@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.UnaryOperator;
 import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.integration.IterativeLegendreGaussIntegrator;
@@ -16,6 +18,8 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.Precision;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.RootsFunctions;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -75,9 +79,10 @@ import de.labathome.AdaptiveQuadrature;
  * </code>
  * </pre>
  * <p>
- * Romberg is the base method for numerical integration; for integrands containing
- * <code>Abs()</code> the LegendreGauss method, for infinite intervals or integrands like
- * <code>x^x</code> the adaptive GaussKronrod method is selected automatically
+ * Romberg is the base method for numerical integration; for infinite intervals and for integrands
+ * containing <code>Abs()</code> or like <code>x^x</code> the adaptive GaussKronrod method is
+ * selected automatically. LegendreGauss is a fixed-order rule without a convergence test, it
+ * returns a finite number even for a divergent integral.
  * </p>
  *
  * <pre>
@@ -123,6 +128,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
 
   public static final int DEFAULT_MAX_POINTS = 100;
   public static final int DEFAULT_MAX_ITERATIONS = 10000;
+
+  /** Highest degree of an <code>Abs()</code> argument whose roots are used as break points. */
+  private static final int MAX_BREAK_POINT_DEGREE = 20;
 
   /**
    * Integrate a function numerically.
@@ -211,6 +219,105 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     return gaussIntegrator.integrate(f);
   }
 
+  /**
+   * Integrate over <code>[min, max]</code> piece by piece between the <code>breakPoints</code>, so
+   * that no rule has to step over a kink or a pole of the integrand.
+   *
+   * @param breakPoints sorted points strictly inside <code>(min, max)</code>
+   */
+  private static double integratePieces(UnaryNumerical f, ISymbol xVar, double min, double max,
+      double[] breakPoints, String method, int maxPoints, int maxIterations, IAST rest)
+      throws MathIllegalStateException {
+    double sum = 0.0;
+    double lower = min;
+    for (int i = 0; i <= breakPoints.length; i++) {
+      double upper = i < breakPoints.length ? breakPoints[i] : max;
+      double piece =
+          integrateDouble(f, xVar, lower, upper, method, maxPoints, maxIterations, rest);
+      if (!Double.isFinite(piece)) {
+        return piece;
+      }
+      sum += piece;
+      lower = upper;
+    }
+    return sum;
+  }
+
+  /**
+   * The real zeros and poles strictly inside <code>(min, max)</code> of the <code>Abs()</code> and
+   * <code>RealAbs()</code> arguments in <code>function</code> which are rational in
+   * <code>x</code>. A quadrature rule can step over the kink of such an argument when none of its
+   * nodes falls into the region where the argument changes sign: all 15 Gauss-Kronrod nodes of
+   * <code>Abs(x^2-2*x)</code> on <code>[-10, 10]</code> miss <code>(0, 2)</code>, both embedded
+   * rules integrate <code>x^2-2*x</code> exactly, and their agreement looks like convergence.
+   *
+   * @return the sorted break points, possibly empty
+   */
+  private static double[] absBreakPoints(IExpr function, ISymbol x, double min, double max,
+      EvalEngine engine) {
+    TreeSet<Double> points = new TreeSet<Double>();
+    // N(Integrate(...)) arrives in numeric mode, where Together(x^2-2*x) turns into the
+    // non-polynomial -2.0*x+x^2.0
+    boolean numericMode = engine.isNumericMode();
+    try {
+      engine.setNumericMode(false);
+      collectAbsBreakPoints(function, x, min, max, points, engine);
+    } catch (RuntimeException rex) {
+      // integrate without the break points found so far
+      Errors.rethrowsInterruptException(rex);
+    } finally {
+      engine.setNumericMode(numericMode);
+    }
+    double[] result = new double[points.size()];
+    int i = 0;
+    for (Double point : points) {
+      result[i++] = point.doubleValue();
+    }
+    return result;
+  }
+
+  private static void collectAbsBreakPoints(IExpr expr, ISymbol x, double min, double max,
+      Set<Double> points, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return;
+    }
+    IAST ast = (IAST) expr;
+    if ((ast.isAbs() || ast.isAST(S.RealAbs, 2)) && !ast.arg1().isFree(x)) {
+      IExpr together = engine.evaluate(F.Together(ast.arg1()));
+      addRealRoots(engine.evaluate(F.Numerator(together)), x, min, max, points, engine);
+      addRealRoots(engine.evaluate(F.Denominator(together)), x, min, max, points, engine);
+    }
+    for (IExpr arg : ast) {
+      collectAbsBreakPoints(arg, x, min, max, points, engine);
+    }
+  }
+
+  private static void addRealRoots(IExpr polynomial, ISymbol x, double min, double max,
+      Set<Double> points, EvalEngine engine) {
+    if (polynomial.isFree(x) || !polynomial.isPolynomial(F.list(x))
+        || !new VariablesSet(polynomial).isSize(1)) {
+      // other variables (the outer variable of a nested NIntegrate) leave no numeric roots
+      return;
+    }
+    if (engine.evaluate(F.Exponent(polynomial, x)).toIntDefault() > MAX_BREAK_POINT_DEGREE) {
+      return;
+    }
+    IAST roots = RootsFunctions.roots(polynomial, true, F.list(x), engine);
+    if (roots.isNIL()) {
+      return;
+    }
+    // keep a margin, a root at an endpoint needs no split
+    double margin = 1.0e-12 * (max - min);
+    for (IExpr root : roots) {
+      if (root.isReal()) {
+        double value = root.evalf();
+        if (value > min + margin && value < max - margin) {
+          points.add(value);
+        }
+      }
+    }
+  }
+
   private static double gaussKronrodRule(int maxIterations, UnaryNumerical function, double min,
       double max) {
     UnaryOperator<double[]> vectorFunction = new UnaryOperator<double[]>() {
@@ -295,11 +402,11 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     } else if (list.arg2().isInfinite() || list.arg3().isInfinite()) {
       // the adaptive Gauss-Kronrod rule maps infinite intervals onto finite ones itself
       method = "GaussKronrod";
-    } else if (!function.isFree(a -> a == S.Abs || a == S.RealAbs, true)) {
-      method = "LegendreGauss";
-    } else if (!function.isFree(a -> a.isPower() && !a.exponent().isFree(x, true), false)) {
-      // x^f(x) shapes like x^x: Romberg converges poorly near their endpoint behavior, use
-      // the adaptive Gauss-Kronrod rule (see issue #1419)
+    } else if (!function.isFree(a -> a == S.Abs || a == S.RealAbs, true)
+        || !function.isFree(a -> a.isPower() && !a.exponent().isFree(x, true), false)) {
+      // Abs() kinks and x^f(x) shapes like x^x (issue #1419): Romberg converges poorly, use the
+      // adaptive Gauss-Kronrod rule. Not the fixed-order LegendreGauss rule - it has no error
+      // estimate and returns a finite number even for a divergent Abs(1/x)
       method = "GaussKronrod";
     }
     double minDouble = list.arg2().evalfNaN();
@@ -328,11 +435,14 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
         return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
       UnaryNumerical sampler = createSampler(function, (ISymbol) x, engine);
+      double[] breakPoints = maxDouble == Double.POSITIVE_INFINITY
+          || minDouble == Double.NEGATIVE_INFINITY ? new double[0]
+              : absBreakPoints(function, (ISymbol) x, minDouble, maxDouble, engine);
       RuntimeException failure = null;
       try {
-        double result = integrateDouble(sampler, (ISymbol) x, minDouble, maxDouble, method,
-            maxPoints, maxIterations, list.rest());
-        if (!Double.isNaN(result)) {
+        double result = integratePieces(sampler, (ISymbol) x, minDouble, maxDouble, breakPoints,
+            method, maxPoints, maxIterations, list.rest());
+        if (Double.isFinite(result)) {
           return Num.valueOf(sign * Precision.round(result, precisionGoal));
         }
       } catch (MathRuntimeException | ArgumentTypeException e) {
@@ -343,9 +453,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       // non-convergence of the simpler rules) if the method was chosen automatically
       if (option[0].isAutomatic() && !"GaussKronrod".equalsIgnoreCase(method)) {
         try {
-          double result = integrateDouble(sampler, (ISymbol) x, minDouble, maxDouble,
-              "GaussKronrod", maxPoints, maxIterations, list.rest());
-          if (!Double.isNaN(result)) {
+          double result = integratePieces(sampler, (ISymbol) x, minDouble, maxDouble,
+              breakPoints, "GaussKronrod", maxPoints, maxIterations, list.rest());
+          if (Double.isFinite(result)) {
             return Num.valueOf(sign * Precision.round(result, precisionGoal));
           }
         } catch (MathRuntimeException | ArgumentTypeException e) {
@@ -354,8 +464,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       }
 
       // CAS "SymbolicProcessing" fallback for oscillatory/infinite integrals: solve
-      // symbolically, then evaluate the result numerically
-      IExpr symbolic = engine.evaluate(F.Integrate(function, list));
+      // symbolically, then evaluate the result numerically. Not in numeric mode: from
+      // N(Integrate(...)) Integrate would delegate straight back to NIntegrate
+      IExpr symbolic = engine.evaluateNonNumeric(F.Integrate(function, list));
       if (symbolic.isFree(S.Integrate)) {
         IExpr numeric = engine.evaluate(F.N(symbolic));
         if (numeric.isNumber()) {
@@ -371,11 +482,17 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      if (sampler.failureCount() > 0) {
+      if (sampler.failureCount() > 0 && sampler.failureCount() == sampler.sampleCount()) {
         // The integrand `1` has evaluated to non-numerical values for all sampling points in
         // the region with boundaries `2`.
         return Errors.printMessage(ast.topHead(), "inumr",
             F.List(function, F.List(list.arg2(), list.arg3())), engine);
+      }
+      if (failure instanceof MathRuntimeException && ((MathRuntimeException) failure)
+          .getSpecifier() == LocalizedCoreFormats.MAX_COUNT_EXCEEDED) {
+        // NIntegrate failed to converge after `1` refinements in `2` in the region `3`.
+        return Errors.printMessage(ast.topHead(), "ncvi",
+            F.List(F.ZZ(maxIterations), x, list.rest()), engine);
       }
       if (failure != null) {
         return Errors.printMessage(ast.topHead(), failure, engine);

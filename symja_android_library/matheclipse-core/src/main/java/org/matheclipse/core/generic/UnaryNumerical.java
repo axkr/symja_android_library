@@ -39,6 +39,9 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
    */
   private int fFailureCount = 0;
 
+  /** Number of sample points requested, see {@link #sampleCount()}. */
+  private int fSampleCount = 0;
+
   UnaryNumerical fFirstDerivative = null;
 
   /**
@@ -264,6 +267,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
 
   @Override
   public double value(double value) {
+    fSampleCount++;
     if (fCompiled != null && fPrecision <= 15) {
       Double compiled = valueCompiled(value);
       if (compiled != null) {
@@ -336,6 +340,14 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
    */
   public int failureCount() {
     return fFailureCount;
+  }
+
+  /**
+   * Number of sample points so far requested through {@link #value(double)} or
+   * {@link #applyAsDouble(double)}.
+   */
+  public int sampleCount() {
+    return fSampleCount;
   }
 
   /**
@@ -413,6 +425,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
 
   @Override
   public double applyAsDouble(double value) {
+    fSampleCount++;
     if (fPrecision > 15) {
       return valueWithPrecision(value);
     }

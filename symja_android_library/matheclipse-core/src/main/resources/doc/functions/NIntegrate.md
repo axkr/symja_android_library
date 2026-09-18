@@ -20,7 +20,15 @@ See:
 -0.0208333333333333
 ```
 
-LegendreGauss is the default method for numerical integration
+Romberg is the base method for numerical integration. For infinite intervals and for integrands containing `Abs()` or like `x^x` the adaptive GaussKronrod method is selected automatically; the interval is split at the zeros and poles of polynomial or rational `Abs()` arguments. LegendreGauss is a fixed-order rule without a convergence test, it returns a finite number even for a divergent integral.
+
+```
+>> NIntegrate(Abs(x^2-2*x), {x,-10,10})
+669.3333
+
+>> NIntegrate(Abs(1/x), {x,-1,1})
+NIntegrate(Abs(1/x),{x,-1,1})
+```
 
 ```
 >> NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->LegendreGauss)

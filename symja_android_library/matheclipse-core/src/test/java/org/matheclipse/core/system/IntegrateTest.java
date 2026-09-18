@@ -1003,9 +1003,50 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(1/x, {x,0,1})", //
         "Integrate(1/x,{x,0,1})");
 
+    // 2008/3 - the integrand is split at the kinks x==0 and x==2
     checkNumeric("Integrate(Abs(x^2-2*x), {x, -10, 10}) // N", //
-        "669.3282335875249");
+        "669.3333333333334");
 
+  }
+
+  @Test
+  public void testNIntegrateAbsDivergent() {
+    // WMA gives NIntegrate::ncvb for these divergent integrals, the fixed-order LegendreGauss
+    // rule used to return a finite number
+    // message - NIntegrate failed to converge after 10000 refinements in x in the region {-1,1}.
+    check("NIntegrate(Abs(1/x),{x,-1,1})", //
+        "NIntegrate(Abs(1/x),{x,-1,1})");
+    check("NIntegrate(RealAbs(1/x),{x,-1,1})", //
+        "NIntegrate(RealAbs(1/x),{x,-1,1})");
+    check("NIntegrate(1/Abs(x),{x,-1,2})", //
+        "NIntegrate(1/Abs(x),{x,-1,2})");
+    check("NIntegrate(Abs(1/(x-1/3)),{x,0,1})", //
+        "NIntegrate(Abs(1/(-1/3+x)),{x,0,1})");
+    check("N(Integrate(Abs(1/x),{x,-1,1}))", //
+        "Integrate(Abs(1/x),{x,-1,1})");
+    check("NIntegrate(1/x^2,{x,-1,1})", //
+        "NIntegrate(1/x^2,{x,-1,1})");
+  }
+
+  @Test
+  public void testNIntegrateAbsKinks() {
+    // 2008/3 - no Gauss-Kronrod node of [-10,10] falls into (0,2), where x^2-2*x < 0
+    checkNumeric("NIntegrate(Abs(x^2-2*x),{x,-10,10})", //
+        "669.3333333333334");
+    checkNumeric("NIntegrate(Abs(x^2-2*x),{x,-10,10},Method->Romberg)", //
+        "669.3333333333334");
+    checkNumeric("NIntegrate(Abs(x),{x,-1,2})", //
+        "2.5");
+    checkNumeric("NIntegrate(Abs(x^3-x),{x,-2,2})", //
+        "5.0");
+    // 6+Cos(10)
+    checkNumeric("NIntegrate(Abs(Sin(x)),{x,0,10})", //
+        "6.160928470923547");
+    // integrable singularity
+    check("NIntegrate(1/Sqrt(Abs(x)),{x,-1,1})", //
+        "4.0");
+    checkNumeric("NIntegrate(RealAbs(x-1/3),{x,0,1})", //
+        "0.2777777777777778");
   }
 
   @Test
