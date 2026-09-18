@@ -77,6 +77,13 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
         return F.Power(s, F.CN2);
       }
       if (t.isSymbol()) {
+        IExpr split = splitPhases(a1, t, engine);
+        if (split.isPresent()) {
+          IExpr transformed = engine.evaluate(F.LaplaceTransform(F.Expand(split), t, s));
+          if (!transformed.has(S.LaplaceTransform)) {
+            return transformed;
+          }
+        }
         IExpr stepped = laplaceTransformOfSteps(engine, a1, t, s);
         if (stepped.isPresent()) {
           return stepped;
@@ -240,6 +247,53 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     return engine.evaluate(F.Times(F.Exp(F.Times(F.CN1, a, s)), transformed));
+  }
+
+  /**
+   * <code>a1</code> with the constant part of the argument of every <code>Sin, Cos, Sinh,
+   * Cosh</code> and <code>E^</code> in <code>t</code> split off by the addition theorems, or
+   * {@link F#NIL} if there is none.
+   *
+   * <p>
+   * The transforms are known for <code>Sin(b*t)</code> and <code>E^(b*t)</code>, but not for
+   * <code>Sin(b*t + d)</code>, and the second shift theorem writes exactly such an argument:
+   * <code>Sin(2*t)</code> on <code>0 &lt;= t &lt; Pi/2</code> needs the transform of
+   * <code>Sin(2*(t + Pi/2))</code>, which is <code>-Sin(2*t)</code> once it is expanded.
+   */
+  private static IExpr splitPhases(IExpr a1, IExpr t, EvalEngine engine) {
+    boolean[] changed = new boolean[1];
+    IExpr result = F.subst(a1, x -> {
+      boolean trig = x.isSin() || x.isCos() || x.isAST(S.Sinh, 2) || x.isAST(S.Cosh, 2);
+      boolean exp = x.isExp();
+      if ((!trig && !exp) || x.isFree(t)) {
+        return F.NIL;
+      }
+      IExpr u = engine.evaluate(F.ExpandAll(exp ? x.exponent() : x.first()));
+      if (!u.isPlus()) {
+        return F.NIL;
+      }
+      IAST[] parts = ((IAST) u).filter(y -> y.isFree(t));
+      IExpr d = parts[0].oneIdentity0();
+      IExpr v = parts[1].oneIdentity0();
+      if (d.isZero()) {
+        return F.NIL;
+      }
+      changed[0] = true;
+      if (exp) {
+        return F.Times(F.Exp(d), F.Exp(v));
+      }
+      if (x.isSin()) {
+        return F.Plus(F.Times(F.Sin(v), F.Cos(d)), F.Times(F.Cos(v), F.Sin(d)));
+      }
+      if (x.isCos()) {
+        return F.Subtract(F.Times(F.Cos(v), F.Cos(d)), F.Times(F.Sin(v), F.Sin(d)));
+      }
+      if (x.isAST(S.Sinh, 2)) {
+        return F.Plus(F.Times(F.Sinh(v), F.Cosh(d)), F.Times(F.Cosh(v), F.Sinh(d)));
+      }
+      return F.Plus(F.Times(F.Cosh(v), F.Cosh(d)), F.Times(F.Sinh(v), F.Sinh(d)));
+    });
+    return changed[0] ? engine.evaluate(result) : F.NIL;
   }
 
   /** Whether <code>expr</code> is a unit step in <code>t</code>. */

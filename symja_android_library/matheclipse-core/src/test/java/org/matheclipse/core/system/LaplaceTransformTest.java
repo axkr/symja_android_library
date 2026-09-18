@@ -88,6 +88,40 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
 
 
   @Test
+  public void testInverseLaplaceTransformPowerOfQuadratic() {
+    // what a resonant forcing leaves: Apart keeps a power of the quadratic as one term
+    check("InverseLaplaceTransform(1/(1+s^2)^2, s, t)", //
+        "-1/2*t*Cos(t)+Sin(t)/2");
+    check("InverseLaplaceTransform(s/(1+s^2)^2, s, t)", //
+        "1/2*t*Sin(t)");
+    check("InverseLaplaceTransform(E^(-Pi*s)/(1+s^2)^2, s, t)", //
+        "HeavisideTheta(-Pi+t)*(1/2*(-Pi+t)*Cos(t)-Sin(t)/2)");
+    // shifted, with a constant factor and a higher power
+    check("f=InverseLaplaceTransform((7*s-2)/(4*s^2+4*s+17)^4, s, t);"
+        + "N(LaplaceTransform(f,t,s)-(7*s-2)/(4*s^2+4*s+17)^4 /. s->13/10)", //
+        "0.0");
+    // two real roots: hyperbolic functions
+    check("f=InverseLaplaceTransform((2*s+1)/(s^2-2*s-1)^2, s, t);"
+        + "Chop(NIntegrate(f*E^(-7*t), {t,0,Infinity}) - 15/1156)", //
+        "0");
+  }
+
+  @Test
+  public void testLaplaceTransformPhase() {
+    // the transforms of Sin(b*t) and E^(b*t) are known, and the constant part of an argument is
+    // split off first; the second shift theorem writes such an argument
+    check("LaplaceTransform(Sin(2*t+1), t, s)", //
+        "(2*Cos(1))/(4+s^2)+(s*Sin(1))/(4+s^2)");
+    check("LaplaceTransform(E^(2*(t+1)), t, s)", //
+        "E^2/(-2+s)");
+    check("LaplaceTransform(Sin(2*t)*UnitStep(t-Pi/2), t, s)", //
+        "-2/(E^(1/2*Pi*s)*(4+s^2))");
+    check("f=LaplaceTransform(t^2*Sin(t+1)*UnitStep(t-3), t, s);"
+        + "Chop(N((f /. s->2) - NIntegrate(t^2*Sin(t+1)*E^(-2*t), {t,3,Infinity})))", //
+        "0");
+  }
+
+  @Test
   public void testInverseLaplaceTransformNumeric() {
     // check("InverseLaplaceTransform(Erf(s)/Sqrt(s), s, 2.3)", //
     // "");

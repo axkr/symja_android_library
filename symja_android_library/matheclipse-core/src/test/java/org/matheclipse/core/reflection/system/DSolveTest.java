@@ -685,6 +685,31 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(t)->C(1)/E^t-Cos(t)/2+Sin(t)/2}}");
   }
 
+  @Test
+  public void testDSolvePiecewiseTrigonometricForcing() {
+    // Sin(t) on 0 <= t < Pi resonates with y'' + y, and its transform leaves 1/(1 + s^2)^2, which
+    // was not inverted; Sin(2*t) on 0 <= t < Pi/2 needed the transform of Sin(2*(t + Pi/2)).
+    checkPiecewiseIVP("y''(t)+y(t)==Piecewise({{Sin(t),0<=t<Pi},{Cos(t),Pi<=t}},0)", //
+        "y''(t)+y(t)-Piecewise({{Sin(t),0<=t<Pi},{Cos(t),Pi<=t}},0)", "y(0)==1,y'(0)==0");
+    checkPiecewiseIVP("y''(t)+y(t)==Piecewise({{Cos(t),0<=t<Pi/2},{0,Pi/2<=t}},0)", //
+        "y''(t)+y(t)-Piecewise({{Cos(t),0<=t<Pi/2}},0)", "y(0)==3,y'(0)==-1");
+    checkPiecewiseIVP("y''(t)+2*y'(t)+y(t)==Piecewise({{Sin(2*t),0<=t<Pi/2},{0,Pi/2<=t}},0)", //
+        "y''(t)+2*y'(t)+y(t)-Piecewise({{Sin(2*t),0<=t<Pi/2}},0)", "y(0)==1,y'(0)==0");
+    // not in any corpus: a phase in the forcing and a repeated quadratic at once
+    checkPiecewiseIVP("y''(t)+4*y(t)==Piecewise({{Cos(2*t+1),0<=t<1}},0)", //
+        "y''(t)+4*y(t)-Piecewise({{Cos(2*t+1),0<=t<1}},0)", "y(0)==0,y'(0)==1");
+  }
+
+  /** The solution of the problem, checked in both pieces and at the initial point. */
+  private void checkPiecewiseIVP(String equation, String residual, String conditions) {
+    String solve = "s=DSolve({" + equation + "," + conditions + "}, y, t)";
+    check("With({" + solve + "}, Head(s)===List && Chop(N({" //
+        + residual + " /. s[[1]] /. t->7/10, " //
+        + residual + " /. s[[1]] /. t->4, " //
+        + "Apply(Subtract, {" + conditions + "}, {1}) /. s[[1]]})) === {0,0,{0,0}})", //
+        "True");
+  }
+
   /** {@link #checkResidual} for an equation in <code>t</code>. */
   private void checkResidualIn(String equation, String residual, String point) {
     check("With({s=DSolve(" + equation + ", y, t)}, Head(s)===List && Abs(N((" + residual

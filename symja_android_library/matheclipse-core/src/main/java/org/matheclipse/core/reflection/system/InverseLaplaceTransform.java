@@ -569,8 +569,80 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
       return engine.evaluate(r);
     }
 
-    // deg(D) >= 3: fall through, let the generic pipeline handle it
-    return F.NIL;
+    // deg(D) >= 3: a power of a quadratic, which Apart leaves as one term, or the generic pipeline
+    return powerOfQuadratic(num, den, s, t, engine);
+  }
+
+  /** The highest power of a quadratic denominator {@link #powerOfQuadratic} inverts. */
+  private static final int MAX_QUADRATIC_POWER = 8;
+
+  /**
+   * The inverse transform of <code>(l*s + m)/(c*Q^n)</code> for a quadratic <code>Q</code> in
+   * <code>s</code> with two distinct roots and <code>n &gt;= 2</code>, or {@link F#NIL}.
+   *
+   * <p>
+   * Written as <code>Q == alpha*((s + a)^2 + b2)</code>, the shift <code>a</code> is a factor
+   * <code>E^(-a*t)</code>, and for <code>g(n) == L^-1{1/(s^2 + b2)^n}</code> and
+   * <code>h(n) == L^-1{s/(s^2 + b2)^n}</code> differentiating in <code>s</code> gives
+   * <code>h(n+1) == t*g(n)/(2*n)</code>, while
+   * <code>1/(s^2+b2)^(n+1) == (1/(s^2+b2)^n - s*s/(s^2+b2)^(n+1))/b2</code> gives
+   * <code>g(n+1) == (g(n) - D(h(n+1), t))/b2</code>, as <code>h(n+1)</code> vanishes at 0. This is
+   * the term <code>1/(1+s^2)^2</code> a resonant forcing leaves, <code>(Sin(t) - t*Cos(t))/2</code>.
+   */
+  private static IExpr powerOfQuadratic(IExpr num, IExpr den, IExpr s, IExpr t,
+      EvalEngine engine) {
+    IExpr power = F.NIL;
+    IExpr constant = F.C1;
+    if (den.isPower()) {
+      power = den;
+    } else if (den.isTimes()) {
+      IAST times = (IAST) den;
+      int index = times.indexOf(x -> x.isPower() && !x.isFree(s));
+      if (index <= 0) {
+        return F.NIL;
+      }
+      power = times.get(index);
+      constant = times.removeAtCopy(index).oneIdentity1();
+      if (!constant.isFree(s)) {
+        return F.NIL;
+      }
+    }
+    if (power.isNIL() || !power.exponent().isInteger()) {
+      return F.NIL;
+    }
+    int n = power.exponent().toIntDefault();
+    if (n < 2 || n > MAX_QUADRATIC_POWER) {
+      return F.NIL;
+    }
+    IExpr[] qc = polynomialCoeffsDescending(power.base(), s, engine);
+    IExpr[] nc = polynomialCoeffsDescending(num, s, engine);
+    if (qc == null || qc.length != 3 || nc == null || nc.length > 2) {
+      return F.NIL;
+    }
+    IExpr alpha = qc[0];
+    IExpr a = engine.evaluate(F.Divide(qc[1], F.Times(F.C2, alpha)));
+    IExpr b2 = engine.evaluate(F.Subtract(F.Divide(qc[2], alpha), F.Sqr(a)));
+    if (b2.isZero() || !b2.isRealResult()) {
+      return F.NIL;
+    }
+    boolean hyperbolic = b2.isNegativeResult();
+    if (!hyperbolic && !b2.isPositiveResult()) {
+      return F.NIL;
+    }
+    IExpr b = engine.evaluate(F.PowerExpand(F.Sqrt(hyperbolic ? F.Negate(b2) : b2)));
+    IExpr g = hyperbolic ? F.Divide(F.Sinh(F.Times(b, t)), b)
+        : F.Divide(F.Sin(F.Times(b, t)), b);
+    IExpr h = F.NIL;
+    for (int k = 1; k < n; k++) {
+      h = engine.evaluate(F.Divide(F.Times(t, g), F.ZZ(2 * k)));
+      g = engine.evaluate(F.Expand(F.Divide(F.Subtract(g, F.D(h, t)), b2)));
+    }
+    IExpr l = nc.length == 2 ? nc[0] : F.C0;
+    IExpr m = nc.length == 2 ? nc[1] : nc[0];
+    // l*s + m == l*(s + a) + (m - a*l)
+    IExpr body = F.Plus(F.Times(l, h), F.Times(F.Subtract(m, F.Times(a, l)), g));
+    return engine.evaluate(F.Expand(F.Divide(F.Times(F.Exp(F.Times(F.CN1, a, t)), body),
+        F.Times(constant, F.Power(alpha, F.ZZ(n))))));
   }
 
   // =====================================================================
