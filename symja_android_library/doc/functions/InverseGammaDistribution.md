@@ -31,6 +31,9 @@ Piecewise({{m/(-1+n),n>1}},Indeterminate)
 >> Variance(InverseGammaDistribution(n, m))
 Piecewise({{m^2/((1-n)^2*(-2+n)),n>2}},Indeterminate)
 
+>> Kurtosis(InverseGammaDistribution(a, b))
+Piecewise({{3+(-66+30*a)/((-4+a)*(-3+a)),a>4}},Indeterminate)
+
 >> InverseCDF(InverseGammaDistribution(a, b), q)
 ConditionalExpression(Piecewise({{b/InverseGammaRegularized(a,q),0<q<1},{0,q<=0}},Infinity),0<=q<=1)
 
@@ -39,4 +42,4 @@ ConditionalExpression(Piecewise({{b/InverseGammaRegularized(a,q),0<q<1},{0,q<=0}
 ```
 
 ### Related terms 
-[CDF](CDF.md), [GammaDistribution](GammaDistribution.md), [Mean](Mean.md), [Median](Median.md), [InverseCDF](InverseCDF.md), [PDF](PDF.md), [Quantile](Quantile.md), [RandomVariate](RandomVariate.md), [Skewness](Skewness.md), [StandardDeviation](StandardDeviation.md), [Variance](Variance.md) 
+[CDF](CDF.md), [GammaDistribution](GammaDistribution.md), [Mean](Mean.md), [Median](Median.md), [InverseCDF](InverseCDF.md), [Kurtosis](Kurtosis.md), [PDF](PDF.md), [Quantile](Quantile.md), [RandomVariate](RandomVariate.md), [Skewness](Skewness.md), [StandardDeviation](StandardDeviation.md), [Variance](Variance.md) 

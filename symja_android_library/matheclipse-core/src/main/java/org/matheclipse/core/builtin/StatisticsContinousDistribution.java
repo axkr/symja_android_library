@@ -1,6 +1,8 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Random;
+import org.apfloat.Apfloat;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.special.Gamma;
@@ -2520,7 +2522,7 @@ public class StatisticsContinousDistribution {
    * <code>((X - m)/b)^(-g)</code> is <code>GammaDistribution(a, 1)</code> distributed.
    */
   private static final class InverseGammaDistribution extends AbstractEvaluator
-      implements IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
+      implements ICentralMoment, IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
 
     /**
      * The parameters <code>{a, b, g, m}</code> of both forms, the 2 argument form with
@@ -2567,6 +2569,93 @@ public class StatisticsContinousDistribution {
       return values;
     }
 
+    /**
+     * <code>{Mean, Variance, Skewness, Kurtosis}</code> of the 4 argument form for machine number
+     * parameters, <code>NaN</code> where the moment does not exist.
+     *
+     * <p>
+     * The exact forms are built from <code>Gamma(a - k/g)/Gamma(a)</code>, the moments of
+     * <code>Y^(-1/g)</code> for <code>Y ~ GammaDistribution(a, 1)</code>. As doubles the
+     * <code>Gamma</code> values overflow from <code>a > 171</code> on, and the central moments
+     * cancel about <code>2*Log10(a*g^2)</code> digits of the raw ones, because the distribution
+     * concentrates as <code>a</code> grows. So the ratios are taken in logarithms, with that many
+     * extra digits.
+     *
+     * @return <code>null</code> unless all parameters are numbers, one of them inexact, and the
+     *         shapes and scale positive
+     */
+    private static double[] machineMoments(IAST dist) {
+      if (!dist.isAST(S.InverseGammaDistribution, 5) || EvalEngine.get().isArbitraryMode()) {
+        return null;
+      }
+      boolean inexact = false;
+      double[] v = new double[4];
+      for (int i = 0; i < 4; i++) {
+        IExpr arg = dist.get(i + 1);
+        inexact |= arg.isInexactNumber();
+        v[i] = arg.evalfNaN();
+        if (!Double.isFinite(v[i])) {
+          return null;
+        }
+      }
+      double a = v[0];
+      double b = v[1];
+      double g = v[2];
+      double m = v[3];
+      if (!inexact || !(a > 0.0 && b > 0.0 && g > 0.0)) {
+        return null;
+      }
+      long precision = 30 + (long) Math.ceil(2.0 * Math.log10(Math.max(1.0, a * g * g)))
+          + (long) Math.ceil(Math.log10(Math.max(10.0, a * Math.abs(Math.log(a)))));
+      FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(precision);
+      Apfloat shape = new Apfloat(a, precision);
+      Apfloat inverseG = h.divide(Apfloat.ONE, new Apfloat(g, precision));
+      Apfloat logGamma0 = h.logGamma(shape);
+      // r[k] = Gamma(a - k/g)/Gamma(a), only for a*g > k
+      Apfloat[] r = new Apfloat[5];
+      r[0] = Apfloat.ONE;
+      for (int k = 1; k <= 4; k++) {
+        if (a * g > k) {
+          Apfloat argument = h.subtract(shape, h.multiply(new Apfloat(k), inverseG));
+          r[k] = h.exp(h.subtract(h.logGamma(argument), logGamma0));
+        }
+      }
+      double[] result = {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
+      if (r[1] == null) {
+        return result;
+      }
+      result[0] = m + b * r[1].doubleValue();
+      if (r[2] == null) {
+        return result;
+      }
+      Apfloat r1Squared = h.multiply(r[1], r[1]);
+      Apfloat c2 = h.subtract(r[2], r1Squared);
+      result[1] = b * b * c2.doubleValue();
+      if (r[3] == null) {
+        return result;
+      }
+      // r3 - 3*r1*r2 + 2*r1^3
+      Apfloat c3 = h.add(h.subtract(r[3], h.multiply(new Apfloat(3), h.multiply(r[1], r[2]))),
+          h.multiply(new Apfloat(2), h.multiply(r1Squared, r[1])));
+      result[2] = h.divide(c3, h.multiply(c2, h.sqrt(c2))).doubleValue();
+      if (r[4] == null) {
+        return result;
+      }
+      // r4 - 4*r1*r3 + 6*r1^2*r2 - 3*r1^4
+      Apfloat c4 = h.subtract(
+          h.add(h.subtract(r[4], h.multiply(new Apfloat(4), h.multiply(r[1], r[3]))),
+              h.multiply(new Apfloat(6), h.multiply(r1Squared, r[2]))),
+          h.multiply(new Apfloat(3), h.multiply(r1Squared, r1Squared)));
+      result[3] = h.divide(c4, h.multiply(c2, c2)).doubleValue();
+      return result;
+    }
+
+    /** A machine moment, or <code>Indeterminate</code> where it does not exist. */
+    private static IExpr machineMoment(double[] moments, int index) {
+      double value = moments[index];
+      return Double.isNaN(value) ? S.Indeterminate : F.num(value);
+    }
+
     /** A parameter which is a real number but not positive. */
     private static boolean isInvalid(IExpr[] parameters) {
       for (int i = 0; i < 3; i++) {
@@ -2606,6 +2695,11 @@ public class StatisticsContinousDistribution {
       return callFunction(F.Function(F.Piecewise(F.list(F.list(//
           F.GammaRegularized(a, F.Power(F.Divide(b, F.Subtract(F.Slot1, m)), g)), //
           F.Greater(F.Slot1, m))), F.C0)), k);
+    }
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+      return F.NIL;
     }
 
     @Override
@@ -2651,10 +2745,56 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      double[] moments = machineMoments(dist);
+      if (moments != null) {
+        return machineMoment(moments, 3);
+      }
+      IExpr a = parameters[0];
+      if (dist.isAST2()) {
+        // Piecewise({{3 + (-66 + 30*a)/((-4 + a)*(-3 + a)), a > 4}}, Indeterminate)
+        return F.Piecewise(F.list(F.list(//
+            F.Plus(F.C3,
+                F.Divide(F.Plus(F.ZZ(-66), F.Times(F.ZZ(30), a)),
+                    F.Times(F.Plus(F.CN4, a), F.Plus(F.CN3, a)))), //
+            F.Greater(a, F.C4))), S.Indeterminate);
+      }
+      IExpr g = parameters[2];
+      // with the moments E(Y^(-k/g)) == Gamma(a - k/g)/Gamma(a) of Y ~ GammaDistribution(a, 1):
+      // Piecewise({{(Gamma(a)^3*Gamma(a - 4/g) - 4*Gamma(a)^2*Gamma(a - 1/g)*Gamma(a - 3/g)
+      // + 6*Gamma(a)*Gamma(a - 1/g)^2*Gamma(a - 2/g) - 3*Gamma(a - 1/g)^4)
+      // /(Gamma(a)*Gamma(a - 2/g) - Gamma(a - 1/g)^2)^2, a*g > 4}}, Indeterminate)
+      IExpr gInverse = F.Power(g, F.CN1);
+      IExpr gamma0 = F.Gamma(a);
+      IExpr gamma1 = F.Gamma(F.Subtract(a, gInverse));
+      IExpr gamma2 = F.Gamma(F.Subtract(a, F.Times(F.C2, gInverse)));
+      IExpr gamma3 = F.Gamma(F.Subtract(a, F.Times(F.C3, gInverse)));
+      IExpr gamma4 = F.Gamma(F.Subtract(a, F.Times(F.C4, gInverse)));
+      // Times(numerator, Power(denominator, -2)) rather than a Divide by a square: the nested
+      // Power(Power(denominator, 2), -1) of large exact Gamma values exceeds the recursion limit
+      return F.Piecewise(F.list(F.list(//
+          F.Times(
+              F.Plus(F.Times(F.Power(gamma0, F.C3), gamma4),
+                  F.Times(F.CN4, F.Sqr(gamma0), gamma1, gamma3),
+                  F.Times(F.C6, gamma0, F.Sqr(gamma1), gamma2),
+                  F.Times(F.CN3, F.Power(gamma1, F.C4))),
+              F.Power(F.Subtract(F.Times(gamma0, gamma2), F.Sqr(gamma1)), F.CN2)), //
+          F.Greater(F.Times(a, g), F.C4))), S.Indeterminate);
+    }
+
+    @Override
     public IExpr mean(IAST dist) {
       IExpr[] parameters = parameters(dist);
       if (parameters == null) {
         return F.NIL;
+      }
+      double[] moments = machineMoments(dist);
+      if (moments != null) {
+        return machineMoment(moments, 0);
       }
       IExpr a = parameters[0];
       IExpr b = parameters[1];
@@ -2759,6 +2899,10 @@ public class StatisticsContinousDistribution {
       if (parameters == null) {
         return F.NIL;
       }
+      double[] moments = machineMoments(dist);
+      if (moments != null) {
+        return machineMoment(moments, 2);
+      }
       IExpr a = parameters[0];
       if (dist.isAST2()) {
         // Piecewise({{(4*Sqrt(-2 + a))/(-3 + a), a > 3}}, Indeterminate)
@@ -2788,6 +2932,10 @@ public class StatisticsContinousDistribution {
       IExpr[] parameters = parameters(dist);
       if (parameters == null) {
         return F.NIL;
+      }
+      double[] moments = machineMoments(dist);
+      if (moments != null) {
+        return machineMoment(moments, 1);
       }
       IExpr a = parameters[0];
       IExpr b = parameters[1];

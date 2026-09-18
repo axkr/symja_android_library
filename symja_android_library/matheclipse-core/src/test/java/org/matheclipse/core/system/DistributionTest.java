@@ -614,6 +614,37 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{0,0,0}");
     check("Quantile(InverseGammaDistribution(2.5, 1.5), {0.1, 0.3, 0.9})", //
         "{0.324803,0.494688,1.863}");
+    // Kurtosis
+    check("Kurtosis(InverseGammaDistribution(a, b))", //
+        "Piecewise({{3+(-66+30*a)/((-4+a)*(-3+a)),a>4}},Indeterminate)");
+    check("Kurtosis(InverseGammaDistribution(a, b, g, m)) === " //
+        + "Piecewise({{(Gamma(a)^3*Gamma(a-4/g)-4*Gamma(a)^2*Gamma(a-3/g)*Gamma(a-1/g)" //
+        + "+6*Gamma(a)*Gamma(a-2/g)*Gamma(a-1/g)^2-3*Gamma(a-1/g)^4)" //
+        + "/(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2)^2,a*g>4}},Indeterminate)", //
+        "True");
+    check("{Kurtosis(InverseGammaDistribution(5, 2)), Kurtosis(InverseGammaDistribution(4, 2)), " //
+        + "Kurtosis(InverseGammaDistribution(9/2, 1, 1, 0))}", //
+        "{45,Indeterminate,95}");
+    check("Module({d=InverseGammaDistribution(6.0, 1.5, 1.2, 0.5), m1, m2, m4}, " //
+        + "m1=NIntegrate(x*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m2=NIntegrate((x-m1)^2*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m4=NIntegrate((x-m1)^4*PDF(d,x),{x,0.5,Infinity}); {m4/m2^2, Kurtosis(d)})", //
+        "{13.11791,13.11791}");
+    // machine numbers with a large shape: the Gamma values overflow a double and the central
+    // moments cancel most of their digits (reference values from 80 digit arithmetic)
+    check("{Mean(InverseGammaDistribution(1000.0, 1.5, 0.7, 2.0)), " //
+        + "Variance(InverseGammaDistribution(1000.0, 1.5, 0.7, 2.0)), " //
+        + "Skewness(InverseGammaDistribution(1000.0, 1.5, 0.7, 2.0)), " //
+        + "Kurtosis(InverseGammaDistribution(1000.0, 1.5, 0.7, 2.0))}", //
+        "{2.00008,1.23979*10^-11,0.167664,3.05218}");
+    check("{Skewness(InverseGammaDistribution(1000000.0, 1.5, 0.7, 2.0)), " //
+        + "Kurtosis(InverseGammaDistribution(1000000.0, 1.5, 0.7, 2.0))}", //
+        "{0.00528573,3.00005}");
+    check("{Variance(InverseGammaDistribution(2.5, 1, 0.8, 0)), Kurtosis(InverseGammaDistribution(4.5, 1, 0.8, 0))}", //
+        "{Indeterminate,Indeterminate}");
+    // an exact large shape evaluates; N needs the digits the central moments cancel
+    check("N(Kurtosis(InverseGammaDistribution(300, 3/2, 7/10, 2)), 40)", //
+        "3.177016612594827128643611533494056882297");
   }
 
   @Test
