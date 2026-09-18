@@ -108,12 +108,16 @@ public class ManipulateSpecTest {
     assertEquals(ManipulateControl.TRIGGER, control.getKind());
   }
 
+  /** No control is drawn for k, but k stays the widget's own variable, starting at 0. */
   @Test
-  public void testControlTypeNoneDropsTheControl() {
+  public void testControlTypeNoneDrawsNoControl() {
     ManipulateSpec spec = parse("Manipulate(k, {k, 0, 5, ControlType -> None}, {j, 0, 1})");
     assertNotNull(spec);
-    assertEquals(1, spec.getControls().size());
-    assertEquals("j", spec.getControls().get(0).getName());
+    assertEquals(2, spec.getControls().size());
+    assertEquals(ManipulateControl.NONE, spec.getControls().get(0).getKind());
+    assertEquals("k", spec.getControls().get(0).getName());
+    assertEquals(ManipulateControl.SLIDER, spec.getControls().get(1).getKind());
+    assertEquals("j", spec.getControls().get(1).getName());
   }
 
   @Test
@@ -389,6 +393,65 @@ public class ManipulateSpecTest {
   @Test
   public void testNotAManipulate() {
     assertNull(parse("Plot(Sin(x), {x, 0, 1})"));
+  }
+
+  /**
+   * Woxi #792's example: a control and its read-out laid out in one Row, a styled read-out of a
+   * variable the body writes, and that variable declared with ControlType -> None.
+   */
+  @Test
+  public void testAControlInsideARowIsAControlAndTheRestItsReadOut() {
+    ManipulateSpec spec =
+        parse("Manipulate(status = If(target >= 8, \"reached\", \"not yet\"); target,"
+            + " Row({Control({{target, 1, \"target\"}, 0, 10}), Style(\" \"),"
+            + " Style(Dynamic(target))}),"
+            + " Style(Dynamic(status), Bold, Red), {{status, \"\", \"\"}, ControlType -> None})");
+    assertNotNull(spec);
+    List<ManipulateControl> controls = spec.getControls();
+    assertEquals(4, controls.size());
+    assertEquals(ManipulateControl.SLIDER, controls.get(0).getKind());
+    assertEquals("target", controls.get(0).getName());
+
+    ManipulateControl readOut = controls.get(1);
+    assertEquals(ManipulateControl.DISPLAY, readOut.getKind());
+    assertTrue(readOut.getDisplay().isAST(S.Row));
+    assertTrue(!readOut.getDisplay().toString().contains("Control"),
+        "the control is not drawn a second time inside the read-out: " + readOut.getDisplay());
+
+    assertEquals(ManipulateControl.DISPLAY, controls.get(2).getKind());
+
+    ManipulateControl status = controls.get(3);
+    assertEquals(ManipulateControl.NONE, status.getKind());
+    assertTrue(status.bindsVariable());
+    assertTrue(status.getInitial().isString());
+    assertEquals("", status.getInitial().toString());
+  }
+
+  @Test
+  public void testALayoutOfControlsWithOnlyTextLeftBecomesAHeading() {
+    ManipulateSpec spec = parse("Manipulate(u, Row({\"speed\", Control({u, 0, 1})}))");
+    assertNotNull(spec);
+    assertEquals(2, spec.getControls().size());
+    assertEquals(ManipulateControl.SLIDER, spec.getControls().get(0).getKind());
+    assertEquals(ManipulateControl.HEADING, spec.getControls().get(1).getKind());
+  }
+
+  /** ControlType -> None keeps the variable local with a starting value, and draws nothing. */
+  @Test
+  public void testControlTypeNoneBindsWithoutAControl() {
+    ManipulateControl range = singleControl("Manipulate(u, {u, 2, 5, ControlType -> None})");
+    assertEquals(ManipulateControl.NONE, range.getKind());
+    assertEquals("2", range.getInitial().toString(), "a range starts at its lower end");
+
+    ManipulateControl choice =
+        singleControl("Manipulate(u, {u, {a, b, c}, ControlType -> None})");
+    assertEquals(ManipulateControl.NONE, choice.getKind());
+    assertEquals("a", choice.getInitial().toString(), "a choice starts at the first one");
+
+    ManipulateControl initial =
+        singleControl("Manipulate(u, {{u, 7}, ControlType -> None})");
+    assertEquals(ManipulateControl.NONE, initial.getKind());
+    assertEquals("7", initial.getInitial().toString());
   }
 
   @Test

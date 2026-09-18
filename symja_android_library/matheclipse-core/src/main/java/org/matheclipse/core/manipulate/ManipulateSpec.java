@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -164,6 +165,12 @@ public class ManipulateSpec {
           && spec.addPaneSelector((IAST) arg, engine)) {
         continue;
       }
+      // Row[{Control[{u, 0, 10}], " ", Dynamic[u]}] puts a control beside its own read-out: the
+      // controls inside are controls, and what is left of the layout is the read-out
+      if (!arg.isAST(S.Control) && containsControlWrapper(arg)) {
+        spec.addLayoutOfControls(arg, engine);
+        continue;
+      }
       ManipulateControl control = parseControl(arg, engine, spec.unknownControlOptions);
       if (control != null) {
         spec.controls.add(control);
@@ -246,6 +253,67 @@ public class ManipulateSpec {
       found.add(single);
     }
     return found;
+  }
+
+  /**
+   * Add the controls a layout such as <code>Row[{Control[...], " ", Dynamic[u]}]</code> holds, then
+   * what is left of the layout without them.
+   *
+   * <p>
+   * The panel draws one control per row, so the controls come first and the rest follows as a row
+   * of its own - a live read-out when it carries a <code>Dynamic</code>, a heading when all it has
+   * left is text - rather than beside them as a notebook would draw it.
+   */
+  private void addLayoutOfControls(IExpr layout, EvalEngine engine) {
+    collectControlWrappers(layout, engine, controls);
+    IExpr rest = withoutControlWrappers(layout);
+    if (Dynamics.containsDynamic(rest)) {
+      controls.add(ManipulateControl.display(rest));
+      return;
+    }
+    StringBuilder text = new StringBuilder();
+    collectText(rest, text);
+    if (!text.toString().trim().isEmpty()) {
+      controls.add(ManipulateControl.heading(text.toString().trim()));
+    }
+  }
+
+  /** <code>expr</code> with every <code>Control[...]</code> in it replaced by an empty string. */
+  private static IExpr withoutControlWrappers(IExpr expr) {
+    if (expr.isAST(S.Control, 2)) {
+      return F.CEmptyString;
+    }
+    if (!expr.isAST()) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    IASTMutable result = null;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr child = withoutControlWrappers(ast.get(i));
+      if (child != ast.get(i)) {
+        if (result == null) {
+          result = ast.copy();
+        }
+        result.set(i, child);
+      }
+    }
+    return result == null ? ast : result;
+  }
+
+  /** The strings of a layout, in order, which is all a static heading can show of it. */
+  private static void collectText(IExpr expr, StringBuilder text) {
+    if (expr.isString()) {
+      text.append(expr.toString());
+      return;
+    }
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      // the directives of a Style are not text
+      int end = ast.isAST(S.Style) ? Math.min(2, ast.size()) : ast.size();
+      for (int i = 1; i < end; i++) {
+        collectText(ast.get(i), text);
+      }
+    }
   }
 
   private static boolean containsControlWrapper(IExpr expr) {
@@ -488,6 +556,9 @@ public class ManipulateSpec {
   private static ManipulateControl build(ISymbol variable, List<IExpr> args, IExpr initial,
       String controlType, EvalEngine engine) {
 
+    if (isName(controlType, "None")) {
+      return hidden(variable, args, initial);
+    }
     if (isName(controlType, "Locator")) {
       return locator(variable, args, initial);
     }
@@ -528,8 +599,6 @@ public class ManipulateSpec {
           kind = ManipulateControl.LOCATOR;
         } else if (isName(controlType, "InputField")) {
           kind = ManipulateControl.INPUTFIELD;
-        } else if (isName(controlType, "None")) {
-          return null;
         }
       }
       // an initial value that is a pair asks for an interval slider
@@ -615,6 +684,29 @@ public class ManipulateSpec {
     return control;
   }
 
+  /**
+   * A variable with <code>ControlType -&gt; None</code>: local to the widget, no control drawn.
+   *
+   * <p>
+   * It starts at its initial value, or where the control it replaces would have started - the
+   * lower end of a range, the first of a list of choices.
+   */
+  private static ManipulateControl hidden(ISymbol variable, List<IExpr> args, IExpr initial) {
+    IExpr start = initial;
+    if (!start.isPresent() && !args.isEmpty()) {
+      IExpr first = args.get(0);
+      if (first.isList() && ((IAST) first).argSize() > 0) {
+        IExpr choice = ((IAST) first).arg1();
+        start = choice.isRule() ? ((IAST) choice).arg1() : choice;
+      } else if (!first.isList()) {
+        start = first;
+      }
+    }
+    ManipulateControl control = new ManipulateControl(ManipulateControl.NONE, variable);
+    control.setInitial(start);
+    return control;
+  }
+
   private static ManipulateControl discrete(ISymbol variable, IAST choices, IExpr initial,
       String controlType) {
     List<IExpr> values = new ArrayList<IExpr>();
@@ -638,8 +730,6 @@ public class ManipulateSpec {
     if (controlType != null) {
       if (isName(controlType, "Checkbox") || isName(controlType, "Toggler")) {
         kind = ManipulateControl.CHECKBOX;
-      } else if (isName(controlType, "None")) {
-        return null;
       }
     } else if (ManipulateControl.isBooleanPair(values)) {
       kind = ManipulateControl.CHECKBOX;

@@ -89,6 +89,17 @@ public class ManipulateControl {
   /** A <code>Delimiter</code> argument: a horizontal rule. */
   public static final String DELIMITER = "delimiter";
 
+  /**
+   * A variable asked for with <code>ControlType -&gt; None</code>: it is local to the widget and
+   * starts at its initial value, but no control is drawn for it.
+   *
+   * <p>
+   * <code>{{status, ""}, ControlType -&gt; None}</code> is how a demonstration declares a variable
+   * its body writes and a read-out shows. The browser has no widget to send a value from, so the
+   * variable is always bound to the initial value and the body takes it from there.
+   */
+  public static final String NONE = "none";
+
   private final String kind;
 
   /** The bound variable, or <code>null</code> for a row that binds nothing. */
@@ -278,6 +289,11 @@ public class ManipulateControl {
 
   void setInitial(IExpr initial) {
     this.initial = initial;
+  }
+
+  /** The initial value as it was written, or {@link F#NIL}. */
+  public IExpr getInitial() {
+    return initial;
   }
 
   void setInitialIndex(int index) {
