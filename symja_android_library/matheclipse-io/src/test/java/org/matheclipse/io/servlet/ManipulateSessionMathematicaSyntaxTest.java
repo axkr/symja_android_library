@@ -24,6 +24,27 @@ public class ManipulateSessionMathematicaSyntaxTest {
   @BeforeAll
   public static void beforeAll() {
     F.initSymbols();
+    org.matheclipse.astro.AstroInit.init();
+  }
+
+  @Test
+  public void testSolarSystemWidgetShowsTheMovingPlanets() throws Exception {
+    ManipulateSessionTest.checkSolarSystem(
+        new EvalEngine("manipulate-test", 256, System.out, false),
+        "Manipulate[Graphics3D[{Sphere[#1, Scaled[0.015]] & /@"
+            + " (orbitPos[dateAt[baseYear, dayFrac], #1] & /@ Range[8]),"
+            + " {Yellow, Sphere[{0, 0, 0}, Scaled[0.02]]}},"
+            + " PlotRange -> Exp[4*(zoom - 1)], ImageSize -> {360, 360},"
+            + " PlotLabel -> DateString[dateAt[baseYear, dayFrac],"
+            + " {\"MonthName\", \" \", \"Year\"}],"
+            + " SphericalRegion -> True],"
+            + " {{dayFrac, 0, \"day offset\"}, 0, 1, ControlType -> Slider},"
+            + " {{baseYear, 2020, \"year\"}, 2020, 2170, 1, ControlType -> Slider},"
+            + " {{zoom, 1, \"zoom\"}, 0, 1},"
+            + " SaveDefinitions -> True, SynchronousUpdating -> False,"
+            + " Initialization :> (dateAt[y_, d_] := DatePlus[{y}, {d, \"Year\"}];"
+            + " orbitPos[t_, k_] := AstronomicalData[AstronomicalData[k],"
+            + " {\"Position\", t}]/(7*10^12);)]");
   }
 
   @Test
