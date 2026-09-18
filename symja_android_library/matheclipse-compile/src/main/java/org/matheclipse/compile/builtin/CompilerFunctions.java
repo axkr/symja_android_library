@@ -257,6 +257,8 @@ public class CompilerFunctions {
           }
           return result;
         }
+      } else if (head.isAST(S.CompiledFunction)) {
+        return applySerializedForm((IAST) head, ast);
       }
       return F.NIL;
     }
@@ -306,6 +308,46 @@ public class CompilerFunctions {
       newSymbol.setAttributes(Attribute.HOLDALL);
       setOptions(newSymbol, OPTION_SYMBOLS, OPTION_DEFAULTS);
     }
+  }
+
+  /**
+   * Call the Wolfram Language's own serialized form of a compiled function -
+   * <code>CompiledFunction[version, argumentTypes, ..., Function[...], ...]</code>, as a notebook
+   * saved with <code>SaveDefinitions -> True</code> or the <code>InputForm</code> of a compiled
+   * function writes it - through the uncompiled <code>Function</code> it embeds next to the
+   * bytecode.
+   *
+   * <p>
+   * Symja cannot run that bytecode, but the Wolfram Language keeps the pure function alongside it
+   * as its own fallback, so applying it gives the same answer. An argument at a position the second
+   * element declares as a bare <code>_Real</code> or <code>_Complex</code> is wrapped in
+   * <code>N</code>, since the bytecode reads it as a machine number.
+   *
+   * @return the application of the embedded function, or {@link F#NIL} if there is none
+   */
+  private static IExpr applySerializedForm(IAST compiledFunction, IAST ast) {
+    IExpr function = F.NIL;
+    for (int i = compiledFunction.argSize(); i >= 1; i--) {
+      if (compiledFunction.get(i).isAST(S.Function)) {
+        function = compiledFunction.get(i);
+        break;
+      }
+    }
+    if (function.isNIL()) {
+      return F.NIL;
+    }
+    IAST types = compiledFunction.argSize() >= 2 && compiledFunction.arg2().isList()
+        ? (IAST) compiledFunction.arg2()
+        : F.CEmptyList;
+    IASTAppendable call = F.ast(function, ast.argSize());
+    for (int i = 1; i <= ast.argSize(); i++) {
+      IExpr argument = ast.get(i);
+      IExpr type = i <= types.argSize() ? types.get(i) : F.NIL;
+      boolean machineNumber = type.isBlank() && (((Blank) type).getHeadTest() == S.Real
+          || ((Blank) type).getHeadTest() == S.Complex);
+      call.append(machineNumber ? F.N(argument) : argument);
+    }
+    return call;
   }
 
   /**
@@ -707,6 +749,10 @@ public class CompilerFunctions {
     return null;
   }
 
+  private static boolean isInexact(CompileAnalyzer.VarType type) {
+    return type == CompileAnalyzer.VarType.REAL || type == CompileAnalyzer.VarType.COMPLEX;
+  }
+
   public static String compilePrint(final IAST ast, CompiledFunctionArg[] args,
       RuntimeOptions runtimeOptions, CompilationOptions compilationOptions, EvalEngine engine) {
     Map<IExpr, String> symbolicVariables = new HashMap<>();
@@ -934,6 +980,10 @@ public class CompilerFunctions {
       String wrapper = runtimeOptions.isCatchMachineIntegerOverflow() ? "symjifyInteger"
           : "symjifyIntegerUnchecked";
       evalMethod.addStatement("return $T.$L($L)", CompiledFunctionExpr.class, wrapper, exprStr);
+    } else if (isInexact(analyzer.tensorResultType(expression))) {
+      // a real or complex result tensor is packed: an exact element which came from a literal in
+      // the body, such as the 1 in {x, 1} or the bound Clip returns, is a machine number too
+      evalMethod.addStatement("return engine.evalN($T.symjify($L))", F.class, exprStr);
     } else {
       evalMethod.addStatement("return $T.symjify($L)", F.class, exprStr);
     }

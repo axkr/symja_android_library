@@ -166,6 +166,57 @@ public class CompileAnalyzer {
     return type;
   }
 
+  /**
+   * The element type of the numeric tensor a compiled function's result <code>expr</code> is, or
+   * {@link VarType#SYMBOLIC} if it is not one. Call after {@link #analyze(IExpr)}.
+   *
+   * <p>
+   * A compiled list result is a packed tensor, so its elements are unified to the widest numeric
+   * type among them - <code>{n, x}</code> with an integer <code>n</code> and a real <code>x</code>
+   * is all real - and <code>Clip</code> of a real is real. This is deliberately not folded into the
+   * type {@link #analyze(IExpr)} records for <code>List</code> nodes: those types also decide which
+   * assignments get a numeric field, and a variable holding a list must not get one.
+   */
+  public VarType tensorResultType(IExpr expr) {
+    if (expr.isAST(S.CompoundExpression) && expr.argSize() > 0) {
+      return tensorResultType(((IAST) expr).last());
+    }
+    if ((expr.isAST(S.Module, 3) || expr.isAST(S.Block, 3) || expr.isAST(S.With, 3))) {
+      return tensorResultType(expr.second());
+    }
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
+      if (list.argSize() == 0) {
+        return VarType.SYMBOLIC;
+      }
+      VarType merged = VarType.UNKNOWN;
+      for (int i = 1; i < list.size(); i++) {
+        VarType element = tensorResultType(list.get(i));
+        if (!isNumber(element)) {
+          return VarType.SYMBOLIC;
+        }
+        merged = VarType.widen(merged, element);
+      }
+      return merged;
+    }
+    if (expr.isAST(S.Clip) && expr.argSize() >= 1 && expr.argSize() <= 2) {
+      VarType merged = tensorResultType(expr.first());
+      if (expr.argSize() == 2) {
+        merged = VarType.widen(merged, tensorResultType(expr.second()));
+      }
+      return isNumber(merged) ? merged : VarType.SYMBOLIC;
+    }
+    if (expr.isInteger()) {
+      return VarType.INTEGER;
+    }
+    VarType type = nodeTypes.get(expr);
+    return isNumber(type) ? type : VarType.SYMBOLIC;
+  }
+
+  private static boolean isNumber(VarType type) {
+    return type == VarType.INTEGER || type == VarType.REAL || type == VarType.COMPLEX;
+  }
+
   private VarType analyzeAST(IAST ast) {
     IExpr head = ast.head();
     if (head.isBuiltInSymbol()) {

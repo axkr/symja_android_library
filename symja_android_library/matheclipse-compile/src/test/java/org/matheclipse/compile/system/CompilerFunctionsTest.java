@@ -1216,7 +1216,8 @@ public class CompilerFunctionsTest extends AbstractTestCase {
     if (ToggleFeature.COMPILE) {
       check("Compile({{x, _Real}}, {x, x^2})[2.]", "{2.0,4.0}");
       assertEquals("", messagesOf("Compile({{x, _Real, 0}}, Clip(x, {-4, 4}))[-5.]"));
-      check("Compile({{x, _Real, 0}}, Clip(x, {-4, 4}))[-5.]", "-4");
+      // Wolfram Language ground truth: Clip of a real is real
+      check("Compile({{x, _Real, 0}}, Clip(x, {-4, 4}))[-5.]", "-4.0");
     }
   }
 
@@ -1517,6 +1518,65 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "");
       assertTrue(evaluator.eval("pq(5.)").head() instanceof
           org.matheclipse.compile.expression.CompiledFunctionExpr);
+    }
+  }
+  /**
+   * A compiled list result is a packed tensor: its elements are unified to the widest numeric type
+   * among them, so an exact element which came from a literal in the body comes back as a machine
+   * number next to a real one, and <code>Clip</code> of a real is real. An all-integer tensor, and
+   * an integer-valued result such as <code>Length</code>, stay exact (Wolfram Language ground
+   * truth: <code>Length</code> of a real matrix argument is an integer).
+   */
+  @Test
+  public void testCompileResultTensorType() {
+    if (ToggleFeature.COMPILE) {
+      check("Compile({{x, _Real, 0}}, {x, 1})[2.5]", //
+          "{2.5,1.0}");
+      check("Compile({{n, _Integer, 0}, {x, _Real, 0}}, {n, x})[3, 2.5]", //
+          "{3.0,2.5}");
+      check("Compile({{n, _Integer, 0}}, {n, 1})[3]", //
+          "{3,1}");
+      check("Compile({{x, _Real, 0}}, {{x, 1}, {2, 3}})[2.5]", //
+          "{{2.5,1.0},{2.0,3.0}}");
+      check("Compile({{x, _Real, 0}}, Clip(x, {-4, 4}))[3.]", //
+          "3.0");
+      check("Compile({{x, _Real, 0}}, Module({y = x}, {y, 0}))[1.5]", //
+          "{1.5,0.0}");
+      check("Compile({{m, _Real, 2}}, Length(m))[{{1., 2.}, {3., 4.}}]", //
+          "2");
+      check("Compile({{x, _Real}}, If(x > 0, 1, 2))[1.]", //
+          "1");
+    }
+  }
+
+  /**
+   * The Wolfram Language's own serialized form of a compiled function - as a notebook saved with
+   * <code>SaveDefinitions -> True</code>, or its <code>InputForm</code>, writes it - is called
+   * through the uncompiled <code>Function</code> it embeds next to the bytecode (Woxi #697). An
+   * argument at a <code>_Real</code> position is read as a machine number.
+   */
+  @Test
+  public void testCompiledFunctionSerializedForm() {
+    if (ToggleFeature.COMPILE) {
+      check("cfs = CompiledFunction({7, 7.0, 42}, {_Integer, _Real}, {{2, 0, 0}}, {{}},"
+          + " {0, 1, 2, 0, 0}, {{1}}, Function({a, b}, N(a) + b), Evaluate); cfs(3, 0.25)", //
+          "3.25");
+      // called deep inside a larger computation, where an unreduced call would grow at every level
+      // (helper names avoid ones relaxed syntax maps to protected builtins, like accumulate)
+      check("stepfn = CompiledFunction({7, 7.0, 42}, {_Integer}, {{2, 0, 0}}, {{}}, {0, 1, 2, 0, 0},"
+          + " {{1}}, Function({k}, N(2*k)), Evaluate);"
+          + " runsteps(n_) := Module({acc}, acc = 0; Do(acc = acc + stepfn(i), {i, 1, n}); acc);"
+          + " runsteps(4)", //
+          "20.0");
+      // the Wolfram Language's own dump of Compile({x, y}, x + 2 y, RuntimeAttributes -> {Listable}):
+      // the attribute rides on the embedded Function, and _Real arguments are read as reals
+      check("CompiledFunction({11, 15., 5598}, {_Real, _Real}, {{3, 0, 0}, {3, 0, 1}, {3, 0, 3}},"
+          + " {{2, {2, 0, 0}}}, {0, 1, 4, 0, 0}, {{10, 0, 2}, {16, 2, 1, 2}, {13, 0, 2, 3}, {1}},"
+          + " Function({x, y}, x + 2*y, Listable), Evaluate)[{1, 2}, {3, 4}]", //
+          "{7.0,10.0}");
+      // no embedded Function: the call stays unevaluated
+      check("CompiledFunction({1, 2}, {_Real})[3.]", //
+          "CompiledFunction({1,2},{_Real})[3.0]");
     }
   }
 }
