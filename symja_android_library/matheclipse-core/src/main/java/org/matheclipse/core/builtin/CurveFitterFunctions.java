@@ -351,7 +351,7 @@ public class CurveFitterFunctions {
             }
             return model;
           } catch (MathIllegalArgumentException miae) {
-            return Errors.printMessage(null, miae);
+            return Errors.printMessage(S.Fit, miae);
             // if (miae.getSpecifier().equals(LocalizedCoreFormats.SINGULAR_MATRIX)) {
             // }
           }
