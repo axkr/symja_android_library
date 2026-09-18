@@ -647,8 +647,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "1.772453850905516");
 
     // integrable singularity at x==0
+    // exact 2 - the QUADPACK extrapolation
     checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->GaussKronrod)", //
-        "1.9999999999924798");
+        "2.0000000000000004");
     checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->LegendreGauss )", //
         "1.9913364016175945");
     checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->GaussKronrod)", //
@@ -695,7 +696,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate (x, {x, 0,2}, Method->Simpson)", //
         "2.0");
     checkNumeric("NIntegrate(Cos(x), {x, 0, Pi})", //
-        "1.0E-16");
+        "0.0");
     checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
         "2.1195255867");
   }
@@ -1007,6 +1008,76 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("Integrate(Abs(x^2-2*x), {x, -10, 10}) // N", //
         "669.3333333333334");
 
+  }
+
+  @Test
+  public void testNIntegrateAutomaticSplitting() {
+    // the integrand is split where its symbolic form has a kink or a jump
+    check("NIntegrate(Sign(x-1/4),{x,0,1})", //
+        "0.5");
+    check("NIntegrate(UnitStep(x-1/2)*x,{x,0,1})", //
+        "0.375");
+    check("NIntegrate(Floor(x),{x,0,5})", //
+        "10.0");
+    // 1/81 + 2/9
+    check("NIntegrate(Piecewise({{x^2,x<1/3},{1-x,x>=1/3}}),{x,0,1})", //
+        "0.234568");
+    check("NIntegrate(Max(x,1-x),{x,0,1})", //
+        "0.75");
+    check("NIntegrate(Clip(3*x-1),{x,-1,1})", //
+        "-0.666667");
+    // a pole at the centre node of [-1,1]: split there, and recognized as divergent
+    check("NIntegrate(1/Sin(x),{x,-1,1})", //
+        "NIntegrate(1/Sin(x),{x,-1,1})");
+    // QAGI would fold x+(-x) to 0
+    check("NIntegrate(x,{x,-Infinity,Infinity})", //
+        "NIntegrate(x,{x,-Infinity,Infinity})");
+  }
+
+  @Test
+  public void testNIntegrateAutomaticSingularities() {
+    // the QUADPACK epsilon extrapolation at endpoint singularities
+    checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1})", //
+        "2.0000000000000004");
+    // 2*(Log(2)^2-2*Log(2)+2)
+    check("NIntegrate(Log(x)^2,{x,0,2})", //
+        "2.18832");
+    check("NIntegrate(x^x,{x,0,1},Method->GlobalAdaptive)", //
+        "0.783431");
+    // message - NIntegrate failed to converge to prescribed accuracy after 237 recursive
+    // bisections in x near {x} = {2.26392*10^-72}. NIntegrate obtained 171.9885 and 9.35056 for
+    // the integral and error estimates.
+    check("NIntegrate(1/x,{x,0,1})", //
+        "NIntegrate(1/x,{x,0,1})");
+  }
+
+  @Test
+  public void testNIntegrateAutomaticOscillatory() {
+    // half periods summed with Wynn epsilon acceleration
+    check("NIntegrate(Sin(x)/x,{x,0,Infinity})", //
+        "1.5708");
+    check("NIntegrate(Sin(x)/x,{x,-Infinity,Infinity})", //
+        "3.14159");
+    // Pi/(2*E)
+    check("NIntegrate(Cos(x)/(1+x^2),{x,0,Infinity})", //
+        "0.577864");
+    check("NIntegrate(Exp(-x)*Sin(x),{x,0,Infinity})", //
+        "0.5");
+    // divergent - an accelerated sum of the half periods would be 1
+    // message - Numerical integration converging too slowly; ...
+    check("NIntegrate(Sin(x),{x,0,Infinity})", //
+        "NIntegrate(Sin(x),{x,0,Infinity})");
+  }
+
+  @Test
+  public void testNIntegrateGoals() {
+    check("NIntegrate(Sin(x^3),{x,0,2},PrecisionGoal->4)", //
+        "0.4519");
+    check("NIntegrate(Sin(x),{x,-1,1},AccuracyGoal->Infinity)", //
+        "0.0");
+    // message - Inappropriate parameter: AccuracyGoal.
+    check("NIntegrate(x,{x,0,1},AccuracyGoal->-1)", //
+        "NIntegrate(x,{x,0,1},AccuracyGoal->-1)");
   }
 
   @Test

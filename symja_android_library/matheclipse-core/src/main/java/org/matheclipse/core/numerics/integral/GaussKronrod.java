@@ -57,14 +57,26 @@ public final class GaussKronrod extends Quadrature {
 
   private final double myRelTol;
 
+  /** Thrown by the sampling wrapper when the integrand returns a non-finite value. */
+  private static final class NonFiniteSample extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
+    final double x;
+
+    NonFiniteSample(double x) {
+      super(null, null, false, false);
+      this.x = x;
+    }
+  }
+
   /**
    * Creates a new instance of the Gauss-Kronrod quadrature integrator.
    * 
-   * @param relativeTolerance the smallest acceptable relative change in integral estimates in
-   *        consecutive iterations that indicates the algorithm has converged
-   * @param tolerance the smallest acceptable absolute change in integral estimates in consecutive
-   *        iterations that indicates the algorithm has converged
-   * @param maxEvaluations the maximum number of evaluations of each function permitted
+   * @param tolerance the absolute error tolerance <code>epsabs</code>
+   * @param relativeTolerance the relative error tolerance <code>epsrel</code>
+   * @param maxEvaluations the maximum number of integrand evaluations. QUADPACK bounds the number
+   *        of subintervals instead: a finite range costs 21 evaluations for the first interval and
+   *        42 for each bisection, an infinite one 15 and 30.
    */
   public GaussKronrod(final double tolerance, final double relativeTolerance,
       final int maxEvaluations) {
@@ -76,6 +88,25 @@ public final class GaussKronrod extends Quadrature {
     this(tolerance, 50.0 * Constants.EPSILON, maxEvaluations);
   }
 
+  /** The QUADPACK subinterval limit for an evaluation budget and a rule of <code>points</code>. */
+  private int subintervalLimit(int points) {
+    return Math.max(1, (myMaxEvals + points) / (2 * points));
+  }
+
+  /**
+   * Stop at the first non-finite sample. QUADPACK would sum it into the heap, and a single
+   * <code>NaN</code> then poisons every later estimate.
+   */
+  private static DoubleUnaryOperator finiteSamples(final DoubleUnaryOperator f) {
+    return x -> {
+      double value = f.applyAsDouble(x);
+      if (!Double.isFinite(value)) {
+        throw new NonFiniteSample(x);
+      }
+      return value;
+    };
+  }
+
   @Override
   protected final QuadratureResult properIntegral(final DoubleUnaryOperator f, final double a,
       final double b) {
@@ -85,10 +116,17 @@ public final class GaussKronrod extends Quadrature {
     final double[] abserr = new double[1];
     final int[] neval = new int[1];
     final int[] ier = new int[1];
+    final double[] worst = {Double.NaN};
 
     // call main subroutine
-    dqags(f, a, b, myTol, myRelTol, result, abserr, neval, ier, myMaxEvals);
-    return new QuadratureResult(result[0], abserr[0], neval[0], ier[0] == 0);
+    try {
+      dqags(finiteSamples(f), a, b, myTol, myRelTol, result, abserr, neval, ier,
+          subintervalLimit(21), worst);
+    } catch (NonFiniteSample nfs) {
+      return new QuadratureResult(Double.NaN, Double.NaN, neval[0],
+          QuadratureResult.STATUS_BAD_INTEGRAND, nfs.x);
+    }
+    return new QuadratureResult(result[0], abserr[0], neval[0], ier[0], worst[0]);
   }
 
   @Override
@@ -101,7 +139,9 @@ public final class GaussKronrod extends Quadrature {
 
     // make sure a < b
     if (a > b) {
-      return integrate(f, b, a);
+      final QuadratureResult result = integrate(f, b, a);
+      return new QuadratureResult(-result.estimate, result.error, result.evaluations,
+          result.status, result.worstPoint);
     }
 
     // both are finite
@@ -112,6 +152,7 @@ public final class GaussKronrod extends Quadrature {
     // infinite bounds case
     final double[] result = new double[1], abserr = new double[1];
     final int[] neval = new int[1], ier = new int[1];
+    final double[] worst = {Double.NaN};
     final int inf;
     final double bound;
     if (Double.isInfinite(a) && Double.isInfinite(b)) {
@@ -126,8 +167,14 @@ public final class GaussKronrod extends Quadrature {
     }
 
     // call main subroutine
-    dqagi1(f, bound, inf, myTol, myRelTol, result, abserr, neval, ier, myMaxEvals);
-    return new QuadratureResult(result[0], abserr[0], neval[0], ier[0] == 0);
+    try {
+      dqagi1(finiteSamples(f), bound, inf, myTol, myRelTol, result, abserr, neval, ier,
+          subintervalLimit(15), worst);
+    } catch (NonFiniteSample nfs) {
+      return new QuadratureResult(Double.NaN, Double.NaN, neval[0],
+          QuadratureResult.STATUS_BAD_INTEGRAND, nfs.x);
+    }
+    return new QuadratureResult(result[0], abserr[0], neval[0], ier[0], worst[0]);
   }
 
   @Override
@@ -140,7 +187,7 @@ public final class GaussKronrod extends Quadrature {
   // *******************************************************************************
   private static final void dqags(final DoubleUnaryOperator f, final double a, final double b,
       final double epsabs, final double epsrel, final double[] result, final double[] abserr,
-      final int[] neval, final int[] ier, final int limit) {
+      final int[] neval, final int[] ier, final int limit, final double[] worst) {
     final int[] last = new int[1];
 
     // CHECK VALIDITY OF LIMIT AND LENW
@@ -157,6 +204,21 @@ public final class GaussKronrod extends Quadrature {
     final int[] iwork = new int[limit];
     dqagse(f, a, b, epsabs, epsrel, limit, result, abserr, neval, ier, alist, blist, rlist, elist,
         iwork, last);
+    int k = worstInterval(elist, last[0]);
+    if (k >= 0) {
+      worst[0] = 0.5 * (alist[k] + blist[k]);
+    }
+  }
+
+  /** The index of the largest error estimate among the first <code>last</code> subintervals. */
+  private static int worstInterval(final double[] elist, final int last) {
+    int worst = -1;
+    for (int k = 0; k < Math.min(last, elist.length); k++) {
+      if (worst < 0 || elist[k] > elist[worst]) {
+        worst = k;
+      }
+    }
+    return worst;
   }
 
   private static final void dqagse(final DoubleUnaryOperator f, final double a, final double b,
@@ -622,7 +684,7 @@ public final class GaussKronrod extends Quadrature {
     if (nrmax[0] != 1) {
       ido = nrmax[0] - 1;
       for (i = 1; i <= ido; ++i) {
-        isucc = iord[nrmax[0] - 1];
+        isucc = iord[nrmax[0] - 2];
         if (errmax <= elist[isucc - 1]) {
           break;
         }
@@ -652,7 +714,7 @@ public final class GaussKronrod extends Quadrature {
           // insert errmin by traversing the list bottom-up.
           iord[i - 1 - 1] = maxerr[0];
           k = jbnd;
-          for (j = 1; j <= jbnd; ++j) {
+          for (j = i; j <= jbnd; ++j) {
             isucc = iord[k - 1];
             if (errmin < elist[isucc - 1]) {
               iord[k + 1 - 1] = last;
@@ -733,7 +795,7 @@ public final class GaussKronrod extends Quadrature {
     resasc[0] *= dhlgth;
     abserr[0] = Math.abs((resk - resg) * hlgth);
     if (resasc[0] != 0.0 && abserr[0] != 0.0) {
-      abserr[0] = resasc[0] * Math.min(10.0, Math.pow(200.0 * abserr[0] / resasc[0], 1.5));
+      abserr[0] = resasc[0] * Math.min(1.0, Math.pow(200.0 * abserr[0] / resasc[0], 1.5));
     }
     if (resabs[0] > UFLOW / (50.0 * EPMACH)) {
       abserr[0] = Math.max((EPMACH * 50.0) * resabs[0], abserr[0]);
@@ -1178,7 +1240,7 @@ public final class GaussKronrod extends Quadrature {
 
   private static void dqagi1(final DoubleUnaryOperator f, final double boun, final int inf,
       final double epsabs, final double epsrel, final double[] result, final double[] abserr,
-      final int[] neval, final int[] ier, final int limit) {
+      final int[] neval, final int[] ier, final int limit, final double[] worst) {
 
     final int[] last = new int[1];
 
@@ -1196,5 +1258,11 @@ public final class GaussKronrod extends Quadrature {
     final int[] iwork = new int[limit];
     dqagie(f, boun, inf, epsabs, epsrel, limit, result, abserr, neval, ier, alist, blist, rlist,
         elist, iwork, last);
+    int k = worstInterval(elist, last[0]);
+    if (k >= 0) {
+      // back from the transformed variable t in (0,1] of x = boun + dinf*(1-t)/t
+      double t = 0.5 * (alist[k] + blist[k]);
+      worst[0] = boun + Math.min(1.0, inf) * (1.0 - t) / t;
+    }
   }
 }

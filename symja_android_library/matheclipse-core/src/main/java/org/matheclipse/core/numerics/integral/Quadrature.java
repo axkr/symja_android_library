@@ -14,17 +14,46 @@ public abstract class Quadrature {
    */
   public static final class QuadratureResult {
 
+    /** The integral converged to the requested tolerance. */
+    public static final int STATUS_OK = 0;
+    /** The maximum number of subdivisions or evaluations was reached. */
+    public static final int STATUS_LIMIT = 1;
+    /** Roundoff error prevents reaching the requested tolerance. */
+    public static final int STATUS_ROUNDOFF = 2;
+    /** Extremely bad integrand behaviour at some point, or a non-finite sample. */
+    public static final int STATUS_BAD_INTEGRAND = 3;
+    /** The extrapolation table does not converge, roundoff dominates. */
+    public static final int STATUS_EXTRAPOLATION_ROUNDOFF = 4;
+    /** The integral is probably divergent, or converges too slowly. */
+    public static final int STATUS_DIVERGENT = 5;
+    /** Invalid input, for example a tolerance below machine precision. */
+    public static final int STATUS_INVALID = 6;
+
     public final double estimate;
     public final double error;
     public final int evaluations;
     public final boolean converged;
+    /** One of the <code>STATUS_...</code> constants, QUADPACK's <code>ier</code> code. */
+    public final int status;
+    /**
+     * The midpoint of the subinterval with the largest error estimate, or <code>NaN</code> if the
+     * rule does not report one.
+     */
+    public final double worstPoint;
 
     public QuadratureResult(final double est, final double err, final int evals,
         final boolean success) {
+      this(est, err, evals, success ? STATUS_OK : STATUS_LIMIT, Double.NaN);
+    }
+
+    public QuadratureResult(final double est, final double err, final int evals, final int status,
+        final double worstPoint) {
       estimate = est;
       error = err;
       evaluations = evals;
-      converged = success;
+      converged = status == STATUS_OK;
+      this.status = status;
+      this.worstPoint = worstPoint;
     }
 
     @Override
@@ -79,7 +108,7 @@ public abstract class Quadrature {
     if (a > b) {
       final QuadratureResult result = integrate(f, b, a);
       return new QuadratureResult(-result.estimate, result.error, result.evaluations,
-          result.converged);
+          result.status, result.worstPoint);
     }
 
     // finite integral (a, b)
@@ -116,8 +145,9 @@ public abstract class Quadrature {
     // doubly improper integral
     final QuadratureResult left = integrate(f, a, 0.0);
     final QuadratureResult right = integrate(f, 0.0, b);
+    final QuadratureResult worse = left.status >= right.status ? left : right;
     return new QuadratureResult(left.estimate + right.estimate, left.error + right.error,
-        left.evaluations + right.evaluations, left.converged && right.converged);
+        left.evaluations + right.evaluations, worse.status, worse.worstPoint);
   }
 
   /**

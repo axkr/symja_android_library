@@ -360,6 +360,9 @@ public class Errors {
       "For compiling functions, Symja needs to be executed on a Java Development Kit with javax.tools.JavaCompiler installed.", //
       "nconvss",
       "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
+      "ncvb",
+      "NIntegrate failed to converge to prescribed accuracy after `1` recursive bisections in `2` "
+          + "near `3` = `4`. NIntegrate obtained `5` and `6` for the integral and error estimates.", //
       "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
       "ndimv", "There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.", //
       "ndsz",
@@ -550,6 +553,10 @@ public class Errors {
       "sfr", "Item `1` requested in `2` out of range. `3` itms available.", //
       "shapespec", "Shape specification `1` is invalid.", //
       "slotn", "Slot number `1` in `2` cannot be filled from `3`.", //
+      "slwcon",
+      "Numerical integration converging too slowly; suspect one of the following: singularity, "
+          + "value of the integration is 0, highly oscillatory integrand, or WorkingPrecision too "
+          + "small.", //
       "smplen", "The elements of `1` are not compatible with the sample size `2`.", //
       "shlen", "The argument `1` should have at least `2` elements.", //
       "sing", "Matrix `1` is singular.", //
