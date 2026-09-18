@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -383,6 +384,27 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
             + "2*x^2))/(2+3*n+n^2)");
     check("Integrate(x*ArcTanh(3*x),{x,0,1})", //
         "1/6+4/9*ArcTanh(3)");
+  }
+
+  @Test
+  public void testIntegratePiecewiseFactorDeclines() {
+    // used to leak Rubi's utility function into the unevaluated integral:
+    // Integrate(E^t*Piecewise({{2,0<=t<=1}},Rubi`trigsimplifyrecur(0)),t).
+    // TrigSimplifyRecur maps itself over the arguments of the HoldAll Piecewise, where the calls
+    // are never evaluated.
+    String[] integrals = {"Integrate(E^t*Piecewise({{2,0<=t<=1}},0), t)",
+        "Integrate(Log(t)*Piecewise({{2,0<=t<=1}},3), t)"};
+    for (String integral : integrals) {
+      String result = evaluator.eval(integral).toString();
+      assertFalse(result.contains("Rubi`"), integral + " => " + result);
+    }
+    check("Integrate(E^t*Piecewise({{2,0<=t<=1}},0), t)", //
+        "Integrate(E^t*Piecewise({{2,0<=t<=1}},0),t)");
+    // the rules used to return part of an antiderivative around the leaked integral
+    check("Integrate(Log(t)*Piecewise({{2,0<=t<=1}},3), t)", //
+        "Integrate(Log(t)*Piecewise({{2,0<=t<=1}},3),t)");
+    check("Integrate(x*Piecewise({{Sin(x),x<1}},Cos(x)), x)", //
+        "Integrate(x*Piecewise({{Sin(x),x<1}},Cos(x)),x)");
   }
 
   @Test

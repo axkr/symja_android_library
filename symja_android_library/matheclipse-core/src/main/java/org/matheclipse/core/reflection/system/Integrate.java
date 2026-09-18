@@ -1813,7 +1813,27 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     return budgetMillis;
   }
 
+  /**
+   * Does the variable occur inside an argument which a head of <code>integrand</code> holds?
+   *
+   * <p>
+   * The rules cannot integrate such an integrand, but they rewrite it before they find that out.
+   * Their utility function {@code TrigSimplifyRecur} maps itself over every subexpression, and
+   * under a held head, for example the {@code HoldAll} {@code Piecewise}, those calls are never
+   * evaluated. So {@code E^t*Piecewise({{2,0<=t<=1}},0)} came back as the unevaluated integral of
+   * {@code E^t*Piecewise({{2,0<=t<=1}},Rubi`trigsimplifyrecur(0))}. The rewritten integral carries
+   * a Rubi symbol, so it bypasses the rules too and is returned as it stands.
+   */
+  private static boolean holdsTheVariable(IAST integrand, IExpr x) {
+    return !integrand.isFree(part -> part.isAST() && part.head().isSymbol()
+        && (((ISymbol) part.head()).getAttributes() & ISymbol.HOLDALL) != 0 && !part.isFree(x),
+        true);
+  }
+
   private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast, EvalEngine engine) {
+    if (holdsTheVariable(arg1, x)) {
+      return F.NIL;
+    }
     if (arg1.isFreeAST(s -> s.isSymbol() && ((ISymbol) s).isContext(Context.RUBI))) {
       int limit = engine.getRecursionLimit();
       boolean quietMode = engine.isQuietMode();
