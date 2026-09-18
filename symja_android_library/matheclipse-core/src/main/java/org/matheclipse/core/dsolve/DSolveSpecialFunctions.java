@@ -1,6 +1,7 @@
 package org.matheclipse.core.dsolve;
 
 import org.matheclipse.core.basic.MachineProfile;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.integrate.IntegrateTimeBudget;
 import org.matheclipse.core.expression.F;
@@ -349,10 +350,79 @@ final class DSolveSpecialFunctions {
     }
     IExpr degree = cancel(F.Divide(F.Negate(q), b), engine);
     IExpr square = engine.evaluate(F.Times(F.CN1D2, b, F.Sqr(xVar)));
-    return new IExpr[] {
+    IExpr[] basis = new IExpr[] {
         F.Hypergeometric1F1(F.Times(F.CN1D2, degree), F.C1D2, square),
         F.Times(xVar,
             F.Hypergeometric1F1(F.Times(F.C1D2, F.Subtract(F.C1, degree)), F.QQ(3L, 2L), square))};
+    if (numericSign(b, engine) > 0) {
+      // The series are in a negative multiple of x^2. Where one of them terminates it is a
+      // polynomial and is kept, but otherwise a confluent function of a negative argument evaluates
+      // to incomplete gamma functions of it with Sqrt(-x^2) in the denominator: no value at x == 0,
+      // where an initial condition is usually given, and complex for real x. Kummer's
+      // transformation 1F1(a, c, z) == E^z*1F1(c-a, c, -z) writes the same solution with a positive
+      // argument, whose closed form is the real one, and that is used for such a member.
+      IExpr positive = engine.evaluate(F.Negate(square));
+      IExpr gaussian = F.Exp(square);
+      IExpr[] transformed = new IExpr[] {
+          F.Times(gaussian,
+              F.Hypergeometric1F1(F.Plus(F.C1D2, F.Times(F.C1D2, degree)), F.C1D2, positive)),
+          F.Times(xVar, gaussian,
+              F.Hypergeometric1F1(F.Plus(F.C1, F.Times(F.C1D2, degree)), F.QQ(3L, 2L), positive))};
+      for (int i = 0; i < 2; i++) {
+        IExpr original = engine.evaluate(basis[i]);
+        if (hasFractionalPower(original, xVar)) {
+          IExpr better = withoutSquareRoots(transformed[i], xVar, engine);
+          if (!hasFractionalPower(better, xVar)) {
+            basis[i] = better;
+          }
+        }
+      }
+    }
+    return basis;
+  }
+
+  /**
+   * Whether a fractional power of something containing the variable occurs in <code>expr</code>.
+   * A root of a constant, <code>Sqrt(Pi)</code> or <code>Sqrt(2)</code>, is not one.
+   */
+  private static boolean hasFractionalPower(IExpr expr, IExpr xVar) {
+    return !expr.isFree(x -> x.isPower() && x.exponent().isRational()
+        && !x.exponent().isInteger() && !x.base().isFree(xVar), true);
+  }
+
+  /**
+   * <code>member</code> with <code>Sqrt(x^2)</code> written as <code>x</code>, when that is the
+   * same function: <code>x/Sqrt(x^2)*Erfi(Sqrt(x^2)/Sqrt(2))</code> is <code>Erfi(x/Sqrt(2))</code>
+   * because <code>Erfi</code> is odd, and the second form has a value at <code>x == 0</code>. The
+   * two are compared at a positive and a negative point, and the member is left as it is unless
+   * they agree at both.
+   */
+  private static IExpr withoutSquareRoots(IExpr member, IExpr xVar, EvalEngine engine) {
+    IExpr evaluated = engine.evaluate(member);
+    if (!hasFractionalPower(evaluated, xVar)) {
+      return evaluated;
+    }
+    IExpr expanded = engine.evaluate(F.PowerExpand(evaluated));
+    if (expanded.isNIL() || expanded.equals(evaluated)) {
+      return evaluated;
+    }
+    for (IExpr point : new IExpr[] {F.QQ(7, 10), F.QQ(-13, 10)}) {
+      IExpr difference;
+      IExpr size;
+      try {
+        difference = engine.evalN(F.Abs(F.Subtract(F.subst(evaluated, xVar, point),
+            F.subst(expanded, xVar, point))));
+        size = engine.evalN(F.Abs(F.subst(evaluated, xVar, point)));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return evaluated;
+      }
+      if (!difference.isReal() || !size.isReal()
+          || difference.evalf() > 1.0e-10 * (1.0 + size.evalf())) {
+        return evaluated;
+      }
+    }
+    return expanded;
   }
 
   /**
