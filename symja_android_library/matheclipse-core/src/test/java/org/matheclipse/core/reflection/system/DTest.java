@@ -524,12 +524,57 @@ public class DTest extends ExprEvaluatorTestCase {
         "D(f(x,x),{x,n})");
     check("D(f(g(x)),{x,n})", //
         "D(f(g(x)),{x,n})");
-    check("D(Sin(x)*Cos(x),{x,n})", //
-        "D(Cos(x)*Sin(x),{x,n})");
+    check("D(Sin(x)*Cos(x),{x,n+1})", //
+        "D(Cos(x)*Sin(x),{x,1+n})");
+    check("D(Sin(x^2),{x,n})", //
+        "D(Sin(x^2),{x,n})");
     check("D(Derivative(n)[f][x],x)", //
         "Derivative(1+n)[f][x]");
     check("D(Sin(x),{x,n},NonConstants->{})", //
         "Sin(1/2*n*Pi+x)");
+  }
+
+  @Test
+  public void testDSymbolicOrderClosedForms() {
+    // linear arguments
+    check("D(Sin(2*x+1),{x,n})", //
+        "2^n*Sin(1+1/2*n*Pi+2*x)");
+    check("D(Cos(a*x+b),{x,n})", //
+        "a^n*Cos(b+1/2*n*Pi+a*x)");
+    check("D(E^(2*x+1),{x,n})", //
+        "2^n*E^(1+2*x)");
+    check("D(2^(3*x),{x,n})", //
+        "2^(3*x)*(3*Log(2))^n");
+    check("D(Log(2*x+1),{x,n})", //
+        "Piecewise({{(2^n*(-1+n)!)/((-1)^(1-n)*(1+2*x)^n),n>=1}},Log(1+2*x))");
+    check("D((2*x+1)^(1/2),{x,n})", //
+        "2^n*(1+2*x)^(1/2-n)*FactorialPower(1/2,n)");
+    check("D(E^(2*x)*x^m,{x,n})", //
+        "E^(2*x)*x^(m-n)*Binomial(m,n)*n!*Hypergeometric1F1(-n,1+m-n,-2*x)");
+
+    // linearised by TrigReduce
+    check("D(Sin(x)*Cos(x),{x,n})", //
+        "Sin(1/2*n*Pi+2*x)/2^(1-n)");
+    check("D(Sin(x)^3*Cos(2*x),{x,n})", //
+        "-Sin(1/2*n*Pi+x)/2+3/8*3^n*Sin(1/2*n*Pi+3*x)-1/8*5^n*Sin(1/2*n*Pi+5*x)");
+    check("D(Sin(x)^2,{x,n})", //
+        "1/2*(-2^n*Cos(1/2*n*Pi+2*x)+Piecewise({{1,n==0}},0))");
+    check("D(3*Sin(x)*Cos(x)+E^(2*x),{x,n})", //
+        "2^n*E^(2*x)+(3*Sin(1/2*n*Pi+2*x))/2^(1-n)");
+    // linearised by Expand(TrigToExp())
+    check("D(Sin(x)*E^x,{x,n})", //
+        "I*1/2*(1-I)^n*E^((1-I)*x)-I*1/2*(1+I)^n*E^((1+I)*x)");
+
+    // Leibniz rule for a polynomial factor
+    check("D(x*Sin(x),{x,n})", //
+        "n*Sin(1/2*(-1+n)*Pi+x)+x*Sin(1/2*n*Pi+x)");
+    check("D(x^2*Cos(2*x),{x,n})", //
+        "((-1+n)*n*Cos(1/2*(-2+n)*Pi+2*x))/2^(2-n)+2^n*n*x*Cos(1/2*(-1+n)*Pi+2*x)+2^n*x^2*Cos(\n"
+            + "1/2*n*Pi+2*x)");
+
+    // no closed form
+    check("D(f(x)*Sin(x),{x,n})", //
+        "D(f(x)*Sin(x),{x,n})");
   }
 
   @Test

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.DLeibnitzRule;
+import org.matheclipse.core.eval.DSymbolicOrder;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.ArrayDerivative;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
@@ -607,11 +608,20 @@ public class D extends AbstractFunctionOptionEvaluator {
               if (filter[0].argSize() > 0) {
                 return F.Times(filter[0], F.D(filter[1].oneIdentity1(), xList));
               }
-              return F.NIL;
             }
             if (fx.isPower() && fx.base().isE() && fx.exponent().equals(x)) {
               // D(E^x, x) -> E^x
               return F.Power(S.E, x);
+            }
+            if (arg2.isSymbol()) {
+              // D(Sin(x)*Cos(x), {x, n}) -> 2^(-1+n)*Sin(2*x+1/2*n*Pi)
+              IExpr closedForm = DSymbolicOrder.nThDerivative(fx, x, arg2, engine);
+              if (closedForm.isPresent()) {
+                return closedForm;
+              }
+            }
+            if (fx.isTimes()) {
+              return F.NIL;
             }
             if (arg2.isSymbol() && fx.isAST() && isSymbolicOrderHead(fx.head())) {
               // D(f(a, x, b), {x, n}) -> Derivative(0, n, 0)[f][a, x, b]; like in Mathematica a
