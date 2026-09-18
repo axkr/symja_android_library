@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -58,6 +59,15 @@ public class Dt extends AbstractFunctionOptionEvaluator {
       boolean evaluated = false;
       for (int i = 2; i <= argSize; i++) {
         IExpr xi = ast.get(i);
+        if (temp.isAST(S.Dt) && i > 2) {
+          // an unevaluated Dt(y, x1, ...) - fold the variable in without evaluating, otherwise the
+          // folded Dt(y, x1, xi) would come back here
+          IExpr folded = foldSpec((IAST) temp, xi);
+          if (folded.isPresent()) {
+            temp = folded;
+            continue;
+          }
+        }
         IExpr nextDt = buildDt(temp, xi, constantsList);
         IExpr evalNext = engine.evaluateNIL(nextDt);
         if (evalNext.isPresent()) {
@@ -67,13 +77,10 @@ public class Dt extends AbstractFunctionOptionEvaluator {
           temp = nextDt;
         }
       }
-      if (evaluated) {
-        if (temp.equals(ast)) {
-          return F.NIL;
-        }
-        return temp;
+      if (temp.equals(ast) || temp.equals(originalAST)) {
+        return F.NIL;
       }
-      return F.NIL;
+      return evaluated || temp.isAST(S.Dt) ? temp : F.NIL;
     }
 
     IExpr x = ast.arg2();
@@ -197,38 +204,81 @@ public class Dt extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * <code>Dt(Dt(y, x), x)</code> is folded into <code>Dt(y, {x, 2})</code> and
-   * <code>Dt(Dt(y, {x, n}), x)</code> into <code>Dt(y, {x, n + 1})</code>.
+   * Fold a derivative of an unevaluated <code>Dt(...)</code> into a single <code>Dt</code> with
+   * the variables in canonical order, like in Mathematica:
+   *
+   * <pre>
+   * Dt(Dt(y, z), x)      -> Dt(y, x, z)
+   * Dt(Dt(y, x), x)      -> Dt(y, {x, 2})
+   * Dt(Dt(y, {x, n}), x) -> Dt(y, {x, n + 1})
+   * </pre>
+   *
+   * @param dtAst the inner <code>Dt(y, spec1, spec2, ...)</code> expression
+   * @param x the variable of the outer derivative
+   * @return {@link F#NIL} for a total differential <code>Dt(y)</code> or a non-integer order
    */
   private static IExpr nestedDt(final IAST dtAst, final IExpr x) {
-    if (dtAst.argSize() >= 2) {
-      IExpr dtX = dtAst.arg2();
-      if (dtX.isList()) {
-        if (dtX.isAST2()) {
-          IAST list = (IAST) dtX;
-          if (list.arg1().equals(x) && list.arg2().isInteger()) {
-            return foldedDt(dtAst, x, list.arg2().inc());
-          } else if (!list.arg1().equals(x)) {
-            return F.C0;
-          }
+    Map<IExpr, Integer> orders = new TreeMap<IExpr, Integer>();
+    orders.put(x, 1);
+    IASTAppendable options = F.ListAlloc();
+    for (int i = 2; i < dtAst.size(); i++) {
+      IExpr spec = dtAst.get(i);
+      if (spec.isRuleAST()) {
+        options.append(spec);
+        continue;
+      }
+      IExpr variable = spec;
+      int n = 1;
+      if (spec.isList()) {
+        if (!spec.isAST2() || !spec.second().isInteger()) {
+          return F.NIL;
         }
-      } else if (dtX.equals(x)) {
-        return foldedDt(dtAst, x, F.C2);
-      } else if (!dtX.isRuleAST()) {
-        return F.C0;
+        variable = spec.first();
+        n = spec.second().toIntDefault();
+        if (n < 0) {
+          return F.NIL;
+        }
+      }
+      orders.merge(variable, n, Integer::sum);
+    }
+    if (orders.size() == 1 && orders.get(x) == 1) {
+      // the total differential Dt(y) isn't folded
+      return F.NIL;
+    }
+    IASTAppendable result = F.ast(S.Dt, orders.size() + options.size() + 1);
+    result.append(dtAst.arg1());
+    for (Map.Entry<IExpr, Integer> entry : orders.entrySet()) {
+      int n = entry.getValue();
+      if (n == 1) {
+        result.append(entry.getKey());
+      } else if (n > 1) {
+        result.append(F.List(entry.getKey(), F.ZZ(n)));
       }
     }
-    return F.NIL;
+    result.appendArgs(options);
+    return result;
   }
 
-  private static IAST foldedDt(final IAST dtAst, final IExpr x, final IExpr n) {
-    IASTAppendable newDt = F.ast(S.Dt, dtAst.size());
-    newDt.append(dtAst.arg1());
-    newDt.append(F.List(x, n));
-    for (int j = 3; j <= dtAst.argSize(); j++) {
-      newDt.append(dtAst.get(j));
+  /**
+   * Fold the variable specification <code>x</code> or <code>{x, n}</code> into the unevaluated
+   * <code>dtAst</code>.
+   */
+  private static IExpr foldSpec(final IAST dtAst, final IExpr spec) {
+    if (spec.isList()) {
+      if (!spec.isAST2() || !spec.second().isInteger()) {
+        return F.NIL;
+      }
+      int n = spec.second().toIntDefault();
+      if (n < 0) {
+        return F.NIL;
+      }
+      IExpr result = dtAst;
+      for (int i = 0; i < n && result.isPresent(); i++) {
+        result = nestedDt((IAST) result, spec.first());
+      }
+      return result;
     }
-    return newDt;
+    return spec.isRuleAST() ? F.NIL : nestedDt(dtAst, spec);
   }
 
   /**
