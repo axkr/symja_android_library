@@ -1494,6 +1494,16 @@ public class S {
       S.initFinalSymbol("AstroGridLinesStyle", ID.AstroGridLinesStyle);
 
   /**
+   * AstronomicalData(x) - TODO describe `AstronomicalData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AstronomicalData.md">AstronomicalData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AstronomicalData =
+      S.initFinalSymbol("AstronomicalData", ID.AstronomicalData);
+
+  /**
    * AstroPosition(x) - TODO describe `AstroPosition`.
    * 
    * @see <a href=
