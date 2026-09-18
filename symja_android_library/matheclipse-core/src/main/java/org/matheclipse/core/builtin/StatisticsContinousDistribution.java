@@ -2520,7 +2520,7 @@ public class StatisticsContinousDistribution {
    * <code>((X - m)/b)^(-g)</code> is <code>GammaDistribution(a, 1)</code> distributed.
    */
   private static final class InverseGammaDistribution extends AbstractEvaluator
-      implements IContinuousDistribution, IRandomVariate, IPDF, ICDF {
+      implements IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
 
     /**
      * The parameters <code>{a, b, g, m}</code> of both forms, the 2 argument form with
@@ -2621,7 +2621,33 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
-      return F.NIL;
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null || isInvalid(parameters)) {
+        return F.NIL;
+      }
+      IExpr a = parameters[0];
+      IExpr b = parameters[1];
+      if (dist.isAST2()) {
+        // ConditionalExpression(Piecewise({{b/InverseGammaRegularized(a, #), 0 < # < 1},
+        // {0, # <= 0}}, Infinity), 0 <= # <= 1) &
+        return callFunction(F.Function(F.ConditionalExpression(F.Piecewise(F.list(//
+            F.list(F.Divide(b, F.InverseGammaRegularized(a, F.Slot1)),
+                F.Less(F.C0, F.Slot1, F.C1)), //
+            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))), F.oo), //
+            F.LessEqual(F.C0, F.Slot1, F.C1))), k);
+      }
+      IExpr g = parameters[2];
+      IExpr m = parameters[3];
+      // ConditionalExpression(Piecewise({{m + b*InverseGammaRegularized(a, #)^(-1/g), 0 < # < 1},
+      // {m, # <= 0}}, Infinity), 0 <= # <= 1) &
+      return callFunction(F.Function(F.ConditionalExpression(F.Piecewise(F.list(//
+          F.list(
+              F.Plus(m,
+                  F.Times(b,
+                      F.Power(F.InverseGammaRegularized(a, F.Slot1), F.Negate(F.Power(g, F.CN1))))),
+              F.Less(F.C0, F.Slot1, F.C1)), //
+          F.list(m, F.LessEqual(F.Slot1, F.C0))), F.oo), //
+          F.LessEqual(F.C0, F.Slot1, F.C1))), k);
     }
 
     @Override
@@ -2726,6 +2752,62 @@ public class StatisticsContinousDistribution {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      IExpr a = parameters[0];
+      if (dist.isAST2()) {
+        // Piecewise({{(4*Sqrt(-2 + a))/(-3 + a), a > 3}}, Indeterminate)
+        return F.Piecewise(F.list(F.list(//
+            F.Divide(F.Times(F.C4, F.Sqrt(F.Plus(F.CN2, a))), F.Plus(F.CN3, a)), //
+            F.Greater(a, F.C3))), S.Indeterminate);
+      }
+      IExpr g = parameters[2];
+      // with the moments E(Y^(-k/g)) == Gamma(a - k/g)/Gamma(a) of Y ~ GammaDistribution(a, 1):
+      // Piecewise({{(Gamma(a)^2*Gamma(a - 3/g) - 3*Gamma(a)*Gamma(a - 1/g)*Gamma(a - 2/g)
+      // + 2*Gamma(a - 1/g)^3)/(Gamma(a)*Gamma(a - 2/g) - Gamma(a - 1/g)^2)^(3/2), a*g > 3}},
+      // Indeterminate)
+      IExpr gamma0 = F.Gamma(a);
+      IExpr gamma1 = F.Gamma(F.Subtract(a, F.Power(g, F.CN1)));
+      IExpr gamma2 = F.Gamma(F.Subtract(a, F.Times(F.C2, F.Power(g, F.CN1))));
+      IExpr gamma3 = F.Gamma(F.Subtract(a, F.Times(F.C3, F.Power(g, F.CN1))));
+      return F.Piecewise(F.list(F.list(//
+          F.Divide(
+              F.Plus(F.Times(F.Sqr(gamma0), gamma3), F.Times(F.CN3, gamma0, gamma1, gamma2),
+                  F.Times(F.C2, F.Power(gamma1, F.C3))),
+              F.Power(F.Subtract(F.Times(gamma0, gamma2), F.Sqr(gamma1)), F.C3D2)), //
+          F.Greater(F.Times(a, g), F.C3))), S.Indeterminate);
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      IExpr a = parameters[0];
+      IExpr b = parameters[1];
+      if (dist.isAST2()) {
+        // Piecewise({{b^2/((-2 + a)*(-1 + a)^2), a > 2}}, Indeterminate)
+        return F.Piecewise(F.list(F.list(//
+            F.Divide(F.Sqr(b), F.Times(F.Plus(F.CN2, a), F.Sqr(F.Plus(F.CN1, a)))), //
+            F.Greater(a, F.C2))), S.Indeterminate);
+      }
+      IExpr g = parameters[2];
+      // Piecewise({{(b^2*(Gamma(a)*Gamma(a - 2/g) - Gamma(a - 1/g)^2))/Gamma(a)^2, a*g > 2}},
+      // Indeterminate)
+      IExpr gamma0 = F.Gamma(a);
+      IExpr gamma1 = F.Gamma(F.Subtract(a, F.Power(g, F.CN1)));
+      IExpr gamma2 = F.Gamma(F.Subtract(a, F.Times(F.C2, F.Power(g, F.CN1))));
+      return F.Piecewise(F.list(F.list(//
+          F.Divide(F.Times(F.Sqr(b), F.Subtract(F.Times(gamma0, gamma2), F.Sqr(gamma1))),
+              F.Sqr(gamma0)), //
+          F.Greater(F.Times(a, g), F.C2))), S.Indeterminate);
+    }
   }
 
   /**

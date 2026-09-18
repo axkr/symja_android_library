@@ -945,10 +945,10 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
             "1},{2,2,2},-n)+12*EulerGamma*Log(n)+6*Log(n)^2))/(6*m^2)");
     check("Variance(HypergeometricDistribution(n, ns, nt))", //
         "(n*ns*(1-ns/nt)*(-n+nt))/((-1+nt)*nt)");
-    // check("Variance(InverseGammaDistribution(n, m))", //
-    // "Piecewise({{m^2/((1-n)^2*(-2+n)),n>2}},Indeterminate)");
-    // check("Variance(InverseGammaDistribution(a,b,g,d))", //
-    // "Piecewise({{(b^2*(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2))/Gamma(a)^2,a*g>2}},Indeterminate)");
+    check("Variance(InverseGammaDistribution(n, m))", //
+        "Piecewise({{m^2/((1-n)^2*(-2+n)),n>2}},Indeterminate)");
+    check("Variance(InverseGammaDistribution(a,b,g,d))", //
+        "Piecewise({{(b^2*(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2))/Gamma(a)^2,a*g>2}},Indeterminate)");
     check("Variance(PoissonDistribution(n))", //
         "n");
     check("Variance(StudentTDistribution(4))", //

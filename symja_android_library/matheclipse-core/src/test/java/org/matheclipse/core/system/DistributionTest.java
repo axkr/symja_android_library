@@ -579,6 +579,41 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "RandomVariate(InverseGammaDistribution(-2,3))");
     check("PDF(InverseGammaDistribution(-2, 3), 1)", //
         "PDF(InverseGammaDistribution(-2,3),1)");
+    // Skewness and InverseCDF
+    check("Skewness(InverseGammaDistribution(a, b))", //
+        "Piecewise({{(4*Sqrt(-2+a))/(-3+a),a>3}},Indeterminate)");
+    check("Skewness(InverseGammaDistribution(a, b, g, m)) === " //
+        + "Piecewise({{(Gamma(a)^2*Gamma(a-3/g)-3*Gamma(a)*Gamma(a-2/g)*Gamma(a-1/g)" //
+        + "+2*Gamma(a-1/g)^3)/(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2)^(3/2),a*g>3}},Indeterminate)", //
+        "True");
+    check("{Variance(InverseGammaDistribution(5, 2)), Skewness(InverseGammaDistribution(5, 2)), " //
+        + "Variance(InverseGammaDistribution(3/2, 2)), Skewness(InverseGammaDistribution(3, 2))}", //
+        "{1/12,2*Sqrt(3),Indeterminate,Indeterminate}");
+    // the moments by quadrature
+    check("Module({d=InverseGammaDistribution(4.5, 1.5, 1.3, 0.5), m1, m2, m3}, " //
+        + "m1=NIntegrate(x*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m2=NIntegrate((x-m1)^2*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m3=NIntegrate((x-m1)^3*PDF(d,x),{x,0.5,Infinity}); " //
+        + "{m1, N(Mean(d)), m2, N(Variance(d)), m3/m2^(3/2), N(Skewness(d))})", //
+        "{1.05758,1.05758,0.0625915,0.0625915,2.5741,2.5741}");
+    check("InverseCDF(InverseGammaDistribution(a, b), q) === " //
+        + "ConditionalExpression(Piecewise({{b/InverseGammaRegularized(a,q),0<q<1},{0,q<=0}}," //
+        + "Infinity),0<=q<=1)", //
+        "True");
+    check("InverseCDF(InverseGammaDistribution(a, b, g, m), q) === " //
+        + "ConditionalExpression(Piecewise({{m+b/InverseGammaRegularized(a,q)^(1/g),0<q<1}," //
+        + "{m,q<=0}},Infinity),0<=q<=1)", //
+        "True");
+    check("{InverseCDF(InverseGammaDistribution(2, 3), 0), InverseCDF(InverseGammaDistribution(2, 3), 1), " //
+        + "InverseCDF(InverseGammaDistribution(2, 3, 2, 1), 0)}", //
+        "{0,Infinity,1}");
+    check("InverseCDF(InverseGammaDistribution(2, 3), 1/2)", //
+        "3/InverseGammaRegularized(2,1/2)");
+    check("Table(CDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), " //
+        + "InverseCDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), q)) - q, {q, {0.001, 0.3, 0.9}}) // Chop", //
+        "{0,0,0}");
+    check("Quantile(InverseGammaDistribution(2.5, 1.5), {0.1, 0.3, 0.9})", //
+        "{0.324803,0.494688,1.863}");
   }
 
   @Test
