@@ -80,7 +80,7 @@ public class Dt extends AbstractFunctionOptionEvaluator {
       if (temp.equals(ast) || temp.equals(originalAST)) {
         return F.NIL;
       }
-      return evaluated || temp.isAST(S.Dt) ? temp : F.NIL;
+      return evaluated || folded(temp, ast) ? temp : F.NIL;
     }
 
     IExpr x = ast.arg2();
@@ -209,6 +209,7 @@ public class Dt extends AbstractFunctionOptionEvaluator {
    *
    * <pre>
    * Dt(Dt(y, z), x)      -> Dt(y, x, z)
+   * Dt(Dt(y, x), y)      -> 0
    * Dt(Dt(y, x), x)      -> Dt(y, {x, 2})
    * Dt(Dt(y, {x, n}), x) -> Dt(y, {x, n + 1})
    * </pre>
@@ -245,6 +246,11 @@ public class Dt extends AbstractFunctionOptionEvaluator {
       // the total differential Dt(y) isn't folded
       return F.NIL;
     }
+    Integer selfOrder = orders.get(dtAst.arg1());
+    if (selfOrder != null && selfOrder > 0) {
+      // total derivatives commute: Dt(Dt(y, x), y) == Dt(Dt(y, y), x) == Dt(1, x) == 0
+      return F.C0;
+    }
     IASTAppendable result = F.ast(S.Dt, orders.size() + options.size() + 1);
     result.append(dtAst.arg1());
     for (Map.Entry<IExpr, Integer> entry : orders.entrySet()) {
@@ -257,6 +263,15 @@ public class Dt extends AbstractFunctionOptionEvaluator {
     }
     result.appendArgs(options);
     return result;
+  }
+
+  /**
+   * Test if the successive derivatives only folded the variables of <code>ast</code>, i.e.
+   * <code>result</code> is a canonical <code>Dt(...)</code> or a <code>0</code> from
+   * <code>Dt(y, x, y)</code>.
+   */
+  private static boolean folded(final IExpr result, final IAST ast) {
+    return result.isAST(S.Dt) || (result.isZero() && ast.arg1().isSymbol());
   }
 
   /**

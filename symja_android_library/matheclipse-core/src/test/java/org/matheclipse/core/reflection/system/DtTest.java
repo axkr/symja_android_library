@@ -143,8 +143,11 @@ public class DtTest {
         "0");
 
     // like in Mathematica nested total derivatives are folded with the variables in canonical order
+    // total derivatives commute: Dt(Dt(y,y),x) is Dt(1,x)
     check("Dt(Dt(y,x),y)", //
-        "Dt(y,x,y)");
+        "0");
+    check("Dt(y,x,y)", //
+        "0");
     check("Dt(Dt(y,z),x)", //
         "Dt(y,x,z)");
     check("Dt(y,z,x)", //
@@ -161,12 +164,11 @@ public class DtTest {
     // Dt(x^2 * y^2, x) = 2*x*y^2 + 2*x^2*y*Dt(y, x)
     // Expected to just unfold the nested structure correctly based on the Dt rules
     check("Dt(x^2 * y^2, x, y)  ", //
-        "4*x*y+2*x^2*Dt(y,x)+Dt(x,y)*(2*y^2+4*x*y*Dt(y,x))+2*x^2*y*Dt(y,x,y)");
+        "4*x*y+2*x^2*Dt(y,x)+Dt(x,y)*(2*y^2+4*x*y*Dt(y,x))");
 
     // Successive mixed with Constants
     check("Dt(x^2 * y^2 * c, x, y, Constants -> {c})",
-        "4*c*x*y+2*c*x^2*Dt(y,x,Constants->{c})+Dt(x,y,Constants->{c})*(2*c*y^2+4*c*x*y*Dt(y,x,Constants->{c}))+\n"
-            + "2*c*x^2*y*Dt(y,x,y,Constants->{c})");
+        "4*c*x*y+2*c*x^2*Dt(y,x,Constants->{c})+Dt(x,y,Constants->{c})*(2*c*y^2+4*c*x*y*Dt(y,x,Constants->{c}))");
   }
 
   @Test
