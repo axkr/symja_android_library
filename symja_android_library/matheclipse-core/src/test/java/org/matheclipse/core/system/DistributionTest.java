@@ -538,6 +538,50 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testInverseGammaDistribution() {
+    check("PDF(InverseGammaDistribution(a, b), x)", //
+        "Piecewise({{(b/x)^a/(E^(b/x)*x*Gamma(a)),x>0}},0)");
+    check("CDF(InverseGammaDistribution(a, b), x)", //
+        "Piecewise({{GammaRegularized(a,b/x),x>0}},0)");
+    check("PDF(InverseGammaDistribution(a, b, g, m), x)", //
+        "Piecewise({{(g*(b/(-m+x))^(1+a*g))/(b*E^(b/(-m+x))^g*Gamma(a)),x>m}},0)");
+    check("CDF(InverseGammaDistribution(a, b, g, m), x)", //
+        "Piecewise({{GammaRegularized(a,(b/(-m+x))^g),x>m}},0)");
+    check("{PDF(InverseGammaDistribution(2, 3), 1), CDF(InverseGammaDistribution(2, 3), 1), " //
+        + "PDF(InverseGammaDistribution(2, 3), -1), CDF(InverseGammaDistribution(2,3,2,1), 5/2)}", //
+        "{9/E^3,4/E^3,0,5/E^4}");
+    // machine numbers agree with the exact form
+    check("{PDF(InverseGammaDistribution(2.5, 1.5), 2.3), CDF(InverseGammaDistribution(2.5, 1.5), 2.3), " //
+        + "PDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), 2.3), " //
+        + "CDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), 2.3)}", //
+        "{0.0585206,0.934484,0.200833,0.814662}");
+    check("{N(PDF(InverseGammaDistribution(5/2, 3/2), 23/10)), " //
+        + "N(CDF(InverseGammaDistribution(5/2, 3/2, 4/5, 1), 23/10))}", //
+        "{0.0585206,0.814662}");
+    // a large shape does not overflow
+    check("{PDF(InverseGammaDistribution(300.0, 500.0), 1.7), " //
+        + "CDF(InverseGammaDistribution(300.0, 500.0), 1.7)}", //
+        "{3.83286,0.626495}");
+    check("NIntegrate(PDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), x), {x, 1, Infinity})", //
+        "1.0");
+    check("CDF(InverseGammaDistribution(2.5,1.5,0.8,1), Median(InverseGammaDistribution(2.5,1.5,0.8,1)))", //
+        "0.5");
+    // sampler
+    check("AllTrue(RandomVariate(InverseGammaDistribution(2, 3), 50), #>0&)", //
+        "True");
+    check("AllTrue(RandomVariate(InverseGammaDistribution(2, 3, 2, -1), 50), #>-1&)", //
+        "True");
+    check("Dimensions(RandomVariate(InverseGammaDistribution(2, 3), {2,3}))", //
+        "{2,3}");
+    check("Table(SeedRandom(9); RandomVariate(InverseGammaDistribution(2,3,2,1), 4), {2}) // Apply(SameQ)", //
+        "True");
+    check("RandomVariate(InverseGammaDistribution(-2, 3))", //
+        "RandomVariate(InverseGammaDistribution(-2,3))");
+    check("PDF(InverseGammaDistribution(-2, 3), 1)", //
+        "PDF(InverseGammaDistribution(-2,3),1)");
+  }
+
+  @Test
   public void testGammaDistribution() {
     check("CentralMoment(GammaDistribution(a, b),n)", //
         "b^n*Hypergeometric1F1(-n,1-a-n,-a)*Pochhammer(a,n)");
