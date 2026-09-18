@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -157,7 +158,11 @@ public class Plot extends ListPlot {
 
     // which curve carries which label; the rule lives in PlotWrapper so that every plot family
     // reads a wrapped argument the same way
-    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions);
+    // f(x) with f(u_?NumericQ) := {Sin(u), Cos(u)} is two curves, which only its value can say
+    final List<IAST> probes =
+        PlotShapeProbe.rangeProbes(new IExpr[] {x}, new double[] {xMinD}, new double[] {xMaxD});
+    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions).splitEach(
+        f -> PlotShapeProbe.split(f, probes, PlotShapeProbe.SCALAR, false, engine));
     final IAST list = curves.functions;
     int size = list.size();
     List<double[][]> dataList = new ArrayList<double[][]>(size - 1);

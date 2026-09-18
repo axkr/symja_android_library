@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics;
 
+import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
@@ -12,6 +13,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -199,7 +201,11 @@ public class PolarPlot extends Plot {
 
     // a wrapped radius is unwrapped before it is sampled, and its label put back on the finished
     // curve; the same reading of the four wrapper levels as every other plot family
-    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions);
+    // r(t) with r(u_?NumericQ) := {1, 2} is two curves, which only its value can say
+    final List<IAST> probes = PlotShapeProbe.rangeProbes(new IExpr[] {theta},
+        new double[] {tMinD}, new double[] {tMaxD});
+    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions).splitEach(
+        f -> PlotShapeProbe.split(f, probes, PlotShapeProbe.SCALAR, false, engine));
     final IAST list = curves.functions;
     int size = list.size();
     final IASTAppendable listOfLines = F.ListAlloc(size - 1);

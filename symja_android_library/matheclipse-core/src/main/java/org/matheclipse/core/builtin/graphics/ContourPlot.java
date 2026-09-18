@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.graphics;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -7,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.RegionClip;
@@ -140,6 +143,23 @@ public class ContourPlot extends ListPlot {
     RegionFunctionFilter region = RegionFunctionFilter.of(
         GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), engine);
     IExpr boundaryStyle = GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic);
+
+    // f(x, y) with a value of {u v, u + v} is two functions, which only its value can say
+    List<IExpr> written = new ArrayList<>();
+    if (functionArg.isList()) {
+      for (IExpr item : (IAST) functionArg) {
+        written.add(item);
+      }
+    } else {
+      written.add(functionArg);
+    }
+    List<IExpr> split = PlotShapeProbe.split(written,
+        PlotShapeProbe.rangeProbes(new IExpr[] {xVar, yVar},
+            new double[] {xRange[0], yRange[0]}, new double[] {xRange[1], yRange[1]}),
+        PlotShapeProbe.SCALAR, false, engine);
+    if (split.size() != written.size()) {
+      functionArg = F.List(split.toArray(new IExpr[0]));
+    }
 
     if (functionArg.isList()) {
       // Multiple functions/equations

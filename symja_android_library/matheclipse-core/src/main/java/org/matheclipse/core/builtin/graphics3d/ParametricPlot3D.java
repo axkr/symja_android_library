@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -69,7 +70,10 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       }
       IAST uRange = (IAST) ast.arg2();
       IAST vRange = (IAST) ast.arg3();
-      functions = splitByEvaluatedShape(functions, new IAST[] {uRange, vRange}, engine);
+      functions = PlotShapeProbe.split(functions, PlotShapeProbe.rangeProbes(
+          new IExpr[] {uRange.arg1(), vRange.arg1()},
+          new double[] {uRange.arg2().evalfNaN(), vRange.arg2().evalfNaN()},
+          new double[] {uRange.arg3().evalfNaN(), vRange.arg3().evalfNaN()}), 3, false, engine);
       PlotColorFunction.Builder colorBuilder = Plot3DTools.plotColors(
           PlotColorFunction.Family.PARAMETRIC_3D_UV, options, S.ParametricPlot3D, engine);
 
@@ -101,7 +105,10 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       if (!range.isList3() || !range.first().isSymbol()) {
         return Errors.printMessage(S.ParametricPlot3D, "pllim", F.list(range), engine);
       }
-      functions = splitByEvaluatedShape(functions, new IAST[] {range}, engine);
+      functions = PlotShapeProbe.split(functions,
+          PlotShapeProbe.rangeProbes(new IExpr[] {range.arg1()},
+              new double[] {range.arg2().evalfNaN()}, new double[] {range.arg3().evalfNaN()}),
+          3, false, engine);
       for (int i = 0; i < functions.size(); i++) {
         // a curve wrapped in Tooltip or Style is sampled bare: the style goes into the curve and
         // the tooltip back around the finished primitive, the way Plot3D labels one of several
@@ -130,125 +137,6 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
             F.Rule(S.BoxRatios,
                 Plot3DTools.automaticBoxRatios(options[Plot3DTools.X_BOX_RATIOS], graphicsList)),
             F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
-  }
-
-  /**
-   * Where each range is probed for the shape of a function: away from the ends, where a
-   * parametrisation is most often undefined, and at more than one place in case the first is a
-   * singular point.
-   */
-  private static final double[] PROBE_FRACTIONS = {0.5, 0.382, 0.618, 0.25, 0.75};
-
-  /**
-   * The curves, with every function that evaluates to several points taken as that many curves.
-   *
-   * <p>
-   * How the argument is written cannot tell {@code {g(t), h(t), k(t)}} - three curves, when each
-   * of {@code g, h, k} gives a point once {@code t} is a number - from {@code {Cos(t), Sin(t), t}},
-   * one curve. Only a value can, so each function is evaluated at one parameter value and read by
-   * the depth of what comes back: a point is one curve, and a list is one curve per point it
-   * holds at any depth, so {@code {p(t), m(t)}} with {@code m} giving two points is three curves.
-   */
-  private static List<IExpr> splitByEvaluatedShape(List<IExpr> functions, IAST[] ranges,
-      EvalEngine engine) {
-    List<IExpr> result = new ArrayList<>(functions.size());
-    for (IExpr function : functions) {
-      // a wrapped function keeps its wrapper whole; its label belongs to all of it
-      if (PlotWrapper.isWrapper(function) || !splitByProbe(function, ranges, engine, result)) {
-        result.add(function);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Append the curves {@code function} evaluates to, and return whether any probe told them apart;
-   * on {@code false} nothing was appended and the function stays as it was written.
-   */
-  private static boolean splitByProbe(IExpr function, IAST[] ranges, EvalEngine engine,
-      List<IExpr> out) {
-    for (double fraction : PROBE_FRACTIONS) {
-      IASTAppendable rules = F.ListAlloc(ranges.length);
-      for (IAST range : ranges) {
-        double min = range.arg2().evalfNaN();
-        double max = range.arg3().evalfNaN();
-        if (!Double.isFinite(min) || !Double.isFinite(max)) {
-          return false;
-        }
-        rules.append(F.Rule(range.arg1(), F.num(min + fraction * (max - min))));
-      }
-      IExpr value;
-      try {
-        value = engine.evaluate(F.subst(function, rules));
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        continue;
-      }
-      List<IExpr> curves = new ArrayList<>();
-      if (curvesOfValue(function, value, curves)) {
-        out.addAll(curves);
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Read the curves {@code expr} stands for off its sampled {@code value}.
-   *
-   * <p>
-   * Each level of the value is matched by an item of {@code expr} where {@code expr} is itself a
-   * list of the same length, so {@code {g(t), m(t)}} keeps {@code g(t)} as written and evaluates
-   * only it for its curve; where it is not, the level is reached with {@code Part}.
-   *
-   * <p>
-   * Once one entry of a level is a curve, the level is a list of curves, and an entry that gives
-   * no point at all is still a curve of its own, one that draws nothing: Mathematica draws one line
-   * for {@code {p(t), undefined(t)}} and two for {@code {p(t), undefined(t), p(2 t)}}. An entry
-   * that is a number instead reads as a coordinate, so that level is no list of curves.
-   *
-   * @return {@code false} when the value is neither a point nor a list holding a curve
-   */
-  private static boolean curvesOfValue(IExpr expr, IExpr value, List<IExpr> out) {
-    if (isPoint(value)) {
-      out.add(expr);
-      return true;
-    }
-    if (!value.isList() || ((IAST) value).argSize() == 0) {
-      return false;
-    }
-    IAST values = (IAST) value;
-    boolean itemwise = expr.isList() && ((IAST) expr).argSize() == values.argSize();
-    List<IExpr> level = new ArrayList<>(values.argSize());
-    boolean anyCurve = false;
-    for (int j = 1; j <= values.argSize(); j++) {
-      IExpr part = itemwise ? ((IAST) expr).get(j) : F.Part(expr, F.ZZ(j));
-      List<IExpr> curves = new ArrayList<>();
-      if (curvesOfValue(part, values.get(j), curves)) {
-        level.addAll(curves);
-        anyCurve = true;
-      } else if (Double.isFinite(values.get(j).evalfNaN())) {
-        return false;
-      } else {
-        level.add(part);
-      }
-    }
-    if (!anyCurve) {
-      return false;
-    }
-    out.addAll(level);
-    return true;
-  }
-
-
-  /** Whether {@code value} is what {@link #evaluatePoint} accepts as a point. */
-  private static boolean isPoint(IExpr value) {
-    if (!value.isList() || ((IAST) value).argSize() < 3) {
-      return false;
-    }
-    IAST list = (IAST) value;
-    return Double.isFinite(list.arg1().evalfNaN()) && Double.isFinite(list.arg2().evalfNaN())
-        && Double.isFinite(list.arg3().evalfNaN());
   }
 
   private void createCurveGeometry(IExpr func, IAST range, int pointsCount, EvalEngine engine,

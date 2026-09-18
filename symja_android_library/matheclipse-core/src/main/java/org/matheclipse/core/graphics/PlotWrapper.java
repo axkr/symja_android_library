@@ -256,6 +256,27 @@ public final class PlotWrapper {
     }
 
     /**
+     * These curves with every function replaced by the curves it splits into, each carrying the
+     * tooltip of the function it came from.
+     */
+    public Curves splitEach(java.util.function.Function<IExpr, List<IExpr>> splitter) {
+      IASTAppendable split = F.ListAlloc(functions.argSize());
+      List<IExpr> splitTooltips = new java.util.ArrayList<>();
+      splitTooltips.add(null);
+      for (int i = 1; i <= functions.argSize(); i++) {
+        for (IExpr curve : splitter.apply(functions.get(i))) {
+          split.append(curve);
+          splitTooltips.add(tooltips[i]);
+        }
+      }
+      if (split.argSize() == functions.argSize()) {
+        // nothing was split; the same functions may still have been rewritten, so keep them
+        return new Curves(split, tooltips);
+      }
+      return new Curves(split, splitTooltips.toArray(new IExpr[0]));
+    }
+
+    /**
      * The finished primitive of curve {@code i}, wrapped as a caller could have typed it.
      *
      * <p>

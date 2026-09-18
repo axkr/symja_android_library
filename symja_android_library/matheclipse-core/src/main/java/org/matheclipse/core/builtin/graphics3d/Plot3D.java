@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -13,6 +14,7 @@ import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -82,7 +84,12 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       final ISymbol yVar = (ISymbol) lst2.arg1();
       // the four wrapper levels are read the same way a two dimensional plot reads them, so a
       // surface can be labelled without Plot3D knowing anything about tooltips
-      final PlotWrapper.Curves curves = PlotWrapper.curves(ast.arg1());
+      // f(x, y) with f(u_?NumericQ, v_?NumericQ) := {u v, u + v} is two surfaces, which only its
+      // value can say
+      final List<IAST> probes = PlotShapeProbe.rangeProbes(new IExpr[] {xVar, yVar},
+          new double[] {xMinD, yMinD}, new double[] {xMaxD, yMaxD});
+      final PlotWrapper.Curves curves = PlotWrapper.curves(ast.arg1()).splitEach(
+          f -> PlotShapeProbe.split(f, probes, PlotShapeProbe.SCALAR, false, engine));
       final IExpr functions = curves.functions;
 
       int[] samples = Plot3DTools.plotPoints(options[X_PLOT_POINTS], 40);

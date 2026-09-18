@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -149,6 +150,20 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
       functions = (IAST) function;
     } else {
       functions = F.List(function);
+    }
+    // f(i, j) with a value of {i j, i + j} is two sets of stems, which only its value can say
+    if (iRange.isList() && (jRange.isList() || !jRange.isPresent())) {
+      List<IExpr> written = new ArrayList<>();
+      functions.forEach(written::add, 1);
+      List<IExpr> split = PlotShapeProbe.split(written,
+          PlotShapeProbe.iteratorProbes(
+              jRange.isList() ? new IAST[] {(IAST) iRange, (IAST) jRange}
+                  : new IAST[] {(IAST) iRange},
+              engine),
+          PlotShapeProbe.SCALAR, false, engine);
+      if (split.size() != written.size()) {
+        functions = F.List(split.toArray(new IExpr[0]));
+      }
     }
 
     // Thd chart palette: the stems and markers take a slightly darkened palette entry and
