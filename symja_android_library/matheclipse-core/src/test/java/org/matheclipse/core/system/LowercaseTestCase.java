@@ -22125,6 +22125,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("RandomVariate(GeometricDistribution(p))", //
         "RandomVariate(GeometricDistribution(p))");
+    // branching process and Kemp samplers
+    check("AllTrue(RandomVariate(BorelTannerDistribution(0.5, 3), 50), IntegerQ(#)&&#>=3&)", //
+        "True");
+    check("AllTrue(RandomVariate(LogSeriesDistribution(0.9), 50), IntegerQ(#)&&#>=1&)", //
+        "True");
+    check("AllTrue(RandomVariate(PoissonConsulDistribution(2, 0.4), 50), IntegerQ(#)&&#>=0&)", //
+        "True");
+    check("Dimensions(RandomInteger(PoissonConsulDistribution(2, 0.4), {2,3}))", //
+        "{2,3}");
+    check("AllTrue(RandomVariate(LogSeriesDistribution(0.9999999), 20), IntegerQ(#)&&#>=1&)", //
+        "True");
+    check("Table(SeedRandom(3); {RandomVariate(BorelTannerDistribution(0.5,2),5), " //
+        + "RandomVariate(LogSeriesDistribution(0.6),5), " //
+        + "RandomVariate(PoissonConsulDistribution(2,0.4),5)}, {2}) // Apply(SameQ)", //
+        "True");
+    check("RandomInteger(LogSeriesDistribution(1))", //
+        "RandomInteger(LogSeriesDistribution(1))");
+    check("RandomInteger(BorelTannerDistribution(0.5, 0))", //
+        "RandomInteger(BorelTannerDistribution(0.5,0))");
+    check("RandomVariate(PoissonConsulDistribution(m, 0.2))", //
+        "RandomVariate(PoissonConsulDistribution(m,0.2))");
     // samplers built on hipparchus distributions draw from the generator SeedRandom seeds
     check("Table(SeedRandom(7); RandomVariate(#, 6), {2})& /@ " //
         + "{PoissonDistribution(3), BinomialDistribution(10,0.3), NormalDistribution(0,1), " //

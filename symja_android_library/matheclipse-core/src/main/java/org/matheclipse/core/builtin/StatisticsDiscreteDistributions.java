@@ -11,6 +11,7 @@ import org.hipparchus.random.RandomDataGenerator;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -164,6 +165,51 @@ public class StatisticsDiscreteDistributions {
       }
     }
     return list;
+  }
+
+  /** Largest mean of a single hipparchus Poisson draw, whose result is an <code>int</code>. */
+  private static final double POISSON_CHUNK_MEAN = 1.0e9;
+
+  /** Largest total progeny of {@link #progeny}, so that the Poisson means stay exact doubles. */
+  private static final long PROGENY_LIMIT = 1L << 53;
+
+  /**
+   * A Poisson deviate of any mean up to {@link #PROGENY_LIMIT}, as a sum of independent Poisson
+   * deviates whose means fit the <code>int</code> result of
+   * {@link RandomDataGenerator#nextPoisson(double)}.
+   */
+  private static long poisson(RandomDataGenerator rdg, double mean) {
+    long sum = 0L;
+    while (mean > POISSON_CHUNK_MEAN) {
+      sum += rdg.nextPoisson(POISSON_CHUNK_MEAN);
+      mean -= POISSON_CHUNK_MEAN;
+    }
+    return mean > 0.0 ? sum + rdg.nextPoisson(mean) : sum;
+  }
+
+  /**
+   * The total progeny, ancestors included, of a Galton-Watson branching process which starts with
+   * <code>ancestors</code> individuals, each of which has a Poisson distributed number of children
+   * with mean <code>rate < 1</code>. This is <code>BorelTannerDistribution(rate, ancestors)</code>:
+   * the children of a whole generation of size <code>g</code> are one Poisson deviate of mean
+   * <code>rate*g</code>.
+   *
+   * @return <code>-1</code> if the progeny exceeds {@link #PROGENY_LIMIT}
+   */
+  private static long progeny(RandomDataGenerator rdg, double rate, long ancestors) {
+    long total = ancestors;
+    long generation = ancestors;
+    while (generation > 0L) {
+      if (Thread.currentThread().isInterrupted()) {
+        throw TimeoutException.TIMED_OUT;
+      }
+      generation = poisson(rdg, rate * generation);
+      total += generation;
+      if (total > PROGENY_LIMIT) {
+        return -1L;
+      }
+    }
+    return total;
   }
 
   /** <code>Floor(Exp(logValue))</code> for a value too large for a <code>long</code>. */
@@ -2149,7 +2195,7 @@ public class StatisticsDiscreteDistributions {
    * <code>BorelTannerDistribution(alpha, n)</code> - the Borel-Tanner distribution.
    */
   private static final class BorelTannerDistribution extends AbstractEvaluator
-      implements IDiscreteDistribution, IPDF, IStatistics {
+      implements IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public int getSupportLowerBound(IExpr discreteDistribution) {
@@ -2183,6 +2229,27 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST2()) {
+        double a = dist.arg1().evalfNaN();
+        int n = dist.arg2().toIntDefault();
+        if (0.0 < a && a < 1.0 && n >= 1) {
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
+          IASTAppendable list = F.ListAlloc(size);
+          for (int i = 0; i < size; i++) {
+            long x = progeny(rdg, a, n);
+            if (x < 0L) {
+              return F.NIL;
+            }
+            list.append(F.ZZ(x));
+          }
+          return list;
+        }
+      }
       return F.NIL;
     }
 
@@ -2237,7 +2304,8 @@ public class StatisticsDiscreteDistributions {
    * <code>LogSeriesDistribution(t)</code> - the logarithmic series distribution.
    */
   private static final class LogSeriesDistribution extends AbstractEvaluator
-      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IGeneratingFunction {
+      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IGeneratingFunction,
+      IRandomVariate {
 
     @Override
     public IExpr pgf(IAST dist, IExpr z, EvalEngine engine) {
@@ -2297,6 +2365,45 @@ public class StatisticsDiscreteDistributions {
       return F.NIL;
     }
 
+    /**
+     * Kemp's algorithm LK: <code>1</code> if <code>V >= t</code>, otherwise
+     * <code>Floor(1 + Log(V)/Log(q))</code> with <code>q = 1 - (1 - t)^U</code>, for independent
+     * uniform <code>U</code> and <code>V</code>. Exact for every <code>0 < t < 1</code>, and a
+     * constant number of steps however heavy the tail is as <code>t</code> approaches
+     * <code>1</code>.
+     */
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST1()) {
+        double t = dist.arg1().evalfNaN();
+        if (0.0 < t && t < 1.0) {
+          double logOneMinusT = Math.log1p(-t);
+          IASTAppendable list = F.ListAlloc(size);
+          for (int i = 0; i < size; i++) {
+            // uniform in (0,1]
+            double v = 1.0 - random.nextDouble();
+            if (v >= t) {
+              list.append(F.C1);
+              continue;
+            }
+            double q = -Math.expm1(logOneMinusT * (1.0 - random.nextDouble()));
+            double x = Math.floor(1.0 + Math.log(v) / Math.log(q));
+            if (x < SAMPLE_SEARCH_LIMIT) {
+              list.append(F.ZZ((long) x));
+            } else {
+              IExpr huge = integerFromLog(Math.log(x));
+              if (huge.isNIL()) {
+                return F.NIL;
+              }
+              list.append(huge);
+            }
+          }
+          return list;
+        }
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST1()) {
@@ -2345,7 +2452,7 @@ public class StatisticsDiscreteDistributions {
    * distribution.
    */
   private static final class PoissonConsulDistribution extends AbstractEvaluator
-      implements IDiscreteDistribution, IPDF, IStatistics {
+      implements IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2368,6 +2475,33 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    /**
+     * The total progeny of a branching process with Poisson distributed children of mean
+     * <code>lambda</code>, started by a Poisson distributed number of ancestors of mean
+     * <code>mu</code> (Consul and Shenton): a <code>BorelTannerDistribution(lambda, n)</code>
+     * deviate for <code>n</code> ancestors, and <code>0</code> without any.
+     */
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST2()) {
+        double mu = dist.arg1().evalfNaN();
+        double lambda = dist.arg2().evalfNaN();
+        if (0.0 < mu && mu < PROGENY_LIMIT && 0.0 <= lambda && lambda < 1.0) {
+          RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
+          IASTAppendable list = F.ListAlloc(size);
+          for (int i = 0; i < size; i++) {
+            long x = progeny(rdg, lambda, poisson(rdg, mu));
+            if (x < 0L) {
+              return F.NIL;
+            }
+            list.append(F.ZZ(x));
+          }
+          return list;
+        }
+      }
       return F.NIL;
     }
 
