@@ -10,6 +10,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ExitException;
 import org.matheclipse.core.eval.tasks.EventLoop;
+import org.matheclipse.core.eval.util.AwtSupport;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -82,6 +84,15 @@ public final class KernelLinkServer {
           engine.clearStopRequest();
           write(parent, F.unaryAST1(S.ReturnPacket, S.$Aborted));
         } catch (RuntimeException rex) {
+          write(parent, F.unaryAST1(S.ReturnPacket, S.$Failed));
+        } catch (LinkageError le) {
+          // Something outside builtin dispatch - formatting an Image result, say - reached AWT on a
+          // runtime without it (a native image on macOS). The evaluator already turns this into a
+          // message inside a builtin; here it must not end the kernel the notebook is talking to.
+          if (!AwtSupport.isMissingNativeLibrary(le)) {
+            throw le;
+          }
+          Errors.printMessage(S.General, "noawt", F.List(S.General), engine);
           write(parent, F.unaryAST1(S.ReturnPacket, S.$Failed));
         }
       }

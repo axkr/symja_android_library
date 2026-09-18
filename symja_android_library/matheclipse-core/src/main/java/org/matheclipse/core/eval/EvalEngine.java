@@ -47,6 +47,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.steps.StepLevel;
+import org.matheclipse.core.eval.util.AwtSupport;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -2001,6 +2002,8 @@ public class EvalEngine implements Serializable {
         throw e;
       } catch (SymjaMathException ve) {
         return Errors.printMessage(ast.topHead(), ve, this);
+      } catch (LinkageError le) {
+        return awtUnavailable(ast, le);
       }
       // cannot generally set the result as evaluated in built-in function. Especially problems in
       // `togetherMode`
@@ -2016,6 +2019,21 @@ public class EvalEngine implements Serializable {
       // }
     }
     return F.NIL;
+  }
+
+  /**
+   * A builtin reached a class that needs AWT on a runtime without it - a native image on macOS. Say
+   * so and leave the call unevaluated, rather than letting the {@link LinkageError} end the process
+   * or a notebook kernel. Any other linkage error is a real classpath fault and propagates.
+   */
+  private IExpr awtUnavailable(final IAST ast, LinkageError le) {
+    if (!AwtSupport.isMissingNativeLibrary(le)) {
+      throw le;
+    }
+    if (Config.SHOW_STACKTRACE) {
+      le.printStackTrace();
+    }
+    return Errors.printMessage(ast.topHead(), "noawt", F.List(ast.topHead()), this);
   }
 
   public IExpr evalAttributes(IASTMutable mutableAST, final int astSize, ISymbol symbol,
@@ -2974,7 +2992,12 @@ public class EvalEngine implements Serializable {
           if (released.isPresent()) {
             return evalWithoutNumericReset(released);
           }
-          return ((IFastFunctionEvaluator) evaluator).evaluate(ast, this);
+          try {
+            return ((IFastFunctionEvaluator) evaluator).evaluate(ast, this);
+          } catch (LinkageError le) {
+            // IFastFunctionEvaluator skips evalASTBuiltinFunction and its handler
+            return awtUnavailable(ast, le);
+          }
         }
       }
     } else if (expr instanceof NILPointer || expr == null) {

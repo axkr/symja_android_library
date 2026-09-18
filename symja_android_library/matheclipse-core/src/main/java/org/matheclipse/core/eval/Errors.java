@@ -397,6 +397,8 @@ public class Errors {
       "nonopt",
       "Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
       "nocont", "Context `1` was not created when Needs was evaluated.", //
+      "noawt",
+      "`1` needs AWT, which this runtime does not provide (a native image on macOS has none); use SVG output instead.", //
       "noopen", "Cannot open `1`.", //
       "noprime", "There are no primes in the specified interval.", //
       "nord", "Invalid comparison with `1` attempted.", //
