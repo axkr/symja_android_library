@@ -107,6 +107,54 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testInverseLaplaceTransformImproperInexact() {
+    // Apart leaves an improper fraction whole when a coefficient is inexact; its polynomial part
+    // used to be dropped: E^(-1.5*t)
+    check("InverseLaplaceTransform(s/(s+1.5), s, t)", //
+        "2.0*(-0.75/E^(1.5*t)+0.5*DiracDelta(t))");
+    check("InverseLaplaceTransform(s/(s+3/2), s, t)", //
+        "-3/(2*E^(3/2*t))+DiracDelta(t)");
+  }
+
+  @Test
+  public void testLaplaceTransformDiracDeltaAndBessel() {
+    // the impulse at the origin is inside the transform's integral; it was HeavisideTheta(0)
+    check("LaplaceTransform(DiracDelta(t), t, s)", //
+        "1");
+    check("LaplaceTransform(DiracDelta(t-2), t, s)", //
+        "E^(-2*s)");
+    check("LaplaceTransform(BesselJ(0,t), t, s)", //
+        "1/Sqrt(1+s^2)");
+    check("LaplaceTransform(BesselJ(1,t), t, s)", //
+        "(-s+Sqrt(1+s^2))/Sqrt(1+s^2)");
+    check("LaplaceTransform(BesselI(0,2*t), t, s)", //
+        "1/Sqrt(-4+s^2)");
+    check("InverseLaplaceTransform(1/Sqrt(s^2+a^2), s, t)", //
+        "BesselJ(0,a*t)");
+    check("InverseLaplaceTransform(1/Sqrt(s^2-a^2), s, t)", //
+        "BesselI(0,a*t)");
+    check("InverseLaplaceTransform(1/Sqrt(s^2+1), s, 1.5)", //
+        "0.511828");
+    check("InverseLaplaceTransform(E^(-3/s)/s, s, t)", //
+        "BesselJ(0,2*Sqrt(3)*Sqrt(t))");
+  }
+
+  @Test
+  public void testLaplaceTransformSeveralVariables() {
+    check("InverseLaplaceTransform(1/(p*q), {p, q}, {x, y})", //
+        "1");
+    check("InverseLaplaceTransform(1/(p+q), {p, q}, {x, y})", //
+        "DiracDelta(-x+y)");
+    check("InverseLaplaceTransform(1/(1+p*q), {p, q}, {x, y})", //
+        "BesselJ(0,2*Sqrt(x*y))");
+    check("Chop(N(InverseLaplaceTransform(1/Sqrt(1+p*q), {p, q}, {x, y}) - "
+        + "Cos(2*Sqrt(x*y))/(Pi*Sqrt(x*y)) /. {x->3/10, y->11/10}))", //
+        "0");
+    check("LaplaceTransform(x*E^(-y), {x, y}, {p, q})", //
+        "1/(p^2*(1+q))");
+  }
+
+  @Test
   public void testLaplaceTransformPhase() {
     // the transforms of Sin(b*t) and E^(b*t) are known, and the constant part of an argument is
     // split off first; the second shift theorem writes such an argument
@@ -334,13 +382,9 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testLaplaceTransformTimesIntegrateFallback() {
-    // BesselJ(0, t) — no direct pattern rule, should fall back to Integrate
-    // L{BesselJ(0, t)} = 1/Sqrt(1+s^2)
-    // TODO Integrate must handle Bessel functions first for this test to pass; currently it returns
-    // an unevaluated LaplaceTransform
+    // L{BesselJ(0, t)} = 1/Sqrt(1+s^2), now a rule of its own rather than an integral
     check("LaplaceTransform(BesselJ(0, t), t, s)", //
-        // "1/Sqrt(1+s^2)");
-        "LaplaceTransform(BesselJ(0,t),t,s)");
+        "1/Sqrt(1+s^2)");
   }
 
   // ----- Plus: Expand before distributing -----
@@ -438,8 +482,8 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testLaplaceTransformUnevaluated() {
     // Unknown functions should return unevaluated
-    check("LaplaceTransform(BesselJ(0, t), t, s)", //
-        "LaplaceTransform(BesselJ(0,t),t,s)");
+    check("LaplaceTransform(f(t), t, s)", //
+        "LaplaceTransform(f(t),t,s)");
   }
 
   @Test

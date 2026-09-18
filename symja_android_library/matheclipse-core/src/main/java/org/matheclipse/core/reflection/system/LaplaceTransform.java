@@ -56,6 +56,19 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
     if (t.equals(s)) {
       return F.NIL;
     }
+    if (t.isList() && s.isList() && t.argSize() == s.argSize() && t.argSize() > 0
+        && ((IAST) s).forAll(x -> !x.isNumber())) {
+      // LaplaceTransform(f, {t1, t2}, {s1, s2}) is the transform in one variable at a time; the
+      // numerical transform is only defined for one variable, and would see the others as symbols
+      IExpr result = a1;
+      for (int i = 1; i <= t.argSize(); i++) {
+        result = engine.evaluate(F.LaplaceTransform(result, t.getAt(i), s.getAt(i)));
+        if (result.has(S.LaplaceTransform)) {
+          return F.NIL;
+        }
+      }
+      return result;
+    }
     if (!t.isList() && !s.isList() && !t.equals(s)) {
       if (s instanceof INum && t.isSymbol()) {
         double sDouble = s.evalfNaN();
@@ -77,6 +90,10 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
         return F.Power(s, F.CN2);
       }
       if (t.isSymbol()) {
+        IExpr special = laplaceTransformOfSpecialFunction(a1, t, s, engine);
+        if (special.isPresent()) {
+          return special;
+        }
         IExpr split = splitPhases(a1, t, engine);
         if (split.isPresent()) {
           IExpr transformed = engine.evaluate(F.LaplaceTransform(F.Expand(split), t, s));
@@ -294,6 +311,43 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
       return F.Plus(F.Times(F.Cosh(v), F.Cosh(d)), F.Times(F.Sinh(v), F.Sinh(d)));
     });
     return changed[0] ? engine.evaluate(result) : F.NIL;
+  }
+
+  /**
+   * The transform of <code>DiracDelta(c*t)</code>, <code>BesselJ(n, a*t)</code> or
+   * <code>BesselI(n, a*t)</code> for an order <code>n &gt; -1</code>, or {@link F#NIL}.
+   *
+   * <p>
+   * The transform's integral starts at the origin and takes all of an impulse there:
+   * <code>DiracDelta(t)</code> is <code>1</code>, where the integral reached from the definition
+   * gave <code>HeavisideTheta(0)</code>.
+   */
+  private static IExpr laplaceTransformOfSpecialFunction(IExpr a1, IExpr t, IExpr s,
+      EvalEngine engine) {
+    if (a1.isAST(S.DiracDelta, 2)) {
+      IExpr c = engine.evaluate(F.D(a1.first(), t));
+      if (c.isFree(t) && !c.isZero()
+          && engine.evaluate(F.Subtract(a1.first(), F.Times(c, t))).isZero()) {
+        return engine.evaluate(F.Divide(F.C1, F.Abs(c)));
+      }
+      return F.NIL;
+    }
+    boolean besselJ = a1.isAST(S.BesselJ, 3);
+    if (!besselJ && !a1.isAST(S.BesselI, 3)) {
+      return F.NIL;
+    }
+    IExpr n = a1.first();
+    IExpr a = engine.evaluate(F.D(a1.second(), t));
+    if (!n.isFree(t) || !a.isFree(t) || a.isZero()
+        || !engine.evaluate(F.Subtract(a1.second(), F.Times(a, t))).isZero()
+        || !engine.evaluate(F.Greater(n, F.CN1)).isTrue()) {
+      return F.NIL;
+    }
+    IExpr root = besselJ ? F.Sqrt(F.Plus(F.Sqr(s), F.Sqr(a)))
+        : F.Sqrt(F.Subtract(F.Sqr(s), F.Sqr(a)));
+    IExpr difference = besselJ ? F.Subtract(root, s) : F.Subtract(s, root);
+    return engine.evaluate(
+        F.Divide(F.Power(difference, n), F.Times(F.Power(a, n), root)));
   }
 
   /** Whether <code>expr</code> is a unit step in <code>t</code>. */
