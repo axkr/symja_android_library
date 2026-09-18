@@ -48,14 +48,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     boolean isSurface = argSize >= 3 && ast.arg2().isList() && ast.arg3().isList();
 
     List<IExpr> functions = new ArrayList<>();
-    IAST listArg = (IAST) ast.arg1();
-    if (listArg.argSize() > 0 && listArg.arg1().isList()) {
-      for (int i = 1; i <= listArg.argSize(); i++) {
-        functions.add(listArg.get(i));
-      }
-    } else {
-      functions.add(listArg);
-    }
+    PlotWrapper.collectCurves(ast.arg1(), functions);
 
     int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS],
         isSurface ? SURFACE_POINTS : CURVE_POINTS);

@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.graphics;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
@@ -391,17 +393,14 @@ public class ParametricPlot extends Plot {
     // a wrapper is taken off before the {fx, fy} shape is read, since Tooltip({Cos(t), Sin(t)})
     // is still one curve and not a collection of two
     final PlotWrapper outer = PlotWrapper.of(functionOrListOfFunctions);
-    IAST curveList;
-    if (outer.datum.isList()) {
-      IAST list = (IAST) outer.datum;
-      if (list.size() > 1 && !PlotWrapper.strip(list.arg1()).isList()) {
-        curveList = F.List(outer.datum);
-      } else {
-        curveList = list;
-      }
-    } else {
+    if (!outer.datum.isList()) {
       return F.NIL;
     }
+    // {c1 /. sol, c2 /. sol} nests each curve one list deeper, so groups are flattened at every
+    // level rather than only the outermost one
+    List<IExpr> curves = new ArrayList<>();
+    PlotWrapper.collectCurves(outer.datum, curves);
+    IAST curveList = F.List(curves.toArray(new IExpr[0]));
 
     final IASTAppendable listOfLines = F.ListAlloc(curveList.size());
     final RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
