@@ -747,6 +747,20 @@ public class AstroFunctionsTest extends AbstractTestCase {
         "PlanetData(Mars,Position)");
   }
 
+  /**
+   * The ground truth the frame was settled against: Mathematica's <code>HelioCoordinates</code> for
+   * Mars at one instant, measured 2026-09-18, which this matches to about 150 km. The ecliptic is
+   * the one of the date asked for - pinned at J2000 the vector stays turned by the precession
+   * since then and lands 0.014 astronomical units away.
+   */
+  @Test
+  public void testPlanetDataAgreesWithMathematica() {
+    check("Max(Abs(QuantityMagnitude(PlanetData(\"Mars\","
+        + " {\"HelioCoordinates\", {2026,9,18,16,39,57}}))"
+        + " - {0.281385, 1.516740, 0.0246979})) < 10^-5", //
+        "True");
+  }
+
   /** The two spellings read the same ephemerides, so they answer with the same vector. */
   @Test
   public void testPlanetDataAgreesWithAstronomicalData() {

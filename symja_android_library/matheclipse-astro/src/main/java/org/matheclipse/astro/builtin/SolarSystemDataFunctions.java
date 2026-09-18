@@ -43,10 +43,11 @@ import org.orekit.utils.IERSConventions;
  * astronomical units. Both read the same ephemerides.
  *
  * <p>
- * The position is heliocentric and referred to the mean ecliptic and equinox of J2000 - a frame
- * which does not turn with the date, so positions at different dates can be drawn in one picture.
- * It comes from the bundled DE ephemerides rather than from a two body approximation, which is
- * what {@link AstroOrbitFunctions} would give.
+ * The position is heliocentric and referred to the mean ecliptic and equinox <em>of the date asked
+ * for</em>, which is the frame Mathematica answers in - measured 2026-09-18, where its
+ * <code>HelioCoordinates</code> for Mars agrees with this to 1.5e-6 astronomical units, about
+ * 150 km. It comes from the bundled DE ephemerides rather than from a two body approximation,
+ * which is what {@link AstroOrbitFunctions} would give.
  */
 public class SolarSystemDataFunctions {
 
@@ -254,21 +255,23 @@ public class SolarSystemDataFunctions {
 
   /**
    * Where {@code bodyName} is at {@code date}, seen from the Sun, in metres along the axes of the
-   * mean ecliptic and equinox of J2000.
+   * mean ecliptic and equinox of that same date.
    *
    * <p>
    * The ephemerides are read in the Earth centred GCRF and the Sun is subtracted there, since the
    * difference of two positions in one frame is the same vector whichever of them is the origin.
-   * The ecliptic frame Orekit builds is the ecliptic <em>of date</em>, so its orientation is taken
-   * once at J2000 and used at every date - otherwise a planet plotted over centuries would also
-   * carry the slow turning of the frame itself.
+   * The ecliptic frame is then taken <em>at the date</em>, which is what Mathematica does: pinned
+   * at J2000 instead, the vector stays turned by the precession since then - a quarter of a degree
+   * by 2026, which puts Mars 0.014 astronomical units out. The price is that a body plotted over
+   * centuries carries the slow turning of the frame with it, which is a property of the
+   * coordinates that were asked for rather than of the body.
    */
   static Vector3D heliocentricEclipticPosition(String bodyName, AbsoluteDate date) {
     Frame gcrf = FramesFactory.getGCRF();
     Vector3D heliocentric = CelestialBodyFactory.getBody(bodyName).getPosition(date, gcrf)
         .subtract(CelestialBodyFactory.getSun().getPosition(date, gcrf));
-    StaticTransform toEcliptic = gcrf.getStaticTransformTo(
-        FramesFactory.getEcliptic(IERSConventions.IERS_2010), AbsoluteDate.J2000_EPOCH);
+    StaticTransform toEcliptic =
+        gcrf.getStaticTransformTo(FramesFactory.getEcliptic(IERSConventions.IERS_2010), date);
     return toEcliptic.transformVector(heliocentric);
   }
 
