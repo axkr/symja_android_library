@@ -194,6 +194,36 @@ public class WebGLGraphics3DTest {
     assertEquals(0.5, sphere.get("radius").asDouble(), 1e-9);
   }
 
+  /**
+   * {@code Sphere[{p1, p2, ...}, {r1, r2, ...}]} gives each centre its own radius. A radius list
+   * used to read as no number at all, and every sphere came out with radius 1.
+   */
+  @Test
+  public void sphereAcceptsAListOfRadii() {
+    for (String head : new String[] {"Sphere", "Ball"}) {
+      JsonNode scene = scene("Graphics3D[" + head + "[{{1,0,0},{-1,0,0}},{0.25,0.75}]]");
+      assertEquals(2, count(scene, "Sphere"), head + ": one element per distinct radius");
+      double sum = 0;
+      for (JsonNode element : scene.get("elements")) {
+        assertEquals(3, element.get("centers").size());
+        sum += element.get("radius").asDouble();
+      }
+      assertEquals(1.0, sum, 1e-9, head + ": radii 0.25 and 0.75");
+    }
+    JsonNode equal = scene("Graphics3D[Sphere[{{1,0,0},{-1,0,0}},{0.5,0.5}]]");
+    assertEquals(1, count(equal, "Sphere"), "equal radii stay one instanced element");
+    assertEquals(6, element(equal, "Sphere").get("centers").size());
+  }
+
+  /** A radius list that does not match the centres one-for-one draws unit spheres, as in WMA. */
+  @Test
+  public void sphereWithAMismatchedRadiusListIsUnitSpheres() {
+    JsonNode sphere = element(
+        scene("Graphics3D[Sphere[{{1,0,0},{-1,0,0},{0,1,0}},{0.25,0.75}]]"), "Sphere");
+    assertEquals(9, sphere.get("centers").size());
+    assertEquals(1.0, sphere.get("radius").asDouble(), 1e-9);
+  }
+
   // --------------------------------------------------------------- directives
 
   @Test

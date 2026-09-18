@@ -69,6 +69,13 @@ public class SVGGraphics3DTest {
   }
 
   @Test
+  public void aRadiusListDrawsEachSphereAtItsOwnRadius() {
+    assertEquals(
+        svg("Graphics3D[{Sphere[{1,0,0},0.25],Sphere[{-1,0,0},0.75]},PlotRange->3]"),
+        svg("Graphics3D[{Sphere[{{1,0,0},{-1,0,0}},{0.25,0.75}]},PlotRange->3]"));
+  }
+
+  @Test
   public void everySolidBecomesPolygons() {
     assertTrue(count(svg("Graphics3D[Cuboid[]]"), "polygon") >= 6, "a box has six faces");
     assertTrue(count(svg("Graphics3D[Sphere[]]"), "polygon") > 50, "a sphere is tessellated");

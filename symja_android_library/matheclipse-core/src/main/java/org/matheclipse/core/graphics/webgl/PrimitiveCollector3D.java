@@ -3,6 +3,7 @@ package org.matheclipse.core.graphics.webgl;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.expression.ID;
@@ -672,7 +673,6 @@ public final class PrimitiveCollector3D {
   }
 
   private void emitSphere(IAST ast, Style3D style, ComplexContext context, Transform3D transform) {
-    double radius = ast.argSize() >= 2 ? ColorUtil.dbl(ast.arg2(), 1.0) : 1.0;
     List<double[]> centers = new ArrayList<>();
     if (ast.argSize() == 0) {
       centers.add(new double[] {0, 0, 0});
@@ -682,6 +682,30 @@ public final class PrimitiveCollector3D {
     if (centers.isEmpty()) {
       return;
     }
+    IExpr radiusArg = ast.argSize() >= 2 ? ast.arg2() : null;
+    if (radiusArg != null && radiusArg.isList()
+        && ((IAST) radiusArg).argSize() == centers.size()) {
+      // Sphere[{p1, p2, ...}, {r1, r2, ...}] gives each centre its own radius; a list whose
+      // length does not match the centres is no radius at all, and every sphere is a unit one.
+      // Centres sharing a radius stay one element, so a field of equal spheres is still one
+      // instanced mesh.
+      IAST radii = (IAST) radiusArg;
+      Map<Double, List<double[]>> byRadius = new LinkedHashMap<>();
+      for (int i = 0; i < centers.size(); i++) {
+        byRadius.computeIfAbsent(ColorUtil.dbl(radii.get(i + 1), 1.0), r -> new ArrayList<>())
+            .add(centers.get(i));
+      }
+      for (Map.Entry<Double, List<double[]>> entry : byRadius.entrySet()) {
+        emitSphereElement(entry.getValue(), entry.getKey(), style, transform);
+      }
+      return;
+    }
+    double radius = radiusArg != null ? ColorUtil.dbl(radiusArg, 1.0) : 1.0;
+    emitSphereElement(centers, radius, style, transform);
+  }
+
+  private void emitSphereElement(List<double[]> centers, double radius, Style3D style,
+      Transform3D transform) {
     ObjectNode node = newElement("Sphere", style, transform);
     node.put("color", rgb(style.effectiveFace()));
     node.put("opacity", style.alphaOf(style.effectiveFace()));

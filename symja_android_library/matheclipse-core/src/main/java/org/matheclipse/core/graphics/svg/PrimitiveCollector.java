@@ -236,6 +236,12 @@ public final class PrimitiveCollector {
       case ID.Annulus:
         collectEllipse(ast, style, true, true);
         break;
+      case ID.Sphere:
+        collectSphere(ast, style, false);
+        break;
+      case ID.Ball:
+        collectSphere(ast, style, true);
+        break;
       case ID.StadiumShape:
         collectStadiumShape(ast, style);
         break;
@@ -1037,6 +1043,27 @@ public final class PrimitiveCollector {
     }
     primitives.add(new Prim2D.EllipsePrim(centre[0], centre[1], rx, ry, innerRx, innerRy, 0, angles,
         filled, style.clone()));
+  }
+
+  /**
+   * {@code Sphere} and {@code Ball} in the plane are the outline and the filled disk.
+   *
+   * <p>
+   * Unlike {@code Circle} and {@code Disk} they take a list of centres, {@code Sphere[{p1, p2,
+   * ...}, r]}, one shape of the same radii around each. In the plane a radius list is still
+   * {@code {rx, ry}} for every centre, not a radius per centre as it is in {@code Graphics3D}:
+   * {@code Graphics[Sphere[{{0, 0}, {3, 0}}, {1, 2}]]} draws two ellipses in Mathematica.
+   */
+  private void collectSphere(IAST ast, Style2D style, boolean filled) {
+    IExpr centres = ast.argSize() >= 1 ? ast.arg1() : null;
+    if (centres != null && centres.isListOfLists()) {
+      IAST list = (IAST) centres;
+      for (int i = 1; i <= list.argSize(); i++) {
+        collectEllipse(ast.setAtCopy(1, list.get(i)), style, filled, false);
+      }
+      return;
+    }
+    collectEllipse(ast, style, filled, false);
   }
 
   private void collectStadiumShape(IAST ast, Style2D style) {

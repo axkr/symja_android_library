@@ -93,6 +93,35 @@ public class SvgPrimitiveTest {
   }
 
   @Test
+  public void testBallIsAFilledDiskAndSphereItsOutline() {
+    Prim2D.EllipsePrim ball = (Prim2D.EllipsePrim) collect("Graphics[Ball[{0, 0}, 1]]").get(0);
+    assertTrue(ball.filled, "Ball in the plane is a disk");
+    assertEquals(1.0, ball.rx, 1e-9);
+    assertEquals(1.0, ball.ry, 1e-9);
+    Prim2D.EllipsePrim sphere = (Prim2D.EllipsePrim) collect("Graphics[Sphere[]]").get(0);
+    assertFalse(sphere.filled, "Sphere in the plane is a circle");
+    assertEquals(1.0, sphere.rx, 1e-9);
+  }
+
+  /**
+   * {@code Sphere[{p1, p2}, {rx, ry}]} draws one ellipse of semi-axes {@code rx, ry} around each
+   * centre. In Mathematica the plane reads a radius list as the two semi-axes even when its length
+   * matches the number of centres; only {@code Graphics3D} reads it as a radius per centre.
+   */
+  @Test
+  public void testSphereWithSeveralCentresKeepsBothRadiiForEach() {
+    List<Prim2D> prims = collect("Graphics[{Sphere[{{0, 0}, {3, 0}}, {1, 2}]}]");
+    assertEquals(2, prims.size());
+    for (int i = 0; i < 2; i++) {
+      Prim2D.EllipsePrim e = (Prim2D.EllipsePrim) prims.get(i);
+      assertEquals(3.0 * i, e.cx, 1e-9);
+      assertEquals(1.0, e.rx, 1e-9);
+      assertEquals(2.0, e.ry, 1e-9);
+      assertFalse(e.filled);
+    }
+  }
+
+  @Test
   public void testCircleAnglesAreKept() {
     Prim2D.EllipsePrim e =
         (Prim2D.EllipsePrim) collect("Graphics[Circle[{0, 0}, 1, {0, Pi/2}]]").get(0);
