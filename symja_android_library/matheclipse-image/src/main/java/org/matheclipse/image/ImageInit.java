@@ -1,6 +1,5 @@
 package org.matheclipse.image;
 
-import javax.imageio.ImageIO;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.io.ImageFormatIO;
 import org.matheclipse.image.builtin.ColorFunctions;
@@ -17,7 +16,11 @@ public class ImageInit {
     // Import and Export gain every javax.imageio format, and return an Image object rather than a
     // matrix of pixel values. Core declares the interface, this module installs the implementation -
     // see org.matheclipse.core.io.ImageFormatIO.
-    ImageIO.scanForPlugins();
+    //
+    // Nothing here may touch javax.imageio or a java.awt class that loads libawt. A GraalVM native
+    // image on macOS has no AWT (oracle/graal#13272), and this runs at start-up for every mode of
+    // symjascript, so an eager ImageIO call aborted the process before it did anything. The
+    // plug-in scan now happens on first use, in ImageIOFormats.
     ImageFormatIO.install(new ImageIOFormats());
 
     ImageFunctions.initialize();

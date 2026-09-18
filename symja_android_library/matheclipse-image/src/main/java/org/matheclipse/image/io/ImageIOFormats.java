@@ -48,6 +48,29 @@ public class ImageIOFormats implements ImageFormatIO {
     FORMAT_NAMES.put(Extension.WEBP, "webp");
   }
 
+  /** Set once {@link ImageIO#scanForPlugins()} has run. */
+  private static volatile boolean pluginsScanned = false;
+
+  /**
+   * Register the <code>javax.imageio</code> plug-ins on first use rather than at start-up.
+   *
+   * <p>
+   * Loading <code>ImageIO</code> loads AWT, which a native image on macOS does not have. Deferring
+   * it means the image builtins still register there, and the failure only surfaces - as a message,
+   * see <code>AwtSupport</code> in core - when an image is actually read or written. Callers check
+   * the format against {@link #FORMAT_NAMES} first, so an SVG or CSV export never gets this far.
+   */
+  private static void ensurePlugins() {
+    if (!pluginsScanned) {
+      synchronized (ImageIOFormats.class) {
+        if (!pluginsScanned) {
+          ImageIO.scanForPlugins();
+          pluginsScanned = true;
+        }
+      }
+    }
+  }
+
   /** The formats that cannot carry an alpha channel, so it has to be flattened before writing. */
   private static boolean discardsAlpha(Extension format) {
     return format == Extension.JPEG || format == Extension.BMP;
@@ -56,17 +79,29 @@ public class ImageIOFormats implements ImageFormatIO {
   @Override
   public boolean canImport(Extension format) {
     String name = FORMAT_NAMES.get(format);
-    return name != null && ImageIO.getImageReadersByFormatName(name).hasNext();
+    if (name == null) {
+      // not an image format: answer without loading javax.imageio
+      return false;
+    }
+    ensurePlugins();
+    return ImageIO.getImageReadersByFormatName(name).hasNext();
   }
 
   @Override
   public boolean canExport(Extension format) {
     String name = FORMAT_NAMES.get(format);
-    return name != null && ImageIO.getImageWritersByFormatName(name).hasNext();
+    if (name == null) {
+      // not an image format - Export asks this before its SVG branch, so it must not load
+      // javax.imageio here
+      return false;
+    }
+    ensurePlugins();
+    return ImageIO.getImageWritersByFormatName(name).hasNext();
   }
 
   @Override
   public IExpr importImage(InputStream inputStream, Extension format) {
+    ensurePlugins();
     try {
       BufferedImage bufferedImage = ImageIO.read(inputStream);
       if (bufferedImage != null) {
@@ -91,6 +126,7 @@ public class ImageIOFormats implements ImageFormatIO {
     if (discardsAlpha(format) && bufferedImage.getColorModel().hasAlpha()) {
       bufferedImage = withoutAlpha(bufferedImage);
     }
+    ensurePlugins();
     try {
       return ImageIO.write(bufferedImage, name, outputStream);
     } catch (IOException ioe) {
