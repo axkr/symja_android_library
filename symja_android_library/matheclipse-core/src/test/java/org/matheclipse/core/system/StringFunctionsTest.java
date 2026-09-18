@@ -452,6 +452,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "\"ab\"");
     check("StringJoin(\"test\")", //
         "test");
+    // nothing joined is the empty string
+    check("{StringJoin(), StringJoin({}), StringJoin @@ {}} // InputForm", //
+        "{\"\",\"\",\"\"}");
     check("\"Hello\" <> \" \" <> \"world!\"", //
         "Hello world!");
 

@@ -199,7 +199,10 @@ public class BoxesFunctions {
                 argsList.append(",");
               }
             }
-            list.append(F.RowBox(argsList));
+            // {} is RowBox({"{","}"}), with no empty row in between, as in the Wolfram Language
+            if (argsList.argSize() > 0) {
+              list.append(F.RowBox(argsList));
+            }
             list.append("}");
             return F.RowBox(list);
           }
@@ -231,7 +234,9 @@ public class BoxesFunctions {
               argsList.append(",");
             }
           }
-          list.append(F.RowBox(argsList));
+          if (argsList.argSize() > 0) {
+            list.append(F.RowBox(argsList));
+          }
           list.append("]");
           return F.RowBox(list);
         }

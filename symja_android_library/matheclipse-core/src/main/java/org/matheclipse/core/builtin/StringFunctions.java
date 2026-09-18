@@ -1898,7 +1898,9 @@ public final class StringFunctions {
         }
         return F.$str(buf.toString());
       }
-      return F.NIL;
+      // nothing joined is the empty string, as the Wolfram Language answers; a notebook joins the
+      // strings of an empty row this way, and StringJoin() left unevaluated showed {StringJoin()}
+      return F.CEmptyString;
     }
 
     @Override

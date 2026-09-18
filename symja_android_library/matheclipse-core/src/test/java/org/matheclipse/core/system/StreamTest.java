@@ -62,6 +62,15 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "False");
     check("s=StringToStream(\"head\\n%%\\ntail\"); {ReadString(s, \"\\n\" ~~ \"%%\"), StringLength(ReadString(s))}", //
         "{head,5}");
+
+    // a terminator starting with ___ is tried once, from the start: tried again from every position
+    // a WLJS notebook of the older format (4 MB, no %Notebook% header) never finished loading
+    check("s=StringToStream(StringRepeat(\"0123456789\", 2000)); "
+        + "{StringLength(Quiet(ReadString(s, ___ ~~ \"%Notebook%\" ~~ EndOfLine))), ReadString(s)}", //
+        "{20000,EndOfFile}");
+    check("s=StringToStream(\"ab%Notebook%\\nrest\"); {ReadString(s, ___ ~~ \"%Notebook%\" ~~ EndOfLine), ReadString(s)}", //
+        "{,\n"
+            + "rest}");
   }
 
   @Test

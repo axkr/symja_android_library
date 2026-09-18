@@ -1859,7 +1859,13 @@ public class FileFunctions {
     try {
       java.util.regex.Matcher matcher = java.util.regex.Pattern
           .compile(regex, java.util.regex.Pattern.MULTILINE).matcher(rest);
-      if (matcher.find()) {
+      // a terminator which starts with ___ or __ matches somewhere only if it matches from the
+      // first character on, so one anchored attempt answers it. find() would try again from every
+      // position, each attempt running to the end: quadratic, and a WLJS notebook in the older
+      // format - 4 MB without the %Notebook% header its reader looks for - never finished loading
+      boolean leadingAnything =
+          regex.startsWith("[\\s\\S]*") || regex.startsWith("[\\s\\S]+");
+      if (leadingAnything ? matcher.lookingAt() : matcher.find()) {
         stream.pushBack(rest.substring(matcher.end()));
         return F.stringx(rest.substring(0, matcher.start()));
       }
