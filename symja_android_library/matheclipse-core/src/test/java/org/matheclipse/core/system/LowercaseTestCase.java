@@ -15211,7 +15211,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "<?xml version=\"1.0\"?>\n"
             + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
             + "<math mode=\"display\">\n"
-            + "<mrow><mn>12</mn><mo>-</mo><mfrac><mrow><msup><mrow><mi>tan</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>2</mn></msup></mrow><mn>3</mn></mfrac><mo>+</mo><mfrac><mrow><mi>tan</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>4</mn></mfrac><mo>+</mo><mfrac><mi>a</mi><mn>2</mn></mfrac></mrow></math>");
+            // evaluated, so the terms are in canonical order
+            + "<mrow><mfrac><mrow><mo>-</mo><msup><mrow><mi>tan</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>2</mn></msup></mrow><mn>3</mn></mfrac><mo>+</mo><mfrac><mrow><mi>tan</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>4</mn></mfrac><mo>+</mo><mfrac><mi>a</mi><mn>2</mn></mfrac><mo>+</mo><mn>12</mn></mrow></math>");
     check("MathMLForm( Surd(a,-3)  )", //
         "<?xml version=\"1.0\"?>\n"
             + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
@@ -15227,10 +15228,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
             + "<math mode=\"display\">\n"
             + "<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>#1</mi><mo>,</mo><mi>#3</mi></mrow><mo>)</mo></mrow></mrow><mo>&amp;</mo></mrow></math>");
+    // the argument is evaluated first, as in TeXForm: this is the derivative, not D(...)
     check("MathMLForm(D(sin(x)*cos(x),x))", "<?xml version=\"1.0\"?>\n"
         + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
         + "<math mode=\"display\">\n"
-        + "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>");
+        + "<mrow><mrow><mo>-</mo><msup><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>2</mn></msup></mrow><mo>+</mo><msup><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>2</mn></msup></mrow></math>");
+    check("MathMLForm(1+1)", "<?xml version=\"1.0\"?>\n"
+        + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+        + "<math mode=\"display\">\n"
+        + "<mn>2</mn></math>");
+    check("MathMLForm(DSolve(y'(x)==y(x),y(x),x))", "<?xml version=\"1.0\"?>\n"
+        + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+        + "<math mode=\"display\">\n"
+        + "<mrow><mo>{</mo><mrow><mrow><mo>{</mo><mrow><mrow><mrow><mi>y</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>-&gt;</mo><mrow><msup><mi>&#x2147;</mi><mi>x</mi></msup><mo>&#0183;</mo><msub><mi>c</mi><mn>1</mn></msub></mrow></mrow></mrow><mo>}</mo></mrow></mrow><mo>}</mo></mrow></math>");
+    // HoldForm still keeps its argument unevaluated
+    check("MathMLForm(HoldForm(1+1))", "<?xml version=\"1.0\"?>\n"
+        + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+        + "<math mode=\"display\">\n"
+        + "<mrow><mn>1</mn><mo>+</mo><mn>1</mn></mrow></math>");
   }
 
 

@@ -39,6 +39,17 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testEvaluatesItsArgument() {
+    check("TeXForm(1+1)", //
+        "2");
+    check("TeXForm(DSolve(y'(x)==y(x),y(x),x))", //
+        "\\{\\{y(x)\\to {e}^{x} \\cdot c_1\\}\\}");
+    // HoldForm still keeps its argument unevaluated
+    check("TeXForm(HoldForm(1+1))", //
+        "1 + 1");
+  }
+
+  @Test
   public void testBeta() {
     check("TeXForm(Beta(a,b))", //
         "B(a,b)");

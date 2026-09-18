@@ -750,7 +750,9 @@ public final class OutputFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       MathMLUtilities mathMLUtil = new MathMLUtilities(engine, false, engine.isRelaxedSyntax());
-      IExpr arg1 = ast.arg1();
+      // the argument is evaluated first, as TeXForm does: MathMLForm(D(Sin(x)*Cos(x),x)) is the
+      // MathML of the derivative, not of the unevaluated D(...) call
+      IExpr arg1 = engine.evaluate(ast.arg1());
       StringBuilderWriter stw = new StringBuilderWriter();
       mathMLUtil.toMathML(arg1, stw);
       return F.stringx(stw.toString(), IStringX.TEXT_MATHML);
