@@ -42,7 +42,9 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         ast = ast.setAtCopy(1, unwrapped);
       }
     }
-    if (argSize < 2 || !ast.arg1().isList()) {
+    // a function which only takes its shape once evaluated, g(t) with g(u_?NumericQ) := {...},
+    // is not a list yet, and its sampled values decide what it draws
+    if (argSize < 2 || ast.arg1().isAtom()) {
       return F.NIL;
     }
     boolean isSurface = argSize >= 3 && ast.arg2().isList() && ast.arg3().isList();
@@ -67,6 +69,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       }
       IAST uRange = (IAST) ast.arg2();
       IAST vRange = (IAST) ast.arg3();
+      functions = splitByEvaluatedShape(functions, new IAST[] {uRange, vRange}, engine);
       PlotColorFunction.Builder colorBuilder = Plot3DTools.plotColors(
           PlotColorFunction.Family.PARAMETRIC_3D_UV, options, S.ParametricPlot3D, engine);
 
@@ -98,6 +101,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       if (!range.isList3() || !range.first().isSymbol()) {
         return Errors.printMessage(S.ParametricPlot3D, "pllim", F.list(range), engine);
       }
+      functions = splitByEvaluatedShape(functions, new IAST[] {range}, engine);
       for (int i = 0; i < functions.size(); i++) {
         // a curve wrapped in Tooltip or Style is sampled bare: the style goes into the curve and
         // the tooltip back around the finished primitive, the way Plot3D labels one of several
@@ -126,6 +130,84 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
             F.Rule(S.BoxRatios,
                 Plot3DTools.automaticBoxRatios(options[Plot3DTools.X_BOX_RATIOS], graphicsList)),
             F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+  }
+
+  /**
+   * Where each range is probed for the shape of a function: away from the ends, where a
+   * parametrisation is most often undefined, and at more than one place in case the first is a
+   * singular point.
+   */
+  private static final double[] PROBE_FRACTIONS = {0.5, 0.382, 0.618, 0.25, 0.75};
+
+  /**
+   * The curves, with every function that evaluates to several points taken as that many curves.
+   *
+   * <p>
+   * How the argument is written cannot tell {@code {g(t), h(t), k(t)}} - three curves, when each
+   * of {@code g, h, k} gives a point once {@code t} is a number - from {@code {Cos(t), Sin(t), t}},
+   * one curve. Only a value can, so each function is evaluated at one parameter value and read by
+   * the depth of what comes back: a point is one curve, a list of points one curve per point.
+   */
+  private static List<IExpr> splitByEvaluatedShape(List<IExpr> functions, IAST[] ranges,
+      EvalEngine engine) {
+    List<IExpr> result = new ArrayList<>(functions.size());
+    for (IExpr function : functions) {
+      // a wrapped function keeps its wrapper whole; its label belongs to all of it
+      int count = PlotWrapper.isWrapper(function) ? 1 : curveCount(function, ranges, engine);
+      if (count <= 1) {
+        result.add(function);
+      } else if (function.isList() && ((IAST) function).argSize() == count) {
+        // {g(t), h(t), k(t)}: the items are the curves, each evaluated on its own
+        for (IExpr item : (IAST) function) {
+          result.add(item);
+        }
+      } else {
+        for (int j = 1; j <= count; j++) {
+          result.add(F.Part(function, F.ZZ(j)));
+        }
+      }
+    }
+    return result;
+  }
+
+  /** How many curves {@code function} evaluates to, 1 when no probe says otherwise. */
+  private static int curveCount(IExpr function, IAST[] ranges, EvalEngine engine) {
+    for (double fraction : PROBE_FRACTIONS) {
+      IASTAppendable rules = F.ListAlloc(ranges.length);
+      for (IAST range : ranges) {
+        double min = range.arg2().evalfNaN();
+        double max = range.arg3().evalfNaN();
+        if (!Double.isFinite(min) || !Double.isFinite(max)) {
+          return 1;
+        }
+        rules.append(F.Rule(range.arg1(), F.num(min + fraction * (max - min))));
+      }
+      IExpr value;
+      try {
+        value = engine.evaluate(F.subst(function, rules));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        continue;
+      }
+      if (isPoint(value)) {
+        return 1;
+      }
+      if (value.isList() && ((IAST) value).argSize() > 1
+          && ((IAST) value).forAll(ParametricPlot3D::isPoint)) {
+        return ((IAST) value).argSize();
+      }
+    }
+    return 1;
+  }
+
+  /** Whether {@code value} is what {@link #evaluatePoint} accepts as a point. */
+  private static boolean isPoint(IExpr value) {
+    if (!value.isList() || ((IAST) value).argSize() < 3) {
+      return false;
+    }
+    IAST list = (IAST) value;
+    return Double.isFinite(list.arg1().evalfNaN()) && Double.isFinite(list.arg2().evalfNaN())
+        && Double.isFinite(list.arg3().evalfNaN());
   }
 
   private void createCurveGeometry(IExpr func, IAST range, int pointsCount, EvalEngine engine,

@@ -128,6 +128,31 @@ public class ParametricCurveListTest {
     assertEquals(2, graphics.toString().split("GraphicsComplex\\(", -1).length - 1);
   }
 
+  /**
+   * A function that only takes its shape once the parameter is a number cannot be split by how it
+   * is written: {@code {g(t), h(t), k(t)}} looks like one curve's three components. It is split by
+   * the depth of its value instead.
+   */
+  @Test
+  public void numericOnlyFunctionsAreSplitByTheirValues() {
+    evaluator.eval("ClearAll(g,h,k,m,q);g(u_?NumericQ) := {u, Sin(u), 1};"
+        + "h(u_?NumericQ) := {u, 0, Cos(u)};k(u_?NumericQ) := {0, u, u};"
+        + "m(u_?NumericQ) := {{u, u, 0}, {0, u, u}};"
+        + "q(u_?NumericQ, v_?NumericQ) := {{u, v, 0}, {u, 0, v}}");
+    assertEquals(3,
+        lineCount(plot("ParametricPlot3D({g(t), h(t), k(t)}, {t, 0, 1})", S.Graphics3D)),
+        "three functions that each give a point are three curves");
+    assertEquals(1, lineCount(plot("ParametricPlot3D(g(t), {t, 0, 1})", S.Graphics3D)),
+        "one function that gives a point is one curve");
+    assertEquals(2, lineCount(plot("ParametricPlot3D(m(t), {t, 0, 1})", S.Graphics3D)),
+        "one function that gives two points is two curves");
+    IAST surfaces =
+        plot("ParametricPlot3D(q(u, v), {u, 0, 1}, {v, 0, 1}, PlotPoints -> 4)", S.Graphics3D);
+    assertEquals(2, surfaces.toString().split("GraphicsComplex\\(", -1).length - 1);
+    // a component undefined at one end of the range is still one curve
+    assertEquals(1, lineCount(plot("ParametricPlot3D({Log(t), t, t}, {t, 0, 1})", S.Graphics3D)));
+  }
+
   @Test
   public void nestedSurfaceIsDrawn() {
     plot("ParametricPlot3D({{{Cos(u), Sin(u), v}}}, {u, 0, 2 Pi}, {v, 0, 1})", S.Graphics3D);
