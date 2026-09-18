@@ -122,7 +122,80 @@ public class ArrayPlotColorScaleTest {
         "the rule paints the 1, the scale still paints the 2");
   }
 
+  /**
+   * A value which is not a real still names a rule: the cell holds {@code I}, and the rule written
+   * {@code I -> Red} is the one that matches it.
+   *
+   * <p>
+   * This is the case Woxi 49410d8a fixes for itself - there both sides of the comparison went
+   * through a machine double first, so {@code I} and {@code -I} collapsed to zero and took the
+   * colour written for {@code 0}.
+   */
+  @Test
+  public void testColorRulesMatchNonRealValues() {
+    IExpr plot = evaluator
+        .eval("ArrayPlot({{0, -I}, {I, 0}}, ColorRules->{0->White, I->Red, -I->Green})");
+    assertEquals("[[[1,1,1], [0,1,0]], [[1,0,0], [1,1,1]]]", cells(plot),
+        "white where the zeros are, red for I and green for -I");
+  }
+
+  /** A pattern on the left of a rule paints every cell it matches; the rest keep the scale. */
+  @Test
+  public void testColorRulesMatchAPattern() {
+    IExpr plot = evaluator.eval("ArrayPlot({{1, -1, 2}}, ColorRules->{_?Positive->Red})");
+    assertEquals("[[[1,0,0], [1,1,1], [1,0,0]]]", cells(plot),
+        "both positives are red, -1 is clipped to white by the grey scale");
+  }
+
+  /** The first rule written wins, as it does under {@code Replace}. */
+  @Test
+  public void testTheFirstMatchingRuleWins() {
+    IExpr plot = evaluator.eval("ArrayPlot({{1}}, ColorRules->{_Integer->Red, 1->Blue})");
+    assertEquals("[[[1,0,0]]]", cells(plot));
+  }
+
+  /** A delayed rule computes the colour from the value it matched. */
+  @Test
+  public void testColorRulesEvaluateADelayedRightHandSide() {
+    IExpr plot = evaluator.eval("ArrayPlot({{0.25, 0.75}}, ColorRules->{x_ :> GrayLevel(x)})");
+    assertEquals("[[[0.25,0.25,0.25], [0.75,0.75,0.75]]]", cells(plot));
+  }
+
+  /** {@code MatrixPlot} shares the rule table, so a pattern reaches its cells as well. */
+  @Test
+  public void testMatrixPlotMatchesAPattern() {
+    IExpr plot = evaluator.eval("MatrixPlot({{1, -1}}, ColorRules->{_?Positive->Red})");
+    assertTrue(cells(plot).startsWith("[[[1,0,0], "), "the positive cell is red, got " + cells(plot));
+  }
+
   // ------------------------------------------------------------------ helpers
+
+  /**
+   * The raster's cells as {@code [[[r,g,b], ...], ...]}, rows top first.
+   *
+   * <p>
+   * {@code rasterTopFirst} writes the rows bottom first, which is the order a {@code Raster} is
+   * drawn in, so they are turned back here to read in the order the array was written.
+   */
+  private static String cells(IExpr plot) {
+    IAST raster = (IAST) ((IAST) ((IAST) plot).arg1()).arg1();
+    IAST data = (IAST) raster.arg1();
+    StringBuilder buf = new StringBuilder("[");
+    for (int r = data.argSize(); r >= 1; r--) {
+      buf.append(r == data.argSize() ? "[" : ", [");
+      IAST row = (IAST) data.get(r);
+      for (int c = 1; c < row.size(); c++) {
+        IAST cell = (IAST) row.get(c);
+        buf.append(c == 1 ? "[" : ", [");
+        for (int i = 1; i < cell.size(); i++) {
+          buf.append(i == 1 ? "" : ",").append(component(cell.get(i).evalDouble()));
+        }
+        buf.append("]");
+      }
+      buf.append("]");
+    }
+    return buf.append("]").toString();
+  }
 
   private static void assertGreys(String input, double... expected) {
     TreeSet<Double> want = new TreeSet<>();
@@ -145,6 +218,13 @@ public class ArrayPlotColorScaleTest {
       }
     }
     return levels;
+  }
+
+  /** One colour component, with the whole ones written short so the expectations stay readable. */
+  private static String component(double value) {
+    double rounded = round(value);
+    return rounded == Math.rint(rounded) ? Integer.toString((int) rounded)
+        : Double.toString(rounded);
   }
 
   /** A third of the scale is not exact in binary, so the comparison is to six places. */

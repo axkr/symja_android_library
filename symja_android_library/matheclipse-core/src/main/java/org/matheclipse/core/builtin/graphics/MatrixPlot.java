@@ -156,6 +156,8 @@ public class MatrixPlot extends ListPlot {
         .of(PlotColorFunction.Family.ARRAY, colorFunctionOpt, F.bool(scaling), S.MatrixPlot, engine)
         .range(1, minValue(data), maxValue(data)).sink(PlotColorFunction.Sink.FLAT)
         .fallback(GraphicsOptions::getMatrixColor).build();
+    // compiled once for the whole matrix: the rules are matched like Replace, once per cell
+    GraphicsOptions.ColorRuleTable colorRules = GraphicsOptions.colorRules(colorRulesOpt, engine);
     IExpr[][] cells = new IExpr[rows][cols];
     for (int r = 0; r < rows; r++) {
       for (int c = 0; c < cols; c++) {
@@ -164,7 +166,8 @@ public class MatrixPlot extends ListPlot {
           continue;
         }
         // an explicit rule for this value wins, then ColorFunction, then the matrix colour map
-        IExpr ruleColor = GraphicsOptions.colorRule(colorRulesOpt, list.getAt(r + 1).getAt(c + 1));
+        IExpr ruleColor =
+            colorRules == null ? null : colorRules.color(list.getAt(r + 1).getAt(c + 1));
         if (ruleColor != null) {
           cells[r][c] = ruleColor;
         } else if (colorMap != null) {

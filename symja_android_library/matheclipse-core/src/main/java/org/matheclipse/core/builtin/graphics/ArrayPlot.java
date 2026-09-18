@@ -172,6 +172,8 @@ public class ArrayPlot extends ListPlot {
         .of(PlotColorFunction.Family.ARRAY, colorFunctionOpt, F.bool(scaling), S.ArrayPlot, engine)
         .range(1, min, max).sink(PlotColorFunction.Sink.FLAT)
         .fallback(t -> greyColor(t, greyLimit, scaling)).build();
+    // compiled once for the whole array: the rules are matched like Replace, once per cell
+    GraphicsOptions.ColorRuleTable colorRules = GraphicsOptions.colorRules(colorRulesOpt, engine);
     IExpr[][] cells = new IExpr[rows][cols];
 
     // Draw cells
@@ -204,7 +206,7 @@ public class ArrayPlot extends ListPlot {
         }
 
         // an explicit rule for this value takes precedence over the colour scale
-        IExpr ruleColor = GraphicsOptions.colorRule(colorRulesOpt, list.getAt(r + 1).getAt(c + 1));
+        IExpr ruleColor = colorRules == null ? null : colorRules.color(val);
         if (ruleColor != null) {
           color = ruleColor;
         }

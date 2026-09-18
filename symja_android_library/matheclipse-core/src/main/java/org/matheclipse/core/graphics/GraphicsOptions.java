@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IASTDataset;
@@ -622,45 +623,114 @@ public class GraphicsOptions {
   }
 
   /**
-   * Resolve a {@code ColorRules} option, which maps particular data values to particular colours.
+   * A {@code ColorRules} option compiled once, ready to be asked for the colour of each cell.
    *
-   * @param spec a list of {@code value -> colour} rules, or anything else for no mapping
-   * @return the colour for an exact value match, or {@code null}
+   * <p>
+   * The rules are applied with the semantics of {@code Replace}: each cell value is matched against
+   * the whole left hand side, patterns and all, and the first rule in the order written wins. So
+   * <code>ColorRules -&gt; {_?Positive -&gt; Red}</code> paints every positive cell, and
+   * <code>{x_ :&gt; GrayLevel[x]}</code> computes a colour from the value. Matching is structural,
+   * not numeric: <code>1 -&gt; Red</code> names the integer 1 and not a cell holding
+   * <code>1.0</code>, exactly as <code>1.0 /. 1 -&gt; Red</code> leaves the real alone.
+   *
+   * <p>
+   * The matchers are built once for the whole array because a plot asks for one colour per cell.
+   * One functor per rule rather than one for the rule list: {@link Functors#rules(IExpr, EvalEngine)}
+   * given a list consults its equality map ahead of its matchers, which would let a literal rule
+   * shadow a pattern rule written before it, and {@code Replace} itself compiles them one by one.
    */
-  public static IExpr colorRule(IExpr spec, IExpr value) {
-    if (spec == null || !spec.isList()) {
-      return null;
-    }
-    IAST rules = (IAST) spec;
-    for (int i = 1; i < rules.size(); i++) {
-      IExpr rule = rules.get(i);
-      if (rule.isRuleAST() && sameValue(rule.first(), value)) {
-        IExpr color = ((IAST) rule).second();
-        if (isColorExpr(color)) {
-          return color;
+  public static final class ColorRuleTable {
+
+    private final Function<IExpr, IExpr>[] matchers;
+    /** The colour of a rule that needs no substitution, so it is resolved once rather than per cell. */
+    private final IExpr[] constantColors;
+    private final EvalEngine engine;
+    private final java.util.Map<IExpr, IExpr> resolved = new java.util.HashMap<>();
+
+    @SuppressWarnings("unchecked")
+    private ColorRuleTable(IAST rules, EvalEngine engine) {
+      this.engine = engine;
+      this.matchers = new Function[rules.argSize()];
+      this.constantColors = new IExpr[rules.argSize()];
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr rule = rules.get(i);
+        if (!rule.isRuleAST()) {
+          continue;
+        }
+        matchers[i - 1] = Functors.rules((IAST) rule, engine);
+        if (rule.isRule() && rule.first().isFreeOfPatterns()) {
+          IExpr color = ((IAST) rule).second();
+          constantColors[i - 1] = isColorExpr(color) ? color : F.NIL;
         }
       }
     }
-    return null;
+
+    /**
+     * The colour this value is named by, or {@code null} for no rule - in which case the caller
+     * paints the cell with whichever colour scale is in force. A rule whose right hand side is not
+     * something a renderer can draw counts as no rule.
+     */
+    public IExpr color(IExpr value) {
+      if (value == null || !value.isPresent()) {
+        // a cell a ragged row never set is not a value, and a bare pattern must not paint it
+        return null;
+      }
+      IExpr cached = resolved.get(value);
+      if (cached != null) {
+        return cached.isPresent() ? cached : null;
+      }
+      IExpr color = match(value);
+      resolved.put(value, color == null ? F.NIL : color);
+      return color;
+    }
+
+    private IExpr match(IExpr value) {
+      for (int i = 0; i < matchers.length; i++) {
+        if (matchers[i] == null) {
+          continue;
+        }
+        IExpr replaced = matchers[i].apply(value);
+        if (!replaced.isPresent()) {
+          continue;
+        }
+        IExpr constant = constantColors[i];
+        if (constant != null) {
+          return constant.isPresent() ? constant : null;
+        }
+        if (isColorExpr(replaced)) {
+          // a colour the rule named outright stays as written, so that a pattern rule and a
+          // literal one both leave Red as Red rather than one of them as RGBColor[1, 0, 0]
+          return replaced;
+        }
+        // the functor substitutes but does not evaluate, so GrayLevel[x] with x bound to 0.25 is
+        // still an unevaluated head until this runs
+        IExpr color = engine.evaluate(replaced);
+        return isColorExpr(color) ? color : null;
+      }
+      return null;
+    }
   }
 
   /**
-   * Whether a {@code ColorRules} left hand side names this value.
+   * Compile a {@code ColorRules} option, which maps particular data values to particular colours.
    *
-   * <p>
-   * Structural equality alone would miss {@code 1 -> Red} against a cell holding {@code 1.0}, and
-   * a rule written as an integer against data read as reals is the usual way to write one.
+   * @param spec a list of {@code value -> colour} rules, or anything else for no mapping
+   * @return a table to ask for each cell's colour, or {@code null} when there is no mapping
    */
-  private static boolean sameValue(IExpr ruleValue, IExpr value) {
-    if (ruleValue.equals(value)) {
-      return true;
+  public static ColorRuleTable colorRules(IExpr spec, EvalEngine engine) {
+    if (spec == null || !spec.isList() || ((IAST) spec).argSize() == 0) {
+      return null;
     }
-    if (ruleValue.isNumber() && value.isNumber()) {
-      double a = ruleValue.evalfNaN();
-      double b = value.evalfNaN();
-      return a == b;
-    }
-    return false;
+    return new ColorRuleTable((IAST) spec, engine);
+  }
+
+  /**
+   * The colour a {@code ColorRules} option gives one value, for a caller with a single value to
+   * resolve. A plot compiles the rules once with {@link #colorRules(IExpr, EvalEngine)} instead.
+   */
+  public static IExpr colorRule(IExpr spec, IExpr value, EvalEngine engine) {
+    ColorRuleTable table = colorRules(spec, engine);
+    return table == null ? null : table.color(value);
   }
 
   protected static void addPadding(double[] boundingbox) {

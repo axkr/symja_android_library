@@ -3,6 +3,7 @@ package org.matheclipse.core.graphics;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.Color;
 import java.util.Locale;
@@ -193,14 +194,47 @@ public class ColorDirectiveTest {
 
   // ------------------------------------------------------------- ColorRules
 
-  /** A rule written with an integer has to match data that came back as a real. */
+  /**
+   * A rule names a value the way {@code Replace} names one, so an integer rule does not reach a
+   * real: {@code 1.0 /. 1 -> Red} leaves the real alone, and so does the option.
+   */
   @Test
-  public void testColorRulesMatchAcrossNumberTypes() {
+  public void testColorRulesUseReplaceSemantics() {
+    EvalEngine engine = EvalEngine.get();
     IAST rules = (IAST) eval("{1 -> Red, 2 -> Blue}");
-    assertNotNull(GraphicsOptions.colorRule(rules, F.C1), "1 should match the rule for 1");
-    assertNotNull(GraphicsOptions.colorRule(rules, F.num(1.0)),
-        "1.0 should match the rule written as 1");
-    assertNotNull(GraphicsOptions.colorRule(rules, F.num(2.0)));
-    org.junit.jupiter.api.Assertions.assertNull(GraphicsOptions.colorRule(rules, F.num(3.0)));
+    assertNotNull(GraphicsOptions.colorRule(rules, F.C1, engine), "1 matches the rule for 1");
+    assertNull(GraphicsOptions.colorRule(rules, F.num(1.0), engine),
+        "1.0 is not the integer the rule names");
+    assertNotNull(GraphicsOptions.colorRule((IAST) eval("{1.0 -> Red}"), F.num(1.0), engine),
+        "a rule written as a real matches a real");
+    assertNull(GraphicsOptions.colorRule(rules, F.C3, engine));
+  }
+
+  /** A pattern on the left names every value it matches, and the first rule written wins. */
+  @Test
+  public void testColorRulesMatchPatterns() {
+    EvalEngine engine = EvalEngine.get();
+    // eval resolves a named colour to its RGBColor, so the expectations are written the same way
+    IAST rules = (IAST) eval("{_?Positive -> Red, _Integer -> Blue}");
+    assertEquals(eval("Red"), GraphicsOptions.colorRule(rules, F.C1, engine));
+    assertEquals(eval("Blue"), GraphicsOptions.colorRule(rules, F.CN2, engine));
+    assertNull(GraphicsOptions.colorRule(rules, F.num(-0.5), engine));
+  }
+
+  /** A delayed rule computes its colour from the value it matched. */
+  @Test
+  public void testColorRulesEvaluateADelayedRightHandSide() {
+    EvalEngine engine = EvalEngine.get();
+    IAST rules = (IAST) eval("{x_ :> GrayLevel(x)}");
+    IExpr color = GraphicsOptions.colorRule(rules, F.num(0.25), engine);
+    assertNotNull(color);
+    assertEquals("GrayLevel(0.25)", color.toString());
+  }
+
+  /** A right hand side a renderer cannot draw is no rule at all - the colour scale still paints. */
+  @Test
+  public void testColorRulesIgnoreARightHandSideWhichIsNoColour() {
+    EvalEngine engine = EvalEngine.get();
+    assertNull(GraphicsOptions.colorRule((IAST) eval("{1 -> \"red\"}"), F.C1, engine));
   }
 }

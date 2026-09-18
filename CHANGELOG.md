@@ -4,6 +4,18 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `ColorRules` in `ArrayPlot` and `MatrixPlot` matches a cell the way `Replace` does, instead of by
+  a hand-written scan over structural equality. A pattern on the left of a rule now names every
+  value it matches - `ColorRules -> {_?Positive -> Red}` used to paint nothing at all, because the
+  pattern was compared to each cell as if it were a value - and a `RuleDelayed` such as
+  `{x_ :> GrayLevel(x)}` computes its colour from the value it matched, where its right hand side
+  used to be taken literally with nothing substituted. The first rule written wins, as under
+  `Replace`. This drops the one place the old scan was more forgiving than the Wolfram Language: a
+  rule written `1 -> Red` no longer reaches a cell holding `1.0`, just as `1.0 /. 1 -> Red` leaves
+  the real alone. Noticed while checking ad-si/Woxi@49410d8 against Symja - the defect fixed there,
+  non-real values collapsing through a machine double and taking the colour written for `0`, never
+  applied here, because the double conversion was only a fallback behind structural equality.
+
 - A `Compile`d function's list result is a packed tensor, as in the Wolfram Language: its elements
   are unified to the widest numeric type among them, so `Compile({{x, _Real}}, {x, 1})[2.5]` is
   `{2.5, 1.}` and `Clip` of a real argument is real, while an all-integer tensor and an
