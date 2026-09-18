@@ -146,39 +146,34 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
    * How the argument is written cannot tell {@code {g(t), h(t), k(t)}} - three curves, when each
    * of {@code g, h, k} gives a point once {@code t} is a number - from {@code {Cos(t), Sin(t), t}},
    * one curve. Only a value can, so each function is evaluated at one parameter value and read by
-   * the depth of what comes back: a point is one curve, a list of points one curve per point.
+   * the depth of what comes back: a point is one curve, and a list is one curve per point it
+   * holds at any depth, so {@code {p(t), m(t)}} with {@code m} giving two points is three curves.
    */
   private static List<IExpr> splitByEvaluatedShape(List<IExpr> functions, IAST[] ranges,
       EvalEngine engine) {
     List<IExpr> result = new ArrayList<>(functions.size());
     for (IExpr function : functions) {
       // a wrapped function keeps its wrapper whole; its label belongs to all of it
-      int count = PlotWrapper.isWrapper(function) ? 1 : curveCount(function, ranges, engine);
-      if (count <= 1) {
+      if (PlotWrapper.isWrapper(function) || !splitByProbe(function, ranges, engine, result)) {
         result.add(function);
-      } else if (function.isList() && ((IAST) function).argSize() == count) {
-        // {g(t), h(t), k(t)}: the items are the curves, each evaluated on its own
-        for (IExpr item : (IAST) function) {
-          result.add(item);
-        }
-      } else {
-        for (int j = 1; j <= count; j++) {
-          result.add(F.Part(function, F.ZZ(j)));
-        }
       }
     }
     return result;
   }
 
-  /** How many curves {@code function} evaluates to, 1 when no probe says otherwise. */
-  private static int curveCount(IExpr function, IAST[] ranges, EvalEngine engine) {
+  /**
+   * Append the curves {@code function} evaluates to, and return whether any probe told them apart;
+   * on {@code false} nothing was appended and the function stays as it was written.
+   */
+  private static boolean splitByProbe(IExpr function, IAST[] ranges, EvalEngine engine,
+      List<IExpr> out) {
     for (double fraction : PROBE_FRACTIONS) {
       IASTAppendable rules = F.ListAlloc(ranges.length);
       for (IAST range : ranges) {
         double min = range.arg2().evalfNaN();
         double max = range.arg3().evalfNaN();
         if (!Double.isFinite(min) || !Double.isFinite(max)) {
-          return 1;
+          return false;
         }
         rules.append(F.Rule(range.arg1(), F.num(min + fraction * (max - min))));
       }
@@ -189,15 +184,42 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         Errors.rethrowsInterruptException(rex);
         continue;
       }
-      if (isPoint(value)) {
-        return 1;
-      }
-      if (value.isList() && ((IAST) value).argSize() > 1
-          && ((IAST) value).forAll(ParametricPlot3D::isPoint)) {
-        return ((IAST) value).argSize();
+      List<IExpr> curves = new ArrayList<>();
+      if (curvesOfValue(function, value, curves)) {
+        out.addAll(curves);
+        return true;
       }
     }
-    return 1;
+    return false;
+  }
+
+  /**
+   * Read the curves {@code expr} stands for off its sampled {@code value}.
+   *
+   * <p>
+   * Each level of the value is matched by an item of {@code expr} where {@code expr} is itself a
+   * list of the same length, so {@code {g(t), m(t)}} keeps {@code g(t)} as written and evaluates
+   * only it for its curve; where it is not, the level is reached with {@code Part}.
+   *
+   * @return {@code false} when some part of the value is neither a point nor a list of them
+   */
+  private static boolean curvesOfValue(IExpr expr, IExpr value, List<IExpr> out) {
+    if (isPoint(value)) {
+      out.add(expr);
+      return true;
+    }
+    if (!value.isList() || ((IAST) value).argSize() == 0) {
+      return false;
+    }
+    IAST values = (IAST) value;
+    boolean itemwise = expr.isList() && ((IAST) expr).argSize() == values.argSize();
+    for (int j = 1; j <= values.argSize(); j++) {
+      IExpr part = itemwise ? ((IAST) expr).get(j) : F.Part(expr, F.ZZ(j));
+      if (!curvesOfValue(part, values.get(j), out)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** Whether {@code value} is what {@link #evaluatePoint} accepts as a point. */

@@ -153,6 +153,18 @@ public class ParametricCurveListTest {
     assertEquals(1, lineCount(plot("ParametricPlot3D({Log(t), t, t}, {t, 0, 1})", S.Graphics3D)));
   }
 
+  /** Functions giving a point and functions giving several points can share one list. */
+  @Test
+  public void mixedPointAndPointListFunctionsAreSplitItemByItem() {
+    evaluator.eval("ClearAll(m,w);m(u_?NumericQ) := {{u, u, 0}, {0, u, u}};"
+        + "w(u_?NumericQ) := {Cos(u), Sin(u), u}");
+    assertEquals(3, lineCount(plot("ParametricPlot3D({w(t), m(t)}, {t, 0, 1})", S.Graphics3D)));
+    assertEquals(3, lineCount(plot("ParametricPlot3D({m(t), w(t)}, {t, 0, 1})", S.Graphics3D)));
+    assertEquals(4, lineCount(
+        plot("ParametricPlot3D({w(t), {t, t, t}, m(t)}, {t, 0, 1})", S.Graphics3D)),
+        "a literal curve among them stays one curve");
+  }
+
   @Test
   public void nestedSurfaceIsDrawn() {
     plot("ParametricPlot3D({{{Cos(u), Sin(u), v}}}, {u, 0, 2 Pi}, {v, 0, 1})", S.Graphics3D);
