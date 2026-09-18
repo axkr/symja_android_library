@@ -16,6 +16,7 @@ import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
 import edu.jas.arith.ModLongRing;
 import edu.jas.arith.Modular;
+import edu.jas.kern.PreemptingException;
 import edu.jas.arith.ModularRingFactory;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
@@ -38,6 +39,22 @@ public class HenselUtil {
 
 
     private static final boolean debug = logger.isDebugEnabled();
+
+
+    /**
+     * Cooperative cancellation checkpoint for the lifting loops below.
+     * <p>
+     * Preemption through the polynomial constructors is switched off, so without this a lift
+     * ignores an interrupt entirely: factoring a multivariate polynomial over the Gaussian
+     * rationals can spend minutes here, long after a time limit on the caller has expired. As in
+     * {@link GreatestCommonDivisorAbstract#checkInterrupted()}, the interrupt flag is left set.
+     * @throws PreemptingException if the current thread has been interrupted.
+     */
+    static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new PreemptingException("Hensel lifting interrupted");
+        }
+    }
 
 
     /**
@@ -1052,6 +1069,7 @@ public class HenselUtil {
         BigInteger modul = p;
         GenPolynomialRing<MOD> mfac; // = new GenPolynomialRing<MOD>(mcfac, fac);
         for (int i = 1; i < k; i++) {
+            checkInterrupted();
             // e = 1 - s a - t b in Z[x]
             GenPolynomial<BigInteger> e = one.subtract(Si.multiply(Ai)).subtract(Ti.multiply(Bi));
             //System.out.println("\ne = " + e);
@@ -1216,6 +1234,7 @@ public class HenselUtil {
         }
         GenPolynomialRing<BigInteger> ifac = new GenPolynomialRing<BigInteger>(new BigInteger(), fac);
         for (Monomial<MOD> m : C) {
+            checkInterrupted();
             //System.out.println("monomial = " + m);
             long e = m.e.getVal(0);
             List<GenPolynomial<MOD>> S = liftDiophant(A, B, e, k);
@@ -1277,6 +1296,7 @@ public class HenselUtil {
         }
         GenPolynomialRing<BigInteger> ifac = new GenPolynomialRing<BigInteger>(new BigInteger(), fac);
         for (Monomial<MOD> m : C) {
+            checkInterrupted();
             //System.out.println("monomial = " + m);
             long e = m.e.getVal(0);
             List<GenPolynomial<MOD>> S = liftDiophant(A, e, k);
@@ -1618,6 +1638,7 @@ public class HenselUtil {
         List<GenPolynomial<MOD>> Sp = PolyUtil.fromIntegerCoefficients(mfac, Si);
         //System.out.println("Sp = " + Sp);
         for (int i = 1; i < k; i++) {
+            checkInterrupted();
             //System.out.println("i = " + i);
             GenPolynomial<BigInteger> e = fac.getONE();
             for (GenPolynomial<BigInteger> fi : Fi) {
@@ -1784,6 +1805,7 @@ public class HenselUtil {
         List<GenPolynomial<MOD>> Sp = PolyUtil.fromIntegerCoefficients(mfac, Si);
         //System.out.println("Sp = " + Sp);
         for (int i = 1; i < k; i++) {
+            checkInterrupted();
             //System.out.println("i = " + i);
             GenPolynomial<BigInteger> e = fac.getONE();
             for (GenPolynomial<BigInteger> fi : Fi) {
