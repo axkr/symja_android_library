@@ -8744,6 +8744,16 @@ public class S {
       S.initFinalSymbol("FromCharacterCode", ID.FromCharacterCode);
 
   /**
+   * FromCoefficientRules(x) - TODO describe `FromCoefficientRules`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromCoefficientRules.md">FromCoefficientRules
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FromCoefficientRules =
+      S.initFinalSymbol("FromCoefficientRules", ID.FromCoefficientRules);
+
+  /**
    * FromContinuedFraction({n1, n2, ...}) - reconstructs a number from the list of its continued
    * fraction terms `{n1, n2, ...}`.
    * 
@@ -17475,6 +17485,15 @@ public class S {
    */
   public final static IBuiltInSymbol PlanarGraphQ =
       S.initFinalSymbol("PlanarGraphQ", ID.PlanarGraphQ);
+
+  /**
+   * PlanetData(x) - TODO describe `PlanetData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlanetData.md">PlanetData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PlanetData = S.initFinalSymbol("PlanetData", ID.PlanetData);
 
   /**
    * Plot(function, {x, xMin, xMax}, PlotRange->{yMin,yMax}) - generate a JavaScript control for the
