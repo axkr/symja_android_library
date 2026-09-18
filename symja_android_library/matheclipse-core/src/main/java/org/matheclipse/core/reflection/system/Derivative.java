@@ -93,6 +93,10 @@ public class Derivative extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    if (isDiracDeltaDerivativeAwayFromZero(ast)) {
+      // like DiracDelta(x) itself, every derivative of it vanishes where x is a nonzero real
+      return F.C0;
+    }
     IAST[] derivativeAST = ast.isDerivative();
     if (derivativeAST != null) {
       IAST derivativeHead = derivativeAST[0];
@@ -176,6 +180,26 @@ public class Derivative extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Whether <code>ast</code> is <code>Derivative(n1, n2, ...)[DiracDelta][x1, x2, ...]</code> with
+   * non-negative integer orders and one of the <code>xi</code> a nonzero real: the residual of a
+   * step-forced equation, differentiated twice, holds <code>DiracDelta'(7/10 - Pi)</code>.
+   */
+  private static boolean isDiracDeltaDerivativeAwayFromZero(IAST ast) {
+    IExpr head = ast.head();
+    if (ast.argSize() < 1 || !head.isAST1() || head.first() != S.DiracDelta
+        || !head.head().isAST(S.Derivative) || ((IAST) head.head()).argSize() != ast.argSize()) {
+      return false;
+    }
+    IAST orders = (IAST) head.head();
+    for (int i = 1; i <= orders.argSize(); i++) {
+      if (!orders.get(i).isInteger() || orders.get(i).isNegative()) {
+        return false;
+      }
+    }
+    return ast.exists(x -> x.isNonZeroRealResult());
   }
 
   /**

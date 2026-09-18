@@ -6252,6 +6252,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDiracDelta() {
+    // a derivative of DiracDelta vanishes away from zero, as DiracDelta does
+    check("DiracDelta'(1)", //
+        "0");
+    check("DiracDelta''(7/10-Pi)", //
+        "0");
+    check("Derivative(1,0)[DiracDelta][2,y]", //
+        "0");
+    check("DiracDelta'(0)", //
+        "DiracDelta'(0)");
+    check("DiracDelta'(x)", //
+        "DiracDelta'(x)");
 
     // DiracDelta(c) == 0 for all non-zero reals. DiracDelta(0) remains unevaluated.
     check("DiracDelta(5)", //
