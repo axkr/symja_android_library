@@ -53,6 +53,19 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveLogarithmsDoNotRestateTheEquation() {
+    // Taking logarithms of 1 + E^(1/v)*v == E^c gives an equation which exponentiates back to
+    // E^c - E^(1/v)*v == 1, whose logarithms are the equation again: StackOverflowError.
+    check("Solve(Log(1+E^(1/v)*v)==c, v)", //
+        "Solve(Log(1+E^(1/v)*v)==c,v)");
+    // one round of it is still what answers these
+    check("Solve(Log(1+E^(1/v)*v)==C-Log(x), v)", //
+        "{{v->-1/ProductLog(-1/(-1+E^C/x))}}");
+    check("Solve(E^(1/v)*v==c, v)", //
+        "{{v->-1/ProductLog(-1/c)}}");
+  }
+
+  @Test
   public void testSolveModulus() {
     // 3^2 == 4^2 == 2 modulo 7
     check("Solve({x^2 == 2, y == x}, {x, y}, Modulus -> 7)", //

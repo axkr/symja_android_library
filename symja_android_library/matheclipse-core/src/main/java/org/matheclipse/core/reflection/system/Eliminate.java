@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
@@ -929,6 +931,10 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param engine
    * @return
    */
+  /** The equations {@link #tryPowerExpand} is solving on this thread. */
+  private static final ThreadLocal<Set<IExpr>> POWER_EXPAND_IN_PROGRESS =
+      ThreadLocal.withInitial(HashSet::new);
+
   private static IExpr tryPowerExpand(IAST plusAST, IExpr exprWithoutVariable, IExpr variable,
       boolean multipleValues, EvalEngine engine) {
     if (plusAST.argSize() == 2) {
@@ -949,10 +955,23 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           powerExpandRHS = F.Log(rhs);
         }
         IExpr termsEqualZero = engine.evaluate(F.Subtract(powerExpandLHS, powerExpandRHS));
-        IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
-        Solve.SolveData solveData = new Solve.SolveData();
-        IExpr result =
-            solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+        // Taking logarithms can restate an equation which is already being solved further up:
+        // 1 + E^(1/v)*v == E^c becomes -Log(E^c - E^(1/v)*v) == 0, which exponentiates back to
+        // E^c - E^(1/v)*v == 1, whose logarithms are c - Log(1 + E^(1/v)*v) == 0 again, and the
+        // two handed each other back until the stack overflowed.
+        Set<IExpr> inProgress = POWER_EXPAND_IN_PROGRESS.get();
+        if (!inProgress.add(termsEqualZero)) {
+          return F.NIL;
+        }
+        IExpr result;
+        try {
+          IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
+          Solve.SolveData solveData = new Solve.SolveData();
+          result =
+              solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+        } finally {
+          inProgress.remove(termsEqualZero);
+        }
         if (result.isListOfLists()) {
           // Inverse functions are being used. Values may be lost for multivalued inverses.
           if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
