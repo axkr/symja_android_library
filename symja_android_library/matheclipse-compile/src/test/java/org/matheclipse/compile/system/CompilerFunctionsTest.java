@@ -1501,6 +1501,17 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       check("p(5.)", //
           "0");
 
+      // a list at a scalar position is CompiledFunction::cfsa, not the generic numerical error -
+      // Wolfram Language ground truth
+      check("sq = Compile({{x, _Real}}, x^2);", //
+          "");
+      check("sq({1., 2.})", //
+          "{1.0,4.0}");
+      String messages = messagesOf("sq({1., 2.})");
+      assertTrue(messages.contains("CompiledFunction: Argument {1.0,2.0} at position 1 should be a"
+          + " machine-size real number."), messages);
+      assertTrue(!messages.contains("Numerical error"), messages);
+
       check("pq = Compile({{v, _Real, 1}}, Length(v),"
           + " RuntimeOptions -> {\"EvaluateSymbolically\" -> False});", //
           "");
