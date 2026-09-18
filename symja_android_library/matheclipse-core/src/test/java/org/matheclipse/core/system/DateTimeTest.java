@@ -192,6 +192,25 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     check("DatePlus({2010, 2, 5}, 73)", "{2010,4,19}");
   }
 
+  /**
+   * A fractional number of a calendar unit is that fraction of the unit it falls in, and lands at a
+   * time of day rather than being truncated to whole years or months.
+   */
+  @Test
+  public void testDatePlusFractionalCalendarUnit() {
+    // 2020 is a leap year, so half of it is 183 whole days: 1 January + 183 days is 2 July, and
+    // the answer is a day list because there is no time of day to carry. Measured in Mathematica
+    // 2026-09-18, which gives {2020, 7, 2} for this.
+    check("DatePlus({2020}, {0.5, \"Year\"})", "{2020,7,2}");
+    // half of the 365 days of 2021 is 182.5 days, which does land at noon
+    check("DatePlus({2021}, {0.5, \"Year\"})", "{2021,7,2,12,0,0.0}");
+    check("DatePlus({2020, 1, 1}, {1.5, \"Month\"})", "{2020,2,15,12,0,0.0}");
+    check("DatePlus({2020, 1, 1}, {-0.5, \"Year\"})", "{2019,7,2,12,0,0.0}");
+    // a whole count still moves by whole calendar units, keeping the day of the month
+    check("DatePlus({2020, 1, 31}, {1.0, \"Month\"})", "{2020,2,29}");
+    check("DatePlus({2020, 1, 1}, {1.0, \"Quarter\"})", "{2020,4,1}");
+  }
+
   @Test
   public void testDatePlus() {
     check("DatePlus({2010, 2, 5}, 73)", "{2010,4,19}");
