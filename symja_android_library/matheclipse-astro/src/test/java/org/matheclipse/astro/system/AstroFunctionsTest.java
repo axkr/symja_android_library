@@ -672,6 +672,54 @@ public class AstroFunctionsTest extends AbstractTestCase {
         "Quantity(1.00188*10^7,\"Meters\")");
   }
 
+  /**
+   * <code>AstronomicalData(n)</code> names the nth major body counting outwards from the Sun, and
+   * the name it gives feeds straight back in as the body of a position query - the two compose,
+   * which is how a notebook walks the planets.
+   */
+  @Test
+  public void testAstronomicalDataNames() {
+    check("AstronomicalData(1)", //
+        "Mercury");
+    check("AstronomicalData(3)", //
+        "Earth");
+    check("AstronomicalData(9)", //
+        "Pluto");
+    check("AstronomicalData(\"Mars\")", //
+        "Mars");
+    // out of the range of the classic nine, and an unknown body
+    check("AstronomicalData(10)", //
+        "AstronomicalData(10)");
+    check("AstronomicalData(\"Vulcan\", {\"Position\"})", //
+        "AstronomicalData(Vulcan,{Position})");
+    check("AstronomicalData(\"Mars\", {\"Mass\"})", //
+        "AstronomicalData(Mars,{Mass})");
+  }
+
+  /**
+   * The position is heliocentric and referred to the ecliptic of J2000, in meters. The Earth is at
+   * perihelion in early January, 1.471*10^11 meters from the Sun, and lies in the ecliptic plane -
+   * which is what tells this frame from the equatorial one, where its z would be 5.8*10^10.
+   */
+  @Test
+  public void testAstronomicalDataPosition() {
+    check("Round(Norm(AstronomicalData(\"Earth\","
+        + " {\"Position\", DateObject({2020,1,1})}))/10^9)", //
+        "147");
+    check("Abs(Last(AstronomicalData(\"Earth\","
+        + " {\"Position\", DateObject({2020,1,1})}))) < 10^10", //
+        "True");
+    check("AstronomicalData(\"Sun\", {\"Position\", DateObject({2020,1,1})})", //
+        "{0.0,0.0,0.0}");
+    // every date puts Mars between its perihelion and its aphelion, 1.381 and 1.666 au
+    check("Table(1.38 < Norm(AstronomicalData(\"Mars\", {\"Position\", DateObject({y,1,1})}))"
+        + "/1.495978707*^11 < 1.67, {y, 1995, 2145, 30})", //
+        "{True,True,True,True,True,True}");
+    // the date may be left out, and is then the current instant
+    check("Length(AstronomicalData(\"Jupiter\", \"Position\"))", //
+        "3");
+  }
+
   @Test
   public void testUnknownBody() {
     check("AstroDistance(\"Vulcan\", DateObject({2026,6,21}))", //
