@@ -4,6 +4,26 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A `Compile`d function's list result is a packed tensor, as in the Wolfram Language: its elements
+  are unified to the widest numeric type among them, so `Compile({{x, _Real}}, {x, 1})[2.5]` is
+  `{2.5, 1.}` and `Clip` of a real argument is real, while an all-integer tensor and an
+  integer-valued result such as `Length` stay exact. The Wolfram Language's own serialized
+  `CompiledFunction[version, types, ..., Function[...], ...]` - what a notebook saved with
+  `SaveDefinitions -> True` or the `InputForm` of a compiled function contains - can now be called:
+  it is applied through the uncompiled `Function` it embeds, with `_Real` arguments read as machine
+  numbers. Both gaps came from checking Woxi's `Compile` test history against Symja.
+
+- A `Compile`d function with `RuntimeAttributes -> {Listable}` threads over the dimensions of an
+  argument beyond the rank its argument template declares, one dimension at a time, as `Listable`
+  means in the Wolfram Language (the fix Woxi made in ad-si/Woxi#807). It used to leave threading to
+  the engine, which takes every list argument apart - so an array-typed argument was peeled down to
+  its scalars, and `Compile({{seg, _Real, 2}}, Length(seg), RuntimeAttributes -> {Listable})` failed
+  even when called with a single matrix. A batch of matrices now gives one result per matrix, a
+  deeper batch nests, and a kernel reapplied by `Nest` to its own growing result keeps working.
+  Separately, an array argument of the wrong rank is reported as `CompiledFunction::cfta` and takes
+  the uncompiled fallback: the vector and matrix conversions answer `null` for it, which used to
+  reach the compiled body as a `NullPointerException` or a silent `Null`.
+
 - `StruveH` and `StruveL` for a large argument, where the library routine's series in `z^2` needs a
   working precision that grows with it: `StruveH(-0.8+1.2*I, 10007)` took 396 seconds at 25 digits
   and now takes 103 ms, agreeing to every digit. Each is a Bessel function -- which the library has
