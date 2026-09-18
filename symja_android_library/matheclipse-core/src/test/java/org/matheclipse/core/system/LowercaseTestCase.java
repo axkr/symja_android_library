@@ -11471,6 +11471,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y}, CoefficientDomain -> "
         + "Polynomials(a)) == GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y})", //
         "True");
+    // a symbolic coefficient: the basis is computed over the rational function field in `a`
+    check("GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y})", //
+        "{18+4*a*x+27*y+45*y^2+2*a*y^2-3*a*y^3,-4-12*y-19*y^2-15*y^3+a*y^4}");
+    // and specializing the parameter reproduces the numeric basis
+    check("Sort(GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y}) /. a->7) === "
+        + "Sort(GroebnerBasis({7*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y}))", //
+        "True");
+    // several parameters, no denominators in the result
+    check("GroebnerBasis({a*x+b*y, x^2-y}, {x, y})", //
+        "{a*x+b*y,-a^2*y+b^2*y^2}");
     // non-polynomial generator passthrough
     check("GroebnerBasis({Sin(x),x*y-2*y, 2*y^2-x^2}, {y,x})", //
         "{-2*x^2+x^3,-2*y+x*y,-x^2+2*y^2,Sin(x)}");

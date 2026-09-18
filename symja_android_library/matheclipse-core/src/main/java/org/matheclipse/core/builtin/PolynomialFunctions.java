@@ -59,10 +59,14 @@ import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.gb.GroebnerBaseAbstract;
+import edu.jas.gb.GroebnerBaseSeq;
 import edu.jas.gb.EGroebnerBaseSeq;
+import edu.jas.ufd.QuotientRing;
+import edu.jas.ufd.Quotient;
 import edu.jas.gbufd.GroebnerBasePartial;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.OptimizedPolynomialList;
 import edu.jas.poly.OrderedPolynomialList;
@@ -1974,9 +1978,181 @@ public class PolynomialFunctions {
           return eliminationGroebnerBasis(polys, vars, elimVars, termOrder);
         }
 
+        IAST parameters = parametersOf(polys, vars);
+        if (parameters.argSize() > 0) {
+          IAST quotientBasis = quotientGroebnerBasis(polys, vars, parameters, termOrder, engine);
+          if (quotientBasis.isPresent()) {
+            return quotientBasis;
+          }
+        }
+
         return exprPolynomialGroebnerBasis(polys, vars, termOrder);
       }
       return F.NIL;
+    }
+
+    /** The symbols of the polynomials which are not variables, in order. */
+    private static IAST parametersOf(IAST listOfPolynomials, IAST listOfVariables) {
+      VariablesSet symbols = new VariablesSet(listOfPolynomials);
+      IAST all = symbols.getVarList();
+      IASTAppendable parameters = F.ListAlloc(all.argSize());
+      for (int i = 1; i <= all.argSize(); i++) {
+        if (listOfVariables.indexOf(all.get(i)) <= 0) {
+          parameters.append(all.get(i));
+        }
+      }
+      return parameters;
+    }
+
+    /**
+     * The Groebner basis of polynomials whose coefficients are rational functions of
+     * <code>parameters</code>, computed in the field those functions form, or {@link F#NIL} if
+     * they are not rational functions of them.
+     *
+     * <p>
+     * A parameter is not a number, and arithmetic on it as an expression does not always reach
+     * zero: <code>GroebnerBasis({a*x^2 + 5*x - 1, 2*x + 3*x*y + y^2}, {x, y})</code> answered
+     * <code>{1}</code>, the basis of the whole ring, because a coefficient which cancels only
+     * after the fractions are put over a common denominator was taken for a nonzero leading term.
+     * In <code>Q(a)[x, y]</code> the same computation is exact.
+     */
+    private static IAST quotientGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables,
+        IAST parameters, TermOrder termOrder, EvalEngine engine) {
+      try {
+        JASConvert<BigRational> parameterJAS =
+            new JASConvert<BigRational>(parameters, BigRational.ZERO);
+        GenPolynomialRing<BigRational> parameterRing = parameterJAS.expr2JAS(F.C1, false).ring;
+        QuotientRing<BigRational> quotientRing = new QuotientRing<BigRational>(parameterRing);
+        String[] variableNames = new String[listOfVariables.argSize()];
+        for (int i = 1; i <= listOfVariables.argSize(); i++) {
+          variableNames[i - 1] = listOfVariables.get(i).toString();
+        }
+        GenPolynomialRing<Quotient<BigRational>> ring = new GenPolynomialRing<Quotient<BigRational>>(
+            quotientRing, variableNames.length, termOrder, variableNames);
+        ExprPolynomialRing exprRing =
+            new ExprPolynomialRing(listOfVariables, new ExprTermOrder(termOrder.getEvord()));
+
+        List<GenPolynomial<Quotient<BigRational>>> polyList =
+            new ArrayList<GenPolynomial<Quotient<BigRational>>>(listOfPolynomials.argSize());
+        for (int i = 1; i <= listOfPolynomials.argSize(); i++) {
+          IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
+          IAST rules = exprRing.create(expr, false, true, true).coefficientRules();
+          GenPolynomial<Quotient<BigRational>> poly = ring.getZERO();
+          for (int r = 1; r <= rules.argSize(); r++) {
+            IExpr rule = rules.get(r);
+            Quotient<BigRational> coefficient =
+                quotientOf(rule.second(), parameterJAS, quotientRing, engine);
+            if (coefficient == null) {
+              return F.NIL;
+            }
+            GenPolynomial<Quotient<BigRational>> monomial = ring.getONE().multiply(coefficient);
+            IAST exponents = (IAST) rule.first();
+            for (int v = 1; v <= exponents.argSize(); v++) {
+              int exponent = exponents.get(v).toIntDefault();
+              if (F.isNotPresent(exponent) || exponent < 0) {
+                return F.NIL;
+              }
+              for (int k = 0; k < exponent; k++) {
+                monomial = monomial.multiply(ring.univariate(variableNames.length - v));
+              }
+            }
+            poly = poly.sum(monomial);
+          }
+          if (poly.isZERO()) {
+            continue;
+          }
+          polyList.add(poly);
+        }
+        if (polyList.isEmpty()) {
+          return F.NIL;
+        }
+
+        GroebnerBaseSeq<Quotient<BigRational>> gb = new GroebnerBaseSeq<Quotient<BigRational>>();
+        List<GenPolynomial<Quotient<BigRational>>> basis = gb.GB(polyList);
+        IASTAppendable resultList = F.ListAlloc(basis.size());
+        for (int i = 0; i < basis.size(); i++) {
+          IExpr poly = quotientPoly2Expr(basis.get(i), listOfVariables, parameterJAS, engine);
+          if (poly.isNIL()) {
+            return F.NIL;
+          }
+          resultList.append(poly);
+        }
+        return sortBasis(resultList, engine);
+      } catch (JASConversionException | ClassCastException | ArithmeticException ex) {
+        return F.NIL;
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return F.NIL;
+      }
+    }
+
+    /** <code>coefficient</code> as a quotient of polynomials in the parameters, or null. */
+    private static Quotient<BigRational> quotientOf(IExpr coefficient,
+        JASConvert<BigRational> parameterJAS, QuotientRing<BigRational> quotientRing,
+        EvalEngine engine) {
+      IExpr together = engine.evaluate(F.Together(coefficient));
+      IExpr numerator = engine.evaluate(F.Numerator(together));
+      IExpr denominator = engine.evaluate(F.Denominator(together));
+      try {
+        GenPolynomial<BigRational> num = parameterJAS.expr2JAS(numerator, false);
+        GenPolynomial<BigRational> den = parameterJAS.expr2JAS(denominator, false);
+        if (num == null || den == null || den.isZERO()) {
+          return null;
+        }
+        return new Quotient<BigRational>(quotientRing, num, den);
+      } catch (JASConversionException jce) {
+        return null;
+      }
+    }
+
+    /** The polynomial written in the variables again, with its coefficients cleared of fractions. */
+    private static IExpr quotientPoly2Expr(GenPolynomial<Quotient<BigRational>> poly,
+        IAST listOfVariables, JASConvert<BigRational> parameterJAS, EvalEngine engine) {
+      int variables = listOfVariables.argSize();
+      IASTAppendable terms = F.PlusAlloc(poly.length());
+      for (Monomial<Quotient<BigRational>> monomial : poly) {
+        Quotient<BigRational> coefficient = monomial.coefficient();
+        IExpr numerator = parameterJAS.rationalPoly2Expr(coefficient.num, false);
+        IExpr denominator = parameterJAS.rationalPoly2Expr(coefficient.den, false);
+        IASTAppendable term = F.TimesAlloc(variables + 1);
+        term.append(F.Divide(numerator, denominator));
+        ExpVector exponents = monomial.exponent();
+        int length = exponents.length();
+        for (int v = 1; v <= variables; v++) {
+          long exponent = exponents.getVal(length - v);
+          if (exponent != 0L) {
+            term.append(F.Power(listOfVariables.get(v), F.ZZ(exponent)));
+          }
+        }
+        terms.append(term);
+      }
+      IExpr sum = engine.evaluate(F.Together(terms.oneIdentity0()));
+      // the basis is written without denominators, as the rational one is
+      IExpr numerator = engine.evaluate(F.Expand(F.Numerator(sum)));
+      return numerator.isZero() ? F.NIL : normalizeBasisElement(numerator, engine);
+    }
+
+    /** The element with its numeric factors dropped. */
+    private static IExpr normalizeBasisElement(IExpr poly, EvalEngine engine) {
+      IExpr result = engine.evaluate(F.Factor(poly));
+      if (result.isTimes()) {
+        IASTAppendable rest = F.TimesAlloc(result.argSize());
+        for (int i = 1; i <= ((IAST) result).argSize(); i++) {
+          IExpr factor = ((IAST) result).get(i);
+          if (!factor.isNumber()) {
+            rest.append(factor);
+          }
+        }
+        if (rest.argSize() > 0) {
+          result = engine.evaluate(F.Expand(rest.oneIdentity1()));
+        }
+      }
+      return result;
+    }
+
+    /** The basis in the order the other paths return it. */
+    private static IAST sortBasis(IAST basis, EvalEngine engine) {
+      return (IAST) engine.evaluate(F.Sort(basis));
     }
 
     /**
