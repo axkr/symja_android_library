@@ -734,7 +734,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("arccsch(-x)", //
         "-ArcCsch(x)");
     check("diff(ArcCsch(x),x)", //
-        "-1/(Sqrt(1+x^2)*Abs(x))");
+        "-1/(Sqrt(1+1/x^2)*x^2)");
   }
 
   @Test
@@ -5804,6 +5804,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sin(#1)/2&");
     check("Derivative(1)[InverseHaversine]", //
         "1/Sqrt((1-#1)*#1)&");
+    check("Derivative(0)[3]", //
+        "3");
+    // like in Mathematica an explicit negative or non-integer order stays unevaluated without a
+    // message
+    check("Derivative(-1)[f][x]", //
+        "Derivative(-1)[f][x]");
+    check("Derivative(1/2)[f][x]", //
+        "Derivative(1/2)[f][x]");
     check("Derivative(0)[#1^2&]", //
         "#1^2&");
     check("Derivative(1)[#1^2&]", //

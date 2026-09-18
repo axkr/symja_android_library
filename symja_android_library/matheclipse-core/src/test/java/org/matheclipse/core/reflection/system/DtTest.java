@@ -30,7 +30,7 @@ public class DtTest {
         "Dt(f)/f");
 
     check("Dt(a*x^n,x)", //
-        "x^n*Dt(a,x)+a*x^n*(n/x+Dt(n,x)*Log(x))");
+        "(a*n)/x^(1-n)+x^n*Dt(a,x)+a*x^n*Dt(n,x)*Log(x)");
   }
 
   @Test
@@ -75,7 +75,7 @@ public class DtTest {
     check("Dt(Sin(x), x)", //
         "Cos(x)");
     check("Dt(Sin(x*y), x)", //
-        "Cos(x*y)*(y+x*Dt(y,x))");
+        "y*Cos(x*y)+x*Cos(x*y)*Dt(y,x)");
     check("Dt(Exp(x), x)", //
         "E^x");
   }
@@ -152,10 +152,49 @@ public class DtTest {
     // Dt(x^2 * y^2, x) = 2*x*y^2 + 2*x^2*y*Dt(y, x)
     // Expected to just unfold the nested structure correctly based on the Dt rules
     check("Dt(x^2 * y^2, x, y)  ", //
-        "4*x*y+2*y^2*Dt(x,y)+2*x^2*Dt(y,x)+4*x*y*Dt(x,y)*Dt(y,x)");
+        "4*x*y+2*x^2*Dt(y,x)+Dt(x,y)*(2*y^2+4*x*y*Dt(y,x))");
 
     // Successive mixed with Constants
     check("Dt(x^2 * y^2 * c, x, y, Constants -> {c})",
-        "4*c*x*y+2*c*y^2*Dt(x,y,Constants->{c})+2*c*x^2*Dt(y,x,Constants->{c})+4*c*x*y*Dt(x,y,Constants->{c})*Dt(y,x,Constants->{c})");
+        "4*c*x*y+2*c*x^2*Dt(y,x,Constants->{c})+Dt(x,y,Constants->{c})*(2*c*y^2+4*c*x*y*Dt(y,x,Constants->{c}))");
+  }
+
+  @Test
+  public void testDtStructures() {
+    check("Dt({x^2,y},x)", //
+        "{2*x,Dt(y,x)}");
+    check("Dt(x^2+y^2==1,x)", //
+        "2*x+2*y*Dt(y,x)==0");
+    check("Dt(Piecewise({{x^2,x>0}},0),x)", //
+        "Piecewise({{2*x,x>0},{0,x<0}},Indeterminate)");
+    check("Dt(Integrate(f(t),{t,a,x}),x)", //
+        "-Dt(a,x)*f(a)+f(x)");
+    check("Dt(f'(x),x)", //
+        "f''(x)");
+    check("Dt(If(x>0,x,y),x)", //
+        "Dt(y,x)*If(x>0,0,1)+If(x>0,1,0)");
+    check("Dt(ArcTan(x,y),x)", //
+        "-y/(x^2+y^2)+(x*Dt(y,x))/(x^2+y^2)");
+    check("Dt(\"abc\",x)", //
+        "0");
+    check("Dt(Sqrt(x^2+y))", //
+        "(x*Dt(x))/Sqrt(x^2+y)+Dt(y)/(2*Sqrt(x^2+y))");
+    // the local variable t isn't a variable of the total derivative
+    check("Dt(Module({t=x},t^2+y),x)", //
+        "2*x+Dt(y,x)");
+    // an unknown option
+    check("Dt(x^2*y,x,NonConstants->{})", //
+        "Dt(x^2*y,x,NonConstants->{})");
+  }
+
+  @Test
+  public void testDtNested() {
+    // formerly $RecursionLimit exceeded
+    check("Dt(y,{x,3})", //
+        "Dt(y,{x,3})");
+    check("Dt(Dt(y,x),x)", //
+        "Dt(y,{x,2})");
+    check("Dt(x*y,{x,2})", //
+        "2*Dt(y,x)+x*Dt(y,{x,2})");
   }
 }

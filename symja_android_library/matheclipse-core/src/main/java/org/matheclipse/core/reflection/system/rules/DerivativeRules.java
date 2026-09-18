@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 166, 0 };
+  final public static int[] SIZES = { 169, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -44,9 +44,9 @@ public class DerivativeRules {
     // Derivative(1)[ArcCsc]=-1/(#1^2*Sqrt(1-1/#1^2))&
     ISet($(Derivative(C1),ArcCsc),
       Function(Times(CN1,Power(Slot1,CN2),Power(Subtract(C1,Power(Slot1,CN2)),CN1D2))), true),
-    // Derivative(1)[ArcCsch]=-1/(Abs(#1)*Sqrt(1+#1^2))&
+    // Derivative(1)[ArcCsch]=-1/(#1^2*Sqrt(1+1/#1^2))&
     ISet($(Derivative(C1),ArcCsch),
-      Function(Times(CN1,Power(Abs(Slot1),CN1),Power(Plus(C1,Sqr(Slot1)),CN1D2))), true),
+      Function(Times(CN1,Power(Slot1,CN2),Power(Plus(C1,Power(Slot1,CN2)),CN1D2))), true),
     // Derivative(1)[ArcSin]=1/Sqrt(1-#1^2)&
     ISet($(Derivative(C1),ArcSin),
       Function(Power(Subtract(C1,Sqr(Slot1)),CN1D2)), true),
@@ -104,9 +104,9 @@ public class DerivativeRules {
     // Derivative(1)[Floor]=Piecewise({{0,#1>Floor(#1)}},Indeterminate)&
     ISet($(Derivative(C1),Floor),
       Function(Piecewise(list(list(C0,Greater(Slot1,Floor(Slot1)))),Indeterminate)), true),
-    // Derivative(1)[FractionalPart]=1&
+    // Derivative(1)[FractionalPart]=Piecewise({{1,(Re(#1)==0||Re(#1)∉Integers)&&(Im(#1)==0||Im(#1)∉Integers)}},Indeterminate)&
     ISet($(Derivative(C1),FractionalPart),
-      Function(C1), true),
+      Function(Piecewise(list(list(C1,And(Or(Equal(Re(Slot1),C0),NotElement(Re(Slot1),Integers)),Or(Equal(Im(Slot1),C0),NotElement(Im(Slot1),Integers))))),Indeterminate)), true),
     // Derivative(1)[FresnelC]=Cos(1/2*Pi*#1^2)&
     ISet($(Derivative(C1),FresnelC),
       Function(Cos(Times(C1D2,Pi,Sqr(Slot1)))), true),
@@ -143,9 +143,9 @@ public class DerivativeRules {
     // Derivative(1)[IntegerPart]=0&
     ISet($(Derivative(C1),IntegerPart),
       Function(C0), true),
-    // Derivative(1)[InverseErf]=1/2*Sqrt(Pi)*E^InverseErf(x)^2&
+    // Derivative(1)[InverseErf]=1/2*Sqrt(Pi)*E^InverseErf(#1)^2&
     ISet($(Derivative(C1),InverseErf),
-      Function(Times(C1D2,CSqrtPi,Exp(Sqr(InverseErf(x))))), true),
+      Function(Times(C1D2,CSqrtPi,Exp(Sqr(InverseErf(Slot1))))), true),
     // Derivative(1)[InverseErfc]=-1/2*E^InverseErfc(#1)^2*Sqrt(Pi)&
     ISet($(Derivative(C1),InverseErfc),
       Function(Times(CN1D2,Exp(Sqr(InverseErfc(Slot1))),CSqrtPi)), true),
@@ -308,6 +308,15 @@ public class DerivativeRules {
     // Derivative(0,0,1)[CarlsonRF]=-CarlsonRD(#1,#2,#3)/6&
     ISet($(Derivative(C0,C0,C1),CarlsonRF),
       Function(Times(QQ(-1L,6L),CarlsonRD(Slot1,Slot2,Slot(C3)))), true),
+    // Derivative(1,0,0)[CarlsonRD]=(-CarlsonRD(#1,#2,#3)+CarlsonRD(#2,#3,#1))/(2*(#1-#3))&
+    ISet($(Derivative(C1,C0,C0),CarlsonRD),
+      Function(Times(Plus(Negate(CarlsonRD(Slot1,Slot2,Slot(C3))),CarlsonRD(Slot2,Slot(C3),Slot1)),Power(Times(C2,Subtract(Slot1,Slot(C3))),CN1))), true),
+    // Derivative(0,1,0)[CarlsonRD]=(-CarlsonRD(#1,#2,#3)+CarlsonRD(#1,#3,#2))/(2*(#2-#3))&
+    ISet($(Derivative(C0,C1,C0),CarlsonRD),
+      Function(Times(Plus(Negate(CarlsonRD(Slot1,Slot2,Slot(C3))),CarlsonRD(Slot1,Slot(C3),Slot2)),Power(Times(C2,Subtract(Slot2,Slot(C3))),CN1))), true),
+    // Derivative(0,0,1)[CarlsonRD]=(-3*Sqrt(#1)*Sqrt(#2))/(2*#3^(3/2)*(-#1+#3)*(-#2+#3))-CarlsonRD(#1,#2,#3)*(1/(-#1+#3)+1/(-#2+#3))+(3*CarlsonRF(#1,#2,#3))/(2*(-#1+#3)*(-#2+#3))&
+    ISet($(Derivative(C0,C0,C1),CarlsonRD),
+      Function(Plus(Times(CN3,Sqrt(Slot1),Sqrt(Slot2),Power(Times(C2,Power(Slot(C3),QQ(3L,2L)),Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1)),Times(CN1,CarlsonRD(Slot1,Slot2,Slot(C3)),Plus(Power(Plus(Negate(Slot1),Slot(C3)),CN1),Power(Plus(Negate(Slot2),Slot(C3)),CN1))),Times(C3,CarlsonRF(Slot1,Slot2,Slot(C3)),Power(Times(C2,Plus(Negate(Slot1),Slot(C3)),Plus(Negate(Slot2),Slot(C3))),CN1)))), true),
     // Derivative(1,0,0)[CarlsonRG]=CarlsonRF(#1,#2,#3)/4-1/12*CarlsonRD(#2,#3,#1)*#1&
     ISet($(Derivative(C1,C0,C0),CarlsonRG),
       Function(Plus(Times(C1D4,CarlsonRF(Slot1,Slot2,Slot(C3))),Times(QQ(-1L,12L),CarlsonRD(Slot2,Slot(C3),Slot1),Slot1))), true),
@@ -395,21 +404,21 @@ public class DerivativeRules {
     // Derivative(0,0,0,1)[Hypergeometric2F1]=(Hypergeometric2F1(1+#1,1+#2,1+#3,#4)*#1*#2)/#3&
     ISet($(Derivative(C0,C0,C0,C1),Hypergeometric2F1),
       Function(Times(Hypergeometric2F1(Plus(C1,Slot1),Plus(C1,Slot2),Plus(C1,Slot(C3)),Slot(C4)),Slot1,Slot2,Power(Slot(C3),CN1))), true),
-    // Derivative(0,0,0,n_)[Hypergeometric2F1]:=((Hypergeometric2F1(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n))/Pochhammer(#3,n)&)/;IntegerQ(n)||!NumericQ(n)
+    // Derivative(0,0,0,n_)[Hypergeometric2F1]:=((Hypergeometric2F1(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n))/Pochhammer(#3,n)&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
     ISetDelayed($(Derivative(C0,C0,C0,n_),Hypergeometric2F1),
-      Condition(Function(Times(Hypergeometric2F1(Plus(n,Slot1),Plus(n,Slot2),Plus(n,Slot(C3)),Slot(C4)),Pochhammer(Slot1,n),Pochhammer(Slot2,n),Power(Pochhammer(Slot(C3),n),CN1))),Or(IntegerQ(n),Not(NumericQ(n))))),
+      Condition(Function(Times(Hypergeometric2F1(Plus(n,Slot1),Plus(n,Slot2),Plus(n,Slot(C3)),Slot(C4)),Pochhammer(Slot1,n),Pochhammer(Slot2,n),Power(Pochhammer(Slot(C3),n),CN1))),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
     // Derivative(0,0,0,1)[Hypergeometric2F1Regularized]=Hypergeometric2F1Regularized(1+#1,1+#2,1+#3,#4)*#1*#2&
     ISet($(Derivative(C0,C0,C0,C1),Hypergeometric2F1Regularized),
       Function(Times(Hypergeometric2F1Regularized(Plus(C1,Slot1),Plus(C1,Slot2),Plus(C1,Slot(C3)),Slot(C4)),Slot1,Slot2)), true),
-    // Derivative(0,0,0,n_)[Hypergeometric2F1Regularized]:=(Hypergeometric2F1Regularized(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n)&)/;IntegerQ(n)||!NumericQ(n)
+    // Derivative(0,0,0,n_)[Hypergeometric2F1Regularized]:=(Hypergeometric2F1Regularized(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n)&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
     ISetDelayed($(Derivative(C0,C0,C0,n_),Hypergeometric2F1Regularized),
-      Condition(Function(Times(Hypergeometric2F1Regularized(Plus(n,Slot1),Plus(n,Slot2),Plus(n,Slot(C3)),Slot(C4)),Pochhammer(Slot1,n),Pochhammer(Slot2,n))),Or(IntegerQ(n),Not(NumericQ(n))))),
+      Condition(Function(Times(Hypergeometric2F1Regularized(Plus(n,Slot1),Plus(n,Slot2),Plus(n,Slot(C3)),Slot(C4)),Pochhammer(Slot1,n),Pochhammer(Slot2,n))),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
     // Derivative(0,0,1)[HypergeometricU]=-HypergeometricU(1+#1,1+#2,#3)*#1&
     ISet($(Derivative(C0,C0,C1),HypergeometricU),
       Function(Times(CN1,HypergeometricU(Plus(C1,Slot1),Plus(C1,Slot2),Slot(C3)),Slot1)), true),
-    // Derivative(0,0,n_)[HypergeometricU]:=((-1)^n*HypergeometricU(n+#1,n+#2,#3)*Pochhammer(#1,n)&)/;IntegerQ(n)||!NumericQ(n)
+    // Derivative(0,0,n_)[HypergeometricU]:=((-1)^n*HypergeometricU(n+#1,n+#2,#3)*Pochhammer(#1,n)&)/;(IntegerQ(n)&&n>=0)||SymbolQ(n)
     ISetDelayed($(Derivative(C0,C0,n_),HypergeometricU),
-      Condition(Function(Times(Power(-1,n),HypergeometricU(Plus(n,Slot1),Plus(n,Slot2),Slot(C3)),Pochhammer(Slot1,n))),Or(IntegerQ(n),Not(NumericQ(n))))),
+      Condition(Function(Times(Power(-1,n),HypergeometricU(Plus(n,Slot1),Plus(n,Slot2),Slot(C3)),Pochhammer(Slot1,n))),Or(And(IntegerQ(n),GreaterEqual(n,C0)),SymbolQ(n)))),
     // Derivative(1,0)[Pochhammer]=Pochhammer(#1,#2)*(-PolyGamma(0,#1)+PolyGamma(0,#1+#2))&
     ISet($(Derivative(C1,C0),Pochhammer),
       Function(Times(Pochhammer(Slot1,Slot2),Plus(Negate(PolyGamma(C0,Slot1)),PolyGamma(C0,Plus(Slot1,Slot2))))), true),
@@ -425,15 +434,15 @@ public class DerivativeRules {
     // Derivative(1,1)[Power]=#1^(-1+#2)+(Log(#1)*#2)/#1^(1-#2)&
     ISet($(Derivative(C1,C1),Power),
       Function(Plus(Power(Slot1,Plus(CN1,Slot2)),Times(Log(Slot1),Power(Slot1,Plus(CN1,Slot2)),Slot2))), true),
-    // Derivative(0,1)[PolyLog]=PolyLog(-1+#2,#1)/#1&
+    // Derivative(0,1)[PolyLog]=PolyLog(-1+#1,#2)/#2&
     ISet($(Derivative(C0,C1),PolyLog),
-      Function(Times(PolyLog(Plus(CN1,Slot2),Slot1),Power(Slot1,CN1))), true),
+      Function(Times(PolyLog(Plus(CN1,Slot1),Slot2),Power(Slot2,CN1))), true),
     // Derivative(0,0,1)[PolyLog]=PolyLog(-1+#1,#2,#3)/#3&
     ISet($(Derivative(C0,C0,C1),PolyLog),
       Function(Times(PolyLog(Plus(CN1,Slot1),Slot2,Slot(C3)),Power(Slot(C3),CN1))), true),
-    // Derivative(0,1)[ProductLog]=ProductLog(#1,#2)/#2*(1+ProductLog(#1,#2))&
+    // Derivative(0,1)[ProductLog]=ProductLog(#1,#2)/(#2*(1+ProductLog(#1,#2)))&
     ISet($(Derivative(C0,C1),ProductLog),
-      Function(Times(ProductLog(Slot1,Slot2),Power(Slot2,CN1),Plus(C1,ProductLog(Slot1,Slot2)))), true),
+      Function(Times(ProductLog(Slot1,Slot2),Power(Times(Slot2,Plus(C1,ProductLog(Slot1,Slot2))),CN1))), true),
     // Derivative(0,1)[BernoulliB]=BernoulliB(-1+#1,#2)*#1&
     ISet($(Derivative(C0,C1),BernoulliB),
       Function(Times(BernoulliB(Plus(CN1,Slot1),Slot2),Slot1)), true),
@@ -470,9 +479,9 @@ public class DerivativeRules {
     // Derivative(0,0,1)[LaguerreL]=-LaguerreL(-1+#1,1+#2,#3)&
     ISet($(Derivative(C0,C0,C1),LaguerreL),
       Function(Negate(LaguerreL(Plus(CN1,Slot1),Plus(C1,Slot2),Slot(C3)))), true),
-    // Derivative(0,1)[LegendreP]=((-1-#1)*x*LegendreP(#1,#2)+(1+#1)*LegendreP(1+#1,#2))/(-1+#2^2)&
+    // Derivative(0,1)[LegendreP]=((-1-#1)*#2*LegendreP(#1,#2)+(1+#1)*LegendreP(1+#1,#2))/(-1+#2^2)&
     ISet($(Derivative(C0,C1),LegendreP),
-      Function(Times(Plus(Times(Subtract(CN1,Slot1),x,LegendreP(Slot1,Slot2)),Times(Plus(C1,Slot1),LegendreP(Plus(C1,Slot1),Slot2))),Power(Plus(CN1,Sqr(Slot2)),CN1))), true),
+      Function(Times(Plus(Times(Subtract(CN1,Slot1),Slot2,LegendreP(Slot1,Slot2)),Times(Plus(C1,Slot1),LegendreP(Plus(C1,Slot1),Slot2))),Power(Plus(CN1,Sqr(Slot2)),CN1))), true),
     // Derivative(0,0,1)[LegendreP]=(LegendreP(1+#1,#2,#3)*(1+#1-#2)+LegendreP(#1,#2,#3)*(-1-#1)*#3)/(-1+#3^2)&
     ISet($(Derivative(C0,C0,C1),LegendreP),
       Function(Times(Plus(Times(LegendreP(Plus(C1,Slot1),Slot2,Slot(C3)),Plus(C1,Slot1,Negate(Slot2))),Times(LegendreP(Slot1,Slot2,Slot(C3)),Subtract(CN1,Slot1),Slot(C3))),Power(Plus(CN1,Sqr(Slot(C3))),CN1))), true),
@@ -500,9 +509,9 @@ public class DerivativeRules {
     // Zeta'(-1)=1/12-Log(Glaisher)
     ISet($($(Derivative(C1),Zeta),CN1),
       Subtract(QQ(1L,12L),Log(Glaisher)), true),
-    // Derivative(1,0,0)[LerchPhi]=(LerchPhi(1,-1+#2,#3)-LerchPhi(#1,#2,#3)*#3)/#1&
+    // Derivative(1,0,0)[LerchPhi]=(LerchPhi(#1,-1+#2,#3)-LerchPhi(#1,#2,#3)*#3)/#1&
     ISet($(Derivative(C1,C0,C0),LerchPhi),
-      Function(Times(Power(Slot1,CN1),Plus(LerchPhi(C1,Plus(CN1,Slot2),Slot(C3)),Times(CN1,LerchPhi(Slot1,Slot2,Slot(C3)),Slot(C3))))), true),
+      Function(Times(Power(Slot1,CN1),Plus(LerchPhi(Slot1,Plus(CN1,Slot2),Slot(C3)),Times(CN1,LerchPhi(Slot1,Slot2,Slot(C3)),Slot(C3))))), true),
     // Derivative(0,0,1)[LerchPhi]=-LerchPhi(#1,1+#2,#3)*#2&
     ISet($(Derivative(C0,C0,C1),LerchPhi),
       Function(Times(CN1,LerchPhi(Slot1,Plus(C1,Slot2),Slot(C3)),Slot2)), true),

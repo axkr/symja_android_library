@@ -23,7 +23,7 @@ Cos(#1)&
 -Cos(#1)&   
  
 >> Derivative(2)[# ^ 3&]    
-6*(#1&)    
+6*#1&    
 ``` 
 
 `Derivative` can be entered using `'`:   
@@ -32,7 +32,7 @@ Cos(#1)&
 Cos(x)    
  
 >> (# ^ 4&)''    
-12*(#1^2&)   
+12*#1^2&   
  
 >> f'(x) // FullForm    
 "Derivative(1)[f][x]"  
