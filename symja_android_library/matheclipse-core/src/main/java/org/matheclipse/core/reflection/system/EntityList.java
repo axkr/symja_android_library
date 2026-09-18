@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.data.Entities;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -10,7 +11,14 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * <code>EntityList</code> implementation.
+ * <code>EntityList(type)</code> - every entity of a type, and
+ * <code>EntityList(EntityClass(type, class))</code> - those of them in a class.
+ *
+ * <p>
+ * The entities themselves come from the data function registered for the type (see
+ * {@link Entities}), so a type is listable here as soon as its function can list it and this class
+ * knows nothing about any particular one. Classes are the exception: what divides the elements into
+ * periods, groups, blocks and series is knowledge about elements, so that filter stays here.
  */
 public class EntityList extends AbstractFunctionEvaluator {
 
@@ -18,37 +26,22 @@ public class EntityList extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
-    if (ast.argSize() == 1) {
-      IExpr arg1 = ast.arg1();
+    IExpr arg1 = ast.arg1();
+    if (arg1.isString()) {
+      return Entities.entityList(arg1.toString(), engine);
+    }
 
-      // Handle EntityList["Element"] -> Returns all 118 elements
-      if (arg1.isString() && arg1.toString().replace("\"", "").equals("Element")) {
-        return getAllElements(engine);
-      }
+    // EntityList(EntityClass(type, class))
+    if (arg1.isAST(S.EntityClass, 3)) {
+      IAST entityClass = (IAST) arg1;
+      IExpr type = entityClass.arg1();
+      IExpr className = entityClass.arg2();
 
-      // Handle EntityList[EntityClass[type, class]]
-      if (arg1.isAST(S.EntityClass, 3)) {
-        IAST entityClass = (IAST) arg1;
-        IExpr type = entityClass.arg1();
-        IExpr className = entityClass.arg2();
-
-        if (type.isString() && type.toString().replace("\"", "").equals("Element")) {
-          return getElementEntityList(className.toString().replace("\"", "").toLowerCase(), engine);
-        }
+      if (type.isString() && type.toString().equals("Element")) {
+        return getElementEntityList(className.toString().toLowerCase(), engine);
       }
     }
     return F.NIL;
-  }
-
-  private IExpr getAllElements(EvalEngine engine) {
-    IASTAppendable result = F.ListAlloc();
-    for (int z = 1; z <= 118; z++) {
-      IExpr name = engine.evaluate(F.ElementData(F.ZZ(z), F.stringx("Name")));
-      if (name.isString()) {
-        result.append(F.Entity(F.stringx("Element"), name));
-      }
-    }
-    return result;
   }
 
   private IExpr getElementEntityList(String cName, EvalEngine engine) {

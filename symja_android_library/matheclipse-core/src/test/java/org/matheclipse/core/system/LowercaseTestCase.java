@@ -7390,6 +7390,50 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Quantity(19.25,\"Grams\"/\"Centimeters\"^3)");
     check("Take(ElementData(\"Properties\"), 2)", //
         "{EntityProperty(Element,AtomicMass),EntityProperty(Element,AtomicNumber)}");
+  }
+
+  /**
+   * <code>EntityValue</code> asks whichever data function answers for the entity's type, so a type
+   * whose module is not loaded - or one nothing ever registered - leaves the call standing rather
+   * than answering wrongly.
+   */
+  @Test
+  public void testEntityValue() {
+    check("EntityValue(Entity(\"Element\", \"Tungsten\"), \"AtomicMass\")", //
+        "Quantity(183.84,\"AtomicMassUnit\")");
+    check("EntityValue(Entity(\"Element\", \"Iron\"),"
+        + " EntityProperty(\"Element\", \"AtomicNumber\"))", //
+        "26");
+    // a list on either side is answered elementwise, and on both sides one row per entity
+    check("EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Carbon\")},"
+        + " \"AtomicNumber\")", //
+        "{26,6}");
+    check("EntityValue(Entity(\"Element\", \"Iron\"), {\"AtomicNumber\", \"Period\"})", //
+        "{26,4}");
+    check("EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Carbon\")},"
+        + " {\"AtomicNumber\", \"Period\"})", //
+        "{{26,4},{6,2}}");
+    // the property the data function does not know, and the type nothing answers for
+    check("EntityValue(Entity(\"Element\", \"Iron\"), \"Nonsense\")", //
+        "EntityValue(Entity(Element,Iron),Nonsense)");
+    check("EntityValue(Entity(\"Unicorn\", \"Twilight\"), \"Horn\")", //
+        "EntityValue(Entity(Unicorn,Twilight),Horn)");
+    // matheclipse-astro is not on this module's classpath, so its types are not registered here
+    check("EntityValue(Entity(\"Planet\", \"Mars\"), \"HelioCoordinates\")", //
+        "EntityValue(Entity(Planet,Mars),HelioCoordinates)");
+    check("EntityList(\"Planet\")", //
+        "EntityList(Planet)");
+  }
+
+  /** Every entity of a type, which now comes from the type's own data function. */
+  @Test
+  public void testEntityList() {
+    check("Length(EntityList(\"Element\"))", //
+        "118");
+    check("EntityList(\"Element\")[[13]]", //
+        "Entity(Element,Aluminum)");
+    check("Length(EntityList(EntityClass(\"Element\", \"NobleGas\")))", //
+        "6");
     check("Length(ElementData(\"Properties\"))", //
         "42");
 

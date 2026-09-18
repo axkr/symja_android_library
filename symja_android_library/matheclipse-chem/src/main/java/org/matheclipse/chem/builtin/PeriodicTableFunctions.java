@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.data.Entities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -195,6 +196,9 @@ public class PeriodicTableFunctions {
   }
 
   /** The text of a string expression, and the printed form of anything else. */
+  /** The entity type of the periodic table, which is the one ElementData answers for. */
+  private static final String ELEMENT = "Element";
+
   private static String unquote(IExpr expr) {
     return expr.toString().replace("\"", "");
   }
@@ -403,9 +407,9 @@ public class PeriodicTableFunctions {
           set.addAll(parseElements(e, engine));
         }
       } else if (expr.isAST(S.Entity, 3)) {
-        IAST entity = (IAST) expr;
-        if ("Element".equals(unquote(entity.arg1()))) {
-          int z = nameToZ(unquote(entity.arg2()));
+        IExpr name = Entities.nameOf(expr, ELEMENT);
+        if (name != expr) {
+          int z = nameToZ(unquote(name));
           if (z > 0) {
             set.add(z);
           }
@@ -440,12 +444,8 @@ public class PeriodicTableFunctions {
      */
     private static IExpr propertyName(IExpr arg) {
       if (arg.isAST(S.EntityProperty, 3)) {
-        IAST entityProperty = (IAST) arg;
-        if ("Element".equals(unquote(entityProperty.arg1()))
-            && entityProperty.arg2().isString()) {
-          return entityProperty.arg2();
-        }
-        return F.NIL;
+        IExpr property = Entities.propertyOf(arg, ELEMENT);
+        return property != arg && property.isString() ? property : F.NIL;
       }
       if (arg.isString()) {
         String text = unquote(arg);

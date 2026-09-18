@@ -91,8 +91,10 @@ public final class FunctionDefinitions {
       S.Wronskian.setEvaluator(new org.matheclipse.core.reflection.system.Wronskian());
       S.EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       S.ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
+      org.matheclipse.core.data.Entities.register("Element", S.ElementData);
       S.Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
       S.EntityList.setEvaluator(new org.matheclipse.core.reflection.system.EntityList());
+      S.EntityValue.setEvaluator(new org.matheclipse.core.reflection.system.EntityValue());
       S.ExponentialGeneratingFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.ExponentialGeneratingFunction());
       S.ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
