@@ -649,6 +649,23 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testGammaDistribution() {
+    // machine numbers in the 4 argument form: Gamma(a) overflows a double from a > 171 on and the
+    // central moments cancel most of their digits (reference values from 80 digit arithmetic)
+    check("{Mean(GammaDistribution(1000.0, 1.5, 0.7, 2.0)), Kurtosis(GammaDistribution(1000.0, 1.5, 0.7, 2.0))}", //
+        "{28971.33,3.01752}");
+    check("{Mean(GammaDistribution(1000000.0, 1.5, 0.7, 2.0)), " //
+        + "Kurtosis(GammaDistribution(1000000.0, 1.5, 0.7, 2.0))}", //
+        "{5.59139*10^8,3.00002}");
+    check("{Mean(GammaDistribution(2.0, 1.5, 0.05, 0.0)), Kurtosis(GammaDistribution(2.0, 1.5, 0.05, 0.0))}", //
+        "{7.66364*10^19,5.1803*10^21}");
+    check("N({Mean(GammaDistribution(9/2, 3/2, 4/5, 2)), Kurtosis(GammaDistribution(9/2, 3/2, 4/5, 2))}) - " //
+        + "{Mean(GammaDistribution(4.5, 1.5, 0.8, 2.0)), Kurtosis(GammaDistribution(4.5, 1.5, 0.8, 2.0))} // Chop", //
+        "{0,0}");
+    check("Module({d=GammaDistribution(2.5, 1.5, 1.3, 0.5), m1, m2, m4}, " //
+        + "m1=NIntegrate(x*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m2=NIntegrate((x-m1)^2*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m4=NIntegrate((x-m1)^4*PDF(d,x),{x,0.5,Infinity}); {m1, Mean(d), m4/m2^2, Kurtosis(d)})", //
+        "{3.43353,3.43353,3.93407,3.93407}");
     check("CentralMoment(GammaDistribution(a, b),n)", //
         "b^n*Hypergeometric1F1(-n,1-a-n,-a)*Pochhammer(a,n)");
     check("CentralMoment(GammaDistribution(a, b),2)", //

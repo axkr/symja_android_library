@@ -1693,6 +1693,99 @@ public class StatisticsContinousDistribution {
   }
 
 
+  /**
+   * <code>{Mean, Variance, Skewness, Kurtosis}</code> of the 4 argument
+   * <code>GammaDistribution(a, b, g, m)</code> (<code>sign == 1</code>) or
+   * <code>InverseGammaDistribution(a, b, g, m)</code> (<code>sign == -1</code>) for machine number
+   * parameters, <code>NaN</code> where the moment does not exist.
+   *
+   * <p>
+   * The exact forms are built from <code>Gamma(a + sign*k/g)/Gamma(a)</code>, the moments of
+   * <code>Y^(sign/g)</code> for <code>Y ~ GammaDistribution(a, 1)</code>. As doubles the
+   * <code>Gamma</code> values overflow from <code>a > 171</code> on, and the central moments
+   * cancel about <code>2*Log10(a*g^2)</code> digits of the raw ones, because the distribution
+   * concentrates as <code>a</code> grows. So the ratios are taken in logarithms, with that many
+   * extra digits. For the inverse form the <code>k</code>-th moment exists only for
+   * <code>a*g > k</code>.
+   *
+   * @param dist a distribution with the 4 arguments <code>a, b, g, m</code>
+   * @return <code>null</code> unless all parameters are numbers, one of them inexact, and the
+   *         shapes and scale positive
+   */
+  private static double[] generalizedGammaMachineMoments(IAST dist, int sign) {
+    if (dist.argSize() != 4 || EvalEngine.get().isArbitraryMode()) {
+      return null;
+    }
+    boolean inexact = false;
+    double[] v = new double[4];
+    for (int i = 0; i < 4; i++) {
+      IExpr arg = dist.get(i + 1);
+      inexact |= arg.isInexactNumber();
+      v[i] = arg.evalfNaN();
+      if (!Double.isFinite(v[i])) {
+        return null;
+      }
+    }
+    double a = v[0];
+    double b = v[1];
+    double g = v[2];
+    double m = v[3];
+    if (!inexact || !(a > 0.0 && b > 0.0 && g > 0.0)) {
+      return null;
+    }
+    // the largest Gamma argument decides how many digits LogGamma needs before the point
+    double largest = sign > 0 ? a + 4.0 / g : a;
+    long precision = 30 + (long) Math.ceil(2.0 * Math.log10(Math.max(1.0, a * g * g)))
+        + (long) Math.ceil(Math.log10(Math.max(10.0, largest * Math.abs(Math.log(largest)))));
+    FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(precision);
+    Apfloat shape = new Apfloat(a, precision);
+    Apfloat inverseG = h.divide(Apfloat.ONE, new Apfloat(g, precision));
+    Apfloat logGamma0 = h.logGamma(shape);
+    // r[k] = Gamma(a + sign*k/g)/Gamma(a)
+    Apfloat[] r = new Apfloat[5];
+    r[0] = Apfloat.ONE;
+    for (int k = 1; k <= 4; k++) {
+      if (sign > 0 || a * g > k) {
+        Apfloat argument = h.add(shape, h.multiply(new Apfloat(sign * k), inverseG));
+        r[k] = h.exp(h.subtract(h.logGamma(argument), logGamma0));
+      }
+    }
+    double[] result = {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
+    if (r[1] == null) {
+      return result;
+    }
+    result[0] = m + b * r[1].doubleValue();
+    if (r[2] == null) {
+      return result;
+    }
+    Apfloat r1Squared = h.multiply(r[1], r[1]);
+    Apfloat c2 = h.subtract(r[2], r1Squared);
+    result[1] = b * b * c2.doubleValue();
+    if (r[3] == null) {
+      return result;
+    }
+    // r3 - 3*r1*r2 + 2*r1^3
+    Apfloat c3 = h.add(h.subtract(r[3], h.multiply(new Apfloat(3), h.multiply(r[1], r[2]))),
+        h.multiply(new Apfloat(2), h.multiply(r1Squared, r[1])));
+    result[2] = h.divide(c3, h.multiply(c2, h.sqrt(c2))).doubleValue();
+    if (r[4] == null) {
+      return result;
+    }
+    // r4 - 4*r1*r3 + 6*r1^2*r2 - 3*r1^4
+    Apfloat c4 = h.subtract(
+        h.add(h.subtract(r[4], h.multiply(new Apfloat(4), h.multiply(r[1], r[3]))),
+            h.multiply(new Apfloat(6), h.multiply(r1Squared, r[2]))),
+        h.multiply(new Apfloat(3), h.multiply(r1Squared, r1Squared)));
+    result[3] = h.divide(c4, h.multiply(c2, c2)).doubleValue();
+    return result;
+  }
+
+  /** A machine moment, or <code>Indeterminate</code> where it does not exist. */
+  private static IExpr machineMoment(double[] moments, int index) {
+    double value = moments[index];
+    return Double.isNaN(value) ? S.Indeterminate : F.num(value);
+  }
+
   private static final class GammaDistribution extends AbstractEvaluator implements ICentralMoment,
       IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF, IGeneratingFunction {
 
@@ -1841,6 +1934,10 @@ public class StatisticsContinousDistribution {
         // 3+6/a
         return F.Plus(F.C3, F.Times(F.C6, F.Power(a, F.CN1)));
       } else if (dist.isAST(S.GammaDistribution, 5)) {
+        double[] moments = generalizedGammaMachineMoments(dist, 1);
+        if (moments != null) {
+          return machineMoment(moments, 3);
+        }
         // (-3*Gamma(a+1/g)^4+6*Gamma(a)*Gamma(a+1/g)^2*Gamma(a+2/g)-4*Gamma(a)^2*Gamma(a+1/g)*Gamma(a+3/g)+Gamma(a)^3*Gamma(a+4/g))/(Gamma(a+1/g)^2-Gamma(a)*Gamma(a+2/g))^2
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -1869,6 +1966,10 @@ public class StatisticsContinousDistribution {
         return F.Times(m, n);
       }
       if (dist.size() == 5) {
+        double[] moments = generalizedGammaMachineMoments(dist, 1);
+        if (moments != null) {
+          return machineMoment(moments, 0);
+        }
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
@@ -2569,91 +2670,10 @@ public class StatisticsContinousDistribution {
       return values;
     }
 
-    /**
-     * <code>{Mean, Variance, Skewness, Kurtosis}</code> of the 4 argument form for machine number
-     * parameters, <code>NaN</code> where the moment does not exist.
-     *
-     * <p>
-     * The exact forms are built from <code>Gamma(a - k/g)/Gamma(a)</code>, the moments of
-     * <code>Y^(-1/g)</code> for <code>Y ~ GammaDistribution(a, 1)</code>. As doubles the
-     * <code>Gamma</code> values overflow from <code>a > 171</code> on, and the central moments
-     * cancel about <code>2*Log10(a*g^2)</code> digits of the raw ones, because the distribution
-     * concentrates as <code>a</code> grows. So the ratios are taken in logarithms, with that many
-     * extra digits.
-     *
-     * @return <code>null</code> unless all parameters are numbers, one of them inexact, and the
-     *         shapes and scale positive
-     */
+    /** The machine moments of the 4 argument form, see {@link #generalizedGammaMachineMoments}. */
     private static double[] machineMoments(IAST dist) {
-      if (!dist.isAST(S.InverseGammaDistribution, 5) || EvalEngine.get().isArbitraryMode()) {
-        return null;
-      }
-      boolean inexact = false;
-      double[] v = new double[4];
-      for (int i = 0; i < 4; i++) {
-        IExpr arg = dist.get(i + 1);
-        inexact |= arg.isInexactNumber();
-        v[i] = arg.evalfNaN();
-        if (!Double.isFinite(v[i])) {
-          return null;
-        }
-      }
-      double a = v[0];
-      double b = v[1];
-      double g = v[2];
-      double m = v[3];
-      if (!inexact || !(a > 0.0 && b > 0.0 && g > 0.0)) {
-        return null;
-      }
-      long precision = 30 + (long) Math.ceil(2.0 * Math.log10(Math.max(1.0, a * g * g)))
-          + (long) Math.ceil(Math.log10(Math.max(10.0, a * Math.abs(Math.log(a)))));
-      FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(precision);
-      Apfloat shape = new Apfloat(a, precision);
-      Apfloat inverseG = h.divide(Apfloat.ONE, new Apfloat(g, precision));
-      Apfloat logGamma0 = h.logGamma(shape);
-      // r[k] = Gamma(a - k/g)/Gamma(a), only for a*g > k
-      Apfloat[] r = new Apfloat[5];
-      r[0] = Apfloat.ONE;
-      for (int k = 1; k <= 4; k++) {
-        if (a * g > k) {
-          Apfloat argument = h.subtract(shape, h.multiply(new Apfloat(k), inverseG));
-          r[k] = h.exp(h.subtract(h.logGamma(argument), logGamma0));
-        }
-      }
-      double[] result = {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
-      if (r[1] == null) {
-        return result;
-      }
-      result[0] = m + b * r[1].doubleValue();
-      if (r[2] == null) {
-        return result;
-      }
-      Apfloat r1Squared = h.multiply(r[1], r[1]);
-      Apfloat c2 = h.subtract(r[2], r1Squared);
-      result[1] = b * b * c2.doubleValue();
-      if (r[3] == null) {
-        return result;
-      }
-      // r3 - 3*r1*r2 + 2*r1^3
-      Apfloat c3 = h.add(h.subtract(r[3], h.multiply(new Apfloat(3), h.multiply(r[1], r[2]))),
-          h.multiply(new Apfloat(2), h.multiply(r1Squared, r[1])));
-      result[2] = h.divide(c3, h.multiply(c2, h.sqrt(c2))).doubleValue();
-      if (r[4] == null) {
-        return result;
-      }
-      // r4 - 4*r1*r3 + 6*r1^2*r2 - 3*r1^4
-      Apfloat c4 = h.subtract(
-          h.add(h.subtract(r[4], h.multiply(new Apfloat(4), h.multiply(r[1], r[3]))),
-              h.multiply(new Apfloat(6), h.multiply(r1Squared, r[2]))),
-          h.multiply(new Apfloat(3), h.multiply(r1Squared, r1Squared)));
-      result[3] = h.divide(c4, h.multiply(c2, c2)).doubleValue();
-      return result;
-    }
-
-    /** A machine moment, or <code>Indeterminate</code> where it does not exist. */
-    private static IExpr machineMoment(double[] moments, int index) {
-      double value = moments[index];
-      return Double.isNaN(value) ? S.Indeterminate : F.num(value);
+      return dist.isAST(S.InverseGammaDistribution, 5) ? generalizedGammaMachineMoments(dist, -1)
+          : null;
     }
 
     /** A parameter which is a real number but not positive. */
