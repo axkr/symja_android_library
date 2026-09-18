@@ -12703,6 +12703,51 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseCDF() {
+    // numeric InverseCDF of discrete distributions; exact probabilities at a tie stay exact
+    check("Map(InverseCDF(GeometricDistribution(1/3), #)&, {0, 1/3, 5/9, 0.9, 99/100, 1})", //
+        "{0,0,1,5,11,Infinity}");
+    check("Map(InverseCDF(BenfordDistribution(10), #)&, {1/10, 3/10, 1/2, 0.95, 1})", //
+        "{1,1,3,8,9}");
+    check("Map(InverseCDF(BetaBinomialDistribution(1,1,4), #)&, {1/5, 2/5, 3/5, 4/5, 0.81, 1})", //
+        "{0,1,2,3,4,4}");
+    check("Map(InverseCDF(WaringYuleDistribution(2,3), #)&, {3/5, 1/2, 0.9, 0.99})", //
+        "{1,1,7,31}");
+    check("Map(InverseCDF(ZipfDistribution(2), #)&, {1/2, 0.9, 0.99, 1})", //
+        "{1,2,6,Infinity}");
+    check("Map(InverseCDF(ZipfDistribution(10, 1), #)&, " //
+        + "{1270080/1968329, 1808100/1968329, 144/205, 0.3, 1})", //
+        "{1,4,2,1,10}");
+    check("Map(InverseCDF(LogSeriesDistribution(1/2), #)&, {0, 1/2, 0.72, 0.99, 1})", //
+        "{1,1,1,5,Infinity}");
+    check("Map(InverseCDF(BorelTannerDistribution(0.7, 3), #)&, {0, 0.5, 0.9, 0.99})", //
+        "{3,7,20,45}");
+    check("Map(InverseCDF(PoissonConsulDistribution(2, 3/10), #)&, {1/2, 0.9, 0.99, 1})", //
+        "{2,6,11,Infinity}");
+    check("Quantile(PoissonConsulDistribution(0.5, 0.8), 0.9)", //
+        "6");
+    // a quantile beyond 2^62 comes from the tail asymptote
+    check("InverseCDF(ZipfDistribution(0.001), 0.5) > 2^62", //
+        "True");
+    check("InverseCDF(LogSeriesDistribution(0.9999999), 0.99)", //
+        "11890643");
+    check("InverseCDF(GeometricDistribution(1/3), q)", //
+        "InverseCDF(GeometricDistribution(1/3),q)");
+    check("InverseCDF(GeometricDistribution(p), 1/2)", //
+        "InverseCDF(GeometricDistribution(p),1/2)");
+    check("InverseCDF(ZipfDistribution(2), 3/2)", //
+        "InverseCDF(ZipfDistribution(2),3/2)");
+    check("InverseCDF(BorelTannerDistribution(2, 1), 1/2)", //
+        "InverseCDF(BorelTannerDistribution(2,1),1/2)");
+    // the CDFs InverseCDF is the inverse of
+    check("{CDF(ZipfDistribution(2), 3), CDF(ZipfDistribution(10,1), 4), CDF(ZipfDistribution(10,1), 12)}", //
+        "{251/(216*Zeta(3)),1808100/1968329,1}");
+    check("{CDF(BorelTannerDistribution(1/2,1), 2), CDF(BorelTannerDistribution(0.5,1), 2), " //
+        + "CDF(BorelTannerDistribution(0.5,1), 0)}", //
+        "{1/(2*E)+1/Sqrt(E),0.79047,0}");
+    check("CDF(BorelTannerDistribution(a,1), 3)", //
+        "CDF(BorelTannerDistribution(a,1),3)");
+    check("{CDF(PoissonConsulDistribution(2,1/2), 1), CDF(PoissonConsulDistribution(2.,0.5), 1)}", //
+        "{2/E^(5/2)+1/E^2,0.299505}");
     // https://github.com/axkr/symja_android_library/issues/147
     check("InverseCDF(StudentTDistribution(24), 0.95)", //
         "1.71088");

@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.Random;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongToDoubleFunction;
+import java.util.function.Supplier;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.special.Beta;
@@ -113,7 +114,7 @@ public class StatisticsDiscreteDistributions {
     return (long) org.hipparchus.util.FastMath.floor(x + 0.5);
   }
 
-  /** Upper end of the inverse CDF search of {@link #sampleBySurvival} for an unbounded support. */
+  /** Upper end of the inverse CDF search of {@link Survival} for an unbounded support. */
   private static final long SAMPLE_SEARCH_LIMIT = 1L << 62;
 
   /** Largest support which {@link #sampleBySurvival} callers tabulate. */
@@ -123,48 +124,299 @@ public class StatisticsDiscreteDistributions {
   private static final int ZIPF_TABLE_SIZE = 1024;
 
   /**
-   * Inverse transform sampling of a discrete distribution: for each draw <code>q</code> uniform in
-   * <code>[0,1)</code> take the smallest <code>k</code> in <code>[lo, hi]</code> with
-   * <code>CDF(k) >= q</code>.
+   * A discrete distribution with numeric parameters, described by its support <code>[lo, hi]</code>
+   * and its survival function <code>P(X > k)</code>. Used for inverse transform sampling and for
+   * the numeric <code>InverseCDF</code>.
    *
    * <p>
-   * The test is made on the survival function as <code>S(k) <= 1 - q</code>, where
-   * <code>1 - q</code> is exact. Computing <code>CDF(k) = 1 - S(k)</code> instead would round every
-   * tail probability below <code>2^-53</code> away, which matters for the heavy tails of
-   * <code>ZipfDistribution</code> and <code>WaringYuleDistribution</code>. {@link #discreteQuantile}
-   * does the search on <code>-S(k) >= q - 1</code>, which is the same condition.
+   * Quantiles test <code>S(k) <= 1 - q</code>, where <code>1 - q</code> is exact. Computing
+   * <code>CDF(k) = 1 - S(k)</code> instead would round every tail probability below
+   * <code>2^-53</code> away, which matters for the heavy tails of <code>ZipfDistribution</code>
+   * and <code>WaringYuleDistribution</code>. {@link #discreteQuantile} does the search on
+   * <code>-S(k) >= q - 1</code>, which is the same condition.
    * </p>
+   */
+  private static final class Survival {
+    final long lo;
+    /** the highest value of the support, or {@link #SAMPLE_SEARCH_LIMIT} if unbounded */
+    final long hi;
+    /** <code>P(X > k)</code> for <code>k</code> in <code>[lo, hi]</code> */
+    final LongToDoubleFunction survival;
+    /**
+     * for an unbounded support, maps <code>1 - q</code> to the logarithm of the quantile beyond
+     * {@link #SAMPLE_SEARCH_LIMIT}; <code>null</code> for a bounded one
+     */
+    final DoubleUnaryOperator logQuantileAsymptote;
+
+    Survival(long lo, long hi, LongToDoubleFunction survival,
+        DoubleUnaryOperator logQuantileAsymptote) {
+      this.lo = lo;
+      this.hi = hi;
+      this.survival = survival;
+      this.logQuantileAsymptote = logQuantileAsymptote;
+    }
+
+    boolean isBounded() {
+      return hi < SAMPLE_SEARCH_LIMIT;
+    }
+
+    boolean isNumeric() {
+      return !Double.isNaN(survival.applyAsDouble(lo));
+    }
+
+    /**
+     * @param q a probability in <code>[0,1)</code>
+     * @return the smallest <code>k</code> with <code>CDF(k) >= q</code>, or {@link F#NIL} if it is
+     *         too large to represent
+     */
+    IExpr quantile(double q) {
+      long k = discreteQuantile(q - 1.0, lo, lo, hi, x -> -survival.applyAsDouble(x));
+      if (k == hi && logQuantileAsymptote != null && !(survival.applyAsDouble(hi) <= 1.0 - q)) {
+        // the quantile is beyond the search limit
+        return integerFromLog(logQuantileAsymptote.applyAsDouble(1.0 - q));
+      }
+      return F.ZZ(k);
+    }
+  }
+
+  /**
+   * Inverse transform sampling: for each draw <code>q</code> uniform in <code>[0,1)</code> take the
+   * smallest <code>k</code> with <code>CDF(k) >= q</code>.
    *
    * @param random the engine's generator, so that <code>SeedRandom</code> reproduces the sample
    * @param size the number of values
-   * @param lo the lowest value of the support
-   * @param hi the highest value of the support, or {@link #SAMPLE_SEARCH_LIMIT} if unbounded
-   * @param survival <code>P(X > k)</code> for <code>k</code> in <code>[lo, hi]</code>
-   * @param logQuantileAsymptote for an unbounded support, maps <code>1 - q</code> to the logarithm
-   *        of the quantile beyond {@link #SAMPLE_SEARCH_LIMIT}; <code>null</code> for a bounded one
-   * @return {@link F#NIL} if the survival function is not a number
+   * @param distribution <code>null</code> if the parameters are not valid numbers
    */
-  private static IExpr sampleBySurvival(Random random, int size, long lo, long hi,
-      LongToDoubleFunction survival, DoubleUnaryOperator logQuantileAsymptote) {
-    if (Double.isNaN(survival.applyAsDouble(lo))) {
+  private static IExpr sampleBySurvival(Random random, int size, Survival distribution) {
+    if (distribution == null || !distribution.isNumeric()) {
       return F.NIL;
     }
     IASTAppendable list = F.ListAlloc(size);
     for (int i = 0; i < size; i++) {
-      double q = random.nextDouble();
-      long k = discreteQuantile(q - 1.0, lo, lo, hi, x -> -survival.applyAsDouble(x));
-      if (k == hi && logQuantileAsymptote != null && !(survival.applyAsDouble(hi) <= 1.0 - q)) {
-        // the quantile is beyond the search limit
-        IExpr huge = integerFromLog(logQuantileAsymptote.applyAsDouble(1.0 - q));
-        if (huge.isNIL()) {
-          return F.NIL;
-        }
-        list.append(huge);
-      } else {
-        list.append(F.ZZ(k));
+      IExpr k = distribution.quantile(random.nextDouble());
+      if (k.isNIL()) {
+        return F.NIL;
       }
+      list.append(k);
     }
     return list;
+  }
+
+  /** Largest quantile whose tie with an exact probability is decided by the exact CDF. */
+  private static final long EXACT_TIE_LIMIT = 1000L;
+
+  /** Largest number of terms which {@link #quantileBySummation} and {@link #cdfBySummation} add. */
+  private static final long SUMMATION_LIMIT = 1L << 30;
+
+  /**
+   * A tail probability small enough to stop a summation: below the resolution <code>2^-53</code>
+   * of a probability <code>q</code>, with room for a tail bound which is not tight.
+   */
+  private static final double NEGLIGIBLE_TAIL = 0x1.0p-60;
+
+  /** Largest number of <code>PDF</code> terms which an exact <code>CDF</code> sums. */
+  private static final int EXACT_CDF_TERMS = 200;
+
+  /**
+   * The numeric <code>InverseCDF(dist, q)</code> of a discrete distribution: the smallest
+   * <code>k</code> in the support with <code>CDF(k) >= q</code>, the lowest value of the support
+   * for <code>q == 0</code> and the highest, possibly <code>Infinity</code>, for <code>q == 1</code>.
+   *
+   * @param dist the distribution
+   * @param probability <code>q</code>; anything but a real number in <code>[0,1]</code> stays
+   *        unevaluated
+   * @param factory the survival function of <code>dist</code>, <code>null</code> for invalid
+   *        parameters; only built once the probability is known to be numeric
+   * @param icdf the distribution's evaluator, whose exact <code>CDF</code> decides ties
+   * @param engine the evaluation engine
+   */
+  private static IExpr inverseCDFBySurvival(IAST dist, IExpr probability,
+      Supplier<Survival> factory, ICDF icdf, EvalEngine engine) {
+    if (!probability.isReal()) {
+      return F.NIL;
+    }
+    double q = ((IReal) probability).doubleValue();
+    if (!(q >= 0.0 && q <= 1.0)) {
+      return F.NIL;
+    }
+    Survival distribution = factory.get();
+    if (distribution == null || !distribution.isNumeric()) {
+      return F.NIL;
+    }
+    if (q == 0.0) {
+      return F.ZZ(distribution.lo);
+    }
+    if (q == 1.0) {
+      return distribution.isBounded() ? F.ZZ(distribution.hi) : F.CInfinity;
+    }
+    return refineAtTie(distribution.quantile(q), distribution.lo, probability, dist, icdf,
+        engine);
+  }
+
+  /**
+   * A quantile found with double precision can be one off where <code>CDF(k)</code> equals an exact
+   * probability <code>q</code>, as <code>q = 2/5</code> does at <code>k = 1</code> for
+   * <code>BetaBinomialDistribution(1, 1, 4)</code>. For exact parameters and an exact
+   * <code>q</code> the neighbours are decided with the distribution's exact <code>CDF</code>;
+   * whatever that cannot decide keeps the double result.
+   */
+  private static IExpr refineAtTie(IExpr quantile, long lo, IExpr probability, IAST dist,
+      ICDF icdf, EvalEngine engine) {
+    if (!probability.isRational() || !dist.forAll(IExpr::isRational) || !quantile.isInteger()) {
+      return quantile;
+    }
+    long k = quantile.toLongDefault();
+    if (k < lo || k > EXACT_TIE_LIMIT) {
+      return quantile;
+    }
+    if (k > lo && cdfAtLeast(icdf, dist, k - 1, probability, engine).isTrue()) {
+      return F.ZZ(k - 1);
+    }
+    if (cdfAtLeast(icdf, dist, k, probability, engine).isFalse()) {
+      return F.ZZ(k + 1);
+    }
+    return quantile;
+  }
+
+  /** <code>CDF(dist, k) >= q</code>, evaluated exactly; neither true nor false if undecided. */
+  private static IExpr cdfAtLeast(ICDF icdf, IAST dist, long k, IExpr probability,
+      EvalEngine engine) {
+    IExpr cdf = icdf.cdf(dist, F.ZZ(k), engine);
+    if (cdf.isNIL()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.GreaterEqual(cdf, probability));
+  }
+
+  /**
+   * The quantile of a discrete distribution without a closed-form survival function, by adding the
+   * probabilities from the lowest value of the support on until they reach <code>q</code>.
+   *
+   * <p>
+   * Once the probabilities decrease, the rest of the tail after a term <code>p</code> is at most
+   * <code>p*r/(1-r)</code>, where <code>r</code> bounds every later ratio of consecutive terms.
+   * That is the current ratio if the ratios decrease, as for a Poisson distribution, or the limit
+   * <code>tailRatio</code> they increase towards, as for the Borel-Tanner distribution. When it is
+   * negligible the sum has stopped short of <code>q</code> only by rounding, so the current value
+   * is the quantile.
+   * </p>
+   *
+   * @param q a probability in <code>(0,1)</code>
+   * @param lo the lowest value of the support
+   * @param logProbability <code>Log(P(X == x))</code> for <code>x >= lo</code>
+   * @param tailRatio the limit, below <code>1</code>, of <code>P(X == x+1)/P(X == x)</code>
+   * @return {@link F#NIL} after {@link #SUMMATION_LIMIT} terms
+   */
+  private static IExpr quantileBySummation(double q, long lo, LongToDoubleFunction logProbability,
+      double tailRatio) {
+    long last = sumProbabilities(lo, SUMMATION_LIMIT, logProbability, tailRatio, q, null);
+    return last < 0L ? F.NIL : F.ZZ(last);
+  }
+
+  /**
+   * <code>CDF(k)</code> as a double, by adding the probabilities from the lowest value of the
+   * support on, see {@link #quantileBySummation}.
+   *
+   * @return <code>NaN</code> after {@link #SUMMATION_LIMIT} terms
+   */
+  private static double cdfBySummation(long k, long lo, LongToDoubleFunction logProbability,
+      double tailRatio) {
+    if (k < lo) {
+      return 0.0;
+    }
+    double[] sum = new double[1];
+    long count = Math.min(k - lo + 1, SUMMATION_LIMIT);
+    long last = sumProbabilities(lo, count, logProbability, tailRatio, 2.0, sum);
+    if (last < 0L && k - lo + 1 > SUMMATION_LIMIT) {
+      return Double.NaN;
+    }
+    return Math.min(1.0, sum[0]);
+  }
+
+  /**
+   * Adds <code>P(X == x)</code> for <code>x = lo, lo+1, ...</code> with Neumaier's compensated
+   * summation.
+   *
+   * @param count the largest number of terms
+   * @param q stop at the first <code>x</code> whose partial sum reaches <code>q</code>
+   * @param result if not <code>null</code>, receives the partial sum
+   * @return the <code>x</code> where the sum reached <code>q</code> or the rest of the tail became
+   *         negligible, or <code>-1</code> if <code>count</code> terms did neither
+   */
+  private static long sumProbabilities(long lo, long count, LongToDoubleFunction logProbability,
+      double tailRatio, double q, double[] result) {
+    double sum = 0.0;
+    double compensation = 0.0;
+    double previous = 0.0;
+    for (long i = 0; i < count; i++) {
+      if ((i & 0xFFFFL) == 0xFFFFL && Thread.currentThread().isInterrupted()) {
+        throw TimeoutException.TIMED_OUT;
+      }
+      long x = lo + i;
+      double term = Math.exp(logProbability.applyAsDouble(x));
+      if (Double.isNaN(term)) {
+        return -1L;
+      }
+      double t = sum + term;
+      compensation += Math.abs(sum) >= Math.abs(term) ? (sum - t) + term : (term - t) + sum;
+      sum = t;
+      if (result != null) {
+        result[0] = sum + compensation;
+      }
+      if (sum + compensation >= q) {
+        return x;
+      }
+      if (i > 0 && term < previous) {
+        double ratio = Math.max(term / previous, tailRatio);
+        if (term == 0.0 || (ratio < 1.0 && term * ratio / (1.0 - ratio) < NEGLIGIBLE_TAIL)) {
+          if (result != null) {
+            result[0] = 1.0;
+          }
+          return x;
+        }
+      }
+      previous = term;
+    }
+    return -1L;
+  }
+
+  /**
+   * The <code>CDF</code> of a discrete distribution without a closed form, for numeric arguments:
+   * the exact sum of its <code>PDF</code> for exact parameters and an exact <code>k</code> (up to
+   * {@link #EXACT_CDF_TERMS} terms), otherwise a double by {@link #cdfBySummation}.
+   *
+   * @param lo the lowest value of the support, or <code>-1</code> if the parameters are invalid
+   * @param logProbability <code>null</code> if the parameters are not valid numbers, which leaves
+   *        the <code>CDF</code> unevaluated
+   */
+  private static IExpr cdfOfNumericArguments(IAST dist, IExpr k, IPDF ipdf, long lo,
+      LongToDoubleFunction logProbability, double tailRatio, EvalEngine engine) {
+    if (k.isInfinity()) {
+      return F.C1;
+    }
+    if (k.isNegativeInfinity()) {
+      return F.C0;
+    }
+    if (!k.isReal() || lo < 0L || logProbability == null) {
+      return F.NIL;
+    }
+    double x = ((IReal) k).doubleValue();
+    if (x < lo) {
+      return F.C0;
+    }
+    long last = (long) Math.floor(Math.min(x, (double) Long.MAX_VALUE / 2));
+    if (k.isRational() && dist.forAll(IExpr::isRational)) {
+      if (last - lo >= EXACT_CDF_TERMS) {
+        return F.NIL;
+      }
+      IASTAppendable sum = F.PlusAlloc((int) (last - lo + 1));
+      for (long j = lo; j <= last; j++) {
+        sum.append(ipdf.pdf(dist, F.ZZ(j), engine));
+      }
+      return engine.evaluate(sum.oneIdentity0());
+    }
+    double cdf = cdfBySummation(last, lo, logProbability, tailRatio);
+    return Double.isNaN(cdf) ? F.NIL : F.num(cdf);
   }
 
   /** Largest mean of a single hipparchus Poisson draw, whose result is an <code>int</code>. */
@@ -1088,22 +1340,27 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
-      return F.NIL;
+      return inverseCDFBySurvival(dist, k, () -> survival(dist), this, engine);
     }
 
-    @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    /** @return <code>null</code> if the parameters are not valid numbers */
+    private static Survival survival(IAST dist) {
       if (dist.isAST1()) {
         double p = dist.arg1().evalfNaN();
         if (0.0 < p && p <= 1.0) {
           // P(X > k) = (1-p)^(k+1)
           double log1mp = Math.log1p(-p);
-          return sampleBySurvival(random, size, 0L, SAMPLE_SEARCH_LIMIT,
+          return new Survival(0L, SAMPLE_SEARCH_LIMIT,
               k -> Math.exp((k + 1.0) * log1mp),
               oneMinusQ -> Math.log(Math.log(oneMinusQ) / log1mp));
         }
       }
-      return F.NIL;
+      return null;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      return sampleBySurvival(random, size, survival(dist));
     }
 
 
@@ -1935,11 +2192,11 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
-      return F.NIL;
+      return inverseCDFBySurvival(dist, k, () -> survival(dist), this, engine);
     }
 
-    @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    /** @return <code>null</code> if the parameters are not valid numbers */
+    private static Survival survival(IAST dist) {
       if (dist.isAST1()) {
         double b = dist.arg1().evalfNaN();
         if (b > 1.0 && Double.isFinite(b)) {
@@ -1947,12 +2204,17 @@ public class StatisticsDiscreteDistributions {
           double logB = Math.log(b);
           double last = Math.ceil(b - 1.0);
           long hi = last < SAMPLE_SEARCH_LIMIT ? Math.max(1L, (long) last) : SAMPLE_SEARCH_LIMIT;
-          return sampleBySurvival(random, size, 1L, hi,
+          return new Survival(1L, hi,
               k -> k >= b - 1.0 ? 0.0 : Math.max(0.0, 1.0 - Math.log1p(k) / logB),
               oneMinusQ -> (1.0 - oneMinusQ) * logB);
         }
       }
-      return F.NIL;
+      return null;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      return sampleBySurvival(random, size, survival(dist));
     }
 
     @Override
@@ -2082,11 +2344,11 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
-      return F.NIL;
+      return inverseCDFBySurvival(dist, k, () -> survival(dist), this, engine);
     }
 
-    @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    /** @return <code>null</code> if the parameters are not valid numbers */
+    private static Survival survival(IAST dist) {
       if (dist.isAST3()) {
         double a = dist.arg1().evalfNaN();
         double b = dist.arg2().evalfNaN();
@@ -2112,10 +2374,15 @@ public class StatisticsDiscreteDistributions {
           }
           // 1 up to rounding
           final double total = tail;
-          return sampleBySurvival(random, size, 0L, n, k -> survival[(int) k] / total, null);
+          return new Survival(0L, n, k -> survival[(int) k] / total, null);
         }
       }
-      return F.NIL;
+      return null;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      return sampleBySurvival(random, size, survival(dist));
     }
 
     @Override
@@ -2195,7 +2462,7 @@ public class StatisticsDiscreteDistributions {
    * <code>BorelTannerDistribution(alpha, n)</code> - the Borel-Tanner distribution.
    */
   private static final class BorelTannerDistribution extends AbstractEvaluator
-      implements IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
+      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public int getSupportLowerBound(IExpr discreteDistribution) {
@@ -2206,6 +2473,57 @@ public class StatisticsDiscreteDistributions {
         }
       }
       return 0;
+    }
+
+    /**
+     * <code>Log(P(X == x)) = Log(n) - Log(x) - a*x + (x-n)*Log(a*x) - LogGamma(x-n+1)</code>, or
+     * <code>null</code> if the parameters are not valid numbers.
+     */
+    private static LongToDoubleFunction logProbability(IAST dist) {
+      double a = dist.arg1().evalfNaN();
+      int n = dist.arg2().toIntDefault();
+      if (!(0.0 < a && a < 1.0) || n < 1) {
+        return null;
+      }
+      double logN = Math.log(n);
+      return x -> logN - Math.log(x) - a * x + (x - n) * Math.log(a * x)
+          - Gamma.logGamma(x - n + 1.0);
+    }
+
+    /** The limit <code>a*E^(1-a)</code> of the ratio of consecutive probabilities. */
+    private static double tailRatio(IAST dist) {
+      double a = dist.arg1().evalfNaN();
+      return a * Math.exp(1.0 - a);
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        int n = dist.arg2().toIntDefault();
+        return cdfOfNumericArguments(dist, k, this, n >= 1 ? n : -1L, logProbability(dist),
+            tailRatio(dist), engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2() && k.isReal()) {
+        LongToDoubleFunction logProbability = logProbability(dist);
+        double q = ((IReal) k).doubleValue();
+        if (logProbability != null && q >= 0.0 && q <= 1.0) {
+          long n = dist.arg2().toIntDefault();
+          if (q == 0.0) {
+            return F.ZZ(n);
+          }
+          if (q == 1.0) {
+            return F.CInfinity;
+          }
+          return refineAtTie(quantileBySummation(q, n, logProbability, tailRatio(dist)), n, k,
+              dist, this, engine);
+        }
+      }
+      return F.NIL;
     }
 
     @Override
@@ -2347,6 +2665,23 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1() && k.isReal()) {
+        double t = dist.arg1().evalfNaN();
+        double q = ((IReal) k).doubleValue();
+        if (0.0 < t && t < 1.0 && q >= 0.0 && q <= 1.0) {
+          if (q == 0.0) {
+            return F.C1;
+          }
+          if (q == 1.0) {
+            return F.CInfinity;
+          }
+          // Log(P(X == x)) = x*Log(t) - Log(x) - Log(-Log(1 - t))
+          double logT = Math.log(t);
+          double logNormalization = Math.log(-Math.log1p(-t));
+          return refineAtTie(quantileBySummation(q, 1L,
+              x -> x * logT - Math.log(x) - logNormalization, t), 1L, k, dist, this, engine);
+        }
+      }
       return F.NIL;
     }
 
@@ -2452,7 +2787,56 @@ public class StatisticsDiscreteDistributions {
    * distribution.
    */
   private static final class PoissonConsulDistribution extends AbstractEvaluator
-      implements IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
+      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IRandomVariate {
+
+    /**
+     * <code>Log(P(X == x)) = Log(mu) + (x-1)*Log(mu + lambda*x) - mu - lambda*x - LogGamma(x+1)</code>,
+     * or <code>null</code> if the parameters are not valid numbers.
+     */
+    private static LongToDoubleFunction logProbability(IAST dist) {
+      double mu = dist.arg1().evalfNaN();
+      double lambda = dist.arg2().evalfNaN();
+      if (!(0.0 < mu && Double.isFinite(mu)) || !(0.0 <= lambda && lambda < 1.0)) {
+        return null;
+      }
+      double logMu = Math.log(mu);
+      return x -> logMu + (x - 1.0) * Math.log(mu + lambda * x) - mu - lambda * x
+          - Gamma.logGamma(x + 1.0);
+    }
+
+    /** The limit <code>lambda*E^(1-lambda)</code> of the ratio of consecutive probabilities. */
+    private static double tailRatio(IAST dist) {
+      double lambda = dist.arg2().evalfNaN();
+      return lambda * Math.exp(1.0 - lambda);
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        return cdfOfNumericArguments(dist, k, this, 0L, logProbability(dist), tailRatio(dist),
+            engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2() && k.isReal()) {
+        LongToDoubleFunction logProbability = logProbability(dist);
+        double q = ((IReal) k).doubleValue();
+        if (logProbability != null && q >= 0.0 && q <= 1.0) {
+          if (q == 0.0) {
+            return F.C0;
+          }
+          if (q == 1.0) {
+            return F.CInfinity;
+          }
+          return refineAtTie(quantileBySummation(q, 0L, logProbability, tailRatio(dist)), 0L, k,
+              dist, this, engine);
+        }
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2596,11 +2980,11 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
-      return F.NIL;
+      return inverseCDFBySurvival(dist, k, () -> survival(dist), this, engine);
     }
 
-    @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    /** @return <code>null</code> if the parameters are not valid numbers */
+    private static Survival survival(IAST dist) {
       IExpr[] shapes = shapes(dist);
       if (shapes != null) {
         double a = shapes[0].evalfNaN();
@@ -2610,12 +2994,17 @@ public class StatisticsDiscreteDistributions {
           double logBeta0 = Beta.logBeta(b, a);
           // P(X > k) ~ Gamma(a+b)/Gamma(b)*k^(-a) for large k
           double logConstant = Gamma.logGamma(a + b) - Gamma.logGamma(b);
-          return sampleBySurvival(random, size, 0L, SAMPLE_SEARCH_LIMIT,
+          return new Survival(0L, SAMPLE_SEARCH_LIMIT,
               k -> Math.exp(Beta.logBeta(b + k + 1.0, a) - logBeta0),
               oneMinusQ -> (logConstant - Math.log(oneMinusQ)) / a);
         }
       }
-      return F.NIL;
+      return null;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      return sampleBySurvival(random, size, survival(dist));
     }
 
     @Override
@@ -2695,7 +3084,7 @@ public class StatisticsDiscreteDistributions {
    * (finite Zipf distribution).
    */
   private static final class ZipfDistribution extends AbstractEvaluator
-      implements IDiscreteDistribution, IPDF, IStatistics, IGeneratingFunction,
+      implements ICDF, IDiscreteDistribution, IPDF, IStatistics, IGeneratingFunction,
       IRandomVariate {
 
     @Override
@@ -2726,8 +3115,37 @@ public class StatisticsDiscreteDistributions {
     }
 
     @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST1()) {
+        IExpr r = dist.arg1();
+        // Piecewise({{HarmonicNumber(Floor(#), 1 + r)/Zeta(1 + r), # >= 1}}, 0) &
+        return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+            F.Divide(F.HarmonicNumber(F.Floor(F.Slot1), F.Plus(F.C1, r)), F.Zeta(F.Plus(F.C1, r))),
+            F.GreaterEqual(F.Slot1, F.C1))), F.C0)), k);
+      }
+      if (dist.isAST2()) {
+        IExpr n = dist.arg1();
+        IExpr r = dist.arg2();
+        // Piecewise({{HarmonicNumber(Floor(#), 1 + r)/HarmonicNumber(n, 1 + r), 1 <= # < n},
+        // {1, # >= n}}, 0) &
+        return callFunction(F.Function(F.Piecewise(F.list(//
+            F.list(
+                F.Divide(F.HarmonicNumber(F.Floor(F.Slot1), F.Plus(F.C1, r)),
+                    F.HarmonicNumber(n, F.Plus(F.C1, r))),
+                F.And(F.LessEqual(F.C1, F.Slot1), F.Less(F.Slot1, n))), //
+            F.list(F.C1, F.GreaterEqual(F.Slot1, n))), F.C0)), k);
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.NIL;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      return inverseCDFBySurvival(dist, k, () -> survival(dist), this, engine);
     }
 
     @Override
@@ -2735,8 +3153,8 @@ public class StatisticsDiscreteDistributions {
       return ARGS_1_2;
     }
 
-    @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
+    /** @return <code>null</code> if the parameters are not valid numbers */
+    private static Survival survival(IAST dist) {
       double rho;
       // 0 for the unbounded zeta distribution
       int n;
@@ -2747,13 +3165,13 @@ public class StatisticsDiscreteDistributions {
         n = dist.arg1().toIntDefault();
         rho = dist.arg2().evalfNaN();
         if (n < 1) {
-          return F.NIL;
+          return null;
         }
       } else {
-        return F.NIL;
+        return null;
       }
       if (!(rho > 0.0) || !Double.isFinite(rho)) {
-        return F.NIL;
+        return null;
       }
       final double s = 1.0 + rho;
       if (n > 0 && n <= SAMPLE_TABLE_LIMIT) {
@@ -2763,7 +3181,7 @@ public class StatisticsDiscreteDistributions {
           suffix[j] = suffix[j + 1] + Math.pow(j, -s);
         }
         final double total = suffix[1];
-        return sampleBySurvival(random, size, 1L, n, k -> suffix[(int) k + 1] / total, null);
+        return new Survival(1L, n, k -> suffix[(int) k + 1] / total, null);
       }
       // suffix[j] = Sum(i^(-s), {i, j, Infinity}) == HurwitzZeta(s, j)
       double[] suffix = new double[ZIPF_TABLE_SIZE + 2];
@@ -2777,15 +3195,20 @@ public class StatisticsDiscreteDistributions {
         // P(X > k) = HurwitzZeta(s, k+1)/Zeta(s) ~ k^(-rho)/(rho*Zeta(s)) for large k
         final double zeta = suffix[1];
         final double logConstant = -Math.log(rho * zeta);
-        return sampleBySurvival(random, size, 1L, SAMPLE_SEARCH_LIMIT,
+        return new Survival(1L, SAMPLE_SEARCH_LIMIT,
             k -> tail.applyAsDouble(k + 1) / zeta,
             oneMinusQ -> (logConstant - Math.log(oneMinusQ)) / rho);
       }
       // P(X > k) = (HurwitzZeta(s, k+1) - HurwitzZeta(s, n+1))/HarmonicNumber(n, s)
       final double end = tail.applyAsDouble(n + 1L);
       final double total = suffix[1] - end;
-      return sampleBySurvival(random, size, 1L, n,
+      return new Survival(1L, n,
           k -> Math.max(0.0, tail.applyAsDouble(k + 1) - end) / total, null);
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      return sampleBySurvival(random, size, survival(dist));
     }
 
     @Override
