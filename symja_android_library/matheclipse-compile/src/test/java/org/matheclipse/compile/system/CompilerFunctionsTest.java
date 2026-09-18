@@ -1401,4 +1401,111 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           + "Module({s = 0.}, Table(If(i > 1, s += 1.), {i, 3}); s))[3.]", "2.0");
     }
   }
+
+  /**
+   * <code>RuntimeAttributes -> {Listable}</code> threads over the dimensions of an argument beyond
+   * the rank its argument template declares, one dimension at a time, and passes an argument of
+   * exactly that rank through unchanged (port of Woxi #807).
+   *
+   * <p>
+   * Before this the engine's own Listable threading took every list argument apart, so an
+   * array-typed argument was peeled down to its scalars: even a call at exactly the declared rank
+   * ended in a <code>NullPointerException</code> or computed with <code>Null</code> in place of the
+   * array. The parameter is named <code>seg</code>, not Woxi's <code>line</code>: in relaxed syntax
+   * <code>line</code> is the builtin <code>Line</code>.
+   */
+  @Test
+  public void testCompileListableArrayRank() {
+    if (ToggleFeature.COMPILE) {
+      check("f = Compile({{seg, _Real, 2}}, Length(seg), RuntimeAttributes -> {Listable});", //
+          "");
+      // Length of a compiled array is an integer, as in the Wolfram Language (Woxi prints 2.)
+      check("f({{{1., 1.}, {2., 2.}}, {{3., 3.}, {4., 4.}}, {{5., 5.}, {6., 6.}}})", //
+          "{2,2,2}");
+      assertEquals("",
+          messagesOf("f({{{1., 1.}, {2., 2.}}, {{3., 3.}, {4., 4.}}, {{5., 5.}, {6., 6.}}})"));
+      // exactly the declared rank: no threading
+      check("f({{1., 1.}, {2., 2.}})", //
+          "2");
+
+      // more than one excess dimension threads recursively
+      check("g = Compile({{m, _Real, 2}}, Total(Flatten(m)), RuntimeAttributes -> {Listable});", //
+          "");
+      check("g({{{{1., 2.}, {3., 4.}}}, {{{5., 6.}, {7., 8.}}}})", //
+          "{{10.0},{26.0}}");
+
+      // an array argument and a scalar argument, threaded together or broadcast
+      check("h = Compile({{v, _Real, 1}, {c, _Real}}, v.v + c, RuntimeAttributes -> {Listable});", //
+          "");
+      check("h({1., 2.}, 10.)", //
+          "15.0");
+      check("h({{1., 2.}, {3., 4.}}, 10.)", //
+          "{15.0,35.0}");
+      check("h({{1., 2.}, {3., 4.}}, {10., 20.})", //
+          "{15.0,45.0}");
+
+      // a ragged list is threaded over its outer level
+      check("q = Compile({{v, _Integer, 1}}, Total(v), RuntimeAttributes -> {Listable});", //
+          "");
+      check("q({{1, 2}, {3, 4, 5}})", //
+          "{3,12}");
+
+      // the Koch snowflake shape: a kernel on one segment, reapplied by Nest to its own result
+      check("koch = Compile({{s, _Real, 2}}, {{s[[1]], (2.*s[[1]] + s[[2]])/3.},"
+          + " {(2.*s[[1]] + s[[2]])/3., (s[[1]] + 2.*s[[2]])/3.},"
+          + " {(s[[1]] + 2.*s[[2]])/3., s[[2]]}}, RuntimeAttributes -> {Listable});", //
+          "");
+      check("Dimensions(Nest(koch, {{0., 0.}, {3., 0.}}, 2))", //
+          "{3,3,2,2}");
+
+      // scalar parameters thread as before
+      check("k = Compile({x, y}, x + 2*y, RuntimeAttributes -> {Listable});", //
+          "");
+      check("k({1., 2.}, {10., 20.})", //
+          "{21.0,42.0}");
+      // unequal lengths, Wolfram Language ground truth: CompiledFunction::tdlen, the uncompiled
+      // expression is evaluated (with its own Thread::tdlen), then CompiledFunction::cfsa names the
+      // argument the compiled code could not take
+      check("k({1., 2.}, {1., 2., 3.})", //
+          "{1.0,2.0}+{2.0,4.0,6.0}");
+      String messages = messagesOf("k({1., 2.}, {1., 2., 3.})");
+      int tdlen = messages.indexOf("CompiledFunction: Arguments of unequal length in");
+      int thread = messages.indexOf(
+          "Thread: Objects of unequal length in {1.0,2.0}+{2.0,4.0,6.0} cannot be combined.");
+      int cfsa = messages.indexOf("CompiledFunction: Argument {1.0,2.0} at position 1 should be a"
+          + " machine-size real number.");
+      assertTrue(0 <= tdlen && tdlen < thread && thread < cfsa, messages);
+      assertTrue(!messages.contains("Numerical error"), messages);
+    }
+  }
+
+  /**
+   * An array argument of the wrong rank is reported by name, position and rank, and takes the
+   * uncompiled fallback. The vector and matrix conversions answer <code>null</code> for such an
+   * argument, which used to reach the body as a <code>NullPointerException</code>.
+   */
+  @Test
+  public void testCompileArrayArgumentWrongRank() {
+    if (ToggleFeature.COMPILE) {
+      check("p = Compile({{v, _Real, 1}}, Length(v));", //
+          "");
+      check("p({1., 2., 3.})", //
+          "3");
+      assertEquals("", messagesOf("p({1., 2., 3.})"));
+      check("p({{1., 2.}, {3., 4.}})", //
+          "2");
+      // the Wolfram Language's message, word for word
+      assertTrue(messagesOf("p({{1., 2.}, {3., 4.}})").contains("CompiledFunction: Argument"
+          + " {{1.0,2.0},{3.0,4.0}} at position 1 should be a rank 1 tensor of machine-size real"
+          + " numbers."));
+      check("p(5.)", //
+          "0");
+
+      check("pq = Compile({{v, _Real, 1}}, Length(v),"
+          + " RuntimeOptions -> {\"EvaluateSymbolically\" -> False});", //
+          "");
+      assertTrue(evaluator.eval("pq(5.)").head() instanceof
+          org.matheclipse.compile.expression.CompiledFunctionExpr);
+    }
+  }
 }

@@ -157,6 +157,7 @@ public class Errors {
       "cfro",
       "Value of option RuntimeOptions -> `1` should be Automatic, \"Speed\", \"Quality\", a rule or a list of rules.", //
       "cfsa", "Argument `1` at position `2` should be a machine-size `3`.", //
+      "cfta", "Argument `1` at position `2` should be a rank `3` tensor of machine-size `4`.", //
       "cfdrop", "`1` cannot be applied to one sample by `2` and was ignored.", //
       "cfeval", "The ColorFunction of `1` did not evaluate to a color; using the default coloring.", //
       "cfname", "`1` is not a known color gradient for `2`; using the default coloring.", //

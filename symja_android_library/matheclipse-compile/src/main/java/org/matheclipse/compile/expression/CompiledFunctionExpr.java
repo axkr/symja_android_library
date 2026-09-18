@@ -1,5 +1,6 @@
 package org.matheclipse.compile.expression;
 
+import java.util.Arrays;
 import org.matheclipse.compile.RuntimeOptions;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.compile.ICompiledFunction;
@@ -23,9 +24,19 @@ import org.matheclipse.core.visit.IVisitorLong;
 public class CompiledFunctionExpr implements IDataExpr<Class<?>>, ICompiledFunction {
   private static final long serialVersionUID = 3098987741558862963L;
 
-  public static CompiledFunctionExpr newInstance(IAST variables, IAST types, IExpr expr,
-      Class<?> clazz, IExpr runtimeAttributes, RuntimeOptions runtimeOptions) {
-    return new CompiledFunctionExpr(variables, types, expr, clazz, runtimeAttributes,
+  /**
+   * @param variables the argument variables, in order
+   * @param types the declared type of each argument's entries
+   * @param ranks the declared array rank of each argument: 0 for a scalar, 1 for a vector, 2 for a
+   *        matrix
+   * @param expr the uncompiled body
+   * @param clazz the generated class
+   * @param runtimeAttributes the <code>RuntimeAttributes</code> option value
+   * @param runtimeOptions the normalized <code>RuntimeOptions</code>
+   */
+  public static CompiledFunctionExpr newInstance(IAST variables, IAST types, int[] ranks,
+      IExpr expr, Class<?> clazz, IExpr runtimeAttributes, RuntimeOptions runtimeOptions) {
+    return new CompiledFunctionExpr(variables, types, ranks, expr, clazz, runtimeAttributes,
         runtimeOptions);
   }
 
@@ -67,17 +78,19 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>>, ICompiledFunct
   protected transient Class<?> compiledJavaClass = null;
   private IAST variables;
   private IAST types;
+  private int[] ranks;
   private IExpr expr;
   private IAST runtimeAttributes;
   private RuntimeOptions runtimeOptions;
 
   private int attributes = ISymbol.NOATTRIBUTE;
 
-  protected CompiledFunctionExpr(IAST variables, IAST types, IExpr expr, Class<?> clazz,
-      IExpr runtimeAttributes, RuntimeOptions runtimeOptions) {
+  protected CompiledFunctionExpr(IAST variables, IAST types, int[] ranks, IExpr expr,
+      Class<?> clazz, IExpr runtimeAttributes, RuntimeOptions runtimeOptions) {
     this.compiledJavaClass = clazz;
     this.variables = variables;
     this.types = types;
+    this.ranks = ranks == null ? new int[variables.argSize()] : ranks;
     this.expr = expr;
     this.runtimeAttributes =
         runtimeAttributes.isPresent() ? runtimeAttributes.makeList() : F.CEmptyList;
@@ -123,6 +136,10 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>>, ICompiledFunct
       if (typesCmp != 0)
         return typesCmp;
 
+      int ranksCmp = Arrays.compare(ranks, compiledFunctionExpr.ranks);
+      if (ranksCmp != 0)
+        return ranksCmp;
+
       int runtimeAttributesCmp =
           runtimeAttributes.compareTo(compiledFunctionExpr.runtimeAttributes);
       if (runtimeAttributesCmp != 0)
@@ -138,8 +155,8 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>>, ICompiledFunct
 
   @Override
   public IExpr copy() {
-    return new CompiledFunctionExpr(variables, types, expr, compiledJavaClass, runtimeAttributes,
-        runtimeOptions);
+    return new CompiledFunctionExpr(variables, types, ranks, expr, compiledJavaClass,
+        runtimeAttributes, runtimeOptions);
   }
 
   @Override
@@ -154,6 +171,7 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>>, ICompiledFunct
       return expr.equals(compiledFunctionExpr.expr) //
           && variables.equals(compiledFunctionExpr.variables) //
           && types.equals(compiledFunctionExpr.types) //
+          && Arrays.equals(ranks, compiledFunctionExpr.ranks) //
           && runtimeAttributes.equals(compiledFunctionExpr.runtimeAttributes) //
           && runtimeOptions.equals(compiledFunctionExpr.runtimeOptions);
     }
@@ -201,11 +219,20 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>>, ICompiledFunct
   }
 
   /**
-   * The declared type of each argument, in order. Note that this does not record the rank of an
-   * argument: a vector or matrix argument is listed by the type of its entries.
+   * The declared type of each argument, in order. A vector or matrix argument is listed by the type
+   * of its entries; its rank is in {@link #getRanks()}.
    */
   public IAST getTypes() {
     return types;
+  }
+
+  /**
+   * The declared array rank of each argument, in order: 0 for a scalar, 1 for a vector, 2 for a
+   * matrix. A <code>Listable</code> compiled function threads over the dimensions of an argument
+   * beyond this rank.
+   */
+  public int[] getRanks() {
+    return ranks;
   }
 
   public IExpr getRuntimeAttributes() {
@@ -225,7 +252,7 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>>, ICompiledFunct
   @Override
   public int hashCode() {
     return 461 + expr.hashCode() + 17 * runtimeAttributes.hashCode()
-        + 23 * runtimeOptions.hashCode();
+        + 23 * runtimeOptions.hashCode() + 31 * Arrays.hashCode(ranks);
   }
 
   @Override
