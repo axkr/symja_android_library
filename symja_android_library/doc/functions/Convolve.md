@@ -27,6 +27,16 @@ Sin(y)
 Sqrt(Pi/2)/E^(y^2/2)
 ```
 
+Shifted Gaussians and normal densities: the shifts add up and the variances add up.
+
+```
+>> Convolve(E^(-(x-2)^2), E^(-(x-1)^2), x, y)
+Sqrt(Pi/2)/E^((3-y)^2/2)
+
+>> Convolve(PDF(NormalDistribution(0, 1), x - t), PDF(NormalDistribution(0, 1), x - s), x, y)
+1/(2*E^((-s-t+y)^2/4)*Sqrt(Pi))
+```
+
 ### Related terms 
-[ListConvolve](ListConvolve.md)
+[ListConvolve](ListConvolve.md), [NormalDistribution](NormalDistribution.md), [PDF](PDF.md)
 
