@@ -705,7 +705,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // and bailing out on those cost testIntegrateRationalizeSurdDenominator its answer.
           boolean unfinishedSubstitution =
               containsRubiInternals(rubiResult) && !rubiResult.isFree(S.Integrate, true);
-          if (!rubiResult.equals(ast) && !unfinishedSubstitution) {
+          // A finite integrand has no infinite antiderivative: the generic rule for
+          // E^(I*k*x)*Sec(a*x) divides by a - k, which is zero when the two frequencies agree, and
+          // answered ComplexInfinity. Leave it to the stages below, which write the exponential as
+          // Cos and Sin.
+          // A finite integrand has no infinite antiderivative: the generic rule for
+          // E^(I*k*x)*Sec(a*x) divides by a - k, which is zero when the two frequencies agree, and
+          // answered ComplexInfinity. Leave it to the stages below, which write the exponential as
+          // Cos and Sin.
+          if (!rubiResult.equals(ast) && !unfinishedSubstitution
+              && isFiniteAntiderivative(rubiResult)) {
             return rubiResult;
           }
         }
@@ -741,6 +750,17 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (result.isPresent()) {
             return result;
           }
+          // An exponential times a trigonometric function of the same frequency, written with
+          // Cos and Sin: E^(-I*a*x)*Sec(a*x) is 1 - I*Tan(a*x), whose integral is elementary,
+          // while the rules read it as the degenerate case of two different frequencies.
+          // An exponential times a trigonometric function of the same frequency, written with
+          // Cos and Sin: E^(-I*a*x)*Sec(a*x) is 1 - I*Tan(a*x), whose integral is elementary,
+          // while the rules read it as the degenerate case of two different frequencies.
+          result = quietStage(engine, fx, x, "writing the exponential as Cos and Sin",
+              () -> integrateExponentialTimesTrig(fx, x, engine));
+          if (result.isPresent()) {
+            return result;
+          }
           // Weierstrass t=Tan(x/2) substitution for rational trigonometric integrands.
           // result = WeierstrassIntegration.integrate(fx, x, engine);
           // if (result.isPresent()) {
@@ -769,6 +789,44 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       engine.setAssumptions(oldAssumptions);
       engine.setNumericMode(oldNumericMode);
     }
+  }
+
+  /**
+   * Whether <code>antiderivative</code> is a function rather than an infinity: an indefinite
+   * integral of a finite integrand never is one.
+   */
+  private static boolean isFiniteAntiderivative(IExpr antiderivative) {
+    return antiderivative.isFree(x -> x.isDirectedInfinity() || x.isIndeterminate()
+        || x == S.ComplexInfinity || x == S.Infinity, true);
+  }
+
+  /**
+   * The integral of an exponential times a trigonometric or hyperbolic function, both of a linear
+   * argument, with the exponential written as <code>Cos</code> and <code>Sin</code>, or
+   * {@link F#NIL}.
+   *
+   * <p>
+   * The rules integrate <code>E^(I*k*x)*Sec(a*x)</code> through a hypergeometric function over
+   * <code>a - k</code>, which is the wrong form when the two frequencies agree: there the
+   * integrand is <code>1 - I*Tan(a*x)</code> and the integral elementary. Expanding the
+   * exponential first leaves a sum of such terms.
+   */
+  private static IExpr integrateExponentialTimesTrig(IAST fx, IExpr x, EvalEngine engine) {
+    if (!fx.isTimes() || fx.isFree(y -> y.isExp() && !y.exponent().isFree(x), true)) {
+      return F.NIL;
+    }
+    if (fx.isFree(y -> y.isTrigFunction() || y.isHyperbolicFunction(), true)) {
+      return F.NIL;
+    }
+    IExpr expanded = engine.evaluate(F.Expand(F.ExpToTrig(fx)));
+    if (expanded.equals(fx) || !expanded.isFree(y -> y.isExp(), true)) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(F.Integrate(expanded, x));
+    if (result.isFree(S.Integrate, true) && isFiniteAntiderivative(result)) {
+      return result;
+    }
+    return F.NIL;
   }
 
   /**

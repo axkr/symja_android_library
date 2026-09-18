@@ -387,6 +387,21 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntegrateExponentialTimesTrigOfTheSameFrequency() {
+    // the generic rule divides by the difference of the two frequencies, and answered
+    // ComplexInfinity where they agree; written as Cos and Sin the integrand is 1 - I*Tan(a*x)
+    check("Integrate(E^(-I*a*x)*Sec(a*x), x)", //
+        "x+(I*Log(Cos(a*x)))/a");
+    check("Integrate(E^(-I*a*x)*Csc(a*x), x)", //
+        "-I*x+Log(Sin(a*x))/a");
+    check("Integrate(E^(-2*x)*Sech(2*x), x)", //
+        "2*x-Log(1+E^(4*x))/2");
+    // two different frequencies keep the hypergeometric answer
+    check("Integrate(E^(-I*a*x)*Sec(b*x), x)", //
+        "(I*2*E^((-I*a+I*b)*x)*Hypergeometric2F1(1,1/2*(1-a/b),1/2*(3-a/b),-E^(I*2*b*x)))/(a-b)");
+  }
+
+  @Test
   public void testIntegratePiecewiseFactorDeclines() {
     // used to leak Rubi's utility function into the unevaluated integral:
     // Integrate(E^t*Piecewise({{2,0<=t<=1}},Rubi`trigsimplifyrecur(0)),t).
