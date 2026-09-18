@@ -12,23 +12,34 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.StaticTransform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
- * Properties of the solar system bodies, in the calling convention the Demonstrations use.
+ * Properties of the solar system bodies: <code>AstronomicalData</code> and
+ * <code>PlanetData</code>.
  *
  * <p>
- * <code>AstronomicalData(n)</code> names the <code>n</code>th major body counting outwards from the
- * Sun and <code>AstronomicalData(body, {"Position", date})</code> gives where it is, so that the
- * two compose: <code>AstronomicalData(AstronomicalData(k), {"Position", t})</code> is how a
- * notebook walks the planets.
+ * Mathematica has superseded <code>AstronomicalData</code> by <code>PlanetData</code> and
+ * <code>StarData</code>, so both spellings are here: the older one because that is what the
+ * Demonstrations call - <code>AstronomicalData(n)</code> names the <code>n</code>th major body
+ * counting outwards from the Sun, so that <code>AstronomicalData(AstronomicalData(k), {"Position",
+ * t})</code> composes - and <code>PlanetData</code> because that is what is written now.
+ *
+ * <p>
+ * They differ in what they cover and in what they answer with. <code>AstronomicalData</code> takes
+ * the Sun, the Moon and Pluto as well, and gives a position in meters; <code>PlanetData</code> is
+ * the eight planets, and gives <code>HelioCoordinates</code> as a <code>Quantity</code> in
+ * astronomical units. Both read the same ephemerides.
  *
  * <p>
  * The position is heliocentric and referred to the mean ecliptic and equinox of J2000 - a frame
@@ -36,7 +47,7 @@ import org.orekit.utils.IERSConventions;
  * It comes from the bundled DE ephemerides rather than from a two body approximation, which is
  * what {@link AstroOrbitFunctions} would give.
  */
-public class AstronomicalDataFunctions {
+public class SolarSystemDataFunctions {
 
   /**
    * The major bodies in the order <code>AstronomicalData(n)</code> counts them, outwards from the
@@ -53,10 +64,15 @@ public class AstronomicalDataFunctions {
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
    */
+  /** The planets, as <code>PlanetData()</code> counts them: the eight, without Pluto. */
+  private static final String[] PLANETS = {"Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
+      "Uranus", "Neptune"};
+
   private static class Initializer {
 
     private static void init() {
       S.AstronomicalData.setEvaluator(new AstronomicalData());
+      S.PlanetData.setEvaluator(new PlanetData());
     }
   }
 
@@ -103,14 +119,9 @@ public class AstronomicalDataFunctions {
       if (!AstroDataContext.checkAvailable(S.AstronomicalData, engine)) {
         return F.NIL;
       }
-      AbsoluteDate date;
-      if (dateExpr.isPresent()) {
-        date = AstroConvert.toAbsoluteDate(dateExpr);
-        if (date == null) {
-          return AstroConvert.reportUnreadableArgument(S.AstronomicalData, dateExpr, ast, engine);
-        }
-      } else {
-        date = AstroConvert.nowUTC();
+      AbsoluteDate date = dateOf(dateExpr, S.AstronomicalData, ast, engine);
+      if (date == null) {
+        return F.NIL;
       }
       try {
         Vector3D position = heliocentricEclipticPosition(bodyName, date);
@@ -130,6 +141,107 @@ public class AstronomicalDataFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+  }
+
+  /**
+   * <code>PlanetData()</code>, or <code>PlanetData(planet, "HelioCoordinates")</code> - the
+   * spelling which replaced <code>AstronomicalData</code>.
+   *
+   * <p>
+   * Only the eight planets answer to it, and the coordinates come back in astronomical units, both
+   * as in Mathematica (measured 2026-09-18).
+   */
+  private static final class PlanetData extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        // the planets themselves, which Mathematica gives as entities and this as their names
+        IASTAppendable planets = F.ListAlloc(PLANETS.length);
+        for (String planet : PLANETS) {
+          planets.append(F.stringx(planet));
+        }
+        return planets;
+      }
+      String bodyName = planetNamed(ast.arg1());
+      if (bodyName == null) {
+        return Errors.printMessage(S.PlanetData, "astrobody", F.List(ast.arg1(), ast), engine);
+      }
+      if (ast.isAST1()) {
+        return F.stringx(bodyName);
+      }
+      IExpr property = ast.arg2();
+      IExpr dateExpr = F.NIL;
+      if (property.isList() && ((IAST) property).argSize() >= 1) {
+        IAST spec = (IAST) property;
+        property = spec.arg1();
+        if (spec.argSize() >= 2) {
+          dateExpr = spec.arg2();
+        }
+      }
+      if (!property.isString("HelioCoordinates")) {
+        return Errors.printMessage(S.PlanetData, "astroprop", F.List(property, ast), engine);
+      }
+      if (!AstroDataContext.checkAvailable(S.PlanetData, engine)) {
+        return F.NIL;
+      }
+      AbsoluteDate date = dateOf(dateExpr, S.PlanetData, ast, engine);
+      if (date == null) {
+        return F.NIL;
+      }
+      try {
+        Vector3D position = heliocentricEclipticPosition(bodyName, date);
+        return F.List(astronomicalUnits(position.getX()), astronomicalUnits(position.getY()),
+            astronomicalUnits(position.getZ()));
+      } catch (OrekitException oex) {
+        return Errors.printMessage(S.PlanetData, "orekitdata",
+            F.List(F.stringx(oex.getMessage())), engine);
+      }
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+  }
+
+  /** The name of the planet {@code expr} names, or {@code null} when it names something else. */
+  private static String planetNamed(IExpr expr) {
+    String name = AstroBodies.nameOf(expr);
+    if (name != null) {
+      for (String planet : PLANETS) {
+        if (planet.equals(name)) {
+          return planet;
+        }
+      }
+    }
+    return null;
+  }
+
+  /** A length in meters as a <code>Quantity</code> in astronomical units. */
+  private static IExpr astronomicalUnits(double meters) {
+    return F.Quantity(F.num(meters / Constants.IAU_2012_ASTRONOMICAL_UNIT),
+        F.stringx("AstronomicalUnit"));
+  }
+
+  /**
+   * The date a property specification asked for, defaulting to now; {@code null} when it is no date
+   * at all, in which case the message is already reported.
+   */
+  private static AbsoluteDate dateOf(IExpr dateExpr, ISymbol symbol, IAST ast, EvalEngine engine) {
+    if (!dateExpr.isPresent()) {
+      return AstroConvert.nowUTC();
+    }
+    AbsoluteDate date = AstroConvert.toAbsoluteDate(dateExpr);
+    if (date == null) {
+      AstroConvert.reportUnreadableArgument(symbol, dateExpr, ast, engine);
+    }
+    return date;
   }
 
   /**
@@ -156,5 +268,5 @@ public class AstronomicalDataFunctions {
     Initializer.init();
   }
 
-  private AstronomicalDataFunctions() {}
+  private SolarSystemDataFunctions() {}
 }

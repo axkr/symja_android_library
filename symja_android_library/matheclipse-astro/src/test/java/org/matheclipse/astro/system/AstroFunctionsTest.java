@@ -720,6 +720,38 @@ public class AstroFunctionsTest extends AbstractTestCase {
         "3");
   }
 
+  /**
+   * <code>PlanetData</code> is the spelling which superseded <code>AstronomicalData</code>: the
+   * eight planets, and coordinates in astronomical units. Both measured in Mathematica 2026-09-18,
+   * where <code>PlanetData[]</code> is those eight as entities and <code>"Position"</code> is not a
+   * property of a planet.
+   */
+  @Test
+  public void testPlanetData() {
+    check("PlanetData()", //
+        "{Mercury,Venus,Earth,Mars,Jupiter,Saturn,Uranus,Neptune}");
+    check("QuantityUnit(First(PlanetData(\"Mars\", \"HelioCoordinates\")))", //
+        "AstronomicalUnit");
+    // the Earth is at perihelion in early January, 0.983 astronomical units from the Sun
+    check("Round(1000*Norm(QuantityMagnitude(PlanetData(\"Earth\","
+        + " {\"HelioCoordinates\", DateObject({2020,1,1})}))))", //
+        "983");
+    // Pluto is a planet to the older function and not to this one
+    check("PlanetData(\"Pluto\", \"HelioCoordinates\")", //
+        "PlanetData(Pluto,HelioCoordinates)");
+    check("PlanetData(\"Mars\", \"Position\")", //
+        "PlanetData(Mars,Position)");
+  }
+
+  /** The two spellings read the same ephemerides, so they answer with the same vector. */
+  @Test
+  public void testPlanetDataAgreesWithAstronomicalData() {
+    check("Chop(149597870700 * QuantityMagnitude(PlanetData(\"Mars\","
+        + " {\"HelioCoordinates\", DateObject({2020,1,1})}))"
+        + " - AstronomicalData(\"Mars\", {\"Position\", DateObject({2020,1,1})}), 1)", //
+        "{0,0,0}");
+  }
+
   @Test
   public void testUnknownBody() {
     check("AstroDistance(\"Vulcan\", DateObject({2026,6,21}))", //
