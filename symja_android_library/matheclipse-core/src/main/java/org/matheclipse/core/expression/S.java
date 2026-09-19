@@ -15532,6 +15532,16 @@ public class S {
   public final static IBuiltInSymbol Nonexistent = S.initFinalSymbol("Nonexistent", ID.Nonexistent);
 
   /**
+   * NonlinearModelFit(x) - TODO describe `NonlinearModelFit`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NonlinearModelFit.md">NonlinearModelFit
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NonlinearModelFit =
+      S.initFinalSymbol("NonlinearModelFit", ID.NonlinearModelFit);
+
+  /**
    * NonNegative(x) - returns `True` if `x` is a positive real number or zero.
    * 
    * @see <a href=
