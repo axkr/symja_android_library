@@ -60,7 +60,9 @@ public class ParametricPlot extends Plot {
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
     graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
+    // the points are adaptive samples of a function, not data, so markers are spaced out
+    graphicsOptions.setSampledCurve(true);
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     // a parametric curve's colour function is given the parameter alongside the coordinates

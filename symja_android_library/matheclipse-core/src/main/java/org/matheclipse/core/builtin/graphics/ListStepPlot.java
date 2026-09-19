@@ -80,7 +80,7 @@ public class ListStepPlot extends ListPlot {
         extent = Math.min(1.0, e);
       }
     }
-    IExpr stepMarkers = GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic);
+    IExpr stepMarkers = GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None);
 
     IAST dataList = (IAST) dataArg;
     if (dataList.isAssociation()) {
@@ -162,6 +162,9 @@ public class ListStepPlot extends ListPlot {
   private boolean generateStepPrimitives(IASTAppendable primitives, IAST data, StepType type,
       boolean joined, IExpr style, GraphicsOptions opts, EvalEngine engine, double extent,
       IExpr markers) {
+    // the same reading of PlotMarkers the rest of the family uses
+    final org.matheclipse.core.graphics.PlotMarkersSpec markerSpec =
+        org.matheclipse.core.graphics.PlotMarkersSpec.of(markers);
 
     Function<IExpr, IExpr> fx = opts.xFunction();
     Function<IExpr, IExpr> fy = opts.yFunction();
@@ -257,10 +260,8 @@ public class ListStepPlot extends ListPlot {
       if (extent < 1.0) {
         xNext = x + (xNext - x) * extent;
       }
-      if (markers.isPresent() && markers != S.Automatic && !markers.isNone() && !Double.isNaN(y)) {
-        IExpr marker =
-            markers.isList() && ((IAST) markers).argSize() > 0 ? ((IAST) markers).arg1() : markers;
-        group.append(F.Text(marker, F.List(F.num(x), F.num(y))));
+      if (markerSpec != null && !Double.isNaN(y)) {
+        group.append(F.Text(markerSpec.markerAt(0), F.List(F.num(x), F.num(y))));
       }
 
       double[] pNextVal = (i < n - 1) ? points.get(i + 1) : null;

@@ -313,15 +313,17 @@ public class GraphicsOptions {
             S.LabelStyle, S.ColorFunction, S.ColorFunctionScaling, S.ScalingFunctions,
             S.PerformanceGoal, S.ClippingStyle, S.RegionFunction, S.ExclusionsStyle,
             S.EvaluationMonitor, S.MeshFunctions, S.MeshShading, S.MeshStyle)
-        .add(S.None, S.Mesh, S.Exclusions).add(S.Automatic, PASS_THROUGH_OPTIONS);
+        .add(S.None, S.Mesh, S.Exclusions, S.PlotMarkers).add(S.Automatic, PASS_THROUGH_OPTIONS);
   }
 
   /** Options of the plots that take explicit data. */
   public static OptionSet listPlotExtras(OptionSet set) {
-    return set.add(S.Automatic, S.PlotMarkers, S.InterpolationOrder, S.PlotTheme, S.LabelStyle,
-        S.ColorFunction, S.ColorFunctionScaling, S.ScalingFunctions, S.ClippingStyle,
-        S.LabelingFunction, S.LabelingSize, S.MeshStyle, S.PerformanceGoal, S.TargetUnits)
-        .add(S.None, S.Mesh).add(S.Automatic, PASS_THROUGH_OPTIONS);
+    return set
+        .add(S.Automatic, S.InterpolationOrder, S.PlotTheme, S.LabelStyle, S.ColorFunction,
+            S.ColorFunctionScaling, S.ScalingFunctions, S.ClippingStyle, S.LabelingFunction,
+            S.LabelingSize, S.MeshStyle, S.PerformanceGoal, S.TargetUnits)
+        // None, not Automatic: Automatic is the standard sequence of markers, a setting of its own
+        .add(S.None, S.Mesh, S.PlotMarkers).add(S.Automatic, PASS_THROUGH_OPTIONS);
   }
 
   /** Options of the bar, pie, histogram and box whisker charts. */
@@ -364,7 +366,7 @@ public class GraphicsOptions {
         .add(S.Automatic, S.PolarAxes, S.PolarGridLines, S.PolarTicks, S.PlotPoints,
             S.MaxRecursion, S.MeshStyle, S.PlotTheme, S.LabelStyle, S.RegionFunction,
             S.ColorFunction)
-        .add(S.True, S.ColorFunctionScaling).add(S.None, S.Mesh);
+        .add(S.True, S.ColorFunctionScaling).add(S.None, S.Mesh, S.PlotMarkers);
   }
 
   /** Options of {@code WordCloud}. */
@@ -1163,14 +1165,36 @@ public class GraphicsOptions {
     addPadding(this.boundingbox);
   }
 
-  /** {@code PlotMarkers} value, or {@link S#Automatic} for the plain point markers. */
-  private IExpr plotMarkers = S.Automatic;
+  /**
+   * The {@code PlotMarkers} option, read once, or {@code null} when no marker is to be drawn.
+   *
+   * <p>
+   * It is {@code null} rather than {@link S#Automatic} because {@code Automatic} is a setting of
+   * its own - the standard sequence of shapes - and has to be distinguishable from the option not
+   * being given at all. It used to be both, which is why {@code PlotMarkers -> Automatic} drew
+   * nothing.
+   */
+  private PlotMarkersSpec plotMarkers = null;
+
+  /**
+   * Whether the points being plotted are samples of a function rather than data that was given.
+   *
+   * <p>
+   * It decides how many markers a joined curve gets. Every point of a dataset is a fact worth
+   * marking, but a continuous curve is sampled adaptively and can carry a thousand points, where a
+   * marker on each one is an unreadable smear.
+   */
+  private boolean sampledCurve = false;
 
   /** {@code Mesh} value, or {@link S#None}. */
   private IExpr mesh = S.None;
 
+  public void setSampledCurve(boolean sampledCurve) {
+    this.sampledCurve = sampledCurve;
+  }
+
   public void setPlotMarkers(IExpr plotMarkers) {
-    this.plotMarkers = plotMarkers == null ? S.Automatic : plotMarkers;
+    this.plotMarkers = PlotMarkersSpec.of(plotMarkers);
   }
 
   public void setMesh(IExpr mesh) {
@@ -1187,27 +1211,14 @@ public class GraphicsOptions {
   }
 
   /**
-   * The marker to draw at each data point of the given curve, or {@link F#NIL} when the plain point
-   * marker should be used.
+   * The marker to draw at each data point of the given curve, or {@link F#NIL} when there is none.
    *
    * <p>
-   * A string, or a list of them, is drawn as a label centred on the point; the list cycles over the
-   * curves the way the colours do.
+   * The marker cycles over the curves the way the colours do, and carries no colour of its own so
+   * that it comes out in the colour of the curve it belongs to.
    */
-  private IExpr markerFor(int curveIndex) {
-    if (plotMarkers == null || plotMarkers == S.Automatic || plotMarkers.isNone()) {
-      return F.NIL;
-    }
-    if (plotMarkers.isList() && ((IAST) plotMarkers).argSize() > 0) {
-      IAST list = (IAST) plotMarkers;
-      IExpr marker = list.get(Math.floorMod(curveIndex, list.argSize()) + 1);
-      // a {marker, size} pair names the marker in its first element
-      if (marker.isList() && ((IAST) marker).argSize() >= 1) {
-        marker = ((IAST) marker).arg1();
-      }
-      return marker;
-    }
-    return plotMarkers;
+  public IExpr markerFor(int curveIndex) {
+    return plotMarkers == null ? F.NIL : plotMarkers.markerAt(curveIndex);
   }
 
   /**
@@ -1216,7 +1227,10 @@ public class GraphicsOptions {
    * on top of a joined curve, which would not otherwise show where the samples fall.
    */
   public IAST addPoints(IAST pointPrimitives) {
-    IExpr marker = markerFor(colorIndex);
+    // colorIndex has already been moved on to the next curve by the time the style was built, so
+    // the curve being drawn is the one before it - and the markers have to cycle in step with the
+    // colours, or the first dataset would get the second shape
+    IExpr marker = markerFor(Math.max(0, colorIndex - 1));
     boolean showSamples = hasMesh();
     // a ColorFunction paints the curve along its length, so it replaces the single line or the
     // single point set with one piece per step
@@ -1235,11 +1249,13 @@ public class GraphicsOptions {
       out.append(body);
     }
     if (marker.isPresent()) {
-      // A continuous curve is sampled adaptively and can carry a thousand points; a marker on each
-      // one is an unreadable smear. Space them out instead, following Mesh when it says how many.
-      IAST markerPoints =
-          joined ? meshSubset(pointPrimitives, showSamples ? meshCount() : DEFAULT_MARKER_COUNT)
-              : pointPrimitives;
+      // Every point of a dataset carries a marker, which is what makes the data visible on top of
+      // the line. A sampled curve is another matter: it can carry a thousand adaptive samples, and
+      // a marker on each one is an unreadable smear, so those are spaced out instead - following
+      // Mesh when it says how many.
+      IAST markerPoints = joined && sampledCurve
+          ? meshSubset(pointPrimitives, showSamples ? meshCount() : DEFAULT_MARKER_COUNT)
+          : pointPrimitives;
       for (int i = 1; i < markerPoints.size(); i++) {
         IExpr point = markerPoints.get(i);
         if (point.isList()) {
@@ -2014,6 +2030,7 @@ public class GraphicsOptions {
     graphicsOptions.dataRange = this.dataRange;
     graphicsOptions.chartLegends = this.chartLegends;
     graphicsOptions.plotMarkers = this.plotMarkers;
+    graphicsOptions.sampledCurve = this.sampledCurve;
     graphicsOptions.mesh = this.mesh;
     graphicsOptions.colorFunction = this.colorFunction;
     graphicsOptions.colorFunctionScaling = this.colorFunctionScaling;

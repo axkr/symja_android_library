@@ -17552,8 +17552,9 @@ public class S {
   public final static IBuiltInSymbol PlotLegends = S.initFinalSymbol("PlotLegends", ID.PlotLegends);
 
   /**
-   * PlotMarkers(x) - TODO describe `PlotMarkers`.
-   * 
+   * PlotMarkers - an option for plots, giving the markers drawn at each data point. `Automatic` is
+   * a standard sequence of shapes, one per dataset.
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlotMarkers.md">PlotMarkers
    *      documentation</a>

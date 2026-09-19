@@ -87,7 +87,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
     graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
@@ -226,7 +226,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
     graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
@@ -684,8 +684,6 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IExpr yLast = yFunction.apply(lastPoint.arg2());
           if (xBoundingBox(boundingbox, xLast, engine)
               && yBoundingBox(boundingbox, yLast, engine)) {
-            addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
-                yLast, lastArg);
             addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
                 yLast, lastArg);
           }

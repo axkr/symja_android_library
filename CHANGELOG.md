@@ -4,6 +4,26 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `PlotMarkers -> Automatic` drew nothing. `Automatic` was both the option's internal default and
+  the value meaning "no marker", so asking for the standard markers could not be told from not
+  asking for anything; only an explicit marker such as `PlotMarkers -> {"x"}` did anything, which
+  is why the option matrix never caught it. `Automatic` is now the standard sequence of shapes -
+  a disk, a square, a diamond and the two triangles - one per dataset, cycling in step with the
+  colours, and `"OpenMarkers"` is the same sequence unfilled.
+
+  The other settings the reference documents work too, and are read the same way by every plot
+  that takes the option: `g`, `{g, s}`, `{g1, g2, ...}` and `{{g1,s1}, {g2,s2}, ...}`. A size used
+  to be parsed out of a `{marker, size}` pair and then dropped; it is now honoured, as a number of
+  printer's points, as `Tiny`/`Small`/`Medium`/`Large`, as `Offset(d)` or as a `Scaled(s)` fraction
+  of the plot.
+
+  Every point of a dataset carries a marker, where a joined curve used to get at most sixteen. A
+  plot that samples a function keeps the spacing, since a marker on each of a thousand adaptive
+  samples is an unreadable smear. `Plot`, `ParametricPlot` and `PolarPlot` honoured the option
+  without declaring it, so `Options(Plot)` did not list it and it was undiscoverable there.
+
+  Incidental: an isolated point at the end of a `ListPlot` dataset was added to the picture twice.
+
 - A single isotope can be named. `IsotopeData` used to answer only for an element - a list of its
   mass numbers, and properties of its most abundant isotope - so there was no way to ask about
   carbon-14 rather than about carbon. An isotope is now an entity,
