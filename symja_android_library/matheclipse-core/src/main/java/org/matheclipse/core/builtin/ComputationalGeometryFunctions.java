@@ -1331,40 +1331,85 @@ public class ComputationalGeometryFunctions {
       if (dimensions.size() != 2) {
         return F.NIL;
       }
-      try {
-        int embeddingDimension = dimensions.getInt(1);
-        switch (embeddingDimension) {
-          case 1: {
-            IExpr mesh = convexHullMesh1D(listOfPoints, engine);
-            if (mesh.isPresent()) {
-              return mesh;
-            }
-            // `1` should be a list of `2` or more affinely independent points.
-            return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C2), engine);
-          }
-          case 2: {
-            IExpr mesh = convexHullMesh2D(listOfPoints, engine);
-            if (mesh.isPresent()) {
-              return mesh;
-            }
-            // `1` should be a list of `2` or more affinely independent points.
-            return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C3), engine);
-          }
-          case 3: {
-            IExpr mesh = convexHullMesh3D(listOfPoints, engine);
-            if (mesh.isPresent()) {
-              return mesh;
-            }
-            // `1` should be a list of `2` or more affinely independent points.
-            return Errors.printMessage(ast.topHead(), "affind", F.List(listOfPoints, F.C4), engine);
-          }
+      int embeddingDimension = dimensions.getInt(1);
+      // everything after the points is an option; anything else is reported the way the
+      // reference does it, as points that do not span a hull
+      IASTAppendable options = F.ListAlloc();
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isRuleAST()) {
+          options.append(arg);
+        } else if (arg.isList() && arg.argSize() > 0 && ((IAST) arg).forAll(x -> x.isRuleAST())) {
+          options.appendArgs((IAST) arg);
+        } else {
+          // `1` should be a list of `2` or more affinely independent points.
+          return Errors.printMessage(ast.topHead(), "affind",
+              F.List(listOfPoints, F.ZZ(embeddingDimension + 1)), engine);
         }
+      }
+      try {
+        IExpr mesh;
+        switch (embeddingDimension) {
+          case 1:
+            mesh = convexHullMesh1D(listOfPoints, engine);
+            break;
+          case 2:
+            mesh = convexHullMesh2D(listOfPoints, engine);
+            break;
+          case 3:
+            mesh = convexHullMesh3D(listOfPoints, engine);
+            break;
+          default:
+            return F.NIL;
+        }
+        if (mesh.isPresent()) {
+          return withOptions((IAST) mesh, options);
+        }
+        // `1` should be a list of `2` or more affinely independent points.
+        return Errors.printMessage(ast.topHead(), "affind",
+            F.List(listOfPoints, F.ZZ(embeddingDimension + 1)), engine);
       } catch (IllegalArgumentException iae) {
         // the points are coincident, co-linear or co-planar
         return Errors.printMessage(ast.topHead(), "affind",
-            F.List(listOfPoints, F.ZZ(dimensions.getInt(1) + 1)), engine);
+            F.List(listOfPoints, F.ZZ(embeddingDimension + 1)), engine);
       }
-      return F.NIL;
+    }
+
+    /**
+     * The hull with the options it was asked for, placed where the reference places them.
+     *
+     * <p>
+     * <code>MeshCellStyle</code> is written out cell by cell as <code>Properties</code> ahead of
+     * <code>Method</code>; every other option is kept as given, gathered into one list at the end.
+     */
+    private static IExpr withOptions(IAST mesh, IAST options) {
+      if (options.argSize() == 0) {
+        return mesh;
+      }
+      IExpr cellStyle = F.NIL;
+      IASTAppendable others = F.ListAlloc(options.argSize());
+      for (IExpr option : options) {
+        if (option.first() == S.MeshCellStyle) {
+          cellStyle = option.second();
+        } else {
+          others.append(option);
+        }
+      }
+      IAST properties =
+          cellStyle.isPresent() ? MeshFunctions.meshCellStyleProperties(mesh, cellStyle) : F.NIL;
+      IASTAppendable result = F.ast(S.BoundaryMeshRegion, mesh.size() + 2);
+      result.append(mesh.arg1());
+      result.append(mesh.arg2());
+      if (properties.isPresent()) {
+        result.append(F.Rule(S.Properties, properties));
+      }
+      for (int i = 3; i < mesh.size(); i++) {
+        result.append(mesh.get(i));
+      }
+      if (others.argSize() > 0) {
+        result.append(others);
+      }
+      return result;
     }
 
     @Override
@@ -1374,7 +1419,7 @@ public class ComputationalGeometryFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_INFINITY;
     }
   }
 

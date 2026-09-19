@@ -328,6 +328,137 @@ public class MeshFunctions {
   }
 
   /**
+   * The number of cells of each dimension, <code>0</code> up to the embedding dimension.
+   *
+   * <p>
+   * A full dimensional cell that is not stored is still one cell - the square the boundary of a
+   * two dimensional mesh encloses, the solid a three dimensional one does - which is how the
+   * reference implementation counts when it styles every cell of a mesh.
+   */
+  private static int[] cellCounts(IAST meshRegion) {
+    int dimension = embeddingDimension(meshRegion);
+    int[] counts = new int[dimension + 1];
+    for (int d = 0; d <= dimension; d++) {
+      IAST cells = meshCells(meshRegion, d);
+      counts[d] = cells.isPresent() ? cells.argSize() : (d == dimension ? 1 : 0);
+    }
+    return counts;
+  }
+
+  /**
+   * A <code>MeshCellStyle</code> setting, written out cell by cell as the <code>Properties</code> a
+   * mesh region carries.
+   *
+   * <p>
+   * The reference implementation does not keep the setting as it was given. A bare style applies
+   * to every cell of every dimension, <code>{d, All} -&gt; s</code> to every cell of dimension
+   * <code>d</code> and <code>{d, i} -&gt; s</code> to one cell; each cell gets its own
+   * <code>{d, i} -&gt; MeshCellStyle -&gt; s</code>, ordered by dimension and then by index, and each
+   * dimension that got any closes with <code>{d, Default} -&gt; MeshCellStyle -&gt; Automatic</code>.
+   * A later rule wins over an earlier one for the same cell; one that names no cell of the mesh is
+   * dropped.
+   *
+   * @param meshRegion the mesh the setting is for
+   * @param spec the right hand side of <code>MeshCellStyle -&gt; spec</code>
+   * @return the list for <code>Properties -&gt; list</code>, or {@link F#NIL} when it styles nothing
+   */
+  public static IAST meshCellStyleProperties(IAST meshRegion, IExpr spec) {
+    int[] counts = cellCounts(meshRegion);
+    java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles =
+        new java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>>();
+    if (spec.isList() && spec.argSize() > 0 && ((IAST) spec).forAll(x -> x.isRuleAST())) {
+      for (IExpr rule : (IAST) spec) {
+        addCellStyle(styles, counts, rule.first(), rule.second());
+      }
+    } else if (!spec.isRuleAST()) {
+      // one style for everything
+      for (int d = 0; d < counts.length; d++) {
+        for (int i = 1; i <= counts[d]; i++) {
+          styles.computeIfAbsent(d, k -> new java.util.TreeMap<Integer, IExpr>()).put(i, spec);
+        }
+      }
+    }
+    if (styles.isEmpty()) {
+      return F.NIL;
+    }
+    IASTAppendable properties = F.ListAlloc();
+    for (java.util.Map.Entry<Integer, java.util.TreeMap<Integer, IExpr>> dimension : styles
+        .entrySet()) {
+      IExpr d = F.ZZ(dimension.getKey());
+      for (java.util.Map.Entry<Integer, IExpr> cell : dimension.getValue().entrySet()) {
+        properties.append(F.Rule(F.list(d, F.ZZ(cell.getKey())),
+            F.Rule(S.MeshCellStyle, cell.getValue())));
+      }
+      properties.append(F.Rule(F.list(d, S.Default), F.Rule(S.MeshCellStyle, S.Automatic)));
+    }
+    return properties;
+  }
+
+  /** One <code>{d, cells} -&gt; style</code> rule of a <code>MeshCellStyle</code> list. */
+  private static void addCellStyle(java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles,
+      int[] counts, IExpr key, IExpr style) {
+    if (!key.isList2() || !key.first().isInteger()) {
+      return;
+    }
+    int d = key.first().toIntDefault();
+    if (d < 0 || d >= counts.length) {
+      return;
+    }
+    java.util.TreeMap<Integer, IExpr> cells =
+        styles.computeIfAbsent(d, k -> new java.util.TreeMap<Integer, IExpr>());
+    IExpr which = key.second();
+    if (which == S.All) {
+      for (int i = 1; i <= counts[d]; i++) {
+        cells.put(i, style);
+      }
+    } else if (which.isInteger()) {
+      int i = which.toIntDefault();
+      if (i >= 1 && i <= counts[d]) {
+        cells.put(i, style);
+      }
+    } else if (which.isList()) {
+      for (IExpr index : (IAST) which) {
+        int i = index.toIntDefault();
+        if (i >= 1 && i <= counts[d]) {
+          cells.put(i, style);
+        }
+      }
+    }
+    if (cells.isEmpty()) {
+      styles.remove(d);
+    }
+  }
+
+  /**
+   * The styles a mesh region's <code>Properties</code> give its cells, by dimension and then by
+   * index - the setting {@link #meshCellStyleProperties(IAST, IExpr)} wrote, read back for drawing.
+   * The closing <code>Default -&gt; Automatic</code> entries style nothing and are left out.
+   */
+  public static java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> meshCellStyles(
+      IAST meshRegion) {
+    java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles =
+        new java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>>();
+    for (int i = optionsStartIndex(meshRegion); i < meshRegion.size(); i++) {
+      IExpr option = meshRegion.get(i);
+      if (!option.isRuleAST() || option.first() != S.Properties || !option.second().isList()) {
+        continue;
+      }
+      for (IExpr entry : (IAST) option.second()) {
+        if (entry.isRuleAST() && entry.first().isList2() && entry.first().first().isInteger()
+            && entry.first().second().isInteger() && entry.second().isRuleAST()
+            && entry.second().first() == S.MeshCellStyle
+            && entry.second().second() != S.Automatic) {
+          styles
+              .computeIfAbsent(entry.first().first().toIntDefault(),
+                  k -> new java.util.TreeMap<Integer, IExpr>())
+              .put(entry.first().second().toIntDefault(), entry.second().second());
+        }
+      }
+    }
+    return styles;
+  }
+
+  /**
    * The index of the first argument which is an option; all arguments from index <code>2</code> up
    * to (but excluding) that index are boundary cell lists.
    */

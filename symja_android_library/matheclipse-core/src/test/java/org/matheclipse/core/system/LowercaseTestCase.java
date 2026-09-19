@@ -4341,6 +4341,50 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ConvexHull({{0,0},{1,1},{2,2}})");
   }
 
+  /**
+   * MeshCellStyle is written out cell by cell as Properties, the way the reference implementation
+   * does it - measured in Mathematica on 2026-09-19. The square has 4 vertices, 4 edges and 1 face,
+   * though only its edges are stored.
+   */
+  @Test
+  public void testConvexHullMeshOptions() {
+    // every edge
+    check("ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->{{1,All}->Red}), InputForm)", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},"
+            + "Properties->{{1,1}->MeshCellStyle->RGBColor(1,0,0),{1,2}->MeshCellStyle->RGBColor(1,0,0),{1,3}->MeshCellStyle->RGBColor(1,0,0),{1,4}->MeshCellStyle->RGBColor(1,0,0),{1,Default}->MeshCellStyle->Automatic},"
+            + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
+    // a bare style is every cell of every dimension
+    check("ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->Red), InputForm)", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},"
+            + "Properties->{{0,1}->MeshCellStyle->RGBColor(1,0,0),{0,2}->MeshCellStyle->RGBColor(1,0,0),{0,3}->MeshCellStyle->RGBColor(1,0,0),{0,4}->MeshCellStyle->RGBColor(1,0,0),{0,Default}->MeshCellStyle->Automatic,{1,1}->MeshCellStyle->RGBColor(1,0,0),{1,2}->MeshCellStyle->RGBColor(1,0,0),{1,3}->MeshCellStyle->RGBColor(1,0,0),{1,4}->MeshCellStyle->RGBColor(1,0,0),{1,Default}->MeshCellStyle->Automatic,{2,1}->MeshCellStyle->RGBColor(1,0,0),{2,Default}->MeshCellStyle->Automatic},"
+            + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
+    // the face
+    check("ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->{{2,All}->Red}), InputForm)", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},"
+            + "Properties->{{2,1}->MeshCellStyle->RGBColor(1,0,0),{2,Default}->MeshCellStyle->Automatic},"
+            + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
+    // one edge
+    check("ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->{{1,2}->Red}), InputForm)", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},"
+            + "Properties->{{1,2}->MeshCellStyle->RGBColor(1,0,0),{1,Default}->MeshCellStyle->Automatic},"
+            + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
+    // the faces of a tetrahedron, with the style evaluated
+    check("ToString(ConvexHullMesh({{0,0,0},{1,0,0},{0,1,0},{0,0,1}}, MeshCellStyle->{{2,All}->Opacity(0.5,LightBlue)}), InputForm)", //
+        "BoundaryMeshRegion({{0,0,0},{1,0,0},{0,1,0},{0,0,1}},{Polygon({{1,2,4},{1,3,2},"
+            + "{1,4,3},{2,3,4}})},"
+            + "Properties->{{2,1}->MeshCellStyle->Opacity(0.5`,RGBColor(0.87`,0.94`,1.0`)),{2,2}->MeshCellStyle->Opacity(0.5`,RGBColor(0.87`,0.94`,1.0`)),{2,3}->MeshCellStyle->Opacity(0.5`,RGBColor(0.87`,0.94`,1.0`)),{2,4}->MeshCellStyle->Opacity(0.5`,RGBColor(0.87`,0.94`,1.0`)),{2,Default}->MeshCellStyle->Automatic},"
+            + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
+    // any other option is kept as given, in a list after WorkingPrecision
+    check("ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, PlotTheme->\"Detailed\"), InputForm)", //
+        "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity,{PlotTheme->\"Detailed\"})");
+    // an argument that is not an option is reported as the reference reports it
+    check("ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, x)", //
+        "ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}},x)");
+    // a styled mesh is still a region
+    check("Area(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->Red))", //
+        "4");
+  }
+
   @Test
   public void testConvexHullMesh() {
     // ConvexHullMesh returns a BoundaryMeshRegion. The hull vertices are listed in the order in
