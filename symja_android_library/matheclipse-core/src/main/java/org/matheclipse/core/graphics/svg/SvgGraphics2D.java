@@ -48,6 +48,7 @@ public class SvgGraphics2D {
   private String idSuffix = "";
 
   private Viewport2D viewport;
+  private Bounds2D bounds;
   private List<Prim2D> primitives = new ArrayList<>();
 
   /**
@@ -161,43 +162,37 @@ public class SvgGraphics2D {
     return elements == null ? null : svgRoot(elements);
   }
 
+  /**
+   * Lay out a single {@code Graphics} expression without drawing it, for renderers of other
+   * output formats.
+   *
+   * @return {@code null} for a layout of several pictures
+   */
+  public Scene2D buildScene(IAST graphicsExpr) {
+    graphicsExpr = unwrapPicture(graphicsExpr);
+    if (isMultiPicture(graphicsExpr)) {
+      return null;
+    }
+    layout(graphicsExpr);
+    return new Scene2D(options, primitives, collectExtra(options.prolog),
+        collectExtra(options.epilog), bounds, viewport);
+  }
+
+  private static boolean isMultiPicture(IAST graphicsExpr) {
+    return graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)
+        || graphicsExpr.isAST(S.GraphicsColumn) || graphicsExpr.isAST(S.GraphicsGrid)
+        || graphicsExpr.isAST(S.Overlay);
+  }
+
   /** The children of the {@code <svg>} root, in drawing order. */
   private List<DomContent> buildElements(IAST graphicsExpr) {
-    if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)
-        || graphicsExpr.isAST(S.GraphicsColumn) || graphicsExpr.isAST(S.GraphicsGrid)
-        || graphicsExpr.isAST(S.Overlay)) {
+    if (isMultiPicture(graphicsExpr)) {
       return null;
     }
 
-    idSuffix = "_" + Integer.toHexString(graphicsExpr.hashCode());
-
-    PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
-    options.parse(graphicsExpr, collector);
-
-    if (graphicsExpr.argSize() >= 1) {
-      collector.collect(graphicsExpr.arg1(), options.globalStyle.clone());
-    }
-    primitives = collector.primitives();
-
-    Bounds2D bounds = new Bounds2D();
-    for (Prim2D p : primitives) {
-      p.accumulate(bounds);
-    }
-    if (options.plotGenerated && options.plotRangeAutomatic && !options.plotRangeAll) {
-      refineYRange(bounds);
-    }
+    PrimitiveCollector collector = layout(graphicsExpr);
 
     boolean hasLegend = LegendRenderer.isSupported(options.plotLegends);
-    viewport = new Viewport2D(options);
-    // padding depends on the tick labels, which depend on the range, which depends on padding:
-    // lay out once with an estimate, then again with the labels that estimate produced
-    viewport.configure(bounds, estimatePadding(0, hasLegend));
-    double labelWidth = AxesFrameRenderer.estimateYLabelWidth(viewport, options);
-    double[] padding = estimatePadding(labelWidth, hasLegend);
-    fitPaddingToWidth(padding);
-    fitHeightToAspectRatio(padding);
-    viewport.configure(bounds, padding);
-
     SvgRenderer2D renderer = new SvgRenderer2D(viewport, options);
     AxesFrameRenderer axes = new AxesFrameRenderer(viewport, options);
 
@@ -281,11 +276,54 @@ public class SvgGraphics2D {
     return elements;
   }
 
+  /**
+   * Read the options, collect the primitives, derive the plot range and fit the canvas to it:
+   * everything short of drawing. Sets {@link #primitives}, {@link #bounds} and {@link #viewport}.
+   */
+  private PrimitiveCollector layout(IAST graphicsExpr) {
+    idSuffix = "_" + Integer.toHexString(graphicsExpr.hashCode());
+
+    PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
+    options.parse(graphicsExpr, collector);
+
+    if (graphicsExpr.argSize() >= 1) {
+      collector.collect(graphicsExpr.arg1(), options.globalStyle.clone());
+    }
+    primitives = collector.primitives();
+
+    bounds = new Bounds2D();
+    for (Prim2D p : primitives) {
+      p.accumulate(bounds);
+    }
+    if (options.plotGenerated && options.plotRangeAutomatic && !options.plotRangeAll) {
+      refineYRange(bounds);
+    }
+
+    boolean hasLegend = LegendRenderer.isSupported(options.plotLegends);
+    viewport = new Viewport2D(options);
+    // padding depends on the tick labels, which depend on the range, which depends on padding:
+    // lay out once with an estimate, then again with the labels that estimate produced
+    viewport.configure(bounds, estimatePadding(0, hasLegend));
+    double labelWidth = AxesFrameRenderer.estimateYLabelWidth(viewport, options);
+    double[] padding = estimatePadding(labelWidth, hasLegend);
+    fitPaddingToWidth(padding);
+    fitHeightToAspectRatio(padding);
+    viewport.configure(bounds, padding);
+    return collector;
+  }
+
   /** Prolog and epilog content is collected and drawn, but never affects the plot range. */
   private void renderExtra(IExpr expr, SvgRenderer2D renderer, ContainerTag<?> parent) {
+    renderer.draw(collectExtra(expr), parent);
+  }
+
+  private List<Prim2D> collectExtra(IExpr expr) {
+    if (expr == null) {
+      return new ArrayList<>();
+    }
     PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
     collector.collect(expr, options.globalStyle.clone());
-    renderer.draw(collector.primitives(), parent);
+    return collector.primitives();
   }
 
   /**
