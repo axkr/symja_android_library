@@ -110,6 +110,8 @@ public class JSGraphicsFunctionsTest extends AbstractTestCase {
     // the function itself goes to MathCell, which samples it in the browser
     String js = script("MathCell(Plot(Sin(x), {x, 0, 5}))", "mathcell");
     assertTrue(js.contains("MathCell( id, [] );"), js);
+    // scoped, so its "parent" does not replace window.parent for the rest of the page
+    assertTrue(js.startsWith("(function () {\nvar parent = "), js);
     assertTrue(js.contains("function f1(x) { try { return sin(x); }"), js);
     assertTrue(js.contains("plot( x => f1(x), [0, 5, 400]"), js);
     assertTrue(js.contains("var config = { type: 'svg' };"), js);

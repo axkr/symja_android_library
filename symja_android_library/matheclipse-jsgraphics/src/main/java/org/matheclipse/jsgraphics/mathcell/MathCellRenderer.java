@@ -87,9 +87,8 @@ public final class MathCellRenderer implements JSRenderer, Prim2D.Visitor<Void> 
       config.append(", axesLabels: [").append(str(labels[0] == null ? "" : labels[0]))
           .append(", ").append(str(labels[1] == null ? "" : labels[1])).append("]");
     }
-    if (options.aspectRatioAutomatic || Double.isNaN(options.aspectRatio)) {
-      config.append(", equalAspect: true");
-    }
+    // no equalAspect: in a box of fixed height MathCell keeps equal scales by cutting the y range,
+    // and the whole plot range matters more than round circles
     config.append(" }");
     return program("", data, config.toString());
   }
@@ -220,7 +219,9 @@ public final class MathCellRenderer implements JSRenderer, Prim2D.Visitor<Void> 
   /** MathCell's own set up: a cell with no controls, drawn once by its update function. */
   private static String program(String definitions, List<String> data, String config) {
     StringBuilder js = new StringBuilder(1024);
-    js.append("var parent = document.currentScript.parentNode;\n") //
+    // in a function of its own: a global "var parent" would replace window.parent for the page
+    js.append("(function () {\n") //
+        .append("var parent = document.currentScript.parentNode;\n") //
         .append("var id = generateId();\n") //
         .append("parent.id = id;\n") //
         .append("MathCell( id, [] );\n") //
@@ -234,7 +235,8 @@ public final class MathCellRenderer implements JSRenderer, Prim2D.Visitor<Void> 
         .append("var config = ").append(config).append(";\n") //
         .append("evaluate( id, data, config );\n") //
         .append("};\n") //
-        .append("parent.update( id );\n");
+        .append("parent.update( id );\n") //
+        .append("})();\n");
     return js.toString();
   }
 

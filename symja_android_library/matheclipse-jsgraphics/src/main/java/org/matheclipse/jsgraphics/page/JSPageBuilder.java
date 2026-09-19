@@ -114,10 +114,13 @@ public final class JSPageBuilder implements JSPageProvider {
    */
   private static final String REPORT_HEIGHT = "<script>\n" //
       + "(function () {\n" //
-      + "  if (window.parent === window) return;\n" //
+      // MathCell's own examples declare a global "var parent", which hides window.parent
+      + "  var host = window.parent && typeof window.parent.postMessage === 'function'\n" //
+      + "      ? window.parent : window.top;\n" //
+      + "  if (host === window) return;\n" //
       + "  function report() {\n" //
-      + "    var h = Math.ceil(document.body.getBoundingClientRect().height);\n" //
-      + "    window.parent.postMessage({ symjaFrameHeight: h }, '*');\n" //
+      + "    var h = Math.ceil(document.documentElement.getBoundingClientRect().height) + 2;\n" //
+      + "    host.postMessage({ symjaFrameHeight: h }, '*');\n" //
       + "  }\n" //
       + "  window.addEventListener('load', function () { report(); setTimeout(report, 500); });\n" //
       + "})();\n" //
@@ -156,7 +159,9 @@ public final class JSPageBuilder implements JSPageProvider {
     StringBuilder buf = new StringBuilder(js.length() + 2048);
     buf.append("<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>")
         .append(library.title).append("</title>\n")
-        .append("<style>html, body { margin: 0; padding: 0; }</style>\n");
+        .append("<style>html, body { margin: 0; padding: 0; }")
+        // the frame is sized to the page, so a scroll bar would only ever cover a few pixels
+        .append(embedded ? " html { overflow: hidden; }" : "").append("</style>\n");
     for (String css : library.css) {
       buf.append("<link rel=\"stylesheet\" type=\"text/css\" href=\"").append(css)
           .append("\"/>\n");
@@ -237,7 +242,7 @@ public final class JSPageBuilder implements JSPageProvider {
         break;
     }
     return "<form method=\"post\" action=\"" + JSFIDDLE_URL
-        + "\" target=\"_blank\" style=\"margin: 4px 0 0 0;\">\n" //
+        + "\" target=\"_blank\" style=\"margin: 0; padding: 4px 0;\">\n" //
         + "<input type=\"hidden\" name=\"title\" value=\"Symja - " + library.title + "\">\n" //
         + "<input type=\"hidden\" name=\"wrap\" value=\"b\">\n" //
         + "<textarea name=\"html\" style=\"display: none;\">"
