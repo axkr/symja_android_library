@@ -36,10 +36,10 @@ The following properties are supported for `FittedModel`:
 
 ```     
 >> nlm("BestFit")
-1.7+1.6*a+2.9*b+0.3*a*b"
+1.7+1.6*a+2.9*b+0.3*a*b
 
 >> nlm("BestFitParameters") 
-{1.7,1.6,2.9,0.3}");
+{1.7,1.6,2.9,0.3}
 
 >> nlm("EstimatedVariance")
 0.06
@@ -47,12 +47,42 @@ The following properties are supported for `FittedModel`:
 >> nlm("FitResiduals")
 {5.32907*10^-15,1.77636*10^-15,-0.1,0.2,-0.1} 
 
->> nlm("ParameterErrors"
+>> nlm("ParameterErrors")
 {1.15758,0.714143,0.663325,0.387298}
 
 >> nlm("RSquared")
-0.99989
-        
+0.998301
+
+>> nlm("AdjustedRSquared")
+0.993203
+```
+
+`RSquared` is measured about the mean of the data whenever the model has a constant term - which it
+has unless `IncludeConstantBasis -> False` asks for a fit through the origin, when it is measured
+about zero instead. The adjusted value scales by `(n-1)/(n-p)`.
+
+```
+>> lm = LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x)
+FittedModel[0.15+1.94*x]
+
+>> lm("PredictedResponse")
+{2.09,4.03,5.97,7.91}
+```
+
+A model evaluated at a point is its best fit function there:
+
+```
+>> lm(2.5)
+5.0
+
+>> LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x, IncludeConstantBasis -> False)
+FittedModel[1.99*x]
+```
+
+`lm("Properties")` lists every property; a name that is not one prints `FittedModel::elmntavs`
+with the nearest name there is.
+
+```
 >> LinearModelFit({ { 1, 3 }, { 2, 5 }, { 3, 7 }, { 4, 14 }, { 5, 11 } },x,x) // Normal
 FittedModel[0.5+2.5*x]
 ```

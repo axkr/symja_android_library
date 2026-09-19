@@ -127,4 +127,89 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
         "{ampl->274.7648,x0->1.02404,sigma->0.614853}");
 
   }
+
+  /**
+   * The goodness of fit of a linear model, measured in Mathematica on 2026-09-19: R-squared is taken
+   * about the mean of the data, and the adjusted value scales by (n-1)/(n-p).
+   */
+  @Test
+  public void testLinearModelFitMathematica() {
+    check("lm=LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x)", //
+        "FittedModel[0.15+1.94*x]");
+    checkNumeric("lm(\"RSquared\")", //
+        "0.9956613756613757");
+    checkNumeric("lm(\"AdjustedRSquared\")", //
+        "0.9934920634920635");
+    check("lm(\"PredictedResponse\")", //
+        "{2.09,4.03,5.97,7.91}");
+    check("lm(\"FitResiduals\")", //
+        "{0.01,-0.13,0.23,-0.11}");
+    // a model is its best fit function when evaluated at a point
+    check("lm(2.5)", //
+        "5.0");
+    // the design-matrix form has its intercept as a column, and is centered just the same
+    check("lm3=LinearModelFit({{{1,1},{1,2},{1,3},{1,4}},{2.1,3.9,6.2,7.8}})", //
+        "FittedModel[0.15*#1+1.94*#2]");
+    checkNumeric("lm3(\"RSquared\")", //
+        "0.9956613756613757");
+    check("lm3(1, 2.5)", //
+        "5.0");
+  }
+
+  /** A fit through the origin has no mean to measure against, and is taken about zero. */
+  @Test
+  public void testLinearModelFitIncludeConstantBasis() {
+    check("lm0=LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x, IncludeConstantBasis->False)", //
+        "FittedModel[1.99*x]");
+    // Mathematica: 0.9991841883936082
+    check("lm0(\"RSquared\")", //
+        "0.999184");
+  }
+
+  /** An unknown property is reported with the nearest one there is, and left unevaluated. */
+  @Test
+  public void testFittedModelUnknownProperty() {
+    check("lm=LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x)", //
+        "FittedModel[0.15+1.94*x]");
+    check("lm(\"BadProperty\")", //
+        "FittedModel[0.15+1.94*x][BadProperty]");
+    check("lm(\"Properties\")", //
+        "{AdjustedRSquared,BestFit,BestFitParameters,EstimatedVariance,FitResiduals,ParameterErrors,PredictedResponse,RSquared}");
+  }
+
+  /**
+   * NonlinearModelFit, measured in Mathematica on 2026-09-19. R-squared is taken about the mean as
+   * for a linear fit, but the adjusted value scales by n/(n-p) - 0.99132 here, where the linear
+   * convention would give 0.99349.
+   */
+  @Test
+  public void testNonlinearModelFit() {
+    check("nlm=NonlinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, a*x+b, {a,b}, x)", //
+        "FittedModel[0.15+1.94*x]");
+    checkNumeric("nlm(\"RSquared\")", //
+        "0.9956613756613757");
+    checkNumeric("nlm(\"AdjustedRSquared\")", //
+        "0.9913227513227514");
+    check("nlm(\"FitResiduals\")", //
+        "{0.01,-0.13,0.23,-0.11}");
+    check("nlm(\"PredictedResponse\")", //
+        "{2.09,4.03,5.97,7.91}");
+    check("nlm(\"BestFit\")", //
+        "0.15+1.94*x");
+    // rules, where a linear fit lists bare coefficients
+    check("nlm(\"BestFitParameters\")", //
+        "{a->1.94,b->0.15}");
+    check("nlm(2.5)", //
+        "5.0");
+    check("nlm(\"Properties\")", //
+        "{AdjustedRSquared,BestFit,BestFitParameters,FitResiduals,PredictedResponse,RSquared}");
+    // an exact fit
+    check("nlm2=NonlinearModelFit({{1,2},{2,5},{3,10}}, a*x^2+b, {a,b}, x)", //
+        "FittedModel[1.0+x^2]");
+    check("{nlm2(\"RSquared\"), nlm2(\"AdjustedRSquared\")}", //
+        "{1.0,1.0}");
+    // a model that is not a list of numbers, or has no variable, is left alone
+    check("NonlinearModelFit(foo, a*x+b, {a,b}, x)", //
+        "NonlinearModelFit(foo,b+a*x,{a,b},x)");
+  }
 }

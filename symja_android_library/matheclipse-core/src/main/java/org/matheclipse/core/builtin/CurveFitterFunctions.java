@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FittedModelExpr;
+import org.matheclipse.core.expression.data.NonlinearFittedModelExpr;
 import org.matheclipse.core.generic.SumCurveFitter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -38,6 +39,7 @@ public class CurveFitterFunctions {
       S.FindFit.setEvaluator(new FindFit());
       S.Fit.setEvaluator(new Fit());
       S.LinearModelFit.setEvaluator(new LinearModelFit());
+      S.NonlinearModelFit.setEvaluator(new NonlinearModelFit());
     }
   }
 
@@ -227,6 +229,38 @@ public class CurveFitterFunctions {
       return initialGuess;
     }
 
+    /**
+     * Fit <code>function</code> of <code>x</code> to the data by Levenberg-Marquardt, starting from
+     * <code>initialGuess</code>.
+     *
+     * <p>
+     * Shared by <code>FindFit</code>, which only wants the parameters, and
+     * <code>NonlinearModelFit</code>, which also wants the data points the fit was made to - those
+     * are added to <code>pointsOut</code> when it is given.
+     *
+     * @return the fitted parameter values, in the order of <code>symbols</code>, or
+     *         <code>null</code> when the function has no gradient or the data are not numeric
+     */
+    static double[] fit(IAST data, IExpr function, IAST symbols, IExpr x, double[] initialGuess,
+        java.util.List<org.hipparchus.fitting.WeightedObservedPoint> pointsOut,
+        EvalEngine engine) {
+      IExpr fitFunction = F.substAbs(function);
+      IExpr gradientList = S.Grad.of(engine, fitFunction, symbols);
+      if (!gradientList.isList()) {
+        return null;
+      }
+      AbstractCurveFitter fitter = SimpleCurveFitter.create(new FindFitParametricFunction(
+          fitFunction, (IAST) gradientList, symbols, x, engine), initialGuess);
+      WeightedObservedPoints obs = new WeightedObservedPoints();
+      if (!addWeightedObservedPoints(data, obs)) {
+        return null;
+      }
+      if (pointsOut != null) {
+        pointsOut.addAll(obs.toList());
+      }
+      return fitter.fit(obs.toList());
+    }
+
     public IExpr numericEval(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr workingPrecision = options[0];
@@ -240,18 +274,10 @@ public class CurveFitterFunctions {
         listOfSymbols = initialGuess(listOfSymbols, initialGuess);
         if (listOfSymbols.isPresent()) {
           try {
-            function = F.substAbs(function);
-            IExpr gradientList = S.Grad.of(engine, function, listOfSymbols);
-            if (gradientList.isList()) {
-              AbstractCurveFitter fitter =
-                  SimpleCurveFitter.create(new FindFitParametricFunction(function,
-                      (IAST) gradientList, listOfSymbols, x, engine), initialGuess);
-              WeightedObservedPoints obs = new WeightedObservedPoints();
-              if (addWeightedObservedPoints(data, obs)) {
-                double[] values = fitter.fit(obs.toList());
-                return F.mapList(listOfSymbols,
-                    (symbol, i) -> F.Rule(symbol, F.num(values[i - 1])));
-              }
+            final IAST symbols = listOfSymbols;
+            double[] values = fit(data, function, symbols, x, initialGuess, null, engine);
+            if (values != null) {
+              return F.mapList(symbols, (symbol, i) -> F.Rule(symbol, F.num(values[i - 1])));
             }
           } catch (ValidateException ve) {
             return Errors.printMessage(ast.topHead(), ve, engine);
@@ -556,12 +582,14 @@ public class CurveFitterFunctions {
     }
   }
 
-  private static final class LinearModelFit extends AbstractEvaluator {
+  private static final class LinearModelFit extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, final IAST originalAST) {
       IExpr arg1 = ast.arg1();
-      if (ast.isAST1()) {
+      // the call still holds the option; argSize counts the positional arguments alone
+      if (argSize == 1) {
         if (arg1.isList2()) {
           IExpr m = arg1.first();
           IExpr v = arg1.second();
@@ -569,7 +597,7 @@ public class CurveFitterFunctions {
         }
         return F.NIL;
       }
-      if (ast.isAST3()) {
+      if (argSize == 3) {
         IAST arg2 = ast.arg2().makeList();
         IAST arg3 = ast.arg3().makeList();
         if (arg1.isList()) {
@@ -577,8 +605,9 @@ public class CurveFitterFunctions {
           // VariablesSet varSet = new VariablesSet(basisFunctions);
           IAST variables = arg3;
 
-          // Intercept will be controlled by the 'basisFunctions'-list (i.e. if '1' is included).
-          if (!basisFunctions.exists(f -> f.isOne())) {
+          // A constant basis function is added unless the list has one already, or
+          // IncludeConstantBasis -> False asks for a fit through the origin.
+          if (!options[0].isFalse() && !basisFunctions.exists(f -> f.isOne())) {
             IASTAppendable temp = F.ListAlloc(basisFunctions.size());
             temp.append(F.C1);
             temp.appendArgs(basisFunctions);
@@ -648,6 +677,65 @@ public class CurveFitterFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IncludeConstantBasis},
+          new IExpr[] {S.True});
+    }
+  }
+
+  /**
+   * <code>NonlinearModelFit(data, model, parameters, x)</code> - fit a model that need not be linear
+   * in its parameters, and return a <code>FittedModel</code> that can be asked about the fit.
+   *
+   * <p>
+   * The fit is the one <code>FindFit</code> makes, Levenberg-Marquardt from a start of
+   * <code>1.0</code> for each parameter or the value given as <code>{a, a0}</code>. As with
+   * <code>FindFit</code>, the model has one independent variable.
+   */
+  private static final class NonlinearModelFit extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList() || !ast.arg3().isList() || !ast.arg4().isVariable()) {
+        return F.NIL;
+      }
+      IAST data = (IAST) ast.arg1();
+      IExpr function = ast.arg2();
+      IExpr x = ast.arg4();
+      double[] initialGuess = new double[((IAST) ast.arg3()).argSize()];
+      IAST symbols = FindFit.initialGuess((IAST) ast.arg3(), initialGuess);
+      if (symbols == null || !symbols.isPresent()) {
+        return F.NIL;
+      }
+      try {
+        java.util.List<org.hipparchus.fitting.WeightedObservedPoint> points =
+            new java.util.ArrayList<>();
+        double[] values = FindFit.fit(data, function, symbols, x, initialGuess, points, engine);
+        if (values == null) {
+          return F.NIL;
+        }
+        double[] xs = new double[points.size()];
+        double[] ys = new double[points.size()];
+        for (int i = 0; i < xs.length; i++) {
+          xs[i] = points.get(i).getX();
+          ys[i] = points.get(i).getY();
+        }
+        return new NonlinearFittedModelExpr(
+            new NonlinearFittedModelExpr.Fit(function, symbols, x, values, xs, ys));
+      } catch (ValidateException ve) {
+        return Errors.printMessage(ast.topHead(), ve, engine);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return Errors.printMessage(S.NonlinearModelFit, rex, engine);
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_4_4;
     }
   }
 

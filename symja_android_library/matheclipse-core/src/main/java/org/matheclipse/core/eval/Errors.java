@@ -138,6 +138,7 @@ public class Errors {
       "chemsmarts", "`1` is not a valid SMARTS pattern.", //
       "elemdent", "`1` does not name a chemical element or a class of elements.", //
       "elemdprop", "`1` is not a known ElementData property.", //
+      "elmntavs", "\"`1`\" is not an available property. Did you mean \"`2`\" instead?", //
       "elemdrepl", "The ElementData property `1` was replaced by `2`.", //
       "bdpt", "Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.", //
       "bset",

@@ -14159,10 +14159,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.15758,0.714143,0.663325,0.387298}");
     checkNumeric("nlm(\"ParameterErrors\")", //
         "{1.1575836902790244,0.7141428428542863,0.6633249580710808,0.3872983346207423}");
+    // centered about the mean of the data, since the model has a constant term: 1 - 0.06/35.308.
+    // It used to be taken about zero, 1 - 0.06/547.38 = 0.99989, which is the convention for a fit
+    // through the origin
     check("nlm(\"RSquared\")", //
-        "0.99989");
+        "0.998301");
     checkNumeric("nlm(\"RSquared\")", //
-        "0.9998903869341226");
+        "0.9983006684037612");
+    check("nlm(\"AdjustedRSquared\")", //
+        "0.993203");
   }
 
   @Test
