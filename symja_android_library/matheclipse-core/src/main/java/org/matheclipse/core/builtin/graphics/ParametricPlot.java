@@ -132,6 +132,12 @@ public class ParametricPlot extends Plot {
         if (listOfLines.isNIL()) {
           return F.NIL;
         }
+        if (listOfLines.argSize() == 0 && PlotShapeProbe.isNoCurve(function)) {
+          // every curve was empty - ParametricPlot({{}}, ...), or a condition that chose no curve
+          // at all. That is an empty picture, not a call that could not be read, which is what
+          // Plot answers for the same data.
+          return createGraphicsFunction(F.CEmptyList, graphicsOptions.copy(), ast);
+        }
 
         GraphicsOptions listPlotOptions = graphicsOptions.copy();
         IASTMutable listPlot = ast.setAtCopy(1, listOfLines);

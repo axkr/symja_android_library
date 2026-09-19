@@ -30,6 +30,26 @@ import org.matheclipse.core.interfaces.IExpr;
 public final class PlotShapeProbe {
 
   /** A leaf of one number, the value of a {@code Plot}, {@code Plot3D} or contour function. */
+  /**
+   * Whether a curve specification asks for nothing to be drawn.
+   *
+   * <p>
+   * An empty list is no curve - <code>ParametricPlot3D[{If[cond, curves, {}], ...}]</code> is how a
+   * picture is made to drop a curve when a control says so - and a list of nothing but those is no
+   * curve either. It is worth telling apart from a curve that could not be sampled: one is an empty
+   * picture, the other a call that could not be read.
+   */
+  public static boolean isNoCurve(IExpr spec) {
+    if (!spec.isList()) {
+      return false;
+    }
+    IAST list = (IAST) spec;
+    if (list.argSize() == 0) {
+      return true;
+    }
+    return list.forAll(x -> isNoCurve(x));
+  }
+
   public static final int SCALAR = 1;
 
   /**

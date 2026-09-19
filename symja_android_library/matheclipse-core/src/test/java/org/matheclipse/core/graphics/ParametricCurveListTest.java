@@ -182,4 +182,36 @@ public class ParametricCurveListTest {
   public void nestedSurfaceIsDrawn() {
     plot("ParametricPlot3D({{{Cos(u), Sin(u), v}}}, {u, 0, 2 Pi}, {v, 0, 1})", S.Graphics3D);
   }
+
+  /**
+   * An empty list is no curve, and a specification of nothing but those is an empty picture rather
+   * than a call that could not be read. `ParametricPlot3D[{If[cond, curves, {}], ...}]` is how a
+   * picture drops a curve when a control says so - the idiom ad-si/Woxi@b274ca0 is about - and the
+   * case where the condition removes every curve used to echo the input back.
+   */
+  @Test
+  public void aSpecificationOfNothingIsAnEmptyPicture() {
+    evaluator.eval("ClearAll(w,v);w(u_?NumericQ) := {Cos(u), Sin(u), u}");
+    assertEquals(0, lineCount(plot("ParametricPlot3D({{}}, {t, 0, 1})", S.Graphics3D)));
+    assertEquals(0, lineCount(plot("ParametricPlot3D({}, {t, 0, 1})", S.Graphics3D)));
+    assertEquals(0, lineCount(plot("ParametricPlot3D({{}, {}}, {t, 0, 1})", S.Graphics3D)));
+    assertEquals(0, lineCount(plot("ParametricPlot({{}}, {t, 0, 1})", S.Graphics)));
+    assertEquals(0, lineCount(plot("ParametricPlot({}, {t, 0, 1})", S.Graphics)));
+    // the condition removing the only curve
+    assertEquals(0, lineCount(
+        plot("ParametricPlot3D({If(1 < 0, {w(t)}, {})}, {t, 0, 1})", S.Graphics3D)));
+    // an empty one beside a real curve still draws the real one
+    assertEquals(1, lineCount(plot("ParametricPlot3D({{}, w(t)}, {t, 0, 1})", S.Graphics3D)));
+  }
+
+  /**
+   * A curve that cannot be read is not the same as no curve: the call stays unevaluated instead of
+   * becoming an empty picture.
+   */
+  @Test
+  public void anUnreadableSpecificationStaysUnevaluated() {
+    evaluator.eval("ClearAll(foo)");
+    assertTrue(evaluator.eval("ParametricPlot3D(foo, {t, 0, 1})").isAST(S.ParametricPlot3D));
+    assertTrue(evaluator.eval("ParametricPlot(foo, {t, 0, 1})").isAST(S.ParametricPlot));
+  }
 }

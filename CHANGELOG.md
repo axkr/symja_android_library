@@ -4,6 +4,15 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A parametric plot of nothing is an empty picture. `ParametricPlot({{}}, ...)` and
+  `ParametricPlot3D({{}}, ...)` echoed the call back instead of drawing an empty frame, where
+  `Plot` already drew one. An empty list is no curve, so a specification of nothing but those is
+  nothing to draw - which is what `ParametricPlot3D({If(cond, curves, {}), ...})` comes to when the
+  condition removes every curve. A curve that cannot be read is still told apart from no curve, and
+  keeps the call unevaluated. Noticed while checking ad-si/Woxi@b274ca0, whose own examples - an
+  empty list among the curves, and several curves produced at once by `Through({f,g}(t))` - already
+  worked here.
+
 - A mesh region can be looked at. `BoundaryMeshRegion` was dropped without a trace by both the SVG
   and the WebGL renderer, `ExportString(mesh, "SVG")` returned nothing, and `Show` had no evaluator
   at all. A mesh is now drawn the way Mathematica draws it - a two dimensional region as the polygon
