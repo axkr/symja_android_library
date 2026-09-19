@@ -10,7 +10,8 @@ Noteworthy changes are documented in this file.
   its boundary encloses, a three dimensional one as its faces, unboxed and lit, in the reference's
   own colours - and `Show(mesh)` returns that picture as `Graphics` or `Graphics3D`. Cells styled by
   `MeshCellStyle` are drawn over it in their style, and a styled face replaces the one beneath, so a
-  translucent face stays translucent. `Show(g1, g2, ..., options)` combines graphics of one kind,
+  translucent face stays translucent. Both notebook servlets show a mesh result as that picture
+  too, without `Show`. `Show(g1, g2, ..., options)` combines graphics of one kind,
   keeping each one's directives to itself and letting the first setting of an option win; it does
   not join plot ranges or combine two and three dimensional graphics.
 

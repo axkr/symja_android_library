@@ -510,6 +510,14 @@ public class AJAXQueryServlet extends HttpServlet {
             outExpr = graphics;
           }
         }
+        if (org.matheclipse.core.builtin.MeshFunctions.isBoundaryMeshRegion(outExpr)) {
+          // a mesh region is shown as its picture, as the reference shows it - without Show
+          IAST graphics =
+              org.matheclipse.core.builtin.MeshFunctions.meshToGraphics((IAST) outExpr, engine);
+          if (graphics.isPresent()) {
+            outExpr = graphics;
+          }
+        }
         if (outExpr.isGraphicsObject()) {
           StringBuilder buf = new StringBuilder();
           // the converter emits its own <svg> root, sized from the ImageSize option; wrapping it
