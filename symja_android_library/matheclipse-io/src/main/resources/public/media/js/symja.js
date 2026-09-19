@@ -70,6 +70,25 @@ function prepareText(text) {
 	*/
 }
 
+/**
+ * A JavaScript graphic runs in a sandboxed frame, which this page is not allowed to look into, so
+ * the page inside posts its height once it has drawn. The frame is found by the window the
+ * message came from; a message from anywhere else names no frame and is ignored.
+ */
+window.addEventListener('message', function(event) {
+	var height = event.data && event.data.symjaFrameHeight;
+	if (typeof height !== 'number' || !(height > 0)) {
+		return;
+	}
+	var frames = document.getElementsByTagName('iframe');
+	for (var i = 0; i < frames.length; i++) {
+		if (frames[i].contentWindow === event.source) {
+			frames[i].style.height = Math.min(Math.max(Math.ceil(height), 50), 2000) + 'px';
+			return;
+		}
+	}
+});
+
 function createLine(value, format) {
 	if (format == 'manipulate' || format == 'steps' || format == 'tracedialog') {
 		// handled by setResult, which has the whole result object; never reached
@@ -115,12 +134,16 @@ function createLine(value, format) {
 		dom.update(value);
 		return dom;
 	} else if (value.startsWith('<iframe')) {
-		var dom = document.createElement('div'); 
-		dom.setAttribute('id', 'mathcell');
-		// an iframe needs a height of its own, but it must still be allowed to narrow with the
-		// output column rather than running off the side of it
-		dom.setAttribute('style', 'width: 600px; max-width: 100%; height: 440px; margin: 0; padding: 0');
-		dom.update(value); 
+		var dom = document.createElement('div');
+		dom.className = 'symja-frame';
+		// An iframe needs a height of its own, but it must still be allowed to narrow with the
+		// output column rather than running off the side of it. A JavaScript graphic carries
+		// its starting height on the frame (data-height) and reports its real one once drawn,
+		// see the message listener below; any other frame fills a box of fixed height.
+		var sized = /^<iframe[^>]* data-height="\d+"/.test(value);
+		dom.setAttribute('style', 'width: 600px; max-width: 100%; margin: 0; padding: 0'
+			+ (sized ? '' : '; height: 440px'));
+		dom.update(value);
 		return dom;
 	} else if (value.startsWith('<div data-type="webgl"')) {
         var dom = document.createElement('div');

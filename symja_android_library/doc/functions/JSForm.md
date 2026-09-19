@@ -17,7 +17,7 @@ JSForm generates JavaScript output for the following JavaScript libraries:
 * [github.com/paulmasson/math](https://github.com/paulmasson/math) 
 * [github.com/paulmasson/mathcell](https://github.com/paulmasson/mathcell) 
 	  
-This JavaScript flavour is also used in the `[Manipulate](Manipulate.md)` function.
+The "Mathcell" flavour is what [MathCell](MathCell.md) hands to the browser when it plots a function. To draw a graphic with a JavaScript library use [JSXGraph](JSXGraph.md), [ECharts](ECharts.md) or [MathCell](MathCell.md).
 	 
 See:  
 * [developer.mozilla.org - Global Objects Math](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Math) 
@@ -38,14 +38,8 @@ Generate output for MathCell and Math JavaScript libraries:
 add(mul(4,ellipticE(x)),pow(kleinJ(t),3))
 ```
 
-With `JSForm` you can display the generated JavaScript form of the `Manipulate` function
-
-```
->> Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}), {a,0,10}) // JSForm
-```
-
 ### Related terms 
-[Manipulate](Manipulate.md) 
+[ECharts](ECharts.md), [JSXGraph](JSXGraph.md), [MathCell](MathCell.md) 
 
 
 
