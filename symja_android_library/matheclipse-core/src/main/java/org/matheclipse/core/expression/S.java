@@ -10925,6 +10925,16 @@ public class S {
       S.initFinalSymbol("IncludeAromaticBonds", ID.IncludeAromaticBonds);
 
   /**
+   * IncludeConstantBasis(x) - TODO describe `IncludeConstantBasis`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IncludeConstantBasis.md">IncludeConstantBasis
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol IncludeConstantBasis =
+      S.initFinalSymbol("IncludeConstantBasis", ID.IncludeConstantBasis);
+
+  /**
    * IncludeHydrogens(x) - TODO describe `IncludeHydrogens`.
    * 
    * @see <a href=
@@ -18340,6 +18350,15 @@ public class S {
   public final static IBuiltInSymbol Projection = S.initFinalSymbol("Projection", ID.Projection);
 
   public final static IBuiltInSymbol Prolog = S.initFinalSymbol("Prolog", ID.Prolog);
+
+  /**
+   * Properties(x) - TODO describe `Properties`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Properties.md">Properties
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Properties = S.initFinalSymbol("Properties", ID.Properties);
 
   public final static IBuiltInSymbol Proportion = S.initFinalSymbol("Proportion", ID.Proportion);
 
