@@ -25,7 +25,7 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 /**
  * Tiers C-E of the <code>matheclipse-chem</code> module: structural editing, the molecular graph,
- * isotope data, and balancing chemical reactions.
+ * and balancing chemical reactions.
  *
  * <p>
  * Reaction balancing is pure integer linear algebra over element counts, so it needs no CDK
@@ -38,7 +38,6 @@ public class ReactionFunctions {
     private static void init() {
       S.MoleculeModify.setEvaluator(new MoleculeModify());
       S.MoleculeGraph.setEvaluator(new MoleculeGraph());
-      S.IsotopeData.setEvaluator(new IsotopeData());
       S.ReactionBalance.setEvaluator(new ReactionBalance());
       S.ReactionBalancedQ.setEvaluator(new ReactionBalancedQ());
     }
@@ -125,89 +124,6 @@ public class ReactionFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-  }
-
-  /**
-   * <code>IsotopeData("element")</code> and <code>IsotopeData("element", "property")</code>, over
-   * CDK's bundled isotope table.
-   *
-   * <p>
-   * Every property but <code>"Abundances"</code> describes the most abundant isotope;
-   * <code>"Abundances"</code> describes them all, as <code>massNumber -&gt; percent</code> for the
-   * isotopes that occur naturally.
-   */
-  private static class IsotopeData extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.arg1().isString()) {
-        return F.NIL;
-      }
-      String element = ast.arg1().toString();
-      try {
-        org.openscience.cdk.config.IsotopeFactory factory =
-            org.openscience.cdk.config.Isotopes.getInstance();
-        org.openscience.cdk.interfaces.IIsotope[] isotopes = factory.getIsotopes(element);
-        if (isotopes == null || isotopes.length == 0) {
-          return F.Missing(F.stringx("NotAvailable"));
-        }
-        if (ast.isAST1()) {
-          IASTAppendable result = F.ListAlloc(isotopes.length);
-          for (int i = 0; i < isotopes.length; i++) {
-            if (isotopes[i].getMassNumber() != null) {
-              result.append(F.ZZ(isotopes[i].getMassNumber().intValue()));
-            }
-          }
-          return result;
-        }
-        if (!ast.arg2().isString()) {
-          return F.NIL;
-        }
-        String property = ast.arg2().toString();
-        if ("Abundances".equals(property)) {
-          // every isotope that occurs naturally, as massNumber -> percent. The rest of this
-          // function speaks for the most abundant isotope alone, which cannot answer this.
-          IASTAppendable abundances = F.ListAlloc(isotopes.length);
-          for (int i = 0; i < isotopes.length; i++) {
-            Double abundance = isotopes[i].getNaturalAbundance();
-            if (isotopes[i].getMassNumber() != null && abundance != null
-                && abundance.doubleValue() > 0.0) {
-              abundances.append(F.Rule(F.ZZ(isotopes[i].getMassNumber().intValue()),
-                  F.num(abundance.doubleValue())));
-            }
-          }
-          return abundances;
-        }
-        org.openscience.cdk.interfaces.IIsotope major = factory.getMajorIsotope(element);
-        if (major == null) {
-          return F.Missing(F.stringx("NotAvailable"));
-        }
-        if ("AtomicNumber".equals(property)) {
-          return major.getAtomicNumber() == null ? F.Missing(F.stringx("NotAvailable"))
-              : F.ZZ(major.getAtomicNumber().intValue());
-        }
-        if ("MassNumber".equals(property)) {
-          return major.getMassNumber() == null ? F.Missing(F.stringx("NotAvailable"))
-              : F.ZZ(major.getMassNumber().intValue());
-        }
-        if ("AtomicMass".equals(property) || "IsotopeMass".equals(property)) {
-          return major.getExactMass() == null ? F.Missing(F.stringx("NotAvailable"))
-              : F.num(major.getExactMass().doubleValue());
-        }
-        if ("Abundance".equals(property) || "IsotopeAbundance".equals(property)) {
-          return major.getNaturalAbundance() == null ? F.Missing(F.stringx("NotAvailable"))
-              : F.num(major.getNaturalAbundance().doubleValue());
-        }
-        return F.Missing(F.stringx("NotAvailable"));
-      } catch (Exception e) {
-        return F.Missing(F.stringx("NotAvailable"));
-      }
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
     }
   }
 

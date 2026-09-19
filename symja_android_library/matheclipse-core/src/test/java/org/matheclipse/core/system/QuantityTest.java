@@ -415,6 +415,12 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "Cases(ListPlot({{Quantity(1,\"Seconds\"),Quantity(3,\"Meters\")},{Quantity(2,\"Seconds\"),Quantity(6,\"Meters\")}}), _Point, Infinity)", //
         "{Point({{1,3},{2,6}})}");
 
+    // a plain abscissa beside a dimensioned ordinate: only the column that carries a unit is
+    // reduced, and the point is drawn rather than dropped for want of a number
+    check(
+        "Cases(ListLinePlot({{12,Quantity(92.16,\"Megaelectronvolts\")},{13,Quantity(97.11,\"Megaelectronvolts\")}}), _Line, Infinity)", //
+        "{Line({{12,92.16},{13,97.11}})}");
+
     check("Cases(ListLinePlot(QuantityArray({1,2,4},\"Meters\")), _Line, Infinity)", //
         "{Line({{1.0,1},{2.0,2},{3.0,4}})}");
 

@@ -4,6 +4,32 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A single isotope can be named. `IsotopeData` used to answer only for an element - a list of its
+  mass numbers, and properties of its most abundant isotope - so there was no way to ask about
+  carbon-14 rather than about carbon. An isotope is now an entity,
+  `Entity("Isotope", "Carbon12")`, written that way or as `"Carbon12"`, `"C12"`, `{"Carbon", 12}`
+  or `{6, 12}`, and it answers for `"AtomicMass"`, `"AtomicNumber"`, `"BindingEnergy"`,
+  `"IsotopeAbundance"`, `"MassNumber"`, `"NeutronNumber"` and `"StandardName"`. `IsotopeData(6)`
+  is the isotopes of carbon and `IsotopeData()` all 3171 of them, over every element rather than
+  only the ones that occur in nature - the table was always there, in the Chemistry Development
+  Kit, and only the naturally occurring entries were reachable. `"Isotope"` is registered as an
+  entity type, so `EntityValue` and `EntityList` reach it like any other.
+
+  `"BindingEnergy"` is computed rather than looked up, from the mass excess
+  `(Z m(1H) + N m(n) - M(A,Z)) c^2` with CODATA 2018 constants, which reproduces the textbook
+  values - carbon-12's 92.16 MeV, the 8.79 MeV per nucleon at the iron-56 peak.
+
+  The mass numbers a lone `IsotopeData(element)` used to give moved to `"MassNumbers"`;
+  `ElementData(z, "KnownIsotopes")` reads that instead and is unchanged. `ElementData` also gained
+  `"StableIsotopes"`, the isotopes of an element that occur in nature - which takes in the long
+  lived primordial ones and leaves technetium and polonium with none. It is answered but stays out
+  of `ElementData("Properties")`, as the reference implementation leaves it out.
+
+  Abundances are reported in two units, which is worth knowing: the table records percent and the
+  element forms hand that on (`IsotopeData("C", "Abundances")` is `{12->98.93, 13->1.07}`), while
+  an isotope entity's `"IsotopeAbundance"` is a fraction of one, `0.9893`, as the reference
+  implementation gives it. From checking ad-si/Woxi#835 against Symja.
+
 - `ColorRules` in `ArrayPlot` and `MatrixPlot` matches a cell the way `Replace` does, instead of by
   a hand-written scan over structural equality. A pattern on the left of a rule now names every
   value it matches - `ColorRules -> {_?Positive -> Red}` used to paint nothing at all, because the
