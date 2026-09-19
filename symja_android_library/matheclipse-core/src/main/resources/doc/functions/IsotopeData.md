@@ -107,14 +107,19 @@ about one isotope; every other property of an element speaks for its most abunda
 {Entity(Isotope,Carbon12),Entity(Isotope,Carbon13)}
 ```
 
-"Stable" there means the table records a natural abundance for it, which is a coarser cut than
-nuclear stability: it takes in the long lived primordial isotopes that still occur - potassium-40,
-thorium-232, all three natural uranium isotopes - and leaves technetium and polonium with none at
-all, which is how a chemistry reference describes them.
+"Stable" means stable, which is not the same thing as occurring in nature: uranium occurs in nature
+and has no stable isotope at all. CDK's table records abundance and nothing about decay, so the
+stable isotopes are a table of their own, copied from the reference implementation for all 118
+elements. It keeps that implementation's choices where they differ from the textbook's -
+thorium-232 counts as stable while bismuth-209 does not - and lists them in the order of their names,
+which puts ruthenium-100 ahead of ruthenium-96.
 
 ```
 >> ElementData(92, "StableIsotopes")
-{Entity(Isotope,Uranium234),Entity(Isotope,Uranium235),Entity(Isotope,Uranium238)}
+{}
+
+>> ElementData(90, "StableIsotopes")
+{Entity(Isotope,Thorium232)}
 
 >> ElementData(84, "StableIsotopes")
 {}

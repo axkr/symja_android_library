@@ -81,6 +81,44 @@ public class IsotopeDataFunctions {
   private static final String[] ISOTOPE_PROPERTIES = {"AtomicMass", "AtomicNumber", "BindingEnergy",
       "IsotopeAbundance", "MassNumber", "NeutronNumber", "StandardName"};
 
+  /**
+   * The stable isotopes of each element, by mass number, indexed by atomic number.
+   *
+   * <p>
+   * Stability is not in CDK's table, which records natural abundance and nothing about decay, and
+   * the two are not the same thing: uranium occurs in nature and has no stable isotope. So this is
+   * copied from the reference implementation - <code>ElementData[z, "StableIsotopes"]</code> for
+   * every element, measured in Mathematica on 2026-09-19 - rather than worked out, and it keeps
+   * that answer's order, which is the order of the entity names. That is why ruthenium lists 100,
+   * 101, 102 and 104 ahead of 96, 98 and 99.
+   *
+   * <p>
+   * Its choices are not the textbook's in a handful of places, and are kept as they are:
+   * thorium-232 counts as stable while bismuth-209 and every uranium isotope do not, samarium-149
+   * is in and samarium-147 and 148 are out, and osmium-184 and 187 are in.
+   */
+  private static final int[][] STABLE_ISOTOPES = {
+      {}, {1, 2}, {3, 4}, {6, 7}, {9}, {10, 11}, {12, 13}, {14, 15}, {16, 17, 18}, {19},
+      {20, 21, 22}, {23}, {24, 25, 26}, {27}, {28, 29, 30}, {31}, {32, 33, 34, 36}, {35, 37},
+      {36, 38, 40}, {39, 41}, {40, 42, 43, 44, 46}, {45}, {46, 47, 48, 49, 50}, {51},
+      {50, 52, 53, 54}, {55}, {54, 56, 57, 58}, {59}, {58, 60, 61, 62, 64}, {63, 65},
+      {64, 66, 67, 68, 70}, {69, 71}, {70, 72, 73, 74}, {75}, {74, 76, 77, 78, 80}, {79, 81},
+      {78, 80, 82, 83, 84, 86}, {85}, {84, 86, 87, 88}, {89}, {90, 91, 92, 94}, {93},
+      {92, 94, 95, 96, 97, 98}, {}, {100, 101, 102, 104, 96, 98, 99}, {103},
+      {102, 104, 105, 106, 108, 110}, {107, 109}, {106, 108, 110, 111, 112, 114}, {113},
+      {112, 114, 115, 116, 117, 118, 119, 120, 122, 124}, {121, 123}, {120, 122, 124, 125, 126},
+      {127}, {124, 126, 128, 129, 130, 131, 132, 134, 136}, {133},
+      {130, 132, 134, 135, 136, 137, 138}, {139}, {136, 138, 140, 142}, {141},
+      {142, 143, 145, 146, 148}, {}, {144, 149, 150, 152, 154}, {151, 153},
+      {154, 155, 156, 157, 158, 160}, {159}, {156, 158, 160, 161, 162, 163, 164}, {165},
+      {162, 164, 166, 167, 168, 170}, {169}, {168, 170, 171, 172, 173, 174, 176}, {175},
+      {176, 177, 178, 179, 180}, {181}, {180, 182, 183, 184, 186}, {185},
+      {184, 187, 188, 189, 190, 192}, {191, 193}, {192, 194, 195, 196, 198}, {197},
+      {196, 198, 199, 200, 201, 202, 204}, {203, 205}, {204, 206, 207, 208}, {}, {}, {}, {}, {},
+      {}, {}, {232}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+      {}, {}, {}, {}, {}, {}, {}, {}, {}
+  };
+
   private static volatile IsotopeFactory factory;
 
   /** Each element's nuclides, sorted by mass number, with the unusable ones dropped. */
@@ -371,15 +409,12 @@ public class IsotopeDataFunctions {
       return result;
     }
     if ("StableIsotopes".equals(property)) {
-      // "stable" as the table means it: an isotope that occurs in nature. That takes in the
-      // long lived primordial ones - potassium-40, thorium-232 - and leaves technetium and
-      // polonium with none at all, which is how a chemistry reference describes them.
-      IASTAppendable result = F.ListAlloc(isotopes.length);
-      for (IIsotope isotope : isotopes) {
-        Double abundance = isotope.getNaturalAbundance();
-        if (abundance != null && abundance.doubleValue() > 0.0) {
-          result.append(entityOf(engine, isotope));
-        }
+      int[] massNumbers = atomicNumber < STABLE_ISOTOPES.length ? STABLE_ISOTOPES[atomicNumber]
+          : new int[0];
+      IASTAppendable result = F.ListAlloc(massNumbers.length);
+      for (int massNumber : massNumbers) {
+        result.append(Entities.entity(ISOTOPE,
+            F.stringx(standardName(engine, atomicNumber, massNumber))));
       }
       return result;
     }
@@ -430,6 +465,19 @@ public class IsotopeDataFunctions {
         // always been.
         return isotopeLike(arg1, engine) ? F.NIL : F.Missing(S.NotAvailable);
       }
+      if (ast.isAST2()) {
+        IExpr propertyExpr = Entities.propertyOf(ast.arg2(), ISOTOPE);
+        if (!propertyExpr.isString()) {
+          return F.NIL;
+        }
+        // a question about the whole element is answered before asking whether CDK has any of
+        // its isotopes: the stable ones come from a table of their own, and oganesson has none
+        // there, which is an empty list and not missing data
+        IExpr whole = elementProperty(atomicNumber, propertyExpr.toString(), engine);
+        if (whole.isPresent()) {
+          return whole;
+        }
+      }
       IIsotope[] isotopes = isotopesOf(atomicNumber);
       if (isotopes.length == 0) {
         return F.Missing(S.NotAvailable);
@@ -437,15 +485,7 @@ public class IsotopeDataFunctions {
       if (ast.isAST1()) {
         return entitiesOf(engine, isotopes);
       }
-      IExpr propertyExpr = Entities.propertyOf(ast.arg2(), ISOTOPE);
-      if (!propertyExpr.isString()) {
-        return F.NIL;
-      }
-      String property = propertyExpr.toString();
-      IExpr whole = elementProperty(atomicNumber, property, engine);
-      if (whole.isPresent()) {
-        return whole;
-      }
+      String property = Entities.propertyOf(ast.arg2(), ISOTOPE).toString();
       // every other property speaks for the most abundant isotope of the element
       IIsotope major = majorIsotope(atomicNumber);
       if (major == null) {

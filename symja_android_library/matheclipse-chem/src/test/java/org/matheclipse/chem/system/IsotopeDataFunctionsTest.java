@@ -161,18 +161,41 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * The isotopes that occur in nature. That takes in the long lived primordial ones and leaves
-   * technetium and polonium with none, which is how a chemistry reference describes them.
+   * The stable isotopes, as the reference implementation lists them - measured in Mathematica on
+   * 2026-09-19 for every element. Stable means stable, not "occurs in nature": uranium occurs in
+   * nature and has none.
    */
   @Test
   public void testStableIsotopes() {
     check("ElementData(6, \"StableIsotopes\")", //
         "{Entity(Isotope,Carbon12),Entity(Isotope,Carbon13)}");
-    check("ElementData(84, \"StableIsotopes\")", //
+    // technetium, polonium and every uranium isotope are radioactive
+    check("{ElementData(43, \"StableIsotopes\"), ElementData(84, \"StableIsotopes\"),"
+        + " ElementData(92, \"StableIsotopes\")}", //
+        "{{},{},{}}");
+    // the reference's own choices, which are not all the textbook's: thorium-232 is in,
+    // bismuth-209 is out, and so is samarium-147 while samarium-149 is in
+    check("ElementData(90, \"StableIsotopes\")", //
+        "{Entity(Isotope,Thorium232)}");
+    check("ElementData(83, \"StableIsotopes\")", //
         "{}");
-    check("ElementData(43, \"StableIsotopes\")", //
+    check("IsotopeData(#, \"MassNumber\")& /@ ElementData(62, \"StableIsotopes\")", //
+        "{144,149,150,152,154}");
+    // in the order of the entity names, which puts ruthenium-100 ahead of ruthenium-96
+    check("IsotopeData(#, \"MassNumber\")& /@ ElementData(44, \"StableIsotopes\")", //
+        "{100,101,102,104,96,98,99}");
+    // oganesson has no isotope in CDK's table either, and still answers an empty list
+    check("ElementData(118, \"StableIsotopes\")", //
         "{}");
-    // answered, but left out of the enumeration, as the reference implementation leaves it out
+    check("Total(Table(Length(ElementData(z, \"StableIsotopes\")), {z, 118}))", //
+        "257");
+    // every one of them is an isotope this table can answer for, named as its element is
+    check("AllTrue(Flatten(Table(ElementData(z, \"StableIsotopes\"), {z, 118})),"
+        + " IntegerQ(IsotopeData(#, \"MassNumber\"))&)", //
+        "True");
+    check("ElementData(55, \"StableIsotopes\")", //
+        "{Entity(Isotope,Cesium133)}");
+    // answered, but left out of the enumeration
     check("MemberQ(ElementData(\"Properties\"), EntityProperty(\"Element\", \"StableIsotopes\"))", //
         "False");
   }

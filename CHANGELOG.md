@@ -41,9 +41,11 @@ Noteworthy changes are documented in this file.
 
   The mass numbers a lone `IsotopeData(element)` used to give moved to `"MassNumbers"`;
   `ElementData(z, "KnownIsotopes")` reads that instead and is unchanged. `ElementData` also gained
-  `"StableIsotopes"`, the isotopes of an element that occur in nature - which takes in the long
-  lived primordial ones and leaves technetium and polonium with none. It is answered but stays out
-  of `ElementData("Properties")`, as the reference implementation leaves it out.
+  `"StableIsotopes"`, the stable isotopes of an element - stable in the sense of not decaying, so
+  uranium, which occurs in nature, has none. CDK records abundance and nothing about decay, so they
+  are a table of their own, copied from Mathematica for all 118 elements and checked against it
+  entry for entry; it keeps the reference's own choices, thorium-232 in and bismuth-209 out among
+  them. It is answered but stays out of `ElementData("Properties")`.
 
   Abundances are reported in two units, which is worth knowing: the table records percent and the
   element forms hand that on (`IsotopeData("C", "Abundances")` is `{12->98.93, 13->1.07}`), while
