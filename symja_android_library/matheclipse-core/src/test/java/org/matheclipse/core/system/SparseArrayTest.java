@@ -967,6 +967,38 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "{{x,0,0,0,0},{y,x,0,0,0},{0,y,x,0,0},{0,0,y,x,0},{0,0,0,y,x}}");
   }
 
+  @Test
+  public void testSparseArrayBandWMA() {
+    // dimensions inferred from the band's value list
+    check("SparseArray(Band({1, 1}) -> {1, 2, 3}) // Normal", //
+        "{{1,0,0},{0,2,0},{0,0,3}}");
+    // a scalar band without dimensions covers the start position only
+    check("SparseArray(Band({1, 1}) -> x) // Normal", //
+        "{{x}}");
+    // an explicit end repeats a shorter value list
+    check("SparseArray(Band({1, 1}, {4, 4}) -> {a, b}, {4, 4}) // Normal", //
+        "{{a,0,0,0},{0,b,0,0},{0,0,a,0},{0,0,0,b}}");
+    // earlier rules take precedence over a later band
+    check("SparseArray({{1, 1} -> 5, Band({1, 1}) -> 1}, {3, 3}) // Normal", //
+        "{{5,0,0},{0,1,0},{0,0,1}}");
+    // negative end counts from the last position
+    check("SparseArray(Band({1, 1}, {-2, -2}) -> x, {4, 4}) // Normal", //
+        "{{x,0,0,0},{0,x,0,0},{0,0,x,0},{0,0,0,0}}");
+    // a matrix value is one block, placed once
+    check("SparseArray(Band({1, 1}) -> {{1, 2}, {3, 4}}, {4, 4}) // Normal", //
+        "{{1,2,0,0},{3,4,0,0},{0,0,0,0},{0,0,0,0}}");
+    check("SparseArray(Band({1, 1}) -> {{1, 2}, {3, 4}}, {5, 5}) // Normal", //
+        "{{1,2,0,0,0},{3,4,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}}");
+    // a list of matrices builds a block diagonal matrix
+    check("SparseArray(Band({1, 1}) -> {{{1, 2}, {3, 4}}, {{5, 6}, {7, 8}}}) // Normal", //
+        "{{1,2,0,0},{3,4,0,0},{0,0,5,6},{0,0,7,8}}");
+    check("SparseArray(Band({1, 1}) -> {{{a}}, {{1, 2}, {3, 4}}}) // Normal", //
+        "{{a,0,0},{0,1,2},{0,3,4}}");
+    // a block is clipped at the given dimensions
+    check("SparseArray(Band({2, 2}) -> {{1, 2}, {3, 4}}, {2, 3}) // Normal", //
+        "{{0,0,0},{0,1,2}}");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
