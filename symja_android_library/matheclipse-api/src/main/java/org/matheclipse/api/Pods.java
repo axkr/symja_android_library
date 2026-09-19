@@ -47,7 +47,8 @@ import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.form.Documentation;
-import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.JSPageProvider;
+import org.matheclipse.core.form.output.OutputFormats;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -438,24 +439,24 @@ public class Pods {
     String encodedPlainText = plainText == null ? null : Encode.forHtmlContent(plainText);
     if ((formats & HTML) != 0x00) {
       if (encodedPlainText != null && encodedPlainText.length() > 0) {
-        json.put(JSBuilder.HTML_STR, encodedPlainText);
+        json.put(OutputFormats.HTML_STR, encodedPlainText);
       }
     }
 
     if ((formats & PLAIN) != 0x00) {
       if (encodedPlainText != null && encodedPlainText.length() > 0) {
-        json.put(JSBuilder.PLAIN_STR, encodedPlainText);
+        json.put(OutputFormats.PLAIN_STR, encodedPlainText);
       } else {
         if (outExpr.isPresent()) {
           String exprStr = Encode.forHtmlContent(outExpr.toString());
-          json.put(JSBuilder.PLAIN_STR, exprStr);
+          json.put(OutputFormats.PLAIN_STR, exprStr);
         }
       }
     }
     if ((formats & SYMJA) != 0x00) {
       if (sinput != null && sinput.length() > 0) {
         String encodedSInput = Encode.forHtmlContent(sinput);
-        json.put(JSBuilder.SYMJA_STR, encodedSInput);
+        json.put(OutputFormats.SYMJA_STR, encodedSInput);
       }
     }
     if ((formats & MATHML) != 0x00) {
@@ -466,7 +467,7 @@ public class Pods {
           // return createJSONErrorString("Max. output size exceeded " +
           // Config.MAX_OUTPUT_SIZE);
         } else {
-          json.put(JSBuilder.MATHML_STR, stw.toString());
+          json.put(OutputFormats.MATHML_STR, stw.toString());
         }
       }
     }
@@ -477,13 +478,13 @@ public class Pods {
         if (!texUtil.toTeX(F.HoldForm(outExpr), stw)) {
           //
         } else {
-          json.put(JSBuilder.LATEX_STR, stw.toString());
+          json.put(OutputFormats.LATEX_STR, stw.toString());
         }
       }
     }
     if ((formats & MARKDOWN) != 0x00) {
       if (encodedPlainText != null && encodedPlainText.length() > 0) {
-        json.put(JSBuilder.MARKDOWN_STR, encodedPlainText);
+        json.put(OutputFormats.MARKDOWN_STR, encodedPlainText);
       } else {
 
       }
@@ -491,13 +492,10 @@ public class Pods {
     if ((formats & MATHCELL) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         try {
-          String html = JSBuilder.buildMathcell(JSBuilder.MATHCELL_IFRAME_TEMPLATE, plainText);
-          // String html = MATHCELL_IFRAME;
-          // html = StringUtils.replace(html, "`1`", plainText);
-          html = StringEscapeUtils.escapeHtml4(html);
-          html = "<iframe srcdoc=\"" + html
-              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
-          json.put(JSBuilder.MATHCELL_STR, html);
+          String html = JSPageProvider.iframeOf(OutputFormats.MATHCELL_STR, plainText);
+          if (html != null) {
+            json.put(OutputFormats.MATHCELL_STR, html);
+          }
         } catch (Exception ex) {
           LOGGER.debug("Pods.createJSONFormat() failed", ex);
         }
@@ -509,13 +507,10 @@ public class Pods {
     if ((formats & JSXGRAPH) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         try {
-          String html = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE, plainText);
-          // String html = JSXGRAPH_IFRAME;
-          // html = StringUtils.replace(html, "`1`", plainText);
-          html = StringEscapeUtils.escapeHtml4(html);
-          html = "<iframe srcdoc=\"" + html
-              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
-          json.put(JSBuilder.JSXGRAPH_STR, html);
+          String html = JSPageProvider.iframeOf(OutputFormats.JSXGRAPH_STR, plainText);
+          if (html != null) {
+            json.put(OutputFormats.JSXGRAPH_STR, html);
+          }
         } catch (Exception ex) {
           LOGGER.debug("JSON API JSXGRAPH", ex);
         }
@@ -527,7 +522,7 @@ public class Pods {
 
     if ((formats & STEPS) != 0x00) {
       if (StepsTree.isTraceForm(outExpr)) {
-        json.putPOJO(JSBuilder.STEPS_STR, StepsJSON.toJSON(JSON_OBJECT_MAPPER, (IAST) outExpr));
+        json.putPOJO(OutputFormats.STEPS_STR, StepsJSON.toJSON(JSON_OBJECT_MAPPER, (IAST) outExpr));
       }
     }
 
@@ -538,7 +533,7 @@ public class Pods {
         // is delivered as it stands, under the html key: the fixed size iframe this used to be
         // wrapped in overrode the size the picture had chosen, and a square frame cropped every
         // grid that was not square.
-        json.put(JSBuilder.HTML_STR, plainText);
+        json.put(OutputFormats.HTML_STR, plainText);
       }
     }
 
@@ -548,7 +543,7 @@ public class Pods {
           String html = StringEscapeUtils.escapeHtml4(plainText);
           html = "<iframe srcdoc=\"" + html
               + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
-          json.put(JSBuilder.JSXGRAPH_STR, html);
+          json.put(OutputFormats.JSXGRAPH_STR, html);
         } catch (Exception ex) {
           LOGGER.debug("JSON API GRAPHICS3D", ex);
         }
@@ -561,13 +556,10 @@ public class Pods {
     if ((formats & PLOTLY) != 0x00) {
       if (plainText != null && plainText.length() > 0) {
         try {
-          String html = JSBuilder.buildPlotly(JSBuilder.PLOTLY_IFRAME_TEMPLATE, plainText);
-          // String html = PLOTLY_IFRAME;
-          // html = StringUtils.replace(html, "`1`", plainText);
-          html = StringEscapeUtils.escapeHtml4(html);
-          html = "<iframe srcdoc=\"" + html
-              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
-          json.put(JSBuilder.PLOTLY_STR, html);
+          String html = JSPageProvider.iframeOf(OutputFormats.PLOTLY_STR, plainText);
+          if (html != null) {
+            json.put(OutputFormats.PLOTLY_STR, html);
+          }
         } catch (Exception ex) {
           LOGGER.debug("Pods.createJSONFormat() failed", ex);
         }
@@ -1226,14 +1218,10 @@ public class Pods {
     int form = GRAPHICS3D;
     String html = null;
     if (WebGLGraphics3D.isRenderable(podOut)) {
-      StringBuilder buf = new StringBuilder();
-      if (GraphicsUtil.renderGraphics3D(buf, (IAST) podOut, engine)) {
-        try {
-          String graphicsStr = buf.toString();
-          html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphicsStr);
-        } catch (Exception ex) {
-          LOGGER.debug("JSBuilder.buildGraphics3D() failed", ex);
-        }
+      try {
+        html = WebGLGraphics3D.generateHTML((IAST) podOut);
+      } catch (RuntimeException rex) {
+        LOGGER.debug("WebGLGraphics3D.generateHTML() failed", rex);
       }
     } else if (podOut.isAST(S.JSFormData, 3)) {
       html = podOut.second().toString();
@@ -1685,27 +1673,27 @@ public class Pods {
 
   /** package private */
   static int internFormat(int intern, String str) {
-    if (str.equals(JSBuilder.HTML_STR)) {
+    if (str.equals(OutputFormats.HTML_STR)) {
       intern |= HTML;
-    } else if (str.equals(JSBuilder.PLAIN_STR)) {
+    } else if (str.equals(OutputFormats.PLAIN_STR)) {
       intern |= PLAIN;
-    } else if (str.equals(JSBuilder.SYMJA_STR)) {
+    } else if (str.equals(OutputFormats.SYMJA_STR)) {
       intern |= SYMJA;
-    } else if (str.equals(JSBuilder.MATHML_STR)) {
+    } else if (str.equals(OutputFormats.MATHML_STR)) {
       intern |= MATHML;
-    } else if (str.equals(JSBuilder.LATEX_STR)) {
+    } else if (str.equals(OutputFormats.LATEX_STR)) {
       intern |= LATEX;
-    } else if (str.equals(JSBuilder.MARKDOWN_STR)) {
+    } else if (str.equals(OutputFormats.MARKDOWN_STR)) {
       intern |= MARKDOWN;
-    } else if (str.equals(JSBuilder.MATHCELL_STR)) {
+    } else if (str.equals(OutputFormats.MATHCELL_STR)) {
       intern |= MATHCELL;
-    } else if (str.equals(JSBuilder.JSXGRAPH_STR)) {
+    } else if (str.equals(OutputFormats.JSXGRAPH_STR)) {
       intern |= JSXGRAPH;
-    } else if (str.equals(JSBuilder.PLOTLY_STR)) {
+    } else if (str.equals(OutputFormats.PLOTLY_STR)) {
       intern |= PLOTLY;
     } else if (str.equals(VISJS_STR) || str.equals("treeform")) {
       intern |= VISJS;
-    } else if (str.equals(JSBuilder.STEPS_STR)) {
+    } else if (str.equals(OutputFormats.STEPS_STR)) {
       intern |= STEPS;
     }
     return intern;

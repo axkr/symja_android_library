@@ -85,6 +85,15 @@
 			<artifactId>matheclipse-compile</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- JSXGraph, ECharts and MathCell renderings, and the sandboxed iframe
+		pages a JSFormData result is shown in; reached only through IOInit and
+		the JSPageProvider interface of matheclipse-core, so a deployment can
+		exclude it -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-jsgraphics</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- the Dataset object and the vendored tech.tablesaw fork it is built
 		on; moved out of this module together with fastutil, RoaringBitmap,
 		classgraph, jsoup, jackson-datatype-jsr310, json-flattener, poi-ooxml

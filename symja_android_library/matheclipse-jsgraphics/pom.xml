@@ -8,48 +8,36 @@
 		<version>3.3.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>matheclipse-md2html</artifactId>
+	<artifactId>matheclipse-jsgraphics</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>The Markdown math enriched document to HTML converter</description>
+	<description>The Symja JavaScript graphics module: renders Graphics with the
+		JSXGraph, Apache ECharts and MathCell JavaScript libraries, in an iframe
+		that loads the library from a CDN</description>
 
 	<licenses>
 		<license>
-			<name>GNU Lesser General Public License, Version 3</name>
-			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+			<name>GNU Lesser General Public License, Version 2.1</name>
+			<url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
 			<distribution>repo</distribution>
 			<comments>A free, copyleft license for software and other kinds of works</comments>
 		</license>
 	</licenses>
 
+	<!-- No maven.compiler.release override: the module generates strings only
+	and inherits the release 11 default of the parent POM. -->
+
 	<dependencies>
 
+		<!-- The JavaScript libraries themselves are not dependencies: the pages
+		this module builds load them from a CDN inside the browser. So there are
+		no third-party jars here, and matheclipse-core must not depend on this
+		module, which org.matheclipse.io.archunit.JSGraphicsDependencyTest
+		asserts. -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>matheclipse-image</artifactId>
+			<artifactId>matheclipse-core</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>matheclipse-gpl</artifactId>
-			<version>${project.version}</version>
-		</dependency> 
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>matheclipse-graphtheory</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>matheclipse-jsgraphics</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.commonmark</groupId>
-			<artifactId>commonmark-ext-gfm-tables</artifactId>
 		</dependency>
 
 		<!-- logging dependencies -->
@@ -66,7 +54,7 @@
 			<artifactId>matheclipse-script</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
-		</dependency> 
+		</dependency>
 
 	</dependencies>
 

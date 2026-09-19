@@ -13,7 +13,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.HtmlTemplates;
 import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.graphics.SVGGraphics;
 import org.matheclipse.image.algo.Pixels;
@@ -292,7 +292,7 @@ final public class ImageExpr extends DataExpr<byte[]> {
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
       ImageIO.write(bImage, "png", b64);
-      String html = JSBuilder.IMAGE_TEMPLATE;
+      String html = HtmlTemplates.IMAGE_TEMPLATE;
       String[] argsToRender = new String[3];
       argsToRender[0] = outputStream.toString();
       argsToRender[1] = styleAttribute(bImage);

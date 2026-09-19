@@ -38,7 +38,7 @@ import org.matheclipse.core.io.ImageFormatIO;
 import org.matheclipse.core.io.TableFormatIO;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IGraphExpr;
-import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.OutputFormats;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
@@ -525,28 +525,10 @@ public class AJAXQueryServlet extends HttpServlet {
           if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, true, engine)) {
             return JSONBuilder.createJSONJavaScript(buf.toString());
           }
-          // if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {
-          // try {
-          // return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
-          // buf.toString());
-          // } catch (Exception ex) {
-          // LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-          // }
-          // }
         } else if (WebGLGraphics3D.isRenderable(outExpr)) {
           String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) outExpr);
           // Return as a JSON JavaScript result (which creates a line in the output UI)
           return JSONBuilder.createJSONJavaScript(webglSnippet);
-
-          // StringBuilder buf = new StringBuilder();
-          // if (GraphicsUtil.renderGraphics3D(buf, (IAST) outExpr, engine)) {
-          // try {
-          // return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
-          // buf.toString());
-          // } catch (Exception ex) {
-          // LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-          // }
-          // }
         }
         if (outExpr.isASTSizeGE(S.Show, 2)) {
           IAST show = (IAST) outExpr;
@@ -574,20 +556,6 @@ public class AJAXQueryServlet extends HttpServlet {
             return JSONBuilder.createJSONJavaScript(
                 "<img alt=\"image\" style=\"max-width: 100%; height: auto;\" src=\"data:image/png;base64,"
                     + imageExpr.toBase64EncodedString() + "\"/>");
-            // } else {
-            // try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            // final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
-            // ImageIO.write(bImage, "png", b64);
-            // String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
-            // String[] argsToRender = new String[3];
-            // argsToRender[0] = outputStream.toString();
-            // System.out.println(argsToRender[0]);
-            // html = IOFunctions.templateRender(html, argsToRender);
-            // html = StringEscapeUtils.escapeHtml4(html);
-            // return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-            // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
-            // ></iframe>");
-            // }
           }
         } else if (outExpr.isAST(S.ExportForm, 3)) {
           String link = exportFormLink(engine, (IAST) outExpr);
@@ -605,42 +573,19 @@ public class AJAXQueryServlet extends HttpServlet {
         } else if (outExpr.isAST(S.JSFormData, 3)) {
           IAST jsFormData = (IAST) outExpr;
           String jsLibraryType = jsFormData.arg2().toString();
-          if (jsLibraryType.equals(JSBuilder.MATHCELL_STR)) {
+          if (!jsLibraryType.equals(OutputFormats.TREEFORM_STR)) {
+            // the JavaScript libraries: a sandboxed iframe loading the library from its CDN,
+            // built by matheclipse-jsgraphics; without that module the result is shown as text
             try {
-              return JSONBuilder.createMathcellIFrame(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
+              String[] iframe =
+                  JSONBuilder.createJSIFrame(jsLibraryType, jsFormData.arg1().toString());
+              if (iframe != null) {
+                return iframe;
+              }
             } catch (Exception ex) {
               LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
             }
-          } else if (jsLibraryType.equals(JSBuilder.ECHARTS_STR)) {
-            try {
-              return JSONBuilder.createEChartsIFrame(JSBuilder.ECHARTS_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
-          } else if (jsLibraryType.equals(JSBuilder.JSXGRAPH_STR)) {
-            try {
-              return JSONBuilder.createJSXGraphIFrame(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
-          } else if (jsLibraryType.equals(JSBuilder.MERMAID_STR)) {
-            try {
-              return JSONBuilder.createMermaidIFrame(JSBuilder.MERMAID_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
-          } else if (jsLibraryType.equals(JSBuilder.PLOTLY_STR)) {
-            try {
-              return JSONBuilder.createPlotlyIFrame(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
-          } else if (jsLibraryType.equals(JSBuilder.TREEFORM_STR)) {
+          } else {
             try {
               String manipulateStr = jsFormData.arg1().toString();
               String html = VISJS_IFRAME;

@@ -1,9 +1,7 @@
 package org.matheclipse.io.servlet;
 
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
@@ -13,7 +11,7 @@ import org.matheclipse.core.eval.steps.StepsJSON;
 import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.JSPageProvider;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -488,72 +486,13 @@ public class JSONBuilder {
   }
 
   /**
-   * Create a JSON mathml output <code>new String[] {"mathml", json.toString()}</code>.
+   * A <code>JSFormData[js, type]</code> result, shown in the sandboxed iframe the
+   * <code>matheclipse-jsgraphics</code> module builds for {@code type}.
    *
-   * @param html
-   * @param manipulateStr
-   * @return
+   * @return <code>null</code> when that module is not installed or does not know {@code type}
    */
-  public static String[] createJSONIFrame(String html, String manipulateStr) {
-    html = Errors.templateRender(html, new String[] {manipulateStr});
-    html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript("<iframe srcdoc=\"" + html
-        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-  }
-
-  public static String[] createJEChartsIFrame(String html, String manipulateStr) {
-    html = JSBuilder.buildECharts(html, manipulateStr);
-    html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript("<iframe srcdoc=\"" + html
-        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
-  }
-
-  public static String[] createGraphics2DIFrame(String html, String manipulateStr) {
-    html = JSBuilder.buildGraphics2D(html, manipulateStr);
-    html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript("<iframe srcdoc=\"" + html
-        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
-  }
-
-  public static String[] createGraphics3DIFrame(String html, String manipulateStr) {
-    html = JSBuilder.buildGraphics3D(html, manipulateStr);
-    html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript("<iframe srcdoc=\"" + html
-        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
-  }
-
-  public static String[] createMathcellIFrame(String html, String manipulateStr) {
-    html = JSBuilder.buildMathcell(html, manipulateStr);
-    html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript("<iframe srcdoc=\"" + html
-        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
-  }
-
-  public static String[] createEChartsIFrame(String html, String manipulateStr) {
-    html = JSBuilder.buildECharts(html, manipulateStr);
-    html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript("<iframe srcdoc=\"" + html
-        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
-  }
-
-  public static String[] createJSXGraphIFrame(String html, String manipulateStr) {
-    html = JSBuilder.buildJSXGraph(html, manipulateStr);
-    html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript("<iframe srcdoc=\"" + html
-        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
-  }
-
-  public static String[] createMermaidIFrame(String html, String manipulateStr) {
-    html = JSBuilder.buildMermaid(html, manipulateStr);
-    html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript("<iframe srcdoc=\"" + html
-        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
-  }
-
-  public static String[] createPlotlyIFrame(String html, String manipulateStr) {
-    html = JSBuilder.buildPlotly(html, manipulateStr);
-    html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript("<iframe srcdoc=\"" + html
-        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" scrolling=\"no\"></iframe>");
+  public static String[] createJSIFrame(String type, String js) {
+    String iframe = JSPageProvider.iframeOf(type, js);
+    return iframe == null ? null : createJSONJavaScript(iframe);
   }
 }

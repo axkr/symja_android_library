@@ -35,4 +35,39 @@ public interface JSPageProvider {
    * @return the page, or <code>null</code> for a type the provider does not know
    */
   String page(String type, String js);
+
+  /**
+   * {@link #page(String, String)} embedded in a sandboxed <code>&lt;iframe srcdoc="..."&gt;</code>,
+   * ready to be put into another HTML page.
+   *
+   * <p>
+   * Every JavaScript rendering is shown this way, never inlined into the host page: the library is
+   * loaded from its CDN inside the frame, its globals and styles cannot clash with the host page or
+   * with a second result, and the sandbox keeps the generated script away from the host page's
+   * cookies and DOM.
+   *
+   * @return the <code>&lt;iframe&gt;</code> element, or <code>null</code> for a type the provider
+   *         does not know
+   */
+  String iframe(String type, String js);
+
+  /**
+   * {@link #iframe(String, String)} of the installed provider.
+   *
+   * @return <code>null</code> when no provider is installed or it does not know {@code type}
+   */
+  static String iframeOf(String type, String js) {
+    JSPageProvider provider = INSTANCE[0];
+    return provider == null ? null : provider.iframe(type, js);
+  }
+
+  /**
+   * {@link #page(String, String)} of the installed provider.
+   *
+   * @return <code>null</code> when no provider is installed or it does not know {@code type}
+   */
+  static String pageOf(String type, String js) {
+    JSPageProvider provider = INSTANCE[0];
+    return provider == null ? null : provider.page(type, js);
+  }
 }

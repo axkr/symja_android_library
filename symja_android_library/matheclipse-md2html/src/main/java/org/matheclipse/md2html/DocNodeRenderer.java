@@ -23,7 +23,9 @@ import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IGraphExpr;
-import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.HtmlTemplates;
+import org.matheclipse.core.form.output.JSPageProvider;
+import org.matheclipse.core.form.output.OutputFormats;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
@@ -110,14 +112,6 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) result, true, EvalEngine.get())) {
             html.raw(buf.toString());
             return true;
-          } else if (GraphicsUtil.renderGraphics2D(buf, (IAST) result, EvalEngine.get())) {
-            String graphicsStr = buf.toString();
-            String htmlStr =
-                JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE, graphicsStr);
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
           }
           // return openSVGOnDesktop((IAST) expr);
         } else if (WebGLGraphics3D.isRenderable(result)) {
@@ -127,7 +121,7 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
         } else if (result instanceof IGraphExpr) {
           String javaScriptStr = ((IGraphExpr) result).graphToJSForm();
           if (javaScriptStr != null) {
-            String htmlStr = JSBuilder.VISJS_IFRAME;
+            String htmlStr = HtmlTemplates.VISJS_IFRAME;
             htmlStr = StringUtils.replace(htmlStr, "`1`", javaScriptStr);
             htmlStr = StringUtils.replace(htmlStr, "`2`", //
                 "  var options = { };\n" //
@@ -150,41 +144,17 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           }
         } else if (result.isAST(F.JSFormData, 3)) {
           IAST jsFormData = (IAST) result;
-          if (jsFormData.arg2().toString().equals(JSBuilder.MATHCELL_STR)) {
-
-            String htmlStr = JSBuilder.buildMathcell(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
-                jsFormData.arg1().toString());
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
-          } else if (jsFormData.arg2().toString().equals(JSBuilder.ECHARTS_STR)) {
-
-            String htmlStr = JSBuilder.buildECharts(JSBuilder.ECHARTS_IFRAME_TEMPLATE,
-                jsFormData.arg1().toString());
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
-          } else if (jsFormData.arg2().toString().equals(JSBuilder.JSXGRAPH_STR)) {
-
-            String htmlStr = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
-                jsFormData.arg1().toString());
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
-
-          } else if (jsFormData.arg2().toString().equals(JSBuilder.PLOTLY_STR)) {
-            String htmlStr = JSBuilder.buildPlotly(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
-                jsFormData.arg1().toString());
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
-          } else if (jsFormData.arg2().toString().equals(JSBuilder.TREEFORM_STR)) {
+          String type = jsFormData.arg2().toString();
+          if (!type.equals(OutputFormats.TREEFORM_STR)) {
+            // a sandboxed iframe loading the library from its CDN, from matheclipse-jsgraphics
+            String iframe = JSPageProvider.iframeOf(type, jsFormData.arg1().toString());
+            if (iframe != null) {
+              html.raw(iframe);
+              return true;
+            }
+          } else {
             String manipulateStr = jsFormData.arg1().toString();
-            String htmlStr = JSBuilder.VISJS_IFRAME;
+            String htmlStr = HtmlTemplates.VISJS_IFRAME;
             htmlStr = StringUtils.replace(htmlStr, "`1`", manipulateStr);
             htmlStr = StringUtils.replace(htmlStr, "`2`", //
                 "  var options = {\n" + //
