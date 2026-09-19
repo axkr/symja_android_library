@@ -19,9 +19,8 @@ IsotopeData()
 > gives every isotope in the table, as entities.
 
 An element can be named, given by atomic number, or given by symbol. A single isotope is named by
-an `Entity("Isotope", name)`, by the name with its mass number written onto it - `"Carbon12"` or
-`"C12"` - or by the element and mass number as a pair, `{"Carbon", 12}` or `{6, 12}`. A property can
-be named or given as an `EntityProperty("Isotope", property)`.
+an `Entity("Isotope", name)`, or by the name with its mass number written onto it - `"Carbon12"` or
+`"C12"`. A property can be named or given as an `EntityProperty("Isotope", property)`.
 
 `IsotopeData` reads the isotope table bundled with the
 [Chemistry Development Kit](https://cdk.github.io/), which is the
@@ -33,7 +32,7 @@ functions do.
 ### Examples
 
 ```
->> IsotopeData({"Carbon", 12})
+>> IsotopeData("Carbon12")
 Entity(Isotope,Carbon12)
 
 >> Take(IsotopeData(6), 3)
@@ -43,7 +42,7 @@ Entity(Isotope,Carbon12)
 6
 
 >> IsotopeData(Entity("Isotope", "Carbon12"), "AtomicMass")
-Quantity(12.0,"Daltons")
+Quantity(12.0,"AtomicMassUnit")
 
 >> Length(IsotopeData())
 3171
@@ -56,40 +55,33 @@ The properties one isotope answers for:
 {EntityProperty(Isotope,AtomicMass),EntityProperty(Isotope,AtomicNumber),EntityProperty(Isotope,BindingEnergy),EntityProperty(Isotope,IsotopeAbundance),EntityProperty(Isotope,MassNumber),EntityProperty(Isotope,NeutronNumber),EntityProperty(Isotope,StandardName)}
 ```
 
-`BindingEnergy` is not looked up. It is the mass excess of the nucleus,
-`(Z m(1H) + N m(n) - M(A,Z)) c^2`, with the neutron mass and the u &rarr; MeV factor from
+`BindingEnergy` is the binding energy **per nucleon**, which is the quantity the curve of binding
+energy is drawn from. It is not looked up: it is the mass excess of the nucleus,
+`(Z m(1H) + N m(n) - M(A,Z)) c^2 / A`, with the neutron mass and the u &rarr; MeV factor from
 [CODATA 2018](https://physics.nist.gov/cuu/Constants/) and the isotope masses from the table. The
 electron binding energies this glosses over are of order electronvolts, which does not show at this
-scale, so the result reproduces the textbook values - carbon-12's 92.16 MeV, and the 8.79 MeV per
-nucleon at the iron-56 peak of the curve:
+scale, so the result matches the reference implementation to the figures it prints - carbon-12's
+7.68 MeV, and the 8.79 MeV at the iron-56 peak:
 
 ```
->> Round(QuantityMagnitude(IsotopeData(Entity("Isotope", "Carbon12"), "BindingEnergy")), 0.01)
-92.16
+>> Round(QuantityMagnitude(IsotopeData(Entity("Isotope", "Carbon12"), "BindingEnergy")), 0.0001)
+7.6801
 
 >> ListLinePlot(Table({m, IsotopeData(Entity("Isotope", "Iron" <> ToString(m)), "BindingEnergy")/m}, {m, 54, 58}))
 
 ```
 
-### Abundances are reported in two different units
+### Abundances
 
-The table records natural abundance as a percentage, and the element forms hand that on unchanged.
-An isotope entity answers with a fraction of one, which is what the reference implementation gives
-for the same question:
+Natural abundance is a percentage. An isotope that does not occur in nature answers zero rather
+than missing data:
 
 ```
->> IsotopeData("C", "Abundances")
-{12->98.93,13->1.07}
-
 >> IsotopeData(Entity("Isotope", "Carbon12"), "IsotopeAbundance")
-0.9893
-```
+Quantity(98.93,"Percents")
 
-An isotope that does not occur in nature has no abundance to report:
-
-```
 >> IsotopeData(Entity("Isotope", "Carbon14"), "IsotopeAbundance")
-Missing(NotAvailable)
+Quantity(0,"Percents")
 ```
 
 ### The whole element
@@ -103,16 +95,18 @@ about one isotope; every other property of an element speaks for its most abunda
 >> IsotopeData("C", "MassNumbers")
 {8,9,10,11,12,13,14,15,16,17,18,19,20,21,22}
 
+>> IsotopeData("C", "Abundances")
+<|Entity(Isotope,Carbon12)->Quantity(98.93,"Percents"),Entity(Isotope,Carbon13)->Quantity(1.07,"Percents")|>
+
 >> ElementData(6, "StableIsotopes")
 {Entity(Isotope,Carbon12),Entity(Isotope,Carbon13)}
 ```
 
 "Stable" means stable, which is not the same thing as occurring in nature: uranium occurs in nature
-and has no stable isotope at all. CDK's table records abundance and nothing about decay, so the
-stable isotopes are a table of their own, copied from the reference implementation for all 118
-elements. It keeps that implementation's choices where they differ from the textbook's -
-thorium-232 counts as stable while bismuth-209 does not - and lists them in the order of their names,
-which puts ruthenium-100 ahead of ruthenium-96.
+and has no stable isotope at all. The table is the reference implementation's, so it keeps that
+implementation's choices where they differ from the textbook's - thorium-232 counts as stable while
+bismuth-209 does not - and it lists them in the order of their names, which puts ruthenium-100 ahead
+of ruthenium-96.
 
 ```
 >> ElementData(92, "StableIsotopes")
@@ -120,9 +114,6 @@ which puts ruthenium-100 ahead of ruthenium-96.
 
 >> ElementData(90, "StableIsotopes")
 {Entity(Isotope,Thorium232)}
-
->> ElementData(84, "StableIsotopes")
-{}
 ```
 
 ### Isotopes as entities

@@ -26,31 +26,31 @@ Noteworthy changes are documented in this file.
 
 - A single isotope can be named. `IsotopeData` used to answer only for an element - a list of its
   mass numbers, and properties of its most abundant isotope - so there was no way to ask about
-  carbon-14 rather than about carbon. An isotope is now an entity,
-  `Entity("Isotope", "Carbon12")`, written that way or as `"Carbon12"`, `"C12"`, `{"Carbon", 12}`
-  or `{6, 12}`, and it answers for `"AtomicMass"`, `"AtomicNumber"`, `"BindingEnergy"`,
-  `"IsotopeAbundance"`, `"MassNumber"`, `"NeutronNumber"` and `"StandardName"`. `IsotopeData(6)`
-  is the isotopes of carbon and `IsotopeData()` all 3171 of them, over every element rather than
-  only the ones that occur in nature - the table was always there, in the Chemistry Development
-  Kit, and only the naturally occurring entries were reachable. `"Isotope"` is registered as an
-  entity type, so `EntityValue` and `EntityList` reach it like any other.
+  carbon-14 rather than about carbon. An isotope is now an entity, `Entity("Isotope", "Carbon12")`,
+  written that way or as `"Carbon12"` or `"C12"`, and it answers for `"AtomicMass"`,
+  `"AtomicNumber"`, `"BindingEnergy"`, `"IsotopeAbundance"`, `"MassNumber"`, `"NeutronNumber"` and
+  `"StandardName"`. `IsotopeData(6)` is the isotopes of carbon and `IsotopeData()` all 3171 of
+  them, over every element rather than only the ones that occur in nature - the table was always
+  there, in the Chemistry Development Kit, and only the naturally occurring entries were reachable.
+  `"Isotope"` is registered as an entity type, so `EntityValue` and `EntityList` reach it like any
+  other. A name the table does not know stays unevaluated.
 
-  `"BindingEnergy"` is computed rather than looked up, from the mass excess
-  `(Z m(1H) + N m(n) - M(A,Z)) c^2` with CODATA 2018 constants, which reproduces the textbook
-  values - carbon-12's 92.16 MeV, the 8.79 MeV per nucleon at the iron-56 peak.
+  Every answer was checked against Mathematica on 2026-09-19, and five of them had to be corrected
+  from what ad-si/Woxi#835 - the pull request that prompted the work - expects: `"BindingEnergy"` is
+  per nucleon (carbon-12 is 7.6801 MeV, not its 92.16 MeV total), `"AtomicMass"` carries
+  `"AtomicMassUnit"` rather than `"Daltons"`, `"IsotopeAbundance"` is a `Quantity` in percent and
+  zero rather than missing for a nuclide that does not occur in nature, an unknown name stays
+  unevaluated, and `{"Carbon", 12}` is not a specifier. `"BindingEnergy"` is computed rather than
+  looked up, from the mass excess `(Z m(1H) + N m(n) - M(A,Z)) c^2 / A` with CODATA 2018
+  constants, and matches the reference to the figures it prints.
 
-  The mass numbers a lone `IsotopeData(element)` used to give moved to `"MassNumbers"`;
-  `ElementData(z, "KnownIsotopes")` reads that instead and is unchanged. `ElementData` also gained
-  `"StableIsotopes"`, the stable isotopes of an element - stable in the sense of not decaying, so
-  uranium, which occurs in nature, has none. CDK records abundance and nothing about decay, so they
-  are a table of their own, copied from Mathematica for all 118 elements and checked against it
-  entry for entry; it keeps the reference's own choices, thorium-232 in and bismuth-209 out among
-  them. It is answered but stays out of `ElementData("Properties")`.
-
-  Abundances are reported in two units, which is worth knowing: the table records percent and the
-  element forms hand that on (`IsotopeData("C", "Abundances")` is `{12->98.93, 13->1.07}`), while
-  an isotope entity's `"IsotopeAbundance"` is a fraction of one, `0.9893`, as the reference
-  implementation gives it. From checking ad-si/Woxi#835 against Symja.
+  `ElementData` follows: `"KnownIsotopes"` answers with the isotope entities and
+  `"IsotopeAbundances"` with an association keyed by them. It also gained `"StableIsotopes"`, listed
+  among its properties as the reference lists it. Stable means stable rather than "occurs in
+  nature" - uranium occurs in nature and has no stable isotope - and CDK records abundance but
+  nothing about decay, so the stable isotopes are a table of their own, copied from Mathematica for
+  all 118 elements and checked against it entry for entry. It keeps the reference's own choices,
+  thorium-232 in and bismuth-209 out among them.
 
 - `ColorRules` in `ArrayPlot` and `MatrixPlot` matches a cell the way `Replace` does, instead of by
   a hand-written scan over structural equality. A pattern on the left of a rule now names every

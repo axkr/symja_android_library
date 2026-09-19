@@ -270,19 +270,14 @@ public class IsotopeDataFunctions {
    * The nuclide an expression names, or <code>null</code>.
    *
    * <p>
-   * Accepted: <code>Entity("Isotope", name)</code>, a name with the mass number written onto it
-   * (<code>"Carbon12"</code>, <code>"C12"</code>), and the element and mass number as a pair
-   * (<code>{"Carbon", 12}</code>, <code>{6, 12}</code>). A name that parses but is not in the table
-   * gives <code>null</code> just as an unparseable one does; the caller decides what that means.
+   * Accepted: <code>Entity("Isotope", name)</code> and a name with the mass number written onto it
+   * (<code>"Carbon12"</code>, <code>"C12"</code>). An element and a mass number as a pair is not a
+   * specifier, which is the reference implementation's rule. A name that parses but is not in the
+   * table gives <code>null</code> just as an unparseable one does; the caller decides what that
+   * means.
    */
   private static IIsotope nuclideOf(IExpr expr, EvalEngine engine) {
     IExpr spec = Entities.nameOf(expr, ISOTOPE);
-    if (spec.isList() && spec.argSize() == 2) {
-      IAST pair = (IAST) spec;
-      int z = elementNumber(pair.arg1(), engine);
-      int a = pair.arg2().toIntDefault();
-      return z < 1 || a < 1 ? null : isotopeOf(z, a);
-    }
     if (!spec.isString()) {
       return null;
     }
@@ -335,8 +330,13 @@ public class IsotopeDataFunctions {
   }
 
   /**
-   * Total nuclear binding energy in MeV, from the mass excess:
-   * <code>BE = (Z*m(H1) + N*m(n) - M(A,Z)) * c^2</code>.
+   * Nuclear binding energy <b>per nucleon</b>, in MeV, from the mass excess:
+   * <code>BE = (Z*m(H1) + N*m(n) - M(A,Z)) * c^2 / A</code>.
+   *
+   * <p>
+   * Per nucleon, not in total, because that is what the reference implementation reports and it is
+   * the quantity the curve of binding energy is drawn from - carbon-12 answers 7.68 MeV rather
+   * than its 92.16 MeV total, and iron-56 the 8.79 MeV at the peak.
    *
    * <p>
    * The mass of hydrogen-1 is read out of the same table as <code>M(A,Z)</code> rather than written
@@ -350,11 +350,26 @@ public class IsotopeDataFunctions {
       return F.Missing(S.NotAvailable);
     }
     int z = isotope.getAtomicNumber().intValue();
-    int n = isotope.getMassNumber().intValue() - z;
+    int a = isotope.getMassNumber().intValue();
     double massExcess = z * hydrogen1.getExactMass().doubleValue()
-        + n * NEUTRON_MASS_IN_DALTONS - isotope.getExactMass().doubleValue();
-    return F.binaryAST2(S.Quantity, F.num(massExcess * DALTON_IN_MEGAELECTRONVOLTS),
+        + (a - z) * NEUTRON_MASS_IN_DALTONS - isotope.getExactMass().doubleValue();
+    return F.binaryAST2(S.Quantity, F.num(massExcess * DALTON_IN_MEGAELECTRONVOLTS / a),
         F.stringx("Megaelectronvolts"));
+  }
+
+  /**
+   * The natural abundance, as a percentage.
+   *
+   * <p>
+   * A nuclide that does not occur in nature answers zero percent rather than missing data, which
+   * is what the reference implementation gives for carbon-14.
+   */
+  private static IExpr abundanceOf(IIsotope isotope) {
+    Double abundance = isotope.getNaturalAbundance();
+    double percent = abundance == null || abundance.doubleValue() <= 0.0 ? 0.0
+        : abundance.doubleValue();
+    return F.binaryAST2(S.Quantity, percent == 0.0 ? F.C0 : F.num(percent),
+        F.stringx("Percent"));
   }
 
   private static IExpr nuclideProperty(IIsotope isotope, String property, EvalEngine engine) {
@@ -363,17 +378,14 @@ public class IsotopeDataFunctions {
     switch (property) {
       case "AtomicMass":
         return F.binaryAST2(S.Quantity, F.num(isotope.getExactMass().doubleValue()),
-            F.stringx("Daltons"));
+            F.stringx("AtomicMassUnit"));
       case "AtomicNumber":
         return F.ZZ(z);
       case "BindingEnergy":
         return bindingEnergy(isotope);
-      case "IsotopeAbundance": {
-        Double abundance = isotope.getNaturalAbundance();
-        // CDK tabulates percent, the Wolfram Language answers a fraction of one
-        return abundance == null || abundance.doubleValue() <= 0.0 ? F.Missing(S.NotAvailable)
-            : F.num(abundance.doubleValue() / 100.0);
-      }
+      case "IsotopeAbundance":
+        // a percentage, and zero rather than missing for a nuclide that does not occur in nature
+        return abundanceOf(isotope);
       case "MassNumber":
         return F.ZZ(a);
       case "NeutronNumber":
@@ -397,16 +409,16 @@ public class IsotopeDataFunctions {
       return result;
     }
     if ("Abundances".equals(property)) {
-      // every isotope that occurs naturally, as massNumber -> percent
-      IASTAppendable result = F.ListAlloc(isotopes.length);
+      // every isotope that occurs naturally, as isotope -> percent. An association keyed by the
+      // entity, which is the shape ElementData("...", "IsotopeAbundances") reports.
+      IASTAppendable rules = F.ListAlloc(isotopes.length);
       for (IIsotope isotope : isotopes) {
         Double abundance = isotope.getNaturalAbundance();
         if (abundance != null && abundance.doubleValue() > 0.0) {
-          result.append(
-              F.Rule(F.ZZ(isotope.getMassNumber().intValue()), F.num(abundance.doubleValue())));
+          rules.append(F.Rule(entityOf(engine, isotope), abundanceOf(isotope)));
         }
       }
-      return result;
+      return F.assoc(rules);
     }
     if ("StableIsotopes".equals(property)) {
       int[] massNumbers = atomicNumber < STABLE_ISOTOPES.length ? STABLE_ISOTOPES[atomicNumber]
@@ -455,15 +467,11 @@ public class IsotopeDataFunctions {
 
       int atomicNumber = elementNumber(arg1, engine);
       if (atomicNumber < 1) {
-        if (!arg1.isString()) {
-          // nothing that names an element or a nuclide at all
-          return F.NIL;
-        }
-        // a name that is neither an element nor a nuclide this table has. A nuclide which only
-        // looks like one - "Carbon99" - is no answer at all, so that EntityValue can tell an
-        // unknown thing from an unknown property; anything else is the missing data it has
-        // always been.
-        return isotopeLike(arg1, engine) ? F.NIL : F.Missing(S.NotAvailable);
+        // Nothing this table knows - an unknown element, or a nuclide which only looks like one
+        // such as "Carbon99". No answer at all rather than missing data, both because that is
+        // what the reference implementation does and because EntityValue needs it: it asks after
+        // the name alone to tell an unknown thing from an unknown property.
+        return F.NIL;
       }
       if (ast.isAST2()) {
         IExpr propertyExpr = Entities.propertyOf(ast.arg2(), ISOTOPE);
@@ -510,21 +518,6 @@ public class IsotopeDataFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_2;
     }
-  }
-
-  /** Whether a name reads as a nuclide of a known element, whether or not the table has it. */
-  private static boolean isotopeLike(IExpr expr, EvalEngine engine) {
-    if (!expr.isString()) {
-      return expr.isList() && expr.argSize() == 2
-          && elementNumber(((IAST) expr).arg1(), engine) >= 1;
-    }
-    String name = expr.toString();
-    int split = name.length();
-    while (split > 0 && Character.isDigit(name.charAt(split - 1))) {
-      split--;
-    }
-    return split > 0 && split < name.length()
-        && elementNumber(F.stringx(name.substring(0, split)), engine) >= 1;
   }
 
   /** The most abundant naturally occurring isotope, or the lightest one when none occurs. */

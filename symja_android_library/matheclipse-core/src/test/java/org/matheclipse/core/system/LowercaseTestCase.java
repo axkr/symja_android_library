@@ -7247,6 +7247,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "EntityProperty(Element,ProtonCount),EntityProperty(Element,Series),"
             + "EntityProperty(Element,ShearModulus),EntityProperty(Element,"
             + "ShortElectronicConfiguration),EntityProperty(Element,SpecificHeat),"
+            + "EntityProperty(Element,StableIsotopes),"
             + "EntityProperty(Element,ThermalConductivity),EntityProperty(Element,"
             + "ValenceElectronCount),EntityProperty(Element,VanDerWaalsRadius),EntityProperty(Element,"
             + "VaporizationHeat),EntityProperty(Element,VickersHardness),EntityProperty(Element,"
@@ -7444,7 +7445,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Length(EntityList(EntityClass(\"Element\", \"NobleGas\")))", //
         "6");
     check("Length(ElementData(\"Properties\"))", //
-        "42");
+        "43");
 
     // properties worked out from the table rather than stored in it
     check("ElementData(\"Carbon\", \"ProtonCount\")", //

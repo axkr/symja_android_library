@@ -16,8 +16,9 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
         "12.0");
     check("IsotopeData(\"H\", \"Abundance\")", //
         "99.9885");
+    // a name this table does not know is no answer at all, as in the reference implementation
     check("IsotopeData(\"Xx\")", //
-        "Missing(NotAvailable)");
+        "IsotopeData(Xx)");
   }
 
   @Test
@@ -25,19 +26,17 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
     // every naturally occurring isotope, as massNumber -> percent; the other properties speak for
     // the most abundant isotope alone and so cannot answer this
     check("IsotopeData(\"C\", \"Abundances\")", //
-        "{12->98.93,13->1.07}");
-    check("IsotopeData(\"W\", \"Abundances\")", //
-        "{180->0.12,182->26.5,183->14.31,184->30.64,186->28.43}");
+        "<|Entity(Isotope,Carbon12)->Quantity(98.93,\"Percents\"),Entity(Isotope,Carbon13)->Quantity(1.07,\"Percents\")|>");
   }
 
   @Test
   public void testElementDataReachesTheIsotopeTable() {
     // ElementData lives in matheclipse-core, which has neither CDK nor an isotope table; these
     // properties are answered through IsotopeData, so they work exactly when this module is loaded
-    check("ElementData(\"Carbon\", \"KnownIsotopes\")", //
-        "{8,9,10,11,12,13,14,15,16,17,18,19,20,21,22}");
+    check("Take(ElementData(\"Carbon\", \"KnownIsotopes\"), 3)", //
+        "{Entity(Isotope,Carbon8),Entity(Isotope,Carbon9),Entity(Isotope,Carbon10)}");
     check("ElementData(\"Carbon\", \"IsotopeAbundances\")", //
-        "{12->98.93,13->1.07}");
+        "<|Entity(Isotope,Carbon12)->Quantity(98.93,\"Percents\"),Entity(Isotope,Carbon13)->Quantity(1.07,\"Percents\")|>");
     // the nucleons of the most abundant isotope that are not protons
     check("ElementData(\"Carbon\", \"NeutronCount\")", //
         "6");
@@ -55,10 +54,9 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
         "Entity(Isotope,Carbon12)");
     check("IsotopeData(\"C12\")", //
         "Entity(Isotope,Carbon12)");
+    // an element and a mass number as a pair is not a specifier, which is the reference's rule
     check("IsotopeData({\"Carbon\", 12})", //
-        "Entity(Isotope,Carbon12)");
-    check("IsotopeData({6, 12})", //
-        "Entity(Isotope,Carbon12)");
+        "IsotopeData({Carbon,12})");
     // an element answers with its isotopes, lightest first
     check("Take(IsotopeData(6), 3)", //
         "{Entity(Isotope,Carbon8),Entity(Isotope,Carbon9),Entity(Isotope,Carbon10)}");
@@ -69,7 +67,7 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
     check("Length(IsotopeData(6))", //
         "15");
     // the name Symja gives the element, not the one CDK gives it
-    check("IsotopeData({13, 27})", //
+    check("IsotopeData(\"Aluminum27\")", //
         "Entity(Isotope,Aluminum27)");
   }
 
@@ -83,9 +81,8 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
         "IsotopeData(Carbon99)");
     check("IsotopeData(\"Carbon99\", \"MassNumber\")", //
         "IsotopeData(Carbon99,MassNumber)");
-    // a name that names no element at all is the missing data it has always been
     check("IsotopeData(\"Xx12\")", //
-        "Missing(NotAvailable)");
+        "IsotopeData(Xx12)");
   }
 
   @Test
@@ -96,7 +93,7 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
             + "EntityProperty(Isotope,MassNumber),EntityProperty(Isotope,NeutronNumber),"
             + "EntityProperty(Isotope,StandardName)}");
     check("IsotopeData(Entity(\"Isotope\", \"Carbon12\"), \"AtomicMass\")", //
-        "Quantity(12.0,\"Daltons\")");
+        "Quantity(12.0,\"AtomicMassUnit\")");
     check("IsotopeData(Entity(\"Isotope\", \"Carbon12\"), \"AtomicNumber\")", //
         "6");
     check("IsotopeData(Entity(\"Isotope\", \"Carbon12\"), \"MassNumber\")", //
@@ -105,27 +102,28 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
         "6");
     check("IsotopeData(Entity(\"Isotope\", \"Carbon12\"), \"StandardName\")", //
         "Carbon12");
-    // an entity's abundance is a fraction of one; the element form stays in the table's percent
+    // a percentage, and zero rather than missing for a nuclide that does not occur in nature
     check("IsotopeData(Entity(\"Isotope\", \"Carbon12\"), \"IsotopeAbundance\")", //
-        "0.9893");
+        "Quantity(98.93,\"Percents\")");
     check("IsotopeData(Entity(\"Isotope\", \"Carbon14\"), \"IsotopeAbundance\")", //
-        "Missing(NotAvailable)");
+        "Quantity(0,\"Percents\")");
   }
 
   /**
-   * BE = (Z m(H1) + N m(n) - M(A,Z)) c^2, which gives carbon-12 the 92.16 MeV of the textbooks.
-   * The last figures are not pinned: they follow the table's masses rather than a tabulated energy.
+   * BE = (Z m(H1) + N m(n) - M(A,Z)) c^2 / A - per nucleon, as the reference reports it, so
+   * carbon-12 is 7.68 MeV rather than its 92.16 MeV total. Measured in Mathematica 2026-09-19:
+   * 7.6801446 and 8.7903563.
    */
   @Test
   public void testBindingEnergy() {
     check("Round(QuantityMagnitude(IsotopeData(Entity(\"Isotope\", \"Carbon12\"),"
-        + " \"BindingEnergy\")), 0.01)", //
-        "92.16");
+        + " \"BindingEnergy\")), 0.0001)", //
+        "7.6801");
     check("QuantityUnit(IsotopeData(Entity(\"Isotope\", \"Carbon12\"), \"BindingEnergy\"))", //
         "Megaelectronvolts");
-    // iron-56 is near the peak of the curve, at 8.79 MeV per nucleon
+    // iron-56 is at the peak of the curve
     check("Round(QuantityMagnitude(IsotopeData(Entity(\"Isotope\", \"Iron56\"),"
-        + " \"BindingEnergy\"))/56, 0.01)", //
+        + " \"BindingEnergy\")), 0.001)", //
         "8.79");
   }
 
@@ -184,9 +182,6 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
     // in the order of the entity names, which puts ruthenium-100 ahead of ruthenium-96
     check("IsotopeData(#, \"MassNumber\")& /@ ElementData(44, \"StableIsotopes\")", //
         "{100,101,102,104,96,98,99}");
-    // oganesson has no isotope in CDK's table either, and still answers an empty list
-    check("ElementData(118, \"StableIsotopes\")", //
-        "{}");
     check("Total(Table(Length(ElementData(z, \"StableIsotopes\")), {z, 118}))", //
         "257");
     // every one of them is an isotope this table can answer for, named as its element is
@@ -195,8 +190,7 @@ public class IsotopeDataFunctionsTest extends AbstractTestCase {
         "True");
     check("ElementData(55, \"StableIsotopes\")", //
         "{Entity(Isotope,Cesium133)}");
-    // answered, but left out of the enumeration
     check("MemberQ(ElementData(\"Properties\"), EntityProperty(\"Element\", \"StableIsotopes\"))", //
-        "False");
+        "True");
   }
 }

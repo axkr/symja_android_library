@@ -53,17 +53,7 @@ public class ElementData extends AbstractFunctionEvaluator {
    */
   private static final String[] COMPUTED_PROPERTIES = { //
       "ProtonCount", "ElectronCount", "ValenceElectronCount", "MolarMass", "Phase", //
-      "NeutronCount", "KnownIsotopes", "IsotopeAbundances"};
-
-  /**
-   * Properties that are answered but not advertised.
-   *
-   * <p>
-   * The reference implementation answers <code>"StableIsotopes"</code> and yet leaves it out of its
-   * own <code>ElementData["Properties"]</code>, so it is kept out of {@link #PROPERTIES_DATA} here
-   * as well - a caller who knows to ask gets an answer, and the enumeration still matches.
-   */
-  private static final String[] UNLISTED_PROPERTIES = {"StableIsotopes"};
+      "NeutronCount", "KnownIsotopes", "IsotopeAbundances", "StableIsotopes"};
 
   /**
    * The temperature a phase is read at, in degrees Celsius, standard conditions being 25 &deg;C at
@@ -87,11 +77,6 @@ public class ElementData extends AbstractFunctionEvaluator {
   private static boolean isComputed(String property) {
     for (int i = 0; i < COMPUTED_PROPERTIES.length; i++) {
       if (COMPUTED_PROPERTIES[i].equals(property)) {
-        return true;
-      }
-    }
-    for (int i = 0; i < UNLISTED_PROPERTIES.length; i++) {
-      if (UNLISTED_PROPERTIES[i].equals(property)) {
         return true;
       }
     }
@@ -214,9 +199,8 @@ public class ElementData extends AbstractFunctionEvaluator {
       return F.Missing(S.NotAvailable);
     }
     if ("KnownIsotopes".equals(property)) {
-      // the mass numbers: a lone IsotopeData(element) answers with the isotopes themselves now
-      return isotopeResult(
-          engine.evaluate(F.binaryAST2(S.IsotopeData, symbol, F.stringx("MassNumbers"))));
+      // the isotopes themselves, as entities, which is what a lone IsotopeData(element) answers
+      return isotopeResult(engine.evaluate(F.unaryAST1(S.IsotopeData, symbol)));
     }
     if ("StableIsotopes".equals(property)) {
       return isotopeResult(

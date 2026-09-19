@@ -39,9 +39,7 @@ which of the three it is, and the fifteen heaviest elements have neither.
 [IsotopeData](IsotopeData.md) reads, which lives in `matheclipse-chem`. In a build without that
 module they report themselves unavailable, as everything else of that module's does.
 
-`StableIsotopes` gives the stable isotopes of the element, as `Entity("Isotope", name)` - stable in
-the sense of not decaying, so uranium, which occurs in nature, has none. It is answered but not
-listed among the properties:
+`StableIsotopes` comes from the same table, as `Entity("Isotope", name)`:
 
 ```
 >> ElementData(6, "StableIsotopes")
