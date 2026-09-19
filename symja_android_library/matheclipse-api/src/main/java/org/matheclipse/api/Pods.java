@@ -46,6 +46,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IGraphExpr;
+import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.JSPageProvider;
 import org.matheclipse.core.form.output.OutputFormats;
@@ -102,7 +103,6 @@ public class Pods {
     }
   }
 
-  public static final String VISJS_STR = "visjs";
   public static final int HTML = 0x0001;
   public static final int PLAIN = 0x0002;
   public static final int SYMJA = 0x0004;
@@ -112,7 +112,6 @@ public class Pods {
   public static final int MATHCELL = 0x0040;
   public static final int JSXGRAPH = 0x0080;
   public static final int PLOTLY = 0x0100;
-  public static final int VISJS = 0x0200;
   public static final int GRAPHICS = 0x0400;
   public static final int GRAPHICS3D = 0x0800;
 
@@ -167,21 +166,6 @@ public class Pods {
           + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>Plotly</title>\n" + "\n"
           + "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n" + "</head>\n"
           + "<body>\n" + "<div id='plotly' ></div>\n" + "`1`\n" + "</body>\n" + "</html>"; //
-
-  protected static final String VISJS_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>VIS-NetWork</title>\n" + "\n"
-          + "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-          + "</head>\n" + "<body>\n" + "\n"
-          + "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<script type=\"text/javascript\">\n" + "`1`\n"
-          + "  var container = document.getElementById('vis');\n" + "  var data = {\n"
-          + "    nodes: nodes,\n" + "    edges: edges\n" + "  };\n" + "`2`\n"
-          + "  var network = new vis.Network(container, data, options);\n" + "</script>\n"
-          + "</div>\n" + "</body>\n" + "</html>";
 
   protected static final String HIGHLIGHT_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
@@ -569,33 +553,6 @@ public class Pods {
       }
     }
 
-    if ((formats & VISJS) != 0x00) {
-      if (plainText != null && plainText.length() > 0) {
-        try {
-          String html = VISJS_IFRAME;
-          html = StringUtils.replace(html, "`1`", plainText);
-          html = StringUtils.replace(html, "`2`", //
-              "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
-                  + "                  type: 'cubicBezier',\n"
-                  + "                  forceDirection:  'vertical',\n"
-                  + "                  roundness: 0.4\n" + "              }\n" + "          },\n"
-                  + "          layout: {\n" + "              hierarchical: {\n"
-                  + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
-                  + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
-                  + "          physics:false\n" + "      }; " //
-          );
-          html = StringEscapeUtils.escapeHtml4(html);
-          html = "<iframe srcdoc=\"" + html
-              + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>";
-          json.put(VISJS_STR, html);
-        } catch (Exception ex) {
-          LOGGER.debug("Pods.createJSONFormat() failed", ex);
-        }
-
-      } else {
-
-      }
-    }
   }
 
   private static void createJSONFormat(ObjectNode json, EvalEngine engine, String sinput,
@@ -970,17 +927,11 @@ public class Pods {
                     IStringX.inputForm(inExpr), "Function", "Plotter", form, engine);
                 numpods++;
               } else if (outExpr instanceof IGraphExpr) {
-                String javaScriptStr = ((IGraphExpr) outExpr).graphToJSForm();
-                if (javaScriptStr != null) {
-                  String html = VISJS_IFRAME;
-                  html = StringUtils.replace(html, "`1`", javaScriptStr);
-                  html = StringUtils.replace(html, "`2`", //
-                      "  var options = { };\n" //
-                  );
-                  // html = StringEscapeUtils.escapeHtml4(html);
-                  int form = internFormat(SYMJA, "visjs");
-                  addPod(podsArray, inExpr, podOut, html, "Graph data", "Graph", form, engine);
-                  numpods++;
+                // the picture the graph draws everywhere else, as SVG
+                IAST graphics = new GraphGraphics(outExpr).toGraphics();
+                if (graphics.isPresent()) {
+                  numpods = addGraphicsPod(numpods, inExpr, graphics, inExpr, "Graph data",
+                      "Graph", podsArray, engine);
                 }
               } else {
                 IExpr head = outExpr.head();
@@ -1292,18 +1243,14 @@ public class Pods {
             errorString = errorWriter.toString().trim();
           }
           outExpr = engine.evaluate(inExpr);
+          IAST graphGraphics = outExpr instanceof IGraphExpr
+              ? new GraphGraphics(outExpr).toGraphics()
+              : F.NIL;
           if (outExpr instanceof IGraphExpr) {
-            String javaScriptStr = ((IGraphExpr) outExpr).graphToJSForm();
-            if (javaScriptStr != null) {
-              String html = VISJS_IFRAME;
-              html = StringUtils.replace(html, "`1`", javaScriptStr);
-              html = StringUtils.replace(html, "`2`", //
-                  "  var options = { };\n" //
-              );
-              // html = StringEscapeUtils.escapeHtml4(html);
-              int form = internFormat(SYMJA, "visjs");
-              addPod(podsArray, inExpr, outExpr, html, "Graph data", "Graph", form, engine);
-              numpods++;
+            if (graphGraphics.isPresent()) {
+              // the picture the graph draws everywhere else, as SVG
+              numpods = addGraphicsPod(numpods, inExpr, graphGraphics, inExpr, "Graph data",
+                  "Graph", podsArray, engine);
             } else {
               addSymjaPod(podsArray, inExpr, outExpr, errorString, "Evaluated result", "Expression",
                   formats, engine, true);
@@ -1692,8 +1639,6 @@ public class Pods {
       intern |= JSXGRAPH;
     } else if (str.equals(OutputFormats.PLOTLY_STR)) {
       intern |= PLOTLY;
-    } else if (str.equals(VISJS_STR) || str.equals("treeform")) {
-      intern |= VISJS;
     } else if (str.equals(OutputFormats.STEPS_STR)) {
       intern |= STEPS;
     }

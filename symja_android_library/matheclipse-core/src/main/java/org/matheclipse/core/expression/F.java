@@ -63,7 +63,6 @@ import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.HtmlTemplates;
 import org.matheclipse.core.form.output.JSPageProvider;
-import org.matheclipse.core.form.output.OutputFormats;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.ObjIntFunction;
@@ -9565,37 +9564,14 @@ public class F extends S {
 
   private static String printJSFormData(IExpr expr) {
     IAST jsFormData = (IAST) expr;
-    String type = jsFormData.arg2().toString();
-    if (!type.equals(OutputFormats.TREEFORM_STR)) {
-      // the page loads the library from its CDN; it is built by matheclipse-jsgraphics
-      try {
-        String html = JSPageProvider.pageOf(type, jsFormData.arg1().toString());
-        if (html != null) {
-          return openHTMLOnDesktop(html);
-        }
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-      }
-    } else {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = Config.VISJS_PAGE;
-        html = StringUtils.replace(html, "`1`", manipulateStr);
-        html = StringUtils.replace(html, "`2`", //
-            "  var options = {\n" + "          edges: {\n" + "              smooth: {\n"
-                + "                  type: 'cubicBezier',\n"
-                + "                  forceDirection:  'vertical',\n"
-                + "                  roundness: 0.4\n" + "              }\n" + "          },\n"
-                + "          layout: {\n" + "              hierarchical: {\n"
-                + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
-                + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
-                + "          physics:false\n" + "      }; " //
-        );
+    // the page loads the library from its CDN; it is built by matheclipse-jsgraphics
+    try {
+      String html = JSPageProvider.pageOf(jsFormData.arg2().toString(), jsFormData.arg1().toString());
+      if (html != null) {
         return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
       }
+    } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
     }
     return null;
   }

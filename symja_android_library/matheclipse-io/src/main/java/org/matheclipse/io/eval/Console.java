@@ -117,7 +117,6 @@ public class Console {
     ToggleFeature.COMPILE_PRINT = true;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;
-    Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
 
     IOInit.init();

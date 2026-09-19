@@ -1,8 +1,7 @@
 package org.matheclipse.core.form.output;
 
 /**
- * HTML pages that need no JavaScript plotting library: an image, a vis-network tree and a JSON
- * viewer.
+ * HTML pages that need no JavaScript plotting library: an image and a JSON viewer.
  *
  * <p>
  * Placeholders are written <code>`1`</code>, <code>`2`</code>, ... and filled in with
@@ -41,40 +40,6 @@ public final class HtmlTemplates {
           + "    <img src=\"data:image/png;base64, `1`\"`2`/> \n" //
           + "</div>\n" //
           + "</body>\n" + "</html>"; //
-
-  public static final String VISJS_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
-          "\n" + //
-          "<!DOCTYPE html PUBLIC\n" + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
-          "\n" + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n" + //
-          "<meta charset=\"utf-8\">\n" + //
-          "<title>VIS-NetWork</title>\n" + //
-          "\n" + //
-          "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-          + //
-          "</head>\n" + //
-          "<body>\n" + //
-          "\n" + //
-          "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script type=\"text/javascript\">\n" + //
-          "`1`\n" + //
-          "  var container = document.getElementById('vis');\n" + //
-          "  var data = {\n" + //
-          "    nodes: nodes,\n" + //
-          "    edges: edges\n" + //
-          "  };\n" + //
-          "`2`\n" + //
-          "  var network = new vis.Network(container, data, options);\n" + //
-          "</script>\n" + //
-          "</div>\n" + //
-          "</body>\n" + //
-          "</html>"; //
 
   /**
    * Javascript library for displaying json data into a DOM.

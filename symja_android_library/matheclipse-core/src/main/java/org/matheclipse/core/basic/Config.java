@@ -745,47 +745,6 @@ public class Config {
   public static IPrimality PRIME_FACTORS = new Primality();
 
 
-  /** Use visjs.org JavaScript library for visualizing graph theory objects */
-  public static boolean USE_VISJS = false;
-
-  /** HTML template for the <a href="https://visjs.org/">VIS-network</a> */
-  public static final String VISJS_PAGE = //
-      "<html>\n" + //
-          "<head>\n" + //
-          "<meta charset=\"utf-8\">\n" + //
-          "<head>\n" + //
-          "  <title>Graph network</title>\n" + //
-          "\n" + //
-          "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-          + //
-          "  <style type=\"text/css\">\n" + //
-          "    #mynetwork {\n" + //
-          "      width: 600px;\n" + //
-          "      height: 400px;\n" + //
-          "      border: 1px solid lightgray;\n" + //
-          "    }\n" + //
-          "  </style>\n" + //
-          "</head>\n" + //
-          "<body>\n" + //
-          "<div id=\"vis\"></div>\n" + //
-          "\n" + //
-          "<script type=\"text/javascript\">\n" + //
-          "`1`\n" + //
-          "  // create a network\n" + //
-          "  var container = document.getElementById('vis');\n" + //
-          "  var data = {\n" + //
-          "    nodes: nodes,\n" + //
-          "    edges: edges\n" + //
-          "  };\n" + //
-          "`2`\n" + //
-          // " var options = {};\n" + //
-          "  var network = new vis.Network(container, data, options);\n" + //
-          "</script>\n" + //
-          "\n" + //
-          "\n" + //
-          "</body>\n" + //
-          "</html>"; //
-
   public static final String SVG_PAGE = //
       "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-0.333333 -0.333333 350.666667 350.666667\" width=\"350.6666666px\" height=\"350.6666666px\">\n"
           + "`1`\n" + "</svg>"; //

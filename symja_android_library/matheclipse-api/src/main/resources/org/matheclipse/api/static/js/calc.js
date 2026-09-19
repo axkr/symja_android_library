@@ -60,13 +60,11 @@ $("#calc").submit(
 				  // the pod carries bare TeX, so it needs delimiters before KaTeX can find it
 			      output += `<div class="cell_output"><div>\\[${v}\\]</div></div>`;
 			    } else if (k == 'jsxgraph') {
-				  output += `<div class="cell_output"><div id="jsxgraph" style="width: 600px; height: 440px; margin: 0; padding: 0">${v}</div></div>\n`;
+				  output += `<div class="cell_output"><div class="symja-frame" style="width: 600px; max-width: 100%; margin: 0; padding: 0">${v}</div></div>\n`;
 				} else if (k == 'mathcell') {
-				  output += `<div class="cell_output"><div id="mathcell" style="width: 600px; height: 440px; margin: 0; padding: 0">${v}</div></div>\n`;
+				  output += `<div class="cell_output"><div class="symja-frame" style="width: 600px; max-width: 100%; margin: 0; padding: 0">${v}</div></div>\n`;
 				} else if (k == 'plotly') {
-				  output += `<div class="cell_output"><div id="plotly" style="width: 600px; height: 440px; margin: 0; padding: 0">${v}</div></div>\n`;
-				} else if (k == 'visjs') {
-					  output += `<div class="cell_output"><div id="visjs" style="width: 600px; height: 440px; margin: 0; padding: 0">${v}</div></div>\n`;
+				  output += `<div class="cell_output"><div class="symja-frame" style="width: 600px; max-width: 100%; margin: 0; padding: 0">${v}</div></div>\n`;
 				} else if (k == 'mathml') {
 				  output += `<div class="cell_output"><div>${v}</div></div>`;
 				} else if (k == 'steps') {

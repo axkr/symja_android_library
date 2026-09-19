@@ -32,9 +32,6 @@ final public class JSONSubPod {
   @JsonProperty("html")
   String html;
 
-  @JsonProperty("visjs")
-  String visjs;
-
   /** The steps of a derivation, as their own tree. */
   @JsonProperty("steps")
   JsonNode steps;
@@ -122,14 +119,5 @@ final public class JSONSubPod {
    */
   public String getSinput() {
     return sinput != null ? sinput : "";
-  }
-
-  /**
-   * 
-   * @return if available get the requested <code>visjs</code> data. If not available return an
-   *         empty string.
-   */
-  public String getVisjs() {
-    return visjs != null ? visjs : "";
   }
 }

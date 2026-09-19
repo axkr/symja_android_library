@@ -19,9 +19,6 @@ public final class OutputFormats {
   /** The steps a <code>TraceForm(...)</code> collected, as their own tree. */
   public static final String STEPS_STR = "steps";
 
-  /** A tree drawn with vis-network; the page is {@link HtmlTemplates#VISJS_IFRAME}. */
-  public static final String TREEFORM_STR = "treeform";
-
   public static final String ECHARTS_STR = "echarts";
   public static final String JSXGRAPH_STR = "jsxgraph";
   public static final String MATHCELL_STR = "mathcell";

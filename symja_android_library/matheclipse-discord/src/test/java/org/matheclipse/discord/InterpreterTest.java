@@ -23,7 +23,6 @@ public class InterpreterTest {
     ToggleFeature.COMPILE_PRINT = true;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 512;
-    Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = false;
     Config.FUZZY_PARSER = true;
     Config.UNPROTECT_ALLOWED = false;

@@ -22,13 +22,6 @@ import org.matheclipse.core.io.Extension;
 public interface IGraphExpr extends IExpr {
 
   /**
-   * This graph as a JavaScript literal for the browser-side renderer.
-   *
-   * @return the JavaScript source, or an empty string when it cannot be produced
-   */
-  String graphToJSForm();
-
-  /**
    * The <code>Graph(vertices, edges)</code> expression form of this graph.
    *
    * <p>

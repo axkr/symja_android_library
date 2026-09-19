@@ -19,6 +19,9 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.graph.SimpleGraph;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.GraphicsUtil;
+import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
@@ -37,8 +40,8 @@ import org.matheclipse.parser.trie.Trie;
  *
  * <p>
  * This class provides conversion utilities between JGraphT graphs and the project's expression
- * representations (IAST/IASTAppendable), support for VisJS JavaScript output, and helpers to
- * produce adjacency matrices in sparse array form. The generic type parameter T denotes the edge
+ * representations (IAST/IASTAppendable), and helpers to produce adjacency matrices in sparse array
+ * form. The generic type parameter T denotes the edge
  * object type used by the underlying graph (typically {@code ExprEdge} or
  * {@code ExprWeightedEdge}).
  * </p>
@@ -308,82 +311,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
     return new IASTAppendable[] {edges, weights};
   }
 
-  public static void edgesToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
-      Graph<IExpr, ExprEdge> g) {
-    Set<ExprEdge> edgeSet = g.edgeSet();
-    GraphType type = g.getType();
-    boolean first = true;
-    if (type.isDirected()) {
-      buf.append("var edges = new vis.DataSet([\n");
-      for (Object object : edgeSet) {
-        if (object instanceof ExprEdge) {
-          ExprEdge edge = (ExprEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-          buf.append(map.get(edge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(edge.rhs()));
-          // , arrows: { to: { enabled: true, type: 'arrow'}}
-          buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
-          buf.append("}\n");
-          first = false;
-        } else if (object instanceof ExprWeightedEdge) {
-          ExprWeightedEdge weightedEdge = (ExprWeightedEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-          buf.append(map.get(weightedEdge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(weightedEdge.rhs()));
-          // , arrows: { to: { enabled: true, type: 'arrow'}}
-          buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
-          buf.append("}\n");
-          first = false;
-        }
-      }
-    } else {
-      //
-      buf.append("var edges = new vis.DataSet([\n");
-      for (Object object : edgeSet) {
-        if (object instanceof ExprEdge) {
-          ExprEdge edge = (ExprEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-          buf.append(map.get(edge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(edge.rhs()));
-          buf.append("}\n");
-          first = false;
-        } else if (object instanceof ExprWeightedEdge) {
-          ExprWeightedEdge weightedEdge = (ExprWeightedEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-          buf.append(map.get(weightedEdge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(weightedEdge.rhs()));
-          buf.append("}\n");
-          first = false;
-        }
-      }
-    }
-    buf.append("]);\n");
-  }
-
   public static void edgeToIExpr(GraphType type, Object edge, IASTAppendable edges,
       IASTAppendable weights, int size) {
     if (edge instanceof ExprWeightedEdge) {
@@ -484,12 +411,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
       }
     }
     return new SparseArrayExpr(trie, new int[] {size, size}, F.C0, false);
-  }
-
-  private static void graphToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
-      AbstractBaseGraph<IExpr, ExprEdge> g) {
-    vertexToVisjs(map, buf, g);
-    edgesToVisjs(map, buf, g);
   }
 
   /**
@@ -828,29 +749,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
     return F.mapSet(graph.vertexSet(), x -> x);
   }
 
-  private static void vertexToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
-      Graph<IExpr, ?> g) {
-    Set<IExpr> vertexSet = g.vertexSet();
-    buf.append("var nodes = new vis.DataSet([\n");
-    boolean first = true;
-    int counter = 1;
-    for (IExpr expr : vertexSet) {
-      // {id: 1, label: 'Node 1'},
-      if (first) {
-        buf.append("  {id: ");
-      } else {
-        buf.append(", {id: ");
-      }
-      buf.append(counter);
-      map.put(expr, counter++);
-      buf.append(", label: '");
-      buf.append(expr.toString());
-      buf.append("'}\n");
-      first = false;
-    }
-    buf.append("]);\n");
-  }
-
   /**
    * Return an array of 2 lists. At index 0 the list of edges. At index 1 the list of corresponding
    * weights.
@@ -879,63 +777,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
   // return new IASTAppendable[] {edges, weights};
   // }
 
-  private static void weightedEdgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
-      Graph<IExpr, ExprWeightedEdge> graph) {
-
-    Set<ExprWeightedEdge> edgeSet = graph.edgeSet();
-    GraphType type = graph.getType();
-    boolean first = true;
-    if (type.isDirected()) {
-      buf.append("var edges = new vis.DataSet([\n");
-      for (Object object : edgeSet) {
-        if (object instanceof ExprWeightedEdge) {
-          ExprWeightedEdge edge = (ExprWeightedEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-
-          buf.append(map.get(edge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(edge.rhs()));
-
-          buf.append(", label: '");
-          buf.append(edge.weight());
-          buf.append("'");
-          // , arrows: { to: { enabled: true, type: 'arrow'}}
-          buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
-          buf.append("}\n");
-          first = false;
-        }
-      }
-    } else {
-      buf.append("var edges = new vis.DataSet([\n");
-      for (Object object : edgeSet) {
-        if (object instanceof ExprWeightedEdge) {
-          ExprWeightedEdge edge = (ExprWeightedEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-
-          buf.append(map.get(edge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(edge.rhs()));
-          buf.append(", label: '");
-          buf.append(edge.weight());
-          buf.append("'");
-          buf.append("}\n");
-          first = false;
-        }
-      }
-    }
-    buf.append("]);\n");
-  }
-
   public static IExpr weightedGraphToAdjacencyMatrix(Graph<IExpr, ExprWeightedEdge> g) {
     Set<IExpr> vertexSet = g.vertexSet();
     int size = vertexSet.size();
@@ -958,12 +799,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
       }
     }
     return new SparseArrayExpr(trie, new int[] {size, size}, F.C0, false);
-  }
-
-  private static void weightedGraphToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
-      AbstractBaseGraph<IExpr, ExprWeightedEdge> g) {
-    vertexToVisjs(map, buf, g);
-    weightedEdgesToVisjs(map, buf, g);
   }
 
   public static IExpr weightedGraphToWeightedAdjacencyMatrix(Graph<IExpr, ExprWeightedEdge> g) {
@@ -1049,30 +884,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
     return options;
   }
 
-  // private static IExpr fullFormWeightedGraph(AbstractBaseGraph<IExpr, ExprWeightedEdge> graph) {
-  // IASTAppendable vertexes = vertexToIExpr(graph);
-  // IASTAppendable[] res = weightedEdgesToIExpr(graph);
-  // return F.Graph(vertexes, res[0], F.list(F.Rule(S.EdgeWeight, res[1])));
-  // }
-  /**
-   * Convert a Graph into a JavaScript visjs.org form
-   *
-   * @param graphExpr
-   * @return
-   */
-  public String graphToJSForm() {
-    GraphExpr<ExprEdge> gex = (GraphExpr<ExprEdge>) this;
-    AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) gex.toData();
-    IdentityHashMap<IExpr, Integer> map = new IdentityHashMap<IExpr, Integer>();
-    StringBuilder buf = new StringBuilder();
-    if (g.getType().isWeighted()) {
-      weightedGraphToVisjs(map, buf, (AbstractBaseGraph<IExpr, ExprWeightedEdge>) g);
-    } else {
-      graphToVisjs(map, buf, (AbstractBaseGraph<IExpr, ExprEdge>) g);
-    }
-    return buf.toString();
-  }
-
   @Override
   public int hashCode() {
     return (fData == null) ? 283 : 283 + fData.hashCode();
@@ -1114,11 +925,14 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
 
   @Override
   public String toHTML() {
-    String javaScriptStr = graphToJSForm();
-    String html = Config.VISJS_PAGE;
-    html = StringUtils.replace(html, "`1`", javaScriptStr);
-    html = StringUtils.replace(html, "`2`", "var options = {};");
-    return html;
+    // the picture Graph draws everywhere else, as SVG in a plain page
+    IAST graphics = new GraphGraphics(this).toGraphics();
+    StringBuilder svg = new StringBuilder();
+    if (!graphics.isPresent()
+        || !GraphicsUtil.renderGraphics2DSVG(svg, graphics, EvalEngine.get())) {
+      return null;
+    }
+    return StringUtils.replace(Config.HTML_PAGE, "`1`", svg.toString());
   }
 
   @Override

@@ -32,12 +32,10 @@ import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -701,9 +699,6 @@ public final class OutputFunctions {
         }
         if (arg1.isDataset()) {
           return F.$str(((IASTDataset) arg1).datasetToJSForm(), IStringX.TEXT_HTML);
-        }
-        if (arg1 instanceof IGraphExpr) {
-          return F.$str(((IGraphExpr) arg1).graphToJSForm(), IStringX.APPLICATION_JAVASCRIPT);
         }
 
         return F.$str(toJavaScript(arg1, javascriptFlavor), IStringX.APPLICATION_JAVASCRIPT);

@@ -13,7 +13,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
@@ -38,7 +37,6 @@ import org.matheclipse.core.io.ImageFormatIO;
 import org.matheclipse.core.io.TableFormatIO;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IGraphExpr;
-import org.matheclipse.core.form.output.OutputFormats;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
@@ -136,21 +134,6 @@ public class AJAXQueryServlet extends HttpServlet {
   static SessionState stateOf(String sessionID) {
     return SESSIONS.get(sessionID);
   }
-
-  protected static final String VISJS_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>VIS-NetWork</title>\n" + "\n"
-          + "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-          + "</head>\n" + "<body>\n" + "\n"
-          + "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<script type=\"text/javascript\">\n" + "`1`\n"
-          + "  var container = document.getElementById('vis');\n" + "  var data = {\n"
-          + "    nodes: nodes,\n" + "    edges: edges\n" + "  };\n" + "`2`\n"
-          + "  var network = new vis.Network(container, data, options);\n" + "</script>\n"
-          + "</div>\n" + "</body>\n" + "</html>"; //
 
   protected static final String HTML_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
@@ -533,18 +516,6 @@ public class AJAXQueryServlet extends HttpServlet {
         if (outExpr.isASTSizeGE(S.Show, 2)) {
           IAST show = (IAST) outExpr;
           return JSONBuilder.createJSONShow(engine, show);
-        } else if (outExpr instanceof IGraphExpr) {
-          String javaScriptStr = ((IGraphExpr) outExpr).graphToJSForm();
-          if (javaScriptStr != null) {
-            String html = VISJS_IFRAME;
-            html = html.replace("`1`", javaScriptStr);
-            html = html.replace("`2`", //
-                "  var options = { };\n" //
-            );
-            html = StringEscapeUtils.escapeHtml4(html);
-            return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-          }
         } else if (outExpr instanceof ImageExpr) {
           ImageExpr imageExpr = (ImageExpr) outExpr;
           // BufferedImage bImage = imageExpr.getBufferedImage();
@@ -572,41 +543,16 @@ public class AJAXQueryServlet extends HttpServlet {
           }
         } else if (outExpr.isAST(S.JSFormData, 3)) {
           IAST jsFormData = (IAST) outExpr;
-          String jsLibraryType = jsFormData.arg2().toString();
-          if (!jsLibraryType.equals(OutputFormats.TREEFORM_STR)) {
-            // the JavaScript libraries: a sandboxed iframe loading the library from its CDN,
-            // built by matheclipse-jsgraphics; without that module the result is shown as text
-            try {
-              String[] iframe =
-                  JSONBuilder.createJSIFrame(jsLibraryType, jsFormData.arg1().toString());
-              if (iframe != null) {
-                return iframe;
-              }
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+          // a sandboxed iframe loading the library from its CDN, built by matheclipse-jsgraphics;
+          // without that module the result is shown as text
+          try {
+            String[] iframe = JSONBuilder.createJSIFrame(jsFormData.arg2().toString(),
+                jsFormData.arg1().toString());
+            if (iframe != null) {
+              return iframe;
             }
-          } else {
-            try {
-              String manipulateStr = jsFormData.arg1().toString();
-              String html = VISJS_IFRAME;
-              html = html.replace("`1`", manipulateStr);
-              html = html.replace("`2`", //
-                  "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
-                      + "                  type: 'cubicBezier',\n"
-                      + "                  forceDirection:  'vertical',\n"
-                      + "                  roundness: 0.4\n" + "              }\n"
-                      + "          },\n" + "          layout: {\n"
-                      + "              hierarchical: {\n"
-                      + "                  direction: \"UD\"\n" + "              }\n"
-                      + "          },\n" + "          nodes: {\n" + "            shape: 'box'\n"
-                      + "          },\n" + "          physics:false\n" + "      }; " //
-              );
-              html = StringEscapeUtils.escapeHtml4(html);
-              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
+          } catch (Exception ex) {
+            LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
           }
         } else if (StepsTree.isTraceForm(outExpr)) {
           // a derivation: the steps travel as their own tree so the page can lay them out

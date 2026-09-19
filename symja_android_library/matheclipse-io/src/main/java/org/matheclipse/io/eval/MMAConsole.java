@@ -121,7 +121,6 @@ public class MMAConsole {
     Config.BUILTIN_PROTECTED = ISymbol.NOATTRIBUTE;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;
-    Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
 
     IOInit.init();
