@@ -6621,6 +6621,9 @@ public class S {
   public final static IBuiltInSymbol EasterSunday =
       S.initFinalSymbol("EasterSunday", ID.EasterSunday);
 
+  /** Render a 2D graphic with the Apache ECharts JavaScript library (module matheclipse-jsgraphics). */
+  public final static IBuiltInSymbol ECharts = S.initFinalSymbol("ECharts", ID.ECharts);
+
   /**
    * Echo(expr) - prints the `expr` to the default output stream and returns `expr`.
    * 
@@ -12005,6 +12008,9 @@ public class S {
 
   public final static IBuiltInSymbol JSFormData = S.initFinalSymbol("JSFormData", ID.JSFormData);
 
+  /** Render a 2D graphic with the JSXGraph JavaScript library (module matheclipse-jsgraphics). */
+  public final static IBuiltInSymbol JSXGraph = S.initFinalSymbol("JSXGraph", ID.JSXGraph);
+
   /**
    * JulianDate(x) - TODO describe `JulianDate`.
    * 
@@ -13993,6 +13999,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol MatchQ = S.initFinalSymbol("MatchQ", ID.MatchQ);
+
+  /** Render a graphic with the MathCell JavaScript library (module matheclipse-jsgraphics). */
+  public final static IBuiltInSymbol MathCell = S.initFinalSymbol("MathCell", ID.MathCell);
 
   /**
    * MathMLForm(expr) - returns the MathML form of the evaluated `expr`.
