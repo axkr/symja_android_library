@@ -4,6 +4,44 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A mesh region can be looked at. `BoundaryMeshRegion` was dropped without a trace by both the SVG
+  and the WebGL renderer, `ExportString(mesh, "SVG")` returned nothing, and `Show` had no evaluator
+  at all. A mesh is now drawn the way Mathematica draws it - a two dimensional region as the polygon
+  its boundary encloses, a three dimensional one as its faces, unboxed and lit, in the reference's
+  own colours - and `Show(mesh)` returns that picture as `Graphics` or `Graphics3D`. Cells styled by
+  `MeshCellStyle` are drawn over it in their style, and a styled face replaces the one beneath, so a
+  translucent face stays translucent. `Show(g1, g2, ..., options)` combines graphics of one kind,
+  keeping each one's directives to itself and letting the first setting of an option win; it does
+  not join plot ranges or combine two and three dimensional graphics.
+
+  This found a bug in the 2D renderer: a list inside `Directive` - `Directive[{Red,
+  EdgeForm[Blue]}]`, which is the form a mesh is drawn with - was collected in a scope of its own and
+  thrown away, so the shape came out black and without an edge.
+
+- `ConvexHullMesh` takes options. Any argument after the points used to be rejected. Options are now
+  placed where Mathematica places them: `MeshCellStyle` is written out cell by cell as a
+  `Properties` option ahead of `Method` - a bare style covers every cell of every dimension,
+  `{d, All}` and `{d, i}` one dimension or one cell - and any other option is kept, in a list, at
+  the end. An argument that is not an option is reported as points that span no hull, as Mathematica
+  reports it. From checking ad-si/Woxi@22b4d339, which keeps `MeshCellStyle` as it was given rather
+  than in the form Mathematica returns.
+
+- `LinearModelFit` measured R-squared about zero. Its intercept is a column of the design matrix, so
+  the regression ran "without intercept", and the same flag chose the uncentered sum of squares - the
+  convention for a fit through the origin. A model with a constant term is now measured about the
+  mean, as Mathematica does (`0.998301` where it used to say `0.99989`), with the adjusted value
+  scaled by `(n-1)/(n-p)`. `IncludeConstantBasis -> False` asks for a fit through the origin, which
+  is measured about zero.
+
+  `NonlinearModelFit` is new, on `FindFit`'s Levenberg-Marquardt fitter. Its R-squared is taken
+  about the mean too, but its adjusted value scales by `n/(n-p)` - Mathematica's convention for a
+  nonlinear model, and the one ad-si/Woxi@0a15f1cb gets wrong. Its `"BestFitParameters"` are rules.
+
+  Every `FittedModel` now answers `"PredictedResponse"` and `"Properties"`, is its best fit function
+  when evaluated at a point (`lm(2.5)`), reports an unknown property as `FittedModel::elmntavs` with
+  the nearest name there is, and equals its own serialized copy - it used to compare its regression
+  object by identity. All of it was checked against Mathematica on 2026-09-19.
+
 - `PlotMarkers -> Automatic` drew nothing. `Automatic` was both the option's internal default and
   the value meaning "no marker", so asking for the standard markers could not be told from not
   asking for anything; only an explicit marker such as `PlotMarkers -> {"x"}` did anything, which

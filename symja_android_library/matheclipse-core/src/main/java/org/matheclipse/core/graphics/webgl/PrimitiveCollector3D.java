@@ -157,6 +157,15 @@ public final class PrimitiveCollector3D {
         }
         return;
       }
+      case ID.BoundaryMeshRegion: {
+        // drawn the way Show draws it: the region as a GraphicsComplex in its own scope
+        IExpr complex = org.matheclipse.core.builtin.MeshFunctions.meshGraphicsComplex(ast,
+            org.matheclipse.core.eval.EvalEngine.get());
+        if (complex.isPresent()) {
+          process(complex, style.clone(), context, transform);
+        }
+        return;
+      }
       case ID.GraphicsComplex: {
         if (ast.argSize() >= 2) {
           IAST pts = ast.arg1().isList() ? (IAST) ast.arg1() : null;

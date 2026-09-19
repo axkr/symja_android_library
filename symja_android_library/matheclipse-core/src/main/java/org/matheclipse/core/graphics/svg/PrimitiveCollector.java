@@ -149,9 +149,7 @@ public final class PrimitiveCollector {
         applyArrowheads(ast, style);
         break;
       case ID.Directive:
-        for (int i = 1; i <= ast.argSize(); i++) {
-          collect(ast.get(i), style);
-        }
+        applyDirective(ast, style);
         break;
       case ID.Rule:
       case ID.RuleDelayed:
@@ -260,6 +258,15 @@ public final class PrimitiveCollector {
       case ID.Inset:
         collectInset(ast, style);
         break;
+      case ID.BoundaryMeshRegion: {
+        // drawn the way Show draws it: the region as a GraphicsComplex in its own scope
+        IExpr complex = org.matheclipse.core.builtin.MeshFunctions.meshGraphicsComplex(ast,
+            org.matheclipse.core.eval.EvalEngine.get());
+        if (complex.isPresent()) {
+          collect(org.matheclipse.core.expression.F.list(complex), style);
+        }
+        break;
+      }
       case ID.BezierCurve:
         collectBezier(ast, style, false);
         break;
@@ -529,6 +536,26 @@ public final class PrimitiveCollector {
       }
     }
     return ColorUtil.dbl(expr, 0.015);
+  }
+
+  /**
+   * The parts of a <code>Directive</code>, all applied to the style in force.
+   *
+   * <p>
+   * A list inside it is only a way of writing several parts - <code>Directive[{Red,
+   * EdgeForm[Blue]}]</code> is how a mesh region is drawn - so it is walked in the same style
+   * rather than collected, which would give it a scope of its own and throw every part of it away
+   * at the end.
+   */
+  private void applyDirective(IAST directive, Style2D style) {
+    for (int i = 1; i <= directive.argSize(); i++) {
+      IExpr part = directive.get(i);
+      if (part.isList()) {
+        applyDirective((IAST) part, style);
+      } else {
+        collect(part, style);
+      }
+    }
   }
 
   private void applyEdgeForm(IAST ast, Style2D style) {

@@ -458,6 +458,142 @@ public class MeshFunctions {
     return styles;
   }
 
+  /** The face colour the reference implementation draws a two dimensional mesh region in. */
+  private static final IAST FACE_2D = F.RGBColor(F.num(0.6260033081763745),
+      F.num(0.8359330492764128), F.num(0.9185378316380052));
+
+  /** The edge colour of a two dimensional mesh region. */
+  private static final IAST EDGE_2D = F.RGBColor(F.num(0.372575209344428),
+      F.num(0.6124949134587575), F.num(0.706900379014863));
+
+  /** The face and edge colour of a three dimensional mesh region. */
+  private static final IAST FACE_3D = F.RGBColor(F.num(0.465719011680535),
+      F.num(0.7656186418234469), F.num(0.8836254737685788));
+
+  /**
+   * The picture of a boundary mesh region, as <code>Show</code> gives it and as the renderers draw
+   * it - the form the reference implementation produces, measured in Mathematica on 2026-09-19:
+   *
+   * <pre>
+   * Graphics[GraphicsComplex[N[coordinates], {Directive[{face, EdgeForm[{edge}]}],
+   *     {Annotation[Polygon[faces], "Geometry"]}, styled}]]
+   * </pre>
+   *
+   * <p>
+   * A two dimensional region is drawn as the polygon its boundary encloses, a three dimensional
+   * one as its faces, with <code>Boxed -&gt; False</code> and four lights. Cells that
+   * <code>MeshCellStyle</code> styled follow the geometry as <code>{Directive[style], Line[...]}</code>
+   * groups, one per style and dimension; a styled face is taken out of the unstyled polygon, so
+   * that a translucent face is not drawn over an opaque copy of itself.
+   *
+   * @return the <code>Graphics</code> or <code>Graphics3D</code>, or {@link F#NIL} for a region
+   *         that is not two or three dimensional
+   */
+  public static IAST meshToGraphics(IAST meshRegion, EvalEngine engine) {
+    IAST complex = meshGraphicsComplex(meshRegion, engine);
+    if (complex.isNIL()) {
+      return F.NIL;
+    }
+    if (embeddingDimension(meshRegion) == 2) {
+      return F.Graphics(complex);
+    }
+    IAST lighting = F.List( //
+        F.list(F.stringx("Ambient"), F.GrayLevel(F.num(0.45))), //
+        F.list(F.stringx("Directional"), F.GrayLevel(F.num(0.3)),
+            F.unaryAST1(S.ImageScaled, F.list(F.C2, F.C0, F.C2))), //
+        F.list(F.stringx("Directional"), F.GrayLevel(F.num(0.33)),
+            F.unaryAST1(S.ImageScaled, F.list(F.C2, F.C2, F.C2))), //
+        F.list(F.stringx("Directional"), F.GrayLevel(F.num(0.3)),
+            F.unaryAST1(S.ImageScaled, F.list(F.C0, F.C2, F.C2))));
+    return F.Graphics3D(complex,
+        F.list(F.Rule(S.Boxed, S.False), F.Rule(S.Lighting, lighting)));
+  }
+
+  /**
+   * The <code>GraphicsComplex</code> of {@link #meshToGraphics(IAST, EvalEngine)}, which is what the
+   * renderers draw when a mesh region sits among other primitives.
+   */
+  public static IAST meshGraphicsComplex(IAST meshRegion, EvalEngine engine) {
+    if (!isBoundaryMeshRegion(meshRegion)) {
+      return F.NIL;
+    }
+    int dimension = embeddingDimension(meshRegion);
+    if (dimension != 2 && dimension != 3) {
+      return F.NIL;
+    }
+    IAST faces = meshCells(meshRegion, 2);
+    if (faces.isNIL()) {
+      return F.NIL;
+    }
+    java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles =
+        meshCellStyles(meshRegion);
+    java.util.Map<Integer, IExpr> styledFaces =
+        styles.getOrDefault(2, new java.util.TreeMap<Integer, IExpr>());
+
+    IASTAppendable unstyledFaces = F.ListAlloc(faces.argSize());
+    for (int i = 1; i <= faces.argSize(); i++) {
+      if (!styledFaces.containsKey(i)) {
+        unstyledFaces.append(faces.get(i).first());
+      }
+    }
+    IAST face = dimension == 2 ? FACE_2D : FACE_3D;
+    IAST edge = dimension == 2 ? EDGE_2D : FACE_3D;
+    IASTAppendable primitives = F.ListAlloc(3);
+    primitives.append(F.Directive(F.list(face, F.unaryAST1(S.EdgeForm, F.list(edge)))));
+    if (unstyledFaces.argSize() > 0) {
+      primitives.append(F.list(
+          F.binaryAST2(S.Annotation, F.Polygon(unstyledFaces), F.stringx("Geometry"))));
+    }
+    IAST styled = styledGroups(meshRegion, styles);
+    if (styled.argSize() > 0) {
+      primitives.append(styled);
+    }
+    return F.binaryAST2(S.GraphicsComplex, engine.evaluate(F.N(meshCoordinates(meshRegion))),
+        primitives);
+  }
+
+  /**
+   * The styled cells as <code>{Directive[style], Head[cells]}</code> groups - one per dimension
+   * and style, in the order the styles first appear, every cell of a group gathered into one
+   * primitive as <code>Line[{{1,2},{2,3},...}]</code>.
+   */
+  private static IAST styledGroups(IAST meshRegion,
+      java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles) {
+    IASTAppendable groups = F.ListAlloc();
+    for (java.util.Map.Entry<Integer, java.util.TreeMap<Integer, IExpr>> dimension : styles
+        .entrySet()) {
+      int d = dimension.getKey();
+      IAST cells = meshCells(meshRegion, d);
+      if (cells.isNIL()) {
+        // the solid of a three dimensional region has no primitive to draw it with
+        continue;
+      }
+      java.util.LinkedHashMap<IExpr, IASTAppendable> byStyle =
+          new java.util.LinkedHashMap<IExpr, IASTAppendable>();
+      for (java.util.Map.Entry<Integer, IExpr> cell : dimension.getValue().entrySet()) {
+        int i = cell.getKey();
+        if (i < 1 || i > cells.argSize()) {
+          continue;
+        }
+        IExpr indices = cells.get(i).first();
+        IASTAppendable members = byStyle.computeIfAbsent(cell.getValue(), k -> F.ListAlloc());
+        if (d == 0 && indices.isList()) {
+          // a point cell holds one index; the group is one list of them
+          members.appendArgs((IAST) indices);
+        } else {
+          members.append(indices);
+        }
+      }
+      IBuiltInSymbol head = d == 0 ? S.Point : d == 1 ? S.Line : S.Polygon;
+      for (java.util.Map.Entry<IExpr, IASTAppendable> group : byStyle.entrySet()) {
+        IExpr style = group.getKey();
+        groups.append(F.list(style.isAST(S.Directive) ? style : F.Directive(style),
+            F.unaryAST1(head, group.getValue())));
+      }
+    }
+    return groups;
+  }
+
   /**
    * The index of the first argument which is an option; all arguments from index <code>2</code> up
    * to (but excluding) that index are boundary cell lists.

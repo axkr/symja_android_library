@@ -74,6 +74,14 @@ public class SVGGraphics {
    * @return the SVG document, or <code>null</code> when the expression is not a graphic
    */
   public static String svgDocument(IExpr graphics) {
+    if (org.matheclipse.core.builtin.MeshFunctions.isBoundaryMeshRegion(graphics)) {
+      // a mesh region is exported as the picture Show makes of it
+      IExpr picture = org.matheclipse.core.builtin.MeshFunctions.meshToGraphics((IAST) graphics,
+          org.matheclipse.core.eval.EvalEngine.get());
+      if (picture.isPresent()) {
+        graphics = picture;
+      }
+    }
     String svg;
     if (graphics.isGraphicsObject()) {
       svg = new SVGGraphics(360, 360).toSVG((IAST) graphics, true);

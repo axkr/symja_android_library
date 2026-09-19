@@ -740,10 +740,115 @@ public class GraphicsFunctions {
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
    */
+  /**
+   * <code>Show(g1, g2, ..., options)</code> - graphics shown together.
+   *
+   * <p>
+   * A mesh region is shown as its picture: <code>Show(ConvexHullMesh(...))</code> is the
+   * <code>Graphics</code> or <code>Graphics3D</code> the reference implementation draws it as. Several
+   * graphics of the same kind become one, each keeping its primitives in a list of their own so that
+   * one's directives do not reach into the next, and their options merged with the first setting of
+   * each winning - so the options given to <code>Show</code> itself win over all of them.
+   *
+   * <p>
+   * Not done: the plot ranges are not joined into one, so the first graphic's range can clip the
+   * others; <code>Epilog</code> and <code>Prolog</code> are not merged; two and three dimensional
+   * graphics are not combined, and nothing but <code>Graphics</code>, <code>Graphics3D</code> and
+   * mesh regions is shown.
+   */
+  private static final class Show extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IASTAppendable graphics = F.ListAlloc(ast.argSize());
+      IASTAppendable options = F.ListAlloc();
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (arg.isRuleAST()) {
+          options.append(arg);
+        } else if (!collect(arg, graphics, engine)) {
+          return F.NIL;
+        }
+      }
+      if (graphics.argSize() == 0) {
+        return F.NIL;
+      }
+      IExpr head = graphics.arg1().head();
+      for (IExpr g : graphics) {
+        if (g.head() != head) {
+          // two and three dimensional graphics cannot be one picture
+          return F.NIL;
+        }
+      }
+      if (graphics.argSize() == 1 && options.argSize() == 0) {
+        return graphics.arg1();
+      }
+      IASTAppendable primitives = F.ListAlloc(graphics.argSize());
+      for (IExpr g : graphics) {
+        primitives.append(((IAST) g).arg1());
+        for (int i = 2; i < ((IAST) g).size(); i++) {
+          addOptions(((IAST) g).get(i), options);
+        }
+      }
+      IASTAppendable result = F.ast(head, options.argSize() + 1);
+      result.append(primitives);
+      java.util.Set<IExpr> seen = new java.util.HashSet<IExpr>();
+      for (IExpr option : options) {
+        // the first setting of an option wins
+        if (seen.add(option.first())) {
+          result.append(option);
+        }
+      }
+      return result;
+    }
+
+    /** A graphic, a mesh region as its picture, or a list of either. */
+    private static boolean collect(IExpr arg, IASTAppendable graphics, EvalEngine engine) {
+      if (arg.isAST(S.Graphics) || arg.isAST(S.Graphics3D)) {
+        graphics.append(arg);
+        return true;
+      }
+      if (MeshFunctions.isBoundaryMeshRegion(arg)) {
+        IAST picture = MeshFunctions.meshToGraphics((IAST) arg, engine);
+        if (picture.isPresent()) {
+          graphics.append(picture);
+          return true;
+        }
+        return false;
+      }
+      if (arg.isList()) {
+        for (IExpr element : (IAST) arg) {
+          if (!collect(element, graphics, engine)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
+    }
+
+    /** An option of a graphic - a rule, or a list of them - added in order. */
+    private static void addOptions(IExpr option, IASTAppendable options) {
+      if (option.isRuleAST()) {
+        options.append(option);
+      } else if (option.isList()) {
+        for (IExpr rule : (IAST) option) {
+          addOptions(rule, options);
+        }
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+  }
+
   private static class Initializer {
 
     private static void init() {
       S.Dashed.setEvaluator(new Dashed());
+      S.Show.setEvaluator(new Show());
       S.DotDashed.setEvaluator(new DotDashed());
       S.Dotted.setEvaluator(new Dotted());
       S.Thick.setEvaluator(new Thick());
