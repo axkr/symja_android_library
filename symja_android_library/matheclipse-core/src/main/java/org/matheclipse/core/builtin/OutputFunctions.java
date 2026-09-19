@@ -693,12 +693,7 @@ public final class OutputFunctions {
         if (ast.isAST2() && ast.arg2().isStringIgnoreCase("mathcell")) {
           javascriptFlavor = JavaScriptFormFactory.USE_MATHCELL;
         }
-        IExpr arg1 = ast.arg1();
-        if (arg1.isFunctionID(ID.Plot, ID.ParametricPlot, ID.ParametricPlot)) {
-          IASTAppendable temp = ((IAST) arg1).appendClone(F.Rule(S.JSForm, S.True));
-          arg1 = temp;
-        }
-        arg1 = engine.evaluate(arg1);
+        IExpr arg1 = engine.evaluate(ast.arg1());
 
         if (arg1.isAST(S.JSFormData, 3)) {
           String manipulateStr = ((IAST) arg1).arg1().toString();

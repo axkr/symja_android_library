@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.graphics;
 
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -18,9 +17,6 @@ public class ListLogLinearPlot extends ListPlot {
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
     ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
-    if (ToggleFeature.JS_ECHARTS) {
-      return evaluateECharts(ast, argSize, options, engine, originalAST);
-    }
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }

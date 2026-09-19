@@ -81,6 +81,26 @@ public class WebGLGraphics3D {
     return generateOutput(graphics, isSnippet, -1, -1);
   }
 
+  /**
+   * A page that works as a plain file with no server behind it: three.js is loaded from its CDN
+   * and the renderer is carried inline. {@link #generateHTML(IAST)} links both from the web front
+   * end instead, which a page opened from disk cannot reach.
+   */
+  public static String generateStandaloneHTML(IAST graphics) {
+    String json;
+    try {
+      json = mapper.writeValueAsString(buildScene(graphics));
+    } catch (JsonProcessingException | RuntimeException e) {
+      return "";
+    }
+    return createPageHTML(json, THREE_CDN + "build/three.module.js",
+        THREE_CDN + "examples/jsm/", "<script type=\"text/javascript\">\n" + rendererScript()
+            + "\n</script>\n");
+  }
+
+  /** The three.js release the renderer is written against, as the md2html template loads it. */
+  private static final String THREE_CDN = "https://unpkg.com/three@0.182.0/";
+
   /** The scene JSON on its own, which the tests assert against. */
   public static String generateJSON(IAST graphics) {
     try {
@@ -541,11 +561,22 @@ public class WebGLGraphics3D {
   }
 
   private static String createPageHTML(String jsonData) {
+    return createPageHTML(jsonData, "/media/js/three/three.module.js", "/media/js/three/jsm/",
+        "<script type=\"text/javascript\" src=\"/media/js/symja_webgl.js\"></script>\n");
+  }
+
+  /**
+   * @param threeModule where the three.js module is loaded from
+   * @param threeAddons the directory its add-ons, OrbitControls among them, are loaded from
+   * @param rendererTag the element that loads <code>symja_webgl.js</code>
+   */
+  private static String createPageHTML(String jsonData, String threeModule, String threeAddons,
+      String rendererTag) {
     StringBuilder html = new StringBuilder();
     html.append("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Symja 3D</title>\n");
     html.append("<style>body { margin: 0; background-color: #ffffff; }</style>\n");
-    html.append(
-        "<script type=\"importmap\">{ \"imports\": { \"three\": \"/media/js/three/three.module.js\", \"three/addons/\": \"/media/js/three/jsm/\" } }</script>\n");
+    html.append("<script type=\"importmap\">{ \"imports\": { \"three\": \"").append(threeModule)
+        .append("\", \"three/addons/\": \"").append(threeAddons).append("\" } }</script>\n");
     html.append("</head><body>\n");
     html.append("<div id=\"webgl-container\" style=\"width: 100vw; height: 100vh;\"></div>\n");
     html.append("<script type=\"module\">\n");
@@ -558,7 +589,7 @@ public class WebGLGraphics3D {
     html.append("  window.SymjaWebGLQueue.push(['webgl-container', ").append(jsonData)
         .append("]);\n");
     html.append("</script>\n");
-    html.append("<script type=\"text/javascript\" src=\"/media/js/symja_webgl.js\"></script>\n");
+    html.append(rendererTag);
     html.append("</body></html>");
     return html.toString();
   }

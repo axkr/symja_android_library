@@ -64,11 +64,6 @@ public class ToggleFeature {
   public static boolean SOLVE_DIOPHANTINE = true;
 
   /**
-   * Use Apache ECharts for rendering some 2D plot functions.
-   */
-  public static boolean JS_ECHARTS = false;
-
-  /**
    * Master switch for the step-by-step evaluation of {@link S#TraceForm}: the listener in
    * <code>org.matheclipse.core.eval.steps</code>, the hints the built-in functions and the pattern
    * matcher announce, and the levels in

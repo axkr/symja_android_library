@@ -3,12 +3,10 @@ package org.matheclipse.core.builtin.graphics;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -43,13 +41,6 @@ public class ParametricPlot extends Plot {
       IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
       // Range specification `1` is not of the form {x, xmin, xmax}.
       return Errors.printMessage(S.ParametricPlot, "pllim", F.list(arg2), engine);
-    }
-    if (options[0].isTrue()) {
-      IExpr temp = S.Manipulate.funEval(engine, ast);
-      if (temp.headID() == ID.JSFormData) {
-        return temp;
-      }
-      return F.NIL;
     }
 
     if (argSize < ast.size()) {
@@ -142,16 +133,12 @@ public class ParametricPlot extends Plot {
           return F.NIL;
         }
 
-        if (ToggleFeature.JS_ECHARTS) {
-          return evaluateECharts(ast, argSize, options, engine, originalAST);
-        } else {
-          GraphicsOptions listPlotOptions = graphicsOptions.copy();
-          IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
-          IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
+        GraphicsOptions listPlotOptions = graphicsOptions.copy();
+        IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
+        IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
 
-          if (graphicsPrimitives.isPresent()) {
-            return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
-          }
+        if (graphicsPrimitives.isPresent()) {
+          return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
         }
       }
 

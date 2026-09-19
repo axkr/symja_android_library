@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin.graphics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -11,10 +10,8 @@ import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.graphics.ECharts;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
@@ -76,132 +73,6 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return data == ast.arg1() ? ast : ast.setAtCopy(1, data);
   }
 
-  public IExpr evaluateECharts(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
-    ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
-    if (argSize > 0 && argSize < ast.size()) {
-      ast = ast.copyUntil(argSize + 1);
-    }
-
-    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
-    // PlotMarkers and Mesh are family options appended after the positional block, so they
-    // are read from the call rather than by index
-    graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
-    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
-    graphicsOptions.readColorFunction(originalAST);
-    graphicsOptions.applyPlotTheme(originalAST);
-    graphicsOptions.readPassThroughOptions(originalAST);
-    String graphicsPrimitivesStr = listPlotECharts(ast, options, graphicsOptions, engine);
-    if (graphicsPrimitivesStr != null) {
-      StringBuilder jsControl = new StringBuilder();
-      jsControl.append("var eChart = echarts.init(document.getElementById('main'));\n");
-      jsControl.append(graphicsPrimitivesStr);
-      jsControl.append("\neChart.setOption(option);");
-
-      return F.JSFormData(jsControl.toString(), "echarts");
-    }
-    return F.NIL;
-  }
-
-  protected static String listPlotECharts(IAST plot, IExpr[] options,
-      GraphicsOptions graphicsOptions, EvalEngine engine) {
-    if (plot.size() < 2) {
-      return null;
-    }
-
-    IExpr arg1 = plot.arg1();
-    if (!arg1.isList()) {
-      arg1 = engine.evaluate(arg1);
-    }
-    if (arg1.isAssociation()) {
-      IAssociation assoc = ((IAssociation) arg1);
-      arg1 = assoc.matrixOrList();
-    }
-    return listPlotECharts(arg1, graphicsOptions);
-  }
-
-  protected static String listPlotECharts(IExpr listData, GraphicsOptions graphicsOptions) {
-    if (listData.isNonEmptyList()) {
-      IAST pointList = (IAST) listData;
-      double[] minMax = new double[] {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
-          Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
-      if (pointList.isListOfLists()) {
-        StringBuilder yAxisSeriesBuffer = new StringBuilder();
-        if (pointList.isListOfPoints(2)) {
-          ECharts.yAxisSingleSeries(yAxisSeriesBuffer, pointList, graphicsOptions, minMax);
-        } else {
-          for (int i = 1; i < pointList.size(); i++) {
-            IExpr pointSet = pointList.get(i);
-            if (pointSet != null && pointSet.isListOfLists()) {
-              if (i > 1) {
-                yAxisSeriesBuffer.append(",\n");
-              }
-              ECharts.yAxisSingleSeries(yAxisSeriesBuffer, (IAST) pointSet, graphicsOptions,
-                  minMax);
-            }
-          }
-        }
-        ECharts echarts = ECharts.build(graphicsOptions, null, yAxisSeriesBuffer);
-        echarts.setXAxisPlot();
-        if (minMax[2] < -1000.0) {
-          minMax[2] = -50;
-        }
-        if (minMax[3] > 1000.0) {
-          minMax[3] = 50;
-        }
-        echarts.setYAxisPlot(minMax[2], minMax[3]);
-        return echarts.getJSONStr();
-      }
-
-      if (pointList.isList()) {
-        if (pointList.isListOfPoints(2)) {
-          return point2DListLinePlot(pointList, graphicsOptions);
-        }
-        if (pointList.isListOfLists()) {
-          IAST listOfLists = pointList;
-          StringBuilder yAxisSeriesBuffer = new StringBuilder();
-          String type = graphicsOptions.isJoined() ? ECharts.TYPE_LINE : ECharts.TYPE_SCATTER;
-          ECharts.seriesData(yAxisSeriesBuffer, listOfLists, graphicsOptions, type, "");
-          StringBuilder xAxisCategoryBuffer = new StringBuilder();
-          ECharts.xAxisCategory(xAxisCategoryBuffer, (IAST) listOfLists.arg1());
-          ECharts echarts = ECharts.build(graphicsOptions, xAxisCategoryBuffer, yAxisSeriesBuffer);
-          echarts.setXAxisPlot();
-          echarts.setYAxisPlot(minMax[2], minMax[3]);
-          return echarts.getJSONStr();
-        }
-
-      }
-      return yValueListLinePlot(pointList, graphicsOptions);
-    }
-    return null;
-  }
-
-  private static String point2DListLinePlot(IAST pointList2D, GraphicsOptions graphicsOptions) {
-    StringBuilder xAxisString = new StringBuilder();
-    StringBuilder yAxisString = new StringBuilder();
-    ECharts.xyAxesPoint2D(pointList2D, xAxisString, yAxisString, graphicsOptions);
-
-    ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
-    echarts.setXAxis();
-    echarts.setYAxis("value");
-    return echarts.getJSONStr();
-  }
-
-  private static String yValueListLinePlot(IAST pointList, GraphicsOptions graphicsOptions) {
-    double[] minMax = new double[] {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
-        Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
-    StringBuilder yAxisString = new StringBuilder();
-    ECharts.yAxisSingleSeries(yAxisString, pointList, graphicsOptions, minMax);
-
-    StringBuilder xAxisString = new StringBuilder();
-    ECharts.xAxisCategory(xAxisString, pointList);
-    ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
-    echarts.setXAxis();
-    echarts.setYAxis("value");
-    return echarts.getJSONStr();
-  }
-
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
@@ -209,16 +80,6 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     IExpr arg1 = ast.arg1();
     if (!checkList(engine, arg1)) {
       return Errors.printMessage(ast.topHead(), "lpn", F.List(arg1), engine);
-    }
-    if (ToggleFeature.JS_ECHARTS) {
-      return evaluateECharts(ast, argSize, options, engine, originalAST);
-    }
-    if (options[GraphicsOptions.X_JSFORM].isTrue()) {
-      IExpr temp = S.Manipulate.funEval(engine, ast);
-      if (temp.headID() == ID.JSFormData) {
-        return temp;
-      }
-      return F.NIL;
     }
     GraphicsOptions graphicsOptions =
         setGraphicsOptions(options, GraphicsOptions.listPlotDefaultOptionKeys(), engine);

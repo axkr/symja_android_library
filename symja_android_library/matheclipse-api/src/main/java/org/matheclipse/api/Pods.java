@@ -1219,9 +1219,10 @@ public class Pods {
     String html = null;
     if (WebGLGraphics3D.isRenderable(podOut)) {
       try {
-        html = WebGLGraphics3D.generateHTML((IAST) podOut);
+        // a pod is shown in an iframe with no server behind it, so the page carries all it needs
+        html = WebGLGraphics3D.generateStandaloneHTML((IAST) podOut);
       } catch (RuntimeException rex) {
-        LOGGER.debug("WebGLGraphics3D.generateHTML() failed", rex);
+        LOGGER.debug("WebGLGraphics3D.generateStandaloneHTML() failed", rex);
       }
     } else if (podOut.isAST(S.JSFormData, 3)) {
       html = podOut.second().toString();

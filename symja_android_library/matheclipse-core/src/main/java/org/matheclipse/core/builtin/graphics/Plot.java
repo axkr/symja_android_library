@@ -3,13 +3,11 @@ package org.matheclipse.core.builtin.graphics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleUnaryOperator;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
@@ -42,13 +40,6 @@ public class Plot extends ListPlot {
       return Errors.printMessage(S.Plot, "pllim", F.list(arg2), engine);
     }
 
-    if (options[0].isTrue()) {
-      IExpr temp = S.Manipulate.funEval(engine, ast);
-      if (temp.headID() == ID.JSFormData) {
-        return temp;
-      }
-      return F.NIL;
-    }
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
@@ -91,25 +82,12 @@ public class Plot extends ListPlot {
               return F.NIL;
             }
 
-            if (ToggleFeature.JS_ECHARTS) {
-              String graphicsPrimitivesStr = listPlotECharts(listOfLines, graphicsOptions);
-              if (graphicsPrimitivesStr != null) {
-                StringBuilder jsControl = new StringBuilder();
-                jsControl.append("var eChart = echarts.init(document.getElementById('main'));\n");
-                jsControl.append(graphicsPrimitivesStr);
-                jsControl.append("\neChart.setOption(option);");
-
-                return F.JSFormData(jsControl.toString(), "echarts");
-              }
-              return F.NIL;
-            } else {
-              // simulate ListPlot data
-              GraphicsOptions listPlotOptions = graphicsOptions.copy();
-              IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
-              IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
-              if (graphicsPrimitives.isPresent()) {
-                return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
-              }
+            // simulate ListPlot data
+            GraphicsOptions listPlotOptions = graphicsOptions.copy();
+            IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
+            IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
+            if (graphicsPrimitives.isPresent()) {
+              return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
             }
 
           }

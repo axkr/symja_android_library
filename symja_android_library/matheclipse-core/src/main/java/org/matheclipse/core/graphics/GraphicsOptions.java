@@ -96,6 +96,12 @@ public class GraphicsOptions {
     return MapperHolder.JSON_OBJECT_MAPPER;
   }
 
+  /**
+   * Reserved. <code>JSForm -&gt; True</code> once made a plot return its JavaScript; nothing reads
+   * the option any more, but the plot option arrays are read by position, so the slot is kept rather
+   * than shifting every index after it.
+   */
+  @Deprecated
   public final static int X_JSFORM = 0;
   public final static int X_FILLING = 1;
   public final static int X_AXES = 2;

@@ -2,12 +2,10 @@ package org.matheclipse.core.builtin.graphics;
 
 import java.util.List;
 import java.util.function.DoubleUnaryOperator;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
@@ -38,13 +36,6 @@ public class PolarPlot extends Plot {
       IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
       // Range specification `1` is not of the form {x, xmin, xmax}.
       return Errors.printMessage(S.PolarPlot, "pllim", F.list(arg2), engine);
-    }
-    if (options[0].isTrue()) {
-      IExpr temp = S.Manipulate.funEval(engine, ast);
-      if (temp.headID() == ID.JSFormData) {
-        return temp;
-      }
-      return F.NIL;
     }
 
     if (argSize < ast.argSize()) {
@@ -79,27 +70,23 @@ public class PolarPlot extends Plot {
         return F.NIL;
       }
 
-      if (ToggleFeature.JS_ECHARTS) {
-        return evaluateECharts(ast, argSize, options, engine, originalAST);
-      } else {
-        // Use ListPlot logic to render the lines with proper styles/options
-        GraphicsOptions listPlotOptions = graphicsOptions.copy();
-        IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
-        IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
+      // Use ListPlot logic to render the lines with proper styles/options
+      GraphicsOptions listPlotOptions = graphicsOptions.copy();
+      IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
+      IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
 
-        if (graphicsPrimitives.isPresent()) {
-          // the polar scale is drawn first so that it sits behind the curve
-          IAST polar = polarScale(GraphicsOptions.optionValue(originalAST, S.PolarAxes, S.False),
-              GraphicsOptions.optionValue(originalAST, S.PolarGridLines, S.None),
-              listPlotOptions.boundingBox());
-          if (polar.isPresent()) {
-            IASTAppendable withScale = F.ListAlloc(graphicsPrimitives.size() + 1);
-            withScale.append(polar);
-            withScale.appendArgs(graphicsPrimitives);
-            graphicsPrimitives = withScale;
-          }
-          return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
+      if (graphicsPrimitives.isPresent()) {
+        // the polar scale is drawn first so that it sits behind the curve
+        IAST polar = polarScale(GraphicsOptions.optionValue(originalAST, S.PolarAxes, S.False),
+            GraphicsOptions.optionValue(originalAST, S.PolarGridLines, S.None),
+            listPlotOptions.boundingBox());
+        if (polar.isPresent()) {
+          IASTAppendable withScale = F.ListAlloc(graphicsPrimitives.size() + 1);
+          withScale.append(polar);
+          withScale.appendArgs(graphicsPrimitives);
+          graphicsPrimitives = withScale;
         }
+        return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
       }
 
     } catch (RuntimeException rex) {

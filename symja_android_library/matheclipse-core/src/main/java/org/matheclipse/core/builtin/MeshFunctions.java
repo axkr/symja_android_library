@@ -9,19 +9,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.graphics.Dimensions2D;
-import org.matheclipse.core.graphics.GraphicsOptions;
-import org.matheclipse.core.graphics.IGraphics2D;
-import org.matheclipse.core.graphics.IGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.external.fastutil.longs.LongOpenHashSet;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions for the mesh region objects <code>BoundaryMeshRegion</code> and
@@ -1284,65 +1277,7 @@ public class MeshFunctions {
     return F.GraphicsComplex(meshCoordinates(meshRegion), cells);
   }
 
-  private static class BoundaryMeshRegion extends AbstractEvaluator
-      implements IGraphics2D, IGraphics3D {
-
-    @Override
-    public boolean graphics2D(ArrayNode arrayNode, IAST ast, GraphicsOptions options) {
-      IExpr complex = toGraphicsComplex(ast);
-      if (complex.isPresent()) {
-        IEvaluator evaluator = S.GraphicsComplex.getEvaluator();
-        if (evaluator instanceof IGraphics2D) {
-          return ((IGraphics2D) evaluator).graphics2D(arrayNode, (IAST) complex, options);
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
-      IExpr complex = toGraphicsComplex(ast);
-      if (complex.isPresent()) {
-        IEvaluator evaluator = S.GraphicsComplex.getEvaluator();
-        if (evaluator instanceof IGraphics2D) {
-          return ((IGraphics2D) evaluator).graphics2DDimension((IAST) complex, dim);
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
-      // the 3D GraphicsComplex renderer doesn't resolve the indices of a Polygon cell, so the
-      // faces are rendered as polygons with absolute coordinates
-      if (!isMeshRegion(ast) || embeddingDimension(ast) != 3) {
-        return false;
-      }
-      IAST faces = boundaryCells(ast, 2);
-      if (faces.isNIL() || faces.argSize() == 0) {
-        return false;
-      }
-      IEvaluator evaluator = S.Polygon.getEvaluator();
-      if (!(evaluator instanceof IGraphics3D)) {
-        return false;
-      }
-      IAST coordinates = meshCoordinates(ast);
-      json.put("type", "graphicscomplex");
-      ArrayNode elements = json.arrayNode();
-      for (int i = 1; i < faces.size(); i++) {
-        IAST indices = (IAST) faces.get(i).first();
-        IASTAppendable points = F.ListAlloc(indices.argSize());
-        for (int j = 1; j < indices.size(); j++) {
-          points.append(coordinates.get(indices.get(j).toIntDefault()));
-        }
-        ObjectNode faceNode = GraphicsOptions.jsonObjectMapper().createObjectNode();
-        if (((IGraphics3D) evaluator).graphics3D(faceNode, F.Polygon(points), color, opacity)) {
-          elements.add(faceNode);
-        }
-      }
-      json.set("elements", elements);
-      return elements.size() > 0;
-    }
+  private static class BoundaryMeshRegion extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
