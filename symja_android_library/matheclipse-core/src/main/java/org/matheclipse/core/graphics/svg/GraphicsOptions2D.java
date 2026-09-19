@@ -267,6 +267,16 @@ public final class GraphicsOptions2D {
       case ID.Joined:
         joined = value.isTrue();
         break;
+      case ID.IntervalMarkers:
+        if (collector != null) {
+          collector.setIntervalMarkers(value, null);
+        }
+        break;
+      case ID.IntervalMarkersStyle:
+        if (collector != null) {
+          collector.setIntervalMarkers(null, value);
+        }
+        break;
       // LabelStyle used to be applied here too, but it styles the labels rather than the
       // primitives, and the colour a plot puts on its own curves overrode it anyway
       case ID.PlotStyle:

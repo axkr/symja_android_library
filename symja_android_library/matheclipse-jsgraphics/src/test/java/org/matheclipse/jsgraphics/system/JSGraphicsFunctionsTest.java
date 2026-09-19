@@ -159,6 +159,29 @@ public class JSGraphicsFunctionsTest extends AbstractTestCase {
     }
   }
 
+  @Test
+  public void testIntervalMarkers() {
+    String jsx = script("JSXGraph(Graphics(Point({{1, Around(2, 0.5)}, {2, Around(3, 0.5)}})))",
+        "jsxgraph");
+    // the two points and one curve per bar
+    assertEquals(2, count(jsx, "board.create('curve'"), jsx);
+
+    String bands = script("MathCell(ListLinePlot({Around(1, 0.2), Around(2, 0.3), Around(1.5, 0.4)},"
+        + " IntervalMarkers -> \"Bands\"))", "mathcell");
+    assertTrue(bands.contains("0.3") || bands.contains("opacity"), bands);
+
+    // the bars are neither legend entries nor named after the next curve
+    String echarts = script("ECharts(ListPlot({{1, Around(2, 0.5)}, {2, Around(3, 0.5)}},"
+        + " PlotLegends -> {\"data\"}))", "echarts");
+    assertEquals(1, count(echarts, "name: 'data'"), echarts);
+    assertFalse(echarts.contains("curve 2"), echarts);
+
+    String echartsBands = script("ECharts(ListLinePlot({Around(1, 0.2), Around(2, 0.3)},"
+        + " IntervalMarkers -> \"Bands\"))", "echarts");
+    assertTrue(echartsBands.contains("type: 'custom'"), echartsBands);
+    assertTrue(echartsBands.contains("type: 'polygon'"), echartsBands);
+  }
+
   private static int count(String s, String what) {
     int n = 0;
     for (int i = s.indexOf(what); i >= 0; i = s.indexOf(what, i + 1)) {

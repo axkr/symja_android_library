@@ -255,6 +255,7 @@ public class WebGLGraphics3D {
 
     ArrayNode elements = root.putArray("elements");
     PrimitiveCollector3D collector = new PrimitiveCollector3D(elements, options.scaling);
+    collector.setIntervalMarkers(options.intervalMarkers, options.intervalMarkersStyle);
     if (target.argSize() >= 1) {
       Style3D initial = new Style3D();
       if (options.baseStyle != null) {
@@ -262,6 +263,7 @@ public class WebGLGraphics3D {
         collector.applyBaseStyle(options.baseStyle, initial);
       }
       collector.collect(target.arg1(), initial);
+      collector.finishIntervalMarkers();
     }
 
     double[][] ranges = resolveRanges(collector.bounds, options);

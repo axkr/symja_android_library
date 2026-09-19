@@ -115,11 +115,23 @@ public abstract class Prim2D {
   public static final class LinePrim extends Prim2D {
     public final List<List<double[]>> segments;
     public final boolean closed;
+    /**
+     * For the bars of {@code IntervalMarkers -> "Fences"}: per segment, whether its first and its
+     * last point get a cap. The caps are sized from the plot range, so they are added once that is
+     * known ({@code IntervalMarkers2D.addFenceCaps}); {@code null} for every other line.
+     */
+    public final List<boolean[]> fenceCaps;
 
     public LinePrim(List<List<double[]>> segments, boolean closed, Style2D style) {
+      this(segments, closed, style, null);
+    }
+
+    public LinePrim(List<List<double[]>> segments, boolean closed, Style2D style,
+        List<boolean[]> fenceCaps) {
       super(style);
       this.segments = segments;
       this.closed = closed;
+      this.fenceCaps = fenceCaps;
     }
 
     @Override
@@ -137,7 +149,7 @@ public abstract class Prim2D {
       for (List<double[]> seg : segments) {
         out.add(mapPoints(seg, map));
       }
-      return new LinePrim(out, closed, style);
+      return new LinePrim(out, closed, style, fenceCaps);
     }
 
     @Override

@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.IntervalMarkerType;
 import org.matheclipse.core.graphics.PlotWrapper;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -61,6 +63,26 @@ public final class PrimitiveCollector3D {
 
   /** The extent of the data, which the renderer frames the scene and the box against. */
   public final Bounds3D bounds = new Bounds3D();
+
+  /** The opacity an interval band is drawn with, times that of its colour. */
+  private static final double BAND_OPACITY = 0.3;
+
+  /** The radius of an interval tube, as a fraction of the scene diagonal. */
+  private static final double TUBE_FRACTION = 0.004;
+
+  /** {@code IntervalMarkers}: how uncertain coordinates of points and lines are marked. */
+  private IntervalMarkerType intervalMarkers = IntervalMarkerType.BARS;
+  /** {@code IntervalMarkersStyle}, or {@code null} for the style of the marked primitive. */
+  private IExpr intervalMarkersStyle = null;
+
+  /**
+   * While a {@code Point} or {@code Line} is read, per group (a line segment) the points with
+   * {centre, lower, upper} per axis; {@code null} otherwise.
+   */
+  private List<List<double[][]>> markerGroups;
+
+  /** The tubes of {@code IntervalMarkers -> "Tubes"}, sized by {@link #finishIntervalMarkers()}. */
+  private final List<ObjectNode> intervalTubes = new ArrayList<>();
 
   public PrimitiveCollector3D(ArrayNode elements, String[] scaling) {
     this.elements = elements;
@@ -597,7 +619,13 @@ public final class PrimitiveCollector3D {
     if (ast.argSize() < 1) {
       return;
     }
-    List<List<double[]>> polylines = polylines(ast.arg1(), context);
+    List<List<double[]>> polylines;
+    beginMarkers(ast.arg1());
+    try {
+      polylines = polylines(ast.arg1(), context);
+    } finally {
+      endMarkers(style, transform, true);
+    }
     if (polylines.isEmpty()) {
       return;
     }
@@ -656,7 +684,13 @@ public final class PrimitiveCollector3D {
       return;
     }
     List<double[]> points = new ArrayList<>();
-    collectPoints(ast.arg1(), context, points);
+    beginMarkers(ast.arg1());
+    try {
+      startMarkerGroup();
+      collectPoints(ast.arg1(), context, points);
+    } finally {
+      endMarkers(style, transform, false);
+    }
     if (points.isEmpty()) {
       return;
     }
@@ -1139,6 +1173,7 @@ public final class PrimitiveCollector3D {
     List<List<double[]>> result = new ArrayList<>();
     for (IExpr face : faces(data, context)) {
       List<double[]> line = new ArrayList<>();
+      startMarkerGroup();
       collectPoints(face, context, line);
       if (line.size() >= 2) {
         result.add(line);
@@ -1198,7 +1233,183 @@ public final class PrimitiveCollector3D {
       return point == null ? null : applyScaling(point);
     }
     double[] v = GraphicsOptions3D.vector(expr);
-    return v == null ? null : applyScaling(v);
+    if (v == null) {
+      return null;
+    }
+    double[] scaled = applyScaling(v);
+    if (markerGroups != null && !markerGroups.isEmpty()) {
+      recordMarker((IAST) expr, scaled);
+    }
+    return scaled;
+  }
+
+  // -------------------------------------------------------- interval markers
+
+  /**
+   * Record the limits of each coordinate of a point about to be drawn, scaled like the point.
+   * Every point is recorded, certain ones with limits at the centre, so a band runs through them.
+   */
+  private void recordMarker(IAST point, double[] centre) {
+    if (!Double.isFinite(centre[0]) || !Double.isFinite(centre[1])
+        || !Double.isFinite(centre[2])) {
+      return;
+    }
+    double[][] marker = new double[3][];
+    for (int i = 0; i < 3; i++) {
+      UncertainValue u = UncertainValue.of(point.get(i + 1));
+      if (u == null) {
+        marker[i] = new double[] {centre[i], centre[i], centre[i]};
+      } else {
+        double lo = scale(u.lo, scaling[i]);
+        double hi = scale(u.hi, scaling[i]);
+        if (!Double.isFinite(lo) || !Double.isFinite(hi)) {
+          lo = hi = centre[i];
+        }
+        marker[i] = new double[] {centre[i], Math.min(lo, hi), Math.max(lo, hi)};
+      }
+    }
+    markerGroups.get(markerGroups.size() - 1).add(marker);
+  }
+
+  /** Set the {@code IntervalMarkers} and {@code IntervalMarkersStyle} options. */
+  public void setIntervalMarkers(IExpr markers, IExpr style) {
+    if (markers != null) {
+      intervalMarkers = IntervalMarkerType.of(markers);
+    }
+    if (style != null) {
+      intervalMarkersStyle = style.isAutomatic() || style.isNone() ? null : style;
+    }
+  }
+
+  /**
+   * Start recording the uncertain coordinates of a {@code Point} or {@code Line}. Only data that
+   * contains an uncertain form is recorded; an index into a {@code GraphicsComplex} never is.
+   */
+  private void beginMarkers(IExpr data) {
+    markerGroups = null;
+    if (intervalMarkers != IntervalMarkerType.NONE
+        && data.has(x -> x.isAST() && UncertainValue.isUncertain(x), false)) {
+      markerGroups = new ArrayList<>();
+    }
+  }
+
+  private void startMarkerGroup() {
+    if (markerGroups != null) {
+      markerGroups.add(new ArrayList<>());
+    }
+  }
+
+  private static boolean hasExtent(double[] axis) {
+    return axis[1] < axis[0] || axis[2] > axis[0];
+  }
+
+  /** Emit the markers recorded since {@link #beginMarkers}, as lines, tubes or bands. */
+  private void endMarkers(Style3D style, Transform3D transform, boolean connected) {
+    List<List<double[][]>> groups = markerGroups;
+    markerGroups = null;
+    if (groups == null) {
+      return;
+    }
+    Style3D markerStyle = style.clone();
+    if (intervalMarkersStyle != null) {
+      applyDirective(intervalMarkersStyle, markerStyle);
+    }
+    List<List<double[]>> bars = new ArrayList<>();
+    for (List<double[][]> group : groups) {
+      if (intervalMarkers == IntervalMarkerType.BANDS && connected && group.size() >= 2
+          && emitBand(group, markerStyle, transform)) {
+        continue;
+      }
+      for (double[][] m : group) {
+        for (int axis = 0; axis < 3; axis++) {
+          if (hasExtent(m[axis])) {
+            double[] lo = new double[] {m[0][0], m[1][0], m[2][0]};
+            double[] hi = lo.clone();
+            lo[axis] = m[axis][1];
+            hi[axis] = m[axis][2];
+            List<double[]> bar = new ArrayList<>(2);
+            bar.add(lo);
+            bar.add(hi);
+            bars.add(bar);
+          }
+        }
+      }
+    }
+    if (bars.isEmpty()) {
+      return;
+    }
+    if (intervalMarkers == IntervalMarkerType.TUBES) {
+      // coloured like the points and lines they mark, not with the default face colour
+      Color tube = markerStyle.effectiveLine();
+      ObjectNode node = newElement("Tube", markerStyle, transform);
+      node.put("color", rgb(tube));
+      node.put("opacity", markerStyle.alphaOf(tube));
+      // sized from the whole scene by finishIntervalMarkers()
+      node.put("radius", 0.0);
+      node.put("pathType", "CatmullRom");
+      writeSurfaceStyle(node, markerStyle);
+      writePolylines(node, bars, transform);
+      intervalTubes.add(node);
+      return;
+    }
+    ObjectNode node = newElement("Line", markerStyle, transform);
+    node.put("color", rgb(markerStyle.effectiveLine()));
+    node.put("opacity", markerStyle.alphaOf(markerStyle.effectiveLine()));
+    writePolylines(node, bars, transform);
+    writeLineStyle(node, markerStyle);
+  }
+
+  /**
+   * A translucent strip between the lower and the upper z limits along a line; {@code false} when
+   * no point of the line is uncertain in z, which leaves it to the bars.
+   */
+  private boolean emitBand(List<double[][]> group, Style3D style, Transform3D transform) {
+    boolean any = false;
+    for (double[][] m : group) {
+      any |= hasExtent(m[2]);
+    }
+    if (!any) {
+      return false;
+    }
+    Style3D band = style.clone();
+    band.showEdges = false;
+    // the colour of the line the band belongs to, as in 2D, not the default face colour
+    band.faceColor = style.effectiveLine();
+    ObjectNode node = newElement("Polygon", band, transform);
+    Color face = band.effectiveFace();
+    node.put("color", rgb(face));
+    node.put("opacity", BAND_OPACITY * band.alphaOf(face));
+    ArrayNode points = node.putArray("points");
+    for (double[][] m : group) {
+      double[] lower = {m[0][0], m[1][0], m[2][1]};
+      double[] upper = {m[0][0], m[1][0], m[2][2]};
+      points.add(lower[0]).add(lower[1]).add(lower[2]);
+      points.add(upper[0]).add(upper[1]).add(upper[2]);
+      track(lower, transform);
+      track(upper, transform);
+    }
+    ArrayNode indices = node.putArray("indices");
+    for (int i = 0; i + 1 < group.size(); i++) {
+      int l0 = 2 * i;
+      int u0 = l0 + 1;
+      int l1 = l0 + 2;
+      int u1 = l0 + 3;
+      indices.add(l0).add(l1).add(u1);
+      indices.add(l0).add(u1).add(u0);
+    }
+    writeSurfaceStyle(node, band);
+    return true;
+  }
+
+  /**
+   * Size the tubes of {@code IntervalMarkers -> "Tubes"} from the extent of the whole scene, which
+   * is only known once every primitive has been collected.
+   */
+  public void finishIntervalMarkers() {
+    double radius = TUBE_FRACTION * bounds.diagonal();
+    for (ObjectNode tube : intervalTubes) {
+      tube.put("radius", radius);
+    }
   }
 
   private double[] applyScaling(double[] v) {

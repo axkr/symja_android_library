@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -698,8 +699,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   private static boolean addSinglePoint(GraphicsOptions graphicsOptions,
       IASTAppendable pointPrimitives, IASTAppendable graphicsExtraPrimitives, double[] boundingbox,
       EvalEngine engine, IExpr xScaled, IExpr yScaled, IAST arg) {
-    IReal x = xScaled.evalReal();
-    IReal y = yScaled.evalReal();
+    IExpr x = realOrUncertain(xScaled);
+    IExpr y = realOrUncertain(yScaled);
     if (x != null && y != null) {
       if (xBoundingBox(boundingbox, x, engine) && yBoundingBox(boundingbox, y, engine)) {
         IAST scaledPoint = F.List(x, y);
@@ -767,7 +768,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   protected static boolean addIndexedYPoint(IASTAppendable pointPrimitives,
       IASTAppendable textPrimitives, double[] boundingbox, EvalEngine engine, IExpr xScaled,
       IExpr yScaled, IExpr currentYPrimitive) {
-    IReal y = yScaled.evalReal();
+    IExpr y = realOrUncertain(yScaled);
     if (y != null && yBoundingBox(boundingbox, yScaled, engine)) {
       if (currentYPrimitive.isAST(S.Labeled, 3)) {
         // Manual Text creation with offset
@@ -797,7 +798,33 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return isNonReal(lastPointX) || isNonReal(lastPointY);
   }
 
+  /**
+   * A real number, or an uncertain value ({@code Around}, {@code Interval}, {@code IntervalData})
+   * kept as it is so the renderer can draw its interval markers; {@code null} for anything else.
+   */
+  protected static IExpr realOrUncertain(IExpr value) {
+    IReal real = value.evalReal();
+    if (real != null) {
+      return real;
+    }
+    return UncertainValue.of(value) != null ? value : null;
+  }
+
+  /** Extend the {@code [lo, hi]} pair at {@code offset} to the limits of an uncertain value. */
+  private static boolean uncertainBoundingBox(double[] boundingbox, int offset, IExpr value) {
+    UncertainValue uncertain = UncertainValue.of(value);
+    if (uncertain == null) {
+      return false;
+    }
+    boundingbox[offset] = Math.min(boundingbox[offset], uncertain.lo);
+    boundingbox[offset + 1] = Math.max(boundingbox[offset + 1], uncertain.hi);
+    return true;
+  }
+
   protected static boolean xBoundingBox(double[] boundingbox, IExpr xExpr, EvalEngine engine) {
+    if (uncertainBoundingBox(boundingbox, 0, xExpr)) {
+      return true;
+    }
     try {
       double xValue = engine.evalDouble(xExpr);
       if (Double.isFinite(xValue)) {
@@ -816,6 +843,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   }
 
   protected static boolean yBoundingBox(double[] boundingbox, IExpr yExpr, EvalEngine engine) {
+    if (uncertainBoundingBox(boundingbox, 2, yExpr)) {
+      return true;
+    }
     try {
       double yValue = engine.evalDouble(yExpr);
       if (Double.isFinite(yValue)) {

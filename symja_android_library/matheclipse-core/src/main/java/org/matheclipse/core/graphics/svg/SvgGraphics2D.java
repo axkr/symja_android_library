@@ -295,6 +295,8 @@ public class SvgGraphics2D {
     for (Prim2D p : primitives) {
       p.accumulate(bounds);
     }
+    // fence caps are sized from the data range, and stay short enough not to change it
+    primitives = IntervalMarkers2D.addFenceCaps(primitives, bounds, options);
     if (options.plotGenerated && options.plotRangeAutomatic && !options.plotRangeAll) {
       refineYRange(bounds);
     }
@@ -323,7 +325,8 @@ public class SvgGraphics2D {
     }
     PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
     collector.collect(expr, options.globalStyle.clone());
-    return collector.primitives();
+    return IntervalMarkers2D.addFenceCaps(collector.primitives(),
+        bounds != null ? bounds : new Bounds2D(), options);
   }
 
   /**

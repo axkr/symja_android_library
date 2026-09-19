@@ -41,7 +41,7 @@ public final class EChartsRenderer implements JSRenderer {
     for (List<Prim2D> list : List.of(scene.primitives, scene.prolog, scene.epilog)) {
       for (Prim2D p : list) {
         if (!(p instanceof Prim2D.LinePrim || p instanceof Prim2D.PointsPrim
-            || p instanceof Prim2D.TextPrim)) {
+            || p instanceof Prim2D.TextPrim || isBand(p))) {
           return p.getClass().getSimpleName().replace("Prim", "");
         }
       }
@@ -58,7 +58,16 @@ public final class EChartsRenderer implements JSRenderer {
     int curve = 0;
     for (List<Prim2D> list : List.of(scene.prolog, scene.primitives, scene.epilog)) {
       for (Prim2D p : list) {
-        if (p instanceof Prim2D.LinePrim) {
+        if (p.style.intervalMarker) {
+          // interval markers belong to their curve: no name, so no legend entry of their own
+          if (p instanceof Prim2D.LinePrim) {
+            lineSeries((Prim2D.LinePrim) p, null, series);
+          } else if (p instanceof Prim2D.PointsPrim) {
+            pointSeries((Prim2D.PointsPrim) p, null, series);
+          } else if (isBand(p)) {
+            bandSeries((Prim2D.PolygonPrim) p, series);
+          }
+        } else if (p instanceof Prim2D.LinePrim) {
           String name = seriesName(legends, curve++);
           lineSeries((Prim2D.LinePrim) p, name, series);
         } else if (p instanceof Prim2D.PointsPrim) {
@@ -129,7 +138,8 @@ public final class EChartsRenderer implements JSRenderer {
         if (run.size() < 2) {
           continue;
         }
-        StringBuilder a = new StringBuilder("{ type: 'line', name: ").append(str(name))
+        StringBuilder a = new StringBuilder("{ type: 'line', ")
+            .append(name == null ? "silent: true, tooltip: { show: false }" : "name: " + str(name))
             .append(", showSymbol: false, animation: false, color: ").append(color(s.strokeColor))
             .append(", lineStyle: { width: ").append(num(Math.max(0.5, s.strokeWidth)))
             .append(", opacity: ").append(num(opacity(s.strokeColor, s)));
@@ -153,10 +163,38 @@ public final class EChartsRenderer implements JSRenderer {
     if (points.isEmpty()) {
       return;
     }
-    series.add("{ type: 'scatter', name: " + str(name) + ", animation: false, symbolSize: "
+    series.add("{ type: 'scatter', " + (name == null ? "silent: true" : "name: " + str(name))
+        + ", animation: false, symbolSize: "
         + num(Math.max(2, 2 * s.pointRadius)) + ", color: " + color(s.strokeColor)
         + ", itemStyle: { opacity: " + num(opacity(s.strokeColor, s)) + " }, data: "
         + pairs(points) + " }");
+  }
+
+  /** The band of {@code IntervalMarkers -> "Bands"}, the one polygon this renderer draws. */
+  private static boolean isBand(Prim2D p) {
+    return p instanceof Prim2D.PolygonPrim && p.style.intervalMarker;
+  }
+
+  /**
+   * A band as a custom series drawing one polygon: a line series can only fill down to an axis,
+   * not between two limits.
+   */
+  private static void bandSeries(Prim2D.PolygonPrim p, List<String> series) {
+    List<double[]> outline = new ArrayList<>(p.outer.size());
+    for (double[] q : p.outer) {
+      if (Double.isFinite(q[0]) && Double.isFinite(q[1])) {
+        outline.add(q);
+      }
+    }
+    if (outline.size() < 3) {
+      return;
+    }
+    Style2D s = p.style;
+    java.awt.Color fill = s.effectiveFill();
+    series.add("{ type: 'custom', silent: true, animation: false, tooltip: { show: false },"
+        + " data: [0], renderItem: function (params, api) { return { type: 'polygon',"
+        + " shape: { points: " + pairs(outline) + ".map(function (q) { return api.coord(q); }) },"
+        + " style: { fill: " + color(fill) + ", opacity: " + num(opacity(fill, s)) + " } }; } }");
   }
 
   /** A label, as an invisible point that shows its text. */

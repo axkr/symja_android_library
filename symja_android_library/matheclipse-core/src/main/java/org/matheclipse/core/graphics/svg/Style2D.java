@@ -90,6 +90,12 @@ public final class Style2D implements Cloneable {
    */
   public String tooltip = null;
 
+  /**
+   * True for the interval markers drawn around uncertain coordinates: they belong to a curve
+   * rather than being one, so a renderer that names its curves (a legend) must skip them.
+   */
+  public boolean intervalMarker = false;
+
   public String fontFamily = "sans-serif";
   public double fontSize = 12.0;
   public String fontWeight = "normal";

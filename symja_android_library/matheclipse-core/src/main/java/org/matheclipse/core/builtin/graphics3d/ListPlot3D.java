@@ -9,6 +9,8 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.IntervalMarkerType;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
@@ -62,7 +64,10 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       int cols = ((IAST) firstRow).argSize();
       // three columns of numbers are {x, y, z} triples. DataRange used to be part of this test,
       // so giving it silently reinterpreted a coordinate list as a rectangular height array.
-      if (cols == 3 && ((IAST) firstRow).forAll(x -> x.isNumber())) {
+      // the height may be uncertain (Around, Interval, IntervalData), the position may not
+      IAST triple = (IAST) firstRow;
+      if (cols == 3 && triple.arg1().isNumber() && triple.arg2().isNumber()
+          && (triple.arg3().isNumber() || UncertainValue.isUncertain(triple.arg3()))) {
         treatAsCoordinates = true;
       }
     }
@@ -160,6 +165,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
     // 1. Extract Points and Register with Builder
     List<PointXYZ> points = new ArrayList<>(n);
+    List<double[]> bars = new ArrayList<>();
     for (int i = 1; i <= n; i++) {
       if (!data.get(i).isList() || ((IAST) data.get(i)).argSize() != 3) {
         return F.NIL;
@@ -167,13 +173,14 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       IAST row = (IAST) data.get(i);
       double x = row.arg1().evalfNaN();
       double y = row.arg2().evalfNaN();
-      double z = row.arg3().evalfNaN();
+      double z = height(row.arg3());
 
       if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z) && !Double.isInfinite(x)
           && !Double.isInfinite(y) && !Double.isInfinite(z)
           && (region == null || region.accepts(x, y, z))) {
         int idx = builder.addVertex(x, y, z, null, null);
         points.add(new PointXYZ(x, y, z, idx));
+        addBar(bars, x, y, row.arg3());
       }
     }
 
@@ -184,6 +191,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     for (Triangle t : triangles) {
       builder.addPolygon(t.p1, t.p2, t.p3); // Triangulator retains builder indices
     }
+    addIntervalMarkers(builder, bars, originalAST);
 
     IExpr graphicsComplex = builder.build();
     if (graphicsComplex.equals(F.NIL)) {
@@ -235,6 +243,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     // the grid is handed to the shared surface builder, so this plot gets the same winding,
     // vertex normals and mesh lines as the ones that sample a function
     double[][][] grid = new double[rows][cols][];
+    List<double[]> bars = new ArrayList<>();
     for (int i = 1; i <= rows; i++) {
       IExpr arg = heightData.get(i);
       if (!arg.isAST() || arg.argSize() != cols) {
@@ -245,9 +254,10 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
       for (int j = 1; j <= cols; j++) {
         double x = (cols > 1) ? xMin + (j - 1) * (xMax - xMin) / (cols - 1.0) : xMin;
-        double z = row.get(j).evalfNaN();
+        double z = height(row.get(j));
         if (Double.isFinite(z) && (region == null || region.accepts(x, y, z))) {
           grid[i - 1][j - 1] = new double[] {x, y, z};
+          addBar(bars, x, y, row.get(j));
         }
       }
     }
@@ -269,6 +279,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colors != null);
     Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
     Plot3DTools.addSurface(builder, grid, false, false, colors, true, meshOpt, meshStyleOpt);
+    addIntervalMarkers(builder, bars, originalAST);
 
     // the rim of the surface, and the rim of every hole a RegionFunction or a datum without a
     // value left in it; Automatic draws it, as Mathematica does
@@ -281,6 +292,60 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),
             F.Rule(S.BoxRatios, boxRatiosOpt.isList() ? boxRatiosOpt : Plot3DTools.FLAT_BOX_RATIOS),
             F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+  }
+
+  /** A height: a number, or the centre of an {@code Around}, {@code Interval} or {@code IntervalData}. */
+  private static double height(IExpr expr) {
+    if (expr.isAST() && UncertainValue.isUncertain(expr)) {
+      return UncertainValue.center(expr);
+    }
+    return expr.evalfNaN();
+  }
+
+  /** Record the {x, y, lower, upper} bar of an uncertain height. */
+  private static void addBar(List<double[]> bars, double x, double y, IExpr height) {
+    if (!height.isAST()) {
+      return;
+    }
+    UncertainValue uncertain = UncertainValue.of(height);
+    if (uncertain != null && uncertain.hasExtent()) {
+      bars.add(new double[] {x, y, uncertain.lo, uncertain.hi});
+    }
+  }
+
+  /**
+   * The interval markers of uncertain heights: a bar or a tube from the lower to the upper limit.
+   *
+   * <p>
+   * The heights of the surface are numbers in the vertex table, so unlike a point plot the markers
+   * cannot be left to the renderer and are drawn here, in a scope of their own so that neither
+   * their style nor the surface's leaks into the other. A surface hides a bar in its own colour, so
+   * they are dark unless {@code IntervalMarkersStyle} says otherwise.
+   */
+  private static void addIntervalMarkers(GraphicsComplexBuilder builder, List<double[]> bars,
+      IAST originalAST) {
+    IntervalMarkerType type = IntervalMarkerType
+        .of(GraphicsOptions.optionValue(originalAST, S.IntervalMarkers, S.Automatic));
+    if (bars.isEmpty() || type == IntervalMarkerType.NONE) {
+      return;
+    }
+    IExpr style = GraphicsOptions.optionValue(originalAST, S.IntervalMarkersStyle, S.Automatic);
+    if (style.isAutomatic()) {
+      style = F.GrayLevel(F.num(0.2));
+    }
+    double zMin = Double.MAX_VALUE;
+    double zMax = -Double.MAX_VALUE;
+    IASTAppendable lines = F.ListAlloc(bars.size());
+    for (double[] bar : bars) {
+      lines.append(F.List(F.List(F.num(bar[0]), F.num(bar[1]), F.num(bar[2])),
+          F.List(F.num(bar[0]), F.num(bar[1]), F.num(bar[3]))));
+      zMin = Math.min(zMin, bar[2]);
+      zMax = Math.max(zMax, bar[3]);
+    }
+    IExpr marker = type == IntervalMarkerType.TUBES
+        ? F.binaryAST2(S.Tube, lines, F.num(Math.max(1e-6, 0.01 * (zMax - zMin))))
+        : F.Line(lines);
+    builder.addPrimitive(F.List(style, marker));
   }
 
   private boolean isRectangularArray(IAST list) {

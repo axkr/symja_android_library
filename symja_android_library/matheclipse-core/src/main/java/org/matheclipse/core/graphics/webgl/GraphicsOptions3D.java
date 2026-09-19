@@ -6,6 +6,7 @@ import java.util.List;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.PlotRangePaddingSpec;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -150,6 +151,10 @@ public final class GraphicsOptions3D {
    * is what makes {@code BaseStyle -> Red} colour a whole graphic without touching its primitives.
    */
   public IExpr baseStyle = null;
+
+  /** {@code IntervalMarkers} and {@code IntervalMarkersStyle}, or {@code null} when not given. */
+  public IExpr intervalMarkers = null;
+  public IExpr intervalMarkersStyle = null;
 
   /** Field of view in degrees, or {@code NaN} to let the renderer fit the scene. */
   public double viewAngle = Double.NaN;
@@ -310,6 +315,12 @@ public final class GraphicsOptions3D {
           break;
         case ID.BaseStyle:
           baseStyle = value.isNone() ? null : value;
+          break;
+        case ID.IntervalMarkers:
+          intervalMarkers = value;
+          break;
+        case ID.IntervalMarkersStyle:
+          intervalMarkersStyle = value;
           break;
         case ID.ViewPoint:
           parseViewPoint(value);
@@ -964,13 +975,21 @@ public final class GraphicsOptions3D {
       return null;
     }
     IAST list = (IAST) expr;
-    double x = ColorUtil.dbl(list.arg1(), Double.NaN);
-    double y = ColorUtil.dbl(list.arg2(), Double.NaN);
-    double z = ColorUtil.dbl(list.arg3(), Double.NaN);
+    double x = coordinate(list.arg1());
+    double y = coordinate(list.arg2());
+    double z = coordinate(list.arg3());
     if (!Double.isFinite(x) || !Double.isFinite(y) || !Double.isFinite(z)) {
       return null;
     }
     return new double[] {x, y, z};
+  }
+
+  /** A number, or the centre of an {@code Around}, {@code Interval} or {@code IntervalData}. */
+  static double coordinate(IExpr expr) {
+    if (expr.isAST() && UncertainValue.isUncertain(expr)) {
+      return UncertainValue.center(expr);
+    }
+    return ColorUtil.dbl(expr, Double.NaN);
   }
 
   /** The plain text of a label expression, with the quotes a string carries removed. */

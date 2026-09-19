@@ -1567,7 +1567,7 @@ public class GraphicsOptions {
    */
   public static final IBuiltInSymbol[] PASS_THROUGH_OPTIONS = {S.FrameTicksStyle, S.TicksStyle,
       S.BaseStyle, S.RotateLabel, S.ImageMargins, S.PlotRegion, S.BaselinePosition, S.FormatType,
-      S.FrameMargins, S.ColorOutput};
+      S.FrameMargins, S.ColorOutput, S.IntervalMarkers, S.IntervalMarkersStyle};
 
   /** The {@link #PASS_THROUGH_OPTIONS} the call gave, as rules; {@link F#NIL} if none. */
   private IASTAppendable passThroughRules = F.NIL;

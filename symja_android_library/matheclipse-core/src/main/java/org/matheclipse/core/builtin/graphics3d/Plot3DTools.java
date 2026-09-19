@@ -181,7 +181,8 @@ public final class Plot3DTools {
 
   /** The options of a plot that takes explicit data rather than a function. */
   public static GraphicsOptions.OptionSet listExtras(GraphicsOptions.OptionSet set) {
-    return surfaceExtras(set).add(S.Automatic, S.DataRange, S.InterpolationOrder, S.MaxPlotPoints);
+    return surfaceExtras(set).add(S.Automatic, S.DataRange, S.InterpolationOrder, S.MaxPlotPoints,
+        S.IntervalMarkers, S.IntervalMarkersStyle);
   }
 
   /**
@@ -1393,6 +1394,6 @@ public final class Plot3DTools {
         || key == S.TicksStyle || key == S.LabelStyle
         || key == S.ViewPoint || key == S.ViewVertical || key == S.ViewAngle || key == S.ViewCenter
         || key == S.ViewProjection || key == S.ViewRange || key == S.SphericalRegion
-        || key == S.ScalingFunctions;
+        || key == S.ScalingFunctions || key == S.IntervalMarkers || key == S.IntervalMarkersStyle;
   }
 }

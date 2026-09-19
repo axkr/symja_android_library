@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.PlotWrapper;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -80,10 +81,15 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
     // parallel to perDataset: the label of each point, or NIL. A point label cannot ride on the
     // drawn geometry, because one Point primitive holds every point of a dataset.
     List<List<IExpr>> perDatasetLabels = new ArrayList<>();
+    // parallel to perDataset: a point with an Around, Interval or IntervalData coordinate as written,
+    // or null. Such a point is drawn from its own coordinates so the renderer adds its interval
+    // markers; the vertex table of the complex only holds numbers.
+    List<List<IAST>> perDatasetUncertain = new ArrayList<>();
     IExpr[] datasetLabels = new IExpr[datasets.size()];
     for (int i = 1; i < datasets.size(); i++) {
       List<double[]> coordinates = new ArrayList<>();
       List<IExpr> labels = new ArrayList<>();
+      List<IAST> uncertain = new ArrayList<>();
       PlotWrapper datasetWrapper = PlotWrapper.of(datasets.get(i));
       datasetLabels[i] = datasetWrapper.tooltip;
       if (datasetWrapper.datum.isList()) {
@@ -91,7 +97,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
         if (isHeightMap) {
           collectHeightMap(dataset, dataRange, coordinates, region);
         } else {
-          collectCoordinates(dataset, coordinates, labels, region);
+          collectCoordinates(dataset, coordinates, labels, uncertain, region);
         }
       }
       while (labels.size() < coordinates.size()) {
@@ -99,6 +105,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       }
       perDataset.add(coordinates);
       perDatasetLabels.add(labels);
+      perDatasetUncertain.add(uncertain);
     }
     double[] box = extentOf(perDataset);
     PlotColorFunction pointColors = Plot3DTools
@@ -113,15 +120,32 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
         continue;
       }
       List<IExpr> labels = perDatasetLabels.get(i);
+      List<IAST> uncertain = perDatasetUncertain.get(i);
       IASTAppendable indices = F.ListAlloc(coordinates.size());
       // a labelled point is drawn by itself so that the label has a primitive of its own to sit
       // on; the rest stay in the one batched Point they were always in
       IASTAppendable labelled = F.ListAlloc(4);
+      IASTAppendable uncertainPoints = F.ListAlloc(4);
       for (int k = 0; k < coordinates.size(); k++) {
         double[] point = coordinates.get(k);
         IExpr color = pointColors == null ? null : pointColors.color(point[0], point[1], point[2]);
-        IExpr index = F.ZZ(builder.addVertex(point[0], point[1], point[2], null, color));
         IExpr label = k < labels.size() ? labels.get(k) : F.NIL;
+        IAST exact = k < uncertain.size() ? uncertain.get(k) : null;
+        IExpr index = F.ZZ(builder.addVertex(point[0], point[1], point[2], null, color));
+        if (exact != null) {
+          // drawn from its own coordinates; the vertex above only keeps the table from being empty
+          // when every point is uncertain, since a complex without vertices is no complex at all
+          if (color == null && label.isNIL()) {
+            uncertainPoints.append(exact);
+            continue;
+          }
+          IExpr drawn = F.Point(exact);
+          if (color != null) {
+            drawn = F.List(color, drawn);
+          }
+          labelled.append(label.isPresent() ? F.binaryAST2(S.Tooltip, drawn, label) : drawn);
+          continue;
+        }
         if (label.isPresent()) {
           labelled.append(F.binaryAST2(S.Tooltip, F.Point(F.List(index)), label));
         } else {
@@ -140,6 +164,12 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
             datasetLabel != null && datasetLabel.isPresent()
                 ? F.binaryAST2(S.Tooltip, batched, datasetLabel)
                 : batched);
+      }
+      if (uncertainPoints.argSize() > 0) {
+        IExpr drawn = F.Point(uncertainPoints);
+        builder.addPrimitive(datasetLabel != null && datasetLabel.isPresent()
+            ? F.binaryAST2(S.Tooltip, drawn, datasetLabel)
+            : drawn);
       }
       for (int k = 1; k < labelled.size(); k++) {
         builder.addPrimitive(labelled.get(k));
@@ -232,7 +262,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   private static void collectCoordinates(IAST dataset, List<double[]> coordinates,
-      List<IExpr> labels, RegionFunctionFilter region) {
+      List<IExpr> labels, List<IAST> uncertain, RegionFunctionFilter region) {
     for (int k = 1; k < dataset.size(); k++) {
       // a display wrapper says how the point is shown, not where it is; one left on used to make
       // the point vanish from the plot with nothing said
@@ -241,14 +271,17 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       if (!point.isList3()) {
         continue;
       }
-      double x = point.first().evalfNaN();
-      double y = point.second().evalfNaN();
-      double z = point.last().evalfNaN();
+      double x = coordinate(point.first());
+      double y = coordinate(point.second());
+      double z = coordinate(point.last());
       // a point that cannot be evaluated is left out; it used to abandon the whole plot
       if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)
           && (region == null || region.accepts(x, y, z))) {
         coordinates.add(new double[] {x, y, z});
         labels.add(wrapper.tooltip);
+        uncertain.add(((IAST) point).exists(c -> c.isAST() && UncertainValue.isUncertain(c))
+            ? (IAST) point
+            : null);
       }
     }
   }
@@ -297,6 +330,14 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
     builder.addPrimitive(F.Line(stems));
     // the points are drawn after the stems again, so they keep their own colour
     builder.addPrimitive(pointStyle);
+  }
+
+  /** A number, or the centre of an {@code Around}, {@code Interval} or {@code IntervalData}. */
+  private static double coordinate(IExpr expr) {
+    if (expr.isAST() && UncertainValue.isUncertain(expr)) {
+      return UncertainValue.center(expr);
+    }
+    return expr.evalfNaN();
   }
 
   private static double[] pair(IExpr expr) {
