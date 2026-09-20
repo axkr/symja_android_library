@@ -32,9 +32,11 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.QuadraticDiophantine;
+import org.matheclipse.core.polynomials.PolynomialHomogenization;
 
 public class Reduce extends AbstractFunctionOptionEvaluator {
   // Internal signal to indicate successful absorption into the variable interval
@@ -1152,6 +1154,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   private static IExpr reducePeriodicEquation(IAST equation, IExpr variable, ISymbol domain,
       EvalEngine engine) {
     IExpr f = engine.evaluate(F.Subtract(equation.arg1(), equation.arg2()));
+    // a*Sin(u)+b*Cos(u) is one Sin(), so that the equation has a single periodic term
+    f = combineLinearSinCos(f, variable, engine).orElse(f);
     PeriodicTerm term = parsePeriodicTerm(f, variable, Reduce::isForwardPeriodicFunction);
     if (term == null) {
       return F.NIL;
@@ -1297,7 +1301,11 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     IExpr parameter = branchConditions.iterator().next().first();
     IExpr[] linear = value.linear(parameter);
     if (linear == null) {
-      return F.NIL;
+      // a quotient like `(Log(8)+2*I*Pi*C(1))/Log(2)` only reads as linear when it is expanded
+      linear = engine.evaluate(F.Expand(value)).linear(parameter);
+      if (linear == null) {
+        return F.NIL;
+      }
     }
     IExpr offset = linear[0];
     IExpr period = linear[1];
@@ -1666,101 +1674,6 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Reduce a single non polynomial equation in one variable with {@link S#Solve}, which knows the
-   * inverse functions the reduction itself doesn't, e.g. <code>Sqrt(x)==x-2</code> or
-   * <code>Log(x)^2==1</code>.
-   *
-   * <p>
-   * {@code Solve} may lose or add solutions, so its answer is only accepted if every value it
-   * returns fulfills the equation. An empty solution list proves nothing (over the reals
-   * {@code Solve} returns it for a periodic equation it declines), so it stays unevaluated.
-   *
-   * @param equation an {@link S#Equal} equation
-   * @param variable the variable to solve for
-   * @param domain {@link S#Reals} or {@link S#Complexes}
-   * @param engine the evaluation engine
-   * @return the solution set or {@link F#NIL} if the equation isn't solved this way
-   */
-  private static IExpr reduceEquationBySolve(IAST equation, IExpr variable, ISymbol domain,
-      EvalEngine engine) {
-    if (!equation.isAST2()) {
-      return F.NIL;
-    }
-    IExpr f = engine.evaluate(F.Subtract(equation.arg1(), equation.arg2()));
-    if (f.isFree(variable) || f.isPolynomial(variable)) {
-      // a polynomial equation is solved exactly by `Roots`
-      return F.NIL;
-    }
-    if (new VariablesSet(f).size() != 1) {
-      // a parametric equation needs conditions on the parameters which `Solve` doesn't give
-      return F.NIL;
-    }
-    if (domain != S.Reals && containsPiecewiseFunction(f, variable)) {
-      // `Solve` returns the real solutions of a piecewise defined function like `Abs`; over the
-      // complexes `Abs(x)==1` describes the whole unit circle, so the reduction declines instead
-      return F.NIL;
-    }
-    // `Solve` returns an empty list for a periodic equation over the reals, so the complete
-    // complex solution set is computed and filtered for its real members here
-    IExpr solutions = engine.evalQuiet(F.Solve(equation, variable, S.Complexes));
-    if (!solutions.isListOfLists() || solutions.isEmptyList()) {
-      return F.NIL;
-    }
-    IAST solutionList = (IAST) solutions;
-    Set<IExpr> integerConditions = new LinkedHashSet<IExpr>();
-    IASTAppendable orEqualities = F.OrAlloc(solutionList.size());
-    for (int i = 1; i < solutionList.size(); i++) {
-      IExpr solution = solutionList.get(i);
-      if (!solution.isList1() || !solution.first().isRule()) {
-        return F.NIL;
-      }
-      IAST rule = (IAST) solution.first();
-      if (!rule.first().equals(variable)) {
-        return F.NIL;
-      }
-      IExpr value = rule.second();
-      Set<IExpr> branchConditions = new LinkedHashSet<IExpr>();
-      if (value.isConditionalExpression()) {
-        if (!collectIntegerConditions(value.second(), branchConditions)) {
-          return F.NIL;
-        }
-        value = value.first();
-      }
-      if (domain == S.Reals) {
-        IExpr realValue = realFamilyMember(value, branchConditions, engine);
-        if (realValue.isNIL()) {
-          return F.NIL;
-        }
-        if (realValue.isFalse()) {
-          continue;
-        }
-        if (!realValue.equals(value)) {
-          branchConditions.clear();
-        }
-        value = realValue;
-      }
-      if (!verifiesEquation(f, variable, value, branchConditions, engine)) {
-        return F.NIL;
-      }
-      integerConditions.addAll(branchConditions);
-      orEqualities.append(F.Equal(variable, value));
-    }
-    if (orEqualities.isAST0()) {
-      return domain == S.Reals ? S.False : F.NIL;
-    }
-    IExpr orExpr = orEqualities.isAST1() ? orEqualities.arg1() : orEqualities;
-    if (integerConditions.isEmpty()) {
-      return engine.evaluate(orExpr);
-    }
-    IASTAppendable result = F.ast(S.And, integerConditions.size() + 1);
-    for (IExpr condition : integerConditions) {
-      result.append(condition);
-    }
-    result.append(orExpr);
-    return engine.evaluate(result);
-  }
-
-  /**
    * Verify that the value solves the equation <code>f == 0</code>. A solution family is verified at
    * the members with the integer parameters set to <code>0</code> and <code>1</code>.
    *
@@ -1870,6 +1783,16 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    */
   private static boolean splitPeriodicFamily(IExpr family, IExpr variable,
       IASTAppendable conditions, IASTAppendable values) {
+    if (family.isOr() && family.first().isAnd()) {
+      // a disjunction of families, e.g. the two families of `Sin(x)^2==1/4`
+      IAST or = (IAST) family;
+      for (int i = 1; i < or.size(); i++) {
+        if (!splitPeriodicFamily(or.get(i), variable, conditions, values)) {
+          return false;
+        }
+      }
+      return values.argSize() > 0;
+    }
     IExpr roots = family;
     if (family.isAnd()) {
       IAST and = (IAST) family;
@@ -2037,7 +1960,11 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
     IExpr family = reducePeriodicEquation((IAST) equation, variable, S.Reals, engine);
     if (family.isNIL()) {
-      family = reduceEquationBySolve((IAST) equation, variable, S.Reals, engine);
+      // the other reductions of a single equation, e.g. a polynomial in one kernel
+      family = engine.evalQuiet(F.Reduce(equation, variable, S.Reals));
+      if (!family.isFree(S.Reduce)) {
+        family = F.NIL;
+      }
     }
     if (family.isNIL()) {
       return F.NIL;
@@ -2291,6 +2218,290 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Reduce an equation which the inverse of <code>u*E^u</code>, {@link S#ProductLog}, solves:
+   * <code>u*Log(u) == z</code> gives <code>u == z/ProductLog(z)</code>. An equation
+   * <code>g^h == c</code> whose base and exponent both contain the variable is brought into that
+   * form by taking logarithms.
+   *
+   * @param equation an {@link S#Equal} equation
+   * @param variable the variable to solve for
+   * @param domain the reduction domain ({@link S#Reals} or {@link S#Complexes})
+   * @param engine the evaluation engine
+   * @return the reduced expression or {@link F#NIL} if the equation isn't of that form
+   */
+  private static IExpr reduceLambertWEquation(IAST equation, IExpr variable, ISymbol domain,
+      EvalEngine engine) {
+    if (domain != S.Reals) {
+      // taking logarithms keeps only the principal branch
+      return F.NIL;
+    }
+    IExpr lhs = equation.arg1();
+    IExpr rhs = equation.arg2();
+    if (lhs.isFree(variable) && !rhs.isFree(variable)) {
+      IExpr swap = lhs;
+      lhs = rhs;
+      rhs = swap;
+    }
+    if (!rhs.isFree(variable) || !rhs.isPositiveResult()) {
+      return F.NIL;
+    }
+    if (lhs.isPower() && !lhs.base().isFree(variable) && !lhs.exponent().isFree(variable)) {
+      // g^h == c => h*Log(g) == Log(c)
+      IExpr logged = engine.evalQuiet(F.Reduce(
+          F.Equal(F.Times(lhs.exponent(), F.Log(lhs.base())), F.Log(rhs)), variable, domain));
+      return logged.isFree(S.Reduce) ? logged : F.NIL;
+    }
+    // u*Log(u) == z => u == z/ProductLog(z)
+    if (lhs.isTimes() && lhs.size() == 3) {
+      IAST times = (IAST) lhs;
+      IExpr u = F.NIL;
+      if (times.arg2().isLog() && times.arg2().first().equals(times.arg1())) {
+        u = times.arg1();
+      } else if (times.arg1().isLog() && times.arg1().first().equals(times.arg2())) {
+        u = times.arg2();
+      }
+      if (u.isPresent() && !u.isFree(variable)) {
+        IExpr value = engine.evaluate(F.Divide(rhs, F.ProductLog(rhs)));
+        IExpr reduced = engine.evalQuiet(F.Reduce(F.Equal(u, value), variable, domain));
+        return reduced.isFree(S.Reduce) ? reduced : F.NIL;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Rewrite <code>a*Sin(u) + b*Cos(u)</code> as the single term
+   * <code>Sqrt(a^2+b^2)*Sin(u+ArcTan(a,b))</code>, so that an equation which mixes both functions
+   * has one periodic term and can be inverted.
+   *
+   * @param f the left hand side of the equation <code>f == 0</code>
+   * @param variable the variable of the reduction
+   * @param engine the evaluation engine
+   * @return the rewritten expression or {@link F#NIL} if <code>f</code> has no such pair
+   */
+  private static IExpr combineLinearSinCos(IExpr f, IExpr variable, EvalEngine engine) {
+    if (!f.isPlus()) {
+      return F.NIL;
+    }
+    IAST plusAST = (IAST) f;
+    IExpr argument = F.NIL;
+    IExpr sinCoefficient = F.NIL;
+    IExpr cosCoefficient = F.NIL;
+    IASTAppendable rest = F.PlusAlloc(plusAST.size());
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr term = plusAST.get(i);
+      if (term.isFree(variable)) {
+        rest.append(term);
+        continue;
+      }
+      IExpr coefficient = F.C1;
+      IExpr function = term;
+      if (term.isTimes()) {
+        IAST[] timesFilter = ((IAST) term).filter(x -> x.isFree(variable));
+        coefficient = timesFilter[0].oneIdentity1();
+        function = timesFilter[1].oneIdentity1();
+      }
+      if (!function.isSin() && !function.isCos()) {
+        return F.NIL;
+      }
+      if (argument.isNIL()) {
+        argument = function.first();
+      } else if (!argument.equals(function.first())) {
+        return F.NIL;
+      }
+      if (function.isSin()) {
+        if (sinCoefficient.isPresent()) {
+          return F.NIL;
+        }
+        sinCoefficient = coefficient;
+      } else {
+        if (cosCoefficient.isPresent()) {
+          return F.NIL;
+        }
+        cosCoefficient = coefficient;
+      }
+    }
+    if (sinCoefficient.isNIL() || cosCoefficient.isNIL()) {
+      return F.NIL;
+    }
+    // a*Sin(u)+b*Cos(u) == R*Sin(u+phi) with R*Cos(phi) == a and R*Sin(phi) == b
+    IExpr r = engine.evaluate(F.Sqrt(F.Plus(F.Sqr(sinCoefficient), F.Sqr(cosCoefficient))));
+    IExpr phi = engine.evaluate(F.ArcTan(sinCoefficient, cosCoefficient));
+    if (!r.isFree(variable) || !phi.isFree(variable) || phi.isIndeterminate()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Plus(F.Times(r, F.Sin(F.Plus(argument, phi))), rest.oneIdentity0()));
+  }
+
+  /**
+   * Reduce an equation <code>amplitude*u^(1/q) + rest == 0</code> whose only variable-dependent
+   * term is a radical: the equation <code>u^(1/q) == v</code> is inverted as <code>u == v^q</code>
+   * and every solution is verified against the equation, because the principal root
+   * <code>u^(1/q)</code> takes only one of the <code>q</code> values of <code>v</code>.
+   *
+   * @param equation an {@link S#Equal} equation
+   * @param variable the variable to solve for
+   * @param domain the reduction domain ({@link S#Reals} or {@link S#Complexes})
+   * @param engine the evaluation engine
+   * @return the reduced expression or {@link F#NIL} if the equation isn't a supported radical
+   *         equation
+   */
+  private static IExpr reduceRadicalEquation(IAST equation, IExpr variable, ISymbol domain,
+      EvalEngine engine) {
+    IExpr f = engine.evaluate(F.Subtract(equation.arg1(), equation.arg2()));
+    if (f.isFree(variable) || f.isPolynomial(variable)) {
+      return F.NIL;
+    }
+    IAST plusAST = f.isPlus() ? (IAST) f : F.Plus(f);
+    IExpr radicalTerm = F.NIL;
+    IASTAppendable restParts = F.PlusAlloc(plusAST.size());
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr term = plusAST.get(i);
+      if (term.isFree(variable)) {
+        restParts.append(term);
+      } else if (radicalTerm.isNIL()) {
+        radicalTerm = term;
+      } else {
+        return F.NIL;
+      }
+    }
+    if (radicalTerm.isNIL()) {
+      return F.NIL;
+    }
+
+    // amplitude * u^(1/q)
+    IExpr amplitude = F.C1;
+    IExpr power = radicalTerm;
+    if (radicalTerm.isTimes()) {
+      IAST[] timesFilter = ((IAST) radicalTerm).filter(x -> x.isFree(variable));
+      amplitude = timesFilter[0].oneIdentity1();
+      power = timesFilter[1].oneIdentity1();
+    }
+    if (!power.isPower() || !power.exponent().isRational()) {
+      return F.NIL;
+    }
+    IRational exponent = (IRational) power.exponent();
+    if (!exponent.numerator().isOne()) {
+      // only a pure root has a unique inverse
+      return F.NIL;
+    }
+    int q = exponent.denominator().toIntDefault();
+    if (F.isNotPresent(q) || q < 2) {
+      return F.NIL;
+    }
+
+    // u^(1/q) == v => u == v^q
+    IExpr v = engine.evaluate(F.Divide(F.Negate(restParts.oneIdentity0()), amplitude));
+    IExpr inverted = engine.evalQuiet(
+        F.Reduce(F.Equal(power.base(), engine.evaluate(F.Power(v, F.ZZ(q)))), variable, domain));
+    return verifiedSolutions(inverted, f, variable, engine);
+  }
+
+  /**
+   * Reduce an equation which is a polynomial of degree {@literal >=} 2 in a single kernel
+   * <code>g(variable)</code>: the roots of that polynomial are determined and every equation
+   * <code>g(variable) == root</code> is reduced on its own, as in the <i>Homogenization</i> method
+   * of PRESS.
+   *
+   * @param equation an {@link S#Equal} equation
+   * @param variable the variable to solve for
+   * @param domain the reduction domain ({@link S#Reals} or {@link S#Complexes})
+   * @param engine the evaluation engine
+   * @return the reduced expression or {@link F#NIL} if the equation isn't a polynomial in one
+   *         kernel
+   */
+  private static IExpr reduceEquationByKernel(IAST equation, IExpr variable, ISymbol domain,
+      EvalEngine engine) {
+    IExpr f = engine.evaluate(F.Subtract(equation.arg1(), equation.arg2()));
+    if (f.isFree(variable) || f.isPolynomial(variable)) {
+      return F.NIL;
+    }
+    if (new VariablesSet(f).size() != 1) {
+      // a parametric equation needs conditions on the parameters
+      return F.NIL;
+    }
+    PolynomialHomogenization homogenization = new PolynomialHomogenization(engine, true);
+    IExpr poly = homogenization.replaceForward(f);
+    Set<ISymbol> kernelVariables = homogenization.substitutedVariablesSet();
+    if (poly.isNIL() || kernelVariables.size() != 1) {
+      return F.NIL;
+    }
+    ISymbol kernelVariable = kernelVariables.iterator().next();
+    IExpr kernel = homogenization.replaceBackward(kernelVariable);
+    if (kernel.equals(variable) || !poly.isPolynomial(kernelVariable)) {
+      return F.NIL;
+    }
+    long degree = S.Exponent.of(engine, poly, kernelVariable).toLongDefault();
+    if (F.isNotPresent(degree) || degree < 2) {
+      // `g(variable) == value` is inverted by the other reductions, not by this one
+      return F.NIL;
+    }
+    IExpr roots =
+        S.Roots.ofNIL(engine, F.Equal(engine.evaluate(poly), F.C0), kernelVariable);
+    if (roots.isNIL() || !roots.isFree(S.Roots)) {
+      return F.NIL;
+    }
+    IAST rootList = roots.isOr() ? (IAST) roots : F.Or(roots);
+    IASTAppendable orResult = F.OrAlloc(rootList.size());
+    for (int i = 1; i < rootList.size(); i++) {
+      IExpr root = rootList.get(i);
+      if (!root.isEqual() || !root.first().equals(kernelVariable)) {
+        return F.NIL;
+      }
+      IExpr reduced =
+          engine.evalQuiet(F.Reduce(F.Equal(kernel, root.second()), variable, domain));
+      if (reduced.isFalse()) {
+        continue;
+      }
+      if (!reduced.isFree(S.Reduce)) {
+        // one of the kernel equations isn't reduced, so the solution set stays incomplete
+        return F.NIL;
+      }
+      orResult.append(reduced);
+    }
+    if (orResult.isAST0()) {
+      return S.False;
+    }
+    return engine.evaluate(orResult.oneIdentity1());
+  }
+
+  /**
+   * Keep the solutions of <code>reduced</code> which satisfy <code>f == 0</code>.
+   *
+   * @param reduced the reduction of an equation which may have gained solutions, e.g. by raising
+   *        both of its sides to a power
+   * @param f the left hand side of the original equation <code>f == 0</code>
+   * @param variable the variable of the reduction
+   * @param engine the evaluation engine
+   * @return the verified reduction, {@link S#False} if no solution survives, or {@link F#NIL} if
+   *         <code>reduced</code> isn't a disjunction of <code>variable == value</code> equations
+   */
+  private static IExpr verifiedSolutions(IExpr reduced, IExpr f, IExpr variable,
+      EvalEngine engine) {
+    if (reduced.isFalse()) {
+      return S.False;
+    }
+    if (reduced.isNIL() || !reduced.isFree(S.Reduce)) {
+      return F.NIL;
+    }
+    IAST orBranches = reduced.isOr() ? (IAST) reduced : F.Or(reduced);
+    IASTAppendable verified = F.OrAlloc(orBranches.size());
+    for (int i = 1; i < orBranches.size(); i++) {
+      IExpr branch = orBranches.get(i);
+      if (!branch.isEqual() || !branch.first().equals(variable)) {
+        return F.NIL;
+      }
+      if (valueSolvesEquation(f, variable, branch.second(), engine)) {
+        verified.append(branch);
+      }
+    }
+    if (verified.isAST0()) {
+      return S.False;
+    }
+    return engine.evaluate(verified.oneIdentity1());
+  }
+
+  /**
    * Test whether the given function head id refers to an inverse function whose principal branch
    * has a restricted range, so that {@link InverseFunctionExpander} returns its inverse under a
    * condition on the value instead of a periodic family.
@@ -2371,8 +2582,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    long precision = Solve.workingPrecision(ast, solveOptions.workingPrecision(), engine);
-    if (precision == Solve.INVALID_PRECISION) {
+    long precision = SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
+    if (precision == SolveUtils.INVALID_PRECISION) {
       return F.NIL;
     }
 
@@ -2381,7 +2592,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     result = renameGeneratedParameters(result, solveOptions.generatedParameters(), engine);
-    if (precision != Solve.MACHINE_PRECISION_REQUESTED) {
+    if (precision != SolveUtils.MACHINE_PRECISION_REQUESTED) {
       // the reduction itself is exact; the requested precision is applied to its result
       result = engine.evaluate(F.N(result, F.ZZ(precision)));
     }
@@ -2594,14 +2805,6 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      if (expr.isEqual() && (domain == S.Complexes || domain == S.Reals)) {
-        // a non polynomial equation which `Solve` can invert, e.g. `Sqrt(x)==x-2`
-        IExpr solved = reduceEquationBySolve((IAST) expr, variable, domain, engine);
-        if (solved.isPresent()) {
-          return solved;
-        }
-      }
-
       if (domain == S.Reals || elementDomains.get(variable) == S.Reals
           || containsOrderRelation(expr, variable)) {
         // a piecewise defined function of a real variable - Abs, Max, UnitStep, ... - is reduced
@@ -2646,6 +2849,21 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         IExpr inverseRange = reduceInverseFunctionEquation((IAST) expr, variable, domain, engine);
         if (inverseRange.isPresent()) {
           return inverseRange;
+        }
+        // a radical is inverted by raising the equation to its power, e.g. `Sqrt(x)==2`
+        IExpr radical = reduceRadicalEquation((IAST) expr, variable, domain, engine);
+        if (radical.isPresent()) {
+          return radical;
+        }
+        // a polynomial in one kernel, e.g. `Log(x)^2==1` in `Log(x)`
+        IExpr kernel = reduceEquationByKernel((IAST) expr, variable, domain, engine);
+        if (kernel.isPresent()) {
+          return kernel;
+        }
+        // the inverse of u*E^u solves it, e.g. `x^x==4`
+        IExpr lambertW = reduceLambertWEquation((IAST) expr, variable, domain, engine);
+        if (lambertW.isPresent()) {
+          return lambertW;
         }
       }
 
@@ -3276,8 +3494,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Reduce a system of relations over a discrete domain by enumerating the solutions which
-   * {@link S#Solve} finds for it.
+   * Reduce a system of relations over a discrete domain by reducing it over the
+   * {@link S#Complexes} first and keeping the solutions whose values belong to the domain.
    *
    * @param expr the condition of the reduction
    * @param vars the variables to reduce
@@ -3287,33 +3505,64 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr reduceIntegerSystem(IExpr expr, IAST vars, ISymbol domain,
       EvalEngine engine) {
-    IExpr solutions = engine.evalQuiet(F.Solve(expr, vars, domain));
-    if (!solutions.isListOfLists()) {
-      return F.NIL;
+    // the complex reduction determines the solutions exactly; it never reaches this method again,
+    // because the discrete domains are dispatched before it
+    IExpr reduced = engine.evalQuiet(F.Reduce(expr, vars, S.Complexes));
+    if (reduced.isFalse()) {
+      return S.False;
     }
-    IAST solutionList = (IAST) solutions;
-    IASTAppendable branches = F.ListAlloc(solutionList.argSize());
-    for (int i = 1; i < solutionList.size(); i++) {
-      IExpr solution = solutionList.get(i);
-      if (!solution.isListOfRules(false)) {
-        return F.NIL;
-      }
-      IAST rules = (IAST) solution;
-      IASTAppendable branch = F.ListAlloc(rules.size());
-      for (int j = 1; j < rules.size(); j++) {
-        IExpr rule = rules.get(j);
-        IExpr value = rule.second();
-        if (value.isConditionalExpression()) {
-          // a parametric family carries its `Element(C(k), Integers)` condition
-          branch.append(F.Equal(rule.first(), value.first()));
-          branch.append(value.second());
-        } else {
-          branch.append(F.Equal(rule.first(), value));
+    IAST orBranches = reduced.isOr() ? (IAST) reduced : F.Or(reduced);
+    IASTAppendable branches = F.ListAlloc(orBranches.argSize());
+    for (int i = 1; i < orBranches.size(); i++) {
+      IExpr orBranch = orBranches.get(i);
+      IAST conjunction = orBranch.isAnd() ? (IAST) orBranch : F.And(orBranch);
+      IASTAppendable branch = F.ListAlloc(conjunction.size());
+      Set<IExpr> determinedVariables = new LinkedHashSet<IExpr>();
+      boolean inDomain = true;
+      for (int j = 1; j < conjunction.size(); j++) {
+        IExpr relation = conjunction.get(j);
+        if (!relation.isEqual() || !vars.contains(relation.first())) {
+          // a parametric family or a relation between the variables isn't decided here
+          return F.NIL;
         }
+        IExpr value = relation.second();
+        if (!value.isNumber()) {
+          return F.NIL;
+        }
+        if (!isDomainMember(value, domain)) {
+          // this solution doesn't belong to the discrete domain
+          inDomain = false;
+          break;
+        }
+        determinedVariables.add(relation.first());
+        branch.append(relation);
+      }
+      if (!inDomain) {
+        continue;
+      }
+      if (determinedVariables.size() != vars.argSize()) {
+        // an undetermined variable would range over the whole domain
+        return F.NIL;
       }
       branches.append(branch);
     }
     return branchesToOr(branches, vars, engine);
+  }
+
+  /**
+   * Whether the number <code>value</code> belongs to the discrete <code>domain</code>.
+   *
+   * @param value a number
+   * @param domain {@link S#Integers}, {@link S#Primes} or {@link S#Rationals}
+   */
+  private static boolean isDomainMember(IExpr value, ISymbol domain) {
+    if (domain == S.Rationals) {
+      return value.isRational();
+    }
+    if (domain == S.Primes) {
+      return value.isInteger() && value.isPositive() && ((IInteger) value).isProbablePrime();
+    }
+    return value.isInteger();
   }
 
   /**

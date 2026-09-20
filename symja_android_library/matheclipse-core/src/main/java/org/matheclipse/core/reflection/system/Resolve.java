@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
+import org.matheclipse.core.eval.util.SolveUtils;
 
 /**
  * Resolve(expr) and Resolve(expr, domain) - eliminate the {@link S#ForAll} and {@link S#Exists}
@@ -82,8 +83,8 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    long precision = Solve.workingPrecision(ast, solveOptions.workingPrecision(), engine);
-    if (precision == Solve.INVALID_PRECISION) {
+    long precision = SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
+    if (precision == SolveUtils.INVALID_PRECISION) {
       return F.NIL;
     }
 
@@ -110,7 +111,7 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
     if (result.isNIL()) {
       return F.NIL;
     }
-    if (precision != Solve.MACHINE_PRECISION_REQUESTED) {
+    if (precision != SolveUtils.MACHINE_PRECISION_REQUESTED) {
       // the quantifier elimination itself is exact; the requested precision is applied to its
       // result
       result = engine.evaluate(F.N(result, F.ZZ(precision)));

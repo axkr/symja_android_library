@@ -740,9 +740,9 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "False");
     check("Reduce(Cosh(x) == 1/2, x, Reals)", //
         "False");
-    // the complex solutions are kept over the complexes
+    // the complex solutions are kept over the complexes; the principal branch is listed first
     check("Reduce(Sin(x) == 2, x, Complexes)", //
-        "C(1)∈Integers&&(x==Pi-ArcSin(2)+2*Pi*C(1)||x==ArcSin(2)+2*Pi*C(1))");
+        "C(1)∈Integers&&(x==ArcSin(2)+2*Pi*C(1)||x==Pi-ArcSin(2)+2*Pi*C(1))");
     // an imaginary period leaves the members with `C(1)==0`
     check("Reduce(Sinh(x) == 1, x, Reals)", //
         "x==ArcSinh(1)");
@@ -787,6 +787,66 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     // TODO the two branches +-ArcCosh(1) are both 0 and should be merged
     check("Reduce(Sech(x) == 1, x)", //
         "C(1)∈Integers&&(x==I*2*Pi*C(1)||x==I*2*Pi*C(1))");
+  }
+
+  /**
+   * A radical equation is inverted by raising it to the power of the root; a solution which the
+   * principal root doesn't take is dropped again.
+   */
+  @Test
+  public void testReduceRadicalEquation() {
+    check("Reduce(Sqrt(x) == 2, x)", //
+        "x==4");
+    check("Reduce(Sqrt(x) == 2, x, Reals)", //
+        "x==4");
+    check("Reduce(Sqrt(x - 1) == 2, x, Reals)", //
+        "x==5");
+    check("Reduce(2*Sqrt(x) == 6, x)", //
+        "x==9");
+    check("Reduce(x^(1/3) == 2, x)", //
+        "x==8");
+    // the principal root is never negative
+    check("Reduce(Sqrt(x) == -1, x)", //
+        "False");
+    check("Reduce(Sqrt(x) == -1, x, Reals)", //
+        "False");
+  }
+
+  /**
+   * An equation which is a polynomial in one kernel <code>g(x)</code> is reduced by the roots of
+   * that polynomial: every equation <code>g(x) == root</code> is reduced on its own.
+   */
+  @Test
+  public void testReduceEquationByKernel() {
+    // a polynomial in Log(x)
+    check("Reduce(Log(x)^2 == 1, x, Reals)", //
+        "x==1/E||x==E");
+    check("Reduce(Log(x)^2 == 1, x)", //
+        "x==1/E||x==E");
+    // a polynomial in E^x
+    check("Reduce(E^(2*x) - 3*E^x + 2 == 0, x, Reals)", //
+        "x==0||x==Log(2)");
+    // a polynomial in Sqrt(x): the root Sqrt(x)==-1 is dropped
+    check("Reduce(Sqrt(x) == x - 2, x, Reals)", //
+        "x==4");
+  }
+
+  /**
+   * <code>a*Sin(u)+b*Cos(u)</code> is one <code>Sin()</code>, so that an equation which mixes both
+   * functions has a single periodic term.
+   */
+  @Test
+  public void testReduceLinearSinCos() {
+    check("Reduce(Sin(x) == Cos(x), x)", //
+        "C(1)∈Integers&&(x==-3/4*Pi+2*Pi*C(1)||x==Pi/4+2*Pi*C(1))");
+    check("Reduce(Sin(x) == Cos(x) && 0 < x < 2*Pi, x)", //
+        "x==Pi/4||x==5/4*Pi");
+    // TODO the two Sin() branches coincide at the maximum and should be merged
+    check("Reduce(3*Sin(x) + 4*Cos(x) == 5, x, Reals)", //
+        "C(1)∈Integers&&(x==Pi/2-ArcTan(4/3)+2*Pi*C(1)||x==Pi/2-ArcTan(4/3)+2*Pi*C(1))");
+    // a*Sin(u)+b*Cos(u) never leaves [-Sqrt(a^2+b^2), Sqrt(a^2+b^2)]
+    check("Reduce(3*Sin(x) + 4*Cos(x) == 6, x, Reals)", //
+        "False");
   }
 
   /**

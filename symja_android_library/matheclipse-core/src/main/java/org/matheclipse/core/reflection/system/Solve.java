@@ -2313,46 +2313,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     return result;
   }
 
-  /**
-   * Determine the number of significant digits which {@link S#NSolve} and {@link S#NSolveValues}
-   * should compute with, either from the optional fourth argument
-   * <code>NSolve(equations, vars, domain, precision)</code> or from the {@link S#WorkingPrecision}
-   * option.
-   *
-   * @param ast the <code>NSolve(...)</code> ast
-   * @param option the value of the {@link S#WorkingPrecision} option
-   * @param engine the evaluation engine
-   * @return the number of significant digits, {@link #MACHINE_PRECISION_REQUESTED} for machine
-   *         precision or {@link #INVALID_PRECISION} if the requested precision isn't a positive
-   *         integer
-   */
-  public static long workingPrecision(IAST ast, IExpr option, EvalEngine engine) {
-    IExpr precisionExpr = F.NIL;
-    if (ast.size() == 5) {
-      precisionExpr = ast.arg4();
-    } else if (option.isPresent() && !option.isAutomatic()) {
-      precisionExpr = option;
-    }
-    if (precisionExpr.isNIL() || precisionExpr.isAutomatic()
-        || precisionExpr == S.MachinePrecision) {
-      return MACHINE_PRECISION_REQUESTED;
-    }
-    int precision = precisionExpr.toIntDefault();
-    if (precision < 1) {
-      // Requested precision `1` is smaller than `2`.
-      Errors.printMessage(ast.topHead(), "precsm", F.List(precisionExpr, F.C1), engine);
-      return INVALID_PRECISION;
-    }
-    return precision <= ParserConfig.MACHINE_PRECISION //
-        ? MACHINE_PRECISION_REQUESTED //
-        : precision;
-  }
-
-  /** {@link #workingPrecision(IAST, IExpr, EvalEngine)}: compute with machine numbers. */
-  public static final long MACHINE_PRECISION_REQUESTED = -1L;
-
-  /** {@link #workingPrecision(IAST, IExpr, EvalEngine)}: the requested precision is invalid. */
-  public static final long INVALID_PRECISION = 0L;
 
   /**
    * The largest distance between a numerically determined root and a rational number which still

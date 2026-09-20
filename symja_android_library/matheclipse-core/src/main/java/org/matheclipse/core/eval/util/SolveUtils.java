@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Solve;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class SolveUtils {
 
@@ -222,6 +223,46 @@ public class SolveUtils {
       collector.append(valueExpr);
     }
   }
+
+  /**
+   * Determine the number of significant digits a numeric evaluation should compute with, either
+   * from the optional fourth argument <code>NSolve(equations, vars, domain, precision)</code> or
+   * from the {@link S#WorkingPrecision} option.
+   *
+   * @param ast the <code>NSolve(...)</code> or <code>Reduce(...)</code> ast
+   * @param option the value of the {@link S#WorkingPrecision} option
+   * @param engine the evaluation engine
+   * @return the number of significant digits, {@link #MACHINE_PRECISION_REQUESTED} for machine
+   *         precision or {@link #INVALID_PRECISION} if the requested precision isn't a positive
+   *         integer
+   */
+  public static long workingPrecision(IAST ast, IExpr option, EvalEngine engine) {
+    IExpr precisionExpr = F.NIL;
+    if (ast.size() == 5) {
+      precisionExpr = ast.arg4();
+    } else if (option.isPresent() && !option.isAutomatic()) {
+      precisionExpr = option;
+    }
+    if (precisionExpr.isNIL() || precisionExpr.isAutomatic()
+        || precisionExpr == S.MachinePrecision) {
+      return MACHINE_PRECISION_REQUESTED;
+    }
+    int precision = precisionExpr.toIntDefault();
+    if (precision < 1) {
+      // Requested precision `1` is smaller than `2`.
+      Errors.printMessage(ast.topHead(), "precsm", F.List(precisionExpr, F.C1), engine);
+      return INVALID_PRECISION;
+    }
+    return precision <= ParserConfig.MACHINE_PRECISION //
+        ? MACHINE_PRECISION_REQUESTED //
+        : precision;
+  }
+
+  /** {@link #workingPrecision(IAST, IExpr, EvalEngine)}: compute with machine numbers. */
+  public static final long MACHINE_PRECISION_REQUESTED = -1L;
+
+  /** {@link #workingPrecision(IAST, IExpr, EvalEngine)}: the requested precision is invalid. */
+  public static final long INVALID_PRECISION = 0L;
 
   /**
    * Substitute the dummy {@link ExprAnalyzer#$InverseFunction} in the <code>expr</code> with the
