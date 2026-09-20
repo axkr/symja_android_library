@@ -925,7 +925,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IExpr variable = vars.get(i);
 
         IAST[] reduced = Eliminate.eliminateOneVariable(F.list(F.Equal(firstEquation, F.C0)),
-            variable, true, false, engine);
+            variable, true, engine);
         if (reduced != null) {
           // oneVariableRule = ( firstVariable -> reducedExpression )
           final IAST oneVariableRule = reduced[1];
@@ -1195,7 +1195,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     private IExpr solveTwoVariableSystem(IASTMutable termsEqualZeroList, boolean numericFlag,
         IExpr firstVariable, EvalEngine engine) {
       IExpr res =
-          eliminateOneVariable(termsEqualZeroList, firstVariable, true, false, numericFlag, engine);
+          eliminateOneVariable(termsEqualZeroList, firstVariable, true, numericFlag, engine);
       if (res.isNIL()) {
         if (numericFlag) {
           IExpr termEqualZero = termsEqualZeroList.arg1();
@@ -1245,14 +1245,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param termsEqualZeroList a list of expressions which equals zero.
      * @param variable the variable which should be eliminated in the term
      * @param multipleValues if <code>true</code> multiple results are returned as list of values
-     * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
-     *        complex solution branches to be returned as <code>ConditionalExpression</code> results
      * @param numeric evaluate in numericMode
      * @param engine
      * @return
      */
     private static IAST eliminateOneVariable(IAST termsEqualZeroList, IExpr variable,
-        boolean multipleValues, boolean periodicBranches, boolean numeric, EvalEngine engine) {
+        boolean multipleValues, boolean numeric, EvalEngine engine) {
       if (!termsEqualZeroList.arg1().isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(),
           true)) {
         return F.NIL;
@@ -1260,8 +1258,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // copy the termsEqualZeroList back to a list of F.Equal(...) expressions
       // because Eliminate() operates on equations.
       IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Slot1, F.C0), 1);
-      IAST[] tempAST = Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues,
-          periodicBranches, engine);
+      IAST[] tempAST = Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues, engine);
       if (tempAST != null) {
         IAST lastRuleUsedForVariableElimination = tempAST[1];
         if (lastRuleUsedForVariableElimination != null) {
@@ -1874,7 +1871,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             if (clonedEqualZeroList.size() == 2 && variables.size() == 2) {
               IExpr firstVariable = variables.arg1();
               IExpr res = eliminateOneVariable(clonedEqualZeroList, firstVariable, multipleValues,
-                  true, numericFlag, engine);
+                  numericFlag, engine);
               if (res.isNIL()) {
                 if (numericFlag) {
                   // find numerically with start value 0

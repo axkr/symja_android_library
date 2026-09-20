@@ -12,19 +12,23 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.eval.util.InverseFunctionExpander;
+import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -34,6 +38,7 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
+import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.reflection.system.rulesets.EliminateRules;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import com.google.common.base.Suppliers;
@@ -66,10 +71,10 @@ import com.google.common.base.Suppliers;
  *
  * <pre>
  * &gt;&gt;&gt; Eliminate({x==2+y, y==z}, y)
- * x==2+z
+ * x-z==2
  * </pre>
  */
-public class Eliminate extends AbstractFunctionEvaluator implements EliminateRules {
+public class Eliminate extends AbstractFunctionOptionEvaluator implements EliminateRules {
 
   static class VariableCounterVisitor extends AbstractVisitorBoolean
       implements Comparable<VariableCounterVisitor> {
@@ -100,6 +105,27 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       fNodeCounter = 0;
       fMaxVariableDepth = 0;
       fCurrentDepth = 0;
+      this.fVariableDegree = degreeOf(expr, variable);
+    }
+
+    /**
+     * The polynomial degree of the variable in the equation, or {@link Integer#MAX_VALUE} if the
+     * equation isn't a polynomial in it.
+     */
+    private final int fVariableDegree;
+
+    /** @see #fVariableDegree */
+    private static int degreeOf(IAST equation, IExpr variable) {
+      if (!equation.isEqual()) {
+        return Integer.MAX_VALUE;
+      }
+      EvalEngine engine = EvalEngine.get();
+      IExpr difference = engine.evalQuiet(F.Subtract(equation.arg1(), equation.arg2()));
+      if (!difference.isPolynomial(variable)) {
+        return Integer.MAX_VALUE;
+      }
+      int degree = S.Exponent.of(engine, difference, variable).toIntDefault();
+      return F.isPresent(degree) && degree > 0 ? degree : Integer.MAX_VALUE;
     }
 
     @Override
@@ -108,6 +134,14 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
         return -1;
       }
       if (fVariableCounter > other.fVariableCounter) {
+        return 1;
+      }
+      // the variable is isolated exactly from the equation of the lowest degree; a higher degree
+      // needs a root, which may be one of several branches
+      if (fVariableDegree < other.fVariableDegree) {
+        return -1;
+      }
+      if (fVariableDegree > other.fVariableDegree) {
         return 1;
       }
       if (fMaxVariableDepth < other.fMaxVariableDepth) {
@@ -283,32 +317,33 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   }
 
   /**
-   * Check if the argument at the given position is an equation (i.e. <code>Equal[a,b]</code>) or a
-   * list of equations and return a list of expressions, which should be equal to <code>0</code>.
+   * Returned by {@link #checkEquations(IAST, int, EvalEngine)} for a system which contains a
+   * contradiction, so that the whole elimination is <code>False</code>. Compared by identity.
+   */
+  private static final IAST CONTRADICTION = F.list(S.False);
+
+  /**
+   * Check if the argument at the given position is an equation (i.e. <code>Equal[a,b]</code>), a
+   * list of equations or a conjunction of equations and return a list of expressions, which should
+   * be equal to <code>0</code>.
+   *
+   * <p>
+   * A member which is <code>True</code> constrains nothing and is dropped; a member which is
+   * <code>False</code> makes the whole system contradictory.
    *
    * @param ast
    * @param position
-   * @return <code>F.NIL</code> if one of the elements is not a well-formed equation.
+   * @return {@link #CONTRADICTION} if the system contains a contradiction, or {@link F#NIL} if one
+   *         of the elements is not a well-formed equation.
    */
-  private static IAST checkEquations(final IAST ast, int position, EvalEngine engine) {
+  private static IAST checkEquations(final IAST ast, int position,
+      IASTAppendable constraints, EvalEngine engine) {
     IExpr arg = ast.get(position);
-    if (arg.isList()) {
-      IAST list = (IAST) arg;
-      return F.mapList(list, t -> {
-        if (t.isEqual()) {
-          COMPARE_TERNARY b = t.first().equalTernary(t.second(), engine);
-          if (b == IExpr.COMPARE_TERNARY.FALSE) {
-            return S.True;
-          }
-          if (b == IExpr.COMPARE_TERNARY.TRUE) {
-            return S.False;
-          }
-          return t;
-        }
-        // `1` is not a well-formed equation.
-        Errors.printMessage(ast.topHead(), "eqf", F.list(t), engine);
-        return null;
-      });
+    if (arg.isList() || arg.isAnd()) {
+      IASTAppendable equations = F.ListAlloc(arg.size());
+      return collectEquations((IAST) arg, ast.topHead(), equations, constraints, engine)
+          ? equations
+          : F.NIL;
     }
     if (arg.isEqual()) {
       IAST equalAST = (IAST) arg;
@@ -321,10 +356,74 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       }
       return F.list(F.Equal(F.evalExpandAll(equalAST.arg1(), engine),
           F.evalExpandAll(equalAST.arg2(), engine)));
-      // return equalList;
+    }
+    if (arg.isTrue()) {
+      // a tautology constrains nothing
+      return F.CEmptyList;
+    }
+    if (arg.isFalse()) {
+      return CONTRADICTION;
     }
     // `1` is not a well-formed equation.
     return Errors.printMessage(ast.topHead(), "eqf", F.list(arg), engine);
+  }
+
+  /**
+   * Collect the equations of a list or conjunction - both of which may be nested - into
+   * <code>equations</code>.
+   *
+   * @return <code>false</code> if a member is not a well-formed equation; the message was printed
+   *         in that case
+   * @throws ContradictionException if a member is <code>False</code>
+   */
+  private static boolean collectEquations(IAST list, ISymbol head, IASTAppendable equations,
+      IASTAppendable constraints, EvalEngine engine) {
+    for (int i = 1; i < list.size(); i++) {
+      IExpr t = list.get(i);
+      if (t.isTrue()) {
+        // a tautology constrains nothing
+        continue;
+      }
+      if (t.isFalse()) {
+        throw ContradictionException.CONST;
+      }
+      if (t.isList() || t.isAnd()) {
+        if (!collectEquations((IAST) t, head, equations, constraints, engine)) {
+          return false;
+        }
+        continue;
+      }
+      if (t.isRelationalBinary() && !t.isEqual()) {
+        // an inequation is no equation to eliminate from, but it constrains the result
+        constraints.append(t);
+        continue;
+      }
+      if (t.isEqual()) {
+        COMPARE_TERNARY b = t.first().equalTernary(t.second(), engine);
+        if (b == IExpr.COMPARE_TERNARY.TRUE) {
+          continue;
+        }
+        if (b == IExpr.COMPARE_TERNARY.FALSE) {
+          throw ContradictionException.CONST;
+        }
+        equations.append(t);
+        continue;
+      }
+      // `1` is not a well-formed equation.
+      Errors.printMessage(head, "eqf", F.list(t), engine);
+      return false;
+    }
+    return true;
+  }
+
+  /** Thrown while the equations are collected, if one of them is a contradiction. */
+  private static final class ContradictionException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+    static final ContradictionException CONST = new ContradictionException();
+
+    private ContradictionException() {
+      super(null, null, false, false);
+    }
   }
 
   /**
@@ -333,12 +432,10 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param equalAST an <code>Equal()</code> expression.
    * @param variable the variable which should be eliminated.
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
-   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued) complex
-   *        solution branches to be returned as <code>ConditionalExpression</code> results
    * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
    */
   private static IExpr eliminateAnalyze(IAST equalAST, IExpr variable, boolean multipleValues,
-      EvalEngine engine, boolean periodicBranches) {
+      EvalEngine engine) {
     if (equalAST.isEqual()) {
       IExpr arg1 = equalAST.arg1();
       IExpr arg2 = equalAST.arg2();
@@ -347,11 +444,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       boolean boolArg2 = arg2.isFree(predicate, true);
       IExpr result = F.NIL;
       if (!boolArg1 && boolArg2) {
-        result = extractVariableRecursive(arg1, arg2, predicate, variable, multipleValues,
-            periodicBranches, engine);
+        result = extractVariableRecursive(arg1, arg2, predicate, variable, multipleValues, engine);
       } else if (boolArg1 && !boolArg2) {
-        result = extractVariableRecursive(arg2, arg1, predicate, variable, multipleValues,
-            periodicBranches, engine);
+        result = extractVariableRecursive(arg2, arg1, predicate, variable, multipleValues, engine);
       }
       return result;
     }
@@ -426,18 +521,16 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param analyzerList the list of <code>Equal()</code> terms with statistics of it's equations.
    * @param variable the variable which should be eliminated.
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
-   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued) complex
-   *        solution branches to be returned as <code>ConditionalExpression</code> results
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
    *         rule which is used for variable elimination in index <code>[1]</code>.
    */
   protected static IAST[] eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList,
-      IExpr variable, boolean multipleValues, boolean periodicBranches, EvalEngine engine) {
+      IExpr variable, boolean multipleValues, EvalEngine engine) {
     IASTAppendable eliminatedResultEquations = F.ListAlloc(analyzerList.size());
     for (int i = 0; i < analyzerList.size(); i++) {
       IExpr variableValues = eliminateAnalyze(analyzerList.get(i).getExpr(), variable,
-          multipleValues, engine, periodicBranches);
+          multipleValues, engine);
       if (variableValues.isPresent()) {
         analyzerList.remove(i);
         IAST[] result = new IAST[2];
@@ -475,15 +568,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param ast
    * @param variable
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
-   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued) complex
-   *        solution branches to be returned as <code>ConditionalExpression</code> results
    * @param engine
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
    *         rule which is used for variable elimination in index <code>[1]</code>.
    */
   public static IAST[] eliminateOneVariable(IAST ast, IExpr variable, boolean multipleValues,
-      boolean periodicBranches, EvalEngine engine) {
+      EvalEngine engine) {
     IAST equalAST;
     VariableCounterVisitor exprAnalyzer;
     ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
@@ -495,7 +586,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     }
     Collections.sort(analyzerList);
 
-    return eliminateOneVariable(analyzerList, variable, multipleValues, periodicBranches, engine);
+    return eliminateOneVariable(analyzerList, variable, multipleValues, engine);
   }
 
   /**
@@ -541,7 +632,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     IExpr result = F.NIL;
     if (!expr.isFree(predicate, true)) {
       result =
-          extractVariableRecursive(expr, F.C0, predicate, variable, multipleValues, false, engine);
+          extractVariableRecursive(expr, F.C0, predicate, variable, multipleValues, engine);
     }
     return result;
   }
@@ -554,13 +645,11 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param predicate the predicate to check for the variable
    * @param variable the variable which should be eliminated.
    * @param multipleValues if true multiple results are returned as list of values
-   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued) complex
-   *        solution branches to be returned as <code>ConditionalExpression</code> results
    * @param engine the evaluation engine
    * @return F.NIL if we can't find an equation for the given variable.
    */
   private static IExpr extractVariableRecursive(IExpr exprWithVariable, IExpr exprWithoutVariable,
-      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues, boolean periodicBranches,
+      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues,
       EvalEngine engine) {
     if (exprWithVariable.equals(variable)) {
       return exprWithoutVariable;
@@ -578,14 +667,14 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               // example: Abs(x-1) == 1
               inverseFunction.append(exprWithoutVariable);
               return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
-                  multipleValues, periodicBranches, engine);
+                  multipleValues, engine);
             }
             return S.True;
           } else {
             // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
             inverseFunction.append(exprWithoutVariable);
             return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
-                multipleValues, periodicBranches, engine);
+                multipleValues, engine);
           }
         }
       } else {
@@ -597,30 +686,16 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             return lambertWEquationResult;
           }
           if (exprWithoutVariable.isZero() && ast.isPlus()) {
-            IAST elimZeroPlus = F.binaryAST2(elimzeroplus, ast, variable);
-            IExpr result = zeroPlusMatcher().apply(elimZeroPlus);
-            if (result.isPresent()) {
-              if (result.isEqual()) {
-                if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
-                  return F.NIL;
-                }
-                return result;
-              }
-              return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues,
-                  engine);
+            IExpr zeroPlus = applyMatcher(zeroPlusMatcher(), elimzeroplus, ast,
+                exprWithoutVariable, variable, multipleValues, engine);
+            if (zeroPlus.isPresent()) {
+              return zeroPlus;
             }
           }
-          IAST elimInverse = F.binaryAST2(eliminv, ast, variable);
-          IExpr result = inverseMatcher().apply(elimInverse);
-          if (result.isPresent()) {
-            if (result.isEqual()) {
-              if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
-                return F.NIL;
-              }
-              return result;
-            }
-            return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues,
-                engine);
+          IExpr inverse = applyMatcher(inverseMatcher(), eliminv, ast, exprWithoutVariable,
+              variable, multipleValues, engine);
+          if (inverse.isPresent()) {
+            return inverse;
           }
         }
 
@@ -656,26 +731,25 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               IExpr rhsWithoutVariable =
                   engine.evaluate(F.Divide(exprWithoutVariable, timesWithoutVariable));
               return extractVariableRecursive(timesWithVariable.oneIdentity1(), rhsWithoutVariable,
-                  predicate, variable, multipleValues, periodicBranches, engine);
+                  predicate, variable, multipleValues, engine);
             }
           } else {
             IExpr rhsWithoutVariable =
                 engine.evaluate(F.Subtract(exprWithoutVariable, plusWithoutVariable));
             IExpr res = extractVariableRecursive(plusWithVariable.oneIdentity0(),
-                rhsWithoutVariable, predicate, variable, multipleValues, periodicBranches, engine);
+                rhsWithoutVariable, predicate, variable, multipleValues, engine);
             if (res.isPresent()) {
               return res;
             }
           }
           if (!ast.isFree(x -> x.isTrigFunction(), true)) {
-            IExpr trigToExp =
-                tryTrigToExp(ast, exprWithoutVariable, variable, multipleValues, engine);
-            if (trigToExp.isPresent()) {
-              return trigToExp;
+            // the closed form of a*Sin(u)+b*Cos(u)==c is preferred over the exponential rewrite
+            IExpr linearSinCos = tryLinearSinCos(ast, exprWithoutVariable, predicate, variable,
+                multipleValues, engine);
+            if (linearSinCos.isPresent()) {
+              return linearSinCos;
             }
-            // symbolic coefficients
-            return tryLinearSinCos(ast, exprWithoutVariable, predicate, variable, multipleValues,
-                periodicBranches, engine);
+            return tryTrigToExp(ast, exprWithoutVariable, variable, multipleValues, engine);
           } else if (ast.isFree(x -> x.isLog(), true)) {
             return tryPowerExpand(ast, exprWithoutVariable, variable, multipleValues, engine);
           } else {
@@ -707,7 +781,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           }
           IExpr value = engine.evaluate(F.Divide(exprWithoutVariable, timesWithoutVariable));
           return extractVariableRecursive(timesWithVariable.oneIdentity1(), value, predicate,
-              variable, multipleValues, periodicBranches, engine);
+              variable, multipleValues, engine);
         } else if (ast.isPower()) {
           IExpr base = ast.base();
           IExpr exponent = ast.exponent();
@@ -718,15 +792,16 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
                 && !Errors.allowInverseFunctions(S.InverseFunction, engine)) {
               return F.NIL;
             }
+            // the elimination is algebraic: raising the equation to a power may gain roots,
+            // which `Solve` sorts out by cross checking its solutions
             IExpr value = engine.evaluate(F.Power(exprWithoutVariable, reversedPower));
-            IExpr res1 = extractVariableRecursive(base, value, predicate, variable, multipleValues,
-                periodicBranches, engine);
+            IExpr res1 = extractVariableRecursive(base, value, predicate, variable, multipleValues, engine);
             // For even integer exponent with multipleValues, also consider the negative root
             if (multipleValues && exponent.isInteger() && exponent.isEvenResult()) {
               IExpr negValue = engine.evaluate(F.Negate(value));
               if (!negValue.equals(value)) {
                 IExpr res2 = extractVariableRecursive(base, negValue, predicate, variable,
-                    multipleValues, periodicBranches, engine);
+                    multipleValues, engine);
                 if (res2.isPresent()) {
                   if (res1.isPresent()) {
                     // Merge both result lists
@@ -773,8 +848,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               // base ^ f(x) == exprWithoutVariable -> f(x) == Log(exprWithoutVariable)/Log(base)
               IExpr value = base.isE() ? F.Log(exprWithoutVariable)
                   : F.Divide(F.Log(exprWithoutVariable), F.Log(base));
-              return extractVariableRecursive(exponent, value, predicate, variable, multipleValues,
-                  periodicBranches, engine);
+              return extractVariableRecursive(exponent, value, predicate, variable, multipleValues, engine);
             }
 
             // base ^ f(x) == exprWithoutVariable /; Element(f(x), Complexes)
@@ -788,8 +862,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
                 expr = F.Divide(expr, F.Log(base));
               }
               IExpr temp = F.ConditionalExpression(expr, F.Element(c_n, S.Integers));
-              return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues,
-                  periodicBranches, engine);
+              return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues, engine);
             } finally {
               engine.decConstantCounter();
             }
@@ -806,41 +879,185 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   }
 
   /**
-   * Convert a list of rules for one variable back to a list of values.
-   * 
-   * @param listOfRules
-   * @param multipleValues if <code>false</code> return only the first found value in the list
-   * @return
+   * Solve <code>termsEqualZero == 0</code> for <code>variable</code>, after one of the
+   * <code>try...</code> transformations rewrote the equation.
+   *
+   * <p>
+   * The transformed equation is usually a polynomial - in the variable itself or in one kernel
+   * <code>g(variable)</code> - so it is solved here instead of by {@link S#Solve}: the elimination
+   * is the more primitive of the two, and <code>Solve</code> calls it, not the other way round.
+   *
+   * @param termsEqualZero the left hand side of the transformed equation
+   * @param variable the variable to solve for
+   * @param multipleValues if <code>true</code> multiple values are returned as a list
+   * @param engine the evaluation engine
+   * @return the value(s) of the variable or {@link F#NIL}
    */
-  protected static IExpr listOfRulesToValues(IExpr listOfRules, IExpr variable,
-      boolean multipleValues) {
-    if (multipleValues) {
-      IASTAppendable solveValues = F.ListAlloc(listOfRules.size());
-      ((IAST) listOfRules).map(a -> {
-        if (a.isList1() //
-            && a.first().isRuleAST() && a.first().first().equals(variable)) {
-          solveValues.append(a.first().second());
-        }
-        return F.NIL;
-      });
-      if (solveValues.size() > 1) {
-        return solveValues;
-      }
-    } else {
-      if (listOfRules.first().isRuleAST() //
-          && listOfRules.first().equals(variable)) {
-        return listOfRules.first().second();
+  private static IExpr solveTransformed(IExpr termsEqualZero, IExpr variable,
+      boolean multipleValues, EvalEngine engine) {
+    if (termsEqualZero.isNIL() || termsEqualZero.isFree(variable)) {
+      return F.NIL;
+    }
+    // the roots of a polynomial in the variable
+    IExpr roots = rootsOrNIL(termsEqualZero, variable, multipleValues, engine);
+    if (roots.isPresent()) {
+      return roots;
+    }
+    // the isolation of the variable, which also inverts the elementary functions and applies the
+    // rules of `EliminateRules`
+    Predicate<IExpr> predicate = Predicates.in(variable);
+    IExpr isolated = extractVariableRecursive(termsEqualZero, F.C0, predicate, variable,
+        multipleValues, engine);
+    if (isolated.isPresent() && !isolated.isTrue()) {
+      return isolated;
+    }
+    // a rational equation is solved by the roots of its numerator
+    IExpr numerator = termsEqualZero.isAST()
+        ? AlgebraUtil.numeratorDenominator((IAST) termsEqualZero, true, engine)[0]
+        : termsEqualZero;
+    if (!numerator.equals(termsEqualZero)) {
+      roots = rootsOrNIL(numerator, variable, multipleValues, engine);
+      if (roots.isPresent()) {
+        return roots;
       }
     }
-    return F.NIL;
+    // a polynomial in one kernel g(variable): solve it for the kernel and invert the kernel
+    return solveByKernel(numerator, variable, multipleValues, engine);
   }
 
   /**
-   * Print message "Inverse functions are being used. Values may be lost for multivalued inverses."
+   * The roots of <code>termsEqualZero</code>, if it is a polynomial in <code>variable</code>.
    *
-   * @param engine
+   * @return the root(s) or {@link F#NIL} if it isn't a polynomial or has no root in radicals
    */
+  private static IExpr rootsOrNIL(IExpr termsEqualZero, IExpr variable, boolean multipleValues,
+      EvalEngine engine) {
+    if (!termsEqualZero.isPolynomial(variable)) {
+      return F.NIL;
+    }
+    IAST roots = RootsFunctions.rootsOfVariable(termsEqualZero, F.C1, F.list(variable),
+        engine.isNumericMode(), engine);
+    if (!roots.isList() || roots.size() <= 1 || !roots.isFree(S.Root, true)) {
+      return F.NIL;
+    }
+    if (!multipleValues || roots.size() == 2) {
+      return roots.first();
+    }
+    return roots;
+  }
 
+  /**
+   * Solve an equation which is a polynomial in one kernel <code>g(variable)</code>: the roots of
+   * that polynomial are determined and <code>g(variable) == root</code> is inverted for every one
+   * of them.
+   *
+   * @return the value(s) of the variable or {@link F#NIL}
+   */
+  private static IExpr solveByKernel(IExpr termsEqualZero, IExpr variable, boolean multipleValues,
+      EvalEngine engine) {
+    PolynomialHomogenization homogenization = new PolynomialHomogenization(engine, true);
+    IExpr poly = homogenization.replaceForward(termsEqualZero);
+    Set<ISymbol> kernelVariables = homogenization.substitutedVariablesSet();
+    if (poly.isNIL() || kernelVariables.size() != 1) {
+      return F.NIL;
+    }
+    ISymbol kernelVariable = kernelVariables.iterator().next();
+    IExpr kernel = homogenization.replaceBackward(kernelVariable);
+    if (kernel.equals(variable) || kernel.isFree(variable)) {
+      return F.NIL;
+    }
+    if (poly.isAST()) {
+      // a Laurent polynomial in the kernel has the roots of its numerator
+      poly = AlgebraUtil.numeratorDenominator((IAST) poly, true, engine)[0];
+    }
+    IExpr kernelRoots = rootsOrNIL(poly, kernelVariable, true, engine);
+    if (kernelRoots.isNIL()) {
+      return F.NIL;
+    }
+    IAST rootList = kernelRoots.isList() ? (IAST) kernelRoots : F.list(kernelRoots);
+    Predicate<IExpr> predicate = Predicates.in(variable);
+    IASTAppendable values = F.ListAlloc(rootList.size());
+    for (int i = 1; i < rootList.size(); i++) {
+      IExpr root = rootList.get(i);
+      if (!InverseFunctionExpander.isFiniteValue(root)) {
+        // the kernel never takes this value
+        continue;
+      }
+      IExpr value = invertKernel(kernel, root, predicate, variable, multipleValues, engine);
+      if (value.isNIL() || value.isTrue()) {
+        continue;
+      }
+      if (value.isList()) {
+        values.appendArgs((IAST) value);
+      } else {
+        values.append(value);
+      }
+    }
+    if (values.argSize() == 0) {
+      return F.NIL;
+    }
+    return multipleValues ? values : values.arg1();
+  }
+
+  /**
+   * Solve <code>kernel == root</code> for <code>variable</code>. A periodic kernel like
+   * <code>Cosh(variable)</code> has infinitely many solutions, which are returned as the
+   * {@link S#ConditionalExpression} families of {@link InverseFunctionExpander}; every other
+   * kernel is inverted by its principal inverse function.
+   *
+   * @return the value(s) of the variable or {@link F#NIL}
+   */
+  private static IExpr invertKernel(IExpr kernel, IExpr root, Predicate<IExpr> predicate,
+      IExpr variable, boolean multipleValues, EvalEngine engine) {
+    if (multipleValues && kernel.isAST1() && kernel.first().equals(variable)
+        && kernel.head().isBuiltInSymbol()
+        && isPeriodicFunction(((IBuiltInSymbol) kernel.head()).ordinal())) {
+      IExpr periodic =
+          InverseFunctionExpander.expandPeriodicInverse((IBuiltInSymbol) kernel.head(), root);
+      if (periodic.isPresent()) {
+        return periodic;
+      }
+    }
+    return extractVariableRecursive(kernel, root, predicate, variable, multipleValues, engine);
+  }
+
+  /**
+   * Whether the function head with this id is periodic, so that the equation
+   * <code>head(variable) == value</code> has infinitely many solutions.
+   */
+  private static boolean isPeriodicFunction(int headID) {
+    switch (headID) {
+      case ID.Cos:
+      case ID.Cosh:
+      case ID.Cot:
+      case ID.Coth:
+      case ID.Csc:
+      case ID.Csch:
+      case ID.Sec:
+      case ID.Sech:
+      case ID.Sin:
+      case ID.Sinh:
+      case ID.Tan:
+      case ID.Tanh:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+
+  /**
+   * Add the inequations of the input, which are no equations to eliminate from, to the result.
+   */
+  private static IExpr withConstraints(IExpr result, IAST constraints, EvalEngine engine) {
+    if (constraints.isEmpty() || result.isFalse()) {
+      return result;
+    }
+    IASTAppendable and = F.ast(S.And, constraints.size() + 1);
+    and.append(result);
+    and.appendArgs(constraints);
+    return engine.evaluate(and);
+  }
 
   private static IExpr resultAsAndEquations(IAST result) {
     if (result.isList()) {
@@ -850,6 +1067,31 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       return result.apply(S.And);
     }
     return result;
+  }
+
+  /**
+   * Apply one of the rule sets of {@link EliminateRules} to <code>ast == exprWithoutVariable</code>.
+   *
+   * @param matcher the rules to apply
+   * @param head the dummy head the rules are defined for
+   * @param ast the left hand side of the equation, which contains the variable
+   * @param exprWithoutVariable the right hand side of the equation
+   * @param variable the variable to isolate
+   * @param multipleValues if <code>true</code> multiple values are returned as a list
+   * @param engine the evaluation engine
+   * @return the transformed equation, the value(s) of the variable, or {@link F#NIL}
+   */
+  private static IExpr applyMatcher(Matcher matcher, ISymbol head, IAST ast,
+      IExpr exprWithoutVariable, IExpr variable, boolean multipleValues, EvalEngine engine) {
+    IExpr result = matcher.apply(F.binaryAST2(head, ast, variable));
+    if (result.isNIL()) {
+      return F.NIL;
+    }
+    if (result.isEqual()) {
+      // a transformed equation, not a value
+      return Errors.allowInverseFunctions(S.InverseFunction, engine) ? result : F.NIL;
+    }
+    return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues, engine);
   }
 
   /**
@@ -981,19 +1223,16 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
         }
         IExpr result;
         try {
-          IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
-          Solve.SolveData solveData = new Solve.SolveData();
-          result =
-              solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+          result = solveTransformed(termsEqualZero, variable, multipleValues, engine);
         } finally {
           inProgress.remove(termsEqualZero);
         }
-        if (result.isListOfLists()) {
+        if (result.isPresent()) {
           // Inverse functions are being used. Values may be lost for multivalued inverses.
           if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
             return F.NIL;
           }
-          return listOfRulesToValues(result, variable, multipleValues);
+          return result;
         }
       }
     }
@@ -1021,7 +1260,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    *         no real solution
    */
   private static IExpr tryLinearSinCos(IAST plusAST, IExpr exprWithoutVariable,
-      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues, boolean periodicBranches,
+      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues,
       EvalEngine engine) {
     IASTAppendable sinCoefficient = F.PlusAlloc(2);
     IASTAppendable cosCoefficient = F.PlusAlloc(2);
@@ -1078,8 +1317,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
         IExpr family = F.ConditionalExpression(
             F.Plus(engine.evaluate(F.ArcTan(cosU, sinU)), F.Times(F.C2, S.Pi, c_n)),
             F.Element(c_n, S.Integers));
-        IExpr solution = extractVariableRecursive(u, family, predicate, variable, multipleValues,
-            periodicBranches, engine);
+        IExpr solution = extractVariableRecursive(u, family, predicate, variable, multipleValues, engine);
         if (solution.isNIL()) {
           return F.NIL;
         }
@@ -1169,15 +1407,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     }
     IExpr result;
     try {
-      IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
-      Solve.SolveData solveData = new Solve.SolveData();
-      result = solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+      result = solveTransformed(termsEqualZero, variable, true, engine);
     } finally {
       inProgress.remove(termsEqualZero);
     }
-    if (result.isListOfLists()) {
-      IExpr values = listOfRulesToValues(result, variable, true);
-      if (values.isList()) {
+    if (result.isPresent()) {
+      IExpr values = result.isList() ? result : F.list(result);
+      {
         IExpr equationEqualZero = F.Subtract(plusAST, exprWithoutVariable);
         IAST solutions = ((IAST) values).select(value -> {
           IExpr residual = engine.evalQuiet(F.N(F.subst(equationEqualZero, variable, value)));
@@ -1205,7 +1441,6 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    */
   private static IExpr tryTrigToExp(IAST plusAST, IExpr exprWithoutVariable, IExpr variable,
       boolean multipleValues, EvalEngine engine) {
-    // System.out.println(plusAST.leafCount());
     if (plusAST.leafCount() > Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
       return F.NIL;
     }
@@ -1215,16 +1450,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
         ? engine.evaluateNIL(F.TrigToExp(plusAST))
         : engine.evaluateNIL(F.TrigToExp(F.Subtract(plusAST, exprWithoutVariable)));
     if (termsEqualZero.isPresent()) {
-      IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
-      Solve.SolveData solveData = new Solve.SolveData();
-      IExpr result =
-          solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
-      if (result.isListOfLists()) {
+      IExpr result = solveTransformed(termsEqualZero, variable, multipleValues, engine);
+      if (result.isPresent()) {
         // Inverse functions are being used. Values may be lost for multivalued inverses.
         if (!Errors.allowInverseFunctions(S.InverseFunction, engine)) {
           return F.NIL;
         }
-        return listOfRulesToValues(result, variable, multipleValues);
+        return result;
       }
     }
     return F.NIL;
@@ -1239,11 +1471,60 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
 
   /** {@inheritDoc} */
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine, IAST originalAST) {
+    SolveOptions eliminateOptions = SolveOptions.of(SolveOptions.ELIMINATE_KEYS, options);
+    for (int i = 3; i < originalAST.size(); i++) {
+      IExpr option = originalAST.get(i);
+      if (!option.isRuleAST() || !isDeclaredOption(option.first())) {
+        // an option which isn't supported - `Mode->Modular` for instance - must not be ignored
+        return F.NIL;
+      }
+    }
+    if (argSize > 0 && argSize < ast.argSize()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
+    long precision =
+        SolveUtils.workingPrecision(ast, eliminateOptions.workingPrecision(), engine);
+    if (precision == SolveUtils.INVALID_PRECISION) {
+      return F.NIL;
+    }
+    // the sites which apply an inverse function sit several layers below this call, so the
+    // `InverseFunctions` mode travels with the engine for its dynamic extent
+    int oldInverseFunctions =
+        engine.setInverseFunctions(eliminateOptions.inverseFunctionsMode());
+    IExpr result;
     try {
-      IAST termsEqualZeroList = checkEquations(ast, 1, engine);
+      result = eliminate(ast, engine);
+    } finally {
+      engine.setInverseFunctions(oldInverseFunctions);
+    }
+    if (result.isNIL() || precision == SolveUtils.MACHINE_PRECISION_REQUESTED) {
+      return result;
+    }
+    // the elimination itself is exact; the requested precision is applied to its result
+    return engine.evaluate(F.N(result, F.ZZ(precision)));
+  }
+
+  /** Whether <code>key</code> is one of the options {@link S#Eliminate} supports. */
+  private static boolean isDeclaredOption(IExpr key) {
+    for (IBuiltInSymbol declared : SolveOptions.ELIMINATE_KEYS) {
+      if (key == declared) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static IExpr eliminate(final IAST ast, EvalEngine engine) {
+    try {
+      IASTAppendable constraints = F.ListAlloc();
+      IAST termsEqualZeroList = checkEquations(ast, 1, constraints, engine);
       if (termsEqualZeroList.isNIL()) {
         return F.NIL;
+      }
+      if (termsEqualZeroList == CONTRADICTION) {
+        return S.False;
       }
       IAST vars = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
       if (vars.isNIL()) {
@@ -1252,20 +1533,20 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
 
       IAST result = termsEqualZeroList;
       IAST[] temp;
-      // IAST equalAST;
       ISymbol variable;
-      // VariableCounterVisitor exprAnalyzer;
       for (int i = 1; i < vars.size(); i++) {
         variable = (ISymbol) vars.get(i);
 
-        temp = eliminateOneVariable(result, variable, false, false, engine);
+        temp = eliminateOneVariable(result, variable, false, engine);
         if (temp != null) {
           result = temp[0];
         } else {
-          return resultAsAndEquations(result);
+          return withConstraints(resultAsAndEquations(result), constraints, engine);
         }
       }
-      return resultAsAndEquations(result);
+      return withConstraints(resultAsAndEquations(result), constraints, engine);
+    } catch (ContradictionException cex) {
+      return S.False;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(S.Eliminate, rex, EvalEngine.get());
@@ -1274,11 +1555,12 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_2;
+    return IFunctionEvaluator.ARGS_2_3;
   }
 
   @Override
   public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol, SolveOptions.ELIMINATE_KEYS, SolveOptions.ELIMINATE_DEFAULTS);
     INVERSE_MATCHER = Suppliers.memoize(EliminateRules::init1);
     ZERO_PLUS_MATCHER = Suppliers.memoize(EliminateRules::init2);
   }

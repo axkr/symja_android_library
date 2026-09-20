@@ -127,6 +127,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // check(
     // "Eliminate(E^(-x)==0,x)", //
     // "False");
+    // the elimination is algebraic and doesn't decide whether the equation has a solution
     checkNumeric("Eliminate(Abs(x-1)==(-1),x)", //
         "True");
   }
@@ -990,6 +991,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(a^x==b,x)", //
         "{{x->Log(b)/Log(a)}}");
 
+    // the elimination is algebraic and doesn't decide whether the equation has a solution
     checkNumeric("Eliminate(Abs(x-1)==(-1),x)", //
         "True");
     checkNumeric("Solve(Abs(x-1)==(-1),x)", //
@@ -1991,7 +1993,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(2*Log(x)-Log(x+2)==0,x)", //
         "{{x->2}}");
     check("Solve(Log(x+1)-Log(x-1)==1,x)", //
-        "{{x->-(1+E)/(1-E)}}");
+        "{{x->(-1-E)/(1-E)}}");
     check("Solve(Log(2,x)+Log(2,x-2)==3,x)", //
         "{{x->4}}");
     // both roots of -x^2 == E are solutions
@@ -2025,8 +2027,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     // PRESS 3.7 - a*Sin(x) + b*Cos(x) == c
     check("Solve(2*Sin(x)+Cos(x)==1,x)", //
-        "{{x->ConditionalExpression(2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(\n" //
-            + "4/3)+2*Pi*C(1),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(Pi-ArcTan(4/3)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n" //
+            + "2*Pi*C(1),C(1)∈Integers)}}");
     // symbolic coefficients: the arguments of ArcTan are Cos(x) and Sin(x). Mathematica gives the
     // same two families with Sqrt(a^4+a^2*b^2-a^2*c^2) instead of a*Sqrt(a^2+b^2-c^2)
     check("Solve(a*Sin(x)+b*Cos(x)==c,x)", //
@@ -2479,8 +2481,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check(
         "Solve(2sin(x)^(2)+3*sin(x) * cos(x)-5cos(x)^(2) == 0, x, GenerateConditions -> True)// ExpToTrig // FullSimplify",
         "{{x->ConditionalExpression(Pi*(-3/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
-            + "1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-ArcTan(5/2)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(\n" //
-            + "5/2)+2*Pi*C(1),C(1)∈Integers)}}");
+            + "1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(5/2)+2*Pi*C(1),C(\n" //
+            + "1)∈Integers)},{x->ConditionalExpression(1/2*(-Pi+ArcTan(20/21)+4*Pi*C(1)),C(1)∈Integers)}}");
 
     // \begin{aligned}
     // &\Leftrightarrow\left(3 \sin 3 x-4 \sin ^3 3 x\right)-\sqrt{3} \cos 9 x=1\\

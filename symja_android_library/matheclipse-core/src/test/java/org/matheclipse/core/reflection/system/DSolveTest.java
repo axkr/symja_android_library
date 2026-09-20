@@ -1479,7 +1479,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // solving the general solution for its constant is what failed, not the problem. Naming the
     // constant on the separated relation instead gives (1 + 2*x/3)^(3/2), which is the answer.
     check("DSolve({y'(x) == y(x)^(1/3), y(0) == 1}, y(x), x)", //
-        "{{y(x)->Sqrt(2/3)*Sqrt(3/2+x)+2/3*Sqrt(2/3)*x*Sqrt(3/2+x)}}");
+        "{{y(x)->Sqrt(1+2/3*x)+2/3*Sqrt(1+2/3*x)*x}}");
     checkResidual("{y'(x) == y(x)^(1/3), y(0) == 1}", //
         "y'(x) - y(x)^(1/3)", "{x->13/10}");
     checkResidual("{y'(x) == y(x)^(1/3), y(0) == 0}", //

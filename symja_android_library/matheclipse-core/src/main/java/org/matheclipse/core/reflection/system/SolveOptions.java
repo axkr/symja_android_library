@@ -37,6 +37,13 @@ public final class SolveOptions {
   static final IExpr[] SOLVE_DEFAULTS =
       new IExpr[] {S.Automatic, S.True, S.Automatic, F.C0, F.C1000, F.C0};
 
+  /** The option keys of {@link S#Eliminate}. */
+  public static final IBuiltInSymbol[] ELIMINATE_KEYS =
+      new IBuiltInSymbol[] {S.InverseFunctions, S.WorkingPrecision};
+
+  /** The option defaults of {@link S#Eliminate}. */
+  static final IExpr[] ELIMINATE_DEFAULTS = new IExpr[] {S.Automatic, S.Automatic};
+
   /** The option keys of {@link S#NSolve} and {@link S#NSolveValues}. */
   static final IBuiltInSymbol[] NSOLVE_KEYS =
       new IBuiltInSymbol[] {S.GenerateConditions, S.MaxRoots, S.WorkingPrecision};
