@@ -1174,6 +1174,15 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     IAST branchList = branches.isList() ? (IAST) branches : F.List(branches);
+    if (!term.isPower()) {
+      // the function never takes this value: Coth(x) == -1 gives ArcCoth(-1) == -Infinity
+      IAST attainableBranches = branchList.select(branch -> Solve.isFiniteValue(
+          engine.evaluate(branch.isConditionalExpression() ? branch.first() : branch)));
+      if (attainableBranches.argSize() == 0) {
+        return S.False;
+      }
+      branchList = attainableBranches;
+    }
     // WMA Reduce lists the principal inverse branch first (e.g. ArcSin before
     // Pi-ArcSin). Symja's shared expander lists the Pi-shifted branch first for these functions,
     // so reverse the two branches here (Solve keeps the expander's original order).

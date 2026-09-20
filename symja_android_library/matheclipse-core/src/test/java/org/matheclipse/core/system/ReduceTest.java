@@ -753,6 +753,43 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * An equation has no solution at all, if the inverse function of its kernel has no finite value.
+   */
+  @Test
+  public void testReduceUnattainableValue() {
+    // ArcCoth(-+1) == -+Infinity
+    check("Reduce(Coth(x) == -1, x)", //
+        "False");
+    check("Reduce(Coth(x) == 1, x)", //
+        "False");
+    check("Reduce(3*Coth(x) + 3 == 0, x)", //
+        "False");
+    // the argument and the domain don't matter
+    check("Reduce(Coth(2*x) == -1, x)", //
+        "False");
+    check("Reduce(Coth(a*x) == -1, x)", //
+        "False");
+    check("Reduce(Coth(x) == -1, x, Reals)", //
+        "False");
+    // ArcTanh(-+1) == -+Infinity
+    check("Reduce(Tanh(x) == 1, x)", //
+        "False");
+    check("Reduce(Tanh(x) == -1, x)", //
+        "False");
+    // ArcSech(0) == Infinity and ArcCsch(0) == ComplexInfinity
+    check("Reduce(Sech(x) == 0, x)", //
+        "False");
+    check("Reduce(Csch(x) == 0, x)", //
+        "False");
+    // an attainable value is still solved
+    check("Reduce(Coth(x) == 2, x)", //
+        "C(1)∈Integers&&x==ArcCoth(2)+I*Pi*C(1)");
+    // TODO the two branches +-ArcCosh(1) are both 0 and should be merged
+    check("Reduce(Sech(x) == 1, x)", //
+        "C(1)∈Integers&&(x==I*2*Pi*C(1)||x==I*2*Pi*C(1))");
+  }
+
+  /**
    * An exponential equation has the same kind of periodic solution family as a trigonometric
    * one.
    */
