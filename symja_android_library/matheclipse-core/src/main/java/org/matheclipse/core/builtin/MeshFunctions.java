@@ -633,7 +633,13 @@ public class MeshFunctions {
     for (int i = 2; i < optionsStart; i++) {
       IExpr boundary = meshRegion.get(i);
       if (!boundary.isList()) {
-        return false;
+        // one cell on its own, as BoundaryMeshRegion({...}, Line({1,2,3,1})) is written, rather
+        // than a list of them
+        if (boundary.isAST1() && cellDimension(boundary.head()) != NO_CELL) {
+          boundary = F.list(boundary);
+        } else {
+          return false;
+        }
       }
       IAST boundaryList = (IAST) boundary;
       for (int j = 1; j < boundaryList.size(); j++) {
@@ -655,6 +661,15 @@ public class MeshFunctions {
             }
             if (!addCell(head, (IAST) indexList.get(k), numberOfCoordinates, cellHeads,
                 cellIndices)) {
+              return false;
+            }
+          }
+        } else if (head == S.Line && indexList.argSize() > 2) {
+          // a walk along the boundary, Line({1,2,3,1}), is that many edges - one per step, so
+          // that every edge is a cell of its own as it is when the pairs are written out
+          for (int k = 1; k < indexList.argSize(); k++) {
+            if (!addCell(head, F.list(indexList.get(k), indexList.get(k + 1)), numberOfCoordinates,
+                cellHeads, cellIndices)) {
               return false;
             }
           }

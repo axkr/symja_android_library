@@ -4,6 +4,14 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A `BoundaryMeshRegion` may write its cells the way the reference writes them.
+  `BoundaryMeshRegion({{0,0},{1,0},{0,1}}, Line({1,2,3,1}))` was not read as a region at all - it
+  had no area, no cells and no picture, in the console and in the servlets alike - because the
+  cells were not in a list and the `Line` was a walk along the boundary rather than its edges one
+  by one. Both forms are now read: a single cell may stand on its own, and a `Line` of more than
+  two indices is that many edges, one per step. The three ways of writing the same triangle now
+  give the same area, the same cells and the same picture.
+
 - A parametric plot of nothing is an empty picture. `ParametricPlot({{}}, ...)` and
   `ParametricPlot3D({{}}, ...)` echoed the call back instead of drawing an empty frame, where
   `Plot` already drew one. An empty list is no curve, so a specification of nothing but those is

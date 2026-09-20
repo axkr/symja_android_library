@@ -155,4 +155,26 @@ public class MeshRegionGraphicsTest {
             + "Frame->False), Axes->False)"));
     assertEquals("Show(x)", inputForm("Show(x)"));
   }
+
+  /**
+   * The ways a boundary mesh region's cells may be written. A cell may stand on its own instead of
+   * in a list, and a <code>Line</code> may be a walk along the boundary rather than its edges one
+   * by one - <code>BoundaryMeshRegion[{{0,0},{1,0},{0,1}}, Line[{1,2,3,1}]]</code> is both at once.
+   * Neither form was read at all: the region was not a region, so it had no area and no picture.
+   */
+  @Test
+  public void theCellsMayBeWrittenInAnyOfTheThreeForms() {
+    String triangle = "{{0,0},{1,0},{0,1}}";
+    String[] cells = {"Line({1,2,3,1})", "{Line({1,2,3,1})}", "{Line({{1,2},{2,3},{3,1}})}"};
+    for (String cell : cells) {
+      String mesh = "BoundaryMeshRegion(" + triangle + ", " + cell + ")";
+      assertEquals("1/2", evaluator.eval("Area(" + mesh + ")").toString(), cell);
+      assertEquals("{Line({1,2}),Line({2,3}),Line({3,1})}",
+          evaluator.eval("MeshCells(" + mesh + ", 1)").toString(), cell);
+      // every form draws the same picture
+      assertEquals(inputForm("Show(BoundaryMeshRegion(" + triangle + ", " + cells[2] + "))"),
+          inputForm("Show(" + mesh + ")"), cell);
+      assertTrue(svg(mesh).contains("rgb(160,213,234)"), cell);
+    }
+  }
 }
