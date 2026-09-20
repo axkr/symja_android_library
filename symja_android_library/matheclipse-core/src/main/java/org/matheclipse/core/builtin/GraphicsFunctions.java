@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -801,6 +802,87 @@ public class GraphicsFunctions {
     // xValue += (GraphicsOptions.MEDIUM_FONTSIZE / 2);
     double yValue = y.evalfNaN();
     return F.Text(labeledPoint.second(), F.List(F.num(xValue), F.num(yValue)));
+  }
+
+  /**
+   * <code>Normal(GraphicsComplex(points, data))</code> - <code>data</code> with every point index
+   * replaced by the point it stands for.
+   *
+   * <p>
+   * Only the indices are substituted: the result is "an ordinary list of graphics primitives and
+   * directives", so a <code>Polygon</code> of several faces stays one <code>Polygon</code> of
+   * several faces, and the directives between the primitives are carried over untouched. The
+   * coordinates are the ones in the table, exact ones included - unlike the renderers, which read
+   * the same structure but lower every coordinate to a machine number on the way to a picture.
+   *
+   * @return {@link F#NIL} if this is not a <code>GraphicsComplex</code> with a point table
+   */
+  public static IExpr graphicsComplexNormal(IAST graphicsComplex) {
+    if (graphicsComplex.argSize() < 2 || !graphicsComplex.arg1().isList()) {
+      return F.NIL;
+    }
+    IAST points = (IAST) graphicsComplex.arg1();
+    IExpr substituted = substituteIndices(points, graphicsComplex.arg2());
+    return substituted.isList() ? substituted : F.List(substituted);
+  }
+
+  /**
+   * Walk <code>expr</code>, replacing the indices in the point argument of every primitive which
+   * takes one. Everything else - a directive, a primitive's later arguments, an integer which is
+   * not a point - is left as it is, but still walked, so that primitives nested inside a list of
+   * directives are reached.
+   */
+  private static IExpr substituteIndices(IAST points, IExpr expr) {
+    if (!expr.isAST()) {
+      return expr;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.argSize() >= 1 && isPointTaking(ast)) {
+      IASTMutable result = ast.copy();
+      result.set(1, substitutePoints(points, ast.arg1()));
+      for (int i = 2; i < ast.size(); i++) {
+        result.set(i, substituteIndices(points, ast.get(i)));
+      }
+      return result;
+    }
+    return ast.map(x -> substituteIndices(points, x), 1);
+  }
+
+  /** Whether the first argument of {@code ast} is a point or a list of points. */
+  private static boolean isPointTaking(IAST ast) {
+    int id = ast.headID();
+    switch (id) {
+      case ID.Point:
+      case ID.Line:
+      case ID.Polygon:
+      case ID.Triangle:
+      case ID.Arrow:
+      case ID.BezierCurve:
+      case ID.BSplineCurve:
+      case ID.FilledCurve:
+      case ID.JoinedCurve:
+      case ID.Tube:
+      case ID.Sphere:
+      case ID.Simplex:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Replace every index in a point argument with the point it stands for. An index outside the
+   * table, and a coordinate which is written out rather than indexed, are left alone.
+   */
+  private static IExpr substitutePoints(IAST points, IExpr expr) {
+    if (expr.isInteger()) {
+      int index = expr.toIntDefault();
+      return index >= 1 && index < points.size() ? points.get(index) : expr;
+    }
+    if (expr.isList()) {
+      return ((IAST) expr).map(x -> substitutePoints(points, x), 1);
+    }
+    return expr;
   }
 
   private GraphicsFunctions() {}

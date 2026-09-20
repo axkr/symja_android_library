@@ -407,6 +407,8 @@ public class Errors {
       "`1` needs AWT, which this runtime does not provide (a native image on macOS has none); use SVG output instead.", //
       "noopen", "Cannot open `1`.", //
       "noprime", "There are no primes in the specified interval.", //
+      "notprop",
+      "`1` is not a known property or size specification for `2`. Use `2`(\"Properties\") for a list of properties.", //
       "nord", "Invalid comparison with `1` attempted.", //
       "norel", "Expressions `1` and `2` cannot be related by a permutation.", //
       "norep", "Assignment on `2` for `1` not found.", //

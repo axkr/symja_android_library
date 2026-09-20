@@ -54,6 +54,14 @@ public final class Normal extends AbstractFunctionEvaluator {
         return expanded;
       }
     }
+    if (arg1.isAST(S.GraphicsComplex)
+        && (heads.isAST0() || heads.exists(y -> y == S.GraphicsComplex))) {
+      IExpr substituted =
+          org.matheclipse.core.builtin.GraphicsFunctions.graphicsComplexNormal((IAST) arg1);
+      if (substituted.isPresent()) {
+        return substituted;
+      }
+    }
     IExpr normal = F.NIL;
     if (heads.isAST0()) {
       normal = arg1.normal(true);

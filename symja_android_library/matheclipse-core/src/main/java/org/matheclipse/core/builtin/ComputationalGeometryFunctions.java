@@ -7,6 +7,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import org.matheclipse.core.data.Entities;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
@@ -59,6 +61,7 @@ public class ComputationalGeometryFunctions {
       S.RegionProduct.setEvaluator(new RegionProduct());
       S.Circumsphere.setEvaluator(new Circumsphere());
       S.PolyhedronData.setEvaluator(new PolyhedronData());
+      Entities.register(PolyhedronData.POLYHEDRON, S.PolyhedronData);
 
       S.VectorGreater.setEvaluator(new VectorGreater());
       S.VectorGreaterEqual.setEvaluator(new VectorGreaterEqual());
@@ -2939,22 +2942,70 @@ public class ComputationalGeometryFunctions {
    * definition, edges are the shortest vertex pairs, and faces follow from those. Only the scalar
    * properties that have no such derivation (exact volumes, circumradii) are listed, and a property
    * that has not been entered returns <code>Missing(NotAvailable)</code> rather than a guess.
+   *
+   * <p>
+   * A question this function does not understand at all - a property which is not in
+   * {@link PolyhedronData#PROPERTIES}, a solid which is not in {@link PolyhedronData#SOLIDS} - is no
+   * answer rather than missing data: the call stays unevaluated, with a message for the property.
+   * That is what {@link org.matheclipse.core.reflection.system.EntityValue} needs to tell an unknown
+   * solid from an unknown property, and it is what the reference implementation does.
    */
   private static class PolyhedronData extends AbstractEvaluator {
+
+    /** The entity type these solids belong to: <code>Entity("Polyhedron", name)</code>. */
+    static final String POLYHEDRON = "Polyhedron";
 
     private static final double GOLDEN = (1.0 + Math.sqrt(5.0)) / 2.0;
 
     /** Squared-distance slack when deciding which vertices are nearest neighbours. */
     private static final double TOLERANCE = 1.0e-6;
 
+    /**
+     * The solids this table knows anything at all about, in the order <code>PolyhedronData()</code>
+     * reports them. A name which is not here is no solid of ours: the call stays unevaluated, which
+     * is what lets {@link org.matheclipse.core.reflection.system.EntityValue} tell an unknown solid
+     * from an unknown property.
+     */
+    private static final String[] SOLIDS = {"Icosahedron", "Icosidodecahedron",
+        "RhombicTriacontahedron", "TruncatedIcosahedron"};
+
+    /**
+     * The properties one solid answers for, in the order <code>PolyhedronData("Properties")</code>
+     * reports them. The switch below reads from this array, so the two cannot drift apart; a
+     * property which is not here is not a question this function understands.
+     */
+    private static final String[] PROPERTIES = {"Circumradius", "EdgeCount", "FaceCount",
+        "FaceCountRules", "FaceIndices", "Faces", "VertexCoordinates", "VertexCount", "Volume"};
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.isAST2() || !ast.arg1().isString() || !ast.arg2().isString()) {
+      if (ast.isAST0()) {
+        return names(SOLIDS);
+      }
+      IExpr arg1 = Entities.nameOf(ast.arg1(), POLYHEDRON);
+      if (!arg1.isString()) {
         return F.NIL;
       }
-      String name = ast.arg1().toString();
-      String property = ast.arg2().toString();
-      double[][] vertices = vertices(name);
+      String name = arg1.toString();
+      if (ast.isAST1() && "Properties".equals(name)) {
+        return names(PROPERTIES);
+      }
+      if (!isKnown(name)) {
+        return F.NIL;
+      }
+      if (ast.isAST1()) {
+        return graphics(name);
+      }
+      IExpr propertySpec = Entities.propertyOf(ast.arg2(), POLYHEDRON);
+      if (!propertySpec.isString()) {
+        return F.NIL;
+      }
+      String property = propertySpec.toString();
+      if (!isProperty(property)) {
+        // `1` is not a known property or size specification for `2`.
+        return Errors.printMessage(S.PolyhedronData, "notprop",
+            F.List(propertySpec, S.PolyhedronData), engine);
+      }
       switch (property) {
         case "Volume":
           return volume(name);
@@ -2963,8 +3014,9 @@ public class ComputationalGeometryFunctions {
         default:
           break;
       }
+      double[][] vertices = vertices(name);
       if (vertices == null) {
-        return F.NIL;
+        return F.Missing(S.NotAvailable);
       }
       List<int[]> faces = faces(name, vertices);
       if (faces == null) {
@@ -2973,18 +3025,67 @@ public class ComputationalGeometryFunctions {
       switch (property) {
         case "VertexCount":
           return F.ZZ(vertices.length);
+        case "VertexCoordinates":
+          return exactVertices(name);
         case "FaceCount":
           return F.ZZ(faces.size());
         case "EdgeCount":
           return F.ZZ(edges(vertices).size());
         case "FaceIndices":
           return faceIndices(faces);
+        case "FaceCountRules":
+          return faceCountRules(faces);
         case "Faces":
-          return F.binaryAST2(S.GraphicsComplex, coordinates(vertices),
-              F.unaryAST1(S.Polygon, faceIndices(faces)));
+          return facesComplex(name, faces);
         default:
           return F.Missing(S.NotAvailable);
       }
+    }
+
+    private static boolean isKnown(String name) {
+      for (String solid : SOLIDS) {
+        if (solid.equals(name)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    private static boolean isProperty(String property) {
+      for (String known : PROPERTIES) {
+        if (known.equals(property)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /** A listing - of solids or of properties - as the plain strings Mathematica reports. */
+    private static IAST names(String[] names) {
+      return F.mapRange(0, names.length, i -> F.stringx(names[i]));
+    }
+
+    /**
+     * <code>Faces</code>: the vertices with the faces as index lists into them.
+     *
+     * <p>
+     * The coordinates are the exact ones, so that <code>Normal</code> of this reports a solid in
+     * exact coordinates rather than in the machine numbers the combinatorics are derived from.
+     */
+    private static IExpr facesComplex(String name, List<int[]> faces) {
+      return F.binaryAST2(S.GraphicsComplex, exactVertices(name),
+          F.unaryAST1(S.Polygon, faceIndices(faces)));
+    }
+
+    /**
+     * The picture <code>PolyhedronData(name)</code> stands for, or
+     * <code>Missing(NotAvailable)</code> when this table has no coordinates for the solid.
+     */
+    private static IExpr graphics(String name) {
+      double[][] vertices = vertices(name);
+      List<int[]> faces = vertices == null ? null : faces(name, vertices);
+      return faces == null ? F.Missing(S.NotAvailable)
+          : F.Graphics3D(facesComplex(name, faces));
     }
 
     private static IExpr volume(String name) {
@@ -3210,16 +3311,73 @@ public class ComputationalGeometryFunctions {
       return result;
     }
 
-    private static IAST coordinates(double[][] vertices) {
-      IASTAppendable result = F.ListAlloc(vertices.length);
-      for (double[] vertex : vertices) {
-        IASTAppendable point = F.ListAlloc(vertex.length);
-        for (double coordinate : vertex) {
-          point.append(F.num(coordinate));
-        }
-        result.append(point);
+    /** How many faces have how many sides, one rule per side count, fewest sides first. */
+    private static IAST faceCountRules(List<int[]> faces) {
+      Map<Integer, Integer> counts = new TreeMap<Integer, Integer>();
+      for (int[] face : faces) {
+        Integer sides = Integer.valueOf(face.length);
+        Integer seen = counts.get(sides);
+        counts.put(sides, Integer.valueOf(seen == null ? 1 : seen.intValue() + 1));
+      }
+      IASTAppendable result = F.ListAlloc(counts.size());
+      for (Map.Entry<Integer, Integer> entry : counts.entrySet()) {
+        result.append(F.Rule(F.ZZ(entry.getKey().intValue()), F.ZZ(entry.getValue().intValue())));
       }
       return result;
+    }
+
+    /**
+     * The vertex coordinates exactly, in the same order as the machine numbers of
+     * {@link #vertices(String)}.
+     *
+     * <p>
+     * The combinatorics need distances and angles and so are derived from the machine numbers; only
+     * what is reported comes from here, which is why the two orders have to agree.
+     * <code>Missing(NotAvailable)</code> for a solid this table has no coordinates for.
+     */
+    private static IExpr exactVertices(String name) {
+      switch (name) {
+        case "Icosahedron":
+          return F.eval(exactIcosahedron());
+        case "TruncatedIcosahedron":
+          return F.eval(exactTruncatedIcosahedron());
+        default:
+          return F.Missing(S.NotAvailable);
+      }
+    }
+
+    /** The cyclic permutations of {@code (0, +-1, +-GoldenRatio)}, as {@link #icosahedron()}. */
+    private static IAST exactIcosahedron() {
+      IASTAppendable result = F.ListAlloc(12);
+      for (int s1 = 1; s1 >= -1; s1 -= 2) {
+        for (int s2 = 1; s2 >= -1; s2 -= 2) {
+          IExpr one = F.ZZ(s1);
+          IExpr golden = F.ZZ(s2).times(S.GoldenRatio);
+          result.append(F.List(F.C0, one, golden));
+          result.append(F.List(one, golden, F.C0));
+          result.append(F.List(golden, F.C0, one));
+        }
+      }
+      return result;
+    }
+
+    /** The third-points of every icosahedron edge, as {@link #truncatedIcosahedron()}. */
+    private static IAST exactTruncatedIcosahedron() {
+      IAST seed = exactIcosahedron();
+      List<int[]> seedEdges = edges(icosahedron());
+      IASTAppendable result = F.ListAlloc(seedEdges.size() * 2);
+      for (int[] edge : seedEdges) {
+        IAST from = (IAST) seed.get(edge[0] + 1);
+        IAST to = (IAST) seed.get(edge[1] + 1);
+        result.append(exactAlong(from, to, F.C1D3));
+        result.append(exactAlong(from, to, F.QQ(2, 3)));
+      }
+      return result;
+    }
+
+    private static IAST exactAlong(IAST from, IAST to, IExpr t) {
+      return F.mapRange(1, from.size(),
+          i -> F.Plus(from.get(i), F.Times(t, F.Subtract(to.get(i), from.get(i)))));
     }
 
     @Override
@@ -3229,7 +3387,7 @@ public class ComputationalGeometryFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_0_2;
     }
   }
 

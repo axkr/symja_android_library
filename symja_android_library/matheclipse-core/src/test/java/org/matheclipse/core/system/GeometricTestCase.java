@@ -1588,8 +1588,70 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         + "-PolyhedronData(\"TruncatedIcosahedron\",\"EdgeCount\")"
         + "+PolyhedronData(\"TruncatedIcosahedron\",\"FaceCount\")", //
         "2");
+    // 12 pentagons and 20 hexagons, the same tally as above but read off directly
+    check("PolyhedronData(\"TruncatedIcosahedron\", \"FaceCountRules\")", //
+        "{5->12,6->20}");
+    check("PolyhedronData(\"Icosahedron\", \"FaceCountRules\")", //
+        "{3->20}");
+    check("Total(Last/@PolyhedronData(\"TruncatedIcosahedron\", \"FaceCountRules\"))"
+        + "==PolyhedronData(\"TruncatedIcosahedron\", \"FaceCount\")", //
+        "True");
+    // the coordinates are exact, although the combinatorics above are derived from machine numbers
+    check("First(PolyhedronData(\"Icosahedron\", \"VertexCoordinates\"))", //
+        "{0,1,GoldenRatio}");
+    check("Head(PolyhedronData(\"Icosahedron\"))", //
+        "Graphics3D");
+    check("PolyhedronData()", //
+        "{Icosahedron,Icosidodecahedron,RhombicTriacontahedron,TruncatedIcosahedron}");
+    check("PolyhedronData(\"Properties\")", //
+        "{Circumradius,EdgeCount,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+    // a question this function does not understand is a message, not missing data
     check("PolyhedronData(\"Icosahedron\", \"Nonsense\")", //
-        "Missing(NotAvailable)");
+        "PolyhedronData(Icosahedron,Nonsense)");
+    // a solid this table never heard of stays unevaluated too
+    check("PolyhedronData(\"Nonesuch\", \"FaceCount\")", //
+        "PolyhedronData(Nonesuch,FaceCount)");
+  }
+
+  @Test
+  public void testPolyhedronDataEntity() {
+    // an entity and a bare name are the same question, and so are a property and its name
+    check("PolyhedronData(Entity(\"Polyhedron\", \"Icosahedron\"), \"FaceCount\")", //
+        "20");
+    check("PolyhedronData(\"Icosahedron\", EntityProperty(\"Polyhedron\", \"FaceCount\"))", //
+        "20");
+    check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), \"FaceCount\")", //
+        "20");
+    check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), {\"VertexCount\",\"EdgeCount\"})", //
+        "{12,30}");
+    check("EntityValue(\"Polyhedron\", \"Properties\")", //
+        "{Circumradius,EdgeCount,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+    check("EntityList(\"Polyhedron\")", //
+        "{Entity(Polyhedron,Icosahedron),Entity(Polyhedron,Icosidodecahedron),Entity(Polyhedron,"
+            + "RhombicTriacontahedron),Entity(Polyhedron,TruncatedIcosahedron)}");
+    // which half of the question was not understood
+    check("EntityValue(Entity(\"Polyhedron\", \"Nonesuch\"), \"FaceCount\")", //
+        "Missing(UnknownEntity,{Polyhedron,Nonesuch})");
+    check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), \"Nonsense\")", //
+        "Missing(UnknownProperty,{Polyhedron,Nonsense})");
+  }
+
+  @Test
+  public void testPolyhedronDataNormal() {
+    // Normal substitutes the indices of a GraphicsComplex with the points they stand for
+    check("Normal(GraphicsComplex({{0,0},{Sqrt(3),Sqrt(3)/2}}, {Point(1), Line({1,2})}))", //
+        "{Point({0,0}),Line({{0,0},{Sqrt(3),Sqrt(3)/2}})}");
+    // data which is not a list becomes one
+    check("Normal(GraphicsComplex({{0,0},{1,0},{1,1}}, Polygon({1,2,3})))", //
+        "{Polygon({{0,0},{1,0},{1,1}})}");
+    // a polygon of several faces stays one polygon of several faces
+    check("Normal(GraphicsComplex({{0,0,0},{1,0,0},{0,1,0},{0,0,1}}, Polygon({{1,2,3},{1,2,4}})))", //
+        "{Polygon({{{0,0,0},{1,0,0},{0,1,0}},{{0,0,0},{1,0,0},{0,0,1}}})}");
+    // the directives between the primitives are carried over
+    check("Normal(GraphicsComplex({{0,0},{1,0},{0,1}}, {Red, Polygon({1,2,3})}))", //
+        "{RGBColor(1,0,0),Polygon({{0,0},{1,0},{0,1}})}");
+    check("Normal(PolyhedronData(\"Icosahedron\", \"Faces\"))[[1,1,1]]", //
+        "{{0,1,GoldenRatio},{1,GoldenRatio,0},{GoldenRatio,0,1}}");
   }
 
   @Test
