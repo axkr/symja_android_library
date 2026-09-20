@@ -1629,4 +1629,36 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("RegionIntersection(Disk({0,0},1), Ball({0,0,0},1))", //
         "RegionIntersection(Disk({0,0},1),Ball({0,0,0},1))");
   }
+
+  /**
+   * A solid and a plane meet in a flat cross section, which has an area although neither of the
+   * two regions does. The cube cut by <code>x + y == 1</code> is a rectangle of the face diagonal
+   * by the height, <code>Sqrt(2)</code>.
+   */
+  @Test
+  public void testAreaOfABoxCutByAPlane() {
+    checkNumeric("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})))", //
+        "1.4142135623730951");
+    // straight through the middle: the unit square
+    check("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(z==1/2,{x,y,z})))", //
+        "1.0");
+    // the long diagonal cuts a regular hexagon of 3*Sqrt(3)/4
+    checkNumeric(
+        "Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y+z==3/2,{x,y,z})))", //
+        "1.299038105676658");
+    // a Cuboid says the same as the Cube it equals
+    checkNumeric(
+        "Area(RegionIntersection(Cuboid({0,0,0},{1,1,1}), ImplicitRegion(x+y==1,{x,y,z})))", //
+        "1.4142135623730951");
+    // a plane that misses the box cuts nothing
+    check("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x==10,{x,y,z})))", //
+        "0.0");
+    // a surface that is not flat, and a region that asks for either part rather than both, are
+    // left alone
+    check("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x^2+y==1,{x,y,z})))", //
+        "Area(BooleanRegion(#1&&#2&,{Cube({0.5,0.5,0.5},1),ImplicitRegion(x^2+y==1,{x,y,z})}))");
+    check(
+        "Area(BooleanRegion(#1||#2&, {Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})}))", //
+        "Area(BooleanRegion(#1||#2&,{Cube({0.5,0.5,0.5},1),ImplicitRegion(x+y==1,{x,y,z})}))");
+  }
 }

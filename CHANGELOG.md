@@ -4,6 +4,15 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `Area` of a box cut by a plane. A solid and a plane meet in a flat cross section, which has an
+  area although neither of the two regions does -
+  `Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})))` is the
+  `Sqrt(2)` rectangle the saw leaves, and a plane that misses the box cuts nothing. The corners are
+  the box edges that cross the plane, put in order around the middle and measured by Newell's
+  formula. A surface that is not flat, or a region that asks for either part rather than both, is
+  left alone. This is the numeric bug behind ad-si/Woxi#871, where the unevaluated area silently
+  zeroed a notebook's total.
+
 - `RegionIntersection` computes something. It had no evaluator at all - it was an inert head that
   `RegionMember` read as the conjunction of its parts, so even two concentric balls came back as
   they were written. It now works the intersection out wherever it is certainly known: the same

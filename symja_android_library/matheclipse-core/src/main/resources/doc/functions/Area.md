@@ -115,6 +115,18 @@ A parametrization which covers the disk twice gives twice its area:
 2*Pi
 ```
 
+A solid and a plane meet in a flat cross section, which has an area although neither of the two
+regions does. `RegionIntersection` carries such a pair as a `BooleanRegion`, and its area is the
+polygon the plane cuts out of the box:
+
+```
+>> Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})))
+1.41421
+
+>> Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x==10,{x,y,z})))
+0.0
+```
+
 ### Related terms
 [ArcLength](ArcLength.md), [Perimeter](Perimeter.md), [RegionMeasure](RegionMeasure.md),
 [SurfaceArea](SurfaceArea.md), [Volume](Volume.md)
