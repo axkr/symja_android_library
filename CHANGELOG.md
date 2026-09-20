@@ -4,6 +4,20 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `RegionIntersection` computes something. It had no evaluator at all - it was an inert head that
+  `RegionMember` read as the conjunction of its parts, so even two concentric balls came back as
+  they were written. It now works the intersection out wherever it is certainly known: the same
+  region twice, an `EmptyRegion` or `FullRegion` among the parts, axis-aligned boxes (the box they
+  overlap in, or `EmptyRegion` when they do not), balls and disks about one centre, and
+  `ImplicitRegion`s over the same variables, `Interval`s of the line, and regions whose bounds lie
+  apart from one another (which meet in nothing). Nested intersections are flattened, and parts
+  living in different spaces report `RegionIntersection::regdims` rather than quietly doing
+  nothing. Anything else stays as it was written, which keeps `RegionMember` answering for it as
+  before - and `Area` and `RegionMeasure` now reach a result wherever the intersection became a
+  shape. Every case was checked against Mathematica on 2026-09-20; the one difference is that a
+  pair that cannot be combined comes back as the `RegionIntersection` itself, where the reference
+  gives a `BooleanRegion`, a head Symja does not have.
+
 - A `BoundaryMeshRegion` may write its cells the way the reference writes them.
   `BoundaryMeshRegion({{0,0},{1,0},{0,1}}, Line({1,2,3,1}))` was not read as a region at all - it
   had no area, no cells and no picture, in the console and in the servlets alike - because the

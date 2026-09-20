@@ -179,6 +179,8 @@ public class Errors {
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
       "deqn", "Equation or list of equations expected instead of `1` in the first argument `2`.", //
       "dimss", "`1` is not a valid dimension specification for `2`.", //
+      "regdims",
+      "Boolean operations involving regions `1` and `2` with different embedding dimensions are not well defined.", //
       "dims",
       "The dimension `1` of the first argument is not the same as the number of binning specifications `2`.", //
       "div", "Sum does not converge.", //

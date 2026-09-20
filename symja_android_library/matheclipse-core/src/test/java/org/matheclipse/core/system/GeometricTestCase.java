@@ -1560,4 +1560,68 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("RegionBoundary(Ball({0,0,0},2))", //
         "Sphere({0,0,0},2)");
   }
+
+  /**
+   * <code>RegionIntersection</code> works the intersection out where it is certainly known, and is
+   * otherwise left standing - which is itself a region, and the form <code>RegionMember</code>
+   * reads as the conjunction of its parts. Every answer below was measured in Mathematica on
+   * 2026-09-20.
+   */
+  @Test
+  public void testRegionIntersection() {
+    // one region is itself, and a region intersected with itself is itself
+    check("RegionIntersection(Disk({0,0},1))", //
+        "Disk({0,0},1)");
+    check("RegionIntersection(Disk({0,0},1), Disk({0,0},1))", //
+        "Disk({0,0},1)");
+    // boxes overlap in a box, and keep exact corners and the head they were written with
+    check("RegionIntersection(Rectangle({0,0},{2,2}), Rectangle({1,1},{3,3}))", //
+        "Rectangle({1,1},{2,2})");
+    check("RegionIntersection(Cuboid({0,0},{2,2}), Cuboid({1,1},{3,3}))", //
+        "Cuboid({1,1},{2,2})");
+    check("RegionIntersection(Cuboid({0,0,0},{2,2,2}), Cuboid({1,1,1},{3,3,3}))", //
+        "Cuboid({1,1,1},{2,2,2})");
+    check("Area(RegionIntersection(Rectangle({0,0},{2,2}), Rectangle({1,1},{3,3})))", //
+        "1");
+    // boxes that do not overlap meet in nothing
+    check("RegionIntersection(Rectangle({0,0},{1,1}), Rectangle({5,5},{6,6}))", //
+        "EmptyRegion(2)");
+    // balls about one centre: the smallest lies inside the others
+    check("RegionIntersection(Disk({0,0},2), Disk({0,0},1))", //
+        "Disk({0,0},1)");
+    check("RegionIntersection(Ball({0,0,0},2), Ball({0,0,0},1))", //
+        "Ball({0,0,0},1)");
+    // regions that lie apart from one another meet in nothing
+    check("RegionIntersection(Disk({0,0},1), Disk({9,9},1))", //
+        "EmptyRegion(2)");
+    // intervals of the line have an intersection of their own
+    check("RegionIntersection(Interval({0,3}), Interval({1,5}))", //
+        "Interval({1,3})");
+    // nothing lies in the empty region; everything lies in the full one
+    check("RegionIntersection(Disk({0,0},1), EmptyRegion(2))", //
+        "EmptyRegion(2)");
+    check("RegionIntersection(Disk({0,0},1), FullRegion(2))", //
+        "Disk({0,0},1)");
+    check("RegionIntersection(FullRegion(2), FullRegion(2))", //
+        "FullRegion(2)");
+    // formula regions over the same variables are one formula region
+    check("RegionIntersection(ImplicitRegion(x^2+y^2<1,{x,y}), ImplicitRegion(x>0,{x,y}))", //
+        "ImplicitRegion(x^2+y^2<1&&x>0,{x,y})");
+    // intersecting is associative
+    check("RegionIntersection(RegionIntersection(Disk({0,0},2), Disk({0,0},1)), Disk({0,0},3))", //
+        "Disk({0,0},1)");
+    // two disks that are not concentric cannot be one shape, and stay as written - which still
+    // answers who lies in both
+    check("RegionIntersection(Disk({0,0},2), Disk({0,3},2))", //
+        "RegionIntersection(Disk({0,0},2),Disk({0,3},2))");
+    check("RegionMember(RegionIntersection(Disk({0,0},1), Disk({1,0},1)), {1/2,0})", //
+        "True");
+    check("RegionMember(RegionIntersection(Disk({0,0},1), Disk({3,0},1)), {1/2,0})", //
+        "False");
+    check("RegionEmbeddingDimension(RegionIntersection(Disk({0,0},2), Disk({0,3},2)))", //
+        "2");
+    // parts of different spaces are no region at all, and RegionIntersection::regdims says so
+    check("RegionIntersection(Disk({0,0},1), Ball({0,0,0},1))", //
+        "RegionIntersection(Disk({0,0},1),Ball({0,0,0},1))");
+  }
 }

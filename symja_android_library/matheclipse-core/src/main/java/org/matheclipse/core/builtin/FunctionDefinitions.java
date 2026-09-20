@@ -284,6 +284,8 @@ public final class FunctionDefinitions {
       S.RegionDistance.setEvaluator(new org.matheclipse.core.reflection.system.RegionDistance());
       S.RegionMeasure.setEvaluator(new org.matheclipse.core.reflection.system.RegionMeasure());
       S.ConstantRegionQ.setEvaluator(new org.matheclipse.core.reflection.system.ConstantRegionQ());
+      S.RegionIntersection
+          .setEvaluator(new org.matheclipse.core.reflection.system.RegionIntersection());
       S.RegionMember.setEvaluator(new org.matheclipse.core.reflection.system.RegionMember());
       S.RegionMemberFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.RegionMemberFunction());
