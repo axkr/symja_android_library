@@ -127,6 +127,22 @@ polygon the plane cuts out of the box:
 0.0
 ```
 
+A ball cut by a plane is a disk, of the radius the plane is left with:
+
+```
+>> Area(RegionIntersection(Ball({0,0,0},2), ImplicitRegion(z==1,{x,y,z})))
+9.42478
+```
+
+A ball and a box together cut the plane down to the part of that disk lying inside the box's cross
+section. The cube's inscribed ball meets the diagonal cross section at its great circle, and that
+disk just fits inside the rectangle:
+
+```
+>> Area(RegionIntersection(Ball({0.5,0.5,0.5},0.5), RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z}))))
+0.785398
+```
+
 ### Related terms
 [ArcLength](ArcLength.md), [Perimeter](Perimeter.md), [RegionMeasure](RegionMeasure.md),
 [SurfaceArea](SurfaceArea.md), [Volume](Volume.md)

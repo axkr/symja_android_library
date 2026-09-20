@@ -4,6 +4,15 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `Area` of a ball cut by a plane, and of a ball and a box cutting one together. A ball meets a
+  plane in a disk of the radius the plane is left with, and a box cuts that disk down to the part
+  lying inside its own cross section, so
+  `Area(RegionIntersection(Ball({0.5,0.5,0.5},0.5), RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z}))))`
+  is the `Pi/4` disk that just fits inside the `Sqrt(2)` rectangle. Both shapes are measured in the
+  plane's own two directions, where the disk is cut against the polygon wedge by wedge, so a ball
+  reaching over the box's edges keeps only what is inside them. A plane that misses the ball, or
+  only touches it, cuts nothing. This is the second half of ad-si/Woxi#871.
+
 - `Area` of a box cut by a plane. A solid and a plane meet in a flat cross section, which has an
   area although neither of the two regions does -
   `Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})))` is the

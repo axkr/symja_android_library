@@ -1661,4 +1661,66 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Area(BooleanRegion(#1||#2&, {Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})}))", //
         "Area(BooleanRegion(#1||#2&,{Cube({0.5,0.5,0.5},1),ImplicitRegion(x+y==1,{x,y,z})}))");
   }
+
+  /**
+   * A ball cut by a plane is a disk, and a ball and a box together cut the plane down to the part
+   * of that disk lying inside the box's cross section.
+   */
+  @Test
+  public void testAreaOfABallCutByAPlane() {
+    // the great circle of the unit ball, whatever direction the plane runs in
+    checkNumeric("Area(RegionIntersection(Ball({0,0,0},1), ImplicitRegion(z==0,{x,y,z})))", //
+        "3.141592653589793");
+    checkNumeric("Area(RegionIntersection(Ball({0,0,0},1), ImplicitRegion(x+y+z==0,{x,y,z})))", //
+        "3.141592653589793");
+    // a plane off the middle cuts a smaller disk, of radius Sqrt(r^2-d^2): here Sqrt(3)
+    checkNumeric("Area(RegionIntersection(Ball({0,0,0},2), ImplicitRegion(z==1,{x,y,z})))", //
+        "9.42477796076938");
+    // a plane past the ball, and one tangent to it, cut nothing
+    check("Area(RegionIntersection(Ball({0,0,0},2), ImplicitRegion(z==5,{x,y,z})))", //
+        "0.0");
+    check("Area(RegionIntersection(Ball({0,0,0},2), ImplicitRegion(z==2,{x,y,z})))", //
+        "0.0");
+
+    // the cube's inscribed ball meets the diagonal cross section at its great circle, and that
+    // disk of radius 1/2 just fits inside the Sqrt(2) by 1 rectangle: Pi/4
+    checkNumeric(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},0.5), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "0.7853981633974483");
+    // a small ball about the middle of the cross section keeps its whole disk: Pi/100
+    checkNumeric(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},0.1), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "0.03141592653589794");
+    // a wider ball has the rectangle's two long sides cut a cap off its disk each
+    checkNumeric(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},0.6), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "1.0409422430387167");
+    // a ball about the rectangle's short side keeps half of its disk: Pi*0.4^2/2
+    checkNumeric(
+        "Area(RegionIntersection(Ball({1,0,0.5},0.4), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "0.25132741228718347");
+    // a ball that swallows the box leaves the whole cross section
+    checkNumeric(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},10), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "1.4142135623730951");
+    // the parts may arrive in any order and as one intersection: Pi/16
+    checkNumeric(
+        "Area(RegionIntersection(Cuboid({0,0,0},{1,1,1}), ImplicitRegion(z==1/2,{x,y,z}),"
+            + " Ball({0.5,0.5,0.5},0.25)))", //
+        "0.19634954084936207");
+
+    // a Sphere is a surface, and meets a plane in a circle rather than a disk, so it is left alone
+    check("Area(RegionIntersection(Sphere({0,0,0},1), ImplicitRegion(z==0,{x,y,z})))", //
+        "Area(BooleanRegion(#1&&#2&,{Sphere({0,0,0},1),ImplicitRegion(z==0,{x,y,z})}))");
+    // two balls meet in a solid, which has a volume and no area
+    check("Area(RegionIntersection(Ball({0,0,0},1), Ball({0,0,1},1)))", //
+        "Area(BooleanRegion(#1&&#2&,{Ball({0,0,0},1),Ball({0,0,1},1)}))");
+    check("Area(RegionIntersection(Ball({0,0,0},2), Ball({0,0,0},1)))", //
+        "Undefined");
+  }
 }
