@@ -667,7 +667,14 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             }
           }
           if (!ast.isFree(x -> x.isTrigFunction(), true)) {
-            return tryTrigToExp(ast, exprWithoutVariable, variable, multipleValues, engine);
+            IExpr trigToExp =
+                tryTrigToExp(ast, exprWithoutVariable, variable, multipleValues, engine);
+            if (trigToExp.isPresent()) {
+              return trigToExp;
+            }
+            // symbolic coefficients
+            return tryLinearSinCos(ast, exprWithoutVariable, predicate, variable, multipleValues,
+                periodicBranches, engine);
           } else if (ast.isFree(x -> x.isLog(), true)) {
             return tryPowerExpand(ast, exprWithoutVariable, variable, multipleValues, engine);
           } else {
@@ -985,6 +992,108 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Solve <code>a*Sin(u) + b*Cos(u) + rest == c</code>, where <code>a, b, rest</code> and
+   * <code>c</code> are free of the variable. With <code>d = c - rest</code> and
+   * <code>s = Sqrt(a^2+b^2-d^2)</code> the two families of solutions are
+   * 
+   * <pre>
+   * u == ArcTan((b*d - a*s)/(a^2+b^2), (a*d + b*s)/(a^2+b^2)) + 2*Pi*C(1)
+   * u == ArcTan((b*d + a*s)/(a^2+b^2), (a*d - b*s)/(a^2+b^2)) + 2*Pi*C(1)
+   * </pre>
+   * 
+   * because the two arguments of <code>ArcTan</code> are <code>Cos(u)</code> and
+   * <code>Sin(u)</code>: they satisfy the equation and the sum of their squares is <code>1</code>.
+   * <p>
+   * See: <a href=
+   * "https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">Solving
+   * Symbolic Equations with PRESS</a> - 3.7
+   * 
+   * @return {@link F#NIL} if the equation hasn't this form, or if it has numeric coefficients and
+   *         no real solution
+   */
+  private static IExpr tryLinearSinCos(IAST plusAST, IExpr exprWithoutVariable,
+      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues, boolean periodicBranches,
+      EvalEngine engine) {
+    IASTAppendable sinCoefficient = F.PlusAlloc(2);
+    IASTAppendable cosCoefficient = F.PlusAlloc(2);
+    IASTAppendable rest = F.PlusAlloc(plusAST.argSize());
+    IExpr u = F.NIL;
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr term = plusAST.get(i);
+      if (term.isFree(predicate, true)) {
+        rest.append(term);
+        continue;
+      }
+      IExpr coefficient = F.C1;
+      IExpr function = term;
+      if (term.isTimes()) {
+        IAST[] timesFilter = ((IAST) term).filter(x -> x.isFree(predicate, true));
+        coefficient = timesFilter[0].oneIdentity1();
+        function = timesFilter[1].oneIdentity1();
+      }
+      if (!(function.isSin() || function.isCos())) {
+        return F.NIL;
+      }
+      if (u.isNIL()) {
+        u = function.first();
+      } else if (!u.equals(function.first())) {
+        return F.NIL;
+      }
+      (function.isSin() ? sinCoefficient : cosCoefficient).append(coefficient);
+    }
+    if (sinCoefficient.isAST0() || cosCoefficient.isAST0()) {
+      // a single Sin() or Cos() is isolated with its inverse function
+      return F.NIL;
+    }
+    IExpr a = sinCoefficient.oneIdentity0();
+    IExpr b = cosCoefficient.oneIdentity0();
+    IExpr d = engine.evaluate(F.Subtract(exprWithoutVariable, rest.oneIdentity0()));
+    IExpr norm = engine.evaluate(F.Expand(F.Plus(F.Sqr(a), F.Sqr(b))));
+    if (norm.isPossibleZero(true)) {
+      // a == +/- I*b
+      return F.NIL;
+    }
+    IExpr discriminant = engine.evaluate(F.Expand(F.Subtract(norm, F.Sqr(d))));
+    if (discriminant.isNegativeResult()) {
+      // no real solution
+      return F.NIL;
+    }
+    IExpr s = engine.evaluate(F.Sqrt(discriminant));
+    IExpr c_n = F.C(engine.incConstantCounter());
+    try {
+      IASTAppendable solutions = F.ListAlloc(2);
+      for (IExpr sign : new IExpr[] {F.CN1, F.C1}) {
+        IExpr signS = engine.evaluate(F.Times(sign, s));
+        IExpr cosU = F.Divide(F.Plus(F.Times(b, d), F.Times(a, signS)), norm);
+        IExpr sinU = F.Divide(F.Subtract(F.Times(a, d), F.Times(b, signS)), norm);
+        IExpr family = F.ConditionalExpression(
+            F.Plus(engine.evaluate(F.ArcTan(cosU, sinU)), F.Times(F.C2, S.Pi, c_n)),
+            F.Element(c_n, S.Integers));
+        IExpr solution = extractVariableRecursive(u, family, predicate, variable, multipleValues,
+            periodicBranches, engine);
+        if (solution.isNIL()) {
+          return F.NIL;
+        }
+        if (!multipleValues) {
+          return solution;
+        }
+        if (solution.isList()) {
+          solutions.appendArgs((IAST) solution);
+        } else {
+          solutions.append(solution);
+        }
+        if (s.isZero()) {
+          // a^2+b^2 == d^2: both families are the same
+          break;
+        }
+      }
+      return solutions;
+    } finally {
+      engine.decConstantCounter();
+    }
   }
 
   /** The equations {@link #tryLogAttraction} is solving on this thread. */

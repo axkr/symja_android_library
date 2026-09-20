@@ -2027,9 +2027,33 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(2*Sin(x)+Cos(x)==1,x)", //
         "{{x->ConditionalExpression(2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(\n" //
             + "4/3)+2*Pi*C(1),C(1)∈Integers)}}");
-    // TODO symbolic coefficients
+    // symbolic coefficients: the arguments of ArcTan are Cos(x) and Sin(x). Mathematica gives the
+    // same two families with Sqrt(a^4+a^2*b^2-a^2*c^2) instead of a*Sqrt(a^2+b^2-c^2)
     check("Solve(a*Sin(x)+b*Cos(x)==c,x)", //
-        "Solve(b*Cos(x)+a*Sin(x)==c,x)");
+        "{{x->ConditionalExpression(ArcTan((b*c-a*Sqrt(a^2+b^2-c^2))/(a^2+b^2),(a*c+b*Sqrt(a^\n" //
+            + "2+b^2-c^2))/(a^2+b^2))+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcTan((b*c+a*Sqrt(a^\n" //
+            + "2+b^2-c^2))/(a^2+b^2),(a*c-b*Sqrt(a^2+b^2-c^2))/(a^2+b^2))+2*Pi*C(1),C(1)∈Integers)}}");
+    // the residual of both families for some coefficients
+    check("Chop(N((a*Sin(x)+b*Cos(x)-c) /. (Solve(a*Sin(x)+b*Cos(x)==c,x) /. C(1)->1)" //
+        + " /. {a->2,b->3/2,c->1/3}),10^-9)", //
+        "{0,0}");
+    check("Chop(N((a*Sin(x)+b*Cos(x)-c) /. (Solve(a*Sin(x)+b*Cos(x)==c,x) /. C(1)->-2)" //
+        + " /. {a->-2,b->1/7,c->-5/3}),10^-9)", //
+        "{0,0}");
+    check("Solve(a*Sin(x)+b*Cos(x)==0,x)", //
+        "{{x->ConditionalExpression(ArcTan(-a/Sqrt(a^2+b^2),b/Sqrt(a^2+b^2))+2*Pi*C(1),C(\n" //
+            + "1)∈Integers)},{x->ConditionalExpression(ArcTan(a/Sqrt(a^2+b^2),-b/Sqrt(a^2+b^2))+\n" //
+            + "2*Pi*C(1),C(1)∈Integers)}}");
+    // the argument 3*x+1 is isolated afterwards
+    check("Solve(a*Sin(3*x+1)+b*Cos(3*x+1)-c==0,x)", //
+        "{{x->ConditionalExpression(-1/3+ArcTan((b*c-a*Sqrt(a^2+b^2-c^2))/(a^2+b^2),(a*c+b*Sqrt(a^\n" //
+            + "2+b^2-c^2))/(a^2+b^2))/3+2/3*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n" //
+            + "1/3+ArcTan((b*c+a*Sqrt(a^2+b^2-c^2))/(a^2+b^2),(a*c-b*Sqrt(a^2+b^2-c^2))/(a^2+b^\n" //
+            + "2))/3+2/3*Pi*C(1),C(1)∈Integers)}}");
+    check("Solve(2*Sin(x)+Cos(x)==c,x)", //
+        "{{x->ConditionalExpression(ArcTan(1/5*(c-2*Sqrt(5-c^2)),1/5*(2*c+Sqrt(5-c^2)))+2*Pi*C(\n" //
+            + "1),C(1)∈Integers)},{x->ConditionalExpression(ArcTan(1/5*(c+2*Sqrt(5-c^2)),1/5*(2*c-Sqrt(\n" //
+            + "5-c^2)))+2*Pi*C(1),C(1)∈Integers)}}");
   }
 
   @Test
