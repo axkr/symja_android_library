@@ -1924,7 +1924,10 @@ public class AlgebraUtil {
   public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar, boolean trig,
       EvalEngine engine) {
     boolean originalHasComplex = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
-    PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, trig);
+    // The trigonometric rewriting (TrigExpand, Cos(x)^2 -> 1-Sin(x)^2, ...) doesn't depend on the
+    // Trig option: Simplify() and TrigFactor() call Factor() without it and rely on the rewriting
+    // to cancel trigonometric expressions.
+    PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, true);
     IExpr subsPolynomial = substitutions.replaceForward(expr);
 
     // Update gaussianIntegers based on the homogenized polynomial to support TrigToExp complex

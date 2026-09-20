@@ -1341,7 +1341,7 @@ public class Algebra {
       originalVarList.append(variable);
       VariablesSet variablesSet = new VariablesSet();
       variablesSet.add(variable);
-      PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, false);
+      PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, true);
       IExpr subsPolynomial = substitutions.replaceForward(expr);
 
       // Verify if substitution introduced complex numbers
@@ -1430,14 +1430,24 @@ public class Algebra {
         IASTAppendable originalVarList, PolynomialHomogenization substitutions, Set<ISymbol> varSet,
         SolveData solveData, EvalEngine engine) {
       IASTAppendable resultList = F.NIL;
-      if (factorization.isTimes() && factorization.size() > 1 && varSet.size() == 1) {
-        // System.out.println(factorization);
+      if ((factorization.isTimes() || factorization.isPower()) && varSet.size() == 1) {
         IAST varList = F.ListAlloc(varSet);
-        IAST timesAST = (IAST) factorization;
-        resultList = F.ListAlloc(factorization.size());
+        // a single repeated factor (I-t)^2 is no Times()
+        IAST timesAST =
+            factorization.isTimes() ? (IAST) factorization : F.unaryAST1(S.Times, factorization);
+        resultList = F.ListAlloc(timesAST.size());
+        boolean unsolvedFactor = false;
         for (int i = 1; i < timesAST.size(); i++) {
           IExpr factor = timesAST.get(i);
+          if (factor.isPower() && factor.exponent().isInteger()
+              && factor.exponent().isPositive()) {
+            // a repeated factor has the roots of its base
+            factor = factor.base();
+          }
           IAST subList = RootsFunctions.rootsOfExprPolynomial(factor, varList, true, true);
+          if (subList.isNIL()) {
+            unsolvedFactor = true;
+          }
           if (subList.isPresent()) {
             for (int j = 1; j < subList.size(); j++) {
               IAST solveFunction = F.Solve(
@@ -1457,6 +1467,10 @@ public class Algebra {
             }
 
           }
+        }
+        if (unsolvedFactor && resultList.isEmpty()) {
+          // no roots found for a factor; an empty list would claim that there's no solution
+          return F.NIL;
         }
       }
       return resultList;

@@ -832,25 +832,27 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         return solveNumeric(QuarticSolver.sortASTArguments(temp), numericFlag, engine);
       }
 
+      // Kernel homogenization for systems in which every variable occurs only under a single
+      // invertible kernel - radicals (fractional powers), trigonometric or hyperbolic functions, or
+      // a mix of these. It declines every other system cheaply and runs first, because it inverts
+      // each kernel on its own and therefore finds all solution families; the elimination below
+      // only finds the principal branch of the eliminated variable.
       IExpr result = F.NIL;
+      if (variables.argSize() >= 2) {
+        result = solveViaKernelHomogenization(termsEqualZeroList, inequationsList, numericFlag,
+            variables, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
+
       if (termsEqualZeroList.size() == 2 && variables.size() == 2 && inequationsList.isEmpty()) {
         result = solveTwoVariableSystem(termsEqualZeroList, numericFlag, variables.arg1(), engine);
       } else if (termsEqualZeroList.size() > 2 && variables.size() >= 3) {
         result = solveMultiVariableSystem(termsEqualZeroList, inequationsList, numericFlag,
             variables, engine);
       }
-      if (result.isPresent()) {
-        return result;
-      }
-
-      // Fallback: kernel homogenization for systems in which every variable occurs only under a
-      // single invertible kernel - radicals (fractional powers), trigonometric or hyperbolic
-      // functions, or a mix of these. Runs last so it never disturbs the strategies above.
-      if (variables.argSize() >= 2) {
-        return solveViaKernelHomogenization(termsEqualZeroList, inequationsList, numericFlag,
-            variables, engine);
-      }
-      return F.NIL;
+      return result;
     }
 
     /**
@@ -1027,15 +1029,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       try {
         // 1. Forward-substitute every equation with ONE shared instance so that identical kernels
         // map to the same dummy variable across all equations.
-        PolynomialHomogenization homogenization = new PolynomialHomogenization(engine, false);
-        IASTAppendable polyTerms = F.ListAlloc(termsEqualZeroList.argSize());
-        for (int i = 1; i < termsEqualZeroList.size(); i++) {
-          IExpr poly = homogenization.replaceForward(termsEqualZeroList.get(i));
-          if (poly.isNIL() || !poly.isFree(v -> variables.contains(v), true)) {
-            // a solve variable survived un-substituted -> not a clean kernel system
-            return F.NIL;
-          }
-          polyTerms.append(poly);
+        // All equations are analysed before the first one is rewritten, so that a kernel like
+        // x^(1/6) is the same in an equation with Sqrt(x) and in another one with x^(1/3).
+        PolynomialHomogenization homogenization = new PolynomialHomogenization(engine, true);
+        IAST polyTerms = homogenization.replaceForwardList(termsEqualZeroList);
+        if (polyTerms.exists(poly -> !poly.isFree(v -> variables.contains(v), true))) {
+          // a solve variable survived un-substituted -> not a clean kernel system
+          return F.NIL;
         }
 
         // 2. Validate: a bijection between dummies and solve variables, where each kernel base is a
@@ -2724,7 +2724,27 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       ast = ast.copyUntil(argSize + 1);
     }
     SolveData sd = new SolveData(SolveOptions.of(SolveOptions.SOLVE_KEYS, options));
-    return sd.of(ast, isNumericArgument, engine);
+    return dropNonFiniteSolutions(sd.of(ast, isNumericArgument, engine));
+  }
+
+  /**
+   * Inverting a kernel for a value it cannot take gives a solution which is not finite:
+   * <code>E^(I*x) == 0</code> gives <code>x -> ComplexInfinity</code> and <code>Coth(x) == -1</code>
+   * gives <code>x -> -Infinity</code>. Drop these solutions.
+   * 
+   * @return {@link F#NIL} if no finite solution remains; the equation may still have solutions
+   *         which were not found
+   */
+  private static IExpr dropNonFiniteSolutions(IExpr result) {
+    if (result.isListOfLists() && result.argSize() > 0) {
+      IAST solutions = (IAST) result;
+      IAST finite = solutions.select(
+          solution -> solution.isFree(x -> x.isDirectedInfinity() || x.isIndeterminate(), true));
+      if (finite.argSize() < solutions.argSize()) {
+        return finite.argSize() > 0 ? finite : F.NIL;
+      }
+    }
+    return result;
   }
 
   @Override

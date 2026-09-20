@@ -8779,8 +8779,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // example from paper
     System.out.print('.');
+    // Tan(3*x) is a rational function of Tan(x)
     check("Factor(3*Tan(3*x)-Tan(x)+2)", //
-        "2-Tan(x)+3*Tan(3*x)");
+        "(-2*(-1-4*Tan(x)+3*Tan(x)^2))/(1-3*Tan(x)^2)");
     System.out.print('.');
     check("TrigToExp(3*Tan(3*x)-Tan(x)+2)", //
         "2+(-I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))+(I*3*(E^(-I*3*x)-E^(I*3*x)))/(E^(-\n"
@@ -8792,13 +8793,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "I*2*x)))");
 
     // example from paper
-    // TODO 3*Sech(x)^2+4*Tanh(x)+1 == -3*Tanh(x)^2+4*Tanh(x)+4 == (2-Tanh(x))*(2+3*Tanh(x)), but
-    // PolynomialHomogenization substitutes Sech(x) and Tanh(x) as independent variables, so the
-    // identity Sech(x)^2 == 1-Tanh(x)^2 is never applied and the polynomial stays irreducible.
-    // Factor(-3*Tanh(x)^2+4*Tanh(x)+4,Trig->True) does give the factorization.
+    // 3*Sech(x)^2+4*Tanh(x)+1 == -3*Tanh(x)^2+4*Tanh(x)+4; PolynomialHomogenization applies the
+    // identity Sech(x)^2 == 1-Tanh(x)^2
     System.out.print('.');
     check("Factor(3*Sech(x)^2+4*Tanh(x)+1,Trig->True)", //
-        "1+3*Sech(x)^2+4*Tanh(x)");
+        "(2-Tanh(x))*(2+3*Tanh(x))");
     System.out.print('.');
     check("TrigToExp(3*Sech(x)^2+4*Tanh(x)+1)", //
         "1+12/(E^(-x)+E^x)^2+4*(-1/(E^x*(E^(-x)+E^x))+E^x/(E^(-x)+E^x))");
