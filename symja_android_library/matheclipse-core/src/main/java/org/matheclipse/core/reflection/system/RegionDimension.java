@@ -105,10 +105,102 @@ public class RegionDimension extends AbstractFunctionEvaluator {
               return ast.arg2().argSize();
             }
             return -1;
+          case ID.ImplicitRegion:
+            return implicitRegionDimension(ast);
+          case ID.BooleanRegion:
+            return booleanRegionDimension(ast);
         }
       }
     }
     return -1;
+  }
+
+  /**
+   * The dimension of <code>ImplicitRegion(condition, {x, y, ...})</code>: an equation cuts one
+   * dimension away, inequalities cut none.
+   *
+   * @return <code>-1</code> for a condition with more than one equation, whose independence is not
+   *         decided here - <code>x + y == 1 && 2*x + 2*y == 2</code> is one plane written twice
+   */
+  private static int implicitRegionDimension(IAST ast) {
+    if (ast.argSize() != 2 || !ast.arg2().isList()) {
+      return -1;
+    }
+    int embeddingDimension = ast.arg2().argSize();
+    IExpr condition = ast.arg1();
+    IAST parts = condition.isAnd() ? (IAST) condition : F.unaryAST1(S.And, condition);
+    int equations = 0;
+    for (int i = 1; i < parts.size(); i++) {
+      IExpr part = parts.get(i);
+      if (part.isAST(S.Equal, 3)) {
+        equations++;
+      } else if (!part.isAST(S.Less) && !part.isAST(S.LessEqual) && !part.isAST(S.Greater)
+          && !part.isAST(S.GreaterEqual) && !part.isAST(S.Inequality) && !part.isTrue()) {
+        // an Or, an Unequal or anything else may describe a region of any dimension at all
+        return -1;
+      }
+    }
+    if (equations > 1 || equations > embeddingDimension) {
+      return -1;
+    }
+    return embeddingDimension - equations;
+  }
+
+  /**
+   * The dimension of a <code>BooleanRegion</code>, which is the dimension of what its parts leave
+   * of each other.
+   *
+   * <p>
+   * Asking for all of the parts at once leaves the thinnest of them, as long as only that one is
+   * thinner than the space it lives in: a box cut by a plane is the plane's two dimensions, and two
+   * solids meet in a solid. Asking for either of them leaves the widest, which is what a union
+   * always is.
+   *
+   * @return <code>-1</code> when the parts are combined in any other way, when one of their
+   *         dimensions is unknown, or when more than one part is thinner than the space - two
+   *         planes of the space may meet in a line, in a plane, or not at all
+   */
+  private static int booleanRegionDimension(IAST ast) {
+    if (ast.argSize() != 2 || !ast.arg2().isList() || !ast.arg1().isAST(S.Function, 2)) {
+      return -1;
+    }
+    IAST parts = (IAST) ast.arg2();
+    IExpr function = ast.arg1().first();
+    boolean all = function.isAnd();
+    if (!all && !function.isOr()) {
+      return -1;
+    }
+    IAST combination = (IAST) function;
+    if (combination.argSize() != parts.argSize()) {
+      return -1;
+    }
+    for (int i = 1; i <= combination.argSize(); i++) {
+      if (!combination.get(i).isAST(S.Slot, 2) || combination.get(i).first().toIntDefault() != i) {
+        return -1;
+      }
+    }
+    int embeddingDimension = RegionEmbeddingDimension.getEmbeddingDimension(ast);
+    int smallest = Integer.MAX_VALUE;
+    int largest = -1;
+    int thin = 0;
+    for (int i = 1; i <= parts.argSize(); i++) {
+      int dimension = getRegionDimension(parts.get(i));
+      if (dimension < 0) {
+        return -1;
+      }
+      smallest = Math.min(smallest, dimension);
+      largest = Math.max(largest, dimension);
+      if (dimension < embeddingDimension) {
+        thin++;
+      }
+    }
+    if (largest < 0) {
+      return -1;
+    }
+    if (!all) {
+      return largest;
+    }
+    return thin > 1 ? -1 : smallest;
   }
 
   @Override

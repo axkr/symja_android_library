@@ -22,6 +22,16 @@ Noteworthy changes are documented in this file.
   left alone. This is the numeric bug behind ad-si/Woxi#871, where the unevaluated area silently
   zeroed a notebook's total.
 
+- `RegionDimension` of a `BooleanRegion` and of an `ImplicitRegion`. An equation cuts one dimension
+  away from an implicit region and an inequality cuts none, so `ImplicitRegion(x+y==1,{x,y,z})` is
+  a surface. A `BooleanRegion` asking for all of its parts is as thin as the thinnest of them -
+  a box cut by a plane is a surface, two solids meet in a solid - and one asking for either of them
+  is as wide as the widest, which is what a union always is. With that, `Area` of two solids that
+  meet in a solid answers `Undefined` instead of staying unevaluated. Declined rather than guessed:
+  more than one equation, whose independence is not decided here, an `Or` of conditions, and a
+  conjunction with more than one part thinner than the space, since two planes may meet in a line,
+  in a plane, or not at all.
+
 - `RegionIntersection` takes a `BooleanRegion` of its own apart. Intersecting a region with an
   intersection that was carried as `BooleanRegion(#1 && #2 &, {...})` asks for all of the parts at
   once, so they are now flattened into one `BooleanRegion(#1 && #2 && #3 &, {...})` as the

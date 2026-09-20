@@ -684,6 +684,42 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "2");
     check("RegionDimension(Annulus({0, 0}, {1, 2}))", //
         "2");
+
+    // an ImplicitRegion loses one dimension per equation, and none to an inequality
+    check("RegionDimension(ImplicitRegion(x+y==1,{x,y,z}))", //
+        "2");
+    check("RegionDimension(ImplicitRegion(x^2+y^2<1,{x,y}))", //
+        "2");
+    check("RegionDimension(ImplicitRegion(x^2+y^2<1&&x>0,{x,y}))", //
+        "2");
+    // two equations may describe one surface written twice, so their independence is not decided
+    // here, and neither is what an Or of conditions describes
+    check("RegionDimension(ImplicitRegion(x==1&&y==1,{x,y,z}))", //
+        "RegionDimension(ImplicitRegion(x==1&&y==1,{x,y,z}))");
+    check("RegionDimension(ImplicitRegion(x==1||y==1,{x,y,z}))", //
+        "RegionDimension(ImplicitRegion(x==1||y==1,{x,y,z}))");
+
+    // a BooleanRegion asking for all of its parts is as thin as the thinnest of them: a box cut by
+    // a plane is a surface, two solids meet in a solid
+    check("RegionDimension(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})))", //
+        "2");
+    check(
+        "RegionDimension(RegionIntersection(Ball({0.5,0.5,0.5},0.5),"
+            + " RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "2");
+    check("RegionDimension(RegionIntersection(Ball({0,0,0},1), Ball({0,0,1},1)))", //
+        "3");
+    check("RegionDimension(RegionIntersection(Disk({0,0},2), Disk({0,3},2)))", //
+        "2");
+    // asking for either part is a union, which is as wide as the widest of them
+    check("RegionDimension(BooleanRegion(#1||#2&, {Disk({0,0},1), Circle({3,0},1)}))", //
+        "2");
+    // two planes of the space may meet in a line, in a plane, or not at all
+    check(
+        "RegionDimension(BooleanRegion(#1&&#2&, {ImplicitRegion(x+y==1,{x,y,z}),"
+            + " ImplicitRegion(x-y==0,{x,y,z})}))", //
+        "RegionDimension(BooleanRegion(#1&&#2&,{ImplicitRegion(x+y==1,{x,y,z}),ImplicitRegion(x-y=="
+            + "\n0,{x,y,z})}))");
   }
 
   @Test
@@ -1672,9 +1708,10 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     // left alone
     check("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x^2+y==1,{x,y,z})))", //
         "Area(BooleanRegion(#1&&#2&,{Cube({0.5,0.5,0.5},1),ImplicitRegion(x^2+y==1,{x,y,z})}))");
+    // a region that asks for either part is as wide as the cube, and a solid has no area
     check(
         "Area(BooleanRegion(#1||#2&, {Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})}))", //
-        "Area(BooleanRegion(#1||#2&,{Cube({0.5,0.5,0.5},1),ImplicitRegion(x+y==1,{x,y,z})}))");
+        "Undefined");
   }
 
   /**
@@ -1734,7 +1771,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Area(BooleanRegion(#1&&#2&,{Sphere({0,0,0},1),ImplicitRegion(z==0,{x,y,z})}))");
     // two balls meet in a solid, which has a volume and no area
     check("Area(RegionIntersection(Ball({0,0,0},1), Ball({0,0,1},1)))", //
-        "Area(BooleanRegion(#1&&#2&,{Ball({0,0,0},1),Ball({0,0,1},1)}))");
+        "Undefined");
     check("Area(RegionIntersection(Ball({0,0,0},2), Ball({0,0,0},1)))", //
         "Undefined");
   }
