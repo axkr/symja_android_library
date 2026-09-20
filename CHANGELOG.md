@@ -26,11 +26,14 @@ Noteworthy changes are documented in this file.
   away from an implicit region and an inequality cuts none, so `ImplicitRegion(x+y==1,{x,y,z})` is
   a surface. A `BooleanRegion` asking for all of its parts is as thin as the thinnest of them -
   a box cut by a plane is a surface, two solids meet in a solid - and one asking for either of them
-  is as wide as the widest, which is what a union always is. With that, `Area` of two solids that
-  meet in a solid answers `Undefined` instead of staying unevaluated. Declined rather than guessed:
-  more than one equation, whose independence is not decided here, an `Or` of conditions, and a
-  conjunction with more than one part thinner than the space, since two planes may meet in a line,
-  in a plane, or not at all.
+  is as wide as the widest, which is what a union always is. Several equations cut away as many
+  dimensions as they are independent - the rank of the system they make up - so `x == 1 && y == 1`
+  of the space is a line while `x + y == 1 && 2*x + 2*y == 2` is the one plane it is written as
+  twice, and implicit parts of a `BooleanRegion` over the same variables are counted together the
+  same way. With that, `Area` of two solids that meet in a solid answers `Undefined` instead of
+  staying unevaluated. Declined rather than guessed: an `Or` of conditions, equations that
+  contradict each other, curved surfaces counted together, and a conjunction with more than one
+  part thinner than the space. Checked against Mathematica on 2026-09-20.
 
 - `RegionIntersection` takes a `BooleanRegion` of its own apart. Intersecting a region with an
   intersection that was carried as `BooleanRegion(#1 && #2 &, {...})` asks for all of the parts at

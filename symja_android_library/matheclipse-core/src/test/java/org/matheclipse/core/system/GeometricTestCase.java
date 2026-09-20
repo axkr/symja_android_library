@@ -692,10 +692,23 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "2");
     check("RegionDimension(ImplicitRegion(x^2+y^2<1&&x>0,{x,y}))", //
         "2");
-    // two equations may describe one surface written twice, so their independence is not decided
-    // here, and neither is what an Or of conditions describes
+    // several equations cut away as many dimensions as they are independent, which is the rank of
+    // the system they make up: two planes of the space meet in a line
     check("RegionDimension(ImplicitRegion(x==1&&y==1,{x,y,z}))", //
-        "RegionDimension(ImplicitRegion(x==1&&y==1,{x,y,z}))");
+        "1");
+    check("RegionDimension(ImplicitRegion(x==1&&y==1&&z==1,{x,y,z}))", //
+        "0");
+    check("RegionDimension(ImplicitRegion(x==1&&y==1&&z>0,{x,y,z}))", //
+        "1");
+    // the same plane written twice is still a plane
+    check("RegionDimension(ImplicitRegion(x+y==1&&2*x+2*y==2,{x,y,z}))", //
+        "2");
+    // equations that contradict each other describe nothing at all, and curved surfaces are not
+    // counted together - neither dimension is decided here, and neither is what an Or describes
+    check("RegionDimension(ImplicitRegion(x+y==1&&2*x+2*y==3,{x,y,z}))", //
+        "RegionDimension(ImplicitRegion(x+y==1&&2*x+2*y==3,{x,y,z}))");
+    check("RegionDimension(ImplicitRegion(x^2+y^2==1&&z==0,{x,y,z}))", //
+        "RegionDimension(ImplicitRegion(x^2+y^2==1&&z==0,{x,y,z}))");
     check("RegionDimension(ImplicitRegion(x==1||y==1,{x,y,z}))", //
         "RegionDimension(ImplicitRegion(x==1||y==1,{x,y,z}))");
 
@@ -714,12 +727,26 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     // asking for either part is a union, which is as wide as the widest of them
     check("RegionDimension(BooleanRegion(#1||#2&, {Disk({0,0},1), Circle({3,0},1)}))", //
         "2");
-    // two planes of the space may meet in a line, in a plane, or not at all
+    // implicit parts over the same variables are asked for at once, so their equations are counted
+    // together: two planes of the space meet in a line, the same plane twice is still a plane
     check(
         "RegionDimension(BooleanRegion(#1&&#2&, {ImplicitRegion(x+y==1,{x,y,z}),"
             + " ImplicitRegion(x-y==0,{x,y,z})}))", //
-        "RegionDimension(BooleanRegion(#1&&#2&,{ImplicitRegion(x+y==1,{x,y,z}),ImplicitRegion(x-y=="
-            + "\n0,{x,y,z})}))");
+        "1");
+    check(
+        "RegionDimension(BooleanRegion(#1&&#2&, {ImplicitRegion(x+y==1,{x,y,z}),"
+            + " ImplicitRegion(2*x+2*y==2,{x,y,z})}))", //
+        "2");
+    check(
+        "RegionDimension(BooleanRegion(#1&&#2&&#3&, {Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}), ImplicitRegion(x-y==0,{x,y,z})}))", //
+        "1");
+    // parts of different spaces are no region at all, and have no dimension either
+    check(
+        "RegionDimension(BooleanRegion(#1&&#2&, {ImplicitRegion(x+y==1,{x,y,z}),"
+            + " ImplicitRegion(x+y==1,{x,y})}))", //
+        "RegionDimension(BooleanRegion(#1&&#2&,{ImplicitRegion(x+y==1,{x,y,z}),ImplicitRegion(x+y=="
+            + "\n1,{x,y})}))");
   }
 
   @Test
