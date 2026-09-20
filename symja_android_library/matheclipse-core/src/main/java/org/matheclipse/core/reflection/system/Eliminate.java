@@ -670,6 +670,9 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             return tryTrigToExp(ast, exprWithoutVariable, variable, multipleValues, engine);
           } else if (ast.isFree(x -> x.isLog(), true)) {
             return tryPowerExpand(ast, exprWithoutVariable, variable, multipleValues, engine);
+          } else {
+            return tryLogAttraction(ast, exprWithoutVariable, predicate, variable, multipleValues,
+                engine);
           }
         } else if (ast.isTimes()) {
           // a * b * c....
@@ -978,6 +981,96 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             return F.NIL;
           }
           return listOfRulesToValues(result, variable, multipleValues);
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /** The equations {@link #tryLogAttraction} is solving on this thread. */
+  private static final ThreadLocal<Set<IExpr>> LOG_ATTRACTION_IN_PROGRESS =
+      ThreadLocal.withInitial(HashSet::new);
+
+  /**
+   * The <i>Attraction</i> method of PRESS: if every term with the variable is an integer multiple
+   * of a logarithm, <code>n1*Log(u1) + n2*Log(u2) + ... + rest == c</code>, bring the occurrences
+   * of the variable together as <code>u1^n1 * u2^n2 * ... == E^(c - rest)</code> and solve this
+   * equation.
+   * <p>
+   * <code>Log(u) + Log(v) == Log(u*v)</code> only holds on the principal branch, so a root is only
+   * a solution if it satisfies the equation which was asked:
+   * <code>Log(x+1) + Log(x-1) == 3</code> gives <code>x^2-1 == E^3</code> with the roots
+   * <code>-Sqrt(1+E^3)</code> and <code>Sqrt(1+E^3)</code>, and only the second one is a solution.
+   * <p>
+   * See: <a href=
+   * "https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">Solving
+   * Symbolic Equations with PRESS</a> - 3.4 Attraction
+   * 
+   * @param plusAST
+   * @param exprWithoutVariable
+   * @param predicate
+   * @param variable
+   * @param multipleValues
+   * @param engine
+   * @return
+   */
+  private static IExpr tryLogAttraction(IAST plusAST, IExpr exprWithoutVariable,
+      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues, EvalEngine engine) {
+    IASTAppendable product = F.TimesAlloc(plusAST.argSize());
+    IASTAppendable rest = F.PlusAlloc(plusAST.argSize());
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr term = plusAST.get(i);
+      if (term.isFree(predicate, true)) {
+        rest.append(term);
+      } else if (term.isLog()) {
+        product.append(term.first());
+      } else if (term.isTimes() && term.size() == 3 && term.first().isInteger()
+          && term.second().isLog()) {
+        product.append(F.Power(term.second().first(), term.first()));
+      } else {
+        return F.NIL;
+      }
+    }
+    if (product.argSize() < 2) {
+      // a single logarithm is isolated with its inverse function
+      return F.NIL;
+    }
+    if (product.argSize() == 2
+        && product.arg1().isPowerReciprocal() != product.arg2().isPowerReciprocal()) {
+      // Log(1+u) - Log(1-u) == 2*ArcTanh(u) is exact and solved as u == Tanh(c/2)
+      IExpr numerator = product.arg1().isPowerReciprocal() ? product.arg2() : product.arg1();
+      IExpr denominator =
+          product.arg1().isPowerReciprocal() ? product.arg1().base() : product.arg2().base();
+      if (engine.evaluate(F.Expand(F.Plus(numerator, denominator))).equals(F.C2)) {
+        return F.NIL;
+      }
+    }
+    IExpr rhs = engine.evaluate(F.Exp(F.Subtract(exprWithoutVariable, rest.oneIdentity0())));
+    IExpr termsEqualZero = engine.evaluate(F.Subtract(product, rhs));
+    // PowerExpand() restates the product as the sum of logarithms which is being solved here
+    Set<IExpr> inProgress = LOG_ATTRACTION_IN_PROGRESS.get();
+    if (!inProgress.add(termsEqualZero)) {
+      return F.NIL;
+    }
+    IExpr result;
+    try {
+      IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
+      Solve.SolveData solveData = new Solve.SolveData();
+      result = solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+    } finally {
+      inProgress.remove(termsEqualZero);
+    }
+    if (result.isListOfLists()) {
+      IExpr values = listOfRulesToValues(result, variable, true);
+      if (values.isList()) {
+        IExpr equationEqualZero = F.Subtract(plusAST, exprWithoutVariable);
+        IAST solutions = ((IAST) values).select(value -> {
+          IExpr residual = engine.evalQuiet(F.N(F.subst(equationEqualZero, variable, value)));
+          // a root is only rejected, if it is known not to satisfy the equation
+          return !residual.isNumber() || F.isZero(residual.evalfc(), 1e-10);
+        });
+        if (solutions.argSize() > 0) {
+          return multipleValues ? solutions : solutions.first();
         }
       }
     }

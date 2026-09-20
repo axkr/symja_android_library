@@ -1200,6 +1200,16 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       if (!res.isList() || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
         return F.NIL;
       }
+      if (res.isListOfLists()) {
+        // check every solution with all of its rules; the elimination squares equations and
+        // inverts even functions, which gives roots of the wrong sign
+        IASTMutable checkedSolutions =
+            crossChecking(termsEqualZeroList, ((IAST) res).copy(), engine);
+        if (checkedSolutions.isEmptyList()) {
+          return F.CEmptyList;
+        }
+        return solveNumeric(checkedSolutions, numericFlag, engine);
+      }
       IASTAppendable resultList = F.ListAlloc(1);
       resultList.append(res);
 
@@ -1784,6 +1794,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
               if (!replaceAll.isPossibleZero(true, Config.DEFAULT_ROOTS_CHOP_DELTA)) {
                 // if (!engine.evalTrue(F.PossibleZeroQ(replaceAll))) {
+                removedPositions[untilPosition++] = j;
+                break;
+              }
+            }
+          } else if (!replaceAll.isFree(S.ConditionalExpression, true)) {
+            // A periodic family of solutions ConditionalExpression(f(C(1)), C(1)∈Integers) has to
+            // solve the equations for every integer, so it has to solve them for C(1) == 0.
+            IExpr member = F.subst(replaceAll, x -> x.isAST(S.C, 2) ? F.C0 : F.NIL);
+            member = F.subst(member, x -> x.isConditionalExpression() ? x.first() : F.NIL);
+            if (member.isNumericFunction()) {
+              IExpr possibleZero = engine.evalQuiet(F.N(member));
+              if (possibleZero.isNumber()
+                  && !((INumber) possibleZero).isZero(Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
                 removedPositions[untilPosition++] = j;
                 break;
               }

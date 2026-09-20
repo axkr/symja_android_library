@@ -1975,11 +1975,31 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // PRESS 3.1 Isolation
     check("Solve(Log(x^2-1)==3,x)", //
         "{{x->-Sqrt(1+E^3)},{x->Sqrt(1+E^3)}}");
-    // PRESS (6) - needs Attraction and Collection to Log(x^2-1) == 3, before it is isolated to
-    // x == Sqrt(1+E^3); the negative root is no solution here
-    // TODO combine the logarithms
+    // PRESS (6) - Attraction and Collection give Log(x^2-1) == 3, which is isolated as in 3.1;
+    // the negative root is no solution: Log(-1-Sqrt(1+E^3))+Log(1-Sqrt(1+E^3)) == 3+I*2*Pi
     check("Solve(Log(x+1)+Log(x-1)==3,x)", //
-        "Solve(Log(-1+x)+Log(1+x)==3,x)");
+        "{{x->Sqrt(1+E^3)}}");
+    check("Solve(Log(x+1)+Log(x-1)-3==0,x)", //
+        "{{x->Sqrt(1+E^3)}}");
+    // x == -2 is no solution
+    check("Solve(Log(x)+Log(x-3)==Log(10),x)", //
+        "{{x->5}}");
+    // x == 1 is no solution
+    check("Solve(Log(x-2)+Log(x-3)==Log(2),x)", //
+        "{{x->4}}");
+    // integer multiples: x^2/(x+2) == 1; x == -1 is no solution
+    check("Solve(2*Log(x)-Log(x+2)==0,x)", //
+        "{{x->2}}");
+    check("Solve(Log(x+1)-Log(x-1)==1,x)", //
+        "{{x->-(1+E)/(1-E)}}");
+    check("Solve(Log(2,x)+Log(2,x-2)==3,x)", //
+        "{{x->4}}");
+    // both roots of -x^2 == E are solutions
+    check("Solve(Log(x)+Log(-x)==1,x)", //
+        "{{x->-I*Sqrt(E)},{x->I*Sqrt(E)}}");
+    // a root with parameters cannot be checked
+    check("Solve(Log(x)+Log(x+a)==b,x)", //
+        "{{x->1/2*(-a-Sqrt(a^2+4*E^b))},{x->1/2*(-a+Sqrt(a^2+4*E^b))}}");
   }
 
   @Test
@@ -2015,11 +2035,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolvePRESSSimultaneous() {
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-    // PRESS (8) - Cosh(x) and Sinh(x) are two kernels of the same variable; they are coupled by
-    // Cosh(x)^2-Sinh(x)^2 == 1
-    // TODO homogenize with E^x and E^y
+    // PRESS (8) - the elimination of x gives an equation in Log(Sinh(y)) and
+    // Log(29-60*Cosh(y)+36*Cosh(y)^2), which is solved by attraction. The solution of the paper
+    // is x == -Log(2) == ArcSinh(-3/4), y == Log(3/2) == ArcCosh(13/12); y == -ArcCosh(13/12) is a
+    // root of the squared equation only and is dropped by the cross check.
     check("Solve({Cosh(x)-3*Sinh(y)==0,2*Sinh(x)+6*Cosh(y)==5},{x,y})", //
-        "Solve({Cosh(x)-3*Sinh(y)==0,6*Cosh(y)+2*Sinh(x)==5},{x,y})");
+        "{{y->ConditionalExpression(ArcCosh(13/12)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcSinh(\n" //
+            + "5/2-3*Cosh(ArcCosh(13/12)+I*2*Pi*C(1))),C(1)∈Integers)}}");
+    check("N(Solve({Cosh(x)-3*Sinh(y)==0,2*Sinh(x)+6*Cosh(y)==5},{x,y}) /. C(1)->0)", //
+        "{{y->0.405465,x->-0.693147}}");
   }
 
   @Test
