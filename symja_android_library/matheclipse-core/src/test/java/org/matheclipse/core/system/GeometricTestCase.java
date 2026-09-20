@@ -1628,6 +1628,21 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     // parts of different spaces are no region at all, and RegionIntersection::regdims says so
     check("RegionIntersection(Disk({0,0},1), Ball({0,0,0},1))", //
         "RegionIntersection(Disk({0,0},1),Ball({0,0,0},1))");
+    // an intersection carried as a BooleanRegion asks for all of its parts, so intersecting it
+    // again takes it apart rather than nesting it
+    check("RegionIntersection(Disk({1,0},2), RegionIntersection(Disk({0,0},2), Disk({0,3},2)))", //
+        "BooleanRegion(#1&&#2&&#3&,{Disk({1,0},2),Disk({0,0},2),Disk({0,3},2)})");
+    check(
+        "RegionIntersection(Ball({0.5,0.5,0.5},0.5), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z})))", //
+        // the long line is wrapped where the output wraps it
+        "BooleanRegion(#1&&#2&&#3&,{Ball({0.5,0.5,0.5},0.5),Cube({0.5,0.5,0.5},1),ImplicitRegion(x+"
+            + "y==\n1,{x,y,z})})");
+    // a region that asks for either of its parts is one part of its own
+    check(
+        "RegionIntersection(Disk({0,0},2), BooleanRegion(#1||#2&, {Disk({0,3},2), Disk({1,1},1)}))", //
+        "BooleanRegion(#1&&#2&,{Disk({0,0},2),BooleanRegion(#1||#2&,{Disk({0,3},2),Disk({\n1,1},1)"
+            + "})})");
   }
 
   /**

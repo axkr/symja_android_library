@@ -24,7 +24,8 @@ The intersection is worked out where it is certainly known:
 
 Anything else is carried as a `BooleanRegion` of the parts together with the condition a point has
 to meet to lie in all of them. That is a region in its own right:
-[RegionMember](RegionMember.md) answers for it.
+[RegionMember](RegionMember.md) answers for it. Intersecting one of those with another region asks
+for all of the parts at once, so it is taken apart rather than nested.
 
 ### Examples
 
@@ -56,6 +57,13 @@ Two disks that are not about one centre cannot be drawn as one shape:
 ```
 >> RegionIntersection(Disk({0,0},2), Disk({0,3},2))
 BooleanRegion(#1&&#2&,{Disk({0,0},2),Disk({0,3},2)})
+```
+
+Intersecting such a region again asks for all of the parts together:
+
+```
+>> RegionIntersection(Disk({1,0},2), RegionIntersection(Disk({0,0},2), Disk({0,3},2)))
+BooleanRegion(#1&&#2&&#3&,{Disk({1,0},2),Disk({0,0},2),Disk({0,3},2)})
 ```
 
 It still answers which points lie in both, and tells a symbolic point what it would take:

@@ -22,6 +22,12 @@ Noteworthy changes are documented in this file.
   left alone. This is the numeric bug behind ad-si/Woxi#871, where the unevaluated area silently
   zeroed a notebook's total.
 
+- `RegionIntersection` takes a `BooleanRegion` of its own apart. Intersecting a region with an
+  intersection that was carried as `BooleanRegion(#1 && #2 &, {...})` asks for all of the parts at
+  once, so they are now flattened into one `BooleanRegion(#1 && #2 && #3 &, {...})` as the
+  reference implementation writes it, rather than nested. A region asking for either of its parts
+  stays one part of its own. Checked against Mathematica on 2026-09-20.
+
 - `RegionIntersection` computes something. It had no evaluator at all - it was an inert head that
   `RegionMember` read as the conjunction of its parts, so even two concentric balls came back as
   they were written. It now works the intersection out wherever it is certainly known: the same

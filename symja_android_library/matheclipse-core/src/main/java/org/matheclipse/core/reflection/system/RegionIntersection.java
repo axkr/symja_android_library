@@ -208,9 +208,38 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
         changed = true;
         continue;
       }
+      if (isConjunction(region)) {
+        // an intersection that was already carried as a BooleanRegion asks for all of its parts,
+        // so it is taken apart here rather than nested
+        flatten((IAST) region.second(), regions);
+        changed = true;
+        continue;
+      }
       regions.add(region);
     }
     return changed;
+  }
+
+  /**
+   * Whether the region is a <code>BooleanRegion</code> that asks for all of its parts at once,
+   * which is what an intersection asks for too. A region asking for either of its parts is not
+   * one, and stays a part of its own.
+   */
+  private static boolean isConjunction(IExpr region) {
+    if (!region.isAST(S.BooleanRegion, 3) || !region.second().isList()
+        || !region.first().isAST(S.Function, 2) || !region.first().first().isAST(S.And)) {
+      return false;
+    }
+    IAST and = (IAST) region.first().first();
+    if (and.argSize() != region.second().argSize()) {
+      return false;
+    }
+    for (int i = 1; i <= and.argSize(); i++) {
+      if (!and.get(i).isAST(S.Slot, 2) || and.get(i).first().toIntDefault() != i) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
