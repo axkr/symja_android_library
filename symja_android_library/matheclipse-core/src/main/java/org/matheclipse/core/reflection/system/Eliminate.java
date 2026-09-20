@@ -748,6 +748,11 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             }
             return res1;
           } else if (base.isFree(predicate, true)) {
+            if (!Solve.isFiniteValue(engine.evaluate(F.Log(exprWithoutVariable)))) {
+              // a power never takes the value 0: Log(0) would give f(x) == -Infinity, so the
+              // equation has no solution
+              return S.True;
+            }
             // Decide between the single principal value and the full periodic family of complex
             // solutions for `base ^ f(x) == exprWithoutVariable`.
             final boolean principalOnly;

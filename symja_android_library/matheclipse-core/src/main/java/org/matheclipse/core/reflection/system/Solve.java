@@ -481,8 +481,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IAST variables, IASTAppendable resultList, IASTAppendable matrix, IASTAppendable vector,
         int maximumNumberOfResults, ExprAnalyzer exprAnalyzer, int[] currEquation, IAST listOfRules,
         boolean numericFlag, EvalEngine engine) throws NoSolution {
-      listOfRules = substituteInverseResults(listOfRules, engine);
-      boolean evaled = false;
+      IAST inverseResults = substituteInverseResults(listOfRules, engine);
+      // every branch of the inverse function is unattainable, so this equation has no solution:
+      // Coth(x) == -1 gives the single branch ArcCoth(-1) + I*Pi*C(1) == -Infinity + I*Pi*C(1)
+      boolean evaled = listOfRules.argSize() > 0 && inverseResults.argSize() == 0;
+      listOfRules = inverseResults;
       ++currEquation[0];
       for (int k = 1; k < listOfRules.size(); k++) {
         if (currEquation[0] >= analyzerList.size()) {
@@ -552,9 +555,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (rhs.isList()) {
           IAST rhsList = (IAST) rhs;
           for (int j = 1; j < rhsList.size(); j++) {
-            newListOfRules.append(rule.setAtCopy(2, rhsList.get(j)));
+            if (isFiniteValue(rhsList.get(j))) {
+              newListOfRules.append(rule.setAtCopy(2, rhsList.get(j)));
+            }
           }
-        } else {
+        } else if (isFiniteValue(rhs)) {
           newListOfRules.append(rule.setAtCopy(2, rhs));
         }
       }
@@ -2751,21 +2756,31 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Inverting a kernel for a value it cannot take gives a solution which is not finite:
+   * Whether <code>value</code> is a value a variable can take. Inverting a function for a value it
+   * never takes gives a value which is not finite, so that the equation has no solution at all:
+   * <code>Coth(x) == -1</code> gives <code>x == ArcCoth(-1) == -Infinity</code>,
+   * <code>Sech(x) == 0</code> gives <code>x == ArcSech(0) == Infinity</code> and
+   * <code>E^x == 0</code> gives <code>x == Log(0) == -Infinity</code>.
+   */
+  static boolean isFiniteValue(IExpr value) {
+    return value.isFree(
+        x -> x.isDirectedInfinity() || x.isIndeterminate() || x == S.Undefined, true);
+  }
+
+  /**
+   * Inverting a function for a value it cannot take gives a solution which is not finite:
    * <code>E^(I*x) == 0</code> gives <code>x -> ComplexInfinity</code> and <code>Coth(x) == -1</code>
    * gives <code>x -> -Infinity</code>. Drop these solutions.
+   * <p>
+   * An empty list is returned, if no finite solution remains: every value which solves the equation
+   * is unattainable, so the equation has no solution. An equation whose solutions were merely not
+   * found stays unevaluated instead, because no solution at all was created for it.
    * 
-   * @return {@link F#NIL} if no finite solution remains; the equation may still have solutions
-   *         which were not found
+   * @see #isFiniteValue(IExpr)
    */
   private static IExpr dropNonFiniteSolutions(IExpr result) {
     if (result.isListOfLists() && result.argSize() > 0) {
-      IAST solutions = (IAST) result;
-      IAST finite = solutions.select(
-          solution -> solution.isFree(x -> x.isDirectedInfinity() || x.isIndeterminate(), true));
-      if (finite.argSize() < solutions.argSize()) {
-        return finite.argSize() > 0 ? finite : F.NIL;
-      }
+      return ((IAST) result).select(Solve::isFiniteValue);
     }
     return result;
   }

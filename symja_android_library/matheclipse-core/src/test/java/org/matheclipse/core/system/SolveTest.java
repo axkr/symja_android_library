@@ -2094,12 +2094,36 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveNonFiniteSolution() {
-    // Coth(x) == -1 has no solution; inverting the kernel gave x -> -Infinity+I*Pi*C(1)
+    // an equation has no solution, if the inverse function of its kernel has no finite value:
+    // ArcCoth(-1) == -Infinity, ArcTanh(1) == Infinity, ArcSech(0) == Infinity,
+    // ArcCsch(0) == ComplexInfinity, Log(0) == -Infinity and Tan(Pi/2) == ComplexInfinity
+    check("Solve(Coth(x)==-1,x)", //
+        "{}");
+    check("Solve(Coth(x)==1,x)", //
+        "{}");
+    check("Solve(Tanh(x)==1,x)", //
+        "{}");
+    check("Solve(Tanh(x)==-1,x)", //
+        "{}");
+    check("Solve(Sech(x)==0,x)", //
+        "{}");
+    check("Solve(Csch(x)==0,x)", //
+        "{}");
+    check("Solve(E^x==0,x)", //
+        "{}");
+    check("Solve(E^(I*5*x)==0,x)", //
+        "{}");
+    check("Solve(2^x==0,x)", //
+        "{}");
+    check("Solve(ArcTan(x)==Pi/2,x)", //
+        "{}");
+    // only the -Infinity family of Coth(x) == -1 is dropped
     check("Solve(3*Csch(x)^2-Coth(x)==1,x)", //
         "{{x->ConditionalExpression(ArcCoth(4/3)+I*Pi*C(1),C(1)∈Integers)}}");
-    // TODO {}
-    check("Solve(Coth(x)==-1,x)", //
-        "Solve(Coth(x)==-1,x)");
+    // an equation whose solutions are merely not found stays unevaluated instead, see
+    // testSolveHO7(): Solve(Cos(x)+Tan(3*x)+Cos(5*x)==0,x)
+    check("Solve(Log(x)==Infinity,x)", //
+        "Solve(Log(x)==Infinity,x)");
   }
 
   @Test
