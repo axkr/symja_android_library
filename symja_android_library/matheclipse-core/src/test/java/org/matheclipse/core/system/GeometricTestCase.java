@@ -1610,10 +1610,15 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     // intersecting is associative
     check("RegionIntersection(RegionIntersection(Disk({0,0},2), Disk({0,0},1)), Disk({0,0},3))", //
         "Disk({0,0},1)");
-    // two disks that are not concentric cannot be one shape, and stay as written - which still
-    // answers who lies in both
-    check("RegionIntersection(Disk({0,0},2), Disk({0,3},2))", //
-        "RegionIntersection(Disk({0,0},2),Disk({0,3},2))");
+    // two disks that are not concentric cannot be drawn as one shape, so the intersection is
+    // carried as the condition a point has to meet - which still answers who lies in both
+    check("ToString(RegionIntersection(Disk({0,0},2), Disk({0,3},2)), InputForm)", //
+        "BooleanRegion(#1&&#2&,{Disk({0,0},2),Disk({0,3},2)})");
+    check("RegionMember(RegionIntersection(Disk({0,0},2), Disk({0,3},2)), {x,y})", //
+        "x^2+y^2<=4&&x^2+(3-y)^2<=4");
+    // a BooleanRegion written by hand answers the same way
+    check("RegionMember(BooleanRegion(#1 || #2 &, {Disk({0,0},1), Disk({3,0},1)}), {3,0})", //
+        "True");
     check("RegionMember(RegionIntersection(Disk({0,0},1), Disk({1,0},1)), {1/2,0})", //
         "True");
     check("RegionMember(RegionIntersection(Disk({0,0},1), Disk({3,0},1)), {1/2,0})", //

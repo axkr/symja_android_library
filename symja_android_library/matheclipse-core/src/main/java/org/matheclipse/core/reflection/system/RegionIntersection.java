@@ -37,7 +37,7 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     List<IExpr> regions = new ArrayList<IExpr>();
-    boolean changed = flatten(ast, regions);
+    flatten(ast, regions);
 
     IExpr intervals = intervals(regions, engine);
     if (intervals.isPresent()) {
@@ -58,14 +58,12 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
       if (region.isAST(S.FullRegion, 2)) {
         // everything lies in the full region, so it constrains nothing
         regions.remove(i--);
-        changed = true;
         continue;
       }
       for (int j = 0; j < i; j++) {
         if (regions.get(j).equals(region)) {
           // a region intersected with itself is itself
           regions.remove(i--);
-          changed = true;
           break;
         }
       }
@@ -90,7 +88,22 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
     if (combined.isPresent()) {
       return combined;
     }
-    return changed ? F.ast(regions.toArray(new IExpr[0]), S.RegionIntersection) : F.NIL;
+    // nothing here can be written as one shape, so the intersection is carried as what it is:
+    // the regions, and the condition a point has to meet to lie in all of them
+    return booleanRegion(regions);
+  }
+
+  /**
+   * <code>BooleanRegion(#1 && #2 && ... &, {reg1, reg2, ...})</code> - the form the reference
+   * implementation gives an intersection it cannot draw as a single shape.
+   */
+  private static IExpr booleanRegion(List<IExpr> regions) {
+    IASTAppendable and = F.ast(S.And, regions.size());
+    for (int i = 1; i <= regions.size(); i++) {
+      and.append(F.Slot(i));
+    }
+    return F.binaryAST2(S.BooleanRegion, F.Function(and),
+        F.ast(regions.toArray(new IExpr[0]), S.List));
   }
 
   /**

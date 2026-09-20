@@ -22,8 +22,9 @@ The intersection is worked out where it is certainly known:
 | `Interval`s of the line | the interval they overlap in |
 | regions whose bounds lie apart | `EmptyRegion(n)` |
 
-Anything else stays as it was written, which is not a failure: the unevaluated form is itself a
-region, and [RegionMember](RegionMember.md) reads it as the conjunction of its parts.
+Anything else is carried as a `BooleanRegion` of the parts together with the condition a point has
+to meet to lie in all of them. That is a region in its own right:
+[RegionMember](RegionMember.md) answers for it.
 
 ### Examples
 
@@ -50,10 +51,19 @@ ImplicitRegion(x^2+y^2<1&&x>0,{x,y})
 1
 ```
 
-Two disks that are not about one centre cannot be written as one shape, so the intersection stays
-as it is - and still answers which points lie in both:
+Two disks that are not about one centre cannot be drawn as one shape:
 
 ```
+>> RegionIntersection(Disk({0,0},2), Disk({0,3},2))
+BooleanRegion(#1&&#2&,{Disk({0,0},2),Disk({0,3},2)})
+```
+
+It still answers which points lie in both, and tells a symbolic point what it would take:
+
+```
+>> RegionMember(RegionIntersection(Disk({0,0},2), Disk({0,3},2)), {x,y})
+x^2+y^2<=4&&x^2+(3-y)^2<=4
+
 >> RegionMember(RegionIntersection(Disk({0,0},1), Disk({1,0},1)), {1/2,0})
 True
 

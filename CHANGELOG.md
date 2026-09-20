@@ -14,9 +14,11 @@ Noteworthy changes are documented in this file.
   living in different spaces report `RegionIntersection::regdims` rather than quietly doing
   nothing. Anything else stays as it was written, which keeps `RegionMember` answering for it as
   before - and `Area` and `RegionMeasure` now reach a result wherever the intersection became a
-  shape. Every case was checked against Mathematica on 2026-09-20; the one difference is that a
-  pair that cannot be combined comes back as the `RegionIntersection` itself, where the reference
-  gives a `BooleanRegion`, a head Symja does not have.
+  shape. A pair that cannot be drawn as one shape is carried as
+  `BooleanRegion(#1 && #2 &, {reg1, reg2})`, the form the reference gives, and `RegionMember` now
+  answers for a `BooleanRegion` - a hand-written one included - by applying its function to the
+  parts' own conditions, so a symbolic point gets the condition back. Every case was checked
+  against Mathematica on 2026-09-20.
 
 - A `BoundaryMeshRegion` may write its cells the way the reference writes them.
   `BoundaryMeshRegion({{0,0},{1,0},{0,1}}, Line({1,2,3,1}))` was not read as a region at all - it

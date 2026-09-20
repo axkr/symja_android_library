@@ -123,6 +123,11 @@ public class RegionEmbeddingDimension extends AbstractFunctionEvaluator {
           case ID.ParametricRegion:
             // ParametricRegion({x1,...,xn}, {params}) maps into n coordinates
             return ast.argSize() == 2 && ast.arg1().isList() ? ast.arg1().argSize() : -1;
+          case ID.BooleanRegion:
+            // the parts live in the space, the function only combines them
+            return ast.argSize() == 2 && ast.arg2().isList()
+                ? combinedEmbeddingDimension((IAST) ast.arg2())
+                : -1;
           case ID.RegionUnion:
           case ID.RegionIntersection:
           case ID.RegionDifference:
