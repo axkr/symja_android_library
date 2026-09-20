@@ -34,6 +34,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.eval.util.InverseFunctionExpander;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.ExprAnalyzer;
 import org.matheclipse.core.expression.F;
@@ -555,11 +556,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (rhs.isList()) {
           IAST rhsList = (IAST) rhs;
           for (int j = 1; j < rhsList.size(); j++) {
-            if (isFiniteValue(rhsList.get(j))) {
+            if (InverseFunctionExpander.isFiniteValue(rhsList.get(j))) {
               newListOfRules.append(rule.setAtCopy(2, rhsList.get(j)));
             }
           }
-        } else if (isFiniteValue(rhs)) {
+        } else if (InverseFunctionExpander.isFiniteValue(rhs)) {
           newListOfRules.append(rule.setAtCopy(2, rhs));
         }
       }
@@ -2756,18 +2757,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Whether <code>value</code> is a value a variable can take. Inverting a function for a value it
-   * never takes gives a value which is not finite, so that the equation has no solution at all:
-   * <code>Coth(x) == -1</code> gives <code>x == ArcCoth(-1) == -Infinity</code>,
-   * <code>Sech(x) == 0</code> gives <code>x == ArcSech(0) == Infinity</code> and
-   * <code>E^x == 0</code> gives <code>x == Log(0) == -Infinity</code>.
-   */
-  static boolean isFiniteValue(IExpr value) {
-    return value.isFree(
-        x -> x.isDirectedInfinity() || x.isIndeterminate() || x == S.Undefined, true);
-  }
-
-  /**
    * Inverting a function for a value it cannot take gives a solution which is not finite:
    * <code>E^(I*x) == 0</code> gives <code>x -> ComplexInfinity</code> and <code>Coth(x) == -1</code>
    * gives <code>x -> -Infinity</code>. Drop these solutions.
@@ -2780,7 +2769,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr dropNonFiniteSolutions(IExpr result) {
     if (result.isListOfLists() && result.argSize() > 0) {
-      return ((IAST) result).select(Solve::isFiniteValue);
+      return ((IAST) result).select(InverseFunctionExpander::isFiniteValue);
     }
     return result;
   }

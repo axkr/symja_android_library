@@ -790,6 +790,68 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * An inverse function only takes the values in the range of its principal branch, so an equation
+   * which asks for another value has no solution.
+   */
+  @Test
+  public void testReduceInverseFunctionRange() {
+    // ArcTan has the range -Pi/2 < Re(z) < Pi/2
+    check("Reduce(ArcTan(x) == Pi/2, x)", //
+        "False");
+    check("Reduce(ArcTan(x) == -Pi/2, x)", //
+        "False");
+    check("Reduce(ArcTan(x) == 2, x)", //
+        "False");
+    check("Reduce(ArcTan(x) == Pi/2, x, Reals)", //
+        "False");
+    // the amplitude, the offset and a linear argument are reduced first
+    check("Reduce(2*ArcTan(x) == Pi, x)", //
+        "False");
+    check("Reduce(ArcTan(x) + 1 == Pi/2 + 1, x)", //
+        "False");
+    check("Reduce(ArcTan(2*x+1) == Pi/2, x)", //
+        "False");
+    // the range doesn't depend on the coefficient of the variable
+    check("Reduce(ArcTan(a*x) == Pi/2, x)", //
+        "False");
+    // ArcSin and ArcCos have the ranges -Pi/2 <= Re(z) <= Pi/2 and 0 <= Re(z) <= Pi, ArcCot
+    // excludes 0
+    check("Reduce(ArcSin(x) == Pi, x)", //
+        "False");
+    check("Reduce(ArcCos(x) == 2*Pi, x)", //
+        "False");
+    check("Reduce(ArcCot(x) == Pi, x)", //
+        "False");
+    check("Reduce(ArcCot(x) == 0, x)", //
+        "False");
+    // Log has the range -Pi < Im(z) <= Pi
+    check("Reduce(Log(x) == 2 + 5*I, x)", //
+        "False");
+    check("Reduce(Log(x) == Infinity, x)", //
+        "False");
+
+    // a value in the range is inverted
+    check("Reduce(ArcTan(x) == 1, x)", //
+        "x==Tan(1)");
+    check("Reduce(ArcSin(x) == 1, x)", //
+        "x==Sin(1)");
+    check("Reduce(ArcCos(x) == 1, x)", //
+        "x==Cos(1)");
+    check("Reduce(ArcTan(x) == Pi/4, x, Reals)", //
+        "x==1");
+    check("Reduce(Log(x) == 2, x)", //
+        "x==E^2");
+    // the root is complex, so it is no solution over the reals
+    check("Reduce(Log(x) == 2 + 3*I, x)", //
+        "x==E^(2+I*3)");
+    check("Reduce(Log(x) == 2 + 3*I, x, Reals)", //
+        "False");
+    // an undecidable range condition stays unevaluated
+    check("Reduce(ArcTan(x) == a, x)", //
+        "ArcTan(x)==a");
+  }
+
+  /**
    * An exponential equation has the same kind of periodic solution family as a trigonometric
    * one.
    */

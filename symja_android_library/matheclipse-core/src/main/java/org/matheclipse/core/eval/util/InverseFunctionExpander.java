@@ -39,6 +39,20 @@ public class InverseFunctionExpander {
   }
 
   /**
+   * Whether <code>value</code> is a value a variable can take. Inverting a function for a value it
+   * never takes gives a value which is not finite, so that the equation has no solution at all:
+   * <code>Coth(x) == -1</code> gives <code>x == ArcCoth(-1) == -Infinity</code>,
+   * <code>Sech(x) == 0</code> gives <code>x == ArcSech(0) == Infinity</code> and
+   * <code>E^x == 0</code> gives <code>x == Log(0) == -Infinity</code>.
+   *
+   * @param value the value of an inverse function
+   */
+  public static boolean isFiniteValue(IExpr value) {
+    return value.isFree(x -> x.isDirectedInfinity() || x.isIndeterminate() || x == S.Undefined,
+        true);
+  }
+
+  /**
    * Substitute the dummy {@link ExprAnalyzer#$InverseFunction} in the <code>expr</code> with the
    * inverse function associated with the <code>symbol</code>.
    *

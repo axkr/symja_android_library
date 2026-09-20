@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.IntPredicate;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.convert.VariablesSet;
@@ -1024,7 +1025,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * @param variable the variable to solve for
    * @return the parsed term or <code>null</code> if <code>f</code> doesn't have this shape
    */
-  private static PeriodicTerm parsePeriodicTerm(IExpr f, IExpr variable) {
+  private static PeriodicTerm parsePeriodicTerm(IExpr f, IExpr variable, IntPredicate headFilter) {
     if (f.isFree(variable) || f.isPolynomial(variable)) {
       return null;
     }
@@ -1082,7 +1083,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
       innerArg = periodicFunction.exponent();
     } else if (periodicFunction.isAST1() && periodicFunction.head().isBuiltInSymbol()
-        && isForwardPeriodicFunction(((IBuiltInSymbol) periodicFunction.head()).ordinal())) {
+        && headFilter.test(((IBuiltInSymbol) periodicFunction.head()).ordinal())) {
       head = periodicFunction.head();
       innerArg = periodicFunction.first();
     } else {
@@ -1151,7 +1152,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   private static IExpr reducePeriodicEquation(IAST equation, IExpr variable, ISymbol domain,
       EvalEngine engine) {
     IExpr f = engine.evaluate(F.Subtract(equation.arg1(), equation.arg2()));
-    PeriodicTerm term = parsePeriodicTerm(f, variable);
+    PeriodicTerm term = parsePeriodicTerm(f, variable, Reduce::isForwardPeriodicFunction);
     if (term == null) {
       return F.NIL;
     }
@@ -1176,7 +1177,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     IAST branchList = branches.isList() ? (IAST) branches : F.List(branches);
     if (!term.isPower()) {
       // the function never takes this value: Coth(x) == -1 gives ArcCoth(-1) == -Infinity
-      IAST attainableBranches = branchList.select(branch -> Solve.isFiniteValue(
+      IAST attainableBranches = branchList.select(branch -> InverseFunctionExpander.isFiniteValue(
           engine.evaluate(branch.isConditionalExpression() ? branch.first() : branch)));
       if (attainableBranches.argSize() == 0) {
         return S.False;
@@ -2115,7 +2116,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       IExpr f = engine.evaluate(F.Subtract(arg.first(), arg.second()));
-      PeriodicTerm term = parsePeriodicTerm(f, variable);
+      PeriodicTerm term =
+          parsePeriodicTerm(f, variable, Reduce::isForwardPeriodicFunction);
       if (term != null) {
         if (relation.isPresent() || term.isPower() || !isPoleFreeTrigFunction(term.head)) {
           return F.NIL;
@@ -2230,6 +2232,84 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return found;
     }
     return false;
+  }
+
+  /**
+   * Reduce an equation <code>amplitude*f(c1*variable+c0) + rest == 0</code> whose function
+   * <code>f</code> is an inverse function with a restricted range, like {@link S#ArcTan} or
+   * {@link S#Log}.
+   * <p>
+   * {@link InverseFunctionExpander} returns the inverse of such a function together with the
+   * condition under which the value lies in the range of its principal branch. If that condition
+   * is <code>False</code> the equation has no solution at all: <code>ArcTan(x) == Pi/2</code> would
+   * need <code>x == Tan(Pi/2) == ComplexInfinity</code>.
+   *
+   * @param equation an {@link S#Equal} equation
+   * @param variable the variable to solve for
+   * @param domain the reduction domain ({@link S#Reals} or {@link S#Complexes})
+   * @param engine the evaluation engine
+   * @return the reduced expression or {@link F#NIL} if the equation isn't a supported single
+   *         inverse-function equation
+   */
+  private static IExpr reduceInverseFunctionEquation(IAST equation, IExpr variable, ISymbol domain,
+      EvalEngine engine) {
+    IExpr f = engine.evaluate(F.Subtract(equation.arg1(), equation.arg2()));
+    PeriodicTerm term = parsePeriodicTerm(f, variable, Reduce::isRestrictedRangeFunction);
+    if (term == null || term.isPower()) {
+      return F.NIL;
+    }
+    // f(c1*variable+c0) == -rest/amplitude
+    IExpr rhsValue = engine.evaluate(F.Divide(F.Negate(term.rest), term.amplitude));
+    IExpr branch =
+        InverseFunctionExpander.expandPeriodicInverse((IBuiltInSymbol) term.head, rhsValue);
+    if (branch.isNIL() || !branch.isConditionalExpression()) {
+      return F.NIL;
+    }
+    IExpr condition = engine.evaluate(branch.second());
+    if (condition.isFalse()) {
+      // the value is outside the range of the principal branch, so no argument gives it
+      return S.False;
+    }
+    IExpr value = engine.evaluate(branch.first());
+    if (!InverseFunctionExpander.isFiniteValue(value)) {
+      return S.False;
+    }
+    if (!condition.isTrue()) {
+      // the range condition depends on parameters and isn't decided here
+      return F.NIL;
+    }
+    if (!engine.evalTrue(F.Unequal(term.c1, F.C0))) {
+      // a vanishing coefficient needs a parametric case analysis
+      return F.NIL;
+    }
+    // c1*variable + c0 == value => variable == (value-c0)/c1
+    IExpr root = engine.evaluate(F.Divide(F.Subtract(value, term.c0), term.c1));
+    if (domain == S.Reals && isComplexNonReal(root)) {
+      return S.False;
+    }
+    return engine.evaluate(F.Equal(variable, root));
+  }
+
+  /**
+   * Test whether the given function head id refers to an inverse function whose principal branch
+   * has a restricted range, so that {@link InverseFunctionExpander} returns its inverse under a
+   * condition on the value instead of a periodic family.
+   *
+   * @param headID the {@link ID} of the function head
+   * @return <code>true</code> for {@link S#ArcSin}, {@link S#ArcCos}, {@link S#ArcTan},
+   *         {@link S#ArcCot} and {@link S#Log}
+   */
+  private static boolean isRestrictedRangeFunction(int headID) {
+    switch (headID) {
+      case ID.ArcCos:
+      case ID.ArcCot:
+      case ID.ArcSin:
+      case ID.ArcTan:
+      case ID.Log:
+        return true;
+      default:
+        return false;
+    }
   }
 
   /**
@@ -2561,6 +2641,11 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         IExpr periodic = reducePeriodicEquation((IAST) expr, variable, domain, engine);
         if (periodic.isPresent()) {
           return periodic;
+        }
+        // an inverse function has a restricted range, e.g. ArcTan(x)==Pi/2 has no solution
+        IExpr inverseRange = reduceInverseFunctionEquation((IAST) expr, variable, domain, engine);
+        if (inverseRange.isPresent()) {
+          return inverseRange;
         }
       }
 

@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.eval.util.InverseFunctionExpander;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -748,7 +749,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             }
             return res1;
           } else if (base.isFree(predicate, true)) {
-            if (!Solve.isFiniteValue(engine.evaluate(F.Log(exprWithoutVariable)))) {
+            if (!InverseFunctionExpander.isFiniteValue(engine.evaluate(F.Log(exprWithoutVariable)))) {
               // a power never takes the value 0: Log(0) would give f(x) == -Infinity, so the
               // equation has no solution
               return S.True;
