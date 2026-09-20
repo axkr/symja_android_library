@@ -2535,6 +2535,16 @@ public class S {
   public final static IBuiltInSymbol BooleanQ = S.initFinalSymbol("BooleanQ", ID.BooleanQ);
 
   /**
+   * BooleanRegion(x) - TODO describe `BooleanRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BooleanRegion.md">BooleanRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BooleanRegion =
+      S.initFinalSymbol("BooleanRegion", ID.BooleanRegion);
+
+  /**
    * Booleans - is the set of boolean values.
    * 
    * @see <a href=
