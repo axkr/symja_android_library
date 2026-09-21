@@ -58,6 +58,7 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.InverseGammaBetaJS;
+import org.matheclipse.core.numerics.functions.MathieuCharacteristic;
 import org.matheclipse.core.numerics.functions.MathieuFunctions;
 import org.matheclipse.core.numerics.functions.StruveFunctions;
 import org.matheclipse.core.numerics.functions.WorkingPrecision;
@@ -89,6 +90,9 @@ public class SpecialFunctions {
       S.LerchPhi.setEvaluator(new LerchPhi());
       S.LogGamma.setEvaluator(new LogGamma());
       S.MathieuC.setEvaluator(new Mathieu(MathieuFunctions.Kind.C));
+      S.MathieuCharacteristicA.setEvaluator(new MathieuCharacteristicValue(false));
+      S.MathieuCharacteristicB.setEvaluator(new MathieuCharacteristicValue(true));
+      S.MathieuCharacteristicExponent.setEvaluator(new MathieuCharacteristicExponent());
       S.MathieuCPrime.setEvaluator(new Mathieu(MathieuFunctions.Kind.C_PRIME));
       S.MathieuS.setEvaluator(new Mathieu(MathieuFunctions.Kind.S));
       S.MathieuSPrime.setEvaluator(new Mathieu(MathieuFunctions.Kind.S_PRIME));
@@ -2646,6 +2650,142 @@ public class SpecialFunctions {
     return Double.isFinite(argument) && argument >= MIN_ASYMPTOTIC_STRUVE_ARGUMENT;
   }
 
+  /** A numeric routine that answers at the precision of <code>h</code>, or declines with null. */
+  @FunctionalInterface
+  private interface WorkingPrecisionRoutine {
+    Apcomplex apply(Apcomplex[] args, FixedPrecisionApcomplexHelper h);
+  }
+
+  /**
+   * <code>routine</code> at machine precision if all arguments of <code>ast</code> are machine
+   * numbers and at the engine's precision otherwise, returned as a real number when its imaginary
+   * part is zero.
+   */
+  private static IExpr atWorkingPrecision(IAST ast, WorkingPrecisionRoutine routine) {
+    boolean machinePrecision = true;
+    Apcomplex[] args = new Apcomplex[ast.argSize()];
+    for (int i = 1; i <= ast.argSize(); i++) {
+      if (ast.get(i) instanceof ApfloatNum || ast.get(i) instanceof ApcomplexNum) {
+        machinePrecision = false;
+      }
+    }
+    FixedPrecisionApcomplexHelper h =
+        machinePrecision ? EvalEngine.getApfloatDouble() : EvalEngine.getApfloat();
+    Apcomplex value;
+    try {
+      for (int i = 1; i <= ast.argSize(); i++) {
+        args[i - 1] = ((IInexactNumber) ast.get(i)).apcomplexValue();
+      }
+      value = routine.apply(args, h);
+    } catch (ArgumentTypeException | ApfloatRuntimeException ex) {
+      return F.NIL;
+    }
+    if (value == null) {
+      return F.NIL;
+    }
+    if (value.imag().signum() == 0) {
+      return machinePrecision ? F.num(value.real().doubleValue()) : F.num(value.real());
+    }
+    return machinePrecision
+        ? F.complexNum(value.real().doubleValue(), value.imag().doubleValue())
+        : F.complexNum(value);
+  }
+
+  /**
+   * <code>MathieuCharacteristicA(r,q)</code> and <code>MathieuCharacteristicB(r,q)</code>: the
+   * values of <code>a</code> for which <code>y''+(a-2*q*Cos(2*z))*y==0</code> has an even, or an
+   * odd, solution <code>Exp(I*r*z)*p(z)</code> with a <code>2*Pi</code> periodic <code>p</code>.
+   */
+  private static final class MathieuCharacteristicValue extends AbstractFunctionEvaluator {
+    private final boolean odd;
+
+    MathieuCharacteristicValue(boolean odd) {
+      this.odd = odd;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        return atWorkingPrecision(ast,
+            (x, h) -> odd ? MathieuCharacteristic.characteristicB(x[0], x[1], h)
+                : MathieuCharacteristic.characteristicA(x[0], x[1], h));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr r = ast.arg1();
+      IExpr q = ast.arg2();
+      if (q.isZero()) {
+        return F.Sqr(r);
+      }
+      // even in r
+      IExpr negR = AbstractFunctionEvaluator.getNormalizedNegativeExpression(r);
+      if (negR.isPresent()) {
+        return F.binaryAST2(ast.head(), negR, q);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
+   * <code>MathieuCharacteristicExponent(a,q)</code>: the <code>r</code> for which the Mathieu
+   * equation has the solution <code>Exp(I*r*z)*p(z)</code> with a <code>2*Pi</code> periodic
+   * <code>p</code>.
+   */
+  private static final class MathieuCharacteristicExponent extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        return atWorkingPrecision(ast,
+            (x, h) -> MathieuCharacteristic.characteristicExponent(x[0], x[1], h));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg2().isZero()) {
+        return F.Sqrt(ast.arg1());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
   /**
    * <code>MathieuC(a,q,z)</code>, <code>MathieuS(a,q,z)</code> and their derivatives with respect to
    * <code>z</code>: the even and the odd solution of <code>y''+(a-2*q*Cos(2*z))*y==0</code>.
@@ -2664,33 +2804,8 @@ public class SpecialFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
-        IInexactNumber a = (IInexactNumber) ast.arg1();
-        IInexactNumber q = (IInexactNumber) ast.arg2();
-        IInexactNumber z = (IInexactNumber) ast.arg3();
-        boolean machinePrecision = true;
-        for (int i = 1; i <= 3; i++) {
-          if (ast.get(i) instanceof ApfloatNum || ast.get(i) instanceof ApcomplexNum) {
-            machinePrecision = false;
-          }
-        }
-        FixedPrecisionApcomplexHelper h =
-            machinePrecision ? EvalEngine.getApfloatDouble() : EvalEngine.getApfloat();
-        Apcomplex value;
-        try {
-          value = MathieuFunctions.mathieu(kind, a.apcomplexValue(), q.apcomplexValue(),
-              z.apcomplexValue(), h);
-        } catch (ArgumentTypeException | ApfloatRuntimeException ex) {
-          return F.NIL;
-        }
-        if (value == null) {
-          return F.NIL;
-        }
-        if (value.imag().signum() == 0) {
-          return machinePrecision ? F.num(value.real().doubleValue()) : F.num(value.real());
-        }
-        return machinePrecision
-            ? F.complexNum(value.real().doubleValue(), value.imag().doubleValue())
-            : F.complexNum(value);
+        return atWorkingPrecision(ast,
+            (x, h) -> MathieuFunctions.mathieu(kind, x[0], x[1], x[2], h));
       }
       return F.NIL;
     }

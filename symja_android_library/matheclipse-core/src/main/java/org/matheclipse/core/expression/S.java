@@ -14043,6 +14043,33 @@ public class S {
   public final static IBuiltInSymbol MathieuC = S.initFinalSymbol("MathieuC", ID.MathieuC);
 
   /**
+   * MathieuCharacteristicA(r, q) - the characteristic value `a` of the even Mathieu function with characteristic exponent `r` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCharacteristicA.md">MathieuCharacteristicA
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuCharacteristicA = S.initFinalSymbol("MathieuCharacteristicA", ID.MathieuCharacteristicA);
+
+  /**
+   * MathieuCharacteristicB(r, q) - the characteristic value `b` of the odd Mathieu function with characteristic exponent `r` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCharacteristicB.md">MathieuCharacteristicB
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuCharacteristicB = S.initFinalSymbol("MathieuCharacteristicB", ID.MathieuCharacteristicB);
+
+  /**
+   * MathieuCharacteristicExponent(a, q) - the characteristic exponent `r` of the Mathieu functions with characteristic value `a` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCharacteristicExponent.md">MathieuCharacteristicExponent
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuCharacteristicExponent = S.initFinalSymbol("MathieuCharacteristicExponent", ID.MathieuCharacteristicExponent);
+
+  /**
    * MathieuCPrime(a, q, z) - the derivative with respect to `z` of the even Mathieu function.
    * 
    * @see <a href=

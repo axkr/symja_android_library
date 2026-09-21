@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -103,5 +104,96 @@ public class MathieuFunctionTest extends ExprEvaluatorTestCase {
         "(-a+2*q*Cos(2*z))*MathieuS(a,q,z)");
     check("Series(MathieuC(3,2,z),{z,0,4})", //
         "MathieuC(3,2,0)+1/2*MathieuC(3,2,0)*z^2-5/8*MathieuC(3,2,0)*z^4+O(z)^5");
+  }
+
+  @Test
+  public void testMathieuCharacteristicA() {
+    // Abramowitz/Stegun table 20.1; the other values are checked against mpmath eigenvalues
+    check("MathieuCharacteristicA({0,1,2}, 1.0)", //
+        "{-0.455139,1.85911,4.3713}");
+    checkNumeric("N(MathieuCharacteristicA(1, 1/2), 40)", //
+        "1.466766842516055774308238490098876885672");
+    // non-integer exponent, checked against a 60 digit mpmath eigenvalue
+    checkNumeric("N(MathieuCharacteristicA(3/2, 1), 40)", //
+        "2.537180087119901695599980222737527197543");
+    // an odd order changes class with the sign of q
+    checkNumeric("MathieuCharacteristicA(1, -1.0)-MathieuCharacteristicB(1, 1.0)", //
+        "0.0");
+    // continuous across an integer exponent from the band below to the band above
+    checkNumeric("MathieuCharacteristicA(0.999999, 1.0)", //
+        "-0.11024881699326623");
+    checkNumeric("MathieuCharacteristicA(1.000001, 1.0)", //
+        "1.8591080725174663");
+    checkNumeric("N(MathieuCharacteristicA(3/2, 1+I), 30)", //
+        "2.60155579759453011180705202703+I*0.52090726462656625634301545334");
+    // a(0) ~ -2*q+2*Sqrt(q)-1/4 for a large q
+    checkNumeric("MathieuCharacteristicA(0, 1000.0)", //
+        "-1937.005446936397");
+
+    check("MathieuCharacteristicA(r, 0)", //
+        "r^2");
+    check("MathieuCharacteristicA(-r, q)", //
+        "MathieuCharacteristicA(r,q)");
+    // the characteristic value makes MathieuC periodic
+    checkNumeric(
+        "Chop(MathieuC(MathieuCharacteristicA(1, 1.), 1., 0.3)-MathieuC(MathieuCharacteristicA(1, 1.), 1., 0.3+2*Pi))", //
+        "0");
+  }
+
+  @Test
+  public void testMathieuCharacteristicB() {
+    check("MathieuCharacteristicB({1,2}, 1.0)", //
+        "{-0.110249,3.91702}");
+    checkNumeric("MathieuCharacteristicB(1, 0.5)", //
+        "0.4706543549338391");
+    // the same as MathieuCharacteristicA for a non-integer exponent
+    checkNumeric("MathieuCharacteristicB(1.5, 1.0)-MathieuCharacteristicA(1.5, 1.0)", //
+        "0.0");
+    check("MathieuCharacteristicB(r, 0)", //
+        "r^2");
+    check("MathieuCharacteristicB(-r, q)", //
+        "MathieuCharacteristicB(r,q)");
+    checkNumeric(
+        "Chop(MathieuS(MathieuCharacteristicB(2, 1.), 1., 0.3)-MathieuS(MathieuCharacteristicB(2, 1.), 1., 0.3+Pi))", //
+        "0");
+  }
+
+  @Test
+  public void testMathieuCharacteristicExponent() {
+    checkNumeric("MathieuCharacteristicExponent(2, 0.5)", //
+        "1.3695085696605283");
+    // the monodromy Cos(Pi*nu) checked against an mpmath integration
+    checkNumeric("N(MathieuCharacteristicExponent(17/3, 1/2), 30)", //
+        "2.37472448001814669297498099483");
+    // band 3: a(3) < 10 < b(4)
+    checkNumeric("MathieuCharacteristicExponent(10.0, 1.0)", //
+        "3.153348522822422");
+    // below a(0), and in the gap between b(1) and a(1)
+    checkNumeric("MathieuCharacteristicExponent(-1, 1.0)", //
+        "I*0.8442462228408524");
+    checkNumeric("MathieuCharacteristicExponent(1.0, 1.0)", //
+        "1.0+I*0.45345353434748305");
+    check("MathieuCharacteristicExponent(a, 0)", //
+        "Sqrt(a)");
+
+    // inverse of the characteristic values
+    checkNumeric("MathieuCharacteristicA(MathieuCharacteristicExponent(3.0, 1.0), 1.0)", //
+        "3.0");
+    checkNumeric("MathieuCharacteristicA(MathieuCharacteristicExponent(-5.0, 3.0), 3.0)", //
+        "-5.0");
+    // b(3) is a band edge, where the exponent moves like Sqrt(a-b(3)): a rounding error of 1E-16
+    // in the characteristic value leaves only 8 digits of the exponent
+    check("Chop(MathieuCharacteristicExponent(N(MathieuCharacteristicB(3, 5), 40), 5) - 3, 10^-15)", //
+        "0");
+  }
+
+  /** Complex parameters are followed by continuation from q == 0, which takes a while. */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testMathieuCharacteristicComplex() {
+    check("Chop(MathieuCharacteristicA(MathieuCharacteristicExponent(2.0, 1.0+I), 1.0+I)-2.0, 1.0*^-10)", //
+        "0");
+    check("Chop(MathieuCharacteristicA(MathieuCharacteristicExponent(2.0+I, 1.0), 1.0)-(2.0+I), 1.0*^-10)", //
+        "0");
   }
 }

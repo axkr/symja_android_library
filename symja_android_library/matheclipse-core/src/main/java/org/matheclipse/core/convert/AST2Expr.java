@@ -403,7 +403,8 @@ public class AST2Expr {
       "LunationNumber", "LUVColor", "MachineNumberQ", "Magnification", "MakeBoxes",
       "MangoldtLambda", "ManhattanDistance", "Manipulate", "Manipulator", "MantissaExponent", "Map",
       "MapAll", "MapApply", "MapAt", "MapIndexed", "MapThread", "MarcumQ", "MarginalDistribution",
-      "Masking", "MatchingDissimilarity", "MatchQ", "MathCell", "MathieuC", "MathieuCPrime", "MathieuS", "MathieuSPrime", //
+      "Masking", "MatchingDissimilarity", "MatchQ", "MathCell", "MathieuC", "MathieuCharacteristicA", "MathieuCharacteristicB", "MathieuCharacteristicExponent", //
+      "MathieuCPrime", "MathieuS", "MathieuSPrime", //
       "MathMLForm", "MatrixExp",
       "MatrixForm", "MatrixFunction", "MatrixLog", "MatrixMinimalPolynomial", "MatrixPlot",
       "MatrixPower", "MatrixQ", "MatrixRank", "MatrixSymbol", "Max", "MaxDate",

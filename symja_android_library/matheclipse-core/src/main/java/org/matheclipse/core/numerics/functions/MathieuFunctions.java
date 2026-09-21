@@ -56,7 +56,7 @@ public final class MathieuFunctions {
   }
 
   /** Digits carried in addition to the precision asked for. */
-  private static final int GUARD_DIGITS = 10;
+  static final int GUARD_DIGITS = 10;
 
   private static final int CACHE_SIZE = 32;
 
@@ -357,6 +357,18 @@ public final class MathieuFunctions {
   private static Apcomplex characteristicExponent(Apcomplex a, Apcomplex q, long precision) {
     final FixedPrecisionApfloatHelper h =
         new FixedPrecisionApfloatHelper(2 * precision + GUARD_DIGITS);
+    Apcomplex cosine = cosPiNu(a, q, h);
+    if (cosine == null) {
+      return null;
+    }
+    return h.divide(h.acos(cosine), new Apcomplex(h.pi()));
+  }
+
+  /**
+   * <code>Cos(Pi*nu) == 2*y1(Pi/2)*y2'(Pi/2) - 1</code> at the precision of <code>h</code>, which
+   * should be about twice the precision wanted for <code>nu</code>.
+   */
+  static Apcomplex cosPiNu(Apcomplex a, Apcomplex q, FixedPrecisionApfloatHelper h) {
     final Apfloat pi = h.pi();
     final Apfloat halfPi = h.divide(pi, new Apfloat(2, h.precision()));
     final double rate = Math.sqrt(magnitude(a) + 2.0 * magnitude(q) + 1.0);
@@ -376,8 +388,7 @@ public final class MathieuFunctions {
       z0 = h.add(z0, step);
     }
     Apcomplex product = h.multiply(y1[0], y2[1]);
-    Apcomplex cosine = h.subtract(h.add(product, product), one(h));
-    return h.divide(h.acos(cosine), new Apcomplex(pi));
+    return h.subtract(h.add(product, product), one(h));
   }
 
   /**

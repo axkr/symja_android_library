@@ -26,7 +26,7 @@ Sqrt(a)*Cos(Sqrt(a)*z)
 ```
 
 ### Related terms
-[MathieuC](MathieuC.md), [MathieuS](MathieuS.md), [MathieuCPrime](MathieuCPrime.md)
+[MathieuC](MathieuC.md), [MathieuCharacteristicA](MathieuCharacteristicA.md), [MathieuCharacteristicB](MathieuCharacteristicB.md), [MathieuCharacteristicExponent](MathieuCharacteristicExponent.md), [MathieuCPrime](MathieuCPrime.md), [MathieuS](MathieuS.md)
 
 ### Implementation status
 

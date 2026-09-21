@@ -2652,6 +2652,9 @@ public class TeXFormFactory {
     initTeXConverter(S.Times, new Times());
 
     initTeXConverter(S.MathieuC, new TernaryFunction("C(", ",", ",", ")"));
+    initTeXConverter(S.MathieuCharacteristicA, new BinaryFunction("a_{", "}(", ")"));
+    initTeXConverter(S.MathieuCharacteristicB, new BinaryFunction("b_{", "}(", ")"));
+    initTeXConverter(S.MathieuCharacteristicExponent, new BinaryFunction("\\nu(", ",", ")"));
     initTeXConverter(S.MathieuCPrime, new TernaryFunction("C'(", ",", ",", ")"));
     initTeXConverter(S.MathieuS, new TernaryFunction("S(", ",", ",", ")"));
     initTeXConverter(S.MathieuSPrime, new TernaryFunction("S'(", ",", ",", ")"));

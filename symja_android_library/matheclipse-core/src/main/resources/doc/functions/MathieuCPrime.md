@@ -26,7 +26,7 @@ See
 ```
 
 ### Related terms
-[MathieuC](MathieuC.md), [MathieuS](MathieuS.md), [MathieuSPrime](MathieuSPrime.md)
+[MathieuC](MathieuC.md), [MathieuCharacteristicA](MathieuCharacteristicA.md), [MathieuCharacteristicB](MathieuCharacteristicB.md), [MathieuCharacteristicExponent](MathieuCharacteristicExponent.md), [MathieuS](MathieuS.md), [MathieuSPrime](MathieuSPrime.md)
 
 ### Implementation status
 

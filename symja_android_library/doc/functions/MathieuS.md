@@ -26,7 +26,7 @@ MathieuSPrime(a,q,z)
 ```
 
 ### Related terms
-[MathieuC](MathieuC.md), [MathieuCPrime](MathieuCPrime.md), [MathieuSPrime](MathieuSPrime.md)
+[MathieuC](MathieuC.md), [MathieuCharacteristicA](MathieuCharacteristicA.md), [MathieuCharacteristicB](MathieuCharacteristicB.md), [MathieuCharacteristicExponent](MathieuCharacteristicExponent.md), [MathieuCPrime](MathieuCPrime.md), [MathieuSPrime](MathieuSPrime.md)
 
 ### Implementation status
 
