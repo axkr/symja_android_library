@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
+import org.junit.jupiter.api.Tag;
 
 public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
@@ -77,6 +78,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
    * takes over. The first of these took 396 seconds at 25 digits; its value is Mathematica's.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testStruveLargeArgument() {
     checkNumeric("StruveH(-8`30*^-1+I*1.2`30,10007)", //
         "-0.026802958742107957516070512296+I*0.0018515622588921706369258653718");

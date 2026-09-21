@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Values for the astronomy functions, checked against published tables where one exists and against
@@ -263,6 +264,7 @@ public class AstroFunctionsTest extends AbstractTestCase {
   }
 
   @Test
+  @Tag("slow")
   public void testFindAstroEventSeasons() {
     // published UTC instants for 2026: 14:46, 08:24, 00:05 and 20:50
     check("FindAstroEvent(\"MarchEquinox\", DateObject({2026,1,1}))", //

@@ -334,6 +334,7 @@ public class PlotOptionMatrixTest {
 
   /** Rendering the same plot twice must produce identical output. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testPlotOutputIsReproducible() {
     List<String> unstable = new ArrayList<>();
     for (String[] row : MATRIX) {

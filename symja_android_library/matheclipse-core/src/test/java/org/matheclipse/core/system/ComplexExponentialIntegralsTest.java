@@ -418,6 +418,7 @@ public class ComplexExponentialIntegralsTest {
    * continuously from either side, so the reference grid covers both.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testExpIntegralEi() {
     check("ExpIntegralEi", EXP_INTEGRAL_EI, IComplexNum::expIntegralEi);
   }

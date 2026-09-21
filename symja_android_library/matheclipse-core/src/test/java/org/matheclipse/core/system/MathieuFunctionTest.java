@@ -159,6 +159,7 @@ public class MathieuFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testMathieuCharacteristicExponent() {
     checkNumeric("MathieuCharacteristicExponent(2, 0.5)", //
         "1.3695085696605283");

@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 public class FourierTest extends ExprEvaluatorTestCase {
 
@@ -102,6 +103,7 @@ public class FourierTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFourierSinTransform() {
     check("FourierSinTransform(Exp(-t),t,w)", //
         "(Sqrt(2/Pi)*w)/(1+w^2)");

@@ -74,6 +74,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBetaRegularized() {
     check("BetaRegularized(z, 1, b)", //
         "1-(1-z)^b");

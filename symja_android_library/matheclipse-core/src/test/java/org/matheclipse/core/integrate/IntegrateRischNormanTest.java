@@ -2,6 +2,8 @@ package org.matheclipse.core.integrate;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * M3 corpus test for the Risch-Norman heuristic stage ({@link RischNorman}), wired into the
@@ -11,6 +13,7 @@ import org.matheclipse.core.basic.Config;
 public class IntegrateRischNormanTest extends AbstractIntegrateCorpusTest {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void rischNormanForced() {
     runCorpusResource("/integrate/rischnorman_seed.txt", "RischNorman");
   }

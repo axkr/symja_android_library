@@ -88,6 +88,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
 
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testInverseLaplaceTransformPowerOfQuadratic() {
     // what a resonant forcing leaves: Apart keeps a power of the quadratic as one term
     check("InverseLaplaceTransform(1/(1+s^2)^2, s, t)", //

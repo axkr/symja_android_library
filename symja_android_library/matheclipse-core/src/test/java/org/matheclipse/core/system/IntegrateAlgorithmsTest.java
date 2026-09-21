@@ -13,6 +13,7 @@ import org.matheclipse.core.integrate.ProductPowerIntegration;
 import org.matheclipse.core.integrate.RadicalSubstitution;
 import org.matheclipse.core.integrate.RationalIntegration;
 import org.matheclipse.core.interfaces.IExpr;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Tests for the native integration algorithm stages ({@link IntegralTable},
@@ -114,6 +115,7 @@ public class IntegrateAlgorithmsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRadicalSubstitutionPrefersClosedForm() {
     // t = Sqrt(x) gives 2*t^2/(1+t^4), which the rules answer in ArcTan and Log; a bare RootSum
     // here is refused by the Rubi rule for Tan(x)^n and left Sqrt(Tan(x)) unevaluated

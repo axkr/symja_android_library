@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 public class SumTest extends ExprEvaluatorTestCase {
 
@@ -554,6 +555,7 @@ public class SumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNSum001() {
     // NSum: Raw object -1 cannot be used as an iterator.
     check("NSum(0.0,{-1,-2,3})", //

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.io.net.SocketRegistry;
+import org.junit.jupiter.api.Tag;
 
 /**
  * TCP sockets over the loopback interface.
@@ -20,6 +21,7 @@ public class SocketFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testWriteAndReadOverLoopback() {
     boolean osAccess = Config.OS_ACCESS_ENABLED;
     Config.OS_ACCESS_ENABLED = true;
@@ -50,6 +52,7 @@ public class SocketFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAHandlerSeesWhatArrives() {
     boolean osAccess = Config.OS_ACCESS_ENABLED;
     Config.OS_ACCESS_ENABLED = true;

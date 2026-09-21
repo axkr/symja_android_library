@@ -3050,6 +3050,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testCoefficient() {
     check("Coefficient(x+y+z, x+y)", //
         "1");
@@ -12052,6 +12053,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testHurwitzZeta() {
     checkNumeric("N(HurwitzZeta(1/3, 8/7), 50)", //
         "-1.1389367444490991746548674334535727810961919460755");
@@ -26090,6 +26092,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSquaresR() {
     check("Table(SquaresR(8, n), {n, 10})", //
         "{16,112,448,1136,2016,3136,5504,9328,12112,14112}");
@@ -29629,6 +29632,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testWhittakerW() {
     checkNumeric("WhittakerW(6, 4, 2.0)", //
         "1374.6407375519752");

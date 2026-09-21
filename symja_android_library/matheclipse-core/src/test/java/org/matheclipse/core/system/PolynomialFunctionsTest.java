@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import com.google.common.math.DoubleMath;
+import org.junit.jupiter.api.Tag;
 
 public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
@@ -349,6 +350,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLegendreP() {
     check("LegendreP(9, 7,3, z)", //
         "((1-z)^7*(1+z)^(7/2)*(2027025/2-34459425/2*z^2))/(-1+z)^(7/2)");

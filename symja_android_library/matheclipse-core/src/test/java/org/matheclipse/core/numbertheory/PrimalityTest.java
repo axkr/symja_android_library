@@ -85,6 +85,7 @@ public class PrimalityTest {
    * be factored further instead of being recorded as a prime factor.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactorIntegerSeveralLargePrimes() {
     assertFactorization(P1.multiply(P2), factors(P1, 1, P2, 1), 50);
     assertFactorization(P1.multiply(P2).multiply(P3), factors(P1, 1, P2, 1, P3, 1), 50);

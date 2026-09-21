@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.junit.jupiter.api.Tag;
 
 /** Tests for statistical moment functions */
 public class EliminateTest extends ExprEvaluatorTestCase {
@@ -139,6 +140,7 @@ public class EliminateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testEliminateReferenceExamples() {
     check("Eliminate({x==2+y, y==z}, y)", //
         "x-z==2");

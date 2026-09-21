@@ -512,6 +512,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveVariationOfParametersOnAFoundBasis() {
     // The methods for variable coefficients answer the homogeneous equation, and the inhomogeneous
     // one used to be declined though its homogeneous part was solved. Its basis {t, t*E^t} is all
@@ -588,6 +589,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveImplicitSolution() {
     // A first integral which does not solve for y is the answer, left for Solve, which is what
     // Mathematica returns for these: Solve[E^y[x] + x Log[y[x]] + Sin[x] == C[1], y[x]].
@@ -610,6 +612,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveLinearFractionalRightSide() {
     // (t+y+1)/(t-y+3) is homogeneous about the point (-2, 1) where both lines meet: moving the
     // origin there leaves (T+Y)/(T-Y), and its relation is written back in t and y.
@@ -643,6 +646,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveIntegratingFactorAPowerOfXAndY() {
     // x^p*y^q makes these exact; the exponents come from the exactness condition, which is linear
     // in them. The relation is the answer where its inversion is not one.
@@ -675,6 +679,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveHomogeneousInXOverY() {
     // The Solve which inverts Log(1+E^(1/v)*v) == c kept taking logarithms of an equation it was
     // already solving and overflowed the stack; the relation is now the answer.
@@ -699,6 +704,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolvePowerPotentialWithSymbolicExponent() {
     // y'' + A*x^m*y == 0 is Bessel's equation in x^((m+2)/2); the exponent and the coefficient
     // may be symbols, where the sign is unknown and J/Y is the answer for either one
@@ -765,6 +771,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolvePiecewiseTrigonometricForcing() {
     // Sin(t) on 0 <= t < Pi resonates with y'' + y, and its transform leaves 1/(1 + s^2)^2, which
     // was not inverted; Sin(2*t) on 0 <= t < Pi/2 needed the transform of Sin(2*(t + Pi/2)).
@@ -832,6 +839,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveExactAfterClearingTheDenominator() {
     // Exact as written, and not exact by the time the solvers see it: the coefficient of y' is
     // cleared of its denominator first, which multiplies the pair by x. The integrating factor
@@ -856,6 +864,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveProductLogRelation() {
     // A relation which mixes a linear form with its own logarithm is what a first order equation
     // separates into whenever the denominator shares a factor with the numerator. Nothing
@@ -903,6 +912,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSeparableConstantFromTheRelation() {
     // The relation these separate into is a cubic in y, and inverting it puts the constant under a
     // square root and inside a cube root, where solving for it afterwards fails. The condition
@@ -1065,6 +1075,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSecondOrderSymmetryFamilies() {
     // The same symmetry with other coefficients, so that the method is not fitted to one equation.
     for (int k : new int[] {1, 2, 3, -1, -2}) {
@@ -1144,6 +1155,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSystemHigherOrder() {
     // Carrying the first derivatives as unknowns of their own turns these into first order
     // systems, which is the shape the matrix engine solves.
@@ -1182,6 +1194,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * methods to the ones which cannot answer it.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveFirstOrderSummedCoefficient() {
     check("DSolve(y'(x) == (1+x)*y(x), y(x), x)", //
         "{{y(x)->E^(x+x^2/2)*C(1)}}");
@@ -1218,6 +1231,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * substitution, so the solution can come back with the round trip still in it.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveChangeOfVariableUndoesTheRoundTrip() {
     // The coefficients here become rational in t == Tan(x), and the solution in t carries
     // ArcTan(t); putting Tan(x) back left ArcTan(Tan(x)) standing, which is a sawtooth rather than
@@ -1240,6 +1254,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * are a linear and a quadratic polynomial.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveWeber() {
     check("DSolve(y''(x) + 3*x*y'(x) + (2*x^2 + 4)*y(x) == 0, y(x), x)", //
         "{{y(x)->C(1)/E^x^2+(-x^2*C(1))/E^x^2+(x*C(2)*Hypergeometric1F1(2,3/2,-x^2/2))/E^(x^\n"
@@ -1384,6 +1399,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * by <code>y == Exp(-Integrate(p/2))*z</code>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveNormalFormPrePass() {
     check("DSolve(y''(x) + 2*y'(x) + (1-x)*y(x) == 0, y(x), x)", //
         "{{y(x)->(AiryAi(x)*C(1))/E^x+(AiryBi(x)*C(2))/E^x}}");
@@ -1568,6 +1584,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveKovacicAlgebraicPair() {
     // The logarithmic derivative is -1/(4*x) +- Sqrt(x)/2, which is not rational; what is rational
     // is the sum of the two, and that is what the search looks for.
@@ -1697,6 +1714,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveKovacicCase1() {
     // z1 == x*(x-1) solves the reduced form, so the logarithmic derivative 1/x + 1/(x-1) is
     // rational and the pole part of the guess reaches it.
@@ -1723,6 +1741,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveOperatorFactor() {
     // The operator of this equation is (D^2 - 1)(D + 2/x), so 1/x^2 solves it and dividing that
     // factor out leaves an equation of the second order which the cascade already answers.
@@ -1902,6 +1921,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveRiccatiWithAiryReduction() {
     // y' == x + y^2 reduces to u''(x) + x*u(x) == 0, whose solutions are Airy functions of
     // (-1)^(1/3)*x. Putting the answer over a common denominator used to change its value, so it
@@ -1930,6 +1950,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveBesselFamilies() {
     // y'' == A*x^m*y is Bessel's equation of order 1/(m+2) in x^((m+2)/2).
     check("DSolve(y''(x) - x^4*y(x) == 0, y(x), x)", //
@@ -2076,6 +2097,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveDeclinesInsteadOfAnswering() {
     // The first order solvers used to be offered this, and answered from the part of it they could
     // read, which produced an expression containing y''(x) itself. It has an answer of its own now:

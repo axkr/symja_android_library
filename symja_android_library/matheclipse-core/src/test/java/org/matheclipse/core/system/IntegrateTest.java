@@ -251,6 +251,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegratePrimitiveTowerHermite() {
     check("FreeQ(Integrate((1-Log(x))/(x-Log(x))^2, x), Integrate)", //
         "True");
@@ -310,6 +311,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateIssue851() {
     check("Integrate(x^n*Haversine(m*x^p),x)", //
         "(x^(1+n)*(2*p*(m^2*x^(2*p))^((1+n)/p)+(1+n)*(I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,-I*m*x^p)+(\n" //
@@ -442,6 +444,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateIncomplete() {
     check("Integrate(Csch(x)/x,x)", //
         "Integrate(Csch(x)/x,x)");
@@ -463,6 +466,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrate() {
 
     check("Integrate(Piecewise({{1/(2 x^2), Abs(x) > 1} },4),x)", //
@@ -1300,6 +1304,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLogOverQuadratic() {
     // Rubi 3044 integrates Log(u)/Qx by parts with v=IntHide(1/Qx,x), which leaves
     // Int(ArcTan(x)*2/(x*(1+x^2))). That one is finished by rule 2897, whose
@@ -1403,6 +1408,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * integrals are unchanged by its being there.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateDiffUnderInt() {
     check("Integrate(Log(1+x)/(x*Sqrt(1-x^2)), {x,0,1})", //
         "Pi^2/8");

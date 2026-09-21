@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.junit.jupiter.api.Tag;
 
 /** Tests built-in functions */
 public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
@@ -2941,6 +2942,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
    * page</a>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testRotationMatrixReference() {
     check("RotationMatrix(t) . {1,0}", //
         "{Cos(t),Sin(t)}");

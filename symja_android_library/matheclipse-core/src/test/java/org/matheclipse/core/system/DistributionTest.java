@@ -974,6 +974,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testGompertzMakehamDistributionSkewness() {
     check("Skewness(GompertzMakehamDistribution(m,n))", //
         "(2*E^(3*n)*Gamma(0,n)^3-3*E^(2*n)*Gamma(0,n)*(Pi^2/6-2*n*HypergeometricPFQ({1,1,\n"

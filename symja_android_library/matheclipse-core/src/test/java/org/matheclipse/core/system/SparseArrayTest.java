@@ -19,6 +19,7 @@ import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
 import org.matheclipse.parser.trie.TrieSequencerIntArray;
+import org.junit.jupiter.api.Tag;
 
 /** Tests for SparseArray functions */
 public class SparseArrayTest extends ExprEvaluatorTestCase {
@@ -45,6 +46,7 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAssociateTo() {
     check("data=<||>;\n" + "Do(\n" + //
         "   c = RandomInteger({1, 10});\n" + //

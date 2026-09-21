@@ -29,6 +29,7 @@ import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.Share;
 import org.matheclipse.core.visit.AbstractVisitor;
+import org.junit.jupiter.api.Tag;
 
 public class SerializableTest {
 
@@ -202,6 +203,7 @@ public class SerializableTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateDefinition() {
     // do a dummy evaluation to load integration rules
     F.Integrate.of(F.x, F.x);

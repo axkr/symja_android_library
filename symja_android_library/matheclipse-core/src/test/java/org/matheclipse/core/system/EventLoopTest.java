@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.tasks.EventLoop;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Scheduled tasks and the pause that runs them.
@@ -21,6 +22,7 @@ public class EventLoopTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPauseRunsATaskThatIsDue() {
     boolean osAccess = Config.OS_ACCESS_ENABLED;
     Config.OS_ACCESS_ENABLED = true;
@@ -44,6 +46,7 @@ public class EventLoopTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testATaskWithACountRunsThatOften() {
     check("counter = 0", //
         "0");

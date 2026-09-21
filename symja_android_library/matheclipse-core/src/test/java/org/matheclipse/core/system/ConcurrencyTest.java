@@ -19,6 +19,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.junit.jupiter.api.Tag;
 
 public class ConcurrencyTest {
 
@@ -110,6 +111,7 @@ public class ConcurrencyTest {
    * counters and left values behind (issue #1498). They are replaced by fresh symbols now.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFormalIteratorVariablesAreLocal() throws Exception {
     final String[] inputs = {"Simplify(D(Tan(x),{x,n}) /. n->4)", "LerchPhi(z,s,5)",
         "Hypergeometric1F1(-4,b,z)", "FunctionExpand(FactorialPower(x,4))"};

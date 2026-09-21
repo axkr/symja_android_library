@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
@@ -526,6 +527,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testHypergeometricU() {
     check("HypergeometricU({3,1},{2,4},{7,8})", //
         "{HypergeometricU(3,2,7),41/256}");

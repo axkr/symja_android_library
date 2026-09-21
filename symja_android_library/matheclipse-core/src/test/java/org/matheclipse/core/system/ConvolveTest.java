@@ -1,9 +1,11 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 public class ConvolveTest extends ExprEvaluatorTestCase {
   @Test
+  @Tag(TestTags.SLOW)
   public void testConvolve() {
     // Gaussian (*) Gaussian
     check("Convolve(E^(-x^2),E^(-x^2),x,y)", //

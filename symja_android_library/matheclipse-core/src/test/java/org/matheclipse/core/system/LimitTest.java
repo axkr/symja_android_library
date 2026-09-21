@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
+import org.junit.jupiter.api.Tag;
 
 /** Tests for DSolve */
 public class LimitTest extends ExprEvaluatorTestCase {
@@ -792,6 +793,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testGruntzSpecialFunctions() {
     check("Limit(Gamma(1/t),t->-Infinity)", //
         "-Infinity");
@@ -1483,6 +1485,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
    * partial fractions takes seconds. Both are avoidable; the limit is just the exponent.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testLargeExponentRationalLimits() {
     check("Limit((x^20000-1)/(x-1), x -> 1)", //
         "20000");

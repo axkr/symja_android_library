@@ -14,6 +14,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * Checks that every option a 3D plot documents is at least <em>accepted</em>, and that the ones
@@ -207,6 +209,7 @@ public class Graphics3DOptionMatrixTest {
    * does with a forwarded option is asserted in {@link WebGLGraphics3DTest} instead.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void implementedOptionsChangeTheGraphic() {
     List<String> inert = new ArrayList<>();
     for (String[] row : MATRIX) {

@@ -393,6 +393,7 @@ public class ComplexAiryBesselTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBessel() {
     IComplexNum order = F.complexNum(0.6, 0.0);
     for (double[] row : BESSEL) {
@@ -449,6 +450,7 @@ public class ComplexAiryBesselTest {
    * actually reached rather than a null escaping as a failure.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegerOrderStillEvaluates() {
     IComplexNum z = F.complexNum(1.7, 0.4);
     for (double order : new double[] {0.0, 1.0, 2.0, -1.0}) {

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.junit.jupiter.api.Tag;
 
 /**
  * A search that runs longer than its deadline still has to stop when the deadline does.
@@ -44,11 +45,13 @@ public class InterruptibleLoopsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testGoldbachListStopsWhenInterrupted() throws InterruptedException {
     assertStopsWhenInterrupted("GoldbachList(2*(10^18+9),1000000)");
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testEulerEStopsWhenInterrupted() throws InterruptedException {
     assertStopsWhenInterrupted("EulerE(40000,x)");
   }

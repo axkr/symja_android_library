@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Risch-Norman integration over a tower of Log, Exp and Tan with one square root in it. Each
@@ -16,6 +17,7 @@ public class RischNormanRadicalTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRadicalInTheTower() {
     // a generator above the radical: Log(x+Sqrt(x^2+1)) differentiates through the root
     check("Integrate(Together(D(Log(x)*Log(x+Sqrt(x^2+1)),x)),x,Method->\"RischNorman\")", //
@@ -34,6 +36,7 @@ public class RischNormanRadicalTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNormLogands() {
     // the denominator factor 1+q*t^2 is a norm, a^2+b^2*q, which gives ArcTan(b*y/a)
     check("Integrate(Together(D(ArcTan(Sqrt(x^2+1)*Log(x)),x)),x,Method->\"RischNorman\")", //
@@ -67,6 +70,7 @@ public class RischNormanRadicalTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAutomatic() {
     // the rules integrate these sums term by term, and the terms are not elementary on their own
     check("Integrate(Together(D(Log(x)*Log(x+Sqrt(x^2+1)),x)),x)", //
