@@ -1667,6 +1667,32 @@ public class Algebra {
         }
         result.append(F.list(jas.integerPoly2Expr(entry.getKey()), F.ZZ(entry.getValue())));
       }
+      return withLostUnit(expr, result);
+    }
+
+    /**
+     * The factor list with the constant factor corrected, so that the product of the factors is
+     * <code>expr</code> again. The square-free factorization of a monomial loses its unit:
+     * <code>-t^2</code> came back as <code>{{t,2}}</code>, which would make it a square.
+     */
+    private static IAST withLostUnit(IExpr expr, IASTAppendable factors) {
+      IASTAppendable product = F.TimesAlloc(factors.argSize());
+      for (IExpr entry : factors) {
+        product.append(F.Power(entry.first(), entry.second()));
+      }
+      EvalEngine engine = EvalEngine.get();
+      IExpr ratio = engine.evaluate(F.Together(F.Divide(expr, product.oneIdentity1())));
+      if (!ratio.isRational() || ratio.isOne()) {
+        return factors;
+      }
+      if (factors.argSize() > 0 && factors.arg1().first().isNumber()
+          && factors.arg1().second().isOne()) {
+        factors.set(1, F.list(engine.evaluate(F.Times(factors.arg1().first(), ratio)), F.C1));
+        return factors;
+      }
+      IASTAppendable result = F.ListAlloc(factors.argSize() + 1);
+      result.append(F.list(ratio, F.C1));
+      result.appendArgs(factors);
       return result;
     }
 

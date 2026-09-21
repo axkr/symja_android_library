@@ -9246,6 +9246,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorSquareFreeList() {
+    // the unit of a monomial was lost, which made -t^2 look like a square
+    check("FactorSquareFreeList(-t^2)", //
+        "{{-1,1},{t,2}}");
+    check("FactorSquareFreeList(-4*t^2*x^2)", //
+        "{{-4,1},{t,2},{x,2}}");
+    check("FactorSquareFreeList(-x^3)", //
+        "{{-1,1},{x,3}}");
+    check("FactorSquareFreeList(-(1+x)^2)", //
+        "{{-1,1},{1+x,2}}");
     // bug endless loop ?
     check("FactorSquareFreeList(x^2147483647)", //
         "{{x,2147483647}}");
