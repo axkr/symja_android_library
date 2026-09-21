@@ -25,6 +25,24 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 public class GraphUtil {
 
   /**
+   * Test if a weighted graph has an edge with a negative weight, which Dijkstra's algorithm doesn't
+   * allow.
+   *
+   * @param graph the graph
+   * @return <code>true</code> if the graph is weighted and an edge weight is negative
+   */
+  public static <E> boolean hasNegativeEdgeWeight(Graph<IExpr, E> graph) {
+    if (graph.getType().isWeighted()) {
+      for (E edge : graph.edgeSet()) {
+        if (graph.getEdgeWeight(edge) < 0.0) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
    * Computes the connected components of the given graph expression, optionally filtering them by a
    * pattern.
    * 
@@ -37,7 +55,7 @@ public class GraphUtil {
       EvalEngine engine) {
     Graph<IExpr, ? extends IExprEdge> jGraph =
         (Graph<IExpr, ? extends IExprEdge>) graphExpr.toData();
-    List<Set<IExpr>> connectedSets = connectedSets(graphExpr, pattern, engine);
+    List<Set<IExpr>> connectedSets = connectedSets(graphExpr, pattern, false, engine);
 
     // Returns a list of components {c1, c2, ...}, where each component is a Graph.
     IASTAppendable resultList = F.ListAlloc(connectedSets.size());
@@ -62,7 +80,22 @@ public class GraphUtil {
    * @return a list of connected components, each component being a list of vertices
    */
   public static IAST connectedComponents(GraphExpr graphExpr, IExpr pattern, EvalEngine engine) {
-    List<Set<IExpr>> connectedSets = connectedSets(graphExpr, pattern, engine);
+    return connectedComponents(graphExpr, pattern, false, engine);
+  }
+
+  /**
+   * Computes the connected components of the given graph expression as lists of vertices,
+   * optionally filtering them by a pattern.
+   *
+   * @param graphExpr
+   * @param pattern {@link F#NIL} if no filtering is desired
+   * @param weak if <code>true</code> ignore the direction of the edges of a directed graph
+   * @param engine
+   * @return a list of connected components, each component being a list of vertices
+   */
+  public static IAST connectedComponents(GraphExpr graphExpr, IExpr pattern, boolean weak,
+      EvalEngine engine) {
+    List<Set<IExpr>> connectedSets = connectedSets(graphExpr, pattern, weak, engine);
 
     IASTAppendable resultList = F.ListAlloc(connectedSets.size());
     for (Set<IExpr> componentVertices : connectedSets) {
@@ -77,16 +110,17 @@ public class GraphUtil {
    *
    * @param graphExpr
    * @param pattern {@link F#NIL} if no filtering is desired
+   * @param weak if <code>true</code> ignore the direction of the edges of a directed graph
    * @param engine
    */
   private static List<Set<IExpr>> connectedSets(GraphExpr graphExpr, IExpr pattern,
-      EvalEngine engine) {
+      boolean weak, EvalEngine engine) {
     Graph<IExpr, ? extends IExprEdge> jGraph =
         (Graph<IExpr, ? extends IExprEdge>) graphExpr.toData();
     List<Set<IExpr>> connectedSets;
 
     // 2. Compute Components using JGraphT
-    if (jGraph.getType().isDirected()) {
+    if (jGraph.getType().isDirected() && !weak) {
       // For directed graphs, strongly connected components are computed.
       // WMA specifies: "given in an order such that there are no edges from ci to ci+1".
       // This implies a Reverse Topological Sort (Sink components first).
@@ -99,7 +133,8 @@ public class GraphUtil {
       Collections.reverse(connectedSets);
 
     } else {
-      // For undirected graphs, vertices are in the same component if there is a path.
+      // For undirected graphs (or weak components), vertices are in the same component if there is
+      // a path ignoring the edge directions.
       ConnectivityInspector<IExpr, ? extends IExprEdge> inspector =
           new ConnectivityInspector<>(jGraph);
       connectedSets = new ArrayList<>(inspector.connectedSets());

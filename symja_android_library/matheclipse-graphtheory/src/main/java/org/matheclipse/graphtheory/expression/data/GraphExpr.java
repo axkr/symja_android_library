@@ -127,13 +127,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         IExpr source = edgeAST.arg1();
         IExpr target = edgeAST.arg2();
         IExpr weight = weights.get(i);
-        ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
-        if (edge != null) {
-          double edgeWeightValue = F.eval(weight).evalfNaN();
-          if (!Double.isNaN(edgeWeightValue)) {
-            weightedGraph.setEdgeWeight(edge, edgeWeightValue);
-          }
-        }
+        setWeight(weightedGraph, weightedGraph.addEdge(source, target), F.eval(weight));
       }
     } else {
       Graph<IExpr, ExprEdge> unweightedGraph = (Graph<IExpr, ExprEdge>) graph;
@@ -196,13 +190,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
 
         if (isWeighted) {
           Graph<IExpr, ExprWeightedEdge> weightedGraph = (Graph<IExpr, ExprWeightedEdge>) graph;
-          ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
-          if (edge != null) {
-            double edgeWeightValue = entry.getValue().evalfNaN();
-            if (!Double.isNaN(edgeWeightValue)) {
-              weightedGraph.setEdgeWeight(edge, edgeWeightValue);
-            }
-          }
+          setWeight(weightedGraph, weightedGraph.addEdge(source, target), entry.getValue());
         } else {
           Graph<IExpr, ExprEdge> unweightedGraph = (Graph<IExpr, ExprEdge>) graph;
           unweightedGraph.addEdge(source, target);
@@ -235,39 +223,42 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         g = new DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class);
       }
 
+      if (vertices.isPresent()) {
+        for (int i = 1; i < vertices.size(); i++) {
+          g.addVertex(vertices.get(i));
+        }
+      }
       IAST list = arg1;
       for (int i = 1; i < list.size(); i++) {
         IAST edge = list.getAST(i);
         g.addVertex(edge.arg1());
         g.addVertex(edge.arg2());
-        g.addEdge(edge.arg1(), edge.arg2());
-      }
-
-      if (t == EdgeListType.DIRECTED) {
-        DefaultDirectedWeightedGraph gw = (DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>) g;
-        for (int i = 1; i < list.size(); i++) {
-          IAST edge = list.getAST(i);
-          double edgeWeightValue = edgeWeight.get(i).evalfNaN();
-          if (!Double.isNaN(edgeWeightValue)) {
-            gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeightValue);
-          }
-        }
-      } else {
-        DefaultUndirectedWeightedGraph gw =
-            (DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>) g;
-        for (int i = 1; i < list.size(); i++) {
-          IAST edge = list.getAST(i);
-          double edgeWeightValue = edgeWeight.get(i).evalfNaN();
-          if (!Double.isNaN(edgeWeightValue)) {
-            gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeightValue);
-          }
-        }
+        setWeight(g, g.addEdge(edge.arg1(), edge.arg2()), edgeWeight.get(i));
       }
 
       return newInstance(g);
     }
 
     return null;
+  }
+
+  /**
+   * Set the double weight JGraphT's algorithms use (if <code>weight</code> is numeric) and remember
+   * the exact weight for display.
+   *
+   * @param graph the weighted graph
+   * @param edge the new edge, or <code>null</code> if it wasn't added
+   * @param weight the weight as given by the user
+   */
+  private static void setWeight(Graph<IExpr, ExprWeightedEdge> graph, ExprWeightedEdge edge,
+      IExpr weight) {
+    if (edge != null) {
+      double edgeWeightValue = weight.evalfNaN();
+      if (!Double.isNaN(edgeWeightValue)) {
+        graph.setEdgeWeight(edge, edgeWeightValue);
+      }
+      edge.setExactWeight(weight);
+    }
   }
 
   /**
@@ -302,7 +293,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         if (weights == null) {
           weights = F.ListAlloc(edgeSet.size());
         }
-        weights.append(weightedEdge.weight());
+        weights.append(weightedEdge.weightExpr());
       } else if (edge instanceof ExprEdge) {
         ExprEdge exprEdge = (ExprEdge) edge;
         edges.append(F.Rule(exprEdge.lhs(), exprEdge.rhs()));
@@ -320,7 +311,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
       } else {
         edges.append(F.UndirectedEdge(weightedEdge.lhs(), weightedEdge.rhs()));
       }
-      weights.append(weightedEdge.weight());
+      weights.append(weightedEdge.weightExpr());
     } else if (edge instanceof ExprEdge) {
       ExprEdge exprEdge = (ExprEdge) edge;
       // in a mixed graph the orientation is stored per edge, not per graph
@@ -817,9 +808,9 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
       IExpr rhs = edge.rhs();
       int from = map.get(lhs);
       int to = map.get(rhs);
-      trie.put(new int[] {from, to}, F.num(edge.weight()));
+      trie.put(new int[] {from, to}, edge.weightExpr());
       if (g.containsEdge(rhs, lhs)) {
-        trie.put(new int[] {to, from}, F.num(edge.weight()));
+        trie.put(new int[] {to, from}, edge.weightExpr());
       }
     }
     return new SparseArrayExpr(trie, new int[] {size, size}, F.C0, false);

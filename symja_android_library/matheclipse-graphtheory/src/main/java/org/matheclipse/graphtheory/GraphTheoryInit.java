@@ -78,6 +78,10 @@ public class GraphTheoryInit {
     S.NeighborhoodGraph
         .setEvaluator(new org.matheclipse.graphtheory.reflection.NeighborhoodGraph());
     S.Subgraph.setEvaluator(new org.matheclipse.graphtheory.reflection.Subgraph());
+    S.VertexConnectivity
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.VertexConnectivity());
+    S.WeaklyConnectedComponents
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.WeaklyConnectedComponents());
     S.TopologicalSort.setEvaluator(new org.matheclipse.graphtheory.reflection.TopologicalSort());
     S.TreeGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.TreeGraph());
     S.TreeGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.TreeGraphQ());

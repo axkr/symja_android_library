@@ -13,7 +13,6 @@ import org.jgrapht.generate.GnmRandomGraphGenerator;
 import org.jgrapht.generate.GridGraphGenerator;
 import org.jgrapht.generate.HyperCubeGraphGenerator;
 import org.jgrapht.generate.RingGraphGenerator;
-import org.jgrapht.generate.StarGraphGenerator;
 import org.jgrapht.generate.WheelGraphGenerator;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
@@ -744,14 +743,17 @@ public class GraphDataFunctions {
     }
 
     private static IExpr starGraph(EvalEngine engine, int order, IASTAppendable options) {
-      StarGraphGenerator<IExpr, ExprEdge> gen = new StarGraphGenerator<IExpr, ExprEdge>(order);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
-          .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
-          .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+          .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .edgeClass(ExprEdge.class) //
           .buildGraph();
-      // Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
-      // ExprEdge>(ExprEdge.class);
-      gen.generateGraph(target);
+      // JGraphT's StarGraphGenerator makes the leaves the edge sources; WMA gives 1<->k
+      for (int i = 1; i <= order; i++) {
+        target.addVertex(F.ZZ(i));
+      }
+      for (int i = 2; i <= order; i++) {
+        target.addEdge(F.C1, F.ZZ(i));
+      }
       return GraphExpr.newInstance(target, options);
     }
 

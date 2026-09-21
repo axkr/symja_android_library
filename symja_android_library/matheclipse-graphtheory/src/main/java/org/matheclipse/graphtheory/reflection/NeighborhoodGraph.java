@@ -98,6 +98,7 @@ public class NeighborhoodGraph extends AbstractFunctionEvaluator {
           ExprWeightedEdge newEdge = resultGraph.addEdge(source, target);
           if (newEdge != null) {
             resultGraph.setEdgeWeight(newEdge, g.getEdgeWeight(edge));
+            ExprWeightedEdge.copyExactWeight(edge, newEdge);
           }
         }
       }

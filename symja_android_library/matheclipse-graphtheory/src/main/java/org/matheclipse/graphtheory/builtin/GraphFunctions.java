@@ -35,6 +35,9 @@ import org.jgrapht.alg.isomorphism.AHUUnrootedTreeIsomorphismInspector;
 import org.jgrapht.alg.isomorphism.IsomorphicGraphMapping;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
+import org.jgrapht.alg.shortestpath.NegativeCycleDetectedException;
+import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
 import org.jgrapht.alg.shortestpath.GraphMeasurer;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 import org.jgrapht.alg.tour.HeldKarpTSP;
@@ -2605,11 +2608,22 @@ public class GraphFunctions {
       }
 
       Graph<IExpr, ?> g = gex.toData();
+      if (!g.containsVertex(ast.arg2()) || !g.containsVertex(ast.arg3())) {
+        return F.NIL;
+      }
 
-      DijkstraShortestPath<IExpr, ?> dijkstraAlg = new DijkstraShortestPath<>(g);
-      SingleSourcePaths<IExpr, ?> iPaths = dijkstraAlg.getPaths(ast.arg2());
-      GraphPath<IExpr, ?> path = iPaths.getPath(ast.arg3());
-
+      ShortestPathAlgorithm<IExpr, ?> alg = GraphUtil.hasNegativeEdgeWeight(g)
+          ? new BellmanFordShortestPath<>(g)
+          : new DijkstraShortestPath<>(g);
+      GraphPath<IExpr, ?> path;
+      try {
+        path = alg.getPaths(ast.arg2()).getPath(ast.arg3());
+      } catch (NegativeCycleDetectedException ncde) {
+        return F.NIL;
+      }
+      if (path == null) {
+        return F.CEmptyList;
+      }
       return Object2Expr.convertList(path.getVertexList(), true, false);
     }
 

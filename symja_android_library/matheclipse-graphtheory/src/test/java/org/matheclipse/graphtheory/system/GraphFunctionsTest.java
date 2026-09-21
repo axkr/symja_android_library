@@ -351,6 +351,10 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
     check("FindShortestPath({1 -> 2, 2 -> 3, 3 -> 1,  3 -> 4, 4 -> 5, 3 -> 5},1,4)", //
         "{1,2,3,4}");
+    check("FindShortestPath(Graph({1,2,3},{1->2}),1,3)", //
+        "{}");
+    check("FindShortestPath(CycleGraph(6),1,4)", //
+        "{1,2,3,4}");
   }
 
   @Test
@@ -476,12 +480,12 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testGraphFullForm() {
     check(
         "Graph({1, 2, 3}, {UndirectedEdge(1, 2), UndirectedEdge(2, 3), UndirectedEdge(3, 1)}, {EdgeWeight -> {5, 4, 3}})", //
-        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{5.0,4.0,3.0}})");
+        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{5,4,3}})");
     check("Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})", //
         "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
     check(
         "Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}, {EdgeWeight -> {2, 3, 4}})", //
-        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
+        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2,3,4}})");
   }
 
   @Test
@@ -866,7 +870,11 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("StarGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},{1,0,0,0},{1,0,0,0},{1,0,0,0}}");
     check("StarGraph(6)", //
-        "Graph({1,2,3,4,5,6},{2<->1,3<->1,4<->1,5<->1,6<->1})");
+        "Graph({1,2,3,4,5,6},{1<->2,1<->3,1<->4,1<->5,1<->6})");
+    check("EdgeList(StarGraph(4))", //
+        "{1<->2,1<->3,1<->4}");
+    check("StarGraph(0)", //
+        "StarGraph(0)");
     check(
         "SparseArray(Automatic, {4, 4}, 0, {1, {{0, 3, 4, 5, 6}, {{2}, {3}, {4}, {1}, {1}, {1}}}, {1, 1, 1, 1, 1, 1}}) // Normal", //
         "{{0,1,1,1},{1,0,0,0},{1,0,0,0},{1,0,0,0}}");
@@ -897,6 +905,62 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
     check("WeightedAdjacencyMatrix(wgd) // Normal", //
         "{{0,5.061,0},{0,0,2.282},{5.086,0,0}}");
+  }
+
+  @Test
+  public void testWeightedGraphExactWeights() {
+    check("InputForm(Graph({1,2},{1<->2},EdgeWeight->{3}))", //
+        "Graph({1,2},{1<->2},{EdgeWeight->{3}})");
+    check("InputForm(Graph({1,2},{1<->2},EdgeWeight->{1/3}))", //
+        "Graph({1,2},{1<->2},{EdgeWeight->{1/3}})");
+    check("WeightedAdjacencyMatrix(Graph({1,2,3},{1->2,2->3},EdgeWeight->{5,7})) // Normal", //
+        "{{0,5,0},{0,0,7},{0,0,0}}");
+    check("Subgraph(Graph({1,2,3},{1<->2,2<->3},EdgeWeight->{1/2,3}),{1,2})", //
+        "Graph({1,2},{1<->2},{EdgeWeight->{1/2}})");
+    // isolated vertices are kept
+    check("VertexList(Graph({1,2,3},{1->2},EdgeWeight->{5}))", //
+        "{1,2,3}");
+    check("GraphDistance(Graph({1,2,3},{1->2},EdgeWeight->{5}),1,3)", //
+        "Infinity");
+    check("FindShortestPath(Graph({1,2,3},{1->2},EdgeWeight->{5}),1,3)", //
+        "{}");
+    check("GraphDistance(Graph({1,2,3},{1->2,2->3},EdgeWeight->{5,7}),1,3)", //
+        "12.0");
+    check("GraphDistance(Graph({1,2,3},{1->2,2->3},EdgeWeight->{1/2,1/3}),1,3)", //
+        "0.833333");
+    check("FindShortestPath(Graph({1,2,3,4},{1->2,2->3,3->4,1->4},EdgeWeight->{1,1,1,10}),1,4)", //
+        "{1,2,3,4}");
+    // negative weights use Bellman-Ford
+    check("GraphDistance(Graph({1,2,3},{1->2,2->3},EdgeWeight->{-1,7}),1,3)", //
+        "6.0");
+    check("FindShortestPath(Graph({1,2,3},{1->2,2->3},EdgeWeight->{-1,7}),1,3)", //
+        "{1,2,3}");
+  }
+
+  @Test
+  public void testWeaklyConnectedComponents() {
+    check("WeaklyConnectedComponents(Graph({1->2,3->4,4->3,5->5}))", //
+        "{{1,2},{3,4},{5}}");
+    check("WeaklyConnectedComponents(Graph({1,2,3},{1->2,2->3}))", //
+        "{{1,2,3}}");
+    check("ConnectedComponents(Graph({1,2,3},{1->2,2->3}))", //
+        "{{3},{2},{1}}");
+    check("WeaklyConnectedComponents(Graph({1->2,3->4}),{3})", //
+        "{{3,4}}");
+  }
+
+  @Test
+  public void testVertexConnectivity() {
+    check("VertexConnectivity(PetersenGraph())", //
+        "3");
+    check("VertexConnectivity(CompleteGraph(4))", //
+        "3");
+    check("VertexConnectivity(Graph({1->2,2->3}))", //
+        "0");
+    check("VertexConnectivity(Graph({1,2,3},{1<->2,2<->3}))", //
+        "1");
+    check("VertexConnectivity(CycleGraph(5),1,3)", //
+        "2");
   }
 
   @Test
@@ -1364,7 +1428,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("FindEdgeCover(CycleGraph(4))", "{1<->2,3<->4}");
     check("FindEdgeCover(PathGraph({1,2,3}))", "{1<->2,2<->3}");
     check("FindEdgeCover(PathGraph({1,2,3,4}))", "{1<->2,3<->4}");
-    check("FindEdgeCover(StarGraph(5))", "{2<->1,3<->1,4<->1,5<->1}");
+    check("FindEdgeCover(StarGraph(5))", "{1<->2,1<->3,1<->4,1<->5}");
     check("FindEdgeCover(CompleteGraph(4))", "{1<->2,3<->4}");
     check("FindEdgeCover({1<->2,2<->3})", "{1<->2,2<->3}");
 

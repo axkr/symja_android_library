@@ -25,6 +25,14 @@ public class ExprWeightedEdge extends DefaultWeightedEdge implements IExprEdge {
   /** */
   private static final long serialVersionUID = -2672050124122743886L;
 
+  /**
+   * The weight as given by the user (for example <code>3</code> or <code>1/3</code>) and the double
+   * weight it was set together with. JGraphT's algorithms only see the double.
+   */
+  private IExpr exactWeight = null;
+
+  private double exactWeightDouble = Double.NaN;
+
   public ExprWeightedEdge() {
     super();
   }
@@ -78,5 +86,40 @@ public class ExprWeightedEdge extends DefaultWeightedEdge implements IExprEdge {
    */
   public double weight() {
     return getWeight();
+  }
+
+  /**
+   * Remember the weight as given by the user; call this after the double weight has been set.
+   *
+   * @param weight the exact weight
+   */
+  public void setExactWeight(IExpr weight) {
+    exactWeight = weight;
+    exactWeightDouble = getWeight();
+  }
+
+  /**
+   * The edge weight as an expression: the exact weight given by the user, unless the double weight
+   * has been changed since.
+   *
+   * @return the edge weight
+   */
+  public IExpr weightExpr() {
+    if (exactWeight != null && exactWeightDouble == getWeight()) {
+      return exactWeight;
+    }
+    return F.num(getWeight());
+  }
+
+  /**
+   * Copy the exact weight of <code>from</code> to <code>to</code>, if both are weighted edges.
+   */
+  public static void copyExactWeight(Object from, Object to) {
+    if (from instanceof ExprWeightedEdge && to instanceof ExprWeightedEdge) {
+      ExprWeightedEdge source = (ExprWeightedEdge) from;
+      if (source.exactWeight != null && source.exactWeightDouble == source.getWeight()) {
+        ((ExprWeightedEdge) to).setExactWeight(source.exactWeight);
+      }
+    }
   }
 }

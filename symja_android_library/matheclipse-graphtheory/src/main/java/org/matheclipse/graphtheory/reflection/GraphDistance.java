@@ -7,6 +7,7 @@ import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
 import org.jgrapht.alg.shortestpath.BFSShortestPath;
 import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jgrapht.alg.shortestpath.NegativeCycleDetectedException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -16,6 +17,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.graphtheory.eval.GraphUtil;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class GraphDistance extends AbstractFunctionOptionEvaluator {
@@ -59,12 +61,19 @@ public class GraphDistance extends AbstractFunctionOptionEvaluator {
       // Default: Automatic or Dijkstra
       if ("Automatic".equalsIgnoreCase(method) && !gex.isWeightedGraph()) {
         alg = new BFSShortestPath<>(g);
+      } else if (GraphUtil.hasNegativeEdgeWeight(g)) {
+        alg = new BellmanFordShortestPath<>(g);
       } else {
         alg = new DijkstraShortestPath<>(g);
       }
     }
 
-    SingleSourcePaths<IExpr, ?> iPaths = alg.getPaths(source);
+    SingleSourcePaths<IExpr, ?> iPaths;
+    try {
+      iPaths = alg.getPaths(source);
+    } catch (NegativeCycleDetectedException ncde) {
+      return F.NIL;
+    }
 
     if (argSize == 3) {
       return getDistance(gex, iPaths, target);
