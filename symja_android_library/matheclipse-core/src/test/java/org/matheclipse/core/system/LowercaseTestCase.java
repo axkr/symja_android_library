@@ -26753,8 +26753,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,1},{0,1,2}}");
     check("Block({i=7}, Table(x, {i, 2}, {x, {i, i+1}}))", //
         "{{1,2},{2,3}}");
-    check("Block({i=7}, Table(x, {i, 2}, i))", //
-        "{{x},{x,x}}");
+    // a bare count is evaluated before the iteration starts, as in Mathematica
+    check("Table(x, {i, 2}, i)", //
+        "Table(x,{i,2},i)");
     check("Block({i=7}, Reap(Do(Sow(x), {i, 2}, {x, 0, i}))[[2,1]])", //
         "{0,1,0,1,2}");
     check("Block({i=7}, Sum(x, {i, 2}, {x, 0, i}))", //
@@ -26771,6 +26772,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
     check("Module({c=0}, Do(Null, {i, 2}, {x, 0, (c++; i)}); c)", //
         "2");
+    // a {max} count may be any real, not only a number
+    check("Table(x, {Pi})", //
+        "{x,x,x}");
+    check("Table(x, {Sqrt(2)})", //
+        "{x}");
+    check("Table(x, {I})", //
+        "Table(x,{I})");
     // the form of an iterator is checked even if it is never reached
     check("Table(x, {i, 0}, {1,2,3,4,5,6})", //
         "Table(x,{i,0},{1,2,3,4,5,6})");
