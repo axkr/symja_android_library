@@ -58,6 +58,7 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.InverseGammaBetaJS;
+import org.matheclipse.core.numerics.functions.MathieuFunctions;
 import org.matheclipse.core.numerics.functions.StruveFunctions;
 import org.matheclipse.core.numerics.functions.WorkingPrecision;
 
@@ -87,6 +88,10 @@ public class SpecialFunctions {
       S.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
       S.LerchPhi.setEvaluator(new LerchPhi());
       S.LogGamma.setEvaluator(new LogGamma());
+      S.MathieuC.setEvaluator(new Mathieu(MathieuFunctions.Kind.C));
+      S.MathieuCPrime.setEvaluator(new Mathieu(MathieuFunctions.Kind.C_PRIME));
+      S.MathieuS.setEvaluator(new Mathieu(MathieuFunctions.Kind.S));
+      S.MathieuSPrime.setEvaluator(new Mathieu(MathieuFunctions.Kind.S_PRIME));
       S.PolyGamma.setEvaluator(new PolyGamma());
       S.PolyLog.setEvaluator(new PolyLog());
       S.ProductLog.setEvaluator(new ProductLog());
@@ -2639,6 +2644,103 @@ public class SpecialFunctions {
   private static boolean isLargeStruveArgument(IInexactNumber z) {
     double argument = z.isReal() ? z.evalf() : z.evalfc().norm();
     return Double.isFinite(argument) && argument >= MIN_ASYMPTOTIC_STRUVE_ARGUMENT;
+  }
+
+  /**
+   * <code>MathieuC(a,q,z)</code>, <code>MathieuS(a,q,z)</code> and their derivatives with respect to
+   * <code>z</code>: the even and the odd solution of <code>y''+(a-2*q*Cos(2*z))*y==0</code>.
+   */
+  private static final class Mathieu extends AbstractFunctionEvaluator {
+    private final MathieuFunctions.Kind kind;
+
+    Mathieu(MathieuFunctions.Kind kind) {
+      this.kind = kind;
+    }
+
+    private boolean isEven() {
+      return kind == MathieuFunctions.Kind.C || kind == MathieuFunctions.Kind.S_PRIME;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 3) {
+        IInexactNumber a = (IInexactNumber) ast.arg1();
+        IInexactNumber q = (IInexactNumber) ast.arg2();
+        IInexactNumber z = (IInexactNumber) ast.arg3();
+        boolean machinePrecision = true;
+        for (int i = 1; i <= 3; i++) {
+          if (ast.get(i) instanceof ApfloatNum || ast.get(i) instanceof ApcomplexNum) {
+            machinePrecision = false;
+          }
+        }
+        FixedPrecisionApcomplexHelper h =
+            machinePrecision ? EvalEngine.getApfloatDouble() : EvalEngine.getApfloat();
+        Apcomplex value;
+        try {
+          value = MathieuFunctions.mathieu(kind, a.apcomplexValue(), q.apcomplexValue(),
+              z.apcomplexValue(), h);
+        } catch (ArgumentTypeException | ApfloatRuntimeException ex) {
+          return F.NIL;
+        }
+        if (value == null) {
+          return F.NIL;
+        }
+        if (value.imag().signum() == 0) {
+          return machinePrecision ? F.num(value.real().doubleValue()) : F.num(value.real());
+        }
+        return machinePrecision
+            ? F.complexNum(value.real().doubleValue(), value.imag().doubleValue())
+            : F.complexNum(value);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr q = ast.arg2();
+      IExpr z = ast.arg3();
+      if (q.isZero()) {
+        // the equation has constant coefficients
+        IExpr sqrtA = F.Sqrt(a);
+        switch (kind) {
+          case C:
+            return F.Cos(F.Times(sqrtA, z));
+          case C_PRIME:
+            return F.Times(F.CN1, sqrtA, F.Sin(F.Times(sqrtA, z)));
+          case S:
+            return F.Sin(F.Times(sqrtA, z));
+          default:
+            return F.Times(sqrtA, F.Cos(F.Times(sqrtA, z)));
+        }
+      }
+      if (z.isZero()) {
+        // the odd ones; the even ones depend on the normalization
+        return isEven() ? F.NIL : F.C0;
+      }
+      IExpr negZ = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+      if (negZ.isPresent()) {
+        IExpr mirrored = F.ternaryAST3(ast.head(), a, q, negZ);
+        return isEven() ? mirrored : F.Negate(mirrored);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
   }
 
   private static final class StruveH extends AbstractFunctionEvaluator implements IFunctionExpand {

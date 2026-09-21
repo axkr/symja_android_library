@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 169, 0 };
+  final public static int[] SIZES = { 173, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -509,6 +509,18 @@ public class DerivativeRules {
     // Zeta'(-1)=1/12-Log(Glaisher)
     ISet($($(Derivative(C1),Zeta),CN1),
       Subtract(QQ(1L,12L),Log(Glaisher)), true),
+    // Derivative(0,0,1)[MathieuC]=MathieuCPrime(#1,#2,#3)&
+    ISet($(Derivative(C0,C0,C1),MathieuC),
+      Function(MathieuCPrime(Slot1,Slot2,Slot(C3))), true),
+    // Derivative(0,0,1)[MathieuCPrime]=(-#1+2*#2*Cos(2*#3))*MathieuC(#1,#2,#3)&
+    ISet($(Derivative(C0,C0,C1),MathieuCPrime),
+      Function(Times(Plus(Negate(Slot1),Times(C2,Slot2,Cos(Times(C2,Slot(C3))))),MathieuC(Slot1,Slot2,Slot(C3)))), true),
+    // Derivative(0,0,1)[MathieuS]=MathieuSPrime(#1,#2,#3)&
+    ISet($(Derivative(C0,C0,C1),MathieuS),
+      Function(MathieuSPrime(Slot1,Slot2,Slot(C3))), true),
+    // Derivative(0,0,1)[MathieuSPrime]=(-#1+2*#2*Cos(2*#3))*MathieuS(#1,#2,#3)&
+    ISet($(Derivative(C0,C0,C1),MathieuSPrime),
+      Function(Times(Plus(Negate(Slot1),Times(C2,Slot2,Cos(Times(C2,Slot(C3))))),MathieuS(Slot1,Slot2,Slot(C3)))), true),
     // Derivative(1,0,0)[LerchPhi]=(LerchPhi(#1,-1+#2,#3)-LerchPhi(#1,#2,#3)*#3)/#1&
     ISet($(Derivative(C1,C0,C0),LerchPhi),
       Function(Times(Power(Slot1,CN1),Plus(LerchPhi(Slot1,Plus(CN1,Slot2),Slot(C3)),Times(CN1,LerchPhi(Slot1,Slot2,Slot(C3)),Slot(C3))))), true),

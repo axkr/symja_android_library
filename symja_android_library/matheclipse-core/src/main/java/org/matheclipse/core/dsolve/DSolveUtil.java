@@ -384,7 +384,7 @@ final class DSolveUtil {
       new java.util.HashSet<>(java.util.Arrays.asList("LegendreP", "LegendreQ", "AiryAi", "AiryBi",
           "AiryAiPrime", "AiryBiPrime", "BesselJ", "BesselY", "BesselI", "BesselK",
           "Hypergeometric1F1", "Hypergeometric2F1", "HypergeometricPFQ", "HypergeometricU",
-          "WhittakerM", "WhittakerW", "MathieuC", "MathieuS"));
+          "WhittakerM", "WhittakerW", "MathieuC", "MathieuS", "MathieuCPrime", "MathieuSPrime"));
 
   /** The places a polynomial vanishes, each with how many times over, or <code>null</code>. */
   static IAST polesOf(IExpr polynomial, IExpr xVar, EvalEngine engine) {

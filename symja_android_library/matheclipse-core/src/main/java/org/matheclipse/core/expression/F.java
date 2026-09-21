@@ -7978,6 +7978,22 @@ public class F extends S {
     return new AST2(MatchQ, expr, form);
   }
 
+  public static IAST MathieuC(final IExpr a, final IExpr q, final IExpr z) {
+    return new AST3(S.MathieuC, a, q, z);
+  }
+
+  public static IAST MathieuCPrime(final IExpr a, final IExpr q, final IExpr z) {
+    return new AST3(S.MathieuCPrime, a, q, z);
+  }
+
+  public static IAST MathieuS(final IExpr a, final IExpr q, final IExpr z) {
+    return new AST3(S.MathieuS, a, q, z);
+  }
+
+  public static IAST MathieuSPrime(final IExpr a, final IExpr q, final IExpr z) {
+    return new AST3(S.MathieuSPrime, a, q, z);
+  }
+
   public static IAST MathMLForm(final IExpr expr) {
     return new AST1(MathMLForm, expr);
   }

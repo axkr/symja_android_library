@@ -196,6 +196,11 @@ Derivative(0,1)[StruveL] = (1/2)*(StruveL(#-1, #2) + StruveL(#+1, #2) + (#2/2)^#
 Derivative(1)[Zeta][0] = (-1/2)*Log(2*Pi),
 Derivative(1)[Zeta][-1] = 1/12-Log(Glaisher),
 
+Derivative(0,0,1)[MathieuC] = MathieuCPrime(#,#2,#3) &,
+Derivative(0,0,1)[MathieuCPrime] = (-#+2*#2*Cos(2*#3))*MathieuC(#,#2,#3) &,
+Derivative(0,0,1)[MathieuS] = MathieuSPrime(#,#2,#3) &,
+Derivative(0,0,1)[MathieuSPrime] = (-#+2*#2*Cos(2*#3))*MathieuS(#,#2,#3) &,
+
 Derivative(1,0,0)[LerchPhi] = (LerchPhi(#,-1+#2,#3)-LerchPhi(#,#2,#3)*#3)/# &,
 Derivative(0,0,1)[LerchPhi] = (-LerchPhi(#, 1 + #2, #3))*#2 &,
 
