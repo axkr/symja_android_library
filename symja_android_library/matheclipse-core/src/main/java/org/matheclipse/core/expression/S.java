@@ -637,6 +637,16 @@ public class S {
    *      documentation</a>
    */
   /**
+   * AlgebraicNumberDenominator(x) - TODO describe `AlgebraicNumberDenominator`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AlgebraicNumberDenominator.md">AlgebraicNumberDenominator
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlgebraicNumberDenominator =
+      S.initFinalSymbol("AlgebraicNumberDenominator", ID.AlgebraicNumberDenominator);
+
+  /**
    * AlgebraicNumberNorm(x) - see the documentation page for details.
    *
    * @see <a href=
@@ -645,6 +655,16 @@ public class S {
    */
   public final static IBuiltInSymbol AlgebraicNumberNorm =
       S.initFinalSymbol("AlgebraicNumberNorm", ID.AlgebraicNumberNorm);
+
+  /**
+   * AlgebraicNumberPolynomial(x) - TODO describe `AlgebraicNumberPolynomial`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AlgebraicNumberPolynomial.md">AlgebraicNumberPolynomial
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlgebraicNumberPolynomial =
+      S.initFinalSymbol("AlgebraicNumberPolynomial", ID.AlgebraicNumberPolynomial);
 
   public final static IBuiltInSymbol AlgebraicNumberQ =
       S.initFinalSymbol("AlgebraicNumberQ", ID.AlgebraicNumberQ);
@@ -23104,6 +23124,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol ToLowerCase = S.initFinalSymbol("ToLowerCase", ID.ToLowerCase);
+
+  /**
+   * ToNumberField(x) - TODO describe `ToNumberField`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToNumberField.md">ToNumberField
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ToNumberField =
+      S.initFinalSymbol("ToNumberField", ID.ToNumberField);
 
   public final static IBuiltInSymbol TooLarge = S.initFinalSymbol("TooLarge", ID.TooLarge);
 
