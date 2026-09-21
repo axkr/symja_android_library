@@ -18,6 +18,22 @@ FindMinimum(f, {{x, xstart},{y, ystart},...})
 
 > searches for a local numerical minimum of the multivariate function `f` for the variables `x, y,...` and the corresponding start values `xstart, ystart,...`. 
 
+```
+FindMinimum(f, {x, xstart}, {y, ystart}, ...)
+```
+
+> is the same search with one search specification per argument.
+
+```
+FindMinimum({f, constraints}, {{x, xstart},{y, ystart},...})
+```
+
+> searches for a local numerical minimum subject to the `constraints`. Bounds of a single variable like `x>=1` are taken by the methods "CMAES" and "BOBYQA"; linear equations and inequalities like `x+y>=4` select the "SequentialQuadratic" method. Other constraints are not supported.
+
+A search specification can be `x` or `{x}` (start value chosen automatically), `{x, xstart}`, `{x, xstart, xstart2}` or `{x, xstart, xmin, xmax}` (the search stays in `xmin<=x<=xmax`). The variables are localized like in `Block`.
+
+The option `MaxIterations` (default `100`) limits the iterations of a method; `Automatic` and `Infinity` are possible values.
+
 See
 * [Wikipedia - Mathematical optimization](https://en.wikipedia.org/wiki/Mathematical_optimization)
 * [Wikipedia - Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function)
@@ -35,7 +51,7 @@ This is a derivative based method and the functions must be symbolically differe
 
 #### "SequentialQuadratic"
 
-Implements the [Sequential Quadratic Programming](https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/vector/constrained/SQPOptimizerS.java) optimizer.  
+Implements the [Sequential Quadratic Programming](https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/vector/constrained/SQPOptimizerS2.java) optimizer.  
 
 This is a derivative, multivariate based method and the functions must be symbolically differentiable.
 
@@ -47,7 +63,7 @@ The "BOBYQA" method falls back to "CMAES" if the objective function has dimensio
 
 #### "CMAES"
 
-Implements the [Covariance Matrix Adaptation Evolution Strategy (CMA-ES)](https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/BOBYQAOptimizer.java) optimizer. 
+Implements the [Covariance Matrix Adaptation Evolution Strategy (CMA-ES)](https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/CMAESOptimizer.java) optimizer. 
 
 ### Examples
 

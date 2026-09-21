@@ -9536,11 +9536,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFindMaximum() {
     // FindMaximum: Failed to converge to the requested accuracy or precision within 2 iterations.
-    check("FindMaximum(-Exp(-1/x^2)+1., {x,1.2}, MaxIterations->2)", //
-        "FindMaximum(1.0-1/E^(1/x^2),{x,1.2},MaxIterations->2)");
+    check("FindMaximum(-(1-x)^2-100*(y-x^2)^2, {{x,-1.2},{y,1}}, MaxIterations->2)", //
+        "FindMaximum(-(1-x)^2-100*(-x^2+y)^2,{{x,-1.2},{y,1}},MaxIterations->2)");
     check(
         "FindMaximum({2/3*x^2*Cos(x^2/3)+Sin(x^2/3), x>=-19.1 && x<=-19.05}, {x, -19.1}, Method -> \"ConjugateGradient\")", //
-        "{226.2146,{x->-18.42096}}");
+        "{-2.91515,{x->-19.05}}");
     check("FindMaximum({x*Cos(x), 1 < x < 11}, {x, 7} )", //
         "{6.361,{x->6.4373}}");
     check("FindMaximum({x*Cos(x), 1 < x < 11}, {x, 7} ,Method->\"BOBYQA\")", //
@@ -9582,7 +9582,144 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.0,{x->1.5708}}");
     check(
         "FindMaximum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}}, MaxIterations->1000, Method -> \"ConjugateGradient\")", //
-        "{1.0,{x->-1.5708,y->2.35619}}");
+        "{1.0,{x->1.5708,y->0.785398}}");
+  }
+
+  @Test
+  public void testFindMaximumSearchSpecifications() {
+    // https://github.com/ad-si/Woxi/pull/830
+    check("FindMaximum(-((x - 1)^2 + (y - 2)^2), {x, 0}, {y, 0}) // Chop", //
+        "{0,{x->1.0,y->2.0}}");
+    check("myFindMaxObjective(k_?NumericQ) := -((k - 4)^2); " //
+        + "FindMaximum(myFindMaxObjective(k), {k, 0}) // Chop", //
+        "{0,{k->4.0}}");
+    // no symbolic gradient: falls back to a derivative free method
+    check("myFindMaxObjective(k_?NumericQ) := -((k - 4)^2); " //
+        + "FindMaximum(myFindMaxObjective(k), {k, 0}, Method->\"ConjugateGradient\") // Chop", //
+        "{0,{k->4.0}}");
+
+    // SQPOptimizerS2 doesn't read the GoalType
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMaximum({-(x-1)^2-(y-2)^2}, {{x,0},{y,0}}, " //
+        + "Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{0,{1,2}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMaximum({-x-2*y, x>=1 && y>=3}, " //
+        + "{{x,5},{y,5}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{-7,{1,3}}");
+    // the PowellOptimizer stops a maximization after the first sweep
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[" //
+        + "FindMaximum(-(1-x)^2-100*(y-x^2)^2, {{x,-1.2},{y,1}})], 10^-6)", //
+        "{0,{1,1}}");
+  }
+
+  @Test
+  public void testFindMinimumSearchSpecifications() {
+    // https://github.com/ad-si/Woxi/pull/830
+    check("FindMinimum((x - 1)^2 + (y - 2)^2, {x, 0}, {y, 0}) // Chop", //
+        "{0,{x->1.0,y->2.0}}");
+    check("FindMinimum((x - 1)^2 + (y - 2)^2, {x, 0}, {y, 0}, MaxIterations -> 50) // Chop", //
+        "{0,{x->1.0,y->2.0}}");
+    check("myFindMinObjective(k_?NumericQ, a_?NumericQ) := (k - 2)^2 + (a - 3)^2; " //
+        + "Round({#[[1]], {k, a} /. #[[2]]} &[" //
+        + "FindMinimum(myFindMinObjective(k, a), {k, 0}, {a, 0})], 10^-6)", //
+        "{0,{2,3}}");
+    check("FindMinimum((x-1)^2+(y-2)^2+(z-3)^2, {x, 0}, {y, 0}, {z, 0}) // Chop", //
+        "{0,{x->1.0,y->2.0,z->3.0}}");
+    check("FindMinimum((x-1)^2+(y-2)^2, {x, 0}, {y, 0}, Method->\"ConjugateGradient\")", //
+        "{0.0,{x->1.0,y->2.0}}");
+    check("FindMinimum((x-1)^2+(y-2)^2, {x, 0}, {y, 0}, ConjugateGradient)", //
+        "{0.0,{x->1.0,y->2.0}}");
+
+    check("FindMinimum(x*Cos(x), x)", //
+        "{-3.28837,{x->3.42562}}");
+    check("FindMinimum(x*Cos(x), {x})", //
+        "{-3.28837,{x->3.42562}}");
+    check("FindMinimum(x*Cos(x), {x, 2, 3})", //
+        "{-3.28837,{x->3.42562}}");
+    check("FindMinimum(x*Cos(x), {x, 2, 1, 5})", //
+        "{-3.28837,{x->3.42562}}");
+    // the search stays in xmin <= x <= xmax
+    check("FindMinimum((x-3)^2, {x, 0, -1, 2})", //
+        "{1.0,{x->2.0}}");
+    check("FindMinimum((x-1)^2+(y-2)^2, {{x}, {y}}) // Chop", //
+        "{0,{x->1.0,y->2.0}}");
+    check("FindMinimum((x-1)^2+(y-2)^2, {{x, 1}, {y}}) // Chop", //
+        "{0,{x->1.0,y->2.0}}");
+    // the start value is evaluated
+    check("n=3; FindMinimum((x-1)^2, {x, n})", //
+        "{0.0,{x->1.0}}");
+    // the variable is localized, the result isn't
+    check("x=5; FindMinimum((x-1)^2, {x, 0})", //
+        "{0.0,{5->1.0}}");
+    check("x=.", //
+        "");
+
+    // message: 5 is not a valid variable.
+    check("FindMinimum((x-1)^2, {5, 1})", //
+        "FindMinimum((-1+x)^2,{5,1})");
+    // message: Search specification {x,I} should be a list with 1 to 3 elements.
+    check("FindMinimum(Sin(x), {x, I})", //
+        "FindMinimum(Sin(x),{x,I})");
+    check("FindMinimum((x-1)^2, {})", //
+        "FindMinimum((-1+x)^2,{})");
+    // message: Method Foo is not one of Powell, ConjugateGradient, ...
+    check("FindMinimum((x-1)^2, {x, 0}, Method->\"Foo\")", //
+        "FindMinimum((-1+x)^2,{x,0},Method->Foo)");
+  }
+
+  @Test
+  public void testFindMinimumMaxIterations() {
+    check("FindMinimum((x-1)^2, {x, 0}, MaxIterations->Automatic)", //
+        "{0.0,{x->1.0}}");
+    check("FindMinimum((x-1)^2, {x, 0}, MaxIterations->Infinity)", //
+        "{0.0,{x->1.0}}");
+    // message: The value of the option MaxIterations -> -1 should be a positive integer, ...
+    check("FindMinimum((x-1)^2, {x, 0}, MaxIterations->-1)", //
+        "FindMinimum((-1+x)^2,{x,0},MaxIterations->-1)");
+    // message: Failed to converge to the requested accuracy or precision within 5 iterations.
+    check("FindMinimum((1-x)^2+100*(y-x^2)^2, {{x,-1.2},{y,1}}, MaxIterations->5)", //
+        "FindMinimum((1-x)^2+100*(-x^2+y)^2,{{x,-1.2},{y,1}},MaxIterations->5)");
+    // MaxIterations doesn't count the function evaluations
+    check("FindMinimum((1-x)^2+100*(y-x^2)^2, {{x,-1.2},{y,1}}) // Chop", //
+        "{0,{x->1.0,y->1.0}}");
+    check("FindMinimum((1-x)^2+100*(y-x^2)^2, {{x,-1.2},{y,1}}, " //
+        + "Method->\"ConjugateGradient\") // Chop", //
+        "{0,{x->1.0,y->1.0}}");
+  }
+
+  @Test
+  public void testFindMinimumConstraints() {
+    // the constraints belong to the variables, whatever the order of the search specifications is
+    check("FindMinimum({x+2*y, x>=1 && y>=3}, {{x,5},{y,5}})", //
+        "{7.0,{x->1.0,y->3.0}}");
+    check("FindMinimum({x+2*y, x>=1 && y>=3}, {{y,5},{x,5}})", //
+        "{7.0,{y->3.0,x->1.0}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum({x+2*y, x>=1 && y>=3}, " //
+        + "{{y,5},{x,5}}, Method->\"SequentialQuadratic\")], 10^-6)", //
+        "{7,{1,3}}");
+    check("FindMinimum({(x-1)^2, x>=2, x<=5}, {x, 3})", //
+        "{1.0,{x->2.0}}");
+
+    // a linear constraint which is no bound of a variable selects "SequentialQuadratic"
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[" //
+        + "FindMinimum({(x-1)^2+(y-1)^2, x+y>=4}, {{x,3},{y,3}})], 10^-6)", //
+        "{2,{2,2}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[" //
+        + "FindMinimum({(x-1)^2+(y-1)^2, x+y==4}, {{x,3},{y,3}})], 10^-6)", //
+        "{2,{2,2}}");
+    // message: Method BOBYQA only takes bounds of a single variable
+    check("FindMinimum({(x-1)^2+(y-1)^2, x+y>=4}, {{x,3},{y,3}}, Method->\"BOBYQA\")", //
+        "FindMinimum({(-1+x)^2+(-1+y)^2,x+y>=4},{{x,3},{y,3}},Method->BOBYQA)");
+
+    // message: Constraints in ... are not all 'equality' or 'less equal' or 'greater equal' linear
+    // constraints.
+    check("FindMinimum({Sin(x)*Sin(2*y), x^2+y^2<3}, {{x,2},{y,2}})", //
+        "FindMinimum({Sin(x)*Sin(2*y),x^2+y^2<3},{{x,2},{y,2}})");
+    check("FindMinimum({(x-1)^2+(y-1)^2, 2*x^2+y>=4}, {{x,3},{y,3}}, " //
+        + "Method->\"SequentialQuadratic\")", //
+        "FindMinimum({(-1+x)^2+(-1+y)^2,2*x^2+y>=4},{{x,3},{y,3}},Method->SequentialQuadratic)");
+    // z is no variable of the search
+    check("FindMinimum({(x-1)^2+(y-1)^2, x+y>=4, z>=1}, {{x,3},{y,3}})", //
+        "FindMinimum({(-1+x)^2+(-1+y)^2,x+y>=4,z>=1},{{x,3},{y,3}})");
   }
 
   @Test
@@ -9614,8 +9751,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         //
         "FindMinimum({x+y,3*x+2*y>7&&x>0&&y>0},{x,y},Method->SequentialQuadratic)");
 
-    // check("FindMinimum({Sin(x)*Sin(2*y),x^2 + y^2 < 3}, {{x, 2}, {y, 2}})", //
-    // "");
     check("FindMinimum(Abs(x + 1) + Abs(x + 1.01) + Abs(y + 1),{x, y},MaxIterations->1000)", //
         "{0.01,{x->-1.00719,y->-1.0}}");
     check(
@@ -9638,9 +9773,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindMinimum(Sin(x), {x,1}, Method -> \"ConjugateGradient\")", //
         "{-1.0,{x->-7.85398}}");
     check("FindMinimum(x*Cos(x), {x,5.0}, Method -> \"ConjugateGradient\")", //
-        "{-6.361,{x->-6.4373}}");
+        "{-3.28837,{x->3.42562}}");
     check("FindMinimum(x*Cos(x), {x,10.0}, Method -> \"ConjugateGradient\")", //
-        "{-12.60593,{x->-12.64529}}");
+        "{-9.47729,{x->9.52934}}");
 
     check("FindMinimum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}}, Method -> \"ConjugateGradient\")", //
         "{-1.0,{x->1.5708,y->2.35619}}");
