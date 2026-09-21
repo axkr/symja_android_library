@@ -9710,16 +9710,49 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindMinimum({(x-1)^2+(y-1)^2, x+y>=4}, {{x,3},{y,3}}, Method->\"BOBYQA\")", //
         "FindMinimum({(-1+x)^2+(-1+y)^2,x+y>=4},{{x,3},{y,3}},Method->BOBYQA)");
 
-    // message: Constraints in ... are not all 'equality' or 'less equal' or 'greater equal' linear
-    // constraints.
-    check("FindMinimum({Sin(x)*Sin(2*y), x^2+y^2<3}, {{x,2},{y,2}})", //
-        "FindMinimum({Sin(x)*Sin(2*y),x^2+y^2<3},{{x,2},{y,2}})");
-    check("FindMinimum({(x-1)^2+(y-1)^2, 2*x^2+y>=4}, {{x,3},{y,3}}, " //
-        + "Method->\"SequentialQuadratic\")", //
-        "FindMinimum({(-1+x)^2+(-1+y)^2,2*x^2+y>=4},{{x,3},{y,3}},Method->SequentialQuadratic)");
     // z is no variable of the search
     check("FindMinimum({(x-1)^2+(y-1)^2, x+y>=4, z>=1}, {{x,3},{y,3}})", //
         "FindMinimum({(-1+x)^2+(-1+y)^2,x+y>=4,z>=1},{{x,3},{y,3}})");
+  }
+
+  @Test
+  public void testFindMinimumNonlinearConstraints() {
+    // constraints with a symbolic Jacobian matrix for the "SequentialQuadratic" method
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[" //
+        + "FindMinimum({Sin(x)*Sin(2*y), x^2+y^2<3}, {{x,2},{y,2}})], 10^-4)", //
+        "{-443/5000,{1049/2500,4201/2500}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[" //
+        + "FindMinimum({(x-2)^2+(y-2)^2, x^2+y^2<=2}, {{x,3},{y,3}})], 10^-4)", //
+        "{2,{1,1}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[" //
+        + "FindMinimum({x^2+y^2, x*y==1}, {{x,2},{y,1}})], 10^-4)", //
+        "{2,{1,1}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[" //
+        + "FindMinimum({Exp(x)+y^2, Log(x)+y>=1}, {{x,2},{y,2}})], 10^-4)", //
+        "{18407/5000,{2249/2500,5529/5000}}");
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[" //
+        + "FindMaximum({x+y, x^2+y^2<=1 && x>=0}, {{x,0.2},{y,0.2}})], 10^-4)", //
+        "{7071/5000,{7071/10000,7071/10000}}");
+    check("Round(First(FindMaximum({x*y, x^2+y^2==1}, {{x,1},{y,0.5}})), 10^-4)", //
+        "1/2");
+    check("Round({#[[1]], x /. #[[2]]} &[FindMinimum({(x-3)^2, x^2<=4}, {x, 1})], 10^-4)", //
+        "{1,2}");
+    // Hock-Schittkowski problem 71
+    check("Round({#[[1]], {x1, x2, x3, x4} /. #[[2]]} &[" //
+        + "FindMinimum({x1*x4*(x1+x2+x3)+x3, x1*x2*x3*x4>=25, x1^2+x2^2+x3^2+x4^2==40, " //
+        + "1<=x1<=5, 1<=x2<=5, 1<=x3<=5, 1<=x4<=5}, {{x1,1},{x2,5},{x3,5},{x4,1}})], 10^-3)", //
+        "{8507/500,{1,4743/1000,3821/1000,1379/1000}}");
+    // {x, x0, xmin, xmax} with the "SequentialQuadratic" method
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum((x-3)^2+(y-1)^2, " //
+        + "{{x, 0, -1, 2},{y,0}}, Method->\"SequentialQuadratic\")], 10^-4)", //
+        "{1,{2,1}}");
+
+    // message: Constraints in ... are not all 'equality' or 'less equal' or 'greater equal' ...
+    check("FindMinimum({x+y, x^2+y^2<=1, x!=0}, {{x,0.5},{y,0.5}})", //
+        "FindMinimum({x+y,x^2+y^2<=1,x!=0},{{x,0.5},{y,0.5}})");
+    // z is no variable of the search
+    check("FindMinimum({x+y, x^2+z^2<=1}, {{x,0.5},{y,0.5}})", //
+        "FindMinimum({x+y,x^2+z^2<=1},{{x,0.5},{y,0.5}})");
   }
 
   @Test
@@ -9743,13 +9776,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "FindMinimum({x+y,3*x+2*y >= 7 , x >= 0 , y >= 0}, {x, y},Method -> \"SequentialQuadratic\")", //
         "{2.33333,{x->2.33333,y->-2.01416*10^-10}}");
 
-    // TODO Less and Greater are not allowed at the moment
-    // message: FindMinimum: Constraints in `1` are not all 'equality' or 'less
-    // equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.
-    check(
-        "FindMinimum({x+y,3*x+2*y > 7 && x > 0 && y > 0}, {x, y},Method -> \"SequentialQuadratic\")",
-        //
-        "FindMinimum({x+y,3*x+2*y>7&&x>0&&y>0},{x,y},Method->SequentialQuadratic)");
+    // Less and Greater are read as LessEqual and GreaterEqual
+    check("Round({#[[1]], {x, y} /. #[[2]]} &[FindMinimum({x+y,3*x+2*y > 7 && x > 0 && y > 0}, " //
+        + "{x, y},Method -> \"SequentialQuadratic\")], 10^-4)", //
+        "{23333/10000,{23333/10000,0}}");
 
     check("FindMinimum(Abs(x + 1) + Abs(x + 1.01) + Abs(y + 1),{x, y},MaxIterations->1000)", //
         "{0.01,{x->-1.00719,y->-1.0}}");

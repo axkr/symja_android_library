@@ -51,8 +51,10 @@ import org.hipparchus.optim.nonlinear.scalar.GoalType;
  * <p>
  * searches for a local numerical maximum subject to the <code>constraints</code>. Bounds of a
  * single variable like <code>x&gt;=1</code> are taken by the methods &quot;CMAES&quot; and
- * &quot;BOBYQA&quot;; linear equations and inequalities like <code>x+y&gt;=4</code> select the
- * &quot;SequentialQuadratic&quot; method. Other constraints are not supported.
+ * &quot;BOBYQA&quot;; other equations and inequalities like <code>x+y&gt;=4</code> or
+ * <code>x^2+y^2&lt;3</code> select the &quot;SequentialQuadratic&quot; method and must be
+ * symbolically differentiable. <code>&lt;</code> and <code>&gt;</code> are read as
+ * <code>&lt;=</code> and <code>&gt;=</code>.
  * </p>
  * <p>
  * A search specification can be <code>x</code> or <code>{x}</code> (start value chosen

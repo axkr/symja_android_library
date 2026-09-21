@@ -28,7 +28,7 @@ FindMinimum(f, {x, xstart}, {y, ystart}, ...)
 FindMinimum({f, constraints}, {{x, xstart},{y, ystart},...})
 ```
 
-> searches for a local numerical minimum subject to the `constraints`. Bounds of a single variable like `x>=1` are taken by the methods "CMAES" and "BOBYQA"; linear equations and inequalities like `x+y>=4` select the "SequentialQuadratic" method. Other constraints are not supported.
+> searches for a local numerical minimum subject to the `constraints`. Bounds of a single variable like `x>=1` are taken by the methods "CMAES" and "BOBYQA"; other equations and inequalities like `x+y>=4` or `x^2+y^2<3` select the "SequentialQuadratic" method and must be symbolically differentiable. `<` and `>` are read as `<=` and `>=`.
 
 A search specification can be `x` or `{x}` (start value chosen automatically), `{x, xstart}`, `{x, xstart, xstart2}` or `{x, xstart, xmin, xmax}` (the search stays in `xmin<=x<=xmax`). The variables are localized like in `Block`.
 
@@ -73,6 +73,9 @@ Implements the [Covariance Matrix Adaptation Evolution Strategy (CMA-ES)](https:
 
 >> FindMinimum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}}, Method -> "ConjugateGradient") 
 {-1.0,{x->1.5708,y->2.35619}}        
+
+>> FindMinimum({Sin(x)*Sin(2*y), x^2+y^2<3}, {{x,2},{y,2}})
+{-0.0886359,{x->0.419647,y->1.68045}}
 ```
 
 ### Related terms 

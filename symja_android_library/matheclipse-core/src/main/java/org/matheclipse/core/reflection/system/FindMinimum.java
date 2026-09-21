@@ -1,13 +1,18 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.ArrayRealVector;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.InitialGuess;
 import org.hipparchus.optim.MaxEval;
@@ -27,6 +32,8 @@ import org.hipparchus.optim.nonlinear.scalar.noderiv.CMAESOptimizer.PopulationSi
 import org.hipparchus.optim.nonlinear.scalar.noderiv.CMAESOptimizer.Sigma;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.hipparchus.optim.nonlinear.vector.constrained.ConstraintOptimizer;
+import org.hipparchus.optim.nonlinear.vector.constrained.EqualityConstraint;
+import org.hipparchus.optim.nonlinear.vector.constrained.InequalityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.LagrangeSolution;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearEqualityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearInequalityConstraint;
@@ -104,8 +111,10 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * searches for a local numerical minimum subject to the <code>constraints</code>. Bounds of a
  * single variable like <code>x&gt;=1</code> are taken by the methods &quot;CMAES&quot; and
- * &quot;BOBYQA&quot;; linear equations and inequalities like <code>x+y&gt;=4</code> select the
- * &quot;SequentialQuadratic&quot; method. Other constraints are not supported.
+ * &quot;BOBYQA&quot;; other equations and inequalities like <code>x+y&gt;=4</code> or
+ * <code>x^2+y^2&lt;3</code> select the &quot;SequentialQuadratic&quot; method and must be
+ * symbolically differentiable. <code>&lt;</code> and <code>&gt;</code> are read as
+ * <code>&lt;=</code> and <code>&gt;=</code>.
  * </p>
  * <p>
  * A search specification can be <code>x</code> or <code>{x}</code> (start value chosen
@@ -353,47 +362,54 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
 
     SimpleBounds simpleBounds = specBounds ? new SimpleBounds(lowerBounds, upperBounds) : null;
     OptimizationData[] optimizationData = new OptimizationData[2];
-    boolean constrained = false;
-    if (relationList.argSize() > 1) {
-      IASTAppendable constraints = F.ast(S.And, relationList.argSize());
-      for (int i = 2; i < relationList.size(); i++) {
-        IExpr relation = relationList.get(i);
-        if (relation.isAnd()) {
-          constraints.appendArgs((IAST) relation);
-        } else {
-          constraints.append(relation);
+    IASTAppendable constraints = F.ast(S.And, relationList.argSize());
+    for (int i = 2; i < relationList.size(); i++) {
+      IExpr relation = relationList.get(i);
+      if (relation.isAnd()) {
+        constraints.appendArgs((IAST) relation);
+      } else {
+        constraints.append(relation);
+      }
+    }
+    if (constraints.argSize() > 0 && !method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
+      IASTAppendable remaining = constraints.copyAppendable();
+      SimpleBounds relationBounds = createSimpleBounds(remaining, varsList, engine);
+      if (relationBounds != null && remaining.argSize() == 0) {
+        simpleBounds = intersect(simpleBounds, relationBounds);
+      } else if (automaticMethod) {
+        // constraints which are no bounds of a single variable need a constrained optimizer
+        method = SEQUENTIAL_QUADRATIC_METHOD;
+      } else {
+        // `1`.
+        return Errors.printMessage(head, "error",
+            F.list(F.$str("Method " + method + " only takes bounds of a single variable, not "
+                + remaining + "; use Method -> \"" + SEQUENTIAL_QUADRATIC_METHOD + "\"")),
+            engine);
+      }
+    }
+    if (method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
+      // SQPOptimizerS2 takes no SimpleBounds before Hipparchus PR #455: {x, x0, xmin, xmax}
+      for (int i = 0; specBounds && i < n; i++) {
+        if (!Double.isInfinite(lowerBounds[i])) {
+          constraints.append(F.GreaterEqual(varsList.get(i + 1), F.num(lowerBounds[i])));
+        }
+        if (!Double.isInfinite(upperBounds[i])) {
+          constraints.append(F.LessEqual(varsList.get(i + 1), F.num(upperBounds[i])));
         }
       }
-      constrained = constraints.argSize() > 0;
-      if (constrained && !method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
-        IASTAppendable remaining = constraints.copyAppendable();
-        SimpleBounds relationBounds = createSimpleBounds(remaining, varsList, engine);
-        if (relationBounds != null && remaining.argSize() == 0) {
-          simpleBounds = intersect(simpleBounds, relationBounds);
-          if (method.equals(POWELL_METHOD)) {
-            // Powell is unbounded. Hipparchus PR #455 lets SQPOptimizerS2 take SimpleBounds.
-            method = CMAES_METHOD;
-          }
-        } else if (automaticMethod) {
-          // constraints which are no bounds of a single variable need a constrained optimizer
-          method = SEQUENTIAL_QUADRATIC_METHOD;
-        } else {
-          // `1`.
-          return Errors.printMessage(head, "error",
-              F.list(F.$str("Method " + method + " only takes bounds of a single variable, not "
-                  + remaining + "; use Method -> \"" + SEQUENTIAL_QUADRATIC_METHOD + "\"")),
-              engine);
-        }
-      }
-      if (constrained && method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
-        if (!createLinearConstraints(constraints, varsList, engine, optimizationData)) {
-          // Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal'
-          // constraints. Constraints with Unequal(!=) are not supported.
-          return Errors.printMessage(head, "eqgele", F.List(constraints), engine);
-        }
-      }
+      simpleBounds = null;
     } else if (simpleBounds != null && method.equals(POWELL_METHOD)) {
+      // Powell is unbounded
       method = CMAES_METHOD;
+    }
+    final boolean constrained = constraints.argSize() > 0;
+    if (constrained && method.equals(SEQUENTIAL_QUADRATIC_METHOD)
+        && !createLinearConstraints(constraints, varsList, engine, optimizationData)
+        && !createNonlinearConstraints(constraints, varsList, initialValues, engine,
+            optimizationData)) {
+      // Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal'
+      // constraints. Constraints with Unequal(!=) are not supported.
+      return Errors.printMessage(head, "eqgele", F.List(constraints), engine);
     }
 
     IExpr initialValue = testInitialValue(function, varsList, initialValues, goalType, engine);
@@ -561,6 +577,143 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Read the relations as the vector valued constraints <code>g(x) &gt;= 0</code> and
+   * <code>h(x) == 0</code> with symbolic Jacobian matrices. Strict inequalities are read as
+   * <code>&gt;=</code>.
+   *
+   * @return <code>false</code> if a relation is no equation or inequality, or isn't a real number
+   *         at the start values
+   */
+  private static boolean createNonlinearConstraints(IAST andAST, IAST varsList,
+      double[] initialValues, EvalEngine engine, OptimizationData[] optimizationData) {
+    List<IExpr> inequalities = new ArrayList<IExpr>();
+    List<IExpr> equalities = new ArrayList<IExpr>();
+    for (int i = 1; i < andAST.size(); i++) {
+      IExpr temp = andAST.get(i);
+      if (!temp.isAST() || temp.argSize() < 2) {
+        return false;
+      }
+      IAST relation = (IAST) temp;
+      final boolean less = relation.isAST(S.Less) || relation.isAST(S.LessEqual);
+      if (!less && !relation.isAST(S.Greater) && !relation.isAST(S.GreaterEqual)
+          && !relation.isAST(S.Equal)) {
+        return false;
+      }
+      // a < b < c
+      for (int j = 1; j < relation.argSize(); j++) {
+        IExpr lhs = relation.get(j);
+        IExpr rhs = relation.get(j + 1);
+        IExpr difference = engine.evaluate(less ? F.Subtract(rhs, lhs) : F.Subtract(lhs, rhs));
+        (relation.isAST(S.Equal) ? equalities : inequalities).add(F.substAbs(difference));
+      }
+    }
+    SymbolicVectorFunction g = new SymbolicVectorFunction(inequalities, varsList, engine);
+    SymbolicVectorFunction h = new SymbolicVectorFunction(equalities, varsList, engine);
+    RealVector start = new ArrayRealVector(initialValues, false);
+    if (!g.isNumeric(start) || !h.isNumeric(start)) {
+      return false;
+    }
+    optimizationData[0] = null;
+    optimizationData[1] = null;
+    if (inequalities.size() > 0) {
+      optimizationData[0] = new InequalityConstraint(new ArrayRealVector(inequalities.size())) {
+        @Override
+        public int dim() {
+          return g.dim();
+        }
+
+        @Override
+        public RealVector value(RealVector x) {
+          return g.value(x);
+        }
+
+        @Override
+        public RealMatrix jacobian(RealVector x) {
+          return g.jacobian(x);
+        }
+      };
+    }
+    if (equalities.size() > 0) {
+      optimizationData[1] = new EqualityConstraint(new ArrayRealVector(equalities.size())) {
+        @Override
+        public int dim() {
+          return h.dim();
+        }
+
+        @Override
+        public RealVector value(RealVector x) {
+          return h.value(x);
+        }
+
+        @Override
+        public RealMatrix jacobian(RealVector x) {
+          return h.jacobian(x);
+        }
+      };
+    }
+    return true;
+  }
+
+  /**
+   * Expressions in the variables of the search together with their symbolic derivatives.
+   */
+  private static final class SymbolicVectorFunction {
+    final IExpr[] functions;
+    final IExpr[][] jacobian;
+    final IAST varsList;
+
+    SymbolicVectorFunction(List<IExpr> functions, IAST varsList, EvalEngine engine) {
+      this.varsList = varsList;
+      this.functions = functions.toArray(new IExpr[0]);
+      this.jacobian = new IExpr[this.functions.length][varsList.argSize()];
+      for (int i = 0; i < this.functions.length; i++) {
+        for (int j = 0; j < varsList.argSize(); j++) {
+          jacobian[i][j] = engine.evaluate(F.D(this.functions[i], varsList.get(j + 1)));
+        }
+      }
+    }
+
+    int dim() {
+      return varsList.argSize();
+    }
+
+    private Function<IExpr, IExpr> at(RealVector x) {
+      return v -> {
+        int index = varsList.indexOf(v);
+        return index > 0 ? F.num(x.getEntry(index - 1)) : F.NIL;
+      };
+    }
+
+    RealVector value(RealVector x) {
+      Function<IExpr, IExpr> point = at(x);
+      double[] result = new double[functions.length];
+      for (int i = 0; i < functions.length; i++) {
+        result[i] = functions[i].evalfNaN(point);
+      }
+      return new ArrayRealVector(result, false);
+    }
+
+    RealMatrix jacobian(RealVector x) {
+      Function<IExpr, IExpr> point = at(x);
+      double[][] result = new double[functions.length][varsList.argSize()];
+      for (int i = 0; i < functions.length; i++) {
+        for (int j = 0; j < result[i].length; j++) {
+          result[i][j] = jacobian[i][j].evalfNaN(point);
+        }
+      }
+      return new Array2DRowRealMatrix(result, false);
+    }
+
+    boolean isNumeric(RealVector x) {
+      if (functions.length == 0) {
+        return true;
+      }
+      return !value(x).isNaN() && Arrays.stream(jacobian(x).getData())
+          .allMatch(row -> Arrays.stream(row).noneMatch(Double::isNaN));
+    }
   }
 
   /**
