@@ -24404,6 +24404,16 @@ public class S {
   public final static IBuiltInSymbol VertexColors =
       S.initFinalSymbol("VertexColors", ID.VertexColors);
 
+  /**
+   * VertexConnectivity(x) - TODO describe `VertexConnectivity`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexConnectivity.md">VertexConnectivity
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexConnectivity =
+      S.initFinalSymbol("VertexConnectivity", ID.VertexConnectivity);
+
   public final static IBuiltInSymbol VertexContract =
       S.initFinalSymbol("VertexContract", ID.VertexContract);
 
@@ -24657,6 +24667,16 @@ public class S {
    */
   public final static IBuiltInSymbol WatershedComponents =
       S.initFinalSymbol("WatershedComponents", ID.WatershedComponents);
+
+  /**
+   * WeaklyConnectedComponents(x) - TODO describe `WeaklyConnectedComponents`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeaklyConnectedComponents.md">WeaklyConnectedComponents
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WeaklyConnectedComponents =
+      S.initFinalSymbol("WeaklyConnectedComponents", ID.WeaklyConnectedComponents);
 
   public final static IBuiltInSymbol WeaklyConnectedGraphQ =
       S.initFinalSymbol("WeaklyConnectedGraphQ", ID.WeaklyConnectedGraphQ);
