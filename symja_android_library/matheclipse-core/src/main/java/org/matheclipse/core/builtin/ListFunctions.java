@@ -3139,6 +3139,10 @@ public final class ListFunctions {
       RecursionData recursionData =
           new RecursionData(level, matcher, positionConverter, headOffset);
       recursionData.positionRecursive(ast, cloneList);
+      if (level.getFromLevel() == 0 && matcher.test(ast)) {
+        // the whole expression is at level 0, and comes last in depth-first order
+        throw new ResultException(F.CEmptyList);
+      }
     }
 
     @Override

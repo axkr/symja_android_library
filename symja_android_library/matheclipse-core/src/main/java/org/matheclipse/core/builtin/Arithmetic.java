@@ -122,6 +122,7 @@ import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesLog;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimesPower;
+import org.matheclipse.core.numbertheory.AlgebraicNumberField;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.units.QuantityOps;
 
@@ -3171,7 +3172,14 @@ public final class Arithmetic {
           }
         }
         if (ast.exists(x -> x instanceof IDataExpr || x.isQuantity() || AroundFunctions.isAround(x)
-            || AroundFunctions.isVectorAround(x))) {
+            || AroundFunctions.isVectorAround(x) || AlgebraicNumberField.isObject(x))) {
+          if (ast.exists(AlgebraicNumberField::isObject)) {
+            // objects of one number field add in that field
+            IExpr algebraicResult = AlgebraicNumberField.plus(ast, engine);
+            if (algebraicResult.isPresent()) {
+              return algebraicResult;
+            }
+          }
           if (ast.exists(x -> AroundFunctions.isVectorAround(x))) {
             IExpr vectorResult = AroundFunctions.plusVectorAround(ast, engine);
             if (vectorResult.isPresent()) {
@@ -3575,6 +3583,13 @@ public final class Arithmetic {
         if (base.isQuantity()) {
           return QuantityOps.power((IAST) base, exponent, EvalEngine.get());
         } else if (base.isAST()) {
+          if (exponent.isInteger() && AlgebraicNumberField.isObject(base)) {
+            IExpr algebraicResult =
+                AlgebraicNumberField.power(base, (IInteger) exponent, EvalEngine.get());
+            if (algebraicResult.isPresent()) {
+              return algebraicResult;
+            }
+          }
           if (base.isInterval()) {
             if (exponent.isInteger()) {
               return IntervalSym.power((IAST) base, (IInteger) exponent);
@@ -7245,6 +7260,13 @@ public final class Arithmetic {
         IExpr arrayResult = SymbolicArrayFunctions.timesSymbolicArrays(ast, engine);
         if (arrayResult.isPresent()) {
           return arrayResult;
+        }
+      }
+      if (ast.exists(AlgebraicNumberField::isObject)) {
+        // objects of one number field multiply in that field
+        IExpr algebraicResult = AlgebraicNumberField.times(ast, engine);
+        if (algebraicResult.isPresent()) {
+          return algebraicResult;
         }
       }
       if (ast.exists(x -> AroundFunctions.isAround(x))) {

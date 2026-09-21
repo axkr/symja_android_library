@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.numbertheory.AlgebraicNumberField;
+
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
@@ -60,7 +62,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
       // Only attempt if the expression is numeric (no free symbolic variables)
       // i.e. it's a closed-form algebraic number expression
       VariablesSet vars = new VariablesSet(arg1);
-      if (!vars.isEmpty()) {
+      if (!vars.isEmpty() && !AlgebraicNumberField.isObject(arg1)) {
         // has symbolic variables - there's nothing to reduce, so RootReduce is the identity here
         return arg1;
       }

@@ -207,7 +207,7 @@ public final class AlgebraicNumberUtils {
     }
     if (head == S.AlgebraicNumber && ast.argSize() == 2) {
       IExpr generator = ast.arg1();
-      if (!generator.isRational() && !isRationalRootObject(generator)) {
+      if (!isExplicitAlgebraicNumber(generator)) {
         return false;
       }
       IExpr coefficients = ast.arg2();

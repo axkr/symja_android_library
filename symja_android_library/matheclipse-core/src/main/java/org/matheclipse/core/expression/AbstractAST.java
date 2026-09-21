@@ -4740,6 +4740,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     } else if (isPiecewise() != null) {
       VariablesSet varSet = new VariablesSet(this);
       return varSet.size() == 0;
+    } else if (isAST(S.AlgebraicNumber, 3) && arg2().isList()) {
+      // an element of a number field is always a numeric quantity
+      return ((IAST) arg2()).forAll(IExpr::isRational)
+          && (arg1().isNumericFunction(allowList) || arg1().isAST(S.Root));
     }
 
     return false;

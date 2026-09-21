@@ -145,7 +145,7 @@ public class FactorAlgebraic<C extends GcdRingElem<C>> extends FactorAbsolute<Al
         List<GenPolynomial<C>> nfacs;
         if (!sqf) {
             //System.out.println("\nres = " + res); 
-            logger.warn("sqf({}) = {}", ks, res.degree());
+            logger.info("sqf({}) = {}", ks, res.degree());
             //res = factorCoeff.squarefreePart(res); // better use obtained factors
             //res = factorCoeff.baseFactors(res).lastKey();
         }
@@ -236,7 +236,7 @@ public class FactorAlgebraic<C extends GcdRingElem<C>> extends FactorAbsolute<Al
         while (!sqf) {
             // k = 0,1,2,-1,-2
             if (ki >= klist.length) {
-                logger.warn("sqf({}) = {}", ks, res.degree());
+                logger.info("sqf({}) = {}", ks, res.degree());
                 break;
             }
             k = klist[ki];

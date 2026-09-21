@@ -21764,10 +21764,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-20");
     check("NumberFieldDiscriminant(3)", //
         "1");
-    // for a degree above 2 the maximal order is only recognized when the polynomial discriminant
-    // is squarefree
+    // x^3-2 has discriminant -108, and Z[2^(1/3)] is the maximal order
     check("NumberFieldDiscriminant(2^(1/3))", //
-        "NumberFieldDiscriminant(2^(1/3))");
+        "-108");
   }
 
   @Test

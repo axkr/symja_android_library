@@ -25,6 +25,14 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicIntegerQ());
       S.AlgebraicNumberQ
           .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicNumberQ());
+      S.AlgebraicNumber.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumber());
+      S.AlgebraicNumberDenominator.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumberDenominator());
+      S.AlgebraicNumberPolynomial.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumberPolynomial());
+      S.ToNumberField.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.ToNumberField());
       S.AlgebraicNumberNorm.setEvaluator(
           new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumberNorm());
       S.AlgebraicNumberTrace.setEvaluator(
