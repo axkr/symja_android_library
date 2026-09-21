@@ -40,14 +40,18 @@ public class VertexConnectivity extends AbstractFunctionEvaluator {
     if (!g.containsVertex(s) || !g.containsVertex(t) || s.equals(t)) {
       return F.NIL;
     }
+    if (g.containsEdge(s, t)) {
+      // WMA: an edge from s to t can't be cut by removing vertices; the result is 0
+      return F.C0;
+    }
     return F.ZZ(localVertexConnectivity(g, s, t));
   }
 
   /**
    * The number of internally vertex-disjoint paths from <code>s</code> to <code>t</code> (Menger):
    * the maximum flow in the network where every vertex <code>v</code> is split into
-   * <code>v_in -&gt; v_out</code> with capacity 1. An edge between <code>s</code> and
-   * <code>t</code> cannot be cut by removing vertices and is left out.
+   * <code>v_in -&gt; v_out</code> with capacity 1. An edge from <code>t</code> back to
+   * <code>s</code> is left out.
    */
   private static <E> int localVertexConnectivity(Graph<IExpr, E> g, IExpr s, IExpr t) {
     final int n = g.vertexSet().size();

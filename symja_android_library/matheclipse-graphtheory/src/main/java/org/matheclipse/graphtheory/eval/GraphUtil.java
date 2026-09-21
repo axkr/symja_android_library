@@ -1,13 +1,18 @@
 package org.matheclipse.graphtheory.eval;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphType;
+import org.jgrapht.Graphs;
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.alg.connectivity.KosarajuStrongConnectivityInspector;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -105,6 +110,51 @@ public class GraphUtil {
   }
 
   /**
+   * The weakly connected components in WMA's order: a connected graph gives its vertex list; else
+   * each component lists its vertices in the post-order of a depth-first search which ignores the
+   * edge directions, larger components first.
+   *
+   * @param graph the graph
+   */
+  private static <E> List<Set<IExpr>> weaklyConnectedSets(Graph<IExpr, E> graph) {
+    List<Set<IExpr>> result = new ArrayList<>();
+    if (new ConnectivityInspector<>(graph).isConnected()) {
+      if (!graph.vertexSet().isEmpty()) {
+        result.add(new LinkedHashSet<>(graph.vertexSet()));
+      }
+      return result;
+    }
+    Set<IExpr> visited = new HashSet<>();
+    for (IExpr root : graph.vertexSet()) {
+      if (!visited.add(root)) {
+        continue;
+      }
+      Set<IExpr> component = new LinkedHashSet<>();
+      Deque<IExpr> vertexStack = new ArrayDeque<>();
+      Deque<Iterator<IExpr>> neighborStack = new ArrayDeque<>();
+      vertexStack.push(root);
+      neighborStack.push(Graphs.neighborListOf(graph, root).iterator());
+      while (!vertexStack.isEmpty()) {
+        Iterator<IExpr> neighbors = neighborStack.peek();
+        if (neighbors.hasNext()) {
+          IExpr next = neighbors.next();
+          if (visited.add(next)) {
+            vertexStack.push(next);
+            neighborStack.push(Graphs.neighborListOf(graph, next).iterator());
+          }
+        } else {
+          neighborStack.pop();
+          component.add(vertexStack.pop());
+        }
+      }
+      result.add(component);
+    }
+    // stable: equal sizes keep the order of their first vertex
+    result.sort(Comparator.<Set<IExpr>>comparingInt(Set::size).reversed());
+    return result;
+  }
+
+  /**
    * Determine the connected components of a graph in the order defined for
    * <code>ConnectedComponents</code> and filter them by an optional pattern.
    *
@@ -120,7 +170,9 @@ public class GraphUtil {
     List<Set<IExpr>> connectedSets;
 
     // 2. Compute Components using JGraphT
-    if (jGraph.getType().isDirected() && !weak) {
+    if (weak) {
+      connectedSets = weaklyConnectedSets(jGraph);
+    } else if (jGraph.getType().isDirected()) {
       // For directed graphs, strongly connected components are computed.
       // WMA specifies: "given in an order such that there are no edges from ci to ci+1".
       // This implies a Reverse Topological Sort (Sink components first).

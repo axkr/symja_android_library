@@ -940,13 +940,23 @@ public class GraphFunctionsTest extends AbstractTestCase {
   @Test
   public void testWeaklyConnectedComponents() {
     check("WeaklyConnectedComponents(Graph({1->2,3->4,4->3,5->5}))", //
-        "{{1,2},{3,4},{5}}");
+        "{{2,1},{4,3},{5}}");
+    check("WeaklyConnectedComponents(Graph({1->2,3->4,5->6,6->7}))", //
+        "{{7,6,5},{2,1},{4,3}}");
+    check("WeaklyConnectedComponents(Graph({1,2},{2->1}))", //
+        "{{1,2}}");
+    check("WeaklyConnectedComponents(Graph({1->2,3->2}))", //
+        "{{1,2,3}}");
+    check("WeaklyConnectedComponents(Graph({1->2,2->3,1->4}))", //
+        "{{1,2,3,4}}");
+    check("WeaklyConnectedComponents(Graph({1<->2,2<->3}))", //
+        "{{1,2,3}}");
     check("WeaklyConnectedComponents(Graph({1,2,3},{1->2,2->3}))", //
         "{{1,2,3}}");
     check("ConnectedComponents(Graph({1,2,3},{1->2,2->3}))", //
         "{{3},{2},{1}}");
     check("WeaklyConnectedComponents(Graph({1->2,3->4}),{3})", //
-        "{{3,4}}");
+        "{{4,3}}");
   }
 
   @Test
@@ -961,6 +971,9 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "1");
     check("VertexConnectivity(CycleGraph(5),1,3)", //
         "2");
+    // adjacent vertices
+    check("VertexConnectivity(CycleGraph(5),1,2)", //
+        "0");
   }
 
   @Test
