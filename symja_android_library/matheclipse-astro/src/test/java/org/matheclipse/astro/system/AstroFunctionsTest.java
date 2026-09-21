@@ -703,17 +703,20 @@ public class AstroFunctionsTest extends AbstractTestCase {
    */
   @Test
   public void testAstronomicalDataPosition() {
-    check("Round(Norm(AstronomicalData(\"Earth\","
-        + " {\"Position\", DateObject({2020,1,1})}))/10^9)", //
+    check(
+        "Round(Norm(AstronomicalData(\"Earth\","
+            + " {\"Position\", DateObject({2020,1,1})}))/10^9)", //
         "147");
-    check("Abs(Last(AstronomicalData(\"Earth\","
-        + " {\"Position\", DateObject({2020,1,1})}))) < 10^10", //
+    check(
+        "Abs(Last(AstronomicalData(\"Earth\","
+            + " {\"Position\", DateObject({2020,1,1})}))) < 10^10", //
         "True");
     check("AstronomicalData(\"Sun\", {\"Position\", DateObject({2020,1,1})})", //
         "{0.0,0.0,0.0}");
     // every date puts Mars between its perihelion and its aphelion, 1.381 and 1.666 au
-    check("Table(1.38 < Norm(AstronomicalData(\"Mars\", {\"Position\", DateObject({y,1,1})}))"
-        + "/1.495978707*^11 < 1.67, {y, 1995, 2145, 30})", //
+    check(
+        "Table(1.38 < Norm(AstronomicalData(\"Mars\", {\"Position\", DateObject({y,1,1})}))"
+            + "/1.495978707*^11 < 1.67, {y, 1995, 2145, 30})", //
         "{True,True,True,True,True,True}");
     // the date may be left out, and is then the current instant
     check("Length(AstronomicalData(\"Jupiter\", \"Position\"))", //
@@ -722,9 +725,9 @@ public class AstroFunctionsTest extends AbstractTestCase {
 
   /**
    * <code>PlanetData</code> is the spelling which superseded <code>AstronomicalData</code>: the
-   * eight planets, and coordinates in astronomical units. Both measured in Mathematica 2026-09-18,
-   * where <code>PlanetData[]</code> is those eight as entities and <code>"Position"</code> is not a
-   * property of a planet.
+   * eight planets, and coordinates in astronomical units. Measured 2026-09-18, where
+   * <code>PlanetData[]</code> is those eight entities and <code>"Position"</code> is not a property
+   * of a planet.
    */
   @Test
   public void testPlanetData() {
@@ -737,8 +740,9 @@ public class AstroFunctionsTest extends AbstractTestCase {
     check("QuantityUnit(First(PlanetData(\"Mars\", \"HelioCoordinates\")))", //
         "AstronomicalUnit");
     // the Earth is at perihelion in early January, 0.983 astronomical units from the Sun
-    check("Round(1000*Norm(QuantityMagnitude(PlanetData(\"Earth\","
-        + " {\"HelioCoordinates\", DateObject({2020,1,1})}))))", //
+    check(
+        "Round(1000*Norm(QuantityMagnitude(PlanetData(\"Earth\","
+            + " {\"HelioCoordinates\", DateObject({2020,1,1})}))))", //
         "983");
     // Pluto is a planet to the older function and not to this one
     check("PlanetData(\"Pluto\", \"HelioCoordinates\")", //
@@ -748,25 +752,27 @@ public class AstroFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * The ground truth the frame was settled against: Mathematica's <code>HelioCoordinates</code> for
-   * Mars at one instant, measured 2026-09-18, which this matches to about 150 km. The ecliptic is
-   * the one of the date asked for - pinned at J2000 the vector stays turned by the precession
-   * since then and lands 0.014 astronomical units away.
+   * The ground truth the frame was settled against: WMA's <code>HelioCoordinates</code> for Mars at
+   * one instant, measured 2026-09-18, which this matches to about 150 km. The ecliptic is the one
+   * of the date asked for - pinned at J2000 the vector stays turned by the precession since then
+   * and lands 0.014 astronomical units away.
    */
   @Test
-  public void testPlanetDataAgreesWithMathematica() {
-    check("Max(Abs(QuantityMagnitude(PlanetData(\"Mars\","
-        + " {\"HelioCoordinates\", {2026,9,18,16,39,57}}))"
-        + " - {0.281385, 1.516740, 0.0246979})) < 10^-5", //
+  public void testPlanetDataAgreesWithWMA() {
+    check(
+        "Max(Abs(QuantityMagnitude(PlanetData(\"Mars\","
+            + " {\"HelioCoordinates\", {2026,9,18,16,39,57}}))"
+            + " - {0.281385, 1.516740, 0.0246979})) < 10^-5", //
         "True");
   }
 
   /** The two spellings read the same ephemerides, so they answer with the same vector. */
   @Test
   public void testPlanetDataAgreesWithAstronomicalData() {
-    check("Chop(149597870700 * QuantityMagnitude(PlanetData(\"Mars\","
-        + " {\"HelioCoordinates\", DateObject({2020,1,1})}))"
-        + " - AstronomicalData(\"Mars\", {\"Position\", DateObject({2020,1,1})}), 1)", //
+    check(
+        "Chop(149597870700 * QuantityMagnitude(PlanetData(\"Mars\","
+            + " {\"HelioCoordinates\", DateObject({2020,1,1})}))"
+            + " - AstronomicalData(\"Mars\", {\"Position\", DateObject({2020,1,1})}), 1)", //
         "{0,0,0}");
   }
 
@@ -781,11 +787,13 @@ public class AstroFunctionsTest extends AbstractTestCase {
     check("Length(EntityValue(Entity(\"Planet\", \"Mars\"), \"HelioCoordinates\"))", //
         "3");
     // a list is a list of properties to EntityValue, so a date is asked of PlanetData itself
-    check("QuantityUnit(First(EntityValue(Entity(\"Planet\", \"Earth\"),"
-        + " EntityProperty(\"Planet\", \"HelioCoordinates\"))))", //
+    check(
+        "QuantityUnit(First(EntityValue(Entity(\"Planet\", \"Earth\"),"
+            + " EntityProperty(\"Planet\", \"HelioCoordinates\"))))", //
         "AstronomicalUnit");
-    check("Round(1000*Norm(QuantityMagnitude(PlanetData(Entity(\"Planet\", \"Earth\"),"
-        + " {\"HelioCoordinates\", DateObject({2020,1,1})}))))", //
+    check(
+        "Round(1000*Norm(QuantityMagnitude(PlanetData(Entity(\"Planet\", \"Earth\"),"
+            + " {\"HelioCoordinates\", DateObject({2020,1,1})}))))", //
         "983");
     // a star is a different type, answered by a different function through the same call
     check("EntityValue(Entity(\"Star\", \"Sirius\"), \"ApparentMagnitude\")", //

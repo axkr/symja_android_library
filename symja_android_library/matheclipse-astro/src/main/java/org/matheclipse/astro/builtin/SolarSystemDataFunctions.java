@@ -26,14 +26,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
- * Properties of the solar system bodies: <code>AstronomicalData</code> and
- * <code>PlanetData</code>.
+ * Properties of the solar system bodies: <code>AstronomicalData</code> and <code>PlanetData</code>.
  *
  * <p>
- * Mathematica has superseded <code>AstronomicalData</code> by <code>PlanetData</code> and
- * <code>StarData</code>, so both spellings are here: the older one because that is what the
- * Demonstrations call - <code>AstronomicalData(n)</code> names the <code>n</code>th major body
- * counting outwards from the Sun, so that <code>AstronomicalData(AstronomicalData(k), {"Position",
+ * <code>AstronomicalData</code> is superseded by <code>PlanetData</code> and <code>StarData</code>,
+ * so both spellings are here: the older one because that is what the Demonstrations call -
+ * <code>AstronomicalData(n)</code> names the <code>n</code>th major body counting outwards from the
+ * Sun, so that <code>AstronomicalData(AstronomicalData(k), {"Position",
  * t})</code> composes - and <code>PlanetData</code> because that is what is written now.
  *
  * <p>
@@ -44,10 +43,9 @@ import org.orekit.utils.IERSConventions;
  *
  * <p>
  * The position is heliocentric and referred to the mean ecliptic and equinox <em>of the date asked
- * for</em>, which is the frame Mathematica answers in - measured 2026-09-18, where its
- * <code>HelioCoordinates</code> for Mars agrees with this to 1.5e-6 astronomical units, about
- * 150 km. It comes from the bundled DE ephemerides rather than from a two body approximation,
- * which is what {@link AstroOrbitFunctions} would give.
+ * for</em> - measured 2026-09-18, where its <code>HelioCoordinates</code> for Mars agrees with this
+ * to 1.5e-6 astronomical units, about 150 km. It comes from the bundled DE ephemerides rather than
+ * from a two body approximation, which is what {@link AstroOrbitFunctions} would give.
  */
 public class SolarSystemDataFunctions {
 
@@ -59,8 +57,8 @@ public class SolarSystemDataFunctions {
    * Pluto is the ninth: this is the classic list the pre-Entity convention was written for, and
    * dropping it would renumber nothing else but would make <code>AstronomicalData(9)</code> a hole.
    */
-  private static final String[] MAJOR_BODIES = {"Mercury", "Venus", "Earth", "Mars", "Jupiter",
-      "Saturn", "Uranus", "Neptune", "Pluto"};
+  private static final String[] MAJOR_BODIES =
+      {"Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"};
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -70,8 +68,8 @@ public class SolarSystemDataFunctions {
   private static final String PLANET = "Planet";
 
   /** The planets, as <code>PlanetData()</code> counts them: the eight, without Pluto. */
-  private static final String[] PLANETS = {"Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
-      "Uranus", "Neptune"};
+  private static final String[] PLANETS =
+      {"Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"};
 
   private static class Initializer {
 
@@ -155,15 +153,15 @@ public class SolarSystemDataFunctions {
    * spelling which replaced <code>AstronomicalData</code>.
    *
    * <p>
-   * Only the eight planets answer to it, and the coordinates come back in astronomical units, both
-   * as in Mathematica (measured 2026-09-18).
+   * Only the eight planets answer to it, and the coordinates come back in astronomical units
+   * (measured 2026-09-18).
    */
   private static final class PlanetData extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        // the planets themselves, as the entities standing for them, as in Mathematica
+        // the planets themselves, as the entities standing for them
         IASTAppendable planets = F.ListAlloc(PLANETS.length);
         for (String planet : PLANETS) {
           planets.append(Entities.entity(PLANET, F.stringx(planet)));
@@ -203,8 +201,8 @@ public class SolarSystemDataFunctions {
         return F.List(astronomicalUnits(position.getX()), astronomicalUnits(position.getY()),
             astronomicalUnits(position.getZ()));
       } catch (OrekitException oex) {
-        return Errors.printMessage(S.PlanetData, "orekitdata",
-            F.List(F.stringx(oex.getMessage())), engine);
+        return Errors.printMessage(S.PlanetData, "orekitdata", F.List(F.stringx(oex.getMessage())),
+            engine);
       }
     }
 
@@ -260,11 +258,11 @@ public class SolarSystemDataFunctions {
    * <p>
    * The ephemerides are read in the Earth centred GCRF and the Sun is subtracted there, since the
    * difference of two positions in one frame is the same vector whichever of them is the origin.
-   * The ecliptic frame is then taken <em>at the date</em>, which is what Mathematica does: pinned
-   * at J2000 instead, the vector stays turned by the precession since then - a quarter of a degree
-   * by 2026, which puts Mars 0.014 astronomical units out. The price is that a body plotted over
-   * centuries carries the slow turning of the frame with it, which is a property of the
-   * coordinates that were asked for rather than of the body.
+   * The ecliptic frame is then taken <em>at the date</em>: pinned at J2000 instead, the vector
+   * stays turned by the precession since then - a quarter of a degree by 2026, which puts Mars
+   * 0.014 astronomical units out. The price is that a body plotted over centuries carries the slow
+   * turning of the frame with it, which is a property of the coordinates that were asked for rather
+   * than of the body.
    */
   static Vector3D heliocentricEclipticPosition(String bodyName, AbsoluteDate date) {
     Frame gcrf = FramesFactory.getGCRF();

@@ -225,7 +225,7 @@ public class BioSequenceFunctions {
         return Errors.printMessage(ast.topHead(), "bioseq", F.List(ast.arg1()), engine);
       } catch (TranslationException e) {
         // BioJava will not translate a sequence it cannot split into codons, an empty one above
-        // all. Mathematica answers BioSequenceTranslate("") for that rather than reporting it.
+        // all.
         return F.NIL;
       }
     }

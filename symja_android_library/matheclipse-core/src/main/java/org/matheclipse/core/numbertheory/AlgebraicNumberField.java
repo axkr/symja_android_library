@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -28,12 +28,12 @@ import edu.jas.ufd.FactorAlgebraic;
  * {@link AlgebraicNumberRing}.
  *
  * <p>
- * An <code>AlgebraicNumber</code> object is canonical when its generator is an algebraic integer
- * (a generator which is not is rescaled by its denominator, as Mathematica does), its coefficient
- * list has one entry for each power below the degree, and it is not a rational number. A generator
- * of degree two keeps the form it was given in (<code>Sqrt[2]</code>, <code>1+I</code>); one of a
- * higher degree is written as the <code>Root</code> object of its minimal polynomial, so that
- * different spellings of the same number give the same field.
+ * An <code>AlgebraicNumber</code> object is canonical when its generator is an algebraic integer (a
+ * generator which is not is rescaled by its denominator), its coefficient list has one entry for
+ * each power below the degree, and it is not a rational number. A generator of degree two keeps the
+ * form it was given in (<code>Sqrt[2]</code>, <code>1+I</code>); one of a higher degree is written
+ * as the <code>Root</code> object of its minimal polynomial, so that different spellings of the
+ * same number give the same field.
  */
 public final class AlgebraicNumberField {
 
@@ -119,8 +119,8 @@ public final class AlgebraicNumberField {
       return null;
     }
     Scaled canonicalEntry = CACHE.get(canonical);
-    AlgebraicNumberField field =
-        canonicalEntry != null ? canonicalEntry.field : new AlgebraicNumberField(canonical, integral);
+    AlgebraicNumberField field = canonicalEntry != null ? canonicalEntry.field
+        : new AlgebraicNumberField(canonical, integral);
     if (canonicalEntry == null) {
       CACHE.put(canonical, new Scaled(field, F.C1));
     }
@@ -150,8 +150,8 @@ public final class AlgebraicNumberField {
    * The smallest positive integer <code>n</code> for which <code>n*theta</code> is an algebraic
    * integer, from the monic minimal polynomial of <code>theta</code>: the coefficient of
    * <code>x^i</code> in the minimal polynomial of <code>n*theta</code> is
-   * <code>c_i*n^(deg-i)</code>, so for every prime <code>p</code> the exponent of <code>p</code>
-   * in <code>n</code> is the least one making all of them integral. (The leading coefficient of the
+   * <code>c_i*n^(deg-i)</code>, so for every prime <code>p</code> the exponent of <code>p</code> in
+   * <code>n</code> is the least one making all of them integral. (The leading coefficient of the
    * primitive integer minimal polynomial over-counts: <code>1/5+Sqrt[2]</code> has 25, but 5 is
    * enough.)
    */
@@ -372,7 +372,8 @@ public final class AlgebraicNumberField {
       edu.jas.poly.AlgebraicNumber<BigRational> value = entry.getValue();
       if (absorb) {
         for (int i = 1; i < rationals.size(); i++) {
-          edu.jas.poly.AlgebraicNumber<BigRational> q = field.fromRational((IRational) rationals.get(i));
+          edu.jas.poly.AlgebraicNumber<BigRational> q =
+              field.fromRational((IRational) rationals.get(i));
           value = plus ? value.sum(q) : value.multiply(q);
         }
       }
@@ -583,7 +584,8 @@ public final class AlgebraicNumberField {
       AlgebraicNumberField enlarged = null;
       for (int k = 1; k <= 16 && enlarged == null; k++) {
         IExpr sumValue = engine.evaluate(F.Plus(generatorValue, F.Times(F.ZZ(k), value)));
-        IRational[] sumPolynomial = sumMinimalPolynomial(generatorPolynomial, m, k, sumValue, engine);
+        IRational[] sumPolynomial =
+            sumMinimalPolynomial(generatorPolynomial, m, k, sumValue, engine);
         if (sumPolynomial == null) {
           continue;
         }
@@ -617,10 +619,10 @@ public final class AlgebraicNumberField {
       IExpr value, EvalEngine engine) {
     ISymbol y = F.Dummy("y");
     ISymbol z = F.Dummy("z");
-    IExpr shifted = F.subst(NumberFieldUtils.polynomial(alpha, y), y,
-        F.Subtract(z, F.Times(F.ZZ(k), y)));
-    IExpr resultant = engine.evaluate(
-        F.Resultant(F.Expand(shifted), NumberFieldUtils.polynomial(beta, y), y));
+    IExpr shifted =
+        F.subst(NumberFieldUtils.polynomial(alpha, y), y, F.Subtract(z, F.Times(F.ZZ(k), y)));
+    IExpr resultant =
+        engine.evaluate(F.Resultant(F.Expand(shifted), NumberFieldUtils.polynomial(beta, y), y));
     IExpr factors = engine.evaluate(F.FactorList(resultant));
     if (!factors.isList()) {
       return null;
@@ -632,8 +634,7 @@ public final class AlgebraicNumberField {
       if (factor.isFree(z)) {
         continue;
       }
-      double residual =
-          engine.evaluate(F.Abs(F.subst(factor, z, value))).evalfNaN();
+      double residual = engine.evaluate(F.Abs(F.subst(factor, z, value))).evalfNaN();
       if (!Double.isNaN(residual) && residual < bestResidual) {
         bestResidual = residual;
         best = factor;
