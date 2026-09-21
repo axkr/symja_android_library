@@ -26733,6 +26733,55 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTableDependentIteratorBounds() {
+    // an inner iterator is created only after the outer ones assigned their variables; its
+    // bounds may use them in any way (Woxi #899)
+    check("nl={2,1,4}; Table(x, {dn1, 1, Length(nl)}, {x, 0, nl[[dn1]] - 1})", //
+        "{{0,1},{0},{0,1,2,3}}");
+    check("nl={2,1,4}; Table(x, {dn1, 1, Length(nl)}, {x, 0, (nl[[#]]&) @ dn1 - 1})", //
+        "{{0,1},{0},{0,1,2,3}}");
+    check("nl={2,1,4}; Table({i,j,k,l}, {i,2}, {j,nl[[i]]}, {k,nl[[j]]}, {l,nl[[k]]})", //
+        "{{{{{1,1,1,1},{1,1,1,2}},{{1,1,2,1}}},{{{1,2,1,1},{1,2,1,2}}}},{{{{2,1,1,1},{2,1,\n"
+            + "1,2}},{{2,1,2,1}}}}}");
+    // a bound which evaluates to a value although the outer variable has none yet
+    check("Table(x, {i, 3}, {x, 0, If(IntegerQ(i), i, 0)})", //
+        "{{0,1},{0,1,2},{0,1,2,3}}");
+    check("Table(x, {i, 3}, {x, 0, Length(Range(i))})", //
+        "{{0,1},{0,1,2},{0,1,2,3}}");
+    // a global value of the outer variable must not be used
+    check("Block({i=7}, Table(x, {i, 2}, {x, 0, i}))", //
+        "{{0,1},{0,1,2}}");
+    check("Block({i=7}, Table(x, {i, 2}, {x, {i, i+1}}))", //
+        "{{1,2},{2,3}}");
+    check("Block({i=7}, Table(x, {i, 2}, i))", //
+        "{{x},{x,x}}");
+    check("Block({i=7}, Reap(Do(Sow(x), {i, 2}, {x, 0, i}))[[2,1]])", //
+        "{0,1,0,1,2}");
+    check("Block({i=7}, Sum(x, {i, 2}, {x, 0, i}))", //
+        "4");
+    check("Block({i=7}, Product(x+1, {i, 2}, {x, 0, i}))", //
+        "12");
+    check("Block({i=7}, Sum(f(x), {i, 2}, {x, 0, i}))", //
+        "2*f(0)+2*f(1)+f(2)");
+    // the variable of the innermost iterator still takes its global value in its own bounds
+    check("Block({x=5}, Sum(x, {x, 1, x}))", //
+        "15");
+    // the bound is evaluated once per outer step
+    check("Module({c=0}, Table(x, {i, 2}, {x, 0, (c++; i)}); c)", //
+        "2");
+    check("Module({c=0}, Do(Null, {i, 2}, {x, 0, (c++; i)}); c)", //
+        "2");
+    // the form of an iterator is checked even if it is never reached
+    check("Table(x, {i, 0}, {1,2,3,4,5,6})", //
+        "Table(x,{i,0},{1,2,3,4,5,6})");
+    check("Table(x, {i, 0}, {2, x})", //
+        "Table(x,{i,0},{2,x})");
+    // an error in an inner iterator restores the outer variable
+    check("Block({i=7}, Table(x, {i, 2}, {x, 0, i, 0}); i)", //
+        "7");
+  }
+
+  @Test
   public void testTable() {
     EvalEngine.resetModuleCounter4JUnit();
 

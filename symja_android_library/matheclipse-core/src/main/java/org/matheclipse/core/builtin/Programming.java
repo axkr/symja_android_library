@@ -846,24 +846,10 @@ public final class Programming {
         return localized;
       }
       try {
-        final java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-        for (int i = 2; i < ast.size(); i++) {
-          IExpr arg = ast.get(i);
-          if (arg.isList()) {
-            iterList.add(Iterator.create((IAST) arg, i, engine));
-          } else {
-            // a bare count is a valid specification, as it is for Table: Do(expr, 3) runs three
-            // times. Anything else is reported instead of silently doing nothing.
-            IExpr evaledArg = engine.evaluate(arg);
-            if (evaledArg.isReal()) {
-              iterList.add(Iterator.create(F.list(evaledArg), i, engine));
-            } else {
-              // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-              return Errors.printMessage(ast.topHead(), "nliter", F.list(arg, F.ZZ(i)), engine);
-            }
-          }
-        }
-        final DoIterator generator = new DoIterator(iterList, engine);
+        // a bare count is a valid specification, as it is for Table: Do(expr, 3) runs three
+        // times. Anything else is reported (nliter) instead of silently doing nothing.
+        final DoIterator generator =
+            new DoIterator(Iterator.createIterators(ast, false, engine), engine);
         return generator.doIt(ast.arg1());
       } catch (final ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);

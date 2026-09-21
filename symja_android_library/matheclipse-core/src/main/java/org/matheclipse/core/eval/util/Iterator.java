@@ -7,12 +7,15 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FormalSymbol;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -1583,6 +1586,235 @@ public class Iterator {
     } finally {
       evalEngine.setNumericMode(localNumericMode);
     }
+  }
+
+  /**
+   * An iterator specification which is turned into an iterator only when the iteration over it
+   * starts, i.e. after the iterators in front of it have assigned their variables. Its bounds may
+   * therefore depend on those variables in any way, as in
+   * <code>Table(x, {i, 3}, {x, 0, list[[i]]})</code> or <code>Table(x, {i, 3}, {x, 0, If(IntegerQ(i), i, 0)})</code>.
+   * Creating all iterators up front evaluated such a bound while <code>i</code> had no value - or
+   * a global one - and froze the wrong range for every outer step.
+   */
+  private static final class LazyIterator implements IIterator<IExpr> {
+    /** The iterator specification; a list, or an expression which should evaluate to a count */
+    private final IExpr spec;
+
+    /** The position of {@link #spec} in the calling function, for messages */
+    private final int position;
+
+    private final EvalEngine engine;
+
+    /** The iterator for the current values of the outer iterator variables */
+    private IIterator<IExpr> delegate;
+
+    private LazyIterator(IExpr spec, int position, EvalEngine engine) {
+      this.spec = spec;
+      this.position = position;
+      this.engine = engine;
+    }
+
+    private IIterator<IExpr> newDelegate() {
+      delegate = null;
+      if (spec.isList()) {
+        delegate = create((IAST) spec, position, engine);
+      } else {
+        IExpr count = engine.evaluate(spec);
+        if (!count.isReal()) {
+          // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
+          throw new ArgumentTypeException(
+              Errors.getMessage("nliter", F.list(spec, F.ZZ(position)), engine));
+        }
+        delegate = create(F.list(count), position, engine);
+      }
+      return delegate;
+    }
+
+    @Override
+    public boolean setUp() {
+      return newDelegate().setUp();
+    }
+
+    @Override
+    public boolean setUpThrow() throws FlowControlException {
+      return newDelegate().setUpThrow();
+    }
+
+    @Override
+    public void tearDown() {
+      if (delegate != null) {
+        delegate.tearDown();
+      }
+    }
+
+    @Override
+    public boolean hasNext() {
+      return delegate.hasNext();
+    }
+
+    @Override
+    public IExpr next() {
+      return delegate.next();
+    }
+
+    @Override
+    public int allocHint() {
+      return delegate.allocHint();
+    }
+
+    @Override
+    public IExpr getLowerLimit() {
+      return delegate.getLowerLimit();
+    }
+
+    @Override
+    public IExpr getUpperLimit() {
+      return delegate.getUpperLimit();
+    }
+
+    @Override
+    public IExpr getStep() {
+      return delegate.getStep();
+    }
+
+    @Override
+    public ISymbol getVariable() {
+      return delegate.getVariable();
+    }
+
+    @Override
+    public boolean isNumericFunction() {
+      return delegate.isNumericFunction();
+    }
+
+    @Override
+    public boolean isSetIterator() {
+      return delegate.isSetIterator();
+    }
+
+    @Override
+    public boolean isValidVariable() {
+      return delegate.isValidVariable();
+    }
+
+    @Override
+    public boolean isUniform() {
+      return delegate.isUniform();
+    }
+
+    @Override
+    public boolean isInvalidNumeric() {
+      return delegate.isInvalidNumeric();
+    }
+  }
+
+  /**
+   * The iterators for the specifications <code>ast.get(2), ast.get(3), ...</code> of a
+   * <code>Table</code>, <code>Do</code>, <code>Sum</code> or <code>Product</code> call.
+   *
+   * <p>
+   * Each iterator is created only when the iteration over it starts, so that its bounds are
+   * evaluated with the current values of the variables of the iterators in front of it. Only the
+   * form of each specification, which does not need any evaluation, is checked here.
+   *
+   * @param ast <code>head(body, spec1, spec2, ...)</code>
+   * @param makeList if <code>true</code> a specification which is not a list is taken as the only
+   *        element of a list; otherwise it has to evaluate to a real count
+   * @param engine the evaluation engine
+   * @return the iterators in the order of the specifications
+   * @throws ArgumentTypeException if a specification does not have the form of an iterator
+   */
+  public static java.util.List<IIterator<IExpr>> createIterators(final IAST ast, boolean makeList,
+      final EvalEngine engine) {
+    java.util.List<IIterator<IExpr>> iterList = new java.util.ArrayList<IIterator<IExpr>>();
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr spec = ast.get(i);
+      if (makeList) {
+        spec = spec.makeList();
+      }
+      if (spec.isList()) {
+        checkIteratorForm((IAST) spec, i);
+      }
+      iterList.add(new LazyIterator(spec, i, engine));
+    }
+    return iterList;
+  }
+
+  /**
+   * Check the form of the iterator specification <code>list</code> without evaluating any part of
+   * it: <code>{max}</code>, <code>{var, max}</code>, <code>{var, min, max}</code> or
+   * <code>{var, min, max, step}</code> with a variable <code>var</code> which can be assigned.
+   *
+   * @param list the iterator specification
+   * @param position the position of <code>list</code> in the calling function
+   * @throws ArgumentTypeException if <code>list</code> does not have the form of an iterator
+   */
+  private static void checkIteratorForm(final IAST list, int position)
+      throws ArgumentTypeException {
+    if (list.size() < 2 || list.size() > 5) {
+      // Argument `1` at position `2` does not have the correct form for an iterator.
+      throw new ArgumentTypeException(
+          Errors.getMessage("itform", F.list(list, F.ZZ(position)), EvalEngine.get()));
+    }
+    if (list.size() > 2) {
+      if (!list.arg1().isSymbol()) {
+        // Raw object `1` cannot be used as an iterator.
+        throw new ArgumentTypeException(
+            Errors.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
+      }
+      if (!isIteratorVariable((ISymbol) list.arg1())) {
+        // Cannot assign to raw object `1`.
+        throw new ArgumentTypeException(
+            Errors.getMessage("setraw", F.list(list.arg1()), EvalEngine.get()));
+      }
+    }
+  }
+
+  /**
+   * Like {@link #create(IAST, int, EvalEngine)}, but the bounds are evaluated while the
+   * <code>localVariables</code> have no value. <code>Sum</code> and <code>Product</code> reduce
+   * their innermost iterator first; the variables of the outer iterators must stay symbolic in its
+   * bounds and not take a global value.
+   *
+   * @param list the iterator specification
+   * @param position the position of <code>list</code> in the calling function
+   * @param localVariables the variables of the outer iterators
+   * @param engine the evaluation engine
+   * @return the iterator
+   */
+  public static IIterator<IExpr> createLocal(final IAST list, int position,
+      final IAST localVariables, final EvalEngine engine) {
+    if (localVariables.argSize() == 0) {
+      return create(list, position, engine);
+    }
+    java.util.List<IIterator<IExpr>> result = new java.util.ArrayList<IIterator<IExpr>>(1);
+    engine.evalBlock(() -> {
+      result.add(create(list, position, engine));
+      return S.Null;
+    }, localVariables);
+    return result.get(0);
+  }
+
+  /**
+   * The variables of all iterator specifications of <code>ast</code> but the last, except the
+   * variable of the last one. The innermost iterator of <code>Sum</code> or <code>Product</code>
+   * is reduced on its own; these are the variables which must stay symbolic while that happens.
+   *
+   * @param ast <code>head(body, spec1, spec2, ..., specN)</code>
+   * @return a list of symbols, possibly empty
+   */
+  public static IAST outerIteratorVariables(final IAST ast) {
+    IExpr last = ast.last();
+    IExpr innerVariable = last.isList() && last.size() > 2 ? last.first() : F.NIL;
+    IASTAppendable result = F.ListAlloc(ast.size());
+    for (int i = 2; i < ast.size() - 1; i++) {
+      IExpr spec = ast.get(i);
+      if (spec.isList() && spec.size() > 2 && spec.first().isVariable()
+          && !spec.first().equals(innerVariable) && !result.contains(spec.first())) {
+        result.append(spec.first());
+      }
+    }
+    return result;
   }
 
   /**

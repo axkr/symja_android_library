@@ -7086,32 +7086,14 @@ public final class ListFunctions {
       if (ast.size() <= 2) {
         return F.NIL;
       }
-      final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-      try {
-        for (int i = 2; i < ast.size(); i++) {
-          IExpr arg = ast.get(i);
-          if (arg.isList()) {
-            iterList.add(Iterator.create((IAST) arg, i, engine));
-          } else {
-            IExpr evaledArg = engine.evaluate(arg);
-            if (evaledArg.isReal()) {
-              iterList.add(Iterator.create(F.list(evaledArg), i, engine));
-            } else {
-              // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-              return Errors.printMessage(ast.topHead(), "nliter", F.list(arg, F.ZZ(i)), engine);
-            }
-          }
-        }
-      } catch (final ArrayIndexOutOfBoundsException e) {
-        return Errors.printMessage(ast.topHead(), e, engine);
-      }
-      return generate(ast.topHead(), iterList, resultList, ast.arg1(), defaultValue, false, engine);
+      return generate(ast.topHead(), Iterator.createIterators(ast, false, engine), resultList,
+          ast.arg1(), defaultValue, false, engine);
     }
 
     /**
-     * Like {@link #evaluateTable(IAST, IAST, IExpr, EvalEngine)}, but every argument is taken as an
-     * iterator specification without checking it first, and an iterator which does not determine
-     * the values it iterates over aborts the generation instead of being skipped.
+     * Like {@link #evaluateTable(IAST, IAST, IExpr, EvalEngine)}, but an argument which is not a
+     * list is taken as the only element of an iterator specification, and an iterator which does
+     * not determine the values it iterates over aborts the generation instead of being skipped.
      *
      * @see Product
      * @see Sum
@@ -7121,15 +7103,8 @@ public final class ListFunctions {
       if (ast.size() <= 2) {
         return F.NIL;
       }
-      final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-      try {
-        for (int i = 2; i < ast.size(); i++) {
-          iterList.add(Iterator.create(ast.get(i).makeList(), i, engine));
-        }
-      } catch (final ArrayIndexOutOfBoundsException e) {
-        return Errors.printMessage(ast.topHead(), e, engine);
-      }
-      return generate(ast.topHead(), iterList, resultList, ast.arg1(), defaultValue, true, engine);
+      return generate(ast.topHead(), Iterator.createIterators(ast, true, engine), resultList,
+          ast.arg1(), defaultValue, true, engine);
     }
 
     /**

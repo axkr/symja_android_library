@@ -98,6 +98,9 @@ public class Product extends ListFunctions.Table implements ProductRules {
         }
       }
 
+      // the variables of the outer iterators are symbolic while the innermost product is reduced
+      // on its own; a global value like i=7 in Product(x,{i,2},{x,1,i}) must not leak into it
+      final IAST outerVariables = Iterator.outerIteratorVariables(preevaledProduct);
       if (preevaledProduct.argSize() >= 2) {
         IAST productForm = preevaledProduct;
         IAST lastList = list;
@@ -108,9 +111,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
         }
 
         if (productForm.argSize() > 2) {
-          // Multiple iterators: Evaluate the innermost product recursively.
+          // Multiple iterators: Evaluate the innermost product recursively. Quietly, like Sum: its
+          // bounds may use an outer variable, e.g. list[[i]], which is symbolic here.
           IAST reducedProductForm = F.Product(productForm.arg1(), lastList);
-          IExpr reducedResult = engine.evaluate(reducedProductForm);
+          IExpr reducedResult =
+              engine.evalBlock(() -> engine.evalQuietNIL(reducedProductForm), outerVariables);
           if (reducedResult.isPresent() && !reducedResult.equals(reducedProductForm)) {
             IASTAppendable result = productForm.removeAtClone(productForm.argSize());
             result.set(1, reducedResult);
@@ -135,7 +140,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
         // A zero factor does NOT make the product zero on its own: an empty range is the empty
         // product 1, so Product(0,{i,1,0}) is 1 and not 0. The range is examined below.
         try {
-          iterator = Iterator.create((IAST) argN, preevaledProduct.argSize(), engine);
+          iterator = Iterator.createLocal((IAST) argN, preevaledProduct.argSize(), outerVariables,
+              engine);
         } catch (final ValidateException ve) {
           return Errors.printMessage(S.Product, ve, engine);
         }
