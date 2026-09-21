@@ -114,6 +114,24 @@ public class IntegrateAlgorithmsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRadicalSubstitutionPrefersClosedForm() {
+    // t = Sqrt(x) gives 2*t^2/(1+t^4), which the rules answer in ArcTan and Log; a bare RootSum
+    // here is refused by the Rubi rule for Tan(x)^n and left Sqrt(Tan(x)) unevaluated
+    check("Integrate(Sqrt(x)/(1+x^2), x)", //
+        "2*(ArcTan(1+Sqrt(2)*Sqrt(x))/(2*Sqrt(2))-ArcTan(1-Sqrt(2)*Sqrt(x))/(2*Sqrt(2))-Log(\n"
+            + "1+Sqrt(2)*Sqrt(x)+x)/(4*Sqrt(2))+Log(1-Sqrt(2)*Sqrt(x)+x)/(4*Sqrt(2)))");
+    check("Integrate(Sqrt(Tan(x)), x)", //
+        "1/8*(4*Sqrt(2)*ArcTan(1+Sqrt(2)*Sqrt(Tan(x)))-4*Sqrt(2)*ArcTan(1-Sqrt(2)*Sqrt(Tan(x)))-\n"
+            + "2*Sqrt(2)*Log(1+Sqrt(2)*Sqrt(Tan(x))+Tan(x))+2*Sqrt(2)*Log(1-Sqrt(2)*Sqrt(Tan(x))+Tan(x)))");
+    check("D(Integrate(Sqrt(Tan(x)), x), x)-Sqrt(Tan(x)) /. x->0.7 // Chop", //
+        "0");
+    check("FreeQ(Integrate(Sqrt(Cot(x)), x), Integrate)", //
+        "True");
+    check("FreeQ(Integrate(Tan(x)^(3/2), x), Integrate)", //
+        "True");
+  }
+
+  @Test
   public void testDerivativeDividesStage() {
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = engine.parse("x");
