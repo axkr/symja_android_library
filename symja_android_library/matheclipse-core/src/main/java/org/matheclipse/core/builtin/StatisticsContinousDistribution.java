@@ -3378,10 +3378,13 @@ public class StatisticsContinousDistribution {
       try {
         double[] meanVector;
         double[][] covMatrix;
+        IExpr sigmaExpr;
+        IInteger sigmaPosition;
 
         if (dist.isAST1()) {
           // MultinormalDistribution(Sigma) -> Mu is zeros
-          IExpr sigmaExpr = dist.arg1();
+          sigmaExpr = dist.arg1();
+          sigmaPosition = F.C1;
           covMatrix = sigmaExpr.toDoubleMatrix();
           if (covMatrix == null) {
             return F.NIL;
@@ -3391,14 +3394,28 @@ public class StatisticsContinousDistribution {
         } else if (dist.isAST2()) {
           // MultinormalDistribution(Mu, Sigma)
           IExpr muExpr = dist.arg1();
-          IExpr sigmaExpr = dist.arg2();
+          sigmaExpr = dist.arg2();
+          sigmaPosition = F.C2;
           meanVector = muExpr.toDoubleVector();
           covMatrix = sigmaExpr.toDoubleMatrix();
         } else {
           return F.NIL;
         }
 
-        if (meanVector != null && covMatrix != null) {
+        if (meanVector != null && covMatrix != null && covMatrix.length > 0
+            && covMatrix.length == covMatrix[0].length && meanVector.length == covMatrix.length) {
+          // the sampler reads only one triangle of Sigma, so an asymmetric or indefinite matrix
+          // would be sampled silently
+          try {
+            new org.hipparchus.linear.CholeskyDecomposition(
+                new org.hipparchus.linear.Array2DRowRealMatrix(covMatrix, false));
+          } catch (org.hipparchus.exception.MathIllegalArgumentException miae) {
+            // The value `1` at position `2` in `3` is expected to be a symmetric positive definite
+            // matrix
+            Errors.printMessage(S.MultinormalDistribution, "posdefprm",
+                F.List(sigmaExpr, sigmaPosition, dist));
+            return F.NIL;
+          }
           org.hipparchus.distribution.multivariate.MultivariateNormalDistribution mnd =
               new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(RandomFunctions.hipparchusGenerator(random),
                 

@@ -772,6 +772,26 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{3,2}");
     check("Dimensions(RandomVariate(MultinormalDistribution({0,0},IdentityMatrix(2)),{2,3}))", //
         "{2,3,2}");
+    // a general covariance matrix in any dimension
+    check(
+        "Dimensions(RandomVariate(MultinormalDistribution({1,2,3},{{2,1/2,0},{1/2,1,1/4},{0,1/4,3}}),5))", //
+        "{5,3}");
+    check("Dimensions(RandomVariate(MultinormalDistribution({{1,1/2},{1/2,1}}),4))", //
+        "{4,2}");
+    check("SeedRandom(42);s=RandomVariate(MultinormalDistribution({1,-2},{{2,3/2},{3/2,3}}),5000);" //
+        + "{Max(Abs(Mean(s)-{1,-2}))<0.1, Max(Abs(Flatten(Covariance(s)-{{2,3/2},{3/2,3}})))<0.25}", //
+        "{True,True}");
+    // MultinormalDistribution: The value {{1,2},{2,1}} at position 2 in
+    // MultinormalDistribution({0,0},{{1,2},{2,1}}) is expected to be a symmetric positive definite
+    // matrix
+    check("RandomVariate(MultinormalDistribution({0,0},{{1,2},{2,1}}),3)", //
+        "RandomVariate(MultinormalDistribution({0,0},\n{{1,2},\n {2,1}}),3)");
+    // asymmetric
+    check("RandomVariate(MultinormalDistribution({0,0},{{1,0},{1,1}}),3)", //
+        "RandomVariate(MultinormalDistribution({0,0},\n{{1,0},\n {1,1}}),3)");
+    // singular
+    check("RandomVariate(MultinormalDistribution({{1,1},{1,1}}))", //
+        "RandomVariate(MultinormalDistribution(\n{{1,1},\n {1,1}}))");
     check("Dimensions(RandomVariate(BinormalDistribution(1/2)))", //
         "{2}");
     check("Dimensions(RandomVariate(BinormalDistribution(1/2),3))", //
