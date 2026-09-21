@@ -1308,15 +1308,51 @@ public class Iterator {
   public static IAST outerIteratorVariables(final IAST ast) {
     IExpr last = ast.last();
     IExpr innerVariable = last.isList() && last.size() > 2 ? last.first() : F.NIL;
-    IASTAppendable result = F.ListAlloc(ast.size());
-    for (int i = 2; i < ast.size() - 1; i++) {
+    IAST variables = iteratorVariables(ast, ast.size() - 1);
+    IASTAppendable result = F.ListAlloc(variables.size());
+    variables.forEach(v -> {
+      if (!v.equals(innerVariable)) {
+        result.append(v);
+      }
+    });
+    return result;
+  }
+
+  /**
+   * The variables of the iterator specifications <code>ast.get(2), ..., ast.get(end - 1)</code>.
+   *
+   * @param ast <code>head(body, spec1, spec2, ...)</code>
+   * @param end the position after the last specification to look at
+   * @return a list of distinct symbols, possibly empty
+   */
+  public static IAST iteratorVariables(final IAST ast, int end) {
+    IASTAppendable result = F.ListAlloc(end);
+    for (int i = 2; i < end; i++) {
       IExpr spec = ast.get(i);
       if (spec.isList() && spec.size() > 2 && spec.first().isVariable()
-          && !spec.first().equals(innerVariable) && !result.contains(spec.first())) {
+          && !result.contains(spec.first())) {
         result.append(spec.first());
       }
     }
     return result;
+  }
+
+  /**
+   * Test if one of the <code>variables</code> occurs in <code>before</code> but no longer in
+   * <code>after</code>, the result of evaluating <code>before</code> while the variables are
+   * symbolic. Then the evaluation did not keep a dependency on the variable, as
+   * <code>IntegerQ(i)</code> or <code>Length(Range(i))</code> don't, and its result must not stand
+   * in for the values the variable takes during the iteration: for
+   * <code>Sum(x, {i, 3}, {x, 0, If(IntegerQ(i), i, 0)})</code> the upper limit would become
+   * <code>0</code>.
+   *
+   * @param before the unevaluated expression
+   * @param after the evaluated expression
+   * @param variables a list of symbols
+   * @return <code>true</code> if the evaluation lost one of the variables
+   */
+  public static boolean losesVariable(IExpr before, IExpr after, IAST variables) {
+    return variables.exists(v -> !before.isFree(v) && after.isFree(v));
   }
 
   /**

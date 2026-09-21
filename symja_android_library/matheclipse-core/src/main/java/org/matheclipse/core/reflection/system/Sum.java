@@ -378,7 +378,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
           IExpr reducedResult =
               engine.evalBlock(() -> engine.evalQuietNIL(reducedSumForm), outerVariables);
           if (reducedResult.isPresent() && !reducedResult.equals(reducedSumForm)
-              && reducedResult.isFreeAST(S.Sum) && reducedResult.isFreeAST(S.DifferenceRoot)) {
+              && reducedResult.isFreeAST(S.Sum) && reducedResult.isFreeAST(S.DifferenceRoot)
+              && !Iterator.losesVariable(lastList, reducedResult, outerVariables)) {
             IASTMutable result = sumForm.removeAtCopy(sumForm.argSize());
             result.set(1, reducedResult);
             return result;

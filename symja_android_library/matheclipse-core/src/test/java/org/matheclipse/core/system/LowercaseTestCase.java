@@ -26764,6 +26764,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "12");
     check("Block({i=7}, Sum(f(x), {i, 2}, {x, 0, i}))", //
         "2*f(0)+2*f(1)+f(2)");
+    // a bound which loses the outer variable when evaluated symbolically is not reduced
+    // symbolically (Mathematica: 10)
+    check("Sum(x, {i, 3}, {x, 0, If(IntegerQ(i), i, 0)})", //
+        "10");
+    check("Sum(x, {i, 3}, {x, 0, Length(Range(i))})", //
+        "10");
+    check("Product(x+1, {i, 3}, {x, 0, If(IntegerQ(i), i, 0)})", //
+        "288");
     // the variable of the innermost iterator still takes its global value in its own bounds
     check("Block({x=5}, Sum(x, {x, 1, x}))", //
         "15");

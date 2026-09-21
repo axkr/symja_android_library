@@ -4999,6 +4999,13 @@ public class EvalEngine implements Serializable {
       IExpr arg = ast.get(i);
       if (arg.isAST()) {
         arg = preevalForwardBackward((IAST) arg);
+        if (arg.isPresent() && i > 2 && arg.isList() && org.matheclipse.core.eval.util.Iterator
+            .losesVariable(ast.get(i), arg, org.matheclipse.core.eval.util.Iterator
+                .iteratorVariables(ast, i))) {
+          // the bounds of an inner iterator depend on an outer variable in a way which the
+          // symbolic evaluation dropped, e.g. {x, 0, If(IntegerQ(i), i, 0)} became {x, 0, 0}
+          continue;
+        }
         if (arg.isPresent()) {
           if (preevaled.isNIL()) {
             preevaled = ast.copy();

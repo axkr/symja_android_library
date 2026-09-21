@@ -116,7 +116,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
           IAST reducedProductForm = F.Product(productForm.arg1(), lastList);
           IExpr reducedResult =
               engine.evalBlock(() -> engine.evalQuietNIL(reducedProductForm), outerVariables);
-          if (reducedResult.isPresent() && !reducedResult.equals(reducedProductForm)) {
+          if (reducedResult.isPresent() && !reducedResult.equals(reducedProductForm)
+              && !Iterator.losesVariable(lastList, reducedResult, outerVariables)) {
             IASTAppendable result = productForm.removeAtClone(productForm.argSize());
             result.set(1, reducedResult);
             return result;
