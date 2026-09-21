@@ -469,7 +469,7 @@ public class AST2Expr {
       "PacletDirectoryUnload", "PacletFind", "PacletInstall", "PacletObject", "PacletUninstall",
       "PaddedForm", "Padding", "PadeApproximant", "PadLeft", "PadRight", "PairedBarChart",
       "PairedHistogram", "PairedSmoothHistogram", "Pane", "Panel", "Paneled", "PaneSelector",
-      "ParallelMap", "Parallelepiped", "Parallelogram", "ParallelSubmit",
+      "ParallelMap", "Parallelepiped", "Parallelogram", "ParallelSubmit", "ParallelTable",
       "ParameterMixtureDistribution", "ParametricPlot", "ParametricPlot3D", "ParametricRegion",
       "ParentDirectory", "Parenthesis", "ParetoDistribution", "Part", "PartialD", "Partition",
       "PartitionsP", "PartitionsQ", "ParzenWindow", "Path", "PathGraph", "PathGraphQ", "Pattern",

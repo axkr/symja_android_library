@@ -17161,6 +17161,16 @@ public class S {
       S.initFinalSymbol("ParallelSubmit", ID.ParallelSubmit);
 
   /**
+   * ParallelTable(x) - TODO describe `ParallelTable`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParallelTable.md">ParallelTable
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ParallelTable =
+      S.initFinalSymbol("ParallelTable", ID.ParallelTable);
+
+  /**
    * ParameterMixtureDistribution(x) - TODO describe `ParameterMixtureDistribution`.
    * 
    * @see <a href=
