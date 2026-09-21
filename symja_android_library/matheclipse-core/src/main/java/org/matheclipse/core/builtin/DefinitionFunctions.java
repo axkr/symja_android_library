@@ -348,6 +348,86 @@ public class DefinitionFunctions {
     return expr;
   }
 
+  /**
+   * Everything that has been assigned to a symbol, read once so that it can be put onto any number
+   * of other symbols later - from other threads too, which only read this object. This is how
+   * <code>ParallelTable</code> hands each of its kernels a copy of the user's definitions.
+   */
+  public static final class SymbolDefinition {
+    private final int attributes;
+
+    /** <code>null</code> if the symbol has no value */
+    private final IExpr ownValue;
+
+    private final boolean ownValueDelayed;
+
+    private final IAST downValues;
+
+    private final IAST upValues;
+
+    private final IAST defaultValues;
+
+    private final IAST options;
+
+    /**
+     * Read the definitions of <code>symbol</code>.
+     *
+     * @param symbol the symbol
+     * @param engine the engine of the calling thread
+     */
+    public SymbolDefinition(ISymbol symbol, EvalEngine engine) {
+      this.attributes = symbol.getAttributes();
+      this.ownValue = symbol.hasAssignedSymbolValue() ? symbol.assignedValue() : null;
+      this.ownValueDelayed = symbol.isEvalFlagOn(ISymbol.SETDELAYED_FLAG_ASSIGNED_VALUE);
+      RulesData rulesData = symbol.getRulesData();
+      this.downValues = rulesData == null ? F.CEmptyList : rulesData.downValues();
+      this.upValues = DefinitionFunctions.upValues(symbol);
+      this.defaultValues = DefinitionFunctions.defaultValues(symbol);
+      IExpr symbolOptions = rulesData == null ? F.CEmptyList : engine.evaluate(F.Options(symbol));
+      this.options = symbolOptions.isList() ? (IAST) symbolOptions : F.CEmptyList;
+    }
+
+    /** <code>true</code> if nothing but attributes has been assigned to the symbol */
+    public boolean isEmpty() {
+      return ownValue == null && downValues.isEmptyList() && upValues.isEmptyList()
+          && defaultValues.isEmptyList() && options.isEmptyList();
+    }
+
+    /** Hand every expression of the definitions to <code>consumer</code>. */
+    public void forEachExpr(java.util.function.Consumer<IExpr> consumer) {
+      if (ownValue != null) {
+        consumer.accept(ownValue);
+      }
+      consumer.accept(downValues);
+      consumer.accept(upValues);
+      consumer.accept(defaultValues);
+      consumer.accept(options);
+    }
+
+    /**
+     * Put the definitions onto <code>target</code>.
+     *
+     * @param target a symbol without definitions
+     * @param rename applied to every expression before it is assigned; has to map the symbol
+     *        these definitions were read from to <code>target</code>
+     * @param engine the engine of the calling thread
+     */
+    public void installOn(ISymbol target, java.util.function.UnaryOperator<IExpr> rename,
+        EvalEngine engine) {
+      // the attributes first: a Hold attribute decides how a left-hand side is read
+      target.setAttributes(attributes);
+      if (ownValue != null) {
+        target.assignValue(rename.apply(ownValue), ownValueDelayed);
+      }
+      assignRuleList(target, rename.apply(downValues), false, engine);
+      assignRuleList(target, rename.apply(upValues), true, engine);
+      assignRuleList(target, rename.apply(defaultValues), false, engine);
+      if (!options.isEmptyList()) {
+        engine.evaluate(F.Set(F.Options(target), rename.apply(options)));
+      }
+    }
+  }
+
   public static void initialize() {
     Initializer.init();
   }

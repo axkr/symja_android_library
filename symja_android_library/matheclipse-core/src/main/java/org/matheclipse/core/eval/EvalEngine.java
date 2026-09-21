@@ -1478,6 +1478,28 @@ public class EvalEngine implements Serializable {
     return engine;
   }
 
+  /**
+   * A copy of this engine for evaluating on another thread <i>at the same time</i> as this engine,
+   * as the kernels of <code>ParallelTable</code> do. {@link #copy()} is meant for a thread which
+   * takes the evaluation over and shares the mutable state of this engine; here everything which
+   * is not safe to use from two threads at once is replaced: the remember and <code>Once</code>
+   * caches, the <code>Reap</code> list, the trace stack and the <code>Out</code> history.
+   *
+   * @return the copy
+   */
+  public synchronized EvalEngine copyParallel() {
+    EvalEngine engine = copy();
+    engine.rememberMap = new IdentityHashMap<Object, IExpr>();
+    engine.onceMap = null;
+    engine.fReapList = null;
+    engine.fModifiedVariablesList = null;
+    engine.fTraceMode = false;
+    engine.fTraceStack = null;
+    engine.fOutListDisabled = true;
+    engine.fEvalHistory = null;
+    return engine;
+  }
+
   public synchronized EvalEngine copyInit() {
     EvalEngine engine = new EvalEngine();
     engine.fRandomSeed = fRandom.nextLong();

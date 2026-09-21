@@ -463,6 +463,7 @@ public class Errors {
       "pair", "Argument `1` is expected to be a pair, a list of pairs or an Interval object.", //
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
       "par", "Inappropriate parameter: `1`.", //
+      "parmthd", "Value of option `1` -> `2` is not Automatic, \"CoarsestGrained\", \"FinestGrained\", \"EvaluationsPerKernel\" -> e or \"ItemsPerEvaluation\" -> m.", //
       "partd", "Part specification `1` is longer than depth of object.", //
       "partw", "Part `1` of `2` does not exist.", //
       "patop", "Pattern `1` contains inappropriate optional object.", //

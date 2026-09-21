@@ -247,6 +247,7 @@ public final class FunctionDefinitions {
       S.Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
       S.Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
 
+      S.ParallelTable.setEvaluator(new org.matheclipse.core.reflection.system.ParallelTable());
       S.Part.setEvaluator(new org.matheclipse.core.reflection.system.Part());
       S.Partition.setEvaluator(new org.matheclipse.core.reflection.system.Partition());
       S.Perimeter.setEvaluator(new org.matheclipse.core.reflection.system.Perimeter());

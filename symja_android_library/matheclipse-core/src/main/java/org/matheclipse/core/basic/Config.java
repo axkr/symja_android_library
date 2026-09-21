@@ -662,6 +662,14 @@ public class Config {
   public static boolean TIMECONSTRAINED_NO_THREAD = false;
 
   /**
+   * The maximum number of threads ("kernels") <code>ParallelTable</code> evaluates on at the same
+   * time. With a value less than <code>2</code> - or if {@link #TIMECONSTRAINED_NO_THREAD} says
+   * that the platform has no threads - <code>ParallelTable</code> is evaluated as
+   * <code>Table</code>.
+   */
+  public static int MAX_PARALLEL_KERNELS = Runtime.getRuntime().availableProcessors();
+
+  /**
    * An object that creates new threads on demand. Using thread factories removes hardwiring of
    * calls to new Thread, enabling applications to use special thread subclasses, priorities, etc.
    *
