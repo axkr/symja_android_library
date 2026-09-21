@@ -49,6 +49,25 @@ public class RischNorman {
   /** Recursion guard. */
   private static final ThreadLocal<Boolean> ACTIVE = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
+  /** Set while a stage re-enters Integrate on rewritten pieces of an integrand. */
+  private static final ThreadLocal<Boolean> RADICAL_TOWER_OFF =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  /**
+   * Run a stage which re-enters Integrate on rewritten pieces of the integrand without the radical
+   * tower stage: that stage has already been tried on the whole integrand, and the pieces are no
+   * easier for it, only more numerous.
+   */
+  public static IExpr withoutRadicalTower(java.util.function.Supplier<IExpr> stage) {
+    boolean old = RADICAL_TOWER_OFF.get().booleanValue();
+    RADICAL_TOWER_OFF.set(Boolean.TRUE);
+    try {
+      return stage.get();
+    } finally {
+      RADICAL_TOWER_OFF.set(old);
+    }
+  }
+
   private RischNorman() {}
 
   /**
@@ -67,6 +86,11 @@ public class RischNorman {
     final long deadline = System.currentTimeMillis()
         + MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_TIMELIMIT_MILLIS);
     try {
+      if (RischNormanRadical.hasRoot(integrand, x)) {
+        // one square root in the tower (and roots which flatten into a generator)
+        return RischNormanRadical.integrate(integrand, x, engine, System.currentTimeMillis()
+            + MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS));
+      }
       return integrateInternal(integrand, x, engine, deadline);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -74,6 +98,19 @@ public class RischNorman {
     } finally {
       ACTIVE.set(Boolean.FALSE);
     }
+  }
+
+  /**
+   * Is <code>f</code> a function of a root and at least one <code>Log</code>, <code>Exp</code> or
+   * <code>Tan</code>? That is the mixed class the rules leave unanswered, for which
+   * {@link #integrate(IExpr, IExpr, EvalEngine)} is worth a try after them.
+   */
+  public static boolean isRadicalTower(IExpr f, IExpr x) {
+    if (RADICAL_TOWER_OFF.get().booleanValue() || !RischNormanRadical.hasRoot(f, x)) {
+      return false;
+    }
+    return !f.isFree(e -> (e.isAST(S.Log, 2) || e.isAST(S.Tan, 2)
+        || (e.isPower() && e.base().isE())) && !e.isFree(x, true), true);
   }
 
   private static IExpr integrateInternal(IExpr integrand, IExpr x, EvalEngine engine,

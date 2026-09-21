@@ -609,6 +609,12 @@ public class Config {
    */
   public static long INTEGRATE_RISCH_NORMAN_TIMELIMIT_MILLIS = 2000L;
 
+  /**
+   * Time limit of the Risch-Norman method over a tower with a radical in it, whose linear systems are
+   * larger than the purely transcendental ones.
+   */
+  public static long INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS = 8000L;
+
   /** Maximum recursion depth for the derivative-divides heuristic. */
   public static int INTEGRATE_DERIVATIVE_DIVIDES_RECURSION_LIMIT = 3;
 

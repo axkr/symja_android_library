@@ -671,10 +671,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         // integrand to itself and is applied again, forever, and the endless-iteration guard turns
         // that into an unevaluated - or, inside a larger integral, a partly evaluated - answer.
         IExpr normalized = normalizePerfectPowerBase(fx, x, engine);
-        result = normalized.isPresent() //
+        // the rules integrate many pieces of the integrand on their way, each through Integrate:
+        // the radical tower stage is tried on the whole integrand afterwards, not on every piece
+        result = RischNorman.withoutRadicalTower(() -> normalized.isPresent() //
             ? integrateByRubiRulesWithBudget((IAST) normalized, x, ast.setAtCopy(1, normalized),
                 engine)
-            : integrateByRubiRulesWithBudget(fx, x, ast, engine);
+            : integrateByRubiRulesWithBudget(fx, x, ast, engine));
         if (result.isPresent()) {
           IExpr rubiResult = F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
@@ -715,6 +717,17 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // Cos and Sin.
           if (!rubiResult.equals(ast) && !unfinishedSubstitution
               && isFiniteAntiderivative(rubiResult)) {
+            if (!rubiResult.isFree(S.Integrate, true) && RischNorman.isRadicalTower(fx, x)) {
+              // the rules integrated a sum term by term and left terms which are not elementary on
+              // their own, like Log(x)/Sqrt(1+x^2) in the derivative of Log(x)*ArcSinh(x): the
+              // radical tower stage takes the integrand as a whole
+              IExpr whole = quietStage(engine, fx, x, "parallel integration over a radical tower",
+                  () -> IntegrateTimeBudget.runWithin(() -> RischNorman.integrate(fx, x, engine),
+                      MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS)));
+              if (whole.isPresent()) {
+                return whole;
+              }
+            }
             return rubiResult;
           }
         }
@@ -742,11 +755,23 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (result.isPresent()) {
             return result;
           }
+          // Parallel integration over a tower with one radical in it, such as the derivative of
+          // Log(x)*Log(x+Sqrt(x^2+1)): a class the rules measurably leave unanswered. Only for a
+          // root together with Log, Exp or Tan, and verified by differentiation before it returns.
+          if (RischNorman.isRadicalTower(fx, x)) {
+            result = quietStage(engine, fx, x, "parallel integration over a radical tower",
+                () -> IntegrateTimeBudget.runWithin(() -> RischNorman.integrate(fx, x, engine),
+                    MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS)));
+            if (result.isPresent()) {
+              return result;
+            }
+          }
           // Conjugate rationalization of a denominator containing a single square root, e.g.
           // x^2/(x^2+Sqrt(1-x^2)) -> x^2*(x^2-Sqrt(1-x^2))/(x^4+x^2-1). Post-Rubi because it only
           // rewrites the integrand and re-enters Integrate: whenever Rubi has an answer for the
           // original form, that (more canonical) form wins.
-          result = quietStage(engine, fx, x, "rationalising the surd", () -> SurdRationalization.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "rationalising the surd",
+              () -> RischNorman.withoutRadicalTower(() -> SurdRationalization.integrate(fx, x, engine)));
           if (result.isPresent()) {
             return result;
           }
