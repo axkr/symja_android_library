@@ -407,6 +407,11 @@ public class NumberFieldFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE);
+    }
   }
 
   /**

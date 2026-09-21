@@ -18,6 +18,7 @@ public class AlgebraicNumberTest extends ExprEvaluatorTestCase {
         "7");
     check("AlgebraicNumber(5/2,{3,2})", //
         "8");
+    // Mathematica: AlgebraicNumber[1 + I, {1, 3/2}]
     check("AlgebraicNumber((1+I)/2,{1,3})", //
         "AlgebraicNumber(1+I,{1,3/2})");
     check("AlgebraicNumber(Sqrt(2),{})", //
@@ -210,8 +211,9 @@ public class AlgebraicNumberTest extends ExprEvaluatorTestCase {
         "True");
     check("AlgebraicIntegerQ(Root(3*#^3+2&,1))", //
         "False");
-    check("AlgebraicIntegerQ({1,2})", //
-        "False");
+    // Listable, as in Mathematica
+    check("AlgebraicIntegerQ({1,2,1/2})", //
+        "{True,True,False}");
     check("AlgebraicIntegerQ(AlgebraicNumber(Sqrt(2),{1/2,1/2}))", //
         "False");
     check("FirstPosition(a+b,a+b)", //
@@ -225,7 +227,7 @@ public class AlgebraicNumberTest extends ExprEvaluatorTestCase {
   @Test
   public void testMaximalOrder() {
     // field discriminants: Q(2^(1/3)), Q(Sqrt(2),Sqrt(3)), Q(zeta_8), Q(10^(1/3)), Q(zeta_9)
-    check("NumberFieldDiscriminant /@ {2^(1/3),Sqrt(2)+Sqrt(3),E^(I*Pi/4),10^(1/3),E^(2*Pi*I/9)}", //
+    check("NumberFieldDiscriminant({2^(1/3),Sqrt(2)+Sqrt(3),E^(I*Pi/4),10^(1/3),E^(2*Pi*I/9)})", //
         "{-108,2304,256,-300,-19683}");
     // Dedekind's cubic, whose ring of integers is not Z[theta] for any theta
     check("NumberFieldDiscriminant(Root(#^3-#^2-2*#-8&,1))", //
