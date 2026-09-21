@@ -14034,6 +14034,42 @@ public class S {
   public final static IBuiltInSymbol MathCell = S.initFinalSymbol("MathCell", ID.MathCell);
 
   /**
+   * MathieuC(a, q, z) - the even Mathieu function with characteristic value `a` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuC.md">MathieuC
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuC = S.initFinalSymbol("MathieuC", ID.MathieuC);
+
+  /**
+   * MathieuCPrime(a, q, z) - the derivative with respect to `z` of the even Mathieu function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCPrime.md">MathieuCPrime
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuCPrime = S.initFinalSymbol("MathieuCPrime", ID.MathieuCPrime);
+
+  /**
+   * MathieuS(a, q, z) - the odd Mathieu function with characteristic value `a` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuS.md">MathieuS
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuS = S.initFinalSymbol("MathieuS", ID.MathieuS);
+
+  /**
+   * MathieuSPrime(a, q, z) - the derivative with respect to `z` of the odd Mathieu function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuSPrime.md">MathieuSPrime
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuSPrime = S.initFinalSymbol("MathieuSPrime", ID.MathieuSPrime);
+
+  /**
    * MathMLForm(expr) - returns the MathML form of the evaluated `expr`.
    * 
    * @see <a href=
