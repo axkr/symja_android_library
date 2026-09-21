@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -11,9 +10,9 @@ import java.util.zip.Inflater;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
-import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -24,23 +23,53 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * The Wolfram Language's wire format for <code>Compress</code> and <code>Uncompress</code>.
+ * The script's wire format for <code>Compress</code> and <code>Uncompress</code>.
  *
  * <p>
  * A compressed expression is written <code>"1:" + Base64(zlib("!boR" + tokens))</code>, where each
  * token is one tag byte and its payload, little endian throughout:
  *
  * <table>
- * <tr><td><code>i</code></td><td>machine integer, 4 bytes</td></tr>
- * <tr><td><code>I</code></td><td>big integer: length, then its decimal digits</td></tr>
- * <tr><td><code>r</code></td><td>machine real, 8 bytes</td></tr>
- * <tr><td><code>R</code></td><td>arbitrary-precision real, written out as text</td></tr>
- * <tr><td><code>s</code></td><td>symbol: length, then its full name</td></tr>
- * <tr><td><code>S</code></td><td>string: length, then its characters</td></tr>
- * <tr><td><code>f</code></td><td>an expression: how many arguments, the head, then the arguments</td></tr>
- * <tr><td><code>e</code></td><td>packed reals: rank, dimensions, then the numbers</td></tr>
- * <tr><td><code>n</code></td><td>packed integers: type, rank, dimensions, then the numbers</td></tr>
- * <tr><td><code>b</code></td><td>packed bytes: rank, dimensions, then the bytes</td></tr>
+ * <tr>
+ * <td><code>i</code></td>
+ * <td>machine integer, 4 bytes</td>
+ * </tr>
+ * <tr>
+ * <td><code>I</code></td>
+ * <td>big integer: length, then its decimal digits</td>
+ * </tr>
+ * <tr>
+ * <td><code>r</code></td>
+ * <td>machine real, 8 bytes</td>
+ * </tr>
+ * <tr>
+ * <td><code>R</code></td>
+ * <td>arbitrary-precision real, written out as text</td>
+ * </tr>
+ * <tr>
+ * <td><code>s</code></td>
+ * <td>symbol: length, then its full name</td>
+ * </tr>
+ * <tr>
+ * <td><code>S</code></td>
+ * <td>string: length, then its characters</td>
+ * </tr>
+ * <tr>
+ * <td><code>f</code></td>
+ * <td>an expression: how many arguments, the head, then the arguments</td>
+ * </tr>
+ * <tr>
+ * <td><code>e</code></td>
+ * <td>packed reals: rank, dimensions, then the numbers</td>
+ * </tr>
+ * <tr>
+ * <td><code>n</code></td>
+ * <td>packed integers: type, rank, dimensions, then the numbers</td>
+ * </tr>
+ * <tr>
+ * <td><code>b</code></td>
+ * <td>packed bytes: rank, dimensions, then the bytes</td>
+ * </tr>
  * </table>
  *
  * <p>
@@ -104,8 +133,8 @@ public class WMACompress {
   }
 
   /**
-   * A compressed string copied out of a notebook carries the quotes, backslashes and line breaks
-   * of however it was quoted there. Mathematica's own readers drop them, and so does this one.
+   * A compressed string copied out of a notebook carries the quotes, backslashes and line breaks of
+   * however it was quoted there. Mathematica's own readers drop them, and so does this one.
    */
   private static String strip(String compressed) {
     StringBuilder buf = new StringBuilder(compressed.length());
@@ -150,9 +179,7 @@ public class WMACompress {
         return true;
       }
       // a number carrying more digits than a machine real is written out as text: its digits, a
-      // backtick and how many of them are precise, which is how Mathematica writes one. Plain
-      // notation, never Symja's `1.5*10^3` - the reader on the other side is a Wolfram Language
-      // parser, and to it that would be a product.
+      // backtick and how many of them are precise.
       out.write('R');
       Apfloat value = number.apfloatValue();
       writeText(value.toString(true) + "`" + value.precision(), out);
@@ -264,7 +291,10 @@ public class WMACompress {
     }
   }
 
-  /** zlib-compress <code>data</code>: the format of Developer`RawCompress and of the WMA wire format. */
+  /**
+   * zlib-compress <code>data</code>: the format of Developer`RawCompress and of the WMA wire
+   * format.
+   */
   public static byte[] deflate(byte[] data) {
     Deflater deflater = new Deflater();
     try {
@@ -485,8 +515,8 @@ public class WMACompress {
      *
      * <p>
      * A pattern travels as the expression it is written as - <code>Blank[]</code> for
-     * <code>_</code> - and has to become a pattern again when it is read, which is what
-     * evaluating <code>Blank[]</code> does.
+     * <code>_</code> - and has to become a pattern again when it is read, which is what evaluating
+     * <code>Blank[]</code> does.
      */
     private static boolean isPatternConstruct(IAST ast) {
       switch (ast.headID()) {

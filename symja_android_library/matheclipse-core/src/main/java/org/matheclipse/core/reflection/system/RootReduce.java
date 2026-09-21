@@ -110,9 +110,9 @@ public class RootReduce extends AbstractFunctionEvaluator {
    * <code>numericValue</code> and return it as a <code>Root[f, k, 0]</code> object.
    *
    * <p>
-   * The roots are ordered the way Wolfram Language indexes them: real roots first (ascending), then
-   * the complex roots (real part ascending, imaginary part ascending). This has to agree with the
-   * sort in {@link ToRadicals#rootToRadicals(IAST, EvalEngine)} so that the resulting
+   * The roots are ordered: real roots first (ascending), then the complex roots (real part
+   * ascending, imaginary part ascending). This has to agree with the sort in
+   * {@link ToRadicals#rootToRadicals(IAST, EvalEngine)} so that the resulting
    * <code>Root[..., k, 0]</code> expands back to the same algebraic number.
    *
    * @param polyInX a univariate polynomial in <code>x</code>

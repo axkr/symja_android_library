@@ -147,8 +147,7 @@ public final class StringFunctions {
           default:
             return F.NIL;
         }
-      } catch (IllegalArgumentException
-          | org.apache.commons.codec.DecoderException iae) {
+      } catch (IllegalArgumentException | org.apache.commons.codec.DecoderException iae) {
         //
       }
       return F.NIL;
@@ -1168,8 +1167,8 @@ public final class StringFunctions {
    * Put what one match captured into the right hand side of a string rule.
    *
    * <p>
-   * Two ways of naming a group have to be served, because the Wolfram Language has two ways of
-   * writing a string pattern. A pattern written in the language names its parts with symbols -
+   * Two ways of naming a group have to be served, because there are two ways of writing a string
+   * pattern. A pattern written in the language names its parts with symbols -
    * <code>x__ ~~ "=" ~~ y__</code> - and those are substituted directly. A
    * <code>RegularExpression</code> numbers them instead, and the right hand side refers to them as
    * the strings <code>"$1"</code>, <code>"$2"</code> and so on, anywhere inside it: the replacement
@@ -1481,9 +1480,8 @@ public final class StringFunctions {
           String s = ast.arg1().toString();
           if (ast.arg2().isList()) {
             // `{m, n}` drops the characters m through n and keeps the rest; `{m}` drops one
-            int[] sequ =
-                Validate.checkListOfInts(ast, ast.arg2(), Integer.MIN_VALUE, Integer.MAX_VALUE,
-                    engine);
+            int[] sequ = Validate.checkListOfInts(ast, ast.arg2(), Integer.MIN_VALUE,
+                Integer.MAX_VALUE, engine);
             if (sequ == null || sequ.length < 1 || sequ.length > 2) {
               return F.NIL;
             }
@@ -1898,7 +1896,7 @@ public final class StringFunctions {
         }
         return F.$str(buf.toString());
       }
-      // nothing joined is the empty string, as the Wolfram Language answers; a notebook joins the
+      // nothing joined is the empty string; a notebook joins the
       // strings of an empty row this way, and StringJoin() left unevaluated showed {StringJoin()}
       return F.CEmptyString;
     }
@@ -1956,8 +1954,8 @@ public final class StringFunctions {
           return F.NIL;
         }
       }
-      String digits = ((org.matheclipse.core.interfaces.IInteger) n).toBigNumerator().abs()
-          .toString(base);
+      String digits =
+          ((org.matheclipse.core.interfaces.IInteger) n).toBigNumerator().abs().toString(base);
       if (ast.argSize() >= 3) {
         int length = ast.arg3().toIntDefault();
         if (length < 0) {
@@ -1985,10 +1983,11 @@ public final class StringFunctions {
 
   /**
    * <code>StringPadLeft(s, n)</code>, <code>StringPadLeft(s, n, pad)</code>,
-   * <code>StringPadLeft({s1, s2, ...})</code>, <code>StringPadLeft({s1, s2, ...}, Automatic, pad)</code>
-   * and the <code>StringPadRight</code> forms - a string padded to <code>n</code> characters, with
-   * spaces or with repetitions of <code>pad</code>, or cut to <code>n</code> characters; a list of
-   * strings is padded to its longest one when no width, or <code>Automatic</code>, is given.
+   * <code>StringPadLeft({s1, s2, ...})</code>,
+   * <code>StringPadLeft({s1, s2, ...}, Automatic, pad)</code> and the <code>StringPadRight</code>
+   * forms - a string padded to <code>n</code> characters, with spaces or with repetitions of
+   * <code>pad</code>, or cut to <code>n</code> characters; a list of strings is padded to its
+   * longest one when no width, or <code>Automatic</code>, is given.
    *
    * <p>
    * The repetitions of <code>pad</code> are lined up with the far end of the finished string - its
@@ -2745,8 +2744,9 @@ public final class StringFunctions {
    * <p>
    * Each specification splits what is left of the string on its delimiter and takes the parts the
    * position specification names, so several of them read successively deeper. It is how a text
-   * protocol is taken apart - <code>StringExtract[request, "\r\n\r\n" -&gt; 1, "\r\n" -&gt; 2 ;; ]</code>
-   * is the header lines of an HTTP request.
+   * protocol is taken apart -
+   * <code>StringExtract[request, "\r\n\r\n" -&gt; 1, "\r\n" -&gt; 2 ;; ]</code> is the header lines
+   * of an HTTP request.
    */
   private static class StringExtract extends AbstractFunctionEvaluator {
 
@@ -2788,8 +2788,8 @@ public final class StringFunctions {
       String regex;
       if (delimiter.isPresent()) {
         Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-        regex = IStringX.toRegexString(delimiter, false, ast, IStringX.REGEX_LONGEST, groups,
-            engine);
+        regex =
+            IStringX.toRegexString(delimiter, false, ast, IStringX.REGEX_LONGEST, groups, engine);
         if (regex == null) {
           return F.NIL;
         }
@@ -3741,9 +3741,8 @@ public final class StringFunctions {
     private static String outputForm(IExpr expr) {
       StringBuilder buf = new StringBuilder();
       int significantFigures = EvalEngine.get().getSignificantFigures();
-      OutputFormFactory factory =
-          OutputFormFactory.get(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS, false, true,
-              significantFigures - 1, significantFigures + 1);
+      OutputFormFactory factory = OutputFormFactory.get(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS,
+          false, true, significantFigures - 1, significantFigures + 1);
       factory.setIgnoreNewLine(true);
       factory.setGraphicsPlaceholder(true);
       return factory.convert(buf, expr) ? buf.toString() : IStringX.inputForm(expr);

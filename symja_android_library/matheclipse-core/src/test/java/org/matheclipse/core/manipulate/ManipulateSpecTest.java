@@ -202,8 +202,7 @@ public class ManipulateSpecTest {
   public void testARowWithADynamicIsALiveReadOut() {
     // Manipulate[..., Row[{"moves: ", Dynamic[moves]}]] is the usual way to put a counter beside
     // the sliders. Taking its text once - which is what a heading row does - would freeze it.
-    ManipulateSpec spec =
-        parse("Manipulate(k, {k, 0, 5}, Row({\"moves: \", Dynamic(k)}))");
+    ManipulateSpec spec = parse("Manipulate(k, {k, 0, 5}, Row({\"moves: \", Dynamic(k)}))");
     assertNotNull(spec);
     assertEquals(2, spec.getControls().size());
     ManipulateControl display = spec.getControls().get(1);
@@ -396,8 +395,8 @@ public class ManipulateSpecTest {
   }
 
   /**
-   * Woxi #792's example: a control and its read-out laid out in one Row, a styled read-out of a
-   * variable the body writes, and that variable declared with ControlType -> None.
+   * A control and its read-out laid out in one Row, a styled read-out of a variable the body
+   * writes, and that variable declared with ControlType -> None.
    */
   @Test
   public void testAControlInsideARowIsAControlAndTheRestItsReadOut() {
@@ -443,13 +442,11 @@ public class ManipulateSpecTest {
     assertEquals(ManipulateControl.NONE, range.getKind());
     assertEquals("2", range.getInitial().toString(), "a range starts at its lower end");
 
-    ManipulateControl choice =
-        singleControl("Manipulate(u, {u, {a, b, c}, ControlType -> None})");
+    ManipulateControl choice = singleControl("Manipulate(u, {u, {a, b, c}, ControlType -> None})");
     assertEquals(ManipulateControl.NONE, choice.getKind());
     assertEquals("a", choice.getInitial().toString(), "a choice starts at the first one");
 
-    ManipulateControl initial =
-        singleControl("Manipulate(u, {{u, 7}, ControlType -> None})");
+    ManipulateControl initial = singleControl("Manipulate(u, {{u, 7}, ControlType -> None})");
     assertEquals(ManipulateControl.NONE, initial.getKind());
     assertEquals("7", initial.getInitial().toString());
   }

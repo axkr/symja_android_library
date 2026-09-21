@@ -7,15 +7,15 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
-import org.matheclipse.core.graphics.IntervalMarkerType;
-import org.matheclipse.core.graphics.UncertainValue;
-import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.IntervalMarkerType;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -79,9 +79,9 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     } else {
       if (isRectangularArray(listData)) {
         // InterpolationOrder 2 or more: the data is a smooth surface through the samples, drawn
-        // on a finer grid over the same range, as the Wolfram Language draws it
-        IAST refined =
-            refine(listData, options[Plot3DTools.indexOf(Plot3DTools.listPlot(), S.InterpolationOrder)]);
+        // on a finer grid over the same range.
+        IAST refined = refine(listData,
+            options[Plot3DTools.indexOf(Plot3DTools.listPlot(), S.InterpolationOrder)]);
         if (refined != listData) {
           if (!dataRangeOpt.isList()) {
             int cols = ((IAST) listData.arg1()).argSize();
@@ -92,9 +92,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         return processHeightMap(listData, dataRangeOpt, boxRatiosOpt, plotRangeOpt, meshOpt,
             plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
             RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine),
-            options[Plot3DTools.X_BOUNDARY_STYLE],
-            Plot3DTools.plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D,
-                engine));
+            options[Plot3DTools.X_BOUNDARY_STYLE], Plot3DTools
+                .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D, engine));
       }
     }
 
@@ -294,7 +293,10 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
             F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
   }
 
-  /** A height: a number, or the centre of an {@code Around}, {@code Interval} or {@code IntervalData}. */
+  /**
+   * A height: a number, or the centre of an {@code Around}, {@code Interval} or
+   * {@code IntervalData}.
+   */
   private static double height(IExpr expr) {
     if (expr.isAST() && UncertainValue.isUncertain(expr)) {
       return UncertainValue.center(expr);

@@ -119,7 +119,7 @@ public class ASCIIPrettyPrinter3 {
   private void convert(final IExpr expr, final int precedence, boolean caller) {
     if (expr.isAST(S.Short, 2) || expr.isAST(S.Short, 3)) {
       // Short only changes how an expression is shown; OutputForm has no page width, so the whole
-      // expression is written, as ToString[Short[expr], OutputForm] is in the Wolfram Language
+      // expression is written, as ToString[Short[expr], OutputForm]
       convert(((IAST) expr).arg1(), precedence, caller);
       return;
     }

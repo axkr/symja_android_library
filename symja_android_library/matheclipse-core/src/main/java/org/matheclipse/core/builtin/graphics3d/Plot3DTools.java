@@ -373,10 +373,9 @@ public final class Plot3DTools {
    * Whether {@code BoundaryStyle} asks for an outline.
    *
    * <p>
-   * {@code None} never draws one and a given style always does. {@code Automatic} draws one where
-   * the Wolfram Language does, which the plot says with {@code outlinedByDefault}: {@code Plot3D}
-   * and {@code ListPlot3D} outline their surface unless told not to - Mathematica's output of
-   * {@code Plot3D[..., Mesh -> None]} still carries {@code {GrayLevel[0], Line[...]}}.
+   * {@code None} never draws one and a given style always does. {@code Automatic} draws one, which
+   * the plot says with {@code outlinedByDefault}: {@code Plot3D} and {@code ListPlot3D} outline
+   * their surface unless told not to.
    */
   public static boolean drawsBoundary(IExpr boundaryStyle, boolean outlinedByDefault) {
     if (boundaryStyle == null || boundaryStyle.isNIL() || boundaryStyle.isNone()) {
@@ -765,17 +764,15 @@ public final class Plot3DTools {
    * The {@code ColorFunction} of a surface, or {@code null} when it keeps its own flat colour.
    *
    * <p>
-   * The caller finishes the builder with the range each coordinate spans, so that a colour
-   * function sees positions rather than raw units.
+   * The caller finishes the builder with the range each coordinate spans, so that a colour function
+   * sees positions rather than raw units.
    *
    * @param family which tuple this plot hands over; a plain surface passes {@code x, y, z}
    */
   public static PlotColorFunction.Builder plotColors(PlotColorFunction.Family family,
       IExpr[] options, ISymbol plotSymbol, EvalEngine engine) {
-    return PlotColorFunction
-        .of(family, options[X_COLOR_FUNCTION], options[X_COLOR_FUNCTION_SCALING], plotSymbol,
-            engine)
-        .sink(PlotColorFunction.Sink.FLAT);
+    return PlotColorFunction.of(family, options[X_COLOR_FUNCTION],
+        options[X_COLOR_FUNCTION_SCALING], plotSymbol, engine).sink(PlotColorFunction.Sink.FLAT);
   }
 
   /**
@@ -1006,8 +1003,8 @@ public final class Plot3DTools {
     if (point == null) {
       return -1;
     }
-    return builder.addVertex(point[0], point[1], point[2],
-        normals == null ? null : normals[fi][fj], colors == null ? null : colors[fi][fj]);
+    return builder.addVertex(point[0], point[1], point[2], normals == null ? null : normals[fi][fj],
+        colors == null ? null : colors[fi][fj]);
   }
 
   /**
@@ -1017,8 +1014,8 @@ public final class Plot3DTools {
    * The corners that are inside and the points where the boundary meets the cell's own edges,
    * walked in the order the quads are, so the winding - and with it which face the lights see -
    * stays the same. A cell whose inside corners are diagonally opposite is crossed twice and no
-   * single polygon describes it, so it is left out the way it was before there was any clipping.
-   * At any density worth plotting at those cells are rare and each is one sample across.
+   * single polygon describes it, so it is left out the way it was before there was any clipping. At
+   * any density worth plotting at those cells are rare and each is one sample across.
    */
   private static void addRegionEdgeCells(GraphicsComplexBuilder builder, double[][][] unmasked,
       boolean[][] inside, int[][] indices, int[][][] crossings, int rows, int cols) {
@@ -1390,10 +1387,10 @@ public final class Plot3DTools {
     return key == S.Axes || key == S.AxesLabel || key == S.AxesEdge || key == S.AxesStyle
         || key == S.Background || key == S.Boxed || key == S.BoxStyle || key == S.BoxRatios
         || key == S.FaceGrids || key == S.ImageSize || key == S.Lighting || key == S.PlotLabel
-        || key == S.PlotRange || key == S.PlotRangePadding || key == S.Ticks
-        || key == S.TicksStyle || key == S.LabelStyle
-        || key == S.ViewPoint || key == S.ViewVertical || key == S.ViewAngle || key == S.ViewCenter
-        || key == S.ViewProjection || key == S.ViewRange || key == S.SphericalRegion
-        || key == S.ScalingFunctions || key == S.IntervalMarkers || key == S.IntervalMarkersStyle;
+        || key == S.PlotRange || key == S.PlotRangePadding || key == S.Ticks || key == S.TicksStyle
+        || key == S.LabelStyle || key == S.ViewPoint || key == S.ViewVertical || key == S.ViewAngle
+        || key == S.ViewCenter || key == S.ViewProjection || key == S.ViewRange
+        || key == S.SphericalRegion || key == S.ScalingFunctions || key == S.IntervalMarkers
+        || key == S.IntervalMarkersStyle;
   }
 }

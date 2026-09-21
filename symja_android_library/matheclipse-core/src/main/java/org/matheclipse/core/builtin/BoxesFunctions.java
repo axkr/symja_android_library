@@ -12,14 +12,10 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
@@ -41,7 +37,8 @@ public class BoxesFunctions {
   }
 
   private static class MakeBoxes extends AbstractEvaluator {
-    // written as they are typed, as the outputs a WLJS notebook saves show them: the front end draws
+    // written as they are typed, as the outputs a WLJS notebook saves show them: the front end
+    // draws
     // the arrow itself
     private static StandardFormOperator RULE = new StandardFormOperator(Precedence.RULE, "->");
     private static StandardFormOperator RULE_DELAYED =
@@ -112,9 +109,7 @@ public class BoxesFunctions {
      * <code>Graphics /: MakeBoxes[g_Graphics, StandardForm] := ViewBox[…]</code> is how the WLJS
      * notebook hands a picture to the browser instead of printing its primitives. The rule has to
      * be looked for here rather than by the evaluator's own up-value probe, because
-     * <code>MakeBoxes</code> is HoldAllComplete and that probe is skipped for such a head; the
-     * Wolfram Language answers the same way, which is why the up-value is the documented way to do
-     * this at all.
+     * <code>MakeBoxes</code> is HoldAllComplete and that probe is skipped for such a head.
      */
     private static IExpr upValueBoxes(IExpr expr, IExpr form, EvalEngine engine) {
       // an object held as an atom (a Graph, a ByteArray, ...) carries its head like an expression
@@ -125,7 +120,7 @@ public class BoxesFunctions {
       ISymbol head = expr.topHead();
       IExpr boxes = head.evalUpRules(F.binaryAST2(S.MakeBoxes, expr, form), engine);
       if (boxes.isNIL() && expr instanceof IDataExpr) {
-        // a rule written for the Wolfram Language form of the object - Image[data, type, ...] -
+        // a rule written for the form of the object - Image[data, type, ...] -
         // is tried on that form: an image object has no parts for Image[_, type_, ___] to match
         IAST normal = ((IDataExpr<?>) expr).normal(true);
         if (normal.isPresent() && normal.head() == head) {
@@ -142,7 +137,7 @@ public class BoxesFunctions {
         return boxes;
       }
       if (expr.isAST(S.Texture, 2)) {
-        // a texture is shown as its image, as the Wolfram Language shows it
+        // a texture is shown as its image.
         return standardFormRecursive(expr.first(), precedence, form, engine);
       }
       if (expr.isAST(S.Short, 2) || expr.isAST(S.Short, 3)) {
@@ -163,7 +158,8 @@ public class BoxesFunctions {
       if (special.isPresent()) {
         return special;
       }
-      // MakeBoxes holds its argument, so <|a -> b|> may still be the unevaluated Association[a -> b]
+      // MakeBoxes holds its argument, so <|a -> b|> may still be the unevaluated Association[a ->
+      // b]
       if (expr.isAssociation()
           || (expr.isAST(S.Association) && ((IAST) expr).forAll(x -> x.isRuleAST()))) {
         IAST association = (IAST) expr;
@@ -199,7 +195,7 @@ public class BoxesFunctions {
                 argsList.append(",");
               }
             }
-            // {} is RowBox({"{","}"}), with no empty row in between, as in the Wolfram Language
+            // {} is RowBox({"{","}"}), with no empty row in between
             if (argsList.argSize() > 0) {
               list.append(F.RowBox(argsList));
             }
@@ -249,8 +245,8 @@ public class BoxesFunctions {
     }
 
     /**
-     * A string as a string box: in quotation marks, with the characters which would end or break
-     * it escaped - <code>ToBoxes["a\"b"]</code> is the box <code>"a\"b"</code>, marks included. The
+     * A string as a string box: in quotation marks, with the characters which would end or break it
+     * escaped - <code>ToBoxes["a\"b"]</code> is the box <code>"a\"b"</code>, marks included. The
      * marks are part of the box, which is how a notebook tells <code>{"123"}</code> from
      * <code>{123}</code>.
      */
@@ -282,8 +278,8 @@ public class BoxesFunctions {
     /**
      * The constants a notebook draws as a glyph rather than spells out - <code>\[Pi]</code> for
      * <code>Pi</code>, <code>\[Infinity]</code> for <code>Infinity</code> - or {@link F#NIL} for
-     * any other expression. <code>E</code> and <code>I</code> stay letters: that is how the outputs a
-     * WLJS notebook saves spell them.
+     * any other expression. <code>E</code> and <code>I</code> stay letters: that is how the outputs
+     * a WLJS notebook saves spell them.
      */
     private static IExpr specialSymbolBox(IExpr expr) {
       if (expr == S.Pi) {
@@ -307,10 +303,10 @@ public class BoxesFunctions {
     private static final String IMAGINARY_I = "I";
 
     /**
-     * A number as the Wolfram Language writes it in a box: a negative one with its sign in front, a
-     * rational as a fraction, an imaginary part followed by <code>I</code> and a machine real with
-     * all of its digits and the <code>`</code> which marks its precision -
-     * <code>0.8459659909775918`</code>, as the notebook's saved outputs show it.
+     * A number as it's written in a box: a negative one with its sign in front, a rational as a
+     * fraction, an imaginary part followed by <code>I</code> and a machine real with all of its
+     * digits and the <code>`</code> which marks its precision - <code>0.8459659909775918`</code>,
+     * as the notebook's saved outputs show it.
      */
     private static IExpr numberBox(INumber number, int precedence) {
       if (number.isComplex() || number.isComplexNumeric()) {
@@ -389,15 +385,16 @@ public class BoxesFunctions {
         }
         buf.append('.');
       } else {
-        buf.append(digits, 0, exponent + 1).append('.').append(digits, exponent + 1, digits.length());
+        buf.append(digits, 0, exponent + 1).append('.').append(digits, exponent + 1,
+            digits.length());
       }
       return buf.append('`').toString();
     }
 
     /**
-     * The boxes of the expressions a notebook shows as something other than their text: a colour
-     * as a swatch, a table as a grid and a power series as its terms followed by
-     * <code>O[x]^n</code>. The box heads are the Wolfram Language's own - the notebook turns a
+     * The boxes of the expressions a notebook shows as something other than their text: a colour as
+     * a swatch, a table as a grid and a power series as its terms followed by <code>O[x]^n</code>.
+     * The notebook turns a
      * <code>TemplateBox[&lt;|"color" -> c|&gt;, "RGBColorSwatchTemplate"]</code> or a
      * <code>GridBox</code> into its widget. {@link F#NIL} for any other expression.
      */
@@ -419,8 +416,8 @@ public class BoxesFunctions {
       }
       if (template != null) {
         if (ast.forAll(x -> x.isReal())) {
-          return F.binaryAST2(S.TemplateBox,
-              F.assoc(F.list(F.Rule(F.$str("color"), ast))), F.$str(template));
+          return F.binaryAST2(S.TemplateBox, F.assoc(F.list(F.Rule(F.$str("color"), ast))),
+              F.$str(template));
         }
         return F.NIL;
       }
@@ -461,8 +458,9 @@ public class BoxesFunctions {
       IExpr variable = series.expansionVariable();
       IExpr point = series.expansionPoint();
       IExpr order = F.Divide(F.ZZ(series.truncateOrder()), F.ZZ(series.puiseuxDenominator()));
-      IExpr bigO = F.Power(F.unaryAST1(S.O, point.isZero() ? variable : F.Subtract(variable, point)),
-          engine.evaluate(order));
+      IExpr bigO =
+          F.Power(F.unaryAST1(S.O, point.isZero() ? variable : F.Subtract(variable, point)),
+              engine.evaluate(order));
       IASTAppendable row = F.ListAlloc(3);
       if (!normal.isZero()) {
         row.append(standardFormRecursive(normal, Precedence.PLUS, form, engine));
@@ -528,14 +526,11 @@ public class BoxesFunctions {
     }
 
     /**
-     * Arithmetic as the Wolfram Language shows it rather than as it is stored.
-     *
-     * <p>
      * <code>Plus</code>, <code>Times</code> and <code>Power</code> are the three heads a printed
      * expression is mostly made of, and writing them the way every other head is written -
      * <code>Plus[Times[…], Power[…]]</code> - is what a notebook cell showed instead of
-     * <code>x&#178; + &#8730;2/3</code>. A power becomes a superscript, a square root a radical, and
-     * a factor of negative power moves under the line into a fraction.
+     * <code>x&#178; + &#8730;2/3</code>. A power becomes a superscript, a square root a radical,
+     * and a factor of negative power moves under the line into a fraction.
      */
     private static IExpr powerBox(IAST power, int precedence, IExpr form, EvalEngine engine) {
       IExpr base = power.base();
@@ -570,8 +565,8 @@ public class BoxesFunctions {
       IExpr positive = withoutMinus(times);
       if (positive.isPresent()) {
         // -x and -(b/2) carry their sign in front, as a sum writes it between its terms
-        IExpr negated = F.RowBox(F.list(F.$str("-"),
-            standardFormRecursive(positive, Precedence.TIMES, form, engine)));
+        IExpr negated = F.RowBox(
+            F.list(F.$str("-"), standardFormRecursive(positive, Precedence.TIMES, form, engine)));
         return parenthesize(negated, Precedence.TIMES, precedence);
       }
       IASTAppendable numerator = F.ListAlloc(times.size());
@@ -595,8 +590,9 @@ public class BoxesFunctions {
       if (coefficientDenominator.isPresent() && denominator.isEmpty()) {
         IExpr above = numerator.isEmpty() //
             ? F.$str("1")
-            : riffle(boxes(numerator, numerator.argSize() == 1 ? 0 : Precedence.TIMES, form,
-                engine), " ");
+            : riffle(
+                boxes(numerator, numerator.argSize() == 1 ? 0 : Precedence.TIMES, form, engine),
+                " ");
         return F.FractionBox(above, coefficientDenominator);
       }
       if (denominator.isEmpty()) {
@@ -638,7 +634,8 @@ public class BoxesFunctions {
         } else if (i > 1) {
           row.append(F.$str("+"));
         }
-        row.append(standardFormRecursive(negative ? positive : term, Precedence.PLUS, form, engine));
+        row.append(
+            standardFormRecursive(negative ? positive : term, Precedence.PLUS, form, engine));
       }
       return parenthesize(F.RowBox(row), Precedence.PLUS, precedence);
     }

@@ -3380,8 +3380,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("CoefficientRules(a*x*y^2+b*x^2*z,{x,y,z},\"DegreeReverseLexicographic\")", //
         "{{1,2,0}->a,{2,0,1}->b}");
     // an order of its own, given as a matrix of weight vectors
-    check("CoefficientRules(a*x*y^2+b*x^2*z,{x,y,z},{{1,1,1},{0,0,-1},{0,-1,0}}) === "
-        + "CoefficientRules(a*x*y^2+b*x^2*z,{x,y,z},\"DegreeReverseLexicographic\")", //
+    check(
+        "CoefficientRules(a*x*y^2+b*x^2*z,{x,y,z},{{1,1,1},{0,0,-1},{0,-1,0}}) === "
+            + "CoefficientRules(a*x*y^2+b*x^2*z,{x,y,z},\"DegreeReverseLexicographic\")", //
         "True");
     // All counts every symbol as a variable, so every coefficient is 1
     check("CoefficientRules(a*x^2+b*x*y+c*y^2, All)", //
@@ -4349,7 +4350,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testConvexHullMeshOptions() {
     // every edge
-    check("ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->{{1,All}->Red}), InputForm)", //
+    check(
+        "ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->{{1,All}->Red}), InputForm)", //
         "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},"
             + "Properties->{{1,1}->MeshCellStyle->RGBColor(1,0,0),{1,2}->MeshCellStyle->RGBColor(1,0,0),{1,3}->MeshCellStyle->RGBColor(1,0,0),{1,4}->MeshCellStyle->RGBColor(1,0,0),{1,Default}->MeshCellStyle->Automatic},"
             + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
@@ -4359,17 +4361,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "Properties->{{0,1}->MeshCellStyle->RGBColor(1,0,0),{0,2}->MeshCellStyle->RGBColor(1,0,0),{0,3}->MeshCellStyle->RGBColor(1,0,0),{0,4}->MeshCellStyle->RGBColor(1,0,0),{0,Default}->MeshCellStyle->Automatic,{1,1}->MeshCellStyle->RGBColor(1,0,0),{1,2}->MeshCellStyle->RGBColor(1,0,0),{1,3}->MeshCellStyle->RGBColor(1,0,0),{1,4}->MeshCellStyle->RGBColor(1,0,0),{1,Default}->MeshCellStyle->Automatic,{2,1}->MeshCellStyle->RGBColor(1,0,0),{2,Default}->MeshCellStyle->Automatic},"
             + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
     // the face
-    check("ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->{{2,All}->Red}), InputForm)", //
+    check(
+        "ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->{{2,All}->Red}), InputForm)", //
         "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},"
             + "Properties->{{2,1}->MeshCellStyle->RGBColor(1,0,0),{2,Default}->MeshCellStyle->Automatic},"
             + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
     // one edge
-    check("ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->{{1,2}->Red}), InputForm)", //
+    check(
+        "ToString(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}, MeshCellStyle->{{1,2}->Red}), InputForm)", //
         "BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}},{Line({{1,2},{2,3},{3,4},{4,1}})},"
             + "Properties->{{1,2}->MeshCellStyle->RGBColor(1,0,0),{1,Default}->MeshCellStyle->Automatic},"
             + "Method->{\"SeparateBoundaries\"->False},WorkingPrecision->Infinity)");
     // the faces of a tetrahedron, with the style evaluated
-    check("ToString(ConvexHullMesh({{0,0,0},{1,0,0},{0,1,0},{0,0,1}}, MeshCellStyle->{{2,All}->Opacity(0.5,LightBlue)}), InputForm)", //
+    check(
+        "ToString(ConvexHullMesh({{0,0,0},{1,0,0},{0,1,0},{0,0,1}}, MeshCellStyle->{{2,All}->Opacity(0.5,LightBlue)}), InputForm)", //
         "BoundaryMeshRegion({{0,0,0},{1,0,0},{0,1,0},{0,0,1}},{Polygon({{1,2,4},{1,3,2},"
             + "{1,4,3},{2,3,4}})},"
             + "Properties->{{2,1}->MeshCellStyle->Opacity(0.5`,RGBColor(0.87`,0.94`,1.0`)),{2,2}->MeshCellStyle->Opacity(0.5`,RGBColor(0.87`,0.94`,1.0`)),{2,3}->MeshCellStyle->Opacity(0.5`,RGBColor(0.87`,0.94`,1.0`)),{2,4}->MeshCellStyle->Opacity(0.5`,RGBColor(0.87`,0.94`,1.0`)),{2,Default}->MeshCellStyle->Automatic},"
@@ -7446,17 +7451,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testEntityValue() {
     check("EntityValue(Entity(\"Element\", \"Tungsten\"), \"AtomicMass\")", //
         "Quantity(183.84,\"AtomicMassUnit\")");
-    check("EntityValue(Entity(\"Element\", \"Iron\"),"
-        + " EntityProperty(\"Element\", \"AtomicNumber\"))", //
+    check(
+        "EntityValue(Entity(\"Element\", \"Iron\"),"
+            + " EntityProperty(\"Element\", \"AtomicNumber\"))", //
         "26");
     // a list on either side is answered elementwise, and on both sides one row per entity
-    check("EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Carbon\")},"
-        + " \"AtomicNumber\")", //
+    check(
+        "EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Carbon\")},"
+            + " \"AtomicNumber\")", //
         "{26,6}");
     check("EntityValue(Entity(\"Element\", \"Iron\"), {\"AtomicNumber\", \"Period\"})", //
         "{26,4}");
-    check("EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Carbon\")},"
-        + " {\"AtomicNumber\", \"Period\"})", //
+    check(
+        "EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Carbon\")},"
+            + " {\"AtomicNumber\", \"Period\"})", //
         "{{26,4},{6,2}}");
     // a registered type means its data function is loaded, so what it cannot answer is genuinely
     // unknown - and which half was unknown is said. Measured in Mathematica 2026-09-18, which
@@ -7465,8 +7473,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Missing(UnknownProperty,{Element,Nonsense})");
     check("EntityValue(Entity(\"Element\", \"Kryptonite\"), \"AtomicMass\")", //
         "Missing(UnknownEntity,{Element,Kryptonite})");
-    check("EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Kryptonite\")},"
-        + " \"AtomicNumber\")", //
+    check(
+        "EntityValue({Entity(\"Element\", \"Iron\"), Entity(\"Element\", \"Kryptonite\")},"
+            + " \"AtomicNumber\")", //
         "{26,Missing(UnknownEntity,{Element,Kryptonite})}");
     // a type nothing registered is the one case left standing: from here a type which does not
     // exist and a module which was not loaded look the same
@@ -10841,7 +10850,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // it is the inverse of CoefficientRules
     check("FromCoefficientRules(CoefficientRules(x^3-2*x*y+7, {x,y}), {x,y})", //
         "7+x^3-2*x*y");
-    check("FromCoefficientRules(CoefficientRules((x+y+z)^4, {x,y,z}), {x,y,z}) == Expand((x+y+z)^4)", //
+    check(
+        "FromCoefficientRules(CoefficientRules((x+y+z)^4, {x,y,z}), {x,y,z}) == Expand((x+y+z)^4)", //
         "True");
     // and inverts it on a list of polynomials as well
     check("FromCoefficientRules(CoefficientRules({x^2-1, y^3}, {x,y}), {x,y})", //
@@ -11603,15 +11613,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("GroebnerBasis({2*x+2, 3*x+3}, x, CoefficientDomain -> Integers)", //
         "{1+x}");
     // a coefficient domain of polynomials in a parameter is what the default already does
-    check("GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y}, CoefficientDomain -> "
-        + "Polynomials(a)) == GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y})", //
+    check(
+        "GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y}, CoefficientDomain -> "
+            + "Polynomials(a)) == GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y})", //
         "True");
     // a symbolic coefficient: the basis is computed over the rational function field in `a`
     check("GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y})", //
         "{18+4*a*x+27*y+45*y^2+2*a*y^2-3*a*y^3,-4-12*y-19*y^2-15*y^3+a*y^4}");
     // and specializing the parameter reproduces the numeric basis
-    check("Sort(GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y}) /. a->7) === "
-        + "Sort(GroebnerBasis({7*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y}))", //
+    check(
+        "Sort(GroebnerBasis({a*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y}) /. a->7) === "
+            + "Sort(GroebnerBasis({7*x^2+5*x-1, 2*x+3*x*y+y^2}, {x, y}))", //
         "True");
     // several parameters, no denominators in the result
     check("GroebnerBasis({a*x+b*y, x^2-y}, {x, y})", //
@@ -12943,7 +12955,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("InverseCDF(BorelTannerDistribution(2, 1), 1/2)", //
         "InverseCDF(BorelTannerDistribution(2,1),1/2)");
     // the CDFs InverseCDF is the inverse of
-    check("{CDF(ZipfDistribution(2), 3), CDF(ZipfDistribution(10,1), 4), CDF(ZipfDistribution(10,1), 12)}", //
+    check(
+        "{CDF(ZipfDistribution(2), 3), CDF(ZipfDistribution(10,1), 4), CDF(ZipfDistribution(10,1), 12)}", //
         "{251/(216*Zeta(3)),1808100/1968329,1}");
     check("{CDF(BorelTannerDistribution(1/2,1), 2), CDF(BorelTannerDistribution(0.5,1), 2), " //
         + "CDF(BorelTannerDistribution(0.5,1), 0)}", //
@@ -15444,8 +15457,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "<mrow><mrow><mo>-</mo><msup><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>2</mn></msup></mrow><mo>+</mo><msup><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mn>2</mn></msup></mrow></math>");
     check("MathMLForm(1+1)", "<?xml version=\"1.0\"?>\n"
         + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
-        + "<math mode=\"display\">\n"
-        + "<mn>2</mn></math>");
+        + "<math mode=\"display\">\n" + "<mn>2</mn></math>");
     check("MathMLForm(DSolve(y'(x)==y(x),y(x),x))", "<?xml version=\"1.0\"?>\n"
         + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
         + "<math mode=\"display\">\n"
@@ -15455,13 +15467,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Protected}");
     check("MathMLForm(Unevaluated(1+1))", "<?xml version=\"1.0\"?>\n"
         + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
-        + "<math mode=\"display\">\n"
-        + "<mrow><mn>1</mn><mo>+</mo><mn>1</mn></mrow></math>");
+        + "<math mode=\"display\">\n" + "<mrow><mn>1</mn><mo>+</mo><mn>1</mn></mrow></math>");
     // HoldForm still keeps its argument unevaluated
     check("MathMLForm(HoldForm(1+1))", "<?xml version=\"1.0\"?>\n"
         + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
-        + "<math mode=\"display\">\n"
-        + "<mrow><mn>1</mn><mo>+</mo><mn>1</mn></mrow></math>");
+        + "<math mode=\"display\">\n" + "<mrow><mn>1</mn><mo>+</mo><mn>1</mn></mrow></math>");
   }
 
 
@@ -16225,10 +16235,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x^2*y^2,x^3}");
     check("MonomialList(x^2*y^2+x^3,{x,y})", //
         "{x^3,x^2*y^2}");
-    check("MonomialList(-x^3*y*z-3*x^9*y^7*z+6*x^10*y^8*z-5*x*y^10*z-x^2*y^5*z^4,{x,y,z},"
-        + "\"NegativeDegreeReverseLexicographic\") === Reverse(MonomialList("
-        + "-x^3*y*z-3*x^9*y^7*z+6*x^10*y^8*z-5*x*y^10*z-x^2*y^5*z^4,{x,y,z},"
-        + "\"DegreeReverseLexicographic\"))", //
+    check(
+        "MonomialList(-x^3*y*z-3*x^9*y^7*z+6*x^10*y^8*z-5*x*y^10*z-x^2*y^5*z^4,{x,y,z},"
+            + "\"NegativeDegreeReverseLexicographic\") === Reverse(MonomialList("
+            + "-x^3*y*z-3*x^9*y^7*z+6*x^10*y^8*z-5*x*y^10*z-x^2*y^5*z^4,{x,y,z},"
+            + "\"DegreeReverseLexicographic\"))", //
         "True");
     // an order which is not one is not an option either
     check("MonomialList(x^2+y, {x,y}, \"NoSuchOrder\")", //
@@ -22457,8 +22468,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "BinormalDistribution({0,0},{1,2},0.5), MultivariateTDistribution({{1,0},{0,1}},3), " //
         + "MultivariatePoissonDistribution(1,{2,3})} // Map(Apply(SameQ))", //
         "{True,True,True,True,True,True,True,True}");
-    check("Table(SeedRandom(7, Method->\"MersenneTwister\"); RandomVariate(NormalDistribution(), 6), {2}) " //
-        + "// Apply(SameQ)", //
+    check(
+        "Table(SeedRandom(7, Method->\"MersenneTwister\"); RandomVariate(NormalDistribution(), 6), {2}) " //
+            + "// Apply(SameQ)", //
         "True");
     check("Length(RandomVariate(FrechetDistribution(2,1), 5))", //
         "5");
@@ -25177,10 +25189,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   /**
-   * <code>Short</code> is a display wrapper, as in the Wolfram Language: it stays in the expression,
-   * and <code>FullForm</code> and <code>InputForm</code> write it with the whole expression inside
-   * (Mathematica: <code>FullForm[Short[Range[100], 2]]</code> is
-   * <code>Short[List[1, 2, ..., 100], 2]</code>).
+   * <code>Short</code> is a display wrapper: it stays in the expression, and <code>FullForm</code>
+   * and <code>InputForm</code> write it with the whole expression inside (Mathematica:
+   * <code>FullForm[Short[Range[100], 2]]</code> is <code>Short[List[1, 2, ..., 100], 2]</code>).
    */
   @Test
   public void testShort() {

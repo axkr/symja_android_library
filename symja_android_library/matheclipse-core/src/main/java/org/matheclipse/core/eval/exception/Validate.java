@@ -922,8 +922,8 @@ public final class Validate {
           termsEqualZeroList.append(arg);
           return;
         }
-        termsEqualZeroList.append(F.binaryAST2(operator, inequality.get(j - 1),
-            inequality.get(j + 1)));
+        termsEqualZeroList
+            .append(F.binaryAST2(operator, inequality.get(j - 1), inequality.get(j + 1)));
       }
       return;
     }
@@ -962,10 +962,8 @@ public final class Validate {
    *
    * <p>
    * <code>NSolve({x+y-3, x-y-1}, {x,y})</code> asks for the solutions of
-   * <code>x+y-3 == 0 &amp;&amp; x-y-1 == 0</code>, the same way
-   * <a href="https://reference.wolfram.com/language/ref/NSolve.html">Wolfram Language</a> reads a
-   * bare expression of a polynomial system. A string, a list or a rule has no reading as an
-   * equation.
+   * <code>x+y-3 == 0 &amp;&amp; x-y-1 == 0</code>, the same way it reads a bare expression of a
+   * polynomial system. A string, a list or a rule has no reading as an equation.
    *
    * @param expr a term of the equation list
    * @return <code>true</code> if <code>expr</code> can be read as <code>expr == 0</code>
@@ -986,8 +984,8 @@ public final class Validate {
     if (eq.isAST2()) {
       IAST equal = (IAST) eq;
       IExpr head = equal.head();
-      if (head == S.Equal || head == S.Unequal || head == S.Greater
-          || head == S.GreaterEqual || head == S.Less || head == S.LessEqual) {
+      if (head == S.Equal || head == S.Unequal || head == S.Greater || head == S.GreaterEqual
+          || head == S.Less || head == S.LessEqual) {
         final IExpr[] arr = new IExpr[] {F.expandAll(equal.arg1(), true, true),
             F.expandAll(equal.arg2(), true, true)};
         termsEqualZeroList.append(F.ast(arr, head));

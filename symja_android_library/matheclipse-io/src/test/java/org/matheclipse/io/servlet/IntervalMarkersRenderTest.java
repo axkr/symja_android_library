@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  * {@code Around}, {@code Interval} and {@code IntervalData} coordinates as the notebook shows them:
  * drawn with their interval markers. {@link IntervalMarkersRenderMathematicaSyntaxTest} sends the
- * same pictures through in Wolfram Language syntax, as {@code MMAServletServer} reads them.
+ * same pictures as {@code MMAServletServer} reads them.
  */
 public class IntervalMarkersRenderTest {
 

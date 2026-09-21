@@ -8,8 +8,8 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
-import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -120,7 +120,7 @@ public class MatrixPlot extends ListPlot {
           try {
             IExpr entry = rowAst.get(c + 1);
             if (entry.isNumber() && !entry.isReal()) {
-              // a complex entry is drawn by its real part, as the Wolfram Language draws it
+              // a complex entry is drawn by its real part
               entry = ((org.matheclipse.core.interfaces.INumber) entry).re();
             }
             double val = entry.evalfNaN();
@@ -173,8 +173,8 @@ public class MatrixPlot extends ListPlot {
         } else if (colorMap != null) {
           cells[r][c] = colorMap.color(val);
         } else {
-          cells[r][c] = GraphicsOptions
-              .getMatrixColor(scaling ? rankFraction(sortedValues, val) : val);
+          cells[r][c] =
+              GraphicsOptions.getMatrixColor(scaling ? rankFraction(sortedValues, val) : val);
         }
       }
     }
@@ -288,7 +288,7 @@ public class MatrixPlot extends ListPlot {
   private static double rankFraction(double[] sortedValues, double value) {
     // Each sign is ranked on its own and zero is the middle of the scale, which is white: the
     // negative entries fill 0..0.5 (the most negative at 0), the positive ones 0.5..1 (the largest
-    // at 1), as the Wolfram Language colours a matrix
+    // at 1)
     if (value == 0.0 || sortedValues.length == 0) {
       return 0.5;
     }

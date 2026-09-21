@@ -5,20 +5,14 @@ import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.IdentityHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import org.apache.commons.text.StringEscapeUtils;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.steps.StepLevel;
-import org.matheclipse.core.eval.steps.DialogStepsListener;
-import org.matheclipse.core.eval.steps.StepDialog;
-import org.matheclipse.core.eval.steps.StepsListener;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
@@ -29,12 +23,16 @@ import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.tasks.EventLoop;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
+import org.matheclipse.core.eval.steps.DialogStepsListener;
+import org.matheclipse.core.eval.steps.StepDialog;
+import org.matheclipse.core.eval.steps.StepLevel;
+import org.matheclipse.core.eval.steps.StepsListener;
+import org.matheclipse.core.eval.tasks.EventLoop;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.B1;
 import org.matheclipse.core.expression.B2;
@@ -289,9 +287,9 @@ public final class Programming {
     }
 
     /**
-     * <code>Block({\[FormalK] = 3}, \[FormalK])</code>: a formal symbol can never hold a value,
-     * so it is replaced by a fresh symbol in the local variable list and in the body. The
-     * initializers are evaluated outside the block and keep the formal symbol.
+     * <code>Block({\[FormalK] = 3}, \[FormalK])</code>: a formal symbol can never hold a value, so
+     * it is replaced by a fresh symbol in the local variable list and in the body. The initializers
+     * are evaluated outside the block and keep the formal symbol.
      *
      * @return {@link F#NIL} if no local variable is a formal symbol
      */
@@ -842,7 +840,8 @@ public final class Programming {
         return engine.checkBuiltinArgsSize(ast, this);
       }
       // Do[..., {Subscript[i, 1], 4}]: a subscript as the iterator variable, or a formal symbol
-      IExpr localized = org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
+      IExpr localized =
+          org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
       if (localized != null) {
         return localized;
       }
@@ -1652,9 +1651,8 @@ public final class Programming {
    * not once per event.
    *
    * <p>
-   * What is remembered belongs to this kernel session, which is where the Wolfram Language keeps
-   * it by default. A second argument naming a persistence location is accepted and treated the
-   * same way - nothing here outlives the session.
+   * What is remembered belongs to this kernel session. A second argument naming a persistence
+   * location is accepted and treated the same way - nothing here outlives the session.
    */
   private static final class Once extends AbstractCoreFunctionEvaluator {
 
@@ -2492,7 +2490,7 @@ public final class Programming {
         if (seconds1.isReal()) {
           double seconds = seconds1.evalf();
           if (seconds >= 0.0) {
-            // a pause is where a Wolfram Language program yields, so it is where the handlers of a
+            // a pause is where a script language program yields, so it is where the handlers of a
             // socket and the tasks that are due get to run
             EventLoop.INSTANCE.pauseAndPump(seconds, engine);
             return S.Null;
@@ -3229,8 +3227,8 @@ public final class Programming {
    * <blockquote>
    *
    * <p>
-   * show the steps nested at most <code>maxDepth</code> deep, counting the steps a reader is
-   * shown. The default is <code>5</code>; <code>Infinity</code> shows every level.
+   * show the steps nested at most <code>maxDepth</code> deep, counting the steps a reader is shown.
+   * The default is <code>5</code>; <code>Infinity</code> shows every level.
    *
    * </blockquote>
    *

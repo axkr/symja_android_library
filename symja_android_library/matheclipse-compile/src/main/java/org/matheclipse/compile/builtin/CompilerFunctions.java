@@ -9,8 +9,8 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.compile.CompilationOptions;
 import org.matheclipse.compile.CompileAnalyzer;
 import org.matheclipse.compile.CompileFactory;
-import org.matheclipse.compile.CompiledFunctionArg;
 import org.matheclipse.compile.CompileRewrites;
+import org.matheclipse.compile.CompiledFunctionArg;
 import org.matheclipse.compile.CompoundAssignment;
 import org.matheclipse.compile.ConstantHoisting;
 import org.matheclipse.compile.InlineDefinitions;
@@ -202,14 +202,12 @@ public class CompilerFunctions {
             IExpr threaded = threadOverExcessRank(compiledFunction, ast, engine);
             if (threaded == ast) {
               // the threaded arguments have different lengths: after CompiledFunction::tdlen the
-              // uncompiled expression is evaluated instead, as in the Wolfram Language
+              // uncompiled expression is evaluated instead
               if (!runtimeOptions.isEvaluateSymbolically()) {
                 return F.NIL;
               }
               IExpr uncompiled = engine.evaluate(
                   F.subst(compiledFunction.getExpr(), Functors.equalRules(variables, ast)));
-              // the Wolfram Language names the argument the compiled code could not take after
-              // the messages of the uncompiled evaluation
               printArgumentTypeMessage(compiledFunction, ast, runtimeOptions, engine);
               return uncompiled;
             }
@@ -271,7 +269,7 @@ public class CompilerFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.HOLDALL);
-      // the Wolfram Language's own wording; General::tdlen reads "Objects of unequal length ..."
+      // General::tdlen reads "Objects of unequal length ..."
       newSymbol.putMessage(IPatternMatcher.SET, "tdlen",
           F.stringx("Arguments of unequal length in `1` cannot be combined."));
     }
@@ -311,17 +309,11 @@ public class CompilerFunctions {
   }
 
   /**
-   * Call the Wolfram Language's own serialized form of a compiled function -
+   * Call the serialized form of a compiled function -
    * <code>CompiledFunction[version, argumentTypes, ..., Function[...], ...]</code>, as a notebook
    * saved with <code>SaveDefinitions -> True</code> or the <code>InputForm</code> of a compiled
    * function writes it - through the uncompiled <code>Function</code> it embeds next to the
    * bytecode.
-   *
-   * <p>
-   * Symja cannot run that bytecode, but the Wolfram Language keeps the pure function alongside it
-   * as its own fallback, so applying it gives the same answer. An argument at a position the second
-   * element declares as a bare <code>_Real</code> or <code>_Complex</code> is wrapped in
-   * <code>N</code>, since the bytecode reads it as a machine number.
    *
    * <p>
    * Mathematica additionally rejects an object whose version tuple its compiler does not accept
@@ -348,8 +340,8 @@ public class CompilerFunctions {
     for (int i = 1; i <= ast.argSize(); i++) {
       IExpr argument = ast.get(i);
       IExpr type = i <= types.argSize() ? types.get(i) : F.NIL;
-      boolean machineNumber = type.isBlank() && (((Blank) type).getHeadTest() == S.Real
-          || ((Blank) type).getHeadTest() == S.Complex);
+      boolean machineNumber = type.isBlank()
+          && (((Blank) type).getHeadTest() == S.Real || ((Blank) type).getHeadTest() == S.Complex);
       call.append(machineNumber ? F.N(argument) : argument);
     }
     return call;
@@ -378,10 +370,10 @@ public class CompilerFunctions {
    *
    * <p>
    * The other arguments are broadcast. Each element of the returned list is again a call of the
-   * compiled function, so an argument which exceeds its declared rank by more than one dimension
-   * is threaded over the remaining dimensions when those calls are evaluated, one dimension at a
-   * time - which is what <code>Listable</code> means for an array-typed argument. An argument of
-   * exactly its declared rank, or of a smaller one, is passed through unchanged.
+   * compiled function, so an argument which exceeds its declared rank by more than one dimension is
+   * threaded over the remaining dimensions when those calls are evaluated, one dimension at a time
+   * - which is what <code>Listable</code> means for an array-typed argument. An argument of exactly
+   * its declared rank, or of a smaller one, is passed through unchanged.
    *
    * @return the list of threaded calls; {@link F#NIL} if no argument exceeds its rank; or
    *         <code>ast</code> itself, after the <code>CompiledFunction::tdlen</code> message, if the
@@ -498,8 +490,8 @@ public class CompilerFunctions {
     String kind;
     switch (((IBuiltInSymbol) type).ordinal()) {
       case ID.Real:
-        readable = rank == 1 ? argument.toDoubleVector() != null
-            : argument.toDoubleMatrix() != null;
+        readable =
+            rank == 1 ? argument.toDoubleVector() != null : argument.toDoubleMatrix() != null;
         kind = "real numbers";
         break;
       case ID.Integer:
@@ -507,8 +499,8 @@ public class CompilerFunctions {
         kind = "integers";
         break;
       case ID.Complex:
-        readable = rank == 1 ? argument.toComplexVector() != null
-            : argument.toComplexMatrix() != null;
+        readable =
+            rank == 1 ? argument.toComplexVector() != null : argument.toComplexMatrix() != null;
         kind = "complex numbers";
         break;
       default:
@@ -628,12 +620,11 @@ public class CompilerFunctions {
    * iterator spec of a <code>Do</code>/<code>Table</code>/<code>Sum</code>/<code>Product</code>.
    *
    * <p>
-   * A parameter with no declared type defaults to <code>_Real</code>, matching the Wolfram
-   * Language - unless it is only ever used this way, in which case real <code>Compile</code>'s
-   * usage-based type inference settles on <code>_Integer</code> instead. Without this, a bare
-   * argument driving one of these reaches the compiled body as e.g. <code>100.</code> instead of
-   * <code>100</code>, and <code>NestList</code> (which insists on an exact integer count) throws
-   * rather than compute anything.
+   * A parameter with no declared type defaults to <code>_Real</code>, unless it is only ever used
+   * this way, in which case real <code>Compile</code>'s usage-based type inference settles on
+   * <code>_Integer</code> instead. Without this, a bare argument driving one of these reaches the
+   * compiled body as e.g. <code>100.</code> instead of <code>100</code>, and <code>NestList</code>
+   * (which insists on an exact integer count) throws rather than compute anything.
    */
   private static boolean isUsedAsIntegerCount(ISymbol symbol, IExpr body) {
     if (!body.isAST()) {

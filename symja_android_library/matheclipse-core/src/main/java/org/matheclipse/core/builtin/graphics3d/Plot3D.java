@@ -1,8 +1,8 @@
 package org.matheclipse.core.builtin.graphics3d;
 
 import java.util.List;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -88,26 +88,27 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       // value can say
       final List<IAST> probes = PlotShapeProbe.rangeProbes(new IExpr[] {xVar, yVar},
           new double[] {xMinD, yMinD}, new double[] {xMaxD, yMaxD});
-      final PlotWrapper.Curves curves = PlotWrapper.curves(ast.arg1()).splitEach(
-          f -> PlotShapeProbe.split(f, probes, PlotShapeProbe.SCALAR, false, engine));
+      final PlotWrapper.Curves curves = PlotWrapper.curves(ast.arg1())
+          .splitEach(f -> PlotShapeProbe.split(f, probes, PlotShapeProbe.SCALAR, false, engine));
       final IExpr functions = curves.functions;
 
       int[] samples = Plot3DTools.plotPoints(options[X_PLOT_POINTS], 40);
       final int nx = samples[0];
       final int ny = samples[1];
-      PlotColorFunction.Builder colorBuilder = Plot3DTools
-          .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.Plot3D, engine);
+      PlotColorFunction.Builder colorBuilder =
+          Plot3DTools.plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.Plot3D, engine);
 
       final IASTAppendable surfaces = F.ListAlloc(functions.argSize());
-      final IExpr targetUnits = GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic);
+      final IExpr targetUnits =
+          GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic);
       final IAST samplePoint = F.List(F.Rule(xVar, F.num((xMinD + xMaxD) / 2.0)),
           F.Rule(yVar, F.num((yMinD + yMaxD) / 2.0)));
       for (int f = 1; f <= functions.argSize(); f++) {
         // a quantity valued function is plotted by its magnitude
         IExpr plotted = QuantityFunctions.quantityPlotFunction(((IAST) functions).get(f),
             samplePoint, targetUnits, engine);
-        IExpr surface = buildSurface(plotted, f - 1, xVar, yVar, xMinD, xMaxD, yMinD,
-            yMaxD, nx, ny, options, colorBuilder, engine);
+        IExpr surface = buildSurface(plotted, f - 1, xVar, yVar, xMinD, xMaxD, yMinD, yMaxD, nx, ny,
+            options, colorBuilder, engine);
         if (surface.isPresent()) {
           surfaces.append(curves.decorate(f, surface));
         }
@@ -174,8 +175,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         options[Plot3DTools.X_EXCLUSIONS], engine);
 
     // Exclusions -> Automatic: where neighbouring samples jump the function is discontinuous - a
-    // branch cut, a step - and the surface is left open there rather than stitched across it,
-    // which is where the Wolfram Language draws its exclusion curves
+    // branch cut, a step - and the surface is left open there rather than stitched across it.
     boolean[][] cut = null;
     if (options[Plot3DTools.X_EXCLUSIONS] == S.Automatic) {
       cut = detectJumps(z, nx, ny);
@@ -194,8 +194,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     // samples are part of the picture, which is what the visible band is then measured over.
     RegionFunctionFilter region =
         RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
-    boolean[][] inside =
-        applyRegionFunction(z, xMinD, xStep, yMinD, yStep, nx, ny, region, engine);
+    boolean[][] inside = applyRegionFunction(z, xMinD, xStep, yMinD, yStep, nx, ny, region, engine);
 
     int finiteCount = 0;
     for (int i = 0; i < nx; i++) {
@@ -271,8 +270,8 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         regionEdge(unmasked, region, zMin, zMax));
     // the rim of the surface belongs to the complex, as Mathematica writes it, and Automatic
     // draws it; the mesh and exclusion lines below stay outside with their own colours
-    IExpr complex = Plot3DTools.withBoundary(builder, grid,
-        options[Plot3DTools.X_BOUNDARY_STYLE], true);
+    IExpr complex =
+        Plot3DTools.withBoundary(builder, grid, options[Plot3DTools.X_BOUNDARY_STYLE], true);
 
     if (complex.isNIL()) {
       return complex;

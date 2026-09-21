@@ -6,32 +6,31 @@ import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.tasks.EventLoop;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.LinkObjectExpr;
-import org.matheclipse.core.io.link.LinkEntry;
-import org.matheclipse.core.io.link.LinkRegistry;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.io.link.LinkEntry;
+import org.matheclipse.core.io.link.LinkRegistry;
 
 /**
  * Two kernels talking to each other.
  *
  * <p>
- * One kernel launches another - <code>LinkLaunch["… -wstp"]</code> - and then writes expressions
- * to it and reads what comes back. That is how a notebook keeps its evaluations out of the kernel
+ * One kernel launches another - <code>LinkLaunch["… -wstp"]</code> - and then writes expressions to
+ * it and reads what comes back. That is how a notebook keeps its evaluations out of the kernel
  * which serves its pages: the one that answers the browser stays responsive while the other one is
  * busy with <code>Integrate</code>.
  *
  * <p>
- * Reading blocks the way the Wolfram Language blocks: the evaluation waits, and while it waits the
- * {@link EventLoop} runs whatever else has come due, so the kernel goes on serving its sockets.
+ * Reading blocks: the evaluation waits, and while it waits the {@link EventLoop} runs whatever else
+ * has come due, so the kernel goes on serving its sockets.
  */
 public class LinkFunctions {
 
@@ -219,11 +218,11 @@ public class LinkFunctions {
   }
 
   /**
-   * A link which has been created but not yet connected to. It answers as a
-   * <code>LinkObject</code> would once the other end arrives; until then it is not ready and has
-   * nothing to read.
+   * A link which has been created but not yet connected to. It answers as a <code>LinkObject</code>
+   * would once the other end arrives; until then it is not ready and has nothing to read.
    */
-  private static final class PendingLinkExpr extends org.matheclipse.core.expression.DataExpr<String> {
+  private static final class PendingLinkExpr
+      extends org.matheclipse.core.expression.DataExpr<String> {
     private static final long serialVersionUID = 1L;
     private final transient Thread thread;
     private final transient LinkEntry[] accepted;
@@ -338,10 +337,10 @@ public class LinkFunctions {
    *
    * <p>
    * The expression is evaluated first, as everything is: <code>LinkWrite[link, f[x]]</code> sends
-   * what <code>f[x]</code> came to here. A caller which wants the other kernel to do the
-   * evaluating writes <code>LinkWrite[link, Unevaluated[…]]</code>, which is how a notebook sends
-   * a cell; an up-value of the second argument's head - <code>HeldRemotePacket /: LinkWrite[…]</code>
-   * - is consulted before this ever runs.
+   * what <code>f[x]</code> came to here. A caller which wants the other kernel to do the evaluating
+   * writes <code>LinkWrite[link, Unevaluated[…]]</code>, which is how a notebook sends a cell; an
+   * up-value of the second argument's head - <code>HeldRemotePacket /: LinkWrite[…]</code> - is
+   * consulted before this ever runs.
    */
   private static class LinkWrite extends AbstractEvaluator {
     @Override

@@ -14,6 +14,9 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
+import org.matheclipse.core.eval.steps.StepDescription;
+import org.matheclipse.core.eval.steps.StepsTree;
+import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -21,13 +24,10 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.DataExpr;
-import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.eval.steps.StepDescription;
-import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
@@ -51,6 +51,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.external.fastutil.ints.IntList;
 import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
@@ -60,7 +61,6 @@ import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.client.operator.PrefixOperator;
 import com.github.freva.asciitable.AsciiTable;
-import org.matheclipse.external.fastutil.ints.IntList;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
 public class OutputFormFactory {
@@ -129,9 +129,10 @@ public class OutputFormFactory {
 
   /**
    * Show <code>Graphics</code> and <code>Graphics3D</code> as the placeholder
-   * <code>-Graphics-</code>. Off by default, because {@link org.matheclipse.core.interfaces.IExpr#toString()}
-   * is a developer's view of an expression and has to keep the contents of a picture; the printers
-   * which show a result to a user - a console, <code>ToString</code> - turn it on.
+   * <code>-Graphics-</code>. Off by default, because
+   * {@link org.matheclipse.core.interfaces.IExpr#toString()} is a developer's view of an expression
+   * and has to keep the contents of a picture; the printers which show a result to a user - a
+   * console, <code>ToString</code> - turn it on.
    */
   private boolean fGraphicsPlaceholder = false;
 
@@ -332,8 +333,8 @@ public class OutputFormFactory {
    * <p>
    * <code>Short</code> only changes how an expression is shown. Where this output has no page width
    * - {@link #setIgnoreNewLine(boolean) ignoreNewLine}, which is how <code>ToString</code> prints -
-   * the expression is written whole, as <code>ToString[Short[expr], OutputForm]</code> is in the
-   * Wolfram Language. Where it has one, the elements that do not fit into <code>n</code> lines of
+   * the expression is written whole, as <code>ToString[Short[expr], OutputForm]</code>. Where it
+   * has one, the elements that do not fit into <code>n</code> lines of
    * {@link Config#MAX_OUTPUT_LINE} characters are replaced by <code>Skeleton[k]</code>.
    *
    * @return <code>false</code> if <code>n</code> is not a positive number; the wrapper is then
@@ -421,8 +422,8 @@ public class OutputFormFactory {
       if (left <= 0) {
         return expr;
       }
-      return F.stringx(text.substring(0, front) + "<<" + left + ">>"
-          + text.substring(text.length() - back));
+      return F.stringx(
+          text.substring(0, front) + "<<" + left + ">>" + text.substring(text.length() - back));
     }
     IAST ast = (IAST) expr;
     int n = ast.argSize();
@@ -471,8 +472,8 @@ public class OutputFormFactory {
    * <code>expr</code> written on one line by this printer, or <code>null</code> if it cannot be.
    */
   private String writtenText(IExpr expr) {
-    OutputFormFactory measure = new OutputFormFactory(fRelaxedSyntax, fPlusReversed,
-        fComplexReImI, fExponentFigures, fSignificantFigures);
+    OutputFormFactory measure = new OutputFormFactory(fRelaxedSyntax, fPlusReversed, fComplexReImI,
+        fExponentFigures, fSignificantFigures);
     measure.setIgnoreNewLine(true);
     measure.setGraphicsPlaceholder(fGraphicsPlaceholder);
     StringBuilder text = new StringBuilder();
@@ -565,8 +566,8 @@ public class OutputFormFactory {
   }
 
   /**
-   * Convert the argument of a number form wrapper with the wrapper's
-   * {@link NumberFormatter} installed, so that every real number in the subtree is reformatted.
+   * Convert the argument of a number form wrapper with the wrapper's {@link NumberFormatter}
+   * installed, so that every real number in the subtree is reformatted.
    */
   private void convertNumberForm(final Appendable buf, final IAST list, final int precedence)
       throws IOException {
@@ -1798,7 +1799,7 @@ public class OutputFormFactory {
               break;
             case ID.Skeleton:
               if (!fInputForm && list.isAST1()) {
-                // a run of elements Short left out, written the Wolfram Language way
+                // a run of elements Short left out
                 append(buf, "<<");
                 convert(buf, list.arg1(), Integer.MIN_VALUE, false);
                 append(buf, ">>");

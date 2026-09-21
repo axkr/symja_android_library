@@ -14,11 +14,11 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.HtmlTemplates;
-import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.graphics.SVGGraphics;
-import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.image.algo.Pixels;
 
 /**
  * Represent a BufferedImage by the PNG byte array.
@@ -147,9 +147,9 @@ final public class ImageExpr extends DataExpr<byte[]> {
   }
 
   /**
-   * <code>Image[data, "type", options]</code>, the image as the Wolfram Language writes one: the
-   * pixel matrix it was built from, or the pixels read back from the picture, its image type, and
-   * the options that differ from the defaults. Evaluating it builds the same image again.
+   * <code>Image[data, "type", options]</code>: the pixel matrix it was built from, or the pixels
+   * read back from the picture, its image type, and the options that differ from the defaults.
+   * Evaluating it builds the same image again.
    *
    * <p>
    * This is what a front end receives: the WLJS notebook reads an <code>Image</code>'s pixels and
@@ -255,8 +255,8 @@ final public class ImageExpr extends DataExpr<byte[]> {
     if (samples == null) {
       return null;
     }
-    BufferedImage bufferedImage = Pixels.toBufferedImage(samples, space,
-        Pixels.scaleOf(Pixels.imageTypeOf(imageData)));
+    BufferedImage bufferedImage =
+        Pixels.toBufferedImage(samples, space, Pixels.scaleOf(Pixels.imageTypeOf(imageData)));
     if (bufferedImage == null) {
       return null;
     }

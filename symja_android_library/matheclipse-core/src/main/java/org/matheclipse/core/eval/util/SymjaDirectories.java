@@ -113,7 +113,7 @@ public final class SymjaDirectories {
 
   /**
    * The start-up files of the autoloaded applications: both {@code <app>/init.m} and
-   * {@code <app>/Kernel/init.m} are recognised, as in the Wolfram Language.
+   * {@code <app>/Kernel/init.m} are recognised.
    */
   public static List<Path> autoloadInitFiles() {
     List<Path> files = new ArrayList<Path>();

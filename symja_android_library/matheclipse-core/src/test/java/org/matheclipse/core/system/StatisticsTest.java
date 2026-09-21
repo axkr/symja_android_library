@@ -496,7 +496,8 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     // also left this path disagreeing with the exact path through Quantile on the same data.
     check("Median({-1.0*10^308, 1.0*10^308})", //
         "0.0");
-    check("Median({-1.0*10^308, 1.0*10^308}) == Quantile({-1.0*10^308, 1.0*10^308}, 1/2, {{1/2,0},{0,1}})", //
+    check(
+        "Median({-1.0*10^308, 1.0*10^308}) == Quantile({-1.0*10^308, 1.0*10^308}, 1/2, {{1/2,0},{0,1}})", //
         "True");
 
     // MeanDeviation, machine-precision path: the deviations are both 1.0*10^308, so their sum
@@ -685,8 +686,8 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
   /**
    * Inputs this family used to fail on in silence, or by leaking a message from the arithmetic
-   * rather than reporting the argument. The results are all unevaluated either way; what changed
-   * is which message reaches the user.
+   * rather than reporting the argument. The results are all unevaluated either way; what changed is
+   * which message reaches the user.
    */
   @Test
   public void testQuantileFamilyMessages() {
@@ -715,7 +716,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     check("Quartiles({1,2,3}, {{0,0},{1,0},{1,1}})", //
         "Quartiles({1,2,3},\n{{0,0},\n {1,0},\n {1,1}})");
 
-    // an empty list is silent across the whole family, as it is in Wolfram Language. Quantile
+    // an empty list is silent across the whole family. Quantile
     // used to be the one head that printed a message here
     check("Median({})", //
         "Median({})");

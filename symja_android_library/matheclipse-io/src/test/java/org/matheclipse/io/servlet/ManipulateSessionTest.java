@@ -23,15 +23,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * One frame of a <code>Manipulate</code> widget as the servlet servers render it: the body, then the
- * read-out rows beside the controls.
+ * One frame of a <code>Manipulate</code> widget as the servlet servers render it: the body, then
+ * the read-out rows beside the controls.
  *
  * <p>
- * The example is Woxi #792's: a slider laid out in a <code>Row</code> with its own read-out, and a
- * styled read-out of a variable the body writes, declared with <code>ControlType -&gt; None</code>.
- * The read-outs have to show the values, not the names of the variables. This class reads it in
- * Symja's syntax, as <code>ServletServer</code> does; {@link ManipulateSessionMathematicaSyntaxTest}
- * reads it as <code>MMAServletServer</code> does.
+ * The example is a slider laid out in a <code>Row</code> with its own read-out, and a styled
+ * read-out of a variable the body writes, declared with <code>ControlType -&gt; None</code>. The
+ * read-outs have to show the values, not the names of the variables. This class reads it in Symja's
+ * syntax, as <code>ServletServer</code> does; {@link ManipulateSessionMathematicaSyntaxTest} reads
+ * it as <code>MMAServletServer</code> does.
  */
 public class ManipulateSessionTest {
 
@@ -128,10 +128,9 @@ public class ManipulateSessionTest {
   }
 
   /**
-   * Woxi #840: a Demonstration-style widget that plots the planets from
-   * <code>AstronomicalData</code> at a date two sliders build with <code>DatePlus</code>. The
-   * planets have to move when either slider does, and the label has to name the date they are drawn
-   * for.
+   * A Demonstration-style widget that plots the planets from <code>AstronomicalData</code> at a
+   * date two sliders build with <code>DatePlus</code>. The planets have to move when either slider
+   * does, and the label has to name the date they are drawn for.
    */
   static void checkSolarSystem(EvalEngine engine, String input) throws Exception {
     ManipulateSpec spec = widget(engine, input);
@@ -164,18 +163,18 @@ public class ManipulateSessionTest {
   @Test
   public void testSolarSystemWidgetInSymjaSyntax() throws Exception {
     checkSolarSystem(engine(), "Manipulate(Graphics3D({Sphere(#1, Scaled(0.015)) & /@"
-          + " (orbitPos(dateAt(baseYear, dayFrac), #1) & /@ Range(8)),"
-          + " {Yellow, Sphere({0, 0, 0}, Scaled(0.02))}},"
-          + " PlotRange -> Exp(4*(zoom - 1)), ImageSize -> {360, 360},"
-          + " PlotLabel -> DateString(dateAt(baseYear, dayFrac), {\"MonthName\", \" \", \"Year\"}),"
-          + " SphericalRegion -> True),"
-          + " {{dayFrac, 0, \"day offset\"}, 0, 1, ControlType -> Slider},"
-          + " {{baseYear, 2020, \"year\"}, 2020, 2170, 1, ControlType -> Slider},"
-          + " {{zoom, 1, \"zoom\"}, 0, 1},"
-          + " SaveDefinitions -> True, SynchronousUpdating -> False,"
-          + " Initialization :> (dateAt(y_, d_) := DatePlus({y}, {d, \"Year\"});"
-          + " orbitPos(t_, k_) := AstronomicalData(AstronomicalData(k),"
-          + " {\"Position\", t})/(7*10^12);))");
+        + " (orbitPos(dateAt(baseYear, dayFrac), #1) & /@ Range(8)),"
+        + " {Yellow, Sphere({0, 0, 0}, Scaled(0.02))}},"
+        + " PlotRange -> Exp(4*(zoom - 1)), ImageSize -> {360, 360},"
+        + " PlotLabel -> DateString(dateAt(baseYear, dayFrac), {\"MonthName\", \" \", \"Year\"}),"
+        + " SphericalRegion -> True),"
+        + " {{dayFrac, 0, \"day offset\"}, 0, 1, ControlType -> Slider},"
+        + " {{baseYear, 2020, \"year\"}, 2020, 2170, 1, ControlType -> Slider},"
+        + " {{zoom, 1, \"zoom\"}, 0, 1},"
+        + " SaveDefinitions -> True, SynchronousUpdating -> False,"
+        + " Initialization :> (dateAt(y_, d_) := DatePlus({y}, {d, \"Year\"});"
+        + " orbitPos(t_, k_) := AstronomicalData(AstronomicalData(k),"
+        + " {\"Position\", t})/(7*10^12);))");
   }
 
   @Test

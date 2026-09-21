@@ -8,7 +8,8 @@ import org.matheclipse.parser.client.Characters;
 
 /**
  * A formal symbol like <code>\[FormalK]</code>: a <code>System`</code> symbol which is
- * {@link org.matheclipse.core.interfaces.ISymbol#PROTECTED} and can never hold a value, a rule or a changed attribute.
+ * {@link org.matheclipse.core.interfaces.ISymbol#PROTECTED} and can never hold a value, a rule or a
+ * changed attribute.
  *
  * <p>
  * The built-in rules use formal symbols ({@link S#k}, {@link S#x}, ...) as pattern names and as the
@@ -54,15 +55,15 @@ public final class FormalSymbol extends Symbol {
   private static final long serialVersionUID = -3180672713525718426L;
 
   /**
-   * The Wolfram Language name of the formal symbol, e.g. <code>\[FormalK]</code>, or
-   * <code>null</code> for an internal formal symbol which cannot be entered by the user.
+   * The scripts name of the formal symbol, e.g. <code>\[FormalK]</code>, or <code>null</code> for
+   * an internal formal symbol which cannot be entered by the user.
    */
   private final String fInputName;
 
   /**
    * @param symbolName the plain name, e.g. <code>"k"</code>
-   * @param inputName the Wolfram Language name, e.g. <code>"\\[FormalK]"</code>, or
-   *        <code>null</code> for an internal symbol
+   * @param inputName the script's name, e.g. <code>"\\[FormalK]"</code>, or <code>null</code> for
+   *        an internal symbol
    */
   FormalSymbol(String symbolName, String inputName) {
     super(symbolName, Context.SYSTEM);
@@ -80,17 +81,16 @@ public final class FormalSymbol extends Symbol {
   }
 
   /**
-   * The name of the symbol in the Wolfram Language, as a string of the named character, e.g.
-   * <code>"U+F80A"</code> for <code>\[FormalK]</code>. The plain name for an internal formal
-   * symbol.
+   * The name of the symbol , as a string of the named character, e.g. <code>"U+F80A"</code> for
+   * <code>\[FormalK]</code>. The plain name for an internal formal symbol.
    */
   public String wolframSymbolName() {
     if (fInputName == null) {
       return fSymbolName;
     }
     // strip \[ and ]
-    String namedCharacter = Characters.NamedCharactersMap
-        .get(fInputName.substring(2, fInputName.length() - 1));
+    String namedCharacter =
+        Characters.NamedCharactersMap.get(fInputName.substring(2, fInputName.length() - 1));
     return namedCharacter != null ? namedCharacter : fSymbolName;
   }
 
@@ -111,9 +111,9 @@ public final class FormalSymbol extends Symbol {
   }
 
   /**
-   * Does nothing: a formal symbol has no value to clear. Not throwing keeps a
-   * <code>finally</code> block which restores the previous value from hiding the exception which
-   * was thrown by {@link #assignValue(IExpr, boolean)}.
+   * Does nothing: a formal symbol has no value to clear. Not throwing keeps a <code>finally</code>
+   * block which restores the previous value from hiding the exception which was thrown by
+   * {@link #assignValue(IExpr, boolean)}.
    */
   @Override
   public void clearValue(IExpr resetValue) {

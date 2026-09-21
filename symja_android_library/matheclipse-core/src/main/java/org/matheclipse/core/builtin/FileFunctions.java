@@ -25,8 +25,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Base64;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -48,7 +48,6 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WMACompress;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
-import org.matheclipse.core.io.net.SocketEntry;
 import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.expression.data.InputStreamExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr;
@@ -59,8 +58,8 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -68,6 +67,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.io.OutputStreamMethods;
+import org.matheclipse.core.io.net.SocketEntry;
 import org.matheclipse.core.io.paclet.PackageResolver;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -106,7 +106,7 @@ public class FileFunctions {
         S.OpenAppend.setEvaluator(new OpenAppend());
         S.OpenRead.setEvaluator(new OpenRead());
         S.DefineOutputStreamMethod.setEvaluator(new DefineOutputStreamMethod());
-      S.OpenWrite.setEvaluator(new OpenWrite());
+        S.OpenWrite.setEvaluator(new OpenWrite());
         S.OutputStream.setEvaluator(new OutputStream());
         S.Put.setEvaluator(new Put());
         S.Read.setEvaluator(new Read());
@@ -171,8 +171,7 @@ public class FileFunctions {
 
       if (Config.isFileSystemEnabled(engine)) {
         for (int j = 2; j < ast.size(); j++) {
-          File packageFile =
-              FileSandbox.resolveRead(S.BeginPackage, ast.get(j).toString(), engine);
+          File packageFile = FileSandbox.resolveRead(S.BeginPackage, ast.get(j).toString(), engine);
           if (packageFile == null) {
             continue;
           }
@@ -352,7 +351,6 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr expr = ast.arg1();
 
-      // the Wolfram Language wire format, which a notebook front end can read
       String compressed = WMACompress.compress(expr);
       if (compressed != null) {
         return F.stringx(compressed);
@@ -873,7 +871,7 @@ public class FileFunctions {
             }
           }
           // Not found where it was named, so look through the directories of a Path option and
-          // then through $Path, as the Wolfram Language does. Only a relative name is searched: an
+          // then through $Path. Only a relative name is searched: an
           // absolute path that does not exist is a mistake, not an invitation to load some other
           // file of the same name.
           List<Path> pathOption = pathOption(S.Get, ast, engine);
@@ -922,8 +920,7 @@ public class FileFunctions {
           IAST names = value.isList() ? (IAST) value : F.list(value);
           for (int j = 1; j < names.size(); j++) {
             if (names.get(j).isString()) {
-              Path directory =
-                  FileSandbox.resolveReadPath(symbol, names.get(j).toString(), engine);
+              Path directory = FileSandbox.resolveReadPath(symbol, names.get(j).toString(), engine);
               if (directory != null) {
                 directories.add(directory);
               }
@@ -1004,7 +1001,7 @@ public class FileFunctions {
    */
   /**
    * <code>DefineOutputStreamMethod(name, {"ConstructorFunction" -> …, "WriteFunction" -> …, …})</code>
-   * - name a kind of output stream whose behaviour is written in the Wolfram Language.
+   * - name a kind of output stream whose behaviour is written in the script language.
    *
    * <p>
    * <code>OpenWrite(Method -> name)</code> then opens one. See
@@ -1121,8 +1118,8 @@ public class FileFunctions {
           if (name.isNIL()) {
             return ast.isAST0() ? OutputStreamExpr.newInstance() : F.NIL;
           }
-          File file = FileSandbox.resolveWrite(append ? S.OpenAppend : S.OpenWrite,
-              name.toString(), engine);
+          File file = FileSandbox.resolveWrite(append ? S.OpenAppend : S.OpenWrite, name.toString(),
+              engine);
           return file == null ? F.NIL : OutputStreamExpr.newInstance(file, append);
         } catch (IOException | RuntimeException ex) {
           Errors.printMessage(S.OpenWrite, ex);
@@ -1291,8 +1288,8 @@ public class FileFunctions {
      * A package which only declares <code>System`</code> symbols (WLJS's
      * <code>CoffeeLiqueur`Extensions`FrontendObject`</code> does) puts nothing into its own
      * context, so {@link #isLoadedInThisSession(String, EvalEngine)} counts it as unread. Reading
-     * it again by name then fails, because it was read from a file and no package path leads to
-     * it. When the name leads nowhere but the package has already begun in this engine, there is
+     * it again by name then fails, because it was read from a file and no package path leads to it.
+     * When the name leads nowhere but the package has already begun in this engine, there is
      * nothing left to read.
      */
     private static boolean wasReadFromAFile(String contextName, EvalEngine engine) {
@@ -1857,14 +1854,13 @@ public class FileFunctions {
       return F.NIL;
     }
     try {
-      java.util.regex.Matcher matcher = java.util.regex.Pattern
-          .compile(regex, java.util.regex.Pattern.MULTILINE).matcher(rest);
+      java.util.regex.Matcher matcher =
+          java.util.regex.Pattern.compile(regex, java.util.regex.Pattern.MULTILINE).matcher(rest);
       // a terminator which starts with ___ or __ matches somewhere only if it matches from the
       // first character on, so one anchored attempt answers it. find() would try again from every
       // position, each attempt running to the end: quadratic, and a WLJS notebook in the older
       // format - 4 MB without the %Notebook% header its reader looks for - never finished loading
-      boolean leadingAnything =
-          regex.startsWith("[\\s\\S]*") || regex.startsWith("[\\s\\S]+");
+      boolean leadingAnything = regex.startsWith("[\\s\\S]*") || regex.startsWith("[\\s\\S]+");
       if (leadingAnything ? matcher.lookingAt() : matcher.find()) {
         stream.pushBack(rest.substring(matcher.end()));
         return F.stringx(rest.substring(0, matcher.start()));
@@ -1874,11 +1870,9 @@ public class FileFunctions {
       return F.NIL;
     }
     if (!terminator.isString()) {
-      // a pattern which never matches is reported, and - as in the Wolfram Language - everything
-      // which is left is still the answer (Mathematica 2026-09-11: the message, then the text;
-      // FailureQ of it is False). The WLJS notebook reader then rejects its older file format at
-      // the header check that follows.
-      // Specified terminator not found.
+      // a pattern which never matches is reported, and - everything
+      // which is left is still the answer. The WLJS notebook reader then rejects its older file
+      // format at the header check that follows. Specified terminator not found.
       Errors.printMessage(S.ReadString, "notfound", F.List(), engine);
     }
     // a terminator which never comes: everything which is left is the answer
@@ -2105,7 +2099,7 @@ public class FileFunctions {
       }
       String compressedString = ast.arg1().toString();
 
-      // the Wolfram Language wire format: "1:" and a zlib-compressed token stream
+      // the wire format: "1:" and a zlib-compressed token stream
       IExpr wolframLanguage = WMACompress.uncompress(compressedString, engine);
       if (wolframLanguage != null) {
         return wolframLanguage;
@@ -2172,8 +2166,8 @@ public class FileFunctions {
   private static final class URLParse extends AbstractFunctionEvaluator {
 
     /** scheme, user, domain, port, path, query, fragment */
-    private static final java.util.regex.Pattern URL = java.util.regex.Pattern.compile(
-        "\\A(?:([A-Za-z][A-Za-z0-9+.-]*):)?(?://(?:([^@/?#]*)@)?([^:/?#]*)(?::([0-9]+))?)?"
+    private static final java.util.regex.Pattern URL = java.util.regex.Pattern
+        .compile("\\A(?:([A-Za-z][A-Za-z0-9+.-]*):)?(?://(?:([^@/?#]*)@)?([^:/?#]*)(?::([0-9]+))?)?"
             + "([^?#]*)(?:\\?([^#]*))?(?:#(.*))?\\z");
 
     private static final String[] PART_NAMES =
@@ -2352,8 +2346,8 @@ public class FileFunctions {
         if (i > 1) {
           result.append('/');
         }
-        result.append(segments.get(i).isString() ? segments.get(i).toString()
-            : segments.get(i).toString());
+        result.append(
+            segments.get(i).isString() ? segments.get(i).toString() : segments.get(i).toString());
       }
       return result.toString();
     }
@@ -2559,8 +2553,8 @@ public class FileFunctions {
    * <code>$StandardOutputStream</code>: the process's own output, as a stream.
    *
    * <p>
-   * A program which has something to say to whatever started it - the WLJS Notebook writes the
-   * port it came up on for the app around it to read - writes it here rather than to a file.
+   * A program which has something to say to whatever started it - the WLJS Notebook writes the port
+   * it came up on for the app around it to read - writes it here rather than to a file.
    */
   private static final class $StandardOutputStream extends AbstractSymbolEvaluator {
 
@@ -2577,8 +2571,8 @@ public class FileFunctions {
       SocketEntry socket = SocketFunctions.entryOf(ast.arg1());
       if (socket != null && ast.arg2().isString()) {
         // writing to a socket is not a file operation, so it is not behind the file switch
-        return SocketFunctions.write(socket,
-            ast.arg2().toString().getBytes(StandardCharsets.UTF_8), S.WriteString, engine);
+        return SocketFunctions.write(socket, ast.arg2().toString().getBytes(StandardCharsets.UTF_8),
+            S.WriteString, engine);
       }
       if (ast.arg1() instanceof OutputStreamExpr) {
         // a stream which is already open is written to as it stands - opening it was the step

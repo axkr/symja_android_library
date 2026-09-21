@@ -9,13 +9,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.ParserConfig;
 
 /**
- * {@link IntervalMarkersRenderTest}'s pictures in Wolfram Language syntax, as
- * {@code MMAServletServer} reads them.
+ * {@link IntervalMarkersRenderTest}'s pictures as {@code MMAServletServer} reads them.
  *
  * <p>
  * The built-in symbol table is keyed by name and built once per JVM, lower-cased for Symja's syntax
- * and not for this one, so this class runs in a JVM of its own - see the
- * "wolfram-language-syntax" surefire execution in the module's pom.
+ * and not for this one, so this class runs in a JVM of its own - see the "wolfram-language-syntax"
+ * surefire execution in the module's pom.
  */
 public class IntervalMarkersRenderMathematicaSyntaxTest {
 

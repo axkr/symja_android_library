@@ -776,7 +776,7 @@ public class QuarticSolver {
             result.append(Plus(t2, Times(power, discriminant)));
             result.append(Plus(t2, Times(power, discriminant.negate())));
           } else {
-            // (-b + Sqrt[d])/(2 a) over one line, as the Wolfram Language answers - with a factor
+            // (-b + Sqrt[d])/(2 a) over one line with a factor
             // both terms share moved in front: 1/3 (1 - I Sqrt[11]), not 1/6 (2 - 2 I Sqrt[11])
             IExpr minusB = b.negate();
             // the root evaluated, so that Sqrt(-44) shows its factor 2*I*Sqrt(11)
@@ -809,8 +809,8 @@ public class QuarticSolver {
   }
 
   /**
-   * The greatest common divisor of the integer factors in front of two terms - 2 for
-   * <code>2</code> and <code>2*I*Sqrt(11)</code> - or 1 when either has none.
+   * The greatest common divisor of the integer factors in front of two terms - 2 for <code>2</code>
+   * and <code>2*I*Sqrt(11)</code> - or 1 when either has none.
    */
   private static long commonIntegerFactor(IExpr term1, IExpr term2) {
     long factor1 = integerFactor(term1);

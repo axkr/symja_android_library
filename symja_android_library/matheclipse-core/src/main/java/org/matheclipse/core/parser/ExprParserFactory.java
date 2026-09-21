@@ -29,7 +29,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.ast.IParserFactory;
-import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.OperatorTable;
 import org.matheclipse.parser.client.operator.Precedence;
@@ -255,16 +254,15 @@ public class ExprParserFactory implements IParserFactory {
      * <p>
      * <code>:</code> collects its arguments flat, so <code>name : pattern : default</code> arrives
      * here as a three-argument <code>Pattern</code>. It is an optional argument that also carries a
-     * name, which the Wolfram Language reads as
-     * <code>Optional[Pattern[name, pattern], default]</code> - the spelling every argument of
-     * <code>CreateUType</code> is written in.
+     * name, which reads as <code>Optional[Pattern[name, pattern], default]</code> - the spelling
+     * every argument of <code>CreateUType</code> is written in.
      */
     @Override
     public IAST endFunction(final IParserFactory factory, final IAST function,
         final Scanner scanner) {
       if (function.isAST(S.Pattern, 4)) {
-        return F.binaryAST2(S.Optional,
-            F.binaryAST2(S.Pattern, function.arg1(), function.arg2()), function.arg3());
+        return F.binaryAST2(S.Optional, F.binaryAST2(S.Pattern, function.arg1(), function.arg2()),
+            function.arg3());
       }
       return function;
     }

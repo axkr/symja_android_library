@@ -1,12 +1,10 @@
 package org.matheclipse.core.builtin;
 
-import java.util.ArrayDeque;
 import java.math.BigInteger;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
@@ -14,10 +12,10 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ExitException;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
+import org.matheclipse.core.eval.exception.ExitException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -25,8 +23,6 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
-import org.matheclipse.core.eval.util.Lambda;
-import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.eval.util.positions.FlattenPositions;
 import org.matheclipse.core.eval.util.positions.MapPositions;
@@ -46,14 +42,13 @@ import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.visit.IndexedLevel;
-import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.external.fastutil.ints.IntList;
 
@@ -277,11 +272,10 @@ public class StructureFunctions {
    * <code>ByteCount(expr)</code> - how much memory the expression takes.
    *
    * <p>
-   * What "how much" means is the implementation's own business - the Wolfram Language documents
-   * this as the bytes <i>it</i> uses - so this is Symja's storage that is counted: a reference per
-   * slot of every node, the object header each one carries, and the digits, characters or bits its
-   * atoms hold. Subexpressions are counted wherever they appear rather than once, which is what
-   * the Wolfram Language says of its own answer too.
+   * What "how much" means is the implementation's own business - so this is Symja's storage that is
+   * counted: a reference per slot of every node, the object header each one carries, and the
+   * digits, characters or bits its atoms hold. Subexpressions are counted wherever they appear
+   * rather than once.
    *
    * <p>
    * The walk is iterative. A structural walk is not counted by <code>$RecursionLimit</code>, so a
@@ -1859,8 +1853,8 @@ public class StructureFunctions {
       // applying a new head is exactly what Operate does, which leaves a series no longer a
       // series. Carry on with the plain expression it is equivalent to, which is what the answer
       // has to be anyway; without this the NIL reaches head.head() below.
-      IAST operand = (arg2 instanceof ASTSeriesData) ? ((ASTSeriesData) arg2).toPlainAST()
-          : (IAST) arg2;
+      IAST operand =
+          (arg2 instanceof ASTSeriesData) ? ((ASTSeriesData) arg2).toPlainAST() : (IAST) arg2;
       IASTAppendable result = operand.copyAppendable();
       if (result.isNIL()) {
         return F.NIL;

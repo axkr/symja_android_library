@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Splits Wolfram Language source into tokens that tile it exactly.
+ * Splits script sources into tokens that tile it exactly.
  *
  * <p>
  * This is what <code>CodeParser`</code> is for: reading source as source. Nothing here evaluates or
@@ -14,10 +14,9 @@ import java.util.List;
  * precisely that, and cannot get it from an evaluator.
  *
  * <p>
- * The token kinds are coarser than the Wolfram Language's own: everything that is not a comment, a
- * string, a number, a symbol, a bracket or whitespace is one run of operator characters. What is
- * exact is the extent of each token and the bracket nesting, which is what tells a top-level
- * newline from one inside an expression.
+ * Everything that is not a comment, a string, a number, a symbol, a bracket or whitespace is one
+ * run of operator characters. What is exact is the extent of each token and the bracket nesting,
+ * which is what tells a top-level newline from one inside an expression.
  */
 public final class CodeTokenizer {
 
@@ -46,7 +45,7 @@ public final class CodeTokenizer {
       return text;
     }
 
-    /** One-based index of the first character, the way the Wolfram Language counts them. */
+    /** One-based index of the first character. */
     public int start() {
       return start;
     }
@@ -77,8 +76,8 @@ public final class CodeTokenizer {
     }
   }
 
-  private static final java.util.Set<String> OPEN_KINDS = java.util.Set.of("OpenSquare",
-      "OpenCurly", "OpenParen", "LessBar", "ColonColonOpenSquare");
+  private static final java.util.Set<String> OPEN_KINDS =
+      java.util.Set.of("OpenSquare", "OpenCurly", "OpenParen", "LessBar", "ColonColonOpenSquare");
 
   private static final java.util.Set<String> CLOSE_KINDS =
       java.util.Set.of("CloseSquare", "CloseCurly", "CloseParen", "BarGreater");
@@ -94,8 +93,8 @@ public final class CodeTokenizer {
    * Would a line break after this token leave the expression unfinished?
    *
    * <p>
-   * An operator waiting for its right-hand side does; a name, a number, a closing bracket or one
-   * of the operators which finish an expression does not.
+   * An operator waiting for its right-hand side does; a name, a number, a closing bracket or one of
+   * the operators which finish an expression does not.
    */
   private static boolean continues(Token lastSignificant) {
     if (lastSignificant == null) {
@@ -151,14 +150,14 @@ public final class CodeTokenizer {
         while (position < length && isSpace(source.charAt(position))) {
           position++;
         }
-        tokens.add(new Token("Whitespace", source.substring(begin, position), begin + 1, position,
-            depth));
+        tokens.add(
+            new Token("Whitespace", source.substring(begin, position), begin + 1, position, depth));
         continue;
       }
       if (ch == '(' && position + 1 < length && source.charAt(position + 1) == '*') {
         position = skipComment(source, position);
-        tokens.add(new Token("Comment", source.substring(begin, position), begin + 1, position,
-            depth));
+        tokens.add(
+            new Token("Comment", source.substring(begin, position), begin + 1, position, depth));
         continue;
       }
       if (ch == '"') {
@@ -176,8 +175,8 @@ public final class CodeTokenizer {
       }
       if (isSymbolStart(ch)) {
         position = skipSymbol(source, position);
-        tokens
-            .add(new Token("Symbol", source.substring(begin, position), begin + 1, position, depth));
+        tokens.add(
+            new Token("Symbol", source.substring(begin, position), begin + 1, position, depth));
         continue;
       }
 
@@ -212,8 +211,8 @@ public final class CodeTokenizer {
               && source.charAt(position + 1) == '*')) {
         position++;
       }
-      tokens
-          .add(new Token("Operator", source.substring(begin, position), begin + 1, position, depth));
+      tokens.add(
+          new Token("Operator", source.substring(begin, position), begin + 1, position, depth));
     }
     return tokens;
   }
@@ -267,12 +266,14 @@ public final class CodeTokenizer {
     int level = 0;
     final int length = source.length();
     while (position < length) {
-      if (position + 1 < length && source.charAt(position) == '(' && source.charAt(position + 1) == '*') {
+      if (position + 1 < length && source.charAt(position) == '('
+          && source.charAt(position + 1) == '*') {
         level++;
         position += 2;
         continue;
       }
-      if (position + 1 < length && source.charAt(position) == '*' && source.charAt(position + 1) == ')') {
+      if (position + 1 < length && source.charAt(position) == '*'
+          && source.charAt(position + 1) == ')') {
         level--;
         position += 2;
         if (level == 0) {

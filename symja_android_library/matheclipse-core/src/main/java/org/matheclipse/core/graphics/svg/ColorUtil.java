@@ -240,8 +240,7 @@ public final class ColorUtil {
 
   /**
    * {@code LABColor[l, a, b]} and {@code LABColor[l, a, b, alpha]}, in CIE L*a*b* with the D65
-   * white point. The lightness runs 0..1 here, as the Wolfram Language writes it, rather than the
-   * 0..100 of the underlying space.
+   * white point. The lightness runs 0..1 here, rather than the 0..100 of the underlying space.
    */
   private static Color parseLAB(IAST ast) {
     if (ast.argSize() < 3) {
@@ -259,7 +258,7 @@ public final class ColorUtil {
         alpha);
   }
 
-  /** The D65 white point, which is the one the Wolfram Language's colour spaces are relative to. */
+  /** The D65 white point, which is the one the script's colour spaces are relative to. */
   private static final double D65_X = 0.95047;
   private static final double D65_Y = 1.0;
   private static final double D65_Z = 1.08883;
@@ -374,9 +373,9 @@ public final class ColorUtil {
    *
    * <p>
    * {@code Background -> Directive({Opacity(0.5), Orange})} is the documented way to let an
-   * {@code Overlay} layer show the one beneath it, so the opacity has to survive into the colour.
-   * A plain {@code Opacity(o)} is a factor rather than a colour, which is why {@link #parse}
-   * cannot read it on its own; here it multiplies whichever colour the directive also carries.
+   * {@code Overlay} layer show the one beneath it, so the opacity has to survive into the colour. A
+   * plain {@code Opacity(o)} is a factor rather than a colour, which is why {@link #parse} cannot
+   * read it on its own; here it multiplies whichever colour the directive also carries.
    *
    * @return the colour, or {@code null} when the expression does not denote one
    */

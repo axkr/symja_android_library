@@ -21,10 +21,10 @@ import org.openscience.cdk.interfaces.IIsotope;
  * not only the ones that occur in nature.
  *
  * <p>
- * A single nuclide is named by an entity, <code>Entity("Isotope", "Carbon12")</code>, so that it can
- * be handed to <code>EntityValue</code> like any other thing this system knows about. The element
- * forms answer for the whole element, and the two are told apart by the shape of the argument
- * rather than by the spelling of the property:
+ * A single nuclide is named by an entity, <code>Entity("Isotope", "Carbon12")</code>, so that it
+ * can be handed to <code>EntityValue</code> like any other thing this system knows about. The
+ * element forms answer for the whole element, and the two are told apart by the shape of the
+ * argument rather than by the spelling of the property:
  *
  * <table>
  * <caption>what each form answers</caption>
@@ -47,8 +47,7 @@ import org.openscience.cdk.interfaces.IIsotope;
  * CDK tabulates percent, and the element forms hand that on unchanged -
  * <code>IsotopeData("C", "Abundances")</code> is <code>{12-&gt;98.93, 13-&gt;1.07}</code>, which is
  * what <code>ElementData("Carbon", "IsotopeAbundances")</code> reads. An entity's
- * <code>"IsotopeAbundance"</code> is a fraction of one, <code>0.9893</code>, which is what the
- * Wolfram Language answers for the same question.
+ * <code>"IsotopeAbundance"</code> is a fraction of one, <code>0.9893</code>.
  *
  * <p>
  * A nuclide that could exist but is not in the table - <code>"Carbon99"</code> - is no answer at
@@ -97,14 +96,13 @@ public class IsotopeDataFunctions {
    * thorium-232 counts as stable while bismuth-209 and every uranium isotope do not, samarium-149
    * is in and samarium-147 and 148 are out, and osmium-184 and 187 are in.
    */
-  private static final int[][] STABLE_ISOTOPES = {
-      {}, {1, 2}, {3, 4}, {6, 7}, {9}, {10, 11}, {12, 13}, {14, 15}, {16, 17, 18}, {19},
-      {20, 21, 22}, {23}, {24, 25, 26}, {27}, {28, 29, 30}, {31}, {32, 33, 34, 36}, {35, 37},
-      {36, 38, 40}, {39, 41}, {40, 42, 43, 44, 46}, {45}, {46, 47, 48, 49, 50}, {51},
-      {50, 52, 53, 54}, {55}, {54, 56, 57, 58}, {59}, {58, 60, 61, 62, 64}, {63, 65},
-      {64, 66, 67, 68, 70}, {69, 71}, {70, 72, 73, 74}, {75}, {74, 76, 77, 78, 80}, {79, 81},
-      {78, 80, 82, 83, 84, 86}, {85}, {84, 86, 87, 88}, {89}, {90, 91, 92, 94}, {93},
-      {92, 94, 95, 96, 97, 98}, {}, {100, 101, 102, 104, 96, 98, 99}, {103},
+  private static final int[][] STABLE_ISOTOPES = {{}, {1, 2}, {3, 4}, {6, 7}, {9}, {10, 11},
+      {12, 13}, {14, 15}, {16, 17, 18}, {19}, {20, 21, 22}, {23}, {24, 25, 26}, {27}, {28, 29, 30},
+      {31}, {32, 33, 34, 36}, {35, 37}, {36, 38, 40}, {39, 41}, {40, 42, 43, 44, 46}, {45},
+      {46, 47, 48, 49, 50}, {51}, {50, 52, 53, 54}, {55}, {54, 56, 57, 58}, {59},
+      {58, 60, 61, 62, 64}, {63, 65}, {64, 66, 67, 68, 70}, {69, 71}, {70, 72, 73, 74}, {75},
+      {74, 76, 77, 78, 80}, {79, 81}, {78, 80, 82, 83, 84, 86}, {85}, {84, 86, 87, 88}, {89},
+      {90, 91, 92, 94}, {93}, {92, 94, 95, 96, 97, 98}, {}, {100, 101, 102, 104, 96, 98, 99}, {103},
       {102, 104, 105, 106, 108, 110}, {107, 109}, {106, 108, 110, 111, 112, 114}, {113},
       {112, 114, 115, 116, 117, 118, 119, 120, 122, 124}, {121, 123}, {120, 122, 124, 125, 126},
       {127}, {124, 126, 128, 129, 130, 131, 132, 134, 136}, {133},
@@ -114,15 +112,15 @@ public class IsotopeDataFunctions {
       {162, 164, 166, 167, 168, 170}, {169}, {168, 170, 171, 172, 173, 174, 176}, {175},
       {176, 177, 178, 179, 180}, {181}, {180, 182, 183, 184, 186}, {185},
       {184, 187, 188, 189, 190, 192}, {191, 193}, {192, 194, 195, 196, 198}, {197},
-      {196, 198, 199, 200, 201, 202, 204}, {203, 205}, {204, 206, 207, 208}, {}, {}, {}, {}, {},
-      {}, {}, {232}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-      {}, {}, {}, {}, {}, {}, {}, {}, {}
-  };
+      {196, 198, 199, 200, 201, 202, 204}, {203, 205}, {204, 206, 207, 208}, {}, {}, {}, {}, {}, {},
+      {}, {232}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
+      {}, {}, {}, {}, {}, {}, {}};
 
   private static volatile IsotopeFactory factory;
 
   /** Each element's nuclides, sorted by mass number, with the unusable ones dropped. */
-  private static final Map<Integer, IIsotope[]> byElement = new ConcurrentHashMap<Integer, IIsotope[]>();
+  private static final Map<Integer, IIsotope[]> byElement =
+      new ConcurrentHashMap<Integer, IIsotope[]>();
 
   /** Every nuclide as an entity, built once: there are more than three thousand of them. */
   private static volatile IAST allEntities;
@@ -167,16 +165,17 @@ public class IsotopeDataFunctions {
       }
       IIsotope[] isotopes;
       try {
-        isotopes = f.getIsotopes(org.openscience.cdk.config.Elements.ofNumber(z.intValue()).symbol());
+        isotopes =
+            f.getIsotopes(org.openscience.cdk.config.Elements.ofNumber(z.intValue()).symbol());
       } catch (Exception e) {
         return new IIsotope[0];
       }
       if (isotopes == null) {
         return new IIsotope[0];
       }
-      IIsotope[] usable = Arrays.stream(isotopes)
-          .filter(i -> i.getMassNumber() != null && i.getExactMass() != null)
-          .toArray(IIsotope[]::new);
+      IIsotope[] usable =
+          Arrays.stream(isotopes).filter(i -> i.getMassNumber() != null && i.getExactMass() != null)
+              .toArray(IIsotope[]::new);
       Arrays.sort(usable, (a, b) -> Integer.compare(a.getMassNumber(), b.getMassNumber()));
       return usable;
     });
@@ -225,8 +224,8 @@ public class IsotopeDataFunctions {
   /** One string-valued element column, also recorded as a way of naming that element. */
   private static String readElement(EvalEngine engine, int atomicNumber, String column,
       Map<String, Integer> numbers) {
-    IExpr value = engine
-        .evaluate(F.binaryAST2(S.ElementData, F.ZZ(atomicNumber), F.stringx(column)));
+    IExpr value =
+        engine.evaluate(F.binaryAST2(S.ElementData, F.ZZ(atomicNumber), F.stringx(column)));
     if (!value.isString()) {
       return null;
     }
@@ -238,8 +237,7 @@ public class IsotopeDataFunctions {
   private static String elementName(EvalEngine engine, int atomicNumber) {
     String[] names = elementNames(engine);
     String name = atomicNumber >= 1 && atomicNumber <= 118 ? names[atomicNumber] : null;
-    return name != null ? name
-        : org.openscience.cdk.config.Elements.ofNumber(atomicNumber).name();
+    return name != null ? name : org.openscience.cdk.config.Elements.ofNumber(atomicNumber).name();
   }
 
   /** The atomic number an expression names, as a number, a name or an atomic symbol. */
@@ -335,14 +333,14 @@ public class IsotopeDataFunctions {
    *
    * <p>
    * Per nucleon, not in total, because that is what the reference implementation reports and it is
-   * the quantity the curve of binding energy is drawn from - carbon-12 answers 7.68 MeV rather
-   * than its 92.16 MeV total, and iron-56 the 8.79 MeV at the peak.
+   * the quantity the curve of binding energy is drawn from - carbon-12 answers 7.68 MeV rather than
+   * its 92.16 MeV total, and iron-56 the 8.79 MeV at the peak.
    *
    * <p>
    * The mass of hydrogen-1 is read out of the same table as <code>M(A,Z)</code> rather than written
    * down here, so that both sides of the subtraction always come from one measurement campaign. The
-   * electron binding energies this glosses over - the <code>Z</code> free hydrogen atoms against the
-   * neutral isotope - are of order electronvolts, which does not show at this scale.
+   * electron binding energies this glosses over - the <code>Z</code> free hydrogen atoms against
+   * the neutral isotope - are of order electronvolts, which does not show at this scale.
    */
   private static IExpr bindingEnergy(IIsotope isotope) {
     IIsotope hydrogen1 = isotopeOf(1, 1);
@@ -361,15 +359,14 @@ public class IsotopeDataFunctions {
    * The natural abundance, as a percentage.
    *
    * <p>
-   * A nuclide that does not occur in nature answers zero percent rather than missing data, which
-   * is what the reference implementation gives for carbon-14.
+   * A nuclide that does not occur in nature answers zero percent rather than missing data, which is
+   * what the reference implementation gives for carbon-14.
    */
   private static IExpr abundanceOf(IIsotope isotope) {
     Double abundance = isotope.getNaturalAbundance();
-    double percent = abundance == null || abundance.doubleValue() <= 0.0 ? 0.0
-        : abundance.doubleValue();
-    return F.binaryAST2(S.Quantity, percent == 0.0 ? F.C0 : F.num(percent),
-        F.stringx("Percent"));
+    double percent =
+        abundance == null || abundance.doubleValue() <= 0.0 ? 0.0 : abundance.doubleValue();
+    return F.binaryAST2(S.Quantity, percent == 0.0 ? F.C0 : F.num(percent), F.stringx("Percent"));
   }
 
   private static IExpr nuclideProperty(IIsotope isotope, String property, EvalEngine engine) {
@@ -421,12 +418,12 @@ public class IsotopeDataFunctions {
       return F.assoc(rules);
     }
     if ("StableIsotopes".equals(property)) {
-      int[] massNumbers = atomicNumber < STABLE_ISOTOPES.length ? STABLE_ISOTOPES[atomicNumber]
-          : new int[0];
+      int[] massNumbers =
+          atomicNumber < STABLE_ISOTOPES.length ? STABLE_ISOTOPES[atomicNumber] : new int[0];
       IASTAppendable result = F.ListAlloc(massNumbers.length);
       for (int massNumber : massNumbers) {
-        result.append(Entities.entity(ISOTOPE,
-            F.stringx(standardName(engine, atomicNumber, massNumber))));
+        result.append(
+            Entities.entity(ISOTOPE, F.stringx(standardName(engine, atomicNumber, massNumber))));
       }
       return result;
     }

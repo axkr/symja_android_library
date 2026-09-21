@@ -79,11 +79,11 @@ public class RegionFunctionTest {
 
   /**
    * How many raster cells were left unpainted: the cells of fully transparent colour. A raster's
-   * cells are numbers, {r, g, b} or {r, g, b, a}, as in the Wolfram Language.
+   * cells are numbers, {r, g, b} or {r, g, b, a}.
    */
   private static int transparentCells(String plot) {
-    return count("Count(Flatten(Cases(" + plot + ",Raster(d_,___):>d,Infinity),2),"
-        + "{_,_,_,a_/;a==0})");
+    return count(
+        "Count(Flatten(Cases(" + plot + ",Raster(d_,___):>d,Infinity),2)," + "{_,_,_,a_/;a==0})");
   }
 
   // -----------------------------------------------------------------------------------------
@@ -238,8 +238,8 @@ public class RegionFunctionTest {
    * Every 3D plot with a sampling grid outlines what it drew, when asked.
    *
    * <p>
-   * {@code Plot3D} and {@code ListPlot3D} outline their surface by default, as Mathematica does: its
-   * output carries {@code {GrayLevel[0], Line[...]}} even with {@code Mesh -> None}. For them
+   * {@code Plot3D} and {@code ListPlot3D} outline their surface by default, as Mathematica does:
+   * its output carries {@code {GrayLevel[0], Line[...]}} even with {@code Mesh -> None}. For them
    * {@code None} takes the outline away. The other surfaces draw none until asked, so for them
    * {@code Automatic} and {@code None} leave the graphic byte for byte the same as no option at
    * all.

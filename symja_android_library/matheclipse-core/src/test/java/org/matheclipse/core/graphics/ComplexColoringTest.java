@@ -124,12 +124,12 @@ public class ComplexColoringTest {
   @Test
   public void testNoSchemeDrawsABlackCurve() {
     for (ComplexColoring.Shading shading : ComplexColoring.Shading.values()) {
-      Color[][] cells = cells(plot("\"" + shading.wolframName() + "\""));
+      Color[][] cells = cells(plot("\"" + shading.scriptName() + "\""));
       for (int r = 0; r < cells.length; r++) {
         for (int c = 0; c < cells[r].length; c++) {
           Color cell = cells[r][c];
           assertFalse(cell.getRed() == 0 && cell.getGreen() == 0 && cell.getBlue() == 0,
-              shading.wolframName() + " painted cell (" + r + "," + c + ") pure black");
+              shading.scriptName() + " painted cell (" + r + "," + c + ") pure black");
         }
       }
     }
@@ -189,8 +189,8 @@ public class ComplexColoringTest {
       if (shading == ComplexColoring.Shading.AUTOMATIC) {
         continue;
       }
-      Color[][] scheme = cells(plot("\"" + shading.wolframName() + "\""));
-      assertTrue(difference(automatic, scheme) > 0.10, shading.wolframName()
+      Color[][] scheme = cells(plot("\"" + shading.scriptName() + "\""));
+      assertTrue(difference(automatic, scheme) > 0.10, shading.scriptName()
           + " is indistinguishable from Automatic; it changed only "
           + Math.round(difference(automatic, scheme) * 100) + "% of the cells");
     }
@@ -368,8 +368,8 @@ public class ComplexColoringTest {
   @Test
   public void testEverySchemePaintsEveryCell() {
     for (ComplexColoring.Shading shading : ComplexColoring.Shading.values()) {
-      assertEquals(0, transparentCells(plot("\"" + shading.wolframName() + "\"")),
-          shading.wolframName() + " left cells unpainted");
+      assertEquals(0, transparentCells(plot("\"" + shading.scriptName() + "\"")),
+          shading.scriptName() + " left cells unpainted");
     }
   }
 

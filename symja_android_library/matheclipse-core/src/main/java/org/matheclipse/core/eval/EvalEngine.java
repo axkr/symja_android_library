@@ -1,8 +1,8 @@
 package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
-import java.nio.file.Path;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -632,8 +632,8 @@ public class EvalEngine implements Serializable {
   private transient Map<Object, IExpr> rememberMap = null;
 
   /**
-   * What <code>Once</code> has already worked out in this session, kept under the expression it
-   * was asked about.
+   * What <code>Once</code> has already worked out in this session, kept under the expression it was
+   * asked about.
    */
   private transient Map<IExpr, IExpr> onceMap = null;
 
@@ -654,8 +654,8 @@ public class EvalEngine implements Serializable {
    * Hear about every message this engine reports.
    *
    * <p>
-   * A kernel driven over a link sends them on as <code>MessagePacket</code>s, because the front
-   * end shows a message beside the cell that caused it rather than in a console nobody reads.
+   * A kernel driven over a link sends them on as <code>MessagePacket</code>s, because the front end
+   * shows a message beside the cell that caused it rather than in a console nobody reads.
    */
   public void setMessageListener(MessageListener listener) {
     this.fMessageListener = listener;
@@ -1360,8 +1360,8 @@ public class EvalEngine implements Serializable {
               // pass - Extract(OptionValue(y))[a, b, c] was then evaluated as though it were the
               // three argument Extract, and failed inside Part.
               // `1` called with `2` arguments; 1 argument is expected.
-              Errors.printMessage(ast.topHead(), "argx",
-                  F.list(ast.head(), F.ZZ(ast.argSize())), this);
+              Errors.printMessage(ast.topHead(), "argx", F.list(ast.head(), F.ZZ(ast.argSize())),
+                  this);
               return null;
             }
             break;
@@ -1784,8 +1784,8 @@ public class EvalEngine implements Serializable {
    * the arguments are evaluated.
    *
    * <p>
-   * Whether <code>g[x]</code> is ever evaluated is then f's business, which is the whole point of
-   * a holding f: WLX interpolates the text of an attribute with
+   * Whether <code>g[x]</code> is ever evaluated is then f's business, which is the whole point of a
+   * holding f: WLX interpolates the text of an attribute with
    * <code>ToExpression[text, InputForm, FakeHold @* ToString]</code>, and <code>FakeHold</code>
    * being <code>HoldAll</code> is what keeps the expression it was handed unevaluated until the
    * template is rendered.
@@ -2070,8 +2070,7 @@ public class EvalEngine implements Serializable {
       return result;
     }
 
-    if (Attribute.LISTABLE.isSetIn(attributes)
-        && mutableAST.hasNoFlag(Flag.IS_LISTABLE_THREADED)) {
+    if (Attribute.LISTABLE.isSetIn(attributes) && mutableAST.hasNoFlag(Flag.IS_LISTABLE_THREADED)) {
       // thread over the lists
       IExpr threaded = threadASTListArgs(mutableAST, S.Thread, "tdlen");
       if (threaded.isPresent()) {
@@ -2952,7 +2951,7 @@ public class EvalEngine implements Serializable {
       // sending an interrupt, which is what an abort does to a notebook's evaluation. The test
       // stands before every other one, because the paths below it - an atom, the fast evaluator,
       // the epoch cache - all answer without reaching the rest of the loop, and a loop written in
-      // the Wolfram Language spends its time in exactly those.
+      // the scripts language spends its time in exactly those.
       fAbortRequested = false;
       throw AbortException.ABORTED;
     }
@@ -3257,8 +3256,8 @@ public class EvalEngine implements Serializable {
     // memoized in an eval flag: one scan answers every special-argument test of the loop
     final boolean hasSpecialArg = ast.hasSpecialArg();
     // only the list classes which drop their flags on every change may remember the answer
-    boolean numbersOrStrings = !argNumericMode
-        && (ast instanceof org.matheclipse.core.expression.HMArrayList
+    boolean numbersOrStrings =
+        !argNumericMode && (ast instanceof org.matheclipse.core.expression.HMArrayList
             || ast instanceof org.matheclipse.core.expression.ASTRRBTree);
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
@@ -3570,8 +3569,8 @@ public class EvalEngine implements Serializable {
    * The left-hand side of a definition is turned into a matcher before it is stored, and the
    * pattern constructs in it have to become pattern objects for that. A holding head must not stop
    * that from happening: <code>f[x_, expr_, OptionsPattern[]] := …</code> is a rule with options
-   * whether or not <code>f</code> holds its arguments - the hold says what happens to the
-   * arguments of a <em>call</em>, not to the shape of the rule.
+   * whether or not <code>f</code> holds its arguments - the hold says what happens to the arguments
+   * of a <em>call</em>, not to the shape of the rule.
    */
   private static boolean isPatternConstruct(IExpr expr) {
     if (!expr.isAST()) {
@@ -3679,8 +3678,7 @@ public class EvalEngine implements Serializable {
             continue;
           }
           if (expr.isAST()) {
-            resultList =
-                evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
+            resultList = evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
           } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
             resultList = resultList.setIfPresent(ast, i, expr.evaluate(this));
           }
@@ -5249,7 +5247,9 @@ public class EvalEngine implements Serializable {
     return fCurrentDirectory;
   }
 
-  /** Change the directory relative file names are resolved against, as <code>SetDirectory</code>. */
+  /**
+   * Change the directory relative file names are resolved against, as <code>SetDirectory</code>.
+   */
   public final void setCurrentDirectory(Path directory) {
     this.fCurrentDirectory = directory == null ? null : directory.toAbsolutePath().normalize();
   }
@@ -5458,8 +5458,8 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Ask the evaluation running in this engine to stop, from whatever thread notices that it
-   * should: the next step of its evaluation loop throws {@link AbortException}.
+   * Ask the evaluation running in this engine to stop, from whatever thread notices that it should:
+   * the next step of its evaluation loop throws {@link AbortException}.
    */
   public void stopRequest() {
     fAbortRequested = true;
@@ -5601,8 +5601,7 @@ public class EvalEngine implements Serializable {
    *         {@link ISparseArray}. Returns {@link F#NIL} if no {@link ISymbol#LISTABLE} arguments
    *         were found or if the arguments cannot be combined.
    */
-  public IExpr threadASTListArgs(final IAST ast, ISymbol commandHead,
-      String messageShortcut) {
+  public IExpr threadASTListArgs(final IAST ast, ISymbol commandHead, String messageShortcut) {
     if (ast.isUniform()) {
       // uniform arguments never contain a S.List, S.Association or S.SparseArray argument
       ast.addFlag(Flag.IS_LISTABLE_THREADED);

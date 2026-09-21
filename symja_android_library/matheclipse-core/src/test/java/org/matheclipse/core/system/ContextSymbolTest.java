@@ -10,7 +10,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.matheclipse.core.basic.Config;
 
 /**
- * Contexts as they are written in Wolfram Language source: <code>Foo`Bar</code>, and the relative
+ * Contexts as they are written in script source: <code>Foo`Bar</code>, and the relative
  * <code>`x</code> / <code>`Private`x</code> that every package uses after
  * <code>Begin["`Private`"]</code>.
  *
@@ -113,8 +113,8 @@ public class ContextSymbolTest extends ExprEvaluatorTestCase {
           "Pkg`Private`");
       // the qualified symbol in the body stayed in its own context
       // (the name is lower-cased because this suite runs in relaxed syntax; the context is not)
-      assertTrue(String.valueOf(evaluator.eval("Pkg`Private`exported(3)"))
-          .contains("Internal`Kernel`"));
+      assertTrue(
+          String.valueOf(evaluator.eval("Pkg`Private`exported(3)")).contains("Internal`Kernel`"));
     } finally {
       Config.FILESYSTEM_ENABLED = fileSystem;
     }

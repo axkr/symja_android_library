@@ -83,10 +83,10 @@ public class EliminateTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The elimination is algebraic: raising an equation to a power gains roots, and Mathematica
-   * keeps them. <code>Sqrt(x)==-1</code> has no solution, but squaring it gives
-   * <code>x==1</code>, so the system below eliminates to <code>y==2</code> rather than to
-   * <code>False</code>. <code>Solve</code> sorts such roots out by cross checking its solutions.
+   * The elimination is algebraic: raising an equation to a power gains roots, and Mathematica keeps
+   * them. <code>Sqrt(x)==-1</code> has no solution, but squaring it gives <code>x==1</code>, so the
+   * system below eliminates to <code>y==2</code> rather than to <code>False</code>.
+   * <code>Solve</code> sorts such roots out by cross checking its solutions.
    */
   @Test
   public void testEliminateIsAlgebraic() {
@@ -138,7 +138,6 @@ public class EliminateTest extends ExprEvaluatorTestCase {
         "x^2+y^2==1&&t!=0");
   }
 
-  /** Examples of the Wolfram Language reference page of <code>Eliminate</code>. */
   @Test
   public void testEliminateReferenceExamples() {
     check("Eliminate({x==2+y, y==z}, y)", //

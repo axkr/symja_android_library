@@ -10,7 +10,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -30,9 +29,9 @@ import org.matheclipse.core.interfaces.IExpr;
  * Union[Flatten[Rasterize[ArrayPlot[data, Frame -&gt; False], "Data"], 1]]
  * </pre>
  *
- * and the eight bit values it reported are quoted next to each case. They are recorded here
- * because the natural reading of the option is the other scale, so this looks like a defect until
- * one checks: it was implemented as a range over the data until this test was written.
+ * and the eight bit values it reported are quoted next to each case. They are recorded here because
+ * the natural reading of the option is the other scale, so this looks like a defect until one
+ * checks: it was implemented as a range over the data until this test was written.
  */
 public class ArrayPlotColorScaleTest {
 
@@ -125,16 +124,12 @@ public class ArrayPlotColorScaleTest {
   /**
    * A value which is not a real still names a rule: the cell holds {@code I}, and the rule written
    * {@code I -> Red} is the one that matches it.
-   *
-   * <p>
-   * This is the case Woxi 49410d8a fixes for itself - there both sides of the comparison went
-   * through a machine double first, so {@code I} and {@code -I} collapsed to zero and took the
-   * colour written for {@code 0}.
+   * 
    */
   @Test
   public void testColorRulesMatchNonRealValues() {
-    IExpr plot = evaluator
-        .eval("ArrayPlot({{0, -I}, {I, 0}}, ColorRules->{0->White, I->Red, -I->Green})");
+    IExpr plot =
+        evaluator.eval("ArrayPlot({{0, -I}, {I, 0}}, ColorRules->{0->White, I->Red, -I->Green})");
     assertEquals("[[[1,1,1], [0,1,0]], [[1,0,0], [1,1,1]]]", cells(plot),
         "white where the zeros are, red for I and green for -I");
   }
@@ -165,7 +160,8 @@ public class ArrayPlotColorScaleTest {
   @Test
   public void testMatrixPlotMatchesAPattern() {
     IExpr plot = evaluator.eval("MatrixPlot({{1, -1}}, ColorRules->{_?Positive->Red})");
-    assertTrue(cells(plot).startsWith("[[[1,0,0], "), "the positive cell is red, got " + cells(plot));
+    assertTrue(cells(plot).startsWith("[[[1,0,0], "),
+        "the positive cell is red, got " + cells(plot));
   }
 
   // ------------------------------------------------------------------ helpers

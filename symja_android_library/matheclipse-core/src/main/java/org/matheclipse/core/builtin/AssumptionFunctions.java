@@ -59,7 +59,7 @@ public class AssumptionFunctions {
 
   /**
    * <code>Matrices({d1,d2})</code> - the domain of the <code>d1</code> x <code>d2</code> matrices.
-   * The component domain defaults to {@link S#Complexes}, as in the Wolfram Language.
+   * The component domain defaults to {@link S#Complexes}.
    */
   private static final class Matrices extends AbstractEvaluator {
 
@@ -96,7 +96,7 @@ public class AssumptionFunctions {
 
   /**
    * <code>Vectors(d)</code> - the domain of the vectors of length <code>d</code>. The component
-   * domain defaults to {@link S#Complexes}, as in the Wolfram Language.
+   * domain defaults to {@link S#Complexes}.
    */
   private static final class Vectors extends AbstractEvaluator {
 
@@ -262,8 +262,8 @@ public class AssumptionFunctions {
     private IExpr assumeDomain(final IExpr expr, final ISymbol domain, EvalEngine engine) {
       if (expr.isAST(S.Indexed, 3) && expr.first() instanceof IArraySymbol) {
         // a component of a symbolic array lies in the element domain the array declares
-        return SymbolicArrayFunctions
-            .domainSubset(((IArraySymbol) expr.first()).getDomain(), domain) ? S.True : F.NIL;
+        return SymbolicArrayFunctions.domainSubset(((IArraySymbol) expr.first()).getDomain(),
+            domain) ? S.True : F.NIL;
       }
       if (domain.isBuiltInSymbol()) {
         ISymbol truthValue;

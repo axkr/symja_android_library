@@ -718,10 +718,10 @@ public class Parser extends Scanner {
    * Read <code>= .</code> as the <code>=.</code> that means <code>Unset</code>.
    *
    * <p>
-   * An operator token is one run of operator characters, so a space between the two - which the
-   * Wolfram Language allows, and packages write - made the <code>.</code> the start of a number
-   * instead. Only a <code>.</code> that begins nothing else counts: <code>x = .5</code> is a
-   * number, and <code>x = ..</code> is not an unset.
+   * An operator token is one run of operator characters, so a space between the two and packages
+   * write - made the <code>.</code> the start of a number instead. Only a <code>.</code> that
+   * begins nothing else counts: <code>x = .5</code> is a number, and <code>x = ..</code> is not an
+   * unset.
    *
    * @param afterOperator the position just after the <code>=</code>
    * @return the position just after the <code>.</code>, or <code>-1</code> if this is not an unset
@@ -922,17 +922,39 @@ public class Parser extends Scanner {
     while (fToken == TT_PARTOPEN) {
       function = null;
       do {
-      if (function == null) {
-        function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
-      } else {
-        function =
-            fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), function);
-      }
+        if (function == null) {
+          function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
+        } else {
+          function =
+              fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), function);
+        }
 
-      fRecursionDepth++;
-      try {
-        do {
-          getNextToken();
+        fRecursionDepth++;
+        try {
+          do {
+            getNextToken();
+
+            if (fToken == TT_ARGUMENTS_CLOSE) {
+              skipWhitespace();
+              // scanner-step begin: (instead of getNextToken() call):
+              if (fInputString.length > fCurrentPosition) {
+                if (fInputString[fCurrentPosition] == ']') {
+                  fCurrentPosition++;
+                  getNextToken();
+                  // fToken = TT_PARTCLOSE;
+                  return function;
+                }
+              }
+              // scanner-step end
+              // if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] ==
+              // ']')
+              // {
+              // throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+              // }
+            }
+
+            function.add(parseExpression());
+          } while (fToken == TT_COMMA);
 
           if (fToken == TT_ARGUMENTS_CLOSE) {
             skipWhitespace();
@@ -940,39 +962,18 @@ public class Parser extends Scanner {
             if (fInputString.length > fCurrentPosition) {
               if (fInputString[fCurrentPosition] == ']') {
                 fCurrentPosition++;
-                getNextToken();
-                // fToken = TT_PARTCLOSE;
-                return function;
+                fToken = TT_PARTCLOSE;
               }
             }
             // scanner-step end
-            // if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] == ']')
-            // {
-            // throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
-            // }
           }
-
-          function.add(parseExpression());
-        } while (fToken == TT_COMMA);
-
-        if (fToken == TT_ARGUMENTS_CLOSE) {
-          skipWhitespace();
-          // scanner-step begin: (instead of getNextToken() call):
-          if (fInputString.length > fCurrentPosition) {
-            if (fInputString[fCurrentPosition] == ']') {
-              fCurrentPosition++;
-              fToken = TT_PARTCLOSE;
-            }
+          if (fToken != TT_PARTCLOSE) {
+            throwSyntaxError("']]' expected.");
           }
-          // scanner-step end
+        } finally {
+          fRecursionDepth--;
         }
-        if (fToken != TT_PARTCLOSE) {
-          throwSyntaxError("']]' expected.");
-        }
-      } finally {
-        fRecursionDepth--;
-      }
-      getNextToken();
+        getNextToken();
       } while (fToken == TT_PARTOPEN);
 
       // whatever is applied to the part, as in t[[i]]["key"]; the loop then reads a part applied

@@ -9,10 +9,9 @@ import org.matheclipse.core.eval.tasks.EventLoop;
  * Scheduled tasks and the pause that runs them.
  *
  * <p>
- * <code>Pause</code> is the point where a Wolfram Language program yields, so it is where a task
- * that has come due is evaluated. Without that, a main loop written as
- * <code>While[True, Pause[0.01]]</code> - which is how the WLJS notebook's server is written - would
- * spin forever and never do any of its work.
+ * <code>Pause</code> is the point where a program yields, so it is where a task that has come due
+ * is evaluated. Without that, a main loop written as <code>While[True, Pause[0.01]]</code> - which
+ * is how the WLJS notebook's server is written - would spin forever and never do any of its work.
  */
 public class EventLoopTest extends ExprEvaluatorTestCase {
 
@@ -48,8 +47,9 @@ public class EventLoopTest extends ExprEvaluatorTestCase {
   public void testATaskWithACountRunsThatOften() {
     check("counter = 0", //
         "0");
-    check("task = SessionSubmit(ScheduledTask(counter = counter + 1, {0.01, 3}));"
-        + "Pause(0.3); counter", //
+    check(
+        "task = SessionSubmit(ScheduledTask(counter = counter + 1, {0.01, 3}));"
+            + "Pause(0.3); counter", //
         "3");
     check("Tasks()", //
         "{}");

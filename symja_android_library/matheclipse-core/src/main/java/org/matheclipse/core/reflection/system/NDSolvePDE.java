@@ -3,9 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -30,7 +28,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * The solution is an <code>InterpolatingFunction</code> of <code>t</code> and <code>x</code>,
  * interpolated between the grid points by a bicubic spline, and is handed back as
- * <code>{{u -&gt; InterpolatingFunction(...)}}</code>, as the Wolfram Language answers.
+ * <code>{{u -&gt; InterpolatingFunction(...)}}</code>.
  */
 final class NDSolvePDE {
 
@@ -109,8 +107,8 @@ final class NDSolvePDE {
         if (!coefficient.isFree(ut) || !coefficient.isNumber() || coefficient.isZero()) {
           return F.NIL;
         }
-        rhs = engine.evaluate(F.Together(F.Times(F.CN1,
-            F.Divide(F.subst(difference, F.Rule(ut, F.C0)), coefficient))));
+        rhs = engine.evaluate(F.Together(
+            F.Times(F.CN1, F.Divide(F.subst(difference, F.Rule(ut, F.C0)), coefficient))));
         continue;
       }
       // a condition: u(t0, x) == f(x) or u(t, a) == g(t), either way round
@@ -151,8 +149,8 @@ final class NDSolvePDE {
     IExpr a = engine.evaluate(F.D(rhs, uxx));
     IExpr b = engine.evaluate(F.D(rhs, ux));
     IExpr c = engine.evaluate(F.D(rhs, u0));
-    IExpr d = engine.evaluate(
-        F.subst(rhs, F.List(F.Rule(uxx, F.C0), F.Rule(ux, F.C0), F.Rule(u0, F.C0))));
+    IExpr d = engine
+        .evaluate(F.subst(rhs, F.List(F.Rule(uxx, F.C0), F.Rule(ux, F.C0), F.Rule(u0, F.C0))));
     for (IExpr coefficient : new IExpr[] {a, b, c, d}) {
       if (!coefficient.isFree(uxx) || !coefficient.isFree(ux) || !coefficient.isFree(u0)) {
         return F.NIL;
@@ -233,8 +231,8 @@ final class NDSolvePDE {
     if (!ruleForm) {
       return function;
     }
-    IExpr rule = unknown.isSymbol() ? F.Rule(u, function)
-        : F.Rule(unknown, F.binaryAST2(function, t, x));
+    IExpr rule =
+        unknown.isSymbol() ? F.Rule(u, function) : F.Rule(unknown, F.binaryAST2(function, t, x));
     return F.List(F.List(rule));
   }
 
@@ -324,8 +322,7 @@ final class NDSolvePDE {
     }
 
     private double evaluate(double tv, double xv) {
-      IExpr value = engine
-          .evalN(F.subst(expr, F.List(F.Rule(t, F.num(tv)), F.Rule(x, F.num(xv)))));
+      IExpr value = engine.evalN(F.subst(expr, F.List(F.Rule(t, F.num(tv)), F.Rule(x, F.num(xv)))));
       return value.isReal() ? value.evalf() : Double.NaN;
     }
   }

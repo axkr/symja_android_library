@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Output streams whose behaviour is written in the Wolfram Language.
+ * Output streams whose behaviour is written in the script language.
  *
  * <p>
  * <code>DefineOutputStreamMethod</code> names a set of functions - how a stream of that kind is
@@ -52,7 +52,9 @@ public final class OutputStreamMethods {
     return METHODS.get(name);
   }
 
-  /** Forget every method. Tests share one process, so one must not leave its methods to the next. */
+  /**
+   * Forget every method. Tests share one process, so one must not leave its methods to the next.
+   */
   public static void clear() {
     METHODS.clear();
   }
@@ -94,8 +96,8 @@ public final class OutputStreamMethods {
       IExpr constructor = function(definitions, "ConstructorFunction");
       IExpr state = S.Null;
       if (constructor.isPresent()) {
-        IExpr answer = engine.evaluate(F.ast(new IExpr[] {streamName, F.bool(append), caller,
-            options}, constructor));
+        IExpr answer = engine.evaluate(
+            F.ast(new IExpr[] {streamName, F.bool(append), caller, options}, constructor));
         // {True, state}: a constructor which says anything else has refused
         if (!answer.isList2() || !answer.first().isTrue()) {
           return null;

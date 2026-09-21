@@ -26,7 +26,7 @@ import org.matheclipse.core.expression.S;
  * <code>wolframscript</code> behaves.
  *
  * <p>
- * That is what makes a Wolfram Language main loop - <code>While[True, MicrotasksRun[]; Pause[0.01]]
+ * That is what makes the main loop - <code>While[True, MicrotasksRun[]; Pause[0.01]]
  * </code> - able to serve a socket: the pause is where the work happens.
  */
 public final class EventLoop {
@@ -208,8 +208,8 @@ public final class EventLoop {
    * <code>Pause[seconds]</code>: wait, running whatever arrives while waiting.
    *
    * <p>
-   * A pause is the ordinary way a Wolfram Language program yields, so it is the main place handlers
-   * get to run.
+   * A pause is the ordinary way a script program yields, so it is the main place handlers get to
+   * run.
    */
   public void pauseAndPump(double seconds, EvalEngine engine) {
     long deadline = System.nanoTime() + (long) (seconds * 1_000_000_000L);

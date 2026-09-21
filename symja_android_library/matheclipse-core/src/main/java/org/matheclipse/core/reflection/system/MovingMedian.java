@@ -115,13 +115,7 @@ public class MovingMedian extends AbstractFunctionEvaluator {
 
   /**
    * Report a window specification that is not a positive integer no larger than the data.
-   *
-   * <p>
-   * The <code>arg2</code> message is registered on <code>MovingMedian</code> itself in
-   * {@link #setUp(ISymbol)}: the tag is the one Wolfram Language uses, but it is already taken in
-   * the shared table by an unrelated text about dividing an equation by zero, and
-   * {@link Errors#printMessage} consults the symbol before the shared table.
-   *
+   * 
    * @param n the length of the first argument
    */
   private static IExpr windowMessage(IExpr arg2, int n, EvalEngine engine) {

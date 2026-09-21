@@ -8,14 +8,13 @@ import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.graphics.svg.ColorUtil;
-import org.matheclipse.core.interfaces.IAssociation;
-import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTDataset;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -35,8 +34,8 @@ public class GraphicsOptions {
    * A <code>Dataset</code> becomes its rows, which for the one-column dataset a chart is usually
    * handed - <code>planets[All, "radius"]</code> - is already the bare list of numbers the chart
    * wants. An <code>Association</code> becomes its values, and its keys are collected into
-   * <code>labelsOut</code> so that <code>PieChart[&lt;|"a" -&gt; 1, "b" -&gt; 2|&gt;]</code> labels its
-   * slices the way the reference does. Anything else is handed back untouched.
+   * <code>labelsOut</code> so that <code>PieChart[&lt;|"a" -&gt; 1, "b" -&gt; 2|&gt;]</code> labels
+   * its slices the way the reference does. Anything else is handed back untouched.
    *
    * <p>
    * The charts live in <code>matheclipse-core</code> and cannot see <code>ASTDataset</code>, which
@@ -98,8 +97,8 @@ public class GraphicsOptions {
 
   /**
    * Reserved. <code>JSForm -&gt; True</code> once made a plot return its JavaScript; nothing reads
-   * the option any more, but the plot option arrays are read by position, so the slot is kept rather
-   * than shifting every index after it.
+   * the option any more, but the plot option arrays are read by position, so the slot is kept
+   * rather than shifting every index after it.
    */
   @Deprecated
   public final static int X_JSFORM = 0;
@@ -142,16 +141,16 @@ public class GraphicsOptions {
 
   // MatrixPlot color map (Light Yellow -> Orange -> Red)
   /**
-   * The Wolfram Language's MatrixPlot colours, as its own plots are coloured: blue for the most
-   * negative entries, white for zero, orange for the most positive. The stops are evenly spaced
-   * because they were read off at even steps of rank, which is how MatrixPlot scales.
+   * The MatrixPlot colours, as its own plots are coloured: blue for the most negative entries,
+   * white for zero, orange for the most positive. The stops are evenly spaced because they were
+   * read off at even steps of rank, which is how MatrixPlot scales.
    */
   public static final double[][] MATRIX_COLORS = {//
-      {0.245, 0.428, 0.870}, {0.346, 0.613, 0.812}, {0.493, 0.716, 0.831},
-      {0.629, 0.793, 0.877}, {0.742, 0.857, 0.915}, {0.854, 0.919, 0.952}, //
+      {0.245, 0.428, 0.870}, {0.346, 0.613, 0.812}, {0.493, 0.716, 0.831}, {0.629, 0.793, 0.877},
+      {0.742, 0.857, 0.915}, {0.854, 0.919, 0.952}, //
       {1.000, 1.000, 1.000}, // zero
-      {0.947, 0.918, 0.793}, {0.937, 0.880, 0.695}, {0.925, 0.834, 0.575},
-      {0.915, 0.799, 0.484}, {0.903, 0.744, 0.371}, {1.000, 0.420, 0.000}};
+      {0.947, 0.918, 0.793}, {0.937, 0.880, 0.695}, {0.925, 0.834, 0.575}, {0.915, 0.799, 0.484},
+      {0.903, 0.744, 0.371}, {1.000, 0.420, 0.000}};
 
   /**
    * Interpolates colors using the "Sunset" gradient.
@@ -168,14 +167,13 @@ public class GraphicsOptions {
   }
 
   /**
-   * The Wolfram Language's default for the plots of a scalar field - ContourPlot, DensityPlot and
-   * their list forms - as its own plots are coloured: dark purple for the lowest values through
-   * magenta, coral and orange to pale yellow for the highest.
+   * The default for the plots of a scalar field - ContourPlot, DensityPlot and their list forms -
+   * as its own plots are coloured: dark purple for the lowest values through magenta, coral and
+   * orange to pale yellow for the highest.
    */
   private static final double[][] FIELD_COLORS = { //
-      {0.387, 0.071, 0.397}, {0.657, 0.099, 0.379}, {0.832, 0.126, 0.363},
-      {0.914, 0.310, 0.362}, {0.974, 0.463, 0.360}, {1.000, 0.604, 0.377},
-      {1.000, 0.755, 0.513}, {1.000, 0.902, 0.654}};
+      {0.387, 0.071, 0.397}, {0.657, 0.099, 0.379}, {0.832, 0.126, 0.363}, {0.914, 0.310, 0.362},
+      {0.974, 0.463, 0.360}, {1.000, 0.604, 0.377}, {1.000, 0.755, 0.513}, {1.000, 0.902, 0.654}};
 
   /** The default colour of a scalar field's value <code>t</code>, scaled to 0..1. */
   public static IAST getFieldColor(double t) {
@@ -369,9 +367,8 @@ public class GraphicsOptions {
   /** Options of the polar plots. */
   public static OptionSet polarExtras(OptionSet set) {
     return set
-        .add(S.Automatic, S.PolarAxes, S.PolarGridLines, S.PolarTicks, S.PlotPoints,
-            S.MaxRecursion, S.MeshStyle, S.PlotTheme, S.LabelStyle, S.RegionFunction,
-            S.ColorFunction)
+        .add(S.Automatic, S.PolarAxes, S.PolarGridLines, S.PolarTicks, S.PlotPoints, S.MaxRecursion,
+            S.MeshStyle, S.PlotTheme, S.LabelStyle, S.RegionFunction, S.ColorFunction)
         .add(S.True, S.ColorFunctionScaling).add(S.None, S.Mesh, S.PlotMarkers);
   }
 
@@ -467,15 +464,15 @@ public class GraphicsOptions {
   private static final IAST TRANSPARENT_CELL = F.List(F.CD0, F.CD0, F.CD0, F.CD0);
 
   /**
-   * One cell of a raster as the Wolfram Language writes it: <code>{r, g, b}</code>, or
-   * <code>{r, g, b, a}</code> when it is not opaque.
+   * One cell of a raster: <code>{r, g, b}</code>, or <code>{r, g, b, a}</code> when it is not
+   * opaque.
    *
    * <p>
    * A colour object such as <code>RGBColor[...]</code> is not raster data: a front end reads the
    * cells of a <code>Raster</code> as numbers, and the WLJS notebook could not draw a
    * <code>ComplexPlot</code>, <code>DensityPlot</code>, <code>MatrixPlot</code> or
-   * <code>ArrayPlot</code> whose cells were ten thousand of them. A cell which is not a colour -
-   * a grey level - is left as it is.
+   * <code>ArrayPlot</code> whose cells were ten thousand of them. A cell which is not a colour - a
+   * grey level - is left as it is.
    */
   public static IExpr rasterPixel(IExpr cell) {
     if (cell == null) {
@@ -499,8 +496,7 @@ public class GraphicsOptions {
     }
     float[] rgb = color.getRGBColorComponents(null);
     int alpha = color.getAlpha();
-    return alpha < 255
-        ? F.List(F.num(rgb[0]), F.num(rgb[1]), F.num(rgb[2]), F.num(alpha / 255.0))
+    return alpha < 255 ? F.List(F.num(rgb[0]), F.num(rgb[1]), F.num(rgb[2]), F.num(alpha / 255.0))
         : F.List(F.num(rgb[0]), F.num(rgb[1]), F.num(rgb[2]));
   }
 
@@ -643,14 +639,17 @@ public class GraphicsOptions {
    *
    * <p>
    * The matchers are built once for the whole array because a plot asks for one colour per cell.
-   * One functor per rule rather than one for the rule list: {@link Functors#rules(IExpr, EvalEngine)}
-   * given a list consults its equality map ahead of its matchers, which would let a literal rule
-   * shadow a pattern rule written before it, and {@code Replace} itself compiles them one by one.
+   * One functor per rule rather than one for the rule list:
+   * {@link Functors#rules(IExpr, EvalEngine)} given a list consults its equality map ahead of its
+   * matchers, which would let a literal rule shadow a pattern rule written before it, and
+   * {@code Replace} itself compiles them one by one.
    */
   public static final class ColorRuleTable {
 
     private final Function<IExpr, IExpr>[] matchers;
-    /** The colour of a rule that needs no substitution, so it is resolved once rather than per cell. */
+    /**
+     * The colour of a rule that needs no substitution, so it is resolved once rather than per cell.
+     */
     private final IExpr[] constantColors;
     private final EvalEngine engine;
     private final java.util.Map<IExpr, IExpr> resolved = new java.util.HashMap<>();
@@ -765,8 +764,8 @@ public class GraphicsOptions {
   }
 
   /**
-   * The inverse of {@link #getScalingFunction(String)}, for reading a data coordinate back out of
-   * a scaled one.
+   * The inverse of {@link #getScalingFunction(String)}, for reading a data coordinate back out of a
+   * scaled one.
    */
   public static DoubleUnaryOperator getInverseScalingFunction(String scale) {
     if (scale == null)
@@ -951,13 +950,13 @@ public class GraphicsOptions {
     IASTAppendable points = F.ListAlloc(2 * steps + 2);
     for (int i = 0; i <= steps; i++) {
       double angle = a1 + (a2 - a1) * i / steps;
-      points.append(F.List(F.num(cx + rOuter * Math.cos(angle)),
-          F.num(cy + rOuter * Math.sin(angle))));
+      points.append(
+          F.List(F.num(cx + rOuter * Math.cos(angle)), F.num(cy + rOuter * Math.sin(angle))));
     }
     for (int i = steps; i >= 0; i--) {
       double angle = a1 + (a2 - a1) * i / steps;
-      points.append(F.List(F.num(cx + rInner * Math.cos(angle)),
-          F.num(cy + rInner * Math.sin(angle))));
+      points.append(
+          F.List(F.num(cx + rInner * Math.cos(angle)), F.num(cy + rInner * Math.sin(angle))));
     }
     return F.unaryAST1(S.Polygon, points);
   }
@@ -1288,7 +1287,7 @@ public class GraphicsOptions {
   /**
    * Which tuple this plot's colour function is given. The curve plots share one painter, but they
    * do not all draw the same kind of thing: a parametric curve knows its parameter and a polar one
-   * its angle and radius, and the Wolfram Language hands those over too.
+   * its angle and radius.
    */
   private PlotColorFunction.Family colorFamily = PlotColorFunction.Family.CURVE_2D;
 
@@ -1337,8 +1336,8 @@ public class GraphicsOptions {
 
   /**
    * The arguments past {@code x, y} at each point, for the families that have them: the parameter
-   * of a parametric curve, the angle and radius of a polar one. Indexed the same way the point
-   * list handed to the painter is.
+   * of a parametric curve, the angle and radius of a polar one. Indexed the same way the point list
+   * handed to the painter is.
    */
   public void setColorExtras(java.util.function.IntFunction<double[]> extras) {
     this.colorExtras = extras;
@@ -1350,8 +1349,8 @@ public class GraphicsOptions {
    * <p>
    * Each step of the curve becomes its own piece, coloured from where that piece sits. The colour
    * function is given the two coordinates of that place, and a named gradient is given the second
-   * of them - the height - which is why {@code ColorFunction -> "Rainbow"} follows the shape of
-   * the curve rather than sweeping across the picture. The positions are scaled into 0..1 over the
+   * of them - the height - which is why {@code ColorFunction -> "Rainbow"} follows the shape of the
+   * curve rather than sweeping across the picture. The positions are scaled into 0..1 over the
    * curve unless {@code ColorFunctionScaling -> False} asks for the raw values.
    *
    * <p>
@@ -1389,9 +1388,8 @@ public class GraphicsOptions {
     double[] xRange = colorRange[0] == null ? new double[] {minX, maxX} : colorRange[0];
     double[] yRange = colorRange[1] == null ? new double[] {minY, maxY} : colorRange[1];
 
-    PlotColorFunction.Builder builder = PlotColorFunction
-        .of(colorFamily, colorFunction, F.bool(colorFunctionScaling), S.ColorFunction,
-            EvalEngine.get())
+    PlotColorFunction.Builder builder = PlotColorFunction.of(colorFamily, colorFunction,
+        F.bool(colorFunctionScaling), S.ColorFunction, EvalEngine.get())
         .range(1, xRange[0], xRange[1]).range(2, yRange[0], yRange[1]);
     for (int slot = 3; slot <= colorFamily.arity; slot++) {
       double[] extra = colorRange[slot - 1];
@@ -2140,8 +2138,8 @@ public class GraphicsOptions {
         if (rule.isRuleAST()) {
           IExpr key = ((IAST) rule).arg1();
           // Filter out keys we already added explicitly to avoid overriding with defaults
-          if (key == S.Axes || key == S.AxesLabel || key == S.PlotLabel
-              || key == S.PlotLegends || key == S.Filling || key == S.AspectRatio) {
+          if (key == S.Axes || key == S.AxesLabel || key == S.PlotLabel || key == S.PlotLegends
+              || key == S.Filling || key == S.AspectRatio) {
             continue;
           }
         }
@@ -2186,7 +2184,7 @@ public class GraphicsOptions {
         continue;
       }
       if (key == S.Ticks && value.isAutomatic()) {
-        // one setting for each axis, as the Wolfram Language writes it: a front end that reads a
+        // one setting for each axis: a front end that reads a
         // pair and nothing else (the WLJS notebook does) left the vertical axis unlabelled
         result.append(F.Rule(S.Ticks, F.list(S.Automatic, S.Automatic)));
         continue;
@@ -2227,22 +2225,19 @@ public class GraphicsOptions {
 
   /**
    * The picture a plot hands back: <code>graphics</code> itself, or
-   * <code>Legended[graphics, legend]</code> when it has a legend - the way the Wolfram Language
-   * returns a plot given <code>PlotLegends</code>. (The Wolfram Language wraps the legend in
-   * <code>Placed[legend, After]</code>; that placement is the default, and <code>After</code> is not
-   * a symbol every front end knows, so it is left out.)
+   * <code>Legended[graphics, legend]</code> when it has a legend.
    *
    * <p>
-   * <code>PlotLegends</code>, <code>PlotStyle</code> and <code>Joined</code> are options of the plot
-   * functions, not of <code>Graphics</code>: a front end which packs the options of a
-   * <code>Graphics</code> (the WLJS notebook does) knows none of them, and a legend it can show only
-   * as a <code>Legended</code> wrapper. A list of labels becomes a <code>LineLegend</code> (curves)
-   * or a <code>PointLegend</code> (points) coloured the way the plot coloured its data; a
-   * <code>BarLegend</code> is written in the Wolfram Language's own form
+   * <code>PlotLegends</code>, <code>PlotStyle</code> and <code>Joined</code> are options of the
+   * plot functions, not of <code>Graphics</code>: a front end which packs the options of a
+   * <code>Graphics</code> (the WLJS notebook does) knows none of them, and a legend it can show
+   * only as a <code>Legended</code> wrapper. A list of labels becomes a <code>LineLegend</code>
+   * (curves) or a <code>PointLegend</code> (points) coloured the way the plot coloured its data; a
+   * <code>BarLegend</code> is written in the following form
    * <code>BarLegend[{colorFunction, {min, max}}]</code>. On a two dimensional picture
    * <code>PlotStyle</code> and <code>Joined</code> still matter to Symja's own renderer, so they
-   * travel under <code>Method</code>, like the ones a plot hands on itself; nothing reads them off a
-   * <code>Graphics3D</code>.
+   * travel under <code>Method</code>, like the ones a plot hands on itself; nothing reads them off
+   * a <code>Graphics3D</code>.
    */
   public static IAST legended(IAST graphics) {
     if (graphics.argSize() < 1) {
@@ -2288,7 +2283,8 @@ public class GraphicsOptions {
       }
       cleaned.append(arg);
     }
-    IExpr plotStyle = plainStyle.isPresent() ? plainStyle : plotOptionFromMethod(method, S.PlotStyle);
+    IExpr plotStyle =
+        plainStyle.isPresent() ? plainStyle : plotOptionFromMethod(method, S.PlotStyle);
     IExpr joined = plainJoined.isPresent() ? plainJoined : plotOptionFromMethod(method, S.Joined);
     if (!is3D) {
       IASTAppendable entries = F.ListAlloc();
@@ -2359,8 +2355,8 @@ public class GraphicsOptions {
    * own - <code>$Scaling</code>, <code>PlotLegends</code>, <code>PlotStyle</code> - they could not
    * travel: a front end which packs the options of a <code>Graphics</code> knows no such symbols,
    * and the WLJS notebook reported an error under every such plot. <code>Method</code> is a
-   * <code>Graphics</code> option everywhere, an unknown key inside it is ignored, and the values are
-   * written with strings only so that nothing in them needs a definition.
+   * <code>Graphics</code> option everywhere, an unknown key inside it is ignored, and the values
+   * are written with strings only so that nothing in them needs a definition.
    */
   private static void addToMethod(IASTAppendable rules, IAST entries) {
     for (int i = 1; i < rules.size(); i++) {
@@ -2641,8 +2637,8 @@ public class GraphicsOptions {
    * {@code ColorFunction -> (Hue(#3)&)} colour a parametric curve by where it is along itself.
    *
    * <p>
-   * Keyed by identity: two points at the same coordinates are still two samples, at two
-   * parameters. The map lives as long as the options object, which is one plot.
+   * Keyed by identity: two points at the same coordinates are still two samples, at two parameters.
+   * The map lives as long as the options object, which is one plot.
    */
   private java.util.Map<IExpr, double[]> pointParameters = null;
 
@@ -2722,8 +2718,8 @@ public class GraphicsOptions {
    *
    * <p>
    * Only the plot knows them, so it resolves the option here rather than leaving {@code Automatic}
-   * for the renderer, which has nothing to derive a name from and used to draw the symbol itself.
-   * A setting the caller wrote out is left alone, and so is the {@code None} default - this fires
+   * for the renderer, which has nothing to derive a name from and used to draw the symbol itself. A
+   * setting the caller wrote out is left alone, and so is the {@code None} default - this fires
    * only for a plot that was actually asked for automatic labels.
    *
    * @param xLabel the name of the horizontal axis, {@link F#NIL} to leave it unlabelled

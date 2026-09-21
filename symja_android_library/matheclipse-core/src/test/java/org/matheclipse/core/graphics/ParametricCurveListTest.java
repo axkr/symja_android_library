@@ -59,7 +59,7 @@ public class ParametricCurveListTest {
     return graphics.toString().split("Line\\(", -1).length - 1;
   }
 
-  /** Woxi #804: three curves, each with a solution substituted into it, in three colours. */
+  /** Three curves, each with a solution substituted into it, in three colours. */
   @Test
   public void threeCurvesWithASolutionSubstitutedAreThreeCurves() throws Exception {
     IAST graphics = plot("sol = {{fx -> Function(t, Cos(t)), fy -> Function(t, Sin(t))}};"
@@ -94,8 +94,7 @@ public class ParametricCurveListTest {
   public void nestedPlaneCurvesAreSeveralCurves() {
     assertEquals(2, lineCount(
         plot("ParametricPlot({{{Cos(t), Sin(t)}}, {{t, Sin(t)}}}, {t, 0, 2 Pi})", S.Graphics)));
-    assertEquals(1,
-        lineCount(plot("ParametricPlot({Cos(t), Sin(t)}, {t, 0, 2 Pi})", S.Graphics)));
+    assertEquals(1, lineCount(plot("ParametricPlot({Cos(t), Sin(t)}, {t, 0, 2 Pi})", S.Graphics)));
   }
 
   /**
@@ -113,8 +112,8 @@ public class ParametricCurveListTest {
     assertEquals(0xFF0000, elements.get(1).get("color").asInt(),
         "the curve's own Style wins over the plot colour");
 
-    assertEquals(2, lineCount(
-        plot("ParametricPlot3D({Tooltip({Cos(t), Sin(t), t}), {t, t, t}}, {t, 0, 1})",
+    assertEquals(2,
+        lineCount(plot("ParametricPlot3D({Tooltip({Cos(t), Sin(t), t}), {t, t, t}}, {t, 0, 1})",
             S.Graphics3D)));
   }
 
@@ -160,8 +159,8 @@ public class ParametricCurveListTest {
         + "w(u_?NumericQ) := {Cos(u), Sin(u), u}");
     assertEquals(3, lineCount(plot("ParametricPlot3D({w(t), m(t)}, {t, 0, 1})", S.Graphics3D)));
     assertEquals(3, lineCount(plot("ParametricPlot3D({m(t), w(t)}, {t, 0, 1})", S.Graphics3D)));
-    assertEquals(4, lineCount(
-        plot("ParametricPlot3D({w(t), {t, t, t}, m(t)}, {t, 0, 1})", S.Graphics3D)),
+    assertEquals(4,
+        lineCount(plot("ParametricPlot3D({w(t), {t, t, t}, m(t)}, {t, 0, 1})", S.Graphics3D)),
         "a literal curve among them stays one curve");
   }
 
@@ -172,10 +171,10 @@ public class ParametricCurveListTest {
   @Test
   public void unevaluatedCurveInACurveListDrawsNothingButKeepsTheOthers() {
     evaluator.eval("ClearAll(w,undefinedCurve);w(u_?NumericQ) := {Cos(u), Sin(u), u}");
-    assertEquals(1, lineCount(
-        plot("ParametricPlot3D({w(t), undefinedCurve(t)}, {t, 0, 1})", S.Graphics3D)));
-    assertEquals(2, lineCount(plot(
-        "ParametricPlot3D({w(t), undefinedCurve(t), w(2*t)}, {t, 0, 1})", S.Graphics3D)));
+    assertEquals(1,
+        lineCount(plot("ParametricPlot3D({w(t), undefinedCurve(t)}, {t, 0, 1})", S.Graphics3D)));
+    assertEquals(2, lineCount(
+        plot("ParametricPlot3D({w(t), undefinedCurve(t), w(2*t)}, {t, 0, 1})", S.Graphics3D)));
   }
 
   @Test
@@ -186,8 +185,8 @@ public class ParametricCurveListTest {
   /**
    * An empty list is no curve, and a specification of nothing but those is an empty picture rather
    * than a call that could not be read. `ParametricPlot3D[{If[cond, curves, {}], ...}]` is how a
-   * picture drops a curve when a control says so - the idiom ad-si/Woxi@b274ca0 is about - and the
-   * case where the condition removes every curve used to echo the input back.
+   * picture drops a curve when a control says so and the case where the condition removes every
+   * curve used to echo the input back.
    */
   @Test
   public void aSpecificationOfNothingIsAnEmptyPicture() {
@@ -198,8 +197,8 @@ public class ParametricCurveListTest {
     assertEquals(0, lineCount(plot("ParametricPlot({{}}, {t, 0, 1})", S.Graphics)));
     assertEquals(0, lineCount(plot("ParametricPlot({}, {t, 0, 1})", S.Graphics)));
     // the condition removing the only curve
-    assertEquals(0, lineCount(
-        plot("ParametricPlot3D({If(1 < 0, {w(t)}, {})}, {t, 0, 1})", S.Graphics3D)));
+    assertEquals(0,
+        lineCount(plot("ParametricPlot3D({If(1 < 0, {w(t)}, {})}, {t, 0, 1})", S.Graphics3D)));
     // an empty one beside a real curve still draws the real one
     assertEquals(1, lineCount(plot("ParametricPlot3D({{}, w(t)}, {t, 0, 1})", S.Graphics3D)));
   }

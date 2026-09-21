@@ -122,8 +122,8 @@ public final class LegendRenderer {
     return labels;
   }
 
-  private void drawListLegend(List<String> labels, IExpr markerSource, boolean swatch,
-      boolean line, ContainerTag<?> parent) {
+  private void drawListLegend(List<String> labels, IExpr markerSource, boolean swatch, boolean line,
+      ContainerTag<?> parent) {
     int count = labels.size();
     double lineHeight = 18;
     double xBase = options.imageSize[0] - LEGEND_WIDTH + 10;
@@ -140,10 +140,10 @@ public final class LegendRenderer {
       double y = yBase + i * lineHeight;
       if (swatch) {
         // a SwatchLegend names areas rather than curves or points, so its marker is the area
-        parent.with(tag("rect").attr("x", SvgRenderer2D.fmt(xBase + 2))
-            .attr("y", SvgRenderer2D.fmt(y - 11)).attr("width", "11").attr("height", "11")
-            .attr("fill", ColorUtil.css(color)).attr("stroke", "#666666")
-            .attr("stroke-width", "0.5"));
+        parent.with(
+            tag("rect").attr("x", SvgRenderer2D.fmt(xBase + 2)).attr("y", SvgRenderer2D.fmt(y - 11))
+                .attr("width", "11").attr("height", "11").attr("fill", ColorUtil.css(color))
+                .attr("stroke", "#666666").attr("stroke-width", "0.5"));
       } else if (line) {
         parent.with(
             tag("line").attr("x1", SvgRenderer2D.fmt(xBase)).attr("y1", SvgRenderer2D.fmt(y - 4))
@@ -177,7 +177,7 @@ public final class LegendRenderer {
 
   /**
    * The colour function and the range of a bar legend, in either spelling:
-   * <code>BarLegend[{colorFunction, {min, max}}]</code>, the Wolfram Language's own, or
+   * <code>BarLegend[{colorFunction, {min, max}}]</code>, or
    * <code>BarLegend[colorFunction, {min, max}]</code>.
    */
   private static IExpr[] barParts(IAST barLegend) {
@@ -285,7 +285,8 @@ public final class LegendRenderer {
     if (colors.isEmpty()) {
       double[][] fallback = GraphicsOptions.SUNSET_COLORS;
       for (int i = 0; i < fallback.length; i++) {
-        colors.add(new Color((float) fallback[i][0], (float) fallback[i][1], (float) fallback[i][2]));
+        colors
+            .add(new Color((float) fallback[i][0], (float) fallback[i][1], (float) fallback[i][2]));
       }
     }
     return colors;

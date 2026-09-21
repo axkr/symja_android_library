@@ -1132,10 +1132,9 @@ public class ExprParser extends Scanner {
    * Read <code>= .</code> as the <code>=.</code> that means <code>Unset</code>.
    *
    * <p>
-   * An operator token is one run of operator characters, so a space between the two - which the
-   * Wolfram Language allows, and packages write - made the <code>.</code> the start of a number
-   * instead. Only a <code>.</code> that begins nothing else counts: <code>x = .5</code> is a
-   * number, and <code>x = ..</code> is not an unset.
+   * An operator token is one run of operator characters, so a space between the two - made the
+   * <code>.</code> the start of a number instead. Only a <code>.</code> that begins nothing else
+   * counts: <code>x = .5</code> is a number, and <code>x = ..</code> is not an unset.
    *
    * @param afterOperator the position just after the <code>=</code>
    * @return the position just after the <code>.</code>, or <code>-1</code> if this is not an unset
@@ -1166,16 +1165,39 @@ public class ExprParser extends Scanner {
     while (fToken == TT_PARTOPEN) {
       function = null;
       do {
-      if (function == null) {
-        function = F.Part(2, temp);
-      } else {
-        function = F.Part(2, function);
-      }
+        if (function == null) {
+          function = F.Part(2, temp);
+        } else {
+          function = F.Part(2, function);
+        }
 
-      fRecursionDepth++;
-      try {
-        do {
-          getNextToken();
+        fRecursionDepth++;
+        try {
+          do {
+            getNextToken();
+
+            if (fToken == TT_ARGUMENTS_CLOSE) {
+              skipWhitespace();
+              // scanner-step begin: (instead of getNextToken() call):
+              if (fInputString.length > fCurrentPosition) {
+                if (fInputString[fCurrentPosition] == ']') {
+                  fCurrentPosition++;
+                  getNextToken();
+                  // fToken = TT_PARTCLOSE;
+                  return function;
+                }
+              }
+              // scanner-step end
+              // if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] ==
+              // ']')
+              // {
+              // throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+              // }
+            }
+
+            temp = parseExpression();
+            function.append(temp);
+          } while (fToken == TT_COMMA);
 
           if (fToken == TT_ARGUMENTS_CLOSE) {
             skipWhitespace();
@@ -1183,41 +1205,19 @@ public class ExprParser extends Scanner {
             if (fInputString.length > fCurrentPosition) {
               if (fInputString[fCurrentPosition] == ']') {
                 fCurrentPosition++;
-                getNextToken();
-                // fToken = TT_PARTCLOSE;
-                return function;
+                fToken = TT_PARTCLOSE;
               }
             }
             // scanner-step end
-            // if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] == ']')
-            // {
-            // throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
-            // }
           }
-
-          temp = parseExpression();
-          function.append(temp);
-        } while (fToken == TT_COMMA);
-
-        if (fToken == TT_ARGUMENTS_CLOSE) {
-          skipWhitespace();
-          // scanner-step begin: (instead of getNextToken() call):
-          if (fInputString.length > fCurrentPosition) {
-            if (fInputString[fCurrentPosition] == ']') {
-              fCurrentPosition++;
-              fToken = TT_PARTCLOSE;
-            }
+          if (fToken != TT_PARTCLOSE) {
+            throwSyntaxError("']]' expected.");
           }
-          // scanner-step end
+          // }
+        } finally {
+          fRecursionDepth--;
         }
-        if (fToken != TT_PARTCLOSE) {
-          throwSyntaxError("']]' expected.");
-        }
-        // }
-      } finally {
-        fRecursionDepth--;
-      }
-      getNextToken();
+        getNextToken();
       } while (fToken == TT_PARTOPEN);
 
       // whatever is applied to the part, as in t[[i]]["key"]; the loop then reads a part applied
@@ -1375,10 +1375,7 @@ public class ExprParser extends Scanner {
         //
         // The newline is what ends it, not the `;` on its own:
         // {@link org.matheclipse.parser.client.Parser} ends the expression at every `;` written
-        // outside brackets, so it reads `a = 1; b = 2` on one line as two expressions. That is not
-        // what the Wolfram Language does with it, and for input typed by hand - where writing
-        // several short statements on one line is ordinary - it would put each of them in the
-        // output history separately.
+        // outside brackets, so it reads `a = 1; b = 2` on one line as two expressions.
         return createInfixFunction(infixOperator, lhs, S.Null);
       }
     }

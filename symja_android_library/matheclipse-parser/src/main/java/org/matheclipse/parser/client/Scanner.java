@@ -474,10 +474,10 @@ public abstract class Scanner {
    * The name after <code>&lt;&lt;</code>, read as a name rather than as an expression.
    *
    * <p>
-   * <code>&lt;&lt;CoffeeLiqueur`CUSockets`</code> loads a context and <code>&lt;&lt;dir/file.wl</code>
-   * a file; neither is an expression - the backticks would be read as contexts of nothing and the
-   * slashes as division. The Wolfram Language reads everything up to the first space as the name,
-   * and so does this.
+   * <code>&lt;&lt;CoffeeLiqueur`CUSockets`</code> loads a context and
+   * <code>&lt;&lt;dir/file.wl</code> a file; neither is an expression - the backticks would be read
+   * as contexts of nothing and the slashes as division. Reads everything up to the first space as
+   * the name.
    *
    * @return the name, or <code>null</code> when what follows is not one (a quoted string, which is
    *         read as the expression it is)
@@ -508,10 +508,9 @@ public abstract class Scanner {
    * Is this character part of a file name written without quotes?
    *
    * <p>
-   * The Wolfram Language allows letters and digits and the punctuation a path is made of; anything
-   * else ends the name, so <code>&lt;&lt;a+b</code> is <code>Get["a"] + b</code> while
-   * <code>&lt;&lt;dir/file.wl</code> is one name. A name with other characters in it is written in
-   * quotes.
+   * Allows letters and digits and the punctuation a path is made of; anything else ends the name,
+   * so <code>&lt;&lt;a+b</code> is <code>Get["a"] + b</code> while <code>&lt;&lt;dir/file.wl</code>
+   * is one name. A name with other characters in it is written in quotes.
    */
   private static boolean isFileNameCharacter(char ch) {
     if (Character.isLetterOrDigit(ch)) {
@@ -1268,9 +1267,10 @@ public abstract class Scanner {
       throwSyntaxError("string -" + ident.toString() + "- contains no character.");
     }
     if (fCurrentChar == '\n') {
-      // A string may begin with a newline. Wolfram Language sources write multi-line text that way
-      // - a usage message, or the HTML a template builds - and the newline is part of the string,
-      // so it is counted here and appended by the loop below like any other character.
+      // A string may begin with a newline. Multi-line text sources
+      // are written that way - a usage message, or the HTML a template builds - and the newline is
+      // part of the string, so it is counted here and appended by the loop below like any other
+      // character.
       fRowCounter++;
       fCurrentColumnStartPosition = fCurrentPosition;
     }

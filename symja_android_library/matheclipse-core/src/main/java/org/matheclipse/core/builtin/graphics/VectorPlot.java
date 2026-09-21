@@ -18,8 +18,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * Each arrow is centred on its grid point and the longest one spans <code>VectorScale</code> of the
  * grid spacing, so the arrows never overlap. They are coloured by their length unless
- * <code>VectorColorFunction -> None</code>. Points where the field has no numeric value, and
- * points where it is zero, get no arrow.
+ * <code>VectorColorFunction -> None</code>. Points where the field has no numeric value, and points
+ * where it is zero, get no arrow.
  *
  * <p>
  * Options: <code>VectorPoints -> n | {nx, ny[, nz]}</code>, <code>VectorScale -> s</code>,
@@ -187,19 +187,18 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     return result;
   }
 
-  /** The size of a three dimensional arrow's head, as the Wolfram Language draws it. */
+  /** The size of a three dimensional arrow's head. */
   static final double ARROWHEAD_3D = 0.045;
 
-  /** The radius of a three dimensional arrow's tube, as the Wolfram Language draws it. */
+  /** The radius of a three dimensional arrow's tube. */
   static final double TUBE_RADIUS_3D = 0.015;
 
   /**
    * One arrow: <code>Arrow[{from, to}]</code> in the plane, <code>Arrow[Tube[{from, to}, r]]</code>
-   * in space, which is how the Wolfram Language draws a three dimensional field.
+   * in space draws a three dimensional field.
    */
   static IAST arrow(IAST from, IAST to, int dimension) {
-    return dimension == 3
-        ? F.Arrow(F.binaryAST2(S.Tube, F.list(from, to), F.num(TUBE_RADIUS_3D)))
+    return dimension == 3 ? F.Arrow(F.binaryAST2(S.Tube, F.list(from, to), F.num(TUBE_RADIUS_3D)))
         : F.Arrow(F.list(from, to));
   }
 
@@ -267,15 +266,15 @@ public class VectorPlot extends AbstractFunctionEvaluator {
   private static final double[] STOPS = {0.0, 0.25, 0.37, 0.47, 0.54, 0.61, 0.70, 0.78, 1.0};
 
   /**
-   * The Wolfram Language's default for vector and stream plots, as its own plots are coloured:
-   * blue-purple for the weakest field through magenta and red to orange-yellow for the strongest.
+   * Default for vector and stream plots, as its own plots are coloured: blue-purple for the weakest
+   * field through magenta and red to orange-yellow for the strongest.
    */
   private static final double[][] GRADIENT = { //
-      {0.195, 0.102, 0.670}, {0.569, 0.208, 0.602}, {0.728, 0.264, 0.477},
-      {0.848, 0.322, 0.350}, {0.922, 0.365, 0.252}, {1.000, 0.414, 0.096},
-      {1.000, 0.487, 0.000}, {1.000, 0.565, 0.004}, {1.000, 0.745, 0.044}};
+      {0.195, 0.102, 0.670}, {0.569, 0.208, 0.602}, {0.728, 0.264, 0.477}, {0.848, 0.322, 0.350},
+      {0.922, 0.365, 0.252}, {1.000, 0.414, 0.096}, {1.000, 0.487, 0.000}, {1.000, 0.565, 0.004},
+      {1.000, 0.745, 0.044}};
 
-  /** The arrowheads of a two dimensional vector plot, as the Wolfram Language sizes them. */
+  /** The arrowheads of a two dimensional vector plot. */
   static IAST arrowheads(double size) {
     return F.unaryAST1(S.Arrowheads, F.list(F.list(F.num(size), F.num(1.0))));
   }

@@ -248,8 +248,8 @@ public class Config {
   /**
    * Minimum number of pattern down-rules a symbol needs before a
    * {@link org.matheclipse.core.patternmatching.ruleindex.RuleFeatureIndex} is built for it. Below
-   * this size a linear scan is cheaper than analyzing the expression which should be rewritten.
-   * Set to {@link Integer#MAX_VALUE} to switch the index off.
+   * this size a linear scan is cheaper than analyzing the expression which should be rewritten. Set
+   * to {@link Integer#MAX_VALUE} to switch the index off.
    */
   public static int RULE_INDEX_MIN_RULES =
       Integer.getInteger("symja.ruleIndexMinRules", 16).intValue();
@@ -273,8 +273,7 @@ public class Config {
    * recorded event walks the stack to find its site, so this is slow - for a census run, not for
    * production.
    */
-  public static boolean AST_ALLOCATION_STATISTICS =
-      Boolean.getBoolean("symja.astAlloc.stats");
+  public static boolean AST_ALLOCATION_STATISTICS = Boolean.getBoolean("symja.astAlloc.stats");
 
   // The wall-clock evaluation budgets are configured with -Dsymja.timeScale=<factor> or
   // -Dsymja.machineProfile=fast|normal|slow|auto, see MachineProfile.
@@ -323,11 +322,11 @@ public class Config {
   /**
    * Set to <code>true</code> to check every dispatch of the
    * {@link org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher} against a full pair
-   * scan. The scan determines the result, the {@link
-   * org.matheclipse.core.patternmatching.ruleindex.OrderlessPairIndex} is only verified to keep
-   * every pair which is rewritten. Mismatches are reported on <code>System.err</code> and counted
-   * in {@link org.matheclipse.core.patternmatching.ruleindex.OrderlessIndexValidation}. Slow - for
-   * testing only.
+   * scan. The scan determines the result, the
+   * {@link org.matheclipse.core.patternmatching.ruleindex.OrderlessPairIndex} is only verified to
+   * keep every pair which is rewritten. Mismatches are reported on <code>System.err</code> and
+   * counted in {@link org.matheclipse.core.patternmatching.ruleindex.OrderlessIndexValidation}.
+   * Slow - for testing only.
    */
   public static boolean ORDERLESS_PAIR_INDEX_VALIDATE = false;
 
@@ -367,9 +366,9 @@ public class Config {
 
   /**
    * The value of <code>$ScriptInputString</code>: the line of standard input the script is running
-   * for under <code>wolframscript -linewise</code>, set by the console for each line. <code>null</code>
-   * when no script is reading its input that way, and <code>$ScriptInputString</code> is then
-   * <code>None</code>, as it is outside wolframscript.
+   * for under <code>wolframscript -linewise</code>, set by the console for each line.
+   * <code>null</code> when no script is reading its input that way, and
+   * <code>$ScriptInputString</code> is then <code>None</code>, as it is outside wolframscript.
    */
   public static IExpr SCRIPT_INPUT_STRING = null;
   /**
@@ -467,8 +466,8 @@ public class Config {
   public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 100;
 
   /**
-   * How long one <code>TimeConstrained()</code> <i>inside</i> a Rubi rule may take, in seconds:
-   * the Rubi <code>§$timelimit</code> variable.
+   * How long one <code>TimeConstrained()</code> <i>inside</i> a Rubi rule may take, in seconds: the
+   * Rubi <code>§$timelimit</code> variable.
    *
    * <p>
    * This is independent of {@link #INTEGRATE_RUBI_TIMELIMIT_MILLIS}, which is the total wall-clock
@@ -580,7 +579,8 @@ public class Config {
   // Raised 30s -> 45s (2026-09-02). Refusing to hand a bare RootSum to the rules (see
   // Integrate.evaluate) makes them retry other rules after each refusal, and every retry re-runs
   // the native cascade. Integrate(Log(x^2+Sqrt(1-x^2)),x) needs 30-45s of rule time under that,
-  // and at 30s the watchdog cut it off and the answer was lost - testIntegrateRationalizeSurdDenominator
+  // and at 30s the watchdog cut it off and the answer was lost -
+  // testIntegrateRationalizeSurdDenominator
   // went red not on a wrong answer but on a missing one. Measured at 45s: matheclipse-core is
   // fully green (4336/0) and the independent Rubi corpus improves 44 -> 39 failures.
   // The value is the budget on the machine it was measured on; the budget which is used is
@@ -841,9 +841,9 @@ public class Config {
    * <p>
    * The list used to start with <code>java.home</code>, which does not belong there:
    * <code>$ScriptCommandLine</code> starts with the name of the script. Prefer
-   * {@link #setScriptCommandLine(String, java.util.List)}, which builds the documented form
-   * from the script name and the arguments meant for it, rather than from everything on the
-   * command line.
+   * {@link #setScriptCommandLine(String, java.util.List)}, which builds the documented form from
+   * the script name and the arguments meant for it, rather than from everything on the command
+   * line.
    */
   public static void setScriptCommandLine(final String[] args) {
     IASTAppendable commandLine = F.ListAlloc(args.length);
@@ -854,13 +854,13 @@ public class Config {
   }
 
   /**
-   * Set <code>$ScriptCommandLine</code> to the documented form: the name of the script
-   * followed by the arguments passed to it. The options that started the interpreter are not
-   * part of it, so a script sees the same list however it was launched - through
-   * <code>-file</code> or through a <code>#!</code> line.
+   * Set <code>$ScriptCommandLine</code> to the documented form: the name of the script followed by
+   * the arguments passed to it. The options that started the interpreter are not part of it, so a
+   * script sees the same list however it was launched - through <code>-file</code> or through a
+   * <code>#!</code> line.
    *
-   * @param scriptName the script being run, or <code>null</code> when no script is running,
-   *        which makes <code>$ScriptCommandLine</code> the empty list
+   * @param scriptName the script being run, or <code>null</code> when no script is running, which
+   *        makes <code>$ScriptCommandLine</code> the empty list
    * @param arguments the arguments meant for the script
    */
   public static void setScriptCommandLine(final String scriptName,
@@ -879,8 +879,8 @@ public class Config {
 
   /**
    * Contains the executable followed by the arguments the process was started with, the way
-   * <code>$CommandLine</code> is defined in the Wolfram Language. <code>null</code> when Symja was
-   * not started from a console app, in which case <code>$CommandLine</code> is the empty list.
+   * <code>$CommandLine</code> is defined. <code>null</code> when Symja was not started from a
+   * console app, in which case <code>$CommandLine</code> is the empty list.
    *
    * <p>
    * Unlike {@link #SCRIPT_COMMAND_LINE} the first element is the interpreter, not the script, so
@@ -896,22 +896,19 @@ public class Config {
   public static java.util.List<String> RELAUNCH_COMMAND = null;
 
   /**
-   * <code>true</code> while a script is run the way <code>wolframscript</code> runs one, which is
-   * what <code>-file</code>, <code>-script</code>, a <code>#!</code> line, a program on stdin and
-   * <code>-wstp</code> all do.
+   * <code>true</code> while a script is run the way <code>wolframscript</code> runs one.
    *
    * <p>
-   * In that mode <code>$VersionNumber</code> reports the Wolfram Language version Symja is
-   * compatible with rather than Symja's own, because scripts gate features on it - a script that
-   * reads <code>If[$VersionNumber &lt; 14.1, Exit[0]]</code> would otherwise refuse to run at all.
+   * In that mode <code>$VersionNumber</code> reports the WMA version Symja is compatible with
+   * rather than Symja's own, because scripts gate features on it - a script that reads
+   * <code>If[$VersionNumber &lt; 14.1, Exit[0]]</code> would otherwise refuse to run at all.
    * <code>$Version</code> always names Symja, so a script that wants to know what it is really
    * talking to can still find out.
    */
   public static boolean WOLFRAMSCRIPT_COMPAT = false;
 
   /**
-   * The Wolfram Language version reported by <code>$VersionNumber</code> in
-   * {@link #WOLFRAMSCRIPT_COMPAT} mode.
+   * The WMA version reported by <code>$VersionNumber</code> in {@link #WOLFRAMSCRIPT_COMPAT} mode.
    */
   public static final double WOLFRAM_LANGUAGE_VERSION = 14.1;
 
@@ -991,8 +988,8 @@ public class Config {
    * read long before an engine exists - so it is arithmetic on big integers and traffic through a
    * hash table, which is where Symja spends most of its time in any case.
    *
-   * @return the factor for this machine, or <code>1.0</code> if
-   *         {@link #TIME_SCALE_REFERENCE_NANOS} says the baseline is unknown
+   * @return the factor for this machine, or <code>1.0</code> if {@link #TIME_SCALE_REFERENCE_NANOS}
+   *         says the baseline is unknown
    */
   public static double calibrateTimeScale() {
     Double remembered = calibratedTimeScale;

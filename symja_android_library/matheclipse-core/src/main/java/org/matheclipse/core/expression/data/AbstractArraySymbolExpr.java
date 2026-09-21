@@ -26,9 +26,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * </p>
  *
  * <p>
- * The default element domain is {@link S#Complexes}, as in the Wolfram language, and it is omitted
- * from the printed form. A domain has to be printed as soon as a symmetry follows it, because the
- * arguments are positional.
+ * The default element domain is {@link S#Complexes}, and it is omitted from the printed form. A
+ * domain has to be printed as soon as a symmetry follows it, because the arguments are positional.
  * </p>
  */
 public abstract class AbstractArraySymbolExpr extends DataExpr<Object>

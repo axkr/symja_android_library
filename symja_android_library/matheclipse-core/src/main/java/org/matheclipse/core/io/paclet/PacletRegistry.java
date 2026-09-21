@@ -12,10 +12,10 @@ import org.matheclipse.core.eval.EvalEngine;
  * The directories <code>PacletDirectoryLoad</code> was given, and the paclets found in them.
  *
  * <p>
- * This is what makes <code>Needs["A`"]</code> able to find a file: a paclet says which context lives
- * where, so the context name does not have to be guessed at from the file system. Load order
- * matters and is kept - a directory loaded later provides a context in preference to an earlier one,
- * which is how an application overrides a bundled paclet.
+ * This is what makes <code>Needs["A`"]</code> able to find a file: a paclet says which context
+ * lives where, so the context name does not have to be guessed at from the file system. Load order
+ * matters and is kept - a directory loaded later provides a context in preference to an earlier
+ * one, which is how an application overrides a bundled paclet.
  *
  * <p>
  * Process-global, like the loaded-package list it works with: paclets are loaded once by a script
@@ -51,7 +51,7 @@ public final class PacletRegistry {
     return key;
   }
 
-  /** Forget a directory. Nothing already read from it is unloaded - as in the Wolfram Language. */
+  /** Forget a directory. Nothing already read from it is unloaded . */
   public static synchronized boolean unload(Path directory) {
     if (directory == null) {
       return false;

@@ -485,9 +485,9 @@ public class RootsFunctions {
    */
   /**
    * Test if the polynomial is a binomial <code>a*x^n + b*x^m</code> in the given variable, i.e. one
-   * of the &quot;very simple forms&quot; which {@link #unitPolynomial(int,
-   * org.matheclipse.core.polynomials.longexponent.ExprPolynomial)} solves in radicals whatever the
-   * {@link S#Cubics} and {@link S#Quartics} options request.
+   * of the &quot;very simple forms&quot; which
+   * {@link #unitPolynomial(int, org.matheclipse.core.polynomials.longexponent.ExprPolynomial)}
+   * solves in radicals whatever the {@link S#Cubics} and {@link S#Quartics} options request.
    *
    * @param polynomial an expanded polynomial
    * @param variable the polynomial variable
@@ -521,9 +521,9 @@ public class RootsFunctions {
    * @return the {@link S#Root} objects of the factor, or {@link F#NIL} if it should be solved in
    *         radicals after all
    */
-  private static IAST generalRootObjects(IExpr polynomial, IExpr variable,
-      boolean cubicsInRadicals, boolean quarticsInRadicals, boolean numericSolutions,
-      boolean allowRootObjects, EvalEngine engine) {
+  private static IAST generalRootObjects(IExpr polynomial, IExpr variable, boolean cubicsInRadicals,
+      boolean quarticsInRadicals, boolean numericSolutions, boolean allowRootObjects,
+      EvalEngine engine) {
     if ((cubicsInRadicals && quarticsInRadicals) || !allowRootObjects || numericSolutions) {
       return F.NIL;
     }
@@ -777,8 +777,7 @@ public class RootsFunctions {
       // odd
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
-        IASTMutable temp =
-            rhsNumerator.mapThread(F.Power(F.Slot1, F.QQ(1, reducedDegree)), 1);
+        IASTMutable temp = rhsNumerator.mapThread(F.Power(F.Slot1, F.QQ(1, reducedDegree)), 1);
         if (rhsNumerator.first().isNegative()) {
           isNegative = true;
           temp.set(1, rhsNumerator.first().negate());
@@ -797,8 +796,7 @@ public class RootsFunctions {
           isNegative = !isNegative;
           rhsDenominator = ((IAST) rhsDenominator).setAtCopy(1, rhsDenominator.first().negate());
         }
-        IASTMutable temp =
-            rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, reducedDegree)), 1);
+        IASTMutable temp = rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, reducedDegree)), 1);
         zDenominator = engine.evaluate(temp);
       } else {
         if (rhsDenominator.isNegative()) {
@@ -1164,9 +1162,8 @@ public class RootsFunctions {
    * <p>
    * In contrast to {@link #roots(IExpr, boolean, IAST, EvalEngine)} the roots are <b>not</b>
    * collected in a set: a root of multiplicity <code>k</code> is returned <code>k</code> times, as
-   * <code>NSolve</code> and <code>Solve</code> do in
-   * <a href="https://reference.wolfram.com/language/ref/NSolve.html">Wolfram Language</a>. The
-   * roots are ordered by their real part and, for equal real parts, by their imaginary part.
+   * <code>NSolve</code> and <code>Solve</code> do. The roots are ordered by their real part and,
+   * for equal real parts, by their imaginary part.
    *
    * <p>
    * A root at the origin is split off exactly instead of being approximated: for

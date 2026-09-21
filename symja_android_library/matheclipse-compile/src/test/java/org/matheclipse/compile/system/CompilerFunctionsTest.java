@@ -253,14 +253,14 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * A local variable and loop variable the analyzer proves integer-valued are compiled as an
-   * exact <code>long</code>, with overflow-checked arithmetic ({@code Math.addExact} and
-   * friends). <code>s</code> here roughly doubles every iteration, so by iteration 100 it is far
-   * past even a <code>long</code>'s range: the checked arithmetic throws, which is caught the
-   * same way any other numerical failure is and falls back to the uncompiled evaluation - which
-   * computes the exact, arbitrary-precision answer. Before <code>long</code> locals existed, the
-   * accumulation ran in <code>double</code> throughout and came back as the lossy
-   * <code>3.80295*10^30</code>, wrong from partway through the loop onward.
+   * A local variable and loop variable the analyzer proves integer-valued are compiled as an exact
+   * <code>long</code>, with overflow-checked arithmetic ({@code Math.addExact} and friends).
+   * <code>s</code> here roughly doubles every iteration, so by iteration 100 it is far past even a
+   * <code>long</code>'s range: the checked arithmetic throws, which is caught the same way any
+   * other numerical failure is and falls back to the uncompiled evaluation - which computes the
+   * exact, arbitrary-precision answer. Before <code>long</code> locals existed, the accumulation
+   * ran in <code>double</code> throughout and came back as the lossy <code>3.80295*10^30</code>,
+   * wrong from partway through the loop onward.
    */
   @Test
   public void testCompileModuleOverflow() {
@@ -550,9 +550,10 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "9.0");
 
       // all five at once, in declaration order
-      check("Compile({{x, _Real}}, x^2, RuntimeAttributes -> {Listable}, RuntimeOptions -> \"Speed\","
-          + " CompilationOptions -> Automatic, CompilationTarget -> \"C\", Parallelization -> True)"
-          + "[{1., 2., 3.}]", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeAttributes -> {Listable}, RuntimeOptions -> \"Speed\","
+              + " CompilationOptions -> Automatic, CompilationTarget -> \"C\", Parallelization -> True)"
+              + "[{1., 2., 3.}]", //
           "{1.0,4.0,9.0}");
 
       // Options(...) reports the options sorted by name, not in declaration order
@@ -575,36 +576,43 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   public void testCompileRuntimeOptions() {
     if (ToggleFeature.COMPILE) {
       // Automatic is the default, so naming it changes nothing
-      check("Compile({{x, _Real}}, x^2, RuntimeOptions -> Automatic) === Compile({{x, _Real}}, x^2)", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeOptions -> Automatic) === Compile({{x, _Real}}, x^2)", //
           "True");
 
       // "Quality" turns both overflow checks on, "Speed" turns both off
-      check("Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Quality\") === "
-          + "Compile({{x, _Real}}, x^2, RuntimeOptions -> "
-          + "{\"CatchMachineIntegerOverflow\" -> True, \"CatchMachineOverflow\" -> True})", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Quality\") === "
+              + "Compile({{x, _Real}}, x^2, RuntimeOptions -> "
+              + "{\"CatchMachineIntegerOverflow\" -> True, \"CatchMachineOverflow\" -> True})", //
           "True");
-      check("Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Speed\") === "
-          + "Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Quality\")", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Speed\") === "
+              + "Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Quality\")", //
           "False");
 
       // a rule after a name overrides that part of it: "Speed" turns CatchMachineIntegerOverflow
       // off and the rule turns it back on, which leaves the default settings
-      check("Compile({{x, _Real}}, x^2, "
-          + "RuntimeOptions -> {\"Speed\", \"CatchMachineIntegerOverflow\" -> True}) === "
-          + "Compile({{x, _Real}}, x^2)", //
+      check(
+          "Compile({{x, _Real}}, x^2, "
+              + "RuntimeOptions -> {\"Speed\", \"CatchMachineIntegerOverflow\" -> True}) === "
+              + "Compile({{x, _Real}}, x^2)", //
           "True");
 
       // RuleDelayed is accepted wherever Rule is
-      check("Compile({{x, _Real}}, x^2, RuntimeOptions :> \"Speed\") === "
-          + "Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Speed\")", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeOptions :> \"Speed\") === "
+              + "Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Speed\")", //
           "True");
-      check("Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"WarningMessages\" :> False}) === "
-          + "Compile({{x, _Real}}, x^2)", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"WarningMessages\" :> False}) === "
+              + "Compile({{x, _Real}}, x^2)", //
           "False");
 
       // "RuntimeErrorHandler" takes an arbitrary expression rather than a boolean
-      check("Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"RuntimeErrorHandler\" -> Function(0)})"
-          + " === Compile({{x, _Real}}, x^2)", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"RuntimeErrorHandler\" -> Function(0)})"
+              + " === Compile({{x, _Real}}, x^2)", //
           "False");
     }
   }
@@ -624,18 +632,21 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "True");
 
       // prints message "optnf" - Option name "Bogus" not found in defaults for RuntimeOptions
-      check("Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"Bogus\" -> True}) === "
-          + "Compile({{x, _Real}}, x^2)", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"Bogus\" -> True}) === "
+              + "Compile({{x, _Real}}, x^2)", //
           "True");
 
       // prints message "opttf" - Value of option "WarningMessages" -> 7 should be True or False
-      check("Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"WarningMessages\" -> 7}) === "
-          + "Compile({{x, _Real}}, x^2)", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"WarningMessages\" -> 7}) === "
+              + "Compile({{x, _Real}}, x^2)", //
           "True");
 
       // the bad entry is skipped, the good one beside it is kept
-      check("Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"Bogus\" -> True, \"Speed\"}) === "
-          + "Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Speed\")", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeOptions -> {\"Bogus\" -> True, \"Speed\"}) === "
+              + "Compile({{x, _Real}}, x^2, RuntimeOptions -> \"Speed\")", //
           "True");
 
       // CompilePrint reports the same way, and still returns its source
@@ -668,8 +679,9 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       // the setting reaches the generated source
       check("StringContainsQ(CompilePrint({{n, _Integer}}, n^2 + 1), \"symjifyIntegerUnchecked\")", //
           "False");
-      check("StringContainsQ(CompilePrint({{n, _Integer}}, n^2 + 1, RuntimeOptions -> \"Speed\"),"
-          + " \"symjifyIntegerUnchecked\")", //
+      check(
+          "StringContainsQ(CompilePrint({{n, _Integer}}, n^2 + 1, RuntimeOptions -> \"Speed\"),"
+              + " \"symjifyIntegerUnchecked\")", //
           "True");
     }
   }
@@ -684,7 +696,8 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       check("Compile({{x, _Real}}, x^2 + 1)[a]", //
           "1+a^2");
       // settings other than the default ones are printed with the compiled function
-      check("Compile({{x, _Real}}, x^2 + 1, RuntimeOptions -> {\"EvaluateSymbolically\" -> False})[a]", //
+      check(
+          "Compile({{x, _Real}}, x^2 + 1, RuntimeOptions -> {\"EvaluateSymbolically\" -> False})[a]", //
           "CompiledFunction(Arg count: 1 Types: {Real} Variables: {x} Attributes: {}"
               + " Options: {CatchMachineIntegerOverflow->True,CatchMachineOverflow->False,"
               + "CompareWithTolerance->True,EvaluateSymbolically->False,"
@@ -693,9 +706,9 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * <code>"RuntimeErrorHandler"</code> is applied to a call which ends in an exception. The
-   * default <code>Evaluate</code> leaves the call unevaluated, which is what it did before the
-   * option existed.
+   * <code>"RuntimeErrorHandler"</code> is applied to a call which ends in an exception. The default
+   * <code>Evaluate</code> leaves the call unevaluated, which is what it did before the option
+   * existed.
    */
   @Test
   public void testCompileRuntimeErrorHandler() {
@@ -703,13 +716,15 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       // reading past the end of the vector throws out of the compiled code
       check("Compile({{v, _Real, 1}}, v[[5]])[{1., 2.}]", //
           "CompiledFunction(Arg count: 1 Types: {Real} Variables: {v} Attributes: {})[{1.0,2.0}]");
-      check("Compile({{v, _Real, 1}}, v[[5]],"
-          + " RuntimeOptions -> {\"RuntimeErrorHandler\" -> Function(0)})[{1., 2.}]", //
+      check(
+          "Compile({{v, _Real, 1}}, v[[5]],"
+              + " RuntimeOptions -> {\"RuntimeErrorHandler\" -> Function(0)})[{1., 2.}]", //
           "0");
 
       // a call which does not fail never reaches the handler
-      check("Compile({{v, _Real, 1}}, v[[1]],"
-          + " RuntimeOptions -> {\"RuntimeErrorHandler\" -> Function(0)})[{1., 2.}]", //
+      check(
+          "Compile({{v, _Real, 1}}, v[[1]],"
+              + " RuntimeOptions -> {\"RuntimeErrorHandler\" -> Function(0)})[{1., 2.}]", //
           "1.0");
     }
   }
@@ -760,15 +775,16 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "4.5");
 
       // the accumulator shape a fractal noise loop is written in
-      check("Compile({{n, _Integer}, {amp, _Real}, {gain, _Real}},"
-          + " Module({v = 0.0, a = amp}, Do(v += 2.0*a; a *= gain, {n}); v))[3, 1.0, 0.5]", //
+      check(
+          "Compile({{n, _Integer}, {amp, _Real}, {gain, _Real}},"
+              + " Module({v = 0.0, a = amp}, Do(v += 2.0*a; a *= gain, {n}); v))[3, 1.0, 0.5]", //
           "3.5");
     }
   }
 
   /**
-   * The smallest form of the defect the tests around this one guard against: a single straight
-   * line assignment to a <code>Module</code> variable which was given an initial value.
+   * The smallest form of the defect the tests around this one guard against: a single straight line
+   * assignment to a <code>Module</code> variable which was given an initial value.
    *
    * <p>
    * Every other test of it writes the assignment inside <code>Do</code>, <code>While</code> or a
@@ -884,8 +900,9 @@ public class CompilerFunctionsTest extends AbstractTestCase {
 
       check("cfDouble = Compile({{x, _Real}}, x*2.0);", //
           "");
-      check("Compile({{x, _Real}}, cfDouble(x),"
-          + " CompilationOptions -> {\"InlineCompiledFunctions\" -> True})[3.]", //
+      check(
+          "Compile({{x, _Real}}, cfDouble(x),"
+              + " CompilationOptions -> {\"InlineCompiledFunctions\" -> True})[3.]", //
           "6.0");
 
       // prints message "cfco" - Value of option CompilationOptions -> "Fast" should be ...
@@ -895,13 +912,15 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       check("Compile({{x, _Real}}, x^2, CompilationOptions -> {\"Bogus\" -> True})[3.]", //
           "9.0");
       // prints message "opttfa" - should be True, False or Automatic
-      check("Compile({{x, _Real}}, x^2,"
-          + " CompilationOptions -> {\"InlineCompiledFunctions\" -> 7})[3.]", //
+      check(
+          "Compile({{x, _Real}}, x^2,"
+              + " CompilationOptions -> {\"InlineCompiledFunctions\" -> 7})[3.]", //
           "9.0");
 
       // the settings which are read and stored but not acted on
-      check("Compile({{x, _Real}}, x^2, CompilationOptions ->"
-          + " {\"ExpressionOptimization\" -> True, \"InlineExternalDefinitions\" -> True})[3.]", //
+      check(
+          "Compile({{x, _Real}}, x^2, CompilationOptions ->"
+              + " {\"ExpressionOptimization\" -> True, \"InlineExternalDefinitions\" -> True})[3.]", //
           "9.0");
     }
   }
@@ -929,13 +948,15 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "9.0");
 
       // the options in front of the unknown one are still read: RuntimeAttributes takes effect
-      check("Compile({{x, _Real}}, x^2, RuntimeAttributes -> {Listable},"
-          + " \"CompilationTarget\" -> \"WVM\")[{1., 2., 3.}]", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeAttributes -> {Listable},"
+              + " \"CompilationTarget\" -> \"WVM\")[{1., 2., 3.}]", //
           "{1.0,4.0,9.0}");
 
       // several unknown ones in a row
-      check("Compile({{x, _Real}}, x^2, RuntimeAttributes -> {Listable}, Foo -> 1, Bar -> 2)"
-          + "[{1., 2.}]", //
+      check(
+          "Compile({{x, _Real}}, x^2, RuntimeAttributes -> {Listable}, Foo -> 1, Bar -> 2)"
+              + "[{1., 2.}]", //
           "{1.0,4.0}");
 
       // too few arguments is still an error, and too many non-option arguments still is too
@@ -962,17 +983,20 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "21");
 
       // the largest entry of the table is written once, however often the table is read
-      check("With({t = Range(0, 63)},"
-          + " StringCount(CompilePrint({{i, _Integer}}, t[[i]] + t[[i+1]] + t[[i+2]]),"
-          + " \"F.ZZ(63L)\"))", //
+      check(
+          "With({t = Range(0, 63)},"
+              + " StringCount(CompilePrint({{i, _Integer}}, t[[i]] + t[[i+1]] + t[[i+2]]),"
+              + " \"F.ZZ(63L)\"))", //
           "1");
-      check("With({t = Range(0, 63)},"
-          + " StringContainsQ(CompilePrint({{i, _Integer}}, t[[i]]), \"const_1\"))", //
+      check(
+          "With({t = Range(0, 63)},"
+              + " StringContainsQ(CompilePrint({{i, _Integer}}, t[[i]]), \"const_1\"))", //
           "True");
 
       // a short list is left where it is - a field would be more source rather than less
-      check("With({t = {10, 20, 30}},"
-          + " StringContainsQ(CompilePrint({{i, _Integer}}, t[[i]]), \"const_1\"))", //
+      check(
+          "With({t = {10, 20, 30}},"
+              + " StringContainsQ(CompilePrint({{i, _Integer}}, t[[i]]), \"const_1\"))", //
           "False");
       check("With({t = {10, 20, 30}}, Compile({{i, _Integer}}, t[[i]]))[2]", //
           "20");
@@ -995,8 +1019,9 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   public void testCompileScopeInExpression() {
     if (ToggleFeature.COMPILE) {
       // a Module which is not numeric, standing where a value is expected
-      check("With({p = {10., 20., 30.}},"
-          + " Compile({{i, _Integer}}, 1.0 + Module({a}, a = p[[i]]; a*2.0)))[2]", //
+      check(
+          "With({p = {10., 20., 30.}},"
+              + " Compile({{i, _Integer}}, 1.0 + Module({a}, a = p[[i]]; a*2.0)))[2]", //
           "41.0");
 
       // ... and on the right hand side of an assignment, which has to write the field of `s`
@@ -1007,7 +1032,8 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       // an assignment read as an expression updates the field too
       check("Compile({{x, _Real}}, Module({a = 5.0, b}, b = (a = a + 1.0); b*100.0 + a))[0.]", //
           "606.0");
-      check("Compile({{x, _Real}}, Module({a = 1.0, b = 2.0}, a = a + (b = b + 3.0); a*100.0 + b))[0.]", //
+      check(
+          "Compile({{x, _Real}}, Module({a = 1.0, b = 2.0}, a = a + (b = b + 3.0); a*100.0 + b))[0.]", //
           "605.0");
 
       // the shape a fractal noise loop has: a compiled function whose body is a Module, inlined
@@ -1056,10 +1082,10 @@ public class CompilerFunctionsTest extends AbstractTestCase {
     if (ToggleFeature.COMPILE) {
       check("cfReal = Compile({{a, _Real}, {b, _Real}}, a*b + 1.0);", //
           "");
-      assertTrue(messagesOf("cfReal(2.0, unsetarg)").contains(
-          "Argument unsetarg at position 2 should be a machine-size real number."));
-      assertTrue(messagesOf("cfReal(unsetarg2, 3.0)").contains(
-          "Argument unsetarg2 at position 1 should be a machine-size real number."));
+      assertTrue(messagesOf("cfReal(2.0, unsetarg)")
+          .contains("Argument unsetarg at position 2 should be a machine-size real number."));
+      assertTrue(messagesOf("cfReal(unsetarg2, 3.0)")
+          .contains("Argument unsetarg2 at position 1 should be a machine-size real number."));
 
       // the fallback still gives the right answer
       check("cfReal(2.0, unsetarg)", //
@@ -1081,8 +1107,9 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       assertEquals("", messagesOf("cfVector({1.0, 2.0})"));
 
       // and silence is still silence
-      check("cfQuiet = Compile({{x, _Real}}, x,"
-          + " RuntimeOptions -> {\"WarningMessages\" -> False});", //
+      check(
+          "cfQuiet = Compile({{x, _Real}}, x,"
+              + " RuntimeOptions -> {\"WarningMessages\" -> False});", //
           "");
       assertEquals("", messagesOf("cfQuiet(unsetarg)"));
     }
@@ -1101,11 +1128,13 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   public void testCompileConstantArrayAccess() {
     if (ToggleFeature.COMPILE) {
       // the array is emitted beside the expression form, and read through
-      check("With({t = Range(0, 63)},"
-          + " StringContainsQ(CompilePrint({{i, _Integer}}, t[[i]]), \"const_1_a\"))", //
+      check(
+          "With({t = Range(0, 63)},"
+              + " StringContainsQ(CompilePrint({{i, _Integer}}, t[[i]]), \"const_1_a\"))", //
           "True");
-      check("With({t = Range(0, 63)},"
-          + " StringContainsQ(CompilePrint({{i, _Integer}}, t[[i]]), \"const_1_a[(int)(\"))", //
+      check(
+          "With({t = Range(0, 63)},"
+              + " StringContainsQ(CompilePrint({{i, _Integer}}, t[[i]]), \"const_1_a[(int)(\"))", //
           "True");
 
       // a table of integers still gives an integer, a table of reals a real
@@ -1115,16 +1144,19 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "21.0");
 
       // a table of tables, read both ways
-      check("With({m = Table(10*r + c, {r, 1, 20}, {c, 1, 20})},"
-          + " Compile({{i, _Integer}, {j, _Integer}}, m[[i]][[j]]))[2, 3]", //
+      check(
+          "With({m = Table(10*r + c, {r, 1, 20}, {c, 1, 20})},"
+              + " Compile({{i, _Integer}, {j, _Integer}}, m[[i]][[j]]))[2, 3]", //
           "23");
-      check("With({m = Table(10*r + c, {r, 1, 20}, {c, 1, 20})},"
-          + " Compile({{i, _Integer}, {j, _Integer}}, m[[i, j]]))[2, 3]", //
+      check(
+          "With({m = Table(10*r + c, {r, 1, 20}, {c, 1, 20})},"
+              + " Compile({{i, _Integer}, {j, _Integer}}, m[[i, j]]))[2, 3]", //
           "23");
 
       // a read which does not produce a number - one index short of the rank - is left alone
-      check("With({m = Table(10*r + c, {r, 1, 20}, {c, 1, 20})},"
-          + " Compile({{i, _Integer}}, Total(m[[i]])))[2]", //
+      check(
+          "With({m = Table(10*r + c, {r, 1, 20}, {c, 1, 20})},"
+              + " Compile({{i, _Integer}}, Total(m[[i]])))[2]", //
           "610");
 
       // a list which was never lifted, and one which is not numbers at all
@@ -1154,9 +1186,9 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * A <code>Return(...)</code> anywhere in the body returns from the compiled function, whether
-   * it is generated directly or reached through a method one of the other native heads generates
-   * for it. Before this the generated <code>evaluate</code> never caught the exception a
+   * A <code>Return(...)</code> anywhere in the body returns from the compiled function, whether it
+   * is generated directly or reached through a method one of the other native heads generates for
+   * it. Before this the generated <code>evaluate</code> never caught the exception a
    * <code>Return</code> throws, so it printed as a runtime error and the call stayed unevaluated.
    */
   @Test
@@ -1172,8 +1204,8 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   /**
    * <code>Do</code> with more than one iterator is rewritten into nested single-iterator
    * <code>Do</code>s before compilation: <code>F.Do</code> only ever has a two-argument factory
-   * method (body plus one iterator), so the symbolic fallback wrote source Janino could not
-   * compile for every other native head this used to reach through it.
+   * method (body plus one iterator), so the symbolic fallback wrote source Janino could not compile
+   * for every other native head this used to reach through it.
    */
   @Test
   public void testCompileMultiIteratorDo() {
@@ -1187,11 +1219,11 @@ public class CompilerFunctionsTest extends AbstractTestCase {
 
   /**
    * A native head with no matching <code>F</code> factory method - <code>NestList</code>,
-   * <code>FixedPointList</code>, a three-argument <code>Array</code> - or a call to a
-   * user-defined function used to fail to compile, because the symbolic fallback wrote every
-   * head as <code>F.&lt;Name&gt;(args)</code> regardless of whether such a factory method
-   * actually existed. It now falls back to the fully general <code>F.function(head, args...)</code>
-   * constructor, which always compiles.
+   * <code>FixedPointList</code>, a three-argument <code>Array</code> - or a call to a user-defined
+   * function used to fail to compile, because the symbolic fallback wrote every head as
+   * <code>F.&lt;Name&gt;(args)</code> regardless of whether such a factory method actually existed.
+   * It now falls back to the fully general <code>F.function(head, args...)</code> constructor,
+   * which always compiles.
    */
   @Test
   public void testCompileSymbolicFactoryFallback() {
@@ -1207,25 +1239,26 @@ public class CompilerFunctionsTest extends AbstractTestCase {
    * A list literal reaching the numeric emitters produced a working but noisy result:
    * <code>isNumericFunction</code> counts any <code>List</code> as numeric regardless of its
    * elements, so <code>{x, x^2}</code> or <code>Clip(x, {-4, 4})</code> were handed to
-   * <code>convertNumeric</code>, which wrote <code>F.List.ofN(...)</code>/<code>F.Clip.ofN(...)</code>
-   * - calls that throw at every invocation, are caught, and fall back to an uncompiled
-   * evaluation. The value was always right; only the silent detour and the message were not.
+   * <code>convertNumeric</code>, which wrote
+   * <code>F.List.ofN(...)</code>/<code>F.Clip.ofN(...)</code> - calls that throw at every
+   * invocation, are caught, and fall back to an uncompiled evaluation. The value was always right;
+   * only the silent detour and the message were not.
    */
   @Test
   public void testCompileListLiteralNoNumericalError() {
     if (ToggleFeature.COMPILE) {
       check("Compile({{x, _Real}}, {x, x^2})[2.]", "{2.0,4.0}");
       assertEquals("", messagesOf("Compile({{x, _Real, 0}}, Clip(x, {-4, 4}))[-5.]"));
-      // Wolfram Language ground truth: Clip of a real is real
+      // Clip of a real is real
       check("Compile({{x, _Real, 0}}, Clip(x, {-4, 4}))[-5.]", "-4.0");
     }
   }
 
   /**
-   * The imaginary unit reaching the double emitter of a real-valued function was written as a
-   * bare, unresolvable Java identifier - the double emitter has no notion of a complex number at
-   * all - so an expression which is complex-valued despite every argument being real failed to
-   * compile. It is now kept out of the numeric emitters the same way a list literal is.
+   * The imaginary unit reaching the double emitter of a real-valued function was written as a bare,
+   * unresolvable Java identifier - the double emitter has no notion of a complex number at all - so
+   * an expression which is complex-valued despite every argument being real failed to compile. It
+   * is now kept out of the numeric emitters the same way a list literal is.
    */
   @Test
   public void testCompileImaginaryUnitInRealFunction() {
@@ -1239,8 +1272,8 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   /**
    * <code>Re</code>, <code>Im</code> and <code>Arg</code> read a <code>double</code> out of a
    * <code>Complex</code>, which Hipparchus has no method returning directly as a
-   * <code>Complex</code>; wrapping the <code>double</code> back up is what lets it compose with
-   * the rest of the complex-domain codegen, which chains Hipparchus instance methods throughout.
+   * <code>Complex</code>; wrapping the <code>double</code> back up is what lets it compose with the
+   * rest of the complex-domain codegen, which chains Hipparchus instance methods throughout.
    * <code>Exp(z)</code> is exactly <code>E^z</code> internally, and Hipparchus's
    * <code>Complex</code> has no two-argument <code>pow</code> taking a real base, so the general
    * <code>Power</code> codegen wrote an instance method call on the primitive <code>double</code>
@@ -1259,8 +1292,8 @@ public class CompilerFunctionsTest extends AbstractTestCase {
 
   /**
    * <code>Max</code>/<code>Min</code> of more than two arguments used to fail to compile in the
-   * real domain: <code>Math.max</code>/<code>Math.min</code> only ever take two arguments, and
-   * the generated call passed every argument to one call. More than two now nest.
+   * real domain: <code>Math.max</code>/<code>Math.min</code> only ever take two arguments, and the
+   * generated call passed every argument to one call. More than two now nest.
    */
   @Test
   public void testCompileMaxMinNary() {
@@ -1299,10 +1332,10 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * A <code>Module</code>/<code>Block</code>/<code>With</code> local, and a native
-   * <code>Do</code> loop variable, the analyzer proves is always integer-valued is compiled as an
-   * exact <code>long</code> field, with checked arithmetic ({@code Math.addExact} and friends,
-   * under the default <code>"CatchMachineIntegerOverflow" -> True</code>) rather than always
+   * A <code>Module</code>/<code>Block</code>/<code>With</code> local, and a native <code>Do</code>
+   * loop variable, the analyzer proves is always integer-valued is compiled as an exact
+   * <code>long</code> field, with checked arithmetic ({@code Math.addExact} and friends, under the
+   * default <code>"CatchMachineIntegerOverflow" -> True</code>) rather than always
    * <code>double</code>. Before this:
    * <ul>
    * <li>the accumulator here came back as <code>55.0</code>, not the correct <code>55</code>,
@@ -1329,15 +1362,14 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * A <code>Divide</code> - and a <code>Power</code> whose exponent is not a literal
-   * non-negative integer - never has an exact-integer codegen, even between two integer
-   * arguments: real <code>Compile</code>'s own <code>Divide</code> always computes a machine
-   * real, so the type this compiler infers for it has to be Real too, or an evenly-divisible
-   * input would come back an Integer while an input that is not stays Real - an inconsistent
-   * return type depending on the argument's value, not just its declared type. Before the
-   * analyzer knew this, <code>n/2</code> reached the double emitter with an <code>int</code>
-   * field substituted by name into it, and Java's own operator typing did integer division
-   * regardless of what the analyzer had inferred.
+   * A <code>Divide</code> - and a <code>Power</code> whose exponent is not a literal non-negative
+   * integer - never has an exact-integer codegen, even between two integer arguments: real
+   * <code>Compile</code>'s own <code>Divide</code> always computes a machine real, so the type this
+   * compiler infers for it has to be Real too, or an evenly-divisible input would come back an
+   * Integer while an input that is not stays Real - an inconsistent return type depending on the
+   * argument's value, not just its declared type. Before the analyzer knew this, <code>n/2</code>
+   * reached the double emitter with an <code>int</code> field substituted by name into it, and
+   * Java's own operator typing did integer division regardless of what the analyzer had inferred.
    */
   @Test
   public void testCompileDivideAlwaysReal() {
@@ -1368,19 +1400,19 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * An assignment nested inside a <i>held</i> argument - one a builtin does not evaluate when it
-   * is itself evaluated, so its own evaluator decides how many times, and in which order, it
-   * actually runs - is left as part of the symbolic expression instead of being hoisted into a
-   * once-called Java method. <code>Table</code>, <code>Sum</code>, <code>Map</code>'s function
-   * argument and <code>Function</code>'s body are all held this way (this is read off the head's
-   * actual <code>HoldFirst</code>/<code>HoldRest</code> attributes, not a fixed list of names).
+   * An assignment nested inside a <i>held</i> argument - one a builtin does not evaluate when it is
+   * itself evaluated, so its own evaluator decides how many times, and in which order, it actually
+   * runs - is left as part of the symbolic expression instead of being hoisted into a once-called
+   * Java method. <code>Table</code>, <code>Sum</code>, <code>Map</code>'s function argument and
+   * <code>Function</code>'s body are all held this way (this is read off the head's actual
+   * <code>HoldFirst</code>/<code>HoldRest</code> attributes, not a fixed list of names).
    *
    * <p>
    * Before this, hoisting ran the assignment eagerly, exactly once, at the point the enclosing
-   * call's Java arguments were being built - not once per iteration, and not only in the branch
-   * an <code>If</code>'s condition actually picked. <code>Table(s += 1., {i, n})</code> updated
-   * the hoisted method's own field once and returned, so the accumulator came back
-   * <code>1.0</code> for any <code>n</code> rather than counting all <code>n</code> iterations;
+   * call's Java arguments were being built - not once per iteration, and not only in the branch an
+   * <code>If</code>'s condition actually picked. <code>Table(s += 1., {i, n})</code> updated the
+   * hoisted method's own field once and returned, so the accumulator came back <code>1.0</code> for
+   * any <code>n</code> rather than counting all <code>n</code> iterations;
    * <code>1.0 + If(x > 0, s = 1., s = 2.)</code> ran <i>both</i> of the <code>If</code>'s branches
    * (each hoisted to its own once-called method) instead of exactly the one the condition picked.
    */
@@ -1394,33 +1426,33 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       check("Compile({{n, _Integer}}, Module({s = 0.}, Sum(s += i, {i, n}); s))[3]", "6.0");
       // Map itself does not hold its function argument, but the Function it is given does hold
       // its own body - which is where the actual per-element assignment lives
-      check("Compile({{x, _Real}}, Module({s = 0.}, Map((s += #) &, {1., 2., 3.}); s))[3.]",
-          "6.0");
+      check("Compile({{x, _Real}}, Module({s = 0.}, Map((s += #) &, {1., 2., 3.}); s))[3.]", "6.0");
       // a Table nested inside a Module that is itself inside another Table - held-ness is sticky
       // through however many levels of nesting a held position contains
-      check("Compile({{x, _Real}}, "
-          + "Module({s = 0.}, Table(If(i > 1, s += 1.), {i, 3}); s))[3.]", "2.0");
+      check(
+          "Compile({{x, _Real}}, " + "Module({s = 0.}, Table(If(i > 1, s += 1.), {i, 3}); s))[3.]",
+          "2.0");
     }
   }
 
   /**
    * <code>RuntimeAttributes -> {Listable}</code> threads over the dimensions of an argument beyond
    * the rank its argument template declares, one dimension at a time, and passes an argument of
-   * exactly that rank through unchanged (port of Woxi #807).
+   * exactly that rank through unchanged.
    *
    * <p>
    * Before this the engine's own Listable threading took every list argument apart, so an
    * array-typed argument was peeled down to its scalars: even a call at exactly the declared rank
    * ended in a <code>NullPointerException</code> or computed with <code>Null</code> in place of the
-   * array. The parameter is named <code>seg</code>, not Woxi's <code>line</code>: in relaxed syntax
-   * <code>line</code> is the builtin <code>Line</code>.
+   * array. The parameter is named <code>seg</code>, in relaxed syntax <code>line</code> is the
+   * builtin <code>Line</code>.
    */
   @Test
   public void testCompileListableArrayRank() {
     if (ToggleFeature.COMPILE) {
       check("f = Compile({{seg, _Real, 2}}, Length(seg), RuntimeAttributes -> {Listable});", //
           "");
-      // Length of a compiled array is an integer, as in the Wolfram Language (Woxi prints 2.)
+      // Length of a compiled array is an integer
       check("f({{{1., 1.}, {2., 2.}}, {{3., 3.}, {4., 4.}}, {{5., 5.}, {6., 6.}}})", //
           "{2,2,2}");
       assertEquals("",
@@ -1452,9 +1484,10 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "{3,12}");
 
       // the Koch snowflake shape: a kernel on one segment, reapplied by Nest to its own result
-      check("koch = Compile({{s, _Real, 2}}, {{s[[1]], (2.*s[[1]] + s[[2]])/3.},"
-          + " {(2.*s[[1]] + s[[2]])/3., (s[[1]] + 2.*s[[2]])/3.},"
-          + " {(s[[1]] + 2.*s[[2]])/3., s[[2]]}}, RuntimeAttributes -> {Listable});", //
+      check(
+          "koch = Compile({{s, _Real, 2}}, {{s[[1]], (2.*s[[1]] + s[[2]])/3.},"
+              + " {(2.*s[[1]] + s[[2]])/3., (s[[1]] + 2.*s[[2]])/3.},"
+              + " {(s[[1]] + 2.*s[[2]])/3., s[[2]]}}, RuntimeAttributes -> {Listable});", //
           "");
       check("Dimensions(Nest(koch, {{0., 0.}, {3., 0.}}, 2))", //
           "{3,3,2,2}");
@@ -1464,7 +1497,7 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "");
       check("k({1., 2.}, {10., 20.})", //
           "{21.0,42.0}");
-      // unequal lengths, Wolfram Language ground truth: CompiledFunction::tdlen, the uncompiled
+      // unequal lengths: CompiledFunction::tdlen, the uncompiled
       // expression is evaluated (with its own Thread::tdlen), then CompiledFunction::cfsa names the
       // argument the compiled code could not take
       check("k({1., 2.}, {1., 2., 3.})", //
@@ -1495,15 +1528,13 @@ public class CompilerFunctionsTest extends AbstractTestCase {
       assertEquals("", messagesOf("p({1., 2., 3.})"));
       check("p({{1., 2.}, {3., 4.}})", //
           "2");
-      // the Wolfram Language's message, word for word
       assertTrue(messagesOf("p({{1., 2.}, {3., 4.}})").contains("CompiledFunction: Argument"
           + " {{1.0,2.0},{3.0,4.0}} at position 1 should be a rank 1 tensor of machine-size real"
           + " numbers."));
       check("p(5.)", //
           "0");
 
-      // a list at a scalar position is CompiledFunction::cfsa, not the generic numerical error -
-      // Wolfram Language ground truth
+      // a list at a scalar position is CompiledFunction::cfsa, not the generic numerical error
       check("sq = Compile({{x, _Real}}, x^2);", //
           "");
       check("sq({1., 2.})", //
@@ -1513,19 +1544,21 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           + " machine-size real number."), messages);
       assertTrue(!messages.contains("Numerical error"), messages);
 
-      check("pq = Compile({{v, _Real, 1}}, Length(v),"
-          + " RuntimeOptions -> {\"EvaluateSymbolically\" -> False});", //
+      check(
+          "pq = Compile({{v, _Real, 1}}, Length(v),"
+              + " RuntimeOptions -> {\"EvaluateSymbolically\" -> False});", //
           "");
-      assertTrue(evaluator.eval("pq(5.)").head() instanceof
-          org.matheclipse.compile.expression.CompiledFunctionExpr);
+      assertTrue(evaluator.eval("pq(5.)")
+          .head() instanceof org.matheclipse.compile.expression.CompiledFunctionExpr);
     }
   }
+
   /**
    * A compiled list result is a packed tensor: its elements are unified to the widest numeric type
    * among them, so an exact element which came from a literal in the body comes back as a machine
    * number next to a real one, and <code>Clip</code> of a real is real. An all-integer tensor, and
-   * an integer-valued result such as <code>Length</code>, stay exact (Wolfram Language ground
-   * truth: <code>Length</code> of a real matrix argument is an integer).
+   * an integer-valued result such as <code>Length</code>, stay exact (<code>Length</code> of a real
+   * matrix argument is an integer).
    */
   @Test
   public void testCompileResultTensorType() {
@@ -1550,10 +1583,10 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * The Wolfram Language's own serialized form of a compiled function - as a notebook saved with
+   * Serialized form of a compiled function - as a notebook saved with
    * <code>SaveDefinitions -> True</code>, or its <code>InputForm</code>, writes it - is called
-   * through the uncompiled <code>Function</code> it embeds next to the bytecode (Woxi #697). An
-   * argument at a <code>_Real</code> position is read as a machine number.
+   * through the uncompiled <code>Function</code> it embeds next to the bytecode. An argument at a
+   * <code>_Real</code> position is read as a machine number.
    *
    * <p>
    * Deliberate divergence: Mathematica itself rejects the hand-built <code>{7, 7.0, 42}</code>
@@ -1565,18 +1598,18 @@ public class CompilerFunctionsTest extends AbstractTestCase {
   @Test
   public void testCompiledFunctionSerializedForm() {
     if (ToggleFeature.COMPILE) {
-      check("cfs = CompiledFunction({7, 7.0, 42}, {_Integer, _Real}, {{2, 0, 0}}, {{}},"
-          + " {0, 1, 2, 0, 0}, {{1}}, Function({a, b}, N(a) + b), Evaluate); cfs(3, 0.25)", //
+      check(
+          "cfs = CompiledFunction({7, 7.0, 42}, {_Integer, _Real}, {{2, 0, 0}}, {{}},"
+              + " {0, 1, 2, 0, 0}, {{1}}, Function({a, b}, N(a) + b), Evaluate); cfs(3, 0.25)", //
           "3.25");
       // called deep inside a larger computation, where an unreduced call would grow at every level
       // (helper names avoid ones relaxed syntax maps to protected builtins, like accumulate)
-      check("stepfn = CompiledFunction({7, 7.0, 42}, {_Integer}, {{2, 0, 0}}, {{}}, {0, 1, 2, 0, 0},"
-          + " {{1}}, Function({k}, N(2*k)), Evaluate);"
-          + " runsteps(n_) := Module({acc}, acc = 0; Do(acc = acc + stepfn(i), {i, 1, n}); acc);"
-          + " runsteps(4)", //
+      check(
+          "stepfn = CompiledFunction({7, 7.0, 42}, {_Integer}, {{2, 0, 0}}, {{}}, {0, 1, 2, 0, 0},"
+              + " {{1}}, Function({k}, N(2*k)), Evaluate);"
+              + " runsteps(n_) := Module({acc}, acc = 0; Do(acc = acc + stepfn(i), {i, 1, n}); acc);"
+              + " runsteps(4)", //
           "20.0");
-      // the Wolfram Language's own dump of Compile({x, y}, x + 2 y, RuntimeAttributes -> {Listable}):
-      // the attribute rides on the embedded Function, and _Real arguments are read as reals
       check("CompiledFunction({11, 15., 5598}, {_Real, _Real}, {{3, 0, 0}, {3, 0, 1}, {3, 0, 3}},"
           + " {{2, {2, 0, 0}}}, {0, 1, 4, 0, 0}, {{10, 0, 2}, {16, 2, 1, 2}, {13, 0, 2, 3}, {1}},"
           + " Function({x, y}, x + 2*y, Listable), Evaluate)[{1, 2}, {3, 4}]", //

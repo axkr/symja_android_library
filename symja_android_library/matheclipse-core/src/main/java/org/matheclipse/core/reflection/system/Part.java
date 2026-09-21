@@ -8,11 +8,10 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.Attribute;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -577,9 +576,8 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    *
    * <p>
    * One position answers the byte as an integer; a span or a list of positions answers another byte
-   * array, the way the Wolfram Language keeps a byte array a byte array. Reading the head of an HTTP
-   * request is written as <code>message[[i ;; i + 3]]</code>, so without this no request can be
-   * parsed.
+   * array. Reading the head of an HTTP request is written as <code>message[[i ;; i + 3]]</code>, so
+   * without this no request can be parsed.
    *
    * @return {@link F#NIL} if the specification is not one this understands
    */

@@ -174,7 +174,8 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
   }
 
   // The tests below run over the 7000 values of Table(Mod(i, 7),{i, 7000}), in which {5, 6}
-  // occurs 1000 times. A fixed-length pattern keeps each scan linear; every tail of the list used to
+  // occurs 1000 times. A fixed-length pattern keeps each scan linear; every tail of the list used
+  // to
   // be copied at every position, which takes hours at this length. (The test harness caps a list at
   // Config.MAX_AST_SIZE = 20000 elements, so a longer one cannot be built here.)
 
@@ -201,14 +202,15 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
     // no match at lengths 1 and 2, a match at 3
     check("SequenceCases({1, 2, 3}, {1, _, _}, Overlaps -> All)", //
         "{{1,2,3}}");
-    // the Wolfram Language documentation: the longest first at each position
+    // the longest first at each position
     check("SequenceCases({1, 2, 3}, {__}, Overlaps -> All)", //
         "{{1,2,3},{1,2},{1},{2,3},{2},{3}}");
   }
 
   @Test
   public void testSequencePositionOnALongList() {
-    check("With({p = SequencePosition(Table(Mod(i, 7), {i, 7000}), {5, 6})}, {Length(p), First(p)})", //
+    check(
+        "With({p = SequencePosition(Table(Mod(i, 7), {i, 7000}), {5, 6})}, {Length(p), First(p)})", //
         "{1000,{5,6}}");
   }
 
