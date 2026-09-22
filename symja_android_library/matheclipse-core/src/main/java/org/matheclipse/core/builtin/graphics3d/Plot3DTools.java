@@ -308,62 +308,55 @@ public final class Plot3DTools {
   }
 
   /**
-   * Iso lines of a scalar over the sampled grid, as {@code Line} primitives in three dimensions.
+   * Iso lines of a scalar over the sampled grid, as segments between vertices of the surface.
    *
    * <p>
    * This is what {@code MeshFunctions} draws: instead of following the sampling grid, a mesh line
    * follows a level of some function of the point. Each cell of the grid is walked and the level is
    * traced across it wherever it enters and leaves, so the lines come out continuous and sit on the
-   * surface rather than beside it.
+   * surface rather than beside it. The points where it crosses become vertices of the surface's
+   * {@code GraphicsComplex}, as Mathematica writes a mesh, so the grid has to be in the builder
+   * already: each crossing takes the normal and the colour of the nearer corner.
    *
+   * @param builder the surface, with its grid added
    * @param grid the sampled surface, {@code null} at a point that has no value
    * @param values the mesh function at each of those points
-   * @param levels how many evenly spaced levels to draw
+   * @param targets the levels to draw
+   * @return <code>{{i, j}, ...}</code>, the segments as pairs of vertex numbers
    */
-  public static IASTAppendable meshLines(double[][][] grid, double[][] values, int levels) {
+  public static IASTAppendable meshSegments(GraphicsComplexBuilder builder, double[][][] grid,
+      double[][] values, double[] targets) {
     int nx = grid.length;
     int ny = nx > 0 ? grid[0].length : 0;
-    IASTAppendable lines = F.ListAlloc(levels * 8);
-    if (nx < 2 || ny < 2 || levels < 1) {
-      return lines;
-    }
-    double min = Double.MAX_VALUE;
-    double max = -Double.MAX_VALUE;
-    for (int i = 0; i < nx; i++) {
-      for (int j = 0; j < ny; j++) {
-        if (grid[i][j] != null && Double.isFinite(values[i][j])) {
-          min = Math.min(min, values[i][j]);
-          max = Math.max(max, values[i][j]);
-        }
-      }
-    }
-    if (!(max > min)) {
-      return lines;
-    }
-    double[] targets = new double[levels];
-    for (int level = 1; level <= levels; level++) {
-      targets[level - 1] = min + (max - min) * level / (levels + 1.0);
-    }
-    return meshLinesAt(grid, values, targets);
-  }
-
-  /** Iso lines of a scalar over the sampled grid at the given levels. */
-  public static IASTAppendable meshLinesAt(double[][][] grid, double[][] values,
-      double[] targets) {
-    int nx = grid.length;
-    int ny = nx > 0 ? grid[0].length : 0;
-    IASTAppendable lines = F.ListAlloc(targets.length * 8);
+    IASTAppendable segments = F.ListAlloc(targets.length * 8);
     if (nx < 2 || ny < 2) {
-      return lines;
+      return segments;
     }
     for (double target : targets) {
       for (int i = 0; i < nx - 1; i++) {
         for (int j = 0; j < ny - 1; j++) {
-          traceCell(lines, grid, values, i, j, target);
+          traceCell(builder, segments, grid, values, i, j, target);
         }
       }
     }
-    return lines;
+    return segments;
+  }
+
+  /**
+   * Draw mesh segments inside the surface's {@code GraphicsComplex}, in a group of their own as
+   * Mathematica writes them: the group scopes the style, and {@code VertexColors -> None} keeps a
+   * coloured surface's vertex colours off the lines.
+   *
+   * @param meshStyle the {@code MeshStyle} option; {@code Automatic} draws the lines black
+   */
+  public static void addMeshSegments(GraphicsComplexBuilder builder, IAST segments,
+      IExpr meshStyle) {
+    if (segments.argSize() == 0) {
+      return;
+    }
+    IExpr style = meshStyle == null || meshStyle == S.Automatic ? S.Black : meshStyle;
+    builder.addPrimitive(F.List(style,
+        F.binaryAST2(S.Line, segments, F.Rule(S.VertexColors, S.None))));
   }
 
   /** How many mesh levels a {@code MeshFunctions} entry draws when {@code Mesh} does not say. */
@@ -649,8 +642,8 @@ public final class Plot3DTools {
   }
 
   /** The segment of one level inside one cell of the grid, if the level passes through it. */
-  private static void traceCell(IASTAppendable lines, double[][][] grid, double[][] values, int i,
-      int j, double target) {
+  private static void traceCell(GraphicsComplexBuilder builder, IASTAppendable segments,
+      double[][][] grid, double[][] values, int i, int j, double target) {
     double[][] corners = {grid[i][j], grid[i + 1][j], grid[i + 1][j + 1], grid[i][j + 1]};
     double[] at = {values[i][j], values[i + 1][j], values[i + 1][j + 1], values[i][j + 1]};
     for (int c = 0; c < 4; c++) {
@@ -658,7 +651,8 @@ public final class Plot3DTools {
         return; // an incomplete cell has no interior to trace
       }
     }
-    IASTAppendable crossings = F.ListAlloc(2);
+    int[] crossings = new int[4];
+    int count = 0;
     for (int edge = 0; edge < 4; edge++) {
       int a = edge;
       int b = (edge + 1) % 4;
@@ -668,15 +662,19 @@ public final class Plot3DTools {
         continue;
       }
       double t = (target - va) / (vb - va);
-      crossings.append(F.List(//
-          F.num(corners[a][0] + t * (corners[b][0] - corners[a][0])), //
-          F.num(corners[a][1] + t * (corners[b][1] - corners[a][1])), //
-          F.num(corners[a][2] + t * (corners[b][2] - corners[a][2]))));
+      // the corner is already a vertex of the surface, so adding it again only finds its number
+      double[] near = corners[t < 0.5 ? a : b];
+      int nearest = builder.addVertex(near[0], near[1], near[2], null, null);
+      crossings[count++] = builder.addVertex( //
+          corners[a][0] + t * (corners[b][0] - corners[a][0]), //
+          corners[a][1] + t * (corners[b][1] - corners[a][1]), //
+          corners[a][2] + t * (corners[b][2] - corners[a][2]), //
+          builder.normalOf(nearest), builder.colorOf(nearest));
     }
     // two crossings is a segment; four means the level passes through twice and the cell is too
     // coarse to say how, so it is left out rather than guessed at
-    if (crossings.argSize() == 2) {
-      lines.append(F.Line(crossings));
+    if (count == 2 && crossings[0] != crossings[1]) {
+      segments.append(F.List(F.ZZ(crossings[0]), F.ZZ(crossings[1])));
     }
   }
 

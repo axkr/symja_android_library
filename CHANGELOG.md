@@ -4,6 +4,12 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- The lines `MeshFunctions` draws on a `Plot3D` or `ParametricPlot3D` surface are part of its
+  `GraphicsComplex`, as Mathematica writes a mesh: `{style, Line({{i, j}, ...}, VertexColors -> None)}`
+  over vertices of the surface, each crossing taking the normal and colour of its nearer sample.
+  They used to be separate lines with coordinates beside the complex. They also replace the
+  sampling grid's lines instead of being drawn on top of them, as `ParametricPlot3D` already did.
+
 - `TabView` shows the pane its selector picks. `TabView({lbl -> e, ...}, i)` selects by position
   and `TabView({v -> {lbl, e}, ...}, v)` by key; the selector may be a `Dynamic`, as a `Manipulate`
   drives the tabs from a control of its own, and one that names no tab shows the first. The web

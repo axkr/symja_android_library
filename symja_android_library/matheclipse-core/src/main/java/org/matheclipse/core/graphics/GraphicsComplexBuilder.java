@@ -120,6 +120,24 @@ public class GraphicsComplexBuilder {
     return vertexMap.get(key);
   }
 
+  /** The normal of vertex {@code index}, counted from one, or {@code null} when there is none. */
+  public double[] normalOf(int index) {
+    if (normals == null || index < 1 || index > normals.argSize()) {
+      return null;
+    }
+    IAST normal = (IAST) normals.get(index);
+    return new double[] {normal.arg1().evalf(), normal.arg2().evalf(), normal.arg3().evalf()};
+  }
+
+  /** The colour of vertex {@code index}, counted from one, or {@code null} when there is none. */
+  public IExpr colorOf(int index) {
+    if (colors == null || index < 1 || index > colors.argSize()) {
+      return null;
+    }
+    IExpr color = colors.get(index);
+    return color == S.Automatic ? null : color;
+  }
+
   /**
    * Append a triangle face to the shared polygon group.
    */

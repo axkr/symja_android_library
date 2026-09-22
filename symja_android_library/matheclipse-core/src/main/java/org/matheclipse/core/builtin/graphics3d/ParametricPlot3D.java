@@ -84,25 +84,17 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         if (each.hasStyle()) {
           builder.setStyle(each.style);
         }
-        IAST[] meshLines = new IAST[1];
         double[][][] grid =
             createSurfaceGeometry(each.datum, uRange, vRange, samples[0], samples[1], engine,
                 builder, colorBuilder, meshOption, options[Plot3DTools.X_MESH_STYLE],
                 options[Plot3DTools.X_EVALUATION_MONITOR], region,
-                options[Plot3DTools.X_MESH_FUNCTIONS], options[Plot3DTools.X_MESH_SHADING],
-                meshLines);
+                options[Plot3DTools.X_MESH_FUNCTIONS], options[Plot3DTools.X_MESH_SHADING]);
         if (grid != null) {
           // the rim of the surface, and the rim of every hole a RegionFunction cut in it
           IExpr complex = Plot3DTools.withBoundary(builder, grid,
               options[Plot3DTools.X_BOUNDARY_STYLE], false);
           if (complex.isPresent()) {
             graphicsList.append(each.wrapTooltip(complex));
-          }
-          if (meshLines[0] != null && meshLines[0].argSize() > 0) {
-            // the lines keep their own colour rather than being shaded with the surface
-            IExpr meshStyle = options[Plot3DTools.X_MESH_STYLE];
-            graphicsList.append(F.list(meshStyle == S.Automatic ? S.Black : meshStyle,
-                meshLines[0]));
           }
         }
       }
@@ -193,13 +185,13 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
    *
    * <p>
    * With explicit {@code MeshFunctions} the mesh follows levels of those functions rather than the
-   * two parameters, and is handed back in {@code meshLines}; {@code MeshShading} then colours the
-   * bands between its lines.
+   * two parameters, drawn inside the surface's {@code GraphicsComplex}; {@code MeshShading} then
+   * colours the bands between its lines.
    */
   private double[][][] createSurfaceGeometry(IExpr func, IAST uRange, IAST vRange, int uCount,
       int vCount, EvalEngine engine, GraphicsComplexBuilder builder,
       PlotColorFunction.Builder colorBuilder, IExpr meshOption, IExpr meshStyle, IExpr monitor,
-      RegionFunctionFilter region, IExpr meshFunctions, IExpr meshShading, IAST[] meshLines) {
+      RegionFunctionFilter region, IExpr meshFunctions, IExpr meshShading) {
     ISymbol uVar = (ISymbol) uRange.arg1();
     double uMin = uRange.arg2().evalfNaN();
     double uMax = uRange.arg3().evalfNaN();
@@ -260,21 +252,17 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
 
     boolean byFunctions = meshFunctions != S.Automatic && !meshFunctions.isNone()
         && !meshOption.isNone();
+    List<double[][]> values = new ArrayList<>();
+    List<double[]> levels = new ArrayList<>();
     if (byFunctions) {
       IAST list = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);
-      List<double[][]> values = new ArrayList<>(list.argSize());
-      List<double[]> levels = new ArrayList<>(list.argSize());
-      IASTAppendable lines = F.ListAlloc(list.argSize() * 8);
       double[] start = {uMin, vMin};
       double[] step = {uStep, vStep};
       for (int k = 1; k < list.size(); k++) {
         double[][] v = Plot3DTools.meshFunctionValues(grid, list.get(k), start, step, engine);
-        double[] at = Plot3DTools.meshLevels(meshOption, k - 1, v);
         values.add(v);
-        levels.add(at);
-        lines.appendArgs(Plot3DTools.meshLinesAt(grid, v, at));
+        levels.add(Plot3DTools.meshLevels(meshOption, k - 1, v));
       }
-      meshLines[0] = lines;
       IExpr[][] shades = Plot3DTools.meshShading(grid, values, levels, meshShading);
       if (shades != null) {
         colors = shades;
@@ -304,6 +292,14 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         }, uMin, uStep, vMin, vStep);
     Plot3DTools.addSurface(builder, grid, wrapU, wrapV, colors, true, meshOption, meshStyle,
         unmasked, inside, edge);
+    if (byFunctions) {
+      // traced once the grid is in the builder: the crossings are placed between its vertices
+      IASTAppendable segments = F.ListAlloc(8);
+      for (int k = 0; k < values.size(); k++) {
+        segments.appendArgs(Plot3DTools.meshSegments(builder, grid, values.get(k), levels.get(k)));
+      }
+      Plot3DTools.addMeshSegments(builder, segments, meshStyle);
+    }
     return grid;
   }
 

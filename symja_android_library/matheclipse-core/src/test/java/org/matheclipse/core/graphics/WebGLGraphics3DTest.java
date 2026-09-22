@@ -131,6 +131,40 @@ public class WebGLGraphics3DTest {
         colours::toString);
   }
 
+  /**
+   * The lines of {@code MeshFunctions} are drawn inside the surface's {@code GraphicsComplex}, as
+   * indexed segments in a group of their own, the way Mathematica writes a mesh; they used to be
+   * separate lines with coordinates beside it. They replace the sampling grid's lines, and every
+   * vertex they add carries a real colour, so the colour list stays aligned with the points.
+   */
+  @Test
+  public void meshFunctionLinesAreInsideTheComplex() {
+    for (String plot : new String[] {
+        "ParametricPlot3D[{u,v,u},{u,-1,1},{v,-1,1}, PlotPoints->3, MeshFunctions->(#1&), "
+            + "Mesh->{{0.5}}, MeshShading->{Red,Blue}]",
+        "Plot3D[x*y,{x,-1,1},{y,-1,1}, PlotPoints->3, MaxRecursion->0, MeshFunctions->{#3&}, "
+            + "Mesh->{{0.1}}]"}) {
+      evaluator.eval("meshPlot = " + plot);
+      assertEquals("0",
+          evaluator.eval("Length[Cases[meshPlot /. _GraphicsComplex -> Null, _Line, Infinity]]")
+              .toString(),
+          plot + ": no line outside the complex");
+      assertEquals("1",
+          evaluator.eval("Length[Cases[meshPlot, {RGBColor[0,0,0], "
+              + "Line[{{_Integer, _Integer} ..}, VertexColors -> None]}, Infinity]]").toString(),
+          plot + ": one indexed group of mesh segments");
+      assertEquals("0",
+          evaluator.eval("Length[Cases[meshPlot, Line[{_Integer, _Integer, _Integer, ___}], "
+              + "Infinity]]").toString(),
+          plot + ": no line along the sampling grid");
+    }
+    assertEquals("True", evaluator.eval("With[{gc = First[Cases[ParametricPlot3D[{u,v,u},"
+        + "{u,-1,1},{v,-1,1}, PlotPoints->3, MeshFunctions->(#1&), Mesh->{{0.5}}, "
+        + "MeshShading->{Red,Blue}], _GraphicsComplex, Infinity]]}, "
+        + "Length[gc[[1]]] == Length[VertexColors /. List @@ Rest[Rest[gc]]] && "
+        + "FreeQ[VertexColors /. List @@ Rest[Rest[gc]], Automatic]]").toString());
+  }
+
   @Test
   public void defaultsFollowTheWMA() {
     JsonNode scene = scene("Graphics3D[Sphere[]]");

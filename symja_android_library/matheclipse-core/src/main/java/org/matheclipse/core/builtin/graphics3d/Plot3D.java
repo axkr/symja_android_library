@@ -265,11 +265,18 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colors != null);
     Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(index, options[X_PLOT_STYLE]),
         options[X_MESH]);
-    Plot3DTools.addSurface(builder, grid, false, false, colors, true, options[X_MESH],
-        options[Plot3DTools.X_MESH_STYLE], unmasked, inside,
-        regionEdge(unmasked, region, zMin, zMax));
-    // the rim of the surface belongs to the complex, as Mathematica writes it, and Automatic
-    // draws it; the mesh and exclusion lines below stay outside with their own colours
+    // explicit mesh functions draw the mesh in place of the sampling grid's lines, not beside them
+    IExpr meshFunctions = options[Plot3DTools.X_MESH_FUNCTIONS];
+    boolean byFunctions = meshFunctions != S.Automatic && !meshFunctions.isNone();
+    Plot3DTools.addSurface(builder, grid, false, false, colors, true,
+        byFunctions ? S.None : options[X_MESH], options[Plot3DTools.X_MESH_STYLE], unmasked,
+        inside, regionEdge(unmasked, region, zMin, zMax));
+    // the lines of the mesh functions, and the rim of the surface, belong to the complex as
+    // Mathematica writes them; Automatic draws the rim. The exclusion lines below stay outside
+    Plot3DTools.addMeshSegments(builder,
+        meshFunctionSegments(builder, grid, options[Plot3DTools.X_MESH_FUNCTIONS],
+            options[X_MESH], engine),
+        options[Plot3DTools.X_MESH_STYLE]);
     IExpr complex =
         Plot3DTools.withBoundary(builder, grid, options[Plot3DTools.X_BOUNDARY_STYLE], true);
 
@@ -277,18 +284,10 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       return complex;
     }
 
-    // the lines are kept outside the GraphicsComplex so that they carry their own colour rather
-    // than being shaded along with the surface they lie on
+    // the exclusion lines are kept outside the GraphicsComplex so that they carry their own
+    // colour rather than being shaded along with the surface they lie on
     IASTAppendable decorated = F.ListAlloc(6);
     decorated.append(complex);
-
-    IAST meshLines = meshFunctionLines(grid, nx, ny, options[Plot3DTools.X_MESH_FUNCTIONS],
-        options[X_MESH], engine);
-    if (meshLines.argSize() > 0) {
-      IExpr meshStyle = options[Plot3DTools.X_MESH_STYLE];
-      decorated.append(meshStyle == S.Automatic ? S.Black : meshStyle);
-      decorated.append(meshLines);
-    }
 
     // ExclusionsStyle -> {surfaces, curves}: the edges the surface was opened along, in the style
     // the curves are given
@@ -620,14 +619,14 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * The mesh lines {@code MeshFunctions} asks for, as levels of each function it names.
+   * The mesh segments {@code MeshFunctions} asks for, as levels of each function it names.
    *
    * <p>
    * {@code Automatic} keeps the lines on the sampling grid, which the surface builder already
    * draws, so only an explicit list produces anything here.
    */
-  private static IAST meshFunctionLines(double[][][] grid, int nx, int ny, IExpr meshFunctions,
-      IExpr meshOption, EvalEngine engine) {
+  private static IAST meshFunctionSegments(GraphicsComplexBuilder builder, double[][][] grid,
+      IExpr meshFunctions, IExpr meshOption, EvalEngine engine) {
     if (meshFunctions == S.Automatic || meshFunctions.isNone() || meshOption.isNone()) {
       return F.CEmptyList;
     }
@@ -635,7 +634,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     IASTAppendable all = F.ListAlloc(list.argSize() * 8);
     for (int k = 1; k < list.size(); k++) {
       double[][] values = Plot3DTools.meshFunctionValues(grid, list.get(k), null, null, engine);
-      all.appendArgs(Plot3DTools.meshLinesAt(grid, values,
+      all.appendArgs(Plot3DTools.meshSegments(builder, grid, values,
           Plot3DTools.meshLevels(meshOption, k - 1, values)));
     }
     return all;
