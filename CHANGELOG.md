@@ -4,6 +4,25 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `TabView` shows the pane its selector picks. `TabView({lbl -> e, ...}, i)` selects by position
+  and `TabView({v -> {lbl, e}, ...}, v)` by key; the selector may be a `Dynamic`, as a `Manipulate`
+  drives the tabs from a control of its own, and one that names no tab shows the first. The web
+  notebook shows the selected pane as it would show it on its own - a 3D pane keeps its interactive
+  view - and as a picture the tab strip is drawn above it with the selected label in bold. It used
+  to have no rendering at all. Found through ad-si/Woxi#919.
+
+- `ImageApply(f, image, Masking -> mask)` applies `f` only where the mask is positive: an image or
+  a matrix, centred on the image when smaller, or a `Graphics` drawn at the image's size. `All` and
+  `None` apply it everywhere, and an unknown option is `ImageApply::optx`. The call accepted two
+  arguments only. `ConstantImage(v, size)` is new, a grey or a coloured image of one value. Found
+  through ad-si/Woxi#915.
+
+- `KnotData` for the torus knots: `"Trefoil"`, `"CinquefoilKnot"`, `"SeptafoilKnot"` and every coprime
+  `{"TorusKnot", {p, q}}`, with `"CrossingNumber"`, `"AlexanderBriggsNotation"` and `"SpaceCurve"`,
+  `KnotData(knot)` drawn as a tube, and `Entity("Knot", name)` for `EntityValue`. The space curve is
+  the textbook parametrization, the same knot as the reference's but not its coefficients. Found
+  through ad-si/Woxi#913.
+
 - `ExportString(expr, "SVG")` draws a `Row`, `Column`, `Grid` or `Pane`, and a `SwatchLegend`,
   `LineLegend` or `PointLegend` standing on its own, as the picture a notebook shows. They left the
   call unevaluated. Every cell keeps its natural size and may be a picture, text, a number or a

@@ -1613,6 +1613,48 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "PolyhedronData(Nonesuch,FaceCount)");
   }
 
+  /**
+   * The torus knots: the named ones and every coprime {"TorusKnot", {p, q}}. The crossing number is
+   * the smaller of p (q - 1) and q (p - 1), and the space curve winds round a tube of radius 1.
+   */
+  @Test
+  public void testKnotData() {
+    check("KnotData(\"Trefoil\", \"CrossingNumber\")", //
+        "3");
+    check("KnotData(\"Trefoil\", \"AlexanderBriggsNotation\")", //
+        "3_1");
+    check("{KnotData(\"TrefoilKnot\", \"CrossingNumber\"), KnotData(\"3_1\", \"CrossingNumber\")}", //
+        "{3,3}");
+    check("KnotData(\"Trefoil\", \"SpaceCurve\") @ 0", //
+        "{3,0,0}");
+    check("Chop(N(KnotData(\"Trefoil\", \"SpaceCurve\") @ (2*Pi) - "
+        + "KnotData(\"Trefoil\", \"SpaceCurve\") @ 0))", //
+        "{0,0,0}");
+    check("With({r = KnotData(\"Trefoil\", \"SpaceCurve\")}, "
+        + "N(Table(Round((Sqrt(r(t)[[1]]^2 + r(t)[[2]]^2) - 2)^2 + r(t)[[3]]^2, 10^-9), "
+        + "{t, 0, 2*Pi, Pi/5})))", //
+        "{1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0}");
+    check("KnotData({\"TorusKnot\", {2, 5}}, \"CrossingNumber\")", //
+        "5");
+    check("KnotData({\"TorusKnot\", {3, 5}}, \"CrossingNumber\")", //
+        "10");
+    // not coprime: several loops and no knot
+    check("KnotData({\"TorusKnot\", {2, 4}}, \"CrossingNumber\")", //
+        "KnotData({TorusKnot,{2,4}},CrossingNumber)");
+    check("KnotData(\"NoSuchKnot\", \"CrossingNumber\")", //
+        "KnotData(NoSuchKnot,CrossingNumber)");
+    check("KnotData(\"Trefoil\", \"NoSuchProperty\")", //
+        "KnotData(Trefoil,NoSuchProperty)");
+    check("KnotData(\"Properties\")", //
+        "{AlexanderBriggsNotation,CrossingNumber,SpaceCurve}");
+    check("KnotData(All)", //
+        "{CinquefoilKnot,SeptafoilKnot,Trefoil}");
+    check("Head(KnotData(\"Trefoil\"))", //
+        "Graphics3D");
+    check("EntityValue(Entity(\"Knot\", \"Trefoil\"), \"CrossingNumber\")", //
+        "3");
+  }
+
   @Test
   public void testPolyhedronDataEntity() {
     // an entity and a bare name are the same question, and so are a property and its name

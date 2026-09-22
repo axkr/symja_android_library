@@ -62,6 +62,8 @@ public class ComputationalGeometryFunctions {
       S.Circumsphere.setEvaluator(new Circumsphere());
       S.PolyhedronData.setEvaluator(new PolyhedronData());
       Entities.register(PolyhedronData.POLYHEDRON, S.PolyhedronData);
+      S.KnotData.setEvaluator(new org.matheclipse.core.reflection.system.KnotData());
+      Entities.register(org.matheclipse.core.reflection.system.KnotData.KNOT, S.KnotData);
 
       S.VectorGreater.setEvaluator(new VectorGreater());
       S.VectorGreaterEqual.setEvaluator(new VectorGreaterEqual());
