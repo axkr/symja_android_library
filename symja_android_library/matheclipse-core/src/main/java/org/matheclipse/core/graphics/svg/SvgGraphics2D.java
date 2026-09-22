@@ -89,6 +89,15 @@ public class SvgGraphics2D {
     return options;
   }
 
+  /**
+   * Whether an expression which is not itself a picture is drawn as a table of cells when a picture
+   * of it is asked for: a <code>Grid</code>, <code>Column</code>, <code>Row</code>,
+   * <code>Pane</code> or a legend on its own.
+   */
+  public static boolean isLayout(IExpr expr) {
+    return SvgLayout.isLayout(expr);
+  }
+
   /** Render {@code graphicsExpr} to a complete SVG document. */
   public String toSVG(IAST graphicsExpr) {
     return toSVG(graphicsExpr, true);
@@ -100,6 +109,9 @@ public class SvgGraphics2D {
    */
   public String toSVG(IAST graphicsExpr, boolean withSVGTag) {
     try {
+      if (SvgLayout.isLayout(graphicsExpr)) {
+        return new SvgLayout(options).layout(graphicsExpr, withSVGTag);
+      }
       graphicsExpr = unwrapPicture(graphicsExpr);
       if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
         return new SvgLayout(options).row(graphicsExpr, withSVGTag);
@@ -189,6 +201,8 @@ public class SvgGraphics2D {
     if (isMultiPicture(graphicsExpr)) {
       return null;
     }
+    // measured afresh for every picture this renderer draws
+    frameLabelPictures = null;
 
     PrimitiveCollector collector = layout(graphicsExpr);
 
@@ -488,10 +502,17 @@ public class SvgGraphics2D {
     // Only for a label that is actually written. Testing the option for null counted
     // `AxesLabel -> None`, which every plot emits by default, so each picture reserved a strip on
     // two sides for text it never drew - 18 pixels of a 70 pixel cell on each of them.
-    if (hasLabel(options.axesLabel, 0) || hasLabel(options.frameLabel, 0)) {
+    // a frame label that is a table or a picture needs its own size, not one line of text
+    double[] bottomPicture = frameLabelBox(0);
+    double[] leftPicture = frameLabelBox(1);
+    if (bottomPicture != null) {
+      bottom += bottomPicture[1] + LABEL_PICTURE_GAP;
+    } else if (hasLabel(options.axesLabel, 0) || hasLabel(options.frameLabel, 0)) {
       bottom += AXIS_LABEL_HEIGHT;
     }
-    if (hasLabel(options.axesLabel, 1) || hasLabel(options.frameLabel, 1)) {
+    if (leftPicture != null) {
+      left += leftPicture[0] + LABEL_PICTURE_GAP;
+    } else if (hasLabel(options.axesLabel, 1) || hasLabel(options.frameLabel, 1)) {
       left += AXIS_LABEL_HEIGHT;
     }
     if (hasLegend) {
@@ -527,6 +548,18 @@ public class SvgGraphics2D {
       String[] labels = labelPair(options.frameLabel);
       double cx = (viewport.plotX1 + viewport.plotX2) / 2.0;
       double cy = (viewport.plotY1 + viewport.plotY2) / 2.0;
+      double[] bottomBox = frameLabelBox(0);
+      if (bottomBox != null) {
+        elements.add(embeddedLabel(frameLabelPictures[0], cx - bottomBox[0] / 2.0,
+            viewport.plotY2 + TICK_LABEL_HEIGHT + LABEL_PICTURE_GAP, bottomBox));
+        labels[0] = null;
+      }
+      double[] leftBox = frameLabelBox(1);
+      if (leftBox != null) {
+        elements.add(embeddedLabel(frameLabelPictures[1], FRAME_EDGE_PADDING,
+            cy - leftBox[1] / 2.0, leftBox));
+        labels[1] = null;
+      }
       if (labels[0] != null) {
         elements.add(labelled(tag("text").attr("x", SvgRenderer2D.fmt(cx))
             .attr("y", SvgRenderer2D.fmt(viewport.plotY2 + TICK_LABEL_HEIGHT + 14))
@@ -659,19 +692,81 @@ public class SvgGraphics2D {
 
   /** Split a {@code {xlabel, ylabel}} option value; either entry may be absent. */
   private String[] labelPair(IExpr expr) {
+    IExpr[] parts = labelParts(expr);
     String[] out = new String[2];
+    for (int i = 0; i < 2; i++) {
+      if (parts[i] != null) {
+        out[i] = labelText(parts[i]);
+      }
+    }
+    return out;
+  }
+
+  /** The {@code {xlabel, ylabel}} of an option value as expressions; either may be absent. */
+  private IExpr[] labelParts(IExpr expr) {
+    IExpr[] out = new IExpr[2];
     if (expr.isList() && ((IAST) expr).argSize() >= 2) {
       IAST list = (IAST) expr;
       if (!unlabelled(list.arg1())) {
-        out[0] = labelText(list.arg1());
+        out[0] = list.arg1();
       }
       if (!unlabelled(list.arg2())) {
-        out[1] = labelText(list.arg2());
+        out[1] = list.arg2();
       }
     } else if (!unlabelled(expr)) {
-      out[0] = labelText(expr);
+      out[0] = expr;
     }
     return out;
+  }
+
+  /** The gap between a frame label that is a picture and the tick labels beside it. */
+  private static final double LABEL_PICTURE_GAP = 4.0;
+
+  /** The largest share of the picture's height a frame label drawn as a picture may take. */
+  private static final double LABEL_PICTURE_SHARE = 0.4;
+
+  /** The frame labels which are tables or pictures, drawn once; {@code null} until measured. */
+  private Layer[] frameLabelPictures;
+
+  /**
+   * The size a frame label is drawn at when it is a table, a layout or a picture rather than text,
+   * or {@code null} for a text label. <code>FrameLabel -> Grid(...)</code> is a table under the
+   * frame; written out as text it used to put the source of the grid there.
+   */
+  private double[] frameLabelBox(int axis) {
+    if (frameLabelPictures == null) {
+      frameLabelPictures = new Layer[2];
+      if (options.frameLabel != null) {
+        IExpr[] parts = labelParts(options.frameLabel);
+        for (int i = 0; i < 2; i++) {
+          IExpr label = parts[i];
+          if (label != null && (SvgLayout.isLayout(label) || label.isGraphicsObject()
+              || label.isAST(S.Graphics3D))) {
+            frameLabelPictures[i] = SvgLayout.embed(label, options.imageSize[0] / 2.0);
+          }
+        }
+      }
+    }
+    Layer layer = frameLabelPictures[axis];
+    if (layer == null) {
+      return null;
+    }
+    double scale = 1.0;
+    double room = options.imageSize[1] * LABEL_PICTURE_SHARE;
+    if (layer.height > room && room > 0) {
+      scale = room / layer.height;
+    }
+    return new double[] {layer.width * scale, layer.height * scale};
+  }
+
+  /** A frame label drawn as a picture of its own, in a viewport at {@code (x, y)}. */
+  private static DomContent embeddedLabel(Layer layer, double x, double y, double[] box) {
+    return tag("svg").attr("x", SvgRenderer2D.fmt(x)).attr("y", SvgRenderer2D.fmt(y))
+        .attr("width", SvgRenderer2D.fmt(box[0])).attr("height", SvgRenderer2D.fmt(box[1]))
+        .attr("viewBox",
+            String.format(Locale.US, "0 0 %s %s", SvgRenderer2D.fmt(layer.width),
+                SvgRenderer2D.fmt(layer.height)))
+        .with(rawHtml(layer.contents));
   }
 
   /**

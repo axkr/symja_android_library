@@ -407,6 +407,26 @@ public class ManipulateControl {
     return Double.valueOf(numericInitial());
   }
 
+  /**
+   * The value this control starts at, as an expression: the initial value as it was written, else
+   * the selected choice of a list of them, else the start of a slider's range. {@link F#NIL} for a
+   * control that holds no value of its own. A still picture of a <code>Manipulate</code> or an
+   * <code>Animate</code> is its body at these values.
+   */
+  public IExpr initialExpression() {
+    if (initial.isPresent()) {
+      return initial;
+    }
+    if (DISCRETE.equals(kind) && values != null && initialIndex >= 0
+        && initialIndex < values.size()) {
+      return values.get(initialIndex);
+    }
+    if (SLIDER.equals(kind)) {
+      return F.num(numericInitial());
+    }
+    return F.NIL;
+  }
+
   private double numericInitial() {
     if (initial.isPresent() && initial.isNumericFunction(true)) {
       IExpr n = F.evaln(initial);

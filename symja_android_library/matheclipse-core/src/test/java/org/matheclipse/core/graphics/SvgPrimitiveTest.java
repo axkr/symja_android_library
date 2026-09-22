@@ -760,6 +760,78 @@ public class SvgPrimitiveTest {
         "the range is a different picture from none at all");
   }
 
+  /** What {@code ExportString[expr, "SVG"]} gives. */
+  private static String export(String input) {
+    return evaluator.eval("ExportString(" + input + ", \"SVG\")").toString();
+  }
+
+  private static int occurrences(String text, String part) {
+    int n = 0;
+    for (int i = text.indexOf(part); i >= 0; i = text.indexOf(part, i + part.length())) {
+      n++;
+    }
+    return n;
+  }
+
+  /**
+   * A {@code Row}, {@code Column} or {@code Grid} is drawn as a table of its cells when a picture of
+   * it is asked for; it used to leave {@code ExportString} unevaluated. A {@code Spacer} is a gap,
+   * not the text of its name.
+   */
+  @Test
+  public void testLayoutHeadsExportAsPictures() {
+    String row = export("Row({Graphics(Circle()), Spacer(20), Graphics(Disk())})");
+    assertTrue(row.startsWith("<?xml"), row);
+    assertEquals(2, occurrences(row, "<ellipse"));
+    assertFalse(row.contains("Spacer"), row);
+
+    String column = export("Column({Grid({{1,2},{3,4}}), Grid({{5,6}})})");
+    assertTrue(column.startsWith("<?xml"), column);
+    for (String cell : new String[] {">1<", ">4<", ">6<"}) {
+      assertTrue(column.contains(cell), cell + " in " + column);
+    }
+    assertFalse(column.contains("Grid"), column);
+
+    String plain = export("Column({1,2,3})");
+    assertEquals(3, occurrences(plain, "<text"));
+
+    // a frame all round is drawn as the dividers between the cells
+    assertTrue(export("Grid({{\"a\",\"b\"},{1,2}}, Frame->All)").contains("<line"));
+  }
+
+  /**
+   * A legend on its own is the small picture it is beside a plot, and a still picture of an
+   * animation is its first frame.
+   */
+  @Test
+  public void testLegendAndAnimationExportAsPictures() {
+    String legend = export("SwatchLegend({Red,Blue},{\"A\",\"B\"})");
+    assertTrue(legend.contains("fill=\"rgb(255,0,0)\""), legend);
+    assertTrue(legend.contains("fill=\"rgb(0,0,255)\""), legend);
+    assertTrue(legend.contains(">A<") && legend.contains(">B<"), legend);
+    assertTrue(export("Grid({{Graphics(Disk()), SwatchLegend({Red,Blue},{\"A\",\"B\"})}})")
+        .contains("fill=\"rgb(0,0,255)\""));
+
+    String pane = export("Pane(Animate(Graphics(Disk({t,0},1)),{t,0,1}),{100,100})");
+    assertEquals(1, occurrences(pane, "<ellipse"), pane);
+  }
+
+  /**
+   * {@code FrameLabel -> Grid[...]} is a table under the frame. Written out as text it put the
+   * source of the grid there.
+   */
+  @Test
+  public void testFrameLabelTableIsEmbedded() {
+    String svg = export("Plot(Sin(x),{x,0,2*Pi},Frame->True,"
+        + "FrameLabel->Grid({{\"a\",\"b\"},{1,2}},Frame->All))");
+    assertTrue(occurrences(svg, "<svg") > 1, svg);
+    assertTrue(svg.contains(">a<"), svg);
+    assertFalse(svg.contains("Grid"), svg);
+    // a label that is text stays text
+    assertEquals(1, occurrences(export("Plot(Sin(x),{x,0,2*Pi},Frame->True,FrameLabel->\"t\")"),
+        "<svg"));
+  }
+
   /** The SVG of a {@code Graphics[...]} expression, at a fixed size. */
   private static String svg(String input) {
     IExpr result = evaluator.eval(input);

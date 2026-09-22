@@ -87,6 +87,9 @@ public class SVGGraphics {
       svg = new SVGGraphics(360, 360).toSVG((IAST) graphics, true);
     } else if (graphics.isAST(S.Graphics3D)) {
       svg = SVGGraphics3D.toSVG((IAST) graphics);
+    } else if (org.matheclipse.core.graphics.svg.SvgGraphics2D.isLayout(graphics)) {
+      // a Column, Row or Grid of cells, which may be pictures, text or numbers
+      svg = new SVGGraphics(360, 360).toSVG((IAST) graphics, true);
     } else {
       return null;
     }
