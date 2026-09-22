@@ -4,6 +4,15 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- Lines that lie on a 3D surface - its rim, its mesh, the levels of its `MeshFunctions` - are no
+  longer drawn dashed by the static SVG renderer. Its painter sorted each line by its own middle,
+  so a line and the face under it came out in random order and the face covered most of the line.
+  A line inside a `GraphicsComplex` that also draws polygons is now marked as lying on it; the SVG
+  renderer sorts such a line segment by segment and nudges it towards the camera by the depth of a
+  face, which still leaves the far side of a sphere's mesh hidden. The WebGL renderer already kept
+  hairlines in front of their faces; a line thick enough to be drawn as a tube now gets the same
+  nudge.
+
 - The lines `MeshFunctions` draws on a `Plot3D` or `ParametricPlot3D` surface are part of its
   `GraphicsComplex`, as Mathematica writes a mesh: `{style, Line({{i, j}, ...}, VertexColors -> None)}`
   over vertices of the surface, each crossing taking the normal and colour of its nearer sample.

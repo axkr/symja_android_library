@@ -268,7 +268,15 @@
                 var path = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.0);
                 var segments = Math.min(600, Math.max(points.length * 2, 8));
                 var tube = new THREE.TubeGeometry(path, segments, radius, 8, false);
-                group.add(new THREE.Mesh(tube, surfaceMaterial(el)));
+                var tubeMaterial = surfaceMaterial(el);
+                if (el.onSurface) {
+                    // a thick line lies half inside the surface it is drawn on; pulling it towards
+                    // the camera keeps the faces from cutting ragged bites out of its edge
+                    tubeMaterial.polygonOffset = true;
+                    tubeMaterial.polygonOffsetFactor = -1;
+                    tubeMaterial.polygonOffsetUnits = -1;
+                }
+                group.add(new THREE.Mesh(tube, tubeMaterial));
             } else {
                 var geometry = new THREE.BufferGeometry().setFromPoints(points);
                 var line = new THREE.Line(geometry, lineMaterial(el, diagonal));

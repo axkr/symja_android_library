@@ -40,11 +40,17 @@ public final class PrimitiveCollector3D {
     final IAST points;
     final IAST vertexColors;
     final IAST vertexNormals;
+    /**
+     * Whether the complex draws a surface. A line in such a complex lies on it - its rim, its
+     * mesh, the levels of its mesh functions - which is how Mathematica writes those lines.
+     */
+    final boolean hasSurface;
 
-    ComplexContext(IAST points, IAST vertexColors, IAST vertexNormals) {
+    ComplexContext(IAST points, IAST vertexColors, IAST vertexNormals, boolean hasSurface) {
       this.points = points;
       this.vertexColors = vertexColors;
       this.vertexNormals = vertexNormals;
+      this.hasSurface = hasSurface;
     }
 
     /** The coordinate an index refers to, or {@code null} when it is out of range. */
@@ -193,7 +199,8 @@ public final class PrimitiveCollector3D {
           IAST pts = ast.arg1().isList() ? (IAST) ast.arg1() : null;
           IAST colors = optionList(ast, S.VertexColors);
           IAST normals = optionList(ast, S.VertexNormals);
-          process(ast.arg2(), style.clone(), new ComplexContext(pts, colors, normals), transform);
+          process(ast.arg2(), style.clone(),
+              new ComplexContext(pts, colors, normals, containsPolygon(ast.arg2())), transform);
         }
         return;
       }
@@ -636,6 +643,10 @@ public final class PrimitiveCollector3D {
     ObjectNode node = newElement(asArrow ? "Arrow" : "Line", style, transform);
     node.put("color", rgb(style.effectiveLine()));
     node.put("opacity", style.alphaOf(style.effectiveLine()));
+    if (!asArrow && context != null && context.hasSurface) {
+      // drawn on the surface of its complex: a renderer has to let it win against those faces
+      node.put("onSurface", true);
+    }
     writePolylines(node, polylines, transform);
     writeLineStyle(node, style);
     IAST vertexColors = optionList(ast, S.VertexColors);
@@ -654,6 +665,23 @@ public final class PrimitiveCollector3D {
       }
       node.put("color", 0xFFFFFF);
     }
+  }
+
+  /** Whether the primitives of a complex hold a polygon anywhere among their groups. */
+  private static boolean containsPolygon(IExpr primitives) {
+    if (primitives.isAST(S.Polygon)) {
+      return true;
+    }
+    if (primitives.isList() || primitives.isAST(S.Style) || primitives.isAST(S.Annotation)
+        || primitives.isAST(S.Tooltip)) {
+      IAST ast = (IAST) primitives;
+      for (int i = 1; i < ast.size(); i++) {
+        if (containsPolygon(ast.get(i))) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private void emitArrow(IAST ast, Style3D style, ComplexContext context, Transform3D transform) {

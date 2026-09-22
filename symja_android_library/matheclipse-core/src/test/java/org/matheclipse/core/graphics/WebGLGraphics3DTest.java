@@ -165,6 +165,23 @@ public class WebGLGraphics3DTest {
         + "FreeQ[VertexColors /. List @@ Rest[Rest[gc]], Automatic]]").toString());
   }
 
+  /**
+   * A line inside a {@code GraphicsComplex} that draws a surface lies on it, and is marked so that
+   * a renderer lets it win against the faces under it. A line on its own, or in a complex of
+   * lines only, is not.
+   */
+  @Test
+  public void linesOnASurfaceAreMarked() {
+    JsonNode onPlot = element(scene("Plot3D[x+y, {x,0,1}, {y,0,1}, PlotPoints->3, "
+        + "MaxRecursion->0]"), "Line");
+    assertTrue(onPlot.path("onSurface").asBoolean(false), "a plot's mesh lies on its surface");
+    JsonNode bare = element(scene("Graphics3D[Line[{{0,0,0},{1,1,1}}]]"), "Line");
+    assertFalse(bare.has("onSurface"), "a line in space is not on a surface");
+    JsonNode linesOnly = element(scene("Graphics3D[GraphicsComplex[{{0,0,0},{1,1,1}}, "
+        + "Line[{1,2}]]]"), "Line");
+    assertFalse(linesOnly.has("onSurface"), "a complex of lines has no surface to lie on");
+  }
+
   @Test
   public void defaultsFollowTheWMA() {
     JsonNode scene = scene("Graphics3D[Sphere[]]");

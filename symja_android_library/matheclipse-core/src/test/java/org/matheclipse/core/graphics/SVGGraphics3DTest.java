@@ -265,4 +265,71 @@ public class SVGGraphics3DTest {
     assertEquals(0, count(bare, "polyline"), "and without the rim, no line at all");
     assertTrue(count(meshed, "polyline") > 20, "the mesh itself is still drawn");
   }
+  /**
+   * How many segments of the given stroke colour are painted before a face they lie on. A line on
+   * a surface has to come after the faces under it, or the painter draws those faces over it and
+   * the line comes out dashed. On a plane nothing hides anything else, so every face that contains
+   * the middle of a segment on screen is one the segment lies on.
+   */
+  private static int buriedSegments(String svg, String stroke) {
+    java.util.List<java.awt.geom.Path2D> faces = new java.util.ArrayList<>();
+    java.util.List<Integer> faceAt = new java.util.ArrayList<>();
+    Matcher polygon = Pattern.compile("<polygon points=\"([^\"]*)\"").matcher(svg);
+    while (polygon.find()) {
+      String[] corners = polygon.group(1).trim().split("\\s+");
+      java.awt.geom.Path2D.Double path = new java.awt.geom.Path2D.Double();
+      for (int k = 0; k < corners.length; k++) {
+        String[] xy = corners[k].split(",");
+        double x = Double.parseDouble(xy[0]);
+        double y = Double.parseDouble(xy[1]);
+        if (k == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+      path.closePath();
+      faces.add(path);
+      faceAt.add(polygon.start());
+    }
+    int buried = 0;
+    int segments = 0;
+    Matcher line = Pattern
+        .compile("<polyline points=\"([^\"]*)\"[^>]*stroke=\"" + stroke + "\"").matcher(svg);
+    while (line.find()) {
+      String[] points = line.group(1).trim().split("\\s+");
+      for (int k = 0; k + 1 < points.length; k++) {
+        String[] a = points[k].split(",");
+        String[] b = points[k + 1].split(",");
+        double mx = (Double.parseDouble(a[0]) + Double.parseDouble(b[0])) / 2;
+        double my = (Double.parseDouble(a[1]) + Double.parseDouble(b[1])) / 2;
+        segments++;
+        for (int f = 0; f < faces.size(); f++) {
+          if (faceAt.get(f) > line.start() && faces.get(f).contains(mx, my)) {
+            buried++;
+            break;
+          }
+        }
+      }
+    }
+    assertTrue(segments > 0, "no segment drawn in " + stroke);
+    return buried;
+  }
+
+  /**
+   * Lines that lie on a surface - mesh function levels, the sampling grid's mesh - are painted
+   * after the faces they lie on. Sorted by their own middle like any other line, they came out
+   * behind their faces at random and were drawn dashed.
+   */
+  @Test
+  public void meshLinesAreNotBuriedInTheirSurface() {
+    String levels = svg("Plot3D[0.3*x + 0.2*y, {x,-1,1}, {y,-1,1}, MeshFunctions -> {#1&}, "
+        + "Mesh -> {{-0.5, 0, 0.5}}, MeshStyle -> Yellow]");
+    assertEquals(0, buriedSegments(levels, "#ffff00"));
+    String grid = svg("Plot3D[0.3*x + 0.2*y, {x,-1,1}, {y,-1,1}]");
+    assertEquals(0, buriedSegments(grid, "#333333"));
+    String parametric = svg("ParametricPlot3D[{u, v, 0.3*u + 0.2*v}, {u,-1,1}, {v,-1,1}, "
+        + "MeshFunctions -> {#4&}, Mesh -> {{0}}, MeshStyle -> Yellow]");
+    assertEquals(0, buriedSegments(parametric, "#ffff00"));
+  }
 }

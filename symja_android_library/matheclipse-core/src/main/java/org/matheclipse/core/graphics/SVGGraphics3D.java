@@ -270,6 +270,8 @@ public class SVGGraphics3D {
     final double opacity;
     final double width;
     final String dashArray;
+    /** A line lying on a surface, which has to be painted after the faces under it. */
+    boolean onSurface;
 
     Polyline(List<Vector3> points, Color color, double opacity, double width, String dashArray) {
       this.points = points;
@@ -984,6 +986,7 @@ public class SVGGraphics3D {
     List<List<Vector3>> paths =
         "BSplineCurve".equals(type) || "BezierCurve".equals(type) ? List.of(controlPolygon(element))
             : polylines(element);
+    boolean onSurface = element.path("onSurface").asBoolean(false);
     for (List<Vector3> path : paths) {
       if (path.size() < 2) {
         continue;
@@ -991,6 +994,17 @@ public class SVGGraphics3D {
       List<Vector3> placed = new ArrayList<>(path.size());
       for (Vector3 p : path) {
         placed.add(view.project(place(p, matrix, dataScale)));
+      }
+      if (onSurface) {
+        // a line along a surface crosses faces at every depth the surface has, so each piece is
+        // sorted where it lies rather than the whole line at its average depth
+        for (int k = 0; k + 1 < placed.size(); k++) {
+          Polyline piece =
+              new Polyline(List.of(placed.get(k), placed.get(k + 1)), color, opacity, width, dash);
+          piece.onSurface = true;
+          out.add(piece);
+        }
+        continue;
       }
       out.add(new Polyline(placed, color, opacity, width, dash));
       if ("Arrow".equals(type)) {
@@ -1302,6 +1316,7 @@ public class SVGGraphics3D {
           Polyline clipped =
               new Polyline(piece, line.color, line.opacity, line.width, line.dashArray);
           clipped.tooltip = line.tooltip;
+          clipped.onSurface = line.onSurface;
           kept.add(clipped);
         }
       } else if (r instanceof Dot) {
@@ -1649,8 +1664,49 @@ public class SVGGraphics3D {
 
   // -------------------------------------------------------------- SVG writing
 
+  /**
+   * Which share of the faces is at most as deep, front to back, as the nudge a line on a surface
+   * gets: the nudge has to cover the face it lies on, and a line anywhere inside a face is at most
+   * the face's own depth away from the depth the face is sorted by.
+   */
+  private static final double SURFACE_LINE_PERCENTILE = 0.9;
+
+  /**
+   * Nudge the lines that lie on a surface towards the camera, so that the painter draws them after
+   * the faces they lie on. Sorted by their own middle, a line and the face under it are ordered at
+   * random, and the line comes out dashed. The nudge is the depth of a face - a large one, so that
+   * it covers almost every face - which leaves a line that is really behind another part of the
+   * surface behind it, as that part is generally farther away than one face.
+   */
+  private static void nudgeSurfaceLines(List<Renderable> renderables) {
+    List<Double> extents = new ArrayList<>();
+    for (Renderable r : renderables) {
+      if (r instanceof Face) {
+        double near = Double.MAX_VALUE;
+        double far = -Double.MAX_VALUE;
+        for (Vector3 p : ((Face) r).points) {
+          near = Math.min(near, p.z);
+          far = Math.max(far, p.z);
+        }
+        extents.add(far - near);
+      }
+    }
+    if (extents.isEmpty()) {
+      return;
+    }
+    Collections.sort(extents);
+    double nudge = extents.get((int) Math.min(extents.size() - 1,
+        Math.floor(SURFACE_LINE_PERCENTILE * extents.size())));
+    for (Renderable r : renderables) {
+      if (r instanceof Polyline && ((Polyline) r).onSurface) {
+        r.depth -= nudge;
+      }
+    }
+  }
+
   private static String write(ObjectNode scene, List<Renderable> renderables, double width,
       double height, View view) {
+    nudgeSurfaceLines(renderables);
     Collections.sort(renderables);
     repairOrder(renderables);
 
