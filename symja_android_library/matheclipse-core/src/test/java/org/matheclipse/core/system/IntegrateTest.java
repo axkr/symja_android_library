@@ -1401,6 +1401,29 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * An integral which re-enters itself: the rules write {@code Tan(Sqrt(1+x^2))} with exponentials,
+   * a post-Rubi stage wrote those as {@code Cos} and {@code Sin} again, and a rule asked for the
+   * original integral once more, until the recursion limit ended it with a {@code Hold(...)}.
+   */
+  @Test
+  public void testIntegrateReentersItself() {
+    check("Integrate(Tan(Sqrt(x^2+1)),x)", //
+        "Integrate(Tan(Sqrt(1+x^2)),x)");
+    check("Integrate(1/(x*Log(x+Sqrt(x^2+1))),x)", //
+        "Integrate(1/(x*Log(x+Sqrt(1+x^2))),x)");
+    // the shape the exponential-times-trig stage is for, unchanged
+    check("Integrate(E^(-I*a*x)*Sec(a*x),x)", //
+        "x+(I*Log(Cos(a*x)))/a");
+    check("Integrate(Tan(Sqrt(x))/Sqrt(x),x)", //
+        "-2*Log(Cos(Sqrt(x)))");
+    check("Integrate(1/(x*(Log(x)^2+1)),x)", //
+        "ArcTan(Log(x))");
+    check("Max(Abs(N(Table(D(Integrate(x^3*ArcSin(x)/Sqrt(1-x^4),x),x)"
+        + " - x^3*ArcSin(x)/Sqrt(1-x^4) /. x->pt, {pt, {1/7, 3/8, 3/5}})))) < 10^-8", //
+        "True");
+  }
+
+  /**
    * Definite integrals done by differentiating under the integral sign, through the ordinary
    * cascade and by asking for the stage by name. The stage itself is tested in
    * {@code IntegrateDiffUnderIntTest}; what is checked here is that the cascade reaches it, that a

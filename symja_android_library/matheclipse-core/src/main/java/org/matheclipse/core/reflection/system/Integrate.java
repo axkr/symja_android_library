@@ -262,6 +262,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   private static final ThreadLocal<java.util.Set<IExpr>> DEFERRED_ROOTSUM =
       ThreadLocal.withInitial(java.util.HashSet::new);
 
+  /**
+   * The indefinite integrals being evaluated further up this thread's stack. The native stages and
+   * the rules rewrite an integrand and re-enter {@code Integrate}, and some rewrites lead back to
+   * where they started: {@code Tan(Sqrt(1+x^2))} is written with exponentials, a rule asks for
+   * {@code Integrate(Tan(Sqrt(1+x^2)),x)} again, and so on until the recursion limit. The same
+   * integral inside its own evaluation can only loop, so it is declined.
+   */
+  private static final ThreadLocal<java.util.Set<IExpr>> IN_PROGRESS =
+      ThreadLocal.withInitial(java.util.HashSet::new);
+
   @Override
   public IExpr evaluate(IAST holdallAST, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
@@ -321,6 +331,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         EVAL_DEPTH.remove();
         IN_RUBI_RULES.remove();
         DEFERRED_ROOTSUM.remove();
+        IN_PROGRESS.remove();
       } else {
         EVAL_DEPTH.set(depth);
       }
@@ -376,6 +387,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
     final IAssumptions oldAssumptions = engine.getAssumptions();
     final boolean oldNumericMode = engine.isNumericMode();
+    IAST inProgressKey = null;
     try {
       IExpr assumptionOption = option[0];
       IExpr assumptionExpr = OptionArgs.determineAssumptions(assumptionOption);
@@ -564,6 +576,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         if (fx.topHead().equals(x)) {
           // issue #91
           return F.NIL;
+        }
+        if (engine.getAssumptions() == null) {
+          // under assumptions the same integral may be asked for with different ones
+          IAST key = F.list(fx, x);
+          if (!IN_PROGRESS.get().add(key)) {
+            return F.NIL;
+          }
+          inProgressKey = key;
         }
         if (forcedMethod != null) {
           // Integrate[f, x, Method -> "..."] forces a single native stage, bypassing the Automatic
@@ -811,6 +831,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       return evaled ? ast : F.NIL;
     } finally {
+      if (inProgressKey != null) {
+        IN_PROGRESS.get().remove(inProgressKey);
+      }
       engine.setAssumptions(oldAssumptions);
       engine.setNumericMode(oldNumericMode);
     }
