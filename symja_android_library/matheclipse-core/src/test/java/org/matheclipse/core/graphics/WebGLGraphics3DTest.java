@@ -81,6 +81,18 @@ public class WebGLGraphics3DTest {
 
   // ------------------------------------------------------------------ options
 
+  /**
+   * An option given as a <code>Dynamic</code> is drawn with its current value, not as if it were
+   * absent; that is what <code>ViewPoint -&gt; Dynamic[vp]</code> means outside a Manipulate too.
+   */
+  @Test
+  public void dynamicOptionValuesAreResolved() {
+    evaluator.eval("vpDyn = {0, 0, 5}");
+    JsonNode scene = scene("Graphics3D[Sphere[], ViewPoint -> Dynamic[vpDyn]]");
+    assertEquals(0.0, scene.get("viewPoint").get(0).asDouble(), 1e-9);
+    assertEquals(5.0, scene.get("viewPoint").get(2).asDouble(), 1e-9);
+  }
+
   @Test
   public void defaultsFollowTheWMA() {
     JsonNode scene = scene("Graphics3D[Sphere[]]");

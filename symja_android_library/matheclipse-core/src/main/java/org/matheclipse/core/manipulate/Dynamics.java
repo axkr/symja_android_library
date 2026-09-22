@@ -63,6 +63,19 @@ public class Dynamics {
     return isDynamic(expr) ? ((IAST) expr).arg1() : expr;
   }
 
+  /**
+   * The value an option of a picture has now: <code>PlotRange -> Dynamic[r]</code> is drawn with
+   * the current value of <code>r</code>, the way a front end shows it, rather than as if the option
+   * were not there at all. An option without a <code>Dynamic</code> in it is returned untouched and
+   * unevaluated.
+   */
+  public static IExpr currentValue(IExpr value) {
+    if (!containsDynamic(value)) {
+      return value;
+    }
+    return resolve(value, EvalEngine.get());
+  }
+
   /** Whether a <code>Dynamic</code> appears anywhere inside <code>expr</code>. */
   public static boolean containsDynamic(IExpr expr) {
     if (isDynamic(expr)) {

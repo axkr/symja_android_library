@@ -747,6 +747,19 @@ public class SvgPrimitiveTest {
 
   // ------------------------------------------------------------- edge form
 
+  /**
+   * {@code PlotRange -> Dynamic[r]} is drawn with the current value of {@code r}. The wrapper used to
+   * make the option unreadable, so the picture was drawn as if it had no plot range at all.
+   */
+  @Test
+  public void testDynamicPlotRangeIsResolved() {
+    String bare = svg("Graphics[{Red, Disk[{0, 0}, 10]}, PlotRange -> {{-5, 5}, {-2, 8}}]");
+    assertEquals(bare,
+        svg("Graphics[{Red, Disk[{0, 0}, 10]}, PlotRange -> Dynamic[{{-5, 5}, {-2, 8}}]]"));
+    assertFalse(bare.equals(svg("Graphics[{Red, Disk[{0, 0}, 10]}]")),
+        "the range is a different picture from none at all");
+  }
+
   /** The SVG of a {@code Graphics[...]} expression, at a fixed size. */
   private static String svg(String input) {
     IExpr result = evaluator.eval(input);
