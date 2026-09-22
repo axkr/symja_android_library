@@ -146,35 +146,7 @@ public class ManipulateSpec {
     spec.animated = animate;
 
     for (int i = 2; i < ast.size(); i++) {
-      IExpr arg = ast.get(i);
-      if (isOptionRule(arg)) {
-        spec.putOption((IAST) arg);
-        continue;
-      }
-      if (arg.isList() && arg.isAST() && allOptionRules((IAST) arg)) {
-        IAST list = (IAST) arg;
-        for (int j = 1; j < list.size(); j++) {
-          spec.putOption((IAST) list.get(j));
-        }
-        continue;
-      }
-      // a PaneSelector argument is a whole panel of controls per pane, only one of which is on
-      // screen at a time; when its panes hold no controls it is prose, and falls through to be
-      // read as an ordinary argument below
-      if (arg.isAST(S.PaneSelector) && arg.size() >= 3
-          && spec.addPaneSelector((IAST) arg, engine)) {
-        continue;
-      }
-      // Row[{Control[{u, 0, 10}], " ", Dynamic[u]}] puts a control beside its own read-out: the
-      // controls inside are controls, and what is left of the layout is the read-out
-      if (!arg.isAST(S.Control) && containsControlWrapper(arg)) {
-        spec.addLayoutOfControls(arg, engine);
-        continue;
-      }
-      ManipulateControl control = parseControl(arg, engine, spec.unknownControlOptions);
-      if (control != null) {
-        spec.controls.add(control);
-      }
+      spec.addArgument(ast.get(i), engine);
     }
 
     if (spec.controls.isEmpty()) {
@@ -197,6 +169,71 @@ public class ManipulateSpec {
       }
     }
     return spec;
+  }
+
+  /** Read one argument after the body: an option, a control, or an arrangement of controls. */
+  private void addArgument(IExpr arg, EvalEngine engine) {
+    if (isControlGroup(arg)) {
+      addControlGroup(((IAST) arg).arg2(), engine);
+      return;
+    }
+    if (isOptionRule(arg)) {
+      putOption((IAST) arg);
+      return;
+    }
+    if (arg.isList() && arg.isAST() && allOptionRules((IAST) arg)) {
+      IAST list = (IAST) arg;
+      for (int j = 1; j < list.size(); j++) {
+        putOption((IAST) list.get(j));
+      }
+      return;
+    }
+    // a PaneSelector argument is a whole panel of controls per pane, only one of which is on
+    // screen at a time; when its panes hold no controls it is prose, and falls through to be
+    // read as an ordinary argument below
+    if (arg.isAST(S.PaneSelector) && arg.size() >= 3 && addPaneSelector((IAST) arg, engine)) {
+      return;
+    }
+    // Row[{Control[{u, 0, 10}], " ", Dynamic[u]}] puts a control beside its own read-out: the
+    // controls inside are controls, and what is left of the layout is the read-out
+    if (!arg.isAST(S.Control) && containsControlWrapper(arg)) {
+      addLayoutOfControls(arg, engine);
+      return;
+    }
+    ManipulateControl control = parseControl(arg, engine, unknownControlOptions);
+    if (control != null) {
+      controls.add(control);
+    }
+  }
+
+  /**
+   * Whether the argument is a named group of controls, <code>"Advanced" -&gt; {{x, 0}, -5, 5}</code>
+   * or <code>"name" :&gt; {spec, spec, ...}</code>, which a front end draws under a heading of that
+   * name. No option of <code>Manipulate</code> has a string for its name, so this cannot shadow one.
+   */
+  private static boolean isControlGroup(IExpr arg) {
+    return (arg.isRule() || arg.isRuleDelayed()) && ((IAST) arg).arg1().isString();
+  }
+
+  /**
+   * The controls of a group: its content is either one control specification, or a list of them.
+   * The two look alike - <code>{{x, 0}, {1, 2, 3}}</code> is a single control with a list of
+   * choices - so the content is read as one control first, and taken apart only when it is not one.
+   */
+  private void addControlGroup(IExpr content, EvalEngine engine) {
+    if (content.isList()) {
+      ManipulateControl single = parseControl(content, engine, unknownControlOptions);
+      if (single != null && single.bindsVariable()) {
+        controls.add(single);
+        return;
+      }
+      IAST list = (IAST) content;
+      for (int i = 1; i < list.size(); i++) {
+        addArgument(list.get(i), engine);
+      }
+      return;
+    }
+    addArgument(content, engine);
   }
 
   /**

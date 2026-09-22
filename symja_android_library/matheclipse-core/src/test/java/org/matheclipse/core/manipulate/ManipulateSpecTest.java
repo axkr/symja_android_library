@@ -455,4 +455,32 @@ public class ManipulateSpecTest {
   public void testManipulateWithoutAControl() {
     assertNull(parse("Manipulate(x)"));
   }
+  /**
+   * <code>"Advanced" -&gt; spec</code> names a group of controls. A string keyed rule used to be read
+   * as an option and dropped, so a panel made only of groups had no control and the whole
+   * <code>Manipulate</code> vanished.
+   */
+  @Test
+  public void testNamedControlGroups() {
+    String[][] cases = {{"Manipulate(x, \"None\" -> {{x,0},-5,5})", "x"},
+        {"Manipulate(x, \"None\" :> {{x,0},-5,5})", "x"},
+        {"Manipulate(x+y, \"Basic\" -> {{x,0},-5,5}, \"Advanced\" -> {{y,0},-5,5})", "x y"},
+        {"Manipulate(x+y+z, \"Group\" -> {{{x,0},-5,5},{{y,0},-5,5},{{z,0},-5,5}})", "x y z"}};
+    for (String[] c : cases) {
+      ManipulateSpec spec = parse(c[0]);
+      assertNotNull(spec, c[0]);
+      StringBuilder names = new StringBuilder();
+      for (ManipulateControl control : spec.getControls()) {
+        names.append(names.length() > 0 ? " " : "").append(control.getName());
+      }
+      assertEquals(c[1], names.toString(), c[0]);
+    }
+    // a single control with a list of choices is one control, not a list of them
+    ManipulateSpec choices = parse("Manipulate(x, \"G\" -> {{x,1},{1,2,3}})");
+    assertEquals(1, choices.getControls().size());
+    assertEquals(ManipulateControl.DISCRETE, choices.getControls().get(0).getKind());
+    // options keep being options
+    ManipulateSpec withOption = parse("Manipulate(x, {x,0,10}, Initialization :> (x=3))");
+    assertEquals(1, withOption.getControls().size());
+  }
 }
