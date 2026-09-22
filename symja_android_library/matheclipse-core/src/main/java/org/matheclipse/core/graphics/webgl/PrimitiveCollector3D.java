@@ -263,6 +263,10 @@ public final class PrimitiveCollector3D {
         }
         return true;
       }
+      case ID.CapForm:
+        // only None changes a solid: the other cap forms shape the ends of a line
+        style.openEnded = ast.argSize() == 1 && ast.arg1().isNone();
+        return true;
       case ID.ColorDataFunction: {
         Color c = ColorUtil.parse(ast);
         if (c != null) {
@@ -824,6 +828,9 @@ public final class PrimitiveCollector3D {
       node.put("radius", radius);
       node.set("start", vector(axis.get(i)));
       node.set("end", vector(axis.get(i + 1)));
+      if (style.openEnded) {
+        node.put("openEnded", true);
+      }
       trackBall(axis.get(i), radius, transform);
       trackBall(axis.get(i + 1), radius, transform);
       writeSurfaceStyle(node, style);

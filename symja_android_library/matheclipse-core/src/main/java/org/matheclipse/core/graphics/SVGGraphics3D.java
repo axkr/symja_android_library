@@ -724,7 +724,8 @@ public class SVGGraphics3D {
       case "Cone":
         barrel(vector(element.get("start"), new Vector3(0, 0, -1)),
             vector(element.get("end"), new Vector3(0, 0, 1)), element.get("radius").asDouble(1),
-            "Cone".equals(type), color, opacity, matrix, dataScale, view, lights, out);
+            "Cone".equals(type), element.path("openEnded").asBoolean(false), color, opacity,
+            matrix, dataScale, view, lights, out);
         break;
       case "Cuboid":
         cuboid(vector(element.get("min"), new Vector3(0, 0, 0)),
@@ -858,9 +859,13 @@ public class SVGGraphics3D {
     quads(grid, color, opacity, view, lights, out);
   }
 
-  /** A cylinder, or a cone when the far end is collapsed to a point. */
+  /**
+   * A cylinder, or a cone when the far end is collapsed to a point.
+   *
+   * @param openEnded <code>CapForm[None]</code>: the side alone, without the discs at the ends
+   */
   private static void barrel(Vector3 start, Vector3 end, double radius, boolean cone,
-      Surface color,
+      boolean openEnded, Surface color,
       double opacity, double[] matrix, Vector3 dataScale, View view, List<Light> lights,
       List<Renderable> out) {
     Vector3 axis = end.sub(start);
@@ -886,6 +891,9 @@ public class SVGGraphics3D {
         addFace(out, view, lights, color, opacity, bottom.get(i), bottom.get(i + 1),
             top.get(i + 1), top.get(i));
       }
+    }
+    if (openEnded) {
+      return;
     }
     cap(out, view, lights, color, opacity, bottom, place(start, matrix, dataScale));
     if (!cone) {
@@ -1006,8 +1014,8 @@ public class SVGGraphics3D {
     }
     Vector3 base = tip.sub(direction.normalize().scale(size));
     // an arrowhead is a solid cone, drawn in the line's own colour
-    barrel(base, tip, size * 0.35, true, new Surface(color), opacity, matrix, dataScale, view,
-        lights, out);
+    barrel(base, tip, size * 0.35, true, false, new Surface(color), opacity, matrix, dataScale,
+        view, lights, out);
   }
 
   private static void dots(JsonNode element, Color color, double opacity, double[] matrix,

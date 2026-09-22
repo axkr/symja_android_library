@@ -93,6 +93,24 @@ public class WebGLGraphics3DTest {
     assertEquals(5.0, scene.get("viewPoint").get(2).asDouble(), 1e-9);
   }
 
+  /** {@code CapForm[None]} leaves a cylinder or a cone open; the default closes both ends. */
+  @Test
+  public void capFormNoneOpensCylindersAndCones() {
+    JsonNode capped = element(scene("Graphics3D[{Cylinder[{{0,0,0},{0,0,1}},1]}]"), "Cylinder");
+    assertFalse(capped.has("openEnded"), "a cylinder is closed by default");
+    JsonNode open =
+        element(scene("Graphics3D[{CapForm[None], Cylinder[{{0,0,0},{0,0,1}},1]}]"), "Cylinder");
+    assertTrue(open.get("openEnded").asBoolean());
+    assertTrue(element(scene("Graphics3D[{CapForm[None], Cone[]}]"), "Cone").get("openEnded")
+        .asBoolean());
+    // the static renderer leaves the discs off as well
+    String closedSvg = org.matheclipse.core.graphics.SVGGraphics3D
+        .toSVG((IAST) evaluator.eval("Graphics3D[{Cylinder[{{0,0,0},{0,0,1}},1]}]"));
+    String openSvg = org.matheclipse.core.graphics.SVGGraphics3D
+        .toSVG((IAST) evaluator.eval("Graphics3D[{CapForm[None], Cylinder[{{0,0,0},{0,0,1}},1]}]"));
+    assertTrue(openSvg.length() < closedSvg.length(), "the caps are faces of their own");
+  }
+
   @Test
   public void defaultsFollowTheWMA() {
     JsonNode scene = scene("Graphics3D[Sphere[]]");

@@ -133,7 +133,8 @@
         // A mathematical surface is a sheet and has to be lit from both sides, but a box or a
         // sphere is closed: drawing its interior as well means a translucent one is blended twice
         // over, which turns a half transparent bar into a muddy solid.
-        var closed = CLOSED_SOLIDS[el.type] === true;
+        // CapForm[None] leaves a cylinder or a cone open, and then its inside can be seen
+        var closed = CLOSED_SOLIDS[el.type] === true && !el.openEnded;
         var params = {
             color: el.color,
             transparent: el.opacity < 1.0,
@@ -360,7 +361,7 @@
         var THREE = global.THREE;
         var start = vec(el.start, 0), end = vec(el.end, 0);
         var height = start.distanceTo(end);
-        var geometry = new THREE.CylinderGeometry(el.radius, el.radius, height, 40, 1);
+        var geometry = new THREE.CylinderGeometry(el.radius, el.radius, height, 40, 1, !!el.openEnded);
         geometry.translate(0, height / 2, 0);
         var mesh = new THREE.Mesh(geometry, surfaceMaterial(el));
         orientAlong(mesh, start, end);
@@ -371,7 +372,7 @@
         var THREE = global.THREE;
         var start = vec(el.start, 0), end = vec(el.end, 0);
         var height = start.distanceTo(end);
-        var geometry = new THREE.ConeGeometry(el.radius, height, 40, 1);
+        var geometry = new THREE.ConeGeometry(el.radius, height, 40, 1, !!el.openEnded);
         geometry.translate(0, height / 2, 0);
         var mesh = new THREE.Mesh(geometry, surfaceMaterial(el));
         orientAlong(mesh, start, end);
