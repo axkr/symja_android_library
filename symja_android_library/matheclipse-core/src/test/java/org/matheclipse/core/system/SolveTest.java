@@ -770,6 +770,38 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "Solve({x<y,y>2},x)");
   }
 
+  /**
+   * <code>Solve(eqns, dom)</code> gives the domain in place of the variables, which are then found
+   * in the equations as the one argument form finds them. An <code>Element(x, dom)</code> which
+   * only repeats the domain says nothing more and is dropped rather than rejected as no equation.
+   */
+  @Test
+  public void testSolveDomainOnly() {
+    check("Solve(x^2==1, Reals)", //
+        "{{x->-1},{x->1}}");
+    check("Solve({x^2-4==0,x>0}, Reals)", //
+        "{{x->2}}");
+    check("Solve(x^2==-1, Reals)", //
+        "{}");
+    check("Solve(x^2==-1, Complexes)", //
+        "{{x->-I},{x->I}}");
+    check("Solve(x^2==4, Integers)", //
+        "{{x->-2},{x->2}}");
+    check("NSolve({x^2-4==0,x>0}, Reals)", //
+        "{{x->2.0}}");
+    check("NSolve({x^2+y==1,x+y^2==1,0<x<1,0<y<1}, Reals)", //
+        "{{x->0.618034,y->0.618034}}");
+    check("NSolve(x^5-x-1==0, Reals)", //
+        "{{x->1.1673}}");
+    // the same answer as the three argument form gives
+    check("Solve({x+y==3, Element(x,Reals)}, Reals)", //
+        "{{x->3-y}}");
+    check("Solve(x^2==1 && Element(x,Reals), Reals)", //
+        "{{x->-1},{x->1}}");
+    check("Solve(a && b, Booleans)", //
+        "{{a->True,b->True}}");
+  }
+
   @Test
   @Tag(TestTags.SLOW)
   public void testSolve() {

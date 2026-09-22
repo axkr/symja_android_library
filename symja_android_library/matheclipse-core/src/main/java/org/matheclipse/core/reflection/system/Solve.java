@@ -1910,8 +1910,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      *        {@link S#NSolveValues} do
      * @param engine the evaluation engine
      */
-    public IExpr of(final IAST ast, final boolean numeric,
-        final boolean bareExpressionsAreEquations, EvalEngine engine) {
+    public IExpr of(IAST ast, final boolean numeric, final boolean bareExpressionsAreEquations,
+        EvalEngine engine) {
+      ast = withDomainOnly(ast);
       if (!bareExpressionsAreEquations && !isQuantifiedSystem(ast.arg1())) {
         // `1` is not a quantified system of equations and inequalities.
         return Errors.printMessage(ast.topHead(), "naqs", F.List(ast.arg1()), engine);
@@ -2209,6 +2210,42 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    */
   private static boolean isQuantifiedSystem(IExpr expr) {
     return isQuantifiedSystem(expr, false);
+  }
+
+  /** The domains <code>Solve</code> accepts as its last argument. */
+  private static boolean isDomain(IExpr expr) {
+    return expr == S.Reals || expr == S.Integers || expr == S.Complexes || expr == S.Rationals
+        || expr == S.Primes || expr == S.Booleans;
+  }
+
+  /**
+   * <code>Solve(eqns, dom)</code> with the domain in place of the variables, as the same call with
+   * the variables left to be found: <code>Solve(eqns, {}, dom)</code>, the form the rest of the
+   * solver reads. An <code>Element(x, dom)</code> among the equations which only repeats the domain
+   * being solved over says nothing more, and is dropped rather than rejected as no equation; one
+   * naming another domain is a real restriction, and stays.
+   */
+  private static IAST withDomainOnly(IAST ast) {
+    IAST result = ast;
+    if (ast.argSize() == 2 && isDomain(ast.arg2())) {
+      result = F.ternaryAST3(ast.head(), ast.arg1(), F.CEmptyList, ast.arg2());
+    }
+    if (result.argSize() != 3 || !isDomain(result.arg3())) {
+      return result;
+    }
+    IExpr domain = result.arg3();
+    IExpr system = result.arg1();
+    if (!system.isList() && !system.isAnd()) {
+      return result;
+    }
+    IAST parts = (IAST) system;
+    IAST kept = parts.select(part -> !(part.isAST(S.Element, 3) && part.second() == domain
+        && (part.first().isSymbol() || part.first().isList())));
+    if (kept.size() == parts.size()) {
+      return result;
+    }
+    IExpr remaining = system.isList() ? kept : (kept.argSize() == 1 ? kept.arg1() : kept);
+    return result.setAtCopy(1, remaining);
   }
 
   /**
