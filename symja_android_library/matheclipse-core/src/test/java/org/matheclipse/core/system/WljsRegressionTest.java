@@ -1179,6 +1179,30 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * An explicit list of <code>VectorPoints</code> puts one arrow at each point instead of on the
+   * grid, and <code>VectorStyle</code> is the arrows' style. Both used to be ignored: the list gave
+   * the default grid's 216 arrows, and the arrows kept their colours by length.
+   */
+  @Test
+  public void testVectorPointsListAndVectorStyle() {
+    check("Count[VectorPlot3D[{1, 0, 0}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
+        + "VectorPoints -> {{0, 0, 0}, {0.5, 0.5, 0.5}}, VectorScale -> 0.5], _Arrow, Infinity]", //
+        "2");
+    check("Count[VectorPlot[{y, -x}, {x, -1, 1}, {y, -1, 1}, "
+        + "VectorPoints -> {{0, 0.5}, {0.5, 0}}], _Arrow, Infinity]", //
+        "2");
+    // a colour in the style replaces the colouring by length, and a list of directives is spread
+    // out so that it reaches the arrows beside it
+    check("Cases[VectorPlot3D[{1, 0, 0}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
+        + "VectorPoints -> {{0, 0, 0}}, VectorStyle -> {Red, Thickness[0.01]}], _RGBColor, Infinity]", //
+        "{RGBColor[1,0,0]}");
+    // an explicit VectorColorFunction still colours them
+    check("Count[VectorPlot[{y, -x}, {x, -1, 1}, {y, -1, 1}, VectorPoints -> 3, "
+        + "VectorStyle -> Red, VectorColorFunction -> Automatic], _RGBColor, Infinity] > 1", //
+        "True");
+  }
+
+  /**
    * A subscript with several indices is a variable like one with a single index:
    * <code>Subscript[Y, 4, 0]</code> as well as <code>Subscript[Y, 4]</code>. The notebook writes a
    * typeset subscript that way.

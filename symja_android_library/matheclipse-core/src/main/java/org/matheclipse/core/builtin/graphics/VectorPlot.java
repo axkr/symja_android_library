@@ -22,9 +22,11 @@ import org.matheclipse.core.interfaces.ISymbol;
  * where it is zero, get no arrow.
  *
  * <p>
- * Options: <code>VectorPoints -> n | {nx, ny[, nz]}</code>, <code>VectorScale -> s</code>,
- * <code>VectorColorFunction -> None</code>; any other option is handed on to the
- * <code>Graphics</code>/<code>Graphics3D</code>.
+ * Options: <code>VectorPoints -> n | {nx, ny[, nz]} | {p1, p2, ...}</code>, <code>VectorScale -> s</code>,
+ * <code>VectorColorFunction -> None</code>, <code>VectorStyle -> style</code>; any other option is
+ * handed on to the <code>Graphics</code>/<code>Graphics3D</code>. An explicit list of points puts
+ * one arrow at each of them instead of on the grid, and a colour in <code>VectorStyle</code> draws
+ * every arrow in it rather than colouring them by their length.
  */
 public class VectorPlot extends AbstractFunctionEvaluator {
 
@@ -65,8 +67,11 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     }
 
     int[] points = vectorPoints(ast, engine);
+    double[][] explicitPoints = explicitVectorPoints(ast, engine);
     double scale = DEFAULT_SCALE;
     boolean colored = true;
+    boolean colorFunctionGiven = false;
+    IExpr style = F.NIL;
     IASTAppendable graphicsOptions = F.ListAlloc();
     for (int i = dimension + 2; i < ast.size(); i++) {
       IExpr option = ast.get(i);
@@ -87,29 +92,29 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       }
       if (key == S.VectorColorFunction) {
         colored = !engine.evaluate(option.second()).isNone();
+        colorFunctionGiven = true;
+        continue;
+      }
+      if (key == S.VectorStyle) {
+        style = engine.evaluate(option.second());
         continue;
       }
       graphicsOptions.append(option);
     }
-
-    // sample the field
-    int total = 1;
-    for (int n : points) {
-      total *= n;
+    boolean styleColored = style.isPresent() && containsColor(style);
+    if (styleColored && !colorFunctionGiven) {
+      // the arrows are drawn in the colour asked for, not coloured by their length over it
+      colored = false;
     }
+
+    // sample the field, on the grid or at the points asked for
+    double[][] samples = explicitPoints != null ? explicitPoints : gridPoints(points, min, max);
+    int total = samples.length;
     double[][] tails = new double[total][];
     double[][] vectors = new double[total][];
     double longest = 0.0;
-    int[] index = new int[dimension];
     for (int k = 0; k < total; k++) {
-      int rest = k;
-      double[] point = new double[dimension];
-      for (int d = dimension - 1; d >= 0; d--) {
-        index[d] = rest % points[d];
-        rest /= points[d];
-        point[d] = points[d] == 1 ? (min[d] + max[d]) / 2
-            : min[d] + (max[d] - min[d]) * index[d] / (points[d] - 1);
-      }
+      double[] point = samples[k];
       double[] vector = fieldAt(field, variables, point, engine);
       if (vector == null) {
         continue;
@@ -123,11 +128,15 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       longest = Math.max(longest, length);
     }
 
-    // the longest arrow spans `scale` of the smallest grid spacing
-    double spacing = Double.MAX_VALUE;
-    for (int d = 0; d < dimension; d++) {
-      if (points[d] > 1) {
-        spacing = Math.min(spacing, (max[d] - min[d]) / (points[d] - 1));
+    // the longest arrow spans `scale` of the smallest grid spacing, or of the smallest distance
+    // between two of the points asked for
+    double spacing = explicitPoints != null ? smallestDistance(explicitPoints)
+        : Double.MAX_VALUE;
+    if (explicitPoints == null) {
+      for (int d = 0; d < dimension; d++) {
+        if (points[d] > 1) {
+          spacing = Math.min(spacing, (max[d] - min[d]) / (points[d] - 1));
+        }
       }
     }
     if (spacing == Double.MAX_VALUE) {
@@ -142,8 +151,17 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     } else {
       primitives.append(arrowheads(ARROWHEAD_3D));
     }
-    if (!colored) {
+    if (!colored && !styleColored) {
       primitives.append(color(0.0));
+    }
+    if (style.isPresent()) {
+      // after the defaults, so that its colour and its Arrowheads are the ones in force; a list of
+      // directives is spread out, since one inside a sublist would not reach the arrows beside it
+      if (style.isList()) {
+        primitives.appendArgs((IAST) style);
+      } else {
+        primitives.append(style);
+      }
     }
     for (int k = 0; k < total; k++) {
       if (vectors[k] == null) {
@@ -164,7 +182,9 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     IASTAppendable range = F.ListAlloc(dimension);
     for (int d = 0; d < dimension; d++) {
       // in 3D the arrows at the edge reach half a spacing beyond it, and the box is kept that big
-      double pad = dimension == 3 && points[d] > 1 ? (max[d] - min[d]) / (points[d] - 1) / 2 : 0.0;
+      double pad = dimension == 3 && explicitPoints == null && points[d] > 1
+          ? (max[d] - min[d]) / (points[d] - 1) / 2
+          : 0.0;
       range.append(F.list(F.num(min[d] - pad), F.num(max[d] + pad)));
     }
     IASTAppendable result = dimension == 3 ? F.Graphics3D(primitives) : F.Graphics(primitives);
@@ -226,6 +246,93 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       }
     }
     return points;
+  }
+
+  /** The points of the regular grid, the last coordinate running fastest. */
+  private double[][] gridPoints(int[] points, double[] min, double[] max) {
+    int total = 1;
+    for (int n : points) {
+      total *= n;
+    }
+    double[][] result = new double[total][];
+    int[] index = new int[dimension];
+    for (int k = 0; k < total; k++) {
+      int rest = k;
+      double[] point = new double[dimension];
+      for (int d = dimension - 1; d >= 0; d--) {
+        index[d] = rest % points[d];
+        rest /= points[d];
+        point[d] = points[d] == 1 ? (min[d] + max[d]) / 2
+            : min[d] + (max[d] - min[d]) * index[d] / (points[d] - 1);
+      }
+      result[k] = point;
+    }
+    return result;
+  }
+
+  /**
+   * The points of <code>VectorPoints -> {p1, p2, ...}</code>, or <code>null</code> when the option
+   * asks for a grid - a number, or one number per axis - or is not given.
+   */
+  private double[][] explicitVectorPoints(IAST ast, EvalEngine engine) {
+    for (int i = dimension + 2; i < ast.size(); i++) {
+      IExpr option = ast.get(i);
+      if (!option.isRuleAST() || option.first() != S.VectorPoints) {
+        continue;
+      }
+      IExpr value = engine.evaluate(option.second());
+      if (!value.isListOfLists()) {
+        return null;
+      }
+      IAST list = (IAST) value;
+      double[][] result = new double[list.argSize()][];
+      for (int k = 1; k <= list.argSize(); k++) {
+        IAST point = (IAST) list.get(k);
+        if (point.argSize() != dimension) {
+          return null;
+        }
+        result[k - 1] = new double[dimension];
+        for (int d = 0; d < dimension; d++) {
+          double c = point.get(d + 1).evalfNaN();
+          if (!Double.isFinite(c)) {
+            return null;
+          }
+          result[k - 1][d] = c;
+        }
+      }
+      return result;
+    }
+    return null;
+  }
+
+  /** The smallest distance between two different points, or {@link Double#MAX_VALUE}. */
+  private static double smallestDistance(double[][] points) {
+    double smallest = Double.MAX_VALUE;
+    for (int i = 0; i < points.length; i++) {
+      for (int j = i + 1; j < points.length; j++) {
+        double sum = 0.0;
+        for (int d = 0; d < points[i].length; d++) {
+          double diff = points[i][d] - points[j][d];
+          sum += diff * diff;
+        }
+        if (sum > 0.0) {
+          smallest = Math.min(smallest, Math.sqrt(sum));
+        }
+      }
+    }
+    return smallest;
+  }
+
+  /** Whether a style names a colour anywhere in it. */
+  private static boolean containsColor(IExpr style) {
+    if (org.matheclipse.core.graphics.GraphicsOptions.isColorExpr(style)
+        && !style.isAST(S.Opacity, 2)) {
+      return true;
+    }
+    if (style.isList() || style.isAST(S.Directive)) {
+      return ((IAST) style).exists(VectorPlot::containsColor);
+    }
+    return false;
   }
 
   /** The field's value at <code>point</code>, or <code>null</code> where it is not numeric. */
