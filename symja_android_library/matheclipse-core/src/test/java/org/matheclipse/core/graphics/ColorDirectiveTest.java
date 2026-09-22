@@ -101,6 +101,29 @@ public class ColorDirectiveTest {
         .getBlue(), "the last colour of a directive list is the one that applies");
   }
 
+  /**
+   * The channels packed into one list are the same colour as the channels spread out -
+   * {@code Table(RGBColor(RandomReal(1, 3)), ...)} produces the packed form. {@code Hue({h,s,b})}
+   * used to read its list as the hue alone and draw red whatever the list said.
+   */
+  @Test
+  public void testPackedChannelListsAreTheSameColour() {
+    String[][] pairs = {{"RGBColor({1,0,0})", "RGBColor(1,0,0)"},
+        {"RGBColor({1,0,0,0.5})", "RGBColor(1,0,0,0.5)"}, {"Hue({0.3,1,1})", "Hue(0.3,1,1)"},
+        {"Hue({0.3,0.5,0.5,0.25})", "Hue(0.3,0.5,0.5,0.25)"}, {"GrayLevel({0.5})", "GrayLevel(0.5)"},
+        {"GrayLevel({0.5,0.5})", "GrayLevel(0.5,0.5)"}, {"CMYKColor({0,1,1,0})", "CMYKColor(0,1,1,0)"},
+        {"XYZColor({0.4,0.2,0.1})", "XYZColor(0.4,0.2,0.1)"},
+        {"LABColor({0.5,0.1,-0.1})", "LABColor(0.5,0.1,-0.1)"}};
+    for (String[] pair : pairs) {
+      Color packed = ColorUtil.parse(eval(pair[0]));
+      assertNotNull(packed, pair[0] + " should be a colour");
+      assertEquals(ColorUtil.parse(eval(pair[1])), packed, pair[0] + " is " + pair[1]);
+      assertTrue(GraphicsOptions.isColorExpr(eval(pair[0])), pair[0] + " should be a colour");
+    }
+    assertEquals(new Color(0, 255, 0), ColorUtil.parse(eval("Hue({1/3,1,1})")),
+        "a packed hue of a third is green, not the red a misread list gave");
+  }
+
   @Test
   public void testTheTwoColourSpacesTheChemModuleAlreadyUsed() {
     assertTrue(GraphicsOptions.isColorExpr(eval("XYZColor(0.4, 0.2, 0.1)")));

@@ -138,13 +138,13 @@ public final class ColorUtil {
     }
     switch (((IBuiltInSymbol) head).ordinal()) {
       case ID.RGBColor:
-        return parseRGB(ast);
+        return parseRGB(unpackChannels(ast));
       case ID.Hue:
-        return parseHue(ast);
+        return parseHue(unpackChannels(ast));
       case ID.GrayLevel:
-        return parseGrayLevel(ast);
+        return parseGrayLevel(unpackChannels(ast));
       case ID.CMYKColor:
-        return parseCMYK(ast);
+        return parseCMYK(unpackChannels(ast));
       case ID.Lighter:
         return lighterDarker(ast, true);
       case ID.Darker:
@@ -152,9 +152,9 @@ public final class ColorUtil {
       case ID.Blend:
         return blend(ast);
       case ID.XYZColor:
-        return parseXYZ(ast);
+        return parseXYZ(unpackChannels(ast));
       case ID.LABColor:
-        return parseLAB(ast);
+        return parseLAB(unpackChannels(ast));
       case ID.Opacity:
         // Opacity[o, colour] denotes a colour; plain Opacity[o] is a directive, not a colour
         if (ast.argSize() >= 2) {
@@ -170,15 +170,24 @@ public final class ColorUtil {
   }
 
   /**
-   * {@code RGBColor[r, g, b]}, {@code RGBColor[r, g, b, a]}, {@code RGBColor[{r, g, b}]} and the
-   * hex string form {@code RGBColor["#ff0000"]}.
+   * A colour whose channels are packed into one list - {@code Hue[{h, s, b}]}, the form
+   * {@code Table[RGBColor[RandomReal[1, 3]], ...]} produces - as the same colour with its channels
+   * spread out as arguments, so that every parser reads only that one shape.
+   */
+  private static IAST unpackChannels(IAST ast) {
+    if (ast.argSize() == 1 && ast.arg1().isList()) {
+      return ((IAST) ast.arg1()).apply(ast.head());
+    }
+    return ast;
+  }
+
+  /**
+   * {@code RGBColor[r, g, b]}, {@code RGBColor[r, g, b, a]} and the hex string form
+   * {@code RGBColor["#ff0000"]}.
    */
   private static Color parseRGB(IAST ast) {
     if (ast.argSize() == 1) {
       IExpr arg = ast.arg1();
-      if (arg.isList()) {
-        return parseRGB((IAST) arg.makeList().apply(ast.head()));
-      }
       if (arg.isString()) {
         return parseHex(arg.toString());
       }

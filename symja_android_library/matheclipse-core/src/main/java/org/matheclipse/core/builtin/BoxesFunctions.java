@@ -406,6 +406,11 @@ public class BoxesFunctions {
         return F.NIL;
       }
       IAST ast = (IAST) expr;
+      if (ast.argSize() == 1 && ast.arg1().isList()
+          && (ast.head() == S.RGBColor || ast.head() == S.GrayLevel || ast.head() == S.Hue)) {
+        // the channels packed into one list are the same colour as the channels spread out
+        ast = ((IAST) ast.arg1()).apply(ast.head());
+      }
       String template = null;
       if (ast.isAST(S.RGBColor, 4, 5)) {
         template = "RGBColorSwatchTemplate";
