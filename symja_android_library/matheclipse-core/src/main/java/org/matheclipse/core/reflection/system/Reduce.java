@@ -2616,6 +2616,157 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Reduce a relation in which the variable occurs only inside one integer valued kernel
+   * <code>k = Floor(u)</code>, <code>Ceiling(u)</code>, <code>IntegerPart(u)</code> or
+   * <code>Round(u)</code>. The relation is reduced for <code>k</code> over the {@link S#Integers},
+   * each condition on <code>k</code> becomes an interval of <code>u</code>, and that is reduced for
+   * the variable over the {@link S#Reals}: <code>Floor(2*x-1)==3</code> gives
+   * <code>x&gt;=2&amp;&amp;x&lt;5/2</code>.
+   *
+   * @return the reduced relation, or {@link F#NIL} if the relation doesn't have this shape
+   */
+  private static IExpr reduceIntegerValuedKernel(IExpr expr, IExpr variable, SolveOptions options,
+      EvalEngine engine) {
+    IExpr rewritten = integerValuedKernelIntervals(expr, variable, options, engine);
+    if (rewritten.isNIL() && expr.isAnd()) {
+      // `Floor(x)<2 && x>0`: every conjunct which has the shape is rewritten on its own
+      IASTMutable and = ((IAST) expr).copy();
+      for (int i = 1; i < and.size(); i++) {
+        IExpr conjunct = integerValuedKernelIntervals(and.get(i), variable, options, engine);
+        if (conjunct.isPresent()) {
+          and.set(i, conjunct);
+          rewritten = and;
+        }
+      }
+    }
+    if (rewritten.isNIL()) {
+      return F.NIL;
+    }
+    IExpr reduced = reduceRecursive(rewritten, variable, S.Reals, options, engine);
+    return reduced.isPresent() && reduced.isFree(S.Reduce) ? reduced : F.NIL;
+  }
+
+  /**
+   * The intervals of the argument <code>u</code> of the only integer valued kernel of the
+   * relation, or {@link F#NIL}.
+   */
+  private static IExpr integerValuedKernelIntervals(IExpr expr, IExpr variable,
+      SolveOptions options, EvalEngine engine) {
+    Set<IExpr> kernels = new LinkedHashSet<IExpr>();
+    collectIntegerValuedKernels(expr, variable, kernels);
+    if (kernels.size() != 1) {
+      return F.NIL;
+    }
+    IExpr kernel = kernels.iterator().next();
+    ISymbol k = F.Dummy("k");
+    IExpr inK = F.subst(expr, x -> x.equals(kernel) ? k : F.NIL);
+    if (!inK.isFree(variable, true)) {
+      // the variable occurs outside of the kernel too
+      return F.NIL;
+    }
+    IExpr integerSolution = reduceRecursive(inK, k, S.Integers, options, engine);
+    if (integerSolution.isNIL() || !integerSolution.isFree(S.Reduce)) {
+      return F.NIL;
+    }
+    return kernelConditionToIntervals(expandComparators(integerSolution), k, kernel.headID(),
+        kernel.first());
+  }
+
+  private static void collectIntegerValuedKernels(IExpr expr, IExpr variable, Set<IExpr> kernels) {
+    if (!expr.isAST() || expr.isFree(variable, true)) {
+      return;
+    }
+    if (expr.isAST1() && expr.isFunctionID(ID.Floor, ID.Ceiling, ID.IntegerPart, ID.Round)) {
+      kernels.add(expr);
+      return;
+    }
+    for (IExpr arg : (IAST) expr) {
+      collectIntegerValuedKernels(arg, variable, kernels);
+    }
+  }
+
+  /**
+   * Translate a reduced condition on the integer value <code>k</code> of the kernel
+   * <code>head(u)</code> into relations of <code>u</code>, e.g. <code>k==3</code> of
+   * <code>Floor(u)</code> into <code>u&gt;=3&amp;&amp;u&lt;4</code>.
+   *
+   * @return {@link F#NIL} if the condition contains anything else than integer bounds of
+   *         <code>k</code>
+   */
+  private static IExpr kernelConditionToIntervals(IExpr condition, IExpr k, int headID, IExpr u) {
+    if (condition.isTrue() || condition.isFalse()) {
+      return condition;
+    }
+    if (condition.isAST(S.Element, 3) && condition.first().equals(k)
+        && condition.second() == S.Integers) {
+      return S.True;
+    }
+    if (condition.isAnd() || condition.isOr()) {
+      IAST ast = (IAST) condition;
+      IASTAppendable result = F.ast(ast.head(), ast.argSize());
+      for (IExpr arg : ast) {
+        IExpr translated = kernelConditionToIntervals(arg, k, headID, u);
+        if (translated.isNIL()) {
+          return F.NIL;
+        }
+        result.append(translated);
+      }
+      return result;
+    }
+    if (!condition.isAST2() || !condition.first().equals(k) || !condition.second().isInteger()) {
+      return F.NIL;
+    }
+    IInteger n = (IInteger) condition.second();
+    switch (condition.headID()) {
+      case ID.Equal:
+        return F.And(kernelAtLeast(headID, u, n), kernelAtMost(headID, u, n));
+      case ID.GreaterEqual:
+        return kernelAtLeast(headID, u, n);
+      case ID.Greater:
+        return kernelAtLeast(headID, u, n.inc());
+      case ID.LessEqual:
+        return kernelAtMost(headID, u, n);
+      case ID.Less:
+        return kernelAtMost(headID, u, n.dec());
+      default:
+        return F.NIL;
+    }
+  }
+
+  /** The values of <code>u</code> with <code>head(u) &gt;= n</code>. */
+  private static IExpr kernelAtLeast(int headID, IExpr u, IInteger n) {
+    switch (headID) {
+      case ID.Floor:
+        return F.GreaterEqual(u, n);
+      case ID.Ceiling:
+        return F.Greater(u, n.dec());
+      case ID.IntegerPart:
+        // truncation towards zero: IntegerPart(u) >= 1 is u >= 1, IntegerPart(u) >= 0 is u > -1
+        return n.isPositive() ? F.GreaterEqual(u, n) : F.Greater(u, n.dec());
+      default:
+        // Round rounds half to even, so n-1/2 rounds to n exactly for an even n
+        IExpr half = F.Subtract(n, F.C1D2);
+        return n.isEven() ? F.GreaterEqual(u, half) : F.Greater(u, half);
+    }
+  }
+
+  /** The values of <code>u</code> with <code>head(u) &lt;= n</code>. */
+  private static IExpr kernelAtMost(int headID, IExpr u, IInteger n) {
+    switch (headID) {
+      case ID.Floor:
+        return F.Less(u, n.inc());
+      case ID.Ceiling:
+        return F.LessEqual(u, n);
+      case ID.IntegerPart:
+        // IntegerPart(u) <= 0 is u < 1, IntegerPart(u) <= -1 is u <= -1
+        return n.isNegative() ? F.LessEqual(u, n) : F.Less(u, n.inc());
+      default:
+        IExpr half = F.Plus(n, F.C1D2);
+        return n.isEven() ? F.LessEqual(u, half) : F.Less(u, half);
+    }
+  }
+
+  /**
    * Reduce relations which don't mention the variable of the reduction over their own variables,
    * e.g. <code>a^2&lt;4</code> becomes <code>a&gt;-2&amp;&amp;a&lt;2</code>. A condition which
    * can't be reduced is kept as it is.
@@ -2841,6 +2992,12 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
 
       if (domain == S.Reals || elementDomains.get(variable) == S.Reals
           || containsOrderRelation(expr, variable)) {
+        // Floor, Ceiling, IntegerPart and Round of a real variable take integer values, so the
+        // relation is reduced over the integers first, e.g. `Floor(x)^2>5`
+        IExpr integerKernel = reduceIntegerValuedKernel(expr, variable, solveOptions, engine);
+        if (integerKernel.isPresent()) {
+          return integerKernel;
+        }
         // a piecewise defined function of a real variable - Abs, Max, UnitStep, ... - is reduced
         // by the case analysis of its branches
         IExpr caseSplit = piecewiseCaseSplit(expr, variable, engine);

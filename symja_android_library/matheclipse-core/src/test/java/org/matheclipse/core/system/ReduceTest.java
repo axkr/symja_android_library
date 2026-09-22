@@ -1354,4 +1354,38 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("IntegerPart(x)", //
         "IntegerPart(x)");
   }
+
+  /** Floor, Ceiling, IntegerPart and Round of a real variable take integer values. */
+  @Test
+  public void testReduceIntegerValuedFunctions() {
+    check("Reduce(Floor(2*x - 1) == 3, x, Reals)", //
+        "x>=2&&x<5/2");
+    check("Reduce(Floor(x)^2 > 5, x, Reals)", //
+        "x<-2||x>=3");
+    check("Reduce(Floor(x)^2 - 3*Floor(x) + 2 <= 0, x, Reals)", //
+        "x>=1&&x<3");
+    check("Reduce(Ceiling(x)^2 > 5, x, Reals)", //
+        "x<=-3||x>2");
+    check("Reduce(IntegerPart(x) == 2, x, Reals)", //
+        "x>=2&&x<3");
+    // IntegerPart truncates towards zero
+    check("Reduce(IntegerPart(x) == 0, x, Reals)", //
+        "x>-1&&x<1");
+    check("Reduce(IntegerPart(x) == -2, x, Reals)", //
+        "x>-3&&x<=-2");
+    // Round rounds half to even
+    check("Reduce(Round(x) == 2, x, Reals)", //
+        "x>=3/2&&x<=5/2");
+    check("Reduce(Round(x) == 1, x, Reals)", //
+        "x>1/2&&x<3/2");
+    check("Reduce(Floor(x^2) == 2, x, Reals)", //
+        "(x>-Sqrt(3)&&x<=-Sqrt(2))||(x>=Sqrt(2)&&x<Sqrt(3))");
+    check("Reduce(Floor(x) == 1/2, x, Reals)", //
+        "False");
+    check("Reduce(Floor(x) < 2 && x > 0, x, Reals)", //
+        "x>0&&x<2");
+    // the variable occurs outside of the kernel
+    check("Reduce(Floor(x) + x == 3, x, Reals)", //
+        "x+Floor(x)==3");
+  }
 }
