@@ -51,6 +51,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IPatternSequence;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -2922,16 +2923,53 @@ public class Algebra {
 
   private static class PolynomialMod extends AbstractFunctionOptionEvaluator {
 
+    /**
+     * <code>a/b</code> as the integer <code>a * b^-1 mod m</code>, or {@link F#NIL} if
+     * <code>b</code> has no inverse modulo <code>m</code>.
+     */
+    private static IExpr rationalMod(IRational r, IInteger m) {
+      IInteger numerator = r.numerator();
+      IInteger denominator = r.denominator();
+      if (denominator.isOne()) {
+        return numerator.mod(m);
+      }
+      if (!denominator.gcd(m).isOne()) {
+        return F.NIL;
+      }
+      return numerator.multiply(denominator.modInverse(m)).mod(m);
+    }
+
+    /**
+     * A rational or complex rational coefficient modulo <code>m</code>: <code>PolynomialMod(2/3,
+     * 7)</code> is <code>3</code>, and <code>PolynomialMod(I+1/3, 7)</code> is the Gaussian
+     * <code>Mod(5+I, 7)</code>, <code>-2+I</code>.
+     *
+     * @return {@link F#NIL} if a denominator has no inverse modulo <code>m</code>
+     */
+    private static IExpr numberMod(IExpr c, IInteger m, EvalEngine engine) {
+      if (c.isRational()) {
+        return rationalMod((IRational) c, m);
+      }
+      if (c instanceof IComplex) {
+        IComplex z = (IComplex) c;
+        IExpr re = rationalMod(z.re(), m);
+        IExpr im = rationalMod(z.im(), m);
+        if (re.isNIL() || im.isNIL()) {
+          return F.NIL;
+        }
+        return engine.evaluate(F.Mod(F.CC((IRational) re, (IRational) im), m));
+      }
+      return F.NIL;
+    }
+
     private static IExpr applyModRecursively(IExpr expr, IInteger m, EvalEngine engine) {
       if (expr.isInteger()) {
         return ((IInteger) expr).mod(m);
       }
-      if (expr.isRational()) {
-        IExpr modded = engine.evaluate(F.Mod(expr, m));
-        if (modded.isAST(S.Mod)) {
-          return F.NIL;
-        }
-        return modded;
+      if (expr.isRational() || expr instanceof IComplex) {
+        IExpr modded = numberMod(expr, m, engine);
+        // a denominator without an inverse stays, as in PolynomialMod(1/7 + x, 7)
+        return modded.isPresent() ? modded : expr;
       }
       if (expr.isPlus()) {
         IAST plus = (IAST) expr;
@@ -2985,6 +3023,10 @@ public class Algebra {
         // Constant expression: just take Mod[expr, m]
         if (expr.isInteger()) {
           return ((IInteger) expr).mod(m);
+        }
+        if (expr.isRational() || expr instanceof IComplex) {
+          IExpr modded = numberMod(expr, m, engine);
+          return modded.isPresent() ? modded : expr;
         }
         IExpr modded = engine.evaluate(F.Mod(expr, m));
         if (modded.isAST(S.Mod)) {
@@ -3100,6 +3142,144 @@ public class Algebra {
       return polynomialModInteger(qr.get()[1], p, engine);
     }
 
+    /**
+     * <code>PolynomialMod(poly, {m1, m2, ...})</code> with a polynomial modulus in more than one
+     * variable, in lexicographic order of <code>Variables({poly, m1, ...})</code>:
+     * <ul>
+     * <li>polynomials only: the remainder of <code>PolynomialReduce</code>, over the rationals;
+     * <li>with integers as well: each polynomial is subtracted with integer multiples only
+     * (<code>Quotient</code> of the coefficients), and the coefficients are reduced modulo the
+     * integers.
+     * </ul>
+     *
+     * @return {@link F#NIL} if the moduli don't have this form
+     */
+    private static IExpr polynomialModList(IExpr poly, IAST moduli, EvalEngine engine) {
+      IASTAppendable polynomials = F.ListAlloc(moduli.argSize());
+      boolean hasInteger = false;
+      for (int i = 1; i <= moduli.argSize(); i++) {
+        IExpr modulus = moduli.get(i);
+        if (modulus.isInteger()) {
+          if (modulus.isZero()) {
+            return F.NIL;
+          }
+          hasInteger = true;
+        } else if (modulus.isFree(x -> x.isNumber() && !x.isRational(), true)
+            && modulus.isPolynomialStruct()) {
+          polynomials.append(modulus);
+        } else {
+          return F.NIL;
+        }
+      }
+      IAST vars = new VariablesSet(F.List(poly, polynomials)).getVarList();
+      if (polynomials.isEmpty() || vars.argSize() < 2) {
+        // one variable: the sequential single-modulus path handles it
+        return F.NIL;
+      }
+      IExpr expanded = F.evalExpandAll(poly, engine);
+      if (!hasInteger) {
+        IExpr reduced = engine.evaluate(F.ternaryAST3(S.PolynomialReduce, expanded, polynomials, vars));
+        if (reduced.isList() && reduced.argSize() == 2) {
+          return reduced.second();
+        }
+        return F.NIL;
+      }
+      IExpr current = expanded;
+      for (int i = 1; i <= moduli.argSize(); i++) {
+        IExpr modulus = moduli.get(i);
+        current = modulus.isInteger()
+            ? polynomialModInteger(current, ((IInteger) modulus).abs(), engine)
+            : reduceOverIntegers(current, modulus, vars, engine);
+        if (current.isNIL()) {
+          return F.NIL;
+        }
+      }
+      // the polynomials after an integer may have left coefficients which it reduces
+      for (int i = 1; i <= moduli.argSize(); i++) {
+        if (moduli.get(i).isInteger()) {
+          current = polynomialModInteger(current, ((IInteger) moduli.get(i)).abs(), engine);
+          if (current.isNIL()) {
+            return F.NIL;
+          }
+        }
+      }
+      return current;
+    }
+
+    /**
+     * Subtract integer multiples of the monomial multiples of <code>g</code> from <code>p</code>:
+     * a term <code>c*t</code> whose monomial is a multiple of the leading monomial <code>lm</code> of
+     * <code>g</code> (leading coefficient <code>lc &gt; 0</code>) loses
+     * <code>Quotient(c, lc)*(t/lm)*g</code>, largest term first, until no term changes.
+     */
+    private static IExpr reduceOverIntegers(IExpr p, IExpr g, IAST vars, EvalEngine engine) {
+      IExpr gRules = engine.evaluate(F.CoefficientRules(F.evalExpandAll(g, engine), vars));
+      if (!gRules.isList() || gRules.argSize() == 0) {
+        return F.NIL;
+      }
+      IExpr leading = gRules.first();
+      if (!leading.second().isInteger() || !leading.first().isList()) {
+        return F.NIL;
+      }
+      IInteger lc = (IInteger) leading.second();
+      IAST lm = (IAST) leading.first();
+      IExpr gNormal = g;
+      if (lc.isNegative()) {
+        lc = lc.negate();
+        gNormal = F.Negate(g);
+      }
+      IExpr current = p;
+      // each step lowers a coefficient below lc or moves to a smaller monomial
+      for (int iter = 0; iter < 1024; iter++) {
+        if (current.isZero()) {
+          return F.C0;
+        }
+        IExpr rules = engine.evaluate(F.CoefficientRules(current, vars));
+        if (!rules.isList()) {
+          return F.NIL;
+        }
+        IExpr step = F.NIL;
+        for (IExpr rule : (IAST) rules) {
+          IExpr c = rule.second();
+          IAST exponents = (IAST) rule.first();
+          if (!c.isInteger()) {
+            continue;
+          }
+          IInteger q = ((IInteger) c).quotient(lc);
+          if (((IInteger) c).isNegative() && !((IInteger) c).mod(lc).isZero()) {
+            // Quotient rounds towards minus infinity
+            q = q.subtract(F.C1);
+          }
+          if (q.isZero()) {
+            continue;
+          }
+          IASTAppendable monomial = F.TimesAlloc(vars.argSize() + 1);
+          monomial.append(q);
+          boolean divisible = true;
+          for (int k = 1; k <= vars.argSize(); k++) {
+            int e = exponents.get(k).toIntDefault();
+            int le = lm.get(k).toIntDefault();
+            if (e < le) {
+              divisible = false;
+              break;
+            }
+            if (e > le) {
+              monomial.append(F.Power(vars.get(k), F.ZZ(e - le)));
+            }
+          }
+          if (divisible) {
+            step = F.Times(monomial, gNormal);
+            break;
+          }
+        }
+        if (step.isNIL()) {
+          return current;
+        }
+        current = F.evalExpandAll(F.Subtract(current, step), engine);
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -3115,6 +3295,10 @@ public class Algebra {
       // PolynomialMod[poly, {m1, m2, ...}] -> apply sequentially.
       if (m.isList()) {
         IAST mList = (IAST) m;
+        IExpr multivariate = polynomialModList(poly, mList, engine);
+        if (multivariate.isPresent()) {
+          return multivariate;
+        }
         IExpr result = poly;
         for (int i = 1; i <= mList.argSize(); i++) {
           IExpr next = engine.evaluate(F.PolynomialMod(result, mList.get(i)));

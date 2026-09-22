@@ -3561,6 +3561,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTranspose() {
+    // Mathematica: Transpose::nmtx, unevaluated - the first two levels aren't rectangular
+    // (\uF3C7 is the \[Transpose] glyph of the unevaluated Transpose)
+    check("InputForm(Transpose({{a,b,c},{d,e}}))", //
+        "{{a,b,c},{d,e}}\uF3C7");
+    check("InputForm(Transpose({{1,2},3}))", //
+        "{{1,2},3}\uF3C7");
+    // only the first two levels have to be rectangular
+    check("Transpose({{{a,b,c},{d,e,f}},{t1,t2}})", //
+        "{{{a,b,c},t1},{{d,e,f},t2}}");
+    check("Dimensions(Transpose(Array(a, {2,3,4}), {3,1,2}))", //
+        "{3,4,2}");
     // A permutation shorter than the tensor left the trailing entries of the internal positions
     // array at 0, and index 0 is the head: this returned {List,List} instead of declining.
     check("Transpose({{1,2},{3,4}}, {1})", //

@@ -6750,13 +6750,25 @@ public final class LinearAlgebra {
         // a symbolic array carries its own shape, so it must not reach the "not a matrix" message
         return SymbolicArrayFunctions.transposeSymbolic(arg1, arg2, isConjugate(), engine);
       }
-      final IntArrayList dimensions =
-          LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      // only the first two levels have to be rectangular: a ragged deeper level is not an error
+      final boolean quiet = engine.isQuietMode();
+      final IntArrayList dimensions;
+      try {
+        engine.setQuietMode(true);
+        dimensions = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      } finally {
+        engine.setQuietMode(quiet);
+      }
       int length = dimensions.size();
       if (length < 1) {
         // Error messages inherits to S.ConjugateTranspose
         // The first two levels of `1` cannot be transposed.
         return Errors.printMessage(ast.topHead(), "nmtx", F.List(ast), engine);
+      }
+      if (length == 1 && arg1.isList() && ((IAST) arg1).exists(x -> x.isList())) {
+        // a ragged list like {{a,b,c},{d,e}} or {{1,2},3}: the second level isn't rectangular
+        // The first two levels of `1` cannot be transposed.
+        return Errors.printMessage(ast.topHead(), "nmtx", F.List(arg1), engine);
       }
       if (arg2.isInteger()) {
         // Transpose(a, k) cycles the levels k positions to the right, i.e. it is

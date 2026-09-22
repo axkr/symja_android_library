@@ -116,4 +116,32 @@ public class PolynomialModTest extends ExprEvaluatorTestCase {
     check("PolynomialMod((2*x + 4)*(x + 1), 2)", //
         "0");
   }
+
+  /** Mathematica ground truth for rational, complex and multivariate moduli. */
+  @Test
+  public void testPolynomialModMathematica() {
+    check("PolynomialMod(2/3, 7)", //
+        "3");
+    check("PolynomialMod(-2/3, 7)", //
+        "4");
+    check("PolynomialMod(I+1/3, 7)", //
+        "-2+I");
+    check("PolynomialMod(1/2 + 3/4*x, 7)", //
+        "4+6*x");
+    // 7 has no inverse modulo 7
+    check("PolynomialMod(1/7 + x, 7)", //
+        "1/7+x");
+    check("PolynomialMod(10^30 + x, 7)", //
+        "1+x");
+    check("PolynomialMod(x^3 + 1, 2*x^2 + 1)", //
+        "1-x/2");
+    // polynomial moduli in two variables: the remainder over the rationals
+    check("PolynomialMod(3*x^3+21*x^2*y^2-7*x*y^3+55, {2*x^2-7, x*y-3})", //
+        "55+21/2*x+105/2*y^2");
+    // and with an integer: integer multiples only, then the integer
+    check("PolynomialMod(3*x^3+21*x^2*y^2-7*x*y^3+55, {2*x^2-7, x*y-3, 9})", //
+        "1+7*x+x^3+4*y^2");
+    check("PolynomialMod(3*x^3+21*x^2*y^2-7*x*y^3+55, {9, 2*x^2-7, x*y-3})", //
+        "1+7*x+x^3+4*y^2");
+  }
 }
