@@ -282,12 +282,15 @@ public class ReduceTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testReduceIntegerQuantifier() {
+    // a residue class is written with a generated parameter, like in Mathematica
     check("Reduce(Exists(y, x == 2*y + 1), x, Integers)", //
-        "x∈Integers&&Mod(x,2)==1");
+        "C(1)∈Integers&&x==1+2*C(1)");
     check("Reduce(Exists(y, x == 2*y), x, Integers)", //
-        "x∈Integers&&Mod(x,2)==0");
+        "C(1)∈Integers&&x==2*C(1)");
     check("Reduce(Exists(y, x == 3*y + 2), x, Integers)", //
-        "x∈Integers&&Mod(x,3)==2");
+        "C(1)∈Integers&&x==2+3*C(1)");
+    check("Reduce(Exists(y, x == 2*y && y > 3), x, Integers)", //
+        "x==8||(C(1)∈Integers&&C(1)>=4&&x==2*C(1))");
     check("Reduce(ForAll(y, y <= x || y > x), x, Integers)", //
         "True");
     // an equation with no integer solution is decided, not searched for
@@ -1169,11 +1172,30 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x∈Integers");
     // a residue class is unbounded too
     check("Reduce(Mod(x, 3) == 1, x, Integers)", //
-        "x∈Integers&&Mod(x,3)==1");
+        "C(1)∈Integers&&x==1+3*C(1)");
     check("Reduce(Mod(2*x, 6) == 4, x, Integers)", //
-        "x∈Integers&&Mod(x,3)==2");
+        "C(1)∈Integers&&x==2+3*C(1)");
     check("Reduce(Divisible(x, 3), x, Integers)", //
-        "x∈Integers&&Mod(x,3)==0");
+        "C(1)∈Integers&&x==3*C(1)");
+    // a bound of the variable becomes a bound of the parameter
+    check("Reduce(Mod(x, 6) == 4 && x > 10, x, Integers)", //
+        "C(1)∈Integers&&C(1)>=2&&x==4+6*C(1)");
+    // a denied congruence leaves the other classes
+    check("Reduce(Mod(x, 3) != 1, x, Integers)", //
+        "C(1)∈Integers&&(x==3*C(1)||x==2+3*C(1))");
+    check("Reduce(Mod(x, 3) != 1 && x > 0, x, Integers)", //
+        "(C(1)∈Integers&&C(1)>=1&&x==3*C(1))||(C(1)∈Integers&&C(1)>=0&&x==2+3*C(1))");
+    check("Reduce(Mod(x, 2) == 1 && Mod(x, 3) == 2, x, Integers)", //
+        "C(1)∈Integers&&x==5+6*C(1)");
+    check("Reduce(Mod(x, 4) == 1 && Mod(x, 6) == 2, x, Integers)", //
+        "False");
+    check("Reduce(Mod(x, 2) == 0 || x > 5, x, Integers)", //
+        "(x∈Integers&&x>=6)||(C(1)∈Integers&&x==2*C(1))");
+    check("Reduce(Mod(x, 2) == 1 && y > 0 && Mod(y, 3) == 2, {x, y}, Integers)", //
+        "(C(1)|C(2))∈Integers&&C(2)>=0&&x==1+2*C(1)&&y==2+3*C(2)");
+    // an equation pins the class to one value
+    check("Reduce(Mod(x, 2) == 1 && x == 5, x, Integers)", //
+        "x==5");
     // an irrational bound is rounded to the enclosed integers
     check("Reduce(x^2 < 5 && x > -3, x, Integers)", //
         "x==-2||x==-1||x==0||x==1||x==2");
