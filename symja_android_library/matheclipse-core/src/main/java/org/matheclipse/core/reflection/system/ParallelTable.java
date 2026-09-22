@@ -62,18 +62,24 @@ import org.matheclipse.core.interfaces.ISymbol;
  * expression in which every symbol of the user is replaced by a symbol of its own, and the
  * definitions of the user's symbols are copied onto them. This is the very model of the parallel
  * kernels of the Wolfram Language, where definitions are distributed to the kernels before the
- * computation and side effects do not come back, and it is what the <code>DistributedContexts</code>
- * option selects the symbols for.
+ * computation and side effects do not come back, and it is what the
+ * <code>DistributedContexts</code> option selects the symbols for.
  */
 public class ParallelTable extends AbstractFunctionEvaluator {
 
-  /** <code>true</code> on a kernel thread; a nested <code>ParallelTable</code> is a <code>Table</code> */
+  /**
+   * <code>true</code> on a kernel thread; a nested <code>ParallelTable</code> is a
+   * <code>Table</code>
+   */
   private static final ThreadLocal<Boolean> IN_KERNEL = new ThreadLocal<Boolean>();
 
   public ParallelTable() {}
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (!Config.FILESYSTEM_ENABLED) {
+      return F.NIL;
+    }
     // Method -> ..., DistributedContexts -> ..., ProgressReporting -> ... behind the iterators
     int last = ast.argSize();
     IExpr method = S.Automatic;
