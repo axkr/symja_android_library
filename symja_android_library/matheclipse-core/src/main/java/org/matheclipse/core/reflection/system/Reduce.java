@@ -2616,6 +2616,21 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Reduce relations which don't mention the variable of the reduction over their own variables,
+   * e.g. <code>a^2&lt;4</code> becomes <code>a&gt;-2&amp;&amp;a&lt;2</code>. A condition which
+   * can't be reduced is kept as it is.
+   */
+  private static IExpr reduceParameterConditions(IExpr conditions, ISymbol domain,
+      SolveOptions options, EvalEngine engine) {
+    IAST parameters = new VariablesSet(conditions).getVarList();
+    if (parameters.isEmpty()) {
+      return engine.evaluate(conditions);
+    }
+    IExpr reduced = reduceRecursive(conditions, parameters, domain, options, engine);
+    return reduced.isPresent() && reduced.isFree(S.Reduce) ? reduced : engine.evaluate(conditions);
+  }
+
+  /**
    * Reduce a sub problem, quietly, with the options of the outer call which change its result.
    *
    * @param options the options of the outer call, or <code>null</code> for the defaults
@@ -2784,9 +2799,16 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       final IExpr variable = vars.arg1();
       IExpr expr = arg1;
 
+      if (arg1.isFree(variable, true)) {
+        // nothing constrains the variable, e.g. `Reduce(a^2<4, x)`: the relations are reduced
+        // over their own variables
+        return reduceParameterConditions(arg1, domain, solveOptions, engine);
+      }
       // relations which don't contain the variable are conditions on the parameters of the
-      // reduction; they are kept unreduced instead of being folded into the variable's interval
-      IExpr withSideConditions = reduceWithSideConditions(arg1, variable, domain, solveOptions, engine);
+      // reduction; they are reduced on their own instead of being folded into the variable's
+      // interval
+      IExpr withSideConditions =
+          reduceWithSideConditions(arg1, variable, domain, solveOptions, engine);
       if (withSideConditions.isPresent()) {
         return withSideConditions;
       }
@@ -2834,7 +2856,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       if (expr.isEqual() && domain == S.Complexes) {
         // case analysis for univariate polynomial equations with parametric coefficients,
         // e.g. a*x^2+b*x+c==0 for variable x with parameters a,b,c
-        IExpr parametric = reduceParametricPolynomialEquation((IAST) expr, variable, solveOptions, engine);
+        IExpr parametric =
+            reduceParametricPolynomialEquation((IAST) expr, variable, solveOptions, engine);
         if (parametric.isPresent()) {
           return parametric;
         }
@@ -2873,7 +2896,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           return kernel;
         }
         // the inverse of u*E^u solves it, e.g. `x^x==4`
-        IExpr lambertW = reduceLambertWEquation((IAST) expr, variable, domain, solveOptions, engine);
+        IExpr lambertW =
+            reduceLambertWEquation((IAST) expr, variable, domain, solveOptions, engine);
         if (lambertW.isPresent()) {
           return lambertW;
         }
@@ -3357,9 +3381,11 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       if (sideConditions.isAST0()) {
         return F.NIL;
       }
-      if (variableTerms.isAST0()) {
+      IExpr conditions =
+          reduceParameterConditions(sideConditions.oneIdentity1(), domain, options, engine);
+      if (variableTerms.isAST0() || conditions.isFalse()) {
         // nothing constrains the variable
-        return engine.evaluate(sideConditions);
+        return conditions;
       }
       IExpr reduced = reduceRecursive(variableTerms, variable, domain, options, engine);
       if (!reduced.isFree(S.Reduce)) {
@@ -3368,10 +3394,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       if (reduced.isFalse()) {
         return S.False;
       }
-      IASTAppendable result = F.ast(S.And, sideConditions.size());
-      result.append(reduced);
-      result.appendArgs(sideConditions);
-      return engine.evaluate(result);
+      // the conditions on the parameters are premises of the solution, so they come first
+      return engine.evaluate(F.And(conditions, reduced));
     }
 
     if (arg1.isOr()) {
@@ -3853,7 +3877,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   /**
    * Reduce a multivariate system of relations over {@link S#Reals}/{@link S#Complexes}. A
    * disjunction is reduced alternative by alternative, a conjunction which contains at least one
-   * equation is handed to {@link #reduceEquationSystem(IAST, IAST, ISymbol, SolveOptions, EvalEngine)}. Anything
+   * equation is handed to
+   * {@link #reduceEquationSystem(IAST, IAST, ISymbol, SolveOptions, EvalEngine)}. Anything
    * else returns {@link F#NIL} so the caller can leave the expression unevaluated.
    */
   private static IExpr reduceMultivariate(IExpr arg1, IAST vars, ISymbol domain,

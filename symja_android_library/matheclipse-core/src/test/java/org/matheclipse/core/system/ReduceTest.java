@@ -443,22 +443,22 @@ public class ReduceTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReduceSideConditions() {
-    // relations of a symbol which isn't reduced are kept, they are neither dropped nor folded
-    // into the interval of the reduced variable
+    // relations of a symbol which isn't reduced are reduced on their own and come first, they are
+    // neither dropped nor folded into the interval of the reduced variable
     check("Reduce({x, y} == {1, 2}, x)", //
-        "x==1&&y==2");
+        "y==2&&x==1");
     check("Reduce({x == 1, y == 2}, x)", //
-        "x==1&&y==2");
+        "y==2&&x==1");
     check("Reduce(x == 1 && y == 2, x)", //
-        "x==1&&y==2");
+        "y==2&&x==1");
     check("Reduce(x == 1 && y > 0, x)", //
-        "x==1&&y>0");
+        "y>0&&x==1");
     check("Reduce(x > 0 && y == 2, x)", //
-        "x>0&&y==2");
+        "y==2&&x>0");
     check("Reduce(x^2 == 4 && y == 2, x)", //
-        "(x==-2||x==2)&&y==2");
+        "y==2&&(x==-2||x==2)");
     check("Reduce(x == 1 && y == 2 && x > 0, x)", //
-        "x==1&&y==2");
+        "y==2&&x==1");
     // nothing constrains the reduced variable
     check("Reduce(y == 2, x)", //
         "y==2");
@@ -466,10 +466,19 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(x == 1 || y == 2, x)", //
         "x==1||y==2");
     check("Reduce((x == 1 && y == 2) || x == 5, x)", //
-        "(x==1&&y==2)||x==5");
+        "(y==2&&x==1)||x==5");
     // a disjunction whose alternatives all constrain the variable is still merged
     check("Reduce((x > 1 && x < 5) || (x >= 5 && x < 8), x)", //
         "x>1&&x<8");
+      // the relations of the other symbols are reduced over their own variables
+    check("Reduce(a^2 < 4, x)", //
+        "a>-2&&a<2");
+    check("Reduce(x > 1 && a^2 < 4 && b^2 < 9, x)", //
+        "a>-2&&a<2&&b>-3&&b<3&&x>1");
+    check("Reduce(a^2 < 4 || x > 1, x)", //
+        "(a>-2&&a<2)||x>1");
+    check("Reduce(x > 1 && a^2 < 0, x, Reals)", //
+        "False");
   }
 
   @Test
