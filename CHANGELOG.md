@@ -4,6 +4,29 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `ExportString(expr, "SVG")` draws a `Row`, `Column`, `Grid` or `Pane`, and a `SwatchLegend`,
+  `LineLegend` or `PointLegend` standing on its own, as the picture a notebook shows. They left the
+  call unevaluated. Every cell keeps its natural size and may be a picture, text, a number or a
+  further layout; a `Spacer(w)` is a gap of that width rather than the text of its name, and an
+  `Animate` or a `Manipulate` in a cell is its first frame. Found through ad-si/Woxi#895, #901 and
+  #906.
+
+- `FrameLabel -> Grid(...)` is a table under the frame. A label that is a layout or a picture used
+  to be written out as the source text of the expression; it is now drawn as a picture of its own,
+  with the room it needs, on the bottom or the left edge. Found through ad-si/Woxi#902.
+
+- `CapForm(None)` leaves a `Cylinder` or a `Cone` in `Graphics3D` open at its ends, in the WebGL and
+  in the static SVG renderer. The directive was read for lines in two dimensions only. Found through
+  ad-si/Woxi#918.
+
+- `ParametricPlot3D` honours `MeshFunctions`, `Mesh -> {{v1, ...}}` and `MeshShading`. A mesh
+  function of the point and the two parameters draws its level lines in place of the parameter
+  grid, and `MeshShading -> {s1, s2, ...}` colours the bands between them - a matrix of shades for
+  two functions. The options were accepted and ignored. `Plot3D` shares the same code, and now also
+  reads explicit levels and a count per function from `Mesh`. The shading is per vertex, so a face
+  the boundary crosses blends across it instead of being cut exactly as Mathematica cuts it. Found
+  through ad-si/Woxi#916.
+
 - An option given as `Dynamic(...)` is drawn with its current value. `PlotRange -> Dynamic(r)`
   used to leave the option unreadable, so a picture was drawn exactly as if it had no plot range;
   `ViewPoint -> Dynamic(vp)` outside a `Manipulate` likewise fell back to the default view. Both

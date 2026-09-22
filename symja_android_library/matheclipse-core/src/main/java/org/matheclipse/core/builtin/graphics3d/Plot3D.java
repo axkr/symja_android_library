@@ -619,9 +619,6 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     return exclusion.isNumber() ? F.NIL : exclusion;
   }
 
-  /** How many mesh levels a {@code MeshFunctions} entry draws when {@code Mesh} does not say. */
-  private static final int MESH_FUNCTION_LEVELS = 8;
-
   /**
    * The mesh lines {@code MeshFunctions} asks for, as levels of each function it names.
    *
@@ -635,27 +632,11 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       return F.CEmptyList;
     }
     IAST list = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);
-    int levels = meshOption.toIntDefault(MESH_FUNCTION_LEVELS);
-    if (levels < 1) {
-      levels = MESH_FUNCTION_LEVELS;
-    }
     IASTAppendable all = F.ListAlloc(list.argSize() * 8);
     for (int k = 1; k < list.size(); k++) {
-      IExpr meshFunction = list.get(k);
-      double[][] values = new double[nx][ny];
-      for (int i = 0; i < nx; i++) {
-        for (int j = 0; j < ny; j++) {
-          double[] point = grid[i][j];
-          if (point == null) {
-            values[i][j] = Double.NaN;
-            continue;
-          }
-          IExpr value = engine.evalN(
-              F.ternaryAST3(meshFunction, F.num(point[0]), F.num(point[1]), F.num(point[2])));
-          values[i][j] = value.isNumber() ? value.evalfNaN() : Double.NaN;
-        }
-      }
-      all.appendArgs(Plot3DTools.meshLines(grid, values, levels));
+      double[][] values = Plot3DTools.meshFunctionValues(grid, list.get(k), null, null, engine);
+      all.appendArgs(Plot3DTools.meshLinesAt(grid, values,
+          Plot3DTools.meshLevels(meshOption, k - 1, values)));
     }
     return all;
   }

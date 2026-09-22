@@ -111,6 +111,26 @@ public class WebGLGraphics3DTest {
     assertTrue(openSvg.length() < closedSvg.length(), "the caps are faces of their own");
   }
 
+  /**
+   * {@code MeshShading} colours the bands the {@code MeshFunctions} lines cut a parametric surface
+   * into: the plane cut at x = 0 is red on one side and blue on the other.
+   */
+  @Test
+  public void parametricPlot3DMeshShading() {
+    JsonNode polygon = element(scene("ParametricPlot3D[{u,v,u},{u,-2,2},{v,-2,2}, "
+        + "MeshFunctions->(#1&), Mesh->{{0}}, MeshShading->{Red,Blue}]"), "Polygon");
+    java.util.Set<String> colours = new java.util.TreeSet<>();
+    // the colours are one flat list of red, green and blue triples
+    JsonNode vertexColors = polygon.get("vertexColors");
+    for (int i = 0; i + 2 < vertexColors.size(); i += 3) {
+      colours.add(vertexColors.get(i).asDouble() + "," + vertexColors.get(i + 1).asDouble() + ","
+          + vertexColors.get(i + 2).asDouble());
+    }
+    assertEquals(2, colours.size(), colours::toString);
+    assertTrue(colours.contains("1.0,0.0,0.0") && colours.contains("0.0,0.0,1.0"),
+        colours::toString);
+  }
+
   @Test
   public void defaultsFollowTheWMA() {
     JsonNode scene = scene("Graphics3D[Sphere[]]");

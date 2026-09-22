@@ -84,16 +84,25 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         if (each.hasStyle()) {
           builder.setStyle(each.style);
         }
+        IAST[] meshLines = new IAST[1];
         double[][][] grid =
             createSurfaceGeometry(each.datum, uRange, vRange, samples[0], samples[1], engine,
                 builder, colorBuilder, meshOption, options[Plot3DTools.X_MESH_STYLE],
-                options[Plot3DTools.X_EVALUATION_MONITOR], region);
+                options[Plot3DTools.X_EVALUATION_MONITOR], region,
+                options[Plot3DTools.X_MESH_FUNCTIONS], options[Plot3DTools.X_MESH_SHADING],
+                meshLines);
         if (grid != null) {
           // the rim of the surface, and the rim of every hole a RegionFunction cut in it
           IExpr complex = Plot3DTools.withBoundary(builder, grid,
               options[Plot3DTools.X_BOUNDARY_STYLE], false);
           if (complex.isPresent()) {
             graphicsList.append(each.wrapTooltip(complex));
+          }
+          if (meshLines[0] != null && meshLines[0].argSize() > 0) {
+            // the lines keep their own colour rather than being shaded with the surface
+            IExpr meshStyle = options[Plot3DTools.X_MESH_STYLE];
+            graphicsList.append(F.list(meshStyle == S.Automatic ? S.Black : meshStyle,
+                meshLines[0]));
           }
         }
       }
@@ -179,11 +188,18 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     }
   }
 
-  /** The sampled grid, or {@code null} when the parametrisation gave nothing to draw. */
+  /**
+   * The sampled grid, or {@code null} when the parametrisation gave nothing to draw.
+   *
+   * <p>
+   * With explicit {@code MeshFunctions} the mesh follows levels of those functions rather than the
+   * two parameters, and is handed back in {@code meshLines}; {@code MeshShading} then colours the
+   * bands between its lines.
+   */
   private double[][][] createSurfaceGeometry(IExpr func, IAST uRange, IAST vRange, int uCount,
       int vCount, EvalEngine engine, GraphicsComplexBuilder builder,
-      PlotColorFunction.Builder colorBuilder,
-      IExpr meshOption, IExpr meshStyle, IExpr monitor, RegionFunctionFilter region) {
+      PlotColorFunction.Builder colorBuilder, IExpr meshOption, IExpr meshStyle, IExpr monitor,
+      RegionFunctionFilter region, IExpr meshFunctions, IExpr meshShading, IAST[] meshLines) {
     ISymbol uVar = (ISymbol) uRange.arg1();
     double uMin = uRange.arg2().evalfNaN();
     double uMax = uRange.arg3().evalfNaN();
@@ -240,6 +256,31 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
           colors[i][j] = colorMap.color(p[0], p[1], p[2], uMin + i * uStep, vMin + j * vStep);
         }
       }
+    }
+
+    boolean byFunctions = meshFunctions != S.Automatic && !meshFunctions.isNone()
+        && !meshOption.isNone();
+    if (byFunctions) {
+      IAST list = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);
+      List<double[][]> values = new ArrayList<>(list.argSize());
+      List<double[]> levels = new ArrayList<>(list.argSize());
+      IASTAppendable lines = F.ListAlloc(list.argSize() * 8);
+      double[] start = {uMin, vMin};
+      double[] step = {uStep, vStep};
+      for (int k = 1; k < list.size(); k++) {
+        double[][] v = Plot3DTools.meshFunctionValues(grid, list.get(k), start, step, engine);
+        double[] at = Plot3DTools.meshLevels(meshOption, k - 1, v);
+        values.add(v);
+        levels.add(at);
+        lines.appendArgs(Plot3DTools.meshLinesAt(grid, v, at));
+      }
+      meshLines[0] = lines;
+      IExpr[][] shades = Plot3DTools.meshShading(grid, values, levels, meshShading);
+      if (shades != null) {
+        colors = shades;
+      }
+      // the parameter grid is not drawn as well: the mesh functions replace it
+      meshOption = S.None;
     }
 
     // a parametric surface may close on itself, and welding the seam is what keeps a torus from
