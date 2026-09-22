@@ -12750,6 +12750,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2         ");
   }
 
+  /** <code>Text(expr)</code> outside a picture is its contents, in every form that sets it. */
+  @Test
+  public void testTextOutsideAPicture() {
+    check("TeXForm(Text(Grid({{1,2}})))", //
+        "\\begin{array}{cc}\n" //
+            + " 1 & 2 \\\\\n" //
+            + "\\end{array}");
+    check("TeXForm(Text(x^2))", //
+        "{x}^{2}");
+    check("StringContainsQ(MathMLForm(Text(Grid({{1,2}}))), \"Text\")", //
+        "False");
+  }
+
   @Test
   public void testInsert() {
     check("Insert(<|\"z\"->t|>, {x->y,a->b}, 1)", //

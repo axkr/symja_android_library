@@ -240,6 +240,19 @@ public class TeXFormFactory {
     }
   }
 
+  /** <code>Text(expr)</code> outside a picture is its contents. */
+  private static final class Text extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() == 2) {
+        fFactory.convertInternal(buffer, f.arg1(), precedence, NO_PLUS_CALL);
+        return true;
+      }
+      return false;
+    }
+  }
+
   private static final class HoldForm extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
@@ -2588,6 +2601,7 @@ public class TeXFormFactory {
     initTeXConverter(S.HarmonicNumber, new HarmonicNumber());
     initTeXConverter(S.HermiteH, new BinaryFunction("H_", "(", ")"));
     initTeXConverter(S.HoldForm, new HoldForm());
+    initTeXConverter(S.Text, new Text());
     initTeXConverter(S.HurwitzZeta, new Zeta());
     initTeXConverter(S.Hypergeometric0F1, new BinaryFunction("\\,_0F_1(;", ";", ")"));
     initTeXConverter(S.Hypergeometric1F1, new TernaryFunction("\\,_1F_1(", ",", ",", ")"));

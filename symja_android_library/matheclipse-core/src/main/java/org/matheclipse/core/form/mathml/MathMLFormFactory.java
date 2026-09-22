@@ -1110,6 +1110,22 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    * the picture layouts use, so a grid of expressions and a grid of graphics agree about what
    * <code>Dividers -&gt; {All, Center}</code> means.
    */
+  /**
+   * <code>Text(expr)</code> outside a picture is its contents: <code>Text@Grid(...)</code> is how a
+   * notebook sets a table as plain text, and writing the head round it printed the source.
+   */
+  private static final class Text extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 2) {
+        return false;
+      }
+      fFactory.convertInternal(buf, f.arg1(), precedence, false);
+      return true;
+    }
+  }
+
   private static final class Grid extends AbstractConverter {
 
     @Override
@@ -3410,6 +3426,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.Row, new Row());
     CONVERTERS.put(S.Column, new Column());
     CONVERTERS.put(S.Grid, new Grid());
+    CONVERTERS.put(S.Text, new Text());
     GraphicsInline graphicsInline = new GraphicsInline();
     CONVERTERS.put(S.Graphics, graphicsInline);
     // the layout heads draw themselves the same way, so a picture inside a Column or a Grid is a

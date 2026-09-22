@@ -10,6 +10,12 @@ Noteworthy changes are documented in this file.
   operator table, and a fraction beside an operator keeps its three lines. Found beside
   ad-si/Woxi#922.
 
+- `Text(expr)` outside a picture is its contents. `Text@Grid(...)` - the Demonstrations idiom for a
+  table set as plain text, and a common `Manipulate` body - showed the literal `Text( ... )` round the
+  table in the notebook, in MathML and in TeX. As a picture, a `Grid`, `Row` or `Column` cell that is a
+  `Dynamic` now shows what it currently evaluates to instead of its source. Found through
+  ad-si/Woxi#924.
+
 - `IAST.asList()` gives Java code a read-only `java.util.List<IExpr>` view of an expression: index
   0 is the head and indices 1..n the arguments as `getRule(int)` returns them, so an association
   lists its rules. The view is backed by the expression rather than copied; `subList(1, size())`

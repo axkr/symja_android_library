@@ -142,6 +142,10 @@ final class SvgLayout {
     if (expr.isAST(S.TabView)) {
       return expr.first().isList() && expr.first().argSize() > 0;
     }
+    if (expr.isAST(S.Text, 2)) {
+      // Text@Grid(...) sets a table as plain text, which as a picture is the table
+      return isLayout(expr.first());
+    }
     return expr.isAST(S.Pane) || isLegend(expr);
   }
 
@@ -157,6 +161,9 @@ final class SvgLayout {
    * way <code>GraphicsRow</code> does.
    */
   String layout(IAST expr, boolean withSVGTag) {
+    if (expr.isAST(S.Text, 2) && expr.first().isAST()) {
+      return layout((IAST) expr.first(), withSVGTag);
+    }
     LayoutSpec spec;
     if (expr.isAST(S.Grid)) {
       options.parse(expr, new PrimitiveCollector(options.imageSize[0]));
@@ -636,6 +643,11 @@ final class SvgLayout {
   private Piece piece(IExpr content, double seedWidth) {
     if (content == null) {
       return null;
+    }
+    // a Dynamic cell shows what it currently evaluates to, not the source that computes it
+    content = Dynamics.currentValue(content);
+    if (content.isAST(S.Text, 2) && isLayout(content.first())) {
+      content = content.first();
     }
     if (content.isAST(S.Spacer, 2)) {
       return spacer(content.first());

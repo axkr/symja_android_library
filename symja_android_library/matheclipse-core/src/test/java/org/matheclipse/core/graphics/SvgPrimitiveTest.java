@@ -839,6 +839,21 @@ public class SvgPrimitiveTest {
   }
 
   /**
+   * A {@code Dynamic} cell of a layout drawn as a picture shows what it currently evaluates to, and
+   * {@code Text@Grid(...)} is the table it sets. Both used to print their source.
+   */
+  @Test
+  public void testDynamicCellsAndTextGridAsPictures() {
+    String grid = export("Grid({{\"a\", Dynamic(1+1)}, {Dynamic(Round(Pi, 0.01)), 3}})");
+    assertTrue(grid.contains(">2<") && grid.contains(">3.14<"), grid);
+    assertFalse(grid.contains("Dynamic"), grid);
+    assertTrue(export("Row({\"v: \", Dynamic(2+2)})").contains(">4<"));
+    String text = export("Text(Grid({{1,2}}))");
+    assertTrue(text.startsWith("<?xml") && text.contains(">1<") && text.contains(">2<"), text);
+    assertFalse(text.contains("Grid"), text);
+  }
+
+  /**
    * {@code FrameLabel -> Grid[...]} is a table under the frame. Written out as text it put the
    * source of the grid there.
    */
