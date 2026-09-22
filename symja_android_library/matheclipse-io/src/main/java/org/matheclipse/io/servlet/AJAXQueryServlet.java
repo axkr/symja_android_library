@@ -43,6 +43,7 @@ import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.manipulate.Dynamics;
 import org.matheclipse.core.manipulate.ManipulateSpec;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
@@ -491,6 +492,15 @@ public class AJAXQueryServlet extends HttpServlet {
           IAST graphics = graphGraphics.toGraphics();
           if (graphics.isPresent()) {
             outExpr = graphics;
+          }
+        }
+        if (outExpr.isAST(S.TabView)) {
+          // the pane the tab strip has selected is what is shown, drawn as it would be on its own:
+          // a 3D pane keeps its interactive view
+          int selected = Dynamics.selectedTab((IAST) outExpr, engine);
+          if (selected > 0) {
+            boolean keyed = Dynamics.isKeyedTab((IAST) outExpr, selected, engine);
+            outExpr = Dynamics.tabPane((IAST) outExpr, selected, keyed)[1];
           }
         }
         if (org.matheclipse.core.builtin.MeshFunctions.isBoundaryMeshRegion(outExpr)) {

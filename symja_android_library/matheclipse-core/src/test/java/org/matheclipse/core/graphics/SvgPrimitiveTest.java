@@ -817,6 +817,28 @@ public class SvgPrimitiveTest {
   }
 
   /**
+   * A {@code TabView} is the pane its selector picks under the strip of tab labels. The selector may
+   * be a {@code Dynamic}; an unset one shows the first pane, as a front end does.
+   */
+  @Test
+  public void testTabViewShowsTheSelectedPane() {
+    String code = "TabView({\"a\" -> Plot(Sin(x), {x, 0, 2*Pi}), "
+        + "\"b\" -> Plot(Cos(x), {x, 0, 2*Pi})}, Dynamic(tabSvg))";
+    String unset = export(code);
+    evaluator.eval("tabSvg = 1");
+    String first = export(code);
+    evaluator.eval("tabSvg = 2");
+    String second = export(code);
+    assertEquals(unset, first);
+    assertFalse(first.equals(second), "the selector changes the pane");
+    assertTrue(second.contains(">a<") && second.contains(">b<"), second);
+    // a keyed pane is picked by its key, and shows its own label
+    String keyed = export("TabView({x -> {\"one\", 11}, y -> {\"two\", 22}}, y)");
+    assertTrue(keyed.contains(">two<") && keyed.contains(">22<"), keyed);
+    assertFalse(keyed.contains(">11<"), keyed);
+  }
+
+  /**
    * {@code FrameLabel -> Grid[...]} is a table under the frame. Written out as text it put the
    * source of the grid there.
    */

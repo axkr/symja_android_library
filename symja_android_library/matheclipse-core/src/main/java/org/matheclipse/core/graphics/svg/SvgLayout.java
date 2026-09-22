@@ -139,6 +139,9 @@ final class SvgLayout {
     if (expr.isAST(S.Grid) || expr.isAST(S.Column) || expr.isAST(S.Row)) {
       return expr.first().isList();
     }
+    if (expr.isAST(S.TabView)) {
+      return expr.first().isList() && expr.first().argSize() > 0;
+    }
     return expr.isAST(S.Pane) || isLegend(expr);
   }
 
@@ -186,6 +189,21 @@ final class SvgLayout {
         items = separated;
       }
       spec = LayoutSpec.forRow(expr, items, expr.size(), LayoutSpec.Units.POINTS);
+    } else if (expr.isAST(S.TabView)) {
+      // the tab strip, with the selected tab set apart, over the pane it selects
+      EvalEngine engine = EvalEngine.get();
+      int selected = Dynamics.selectedTab(expr, engine);
+      boolean keyed = Dynamics.isKeyedTab(expr, selected, engine);
+      IAST panes = (IAST) expr.arg1();
+      IASTAppendable labels = F.ListAlloc(panes.argSize());
+      for (int i = 1; i < panes.size(); i++) {
+        IExpr label = Dynamics.tabPane(expr, i, keyed)[0];
+        labels.append(i == selected ? F.Style(label, S.Bold)
+            : F.Style(label, F.GrayLevel(F.num(0.5))));
+      }
+      IExpr pane = Dynamics.tabPane(expr, selected, keyed)[1];
+      spec = LayoutSpec.forColumn(expr, F.list(F.unaryAST1(S.Row, labels), pane), expr.size(),
+          LayoutSpec.Units.POINTS);
     } else {
       // a Pane or a legend is one cell; the options of a Pane size a notebook's box, not a picture
       IExpr only = isLegend(expr) ? legendPicture(expr) : expr.arg1();
