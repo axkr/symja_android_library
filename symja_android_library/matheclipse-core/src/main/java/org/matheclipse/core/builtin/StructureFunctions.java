@@ -1884,37 +1884,97 @@ public class StructureFunctions {
   }
 
 
-  private static class ParallelMap extends AbstractFunctionOptionEvaluator {
+  /**
+   * <code>ParallelMap(f, expr)</code> applies <code>f</code> to the elements of <code>expr</code>
+   * on several threads at the same time, through the kernels of {@code ParallelTable}: the user's
+   * symbols are copied for each thread and their definitions distributed. A level specification,
+   * <code>Heads-&gt;True</code>, a held head, an association or a sparse array are mapped as
+   * <code>Map</code> does it, on this thread.
+   */
+  private static class ParallelMap extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine, IAST originalAST) {
-      boolean includeHeads = option[0].isTrue();
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      if (ast.isAST2()) {
-        if (arg2.isSparseArray()) {
-          return ((ISparseArray) arg2).map(x -> F.unaryAST1(arg1, x));
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // Heads -> ..., Method -> ..., DistributedContexts -> ..., ProgressReporting -> ...
+      int last = ast.argSize();
+      boolean includeHeads = false;
+      IASTAppendable parallelOptions = F.ListAlloc();
+      while (last > 2 && ast.get(last).isRuleAST() && ast.get(last).first().isSymbol()) {
+        String name =
+            ((ISymbol) ast.get(last).first()).getSymbolName().toLowerCase(java.util.Locale.US);
+        if (name.equals("heads")) {
+          includeHeads = ast.get(last).second().isTrue();
+        } else if (name.equals("method") || name.equals("distributedcontexts")
+            || name.equals("progressreporting")) {
+          parallelOptions.append(ast.get(last));
+        } else {
+          break;
+        }
+        last--;
+      }
+      if (last < 2 || last > 3) {
+        return F.NIL;
+      }
+      final IExpr f = ast.arg1();
+      final IExpr expr = ast.arg2();
+      if (last == 2) {
+        if (expr.isSparseArray()) {
+          return ((ISparseArray) expr).map(x -> F.unaryAST1(f, x));
+        }
+        if (!includeHeads) {
+          IExpr result = parallelMap(f, expr, parallelOptions, engine);
+          if (result.isPresent()) {
+            return result;
+          }
         }
       }
       VisitorLevelSpecification level;
-      if (argSize == 3) {
-        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(argSize),
-            includeHeads, engine);
+      if (last == 3) {
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(f, x), ast.arg3(), includeHeads,
+            engine);
       } else {
-        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, includeHeads);
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(f, x), 1, includeHeads);
       }
-      return arg2.accept(level).orElse(arg2);
+      return expr.accept(level).orElse(expr);
+    }
+
+    /**
+     * <code>h(f(e1), f(e2), ...)</code> evaluated as
+     * <code>ParallelTable(With({w=v}, f(w)), {v, {e1, e2, ...}})</code>; <code>With</code> puts each
+     * element into <code>f(...)</code> as it is, so a held <code>f</code> gets the element and not
+     * the variable.
+     *
+     * @return {@link F#NIL} if <code>expr</code> is mapped on this thread
+     */
+    private static IExpr parallelMap(IExpr f, IExpr expr, IAST parallelOptions,
+        EvalEngine engine) {
+      if (!expr.isAST() || expr.argSize() < 2 || expr.isAssociation() || !expr.head().isSymbol()) {
+        return F.NIL;
+      }
+      final IAST elements = (IAST) expr;
+      final ISymbol head = (ISymbol) elements.head();
+      if ((head.getAttributes() & (ISymbol.HOLDALL | ISymbol.HOLDALLCOMPLETE)) != 0) {
+        // the elements of Hold(...) must not be evaluated
+        return F.NIL;
+      }
+      final String suffix = EvalEngine.uniqueName("$");
+      final ISymbol v = F.Dummy("v" + suffix);
+      final ISymbol w = F.Dummy("w" + suffix);
+      IASTAppendable parallelTable = F.ast(S.ParallelTable, parallelOptions.argSize() + 2);
+      parallelTable.append(F.With(F.list(F.Set(w, v)), F.unaryAST1(f, w)));
+      parallelTable.append(F.list(v, elements.setAtCopy(0, S.List)));
+      parallelTable.appendArgs(parallelOptions);
+      IExpr result = engine.evaluate(parallelTable);
+      if (!result.isList() || result.argSize() != elements.argSize()) {
+        // ParallelTable didn't run, for example in the sandbox
+        return F.NIL;
+      }
+      return ((IAST) result).setAtCopy(0, head);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.Heads, S.False);
+      return ARGS_2_INFINITY;
     }
   }
 
