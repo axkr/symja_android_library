@@ -2573,6 +2573,9 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    // The engine's assumptions are deliberately not extended by `x∈Reals` over the reals: the sub
+    // evaluations then decide relations like `x^2+y^2>0` as always true and drop conditions like
+    // `a>0` of `a*x^2==1`, which gave wrong answers.
     IExpr result = reduce(ast, solveOptions, engine);
     if (result.isNIL()) {
       return F.NIL;
@@ -2895,6 +2898,10 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     ISymbol domain = S.Complexes;
     if (ast.isAST3()) {
       if (!isReduceDomain(ast.arg3())) {
+        if (ast.arg3().isRuleAST()) {
+          // Unknown option `1` in `2`.
+          return Errors.printMessage(S.Reduce, "optx", F.list(ast.arg3(), S.Reduce), engine);
+        }
         return F.NIL;
       }
       domain = (ISymbol) ast.arg3();

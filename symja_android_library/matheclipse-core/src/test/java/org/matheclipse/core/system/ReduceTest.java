@@ -1438,4 +1438,19 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(Floor(x) + x == 3, x, Reals)", //
         "x+Floor(x)==3");
   }
+
+  /** As in Mathematica the assumptions of the caller are not a condition of the reduction. */
+  @Test
+  public void testReduceIgnoresAssumptions() {
+    check("Assuming(a > 0, Reduce(a*x == b, x))", //
+        "(a!=0&&x==b/a)||(a==0&&b==0)");
+    check("Assuming(x > 0, Reduce(x^2 == 4, x))", //
+        "x==-2||x==2");
+    check("Assuming(Element(x, Reals) && Element(y, Reals), " //
+        + "Reduce(ForAll(y, y^2 + x^2 > 0), {x}, Reals))", //
+        "x<0||x>0");
+    // `Assumptions` is no option of `Reduce`
+    check("Reduce(x^2 == 4, x, Assumptions -> x > 0)", //
+        "Reduce(x^2==4,x,Assumptions->x>0)");
+  }
 }
