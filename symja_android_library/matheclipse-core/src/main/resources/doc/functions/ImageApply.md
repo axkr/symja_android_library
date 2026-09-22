@@ -26,3 +26,7 @@ The mask is an image or a matrix of the same size, or a smaller one centred on t
 
 ### Related terms
 [ConstantImage](ConstantImage.md), [ImageData](ImageData.md)
+
+### Implementation status
+
+* &#x1F9EA; - experimental

@@ -16,3 +16,7 @@ ConstantImage(v, size)
 
 ### Related terms
 [ImageApply](ImageApply.md), [ImageData](ImageData.md)
+
+### Implementation status
+
+* &#x1F9EA; - experimental

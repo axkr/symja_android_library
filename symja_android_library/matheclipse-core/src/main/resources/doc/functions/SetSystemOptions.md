@@ -29,3 +29,7 @@ DifferentiationOptions->{ExcludedFunctions->{}}
 
 ### Related terms
 [SystemOptions](SystemOptions.md)
+
+### Implementation status
+
+* &#x1F9EA; - experimental

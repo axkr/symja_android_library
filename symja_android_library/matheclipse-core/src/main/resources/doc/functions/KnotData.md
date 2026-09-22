@@ -45,3 +45,7 @@ Function({t},{Cos(2*t)*(2+Cos(3*t)),(2+Cos(3*t))*Sin(2*t),Sin(3*t)})
 
 ### Related terms
 [PolyhedronData](PolyhedronData.md)
+
+### Implementation status
+
+* &#x1F9EA; - experimental

@@ -35,3 +35,7 @@ TabView({a->1,b->2},2)
 
 ### Related terms
 [Manipulate](Manipulate.md)
+
+### Implementation status
+
+* &#x1F9EA; - experimental
