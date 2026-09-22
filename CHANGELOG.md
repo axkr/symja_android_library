@@ -4,6 +4,27 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- Colour directives accept their channels packed into one list. `Hue({h,s,b})`,
+  `GrayLevel({g})`, `CMYKColor({c,m,y,k})`, `XYZColor({..})` and `LABColor({..})` are the same
+  colours as the spread-out forms, as `RGBColor({r,g,b})` already was - the form
+  `Table(RGBColor(RandomReal(1,3)), ...)` produces. `Hue` used to read the list as its hue alone and
+  draw red whatever the list said, `GrayLevel` drew black, and the other three were rejected; the
+  SVG and WebGL renderers and the colour swatch boxes all read the one shape now. Found through
+  ad-si/Woxi#893.
+
+- `ListPlot3D` of scattered `{x,y,z}` points honours `ColorFunction`, `Mesh` and `MeshStyle`. The
+  triangulated form was handed no colour builder at all, so a named gradient or a colour function
+  changed nothing on it while it worked on a height array; and it drew no mesh. It is coloured by
+  the same builder now, and its mesh is every triangle edge once, since a triangulation has no grid
+  lines to thin out. Found through ad-si/Woxi#889.
+
+- `SetSystemOptions` answers as the reference implementation does. It was a stub returning `Null`,
+  so a notebook's `SetSystemOptions["MungoLevel" -> 3];` was silently discarded. A name that is no
+  system option is now `SetSystemOptions::sysname` and the call stays unevaluated - Mathematica's
+  answer, probed 2026-09-22, and not the flat rule list ad-si/Woxi#897 returns - while the names
+  `SystemOptions` reports are accepted and given back. `SystemOptions` and `SetSystemOptions` have
+  documentation pages.
+
 - `Area` of a ball cut by a plane, and of a ball and a box cutting one together. A ball meets a
   plane in a disk of the radius the plane is left with, and a box cuts that disk down to the part
   lying inside its own cross section, so

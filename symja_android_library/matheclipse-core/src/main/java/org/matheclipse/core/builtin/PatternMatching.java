@@ -2479,20 +2479,40 @@ public final class PatternMatching {
   }
 
 
+  /**
+   * <code>SetSystemOptions(name -> value)</code> - resets an internal system option.
+   *
+   * <p>
+   * The only system options here are the ones {@link SystemOptions} reports, and none of them is
+   * stored, so a known name is accepted and given back as it was written - the form a notebook
+   * uses as a statement whose result is discarded. A name that is not a system option is
+   * <code>SetSystemOptions::sysname</code> and the call stays unevaluated, which is what the
+   * reference implementation does; it does not quietly answer <code>Null</code>.
+   */
   private static final class SetSystemOptions extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // stub implementation
-      if (ast.isAST1() && ast.arg1().isString()) {
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        IAST rules = arg.isList() ? (IAST) arg : F.List(arg);
+        for (int j = 1; j < rules.size(); j++) {
+          IExpr rule = rules.get(j);
+          if (!rule.isRuleAST()) {
+            return F.NIL;
+          }
+          IExpr name = rule.first();
+          if (!SystemOptions.isKnown(name)) {
+            return Errors.printMessage(S.SetSystemOptions, "sysname", F.list(name), engine);
+          }
+        }
       }
-
-      return S.Null;
+      return ast.isAST1() ? ast.arg1() : ast.setAtCopy(0, S.List);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_INFINITY;
     }
 
     @Override
@@ -2577,6 +2597,22 @@ public final class PatternMatching {
   }
 
   private static final class SystemOptions extends AbstractFunctionEvaluator {
+
+    /** The names this table answers for, which are the only ones that can be set. */
+    private static final String[] KNOWN = {"DifferentiationOptions"};
+
+    static boolean isKnown(IExpr name) {
+      if (!name.isString() && !name.isSymbol()) {
+        return false;
+      }
+      String str = name.toString();
+      for (String known : KNOWN) {
+        if (known.equals(str)) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

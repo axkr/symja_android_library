@@ -82,6 +82,7 @@ public class Errors {
       "argr", "`1` called with 1 argument; `2` arguments are expected.", //
       "argrx", "`1` called with `2` arguments; `3` arguments are expected.", //
       "argx", "`1` called with `2` arguments; 1 argument is expected.", //
+      "sysname", "`1` is not a known SystemOption.", //
       "args", "`1` called with invalid parameters.", //
       "argt", "`1` called with `2` arguments; `3` or `4` arguments are expected.", //
       "arrayerr", "`1` must be a valid array.", //

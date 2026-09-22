@@ -25295,6 +25295,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Flat}");
   }
 
+  /**
+   * A name that is no system option is a message and the call stays unevaluated, as Mathematica
+   * answers (probed 2026-09-22); it used to answer Null and discard the rule silently.
+   */
+  @Test
+  public void testSetSystemOptions() {
+    check("SetSystemOptions(\"MungoLevel\" -> 3)", //
+        "SetSystemOptions(MungoLevel->3)");
+    check("SetSystemOptions({\"MungoLevel\" -> 3, \"DifferentiationOptions\" -> {}})", //
+        "SetSystemOptions({MungoLevel->3,DifferentiationOptions->{}})");
+    check("SetSystemOptions(\"DifferentiationOptions\" -> {\"ExcludedFunctions\" -> {}})", //
+        "DifferentiationOptions->{ExcludedFunctions->{}}");
+    check("SetSystemOptions({\"DifferentiationOptions\" -> {}})", //
+        "{DifferentiationOptions->{}}");
+    check("SetSystemOptions(5)", //
+        "SetSystemOptions(5)");
+  }
+
   @Test
   public void testSetDelayed() {
     check("f(x_, nm : Association((_String -> _Integer) ..)) := {x,nm}", //
