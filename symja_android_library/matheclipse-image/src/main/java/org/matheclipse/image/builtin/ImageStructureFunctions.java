@@ -2,6 +2,7 @@ package org.matheclipse.image.builtin;
 
 import java.awt.image.BufferedImage;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -12,6 +13,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Kernels;
+import org.matheclipse.image.algo.Masks;
 import org.matheclipse.image.algo.Pixels;
 import org.matheclipse.image.expression.data.ImageExpr;
 
@@ -38,7 +40,15 @@ public class ImageStructureFunctions {
     }
   }
 
-  /** <code>ImageApply(f, image)</code> - replace every sample by <code>f</code> of it. */
+  /**
+   * <code>ImageApply(f, image)</code> - replace every sample by <code>f</code> of it.
+   *
+   * <p>
+   * <code>Masking -&gt; mask</code> applies <code>f</code> only where the mask is positive and passes
+   * every other pixel through unchanged: an image or a matrix of the same size, or a smaller one
+   * centred on the image, or a <code>Graphics</code> drawn at the image's size, whose drawn pixels
+   * are the ones included. <code>All</code> and <code>None</code> apply <code>f</code> everywhere.
+   */
   private static class ImageApply extends AbstractEvaluator {
 
     @Override
@@ -47,16 +57,34 @@ public class ImageStructureFunctions {
       if (image == null) {
         return F.NIL;
       }
+      IExpr maskSpec = S.All;
+      for (int i = 3; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (option.isRuleAST() && option.first() == S.Masking) {
+          maskSpec = option.second();
+          continue;
+        }
+        // Unknown option `1` in `2`.
+        return Errors.printMessage(S.ImageApply, "optx", F.list(option, ast), engine);
+      }
       IExpr function = ast.arg1();
       int channels = Boof.channels(image);
       int colorChannels = channels == 4 ? 3 : channels;
       int width = image.getWidth();
       int height = image.getHeight();
+      boolean[][] mask = Masks.of(maskSpec, width, height);
+      if (mask == Masks.UNREADABLE) {
+        return F.NIL;
+      }
 
       float[][] result = new float[width * height][];
       for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
           float[] values = Pixels.pixel(image, x, y, channels);
+          if (mask != null && !mask[y][x]) {
+            result[y * width + x] = values;
+            continue;
+          }
           IExpr applied =
               engine.evaluate(F.unaryAST1(function, samplesOf(values, colorChannels)));
           float[] replaced = valuesOf(applied, values, colorChannels);
@@ -72,7 +100,7 @@ public class ImageStructureFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_INFINITY;
     }
 
     @Override

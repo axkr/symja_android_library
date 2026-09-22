@@ -22,9 +22,79 @@ public class ImageFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.ConstantImage.setEvaluator(new ConstantImage());
       S.Image.setEvaluator(new Image());
       S.ImageData.setEvaluator(new ImageData());
       S.ImageDimensions.setEvaluator(new ImageDimensions());
+    }
+  }
+
+  /**
+   * <code>ConstantImage(v, size)</code> - an image whose every pixel is <code>v</code>: a number
+   * for a greyscale image, a list of channel values or a colour for a colour one. The size is a
+   * width and a height, or one number for a square.
+   */
+  private static class ConstantImage extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int width;
+      int height;
+      IExpr size = ast.arg2();
+      if (size.isList2()) {
+        width = size.first().toIntDefault();
+        height = size.second().toIntDefault();
+      } else {
+        width = size.toIntDefault();
+        height = width;
+      }
+      if (width < 1 || height < 1) {
+        return F.NIL;
+      }
+      float[] pixel = pixelOf(ast.arg1());
+      if (pixel == null) {
+        return F.NIL;
+      }
+      return new ImageExpr(Pixels.fromPixels(width, height, pixel.length, (x, y) -> pixel), null);
+    }
+
+    /** The channel values of the constant, on <code>0 ... 255</code>, or <code>null</code>. */
+    private static float[] pixelOf(IExpr value) {
+      if (value.isReal()) {
+        return new float[] {(float) (255.0 * clamp(value.evalf()))};
+      }
+      if (value.isList() && (value.argSize() == 3 || value.argSize() == 4)) {
+        float[] channels = new float[value.argSize()];
+        for (int i = 0; i < channels.length; i++) {
+          double c = value.getAt(i + 1).evalfNaN();
+          if (Double.isNaN(c)) {
+            return null;
+          }
+          channels[i] = (float) (255.0 * clamp(c));
+        }
+        return channels;
+      }
+      java.awt.Color color = org.matheclipse.core.graphics.svg.ColorUtil.parse(value);
+      if (color == null) {
+        return null;
+      }
+      return color.getAlpha() < 255
+          ? new float[] {color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()}
+          : new float[] {color.getRed(), color.getGreen(), color.getBlue()};
+    }
+
+    private static double clamp(double v) {
+      return Math.max(0.0, Math.min(1.0, v));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
