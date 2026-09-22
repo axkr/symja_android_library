@@ -1206,13 +1206,12 @@ public final class PrimitiveCollector3D {
    * multi face specification is a list of those.
    */
   private List<IExpr> faces(IExpr data, ComplexContext context) {
-    List<IExpr> result = new ArrayList<>();
     if (!data.isList()) {
-      return result;
+      return List.of();
     }
     IAST list = (IAST) data;
     if (list.argSize() == 0) {
-      return result;
+      return List.of();
     }
     IExpr first = list.arg1();
     boolean multi;
@@ -1222,14 +1221,7 @@ public final class PrimitiveCollector3D {
     } else {
       multi = first.isList() && ((IAST) first).argSize() > 0 && ((IAST) first).arg1().isList();
     }
-    if (multi) {
-      for (int i = 1; i <= list.argSize(); i++) {
-        result.add(list.get(i));
-      }
-    } else {
-      result.add(list);
-    }
-    return result;
+    return multi ? list.asArgsList() : List.of(list);
   }
 
   /** Split a line specification into its polylines. */

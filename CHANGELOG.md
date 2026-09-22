@@ -7,8 +7,12 @@ Noteworthy changes are documented in this file.
 - `IAST.asList()` gives Java code a read-only `java.util.List<IExpr>` view of an expression: index
   0 is the head and indices 1..n the arguments as `getRule(int)` returns them, so an association
   lists its rules. The view is backed by the expression rather than copied; `subList(1, size())`
-  is the arguments alone. `IAST` cannot implement `List` itself because `IExpr.add(IExpr)` is
-  the Hipparchus field addition and returns the sum where `List.add` returns a boolean.
+  is the arguments alone, which `IAST.asArgsList()` also gives directly. `IAST` cannot implement
+  `List` itself because `IExpr.add(IExpr)` is the Hipparchus field addition and returns the sum
+  where `List.add` returns a boolean. Symja's own code reads variable, constraint and function
+  lists through the view now: the polynomial engines that hand a variable list to the Java Algebra
+  System, the plotters that split a list-valued function, and the dataset and molecule builtins
+  used to copy those arguments into a fresh list each time only to read them.
 
 - A `Tube` along a path that returns to its start is one closed tube, so `KnotData("Trefoil")` no
   longer shows a seam with a thin black ring where the knot's two ends met. The ring was the outline

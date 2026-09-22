@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.graphics;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
@@ -37,14 +36,8 @@ public class DiscretePlot extends ListPlot {
       if (variable.isVariable()) {
         // f(n) with a value of {n, n^2} is two sequences, which only its value can say; the
         // probes are the iterator's own values, where a function of an integer is defined
-        List<IExpr> written = new ArrayList<>();
-        if (function.isList()) {
-          for (IExpr item : (IAST) function) {
-            written.add(item);
-          }
-        } else {
-          written.add(function);
-        }
+        List<IExpr> written =
+            function.isList() ? ((IAST) function).asArgsList() : List.of(function);
         List<IExpr> split = PlotShapeProbe.split(written,
             PlotShapeProbe.iteratorProbes(new IAST[] {iteratorList}, engine),
             PlotShapeProbe.SCALAR, false, engine);

@@ -15,8 +15,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 
 /**
- * {@link IAST#asList()} is the only public entry to the {@code java.util.List} view, so these tests
- * go through it alone: index 0 is the head, the arguments come from {@link IAST#getRule(int)}, and
+ * {@link IAST#asList()} and {@link IAST#asArgsList()} are the only public entries to the
+ * {@code java.util.List} view, so these tests go through them alone: index 0 is the head, the arguments come from {@link IAST#getRule(int)}, and
  * nothing can be changed through the view.
  */
 class ASTListViewTest {
@@ -119,6 +119,66 @@ class ASTListViewTest {
       it.remove();
     });
     // nothing changed underneath
+    assertEquals(F.List(F.C1, F.C2), ast);
+  }
+
+  @Test
+  void argsListSkipsTheHead() {
+    List<IExpr> args = F.Plus(F.x, F.y).asArgsList();
+    assertEquals(2, args.size());
+    assertSame(F.x, args.get(0));
+    assertSame(F.y, args.get(1));
+    assertEquals(Arrays.asList(F.x, F.y), args);
+    assertEquals(Arrays.asList(F.x, F.y), new ArrayList<>(args));
+    assertEquals("[x, y]", args.toString());
+    assertFalse(args.contains(S.Plus));
+    assertEquals(F.Plus(F.x, F.y).asList().subList(1, 3), args);
+  }
+
+  @Test
+  void argsListOfHeadOnlyAndNilIsEmpty() {
+    assertTrue(F.List().asArgsList().isEmpty());
+    assertEquals(0, F.List().asArgsList().size());
+    assertTrue(F.NIL.asArgsList().isEmpty());
+    assertEquals(0, F.NIL.asArgsList().size());
+    assertThrows(IndexOutOfBoundsException.class, () -> F.NIL.asArgsList().get(0));
+  }
+
+  @Test
+  void argsListBoundsAreChecked() {
+    List<IExpr> args = F.List(F.C1, F.C2, F.C3).asArgsList();
+    assertEquals(3, args.size());
+    assertEquals(F.C3, args.get(2));
+    assertThrows(IndexOutOfBoundsException.class, () -> args.get(3));
+    assertThrows(IndexOutOfBoundsException.class, () -> args.get(-1));
+    assertEquals(Arrays.asList(F.C1, F.C2), args.subList(0, 2));
+  }
+
+  @Test
+  void argsListOfAssociationShowsRules() {
+    IAssociation assoc = F.assoc(F.List(F.Rule(F.a, F.C1), F.Rule(F.b, F.C2)));
+    List<IExpr> args = assoc.asArgsList();
+    assertEquals(2, args.size());
+    assertEquals(F.Rule(F.a, F.C1), args.get(0));
+    assertEquals(F.Rule(F.b, F.C2), args.get(1));
+    // whereas get(int) on the association itself yields the value
+    assertEquals(F.C1, assoc.get(1));
+  }
+
+  @Test
+  void argsListIsBackedAndReadOnly() {
+    IASTAppendable ast = F.ListAlloc(4);
+    ast.append(F.C1);
+    List<IExpr> args = ast.asArgsList();
+    assertEquals(1, args.size());
+    ast.append(F.C2);
+    assertEquals(2, args.size());
+    assertEquals(F.C2, args.get(1));
+    assertThrows(UnsupportedOperationException.class, () -> args.set(0, F.C3));
+    assertThrows(UnsupportedOperationException.class, () -> args.add(F.C3));
+    assertThrows(UnsupportedOperationException.class, () -> args.remove(0));
+    assertThrows(UnsupportedOperationException.class, () -> args.clear());
+    assertThrows(UnsupportedOperationException.class, () -> args.subList(0, 1).clear());
     assertEquals(F.List(F.C1, F.C2), ast);
   }
 

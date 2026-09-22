@@ -148,15 +148,13 @@ public class GroebnerBasisJAS {
   private static IAST exprPolynomialBasis(IAST listOfPolynomials, IAST listOfVariables,
       TermOrder termOrder) {
     String[] pvars = new String[listOfVariables.argSize()];
-    List<IExpr> varList = new ArrayList<IExpr>(listOfVariables.argSize());
-
     for (int i = 1; i < listOfVariables.size(); i++) {
       if (!listOfVariables.get(i).isSymbol()) {
         return F.NIL;
       }
-      varList.add(listOfVariables.get(i));
       pvars[i - 1] = listOfVariables.get(i).toString();
     }
+    List<IExpr> varList = listOfVariables.asArgsList();
 
     List<GenPolynomial<IExpr>> polyList =
         new ArrayList<GenPolynomial<IExpr>>(listOfPolynomials.argSize());
@@ -354,9 +352,8 @@ public class GroebnerBasisJAS {
       evars[i - 1] = eliminatedVariables.get(i).toString();
     }
 
-    List<IExpr> varList = new ArrayList<IExpr>(allVariables.argSize());
-    allVariables.forEach(x -> varList.add(x));
-    JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST_FIELD, termOrder, false);
+    JASIExpr jas =
+        new JASIExpr(allVariables.asArgsList(), ExprRingFactory.CONST_FIELD, termOrder, false);
     ExprPolynomialRing ring =
         new ExprPolynomialRing(allVariables, new ExprTermOrder(termOrder.getEvord()));
     List<GenPolynomial<IExpr>> polyList =

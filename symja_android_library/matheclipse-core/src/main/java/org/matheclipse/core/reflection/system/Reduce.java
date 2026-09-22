@@ -1952,10 +1952,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     List<IExpr> members;
     if (conditions.isAST0()) {
       // the equation has finitely many solutions - every one of them is a candidate
-      members = new ArrayList<IExpr>();
-      for (int i = 1; i < values.size(); i++) {
-        members.add(values.get(i));
-      }
+      members = values.asArgsList();
     } else if (isBoundedWindow(window)) {
       members = periodicMembersInWindow(values, conditions, (IAST) window.arg1(), engine);
       if (members == null) {

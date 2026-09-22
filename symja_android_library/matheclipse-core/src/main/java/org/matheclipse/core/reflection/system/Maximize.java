@@ -1007,14 +1007,8 @@ public class Maximize extends AbstractFunctionEvaluator {
       }
 
       // collect the constraints (flatten a top-level And)
-      List<IExpr> conjuncts = new ArrayList<>();
-      if (constraint.isAST(S.And)) {
-        for (int i = 1; i < constraint.size(); i++) {
-          conjuncts.add(constraint.get(i));
-        }
-      } else {
-        conjuncts.add(constraint);
-      }
+      List<IExpr> conjuncts =
+          constraint.isAST(S.And) ? ((IAST) constraint).asArgsList() : List.of(constraint);
 
       // each constraint becomes a boundary expression E (E <= 0 for inequalities, E == 0 for
       // equalities) plus its normal vector

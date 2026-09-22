@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.graphics;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -145,14 +144,8 @@ public class ContourPlot extends ListPlot {
     IExpr boundaryStyle = GraphicsOptions.optionValue(originalAST, S.BoundaryStyle, S.Automatic);
 
     // f(x, y) with a value of {u v, u + v} is two functions, which only its value can say
-    List<IExpr> written = new ArrayList<>();
-    if (functionArg.isList()) {
-      for (IExpr item : (IAST) functionArg) {
-        written.add(item);
-      }
-    } else {
-      written.add(functionArg);
-    }
+    List<IExpr> written =
+        functionArg.isList() ? ((IAST) functionArg).asArgsList() : List.of(functionArg);
     List<IExpr> split = PlotShapeProbe.split(written,
         PlotShapeProbe.rangeProbes(new IExpr[] {xVar, yVar},
             new double[] {xRange[0], yRange[0]}, new double[] {xRange[1], yRange[1]}),

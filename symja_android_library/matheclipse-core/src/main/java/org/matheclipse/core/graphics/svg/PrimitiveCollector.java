@@ -599,17 +599,7 @@ public final class PrimitiveCollector {
     Style2D edge = style.clone();
     edge.setColor(Color.BLACK);
     edge.opacity = 1.0;
-    List<IExpr> items = new ArrayList<>();
-    if (arg.isList()) {
-      IAST list = (IAST) arg;
-      for (int i = 1; i <= list.argSize(); i++) {
-        items.add(list.get(i));
-      }
-    } else {
-      for (int i = 1; i <= ast.argSize(); i++) {
-        items.add(ast.get(i));
-      }
-    }
+    List<IExpr> items = arg.isList() ? ((IAST) arg).asArgsList() : ast.asArgsList();
     for (IExpr item : items) {
       collectDirectiveOnly(item, edge);
     }

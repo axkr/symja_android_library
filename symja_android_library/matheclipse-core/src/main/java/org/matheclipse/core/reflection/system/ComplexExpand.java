@@ -9,7 +9,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Times;
-import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.CompareUtil;
@@ -805,8 +804,7 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
   private static void setAssumptions(IExpr arg1, final IAST arg2, IAssumptions oldAssumptions,
       final EvalEngine engine) {
     VariablesSet eVar = new VariablesSet(arg1);
-    List<IExpr> varList = eVar.getVarList().copyTo();
-    IASTAppendable assumptionExpr = F.mapList(varList, variable -> {
+    IASTAppendable assumptionExpr = F.mapList(eVar.getVarList().asArgsList(), variable -> {
       if (arg2.isPresent()) {
         for (int j = 1; j < arg2.size(); j++) {
           if (S.MatchQ.ofQ(variable, arg2.get(j))) {

@@ -122,10 +122,7 @@ public final class PlotShapeProbe {
     }
     if (iterator.argSize() == 2 && iterator.arg2().isList()) {
       IAST explicit = (IAST) iterator.arg2();
-      for (int i = 1; i <= Math.min(3, explicit.argSize()); i++) {
-        values.add(explicit.get(i));
-      }
-      return values;
+      return explicit.asArgsList().subList(0, Math.min(3, explicit.argSize()));
     }
     IExpr min = iterator.argSize() == 2 ? F.C1 : iterator.arg2();
     IExpr max = iterator.argSize() == 2 ? iterator.arg2() : iterator.arg3();

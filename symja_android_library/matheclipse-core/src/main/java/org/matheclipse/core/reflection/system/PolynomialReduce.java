@@ -81,10 +81,7 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
   private static IExpr polynomialReduceExpr(IExpr polynomialExpr, IAST divisorsAST,
       IAST variablesListExpr, TermOrder termOrder) {
 
-    List<IExpr> varList = new ArrayList<>(variablesListExpr.argSize());
-    for (int i = 1; i < variablesListExpr.size(); i++) {
-      varList.add(variablesListExpr.get(i));
-    }
+    List<IExpr> varList = variablesListExpr.asArgsList();
 
     // Initialize JASIExpr using the field-configured ExprRingFactory[cite: 3, 6]
     JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST_FIELD, termOrder, false);

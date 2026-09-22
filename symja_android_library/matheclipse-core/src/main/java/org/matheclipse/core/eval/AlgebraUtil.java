@@ -1076,8 +1076,7 @@ public class AlgebraUtil {
         ExprPolynomialRing ring = new ExprPolynomialRing(vars);
         ExprPolynomial pol1 = ring.create(numeratorPolynomial);
         ExprPolynomial pol2 = ring.create(denominatorPolynomial);
-        List<IExpr> varList = eVar.getVarList().copyTo();
-        JASIExpr jas = new JASIExpr(varList, true);
+        JASIExpr jas = new JASIExpr(vars.asArgsList(), true);
         GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
         GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 
