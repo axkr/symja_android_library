@@ -332,4 +332,20 @@ public class SVGGraphics3DTest {
         + "MeshFunctions -> {#4&}, Mesh -> {{0}}, MeshStyle -> Yellow]");
     assertEquals(0, buriedSegments(parametric, "#ffff00"));
   }
+
+  /**
+   * A tube is one smooth surface: the seams between its facets are no edges, so nothing is outlined
+   * on it. Its ten sides meet at more than the outline angle, and every seam used to be drawn as a
+   * dark stripe along it.
+   */
+  @Test
+  public void aTubeDrawsNoOutline() {
+    for (String tube : new String[] {
+        "Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0}}, 0.1], Boxed->False, Axes->False]",
+        "Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,0,0}}, 0.1], Boxed->False, Axes->False]"}) {
+      String svg = svg(tube);
+      assertTrue(count(svg, "polygon") > 0, tube + " draws the tube");
+      assertEquals(0, count(svg, "polyline"), tube + " draws no outline");
+    }
+  }
 }

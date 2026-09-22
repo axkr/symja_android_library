@@ -704,7 +704,8 @@ public class SVGGraphics3D {
 
     RenderList sink = out instanceof RenderList ? (RenderList) out : null;
     if (sink != null) {
-      sink.creases = creasesOf(element);
+      // a tube is one smooth surface, and the seams between its facets are no edges to outline
+      sink.creases = "Tube".equals(type) ? null : creasesOf(element);
       sink.beginElement(element.has("tooltip") ? element.get("tooltip").asText() : null);
     }
     switch (type) {
@@ -945,18 +946,27 @@ public class SVGGraphics3D {
   private static void tube(JsonNode element, Surface color, double opacity, double[] matrix,
       Vector3 dataScale, View view, List<Light> lights, List<Renderable> out) {
     double radius = element.has("radius") ? element.get("radius").asDouble(0.02) : 0.02;
+    boolean closed = element.path("closed").asBoolean(false);
     for (List<Vector3> raw : polylines(element)) {
       if (raw.size() < 2) {
         continue;
       }
       // the interactive renderer sweeps a tube along a Catmull-Rom curve through the given
       // points, so the same smoothing is applied here or a bent tube comes out visibly angular
-      List<Vector3> path = smooth(raw);
-      Vector3[][] grid = new Vector3[path.size()][TUBE_SIDES + 1];
+      boolean loop = closed && raw.size() >= 3;
+      List<Vector3> path = loop ? smoothClosed(raw) : smooth(raw);
+      int n = path.size();
+      Vector3[] tangents = new Vector3[n];
+      Vector3[] us = new Vector3[n];
       Vector3 carried = null;
-      for (int i = 0; i < path.size(); i++) {
-        Vector3 tangent =
-            (i == 0 ? path.get(1).sub(path.get(0)) : path.get(i).sub(path.get(i - 1))).normalize();
+      for (int i = 0; i < n; i++) {
+        Vector3 tangent;
+        if (loop) {
+          tangent = path.get((i + 1) % n).sub(path.get((i + n - 1) % n)).normalize();
+        } else {
+          tangent = (i == 0 ? path.get(1).sub(path.get(0)) : path.get(i).sub(path.get(i - 1)))
+              .normalize();
+        }
         // The frame is carried along the path rather than chosen afresh at every ring. Picking
         // an arbitrary perpendicular each time lets the frame spin between one ring and the next,
         // and the quads joining them come out twisted into bow ties instead of a tube wall.
@@ -967,12 +977,34 @@ public class SVGGraphics3D {
         }
         u = u.normalize();
         carried = u;
-        Vector3 v = tangent.cross(u);
+        tangents[i] = tangent;
+        us[i] = u;
+      }
+      // Carried once round a closed path, the frame comes back turned by however much the path
+      // twists. Joining the last ring to the first as they are would put all of that turn into
+      // one band of faces; it is spread evenly over the whole tube instead.
+      double twist = 0;
+      if (loop) {
+        Vector3 t0 = tangents[0];
+        Vector3 back = carried.sub(t0.scale(carried.dot(t0)));
+        if (back.length() > 1e-9) {
+          back = back.normalize();
+          twist = Math.atan2(us[0].cross(back).dot(t0), us[0].dot(back));
+        }
+      }
+      Vector3[][] grid = new Vector3[loop ? n + 1 : n][TUBE_SIDES + 1];
+      for (int i = 0; i < n; i++) {
+        Vector3 v = tangents[i].cross(us[i]);
+        double turn = -twist * i / n;
         for (int j = 0; j <= TUBE_SIDES; j++) {
-          double a = 2 * Math.PI * j / TUBE_SIDES;
-          Vector3 offset = u.scale(radius * Math.cos(a)).add(v.scale(radius * Math.sin(a)));
+          double a = 2 * Math.PI * j / TUBE_SIDES + turn;
+          Vector3 offset = us[i].scale(radius * Math.cos(a)).add(v.scale(radius * Math.sin(a)));
           grid[i][j] = place(path.get(i).add(offset), matrix, dataScale);
         }
+      }
+      if (loop) {
+        // the last band of faces joins the last ring to the first, which closes the tube
+        grid[n] = grid[0];
       }
       quads(grid, color, opacity, view, lights, out);
     }
@@ -2209,6 +2241,25 @@ public class SVGGraphics3D {
       for (int step = 0; step <= steps; step++) {
         double t = (double) step / TUBE_SMOOTHING;
         out.add(catmullRom(p0, p1, p2, p3, t));
+      }
+    }
+    return out;
+  }
+
+  /**
+   * A closed path smoothed the way {@link #smooth(List)} smooths an open one, with the neighbours
+   * of each end taken from the other end, so the curve runs on through where it started.
+   */
+  private static List<Vector3> smoothClosed(List<Vector3> path) {
+    int n = path.size();
+    List<Vector3> out = new ArrayList<>(n * TUBE_SMOOTHING);
+    for (int i = 0; i < n; i++) {
+      Vector3 p0 = path.get((i + n - 1) % n);
+      Vector3 p1 = path.get(i);
+      Vector3 p2 = path.get((i + 1) % n);
+      Vector3 p3 = path.get((i + 2) % n);
+      for (int step = 0; step < TUBE_SMOOTHING; step++) {
+        out.add(catmullRom(p0, p1, p2, p3, (double) step / TUBE_SMOOTHING));
       }
     }
     return out;

@@ -431,7 +431,9 @@
         }
         if (!path) { return null; }
         var geometry = new THREE.TubeGeometry(path, 128, el.radius, 16, !!el.closed);
-        return addOutline(new THREE.Mesh(geometry, surfaceMaterial(el)), geometry, el);
+        // a tube is one smooth surface: the seams between its facets are no edges, and the rims of
+        // an open one would show as a dark ring wherever its ends meet
+        return new THREE.Mesh(geometry, surfaceMaterial(el));
     }
 
     function buildCurve(el, diagonal, group, curve) {

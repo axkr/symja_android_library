@@ -951,7 +951,36 @@ public final class PrimitiveCollector3D {
     if (lines.isEmpty()) {
       return;
     }
+    if (lines.size() == 1 && isClosed(lines.get(0))) {
+      // a path that returns to where it started is one closed tube, not a tube whose two ends
+      // happen to touch: those ends would show as a seam across it
+      List<double[]> loop = new ArrayList<>(lines.get(0));
+      loop.remove(loop.size() - 1);
+      lines = List.of(loop);
+      node.put("closed", true);
+    }
     writePolylines(node, lines, transform);
+  }
+
+  /** Whether a path of at least three distinct points ends where it starts. */
+  private static boolean isClosed(List<double[]> path) {
+    if (path.size() < 4) {
+      return false;
+    }
+    double[] first = path.get(0);
+    double[] last = path.get(path.size() - 1);
+    double span = 0;
+    for (double[] p : path) {
+      for (int k = 0; k < 3; k++) {
+        span = Math.max(span, Math.abs(p[k] - first[k]));
+      }
+    }
+    for (int k = 0; k < 3; k++) {
+      if (Math.abs(first[k] - last[k]) > 1e-9 * Math.max(1, span)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void emitBSpline(IAST ast, Style3D style, ComplexContext context, Transform3D transform) {

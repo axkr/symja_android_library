@@ -4,6 +4,13 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A `Tube` along a path that returns to its start is one closed tube, so `KnotData("Trefoil")` no
+  longer shows a seam with a thin black ring where the knot's two ends met. The ring was the outline
+  WebGL draws round an open tube's end rims; tubes draw no outline now, in either renderer, which
+  also removes the dark stripes the static SVG renderer drew along every tube - its ten sides meet
+  at more than the outline angle. The static renderer joins a closed tube's last ring to its first
+  and spreads the twist its frame picks up round the loop, so the join shows no kink.
+
 - Lines that lie on a 3D surface - its rim, its mesh, the levels of its `MeshFunctions` - are no
   longer drawn dashed by the static SVG renderer. Its painter sorted each line by its own middle,
   so a line and the face under it came out in random order and the face covered most of the line.

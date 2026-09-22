@@ -182,6 +182,21 @@ public class WebGLGraphics3DTest {
     assertFalse(linesOnly.has("onSurface"), "a complex of lines has no surface to lie on");
   }
 
+  /**
+   * A tube whose path returns to its start is one closed tube, and the repeated end point is
+   * dropped; an open path stays open. The knot's tube used to be open, and its two ends met in a
+   * seam with a dark rim round it.
+   */
+  @Test
+  public void aTubeAlongAClosedPathIsClosed() {
+    JsonNode knot = element(scene("KnotData[\"Trefoil\"]"), "Tube");
+    assertTrue(knot.path("closed").asBoolean(false), "the knot is one closed tube");
+    assertEquals(300 * 3, knot.get("polylines").get(0).size(), "the repeated end point is dropped");
+    JsonNode open = element(scene("Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0}}, 0.1]]"),
+        "Tube");
+    assertFalse(open.has("closed"), "a path that does not return stays open");
+  }
+
   @Test
   public void defaultsFollowTheWMA() {
     JsonNode scene = scene("Graphics3D[Sphere[]]");
