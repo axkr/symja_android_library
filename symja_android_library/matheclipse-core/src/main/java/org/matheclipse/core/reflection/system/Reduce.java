@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -16,6 +15,7 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.exception.Validate;
@@ -73,7 +73,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       public VariableInterval(IExpr min, IBuiltInSymbol minType, IExpr variable,
           IBuiltInSymbol maxType, IExpr max) {
         this.variable = variable;
-        this.intervalData = F.IntervalData(F.List(min, minType, maxType, F.CInfinity));
+        this.intervalData = F.IntervalData(F.List(min, minType, maxType, max));
       }
 
       public void set(VariableInterval cd) {
@@ -129,6 +129,10 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
 
       public IExpr reduceAnd(int headID, IExpr lhs, IExpr rhs) throws ArgumentTypeException {
+        if (!isRelationID(headID)) {
+          // `g(x, 2)` has the shape `variable OP value` too, but no interval
+          return F.NIL;
+        }
         try {
           IExpr domain = domainMap.get(lhs);
           if (domain == S.Reals) {
@@ -248,7 +252,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           }
           IExpr temp = rewritten;
           if (!temp.isAST2() || !temp.first().equals(variable)) {
-            temp = S.Simplify.of(arg);
+            temp = EvalEngine.get().evalQuiet(F.Simplify(arg));
           }
           if (temp.isAST2() && temp.first().equals(variable)) {
             IExpr rhs = temp.second();
@@ -554,7 +558,12 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         // real - over the complexes `x^2==-1` has the solutions `-I` and `I`.
         IAST intervals = realAtomToIntervals(lastArg, cd.variable, options, engine);
         if (intervals.isPresent()) {
-          return intervalsToExpr(intervals, cd.variable, engine);
+          IExpr solved = intervalsToExpr(intervals, cd.variable, engine);
+          if (solved.isAST(S.Element) && domainMap.get(cd.variable) == S.Reals) {
+            // the whole real line: no restriction for a real variable
+            return S.True;
+          }
+          return solved;
         }
       }
       if (lastArg.isEqual()) {
@@ -650,7 +659,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    *         symbolically (then the standard reduction applies)
    */
   private static IExpr reduceParametricPolynomialEquation(IAST equation, IExpr variable,
-      EvalEngine engine) {
+      SolveOptions options, EvalEngine engine) {
     IExpr f = engine.evaluate(F.ExpandAll(F.Subtract(equation.arg1(), equation.arg2())));
     if (f.isFree(variable) || !f.isPolynomial(variable)) {
       return F.NIL;
@@ -667,7 +676,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       // leading coefficient cannot vanish symbolically - no case analysis necessary
       return F.NIL;
     }
-    return parametricCases(coefficientList, degree, variable, engine);
+    return parametricCases(coefficientList, degree, variable, options, engine);
   }
 
   /**
@@ -943,20 +952,20 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * polynomial given by <code>coefficientList</code> truncated at <code>degree</code>.
    */
   private static IExpr parametricCases(IAST coefficientList, int degree, IExpr variable,
-      EvalEngine engine) {
+      SolveOptions options, EvalEngine engine) {
     IExpr ck = coefficientList.get(degree + 1);
     if (degree == 0) {
       return F.Equal(ck, F.C0);
     }
     if (ck.isZero()) {
       // this coefficient vanishes identically - skip to the lower degree
-      return parametricCases(coefficientList, degree - 1, variable, engine);
+      return parametricCases(coefficientList, degree - 1, variable, options, engine);
     }
     IASTAppendable poly = F.PlusAlloc(degree + 1);
     for (int i = 0; i <= degree; i++) {
       poly.append(F.Times(coefficientList.get(i + 1), F.Power(variable, F.ZZ(i))));
     }
-    IExpr roots = S.Roots.ofNIL(engine, F.Equal(engine.evaluate(poly), F.C0), variable);
+    IExpr roots = rootsOf(F.Equal(engine.evaluate(poly), F.C0), variable, options, engine);
     if (roots.isNIL() || !roots.isFree(S.Roots)) {
       return F.NIL;
     }
@@ -964,7 +973,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       // non-zero numeric leading coefficient - no further case analysis
       return roots;
     }
-    IExpr lowerCases = parametricCases(coefficientList, degree - 1, variable, engine);
+    IExpr lowerCases = parametricCases(coefficientList, degree - 1, variable, options, engine);
     if (lowerCases.isNIL()) {
       return F.NIL;
     }
@@ -1241,7 +1250,11 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       } else {
         integerConditions.addAll(branchConditions);
       }
-      orEqualities.append(F.Equal(variable, root));
+      IExpr equality = F.Equal(variable, root);
+      if (!orEqualities.exists(equality::equals)) {
+        // two branches may coincide, e.g. the +/-ArcCosh(1) branches of Cosh(x)==1
+        orEqualities.append(equality);
+      }
     }
     if (orEqualities.isAST0()) {
       // every solution of the equation is non-real
@@ -2394,6 +2407,16 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     IExpr v = engine.evaluate(F.Divide(F.Negate(restParts.oneIdentity0()), amplitude));
     IExpr inverted = engine.evalQuiet(
         F.Reduce(F.Equal(power.base(), engine.evaluate(F.Power(v, F.ZZ(q)))), variable, domain));
+    if (!v.isNumericFunction() || !amplitude.isNumericFunction()) {
+      // a value which depends on a parameter can't be verified by substituting it. Over the reals
+      // the principal root u^(1/q) is real exactly for u>=0 and then it is >=0, so u^(1/q)==v is
+      // v>=0 && u==v^q; over the complexes the branch of the root has no such simple condition.
+      if (domain != S.Reals || !amplitude.isNumericFunction() || inverted.isNIL()
+          || !inverted.isFree(S.Reduce)) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.And(F.GreaterEqual(v, F.C0), inverted));
+    }
     return verifiedSolutions(inverted, f, variable, engine);
   }
 
@@ -2411,7 +2434,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    *         kernel
    */
   private static IExpr reduceEquationByKernel(IAST equation, IExpr variable, ISymbol domain,
-      EvalEngine engine) {
+      SolveOptions options, EvalEngine engine) {
     IExpr f = engine.evaluate(F.Subtract(equation.arg1(), equation.arg2()));
     if (f.isFree(variable) || f.isPolynomial(variable)) {
       return F.NIL;
@@ -2437,7 +2460,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     IExpr roots =
-        S.Roots.ofNIL(engine, F.Equal(engine.evaluate(poly), F.C0), kernelVariable);
+        rootsOf(F.Equal(engine.evaluate(poly), F.C0), kernelVariable, options, engine);
     if (roots.isNIL() || !roots.isFree(S.Roots)) {
       return F.NIL;
     }
@@ -2582,7 +2605,10 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    long precision = SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
+    // `Infinity` is the default of `Reduce`: the exact result is kept
+    long precision = solveOptions.workingPrecision().isInfinity()
+        ? SolveUtils.MACHINE_PRECISION_REQUESTED
+        : SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
     if (precision == SolveUtils.INVALID_PRECISION) {
       return F.NIL;
     }
@@ -2633,6 +2659,17 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     return renamed.isPresent() ? engine.evaluate(renamed) : expr;
   }
 
+  /** Test if <code>domain</code> is one of the domains {@code Reduce} supports. */
+  private static boolean isReduceDomain(IExpr domain) {
+    return domain == S.Reals || domain == S.Complexes || domain == S.Integers
+        || domain == S.Primes || domain == S.Booleans || domain == S.Rationals;
+  }
+
+  /** Test if <code>domain</code> is a discrete number domain. */
+  private static boolean isDiscreteDomain(ISymbol domain) {
+    return domain == S.Integers || domain == S.Primes || domain == S.Rationals;
+  }
+
   /**
    * Test if the second argument of {@code Reduce} names the variables of the reduction: a single
    * symbol or a non empty list of symbols.
@@ -2666,23 +2703,34 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return arg1;
     }
 
-    if (ast.isAST3() && ast.arg3() == S.Integers && ast.arg2().isPresent()) {
-      // Cooper elimination decides a quantified integer condition exactly. It has to run before
-      // the `Resolve` route below, whose strategies reason over a continuum: they answer
-      // `Exists(y, x == 2*y + 1)` with True instead of the parity condition on `x`.
-      IExpr integers = IntegerReduceEngine.reduce(arg1, ast.arg2().makeList(),
-          (ISymbol) ast.arg3(), engine);
-      if (integers.isPresent()) {
-        return integers;
+    // the domain and the variables are validated before any method sees them
+    ISymbol domain = S.Complexes;
+    if (ast.isAST3()) {
+      if (!isReduceDomain(ast.arg3())) {
+        return F.NIL;
       }
+      domain = (ISymbol) ast.arg3();
+    }
+    if ((ast.isAST2() || ast.isAST3()) && !isVariableSpecification(ast.arg2())) {
+      // `1` is not a valid variable.
+      return Errors.printMessage(S.Reduce, "ivar", F.list(ast.arg2()), engine);
     }
 
-    // quantifier elimination is implemented in `Resolve`
     if (arg1.isAST(S.ForAll) || arg1.isAST(S.Exists)) {
-      ISymbol quantifierDomain = null;
-      if (ast.isAST3() && ast.arg3().isSymbol()) {
-        quantifierDomain = (ISymbol) ast.arg3();
+      if (isDiscreteDomain(domain)) {
+        // Cooper elimination decides a quantified integer condition exactly. The `Resolve`
+        // strategies reason over a continuum - they answer `Exists(y, x == 2*y + 1)` with True
+        // instead of the parity condition on `x` - so they must not see a discrete domain.
+        if (domain == S.Integers) {
+          IExpr integers = IntegerReduceEngine.reduce(arg1, ast.arg2().makeList(), domain, engine);
+          if (integers.isPresent()) {
+            return integers;
+          }
+        }
+        return F.NIL;
       }
+      // quantifier elimination is implemented in `Resolve`
+      ISymbol quantifierDomain = ast.isAST3() ? domain : null;
       IExpr quantified = Resolve.resolveQuantifier((IAST) arg1, quantifierDomain, engine);
       if (quantified.isPresent()) {
         if (quantified.isTrue() || quantified.isFalse() || (!ast.isAST2() && !ast.isAST3())) {
@@ -2696,24 +2744,23 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
 
     final IAST vars;
-    ISymbol domain = S.Complexes;
-    if (ast.isAST3()) {
-      if (ast.arg3().isSymbol()) {
-        domain = (ISymbol) ast.arg3();
-      } else {
-        return F.NIL;
-      }
-    }
-
     // extract Element(var, domain) constraints from the input; a discrete domain
     // (Integers/Primes) overrides the requested domain for those variables
-    Map<IExpr, IExpr> elementDomains = new HashMap<IExpr, IExpr>();
+    Map<IExpr, IExpr> elementDomains = new LinkedHashMap<IExpr, IExpr>();
     IExpr strippedArg1 = extractElementDomains(arg1, elementDomains);
     if (!elementDomains.isEmpty()) {
+      ISymbol discreteDomain = null;
       for (IExpr elementDomain : elementDomains.values()) {
         if (elementDomain == S.Integers || elementDomain == S.Primes) {
-          domain = (ISymbol) elementDomain;
+          if (discreteDomain != null && discreteDomain != elementDomain) {
+            // `x ∈ Integers && y ∈ Primes` has no single domain to reduce over
+            return F.NIL;
+          }
+          discreteDomain = (ISymbol) elementDomain;
         }
+      }
+      if (discreteDomain != null) {
+        domain = discreteDomain;
       }
       arg1 = strippedArg1;
     }
@@ -2729,22 +2776,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
 
     if (ast.isAST2() || ast.isAST3()) {
-      IExpr variableSpecification = ast.arg2();
-      if (!isVariableSpecification(variableSpecification)) {
-        // `1` is not a valid variable.
-        return Errors.printMessage(S.Reduce, "ivar", F.list(variableSpecification), engine);
-      }
-      vars = variableSpecification.makeList();
+      vars = ast.arg2().makeList();
     } else {
       // compute the variables from the (Element-stripped) condition
       VariablesSet eVar = new VariablesSet(arg1);
       vars = eVar.getVarList();
     }
 
-    if (domain != S.Reals && domain != S.Complexes && domain != S.Integers && domain != S.Primes
-        && domain != S.Booleans && domain != S.Rationals) {
-      return F.NIL;
-    }
     try {
       IExpr modulus = solveOptions.modulus();
       if (!modulus.isZero()) {
@@ -2822,7 +2860,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       if (expr.isEqual() && domain == S.Complexes) {
         // case analysis for univariate polynomial equations with parametric coefficients,
         // e.g. a*x^2+b*x+c==0 for variable x with parameters a,b,c
-        IExpr parametric = reduceParametricPolynomialEquation((IAST) expr, variable, engine);
+        IExpr parametric = reduceParametricPolynomialEquation((IAST) expr, variable, solveOptions, engine);
         if (parametric.isPresent()) {
           return parametric;
         }
@@ -2856,7 +2894,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           return radical;
         }
         // a polynomial in one kernel, e.g. `Log(x)^2==1` in `Log(x)`
-        IExpr kernel = reduceEquationByKernel((IAST) expr, variable, domain, engine);
+        IExpr kernel = reduceEquationByKernel((IAST) expr, variable, domain, solveOptions, engine);
         if (kernel.isPresent()) {
           return kernel;
         }
@@ -2891,7 +2929,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         // symbolic optimizers Minimize/Maximize (e.g. x^2 + 1 > 0 is always True).
         IExpr decided = decideInequalityByExtrema(arg1, variable, engine);
         if (decided.isPresent()) {
-          return decided;
+          // `x ∈ Reals` is the whole domain when the reduction is over the reals
+          return domain == S.Reals && decided.isAST(S.Element) ? S.True : decided;
         }
 
         // solve a single univariate polynomial inequality by a sign analysis of the real roots,
@@ -2971,7 +3010,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return logicalExpand;
       }
       return reduced.orElse(logicalExpand);
-    } catch (ArgumentTypeException ate) {
+    } catch (ArgumentTypeException | ArgumentTypeStopException ate) {
       // the interval reduction signals a condition it cannot represent - leave the input
       // unevaluated instead of reporting an internal error
     } catch (RuntimeException rex) {
@@ -3452,16 +3491,20 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr reduceBooleans(IExpr expr, EvalEngine engine) {
     IExpr formula = expr.isList() ? ((IAST) expr).setAtCopy(0, S.And) : expr;
-    IExpr tautology = S.TautologyQ.of(engine, formula);
+    if (!formula.isBooleanFormula()) {
+      // `x^2 == 4` or `1 + x` is no statement about truth values
+      return F.NIL;
+    }
+    IExpr tautology = engine.evalQuiet(F.unaryAST1(S.TautologyQ, formula));
     if (tautology.isTrue()) {
       return S.True;
     }
-    IExpr satisfiable = S.SatisfiableQ.of(engine, formula);
+    IExpr satisfiable = engine.evalQuiet(F.unaryAST1(S.SatisfiableQ, formula));
     if (satisfiable.isFalse()) {
       return S.False;
     }
-    IExpr minimized = S.BooleanMinimize.of(engine, formula);
-    return minimized.isPresent() ? minimized : formula;
+    IExpr minimized = engine.evalQuiet(F.BooleanMinimize(formula));
+    return minimized.isPresent() && minimized.isFree(S.BooleanMinimize) ? minimized : formula;
   }
 
   /**
@@ -3572,7 +3615,18 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   private static IExpr reduceIntegersUnivariate(IExpr expr, IExpr variable, ISymbol domain,
       EvalEngine engine) {
     if (expr.isEqual()) {
-      IExpr roots = S.Roots.ofNIL(engine, expr, variable);
+      IExpr difference = engine.evaluate(F.Subtract(expr.first(), expr.second()));
+      IExpr roots;
+      if (difference.isPolynomial(variable)) {
+        roots = S.Roots.ofNIL(engine, expr, variable);
+      } else {
+        // `Roots` answers `False` for every equation it cannot solve, e.g. `Sqrt(x)==2`; the
+        // reduction over the complexes declines instead
+        roots = engine.evalQuiet(F.Reduce(expr, variable, S.Complexes));
+        if (!roots.isFree(S.Reduce)) {
+          return F.NIL;
+        }
+      }
       if (roots.isPresent()) {
         return filterIntegerEqualities(roots, variable, domain, engine);
       }
@@ -3596,14 +3650,16 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr filterIntegerEqualities(IExpr rootsExpr, IExpr variable, ISymbol domain,
       EvalEngine engine) {
+    if (rootsExpr.isFalse()) {
+      return S.False;
+    }
     IASTAppendable result = F.OrAlloc(4);
-    if (rootsExpr.isOr()) {
-      IAST or = (IAST) rootsExpr;
-      for (int i = 1; i < or.size(); i++) {
-        appendIfDomainValue(or.get(i), variable, domain, result, engine);
+    IAST or = rootsExpr.isOr() ? (IAST) rootsExpr : F.Or(rootsExpr);
+    for (int i = 1; i < or.size(); i++) {
+      if (!appendIfDomainValue(or.get(i), variable, domain, result, engine)) {
+        // a family `x == 2*Pi*C(1)` or a value depending on a parameter isn't decided here
+        return F.NIL;
       }
-    } else {
-      appendIfDomainValue(rootsExpr, variable, domain, result, engine);
     }
     if (result.isAST0()) {
       return S.False;
@@ -3615,26 +3671,20 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * Append <code>Equal(variable, value)</code> to <code>result</code> if the equation determines an
    * integer (or prime) value for <code>variable</code>.
    */
-  private static void appendIfDomainValue(IExpr equation, IExpr variable, ISymbol domain,
+  private static boolean appendIfDomainValue(IExpr equation, IExpr variable, ISymbol domain,
       IASTAppendable result, EvalEngine engine) {
-    if (equation.isEqual() && equation.first().equals(variable)) {
-      IExpr value = engine.evaluate(equation.second());
-      if (domain == S.Rationals) {
-        if (value.isRational()) {
-          result.append(F.Equal(variable, value));
-        }
-        return;
-      }
-      if (value.isInteger()) {
-        if (domain == S.Primes) {
-          if (value.isPositive() && ((IInteger) value).isProbablePrime()) {
-            result.append(F.Equal(variable, value));
-          }
-        } else {
-          result.append(F.Equal(variable, value));
-        }
-      }
+    if (!equation.isEqual() || !equation.first().equals(variable)) {
+      return false;
     }
+    IExpr value = engine.evaluate(equation.second());
+    if (!value.isNumericFunction()) {
+      // the value depends on a parameter or a generated constant
+      return false;
+    }
+    if (isDomainMember(value, domain)) {
+      result.append(F.Equal(variable, value));
+    }
+    return true;
   }
 
   /**
@@ -4044,7 +4094,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    IAST branches = solveSystemRecursive(equations, constraints, vars, domain, options, engine);
+    IAST branches = solveSystemRecursive(equations, constraints, vars, domain, options,
+        new int[] {MAX_LEADING_COEFFICIENT_SPLITS}, engine);
     if (branches.isNIL()) {
       return F.NIL;
     }
@@ -4088,7 +4139,20 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    *         {@link F#NIL} if the system cannot be solved
    */
   private static IAST solveSystemRecursive(IAST equations, IAST constraints, IAST vars,
-      ISymbol domain, SolveOptions options, EvalEngine engine) {
+      ISymbol domain, SolveOptions options, int[] splits, EvalEngine engine) {
+    if (!vars.isAST0() && equations.exists(eq -> isFreeOfAll(eq, vars))) {
+      // an equation which mentions none of the remaining variables is a condition on the
+      // parameters, e.g. the `a==0` of a degenerate branch
+      IASTAppendable variableEquations = F.ListAlloc(equations.size());
+      IASTAppendable conditions = F.ListAlloc(constraints.size() + equations.size());
+      conditions.appendArgs(constraints);
+      for (int i = 1; i < equations.size(); i++) {
+        IExpr equation = equations.get(i);
+        (isFreeOfAll(equation, vars) ? conditions : variableEquations).append(equation);
+      }
+      equations = variableEquations;
+      constraints = conditions;
+    }
     if (vars.isAST0() || equations.isAST0()) {
       // every variable is substituted, or the remaining variables are not determined by an equation
       // anymore; the remaining relations are either decided or they are conditions on the free
@@ -4107,7 +4171,19 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           return F.CEmptyList;
         }
         if (!constraints.get(i).isTrue()) {
-          branch.append(constraints.get(i));
+          IExpr constraint = constraints.get(i);
+          if (domain == S.Reals) {
+            // a condition on a single variable, e.g. the `1-y^2>=0` under which `Sqrt(1-y^2)` is
+            // real, reads better as the interval `y>=-1&&y<=1`
+            constraint = reduceUnivariateCondition(constraint, engine);
+            if (constraint.isFalse()) {
+              return F.CEmptyList;
+            }
+            if (constraint.isTrue()) {
+              continue;
+            }
+          }
+          branch.append(constraint);
         }
       }
       return F.list(branch);
@@ -4133,19 +4209,183 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
             // first keeps the parameters for the equations which really constrain them
             continue;
           }
+          IExpr leadingCoefficient = symbolicLeadingCoefficient(equation, variable, vars, engine);
+          if (leadingCoefficient.isPresent() && splits[0]-- <= 0) {
+            // too many case distinctions
+            return F.NIL;
+          }
           IAST roots = variableBranches(equation, variable, domain, options, engine);
           if (roots.isNIL()) {
             continue;
           }
-          IAST solved = substituteBranches(roots, variable, equations.removeAtCopy(e), constraints,
-              vars.removeAtCopy(v), domain, options, engine);
-          if (solved.isPresent()) {
-            return solved;
+          IAST genericConstraints = constraints;
+          if (leadingCoefficient.isPresent()) {
+            // the roots divide by the leading coefficient, so they hold only where it doesn't
+            // vanish
+            genericConstraints = constraints.appendClone(nonZeroCondition(leadingCoefficient));
           }
+          IAST solved = substituteBranches(roots, variable, equations.removeAtCopy(e),
+              genericConstraints, vars.removeAtCopy(v), domain, options, splits, engine);
+          if (solved.isNIL()) {
+            continue;
+          }
+          if (leadingCoefficient.isPresent()) {
+            IAST degenerate = degenerateBranches(equation, variable, leadingCoefficient, equations,
+                e, constraints, vars, domain, options, splits, engine);
+            if (degenerate.isNIL()) {
+              continue;
+            }
+            IASTAppendable union = F.ListAlloc(solved.size() + degenerate.size());
+            union.appendArgs(solved);
+            union.appendArgs(degenerate);
+            return union;
+          }
+          return solved;
         }
       }
     }
     return F.NIL;
+  }
+
+  /** Maximum number of leading coefficient case distinctions in one system. */
+  private static final int MAX_LEADING_COEFFICIENT_SPLITS = 16;
+
+  /** Test if <code>expr</code> contains none of the <code>vars</code>. */
+  private static boolean isFreeOfAll(IExpr expr, IAST vars) {
+    return vars.forAll(v -> expr.isFree(v, true));
+  }
+
+  /**
+   * The leading coefficient of a polynomial equation in <code>variable</code>, if it depends on the
+   * other variables or on parameters of the system, e.g. <code>-y^2</code> for
+   * <code>x^2-y^2*z==0</code> in <code>z</code>.
+   *
+   * @return {@link F#NIL} if the equation isn't polynomial in the variable or its leading
+   *         coefficient is a number
+   */
+  private static IExpr symbolicLeadingCoefficient(IExpr equation, IExpr variable, IAST vars,
+      EvalEngine engine) {
+    if (!equation.isEqual()) {
+      return F.NIL;
+    }
+    IExpr poly = engine.evaluate(F.Subtract(equation.first(), equation.second()));
+    if (!poly.isPolynomial(variable)) {
+      return F.NIL;
+    }
+    IExpr degree = engine.evalQuiet(F.Exponent(poly, variable));
+    if (!degree.isInteger() || !degree.isPositive()) {
+      return F.NIL;
+    }
+    IExpr coefficient = engine.evalQuiet(F.Coefficient(poly, variable, degree));
+    if (coefficient.isNumber() || coefficient.isNumericFunction()) {
+      return F.NIL;
+    }
+    return coefficient;
+  }
+
+  /**
+   * <code>c!=0</code> for a leading coefficient <code>c</code>, written with its factors:
+   * <code>-2*y^2!=0</code> becomes <code>y!=0</code>.
+   */
+  private static IExpr nonZeroCondition(IExpr coefficient) {
+    IAST factors = coefficient.isTimes() ? (IAST) coefficient : F.Times(coefficient);
+    IASTAppendable conditions = F.ast(S.And, factors.argSize());
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isNumericFunction()) {
+        continue;
+      }
+      if (factor.isPower() && factor.exponent().isInteger() && factor.exponent().isPositive()) {
+        factor = factor.base();
+      }
+      conditions.append(F.Unequal(factor, F.C0));
+    }
+    return conditions.isAST0() ? S.True : conditions.oneIdentity1();
+  }
+
+  /**
+   * The solutions of the system where the leading coefficient <code>c</code> of the equation
+   * vanishes: the equation is replaced by <code>c==0</code> and its lower degree remainder.
+   */
+  private static IAST degenerateBranches(IExpr equation, IExpr variable, IExpr leadingCoefficient,
+      IAST equations, int position, IAST constraints, IAST vars, ISymbol domain,
+      SolveOptions options, int[] splits, EvalEngine engine) {
+    IExpr poly = engine.evaluate(F.Subtract(equation.first(), equation.second()));
+    IExpr degree = engine.evalQuiet(F.Exponent(poly, variable));
+    IExpr rest = engine.evaluate(
+        F.Expand(F.Subtract(poly, F.Times(leadingCoefficient, F.Power(variable, degree)))));
+    IExpr lowerEquation = engine.evaluate(F.Equal(rest, F.C0));
+    if (lowerEquation.isFalse()) {
+      return F.CEmptyList;
+    }
+    IASTAppendable degenerateEquations =
+        lowerEquation.isTrue() ? equations.removeAtClone(position)
+            : equations.setAtCopy(position, lowerEquation).copyAppendable();
+    degenerateEquations.append(F.Equal(leadingCoefficient, F.C0));
+    return solveSystemRecursive(degenerateEquations, constraints, vars, domain, options, splits,
+        engine);
+  }
+
+  /** Test if <code>value</code> contains a constant which is not real, like <code>I</code>. */
+  private static boolean containsNonRealConstant(IExpr value) {
+    return value.has(x -> x.isComplex() || x.isComplexNumeric() //
+        || (x.isPower() && x.base().isReal() && x.base().isNegative()
+            && x.exponent().isRational() && !x.exponent().isInteger()),
+        false);
+  }
+
+  /**
+   * Append the conditions under which the radicals of <code>value</code> are real:
+   * <code>u&gt;=0</code> for every <code>u^(p/q)</code> whose radicand depends on a variable.
+   *
+   * @return <code>false</code> if one of the conditions is never fulfilled
+   */
+  private static boolean appendRealityConditions(IExpr value, IASTAppendable constraints,
+      EvalEngine engine) {
+    Set<IExpr> conditions = new LinkedHashSet<IExpr>();
+    collectRadicandConditions(value, conditions);
+    for (IExpr condition : conditions) {
+      IExpr evaluated = engine.evaluate(condition);
+      if (evaluated.isFalse()) {
+        return false;
+      }
+      if (!evaluated.isTrue()) {
+        constraints.append(evaluated);
+      }
+    }
+    return true;
+  }
+
+  private static void collectRadicandConditions(IExpr expr, Set<IExpr> conditions) {
+    if (!expr.isAST()) {
+      return;
+    }
+    if (expr.isPower() && expr.exponent().isRational() && !expr.exponent().isInteger()
+        && !expr.base().isNumericFunction()) {
+      conditions.add(expr.exponent().isNegative() ? F.Greater(expr.base(), F.C0)
+          : F.GreaterEqual(expr.base(), F.C0));
+    }
+    for (IExpr arg : (IAST) expr) {
+      collectRadicandConditions(arg, conditions);
+    }
+  }
+
+  /**
+   * Reduce an inequality in a single variable over the reals, e.g. <code>1-y^2>=0</code> to
+   * <code>y>=-1&&y<=1</code>; any other condition is returned unchanged.
+   */
+  private static IExpr reduceUnivariateCondition(IExpr condition, EvalEngine engine) {
+    int headID = condition.headID();
+    if (headID != ID.Less && headID != ID.LessEqual && headID != ID.Greater
+        && headID != ID.GreaterEqual) {
+      return condition;
+    }
+    IAST variables = new VariablesSet(condition).getVarList();
+    if (!variables.isAST1()) {
+      return condition;
+    }
+    IExpr reduced = engine.evalQuiet(F.Reduce(condition, variables.arg1(), S.Reals));
+    return reduced.isPresent() && reduced.isFree(S.Reduce) ? reduced : condition;
   }
 
   /**
@@ -4197,7 +4437,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    *         which cannot be solved
    */
   private static IAST substituteBranches(IAST roots, IExpr variable, IAST equations,
-      IAST constraints, IAST vars, ISymbol domain, SolveOptions options, EvalEngine engine) {
+      IAST constraints, IAST vars, ISymbol domain, SolveOptions options, int[] splits,
+      EvalEngine engine) {
     IASTAppendable result = F.ListAlloc(roots.argSize());
     // the dependent form of every emitted branch, in the same order
     List<IExpr> dependentValues = new ArrayList<IExpr>();
@@ -4205,9 +4446,16 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     for (int i = 1; i < roots.size(); i++) {
       IAST root = (IAST) roots.get(i);
       IExpr value = root.arg1();
-      if (domain == S.Reals && isComplexNonReal(value)) {
-        // a non-real root is no solution over the reals
-        continue;
+      if (domain == S.Reals) {
+        if (isComplexNonReal(value)) {
+          // a non-real root is no solution over the reals
+          continue;
+        }
+        if (containsNonRealConstant(value)) {
+          // `-I*y` or `(-1)^(1/3)*(1-y^3)^(1/3)` is real only for some values of the other
+          // variables, which this elimination can't describe
+          return F.NIL;
+        }
       }
       IAST substRule = F.list(F.Rule(variable, value));
       IASTAppendable substEquations = F.ListAlloc(equations.size());
@@ -4218,9 +4466,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         // the root contradicts one of the remaining relations
         continue;
       }
+      if (domain == S.Reals && !appendRealityConditions(value, substConstraints, engine)) {
+        // the root is never real
+        continue;
+      }
 
-      IAST solved =
-          solveSystemRecursive(substEquations, substConstraints, vars, domain, options, engine);
+      IAST solved = solveSystemRecursive(substEquations, substConstraints, vars, domain, options,
+          splits, engine);
       if (solved.isNIL()) {
         return F.NIL;
       }
@@ -4401,8 +4653,9 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
 
   /**
    * Convert a solution branch into an {@link S#And} expression. Domain conditions like
-   * <code>C(1) ∈ Integers</code> are listed first, the relations of the requested variables follow
-   * in the order of the variables, conditions on the parameters of the system come last.
+   * <code>C(1) ∈ Integers</code> are listed first, then the conditions on the parameters of the
+   * system, which are premises of the solution, then the relations of the requested variables in
+   * the order of the variables; relations between several variables come last.
    *
    * @param branch the relations of one solution branch
    * @param vars the variables of the reduction
@@ -4415,6 +4668,12 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       if (!relation.isComparatorFunction()) {
         appended[i] = true;
         andResult.append(relation);
+      }
+    }
+    for (int i = 1; i < branch.size(); i++) {
+      if (!appended[i] && isFreeOfAll(branch.get(i), vars)) {
+        appended[i] = true;
+        andResult.append(branch.get(i));
       }
     }
     for (int v = 1; v < vars.size(); v++) {
@@ -4781,6 +5040,21 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * @param headID the {@link ID} of the relation
    * @param sign the sign of <code>f</code>
    */
+  /** Test if <code>headID</code> is one of the six relations an interval can represent. */
+  private static boolean isRelationID(int headID) {
+    switch (headID) {
+      case ID.Equal:
+      case ID.Unequal:
+      case ID.Less:
+      case ID.LessEqual:
+      case ID.Greater:
+      case ID.GreaterEqual:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   private static boolean relationHolds(int headID, int sign) {
     switch (headID) {
       case ID.Equal:
@@ -5024,9 +5298,23 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       // comparator function too, so it has to be recognized before the chained comparators - its
       // arguments alternate between values and relation heads.
       if (ast.isAST(S.Inequality)) {
+        if (ast.argSize() < 3 || ast.argSize() % 2 == 0) {
+          // not a well formed chain of relations
+          return expr;
+        }
         IASTAppendable andAST = F.AndAlloc(ast.argSize() / 2);
         for (int i = 1; i < ast.size() - 2; i += 2) {
           andAST.append(F.binaryAST2(ast.get(i + 1), ast.get(i), ast.get(i + 2)));
+        }
+        return andAST;
+      }
+      // `Unequal(a, b, c)` means pairwise distinct, not a chain
+      else if (ast.isAST(S.Unequal) && ast.argSize() > 2) {
+        IASTAppendable andAST = F.AndAlloc(ast.argSize() * (ast.argSize() - 1) / 2);
+        for (int i = 1; i < ast.size(); i++) {
+          for (int j = i + 1; j < ast.size(); j++) {
+            andAST.append(F.Unequal(ast.get(i), ast.get(j)));
+          }
         }
         return andAST;
       }

@@ -405,9 +405,9 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     // an inequation which isn't decided by the solution is kept
     check("Reduce(x == 1 && y > 0, {x, y})", //
         "x==1&&y>0");
-    // a condition on a symbol which isn't reduced is kept
+    // a condition on a symbol which isn't reduced is kept, as a premise in front of the solution
     check("Reduce({x == 1, y == 2, z == 3}, {x, y})", //
-        "x==1&&y==2&&z==3");
+        "z==3&&x==1&&y==2");
     // `Roots` doesn't solve periodic equations, the univariate reduction does
     check("Reduce({Sin(x) == 0, y == 2}, {x, y})", //
         "(C(1)∈Integers&&x==2*Pi*C(1)&&y==2)||(C(1)∈Integers&&x==Pi+2*Pi*C(1)&&y==2)");
@@ -784,9 +784,9 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     // an attainable value is still solved
     check("Reduce(Coth(x) == 2, x)", //
         "C(1)∈Integers&&x==ArcCoth(2)+I*Pi*C(1)");
-    // TODO the two branches +-ArcCosh(1) are both 0 and should be merged
+    // the two branches +-ArcCosh(1) are both 0 and are merged
     check("Reduce(Sech(x) == 1, x)", //
-        "C(1)∈Integers&&(x==I*2*Pi*C(1)||x==I*2*Pi*C(1))");
+        "C(1)∈Integers&&x==I*2*Pi*C(1)");
   }
 
   /**
@@ -841,9 +841,9 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "C(1)∈Integers&&(x==-3/4*Pi+2*Pi*C(1)||x==Pi/4+2*Pi*C(1))");
     check("Reduce(Sin(x) == Cos(x) && 0 < x < 2*Pi, x)", //
         "x==Pi/4||x==5/4*Pi");
-    // TODO the two Sin() branches coincide at the maximum and should be merged
+    // the two Sin() branches coincide at the maximum and are merged
     check("Reduce(3*Sin(x) + 4*Cos(x) == 5, x, Reals)", //
-        "C(1)∈Integers&&(x==Pi/2-ArcTan(4/3)+2*Pi*C(1)||x==Pi/2-ArcTan(4/3)+2*Pi*C(1))");
+        "C(1)∈Integers&&x==Pi/2-ArcTan(4/3)+2*Pi*C(1)");
     // a*Sin(u)+b*Cos(u) never leaves [-Sqrt(a^2+b^2), Sqrt(a^2+b^2)]
     check("Reduce(3*Sin(x) + 4*Cos(x) == 6, x, Reals)", //
         "False");
@@ -998,13 +998,17 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   /** An inequality whose two sides never meet is decided by the range of the function. */
   @Test
   public void testReduceInequalityByRange() {
+    // over the reals the whole real line is `True`
     check("Reduce(Sin(x) <= 1, x, Reals)", //
-        "x∈Reals");
+        "True");
     check("Reduce(Sin(x) > 1, x, Reals)", //
         "False");
     check("Reduce(Tanh(x) < 1, x, Reals)", //
-        "x∈Reals");
+        "True");
     check("Reduce(E^x > 0, x, Reals)", //
+        "True");
+    // without a domain the inequality still restricts x to the reals
+    check("Reduce(E^x > 0, x)", //
         "x∈Reals");
     check("Reduce(E^x < 0, x, Reals)", //
         "False");
@@ -1244,5 +1248,101 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "Reduce(x==1,5)");
     check("Reduce(x == 1, {})", //
         "Reduce(x==1,{})");
+  }
+
+  /** A non-polynomial equation over a discrete domain is reduced over the complexes first. */
+  @Test
+  public void testReduceDiscreteNonPolynomialEquation() {
+    // `Roots` answers `False` for an equation it cannot solve - that must not become the result
+    check("Reduce(Sqrt(x) == 2, x, Integers)", //
+        "x==4");
+    check("Reduce(Sqrt(x) == 2, x, Rationals)", //
+        "x==4");
+    check("Reduce(Log(x) == 0, x, Integers)", //
+        "x==1");
+    check("Reduce(x^2 == 4, x, Primes)", //
+        "x==2");
+    check("Reduce(x^2 == 2, x, Integers)", //
+        "False");
+    // a periodic family isn't decided over the integers
+    check("Reduce(Sin(x) == 0, x, Integers)", //
+        "Reduce(Sin(x)==0,x,Integers)");
+  }
+
+  /** A radical equal to a parameter: the value of the root has to be nonnegative. */
+  @Test
+  public void testReduceParametricRadicalEquation() {
+    check("Reduce(Sqrt(x) == a, x, Reals)", //
+        "a>=0&&x==a^2");
+    check("Reduce(Sqrt(x - 1) == a, x, Reals)", //
+        "a>=0&&x==1+a^2");
+  }
+
+  /** <code>Unequal(a, b, c)</code> means pairwise distinct. */
+  @Test
+  public void testReduceUnequalChain() {
+    check("Reduce(Unequal(x, 1, 2), x, Reals)", //
+        "x<1||(x>1&&x<2)||x>2");
+    check("Reduce(Unequal(x, 1, 2, 3), x, Reals)", //
+        "x<1||(x>1&&x<2)||(x>2&&x<3)||x>3");
+  }
+
+  /** The leading coefficient of an equation may vanish, and over the reals a root must be real. */
+  @Test
+  public void testReduceSystemDegenerateLeadingCoefficient() {
+    check("Reduce(x^2 - y^2*z == 0, {x, y, z}, Reals)", //
+        "(y!=0&&z==x^2/y^2)||(x==0&&y==0)");
+    check("Reduce(x^2*z + y^2*z + x*y == 0, {x, y, z}, Reals)", //
+        "(x==(-y-Sqrt(y^2-4*y^2*z^2))/(2*z)&&z!=0&&y^2-4*y^2*z^2>=0)||(x==(-y+Sqrt(y^2-4*y^\n"
+            + "2*z^2))/(2*z)&&z!=0&&y^2-4*y^2*z^2>=0)||(x==0&&y!=0&&z==0)||(y==0&&z==0)");
+    check("Reduce(a*x + y == 1 && x + y == 0, {x, y})", //
+        "a!=1&&x==-1/(1-a)&&y==1/(1-a)");
+    check("Reduce(a*x == b && y == 1, {x, y})", //
+        "(a!=0&&x==b/a&&y==1)||(b==0&&a==0&&y==1)");
+    // the root `Sqrt(1-y^2)` is real only for `-1<=y<=1`
+    check("Reduce(x^2 + y^2 == 1, {x, y}, Reals)", //
+        "(y>=-1&&y<=1&&x==-Sqrt(1-y^2))||(y>=-1&&y<=1&&x==Sqrt(1-y^2))");
+    // `-I*y` and `(-1)^(1/3)*(1-y^3)^(1/3)` are real only for some values of the other
+    // variables, which the elimination can't describe
+    check("Reduce(w*x + y*z == 0 && w*z - x*y == 0, {w, x, y, z}, Reals)", //
+        "Reduce(w*x+y*z==0&&-x*y+w*z==0,{w,x,y,z},Reals)");
+    check("Reduce(x^3 + y^3 == 1 && x > 0 && y > 0, {x, y}, Reals)", //
+        "Reduce(x^3+y^3==1&&x>0&&y>0,{x,y},Reals)");
+  }
+
+  /** Domain and variables are checked before any method runs. */
+  @Test
+  public void testReduceDomainValidation() {
+    check("Reduce(ForAll(y, x > y), x, Foo)", //
+        "Reduce(ForAll(y,x>y),x,foo)");
+    // the continuum reasoning of `Resolve` doesn't apply to a discrete domain
+    check("Reduce(Exists(y, x == 2*y + 1), x, Primes)", //
+        "Reduce(Exists(y,x==1+2*y),x,Primes)");
+    // no single domain for `x` and `y`
+    check("Reduce(Element(x, Integers) && Element(y, Primes) && x + y == 5, {x, y})", //
+        "Reduce(x∈Integers&&y∈Primes&&x+y==5,{x,y})");
+    check("Reduce(x^2 == 4, x, Booleans)", //
+        "Reduce(x^2==4,x,Booleans)");
+    check("Reduce(p && !p, p, Booleans)", //
+        "False");
+    check("Reduce((p || q) && (p || !q), {p, q}, Booleans)", //
+        "p");
+  }
+
+  /** Relations which aren't comparisons, and the options with their default values. */
+  @Test
+  public void testReduceMiscellaneous() {
+    check("Reduce(Abs(x^2 - 1) < 3, x, Reals)", //
+        "x>-2&&x<2");
+    check("Reduce(g(x, 2) && x > 0, x)", //
+        "x>0&&g(x,2)");
+    check("Reduce(x^2 > 1, x, WorkingPrecision -> Infinity)", //
+        "x<-1||x>1");
+    check("Reduce(x^2 + 1 > 0, x, Reals)", //
+        "True");
+    check("Reduce(x^2 + 1 > 0, x)", //
+        "x∈Reals");
+    check("IntegerPart(x)", //
+        "IntegerPart(x)");
   }
 }
