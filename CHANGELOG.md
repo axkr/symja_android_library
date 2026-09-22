@@ -4,6 +4,34 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- An option given as `Dynamic(...)` is drawn with its current value. `PlotRange -> Dynamic(r)`
+  used to leave the option unreadable, so a picture was drawn exactly as if it had no plot range;
+  `ViewPoint -> Dynamic(vp)` outside a `Manipulate` likewise fell back to the default view. Both
+  the SVG and the WebGL option readers resolve it now. Found through ad-si/Woxi#908.
+
+- `CoordinateBoundingBox` and `CoordinateBounds` take the box around nested points. The faces of
+  `Cases(g, Polygon(x_) :> x, Infinity)` are lists of point lists, and the first face used to be read
+  as one three dimensional point, giving `{{0,0,1},{2,3,3}}` instead of `{{0,0},{3,3}}`. Found
+  through ad-si/Woxi#905.
+
+- `Manipulate` reads `"name" -> spec` as a named group of controls, also with `:>` and with a list
+  of specifications. A string keyed rule was read as an option and dropped, so a panel made only of
+  groups had no control at all and the whole `Manipulate` vanished. Found through ad-si/Woxi#910.
+
+- `Solve(eqns, dom)` and `NSolve(eqns, dom)` with the domain in place of the variables find the
+  variables as the one argument form does: `Solve(x^2==1, Reals)` is `{{x->-1},{x->1}}` rather than
+  unevaluated. An `Element(x, dom)` among the equations which only repeats the domain being solved
+  over is dropped instead of rejected as no equation. Found through ad-si/Woxi#911.
+
+- `VectorPlot` and `VectorPlot3D` honour an explicit list `VectorPoints -> {p1, p2, ...}`, one arrow
+  at each point, and `VectorStyle`. The list used to give the default grid, and the style was
+  ignored; a colour in it now replaces the colouring by length unless `VectorColorFunction` is
+  given. Found through ad-si/Woxi#895.
+
+- `GroebnerBasis` accepts indeterminates which are not symbols, `{f(x), g(y)}`, as
+  `PolynomialReduce` already does: they are computed in symbols standing for them and given back.
+  Found through ad-si/Woxi#914.
+
 - Colour directives accept their channels packed into one list. `Hue({h,s,b})`,
   `GrayLevel({g})`, `CMYKColor({c,m,y,k})`, `XYZColor({..})` and `LABColor({..})` are the same
   colours as the spread-out forms, as `RGBColor({r,g,b})` already was - the form

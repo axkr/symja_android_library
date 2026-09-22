@@ -11854,6 +11854,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    * {@code Modulus->p} computes the basis in {@code GF(p)[variables]} rather than over the
    * rationals. {@code Modulus->0} is the default and asks for the rational computation.
    */
+  /**
+   * Indeterminates which are not symbols are computed in symbols standing for them, as
+   * <code>PolynomialReduce</code> already accepts them.
+   */
+  @Test
+  public void testGroebnerBasisKernelVariables() {
+    check("GroebnerBasis({f(x)^2-f(x), f(x)*g(y)-1},{f(x),g(y)})", //
+        "{-1+g(y),-1+f(x)}");
+    check("GroebnerBasis({f(x)^2-f(x), f(x)*g(y)-1},{f(x),g(y)}, {f(x)})", //
+        "{-1+g(y)}");
+    check("GroebnerBasis({f(x)+g(x)-1, f(x)-g(x)},{f(x),g(x)})", //
+        "{-1+2*g(x),-1+2*f(x)}");
+    // x is a parameter here, not an indeterminate
+    check("GroebnerBasis({f(x)^2-x},{f(x)})", //
+        "{-x+f(x)^2}");
+    check("GroebnerBasis({f(x)-1},{f(x), 2})", //
+        "GroebnerBasis({-1+f(x)},{f(x),2})");
+  }
+
   @Test
   public void testGroebnerBasisModulus() {
     check("GroebnerBasis({x^2 + y, y^2 + x}, {x, y}, Modulus -> 2)", //

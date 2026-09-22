@@ -33,6 +33,7 @@ import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
@@ -1725,8 +1726,11 @@ public class PolynomialFunctions {
         }
         // a single variable needs no list of its own
         IAST vars = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
-        if (vars.size() <= 1 || !vars.forAll(x -> x.isSymbol())) {
+        if (vars.size() <= 1) {
           return F.NIL;
+        }
+        if (!vars.forAll(x -> x.isSymbol())) {
+          return kernelVariables(ast, argSize, options, engine);
         }
         // equations are the polynomials of their difference
         IASTAppendable polys = F.ListAlloc(ast.arg1().argSize());
@@ -1782,8 +1786,47 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
-
-
+    /**
+     * A basis in indeterminates which are not symbols - <code>{f(x), g(y)}</code> - computed in
+     * fresh symbols standing for them, and given back in the indeterminates again. The polynomial
+     * code only knows symbols as variables; <code>PolynomialReduce</code> accepts such kernels, and
+     * the two should agree on what an indeterminate is.
+     */
+    private IExpr kernelVariables(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
+      IAST vars = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
+      IAST eliminated = argSize >= 3 ? (ast.arg3().isList() ? (IAST) ast.arg3() : F.list(ast.arg3()))
+          : F.CEmptyList;
+      java.util.Map<IExpr, IExpr> toSymbols = new java.util.HashMap<IExpr, IExpr>();
+      java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+      for (IAST list : new IAST[] {vars, eliminated}) {
+        for (int i = 1; i < list.size(); i++) {
+          IExpr variable = list.get(i);
+          if (variable.isSymbol() || toSymbols.containsKey(variable)) {
+            continue;
+          }
+          if (!variable.isAST() || !variable.isVariable() || variable.isNumericFunction()) {
+            return F.NIL;
+          }
+          ISymbol dummy = F.Dummy();
+          toSymbols.put(variable, dummy);
+          back.put(dummy, variable);
+        }
+      }
+      IASTMutable call = ast.copy();
+      for (int i = 1; i <= argSize; i++) {
+        call.set(i, F.subst(ast.get(i), toSymbols));
+      }
+      if (!call.arg2().isList() ? !call.arg2().isSymbol()
+          : !((IAST) call.arg2()).forAll(x -> x.isSymbol())) {
+        // a kernel nested inside another, f(g(x)) beside g(x), cannot be renamed on its own
+        return F.NIL;
+      }
+      IExpr basis = evaluate(call, argSize, options, engine, call);
+      if (basis.isNIL()) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.subst(basis, back));
+    }
 
 
     @Override
