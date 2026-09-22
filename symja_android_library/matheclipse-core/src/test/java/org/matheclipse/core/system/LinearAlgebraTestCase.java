@@ -497,6 +497,24 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{0,0},{4,2}}");
   }
 
+  /**
+   * The points may be nested - the faces of <code>Cases(g, Polygon(x_) :> x, Infinity)</code> are
+   * lists of point lists - and the box is taken around their corners, not around the faces. The
+   * first face used to be read as a three dimensional point.
+   */
+  @Test
+  public void testCoordinateBoundingBoxNestedPoints() {
+    check("CoordinateBoundingBox({{{0,0},{1,0},{1,1}},{{2,2},{3,2},{3,3}}})", //
+        "{{0,0},{3,3}}");
+    check("CoordinateBounds({{{0,0},{1,0},{1,1}},{{2,2},{3,2},{3,3}}})", //
+        "{{0,3},{0,3}}");
+    check("CoordinateBoundingBox({{{0,0},{1,0},{1,1}},{{2,2},{3,2},{3,3}}}, 1)", //
+        "{{-1,-1},{4,4}}");
+    // points of different dimensions have no box
+    check("CoordinateBoundingBox({{{0,0},{1,0}},{{2,2,2}}})", //
+        "CoordinateBoundingBox({{{0,0},{1,0}},{{2,2,2}}})");
+  }
+
   @Test
   public void testCoordinateBounds() {
     check("CoordinateBounds({{1.0,-1.0},{0.0,2.6457513110645907},{-1.0,-1.0}})", //

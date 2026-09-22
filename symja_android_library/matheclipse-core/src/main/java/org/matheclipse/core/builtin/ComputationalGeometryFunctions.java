@@ -1432,7 +1432,10 @@ public class ComputationalGeometryFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isListOfLists()) {
-        IAST listOfPoints = (IAST) ast.arg1();
+        IASTAppendable listOfPoints = F.ListAlloc();
+        if (!collectPoints(ast.arg1(), listOfPoints)) {
+          return F.NIL;
+        }
         if (listOfPoints.argSize() > 0) {
           IAST points0 = (IAST) listOfPoints.arg1();
           int dim = points0.argSize();
@@ -1530,6 +1533,31 @@ public class ComputationalGeometryFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The points of a list, however deeply they are nested in it: the faces of
+     * <code>Cases(g, Polygon(x_) :> x, Infinity)</code> are lists of point lists, and their corners
+     * are what the box is taken around, not the faces themselves. A list of numbers (or of any
+     * scalars) is one point.
+     *
+     * @return <code>false</code> when a list mixes points with scalars
+     */
+    private static boolean collectPoints(IExpr expr, IASTAppendable points) {
+      if (!expr.isList()) {
+        return false;
+      }
+      IAST list = (IAST) expr;
+      if (list.exists(x -> x.isList())) {
+        for (int i = 1; i < list.size(); i++) {
+          if (!collectPoints(list.get(i), points)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      points.append(list);
+      return true;
     }
 
     @Override
