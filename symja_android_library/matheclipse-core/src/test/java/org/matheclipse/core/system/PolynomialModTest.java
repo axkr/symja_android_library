@@ -131,6 +131,11 @@ public class PolynomialModTest extends ExprEvaluatorTestCase {
     // the numerator of a complex coefficient is only multiplied by the inverse of its denominator
     check("PolynomialMod((1/3+I)*x, 7)", //
         "(5+I*15)*x");
+    check("PolynomialMod((I/3)*x, 7)", //
+        "I*5*x");
+    // without a denominator the coefficient is reduced as a Gaussian integer
+    check("PolynomialMod((2+9*I)*x, 7)", //
+        "(2+I*2)*x");
     check("PolynomialMod(x^3 + y, {x^2 + 1, 5})", //
         "4*x+y");
     check("PolynomialMod(1/2 + 3/4*x, 7)", //
