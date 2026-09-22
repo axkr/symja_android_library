@@ -126,6 +126,13 @@ public class PolynomialModTest extends ExprEvaluatorTestCase {
         "4");
     check("PolynomialMod(I+1/3, 7)", //
         "-2+I");
+    check("PolynomialMod(x + I/3, 7)", //
+        "-I*2+x");
+    // the numerator of a complex coefficient is only multiplied by the inverse of its denominator
+    check("PolynomialMod((1/3+I)*x, 7)", //
+        "(5+I*15)*x");
+    check("PolynomialMod(x^3 + y, {x^2 + 1, 5})", //
+        "4*x+y");
     check("PolynomialMod(1/2 + 3/4*x, 7)", //
         "4+6*x");
     // 7 has no inverse modulo 7

@@ -2962,6 +2962,24 @@ public class Algebra {
       return F.NIL;
     }
 
+    /**
+     * A complex coefficient of a monomial with a denominator, as Mathematica reduces it:
+     * <code>(1/3+I)*x</code> is <code>(1+3*I)/3*x</code> and its numerator is multiplied by the
+     * inverse of the denominator only, <code>(5+15*I)*x</code> modulo 7, without reducing the
+     * product.
+     *
+     * @return {@link F#NIL} if the coefficient has no denominator or it has no inverse
+     */
+    private static IExpr complexCoefficientMod(IComplex z, IInteger m) {
+      IInteger denominator = z.re().denominator().lcm(z.im().denominator());
+      if (denominator.isOne() || !denominator.gcd(m).isOne()) {
+        return F.NIL;
+      }
+      IInteger inverse = denominator.modInverse(m);
+      return F.CC(z.re().multiply(denominator).multiply(inverse),
+          z.im().multiply(denominator).multiply(inverse));
+    }
+
     private static IExpr applyModRecursively(IExpr expr, IInteger m, EvalEngine engine) {
       if (expr.isInteger()) {
         return ((IInteger) expr).mod(m);
@@ -2990,6 +3008,13 @@ public class Algebra {
         IASTAppendable result = F.TimesAlloc(times.argSize());
         for (int i = 1; i <= times.argSize(); i++) {
           IExpr factor = times.get(i);
+          if (factor instanceof IComplex) {
+            IExpr cleared = complexCoefficientMod((IComplex) factor, m);
+            if (cleared.isPresent()) {
+              result.append(cleared);
+              continue;
+            }
+          }
           if (factor.isNumber()) {
             IExpr reduced = applyModRecursively(factor, m, engine);
             if (!reduced.isPresent()) {
