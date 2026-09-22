@@ -191,6 +191,13 @@ public class ParallelTableTest extends ExprEvaluatorTestCase {
           "{{{1,1}},{{2,1},{2,2}},{{3,1},{3,2},{3,3}}}");
       check("ParallelTable(i, {i, 1, n})", //
           "ParallelTable(i,{i,1,n})");
+      // the sandbox starts no threads
+      Config.MAX_PARALLEL_KERNELS = kernels;
+      Config.FILESYSTEM_ENABLED = false;
+      check("ParallelTable(i^2, {i, 3}, Method -> \"FinestGrained\")", //
+          "{1,4,9}");
+      check("c = 0; ParallelTable(c++, {i, 8}); c", //
+          "8");
     } finally {
       Config.FILESYSTEM_ENABLED = fileSystem;
       Config.MAX_PARALLEL_KERNELS = kernels;

@@ -77,9 +77,6 @@ public class ParallelTable extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    if (!Config.FILESYSTEM_ENABLED) {
-      return F.NIL;
-    }
     // Method -> ..., DistributedContexts -> ..., ProgressReporting -> ... behind the iterators
     int last = ast.argSize();
     IExpr method = S.Automatic;
@@ -108,7 +105,9 @@ public class ParallelTable extends AbstractFunctionEvaluator {
       return localized;
     }
 
-    final int kernels = Config.TIMECONSTRAINED_NO_THREAD ? 1 : Config.MAX_PARALLEL_KERNELS;
+    // no threads in the sandbox: evaluated as Table
+    final int kernels = Config.TIMECONSTRAINED_NO_THREAD || !Config.FILESYSTEM_ENABLED ? 1
+        : Config.MAX_PARALLEL_KERNELS;
     if (kernels < 2 || IN_KERNEL.get() != null) {
       return engine.evaluateNIL(table);
     }
