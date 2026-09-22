@@ -4260,6 +4260,16 @@ public class S {
       S.initFinalSymbol("ConstantArray", ID.ConstantArray);
 
   /**
+   * ConstantImage(x) - TODO describe `ConstantImage`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConstantImage.md">ConstantImage
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ConstantImage =
+      S.initFinalSymbol("ConstantImage", ID.ConstantImage);
+
+  /**
    * ConstantRegionQ(x) - TODO describe `ConstantRegionQ`.
    * 
    * @see <a href=
@@ -12234,6 +12244,15 @@ public class S {
 
   public final static IBuiltInSymbol KleinInvariantJ =
       S.initFinalSymbol("KleinInvariantJ", ID.KleinInvariantJ);
+
+  /**
+   * KnotData(x) - TODO describe `KnotData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KnotData.md">KnotData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KnotData = S.initFinalSymbol("KnotData", ID.KnotData);
 
   public final static IBuiltInSymbol KnownUnitQ = S.initFinalSymbol("KnownUnitQ", ID.KnownUnitQ);
 
