@@ -4,6 +4,12 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `IAST.asList()` gives Java code a read-only `java.util.List<IExpr>` view of an expression: index
+  0 is the head and indices 1..n the arguments as `getRule(int)` returns them, so an association
+  lists its rules. The view is backed by the expression rather than copied; `subList(1, size())`
+  is the arguments alone. `IAST` cannot implement `List` itself because `IExpr.add(IExpr)` is
+  the Hipparchus field addition and returns the sum where `List.add` returns a boolean.
+
 - A `Tube` along a path that returns to its start is one closed tube, so `KnotData("Trefoil")` no
   longer shows a seam with a thin black ring where the knot's two ends met. The ring was the outline
   WebGL draws round an open tube's end rims; tubes draw no outline now, in either renderer, which
