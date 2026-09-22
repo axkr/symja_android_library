@@ -12728,6 +12728,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "1              1    \n" //
             + "- *  (  - a - --- ) \n" //
             + "4             b^2   ");
+
+    // an operator is written as one, not as its head: x == y rather than Equal(x, y)
+    check("OutputForm(x==y)", //
+        "x == y");
+    check("ToString(x<y, OutputForm)", //
+        "x < y");
+    check("OutputForm({a->1, b:>2})", //
+        "{a -> 1, b :> 2}");
+    check("OutputForm(a && (b || c))", //
+        "a &&  ( b || c ) ");
+    check("OutputForm((a+b)==c)", //
+        "a + b == c");
+    check("OutputForm(Hold(a; b))", //
+        "Hold(a; b)");
+    // a fraction beside an operator keeps its three lines
+    check("OutputForm(x/2 == y)", //
+        ""//
+            + "1         \n" //
+            + "- * x == y\n"//
+            + "2         ");
   }
 
   @Test

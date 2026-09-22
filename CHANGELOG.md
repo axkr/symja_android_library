@@ -4,6 +4,12 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `OutputForm` writes an operator as one: `x == y`, `a -> b`, `p && q`, `x < y`, `a; b` rather than
+  `Equal(x, y)` and so on. Its two-dimensional printer knew only `+`, `*` and `^` and wrote any other
+  head in function form; it now reads the spelling and the precedence from the parser's own
+  operator table, and a fraction beside an operator keeps its three lines. Found beside
+  ad-si/Woxi#922.
+
 - `IAST.asList()` gives Java code a read-only `java.util.List<IExpr>` view of an expression: index
   0 is the head and indices 1..n the arguments as `getRule(int)` returns them, so an association
   lists its rules. The view is backed by the expression rather than copied; `subList(1, size())`
