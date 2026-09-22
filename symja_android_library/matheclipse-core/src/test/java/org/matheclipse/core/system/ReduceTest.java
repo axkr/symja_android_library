@@ -1148,9 +1148,27 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "(x<-1||x>1)&&y<3");
     check("Reduce(x > 0 && y > 0, {x, y})", //
         "x>0&&y>0");
-    // a relation which couples the variables needs a multivariate engine, so it stays unevaluated
+    // linear relations which couple the variables are reduced by Fourier-Motzkin elimination, each
+    // variable bounded by the ones before it
     check("Reduce(x + y < 1 && x > 0 && y > 0, {x, y}, Reals)", //
-        "Reduce(x+y<1&&x>0&&y>0,{x,y},Reals)");
+        "x>0&&x<1&&y>0&&y<1-x");
+    check("Reduce(x + y < 1 && x > 0 && y > 0, {x, y})", //
+        "x>0&&x<1&&y>0&&y<1-x");
+    check("Reduce(2*x + 3*y <= 6 && x >= 0 && y >= 0, {x, y}, Reals)", //
+        "x>=0&&x<=3&&y>=0&&y<=2-2/3*x");
+    check("Reduce(x + y == 1 && x > 0, {x, y}, Reals)", //
+        "x>0&&y==1-x");
+    check("Reduce(x != y && x > 0, {x, y}, Reals)", //
+        "x>0&&(y>x||y<x)");
+    // a parameter is the outermost variable
+    check("Reduce(x + y < a && x > 0 && y > 0, {x, y}, Reals)", //
+        "a>0&&x>0&&x<a&&y>0&&y<a-x");
+    // nonlinear couplings still need a cylindrical decomposition
+    check("Reduce(x*y > 0, {x, y}, Reals)", //
+        "Reduce(x*y>0,{x,y},Reals)");
+    // `x ∈ Integers` doesn't make `y` an integer
+    check("Reduce(Element(x, Integers) && x + y < 1 && y > 0, {x, y}, Reals)", //
+        "Reduce(x∈Integers&&x+y<1&&y>0,{x,y},Reals)");
   }
 
   /**
@@ -1220,9 +1238,19 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "False");
     check("Reduce(2*x == 1, x, Rationals)", //
         "x==1/2");
-    // the rational solutions of an inequality are dense, so they aren't described
+    // the rational solutions of an inequality are an interval together with the membership
     check("Reduce(x > 0, x, Rationals)", //
-        "Reduce(x>0,x,Rationals)");
+        "x∈Rationals&&x>0");
+    check("Reduce(x != 2, x, Rationals)", //
+        "x∈Rationals&&(x<2||x>2)");
+    check("Reduce(x >= 2 && x <= 2, x, Rationals)", //
+        "x==2");
+    check("Reduce(True, x, Rationals)", //
+        "x∈Rationals");
+    check("Reduce(True, {x, y}, Integers)", //
+        "(x|y)∈Integers");
+    check("Reduce(Exists(y, 0 < y && y < x && x < 2), x, Rationals)", //
+        "x∈Rationals&&x>0&&x<2");
   }
 
   /** The condition which the quantifier elimination leaves is reduced in turn. */

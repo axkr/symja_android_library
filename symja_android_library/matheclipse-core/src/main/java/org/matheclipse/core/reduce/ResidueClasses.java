@@ -356,7 +356,7 @@ public final class ResidueClasses {
     return disjuncts.argSize() == 1 ? disjuncts.arg1() : disjuncts;
   }
 
-  /** One disjunct per combination of residue classes; combinations nothing satisfies are dropped. */
+  /** One disjunct per combination of residue classes; empty combinations are dropped. */
   private static IAST parametrizedBranches(List<Atom> branch, List<Variable> targets,
       List<TargetClasses> classes) {
     List<List<BigInteger>> combinations = new ArrayList<List<BigInteger>>();
@@ -384,9 +384,9 @@ public final class ResidueClasses {
 
   /**
    * <code>C(1)&isin;Integers &amp;&amp; x==3*C(1)</code> together with
-   * <code>C(1)&isin;Integers &amp;&amp; x==2+3*C(1)</code> is written with the membership pulled out
-   * front - but only while the classes carry nothing else, since a bound of one class has to stay
-   * with its class.
+   * <code>C(1)&isin;Integers &amp;&amp; x==2+3*C(1)</code> is written with the membership pulled
+   * out front - but only while the classes carry nothing else, since a bound of one class has to
+   * stay with its class.
    */
   private static IAST factorSharedMembership(List<IAST> disjuncts) {
     IASTAppendable result = F.ListAlloc(disjuncts.size());

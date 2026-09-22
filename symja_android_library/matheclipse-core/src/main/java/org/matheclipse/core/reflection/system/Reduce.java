@@ -33,8 +33,12 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reduce.Formula;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
+import org.matheclipse.core.reduce.Lowering;
 import org.matheclipse.core.reduce.QuadraticDiophantine;
+import org.matheclipse.core.reduce.RationalQE;
+import org.matheclipse.core.reduce.Variable;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 
 public class Reduce extends AbstractFunctionOptionEvaluator {
@@ -2798,6 +2802,43 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     return engine.evalQuiet(call);
   }
 
+  /**
+   * Reduce a linear condition with {@link RationalQE}: over the {@link S#Rationals}, or over the
+   * reals when it contains inequalities which make every one of its variables real.
+   *
+   * @param rationals <code>true</code> for the {@link S#Rationals}
+   * @return {@link F#NIL} if the condition isn't linear or not of this kind
+   */
+  private static IExpr reduceLinear(IExpr condition, IAST vars, ISymbol domain,
+      EvalEngine engine) {
+    final boolean rationals = domain == S.Rationals;
+    if (condition.isList()) {
+      condition = ((IAST) condition).setAtCopy(0, S.And);
+    }
+    if (!condition.isFree(S.Element)) {
+      // the lowering reads a membership as true, which only holds over a discrete domain
+      return F.NIL;
+    }
+    Formula formula = Lowering.lower(condition);
+    if (formula == null || formula.containsDivisibility()) {
+      return F.NIL;
+    }
+    if (domain == S.Reals ? !RationalQE.hasOrdering(formula)
+        : !rationals && !RationalQE.isRealFormula(formula)) {
+      // over the complexes only an ordering relation makes a variable real
+      return F.NIL;
+    }
+    List<Variable> targets = new ArrayList<Variable>(vars.argSize());
+    for (IExpr variable : vars) {
+      if (!variable.isSymbol()) {
+        return F.NIL;
+      }
+      targets.add(Variable.free((ISymbol) variable));
+    }
+    IExpr reduced = RationalQE.reduce(formula, targets, rationals);
+    return reduced.isPresent() ? engine.evaluate(reduced) : F.NIL;
+  }
+
   /** Test if <code>domain</code> is one of the domains {@code Reduce} supports. */
   private static boolean isReduceDomain(IExpr domain) {
     return domain == S.Reals || domain == S.Complexes || domain == S.Integers
@@ -2805,7 +2846,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /** Test if <code>domain</code> is a discrete number domain. */
-  private static boolean isDiscreteDomain(ISymbol domain) {
+  private static boolean isDiscreteDomain(IExpr domain) {
     return domain == S.Integers || domain == S.Primes || domain == S.Rationals;
   }
 
@@ -2839,6 +2880,14 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   private static IExpr reduce(final IAST ast, SolveOptions solveOptions, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     if (arg1.isTrue() || arg1.isFalse()) {
+      if (arg1.isTrue() && ast.isAST3() && isDiscreteDomain(ast.arg3())
+          && isVariableSpecification(ast.arg2())) {
+        // every member of a discrete domain: `x ∈ Integers`
+        IAST variables = ast.arg2().makeList();
+        IExpr members =
+            variables.isAST1() ? variables.arg1() : variables.setAtCopy(0, S.Alternatives);
+        return F.Element(members, ast.arg3());
+      }
       return arg1;
     }
 
@@ -2865,6 +2914,9 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           if (integers.isPresent()) {
             return integers;
           }
+        } else if (domain == S.Rationals) {
+          // a linear statement over an ordered field is decided by Fourier-Motzkin elimination
+          return reduceLinear(arg1, ast.arg2().makeList(), domain, engine);
         }
         return F.NIL;
       }
@@ -2887,6 +2939,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     // (Integers/Primes) overrides the requested domain for those variables
     Map<IExpr, IExpr> elementDomains = new LinkedHashMap<IExpr, IExpr>();
     IExpr strippedArg1 = extractElementDomains(arg1, elementDomains);
+    ISymbol promotedDomain = null;
     if (!elementDomains.isEmpty()) {
       ISymbol discreteDomain = null;
       for (IExpr elementDomain : elementDomains.values()) {
@@ -2898,7 +2951,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           discreteDomain = (ISymbol) elementDomain;
         }
       }
-      if (discreteDomain != null) {
+      if (discreteDomain != null && discreteDomain != domain) {
+        promotedDomain = discreteDomain;
         domain = discreteDomain;
       }
       arg1 = strippedArg1;
@@ -2921,6 +2975,14 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       VariablesSet eVar = new VariablesSet(arg1);
       vars = eVar.getVarList();
     }
+    if (promotedDomain != null) {
+      for (IExpr variable : vars) {
+        if (elementDomains.get(variable) != promotedDomain) {
+          // `x ∈ Integers && x+y<1` with a real `y` mixes two domains
+          return F.NIL;
+        }
+      }
+    }
 
     try {
       IExpr modulus = solveOptions.modulus();
@@ -2931,6 +2993,12 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       if (domain == S.Booleans) {
         return reduceBooleans(arg1, engine);
       }
+      if (domain == S.Rationals) {
+        IExpr linear = reduceLinear(arg1, vars, domain, engine);
+        if (linear.isPresent()) {
+          return linear;
+        }
+      }
       if (domain == S.Integers || domain == S.Primes || domain == S.Rationals) {
         // stays unevaluated (F.NIL) if no integer/rational method applies
         return reduceIntegers(arg1, vars, domain, engine);
@@ -2938,6 +3006,11 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
 
       // from here on the domain is `Reals` or `Complexes`
       if (!vars.isList1()) {
+        // linear inequalities in several variables: Fourier-Motzkin elimination
+        IExpr linear = reduceLinear(arg1, vars, domain, engine);
+        if (linear.isPresent()) {
+          return linear;
+        }
         IExpr multivariate = reduceMultivariate(arg1, vars, domain, solveOptions, engine);
         if (multivariate.isPresent()) {
           return multivariate;
