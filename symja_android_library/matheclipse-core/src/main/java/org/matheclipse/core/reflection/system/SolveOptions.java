@@ -4,6 +4,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -170,6 +172,25 @@ public final class SolveOptions {
       }
     }
     return undeclared;
+  }
+
+  /**
+   * The options of a {@code Reduce} call which change what an internal {@code Reduce} of a sub
+   * problem returns, as a list of rules. Only values which differ from the {@code Reduce} defaults
+   * are listed; the other options are applied to the final result.
+   */
+  public IAST reduceRecursionRules() {
+    IASTAppendable rules = F.ListAlloc(3);
+    if (!cubics.isFalse()) {
+      rules.append(F.Rule(S.Cubics, cubics));
+    }
+    if (!quartics.isFalse()) {
+      rules.append(F.Rule(S.Quartics, quartics));
+    }
+    if (!backsubstitution.isFalse()) {
+      rules.append(F.Rule(S.Backsubstitution, backsubstitution));
+    }
+    return rules;
   }
 
   /** The value of the {@link S#GenerateConditions} option. */

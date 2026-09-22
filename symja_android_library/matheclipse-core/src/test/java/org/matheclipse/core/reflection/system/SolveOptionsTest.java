@@ -295,6 +295,11 @@ public class SolveOptionsTest extends ExprEvaluatorTestCase {
             + "1-I*Sqrt(3)))/(2^(2/3)*(-27+I*27*Sqrt(3))^(1/3))+((-1-I*Sqrt(3))*(-27+I*27*Sqrt(\n"
             + "3))^(1/3))/(6*2^(1/3))||x==(-3*(1+I*Sqrt(3)))/(2^(2/3)*(-27+I*27*Sqrt(3))^(1/3))+((-\n"
             + "1+I*Sqrt(3))*(-27+I*27*Sqrt(3))^(1/3))/(6*2^(1/3))");
+    // the option reaches the reduction of a sub problem too
+    check("FreeQ(Reduce(x^3 - x - 1 == 0 && a > 0, x, Cubics -> True), Root)", //
+        "True");
+    check("FreeQ(Reduce(x^3 - x - 1 == 0 && a > 0, x), Root)", //
+        "False");
     // Solve keeps the radicals: it doesn't declare the options
     check("Solve(x^3 - 3*x + 1 == 0, x) // Length", //
         "3");
