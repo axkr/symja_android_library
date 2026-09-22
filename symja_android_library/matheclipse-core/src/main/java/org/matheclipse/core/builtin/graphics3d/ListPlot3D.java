@@ -74,8 +74,9 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
     if (treatAsCoordinates) {
       return processCoordinateList(listData, boxRatiosOpt, plotRangeOpt, meshOpt, plotStyleOpt,
-          originalAST, argSize,
-          RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine));
+          options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
+          RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine), Plot3DTools
+              .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D, engine));
     } else {
       if (isRectangularArray(listData)) {
         // InterpolationOrder 2 or more: the data is a smooth surface through the samples, drawn
@@ -151,20 +152,25 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
   /**
    * Processes a list of {x,y,z} coordinates using Delaunay Triangulation.
+   *
+   * <p>
+   * The scattered points are coloured and meshed as the height array is: the same
+   * <code>ColorFunction</code> colours each vertex by its position, and <code>Mesh</code> draws the
+   * edges of the triangles the points were joined into, since a triangulation has no grid lines
+   * to thin out.
    */
   private IExpr processCoordinateList(IAST data, IExpr boxRatiosOpt, IExpr plotRangeOpt,
-      IExpr meshOpt, IExpr plotStyleOpt, IAST originalAST, int argSize,
-      RegionFunctionFilter region) {
+      IExpr meshOpt, IExpr plotStyleOpt, IExpr meshStyleOpt, IAST originalAST, int argSize,
+      RegionFunctionFilter region, PlotColorFunction.Builder colorBuilder) {
     int n = data.argSize();
     if (n < 3)
       return F.NIL; // Need at least 3 points for a surface
 
-    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
-    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
-
-    // 1. Extract Points and Register with Builder
-    List<PointXYZ> points = new ArrayList<>(n);
-    List<double[]> bars = new ArrayList<>();
+    // 1. Extract the points
+    List<double[]> samples = new ArrayList<>(n);
+    List<IExpr> heights = new ArrayList<>(n);
+    double[] box = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
     for (int i = 1; i <= n; i++) {
       if (!data.get(i).isList() || ((IAST) data.get(i)).argSize() != 3) {
         return F.NIL;
@@ -174,21 +180,43 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       double y = row.arg2().evalfNaN();
       double z = height(row.arg3());
 
-      if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z) && !Double.isInfinite(x)
-          && !Double.isInfinite(y) && !Double.isInfinite(z)
+      if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)
           && (region == null || region.accepts(x, y, z))) {
-        int idx = builder.addVertex(x, y, z, null, null);
-        points.add(new PointXYZ(x, y, z, idx));
-        addBar(bars, x, y, row.arg3());
+        samples.add(new double[] {x, y, z});
+        heights.add(row.arg3());
+        box[0] = Math.min(box[0], x);
+        box[1] = Math.max(box[1], x);
+        box[2] = Math.min(box[2], y);
+        box[3] = Math.max(box[3], y);
+        box[4] = Math.min(box[4], z);
+        box[5] = Math.max(box[5], z);
       }
     }
+    PlotColorFunction colorMap = samples.isEmpty() ? null
+        : colorBuilder.ranges(box[0], box[1], box[2], box[3], box[4], box[5]).build();
 
-    // 2. Triangulate (Projected to XY plane)
+    // 2. Register them with the builder
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, colorMap != null);
+    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
+    List<PointXYZ> points = new ArrayList<>(samples.size());
+    List<double[]> bars = new ArrayList<>();
+    for (int i = 0; i < samples.size(); i++) {
+      double[] p = samples.get(i);
+      IExpr color = colorMap == null ? null : colorMap.color(p[0], p[1], p[2]);
+      int idx = builder.addVertex(p[0], p[1], p[2], null, color);
+      points.add(new PointXYZ(p[0], p[1], p[2], idx));
+      addBar(bars, p[0], p[1], heights.get(i));
+    }
+
+    // 3. Triangulate (Projected to XY plane)
     List<Triangle> triangles = Triangulator.delaunay(points);
 
-    // 3. Construct Polygons
+    // 4. Construct Polygons
     for (Triangle t : triangles) {
       builder.addPolygon(t.p1, t.p2, t.p3); // Triangulator retains builder indices
+    }
+    if (Plot3DTools.showMesh(meshOpt)) {
+      addTriangleEdges(builder, triangles, meshStyleOpt);
     }
     addIntervalMarkers(builder, bars, originalAST);
 
@@ -201,6 +229,36 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),
             F.Rule(S.BoxRatios, boxRatiosOpt.isList() ? boxRatiosOpt : Plot3DTools.FLAT_BOX_RATIOS),
             F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+  }
+
+  /**
+   * The mesh of a triangulated surface: every edge once, whichever triangles share it, drawn in
+   * the <code>MeshStyle</code> or the default grey the grid surfaces use.
+   */
+  private static void addTriangleEdges(GraphicsComplexBuilder builder, List<Triangle> triangles,
+      IExpr meshStyle) {
+    if (triangles.isEmpty()) {
+      return;
+    }
+    java.util.Set<Long> seen = new java.util.HashSet<>();
+    IASTAppendable edges = F.ListAlloc(triangles.size() * 3);
+    for (Triangle t : triangles) {
+      addEdge(edges, seen, t.p1, t.p2);
+      addEdge(edges, seen, t.p2, t.p3);
+      addEdge(edges, seen, t.p3, t.p1);
+    }
+    builder.addPrimitive(
+        meshStyle != null && !meshStyle.isAutomatic() && !meshStyle.isNone() ? meshStyle
+            : Plot3DTools.MESH_STYLE);
+    builder.addPrimitive(F.Line(edges));
+  }
+
+  private static void addEdge(IASTAppendable edges, java.util.Set<Long> seen, int from, int to) {
+    int low = Math.min(from, to);
+    int high = Math.max(from, to);
+    if (seen.add(((long) low << 32) | high)) {
+      edges.append(F.List(F.ZZ(low), F.ZZ(high)));
+    }
   }
 
   /**

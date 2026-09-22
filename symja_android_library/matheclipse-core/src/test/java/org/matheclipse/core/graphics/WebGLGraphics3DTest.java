@@ -326,6 +326,23 @@ public class WebGLGraphics3DTest {
    * normal, which leaves the surface unlit; that is invisible to any test that only counts
    * elements, so the orientation is checked here directly.
    */
+  /**
+   * A triangulated point cloud has no grid lines to thin out, so its mesh is every triangle edge
+   * once; {@code Mesh -> None} leaves the surface bare, and {@code MeshStyle} colours the edges.
+   */
+  @Test
+  public void listPlot3DPointCloudMeshIsItsTriangleEdges() {
+    String cloud = "ListPlot3D[{{0,0,0},{1,0,1},{0,1,2},{1,1,3},{0.5,0.5,1}}";
+    JsonNode meshed = scene(cloud + "]");
+    assertNotNull(element(meshed, "Polygon"), "no surface");
+    JsonNode line = element(meshed, "Line");
+    assertNotNull(line, "the default mesh draws the triangulation");
+    assertEquals(0, count(scene(cloud + ", Mesh -> None]"), "Line"), "Mesh -> None draws no edges");
+    JsonNode red = element(scene(cloud + ", MeshStyle -> Red]"), "Line");
+    assertNotNull(red);
+    assertFalse(line.get("color").equals(red.get("color")), "MeshStyle colours the edges");
+  }
+
   @Test
   public void surfaceNormalsAgreeWithTheWinding() {
     for (String plot : new String[] { //
