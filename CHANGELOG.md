@@ -4,6 +4,9 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `Item("heading")` and `Text("heading")` between the controls of a `Manipulate` are subheadings, as
+  a bare string already was; they used to be dropped. Found through ad-si/Woxi#938.
+
 - `KnotData(knot, "ImageData")`: the tube round the knot as a list of one `GraphicsComplex`, its
   rings centred on the space curve. `KnotData(knot)` draws that surface, and the static SVG renderer
   builds its tubes with the same ring geometry. Found through ad-si/Woxi#935.

@@ -484,6 +484,14 @@ public class ManipulateSpec {
     if (spec.isAST(S.Style, 2, 4)) {
       return ManipulateControl.heading(((IAST) spec).arg1().toString());
     }
+    if ((spec.isAST(S.Item) && spec.argSize() >= 1) || spec.isAST(S.Text, 2)) {
+      // Item("background") between two groups of controls is a subheading, as a bare string is;
+      // the options of an Item only place it in a grid
+      StringBuilder text = new StringBuilder();
+      collectText(((IAST) spec).arg1(), text);
+      String label = text.toString().trim();
+      return label.isEmpty() ? null : ManipulateControl.heading(label);
+    }
     return null;
   }
 

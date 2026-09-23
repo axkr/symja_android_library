@@ -483,4 +483,22 @@ public class ManipulateSpecTest {
     ManipulateSpec withOption = parse("Manipulate(x, {x,0,10}, Initialization :> (x=3))");
     assertEquals(1, withOption.getControls().size());
   }
+  /**
+   * Item("background") or Text("background") between groups of controls is a subheading, as a
+   * bare string is; they used to be dropped. An Item holding a Control still gives the control.
+   */
+  @Test
+  public void testItemAndTextAreHeadings() {
+    for (String annotation : new String[] {"Item(\"background\")", "Text(\"background\")",
+        "Item(Style(\"background\", Bold), Alignment -> Left)"}) {
+      ManipulateSpec spec = parse("Manipulate(x, " + annotation + ", {x, 0, 10})");
+      assertNotNull(spec, annotation);
+      assertEquals(2, spec.getControls().size(), annotation);
+      assertEquals(ManipulateControl.HEADING, spec.getControls().get(0).getKind(), annotation);
+      assertEquals(ManipulateControl.SLIDER, spec.getControls().get(1).getKind(), annotation);
+    }
+    ManipulateSpec wrapped = parse("Manipulate(x, Item(Control({x, 0, 10})))");
+    assertEquals(1, wrapped.getControls().size());
+    assertEquals(ManipulateControl.SLIDER, wrapped.getControls().get(0).getKind());
+  }
 }
