@@ -2409,4 +2409,17 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y'(x) == Sqrt(y(x)^2 + C(3)), y(x), x)", //
         "{{y(x)->Sqrt(C(3))*Sinh(x+C(1))}}");
   }
+
+  /**
+   * The unknown and the variable named like the dummies the integrating-factor method makes for
+   * them. Two symbols of one name used to sort as equal without being equal, so products of them
+   * came out in either order and the exactness test's zero did not cancel.
+   */
+  @Test
+  public void testDSolveUnknownNamedLikeADummy() {
+    check("DSolve(p''(Y) + p'(Y)^2/p(Y) - p'(Y)/Y == 0, p(Y), Y)", //
+        "{{p(Y)->-Sqrt(Y^2*C(1)-C(2))},{p(Y)->Sqrt(Y^2*C(1)-C(2))}}");
+    check("DSolve(q''(t) + q'(t)^2/q(t) - q'(t)/t == 0, q(t), t)", //
+        "{{q(t)->E^C(1)*Sqrt(t^2+C(2))}}");
+  }
 }
