@@ -1646,7 +1646,20 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("KnotData(\"Trefoil\", \"NoSuchProperty\")", //
         "KnotData(Trefoil,NoSuchProperty)");
     check("KnotData(\"Properties\")", //
-        "{AlexanderBriggsNotation,CrossingNumber,SpaceCurve}");
+        "{AlexanderBriggsNotation,CrossingNumber,ImageData,SpaceCurve}");
+    // ImageData is the tube as one closed surface: a list of one GraphicsComplex whose rings are
+    // centred on the space curve at t = 2 Pi k/96
+    check("{Head(#), Length(#), Head(First(#))}&(KnotData(\"Trefoil\", \"ImageData\"))", //
+        "{List,1,GraphicsComplex}");
+    check("With({r = KnotData(\"Trefoil\", \"SpaceCurve\"), "
+        + "pts = First(KnotData(\"Trefoil\", \"ImageData\"))[[1]]}, "
+        + "With({centers = Mean /@ Partition(pts, Length(pts)/96)}, "
+        + "Max(Norm /@ (centers - Table(r(2*Pi*k/96), {k, 0, 95}))) < 10^-9))", //
+        "True");
+    check("Head(Graphics3D(Scale(KnotData({\"TorusKnot\", {2, 7}}, \"ImageData\"), 6)))", //
+        "Graphics3D");
+    check("Head(First(KnotData({\"TorusKnot\", {3, 4}}, \"ImageData\")))", //
+        "GraphicsComplex");
     check("KnotData(All)", //
         "{CinquefoilKnot,SeptafoilKnot,Trefoil}");
     check("Head(KnotData(\"Trefoil\"))", //

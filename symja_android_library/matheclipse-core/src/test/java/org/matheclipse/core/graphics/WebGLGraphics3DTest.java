@@ -189,9 +189,10 @@ public class WebGLGraphics3DTest {
    */
   @Test
   public void aTubeAlongAClosedPathIsClosed() {
-    JsonNode knot = element(scene("KnotData[\"Trefoil\"]"), "Tube");
-    assertTrue(knot.path("closed").asBoolean(false), "the knot is one closed tube");
-    assertEquals(300 * 3, knot.get("polylines").get(0).size(), "the repeated end point is dropped");
+    JsonNode loop = element(scene("Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,0}}, 0.1]]"),
+        "Tube");
+    assertTrue(loop.path("closed").asBoolean(false), "a path back to its start is one closed tube");
+    assertEquals(4 * 3, loop.get("polylines").get(0).size(), "the repeated end point is dropped");
     JsonNode open = element(scene("Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0}}, 0.1]]"),
         "Tube");
     assertFalse(open.has("closed"), "a path that does not return stays open");

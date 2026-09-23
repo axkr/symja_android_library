@@ -4,6 +4,10 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `KnotData(knot, "ImageData")`: the tube round the knot as a list of one `GraphicsComplex`, its
+  rings centred on the space curve. `KnotData(knot)` draws that surface, and the static SVG renderer
+  builds its tubes with the same ring geometry. Found through ad-si/Woxi#935.
+
 - A 3D plot of one surface is that surface's `GraphicsComplex`, as Mathematica writes it:
   `Graphics3D(GraphicsComplex(..), opts)` rather than `Graphics3D({GraphicsComplex(..)}, opts)`. So
   `First(RegionPlot3D(..))` is the complex itself, and can be moved or rotated into a scene of its

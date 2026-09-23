@@ -21,7 +21,9 @@ KnotData(All)
 A torus knot lies on the surface of a torus, winding `p` times round its axis and `q` times through
 its hole. The named knots `"Trefoil"`, `"CinquefoilKnot"` and `"SeptafoilKnot"` are torus knots, and
 every other one is `{"TorusKnot", {p, q}}` with `p` and `q` coprime. The properties are
-`"AlexanderBriggsNotation"`, `"CrossingNumber"` and `"SpaceCurve"`. The space curve is the textbook
+`"AlexanderBriggsNotation"`, `"CrossingNumber"`, `"ImageData"` - the tube round the curve as a list
+of one `GraphicsComplex`, which can be moved or scaled into a scene of its own - and
+`"SpaceCurve"`. The space curve is the textbook
 parametrization on a torus of major radius 2 and tube radius 1 - the same knot as the reference
 implementation's, not the same coefficients.
 

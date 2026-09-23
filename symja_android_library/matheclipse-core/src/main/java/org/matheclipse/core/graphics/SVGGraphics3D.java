@@ -956,50 +956,17 @@ public class SVGGraphics3D {
       boolean loop = closed && raw.size() >= 3;
       List<Vector3> path = loop ? smoothClosed(raw) : smooth(raw);
       int n = path.size();
-      Vector3[] tangents = new Vector3[n];
-      Vector3[] us = new Vector3[n];
-      Vector3 carried = null;
+      double[][] points = new double[n][];
       for (int i = 0; i < n; i++) {
-        Vector3 tangent;
-        if (loop) {
-          tangent = path.get((i + 1) % n).sub(path.get((i + n - 1) % n)).normalize();
-        } else {
-          tangent = (i == 0 ? path.get(1).sub(path.get(0)) : path.get(i).sub(path.get(i - 1)))
-              .normalize();
-        }
-        // The frame is carried along the path rather than chosen afresh at every ring. Picking
-        // an arbitrary perpendicular each time lets the frame spin between one ring and the next,
-        // and the quads joining them come out twisted into bow ties instead of a tube wall.
-        Vector3 u = carried == null ? perpendicular(tangent)
-            : carried.sub(tangent.scale(carried.dot(tangent)));
-        if (u.length() < 1e-9) {
-          u = perpendicular(tangent);
-        }
-        u = u.normalize();
-        carried = u;
-        tangents[i] = tangent;
-        us[i] = u;
+        Vector3 p = path.get(i);
+        points[i] = new double[] {p.x, p.y, p.z};
       }
-      // Carried once round a closed path, the frame comes back turned by however much the path
-      // twists. Joining the last ring to the first as they are would put all of that turn into
-      // one band of faces; it is spread evenly over the whole tube instead.
-      double twist = 0;
-      if (loop) {
-        Vector3 t0 = tangents[0];
-        Vector3 back = carried.sub(t0.scale(carried.dot(t0)));
-        if (back.length() > 1e-9) {
-          back = back.normalize();
-          twist = Math.atan2(us[0].cross(back).dot(t0), us[0].dot(back));
-        }
-      }
+      TubeRings.Rings rings = TubeRings.of(points, radius, TUBE_SIDES, loop);
       Vector3[][] grid = new Vector3[loop ? n + 1 : n][TUBE_SIDES + 1];
       for (int i = 0; i < n; i++) {
-        Vector3 v = tangents[i].cross(us[i]);
-        double turn = -twist * i / n;
         for (int j = 0; j <= TUBE_SIDES; j++) {
-          double a = 2 * Math.PI * j / TUBE_SIDES + turn;
-          Vector3 offset = us[i].scale(radius * Math.cos(a)).add(v.scale(radius * Math.sin(a)));
-          grid[i][j] = place(path.get(i).add(offset), matrix, dataScale);
+          double[] q = rings.points[i][j % TUBE_SIDES];
+          grid[i][j] = place(new Vector3(q[0], q[1], q[2]), matrix, dataScale);
         }
       }
       if (loop) {

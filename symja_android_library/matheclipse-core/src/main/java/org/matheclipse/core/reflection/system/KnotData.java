@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.TubeRings;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -43,10 +44,16 @@ public class KnotData extends AbstractEvaluator {
 
   /** The properties a knot answers for, in the order <code>KnotData("Properties")</code> gives. */
   private static final String[] PROPERTIES =
-      {"AlexanderBriggsNotation", "CrossingNumber", "SpaceCurve"};
+      {"AlexanderBriggsNotation", "CrossingNumber", "ImageData", "SpaceCurve"};
 
-  /** How many points of the curve the picture of a knot joins. */
-  private static final int PICTURE_POINTS = 300;
+  /** How many rings round the curve the tube of a knot is built from. */
+  private static final int RINGS = 96;
+
+  /** How many points each ring has. */
+  private static final int RING_SIDES = 16;
+
+  /** The radius of the tube, against the torus of major radius 2 the curve winds round. */
+  private static final double TUBE_RADIUS = 0.25;
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -85,6 +92,8 @@ public class KnotData extends AbstractEvaluator {
         return F.ZZ(Math.min(p * (q - 1), q * (p - 1)));
       case "SpaceCurve":
         return spaceCurve(p, q);
+      case "ImageData":
+        return imageData(p, q);
       default:
         // `1` is not a known property or size specification for `2`.
         return Errors.printMessage(S.KnotData, "notprop", F.List(propertySpec, S.KnotData),
@@ -142,17 +151,46 @@ public class KnotData extends AbstractEvaluator {
     return F.Function(F.List(t), curve);
   }
 
-  /** The knot drawn as a tube along its curve. */
+  /** The knot drawn as its tube, the surface of {@link #imageData(int, int)}. */
   private static IExpr picture(int p, int q, EvalEngine engine) {
-    IASTAppendable points = F.ListAlloc(PICTURE_POINTS + 1);
-    for (int i = 0; i <= PICTURE_POINTS; i++) {
-      double t = 2.0 * Math.PI * i / PICTURE_POINTS;
-      double ring = 2.0 + Math.cos(q * t);
-      points.append(F.List(F.num(ring * Math.cos(p * t)), F.num(ring * Math.sin(p * t)),
-          F.num(Math.sin(q * t))));
-    }
-    return F.Graphics3D(F.List(F.binaryAST2(S.Tube, points, F.num(0.25))),
+    return F.Graphics3D(F.List(F.EdgeForm(S.None), imageData(p, q).first()),
         F.Rule(S.Boxed, S.False));
+  }
+
+  /**
+   * <code>{GraphicsComplex(points, Polygon(quads), VertexNormals -> normals)}</code>: the tube round
+   * the space curve, as one closed surface. The points go ring by ring, each ring centred on the
+   * curve at <code>t = 2 Pi k / 96</code>.
+   */
+  private static IAST imageData(int p, int q) {
+    double[][] path = new double[RINGS][];
+    for (int k = 0; k < RINGS; k++) {
+      double t = 2.0 * Math.PI * k / RINGS;
+      double ring = 2.0 + Math.cos(q * t);
+      path[k] = new double[] {ring * Math.cos(p * t), ring * Math.sin(p * t), Math.sin(q * t)};
+    }
+    TubeRings.Rings rings = TubeRings.of(path, TUBE_RADIUS, RING_SIDES, true);
+    IASTAppendable points = F.ListAlloc(RINGS * RING_SIDES);
+    IASTAppendable normals = F.ListAlloc(RINGS * RING_SIDES);
+    for (int i = 0; i < RINGS; i++) {
+      for (int j = 0; j < RING_SIDES; j++) {
+        double[] point = rings.points[i][j];
+        double[] normal = rings.normals[i][j];
+        points.append(F.List(F.num(point[0]), F.num(point[1]), F.num(point[2])));
+        normals.append(F.List(F.num(normal[0]), F.num(normal[1]), F.num(normal[2])));
+      }
+    }
+    IASTAppendable quads = F.ListAlloc(RINGS * RING_SIDES);
+    for (int i = 0; i < RINGS; i++) {
+      int next = (i + 1) % RINGS;
+      for (int j = 0; j < RING_SIDES; j++) {
+        int around = (j + 1) % RING_SIDES;
+        quads.append(F.List(F.ZZ(i * RING_SIDES + j + 1), F.ZZ(next * RING_SIDES + j + 1),
+            F.ZZ(next * RING_SIDES + around + 1), F.ZZ(i * RING_SIDES + around + 1)));
+      }
+    }
+    return F.List(F.ternaryAST3(S.GraphicsComplex, points, F.unaryAST1(S.Polygon, quads),
+        F.Rule(S.VertexNormals, normals)));
   }
 
   private static IAST strings(String[] names) {
