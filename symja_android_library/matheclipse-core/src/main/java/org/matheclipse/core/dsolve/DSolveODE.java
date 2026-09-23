@@ -446,6 +446,20 @@ final class DSolveODE {
           result = usableBranches(engine, Eliminate
               .extractVariable(S.Subtract.of(engine, collected, fxExpr), y, true, engine), y);
         }
+        if (result.isNIL()) {
+          // With a parameter in the radicand the antiderivative of 1/Sqrt(y^2 + a) is written
+          // through ArcTanh(y/Sqrt(a + y^2)) - or the two logarithms it stands for - and nothing
+          // solves that for y, while the ArcSinh(y/Sqrt(a)) it equals is inverted at once. The
+          // same for ArcTan and ArcSin, and for ArcCosh.
+          IExpr inverse = inverseHyperbolicForm(gyExpr, y, engine);
+          if (inverse.isNIL() && collected.isPresent()) {
+            inverse = inverseHyperbolicForm(collected, y, engine);
+          }
+          if (inverse.isPresent()) {
+            result = usableBranches(engine, Eliminate
+                .extractVariable(S.Subtract.of(engine, inverse, fxExpr), y, true, engine), y);
+          }
+        }
       }
       if (result.isNIL()) {
         result = solveSeparatedEquation(engine, yEquation, y);
@@ -464,6 +478,87 @@ final class DSolveODE {
       return result;
     }
     return F.NIL;
+  }
+
+  /**
+   * The antiderivative with <code>ArcTanh(u/Sqrt(a + u^2))</code> written as
+   * <code>ArcSinh(u/Sqrt(a))</code>, <code>ArcTanh(u/Sqrt(u^2 - a))</code> as
+   * <code>ArcCosh(u/Sqrt(a))</code> and <code>ArcTan(u/Sqrt(a - u^2))</code> as
+   * <code>ArcSin(u/Sqrt(a))</code>, for an <code>a</code> free of <code>y</code>; a
+   * <code>Log(1+v)/2 - Log(1-v)/2</code> is read as <code>ArcTanh(v)</code> first. The forms are
+   * equal where the radicand is positive, which is where the equation is real. Every answer built on
+   * this is put back into the equation by the callers.
+   *
+   * @return {@link F#NIL} if nothing was rewritten
+   */
+  private static IExpr inverseHyperbolicForm(IExpr antiderivative, IExpr y, EvalEngine engine) {
+    IExpr rewritten = antiderivative.replaceAll(part -> {
+      // Log(1+v)/2 - Log(1-v)/2, as the two terms or as half of their difference
+      IExpr plusLog = F.NIL;
+      IExpr minusLog = F.NIL;
+      if (part.isPlus() && part.argSize() == 2) {
+        for (int i = 1; i <= 2; i++) {
+          IExpr term = part.getAt(i);
+          if (term.isTimes() && term.argSize() == 2 && term.second().isLog()) {
+            if (term.first().equals(F.C1D2)) {
+              plusLog = term.second();
+            } else if (term.first().equals(F.CN1D2)) {
+              minusLog = term.second();
+            }
+          }
+        }
+      } else if (part.isTimes() && part.argSize() == 2 && part.first().equals(F.C1D2)
+          && part.second().isPlus() && part.second().argSize() == 2) {
+        for (int i = 1; i <= 2; i++) {
+          IExpr term = part.second().getAt(i);
+          if (term.isLog()) {
+            plusLog = term;
+          } else if (term.isTimes() && term.argSize() == 2 && term.first().isMinusOne()
+              && term.second().isLog()) {
+            minusLog = term.second();
+          }
+        }
+      }
+      if (plusLog.isPresent() && minusLog.isPresent()) {
+        IExpr v = engine.evaluate(F.Subtract(plusLog.first(), F.C1));
+        if (engine.evaluate(F.Expand(F.Plus(minusLog.first(), v, F.CN1))).isZero()) {
+          return F.ArcTanh(v);
+        }
+        return F.NIL;
+      }
+      if ((part.isAST(S.ArcTanh, 2) || part.isAST(S.ArcTan, 2)) && part.first().isTimes()
+          && part.first().argSize() == 2) {
+        IAST quotient = (IAST) part.first();
+        for (int i = 1; i <= 2; i++) {
+          IExpr root = quotient.get(i);
+          IExpr u = quotient.get(3 - i);
+          if (root.isPower() && root.exponent().equals(F.CN1D2) && !u.isFree(y, true)) {
+            IExpr base = root.base();
+            IExpr squared = F.Sqr(u);
+            if (part.isAST(S.ArcTanh, 2)) {
+              IExpr a = engine.evaluate(F.Expand(F.Subtract(base, squared)));
+              if (a.isFree(y, true) && !a.isZero()) {
+                // u^2 - a under the root reads as ArcCosh(u/Sqrt(a)), the real form there
+                return a.isNegativeSigned() ? F.ArcCosh(F.Divide(u, F.Sqrt(a.negate())))
+                    : F.ArcSinh(F.Divide(u, F.Sqrt(a)));
+              }
+            } else {
+              IExpr a = engine.evaluate(F.Expand(F.Plus(base, squared)));
+              if (a.isFree(y, true) && !a.isZero()) {
+                return F.ArcSin(F.Divide(u, F.Sqrt(a)));
+              }
+            }
+          }
+        }
+      }
+      return F.NIL;
+    });
+    if (rewritten.isNIL() || rewritten.equals(antiderivative)) {
+      return F.NIL;
+    }
+    // a logarithm pair became an ArcTanh which may itself be one of the roots above
+    IExpr again = inverseHyperbolicForm(rewritten, y, engine);
+    return again.isPresent() ? again : rewritten;
   }
 
   /**
@@ -1891,8 +1986,152 @@ final class DSolveODE {
         }
       }
     }
-
+    if (n >= 3) {
+      return solveAutonomousHigherOrder(lhs, yFunction, xVar, n, c_n, ctx);
+    }
     return F.NIL;
+  }
+
+  /**
+   * An autonomous equation of order <code>n &gt;= 3</code>, <code>y^(n) == f(y, y', ...,
+   * y^(n-1))</code> with no <code>x</code> in it, reduced by <code>p == y'</code> taken as a
+   * function of <code>y</code>.
+   *
+   * <p>
+   * Along a solution <code>d/dx == p*d/dy</code>, so the derivatives are <code>D_1 == p</code>,
+   * <code>D_(k+1) == p*dD_k/dy</code> (<code>y'' == p*p'</code>, <code>y''' == p^2*p'' +
+   * p*p'^2</code>, ...), and putting them in leaves an equation of order <code>n-1</code> in
+   * <code>p(y)</code>, which the cascade is asked for. Its constants are renamed
+   * <code>C(2), ..., C(n)</code>, and what is left, <code>y' == p(y)</code>, is separable and
+   * brings the last constant <code>C(1)</code>. For <code>n == 2</code> this is the second case
+   * of {@link #solveReductionOfOrderODE}, which is kept as it is.
+   *
+   * <p>
+   * The quadrature of <code>1/p</code> is where this can hang: for a <code>p</code> with a
+   * logarithm in it or a denominator depending on <code>y</code> it is not elementary and
+   * <code>Integrate</code> grinds on it past any time limit, so those are declined before it is
+   * asked. <code>2*y*y''' == y'</code> is one; <code>y*y''' == y'*y''</code>, whose
+   * <code>p</code> is <code>Sqrt(C(2)*y^2 + C(3))</code>, is solved.
+   *
+   * @return the branches of the solution, or {@link F#NIL}
+   */
+  private static IExpr solveAutonomousHigherOrder(IExpr lhs, IExpr yFunction, IExpr xVar, int n,
+      IExpr c_n, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    if (ctx.conditions.argSize() > 0) {
+      // the constants of the two stages are fitted by nobody
+      return F.NIL;
+    }
+    // y^(k) -> a marker, k = n..0, to see whether x is left
+    IExpr[] markers = new IExpr[n + 1];
+    IASTAppendable toMarkers = F.ListAlloc(n + 1);
+    for (int k = n; k >= 1; k--) {
+      markers[k] = F.Dummy("d" + k);
+      toMarkers.append(F.Rule(engine.evaluate(F.D(yFunction, F.List(xVar, F.ZZ(k)))), markers[k]));
+    }
+    markers[0] = F.Dummy("d0");
+    toMarkers.append(F.Rule(yFunction, markers[0]));
+    IExpr marked = engine.evaluate(F.subst(lhs, toMarkers));
+    if (!marked.isFree(xVar, true) || marked.isFree(markers[0], true)
+        || !marked.isFree(yFunction.head(), true)) {
+      return F.NIL;
+    }
+    // the chain D_1 == p(Y), D_(k+1) == p(Y)*dD_k/dY. The names are not Y and p: the methods the
+    // reduced equation goes to make dummies of those names for their own use, and two dummies of
+    // one name are not told apart everywhere.
+    IExpr yDummy = F.Dummy("Yauto");
+    IExpr pFunc = F.unaryAST1(F.Dummy("pauto"), yDummy);
+    IExpr[] chain = new IExpr[n + 1];
+    chain[1] = pFunc;
+    for (int k = 1; k < n; k++) {
+      chain[k + 1] = engine.evaluate(F.Expand(F.Times(pFunc, F.D(chain[k], yDummy))));
+    }
+    IASTAppendable toChain = F.ListAlloc(n + 1);
+    for (int k = n; k >= 1; k--) {
+      toChain.append(F.Rule(markers[k], chain[k]));
+    }
+    toChain.append(F.Rule(markers[0], yDummy));
+    IExpr reduced = engine.evaluate(F.subst(marked, toChain));
+    IExpr highest = engine.evaluate(F.D(pFunc, F.List(yDummy, F.ZZ(n - 1))));
+    IExpr coefficient = engine.evaluate(F.Coefficient(reduced, highest));
+    if (coefficient.isZero() || !reduced.isFree(xVar, true)) {
+      return F.NIL;
+    }
+    if (!coefficient.isOne()) {
+      reduced = engine.evaluate(F.Simplify(F.Divide(reduced, coefficient)));
+    }
+    IExpr pSolution = solveSingleODE(F.Equal(reduced, F.C0), yDummy, F.List(pFunc), c_n, ctx);
+    if (pSolution.isNIL()) {
+      return F.NIL;
+    }
+    IAST pBranches = DSolveUtil.stripConditionalExpression(pSolution).makeList();
+    IExpr dyx = engine.evaluate(F.D(yFunction, xVar));
+    IASTAppendable resultList = F.ListAlloc(pBranches.argSize());
+    for (int r = 1; r <= pBranches.argSize(); r++) {
+      IExpr pBranch = DSolveUtil.stripConditionalExpression(pBranches.get(r));
+      if (pBranch.isNIL() || !pBranch.isFree(pFunc.head(), true)
+          || !DSolveContext.isUsable(pBranch)) {
+        continue;
+      }
+      // The constants of the first stage are hidden in plain symbols while the second stage runs:
+      // its DSolve names its own constant from the same supply, and would take one of them again
+      // (and GeneratedParameters renames every constant in the equation as well). Afterwards the
+      // second stage's constant is C(1) and the hidden ones become C(2), ..., C(n).
+      IASTAppendable stageOne = F.ListAlloc();
+      DSolveUtil.extractCVars(pBranch, stageOne);
+      if (stageOne.argSize() != n - 1) {
+        continue;
+      }
+      IASTAppendable toHidden = F.ListAlloc(n - 1);
+      IASTAppendable fromHidden = F.ListAlloc(n - 1);
+      IExpr[] hidden = new IExpr[n - 1];
+      for (int i = 1; i <= n - 1; i++) {
+        hidden[i - 1] = F.Dummy("cauto" + i);
+        toHidden.append(F.Rule(stageOne.get(i), hidden[i - 1]));
+        fromHidden.append(F.Rule(hidden[i - 1], F.C(i + 1)));
+      }
+      IExpr pHidden = F.subst(pBranch, toHidden);
+      IExpr denominator = engine.evaluate(F.Denominator(F.Together(pHidden)));
+      if (!denominator.isFree(yDummy, true) || !pHidden.isFree(S.Log, true)) {
+        // the quadrature of 1/p would not be elementary, and Integrate does not give up on it
+        continue;
+      }
+      IExpr slope = engine.evaluate(F.subst(pHidden, yDummy, yFunction));
+      IExpr firstOrderEq = F.Equal(F.Subtract(dyx, slope), F.C0);
+      IExpr ySolution =
+          ctx.evalTimeConstrained(F.DSolve(F.List(firstOrderEq), F.List(yFunction), xVar), 5);
+      if (ySolution.isNIL()) {
+        continue;
+      }
+      IAST bodies = DSolveUtil.extractSolveResults(ySolution);
+      for (int b = 1; b <= bodies.argSize(); b++) {
+        IExpr body = bodies.get(b);
+        if (body.isAST(S.Function)) {
+          body = engine.evaluate(F.unaryAST1(body, xVar));
+        }
+        IASTAppendable stageTwo = F.ListAlloc();
+        DSolveUtil.extractCVars(body, stageTwo);
+        if (stageTwo.argSize() != 1 || body.isFree(xVar, true)) {
+          // a constant solution, or not the one-constant answer a first order equation has
+          continue;
+        }
+        body = F.subst(F.subst(body, stageTwo.arg1(), F.C(1)), fromHidden);
+        IASTAppendable all = F.ListAlloc();
+        DSolveUtil.extractCVars(body, all);
+        boolean hiddenLeft = false;
+        for (IExpr h : hidden) {
+          hiddenLeft |= !body.isFree(h, true);
+        }
+        if (all.argSize() != n || hiddenLeft || !DSolveContext.isUsable(body)) {
+          continue;
+        }
+        resultList.append(body);
+      }
+    }
+    if (resultList.argSize() == 0) {
+      return F.NIL;
+    }
+    return resultList.argSize() == 1 ? resultList.arg1() : resultList;
   }
 
   /**

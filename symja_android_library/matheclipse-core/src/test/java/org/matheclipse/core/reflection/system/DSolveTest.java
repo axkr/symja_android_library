@@ -2373,4 +2373,40 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }
+
+  /**
+   * An autonomous equation of the third order, reduced by p == y'(y) to one of the second order in
+   * p(y) and then to the separable y' == p(y); and one whose p has a logarithm in it, which is
+   * declined before the quadrature of 1/p is asked for.
+   */
+  @Test
+  public void testDSolveAutonomousThirdOrder() {
+    check("DSolve(y(x)*y'''(x) == y'(x)*y''(x), y(x), x)", //
+        "{{y(x)->Sqrt(C(3))*Sinh(E^C(2)*x+C(1))}}");
+    check("DSolve(2*y(x)*y'''(x) == y'(x), y(x), x)", //
+        "DSolve(2*y(x)*Derivative(3)[y][x]==y'(x),y(x),x)");
+    // the second order case is what it was
+    check("DSolve(y(x)*y''(x) == y'(x)^2, y(x), x)", //
+        "{{y(x)->E^(x*C(1))*C(2)}}");
+  }
+
+  /**
+   * The antiderivative of 1/Sqrt(y^2 + a) with a parameter in it comes as
+   * ArcTanh(y/Sqrt(a + y^2)), or as the two logarithms it stands for, which nothing inverted; the
+   * ArcSinh(y/Sqrt(a)) it equals is inverted at once.
+   */
+  @Test
+  public void testDSolveSeparableRadicalWithParameter() {
+    check("DSolve(y'(x) == Sqrt(y(x)^2 + a), y(x), x)", //
+        "{{y(x)->Sqrt(a)*Sinh(x+C(1))}}");
+    check("DSolve(y'(x) == b*Sqrt(y(x)^2 + a), y(x), x)", //
+        "{{y(x)->Sqrt(a)*Sinh(b*x+C(1))}}");
+    check("DSolve(y'(x) == Sqrt(a - y(x)^2), y(x), x)", //
+        "{{y(x)->Sqrt(a)*Sin(x+C(1))}}");
+    check("DSolve(y'(x) == Sqrt(y(x)^2 - a), y(x), x)", //
+        "{{y(x)->Sqrt(a)*Cosh(x+C(1))}}");
+    // with a generated constant as the parameter FullSimplify leaves the logarithms alone
+    check("DSolve(y'(x) == Sqrt(y(x)^2 + C(3)), y(x), x)", //
+        "{{y(x)->Sqrt(C(3))*Sinh(x+C(1))}}");
+  }
 }
