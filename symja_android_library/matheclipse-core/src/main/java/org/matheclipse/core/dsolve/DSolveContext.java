@@ -278,7 +278,9 @@ final class DSolveContext {
 
   /** Whether an antiderivative is in a form the solvers can go on working with. */
   static boolean isUsable(IExpr expr) {
-    return expr.isFree(
+    // an integral which ran out of time comes back as NIL, and NIL is free of everything, so it
+    // passed as usable and the caller's next evaluation threw and ended the whole DSolve
+    return expr.isPresent() && expr.isFree(
         x -> x.isAST(S.Integrate) || x.isAST(S.EllipticF) || x.isAST(S.EllipticE)
             || x.isAST(S.EllipticPi) || x.isAST(S.WeierstrassP) || x.isAST(S.WeierstrassPPrime),
         true);

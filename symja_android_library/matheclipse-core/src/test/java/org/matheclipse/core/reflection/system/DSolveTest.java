@@ -2106,9 +2106,11 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(x*y''(x) + 2*y'(x) - x*y(x) == Sin(x), y(x), x)", //
         "{{y(x)->C(1)/(E^x*x)+(E^x*C(2))/x-Sin(x)/(2*x)}}");
 
-    // The second integration is elliptic, so this has no solution in elementary terms.
+    // The second integration is elliptic, so this has no solution in elementary terms; the answer
+    // is the relation with that integral inert, as Mathematica gives it.
     check("DSolve(y''(x) == y(x)^2 + 1, y(x), x)", //
-        "DSolve(y''(x)==1+y(x)^2,y(x),x)");
+        "Solve(Inactive(Integrate)[1/(Sqrt(2)*Sqrt(C(1)+K(1)+K(1)^3/3)),{K(1),1,y(x)}]^2==(x+C(\n"
+            + "2))^2,y(x))");
 
     // A system which is not linear in its unknowns has no coefficient matrix. Treating E^z(x) as
     // if it were a forcing function produced an answer to a different system.
@@ -2376,18 +2378,40 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
   /**
    * An autonomous equation of the third order, reduced by p == y'(y) to one of the second order in
-   * p(y) and then to the separable y' == p(y); and one whose p has a logarithm in it, which is
-   * declined before the quadrature of 1/p is asked for.
+   * p(y) and then to the separable y' == p(y). Where that quadrature is not elementary the answer
+   * is the relation it gives, with the integral inert, as in Mathematica; the constants of p come
+   * first and the one of the quadrature last.
    */
   @Test
   public void testDSolveAutonomousThirdOrder() {
     check("DSolve(y(x)*y'''(x) == y'(x)*y''(x), y(x), x)", //
-        "{{y(x)->Sqrt(C(3))*Sinh(E^C(2)*x+C(1))}}");
+        "{{y(x)->Sqrt(C(2))*Sinh(E^C(1)*x+C(3))}}");
+    check("DSolve(y(x)^2*y'''(x) == y'(x)^3, y(x), x)", //
+        "{{y(x)->(Sqrt(C(2))*Sinh(3/2*E^C(1)*x+3/2*C(3)))^(2/3)}}");
     check("DSolve(2*y(x)*y'''(x) == y'(x), y(x), x)", //
-        "DSolve(2*y(x)*Derivative(3)[y][x]==y'(x),y(x),x)");
+        "Solve(Inactive(Integrate)[1/(Sqrt(2)*Sqrt(C(1)+1/2*(-K(1)+2*C(2)*K(1)+K(1)*Log(K(\n"
+            + "1))))),{K(1),1,y(x)}]^2==(x+C(3))^2,y(x))");
     // the second order case is what it was
     check("DSolve(y(x)*y''(x) == y'(x)^2, y(x), x)", //
         "{{y(x)->E^(x*C(1))*C(2)}}");
+  }
+
+  /**
+   * An autonomous equation of the second order whose quadrature is not elementary: the relation,
+   * inert. With conditions the first integral is fitted as before and the quadrature may become
+   * elementary.
+   */
+  @Test
+  public void testDSolveAutonomousRelation() {
+    check("DSolve(y''(x) == 2*y(x)^3, y(x), x)", //
+        "Solve(Inactive(Integrate)[1/Sqrt(-C(1)+K(1)^4),{K(1),1,y(x)}]^2==(x+C(2))^2,y(x))");
+    check("DSolve(y''(x) == Sin(y(x)), y(x), x)", //
+        "Solve(Inactive(Integrate)[1/Sqrt(-C(1)-2*Cos(K(1))),{K(1),1,y(x)}]^2==(x+C(2))^2,y(x))");
+    check("DSolve({y''(x) == y(x)^3, y(0) == 5, y'(0) == 25/Sqrt(2)}, y(x), x)", //
+        "{{y(x)->1/(1/5-x/Sqrt(2))}}");
+    // the relation differentiates back to the equation
+    check("D(Inactive(Integrate)[1/Sqrt(-c+K(1)^4),{K(1),1,y(x)}], x)", //
+        "y'(x)/Sqrt(-c+y(x)^4)");
   }
 
   /**

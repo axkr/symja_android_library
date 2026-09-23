@@ -2001,101 +2001,47 @@ final class DSolveODE {
    * Along a solution <code>d/dx == p*d/dy</code>, so the derivatives are <code>D_1 == p</code>,
    * <code>D_(k+1) == p*dD_k/dy</code> (<code>y'' == p*p'</code>, <code>y''' == p^2*p'' +
    * p*p'^2</code>, ...), and putting them in leaves an equation of order <code>n-1</code> in
-   * <code>p(y)</code>, which the cascade is asked for. Its constants are renamed
-   * <code>C(2), ..., C(n)</code>, and what is left, <code>y' == p(y)</code>, is separable and
-   * brings the last constant <code>C(1)</code>. For <code>n == 2</code> this is the second case
-   * of {@link #solveReductionOfOrderODE}, which is kept as it is.
-   *
-   * <p>
-   * The quadrature of <code>1/p</code> is where this can hang: for a <code>p</code> with a
-   * logarithm in it or a denominator depending on <code>y</code> it is not elementary and
-   * <code>Integrate</code> grinds on it past any time limit, so those are declined before it is
-   * asked. <code>2*y*y''' == y'</code> is one; <code>y*y''' == y'*y''</code>, whose
-   * <code>p</code> is <code>Sqrt(C(2)*y^2 + C(3))</code>, is solved.
+   * <code>p(y)</code>, which the cascade is asked for. What is left, <code>y' == p(y)</code>, is
+   * separable. The constants are numbered as Mathematica numbers them: those of <code>p</code>
+   * first, the one of the quadrature last. For <code>n == 2</code> this is the second case of
+   * {@link #solveReductionOfOrderODE}, which is kept as it is. When the quadrature is not
+   * elementary the answer is the relation {@link #autonomousRelation} gives, once nothing else in
+   * the cascade has answered the equation.
    *
    * @return the branches of the solution, or {@link F#NIL}
    */
   private static IExpr solveAutonomousHigherOrder(IExpr lhs, IExpr yFunction, IExpr xVar, int n,
       IExpr c_n, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    if (ctx.conditions.argSize() > 0) {
+    if (ctx.conditions.argSize() > 0 || !c_n.isAST(S.C, 2)) {
       // the constants of the two stages are fitted by nobody
       return F.NIL;
     }
-    // y^(k) -> a marker, k = n..0, to see whether x is left
-    IExpr[] markers = new IExpr[n + 1];
-    IASTAppendable toMarkers = F.ListAlloc(n + 1);
-    for (int k = n; k >= 1; k--) {
-      markers[k] = F.Dummy("d" + k);
-      toMarkers.append(F.Rule(engine.evaluate(F.D(yFunction, F.List(xVar, F.ZZ(k)))), markers[k]));
-    }
-    markers[0] = F.Dummy("d0");
-    toMarkers.append(F.Rule(yFunction, markers[0]));
-    IExpr marked = engine.evaluate(F.subst(lhs, toMarkers));
-    if (!marked.isFree(xVar, true) || marked.isFree(markers[0], true)
-        || !marked.isFree(yFunction.head(), true)) {
+    IExpr[] reduction = autonomousReduction(lhs, yFunction, xVar, n, engine);
+    if (reduction == null) {
       return F.NIL;
     }
-    // the chain D_1 == p(Y), D_(k+1) == p(Y)*dD_k/dY. The names are not Y and p: the methods the
-    // reduced equation goes to make dummies of those names for their own use, and two dummies of
-    // one name are not told apart everywhere.
-    IExpr yDummy = F.Dummy("Yauto");
-    IExpr pFunc = F.unaryAST1(F.Dummy("pauto"), yDummy);
-    IExpr[] chain = new IExpr[n + 1];
-    chain[1] = pFunc;
-    for (int k = 1; k < n; k++) {
-      chain[k + 1] = engine.evaluate(F.Expand(F.Times(pFunc, F.D(chain[k], yDummy))));
-    }
-    IASTAppendable toChain = F.ListAlloc(n + 1);
-    for (int k = n; k >= 1; k--) {
-      toChain.append(F.Rule(markers[k], chain[k]));
-    }
-    toChain.append(F.Rule(markers[0], yDummy));
-    IExpr reduced = engine.evaluate(F.subst(marked, toChain));
-    IExpr highest = engine.evaluate(F.D(pFunc, F.List(yDummy, F.ZZ(n - 1))));
-    IExpr coefficient = engine.evaluate(F.Coefficient(reduced, highest));
-    if (coefficient.isZero() || !reduced.isFree(xVar, true)) {
-      return F.NIL;
-    }
-    if (!coefficient.isOne()) {
-      reduced = engine.evaluate(F.Simplify(F.Divide(reduced, coefficient)));
-    }
-    IExpr pSolution = solveSingleODE(F.Equal(reduced, F.C0), yDummy, F.List(pFunc), c_n, ctx);
-    if (pSolution.isNIL()) {
-      return F.NIL;
-    }
-    IAST pBranches = DSolveUtil.stripConditionalExpression(pSolution).makeList();
+    IExpr yDummy = reduction[0];
+    IAST pBranches = firstStageBranches(reduction, n, c_n, ctx);
     IExpr dyx = engine.evaluate(F.D(yFunction, xVar));
+    int first = c_n.first().toIntDefault();
     IASTAppendable resultList = F.ListAlloc(pBranches.argSize());
     for (int r = 1; r <= pBranches.argSize(); r++) {
-      IExpr pBranch = DSolveUtil.stripConditionalExpression(pBranches.get(r));
-      if (pBranch.isNIL() || !pBranch.isFree(pFunc.head(), true)
-          || !DSolveContext.isUsable(pBranch)) {
-        continue;
-      }
+      IExpr pBranch = pBranches.get(r);
       // The constants of the first stage are hidden in plain symbols while the second stage runs:
-      // its DSolve names its own constant from the same supply, and would take one of them again
-      // (and GeneratedParameters renames every constant in the equation as well). Afterwards the
-      // second stage's constant is C(1) and the hidden ones become C(2), ..., C(n).
+      // its DSolve names its own constant from the same supply, and would take one of them again.
+      // Afterwards they are what they were, and the second stage's constant comes after them.
       IASTAppendable stageOne = F.ListAlloc();
       DSolveUtil.extractCVars(pBranch, stageOne);
-      if (stageOne.argSize() != n - 1) {
-        continue;
-      }
       IASTAppendable toHidden = F.ListAlloc(n - 1);
       IASTAppendable fromHidden = F.ListAlloc(n - 1);
       IExpr[] hidden = new IExpr[n - 1];
       for (int i = 1; i <= n - 1; i++) {
         hidden[i - 1] = F.Dummy("cauto" + i);
         toHidden.append(F.Rule(stageOne.get(i), hidden[i - 1]));
-        fromHidden.append(F.Rule(hidden[i - 1], F.C(i + 1)));
+        fromHidden.append(F.Rule(hidden[i - 1], stageOne.get(i)));
       }
       IExpr pHidden = F.subst(pBranch, toHidden);
-      IExpr denominator = engine.evaluate(F.Denominator(F.Together(pHidden)));
-      if (!denominator.isFree(yDummy, true) || !pHidden.isFree(S.Log, true)) {
-        // the quadrature of 1/p would not be elementary, and Integrate does not give up on it
-        continue;
-      }
       IExpr slope = engine.evaluate(F.subst(pHidden, yDummy, yFunction));
       IExpr firstOrderEq = F.Equal(F.Subtract(dyx, slope), F.C0);
       IExpr ySolution =
@@ -2115,7 +2061,7 @@ final class DSolveODE {
           // a constant solution, or not the one-constant answer a first order equation has
           continue;
         }
-        body = F.subst(F.subst(body, stageTwo.arg1(), F.C(1)), fromHidden);
+        body = F.subst(F.subst(body, stageTwo.arg1(), F.C(first + n - 1)), fromHidden);
         IASTAppendable all = F.ListAlloc();
         DSolveUtil.extractCVars(body, all);
         boolean hiddenLeft = false;
@@ -2132,6 +2078,201 @@ final class DSolveODE {
       return F.NIL;
     }
     return resultList.argSize() == 1 ? resultList.arg1() : resultList;
+  }
+
+  /**
+   * The equation for <code>p(Y) == y'</code> an autonomous equation of order <code>n</code> reduces
+   * to, as <code>{Y, p(Y), equation}</code>, or <code>null</code> if the equation has an
+   * <code>x</code> in it or no <code>y</code>.
+   */
+  private static IExpr[] autonomousReduction(IExpr lhs, IExpr yFunction, IExpr xVar, int n,
+      EvalEngine engine) {
+    // y^(k) -> a marker, k = n..0, to see whether x is left
+    IExpr[] markers = new IExpr[n + 1];
+    IASTAppendable toMarkers = F.ListAlloc(n + 1);
+    for (int k = n; k >= 1; k--) {
+      markers[k] = F.Dummy("d" + k);
+      toMarkers.append(F.Rule(engine.evaluate(F.D(yFunction, F.List(xVar, F.ZZ(k)))), markers[k]));
+    }
+    markers[0] = F.Dummy("d0");
+    toMarkers.append(F.Rule(yFunction, markers[0]));
+    IExpr marked = engine.evaluate(F.subst(lhs, toMarkers));
+    if (!marked.isFree(xVar, true) || marked.isFree(markers[0], true)
+        || !marked.isFree(yFunction.head(), true)) {
+      return null;
+    }
+    // the chain D_1 == p(Y), D_(k+1) == p(Y)*dD_k/dY. The names are not Y and p: the methods the
+    // reduced equation goes to make dummies of those names for their own use.
+    IExpr yDummy = F.Dummy("Yauto");
+    IExpr pFunc = F.unaryAST1(F.Dummy("pauto"), yDummy);
+    IExpr[] chain = autonomousChain(pFunc, yDummy, n, engine);
+    IASTAppendable toChain = F.ListAlloc(n + 1);
+    for (int k = n; k >= 1; k--) {
+      toChain.append(F.Rule(markers[k], chain[k]));
+    }
+    toChain.append(F.Rule(markers[0], yDummy));
+    IExpr reduced = engine.evaluate(F.subst(marked, toChain));
+    IExpr highest = engine.evaluate(F.D(pFunc, F.List(yDummy, F.ZZ(n - 1))));
+    IExpr coefficient = engine.evaluate(F.Coefficient(reduced, highest));
+    if (coefficient.isZero() || !reduced.isFree(xVar, true)) {
+      return null;
+    }
+    if (!coefficient.isOne()) {
+      // expanded, not simplified: Simplify writes p' - f/p as one quotient, which the first order
+      // methods do not read as an equation linear in p'
+      reduced = engine.evaluate(F.Expand(F.Divide(reduced, coefficient)));
+    }
+    return new IExpr[] {yDummy, pFunc, reduced};
+  }
+
+  /** The derivatives <code>D_1 == p, D_(k+1) == p*dD_k/dY</code>, indexed 1 to n. */
+  private static IExpr[] autonomousChain(IExpr p, IExpr yDummy, int n, EvalEngine engine) {
+    IExpr[] chain = new IExpr[n + 1];
+    chain[1] = p;
+    for (int k = 1; k < n; k++) {
+      chain[k + 1] = engine.evaluate(F.Expand(F.Times(p, F.D(chain[k], yDummy))));
+    }
+    return chain;
+  }
+
+  /**
+   * The solutions <code>p(Y)</code> of the reduced equation, with their constants numbered from
+   * <code>c_n</code>; only those with all <code>n-1</code> constants are kept.
+   */
+  private static IAST firstStageBranches(IExpr[] reduction, int n, IExpr c_n, DSolveContext ctx) {
+    IExpr yDummy = reduction[0];
+    IExpr pFunc = reduction[1];
+    IAST pBranches = solveSubODE(F.Equal(reduction[2], F.C0), yDummy, pFunc, c_n, ctx);
+    IASTAppendable kept = F.ListAlloc(pBranches.argSize());
+    for (int r = 1; r <= pBranches.argSize(); r++) {
+      IExpr pBranch = DSolveUtil.stripConditionalExpression(pBranches.get(r));
+      if (pBranch.isNIL() || !pBranch.isFree(pFunc.head(), true)
+          || !DSolveContext.isUsable(pBranch)) {
+        continue;
+      }
+      IASTAppendable constants = F.ListAlloc();
+      DSolveUtil.extractCVars(pBranch, constants);
+      if (constants.argSize() != n - 1) {
+        continue;
+      }
+      kept.append(DSolveUtil.renumberConstants(pBranch, c_n, ctx.engine));
+    }
+    return kept;
+  }
+
+  /**
+   * The answer to an autonomous equation of order <code>n &gt;= 2</code> whose reduction to
+   * <code>y' == p(y)</code> works but whose quadrature does not: the relation
+   * <code>Inactive(Integrate)[1/p(K(1)), {K(1), 1, y(x)}] == x + C(n)</code> for the equation to be
+   * solved for <code>y(x)</code>, as Mathematica answers it. A pair of branches <code>+-p</code>
+   * is one relation, squared on both sides. The integral is inert: it is not elementary, and
+   * integrating it would not end.
+   *
+   * <p>
+   * Every <code>p</code> is put back into the equation before it is used: the derivatives it
+   * implies, <code>y' == p</code>, <code>y'' == p*p'</code>, ..., have to satisfy the equation at
+   * sample points, with the constants and parameters given values. One which does not is dropped.
+   *
+   * @return <code>Solve(relation, y(x))</code>, or {@link F#NIL}
+   */
+  static IExpr autonomousRelation(IExpr equation, IExpr yFunction, IExpr xVar, IExpr c_n,
+      DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    if (ctx.conditions.argSize() > 0 || !c_n.isAST(S.C, 2)) {
+      return F.NIL;
+    }
+    IExpr lhs = equation.isEqual() ? S.Subtract.of(engine, equation.first(), equation.second())
+        : equation;
+    lhs = engine.evaluate(F.ExpandAll(lhs));
+    int n = LinearODEForm.highestDerivativeOrder(lhs, yFunction.head(), xVar);
+    if (n < 2) {
+      return F.NIL;
+    }
+    IExpr[] reduction = autonomousReduction(lhs, yFunction, xVar, n, engine);
+    if (reduction == null) {
+      return F.NIL;
+    }
+    IExpr yDummy = reduction[0];
+    IAST pBranches = firstStageBranches(reduction, n, c_n, ctx);
+    IASTAppendable verified = F.ListAlloc(pBranches.argSize());
+    for (int r = 1; r <= pBranches.argSize(); r++) {
+      if (solvesAutonomous(lhs, yFunction, xVar, n, pBranches.get(r), yDummy, engine)) {
+        verified.append(pBranches.get(r));
+      }
+    }
+    IExpr p;
+    boolean squared;
+    if (verified.argSize() == 1) {
+      p = verified.arg1();
+      squared = false;
+    } else if (verified.argSize() == 2 && isVanishing(
+        engine.evaluate(F.Together(F.Plus(verified.arg1(), verified.arg2()))), engine)) {
+      p = verified.arg1().isNegativeSigned() ? verified.arg2() : verified.arg1();
+      squared = true;
+    } else {
+      return F.NIL;
+    }
+    int first = c_n.first().toIntDefault();
+    IExpr k1 = F.unaryAST1(S.initFinalHiddenSymbol("K"), F.C1);
+    IExpr integrand = engine.evaluate(F.Power(F.subst(p, yDummy, k1), F.CN1));
+    IExpr integral =
+        F.binaryAST2(F.Inactive(S.Integrate), integrand, F.list(k1, F.C1, yFunction));
+    IExpr right = F.Plus(xVar, F.C(first + n - 1));
+    IExpr relation = squared ? F.Equal(F.Sqr(integral), F.Sqr(right)) : F.Equal(integral, right);
+    return F.Solve(relation, yFunction);
+  }
+
+  /**
+   * Whether <code>y' == p(y)</code> solves the autonomous equation: the derivatives it implies are
+   * put into the equation, the constants and parameters given values, and the result has to vanish
+   * at every sample of <code>y</code> where it can be evaluated, and be evaluated at three at
+   * least.
+   */
+  private static boolean solvesAutonomous(IExpr lhs, IExpr yFunction, IExpr xVar, int n, IExpr p,
+      IExpr yDummy, EvalEngine engine) {
+    IExpr[] chain = autonomousChain(p, yDummy, n, engine);
+    IASTAppendable rules = F.ListAlloc(n + 1);
+    for (int k = n; k >= 1; k--) {
+      rules.append(F.Rule(engine.evaluate(F.D(yFunction, F.List(xVar, F.ZZ(k)))), chain[k]));
+    }
+    rules.append(F.Rule(yFunction, yDummy));
+    IExpr residual = engine.evaluate(F.subst(lhs, rules));
+    if (!residual.isFree(yFunction.head(), true) || !residual.isFree(xVar, true)) {
+      return false;
+    }
+    IASTAppendable values = F.ListAlloc();
+    IASTAppendable constants = F.ListAlloc();
+    DSolveUtil.extractCVars(residual, constants);
+    for (int i = 1; i <= constants.argSize(); i++) {
+      values.append(F.Rule(constants.get(i), F.num(0.37 + 0.11 * i)));
+    }
+    IExpr withConstants = F.subst(residual, values);
+    IAST parameters = new org.matheclipse.core.convert.VariablesSet(withConstants).getVarList();
+    IASTAppendable parameterValues = F.ListAlloc(parameters.argSize());
+    int index = 0;
+    for (int i = 1; i <= parameters.argSize(); i++) {
+      if (!parameters.get(i).equals(yDummy)) {
+        parameterValues.append(F.Rule(parameters.get(i), F.num(0.43 + 0.19 * (++index))));
+      }
+    }
+    IExpr sampled = F.subst(withConstants, parameterValues);
+    double[] points = {0.7, 1.3, 1.9, 2.6, 3.4};
+    int evaluated = 0;
+    for (double y : points) {
+      IExpr value = engine.evaluate(F.N(F.Abs(F.subst(sampled, yDummy, F.num(y)))));
+      if (!value.isReal()) {
+        continue;
+      }
+      double magnitude = value.evalf();
+      if (Double.isNaN(magnitude) || Double.isInfinite(magnitude)) {
+        continue;
+      }
+      if (magnitude > 1.0e-6) {
+        return false;
+      }
+      evaluated++;
+    }
+    return evaluated >= 3;
   }
 
   /**
@@ -2884,6 +3025,14 @@ final class DSolveODE {
           }
         }
 
+        if (temp.isNIL() && boundaryConditions.argSize() == 0) {
+          // Nothing answers the equation explicitly. An autonomous one may still reduce to a
+          // quadrature which is not elementary, and the answer is then that quadrature, inert.
+          IExpr relation = autonomousRelation(equation, uFunction1Arg, xVar, c_n, ctx);
+          if (relation.isPresent()) {
+            return relation;
+          }
+        }
         if (temp.isPresent()) {
           boolean[] bcUnsatisfiable = new boolean[1];
           // Wrap in a list if it's a single root to uniformize processing
@@ -2936,6 +3085,11 @@ final class DSolveODE {
                 c_n, boundaryConditions, engine);
             if (answer.isPresent()) {
               return answer;
+            }
+          } else if (boundaryConditions.argSize() == 0) {
+            IExpr relation = autonomousRelation(equation, uFunction1Arg, xVar, c_n, ctx);
+            if (relation.isPresent()) {
+              return relation;
             }
           }
           return F.NIL;

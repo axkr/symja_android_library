@@ -882,7 +882,8 @@ public class D extends AbstractFunctionOptionEvaluator {
       }
       return F.Integrate(engine.evaluate(F.D(f, x)), iterator);
     }
-    if (!iterator.isList3() || !iterator.first().isVariable()) {
+    // the bound variable may be an indexed one like DSolve's K(1)
+    if (!iterator.isList3() || !isDerivativeVariable(iterator.first())) {
       return F.NIL;
     }
     final IAST list = (IAST) iterator;
