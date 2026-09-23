@@ -4,6 +4,10 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A backslash before a space in a string literal only marks the space: `"a\ b"` is `"a b"`, as in
+  Mathematica (confirmed 2026-09-23). The scanner dropped the space along with the backslash, so the
+  string came out as `"ab"`. Found through ad-si/Woxi#930.
+
 - `Item("heading")` and `Text("heading")` between the controls of a `Manipulate` are subheadings, as
   a bare string already was; they used to be dropped. Found through ad-si/Woxi#938.
 

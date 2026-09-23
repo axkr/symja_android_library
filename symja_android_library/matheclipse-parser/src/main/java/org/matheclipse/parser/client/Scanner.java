@@ -1294,6 +1294,10 @@ public abstract class Scanner {
             case 't':
               ident.append('\t');
               break;
+            case ' ':
+              // "a\ b" is "a b", as in Mathematica: the backslash only marks the space
+              ident.append(' ');
+              break;
             case '\"':
               ident.append('\"');
               break;
