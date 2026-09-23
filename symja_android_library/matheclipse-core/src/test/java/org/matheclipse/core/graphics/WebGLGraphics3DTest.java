@@ -197,6 +197,27 @@ public class WebGLGraphics3DTest {
     assertFalse(open.has("closed"), "a path that does not return stays open");
   }
 
+  /**
+   * A plot of one surface is that surface's GraphicsComplex, as Mathematica writes it, so
+   * First(plot) can be moved or rotated into another scene. Several surfaces stay a list.
+   */
+  @Test
+  public void oneSurfaceIsItsGraphicsComplex() {
+    for (String plot : new String[] {"Plot3D[x*y,{x,0,1},{y,0,1},PlotPoints->3]",
+        "ParametricPlot3D[{u,v,u},{u,0,1},{v,0,1},PlotPoints->3]",
+        "RegionPlot3D[x^2 + z^2 < 1, {x, 0, 1}, {y, 0, 0.001}, {z, -1, 1}]"}) {
+      assertEquals("GraphicsComplex", evaluator.eval("Head[First[" + plot + "]]").toString(),
+          plot);
+    }
+    assertEquals("{GraphicsComplex,GraphicsComplex}", evaluator.eval(
+        "Head /@ First[ParametricPlot3D[{{u,v,u},{u,v,-u}},{u,0,1},{v,0,1},PlotPoints->3]]")
+        .toString());
+    // Woxi's own example: the cap of a cylinder, moved and turned, beside itself
+    JsonNode scene = scene("capW = First[RegionPlot3D[x^2 + z^2 < 1, {x, 0, 1}, {y, 0, 0.001}, "
+        + "{z, -1, 1}]]; Graphics3D[{Rotate[Translate[capW, {2, 0, 0}], Pi/2, {0, 0, 1}], capW}]");
+    assertEquals(2, count(scene, "Polygon"));
+  }
+
   @Test
   public void defaultsFollowTheWMA() {
     JsonNode scene = scene("Graphics3D[Sphere[]]");

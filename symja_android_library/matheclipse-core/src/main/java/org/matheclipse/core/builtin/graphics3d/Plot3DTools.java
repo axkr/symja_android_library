@@ -1411,6 +1411,11 @@ public final class Plot3DTools {
   public static IExpr graphics3D(IExpr content, IAST originalAST, int argSize, IExpr[] defaults,
       boolean applyArgumentWrapper, IExpr[] autoAxesLabels) {
     IASTAppendable result = F.ast(S.Graphics3D, 4 + (defaults == null ? 0 : defaults.length));
+    if (content.isList() && content.argSize() == 1 && isSurface(content.first())) {
+      // one surface is its GraphicsComplex, as Mathematica writes it, so First(Plot3D(...)) is the
+      // complex itself and can be moved or rotated into another scene; several stay a list
+      content = content.first();
+    }
     if (applyArgumentWrapper && originalAST != null && originalAST.size() > 1) {
       content = PlotWrapper.of(originalAST.arg1()).wrapTooltip(content);
     }
@@ -1424,6 +1429,15 @@ public final class Plot3DTools {
       }
     }
     return legended(result, originalAST, argSize);
+  }
+
+  /** A surface's {@code GraphicsComplex}, bare or inside a {@code Tooltip} or {@code Style}. */
+  private static boolean isSurface(IExpr expr) {
+    if (expr.isAST(S.GraphicsComplex)) {
+      return true;
+    }
+    return (expr.isAST(S.Tooltip) || expr.isAST(S.Style) || expr.isAST(S.Annotation))
+        && expr.argSize() >= 1 && expr.first().isAST(S.GraphicsComplex);
   }
 
   /**

@@ -4,6 +4,11 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- A 3D plot of one surface is that surface's `GraphicsComplex`, as Mathematica writes it:
+  `Graphics3D(GraphicsComplex(..), opts)` rather than `Graphics3D({GraphicsComplex(..)}, opts)`. So
+  `First(RegionPlot3D(..))` is the complex itself, and can be moved or rotated into a scene of its
+  own. Several surfaces stay a list. Found through ad-si/Woxi#931.
+
 - `OutputForm` writes an operator as one: `x == y`, `a -> b`, `p && q`, `x < y`, `a; b` rather than
   `Equal(x, y)` and so on. Its two-dimensional printer knew only `+`, `*` and `^` and wrote any other
   head in function form; it now reads the spelling and the precedence from the parser's own

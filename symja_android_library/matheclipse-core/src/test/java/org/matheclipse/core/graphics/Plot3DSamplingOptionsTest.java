@@ -45,7 +45,8 @@ public class Plot3DSamplingOptionsTest {
 
   /** How many vertices the surface was built from. */
   private static int vertices(String plot) {
-    IExpr count = evaluator.eval("Length(Part(" + plot + ",1,1,1))");
+    IExpr count =
+        evaluator.eval("Length(First(Cases(" + plot + ", _GraphicsComplex, Infinity))[[1]])");
     assertTrue(count.isInteger(), plot + " did not produce a GraphicsComplex: " + count);
     return count.toIntDefault(-1);
   }
