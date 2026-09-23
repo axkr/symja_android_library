@@ -6255,6 +6255,7 @@ public final class LinearAlgebra {
             Errors.printMessage(S.SingularValueDecomposition, rex);
           }
         } else {
+          boolean togetherMode = engine.isTogetherMode();
           try {
             engine.setTogetherMode(true);
             SymbolicSingularValueDecomposition symbolicSVD =
@@ -6262,6 +6263,8 @@ public final class LinearAlgebra {
             return symbolicSVD.svd();
           } catch (final RuntimeException rex) {
             Errors.printMessage(S.SingularValueDecomposition, rex);
+          } finally {
+            engine.setTogetherMode(togetherMode);
           }
         }
       }
