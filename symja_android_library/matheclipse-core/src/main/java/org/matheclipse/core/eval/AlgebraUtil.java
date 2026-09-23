@@ -39,6 +39,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.AlgebraicCoefficientGCD;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
@@ -1080,6 +1081,31 @@ public class AlgebraUtil {
         GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
         GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 
+        if (!hasNumberCoefficients(p1) || !hasNumberCoefficients(p2)) {
+          // Radical coefficients such as 3-2*Sqrt(2): take the GCD in the number field they
+          // generate. Over IExpr coefficients the same GCD has no normal form - every product is a
+          // full evaluation, every quotient a nested fraction - and it swells at every step.
+          AlgebraicCoefficientGCD.Quotients quotients =
+              AlgebraicCoefficientGCD.cancel(p1, p2, EvalEngine.get());
+          if (quotients == AlgebraicCoefficientGCD.COPRIME) {
+            return Optional.empty();
+          }
+          if (quotients != null) {
+            IExpr[] result = new IExpr[3];
+            result[0] = F.C1;
+            result[1] = substitutions
+                .replaceBackward(F.eval(jas.exprPoly2Expr(quotients.numerator)));
+            result[2] = substitutions
+                .replaceBackward(F.eval(jas.exprPoly2Expr(quotients.denominator)));
+            return Optional.of(result);
+          }
+          // No number field for these coefficients: the IExpr GCD below is the only way left, and
+          // its cost grows with the term counts, so it is only attempted for small polynomials.
+          if ((long) p1.length() * (long) p2.length() > Config.MAX_CANCEL_GCD_TERM_PRODUCT) {
+            return Optional.empty();
+          }
+        }
+
         GreatestCommonDivisor<IExpr> engine;
         engine = GCDFactory.getImplementation(ExprRingFactory.CONST);
         GenPolynomial<IExpr> gcd = engine.gcd(p1, p2);
@@ -1156,6 +1182,16 @@ public class AlgebraUtil {
       }
     }
     return Optional.empty();
+  }
+
+  /** Are all coefficients of <code>p</code> numbers (rational, complex or inexact)? */
+  private static boolean hasNumberCoefficients(GenPolynomial<IExpr> p) {
+    for (IExpr c : p.getMap().values()) {
+      if (!c.isNumber()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**

@@ -1891,6 +1891,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testLinearSolveRadicalCosines() {
+    // The LU steps cancel fractions whose coefficients lie in Q(Sqrt(2),Sqrt(3)); over IExpr
+    // coefficients two of those GCDs took several seconds each. Now they run in the number field.
+    // Roots from a 50 digit solve: 0.63991519622033242272, 0.75145976466452541197,
+    // 1.1478791808063615053
+    check("N(LinearSolve({{Cos(7/36*Pi),-Cos(Pi/9),1},{1/Sqrt(2),-Cos(7/36*Pi),1},"
+        + "{1/2,-Cos(5/18*Pi),1}},{(1+Sqrt(3))/(2*Sqrt(2)),Cos(Pi/18),Cos(Pi/18)}))", //
+        "{0.639915,0.75146,1.14788}");
+  }
+
+  @Test
   public void testLinearSolveFunction001() {
     check("lsf=LinearSolve({{1, 2}, {3, 4}})", //
         "LinearSolveFunction(Matrix dimensions: {2,2})");

@@ -137,6 +137,21 @@ public class Config {
   public static final int MAX_CANCEL_GCD_LEAFCOUNT = 4000;
 
   /**
+   * Maximum product of the term counts of numerator and denominator for which the polynomial GCD
+   * of {@link org.matheclipse.core.eval.AlgebraUtil#cancelGCD(IExpr, IExpr)} is attempted over
+   * <code>IExpr</code> coefficients that are not all numbers and generate no number field. Has to
+   * be an int value greater 0.
+   *
+   * <p>
+   * Coefficients built from radicals are cancelled in their number field instead, where the GCD is
+   * exact rational arithmetic. Only the remaining symbolic coefficients take the <code>IExpr</code>
+   * GCD, whose every coefficient product is a full evaluation; above this limit the expression is
+   * left uncancelled, a correct but less reduced result, as for
+   * {@link #MAX_CANCEL_GCD_LEAFCOUNT}.
+   */
+  public static final int MAX_CANCEL_GCD_TERM_PRODUCT = 256;
+
+  /**
    * Maximum number for the leaf count of an expression so that {@link S#PossibleZeroQ} > will try a
    * factoring. Has to be an int value greater 0.
    */

@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -301,13 +302,12 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "1/2*(Sqrt(3)+x)");
     check("Cancel((Sqrt(3)+Sqrt(3)*x^2)/(2*Sqrt(3)*x))", //
         "(1+x^2)/(2*x)");
-    // the polynomial GCD keeps the coefficients expanded, so this stays a compact quotient instead
-    // of collapsing into a page of nested fractions built from unexpanded products of Sqrt(2)
+    // the GCD runs in Q(Sqrt(2)), so this is (1+Sqrt(2)+x)^2/(2+x) without a spare unit
+    // 3+2*Sqrt(2) in numerator and denominator, and not a page of nested fractions
     check("Cancel(Expand((1+Sqrt(2)+x)^4*(2+x))/Expand((1+Sqrt(2)+x)^2*(2+x)^2))", //
-        "(17+12*Sqrt(2)+(14+10*Sqrt(2))*x+(3+2*Sqrt(2))*x^2)/(6+4*Sqrt(2)+(3+2*Sqrt(2))*x)");
+        "(3+2*Sqrt(2)+(2+2*Sqrt(2))*x+x^2)/(2+x)");
     check("Cancel(Expand((1+Sqrt(2)+E^Sqrt(3))^4*(2+E^Sqrt(3)))/Expand((1+Sqrt(2)+E^Sqrt(3))^2*(2+E^Sqrt(3))^2))", //
-        "(17+12*Sqrt(2)+(14+10*Sqrt(2))*E^Sqrt(3)+(3+2*Sqrt(2))*E^(2*Sqrt(3)))/(6+4*Sqrt(\n"
-            + "2)+(3+2*Sqrt(2))*E^Sqrt(3))");
+        "(3+2*Sqrt(2)+(2+2*Sqrt(2))*E^Sqrt(3)+E^(2*Sqrt(3)))/(2+E^Sqrt(3))");
     check("Cancel((4*x^2 - 2*x)/(2 + 3*x))", //
         "(-2*x+4*x^2)/(2+3*x)");
     check("Cancel((-5 - 2*x - 4*x^2)/(3 + 2*x^2 + 5*x^3))", //
@@ -404,6 +404,39 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "1/(4*x*(1+x))");
     check("Cancel(2/(1 - 2*x)^2)", //
         "2/(1-2*x)^2");
+  }
+
+  @Test
+  public void testCancelRadicalCoefficients() {
+    // Coefficients built from radicals are cancelled in the number field they generate. Over IExpr
+    // coefficients these came back as nested fractions such as
+    // 1/((-1-Sqrt(6))*(1/5-Sqrt(6)/5)), the common factor was sometimes not found at all, and the
+    // (x+y+z)^4 case did not return.
+    check("Cancel((Sqrt(2)*x-y)*(x+y)/((x+Sqrt(3)*y)*(x+y)))", //
+        "(Sqrt(2)*x-y)/(x+Sqrt(3)*y)");
+    check("Cancel(Expand((x+y+z)^4*(Sqrt(2)*x-y))/Expand((x+y+z)^4*(x+Sqrt(3)*y)))", //
+        "(Sqrt(2)*x-y)/(x+Sqrt(3)*y)");
+    check("Cancel(Expand((x+y+z)^2*(Sqrt(2)*x-y))/Expand((x+y+z)^2*(x+Sqrt(2)*y)))", //
+        "(Sqrt(2)*x-y)/(x+Sqrt(2)*y)");
+    check("Cancel(Expand((x+y+z+Sqrt(2))^3*(x+Sqrt(3)))/Expand((x+y+z+Sqrt(2))^3*(y+Sqrt(3))))", //
+        "(Sqrt(3)+x)/(Sqrt(3)+y)");
+    check("Cancel((2-Sqrt(2)*x)/(Sqrt(2)-x))", //
+        "Sqrt(2)");
+    check("Cancel((x^2-2)/(x-Sqrt(2)))", //
+        "Sqrt(2)+x");
+    check("Cancel((x^2-3)/(x^2-2*Sqrt(3)*x+3))", //
+        "(Sqrt(3)+x)/(-Sqrt(3)+x)");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testCancelRadicalCoefficientsLargerFields() {
+    // Q(I,Sqrt(2),Sqrt(3)) and Q(2^(1/3),Sqrt(3)) have degree 8 and 6; finding them is most of the
+    // time
+    check("Cancel(Expand((x+y+z)^3*(I*Sqrt(2)*x-y))/Expand((x+y+z)^3*(x+Sqrt(3)*y)))", //
+        "(I*Sqrt(2)*x-y)/(x+Sqrt(3)*y)");
+    check("Cancel(Expand((x+y+z)^3*(2^(1/3)*x-y))/Expand((x+y+z)^3*(x+Sqrt(3)*y)))", //
+        "(2^(1/3)*x-y)/(x+Sqrt(3)*y)");
   }
 
   @Test
