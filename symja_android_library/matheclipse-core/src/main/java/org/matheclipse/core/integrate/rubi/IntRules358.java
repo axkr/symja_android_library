@@ -46,7 +46,7 @@ IIntegrate(7174,Integrate(PolyLog(n_,Times(d_DEFAULT,Power(Power(F_,Times(c_DEFA
 IIntegrate(7175,Integrate(Times(Power(Plus(e_DEFAULT,Times(f_DEFAULT,x_)),m_DEFAULT),PolyLog(n_,Times(d_DEFAULT,Power(Power(F_,Times(c_DEFAULT,Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),p_DEFAULT)))),x_Symbol),
     Condition(Subtract(Simp(Times(Power(Plus(e,Times(f,x)),m),PolyLog(Plus(n,C1),Times(d,Power(Power(FSymbol,Times(c,Plus(a,Times(b,x)))),p))),Power(Times(b,c,p,Log(FSymbol)),CN1)),x),Simp(Dist(Times(f,m,Power(Times(b,c,p,Log(FSymbol)),CN1)),Integrate(Times(Power(Plus(e,Times(f,x)),Plus(m,CN1)),PolyLog(Plus(n,C1),Times(d,Power(Power(FSymbol,Times(c,Plus(a,Times(b,x)))),p)))),x),x),x)),And(FreeQ(List(FSymbol,a,b,c,d,e,f,n,p),x),GtQ(m,C0)))),
 IIntegrate(7176,Integrate(PolyLog(C2,u_),x_Symbol),
-    Condition(With(list(Set(v,SimplifyIntegrand(Times(x,D(u,x),Log(Subtract(C1,u)),Power(u,CN1)),x))),Plus(Times(x,PolyLog(C2,u)),Integrate(v,x))),With(list(Set(w,Together(u))),And(RationalFunctionQ(w,x),Not(FreeQ(w,x)),LessEqual(C0,Expon(Numerator(w),x),C2),LessEqual(C0,Expon(Denominator(w),x),C2))))),
+    Condition(With(list(Set(v,SimplifyIntegrand(Times(x,D(u,x),Log(Subtract(C1,u)),Power(u,CN1)),x))),With(list(Set(w,Integrate(v,x))),If(IntegralFreeQ(w),Plus(Times(x,PolyLog(C2,u)),w),Unintegrable(PolyLog(C2,u),x)))),With(list(Set(w,Together(u))),And(RationalFunctionQ(w,x),Not(FreeQ(w,x)),LessEqual(C0,Expon(Numerator(w),x),C2),LessEqual(C0,Expon(Denominator(w),x),C2))))),
 IIntegrate(7177,Integrate(Times(u_,PolyLog(n_,v_)),x_Symbol),
     Condition(With(list(Set(w,DerivativeDivides(v,Times(u,v),x))),Condition(Simp(Times(w,PolyLog(Plus(n,C1),v)),x),Not(FalseQ(w)))),FreeQ(n,x))),
 IIntegrate(7178,Integrate(Times(Log(w_),u_,PolyLog(n_,v_)),x_Symbol),
