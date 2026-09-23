@@ -629,4 +629,28 @@ public class DTest extends ExprEvaluatorTestCase {
         "(6-3*x^2+x^4)/(4+5*x^2-5*x^4+x^6)");
 
   }
+
+  /**
+   * The inert integral is differentiated by the rules of the active one and stays inert; the
+   * general rule for a compound head used to take its iterator list for an argument. Mathematica's
+   * answers.
+   */
+  @Test
+  public void testDInactiveIntegrate() {
+    check("D(Inactive(Integrate)[f(y), y], y)", //
+        "f(y)");
+    check("D(Inactive(Integrate)[f(t), {t, 1, y(x)}], x)", //
+        "f(y(x))*y'(x)");
+    check("D(Inactive(Integrate)[f(t, x), {t, a, b}], x)", //
+        "Inactive(Integrate)[Derivative(0,1)[f][t,x],{t,a,b}]");
+    check("D(Inactive(Integrate)[f(t), {t, a, b}], y)", //
+        "0");
+    check("D(Inactive(Integrate)[1/p(y), y] - x, x)", //
+        "-1");
+    // a non-elementary integrand is not integrated on the way
+    check("D(Inactive(Integrate)[1/Sqrt(y*Log(y) + 3), y], y)", //
+        "1/Sqrt(3+y*Log(y))");
+    check("D(Inactive(Integrate)[f(t, x), {t, 1, x}], x)", //
+        "f(x,x)+Inactive(Integrate)[Derivative(0,1)[f][t,x],{t,1,x}]");
+  }
 }

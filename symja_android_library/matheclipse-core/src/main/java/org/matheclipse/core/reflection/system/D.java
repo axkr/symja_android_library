@@ -483,6 +483,11 @@ public class D extends AbstractFunctionOptionEvaluator {
         return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
 
+      if (fx.isAST() && fx.head().isAST(S.Inactive, 2) && fx.head().first() == S.Integrate
+          && fx.argSize() >= 2 && isDerivativeVariable(x)) {
+        return inactiveIntegrate((IAST) fx, x, engine);
+      }
+
       if (fx.isList()) {
         IAST list = (IAST) fx;
         // thread over first list
@@ -807,6 +812,38 @@ public class D extends AbstractFunctionOptionEvaluator {
       return getDerivativeArgN(x, function, function.head(), engine);
     }
     return F.NIL;
+  }
+
+  /**
+   * Differentiate the inert <code>Inactive(Integrate)(f, ...)</code> by the same rules as the active
+   * integral, keeping every integral which is left inert:
+   * <code>D(Inactive(Integrate)(f(t), {t, 1, y(x)}), x) == f(y(x))*y'(x)</code> and
+   * <code>D(Inactive(Integrate)(f(t, x), {t, a, b}), x) ==
+   * Inactive(Integrate)(D(f(t, x), x), {t, a, b})</code>, as in Mathematica. Without this the
+   * general rule for a compound head took the iterator list for an argument.
+   *
+   * @return the derivative, or the unevaluated <code>D</code> ({@link F#NIL}) for an iterator the
+   *         rule does not cover
+   */
+  private static IExpr inactiveIntegrate(final IAST inactive, final IExpr x, EvalEngine engine) {
+    if (inactive.isFree(x, true)) {
+      return F.C0;
+    }
+    IExpr active = integrate(inactive.setAtCopy(0, S.Integrate), x, engine);
+    if (active.isNIL()) {
+      return F.NIL;
+    }
+    // the integrals the rule builds are active ones; they must not be evaluated
+    final IExpr inactiveHead = inactive.head();
+    if (active.isAST(S.Integrate)) {
+      return ((IAST) active).setAtCopy(0, inactiveHead);
+    }
+    if (active.isPlus()) {
+      return ((IAST) active).map(term -> term.isAST(S.Integrate)
+          ? ((IAST) term).setAtCopy(0, inactiveHead)
+          : F.NIL);
+    }
+    return active;
   }
 
   /**
