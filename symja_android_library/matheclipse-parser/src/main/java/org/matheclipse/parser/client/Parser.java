@@ -1307,6 +1307,10 @@ public class Parser extends Scanner {
       }
       if (fToken == TT_DERIVATIVE) {
         lhs = parseDerivative(lhs);
+        // f'[x] may be followed by a juxtaposed factor (f'[x] g[x]), another operator or a span,
+        // so the climb starts over; falling through to the operator test made f'[x] g[x] a syntax
+        // error and f'[x] == g'[x] h[x] the product (f'[x] == g'[x])*h[x]
+        continue;
       }
       if (fToken != TT_OPERATOR) {
         break;

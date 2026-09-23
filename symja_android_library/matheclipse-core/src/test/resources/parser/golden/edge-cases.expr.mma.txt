@@ -121,9 +121,9 @@ x|->x^2	Function(x, Power(x, 2))
 f'	Derivative(1)[f]
 f''	Derivative(2)[f]
 f'''	Derivative(3)[f]
-f'(x)	!syntax@3: End-of-file not reached.
-f''(x)	!syntax@4: End-of-file not reached.
-f'(x)(y)	!syntax@3: End-of-file not reached.
+f'(x)	Times(Derivative(1)[f], x)
+f''(x)	Times(Derivative(2)[f], x)
+f'(x)(y)	Times(Derivative(1)[f], Times(x, y))
 Sin'	Derivative(1)[Sin]
 a[[1]]	Part(a, 1)
 a[[1,2]]	Part(a, 1, 2)

@@ -220,4 +220,17 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     // a string may begin with a newline - a usage message or a template body is written that way
     assertEquals("Set[MessageName[f, usage], \"\na\"]", scriptExpressions("f::usage = \"\na\""));
   }
+
+  /** A derivative followed by a juxtaposed factor is a product, in the relaxed syntax as well. */
+  @Test
+  public void testDerivativeFollowedByFactor() {
+    check("Hold(f'(x) g'(x) == 1)", //
+        "Hold(f'(x)*g'(x)==1)");
+    check("Hold(f'(x) == g'(x) h(x))", //
+        "Hold(f'(x)==g'(x)*h(x))");
+    check("Hold(y(x) y'''(x) == y'(x) y''(x))", //
+        "Hold(y(x)*Derivative(3)[y][x]==y'(x)*y''(x))");
+    check("Hold(f'(x)^2 + 2 g'(x) - g(x) h'(x))", //
+        "Hold(f'(x)^2+2*g'(x)-g(x)*h'(x))");
+  }
 }

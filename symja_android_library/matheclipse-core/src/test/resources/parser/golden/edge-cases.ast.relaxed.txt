@@ -123,7 +123,7 @@ f''	Derivative(2)[f]
 f'''	Derivative(3)[f]
 f'(x)	Derivative(1)[f][x]
 f''(x)	Derivative(2)[f][x]
-f'(x)(y)	!syntax@6: End-of-file not reached.
+f'(x)(y)	Times(Derivative(1)[f][x], y)
 Sin'	Derivative(1)[Sin]
 a[[1]]	Part(a, 1)
 a[[1,2]]	Part(a, 1, 2)

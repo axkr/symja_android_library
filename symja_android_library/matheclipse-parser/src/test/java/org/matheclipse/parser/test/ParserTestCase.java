@@ -771,4 +771,25 @@ class ParserTestCase {
     ASTNode bare = PARSE_UNRELAXED.parse("_Symbol | _Function : Auto");
     assertEquals("Optional(Alternatives(_Symbol, _Function), Auto)", bare.toString());
   }
+
+  /**
+   * A derivative followed by a juxtaposed factor: the climb over the operators used to stop after
+   * the derivative, so f'[x] g'[x] was a syntax error and f'[x] == g'[x] h[x] the product
+   * (f'[x] == g'[x])*h[x].
+   */
+  @Test
+  void testDerivativeFollowedByFactor() {
+    ASTNode obj = PARSE_UNRELAXED.parse("f'[x] g'[x] == 1");
+    assertEquals("Equal(Times(Derivative(1)[f][x], Derivative(1)[g][x]), 1)", obj.toString());
+    obj = PARSE_UNRELAXED.parse("f'[x] == g'[x] h[x]");
+    assertEquals("Equal(Derivative(1)[f][x], Times(Derivative(1)[g][x], h(x)))", obj.toString());
+    obj = PARSE_UNRELAXED.parse("y[x] y'''[x] == y'[x] y''[x]");
+    assertEquals(
+        "Equal(Times(y(x), Derivative(3)[y][x]), Times(Derivative(1)[y][x], Derivative(2)[y][x]))",
+        obj.toString());
+    obj = PARSE_UNRELAXED.parse("f'[x]^2 + 2 g'[x] - g[x] h'[x]");
+    assertEquals(
+        "Plus(Plus(Power(Derivative(1)[f][x], 2), Times(2, Derivative(1)[g][x])), Times(-1, Times(g(x), Derivative(1)[h][x])))",
+        obj.toString());
+  }
 }
