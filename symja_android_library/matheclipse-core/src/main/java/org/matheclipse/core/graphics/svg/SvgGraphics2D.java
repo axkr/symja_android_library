@@ -687,7 +687,7 @@ public class SvgGraphics2D {
   }
 
   private String labelText(IExpr expr) {
-    return PrimitiveCollector.unquote(expr.toString());
+    return LabelText.of(expr);
   }
 
   /** Split a {@code {xlabel, ylabel}} option value; either entry may be absent. */

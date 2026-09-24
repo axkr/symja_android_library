@@ -7087,6 +7087,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testButton() {
+    // Mathematica: {HoldRest,Protected,ReadProtected} - the label is shown, the action waits for
+    // a press
+    check("Attributes(Button)", //
+        "{HoldRest,Protected,ReadProtected}");
+    check("Column({Button(100, x = 1), Button(200 + 1, x = 2)})", //
+        "Column({Button(100,x=1),Button(201,x=2)})");
+    check("x", //
+        "x");
+  }
+
+  @Test
   public void testDynamicModule() {
     check("vars={a,b}; DynamicModule(Evaluate(vars), a=1; b=2; a+b)", //
         "3");
@@ -15601,6 +15613,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("MatchQ(x, ( a_. + b_. ) )", //
         "True");
+  }
+
+  @Test
+  public void testMathMLFormTableFormOfANonList() {
+    // TableForm of something which is no table displays it as it is; Framed is a box
+    check("MathMLForm(TableForm(Framed(Pane(Text(Style(\"hi\", 24)))), TableAlignments -> Center))", //
+        "<?xml version=\"1.0\"?>\n<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n<math mode=\"display\">\n<menclose notation=\"box\"><mstyle mathsize=\"24.0pt\"><mtext>hi</mtext></mstyle></menclose></math>");
+    check("MathMLForm(TableForm({1,2}))", //
+        "<?xml version=\"1.0\"?>\n<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n<math mode=\"display\">\n<mtable columnalign=\"center\"><mtr><mtd columnalign=\"center\"><mn>1</mn></mtd></mtr><mtr><mtd columnalign=\"center\"><mn>2</mn></mtd></mtr></mtable></math>");
   }
 
   /**

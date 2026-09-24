@@ -420,7 +420,7 @@ public class Errors {
       "notdata",
       "The first argument is not a vector or matrix or a list containing a design matrix and response vector.", //
       "notent",
-      "`1` is not a known entity, class or tag for GraphData. Use GraphData for a list of entities.", //
+      "`1` is not a known entity, class or tag for `2`. Use `2`[] for a list of entities.", //
       "notfound", "Specified terminator not found.", //
       "notunicode",
       "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
@@ -479,7 +479,8 @@ public class Errors {
       "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
       "pint", "The value `1` in position `2` must be a non-negative machine sized integer.", //
       "plen", "`1` and `2` should have the same length.", //
-      "plld", "Endpoints in `1` must be distinct machine-size real numbers.", //
+      "svars", "Equations may not give solutions for all \"solve\" variables.", //
+      "plld", "Endpoints for `1` in `2` must have distinct machine-precision numerical values.", //
       "pllim", "Range specification `1` is not of the form {x, xmin, xmax}.", //
       "plln", "Limiting value `1` in `2` is not a machine-size real number.", //
       "pkspec1", "The expression `1` cannot be used as a part specification.", //

@@ -869,6 +869,24 @@ public class SvgPrimitiveTest {
         "<svg"));
   }
 
+  /**
+   * A power, a {@code Superscript} or a {@code Subscript} in a label is set with the Unicode script
+   * characters instead of being written out, or dropped.
+   */
+  @Test
+  public void testScriptsInLabels() {
+    String svg = export("Plot(Sin(x),{x,0,2*Pi},Frame->True,FrameLabel->{\"t\",x^2})");
+    assertTrue(svg.contains(">x\u00b2<"), svg);
+    svg = export("Plot(Sin(x),{x,0,2*Pi},AxesLabel->{Subscript(x,1),Superscript(y,2)})");
+    assertTrue(svg.contains(">x\u2081<") && svg.contains(">y\u00b2<"), svg);
+    svg = export("Plot(Sin(x),{x,0,2*Pi},Frame->True,FrameLabel->Row({\"H(\", "
+        + "Style(\"e\", Italic)^Row({Style(\"i\", Italic), \"t\"}), \")\"}))");
+    assertTrue(svg.contains(">e\u2071\u1d57<"), svg);
+    // a script without Unicode characters keeps its written form
+    svg = export("Plot(Sin(x),{x,0,2*Pi},PlotLabel->x^(1/3))");
+    assertTrue(svg.contains(">x^(1/3)<"), svg);
+  }
+
   /** The SVG of a {@code Graphics[...]} expression, at a fixed size. */
   private static String svg(String input) {
     IExpr result = evaluator.eval(input);

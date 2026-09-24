@@ -1371,10 +1371,7 @@ public final class PrimitiveCollector {
 
   /** The displayed form of a label. Strings lose their quotes; anything else prints as is. */
   private String textOf(IExpr expr) {
-    if (expr.isString()) {
-      return expr.toString();
-    }
-    return unquote(expr.toString());
+    return LabelText.of(expr);
   }
 
   private void collectInset(IAST ast, Style2D style) {

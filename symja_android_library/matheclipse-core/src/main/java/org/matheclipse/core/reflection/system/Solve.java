@@ -165,6 +165,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     final IASTAppendable intervalInequations;
 
     /**
+     * Whether an underdetermined system is solved for its last variables, the earlier ones staying
+     * free parameters, as <code>Solve</code> does. <code>NSolve</code> solves a linear one for its
+     * first variables.
+     */
+    private boolean preferLastVariables = true;
+
+    /**
      * An internal solving step which doesn't come from a user written option, for example a step of
      * {@link S#Eliminate}.
      */
@@ -889,8 +896,24 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       IExpr equation = termsEqualZeroList.arg1();
-      // choose the variable with the lowest positive degree in the (polynomial) equation
+      // a variable which occurs only as a linear term with a numeric coefficient comes first -
+      // b in a*x + b == 0 - the last such one when there are several
       IExpr solveVariable = F.NIL;
+      for (int i = variables.argSize(); i >= 1; i--) {
+        IExpr variable = variables.get(i);
+        if (variable.isSymbol() && !equation.isFree(variable)
+            && equation.isPolynomial(F.list(variable))
+            && S.Exponent.of(engine, equation, variable).isOne()
+            && S.Coefficient.of(engine, equation, variable).isNumber()) {
+          solveVariable = variable;
+          break;
+        }
+      }
+      if (solveVariable.isPresent()) {
+        return solveRecursive(termsEqualZeroList, inequationsList, numericFlag,
+            F.list(solveVariable), engine);
+      }
+      // choose the variable with the lowest positive degree in the (polynomial) equation
       long minDegree = Long.MAX_VALUE;
       for (int i = 1; i < variables.size(); i++) {
         IExpr variable = variables.get(i);
@@ -913,6 +936,53 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
       return solveRecursive(termsEqualZeroList, inequationsList, numericFlag, F.list(solveVariable),
           engine);
+    }
+
+    private static IAST reversed(IAST list) {
+      IASTAppendable result = F.ListAlloc(list.argSize());
+      for (int i = list.argSize(); i >= 1; i--) {
+        result.append(list.get(i));
+      }
+      return result;
+    }
+
+    /** The rules of <code>solution</code> in the order of <code>variables</code>. */
+    private static IAST sortByVariables(IAST solution, IAST variables) {
+      IASTAppendable sorted = F.ListAlloc(solution.argSize());
+      for (IExpr variable : variables) {
+        for (IExpr rule : solution) {
+          if (rule.isRuleAST() && rule.first().equals(variable)) {
+            sorted.append(rule);
+          }
+        }
+      }
+      for (IExpr rule : solution) {
+        // a rule for a variable which was eliminated before, which is not among these
+        if (!rule.isRuleAST() || !variables.exists(v -> v.equals(rule.first()))) {
+          sorted.append(rule);
+        }
+      }
+      return sorted.argSize() == solution.argSize() ? sorted : solution;
+    }
+
+    /**
+     * Whether a solution leaves one of the requested variables without a rule, which makes it a
+     * parametric family rather than a solution for all of them.
+     */
+    private static boolean leavesVariablesFree(IExpr result, IAST variables) {
+      if (!result.isListOfLists() || result.argSize() == 0) {
+        return false;
+      }
+      IAST first = (IAST) result.first();
+      if (first.argSize() == 0) {
+        return false;
+      }
+      for (IExpr variable : variables) {
+        if (!first.exists(rule -> rule.isRuleAST() && rule.first().equals(variable))) {
+          return true;
+        }
+      }
+      return false;
     }
 
     private IExpr solveMultiVariableSystem(IASTMutable termsEqualZeroList, IAST inequationsList,
@@ -1456,8 +1526,35 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IASTAppendable resultList, EvalEngine engine) {
       FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
       if (augmentedMatrix != null) {
-        IASTAppendable subSolutionList = LinearAlgebra.rowReduced2RulesList(augmentedMatrix,
-            variables, additionalRule, resultList, engine);
+        IASTAppendable solutions = LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables,
+            additionalRule, F.ListAlloc(1), engine);
+        if (preferLastVariables && solutions.argSize() == 1 && solutions.arg1().isList()
+            && leavesVariablesFree(solutions, variables)) {
+          // underdetermined: the columns are reduced from the last variable on, so that the
+          // pivots - the variables solved for - are the last ones and the earlier ones stay free
+          // parameters
+          IASTAppendable reversedMatrix = F.ListAlloc(matrix.argSize());
+          for (IExpr row : matrix) {
+            reversedMatrix.append(row.isList() ? reversed((IAST) row) : row);
+          }
+          FieldMatrix<IExpr> reversedAugmented = Convert.list2Matrix(reversedMatrix, vector);
+          if (reversedAugmented != null) {
+            IASTAppendable fromLast = LinearAlgebra.rowReduced2RulesList(reversedAugmented,
+                reversed(variables), additionalRule, F.ListAlloc(1), engine);
+            if (fromLast.argSize() == 1 && fromLast.arg1().isList()) {
+              solutions = F.ListAlloc(1);
+              solutions.append(sortByVariables((IAST) fromLast.arg1(), variables));
+            }
+          }
+        }
+        IASTAppendable subSolutionList;
+        if (solutions.argSize() == 0) {
+          // no solution
+          subSolutionList = F.ListAlloc();
+        } else {
+          resultList.appendArgs(solutions);
+          subSolutionList = resultList;
+        }
         if (inequationsList.isPresent() || !intervalDataMap.isEmpty()) {
           return solveInequations(subSolutionList, inequationsList, variables, intervalInequations,
               engine);
@@ -1913,6 +2010,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     public IExpr of(IAST ast, final boolean numeric, final boolean bareExpressionsAreEquations,
         EvalEngine engine) {
       ast = withDomainOnly(ast);
+      preferLastVariables = !numeric;
       if (!bareExpressionsAreEquations && !isQuantifiedSystem(ast.arg1())) {
         // `1` is not a quantified system of equations and inequalities.
         return Errors.printMessage(ast.topHead(), "naqs", F.List(ast.arg1()), engine);
@@ -2075,8 +2173,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             // The system cannot be solved with the methods available to Solve.
             return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
           }
-          return appendExtraConditionSolutions(checkDomain(result, domain, maxRoots), ast,
+          result = appendExtraConditionSolutions(checkDomain(result, domain, maxRoots), ast,
               variables, options.maxExtraConditions(), engine);
+          if (!numeric && ast.argSize() > 1 && !ast.arg2().isNIL() && !ast.arg2().isEmptyList()
+              && leavesVariablesFree(result, variables)) {
+            // Equations may not give solutions for all "solve" variables.
+            Errors.printMessage(ast.topHead(), "svars", F.CEmptyList, engine);
+          }
+          return result;
         } finally {
           engine.setAssumptions(oldAssumptions);
           engine.setInverseFunctions(oldInverseFunctions);

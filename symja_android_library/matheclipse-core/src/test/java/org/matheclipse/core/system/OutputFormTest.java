@@ -205,7 +205,7 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
         "Grid({{\"first\",\"second\",\"third\"},{a},{1,2,3}})");
     check("Pane(37!)", "Pane(13763753091226345046315979581580902400000000)");
     check("Pane(37!); {{Pane(a,3), Pane(expt, 3)}}//TableForm//TeXForm",
-        "\\begin{array}{cc}\n \\text{Pane}(a,3) & \\text{Pane}(expt,3) \\\\\n\\end{array}");
+        "\\begin{array}{cc}\n a & expt \\\\\n\\end{array}");
     // the delayed rule is held, so the option value stays unevaluated
     check("Grid({{a,bc},{d,e}}, ColumnAlignments:>Symbol(\"Rig\"<>\"ht\"))",
         "Grid({{a,bc},{d,e}},ColumnAlignments:>Symbol(Rig<>ht))");

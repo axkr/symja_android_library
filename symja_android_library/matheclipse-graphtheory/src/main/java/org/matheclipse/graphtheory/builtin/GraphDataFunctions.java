@@ -202,7 +202,7 @@ public class GraphDataFunctions {
         }
         // `1` is not a known entity, class or tag for GraphData. Use GraphData for a list of
         // entities.
-        return Errors.printMessage(S.GraphData, "notent", F.List(arg1), engine);
+        return Errors.printMessage(S.GraphData, "notent", F.List(arg1, S.GraphData), engine);
       }
       return F.NIL;
     }

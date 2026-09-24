@@ -45,6 +45,9 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     if (ast.argSize() < dimension + 1) {
       return F.NIL;
     }
+    if (PlotEndpoints.degenerate((ISymbol) ast.topHead(), ast, 2, dimension + 1, false, engine)) {
+      return F.NIL;
+    }
     IExpr field = ast.arg1();
     ISymbol[] variables = new ISymbol[dimension];
     double[] min = new double[dimension];

@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.builtin.RegionPrimitives;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -44,7 +43,8 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
       return intervals;
     }
 
-    int embeddingDimension = embeddingDimension(regions, engine);
+    int embeddingDimension =
+        BooleanRegions.embeddingDimension(S.RegionIntersection, regions, engine);
     if (embeddingDimension < 1) {
       return F.NIL;
     }
@@ -98,40 +98,7 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
    * implementation gives an intersection it cannot draw as a single shape.
    */
   private static IExpr booleanRegion(List<IExpr> regions) {
-    IASTAppendable and = F.ast(S.And, regions.size());
-    for (int i = 1; i <= regions.size(); i++) {
-      and.append(F.Slot(i));
-    }
-    return F.binaryAST2(S.BooleanRegion, F.Function(and),
-        F.ast(regions.toArray(new IExpr[0]), S.List));
-  }
-
-  /**
-   * The space the regions live in, or <code>-1</code> when that is not one space.
-   *
-   * <p>
-   * Two regions of different embedding dimensions describe no region together, which is worth
-   * saying rather than quietly leaving the call alone - the reference implementation says it too.
-   */
-  private static int embeddingDimension(List<IExpr> regions, EvalEngine engine) {
-    int dimension = -1;
-    IExpr first = F.NIL;
-    for (IExpr region : regions) {
-      int part = RegionEmbeddingDimension.getEmbeddingDimension(region);
-      if (part < 1) {
-        return -1;
-      }
-      if (dimension < 0) {
-        dimension = part;
-        first = region;
-      } else if (dimension != part) {
-        // Boolean operations involving regions `1` and `2` with different embedding dimensions
-        // are not well defined.
-        Errors.printMessage(S.RegionIntersection, "regdims", F.List(first, region), engine);
-        return -1;
-      }
-    }
-    return dimension;
+    return BooleanRegions.of(regions, bodies -> BooleanRegions.junction(S.And, bodies));
   }
 
   /** Intervals of the line, which have an intersection of their own. */
@@ -208,7 +175,7 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
         changed = true;
         continue;
       }
-      if (isConjunction(region)) {
+      if (BooleanRegions.isJunction(region, S.And)) {
         // an intersection that was already carried as a BooleanRegion asks for all of its parts,
         // so it is taken apart here rather than nested
         flatten((IAST) region.second(), regions);
@@ -218,28 +185,6 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
       regions.add(region);
     }
     return changed;
-  }
-
-  /**
-   * Whether the region is a <code>BooleanRegion</code> that asks for all of its parts at once,
-   * which is what an intersection asks for too. A region asking for either of its parts is not
-   * one, and stays a part of its own.
-   */
-  private static boolean isConjunction(IExpr region) {
-    if (!region.isAST(S.BooleanRegion, 3) || !region.second().isList()
-        || !region.first().isAST(S.Function, 2) || !region.first().first().isAST(S.And)) {
-      return false;
-    }
-    IAST and = (IAST) region.first().first();
-    if (and.argSize() != region.second().argSize()) {
-      return false;
-    }
-    for (int i = 1; i <= and.argSize(); i++) {
-      if (!and.get(i).isAST(S.Slot, 2) || and.get(i).first().toIntDefault() != i) {
-        return false;
-      }
-    }
-    return true;
   }
 
   /**

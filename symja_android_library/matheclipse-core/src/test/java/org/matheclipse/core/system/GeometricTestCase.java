@@ -774,6 +774,24 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "RegionEmbeddingDimension(x)");
   }
 
+  /**
+   * The surface of a solid mesh is the sum of its faces, a machine number; a mesh in the plane
+   * bounds an area and has no surface. The values are the reference implementation's.
+   */
+  @Test
+  public void testSurfaceAreaOfAMesh() {
+    checkNumeric("SurfaceArea(ConvexHullMesh({{0,0,0},{1,0,0},{0,1,0},{0,0,1}}))", //
+        "2.3660254037844384");
+    checkNumeric(
+        "SurfaceArea(ConvexHullMesh({{0,0,0},{2,0,0},{0,2,0},{0,0,2},{2,2,2},{2,2,0},{1,1,3}}))", //
+        "21.797958971132715");
+    check(
+        "SurfaceArea(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", //
+        "6.0");
+    check("SurfaceArea(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
+        "Undefined");
+  }
+
   @Test
   public void testVolume() {
     check(
@@ -1614,39 +1632,65 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The torus knots: the named ones and every coprime {"TorusKnot", {p, q}}. The crossing number is
-   * the smaller of p (q - 1) and q (p - 1), and the space curve winds round a tube of radius 1.
+   * The knots of the Rolfsen table, named by {n, k} or a standard name, and every coprime
+   * {"TorusKnot", {p, q}}. The table entries, names and forms are the reference implementation's.
    */
   @Test
   public void testKnotData() {
     check("KnotData(\"Trefoil\", \"CrossingNumber\")", //
         "3");
     check("KnotData(\"Trefoil\", \"AlexanderBriggsNotation\")", //
-        "3_1");
-    check("{KnotData(\"TrefoilKnot\", \"CrossingNumber\"), KnotData(\"3_1\", \"CrossingNumber\")}", //
-        "{3,3}");
+        "Subscript(3,1)");
+    check("KnotData(\"Trefoil\", \"AlexanderBriggsList\")", //
+        "{3,1}");
+    check("Table({KnotData(k, \"StandardName\"), KnotData(k, \"Name\"), "
+        + "KnotData(k, \"CrossingNumber\")}, "
+        + "{k, {{0,1}, {3,1}, {4,1}, {5,1}, {5,2}, {6,1}, {10,161}}})", //
+        "{{Unknot,unknot,0},{Trefoil,trefoil,3},{FigureEight,figure eight knot,4},{SolomonSeal,Solomon seal knot,\n"
+            + "5},{{Knot,{5,2}},knot 5-2,5},{Stevedore,Stevedore knot,6},{PerkoPair,Perko pair,\n"
+            + "10}}");
+    check("KnotData()", //
+        "{Unknot,Trefoil,FigureEight,SolomonSeal,Stevedore,PerkoPair}");
+    // the table: every prime knot of up to ten crossings, and the unknot
+    check("{Length(KnotData(All)), Take(KnotData(All), 5), Last(KnotData(All)), "
+        + "Counts(First /@ KnotData(All))}", //
+        "{250,{{0,1},{3,1},{4,1},{5,1},{5,2}},{10,165},<|0->1,3->1,4->1,5->2,6->3,7->7,8->\n"
+            + "21,9->49,10->165|>}");
+    // the trefoil's space curve is the classic one
+    check("KnotData(\"Trefoil\", \"SpaceCurve\")", //
+        "{Sin(#1)+2*Sin(2*#1),Cos(#1)-2*Cos(2*#1),-Sin(3*#1)}&");
     check("KnotData(\"Trefoil\", \"SpaceCurve\") @ 0", //
-        "{3,0,0}");
+        "{0,-1,0}");
     check("Chop(N(KnotData(\"Trefoil\", \"SpaceCurve\") @ (2*Pi) - "
         + "KnotData(\"Trefoil\", \"SpaceCurve\") @ 0))", //
         "{0,0,0}");
-    check("With({r = KnotData(\"Trefoil\", \"SpaceCurve\")}, "
+    // a torus knot winds round a tube of radius 1 about the core circle of radius 2
+    check("KnotData({\"TorusKnot\", {2, 5}}, \"SpaceCurve\")", //
+        "{Cos(2*#1)*(2+Cos(5*#1)),(2+Cos(5*#1))*Sin(2*#1),Sin(5*#1)}&");
+    check("With({r = KnotData(\"SolomonSeal\", \"SpaceCurve\")}, "
         + "N(Table(Round((Sqrt(r(t)[[1]]^2 + r(t)[[2]]^2) - 2)^2 + r(t)[[3]]^2, 10^-9), "
         + "{t, 0, 2*Pi, Pi/5})))", //
         "{1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0}");
-    check("KnotData({\"TorusKnot\", {2, 5}}, \"CrossingNumber\")", //
-        "5");
-    check("KnotData({\"TorusKnot\", {3, 5}}, \"CrossingNumber\")", //
-        "10");
-    // not coprime: several loops and no knot
+    check("{KnotData({\"TorusKnot\", {2, 5}}, \"CrossingNumber\"), "
+        + "KnotData({\"TorusKnot\", {3, 5}}, \"CrossingNumber\"), "
+        + "KnotData({\"TorusKnot\", {3, 4}}, \"AlexanderBriggsList\"), "
+        + "KnotData({\"TorusKnot\", {3, 4}}, \"Name\"), "
+        + "KnotData({\"TorusKnot\", {3, 4}}, \"StandardName\")}", //
+        "{5,10,Missing(NotApplicable),(3,4)-torus knot,{TorusKnot,{3,4}}}");
+    // not coprime: several loops and no knot; an Alexander-Briggs label is no name, and the
+    // table ends at ten crossings
     check("KnotData({\"TorusKnot\", {2, 4}}, \"CrossingNumber\")", //
         "KnotData({TorusKnot,{2,4}},CrossingNumber)");
     check("KnotData(\"NoSuchKnot\", \"CrossingNumber\")", //
         "KnotData(NoSuchKnot,CrossingNumber)");
+    check("KnotData(\"3_1\", \"CrossingNumber\")", //
+        "KnotData(3_1,CrossingNumber)");
+    check("KnotData({11, 1}, \"CrossingNumber\")", //
+        "KnotData({11,1},CrossingNumber)");
     check("KnotData(\"Trefoil\", \"NoSuchProperty\")", //
         "KnotData(Trefoil,NoSuchProperty)");
     check("KnotData(\"Properties\")", //
-        "{AlexanderBriggsNotation,CrossingNumber,ImageData,SpaceCurve}");
+        "{AlexanderBriggsList,AlexanderBriggsNotation,CrossingNumber,ImageData,Name,SpaceCurve,StandardName}");
     // ImageData is the tube as one closed surface: a list of one GraphicsComplex whose rings are
     // centred on the space curve at t = 2 Pi k/96
     check("{Head(#), Length(#), Head(First(#))}&(KnotData(\"Trefoil\", \"ImageData\"))", //
@@ -1660,10 +1704,11 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Graphics3D");
     check("Head(First(KnotData({\"TorusKnot\", {3, 4}}, \"ImageData\")))", //
         "GraphicsComplex");
-    check("KnotData(All)", //
-        "{CinquefoilKnot,SeptafoilKnot,Trefoil}");
     check("Head(KnotData(\"Trefoil\"))", //
         "Graphics3D");
+    // no curve is known for a knot which is neither the trefoil nor a torus knot
+    check("KnotData(\"FigureEight\")", //
+        "KnotData(FigureEight)");
     check("EntityValue(Entity(\"Knot\", \"Trefoil\"), \"CrossingNumber\")", //
         "3");
   }
@@ -1693,15 +1738,29 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyhedronDataNormal() {
-    // Normal substitutes the indices of a GraphicsComplex with the points they stand for
+    // Normal substitutes the indices of a GraphicsComplex with the points they stand for; a
+    // Point becomes a list of single points
     check("Normal(GraphicsComplex({{0,0},{Sqrt(3),Sqrt(3)/2}}, {Point(1), Line({1,2})}))", //
-        "{Point({0,0}),Line({{0,0},{Sqrt(3),Sqrt(3)/2}})}");
+        "{{Point({0,0})},Line({{0,0},{Sqrt(3),Sqrt(3)/2}})}");
     // data which is not a list becomes one
     check("Normal(GraphicsComplex({{0,0},{1,0},{1,1}}, Polygon({1,2,3})))", //
         "{Polygon({{0,0},{1,0},{1,1}})}");
-    // a polygon of several faces stays one polygon of several faces
+    check("Normal(GraphicsComplex({{0,0},{1,0}}, Point(1)))", //
+        "{{Point({0,0})}}");
+    // a primitive of several index lists becomes one primitive each
     check("Normal(GraphicsComplex({{0,0,0},{1,0,0},{0,1,0},{0,0,1}}, Polygon({{1,2,3},{1,2,4}})))", //
-        "{Polygon({{{0,0,0},{1,0,0},{0,1,0}},{{0,0,0},{1,0,0},{0,0,1}}})}");
+        "{{Polygon({{0,0,0},{1,0,0},{0,1,0}}),Polygon({{0,0,0},{1,0,0},{0,0,1}})}}");
+    check("Normal(GraphicsComplex({{0,0},{1,1},{2,0}}, {Point({1,2}), Line({{1,2},{2,3}})}))", //
+        "{{Point({0,0}),Point({1,1})},{Line({{0,0},{1,1}}),Line({{1,1},{2,0}})}}");
+    // the point arguments of shapes are resolved too
+    check(
+        "Normal(GraphicsComplex({{0,0},{1,1},{2,0}}, {Disk(1,0.1), Circle(3), Rectangle(1,2), Inset(x,2)}))", //
+        "{Disk({0,0},0.1),Circle({2,0}),Rectangle({0,0},{1,1}),Inset(x,{1,1})}");
+    // the vertex colors move onto each polygon, a line gets none
+    check(
+        "Normal(GraphicsComplex({{0,0},{1,1},{2,0}}, {Polygon({1,2,3}), Line({1,2})}, VertexColors->{Red,Green,Blue}))", //
+        "{Polygon({{0,0},{1,1},{2,0}},VertexColors->{RGBColor(1,0,0),RGBColor(0,1,0),RGBColor(\n"
+            + "0,0,1)}),Line({{0,0},{1,1}})}");
     // the directives between the primitives are carried over
     check("Normal(GraphicsComplex({{0,0},{1,0},{0,1}}, {Red, Polygon({1,2,3})}))", //
         "{RGBColor(1,0,0),Polygon({{0,0},{1,0},{0,1}})}");
@@ -1747,6 +1806,42 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
    * reads as the conjunction of its parts. Every answer below was measured in Mathematica on
    * 2026-09-20.
    */
+  /**
+   * <code>RegionUnion</code> and <code>RegionDifference</code> are carried as a
+   * <code>BooleanRegion</code>, a nested one inlined with its slots renumbered - the forms
+   * Mathematica gives.
+   */
+  @Test
+  public void testRegionUnionAndDifference() {
+    check("RegionUnion(Disk(), Disk({3,0},1))", //
+        "BooleanRegion(#1||#2&,{Disk({0,0}),Disk({3,0},1)})");
+    check("RegionUnion(Disk(), RegionUnion(Disk({3,0},1), Disk({6,0},1)))", //
+        "BooleanRegion(#1||#2||#3&,{Disk({0,0}),Disk({3,0},1),Disk({6,0},1)})");
+    check("RegionIntersection(RegionUnion(Ball(), ImplicitRegion(x==0,{x,y,z})), Cube())", //
+        "BooleanRegion((#1||#2)&&#3&,{Ball(),ImplicitRegion(x==0,{x,y,z}),Cube()})");
+    check("RegionDifference(Cube(), RegionUnion(Ball(), ImplicitRegion(x==0,{x,y,z})))", //
+        "BooleanRegion(#1&&!(#2||#3)&,{Cube(),Ball(),ImplicitRegion(x==0,{x,y,z})})");
+    // an empty part adds nothing, a full one covers everything, a repeated one counts once
+    check("RegionUnion(Disk(), EmptyRegion(2))", //
+        "Disk({0,0})");
+    check("RegionUnion(Disk(), FullRegion(2))", //
+        "FullRegion(2)");
+    check("RegionUnion(Disk(), Disk())", //
+        "Disk({0,0})");
+    check("RegionUnion(Interval({0,1}), Interval({3,4}))", //
+        "Interval({0,1},{3,4})");
+    check("RegionDifference(Disk(), Disk())", //
+        "EmptyRegion(2)");
+    check("RegionDifference(Disk(), EmptyRegion(2))", //
+        "Disk({0,0})");
+    check("RegionDifference(Disk(), FullRegion(2))", //
+        "EmptyRegion(2)");
+    check("RegionUnion(Disk(), Ball())", //
+        "RegionUnion(Disk({0,0}),Ball())");
+    check("RegionDimension(RegionUnion(Disk(), Line({{0,0},{1,1}})))", //
+        "2");
+  }
+
   @Test
   public void testRegionIntersection() {
     // one region is itself, and a region intersected with itself is itself
@@ -1818,11 +1913,10 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         // the long line is wrapped where the output wraps it
         "BooleanRegion(#1&&#2&&#3&,{Ball({0.5,0.5,0.5},0.5),Cube({0.5,0.5,0.5},1),ImplicitRegion(x+"
             + "y==\n1,{x,y,z})})");
-    // a region that asks for either of its parts is one part of its own
+    // a region that asks for either of its parts is inlined with its slots renumbered
     check(
         "RegionIntersection(Disk({0,0},2), BooleanRegion(#1||#2&, {Disk({0,3},2), Disk({1,1},1)}))", //
-        "BooleanRegion(#1&&#2&,{Disk({0,0},2),BooleanRegion(#1||#2&,{Disk({0,3},2),Disk({\n1,1},1)"
-            + "})})");
+        "BooleanRegion(#1&&(#2||#3)&,{Disk({0,0},2),Disk({0,3},2),Disk({1,1},1)})");
   }
 
   /**
@@ -1845,9 +1939,9 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     checkNumeric(
         "Area(RegionIntersection(Cuboid({0,0,0},{1,1,1}), ImplicitRegion(x+y==1,{x,y,z})))", //
         "1.4142135623730951");
-    // a plane that misses the box cuts nothing
+    // a plane that misses the box cuts nothing, and there is no region to measure
     check("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x==10,{x,y,z})))", //
-        "0.0");
+        "Area(BooleanRegion(#1&&#2&,{Cube({0.5,0.5,0.5},1),ImplicitRegion(x==10,{x,y,z})}))");
     // a surface that is not flat, and a region that asks for either part rather than both, are
     // left alone
     check("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x^2+y==1,{x,y,z})))", //
@@ -1874,9 +1968,14 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "9.42477796076938");
     // a plane past the ball, and one tangent to it, cut nothing
     check("Area(RegionIntersection(Ball({0,0,0},2), ImplicitRegion(z==5,{x,y,z})))", //
-        "0.0");
+        "Area(BooleanRegion(#1&&#2&,{Ball({0,0,0},2),ImplicitRegion(z==5,{x,y,z})}))");
     check("Area(RegionIntersection(Ball({0,0,0},2), ImplicitRegion(z==2,{x,y,z})))", //
-        "0.0");
+        "Area(BooleanRegion(#1&&#2&,{Ball({0,0,0},2),ImplicitRegion(z==2,{x,y,z})}))");
+    // a small ball which the plane misses inside the box
+    check(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},0.1), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1.9,{x,y,z}))))", //
+        "Area(BooleanRegion(#1&&#2&&#3&,{Ball({0.5,0.5,0.5},0.1),Cube({0.5,0.5,0.5},1),ImplicitRegion(x+y==1.9,{x,y,z})}))");
 
     // the cube's inscribed ball meets the diagonal cross section at its great circle, and that
     // disk of radius 1/2 just fits inside the Sqrt(2) by 1 rectangle: Pi/4

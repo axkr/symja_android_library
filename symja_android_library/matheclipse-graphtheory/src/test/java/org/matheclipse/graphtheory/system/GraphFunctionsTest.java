@@ -16,6 +16,39 @@ public class GraphFunctionsTest extends AbstractTestCase {
    * A directed <code>Graph3D</code> edge is <code>Arrow[{p1, p2}, setback]</code>: the WLJS notebook
    * reads the points straight from the arrow and drew nothing for <code>Arrow[Line[...]]</code>.
    */
+  /**
+   * TreePlot(g, pos), TreePlot(g, root) and TreePlot(g, pos, root), as in the reference
+   * implementation: an integer which is no vertex is ignored, anything else is refused.
+   */
+  @Test
+  public void testTreePlotRootAndPosition() {
+    check("Head(TreePlot({1 -> 2, 2 -> 3}, 3))", //
+        "Graphics");
+    check("Head(TreePlot({a -> b}, a))", //
+        "Graphics");
+    check("Head(TreePlot({\"a\" -> \"b\"}, \"a\"))", //
+        "Graphics");
+    check("Head(TreePlot({1 -> 2, 2 -> 3}, 7))", //
+        "Graphics");
+    check("Head(TreePlot({1 -> 2, 2 -> 3}, Center))", //
+        "Graphics");
+    check("Head(TreePlot({1 -> 2, 2 -> 3}, Top, 3))", //
+        "Graphics");
+    check("TreePlot({1 -> 2, 2 -> 3}, x)", //
+        "TreePlot({1->2,2->3},x)");
+    check("TreePlot({a -> b}, f(a))", //
+        "TreePlot({a->b},f(a))");
+    // the tree hangs from its root: from 3 the vertices climb, from 1 they descend
+    check("Cases(TreePlot({1 -> 2, 2 -> 3}, 3), Disk(p_, ___) :> p[[2]], Infinity)", //
+        "{-1.5,0.0,1.5}");
+    check("Cases(TreePlot({1 -> 2, 2 -> 3}, 1), Disk(p_, ___) :> p[[2]], Infinity)", //
+        "{1.5,0.0,-1.5}");
+    check("Cases(TreePlot({1 -> 2, 2 -> 3}, Bottom), Disk(p_, ___) :> p[[2]], Infinity)", //
+        "{-1.5,0.0,1.5}");
+    check("Cases(TreePlot({1 -> 2, 2 -> 3}, Left), Disk(p_, ___) :> p[[1]], Infinity)", //
+        "{-1.5,0.0,1.5}");
+  }
+
   @Test
   public void testGraph3DArrowsHoldTheirPoints() {
     check("a=Cases(Graph3D({1->2,2->3,3->1}),_Arrow,Infinity);" //

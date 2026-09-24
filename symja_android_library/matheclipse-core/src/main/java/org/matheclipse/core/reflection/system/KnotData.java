@@ -11,40 +11,55 @@ import org.matheclipse.core.graphics.TubeRings;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * <code>KnotData(knot, "property")</code> - properties of a torus knot.
+ * <code>KnotData(knot, "property")</code> - properties of the knots of the Rolfsen table.
  *
  * <p>
- * A torus knot lies on the surface of a torus, winding <code>p</code> times round its axis and
- * <code>q</code> times through its hole; <code>p</code> and <code>q</code> have to be coprime, or
- * the curve closes up as several loops rather than one knot. The named knots here are all torus
- * knots, and every other one is reached as <code>{"TorusKnot", {p, q}}</code>.
+ * A knot is named by its entry <code>{n, k}</code> in the table of prime knots - the
+ * <code>k</code>-th knot with <code>n</code> crossings, up to ten crossings, <code>{0, 1}</code>
+ * being the unknot - by the standard name of one of the famous ones (<code>"Trefoil"</code>,
+ * <code>"FigureEight"</code>, ...), or as a torus knot <code>{"TorusKnot", {p, q}}</code>, which
+ * winds <code>p</code> times round a torus's axis and <code>q</code> times through its hole
+ * (<code>p</code> and <code>q</code> coprime, or the curve closes up as several loops).
  *
  * <p>
- * The space curve is the textbook parametrization on a torus of major radius 2 and tube radius 1,
- * <code>{(2 + cos(q t)) cos(p t), (2 + cos(q t)) sin(p t), sin(q t)}</code>. It is the same knot as
- * the reference implementation's, not the same curve: those coefficients are its own.
+ * What follows from the name alone - the crossing number, the Alexander-Briggs notation, the names
+ * - is known for every knot of the table. A space curve, and the tube drawn round it, is known for
+ * the trefoil, whose classic <code>{Sin(t) + 2 Sin(2 t), Cos(t) - 2 Cos(2 t), -Sin(3 t)}</code> is
+ * the reference implementation's too, and for the torus knots, as the textbook parametrization on
+ * a torus of major radius 2 and tube radius 1. The reference implementation's curves for the other
+ * knots are interpolated from curated data, which is not bundled.
  *
  * <p>
- * A knot or a property this table does not know leaves the call unevaluated, which is how
- * {@link EntityValue} tells the two apart; an unknown property also says so.
+ * An unknown knot is reported with <code>notent</code> and an unknown property with
+ * <code>notprop</code>; both leave the call unevaluated, which is how {@link EntityValue} tells
+ * them apart.
  */
 public class KnotData extends AbstractEvaluator {
-
   /** The entity type these knots belong to: <code>Entity("Knot", name)</code>. */
   public static final String KNOT = "Knot";
 
-  /** The named knots: the name, its aliases, the Alexander-Briggs notation, and p and q. */
-  private static final Object[][] KNOTS = { //
-      {"CinquefoilKnot", new String[] {"Cinquefoil", "SolomonsSealKnot", "5_1"}, "5_1", 2, 5},
-      {"SeptafoilKnot", new String[] {"Septafoil", "7_1"}, "7_1", 2, 7},
-      {"Trefoil", new String[] {"TrefoilKnot", "3_1"}, "3_1", 2, 3}};
+  /** How many prime knots the table lists for each crossing number, the unknot included. */
+  private static final int[][] TABLE_COUNTS =
+      {{0, 1}, {3, 1}, {4, 1}, {5, 2}, {6, 3}, {7, 7}, {8, 21}, {9, 49}, {10, 165}};
+
+  /** The knots with a standard name: the name, the table entry and the descriptive name. */
+  private static final Object[][] NAMED_KNOTS = { //
+      {"Unknot", 0, 1, "unknot"}, //
+      {"Trefoil", 3, 1, "trefoil"}, //
+      {"FigureEight", 4, 1, "figure eight knot"}, //
+      {"SolomonSeal", 5, 1, "Solomon seal knot"}, //
+      {"Stevedore", 6, 1, "Stevedore knot"}, //
+      {"PerkoPair", 10, 161, "Perko pair"}};
+
+  /** The table knots which are torus knots: <code>{n, k, p, q}</code>. */
+  private static final int[][] TABLE_TORUS_KNOTS =
+      {{3, 1, 2, 3}, {5, 1, 2, 5}, {7, 1, 2, 7}, {8, 19, 3, 4}, {9, 1, 2, 9}, {10, 124, 3, 5}};
 
   /** The properties a knot answers for, in the order <code>KnotData("Properties")</code> gives. */
-  private static final String[] PROPERTIES =
-      {"AlexanderBriggsNotation", "CrossingNumber", "ImageData", "SpaceCurve"};
+  private static final String[] PROPERTIES = {"AlexanderBriggsList", "AlexanderBriggsNotation",
+      "CrossingNumber", "ImageData", "Name", "SpaceCurve", "StandardName"};
 
   /** How many rings round the curve the tube of a knot is built from. */
   private static final int RINGS = 96;
@@ -55,45 +70,116 @@ public class KnotData extends AbstractEvaluator {
   /** The radius of the tube, against the torus of major radius 2 the curve winds round. */
   private static final double TUBE_RADIUS = 0.25;
 
+  /**
+   * A knot: the table entry <code>{n, k}</code>, or <code>n = -1</code> for a torus knot off the
+   * table; <code>p</code> and <code>q</code> are its torus winding numbers, or <code>0</code> when
+   * it is no torus knot.
+   */
+  private static final class Knot {
+    final int n;
+    final int k;
+    final int p;
+    final int q;
+
+    Knot(int n, int k, int p, int q) {
+      this.n = n;
+      this.k = k;
+      this.p = p;
+      this.q = q;
+    }
+
+    boolean inTable() {
+      return n >= 0;
+    }
+
+    boolean isTrefoil() {
+      return n == 3 && k == 1;
+    }
+
+    boolean hasCurve() {
+      return isTrefoil() || p > 0;
+    }
+
+    Object[] named() {
+      for (Object[] named : NAMED_KNOTS) {
+        if ((Integer) named[1] == n && (Integer) named[2] == k) {
+          return named;
+        }
+      }
+      return null;
+    }
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    if (ast.isAST0() || (ast.isAST1() && ast.arg1() == S.All)) {
-      IASTAppendable names = F.ListAlloc(KNOTS.length);
-      for (Object[] knot : KNOTS) {
-        names.append(F.stringx((String) knot[0]));
+    if (ast.isAST0()) {
+      IASTAppendable names = F.ListAlloc(NAMED_KNOTS.length);
+      for (Object[] named : NAMED_KNOTS) {
+        names.append(F.stringx((String) named[0]));
       }
       return names;
+    }
+    if (ast.isAST1() && ast.arg1() == S.All) {
+      IASTAppendable table = F.ListAlloc(250);
+      for (int[] count : TABLE_COUNTS) {
+        for (int k = 1; k <= count[1]; k++) {
+          table.append(F.list(F.ZZ(count[0]), F.ZZ(k)));
+        }
+      }
+      return table;
     }
     IExpr spec = ast.arg1();
     if (!spec.isList()) {
       spec = Entities.nameOf(spec, KNOT);
     }
     if (ast.isAST1() && spec.isString() && "Properties".equals(spec.toString())) {
-      return strings(PROPERTIES);
+      return F.mapRange(0, PROPERTIES.length, i -> F.stringx(PROPERTIES[i]));
     }
-    Object[] knot = resolve(spec);
+    Knot knot = resolve(spec);
     if (knot == null) {
+      if (spec.isString() || spec.isList()) {
+        // `1` is not a known entity, class or tag for `2`. Use `2`[] for a list of entities.
+        Errors.printMessage(S.KnotData, "notent", F.List(spec, S.KnotData), engine);
+      }
       return F.NIL;
     }
-    int p = (Integer) knot[3];
-    int q = (Integer) knot[4];
     if (ast.isAST1()) {
-      return picture(p, q, engine);
+      return knot.hasCurve() ? picture(knot) : F.NIL;
     }
     IExpr propertySpec = Entities.propertyOf(ast.arg2(), KNOT);
     if (!propertySpec.isString()) {
       return F.NIL;
     }
     switch (propertySpec.toString()) {
+      case "AlexanderBriggsList":
+        return knot.inTable() ? F.list(F.ZZ(knot.n), F.ZZ(knot.k))
+            : F.Missing(S.NotApplicable);
       case "AlexanderBriggsNotation":
-        return knot[2] == null ? F.Missing(S.NotAvailable) : F.stringx((String) knot[2]);
+        return knot.inTable() ? F.Subscript(F.ZZ(knot.n), F.ZZ(knot.k))
+            : F.Missing(S.NotApplicable);
       case "CrossingNumber":
         // a theorem for torus knots: the smaller of p (q - 1) and q (p - 1)
-        return F.ZZ(Math.min(p * (q - 1), q * (p - 1)));
+        return knot.inTable() ? F.ZZ(knot.n)
+            : F.ZZ(Math.min(knot.p * (knot.q - 1), knot.q * (knot.p - 1)));
+      case "StandardName": {
+        if (!knot.inTable()) {
+          return F.list(F.stringx("TorusKnot"), F.list(F.ZZ(knot.p), F.ZZ(knot.q)));
+        }
+        Object[] named = knot.named();
+        return named != null ? F.stringx((String) named[0])
+            : F.list(F.stringx("Knot"), F.list(F.ZZ(knot.n), F.ZZ(knot.k)));
+      }
+      case "Name": {
+        if (!knot.inTable()) {
+          return F.stringx("(" + knot.p + "," + knot.q + ")-torus knot");
+        }
+        Object[] named = knot.named();
+        return F.stringx(named != null ? (String) named[3] : "knot " + knot.n + "-" + knot.k);
+      }
       case "SpaceCurve":
-        return spaceCurve(p, q);
+        return knot.hasCurve() ? spaceCurve(knot) : F.NIL;
       case "ImageData":
-        return imageData(p, q);
+        return knot.hasCurve() ? imageData(knot) : F.NIL;
       default:
         // `1` is not a known property or size specification for `2`.
         return Errors.printMessage(S.KnotData, "notprop", F.List(propertySpec, S.KnotData),
@@ -101,26 +187,31 @@ public class KnotData extends AbstractEvaluator {
     }
   }
 
-  /**
-   * The knot a name or a <code>{"TorusKnot", {p, q}}</code> specification stands for, as
-   * <code>{name, aliases, notation, p, q}</code>, or <code>null</code>.
-   */
-  private static Object[] resolve(IExpr spec) {
+  /** The knot a standard name, a table entry or a torus knot specification stands for. */
+  private static Knot resolve(IExpr spec) {
     if (spec.isString()) {
       String name = spec.toString();
-      for (Object[] knot : KNOTS) {
-        if (knot[0].equals(name)) {
-          return knot;
-        }
-        for (String alias : (String[]) knot[1]) {
-          if (alias.equals(name)) {
-            return knot;
-          }
+      for (Object[] named : NAMED_KNOTS) {
+        if (named[0].equals(name)) {
+          return tableKnot((Integer) named[1], (Integer) named[2]);
         }
       }
       return null;
     }
-    if (spec.isList2() && spec.first().isString() && "TorusKnot".equals(spec.first().toString())
+    if (!spec.isList2()) {
+      return null;
+    }
+    if (spec.first().isInteger() && spec.second().isInteger()) {
+      int n = spec.first().toIntDefault();
+      int k = spec.second().toIntDefault();
+      for (int[] count : TABLE_COUNTS) {
+        if (count[0] == n && k >= 1 && k <= count[1]) {
+          return tableKnot(n, k);
+        }
+      }
+      return null;
+    }
+    if (spec.first().isString() && "TorusKnot".equals(spec.first().toString())
         && spec.second().isList2()) {
       int p = spec.second().first().toIntDefault();
       int q = spec.second().second().toIntDefault();
@@ -128,32 +219,51 @@ public class KnotData extends AbstractEvaluator {
         // not coprime, the curve is several loops and no knot
         return null;
       }
-      for (Object[] knot : KNOTS) {
-        if ((Integer) knot[3] == p && (Integer) knot[4] == q) {
-          return knot;
-        }
-      }
-      return new Object[] {null, new String[0], null, p, q};
+      return new Knot(-1, 0, p, q);
     }
     return null;
+  }
+
+  private static Knot tableKnot(int n, int k) {
+    for (int[] torus : TABLE_TORUS_KNOTS) {
+      if (torus[0] == n && torus[1] == k) {
+        return new Knot(n, k, torus[2], torus[3]);
+      }
+    }
+    return new Knot(n, k, 0, 0);
   }
 
   private static int gcd(int a, int b) {
     return b == 0 ? a : gcd(b, a % b);
   }
 
-  /** <code>Function({t}, {x(t), y(t), z(t)})</code>, one turn of the knot as t runs to 2 Pi. */
-  private static IExpr spaceCurve(int p, int q) {
-    ISymbol t = F.Dummy("t");
-    IExpr ring = F.Plus(F.C2, F.Cos(F.Times(F.ZZ(q), t)));
-    IAST curve = F.List(F.Times(ring, F.Cos(F.Times(F.ZZ(p), t))),
-        F.Times(ring, F.Sin(F.Times(F.ZZ(p), t))), F.Sin(F.Times(F.ZZ(q), t)));
-    return F.Function(F.List(t), curve);
+  /** The space curve as a pure function, <code>{x(#1), y(#1), z(#1)}&</code>, one turn to 2 Pi. */
+  private static IExpr spaceCurve(Knot knot) {
+    IExpr t = F.Slot1;
+    if (knot.isTrefoil()) {
+      return F.Function(F.list(F.Plus(F.Sin(t), F.Times(F.C2, F.Sin(F.Times(F.C2, t)))),
+          F.Subtract(F.Cos(t), F.Times(F.C2, F.Cos(F.Times(F.C2, t)))),
+          F.Negate(F.Sin(F.Times(F.C3, t)))));
+    }
+    IExpr ring = F.Plus(F.C2, F.Cos(F.Times(F.ZZ(knot.q), t)));
+    return F.Function(F.list(F.Times(ring, F.Cos(F.Times(F.ZZ(knot.p), t))),
+        F.Times(ring, F.Sin(F.Times(F.ZZ(knot.p), t))), F.Sin(F.Times(F.ZZ(knot.q), t))));
   }
 
-  /** The knot drawn as its tube, the surface of {@link #imageData(int, int)}. */
-  private static IExpr picture(int p, int q, EvalEngine engine) {
-    return F.Graphics3D(F.List(F.EdgeForm(S.None), imageData(p, q).first()),
+  /** The point of the space curve at <code>t</code>, the same curve {@link #spaceCurve} gives. */
+  private static double[] curvePoint(Knot knot, double t) {
+    if (knot.isTrefoil()) {
+      return new double[] {Math.sin(t) + 2.0 * Math.sin(2.0 * t),
+          Math.cos(t) - 2.0 * Math.cos(2.0 * t), -Math.sin(3.0 * t)};
+    }
+    double ring = 2.0 + Math.cos(knot.q * t);
+    return new double[] {ring * Math.cos(knot.p * t), ring * Math.sin(knot.p * t),
+        Math.sin(knot.q * t)};
+  }
+
+  /** The knot drawn as its tube, the surface of {@link #imageData(Knot)}. */
+  private static IExpr picture(Knot knot) {
+    return F.Graphics3D(F.List(F.EdgeForm(S.None), imageData(knot).first()),
         F.Rule(S.Boxed, S.False));
   }
 
@@ -162,12 +272,10 @@ public class KnotData extends AbstractEvaluator {
    * the space curve, as one closed surface. The points go ring by ring, each ring centred on the
    * curve at <code>t = 2 Pi k / 96</code>.
    */
-  private static IAST imageData(int p, int q) {
+  private static IAST imageData(Knot knot) {
     double[][] path = new double[RINGS][];
     for (int k = 0; k < RINGS; k++) {
-      double t = 2.0 * Math.PI * k / RINGS;
-      double ring = 2.0 + Math.cos(q * t);
-      path[k] = new double[] {ring * Math.cos(p * t), ring * Math.sin(p * t), Math.sin(q * t)};
+      path[k] = curvePoint(knot, 2.0 * Math.PI * k / RINGS);
     }
     TubeRings.Rings rings = TubeRings.of(path, TUBE_RADIUS, RING_SIDES, true);
     IASTAppendable points = F.ListAlloc(RINGS * RING_SIDES);
@@ -191,10 +299,6 @@ public class KnotData extends AbstractEvaluator {
     }
     return F.List(F.ternaryAST3(S.GraphicsComplex, points, F.unaryAST1(S.Polygon, quads),
         F.Rule(S.VertexNormals, normals)));
-  }
-
-  private static IAST strings(String[] names) {
-    return F.mapRange(0, names.length, i -> F.stringx(names[i]));
   }
 
   @Override

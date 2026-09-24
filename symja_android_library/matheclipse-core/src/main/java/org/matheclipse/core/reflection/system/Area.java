@@ -156,7 +156,9 @@ public class Area extends AbstractFunctionOptionEvaluator {
       // the plane itself is unbounded
       return F.NIL;
     }
-    return F.num(crossSectionArea(box, ball, plane));
+    double area = crossSectionArea(box, ball, plane);
+    // a plane which misses the solid leaves no region to measure; the call stays as it is
+    return area > 0.0 ? F.num(area) : F.NIL;
   }
 
   /**

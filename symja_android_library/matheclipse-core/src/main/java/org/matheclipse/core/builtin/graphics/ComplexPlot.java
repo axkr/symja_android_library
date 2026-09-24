@@ -111,6 +111,9 @@ public class ComplexPlot extends ListPlot {
     } catch (Exception e) {
       return F.NIL;
     }
+    if (PlotEndpoints.degenerateCorners(S.ComplexPlot, (IAST) rangeSpec, x0, y0, x1, y1, engine)) {
+      return F.NIL;
+    }
 
     double dx = (x1 - x0) / plotPoints;
     double dy = (y1 - y0) / plotPoints;
@@ -221,6 +224,7 @@ public class ComplexPlot extends ListPlot {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
+    PlotEndpoints.cornerMessage(newSymbol);
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
 
     defaults[GraphicsOptions.X_FRAME] = S.True;

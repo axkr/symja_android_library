@@ -806,14 +806,16 @@ public class GraphicsFunctions {
 
   /**
    * <code>Normal(GraphicsComplex(points, data))</code> - <code>data</code> with every point index
-   * replaced by the point it stands for.
+   * replaced by the point it stands for, as "an ordinary list of graphics primitives and
+   * directives".
    *
    * <p>
-   * Only the indices are substituted: the result is "an ordinary list of graphics primitives and
-   * directives", so a <code>Polygon</code> of several faces stays one <code>Polygon</code> of
-   * several faces, and the directives between the primitives are carried over untouched. The
-   * coordinates are the ones in the table, exact ones included - unlike the renderers, which read
-   * the same structure but lower every coordinate to a machine number on the way to a picture.
+   * As in the reference implementation a primitive holding several index lists becomes a list of
+   * one primitive each - <code>Polygon({{1,2,3},{1,2,4}})</code> two polygons, a <code>Point</code>
+   * a list of single points - the point arguments of shapes such as <code>Disk</code>,
+   * <code>Rectangle</code> and <code>Inset</code> are resolved too, and the complex's
+   * <code>VertexColors</code> and <code>VertexNormals</code> move onto each polygon with the
+   * values of its own corners. The coordinates are the ones in the table, exact ones included.
    *
    * @return {@link F#NIL} if this is not a <code>GraphicsComplex</code> with a point table
    */
@@ -822,36 +824,108 @@ public class GraphicsFunctions {
       return F.NIL;
     }
     IAST points = (IAST) graphicsComplex.arg1();
-    IExpr substituted = substituteIndices(points, graphicsComplex.arg2());
-    return substituted.isList() ? substituted : F.List(substituted);
+    IASTAppendable vertexData = F.ListAlloc(2);
+    for (int i = 3; i < graphicsComplex.size(); i++) {
+      IExpr option = graphicsComplex.get(i);
+      if ((option.isRuleAST() && (option.first() == S.VertexColors
+          || option.first() == S.VertexNormals)) && option.second().isList()) {
+        vertexData.append(option);
+      }
+    }
+    IExpr substituted = substituteIndices(points, vertexData, graphicsComplex.arg2());
+    // data which is not a list becomes one, even when a split made a list of it
+    return graphicsComplex.arg2().isList() ? substituted : F.List(substituted);
   }
 
   /**
-   * Walk <code>expr</code>, replacing the indices in the point argument of every primitive which
-   * takes one. Everything else - a directive, a primitive's later arguments, an integer which is
-   * not a point - is left as it is, but still walked, so that primitives nested inside a list of
-   * directives are reached.
+   * Walk <code>expr</code>, replacing the indices in the point arguments of every primitive which
+   * takes them. Everything else - a directive, an integer which is not a point - is left as it is,
+   * but still walked, so that primitives nested inside a list of directives are reached.
    */
-  private static IExpr substituteIndices(IAST points, IExpr expr) {
+  private static IExpr substituteIndices(IAST points, IAST vertexData, IExpr expr) {
     if (!expr.isAST()) {
       return expr;
     }
     IAST ast = (IAST) expr;
-    if (ast.argSize() >= 1 && isPointTaking(ast)) {
-      IASTMutable result = ast.copy();
-      result.set(1, substitutePoints(points, ast.arg1()));
-      for (int i = 2; i < ast.size(); i++) {
-        result.set(i, substituteIndices(points, ast.get(i)));
-      }
-      return result;
+    int[] pointArguments = ast.argSize() >= 1 ? pointArguments(ast) : null;
+    if (pointArguments == null) {
+      return ast.map(x -> substituteIndices(points, vertexData, x), 1);
     }
-    return ast.map(x -> substituteIndices(points, x), 1);
+    if (ast.isAST(S.Point) && (ast.arg1().isInteger() || isIndexList(ast.arg1()))) {
+      // a list of single points
+      IAST indices = ast.arg1().isInteger() ? F.List(ast.arg1()) : (IAST) ast.arg1();
+      return indices.map(
+          x -> substitutePrimitive(points, vertexData, ast.setAtCopy(1, x), pointArguments), 1);
+    }
+    if (isSplittable(ast) && ast.arg1().isList() && ast.arg1().argSize() > 0
+        && ((IAST) ast.arg1()).forAll(x -> isIndexList(x))) {
+      // several primitives of the same kind written as one
+      return ((IAST) ast.arg1()).map(
+          x -> substitutePrimitive(points, vertexData, ast.setAtCopy(1, x), pointArguments), 1);
+    }
+    return substitutePrimitive(points, vertexData, ast, pointArguments);
   }
 
-  /** Whether the first argument of {@code ast} is a point or a list of points. */
-  private static boolean isPointTaking(IAST ast) {
-    int id = ast.headID();
-    switch (id) {
+  private static IExpr substitutePrimitive(IAST points, IAST vertexData, IAST primitive,
+      int[] pointArguments) {
+    IASTAppendable result = primitive.copyAppendable();
+    for (int i = 1; i < primitive.size(); i++) {
+      IExpr arg = primitive.get(i);
+      boolean isPoint = false;
+      for (int position : pointArguments) {
+        isPoint |= position == i;
+      }
+      result.set(i,
+          isPoint ? substitutePoints(points, arg) : substituteIndices(points, vertexData, arg));
+    }
+    if (primitive.isAST(S.Polygon) && isIndexList(primitive.arg1())) {
+      // the values the complex gives the corners of this one polygon
+      IAST corners = (IAST) primitive.arg1();
+      for (IExpr option : vertexData) {
+        IAST values = (IAST) option.second();
+        IASTAppendable own = F.ListAlloc(corners.argSize());
+        for (IExpr corner : corners) {
+          int index = corner.toIntDefault();
+          if (index < 1 || index >= values.size()) {
+            own = null;
+            break;
+          }
+          own.append(values.get(index));
+        }
+        if (own != null) {
+          result.append(F.Rule(option.first(), own));
+        }
+      }
+    }
+    return result;
+  }
+
+  private static boolean isIndexList(IExpr expr) {
+    return expr.isList() && expr.argSize() > 0 && ((IAST) expr).forAll(IExpr::isInteger);
+  }
+
+  /** The primitives whose first argument may be a list of several index lists. */
+  private static boolean isSplittable(IAST ast) {
+    switch (ast.headID()) {
+      case ID.Line:
+      case ID.Polygon:
+      case ID.Triangle:
+      case ID.Arrow:
+      case ID.BezierCurve:
+      case ID.BSplineCurve:
+      case ID.Tube:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * The positions of the arguments of {@code ast} which are a point or a list of points, or
+   * <code>null</code> for an expression which is no such primitive.
+   */
+  private static int[] pointArguments(IAST ast) {
+    switch (ast.headID()) {
       case ID.Point:
       case ID.Line:
       case ID.Polygon:
@@ -859,14 +933,25 @@ public class GraphicsFunctions {
       case ID.Arrow:
       case ID.BezierCurve:
       case ID.BSplineCurve:
-      case ID.FilledCurve:
-      case ID.JoinedCurve:
       case ID.Tube:
       case ID.Sphere:
+      case ID.Ball:
       case ID.Simplex:
-        return true;
+      case ID.Disk:
+      case ID.Circle:
+      case ID.Annulus:
+      case ID.Cylinder:
+      case ID.Cone:
+      case ID.CapsuleShape:
+        return new int[] {1};
+      case ID.Rectangle:
+      case ID.Cuboid:
+        return new int[] {1, 2};
+      case ID.Inset:
+      case ID.Text:
+        return new int[] {2};
       default:
-        return false;
+        return null;
     }
   }
 

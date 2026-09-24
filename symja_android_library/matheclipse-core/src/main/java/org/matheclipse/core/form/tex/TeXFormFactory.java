@@ -253,6 +253,34 @@ public class TeXFormFactory {
     }
   }
 
+  /** <code>Framed(expr)</code> - the expression in a box. */
+  private static final class Framed extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      buffer.append("\\boxed{");
+      fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("}");
+      return true;
+    }
+  }
+
+  /** <code>Pane(expr, ...)</code> - the expression; the size options belong to a notebook box. */
+  private static final class Pane extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      fFactory.convertInternal(buffer, f.arg1(), precedence, NO_PLUS_CALL);
+      return true;
+    }
+  }
+
   private static final class HoldForm extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
@@ -769,8 +797,13 @@ public class TeXFormFactory {
     /** {@inheritDoc} */
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
-      if (f.size() != 2) {
+      if (f.size() < 2) {
         return false;
+      }
+      if (!f.arg1().isList()) {
+        // TableForm of something which is no table displays it as it is
+        fFactory.convertInternal(buffer, f.arg1(), precedence, NO_PLUS_CALL);
+        return true;
       }
       int[] dims = f.arg1().isMatrix();
       if (dims == null) {
@@ -2602,6 +2635,8 @@ public class TeXFormFactory {
     initTeXConverter(S.HermiteH, new BinaryFunction("H_", "(", ")"));
     initTeXConverter(S.HoldForm, new HoldForm());
     initTeXConverter(S.Text, new Text());
+    initTeXConverter(S.Framed, new Framed());
+    initTeXConverter(S.Pane, new Pane());
     initTeXConverter(S.HurwitzZeta, new Zeta());
     initTeXConverter(S.Hypergeometric0F1, new BinaryFunction("\\,_0F_1(;", ";", ")"));
     initTeXConverter(S.Hypergeometric1F1, new TernaryFunction("\\,_1F_1(", ",", ",", ")"));

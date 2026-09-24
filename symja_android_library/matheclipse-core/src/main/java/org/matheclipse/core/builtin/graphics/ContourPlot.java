@@ -39,6 +39,9 @@ public class ContourPlot extends ListPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    if (PlotEndpoints.degenerate(S.ContourPlot, ast, 2, 3, false, engine)) {
+      return F.NIL;
+    }
     // the shape tests below read the data through any display wrapper; `wrappedAST` keeps the
     // wrapper, so the label can still be put over the finished picture
     final IAST wrappedAST = ast;

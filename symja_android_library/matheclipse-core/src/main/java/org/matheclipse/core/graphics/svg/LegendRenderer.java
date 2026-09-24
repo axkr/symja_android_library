@@ -109,14 +109,14 @@ public final class LegendRenderer {
       if (ast.argSize() >= 2 && ast.arg2().isList()) {
         IAST labelList = (IAST) ast.arg2();
         for (int i = 1; i <= labelList.argSize(); i++) {
-          labels.add(PrimitiveCollector.unquote(labelList.get(i).toString()));
+          labels.add(LabelText.of(labelList.get(i)));
         }
       }
     }
     if (labels.isEmpty() && spec.isList()) {
       IAST list = (IAST) spec;
       for (int i = 1; i <= list.argSize(); i++) {
-        labels.add(PrimitiveCollector.unquote(list.get(i).toString()));
+        labels.add(LabelText.of(list.get(i)));
       }
     }
     return labels;

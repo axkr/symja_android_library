@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import org.matheclipse.core.builtin.graphics.PlotEndpoints;
 import java.util.List;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.Errors;
@@ -40,6 +41,9 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    if (PlotEndpoints.degenerate(S.Plot3D, ast, 2, 3, false, engine)) {
+      return F.NIL;
+    }
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }

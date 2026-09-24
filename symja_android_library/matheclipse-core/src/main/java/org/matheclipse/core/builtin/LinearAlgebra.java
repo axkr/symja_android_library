@@ -8362,39 +8362,39 @@ public final class LinearAlgebra {
     FieldReducedRowEchelonForm ref =
         new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
     FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
-    int size = listOfVariables.argSize();
-
-    IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
-
-    if (lastVarCoefficient.isZero()) {
-      if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
-        // no solution
-        return F.ListAlloc();
-      }
-    }
-    IAST rule;
     IASTAppendable list = F.ListAlloc(rows);
     if (additionalRule.isPresent()) {
       list.append(additionalRule);
     }
-    for (int j = 1; j < rows + 1; j++) {
-      if (j < size + 1) {
-        IExpr diagonal = rowReduced.getEntry(j - 1, j - 1);
-        if (diagonal.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    for (int row = 0; row < rows; row++) {
+      // the pivot of a row need not lie on the diagonal: a variable which no equation mentions
+      // before it moves every later pivot one column along
+      int pivot = -1;
+      for (int col = 0; col < cols - 1; col++) {
+        if (!rowReduced.getEntry(row, col).isPossibleZero(true,
+            Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+          pivot = col;
+          break;
+        }
+      }
+      if (pivot < 0) {
+        if (!rowReduced.getEntry(row, cols - 1).isPossibleZero(true,
+            Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+          // 0 == c with c != 0: no solution
+          return F.ListAlloc();
+        }
+        continue;
+      }
+      IASTAppendable plus = F.PlusAlloc(cols);
+      plus.append(rowReduced.getEntry(row, cols - 1));
+      for (int col = pivot + 1; col < cols - 1; col++) {
+        IExpr rowEntry = rowReduced.getEntry(row, col);
+        if (rowEntry.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           continue;
         }
-        IASTAppendable plus = F.PlusAlloc(cols);
-        plus.append(rowReduced.getEntry(j - 1, cols - 1));
-        for (int i = j; i < cols - 1; i++) {
-          IExpr rowEntry = rowReduced.getEntry(j - 1, i);
-          if (rowEntry.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-            continue;
-          }
-          plus.append(F.Times(rowEntry.negate(), listOfVariables.get(i + 1)));
-        }
-        rule = F.Rule(listOfVariables.get(j), S.Together.of(engine, plus.oneIdentity0()));
-        list.append(rule);
+        plus.append(F.Times(rowEntry.negate(), listOfVariables.get(col + 1)));
       }
+      list.append(F.Rule(listOfVariables.get(pivot + 1), S.Together.of(engine, plus.oneIdentity0())));
     }
     resultList.append(list);
     return resultList;

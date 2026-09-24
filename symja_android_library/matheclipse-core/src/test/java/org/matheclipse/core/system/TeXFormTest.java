@@ -21,6 +21,15 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTableFormOfANonList() {
+    // TableForm of something which is no table displays it as it is
+    check("TeXForm(TableForm(Framed(\"hi\")))", //
+        "\\boxed{\\textnormal{hi}}");
+    check("TeXForm(Pane(x^2))", //
+        "{x}^{2}");
+  }
+
+  @Test
   public void testGeneratedConstant() {
     // the constant C(k) of DSolve, Integrate and Reduce is typeset as a subscripted c
     check("TeXForm(C(1))", //

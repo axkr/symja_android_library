@@ -77,6 +77,10 @@ public class GraphGraphics {
   }
 
   private final Graph<IExpr, ?> graph;
+  /** the vertex a tree layout hangs from, or {@link F#NIL} to choose one */
+  private IExpr treeRoot = F.NIL;
+  /** where the root of a tree layout sits: <code>Top</code>, <code>Bottom</code>, ... */
+  private IExpr treeOrientation = S.Top;
   private final IAST options;
   // Configuration
   /** The options that describe the graph and mean nothing to <code>Graphics</code>. */
@@ -143,6 +147,15 @@ public class GraphGraphics {
     }
 
     this.directed = this.graph.getType().isDirected();
+  }
+
+  /**
+   * Hang a tree layout from <code>root</code> - {@link F#NIL} to choose one - with the root at the
+   * <code>Top</code>, <code>Bottom</code>, <code>Left</code> or <code>Right</code>.
+   */
+  public void setTreeRoot(IExpr root, IExpr orientation) {
+    this.treeRoot = root;
+    this.treeOrientation = orientation;
   }
 
   private <E> void calculateLayout(Graph<IExpr, E> g) {
@@ -599,7 +612,9 @@ public class GraphGraphics {
     // For undirected (or cycle), picking the one with max degree or first available is acceptable
     // fallback.
     IExpr rootExpr = component.iterator().next();
-    if (directed) {
+    if (treeRoot.isPresent() && component.contains(treeRoot)) {
+      rootExpr = treeRoot;
+    } else if (directed) {
       for (IExpr v : component) {
         // We must check degree *within the subgraph* of the component
         // Using Graphs.neighborListOf would check global
@@ -690,6 +705,14 @@ public class GraphGraphics {
       // Let's center it vertically around 0.
       double normY = (n.y - (minY + maxY) / 2.0) / maxDim;
 
+      if (treeOrientation == S.Bottom) {
+        normY = -normY;
+      } else if (treeOrientation == S.Left || treeOrientation == S.Right) {
+        // the levels run across instead of down
+        double across = treeOrientation == S.Left ? -normY : normY;
+        normY = normX;
+        normX = across;
+      }
       // Translate to final grid cell center and apply final scale
       double finalX = centerX + normX * scale;
       double finalY = centerY + normY * scale;

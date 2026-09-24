@@ -448,10 +448,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
      */
     @Override
     public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.size() != 2) {
+      if (f.size() < 2 || (!tableForm && f.size() != 2)) {
         return false;
       }
       IExpr arg1 = f.arg1();
+      if (tableForm && !arg1.isList()) {
+        // TableForm of something which is no table displays it as it is
+        fFactory.convertInternal(buf, arg1, precedence, false);
+        return true;
+      }
       int[] dims = arg1.isMatrix();
       if (dims == null) {
         int dim = arg1.isVector();
@@ -1119,6 +1124,34 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     @Override
     public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
       if (f.size() != 2) {
+        return false;
+      }
+      fFactory.convertInternal(buf, f.arg1(), precedence, false);
+      return true;
+    }
+  }
+
+  /** <code>Framed(expr)</code> - the expression in a box. */
+  private static final class Framed extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      fFactory.tagStart(buf, "menclose", "notation=\"box\"");
+      fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
+      fFactory.tagEnd(buf, "menclose");
+      return true;
+    }
+  }
+
+  /** <code>Pane(expr, ...)</code> - the expression; the size options belong to a notebook box. */
+  private static final class Pane extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2) {
         return false;
       }
       fFactory.convertInternal(buf, f.arg1(), precedence, false);
@@ -3427,6 +3460,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.Column, new Column());
     CONVERTERS.put(S.Grid, new Grid());
     CONVERTERS.put(S.Text, new Text());
+    CONVERTERS.put(S.Framed, new Framed());
+    CONVERTERS.put(S.Pane, new Pane());
     GraphicsInline graphicsInline = new GraphicsInline();
     CONVERTERS.put(S.Graphics, graphicsInline);
     // the layout heads draw themselves the same way, so a picture inside a Column or a Grid is a

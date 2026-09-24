@@ -13,6 +13,48 @@ import org.matheclipse.core.interfaces.IExpr;
 public class SolveTest extends ExprEvaluatorTestCase {
 
 
+  /**
+   * An underdetermined system is solved for its last variables, the earlier ones staying free
+   * parameters, and svars says so when the variables were asked for. NSolve keeps the first ones.
+   * The answers are Mathematica's.
+   */
+  @Test
+  public void testUnderdeterminedSolvesForTheLastVariables() {
+    check("Solve(x + y == 3)", //
+        "{{y->3-x}}");
+    check("Solve({y + z == 1, y + z + x == 2})", //
+        "{{x->1,z->1-y}}");
+    check("Solve(x + y^2 == 2)", //
+        "{{x->2-y^2}}");
+    check("Solve(a*x + b == 0)", //
+        "{{b->-a*x}}");
+    check("Solve(x*y == 1)", //
+        "{{y->1/x}}");
+    check("Solve({y == 1, x == 2})", //
+        "{{x->2,y->1}}");
+    check("Solve(x + y == 2, {x, y})", //
+        "{{y->2-x}}");
+    check("Solve(x + 2*y == 3, {y, x})", //
+        "{{x->3-2*y}}");
+    check("Solve(a*x + b*y + c*z == d, {x, y, z})", //
+        "{{z->(d-a*x-b*y)/c}}");
+    check("Solve({2*x + y + 2*z == 2, x - y + 3*z == 1}, {x, y, z})", //
+        "{{y->1/5*(4-4*x),z->1/5*(3-3*x)}}");
+    check("Solve({x + y + z == 2, 2*x + 2*y + 2*z == 4, x - z == 1}, {x, y, z})", //
+        "{{y->3-2*x,z->-1+x}}");
+    check("Solve(x^2 + y^2 == 1, {x, y})", //
+        "{{y->-Sqrt(1-x^2)},{y->Sqrt(1-x^2)}}");
+    check("Solve(x + y == 2, Reals)", //
+        "{{y->2-x}}");
+    check("NSolve({x + y + z == 2, x - y == 1}, {x, y, z})", //
+        "{{x->0.5*(3.0-z),y->0.5*(1.0-z)}}");
+    // no solution, and a unique one, are not affected
+    check("Solve({x + y == 2, x + y == 3}, {x, y})", //
+        "{}");
+    check("Solve({x + 2*y == 3, 3*x + 4*y == 5, x + y + z == 1}, {x, y, z})", //
+        "{{x->-1,y->2,z->0}}");
+  }
+
   @Test
   public void testSimple() {
     check("Solve(True,{x,y,z})", //
@@ -555,7 +597,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x^5 - y^2 == 1, {x, y})", //
         "{{y->-I*Sqrt(1-x^5)},{y->I*Sqrt(1-x^5)}}");
     check("Solve(x + y == 1, {x, y})", //
-        "{{x->1-y}}");
+        "{{y->1-x}}");
     // on equal degree the later variable is solved for, keeping x as the free parameter
     check("Solve(x*y == 1, {x, y})", //
         "{{y->1/x}}");
@@ -795,7 +837,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->1.1673}}");
     // the same answer as the three argument form gives
     check("Solve({x+y==3, Element(x,Reals)}, Reals)", //
-        "{{x->3-y}}");
+        "{{y->3-x}}");
     check("Solve(x^2==1 && Element(x,Reals), Reals)", //
         "{{x->-1},{x->1}}");
     check("Solve(a && b, Booleans)", //
@@ -2672,12 +2714,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testWrongVariables() {
     check(
         "Solve({a1==a4,a2==a3,a3==a5,a4==a3*t62/(t62+t63)+a8*t63/(t62+t63),a5==0,a6==1,a7==0,a8==a9*t22,a9==a10},{a1,a2,a3,a4,a5,a6,a7,a8,a9,a10})", //
-        "{{a1->(a10*t22*t63)/(t62+t63),a2->0,a3->0,a4->(a10*t22*t63)/(t62+t63),a5->0,a6->\n"
-            + "1,a7->0,a8->a10*t22,a9->a10}}");
+        "{{a10->(a1*t62+a1*t63)/(t22*t63),a2->0,a3->0,a4->a1,a5->0,a6->1,a7->0,a8->(a1*t62+a1*t63)/t63,a9->(a1*t62+a1*t63)/(t22*t63)}}");
     check(
         "Solve({x1==x4,x2==x3,x3==x5,x4==x3*t62/(t62+t63)+x8*t63/(t62+t63),x5==0,x6==1,x7==0,x8==x9*t22,x9==x10},{x1,x2,x3,x4,x5,x6,x7,x8,x9,x10})", //
-        "{{x1->(t22*t63*x10)/(t62+t63),x2->0,x3->0,x4->(t22*t63*x10)/(t62+t63),x5->0,x6->\n" //
-            + "1,x7->0,x8->t22*x10,x9->x10}}");
+        "{{x10->(t62*x1+t63*x1)/(t22*t63),x2->0,x3->0,x4->x1,x5->0,x6->1,x7->0,x8->(t62*x1+t63*x1)/t63,x9->(t62*x1+t63*x1)/(t22*t63)}}");
   }
 
   @Test
@@ -3225,7 +3265,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolveConstraints() {
     check("Solve({x + y==4, 1 <= x <= 3 && 0 <= y <= 2}, {x, y})", //
-        "{{x->ConditionalExpression(4-y,y>=1&&y<=2)}}");
+        "{{y->ConditionalExpression(4-x,x>=2&&x<=3)}}");
   }
 
   @Test

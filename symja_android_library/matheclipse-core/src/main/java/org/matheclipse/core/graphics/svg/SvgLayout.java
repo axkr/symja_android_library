@@ -798,7 +798,7 @@ final class SvgLayout {
     if (value.isAST(S.Text) && ((IAST) value).argSize() >= 1) {
       value = ((IAST) value).arg1();
     }
-    String text = value.isString() ? value.toString() : value.toString();
+    String text = LabelText.of(value);
     if (text.isEmpty()) {
       return null;
     }

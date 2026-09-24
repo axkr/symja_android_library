@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import org.matheclipse.core.builtin.graphics.PlotEndpoints;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -39,6 +40,9 @@ public class RegionPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    if (PlotEndpoints.degenerate(S.RegionPlot3D, ast, 2, 4, true, engine)) {
+      return F.NIL;
+    }
     if (ast.size() > 1) {
       IExpr unwrapped = PlotWrapper.strip(ast.arg1());
       if (unwrapped != ast.arg1()) {

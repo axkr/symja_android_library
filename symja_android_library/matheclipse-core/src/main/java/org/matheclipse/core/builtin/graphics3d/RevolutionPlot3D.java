@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import org.matheclipse.core.builtin.graphics.PlotEndpoints;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -32,6 +33,10 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    if (PlotEndpoints.degenerate(S.ParametricPlot3D, ast, 2, 3, false, engine)) {
+      // a sweep over nothing: RevolutionPlot3D is a ParametricPlot3D inside, and gives up
+      return S.$Failed;
+    }
     // a display wrapper comes off before the argument's shape is read, so a labelled dataset is
     // still recognised as a dataset; Plot3DTools.graphics3D puts the label back on the finished
     // primitives, reading it from the original call
