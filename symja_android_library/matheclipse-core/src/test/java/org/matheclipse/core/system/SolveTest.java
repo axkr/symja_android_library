@@ -3510,6 +3510,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{}");
     check("Solve(x*(x-1)*Csc(x)==0,x)", //
         "{{x->1}}");
+    // without the message "Infinite expression 1/0"
+    check("Solve(x*Csc(x)==0,x)", //
+        "{}");
+    check("Solve(Sech(x)==0,x)", //
+        "{}");
     check("Solve(x/(x-2)==0,x)", //
         "{{x->0}}");
     check("Solve((x^2-1)/(x-1)-x-1==0,x)", //
@@ -3527,5 +3532,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "2");
     check("Solve(Sin(x)==2, x, Reals)", //
         "{}");
+    // the real member of a complex family; WMA: {{x->0},{x->0}} for Sinh
+    check("Solve(Sinh(x)==0, x, Reals)", //
+        "{{x->0}}");
+    check("Solve(Cosh(x)==1, x, Reals)", //
+        "{{x->0},{x->0}}");
+    check("Solve(Tanh(x)==0, x, Reals)", //
+        "{{x->0}}");
   }
 }

@@ -277,8 +277,10 @@ public class FunctionRange extends AbstractFunctionEvaluator {
     }
     IExpr positive = engine.evalQuiet(F.Refine(function, F.Greater(x, F.C0)));
     IExpr negative = engine.evalQuiet(F.Refine(function, F.Less(x, F.C0)));
-    if (!isFiniteRealValue(positive) || !isFiniteRealValue(negative) || !positive.isFree(x)
-        || !negative.isFree(x)) {
+    if (!positive.isFree(x) || !negative.isFree(x)) {
+      return signSplitRange(function, positive, negative, x, y, engine);
+    }
+    if (!isFiniteRealValue(positive) || !isFiniteRealValue(negative)) {
       return F.NIL;
     }
     IExpr atZero = engine.evalQuiet(F.subst(function, x, F.C0));
@@ -298,6 +300,141 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       or.append(F.Equal(y, value));
     }
     return or.oneIdentity0();
+  }
+
+  /**
+   * The range of a function with <code>Abs(x)</code> or <code>Sign(x)</code> as the union of the
+   * ranges of its two branches on the half-lines and its value at <code>0</code>:
+   * <code>Abs(x)+x</code> is <code>2*x</code> for <code>x&gt;0</code> and <code>0</code> for
+   * <code>x&lt;0</code>, so its range is <code>y&gt;=0</code>.
+   *
+   * @return the range or {@link F#NIL} if a branch still contains <code>Abs</code> or
+   *         <code>Sign</code>, or its range cannot be determined
+   */
+  private static IExpr signSplitRange(IExpr function, IExpr positive, IExpr negative, ISymbol x,
+      ISymbol y, EvalEngine engine) {
+    if (!positive.isFree(h -> h == S.Abs || h == S.Sign, true)
+        || !negative.isFree(h -> h == S.Abs || h == S.Sign, true)) {
+      return F.NIL;
+    }
+    List<Span> spans = new ArrayList<>();
+    Span positiveSpan = branchSpan(positive, F.Greater(x, F.C0), x, engine);
+    Span negativeSpan = branchSpan(negative, F.Less(x, F.C0), x, engine);
+    if (positiveSpan == null || negativeSpan == null) {
+      return F.NIL;
+    }
+    spans.add(positiveSpan);
+    spans.add(negativeSpan);
+    IExpr atZero = engine.evalQuiet(F.subst(function, x, F.C0));
+    if (isFiniteRealValue(atZero)) {
+      Span point = Span.point(atZero);
+      if (point == null) {
+        return F.NIL;
+      }
+      spans.add(point);
+    }
+    // merge overlapping or touching intervals, ordered by their lower ends
+    // at equal lower ends a closed one first, so that a point closes the gap between two spans
+    spans.sort((s1, s2) -> s1.loNum != s2.loNum ? Double.compare(s1.loNum, s2.loNum)
+        : Boolean.compare(!s1.lo.closed, !s2.lo.closed));
+    List<Span> merged = new ArrayList<>();
+    for (Span span : spans) {
+      Span last = merged.isEmpty() ? null : merged.get(merged.size() - 1);
+      if (last != null && (span.loNum < last.hiNum
+          || (span.loNum == last.hiNum && (last.hi.closed || span.lo.closed)))) {
+        if (span.hiNum > last.hiNum || (span.hiNum == last.hiNum && span.hi.closed)) {
+          last.hi = span.hi;
+          last.hiNum = span.hiNum;
+        }
+        if (span.loNum == last.loNum && span.lo.closed) {
+          last.lo = span.lo;
+        }
+      } else {
+        merged.add(span.copy());
+      }
+    }
+    IASTAppendable or = F.ast(S.Or, merged.size());
+    for (Span span : merged) {
+      if (span.loNum == span.hiNum && !span.lo.unbounded) {
+        or.append(F.Equal(y, span.lo.value));
+      } else {
+        or.append(buildRangeRelational(span.lo, span.hi, y));
+      }
+    }
+    return engine.evaluate(or.oneIdentity0());
+  }
+
+  /** An interval of values: its two {@link Bound}s and their numeric values for comparing. */
+  private static final class Span {
+    Bound lo;
+    Bound hi;
+    double loNum;
+    double hiNum;
+
+    Span(Bound lo, double loNum, Bound hi, double hiNum) {
+      this.lo = lo;
+      this.loNum = loNum;
+      this.hi = hi;
+      this.hiNum = hiNum;
+    }
+
+    static Span point(IExpr value) {
+      double d = value.evalfNaN();
+      if (Double.isNaN(d)) {
+        return null;
+      }
+      Bound bound = Bound.finite(value, true);
+      return new Span(bound, d, bound, d);
+    }
+
+    Span copy() {
+      return new Span(lo, loNum, hi, hiNum);
+    }
+  }
+
+  /**
+   * The values of a branch of the function on the half-line <code>constraint</code>, from the
+   * constrained {@code Minimize} and {@code Maximize}: an extremum is attained only if its witness
+   * satisfies the constraint.
+   *
+   * @return <code>null</code> if an extremum cannot be determined
+   */
+  private static Span branchSpan(IExpr branch, IExpr constraint, ISymbol x, EvalEngine engine) {
+    if (branch.isFree(x, true)) {
+      return isFiniteRealValue(branch) ? Span.point(branch) : null;
+    }
+    IExpr min = engine.evalQuiet(F.Minimize(F.list(branch, constraint), x));
+    IExpr max = engine.evalQuiet(F.Maximize(F.list(branch, constraint), x));
+    Bound lo = branchBound(min, true, constraint, x, engine);
+    Bound hi = branchBound(max, false, constraint, x, engine);
+    if (lo == null || hi == null) {
+      return null;
+    }
+    double loNum = lo.unbounded ? Double.NEGATIVE_INFINITY : lo.value.evalfNaN();
+    double hiNum = hi.unbounded ? Double.POSITIVE_INFINITY : hi.value.evalfNaN();
+    if (Double.isNaN(loNum) || Double.isNaN(hiNum)) {
+      return null;
+    }
+    return new Span(lo, loNum, hi, hiNum);
+  }
+
+  private static Bound branchBound(IExpr extremum, boolean isMin, IExpr constraint, ISymbol x,
+      EvalEngine engine) {
+    if (!extremum.isList2() || !extremum.second().isList1()
+        || !extremum.second().first().isRuleAST()) {
+      return null;
+    }
+    IExpr value = extremum.first();
+    if (isMin ? value.isNegativeInfinity() : value.isInfinity()) {
+      return Bound.unbounded();
+    }
+    if (!isFiniteRealValue(value)) {
+      return null;
+    }
+    IExpr witness = extremum.second().first().second();
+    boolean attained = isFiniteRealValue(witness)
+        && engine.evalTrue(F.subst(constraint, x, witness));
+    return Bound.finite(value, attained);
   }
 
   /**
@@ -697,9 +834,12 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       final double xMax = 50.0;
       final double step = 0.1;
       List<Double> roots = new ArrayList<>();
-      double prevX = xMin;
+      // the positive half-line first, so that the root of an even function is the positive one
+      for (double side : new double[] {1.0, -1.0}) {
+      double prevX = side * xMin;
       double prevVal = sampleAt(eqExpr, x, prevX, engine);
-      for (double xs = xMin + step; xs <= xMax; xs += step) {
+      for (double xsAbs = xMin + step; xsAbs <= xMax; xsAbs += step) {
+        double xs = side * xsAbs;
         double curVal = sampleAt(eqExpr, x, xs, engine);
         if (!Double.isNaN(prevVal) && !Double.isNaN(curVal) && prevVal * curVal < 0.0) {
           // Sign change in [prevX, xs] → refine with FindRoot
@@ -721,6 +861,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         }
         prevX = xs;
         prevVal = curVal;
+      }
       }
       if (roots.isEmpty()) {
         return F.NIL;
@@ -755,9 +896,11 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       // a finite real value and NaN (complex-valued evaluations also return NaN here),
       // then refine the boundary x* via bisection.
       List<Double> boundaryRoots = new ArrayList<>();
-      double prevBx = xMin;
+      for (double side : new double[] {1.0, -1.0}) {
+      double prevBx = side * xMin;
       double prevBv = sampleAt(function, x, prevBx, engine);
-      for (double xs = xMin + step; xs <= xMax; xs += step) {
+      for (double xsAbs = xMin + step; xsAbs <= xMax; xsAbs += step) {
+        double xs = side * xsAbs;
         double curBv = sampleAt(function, x, xs, engine);
         boolean prevReal = !Double.isNaN(prevBv) && !Double.isInfinite(prevBv);
         boolean curReal = !Double.isNaN(curBv) && !Double.isInfinite(curBv);
@@ -800,6 +943,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         prevBx = xs;
         prevBv = curBv;
       }
+      }
       for (Double c : boundaryRoots) {
         // Prefer the unevaluated Subst form, mirroring the Root[..] style used above.
         IExpr yCandidate = F.subst(function, x, F.num(c));
@@ -813,7 +957,9 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         // when both the real-side sample and the modulus of the complex-side sample
         // (just past the boundary) are negligibly small — the signature of a
         // limit-to-zero boundary such as Sqrt[Sin[2 x]] at Sin[2 x] == 0.
-        double yAbsHi = sampleAbsAt(function, x, c + 1.0e-9, engine);
+        // the complex side lies to the right on the positive and to the left on the negative scan
+        double yAbsHi = Math.min(sampleAbsAt(function, x, c + 1.0e-9, engine),
+            sampleAbsAt(function, x, c - 1.0e-9, engine));
         if (Math.abs(yNum) < 1.0e-3 && (Double.isNaN(yAbsHi) || yAbsHi < 1.0e-3)) {
           yNum = 0.0;
           yCandidate = F.C0;
@@ -834,49 +980,54 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         return F.NIL;
       }
 
-      // Compare against limits at +/- Infinity so global extrema at the boundary are not
-      // missed (e.g. monotonic transcendental functions). A finite boundary limit beats
-      // a critical-point value when smaller (for the min) or larger (for the max).
-      double[] limitBounds = boundaryLimits(function, x, engine);
-      double limNegNum = limitBounds[0];
-      double limPosNum = limitBounds[1];
+      // Compare against the limits at +/- Infinity and at the real poles and removable
+      // singularities of the function, so that extrema which are not attained are not missed
+      // (e.g. Sin(x)/x tends to its supremum 1 at x == 0). A finite limit is an open bound, an
+      // infinite one makes that side unbounded, and a limit which cannot be determined on a side
+      // where the function is real leaves the range undecided.
+      List<IExpr> limits = new ArrayList<>();
+      if (!collectLimits(function, x, yMinNum, yMaxNum, engine, limits)) {
+        return F.NIL;
+      }
       boolean lowerOpen = false;
       boolean upperOpen = false;
-      if (!Double.isNaN(limNegNum)) {
-        if (limNegNum < yMinNum) {
-          yMinNum = limNegNum;
-          yMinExpr = F.num(limNegNum);
-          lowerOpen = true;
-        }
-        if (limNegNum > yMaxNum) {
-          yMaxNum = limNegNum;
-          yMaxExpr = F.num(limNegNum);
-          upperOpen = true;
+      boolean lowerUnbounded = false;
+      boolean upperUnbounded = false;
+      for (IExpr limitExpr : limits) {
+        if (limitExpr.isNegativeInfinity()) {
+          lowerUnbounded = true;
+        } else if (limitExpr.isInfinity()) {
+          upperUnbounded = true;
+        } else {
+          double limit = limitExpr.evalfNaN();
+          if (limit < yMinNum) {
+            yMinNum = limit;
+            yMinExpr = limitExpr;
+            lowerOpen = true;
+          }
+          if (limit > yMaxNum) {
+            yMaxNum = limit;
+            yMaxExpr = limitExpr;
+            upperOpen = true;
+          }
         }
       }
-      if (!Double.isNaN(limPosNum)) {
-        if (limPosNum < yMinNum) {
-          yMinNum = limPosNum;
-          yMinExpr = F.num(limPosNum);
-          lowerOpen = true;
-        }
-        if (limPosNum > yMaxNum) {
-          yMaxNum = limPosNum;
-          yMaxExpr = F.num(limPosNum);
-          upperOpen = true;
-        }
+      if (lowerUnbounded && upperUnbounded) {
+        return S.True;
+      }
+      if (lowerUnbounded) {
+        return upperOpen ? F.Less(y, yMaxExpr) : F.LessEqual(y, yMaxExpr);
+      }
+      if (upperUnbounded) {
+        return lowerOpen ? F.Greater(y, yMinExpr) : F.GreaterEqual(y, yMinExpr);
       }
 
       if (yMinExpr.equals(yMaxExpr)) {
         return F.Equal(y, yMinExpr);
       }
-      // Use Less for open boundary bounds and LessEqual otherwise.
-      IExpr lower = lowerOpen ? F.Less(yMinExpr, y) : F.LessEqual(yMinExpr, y);
-      IExpr upper = upperOpen ? F.Less(y, yMaxExpr) : F.LessEqual(y, yMaxExpr);
-      if (lowerOpen || upperOpen) {
-        return F.And(lower, upper);
-      }
-      return F.LessEqual(yMinExpr, y, yMaxExpr);
+      // Less for a bound which is only a limit, LessEqual otherwise
+      return buildRangeRelational(Bound.finite(yMinExpr, !lowerOpen),
+          Bound.finite(yMaxExpr, !upperOpen), y);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
@@ -910,24 +1061,90 @@ public class FunctionRange extends AbstractFunctionEvaluator {
    * machine-precision doubles. Returns {@link Double#NaN} for either side if the limit is not a
    * finite real number.
    */
-  private static double[] boundaryLimits(IExpr function, ISymbol x, EvalEngine engine) {
-    return new double[] {evalLimit(function, x, F.CNInfinity, engine),
-        evalLimit(function, x, F.CInfinity, engine)};
+  /**
+   * Collect the limits of the function at +/- Infinity and from both sides of the real zeros of
+   * its denominator, on every side where the function is real.
+   *
+   * @return <code>false</code> if a limit on a real side cannot be determined
+   */
+  private static boolean collectLimits(IExpr function, ISymbol x, double yMin, double yMax,
+      EvalEngine engine, List<IExpr> limits) {
+    for (double side : new double[] {-1.0, 1.0}) {
+      IExpr infinity = side < 0 ? F.CNInfinity : F.CInfinity;
+      if (!addLimit(function, x, infinity, F.NIL, side * 50.0, engine, limits)
+          && !isBoundedOscillation(function, x, side, yMin, yMax, engine)) {
+        return false;
+      }
+    }
+    IExpr denominator = engine.evalQuiet(F.Denominator(F.Together(function)));
+    if (denominator.isFree(x, true) || !denominator.isPolynomial(x)) {
+      return true;
+    }
+    IExpr poles = engine.evalQuiet(F.Solve(F.Equal(denominator, F.C0), x, S.Reals));
+    if (!poles.isListOfLists()) {
+      return true;
+    }
+    for (IExpr solution : (IAST) poles) {
+      IExpr pole = solution.first().second();
+      double p = pole.evalfNaN();
+      if (Double.isNaN(p)) {
+        continue;
+      }
+      if (!addLimit(function, x, pole, F.stringx("FromAbove"), p + 1.0e-4, engine, limits)
+          || !addLimit(function, x, pole, F.stringx("FromBelow"), p - 1.0e-4, engine, limits)) {
+        return false;
+      }
+    }
+    return true;
   }
 
-  private static double evalLimit(IExpr function, ISymbol x, IExpr direction, EvalEngine engine) {
+  /**
+   * Test if the function stays within the values of its critical points far out on one side, as
+   * <code>Sin(x)*Cos(x)</code> does while its limit at infinity doesn't exist. A function like
+   * <code>E^x*Sin(x)</code> leaves them.
+   */
+  private static boolean isBoundedOscillation(IExpr function, ISymbol x, double side, double yMin,
+      double yMax, EvalEngine engine) {
+    double tolerance = 1.0e-6 * Math.max(1.0, Math.max(Math.abs(yMin), Math.abs(yMax)));
+    for (int k = 0; k <= 200; k++) {
+      double value = sampleAt(function, x, side * (50.0 + 4.95 * k), engine);
+      if (Double.isNaN(value) || value < yMin - tolerance || value > yMax + tolerance) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Add the limit of the function towards <code>point</code> (from the given
+   * <code>direction</code>, or two sided for {@link F#NIL}) if the function is real at
+   * <code>probe</code>, a point on that side.
+   */
+  private static boolean addLimit(IExpr function, ISymbol x, IExpr point, IExpr direction,
+      double probe, EvalEngine engine, List<IExpr> limits) {
+    if (Double.isNaN(sampleAt(function, x, probe, engine))) {
+      // the function isn't real on that side
+      return true;
+    }
     try {
-      IExpr lim = engine.evalQuiet(F.Limit(function, F.Rule(x, direction)));
-      if (lim.isNumber()) {
-        double v = lim.evalfNaN();
+      IExpr limit = direction.isPresent()
+          ? engine.evalQuiet(F.Limit(function, F.Rule(x, point), F.Rule(S.Direction, direction)))
+          : engine.evalQuiet(F.Limit(function, F.Rule(x, point)));
+      if (limit.isInfinity() || limit.isNegativeInfinity()) {
+        limits.add(limit);
+        return true;
+      }
+      if (limit.isRealResult() && !limit.isDirectedInfinity()) {
+        double v = limit.evalfNaN();
         if (!Double.isNaN(v) && !Double.isInfinite(v)) {
-          return v;
+          limits.add(limit);
+          return true;
         }
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }
-    return Double.NaN;
+    return false;
   }
 
   /**

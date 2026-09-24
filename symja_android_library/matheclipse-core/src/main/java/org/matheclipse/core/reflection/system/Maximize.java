@@ -203,10 +203,12 @@ public class Maximize extends AbstractFunctionEvaluator {
         if (unbounded.isPresent()) {
           return unbounded;
         }
-        if (!isRationalObjective(objective, x, engine)) {
-          // the Lagrange method drops periodic families of stationary points; an objective which
-          // cannot be decided here stays unevaluated
-          return univariateIntervalExtremum(objective, x, intervalData, isMax, engine);
+        IExpr interval = univariateIntervalExtremum(objective, x, intervalData, isMax, engine);
+        if (interval.isPresent() || !isRationalObjective(objective, x, engine)) {
+          // the Lagrange method drops periodic families of stationary points and misses limits
+          // at the ends of the region; a non rational objective which cannot be decided here
+          // stays unevaluated
+          return interval;
         }
       }
       // Delegate the finite (compact-region) case to the proven multivariate KKT / Lagrange

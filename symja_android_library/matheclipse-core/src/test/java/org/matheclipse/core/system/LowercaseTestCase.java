@@ -11499,6 +11499,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "y==-1||y==0||y==1");
     check("FunctionRange(Floor(x), x, y)", //
         "y∈Integers");
+    // WMA: Sin(Root({#-Tan(#)&,4.4934...}))/Root(...) <= y < 1
+    check("FunctionRange(Sin(x)/x, x, y)", //
+        "Sin(Root({#1-Tan(#1)&,4.49341}))/Root({#1-Tan(#1)&,4.49341})<=y<1");
+    check("FunctionRange(Sin(x)/x^2, x, y)", //
+        "True");
+    check("FunctionRange(Abs(x)+x, x, y)", //
+        "y>=0");
+    check("FunctionRange(x*Abs(x), x, y)", //
+        "True");
+    check("FunctionRange(Abs(x)/(1+Abs(x)), x, y)", //
+        "0<=y<1");
+    check("FunctionRange(x*Exp(x), x, y)", //
+        "y>=-1/E");
   }
 
   @Test

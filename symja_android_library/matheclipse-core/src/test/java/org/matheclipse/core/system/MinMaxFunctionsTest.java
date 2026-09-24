@@ -368,6 +368,11 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "{1/E,{t->-1}}");
     check("Maximize({ArcTan(t), t>0}, t)", //
         "{Pi/2,{t->Infinity}}");
+    // the supremum is only a limit at the end of the region
+    check("Maximize({x/(1+x), x>0}, x)", //
+        "{1,{x->Infinity}}");
+    check("Minimize({x^4-3*x^2, x>-5}, x)", //
+        "{-9/4,{x->-Sqrt(3/2)}}");
     // unbounded below: stays unevaluated instead of a wrong minimum
     check("Minimize({t*Sin(t), t>0}, t)", //
         "Minimize({t*Sin(t),t>0},t)");

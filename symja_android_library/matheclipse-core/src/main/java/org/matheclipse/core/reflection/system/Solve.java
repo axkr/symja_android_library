@@ -2254,6 +2254,89 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     return false;
   }
 
+  /**
+   * Replace a periodic family <code>ConditionalExpression(a+b*C(1), C(1)∈Integers)</code> whose
+   * members are not all real by its only real member, or drop it if it has none:
+   * <code>Sinh(x)==0</code> gives <code>2*I*Pi*C(1)</code>, of which <code>C(1)==0</code> is real.
+   *
+   * @param list a list of solutions, or a list of rules
+   * @return the changed list or {@link F#NIL} if no family was changed
+   */
+  private static IAST realMembers(IAST list, EvalEngine engine) {
+    if (!list.isListOfLists()) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ListAlloc(list.argSize());
+    boolean changed = false;
+    for (IExpr solution : list) {
+      IAST rules = (IAST) solution;
+      IASTMutable newRules = rules.copy();
+      boolean drop = false;
+      for (int i = 1; i < rules.size(); i++) {
+        IExpr rule = rules.get(i);
+        if (!rule.isRuleAST() || !rule.second().isConditionalExpression()
+            || isRealValue(rule.second())) {
+          continue;
+        }
+        IExpr member = realMember(rule.second(), engine);
+        if (member.isNIL()) {
+          continue;
+        }
+        changed = true;
+        if (member.isFalse()) {
+          drop = true;
+          break;
+        }
+        newRules.set(i, F.Rule(rule.first(), member));
+      }
+      if (!drop) {
+        result.append(newRules);
+      }
+    }
+    return changed ? result : F.NIL;
+  }
+
+  /**
+   * The real member of the family <code>ConditionalExpression(a+b*C(k), C(k)∈Integers)</code>:
+   * <code>a+b*c</code> for the integer <code>c = -Im(a)/Im(b)</code>.
+   *
+   * @return the real member, {@link S#False} if there is none, or {@link F#NIL} if the family isn't
+   *         linear in a single integer parameter
+   */
+  private static IExpr realMember(IExpr family, EvalEngine engine) {
+    IExpr condition = family.second();
+    if (!condition.isAST(S.Element, 3) || !condition.first().isAST(S.C, 2)
+        || condition.second() != S.Integers) {
+      return F.NIL;
+    }
+    IExpr c = condition.first();
+    ISymbol k = F.Dummy("k");
+    IExpr value = F.subst(family.first(), x -> x.equals(c) ? k : F.NIL);
+    if (!value.isFree(S.C, true)) {
+      return F.NIL;
+    }
+    IExpr a = engine.evalQuiet(F.subst(value, k, F.C0));
+    IExpr b = engine.evalQuiet(F.D(value, k));
+    if (!b.isFree(k) || !a.isNumericFunction() || !b.isNumericFunction()) {
+      return F.NIL;
+    }
+    IExpr imA = engine.evalQuiet(F.Im(a));
+    IExpr imB = engine.evalQuiet(F.Im(b));
+    if (!imA.isNumericFunction() || !imB.isNumericFunction()) {
+      return F.NIL;
+    }
+    if (imB.isZero()) {
+      // every member has the imaginary part of a, which isn't zero
+      return S.False;
+    }
+    IExpr integer = engine.evalQuiet(F.Negate(F.Divide(imA, imB)));
+    if (!integer.isInteger()) {
+      return S.False;
+    }
+    IExpr member = engine.evalQuiet(F.Plus(a, F.Times(b, integer)));
+    return member.isRealResult() ? member : S.False;
+  }
+
   /** <code>C(1)∈Integers</code>, or a conjunction of those. */
   private static boolean isIntegerParameterCondition(IExpr condition) {
     if (condition.isAnd()) {
@@ -2304,6 +2387,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     if (expr.isList()) {
       IAST list = (IAST) expr;
       if (domain == S.Reals) {
+        IAST members = realMembers(list, EvalEngine.get());
+        if (members.isPresent()) {
+          list = members;
+          result = members;
+        }
         result = checkDomain(list, result, Solve::isComplex);
       } else if (domain == S.Primes) {
         result = checkDomain(list, result, Solve::isPrime);
