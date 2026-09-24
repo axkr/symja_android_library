@@ -78,6 +78,11 @@ public class PlotEndpointsTest {
         "ComplexPlot: Corners for z in {z,0,1} must have distinct machine-precision real and imaginary parts.");
     refused("ComplexPlot3D(z,{z,0,I})", //
         "ComplexPlot3D: Corners for z in {z,0,I}");
+    // the log plots are a Plot inside
+    refused("LogPlot(x,{x,1,1})", //
+        "Plot: Endpoints for x in {x,1,1}");
+    refused("LogLogPlot(x,{x,1,1})", //
+        "Plot: Endpoints for x in {x,1,1}");
   }
 
   @Test

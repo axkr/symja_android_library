@@ -126,7 +126,12 @@ public class Plot extends ListPlot {
         .evalN(quantityRange.isPresent() ? quantityRange.arg2() : rangeList.arg3());
     if ((!(xMin instanceof INum)) || (!(xMax instanceof INum)) || xMin.equals(xMax)) {
       // Endpoints in `1` must be distinct machine-size real numbers.
-      return Errors.printMessage(ast.topHead(), "plld", F.List(x, rangeList), engine);
+      // the log plots are a Plot inside, and report it under that name as the reference does
+      IExpr head = ast.topHead();
+      if (head == S.LogPlot || head == S.LogLogPlot || head == S.LogLinearPlot) {
+        head = S.Plot;
+      }
+      return Errors.printMessage((ISymbol) head, "plld", F.List(x, rangeList), engine);
     }
     double xMinD = ((INum) xMin).getRealPart();
     double xMaxD = ((INum) xMax).getRealPart();
