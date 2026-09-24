@@ -2361,6 +2361,22 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNullSpace() {
+    // Mathematica's options and answers
+    check("Options(NullSpace)", //
+        "{Method->Automatic,Modulus->0,Tolerance->Automatic,ZeroTest->Automatic}");
+    check("NullSpace({{1, Sqrt(2) + Sqrt(3)}, {Sqrt(2) - Sqrt(3), -1}})", //
+        "{{-Sqrt(2)-Sqrt(3),1}}");
+    check("NullSpace({{1, Sqrt(2)}, {Sqrt(2), 2}}, ZeroTest -> PossibleZeroQ)", //
+        "{{-Sqrt(2),1}}");
+    check("NullSpace({{1, a}, {a, a^2}}, ZeroTest -> (Simplify(#) === 0 &))", //
+        "{{-a,1}}");
+    check("NullSpace({{1, 2}, {2, 4}}, Modulus -> 5)", //
+        "{{3,1}}");
+    // a tolerance decides which entries of a numeric matrix are zero
+    check("NullSpace({{1.0, 2.0}, {2.0, 4.0000000001}}, Tolerance -> 10^-6)", //
+        "{{-2.0,1}}");
+    check("NullSpace({{1.0, 2.0}, {2.0, 4.0000000001}})", //
+        "{}");
     check("NullSpace({{0,0,0}, {0,3*E,-4*E}, {0,4*E,3*E}})", //
         "{{1,0,0}}");
     // TODO improve Zero tests

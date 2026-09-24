@@ -1401,6 +1401,22 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * The rules integrate <code>ArcTan(x+Sqrt(1-x^2))</code> by parts and leave two algebraic
+   * integrals they could not finish in their budget; each is asked for again with a budget of its
+   * own (Charlwood problem 12). A partial answer remembered on the way used to come back to every
+   * later request of the same integral.
+   */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testIntegrateFinishesPartialRubiAnswer() {
+    check("r = Integrate(ArcTan(x+Sqrt(1-x^2)), x); {FreeQ(r, Integrate), "
+        + "Max(Abs(N(Table(D(r, x) - ArcTan(x+Sqrt(1-x^2)) /. x->pt, {pt, {1/7, 3/8, 3/5}})))) < 10^-8}", //
+        "{True,True}");
+    check("FreeQ(Integrate(x^2*Sqrt(1-x^2)/(1-x^2+x^4), x), Integrate)", //
+        "True");
+  }
+
+  /**
    * An integral which re-enters itself: the rules write {@code Tan(Sqrt(1+x^2))} with exponentials,
    * a post-Rubi stage wrote those as {@code Cos} and {@code Sin} again, and a rule asked for the
    * original integral once more, until the recursion limit ended it with a {@code Hold(...)}.

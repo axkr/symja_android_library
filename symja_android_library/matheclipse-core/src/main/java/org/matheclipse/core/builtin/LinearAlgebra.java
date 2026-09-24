@@ -5059,7 +5059,7 @@ public final class LinearAlgebra {
    * NullSpace({1, {2}})
    * </pre>
    */
-  private static class NullSpace extends AbstractFunctionEvaluator {
+  private static class NullSpace extends AbstractFunctionOptionEvaluator {
 
     /**
      * Multiply the row vectors by the denominators {@link S#LCM} if all values are of type
@@ -5104,12 +5104,20 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
       FieldMatrix<IExpr> matrix;
-      IInteger modulus = ruleModulus(ast, engine);
+      // options: Method (not used), Modulus, Tolerance, ZeroTest, as in Mathematica
+      IInteger modulus = modulusOption(options[1]);
       if (modulus != null) {
         return nullSpaceModulus(ast.arg1(), modulus, engine);
       }
+      IExpr tolerance = options[2];
+      IExpr zeroTest = options[3];
+      // without either option the pivots are tested as they always were
+      Predicate<IExpr> zeroChecker = zeroTest == S.Automatic && tolerance == S.Automatic
+          ? AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST
+          : AbstractMatrix1Expr.optionZeroTest(ast, engine, zeroTest, tolerance);
       boolean togetherMode = engine.isTogetherMode();
       try {
         engine.setTogetherMode(true);
@@ -5117,7 +5125,7 @@ public final class LinearAlgebra {
         if (dims != null) {
           matrix = Convert.list2Matrix(ast.arg1());
           if (matrix != null) {
-            FieldMatrix<IExpr> nullspace = nullSpace(matrix);
+            FieldMatrix<IExpr> nullspace = nullSpace(matrix, zeroChecker);
             if (nullspace == null) {
               return F.CEmptyList;
             }
@@ -5195,7 +5203,13 @@ public final class LinearAlgebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.Method, S.Modulus, S.Tolerance, S.ZeroTest},
+          new IExpr[] {S.Automatic, F.C0, S.Automatic, S.Automatic});
     }
   }
 
@@ -8040,10 +8054,17 @@ public final class LinearAlgebra {
    * @return <code>null</code> if the null space is trivial (only the zero vector)
    */
   public static FieldMatrix<IExpr> nullSpace(FieldMatrix<IExpr> matrix) {
-    FieldReducedRowEchelonForm fmw =
-        new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
-    FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
-    return nullspace;
+    return nullSpace(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
+  }
+
+  /**
+   * The null space of <code>matrix</code>, with <code>zeroChecker</code> deciding which entries are
+   * zero when the pivots are chosen.
+   */
+  public static FieldMatrix<IExpr> nullSpace(FieldMatrix<IExpr> matrix,
+      Predicate<IExpr> zeroChecker) {
+    FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix, zeroChecker);
+    return fmw.getNullSpace(F.CN1);
   }
 
   /**

@@ -269,6 +269,20 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * {@code Integrate(Tan(Sqrt(1+x^2)),x)} again, and so on until the recursion limit. The same
    * integral inside its own evaluation can only loop, so it is declined.
    */
+  /**
+   * The integrals whose remembered answer of the rules still has integrals in it. Such an answer
+   * depends on the budget it was computed under - inside a rule the sub-integrals run with what is
+   * left of the outer budget - so it is remembered only until the top-level integration ends, and
+   * forgotten before {@link #finishPartialAnswer} asks again. Remembering it for good made every
+   * later request get the same partial answer back: after
+   * <code>Integrate(ArcTan(x+Sqrt(1-x^2)), x)</code>,
+   * <code>Integrate(x^2*Sqrt(1-x^2)/(1-x^2+x^4), x)</code> came back with an integral in it. Not
+   * remembering it at all is no option: the rules then compute the same partial sub-integrals over
+   * and over.
+   */
+  private static final ThreadLocal<java.util.Set<IExpr>> PARTIAL_RUBI_ANSWERS =
+      ThreadLocal.withInitial(java.util.HashSet::new);
+
   private static final ThreadLocal<java.util.Set<IExpr>> IN_PROGRESS =
       ThreadLocal.withInitial(java.util.HashSet::new);
 
@@ -332,6 +346,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         IN_RUBI_RULES.remove();
         DEFERRED_ROOTSUM.remove();
         IN_PROGRESS.remove();
+        forgetPartialAnswers(engine);
+        PARTIAL_RUBI_ANSWERS.remove();
       } else {
         EVAL_DEPTH.set(depth);
       }
@@ -358,6 +374,114 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * {@code Unintegrable} and {@code CannotIntegrate} are in the context too, but they are mapped
    * back to an unevaluated {@code Integrate()} before this runs, so they never reach here.
    */
+  /**
+   * Whether a result of the rules is an antiderivative with nothing left to integrate. One which
+   * is not is remembered only until the top-level integration ends, see
+   * {@link #PARTIAL_RUBI_ANSWERS}.
+   */
+  private static boolean isCompleteAntiderivative(IExpr result) {
+    return result.isFree(part -> part.isAST(S.Integrate)
+        || part.isAST(UtilityFunctionCtors.Unintegrable)
+        || part.isAST(F.$rubi("CannotIntegrate")), true) && !containsRubiInternals(result);
+  }
+
+  /**
+   * Finish an answer of the rules which still has integrals in it, at the top level only: each
+   * leftover <code>Integrate(g, x)</code> is asked for again through the whole cascade, with a
+   * budget of its own, and the answer is kept only if every leftover was integrated and the
+   * assembled antiderivative differentiates back to the integrand.
+   *
+   * <p>
+   * The rules integrate by parts and hand the pieces back to <code>Integrate</code> with what is
+   * left of their own budget. <code>Integrate(ArcTan(x+Sqrt(1-x^2)), x)</code> left
+   * <code>Integrate(x/(1+x*Sqrt(1-x^2)), x)</code> and
+   * <code>Integrate(x^2/(x-x^3+Sqrt(1-x^2)), x)</code>, which the surd stage integrates on their
+   * own in a few seconds. The partial answers remembered on the way are forgotten first, or the
+   * second attempt would get them back.
+   *
+   * @return the finished antiderivative, or {@link F#NIL}
+   */
+  private static IExpr finishPartialAnswer(IExpr partial, IAST fx, IExpr x, EvalEngine engine) {
+    if (EVAL_DEPTH.get() != 1 || !x.isSymbol()) {
+      return F.NIL;
+    }
+    java.util.Set<IExpr> leftovers = new java.util.LinkedHashSet<>();
+    collectLeftovers(partial, x, leftovers);
+    if (leftovers.isEmpty() || leftovers.contains(fx)) {
+      return F.NIL;
+    }
+    forgetPartialAnswers(engine);
+    IASTAppendable rules = F.ListAlloc(leftovers.size());
+    for (IExpr g : leftovers) {
+      long budget = rubiBudgetMillis(engine);
+      IExpr integrated = IntegrateTimeBudget.runWithin(
+          () -> engine.evaluate(F.Integrate(g, x)), budget > 0 ? budget : 0);
+      if (integrated.isNIL() || !integrated.isFree(S.Integrate, true)
+          || !isFiniteAntiderivative(integrated) || containsRubiInternals(integrated)) {
+        return F.NIL;
+      }
+      rules.append(F.Rule(F.Integrate(g, x), integrated));
+    }
+    IExpr finished = engine.evaluate(F.subst(partial, rules));
+    if (!finished.isFree(S.Integrate, true) || !differentiatesBack(finished, fx, x, engine)) {
+      return F.NIL;
+    }
+    return finished;
+  }
+
+  private static void collectLeftovers(IExpr expr, IExpr x, java.util.Set<IExpr> leftovers) {
+    if (expr.isAST(S.Integrate, 3) && expr.second().equals(x)) {
+      leftovers.add(expr.first());
+      return;
+    }
+    if (expr.isAST()) {
+      for (IExpr arg : (IAST) expr) {
+        collectLeftovers(arg, x, leftovers);
+      }
+    }
+  }
+
+  /**
+   * <code>D(antiderivative, x) == integrand</code> numerically, at the sample points where the
+   * integrand is real: every one of them has to agree, and there have to be two at least. The
+   * points outside the real domain are skipped, because the two sides may be continued there on
+   * different branches.
+   */
+  private static boolean differentiatesBack(IExpr antiderivative, IExpr integrand, IExpr x,
+      EvalEngine engine) {
+    IExpr difference = engine.evaluate(F.Subtract(F.D(antiderivative, x), integrand));
+    double[] points = {0.37, 0.61, 1.37, 2.19, -0.43};
+    int checked = 0;
+    for (double point : points) {
+      IExpr f = engine.evaluate(F.N(F.subst(integrand, x, F.num(point))));
+      if (!f.isReal()) {
+        continue;
+      }
+      double scale = Math.abs(f.evalf());
+      if (Double.isNaN(scale) || Double.isInfinite(scale)) {
+        continue;
+      }
+      IExpr d = engine.evaluate(F.N(F.Abs(F.subst(difference, x, F.num(point)))));
+      double deviation = d.evalfNaN();
+      if (Double.isNaN(deviation) || deviation > 1e-8 * (1.0 + scale)) {
+        return false;
+      }
+      checked++;
+    }
+    return checked >= 2;
+  }
+
+  /** Forget the partial answers of the rules remembered during this top-level integration. */
+  private static void forgetPartialAnswers(EvalEngine engine) {
+    java.util.Set<IExpr> partial = PARTIAL_RUBI_ANSWERS.get();
+    if (engine.rubiASTCache != null) {
+      for (IExpr ast : partial) {
+        engine.rubiASTCache.invalidate(ast);
+      }
+    }
+    partial.clear();
+  }
+
   private static boolean containsRubiInternals(IExpr expr) {
     return !expr.isFree(part -> {
       if (!part.isSymbol()) {
@@ -737,6 +861,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // Cos and Sin.
           if (!rubiResult.equals(ast) && !unfinishedSubstitution
               && isFiniteAntiderivative(rubiResult)) {
+            if (!rubiResult.isFree(S.Integrate, true)) {
+              IExpr finished = finishPartialAnswer(rubiResult, fx, x, engine);
+              if (finished.isPresent()) {
+                return finished;
+              }
+            }
             if (!rubiResult.isFree(S.Integrate, true) && RischNorman.isRadicalTower(fx, x)) {
               // the rules integrated a sum term by term and left terms which are not elementary on
               // their own, like Log(x)/Sqrt(1+x^2) in the derivative of Log(x)*ArcSinh(x): the
@@ -2017,6 +2147,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               }
               if (!assumptionsActive && temp.isAST()) {
                 engine.rubiASTCache.put(ast, temp);
+                if (!isCompleteAntiderivative(temp)) {
+                  PARTIAL_RUBI_ANSWERS.get().add(ast);
+                }
               }
               return temp;
             }
