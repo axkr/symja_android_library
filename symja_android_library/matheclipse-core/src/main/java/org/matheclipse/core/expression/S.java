@@ -16966,6 +16966,15 @@ public class S {
       S.initFinalSymbol("OverwriteTarget", ID.OverwriteTarget);
 
   /**
+   * OwenT(x) - TODO describe `OwenT`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OwenT.md">OwenT
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol OwenT = S.initFinalSymbol("OwenT", ID.OwenT);
+
+  /**
    * OwnValues(symbol) - prints the own-value rule associated with `symbol`.
    * 
    * @see <a href=
@@ -20843,6 +20852,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Skewness = S.initFinalSymbol("Skewness", ID.Skewness);
+
+  /**
+   * SkewNormalDistribution(x) - TODO describe `SkewNormalDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SkewNormalDistribution.md">SkewNormalDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SkewNormalDistribution =
+      S.initFinalSymbol("SkewNormalDistribution", ID.SkewNormalDistribution);
 
   /**
    * Slider(x) - TODO describe `Slider`.
