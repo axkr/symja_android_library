@@ -322,11 +322,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      // https://github.com/Hipparchus-Math/hipparchus/issues/128
-      if (arg1 > 1.0 || arg1 < -1.0) {
-        return F.complexNum(Complex.valueOf(arg1).acos());
-      }
-      return F.num(Math.acos(arg1));
+      return F.num(arg1).acos();
     }
 
     @Override
@@ -379,6 +375,45 @@ public class ExpTrigsFunctions {
   }
 
   /**
+   * <code>Log(z + Sqrt(z - 1)*Sqrt(z + 1))</code>, the principal branch of <code>ArcCosh(z)</code>.
+   * <code>Sqrt(z^2 - 1)</code> would pick the wrong branch for <code>Re(z) < 0</code>.
+   */
+  private static Complex arcCosh(Complex z) {
+    return z.add(z.subtract(Complex.ONE).sqrt().multiply(z.add(Complex.ONE).sqrt())).log();
+  }
+
+  private static Apcomplex arcCosh(Apcomplex z) {
+    Apcomplex one = new Apfloat(1, z.precision());
+    return ApcomplexMath.log(z.add(
+        ApcomplexMath.sqrt(z.subtract(one)).multiply(ApcomplexMath.sqrt(z.add(one)))));
+  }
+
+  /**
+   * <code>ArcCosh(x)</code> for real <code>x</code>, split at the branch points so that no signed
+   * zero of a complex intermediate decides the side of the cut.
+   */
+  private static IExpr arcCoshReal(double x) {
+    if (x >= 1.0) {
+      return F.num(FastMath.acosh(x));
+    }
+    if (x >= -1.0) {
+      return F.complexNum(0.0, Math.acos(x));
+    }
+    return F.complexNum(FastMath.acosh(-x), Math.PI);
+  }
+
+  private static IExpr arcCoshReal(Apfloat x) {
+    Apfloat one = new Apfloat(1, x.precision());
+    if (x.compareTo(one) >= 0) {
+      return F.num(ApfloatMath.acosh(x));
+    }
+    if (x.compareTo(one.negate()) >= 0) {
+      return F.complexNum(Apfloat.ZERO, ApfloatMath.acos(x));
+    }
+    return F.complexNum(ApfloatMath.acosh(x.negate()), ApfloatMath.pi(x.precision()));
+  }
+
+  /**
    * Inverse hyperbolic cosine
    *
    * <p>
@@ -403,29 +438,22 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return F.complexNum(ApcomplexMath.acosh(arg1));
+      return F.complexNum(arcCosh(arg1));
     }
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
-      double re = arg1.getReal();
-      double im = arg1.getImaginary();
-      Complex temp = new Complex(re * re - im * im - 1, 2 * re * im).sqrt();
-      return F.complexNum(new Complex(temp.getReal() + re, temp.getImaginary() + im).log());
+      return F.complexNum(arcCosh(arg1));
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatMath.acosh(arg1));
+      return arcCoshReal(arg1);
     }
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      double val = FastMath.acosh(arg1);
-      if (Double.isNaN(val)) {
-        return e1ComplexArg(new Complex(arg1));
-      }
-      return F.num(val);
+      return arcCoshReal(arg1);
     }
 
     @Override
@@ -699,6 +727,10 @@ public class ExpTrigsFunctions {
       if (F.isZero(arg1)) {
         return F.CComplexInfinity;
       }
+      if (arg1 > -1.0 && arg1 < 1.0) {
+        // the same branch as ArcSin(1/arg1)
+        return F.complexNum(Complex.valueOf(1 / arg1).asin());
+      }
       return F.num(Math.asin(1 / arg1));
     }
 
@@ -807,11 +839,34 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double d) {
-      // log(1+Sqrt(1-d^2) / d)
       if (F.isZero(d)) {
         return S.Indeterminate;
       }
-      return F.num(Math.log((1 + Math.sqrt(1 - d * d)) / d));
+      return arcCoshReal(1.0 / d);
+    }
+
+    /**
+     * <code>ArcCosh(1/z)</code>, the principal branch.
+     */
+    @Override
+    public IExpr e1ComplexArg(final Complex arg1) {
+      return F.complexNum(arcCosh(Complex.ONE.divide(arg1)));
+    }
+
+    @Override
+    public IExpr e1ApfloatArg(Apfloat arg1) {
+      if (arg1.signum() == 0) {
+        return F.NIL;
+      }
+      return arcCoshReal(ApfloatMath.inverseRoot(arg1, 1));
+    }
+
+    @Override
+    public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      if (arg1.equals(Apcomplex.ZERO)) {
+        return F.NIL;
+      }
+      return F.complexNum(arcCosh(ApcomplexMath.inverseRoot(arg1, 1)));
     }
 
     @Override
@@ -856,6 +911,10 @@ public class ExpTrigsFunctions {
     public IExpr e1DblArg(final double arg1) {
       if (F.isZero(arg1)) {
         return F.CComplexInfinity;
+      }
+      if (arg1 > -1.0 && arg1 < 1.0) {
+        // the same branch as ArcCos(1/arg1)
+        return F.num(1 / arg1).acos();
       }
       return F.num(Math.acos(1 / arg1));
     }

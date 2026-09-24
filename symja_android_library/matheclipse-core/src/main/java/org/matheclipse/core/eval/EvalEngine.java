@@ -1884,13 +1884,19 @@ public class EvalEngine implements Serializable {
           final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
           if (module instanceof DoubleUnaryOperator) {
             DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-            return ASTRealVector.map((IAST) arg1, oper);
+            IAST mapped = ASTRealVector.map((IAST) arg1, oper);
+            if (mapped != null) {
+              return mapped;
+            }
           }
         } else if (arg1.isRealMatrix()) {
           final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
           if (module instanceof DoubleUnaryOperator) {
             DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-            return ASTRealMatrix.map((IAST) arg1, oper);
+            IAST mapped = ASTRealMatrix.map((IAST) arg1, oper);
+            if (mapped != null) {
+              return mapped;
+            }
           }
         }
       }

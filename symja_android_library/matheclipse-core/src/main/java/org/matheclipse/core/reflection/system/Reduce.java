@@ -3009,6 +3009,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
 
       // from here on the domain is `Reals` or `Complexes`
+      IExpr rationalSplit = splitRationalRelations(arg1, vars, engine);
+      if (rationalSplit.isPresent()) {
+        if (rationalSplit.isTrue() || rationalSplit.isFalse()) {
+          return rationalSplit;
+        }
+        arg1 = rationalSplit;
+      }
       if (!vars.isList1()) {
         // linear inequalities in several variables: Fourier-Motzkin elimination
         IExpr linear = reduceLinear(arg1, vars, domain, engine);
@@ -4396,6 +4403,54 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
 
   /** Maximum number of leading coefficient case distinctions in one system. */
   private static final int MAX_LEADING_COEFFICIENT_SPLITS = 16;
+
+  /**
+   * An equation or inequation of a rational function <code>n/d</code> of the variables holds where
+   * the one of the numerator <code>n</code> does and <code>d!=0</code>, so that no solution lies on
+   * a pole: <code>(x-y)/(x-2)==0</code> becomes <code>x-y==0&amp;&amp;-2+x!=0</code>. Common
+   * factors are cancelled first, as <code>(x^2-1)/(x-1)-x-1==0</code> is <code>True</code>.
+   *
+   * @return {@link F#NIL} if no relation of <code>expr</code> has a denominator in the variables
+   */
+  private static IExpr splitRationalRelations(IExpr expr, IAST vars, EvalEngine engine) {
+    if (expr.isAnd() || expr.isOr() || expr.isList()) {
+      IAST ast = (IAST) expr;
+      IASTMutable result = F.NIL;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr split = splitRationalRelations(ast.get(i), vars, engine);
+        if (split.isPresent()) {
+          if (result.isNIL()) {
+            result = ast.copy();
+          }
+          result.set(i, split);
+        }
+      }
+      if (result.isNIL()) {
+        return F.NIL;
+      }
+      // a list of relations is their conjunction, where a relation which became True drops out
+      return engine.evaluate(result.isList() ? result.setAtCopy(0, S.And) : result);
+    }
+    if (!expr.isEqual() && !expr.isAST(S.Unequal, 3)) {
+      return F.NIL;
+    }
+    IExpr difference = engine.evaluate(F.Subtract(expr.first(), expr.second()));
+    if (!difference.isAST() || isFreeOfAll(difference, vars) || difference.isPolynomial(vars)) {
+      return F.NIL;
+    }
+    IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) difference, true, engine);
+    IExpr denominator = parts[1];
+    // for a unit denominator parts[0] is the uncancelled input
+    IExpr numerator = denominator.isOne() ? parts[2] : parts[0];
+    if (!numerator.isPolynomial(vars) || !denominator.isPolynomial(vars)) {
+      return F.NIL;
+    }
+    IExpr relation = expr.isEqual() ? F.Equal(numerator, F.C0) : F.Unequal(numerator, F.C0);
+    if (!isFreeOfAll(denominator, vars)) {
+      relation = F.And(relation, F.Unequal(denominator, F.C0));
+    }
+    return engine.evaluate(relation);
+  }
 
   /** Test if <code>expr</code> contains none of the <code>vars</code>. */
   private static boolean isFreeOfAll(IExpr expr, IAST vars) {

@@ -16,6 +16,7 @@ import java.math.BigInteger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -89,6 +90,7 @@ public class SpecialFunctions {
       S.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
       S.LerchPhi.setEvaluator(new LerchPhi());
       S.LogGamma.setEvaluator(new LogGamma());
+      S.OwenT.setEvaluator(new OwenT());
       S.MathieuC.setEvaluator(new Mathieu(MathieuFunctions.Kind.C));
       S.MathieuCharacteristicA.setEvaluator(new MathieuCharacteristicValue(false));
       S.MathieuCharacteristicB.setEvaluator(new MathieuCharacteristicValue(true));
@@ -825,6 +827,167 @@ public class SpecialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
+   * Owen's T function <code>OwenT(h, a) = 1/(2*Pi)*Integrate(E^(-h^2*(1+t^2)/2)/(1+t^2), {t,0,a})</code>.
+   */
+  private static final class OwenT extends AbstractFunctionEvaluator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return ast.argSize() == 2 && ast.arg1().isRealResult() && ast.arg2().isRealResult();
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr h = ast.arg1();
+      IExpr a = ast.arg2();
+      if (a.isZero()) {
+        return F.C0;
+      }
+      if (h.isZero()) {
+        // ArcTan(a)/(2*Pi)
+        return F.Times(F.C1D2, F.Power(S.Pi, F.CN1), F.ArcTan(a));
+      }
+      if (a.isOne()) {
+        // 1/8*Erfc(-h/Sqrt(2))*Erfc(h/Sqrt(2))
+        IExpr z = F.Times(F.C1DSqrt2, h);
+        return F.Times(F.QQ(1, 8), F.Erfc(F.Negate(z)), F.Erfc(z));
+      }
+      if (h.isInfinity() || h.isNegativeInfinity()) {
+        return F.C0;
+      }
+      if (a.isInfinity() || a.isNegativeInfinity()) {
+        // 1/4*Erfc(Abs(h)/Sqrt(2))
+        IExpr value = F.Times(F.C1D4, F.Erfc(F.Times(F.C1DSqrt2, F.Abs(h))));
+        return a.isInfinity() ? value : F.Negate(value);
+      }
+      IExpr negH = AbstractFunctionEvaluator.getNormalizedNegativeExpression(h);
+      if (negH.isPresent()) {
+        // OwenT is even in h
+        return F.binaryAST2(S.OwenT, negH, a);
+      }
+      IExpr negA = AbstractFunctionEvaluator.getNormalizedNegativeExpression(a);
+      if (negA.isPresent()) {
+        // and odd in a
+        return F.Negate(F.binaryAST2(S.OwenT, h, negA));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() != 2 || !(ast.arg1() instanceof INum) || !(ast.arg2() instanceof INum)) {
+        return F.NIL;
+      }
+      INum h = (INum) ast.arg1();
+      INum a = (INum) ast.arg2();
+      if (h instanceof ApfloatNum || a instanceof ApfloatNum) {
+        long precision = Math.min(h.apfloatValue().precision(), a.apfloatValue().precision());
+        if (precision == Apfloat.INFINITE) {
+          precision = engine.getNumericPrecision();
+        }
+        return F.num(owenT(h.apfloatValue(), a.apfloatValue(), precision));
+      }
+      return F.num(owenT(new Apfloat(h.getRealPart()), new Apfloat(a.getRealPart()), 20)
+          .doubleValue());
+    }
+
+    /**
+     * Owen's T function to <code>precision</code> digits: the series of Owen's method T1 for
+     * <code>0 &lt; a &lt;= 1</code>, and the identity
+     * <code>T(h,a) = (Phi(h)+Phi(a*h))/2 - Phi(h)*Phi(a*h) - T(a*h,1/a)</code> for <code>a &gt; 1</code>
+     * (<code>h &gt;= 0</code>).
+     */
+    static Apfloat owenT(Apfloat h, Apfloat a, long precision) {
+      if (a.signum() == 0) {
+        return Apfloat.ZERO;
+      }
+      if (a.signum() < 0) {
+        return owenT(h, a.negate(), precision).negate();
+      }
+      h = ApfloatMath.abs(h);
+      // the series cancels to a result of the size E^(-h^2/2): carry that many extra digits
+      double hd = h.doubleValue();
+      long guard = 10 + (long) (hd * hd / 2.0 / Math.log(10.0));
+      long working = precision + guard;
+      FixedPrecisionApfloatHelper helper = new FixedPrecisionApfloatHelper(working);
+      Apfloat one = new Apfloat(1, working);
+      if (a.compareTo(one) <= 0) {
+        return ApfloatMath.round(owenTSeries(h, a, working, helper), precision,
+            java.math.RoundingMode.HALF_EVEN);
+      }
+      Apfloat ah = helper.multiply(a, h);
+      Apfloat sqrt2 = helper.sqrt(new Apfloat(2, working));
+      Apfloat phiH = helper.divide(helper.erfc(helper.divide(h.negate(), sqrt2)), new Apfloat(2));
+      Apfloat phiAH =
+          helper.divide(helper.erfc(helper.divide(ah.negate(), sqrt2)), new Apfloat(2));
+      Apfloat value = helper.subtract(helper.divide(helper.add(phiH, phiAH), new Apfloat(2)),
+          helper.multiply(phiH, phiAH));
+      double ahd = ah.doubleValue();
+      if (ahd * ahd / 2.0 < working * Math.log(10.0) + 10.0) {
+        // T(a*h, 1/a) is smaller than E^(-(a*h)^2/2); below the working precision it is dropped
+        value = helper.subtract(value,
+            owenT(ah, helper.divide(one, a), working));
+      }
+      return ApfloatMath.round(value, precision, java.math.RoundingMode.HALF_EVEN);
+    }
+
+    /**
+     * <code>(ArcTan(a) - Sum(c_j*a^(2*j+1), j>=0))/(2*Pi)</code> with
+     * <code>c_j = (-1)^j/(2*j+1)*(1-E^(-x)*Sum(x^i/i!, {i,0,j}))</code>, <code>x = h^2/2</code>,
+     * for <code>0 &lt; a &lt;= 1</code>.
+     */
+    private static Apfloat owenTSeries(Apfloat h, Apfloat a, long working,
+        FixedPrecisionApfloatHelper helper) {
+      Apfloat x = helper.divide(helper.multiply(h, h), new Apfloat(2));
+      if (x.doubleValue() > 1.0e5) {
+        // smaller than E^(-100000)
+        return Apfloat.ZERO;
+      }
+      Apfloat expMinusX = helper.exp(x.negate());
+      Apfloat a2 = helper.multiply(a, a);
+      Apfloat poissonTerm = expMinusX; // E^(-x)*x^j/j!
+      Apfloat poissonSum = expMinusX; // E^(-x)*Sum(x^i/i!, {i,0,j})
+      Apfloat aPower = a; // a^(2*j+1)
+      Apfloat sum = Apfloat.ZERO;
+      Apfloat epsilon = ApfloatMath.scale(new Apfloat(1, working), -working);
+      double xd = x.doubleValue();
+      for (long j = 0;; j++) {
+        Apfloat c = helper.divide(helper.subtract(new Apfloat(1, working), poissonSum),
+            new Apfloat(2 * j + 1));
+        Apfloat term = helper.multiply(c, aPower);
+        sum = (j & 1) == 0 ? helper.add(sum, term) : helper.subtract(sum, term);
+        if (j > xd && ApfloatMath.abs(term).compareTo(epsilon) < 0) {
+          break;
+        }
+        if (j > 100_000_000L) {
+          break;
+        }
+        poissonTerm = helper.divide(helper.multiply(poissonTerm, x), new Apfloat(j + 1));
+        poissonSum = helper.add(poissonSum, poissonTerm);
+        aPower = helper.multiply(aPower, a2);
+      }
+      Apfloat twoPi = helper.multiply(new Apfloat(2), helper.pi());
+      return helper.divide(helper.subtract(helper.atan(a), sum), twoPi);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
 
     @Override

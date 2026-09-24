@@ -10,6 +10,7 @@ import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -222,9 +223,13 @@ public class Num implements INum {
 
   @Override
   public IInexactNumber acos() {
-    // https://github.com/Hipparchus-Math/hipparchus/issues/128
-    if (value > 1.0 || value < -1.0) {
-      return F.complexNum(Complex.valueOf(value).acos());
+    // https://github.com/Hipparchus-Math/hipparchus/issues/128 - and Complex.acos() puts a real
+    // argument greater than 1 on the other side of the cut: ArcCos(2.0) is I*ArcCosh(2.0)
+    if (value > 1.0) {
+      return F.complexNum(0.0, FastMath.acosh(value));
+    }
+    if (value < -1.0) {
+      return F.complexNum(Math.PI, -FastMath.acosh(-value));
     }
     return valueOf(Math.acos(value));
   }

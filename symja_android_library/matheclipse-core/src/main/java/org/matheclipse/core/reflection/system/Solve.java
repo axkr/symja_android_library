@@ -1780,11 +1780,15 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           return resultList;
         }
         Set<IExpr> subSolutionSet = new TreeSet<IExpr>();
+        // every factor of a single equation was solved, and each candidate it gave was rejected by
+        // the cross check: `x*Csc(x)==0` has no solution
+        boolean candidatesRejected = false;
         for (int i = 1; i < termsEqualZero.size(); i++) {
           IExpr termEQZero = termsEqualZero.get(i);
           if (termEQZero.isTimes()) {
-            solveTimesAST((IAST) termEQZero, termsEqualZero, inequationsList, numericFlag,
-                variables, multipleValues, subSolutionSet, i, engine);
+            int candidates = solveTimesAST((IAST) termEQZero, termsEqualZero, inequationsList,
+                numericFlag, variables, multipleValues, subSolutionSet, i, engine);
+            candidatesRejected = candidates > 0 && termsEqualZero.isAST1();
           } else {
             if (termEQZero.isAST()) {
               // try factoring
@@ -1814,6 +1818,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         }
         if (subSolutionSet.size() > 0) {
           return crossChecking(originalTermsEqualZero, subSolutionSet, engine);
+        }
+        if (candidatesRejected) {
+          return F.ListAlloc();
         }
         return resultList;
       } catch (LimitException le) {
@@ -1936,16 +1943,22 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param i the index of the current equation in the list
      * @param engine the evaluation engine
      */
-    private void solveTimesAST(IAST times, IAST termsEqualZeroList, IAST inequationsList,
+    private int solveTimesAST(IAST times, IAST termsEqualZeroList, IAST inequationsList,
         boolean numericFlag, IAST variables, boolean multipleValues, Set<IExpr> subSolutionSet,
         int i, EvalEngine engine) {
       IAST temp;
+      int candidates = 0;
       for (int j = 1; j < times.size(); j++) {
         if (!times.get(j).isFree(Predicates.in(variables), true)) {
           // try to get a solution from this Times() factor
           IASTMutable clonedEqualZeroList = termsEqualZeroList.setAtCopy(i, times.get(j));
           temp = solveEquations(clonedEqualZeroList, inequationsList, variables, 0, numericFlag,
               engine);
+          if (!temp.isList()) {
+            candidates = -1;
+          } else if (candidates >= 0) {
+            candidates += temp.argSize();
+          }
           if (temp.size() > 1) {
             for (int k = 1; k < temp.size(); k++) {
               IExpr solution = temp.get(k);
@@ -1984,10 +1997,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               for (int k = 1; k < subResult.size(); k++) {
                 subSolutionSet.add(solveNumeric(subResult.get(k), numericFlag, engine));
               }
+              candidates = -1;
             }
           }
         }
       }
+      return candidates;
     }
 
     /**
@@ -2212,9 +2227,40 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    */
   private static boolean isComplex(IExpr listOfRules) {
     if (listOfRules.isListOfRules(false)) {
-      return listOfRules.exists(x -> !x.second().isRealResult());
+      return listOfRules.exists(x -> !isRealValue(x.second()));
     }
     return false;
+  }
+
+  /**
+   * Test if a solution value is real. A periodic family
+   * <code>ConditionalExpression(Pi/2+2*Pi*C(1), C(1)∈Integers)</code> is real, if its members for
+   * two integers are.
+   */
+  private static boolean isRealValue(IExpr value) {
+    if (value.isRealResult()) {
+      return true;
+    }
+    if (value.isConditionalExpression() && isIntegerParameterCondition(value.second())) {
+      EvalEngine engine = EvalEngine.get();
+      for (IExpr integer : new IExpr[] {F.C0, F.C1}) {
+        IExpr member = F.subst(value.first(), x -> x.isAST(S.C, 2) ? integer : F.NIL);
+        if (!engine.evalQuiet(member).isRealResult()) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /** <code>C(1)∈Integers</code>, or a conjunction of those. */
+  private static boolean isIntegerParameterCondition(IExpr condition) {
+    if (condition.isAnd()) {
+      return ((IAST) condition).forAll(Solve::isIntegerParameterCondition);
+    }
+    return condition.isAST(S.Element, 3) && condition.first().isAST(S.C, 2)
+        && condition.second() == S.Integers;
   }
 
   private static boolean isPrime(IExpr listOfRules) {
@@ -2851,7 +2897,105 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       ast = ast.copyUntil(argSize + 1);
     }
     SolveData sd = new SolveData(SolveOptions.of(SolveOptions.SOLVE_KEYS, options));
-    return dropNonFiniteSolutions(sd.of(ast, isNumericArgument, engine));
+    IAST withoutIdentities = dropRationalIdentities(ast, engine);
+    if (withoutIdentities.isPresent()) {
+      if (withoutIdentities.isList()) {
+        return withoutIdentities;
+      }
+      ast = withoutIdentities;
+    }
+    IExpr result = dropNonFiniteSolutions(sd.of(ast, isNumericArgument, engine));
+    return dropIndeterminateSolutions(ast.arg1(), result, engine);
+  }
+
+  /**
+   * The equations of a {@code Solve(...)} call: a single equation, or the equations of a list or
+   * conjunction.
+   */
+  private static IAST equationsOf(IExpr system) {
+    if (system.isEqual()) {
+      return F.list(system);
+    }
+    if (system.isList() || system.isAnd()) {
+      IAST relations = (IAST) system;
+      IASTAppendable equations = F.ListAlloc(relations.argSize());
+      for (IExpr relation : relations) {
+        if (relation.isEqual()) {
+          equations.append(relation);
+        }
+      }
+      return equations;
+    }
+    return F.CEmptyList;
+  }
+
+  /**
+   * An equation of rational functions which holds identically once the common factors are
+   * cancelled constrains nothing: <code>(x^2-1)/(x-1)-x-1==0</code> is solved by every
+   * <code>x</code>, so <code>Solve</code> gives <code>{{}}</code> for it and drops it from a
+   * system.
+   *
+   * @return the <code>Solve(...)</code> ast without these equations, <code>{{}}</code> if no other
+   *         relation remains, or {@link F#NIL} if there is no such equation
+   */
+  private static IAST dropRationalIdentities(IAST ast, EvalEngine engine) {
+    if (ast.argSize() < 2) {
+      return F.NIL;
+    }
+    IExpr system = ast.arg1();
+    IAST variables = ast.arg2().makeList();
+    IAST relations = system.isEqual() ? F.list(system)
+        : system.isList() || system.isAnd() ? (IAST) system : F.CEmptyList;
+    IASTAppendable remaining = F.ListAlloc(relations.argSize());
+    boolean dropped = false;
+    for (IExpr relation : relations) {
+      if (relation.isEqual()) {
+        IExpr difference = engine.evaluate(F.Subtract(relation.first(), relation.second()));
+        if (difference.isAST() && !difference.isFree(x -> variables.contains(x), true)
+            && !difference.isPolynomial(variables)
+            && engine.evalQuiet(F.Together(difference)).isZero()) {
+          dropped = true;
+          continue;
+        }
+      }
+      remaining.append(relation);
+    }
+    if (!dropped) {
+      return F.NIL;
+    }
+    if (remaining.isEmpty()) {
+      return F.list(F.CEmptyList);
+    }
+    return ast.setAtCopy(1, remaining.isAST1() ? remaining.arg1() : remaining);
+  }
+
+  /**
+   * Drop a solution for which an equation evaluates to <code>Indeterminate</code> or an infinity:
+   * <code>x/E^(1/x)==0</code> has no solution <code>x-&gt;0</code>, because <code>0*E^(-1/0)</code>
+   * is not <code>0</code>. <code>x/Log(x)==0</code> keeps it, as <code>0/-Infinity</code> is
+   * <code>0</code>.
+   */
+  private static IExpr dropIndeterminateSolutions(IExpr system, IExpr result, EvalEngine engine) {
+    if (!result.isListOfLists() || result.argSize() == 0) {
+      return result;
+    }
+    IAST equations = equationsOf(system);
+    if (equations.isEmpty()) {
+      return result;
+    }
+    return ((IAST) result).select(solution -> {
+      if (!solution.isFree(x -> x.isConditionalExpression() || x.isAST(S.C, 2), true)) {
+        return true;
+      }
+      for (IExpr equation : equations) {
+        IExpr difference = F.Subtract(equation.first(), equation.second());
+        IExpr value = engine.evalQuiet(difference.replaceAll((IAST) solution).orElse(difference));
+        if (value.isIndeterminate() || value.isDirectedInfinity()) {
+          return false;
+        }
+      }
+      return true;
+    });
   }
 
   /**

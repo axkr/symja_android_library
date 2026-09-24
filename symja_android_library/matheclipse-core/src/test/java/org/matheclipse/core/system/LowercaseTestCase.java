@@ -590,8 +590,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     checkNumeric("ArcCos(-2.0)", //
         "3.141592653589793+I*(-1.3169578969248166)");
+    // WMA: ArcCos(2.) -> 0.+1.31696*I, the same side of the cut as N(ArcCos(2),30)
     checkNumeric("ArcCos(2.0)", //
-        "I*(-1.3169578969248166)");
+        "I*1.3169578969248166");
 
     check("ArcCos(Cos(-1/2))", //
         "1/2");
@@ -770,7 +771,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ArcSech(-2)", //
         "I*2/3*Pi");
     check("D(ArcSech(x),x)", //
-        "-1/(x*Sqrt(1-x^2))");
+        "-1/(x*Sqrt((1-x)/(1+x))*(1+x))");
   }
 
   @Test
@@ -11475,6 +11476,92 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // TODO implement for multiple variables
     check("FunctionPeriod(Cos(x) + Sin(y), {x, y})", //
         "FunctionPeriod(Cos(x)+Sin(y),{x,y})");
+  }
+
+  @Test
+  public void testFunctionRangeCompositionSympy() {
+    // sympy #30499, #30505
+    check("FunctionRange(Sin(Exp(x)), x, y)", //
+        "-1<=y<=1");
+    check("FunctionRange(Cos(x^2), x, y)", //
+        "-1<=y<=1");
+    check("FunctionRange(Exp(Sin(x)), x, y)", //
+        "1/E<=y<=E");
+    check("FunctionRange(ArcTan(x^2), x, y)", //
+        "0<=y<Pi/2");
+    check("FunctionRange(Exp(1/(1+x^2)), x, y)", //
+        "1<y<=E");
+    check("FunctionRange(ArcCot(x), x, y)", //
+        "-Pi/2<y<0||0<y<=Pi/2");
+    check("FunctionRange(x/Abs(x), x, y)", //
+        "y==-1||y==1");
+    check("FunctionRange(Sign(x), x, y)", //
+        "y==-1||y==0||y==1");
+    check("FunctionRange(Floor(x), x, y)", //
+        "y∈Integers");
+  }
+
+  @Test
+  public void testArcSechNumeric() {
+    // the branch of ArcCosh(1/x) for real x outside of (0,1]
+    checkNumeric("ArcSech({-3.0, 2.0, 0.5, -0.5, -2.0})", //
+        "{I*1.9106332362490186,I*1.0471975511965979,1.3169578969248166,1.3169578969248166+I*3.141592653589793,I*2.0943951023931957}");
+    checkNumeric("N(ArcSech(-3), 30)", //
+        "I*1.91063323624901855632771420503");
+    checkNumeric("ArcCosh({-2.0, 0.5})", //
+        "{1.3169578969248166+I*3.141592653589793,I*1.0471975511965979}");
+    // WMA: ArcSec(0.5) -> 0.+1.31696*I
+    checkNumeric("ArcSec({0.5, -0.5})", //
+        "{I*1.3169578969248166,3.141592653589793+I*(-1.3169578969248166)}");
+    checkNumeric("ArcCos({2.0, -2.0})", //
+        "{I*1.3169578969248166,3.141592653589793+I*(-1.3169578969248166)}");
+    check("D(ArcSech(x),x) /. x->-3", //
+        "(I*1/6)/Sqrt(2)");
+  }
+
+  @Test
+  public void testPositivePowersIntegerExponent() {
+    // (a*b)^2 is distributed again - an endless recursion
+    check("Refine(a^2*b^2, a>0&&b>0)", //
+        "a^2*b^2");
+    check("Refine(a^(1/2)*b^(1/2), a>0&&b>0)", //
+        "Sqrt(a*b)");
+    // sympy gh-7383
+    check("Integrate(D(Erf(a*Sqrt(x^2+z^2)/Sqrt(2))/Sqrt(x^2+z^2), {z,2}) /. x->Sqrt(R^2-z^2), {z,-R,R}, Assumptions->R>0&&a>0)", //
+        "-2/3*(Sqrt(2)*a^3*R)/(E^(1/2*a^2*R^2)*Sqrt(Pi))");
+  }
+
+  @Test
+  public void testOwenT() {
+    check("OwenT(x, 1)", //
+        "1/8*Erfc(x/Sqrt(2))*Erfc(-x/Sqrt(2))");
+    check("OwenT(0, a)", //
+        "ArcTan(a)/(2*Pi)");
+    check("OwenT(0, 0)", //
+        "0");
+    check("OwenT(-x, a)", //
+        "OwenT(x,a)");
+    check("OwenT(x, -a)", //
+        "-OwenT(x,a)");
+    check("OwenT(x, Infinity)", //
+        "Erfc(Abs(x)/Sqrt(2))/4");
+    check("D(OwenT(x, a), x)", //
+        "-Erf((a*x)/Sqrt(2))/(2*E^(x^2/2)*Sqrt(2*Pi))");
+    check("D(OwenT(x, a), a)", //
+        "E^(1/2*(-1-a^2)*x^2)/(2*(1+a^2)*Pi)");
+    // WMA values
+    checkNumeric("OwenT(4.0, 1)", //
+        "1.5835119382780334E-5");
+    checkNumeric("OwenT(0, 0.5)", //
+        "0.07379180882521663");
+    checkNumeric("OwenT(4.0, -7)", //
+        "-1.5835620916559962E-5");
+    checkNumeric("N(OwenT(1/8, -1), 70)", //
+        "-0.1237630544953745706391640590520641713114251219285658884225649998862016");
+    checkNumeric("N(Table(OwenT(x, 2), {x, -2, 2}))", //
+        "{0.01137490879318756,0.0784681869930841,0.17620819117478337,0.0784681869930841,0.01137490879318756}");
+    checkNumeric("OwenT(1.0, 1000.0)", //
+        "0.07932762696572852");
   }
 
   @Test

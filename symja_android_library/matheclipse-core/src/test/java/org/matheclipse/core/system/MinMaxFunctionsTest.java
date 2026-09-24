@@ -348,4 +348,28 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     check("NMinimize({x + y, 3*x + 2*y >= 7 && x + 2*y >= 6 }, {x, y})", //
         "{3.25,{x->0.5,y->2.75}}");
   }
+
+  /** The stationary points of a periodic objective inside a constraint interval. */
+  @Test
+  public void testConstrainedPeriodicExtremum() {
+    check("Minimize({Sin(t), t>0}, t)", //
+        "{-1,{t->3/2*Pi}}");
+    check("Maximize({Sin(t), t>0}, t)", //
+        "{1,{t->Pi/2}}");
+    check("Minimize({Cos(t), t>=0}, t)", //
+        "{-1,{t->Pi}}");
+    check("Maximize({Sin(t), 0<=t<=2}, t)", //
+        "{1,{t->Pi/2}}");
+    check("Minimize({Sin(t), 1<=t<=10}, t)", //
+        "{-1,{t->3/2*Pi}}");
+    check("Minimize({Sin(t)+Cos(t), t>0}, t)", //
+        "{-Sqrt(2),{t->5/4*Pi}}");
+    check("Minimize({E^t, -1<=t<=1}, t)", //
+        "{1/E,{t->-1}}");
+    check("Maximize({ArcTan(t), t>0}, t)", //
+        "{Pi/2,{t->Infinity}}");
+    // unbounded below: stays unevaluated instead of a wrong minimum
+    check("Minimize({t*Sin(t), t>0}, t)", //
+        "Minimize({t*Sin(t),t>0},t)");
+  }
 }

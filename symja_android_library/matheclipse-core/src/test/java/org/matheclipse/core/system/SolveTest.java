@@ -3494,4 +3494,38 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve({x^(1/2)+Tanh(y)==13/5, x^(1/2)-Tanh(y)==7/5},{x,y})", //
         "{{x->4,y->ConditionalExpression(ArcTanh(3/5)+I*Pi*C(1),C(1)∈Integers)}}");
   }
+
+  /**
+   * A root of the numerator where the equation is undefined isn't a solution (sympy #7870); an
+   * equation which cancels to an identity is solved by everything.
+   */
+  @Test
+  public void testSolveUndefinedRoots() {
+    // WMA keeps x->0, because 0/-Infinity is 0
+    check("Solve(x/Log(x)==0,x)", //
+        "{{x->0}}");
+    check("Solve(x/Exp(1/x)==0,x)", //
+        "{}");
+    check("Solve(x/Sin(x)==0,x)", //
+        "{}");
+    check("Solve(x*(x-1)*Csc(x)==0,x)", //
+        "{{x->1}}");
+    check("Solve(x/(x-2)==0,x)", //
+        "{{x->0}}");
+    check("Solve((x^2-1)/(x-1)-x-1==0,x)", //
+        "{{}}");
+    check("Solve({(x^2-1)/(x-1)-x-1==0, y-1==0},{x,y})", //
+        "{{y->1}}");
+  }
+
+  /** A periodic family of real solutions belongs to the Reals domain. */
+  @Test
+  public void testSolveRealsPeriodic() {
+    check("Solve(Cos(x)==0, x, Reals)[[2]]", //
+        "{x->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers)}");
+    check("Length(Solve(Cos(x)==0, x, Reals))", //
+        "2");
+    check("Solve(Sin(x)==2, x, Reals)", //
+        "{}");
+  }
 }

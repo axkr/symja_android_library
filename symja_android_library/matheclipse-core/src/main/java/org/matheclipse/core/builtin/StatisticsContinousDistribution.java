@@ -2655,6 +2655,7 @@ public class StatisticsContinousDistribution {
       S.BetaPrimeDistribution.setEvaluator(new BetaPrimeDistribution());
       S.MeixnerDistribution.setEvaluator(new MeixnerDistribution());
       S.SinghMaddalaDistribution.setEvaluator(new SinghMaddalaDistribution());
+      S.SkewNormalDistribution.setEvaluator(new SkewNormalDistribution());
       S.SuzukiDistribution.setEvaluator(new SuzukiDistribution());
       S.ExponentialPowerDistribution.setEvaluator(new ExponentialPowerDistribution());
       S.MaxStableDistribution.setEvaluator(new MaxStableDistribution());
@@ -6323,6 +6324,176 @@ public class StatisticsContinousDistribution {
    * and scale parameter <code>b</code>. <code>LogisticDistribution()</code> is equivalent to
    * <code>LogisticDistribution(0, 1)</code>.
    */
+  /**
+   * <code>SkewNormalDistribution(mu, sigma, alpha)</code> - the skew-normal distribution with location
+   * <code>mu</code>, scale <code>sigma</code> and shape <code>alpha</code>.
+   * <code>SkewNormalDistribution(alpha)</code> is <code>SkewNormalDistribution(0, 1, alpha)</code>.
+   */
+  private static final class SkewNormalDistribution extends AbstractEvaluator
+      implements ICDF, ICentralMoment, IContinuousDistribution, IPDF, IRandomVariate, IStatistics {
+
+    /** <code>{mu, sigma, alpha}</code>, or <code>null</code> for a wrong number of arguments. */
+    private static IExpr[] parameters(IAST dist) {
+      if (dist.isAST1()) {
+        return new IExpr[] {F.C0, F.C1, dist.arg1()};
+      }
+      if (dist.isAST3()) {
+        return new IExpr[] {dist.arg1(), dist.arg2(), dist.arg3()};
+      }
+      return null;
+    }
+
+    /** <code>Pi + (Pi-2)*alpha^2</code> */
+    private static IExpr shapeDenominator(IExpr alpha) {
+      return F.Plus(S.Pi, F.Times(F.Plus(F.CN2, S.Pi), F.Sqr(alpha)));
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // 1/2*Erfc((mu-#)/(Sqrt(2)*sigma)) - 2*OwenT((#-mu)/sigma, alpha) &
+      IExpr z = F.Divide(F.Subtract(F.Slot1, p[0]), p[1]);
+      return callFunction(F.Function(F.Subtract(
+          F.Times(F.C1D2, F.Erfc(F.Times(F.CN1, F.C1DSqrt2, z))),
+          F.Times(F.C2, F.binaryAST2(S.OwenT, z, p[2])))), x);
+    }
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IAST checkParameters(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      if (p[1].isReal() && !p[1].isPositive()) {
+        // Parameter `1` at position `2` in `3` is expected to be positive.
+        Errors.printMessage(S.SkewNormalDistribution, "posprm", F.list(p[1], F.C2, dist),
+            EvalEngine.get());
+        return F.NIL;
+      }
+      return dist;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // 3 + (8*(Pi-3)*alpha^4)/(Pi + (Pi-2)*alpha^2)^2
+      return F.Plus(F.C3, F.Times(F.C8, F.Plus(F.CN3, S.Pi), F.Power(p[2], F.C4),
+          F.Power(shapeDenominator(p[2]), F.CN2)));
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // mu + (Sqrt(2/Pi)*alpha*sigma)/Sqrt(1+alpha^2)
+      return F.Plus(p[0], F.Times(F.Sqrt(F.Times(F.C2, F.Power(S.Pi, F.CN1))), p[2], p[1],
+          F.Power(F.Plus(F.C1, F.Sqr(p[2])), F.CN1D2)));
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr parameterAssumptions(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      return F.And(F.Element(p[0], S.Reals), F.Greater(p[1], F.C0), F.Element(p[2], S.Reals));
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // E^(-(#-mu)^2/(2*sigma^2))*Erfc(-(alpha*(#-mu))/(Sqrt(2)*sigma))/(Sqrt(2*Pi)*sigma) &
+      IExpr z = F.Divide(F.Subtract(F.Slot1, p[0]), p[1]);
+      return callFunction(F.Function(F.Times(F.Exp(F.Times(F.CN1D2, F.Sqr(z))),
+          F.Erfc(F.Times(F.CN1, F.C1DSqrt2, p[2], z)),
+          F.Power(F.Times(F.Sqrt(F.Times(F.C2, S.Pi)), p[1]), F.CN1))), x);
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      double mu = p[0].evalfNaN();
+      double sigma = p[1].evalfNaN();
+      double alpha = p[2].evalfNaN();
+      if (Double.isNaN(mu) || Double.isNaN(sigma) || Double.isNaN(alpha) || sigma <= 0.0) {
+        return F.NIL;
+      }
+      // delta*|U0| + Sqrt(1-delta^2)*U1 for independent standard normal U0, U1
+      double delta = alpha / Math.sqrt(1.0 + alpha * alpha);
+      double complement = Math.sqrt(1.0 - delta * delta);
+      double[] vector = new double[size];
+      for (int i = 0; i < size; i++) {
+        double z = delta * Math.abs(random.nextGaussian()) + complement * random.nextGaussian();
+        vector[i] = mu + sigma * z;
+      }
+      return new ASTRealVector(vector, false);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // (Sqrt(2)*(4-Pi)*alpha^3)/(Pi + (Pi-2)*alpha^2)^(3/2)
+      return F.Times(F.CSqrt2, F.Subtract(F.C4, S.Pi), F.Power(p[2], F.C3),
+          F.Power(shapeDenominator(p[2]), F.QQ(-3, 2)));
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // (1 - (2*alpha^2)/(Pi*(1+alpha^2)))*sigma^2
+      return F.Times(F.Subtract(F.C1, F.Times(F.C2, F.Sqr(p[2]),
+          F.Power(F.Times(S.Pi, F.Plus(F.C1, F.Sqr(p[2]))), F.CN1))), F.Sqr(p[1]));
+    }
+  }
+
   private static final class LogisticDistribution extends AbstractEvaluator
       implements ICDF, ICentralMoment, IContinuousDistribution, IGeneratingFunction, IPDF,
       IRandomVariate, IStatistics {

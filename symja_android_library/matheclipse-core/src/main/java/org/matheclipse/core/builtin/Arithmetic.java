@@ -7916,6 +7916,8 @@ public final class Arithmetic {
         // numeric bases are combined by the rules below, merging them here would compete with
         // the normalization of numbers and constants and can run into an endless recursion
         && !base1.isNumericFunction(true) && !base2.isNumericFunction(true) //
+        // (a*b)^n with an integer n is distributed again: an endless recursion
+        && !exponent1.isInteger() //
         && base1.isPositiveResult() && base2.isPositiveResult()) {
       // https://functions.wolfram.com/ElementaryFunctions/Power/16/08/01/0004/
       // a^(c)*b^(c) => (a*b)^c holds for arbitrary c if a and b are assumed to be positive

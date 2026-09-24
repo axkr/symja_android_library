@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 173, 0 };
+  final public static int[] SIZES = { 175, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -62,9 +62,9 @@ public class DerivativeRules {
     // Derivative(1)[ArcSec]=1/(#1^2*Sqrt(1-1/#1^2))&
     ISet($(Derivative(C1),ArcSec),
       Function(Times(Power(Slot1,CN2),Power(Subtract(C1,Power(Slot1,CN2)),CN1D2))), true),
-    // Derivative(1)[ArcSech]=-1/(#1*Sqrt(1-#1^2))&
+    // Derivative(1)[ArcSech]=-1/(#1*Sqrt((1-#1)/(1+#1))*(1+#1))&
     ISet($(Derivative(C1),ArcSech),
-      Function(Times(CN1,Power(Slot1,CN1),Power(Subtract(C1,Sqr(Slot1)),CN1D2))), true),
+      Function(Times(CN1,Power(Slot1,CN1),Power(Plus(C1,Slot1),CN1),Power(Times(Subtract(C1,Slot1),Power(Plus(C1,Slot1),CN1)),CN1D2))), true),
     // Derivative(1)[BarnesG]=BarnesG(#1)*((-1+#1)*PolyGamma(#1)-#1+1/2*(Log(2*Pi)+1))&
     ISet($(Derivative(C1),BarnesG),
       Function(Times(BarnesG(Slot1),Plus(Times(Plus(CN1,Slot1),PolyGamma(Slot1)),Negate(Slot1),Times(C1D2,Plus(Log(C2Pi),C1))))), true),
@@ -281,6 +281,12 @@ public class DerivativeRules {
     // Derivative(1,1)[Binomial]=Binomial(#1,#2)*(PolyGamma(0,1+#1)-PolyGamma(0,1+#1-#2))*(PolyGamma(0,1+#1-#2)-PolyGamma(0,1+#2))+Binomial(#1,#2)*PolyGamma(1,1+#1-#2)&
     ISet($(Derivative(C1,C1),Binomial),
       Function(Plus(Times(Binomial(Slot1,Slot2),Subtract(PolyGamma(C0,Plus(C1,Slot1)),PolyGamma(C0,Plus(C1,Slot1,Negate(Slot2)))),Subtract(PolyGamma(C0,Plus(C1,Slot1,Negate(Slot2))),PolyGamma(C0,Plus(C1,Slot2)))),Times(Binomial(Slot1,Slot2),PolyGamma(C1,Plus(C1,Slot1,Negate(Slot2)))))), true),
+    // Derivative(1,0)[OwenT]=-E^(-#1^2/2)*Erf((#1*#2)/Sqrt(2))/(2*Sqrt(2*Pi))&
+    ISet($(Derivative(C1,C0),org.matheclipse.core.expression.S.OwenT),
+      Function(Times(CN1D2,Power(Times(C2,Pi),CN1D2),Exp(Times(CN1D2,Sqr(Slot1))),Erf(Times(C1DSqrt2,Slot1,Slot2)))), true),
+    // Derivative(0,1)[OwenT]=E^(-(1+#2^2)*#1^2/2)/(2*Pi*(1+#2^2))&
+    ISet($(Derivative(C0,C1),org.matheclipse.core.expression.S.OwenT),
+      Function(Times(C1D2,Power(Pi,CN1),Power(Plus(C1,Sqr(Slot2)),CN1),Exp(Times(CN1D2,Plus(C1,Sqr(Slot2)),Sqr(Slot1))))), true),
     // Derivative(0,1)[BesselJ]=1/2*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))&
     ISet($(Derivative(C0,C1),BesselJ),
       Function(Times(C1D2,Subtract(BesselJ(Plus(CN1,Slot1),Slot2),BesselJ(Plus(C1,Slot1),Slot2)))), true),

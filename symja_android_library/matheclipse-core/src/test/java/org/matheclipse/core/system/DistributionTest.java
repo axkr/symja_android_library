@@ -1773,4 +1773,30 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     assertEquals(result.toString(), //
         "{chi2->2.75265,p->0.600033,df->4.0,expected->{{7.0,9.33333,8.75,8.75,8.16667},{5.0,6.66667,6.25,6.25,5.83333}}}");
   }
+
+  @Test
+  public void testSkewNormalDistribution() {
+    check("PDF(SkewNormalDistribution(m, s, a), x)", //
+        "Erfc((a*(m-x))/(Sqrt(2)*s))/(E^((-m+x)^2/(2*s^2))*Sqrt(2*Pi)*s)");
+    check("CDF(SkewNormalDistribution(m, s, a), x)", //
+        "Erfc((m-x)/(Sqrt(2)*s))/2-2*OwenT((-m+x)/s,a)");
+    check("Mean(SkewNormalDistribution(m, s, a))", //
+        "m+(a*Sqrt(2/Pi)*s)/Sqrt(1+a^2)");
+    check("Variance(SkewNormalDistribution(m, s, a))", //
+        "(1+(-2*a^2)/((1+a^2)*Pi))*s^2");
+    check("Skewness(SkewNormalDistribution(m, s, a))", //
+        "(Sqrt(2)*a^3*(4-Pi))/(a^2*(-2+Pi)+Pi)^(3/2)");
+    check("Kurtosis(SkewNormalDistribution(m, s, a))", //
+        "3+(8*a^4*(-3+Pi))/(a^2*(-2+Pi)+Pi)^2");
+    check("Simplify(PDF(SkewNormalDistribution(m, s, 0), x) - PDF(NormalDistribution(m, s), x))", //
+        "0");
+    checkNumeric("CDF(SkewNormalDistribution(2), 0.5)", //
+        "0.4083012539660562");
+    checkNumeric("N(Mean(SkewNormalDistribution(1, 2, 3)))", //
+        "2.513879513212096");
+    check("Skewness(SkewNormalDistribution(1, 2, -3)) + Skewness(SkewNormalDistribution(1, 2, 3))", //
+        "0");
+    check("PDF(SkewNormalDistribution(0, -1, 1), x)", //
+        "PDF(SkewNormalDistribution(0,-1,1),x)");
+  }
 }

@@ -105,9 +105,9 @@ public class Maximize extends AbstractFunctionEvaluator {
         // single variable with a constraint: optimize over the feasible real interval
         IExpr result = univariateConstrainedExtremum(head, function.first(), function.second(), x,
             true, engine);
-        if (result.isPresent()) {
-          return result;
-        }
+        // a constrained problem which isn't decided stays unevaluated; the unconstrained method
+        // cannot read the {objective, constraint} list
+        return result;
       }
       return maximize(head, function, x, engine);
     }
@@ -203,6 +203,11 @@ public class Maximize extends AbstractFunctionEvaluator {
         if (unbounded.isPresent()) {
           return unbounded;
         }
+        if (!isRationalObjective(objective, x, engine)) {
+          // the Lagrange method drops periodic families of stationary points; an objective which
+          // cannot be decided here stays unevaluated
+          return univariateIntervalExtremum(objective, x, intervalData, isMax, engine);
+        }
       }
       // Delegate the finite (compact-region) case to the proven multivariate KKT / Lagrange
       // machinery with the single variable as a one-element variable list.
@@ -211,6 +216,253 @@ public class Maximize extends AbstractFunctionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(head, rex);
     }
+  }
+
+  /** The most members of a periodic family of stationary points which are enumerated. */
+  private static final int FAMILY_ENUMERATION_LIMIT = 1000;
+
+  /**
+   * Optimize a univariate objective which isn't a rational function over the feasible intervals.
+   * The candidates are the real stationary points inside an interval - including the members of a
+   * periodic family <code>a+b*C(1)</code> which lie in it, which the Lagrange method doesn't see -
+   * the closed endpoints, and the limits at the open or infinite ends, which are not attained:
+   * <code>Minimize({Sin(t), t&gt;0}, t)</code> is <code>{-1, {t-&gt;3*Pi/2}}</code>.
+   *
+   * @return <code>{value, {x-&gt;point}}</code> or {@link F#NIL} if a candidate cannot be
+   *         determined
+   */
+  private static IExpr univariateIntervalExtremum(IExpr objective, IExpr x, IAST intervalData,
+      boolean isMax, EvalEngine engine) {
+    IExpr derivative = S.D.of(engine, objective, x);
+    IExpr solution = engine.evalQuiet(F.Solve(F.Equal(derivative, F.C0), x, S.Reals));
+    if (!solution.isList() || !solution.isFree(S.Solve)) {
+      return F.NIL;
+    }
+    List<IExpr> stationary = new ArrayList<IExpr>();
+    List<IExpr[]> families = new ArrayList<IExpr[]>();
+    ISymbol k = F.Dummy("k");
+    for (IExpr rules : (IAST) solution) {
+      if (!rules.isList1() || !rules.first().isRule()) {
+        return F.NIL;
+      }
+      IExpr point = rules.first().second();
+      if (point.isConditionalExpression()) {
+        IExpr condition = point.second();
+        if (!condition.isAST(S.Element, 3) || !condition.first().isAST(S.C, 2)
+            || condition.second() != S.Integers) {
+          return F.NIL;
+        }
+        IExpr c = condition.first();
+        IExpr member = F.subst(point.first(), x2 -> x2.equals(c) ? k : F.NIL);
+        if (!member.isFree(S.C, true)) {
+          return F.NIL;
+        }
+        IExpr offset = engine.evaluate(F.subst(member, k, F.C0));
+        IExpr step = engine.evaluate(F.D(member, k));
+        if (!offset.isRealResult() || !step.isRealResult() || step.isZero()
+            || !engine.evaluate(F.D(step, k)).isZero()) {
+          return F.NIL;
+        }
+        families.add(new IExpr[] {offset, step});
+      } else if (point.isRealResult()) {
+        stationary.add(point);
+      } else {
+        return F.NIL;
+      }
+    }
+
+    Extremum best = new Extremum(isMax);
+    for (int i = 1; i < intervalData.size(); i++) {
+      IExpr entry = intervalData.get(i);
+      if (!entry.isList() || ((IAST) entry).argSize() != 4) {
+        return F.NIL;
+      }
+      IAST interval = (IAST) entry;
+      IExpr lo = interval.arg1();
+      IExpr hi = interval.arg4();
+      boolean loClosed = interval.arg2() == S.LessEqual;
+      boolean hiClosed = interval.arg3() == S.LessEqual;
+      for (IExpr point : stationary) {
+        if (isInside(point, lo, loClosed, hi, hiClosed, engine)
+            && !best.consider(engine.evaluate(F.xreplace(objective, x, point)), point, true,
+                engine)) {
+          return F.NIL;
+        }
+      }
+      // on an unbounded interval every family is constant valued (else it declines), so its
+      // members bound the values which a non existing limit at infinity leaves open
+      boolean periodic = !families.isEmpty();
+      for (IExpr[] family : families) {
+        if (!familyCandidates(objective, x, family[0], family[1], lo, loClosed, hi, hiClosed,
+            best, engine)) {
+          return F.NIL;
+        }
+      }
+      if (!endCandidate(objective, x, lo, loClosed, F.CNInfinity, periodic, best, engine)
+          || !endCandidate(objective, x, hi, hiClosed, F.CInfinity, periodic, best, engine)) {
+        return F.NIL;
+      }
+    }
+    if (best.value.isNIL()) {
+      return F.NIL;
+    }
+    return F.list(best.value, F.list(F.Rule(x, best.point)));
+  }
+
+  /** Test if the objective is a rational function of <code>x</code>. */
+  private static boolean isRationalObjective(IExpr objective, IExpr x, EvalEngine engine) {
+    IExpr together = engine.evalQuiet(F.Together(objective));
+    return engine.evalQuiet(F.Numerator(together)).isPolynomial(x)
+        && engine.evalQuiet(F.Denominator(together)).isPolynomial(x);
+  }
+
+  /** The best value found so far; an attained value wins a tie against a limit. */
+  private static final class Extremum {
+    final boolean isMax;
+    IExpr value = F.NIL;
+    IExpr point = F.NIL;
+    double numeric;
+    boolean attained;
+
+    Extremum(boolean isMax) {
+      this.isMax = isMax;
+    }
+
+    /** @return <code>false</code> if the value is not a real number */
+    boolean consider(IExpr candidate, IExpr at, boolean isAttained, EvalEngine engine) {
+      double d = engine.evalQuiet(F.N(candidate)).evalfNaN();
+      if (Double.isNaN(d) || Double.isInfinite(d)) {
+        return false;
+      }
+      if (value.isPresent()) {
+        double tolerance = Config.SPECIAL_FUNCTIONS_TOLERANCE * Math.max(1.0, Math.abs(d));
+        double improvement = isMax ? d - numeric : numeric - d;
+        if (improvement < -tolerance || (improvement <= tolerance && (attained || !isAttained))) {
+          return true;
+        }
+      }
+      value = candidate;
+      point = at;
+      numeric = d;
+      attained = isAttained;
+      return true;
+    }
+  }
+
+  private static boolean isInside(IExpr point, IExpr lo, boolean loClosed, IExpr hi,
+      boolean hiClosed, EvalEngine engine) {
+    return engine.evalTrue(loClosed ? F.LessEqual(lo, point) : F.Less(lo, point))
+        && engine.evalTrue(hiClosed ? F.LessEqual(point, hi) : F.Less(point, hi));
+  }
+
+  /**
+   * Add the members <code>offset+step*k</code> of a periodic family of stationary points which lie
+   * in the interval. On an unbounded interval this is only possible if the objective takes the
+   * same value at every member.
+   */
+  private static boolean familyCandidates(IExpr objective, IExpr x, IExpr offset, IExpr step,
+      IExpr lo, boolean loClosed, IExpr hi, boolean hiClosed, Extremum best, EvalEngine engine) {
+    double a = engine.evalQuiet(F.N(offset)).evalfNaN();
+    double b = engine.evalQuiet(F.N(step)).evalfNaN();
+    if (Double.isNaN(a) || Double.isNaN(b)) {
+      return false;
+    }
+    boolean constant = true;
+    double reference = Double.NaN;
+    for (int m = -2; m <= 2; m++) {
+      IExpr value = engine.evalQuiet(F.N(F.xreplace(objective, x, F.Plus(offset, F.Times(F.ZZ(m), step)))));
+      double d = value.evalfNaN();
+      if (Double.isNaN(d)) {
+        return false;
+      }
+      if (m == -2) {
+        reference = d;
+      } else if (Math.abs(d - reference) > Config.SPECIAL_FUNCTIONS_TOLERANCE
+          * Math.max(1.0, Math.abs(reference))) {
+        constant = false;
+      }
+    }
+    double loD = lo.isNegativeInfinity() ? Double.NEGATIVE_INFINITY
+        : engine.evalQuiet(F.N(lo)).evalfNaN();
+    double hiD = hi.isInfinity() ? Double.POSITIVE_INFINITY
+        : engine.evalQuiet(F.N(hi)).evalfNaN();
+    if (Double.isNaN(loD) || Double.isNaN(hiD)) {
+      return false;
+    }
+    double k1 = (loD - a) / b;
+    double k2 = (hiD - a) / b;
+    double kMin = Math.min(k1, k2);
+    double kMax = Math.max(k1, k2);
+    long first;
+    long last;
+    if (Double.isInfinite(kMin) && Double.isInfinite(kMax)) {
+      first = -1;
+      last = 1;
+    } else if (Double.isInfinite(kMin)) {
+      first = (long) Math.floor(kMax) - 2;
+      last = (long) Math.floor(kMax) + 1;
+    } else if (Double.isInfinite(kMax)) {
+      first = (long) Math.ceil(kMin) - 1;
+      last = (long) Math.ceil(kMin) + 2;
+    } else {
+      first = (long) Math.ceil(kMin) - 1;
+      last = (long) Math.floor(kMax) + 1;
+    }
+    if (!constant && (Double.isInfinite(kMin) || Double.isInfinite(kMax))) {
+      return false;
+    }
+    if (last - first > FAMILY_ENUMERATION_LIMIT) {
+      if (!constant) {
+        return false;
+      }
+      last = first + 3;
+    }
+    for (long m = first; m <= last; m++) {
+      IExpr point = engine.evaluate(F.Plus(offset, F.Times(F.ZZ(m), step)));
+      if (isInside(point, lo, loClosed, hi, hiClosed, engine)) {
+        if (!best.consider(engine.evaluate(F.xreplace(objective, x, point)), point, true,
+            engine)) {
+          return false;
+        }
+        if (constant) {
+          return true;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Add the value at a closed finite end, or the limit towards an open or infinite end, which is
+   * not attained. A limit which doesn't exist, like the one of <code>Sin(x)</code> at infinity,
+   * adds no candidate if a periodic family of stationary points bounds the values.
+   */
+  private static boolean endCandidate(IExpr objective, IExpr x, IExpr end, boolean closed,
+      IExpr infinity, boolean periodic, Extremum best, EvalEngine engine) {
+    if (end.equals(infinity)) {
+      IExpr limit = engine.evalQuiet(F.Limit(objective, F.Rule(x, infinity)));
+      if (periodic && (limit.isAST(S.Interval) || limit.isIndeterminate()
+          || limit.isAST(S.Limit))) {
+        return true;
+      }
+      if (limit.isInfinity() || limit.isNegativeInfinity()) {
+        // an end which improves the objective was already detected
+        return true;
+      }
+      return best.consider(limit, infinity, false, engine);
+    }
+    IExpr value = engine.evalQuiet(F.xreplace(objective, x, end));
+    if (closed) {
+      return best.consider(value, end, true, engine);
+    }
+    if (value.isRealResult() && !value.isDirectedInfinity() && !value.isIndeterminate()) {
+      return best.consider(value, end, false, engine);
+    }
+    IExpr limit = engine.evalQuiet(F.Limit(objective, F.Rule(x, end)));
+    if (limit.isInfinity() || limit.isNegativeInfinity()) {
+      return true;
+    }
+    return best.consider(limit, end, false, engine);
   }
 
   /**

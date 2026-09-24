@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -111,6 +112,15 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       case ID.Cosh:
         // minimum Cosh(0) == 1 is attained -> 1 <= y
         return F.LessEqual(F.C1, y);
+      case ID.ArcCot:
+        // ArcCot jumps at 0, where it takes the value Pi/2 of the upper branch
+        return F.Or(F.Less(F.CNPiHalf, y, F.C0),
+            F.Inequality(F.C0, S.Less, y, S.LessEqual, F.CPiHalf));
+      case ID.Ceiling:
+      case ID.Floor:
+      case ID.IntegerPart:
+      case ID.Round:
+        return F.Element(y, S.Integers);
       case ID.Gamma:
         // Gamma is real-valued on its real domain and never 0 -> y<0 || y>0
         return F.Or(F.Less(y, F.C0), F.Greater(y, F.C0));
@@ -254,6 +264,175 @@ public class FunctionRange extends AbstractFunctionEvaluator {
   }
 
   /**
+   * The range of a function which is constant on each side of <code>x==0</code>, as
+   * <code>x/Abs(x)</code> or <code>Sign(x)</code>: the values of both sides and the value at
+   * <code>0</code>, if it is defined.
+   *
+   * @return <code>y==v1||y==v2...</code> or {@link F#NIL}
+   */
+  private static IExpr piecewiseConstantRange(IExpr function, ISymbol x, ISymbol y,
+      EvalEngine engine) {
+    if (function.isFree(h -> h == S.Abs || h == S.Sign, true)) {
+      return F.NIL;
+    }
+    IExpr positive = engine.evalQuiet(F.Refine(function, F.Greater(x, F.C0)));
+    IExpr negative = engine.evalQuiet(F.Refine(function, F.Less(x, F.C0)));
+    if (!isFiniteRealValue(positive) || !isFiniteRealValue(negative) || !positive.isFree(x)
+        || !negative.isFree(x)) {
+      return F.NIL;
+    }
+    IExpr atZero = engine.evalQuiet(F.subst(function, x, F.C0));
+    IASTAppendable values = F.ListAlloc(3);
+    values.append(negative);
+    values.append(positive);
+    if (isFiniteRealValue(atZero)) {
+      values.append(atZero);
+    }
+    IExpr sorted = engine.evaluate(F.Union(values));
+    if (!sorted.isList()) {
+      return F.NIL;
+    }
+    IAST list = (IAST) sorted;
+    IASTAppendable or = F.ast(S.Or, list.argSize());
+    for (IExpr value : list) {
+      or.append(F.Equal(y, value));
+    }
+    return or.oneIdentity0();
+  }
+
+  /**
+   * The range of <code>f(g(x))</code> for an outer function <code>f</code> which is periodic or
+   * increasing: the image of the range of <code>g</code> under <code>f</code>, e.g.
+   * <code>Sin(Exp(x))</code> covers a full period, so its range is <code>-1&lt;=y&lt;=1</code>,
+   * and <code>Exp(Sin(x))</code> is <code>1/E&lt;=y&lt;=E</code>.
+   */
+  private static IExpr compositionRange(IExpr function, ISymbol x, ISymbol y,
+      EvalEngine engine) {
+    IExpr inner;
+    int id;
+    if (function.isPower() && function.base() == S.E) {
+      // E^g(x)
+      inner = function.exponent();
+      id = ID.Exp;
+    } else if (function.isAST1() && function.head().isBuiltInSymbol()) {
+      inner = function.first();
+      id = ((IBuiltInSymbol) function.head()).ordinal();
+    } else {
+      return F.NIL;
+    }
+    if (inner.equals(x) || inner.isFree(x, true)) {
+      return F.NIL;
+    }
+    boolean periodic = id == ID.Sin || id == ID.Cos;
+    boolean increasing = id == ID.Exp || id == ID.ArcTan || id == ID.Tanh || id == ID.Sinh
+        || id == ID.ArcSinh || id == ID.Erf || id == ID.Log || id == ID.Sqrt;
+    if (!periodic && !increasing) {
+      return F.NIL;
+    }
+    ISymbol t = F.Dummy("t");
+    IExpr innerRange = engine.evalQuiet(F.FunctionRange(inner, x, t));
+    Bound[] bounds = rangeBounds(innerRange, t);
+    if (bounds == null) {
+      return F.NIL;
+    }
+    Bound lo = bounds[0];
+    Bound hi = bounds[1];
+    if (periodic) {
+      if (lo.unbounded || hi.unbounded
+          || engine.evalTrue(F.GreaterEqual(F.Subtract(hi.value, lo.value), F.C2Pi))) {
+        return F.LessEqual(F.CN1, y, F.C1);
+      }
+      return F.NIL;
+    }
+    if (id == ID.Log || id == ID.Sqrt) {
+      // the inner range has to lie in the real domain [0, Infinity)
+      if (lo.unbounded || !engine.evalTrue(F.GreaterEqual(lo.value, F.C0))) {
+        return F.NIL;
+      }
+      if (id == ID.Log && lo.value.isZero()) {
+        if (lo.closed) {
+          return F.NIL;
+        }
+        lo = Bound.unbounded();
+      }
+    }
+    IExpr f = id == ID.Exp ? F.Function(F.Power(S.E, F.Slot1)) : function.head();
+    Bound imageLo = image(f, lo, F.CNInfinity, engine);
+    Bound imageHi = image(f, hi, F.CInfinity, engine);
+    if (!imageLo.known || !imageHi.known) {
+      return F.NIL;
+    }
+    return buildRangeRelational(imageLo, imageHi, y);
+  }
+
+  /**
+   * The image of one end of an interval under an increasing function <code>f</code>; an unbounded
+   * end is mapped to the limit <code>f(infinity)</code>, which isn't attained.
+   */
+  private static Bound image(IExpr f, Bound bound, IExpr infinity, EvalEngine engine) {
+    if (!bound.known) {
+      return Bound.UNKNOWN;
+    }
+    if (bound.unbounded) {
+      if (f == S.Log) {
+        // the open end 0 of the inner range
+        return Bound.unbounded();
+      }
+      IExpr limit = engine.evalQuiet(F.unaryAST1(f, infinity));
+      if (limit.isInfinity() || limit.isNegativeInfinity()) {
+        return Bound.unbounded();
+      }
+      return isFiniteRealValue(limit) ? Bound.finite(limit, false) : Bound.UNKNOWN;
+    }
+    IExpr value = engine.evalQuiet(F.unaryAST1(f, bound.value));
+    return isFiniteRealValue(value) ? Bound.finite(value, bound.closed) : Bound.UNKNOWN;
+  }
+
+  /**
+   * The lower and upper {@link Bound} of a range relation of <code>t</code> as
+   * {@code FunctionRange} returns it: <code>True</code>, a one sided or a two sided inequality.
+   *
+   * @return <code>null</code> for any other relation
+   */
+  private static Bound[] rangeBounds(IExpr range, IExpr t) {
+    if (range.isTrue()) {
+      return new Bound[] {Bound.unbounded(), Bound.unbounded()};
+    }
+    if (range.isAST(S.Inequality, 6) && range.getAt(3).equals(t)) {
+      return new Bound[] {Bound.finite(range.first(), range.getAt(2) == S.LessEqual),
+          Bound.finite(range.getAt(5), range.getAt(4) == S.LessEqual)};
+    }
+    if (!range.isAST() || !range.isFunctionID(ID.Less, ID.LessEqual, ID.Greater,
+        ID.GreaterEqual)) {
+      return null;
+    }
+    int id = range.headID();
+    boolean closed = id == ID.LessEqual || id == ID.GreaterEqual;
+    if (range.isAST3() && range.second().equals(t)) {
+      if (id == ID.Less || id == ID.LessEqual) {
+        return new Bound[] {Bound.finite(range.first(), closed),
+            Bound.finite(range.getAt(3), closed)};
+      }
+      return null;
+    }
+    if (!range.isAST2()) {
+      return null;
+    }
+    boolean ascending = id == ID.Less || id == ID.LessEqual;
+    if (range.first().equals(t)) {
+      // t<b or t>a
+      return ascending ? new Bound[] {Bound.unbounded(), Bound.finite(range.second(), closed)}
+          : new Bound[] {Bound.finite(range.second(), closed), Bound.unbounded()};
+    }
+    if (range.second().equals(t)) {
+      // a<t or b>t
+      return ascending ? new Bound[] {Bound.finite(range.first(), closed), Bound.unbounded()}
+          : new Bound[] {Bound.unbounded(), Bound.finite(range.first(), closed)};
+    }
+    return null;
+  }
+
+  /**
    * Combine a lower and an upper {@link Bound} into the range relational for {@code y}:
    * {@link S#True} for the whole real line, a single (possibly strict) inequality when one side is
    * unbounded, and a chained inequality (or {@code Inequality[...]} for a mixed open/closed pair)
@@ -377,6 +556,14 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         IExpr builtin = builtinRange(function, x, y);
         if (builtin.isPresent()) {
           return builtin;
+        }
+        IExpr piecewiseConstant = piecewiseConstantRange(function, x, y, engine);
+        if (piecewiseConstant.isPresent()) {
+          return piecewiseConstant;
+        }
+        IExpr composition = compositionRange(function, x, y, engine);
+        if (composition.isPresent()) {
+          return composition;
         }
 
         // Transcendental short-circuit: for expressions involving Sin/Cos/Tan/Exp/Log/... the
@@ -546,7 +733,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       double yMaxNum = Double.NEGATIVE_INFINITY;
       for (Double c : roots) {
         IAST rootExpr = F.Root(F.list(pureFunction, F.num(c)));
-        IExpr yCandidate = engine.evaluate(F.subst(function, x, rootExpr));
+        IExpr yCandidate = engine.evalQuiet(F.subst(function, x, rootExpr));
         double yNum = engine.evaluate(F.N(yCandidate)).evalfNaN();
         if (Double.isNaN(yNum) || Double.isInfinite(yNum)) {
           continue;

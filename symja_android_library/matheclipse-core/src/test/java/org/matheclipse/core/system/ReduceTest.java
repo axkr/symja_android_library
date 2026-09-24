@@ -1453,4 +1453,32 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(x^2 == 4, x, Assumptions -> x > 0)", //
         "Reduce(x^2==4,x,Assumptions->x>0)");
   }
+
+  /** A solution of the numerator must not lie on a pole of the equation (sympy #30522). */
+  @Test
+  public void testReduceRationalDenominator() {
+    check("Reduce((x-y)/(x-2)==0,{x,y})", //
+        "x==y&&y!=2");
+    check("Reduce((x-y)/((x-2)*(y-3))==0,{x,y})", //
+        "x==y&&-5*y+y^2!=-6");
+    check("Reduce((x-y)/(y-3)==0,{x,y})", //
+        "x==y&&y!=3");
+    check("Reduce((x-y)*(x-2*y)/(x-1)==0,{x,y})", //
+        "(x==y&&y!=1)||(x==2*y&&y!=1/2)");
+    check("Reduce(x/(x-2)==0,x)", //
+        "x==0");
+    check("Reduce(1/x==0,x)", //
+        "False");
+    check("Reduce(1/x!=0,x)", //
+        "x!=0");
+    // WMA cancels common factors first
+    check("Reduce((x^2-1)/(x-1)-x-1==0,x)", //
+        "True");
+    check("Reduce({(x^2-1)/(x-1)-x-1==0, y-1==0},{x,y})", //
+        "y==1");
+    check("Reduce((x^2-4)/(x-2)==0, x)", //
+        "x==-2");
+    check("Reduce(x/(x-2)>0, x)", //
+        "x<0||x>2");
+  }
 }
