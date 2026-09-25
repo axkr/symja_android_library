@@ -429,27 +429,23 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * @param evaluate
    */
   private IExpr replaceEqualMatch(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
-    IExpr result = fRightHandSide;
+    if (!evaluate) {
+      return fRightHandSide;
+    }
     try {
-      if (evaluate) {
-        if (engine.isTraceRewriteRules()) {
-          return engine.addEvaluatedTraceStep(leftHandSide, result, traceHints());
-        }
-        return result.eval(engine);
-      }
-      return result;
+      return evalEqualMatch(leftHandSide, fRightHandSide, engine);
     } catch (final ConditionException e) {
       return F.NIL;
     } catch (final ReturnException e) {
-      result = e.getValue();
-      if (evaluate) {
-        if (engine.isTraceRewriteRules()) {
-          return engine.addEvaluatedTraceStep(leftHandSide, result, traceHints());
-        }
-        return result.eval(engine);
-      }
-      return result;
+      return evalEqualMatch(leftHandSide, e.getValue(), engine);
     }
+  }
+
+  private IExpr evalEqualMatch(final IExpr leftHandSide, IExpr result, EvalEngine engine) {
+    if (engine.isTraceRewriteRules()) {
+      return engine.addEvaluatedTraceStep(leftHandSide, result, traceHints());
+    }
+    return result.eval(engine);
   }
 
   @Override
