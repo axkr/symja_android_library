@@ -548,8 +548,10 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        // GraphUnion(g1, g2, ..., opts) - the trailing options go onto the result
+        int graphs = graphArguments(ast);
         GraphExpr<?> gex1 = GraphExpr.newInstance(ast.arg1());
-        if (gex1 == null) {
+        if (gex1 == null || graphs < 1) {
           return F.NIL;
         }
         Graph<IExpr, ? extends IExprEdge> resultGraph =
@@ -559,7 +561,7 @@ public class GraphFunctions {
           return F.NIL;
         }
         resultGraph = applyFunctionArg1(resultGraph);
-        for (int i = 2; i < ast.size(); i++) {
+        for (int i = 2; i <= graphs; i++) {
           GraphExpr<?> gexArg = GraphExpr.newInstance(ast.get(i));
           if (gexArg == null) {
             return F.NIL;
@@ -576,7 +578,7 @@ public class GraphFunctions {
           setOperation(resultGraph, graphArg, newGraph);
           resultGraph = newGraph;
         }
-        return GraphExpr.newInstance(resultGraph);
+        return withOptions(resultGraph, ast, graphs);
 
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
@@ -633,6 +635,38 @@ public class GraphFunctions {
   }
 
 
+  /**
+   * The number of leading arguments of a graph combinator which are graphs: the arguments before
+   * the first option rule, or <code>-1</code> when a rule is followed by something else.
+   */
+  private static int graphArguments(IAST ast) {
+    int graphs = ast.argSize();
+    for (int i = 1; i < ast.size(); i++) {
+      if (ast.get(i).isRuleAST()) {
+        graphs = i - 1;
+        break;
+      }
+    }
+    for (int i = graphs + 1; i < ast.size(); i++) {
+      if (!ast.get(i).isRuleAST()) {
+        return -1;
+      }
+    }
+    return graphs;
+  }
+
+  /** The graph with the trailing option rules of the combinator call, such as a GraphLayout. */
+  private static IExpr withOptions(Graph<IExpr, ?> graph, IAST ast, int graphs) {
+    if (graphs == ast.argSize()) {
+      return GraphExpr.newInstance(graph);
+    }
+    IASTAppendable options = F.ListAlloc(ast.argSize() - graphs);
+    for (int i = graphs + 1; i < ast.size(); i++) {
+      options.append(ast.get(i));
+    }
+    return GraphExpr.newInstance(graph, options);
+  }
+
   private static class GraphComplement extends AbstractEvaluator {
 
     @Override
@@ -683,6 +717,9 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        if (graphArguments(ast) != 2) {
+          return F.NIL;
+        }
         GraphExpr<?> gex1 = GraphExpr.newInstance(ast.arg1());
         if (gex1 == null) {
           return F.NIL;
@@ -702,7 +739,8 @@ public class GraphFunctions {
           } else {
             resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
           }
-          return setOperation(g1, g2, resultGraph);
+          setOperation(g1, g2, resultGraph);
+          return withOptions(resultGraph, ast, 2);
         }
 
       } catch (RuntimeException rex) {
@@ -719,10 +757,10 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_INFINITY;
     }
 
-    protected IExpr setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
+    protected void setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
         Graph<IExpr, ? extends IExprEdge> graph2, Graph<IExpr, ExprEdge> resultGraph) {
       for (IExpr v : Sets.union(graph1.vertexSet(), graph2.vertexSet())) {
         resultGraph.addVertex(v);
@@ -735,7 +773,6 @@ public class GraphFunctions {
           resultGraph.addEdge(v1, v2);
         }
       }
-      return GraphExpr.newInstance(resultGraph);
     }
 
   }
@@ -883,13 +920,13 @@ public class GraphFunctions {
             return gex;
           }
         } else if (ast.size() >= 3 && ast.arg1().isList()) {
-          if (ast.isAST2() //
-              && ast.arg1().isList() //
-              && ast.arg2().isList2() //
-              && (ast.arg2().second() instanceof SparseArrayExpr)) {
+          if (ast.isAST2() && GraphExpr.isInternalEdges(ast.arg2())) {
+            // {directed, undirected}: a SparseArray keeps its form, index pairs become edges
             Graph<IExpr, Object> graph = GraphExpr.createGraph((IAST) ast.arg1(),
-                (SparseArrayExpr) ast.arg2().second(), F.CEmptyList);
-            return GraphExpr.newInstance(graph, true);
+                ast.arg2().first(), ast.arg2().second(), F.CEmptyList);
+            boolean sparse = ast.arg2().first() instanceof SparseArrayExpr
+                || ast.arg2().second() instanceof SparseArrayExpr;
+            return sparse ? GraphExpr.newInstance(graph, true) : GraphExpr.newInstance(graph);
           }
           IExpr edgeWeight = F.NIL;
           final OptionArgs options = new OptionArgs(S.Graph, ast, ast.argSize(), engine);

@@ -70,12 +70,10 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
       options = (IAST) fullForm.arg3();
     }
 
-    // Check if the input is in the SparseArray CSR format: {Null, SparseArray(...)}
-    if (edgesArg.isList()//
-        && edgesArg.isAST2() //
-        && edgesArg.first() == S.Null //
-        && (edgesArg.second() instanceof SparseArrayExpr)) {
-      return createGraph(vertices, (SparseArrayExpr) edgesArg.second(), options);
+    // the internal form {directed, undirected}, each side Null, a SparseArray adjacency matrix or
+    // a list of 1-based index pairs - what a SparseArray cached or Compress restored graph carries
+    if (isInternalEdges(edgesArg)) {
+      return createGraph(vertices, edgesArg.first(), edgesArg.second(), options);
     }
 
     IAST edges = (IAST) edgesArg;
@@ -142,16 +140,39 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
   }
 
   /**
-   * Create a new JGraphT Graph instance from the SparseArray input format.
-   * 
-   * @param <T>
+   * Whether <code>edges</code> is the internal form <code>{directed, undirected}</code>: two sides
+   * each <code>Null</code>, a <code>SparseArray</code> or a list of index pairs, not both
+   * <code>Null</code>.
+   */
+  public static boolean isInternalEdges(IExpr edges) {
+    return edges.isList2() && isEdgeSide(edges.first()) && isEdgeSide(edges.second())
+        && !(edges.first() == S.Null && edges.second() == S.Null);
+  }
+
+  private static boolean isEdgeSide(IExpr side) {
+    if (side == S.Null || side instanceof SparseArrayExpr) {
+      return true;
+    }
+    if (!side.isList() || side.argSize() == 0) {
+      return false;
+    }
+    return ((IAST) side).forAll(pair -> pair.isList2() && pair.first().isInteger()
+        && pair.second().isInteger());
+  }
+
+  /**
+   * Create a new JGraphT Graph instance from the internal form <code>{directed, undirected}</code>.
+   * A graph with directed edges is directed; the adjacency matrix of the undirected side lists
+   * every edge in both directions, and gives it once.
+   *
    * @param vertices the list of graph vertices
-   * @param sparseArray the SparseArrayExpr representing the adjacency matrix
+   * @param directedSide <code>Null</code>, a <code>SparseArray</code> or a list of index pairs
+   * @param undirectedSide likewise
    * @param options the graph options, or F.NIL
    * @return a Graph instance
    */
-  public static <T> Graph<IExpr, T> createGraph(IAST vertices, SparseArrayExpr sparseArray,
-      IAST options) {
+  public static <T> Graph<IExpr, T> createGraph(IAST vertices, IExpr directedSide,
+      IExpr undirectedSide, IAST options) {
     boolean isWeighted = false;
     if (options.isList() && options.argSize() > 0 && options.arg1().isRuleAST()) {
       IAST rule = (IAST) options.arg1();
@@ -159,46 +180,81 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         isWeighted = true;
       }
     }
-
-    // Default to directed when creating from an adjacency matrix.
+    boolean directed = directedSide != S.Null;
     final Graph<IExpr, T> graph;
     if (isWeighted) {
-      graph =
-          (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>(
+      graph = directed
+          ? (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>(
+              ExprWeightedEdge.class)
+          : (Graph<IExpr, T>) new org.jgrapht.graph.DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>(
               ExprWeightedEdge.class);
     } else {
-      graph = (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedGraph<IExpr, ExprEdge>(
-          ExprEdge.class);
+      graph = directed
+          ? (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedGraph<IExpr, ExprEdge>(
+              ExprEdge.class)
+          : (Graph<IExpr, T>) new org.jgrapht.graph.DefaultUndirectedGraph<IExpr, ExprEdge>(
+              ExprEdge.class);
     }
     for (int i = 1; i <= vertices.argSize(); i++) {
       graph.addVertex(vertices.get(i));
     }
+    addEdges(graph, vertices, directedSide, false, isWeighted);
+    // in a mixed graph the undirected edges run both ways
+    addEdges(graph, vertices, undirectedSide, !directed, isWeighted);
+    if (directed && undirectedSide != S.Null) {
+      addEdges(graph, vertices, transposed(undirectedSide), false, isWeighted);
+    }
+    return graph;
+  }
 
-    // Iterate directly over the non-default entries in the sparse array's Trie structure
-    org.matheclipse.parser.trie.Trie<int[], IExpr> trie = sparseArray.toData();
-    for (org.matheclipse.parser.trie.TrieNode<int[], IExpr> entry : trie.nodeSet()) {
-      int[] key = entry.getKey();
+  /** The index pairs of a side the other way round; a SparseArray is symmetric already. */
+  private static IExpr transposed(IExpr side) {
+    if (side.isList()) {
+      return ((IAST) side).map(pair -> F.list(pair.second(), pair.first()), 1);
+    }
+    return S.Null;
+  }
 
-      // The sparse array for an adjacency matrix is 2D
-      if (key.length >= 2) {
-        // Symja sparse arrays are 1-based, aligning perfectly with IAST 1-based indexing
-        int row = key[0];
-        int col = key[1];
-
-        IExpr source = vertices.get(row);
-        IExpr target = vertices.get(col);
-
-        if (isWeighted) {
-          Graph<IExpr, ExprWeightedEdge> weightedGraph = (Graph<IExpr, ExprWeightedEdge>) graph;
-          setWeight(weightedGraph, weightedGraph.addEdge(source, target), entry.getValue());
-        } else {
-          Graph<IExpr, ExprEdge> unweightedGraph = (Graph<IExpr, ExprEdge>) graph;
-          unweightedGraph.addEdge(source, target);
+  /**
+   * Add the edges of one side of the internal form.
+   *
+   * @param once whether a symmetric adjacency matrix gives each edge once, from its upper triangle
+   */
+  private static <T> void addEdges(Graph<IExpr, T> graph, IAST vertices, IExpr side,
+      boolean once, boolean isWeighted) {
+    if (side instanceof SparseArrayExpr) {
+      org.matheclipse.parser.trie.Trie<int[], IExpr> trie = ((SparseArrayExpr) side).toData();
+      for (org.matheclipse.parser.trie.TrieNode<int[], IExpr> entry : trie.nodeSet()) {
+        int[] key = entry.getKey();
+        // Symja sparse arrays are 1-based, aligning with IAST 1-based indexing
+        if (key.length >= 2 && (!once || key[0] <= key[1])) {
+          addEdge(graph, vertices, key[0], key[1], entry.getValue(), isWeighted);
         }
       }
+    } else if (side.isList()) {
+      for (IExpr pair : (IAST) side) {
+        addEdge(graph, vertices, pair.first().toIntDefault(), pair.second().toIntDefault(), F.C1,
+            isWeighted);
+      }
     }
+  }
 
-    return graph;
+  private static <T> void addEdge(Graph<IExpr, T> graph, IAST vertices, int row, int col,
+      IExpr weight, boolean isWeighted) {
+    if (row < 1 || row > vertices.argSize() || col < 1 || col > vertices.argSize()) {
+      return;
+    }
+    IExpr source = vertices.get(row);
+    IExpr target = vertices.get(col);
+    if (isWeighted) {
+      Graph<IExpr, ExprWeightedEdge> weightedGraph = (Graph<IExpr, ExprWeightedEdge>) graph;
+      ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
+      if (edge != null) {
+        setWeight(weightedGraph, edge, weight);
+      }
+    } else {
+      ((Graph<IExpr, ExprEdge>) graph).addEdge(source, target);
+    }
   }
 
 
@@ -351,7 +407,9 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         csrData.set(3, S.Pattern);
       }
 
-      IAST edgesArg = F.List(S.Null, sparseAST);
+      // {directed, undirected}, as in the reference implementation
+      IAST edgesArg = graph.getType().isDirected() ? F.List(sparseAST, S.Null)
+          : F.List(S.Null, sparseAST);
 
       IASTAppendable[] edgeData = edgesToIExpr(graph);
       if (edgeData[1].isNIL()) {

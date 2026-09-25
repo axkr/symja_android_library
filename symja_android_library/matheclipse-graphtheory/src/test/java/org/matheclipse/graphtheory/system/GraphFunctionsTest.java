@@ -20,6 +20,53 @@ public class GraphFunctionsTest extends AbstractTestCase {
    * TreePlot(g, pos), TreePlot(g, root) and TreePlot(g, pos, root), as in the reference
    * implementation: an integer which is no vertex is ignored, anything else is refused.
    */
+  /**
+   * The internal edge form {directed, undirected} of a SparseArray cached or Compress restored
+   * graph: each side Null, an adjacency SparseArray or a list of index pairs.
+   */
+  @Test
+  public void testInternalEdgeForm() {
+    check("EdgeList(Graph({1,2,3,4}, {Null, SparseArray(Automatic, {4, 4}, 0, "
+        + "{1, {{0, 2, 4, 6, 6}, {{2}, {3}, {1}, {3}, {1}, {2}}}, Pattern})}))", //
+        "{1<->2,1<->3,2<->3}");
+    check("EdgeList(Graph({1,2,3}, {SparseArray(Automatic, {3, 3}, 0, "
+        + "{1, {{0, 1, 2, 2}, {{2}, {3}}}, Pattern}), Null}))", //
+        "{1->2,2->3}");
+    check("g = Graph({1,2,3,4}, {Null, SparseArray(Automatic, {4, 4}, 0, "
+        + "{1, {{0, 2, 4, 6, 6}, {{2}, {3}, {1}, {3}, {1}, {2}}}, Pattern})}); "
+        + "EdgeCount(Graph(EdgeList(g)))", //
+        "3");
+    check("EdgeList(Graph({1,2,3}, {Null, {{1,2},{2,3}}}))", //
+        "{1<->2,2<->3}");
+    check("EdgeList(Graph({1,2,3}, {{{1,2},{2,3}}, Null}))", //
+        "{1->2,2->3}");
+  }
+
+  /** The graph combinators take trailing options, which go onto the result. */
+  @Test
+  public void testCombinatorsTakeOptions() {
+    check("EdgeList(GraphIntersection(CompleteGraph(3), PathGraph({1,2,3}), "
+        + "GraphLayout -> \"CircularEmbedding\"))", //
+        "{1<->2,2<->3}");
+    check("EdgeCount(GraphUnion(PathGraph({1,2,3}), PathGraph({3,4,5}), "
+        + "GraphLayout -> \"CircularEmbedding\"))", //
+        "4");
+    check("Head(GraphUnion(PathGraph({1,2}), PathGraph({2,3}), "
+        + "GraphLayout -> \"CircularEmbedding\"))", //
+        "Graph");
+    check("VertexCount(GraphDisjointUnion(CycleGraph(3), PathGraph({1,2}), "
+        + "GraphLayout -> \"CircularEmbedding\"))", //
+        "5");
+    check("Head(GraphDisjointUnion(CycleGraph(3), GraphLayout -> \"CircularEmbedding\"))", //
+        "Graph");
+    check("EdgeList(GraphDifference(Graph({1<->2,2<->3}), Graph({2<->3}), "
+        + "GraphLayout -> \"CircularEmbedding\"))", //
+        "{1<->2}");
+    // a non graph operand still leaves the call alone
+    check("GraphUnion(PathGraph({1,2}), x)", //
+        "GraphUnion(Graph({1,2},{1<->2}),x)");
+  }
+
   @Test
   public void testTreePlotRootAndPosition() {
     check("Head(TreePlot({1 -> 2, 2 -> 3}, 3))", //
@@ -71,8 +118,15 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testAdjacencyGraph() {
     check("AdjacencyGraph(SparseArray({{i_, j_} /; 0<Abs(i-j) <= 3 -> 1}, {6, 6}))// InputForm", //
         "Graph({1,2,3,4,5,6},{Null,SparseArray(Automatic,{6,6},0,{1,{{0,3,7,12,17,21,24},{{2},{3},{4},{1},{3},{4},{5},{1},{2},{4},{5},{6},{1},{2},{3},{5},{6},{2},{3},{4},{6},{3},{4},{5}}},Pattern})})");
+    // a directed graph carries its matrix on the directed side of {directed, undirected}
     check("AdjacencyGraph({{0,1,1,0},{0,0,1,0},{0,0,0,0},{0,1,0,0}}) // InputForm", //
-        "Graph({1,2,3,4},{Null,SparseArray(Automatic,{4,4},0,{1,{{0,2,3,3,4},{{2},{3},{3},{2}}},Pattern})})");
+        "Graph({1,2,3,4},{SparseArray(Automatic,{4,4},0,{1,{{0,2,3,3,4},{{2},{3},{3},{2}}},Pattern}),Null})");
+    // both read back as they were written
+    check("EdgeList(ToExpression(ToString(InputForm(AdjacencyGraph({{0,1,1},{1,0,1},{1,1,0}})))))", //
+        "{1<->2,1<->3,2<->3}");
+    check(
+        "EdgeList(ToExpression(ToString(InputForm(AdjacencyGraph({{0,1,1,0},{0,0,1,0},{0,0,0,0},{0,1,0,0}})))))", //
+        "{1->2,1->3,2->3,4->2}");
 
   }
 
