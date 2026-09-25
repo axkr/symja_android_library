@@ -433,6 +433,17 @@ public class WebGLGraphics3DTest {
         element(scene("Graphics3D[{Red,Text[\"a\",{0,0,0}]}]"), "Text").get("color").asInt());
   }
 
+  @Test
+  public void textFollowsTheFontOptionsOfAStyle() {
+    JsonNode text = element(scene("Graphics3D[{Red,Style[Text[\"a\",{0,0,0}],"
+        + "FontColor->Blue,FontSize->20,FontFamily->\"Courier\",Bold,Italic]}]"), "Text");
+    assertEquals(0x0000FF, text.get("color").asInt());
+    assertEquals(20.0, text.get("fontSize").asDouble());
+    assertEquals("Courier", text.get("fontFamily").asText());
+    assertEquals("bold", text.get("fontWeight").asText());
+    assertEquals("italic", text.get("fontStyle").asText());
+  }
+
   // ---------------------------------------------------------- transformations
 
   @Test

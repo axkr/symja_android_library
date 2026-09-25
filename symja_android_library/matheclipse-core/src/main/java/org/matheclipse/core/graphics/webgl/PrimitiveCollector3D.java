@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -382,9 +383,69 @@ public final class PrimitiveCollector3D {
         }
         return applied;
       }
+      case ID.Rule:
+      case ID.RuleDelayed:
+        return applyFontRule(ast, style);
       default:
         return false;
     }
+  }
+
+  /** The font options <code>Style</code> takes as rules, as the 2D pipeline reads them. */
+  private static boolean applyFontRule(IAST rule, Style3D style) {
+    if (rule.argSize() != 2 || !rule.arg1().isBuiltInSymbol()) {
+      return false;
+    }
+    IExpr value = rule.arg2();
+    switch (((IBuiltInSymbol) rule.arg1()).ordinal()) {
+      case ID.FontColor: {
+        Color c = ColorUtil.parse(value);
+        if (c != null) {
+          style.textColor = c;
+        }
+        return true;
+      }
+      case ID.FontSize:
+        style.fontSize = fontSizeOf(value, style.fontSize);
+        return true;
+      case ID.FontFamily:
+        style.fontFamily = unquote(value);
+        return true;
+      case ID.FontWeight:
+        style.fontWeight =
+            unquote(value).toLowerCase(Locale.US).contains("bold") ? "bold" : "normal";
+        return true;
+      case ID.FontSlant: {
+        String slant = unquote(value).toLowerCase(Locale.US);
+        style.fontStyle =
+            slant.contains("italic") || slant.contains("oblique") ? "italic" : "normal";
+        return true;
+      }
+      default:
+        return false;
+    }
+  }
+
+  private static double fontSizeOf(IExpr value, double current) {
+    if (value.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) value).ordinal()) {
+        case ID.Tiny:
+          return 6.0;
+        case ID.Small:
+          return 9.0;
+        case ID.Medium:
+          return 12.0;
+        case ID.Large:
+          return 18.0;
+        default:
+          return current;
+      }
+    }
+    return ColorUtil.dbl(value, current);
+  }
+
+  private static String unquote(IExpr value) {
+    return value.toString().replace("\"", "");
   }
 
   private boolean applySymbolDirective(IBuiltInSymbol symbol, Style3D style) {
@@ -425,6 +486,16 @@ public final class PrimitiveCollector3D {
         return true;
       case ID.Large:
         style.pointSize = Style3D.Size.ofScaled(0.018);
+        return true;
+      case ID.Bold:
+        style.fontWeight = "bold";
+        return true;
+      case ID.Italic:
+        style.fontStyle = "italic";
+        return true;
+      case ID.Plain:
+        style.fontWeight = "normal";
+        style.fontStyle = "normal";
         return true;
       default:
         return false;
