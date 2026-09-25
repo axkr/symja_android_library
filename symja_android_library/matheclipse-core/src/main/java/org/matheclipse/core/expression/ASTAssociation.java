@@ -237,6 +237,14 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
+  public ASTAssociation clone() {
+    ASTAssociation result = (ASTAssociation) super.clone();
+    // rebuilt rather than shared, for the reason given in copy()
+    result.keyToIndexMap = keyToIndexMap.toMutMap(x -> x);
+    return result;
+  }
+
+  @Override
   public ASTAssociation copy() {
     ASTAssociation ast = new ASTAssociation();
     ast.rrbTree = shallowCopy(rrbTree);

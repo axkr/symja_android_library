@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -282,18 +281,24 @@ public class ASTRRBTree extends AbstractAST
   }
 
   /**
-   * A shallow copy of this tree, the same as {@link #copy()}: the elements themselves are not
-   * copied.
+   * A shallow copy of this tree, like {@link #copy()}: the elements themselves are not copied, the
+   * tree holding them is, and the evaluation flags start cleared.
    *
    * @return a shallow copy of this {@code ASTRRBTree}
    * @see java.lang.Cloneable
    */
   @Override
-  @SuppressFBWarnings(value = "CN_IDIOM_NO_SUPER_CALL",
-      justification = "copy() is overridden by every subclass (ASTAssociation rebuilds its key "
-          + "map there); super.clone() would share the tree and that map")
-  final public IAST clone() {
-    return copy();
+  public ASTRRBTree clone() {
+    try {
+      ASTRRBTree result = (ASTRRBTree) super.clone();
+      result.resetFlags();
+      result.fEvalEpoch = 0L;
+      result.rrbTree = shallowCopy(rrbTree);
+      return result;
+    } catch (CloneNotSupportedException e) {
+      // AbstractAST implements Cloneable
+      throw new AssertionError(e);
+    }
   }
 
   /** {@inheritDoc} */
