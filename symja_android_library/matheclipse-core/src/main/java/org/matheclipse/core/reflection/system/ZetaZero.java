@@ -24,13 +24,19 @@ public class ZetaZero extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    final int k = ast.arg1().toMachineInt();
-    if (k <= 0) {
-      if (ast.arg1().isNumber()) {
-        // Nonzero integer expected at position `1` in `2`.
+    final IExpr arg1 = ast.arg1();
+    final int index = arg1.isInteger() ? arg1.toIntDefault() : 0;
+    if (index == 0 || index == Integer.MIN_VALUE) {
+      if (arg1.isNumber()) {
+        // ZetaZero(0) and ZetaZero(3.0) - Nonzero integer expected at position `1` in `2`.
         return Errors.printMessage(S.ZetaZero, "intnz", F.List(F.C1, S.ZetaZero), engine);
       }
-      // unevaluated for k == 0 and negative k
+      return F.NIL;
+    }
+    // ZetaZero(-k) is the conjugate of the k-th zero
+    final boolean conjugate = index < 0;
+    final int k = Math.abs(index);
+    if (conjugate && ast.isAST2()) {
       return F.NIL;
     }
 
@@ -55,7 +61,10 @@ public class ZetaZero extends AbstractFunctionEvaluator {
         tMin = new Apfloat(tMinDouble, precision);
       }
 
-      final Apfloat imaginaryPart = ZetaZero.zetaZeroImaginaryPart(h, k, tMin);
+      Apfloat imaginaryPart = ZetaZero.zetaZeroImaginaryPart(h, k, tMin);
+      if (conjugate) {
+        imaginaryPart = imaginaryPart.negate();
+      }
       if (arbitrary) {
         final Apfloat half = new Apfloat("0.5", precision);
         return F.complexNum(new Apcomplex(half, imaginaryPart.precision(precision)));

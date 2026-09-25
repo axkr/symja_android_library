@@ -11,6 +11,28 @@ public class ImageStructureTest extends AbstractTestCase {
     check("ImageData(ImageApply(0.5&,Image({{0.0,1.0}})),\"Byte\")", "{{128,128}}");
   }
 
+  /**
+   * The result has as many channels as f returns: a color for every gray sample widens the image
+   * to RGB, Max of every color narrows it to gray.
+   */
+  @Test
+  public void imageApplyTakesItsChannelsFromTheResult() {
+    check("ImageData(ImageApply(If(#==0,{1,1,1},{1,0,0})&, Image({{0,1},{1,0}})))", //
+        "{{{1.0,1.0,1.0},{1.0,0.0,0.0}},{{1.0,0.0,0.0},{1.0,1.0,1.0}}}");
+    check("ImageChannels(ImageApply(If(#==0,{1,1,1},{1,0,0})&, Image({{0,1},{1,0}})))", //
+        "3");
+    check("ImageData(ImageApply(Max, Image({{{1,0,0},{0,1,0}}})))", //
+        "{{1.0,1.0}}");
+    check("ImageChannels(ImageApply(Max, Image({{{1,0,0},{0,1,0}}})))", //
+        "1");
+    // a masked out gray pixel is repeated into r, g and b
+    check("ImageData(ImageApply({#,0,0}&, Image({{0.0,1.0}}), Masking->{{1,0}}),\"Byte\")", //
+        "{{{0,0,0},{255,255,255}}}");
+    // two channels are no image
+    check("Head(ImageApply({#,#}&, Image({{0.0,1.0}})))", //
+        "ImageApply");
+  }
+
   @Test
   public void imageApplyOnAColorImageGetsAChannelList() {
     check("ImageData(ImageApply(Reverse,Image({{{1.0,0.5,0.0}}})),\"Byte\")", //

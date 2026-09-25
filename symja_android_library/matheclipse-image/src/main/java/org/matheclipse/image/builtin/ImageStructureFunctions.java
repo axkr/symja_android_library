@@ -77,25 +77,50 @@ public class ImageStructureFunctions {
         return F.NIL;
       }
 
+      // the number of channels of the result is the length of what f returns, as in the
+      // reference implementation: a color for every gray sample widens the image to RGB, Max of
+      // every color narrows it to gray. It is read from the first sample f is applied to.
+      int outColorChannels = -1;
       float[][] result = new float[width * height][];
+      boolean[] masked = new boolean[width * height];
       for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
           float[] values = Pixels.pixel(image, x, y, channels);
           if (mask != null && !mask[y][x]) {
             result[y * width + x] = values;
+            masked[y * width + x] = true;
             continue;
           }
           IExpr applied =
               engine.evaluate(F.unaryAST1(function, samplesOf(values, colorChannels)));
-          float[] replaced = valuesOf(applied, values, colorChannels);
+          if (outColorChannels < 0) {
+            outColorChannels = applied.isList() ? applied.argSize() : 1;
+            if (outColorChannels != 1 && outColorChannels != 3 && outColorChannels != 4) {
+              return F.NIL;
+            }
+          }
+          float[] replaced = valuesOf(applied, values, colorChannels, outColorChannels);
           if (replaced == null) {
             return F.NIL;
           }
           result[y * width + x] = replaced;
         }
       }
+      if (outColorChannels < 0) {
+        outColorChannels = colorChannels;
+      }
+      // an alpha channel is carried along when the colors stay colors
+      boolean alpha = channels == 4 && outColorChannels == 3;
+      int outChannels = alpha ? 4 : outColorChannels;
+      if (outColorChannels != colorChannels) {
+        for (int i = 0; i < result.length; i++) {
+          if (masked[i]) {
+            result[i] = converted(result[i], colorChannels, outChannels);
+          }
+        }
+      }
       return new ImageExpr(
-          Pixels.fromPixels(width, height, channels, (x, y) -> result[y * width + x]), null);
+          Pixels.fromPixels(width, height, outChannels, (x, y) -> result[y * width + x]), null);
     }
 
     @Override
@@ -411,6 +436,43 @@ public class ImageStructureFunctions {
    * @return <code>null</code> if the function did not return a number or a list of the right length
    */
   private static float[] valuesOf(IExpr applied, float[] original, int colorChannels) {
+    return valuesOf(applied, original, colorChannels, colorChannels);
+  }
+
+  /**
+   * The value the user function returned, as {@code outColorChannels} samples on the 0 ... 255
+   * scale; the alpha channel of <code>original</code> follows the colors when they stay colors.
+   *
+   * @return <code>null</code> if the function did not return a number or a list of that length
+   */
+  private static float[] valuesOf(IExpr applied, float[] original, int colorChannels,
+      int outColorChannels) {
+    if (outColorChannels != colorChannels) {
+      boolean alpha = original.length == 4 && outColorChannels == 3;
+      float[] result = new float[alpha ? 4 : outColorChannels];
+      if (alpha) {
+        result[3] = original[3];
+      }
+      if (outColorChannels == 1) {
+        double value = applied.evalfNaN();
+        if (Double.isNaN(value)) {
+          return null;
+        }
+        result[0] = (float) (255.0 * value);
+        return result;
+      }
+      if (!applied.isList() || applied.argSize() != outColorChannels) {
+        return null;
+      }
+      for (int c = 0; c < outColorChannels; c++) {
+        double value = ((IAST) applied).get(c + 1).evalfNaN();
+        if (Double.isNaN(value)) {
+          return null;
+        }
+        result[c] = (float) (255.0 * value);
+      }
+      return result;
+    }
     float[] result = original.clone();
     if (colorChannels == 1) {
       double value = applied.evalfNaN();
@@ -430,6 +492,31 @@ public class ImageStructureFunctions {
         return null;
       }
       result[c] = (float) (255.0 * value);
+    }
+    return result;
+  }
+
+  /**
+   * A pixel masked out of <code>ImageApply</code> in the result's channels: a gray sample repeated
+   * into r, g and b, or the mean of the colors when the result is gray.
+   */
+  private static float[] converted(float[] values, int colorChannels, int outChannels) {
+    float[] result = new float[outChannels];
+    if (colorChannels == 1) {
+      for (int c = 0; c < Math.min(outChannels, 3); c++) {
+        result[c] = values[0];
+      }
+    } else {
+      float sum = 0.0f;
+      for (int c = 0; c < colorChannels; c++) {
+        sum += values[c];
+      }
+      for (int c = 0; c < Math.min(outChannels, 3); c++) {
+        result[c] = sum / colorChannels;
+      }
+    }
+    if (outChannels == 4) {
+      result[3] = values.length == 4 ? values[3] : 255.0f;
     }
     return result;
   }

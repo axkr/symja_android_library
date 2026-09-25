@@ -89,6 +89,22 @@ public class ZetaZeroTest {
     }
   }
 
+  /**
+   * Mathematica: ZetaZero(-k) is the conjugate of the k-th zero; a zero or non-integer index gets
+   * the intnz message and stays unevaluated.
+   */
+  @Test
+  public void testNegativeIndexIsTheConjugateZero() {
+    ExprEvaluator eval = new ExprEvaluator();
+    IExpr result = eval.eval("N(ZetaZero(-1))");
+    assertEquals(0.5, result.re().evalf(), 1e-15);
+    assertEquals(-14.134725141734695, result.im().evalf(), 1e-12);
+    assertEquals("True",
+        eval.eval("Abs(Im(N(ZetaZero(-3), 20)) + 25.010857580145688763`25) < 10^-15").toString());
+    assertEquals("ZetaZero(3.0)", eval.eval("ZetaZero(3.0)").toString());
+    assertEquals("ZetaZero(0)", eval.eval("N(ZetaZero(0))").toString());
+  }
+
   @Test
   public void testSymbolicStaysUnevaluated() {
     ExprEvaluator eval = new ExprEvaluator();
