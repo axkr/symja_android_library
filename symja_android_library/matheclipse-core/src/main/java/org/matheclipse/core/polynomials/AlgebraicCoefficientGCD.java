@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -114,6 +115,8 @@ public final class AlgebraicCoefficientGCD {
      * the image of <code>h</code> has the total degree of <code>h</code>. A constant GCD of the
      * images therefore proves that <code>h</code> is constant.
      */
+    @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE",
+        justification = "seeded for a deterministic answer; drawn from in a loop")
     boolean isCoprime(GenPolynomial<AlgebraicNumber<BigRational>> q1,
         GenPolynomial<AlgebraicNumber<BigRational>> q2) {
       long[][] roots = primeRoots();

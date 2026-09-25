@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
@@ -69,6 +70,8 @@ public class RationalQETest {
   }
 
   @Test
+  @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE",
+      justification = "fixed seed for a reproducible fuzz loop")
   public void testGeneratedFormulasAgreePointwise() {
     Random random = new Random(20260922L);
     EvalEngine engine = EvalEngine.get();

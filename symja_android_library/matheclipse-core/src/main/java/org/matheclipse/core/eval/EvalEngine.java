@@ -20,6 +20,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.apache.logging.log4j.Level;
 import org.apfloat.Apfloat;
@@ -930,6 +931,8 @@ public class EvalEngine implements Serializable {
    * @param relaxedSyntax if <code>true</code>, the parser doesn't distinguidh between upper and
    *        lower case identifiers
    */
+  @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE",
+      justification = "long-lived engine Random, reseeded to record its seed")
   public EvalEngine(String sessionID, int recursionLimit, int iterationLimit, PrintStream outStream,
       PrintStream errorStream, boolean relaxedSyntax) {
     fRandomSeed = fRandom.nextLong();
@@ -1503,7 +1506,7 @@ public class EvalEngine implements Serializable {
   public synchronized EvalEngine copyInit() {
     EvalEngine engine = new EvalEngine();
     engine.fRandomSeed = fRandom.nextLong();
-    engine.fRandom.setSeed(fRandomSeed);
+    engine.fRandom.setSeed(engine.fRandomSeed);
     engine.fSessionID = this.fSessionID;
     engine.fRecursionLimit = this.fRecursionLimit;
     engine.fIterationLimit = this.fIterationLimit;
