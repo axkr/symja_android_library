@@ -431,12 +431,13 @@ public class StatisticsDiscreteDistributions {
    * {@link RandomDataGenerator#nextPoisson(double)}.
    */
   private static long poisson(RandomDataGenerator rdg, double mean) {
+    final long chunks = (long) (mean / POISSON_CHUNK_MEAN);
+    final double rest = mean - chunks * POISSON_CHUNK_MEAN;
     long sum = 0L;
-    while (mean > POISSON_CHUNK_MEAN) {
+    for (long i = 0; i < chunks; i++) {
       sum += rdg.nextPoisson(POISSON_CHUNK_MEAN);
-      mean -= POISSON_CHUNK_MEAN;
     }
-    return mean > 0.0 ? sum + rdg.nextPoisson(mean) : sum;
+    return rest > 0.0 ? sum + rdg.nextPoisson(rest) : sum;
   }
 
   /**

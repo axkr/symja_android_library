@@ -111,13 +111,12 @@ public final class BarnesG {
     }
     // Walk up to where the expansion applies, accumulating the log Gamma terms that
     // G(z+1) = Gamma(z) G(z) introduces, then subtract them again.
-    double z = x;
+    final int k = x < ASYMPTOTIC_FROM ? (int) Math.ceil(ASYMPTOTIC_FROM - x) : 0;
     double shift = 0.0;
-    while (z < ASYMPTOTIC_FROM) {
-      shift += Gamma.logGamma(z);
-      z += 1.0;
+    for (int i = 0; i < k; i++) {
+      shift += Gamma.logGamma(x + i);
     }
-    return asymptoticLogG(z) - shift;
+    return asymptoticLogG(x + k) - shift;
   }
 
   /**

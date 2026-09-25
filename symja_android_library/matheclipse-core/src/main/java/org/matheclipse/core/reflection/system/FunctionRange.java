@@ -833,12 +833,14 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       final double xMin = 0.01;
       final double xMax = 50.0;
       final double step = 0.1;
+      final int steps = (int) Math.round((xMax - xMin) / step);
       List<Double> roots = new ArrayList<>();
       // the positive half-line first, so that the root of an even function is the positive one
       for (double side : new double[] {1.0, -1.0}) {
       double prevX = side * xMin;
       double prevVal = sampleAt(eqExpr, x, prevX, engine);
-      for (double xsAbs = xMin + step; xsAbs <= xMax; xsAbs += step) {
+      for (int i = 1; i <= steps; i++) {
+        double xsAbs = xMin + i * step;
         double xs = side * xsAbs;
         double curVal = sampleAt(eqExpr, x, xs, engine);
         if (!Double.isNaN(prevVal) && !Double.isNaN(curVal) && prevVal * curVal < 0.0) {
@@ -899,7 +901,8 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       for (double side : new double[] {1.0, -1.0}) {
       double prevBx = side * xMin;
       double prevBv = sampleAt(function, x, prevBx, engine);
-      for (double xsAbs = xMin + step; xsAbs <= xMax; xsAbs += step) {
+      for (int i = 1; i <= steps; i++) {
+        double xsAbs = xMin + i * step;
         double xs = side * xsAbs;
         double curBv = sampleAt(function, x, xs, engine);
         boolean prevReal = !Double.isNaN(prevBv) && !Double.isInfinite(prevBv);
