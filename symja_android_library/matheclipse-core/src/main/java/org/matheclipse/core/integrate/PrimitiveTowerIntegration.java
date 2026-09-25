@@ -388,6 +388,9 @@ public class PrimitiveTowerIntegration {
       return false;
     }
     try {
+      if (AntiderivativeCheck.agrees(result, integrand, x, engine)) {
+        return true;
+      }
       IExpr difference = F.Subtract(F.D(result, x), integrand);
       if (engine.evaluate(F.Together(difference)).isZero()) {
         return true;
