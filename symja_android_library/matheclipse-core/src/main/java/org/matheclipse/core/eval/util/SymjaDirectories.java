@@ -102,7 +102,8 @@ public final class SymjaDirectories {
       }
       try (Stream<Path> entries = Files.list(autoload)) {
         entries.filter(Files::isDirectory)
-            .sorted(Comparator.comparing(p -> p.getFileName().toString()))
+            // entries of one directory: ordering by the full path orders by name
+            .sorted(Comparator.comparing(Path::toString))
             .forEach(directories::add);
       } catch (IOException ioe) {
         // an unreadable Autoload directory simply contributes nothing

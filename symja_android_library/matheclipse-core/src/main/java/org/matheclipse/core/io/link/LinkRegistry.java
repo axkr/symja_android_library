@@ -37,8 +37,12 @@ public final class LinkRegistry {
   private static final AtomicLong COUNTER = new AtomicLong(1);
 
   /** Where a named link leaves the port it is listening on. */
+  private static Path linksDirectory() {
+    return Paths.get(System.getProperty("java.io.tmpdir"), "symja-links");
+  }
+
   private static Path portFile(String name) {
-    return Paths.get(System.getProperty("java.io.tmpdir"), "symja-links", name);
+    return linksDirectory().resolve(name);
   }
 
   public static LinkEntry get(String uuid) {
@@ -91,8 +95,8 @@ public final class LinkRegistry {
     try {
       ServerSocket server = new ServerSocket();
       server.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+      Files.createDirectories(linksDirectory());
       Path file = portFile(name);
-      Files.createDirectories(file.getParent());
       Files.write(file, Integer.toString(server.getLocalPort()).getBytes(StandardCharsets.UTF_8));
       return new PendingLink(name, server, file);
     } catch (IOException ioe) {

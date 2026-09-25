@@ -150,7 +150,10 @@ public class FileSystemFunctions {
           if (Files.isDirectory(source)) {
             Files.createDirectories(target);
           } else {
-            Files.createDirectories(target.getParent());
+            final Path parent = target.getParent();
+            if (parent != null) {
+              Files.createDirectories(parent);
+            }
             Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
           }
         }
