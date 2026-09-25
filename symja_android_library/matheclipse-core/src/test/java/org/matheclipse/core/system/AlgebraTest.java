@@ -456,12 +456,46 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTogetherKeepsDenominators() {
+    // as in Mathematica: the denominators are split only as far as they share a factor, not
+    // factored into irreducibles
+    check("Together(1/(x^2-1)+1/(x^2-4))", //
+        "(-5+2*x^2)/((-4+x^2)*(-1+x^2))");
+    check("Together(1/(x^3+1)+1/x)", //
+        "(1+x+x^3)/(x*(1+x^3))");
+    check("Together((x-1)/(x^2-1)+(x-2)/(x^2-4))", //
+        "(3+2*x)/((1+x)*(2+x))");
+    check("Together(1/(x^2-1)+1/(x+1))", //
+        "x/((-1+x)*(1+x))");
+    // Mathematica: (2*x)/((-1+x)^2*(1+x)); Symja's Power writes (-1+x)^2 as (1-x)^2
+    check("Together(1/(x^2-1)+1/(x-1)^2)", //
+        "(2*x)/((1-x)^2*(1+x))");
+    check("Together(1/(x^2+3*x+2)+1/(x+1))", //
+        "(3+x)/((1+x)*(2+x))");
+    check("Together(1/(x^2-1)+1/(x^3-1))", //
+        "(2+2*x+x^2)/((-1+x)*(1+x)*(1+x+x^2))");
+    check("Together(x/(x^2-1)+1/(x^2-1))", //
+        "1/(-1+x)");
+    check("Together(1/((x-1)*(x+2))+1/(x^2+x-2))", //
+        "2/((-1+x)*(2+x))");
+    check("Together((x+1)/(x^2-1))", //
+        "1/(-1+x)");
+    check("Together(1/(x^4-1)+1/(x^2+1))", //
+        "x^2/((-1+x^2)*(1+x^2))");
+    check("Together(1/(2*x+2)+1/x)", //
+        "(2+3*x)/(2*x*(1+x))");
+    // the common denominator isn't factored, which took seconds for a few dozen terms
+    check("Denominator(Together(Sum(1/(x+k)^2 + k/(x^2+k), {k,1,3})))", //
+        "(1+x)^2*(2+x)^2*(3+x)^2*(1+x^2)*(2+x^2)*(3+x^2)");
+  }
+
+  @Test
   public void testTogether() {
     // regression: JAS' GenPolynomial.divide asserts its dividend is in descending leading-exponent
     // order and threw an AssertionError (an Error, so it escaped the RuntimeException guard and
     // aborted the whole evaluation) while cancelling the gcd of this multivariate combination
     check("Together(1/(1+x) + 1/(1+x+x^5))", //
-        "(2+2*x+x^5)/((1+x)*(1+x+x^2)*(1-x^2+x^3))");
+        "(2+2*x+x^5)/((1+x)*(1+x+x^5))");
     // regression: a Gaussian integer coefficient makes the JAS BigRational conversion fail, so the
     // denominator was factored through PolynomialHomogenization. That path used to rebalance every
     // factor by x^(-degree/2), which kept the value but shifted all exponents by a half-integer

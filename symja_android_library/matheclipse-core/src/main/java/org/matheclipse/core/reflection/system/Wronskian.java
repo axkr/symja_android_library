@@ -168,6 +168,11 @@ public class Wronskian extends AbstractFunctionEvaluator {
     if (together.isPresent() && together.leafCount() <= best.leafCount()) {
       best = together;
     }
+    // Together keeps a denominator as the determinant wrote it, e.g. 2*n+n^2
+    IExpr factored = S.Factor.of(engine, best);
+    if (factored.isPresent() && factored.leafCount() < best.leafCount()) {
+      best = factored;
+    }
     IExpr simplified;
     try {
       simplified = engine.evaluate(

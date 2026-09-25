@@ -3342,6 +3342,12 @@ public class AlgebraUtil {
   public static IExpr togetherNull(IAST ast, EvalEngine engine) {
     boolean evaled = false;
     IExpr temp = F.NIL;
+    if (ast.isPlus()) {
+      temp = togetherUnexpanded(ast, engine);
+      if (temp.isPresent()) {
+        return engine.evaluate(temp);
+      }
+    }
 
     // Skip expensive deep expansions if the expression is already marked as expanded
     if (!ast.isAllExpanded()) {
@@ -3373,6 +3379,61 @@ public class AlgebraUtil {
    * 
    * @return F.NIL if together couldn't be performed
    */
+  /**
+   * A sum free of inexact numbers, of heads other than <code>Plus, Times, Power</code> and of
+   * non-integer powers.
+   */
+  private static boolean isUnivariateRationalSum(IAST plusAST) {
+    return plusAST.isFree(
+        x -> x.isInexactNumber()
+            || (x.isAST() && (!x.isPlusTimesPower() || (x.isPower() && !x.exponent().isInteger()))),
+        false);
+  }
+
+  private static void fractionalParts(IAST plusAST, IASTAppendable numerators,
+      IASTAppendable denominators) {
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr arg = plusAST.get(i);
+      Optional<IExpr[]> fractionalParts = fractionalPartsRational(arg, false, false);
+      if (fractionalParts.isPresent()) {
+        IExpr[] parts = fractionalParts.get();
+        numerators.append(parts[0]);
+        denominators.append(parts[1]);
+      } else {
+        numerators.append(arg);
+        denominators.append(F.C1);
+      }
+    }
+  }
+
+  /**
+   * <code>Together</code> of a univariate sum with the denominators as the terms have them,
+   * before <code>ExpandAll</code> multiplies them out: Mathematica keeps
+   * <code>(-1+x)*(2+x)</code> in <code>Together(1/((x-1)*(x+2))+1/(x^2+x-2))</code>.
+   */
+  private static IExpr togetherUnexpanded(IAST plusAST, EvalEngine engine) {
+    if (plusAST.argSize() < 2 || !isUnivariateRationalSum(plusAST)
+        || plusAST.isFree(x -> x.isFraction() || x.isPower() && x.exponent().isNegative(), false)) {
+      return F.NIL;
+    }
+    VariablesSet eVar = new VariablesSet(plusAST);
+    if (eVar.size() != 1) {
+      return F.NIL;
+    }
+    IASTAppendable numerators = F.ListAlloc(plusAST.argSize());
+    IASTAppendable denominators = F.ListAlloc(plusAST.argSize());
+    fractionalParts(plusAST, numerators, denominators);
+    if (!denominators.exists(a -> !a.isOne())) {
+      return F.NIL;
+    }
+    try {
+      return CoprimeDenominators.together(numerators, denominators, eVar.firstVariable(), engine);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
   public static IExpr togetherPlus(final IAST plusAST, EvalEngine engine) {
     if (plusAST.argSize() <= 1) {
       return F.NIL;
@@ -3383,10 +3444,7 @@ public class AlgebraUtil {
       return mergedRoots;
     }
 
-    if (plusAST.isFree(
-        x -> x.isInexactNumber()
-            || (x.isAST() && (!x.isPlusTimesPower() || (x.isPower() && !x.exponent().isInteger()))),
-        false)) {
+    if (isUnivariateRationalSum(plusAST)) {
       if (plusAST.isFree(x -> x.isFraction() || x.isPower() && x.exponent().isNegative(), false)) {
         return F.NIL;
       }
@@ -3394,26 +3452,16 @@ public class AlgebraUtil {
       if (eVar.size() == 1) {
         try {
           IExpr variable = eVar.firstVariable();
-          IAST termList = plusAST.setAtCopy(0, S.List);
-          int argSize = termList.argSize();
-
-          IASTAppendable numerators = F.ListAlloc(argSize);
-          IASTAppendable denominators = F.ListAlloc(argSize);
-
-          for (int i = 1; i <= argSize; i++) {
-            IExpr arg = termList.get(i);
-            Optional<IExpr[]> fractionalParts = fractionalPartsRational(arg, false, false);
-            if (fractionalParts.isPresent()) {
-              IExpr[] parts = fractionalParts.get();
-              numerators.append(parts[0]);
-              denominators.append(parts[1]);
-            } else {
-              numerators.append(arg);
-              denominators.append(F.C1);
-            }
-          }
+          IASTAppendable numerators = F.ListAlloc(plusAST.argSize());
+          IASTAppendable denominators = F.ListAlloc(plusAST.argSize());
+          fractionalParts(plusAST, numerators, denominators);
 
           if (denominators.exists(a -> !a.isOne())) {
+            IExpr coprime =
+                CoprimeDenominators.together(numerators, denominators, variable, engine);
+            if (coprime.isPresent()) {
+              return coprime;
+            }
             IExpr commonDenominator = engine.evaluate(denominators.setAtCopy(0, S.PolynomialLCM));
             IASTAppendable sum = F.PlusAlloc(numerators.argSize()); // 2025-12-05]
 
