@@ -841,13 +841,16 @@ public class Errors {
    */
   public static IAST printMessage(@NonNull ISymbol symbol, @NonNull String messageShortcut,
       final IAST listOfParameters, EvalEngine engine) {
-    if (engine != null && engine.isMessageDisabled(symbol.toString(), messageShortcut)) {
+    if (engine == null) {
+      engine = EvalEngine.get();
+    }
+    if (engine.isMessageDisabled(symbol.toString(), messageShortcut)) {
       // Off[Symbol::tag] - the message is not printed, and everything else about the evaluation
       // stays as it was
       engine.setMessageShortcut(messageShortcut);
       return F.NIL;
     }
-    if (engine != null && engine.getMessageListener() != null && !engine.isQuietMode()) {
+    if (engine.getMessageListener() != null && !engine.isQuietMode()) {
       // a kernel driven over a link sends its messages on rather than printing them
       engine.getMessageListener().message(symbol, messageShortcut);
     }
