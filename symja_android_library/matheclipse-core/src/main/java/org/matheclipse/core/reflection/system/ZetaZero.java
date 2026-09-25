@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
@@ -56,7 +58,7 @@ public class ZetaZero extends AbstractFunctionEvaluator {
       final Apfloat imaginaryPart = ZetaZero.zetaZeroImaginaryPart(h, k, tMin);
       if (arbitrary) {
         final Apfloat half = new Apfloat("0.5", precision);
-        return F.complexNum(new Apcomplex(half, imaginaryPart));
+        return F.complexNum(new Apcomplex(half, imaginaryPart.precision(precision)));
       }
       return F.complexNum(0.5, imaginaryPart.doubleValue());
     } catch (RuntimeException rex) {
@@ -131,72 +133,234 @@ public class ZetaZero extends AbstractFunctionEvaluator {
     return ZetaZero.zzFindZeroApfloat(h, index, half, quarter, two, logPi, tol, precision);
   }
 
-  /**
-   * Machine-precision locate phase: bracket the {@code index}-th zeta zero by scanning the
-   * double-precision Riemann-Siegel {@code Z(t)} around the asymptotic estimate for a sign change.
-   * The returned {@code {a, b}} bracket is kept deliberately wider than the Riemann-Siegel
-   * truncation error so the sign change survives at full precision. Returns {@code null} if no sign
-   * change is found within the widened window, so the caller can fall back to the
-   * arbitrary-precision search.
-   */
-  private static double[] locateBracketDouble(int index) {
-    double t0 = ZetaJS.zetaZeroEstimate(index);
-    double lnArg = Math.log(t0 / (2.0 * Math.PI));
-    double gap = 2.0 * Math.PI / Math.max(lnArg, 0.3);
-    double step = gap / ZetaJS.ZZ_SCAN_SEGMENTS;
+  /** Above this height the O(t) double-precision Z gives way to the O(sqrt(t)) Riemann-Siegel Z. */
+  private static final double EM_DOUBLE_LIMIT = 2.0e6;
 
-    for (int widen = 0; widen < ZetaJS.ZZ_MAX_WIDEN; widen++) {
-      double lo = t0 - gap;
-      if (lo <= 0.0) {
-        lo = 0.1;
-      }
-      double hi = t0 + gap;
-      double prev = lo;
-      double fprev = ZetaJS.riemannSiegelZDouble(prev);
-      double bestA = Double.NaN;
-      double bestB = Double.NaN;
-      double bestDist = Double.MAX_VALUE;
-      int segments = (int) Math.ceil((hi - lo) / step);
-      for (int i = 1; i <= segments; i++) {
-        double cur = lo + step * i;
-        if (cur > hi) {
-          cur = hi;
-        }
-        double fcur = ZetaJS.riemannSiegelZDouble(cur);
-        if (fprev != 0.0 && fcur != 0.0 && Math.signum(fprev) != Math.signum(fcur)) {
-          double mid = 0.5 * (prev + cur);
-          double dist = Math.abs(mid - t0);
-          if (dist < bestDist) {
-            bestDist = dist;
-            bestA = prev;
-            bestB = cur;
-          }
-        }
-        prev = cur;
-        fprev = fcur;
-      }
-      if (!Double.isNaN(bestA)) {
-        return ZetaZero.refineBracketDouble(bestA, bestB);
-      }
-      gap *= 2.0;
+  /**
+   * Machine-precision {@code Z(t)}. Up to {@link #EM_DOUBLE_LIMIT} it is computed from zeta(1/2 +
+   * I*t) by Euler-Maclaurin summation, accurate to about {@code 1e-9} at {@code t ~ 1e5} - enough to
+   * see the tiny extremum between the two zeros of a Lehmer pair, which the leading Riemann-Siegel
+   * term alone cannot; above it the Riemann-Siegel formula takes over.
+   */
+  static double zDouble(double t) {
+    if (t > EM_DOUBLE_LIMIT) {
+      return ZetaJS.riemannSiegelZDouble(t);
     }
-    return null;
+    // N direct terms with t/(2 Pi N) = 1/Pi, so the Bernoulli tail shrinks by 1/Pi^2 per term
+    int n = (int) Math.ceil(0.5 * t) + 30;
+    double re = 0.0;
+    double im = 0.0;
+    for (int k = 1; k < n; k++) {
+      double lnk = Math.log(k);
+      double mag = 1.0 / Math.sqrt(k);
+      double phase = t * lnk;
+      re += mag * Math.cos(phase);
+      im -= mag * Math.sin(phase);
+    }
+    double lnN = Math.log(n);
+    double magN = 1.0 / Math.sqrt(n);
+    // N^(-s)
+    double nsRe = magN * Math.cos(t * lnN);
+    double nsIm = -magN * Math.sin(t * lnN);
+    // N^(1-s)/(s-1) with s-1 = -1/2 + I*t
+    double aRe = n * nsRe;
+    double aIm = n * nsIm;
+    double den = 0.25 + t * t;
+    re += (aRe * -0.5 + aIm * t) / den;
+    im += (aIm * -0.5 - aRe * t) / den;
+    re += 0.5 * nsRe;
+    im += 0.5 * nsIm;
+    // Bernoulli tail: B_2j/(2j)! * s(s+1)...(s+2j-2) * N^(-s-2j+1)
+    double riseRe = 0.5;
+    double riseIm = t;
+    double powRe = nsRe / n;
+    double powIm = nsIm / n;
+    for (int j = 1; j <= 10; j++) {
+      double c = BERNOULLI_OVER_FACTORIAL[j - 1];
+      re += c * (riseRe * powRe - riseIm * powIm);
+      im += c * (riseRe * powIm + riseIm * powRe);
+      // next rising factorial: times (s+2j-1)(s+2j)
+      for (int m = 2 * j - 1; m <= 2 * j; m++) {
+        double fRe = 0.5 + m;
+        double nRe = riseRe * fRe - riseIm * t;
+        double nIm = riseRe * t + riseIm * fRe;
+        riseRe = nRe;
+        riseIm = nIm;
+      }
+      powRe /= (double) n * n;
+      powIm /= (double) n * n;
+    }
+    double theta = ZetaJS.riemannSiegelThetaDouble(t);
+    return Math.cos(theta) * re - Math.sin(theta) * im;
+  }
+
+  /** B_2j / (2j)! for j = 1..10. */
+  private static final double[] BERNOULLI_OVER_FACTORIAL = {1.0 / 12.0, -1.0 / 720.0,
+      1.0 / 30240.0, -1.0 / 1209600.0, 1.0 / 47900160.0, -691.0 / 1307674368000.0,
+      7.0 / 523069747200.0, -3617.0 / 10670622842880000.0, 43867.0 / 5109094217170944000.0,
+      -174611.0 / 802857662698291200000.0};
+
+  /** The Gram point g_n, where theta(g_n) = n*Pi, for {@code n >= -1}. */
+  static double gramPoint(int n) {
+    double t = Math.max(9.0, ZetaJS.zetaZeroEstimate(n + 1));
+    for (int i = 0; i < 60; i++) {
+      double f = ZetaJS.riemannSiegelThetaDouble(t) - n * Math.PI;
+      double dt = f / (0.5 * Math.log(t / (2.0 * Math.PI)));
+      t -= dt;
+      if (Math.abs(dt) <= 1e-13 * t) {
+        break;
+      }
+    }
+    return t;
+  }
+
+  /** Whether g_n is a good Gram point, (-1)^n Z(g_n) > 0; then N(g_n) = n + 1 (Rosser's rule). */
+  private static boolean isGoodGramPoint(int n, double g) {
+    double z = zDouble(g);
+    return (n % 2 == 0) ? z > 0.0 : z < 0.0;
   }
 
   /**
-   * Tighten a double-precision sign-change bracket by bisection, but stop well above the
-   * Riemann-Siegel truncation error (~{@code t^(-3/4)}) so the reported endpoints keep reliable
-   * (opposite) signs when handed to the full-precision polish.
+   * Machine-precision locate phase: bracket the {@code index}-th zeta zero by counting.
+   *
+   * <p>
+   * The zero is looked for between two good Gram points g_a < g_b around it, where the number of
+   * zeros below each is known: {@code N(g_n) = n + 1} (Rosser's rule). The sign changes of Z in
+   * between are counted, and when there are fewer than {@code b - a} a pair of zeros is hiding in
+   * a step - found where Z comes close to the axis and turns back. The {@code index}-th zero is
+   * then picked by its position in the count, not by its distance to an estimate, which gets a
+   * close pair (the Lehmer pair #6709/#6710, 0.038 apart) and a zero off its Gram interval right.
+   *
+   * @return the bracket, or {@code null} to fall back to the arbitrary-precision search
+   */
+  private static double[] locateBracketDouble(int index) {
+    int b = index - 1;
+    double gb = gramPoint(b);
+    for (int i = 0; i < 100 && !isGoodGramPoint(b, gb); i++) {
+      gb = gramPoint(++b);
+    }
+    int a = index - 2;
+    double ga = a >= -1 ? gramPoint(a) : 1.0;
+    for (int i = 0; i < 100 && a >= 0 && !isGoodGramPoint(a, ga); i++) {
+      ga = gramPoint(--a);
+    }
+    // below g_{-1} ~ 9.67 there is no zero at all
+    int zerosBelowLeft = Math.max(a + 1, 0);
+    int expected = (b + 1) - zerosBelowLeft;
+    double gap = 2.0 * Math.PI / Math.max(Math.log(gb / (2.0 * Math.PI)), 0.3);
+    double step = gap / 8.0;
+    List<double[]> brackets = null;
+    for (int refine = 0; refine < 8; refine++) {
+      brackets = signChanges(ga, gb, step, expected);
+      if (brackets.size() >= expected) {
+        break;
+      }
+      step *= 0.5;
+    }
+    int position = index - zerosBelowLeft - 1;
+    if (brackets.size() != expected || position < 0 || position >= brackets.size()) {
+      return null;
+    }
+    double[] bracket = brackets.get(position);
+    return ZetaZero.refineBracketDouble(bracket[0], bracket[1]);
+  }
+
+  /**
+   * The sign-change brackets of Z in {@code [lo, hi]}, sampled with {@code step}; when fewer than
+   * {@code expected} are seen, each place where Z approaches the axis and turns back is searched
+   * for a hidden pair.
+   */
+  private static List<double[]> signChanges(double lo, double hi, double step, int expected) {
+    int n = Math.max(2, (int) Math.ceil((hi - lo) / step));
+    double[] x = new double[n + 1];
+    double[] z = new double[n + 1];
+    for (int i = 0; i <= n; i++) {
+      x[i] = i == n ? hi : lo + (hi - lo) * i / n;
+      z[i] = zDouble(x[i]);
+    }
+    List<double[]> brackets = new ArrayList<double[]>();
+    for (int i = 1; i <= n; i++) {
+      if (z[i - 1] != 0.0 && z[i] != 0.0 && Math.signum(z[i - 1]) != Math.signum(z[i])) {
+        brackets.add(new double[] {x[i - 1], x[i]});
+      }
+    }
+    if (brackets.size() >= expected) {
+      return brackets;
+    }
+    // candidates for a hidden pair: a sample closer to the axis than both its neighbours
+    List<Integer> candidates = new ArrayList<Integer>();
+    for (int i = 1; i < n; i++) {
+      double s = Math.signum(z[i]);
+      if (s != 0 && Math.signum(z[i - 1]) == s && Math.signum(z[i + 1]) == s
+          && Math.abs(z[i]) <= Math.abs(z[i - 1]) && Math.abs(z[i]) <= Math.abs(z[i + 1])) {
+        candidates.add(i);
+      }
+    }
+    candidates.sort((p, q) -> Double.compare(Math.abs(z[p]), Math.abs(z[q])));
+    for (int i : candidates) {
+      if (brackets.size() >= expected) {
+        break;
+      }
+      double sign = Math.signum(z[i]);
+      double m = closestToAxis(x[i - 1], x[i + 1], sign);
+      double zm = zDouble(m);
+      if (zm != 0.0 && Math.signum(zm) != sign) {
+        brackets.add(new double[] {x[i - 1], m});
+        brackets.add(new double[] {m, x[i + 1]});
+      }
+    }
+    brackets.sort((p, q) -> Double.compare(p[0], q[0]));
+    return brackets;
+  }
+
+  /** Golden-section search for the point of {@code [a, b]} where {@code sign * Z} is least. */
+  private static double closestToAxis(double a, double b, double sign) {
+    final double r = 0.5 * (Math.sqrt(5.0) - 1.0);
+    double c = b - r * (b - a);
+    double d = a + r * (b - a);
+    double fc = sign * zDouble(c);
+    double fd = sign * zDouble(d);
+    for (int i = 0; i < 60 && (b - a) > 1e-12 * Math.max(1.0, Math.abs(b)); i++) {
+      if (fc < 0.0) {
+        return c;
+      }
+      if (fd < 0.0) {
+        return d;
+      }
+      if (fc < fd) {
+        b = d;
+        d = c;
+        fd = fc;
+        c = b - r * (b - a);
+        fc = sign * zDouble(c);
+      } else {
+        a = c;
+        c = d;
+        fc = fd;
+        d = a + r * (b - a);
+        fd = sign * zDouble(d);
+      }
+    }
+    return fc < fd ? c : d;
+  }
+
+  /**
+   * Tighten a double-precision sign-change bracket by bisection, down to a width of about
+   * {@code 1e-12 t} - well above the error of {@link #zDouble(double)}, so the endpoints keep
+   * reliable opposite signs at full precision, and narrow enough that the full precision polish
+   * needs only a few evaluations. Above {@link #EM_DOUBLE_LIMIT} the Riemann-Siegel truncation
+   * error (~{@code t^(-3/4)}) sets the width instead.
    */
   private static double[] refineBracketDouble(double a, double b) {
-    double fa = ZetaJS.riemannSiegelZDouble(a);
+    double fa = zDouble(a);
     double t = Math.max(0.5 * (a + b), 1.0);
-    double target = Math.max(10.0 * Math.pow(t, -0.75), 1e-9);
-    for (int i = 0; i < 60 && (b - a) > target; i++) {
+    double target = t > EM_DOUBLE_LIMIT ? Math.max(10.0 * Math.pow(t, -0.75), 1e-9)
+        : 1e-12 * Math.max(t, 100.0);
+    for (int i = 0; i < 80 && (b - a) > target; i++) {
       double m = 0.5 * (a + b);
-      double fm = ZetaJS.riemannSiegelZDouble(m);
+      double fm = zDouble(m);
       if (fm == 0.0) {
-        break;
+        return new double[] {m - target, m + target};
       }
       if (Math.signum(fm) == Math.signum(fa)) {
         a = m;
@@ -231,16 +395,25 @@ public class ZetaZero extends AbstractFunctionEvaluator {
    */
   private static Apfloat zzPolish(FixedPrecisionApfloatHelper h, double aDouble, double bDouble,
       Apfloat half, Apfloat quarter, Apfloat two, Apfloat logPi, Apfloat tol, long precision) {
+    // above CRITICAL_LINE_LIMIT the zeta values come from the summation of CriticalLineZ, which
+    // is much faster at large t than the general arbitrary precision zeta
+    java.util.function.UnaryOperator<Apfloat> z = bDouble >= CRITICAL_LINE_LIMIT
+        ? new CriticalLineZ(precision, bDouble)::z
+        : x -> ZetaZero.zzZ(h, x, half, quarter, two, logPi);
     Apfloat a = new Apfloat(aDouble, precision);
     Apfloat b = new Apfloat(bDouble, precision);
+    // converged at a couple of units in the last place of t: a secant step that small cannot be
+    // resolved at this precision, and a looser test leaves the last digits unfinished
+    tol = ApfloatMath.pow(new Apfloat(10, precision), -precision)
+        .multiply(new Apfloat(2.0 * Math.max(1.0, bDouble), precision));
     Apfloat fa;
     Apfloat fb;
     try {
-      fa = ZetaZero.zzZ(h, a, half, quarter, two, logPi);
+      fa = z.apply(a);
       if (fa.signum() == 0) {
         return a;
       }
-      fb = ZetaZero.zzZ(h, b, half, quarter, two, logPi);
+      fb = z.apply(b);
       if (fb.signum() == 0) {
         return b;
       }
@@ -263,6 +436,11 @@ public class ZetaZero extends AbstractFunctionEvaluator {
       Apfloat x2;
       if (denom.signum() != 0) {
         x2 = x1.subtract(fx1.multiply(x1.subtract(x0)).divide(denom));
+        if (ApfloatMath.abs(x2.subtract(x1)).compareTo(tol) < 0) {
+          // converged - possibly onto the endpoint the last step became, which the bracket test
+          // below would take for leaving the bracket and answer with a slow bisection
+          return x2;
+        }
         if (x2.compareTo(a) <= 0 || x2.compareTo(b) >= 0) {
           x2 = a.add(b).divide(two); // secant would leave the bracket: bisect instead
         }
@@ -271,13 +449,18 @@ public class ZetaZero extends AbstractFunctionEvaluator {
       }
       Apfloat fx2;
       try {
-        fx2 = ZetaZero.zzZ(h, x2, half, quarter, two, logPi);
+        fx2 = z.apply(x2);
       } catch (LossOfPrecisionException lop) {
         // zeta(1/2 + I*x2) underflowed to zero at working precision: x2 is the zero
         return x2;
       }
       if (fx2.signum() == 0 || ApfloatMath.abs(x2.subtract(x1)).compareTo(tol) < 0) {
         return x2;
+      }
+      if (ApfloatMath.abs(fx2).compareTo(ApfloatMath.abs(fx1)) >= 0
+          && ApfloatMath.abs(x2.subtract(x1)).compareTo(tol.multiply(new Apfloat(1000))) < 0) {
+        // Z no longer shrinks: the iterates are at the noise floor of the working precision
+        return x1;
       }
       // keep [a, b] straddling the root by replacing the like-signed endpoint
       if (fx2.signum() == fa.signum()) {
@@ -354,9 +537,17 @@ public class ZetaZero extends AbstractFunctionEvaluator {
    *        smallest positive imaginary part
    * @param tMin if non-null, the result is the k-th zero whose imaginary part is greater than
    *        {@code tMin}
-   * @return the imaginary part {@code t_k} such that {@code zeta(1/2 + I*t_k) == 0}
+   * @return the imaginary part {@code t_k} such that {@code zeta(1/2 + I*t_k) == 0}, with three
+   *         guard digits beyond the helper's precision for the caller to round
    */
   private static Apfloat zetaZeroImaginaryPart(FixedPrecisionApfloatHelper h, int k, Apfloat tMin) {
+    // polished with guard digits: evaluated at exactly the requested precision the noise of Z
+    // leaves the last digit or two of the zero undecided
+    return zetaZeroImaginaryPartAt(new FixedPrecisionApfloatHelper(h.precision() + 3), k, tMin);
+  }
+
+  private static Apfloat zetaZeroImaginaryPartAt(FixedPrecisionApfloatHelper h, int k,
+      Apfloat tMin) {
     long precision = h.precision();
     Apfloat two = new Apfloat(2, precision);
     Apfloat half = new Apfloat("0.5", precision);
@@ -385,4 +576,130 @@ public class ZetaZero extends AbstractFunctionEvaluator {
     }
     return ZetaZero.zzFindZero(h, (int) (m + k - 1), half, quarter, two, logPi, tol, precision);
   }
+
+  /** From this height on the zero is polished with {@link CriticalLineZ}. */
+  private static final double CRITICAL_LINE_LIMIT = 200.0;
+
+  /**
+   * The Riemann-Siegel {@code Z(t)} at arbitrary precision for large {@code t}, from zeta(1/2 +
+   * I*t) by Euler-Maclaurin summation.
+   *
+   * <p>
+   * The direct sum runs to {@code N ~ t/2}, so that {@code t/(2 Pi N) = 1/Pi} and every Bernoulli
+   * term of the tail is about {@code 1/Pi^2} of the one before. Its terms {@code k^(-1/2 - I*t)}
+   * are completely multiplicative, so only the primes need a complex exponential; every other term
+   * is the product of two earlier ones. The logarithms and square roots of the primes do not depend
+   * on {@code t} and are kept for the few evaluations a root polish makes. The work precision has
+   * guard digits for the phase {@code t*log(k)} of every term.
+   */
+  static final class CriticalLineZ {
+    private final long precision;
+    private final int n;
+    private final FixedPrecisionApfloatHelper hw;
+    private final int[] smallestFactor;
+    private final Apfloat[] logPrime;
+    private final Apfloat[] invSqrtPrime;
+    private final Apfloat half;
+    private final Apfloat quarter;
+    private final Apfloat two;
+    private final Apfloat logPi;
+    private final Apfloat epsilon;
+    private final List<Apfloat> bernoulliOverFactorial = new ArrayList<Apfloat>();
+
+    CriticalLineZ(long precision, double tMax) {
+      this.precision = precision;
+      this.n = (int) Math.ceil(0.5 * tMax) + 30;
+      long work =
+          precision + (long) Math.ceil(Math.log10(tMax * Math.log(n) + 10.0)) + 6;
+      this.hw = new FixedPrecisionApfloatHelper(work);
+      this.half = new Apfloat("0.5", work);
+      this.quarter = new Apfloat("0.25", work);
+      this.two = new Apfloat(2, work);
+      this.logPi = ApfloatMath.log(ApfloatMath.pi(work));
+      this.epsilon = ApfloatMath.pow(new Apfloat(10, work), -work);
+      smallestFactor = new int[n + 1];
+      logPrime = new Apfloat[n + 1];
+      invSqrtPrime = new Apfloat[n + 1];
+      for (int k = 2; k <= n; k++) {
+        if (smallestFactor[k] == 0) {
+          for (long m = k; m <= n; m += k) {
+            if (smallestFactor[(int) m] == 0) {
+              smallestFactor[(int) m] = k;
+            }
+          }
+          Apfloat pk = new Apfloat(k, work);
+          logPrime[k] = hw.log(pk);
+          invSqrtPrime[k] = hw.inverseRoot(pk, 2);
+        }
+      }
+    }
+
+    /** The coefficient B_2j / (2j)! of the Euler-Maclaurin tail. */
+    private Apfloat bernoulliOverFactorial(int j) {
+      while (bernoulliOverFactorial.size() < j) {
+        int m = 2 * (bernoulliOverFactorial.size() + 1);
+        org.matheclipse.core.interfaces.IRational b =
+            org.matheclipse.core.expression.AbstractFractionSym.bernoulliNumber(m);
+        java.math.BigInteger factorial = java.math.BigInteger.ONE;
+        for (int i = 2; i <= m; i++) {
+          factorial = factorial.multiply(java.math.BigInteger.valueOf(i));
+        }
+        Apfloat numerator = new Apfloat(b.toBigNumerator(), hw.precision());
+        Apfloat denominator =
+            new Apfloat(b.toBigDenominator().multiply(factorial), hw.precision());
+        bernoulliOverFactorial.add(hw.divide(numerator, denominator));
+      }
+      return bernoulliOverFactorial.get(j - 1);
+    }
+
+    /** Z(t) at the precision this object was made for. */
+    Apfloat z(Apfloat tIn) {
+      Apfloat t = tIn.precision(hw.precision());
+      Apcomplex[] power = new Apcomplex[n + 1];
+      power[1] = Apcomplex.ONE;
+      Apcomplex sum = Apcomplex.ONE;
+      for (int k = 2; k <= n; k++) {
+        int p = smallestFactor[k];
+        if (p == k) {
+          Apfloat phase = hw.multiply(t, logPrime[k]);
+          power[k] = new Apcomplex(hw.multiply(invSqrtPrime[k], hw.cos(phase)),
+              hw.multiply(invSqrtPrime[k], hw.sin(phase)).negate());
+        } else {
+          power[k] = hw.multiply(power[p], power[k / p]);
+        }
+        if (k < n) {
+          sum = hw.add(sum, power[k]);
+        }
+      }
+      Apcomplex s = new Apcomplex(half, t);
+      Apfloat bigN = new Apfloat(n, hw.precision());
+      Apcomplex powerN = power[n];
+      // N^(1-s)/(s-1) + N^(-s)/2
+      sum = hw.add(sum,
+          hw.divide(hw.multiply(powerN, bigN), hw.subtract(s, Apcomplex.ONE)));
+      sum = hw.add(sum, hw.divide(powerN, two));
+      // Bernoulli tail: B_2j/(2j)! * s(s+1)...(s+2j-2) * N^(-s-2j+1)
+      Apcomplex rising = s;
+      Apcomplex tailPower = hw.divide(powerN, bigN);
+      Apfloat nSquared = hw.multiply(bigN, bigN);
+      Apfloat previous = null;
+      for (int j = 1; j <= 400; j++) {
+        Apcomplex term = hw.multiply(hw.multiply(rising, tailPower), bernoulliOverFactorial(j));
+        Apfloat size = hw.abs(term);
+        sum = hw.add(sum, term);
+        if (size.compareTo(epsilon) < 0 || (previous != null && size.compareTo(previous) > 0)) {
+          break;
+        }
+        previous = size;
+        rising = hw.multiply(hw.multiply(rising, hw.add(s, new Apfloat(2 * j - 1))),
+            hw.add(s, new Apfloat(2 * j)));
+        tailPower = hw.divide(tailPower, nSquared);
+      }
+      Apfloat theta = RiemannSiegelTheta.zzTheta(hw, t, quarter, two, logPi);
+      Apfloat value = hw.subtract(hw.multiply(hw.cos(theta), sum.real()),
+          hw.multiply(hw.sin(theta), sum.imag()));
+      return value.precision(precision);
+    }
+  }
+
 }
