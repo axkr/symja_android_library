@@ -61,7 +61,7 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
   @Test
   public void testMod() {
     check("FindInstance(Mod(x^2+y^2,2) == 1 && Mod(x-2*y,3) == 2, {x, y}, Integers,5)", //
-        "{{x->0,y->-25},{x->0,y->-19},{x->0,y->-13},{x->0,y->-7},{x->0,y->-1}}");
+        "{{x->0,y->-13},{x->0,y->-7},{x->0,y->-1},{x->0,y->5},{x->0,y->11}}");
   }
 
   @Test
