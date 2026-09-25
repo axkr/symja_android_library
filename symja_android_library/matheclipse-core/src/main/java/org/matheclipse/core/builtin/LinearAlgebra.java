@@ -2153,6 +2153,13 @@ public final class LinearAlgebra {
       this.numCols = matrix.getColumnDimension();
       this.matrixRankCache = -1;
       this.nullSpaceCache = null;
+      if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
+        FieldMatrix<IExpr> exact = ExactRationalMatrix.rowReduce(matrix);
+        if (exact != null) {
+          this.rowReducedMatrix = exact;
+          return;
+        }
+      }
       this.rowReducedMatrix = matrix.copy();
       if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
         rowReduce();
@@ -3850,6 +3857,20 @@ public final class LinearAlgebra {
       return F.mapRange(0, cols, i -> solution[i]);
     }
 
+    /** The unique solution of a nonsingular rational system, or {@link F#NIL}. */
+    private static IExpr exactRationalSolve(IExpr matrixList, IExpr vectorList) {
+      final FieldMatrix<IExpr> matrix = Convert.list2Matrix(matrixList, false);
+      final FieldVector<IExpr> vector = Convert.list2Vector(vectorList);
+      if (matrix == null || vector == null) {
+        return F.NIL;
+      }
+      final IExpr[] solution = ExactRationalMatrix.solve(matrix, vector.toArray());
+      if (solution == null) {
+        return F.NIL;
+      }
+      return F.List(solution);
+    }
+
     private static IExpr createLinearSolveFunction(final IAST ast, final int argSize,
         final int[] matrixDims, Predicate<IExpr> zeroChecker, EvalEngine engine) {
       if (matrixDims[0] > matrixDims[1]) {
@@ -4039,6 +4060,14 @@ public final class LinearAlgebra {
               modulus, engine);
         }
         Predicate<IExpr> zeroChecker = buildZeroChecker(ast, options, engine);
+        if (argSize == 2 && matrixDims[0] == matrixDims[1] && matrixDims[0] > 3
+            && zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest
+            && ast.arg2().isVector() == matrixDims[0]) {
+          IExpr exact = exactRationalSolve(ast.arg1(), ast.arg2());
+          if (exact.isPresent()) {
+            return exact;
+          }
+        }
         boolean togetherMode = engine.isTogetherMode();
         engine.setTogetherMode(true);
         try {
@@ -5908,6 +5937,7 @@ public final class LinearAlgebra {
 
       int pivotRow = 0;
       IExpr previousPivot = F.C1;
+      final boolean[] pivotColumn = new boolean[cols];
       for (int j = 0; j < cols && pivotRow < rows; j++) {
         int swapRow = -1;
         for (int i = pivotRow; i < rows; i++) {
@@ -5930,9 +5960,15 @@ public final class LinearAlgebra {
           }
 
           IExpr pivot = m[pivotRow][j];
+          pivotColumn[j] = true;
           for (int i = 0; i < rows; i++) {
             if (i != pivotRow) {
-              for (int k = j + 1; k < cols; k++) {
+              // every column but the pivot columns, also the free columns left of j: the rows above
+              // the pivot row carry entries there, which have to stay on the scale of the row
+              for (int k = 0; k < cols; k++) {
+                if (pivotColumn[k]) {
+                  continue;
+                }
                 IExpr numerator = engine.evaluate(F
                     .Expand(F.Subtract(F.Times(m[i][k], pivot), F.Times(m[i][j], m[pivotRow][k]))));
                 if (previousPivot.isOne()) {
@@ -5955,19 +5991,21 @@ public final class LinearAlgebra {
         }
       }
 
-      // Normalize down to Reduced Row Echelon Form (so the final Pivots equal exactly 1)
+      // Normalize down to Reduced Row Echelon Form (so the final Pivots equal exactly 1). The
+      // entries of a pivot column aren't updated after its step, but every pivot row is scaled to
+      // the last pivot, which is the common divisor.
+      final IExpr pivot = previousPivot;
       for (int i = 0; i < pivotRow; i++) {
-        IExpr pivot = F.C0;
         int pivotCol = -1;
         for (int j = 0; j < cols; j++) {
           if (!zeroChecker.test(m[i][j])) {
-            pivot = m[i][j];
             pivotCol = j;
             break;
           }
         }
         if (pivotCol != -1) {
-          for (int j = pivotCol; j < cols; j++) {
+          m[i][pivotCol] = F.C1;
+          for (int j = pivotCol + 1; j < cols; j++) {
             if (m[i][j].equals(pivot)) {
               m[i][j] = F.C1;
             } else if (!zeroChecker.test(m[i][j])) {
@@ -7223,6 +7261,12 @@ public final class LinearAlgebra {
     if (matrix.getRowDimension() == 3 && matrix.getColumnDimension() == 3) {
       return determinant3x3(matrix);
     }
+    if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
+      IRational exact = ExactRationalMatrix.determinant(matrix);
+      if (exact != null) {
+        return exact;
+      }
+    }
     final FieldLUDecomposition<IExpr> lu =
         new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
     return F.evalExpand(lu.getDeterminant());
@@ -7756,6 +7800,12 @@ public final class LinearAlgebra {
         }
       }
       return adjugate;
+    }
+    if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
+      FieldMatrix<IExpr> exact = ExactRationalMatrix.inverse(matrix);
+      if (exact != null) {
+        return exact;
+      }
     }
     // @since version 1.9
     // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,

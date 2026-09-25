@@ -3268,6 +3268,46 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testExactRationalMatrices() {
+    // rational matrices are reduced fraction-free over the integers
+    check("RowReduce({{2,-3,-3,2,4,0,1,-3},{-3,-3,3,3,-3,-4,-4,3},{-2,-1,2,1,-2,4,0,4},{1,4,3,4,-1,4,3,0},{-1,0,1,2,-4,2,-4,4}})", //
+        "{{1,0,0,0,0,-39,-299/24,-329/24},\n" //
+            + " {0,1,0,0,0,19,51/8,49/8},\n" //
+            + " {0,0,1,0,0,-73/3,-55/8,-199/24},\n" //
+            + " {0,0,0,1,0,37/3,89/24,33/8},\n" //
+            + " {0,0,0,0,1,28/3,17/4,29/12}}");
+    check("m58={{2,-3,-3,2,4,0,1,-3},{-3,-3,3,3,-3,-4,-4,3},{-2,-1,2,1,-2,4,0,4},{1,4,3,4,-1,4,3,0},{-1,0,1,2,-4,2,-4,4}};NullSpace(m58)", //
+        "{{329,-147,199,-99,-58,0,0,24},\n" //
+            + " {299,-153,165,-89,-102,0,24,0},\n" //
+            + " {117,-57,73,-37,-28,3,0,0}}");
+    check("m58.Transpose(NullSpace(m58))==ConstantArray(0,{5,3})", //
+        "True");
+    check("m6={{-2,-3/4,4,3,4/3,-4},{1/4,-2/3,-1,0,1,2/3},{-3/4,-5/3,-4,5/3,1/3,-2},{-4/3,2/3,3,4/3,1/4,3},{-2/3,-5/3,1/2,-5,1,-1/4},{5,5,-3,-3/4,5/4,4/3}};Det(m6)", //
+        "468430955/248832");
+    check("Det(m6)*Det(Inverse(m6))", //
+        "1");
+    check("Inverse(m6).m6==IdentityMatrix(6)", //
+        "True");
+    check("b={1,-2,0,3/5,7,-1};m6.LinearSolve(m6,b)==b", //
+        "True");
+    check("RowReduce(m6)==IdentityMatrix(6)", //
+        "True");
+    check("mr=Join(m6[[1;;4]],{m6[[1]]-3*m6[[2]],m6[[3]]/2});MatrixRank(mr)", //
+        "4");
+    check("RowReduce(mr)==RowReduce(mr,Method->\"DivisionFreeRowReduction\")", //
+        "True");
+    check("Det(mr)", //
+        "0");
+    check("Head(Quiet(Inverse(mr)))", //
+        "Inverse");
+    // the division-free elimination has to rescale the free columns of the rows above the pivot
+    check("RowReduce({{2,1,4},{1,3,5}}, Method->\"DivisionFreeRowReduction\")", //
+        "{{1,0,7/5},{0,1,6/5}}");
+    check("RowReduce({{1,a,2,c},{2,2*a,5,c}}, Method->\"DivisionFreeRowReduction\")", //
+        "{{1,a,0,3*c},{0,0,1,-c}}");
+  }
+
+  @Test
   public void testRowReduceOptions() {
     // Standard examples
     check("RowReduce({{1, 1, 0, 1, 5}, {1, 0, 0, 2, 2}, {0, 0, 1, 4, -1}, {0, 0, 0, 0, 0}})", //
