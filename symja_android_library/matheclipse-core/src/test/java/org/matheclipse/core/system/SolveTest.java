@@ -529,6 +529,19 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1},{x->5,y->3},{x->5,y->5}}");
   }
 
+  /** Mod takes the sign of the divisor and Quotient rounds towards minus infinity. */
+  @Test
+  public void testSolveIntegersFlooredModQuotient() {
+    check("Solve({y==Mod(x,3), -4<=x<=0, -2<=y<=2},{x,y},Integers)", //
+        "{{x->-4,y->2},{x->-3,y->0},{x->-2,y->1},{x->-1,y->2},{x->0,y->0}}");
+    check("Solve({y==Mod(x,-3), 0<=x<=4, -2<=y<=2},{x,y},Integers)", //
+        "{{x->0,y->0},{x->1,y->-2},{x->2,y->-1},{x->3,y->0},{x->4,y->-2}}");
+    check("Solve({y==Quotient(x,3), -4<=x<=0, -2<=y<=2},{x,y},Integers)", //
+        "{{x->-4,y->-2},{x->-3,y->-1},{x->-2,y->-1},{x->-1,y->-1},{x->0,y->0}}");
+    check("Solve({y==Quotient(x,-3), 0<=x<=4, -2<=y<=2},{x,y},Integers)", //
+        "{{x->0,y->0},{x->1,y->-1},{x->2,y->-1},{x->3,y->-1},{x->4,y->-2}}");
+  }
+
   /**
    * An integer condition whose solution set was not proved finite stays unevaluated. Enumerating a
    * search window answers a different question, and an empty list would be plainly wrong.

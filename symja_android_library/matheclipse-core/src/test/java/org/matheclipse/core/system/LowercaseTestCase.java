@@ -22375,7 +22375,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testQuotient() {
     check("Quotient({x,1,-1,-1},{1,2,3,a},-0.8+I*1.2)", //
         "{Quotient(x,1,-0.8+I*1.2),1-I,0,Quotient(-1,a,-0.8+I*1.2)}");
-
+    // rounds towards minus infinity even when the truncated quotient is 0
+    check("{Quotient(-2,3),Quotient(2,-3),Quotient(-2,-3),Quotient(-2*10^30,3*10^30)}", //
+        "{-1,-1,0,-1}");
+    check("QuotientRemainder(-2,3)", //
+        "{-1,1}");
 
     check("Quotient(m,n) // FunctionExpand", //
         "Floor(m/n)");

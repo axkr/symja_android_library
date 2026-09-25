@@ -499,6 +499,15 @@ public class ChocoConvert {
         temp.toString() + " is no relational expression found for Solve(..., Integers)");
   }
 
+  /**
+   * The condition under which the truncated remainder <code>r</code> of a division by
+   * <code>b</code> differs from the floored remainder: <code>r</code> is non-zero and its sign
+   * differs from the sign of <code>b</code>.
+   */
+  private static ReExpression floorCorrection(ArExpression r, ArExpression b) {
+    return r.lt(0).and(b.gt(0)).or(r.gt(0).and(b.lt(0)));
+  }
+
   private static ArExpression integerExpression(Model net, IExpr expr, Map<ISymbol, IntVar> map)
       throws ArgumentTypeException {
     if (expr instanceof ISymbol) {
@@ -578,8 +587,17 @@ public class ChocoConvert {
         }
         return result;
       } else if (ast.isAST(S.Mod, 3)) {
-        ArExpression result = integerExpression(net, ast.arg1(), map);
-        return result.mod(integerExpression(net, ast.arg2(), map));
+        ArExpression a = integerExpression(net, ast.arg1(), map);
+        ArExpression b = integerExpression(net, ast.arg2(), map);
+        // choco's mod truncates (sign of the dividend); Mod takes the sign of the divisor
+        ArExpression r = a.mod(b);
+        return floorCorrection(r, b).ift(r.add(b), r);
+      } else if (ast.isAST(S.Quotient, 3)) {
+        ArExpression a = integerExpression(net, ast.arg1(), map);
+        ArExpression b = integerExpression(net, ast.arg2(), map);
+        // choco's div truncates towards zero; Quotient rounds towards -Infinity
+        ArExpression q = a.div(b);
+        return floorCorrection(a.mod(b), b).ift(q.sub(1), q);
       } else if (ast.isAbs()) {
         return integerExpression(net, ast.arg1(), map).abs();
         // } else if (ast.isAST(F.Sign, 2)) {

@@ -3270,11 +3270,8 @@ public class Algebra {
           if (!c.isInteger()) {
             continue;
           }
+          // Quotient rounds towards minus infinity
           IInteger q = ((IInteger) c).quotient(lc);
-          if (((IInteger) c).isNegative() && !((IInteger) c).mod(lc).isZero()) {
-            // Quotient rounds towards minus infinity
-            q = q.subtract(F.C1);
-          }
           if (q.isZero()) {
             continue;
           }
