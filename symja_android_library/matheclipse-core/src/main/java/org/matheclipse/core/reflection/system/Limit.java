@@ -1561,7 +1561,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
       if (!value.isZero()) {
         int side = value.isNegative() ? -1 : 1;
-        if (data.direction() == Direction.FROM_BELOW && (k % 2 == 1)) {
+        if (data.direction() == Direction.FROM_BELOW && (k % 2 != 0)) {
           side = -side;
         }
         return side;

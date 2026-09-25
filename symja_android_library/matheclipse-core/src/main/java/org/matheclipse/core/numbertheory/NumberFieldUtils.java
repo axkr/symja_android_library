@@ -338,7 +338,7 @@ public final class NumberFieldUtils {
       if (exponent < 0) {
         return null;
       }
-      if (exponent % 2 == 1) {
+      if (exponent % 2 != 0) {
         result = result.multiply(prime);
       }
     }

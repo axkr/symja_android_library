@@ -369,7 +369,7 @@ final class DSolveKovacic {
           nonNegativeInteger(discriminant, 0, engine) == 0 ? S.True : S.False};
       return isUsable(out[1]) && isUsable(out[2]) ? out : null;
     }
-    if (order % 2 == 1) {
+    if (order % 2 != 0) {
       // An odd pole of the third order or above cannot be reached this way at all.
       return null;
     }

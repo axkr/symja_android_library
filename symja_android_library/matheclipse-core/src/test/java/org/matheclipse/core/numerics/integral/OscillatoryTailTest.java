@@ -22,7 +22,7 @@ public class OscillatoryTailTest {
     double sum = 0.0;
     double estimate = 0.0;
     for (int k = 1; k <= 20; k++) {
-      sum += (k % 2 == 1 ? 1.0 : -1.0) / k;
+      sum += (k % 2 != 0 ? 1.0 : -1.0) / k;
       estimate = epsilon.add(sum);
     }
     assertEquals(Math.log(2.0), estimate, 1.0e-12);
