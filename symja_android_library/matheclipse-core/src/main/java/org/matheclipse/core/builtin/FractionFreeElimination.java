@@ -350,14 +350,15 @@ final class FractionFreeElimination {
 
   /**
    * Forward elimination of the square matrix <code>m</code> in place. Afterwards
-   * <code>m[n-1][n-1]</code> is the determinant, negated if the result is <code>true</code>.
+   * <code>m[n-1][n-1]</code> is the determinant times the returned sign.
    *
-   * @return <code>null</code> if a column has no pivot, which makes the determinant 0
+   * @return the sign <code>1</code> or <code>-1</code> of the row permutation, or <code>0</code>
+   *         if a column has no pivot, which makes the determinant 0
    */
-  private static <T> Boolean forward(T[][] m, Domain<T> domain) {
+  private static <T> int forward(T[][] m, Domain<T> domain) {
     final int n = m.length;
     T previousPivot = domain.one();
-    boolean oddSwaps = false;
+    int sign = 1;
     for (int k = 0; k < n - 1; k++) {
       if (domain.isZero(m[k][k])) {
         int swapRow = -1;
@@ -368,12 +369,12 @@ final class FractionFreeElimination {
           }
         }
         if (swapRow < 0) {
-          return null;
+          return 0;
         }
         final T[] swap = m[k];
         m[k] = m[swapRow];
         m[swapRow] = swap;
-        oddSwaps = !oddSwaps;
+        sign = -sign;
       }
       final T pivot = m[k][k];
       for (int i = k + 1; i < n; i++) {
@@ -385,7 +386,7 @@ final class FractionFreeElimination {
       }
       previousPivot = pivot;
     }
-    return oddSwaps;
+    return sign;
   }
 
   /**
@@ -588,8 +589,8 @@ final class FractionFreeElimination {
     if (m == null) {
       return null;
     }
-    final Boolean oddSwaps = forward(m, numbers);
-    if (oddSwaps == null) {
+    final int sign = forward(m, numbers);
+    if (sign == 0) {
       return F.C0;
     }
     final T det = m[n - 1][n - 1];
@@ -597,19 +598,19 @@ final class FractionFreeElimination {
     for (BigInteger scale : scales) {
       denominator = denominator.multiply(scale);
     }
-    return numbers.quotient(oddSwaps ? numbers.negate(det) : det, denominator);
+    return numbers.quotient(sign < 0 ? numbers.negate(det) : det, denominator);
   }
 
   /** The determinant of a symbolic square <code>matrix</code>. */
   static IExpr determinant(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
       EvalEngine engine) {
     final IExpr[][] m = entries(matrix, 0);
-    final Boolean oddSwaps = forward(m, expressions(zeroChecker, engine));
-    if (oddSwaps == null) {
+    final int sign = forward(m, expressions(zeroChecker, engine));
+    if (sign == 0) {
       return F.C0;
     }
     final int n = m.length;
-    final IExpr det = oddSwaps ? m[n - 1][n - 1].negate() : m[n - 1][n - 1];
+    final IExpr det = sign < 0 ? m[n - 1][n - 1].negate() : m[n - 1][n - 1];
     return engine.evaluate(F.Expand(det));
   }
 

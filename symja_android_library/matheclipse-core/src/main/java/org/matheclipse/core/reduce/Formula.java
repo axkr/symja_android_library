@@ -47,9 +47,8 @@ public final class Formula implements Comparable<Formula> {
     if (atom == null) {
       return null;
     }
-    Boolean truth = atom.constantTruth();
-    if (truth != null) {
-      return of(truth.booleanValue());
+    if (atom.isConstant()) {
+      return of(atom.constantTruth());
     }
     return new Formula(Kind.ATOM, atom, null, null);
   }

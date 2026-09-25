@@ -397,11 +397,10 @@ public final class RationalQE {
       }
     }
     for (Atom atom : current) {
-      Boolean truth = atom.constantTruth();
-      if (truth == null) {
+      if (!atom.isConstant()) {
         return F.NIL;
       }
-      if (!truth.booleanValue()) {
+      if (!atom.constantTruth()) {
         return S.False;
       }
     }
@@ -416,9 +415,8 @@ public final class RationalQE {
         for (int i = 0; i < pinned.size(); i++) {
           substituted = substituted.substitute(pinned.get(i), pinnedValues.get(i));
         }
-        Boolean truth = substituted.constantTruth();
-        if (truth != null) {
-          if (!truth.booleanValue()) {
+        if (substituted.isConstant()) {
+          if (!substituted.constantTruth()) {
             return S.False;
           }
           continue;

@@ -88,38 +88,37 @@ public final class Atom implements Comparable<Atom> {
     return !term.coefficient(variable).isZero();
   }
 
-  /**
-   * The truth value of an atom without variables, or <code>null</code> when the atom still depends
-   * on a variable.
-   */
-  public Boolean constantTruth() {
-    if (!term.isConstant()) {
-      return null;
-    }
+  /** <code>true</code> if the atom has no variables, so {@link #constantTruth()} decides it. */
+  public boolean isConstant() {
+    return term.isConstant();
+  }
+
+  /** The truth value of an atom without variables; requires {@link #isConstant()}. */
+  public boolean constantTruth() {
     if (isDivides()) {
       BigInteger value = term.constant().numerator().toBigNumerator();
       BigInteger denominator = term.constant().denominator().toBigNumerator();
       if (!denominator.equals(BigInteger.ONE)) {
         // a non integer is divisible by no positive modulus
-        return Boolean.valueOf(negated);
+        return negated;
       }
       boolean divides = IntegerMath.euclideanMod(value, modulus).signum() == 0;
-      return Boolean.valueOf(negated ? !divides : divides);
+      return negated ? !divides : divides;
     }
     int sign = term.constant().complexSign();
     switch (relation) {
       case EQUAL:
-        return Boolean.valueOf(sign == 0);
+        return sign == 0;
       case NOT_EQUAL:
-        return Boolean.valueOf(sign != 0);
+        return sign != 0;
       case LESS:
-        return Boolean.valueOf(sign < 0);
+        return sign < 0;
       case LESS_EQUAL:
-        return Boolean.valueOf(sign <= 0);
+        return sign <= 0;
       case GREATER:
-        return Boolean.valueOf(sign > 0);
+        return sign > 0;
       default:
-        return Boolean.valueOf(sign >= 0);
+        return sign >= 0;
     }
   }
 
