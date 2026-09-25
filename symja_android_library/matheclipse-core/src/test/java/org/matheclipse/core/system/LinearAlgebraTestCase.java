@@ -3308,6 +3308,25 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testExactGaussianMatrices() {
+    // Gaussian rational matrices are reduced fraction-free over the Gaussian integers
+    check("g={{2+I,1/2,-I,3},{1,1+I,2,-1/3},{I,0,1-I,2},{3,-2*I,1/2+I,1}};Det(g)", //
+        "-131/6-I*127/4");
+    check("Inverse(g).g==IdentityMatrix(4)", //
+        "True");
+    check("Adjugate(g)==Det(g)*Inverse(g)", //
+        "True");
+    check("v={1,I,-1/2,2-I};g.LinearSolve(g,v)==v", //
+        "True");
+    check("RowReduce({{1+I,2,I},{2,2-2*I,1+I}})", //
+        "{{1,1-I,1/2+I*1/2},\n" //
+            + " {0,0,0}}");
+    check("NullSpace({{1+I,2,I},{2,2-2*I,1+I}})", //
+        "{{-1-I,0,2},\n" //
+            + " {-1+I,1,0}}");
+  }
+
+  @Test
   public void testRowReduceOptions() {
     // Standard examples
     check("RowReduce({{1, 1, 0, 1, 5}, {1, 0, 0, 2, 2}, {0, 0, 1, 4, -1}, {0, 0, 0, 0, 0}})", //

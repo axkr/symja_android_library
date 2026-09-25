@@ -117,7 +117,13 @@ public final class LinearAlgebra {
           }
         }
         // the expansion grew past its budget: fall back to the fraction-free elimination
-        return bareissAdjugate(matrix, zeroChecker, engine);
+        return FractionFreeElimination.adjugate(matrix, zeroChecker, engine);
+      }
+      if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
+        FieldMatrix<IExpr> inverse = FractionFreeElimination.inverse(matrix);
+        if (inverse != null) {
+          return inverse.scalarMultiply(FractionFreeElimination.determinant(matrix));
+        }
       }
       // @since version 1.9
       // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
@@ -2154,7 +2160,7 @@ public final class LinearAlgebra {
       this.matrixRankCache = -1;
       this.nullSpaceCache = null;
       if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
-        FieldMatrix<IExpr> exact = ExactRationalMatrix.rowReduce(matrix);
+        FieldMatrix<IExpr> exact = FractionFreeElimination.rowReduce(matrix);
         if (exact != null) {
           this.rowReducedMatrix = exact;
           return;
@@ -3864,7 +3870,7 @@ public final class LinearAlgebra {
       if (matrix == null || vector == null) {
         return F.NIL;
       }
-      final IExpr[] solution = ExactRationalMatrix.solve(matrix, vector.toArray());
+      final IExpr[] solution = FractionFreeElimination.solve(matrix, vector.toArray());
       if (solution == null) {
         return F.NIL;
       }
@@ -5920,112 +5926,12 @@ public final class LinearAlgebra {
     }
 
     /**
-     * Executes the Bareiss-Jordan Algorithm. Uses exact divisions over the ring to keep elements
-     * (especially symbolics and polynomials) fraction-free during the elimination process.
+     * <code>Method -> "DivisionFreeRowReduction"</code>: fraction-free Gauss-Jordan elimination,
+     * which keeps symbolic and polynomial entries polynomial until the rows are normalized.
      */
     private IASTAppendable divisionFreeRowReduction(FieldMatrix<IExpr> matrix,
         Predicate<IExpr> zeroChecker, EvalEngine engine) {
-      int rows = matrix.getRowDimension();
-      int cols = matrix.getColumnDimension();
-      IExpr[][] m = new IExpr[rows][cols];
-
-      for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-          m[i][j] = matrix.getEntry(i, j);
-        }
-      }
-
-      int pivotRow = 0;
-      IExpr previousPivot = F.C1;
-      final boolean[] pivotColumn = new boolean[cols];
-      for (int j = 0; j < cols && pivotRow < rows; j++) {
-        int swapRow = -1;
-        for (int i = pivotRow; i < rows; i++) {
-          if (!zeroChecker.test(m[i][j])) {
-            swapRow = i;
-            break;
-          }
-        }
-        if (swapRow != -1) {
-          if (swapRow != pivotRow) {
-            IExpr[] temp = m[pivotRow];
-            m[pivotRow] = m[swapRow];
-            m[swapRow] = temp;
-
-            // To preserve the exact division identities across sign-flipping permutations,
-            // we negate the swapped row.
-            for (int k = j; k < cols; k++) {
-              m[pivotRow][k] = m[pivotRow][k].negate();
-            }
-          }
-
-          IExpr pivot = m[pivotRow][j];
-          pivotColumn[j] = true;
-          for (int i = 0; i < rows; i++) {
-            if (i != pivotRow) {
-              // every column but the pivot columns, also the free columns left of j: the rows above
-              // the pivot row carry entries there, which have to stay on the scale of the row
-              for (int k = 0; k < cols; k++) {
-                if (pivotColumn[k]) {
-                  continue;
-                }
-                IExpr numerator = engine.evaluate(F
-                    .Expand(F.Subtract(F.Times(m[i][k], pivot), F.Times(m[i][j], m[pivotRow][k]))));
-                if (previousPivot.isOne()) {
-                  m[i][k] = numerator;
-                } else {
-                  if (previousPivot.isNumber()) {
-                    m[i][k] =
-                        engine.evaluate(F.Expand(F.Times(numerator, previousPivot.inverse())));
-                  } else {
-                    m[i][k] = engine.evaluate(
-                        F.Expand(S.Cancel.of(engine, F.Divide(numerator, previousPivot))));
-                  }
-                }
-              }
-              m[i][j] = F.C0;
-            }
-          }
-          previousPivot = pivot;
-          pivotRow++;
-        }
-      }
-
-      // Normalize down to Reduced Row Echelon Form (so the final Pivots equal exactly 1). The
-      // entries of a pivot column aren't updated after its step, but every pivot row is scaled to
-      // the last pivot, which is the common divisor.
-      final IExpr pivot = previousPivot;
-      for (int i = 0; i < pivotRow; i++) {
-        int pivotCol = -1;
-        for (int j = 0; j < cols; j++) {
-          if (!zeroChecker.test(m[i][j])) {
-            pivotCol = j;
-            break;
-          }
-        }
-        if (pivotCol != -1) {
-          m[i][pivotCol] = F.C1;
-          for (int j = pivotCol + 1; j < cols; j++) {
-            if (m[i][j].equals(pivot)) {
-              m[i][j] = F.C1;
-            } else if (!zeroChecker.test(m[i][j])) {
-              m[i][j] = engine.evaluate(S.Together.of(engine, F.Divide(m[i][j], pivot)));
-            } else {
-              m[i][j] = F.C0;
-            }
-          }
-        }
-      }
-
-      IASTAppendable result = F.ListAlloc(rows);
-      for (int i = 0; i < rows; i++) {
-        IASTAppendable rowList = F.ListAlloc(cols);
-        for (int j = 0; j < cols; j++) {
-          rowList.append(m[i][j]);
-        }
-        result.append(rowList);
-      }
-      return result;
+      return FractionFreeElimination.rowReduce(matrix, zeroChecker, engine);
     }
 
     @Override
@@ -7253,7 +7159,7 @@ public final class LinearAlgebra {
         return det;
       }
       // the expansion grew past its budget: fall back to the fraction-free elimination
-      return bareissDeterminant(matrix, zeroChecker, engine);
+      return FractionFreeElimination.determinant(matrix, zeroChecker, engine);
     }
     if (matrix.getRowDimension() == 2 && matrix.getColumnDimension() == 2) {
       return determinant2x2(matrix);
@@ -7262,7 +7168,7 @@ public final class LinearAlgebra {
       return determinant3x3(matrix);
     }
     if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
-      IRational exact = ExactRationalMatrix.determinant(matrix);
+      IExpr exact = FractionFreeElimination.determinant(matrix);
       if (exact != null) {
         return exact;
       }
@@ -7336,160 +7242,6 @@ public final class LinearAlgebra {
       }
     }
     return false;
-  }
-
-  /**
-   * Compute the determinant of a square matrix with the
-   * <a href="https://en.wikipedia.org/wiki/Bareiss_algorithm">fraction-free Bareiss algorithm</a>.
-   * Every division in the elimination is exact (guaranteed by the Bareiss identity), so the
-   * intermediate entries - and the final result - stay polynomial for matrices with polynomial
-   * entries. This avoids both the coefficient/fraction blow-up and the nested rational expressions
-   * produced by LU based elimination, and removes the need for a <code>Together</code>
-   * post-processing step.
-   *
-   * <p>
-   * See: <a href="https://en.wikipedia.org/wiki/Bareiss_algorithm">Wikipedia - Bareiss
-   * algorithm</a>
-   *
-   * @param matrix a square matrix
-   * @param zeroChecker predicate to detect (pivot) zeros
-   * @param engine the evaluation engine
-   * @return the determinant expression
-   */
-  private static IExpr bareissDeterminant(final FieldMatrix<IExpr> matrix,
-      Predicate<IExpr> zeroChecker, EvalEngine engine) {
-    final int n = matrix.getRowDimension();
-    // work on a mutable copy of the entries
-    final IExpr[][] m = new IExpr[n][n];
-    for (int i = 0; i < n; i++) {
-      for (int j = 0; j < n; j++) {
-        m[i][j] = matrix.getEntry(i, j);
-      }
-    }
-    IExpr previousPivot = F.C1;
-    int sign = 1;
-    for (int k = 0; k < n - 1; k++) {
-      if (zeroChecker.test(m[k][k])) {
-        // the pivot is zero: search for a non-zero pivot in the same column below row k
-        int swapRow = -1;
-        for (int i = k + 1; i < n; i++) {
-          if (!zeroChecker.test(m[i][k])) {
-            swapRow = i;
-            break;
-          }
-        }
-        if (swapRow < 0) {
-          // the whole column below the pivot is zero => singular matrix
-          return F.C0;
-        }
-        final IExpr[] tmp = m[k];
-        m[k] = m[swapRow];
-        m[swapRow] = tmp;
-        sign = -sign;
-      }
-      final IExpr pivot = m[k][k];
-      for (int i = k + 1; i < n; i++) {
-        for (int j = k + 1; j < n; j++) {
-          // numerator = m[i][j]*pivot - m[i][k]*m[k][j]; divided exactly by the previous pivot
-          IExpr numerator = engine
-              .evaluate(F.Expand(F.Subtract(F.Times(m[i][j], pivot), F.Times(m[i][k], m[k][j]))));
-          m[i][j] = exactDivide(numerator, previousPivot, engine);
-        }
-        m[i][k] = F.C0;
-      }
-      previousPivot = pivot;
-    }
-    IExpr det = m[n - 1][n - 1];
-    if (sign < 0) {
-      det = det.negate();
-    }
-    return engine.evaluate(F.Expand(det));
-  }
-
-  /**
-   * Divide <code>numerator</code> exactly by <code>denominator</code> for use inside the Bareiss
-   * elimination. Division by a constant keeps a polynomial polynomial; for a symbolic denominator
-   * <code>Cancel</code> reduces the (exact) quotient to a polynomial.
-   *
-   * @param numerator the dividend
-   * @param denominator the divisor (a previous Bareiss pivot, which divides the numerator exactly)
-   * @param engine the evaluation engine
-   * @return the exact quotient
-   */
-  private static IExpr exactDivide(IExpr numerator, IExpr denominator, EvalEngine engine) {
-    if (numerator.isZero()) {
-      return F.C0;
-    }
-    if (denominator.isOne()) {
-      return numerator;
-    }
-    if (denominator.isNumber()) {
-      return engine.evaluate(F.Expand(numerator.times(denominator.inverse())));
-    }
-    return engine.evaluate(F.Expand(S.Cancel.of(engine, F.Divide(numerator, denominator))));
-  }
-
-  /**
-   * Compute the adjugate (classical adjoint) of a square matrix fraction-free, by computing every
-   * cofactor as a Bareiss determinant of the corresponding minor. Because each minor determinant is
-   * evaluated with the <a href="https://en.wikipedia.org/wiki/Bareiss_algorithm">fraction-free
-   * Bareiss algorithm</a>, the result stays polynomial for matrices with polynomial entries and no
-   * <code>Together</code>/<code>Cancel</code> post-processing of a rational inverse is required.
-   * Unlike the LU based variant this also works for singular matrices.
-   *
-   * @param matrix a square matrix
-   * @param zeroChecker predicate to detect (pivot) zeros
-   * @param engine the evaluation engine
-   * @return the adjugate matrix
-   */
-  private static FieldMatrix<IExpr> bareissAdjugate(final FieldMatrix<IExpr> matrix,
-      Predicate<IExpr> zeroChecker, EvalEngine engine) {
-    final int n = matrix.getRowDimension();
-    final FieldMatrix<IExpr> adjugate = matrix.copy();
-    if (n == 1) {
-      adjugate.setEntry(0, 0, F.C1);
-      return adjugate;
-    }
-    for (int i = 0; i < n; i++) {
-      for (int j = 0; j < n; j++) {
-        // cofactor C[i][j] = (-1)^(i+j) * det(minor removing row i and column j)
-        final FieldMatrix<IExpr> minor = removeRowColumn(matrix, i, j);
-        IExpr minorDet = determinant(minor, zeroChecker);
-        IExpr cofactor = ((i + j) & 1) == 0 ? minorDet : minorDet.negate();
-        // the adjugate is the transpose of the cofactor matrix
-        adjugate.setEntry(j, i, engine.evaluate(F.Expand(cofactor)));
-      }
-    }
-    return adjugate;
-  }
-
-  /**
-   * Return a copy of <code>matrix</code> with the given <code>row</code> and <code>column</code>
-   * removed.
-   *
-   * @param matrix the source matrix
-   * @param row the (0-based) row index to remove
-   * @param column the (0-based) column index to remove
-   * @return the <code>(n-1) x (n-1)</code> sub-matrix
-   */
-  private static FieldMatrix<IExpr> removeRowColumn(final FieldMatrix<IExpr> matrix, int row,
-      int column) {
-    final int n = matrix.getRowDimension();
-    final int[] selectedRows = new int[n - 1];
-    final int[] selectedColumns = new int[n - 1];
-    int r = 0;
-    for (int i = 0; i < n; i++) {
-      if (i != row) {
-        selectedRows[r++] = i;
-      }
-    }
-    int c = 0;
-    for (int j = 0; j < n; j++) {
-      if (j != column) {
-        selectedColumns[c++] = j;
-      }
-    }
-    return matrix.getSubMatrix(selectedRows, selectedColumns);
   }
 
   /**
@@ -7791,7 +7543,7 @@ public final class LinearAlgebra {
         Errors.printMessage(S.Inverse, "sing", F.list(Convert.matrix2List(matrix, false)), engine);
         return null;
       }
-      final FieldMatrix<IExpr> adjugate = bareissAdjugate(matrix, zeroChecker, engine);
+      final FieldMatrix<IExpr> adjugate = FractionFreeElimination.adjugate(matrix, zeroChecker, engine);
       final int n = matrix.getRowDimension();
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -7802,7 +7554,7 @@ public final class LinearAlgebra {
       return adjugate;
     }
     if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
-      FieldMatrix<IExpr> exact = ExactRationalMatrix.inverse(matrix);
+      FieldMatrix<IExpr> exact = FractionFreeElimination.inverse(matrix);
       if (exact != null) {
         return exact;
       }
