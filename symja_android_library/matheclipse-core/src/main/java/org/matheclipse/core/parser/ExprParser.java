@@ -465,6 +465,24 @@ public class ExprParser extends Scanner {
         }
         return temp;
 
+      case TT_FLOOR_OPEN:
+      case TT_CEILING_OPEN: {
+        // ⌊x⌋ is Floor(x) and ⌈x⌉ is Ceiling(x)
+        final boolean floor = fToken == TT_FLOOR_OPEN;
+        fRecursionDepth++;
+        try {
+          getNextToken();
+          temp = parseExpression();
+          if (fToken != (floor ? TT_FLOOR_CLOSE : TT_CEILING_CLOSE)) {
+            throwSyntaxError(floor ? "'\u230B' expected." : "'\u2309' expected.");
+          }
+        } finally {
+          fRecursionDepth--;
+        }
+        getNextToken();
+        return F.unaryAST1(floor ? S.Floor : S.Ceiling, temp);
+      }
+
       case TT_LIST_OPEN:
         fRecursionDepth++;
         try {
@@ -1515,7 +1533,7 @@ public class ExprParser extends Scanner {
   private boolean isOperandStart() {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_ASSOCIATION_OPEN
         || fToken == TT_IDENTIFIER || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
-        || fToken == TT_SLOTSEQUENCE;
+        || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN;
   }
 
   /**

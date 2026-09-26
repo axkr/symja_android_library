@@ -2249,7 +2249,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1}");
     check("{Block(Sequence({a}), a=1;a)}", //
         "{1}");
-    // the Wolfram Demonstrations idiom this was reported for
+
     check("Block(Evaluate({f,g}), HoldForm(f(g(1))))", //
         "f(g(1))");
 
@@ -10669,6 +10669,152 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("MapAt(Flatten, {1, {{2}, {3}}, 4}, {2})", //
         "{1,{2,3},4}");
 
+  }
+
+  /** Bracket notation: ⌊x⌋ is Floor(x) and ⌈x⌉ is Ceiling(x). */
+  @Test
+  public void testFloorCeilingBrackets() {
+    check("⌊5.7⌋", //
+        "5");
+    check("⌊-2.5⌋", //
+        "-3");
+    check("⌈5.2⌉", //
+        "6");
+    check("⌈-2.5⌉", //
+        "-2");
+    check("Head(⌊x⌋)", //
+        "Floor");
+    check("Head(⌈x⌉)", //
+        "Ceiling");
+    // they bind like a parenthesized factor
+    check("2⌊5.7⌋", //
+        "10");
+    check("⌊5.7⌋⌈2.1⌉", //
+        "15");
+    check("⌊x/2⌋ /. x -> 7", //
+        "3");
+    check("⌈x/2⌉ /. x -> 7", //
+        "4");
+    check("\\[LeftFloor]7/2\\[RightFloor]", //
+        "3");
+  }
+
+  /** NIntegrate along the straight segments through complex waypoints, a contour integral. */
+  @Test
+  public void testNIntegrateContour() {
+    checkNumeric("Chop(NIntegrate(1/z, {z, 1, I, -1, -I, 1}))", //
+        "I*6.283185307179586");
+    checkNumeric("Chop(NIntegrate((2*z)/(z^2 - 1), {z, 2, 2*I, -2, -2*I, 2})/(2*Pi*I))", //
+        "2.0");
+    checkNumeric("NIntegrate(z, {z, 0, I})", //
+        "-0.5");
+    // real waypoints are split points
+    checkNumeric("NIntegrate(1/Sqrt(Abs(x)), {x, -1, 0, 1})", //
+        "4.0");
+  }
+
+  /**
+   * DistributionFitTest reads the data through the CDF of the distribution with its parameters, as
+   * KolmogorovSmirnovTest now does too - it used to test every distribution with its default
+   * parameters.
+   */
+  @Test
+  public void testDistributionFitTest() {
+    // Mathematica: the automatic test is Kolmogorov-Smirnov; its p-value, and those of Cramer-von
+    // Mises and Pearson chi^2, agree to machine precision
+    check("d = {1., 2., 3., 4., 5.}; e = ExponentialDistribution(1/3);"
+        + " {DistributionFitTest(d, e, \"AutomaticTest\"), Round(10^12*DistributionFitTest(d, e))}", //
+        "{KolmogorovSmirnov,716218417415}");
+    check(
+        "d = {1., 2., 3., 4., 5.}; e = ExponentialDistribution(1/3);"
+            + " Round(10^12*Table(DistributionFitTest(d, e, t), {t, {\"CramerVonMises\","
+            + " \"KolmogorovSmirnov\", \"PearsonChiSquare\"}}))", //
+        "{529977808010,716218417415,531948371210}");
+    // a list is a list of properties, a test's name standing for its p-value
+    check(
+        "d = {1., 2., 3., 4., 5.}; e = ExponentialDistribution(1/3);"
+            + " Round(10^12*DistributionFitTest(d, e, {\"KolmogorovSmirnov\", \"TestData\"}))", //
+        "{716218417415,{286582880967,716218417415}}");
+    check("DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3), \"AllTests\")", //
+        "{AndersonDarling,CramerVonMises,KolmogorovSmirnov,Kuiper,PearsonChiSquare,WatsonUSquare}");
+    check(
+        "h = DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3),"
+            + " \"HypothesisTestData\"); {Head(h), h(\"FittedDistribution\"), h(\"NotAProperty\")}", //
+        "{HypothesisTestData,ExponentialDistribution(1/3),Missing(NotAvailable,NotAProperty)}");
+    check(
+        "h = DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3),"
+            + " \"HypothesisTestData\"); Head(h(\"TestDataTable\", \"KolmogorovSmirnov\"))", //
+        "Style");
+    // Mathematica's statistics; the Kuiper statistic is D+ + D- - 1/n
+    check("h = DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3),"
+        + " \"HypothesisTestData\"); Round(10^12*Table(h(\"TestStatistic\", t), {t, {\"AndersonDarling\","
+        + " \"Kuiper\", \"WatsonUSquare\"}}))", //
+        "{614851400417,275458483805,71374573373}");
+    // the automatic test only, or with All every test valid for 5 points (not Cramer-von Mises)
+    check(
+        "h = DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3),"
+            + " \"HypothesisTestData\"); {Length(h(\"TestDataTable\")[[1, 1]]),"
+            + " h(\"TestDataTable\", All)[[1, 1, All, 1]]}", //
+        "{2,{,Anderson\u2010Darling,Kolmogorov\u2010Smirnov,Kuiper,Pearson \u03C7\u00B2,Watson U\u00B2}}");
+    check(
+        "AllTrue(Table(DistributionFitTest({1., 2., 3., 4., 5., 6., 7.},"
+            + " ExponentialDistribution(1/4), t), {t, {\"AndersonDarling\", \"CramerVonMises\","
+            + " \"KolmogorovSmirnov\", \"Kuiper\", \"PearsonChiSquare\", \"WatsonUSquare\"}}),"
+            + " 0 <= # <= 1 &)", //
+        "True");
+    // a good fit and a bad one
+    check("DistributionFitTest({-1.2, -0.5, -0.1, 0.2, 0.4, 0.9, 1.5}, NormalDistribution()) > 0.1", //
+        "True");
+    check(
+        "DistributionFitTest({-1.2, -0.5, -0.1, 0.2, 0.4, 0.9, 1.5}, NormalDistribution(3, 1/2)) < 0.01", //
+        "True");
+    check(
+        "KolmogorovSmirnovTest({4.9, 5.1, 5.3, 4.7, 5.0, 5.2, 4.8}, NormalDistribution(5, 1/5)) > 0.9", //
+        "True");
+    check("KolmogorovSmirnovTest({4.9, 5.1, 5.3, 4.7, 5.0, 5.2, 4.8}, NormalDistribution(0, 1))", //
+        "0.0");
+  }
+
+  @Test
+  public void testFindDistributionParametersExponential() {
+    // the maximum likelihood rate is the reciprocal of the mean
+    check("FindDistributionParameters({1.5, 2.8, 4.3, 0.5}, ExponentialDistribution(lambda))", //
+        "{lambda->0.43956}");
+  }
+
+  @Test
+  public void testMathMLFormMatrixFormOfANonList() {
+    // MatrixForm of something which is no matrix displays it as it is
+    check(
+        "StringContainsQ(MathMLForm(MatrixForm(StringForm(\"value = ``, ``\", \"hello\", \"world\"))), \"MatrixForm\")", //
+        "False");
+  }
+
+  /** SectorChart3D: angle ~ x, radius y, height z; datasets as rings or stacked. */
+  @Test
+  public void testSectorChart3D() {
+    check("Head(SectorChart3D({{2, 2, 3}, {2, 1, 2}, {1, 2, 1}}))", //
+        "Graphics3D");
+    check(
+        "StringCount(ExportString(SectorChart3D({{2, 2, 3}, {2, 1, 2}, {1, 2, 1}}), \"SVG\"), \"<polygon\") > 0", //
+        "True");
+    check(
+        "Head(SectorChart3D({{{1, 1, 3}, {2, 2, 2}, {2, 3, 1}}, {{1, 1, 3}, {1, 2, 2}, {2, 3, 2}, {3, 2, 1}}}))", //
+        "Graphics3D");
+    check(
+        "Head(SectorChart3D({{{1, 1, 3}, {2, 2, 2}}, {{1, 1, 3}, {1, 2, 2}}}, ChartLayout -> \"Stacked\"))", //
+        "Graphics3D");
+    check(
+        "StringCount(ExportString(SectorChart3D({{1, 3, 2}, {2, 1, 3}}, ChartElementFunction -> \"ProfileSector3D\"), \"SVG\"), \"<polygon\") > 0", //
+        "True");
+    check(
+        "StringCount(ExportString(SectorChart3D({{1, 3, 2}, {2, 1, 3}}, ChartElementFunction -> \"TorusSector3D\"), \"SVG\"), \"<polygon\") > 0", //
+        "True");
+    check(
+        "StringContainsQ(ExportString(SectorChart3D({{1, 2, 3}, {2, 3, 1}}, ImageSize -> 200), \"SVG\"), \"width=\\\"200\")", //
+        "True");
+    check("SectorChart3D(5)", //
+        "SectorChart3D(5)");
   }
 
   @Test
@@ -25472,8 +25618,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   /**
-   * A name that is no system option is a message and the call stays unevaluated, as Mathematica
-   * answers (probed 2026-09-22); it used to answer Null and discard the rule silently.
+   * A name that is no system option is a message and the call stays unevaluated; it used to answer
+   * Null and discard the rule silently.
    */
   @Test
   public void testSetSystemOptions() {

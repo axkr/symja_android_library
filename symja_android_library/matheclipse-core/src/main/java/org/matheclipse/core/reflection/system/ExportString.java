@@ -65,7 +65,10 @@ public class ExportString extends AbstractEvaluator {
       }
 
       if (format.equals(Extension.SVG)) {
-        String svgString = SVGGraphics.svgDocument(arg1);
+        // a graph is drawn as its picture, not written as one of the graph file formats
+        IExpr picture = arg1 instanceof IGraphExpr ? engine.evaluate(F.unaryAST1(S.GraphPlot, arg1))
+            : arg1;
+        String svgString = SVGGraphics.svgDocument(picture);
         if (svgString != null) {
           return F.stringx(svgString);
         }

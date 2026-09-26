@@ -192,7 +192,7 @@ public class Parser extends Scanner {
    * Asks the operator, not the token text. A unicode spelling is registered as a second token for
    * the very same operator instance, so testing the text made the chaining loops skip
    * <code>a \u2264 b \u2264 c</code> while running for <code>a &lt;= b &lt;= c</code> - the first
-   * nested, the second flattened, for what Wolfram treats as one expression.
+   * nested, the second flattened.
    */
   private boolean isComparatorToken() {
     InfixOperator infixOperator = determineBinaryOperator();
@@ -259,6 +259,27 @@ public class Parser extends Scanner {
           return getFunctionArguments(temp);
         }
         return temp;
+
+      case TT_FLOOR_OPEN:
+      case TT_CEILING_OPEN: {
+        // ⌊x⌋ is Floor(x) and ⌈x⌉ is Ceiling(x)
+        final boolean floor = fToken == TT_FLOOR_OPEN;
+        fRecursionDepth++;
+        try {
+          getNextToken();
+          temp = parseExpression();
+          if (fToken != (floor ? TT_FLOOR_CLOSE : TT_CEILING_CLOSE)) {
+            throwSyntaxError(floor ? "'\u230B' expected." : "'\u2309' expected.");
+          }
+        } finally {
+          fRecursionDepth--;
+        }
+        getNextToken();
+        final FunctionNode rounded =
+            fFactory.createFunction(fFactory.createSymbol(floor ? "Floor" : "Ceiling"));
+        rounded.add(temp);
+        return rounded;
+      }
 
       case TT_LIST_OPEN:
         return parseArguments(getList());
@@ -1261,7 +1282,7 @@ public class Parser extends Scanner {
   private boolean isOperandStart() {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_IDENTIFIER
         || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
-        || fToken == TT_SLOTSEQUENCE;
+        || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN;
   }
 
   private ASTNode parseExpression(ASTNode lhs, final int min_precedence) {

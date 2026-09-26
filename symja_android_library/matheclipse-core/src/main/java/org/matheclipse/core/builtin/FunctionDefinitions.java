@@ -404,6 +404,7 @@ public final class FunctionDefinitions {
       S.ListLinePlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListLinePlot3D());
       S.ListPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListPlot3D());
       S.ListPointPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListPointPlot3D());
+      S.SectorChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.SectorChart3D());
       S.Plot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.Plot3D());
       S.ParametricPlot3D
           .setEvaluator(new org.matheclipse.core.builtin.graphics3d.ParametricPlot3D());

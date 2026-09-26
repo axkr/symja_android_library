@@ -33,6 +33,11 @@ public class TreePlot extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     org.jgrapht.Graph<IExpr, ?> graph = graphExpr.toData();
+    // an option this function does not declare - the legacy VertexLabeling - is still an option,
+    // not the position or root argument
+    while (argSize > 1 && ast.get(argSize).isRuleAST()) {
+      argSize--;
+    }
     // TreePlot(g, pos) or TreePlot(g, root) or TreePlot(g, pos, root)
     IExpr orientation = S.Top;
     IExpr root = F.NIL;
@@ -52,14 +57,23 @@ public class TreePlot extends AbstractFunctionOptionEvaluator {
       root = ast.arg3();
     }
 
-    IASTAppendable optionsList = F.ListAlloc(2);
-    if (options[GraphGraphics.X_DIRECTED_EDGES].isTrue()) {
-      optionsList.append(F.Rule(S.DirectedEdges, S.True));
+    // TreePlot's own options take the place of the graph's ones of the same name, on a copy: the
+    // caller's graph keeps its options
+    IASTAppendable plotOptions = GraphGraphics.createOptionsList(options);
+    IASTAppendable merged = F.ListAlloc();
+    IAST own = graphExpr.options();
+    if (own != null) {
+      for (IExpr option : own) {
+        if (option.isRuleAST() && plotOptions.exists(x -> x.first().equals(option.first()))) {
+          continue;
+        }
+        merged.append(option);
+      }
     }
-    optionsList.append(F.Rule(S.GraphLayout, options[GraphGraphics.X_GRAPH_LAYOUT]));
-
-    graphExpr.setOptions(optionsList);
-    GraphGraphics graphics = new GraphGraphics(graphExpr);
+    merged.appendArgs(plotOptions);
+    GraphExpr<?> plotted = GraphExpr.newInstance(graphExpr.toData(), merged);
+    plotted = GraphGraphics.withPlotOptions(plotted, originalAST, 2);
+    GraphGraphics graphics = new GraphGraphics(plotted);
     graphics.setTreeRoot(root, orientation);
     return graphics.toGraphics();
 

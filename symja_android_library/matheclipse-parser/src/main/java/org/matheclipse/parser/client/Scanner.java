@@ -54,6 +54,18 @@ public abstract class Scanner {
   protected static final int TT_PARTCLOSE = 19;
 
   /** Token type: operator ';;' */
+  /** <code>\u230A</code> - the opening bracket of <code>Floor</code>, as in <code>⌊x⌋</code> */
+  protected static final int TT_FLOOR_OPEN = 20;
+
+  /** <code>\u230B</code> - the closing bracket of <code>Floor</code> */
+  protected static final int TT_FLOOR_CLOSE = 21;
+
+  /** <code>\u2308</code> - the opening bracket of <code>Ceiling</code>, as in <code>⌈x⌉</code> */
+  protected static final int TT_CEILING_OPEN = 22;
+
+  /** <code>\u2309</code> - the closing bracket of <code>Ceiling</code> */
+  protected static final int TT_CEILING_CLOSE = 23;
+
   protected static final int TT_SPAN = 30;
 
   /** Token type: operator found in input string */
@@ -986,6 +998,13 @@ public abstract class Scanner {
             }
             break;
           default:
+            if (fCurrentChar >= '\u2308' && fCurrentChar <= '\u230B') {
+              // ⌈x⌉ and ⌊x⌋ enclose one expression, like parentheses
+              fToken = fCurrentChar == '\u2308' ? TT_CEILING_OPEN
+                  : fCurrentChar == '\u2309' ? TT_CEILING_CLOSE
+                      : fCurrentChar == '\u230A' ? TT_FLOOR_OPEN : TT_FLOOR_CLOSE;
+              return;
+            }
             if (isOperatorCharacters()) {
               fOperList = getOperator();
               fToken = TT_OPERATOR;
@@ -1295,7 +1314,7 @@ public abstract class Scanner {
               ident.append('\t');
               break;
             case ' ':
-              // "a\ b" is "a b", as in Mathematica: the backslash only marks the space
+              // "a\ b" is "a b", as in WMA: the backslash only marks the space
               ident.append(' ');
               break;
             case '\"':

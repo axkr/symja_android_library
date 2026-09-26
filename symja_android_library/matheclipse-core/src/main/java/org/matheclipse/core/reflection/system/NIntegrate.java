@@ -684,6 +684,19 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
         }
       }
       function = ast.removeAtCopy(2);
+    } else if (list.isList() && list.argSize() > 3 && list.arg1().isSymbol()) {
+      // NIntegrate(f, {x, x0, x1, ..., xn}) - along the path through the points, straight
+      // segments between complex ones (a contour integral), split points on the real line
+      IExpr sum = F.C0;
+      for (int i = 2; i < list.argSize(); i++) {
+        IExpr segment = engine.evaluate(
+            ast.setAtCopy(2, F.list(list.arg1(), list.get(i), list.get(i + 1))));
+        if (!segment.isNumber()) {
+          return F.NIL;
+        }
+        sum = engine.evaluate(F.Plus(sum, segment));
+      }
+      return sum;
     } else if (!list.isAST3() || !list.arg1().isSymbol()) {
       return F.NIL;
     }

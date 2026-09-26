@@ -97,7 +97,8 @@ public class Errors {
       "astrocsys", "`1` is not a supported celestial system in `2`.", //
       "astrodms", "`1` in `2` is not a sexagesimal angle.", //
       "astroevent", "`1` is not a supported astronomical event in `2`.", //
-      "astroframe", "Value of option `1` -> `2` is not a usable reference frame; a horizon frame also needs a location.", //
+      "astroframe",
+      "Value of option `1` -> `2` is not a usable reference frame; a horizon frame also needs a location.", //
       "astroloc", "`1` in `2` needs an observer location.", //
       "astromethod", "`1` is not a supported computation method in `2`.", //
       "astronotimpl", "`1` is not implemented.", //
@@ -107,7 +108,8 @@ public class Errors {
       "astrostar", "`1` in `2` is not a star in the bundled catalogue.", //
       "astrostarprop", "`1` needs data which is not bundled: `2`.", //
       "astrorange", "Value of option `1` -> `2` is not an angle or Automatic.", //
-      "astrorefalt", "Value of option ReferenceAltitude -> `1` in `2` is not Automatic, an angle, {angle,limb}, \"Civil\", \"Nautical\" or \"Astronomical\".", //
+      "astrorefalt",
+      "Value of option ReferenceAltitude -> `1` in `2` is not Automatic, an angle, {angle,limb}, \"Civil\", \"Nautical\" or \"Astronomical\".", //
       "astrotimesys", "`1` is not a supported time system in `2`.", //
       "astrotimetype", "`1` is not a supported sidereal time type in `2`.", //
       "astrotimezone", "`1` in `2` is not a time zone offset or an IANA time zone name.", //
@@ -221,7 +223,8 @@ public class Errors {
       "fdguess", "Form of start specification `1` supports only one start value for a variable.",
       "fdss", "Search specification `1` should be a list with 1 to 3 elements.", //
       "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
-      "filetype", "`1` is not a known file dialog type. Use \"Open\", \"OpenList\", \"Save\" or \"Directory\".", //
+      "filetype",
+      "`1` is not a known file dialog type. Use \"Open\", \"OpenList\", \"Save\" or \"Directory\".", //
       "fnand", "The function `1` is not analytic or defined at `2`.", //
       "fname", "`1` is not a valid file name.", //
       "fsandbox", "Cannot open `1`: the path is outside this session's directory.", //
@@ -435,8 +438,7 @@ public class Errors {
       "The integrand `1` does not appear to be analytic on the contour of radius `2` around `3`; a branch cut seems to cross it and the result is unreliable.", //
       "nrescnv",
       "Failed to converge to the requested accuracy on the contour of radius `1` around `2` after `3` sample points; the result may be inaccurate.", //
-      "nresnum",
-      "The integrand `1` could not be evaluated to a number on the contour around `2`.", //
+      "nresnum", "The integrand `1` could not be evaluated to a number on the contour around `2`.", //
       "nresopt", "Value of option `1` -> `2` is not valid; the default value is used.", //
       "nsmet", "The system cannot be solved with the methods available to `1`.", //
       "nspecnl",
@@ -464,7 +466,8 @@ public class Errors {
       "pair", "Argument `1` is expected to be a pair, a list of pairs or an Interval object.", //
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
       "par", "Inappropriate parameter: `1`.", //
-      "parmthd", "Value of option `1` -> `2` is not Automatic, \"CoarsestGrained\", \"FinestGrained\", \"EvaluationsPerKernel\" -> e or \"ItemsPerEvaluation\" -> m.", //
+      "parmthd",
+      "Value of option `1` -> `2` is not Automatic, \"CoarsestGrained\", \"FinestGrained\", \"EvaluationsPerKernel\" -> e or \"ItemsPerEvaluation\" -> m.", //
       "partd", "Part specification `1` is longer than depth of object.", //
       "partw", "Part `1` of `2` does not exist.", //
       "patop", "Pattern `1` contains inappropriate optional object.", //
@@ -480,6 +483,7 @@ public class Errors {
       "pint", "The value `1` in position `2` must be a non-negative machine sized integer.", //
       "plen", "`1` and `2` should have the same length.", //
       "svars", "Equations may not give solutions for all \"solve\" variables.", //
+      "htdrng", "The `1` test is only valid for sample sizes between `2` and `3`.", //
       "plld", "Endpoints for `1` in `2` must have distinct machine-precision numerical values.", //
       "pllim", "Range specification `1` is not of the form {x, xmin, xmax}.", //
       "plln", "Limiting value `1` in `2` is not a machine-size real number.", //
@@ -574,8 +578,7 @@ public class Errors {
       "ssle", "Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.", //
       "step", "The step size `1` is expected to be positive", //
       "stream", "`1` is not string, InputStream[], or OutputStream[].", //
-      "steps",
-          "Evaluation steps are switched off in this build (ToggleFeature#SHOW_STEPS).", //
+      "steps", "Evaluation steps are switched off in this build (ToggleFeature#SHOW_STEPS).", //
       "string", "String expected at position `1` in `2`.", //
       "strse", "String or list of strings expected at position `1` in `2`.", //
       "sym", "Argument `1` at position `2` is expected to be a symbol.", //
@@ -688,7 +691,7 @@ public class Errors {
     }
     // "or" only reads correctly for two adjacent counts. For a wider range it names two of the
     // several that are allowed and silently excludes the rest - "3 or 6 arguments are expected"
-    // for a function taking 3 to 6. Mathematica reports that range as argb.
+    // for a function taking 3 to 6. WMA reports that range as argb.
     // `1` called with `2` arguments; between `3` and `4` arguments are expected.
     return printMessage(topHead, "argb",
         F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);

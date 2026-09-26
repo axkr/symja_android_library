@@ -452,8 +452,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         return false;
       }
       IExpr arg1 = f.arg1();
-      if (tableForm && !arg1.isList()) {
-        // TableForm of something which is no table displays it as it is
+      if (!arg1.isList() && !arg1.isSparseArray()) {
+        // TableForm or MatrixForm of something which is no table displays it as it is
         fFactory.convertInternal(buf, arg1, precedence, false);
         return true;
       }

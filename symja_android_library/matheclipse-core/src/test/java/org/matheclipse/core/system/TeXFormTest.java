@@ -21,6 +21,13 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMatrixFormOfANonList() {
+    // MatrixForm of something which is no matrix displays it as it is
+    check("TeXForm(MatrixForm(x^2))", //
+        "{x}^{2}");
+  }
+
+  @Test
   public void testTableFormOfANonList() {
     // TableForm of something which is no table displays it as it is
     check("TeXForm(TableForm(Framed(\"hi\")))", //
@@ -56,7 +63,7 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     // HoldForm still keeps its argument unevaluated
     check("TeXForm(HoldForm(1+1))", //
         "1 + 1");
-    // an ordinary function, as in Mathematica: Attributes[TeXForm] is {Protected}
+    // an ordinary function: Attributes[TeXForm] is {Protected}
     check("Attributes(TeXForm)", //
         "{Protected}");
     check("TeXForm(Unevaluated(1+1))", //
@@ -658,9 +665,9 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The operators built from the Mathics3 tables get their LaTeX from
-   * {@code OperatorMarkup} rather than from a line of their own in {@code TeXFormFactory}, so
-   * these check the wiring, not each of the 182 macros.
+   * The operators built from the Mathics3 tables get their LaTeX from {@code OperatorMarkup} rather
+   * than from a line of their own in {@code TeXFormFactory}, so these check the wiring, not each of
+   * the 182 macros.
    */
   @Test
   public void testOperatorTableInfix() {

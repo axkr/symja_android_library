@@ -1992,6 +1992,14 @@ public class TensorFunctions {
         // Take(m . Join(v, {1}), Length(v))
         return F.Take(F.Dot(m, F.Join(v, F.list(F.C1))), F.ZZ(dim));
       }
+      // a list of points: every one of them is transformed
+      int[] dims = ast.arg1().isMatrix(false);
+      int[] matrixDims = m.isMatrix(false);
+      if (dims != null && matrixDims != null && dims[1] == matrixDims[0] - 1) {
+        IAST points = (IAST) ast.arg1().normal(false);
+        return points.map(point -> F.Take(F.Dot(m, F.Join(point, F.list(F.C1))), F.ZZ(dims[1])),
+            1);
+      }
       return F.NIL;
     }
 

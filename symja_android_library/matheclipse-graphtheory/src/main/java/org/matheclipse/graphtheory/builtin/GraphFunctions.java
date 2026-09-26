@@ -13,10 +13,10 @@ import org.jgrapht.GraphTests;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.cycle.DirectedSimpleCycles;
-import org.jgrapht.alg.flow.EdmondsKarpMFImpl;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
 import org.jgrapht.alg.cycle.PatonCycleBase;
 import org.jgrapht.alg.cycle.SzwarcfiterLauerSimpleCycles;
+import org.jgrapht.alg.flow.EdmondsKarpMFImpl;
 import org.jgrapht.alg.flow.mincost.CapacityScalingMinimumCostFlow;
 import org.jgrapht.alg.flow.mincost.MinimumCostFlowProblem;
 import org.jgrapht.alg.interfaces.CycleBasisAlgorithm;
@@ -27,18 +27,17 @@ import org.jgrapht.alg.interfaces.MaximumFlowAlgorithm;
 import org.jgrapht.alg.interfaces.MinimumCostFlowAlgorithm;
 import org.jgrapht.alg.interfaces.MinimumCostFlowAlgorithm.MinimumCostFlow;
 import org.jgrapht.alg.interfaces.PlanarityTestingAlgorithm;
-import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.interfaces.VertexCoverAlgorithm;
 import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
 import org.jgrapht.alg.isomorphism.AHUUnrootedTreeIsomorphismInspector;
 import org.jgrapht.alg.isomorphism.IsomorphicGraphMapping;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
-import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
-import org.jgrapht.alg.shortestpath.NegativeCycleDetectedException;
 import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.GraphMeasurer;
+import org.jgrapht.alg.shortestpath.NegativeCycleDetectedException;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 import org.jgrapht.alg.tour.HeldKarpTSP;
 import org.jgrapht.alg.vertexcover.GreedyVCImpl;
@@ -53,21 +52,15 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.interfaces.Attribute;
-import org.matheclipse.graphtheory.eval.GraphUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.graphtheory.expression.data.ExprEdge;
-import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
-import org.matheclipse.graphtheory.expression.data.GraphExpr;
-import org.matheclipse.graphtheory.expression.data.IExprEdge;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
-import org.matheclipse.graphtheory.graphics.GraphGraphics;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EdgeListType;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -79,6 +72,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.geodesy.GeodesicSolver;
 import org.matheclipse.core.numerics.geodesy.ReferenceEllipsoid;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.graphtheory.eval.GraphUtil;
+import org.matheclipse.graphtheory.expression.data.ExprEdge;
+import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
+import org.matheclipse.graphtheory.expression.data.GraphExpr;
+import org.matheclipse.graphtheory.expression.data.IExprEdge;
+import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import com.google.common.collect.Sets;
 
 /** Functions for graph theory algorithms. */
@@ -464,6 +463,8 @@ public class GraphFunctions {
           return F.NIL;
         }
         try {
+          // VertexLabels, GraphLayout, ... given to GraphPlot describe the graph it draws
+          graph = GraphGraphics.withPlotOptions(graph, ast, 2);
           GraphGraphics gg = new GraphGraphics(graph);
           IExpr gExpr = gg.toGraphics();
 
@@ -473,11 +474,12 @@ public class GraphFunctions {
             gApp.append(F.Rule(S.BaseStyle, F.List(F.PointSize(0.04), F.Thickness(0.005))));
             // the caller's Graphics options (AspectRatio, ...) are kept, as trailing rules, except
             // ImageSize: the WLJS notebook draws a Graph as GraphPlot[g, ImageSize -> 70, ...],
-            // and Mathematica's picture of it has ImageSize -> 200 all the same, unless the graph
+            // picture has ImageSize -> 200 all the same, unless the graph
             // was given a size of its own
             for (int i = 2; i < ast.size(); i++) {
               IExpr option = ast.get(i);
-              if (option.isRuleAST() && option.first() != S.ImageSize) {
+              if (option.isRuleAST() && option.first() != S.ImageSize
+                  && !GraphGraphics.isPlotGraphOption(option)) {
                 gApp.append(option);
               }
             }
@@ -942,7 +944,8 @@ public class GraphFunctions {
             IExpr arg = ast.get(i);
             if (arg.isRuleAST()) {
               graphOptions.append(arg);
-            } else if (arg.isList() && arg.argSize() > 0 && ((IAST) arg).forAll(x -> x.isRuleAST())) {
+            } else if (arg.isList() && arg.argSize() > 0
+                && ((IAST) arg).forAll(x -> x.isRuleAST())) {
               graphOptions.appendArgs((IAST) arg);
             }
           }
@@ -2649,9 +2652,9 @@ public class GraphFunctions {
         return F.NIL;
       }
 
-      ShortestPathAlgorithm<IExpr, ?> alg = GraphUtil.hasNegativeEdgeWeight(g)
-          ? new BellmanFordShortestPath<>(g)
-          : new DijkstraShortestPath<>(g);
+      ShortestPathAlgorithm<IExpr, ?> alg =
+          GraphUtil.hasNegativeEdgeWeight(g) ? new BellmanFordShortestPath<>(g)
+              : new DijkstraShortestPath<>(g);
       GraphPath<IExpr, ?> path;
       try {
         path = alg.getPaths(ast.arg2()).getPath(ast.arg3());

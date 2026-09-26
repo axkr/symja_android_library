@@ -8,7 +8,6 @@ import java.util.function.LongPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.hipparchus.distribution.IntegerDistribution;
-import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.FieldMatrix;
@@ -89,6 +88,10 @@ public class StatisticsFunctions {
       S.Covariance.setEvaluator(new Covariance());
       S.DistributionParameterQ.setEvaluator(new DistributionParameterQ());
       S.FindDistributionParameters.setEvaluator(new FindDistributionParameters());
+      S.DistributionFitTest
+          .setEvaluator(new org.matheclipse.core.reflection.system.DistributionFitTest());
+      S.HypothesisTestData
+          .setEvaluator(new org.matheclipse.core.reflection.system.HypothesisTestData());
       S.Expectation.setEvaluator(new Expectation());
       S.HazardFunction.setEvaluator(new HazardFunction());
       S.InverseSurvivalFunction.setEvaluator(new InverseSurvivalFunction());
@@ -1308,8 +1311,8 @@ public class StatisticsFunctions {
       for (int i = 1; i <= columns; i++) {
         IASTAppendable row = F.ListAlloc(columns);
         for (int j = 1; j <= columns; j++) {
-          IExpr entry = evaluateArg2((IAST) columnVectors.get(i), (IAST) columnVectors.get(j),
-              engine);
+          IExpr entry =
+              evaluateArg2((IAST) columnVectors.get(i), (IAST) columnVectors.get(j), engine);
           if (entry.isNIL()) {
             return F.NIL;
           }
@@ -1918,8 +1921,7 @@ public class StatisticsFunctions {
       if (min.isNIL() || max.isNIL() || !engine.evalGreater(max, min)) {
         return F.NIL;
       }
-      IExpr result =
-          engine.evaluate(F.NIntegrate(F.Times(xExpr, pdf), F.list(x, min, max)));
+      IExpr result = engine.evaluate(F.NIntegrate(F.Times(xExpr, pdf), F.list(x, min, max)));
       return result.isFree(S.NIntegrate, true) ? result : F.NIL;
     }
 
@@ -2427,26 +2429,17 @@ public class StatisticsFunctions {
                 }
                 return F.NIL;
               }
-              IExpr head = ast.arg2().head();
-              if (head instanceof IBuiltInSymbol) {
-                IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-                if (evaluator instanceof IDistribution) {
-                  RealDistribution dist = ((IDistribution) evaluator).dist();
-                  if (dist != null) {
-                    // KolmogorovSmirnovTest(data1, dist)
-                    org.hipparchus.stat.inference.KolmogorovSmirnovTest test =
-                        new org.hipparchus.stat.inference.KolmogorovSmirnovTest();
-                    switch (property) {
-                      case 0:
-                        p = test.kolmogorovSmirnovTest(dist, data1, false);
-                        return F.num(p);
-                      case 1:
-                        p = test.kolmogorovSmirnovTest(dist, data1, false);
-                        d = test.kolmogorovSmirnovStatistic(dist, data1);
-                        return new ASTRealVector(new double[] {d, p}, false);
-                    }
-                  }
-                }
+              // KolmogorovSmirnovTest(data1, dist): the data are read through the CDF of the
+              // distribution with its parameters - IDistribution.dist() is the distribution with
+              // default parameters, so NormalDistribution(5, 1/5) was tested as
+              // NormalDistribution()
+              double[] u = org.matheclipse.core.reflection.system.DistributionFitTest
+                  .cdfValues(data1, ast.arg2(), engine);
+              if (u != null) {
+                double[] result =
+                    org.matheclipse.core.reflection.system.DistributionFitTest.kolmogorovSmirnov(u);
+                return property == 0 ? F.num(result[1])
+                    : new ASTRealVector(new double[] {result[0], result[1]}, false);
               }
             }
           }
@@ -2708,11 +2701,22 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.isAST2() || !ast.arg2().isAST2()) {
+      if (!ast.isAST2()) {
         return F.NIL;
       }
       double[] data = ast.arg1().toDoubleVector();
       if (data == null || data.length == 0) {
+        return F.NIL;
+      }
+      if (ast.arg2().isAST(S.ExponentialDistribution, 2) && ast.arg2().first().isSymbol()) {
+        // maximum likelihood: the rate is the reciprocal of the mean
+        double mean = StatUtils.mean(data);
+        if (!(mean > 0.0)) {
+          return F.NIL;
+        }
+        return F.list(F.Rule(ast.arg2().first(), F.num(1.0 / mean)));
+      }
+      if (!ast.arg2().isAST2()) {
         return F.NIL;
       }
       IAST dist = (IAST) ast.arg2();
@@ -3179,7 +3183,7 @@ public class StatisticsFunctions {
      * empirical CDF.
      *
      * <p>
-     * A <code>WeightedData</code> quantile is NOT the quantile of its data list. Mathematica gives
+     * A <code>WeightedData</code> quantile is NOT the quantile of its data list. Gives
      * <code>Quartiles[WeightedData[{1,2,3,4},{1,1,1,1}]]</code> as <code>{1,2,3}</code>, not the
      * <code>{3/2,5/2,7/2}</code> that the same numbers as a plain list produce, because the
      * parameterization never enters - the empirical distribution does.
@@ -4907,8 +4911,8 @@ public class StatisticsFunctions {
         return F.NIL;
       }
       ISymbol x = F.Dummy("x");
-      IExpr result = engine.evaluate(F.binaryAST2(S.NExpectation, F.Sqr(F.Subtract(x, mean)),
-          F.Distributed(x, dist)));
+      IExpr result = engine.evaluate(
+          F.binaryAST2(S.NExpectation, F.Sqr(F.Subtract(x, mean)), F.Distributed(x, dist)));
       return result.isReal() ? result : F.NIL;
     }
 
@@ -5012,7 +5016,7 @@ public class StatisticsFunctions {
    * Whether every leaf is real-valued, or every leaf is a {@link S#Quantity}.
    *
    * <p>
-   * Mixing the two is data this family cannot make sense of, and Mathematica agrees:
+   * Mixing the two is data this family cannot make sense of:
    * <code>Median({Quantity(1,"Meters"), 2})</code> reports <code>rectn</code>.
    */
   private static boolean isRealOrQuantityData(IExpr data) {
@@ -5043,11 +5047,11 @@ public class StatisticsFunctions {
    * the plain magnitudes, and re-attaching the unit to the result.
    *
    * <p>
-   * Every head in this family answers in the unit of its data - unlike <code>Variance</code>,
-   * whose result is squared - so re-attaching a single unit is enough. The magnitudes then travel
-   * the ordinary real-number path, which is what keeps the overflow-safe interpolation and the
-   * shared sort in play without any of them having to know about units. The result is reported in
-   * the unit of the FIRST element, the convention <code>Plus</code> already uses here:
+   * Every head in this family answers in the unit of its data - unlike <code>Variance</code>, whose
+   * result is squared - so re-attaching a single unit is enough. The magnitudes then travel the
+   * ordinary real-number path, which is what keeps the overflow-safe interpolation and the shared
+   * sort in play without any of them having to know about units. The result is reported in the unit
+   * of the FIRST element, the convention <code>Plus</code> already uses here:
    * <code>Median({Quantity(1,"Meters"), Quantity(300,"Centimeters"), Quantity(2,"Meters")})</code>
    * is <code>Quantity(2,"Meters")</code>.
    *
@@ -5068,8 +5072,8 @@ public class StatisticsFunctions {
     IASTAppendable magnitudes = F.ListAlloc(data.argSize());
     for (int i = 1; i < data.size(); i++) {
       IAST quantity = (IAST) data.get(i);
-      IExpr magnitude = org.matheclipse.core.units.QuantityOps.magnitudeInFirstUnit(first,
-          quantity, engine);
+      IExpr magnitude =
+          org.matheclipse.core.units.QuantityOps.magnitudeInFirstUnit(first, quantity, engine);
       if (magnitude.isNIL()) {
         // `1` and `2` are incompatible units
         return Errors.printMessage(S.Quantity, "compat", F.list(unit, quantity.arg2()), engine);
@@ -5097,8 +5101,8 @@ public class StatisticsFunctions {
    * Both spellings are accepted: the 2x2 matrix <code>{{a,b},{c,d}}</code>, and the two-element
    * "plot point" form <code>{a,b}</code>, which means <code>{{a,b},{0,1}}</code> - the
    * linear-interpolation family. The pair form is absent from the <code>Quantile</code> reference
-   * page and named only in the message text for a malformed specification; it was pinned against
-   * Mathematica by <code>Quantile[Range[10],3/10,{1,2}] == 23/5</code> and
+   * page and named only in the message text for a malformed specification;
+   * <code>Quantile[Range[10],3/10,{1,2}] == 23/5</code> and
    * <code>Quantile[Range[10],7/20,{0,0}] == 7/2</code>, which rule out reading <code>{a,b}</code>
    * as a constant weight - the other reading that fits <code>Quartiles[{1,2,3},{1,2}]</code>.
    *
@@ -5120,12 +5124,11 @@ public class StatisticsFunctions {
   }
 
   /**
-   * The quantile of an ascending-sorted list under the parameterization
-   * <code>{{a,b},{c,d}}</code>: with <code>h = a + (n+b)*q</code> and
-   * <code>w = c + d*FractionalPart(h)</code> the result is <code>s[[Floor(h)]]</code>
-   * interpolated toward <code>s[[Ceiling(h)]]</code> by <code>w</code>, both indices clamped to
-   * the list. At an integer <code>h</code> the two neighbours coincide and the element is selected
-   * outright.
+   * The quantile of an ascending-sorted list under the parameterization <code>{{a,b},{c,d}}</code>:
+   * with <code>h = a + (n+b)*q</code> and <code>w = c + d*FractionalPart(h)</code> the result is
+   * <code>s[[Floor(h)]]</code> interpolated toward <code>s[[Ceiling(h)]]</code> by <code>w</code>,
+   * both indices clamped to the list. At an integer <code>h</code> the two neighbours coincide and
+   * the element is selected outright.
    *
    * <p>
    * The result is returned unevaluated, for the engine to evaluate as it does for any other
@@ -5134,8 +5137,8 @@ public class StatisticsFunctions {
    * @param s the data, sorted ascending
    * @param length the number of data points
    * @param q the quantile, already checked to lie in <code>[0,1]</code>
-   * @return {@link F#NIL} when the point is not computable, for instance when a symbolic
-   *         parameter leaves <code>h</code> non-real
+   * @return {@link F#NIL} when the point is not computable, for instance when a symbolic parameter
+   *         leaves <code>h</code> non-real
    */
   private static IExpr quantilePoint(IAST s, IInteger length, IReal q, IExpr a, IExpr b, IExpr c,
       IExpr d, EvalEngine engine) {
@@ -5183,16 +5186,16 @@ public class StatisticsFunctions {
    * The quantile points of one sorted list at every <code>q</code> in <code>qList</code>.
    *
    * <p>
-   * Sorting the data and walking its real-number gate dominate the cost of a quantile, and both
-   * are independent of <code>q</code>. Re-entering <code>Quantile</code> once per element repeats
-   * them: <code>Quartiles</code> used to pay for three sorts and four gate walks to produce three
+   * Sorting the data and walking its real-number gate dominate the cost of a quantile, and both are
+   * independent of <code>q</code>. Re-entering <code>Quantile</code> once per element repeats them:
+   * <code>Quartiles</code> used to pay for three sorts and four gate walks to produce three
    * numbers, and <code>InterquartileRange</code> for a fifth gate walk on top of that.
    *
    * @return {@link F#NIL} unless every point is computable, so that a caller can fall back to its
    *         own per-element path without having to reason about a partial result
    */
-  private static IAST quantilePoints(IAST s, IInteger length, IAST qList, IExpr a, IExpr b,
-      IExpr c, IExpr d, EvalEngine engine) {
+  private static IAST quantilePoints(IAST s, IInteger length, IAST qList, IExpr a, IExpr b, IExpr c,
+      IExpr d, EvalEngine engine) {
     IASTAppendable result = F.ListAlloc(qList.argSize());
     for (int i = 1; i < qList.size(); i++) {
       IExpr q = qList.get(i);

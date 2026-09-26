@@ -13,8 +13,9 @@ public class GraphFunctionsTest extends AbstractTestCase {
    * <code>Graph</code> as <code>GraphPlot(g, ImageSize->70, AspectRatio->1, ...)</code>.
    */
   /**
-   * A directed <code>Graph3D</code> edge is <code>Arrow[{p1, p2}, setback]</code>: the WLJS notebook
-   * reads the points straight from the arrow and drew nothing for <code>Arrow[Line[...]]</code>.
+   * A directed <code>Graph3D</code> edge is <code>Arrow[{p1, p2}, setback]</code>: the WLJS
+   * notebook reads the points straight from the arrow and drew nothing for
+   * <code>Arrow[Line[...]]</code>.
    */
   /**
    * TreePlot(g, pos), TreePlot(g, root) and TreePlot(g, pos, root), as in the reference
@@ -26,15 +27,18 @@ public class GraphFunctionsTest extends AbstractTestCase {
    */
   @Test
   public void testInternalEdgeForm() {
-    check("EdgeList(Graph({1,2,3,4}, {Null, SparseArray(Automatic, {4, 4}, 0, "
-        + "{1, {{0, 2, 4, 6, 6}, {{2}, {3}, {1}, {3}, {1}, {2}}}, Pattern})}))", //
+    check(
+        "EdgeList(Graph({1,2,3,4}, {Null, SparseArray(Automatic, {4, 4}, 0, "
+            + "{1, {{0, 2, 4, 6, 6}, {{2}, {3}, {1}, {3}, {1}, {2}}}, Pattern})}))", //
         "{1<->2,1<->3,2<->3}");
-    check("EdgeList(Graph({1,2,3}, {SparseArray(Automatic, {3, 3}, 0, "
-        + "{1, {{0, 1, 2, 2}, {{2}, {3}}}, Pattern}), Null}))", //
+    check(
+        "EdgeList(Graph({1,2,3}, {SparseArray(Automatic, {3, 3}, 0, "
+            + "{1, {{0, 1, 2, 2}, {{2}, {3}}}, Pattern}), Null}))", //
         "{1->2,2->3}");
-    check("g = Graph({1,2,3,4}, {Null, SparseArray(Automatic, {4, 4}, 0, "
-        + "{1, {{0, 2, 4, 6, 6}, {{2}, {3}, {1}, {3}, {1}, {2}}}, Pattern})}); "
-        + "EdgeCount(Graph(EdgeList(g)))", //
+    check(
+        "g = Graph({1,2,3,4}, {Null, SparseArray(Automatic, {4, 4}, 0, "
+            + "{1, {{0, 2, 4, 6, 6}, {{2}, {3}, {1}, {3}, {1}, {2}}}, Pattern})}); "
+            + "EdgeCount(Graph(EdgeList(g)))", //
         "3");
     check("EdgeList(Graph({1,2,3}, {Null, {{1,2},{2,3}}}))", //
         "{1<->2,2<->3}");
@@ -45,26 +49,68 @@ public class GraphFunctionsTest extends AbstractTestCase {
   /** The graph combinators take trailing options, which go onto the result. */
   @Test
   public void testCombinatorsTakeOptions() {
-    check("EdgeList(GraphIntersection(CompleteGraph(3), PathGraph({1,2,3}), "
-        + "GraphLayout -> \"CircularEmbedding\"))", //
+    check(
+        "EdgeList(GraphIntersection(CompleteGraph(3), PathGraph({1,2,3}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
         "{1<->2,2<->3}");
-    check("EdgeCount(GraphUnion(PathGraph({1,2,3}), PathGraph({3,4,5}), "
-        + "GraphLayout -> \"CircularEmbedding\"))", //
+    check(
+        "EdgeCount(GraphUnion(PathGraph({1,2,3}), PathGraph({3,4,5}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
         "4");
-    check("Head(GraphUnion(PathGraph({1,2}), PathGraph({2,3}), "
-        + "GraphLayout -> \"CircularEmbedding\"))", //
+    check(
+        "Head(GraphUnion(PathGraph({1,2}), PathGraph({2,3}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
         "Graph");
-    check("VertexCount(GraphDisjointUnion(CycleGraph(3), PathGraph({1,2}), "
-        + "GraphLayout -> \"CircularEmbedding\"))", //
+    check(
+        "VertexCount(GraphDisjointUnion(CycleGraph(3), PathGraph({1,2}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
         "5");
     check("Head(GraphDisjointUnion(CycleGraph(3), GraphLayout -> \"CircularEmbedding\"))", //
         "Graph");
-    check("EdgeList(GraphDifference(Graph({1<->2,2<->3}), Graph({2<->3}), "
-        + "GraphLayout -> \"CircularEmbedding\"))", //
+    check(
+        "EdgeList(GraphDifference(Graph({1<->2,2<->3}), Graph({2<->3}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
         "{1<->2}");
     // a non graph operand still leaves the call alone
     check("GraphUnion(PathGraph({1,2}), x)", //
         "GraphUnion(Graph({1,2},{1<->2}),x)");
+  }
+
+  /**
+   * GraphPlot and TreePlot take the graph options - VertexLabels, and the legacy VertexLabeling -
+   * as their own, and a Graph exports to SVG as its picture.
+   */
+  @Test
+  public void testGraphPlotLabelsAndSVGExport() {
+    check(
+        "StringCases(ExportString(GraphPlot({1 -> 2}, VertexLabeling -> True), \"SVG\"),"
+            + " \">\" ~~ Shortest(t : Except(\">\") ..) ~~ \"</text>\" :> t)", //
+        "{1,2}");
+    check(
+        "StringCount(ExportString(GraphPlot({1 -> 2}, VertexLabeling -> False), \"SVG\"), \"<text\")", //
+        "0");
+    check(
+        "StringCases(ExportString(GraphPlot({1 -> 2}, VertexLabels -> \"Name\"), \"SVG\"),"
+            + " \">\" ~~ Shortest(t : Except(\">\") ..) ~~ \"</text>\" :> t)", //
+        "{1,2}");
+    check(
+        "StringCases(ExportString(GraphPlot({Subscript(x, 1) -> Subscript(x, 2)}, VertexLabeling -> True), \"SVG\"),"
+            + " \">\" ~~ Shortest(t : Except(\">\") ..) ~~ \"</text>\" :> t)", //
+        "{x\u2081,x\u2082}");
+    check("Length(Cases(TreePlot({1 -> 2, 2 -> 3}, VertexLabeling -> True), _Text, Infinity))", //
+        "3");
+    // a Graph exports as a picture, with its PlotLabel
+    check("StringContainsQ(ExportString(Graph({1 <-> 2}), \"SVG\"), \"<svg\")", //
+        "True");
+    check(
+        "StringCases(ExportString(Graph({1 <-> 2}, PlotLabel -> Subscript(\"I\", 4)), \"SVG\"),"
+            + " \">\" ~~ Shortest(t : Except(\">\") ..) ~~ \"</text>\" :> t)", //
+        "{I\u2084}");
+    // TreePlot draws a copy: the graph keeps its own options
+    check(
+        "g = Graph({1 -> 2, 2 -> 3}, VertexLabels -> \"Name\"); TreePlot(g);"
+            + " Length(Cases(GraphPlot(g), _Text, Infinity))", //
+        "3");
   }
 
   @Test
@@ -108,9 +154,10 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("p=GraphPlot(Graph({1->2,2->3,3->1}),ImageSize->70,AspectRatio->1);" //
         + "{Head(p), Cases(List@@p,(ImageSize->s_):>s), Cases(List@@p,(AspectRatio->a_):>a)}", //
         "{Graphics,{200},{1}}");
-    // a directed edge ends at the edge of its target vertex, with Mathematica's Medium arrowheads
-    check("p=GraphPlot(Graph({1->2}));{Cases(p,_Arrowheads,Infinity),"
-        + "Cases(p,Arrow({_,e_}):>e,Infinity)==Cases(p,Disk(c_,_):>c,Infinity)[[{2}]]}", //
+    // a directed edge ends at the edge of its target vertex, with Medium arrowheads
+    check(
+        "p=GraphPlot(Graph({1->2}));{Cases(p,_Arrowheads,Infinity),"
+            + "Cases(p,Arrow({_,e_}):>e,Infinity)==Cases(p,Disk(c_,_):>c,Infinity)[[{2}]]}", //
         "{{Arrowheads(Medium)},False}");
   }
 
@@ -191,43 +238,48 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * The graphs of the WLJS demo notebook: Mathematica's default look, and the options a
-   * <code>Graph</code> keeps for drawing it.
+   * The graphs of the WLJS demo notebook and the options a <code>Graph</code> keeps for drawing it.
    */
   @Test
   public void testGraphDrawingOptions() {
-    // Mathematica's colours; the edges and the vertices each in a list of their own
+    // The edges and the vertices each in a list of their own colours
     check("Cases(GraphPlot(Graph({1->2,2->3,3->1})),_Hue,Infinity)", //
         "{Hue(0.6,0.7,0.7),Hue(0.6,0.5,1.0)}");
     // VertexShapeFunction and VertexSize are kept by Graph
-    check("Length(Cases(GraphPlot(Graph({1->2,2->3,3->1},VertexShapeFunction->\"Diamond\","
-        + "VertexSize->Medium)),_Polygon,Infinity))", //
+    check(
+        "Length(Cases(GraphPlot(Graph({1->2,2->3,3->1},VertexShapeFunction->\"Diamond\","
+            + "VertexSize->Medium)),_Polygon,Infinity))", //
         "3");
     // an annotated vertex is the vertex itself, with a size and a style of its own
-    check("g=Graph(Table(Annotation(v,{VertexSize->0.2+0.2*Mod(v,5),VertexStyle->Hue(v/15,1,1)}),"
-        + "{v,0,14}),Table(v<->Mod(v+1,15),{v,0,14}));"
-        + "{VertexCount(g),Length(Cases(GraphPlot(g),Hue(_,1,1),Infinity))}", //
+    check(
+        "g=Graph(Table(Annotation(v,{VertexSize->0.2+0.2*Mod(v,5),VertexStyle->Hue(v/15,1,1)}),"
+            + "{v,0,14}),Table(v<->Mod(v+1,15),{v,0,14}));"
+            + "{VertexCount(g),Length(Cases(GraphPlot(g),Hue(_,1,1),Infinity))}", //
         "{15,15}");
     // a list of rules is options too; a named GraphStyle draws labelled rectangles, and the graph
     // options do not reach Graphics
-    check("p=GraphPlot(Graph({1,2,3},{1<->2,2<->3},{GraphStyle->\"DiagramGreen\"}));"
-        + "{Length(Cases(p,_Rectangle,Infinity)),Length(Cases(p,_Text,Infinity)),"
-        + "FreeQ(p,GraphStyle)}", //
+    check(
+        "p=GraphPlot(Graph({1,2,3},{1<->2,2<->3},{GraphStyle->\"DiagramGreen\"}));"
+            + "{Length(Cases(p,_Rectangle,Infinity)),Length(Cases(p,_Text,Infinity)),"
+            + "FreeQ(p,GraphStyle)}", //
         "{3,3,True}");
     // "GridEmbedding" with "Dimension" -> {columns, rows}
-    check("p=GraphPlot(Graph({1,2,3,4,5,6},{1<->2,2<->3,4<->5,5<->6,1<->4},"
-        + "GraphLayout->{\"VertexLayout\"->{\"GridEmbedding\",\"Dimension\"->{3,2}}}));"
-        + "Length(Union(Cases(p,Disk({x_,y_},_):>y,Infinity)))", //
+    check(
+        "p=GraphPlot(Graph({1,2,3,4,5,6},{1<->2,2<->3,4<->5,5<->6,1<->4},"
+            + "GraphLayout->{\"VertexLayout\"->{\"GridEmbedding\",\"Dimension\"->{3,2}}}));"
+            + "Length(Union(Cases(p,Disk({x_,y_},_):>y,Infinity)))", //
         "2");
-    check("Cases(GraphPlot(HighlightGraph(PathGraph(Range(3)),{Style(2,Green)})),_RGBColor,"
-        + "Infinity)", //
+    check(
+        "Cases(GraphPlot(HighlightGraph(PathGraph(Range(3)),{Style(2,Green)})),_RGBColor,"
+            + "Infinity)", //
         "{RGBColor(0,1,0)}");
     check("{VertexCount(ButterflyGraph(3)),EdgeCount(ButterflyGraph(3))}", //
         "{32,48}");
     // Graph3D(vertices, edges) with annotated vertices
-    check("p=Graph3D(Table(Annotation(v,{VertexStyle->Hue(v/15,1,1)}),{v,0,14}),"
-        + "Table(v<->Mod(v+1,15),{v,0,14}));"
-        + "{Head(p),Length(Cases(p,_Sphere,Infinity)),Length(Cases(p,Hue(_,1,1),Infinity))}", //
+    check(
+        "p=Graph3D(Table(Annotation(v,{VertexStyle->Hue(v/15,1,1)}),{v,0,14}),"
+            + "Table(v<->Mod(v+1,15),{v,0,14}));"
+            + "{Head(p),Length(Cases(p,_Sphere,Infinity)),Length(Cases(p,Hue(_,1,1),Infinity))}", //
         "{Graphics3D,15,15}");
   }
 
@@ -1350,7 +1402,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("Max(FindVertexColoring(Graph({1,2},{1->2})))", "2");
     check("Max(FindVertexColoring(Graph({1,2,3,4},{1<->2,3<->4})))", "2");
 
-    // self loops are ignored, matching Mathematica: FindVertexColoring[Graph[{1,2},{1<->1}]]
+    // self loops are ignored: FindVertexColoring[Graph[{1,2},{1<->1}]]
     // answers {1,1} there rather than refusing
     check("FindVertexColoring(Graph({1,2},{1<->1}))", "{1,1}");
     check("FindVertexColoring(Graph({1,2},{1<->1,1<->2}))", "{1,2}");
@@ -2311,8 +2363,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("FindVertexColoring(CycleGraph(4), 2)", "{1,2,1,2}");
     check("FindVertexColoring(CycleGraph(4), 2)===FindVertexColoring(CycleGraph(4))", "True");
     check("FindVertexColoring(CompleteGraph(3), 3)", "{1,2,3}");
-    // fewer colors than the chromatic number: no coloring exists, and Mathematica returns the
-    // expression unevaluated rather than an empty list
+    // fewer colors than the chromatic number: no coloring exists
     check("Head(FindVertexColoring(CycleGraph(5), 2))", "FindVertexColoring");
     check("Head(FindVertexColoring(CompleteGraph(3), 2))", "FindVertexColoring");
     check("Head(FindVertexColoring(CycleGraph(4), 0))", "FindVertexColoring");

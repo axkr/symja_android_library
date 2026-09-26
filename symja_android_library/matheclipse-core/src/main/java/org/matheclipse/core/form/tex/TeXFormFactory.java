@@ -535,6 +535,11 @@ public class TeXFormFactory {
         return false;
       }
       IExpr arg1 = f.arg1();
+      if (!arg1.isList() && !arg1.isSparseArray()) {
+        // MatrixForm of something which is no matrix displays it as it is
+        fFactory.convertInternal(buffer, arg1, precedence, NO_PLUS_CALL);
+        return true;
+      }
       int[] dims = arg1.isMatrix();
       if (dims == null) {
         int dim = arg1.isVector();
