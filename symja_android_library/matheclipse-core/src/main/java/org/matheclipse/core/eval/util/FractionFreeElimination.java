@@ -1,8 +1,9 @@
-package org.matheclipse.core.builtin;
+package org.matheclipse.core.eval.util;
 
 import java.math.BigInteger;
 import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
+import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -30,7 +31,7 @@ import org.matheclipse.core.interfaces.IRational;
  * polynomial, <code>Together</code> performs the exact divisions.
  * </ul>
  */
-final class FractionFreeElimination {
+public final class FractionFreeElimination {
 
   /** The integral domain in which the elimination runs. */
   interface Domain<T> {
@@ -307,8 +308,8 @@ final class FractionFreeElimination {
       @Override
       public IExpr eliminate(IExpr entry, IExpr pivot, IExpr factor, IExpr pivotRowEntry,
           IExpr previousPivot) {
-        IExpr numerator = engine.evaluate(
-            F.Expand(F.Subtract(F.Times(entry, pivot), F.Times(factor, pivotRowEntry))));
+        IExpr numerator = engine
+            .evaluate(F.Expand(F.Subtract(F.Times(entry, pivot), F.Times(factor, pivotRowEntry))));
         return exactDivide(numerator, previousPivot, engine);
       }
     };
@@ -352,8 +353,8 @@ final class FractionFreeElimination {
    * Forward elimination of the square matrix <code>m</code> in place. Afterwards
    * <code>m[n-1][n-1]</code> is the determinant times the returned sign.
    *
-   * @return the sign <code>1</code> or <code>-1</code> of the row permutation, or <code>0</code>
-   *         if a column has no pivot, which makes the determinant 0
+   * @return the sign <code>1</code> or <code>-1</code> of the row permutation, or <code>0</code> if
+   *         a column has no pivot, which makes the determinant 0
    */
   private static <T> int forward(T[][] m, Domain<T> domain) {
     final int n = m.length;
@@ -458,7 +459,7 @@ final class FractionFreeElimination {
    * The reduced row echelon form of a matrix with rational or Gaussian rational entries, or
    * <code>null</code> for another matrix.
    */
-  static FieldMatrix<IExpr> rowReduce(FieldMatrix<IExpr> matrix) {
+  public static FieldMatrix<IExpr> rowReduce(FieldMatrix<IExpr> matrix) {
     if (matrix.getRowDimension() == 0 || matrix.getColumnDimension() == 0) {
       return null;
     }
@@ -478,8 +479,8 @@ final class FractionFreeElimination {
     final FieldMatrix<IExpr> result = matrix.createMatrix(rows, cols);
     for (int i = 0; i < rows; i++) {
       for (int k = 0; k < cols; k++) {
-        result.setEntry(i, k, i >= pivots.rank || pivots.column[k] ? F.C0
-            : numbers.quotient(m[i][k], pivots.last));
+        result.setEntry(i, k,
+            i >= pivots.rank || pivots.column[k] ? F.C0 : numbers.quotient(m[i][k], pivots.last));
       }
     }
     int row = 0;
@@ -496,7 +497,7 @@ final class FractionFreeElimination {
    * (<code>Method -> "DivisionFreeRowReduction"</code>). The rows below the rank are returned as
    * the elimination left them.
    */
-  static IASTAppendable rowReduce(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
+  public static IASTAppendable rowReduce(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
       EvalEngine engine) {
     final IExpr[][] m = entries(matrix, 0);
     final int rows = m.length;
@@ -533,7 +534,7 @@ final class FractionFreeElimination {
    * The inverse of a square <code>matrix</code> with rational or Gaussian rational entries, or
    * <code>null</code> for another or a singular matrix.
    */
-  static FieldMatrix<IExpr> inverse(FieldMatrix<IExpr> matrix) {
+  public static FieldMatrix<IExpr> inverse(FieldMatrix<IExpr> matrix) {
     final int n = matrix.getRowDimension();
     final FieldMatrix<IExpr> augmented = matrix.createMatrix(n, 2 * n);
     for (int i = 0; i < n; i++) {
@@ -554,7 +555,7 @@ final class FractionFreeElimination {
    * <code>vector</code> with rational or Gaussian rational entries, or <code>null</code> for others
    * or a singular matrix.
    */
-  static IExpr[] solve(FieldMatrix<IExpr> matrix, IExpr[] vector) {
+  public static IExpr[] solve(FieldMatrix<IExpr> matrix, IExpr[] vector) {
     final int n = matrix.getRowDimension();
     final FieldMatrix<IExpr> augmented = matrix.createMatrix(n, n + 1);
     for (int i = 0; i < n; i++) {
@@ -574,7 +575,7 @@ final class FractionFreeElimination {
    * The determinant of a square <code>matrix</code> with rational or Gaussian rational entries, or
    * <code>null</code> for another matrix.
    */
-  static IExpr determinant(FieldMatrix<IExpr> matrix) {
+  public static IExpr determinant(FieldMatrix<IExpr> matrix) {
     if (matrix.getRowDimension() == 0) {
       return null;
     }
@@ -602,7 +603,7 @@ final class FractionFreeElimination {
   }
 
   /** The determinant of a symbolic square <code>matrix</code>. */
-  static IExpr determinant(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
+  public static IExpr determinant(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
       EvalEngine engine) {
     final IExpr[][] m = entries(matrix, 0);
     final int sign = forward(m, expressions(zeroChecker, engine));
@@ -624,7 +625,7 @@ final class FractionFreeElimination {
    * matrix, or an elimination whose divisions <code>Cancel</code> couldn't reduce, takes the
    * cofactors, a determinant for every minor.
    */
-  static FieldMatrix<IExpr> adjugate(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
+  public static FieldMatrix<IExpr> adjugate(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
       EvalEngine engine) {
     final int n = matrix.getRowDimension();
     final FieldMatrix<IExpr> adjugate = matrix.copy();
@@ -646,8 +647,8 @@ final class FractionFreeElimination {
     }
     for (int i = 0; eliminated && i < n; i++) {
       for (int j = 0; j < n; j++) {
-        final IExpr entry = engine.evaluate(F.Expand(pivots.oddSwaps ? m[i][n + j].negate()
-            : m[i][n + j]));
+        final IExpr entry =
+            engine.evaluate(F.Expand(pivots.oddSwaps ? m[i][n + j].negate() : m[i][n + j]));
         if (hasVariableDenominator(entry)) {
           eliminated = false;
           break;
@@ -673,8 +674,9 @@ final class FractionFreeElimination {
 
   /** Does <code>expr</code> divide by something which isn't a constant? */
   private static boolean hasVariableDenominator(IExpr expr) {
-    return !expr.isFree(x -> x.isPower() && x.exponent().isNegativeResult()
-        && !x.base().isNumericFunction(true), true);
+    return !expr.isFree(
+        x -> x.isPower() && x.exponent().isNegativeResult() && !x.base().isNumericFunction(true),
+        true);
   }
 
   /**

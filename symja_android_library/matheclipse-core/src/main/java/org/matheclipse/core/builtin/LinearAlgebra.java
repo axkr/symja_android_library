@@ -62,6 +62,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
+import org.matheclipse.core.eval.util.FractionFreeElimination;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.eval.util.SymbolicDeterminant;
@@ -2903,8 +2904,7 @@ public final class LinearAlgebra {
      * @param plus the matrix entry <code>1/Sqrt(order)</code>
      * @param minus the matrix entry <code>-1/Sqrt(order)</code>
      */
-    private static IExpr entry(int method, int bits, int row, int column, IExpr plus,
-        IExpr minus) {
+    private static IExpr entry(int method, int bits, int row, int column, IExpr plus, IExpr minus) {
       return (Integer.bitCount(rowIndex(method, bits, row) & column) & 1) == 0 ? plus : minus;
     }
 
@@ -7528,8 +7528,7 @@ public final class LinearAlgebra {
             for (int i = 0; i < n; i++) {
               for (int j = 0; j < n; j++) {
                 final IExpr cofactor = engine.evaluate(F.Expand(adjugate[i][j]));
-                result.setEntry(i, j,
-                    engine.evaluate(F.Together(F.Divide(cofactor, expandedDet))));
+                result.setEntry(i, j, engine.evaluate(F.Together(F.Divide(cofactor, expandedDet))));
               }
             }
             return result;
@@ -7543,7 +7542,8 @@ public final class LinearAlgebra {
         Errors.printMessage(S.Inverse, "sing", F.list(Convert.matrix2List(matrix, false)), engine);
         return null;
       }
-      final FieldMatrix<IExpr> adjugate = FractionFreeElimination.adjugate(matrix, zeroChecker, engine);
+      final FieldMatrix<IExpr> adjugate =
+          FractionFreeElimination.adjugate(matrix, zeroChecker, engine);
       final int n = matrix.getRowDimension();
       for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -7873,8 +7873,8 @@ public final class LinearAlgebra {
    * Read the <code>Modulus</code> option value.
    *
    * @param option the value of the <code>Modulus</code> option
-   * @return the modulus, or <code>null</code> if no modulus was given or the value isn't a
-   *         positive integer
+   * @return the modulus, or <code>null</code> if no modulus was given or the value isn't a positive
+   *         integer
    */
   /**
    * Search the arguments of <code>ast</code> for a <code>Modulus -&gt; n</code> option rule.
@@ -8196,7 +8196,8 @@ public final class LinearAlgebra {
         }
         plus.append(F.Times(rowEntry.negate(), listOfVariables.get(col + 1)));
       }
-      list.append(F.Rule(listOfVariables.get(pivot + 1), S.Together.of(engine, plus.oneIdentity0())));
+      list.append(
+          F.Rule(listOfVariables.get(pivot + 1), S.Together.of(engine, plus.oneIdentity0())));
     }
     resultList.append(list);
     return resultList;
