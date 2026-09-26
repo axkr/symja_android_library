@@ -6144,6 +6144,16 @@ public class S {
       S.initFinalSymbol("DistributionChart", ID.DistributionChart);
 
   /**
+   * DistributionFitTest(x) - TODO describe `DistributionFitTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DistributionFitTest.md">DistributionFitTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DistributionFitTest =
+      S.initFinalSymbol("DistributionFitTest", ID.DistributionFitTest);
+
+  /**
    * DistributionParameterQ(x) - TODO describe `DistributionParameterQ`.
    * 
    * @see <a href=
@@ -10448,6 +10458,16 @@ public class S {
    */
   public final static IBuiltInSymbol HypoexponentialDistribution =
       S.initFinalSymbol("HypoexponentialDistribution", ID.HypoexponentialDistribution);
+
+  /**
+   * HypothesisTestData(x) - TODO describe `HypothesisTestData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HypothesisTestData.md">HypothesisTestData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HypothesisTestData =
+      S.initFinalSymbol("HypothesisTestData", ID.HypothesisTestData);
 
   /**
    * I - Imaginary unit - internally converted to the complex number `0+1*i`. `I` represents the
@@ -20324,6 +20344,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol SectorChart = S.initFinalSymbol("SectorChart", ID.SectorChart);
+
+  /**
+   * SectorChart3D(x) - TODO describe `SectorChart3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SectorChart3D.md">SectorChart3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SectorChart3D =
+      S.initFinalSymbol("SectorChart3D", ID.SectorChart3D);
 
   /**
    * SectorOrigin(x) - TODO describe `SectorOrigin`.
