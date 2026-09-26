@@ -1,8 +1,6 @@
-package org.matheclipse.core.builtin;
+package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.util.Assumptions;
-import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;

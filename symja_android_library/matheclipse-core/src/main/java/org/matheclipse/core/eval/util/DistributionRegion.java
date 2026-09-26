@@ -1,9 +1,10 @@
-package org.matheclipse.core.builtin;
+package org.matheclipse.core.eval.util;
 
 import java.util.ArrayList;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.LongPredicate;
 import org.hipparchus.distribution.IntegerDistribution;
+import org.matheclipse.core.builtin.StatisticsFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -31,13 +32,13 @@ import org.matheclipse.external.fastutil.longs.LongArrayList;
  * distributions.
  * </ul>
  */
-final class DistributionRegion {
+public final class DistributionRegion {
 
   /** Maximum number of integer points enumerated term by term in exact symbolic sums. */
-  static final int SYMBOLIC_ENUMERATION_LIMIT = 512;
+  public static final int SYMBOLIC_ENUMERATION_LIMIT = 512;
 
   /** Maximum number of integer points enumerated term by term in machine numeric sums. */
-  static final long NUMERIC_ENUMERATION_LIMIT = 250_000L;
+  public static final long NUMERIC_ENUMERATION_LIMIT = 250_000L;
 
   /** Probability mass allowed to be ignored in each tail of a truncated numeric summation. */
   private static final double TAIL_EPSILON = 1.0e-16;
@@ -54,7 +55,7 @@ final class DistributionRegion {
    *
    * @return {@link F#NIL} if the predicate cannot be converted exactly
    */
-  static IAST regionFromPredicate(IExpr predicate, IExpr x) {
+  public static IAST regionFromPredicate(IExpr predicate, IExpr x) {
     if (predicate.isAST(S.And) || predicate.isAST(S.Or)) {
       IAST logical = (IAST) predicate;
       boolean intersect = predicate.isAST(S.And);
@@ -90,7 +91,7 @@ final class DistributionRegion {
    * sampling, because <code>Reduce</code> does not solve all predicates correctly. Only intended
    * for machine numeric use.
    */
-  static IAST regionFromPredicateViaReduce(IExpr predicate, IExpr x, EvalEngine engine) {
+  public static IAST regionFromPredicateViaReduce(IExpr predicate, IExpr x, EvalEngine engine) {
     IExpr reduced = engine.evaluate(F.Reduce(predicate, x));
     if (reduced.equals(predicate)) {
       return F.NIL;
@@ -197,7 +198,7 @@ final class DistributionRegion {
    *
    * @return <code>null</code> if an endpoint cannot be converted
    */
-  static long[] integerWindows(IAST region, EvalEngine engine) {
+  public static long[] integerWindows(IAST region, EvalEngine engine) {
     LongArrayList windows = new LongArrayList();
     for (int i = 1; i < region.size(); i++) {
       IAST piece = (IAST) region.get(i);
@@ -246,7 +247,7 @@ final class DistributionRegion {
   }
 
   /** Intersect every window with <code>[lo, hi]</code>. */
-  static long[] clampWindows(long[] windows, long lo, long hi) {
+  public static long[] clampWindows(long[] windows, long lo, long hi) {
     LongArrayList clamped = new LongArrayList();
     for (int i = 0; i < windows.length; i += 2) {
       long min = Math.max(windows[i], lo);
@@ -260,7 +261,7 @@ final class DistributionRegion {
   }
 
   /** Intersection of two ascending disjoint window lists. */
-  static long[] intersectWindows(long[] first, long[] second) {
+  public static long[] intersectWindows(long[] first, long[] second) {
     LongArrayList result = new LongArrayList();
     int i = 0;
     int j = 0;
@@ -283,7 +284,7 @@ final class DistributionRegion {
   /**
    * The complement of the (ascending, disjoint) windows within <code>[lo, hi]</code>.
    */
-  static long[] complementWindows(long[] windows, long lo, long hi) {
+  public static long[] complementWindows(long[] windows, long lo, long hi) {
     LongArrayList complement = new LongArrayList();
     long cursor = lo;
     for (int i = 0; i < windows.length; i += 2) {
@@ -312,7 +313,7 @@ final class DistributionRegion {
    * Total number of integer points covered by the windows; <code>Long.MAX_VALUE</code> if unbounded
    * or too large.
    */
-  static long countWindows(long[] windows) {
+  public static long countWindows(long[] windows) {
     long total = 0;
     for (int i = 0; i < windows.length; i += 2) {
       if (windows[i] == Long.MIN_VALUE || windows[i + 1] == Long.MAX_VALUE) {
@@ -331,13 +332,13 @@ final class DistributionRegion {
   }
 
   /** The distributions support lower bound widened to <code>long</code> sentinel values. */
-  static long supportLowerBound(IDiscreteDistribution dist, IExpr distribution) {
+  public static long supportLowerBound(IDiscreteDistribution dist, IExpr distribution) {
     int bound = dist.getSupportLowerBound(distribution);
     return bound == Integer.MIN_VALUE ? Long.MIN_VALUE : bound;
   }
 
   /** The distributions support upper bound widened to <code>long</code> sentinel values. */
-  static long supportUpperBound(IDiscreteDistribution dist, IExpr distribution) {
+  public static long supportUpperBound(IDiscreteDistribution dist, IExpr distribution) {
     int bound = dist.getSupportUpperBound(distribution);
     return bound == Integer.MAX_VALUE ? Long.MAX_VALUE : bound;
   }
@@ -378,7 +379,8 @@ final class DistributionRegion {
    * Exact probability of the integer windows as a telescoping sum of CDF differences
    * <code>P(lo &lt;= X &lt;= hi) == CDF(hi) - CDF(lo - 1)</code>.
    */
-  static IExpr probabilityFromCDFDiscrete(IExpr distribution, long[] windows, EvalEngine engine) {
+  public static IExpr probabilityFromCDFDiscrete(IExpr distribution, long[] windows,
+      EvalEngine engine) {
     IASTAppendable sum = F.PlusAlloc(windows.length / 2 + 1);
     for (int i = 0; i < windows.length; i += 2) {
       long lo = windows[i];
@@ -398,7 +400,8 @@ final class DistributionRegion {
    * comparability with the integration based results <code>Erfc(z)</code> is rewritten as
    * <code>1 - Erf(z)</code>.
    */
-  static IExpr probabilityFromCDFContinuous(IExpr distribution, IAST region, EvalEngine engine) {
+  public static IExpr probabilityFromCDFContinuous(IExpr distribution, IAST region,
+      EvalEngine engine) {
     IASTAppendable sum = F.PlusAlloc(region.argSize() + 1);
     for (int i = 1; i < region.size(); i++) {
       IAST piece = (IAST) region.get(i);
@@ -422,7 +425,8 @@ final class DistributionRegion {
    *
    * @return <code>Double.NaN</code> if a CDF value could not be computed
    */
-  static double probabilityNumericContinuous(IExpr distribution, IAST region, EvalEngine engine) {
+  public static double probabilityNumericContinuous(IExpr distribution, IAST region,
+      EvalEngine engine) {
     double total = 0.0;
     for (int i = 1; i < region.size(); i++) {
       IAST piece = (IAST) region.get(i);
@@ -443,7 +447,8 @@ final class DistributionRegion {
    *
    * @return <code>Double.NaN</code> if a CDF value could not be computed
    */
-  static double probabilityNumericDiscrete(IExpr distribution, long[] windows, EvalEngine engine) {
+  public static double probabilityNumericDiscrete(IExpr distribution, long[] windows,
+      EvalEngine engine) {
     double total = 0.0;
     for (int i = 0; i < windows.length; i += 2) {
       long lo = windows[i];
@@ -465,7 +470,7 @@ final class DistributionRegion {
    * @return <code>null</code> if there is no hipparchus implementation or a parameter is not
    *         machine numeric
    */
-  static IntegerDistribution hipparchusDiscrete(IExpr distribution) {
+  public static IntegerDistribution hipparchusDiscrete(IExpr distribution) {
     if (!distribution.isAST()) {
       return null;
     }
@@ -547,7 +552,8 @@ final class DistributionRegion {
    * Machine probability of the integer windows as cumulative probability differences of the
    * hipparchus distribution.
    */
-  static double windowsProbability(IntegerDistribution hipparchusDistribution, long[] windows) {
+  public static double windowsProbability(IntegerDistribution hipparchusDistribution,
+      long[] windows) {
     double total = 0.0;
     for (int i = 0; i < windows.length; i += 2) {
       long lo = windows[i];
@@ -568,7 +574,7 @@ final class DistributionRegion {
    * A window <code>{lo, hi}</code> which covers all but roughly <code>2*TAIL_EPSILON</code> of the
    * probability mass of the distribution.
    */
-  static long[] quantileWindow(IntegerDistribution hipparchusDistribution) {
+  public static long[] quantileWindow(IntegerDistribution hipparchusDistribution) {
     try {
       long lo = hipparchusDistribution.inverseCumulativeProbability(TAIL_EPSILON);
       long hi = hipparchusDistribution.inverseCumulativeProbability(1.0 - TAIL_EPSILON);
@@ -585,7 +591,7 @@ final class DistributionRegion {
    * @param filter optional restriction of the summation points; may be <code>null</code>
    * @return <code>Double.NaN</code> if a term is not finite or the windows are unbounded
    */
-  static double kahanSum(DoubleUnaryOperator term, LongPredicate filter, long[] windows) {
+  public static double kahanSum(DoubleUnaryOperator term, LongPredicate filter, long[] windows) {
     if (countWindows(windows) > NUMERIC_ENUMERATION_LIMIT) {
       return Double.NaN;
     }
@@ -621,7 +627,7 @@ final class DistributionRegion {
    * This also protects against <code>f</code> growing faster than the probability mass decays: in
    * that (divergent) case <code>Double.NaN</code> is returned.
    */
-  static double expectationNumeric(IntegerDistribution hipparchusDistribution,
+  public static double expectationNumeric(IntegerDistribution hipparchusDistribution,
       DoubleUnaryOperator function, long supportLo, long supportHi) {
     long[] window = quantileWindow(hipparchusDistribution);
     if (window == null || supportLo == Long.MIN_VALUE) {
@@ -671,7 +677,7 @@ final class DistributionRegion {
    *
    * @return <code>null</code> if <code>variable</code> is not a symbol
    */
-  static DoubleUnaryOperator compile(IExpr function, IExpr variable, EvalEngine engine) {
+  public static DoubleUnaryOperator compile(IExpr function, IExpr variable, EvalEngine engine) {
     if (!variable.isSymbol()) {
       return null;
     }
@@ -687,8 +693,8 @@ final class DistributionRegion {
    * @return {@link F#NIL} if the predicate is undecidable at one of the points (e.g. it contains
    *         additional symbolic parameters)
    */
-  static IExpr enumerateSymbolic(IExpr termTemplate, IExpr x, long[] windows, IExpr predicate,
-      EvalEngine engine) {
+  public static IExpr enumerateSymbolic(IExpr termTemplate, IExpr x, long[] windows,
+      IExpr predicate, EvalEngine engine) {
     long count = countWindows(windows);
     if (count > SYMBOLIC_ENUMERATION_LIMIT) {
       return F.NIL;
@@ -718,7 +724,7 @@ final class DistributionRegion {
    *
    * @return {@link S#True}, {@link S#False} or {@link F#NIL} if undecidable
    */
-  static IExpr definiteTruthValue(IExpr predicate, IExpr x, long point, EvalEngine engine) {
+  public static IExpr definiteTruthValue(IExpr predicate, IExpr x, long point, EvalEngine engine) {
     IExpr test = engine.evaluate(F.subst(predicate, x, F.ZZ(point)));
     if (test.isTrue() || test.isFalse()) {
       return test;
