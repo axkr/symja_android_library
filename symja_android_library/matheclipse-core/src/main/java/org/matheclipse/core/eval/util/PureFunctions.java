@@ -181,6 +181,12 @@ public final class PureFunctions {
       // Slot number `1` in `2` cannot be filled from `3`.
       Errors.printMessage(S.Function, "slotn", F.List(unfillable, function, application), engine);
     }
+    IExpr unfillableName = visitor.getUnfillableNamedSlot();
+    if (unfillableName.isPresent()) {
+      // Named slot `1` in `2` cannot be filled from `3`.
+      Errors.printMessage(S.Function, "slota",
+          F.List(F.stringx(unfillableName.toString()), function, application.arg1()), engine);
+    }
     return result;
   }
 

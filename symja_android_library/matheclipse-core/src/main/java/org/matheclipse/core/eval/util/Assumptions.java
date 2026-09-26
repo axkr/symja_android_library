@@ -339,6 +339,19 @@ public class Assumptions extends AbstractAssumptions {
       assumptions.realRelationsMap.put(key, relations);
       return true;
     }
+    if (intersection) {
+      // a==b is recorded as a-b==0, so that Refine(a==b, a==b) finds it in zeroPolynomials()
+      IExpr key = EvalEngine.get().evaluate(F.Subtract(equalsAST.arg1(), equalsAST.arg2()));
+      if (!key.isNumber()) {
+        RealRelations relations = assumptions.realRelationsMap.get(key);
+        if (relations == null) {
+          relations = new RealRelations();
+        }
+        relations.addEqual(F.C0, intersection);
+        assumptions.realRelationsMap.put(key, relations);
+        return true;
+      }
+    }
     return false;
   }
 

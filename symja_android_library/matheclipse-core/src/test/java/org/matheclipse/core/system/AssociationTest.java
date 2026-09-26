@@ -8,6 +8,55 @@ import org.matheclipse.core.eval.EvalEngine;
 public class AssociationTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testAssociationWMA() {
+    // the values are combined by position, so the keys have to agree in order
+    check("<|a -> 1, b -> 2|> + <|b -> 10, a -> 20|>", //
+        "<|a->1,b->2|>+<|b->10,a->20|>");
+    check("<|a -> 1, b -> 2|> + <|a -> 10, c -> 20|>", //
+        "<|a->1,b->2|>+<|a->10,c->20|>");
+    check("<|a -> 1, b -> 2|> + <|a -> 10, b -> 20|>", //
+        "<|a->11,b->22|>");
+    check("<|a -> 1, b -> 2|> == <|b -> 2, a -> 1|>", //
+        "False");
+    check("<|a -> 1, b -> 2|> == <|a -> 1, b -> 2|>", //
+        "True");
+    check("<|\"a\" -> 1|>[[{\"a\", \"z\"}]]", //
+        "<|a->1,z->Missing(KeyAbsent,z)|>");
+    check("Depth(<|a -> <|b -> 1|>|>)", //
+        "3");
+    check("<|a -> 1|> /. Association -> List", //
+        "{a->1}");
+    // ties under a strict order come out reversed
+    check("Sort(<|\"a\" -> 2, \"b\" -> 2, \"c\" -> 1, \"d\" -> 2|>, Greater)", //
+        "<|d->2,b->2,a->2,c->1|>");
+    check("Sort(Range(10), Mod(#1, 3) > Mod(#2, 3) &)", //
+        "{8,5,2,10,7,4,1,9,6,3}");
+    check("Sort({3, 1, 2, 1}, Order)", //
+        "{1,1,2,3}");
+    check("SortBy({{1, \"b\"}, {1, \"a\"}}, First)", //
+        "{{1,a},{1,b}}");
+    // an existing key moves to the end
+    check("Append(<|\"a\" -> 1, \"b\" -> 2|>, \"a\" -> 9)", //
+        "<|b->2,a->9|>");
+    check("KeyTake(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, {\"c\", \"a\", \"c\"})", //
+        "<|a->1,c->3|>");
+    check("<|a -> 1, b -> 2, a -> 3|>", //
+        "<|a->3,b->2|>");
+    check("KeyMemberQ(<|x -> 1, y -> 2|>, _)", //
+        "True");
+    check("KeyMemberQ(\"a\")[<|\"a\" -> 1|>]", //
+        "True");
+    check("KeyFreeQ(<|1 -> 1|>, _Integer)", //
+        "False");
+    check("KeySortBy(Minus)[<|1 -> 1, 2 -> 2|>]", //
+        "<|2->2,1->1|>");
+    check("#a &[<|\"b\" -> 3|>]", //
+        "#a");
+    check("<|a -> 1, Splice({b -> 2, c -> 3})|>", //
+        "<|a->1,b->2,c->3|>");
+  }
+
+  @Test
   public void testThreadAssociation() {
     // the value of a RuleDelayed is held and is never re-evaluated, so Plus has to drop its
     // identity element 0 before threading: the first element is <|s1->0,s2:>1|> and not
@@ -320,8 +369,9 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "{<|a->1|>}");
     check("Union({<|a->1|>}, {<|a->2|>})", //
         "{<|a->1|>,<|a->2|>}");
-    check("Length(Union({<|\"a\"->1,\"b\"->\"x\"|>, <|\"a\"->2,\"b\"->\"y\"|>,"
-        + "<|\"a\"->3,\"b\"->\"x\"|>}))", //
+    check(
+        "Length(Union({<|\"a\"->1,\"b\"->\"x\"|>, <|\"a\"->2,\"b\"->\"y\"|>,"
+            + "<|\"a\"->3,\"b\"->\"x\"|>}))", //
         "3");
 
     // ... and Sort left them where they lay

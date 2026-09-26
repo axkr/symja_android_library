@@ -15,7 +15,6 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -26,13 +25,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.organicdesign.fp.StaticImports;
 import org.organicdesign.fp.collections.MutMap;
 import org.organicdesign.fp.collections.RrbTree;
 import org.organicdesign.fp.collections.UnmodIterator;
 import org.organicdesign.fp.collections.UnmodListIterator;
 import org.organicdesign.fp.collections.UnmodMap.UnEntry;
-import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
@@ -296,6 +295,37 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     ASTAssociation result = new ASTAssociation();
     result.appendRules(this.normal(false), 1, index);
     return result;
+  }
+
+  /**
+   * Two associations are equal if they have the same keys in the same order and equal values:
+   * <code>&lt;|a-&gt;1,b-&gt;2|&gt; == &lt;|b-&gt;2,a-&gt;1|&gt;</code> is <code>False</code>.
+   */
+  @Override
+  public IExpr.COMPARE_TERNARY equalTernary(IExpr that, EvalEngine engine) {
+    if (that.isAssociation()) {
+      final IAssociation other = (IAssociation) that;
+      if (size() != other.size()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      IExpr.COMPARE_TERNARY result = IExpr.COMPARE_TERNARY.TRUE;
+      for (int i = 1; i < size(); i++) {
+        final IAST rule = getRule(i);
+        final IAST otherRule = other.getRule(i);
+        if (!rule.first().equals(otherRule.first())) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
+        final IExpr.COMPARE_TERNARY b = rule.second().equalTernary(otherRule.second(), engine);
+        if (b == IExpr.COMPARE_TERNARY.FALSE) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
+        if (b != IExpr.COMPARE_TERNARY.TRUE) {
+          result = IExpr.COMPARE_TERNARY.UNDECIDABLE;
+        }
+      }
+      return result;
+    }
+    return super.equalTernary(that, engine);
   }
 
   @Override

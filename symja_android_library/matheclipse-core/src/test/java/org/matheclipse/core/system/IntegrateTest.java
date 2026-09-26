@@ -30,7 +30,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * {@code AbstractFractionSym.rationalize} and fail there with a Hipparchus "cannot convert
    * infinite value", before Integrate ever looked at what it was being asked to integrate over.
    * Nothing about such an argument is rationalizable, so it is left alone and the second argument
-   * is judged on its own merits, which is what Mathematica reports for this input as well:
+   * is judged on its own merits:
    * {@code Integrate::ilim Invalid integration variable or limit(s) in 2.}
    *
    * <p>
@@ -40,7 +40,8 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testIntegrateFermiDirac() {
-    // Integrate(x^(s-1)/(E^(c*x)+z), {x,0,Infinity}) == -Gamma(s)*PolyLog(s,-z)/(z*c^s), for z >= -1.
+    // Integrate(x^(s-1)/(E^(c*x)+z), {x,0,Infinity}) == -Gamma(s)*PolyLog(s,-z)/(z*c^s), for z >=
+    // -1.
     // The general route cannot answer these: the antiderivative of x/(E^x+1) is three terms which
     // each diverge at infinity while their sum does not.
     check("Integrate(x/(E^x + 1), {x, 0, Infinity})", //
@@ -499,7 +500,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "x^5/5");
 
     check("Refine(Integrate(Abs(x^(-1)),x), Element(x,Reals))", //
-        "(x*Log(Abs(x)))/Abs(x)");
+        "Log(Abs(x))*Sign(x)");
     check("Refine(Integrate(Abs(x^(-5)),x), Element(x,Reals))", //
         "-Abs(x)/(4*x^5)");
     check("Refine(Integrate(Abs(x^(-7)),x), Element(x,Reals))", //
@@ -1395,8 +1396,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // Integrate() subexpressions left inside an otherwise closed form.
     check("Cases(Integrate(E^x/(x^2*(6-6*x+x^2)^2), x), Integrate(__), Infinity) // Length", //
         "0");
-    check("Max(Abs(N(Table(D(Integrate(E^x/(x^2*(6-6*x+x^2)^2), x), x)"
-        + " - E^x/(x^2*(6-6*x+x^2)^2) /. x->pt, {pt, {17/13, -7/5, 11/3}})))) < 10^-8", //
+    check(
+        "Max(Abs(N(Table(D(Integrate(E^x/(x^2*(6-6*x+x^2)^2), x), x)"
+            + " - E^x/(x^2*(6-6*x+x^2)^2) /. x->pt, {pt, {17/13, -7/5, 11/3}})))) < 10^-8", //
         "True");
   }
 
@@ -1434,8 +1436,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "-2*Log(Cos(Sqrt(x)))");
     check("Integrate(1/(x*(Log(x)^2+1)),x)", //
         "ArcTan(Log(x))");
-    check("Max(Abs(N(Table(D(Integrate(x^3*ArcSin(x)/Sqrt(1-x^4),x),x)"
-        + " - x^3*ArcSin(x)/Sqrt(1-x^4) /. x->pt, {pt, {1/7, 3/8, 3/5}})))) < 10^-8", //
+    check(
+        "Max(Abs(N(Table(D(Integrate(x^3*ArcSin(x)/Sqrt(1-x^4),x),x)"
+            + " - x^3*ArcSin(x)/Sqrt(1-x^4) /. x->pt, {pt, {1/7, 3/8, 3/5}})))) < 10^-8", //
         "True");
   }
 

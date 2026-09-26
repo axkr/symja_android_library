@@ -33,6 +33,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.generic.PredicateSort;
 import org.matheclipse.core.generic.Predicates.IsBinaryFalse;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -2243,6 +2244,9 @@ public class StructureFunctions {
         comparator = new Predicates.IsBinaryFalse(arg2);
       }
       IExpr arg1 = IASTDataset.normalizeDataset(ast.arg1());
+      if (ast.isAST2() && arg1 == ast.arg1() && arg1.isASTOrAssociation()) {
+        return sortByPredicate((IAST) arg1, arg2, engine);
+      }
       if (comparator == null && arg1.isList() && !arg1.isAssociation()
           && ((IAST) arg1).exists(x -> x.isQuantity())) {
         // quantities order by magnitude, not canonically - see Comparators.QuantityComparator.
@@ -2256,6 +2260,33 @@ public class StructureFunctions {
             .restoreDataset(sortByComparator(comparator, ast.setAtCopy(1, arg1), engine));
       }
       return sortByComparator(comparator, ast, engine);
+    }
+
+    /**
+     * <code>Sort(list, p)</code>: a merge sort which keeps <code>a</code> before <code>b</code> unless
+     * <code>p(a, b)</code> is <code>False</code>, see {@link PredicateSort}. The values of an
+     * association are sorted, and its rules are reordered with them.
+     */
+    private static IExpr sortByPredicate(IAST list, IExpr p, EvalEngine engine) {
+      final int n = list.argSize();
+      final boolean association = list.isAssociation();
+      final IExpr[] elements = new IExpr[n];
+      for (int i = 0; i < n; i++) {
+        elements[i] = association ? list.getRule(i + 1).second() : list.get(i + 1);
+      }
+      final int[] permutation = PredicateSort.permutation(elements, p, engine);
+      if (association) {
+        final IASTAppendable rules = F.ListAlloc(n);
+        for (int j : permutation) {
+          rules.append(list.getRule(j + 1));
+        }
+        return F.assoc(rules);
+      }
+      final IASTAppendable result = F.ast(list.head(), n);
+      for (int j : permutation) {
+        result.append(elements[j]);
+      }
+      return result;
     }
 
     protected static IExpr sortByComparator(Comparator<IExpr> comparator, final IAST ast,
@@ -2366,14 +2397,17 @@ public class StructureFunctions {
             final IExpr arg2 = ast.arg2();
 
             // sort a list of indices. after sorting, we reorder the leaves.
+            // elements with the same f(x) are in the canonical order of the elements, the rules of
+            // an association: SortBy({{1,"b"},{1,"a"}}, First) is {{1,"a"},{1,"b"}}
             final IASTAppendable sortAST = F.mapRange(1, arg1.size(), i -> {
               IExpr unary = engine.evaluate(F.unaryAST1(arg2, arg1.get(i)));
-              return F.binaryAST2(S.List, unary, F.ZZ(i));
+              IExpr element = arg1.isAssociation() ? arg1.getRule(i) : arg1.get(i);
+              return F.List(unary, element, F.ZZ(i));
             });
             EvalAttributes.sort(sortAST);
 
             return F.mapFunction(arg1.head(), sortAST, t -> {
-              int sortedIndex = t.second().toIntDefault(-1);
+              int sortedIndex = ((IAST) t).arg3().toIntDefault(-1);
               if (sortedIndex < 0) {
                 // stop iterating and return fFalse
                 return null;

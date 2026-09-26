@@ -1606,8 +1606,8 @@ public class ExpTrigsFunctions {
           return F.Power(-1, t);
         }
 
-        // t - 1/2
-        temp = engine.evaluate(F.Subtract(t, F.C1D2));
+        // t - 1/2, expanded: t == 1/2*(1+2*k) gives k
+        temp = engine.evaluate(F.Expand(F.Subtract(t, F.C1D2)));
         if (temp.isIntegerResult()) {
           return F.C0;
         }
@@ -3531,12 +3531,11 @@ public class ExpTrigsFunctions {
         if (temp2.isIntegerResult()) {
           return F.CN1;
         }
-        // t - 1/2
-        temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
+        // t - 1/2, expanded: t == 1/2*(1+2*k) gives k
+        temp2 = engine.evaluate(F.Expand(F.Plus(t, F.CN1D2)));
         if (temp2.isIntegerResult()) {
-          // I^(-1+2*t); distribute the 2 over a Plus, so that the half integer part of t
-          // cancels against the -1 instead of being carried along unevaluated
-          return F.Power(F.CI, F.Plus(F.CN1, F.distributePlusOnTimes(F.C2, t)));
+          // Sin((m+1/2)*Pi) == (-1)^m
+          return F.Power(F.CN1, temp2);
         }
       }
       return F.NIL;

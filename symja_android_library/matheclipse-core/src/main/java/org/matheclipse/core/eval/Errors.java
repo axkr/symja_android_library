@@ -564,6 +564,7 @@ public class Errors {
       "setps", "`1` in the part assignment is not a symbol.", //
       "sfr", "Item `1` requested in `2` out of range. `3` itms available.", //
       "shapespec", "Shape specification `1` is invalid.", //
+      "slota", "Named slot `1` in `2` cannot be filled from `3`.", //
       "slotn", "Slot number `1` in `2` cannot be filled from `3`.", //
       "slwcon",
       "Numerical integration converging too slowly; suspect one of the following: singularity, "

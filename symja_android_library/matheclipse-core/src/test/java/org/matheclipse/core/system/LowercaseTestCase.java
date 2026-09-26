@@ -2942,7 +2942,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testSequenceHoldIsNotSplicedOnTheFastPath() {
     // A symbol whose ONLY attribute is SequenceHold passes the ISymbol#EVAL_ENGINE_ATTRIBUTES
     // gate and used to reach evalNoAttributes(), which flattened Sequence() unconditionally -
-    // exactly what the attribute forbids. Mathematica: f[Sequence[1, 2]] stays unflattened.
+    // exactly what the attribute forbids. f[Sequence[1, 2]] stays unflattened.
     check("SetAttributes(seqhold, SequenceHold)", //
         "");
     check("Attributes(seqhold)", //
@@ -3376,7 +3376,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCoefficientRules() {
-    // the order as a string, as Mathematica writes it; a symbol of the same name is taken too
+    // the order as a string; a symbol of the same name is taken too
     check("CoefficientRules(x^2-1, x, \"NegativeLexicographic\")", //
         "{{0}->-1,{2}->1}");
     check("CoefficientRules(a*x*y^2+b*x^2*z,{x,y,z},\"DegreeReverseLexicographic\")", //
@@ -4346,8 +4346,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   /**
    * MeshCellStyle is written out cell by cell as Properties, the way the reference implementation
-   * does it - measured in Mathematica on 2026-09-19. The square has 4 vertices, 4 edges and 1 face,
-   * though only its edges are stored.
+   * does it. The square has 4 vertices, 4 edges and 1 face, though only its edges are stored.
    */
   @Test
   public void testConvexHullMeshOptions() {
@@ -5869,8 +5868,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/Sqrt((1-#1)*#1)&");
     check("Derivative(0)[3]", //
         "3");
-    // like in Mathematica an explicit negative or non-integer order stays unevaluated without a
-    // message
+    // an explicit negative or non-integer order stays unevaluated without a message
     check("Derivative(-1)[f][x]", //
         "Derivative(-1)[f][x]");
     check("Derivative(1/2)[f][x]", //
@@ -7089,8 +7087,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testButton() {
-    // Mathematica: {HoldRest,Protected,ReadProtected} - the label is shown, the action waits for
-    // a press
     check("Attributes(Button)", //
         "{HoldRest,Protected,ReadProtected}");
     check("Column({Button(100, x = 1), Button(200 + 1, x = 2)})", //
@@ -7481,8 +7477,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " {\"AtomicNumber\", \"Period\"})", //
         "{{26,4},{6,2}}");
     // a registered type means its data function is loaded, so what it cannot answer is genuinely
-    // unknown - and which half was unknown is said. Measured in Mathematica 2026-09-18, which
-    // gives Missing["UnknownEntity", {"Isotope", "C"}] for an entity it does not have.
+    // unknown - and which half was unknown is said. Returns Missing["UnknownEntity", {"Isotope",
+    // "C"}] for an entity it does not have.
     check("EntityValue(Entity(\"Element\", \"Iron\"), \"Nonsense\")", //
         "Missing(UnknownProperty,{Element,Nonsense})");
     check("EntityValue(Entity(\"Element\", \"Kryptonite\"), \"AtomicMass\")", //
@@ -9983,7 +9979,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindRoot(Sin(x)==2,{x,I})", //
         "{x->1.5708+I*1.31696}");
 
-    // the multivariate form Mathematica documents, where each start specification is its own
+    // the multivariate form documents, where each start specification is its own
     // argument instead of an element of one list
     check("FindRoot({x + y - 1 == 0, x - y - 0.5 == 0}, {x, 0.1}, {y, 0.1})", //
         "{x->0.75,y->0.25}");
@@ -10720,7 +10716,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    */
   @Test
   public void testDistributionFitTest() {
-    // Mathematica: the automatic test is Kolmogorov-Smirnov; its p-value, and those of Cramer-von
+    // The automatic test is Kolmogorov-Smirnov; its p-value, and those of Cramer-von
     // Mises and Pearson chi^2, agree to machine precision
     check("d = {1., 2., 3., 4., 5.}; e = ExponentialDistribution(1/3);"
         + " {DistributionFitTest(d, e, \"AutomaticTest\"), Round(10^12*DistributionFitTest(d, e))}", //
@@ -10745,7 +10741,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "h = DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3),"
             + " \"HypothesisTestData\"); Head(h(\"TestDataTable\", \"KolmogorovSmirnov\"))", //
         "Style");
-    // Mathematica's statistics; the Kuiper statistic is D+ + D- - 1/n
+    // the Kuiper statistic is D+ + D- - 1/n
     check("h = DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3),"
         + " \"HypothesisTestData\"); Round(10^12*Table(h(\"TestStatistic\", t), {t, {\"AndersonDarling\","
         + " \"Kuiper\", \"WatsonUSquare\"}}))", //
@@ -11188,7 +11184,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // and inverts it on a list of polynomials as well
     check("FromCoefficientRules(CoefficientRules({x^2-1, y^3}, {x,y}), {x,y})", //
         "{-1+x^2,y^3}");
-    // a negative exponent is a rational function, as Mathematica gives it
+    // a negative exponent is a rational function
     check("FromCoefficientRules({{-1}->1}, {x})", //
         "1/x");
     // message FromCoefficientRules: FromCoefficientRules called with 1 argument; 2 arguments are
@@ -15956,7 +15952,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
         + "<math mode=\"display\">\n"
         + "<mrow><mo>{</mo><mrow><mrow><mo>{</mo><mrow><mrow><mrow><mi>y</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>-&gt;</mo><mrow><msup><mi>&#x2147;</mi><mi>x</mi></msup><mo>&#0183;</mo><msub><mi>c</mi><mn>1</mn></msub></mrow></mrow></mrow><mo>}</mo></mrow></mrow><mo>}</mo></mrow></math>");
-    // an ordinary function, as in Mathematica: Attributes[MathMLForm] is {Protected}
+    // an ordinary function: Attributes[MathMLForm] is {Protected}
     check("Attributes(MathMLForm)", //
         "{Protected}");
     check("MathMLForm(Unevaluated(1+1))", "<?xml version=\"1.0\"?>\n"
@@ -18845,7 +18841,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x,y,z,x,y,z,a,b,c}");
     check("PadLeft({a, b, c}, 8, {x, y, z})", //
         "{y,z,x,y,z,a,b,c}");
-    // the cycle is counted from the end of the list (Mathematica)
+    // the cycle is counted from the end of the list
     check("PadLeft({a, b, c}, 9, {x, y})", //
         "{y,x,y,x,y,x,a,b,c}");
     check("PadLeft({a, b, c}, 10, 42)", //
@@ -18901,7 +18897,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,b,c,x,y,z,x,y,z}");
     check("PadRight({a, b, c}, 8, {x, y, z})", //
         "{a,b,c,x,y,z,x,y}");
-    // the cycle is counted from the start of the list (Mathematica)
+    // the cycle is counted from the start of the list
     check("PadRight({a, b, c}, 9, {x, y})", //
         "{a,b,c,y,x,y,x,y,x}");
     check("PadRight({a, b, c}, 10, 42)", //
@@ -24083,9 +24079,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "b");
     check("Refine(Min(a, b), a <= b)", //
         "a");
-    // a==b determines neither Greater() nor GreaterEqual() in one direction only
+    // a==b is recorded as the equation a-b==0, which decides a>=b: Max(a,b) is b
     check("Refine(Max(a, b), a == b)", //
-        "Max(a,b)");
+        "b");
     check("Refine(Min(a, b), a == b)", //
         "Min(a,b)");
     // the mirrored difference is recorded as well, so both spellings answer the same question
@@ -24360,9 +24356,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(-1)^k*Csc(x)");
 
     check("Refine(Sin(Pi*(1/2+m)), Element(m, Integers))", //
-        "I^(2*m)");
+        "(-1)^m");
     check("Refine(Sin(Pi*(-1/2+m)), Element(m, Integers))", //
-        "I^(-2+2*m)");
+        "(-1)^(1+m)");
     check("Refine(Sin(Pi*(1/4+m)), Element(m, Integers))", //
         "Sin((1/4+m)*Pi)");
     check("Refine(Sin(Pi*(-1/4+m)), Element(m, Integers))", //
@@ -25705,7 +25701,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   /**
    * <code>Short</code> is a display wrapper: it stays in the expression, and <code>FullForm</code>
-   * and <code>InputForm</code> write it with the whole expression inside (Mathematica:
+   * and <code>InputForm</code> write it with the whole expression inside:
    * <code>FullForm[Short[Range[100], 2]]</code> is <code>Short[List[1, 2, ..., 100], 2]</code>).
    */
   @Test
@@ -25714,10 +25710,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Short");
     check("FullForm(Short(Range(3), 2))", //
         "Short(List(1, 2, 3), 2)");
-    // no page width: the whole expression, as ToString[Short[expr], OutputForm] is in Mathematica
+    // no page width: the whole expression, as ToString[Short[expr], OutputForm]
     check("ToString(Short(Range(20)))", //
         "{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}");
-    // two different expressions, as they are in Mathematica
+    // two different expressions
     check("Short(Expand((1 + x + y)^12), 1) === Short(Expand((1 + x + y)^12))", //
         "False");
     check("Short(x, 0)", //
@@ -25727,7 +25723,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   /** A printed result has a page width, so Short leaves out what does not fit, written <<k>>. */
   @Test
   public void testShortElidesAPrintedList() {
-    // twice as many from the front as from the back, in about four fifths of a line - Mathematica
+    // twice as many from the front as from the back, in about four fifths of a line - WMA
     // keeps 10 and 5, writing ", " between the elements (Short[Range[100]] at PageWidth 78)
     check("Short(Range(100))", //
         "{1,2,3,4,5,6,7,8,9,10,11,12,13,14,<<79>>,94,95,96,97,98,99,100}");
@@ -25743,7 +25739,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   /** <code>Short(expr, n)</code> shows about n lines. */
   @Test
   public void testShortTakesALineCount() {
-    // 28 and 14, as Mathematica keeps 21 and 10 of Short[Range[100], 2]
+    // 28 and 14, as WMA keeps 21 and 10 of Short[Range[100], 2]
     check("Short(Range(100), 2)", //
         "{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,<<58>>,\n"
             + "87,88,89,90,91,92,93,94,95,96,97,98,99,100}");
@@ -25781,6 +25777,82 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b,c,d},{a,c,d,b},{a,d,b,c},{b,a,d,c},{b,c,a,d},{b,d,c,a},{c,a,b,d},{c,b,d,a},{c,d,a,b},{d,a,c,b},{d,b,a,c},{d,c,b,a}}");
     check("Array(Signature({##})&,{3,3,3})", //
         "{{{0,0,0},{0,0,1},{0,-1,0}},{{0,0,-1},{0,0,0},{1,0,0}},{{0,1,0},{-1,0,0},{0,0,0}}}");
+  }
+
+  @Test
+  public void testRefineWMA() {
+    check("Refine(Sqrt(x^2*y^2), x > 0 && y > 0)", //
+        "x*y");
+    check("Refine((x^2)^r, x > 0)", //
+        "x^(2*r)");
+    check("(x^2)^r", //
+        "(x^2)^r");
+    check("Sqrt(2*Pi)", //
+        "Sqrt(2*Pi)");
+    check("Refine(Exp(2*Pi*I*k), Element(k, Integers))", //
+        "1");
+    check("Refine(Exp(Pi*I*k), Element(k, Integers))", //
+        "(-1)^k");
+    check("Refine(Sin((2*k + 1)*Pi/2), Element(k, Integers))", //
+        "(-1)^k");
+    check("Refine(Cos((2*k + 1)*Pi/2), Element(k, Integers))", //
+        "0");
+    // relations which the assumptions decide
+    check("Refine(x^3 > 0, x > 0)", //
+        "True");
+    check("Refine(a > c, a > b && b > c)", //
+        "True");
+    check("Refine(a >= c, a >= b && b >= c)", //
+        "True");
+    check("Refine(x^2 + 1 == 0, Element(x, Reals))", //
+        "False");
+    check("Refine(a == b, a == b)", //
+        "True");
+    check("Refine(Element(x, Reals), x^2 < 1)", //
+        "True");
+    check("Refine(x^r > 0, x > 0)", //
+        "x^r>0");
+  }
+
+  @Test
+  public void testSignAssumptions() {
+    // x/Abs(x) is not Sign(x) at x == 0: under x>=0 the sign stays undecided
+    check("Refine(Sign(x), x >= 0)", //
+        "Sign(x)");
+    check("Refine(Sign(x), x <= 0)", //
+        "Sign(x)");
+    check("Refine(Sign(x), Element(x, Reals))", //
+        "Sign(x)");
+    check("Refine(Sign(x), x > 0)", //
+        "1");
+    check("Refine(Sign(x - 1), x > 1)", //
+        "1");
+    check("Refine(Sign(3 - 2*x), x > 2)", //
+        "-1");
+    check("Refine(Sign(-x^2 - 1), Element(x, Reals))", //
+        "-1");
+    // -x is not negative for x>=0, it may be 0
+    check("Refine(UnitStep(-x), x >= 0)", //
+        "UnitStep(-x)");
+    check("Refine(UnitStep(x - 1), x >= 1)", //
+        "1");
+    check("Refine(Positive(x - 1), x > 1)", //
+        "True");
+    check("Refine(Positive(x - 1), x >= 1)", //
+        "Positive(-1+x)");
+    check("Refine(Abs(x - 1), x > 1)", //
+        "-1+x");
+    check("Refine(Sqrt(-x^2), Element(x, Reals))", //
+        "I*Abs(x)");
+    // an exact 0 whose numerical value is only rounding noise
+    check("Sign((Sqrt(2) + Sqrt(3))^2 - 5 - 2*Sqrt(6))", //
+        "Sign(-5-2*Sqrt(6)+(Sqrt(2)+Sqrt(3))^2)");
+    check("Sign(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", //
+        "Sign(Sqrt(2)+Sqrt(3)-Sqrt(5+2*Sqrt(6)))");
+    check("Sign(Pi - 355/113)", //
+        "-1");
+    check("Sign(E - 2718281828/1000000000)", //
+        "1");
   }
 
   @Test
@@ -26247,8 +26319,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{f(1,4),f(1,2,3)}");
     check("Sort(<|a -> 4, b -> 1, c -> 3, e :> 2, d -> 2|>)", //
         "<|b->1,e:>2,d->2,c->3,a->4|>");
+    // ties under a strict order come out reversed
     check("Sort(<|a -> 4, b -> 1, c -> 3, d :> 2, e -> 2|>, Greater)", //
-        "<|a->4,c->3,d:>2,e->2,b->1|>");
+        "<|a->4,c->3,e->2,d:>2,b->1|>");
     check("Sort({2.1,1.1-I,2.1-I,I*E^(I*x)})", //
         "{1.1+I*(-1.0),2.1,2.1+I*(-1.0),I*E^(I*x)}");
     check("Sort({2,1-I,2-I,I*E^(I*x)})", //
@@ -27261,7 +27334,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{0,1},{0,1,2}}");
     check("Block({i=7}, Table(x, {i, 2}, {x, {i, i+1}}))", //
         "{{1,2},{2,3}}");
-    // a bare count is evaluated before the iteration starts, as in Mathematica
+    // a bare count is evaluated before the iteration starts
     check("Table(x, {i, 2}, i)", //
         "Table(x,{i,2},i)");
     check("Block({i=7}, Reap(Do(Sow(x), {i, 2}, {x, 0, i}))[[2,1]])", //
@@ -27273,7 +27346,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Block({i=7}, Sum(f(x), {i, 2}, {x, 0, i}))", //
         "2*f(0)+2*f(1)+f(2)");
     // a bound which loses the outer variable when evaluated symbolically is not reduced
-    // symbolically (Mathematica: 10)
+    // symbolically
     check("Sum(x, {i, 3}, {x, 0, If(IntegerQ(i), i, 0)})", //
         "10");
     check("Sum(x, {i, 3}, {x, 0, Length(Range(i))})", //

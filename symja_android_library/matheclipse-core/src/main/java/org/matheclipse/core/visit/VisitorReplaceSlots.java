@@ -22,16 +22,18 @@ public class VisitorReplaceSlots extends VisitorExpr {
   final IAST astSlots;
 
   /**
-   * The number of the first integer <code>Slot</code> which could not be filled, or
-   * {@link F#NIL} if every slot was fillable. Recorded so that the caller can report it; the
-   * visitor itself never emits a message, because it is also used to fill templates where an
-   * unfilled slot is not an error.
+   * The number of the first integer <code>Slot</code> which could not be filled, or {@link F#NIL}
+   * if every slot was fillable. Recorded so that the caller can report it; the visitor itself never
+   * emits a message, because it is also used to fill templates where an unfilled slot is not an
+   * error.
    *
    * <p>
    * This makes the visitor stateful, so a fresh one is needed per substitution. All entry points in
    * {@link org.matheclipse.core.eval.util.PureFunctions} construct one.
    */
   private IExpr unfillableSlot = F.NIL;
+
+  private IExpr unfillableNamedSlot = F.NIL;
 
   public VisitorReplaceSlots(IAST ast) {
     super();
@@ -40,8 +42,9 @@ public class VisitorReplaceSlots extends VisitorExpr {
 
   /**
    * The number of the first integer <code>Slot</code> which could not be filled from the arguments,
-   * or {@link F#NIL} if there was none. Named and string slots are not reported: an absent key is a
-   * normal outcome for the <code>Dataset</code> and <code>Association</code> forms.
+   * or {@link F#NIL} if there was none. Named slots are reported by
+   * {@link #getUnfillableNamedSlot()}; for the <code>Dataset</code> form an absent key is a normal
+   * outcome.
    */
   public IExpr getUnfillableSlot() {
     return unfillableSlot;
@@ -67,9 +70,22 @@ public class VisitorReplaceSlots extends VisitorExpr {
       arg1 = EvalEngine.get().evaluate(arg1);
     }
     if (arg1.isAssociation()) {
-      return ((IAssociation) arg1).getValue(str);
+      // an absent key leaves the slot as it is, with the message Function::slota
+      IExpr value = ((IAssociation) arg1).getValue(str, () -> F.NIL);
+      if (value.isNIL() && unfillableNamedSlot.isNIL()) {
+        unfillableNamedSlot = str;
+      }
+      return value;
     }
     return F.NIL;
+  }
+
+  /**
+   * The name of the first named <code>Slot</code> which could not be filled from the association in
+   * the first argument, or {@link F#NIL} if there was none.
+   */
+  public IExpr getUnfillableNamedSlot() {
+    return unfillableNamedSlot;
   }
 
   /**

@@ -96,6 +96,6 @@ public class KeySortBy extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_2;
+    return ARGS_1_2_1;
   }
 }

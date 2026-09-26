@@ -6,6 +6,7 @@ import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DispatchExpr;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -264,6 +265,12 @@ public class VisitorReplaceAll extends VisitorExpr {
     IExpr replacement = fFunction.apply(assoc);
     if (replacement.isPresent()) {
       return replacement;
+    }
+    // the head is replaced too: <|a->1|> /. Association->List is {a->1}
+    IExpr head = fFunction.apply(S.Association);
+    if (head.isPresent() && head != S.Association) {
+      IASTMutable rules = assoc.normal(false).setAtCopy(0, head);
+      return visitAST(rules).orElse(rules);
     }
     int size = assoc.size();
     for (int i = fOffset; i < size; i++) {

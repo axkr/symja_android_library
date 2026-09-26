@@ -20,7 +20,6 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.apache.logging.log4j.Level;
 import org.apfloat.Apfloat;
@@ -100,6 +99,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 import edu.jas.kern.PreemptingException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.annotation.Nonnull;
 
 /**
@@ -1484,8 +1484,8 @@ public class EvalEngine implements Serializable {
   /**
    * A copy of this engine for evaluating on another thread <i>at the same time</i> as this engine,
    * as the kernels of <code>ParallelTable</code> do. {@link #copy()} is meant for a thread which
-   * takes the evaluation over and shares the mutable state of this engine; here everything which
-   * is not safe to use from two threads at once is replaced: the remember and <code>Once</code>
+   * takes the evaluation over and shares the mutable state of this engine; here everything which is
+   * not safe to use from two threads at once is replaced: the remember and <code>Once</code>
    * caches, the <code>Reap</code> list, the trace stack and the <code>Out</code> history.
    *
    * @return the copy
@@ -5030,9 +5030,9 @@ public class EvalEngine implements Serializable {
       IExpr arg = ast.get(i);
       if (arg.isAST()) {
         arg = preevalForwardBackward((IAST) arg);
-        if (arg.isPresent() && i > 2 && arg.isList() && org.matheclipse.core.eval.util.Iterator
-            .losesVariable(ast.get(i), arg, org.matheclipse.core.eval.util.Iterator
-                .iteratorVariables(ast, i))) {
+        if (arg.isPresent() && i > 2 && arg.isList()
+            && org.matheclipse.core.eval.util.Iterator.losesVariable(ast.get(i), arg,
+                org.matheclipse.core.eval.util.Iterator.iteratorVariables(ast, i))) {
           // the bounds of an inner iterator depend on an outer variable in a way which the
           // symbolic evaluation dropped, e.g. {x, 0, If(IntegerQ(i), i, 0)} became {x, 0, 0}
           continue;
@@ -5760,8 +5760,10 @@ public class EvalEngine implements Serializable {
             return invalidListable(ast, S.Association, "incmp",
                 F.List(refAssociation, association, ast));
           }
+          // the values are combined by position, so the keys have to agree in order too:
+          // <|a->1,b->2|>+<|b->10,a->20|>
           for (int j = 1; j < association.size(); j++) {
-            if (!refAssociation.isKey(association.getRule(j).first())) {
+            if (!refAssociation.getRule(j).first().equals(association.getRule(j).first())) {
               // incmp: The arguments `1` and `2` in `3` are incompatible.
               return invalidListable(ast, S.Association, "incmp",
                   F.List(refAssociation, association, ast));

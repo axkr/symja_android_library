@@ -93,6 +93,35 @@ public abstract class AbstractAssumptions implements IAssumptions {
    * @param ast a {@link S#Plus} expression
    * @return an {@link S#IntervalData} enclosure or {@link F#NIL}
    */
+  /**
+   * Decide the sign of <code>c + a*x</code> from an assumed bound on the variable <code>x</code>,
+   * e.g. <code>x-1</code> is positive for <code>x&gt;1</code>.
+   *
+   * @param positive test for a positive (non negative) instead of a negative (non positive) sum
+   * @param strict test for a positive or negative sum instead of a non negative or non positive one
+   */
+  private static boolean linearBound(IAST ast, boolean positive, boolean strict) {
+    if (ast.argSize() != 2 || !ast.arg1().isReal()) {
+      return false;
+    }
+    IReal c = (IReal) ast.arg1();
+    IExpr term = ast.arg2();
+    IReal a = F.C1;
+    IExpr x = term;
+    if (term.isTimes() && term.size() == 3 && term.first().isReal()) {
+      a = (IReal) term.first();
+      x = term.second();
+    }
+    if (!x.isVariable() || a.isZero()) {
+      return false;
+    }
+    IExpr bound = c.negate().divide(a);
+    if (positive == a.isPositive()) {
+      return strict ? assumeGreaterThan(x, bound) : assumeGreaterEqual(x, bound);
+    }
+    return strict ? assumeLessThan(x, bound) : assumeLessEqual(x, bound);
+  }
+
   private static IAST assumedRange(IAST ast) {
     EvalEngine engine = EvalEngine.get();
     if (engine.getAssumptions() == null //
@@ -873,14 +902,19 @@ public abstract class AbstractAssumptions implements IAssumptions {
           if (summandsDecided && strict) {
             return true;
           }
+          if (linearBound(ast, false, true)) {
+            return true;
+          }
           IAST negativeRange = assumedRange(ast);
           return negativeRange.isPresent() && IntervalDataSym.isNegativeResult(negativeRange);
         }
         if (ast.isTimes()) {
+          // a product is negative if no factor can be 0 and an odd number of them is negative: a
+          // factor which is only known to be non-negative, like x for x>=0, may make it 0
           boolean flag = false;
           for (int i = 1; i < size; i++) {
             IExpr x = ast.get(i);
-            if (x.isNonNegativeResult() || assumeNonNegative(x)) {
+            if (x.isPositiveResult() || assumePositive(x)) {
             } else {
               if (x.isNegativeResult()) {
               } else if (assumeNegative(x)) {
@@ -958,6 +992,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
         }
         // e.g. a^2-a*b+b^2 is non negative for all real a and b
         if (quadraticFormSign(ast) >= QuadraticForm.POSITIVE_SEMIDEFINITE) {
+          return true;
+        }
+        if (linearBound(ast, true, false)) {
           return true;
         }
         IAST nonNegativeRange = assumedRange(ast);
@@ -1044,6 +1081,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
         break;
       }
       if (summandsDecided) {
+        return true;
+      }
+      if (linearBound(ast, false, false)) {
         return true;
       }
       IAST range = assumedRange(ast);
@@ -1138,6 +1178,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
         if (quadraticFormSign(ast) == QuadraticForm.POSITIVE_DEFINITE) {
           return true;
         }
+        if (linearBound(ast, true, true)) {
+          return true;
+        }
         IAST positiveRange = assumedRange(ast);
         return positiveRange.isPresent() && IntervalDataSym.isPositiveResult(positiveRange);
       }
@@ -1178,6 +1221,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
           if (exponent.isRealResult()) {
             return true;
           }
+        }
+        // a positive base to a real power, e.g. x^3 for x>0
+        if ((base.isPositiveResult() || assumePositive(base)) && exponent.isRealResult()) {
+          return true;
         }
         return false;
       }

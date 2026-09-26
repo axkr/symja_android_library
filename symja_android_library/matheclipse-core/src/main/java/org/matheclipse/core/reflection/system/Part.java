@@ -800,10 +800,11 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             } else {
               return F.NIL;
             }
-          } else if (listArg.isKey()) {
-            result.appendRule(assoc.getRule(listArg.first()));
-          } else if (listArg.isString()) {
-            result.appendRule(assoc.getRule(listArg));
+          } else if (listArg.isKey() || listArg.isString()) {
+            // an absent key gives key -> Missing("KeyAbsent", key)
+            final IExpr key = listArg.isKey() ? listArg.first() : listArg;
+            final IAST rule = assoc.getRule(key);
+            result.appendRule(rule.isPresent() ? rule : F.Rule(key, F.Missing(S.KeyAbsent, key)));
           } else if (listArg.isNumber()) {
             // The expression `1` cannot be used as a part specification.
             return Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);

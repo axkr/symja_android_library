@@ -279,6 +279,10 @@ public class AssociationFunctions {
             // arbitrary head like `f(a->1)` isn't a valid element of an association
             if (arg.isRuleAST() || arg.isList() || arg.isAssociation()) {
               assoc.appendRules((IAST) arg);
+            } else if (arg.isAST(S.Splice) && arg.first().isList()
+                && (arg.argSize() == 1 || arg.second() == S.Association)) {
+              // <|a->1, Splice({b->2,c->3})|> is <|a->1,b->2,c->3|>
+              assoc.appendRules((IAST) arg.first());
             } else {
               return evaled ? assocList : F.NIL;
             }
@@ -1582,6 +1586,9 @@ public class AssociationFunctions {
       for (int i = 1; i < size; i++) {
         final IExpr rule = expr.getRule(list.get(i));
         if (rule.isPresent()) {
+          // a repeated key moves to the end, as in Append: KeyTake(<|a->1,b->2,c->3|>,{c,a,c}) is
+          // <|a->1,c->3|>
+          ((IAssociation) resultAssoc).removeRule(rule.first());
           resultAssoc.appendRule(rule);
         }
       }
