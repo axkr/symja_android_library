@@ -1212,6 +1212,15 @@ public class S {
       S.initFinalSymbol("ArithmeticGeometricMean", ID.ArithmeticGeometricMean);
 
   /**
+   * ARMAProcess(x) - TODO describe `ARMAProcess`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ARMAProcess.md">ARMAProcess
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ARMAProcess = S.initFinalSymbol("ARMAProcess", ID.ARMAProcess);
+
+  /**
    * Around(x) - TODO describe `Around`.
    * 
    * @see <a href=
@@ -13118,6 +13127,15 @@ public class S {
   public final static IBuiltInSymbol LightYellow = S.initFinalSymbol("LightYellow", ID.LightYellow);
 
   /**
+   * Likelihood(x) - TODO describe `Likelihood`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Likelihood.md">Likelihood
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Likelihood = S.initFinalSymbol("Likelihood", ID.Likelihood);
+
+  /**
    * Limit(expr, x->x0) - gives the limit of `expr` as `x` approaches `x0`
    * 
    * @see <a href=
@@ -13708,6 +13726,16 @@ public class S {
    */
   public final static IBuiltInSymbol LogisticSigmoid =
       S.initFinalSymbol("LogisticSigmoid", ID.LogisticSigmoid);
+
+  /**
+   * LogLikelihood(x) - TODO describe `LogLikelihood`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LogLikelihood.md">LogLikelihood
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LogLikelihood =
+      S.initFinalSymbol("LogLikelihood", ID.LogLikelihood);
 
   public final static IBuiltInSymbol LogLinearPlot =
       S.initFinalSymbol("LogLinearPlot", ID.LogLinearPlot);
@@ -16888,6 +16916,16 @@ public class S {
       S.initFinalSymbol("OrderlessPatternSequence", ID.OrderlessPatternSequence);
 
   /**
+   * OrnsteinUhlenbeckProcess(x) - TODO describe `OrnsteinUhlenbeckProcess`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OrnsteinUhlenbeckProcess.md">OrnsteinUhlenbeckProcess
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol OrnsteinUhlenbeckProcess =
+      S.initFinalSymbol("OrnsteinUhlenbeckProcess", ID.OrnsteinUhlenbeckProcess);
+
+  /**
    * Orthogonalize(matrix) - returns a basis for the orthogonalized set of vectors defined by
    * `matrix`.
    * 
@@ -18856,6 +18894,16 @@ public class S {
    */
   public final static IBuiltInSymbol RandomComplex =
       S.initFinalSymbol("RandomComplex", ID.RandomComplex);
+
+  /**
+   * RandomFunction(x) - TODO describe `RandomFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomFunction.md">RandomFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RandomFunction =
+      S.initFinalSymbol("RandomFunction", ID.RandomFunction);
 
   /**
    * RandomGraph({number-of-vertices,number-of-edges}) - create a random graph with
@@ -22808,6 +22856,16 @@ public class S {
   public final static IBuiltInSymbol TemplateSlot =
       S.initFinalSymbol("TemplateSlot", ID.TemplateSlot);
 
+  /**
+   * TemporalData(x) - TODO describe `TemporalData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TemporalData.md">TemporalData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TemporalData =
+      S.initFinalSymbol("TemporalData", ID.TemporalData);
+
   public final static IBuiltInSymbol TensorContract =
       S.initFinalSymbol("TensorContract", ID.TensorContract);
 
@@ -24940,6 +24998,16 @@ public class S {
    */
   public final static IBuiltInSymbol WienerFilter =
       S.initFinalSymbol("WienerFilter", ID.WienerFilter);
+
+  /**
+   * WienerProcess(x) - TODO describe `WienerProcess`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WienerProcess.md">WienerProcess
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WienerProcess =
+      S.initFinalSymbol("WienerProcess", ID.WienerProcess);
 
   /**
    * WignerD({j,m1,m2},a,b,c) - the Wigner D-function returns the matrix element of a rotation
