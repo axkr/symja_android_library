@@ -460,6 +460,64 @@ public class GraphicsOptions {
         F.Rule(S.Method, F.list(F.Rule(F.stringx("InterpolationOrder"), F.C1))));
   }
 
+  /**
+   * The {@code FrameTicks} of a matrix drawn as cells over {@code [0, cols] x [0, rows]} with row 1
+   * at the top: each tick sits at the centre of its cell and is labelled with the integer index.
+   * All four edges are labelled, rows on the left and right, columns on the bottom and top.
+   *
+   * <p>
+   * The reference rendering labels every index up to 10, e.g. {@code MatrixPlot(PauliMatrix(3))}
+   * has the row ticks {@code {{1.5, 1}, {0.5, 2}}} and the column ticks
+   * {@code {{0.5, 1}, {1.5, 2}}}.
+   */
+  public static IAST matrixIndexFrameTicks(int rows, int cols) {
+    IASTAppendable rowTicks = F.ListAlloc();
+    for (int i : matrixIndexTicks(rows)) {
+      rowTicks.append(F.List(F.num(rows - i + 0.5), F.ZZ(i)));
+    }
+    IASTAppendable colTicks = F.ListAlloc();
+    for (int j : matrixIndexTicks(cols)) {
+      colTicks.append(F.List(F.num(j - 0.5), F.ZZ(j)));
+    }
+    // FrameTicks -> {{left, right}, {bottom, top}}
+    return F.List(F.List(rowTicks, rowTicks), F.List(colTicks, colTicks));
+  }
+
+  /**
+   * The indices of <code>1..n</code> that get a tick: all of them up to 10, beyond that 1 and the
+   * multiples of a round step (1, 2 or 5 times a power of ten) that leaves at most six more.
+   */
+  private static int[] matrixIndexTicks(int n) {
+    if (n <= 0) {
+      return new int[0];
+    }
+    int step = 1;
+    if (n > 10) {
+      for (int magnitude = 1;; magnitude *= 10) {
+        if (n / magnitude <= 6) {
+          step = magnitude;
+          break;
+        }
+        if (n / (2 * magnitude) <= 6) {
+          step = 2 * magnitude;
+          break;
+        }
+        if (n / (5 * magnitude) <= 6) {
+          step = 5 * magnitude;
+          break;
+        }
+      }
+    }
+    java.util.List<Integer> ticks = new java.util.ArrayList<>();
+    ticks.add(1);
+    for (int i = step; i <= n; i += step) {
+      if (i > 1) {
+        ticks.add(i);
+      }
+    }
+    return ticks.stream().mapToInt(Integer::intValue).toArray();
+  }
+
   /** Fully transparent, used for cells a raster has no value for. */
   private static final IAST TRANSPARENT_CELL = F.List(F.CD0, F.CD0, F.CD0, F.CD0);
 
@@ -941,8 +999,7 @@ public class GraphicsOptions {
 
   /**
    * A sector of an annulus as a polygon: along the arc at <code>rOuter</code> and back along
-   * <code>rInner</code>. Mathematica draws the sectors of a ring that way too, since a
-   * <code>Disk</code> has no hole.
+   * <code>rInner</code>.
    */
   public static IAST annulusSector(double cx, double cy, double rInner, double rOuter, double a1,
       double a2) {

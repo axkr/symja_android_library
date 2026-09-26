@@ -1,7 +1,5 @@
 package org.matheclipse.core.builtin.graphics;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -190,40 +188,19 @@ public class MatrixPlot extends ListPlot {
       graphicsOptions.setAspectRatio(F.num((double) rows / (double) cols));
     }
 
-    // Generate FrameTicks to match MatrixPlot style
-    // Top: Columns 1..Cols
-    // Left: Rows 1..Rows (Inverted labels)
-
-    // Top Ticks
-    IASTAppendable topTicks = F.ListAlloc();
-    List<Double> cTicks = getNiceTicks(0, cols, 10);
-    for (double v : cTicks) {
-      if (v > 0 && v <= cols) {
-        topTicks.append(F.List(F.num(v), F.num(v))); // {val, label}
-      }
+    // one tick per cell index at the centre of its cell, row 1 at the top; explicit FrameTicks of
+    // the caller's own are left alone
+    IExpr frameTicksOpt = GraphicsOptions.optionValue(originalAST, S.FrameTicks, S.Automatic);
+    if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
+      // through addOption, not setFrameTicks: the field is not one of the values getListOfRules
+      // emits, so setting it alone leaves the registered default of None in the output
+      graphicsOptions
+          .addOption(F.Rule(S.FrameTicks, GraphicsOptions.matrixIndexFrameTicks(rows, cols)));
     }
-
-    // Left Ticks (Inverted: Row 1 is at top y=rows-0.5)
-    IASTAppendable leftTicks = F.ListAlloc();
-    List<Double> rTicks = getNiceTicks(0, rows, 10);
-    for (double v : rTicks) {
-      if (v > 0 && v <= rows) {
-        // Map index v to Y coordinate: rows - v + 0.5 (center of cell)
-        leftTicks.append(F.List(F.num(rows - v + 0.5), F.num(v)));
-      }
-    }
-
-    // FrameTicks -> {{Left, Right}, {Bottom, Top}}. The reference rendering labels all four edges,
-    // so the row ticks go on both sides and the column ticks on both top and bottom.
-    IExpr frameTicks = F.List(F.List(leftTicks, leftTicks), F.List(topTicks, topTicks));
-    // through addOption, not setFrameTicks: the field is not one of the values getListOfRules
-    // emits, so setting it alone leaves the registered default of None in the output
-    graphicsOptions.addOption(F.Rule(S.FrameTicks, frameTicks));
 
     return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
   }
 
-  /** Every finite entry of the matrix, in ascending order. */
   /** The smallest finite entry, or 0 when there is none. */
   private static double minValue(double[][] data) {
     double min = Double.POSITIVE_INFINITY;
@@ -250,6 +227,7 @@ public class MatrixPlot extends ListPlot {
     return Double.isFinite(max) ? max : 1.0;
   }
 
+  /** Every finite entry of the matrix, in ascending order. */
   private static double[] sortedFiniteValues(double[][] data) {
     int count = 0;
     for (double[] row : data) {
@@ -330,26 +308,6 @@ public class MatrixPlot extends ListPlot {
       }
     }
     return sortedValues.length - low;
-  }
-
-  private List<Double> getNiceTicks(double min, double max, int maxTicks) {
-    List<Double> ticks = new ArrayList<>();
-    double range = max - min;
-    if (range <= 0)
-      return ticks;
-    double step = Math.pow(10, Math.floor(Math.log10(range / maxTicks)));
-    if (2.0 * range / step < maxTicks)
-      step /= 2;
-    if (2.0 * range / step < maxTicks)
-      step /= 2;
-    else if (range / step > maxTicks * 2)
-      step *= 2;
-
-    double start = Math.ceil(min / step) * step;
-    for (double t = start; t <= max; t += step) {
-      ticks.add(t);
-    }
-    return ticks;
   }
 
   @Override
