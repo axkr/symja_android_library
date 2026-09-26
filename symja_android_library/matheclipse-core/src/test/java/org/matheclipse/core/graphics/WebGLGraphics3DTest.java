@@ -101,8 +101,8 @@ public class WebGLGraphics3DTest {
     JsonNode open =
         element(scene("Graphics3D[{CapForm[None], Cylinder[{{0,0,0},{0,0,1}},1]}]"), "Cylinder");
     assertTrue(open.get("openEnded").asBoolean());
-    assertTrue(element(scene("Graphics3D[{CapForm[None], Cone[]}]"), "Cone").get("openEnded")
-        .asBoolean());
+    assertTrue(
+        element(scene("Graphics3D[{CapForm[None], Cone[]}]"), "Cone").get("openEnded").asBoolean());
     // the static renderer leaves the discs off as well
     String closedSvg = org.matheclipse.core.graphics.SVGGraphics3D
         .toSVG((IAST) evaluator.eval("Graphics3D[{Cylinder[{{0,0,0},{0,0,1}},1]}]"));
@@ -145,40 +145,43 @@ public class WebGLGraphics3DTest {
         "Plot3D[x*y,{x,-1,1},{y,-1,1}, PlotPoints->3, MaxRecursion->0, MeshFunctions->{#3&}, "
             + "Mesh->{{0.1}}]"}) {
       evaluator.eval("meshPlot = " + plot);
-      assertEquals("0",
-          evaluator.eval("Length[Cases[meshPlot /. _GraphicsComplex -> Null, _Line, Infinity]]")
-              .toString(),
+      assertEquals("0", evaluator
+          .eval("Length[Cases[meshPlot /. _GraphicsComplex -> Null, _Line, Infinity]]").toString(),
           plot + ": no line outside the complex");
       assertEquals("1",
-          evaluator.eval("Length[Cases[meshPlot, {RGBColor[0,0,0], "
-              + "Line[{{_Integer, _Integer} ..}, VertexColors -> None]}, Infinity]]").toString(),
+          evaluator
+              .eval("Length[Cases[meshPlot, {RGBColor[0,0,0], "
+                  + "Line[{{_Integer, _Integer} ..}, VertexColors -> None]}, Infinity]]")
+              .toString(),
           plot + ": one indexed group of mesh segments");
       assertEquals("0",
-          evaluator.eval("Length[Cases[meshPlot, Line[{_Integer, _Integer, _Integer, ___}], "
-              + "Infinity]]").toString(),
+          evaluator.eval(
+              "Length[Cases[meshPlot, Line[{_Integer, _Integer, _Integer, ___}], " + "Infinity]]")
+              .toString(),
           plot + ": no line along the sampling grid");
     }
-    assertEquals("True", evaluator.eval("With[{gc = First[Cases[ParametricPlot3D[{u,v,u},"
-        + "{u,-1,1},{v,-1,1}, PlotPoints->3, MeshFunctions->(#1&), Mesh->{{0.5}}, "
-        + "MeshShading->{Red,Blue}], _GraphicsComplex, Infinity]]}, "
-        + "Length[gc[[1]]] == Length[VertexColors /. List @@ Rest[Rest[gc]]] && "
-        + "FreeQ[VertexColors /. List @@ Rest[Rest[gc]], Automatic]]").toString());
+    assertEquals("True",
+        evaluator.eval("With[{gc = First[Cases[ParametricPlot3D[{u,v,u},"
+            + "{u,-1,1},{v,-1,1}, PlotPoints->3, MeshFunctions->(#1&), Mesh->{{0.5}}, "
+            + "MeshShading->{Red,Blue}], _GraphicsComplex, Infinity]]}, "
+            + "Length[gc[[1]]] == Length[VertexColors /. List @@ Rest[Rest[gc]]] && "
+            + "FreeQ[VertexColors /. List @@ Rest[Rest[gc]], Automatic]]").toString());
   }
 
   /**
    * A line inside a {@code GraphicsComplex} that draws a surface lies on it, and is marked so that
-   * a renderer lets it win against the faces under it. A line on its own, or in a complex of
-   * lines only, is not.
+   * a renderer lets it win against the faces under it. A line on its own, or in a complex of lines
+   * only, is not.
    */
   @Test
   public void linesOnASurfaceAreMarked() {
-    JsonNode onPlot = element(scene("Plot3D[x+y, {x,0,1}, {y,0,1}, PlotPoints->3, "
-        + "MaxRecursion->0]"), "Line");
+    JsonNode onPlot = element(
+        scene("Plot3D[x+y, {x,0,1}, {y,0,1}, PlotPoints->3, " + "MaxRecursion->0]"), "Line");
     assertTrue(onPlot.path("onSurface").asBoolean(false), "a plot's mesh lies on its surface");
     JsonNode bare = element(scene("Graphics3D[Line[{{0,0,0},{1,1,1}}]]"), "Line");
     assertFalse(bare.has("onSurface"), "a line in space is not on a surface");
-    JsonNode linesOnly = element(scene("Graphics3D[GraphicsComplex[{{0,0,0},{1,1,1}}, "
-        + "Line[{1,2}]]]"), "Line");
+    JsonNode linesOnly =
+        element(scene("Graphics3D[GraphicsComplex[{{0,0,0},{1,1,1}}, " + "Line[{1,2}]]]"), "Line");
     assertFalse(linesOnly.has("onSurface"), "a complex of lines has no surface to lie on");
   }
 
@@ -189,12 +192,12 @@ public class WebGLGraphics3DTest {
    */
   @Test
   public void aTubeAlongAClosedPathIsClosed() {
-    JsonNode loop = element(scene("Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,0}}, 0.1]]"),
-        "Tube");
+    JsonNode loop =
+        element(scene("Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,0}}, 0.1]]"), "Tube");
     assertTrue(loop.path("closed").asBoolean(false), "a path back to its start is one closed tube");
     assertEquals(4 * 3, loop.get("polylines").get(0).size(), "the repeated end point is dropped");
-    JsonNode open = element(scene("Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0}}, 0.1]]"),
-        "Tube");
+    JsonNode open =
+        element(scene("Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0}}, 0.1]]"), "Tube");
     assertFalse(open.has("closed"), "a path that does not return stays open");
   }
 
@@ -207,13 +210,14 @@ public class WebGLGraphics3DTest {
     for (String plot : new String[] {"Plot3D[x*y,{x,0,1},{y,0,1},PlotPoints->3]",
         "ParametricPlot3D[{u,v,u},{u,0,1},{v,0,1},PlotPoints->3]",
         "RegionPlot3D[x^2 + z^2 < 1, {x, 0, 1}, {y, 0, 0.001}, {z, -1, 1}]"}) {
-      assertEquals("GraphicsComplex", evaluator.eval("Head[First[" + plot + "]]").toString(),
-          plot);
+      assertEquals("GraphicsComplex", evaluator.eval("Head[First[" + plot + "]]").toString(), plot);
     }
-    assertEquals("{GraphicsComplex,GraphicsComplex}", evaluator.eval(
-        "Head /@ First[ParametricPlot3D[{{u,v,u},{u,v,-u}},{u,0,1},{v,0,1},PlotPoints->3]]")
-        .toString());
-    // Woxi's own example: the cap of a cylinder, moved and turned, beside itself
+    assertEquals("{GraphicsComplex,GraphicsComplex}",
+        evaluator
+            .eval(
+                "Head /@ First[ParametricPlot3D[{{u,v,u},{u,v,-u}},{u,0,1},{v,0,1},PlotPoints->3]]")
+            .toString());
+    // The cap of a cylinder, moved and turned, beside itself
     JsonNode scene = scene("capW = First[RegionPlot3D[x^2 + z^2 < 1, {x, 0, 1}, {y, 0, 0.001}, "
         + "{z, -1, 1}]]; Graphics3D[{Rotate[Translate[capW, {2, 0, 0}], Pi/2, {0, 0, 1}], capW}]");
     assertEquals(2, count(scene, "Polygon"));
@@ -384,8 +388,8 @@ public class WebGLGraphics3DTest {
   /** A radius list that does not match the centres one-for-one draws unit spheres, as in WMA. */
   @Test
   public void sphereWithAMismatchedRadiusListIsUnitSpheres() {
-    JsonNode sphere = element(
-        scene("Graphics3D[Sphere[{{1,0,0},{-1,0,0},{0,1,0}},{0.25,0.75}]]"), "Sphere");
+    JsonNode sphere =
+        element(scene("Graphics3D[Sphere[{{1,0,0},{-1,0,0},{0,1,0}},{0.25,0.75}]]"), "Sphere");
     assertEquals(9, sphere.get("centers").size());
     assertEquals(1.0, sphere.get("radius").asDouble(), 1e-9);
   }
@@ -816,8 +820,8 @@ public class WebGLGraphics3DTest {
    */
   @Test
   public void surfacesWithTheirOwnLightsAreLitNeutrally() {
-    JsonNode lights = scene(
-        "ContourPlot3D[x^2+y^2+z^2,{x,-1,1},{y,-1,1},{z,-1,1},Contours->{1},PlotPoints->8]")
+    JsonNode lights =
+        scene("ContourPlot3D[x^2+y^2+z^2,{x,-1,1},{y,-1,1},{z,-1,1},Contours->{1},PlotPoints->8]")
             .get("lights");
     assertEquals(4, lights.size(), "the neutral set, not the coloured automatic one");
     assertEquals(rgb(0.35, 0.35, 0.35), lights.get(0).get("color").asInt());
@@ -878,7 +882,8 @@ public class WebGLGraphics3DTest {
   /** {@code Opacity} tints the face; the outline keeps its own transparency. */
   @Test
   public void opacityDoesNotReachTheOutline() {
-    JsonNode faded = element(scene("Graphics3D[{Opacity[0.3],EdgeForm[Black],Cuboid[]}]"), "Cuboid");
+    JsonNode faded =
+        element(scene("Graphics3D[{Opacity[0.3],EdgeForm[Black],Cuboid[]}]"), "Cuboid");
     assertEquals(0.3, faded.get("opacity").asDouble(), 1e-9);
     assertEquals(1.0, faded.get("edgeOpacity").asDouble(), 1e-9, "the outline stays opaque");
 
@@ -893,7 +898,9 @@ public class WebGLGraphics3DTest {
     }
   }
 
-  /** A plotted surface carries an explicit {@code EdgeForm[None]}, so the default cannot reach it. */
+  /**
+   * A plotted surface carries an explicit {@code EdgeForm[None]}, so the default cannot reach it.
+   */
   @Test
   public void aPlottedSurfaceKeepsItsCleanSkin() {
     for (String input : new String[] {"Plot3D[Sin[x y],{x,-1,1},{y,-1,1},PlotPoints->4]",

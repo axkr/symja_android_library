@@ -19,8 +19,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>C(1)&isin;Integers &amp;&amp; C(1)&gt;=2 &amp;&amp; x==4+6*C(1)</code>.
  *
  * <p>
- * Port of the residue class emitter of Woxi (<code>reduce_backend/emit.rs</code>, commit
- * <code>eee6117f5</code>). A bound on the variable becomes a bound on the parameter, a denied
+ * Residue class emitter. A bound on the variable becomes a bound on the parameter, a denied
  * congruence splits into the classes it leaves, every congruent variable gets its own parameter,
  * and a branch which pins a variable between two bounds reports its values.
  */
@@ -55,8 +54,8 @@ public final class ResidueClasses {
    *
    * @param formula the normalized formula
    * @param targets the variables of the reduction, in the order they were asked for
-   * @return the parametrized form, or {@link F#NIL} if no branch contains a residue class which
-   *         can be written this way
+   * @return the parametrized form, or {@link F#NIL} if no branch contains a residue class which can
+   *         be written this way
    */
   public static IExpr form(Formula formula, List<Variable> targets) {
     List<List<Atom>> branches = dnf(formula, new int[] {MAX_CLASSES});
@@ -173,9 +172,9 @@ public final class ResidueClasses {
             || !coefficient.isInteger()) {
           return null;
         }
-        BigInteger[] solved = IntegerMath.solveLinearCongruence(
-            coefficient.numerator().toBigNumerator(),
-            term.constant().numerator().toBigNumerator().negate(), atom.modulus());
+        BigInteger[] solved =
+            IntegerMath.solveLinearCongruence(coefficient.numerator().toBigNumerator(),
+                term.constant().numerator().toBigNumerator().negate(), atom.modulus());
         if (atom.isNegated()) {
           if (solved != null) {
             forbidden.add(solved);
@@ -289,10 +288,10 @@ public final class ResidueClasses {
         return null;
       }
       IRational coefficient = term.coefficient(target);
-      // coefficient*x + constant REL 0  <=>  x REL' boundary
+      // coefficient*x + constant REL 0 <=> x REL' boundary
       IRational boundary = term.constant().negate().divideBy(coefficient);
-      Relation relation = coefficient.complexSign() < 0 ? atom.relation().reversed()
-          : atom.relation();
+      Relation relation =
+          coefficient.complexSign() < 0 ? atom.relation().reversed() : atom.relation();
       BigInteger floor = IntegerMath.floorDiv(boundary.numerator().toBigNumerator(),
           boundary.denominator().toBigNumerator());
       BigInteger ceil = IntegerMath.ceilDiv(boundary.numerator().toBigNumerator(),
@@ -423,8 +422,8 @@ public final class ResidueClasses {
       ISymbol symbol = F.Dummy("C$" + (slot + 1));
       Variable parameter = Variable.free(symbol);
       parameters.add(parameter);
-      replacements.add(AffineTerm.variable(parameter)
-          .scale(F.ZZ(classes.get(slot).modulus)).add(AffineTerm.integer(choice.get(slot))));
+      replacements.add(AffineTerm.variable(parameter).scale(F.ZZ(classes.get(slot).modulus))
+          .add(AffineTerm.integer(choice.get(slot))));
       renames.append(F.Rule(symbol, F.C(slot + 1)));
     }
     // the parameters lead the isolation order, so a relation which survives the substitution is
@@ -477,8 +476,8 @@ public final class ResidueClasses {
     conjuncts.append(F.Element(members.argSize() == 1 ? members.arg1() : members, S.Integers));
     conjuncts.appendArgs(parameterBounds);
     for (int slot = 0; slot < classes.size(); slot++) {
-      conjuncts.append(F.Equal(classes.get(slot).target.symbol(), classValue(choice.get(slot),
-          classes.get(slot).modulus, parameters.get(slot).symbol())));
+      conjuncts.append(F.Equal(classes.get(slot).target.symbol(),
+          classValue(choice.get(slot), classes.get(slot).modulus, parameters.get(slot).symbol())));
     }
     conjuncts.appendArgs(remaining);
     return (IAST) F.subst(conjuncts, renames);

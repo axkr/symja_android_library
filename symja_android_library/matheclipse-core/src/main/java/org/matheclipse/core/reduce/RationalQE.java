@@ -11,16 +11,14 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Exact reduction of linear formulas over an ordered field - the {@link S#Reals} or the
  * {@link S#Rationals} - by Fourier-Motzkin elimination.
  *
  * <p>
- * Port of the dense linear quantifier elimination of Woxi
- * (<code>woxi-reduce/src/rational_qe.rs</code>), plus a cylindrical emitter: every variable is
- * given by bounds in the variables before it, the way Mathematica writes such a solution set, e.g.
+ * Dense linear quantifier elimination, plus a cylindrical emitter: every variable is given by
+ * bounds in the variables before it, the way Mathematica writes such a solution set, e.g.
  * <code>x+y&lt;1 &amp;&amp; x&gt;0 &amp;&amp; y&gt;0</code> is
  * <code>x&gt;0 &amp;&amp; x&lt;1 &amp;&amp; y&gt;0 &amp;&amp; y&lt;1-x</code>.
  *
@@ -332,9 +330,9 @@ public final class RationalQE {
     }
     for (Bound low : lower) {
       for (Bound high : upper) {
-        independent.add(Formula.atom(Atom.relation(
-            low.strict || high.strict ? Relation.LESS : Relation.LESS_EQUAL,
-            low.value.subtract(high.value))));
+        independent.add(Formula
+            .atom(Atom.relation(low.strict || high.strict ? Relation.LESS : Relation.LESS_EQUAL,
+                low.value.subtract(high.value))));
       }
     }
     return Formula.and(independent).normalized();
@@ -479,8 +477,8 @@ public final class RationalQE {
   }
 
   /**
-   * Keep only the tightest of the numeric lower and of the numeric upper bounds of the variable;
-   * a bound which depends on other variables is kept.
+   * Keep only the tightest of the numeric lower and of the numeric upper bounds of the variable; a
+   * bound which depends on other variables is kept.
    */
   private static List<Atom> dropDominatedBounds(List<Atom> level, Variable variable) {
     Atom lowest = null;

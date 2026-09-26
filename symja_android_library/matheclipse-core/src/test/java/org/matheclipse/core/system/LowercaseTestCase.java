@@ -9600,7 +9600,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMaximumSearchSpecifications() {
-    // https://github.com/ad-si/Woxi/pull/830
     check("FindMaximum(-((x - 1)^2 + (y - 2)^2), {x, 0}, {y, 0}) // Chop", //
         "{0,{x->1.0,y->2.0}}");
     check("myFindMaxObjective(k_?NumericQ) := -((k - 4)^2); " //
@@ -9626,7 +9625,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMinimumSearchSpecifications() {
-    // https://github.com/ad-si/Woxi/pull/830
     check("FindMinimum((x - 1)^2 + (y - 2)^2, {x, 0}, {y, 0}) // Chop", //
         "{0,{x->1.0,y->2.0}}");
     check("FindMinimum((x - 1)^2 + (y - 2)^2, {x, 0}, {y, 0}, MaxIterations -> 50) // Chop", //
@@ -11540,7 +11538,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(a^(1/2)*b^(1/2), a>0&&b>0)", //
         "Sqrt(a*b)");
     // sympy gh-7383
-    check("Integrate(D(Erf(a*Sqrt(x^2+z^2)/Sqrt(2))/Sqrt(x^2+z^2), {z,2}) /. x->Sqrt(R^2-z^2), {z,-R,R}, Assumptions->R>0&&a>0)", //
+    check(
+        "Integrate(D(Erf(a*Sqrt(x^2+z^2)/Sqrt(2))/Sqrt(x^2+z^2), {z,2}) /. x->Sqrt(R^2-z^2), {z,-R,R}, Assumptions->R>0&&a>0)", //
         "-2/3*(Sqrt(2)*a^3*R)/(E^(1/2*a^2*R^2)*Sqrt(Pi))");
   }
 
@@ -27098,7 +27097,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTableDependentIteratorBounds() {
     // an inner iterator is created only after the outer ones assigned their variables; its
-    // bounds may use them in any way (Woxi #899)
+    // bounds may use them in any way
     check("nl={2,1,4}; Table(x, {dn1, 1, Length(nl)}, {x, 0, nl[[dn1]] - 1})", //
         "{{0,1},{0},{0,1,2,3}}");
     check("nl={2,1,4}; Table(x, {dn1, 1, Length(nl)}, {x, 0, (nl[[#]]&) @ dn1 - 1})", //
