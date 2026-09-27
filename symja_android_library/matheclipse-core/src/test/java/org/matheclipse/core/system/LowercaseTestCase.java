@@ -17256,9 +17256,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\"Sow\",\"Sum\",\"Tan\",\"Top\",\"URL\",\"Vee\",\"Xor\"}");
 
     check("Names(\"Int*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,IntegerString,Integrate,Interleaving,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,Interpretation,InterpretationBox,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,IntegerReverse,Integers,IntegerString,Integrate,Interleaving,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,Interpretation,InterpretationBox,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMarkers,IntervalMarkersStyle,IntervalMemberQ,IntervalSlider,IntervalUnion}");
     check("Names(\"Integer*\" )", //
-        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,IntegerString}");
+        "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,IntegerReverse,Integers,IntegerString}");
     check("Names(\"IntegerPart\" )", //
         "{IntegerPart}");
   }
