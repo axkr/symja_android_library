@@ -3,8 +3,8 @@ package org.matheclipse.core.builtin.graphics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -17,10 +17,10 @@ import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -48,11 +48,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * otherwise.
    *
    * <p>
-   * For the one-column dataset these plots are usually handed -
-   * <code>planets[All, "radius"]</code> - the rows are already the bare list of numbers
-   * <code>checkList</code> is looking for, and without this that check rejects the dataset before
-   * anything else runs. Deliberately not applied to an <code>Association</code>, which this family
-   * already plots its own way.
+   * For the one-column dataset these plots are usually handed - <code>planets[All, "radius"]</code>
+   * - the rows are already the bare list of numbers <code>checkList</code> is looking for, and
+   * without this that check rejects the dataset before anything else runs. Deliberately not applied
+   * to an <code>Association</code>, which this family already plots its own way.
    */
   protected static IAST withDatasetRows(IAST ast) {
     IExpr rows = IASTDataset.normalizeDataset(ast.arg1());
@@ -63,8 +62,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * Replace quantity data by its magnitudes before the plotting pipeline sees it.
    *
    * <p>
-   * That pipeline reaches {@code toDoubleVectorIgnore}, which cannot turn a quantity into a
-   * machine number and drops it in silence, so plotting a list of quantities produced a
+   * That pipeline reaches {@code toDoubleVectorIgnore}, which cannot turn a quantity into a machine
+   * number and drops it in silence, so plotting a list of quantities produced a
    * <code>Graphics</code> holding no <code>Line</code> at all. See
    * {@link QuantityFunctions#quantityPlotMagnitudes}.
    */
@@ -87,8 +86,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     graphicsOptions.forwardOptions(originalAST);
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
-    graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
+    graphicsOptions.setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
@@ -173,8 +171,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * Whether this plot already takes a display wrapper off its first argument itself.
    *
    * <p>
-   * The plots that read their data point by point put each label where it belongs and must not
-   * have one applied over the whole picture afterwards - an outer label wins in the renderer, so a
+   * The plots that read their data point by point put each label where it belongs and must not have
+   * one applied over the whole picture afterwards - an outer label wins in the renderer, so a
    * second one would overwrite every label the plot had just placed. The plots that draw their data
    * as a single field or raster do not read wrappers at all, and say so by overriding this, which
    * is what gets them a label over the picture for free.
@@ -192,8 +190,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    *
    * <p>
    * A field or raster plot draws its data as one picture, so the only level a label can sit at is
-   * the whole of it. The plots that read their data point by point have already placed their
-   * labels and say so through {@link #readsArgumentWrapper()}.
+   * the whole of it. The plots that read their data point by point have already placed their labels
+   * and say so through {@link #readsArgumentWrapper()}.
    */
   protected IExpr labelledContent(IAST graphicsPrimitives, IAST plotAST) {
     if (readsArgumentWrapper() || plotAST == null || plotAST.size() <= 1) {
@@ -208,7 +206,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * <p>
    * {@link IAST#isListOfPoints(int)} only asks for pairs, so two datasets of two points each -
    * <code>{{{0, 1}, {1, 2}}, {{0, 3}, {1, 1}}}</code> - pass for a list of two "points" with lists
-   * for coordinates, and read that way nothing at all was drawn. Mathematica draws two lines.
+   * for coordinates, and read that way nothing at all was drawn.
    */
   private static boolean isListOfPlainPoints(IAST list) {
     if (!list.isListOfPoints(2)) {
@@ -326,8 +324,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           }
         }
         if (curvePrimitives != graphicsPrimitives && curvePrimitives.argSize() > 0) {
-          graphicsPrimitives
-              .append(F.binaryAST2(S.Tooltip, curvePrimitives, curveWrapper.tooltip));
+          graphicsPrimitives.append(F.binaryAST2(S.Tooltip, curvePrimitives, curveWrapper.tooltip));
         }
       }
       return graphicsPrimitives;
@@ -341,7 +338,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (plot.size() < 2) {
       return F.NIL;
     }
-    if (options[GraphicsOptions.X_JOINED].isTrue()) {
+    IExpr joinedSpec = options[GraphicsOptions.X_JOINED];
+    if (joinedSpec.isTrue()) {
       graphicsOptions.setJoined(true);
     }
     graphicsOptions.setScalingFunctions(options);
@@ -417,6 +415,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
               style = F.Directive(defaultColor, userStyle);
             }
 
+            if (joinedSpec.isList() && joinedSpec.argSize() > 0) {
+              // Joined -> {b1, b2, ...}: one flag per dataset, cycled
+              graphicsOptions
+                  .setJoined(joinedSpec.get((i - 1) % joinedSpec.argSize() + 1).isTrue());
+            }
             PlotWrapper each =
                 datasetWrappers != null && i < datasetWrappers.length ? datasetWrappers[i] : null;
             final IASTAppendable into =
@@ -500,8 +503,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
               IExpr yLast = yFunction.apply(lastPoint.arg2());
               if (xBoundingBox(boundingbox, xLast, engine)
                   && yBoundingBox(boundingbox, yLast, engine)) {
-                addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
-                    yLast, lastArg);
+                addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives,
+                    boundingbox, engine, xLast, yLast, lastArg);
               }
             }
 
@@ -520,14 +523,14 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
             IExpr yLast = yFunction.apply(lastPoint.arg2());
             if (xBoundingBox(boundingbox, xLast, engine)
                 && yBoundingBox(boundingbox, yLast, engine)) {
-              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
-                  yLast, lastArg);
+              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
+                  engine, xLast, yLast, lastArg);
             }
 
             if (xBoundingBox(boundingbox, xValue, engine)
                 && yBoundingBox(boundingbox, yValue, engine)) {
-              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
-                  yValue, (IAST) arg);
+              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
+                  engine, xValue, yValue, (IAST) arg);
               isConnected = true;
               continue;
             }
@@ -535,8 +538,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           if (isConnected) {
             if (xBoundingBox(boundingbox, xValue, engine)
                 && yBoundingBox(boundingbox, yValue, engine)) {
-              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
-                  yValue, (IAST) arg);
+              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
+                  engine, xValue, yValue, (IAST) arg);
             }
           }
           lastPoint = point;
@@ -546,8 +549,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IExpr yLast = yFunction.apply(lastPoint.arg2());
           if (xBoundingBox(boundingbox, xLast, engine)
               && yBoundingBox(boundingbox, yLast, engine)) {
-            addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
-                yLast, lastArg);
+            addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
+                engine, xLast, yLast, lastArg);
           }
         }
 
@@ -759,10 +762,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     double drawn = graphicsOptions == null ? 0.0 : graphicsOptions.pointSize();
     // never smaller than the mark it covers, and large enough to be worth aiming at
     double hitSize = Math.max(drawn * 1.5, 0.02);
-    extraPrimitives.append(F.binaryAST2(S.Tooltip,
-        F.List(F.unaryAST1(S.Opacity, F.C0), F.unaryAST1(S.PointSize, F.num(hitSize)),
-            F.Point(scaledPoint)),
-        label));
+    extraPrimitives.append(F.binaryAST2(S.Tooltip, F.List(F.unaryAST1(S.Opacity, F.C0),
+        F.unaryAST1(S.PointSize, F.num(hitSize)), F.Point(scaledPoint)), label));
   }
 
   protected static boolean addIndexedYPoint(IASTAppendable pointPrimitives,
@@ -1042,8 +1043,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           }
         }
         extractCurvesRecursive(ast.arg1(), curves, newColor);
-      } else if (head == S.GraphicsGroup || head == S.Annotation
-          || head == S.Tooltip) {
+      } else if (head == S.GraphicsGroup || head == S.Annotation || head == S.Tooltip) {
         // a fully transparent group is a hover target rather than something drawn, so it has no
         // curve to fill under; without this the mark over a tooltipped point becomes a spurious
         // one point curve and the fill goes down to the axis beneath it
@@ -1071,10 +1071,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   private static boolean isColor(IExpr e) {
     return e.isAST(S.RGBColor) || e.isAST(S.Hue) || e.isAST(S.GrayLevel) || e.isAST(S.CMYKColor)
-        || e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue
-            || e == S.Black || e == S.White || e == S.Gray || e == S.Yellow
-            || e == S.Cyan || e == S.Magenta || e == S.Orange || e == S.Pink
-            || e == S.Purple || e == S.Brown);
+        || e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue || e == S.Black
+            || e == S.White || e == S.Gray || e == S.Yellow || e == S.Cyan || e == S.Magenta
+            || e == S.Orange || e == S.Pink || e == S.Purple || e == S.Brown);
   }
 
   private static IExpr createStemsToBottom(IAST pts, double yBottom) {

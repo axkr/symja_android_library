@@ -59,6 +59,11 @@ public abstract class AbstractFittedModelExpr<T> extends DataExpr<T> {
       return Errors.printMessage(S.FittedModel, "elmntavs",
           F.list(ast.arg1(), F.stringx(nearestProperty(name))), engine);
     }
+    if (ast.isAST1() && ast.arg1().isList() && ((IAST) ast.arg1()).argSize() > 0
+        && ((IAST) ast.arg1()).forAll(x -> x.isString())) {
+      // a list of properties
+      return ((IAST) ast.arg1()).map(name -> evaluate(F.unaryAST1(ast.head(), name), engine));
+    }
     IAST variables = fitVariables();
     if (variables.isPresent() && ast.argSize() == variables.argSize()) {
       // the best fit function at a point

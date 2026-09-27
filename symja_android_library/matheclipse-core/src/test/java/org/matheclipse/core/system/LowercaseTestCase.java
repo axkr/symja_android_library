@@ -10779,6 +10779,148 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testLinearModelFitParameterStatistics() {
+    check(
+        "lm = LinearModelFit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, x, x);"
+            + " Round(10^12*{lm(\"ParameterTStatistics\"), lm(\"ParameterPValues\")})", //
+        "{{268372520061,2958920129597},{813559322034,97756361322}}");
+    check(
+        "lm = LinearModelFit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, x, x);"
+            + " Round(10^5*lm(\"ParameterConfidenceIntervals\"))", //
+        "{{-280265,317553},{-31558,170541}}");
+    // a list of properties
+    check(
+        "lm = LinearModelFit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, x, x);"
+            + " Round(10^12*lm({\"RSquared\", \"ParameterTableEntries\"})[[2, 2]])", //
+        "{694915254237,234854346789,2958920129597,97756361322}");
+    check(
+        "lm = LinearModelFit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, x, x);"
+            + " {Head(lm(\"ParameterTable\")), lm(\"ParameterTable\")[[1, 1, 3, 1]]}", //
+        "{Style,x}");
+    // no residual degrees of freedom
+    check("(LinearModelFit({{0, 1}, {1, 0}}, x, x) @ \"ParameterTableEntries\")[[All, 2;;]]", //
+        "{{Indeterminate,Indeterminate,Indeterminate},{Indeterminate,Indeterminate,Indeterminate}}");
+  }
+
+  @Test
+  public void testLinearSolveFunctionWithOptions() {
+    // the Method option is accepted, so LinearSolve(m, opts) is a LinearSolveFunction
+    check("LinearSolve({{1, 2}, {3, 4}}, Method -> \"Cholesky\") @ {1, 2}", //
+        "{0,1/2}");
+    check("LinearSolve({{2, 1}, {1, 2}}, Method -> \"Cholesky\") @ {1, 2}", //
+        "{0,1}");
+  }
+
+  @Test
+  public void testNIntegrateIteratedBoole() {
+    // the inner integral of an iterated Boole indicator is split at its exact jumps
+    check("Chop(NIntegrate(Boole(p^2 + q^2 < 1), {p, -1, 1}, {q, -1, 1}) - Pi, 10^-10)", //
+        "0");
+    check(
+        "Chop(NIntegrate(Boole(p^2 + (q - 3)^2 < 4 && q < 3), {p, -2, 2}, {q, 1, 5}) - 2*Pi,"
+            + " 10^-10)", //
+        "0");
+    check(
+        "Chop(NIntegrate(Boole(p^2 + (q - 3)^2 < 4 && q < 2), {p, -2, 2}, {q, 1, 5})"
+            + " - (4*Pi/3 - Sqrt(3)), 10^-10)", //
+        "0");
+    check("{NIntegrate(Boole(x > 0.5), {x, 0, 1}), NIntegrate(Boole(3 < x < 7), {x, 0, 10})}", //
+        "{0.5,4.0}");
+  }
+
+  @Test
+  public void testTogetherInexactPolynomial() {
+    // the rationalized GCD of the inexact coefficients collapsed, and dividing by it gave
+    // Indeterminate
+    check("Together(q^2 - 0.9978377499999949)", //
+        "-0.997838+q^2");
+  }
+
+  @Test
+  public void testLikelihood() {
+    check("LogLikelihood(NormalDistribution(0, 1), {0.1, 0.2, -0.1, 0.3})", //
+        "-3.75075");
+    check("LogLikelihood(NormalDistribution(m, s), {x1, x2})", //
+        "-(-m+x1)^2/(2*s^2)-(-m+x2)^2/(2*s^2)-Log(2)-Log(Pi)-2*Log(s)");
+    check("Likelihood(NormalDistribution(m, s), {x1, x2})", //
+        "1/(2*E^((-m+x1)^2/(2*s^2)+(-m+x2)^2/(2*s^2))*Pi*s^2)");
+    check("LogLikelihood(PoissonDistribution(2), {1, 3})", //
+        "-4+3*Log(2)-Log(3)");
+    check("LogLikelihood(ARMAProcess({0.5}, {0.3}, 2.0), {1.0, 2.0})", //
+        "-3.42455");
+    check("LogLikelihood(ARMAProcess({0}, {0}, 1.0), {0.1, 0.2, -0.1, 0.3})", //
+        "-3.75075");
+    // not stationary
+    check("LogLikelihood(ARMAProcess({1.5}, {0}, 1.0), {1.0, 2.0})", //
+        "LogLikelihood(ARMAProcess({1.5},{0},1.0),{1.0,2.0})");
+  }
+
+  @Test
+  public void testRandomProcessSlices() {
+    check("WienerProcess() @ t", //
+        "NormalDistribution(0,Sqrt(t))");
+    check("OrnsteinUhlenbeckProcess(0, 1, 1) @ t", //
+        "NormalDistribution(0,1/Sqrt(2))");
+    check("OrnsteinUhlenbeckProcess(0, 1, 1, 2) @ t", //
+        "NormalDistribution(2/E^t,Sqrt(1-1/E^(2*t))/Sqrt(2))");
+  }
+
+  @Test
+  public void testRandomFunction() {
+    check(
+        "SeedRandom(1); r = RandomFunction(WienerProcess(0, 1), {0, 1, 0.25});"
+            + " {Head(r), r(\"Times\"), r(\"PathCount\"), r(\"FirstValue\")}", //
+        "{TemporalData,{0.0,0.25,0.5,0.75,1.0},1,0.0}");
+    check(
+        "SeedRandom(1); r = RandomFunction(WienerProcess(0, 1), {0, 1, 0.25});"
+            + " {r[[2, 2]], r[[2, 3]], r[[2, 4]]}", //
+        "{{{0,1,0.25}},1,{Continuous,1}}");
+    check(
+        "SeedRandom(5); a = RandomFunction(WienerProcess(), {0, 1, 0.1}) @ \"Values\";"
+            + " SeedRandom(5); a == (RandomFunction(WienerProcess(), {0, 1, 0.1}) @ \"Values\")", //
+        "True");
+    check(
+        "r = RandomFunction(OrnsteinUhlenbeckProcess(0, 1, 2, 5), {0, 2, 0.5}, 3);"
+            + " {r(\"PathCount\"), Dimensions(r(\"Values\")), r(\"FirstValue\")}", //
+        "{3,{3,5},{5.0,5.0,5.0}}");
+    check(
+        "SeedRandom(11); Abs(Mean(RandomFunction(OrnsteinUhlenbeckProcess(0, 1, 1),"
+            + " {0, 1000, 1}) @ \"Values\")) < 0.5", //
+        "True");
+    check(
+        "r = RandomFunction(ARMAProcess({0.5}, {0.3}, 1), {10}); {r(\"Times\"),"
+            + " Length(r(\"Path\")), r[[2, 4]]}", //
+        "{{0,1,2,3,4,5,6,7,8,9,10},11,{Discrete,1}}");
+  }
+
+  @Test
+  public void testListPlotJoinedPerDataset() {
+    check(
+        "Cases(ListPlot({{0, 0, 0}, {1, 2, 1}}, Joined -> {False, True}),"
+            + " h:(_Line | _Point) :> Head(h), Infinity)", //
+        "{Point,Line}");
+    check(
+        "Cases(ListPlot({{0, 0, 0}, {1, 2, 1}}, Joined -> {True, False}),"
+            + " h:(_Line | _Point) :> Head(h), Infinity)", //
+        "{Line,Point}");
+  }
+
+  @Test
+  public void testGraphicsRoundingRadiusAndRotatedAxesLabel() {
+    check(
+        "StringCases(ExportString(Graphics({Rectangle({0, 0}, {4, 1},"
+            + " RoundingRadius -> {0.2, 0.1})}, AspectRatio -> 1/4), \"SVG\"),"
+            + " RegularExpression(\"r[xy]=\\\"[0-9.]+\\\"\"))", //
+        "{rx=\"16.800\",ry=\"8.400\"}");
+    // a rotated axis label is drawn as its text
+    check(
+        "svg = ExportString(ListPlot3D(Table(x + y, {x, 3}, {y, 3}),"
+            + " AxesLabel -> {Rotate(\"zz\", Pi/2), \"b\", \"c\"}), \"SVG\");"
+            + " {StringContainsQ(svg, \"zz\"), StringContainsQ(svg, \"Rotate\")}", //
+        "{True,False}");
+  }
+
+  @Test
   public void testMathMLFormMatrixFormOfANonList() {
     // MatrixForm of something which is no matrix displays it as it is
     check(

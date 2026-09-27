@@ -7,6 +7,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OptionalDataException;
 import java.util.Arrays;
+import org.hipparchus.distribution.continuous.TDistribution;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.ArrayFieldVector;
 import org.hipparchus.linear.FieldMatrix;
@@ -235,8 +236,8 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
    * Whether some column of the design matrix is one constant, non-zero value - the intercept.
    *
    * <p>
-   * The matrix is looked at rather than the basis functions, which covers the basis form (where
-   * the prepended <code>1</code> is a column of ones), the design-matrix form (whose basis is only
+   * The matrix is looked at rather than the basis functions, which covers the basis form (where the
+   * prepended <code>1</code> is a column of ones), the design-matrix form (whose basis is only
    * slots) and a deserialized model alike.
    */
   private static boolean hasConstantColumn(FieldMatrix<IExpr> designMatrix) {
@@ -258,7 +259,9 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
   }
 
   private static final String[] PROPERTIES = {"AdjustedRSquared", "BestFit", "BestFitParameters",
-      "EstimatedVariance", "FitResiduals", "ParameterErrors", "PredictedResponse", "RSquared"};
+      "EstimatedVariance", "FitResiduals", "ParameterConfidenceIntervals", "ParameterErrors",
+      "ParameterPValues", "ParameterTStatistics", "ParameterTable", "ParameterTableEntries",
+      "PredictedResponse", "RSquared"};
 
   private FieldMatrix<IExpr> designMatrix;
   private FieldVector<IExpr> responseVector;
@@ -302,8 +305,7 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     }
     if (obj instanceof FittedModelExpr) {
       FittedModelExpr other = (FittedModelExpr) obj;
-      return designMatrix.equals(other.designMatrix)
-          && responseVector.equals(other.responseVector)
+      return designMatrix.equals(other.designMatrix) && responseVector.equals(other.responseVector)
           && basisFunctions.equals(other.basisFunctions);
     }
     return false;
@@ -330,6 +332,16 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
         return F.List(regression.estimateResiduals());
       case "ParameterErrors":
         return F.List(regression.estimateRegressionParametersStandardErrors());
+      case "ParameterConfidenceIntervals":
+        return confidenceIntervals(regression, 0.95);
+      case "ParameterPValues":
+        return parameterColumn(regression, 3);
+      case "ParameterTable":
+        return parameterTable(regression);
+      case "ParameterTableEntries":
+        return parameterTableEntries(regression);
+      case "ParameterTStatistics":
+        return parameterColumn(regression, 2);
       case "PredictedResponse":
         return predictedResponse(regression);
       case "RSquared":
@@ -339,12 +351,93 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     }
   }
 
+  /** The residual degrees of freedom: data points less parameters. */
+  private int degreesOfFreedom() {
+    return designMatrix.getRowDimension() - designMatrix.getColumnDimension();
+  }
+
+  /**
+   * One row <code>{estimate, standard error, t, p}</code> per parameter, with the two-tailed
+   * p-value of Student's t distribution. Without residual degrees of freedom only the estimates are
+   * known; everything else is <code>Indeterminate</code>.
+   */
+  private IExpr[][] parameterStatistics(ExprOLSLinearRegression regression) {
+    IExpr[] estimates = regression.estimateRegressionParameters();
+    int df = degreesOfFreedom();
+    IExpr[] errors = df > 0 ? regression.estimateRegressionParametersStandardErrors() : null;
+    TDistribution t = df > 0 ? new TDistribution(df) : null;
+    IExpr[][] rows = new IExpr[estimates.length][4];
+    for (int i = 0; i < estimates.length; i++) {
+      double estimate = estimates[i].evalfNaN();
+      rows[i][0] = F.num(estimate);
+      double error = errors == null ? Double.NaN : errors[i].evalfNaN();
+      if (!(error > 0.0) || Double.isNaN(estimate)) {
+        rows[i][1] = rows[i][2] = rows[i][3] = S.Indeterminate;
+        continue;
+      }
+      double statistic = estimate / error;
+      rows[i][1] = F.num(error);
+      rows[i][2] = F.num(statistic);
+      rows[i][3] = F.num(2.0 * t.cumulativeProbability(-Math.abs(statistic)));
+    }
+    return rows;
+  }
+
+  private IAST parameterTableEntries(ExprOLSLinearRegression regression) {
+    IExpr[][] rows = parameterStatistics(regression);
+    return F.mapRange(0, rows.length, i -> F.List(rows[i]));
+  }
+
+  /** One column of the parameter table, for every parameter. */
+  private IAST parameterColumn(ExprOLSLinearRegression regression, int column) {
+    IExpr[][] rows = parameterStatistics(regression);
+    return F.mapRange(0, rows.length, i -> rows[i][column]);
+  }
+
+  /** <code>{estimate - q se, estimate + q se}</code> with q the Student t quantile. */
+  private IAST confidenceIntervals(ExprOLSLinearRegression regression, double level) {
+    IExpr[][] rows = parameterStatistics(regression);
+    int df = degreesOfFreedom();
+    double q =
+        df > 0 ? new TDistribution(df).inverseCumulativeProbability(0.5 + 0.5 * level) : Double.NaN;
+    return F.mapRange(0, rows.length, i -> {
+      if (!rows[i][1].isReal()) {
+        return F.List(S.Indeterminate, S.Indeterminate);
+      }
+      double estimate = rows[i][0].evalf();
+      double halfWidth = q * rows[i][1].evalf();
+      return F.List(F.num(estimate - halfWidth), F.num(estimate + halfWidth));
+    });
+  }
+
+  /** The parameter table, one row per basis function. */
+  private IExpr parameterTable(ExprOLSLinearRegression regression) {
+    IExpr[][] rows = parameterStatistics(regression);
+    IASTAppendable grid = F.ListAlloc(rows.length + 1);
+    grid.append(F.List(F.stringx(""), F.stringx("Estimate"), F.stringx("Standard Error"),
+        F.stringx("t\u2010Statistic"), F.stringx("P\u2010Value")));
+    for (int i = 0; i < rows.length; i++) {
+      IASTAppendable row = F.ListAlloc(5);
+      row.append(basisFunctions.getEntry(i));
+      row.appendAll(rows[i], 0, 4);
+      grid.append(row);
+    }
+    IExpr gray = F.GrayLevel(F.num(0.7));
+    return F.binaryAST2(S.Style,
+        F.function(S.Grid, grid, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
+            F.Rule(S.Dividers, F.List(F.List(F.Rule(F.C2, gray)), F.List(F.Rule(F.C2, gray)))),
+            F.Rule(S.Spacings,
+                F.List(F.List(F.Rule(F.C2, F.C1)), F.List(F.Rule(F.C2, F.num(0.75)))))),
+        F.stringx("DialogStyle"));
+  }
+
   /** The fitted value at each data point: the observed value less its residual. */
   private IAST predictedResponse(ExprOLSLinearRegression regression) {
     IExpr[] residuals = regression.estimateResiduals();
     IASTAppendable predicted = F.ListAlloc(residuals.length);
     for (int i = 0; i < residuals.length; i++) {
-      predicted.append(EvalEngine.get().evaluate(F.Subtract(responseVector.getEntry(i), residuals[i])));
+      predicted
+          .append(EvalEngine.get().evaluate(F.Subtract(responseVector.getEntry(i), residuals[i])));
     }
     return predicted;
   }

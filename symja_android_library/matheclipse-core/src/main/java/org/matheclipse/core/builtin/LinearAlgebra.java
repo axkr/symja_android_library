@@ -4158,8 +4158,9 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance, S.Modulus},
-          new IExpr[] {S.Automatic, S.Automatic, F.C0});
+      // Method is accepted and ignored: every system is solved the same way
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance, S.Modulus, S.Method},
+          new IExpr[] {S.Automatic, S.Automatic, F.C0, S.Automatic});
     }
 
 
@@ -5142,7 +5143,7 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, IAST originalAST) {
       FieldMatrix<IExpr> matrix;
-      // options: Method (not used), Modulus, Tolerance, ZeroTest, as in Mathematica
+      // options: Method (not used), Modulus, Tolerance, ZeroTest
       IInteger modulus = modulusOption(options[1]);
       if (modulus != null) {
         return nullSpaceModulus(ast.arg1(), modulus, engine);

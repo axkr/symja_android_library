@@ -92,6 +92,17 @@ public class StatisticsFunctions {
           .setEvaluator(new org.matheclipse.core.reflection.system.DistributionFitTest());
       S.HypothesisTestData
           .setEvaluator(new org.matheclipse.core.reflection.system.HypothesisTestData());
+      S.Likelihood.setEvaluator(new org.matheclipse.core.reflection.system.Likelihood(false));
+      S.LogLikelihood.setEvaluator(new org.matheclipse.core.reflection.system.Likelihood(true));
+      S.RandomFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.RandomFunction());
+      S.TemporalData.setEvaluator(new org.matheclipse.core.reflection.system.TemporalData());
+      S.WienerProcess.setEvaluator(
+          new org.matheclipse.core.builtin.StochasticProcesses.WienerProcess());
+      S.OrnsteinUhlenbeckProcess.setEvaluator(
+          new org.matheclipse.core.builtin.StochasticProcesses.OrnsteinUhlenbeckProcess());
+      S.ARMAProcess.setEvaluator(
+          new org.matheclipse.core.builtin.StochasticProcesses.ARMAProcess());
       S.Expectation.setEvaluator(new Expectation());
       S.HazardFunction.setEvaluator(new HazardFunction());
       S.InverseSurvivalFunction.setEvaluator(new InverseSurvivalFunction());

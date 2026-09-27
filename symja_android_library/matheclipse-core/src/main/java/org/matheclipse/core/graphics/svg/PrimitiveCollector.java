@@ -40,8 +40,8 @@ public final class PrimitiveCollector {
   private IExpr intervalMarkersStyle = null;
 
   /**
-   * While a {@code Point} or {@code Line} is read, the points of each of its groups (a segment of
-   * a line) with the uncertainty of their coordinates; {@code null} otherwise.
+   * While a {@code Point} or {@code Line} is read, the points of each of its groups (a segment of a
+   * line) with the uncertainty of their coordinates; {@code null} otherwise.
    */
   private List<List<IntervalMarkers2D.Marker>> markerGroups;
 
@@ -207,8 +207,7 @@ public final class PrimitiveCollector {
           Style2D scoped = style.clone();
           // Tooltip(expr) shows the expression itself, which is what makes wrapping a table of
           // bare values worth doing at all
-          scoped.tooltip =
-              PlotWrapper.tooltipLabel(ast.argSize() >= 2 ? ast.arg2() : ast.arg1());
+          scoped.tooltip = PlotWrapper.tooltipLabel(ast.argSize() >= 2 ? ast.arg2() : ast.arg1());
           collect(ast.arg1(), scoped);
         }
         break;
@@ -974,9 +973,9 @@ public final class PrimitiveCollector {
     }
     UncertainValue x = UncertainValue.of(point.arg1());
     UncertainValue y = UncertainValue.of(point.arg2());
-    markerGroups.get(markerGroups.size() - 1).add(new IntervalMarkers2D.Marker(
-        x == null ? UncertainValue.exact(centre[0]) : x,
-        y == null ? UncertainValue.exact(centre[1]) : y));
+    markerGroups.get(markerGroups.size() - 1)
+        .add(new IntervalMarkers2D.Marker(x == null ? UncertainValue.exact(centre[0]) : x,
+            y == null ? UncertainValue.exact(centre[1]) : y));
   }
 
   /**
@@ -1007,8 +1006,8 @@ public final class PrimitiveCollector {
       groups.add(all);
     }
     for (List<IntervalMarkers2D.Marker> group : groups) {
-      primitives.addAll(IntervalMarkers2D.build(group, intervalMarkers, markerStyle, bandStyle,
-          unconnected));
+      primitives.addAll(
+          IntervalMarkers2D.build(group, intervalMarkers, markerStyle, bandStyle, unconnected));
     }
   }
 
@@ -1044,12 +1043,20 @@ public final class PrimitiveCollector {
     double[] p1 = ast.argSize() >= 1 ? pointOf(ast.arg1()) : new double[] {0, 0};
     double[] p2 = ast.argSize() >= 2 && !ast.arg2().isRuleAST() ? pointOf(ast.arg2())
         : new double[] {p1[0] + 1, p1[1] + 1};
-    double rounding = 0;
+    double roundingX = 0;
+    double roundingY = 0;
     IExpr r = optionValue(ast, S.RoundingRadius);
     if (r != null) {
-      rounding = ColorUtil.dbl(r, 0);
+      if (r.isList2()) {
+        // RoundingRadius -> {rx, ry}: elliptical corners
+        roundingX = ColorUtil.dbl(r.first(), 0);
+        roundingY = ColorUtil.dbl(r.second(), 0);
+      } else {
+        roundingX = roundingY = ColorUtil.dbl(r, 0);
+      }
     }
-    primitives.add(new Prim2D.RectPrim(p1[0], p1[1], p2[0], p2[1], rounding, style.clone()));
+    primitives
+        .add(new Prim2D.RectPrim(p1[0], p1[1], p2[0], p2[1], roundingX, roundingY, style.clone()));
   }
 
   private void collectPolygon(IAST ast, Style2D style) {
@@ -1171,7 +1178,7 @@ public final class PrimitiveCollector {
    * Unlike {@code Circle} and {@code Disk} they take a list of centres, {@code Sphere[{p1, p2,
    * ...}, r]}, one shape of the same radii around each. In the plane a radius list is still
    * {@code {rx, ry}} for every centre, not a radius per centre as it is in {@code Graphics3D}:
-   * {@code Graphics[Sphere[{{0, 0}, {3, 0}}, {1, 2}]]} draws two ellipses in Mathematica.
+   * {@code Graphics[Sphere[{{0, 0}, {3, 0}}, {1, 2}]]} draws two ellipses.
    */
   private void collectSphere(IAST ast, Style2D style, boolean filled) {
     IExpr centres = ast.argSize() >= 1 ? ast.arg1() : null;
@@ -1671,8 +1678,8 @@ public final class PrimitiveCollector {
    *
    * <p>
    * A corner of the drawing area can be written with the words for it: {@code {Right, Bottom}}
-   * means the same place as {@code {1, 0}} does in scaled coordinates. Read as a number those
-   * words are nothing, and anything positioned with them was quietly dropped.
+   * means the same place as {@code {1, 0}} does in scaled coordinates. Read as a number those words
+   * are nothing, and anything positioned with them was quietly dropped.
    *
    * @param horizontal whether this is the first coordinate, since {@code Center} is the middle of
    *        whichever direction it is used in and the other words only belong to one of them

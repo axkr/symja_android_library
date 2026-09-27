@@ -129,11 +129,11 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The goodness of fit of a linear model, measured in Mathematica on 2026-09-19: R-squared is taken
-   * about the mean of the data, and the adjusted value scales by (n-1)/(n-p).
+   * The goodness of fit of a linear model: R-squared is taken about the mean of the data, and the
+   * adjusted value scales by (n-1)/(n-p).
    */
   @Test
-  public void testLinearModelFitMathematica() {
+  public void testLinearModelFit() {
     check("lm=LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x)", //
         "FittedModel[0.15+1.94*x]");
     checkNumeric("lm(\"RSquared\")", //
@@ -159,9 +159,9 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
   /** A fit through the origin has no mean to measure against, and is taken about zero. */
   @Test
   public void testLinearModelFitIncludeConstantBasis() {
-    check("lm0=LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x, IncludeConstantBasis->False)", //
+    check(
+        "lm0=LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x, IncludeConstantBasis->False)", //
         "FittedModel[1.99*x]");
-    // Mathematica: 0.9991841883936082
     check("lm0(\"RSquared\")", //
         "0.999184");
   }
@@ -174,13 +174,14 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("lm(\"BadProperty\")", //
         "FittedModel[0.15+1.94*x][BadProperty]");
     check("lm(\"Properties\")", //
-        "{AdjustedRSquared,BestFit,BestFitParameters,EstimatedVariance,FitResiduals,ParameterErrors,PredictedResponse,RSquared}");
+        "{AdjustedRSquared,BestFit,BestFitParameters,EstimatedVariance,FitResiduals,"
+            + "ParameterConfidenceIntervals,ParameterErrors,ParameterPValues,ParameterTStatistics,"
+            + "ParameterTable,ParameterTableEntries,PredictedResponse,RSquared}");
   }
 
   /**
-   * NonlinearModelFit, measured in Mathematica on 2026-09-19. R-squared is taken about the mean as
-   * for a linear fit, but the adjusted value scales by n/(n-p) - 0.99132 here, where the linear
-   * convention would give 0.99349.
+   * NonlinearModelFit. R-squared is taken about the mean as for a linear fit, but the adjusted
+   * value scales by n/(n-p) - 0.99132 here, where the linear convention would give 0.99349.
    */
   @Test
   public void testNonlinearModelFit() {

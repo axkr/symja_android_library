@@ -286,8 +286,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
    * <li>the real zeros and poles of the arguments of <code>Abs, RealAbs, Sign, UnitStep,
    * HeavisideTheta</code>, of the differences of the arguments of <code>Max, Min</code>, of an
    * argument of <code>Clip</code> minus its bounds, and of <code>lhs - rhs</code> for the
-   * comparisons in the conditions of <code>Piecewise</code>, where these are rational in
-   * <code>x</code>;</li>
+   * comparisons in the conditions of <code>Piecewise</code> and <code>Boole</code>, where these
+   * are rational in <code>x</code>;</li>
    * <li>where a linear argument of <code>Floor, Ceiling, Round, IntegerPart, FractionalPart</code>
    * crosses an integer (a half integer for <code>Round</code>);</li>
    * <li>the real poles of the integrand itself, if its denominator is a polynomial in
@@ -359,6 +359,9 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     } else if ((head == S.Floor || head == S.Ceiling || head == S.Round
         || head == S.IntegerPart || head == S.FractionalPart) && ast.isAST1()) {
       addIntegerCrossings(ast.arg1(), x, min, max, head == S.Round ? 0.5 : 0.0, points);
+    } else if (ast.isAST(S.Boole, 2)) {
+      // the indicator jumps where its condition changes
+      addComparisonPoints(ast.arg1(), x, min, max, points, engine);
     } else if (ast.isAST(S.Piecewise) && ast.arg1().isList()) {
       for (IExpr pair : (IAST) ast.arg1()) {
         if (pair.isList2()) {
@@ -400,6 +403,11 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
   private static void addZerosAndPoles(IExpr expr, ISymbol x, double min, double max,
       Set<Double> points, EvalEngine engine) {
     if (expr.isFree(x)) {
+      return;
+    }
+    if (expr.isPolynomial(F.list(x))) {
+      // Together would pull a rationalized factor out of inexact coefficients
+      addRealRoots(engine.evaluate(F.Expand(expr)), x, min, max, points, engine);
       return;
     }
     IExpr together = engine.evaluate(F.Together(expr));
@@ -446,20 +454,89 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     if (engine.evaluate(F.Exponent(polynomial, x)).toIntDefault() > MAX_BREAK_POINT_DEGREE) {
       return;
     }
+    // keep a margin, a root at an endpoint needs no split
+    double margin = 1.0e-12 * (max - min);
+    double[] coefficients = doubleCoefficients(polynomial, x, engine);
+    if (coefficients != null && coefficients.length == 3 && coefficients[2] != 0.0) {
+      // a quadratic in closed form: the roots of a Boole(p^2 + q^2 < 1) condition have to be
+      // exact to machine precision, or the outer integral of a nested NIntegrate sees noise
+      double c = coefficients[0];
+      double b = coefficients[1];
+      double a = coefficients[2];
+      double discriminant = b * b - 4.0 * a * c;
+      if (discriminant > 0.0) {
+        double q = -0.5 * (b + Math.copySign(Math.sqrt(discriminant), b));
+        for (double value : new double[] {q / a, c / q}) {
+          if (value > min + margin && value < max - margin) {
+            points.add(value);
+          }
+        }
+      }
+      return;
+    }
     IAST roots = RootsFunctions.roots(polynomial, true, F.list(x), engine);
     if (roots.isNIL()) {
       return;
     }
-    // keep a margin, a root at an endpoint needs no split
-    double margin = 1.0e-12 * (max - min);
     for (IExpr root : roots) {
       if (root.isReal()) {
-        double value = root.evalf();
+        double value = polish(coefficients, root.evalf());
         if (value > min + margin && value < max - margin) {
           points.add(value);
         }
       }
     }
+  }
+
+  /**
+   * The coefficients <code>{c0, c1, ...}</code> of a univariate polynomial as doubles, or
+   * <code>null</code>.
+   */
+  private static double[] doubleCoefficients(IExpr polynomial, ISymbol x, EvalEngine engine) {
+    IExpr list = engine.evaluate(F.CoefficientList(polynomial, x));
+    if (!list.isList() || list.argSize() == 0) {
+      return null;
+    }
+    double[] coefficients = new double[list.argSize()];
+    for (int i = 0; i < coefficients.length; i++) {
+      coefficients[i] = list.getAt(i + 1).evalfNaN();
+      if (!Double.isFinite(coefficients[i])) {
+        return null;
+      }
+    }
+    return coefficients;
+  }
+
+  /** A few Newton steps on the polynomial, keeping the root when they do not improve it. */
+  private static double polish(double[] coefficients, double root) {
+    if (coefficients == null || coefficients.length < 2) {
+      return root;
+    }
+    double best = root;
+    double bestValue = Math.abs(horner(coefficients, root, false));
+    for (int i = 0; i < 4; i++) {
+      double derivative = horner(coefficients, root, true);
+      if (derivative == 0.0) {
+        break;
+      }
+      root -= horner(coefficients, root, false) / derivative;
+      double value = Math.abs(horner(coefficients, root, false));
+      if (!(value < bestValue)) {
+        break;
+      }
+      best = root;
+      bestValue = value;
+    }
+    return best;
+  }
+
+  /** The polynomial, or its derivative, at <code>x</code>. */
+  private static double horner(double[] coefficients, double x, boolean derivative) {
+    double result = 0.0;
+    for (int i = coefficients.length - 1; i >= (derivative ? 1 : 0); i--) {
+      result = result * x + (derivative ? i * coefficients[i] : coefficients[i]);
+    }
+    return result;
   }
 
   /**
