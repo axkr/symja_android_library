@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval;
 
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.S.x;
@@ -22,6 +21,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -41,6 +41,8 @@ import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
+import org.matheclipse.core.sympy.simplify.GammaSimp;
+import org.matheclipse.core.sympy.simplify.SqrtDenest;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.AbstractVisitorLong;
 import org.matheclipse.core.visit.VisitorExpr;
@@ -261,8 +263,7 @@ public class SimplifyUtil extends VisitorExpr {
   public static HashedOrderlessMatcherPlus PLUS_ORDERLESS_MATCHER =
       new HashedOrderlessMatcherPlus();
 
-  public static final HashedOrderlessMatcherTimes TIMES_ORDERLESS_MATCHER =
-      initTimesHashMatcher();
+  public static final HashedOrderlessMatcherTimes TIMES_ORDERLESS_MATCHER = initTimesHashMatcher();
 
   static {
     // Cosh(x)+Sinh(x) -> Exp(x)
@@ -283,12 +284,11 @@ public class SimplifyUtil extends VisitorExpr {
     // ArcTan(x) + ArcTan(y) == ArcTan((x+y)/(1-x*y)) for rational x, y with x*y < 1 - on that
     // domain the principal values add without a Pi correction. Subsumes the formerly hardcoded
     // pairs ArcTan(1/2)+ArcTan(1/3) == Pi/4 and ArcTan(1/3)+ArcTan(1/7) == ArcTan(1/2);
-    // Mathematica's FullSimplify contracts the general sum the same way:
+    // FullSimplify contracts the general sum the same way:
     // ArcTan(1/7)+ArcTan(1/9) == ArcTan(8/31).
     PLUS_ORDERLESS_MATCHER.defineHashRule(F.ArcTan(x_), F.ArcTan(y_), //
         F.ArcTan(F.Times(F.Plus(x, y), F.Power(F.Subtract(F.C1, F.Times(x, y)), F.CN1))), //
-        F.And(F.Element(x, S.Rationals), F.Element(y, S.Rationals),
-            F.Less(F.Times(x, y), F.C1)));
+        F.And(F.Element(x, S.Rationals), F.Element(y, S.Rationals), F.Less(F.Times(x, y), F.C1)));
     // ArcTan(x) + ArcTan(y) == Pi + ArcTan((x+y)/(1-x*y)) for positive rational x, y with
     // x*y > 1, e.g. ArcTan(2)+ArcTan(3) == 3*Pi/4. Negative pairs need no rule of their own:
     // ArcTan is odd, so -ArcTan(2)-ArcTan(3) reaches the matcher as the pair (2,3) with a
@@ -473,8 +473,7 @@ public class SimplifyUtil extends VisitorExpr {
         F.Abs(y_), //
         F.Abs(F.Times(x, y))));
     // Gamma(x)*Gamma(-x) == -Pi*Csc(Pi*x)/x - the reflection formula at the mirrored argument.
-    // The eager matcher only handles Gamma(x)*Gamma(1-x); this variant stays until FullSimplify,
-    // like Mathematica's.
+    // The eager matcher only handles Gamma(x)*Gamma(1-x); this variant stays until FullSimplify.
     timesMatcher.defineHashRule(new HashedPatternRulesTimes( //
         F.Gamma(x_), //
         F.Gamma(y_), //
@@ -1068,16 +1067,16 @@ public class SimplifyUtil extends VisitorExpr {
    * <p>
    * The identity holds exactly when <code>Arg(z)+Arg(w)</code> stays inside <code>(-Pi, Pi]</code>.
    * If <code>z*w</code> is a positive real then that sum is a multiple of <code>2*Pi</code>; since
-   * each argument lies in <code>(-Pi, Pi]</code> their sum lies in <code>(-2*Pi, 2*Pi]</code>, so it
-   * is either <code>0</code> or <code>2*Pi</code>, and it can only be <code>2*Pi</code> when both
-   * arguments equal <code>Pi</code>, that is when <code>z</code> and <code>w</code> are both
+   * each argument lies in <code>(-Pi, Pi]</code> their sum lies in <code>(-2*Pi, 2*Pi]</code>, so
+   * it is either <code>0</code> or <code>2*Pi</code>, and it can only be <code>2*Pi</code> when
+   * both arguments equal <code>Pi</code>, that is when <code>z</code> and <code>w</code> are both
    * negative reals. Excluding that one case makes the fold sound.
    *
    * <p>
    * The excluded case is not academic: <code>Log(-5)+Log(-5)</code> is
    * <code>I*2*Pi+2*Log(5)</code>, and a conjugate test would not catch it, because a negative real
-   * is its own conjugate. This test needs no <code>Conjugate</code> call and is more general than
-   * a conjugate pair; a symbolic argument is rejected because its product does not evaluate to a
+   * is its own conjugate. This test needs no <code>Conjugate</code> call and is more general than a
+   * conjugate pair; a symbolic argument is rejected because its product does not evaluate to a
    * positive real.
    *
    * @param z the argument of the first logarithm
@@ -1182,6 +1181,31 @@ public class SimplifyUtil extends VisitorExpr {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         //
+      }
+      if (expr.isPower() && SqrtDenest.isSqrt(expr) && SqrtDenest.sqrtDepth(expr) >= 2
+          && SqrtDenest.isAlgebraic(expr)) {
+        try {
+          // nested square roots, which aren't denested by FunctionExpand
+          IExpr temp = SqrtDenest.sqrtdenest(expr);
+          if (!temp.equals(expr) && sResult.checkLessPlusTimesPower(temp)) {
+            expr = temp;
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          //
+        }
+      }
+      if ((expr.isTimes() || expr.isPlus()) && GammaSimp.isCandidate(expr)) {
+        try {
+          // ratios and products of Gamma, Factorial, Binomial, Pochhammer and Beta functions
+          IExpr temp = GammaSimp.combsimp(expr);
+          if (!temp.equals(expr) && sResult.checkLessPlusTimesPower(temp)) {
+            expr = temp;
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          //
+        }
       }
       if (expr.isAST(S.Arg, 2)) {
         try {
@@ -1623,14 +1647,14 @@ public class SimplifyUtil extends VisitorExpr {
    * @param dividend the dividend
    * @param divisor the divisor
    * @param variable the variable to divide in
-   * @return the quotient, or {@link F#NIL} if the division leaves a remainder or a quotient with
-   *         a sum in a denominator
+   * @return the quotient, or {@link F#NIL} if the division leaves a remainder or a quotient with a
+   *         sum in a denominator
    */
   private static IExpr polynomialQuotient(IExpr dividend, IExpr divisor, IExpr variable) {
     IExpr temp =
         EvalEngine.get().evaluate(F.PolynomialQuotientRemainder(dividend, divisor, variable));
-    if (temp.isList2() && temp.second().isZero() && !temp.first().has(
-        x -> x.isPower() && x.base().isPlus() && isNegativeExponent(x.exponent()), true)) {
+    if (temp.isList2() && temp.second().isZero() && !temp.first()
+        .has(x -> x.isPower() && x.base().isPlus() && isNegativeExponent(x.exponent()), true)) {
       return temp.first();
     }
     return F.NIL;
@@ -1806,9 +1830,9 @@ public class SimplifyUtil extends VisitorExpr {
    * The gates below decide, from the shape of an expression alone, whether a rewrite of the
    * pipeline can change it at all. They exist because the pipeline runs on every node of the
    * expression tree in every pass of the fixpoint loop, and measured over the Simplify tests most
-   * of the rewrites come back with their input unchanged: 82% of the Together calls and 84% of
-   * the ExpandAll calls were no-ops. Each gate was checked against the candidates that actually
-   * won in those tests; none of them cuts a winning candidate.
+   * of the rewrites come back with their input unchanged: 82% of the Together calls and 84% of the
+   * ExpandAll calls were no-ops. Each gate was checked against the candidates that actually won in
+   * those tests; none of them cuts a winning candidate.
    */
 
   /**
@@ -1817,8 +1841,9 @@ public class SimplifyUtil extends VisitorExpr {
    * {@link S#Apart} has nothing to split.
    */
   private static boolean hasDenominator(IExpr expr) {
-    return expr.has(x -> x.isFraction() || x.isComplex()
-        || (x.isPower() && isNegativeExponent(x.exponent())), true);
+    return expr.has(
+        x -> x.isFraction() || x.isComplex() || (x.isPower() && isNegativeExponent(x.exponent())),
+        true);
   }
 
   private static boolean isNegativeExponent(IExpr exponent) {
@@ -1827,9 +1852,9 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   /**
-   * {@link S#Together} needs a denominator to combine, and for a product it also needs a sum
-   * among the factors: <code>(x^2+x)/x</code> cancels to <code>1+x</code>, but a product of
-   * atoms and functions is already canonical.
+   * {@link S#Together} needs a denominator to combine, and for a product it also needs a sum among
+   * the factors: <code>(x^2+x)/x</code> cancels to <code>1+x</code>, but a product of atoms and
+   * functions is already canonical.
    */
   private static boolean isTogetherCandidate(IExpr expr) {
     if (!hasDenominator(expr)) {
@@ -1847,8 +1872,8 @@ public class SimplifyUtil extends VisitorExpr {
    * picks an arbitrary main variable and, because it makes the denominator monic in that variable,
    * trades a flat quotient for nested ones: the matrix inverse entry
    * <code>(-f*h+e*i)/(-c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i)</code> came back as
-   * <code>1/(a+(-c*e*g+b*f*g+c*d*h-b*d*i)/(-f*h+e*i))</code>, one leaf lighter and much harder
-   * to read. No multivariate Apart candidate has ever won in the Simplify tests.
+   * <code>1/(a+(-c*e*g+b*f*g+c*d*h-b*d*i)/(-f*h+e*i))</code>, one leaf lighter and much harder to
+   * read. No multivariate Apart candidate has ever won in the Simplify tests.
    */
   private static boolean isApartCandidate(IExpr expr) {
     return hasDenominator(expr) && new VariablesSet(expr).size() == 1;
@@ -1860,14 +1885,13 @@ public class SimplifyUtil extends VisitorExpr {
    */
   private static boolean isExpandable(IExpr expr) {
     return expr.has(x -> (x.isTimes() && ((IAST) x).exists(y -> y.isPlus()))
-        || (x.isPower() && x.base().isPlus() && x.exponent().isInteger()
-            && !x.exponent().isOne()),
+        || (x.isPower() && x.base().isPlus() && x.exponent().isInteger() && !x.exponent().isOne()),
         true);
   }
 
   /**
-   * {@link S#Factor} and {@link S#FactorSquareFree} can only change an expression with a sum in
-   * it. A variable-free sum still counts: <code>Factor</code> is what collapses a constant like
+   * {@link S#Factor} and {@link S#FactorSquareFree} can only change an expression with a sum in it.
+   * A variable-free sum still counts: <code>Factor</code> is what collapses a constant like
    * <code>(1/3+1/3*(-2)^(-1/3)*2^(-2/3)*(1+I*Sqrt(3))+...)^2</code> to <code>1</code>.
    */
   private static boolean isFactorable(IExpr expr) {
@@ -1903,8 +1927,10 @@ public class SimplifyUtil extends VisitorExpr {
       return 0;
     }
     IAST ast = (IAST) expr;
-    int count = (ast.isTrigFunction() || ast.isHyperbolicFunction()
-        || (ast.isPower() && ast.base().isE())) ? 1 : 0;
+    int count =
+        (ast.isTrigFunction() || ast.isHyperbolicFunction() || (ast.isPower() && ast.base().isE()))
+            ? 1
+            : 0;
     for (int i = 1; i < ast.size(); i++) {
       count += countTrigOrExp(ast.get(i));
     }

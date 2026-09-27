@@ -23,9 +23,10 @@ public class Add {
       return F.pair(independent.oneIdentity0(), dependent);
     }
 
-    // Default logic: return head (slot 1 if number) and rest
+    // coeff, notrat = self.args[0].as_coeff_add()
+    // only a rational first argument is a coefficient
     IExpr first = addAST.arg1();
-    if (!first.isZero()) {
+    if (first.isRational() && !first.isZero()) {
       IASTAppendable rest = F.ListAlloc(addAST.size());
       rest.appendAll(addAST, 2, addAST.size());
       return F.pair(first, rest);

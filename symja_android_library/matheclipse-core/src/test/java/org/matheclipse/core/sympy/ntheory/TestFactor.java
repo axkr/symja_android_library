@@ -75,9 +75,47 @@ public class TestFactor extends ExprEvaluatorTestCase {
     assertEquals(Factor.divisorCount(F.ZZ(12)).toString(), //
         "6");
 
-    // TODO modulus
     // assert divisor_count(180, 3) == divisor_count(180//3)
+    assertEquals(Factor.divisorCount(F.ZZ(180), 3, false).toString(), //
+        Factor.divisorCount(F.ZZ(60)).toString());
     // assert divisor_count(2*3*5, 7) == 0
+    assertEquals(Factor.divisorCount(F.ZZ(30), 7, false).toString(), //
+        "0");
+    // assert divisor_count(6, 2) == 2
+    assertEquals(Factor.divisorCount(F.ZZ(6), 2, false).toString(), //
+        "2");
+    // assert divisor_count(6, proper=True) == 3
+    assertEquals(Factor.divisorCount(F.ZZ(6), 1, true).toString(), //
+        "3");
+  }
+
+  @Test
+  public void testPrimeFactors() {
+    // assert primefactors(6) == [2, 3]
+    assertEquals(Factor.primeFactors(6).toString(), //
+        "{2,3}");
+    // assert primefactors(-5) == [5]
+    assertEquals(Factor.primeFactors(-5).toString(), //
+        "{5}");
+    // assert primefactors(123456) == [2, 3, 643]
+    assertEquals(Factor.primeFactors(123456).toString(), //
+        "{2,3,643}");
+  }
+
+  @Test
+  public void testPerfectPowerWithFactor() {
+    // assert perfect_power(2**3*3**3) == (6, 3)
+    assertEquals(Factor.perfectPower(F.ZZ(216)).toString(), //
+        "{6,3}");
+    // assert perfect_power(2**4*3**2) == (12, 2)
+    assertEquals(Factor.perfectPower(F.ZZ(144)).toString(), //
+        "{12,2}");
+    // assert perfect_power(2**6*3**4, big=False) == (72, 2)
+    assertEquals(Factor.perfectPower(F.ZZ(5184), F.NIL, false, true).toString(), //
+        "{72,2}");
+    // assert perfect_power(2**2*3) is False
+    assertEquals(Factor.perfectPower(F.ZZ(12)).isNIL(), //
+        true);
   }
 
   @Test

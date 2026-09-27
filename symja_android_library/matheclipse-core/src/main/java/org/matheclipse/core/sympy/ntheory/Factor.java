@@ -195,7 +195,8 @@ public class Factor {
               // If n = fac**e*m can be written as a perfect
               // power then see if m can be written as r**E where
               // gcd(e, E) != 1 so n = (fac**(e//E)*r)**E
-              IInteger m = ni.iquo(fac).powerRational(ei);
+              // m = n // fac**e
+              IInteger m = ni.iquo(fac.powerRational(ei));
               IPair rE = perfectPower(m, divisors(F.ZZ(ei), true, false));
               if (rE.isNIL()) {
                 return F.NIL;
@@ -294,7 +295,7 @@ public class Factor {
     // divisors
     IASTAppendable factors = n.factorInteger();
     IASTAppendable s = F.ListAlloc(factors.argSize());
-    for (int i = 1; i < factors.argSize(); i++) {
+    for (int i = 1; i < factors.size(); i++) {
       IAST pair = (IAST) factors.get(i);
       IExpr prime = pair.first();
       if (prime.isMinusOne()//
@@ -366,7 +367,7 @@ public class Factor {
     if (modulus != 1) {
       IInteger[] divMod = n.divideAndRemainder(F.ZZ(modulus));
       n = divMod[0];
-      if (divMod[1].isZero()) {
+      if (!divMod[1].isZero()) {
         return F.C0;
       }
     }
@@ -385,7 +386,7 @@ public class Factor {
     }
     n = (IInteger) F.eval(timesAST);
     if (!n.isZero() && proper) {
-      return n.subtract(F.CN1);
+      return n.subtract(F.C1);
     }
     return n;
   }

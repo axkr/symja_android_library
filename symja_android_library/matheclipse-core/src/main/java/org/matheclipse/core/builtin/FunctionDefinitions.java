@@ -145,6 +145,8 @@ public final class FunctionDefinitions {
       S.HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
       S.HermiteDecomposition
           .setEvaluator(new org.matheclipse.core.reflection.system.HermiteDecomposition());
+      S.SmithDecomposition
+          .setEvaluator(new org.matheclipse.core.reflection.system.SmithDecomposition());
       S.Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
       S.HurwitzZeta.setEvaluator(new org.matheclipse.core.reflection.system.HurwitzZeta());
 
@@ -225,6 +227,39 @@ public final class FunctionDefinitions {
       S.Normal.setEvaluator(new org.matheclipse.core.reflection.system.Normal());
       S.NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
       S.NSolveValues.setEvaluator(new org.matheclipse.core.reflection.system.NSolveValues());
+      S.NProduct.setEvaluator(new org.matheclipse.core.reflection.system.NProduct());
+      S.IntegerReverse.setEvaluator(new org.matheclipse.core.reflection.system.IntegerReverse());
+      S.MinValue.setEvaluator(new org.matheclipse.core.reflection.system.MinValue(false));
+      S.MaxValue.setEvaluator(new org.matheclipse.core.reflection.system.MinValue(true));
+      S.EulerEquations
+          .setEvaluator(new org.matheclipse.core.reflection.system.EulerEquations(true));
+      S.VariationalD
+          .setEvaluator(new org.matheclipse.core.reflection.system.EulerEquations(false));
+      S.RecurrenceTable
+          .setEvaluator(new org.matheclipse.core.reflection.system.RecurrenceTable());
+      S.CountRoots.setEvaluator(new org.matheclipse.core.reflection.system.CountRoots());
+      S.IsolatingInterval
+          .setEvaluator(new org.matheclipse.core.reflection.system.IsolatingInterval());
+      S.FunctionMonotonicity
+          .setEvaluator(new org.matheclipse.core.reflection.system.FunctionMonotonicity(false));
+      S.FunctionConvexity
+          .setEvaluator(new org.matheclipse.core.reflection.system.FunctionMonotonicity(true));
+      S.FourierSeries.setEvaluator(new org.matheclipse.core.reflection.system.FourierSeries(
+          org.matheclipse.core.reflection.system.FourierSeries.SERIES));
+      S.FourierTrigSeries.setEvaluator(new org.matheclipse.core.reflection.system.FourierSeries(
+          org.matheclipse.core.reflection.system.FourierSeries.TRIG_SERIES));
+      S.FourierCoefficient.setEvaluator(new org.matheclipse.core.reflection.system.FourierSeries(
+          org.matheclipse.core.reflection.system.FourierSeries.COEFFICIENT));
+      S.FourierSinSeries.setEvaluator(new org.matheclipse.core.reflection.system.FourierSeries(
+          org.matheclipse.core.reflection.system.FourierSeries.SIN_SERIES));
+      S.FourierCosSeries.setEvaluator(new org.matheclipse.core.reflection.system.FourierSeries(
+          org.matheclipse.core.reflection.system.FourierSeries.COS_SERIES));
+      S.FourierSinCoefficient
+          .setEvaluator(new org.matheclipse.core.reflection.system.FourierSeries(
+              org.matheclipse.core.reflection.system.FourierSeries.SIN_COEFFICIENT));
+      S.FourierCosCoefficient
+          .setEvaluator(new org.matheclipse.core.reflection.system.FourierSeries(
+              org.matheclipse.core.reflection.system.FourierSeries.COS_COEFFICIENT));
       S.NSum.setEvaluator(new org.matheclipse.core.reflection.system.NSum());
       S.NumberLinePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.NumberLinePlot());
 
@@ -459,6 +494,7 @@ public final class FunctionDefinitions {
     SubsetFunctions.initialize();
     SequenceFunctions.initialize();
     Combinatoric.initialize();
+    PermutationGroupFunctions.initialize();
     IntegerFunctions.initialize();
     BesselFunctions.initialize();
     SpecialFunctions.initialize();

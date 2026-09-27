@@ -751,13 +751,4 @@ public class ExprTools {
   // return S.Cancel.of(EvalEngine.get(), terms);
   // }
 
-  public static IExpr normal(IExpr self, IExpr others) {
-    if (!others.isAST(S.Factor)) {
-      others = S.Factor.of(others);
-      if (others.isZero()) {
-
-      }
-    }
-    return F.NIL;
-  }
 }

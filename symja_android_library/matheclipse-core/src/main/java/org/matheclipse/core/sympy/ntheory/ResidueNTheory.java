@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.core.sympy.exception.ValueError;
 
 /**
  * Modular arithmetic primitives backing {@code PowerMod}.
@@ -560,28 +561,251 @@ public class ResidueNTheory {
     return TWO;
   }
 
-  /** Baby-step giant-step discrete logarithm of {@code a} to base {@code b} modulo {@code p}. */
+  /** Discrete logarithm of {@code a} to base {@code b} modulo {@code p}. */
   private static BigInteger discreteLog(BigInteger p, BigInteger a, BigInteger b) {
-    if (p.compareTo(BigInteger.valueOf(1000000000L)) > 0) {
-      throw new UnsupportedOperationException("Discrete log for large p not currently supported.");
+    try {
+      return discreteLog(p, a, b, null, null, null);
+    } catch (ValueError ve) {
+      throw new IllegalArgumentException(ve.getMessage());
     }
-    long pLong = p.longValueExact();
-    long m = (long) Math.ceil(Math.sqrt(pLong));
-    Map<BigInteger, Long> table = new HashMap<>();
-    BigInteger cur = BigInteger.ONE;
-    for (long i = 0; i < m; i++) {
-      table.putIfAbsent(cur, i);
-      cur = cur.multiply(b).mod(p);
+  }
+
+  /**
+   * Compute the discrete logarithm of {@code a} to the base {@code b} modulo {@code n}.
+   *
+   * @return {@link F#NIL} if the logarithm does not exist
+   */
+  public static IExpr discreteLog(IInteger n, IInteger a, IInteger b) {
+    // >>> from sympy.ntheory import discrete_log
+    // >>> discrete_log(41, 15, 7)
+    // 3
+    try {
+      return F.ZZ(discreteLogBig(n.toBigNumerator(), a.toBigNumerator(), b.toBigNumerator()));
+    } catch (ValueError | ArithmeticException ex) {
+      return F.NIL;
     }
-    BigInteger z = b.modInverse(p).modPow(BigInteger.valueOf(m), p);
-    cur = a;
-    for (long i = 0; i < m; i++) {
-      if (table.containsKey(cur)) {
-        return BigInteger.valueOf(i * m + table.get(cur));
+  }
+
+  /**
+   * Compute the discrete logarithm of {@code a} to the base {@code b} modulo {@code n}.
+   *
+   * <p>
+   * This is a recursive function to reduce the discrete logarithm problem in cyclic groups of
+   * composite order to the problem in cyclic groups of prime order. It employs different
+   * algorithms depending on the problem (subgroup order size, prime order or not): trial
+   * multiplication, baby-step giant-step, Pollard's Rho and Pohlig-Hellman.
+   *
+   * @throws ValueError if the logarithm does not exist
+   */
+  public static BigInteger discreteLogBig(BigInteger n, BigInteger a, BigInteger b) {
+    return discreteLog(n, a, b, null, null, null);
+  }
+
+  private static BigInteger discreteLog(BigInteger n, BigInteger a, BigInteger b,
+      BigInteger order, Boolean primeOrder, Map<BigInteger, Integer> orderFactors) {
+    if (n.signum() < 1) {
+      throw new ValueError("n should be positive");
+    }
+    if (n.equals(BigInteger.ONE)) {
+      return BigInteger.ZERO;
+    }
+    a = a.mod(n);
+    b = b.mod(n);
+    if (order == null) {
+      // Compute the order and its factoring in one pass
+      // order = totient(n), factors = factorint(order)
+      Map<BigInteger, Integer> factors = new java.util.TreeMap<BigInteger, Integer>();
+      for (Map.Entry<BigInteger, Integer> entry : factorIntegerMap(n).entrySet()) {
+        BigInteger px = entry.getKey();
+        int kx = entry.getValue();
+        if (kx > 1) {
+          factors.merge(px, kx - 1, Integer::sum);
+        }
+        BigInteger pxMinus1 = px.subtract(BigInteger.ONE);
+        if (pxMinus1.compareTo(BigInteger.ONE) > 0) {
+          for (Map.Entry<BigInteger, Integer> e : factorIntegerMap(pxMinus1).entrySet()) {
+            factors.merge(e.getKey(), e.getValue(), Integer::sum);
+          }
+        }
       }
-      cur = cur.multiply(z).mod(p);
+      order = BigInteger.ONE;
+      for (Map.Entry<BigInteger, Integer> entry : factors.entrySet()) {
+        order = order.multiply(entry.getKey().pow(entry.getValue()));
+      }
+      // Now the `order` is the order of the group and factors = factorint(order)
+      // The order of `b` divides the order of the group.
+      orderFactors = new java.util.TreeMap<BigInteger, Integer>();
+      for (Map.Entry<BigInteger, Integer> entry : factors.entrySet()) {
+        BigInteger p = entry.getKey();
+        int e = entry.getValue();
+        int i = 0;
+        for (int k = 0; k < e; k++) {
+          if (b.modPow(order.divide(p), n).equals(BigInteger.ONE)) {
+            order = order.divide(p);
+            i++;
+          } else {
+            break;
+          }
+        }
+        if (i < e) {
+          orderFactors.put(p, e - i);
+        }
+      }
     }
-    throw new IllegalArgumentException("Log does not exist");
+    if (primeOrder == null) {
+      primeOrder = order.isProbablePrime(32);
+    }
+
+    if (order.compareTo(BigInteger.valueOf(1000L)) < 0) {
+      return discreteLogTrialMul(n, a, b, order.intValue());
+    } else if (primeOrder) {
+      if (order.compareTo(BigInteger.valueOf(1000000000000L)) < 0) {
+        // Shanks seems typically faster, but uses O(sqrt(order)) memory
+        return discreteLogShanksSteps(n, a, b, order);
+      }
+      return discreteLogPollardRho(n, a, b, order, 10);
+    }
+    return discreteLogPohligHellman(n, a, b, order, orderFactors);
+  }
+
+  /**
+   * Trial multiplication algorithm for computing the discrete logarithm of {@code a} to the base
+   * {@code b} modulo {@code n}.
+   */
+  private static BigInteger discreteLogTrialMul(BigInteger n, BigInteger a, BigInteger b,
+      int order) {
+    BigInteger x = BigInteger.ONE.mod(n);
+    for (int i = 0; i < order; i++) {
+      if (x.equals(a)) {
+        return BigInteger.valueOf(i);
+      }
+      x = x.multiply(b).mod(n);
+    }
+    throw new ValueError("Log does not exist");
+  }
+
+  /**
+   * Baby-step giant-step algorithm for computing the discrete logarithm of {@code a} to the base
+   * {@code b} modulo {@code n}.
+   */
+  private static BigInteger discreteLogShanksSteps(BigInteger n, BigInteger a, BigInteger b,
+      BigInteger order) {
+    // m = sqrt(order) + 1
+    long m = order.sqrt().longValueExact() + 1;
+    Map<BigInteger, Long> table = new HashMap<>();
+    BigInteger x = BigInteger.ONE;
+    for (long i = 0; i < m; i++) {
+      table.put(x, i);
+      x = x.multiply(b).mod(n);
+    }
+    // z = pow(b, -m, n)
+    BigInteger z = b.modInverse(n).modPow(BigInteger.valueOf(m), n);
+    x = a;
+    for (long i = 0; i < m; i++) {
+      Long t = table.get(x);
+      if (t != null) {
+        return BigInteger.valueOf(i).multiply(BigInteger.valueOf(m)).add(BigInteger.valueOf(t));
+      }
+      x = x.multiply(z).mod(n);
+    }
+    throw new ValueError("Log does not exist");
+  }
+
+  /** A random number in the range {@code 1..order-1} */
+  private static BigInteger randomBelow(BigInteger order, java.util.Random random) {
+    BigInteger range = order.subtract(BigInteger.ONE);
+    BigInteger r;
+    do {
+      r = new BigInteger(range.bitLength(), random);
+    } while (r.compareTo(range) >= 0);
+    return r.add(BigInteger.ONE);
+  }
+
+  /**
+   * Pollard's Rho algorithm for computing the discrete logarithm of {@code a} to the base
+   * {@code b} modulo {@code n}.
+   */
+  private static BigInteger discreteLogPollardRho(BigInteger n, BigInteger a, BigInteger b,
+      BigInteger order, int retries) {
+    java.util.Random random = java.util.concurrent.ThreadLocalRandom.current();
+    final long maxSteps = order.bitLength() < 63 ? order.longValue() : Long.MAX_VALUE;
+    for (int i = 0; i < retries; i++) {
+      // state: {x, exponent of b, exponent of a}
+      BigInteger[] tortoise = new BigInteger[3];
+      tortoise[1] = randomBelow(order, random);
+      tortoise[2] = randomBelow(order, random);
+      tortoise[0] = b.modPow(tortoise[1], n).multiply(a.modPow(tortoise[2], n)).mod(n);
+      BigInteger[] hare = tortoise.clone();
+      pollardRhoStep(hare, n, a, b, order);
+      for (long j = 0; j < maxSteps; j++) {
+        pollardRhoStep(tortoise, n, a, b, order);
+        pollardRhoStep(hare, n, a, b, order);
+        pollardRhoStep(hare, n, a, b, order);
+        if (tortoise[0].equals(hare[0])) {
+          BigInteger r = tortoise[2].subtract(hare[2]).mod(order);
+          try {
+            BigInteger e = r.modInverse(order).multiply(hare[1].subtract(tortoise[1])).mod(order);
+            if (b.modPow(e, n).equals(a)) {
+              return e;
+            }
+          } catch (ArithmeticException ae) {
+            // not invertible
+          }
+          break;
+        }
+      }
+    }
+    throw new ValueError("Pollard's Rho failed to find logarithm");
+  }
+
+  private static void pollardRhoStep(BigInteger[] state, BigInteger n, BigInteger a,
+      BigInteger b, BigInteger order) {
+    int c = state[0].mod(BigInteger.valueOf(3)).intValue();
+    if (c == 0) {
+      state[0] = a.multiply(state[0]).mod(n);
+      state[2] = state[2].add(BigInteger.ONE).mod(order);
+    } else if (c == 1) {
+      state[0] = state[0].multiply(state[0]).mod(n);
+      state[1] = state[1].shiftLeft(1).mod(order);
+      state[2] = state[2].shiftLeft(1).mod(order);
+    } else {
+      state[0] = b.multiply(state[0]).mod(n);
+      state[1] = state[1].add(BigInteger.ONE).mod(order);
+    }
+  }
+
+  /**
+   * Pohlig-Hellman algorithm for computing the discrete logarithm of {@code a} to the base
+   * {@code b} modulo {@code n}. It takes advantage of the factorization of the group order.
+   */
+  private static BigInteger discreteLogPohligHellman(BigInteger n, BigInteger a, BigInteger b,
+      BigInteger order, Map<BigInteger, Integer> orderFactors) {
+    if (orderFactors == null) {
+      orderFactors = factorIntegerMap(order);
+    }
+    BigInteger bInverse = b.modInverse(n);
+    BigInteger d = BigInteger.ZERO;
+    for (Map.Entry<BigInteger, Integer> entry : orderFactors.entrySet()) {
+      BigInteger pi = entry.getKey();
+      int ri = entry.getValue();
+      BigInteger li = BigInteger.ZERO;
+      BigInteger bj = b.modPow(order.divide(pi), n);
+      for (int j = 0; j < ri; j++) {
+        // aj = pow(a * pow(b, -l[i], n), order // pi**(j + 1), n)
+        BigInteger aj = a.multiply(bInverse.modPow(li, n)).mod(n).modPow(order.divide(pi.pow(j + 1)), n);
+        BigInteger cj = discreteLog(n, aj, bj, pi, Boolean.TRUE, null);
+        li = li.add(cj.multiply(pi.pow(j)));
+      }
+      // d, _ = crt([pi**ri for pi, ri in order_factors.items()], l)
+      BigInteger modulus = pi.pow(ri);
+      BigInteger cofactor = order.divide(modulus);
+      d = d.add(li.multiply(cofactor).multiply(cofactor.modInverse(modulus)));
+    }
+    d = d.mod(order);
+    if (!b.modPow(d, n).equals(a)) {
+      throw new ValueError("Log does not exist");
+    }
+    return d;
   }
 
   /** Adapter to {@link Primality#factorInteger(BigInteger)} returning a plain {@code Map}. */

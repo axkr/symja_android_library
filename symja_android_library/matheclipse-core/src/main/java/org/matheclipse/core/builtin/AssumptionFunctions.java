@@ -449,6 +449,7 @@ public class AssumptionFunctions {
       try {
         engine.setAssumptions(assumptions);
         IExpr result = engine.evalWithoutNumericReset(expr);
+        result = org.matheclipse.core.sympy.assumptions.Refine.refine(result, engine);
         return decideRelation(result, assumptions, engine).orElse(result);
       } finally {
         engine.setAssumptions(oldAssumptions);

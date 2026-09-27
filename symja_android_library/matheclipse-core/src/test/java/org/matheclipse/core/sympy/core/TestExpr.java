@@ -70,6 +70,10 @@ public class TestExpr extends ExprEvaluatorTestCase {
     ISymbol x = F.x;
     ISymbol y = F.y;
     assertEquals(F.C2.as_coeff_add().toString(), "{2,{}}");
+    // assert S(-2).as_coeff_add() == (-2, ())
+    assertEquals(F.CN2.as_coeff_add().toString(), "{-2,{}}");
+    // assert (3.0 + x).as_coeff_add() == (0, (3.0, x))
+    assertEquals(F.Plus(F.num(3.0), x).as_coeff_add().toString(), "{0,{3.0,x}}");
     assertEquals(F.num(3.0).as_coeff_add().toString(), "{0,{3.0}}");
     assertEquals(F.num(-3.0).as_coeff_add().toString(), "{0,{-3.0}}");
     assertEquals(x.as_coeff_add().toString(), "{0,{x}}");

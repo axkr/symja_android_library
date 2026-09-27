@@ -22,8 +22,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
@@ -34,9 +34,10 @@ import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.AiryZeros;
 import org.matheclipse.core.numerics.functions.AngerWeber;
-import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.numerics.functions.BesselJS;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import com.google.common.math.IntMath;
 
 public class BesselFunctions {
@@ -61,6 +62,12 @@ public class BesselFunctions {
       S.BesselYZero.setEvaluator(new BesselYZero());
       S.HankelH1.setEvaluator(new HankelH1());
       S.HankelH2.setEvaluator(new HankelH2());
+      S.KelvinBei.setEvaluator(new Kelvin(Kelvin.BEI));
+      S.KelvinBer.setEvaluator(new Kelvin(Kelvin.BER));
+      S.KelvinKei.setEvaluator(new Kelvin(Kelvin.KEI));
+      S.KelvinKer.setEvaluator(new Kelvin(Kelvin.KER));
+      S.AiryAiZero.setEvaluator(new AiryZero(false));
+      S.AiryBiZero.setEvaluator(new AiryZero(true));
       S.SphericalBesselJ.setEvaluator(new SphericalBesselJ());
       S.SphericalBesselY.setEvaluator(new SphericalBesselY());
       S.SphericalHankelH1.setEvaluator(new SphericalHankelH1());
@@ -150,8 +157,8 @@ public class BesselFunctions {
     /**
      * Smallest order answered by the endpoint expansion. The arbitrary precision routine is still
      * quick here - 11 ms at 1000, against 156 ms at 100000 and 1.4 s at 1000000 - so the two
-     * overlap rather than meet, and {@link AngerWeber#angerJ} is asked only where its series is
-     * far into its asymptotic regime.
+     * overlap rather than meet, and {@link AngerWeber#angerJ} is asked only where its series is far
+     * into its asymptotic regime.
      */
     private static final double MIN_ASYMPTOTIC_ANGERJ_ORDER = 1000.0;
 
@@ -168,8 +175,8 @@ public class BesselFunctions {
       if (!Double.isFinite(order) || Math.abs(order) < MIN_ASYMPTOTIC_ANGERJ_ORDER) {
         return F.NIL;
       }
-      return WorkingPrecision.evaluate(n, z, true,
-          (nu, argument, h) -> AngerWeber.angerJ(nu.real(), orderModTwo((IReal) n, h), argument, h));
+      return WorkingPrecision.evaluate(n, z, true, (nu, argument, h) -> AngerWeber.angerJ(nu.real(),
+          orderModTwo((IReal) n, h), argument, h));
     }
 
     /**
@@ -506,8 +513,8 @@ public class BesselFunctions {
    * </pre>
    */
   /**
-   * Highest order {@link BesselY} expands. The work there rises linearly with the order - a
-   * million takes seconds - so 2147483647 would take hours.
+   * Highest order {@link BesselY} expands. The work there rises linearly with the order - a million
+   * takes seconds - so 2147483647 would take hours.
    *
    * <p>
    * There is no companion bound for a non-integer order, although one is badly needed:
@@ -1236,7 +1243,7 @@ public class BesselFunctions {
       }
       if (isNonFiniteNumber(n) || isNonFiniteNumber(z)) {
         // apfloat has no representation for these and answers a NumberFormatException from its
-        // constructor, which is not one of the failures caught below. Mathematica leaves
+        // constructor, which is not one of the failures caught below. WMA leaves
         // HankelH2[2, Infinity] unevaluated.
         return F.NIL;
       }
@@ -1662,6 +1669,239 @@ public class BesselFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+    }
+  }
+
+  /**
+   * <code>AiryAiZero(k)</code> and <code>AiryBiZero(k)</code> - the <code>k</code>-th zero of the
+   * Airy functions on the negative real axis.
+   */
+  private static final class AiryZero extends AbstractFunctionEvaluator {
+    private final boolean bi;
+
+    AiryZero(boolean bi) {
+      this.bi = bi;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr k = ast.arg1();
+      if (k.isNumber() && !(k.isInteger() && k.isPositive())) {
+        if (k.isInexactNumber() && k.isReal() && k.isPositive() && ((IReal) k).isNumIntValue()) {
+          return numericZero(((IReal) k).toIntDefault(), engine);
+        }
+        // Positive integer expected at position `2` in `1`.
+        return Errors.printMessage(ast.topHead(), "intp", F.List(ast, F.C1), engine);
+      }
+      return F.NIL;
+    }
+
+    private IExpr numericZero(int k, EvalEngine engine) {
+      if (k <= 0) {
+        return F.NIL;
+      }
+      try {
+        if (engine.isArbitraryMode()) {
+          long precision = engine.getNumericPrecision();
+          return F
+              .num(bi ? AiryZeros.airyBiZero(k, precision) : AiryZeros.airyAiZero(k, precision));
+        }
+        return F.num(bi ? AiryZeros.airyBiZero(k) : AiryZeros.airyAiZero(k));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return Errors.printMessage(bi ? S.AiryBiZero : S.AiryAiZero, rex);
+      }
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.isAST1() && ast.arg1().isReal() && ((IReal) ast.arg1()).isNumIntValue()) {
+        return numericZero(ast.arg1().toIntDefault(), engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+    }
+  }
+
+  /**
+   * The Kelvin functions <code>KelvinBer(n, z), KelvinBei(n, z), KelvinKer(n, z), KelvinKei(n, z)
+   * </code>.
+   *
+   * <p>
+   * See
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Kelvin_functions">Wikipedia - Kelvin functions</a>
+   * <li><a href="https://dlmf.nist.gov/10.61">DLMF - 10.61 Kelvin functions</a>
+   * </ul>
+   */
+  static final class Kelvin extends AbstractFunctionEvaluator implements IFunctionExpand {
+    static final int BER = 0;
+    static final int BEI = 1;
+    static final int KER = 2;
+    static final int KEI = 3;
+
+    private final int kind;
+
+    Kelvin(int kind) {
+      this.kind = kind;
+    }
+
+    /**
+     * The entire function <code>BesselJ(n,w)/(w/2)^n</code> multiplied by the phase factor for
+     * <code>w = z*E^(sign*3/4*Pi*I)</code>.
+     */
+    private static IExpr berTerm(IExpr n, IExpr z, int sign) {
+      IExpr w = F.Times(z, F.Power(S.E, F.Times(F.QQ(3 * sign, 4), F.CI, S.Pi)));
+      return F.Times(F.Power(S.E, F.Times(F.QQ(3 * sign, 4), F.CI, S.Pi, n)), F.BesselJ(n, w),
+          F.Power(F.Times(F.C1D2, w), F.Negate(n)));
+    }
+
+    /**
+     * <code>BesselI(v, z*E^(sign*1/4*Pi*I))</code> with the power written as
+     * <code>(z/2)^v * E^(sign*1/4*Pi*I*v)</code>.
+     */
+    private static IExpr besselIz(IExpr v, IExpr z, int sign) {
+      IExpr w = F.Times(z, F.Power(S.E, F.Times(F.QQ(sign, 4), F.CI, S.Pi)));
+      return F.Times(F.Power(F.Times(F.C1D2, z), v),
+          F.Power(S.E, F.Times(F.QQ(sign, 4), F.CI, S.Pi, v)), F.BesselI(v, w),
+          F.Power(F.Times(F.C1D2, w), F.Negate(v)));
+    }
+
+    /**
+     * <code>ker(n,z)+I*kei(n,z) == E^(-n*Pi*I/2) * BesselK(n, z*E^(1/4*Pi*I))</code>, where
+     * <code>BesselK</code> is continued analytically from the positive real axis of <code>z</code>.
+     *
+     * @param sign <code>1</code> for the term above, <code>-1</code> for the conjugated term
+     */
+    private static IExpr kerTerm(IExpr n, IExpr z, int sign) {
+      IExpr phase = F.Power(S.E, F.Times(F.QQ(-sign, 2), F.CI, S.Pi, n));
+      if (n.isMathematicalIntegerNonNegative() || n.isMathematicalIntegerNegative()) {
+        IExpr w = F.Times(z, F.Power(S.E, F.Times(F.QQ(sign, 4), F.CI, S.Pi)));
+        IExpr besselK = F.BesselK(n, w);
+        if (z.isNumber()) {
+          // BesselK(n, w*E^(2*m*Pi*I)) == BesselK(n,w) - 2*m*Pi*I*(-1)^n*BesselI(n,w)
+          final double theta = z.evalfc().getArgument() + sign * Math.PI / 4.0;
+          int m = 0;
+          if (theta > Math.PI) {
+            m = 1;
+          } else if (theta <= -Math.PI) {
+            m = -1;
+          }
+          if (m != 0) {
+            besselK = F.Plus(besselK,
+                F.Times(F.ZZ(-2 * m), S.Pi, F.CI, F.Power(F.CN1, n), F.BesselI(n, w)));
+          }
+        }
+        return F.Times(phase, besselK);
+      }
+      // Pi/2*(BesselI(-n,w)-BesselI(n,w))/Sin(n*Pi)
+      return F.Times(phase, F.C1D2, S.Pi, F.Power(F.Sin(F.Times(n, S.Pi)), F.CN1),
+          F.Subtract(besselIz(F.Negate(n), z, sign), besselIz(n, z, sign)));
+    }
+
+    private IExpr expand(IExpr n, IExpr z) {
+      switch (kind) {
+        case BER:
+          // (z/2)^n * Sum(Cos((3/4*n+k/2)*Pi)/(k!*Gamma(n+k+1))*(z^2/4)^k, {k,0,Infinity})
+          return F.Times(F.C1D2, F.Power(F.Times(F.C1D2, z), n),
+              F.Plus(berTerm(n, z, 1), berTerm(n, z, -1)));
+        case BEI:
+          return F.Times(F.CNI, F.C1D2, F.Power(F.Times(F.C1D2, z), n),
+              F.Subtract(berTerm(n, z, 1), berTerm(n, z, -1)));
+        case KER:
+          return F.Times(F.C1D2, F.Plus(kerTerm(n, z, 1), kerTerm(n, z, -1)));
+        default:
+          return F.Times(F.CNI, F.C1D2, F.Subtract(kerTerm(n, z, 1), kerTerm(n, z, -1)));
+      }
+    }
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (kind == KER || kind == KEI) {
+        // the formula with BesselI functions is only valid for a non-integer order
+        if (ast.isAST1() || !ast.arg1().isNumber() || ast.arg1().isInteger()) {
+          return F.NIL;
+        }
+      }
+      if (ast.isAST1()) {
+        return expand(F.C0, ast.arg1());
+      }
+      return expand(ast.arg1(), ast.arg2());
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.isAST1() ? F.C0 : ast.arg1();
+      IExpr z = ast.isAST1() ? ast.arg1() : ast.arg2();
+      if (z.isZero() && n.isInteger()) {
+        if (kind == KER || kind == KEI) {
+          if (kind == KEI && n.isZero()) {
+            return F.Times(F.CN1D4, S.Pi);
+          }
+          return F.NIL;
+        }
+        // ber(0,0)==1, all other ber(n,0), bei(n,0) are zero for integer n
+        return (kind == BER && n.isZero()) ? F.C1 : F.C0;
+      }
+      // WMA keeps KelvinBer(0, z) unevaluated
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      IExpr n = ast.isAST1() ? F.C0 : ast.arg1();
+      IExpr z = ast.isAST1() ? ast.arg1() : ast.arg2();
+      if (!n.isNumber() || !z.isNumber()) {
+        return F.NIL;
+      }
+      if (z.isZero()) {
+        return F.NIL;
+      }
+      final boolean real =
+          n.isReal() && z.isReal() && (z.isPositive() || (kind != KER && kind != KEI
+              && (n.isMathematicalIntegerNonNegative() || n.isMathematicalIntegerNegative())));
+      try {
+        IExpr result = engine.evaluate(expand(n, z));
+        if (result.isNumber()) {
+          return real ? result.re() : result;
+        }
+      } catch (LossOfPrecisionException lpe) {
+        // Complete loss of accurate digits (apfloat).
+        return Errors.printMessage(ast.topHead(), "zzapfloatcld", F.List());
+      } catch (OverflowException ofe) {
+        // Overflow occurred in apfloat computation.
+        return Errors.printMessage(ast.topHead(), "ovfl", F.List());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override

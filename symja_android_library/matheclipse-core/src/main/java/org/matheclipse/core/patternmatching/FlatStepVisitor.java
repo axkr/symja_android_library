@@ -45,6 +45,11 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 
   @Override
   public boolean visit(int[][] result) {
+    if (Thread.currentThread().isInterrupted()) {
+      // the partitions of a long Plus or Times are exponentially many and are matched without an
+      // evaluation, which would otherwise notice the timeout
+      throw org.matheclipse.core.eval.exception.TimeoutException.TIMED_OUT;
+    }
     return !matchSinglePartition(result, stackMatcher);
   }
 

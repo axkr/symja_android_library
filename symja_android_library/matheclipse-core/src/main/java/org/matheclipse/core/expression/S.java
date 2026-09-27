@@ -22540,6 +22540,16 @@ public class S {
   public final static IBuiltInSymbol Strict = S.initFinalSymbol("Strict", ID.Strict);
 
   /**
+   * StrictInequalities(x) - TODO describe `StrictInequalities`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StrictInequalities.md">StrictInequalities
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StrictInequalities =
+      S.initFinalSymbol("StrictInequalities", ID.StrictInequalities);
+
+  /**
    * String - is the head of strings..
    * 
    * @see <a href=

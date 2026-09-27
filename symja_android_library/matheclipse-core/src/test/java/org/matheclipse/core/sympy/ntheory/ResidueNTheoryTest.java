@@ -116,4 +116,55 @@ public class ResidueNTheoryTest extends ExprEvaluatorTestCase {
     assertTrue(r.isInteger());
     assertIsRoot(r, 8, 3, 25);
   }
+
+  @Test
+  public void testDiscreteLog() {
+    // https://github.com/sympy/sympy/blob/master/sympy/ntheory/tests/test_residue.py
+    // assert discrete_log(1, 0, 2) == 0
+    checkDiscreteLog("1", "0", "2", "0");
+    // raises(ValueError, lambda: discrete_log(-4, 1, 3))
+    checkDiscreteLog("-4", "1", "3", "NIL");
+    // raises(ValueError, lambda: discrete_log(10, 3, 2))
+    checkDiscreteLog("10", "3", "2", "NIL");
+    // assert discrete_log(587, 2**9, 2) == 9
+    checkDiscreteLog("587", "512", "2", "9");
+    // assert discrete_log(41, 15, 7) == 3
+    checkDiscreteLog("41", "15", "7", "3");
+    // assert _discrete_log_trial_mul(941, 7**18, 7) == 18
+    checkDiscreteLogPower("941", 7, 18);
+    // assert _discrete_log_shanks_steps(2456747, 3**321, 3) == 321
+    checkDiscreteLogPower("2456747", 3, 321);
+    // assert _discrete_log_pollard_rho(24567899, 3**333, 3, rseed=0) == 333
+    checkDiscreteLogPower("24567899", 3, 333);
+    // assert _discrete_log_pohlig_hellman(14789363, 11**444, 11) == 444
+    checkDiscreteLogPower("14789363", 11, 444);
+    // assert discrete_log(2456747, 3**51, 3) == 51
+    checkDiscreteLogPower("2456747", 3, 51);
+    // assert discrete_log(32942478, 11**127, 11) == 127
+    checkDiscreteLogPower("32942478", 11, 127);
+    // assert discrete_log(432751500361, 7**324, 7) == 324
+    checkDiscreteLogPower("432751500361", 7, 324);
+    // assert discrete_log(265390227570863,184500076053622, 2) == 17835221372061
+    checkDiscreteLog("265390227570863", "184500076053622", "2", "17835221372061");
+    // assert discrete_log(22708823198678103974314518195029102158525052496759285596453269189798311427475159776411276642277139650833937,
+    // 17463946429475485293747680247507700244427944625055089103624311227422110546803452417458985046168310373075327,
+    // 123456) == 2068031853682195777930683306640554533145512201725884603914601918777510185469769997054750835368413389728895
+    checkDiscreteLog(
+        "22708823198678103974314518195029102158525052496759285596453269189798311427475159776411276642277139650833937",
+        "17463946429475485293747680247507700244427944625055089103624311227422110546803452417458985046168310373075327",
+        "123456",
+        "2068031853682195777930683306640554533145512201725884603914601918777510185469769997054750835368413389728895");
+  }
+
+  private static void checkDiscreteLog(String n, String a, String b, String expected) {
+    assertEquals(expected,
+        ResidueNTheory.discreteLog(F.ZZ(new BigInteger(n)), F.ZZ(new BigInteger(a)),
+            F.ZZ(new BigInteger(b))).toString());
+  }
+
+  private static void checkDiscreteLogPower(String n, int base, int exponent) {
+    BigInteger a = BigInteger.valueOf(base).pow(exponent);
+    assertEquals(Integer.toString(exponent), ResidueNTheory
+        .discreteLog(F.ZZ(new BigInteger(n)), F.ZZ(a), F.ZZ(base)).toString());
+  }
 }

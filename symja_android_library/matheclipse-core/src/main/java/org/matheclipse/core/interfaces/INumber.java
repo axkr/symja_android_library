@@ -88,9 +88,6 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
     if (!this.isRational()) {
       return F.pair(F.C0, F.List(this));
     }
-    if (this.isNegative()) {
-      return F.pair(this.negate(), F.List(F.CN1));
-    }
     return F.pair(this, F.CEmptyList);
   }
 

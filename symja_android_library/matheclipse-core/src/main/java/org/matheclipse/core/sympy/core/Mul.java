@@ -53,32 +53,7 @@ public class Mul {
   }
 
   public static Pair as_coeff_mul(IAST mulAST, IExpr... deps) {
-    if (deps.length > 0) {
-      IASTAppendable l1 = F.ListAlloc(mulAST.size());
-      IASTAppendable l2 = F.ListAlloc(mulAST.size());
-      for (int i = 1; i < mulAST.size(); i++) {
-        IExpr arg = mulAST.get(i);
-        if (arg.has(deps)) {
-          l1.append(arg);
-        } else {
-          l2.append(arg);
-        }
-      }
-      return F.pair(F.Times(l2), l1);
-    }
-
-    IExpr first = mulAST.arg1();
-    if (first.isNumber()) {
-      if (first.isRational()) {
-        return F.pair(first, mulAST.subList(2));
-      } else if (first.isNegative()) {
-        IASTAppendable rest = F.ListAlloc(mulAST.size());
-        rest.append(first.negate());
-        rest.appendAll(mulAST, 2, mulAST.size());
-        return F.pair(F.CN1, rest);
-      }
-    }
-    return F.pair(F.C1, mulAST.apply(F.List));
+    return as_coeff_mul(mulAST, true, deps);
   }
 
   public static Pair asCoeffMul(IAST mulAST, boolean rational) {

@@ -17,44 +17,70 @@ import org.matheclipse.core.sympy.core.Expr;
 import org.matheclipse.core.sympy.solvers.Decompogen;
 
 public class Util {
-  public static IAST continuousDomain(IExpr expr, ISymbol symbol, IExpr domain) {
-    IAST cont_domain = F.NIL;
-    if (domain == S.Reals) {
-      cont_domain = IntervalDataSym.reals();
-      // } else if (IntervalDataSym.isInterval(domain)) {
-    } else if (domain.isIntervalData()) {
-      if (IntervalDataSym.isEmptySet(domain)) {
-        return IntervalDataSym.emptySet();
-      }
-      cont_domain = (IAST) domain;
-    }
-    if (cont_domain.isNIL()) {
-      throw new UnsupportedOperationException("Domain must be a subset of Reals.");
-    }
 
-    ISymbol x = F.Dummy('x');
+  /**
+   * Determines the convexity of the function in the given domain.
+   *
+   * @param f the function
+   * @param x the variable
+   * @param domain a condition like <code>0&lt;x&lt;1</code>, use {@link S#True} for all real
+   *        numbers
+   * @return {@link S#True} if the function is convex, {@link S#False} if the function isn't
+   *         convex or {@link F#NIL} if the convexity can't be decided
+   */
+  public static IExpr isConvex(IExpr f, ISymbol x, IExpr domain, EvalEngine engine) {
+    // >>> is_convex(exp(x), x)
+    // True
+    // >>> is_convex(x**3, x, domain = Interval(-1, oo))
+    // False
+    // >>> is_convex(1/x**2, x, domain=Interval.open(0, oo))
+    // True
 
-    if (expr.isAST()) {
-      IAST f = (IAST) expr;
-      for (int i = 1; i < f.size(); i++) {
-        IExpr atom = f.get(i);
-        if (atom.isPower()) {
-          IExpr exp = atom.exponent();
-          IExpr den = exp.asNumerDenom().second();
-          if (exp.isRational() && den.isOdd()) {
-            // pass # 0^negative handled by singularities()
-          } else {
-            // IAST constraint =
-            // solveUnivariateInequality(F.GreaterEqual(atom.base(), F.C0), symbol).as_set();
-            // cont_domain =
-            // IntervalDataSym.intersectionIntervalData(constraint, cont_domain, EvalEngine.get());
-          }
-        }
-      }
+    // if any(s in domain for s in singularities(f, var)):
+    // return False
+    if (Singularities.hasSingularity(f, domain, x, engine).isTrue()) {
+      return S.False;
     }
-    return F.NIL;
+    // condition = f.diff(var, 2) < 0
+    // if solve_univariate_inequality(condition, var, False, domain):
+    // return False
+    IExpr derivative = engine.evaluate(F.D(f, F.List(x, F.C2)));
+    if (!derivative.isFree(S.D, true) || !derivative.isFree(S.Derivative, true)) {
+      return F.NIL;
+    }
+    IExpr reduced = Singularities.reduce(F.Less(derivative, F.C0), domain, x, engine);
+    if (reduced.isNIL()) {
+      return F.NIL;
+    }
+    return reduced.isFalse() ? S.True : S.False;
   }
 
+  /**
+   * Returns the stationary points of a function (where derivative of the function is 0) in the
+   * given domain.
+   *
+   * @param f the function
+   * @param x the variable
+   * @param domain a condition like <code>0&lt;x&lt;1</code>, use {@link S#True} for all real
+   *        numbers
+   * @return the reduced condition for the stationary points, for example
+   *         <code>x==-1||x==1</code>; {@link S#False} if there are no stationary points or
+   *         {@link F#NIL} if the stationary points can't be determined
+   */
+  public static IExpr stationaryPoints(IExpr f, ISymbol x, IExpr domain, EvalEngine engine) {
+    // >>> stationary_points(1/x, x, S.Reals)
+    // EmptySet
+    // >>> stationary_points(sin(x),x, Interval(0, 4*pi))
+    // {pi/2, 3*pi/2, 5*pi/2, 7*pi/2}
+    IExpr derivative = engine.evaluate(F.D(f, x));
+    if (!derivative.isFree(S.D, true) || !derivative.isFree(S.Derivative, true)) {
+      return F.NIL;
+    }
+    if (derivative.isZero()) {
+      return domain;
+    }
+    return Singularities.reduce(F.Equal(derivative, F.C0), domain, x, engine);
+  }
   /**
    * Return the checked period or raise an error.
    * 

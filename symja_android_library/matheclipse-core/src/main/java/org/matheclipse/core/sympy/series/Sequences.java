@@ -74,37 +74,30 @@ public class Sequences {
       // sequences if they can simplify themselves with any other constituent.
       boolean new_args = true;
       while (new_args) {
-        for (int i = 0; i < args.length - 1; i++) {
-          new_args = false;
-          SeqBase[] newArgs = null;
-          SeqBase id1 = args[i];
-          SeqBase s = args[i + 1];
-          for (int j = 0; j < args.length - 1; j++) {
-            SeqBase id2 = args[j];
-            if (id1 == id2) {
+        new_args = false;
+        for (int i = 0; i < args.length && !new_args; i++) {
+          SeqBase s = args[i];
+          for (int j = 0; j < args.length; j++) {
+            if (i == j) {
               continue;
             }
-            SeqBase t = args[j + 1];
+            SeqBase t = args[j];
             SeqBase new_seq = s._mul(t);
             // This returns null if s does not know how to multiply
             // with t. Returns the newly multiplied sequence otherwise
             if (new_seq != null) {
               int na = 0;
-              newArgs = new SeqBase[args.length - 2];
+              SeqBase[] newArgs = new SeqBase[args.length - 1];
               for (int k = 0; k < args.length; k++) {
-                SeqBase seq = args[k];
-                if (seq != s && seq != t) {
-                  newArgs[na++] = seq;
+                if (k != i && k != j) {
+                  newArgs[na++] = args[k];
                 }
               }
-              newArgs[na++] = new_seq;
+              newArgs[na] = new_seq;
+              args = newArgs;
+              new_args = true;
               break;
             }
-
-          }
-          if (newArgs != null && newArgs.length > 0) {
-            args = newArgs;
-            break;
           }
         }
       }
