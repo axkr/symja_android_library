@@ -10921,6 +10921,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testStringsAboveBMP() {
+    // Count characters as code points: \|013362 is one character
+    check("StringLength(\"\\|013362\")", //
+        "1");
+    check("ToCharacterCode(\"\\|013362\")", //
+        "{78690}");
+    check("ToCharacterCode(FromCharacterCode(78690))", //
+        "{78690}");
+    check("ToCharacterCode(Characters(\"a\\|01F600b\"))", //
+        "{{97},{128512},{98}}");
+    check("StringPosition(\"a\\|01F600b\", \"b\")", //
+        "{{3,3}}");
+    check(
+        "ToCharacterCode({StringTake(\"a\\|01F600b\", 2), StringTake(\"a\\|01F600b\", -2),"
+            + " StringDrop(\"a\\|01F600b\", 1), StringPart(\"a\\|01F600b\", 2)})", //
+        "{{97,128512},{128512,98},{128512,98},{128512}}");
+    check("ToCharacterCode(StringReverse(\"a\\|01F600b\"))", //
+        "{98,128512,97}");
+  }
+
+  @Test
+  public void testHoldFormBoxes() {
+    check("InputForm(ToBoxes(HoldForm(1 + 1)))", //
+        "TagBox(RowBox({\"1\",\"+\",\"1\"}),HoldForm)");
+    // Editable is no built-in symbol yet, so the relaxed syntax lowercases it
+    check("InputForm(ToBoxes(TraditionalForm(x^2)))", //
+        "TagBox(FormBox(SuperscriptBox(\"x\",\"2\"),TraditionalForm),TraditionalForm,editable->True)");
+    check("InputForm(ToBoxes(Defer(1 + 1)))", //
+        "RowBox({\"1\",\"+\",\"1\"})");
+    check("ToString(HoldForm(1 + 1), InputForm)", //
+        "HoldForm(1 + 1)");
+  }
+
+  @Test
   public void testMathMLFormMatrixFormOfANonList() {
     // MatrixForm of something which is no matrix displays it as it is
     check(

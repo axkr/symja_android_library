@@ -329,8 +329,9 @@ public final class StringFunctions {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
-      final String str = ast.arg1().toString();
-      return F.mapRange(0, str.length(), i -> F.$str(str.charAt(i)));
+      // one string per code point, so a character above U+FFFF stays whole
+      final int[] codePoints = ast.arg1().toString().codePoints().toArray();
+      return F.mapRange(0, codePoints.length, i -> F.$str(new String(codePoints, i, 1)));
     }
 
     @Override
@@ -644,7 +645,6 @@ public final class StringFunctions {
     private static IExpr fromCharacterCode(final IAST charList, final IAST fromCharacterCodeAST,
         EvalEngine engine) {
       final StringBuilder buffer = new StringBuilder(charList.size());
-      char ch;
       for (int i = 1; i < charList.size(); i++) {
         if (charList.get(i).isInteger()) {
           int unicode = charList.get(i).toIntDefault();
@@ -654,9 +654,8 @@ public final class StringFunctions {
             return Errors.printMessage(S.FromCharacterCode, "notunicode", F.list(charList, F.ZZ(i)),
                 engine);
           }
-          ch = (char) unicode;
-
-          buffer.append(ch);
+          // a code point above U+FFFF is a surrogate pair in Java; a (char) cast cut it off
+          buffer.appendCodePoint(unicode);
         } else {
           return F.NIL;
         }
@@ -1477,7 +1476,7 @@ public final class StringFunctions {
       int to = 1;
       try {
         if (ast.arg1().isString()) {
-          String s = ast.arg1().toString();
+          CodePointString s = new CodePointString(ast.arg1().toString());
           if (ast.arg2().isList()) {
             // `{m, n}` drops the characters m through n and keeps the rest; `{m}` drops one
             int[] sequ = Validate.checkListOfInts(ast, ast.arg2(), Integer.MIN_VALUE,
@@ -1992,10 +1991,10 @@ public final class StringFunctions {
    * <p>
    * The repetitions of <code>pad</code> are lined up with the far end of the finished string - its
    * right end for <code>StringPadLeft</code>, its left end for <code>StringPadRight</code>.
-   * Mathematica (2026-09-11): <code>StringPadLeft["abc", 9, "xy"]</code> is
-   * <code>"yxyxyxabc"</code>, <code>StringPadRight["abc", 9, "xy"]</code> is
-   * <code>"abcyxyxyx"</code>, and a string longer than <code>n</code> keeps its right end
-   * (<code>StringPadLeft</code>) or its left end (<code>StringPadRight</code>).
+   * <code>StringPadLeft["abc", 9, "xy"]</code> is <code>"yxyxyxabc"</code>,
+   * <code>StringPadRight["abc", 9, "xy"]</code> is <code>"abcyxyxyx"</code>, and a string longer
+   * than <code>n</code> keeps its right end (<code>StringPadLeft</code>) or its left end
+   * (<code>StringPadRight</code>).
    */
   private static class StringPad extends AbstractFunctionEvaluator {
     private final boolean left;
@@ -2088,7 +2087,8 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isString()) {
-        return F.ZZ(ast.arg1().toString().length());
+        String str = ast.arg1().toString();
+        return F.ZZ(str.codePointCount(0, str.length()));
       }
       // String expected at position `1` in `2`.
       return Errors.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
@@ -2244,7 +2244,7 @@ public final class StringFunctions {
       if (arg2.isList()) {
         return arg2.mapThread(ast, 2);
       }
-      String str = ast.arg1().toString();
+      CodePointString str = new CodePointString(ast.arg1().toString());
       int part = arg2.toMachineInt();
       if (part > 0) {
         if (part > str.length()) {
@@ -2252,7 +2252,7 @@ public final class StringFunctions {
           return Errors.printMessage(ast.topHead(), "partw", F.list(F.ZZ(part), ast.arg1()),
               engine);
         }
-        return F.stringx(str.charAt(part - 1));
+        return F.stringx(str.substring(part - 1, part));
       }
 
       return F.NIL;
@@ -2279,12 +2279,14 @@ public final class StringFunctions {
         return F.NIL;
       }
       String s1 = arg1.toString();
+      CodePointString positions = new CodePointString(s1);
       java.util.regex.Matcher matcher = pattern.matcher(s1);
       while (matcher.find()) {
         if (maxOccurences < result.size()) {
           return result;
         }
-        result.append(F.list(F.ZZ(matcher.start() + 1), F.ZZ(matcher.end())));
+        result.append(F.list(F.ZZ(positions.position(matcher.start()) + 1),
+            F.ZZ(positions.position(matcher.end()))));
       }
       return result;
     }
@@ -3079,7 +3081,7 @@ public final class StringFunctions {
           // if (sequ == null) {
           // return F.NIL;
           // }
-          String s = arg1.toString();
+          CodePointString s = new CodePointString(arg1.toString());
           IExpr arg2 = ast.arg2();
           if (arg2.isAST(S.UpTo, 2)) {
             int upTo = Validate.checkUpTo((IAST) arg2, engine);
@@ -3559,8 +3561,9 @@ public final class StringFunctions {
     public static IAST toCharacterCode(final String unicodeInput, final Charset inputEncoding) {
       final String utf8String =
           new String(unicodeInput.getBytes(inputEncoding), StandardCharsets.UTF_8);
-      final int length = utf8String.length();
-      return F.mapRange(0, length, i -> F.ZZ(utf8String.charAt(i)));
+      // code points: a character above U+FFFF is one code, not two surrogates
+      final int[] codePoints = utf8String.codePoints().toArray();
+      return F.mapRange(0, codePoints.length, i -> F.ZZ(codePoints[i]));
     }
 
     @Override
@@ -4009,6 +4012,69 @@ public final class StringFunctions {
 
   public static void initialize() {
     Initializer.init();
+  }
+
+  /**
+   * A string indexed by characters - Unicode code points - rather than by Java's UTF-16 units: a
+   * character above U+FFFF, like an emoji or <code>\\|01F600</code>, is one character, not a
+   * surrogate pair. For a string without such characters the positions are the same and nothing is
+   * converted.
+   */
+  static final class CodePointString {
+    private final String s;
+    /** The UTF-16 offset of each code point, or <code>null</code> if they are the same. */
+    private final int[] offsets;
+
+    CodePointString(String s) {
+      this.s = s;
+      int count = s.codePointCount(0, s.length());
+      if (count == s.length()) {
+        offsets = null;
+      } else {
+        offsets = new int[count];
+        for (int i = 0, unit = 0; i < count; i++) {
+          offsets[i] = unit;
+          unit += Character.charCount(s.codePointAt(unit));
+        }
+      }
+    }
+
+    /** The number of characters. */
+    int length() {
+      return offsets == null ? s.length() : offsets.length;
+    }
+
+    /**
+     * The UTF-16 offset of the character at <code>index</code>; <code>length()</code> maps to the
+     * end.
+     *
+     * @throws IndexOutOfBoundsException for an index outside the string
+     */
+    private int unit(int index) {
+      if (offsets == null || index == offsets.length) {
+        return offsets == null ? index : s.length();
+      }
+      return offsets[index];
+    }
+
+    /** The characters <code>begin</code> (inclusive) to <code>end</code> (exclusive). */
+    String substring(int begin, int end) {
+      return s.substring(unit(begin), unit(end));
+    }
+
+    String substring(int begin) {
+      return s.substring(unit(begin));
+    }
+
+    /** The character position of a UTF-16 offset, like a regular expression match reports. */
+    int position(int unitOffset) {
+      return offsets == null ? unitOffset : s.codePointCount(0, unitOffset);
+    }
+
+    @Override
+    public String toString() {
+      return s;
+    }
   }
 
   private StringFunctions() {}

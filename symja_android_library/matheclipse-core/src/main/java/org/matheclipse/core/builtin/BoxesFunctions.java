@@ -151,6 +151,20 @@ public class BoxesFunctions {
       if (expr.isAST(S.Skeleton, 2)) {
         return F.$str("<<" + expr.first().toString() + ">>");
       }
+      if (expr.isAST(S.HoldForm, 2)) {
+        // an invisible wrapper: TagBox keeps it for the way back, the front end shows the content
+        return F.binaryAST2(S.TagBox, standardFormRecursive(expr.first(), precedence, form, engine),
+            S.HoldForm);
+      }
+      if (expr.isAST(S.Defer, 2)) {
+        return standardFormRecursive(expr.first(), precedence, form, engine);
+      }
+      if (expr.isAST(S.TraditionalForm, 2)) {
+        return F.ternaryAST3(S.TagBox,
+            F.binaryAST2(S.FormBox, standardFormRecursive(expr.first(), 0, form, engine),
+                S.TraditionalForm),
+            S.TraditionalForm, F.Rule(F.symbol("Editable"), S.True));
+      }
       if (expr.isString()) {
         return F.$str(quotedString(expr.toString()));
       }

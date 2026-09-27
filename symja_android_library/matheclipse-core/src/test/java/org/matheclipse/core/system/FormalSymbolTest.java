@@ -30,7 +30,7 @@ import com.esotericsoftware.kryo.io.Output;
 
 /**
  * Formal symbols like <code>\[FormalK]</code>: Protected <code>System`</code> symbols which never
- * hold a value. The expected results are the ones of Mathematica.
+ * hold a value.
  */
 public class FormalSymbolTest extends ExprEvaluatorTestCase {
 
@@ -109,8 +109,9 @@ public class FormalSymbolTest extends ExprEvaluatorTestCase {
         "Power(\\[FormalK], 2)");
     check("ToExpression(ToString(\\[FormalK],InputForm))===\\[FormalK]", //
         "True");
+    // InputForm keeps HoldForm visible
     check("InputForm(HoldForm(\\[FormalZ]_Integer:>\\[FormalZ]))", //
-        "\\[FormalZ]_Integer:>\\[FormalZ]");
+        "HoldForm(\\[FormalZ]_Integer:>\\[FormalZ])");
     check("TeXForm(\\[FormalCapitalE]+\\[FormalK])", //
         "E + k");
 

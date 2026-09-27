@@ -393,8 +393,7 @@ public class OutputFormFactory {
   /**
    * <code>expr</code> as <code>Short</code> shows it in <code>width</code> characters: whole if it
    * fits, otherwise in about four fifths of the width, with about twice as much kept from the front
-   * as from the back. That is the shape Mathematica gives it where a page width applies (probed
-   * 2026-09-11 at <code>PageWidth -&gt; 78</code>): <code>Short[Range[100]]</code> is
+   * as from the back. That is the shape it gives here: <code>Short[Range[100]]</code> is
    * <code>{1, ..., 10, &lt;&lt;85&gt;&gt;, 96, ..., 100}</code>, <code>Short[Range[100], 2]</code>
    * keeps 21 and 10, and a 300 character string keeps its first 36 and last 18 characters.
    *
@@ -1883,7 +1882,8 @@ public class OutputFormFactory {
               break;
             case ID.Defer:
             case ID.HoldForm:
-              if (list.isAST1()) {
+              // InputForm shows HoldForm(...), so it reads back held
+              if (list.isAST1() && !(fInputForm && list.isAST(S.HoldForm))) {
                 convert(buf, list.arg1(), Integer.MIN_VALUE, false);
                 return;
               }
