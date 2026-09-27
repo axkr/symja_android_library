@@ -79,6 +79,7 @@ import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
@@ -6699,6 +6700,46 @@ public final class LinearAlgebra {
 
 
 
+    /**
+     * Transpose an association of associations with the same keys in the same order:
+     * <code>&lt;|a-&gt;&lt;|x-&gt;1,y-&gt;2|&gt;,b-&gt;&lt;|x-&gt;3,y-&gt;4|&gt;|&gt;</code>
+     * becomes
+     * <code>&lt;|x-&gt;&lt;|a-&gt;1,b-&gt;3|&gt;,y-&gt;&lt;|a-&gt;2,b-&gt;4|&gt;|&gt;</code>.
+     * Anything else gives the message <code>nmtx</code>.
+     */
+    private IExpr transposeAssociation(IAssociation assoc, IAST ast, EvalEngine engine) {
+      IAST innerKeys = F.NIL;
+      for (int i = 1; i < assoc.size(); i++) {
+        IExpr value = assoc.get(i);
+        if (!value.isAssociation()) {
+          innerKeys = F.NIL;
+          break;
+        }
+        IAST keys = ((IAssociation) value).keys();
+        if (innerKeys.isNIL()) {
+          innerKeys = keys;
+        } else if (!innerKeys.equals(keys)) {
+          innerKeys = F.NIL;
+          break;
+        }
+      }
+      if (innerKeys.isNIL() || innerKeys.argSize() == 0) {
+        // The first two levels of `1` cannot be transposed.
+        return Errors.printMessage(ast.topHead(), "nmtx", F.List(assoc), engine);
+      }
+      IAssociation result = F.assoc();
+      for (int j = 1; j < innerKeys.size(); j++) {
+        IAssociation row = F.assoc();
+        for (int i = 1; i < assoc.size(); i++) {
+          IExpr value = ((IAssociation) assoc.get(i)).get(j);
+          row.appendRule(
+              F.Rule(assoc.getRule(i).first(), isConjugate() ? F.Conjugate(value) : value));
+        }
+        result.appendRule(F.Rule(innerKeys.get(j), row));
+      }
+      return engine.evaluate(result);
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr arg1 = ast.arg1();
@@ -6711,6 +6752,14 @@ public final class LinearAlgebra {
       if (SymbolicArrayUtil.isArrayValued(arg1)) {
         // a symbolic array carries its own shape, so it must not reach the "not a matrix" message
         return SymbolicArrayFunctions.transposeSymbolic(arg1, arg2, isConjugate(), engine);
+      }
+      if (ast.isAST1() && arg1.isAssociation()) {
+        return transposeAssociation((IAssociation) arg1, ast, engine);
+      }
+      if (ast.isAST1() && arg1.isList() && arg1.argSize() > 0
+          && ((IAST) arg1).forAll(x -> x.isAssociation())) {
+        // leaves a list of associations as it is
+        return arg1;
       }
       // only the first two levels have to be rectangular: a ragged deeper level is not an error
       final boolean quiet = engine.isQuietMode();

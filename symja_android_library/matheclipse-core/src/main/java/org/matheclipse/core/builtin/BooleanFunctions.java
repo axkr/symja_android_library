@@ -2981,7 +2981,10 @@ public final class BooleanFunctions {
           continue;
         }
         comp = engine.evaluate(F.Greater(max1, max2));
-
+        if (comp.isPresent() && Min.knownEqual(max1, max2, engine)) {
+          // only a==b is known: keeps Max(a,b)
+          comp = F.NIL;
+        }
         if (comp.isFalse()) {
           max1 = max2;
           evaled = true;
@@ -2992,6 +2995,10 @@ public final class BooleanFunctions {
           // maximum. An assumption a==b on the other hand leaves both of them undecidable, so
           // that Max(a,b) is kept.
           comp = engine.evaluate(F.GreaterEqual(max1, max2));
+          if (comp.isPresent() && Min.knownEqual(max1, max2, engine)) {
+            // only a==b is known: keeps Max(a,b)
+            comp = F.NIL;
+          }
           if (comp.isTrue()) {
             evaled = true;
           } else if (comp.isFalse()) {
@@ -3019,7 +3026,8 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT,
+          Attribute.NUMERICFUNCTION);
       MAX_DUMMY_SYMBOL.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT);
     }
   }
@@ -3095,6 +3103,25 @@ public final class BooleanFunctions {
       return evaled;
     }
 
+    /**
+     * Whether the assumptions only say <code>a==b</code> (recorded as <code>a-b==0</code>), which
+     * Doesn't use to decide <code>Min(a,b)</code> or <code>Max(a,b)</code>:
+     * <code>Refine(Max(a,b), a==b)</code> stays <code>Max(a,b)</code>.
+     */
+    static boolean knownEqual(IExpr a, IExpr b, EvalEngine engine) {
+      IAssumptions assumptions = engine.getAssumptions();
+      if (assumptions == null || a.isNumber() || b.isNumber()) {
+        return false;
+      }
+      IAST zeros = assumptions.zeroPolynomials();
+      if (zeros == null || zeros.isEmpty()) {
+        return false;
+      }
+      IExpr difference = engine.evaluate(F.Subtract(a, b));
+      IExpr negated = engine.evaluate(F.Negate(difference));
+      return zeros.exists(z -> z.equals(difference) || z.equals(negated));
+    }
+
     private static IExpr minimum(IAST list, final boolean flattenedList, EvalEngine engine) {
       boolean evaled = false;
       IASTAppendable f = list.remove(x -> x.isInfinity());
@@ -3129,6 +3156,10 @@ public final class BooleanFunctions {
           continue;
         }
         comp = engine.evaluate(F.Less(min1, min2));
+        if (comp.isPresent() && knownEqual(min1, min2, engine)) {
+          // only a==b is known: keeps Min(a,b)
+          comp = F.NIL;
+        }
         if (comp.isFalse()) {
           min1 = min2;
           evaled = true;
@@ -3139,6 +3170,10 @@ public final class BooleanFunctions {
           // minimum. An assumption a==b on the other hand leaves both of them undecidable, so
           // that Min(a,b) is kept.
           comp = engine.evaluate(F.LessEqual(min1, min2));
+          if (comp.isPresent() && knownEqual(min1, min2, engine)) {
+            // only a==b is known: keeps Min(a,b)
+            comp = F.NIL;
+          }
           if (comp.isTrue()) {
             evaled = true;
           } else if (comp.isFalse()) {
@@ -3166,7 +3201,8 @@ public final class BooleanFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT, Attribute.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT,
+          Attribute.NUMERICFUNCTION);
       MIN_DUMMY_SYMBOL.setAttributes(Attribute.ONEIDENTITY, Attribute.ORDERLESS, Attribute.FLAT);
 
     }
@@ -3290,8 +3326,8 @@ public final class BooleanFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
-        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1,
-            S.Negative, engine);
+        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1, S.Negative,
+            engine);
       }
       if (arg1.isNegativeResult()) {
         return S.True;
@@ -3392,8 +3428,8 @@ public final class BooleanFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
-        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1,
-            S.NonNegative, engine);
+        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1, S.NonNegative,
+            engine);
       }
       if (arg1.isNonNegativeResult()) {
         return S.True;
@@ -3455,8 +3491,8 @@ public final class BooleanFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
-        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1,
-            S.NonPositive, engine);
+        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1, S.NonPositive,
+            engine);
       }
       if (arg1.isNegativeResult() || arg1.isZero() || arg1.isNonPositiveResult()) {
         return S.True;
@@ -3698,8 +3734,8 @@ public final class BooleanFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isQuantity()) {
         // the sign of a quantity is the sign of its magnitude
-        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1,
-            S.Positive, engine);
+        return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1, S.Positive,
+            engine);
       }
       if (arg1.isPositiveResult()) {
         return S.True;

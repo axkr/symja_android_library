@@ -295,6 +295,7 @@ public class Errors {
       "invdt", "The argument `1` is not a valid Association.", //
       "invdt2", "The argument `1` is not a rule or a list of rules.", //
       "invidx2", "Index `1` should be a machine sized integer between `2` and `3`.", //
+      "invl", "The argument `1` is not a list.", //
       "invrl", "The argument `1` is not a valid Association or a list of rules.", //
       "iopnf", "Value of option `1` should be a non-negative integer or Infinity.", //
       "ioppfa",

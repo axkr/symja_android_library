@@ -157,6 +157,7 @@ public final class OperatorTable {
       row("/.", "ReplaceAll", Affix.INFIX, 110, Grouping.LEFT),
       row("//", "//", Affix.INFIX, 70, Grouping.LEFT),
       row("//.", "ReplaceRepeated", Affix.INFIX, 110, Grouping.LEFT),
+      row("//=", "ApplyTo", Affix.INFIX, 100, Grouping.RIGHT),
       row("//@", "MapAll", Affix.INFIX, 620, Grouping.RIGHT),
       row("/:", "TagSet", Affix.INFIX, 40, Grouping.FLAT),
       row("/;", "Condition", Affix.INFIX, 130, Grouping.LEFT),

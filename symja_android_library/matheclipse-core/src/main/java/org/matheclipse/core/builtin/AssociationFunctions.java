@@ -39,7 +39,9 @@ public class AssociationFunctions {
     private static void init() {
       S.AssociateTo.setEvaluator(new AssociateTo());
       S.Association.setEvaluator(new Association());
+      S.AssociationComap.setEvaluator(new AssociationComap());
       S.AssociationMap.setEvaluator(new AssociationMap());
+      S.JoinAcross.setEvaluator(new JoinAcross());
       S.AssociationThread.setEvaluator(new AssociationThread());
       S.Counts.setEvaluator(new Counts());
       S.KeyDrop.setEvaluator(new KeyDrop());
@@ -447,6 +449,219 @@ public class AssociationFunctions {
    * <a href="Lookup.md">Lookup</a>, <a href="KeyExistsQ.md">KeyExistsQ</a>,
    * <a href="Keys.md">Keys</a>, <a href="KeySort.md">KeySort</a>, <a href="Values.md">Values</a>
    */
+  /**
+   * <code>AssociationComap({f1, f2, ...}, x)</code> - the association
+   * <code>&lt;|f1 -&gt; f1(x), f2 -&gt; f2(x), ...|&gt;</code>.
+   */
+  private static final class AssociationComap extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr functions = ast.arg1();
+      IExpr x = ast.arg2();
+      if (!functions.isList()) {
+        // The argument `1` is not a list.
+        return Errors.printMessage(S.AssociationComap, "invl", F.list(functions), engine);
+      }
+      IAssociation result = F.assoc();
+      for (IExpr f : (IAST) functions) {
+        result.appendRule(F.Rule(f, engine.evaluate(F.unaryAST1(f, x))));
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // AssociationComap({f1, f2, ...})(x) is AssociationComap({f1, f2, ...}, x)
+      return ARGS_2_2_2;
+    }
+  }
+
+  /**
+   * <code>JoinAcross(a, b, spec)</code>, <code>JoinAcross(a, b, spec, "Inner" | "Left" | "Right" |
+   * "Outer")</code> - join the associations of the lists <code>a</code> and <code>b</code> whose
+   * values for the keys <code>spec</code> agree. <code>spec</code> is a key, a list of keys or
+   * <code>Key(ka) -&gt; Key(kb)</code>. A key of both associations keeps the value of
+   * <code>a</code>, unless the option <code>KeyCollisionFunction -&gt; f</code> renames it to the
+   * two keys of <code>f(key)</code>. The missing values of unmatched rows are
+   * <code>Missing("Unmatched")</code>.
+   */
+  private static final class JoinAcross extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int argSize = ast.argSize();
+      IExpr collision = F.NIL;
+      while (argSize > 3 && ast.get(argSize).isRuleAST()) {
+        IExpr option = ast.get(argSize);
+        // no built-in symbol yet - compare the name
+        if (!option.first().isSymbol() || !((ISymbol) option.first()).getSymbolName()
+            .equalsIgnoreCase("KeyCollisionFunction")) {
+          return F.NIL;
+        }
+        collision = option.second();
+        argSize--;
+      }
+      if (argSize < 3 || argSize > 4 || !isListOfAssociations(ast.arg1())
+          || !isListOfAssociations(ast.arg2())) {
+        return F.NIL;
+      }
+      String type = "Inner";
+      if (argSize == 4) {
+        if (!ast.arg4().isString()) {
+          return F.NIL;
+        }
+        type = ast.arg4().toString();
+        if (!type.equals("Inner") && !type.equals("Left") && !type.equals("Right")
+            && !type.equals("Outer")) {
+          return F.NIL;
+        }
+      }
+      IExpr spec = ast.arg3();
+      IAST keysA;
+      IAST keysB;
+      if (spec.isRuleAST()) {
+        keysA = unwrapKeys(spec.first());
+        keysB = unwrapKeys(spec.second());
+      } else {
+        keysA = unwrapKeys(spec);
+        keysB = keysA;
+      }
+      if (keysA.argSize() != keysB.argSize() || keysA.argSize() == 0) {
+        return F.NIL;
+      }
+      IAST a = (IAST) ast.arg1();
+      IAST b = (IAST) ast.arg2();
+      final boolean left = type.equals("Left") || type.equals("Outer");
+      final boolean right = type.equals("Right") || type.equals("Outer");
+      // the keys of all rows of a and b, in the order they first appear
+      java.util.LinkedHashSet<IExpr> aKeys = new java.util.LinkedHashSet<IExpr>();
+      for (IExpr row : a) {
+        for (IExpr key : ((IAssociation) row).keys()) {
+          aKeys.add(key);
+        }
+      }
+      java.util.LinkedHashSet<IExpr> bOtherKeys = new java.util.LinkedHashSet<IExpr>();
+      for (IExpr row : b) {
+        for (IExpr key : ((IAssociation) row).keys()) {
+          if (!keysB.contains(key)) {
+            bOtherKeys.add(key);
+          }
+        }
+      }
+      boolean[] matchedB = new boolean[b.argSize() + 1];
+      IASTAppendable result = F.ListAlloc();
+      for (IExpr rowA : a) {
+        IAssociation assocA = (IAssociation) rowA;
+        IAST valuesA = joinValues(assocA, keysA);
+        boolean matched = false;
+        for (int j = 1; j < b.size(); j++) {
+          IAssociation assocB = (IAssociation) b.get(j);
+          if (valuesA.equals(joinValues(assocB, keysB))) {
+            matched = true;
+            matchedB[j] = true;
+            result.append(merge(assocA, assocB, keysB, collision, engine));
+          }
+        }
+        if (!matched && left) {
+          IAssociation row = assocA.copy();
+          for (IExpr key : bOtherKeys) {
+            if (!row.isKey(key)) {
+              row.appendRule(F.Rule(key, UNMATCHED));
+            }
+          }
+          result.append(row);
+        }
+      }
+      if (right) {
+        for (int j = 1; j < b.size(); j++) {
+          if (matchedB[j]) {
+            continue;
+          }
+          IAssociation assocB = (IAssociation) b.get(j);
+          IAssociation row = F.assoc();
+          for (IExpr key : aKeys) {
+            int k = keysA.indexOf(key);
+            if (k > 0) {
+              row.appendRule(F.Rule(key, assocB.getValue(keysB.get(k))));
+            } else {
+              row.appendRule(F.Rule(key, UNMATCHED));
+            }
+          }
+          for (IAST rule : rules(assocB)) {
+            if (!keysB.contains(rule.first()) && !row.isKey(rule.first())) {
+              row.appendRule(rule);
+            }
+          }
+          result.append(row);
+        }
+      }
+      return result;
+    }
+
+    private static final IExpr UNMATCHED = F.Missing(F.stringx("Unmatched"));
+
+    private static boolean isListOfAssociations(IExpr expr) {
+      return expr.isList() && ((IAST) expr).forAll(x -> x.isAssociation());
+    }
+
+    /** The join keys of a key, a list of keys or <code>Key(k)</code>. */
+    private static IAST unwrapKeys(IExpr spec) {
+      IAST list = spec.isList() ? (IAST) spec : F.list(spec);
+      return list.map(k -> k.isAST(S.Key, 2) ? k.first() : k, 1);
+    }
+
+    private static IAST joinValues(IAssociation assoc, IAST keys) {
+      return keys.map(k -> assoc.getValue(k), 1);
+    }
+
+    private static java.util.List<IAST> rules(IAssociation assoc) {
+      java.util.List<IAST> result = new java.util.ArrayList<IAST>();
+      for (int i = 1; i < assoc.size(); i++) {
+        result.add(assoc.getRule(i));
+      }
+      return result;
+    }
+
+    /** The rules of a, then the rules of b which a hasn't; keys of both keep a's value. */
+    private static IAssociation merge(IAssociation a, IAssociation b, IAST keysB, IExpr collision,
+        EvalEngine engine) {
+      IAssociation result = F.assoc();
+      java.util.List<IAST> appended = new java.util.ArrayList<IAST>();
+      java.util.Map<IExpr, IExpr> renamedA = new java.util.HashMap<IExpr, IExpr>();
+      for (IAST rule : rules(b)) {
+        IExpr key = rule.first();
+        if (keysB.contains(key)) {
+          continue;
+        }
+        if (a.isKey(key)) {
+          if (collision.isPresent()) {
+            IExpr names = engine.evaluate(F.unaryAST1(collision, key));
+            if (names.isList2()) {
+              renamedA.put(key, names.first());
+              appended.add(F.Rule(names.second(), rule.second()));
+            }
+          }
+        } else {
+          appended.add(rule);
+        }
+      }
+      for (IAST rule : rules(a)) {
+        IExpr newKey = renamedA.get(rule.first());
+        result.appendRule(newKey != null ? F.Rule(newKey, rule.second()) : rule);
+      }
+      for (IAST rule : appended) {
+        result.appendRule(rule);
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_INFINITY;
+    }
+  }
+
   private static class AssociationMap extends AbstractEvaluator {
 
     @Override

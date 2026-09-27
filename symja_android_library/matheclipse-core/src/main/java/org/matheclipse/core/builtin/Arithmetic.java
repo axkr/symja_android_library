@@ -383,7 +383,7 @@ public final class Arithmetic {
             if (temp.isNIL()) {
               return F.NIL;
             }
-            IExpr rhs = engine.evaluate(F.binaryAST2(getArithmeticSymbol(), temp, ast.arg2()));
+            IExpr rhs = engine.evaluate(operatorAST(temp, ast.arg2()));
             return ((ISetEvaluator) eval).evaluateSet(leftHandSide, rhs, S.Set, engine);
           }
         }
@@ -447,6 +447,11 @@ public final class Arithmetic {
       return F.Plus(null, value);
     }
 
+    /** The expression which computes the new value from the old one. */
+    protected IAST operatorAST(IExpr oldValue, IExpr value) {
+      return F.binaryAST2(getArithmeticSymbol(), oldValue, value);
+    }
+
     /**
      * Get the head symbol of this function.
      *
@@ -459,6 +464,29 @@ public final class Arithmetic {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.HOLDFIRST);
+    }
+  }
+
+  /** <code>ApplyTo(x, f)</code>, <code>x //= f</code> - set <code>x</code> to <code>f(x)</code>. */
+  private static final class ApplyTo extends AddTo {
+    @Override
+    protected ISymbol getArithmeticSymbol() {
+      return S.ApplyTo;
+    }
+
+    @Override
+    protected IASTMutable getAST(final IExpr value) {
+      return F.unaryAST1(value, S.Null);
+    }
+
+    @Override
+    protected IAST operatorAST(IExpr oldValue, IExpr value) {
+      return F.unaryAST1(value, oldValue);
+    }
+
+    @Override
+    protected ISymbol getFunctionSymbol() {
+      return S.ApplyTo;
     }
   }
 
@@ -2723,6 +2751,7 @@ public final class Arithmetic {
       S.Abs.setEvaluator(new Abs());
       S.AbsArg.setEvaluator(new AbsArg());
       S.AddTo.setEvaluator(new AddTo());
+      S.ApplyTo.setEvaluator(new ApplyTo());
       S.Arg.setEvaluator(new Arg());
       S.Chop.setEvaluator(new Chop());
       S.Complex.setEvaluator(CONST_COMPLEX);

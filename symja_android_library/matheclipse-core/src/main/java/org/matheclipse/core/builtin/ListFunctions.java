@@ -219,6 +219,7 @@ public final class ListFunctions {
       S.ConstantArray.setEvaluator(new ConstantArray());
       S.Count.setEvaluator(new Count());
       S.CountDistinct.setEvaluator(new CountDistinct());
+      S.CountDistinctBy.setEvaluator(new CountDistinctBy());
       S.Delete.setEvaluator(new Delete());
       S.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
       S.DeleteDuplicatesBy.setEvaluator(new DeleteDuplicatesBy());
@@ -268,6 +269,7 @@ public final class ListFunctions {
       S.RotateLeft.setEvaluator(new RotateLeft());
       S.RotateRight.setEvaluator(new RotateRight());
       S.Select.setEvaluator(new Select());
+      S.Discard.setEvaluator(new Discard());
       S.SelectFirst.setEvaluator(new SelectFirst());
       S.Split.setEvaluator(new Split());
       S.SplitBy.setEvaluator(new SplitBy());
@@ -2165,6 +2167,30 @@ public final class ListFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+  }
+
+  /**
+   * <code>CountDistinctBy(list, f)</code> - the number of distinct values <code>f(x)</code> of the
+   * elements of <code>list</code> (the values of an association).
+   */
+  private static final class CountDistinctBy extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr arg1 = ast.arg1();
+      if (arg1.isASTOrAssociation()) {
+        final Set<IExpr> set = new HashSet<IExpr>();
+        final IExpr f = ast.arg2();
+        ((IAST) arg1).forEach(x -> set.add(engine.evaluate(F.unaryAST1(f, x))));
+        return F.ZZ(set.size());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2_1;
     }
   }
 
@@ -6695,6 +6721,45 @@ public final class ListFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   * <code>Discard(list, crit)</code> - the elements of <code>list</code> for which
+   * <code>crit</code> doesn't give <code>True</code>; <code>Discard(list, crit, n)</code> drops only
+   * the first <code>n</code> elements which satisfy <code>crit</code>.
+   */
+  private static final class Discard extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isASTOrAssociation()) {
+        return F.NIL;
+      }
+      IAST list = (IAST) ast.arg1();
+      IExpr crit = ast.arg2();
+      int n = Integer.MAX_VALUE;
+      if (ast.isAST3() && !ast.arg3().isInfinity()) {
+        n = ast.arg3().toIntDefault();
+        if (n < 0) {
+          // Non-negative integer or Infinity expected at position `1` in `2`.
+          return Errors.printMessage(S.Discard, "innf", F.List(F.C3, ast), engine);
+        }
+      }
+      final int maxDropped = n;
+      final int[] dropped = {0};
+      return list.select(x -> {
+        if (dropped[0] < maxDropped && engine.evalTrue(crit, x)) {
+          dropped[0]++;
+          return false;
+        }
+        return true;
+      });
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3_1;
+    }
   }
 
   private static final class SelectFirst extends AbstractEvaluator {

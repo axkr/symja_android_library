@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -32,8 +33,8 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
-import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.PredicateSort;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.Predicates.IsBinaryFalse;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -90,6 +91,7 @@ public class StructureFunctions {
       S.Scan.setEvaluator(new Scan());
       S.Sort.setEvaluator(new Sort());
       S.SortBy.setEvaluator(new SortBy());
+      S.ReverseSortBy.setEvaluator(new ReverseSortBy());
       S.Symbol.setEvaluator(new Symbol());
       S.SymbolName.setEvaluator(new SymbolName());
       S.Thread.setEvaluator(new Thread());
@@ -1931,8 +1933,8 @@ public class StructureFunctions {
       }
       VisitorLevelSpecification level;
       if (last == 3) {
-        level = new VisitorLevelSpecification(x -> F.unaryAST1(f, x), ast.arg3(), includeHeads,
-            engine);
+        level =
+            new VisitorLevelSpecification(x -> F.unaryAST1(f, x), ast.arg3(), includeHeads, engine);
       } else {
         level = new VisitorLevelSpecification(x -> F.unaryAST1(f, x), 1, includeHeads);
       }
@@ -1941,14 +1943,13 @@ public class StructureFunctions {
 
     /**
      * <code>h(f(e1), f(e2), ...)</code> evaluated as
-     * <code>ParallelTable(With({w=v}, f(w)), {v, {e1, e2, ...}})</code>; <code>With</code> puts each
-     * element into <code>f(...)</code> as it is, so a held <code>f</code> gets the element and not
-     * the variable.
+     * <code>ParallelTable(With({w=v}, f(w)), {v, {e1, e2, ...}})</code>; <code>With</code> puts
+     * each element into <code>f(...)</code> as it is, so a held <code>f</code> gets the element and
+     * not the variable.
      *
      * @return {@link F#NIL} if <code>expr</code> is mapped on this thread
      */
-    private static IExpr parallelMap(IExpr f, IExpr expr, IAST parallelOptions,
-        EvalEngine engine) {
+    private static IExpr parallelMap(IExpr f, IExpr expr, IAST parallelOptions, EvalEngine engine) {
       if (!expr.isAST() || expr.argSize() < 2 || expr.isAssociation() || !expr.head().isSymbol()) {
         return F.NIL;
       }
@@ -2263,9 +2264,9 @@ public class StructureFunctions {
     }
 
     /**
-     * <code>Sort(list, p)</code>: a merge sort which keeps <code>a</code> before <code>b</code> unless
-     * <code>p(a, b)</code> is <code>False</code>, see {@link PredicateSort}. The values of an
-     * association are sorted, and its rules are reordered with them.
+     * <code>Sort(list, p)</code>: a merge sort which keeps <code>a</code> before <code>b</code>
+     * unless <code>p(a, b)</code> is <code>False</code>, see {@link PredicateSort}. The values of
+     * an association are sorted, and its rules are reordered with them.
      */
     private static IExpr sortByPredicate(IAST list, IExpr p, EvalEngine engine) {
       final int n = list.argSize();
@@ -2379,9 +2380,9 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
+      if (ast.isAST2() || ast.isAST3()) {
         try {
-          if (ast.arg1().isDataset()) {
+          if (ast.isAST2() && ast.arg1().isDataset()) {
             List<String> listOfStrings = Convert.toStringList(ast.arg2());
             if (listOfStrings != null) {
               // column names: sort the dataset on those columns and stay a dataset
@@ -2399,12 +2400,25 @@ public class StructureFunctions {
             // sort a list of indices. after sorting, we reorder the leaves.
             // elements with the same f(x) are in the canonical order of the elements, the rules of
             // an association: SortBy({{1,"b"},{1,"a"}}, First) is {{1,"a"},{1,"b"}}
-            final IASTAppendable sortAST = F.mapRange(1, arg1.size(), i -> {
+            IASTAppendable sortAST = F.mapRange(1, arg1.size(), i -> {
               IExpr unary = engine.evaluate(F.unaryAST1(arg2, arg1.get(i)));
               IExpr element = arg1.isAssociation() ? arg1.getRule(i) : arg1.get(i);
               return F.List(unary, element, F.ZZ(i));
             });
-            EvalAttributes.sort(sortAST);
+            if (ast.isAST3()) {
+              // SortBy(list, f, p): x before y if p(f(x), f(y)) is True, elements with equal f(x)
+              // stay in the order of list
+              sortAST = stableSort(sortAST, ast.arg3(), engine);
+            } else {
+              EvalAttributes.sort(sortAST);
+            }
+            if (reverse()) {
+              for (int i = 1, j = sortAST.argSize(); i < j; i++, j--) {
+                IExpr t = sortAST.get(i);
+                sortAST.set(i, sortAST.get(j));
+                sortAST.set(j, t);
+              }
+            }
 
             return F.mapFunction(arg1.head(), sortAST, t -> {
               int sortedIndex = ((IAST) t).arg3().toIntDefault(-1);
@@ -2426,6 +2440,83 @@ public class StructureFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * A stable merge sort of the <code>{f(x), x, i}</code> triples: the right element goes first
+     * only if <code>p(f(right), f(left))</code> is <code>True</code>.
+     */
+    private static IASTAppendable stableSort(IASTAppendable triples, IExpr p, EvalEngine engine) {
+      int n = triples.argSize();
+      IExpr[] elements = new IExpr[n];
+      for (int i = 0; i < n; i++) {
+        elements[i] = triples.get(i + 1);
+      }
+      IExpr[] buffer = new IExpr[n];
+      mergeSort(elements, buffer, 0, n, p, engine);
+      IASTAppendable result = F.ListAlloc(n);
+      for (IExpr e : elements) {
+        result.append(e);
+      }
+      return result;
+    }
+
+    private static void mergeSort(IExpr[] elements, IExpr[] buffer, int from, int to, IExpr p,
+        EvalEngine engine) {
+      if (to - from < 2) {
+        return;
+      }
+      int middle = (from + to) >>> 1;
+      mergeSort(elements, buffer, from, middle, p, engine);
+      mergeSort(elements, buffer, middle, to, p, engine);
+      int left = from;
+      int right = middle;
+      int k = from;
+      while (left < middle && right < to) {
+        OperationSystem.checkInterrupt();
+        if (engine.evaluate(F.binaryAST2(p, elements[right].first(), elements[left].first()))
+            .isTrue()) {
+          buffer[k++] = elements[right++];
+        } else {
+          buffer[k++] = elements[left++];
+        }
+      }
+      while (left < middle) {
+        buffer[k++] = elements[left++];
+      }
+      while (right < to) {
+        buffer[k++] = elements[right++];
+      }
+      System.arraycopy(buffer, from, elements, from, to - from);
+    }
+
+    /** Whether the sorted elements are reversed, as by <code>ReverseSortBy</code>. */
+    protected boolean reverse() {
+      return false;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3_1;
+    }
+  }
+
+  /**
+   * <code>ReverseSortBy(list, f)</code> - the elements of <code>list</code> in the reverse order of
+   * <code>SortBy(list, f)</code>.
+   */
+  private static final class ReverseSortBy extends SortBy {
+    @Override
+    protected boolean reverse() {
+      return true;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.isAST2() && ast.arg1().isDataset()) {
+        return F.NIL;
+      }
+      return super.evaluate(ast, engine);
     }
 
     @Override

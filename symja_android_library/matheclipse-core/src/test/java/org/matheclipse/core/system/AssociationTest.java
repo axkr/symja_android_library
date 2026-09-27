@@ -7,6 +7,74 @@ import org.matheclipse.core.eval.EvalEngine;
 
 public class AssociationTest extends ExprEvaluatorTestCase {
 
+  /** joining, transposing and sorting associations. */
+  @Test
+  public void testAssociationJoinSortWMA() {
+    check("l1 = {<|\"id\" -> 1, \"x\" -> a|>, <|\"id\" -> 2, \"x\" -> b|>};" //
+        + "l2 = {<|\"id\" -> 1, \"y\" -> c|>, <|\"id\" -> 3, \"y\" -> d|>};" //
+        + "JoinAcross(l1, l2, \"id\")", //
+        "{<|id->1,x->a,y->c|>}");
+    check("JoinAcross(l1, l2, \"id\", \"Left\")", //
+        "{<|id->1,x->a,y->c|>,<|id->2,x->b,y->Missing(Unmatched)|>}");
+    check("JoinAcross(l1, l2, \"id\", \"Right\")", //
+        "{<|id->1,x->a,y->c|>,<|id->3,x->Missing(Unmatched),y->d|>}");
+    check("JoinAcross(l1, l2, \"id\", \"Outer\")", //
+        "{<|id->1,x->a,y->c|>,<|id->2,x->b,y->Missing(Unmatched)|>,<|id->3,x->Missing(Unmatched),y->d|>}");
+    check("JoinAcross(l1, l2, Key(\"id\") -> Key(\"id\"))", //
+        "{<|id->1,x->a,y->c|>}");
+    // a key of both keeps the value of the first list
+    check("JoinAcross({<|\"id\" -> 1, \"v\" -> 1|>}, {<|\"id\" -> 1, \"v\" -> 2|>}, \"id\")", //
+        "{<|id->1,v->1|>}");
+    check("JoinAcross({<|\"id\" -> 1, \"v\" -> 1|>}, {<|\"id\" -> 1, \"v\" -> 2|>}, \"id\", " //
+        + "KeyCollisionFunction -> Function(k, {k <> \"1\", k <> \"2\"}))", //
+        "{<|id->1,v1->1,v2->2|>}");
+
+    check("Transpose(<|a -> <|x -> 1, y -> 2|>, b -> <|x -> 3, y -> 4|>|>)", //
+        "<|x-><|a->1,b->3|>,y-><|a->2,b->4|>|>");
+    // the inner keys have to agree in order (an unevaluated Transpose prints as a postfix glyph)
+    check("Head(Transpose(<|a -> <|x -> 1, y -> 2|>, b -> <|y -> 4, x -> 3|>|>))", //
+        "Transpose");
+    check("Head(Transpose(<|a -> <|x -> 1|>, b -> <|y -> 4|>|>))", //
+        "Transpose");
+    check("Transpose({<|x -> 1, y -> 2|>, <|x -> 3, y -> 4|>})", //
+        "{<|x->1,y->2|>,<|x->3,y->4|>}");
+
+    // ties keep their order
+    check("SortBy(<|\"a\" -> {1, 2}, \"b\" -> {0, 5}, \"c\" -> {1, 1}|>, First, Greater)", //
+        "<|a->{1,2},c->{1,1},b->{0,5}|>");
+    check("Ordering(<|\"a\" -> 2, \"b\" -> 2, \"c\" -> 1|>, All, Greater)", //
+        "{2,1,3}");
+    check("Ordering(<|\"a\" -> 2, \"b\" -> 3, \"c\" -> 1|>, 2)", //
+        "{3,1}");
+    check(
+        "{ReverseSortBy({1, -3, 2}, Abs), ReverseSortBy({{1, \"b\"}, {1, \"a\"}, {0, \"c\"}}, First), " //
+            + "ReverseSortBy(<|a -> 2, b -> -3, c -> 1|>, Abs)}", //
+        "{{-3,2,1},{{1,b},{1,a},{0,c}},<|b->-3,a->2,c->1|>}");
+
+    // an association stands for its values
+    check("{SubsetQ(<|a -> 1, b -> 2|>, <|a -> 1|>), SubsetQ(<|a -> 1, b -> 2|>, <|a -> 2|>), " //
+        + "SubsetQ(<|a -> 1, b -> 2|>, {1}), SubsetQ({1, 2}, <|a -> 1|>)}", //
+        "{True,True,True,True}");
+    check(
+        "{CountDistinctBy({1, 2, 3, 4}, EvenQ), CountDistinctBy(<|a -> 1, b -> 2, c -> 3|>, OddQ), " //
+            + "CountDistinctBy(EvenQ)[{1, 2, 3}]}", //
+        "{2,2,2}");
+    check("{Discard({1, 2, 3, 4}, EvenQ), Discard(<|a -> 1, b -> 2|>, EvenQ), " //
+        + "Discard({1, 2, 3, 4}, EvenQ, 1), Discard(EvenQ)[{1, 2}]}", //
+        "{{1,3},<|a->1|>,{1,3,4},{1}}");
+
+    check("xx = 5; ApplyTo(xx, f); xx", //
+        "f(5)");
+    check("yy = {1, 2}; yy //= Reverse; yy", //
+        "{2,1}");
+    check("ApplyTo(zz, f)", //
+        "zz//=f");
+    check("{AssociationComap({f, g}, x), AssociationComap({f, g})[x]}", //
+        "{<|f->f(x),g->g(x)|>,<|f->f(x),g->g(x)|>}");
+    check("AssociationComap(<|\"a\" -> f, \"b\" -> g|>, x)", //
+        "AssociationComap(<|a->f,b->g|>,x)");
+  }
+
   @Test
   public void testAssociationWMA() {
     // the values are combined by position, so the keys have to agree in order

@@ -24255,9 +24255,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "b");
     check("Refine(Min(a, b), a <= b)", //
         "a");
-    // a==b is recorded as the equation a-b==0, which decides a>=b: Max(a,b) is b
+    // doesn't decide Max(a,b) from a==b
     check("Refine(Max(a, b), a == b)", //
-        "b");
+        "Max(a,b)");
     check("Refine(Min(a, b), a == b)", //
         "Min(a,b)");
     // the mirrored difference is recorded as well, so both spellings answer the same question

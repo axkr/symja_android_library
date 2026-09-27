@@ -47,6 +47,10 @@ public class ContainsFunctions {
   private static class SubsetQ extends ContainsAll implements IPredicate {
     @Override
     public boolean validateArgs(IExpr arg1, IExpr arg2, EvalEngine engine) {
+      // an association stands for its values
+      if (arg1.isListOrAssociation() && arg2.isListOrAssociation()) {
+        return true;
+      }
       return arg1.isAST() && arg2.isAST(arg1.head());
     }
   }

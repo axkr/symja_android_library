@@ -21,6 +21,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.generic.PredicateSort;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -194,8 +195,7 @@ public class TensorFunctions {
 
       for (int i = length - 1; i >= 0; i--) {
         int level = levels[i];
-        currentArray =
-            arrayReduce(f, currentArray, dimensions, level, engine, i == 0);
+        currentArray = arrayReduce(f, currentArray, dimensions, level, engine, i == 0);
         if (currentArray.isNIL()) {
           return F.NIL;
         }
@@ -241,8 +241,8 @@ public class TensorFunctions {
         }
       } else {
         // flatten lists
-        VisitorLevelSpecification levelSpec = new VisitorLevelSpecification(
-            x -> F.Apply(S.Sequence, x), iDepth - 1, false);
+        VisitorLevelSpecification levelSpec =
+            new VisitorLevelSpecification(x -> F.Apply(S.Sequence, x), iDepth - 1, false);
         IExpr flattened = reduced.accept(levelSpec);
         if (!flattened.isAST()) {
           return F.NIL;
@@ -1028,9 +1028,9 @@ public class TensorFunctions {
 
     /**
      * The "valid"-mode correlation of {@code kernel} with {@code tensor}: entry {@code o} of the
-     * result is the sum over every kernel index {@code q} of
-     * {@code kernel[[q]] * tensor[[o + q]]}. Works for any rank; when the kernel has fewer levels
-     * than the tensor, the trailing levels are carried along as whole sub-tensors.
+     * result is the sum over every kernel index {@code q} of {@code kernel[[q]] * tensor[[o + q]]}.
+     * Works for any rank; when the kernel has fewer levels than the tensor, the trailing levels are
+     * carried along as whole sub-tensors.
      *
      * @return {@link F#NIL} if the ranks do not fit or the kernel is larger than the tensor
      */
@@ -1217,24 +1217,36 @@ public class TensorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
+      if (ast.arg1().isASTOrAssociation()) {
         IAST list = (IAST) ast.arg1();
-        ArrayIndexComparator comparator;
-        if (ast.size() >= 4) {
-          // use the 3rd argument as a head for the comparator operation:
-          IExpr comparatorFunction = ast.arg3();
-          comparator =
-              new PredicateComparator(list, new Predicates.IsBinaryFalse(comparatorFunction));
-        } else if (list.exists(x -> x.isQuantity())) {
-          // quantities order by magnitude, not canonically - see Comparators.QuantityComparator
-          comparator =
-              new PredicateComparator(list, new Comparators.QuantityComparator(engine));
+        Integer[] indexes;
+        if (ast.size() >= 4 && list.isAssociation()) {
+          // the positions Sort(assoc, p) puts the values in, with WMA's placement of ties
+          // - see PredicateSort
+          IExpr[] elements = new IExpr[list.argSize()];
+          for (int i = 1; i < list.size(); i++) {
+            elements[i - 1] = list.get(i);
+          }
+          int[] permutation = PredicateSort.permutation(elements, ast.arg3(), engine);
+          indexes = new Integer[permutation.length];
+          for (int i = 0; i < permutation.length; i++) {
+            indexes[i] = permutation[i] + 1;
+          }
         } else {
-          // use the default IExpr#compareTo() method
-          comparator = new ArrayIndexComparator(list);
+          ArrayIndexComparator comparator;
+          if (ast.size() >= 4) {
+            // use the 3rd argument as a head for the comparator operation:
+            comparator = new PredicateComparator(list, new Predicates.IsBinaryFalse(ast.arg3()));
+          } else if (list.exists(x -> x.isQuantity())) {
+            // quantities order by magnitude, not canonically - see Comparators.QuantityComparator
+            comparator = new PredicateComparator(list, new Comparators.QuantityComparator(engine));
+          } else {
+            // use the default IExpr#compareTo() method
+            comparator = new ArrayIndexComparator(list);
+          }
+          indexes = comparator.createIndexArray();
+          Arrays.sort(indexes, comparator);
         }
-        Integer[] indexes = comparator.createIndexArray();
-        Arrays.sort(indexes, comparator);
         int n = indexes.length;
         if (ast.size() >= 3) {
           IExpr arg2 = ast.arg2();
@@ -1779,9 +1791,9 @@ public class TensorFunctions {
 
   /**
    * An inert one-argument symbolic array whose shape is its own first argument, such as
-   * <code>SymbolicOnesArray({2,3})</code>. It never evaluates; it exists so that the shape is
-   * known to {@link ISymbolicArray#getDimensions(IAST)} and so that arithmetic does not thread it
-   * into the elements of a list.
+   * <code>SymbolicOnesArray({2,3})</code>. It never evaluates; it exists so that the shape is known
+   * to {@link ISymbolicArray#getDimensions(IAST)} and so that arithmetic does not thread it into
+   * the elements of a list.
    */
   private abstract static class SymbolicShapeArray extends AbstractFunctionEvaluator
       implements ISymbolicArray {
@@ -1875,9 +1887,8 @@ public class TensorFunctions {
    *
    * <p>
    * A {@link S#TransformationFunction} second argument is rewritten as the pair
-   * <code>{linear, translation}</code>, which is the form the result is displayed in. The
-   * primitive itself is left alone: the transformation is applied when the graphic is rendered, not
-   * here.
+   * <code>{linear, translation}</code>, which is the form the result is displayed in. The primitive
+   * itself is left alone: the transformation is applied when the graphic is rendered, not here.
    */
   private static class GeometricTransformation extends AbstractFunctionEvaluator {
 
@@ -1892,8 +1903,8 @@ public class TensorFunctions {
     }
 
     /**
-     * The <code>{linear, translation}</code> pair of a {@link S#TransformationFunction}, or of every
-     * such function in a list of transformations.
+     * The <code>{linear, translation}</code> pair of a {@link S#TransformationFunction}, or of
+     * every such function in a list of transformations.
      *
      * @return {@link F#NIL} if there is nothing to rewrite
      */
@@ -1997,8 +2008,7 @@ public class TensorFunctions {
       int[] matrixDims = m.isMatrix(false);
       if (dims != null && matrixDims != null && dims[1] == matrixDims[0] - 1) {
         IAST points = (IAST) ast.arg1().normal(false);
-        return points.map(point -> F.Take(F.Dot(m, F.Join(point, F.list(F.C1))), F.ZZ(dims[1])),
-            1);
+        return points.map(point -> F.Take(F.Dot(m, F.Join(point, F.list(F.C1))), F.ZZ(dims[1])), 1);
       }
       return F.NIL;
     }
