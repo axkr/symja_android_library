@@ -79,6 +79,7 @@ public class SubstitutionPlanTest {
    * wrong in a way that changes the answer.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testPlanAgreesWithGenericSubstitution() {
     boolean plan = Config.SUBSTITUTION_PLAN;
     boolean validate = Config.SUBSTITUTION_PLAN_VALIDATE;

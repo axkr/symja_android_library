@@ -14,7 +14,8 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.HtmlTemplates;
+import org.matheclipse.core.form.output.JSPageProvider;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.expression.data.ImageExpr;
@@ -31,7 +32,6 @@ public abstract class BasePlotExample {
     ToggleFeature.COMPILE_PRINT = true;
     Config.JAVA_UNSAFE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;
-    Config.USE_VISJS = true;
     Config.FILESYSTEM_ENABLED = true;
     try {
       F.await();
@@ -93,7 +93,7 @@ public abstract class BasePlotExample {
       try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
           final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
         ImageIO.write(bImage, "png", b64);
-        String html = JSBuilder.IMAGE_TEMPLATE;
+        String html = HtmlTemplates.IMAGE_TEMPLATE;
         String[] argsToRender = new String[3];
         argsToRender[0] = outputStream.toString();
         html = Errors.templateRender(html, argsToRender);
@@ -102,38 +102,13 @@ public abstract class BasePlotExample {
       }
     } else if (result.isAST(F.JSFormData, 3)) {
       String js;
-      if (result.second().toString().equals("mathcell")) {
-        String manipulateStr = ((IAST) result).arg1().toString();
-        js = JSBuilder.buildMathcell(JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
-        // js = Config.MATHCELL_PAGE;
-        // js = StringUtils.replace(js, "`1`", manipulateStr);
-      } else if (result.second().toString().equals("treeform")) {
-        String manipulateStr = ((IAST) result).arg1().toString();
-        js = Config.VISJS_PAGE;
-        js = StringUtils.replace(js, "`1`", manipulateStr);
-        js = StringUtils.replace(js, "`2`", //
-            "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
-                + "                  type: 'cubicBezier',\n"
-                + "                  forceDirection:  'vertical',\n"
-                + "                  roundness: 0.4\n" + "              }\n" + "          },\n"
-                + "          layout: {\n" + "              hierarchical: {\n"
-                + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
-                + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
-                + "          physics:false\n" + "      }; ");
-      } else if (result.second().toString().equals("mermaid")) {
-        String manipulateStr = ((IAST) result).arg1().toString();
-        js = JSBuilder.buildMermaid(JSBuilder.MERMAID_TEMPLATE, manipulateStr);
-      } else if (result.second().toString().equals("plotly")) {
-        String manipulateStr = ((IAST) result).arg1().toString();
-        js = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);
-        // js = Config.PLOTLY_PAGE;
-        // js = StringUtils.replace(js, "`1`", manipulateStr);
-      } else if (result.second().toString().equals("echarts")) {
-        String manipulateStr = ((IAST) result).arg1().toString();
-        js = JSBuilder.buildECharts(JSBuilder.ECHARTS_TEMPLATE, manipulateStr);
-      } else {
-        String manipulateStr = ((IAST) result).arg1().toString();
-        js = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
+      String type = result.second().toString();
+      String manipulateStr = ((IAST) result).arg1().toString();
+      // the page loads the library from its CDN; built by matheclipse-jsgraphics
+      js = JSPageProvider.pageOf(type, manipulateStr);
+      if (js == null) {
+        System.out.println(result);
+        return;
       }
       System.out.println(js);
       F.openHTMLOnDesktop(js);

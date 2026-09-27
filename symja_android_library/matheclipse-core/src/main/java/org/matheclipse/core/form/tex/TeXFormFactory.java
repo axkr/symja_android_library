@@ -240,6 +240,47 @@ public class TeXFormFactory {
     }
   }
 
+  /** <code>Text(expr)</code> outside a picture is its contents. */
+  private static final class Text extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() == 2) {
+        fFactory.convertInternal(buffer, f.arg1(), precedence, NO_PLUS_CALL);
+        return true;
+      }
+      return false;
+    }
+  }
+
+  /** <code>Framed(expr)</code> - the expression in a box. */
+  private static final class Framed extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      buffer.append("\\boxed{");
+      fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("}");
+      return true;
+    }
+  }
+
+  /** <code>Pane(expr, ...)</code> - the expression; the size options belong to a notebook box. */
+  private static final class Pane extends AbstractTeXConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      fFactory.convertInternal(buffer, f.arg1(), precedence, NO_PLUS_CALL);
+      return true;
+    }
+  }
+
   private static final class HoldForm extends AbstractTeXConverter {
 
     /** {@inheritDoc} */
@@ -494,6 +535,11 @@ public class TeXFormFactory {
         return false;
       }
       IExpr arg1 = f.arg1();
+      if (!arg1.isList() && !arg1.isSparseArray()) {
+        // MatrixForm of something which is no matrix displays it as it is
+        fFactory.convertInternal(buffer, arg1, precedence, NO_PLUS_CALL);
+        return true;
+      }
       int[] dims = arg1.isMatrix();
       if (dims == null) {
         int dim = arg1.isVector();
@@ -756,8 +802,13 @@ public class TeXFormFactory {
     /** {@inheritDoc} */
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
-      if (f.size() != 2) {
+      if (f.size() < 2) {
         return false;
+      }
+      if (!f.arg1().isList()) {
+        // TableForm of something which is no table displays it as it is
+        fFactory.convertInternal(buffer, f.arg1(), precedence, NO_PLUS_CALL);
+        return true;
       }
       int[] dims = f.arg1().isMatrix();
       if (dims == null) {
@@ -1129,6 +1180,29 @@ public class TeXFormFactory {
         }
       }
       return false;
+    }
+  }
+
+  /**
+   * The constant <code>C(k)</code> which {@code DSolve}, {@code Integrate} and {@code Reduce}
+   * generate, as the subscripted <code>c_k</code> it is typeset as: <code>C(1)</code> is
+   * <code>c_1</code> and <code>C(12)</code> is <code>c_{12}</code>.
+   */
+  private static final class C extends AbstractTeXConverter {
+    @Override
+    public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (!f.isAST1()) {
+        return false;
+      }
+      StringBuilder index = new StringBuilder();
+      fFactory.convertInternal(index, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
+      buffer.append("c_");
+      if (index.length() == 1) {
+        buffer.append(index);
+      } else {
+        buffer.append('{').append(index).append('}');
+      }
+      return true;
     }
   }
 
@@ -2565,6 +2639,9 @@ public class TeXFormFactory {
     initTeXConverter(S.HarmonicNumber, new HarmonicNumber());
     initTeXConverter(S.HermiteH, new BinaryFunction("H_", "(", ")"));
     initTeXConverter(S.HoldForm, new HoldForm());
+    initTeXConverter(S.Text, new Text());
+    initTeXConverter(S.Framed, new Framed());
+    initTeXConverter(S.Pane, new Pane());
     initTeXConverter(S.HurwitzZeta, new Zeta());
     initTeXConverter(S.Hypergeometric0F1, new BinaryFunction("\\,_0F_1(;", ";", ")"));
     initTeXConverter(S.Hypergeometric1F1, new TernaryFunction("\\,_1F_1(", ",", ",", ")"));
@@ -2618,6 +2695,7 @@ public class TeXFormFactory {
     initTeXConverter(S.Sqrt, new UnaryFunction("\\sqrt{", "}"));
     initTeXConverter(S.Style, new Style());
     initTeXConverter(S.Subscript, new Subscript());
+    initTeXConverter(S.C, new C());
     initTeXConverter(S.Subsuperscript, new Subsuperscript());
     initTeXConverter(S.Underscript, new Underscript());
     initTeXConverter(S.Overscript, new Overscript());
@@ -2627,6 +2705,13 @@ public class TeXFormFactory {
 
     initTeXConverter(S.Times, new Times());
 
+    initTeXConverter(S.MathieuC, new TernaryFunction("C(", ",", ",", ")"));
+    initTeXConverter(S.MathieuCharacteristicA, new BinaryFunction("a_{", "}(", ")"));
+    initTeXConverter(S.MathieuCharacteristicB, new BinaryFunction("b_{", "}(", ")"));
+    initTeXConverter(S.MathieuCharacteristicExponent, new BinaryFunction("\\nu(", ",", ")"));
+    initTeXConverter(S.MathieuCPrime, new TernaryFunction("C'(", ",", ",", ")"));
+    initTeXConverter(S.MathieuS, new TernaryFunction("S(", ",", ",", ")"));
+    initTeXConverter(S.MathieuSPrime, new TernaryFunction("S'(", ",", ",", ")"));
     initTeXConverter(S.WhittakerM, new TernaryFunction("M_{", ",", "}(", ")"));
     initTeXConverter(S.WhittakerW, new TernaryFunction("W_{", ",", "}(", ")"));
 

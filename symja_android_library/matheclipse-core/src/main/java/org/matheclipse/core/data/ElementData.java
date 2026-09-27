@@ -53,7 +53,7 @@ public class ElementData extends AbstractFunctionEvaluator {
    */
   private static final String[] COMPUTED_PROPERTIES = { //
       "ProtonCount", "ElectronCount", "ValenceElectronCount", "MolarMass", "Phase", //
-      "NeutronCount", "KnownIsotopes", "IsotopeAbundances"};
+      "NeutronCount", "KnownIsotopes", "IsotopeAbundances", "StableIsotopes"};
 
   /**
    * The temperature a phase is read at, in degrees Celsius, standard conditions being 25 &deg;C at
@@ -199,7 +199,12 @@ public class ElementData extends AbstractFunctionEvaluator {
       return F.Missing(S.NotAvailable);
     }
     if ("KnownIsotopes".equals(property)) {
+      // the isotopes themselves, as entities, which is what a lone IsotopeData(element) answers
       return isotopeResult(engine.evaluate(F.unaryAST1(S.IsotopeData, symbol)));
+    }
+    if ("StableIsotopes".equals(property)) {
+      return isotopeResult(
+          engine.evaluate(F.binaryAST2(S.IsotopeData, symbol, F.stringx("StableIsotopes"))));
     }
     if ("IsotopeAbundances".equals(property)) {
       return isotopeResult(
@@ -375,7 +380,7 @@ public class ElementData extends AbstractFunctionEvaluator {
     if (ast.size() == 2) {
       if (arg1.isString() && arg1.toString().equals("Properties")) {
         return F.mapRange(0, PROPERTIES_DATA.length,
-            i -> F.binaryAST2(S.EntityProperty, ELEMENT, F.stringx(PROPERTIES_DATA[i])));
+            i -> Entities.property(ELEMENT.toString(), PROPERTIES_DATA[i]));
       }
       // a lone element is the entity that stands for it
       return MAP_NAME_DATA.containsKey(arg1) ? entityOf(arg1) : F.NIL;
@@ -397,7 +402,7 @@ public class ElementData extends AbstractFunctionEvaluator {
       }
       name = data.arg3();
     }
-    return F.binaryAST2(S.Entity, ELEMENT, name);
+    return Entities.entity(ELEMENT, name);
   }
 
   /**
@@ -405,18 +410,12 @@ public class ElementData extends AbstractFunctionEvaluator {
    * for it.
    */
   private static IExpr elementOf(IExpr expr) {
-    if (expr.isAST(S.Entity, 3) && ELEMENT.equals(expr.first())) {
-      return ((IAST) expr).arg2();
-    }
-    return expr;
+    return Entities.nameOf(expr, ELEMENT);
   }
 
   /** The property being asked for, whether named directly or through an EntityProperty. */
   private static String propertyOf(IExpr expr) {
-    if (expr.isAST(S.EntityProperty, 3) && ELEMENT.equals(expr.first())) {
-      return ((IAST) expr).arg2().toString();
-    }
-    return expr.toString();
+    return Entities.propertyName(expr, ELEMENT);
   }
 
   @Override

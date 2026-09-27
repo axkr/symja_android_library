@@ -9,11 +9,18 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.manipulate.Dynamics;
+import org.matheclipse.core.manipulate.ManipulateControl;
+import org.matheclipse.core.manipulate.ManipulateSpec;
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 
@@ -117,6 +124,164 @@ final class SvgLayout {
     }
     LayoutSpec spec = LayoutSpec.forGrid(expr, rows, 2, LayoutSpec.Units.POINTS);
     return render(spec, Mode.GRID, withSVGTag);
+  }
+
+  /**
+   * Whether an expression that is not a picture is still drawn as one when a picture of it is
+   * asked for: a <code>Grid</code>, <code>Column</code> or <code>Row</code> of cells, a
+   * <code>Pane</code> around one, or a legend standing on its own. Their cells may be pictures,
+   * text, numbers or further layouts.
+   */
+  static boolean isLayout(IExpr expr) {
+    if (!expr.isAST() || expr.argSize() < 1) {
+      return false;
+    }
+    if (expr.isAST(S.Grid) || expr.isAST(S.Column) || expr.isAST(S.Row)) {
+      return expr.first().isList();
+    }
+    if (expr.isAST(S.TabView)) {
+      return expr.first().isList() && expr.first().argSize() > 0;
+    }
+    if (expr.isAST(S.Text, 2)) {
+      // Text@Grid(...) sets a table as plain text, which as a picture is the table
+      return isLayout(expr.first());
+    }
+    return expr.isAST(S.Pane) || isLegend(expr);
+  }
+
+  /** <code>SwatchLegend(colours, labels)</code>, <code>LineLegend</code> or <code>PointLegend</code>. */
+  private static boolean isLegend(IExpr expr) {
+    return (expr.isAST(S.SwatchLegend) || expr.isAST(S.LineLegend) || expr.isAST(S.PointLegend))
+        && expr.argSize() >= 2 && expr.second().isList();
+  }
+
+  /**
+   * A layout of {@link #isLayout(IExpr)}. Every cell keeps its natural size, as a notebook shows a
+   * <code>Row</code> or a <code>Column</code>, rather than being brought to a common height the
+   * way <code>GraphicsRow</code> does.
+   */
+  String layout(IAST expr, boolean withSVGTag) {
+    if (expr.isAST(S.Text, 2) && expr.first().isAST()) {
+      return layout((IAST) expr.first(), withSVGTag);
+    }
+    LayoutSpec spec;
+    if (expr.isAST(S.Grid)) {
+      options.parse(expr, new PrimitiveCollector(options.imageSize[0]));
+      spec = LayoutSpec.forGrid(expr, (IAST) expr.arg1(), 2, LayoutSpec.Units.POINTS);
+    } else if (expr.isAST(S.Column)) {
+      options.parse(expr, new PrimitiveCollector(options.imageSize[0]));
+      spec = LayoutSpec.forColumn(expr, (IAST) expr.arg1(), 2, LayoutSpec.Units.POINTS);
+      // Column[{...}, alignment, spacing]
+      IExpr alignment = positionalArg(expr, 2);
+      if (alignment != null) {
+        double h = LayoutSpec.alignFraction(alignment, 0);
+        if (!Double.isNaN(h)) {
+          Arrays.fill(spec.colAlignH, h);
+        }
+      }
+      applyPositionalSpacing(spec, positionalArg(expr, 3));
+    } else if (expr.isAST(S.Row)) {
+      // Row[{a, b, c}, s] puts s between the items
+      IAST items = (IAST) expr.arg1();
+      IExpr separator = positionalArg(expr, 2);
+      if (separator != null && items.argSize() > 1) {
+        IASTAppendable separated =
+            F.ListAlloc(2 * items.argSize());
+        for (int i = 1; i <= items.argSize(); i++) {
+          if (i > 1) {
+            separated.append(separator);
+          }
+          separated.append(items.get(i));
+        }
+        items = separated;
+      }
+      spec = LayoutSpec.forRow(expr, items, expr.size(), LayoutSpec.Units.POINTS);
+    } else if (expr.isAST(S.TabView)) {
+      // the tab strip, with the selected tab set apart, over the pane it selects
+      EvalEngine engine = EvalEngine.get();
+      int selected = Dynamics.selectedTab(expr, engine);
+      boolean keyed = Dynamics.isKeyedTab(expr, selected, engine);
+      IAST panes = (IAST) expr.arg1();
+      IASTAppendable labels = F.ListAlloc(panes.argSize());
+      for (int i = 1; i < panes.size(); i++) {
+        IExpr label = Dynamics.tabPane(expr, i, keyed)[0];
+        labels.append(i == selected ? F.Style(label, S.Bold)
+            : F.Style(label, F.GrayLevel(F.num(0.5))));
+      }
+      IExpr pane = Dynamics.tabPane(expr, selected, keyed)[1];
+      spec = LayoutSpec.forColumn(expr, F.list(F.unaryAST1(S.Row, labels), pane), expr.size(),
+          LayoutSpec.Units.POINTS);
+    } else {
+      // a Pane or a legend is one cell; the options of a Pane size a notebook's box, not a picture
+      IExpr only = isLegend(expr) ? legendPicture(expr) : expr.arg1();
+      spec = LayoutSpec.forRow(expr, F.list(only), expr.size(),
+          LayoutSpec.Units.POINTS);
+    }
+    if (spec.rows == 0 || spec.cols == 0) {
+      return empty(withSVGTag);
+    }
+    return render(spec, Mode.GRID, withSVGTag);
+  }
+
+  /**
+   * A legend on its own, as the small picture it is beside a plot: a swatch, a line or a point in
+   * each colour, and its label to the right of it.
+   */
+  private static IExpr legendPicture(IExpr legend) {
+    IAST labels = (IAST) legend.second();
+    IExpr colours = legend.first();
+    boolean swatch = legend.isAST(S.SwatchLegend);
+    boolean line = legend.isAST(S.LineLegend);
+    IASTAppendable primitives =
+        F.ListAlloc(labels.argSize());
+    for (int i = 1; i <= labels.argSize(); i++) {
+      IExpr colour = colours.isList() && ((IAST) colours).argSize() >= i
+          ? ((IAST) colours).get(i)
+          : defaultColor(i - 1);
+      double y = -(i - 1);
+      IExpr marker;
+      if (swatch) {
+        marker = F.Rectangle(
+            F.list(F.num(0.0),
+                F.num(y - 0.35)),
+            F.list(F.num(0.7),
+                F.num(y + 0.35)));
+      } else if (line) {
+        marker = F.Line(F.list(
+            F.list(F.num(0.0),
+                F.num(y)),
+            F.list(F.num(0.7),
+                F.num(y))));
+      } else {
+        marker = F.Point(F.list(
+            F.num(0.35), F.num(y)));
+      }
+      primitives.append(F.list(colour, marker));
+      primitives.append(F.Text(labels.get(i),
+          F.list(F.num(1.0),
+              F.num(y)),
+          F.list(F.CN1,
+              F.C0)));
+    }
+    double height = labels.argSize();
+    return F.Graphics(primitives,
+        F.Rule(S.PlotRange,
+            F.list(
+                F.list(F.num(0.0),
+                    F.num(4.0)),
+                F.list(
+                    F.num(-height + 0.5),
+                    F.num(0.5)))),
+        F.Rule(S.ImageSize,
+            F.list(F.ZZ(100),
+                F.ZZ(Math.max(20, 20 * labels.argSize())))));
+  }
+
+  /** The colour a plot gives its curve number {@code index}, from zero. */
+  private static IExpr defaultColor(int index) {
+    org.matheclipse.core.convert.RGBColor rgb = GraphicsOptions.plotStyleColor(index, F.NIL);
+    return F.RGBColor(F.num(rgb.getRed() / 255.0), F.num(rgb.getGreen() / 255.0),
+        F.num(rgb.getBlue() / 255.0));
   }
 
   /** The argument at {@code index} when it is a positional one rather than an option rule. */
@@ -479,7 +644,26 @@ final class SvgLayout {
     if (content == null) {
       return null;
     }
+    // a Dynamic cell shows what it currently evaluates to, not the source that computes it
+    content = Dynamics.currentValue(content);
+    if (content.isAST(S.Text, 2) && isLayout(content.first())) {
+      content = content.first();
+    }
+    if (content.isAST(S.Spacer, 2)) {
+      return spacer(content.first());
+    }
+    if (isAnimation(content)) {
+      // a still picture of an animation is its first frame
+      IExpr frame = firstFrame((IAST) content);
+      return frame.isPresent() ? piece(frame, seedWidth) : null;
+    }
+    if (isLayout(content)) {
+      return nestedLayout((IAST) content, seedWidth);
+    }
     IExpr cell = content.isGraphicsObject() ? content : content.stripDisplayWrappers();
+    if (cell != content && (isLayout(cell) || isAnimation(cell) || cell.isAST(S.Spacer, 2))) {
+      return piece(cell, seedWidth);
+    }
     if (cell instanceof IAST) {
       IAST ast = (IAST) cell;
       if (WebGLGraphics3D.isRenderable(ast)) {
@@ -493,6 +677,77 @@ final class SvgLayout {
       }
     }
     return pieceText(content);
+  }
+
+  /**
+   * One cell drawn on its own, as a layout draws each of its cells: a picture, a table or a line
+   * of text. A frame label that is itself a table is drawn this way.
+   *
+   * @return <code>null</code> when there is nothing to draw
+   */
+  static SvgGraphics2D.Layer embed(IExpr content, double seedWidth) {
+    Piece piece = new SvgLayout(new GraphicsOptions2D()).piece(content, seedWidth);
+    if (piece == null || piece.contents.isEmpty()) {
+      return null;
+    }
+    return new SvgGraphics2D.Layer(piece.contents, piece.naturalW, piece.naturalH);
+  }
+
+  /** A <code>Grid</code>, <code>Row</code> or <code>Column</code> inside a cell of another one. */
+  private Piece nestedLayout(IAST ast, double seedWidth) {
+    GraphicsOptions2D sub = new GraphicsOptions2D();
+    sub.imageSize[0] = seedWidth;
+    sub.imageSize[1] = seedWidth;
+    String contents = new SvgLayout(sub).layout(ast, false);
+    if (contents == null || contents.isEmpty()) {
+      return null;
+    }
+    return new Piece(contents, sub.imageSize[0], sub.imageSize[1], true);
+  }
+
+  /** <code>Spacer(w)</code> or <code>Spacer({w, h})</code>: a gap of that many points, and nothing in it. */
+  private static Piece spacer(IExpr size) {
+    double w = size.isList() && size.argSize() >= 1 ? size.first().evalfNaN() : size.evalfNaN();
+    double h = size.isList() && size.argSize() >= 2 ? size.second().evalfNaN() : MIN_EXTENT;
+    return new Piece("", Double.isFinite(w) && w > 0 ? w : MIN_EXTENT,
+        Double.isFinite(h) && h > 0 ? h : MIN_EXTENT, false);
+  }
+
+  private static boolean isAnimation(IExpr expr) {
+    return (expr.isAST(S.Animate) || expr.isAST(S.ListAnimate) || expr.isAST(S.Manipulate))
+        && expr.argSize() >= 1;
+  }
+
+  /**
+   * The body of an animation at the start of its controls, the picture it shows before it has been
+   * played. A <code>ListAnimate</code> starts at its first frame.
+   */
+  private static IExpr firstFrame(IAST animation) {
+    EvalEngine engine = EvalEngine.get();
+    if (animation.isAST(S.ListAnimate)) {
+      IExpr frames = engine.evaluate(animation.arg1());
+      return frames.isList() && frames.argSize() > 0 ? frames.first()
+          : F.NIL;
+    }
+    ManipulateSpec spec =
+        ManipulateSpec.parse(animation, engine);
+    if (spec == null) {
+      return F.NIL;
+    }
+    IASTAppendable locals =
+        F.ListAlloc(spec.getControls().size());
+    for (ManipulateControl control : spec.getControls()) {
+      IExpr start = control.initialExpression();
+      if (control.bindsVariable() && start.isPresent()) {
+        locals.append(F.Set(control.getVariable(), start));
+      }
+    }
+    try {
+      return engine.evaluate(F.Block(locals,
+          Dynamics.releaseAll(spec.getBody())));
+    } catch (RuntimeException rex) {
+      return F.NIL;
+    }
   }
 
   /**
@@ -543,7 +798,7 @@ final class SvgLayout {
     if (value.isAST(S.Text) && ((IAST) value).argSize() >= 1) {
       value = ((IAST) value).arg1();
     }
-    String text = value.isString() ? value.toString() : value.toString();
+    String text = LabelText.of(value);
     if (text.isEmpty()) {
       return null;
     }

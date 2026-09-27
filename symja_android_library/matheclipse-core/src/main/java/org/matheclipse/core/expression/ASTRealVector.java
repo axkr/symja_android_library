@@ -66,12 +66,16 @@ public final class ASTRealVector extends AbstractAST
    *
    * @param astVector an AST which could be converted into <code>double[]</code>
    * @param function Function to apply to each entry.
-   * @return a new vector.
+   * @return a new vector, or <code>null</code> if an entry maps to <code>NaN</code>
    */
   public static ASTRealVector map(final IAST astVector, DoubleUnaryOperator function) {
     double[] vector = astVector.toDoubleVector();
     for (int i = 0; i < vector.length; i++) {
       vector[i] = function.applyAsDouble(vector[i]);
+      if (Double.isNaN(vector[i])) {
+        // outside the real domain, e.g. ArcCos(2.0); the caller evaluates element-wise
+        return null;
+      }
     }
     return new ASTRealVector(vector, false);
   }

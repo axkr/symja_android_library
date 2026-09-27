@@ -1296,6 +1296,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   private static int[] createTrie(IAST arrayRulesList, final Trie<int[], IExpr> trie,
       int[] dimension, int defaultDimension, IExpr[] defaultValue, EvalEngine engine) {
     boolean determineDimension = defaultDimension < 0 || dimension == null;
+    // dimensions given by the caller bound Band blocks; inferred ones grow with them
+    final boolean fixedDimension = dimension != null;
 
     if (!arrayRulesList.isNonEmptyList()) {
       return dimension;
@@ -1337,8 +1339,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     // 2. Process the first rule
-    if (!processSingleRule(rule1, trie, dimension, depth, determineDimension, defaultDimension,
-        defaultValue, arrayRulesList, true, engine)) {
+    if (!processSingleRule(rule1, trie, dimension, depth, determineDimension, fixedDimension,
+        defaultDimension, defaultValue, arrayRulesList, true, engine)) {
       return null;
     }
 
@@ -1347,7 +1349,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       IExpr arg = arrayRulesList.get(j);
       if (arg.isRuleAST()) {
         if (!processSingleRule((IAST) arg, trie, dimension, depth, determineDimension,
-            defaultDimension, defaultValue, arrayRulesList, false, engine)) {
+            fixedDimension, defaultDimension, defaultValue, arrayRulesList, false, engine)) {
           return null;
         }
       }
@@ -1363,6 +1365,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @param dimension the dimension array of the sparse array
    * @param depth the expected depth of the positions
    * @param determineDimension flag to update dimensions dynamically based on positions
+   * @param fixedDimension <code>true</code> if the dimensions were given explicitly
    * @param defaultDimension the default scalar dimension
    * @param defaultValue array holding the default value (modified if a Blank pattern matches)
    * @param arrayRulesList the complete rules list for error reporting
@@ -1371,8 +1374,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @return <code>true</code> if the rule was processed successfully, false otherwise
    */
   private static boolean processSingleRule(IAST rule, Trie<int[], IExpr> trie, int[] dimension,
-      int depth, boolean determineDimension, int defaultDimension, IExpr[] defaultValue,
-      IAST arrayRulesList, boolean isFirstRule, EvalEngine engine) {
+      int depth, boolean determineDimension, boolean fixedDimension, int defaultDimension,
+      IExpr[] defaultValue, IAST arrayRulesList, boolean isFirstRule, EvalEngine engine) {
     IExpr lhs = rule.arg1();
     IExpr rhs = rule.arg2();
 
@@ -1396,7 +1399,8 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       return true;
 
     } else if (lhs.isAST(S.Band, 1, 4)) {
-      return processBandRule(trie, (IAST) lhs, rhs, dimension, determineDimension);
+      return processBandRule(trie, (IAST) lhs, rhs, dimension, determineDimension, fixedDimension,
+          isFirstRule);
     } else {
       int n = lhs.toIntDefault();
       if (n > 0) {
@@ -2436,15 +2440,22 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   /**
    * Process a Band(...) rule for sparse arrays.
    *
+   * <p>
+   * The value may be a scalar (repeated along the band), a list of scalars (one per band position,
+   * repeated only up to an explicit end), a single array block of the band's rank (placed once at
+   * the start) or a list of such blocks (placed one after the other along the diagonal).
+   *
    * @param trie the internal trie structure
    * @param band the Band AST
    * @param rhs the right hand side value or list of values
    * @param dimension the current dimensions array
    * @param determineDimension whether to update dimensions dynamically
+   * @param fixedDimension <code>true</code> if the dimensions were given explicitly
+   * @param isFirstRule earlier rules take precedence, so only the first rule may overwrite
    * @return true if successful
    */
   private static boolean processBandRule(final Trie<int[], IExpr> trie, IAST band, IExpr rhs,
-      int[] dimension, boolean determineDimension) {
+      int[] dimension, boolean determineDimension, boolean fixedDimension, boolean isFirstRule) {
     int argSize = band.argSize();
     if (argSize < 1 || argSize > 3) {
       return false;
@@ -2468,44 +2479,6 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       start[i - 1] = val;
     }
 
-    int[] end = new int[depth];
-    boolean[] endAutomatic = new boolean[depth];
-    if (argSize >= 2) {
-      IExpr arg2 = band.arg2();
-      if (arg2.isList() && ((IAST) arg2).argSize() == depth) {
-        IAST endAst = (IAST) arg2;
-        for (int i = 1; i <= depth; i++) {
-          IExpr ei = endAst.get(i);
-          if (ei == S.Automatic) {
-            endAutomatic[i - 1] = true;
-            end[i - 1] =
-                (dimension != null && dimension[i - 1] > 0) ? dimension[i - 1] : Integer.MAX_VALUE;
-          } else {
-            int val = ei.toIntDefault(Integer.MIN_VALUE);
-            if (val < 0) {
-              endAutomatic[i - 1] = true;
-              end[i - 1] = (dimension != null && dimension[i - 1] > 0) ? dimension[i - 1]
-                  : Integer.MAX_VALUE;
-            } else {
-              end[i - 1] = val;
-            }
-          }
-        }
-      } else if (arg2 == S.Automatic) {
-        for (int i = 0; i < depth; i++) {
-          endAutomatic[i] = true;
-          end[i] = (dimension != null && dimension[i] > 0) ? dimension[i] : Integer.MAX_VALUE;
-        }
-      } else {
-        return false;
-      }
-    } else {
-      for (int i = 0; i < depth; i++) {
-        endAutomatic[i] = true;
-        end[i] = (dimension != null && dimension[i] > 0) ? dimension[i] : Integer.MAX_VALUE;
-      }
-    }
-
     int[] step = new int[depth];
     if (argSize == 3) {
       IExpr arg3 = band.arg3();
@@ -2521,15 +2494,52 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         return false;
       }
     } else {
-      for (int i = 0; i < depth; i++) {
-        step[i] = 1;
+      Arrays.fill(step, 1);
+    }
+
+    boolean dimensionUnknown = dimension == null;
+    if (!dimensionUnknown && !fixedDimension) {
+      dimensionUnknown = true;
+      for (int d : dimension) {
+        if (d > 0) {
+          dimensionUnknown = false;
+          break;
+        }
       }
     }
 
-    boolean rhsIsList = rhs.isList();
-    IAST rhsList = rhsIsList ? (IAST) rhs : null;
-    int rhsSize = rhsIsList ? rhsList.argSize() : 1;
-    int rhsIndex = 1;
+    int[] end = new int[depth];
+    boolean[] endAutomatic = new boolean[depth];
+    IAST endAst = null;
+    if (argSize >= 2) {
+      IExpr arg2 = band.arg2();
+      if (arg2.isList() && ((IAST) arg2).argSize() == depth) {
+        endAst = (IAST) arg2;
+      } else if (arg2 != S.Automatic) {
+        return false;
+      }
+    }
+    for (int i = 0; i < depth; i++) {
+      int dim = (dimension != null && dimension[i] > 0) ? dimension[i] : -1;
+      IExpr ei = endAst == null ? S.Automatic : endAst.get(i + 1);
+      int val = ei == S.Automatic ? Integer.MIN_VALUE : ei.toIntDefault(Integer.MIN_VALUE);
+      if (val == Integer.MIN_VALUE && ei != S.Automatic) {
+        return false;
+      }
+      if (val > 0) {
+        end[i] = val;
+      } else if (val < 0 && val != Integer.MIN_VALUE && dim > 0) {
+        // negative end counts from the last position: -1 is the last, -2 the one before, ...
+        end[i] = dim + 1 + val;
+      } else {
+        endAutomatic[i] = true;
+        if (step[i] < 0) {
+          end[i] = 1;
+        } else {
+          end[i] = dim > 0 ? dim : Integer.MAX_VALUE;
+        }
+      }
+    }
 
     boolean allAuto = true;
     for (boolean b : endAutomatic) {
@@ -2539,22 +2549,64 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       }
     }
 
-    // Prevent infinite loops when array edge is unknown and RHS is a repeating scalar
-    if (allAuto && dimension == null && !rhsIsList) {
-      return false;
+    if (depth >= 2 && rhs.isList()) {
+      IAST rhsList = (IAST) rhs;
+      int[] blockDims = rhsList.isEmpty() ? null : arrayDimensions(rhsList, depth);
+      if (blockDims != null) {
+        // a single block of the band's rank, placed once
+        putBandBlock(trie, rhsList, blockDims, start, dimension, determineDimension,
+            fixedDimension, isFirstRule);
+        return true;
+      }
+      if (rhsList.argSize() > 0) {
+        int[][] blocks = new int[rhsList.argSize()][];
+        for (int k = 1; k < rhsList.size(); k++) {
+          IExpr block = rhsList.get(k);
+          blocks[k - 1] = block.isList() ? arrayDimensions((IAST) block, depth) : null;
+          if (blocks[k - 1] == null) {
+            blocks = null;
+            break;
+          }
+        }
+        if (blocks != null) {
+          // a list of blocks, placed one after the other along the diagonal
+          int[] current = start.clone();
+          for (int k = 1; k < rhsList.size(); k++) {
+            int[] blockDims1 = blocks[k - 1];
+            putBandBlock(trie, (IAST) rhsList.get(k), blockDims1, current, dimension,
+                determineDimension, fixedDimension, isFirstRule);
+            for (int i = 0; i < depth; i++) {
+              current[i] += blockDims1[i];
+            }
+          }
+          return true;
+        }
+      }
+    }
+
+    boolean rhsIsList = rhs.isList();
+    IAST rhsList = rhsIsList ? (IAST) rhs : null;
+    int rhsSize = rhsIsList ? rhsList.argSize() : 1;
+    if (rhsIsList && rhsSize == 0) {
+      return true;
+    }
+    int rhsIndex = 1;
+
+    if (allAuto && dimensionUnknown && !rhsIsList) {
+      // no end in sight: the band covers the start position only
+      putBandValue(trie, start, rhs, dimension, determineDimension, isFirstRule);
+      return true;
     }
 
     int[] current = new int[depth];
     System.arraycopy(start, 0, current, 0, depth);
 
+    int count = 0;
     while (true) {
       boolean outOfBounds = false;
       for (int i = 0; i < depth; i++) {
-        if (step[i] > 0 && current[i] > end[i]) {
-          outOfBounds = true;
-          break;
-        }
-        if (step[i] < 0 && current[i] < end[i]) {
+        if (current[i] < 1 || (step[i] > 0 && current[i] > end[i])
+            || (step[i] < 0 && current[i] < end[i])) {
           outOfBounds = true;
           break;
         }
@@ -2567,6 +2619,10 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       if (outOfBounds)
         break;
 
+      if (++count > Config.MAX_AST_SIZE) {
+        org.matheclipse.core.eval.exception.ASTElementLimitExceeded.throwIt(count);
+      }
+
       IExpr val;
       if (rhsIsList) {
         int idx = (rhsIndex - 1) % rhsSize + 1;
@@ -2575,14 +2631,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         val = rhs;
       }
 
-      trie.put(current.clone(), val);
-      if (determineDimension && dimension != null) {
-        for (int i = 0; i < depth; i++) {
-          if (current[i] > dimension[i]) {
-            dimension[i] = current[i];
-          }
-        }
-      }
+      putBandValue(trie, current.clone(), val, dimension, determineDimension, isFirstRule);
 
       for (int i = 0; i < depth; i++) {
         current[i] += step[i];
@@ -2590,6 +2639,78 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       rhsIndex++;
     }
     return true;
+  }
+
+  /**
+   * The dimensions of <code>list</code> if it is a full (rectangular) array of exactly
+   * <code>depth</code> levels, <code>null</code> otherwise.
+   */
+  private static int[] arrayDimensions(IAST list, int depth) {
+    IntList dims = LinearAlgebraUtil.dimensions(list, S.List, Integer.MAX_VALUE, false);
+    if (dims.size() != depth) {
+      return null;
+    }
+    int[] result = new int[depth];
+    for (int i = 0; i < depth; i++) {
+      result[i] = dims.getInt(i);
+      if (result[i] <= 0) {
+        return null;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Put all entries of the rectangular array <code>block</code> with the upper left corner at
+   * <code>origin</code>. Entries outside of fixed dimensions are dropped.
+   */
+  private static void putBandBlock(final Trie<int[], IExpr> trie, IAST block, int[] blockDims,
+      int[] origin, int[] dimension, boolean determineDimension, boolean fixedDimension,
+      boolean isFirstRule) {
+    int depth = blockDims.length;
+    long size = 1;
+    for (int d : blockDims) {
+      size *= d;
+    }
+    if (size > Config.MAX_AST_SIZE) {
+      org.matheclipse.core.eval.exception.ASTElementLimitExceeded.throwIt(size);
+    }
+    int[] offset = new int[depth];
+    Arrays.fill(offset, 1);
+    for (long n = 0; n < size; n++) {
+      int[] position = new int[depth];
+      boolean inside = true;
+      for (int i = 0; i < depth; i++) {
+        position[i] = origin[i] + offset[i] - 1;
+        if (fixedDimension && dimension != null && position[i] > dimension[i]) {
+          inside = false;
+        }
+      }
+      if (inside) {
+        IExpr value = block;
+        for (int i = 0; i < depth; i++) {
+          value = ((IAST) value).get(offset[i]);
+        }
+        putBandValue(trie, position, value, dimension, determineDimension, isFirstRule);
+      }
+      incrementKey(offset, blockDims);
+    }
+  }
+
+  private static void putBandValue(final Trie<int[], IExpr> trie, int[] position, IExpr value,
+      int[] dimension, boolean determineDimension, boolean isFirstRule) {
+    if (isFirstRule) {
+      trie.put(position, value);
+    } else {
+      trie.putIfAbsent(position, value);
+    }
+    if (determineDimension && dimension != null) {
+      for (int i = 0; i < position.length; i++) {
+        if (position[i] > dimension[i]) {
+          dimension[i] = position[i];
+        }
+      }
+    }
   }
 
   @Override

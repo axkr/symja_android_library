@@ -14,7 +14,13 @@ See:
 
 ```
 >> Eliminate({x==2+y, y==z}, y)
-x==2+z
+x-z==2
+
+>> Eliminate(2*x+3*y+4*z==1 && 9*x+8*y+7*z==2, z)
+11/2*x+11/4*y==1/4
+
+>> Eliminate({f==x^5+y^5, a==x+y, b==x*y}, {x,y})
+-a^5+5*a^3*b-5*a*b^2+f==0
 ```
 
 ### Related terms

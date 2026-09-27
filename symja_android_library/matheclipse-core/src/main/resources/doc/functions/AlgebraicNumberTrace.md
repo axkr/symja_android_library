@@ -4,6 +4,12 @@
 AlgebraicNumberTrace(a)
 ```
 
+```
+AlgebraicNumberTrace(a, Extension -> theta)
+```
+
+> gives the trace of `a` relative to the field `Q(theta)`, which has to contain `a`.
+
 > gives the trace of the algebraic number `a` in the field `Q(a)` it generates.
 
 The trace is the negated second highest coefficient of the monic minimal polynomial of `a`.
@@ -22,6 +28,16 @@ See
 0
 
 >> AlgebraicNumberTrace((1+Sqrt(5))/2)
+1
+```
+
+With `Extension -> theta` the trace is taken in the tower `Q <= Q(a) <= Q(theta)`:
+
+```
+>> AlgebraicNumberTrace(3,Extension->Sqrt(2)+Sqrt(3))
+12
+
+>> AlgebraicNumberTrace((1+Sqrt(2))/2,Extension->Sqrt(2))
 1
 ```
 

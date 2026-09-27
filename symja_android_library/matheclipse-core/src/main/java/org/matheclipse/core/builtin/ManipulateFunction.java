@@ -45,6 +45,7 @@ public class ManipulateFunction {
       S.Dynamic.setEvaluator(new DynamicObject());
       S.DynamicWrapper.setEvaluator(new DynamicObject());
       S.Refresh.setEvaluator(new Refresh());
+      S.Button.setEvaluator(new ButtonObject());
     }
   }
 
@@ -94,6 +95,34 @@ public class ManipulateFunction {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.HOLDFIRST, Attribute.PROTECTED, Attribute.READPROTECTED);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   * <code>Button[label, action]</code>: the label is shown and so evaluated, the action runs only
+   * when the button is pressed. Without the hold a <code>Column[{Button[1, x = 1]}]</code> would
+   * assign at once.
+   */
+  private static class ButtonObject extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDREST, Attribute.PROTECTED, Attribute.READPROTECTED);
     }
 
     @Override

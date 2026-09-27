@@ -9,6 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
+import org.matheclipse.core.eval.util.SolveUtils;
 
 /** Try to solve a set of equations (i.e. <code>Equal[...]</code> expressions) numerically. */
 public class NSolve extends AbstractFunctionOptionEvaluator {
@@ -22,8 +23,8 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
       ast = ast.copyUntil(argSize + 1);
     }
     SolveOptions solveOptions = SolveOptions.of(SolveOptions.NSOLVE_KEYS, options);
-    long precision = Solve.workingPrecision(ast, solveOptions.workingPrecision(), engine);
-    if (precision == Solve.INVALID_PRECISION) {
+    long precision = SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
+    if (precision == SolveUtils.INVALID_PRECISION) {
       return F.NIL;
     }
     if (ast.size() == 5) {
@@ -53,7 +54,7 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
    * @return the list of solution lists
    */
   static IExpr solveNumeric(SolveOptions options, IAST ast, long precision, EvalEngine engine) {
-    if (precision == Solve.MACHINE_PRECISION_REQUESTED) {
+    if (precision == SolveUtils.MACHINE_PRECISION_REQUESTED) {
       return new SolveData(options).of(ast, true, true, engine);
     }
     IExpr result = new SolveData(options).of(ast, false, true, engine);

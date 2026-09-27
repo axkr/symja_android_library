@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -39,15 +38,12 @@ public class DataStructureFunctions {
         return F.NIL;
       }
       String type = ast.arg1().toString();
-      List<IExpr> elements = new ArrayList<IExpr>();
+      List<IExpr> elements = List.of();
       if (ast.isAST2()) {
         if (!ast.arg2().isList()) {
           return F.NIL;
         }
-        IAST list = (IAST) ast.arg2();
-        for (int i = 1; i < list.size(); i++) {
-          elements.add(list.get(i));
-        }
+        elements = ((IAST) ast.arg2()).asArgsList();
       }
       DataStructureExpr result = DataStructureExpr.newInstance(type, elements);
       if (result == null) {

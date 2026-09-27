@@ -76,9 +76,9 @@ public class Minimize extends AbstractFunctionEvaluator {
         // single variable with a constraint: optimize over the feasible real interval
         IExpr result = Maximize.univariateConstrainedExtremum(head, function.first(),
             function.second(), x, false, engine);
-        if (result.isPresent()) {
-          return result;
-        }
+        // a constrained problem which isn't decided stays unevaluated; the unconstrained method
+        // cannot read the {objective, constraint} list
+        return result;
       }
       return minimize(head, function, x, engine);
     }

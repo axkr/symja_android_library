@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import org.matheclipse.core.builtin.graphics.PlotEndpoints;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
@@ -9,6 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
 import org.matheclipse.core.graphics.GraphicsOptions;
@@ -33,6 +35,9 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    if (PlotEndpoints.degenerate(S.ParametricPlot3D, ast, 2, 3, false, engine)) {
+      return F.NIL;
+    }
     // a display wrapper comes off before the argument's shape is read, so a labelled dataset is
     // still recognised as a dataset; Plot3DTools.graphics3D puts the label back on the finished
     // primitives, reading it from the original call
@@ -42,20 +47,15 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         ast = ast.setAtCopy(1, unwrapped);
       }
     }
-    if (argSize < 2 || !ast.arg1().isList()) {
+    // a function which only takes its shape once evaluated, g(t) with g(u_?NumericQ) := {...},
+    // is not a list yet, and its sampled values decide what it draws
+    if (argSize < 2 || ast.arg1().isAtom()) {
       return F.NIL;
     }
     boolean isSurface = argSize >= 3 && ast.arg2().isList() && ast.arg3().isList();
 
     List<IExpr> functions = new ArrayList<>();
-    IAST listArg = (IAST) ast.arg1();
-    if (listArg.argSize() > 0 && listArg.arg1().isList()) {
-      for (int i = 1; i <= listArg.argSize(); i++) {
-        functions.add(listArg.get(i));
-      }
-    } else {
-      functions.add(listArg);
-    }
+    PlotWrapper.collectCurves(ast.arg1(), functions);
 
     int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS],
         isSurface ? SURFACE_POINTS : CURVE_POINTS);
@@ -74,22 +74,31 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       }
       IAST uRange = (IAST) ast.arg2();
       IAST vRange = (IAST) ast.arg3();
+      functions = PlotShapeProbe.split(functions, PlotShapeProbe.rangeProbes(
+          new IExpr[] {uRange.arg1(), vRange.arg1()},
+          new double[] {uRange.arg2().evalfNaN(), vRange.arg2().evalfNaN()},
+          new double[] {uRange.arg3().evalfNaN(), vRange.arg3().evalfNaN()}), 3, false, engine);
       PlotColorFunction.Builder colorBuilder = Plot3DTools.plotColors(
           PlotColorFunction.Family.PARAMETRIC_3D_UV, options, S.ParametricPlot3D, engine);
 
       for (int i = 0; i < functions.size(); i++) {
+        PlotWrapper each = PlotWrapper.of(functions.get(i));
         GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colorBuilder != null);
         Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(i, plotStyle), meshOption);
+        if (each.hasStyle()) {
+          builder.setStyle(each.style);
+        }
         double[][][] grid =
-            createSurfaceGeometry(functions.get(i), uRange, vRange, samples[0], samples[1], engine,
+            createSurfaceGeometry(each.datum, uRange, vRange, samples[0], samples[1], engine,
                 builder, colorBuilder, meshOption, options[Plot3DTools.X_MESH_STYLE],
-                options[Plot3DTools.X_EVALUATION_MONITOR], region);
+                options[Plot3DTools.X_EVALUATION_MONITOR], region,
+                options[Plot3DTools.X_MESH_FUNCTIONS], options[Plot3DTools.X_MESH_SHADING]);
         if (grid != null) {
           // the rim of the surface, and the rim of every hole a RegionFunction cut in it
           IExpr complex = Plot3DTools.withBoundary(builder, grid,
               options[Plot3DTools.X_BOUNDARY_STYLE], false);
           if (complex.isPresent()) {
-            graphicsList.append(complex);
+            graphicsList.append(each.wrapTooltip(complex));
           }
         }
       }
@@ -101,21 +110,35 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       if (!range.isList3() || !range.first().isSymbol()) {
         return Errors.printMessage(S.ParametricPlot3D, "pllim", F.list(range), engine);
       }
+      functions = PlotShapeProbe.split(functions,
+          PlotShapeProbe.rangeProbes(new IExpr[] {range.arg1()},
+              new double[] {range.arg2().evalfNaN()}, new double[] {range.arg3().evalfNaN()}),
+          3, false, engine);
       for (int i = 0; i < functions.size(); i++) {
+        // a curve wrapped in Tooltip or Style is sampled bare: the style goes into the curve and
+        // the tooltip back around the finished primitive, the way Plot3D labels one of several
+        PlotWrapper each = PlotWrapper.of(functions.get(i));
         GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
         // a curve is a line: no mesh, no edge form, and the ordinary plot colours
         builder.setStyle(Plot3DTools.curveStyle(i, plotStyle));
-        createCurveGeometry(functions.get(i), range, samples[0], engine, builder,
+        if (each.hasStyle()) {
+          // the curve's own Style comes after the plot colour, so it is the one that holds
+          builder.setStyle(each.style);
+        }
+        createCurveGeometry(each.datum, range, samples[0], engine, builder,
             options[Plot3DTools.X_EVALUATION_MONITOR], region);
         IExpr complex = builder.build();
         if (complex.isPresent()) {
-          graphicsList.append(complex);
+          graphicsList.append(each.wrapTooltip(complex));
         }
       }
     }
 
     if (graphicsList.argSize() == 0) {
-      return F.NIL;
+      if (!PlotShapeProbe.isNoCurve(ast.arg1())) {
+        return F.NIL;
+      }
+      // every curve was empty: an empty picture, not a call that could not be read
     }
     return Plot3DTools.graphics3D(graphicsList, originalAST, argSize,
         new IExpr[] {F.Rule(S.PlotRange, options[Plot3DTools.X_PLOT_RANGE]),
@@ -161,11 +184,18 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     }
   }
 
-  /** The sampled grid, or {@code null} when the parametrisation gave nothing to draw. */
+  /**
+   * The sampled grid, or {@code null} when the parametrisation gave nothing to draw.
+   *
+   * <p>
+   * With explicit {@code MeshFunctions} the mesh follows levels of those functions rather than the
+   * two parameters, drawn inside the surface's {@code GraphicsComplex}; {@code MeshShading} then
+   * colours the bands between its lines.
+   */
   private double[][][] createSurfaceGeometry(IExpr func, IAST uRange, IAST vRange, int uCount,
       int vCount, EvalEngine engine, GraphicsComplexBuilder builder,
-      PlotColorFunction.Builder colorBuilder,
-      IExpr meshOption, IExpr meshStyle, IExpr monitor, RegionFunctionFilter region) {
+      PlotColorFunction.Builder colorBuilder, IExpr meshOption, IExpr meshStyle, IExpr monitor,
+      RegionFunctionFilter region, IExpr meshFunctions, IExpr meshShading) {
     ISymbol uVar = (ISymbol) uRange.arg1();
     double uMin = uRange.arg2().evalfNaN();
     double uMax = uRange.arg3().evalfNaN();
@@ -224,6 +254,27 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       }
     }
 
+    boolean byFunctions = meshFunctions != S.Automatic && !meshFunctions.isNone()
+        && !meshOption.isNone();
+    List<double[][]> values = new ArrayList<>();
+    List<double[]> levels = new ArrayList<>();
+    if (byFunctions) {
+      IAST list = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);
+      double[] start = {uMin, vMin};
+      double[] step = {uStep, vStep};
+      for (int k = 1; k < list.size(); k++) {
+        double[][] v = Plot3DTools.meshFunctionValues(grid, list.get(k), start, step, engine);
+        values.add(v);
+        levels.add(Plot3DTools.meshLevels(meshOption, k - 1, v));
+      }
+      IExpr[][] shades = Plot3DTools.meshShading(grid, values, levels, meshShading);
+      if (shades != null) {
+        colors = shades;
+      }
+      // the parameter grid is not drawn as well: the mesh functions replace it
+      meshOption = S.None;
+    }
+
     // a parametric surface may close on itself, and welding the seam is what keeps a torus from
     // showing a crease where the last row of quads meets the first
     boolean wrapU = closes(grid, true);
@@ -245,6 +296,14 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         }, uMin, uStep, vMin, vStep);
     Plot3DTools.addSurface(builder, grid, wrapU, wrapV, colors, true, meshOption, meshStyle,
         unmasked, inside, edge);
+    if (byFunctions) {
+      // traced once the grid is in the builder: the crossings are placed between its vertices
+      IASTAppendable segments = F.ListAlloc(8);
+      for (int k = 0; k < values.size(); k++) {
+        segments.appendArgs(Plot3DTools.meshSegments(builder, grid, values.get(k), levels.get(k)));
+      }
+      Plot3DTools.addMeshSegments(builder, segments, meshStyle);
+    }
     return grid;
   }
 

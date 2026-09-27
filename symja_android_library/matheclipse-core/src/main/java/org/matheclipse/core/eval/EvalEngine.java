@@ -1,8 +1,8 @@
 package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
-import java.nio.file.Path;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -47,6 +47,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.steps.StepLevel;
+import org.matheclipse.core.eval.util.AwtSupport;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -98,6 +99,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 import edu.jas.kern.PreemptingException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.annotation.Nonnull;
 
 /**
@@ -631,8 +633,8 @@ public class EvalEngine implements Serializable {
   private transient Map<Object, IExpr> rememberMap = null;
 
   /**
-   * What <code>Once</code> has already worked out in this session, kept under the expression it
-   * was asked about.
+   * What <code>Once</code> has already worked out in this session, kept under the expression it was
+   * asked about.
    */
   private transient Map<IExpr, IExpr> onceMap = null;
 
@@ -653,8 +655,8 @@ public class EvalEngine implements Serializable {
    * Hear about every message this engine reports.
    *
    * <p>
-   * A kernel driven over a link sends them on as <code>MessagePacket</code>s, because the front
-   * end shows a message beside the cell that caused it rather than in a console nobody reads.
+   * A kernel driven over a link sends them on as <code>MessagePacket</code>s, because the front end
+   * shows a message beside the cell that caused it rather than in a console nobody reads.
    */
   public void setMessageListener(MessageListener listener) {
     this.fMessageListener = listener;
@@ -929,6 +931,8 @@ public class EvalEngine implements Serializable {
    * @param relaxedSyntax if <code>true</code>, the parser doesn't distinguidh between upper and
    *        lower case identifiers
    */
+  @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE",
+      justification = "long-lived engine Random, reseeded to record its seed")
   public EvalEngine(String sessionID, int recursionLimit, int iterationLimit, PrintStream outStream,
       PrintStream errorStream, boolean relaxedSyntax) {
     fRandomSeed = fRandom.nextLong();
@@ -1359,8 +1363,8 @@ public class EvalEngine implements Serializable {
               // pass - Extract(OptionValue(y))[a, b, c] was then evaluated as though it were the
               // three argument Extract, and failed inside Part.
               // `1` called with `2` arguments; 1 argument is expected.
-              Errors.printMessage(ast.topHead(), "argx",
-                  F.list(ast.head(), F.ZZ(ast.argSize())), this);
+              Errors.printMessage(ast.topHead(), "argx", F.list(ast.head(), F.ZZ(ast.argSize())),
+                  this);
               return null;
             }
             break;
@@ -1477,10 +1481,32 @@ public class EvalEngine implements Serializable {
     return engine;
   }
 
+  /**
+   * A copy of this engine for evaluating on another thread <i>at the same time</i> as this engine,
+   * as the kernels of <code>ParallelTable</code> do. {@link #copy()} is meant for a thread which
+   * takes the evaluation over and shares the mutable state of this engine; here everything which is
+   * not safe to use from two threads at once is replaced: the remember and <code>Once</code>
+   * caches, the <code>Reap</code> list, the trace stack and the <code>Out</code> history.
+   *
+   * @return the copy
+   */
+  public synchronized EvalEngine copyParallel() {
+    EvalEngine engine = copy();
+    engine.rememberMap = new IdentityHashMap<Object, IExpr>();
+    engine.onceMap = null;
+    engine.fReapList = null;
+    engine.fModifiedVariablesList = null;
+    engine.fTraceMode = false;
+    engine.fTraceStack = null;
+    engine.fOutListDisabled = true;
+    engine.fEvalHistory = null;
+    return engine;
+  }
+
   public synchronized EvalEngine copyInit() {
     EvalEngine engine = new EvalEngine();
     engine.fRandomSeed = fRandom.nextLong();
-    engine.fRandom.setSeed(fRandomSeed);
+    engine.fRandom.setSeed(engine.fRandomSeed);
     engine.fSessionID = this.fSessionID;
     engine.fRecursionLimit = this.fRecursionLimit;
     engine.fIterationLimit = this.fIterationLimit;
@@ -1783,8 +1809,8 @@ public class EvalEngine implements Serializable {
    * the arguments are evaluated.
    *
    * <p>
-   * Whether <code>g[x]</code> is ever evaluated is then f's business, which is the whole point of
-   * a holding f: WLX interpolates the text of an attribute with
+   * Whether <code>g[x]</code> is ever evaluated is then f's business, which is the whole point of a
+   * holding f: WLX interpolates the text of an attribute with
    * <code>ToExpression[text, InputForm, FakeHold @* ToString]</code>, and <code>FakeHold</code>
    * being <code>HoldAll</code> is what keeps the expression it was handed unevaluated until the
    * template is rendered.
@@ -1861,13 +1887,19 @@ public class EvalEngine implements Serializable {
           final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
           if (module instanceof DoubleUnaryOperator) {
             DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-            return ASTRealVector.map((IAST) arg1, oper);
+            IAST mapped = ASTRealVector.map((IAST) arg1, oper);
+            if (mapped != null) {
+              return mapped;
+            }
           }
         } else if (arg1.isRealMatrix()) {
           final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
           if (module instanceof DoubleUnaryOperator) {
             DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-            return ASTRealMatrix.map((IAST) arg1, oper);
+            IAST mapped = ASTRealMatrix.map((IAST) arg1, oper);
+            if (mapped != null) {
+              return mapped;
+            }
           }
         }
       }
@@ -2001,6 +2033,8 @@ public class EvalEngine implements Serializable {
         throw e;
       } catch (SymjaMathException ve) {
         return Errors.printMessage(ast.topHead(), ve, this);
+      } catch (LinkageError le) {
+        return awtUnavailable(ast, le);
       }
       // cannot generally set the result as evaluated in built-in function. Especially problems in
       // `togetherMode`
@@ -2016,6 +2050,21 @@ public class EvalEngine implements Serializable {
       // }
     }
     return F.NIL;
+  }
+
+  /**
+   * A builtin reached a class that needs AWT on a runtime without it - a native image on macOS. Say
+   * so and leave the call unevaluated, rather than letting the {@link LinkageError} end the process
+   * or a notebook kernel. Any other linkage error is a real classpath fault and propagates.
+   */
+  private IExpr awtUnavailable(final IAST ast, LinkageError le) {
+    if (!AwtSupport.isMissingNativeLibrary(le)) {
+      throw le;
+    }
+    if (Config.SHOW_STACKTRACE) {
+      le.printStackTrace();
+    }
+    return Errors.printMessage(ast.topHead(), "noawt", F.List(ast.topHead()), this);
   }
 
   public IExpr evalAttributes(IASTMutable mutableAST, final int astSize, ISymbol symbol,
@@ -2052,8 +2101,7 @@ public class EvalEngine implements Serializable {
       return result;
     }
 
-    if (Attribute.LISTABLE.isSetIn(attributes)
-        && mutableAST.hasNoFlag(Flag.IS_LISTABLE_THREADED)) {
+    if (Attribute.LISTABLE.isSetIn(attributes) && mutableAST.hasNoFlag(Flag.IS_LISTABLE_THREADED)) {
       // thread over the lists
       IExpr threaded = threadASTListArgs(mutableAST, S.Thread, "tdlen");
       if (threaded.isPresent()) {
@@ -2934,7 +2982,7 @@ public class EvalEngine implements Serializable {
       // sending an interrupt, which is what an abort does to a notebook's evaluation. The test
       // stands before every other one, because the paths below it - an atom, the fast evaluator,
       // the epoch cache - all answer without reaching the rest of the loop, and a loop written in
-      // the Wolfram Language spends its time in exactly those.
+      // the scripts language spends its time in exactly those.
       fAbortRequested = false;
       throw AbortException.ABORTED;
     }
@@ -2974,7 +3022,12 @@ public class EvalEngine implements Serializable {
           if (released.isPresent()) {
             return evalWithoutNumericReset(released);
           }
-          return ((IFastFunctionEvaluator) evaluator).evaluate(ast, this);
+          try {
+            return ((IFastFunctionEvaluator) evaluator).evaluate(ast, this);
+          } catch (LinkageError le) {
+            // IFastFunctionEvaluator skips evalASTBuiltinFunction and its handler
+            return awtUnavailable(ast, le);
+          }
         }
       }
     } else if (expr instanceof NILPointer || expr == null) {
@@ -3234,8 +3287,8 @@ public class EvalEngine implements Serializable {
     // memoized in an eval flag: one scan answers every special-argument test of the loop
     final boolean hasSpecialArg = ast.hasSpecialArg();
     // only the list classes which drop their flags on every change may remember the answer
-    boolean numbersOrStrings = !argNumericMode
-        && (ast instanceof org.matheclipse.core.expression.HMArrayList
+    boolean numbersOrStrings =
+        !argNumericMode && (ast instanceof org.matheclipse.core.expression.HMArrayList
             || ast instanceof org.matheclipse.core.expression.ASTRRBTree);
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
@@ -3547,8 +3600,8 @@ public class EvalEngine implements Serializable {
    * The left-hand side of a definition is turned into a matcher before it is stored, and the
    * pattern constructs in it have to become pattern objects for that. A holding head must not stop
    * that from happening: <code>f[x_, expr_, OptionsPattern[]] := …</code> is a rule with options
-   * whether or not <code>f</code> holds its arguments - the hold says what happens to the
-   * arguments of a <em>call</em>, not to the shape of the rule.
+   * whether or not <code>f</code> holds its arguments - the hold says what happens to the arguments
+   * of a <em>call</em>, not to the shape of the rule.
    */
   private static boolean isPatternConstruct(IExpr expr) {
     if (!expr.isAST()) {
@@ -3656,8 +3709,7 @@ public class EvalEngine implements Serializable {
             continue;
           }
           if (expr.isAST()) {
-            resultList =
-                evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
+            resultList = evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
           } else if (!(expr instanceof IPatternObject) && !noEvaluation) {
             resultList = resultList.setIfPresent(ast, i, expr.evaluate(this));
           }
@@ -4978,6 +5030,13 @@ public class EvalEngine implements Serializable {
       IExpr arg = ast.get(i);
       if (arg.isAST()) {
         arg = preevalForwardBackward((IAST) arg);
+        if (arg.isPresent() && i > 2 && arg.isList()
+            && org.matheclipse.core.eval.util.Iterator.losesVariable(ast.get(i), arg,
+                org.matheclipse.core.eval.util.Iterator.iteratorVariables(ast, i))) {
+          // the bounds of an inner iterator depend on an outer variable in a way which the
+          // symbolic evaluation dropped, e.g. {x, 0, If(IntegerQ(i), i, 0)} became {x, 0, 0}
+          continue;
+        }
         if (arg.isPresent()) {
           if (preevaled.isNIL()) {
             preevaled = ast.copy();
@@ -5226,7 +5285,9 @@ public class EvalEngine implements Serializable {
     return fCurrentDirectory;
   }
 
-  /** Change the directory relative file names are resolved against, as <code>SetDirectory</code>. */
+  /**
+   * Change the directory relative file names are resolved against, as <code>SetDirectory</code>.
+   */
   public final void setCurrentDirectory(Path directory) {
     this.fCurrentDirectory = directory == null ? null : directory.toAbsolutePath().normalize();
   }
@@ -5435,8 +5496,8 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Ask the evaluation running in this engine to stop, from whatever thread notices that it
-   * should: the next step of its evaluation loop throws {@link AbortException}.
+   * Ask the evaluation running in this engine to stop, from whatever thread notices that it should:
+   * the next step of its evaluation loop throws {@link AbortException}.
    */
   public void stopRequest() {
     fAbortRequested = true;
@@ -5578,8 +5639,7 @@ public class EvalEngine implements Serializable {
    *         {@link ISparseArray}. Returns {@link F#NIL} if no {@link ISymbol#LISTABLE} arguments
    *         were found or if the arguments cannot be combined.
    */
-  public IExpr threadASTListArgs(final IAST ast, ISymbol commandHead,
-      String messageShortcut) {
+  public IExpr threadASTListArgs(final IAST ast, ISymbol commandHead, String messageShortcut) {
     if (ast.isUniform()) {
       // uniform arguments never contain a S.List, S.Association or S.SparseArray argument
       ast.addFlag(Flag.IS_LISTABLE_THREADED);
@@ -5700,8 +5760,10 @@ public class EvalEngine implements Serializable {
             return invalidListable(ast, S.Association, "incmp",
                 F.List(refAssociation, association, ast));
           }
+          // the values are combined by position, so the keys have to agree in order too:
+          // <|a->1,b->2|>+<|b->10,a->20|>
           for (int j = 1; j < association.size(); j++) {
-            if (!refAssociation.isKey(association.getRule(j).first())) {
+            if (!refAssociation.getRule(j).first().equals(association.getRule(j).first())) {
               // incmp: The arguments `1` and `2` in `3` are incompatible.
               return invalidListable(ast, S.Association, "incmp",
                   F.List(refAssociation, association, ast));

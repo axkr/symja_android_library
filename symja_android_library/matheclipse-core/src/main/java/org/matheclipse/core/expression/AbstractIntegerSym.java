@@ -1443,15 +1443,14 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public IInteger quotient(final IInteger that) {
-    BigInteger quotient = toBigNumerator().divide(that.toBigNumerator());
-    BigInteger mod = toBigNumerator().remainder(that.toBigNumerator());
-    if (mod.signum() == 0) {
-      return valueOf(quotient);
+    BigInteger divisor = that.toBigNumerator();
+    BigInteger[] qr = toBigNumerator().divideAndRemainder(divisor);
+    // round towards minus infinity: correct the truncated quotient if the remainder's sign
+    // differs from the divisor's sign
+    if (qr[1].signum() != 0 && qr[1].signum() != divisor.signum()) {
+      return valueOf(qr[0].subtract(BigInteger.ONE));
     }
-    if (quotient.signum() < 0) {
-      return valueOf(quotient.subtract(BigInteger.ONE));
-    }
-    return valueOf(quotient);
+    return valueOf(qr[0]);
   }
 
   @Override

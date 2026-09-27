@@ -32,12 +32,10 @@ import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IGraphExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -693,12 +691,7 @@ public final class OutputFunctions {
         if (ast.isAST2() && ast.arg2().isStringIgnoreCase("mathcell")) {
           javascriptFlavor = JavaScriptFormFactory.USE_MATHCELL;
         }
-        IExpr arg1 = ast.arg1();
-        if (arg1.isFunctionID(ID.Plot, ID.ParametricPlot, ID.ParametricPlot)) {
-          IASTAppendable temp = ((IAST) arg1).appendClone(F.Rule(S.JSForm, S.True));
-          arg1 = temp;
-        }
-        arg1 = engine.evaluate(arg1);
+        IExpr arg1 = engine.evaluate(ast.arg1());
 
         if (arg1.isAST(S.JSFormData, 3)) {
           String manipulateStr = ((IAST) arg1).arg1().toString();
@@ -706,9 +699,6 @@ public final class OutputFunctions {
         }
         if (arg1.isDataset()) {
           return F.$str(((IASTDataset) arg1).datasetToJSForm(), IStringX.TEXT_HTML);
-        }
-        if (arg1 instanceof IGraphExpr) {
-          return F.$str(((IGraphExpr) arg1).graphToJSForm(), IStringX.APPLICATION_JAVASCRIPT);
         }
 
         return F.$str(toJavaScript(arg1, javascriptFlavor), IStringX.APPLICATION_JAVASCRIPT);
@@ -745,7 +735,7 @@ public final class OutputFunctions {
    *
    * </blockquote>
    */
-  private static class MathMLForm extends AbstractCoreFunctionEvaluator {
+  private static class MathMLForm extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -764,11 +754,6 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 
@@ -1003,14 +988,14 @@ public final class OutputFunctions {
    * "{\cos(x)}^{2}-{\sin(x)}^{2}"
    * </pre>
    */
-  private static class TeXForm extends AbstractCoreFunctionEvaluator {
+  private static class TeXForm extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
-      IExpr arg1 = engine.evaluate(ast.arg1());
+      IExpr arg1 = ast.arg1();
       StringBuilderWriter stw = new StringBuilderWriter();
-      texUtil.toTeX(arg1, stw);
+      texUtil.toTeX(arg1, stw, false);
       return F.$str(stw.toString(), IStringX.TEXT_LATEX);
     }
 
@@ -1022,11 +1007,6 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 

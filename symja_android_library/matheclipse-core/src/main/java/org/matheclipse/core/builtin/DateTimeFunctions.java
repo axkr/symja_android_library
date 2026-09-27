@@ -826,14 +826,13 @@ public class DateTimeFunctions {
    * the target month, i.e. the &quot;RollBackward&quot; method.
    */
   static LocalDateTime plusCalendarUnit(LocalDateTime date, String unit, double count) {
-    long whole = (long) count;
     switch (unit) {
       case "Year":
-        return date.plusYears(whole);
+        return plusMonths(date, 12, count);
       case "Quarter":
-        return date.plusMonths(3 * whole);
+        return plusMonths(date, 3, count);
       case "Month":
-        return date.plusMonths(whole);
+        return plusMonths(date, 1, count);
       case "Week":
         return plusSecondsOrNull(date, count * 7 * 86400.0);
       case "Day":
@@ -847,6 +846,35 @@ public class DateTimeFunctions {
       default:
         return null;
     }
+  }
+
+  /**
+   * Add {@code count} units of {@code monthsPerUnit} months each, where a fractional count is that
+   * fraction of the unit the whole ones end in.
+   *
+   * <p>
+   * A calendar unit has no fixed length - a year is 365 days or 366, a month 28 to 31 - so the
+   * fraction has to be measured against the one unit it falls in: half a year from 2020-01-01 is
+   * half of the 366 days of 2020, and from 2021-01-01 half of 365. A whole count moves by whole
+   * calendar units as it always did, so the day of the month is kept.
+   */
+  private static LocalDateTime plusMonths(LocalDateTime date, int monthsPerUnit, double count) {
+    if (!Double.isFinite(count)) {
+      return null;
+    }
+    double whole = Math.floor(count);
+    LocalDateTime base;
+    try {
+      base = date.plusMonths((long) whole * monthsPerUnit);
+    } catch (DateTimeException | ArithmeticException e) {
+      return null;
+    }
+    double fraction = count - whole;
+    if (fraction == 0.0) {
+      return base;
+    }
+    double unitSeconds = Duration.between(base, base.plusMonths(monthsPerUnit)).toNanos() / 1.0e9;
+    return plusSecondsOrNull(base, fraction * unitSeconds);
   }
 
   /** <code>true</code> if the unit is finer than a day. */
@@ -2092,8 +2120,11 @@ public class DateTimeFunctions {
         return dateObject.withDateTime(dateObject.getGranularity().truncate(result));
       }
       if (spec.listSize > 0) {
-        return hasTimeIncrement(increments) || spec.listSize > 3 ? dateListOf(result)
-            : dayListOf(result);
+        // a date list carries a time of day only when there is one to carry: half of 2020 is 183
+        // whole days, and Mathematica answers {2020, 7, 2} rather than spelling out the midnight
+        return hasTimeIncrement(increments) || spec.listSize > 3
+            || !result.toLocalTime().equals(LocalTime.MIDNIGHT) ? dateListOf(result)
+                : dayListOf(result);
       }
       return instantObject(result, spec.dateObject.getTimeZone(), spec.real);
     }

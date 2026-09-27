@@ -1,16 +1,17 @@
 package org.matheclipse.core.builtin.graphics;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -41,13 +42,6 @@ public class ParametricPlot extends Plot {
       // Range specification `1` is not of the form {x, xmin, xmax}.
       return Errors.printMessage(S.ParametricPlot, "pllim", F.list(arg2), engine);
     }
-    if (options[0].isTrue()) {
-      IExpr temp = S.Manipulate.funEval(engine, ast);
-      if (temp.headID() == ID.JSFormData) {
-        return temp;
-      }
-      return F.NIL;
-    }
 
     if (argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
@@ -57,7 +51,9 @@ public class ParametricPlot extends Plot {
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
     graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
+    // the points are adaptive samples of a function, not data, so markers are spaced out
+    graphicsOptions.setSampledCurve(true);
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     // a parametric curve's colour function is given the parameter alongside the coordinates
@@ -136,17 +132,19 @@ public class ParametricPlot extends Plot {
         if (listOfLines.isNIL()) {
           return F.NIL;
         }
+        if (listOfLines.argSize() == 0 && PlotShapeProbe.isNoCurve(function)) {
+          // every curve was empty - ParametricPlot({{}}, ...), or a condition that chose no curve
+          // at all. That is an empty picture, not a call that could not be read, which is what
+          // Plot answers for the same data.
+          return createGraphicsFunction(F.CEmptyList, graphicsOptions.copy(), ast);
+        }
 
-        if (ToggleFeature.JS_ECHARTS) {
-          return evaluateECharts(ast, argSize, options, engine, originalAST);
-        } else {
-          GraphicsOptions listPlotOptions = graphicsOptions.copy();
-          IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
-          IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
+        GraphicsOptions listPlotOptions = graphicsOptions.copy();
+        IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
+        IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
 
-          if (graphicsPrimitives.isPresent()) {
-            return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
-          }
+        if (graphicsPrimitives.isPresent()) {
+          return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
         }
       }
 
@@ -391,73 +389,78 @@ public class ParametricPlot extends Plot {
     // a wrapper is taken off before the {fx, fy} shape is read, since Tooltip({Cos(t), Sin(t)})
     // is still one curve and not a collection of two
     final PlotWrapper outer = PlotWrapper.of(functionOrListOfFunctions);
-    IAST curveList;
-    if (outer.datum.isList()) {
-      IAST list = (IAST) outer.datum;
-      if (list.size() > 1 && !PlotWrapper.strip(list.arg1()).isList()) {
-        curveList = F.List(outer.datum);
-      } else {
-        curveList = list;
-      }
-    } else {
+    if (outer.datum.isAtom()) {
       return F.NIL;
     }
+    // {c1 /. sol, c2 /. sol} nests each curve one list deeper, so groups are flattened at every
+    // level rather than only the outermost one
+    List<IExpr> curves = new ArrayList<>();
+    PlotWrapper.collectCurves(outer.datum, curves);
+    final List<IAST> probes = PlotShapeProbe.rangeProbes(new IExpr[] {tSym},
+        new double[] {Math.min(tMinD, tMaxD)}, new double[] {Math.max(tMinD, tMaxD)});
+    IAST curveList = F.List(curves.toArray(new IExpr[0]));
 
     final IASTAppendable listOfLines = F.ListAlloc(curveList.size());
     final RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
 
     for (IExpr wrappedCurve : curveList) {
       PlotWrapper each = PlotWrapper.of(wrappedCurve);
-      IExpr curveSpec = each.datum;
+      // the label is read off the curve as it was written, before it is rewritten below
       IExpr curveTooltip = outer.tooltipOf(each);
-      if (!curveSpec.isList() || ((IAST) curveSpec).size() < 3)
-        continue;
-      // quantity valued components are plotted by their magnitudes, one unit per axis
-      final IAST samplePoint = F.List(F.Rule(tSym, F.num((tMinD + tMaxD) / 2.0)));
-      IExpr targetUnits = GraphicsOptions.optionValue(ast, S.TargetUnits, S.Automatic);
-      IExpr fx = QuantityFunctions.quantityPlotFunction(((IAST) curveSpec).arg1(), samplePoint,
-          targetUnits, 1, 2, engine);
-      IExpr fy = QuantityFunctions.quantityPlotFunction(((IAST) curveSpec).arg2(), samplePoint,
-          targetUnits, 2, 2, engine);
+      // {g(t), h(t)} with g and h giving points is two curves, not one curve's two coordinates,
+      // which only a sampled value can say; a curve that is not written as {fx, fy} is read
+      // coordinate by coordinate
+      for (IExpr curveSpec : PlotShapeProbe.split(each.datum, probes, 2, true, engine)) {
+        if (!curveSpec.isList() || ((IAST) curveSpec).size() < 3)
+          continue;
+        // quantity valued components are plotted by their magnitudes, one unit per axis
+        final IAST samplePoint = F.List(F.Rule(tSym, F.num((tMinD + tMaxD) / 2.0)));
+        IExpr targetUnits = GraphicsOptions.optionValue(ast, S.TargetUnits, S.Automatic);
+        IExpr fx = QuantityFunctions.quantityPlotFunction(((IAST) curveSpec).arg1(), samplePoint,
+            targetUnits, 1, 2, engine);
+        IExpr fy = QuantityFunctions.quantityPlotFunction(((IAST) curveSpec).arg2(), samplePoint,
+            targetUnits, 2, 2, engine);
 
-      // one curve is a list of the polylines it is made of, which is how a curve broken by a
-      // region or a pole keeps a single colour instead of being read as several curves
-      IASTAppendable segments = F.ListAlloc(4);
-      IASTAppendable linePoints = F.ListAlloc(steps);
+        // one curve is a list of the polylines it is made of, which is how a curve broken by a
+        // region or a pole keeps a single colour instead of being read as several curves
+        IASTAppendable segments = F.ListAlloc(4);
+        IASTAppendable linePoints = F.ListAlloc(steps);
 
-      for (int i = 0; i <= steps; i++) {
-        double t = tMinD + i * step;
-        IExpr tVal = F.num(t);
-        IExpr xExpr = F.subst(fx, F.Rule(tSym, tVal));
-        IExpr yExpr = F.subst(fy, F.Rule(tSym, tVal));
+        for (int i = 0; i <= steps; i++) {
+          double t = tMinD + i * step;
+          IExpr tVal = F.num(t);
+          IExpr xExpr = F.subst(fx, F.Rule(tSym, tVal));
+          IExpr yExpr = F.subst(fy, F.Rule(tSym, tVal));
 
-        boolean drawn = false;
-        try {
-          double x = engine.evalDouble(xExpr);
-          double y = engine.evalDouble(yExpr);
-          if (Double.isFinite(x) && Double.isFinite(y)
-              && (region == null || region.accepts(x, y, t))) {
-            linePoints.append(graphicsOptions.parametricPoint(x, y, t));
-            drawn = true;
+          boolean drawn = false;
+          try {
+            double x = engine.evalDouble(xExpr);
+            double y = engine.evalDouble(yExpr);
+            if (Double.isFinite(x) && Double.isFinite(y)
+                && (region == null || region.accepts(x, y, t))) {
+              linePoints.append(graphicsOptions.parametricPoint(x, y, t));
+              drawn = true;
+            }
+          } catch (RuntimeException e) {
+            // Ignore
           }
-        } catch (RuntimeException e) {
-          // Ignore
-        }
-        if (!drawn) {
-          // the curve is broken where it has no value, or where the region ends, rather than
-          // jumped across
-          if (linePoints.argSize() > 1) {
-            segments.append(linePoints);
+          if (!drawn) {
+            // the curve is broken where it has no value, or where the region ends, rather than
+            // jumped across
+            if (linePoints.argSize() > 1) {
+              segments.append(linePoints);
+            }
+            linePoints = F.ListAlloc(steps);
           }
-          linePoints = F.ListAlloc(steps);
         }
-      }
-      if (linePoints.argSize() > 1) {
-        segments.append(linePoints);
-      }
-      if (segments.argSize() > 0) {
-        listOfLines.append(
-            curveTooltip.isPresent() ? F.binaryAST2(S.Tooltip, segments, curveTooltip) : segments);
+        if (linePoints.argSize() > 1) {
+          segments.append(linePoints);
+        }
+        if (segments.argSize() > 0) {
+          listOfLines.append(curveTooltip.isPresent()
+              ? F.binaryAST2(S.Tooltip, segments, curveTooltip)
+              : segments);
+        }
       }
     }
 

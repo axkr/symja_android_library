@@ -8,7 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.io.FileSandbox;
 
 /**
- * Finds the file a Wolfram Language context lives in.
+ * Finds the file a script context lives in.
  *
  * <p>
  * <code>Needs["A`B`"]</code> names a context, not a file, and the file is looked for in this order:
@@ -31,9 +31,9 @@ public final class PackageResolver {
    * Contexts the system provides itself, which <code>Needs</code> therefore has nothing to read.
    *
    * <p>
-   * In the Wolfram Language these are part of the kernel, and a package that asks for one expects
-   * silence rather than a file. What Symja actually defines in them is another matter - a symbol
-   * that is missing is missing whether or not the Needs said so.
+   * These are part of the kernel, and a package that asks for one expects silence rather than a
+   * file. What Symja actually defines in them is another matter - a symbol that is missing is
+   * missing whether or not the Needs said so.
    */
   private static final java.util.Set<String> STANDARD_CONTEXTS =
       new java.util.HashSet<>(java.util.Arrays.asList(//

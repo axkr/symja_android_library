@@ -87,8 +87,7 @@ public final class FiniteIntegerSolver {
     }
     TreeSet<BigInteger[]> solutions = new TreeSet<BigInteger[]>(LEXICOGRAPHIC);
     for (List<Atom> branch : branches) {
-      Boolean enumerated = enumerateBranch(branch, present, domain, maxPoints, solutions);
-      if (enumerated == null) {
+      if (!enumerateBranch(branch, present, domain, maxPoints, solutions)) {
         return IntegerSolveResult.unsupported();
       }
     }
@@ -98,14 +97,14 @@ public final class FiniteIntegerSolver {
   /**
    * Enumerate one conjunction.
    *
-   * @return <code>Boolean.TRUE</code> when the branch was decided, or <code>null</code> when its
+   * @return <code>true</code> when the branch was decided, or <code>false</code> when its
    *         variables were not proved to lie in a finite range
    */
-  private static Boolean enumerateBranch(List<Atom> atoms, List<Variable> variables,
+  private static boolean enumerateBranch(List<Atom> atoms, List<Variable> variables,
       IntegerDomain domain, long maxPoints, TreeSet<BigInteger[]> output) {
     BoundProver.Box box = BoundProver.bounds(atoms, variables, domain);
     if (box.isInfeasible()) {
-      return Boolean.TRUE;
+      return true;
     }
     List<Domain> domains = new ArrayList<Domain>(variables.size());
     BigInteger total = BigInteger.ONE;
@@ -113,21 +112,21 @@ public final class FiniteIntegerSolver {
       BigInteger lower = box.lower(variable);
       BigInteger upper = box.upper(variable);
       if (lower == null || upper == null) {
-        return null;
+        return false;
       }
       Domain range = domainOf(variable, lower, upper, atoms);
       if (range == null) {
         // an inconsistent congruence leaves this branch without a solution
-        return Boolean.TRUE;
+        return true;
       }
       domains.add(range);
       total = total.multiply(range.count);
       if (total.compareTo(BigInteger.valueOf(maxPoints)) > 0) {
-        return null;
+        return false;
       }
     }
     enumerate(0, variables, domains, atoms, domain, new TreeMap<Variable, BigInteger>(), output);
-    return Boolean.TRUE;
+    return true;
   }
 
   /** The values one variable may take: an arithmetic progression inside its bounds. */

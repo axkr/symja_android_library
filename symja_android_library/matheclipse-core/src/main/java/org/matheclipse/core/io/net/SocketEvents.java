@@ -22,8 +22,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * <p>
  * The selector thread calls the methods here; they only build a description of what happened and
  * hand it to the {@link EventLoop}, which runs the handler later on the evaluating thread. So a
- * handler is ordinary Wolfram Language code evaluated in the usual single-threaded way, no matter
- * which thread the bytes arrived on.
+ * handler is ordinary script code evaluated in the usual single-threaded way, no matter which
+ * thread the bytes arrived on.
  */
 public final class SocketEvents {
 
@@ -51,7 +51,8 @@ public final class SocketEvents {
     }
   }
 
-  private static final Map<Integer, Listener> LISTENERS = new ConcurrentHashMap<Integer, Listener>();
+  private static final Map<Integer, Listener> LISTENERS =
+      new ConcurrentHashMap<Integer, Listener>();
 
   private static final AtomicInteger NEXT_ID = new AtomicInteger();
 
@@ -169,13 +170,13 @@ public final class SocketEvents {
     rules.append(F.Rule(F.stringx("TimeStamp"), engine.evaluate(S.Now)));
     rules.append(F.Rule(F.stringx("SourceSocket"), SocketObjectExpr.newInstance(entry)));
     SocketEntry listened = SocketRegistry.get(listener.socketUuid);
-    rules.append(F.Rule(F.stringx("Socket"),
-        listened == null ? SocketObjectExpr.newInstance(entry) : SocketObjectExpr.newInstance(listened)));
+    rules.append(F.Rule(F.stringx("Socket"), listened == null ? SocketObjectExpr.newInstance(entry)
+        : SocketObjectExpr.newInstance(listened)));
     if (data != null) {
       ByteArrayExpr byteArray = ByteArrayExpr.newInstance(data);
       rules.append(F.Rule(F.stringx("DataByteArray"), byteArray));
-      rules.append(F.Rule(F.stringx("DataBytes"), F.mapRange(0, data.length,
-          i -> F.ZZ(data[i] & 0xFF))));
+      rules.append(
+          F.Rule(F.stringx("DataBytes"), F.mapRange(0, data.length, i -> F.ZZ(data[i] & 0xFF))));
       rules.append(F.Rule(F.stringx("MultipartComplete"), S.True));
     }
     return F.assoc(rules);

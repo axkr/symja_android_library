@@ -4113,11 +4113,11 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Solve({2*x+7*y==6,-5*x-20*y==-15},{x,y})", //
         "{{x->3,y->0}}");
     check("Solve({2*x+8*y==6,-5*x-20*y==-15},{x,y})", //
-        "{{x->3-4*y}}");
+        "{{y->1/4*(3-x)}}");
     check("Solve({3*x+2*y-z==1,2*x-2*y+4*z==-2,-x+1/2*y-z==0},{x,y,z})", //
         "{{x->1,y->-2,z->-2}}");
     check("Solve({x+3*y-2*z==5,3*x+5*y+6*z==7},{x,y,z})", //
-        "{{x->-1-7*z,y->2+3*z}}");
+        "{{y->1/7*(11-3*x),z->1/7*(-1-x)}}");
     check("Solve({x+y==62,x-6==4*(y-6)},{x,y})", //
         "{{x->46,y->16}}");
     check("Solve({3*x==2,4*x==2},{x})", //

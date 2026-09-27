@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
@@ -242,6 +243,8 @@ public class PresburgerTest {
   }
 
   @Test
+  @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE",
+      justification = "fixed seed for a reproducible fuzz loop")
   public void testGeneratedFormulasAgreeWithExhaustiveEvaluation() {
     final int cases = Integer.getInteger("symja.presburger.cases",
         Config.EXPENSIVE_JUNIT_TESTS ? 25000 : 2000).intValue();

@@ -1,8 +1,11 @@
 package org.matheclipse.core.builtin;
 
 import java.util.Random;
+import org.apfloat.Apfloat;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.random.RandomDataGenerator;
+import org.hipparchus.special.Gamma;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.eval.Errors;
@@ -1690,6 +1693,133 @@ public class StatisticsContinousDistribution {
   }
 
 
+  /**
+   * <code>{Mean, Variance, Skewness, Kurtosis}</code> of the 4 argument
+   * <code>GammaDistribution(a, b, g, m)</code> (<code>sign == 1</code>) or
+   * <code>InverseGammaDistribution(a, b, g, m)</code> (<code>sign == -1</code>) for machine number
+   * parameters, <code>NaN</code> where the moment does not exist.
+   *
+   * <p>
+   * The exact forms are built from <code>Gamma(a + sign*k/g)/Gamma(a)</code>, the moments of
+   * <code>Y^(sign/g)</code> for <code>Y ~ GammaDistribution(a, 1)</code>. As doubles the
+   * <code>Gamma</code> values overflow from <code>a > 171</code> on, and the central moments
+   * cancel about <code>2*Log10(a*g^2)</code> digits of the raw ones, because the distribution
+   * concentrates as <code>a</code> grows. So the ratios are taken in logarithms, with that many
+   * extra digits. For the inverse form the <code>k</code>-th moment exists only for
+   * <code>a*g > k</code>.
+   *
+   * @param dist a distribution with the 4 arguments <code>a, b, g, m</code>
+   * @return <code>null</code> unless all parameters are numbers, one of them inexact, and the
+   *         shapes and scale positive
+   */
+  private static double[] generalizedGammaMachineMoments(IAST dist, int sign) {
+    if (dist.argSize() != 4 || EvalEngine.get().isArbitraryMode()) {
+      return null;
+    }
+    boolean inexact = false;
+    double[] v = new double[4];
+    for (int i = 0; i < 4; i++) {
+      IExpr arg = dist.get(i + 1);
+      inexact |= arg.isInexactNumber();
+      v[i] = arg.evalfNaN();
+      if (!Double.isFinite(v[i])) {
+        return null;
+      }
+    }
+    double a = v[0];
+    double b = v[1];
+    double g = v[2];
+    double m = v[3];
+    if (!inexact || !(a > 0.0 && b > 0.0 && g > 0.0)) {
+      return null;
+    }
+    // the largest Gamma argument decides how many digits LogGamma needs before the point
+    double largest = sign > 0 ? a + 4.0 / g : a;
+    long precision = 30 + (long) Math.ceil(2.0 * Math.log10(Math.max(1.0, a * g * g)))
+        + (long) Math.ceil(Math.log10(Math.max(10.0, largest * Math.abs(Math.log(largest)))));
+    FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(precision);
+    Apfloat shape = new Apfloat(a, precision);
+    Apfloat inverseG = h.divide(Apfloat.ONE, new Apfloat(g, precision));
+    Apfloat logGamma0 = h.logGamma(shape);
+    // r[k] = Gamma(a + sign*k/g)/Gamma(a)
+    Apfloat[] r = new Apfloat[5];
+    r[0] = Apfloat.ONE;
+    for (int k = 1; k <= 4; k++) {
+      if (sign > 0 || a * g > k) {
+        Apfloat argument = h.add(shape, h.multiply(new Apfloat(sign * k), inverseG));
+        r[k] = h.exp(h.subtract(h.logGamma(argument), logGamma0));
+      }
+    }
+    double[] result = {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
+    if (r[1] == null) {
+      return result;
+    }
+    result[0] = m + b * r[1].doubleValue();
+    if (r[2] == null) {
+      return result;
+    }
+    Apfloat r1Squared = h.multiply(r[1], r[1]);
+    Apfloat c2 = h.subtract(r[2], r1Squared);
+    result[1] = b * b * c2.doubleValue();
+    if (r[3] == null) {
+      return result;
+    }
+    // r3 - 3*r1*r2 + 2*r1^3
+    Apfloat c3 = h.add(h.subtract(r[3], h.multiply(new Apfloat(3), h.multiply(r[1], r[2]))),
+        h.multiply(new Apfloat(2), h.multiply(r1Squared, r[1])));
+    result[2] = h.divide(c3, h.multiply(c2, h.sqrt(c2))).doubleValue();
+    if (r[4] == null) {
+      return result;
+    }
+    // r4 - 4*r1*r3 + 6*r1^2*r2 - 3*r1^4
+    Apfloat c4 = h.subtract(
+        h.add(h.subtract(r[4], h.multiply(new Apfloat(4), h.multiply(r[1], r[3]))),
+            h.multiply(new Apfloat(6), h.multiply(r1Squared, r[2]))),
+        h.multiply(new Apfloat(3), h.multiply(r1Squared, r1Squared)));
+    result[3] = h.divide(c4, h.multiply(c2, c2)).doubleValue();
+    return result;
+  }
+
+  /** A machine moment, or <code>Indeterminate</code> where it does not exist. */
+  private static IExpr machineMoment(double[] moments, int index) {
+    double value = moments[index];
+    return Double.isNaN(value) ? S.Indeterminate : F.num(value);
+  }
+
+  /**
+   * The parameters <code>{a, b, g, m}</code> of a <code>GammaDistribution</code> or
+   * <code>InverseGammaDistribution</code> as doubles for a machine precision evaluation at
+   * <code>x</code>: all of them numbers, at least one of them inexact, and the shapes and scale
+   * positive.
+   *
+   * @return <code>{a, b, g, m, x}</code> or <code>null</code>
+   */
+  private static double[] generalizedGammaMachineArguments(IExpr[] parameters, IExpr x,
+      EvalEngine engine) {
+    if (engine.isArbitraryMode()) {
+      return null;
+    }
+    boolean inexact = x.isInexactNumber();
+    double[] values = new double[5];
+    for (int i = 0; i < 4; i++) {
+      inexact |= parameters[i].isInexactNumber();
+      values[i] = parameters[i].evalfNaN();
+    }
+    values[4] = x.evalfNaN();
+    if (!inexact) {
+      return null;
+    }
+    for (double value : values) {
+      if (!Double.isFinite(value)) {
+        return null;
+      }
+    }
+    if (!(values[0] > 0.0 && values[1] > 0.0 && values[2] > 0.0)) {
+      return null;
+    }
+    return values;
+  }
+
   private static final class GammaDistribution extends AbstractEvaluator implements ICentralMoment,
       IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF, IGeneratingFunction {
 
@@ -1748,6 +1878,13 @@ public class StatisticsContinousDistribution {
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
         IExpr d = dist.arg4();
+        double[] v = generalizedGammaMachineArguments(new IExpr[] {a, b, g, d}, k, engine);
+        if (v != null && v[4] > v[3]) {
+          // GammaRegularized(a, 0, ((x - d)/b)^g), which the symbolic form cannot evaluate for a
+          // large machine shape
+          double z = Math.exp(v[2] * Math.log((v[4] - v[3]) / v[1]));
+          return F.num(z == Double.POSITIVE_INFINITY ? 1.0 : Gamma.regularizedGammaP(v[0], z));
+        }
         IExpr function =
             // [$ (Piecewise({{GammaRegularized(a, 0, ((# - d)/b)^g), # > d}}, 0)&) $]
             F.Function(F.Piecewise(F.list(F.list(
@@ -1838,6 +1975,10 @@ public class StatisticsContinousDistribution {
         // 3+6/a
         return F.Plus(F.C3, F.Times(F.C6, F.Power(a, F.CN1)));
       } else if (dist.isAST(S.GammaDistribution, 5)) {
+        double[] moments = generalizedGammaMachineMoments(dist, 1);
+        if (moments != null) {
+          return machineMoment(moments, 3);
+        }
         // (-3*Gamma(a+1/g)^4+6*Gamma(a)*Gamma(a+1/g)^2*Gamma(a+2/g)-4*Gamma(a)^2*Gamma(a+1/g)*Gamma(a+3/g)+Gamma(a)^3*Gamma(a+4/g))/(Gamma(a+1/g)^2-Gamma(a)*Gamma(a+2/g))^2
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
@@ -1866,6 +2007,10 @@ public class StatisticsContinousDistribution {
         return F.Times(m, n);
       }
       if (dist.size() == 5) {
+        double[] moments = generalizedGammaMachineMoments(dist, 1);
+        if (moments != null) {
+          return machineMoment(moments, 0);
+        }
         IExpr a = dist.arg1();
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
@@ -1938,6 +2083,15 @@ public class StatisticsContinousDistribution {
         IExpr b = dist.arg2();
         IExpr g = dist.arg3();
         IExpr d = dist.arg4();
+        double[] v = generalizedGammaMachineArguments(new IExpr[] {a, b, g, d}, k, engine);
+        if (v != null && v[4] > v[3]) {
+          // in logarithms, because Gamma(a) overflows a double from a > 171 on:
+          // Log(g) - Log(b) - LogGamma(a) + (a*g - 1)*Log(z) - z^g with z = (x - d)/b
+          double logZ = Math.log((v[4] - v[3]) / v[1]);
+          double logDensity = Math.log(v[2]) - Math.log(v[1]) - Gamma.logGamma(v[0])
+              + (v[0] * v[2] - 1.0) * logZ - Math.exp(v[2] * logZ);
+          return F.num(Math.exp(logDensity));
+        }
         IExpr function =
             // [$ ( Piecewise( {{(((# - d)/b)^(-1 + a*g)*g)/(E^((# - d)/b)^g*(b*Gamma(a))), # > d}},
             // 0) & )
@@ -2478,7 +2632,7 @@ public class StatisticsContinousDistribution {
       S.GammaDistribution.setEvaluator(new GammaDistribution());
       S.GompertzMakehamDistribution.setEvaluator(new GompertzMakehamDistribution());
       S.GumbelDistribution.setEvaluator(new GumbelDistribution());
-      // S.InverseGammaDistribution.setEvaluator(new InverseGammaDistribution());
+      S.InverseGammaDistribution.setEvaluator(new InverseGammaDistribution());
       S.LogNormalDistribution.setEvaluator(new LogNormalDistribution());
       S.MultinormalDistribution.setEvaluator(new MultinormalDistribution());
       S.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
@@ -2501,6 +2655,7 @@ public class StatisticsContinousDistribution {
       S.BetaPrimeDistribution.setEvaluator(new BetaPrimeDistribution());
       S.MeixnerDistribution.setEvaluator(new MeixnerDistribution());
       S.SinghMaddalaDistribution.setEvaluator(new SinghMaddalaDistribution());
+      S.SkewNormalDistribution.setEvaluator(new SkewNormalDistribution());
       S.SuzukiDistribution.setEvaluator(new SuzukiDistribution());
       S.ExponentialPowerDistribution.setEvaluator(new ExponentialPowerDistribution());
       S.MaxStableDistribution.setEvaluator(new MaxStableDistribution());
@@ -2512,300 +2667,336 @@ public class StatisticsContinousDistribution {
     }
   }
 
-  // private static final class InverseGammaDistribution extends AbstractEvaluator
-  // implements IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
-  //
-  // @Override
-  // public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
-  // if (dist.isAST2()) {
-  // //
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // if (!engine.isArbitraryMode() && //
-  // (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-  // try {
-  // return F.num(new org.hipparchus.distribution.continuous.InvGammaDistribution(a.evalf(),
-  // b.evalf()) //
-  // .cumulativeProbability(k.evalf()));
-  // } catch (RuntimeException rex) {
-  // Errors.rethrowsInterruptException(rex);
-  // //
-  // }
-  // }
-  // IExpr function = //
-  // F.Function(F.Piecewise(
-  // F.list(F.list(F.GammaRegularized(a, F.Times(b, F.Power(F.Slot1, F.CN1)))),
-  // F.Greater(F.Slot1, F.C0))),
-  // F.C0);
-  //
-  //
-  // return callFunction(function, k);
-  // } else if (dist.isAST(S.InverseGammaDistribution, 5)) {
-  // //
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // IExpr g = dist.arg3();
-  // IExpr d = dist.arg4();
-  // IExpr function = //
-  // F.Function(F.Piecewise(F.list(F.list(
-  // F.GammaRegularized(a,
-  // F.Power(F.Times(b, F.Power(F.Plus(F.Negate(d), F.Slot1), F.CN1)), g)),
-  // F.Greater(F.Slot1, d))), F.C0));
-  // return callFunction(function, k);
-  // }
-  //
-  // return F.NIL;
-  // }
-  //
-  //
-  // @Override
-  // public IExpr evaluate(final IAST ast, EvalEngine engine) {
-  // // 2 or 4 arguments
-  // return F.NIL;
-  // }
-  //
-  // @Override
-  // public int[] expectedArgSize(IAST ast) {
-  // return ARGS_2_4;
-  // }
-  //
-  // @Override
-  // public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
-  // if (dist.isAST2()) {
-  // //
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // if (!engine.isArbitraryMode() && //
-  // (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-  // try {
-  // return F.num(new org.hipparchus.distribution.continuous.InvGammaDistribution(a.evalf(),
-  // b.evalf()) //
-  // .inverseCumulativeProbability(k.evalf()));
-  // } catch (RuntimeException rex) {
-  // Errors.rethrowsInterruptException(rex);
-  // //
-  // }
-  // }
-  // IExpr function = //
-  // F.Function(
-  // F.ConditionalExpression(F.Piecewise(
-  // F.list(F.list(F.Times(b, F.Power(F.InverseGammaRegularized(a, F.Slot1), F.CN1)),
-  // F.Less(F.C0, F.Slot1, F.C1)), F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
-  // F.oo), F.LessEqual(F.C0, F.Slot1, F.C1)));
-  // return callFunction(function, k);
-  // } else if (dist.isAST(S.GammaDistribution, 5)) {
-  // //
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // IExpr g = dist.arg3();
-  // IExpr d = dist.arg4();
-  // IExpr function = //
-  // F.Function(
-  // F.ConditionalExpression(
-  // F.Piecewise(
-  // F.list(
-  // F.list(
-  // F.Plus(d,
-  // F.Times(b,
-  // F.Power(F.Power(F.InverseGammaRegularized(a, F.Slot1),
-  // F.Power(g, F.CN1)), F.CN1))),
-  // F.Less(F.C0, F.Slot1, F.C1)),
-  // F.list(d, F.LessEqual(F.Slot1, F.C0))),
-  // F.oo),
-  // F.LessEqual(F.C0, F.Slot1, F.C1)));
-  // return callFunction(function, k);
-  // }
-  // return F.NIL;
-  // }
-  //
-  // @Override
-  // public IExpr mean(IAST dist) {
-  // if (dist.isAST2()) {
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // // Piecewise({{b/(-1+a),a>1}},Indeterminate)
-  // return F.Piecewise(
-  // F.list(F.list(F.Times(F.Power(F.Plus(F.CN1, a), F.CN1), b), F.Greater(a, F.C1))),
-  // F.Indeterminate);
-  // }
-  // if (dist.size() == 5) {
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // IExpr g = dist.arg3();
-  // IExpr d = dist.arg4();
-  // // Piecewise({{d+(b*Gamma(a-1/g))/Gamma(a),a*g>1}},Indeterminate)
-  // return F
-  // .Piecewise(F.list(F.list(
-  // F.Plus(d,
-  // F.Times(b, F.Power(F.Gamma(a), F.CN1),
-  // F.Gamma(F.Subtract(a, F.Power(g, F.CN1))))),
-  // F.Greater(F.Times(a, g), F.C1))), S.Indeterminate);
-  // }
-  // return F.NIL;
-  // }
-  //
-  // @Override
-  // public IExpr median(IAST dist) {
-  // if (dist.isAST2()) {
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // // b/InverseGammaRegularized(a,1/2)
-  // return F.Times(b, F.Power(F.InverseGammaRegularized(a, F.C1D2), F.CN1));
-  // }
-  // if (dist.size() == 5) {
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // IExpr g = dist.arg3();
-  // IExpr d = dist.arg4();
-  // // d+b*((1/InverseGammaRegularized(a,1/2)))^(1/g)
-  // return F.Plus(d, F.Times(b,
-  // F.Power(F.Power(F.InverseGammaRegularized(a, F.C1D2), F.CN1), F.Power(g, F.CN1))));
-  // }
-  // return F.NIL;
-  // }
-  //
-  // @Override
-  // public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
-  // if (dist.isAST2()) {
-  // //
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // if (!engine.isArbitraryMode() && //
-  // (a.isNumericArgument(true) || b.isNumericArgument(true) || k.isNumericArgument(true))) {
-  // try {
-  // return F.num(new org.hipparchus.distribution.continuous.InvGammaDistribution(a.evalf(),
-  // b.evalf()) //
-  // .density(k.evalf()));
-  // } catch (RuntimeException rex) {
-  // Errors.rethrowsInterruptException(rex);
-  // //
-  // }
-  // }
-  // IExpr function = //
-  // // Piecewise({{(b/#)^a/(E^(b/#)*#*Gamma(a)),#>0}},0)&
-  // F.Function(
-  // F.Piecewise(
-  // F.list(F.list(
-  // F.Times(
-  // F.Power(F.Times(F.Exp(F.Times(b, F.Power(F.Slot1, F.CN1))), F.Slot1,
-  // F.Gamma(a)), F.CN1),
-  // F.Power(F.Times(b, F.Power(F.Slot1, F.CN1)), a)),
-  // F.Greater(F.Slot1, F.C0))),
-  // F.C0));
-  // return callFunction(function, k);
-  // } else if (dist.isAST(S.InverseGammaDistribution, 5)) {
-  // //
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // IExpr g = dist.arg3();
-  // IExpr d = dist.arg4();
-  // IExpr function = //
-  // // Piecewise({{(g*(b/(-d+#1))^(1+a*g))/(E^(b/(-d+#1))^g*b*Gamma(a)),#1>d}},0)&
-  // F.Function(F.Piecewise(F.list(F.list(F.Times(g,
-  // F.Power(F.Times(
-  // F.Exp(F.Power(F.Times(b, F.Power(F.Plus(F.Negate(d), F.Slot1), F.CN1)), g)), b,
-  // F.Gamma(a)), F.CN1),
-  // F.Power(F.Times(b, F.Power(F.Plus(F.Negate(d), F.Slot1), F.CN1)),
-  // F.Plus(F.C1, F.Times(a, g)))),
-  // F.Greater(F.Slot1, d))), F.C0));
-  // return callFunction(function, k);
-  // }
-  //
-  // return F.NIL;
-  // }
-  //
-  // @Override
-  // public IExpr randomVariate(Random random, IAST dist, int size) {
-  // if (dist.isAST2()) {
-  // // see exception handling in RandomVariate() function
-  // double a = dist.arg1().evalf();
-  // double b = dist.arg2().evalf();
-  //
-  // // TODO cache RandomDataGenerator instance
-  // RandomDataGenerator rdg = new RandomDataGenerator();
-  // double[] vector = rdg.nextDeviates( //
-  // new org.hipparchus.distribution.continuous.InvGammaDistribution(a, b), //
-  // size);
-  // return new ASTRealVector(vector, false);
-  // }
-  // return F.NIL;
-  // }
-  //
-  // @Override
-  // public void setUp(final ISymbol newSymbol) {}
-  //
-  // @Override
-  // public IExpr skewness(IAST dist) {
-  // if (dist.isAST2()) {
-  // IExpr a = dist.arg1();
-  // // Piecewise({{(4*Sqrt(-2+a))/(-3+a),a>3}},Indeterminate)
-  // return F.Piecewise(
-  // F.list(F.list(F.Times(F.C4, F.Power(F.Plus(F.CN3, a), F.CN1), F.Sqrt(F.Plus(F.CN2, a))),
-  // F.Greater(a, F.C3))),
-  // F.Indeterminate);
-  // } else if (dist.isAST(S.InverseGammaDistribution, 5)) {
-  // //
-  // IExpr a = dist.arg1();
-  // IExpr g = dist.arg3();
-  // // Piecewise({{(Gamma(a)^2*Gamma(a-3/g)-3*Gamma(a)*Gamma(a-2/g)*Gamma(a-1/g)+2*Gamma(a-
-  // // 1/g)^3)/(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2)^(3/2),a*g>3}},Indeterminate)
-  // return F
-  // .Piecewise(
-  // F.list(
-  // F.list(
-  // F.Times(
-  // F.Power(
-  // F.Subtract(
-  // F.Times(F.Gamma(a),
-  // F.Gamma(F.Plus(a, F.Times(F.CN2, F.Power(g, F.CN1))))),
-  // F.Sqr(F.Gamma(F.Subtract(a, F.Power(g, F.CN1))))),
-  // F.QQ(-3L, 2L)),
-  // F.Plus(
-  // F.Times(F.Sqr(F.Gamma(a)),
-  // F.Gamma(F.Plus(a, F.Times(F.CN3, F.Power(g, F.CN1))))),
-  // F.Times(
-  // F.CN3, F.Gamma(a),
-  // F.Gamma(F.Plus(a, F.Times(F.CN2, F.Power(g, F.CN1)))),
-  // F.Gamma(F.Subtract(a, F.Power(g, F.CN1)))),
-  // F.Times(F.C2,
-  // F.Power(F.Gamma(F.Subtract(a, F.Power(g, F.CN1))), F.C3)))),
-  // F.Greater(F.Times(a, g), F.C3))),
-  // S.Indeterminate);
-  //
-  // }
-  // return F.NIL;
-  // }
-  //
-  // @Override
-  // public IExpr variance(IAST dist) {
-  // if (dist.isAST2()) {
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // // Piecewise({{b^2/((-2+a)*(-1+a)^2),a>2}},Indeterminate)
-  // return F.Piecewise(F.list(F.list(
-  // F.Times(F.Power(F.Times(F.Plus(F.CN2, a), F.Sqr(F.Plus(F.CN1, a))), F.CN1), F.Sqr(b)),
-  // F.Greater(a, F.C2))), S.Indeterminate);
-  // } else if (dist.isAST(S.InverseGammaDistribution, 5)) {
-  // //
-  // IExpr a = dist.arg1();
-  // IExpr b = dist.arg2();
-  // IExpr g = dist.arg3();
-  // // Piecewise({{(b^2*(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2))/Gamma(a)^2,a*g>2}},Indeterminate)
-  // return F
-  // .Piecewise(
-  // F.list(F.list(
-  // F.Times(F.Sqr(b), F.Power(F.Gamma(a), F.CN2),
-  // F.Subtract(
-  // F.Times(F.Gamma(a),
-  // F.Gamma(F.Plus(a, F.Times(F.CN2, F.Power(g, F.CN1))))),
-  // F.Sqr(F.Gamma(F.Subtract(a, F.Power(g, F.CN1)))))),
-  // F.Greater(F.Times(a, g), F.C2))),
-  // F.Indeterminate);
-  //
-  // }
-  // return F.NIL;
-  // }
-  // }
+  /**
+   * <code>InverseGammaDistribution(a, b)</code> with shape <code>a</code> and scale <code>b</code>,
+   * and the generalized <code>InverseGammaDistribution(a, b, g, m)</code> with the second shape
+   * <code>g</code> and location <code>m</code>. <code>X</code> is inverse gamma distributed if
+   * <code>((X - m)/b)^(-g)</code> is <code>GammaDistribution(a, 1)</code> distributed.
+   */
+  private static final class InverseGammaDistribution extends AbstractEvaluator
+      implements ICentralMoment, IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF {
+
+    /**
+     * The parameters <code>{a, b, g, m}</code> of both forms, the 2 argument form with
+     * <code>g == 1</code> and <code>m == 0</code>.
+     */
+    private static IExpr[] parameters(IAST dist) {
+      if (dist.isAST2()) {
+        return new IExpr[] {dist.arg1(), dist.arg2(), F.C1, F.C0};
+      }
+      if (dist.isAST(S.InverseGammaDistribution, 5)) {
+        return new IExpr[] {dist.arg1(), dist.arg2(), dist.arg3(), dist.arg4()};
+      }
+      return null;
+    }
+
+    /** The machine moments of the 4 argument form, see {@link #generalizedGammaMachineMoments}. */
+    private static double[] machineMoments(IAST dist) {
+      return dist.isAST(S.InverseGammaDistribution, 5) ? generalizedGammaMachineMoments(dist, -1)
+          : null;
+    }
+
+    /** A parameter which is a real number but not positive. */
+    private static boolean isInvalid(IExpr[] parameters) {
+      for (int i = 0; i < 3; i++) {
+        if (parameters[i].isReal() && !parameters[i].isPositive()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null || isInvalid(parameters)) {
+        return F.NIL;
+      }
+      double[] v = generalizedGammaMachineArguments(parameters, k, engine);
+      if (v != null) {
+        if (!(v[4] > v[3])) {
+          return F.CD0;
+        }
+        // GammaRegularized(a, (b/(x - m))^g)
+        double z = Math.exp(v[2] * Math.log(v[1] / (v[4] - v[3])));
+        return F.num(z == Double.POSITIVE_INFINITY ? 0.0 : Gamma.regularizedGammaQ(v[0], z));
+      }
+      IExpr a = parameters[0];
+      IExpr b = parameters[1];
+      IExpr g = parameters[2];
+      IExpr m = parameters[3];
+      if (dist.isAST2()) {
+        // Piecewise({{GammaRegularized(a, b/#), # > 0}}, 0) &
+        return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+            F.GammaRegularized(a, F.Divide(b, F.Slot1)), //
+            F.Greater(F.Slot1, F.C0))), F.C0)), k);
+      }
+      // Piecewise({{GammaRegularized(a, (b/(# - m))^g), # > m}}, 0) &
+      return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+          F.GammaRegularized(a, F.Power(F.Divide(b, F.Subtract(F.Slot1, m)), g)), //
+          F.Greater(F.Slot1, m))), F.C0)), k);
+    }
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // 2 or 4 arguments
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_4;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null || isInvalid(parameters)) {
+        return F.NIL;
+      }
+      IExpr a = parameters[0];
+      IExpr b = parameters[1];
+      if (dist.isAST2()) {
+        // ConditionalExpression(Piecewise({{b/InverseGammaRegularized(a, #), 0 < # < 1},
+        // {0, # <= 0}}, Infinity), 0 <= # <= 1) &
+        return callFunction(F.Function(F.ConditionalExpression(F.Piecewise(F.list(//
+            F.list(F.Divide(b, F.InverseGammaRegularized(a, F.Slot1)),
+                F.Less(F.C0, F.Slot1, F.C1)), //
+            F.list(F.C0, F.LessEqual(F.Slot1, F.C0))), F.oo), //
+            F.LessEqual(F.C0, F.Slot1, F.C1))), k);
+      }
+      IExpr g = parameters[2];
+      IExpr m = parameters[3];
+      // ConditionalExpression(Piecewise({{m + b*InverseGammaRegularized(a, #)^(-1/g), 0 < # < 1},
+      // {m, # <= 0}}, Infinity), 0 <= # <= 1) &
+      return callFunction(F.Function(F.ConditionalExpression(F.Piecewise(F.list(//
+          F.list(
+              F.Plus(m,
+                  F.Times(b,
+                      F.Power(F.InverseGammaRegularized(a, F.Slot1), F.Negate(F.Power(g, F.CN1))))),
+              F.Less(F.C0, F.Slot1, F.C1)), //
+          F.list(m, F.LessEqual(F.Slot1, F.C0))), F.oo), //
+          F.LessEqual(F.C0, F.Slot1, F.C1))), k);
+    }
+
+    @Override
+    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      double[] moments = machineMoments(dist);
+      if (moments != null) {
+        return machineMoment(moments, 3);
+      }
+      IExpr a = parameters[0];
+      if (dist.isAST2()) {
+        // Piecewise({{3 + (-66 + 30*a)/((-4 + a)*(-3 + a)), a > 4}}, Indeterminate)
+        return F.Piecewise(F.list(F.list(//
+            F.Plus(F.C3,
+                F.Divide(F.Plus(F.ZZ(-66), F.Times(F.ZZ(30), a)),
+                    F.Times(F.Plus(F.CN4, a), F.Plus(F.CN3, a)))), //
+            F.Greater(a, F.C4))), S.Indeterminate);
+      }
+      IExpr g = parameters[2];
+      // with the moments E(Y^(-k/g)) == Gamma(a - k/g)/Gamma(a) of Y ~ GammaDistribution(a, 1):
+      // Piecewise({{(Gamma(a)^3*Gamma(a - 4/g) - 4*Gamma(a)^2*Gamma(a - 1/g)*Gamma(a - 3/g)
+      // + 6*Gamma(a)*Gamma(a - 1/g)^2*Gamma(a - 2/g) - 3*Gamma(a - 1/g)^4)
+      // /(Gamma(a)*Gamma(a - 2/g) - Gamma(a - 1/g)^2)^2, a*g > 4}}, Indeterminate)
+      IExpr gInverse = F.Power(g, F.CN1);
+      IExpr gamma0 = F.Gamma(a);
+      IExpr gamma1 = F.Gamma(F.Subtract(a, gInverse));
+      IExpr gamma2 = F.Gamma(F.Subtract(a, F.Times(F.C2, gInverse)));
+      IExpr gamma3 = F.Gamma(F.Subtract(a, F.Times(F.C3, gInverse)));
+      IExpr gamma4 = F.Gamma(F.Subtract(a, F.Times(F.C4, gInverse)));
+      // Times(numerator, Power(denominator, -2)) rather than a Divide by a square: the nested
+      // Power(Power(denominator, 2), -1) of large exact Gamma values exceeds the recursion limit
+      return F.Piecewise(F.list(F.list(//
+          F.Times(
+              F.Plus(F.Times(F.Power(gamma0, F.C3), gamma4),
+                  F.Times(F.CN4, F.Sqr(gamma0), gamma1, gamma3),
+                  F.Times(F.C6, gamma0, F.Sqr(gamma1), gamma2),
+                  F.Times(F.CN3, F.Power(gamma1, F.C4))),
+              F.Power(F.Subtract(F.Times(gamma0, gamma2), F.Sqr(gamma1)), F.CN2)), //
+          F.Greater(F.Times(a, g), F.C4))), S.Indeterminate);
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      double[] moments = machineMoments(dist);
+      if (moments != null) {
+        return machineMoment(moments, 0);
+      }
+      IExpr a = parameters[0];
+      IExpr b = parameters[1];
+      if (dist.isAST2()) {
+        // Piecewise({{b/(-1 + a), a > 1}}, Indeterminate)
+        return F.Piecewise(
+            F.list(F.list(F.Divide(b, F.Plus(F.CN1, a)), F.Greater(a, F.C1))), S.Indeterminate);
+      }
+      IExpr g = parameters[2];
+      IExpr m = parameters[3];
+      // Piecewise({{m + (b*Gamma(a - 1/g))/Gamma(a), a*g > 1}}, Indeterminate)
+      return F.Piecewise(F.list(F.list(//
+          F.Plus(m, F.Divide(F.Times(b, F.Gamma(F.Subtract(a, F.Power(g, F.CN1)))), F.Gamma(a))),
+          F.Greater(F.Times(a, g), F.C1))), S.Indeterminate);
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      IExpr a = parameters[0];
+      IExpr b = parameters[1];
+      if (dist.isAST2()) {
+        // b/InverseGammaRegularized(a, 1/2)
+        return F.Divide(b, F.InverseGammaRegularized(a, F.C1D2));
+      }
+      IExpr g = parameters[2];
+      IExpr m = parameters[3];
+      // m + b*(1/InverseGammaRegularized(a, 1/2))^(1/g)
+      return F.Plus(m, F.Times(b,
+          F.Power(F.Power(F.InverseGammaRegularized(a, F.C1D2), F.CN1), F.Power(g, F.CN1))));
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null || isInvalid(parameters)) {
+        return F.NIL;
+      }
+      double[] v = generalizedGammaMachineArguments(parameters, k, engine);
+      if (v != null) {
+        if (!(v[4] > v[3])) {
+          return F.CD0;
+        }
+        // in logarithms, so that a large shape does not overflow:
+        // Log(g) - Log(b) - LogGamma(a) + (1 + a*g)*Log(z) - z^g with z = b/(x - m)
+        double logZ = Math.log(v[1] / (v[4] - v[3]));
+        double logDensity = Math.log(v[2]) - Math.log(v[1]) - Gamma.logGamma(v[0])
+            + (1.0 + v[0] * v[2]) * logZ - Math.exp(v[2] * logZ);
+        return F.num(Math.exp(logDensity));
+      }
+      IExpr a = parameters[0];
+      IExpr b = parameters[1];
+      IExpr g = parameters[2];
+      IExpr m = parameters[3];
+      if (dist.isAST2()) {
+        // Piecewise({{(b/#)^a/(E^(b/#)*#*Gamma(a)), # > 0}}, 0) &
+        IExpr z = F.Divide(b, F.Slot1);
+        return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+            F.Divide(F.Power(z, a), F.Times(F.Exp(z), F.Slot1, F.Gamma(a))), //
+            F.Greater(F.Slot1, F.C0))), F.C0)), k);
+      }
+      // Piecewise({{(g*(b/(# - m))^(1 + a*g))/(E^(b/(# - m))^g*b*Gamma(a)), # > m}}, 0) &
+      IExpr z = F.Divide(b, F.Subtract(F.Slot1, m));
+      return callFunction(F.Function(F.Piecewise(F.list(F.list(//
+          F.Divide(F.Times(g, F.Power(z, F.Plus(F.C1, F.Times(a, g)))),
+              F.Times(F.Exp(F.Power(z, g)), b, F.Gamma(a))), //
+          F.Greater(F.Slot1, m))), F.C0)), k);
+    }
+
+    /** <code>m + b*Y^(-1/g)</code> for <code>Y</code> distributed as <code>GammaDistribution(a, 1)</code>. */
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      double a = parameters[0].evalfNaN();
+      double b = parameters[1].evalfNaN();
+      double g = parameters[2].evalfNaN();
+      double m = parameters[3].evalfNaN();
+      if (!(a > 0.0 && b > 0.0 && g > 0.0) || !Double.isFinite(a) || !Double.isFinite(b)
+          || !Double.isFinite(g) || !Double.isFinite(m)) {
+        return F.NIL;
+      }
+      RandomDataGenerator rdg = RandomFunctions.randomDataGenerator(random);
+      double[] vector = new double[size];
+      for (int i = 0; i < size; i++) {
+        vector[i] = m + b * Math.exp(-Math.log(rdg.nextGamma(a, 1.0)) / g);
+      }
+      return new ASTRealVector(vector, false);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      double[] moments = machineMoments(dist);
+      if (moments != null) {
+        return machineMoment(moments, 2);
+      }
+      IExpr a = parameters[0];
+      if (dist.isAST2()) {
+        // Piecewise({{(4*Sqrt(-2 + a))/(-3 + a), a > 3}}, Indeterminate)
+        return F.Piecewise(F.list(F.list(//
+            F.Divide(F.Times(F.C4, F.Sqrt(F.Plus(F.CN2, a))), F.Plus(F.CN3, a)), //
+            F.Greater(a, F.C3))), S.Indeterminate);
+      }
+      IExpr g = parameters[2];
+      // with the moments E(Y^(-k/g)) == Gamma(a - k/g)/Gamma(a) of Y ~ GammaDistribution(a, 1):
+      // Piecewise({{(Gamma(a)^2*Gamma(a - 3/g) - 3*Gamma(a)*Gamma(a - 1/g)*Gamma(a - 2/g)
+      // + 2*Gamma(a - 1/g)^3)/(Gamma(a)*Gamma(a - 2/g) - Gamma(a - 1/g)^2)^(3/2), a*g > 3}},
+      // Indeterminate)
+      IExpr gamma0 = F.Gamma(a);
+      IExpr gamma1 = F.Gamma(F.Subtract(a, F.Power(g, F.CN1)));
+      IExpr gamma2 = F.Gamma(F.Subtract(a, F.Times(F.C2, F.Power(g, F.CN1))));
+      IExpr gamma3 = F.Gamma(F.Subtract(a, F.Times(F.C3, F.Power(g, F.CN1))));
+      return F.Piecewise(F.list(F.list(//
+          F.Divide(
+              F.Plus(F.Times(F.Sqr(gamma0), gamma3), F.Times(F.CN3, gamma0, gamma1, gamma2),
+                  F.Times(F.C2, F.Power(gamma1, F.C3))),
+              F.Power(F.Subtract(F.Times(gamma0, gamma2), F.Sqr(gamma1)), F.C3D2)), //
+          F.Greater(F.Times(a, g), F.C3))), S.Indeterminate);
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      IExpr[] parameters = parameters(dist);
+      if (parameters == null) {
+        return F.NIL;
+      }
+      double[] moments = machineMoments(dist);
+      if (moments != null) {
+        return machineMoment(moments, 1);
+      }
+      IExpr a = parameters[0];
+      IExpr b = parameters[1];
+      if (dist.isAST2()) {
+        // Piecewise({{b^2/((-2 + a)*(-1 + a)^2), a > 2}}, Indeterminate)
+        return F.Piecewise(F.list(F.list(//
+            F.Divide(F.Sqr(b), F.Times(F.Plus(F.CN2, a), F.Sqr(F.Plus(F.CN1, a)))), //
+            F.Greater(a, F.C2))), S.Indeterminate);
+      }
+      IExpr g = parameters[2];
+      // Piecewise({{(b^2*(Gamma(a)*Gamma(a - 2/g) - Gamma(a - 1/g)^2))/Gamma(a)^2, a*g > 2}},
+      // Indeterminate)
+      IExpr gamma0 = F.Gamma(a);
+      IExpr gamma1 = F.Gamma(F.Subtract(a, F.Power(g, F.CN1)));
+      IExpr gamma2 = F.Gamma(F.Subtract(a, F.Times(F.C2, F.Power(g, F.CN1))));
+      return F.Piecewise(F.list(F.list(//
+          F.Divide(F.Times(F.Sqr(b), F.Subtract(F.Times(gamma0, gamma2), F.Sqr(gamma1))),
+              F.Sqr(gamma0)), //
+          F.Greater(F.Times(a, g), F.C2))), S.Indeterminate);
+    }
+  }
 
   /**
    *
@@ -3188,10 +3379,13 @@ public class StatisticsContinousDistribution {
       try {
         double[] meanVector;
         double[][] covMatrix;
+        IExpr sigmaExpr;
+        IInteger sigmaPosition;
 
         if (dist.isAST1()) {
           // MultinormalDistribution(Sigma) -> Mu is zeros
-          IExpr sigmaExpr = dist.arg1();
+          sigmaExpr = dist.arg1();
+          sigmaPosition = F.C1;
           covMatrix = sigmaExpr.toDoubleMatrix();
           if (covMatrix == null) {
             return F.NIL;
@@ -3201,14 +3395,28 @@ public class StatisticsContinousDistribution {
         } else if (dist.isAST2()) {
           // MultinormalDistribution(Mu, Sigma)
           IExpr muExpr = dist.arg1();
-          IExpr sigmaExpr = dist.arg2();
+          sigmaExpr = dist.arg2();
+          sigmaPosition = F.C2;
           meanVector = muExpr.toDoubleVector();
           covMatrix = sigmaExpr.toDoubleMatrix();
         } else {
           return F.NIL;
         }
 
-        if (meanVector != null && covMatrix != null) {
+        if (meanVector != null && covMatrix != null && covMatrix.length > 0
+            && covMatrix.length == covMatrix[0].length && meanVector.length == covMatrix.length) {
+          // the sampler reads only one triangle of Sigma, so an asymmetric or indefinite matrix
+          // would be sampled silently
+          try {
+            new org.hipparchus.linear.CholeskyDecomposition(
+                new org.hipparchus.linear.Array2DRowRealMatrix(covMatrix, false));
+          } catch (org.hipparchus.exception.MathIllegalArgumentException miae) {
+            // The value `1` at position `2` in `3` is expected to be a symmetric positive definite
+            // matrix
+            Errors.printMessage(S.MultinormalDistribution, "posdefprm",
+                F.List(sigmaExpr, sigmaPosition, dist));
+            return F.NIL;
+          }
           org.hipparchus.distribution.multivariate.MultivariateNormalDistribution mnd =
               new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(RandomFunctions.hipparchusGenerator(random),
                 
@@ -6116,6 +6324,176 @@ public class StatisticsContinousDistribution {
    * and scale parameter <code>b</code>. <code>LogisticDistribution()</code> is equivalent to
    * <code>LogisticDistribution(0, 1)</code>.
    */
+  /**
+   * <code>SkewNormalDistribution(mu, sigma, alpha)</code> - the skew-normal distribution with location
+   * <code>mu</code>, scale <code>sigma</code> and shape <code>alpha</code>.
+   * <code>SkewNormalDistribution(alpha)</code> is <code>SkewNormalDistribution(0, 1, alpha)</code>.
+   */
+  private static final class SkewNormalDistribution extends AbstractEvaluator
+      implements ICDF, ICentralMoment, IContinuousDistribution, IPDF, IRandomVariate, IStatistics {
+
+    /** <code>{mu, sigma, alpha}</code>, or <code>null</code> for a wrong number of arguments. */
+    private static IExpr[] parameters(IAST dist) {
+      if (dist.isAST1()) {
+        return new IExpr[] {F.C0, F.C1, dist.arg1()};
+      }
+      if (dist.isAST3()) {
+        return new IExpr[] {dist.arg1(), dist.arg2(), dist.arg3()};
+      }
+      return null;
+    }
+
+    /** <code>Pi + (Pi-2)*alpha^2</code> */
+    private static IExpr shapeDenominator(IExpr alpha) {
+      return F.Plus(S.Pi, F.Times(F.Plus(F.CN2, S.Pi), F.Sqr(alpha)));
+    }
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr x, EvalEngine engine) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // 1/2*Erfc((mu-#)/(Sqrt(2)*sigma)) - 2*OwenT((#-mu)/sigma, alpha) &
+      IExpr z = F.Divide(F.Subtract(F.Slot1, p[0]), p[1]);
+      return callFunction(F.Function(F.Subtract(
+          F.Times(F.C1D2, F.Erfc(F.Times(F.CN1, F.C1DSqrt2, z))),
+          F.Times(F.C2, F.binaryAST2(S.OwenT, z, p[2])))), x);
+    }
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IAST checkParameters(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      if (p[1].isReal() && !p[1].isPositive()) {
+        // Parameter `1` at position `2` in `3` is expected to be positive.
+        Errors.printMessage(S.SkewNormalDistribution, "posprm", F.list(p[1], F.C2, dist),
+            EvalEngine.get());
+        return F.NIL;
+      }
+      return dist;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // 3 + (8*(Pi-3)*alpha^4)/(Pi + (Pi-2)*alpha^2)^2
+      return F.Plus(F.C3, F.Times(F.C8, F.Plus(F.CN3, S.Pi), F.Power(p[2], F.C4),
+          F.Power(shapeDenominator(p[2]), F.CN2)));
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // mu + (Sqrt(2/Pi)*alpha*sigma)/Sqrt(1+alpha^2)
+      return F.Plus(p[0], F.Times(F.Sqrt(F.Times(F.C2, F.Power(S.Pi, F.CN1))), p[2], p[1],
+          F.Power(F.Plus(F.C1, F.Sqr(p[2])), F.CN1D2)));
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr parameterAssumptions(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      return F.And(F.Element(p[0], S.Reals), F.Greater(p[1], F.C0), F.Element(p[2], S.Reals));
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr x, EvalEngine engine) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // E^(-(#-mu)^2/(2*sigma^2))*Erfc(-(alpha*(#-mu))/(Sqrt(2)*sigma))/(Sqrt(2*Pi)*sigma) &
+      IExpr z = F.Divide(F.Subtract(F.Slot1, p[0]), p[1]);
+      return callFunction(F.Function(F.Times(F.Exp(F.Times(F.CN1D2, F.Sqr(z))),
+          F.Erfc(F.Times(F.CN1, F.C1DSqrt2, p[2], z)),
+          F.Power(F.Times(F.Sqrt(F.Times(F.C2, S.Pi)), p[1]), F.CN1))), x);
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      double mu = p[0].evalfNaN();
+      double sigma = p[1].evalfNaN();
+      double alpha = p[2].evalfNaN();
+      if (Double.isNaN(mu) || Double.isNaN(sigma) || Double.isNaN(alpha) || sigma <= 0.0) {
+        return F.NIL;
+      }
+      // delta*|U0| + Sqrt(1-delta^2)*U1 for independent standard normal U0, U1
+      double delta = alpha / Math.sqrt(1.0 + alpha * alpha);
+      double complement = Math.sqrt(1.0 - delta * delta);
+      double[] vector = new double[size];
+      for (int i = 0; i < size; i++) {
+        double z = delta * Math.abs(random.nextGaussian()) + complement * random.nextGaussian();
+        vector[i] = mu + sigma * z;
+      }
+      return new ASTRealVector(vector, false);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // (Sqrt(2)*(4-Pi)*alpha^3)/(Pi + (Pi-2)*alpha^2)^(3/2)
+      return F.Times(F.CSqrt2, F.Subtract(F.C4, S.Pi), F.Power(p[2], F.C3),
+          F.Power(shapeDenominator(p[2]), F.QQ(-3, 2)));
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      IExpr[] p = parameters(dist);
+      if (p == null) {
+        return F.NIL;
+      }
+      // (1 - (2*alpha^2)/(Pi*(1+alpha^2)))*sigma^2
+      return F.Times(F.Subtract(F.C1, F.Times(F.C2, F.Sqr(p[2]),
+          F.Power(F.Times(S.Pi, F.Plus(F.C1, F.Sqr(p[2]))), F.CN1))), F.Sqr(p[1]));
+    }
+  }
+
   private static final class LogisticDistribution extends AbstractEvaluator
       implements ICDF, ICentralMoment, IContinuousDistribution, IGeneratingFunction, IPDF,
       IRandomVariate, IStatistics {

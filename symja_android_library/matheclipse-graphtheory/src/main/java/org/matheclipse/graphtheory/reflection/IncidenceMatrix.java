@@ -7,10 +7,11 @@ import org.jgrapht.GraphType;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.graphtheory.expression.data.GraphExpr;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.graphtheory.expression.data.GraphExpr;
 
 public class IncidenceMatrix extends AbstractFunctionEvaluator {
 
@@ -59,7 +60,8 @@ public class IncidenceMatrix extends AbstractFunctionEvaluator {
         Integer vIdx = vertexToIndex.get(v);
 
         if (uIdx != null && vIdx != null) {
-          if (isDirected) {
+          // an undirected edge of a mixed graph is incident +1 to both ends
+          if (isDirected && edgeExpr.head() != S.UndirectedEdge) {
             // Directed self-loops have an incidence of -2 (2 for the opposite orientation).
             // For distinct vertices, mark the source as -1 and target as 1.
             if (uIdx.equals(vIdx)) {

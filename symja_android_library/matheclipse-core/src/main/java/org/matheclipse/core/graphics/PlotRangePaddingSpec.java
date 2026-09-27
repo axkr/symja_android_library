@@ -15,10 +15,6 @@ import org.matheclipse.core.interfaces.IExpr;
  * number of axes is a parameter rather than a constant. Instances are immutable, which matters
  * because the 2D viewport is configured twice for the same picture.
  *
- * <p>
- * Two rules of the Wolfram Language are worth spelling out, because neither is what a first reading
- * of the option name suggests.
- *
  * <ul>
  * <li>{@code Scaled[s]} is a fraction of the <em>finished</em> plot, not of the data. A plot padded
  * with {@code Scaled[s]} on both sides covers a fraction {@code 1 - 2 s} of the plotting area, so
@@ -91,8 +87,7 @@ public final class PlotRangePaddingSpec {
         return false;
       }
       Amount other = (Amount) obj;
-      return kind == other.kind
-          && Double.compare(absolute, other.absolute) == 0
+      return kind == other.kind && Double.compare(absolute, other.absolute) == 0
           && Double.compare(scaled, other.scaled) == 0;
     }
 
@@ -197,8 +192,8 @@ public final class PlotRangePaddingSpec {
   }
 
   /**
-   * The whole padding of one axis, for a pipeline that has no scaling function between the data
-   * and the picture.
+   * The whole padding of one axis, for a pipeline that has no scaling function between the data and
+   * the picture.
    *
    * @param span the extent of the axis before any padding
    * @return {@code {low, high}} in the same units as {@code span}

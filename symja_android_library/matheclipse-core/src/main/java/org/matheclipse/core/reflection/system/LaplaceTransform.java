@@ -56,6 +56,19 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
     if (t.equals(s)) {
       return F.NIL;
     }
+    if (t.isList() && s.isList() && t.argSize() == s.argSize() && t.argSize() > 0
+        && ((IAST) s).forAll(x -> !x.isNumber())) {
+      // LaplaceTransform(f, {t1, t2}, {s1, s2}) is the transform in one variable at a time; the
+      // numerical transform is only defined for one variable, and would see the others as symbols
+      IExpr result = a1;
+      for (int i = 1; i <= t.argSize(); i++) {
+        result = engine.evaluate(F.LaplaceTransform(result, t.getAt(i), s.getAt(i)));
+        if (result.has(S.LaplaceTransform)) {
+          return F.NIL;
+        }
+      }
+      return result;
+    }
     if (!t.isList() && !s.isList() && !t.equals(s)) {
       if (s instanceof INum && t.isSymbol()) {
         double sDouble = s.evalfNaN();
@@ -77,6 +90,17 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
         return F.Power(s, F.CN2);
       }
       if (t.isSymbol()) {
+        IExpr special = laplaceTransformOfSpecialFunction(a1, t, s, engine);
+        if (special.isPresent()) {
+          return special;
+        }
+        IExpr split = splitPhases(a1, t, engine);
+        if (split.isPresent()) {
+          IExpr transformed = engine.evaluate(F.LaplaceTransform(F.Expand(split), t, s));
+          if (!transformed.has(S.LaplaceTransform)) {
+            return transformed;
+          }
+        }
         IExpr stepped = laplaceTransformOfSteps(engine, a1, t, s);
         if (stepped.isPresent()) {
           return stepped;
@@ -242,6 +266,90 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
     return engine.evaluate(F.Times(F.Exp(F.Times(F.CN1, a, s)), transformed));
   }
 
+  /**
+   * <code>a1</code> with the constant part of the argument of every <code>Sin, Cos, Sinh,
+   * Cosh</code> and <code>E^</code> in <code>t</code> split off by the addition theorems, or
+   * {@link F#NIL} if there is none.
+   *
+   * <p>
+   * The transforms are known for <code>Sin(b*t)</code> and <code>E^(b*t)</code>, but not for
+   * <code>Sin(b*t + d)</code>, and the second shift theorem writes exactly such an argument:
+   * <code>Sin(2*t)</code> on <code>0 &lt;= t &lt; Pi/2</code> needs the transform of
+   * <code>Sin(2*(t + Pi/2))</code>, which is <code>-Sin(2*t)</code> once it is expanded.
+   */
+  private static IExpr splitPhases(IExpr a1, IExpr t, EvalEngine engine) {
+    boolean[] changed = new boolean[1];
+    IExpr result = F.subst(a1, x -> {
+      boolean trig = x.isSin() || x.isCos() || x.isAST(S.Sinh, 2) || x.isAST(S.Cosh, 2);
+      boolean exp = x.isExp();
+      if ((!trig && !exp) || x.isFree(t)) {
+        return F.NIL;
+      }
+      IExpr u = engine.evaluate(F.ExpandAll(exp ? x.exponent() : x.first()));
+      if (!u.isPlus()) {
+        return F.NIL;
+      }
+      IAST[] parts = ((IAST) u).filter(y -> y.isFree(t));
+      IExpr d = parts[0].oneIdentity0();
+      IExpr v = parts[1].oneIdentity0();
+      if (d.isZero()) {
+        return F.NIL;
+      }
+      changed[0] = true;
+      if (exp) {
+        return F.Times(F.Exp(d), F.Exp(v));
+      }
+      if (x.isSin()) {
+        return F.Plus(F.Times(F.Sin(v), F.Cos(d)), F.Times(F.Cos(v), F.Sin(d)));
+      }
+      if (x.isCos()) {
+        return F.Subtract(F.Times(F.Cos(v), F.Cos(d)), F.Times(F.Sin(v), F.Sin(d)));
+      }
+      if (x.isAST(S.Sinh, 2)) {
+        return F.Plus(F.Times(F.Sinh(v), F.Cosh(d)), F.Times(F.Cosh(v), F.Sinh(d)));
+      }
+      return F.Plus(F.Times(F.Cosh(v), F.Cosh(d)), F.Times(F.Sinh(v), F.Sinh(d)));
+    });
+    return changed[0] ? engine.evaluate(result) : F.NIL;
+  }
+
+  /**
+   * The transform of <code>DiracDelta(c*t)</code>, <code>BesselJ(n, a*t)</code> or
+   * <code>BesselI(n, a*t)</code> for an order <code>n &gt; -1</code>, or {@link F#NIL}.
+   *
+   * <p>
+   * The transform's integral starts at the origin and takes all of an impulse there:
+   * <code>DiracDelta(t)</code> is <code>1</code>, where the integral reached from the definition
+   * gave <code>HeavisideTheta(0)</code>.
+   */
+  private static IExpr laplaceTransformOfSpecialFunction(IExpr a1, IExpr t, IExpr s,
+      EvalEngine engine) {
+    if (a1.isAST(S.DiracDelta, 2)) {
+      IExpr c = engine.evaluate(F.D(a1.first(), t));
+      if (c.isFree(t) && !c.isZero()
+          && engine.evaluate(F.Subtract(a1.first(), F.Times(c, t))).isZero()) {
+        return engine.evaluate(F.Divide(F.C1, F.Abs(c)));
+      }
+      return F.NIL;
+    }
+    boolean besselJ = a1.isAST(S.BesselJ, 3);
+    if (!besselJ && !a1.isAST(S.BesselI, 3)) {
+      return F.NIL;
+    }
+    IExpr n = a1.first();
+    IExpr a = engine.evaluate(F.D(a1.second(), t));
+    if (!n.isFree(t) || !a.isFree(t) || a.isZero()
+        || !engine.evaluate(F.Subtract(a1.second(), F.Times(a, t))).isZero()
+        || !engine.evaluate(F.Greater(n, F.CN1)).isTrue()) {
+      return F.NIL;
+    }
+    IExpr root = besselJ ? F.Sqrt(F.Plus(F.Sqr(s), F.Sqr(a)))
+        : F.Sqrt(F.Subtract(F.Sqr(s), F.Sqr(a)));
+    IExpr difference = besselJ ? F.Subtract(root, s) : F.Subtract(s, root);
+    return engine.evaluate(
+        F.Divide(F.Power(difference, n), F.Times(F.Power(a, n), root)));
+  }
+
   /** Whether <code>expr</code> is a unit step in <code>t</code>. */
   private static boolean isStep(IExpr expr, IExpr t) {
     return (expr.isAST(S.UnitStep, 2) || expr.isAST(S.HeavisideTheta, 2)) && !expr.isFree(t);
@@ -312,6 +420,16 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
         }
         lo = inequality.arg1();
         hi = inequality.get(5);
+      } else if (part.isAST3() && (isLess(part.head()) || isGreater(part.head()))
+          && part.second().equals(t)) {
+        // a chain: 0 <= t <= 1 is LessEqual(0, t, 1), and 1 > t > 0 is Greater(1, t, 0)
+        IAST chain = (IAST) part;
+        if (!chain.arg1().isFree(t) || !chain.arg3().isFree(t)) {
+          return null;
+        }
+        boolean less = isLess(chain.head());
+        lo = less ? chain.arg1() : chain.arg3();
+        hi = less ? chain.arg3() : chain.arg1();
       } else if (part.isAST2() && (isLess(part.head()) || isGreater(part.head()))) {
         IExpr left = part.first();
         IExpr right = part.second();

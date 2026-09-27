@@ -57,6 +57,10 @@ public class IOInit {
     // registers Compile / CompiledFunction / CompilePrint for both servlets and both
     // consoles, and installs the IExprCompiler core's numerical functions use
     initOptional("matheclipse-compile", () -> org.matheclipse.compile.CompileInit.init());
+    // registers JSXGraph / ECharts / MathCell and installs the pages a JSFormData result is
+    // shown in; without it those stay unevaluated and JSFormData is shown as text
+    initOptional("matheclipse-jsgraphics",
+        () -> org.matheclipse.jsgraphics.JSGraphicsInit.init());
 
     S.Import.setEvaluator(new org.matheclipse.io.builtin.Import());
     FileIOFunctions.initialize();

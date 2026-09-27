@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.integrate.IntegrateTimeBudget;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -249,12 +250,22 @@ final class DSolveContext {
     return integrate(function, variable, INTEGRATE_SECONDS, engine);
   }
 
-  /** {@link #integrate(IExpr, IExpr, EvalEngine)} with a budget of its own. */
+  /**
+   * {@link #integrate(IExpr, IExpr, EvalEngine)} with a budget of its own.
+   *
+   * <p>
+   * The budget is kept by a watchdog, not by {@code TimeConstrained}: inside an evaluation which
+   * already has a time limit, as every corpus or user call with one does, a nested
+   * {@code TimeConstrained} evaluates its argument without any limit. The integrating factor of
+   * <code>v'(t) + (1+Cos(4*t))/4*v(t) == (1-Cos(4*t))/800</code> has no elementary antiderivative,
+   * and the rules spent 160 seconds finding that out - most of it factoring inside a zero test.
+   */
   static IExpr integrate(IExpr function, IExpr variable, int baseSeconds, EvalEngine engine) {
     IExpr result;
     try {
-      result = engine.evaluate(F.TimeConstrained(F.Integrate(function, variable),
-          F.ZZ(MachineProfile.seconds(baseSeconds)), S.$Aborted));
+      result = IntegrateTimeBudget.runWithin(
+          () -> engine.evaluate(F.Integrate(function, variable)),
+          MachineProfile.seconds((long) baseSeconds) * 1000L);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
@@ -267,7 +278,9 @@ final class DSolveContext {
 
   /** Whether an antiderivative is in a form the solvers can go on working with. */
   static boolean isUsable(IExpr expr) {
-    return expr.isFree(
+    // an integral which ran out of time comes back as NIL, and NIL is free of everything, so it
+    // passed as usable and the caller's next evaluation threw and ended the whole DSolve
+    return expr.isPresent() && expr.isFree(
         x -> x.isAST(S.Integrate) || x.isAST(S.EllipticF) || x.isAST(S.EllipticE)
             || x.isAST(S.EllipticPi) || x.isAST(S.WeierstrassP) || x.isAST(S.WeierstrassPPrime),
         true);

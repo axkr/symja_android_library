@@ -48,6 +48,7 @@ public class SvgGraphics2D {
   private String idSuffix = "";
 
   private Viewport2D viewport;
+  private Bounds2D bounds;
   private List<Prim2D> primitives = new ArrayList<>();
 
   /**
@@ -88,6 +89,15 @@ public class SvgGraphics2D {
     return options;
   }
 
+  /**
+   * Whether an expression which is not itself a picture is drawn as a table of cells when a picture
+   * of it is asked for: a <code>Grid</code>, <code>Column</code>, <code>Row</code>,
+   * <code>Pane</code> or a legend on its own.
+   */
+  public static boolean isLayout(IExpr expr) {
+    return SvgLayout.isLayout(expr);
+  }
+
   /** Render {@code graphicsExpr} to a complete SVG document. */
   public String toSVG(IAST graphicsExpr) {
     return toSVG(graphicsExpr, true);
@@ -99,6 +109,9 @@ public class SvgGraphics2D {
    */
   public String toSVG(IAST graphicsExpr, boolean withSVGTag) {
     try {
+      if (SvgLayout.isLayout(graphicsExpr)) {
+        return new SvgLayout(options).layout(graphicsExpr, withSVGTag);
+      }
       graphicsExpr = unwrapPicture(graphicsExpr);
       if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
         return new SvgLayout(options).row(graphicsExpr, withSVGTag);
@@ -161,43 +174,39 @@ public class SvgGraphics2D {
     return elements == null ? null : svgRoot(elements);
   }
 
-  /** The children of the {@code <svg>} root, in drawing order. */
-  private List<DomContent> buildElements(IAST graphicsExpr) {
-    if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)
-        || graphicsExpr.isAST(S.GraphicsColumn) || graphicsExpr.isAST(S.GraphicsGrid)
-        || graphicsExpr.isAST(S.Overlay)) {
+  /**
+   * Lay out a single {@code Graphics} expression without drawing it, for renderers of other
+   * output formats.
+   *
+   * @return {@code null} for a layout of several pictures
+   */
+  public Scene2D buildScene(IAST graphicsExpr) {
+    graphicsExpr = unwrapPicture(graphicsExpr);
+    if (isMultiPicture(graphicsExpr)) {
       return null;
     }
+    layout(graphicsExpr);
+    return new Scene2D(options, primitives, collectExtra(options.prolog),
+        collectExtra(options.epilog), bounds, viewport);
+  }
 
-    idSuffix = "_" + Integer.toHexString(graphicsExpr.hashCode());
+  private static boolean isMultiPicture(IAST graphicsExpr) {
+    return graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)
+        || graphicsExpr.isAST(S.GraphicsColumn) || graphicsExpr.isAST(S.GraphicsGrid)
+        || graphicsExpr.isAST(S.Overlay);
+  }
 
-    PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
-    options.parse(graphicsExpr, collector);
-
-    if (graphicsExpr.argSize() >= 1) {
-      collector.collect(graphicsExpr.arg1(), options.globalStyle.clone());
+  /** The children of the {@code <svg>} root, in drawing order. */
+  private List<DomContent> buildElements(IAST graphicsExpr) {
+    if (isMultiPicture(graphicsExpr)) {
+      return null;
     }
-    primitives = collector.primitives();
+    // measured afresh for every picture this renderer draws
+    frameLabelPictures = null;
 
-    Bounds2D bounds = new Bounds2D();
-    for (Prim2D p : primitives) {
-      p.accumulate(bounds);
-    }
-    if (options.plotGenerated && options.plotRangeAutomatic && !options.plotRangeAll) {
-      refineYRange(bounds);
-    }
+    PrimitiveCollector collector = layout(graphicsExpr);
 
     boolean hasLegend = LegendRenderer.isSupported(options.plotLegends);
-    viewport = new Viewport2D(options);
-    // padding depends on the tick labels, which depend on the range, which depends on padding:
-    // lay out once with an estimate, then again with the labels that estimate produced
-    viewport.configure(bounds, estimatePadding(0, hasLegend));
-    double labelWidth = AxesFrameRenderer.estimateYLabelWidth(viewport, options);
-    double[] padding = estimatePadding(labelWidth, hasLegend);
-    fitPaddingToWidth(padding);
-    fitHeightToAspectRatio(padding);
-    viewport.configure(bounds, padding);
-
     SvgRenderer2D renderer = new SvgRenderer2D(viewport, options);
     AxesFrameRenderer axes = new AxesFrameRenderer(viewport, options);
 
@@ -281,11 +290,57 @@ public class SvgGraphics2D {
     return elements;
   }
 
+  /**
+   * Read the options, collect the primitives, derive the plot range and fit the canvas to it:
+   * everything short of drawing. Sets {@link #primitives}, {@link #bounds} and {@link #viewport}.
+   */
+  private PrimitiveCollector layout(IAST graphicsExpr) {
+    idSuffix = "_" + Integer.toHexString(graphicsExpr.hashCode());
+
+    PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
+    options.parse(graphicsExpr, collector);
+
+    if (graphicsExpr.argSize() >= 1) {
+      collector.collect(graphicsExpr.arg1(), options.globalStyle.clone());
+    }
+    primitives = collector.primitives();
+
+    bounds = new Bounds2D();
+    for (Prim2D p : primitives) {
+      p.accumulate(bounds);
+    }
+    // fence caps are sized from the data range, and stay short enough not to change it
+    primitives = IntervalMarkers2D.addFenceCaps(primitives, bounds, options);
+    if (options.plotGenerated && options.plotRangeAutomatic && !options.plotRangeAll) {
+      refineYRange(bounds);
+    }
+
+    boolean hasLegend = LegendRenderer.isSupported(options.plotLegends);
+    viewport = new Viewport2D(options);
+    // padding depends on the tick labels, which depend on the range, which depends on padding:
+    // lay out once with an estimate, then again with the labels that estimate produced
+    viewport.configure(bounds, estimatePadding(0, hasLegend));
+    double labelWidth = AxesFrameRenderer.estimateYLabelWidth(viewport, options);
+    double[] padding = estimatePadding(labelWidth, hasLegend);
+    fitPaddingToWidth(padding);
+    fitHeightToAspectRatio(padding);
+    viewport.configure(bounds, padding);
+    return collector;
+  }
+
   /** Prolog and epilog content is collected and drawn, but never affects the plot range. */
   private void renderExtra(IExpr expr, SvgRenderer2D renderer, ContainerTag<?> parent) {
+    renderer.draw(collectExtra(expr), parent);
+  }
+
+  private List<Prim2D> collectExtra(IExpr expr) {
+    if (expr == null) {
+      return new ArrayList<>();
+    }
     PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
     collector.collect(expr, options.globalStyle.clone());
-    renderer.draw(collector.primitives(), parent);
+    return IntervalMarkers2D.addFenceCaps(collector.primitives(),
+        bounds != null ? bounds : new Bounds2D(), options);
   }
 
   /**
@@ -447,10 +502,17 @@ public class SvgGraphics2D {
     // Only for a label that is actually written. Testing the option for null counted
     // `AxesLabel -> None`, which every plot emits by default, so each picture reserved a strip on
     // two sides for text it never drew - 18 pixels of a 70 pixel cell on each of them.
-    if (hasLabel(options.axesLabel, 0) || hasLabel(options.frameLabel, 0)) {
+    // a frame label that is a table or a picture needs its own size, not one line of text
+    double[] bottomPicture = frameLabelBox(0);
+    double[] leftPicture = frameLabelBox(1);
+    if (bottomPicture != null) {
+      bottom += bottomPicture[1] + LABEL_PICTURE_GAP;
+    } else if (hasLabel(options.axesLabel, 0) || hasLabel(options.frameLabel, 0)) {
       bottom += AXIS_LABEL_HEIGHT;
     }
-    if (hasLabel(options.axesLabel, 1) || hasLabel(options.frameLabel, 1)) {
+    if (leftPicture != null) {
+      left += leftPicture[0] + LABEL_PICTURE_GAP;
+    } else if (hasLabel(options.axesLabel, 1) || hasLabel(options.frameLabel, 1)) {
       left += AXIS_LABEL_HEIGHT;
     }
     if (hasLegend) {
@@ -486,6 +548,18 @@ public class SvgGraphics2D {
       String[] labels = labelPair(options.frameLabel);
       double cx = (viewport.plotX1 + viewport.plotX2) / 2.0;
       double cy = (viewport.plotY1 + viewport.plotY2) / 2.0;
+      double[] bottomBox = frameLabelBox(0);
+      if (bottomBox != null) {
+        elements.add(embeddedLabel(frameLabelPictures[0], cx - bottomBox[0] / 2.0,
+            viewport.plotY2 + TICK_LABEL_HEIGHT + LABEL_PICTURE_GAP, bottomBox));
+        labels[0] = null;
+      }
+      double[] leftBox = frameLabelBox(1);
+      if (leftBox != null) {
+        elements.add(embeddedLabel(frameLabelPictures[1], FRAME_EDGE_PADDING,
+            cy - leftBox[1] / 2.0, leftBox));
+        labels[1] = null;
+      }
       if (labels[0] != null) {
         elements.add(labelled(tag("text").attr("x", SvgRenderer2D.fmt(cx))
             .attr("y", SvgRenderer2D.fmt(viewport.plotY2 + TICK_LABEL_HEIGHT + 14))
@@ -613,24 +687,86 @@ public class SvgGraphics2D {
   }
 
   private String labelText(IExpr expr) {
-    return PrimitiveCollector.unquote(expr.toString());
+    return LabelText.of(expr);
   }
 
   /** Split a {@code {xlabel, ylabel}} option value; either entry may be absent. */
   private String[] labelPair(IExpr expr) {
+    IExpr[] parts = labelParts(expr);
     String[] out = new String[2];
+    for (int i = 0; i < 2; i++) {
+      if (parts[i] != null) {
+        out[i] = labelText(parts[i]);
+      }
+    }
+    return out;
+  }
+
+  /** The {@code {xlabel, ylabel}} of an option value as expressions; either may be absent. */
+  private IExpr[] labelParts(IExpr expr) {
+    IExpr[] out = new IExpr[2];
     if (expr.isList() && ((IAST) expr).argSize() >= 2) {
       IAST list = (IAST) expr;
       if (!unlabelled(list.arg1())) {
-        out[0] = labelText(list.arg1());
+        out[0] = list.arg1();
       }
       if (!unlabelled(list.arg2())) {
-        out[1] = labelText(list.arg2());
+        out[1] = list.arg2();
       }
     } else if (!unlabelled(expr)) {
-      out[0] = labelText(expr);
+      out[0] = expr;
     }
     return out;
+  }
+
+  /** The gap between a frame label that is a picture and the tick labels beside it. */
+  private static final double LABEL_PICTURE_GAP = 4.0;
+
+  /** The largest share of the picture's height a frame label drawn as a picture may take. */
+  private static final double LABEL_PICTURE_SHARE = 0.4;
+
+  /** The frame labels which are tables or pictures, drawn once; {@code null} until measured. */
+  private Layer[] frameLabelPictures;
+
+  /**
+   * The size a frame label is drawn at when it is a table, a layout or a picture rather than text,
+   * or {@code null} for a text label. <code>FrameLabel -> Grid(...)</code> is a table under the
+   * frame; written out as text it used to put the source of the grid there.
+   */
+  private double[] frameLabelBox(int axis) {
+    if (frameLabelPictures == null) {
+      frameLabelPictures = new Layer[2];
+      if (options.frameLabel != null) {
+        IExpr[] parts = labelParts(options.frameLabel);
+        for (int i = 0; i < 2; i++) {
+          IExpr label = parts[i];
+          if (label != null && (SvgLayout.isLayout(label) || label.isGraphicsObject()
+              || label.isAST(S.Graphics3D))) {
+            frameLabelPictures[i] = SvgLayout.embed(label, options.imageSize[0] / 2.0);
+          }
+        }
+      }
+    }
+    Layer layer = frameLabelPictures[axis];
+    if (layer == null) {
+      return null;
+    }
+    double scale = 1.0;
+    double room = options.imageSize[1] * LABEL_PICTURE_SHARE;
+    if (layer.height > room && room > 0) {
+      scale = room / layer.height;
+    }
+    return new double[] {layer.width * scale, layer.height * scale};
+  }
+
+  /** A frame label drawn as a picture of its own, in a viewport at {@code (x, y)}. */
+  private static DomContent embeddedLabel(Layer layer, double x, double y, double[] box) {
+    return tag("svg").attr("x", SvgRenderer2D.fmt(x)).attr("y", SvgRenderer2D.fmt(y))
+        .attr("width", SvgRenderer2D.fmt(box[0])).attr("height", SvgRenderer2D.fmt(box[1]))
+        .attr("viewBox",
+            String.format(Locale.US, "0 0 %s %s", SvgRenderer2D.fmt(layer.width),
+                SvgRenderer2D.fmt(layer.height)))
+        .with(rawHtml(layer.contents));
   }
 
   /**

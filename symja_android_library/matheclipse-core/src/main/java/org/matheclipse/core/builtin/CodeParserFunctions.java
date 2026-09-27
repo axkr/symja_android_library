@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.CodeTokenizer;
 
 /**
- * <code>CodeParser`</code>: reading Wolfram Language source as source.
+ * <code>CodeParser`</code>.
  *
  * <p>
  * These answer with a description of the text rather than with what it computes, and every token
@@ -22,10 +22,10 @@ import org.matheclipse.core.parser.CodeTokenizer;
  * top-level expressions, or an editor pointing at where a syntax error is.
  *
  * <p>
- * A subset: the tokens tile the source exactly and the bracket nesting is right, which is what those
- * uses need. The token kinds are coarser than the Wolfram Language's own - every run of operator
- * characters is <code>Token`Operator</code> rather than a name of its own - and
- * <code>CodeParse</code> answers the shape of the expression without positions.
+ * A subset: the tokens tile the source exactly and the bracket nesting is right, which is what
+ * those uses need. Every run of operator characters is <code>Token`Operator</code> rather than a
+ * name of its own - and <code>CodeParse</code> answers the shape of the expression without
+ * positions.
  */
 public class CodeParserFunctions {
 
@@ -166,8 +166,8 @@ public class CodeParserFunctions {
   }
 
   /**
-   * <code>CodeParse[str]</code>: the shape of the expression, as
-   * <code>CallNode</code>s and <code>LeafNode</code>s.
+   * <code>CodeParse[str]</code>: the shape of the expression, as <code>CallNode</code>s and
+   * <code>LeafNode</code>s.
    *
    * <p>
    * Built from the parsed expression rather than from the tokens, so it says what the source means;
@@ -235,7 +235,7 @@ public class CodeParserFunctions {
   /**
    * The <code>&lt;|Source -&gt; …|&gt;</code> of a node: a pair of character indices under
    * <code>SourceConvention -&gt; "SourceCharacterIndex"</code>, and a pair of line and column
-   * positions otherwise, which is what the Wolfram Language answers by default.
+   * positions otherwise.
    */
   private static IExpr metadata(int start, int end, String source, boolean characterIndex,
       EvalEngine engine) {

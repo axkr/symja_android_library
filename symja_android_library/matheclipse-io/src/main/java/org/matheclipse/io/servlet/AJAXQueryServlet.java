@@ -13,7 +13,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
@@ -38,13 +37,13 @@ import org.matheclipse.core.io.ImageFormatIO;
 import org.matheclipse.core.io.TableFormatIO;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IGraphExpr;
-import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.manipulate.Dynamics;
 import org.matheclipse.core.manipulate.ManipulateSpec;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
@@ -136,21 +135,6 @@ public class AJAXQueryServlet extends HttpServlet {
   static SessionState stateOf(String sessionID) {
     return SESSIONS.get(sessionID);
   }
-
-  protected static final String VISJS_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>VIS-NetWork</title>\n" + "\n"
-          + "  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
-          + "</head>\n" + "<body>\n" + "\n"
-          + "<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<script type=\"text/javascript\">\n" + "`1`\n"
-          + "  var container = document.getElementById('vis');\n" + "  var data = {\n"
-          + "    nodes: nodes,\n" + "    edges: edges\n" + "  };\n" + "`2`\n"
-          + "  var network = new vis.Network(container, data, options);\n" + "</script>\n"
-          + "</div>\n" + "</body>\n" + "</html>"; //
 
   protected static final String HTML_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "\n" + "<!DOCTYPE html PUBLIC\n"
@@ -510,6 +494,23 @@ public class AJAXQueryServlet extends HttpServlet {
             outExpr = graphics;
           }
         }
+        if (outExpr.isAST(S.TabView)) {
+          // the pane the tab strip has selected is what is shown, drawn as it would be on its own:
+          // a 3D pane keeps its interactive view
+          int selected = Dynamics.selectedTab((IAST) outExpr, engine);
+          if (selected > 0) {
+            boolean keyed = Dynamics.isKeyedTab((IAST) outExpr, selected, engine);
+            outExpr = Dynamics.tabPane((IAST) outExpr, selected, keyed)[1];
+          }
+        }
+        if (org.matheclipse.core.builtin.MeshFunctions.isBoundaryMeshRegion(outExpr)) {
+          // a mesh region is shown as its picture, as the reference shows it - without Show
+          IAST graphics =
+              org.matheclipse.core.builtin.MeshFunctions.meshToGraphics((IAST) outExpr, engine);
+          if (graphics.isPresent()) {
+            outExpr = graphics;
+          }
+        }
         if (outExpr.isGraphicsObject()) {
           StringBuilder buf = new StringBuilder();
           // the converter emits its own <svg> root, sized from the ImageSize option; wrapping it
@@ -517,44 +518,14 @@ public class AJAXQueryServlet extends HttpServlet {
           if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, true, engine)) {
             return JSONBuilder.createJSONJavaScript(buf.toString());
           }
-          // if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {
-          // try {
-          // return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
-          // buf.toString());
-          // } catch (Exception ex) {
-          // LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-          // }
-          // }
         } else if (WebGLGraphics3D.isRenderable(outExpr)) {
           String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) outExpr);
           // Return as a JSON JavaScript result (which creates a line in the output UI)
           return JSONBuilder.createJSONJavaScript(webglSnippet);
-
-          // StringBuilder buf = new StringBuilder();
-          // if (GraphicsUtil.renderGraphics3D(buf, (IAST) outExpr, engine)) {
-          // try {
-          // return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
-          // buf.toString());
-          // } catch (Exception ex) {
-          // LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-          // }
-          // }
         }
         if (outExpr.isASTSizeGE(S.Show, 2)) {
           IAST show = (IAST) outExpr;
           return JSONBuilder.createJSONShow(engine, show);
-        } else if (outExpr instanceof IGraphExpr) {
-          String javaScriptStr = ((IGraphExpr) outExpr).graphToJSForm();
-          if (javaScriptStr != null) {
-            String html = VISJS_IFRAME;
-            html = html.replace("`1`", javaScriptStr);
-            html = html.replace("`2`", //
-                "  var options = { };\n" //
-            );
-            html = StringEscapeUtils.escapeHtml4(html);
-            return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-          }
         } else if (outExpr instanceof ImageExpr) {
           ImageExpr imageExpr = (ImageExpr) outExpr;
           // BufferedImage bImage = imageExpr.getBufferedImage();
@@ -566,20 +537,6 @@ public class AJAXQueryServlet extends HttpServlet {
             return JSONBuilder.createJSONJavaScript(
                 "<img alt=\"image\" style=\"max-width: 100%; height: auto;\" src=\"data:image/png;base64,"
                     + imageExpr.toBase64EncodedString() + "\"/>");
-            // } else {
-            // try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            // final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
-            // ImageIO.write(bImage, "png", b64);
-            // String html = JSBuilder.IMAGE_IFRAME_TEMPLATE;
-            // String[] argsToRender = new String[3];
-            // argsToRender[0] = outputStream.toString();
-            // System.out.println(argsToRender[0]);
-            // html = IOFunctions.templateRender(html, argsToRender);
-            // html = StringEscapeUtils.escapeHtml4(html);
-            // return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-            // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
-            // ></iframe>");
-            // }
           }
         } else if (outExpr.isAST(S.ExportForm, 3)) {
           String link = exportFormLink(engine, (IAST) outExpr);
@@ -596,64 +553,16 @@ public class AJAXQueryServlet extends HttpServlet {
           }
         } else if (outExpr.isAST(S.JSFormData, 3)) {
           IAST jsFormData = (IAST) outExpr;
-          String jsLibraryType = jsFormData.arg2().toString();
-          if (jsLibraryType.equals(JSBuilder.MATHCELL_STR)) {
-            try {
-              return JSONBuilder.createMathcellIFrame(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+          // a sandboxed iframe loading the library from its CDN, built by matheclipse-jsgraphics;
+          // without that module the result is shown as text
+          try {
+            String[] iframe = JSONBuilder.createJSIFrame(jsFormData.arg2().toString(),
+                jsFormData.arg1().toString());
+            if (iframe != null) {
+              return iframe;
             }
-          } else if (jsLibraryType.equals(JSBuilder.ECHARTS_STR)) {
-            try {
-              return JSONBuilder.createEChartsIFrame(JSBuilder.ECHARTS_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
-          } else if (jsLibraryType.equals(JSBuilder.JSXGRAPH_STR)) {
-            try {
-              return JSONBuilder.createJSXGraphIFrame(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
-          } else if (jsLibraryType.equals(JSBuilder.MERMAID_STR)) {
-            try {
-              return JSONBuilder.createMermaidIFrame(JSBuilder.MERMAID_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
-          } else if (jsLibraryType.equals(JSBuilder.PLOTLY_STR)) {
-            try {
-              return JSONBuilder.createPlotlyIFrame(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
-                  jsFormData.arg1().toString());
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
-          } else if (jsLibraryType.equals(JSBuilder.TREEFORM_STR)) {
-            try {
-              String manipulateStr = jsFormData.arg1().toString();
-              String html = VISJS_IFRAME;
-              html = html.replace("`1`", manipulateStr);
-              html = html.replace("`2`", //
-                  "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
-                      + "                  type: 'cubicBezier',\n"
-                      + "                  forceDirection:  'vertical',\n"
-                      + "                  roundness: 0.4\n" + "              }\n"
-                      + "          },\n" + "          layout: {\n"
-                      + "              hierarchical: {\n"
-                      + "                  direction: \"UD\"\n" + "              }\n"
-                      + "          },\n" + "          nodes: {\n" + "            shape: 'box'\n"
-                      + "          },\n" + "          physics:false\n" + "      }; " //
-              );
-              html = StringEscapeUtils.escapeHtml4(html);
-              return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + html
-                  + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-            } catch (Exception ex) {
-              LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-            }
+          } catch (Exception ex) {
+            LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
           }
         } else if (StepsTree.isTraceForm(outExpr)) {
           // a derivation: the steps travel as their own tree so the page can lay them out

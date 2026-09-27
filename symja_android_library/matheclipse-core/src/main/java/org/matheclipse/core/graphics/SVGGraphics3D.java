@@ -270,6 +270,8 @@ public class SVGGraphics3D {
     final double opacity;
     final double width;
     final String dashArray;
+    /** A line lying on a surface, which has to be painted after the faces under it. */
+    boolean onSurface;
 
     Polyline(List<Vector3> points, Color color, double opacity, double width, String dashArray) {
       this.points = points;
@@ -702,24 +704,31 @@ public class SVGGraphics3D {
 
     RenderList sink = out instanceof RenderList ? (RenderList) out : null;
     if (sink != null) {
-      sink.creases = creasesOf(element);
+      // a tube is one smooth surface, and the seams between its facets are no edges to outline
+      sink.creases = "Tube".equals(type) ? null : creasesOf(element);
       sink.beginElement(element.has("tooltip") ? element.get("tooltip").asText() : null);
     }
     switch (type) {
       case "Polygon":
         polygons(element, color, opacity, matrix, dataScale, view, lights, out);
         break;
-      case "Sphere":
+      case "Sphere": {
+        // Scaled[s] is a fraction of the scene diagonal; the diagonal is in the data's own units,
+        // so the radius that comes out of it is too
+        double sphereRadius = element.has("radiusScaled")
+            ? element.get("radiusScaled").asDouble(0.01) * diagonal
+            : element.get("radius").asDouble(1);
         for (Vector3 centre : points(element.get("centers"))) {
-          sphere(centre, element.get("radius").asDouble(1), color, opacity, matrix, dataScale, view,
-              lights, out);
+          sphere(centre, sphereRadius, color, opacity, matrix, dataScale, view, lights, out);
         }
         break;
+      }
       case "Cylinder":
       case "Cone":
         barrel(vector(element.get("start"), new Vector3(0, 0, -1)),
             vector(element.get("end"), new Vector3(0, 0, 1)), element.get("radius").asDouble(1),
-            "Cone".equals(type), color, opacity, matrix, dataScale, view, lights, out);
+            "Cone".equals(type), element.path("openEnded").asBoolean(false), color, opacity,
+            matrix, dataScale, view, lights, out);
         break;
       case "Cuboid":
         cuboid(vector(element.get("min"), new Vector3(0, 0, 0)),
@@ -853,9 +862,13 @@ public class SVGGraphics3D {
     quads(grid, color, opacity, view, lights, out);
   }
 
-  /** A cylinder, or a cone when the far end is collapsed to a point. */
+  /**
+   * A cylinder, or a cone when the far end is collapsed to a point.
+   *
+   * @param openEnded <code>CapForm[None]</code>: the side alone, without the discs at the ends
+   */
   private static void barrel(Vector3 start, Vector3 end, double radius, boolean cone,
-      Surface color,
+      boolean openEnded, Surface color,
       double opacity, double[] matrix, Vector3 dataScale, View view, List<Light> lights,
       List<Renderable> out) {
     Vector3 axis = end.sub(start);
@@ -881,6 +894,9 @@ public class SVGGraphics3D {
         addFace(out, view, lights, color, opacity, bottom.get(i), bottom.get(i + 1),
             top.get(i + 1), top.get(i));
       }
+    }
+    if (openEnded) {
+      return;
     }
     cap(out, view, lights, color, opacity, bottom, place(start, matrix, dataScale));
     if (!cone) {
@@ -930,34 +946,32 @@ public class SVGGraphics3D {
   private static void tube(JsonNode element, Surface color, double opacity, double[] matrix,
       Vector3 dataScale, View view, List<Light> lights, List<Renderable> out) {
     double radius = element.has("radius") ? element.get("radius").asDouble(0.02) : 0.02;
+    boolean closed = element.path("closed").asBoolean(false);
     for (List<Vector3> raw : polylines(element)) {
       if (raw.size() < 2) {
         continue;
       }
       // the interactive renderer sweeps a tube along a Catmull-Rom curve through the given
       // points, so the same smoothing is applied here or a bent tube comes out visibly angular
-      List<Vector3> path = smooth(raw);
-      Vector3[][] grid = new Vector3[path.size()][TUBE_SIDES + 1];
-      Vector3 carried = null;
-      for (int i = 0; i < path.size(); i++) {
-        Vector3 tangent =
-            (i == 0 ? path.get(1).sub(path.get(0)) : path.get(i).sub(path.get(i - 1))).normalize();
-        // The frame is carried along the path rather than chosen afresh at every ring. Picking
-        // an arbitrary perpendicular each time lets the frame spin between one ring and the next,
-        // and the quads joining them come out twisted into bow ties instead of a tube wall.
-        Vector3 u = carried == null ? perpendicular(tangent)
-            : carried.sub(tangent.scale(carried.dot(tangent)));
-        if (u.length() < 1e-9) {
-          u = perpendicular(tangent);
-        }
-        u = u.normalize();
-        carried = u;
-        Vector3 v = tangent.cross(u);
+      boolean loop = closed && raw.size() >= 3;
+      List<Vector3> path = loop ? smoothClosed(raw) : smooth(raw);
+      int n = path.size();
+      double[][] points = new double[n][];
+      for (int i = 0; i < n; i++) {
+        Vector3 p = path.get(i);
+        points[i] = new double[] {p.x, p.y, p.z};
+      }
+      TubeRings.Rings rings = TubeRings.of(points, radius, TUBE_SIDES, loop);
+      Vector3[][] grid = new Vector3[loop ? n + 1 : n][TUBE_SIDES + 1];
+      for (int i = 0; i < n; i++) {
         for (int j = 0; j <= TUBE_SIDES; j++) {
-          double a = 2 * Math.PI * j / TUBE_SIDES;
-          Vector3 offset = u.scale(radius * Math.cos(a)).add(v.scale(radius * Math.sin(a)));
-          grid[i][j] = place(path.get(i).add(offset), matrix, dataScale);
+          double[] q = rings.points[i][j % TUBE_SIDES];
+          grid[i][j] = place(new Vector3(q[0], q[1], q[2]), matrix, dataScale);
         }
+      }
+      if (loop) {
+        // the last band of faces joins the last ring to the first, which closes the tube
+        grid[n] = grid[0];
       }
       quads(grid, color, opacity, view, lights, out);
     }
@@ -971,6 +985,7 @@ public class SVGGraphics3D {
     List<List<Vector3>> paths =
         "BSplineCurve".equals(type) || "BezierCurve".equals(type) ? List.of(controlPolygon(element))
             : polylines(element);
+    boolean onSurface = element.path("onSurface").asBoolean(false);
     for (List<Vector3> path : paths) {
       if (path.size() < 2) {
         continue;
@@ -978,6 +993,17 @@ public class SVGGraphics3D {
       List<Vector3> placed = new ArrayList<>(path.size());
       for (Vector3 p : path) {
         placed.add(view.project(place(p, matrix, dataScale)));
+      }
+      if (onSurface) {
+        // a line along a surface crosses faces at every depth the surface has, so each piece is
+        // sorted where it lies rather than the whole line at its average depth
+        for (int k = 0; k + 1 < placed.size(); k++) {
+          Polyline piece =
+              new Polyline(List.of(placed.get(k), placed.get(k + 1)), color, opacity, width, dash);
+          piece.onSurface = true;
+          out.add(piece);
+        }
+        continue;
       }
       out.add(new Polyline(placed, color, opacity, width, dash));
       if ("Arrow".equals(type)) {
@@ -1001,8 +1027,8 @@ public class SVGGraphics3D {
     }
     Vector3 base = tip.sub(direction.normalize().scale(size));
     // an arrowhead is a solid cone, drawn in the line's own colour
-    barrel(base, tip, size * 0.35, true, new Surface(color), opacity, matrix, dataScale, view,
-        lights, out);
+    barrel(base, tip, size * 0.35, true, false, new Surface(color), opacity, matrix, dataScale,
+        view, lights, out);
   }
 
   private static void dots(JsonNode element, Color color, double opacity, double[] matrix,
@@ -1289,6 +1315,7 @@ public class SVGGraphics3D {
           Polyline clipped =
               new Polyline(piece, line.color, line.opacity, line.width, line.dashArray);
           clipped.tooltip = line.tooltip;
+          clipped.onSurface = line.onSurface;
           kept.add(clipped);
         }
       } else if (r instanceof Dot) {
@@ -1636,8 +1663,49 @@ public class SVGGraphics3D {
 
   // -------------------------------------------------------------- SVG writing
 
+  /**
+   * Which share of the faces is at most as deep, front to back, as the nudge a line on a surface
+   * gets: the nudge has to cover the face it lies on, and a line anywhere inside a face is at most
+   * the face's own depth away from the depth the face is sorted by.
+   */
+  private static final double SURFACE_LINE_PERCENTILE = 0.9;
+
+  /**
+   * Nudge the lines that lie on a surface towards the camera, so that the painter draws them after
+   * the faces they lie on. Sorted by their own middle, a line and the face under it are ordered at
+   * random, and the line comes out dashed. The nudge is the depth of a face - a large one, so that
+   * it covers almost every face - which leaves a line that is really behind another part of the
+   * surface behind it, as that part is generally farther away than one face.
+   */
+  private static void nudgeSurfaceLines(List<Renderable> renderables) {
+    List<Double> extents = new ArrayList<>();
+    for (Renderable r : renderables) {
+      if (r instanceof Face) {
+        double near = Double.MAX_VALUE;
+        double far = -Double.MAX_VALUE;
+        for (Vector3 p : ((Face) r).points) {
+          near = Math.min(near, p.z);
+          far = Math.max(far, p.z);
+        }
+        extents.add(far - near);
+      }
+    }
+    if (extents.isEmpty()) {
+      return;
+    }
+    Collections.sort(extents);
+    double nudge = extents.get((int) Math.min(extents.size() - 1,
+        Math.floor(SURFACE_LINE_PERCENTILE * extents.size())));
+    for (Renderable r : renderables) {
+      if (r instanceof Polyline && ((Polyline) r).onSurface) {
+        r.depth -= nudge;
+      }
+    }
+  }
+
   private static String write(ObjectNode scene, List<Renderable> renderables, double width,
       double height, View view) {
+    nudgeSurfaceLines(renderables);
     Collections.sort(renderables);
     repairOrder(renderables);
 
@@ -2140,6 +2208,25 @@ public class SVGGraphics3D {
       for (int step = 0; step <= steps; step++) {
         double t = (double) step / TUBE_SMOOTHING;
         out.add(catmullRom(p0, p1, p2, p3, t));
+      }
+    }
+    return out;
+  }
+
+  /**
+   * A closed path smoothed the way {@link #smooth(List)} smooths an open one, with the neighbours
+   * of each end taken from the other end, so the curve runs on through where it started.
+   */
+  private static List<Vector3> smoothClosed(List<Vector3> path) {
+    int n = path.size();
+    List<Vector3> out = new ArrayList<>(n * TUBE_SMOOTHING);
+    for (int i = 0; i < n; i++) {
+      Vector3 p0 = path.get((i + n - 1) % n);
+      Vector3 p1 = path.get(i);
+      Vector3 p2 = path.get((i + 1) % n);
+      Vector3 p3 = path.get((i + 2) % n);
+      for (int step = 0; step < TUBE_SMOOTHING; step++) {
+        out.add(catmullRom(p0, p1, p2, p3, (double) step / TUBE_SMOOTHING));
       }
     }
     return out;

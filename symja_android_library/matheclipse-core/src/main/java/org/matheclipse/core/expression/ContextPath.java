@@ -11,8 +11,8 @@ import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
@@ -68,8 +68,8 @@ public final class ContextPath implements Iterable<Context> {
   }
 
   /**
-   * A path whose current context is <code>context</code>, knowing the contexts
-   * <code>outer</code> already knows.
+   * A path whose current context is <code>context</code>, knowing the contexts <code>outer</code>
+   * already knows.
    *
    * <p>
    * Inheriting them is what makes a context mean the same thing inside a package as outside it. A
@@ -144,8 +144,8 @@ public final class ContextPath implements Iterable<Context> {
    * <p>
    * A name starting with a backtick is relative to <code>$Context</code>: inside
    * <code>BeginPackage["Foo`"]; Begin["`Private`"]</code> both <code>`x</code> and
-   * <code>`Private`x</code> mean <code>Foo`Private`x</code>. Every Wolfram Language package writes
-   * its private symbols that way, so a package cannot be read without it.
+   * <code>`Private`x</code> mean <code>Foo`Private`x</code>. Every package writes its private
+   * symbols that way, so a package cannot be read without it.
    *
    * @param contextName the context as it was written, with or without a leading backtick
    * @param engine supplies the current context

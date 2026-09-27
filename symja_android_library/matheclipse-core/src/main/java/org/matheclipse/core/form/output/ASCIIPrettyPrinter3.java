@@ -9,6 +9,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.operator.InfixOperator;
+import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
 
 /** ASCII pretty printer which tries to create a pretty printer ASCII form on 3 lines. */
@@ -119,7 +121,7 @@ public class ASCIIPrettyPrinter3 {
   private void convert(final IExpr expr, final int precedence, boolean caller) {
     if (expr.isAST(S.Short, 2) || expr.isAST(S.Short, 3)) {
       // Short only changes how an expression is shown; OutputForm has no page width, so the whole
-      // expression is written, as ToString[Short[expr], OutputForm] is in the Wolfram Language
+      // expression is written, as ToString[Short[expr], OutputForm]
       convert(((IAST) expr).arg1(), precedence, caller);
       return;
     }
@@ -152,6 +154,14 @@ public class ASCIIPrettyPrinter3 {
         print("<<" + ast.arg1().toString() + ">>");
         return;
       }
+      if (head != S.List && ast.argSize() >= 2) {
+        Operator operator = OutputFormFactory.getOperator(head, ast.argSize());
+        if (operator instanceof InfixOperator) {
+          // x == y, a -> b, p && q: an operator is written as one, as it is in every other form
+          convertInfix(ast, operator, precedence);
+          return;
+        }
+      }
       if (head == S.List) {
         print("{");
       } else {
@@ -178,6 +188,29 @@ public class ASCIIPrettyPrinter3 {
         }
         print(expr.toString());
       }
+    }
+  }
+
+  /**
+   * The arguments joined by the operator, each on the middle line so a fraction beside it keeps its
+   * layout, in parentheses when the surrounding operator binds more tightly.
+   */
+  private void convertInfix(IAST ast, Operator operator, final int precedence) {
+    int own = operator.getPrecedence();
+    if (own < precedence) {
+      print(" ( ");
+    }
+    for (int i = 1; i < ast.size(); i++) {
+      fractionPrinted = false;
+      if (i != 1) {
+        // a statement ends at its semicolon: a; b, not a ; b
+        String spelling = operator.getOperatorString();
+        print(";".equals(spelling) ? "; " : " " + spelling + " ");
+      }
+      convert(ast.get(i), own, NO_PLUS_CALL);
+    }
+    if (own < precedence) {
+      print(" ) ");
     }
   }
 

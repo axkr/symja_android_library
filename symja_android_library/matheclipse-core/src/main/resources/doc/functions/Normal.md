@@ -42,8 +42,15 @@ Normalize an association:
 {U->1,V->2}
 ```
 
+Substitute the point indices of a graphics complex with the points they stand for:
+
+```
+>> Normal(GraphicsComplex({{0,0},{1,0},{0,1}}, {Red, Polygon({1,2,3})}))
+{RGBColor(1,0,0),Polygon({{0,0},{1,0},{0,1}})}
+```
+
 ### Related terms  
-[Association](Association.md), [ByteArray](ByteArray.md), [SeriesData](SeriesData.md), [SparseArray](SparseArray.md) 
+[Association](Association.md), [ByteArray](ByteArray.md), [GraphicsComplex](GraphicsComplex.md), [SeriesData](SeriesData.md), [SparseArray](SparseArray.md) 
 
 
 

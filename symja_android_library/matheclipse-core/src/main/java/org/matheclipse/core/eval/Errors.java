@@ -82,6 +82,7 @@ public class Errors {
       "argr", "`1` called with 1 argument; `2` arguments are expected.", //
       "argrx", "`1` called with `2` arguments; `3` arguments are expected.", //
       "argx", "`1` called with `2` arguments; 1 argument is expected.", //
+      "sysname", "`1` is not a known SystemOption.", //
       "args", "`1` called with invalid parameters.", //
       "argt", "`1` called with `2` arguments; `3` or `4` arguments are expected.", //
       "arrayerr", "`1` must be a valid array.", //
@@ -96,7 +97,8 @@ public class Errors {
       "astrocsys", "`1` is not a supported celestial system in `2`.", //
       "astrodms", "`1` in `2` is not a sexagesimal angle.", //
       "astroevent", "`1` is not a supported astronomical event in `2`.", //
-      "astroframe", "Value of option `1` -> `2` is not a usable reference frame; a horizon frame also needs a location.", //
+      "astroframe",
+      "Value of option `1` -> `2` is not a usable reference frame; a horizon frame also needs a location.", //
       "astroloc", "`1` in `2` needs an observer location.", //
       "astromethod", "`1` is not a supported computation method in `2`.", //
       "astronotimpl", "`1` is not implemented.", //
@@ -106,7 +108,8 @@ public class Errors {
       "astrostar", "`1` in `2` is not a star in the bundled catalogue.", //
       "astrostarprop", "`1` needs data which is not bundled: `2`.", //
       "astrorange", "Value of option `1` -> `2` is not an angle or Automatic.", //
-      "astrorefalt", "Value of option ReferenceAltitude -> `1` in `2` is not Automatic, an angle, {angle,limb}, \"Civil\", \"Nautical\" or \"Astronomical\".", //
+      "astrorefalt",
+      "Value of option ReferenceAltitude -> `1` in `2` is not Automatic, an angle, {angle,limb}, \"Civil\", \"Nautical\" or \"Astronomical\".", //
       "astrotimesys", "`1` is not a supported time system in `2`.", //
       "astrotimetype", "`1` is not a supported sidereal time type in `2`.", //
       "astrotimezone", "`1` in `2` is not a time zone offset or an IANA time zone name.", //
@@ -138,6 +141,7 @@ public class Errors {
       "chemsmarts", "`1` is not a valid SMARTS pattern.", //
       "elemdent", "`1` does not name a chemical element or a class of elements.", //
       "elemdprop", "`1` is not a known ElementData property.", //
+      "elmntavs", "\"`1`\" is not an available property. Did you mean \"`2`\" instead?", //
       "elemdrepl", "The ElementData property `1` was replaced by `2`.", //
       "bdpt", "Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.", //
       "bset",
@@ -157,6 +161,7 @@ public class Errors {
       "cfro",
       "Value of option RuntimeOptions -> `1` should be Automatic, \"Speed\", \"Quality\", a rule or a list of rules.", //
       "cfsa", "Argument `1` at position `2` should be a machine-size `3`.", //
+      "cfta", "Argument `1` at position `2` should be a rank `3` tensor of machine-size `4`.", //
       "cfdrop", "`1` cannot be applied to one sample by `2` and was ignored.", //
       "cfeval", "The ColorFunction of `1` did not evaluate to a color; using the default coloring.", //
       "cfname", "`1` is not a known color gradient for `2`; using the default coloring.", //
@@ -177,6 +182,8 @@ public class Errors {
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
       "deqn", "Equation or list of equations expected instead of `1` in the first argument `2`.", //
       "dimss", "`1` is not a valid dimension specification for `2`.", //
+      "regdims",
+      "Boolean operations involving regions `1` and `2` with different embedding dimensions are not well defined.", //
       "dims",
       "The dimension `1` of the first argument is not the same as the number of binning specifications `2`.", //
       "div", "Sum does not converge.", //
@@ -216,7 +223,8 @@ public class Errors {
       "fdguess", "Form of start specification `1` supports only one start value for a variable.",
       "fdss", "Search specification `1` should be a list with 1 to 3 elements.", //
       "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
-      "filetype", "`1` is not a known file dialog type. Use \"Open\", \"OpenList\", \"Save\" or \"Directory\".", //
+      "filetype",
+      "`1` is not a known file dialog type. Use \"Open\", \"OpenList\", \"Save\" or \"Directory\".", //
       "fnand", "The function `1` is not analytic or defined at `2`.", //
       "fname", "`1` is not a valid file name.", //
       "fsandbox", "Cannot open `1`: the path is outside this session's directory.", //
@@ -359,6 +367,9 @@ public class Errors {
       "For compiling functions, Symja needs to be executed on a Java Development Kit with javax.tools.JavaCompiler installed.", //
       "nconvss",
       "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
+      "ncvb",
+      "NIntegrate failed to converge to prescribed accuracy after `1` recursive bisections in `2` "
+          + "near `3` = `4`. NIntegrate obtained `5` and `6` for the integral and error estimates.", //
       "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
       "ndimv", "There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.", //
       "ndsz",
@@ -396,8 +407,12 @@ public class Errors {
       "nonopt",
       "Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or a list of rules.", //
       "nocont", "Context `1` was not created when Needs was evaluated.", //
+      "noawt",
+      "`1` needs AWT, which this runtime does not provide (a native image on macOS has none); use SVG output instead.", //
       "noopen", "Cannot open `1`.", //
       "noprime", "There are no primes in the specified interval.", //
+      "notprop",
+      "`1` is not a known property or size specification for `2`. Use `2`(\"Properties\") for a list of properties.", //
       "nord", "Invalid comparison with `1` attempted.", //
       "norel", "Expressions `1` and `2` cannot be related by a permutation.", //
       "norep", "Assignment on `2` for `1` not found.", //
@@ -408,7 +423,7 @@ public class Errors {
       "notdata",
       "The first argument is not a vector or matrix or a list containing a design matrix and response vector.", //
       "notent",
-      "`1` is not a known entity, class or tag for GraphData. Use GraphData for a list of entities.", //
+      "`1` is not a known entity, class or tag for `2`. Use `2`[] for a list of entities.", //
       "notfound", "Specified terminator not found.", //
       "notunicode",
       "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
@@ -423,8 +438,7 @@ public class Errors {
       "The integrand `1` does not appear to be analytic on the contour of radius `2` around `3`; a branch cut seems to cross it and the result is unreliable.", //
       "nrescnv",
       "Failed to converge to the requested accuracy on the contour of radius `1` around `2` after `3` sample points; the result may be inaccurate.", //
-      "nresnum",
-      "The integrand `1` could not be evaluated to a number on the contour around `2`.", //
+      "nresnum", "The integrand `1` could not be evaluated to a number on the contour around `2`.", //
       "nresopt", "Value of option `1` -> `2` is not valid; the default value is used.", //
       "nsmet", "The system cannot be solved with the methods available to `1`.", //
       "nspecnl",
@@ -452,6 +466,8 @@ public class Errors {
       "pair", "Argument `1` is expected to be a pair, a list of pairs or an Interval object.", //
       "pairs", "The first argument `1` of `2` is not a list of pairs.", //
       "par", "Inappropriate parameter: `1`.", //
+      "parmthd",
+      "Value of option `1` -> `2` is not Automatic, \"CoarsestGrained\", \"FinestGrained\", \"EvaluationsPerKernel\" -> e or \"ItemsPerEvaluation\" -> m.", //
       "partd", "Part specification `1` is longer than depth of object.", //
       "partw", "Part `1` of `2` does not exist.", //
       "patop", "Pattern `1` contains inappropriate optional object.", //
@@ -466,7 +482,9 @@ public class Errors {
       "The arguments to `1` must be two lists of integers of identical length, with the second list only containing positive integers.", //
       "pint", "The value `1` in position `2` must be a non-negative machine sized integer.", //
       "plen", "`1` and `2` should have the same length.", //
-      "plld", "Endpoints in `1` must be distinct machine-size real numbers.", //
+      "svars", "Equations may not give solutions for all \"solve\" variables.", //
+      "htdrng", "The `1` test is only valid for sample sizes between `2` and `3`.", //
+      "plld", "Endpoints for `1` in `2` must have distinct machine-precision numerical values.", //
       "pllim", "Range specification `1` is not of the form {x, xmin, xmax}.", //
       "plln", "Limiting value `1` in `2` is not a machine-size real number.", //
       "pkspec1", "The expression `1` cannot be used as a part specification.", //
@@ -546,7 +564,12 @@ public class Errors {
       "setps", "`1` in the part assignment is not a symbol.", //
       "sfr", "Item `1` requested in `2` out of range. `3` itms available.", //
       "shapespec", "Shape specification `1` is invalid.", //
+      "slota", "Named slot `1` in `2` cannot be filled from `3`.", //
       "slotn", "Slot number `1` in `2` cannot be filled from `3`.", //
+      "slwcon",
+      "Numerical integration converging too slowly; suspect one of the following: singularity, "
+          + "value of the integration is 0, highly oscillatory integrand, or WorkingPrecision too "
+          + "small.", //
       "smplen", "The elements of `1` are not compatible with the sample size `2`.", //
       "shlen", "The argument `1` should have at least `2` elements.", //
       "sing", "Matrix `1` is singular.", //
@@ -556,8 +579,7 @@ public class Errors {
       "ssle", "Symbol, string or HoldPattern(symbol) expected at position `2` in `1`.", //
       "step", "The step size `1` is expected to be positive", //
       "stream", "`1` is not string, InputStream[], or OutputStream[].", //
-      "steps",
-          "Evaluation steps are switched off in this build (ToggleFeature#SHOW_STEPS).", //
+      "steps", "Evaluation steps are switched off in this build (ToggleFeature#SHOW_STEPS).", //
       "string", "String expected at position `1` in `2`.", //
       "strse", "String or list of strings expected at position `1` in `2`.", //
       "sym", "Argument `1` at position `2` is expected to be a symbol.", //
@@ -670,7 +692,7 @@ public class Errors {
     }
     // "or" only reads correctly for two adjacent counts. For a wider range it names two of the
     // several that are allowed and silently excludes the rest - "3 or 6 arguments are expected"
-    // for a function taking 3 to 6. Mathematica reports that range as argb.
+    // for a function taking 3 to 6. WMA reports that range as argb.
     // `1` called with `2` arguments; between `3` and `4` arguments are expected.
     return printMessage(topHead, "argb",
         F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
@@ -823,13 +845,16 @@ public class Errors {
    */
   public static IAST printMessage(@NonNull ISymbol symbol, @NonNull String messageShortcut,
       final IAST listOfParameters, EvalEngine engine) {
-    if (engine != null && engine.isMessageDisabled(symbol.toString(), messageShortcut)) {
+    if (engine == null) {
+      engine = EvalEngine.get();
+    }
+    if (engine.isMessageDisabled(symbol.toString(), messageShortcut)) {
       // Off[Symbol::tag] - the message is not printed, and everything else about the evaluation
       // stays as it was
       engine.setMessageShortcut(messageShortcut);
       return F.NIL;
     }
-    if (engine != null && engine.getMessageListener() != null && !engine.isQuietMode()) {
+    if (engine.getMessageListener() != null && !engine.isQuietMode()) {
       // a kernel driven over a link sends its messages on rather than printing them
       engine.getMessageListener().message(symbol, messageShortcut);
     }

@@ -122,7 +122,7 @@ public class GreenFunctionTest extends ExprEvaluatorTestCase {
 
     check("GreenFunction({y(n+2) - 3*y(n+1) + 2*y(n), y(0) == 0, y(1) == 0},"
         + " y(n), {n, 0, Infinity}, m)", //
-        "((-2^(1+m)+2^n)*UnitStep(-2-m+n))/(-2^(1+m)+2^(2+m))");
+        "(-1+2^(-1-m+n))*UnitStep(-2-m+n)");
 
     // First order needs one condition only.
     check("GreenFunction({y(n+1) - 2*y(n), y(0) == 0}, y(n), {n, 0, Infinity}, m)", //

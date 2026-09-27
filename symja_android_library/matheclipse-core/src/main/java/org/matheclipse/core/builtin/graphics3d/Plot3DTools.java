@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -181,7 +182,8 @@ public final class Plot3DTools {
 
   /** The options of a plot that takes explicit data rather than a function. */
   public static GraphicsOptions.OptionSet listExtras(GraphicsOptions.OptionSet set) {
-    return surfaceExtras(set).add(S.Automatic, S.DataRange, S.InterpolationOrder, S.MaxPlotPoints);
+    return surfaceExtras(set).add(S.Automatic, S.DataRange, S.InterpolationOrder, S.MaxPlotPoints,
+        S.IntervalMarkers, S.IntervalMarkersStyle);
   }
 
   /**
@@ -306,47 +308,189 @@ public final class Plot3DTools {
   }
 
   /**
-   * Iso lines of a scalar over the sampled grid, as {@code Line} primitives in three dimensions.
+   * Iso lines of a scalar over the sampled grid, as segments between vertices of the surface.
    *
    * <p>
    * This is what {@code MeshFunctions} draws: instead of following the sampling grid, a mesh line
    * follows a level of some function of the point. Each cell of the grid is walked and the level is
    * traced across it wherever it enters and leaves, so the lines come out continuous and sit on the
-   * surface rather than beside it.
+   * surface rather than beside it. The points where it crosses become vertices of the surface's
+   * {@code GraphicsComplex}, as Mathematica writes a mesh, so the grid has to be in the builder
+   * already: each crossing takes the normal and the colour of the nearer corner.
    *
+   * @param builder the surface, with its grid added
    * @param grid the sampled surface, {@code null} at a point that has no value
    * @param values the mesh function at each of those points
-   * @param levels how many evenly spaced levels to draw
+   * @param targets the levels to draw
+   * @return <code>{{i, j}, ...}</code>, the segments as pairs of vertex numbers
    */
-  public static IASTAppendable meshLines(double[][][] grid, double[][] values, int levels) {
+  public static IASTAppendable meshSegments(GraphicsComplexBuilder builder, double[][][] grid,
+      double[][] values, double[] targets) {
     int nx = grid.length;
     int ny = nx > 0 ? grid[0].length : 0;
-    IASTAppendable lines = F.ListAlloc(levels * 8);
-    if (nx < 2 || ny < 2 || levels < 1) {
-      return lines;
+    IASTAppendable segments = F.ListAlloc(targets.length * 8);
+    if (nx < 2 || ny < 2) {
+      return segments;
+    }
+    for (double target : targets) {
+      for (int i = 0; i < nx - 1; i++) {
+        for (int j = 0; j < ny - 1; j++) {
+          traceCell(builder, segments, grid, values, i, j, target);
+        }
+      }
+    }
+    return segments;
+  }
+
+  /**
+   * Draw mesh segments inside the surface's {@code GraphicsComplex}, in a group of their own as
+   * Mathematica writes them: the group scopes the style, and {@code VertexColors -> None} keeps a
+   * coloured surface's vertex colours off the lines.
+   *
+   * @param meshStyle the {@code MeshStyle} option; {@code Automatic} draws the lines black
+   */
+  public static void addMeshSegments(GraphicsComplexBuilder builder, IAST segments,
+      IExpr meshStyle) {
+    if (segments.argSize() == 0) {
+      return;
+    }
+    IExpr style = meshStyle == null || meshStyle == S.Automatic ? S.Black : meshStyle;
+    builder.addPrimitive(F.List(style,
+        F.binaryAST2(S.Line, segments, F.Rule(S.VertexColors, S.None))));
+  }
+
+  /** How many mesh levels a {@code MeshFunctions} entry draws when {@code Mesh} does not say. */
+  public static final int MESH_FUNCTION_LEVELS = 8;
+
+  /**
+   * The value of one mesh function at every sampled point, {@code NaN} where there is none.
+   *
+   * <p>
+   * The function is given the point's coordinates, and after them the surface's two parameters
+   * when there are any - a mesh function of a parametric surface may be one of its parameters.
+   *
+   * @param start the parameters at index zero, or {@code null} for a surface that has none
+   * @param step the distance between two samples in each parameter
+   */
+  public static double[][] meshFunctionValues(double[][][] grid, IExpr function, double[] start,
+      double[] step, EvalEngine engine) {
+    int nx = grid.length;
+    int ny = nx > 0 ? grid[0].length : 0;
+    double[][] values = new double[nx][ny];
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        double[] point = grid[i][j];
+        if (point == null) {
+          values[i][j] = Double.NaN;
+          continue;
+        }
+        IASTAppendable call = F.ast(function, 5);
+        call.append(F.num(point[0]));
+        call.append(F.num(point[1]));
+        call.append(F.num(point[2]));
+        if (start != null) {
+          call.append(F.num(start[0] + i * step[0]));
+          call.append(F.num(start[1] + j * step[1]));
+        }
+        IExpr value = engine.evalN(call);
+        values[i][j] = value.isNumber() ? value.evalfNaN() : Double.NaN;
+      }
+    }
+    return values;
+  }
+
+  /**
+   * The levels mesh function number {@code k}, counted from zero, is drawn at: {@code Mesh -> n}
+   * spaces n of them evenly over the function's values, {@code Mesh -> {n1, n2}} gives each
+   * function its own count, and {@code Mesh -> {{v1, v2, ...}, ...}} names the values themselves.
+   */
+  public static double[] meshLevels(IExpr meshOption, int k, double[][] values) {
+    IExpr entry = meshOption;
+    if (meshOption.isList()) {
+      IAST perFunction = (IAST) meshOption;
+      if (perFunction.argSize() <= k) {
+        return new double[0];
+      }
+      entry = perFunction.get(k + 1);
+    }
+    if (entry.isList()) {
+      IAST list = (IAST) entry;
+      double[] explicit = new double[list.argSize()];
+      int n = 0;
+      for (int i = 1; i <= list.argSize(); i++) {
+        // {v, style} gives a level its own style, which is not read here
+        IExpr level = list.get(i).isList() && list.get(i).argSize() >= 1 ? list.get(i).first()
+            : list.get(i);
+        double v = level.evalfNaN();
+        if (Double.isFinite(v)) {
+          explicit[n++] = v;
+        }
+      }
+      return java.util.Arrays.copyOf(explicit, n);
+    }
+    int count = entry.toIntDefault(MESH_FUNCTION_LEVELS);
+    if (count < 1) {
+      count = MESH_FUNCTION_LEVELS;
     }
     double min = Double.MAX_VALUE;
     double max = -Double.MAX_VALUE;
-    for (int i = 0; i < nx; i++) {
-      for (int j = 0; j < ny; j++) {
-        if (grid[i][j] != null && Double.isFinite(values[i][j])) {
-          min = Math.min(min, values[i][j]);
-          max = Math.max(max, values[i][j]);
+    for (double[] row : values) {
+      for (double v : row) {
+        if (Double.isFinite(v)) {
+          min = Math.min(min, v);
+          max = Math.max(max, v);
         }
       }
     }
     if (!(max > min)) {
-      return lines;
+      return new double[0];
     }
-    for (int level = 1; level <= levels; level++) {
-      double target = min + (max - min) * level / (levels + 1.0);
-      for (int i = 0; i < nx - 1; i++) {
-        for (int j = 0; j < ny - 1; j++) {
-          traceCell(lines, grid, values, i, j, target);
+    double[] targets = new double[count];
+    for (int level = 1; level <= count; level++) {
+      targets[level - 1] = min + (max - min) * level / (count + 1.0);
+    }
+    return targets;
+  }
+
+  /**
+   * The colour of each sampled point under {@code MeshShading}: the mesh lines of the functions cut
+   * the surface into bands, and the bands take the shades in turn - a list for one function, a
+   * matrix indexed by the band of each of two.
+   *
+   * @return {@code null} when {@code MeshShading} is not a list of colours
+   */
+  public static IExpr[][] meshShading(double[][][] grid, List<double[][]> values,
+      List<double[]> levels, IExpr shading) {
+    if (!shading.isList() || shading.argSize() == 0 || values.isEmpty()) {
+      return null;
+    }
+    int nx = grid.length;
+    int ny = nx > 0 ? grid[0].length : 0;
+    IExpr[][] colors = new IExpr[nx][ny];
+    for (int i = 0; i < nx; i++) {
+      for (int j = 0; j < ny; j++) {
+        if (grid[i][j] == null) {
+          continue;
         }
+        IExpr shade = shading;
+        for (int k = 0; k < values.size() && shade.isList() && shade.argSize() > 0; k++) {
+          int band = 0;
+          for (double level : levels.get(k)) {
+            if (values.get(k)[i][j] > level) {
+              band++;
+            }
+          }
+          shade = ((IAST) shade).get(band % shade.argSize() + 1);
+        }
+        IExpr color = GraphicsOptions.toColorExpr(shade, F.NIL);
+        if (color.isNIL()) {
+          // None or a style that is no colour: the shading is not one this surface can carry
+          return null;
+        }
+        colors[i][j] = color;
       }
     }
-    return lines;
+    return colors;
   }
 
   /**
@@ -372,10 +516,9 @@ public final class Plot3DTools {
    * Whether {@code BoundaryStyle} asks for an outline.
    *
    * <p>
-   * {@code None} never draws one and a given style always does. {@code Automatic} draws one where
-   * the Wolfram Language does, which the plot says with {@code outlinedByDefault}: {@code Plot3D}
-   * and {@code ListPlot3D} outline their surface unless told not to - Mathematica's output of
-   * {@code Plot3D[..., Mesh -> None]} still carries {@code {GrayLevel[0], Line[...]}}.
+   * {@code None} never draws one and a given style always does. {@code Automatic} draws one, which
+   * the plot says with {@code outlinedByDefault}: {@code Plot3D} and {@code ListPlot3D} outline
+   * their surface unless told not to.
    */
   public static boolean drawsBoundary(IExpr boundaryStyle, boolean outlinedByDefault) {
     if (boundaryStyle == null || boundaryStyle.isNIL() || boundaryStyle.isNone()) {
@@ -499,8 +642,8 @@ public final class Plot3DTools {
   }
 
   /** The segment of one level inside one cell of the grid, if the level passes through it. */
-  private static void traceCell(IASTAppendable lines, double[][][] grid, double[][] values, int i,
-      int j, double target) {
+  private static void traceCell(GraphicsComplexBuilder builder, IASTAppendable segments,
+      double[][][] grid, double[][] values, int i, int j, double target) {
     double[][] corners = {grid[i][j], grid[i + 1][j], grid[i + 1][j + 1], grid[i][j + 1]};
     double[] at = {values[i][j], values[i + 1][j], values[i + 1][j + 1], values[i][j + 1]};
     for (int c = 0; c < 4; c++) {
@@ -508,7 +651,8 @@ public final class Plot3DTools {
         return; // an incomplete cell has no interior to trace
       }
     }
-    IASTAppendable crossings = F.ListAlloc(2);
+    int[] crossings = new int[4];
+    int count = 0;
     for (int edge = 0; edge < 4; edge++) {
       int a = edge;
       int b = (edge + 1) % 4;
@@ -518,15 +662,19 @@ public final class Plot3DTools {
         continue;
       }
       double t = (target - va) / (vb - va);
-      crossings.append(F.List(//
-          F.num(corners[a][0] + t * (corners[b][0] - corners[a][0])), //
-          F.num(corners[a][1] + t * (corners[b][1] - corners[a][1])), //
-          F.num(corners[a][2] + t * (corners[b][2] - corners[a][2]))));
+      // the corner is already a vertex of the surface, so adding it again only finds its number
+      double[] near = corners[t < 0.5 ? a : b];
+      int nearest = builder.addVertex(near[0], near[1], near[2], null, null);
+      crossings[count++] = builder.addVertex( //
+          corners[a][0] + t * (corners[b][0] - corners[a][0]), //
+          corners[a][1] + t * (corners[b][1] - corners[a][1]), //
+          corners[a][2] + t * (corners[b][2] - corners[a][2]), //
+          builder.normalOf(nearest), builder.colorOf(nearest));
     }
     // two crossings is a segment; four means the level passes through twice and the cell is too
     // coarse to say how, so it is left out rather than guessed at
-    if (crossings.argSize() == 2) {
-      lines.append(F.Line(crossings));
+    if (count == 2 && crossings[0] != crossings[1]) {
+      segments.append(F.List(F.ZZ(crossings[0]), F.ZZ(crossings[1])));
     }
   }
 
@@ -764,17 +912,15 @@ public final class Plot3DTools {
    * The {@code ColorFunction} of a surface, or {@code null} when it keeps its own flat colour.
    *
    * <p>
-   * The caller finishes the builder with the range each coordinate spans, so that a colour
-   * function sees positions rather than raw units.
+   * The caller finishes the builder with the range each coordinate spans, so that a colour function
+   * sees positions rather than raw units.
    *
    * @param family which tuple this plot hands over; a plain surface passes {@code x, y, z}
    */
   public static PlotColorFunction.Builder plotColors(PlotColorFunction.Family family,
       IExpr[] options, ISymbol plotSymbol, EvalEngine engine) {
-    return PlotColorFunction
-        .of(family, options[X_COLOR_FUNCTION], options[X_COLOR_FUNCTION_SCALING], plotSymbol,
-            engine)
-        .sink(PlotColorFunction.Sink.FLAT);
+    return PlotColorFunction.of(family, options[X_COLOR_FUNCTION],
+        options[X_COLOR_FUNCTION_SCALING], plotSymbol, engine).sink(PlotColorFunction.Sink.FLAT);
   }
 
   /**
@@ -1005,8 +1151,8 @@ public final class Plot3DTools {
     if (point == null) {
       return -1;
     }
-    return builder.addVertex(point[0], point[1], point[2],
-        normals == null ? null : normals[fi][fj], colors == null ? null : colors[fi][fj]);
+    return builder.addVertex(point[0], point[1], point[2], normals == null ? null : normals[fi][fj],
+        colors == null ? null : colors[fi][fj]);
   }
 
   /**
@@ -1016,8 +1162,8 @@ public final class Plot3DTools {
    * The corners that are inside and the points where the boundary meets the cell's own edges,
    * walked in the order the quads are, so the winding - and with it which face the lights see -
    * stays the same. A cell whose inside corners are diagonally opposite is crossed twice and no
-   * single polygon describes it, so it is left out the way it was before there was any clipping.
-   * At any density worth plotting at those cells are rare and each is one sample across.
+   * single polygon describes it, so it is left out the way it was before there was any clipping. At
+   * any density worth plotting at those cells are rare and each is one sample across.
    */
   private static void addRegionEdgeCells(GraphicsComplexBuilder builder, double[][][] unmasked,
       boolean[][] inside, int[][] indices, int[][][] crossings, int rows, int cols) {
@@ -1265,6 +1411,11 @@ public final class Plot3DTools {
   public static IExpr graphics3D(IExpr content, IAST originalAST, int argSize, IExpr[] defaults,
       boolean applyArgumentWrapper, IExpr[] autoAxesLabels) {
     IASTAppendable result = F.ast(S.Graphics3D, 4 + (defaults == null ? 0 : defaults.length));
+    if (content.isList() && content.argSize() == 1 && isSurface(content.first())) {
+      // one surface is its GraphicsComplex, as Mathematica writes it, so First(Plot3D(...)) is the
+      // complex itself and can be moved or rotated into another scene; several stay a list
+      content = content.first();
+    }
     if (applyArgumentWrapper && originalAST != null && originalAST.size() > 1) {
       content = PlotWrapper.of(originalAST.arg1()).wrapTooltip(content);
     }
@@ -1278,6 +1429,15 @@ public final class Plot3DTools {
       }
     }
     return legended(result, originalAST, argSize);
+  }
+
+  /** A surface's {@code GraphicsComplex}, bare or inside a {@code Tooltip} or {@code Style}. */
+  private static boolean isSurface(IExpr expr) {
+    if (expr.isAST(S.GraphicsComplex)) {
+      return true;
+    }
+    return (expr.isAST(S.Tooltip) || expr.isAST(S.Style) || expr.isAST(S.Annotation))
+        && expr.argSize() >= 1 && expr.first().isAST(S.GraphicsComplex);
   }
 
   /**
@@ -1389,10 +1549,10 @@ public final class Plot3DTools {
     return key == S.Axes || key == S.AxesLabel || key == S.AxesEdge || key == S.AxesStyle
         || key == S.Background || key == S.Boxed || key == S.BoxStyle || key == S.BoxRatios
         || key == S.FaceGrids || key == S.ImageSize || key == S.Lighting || key == S.PlotLabel
-        || key == S.PlotRange || key == S.PlotRangePadding || key == S.Ticks
-        || key == S.TicksStyle || key == S.LabelStyle
-        || key == S.ViewPoint || key == S.ViewVertical || key == S.ViewAngle || key == S.ViewCenter
-        || key == S.ViewProjection || key == S.ViewRange || key == S.SphericalRegion
-        || key == S.ScalingFunctions;
+        || key == S.PlotRange || key == S.PlotRangePadding || key == S.Ticks || key == S.TicksStyle
+        || key == S.LabelStyle || key == S.ViewPoint || key == S.ViewVertical || key == S.ViewAngle
+        || key == S.ViewCenter || key == S.ViewProjection || key == S.ViewRange
+        || key == S.SphericalRegion || key == S.ScalingFunctions || key == S.IntervalMarkers
+        || key == S.IntervalMarkersStyle;
   }
 }

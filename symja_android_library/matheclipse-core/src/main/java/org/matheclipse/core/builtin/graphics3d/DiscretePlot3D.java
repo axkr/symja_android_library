@@ -12,8 +12,10 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotMarkersSpec;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
@@ -149,6 +151,20 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
       functions = (IAST) function;
     } else {
       functions = F.List(function);
+    }
+    // f(i, j) with a value of {i j, i + j} is two sets of stems, which only its value can say
+    if (iRange.isList() && (jRange.isList() || !jRange.isPresent())) {
+      List<IExpr> written = new ArrayList<>();
+      functions.forEach(written::add, 1);
+      List<IExpr> split = PlotShapeProbe.split(written,
+          PlotShapeProbe.iteratorProbes(
+              jRange.isList() ? new IAST[] {(IAST) iRange, (IAST) jRange}
+                  : new IAST[] {(IAST) iRange},
+              engine),
+          PlotShapeProbe.SCALAR, false, engine);
+      if (split.size() != written.size()) {
+        functions = F.List(split.toArray(new IExpr[0]));
+      }
     }
 
     // Thd chart palette: the stems and markers take a slightly darkened palette entry and
@@ -363,34 +379,31 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
    * The marker that sits on top of a stem, as {@code PlotMarkers} asks for.
    *
    * <p>
-   * A list is read as one marker per dataset, unless it is a pair whose second element is a number.
+   * The settings are read the same way the 2D plots read them, so a list is one marker per dataset
+   * and a pair whose second element is a size is one marker at that size. {@code Automatic} is the
+   * exception: on a stem plot the standard marker is the plain point this draws by default, not
+   * one of the 2D glyphs.
    */
   private static void appendMarker(IASTAppendable primitives, IExpr plotMarkers, int index,
       double x, double y, double z) {
     IAST position = F.List(F.num(x), F.num(y), F.num(z));
-    IExpr marker = plotMarkers;
-    if (marker.isList()) {
-      IAST list = (IAST) marker;
-      if (list.argSize() == 2 && list.arg2().isNumber()) {
-        // {marker, size}: the size is in printer's points, which a fraction of the image is the
-        // nearest thing to here
-        double size = toDouble(list.arg2(), 0.0);
-        if (size > 0.0) {
-          primitives.append(F.PointSize(F.num(Math.min(0.05, size / 400.0))));
-        }
-        marker = list.arg1();
-      } else if (list.argSize() > 0) {
-        marker = list.get(Math.floorMod(index, list.argSize()) + 1);
-      }
-    }
-    if (marker.isNone()) {
+    if (plotMarkers.isNone()) {
       return;
     }
-    if (marker.isString()) {
-      primitives.append(F.Text(marker, position));
+    if (plotMarkers.isAutomatic()) {
+      primitives.append(F.Point(position));
       return;
     }
-    primitives.append(F.Point(position));
+    PlotMarkersSpec spec = PlotMarkersSpec.of(plotMarkers);
+    if (spec == null) {
+      return;
+    }
+    IExpr marker = spec.markerAt(index);
+    if (marker.isNIL()) {
+      primitives.append(F.Point(position));
+      return;
+    }
+    primitives.append(F.Text(marker, position));
   }
 
   /**

@@ -86,7 +86,7 @@ public class SwingFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.HOLDALL);
+      newSymbol.setAttributes(Attribute.HOLDREST, Attribute.PROTECTED, Attribute.READPROTECTED);
     }
 
     @Override

@@ -885,16 +885,7 @@ public class IntegerSym extends AbstractIntegerSym {
     if (that instanceof BigIntegerSym) {
       return super.quotient(that);
     }
-    int thatValue = ((IntegerSym) that).fIntValue;
-    long quotient = fIntValue / thatValue;
-    long mod = fIntValue % thatValue;
-    if (mod == 0L) {
-      return valueOf(quotient);
-    }
-    if (quotient < 0) {
-      return valueOf(quotient - 1);
-    }
-    return valueOf(quotient);
+    return valueOf(Math.floorDiv((long) fIntValue, (long) ((IntegerSym) that).fIntValue));
   }
 
   /** {@inheritDoc} */

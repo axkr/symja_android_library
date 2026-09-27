@@ -1,6 +1,7 @@
 package org.matheclipse.chem;
 
 import org.matheclipse.chem.builtin.DepictionFunctions;
+import org.matheclipse.chem.builtin.IsotopeDataFunctions;
 import org.matheclipse.chem.builtin.MoleculeFunctions;
 import org.matheclipse.chem.builtin.PeriodicTableFunctions;
 import org.matheclipse.chem.builtin.ReactionFunctions;
@@ -29,6 +30,7 @@ public class ChemInit {
     SubstructureFunctions.initialize();
     DepictionFunctions.initialize();
     ReactionFunctions.initialize();
+    IsotopeDataFunctions.initialize();
     PeriodicTableFunctions.initialize();
   }
 

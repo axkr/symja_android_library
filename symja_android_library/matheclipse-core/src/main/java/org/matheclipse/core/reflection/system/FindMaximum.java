@@ -1,21 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.exception.MathIllegalStateException;
-import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
-import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.Attribute;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <pre>
@@ -47,6 +32,39 @@ import org.matheclipse.core.interfaces.ISymbol;
  * searches for a local numerical maximum of the multivariate function <code>f</code> for the
  * variables <code>x, y,...</code> and the corresponding start values
  * <code>xstart, ystart,...</code>.
+ * </p>
+ *
+ * <pre>
+ * <code>FindMaximum(f, {x, xstart}, {y, ystart}, ...)
+ * </code>
+ * </pre>
+ *
+ * <p>
+ * is the same search with one search specification per argument.
+ * </p>
+ *
+ * <pre>
+ * <code>FindMaximum({f, constraints}, {{x, xstart},{y, ystart},...})
+ * </code>
+ * </pre>
+ *
+ * <p>
+ * searches for a local numerical maximum subject to the <code>constraints</code>. Bounds of a
+ * single variable like <code>x&gt;=1</code> are taken by the methods &quot;CMAES&quot; and
+ * &quot;BOBYQA&quot;; other equations and inequalities like <code>x+y&gt;=4</code> or
+ * <code>x^2+y^2&lt;3</code> select the &quot;SequentialQuadratic&quot; method and must be
+ * symbolically differentiable. <code>&lt;</code> and <code>&gt;</code> are read as
+ * <code>&lt;=</code> and <code>&gt;=</code>.
+ * </p>
+ * <p>
+ * A search specification can be <code>x</code> or <code>{x}</code> (start value chosen
+ * automatically), <code>{x, xstart}</code>, <code>{x, xstart, xstart2}</code> or
+ * <code>{x, xstart, xmin, xmax}</code> (the search stays in <code>xmin&lt;=x&lt;=xmax</code>). The
+ * variables are localized like in <code>Block</code>.
+ * </p>
+ * <p>
+ * The option <code>MaxIterations</code> (default <code>100</code>) limits the iterations of a
+ * method; <code>Automatic</code> and <code>Infinity</code> are possible values.
  * </p>
  * 
  * <p>
@@ -97,7 +115,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <h4>&quot;CMAES&quot;</h4>
  * <p>
  * Implements the <a href=
- * "https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/BOBYQAOptimizer.java">Covariance
+ * "https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/CMAESOptimizer.java">Covariance
  * Matrix Adaptation Evolution Strategy (CMA-ES)</a> optimizer.
  * </p>
  * <h3>Examples</h3>
@@ -114,48 +132,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class FindMaximum extends FindMinimum {
 
   @Override
-  public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
-      IAST originalAST) {
-    GoalType goalType = GoalType.MAXIMIZE;
-    try {
-      return findExtremum(ast, goalType, engine, options);
-    } catch (MathIllegalArgumentException miae) {
-      // `1`.
-      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())), engine);
-    } catch (MathIllegalStateException mise) {
-      if (mise.getSpecifier().equals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED)) {
-        Object[] parts = mise.getParts();
-        if (parts != null && parts.length >= 1) {
-          // Failed to converge to the requested accuracy or precision within `1` iterations.
-          return Errors.printMessage(ast.topHead(), "cvmit", F.list(F.$str(parts[0].toString())),
-              engine);
-        }
-      }
-      // `1`.
-      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mise.getMessage())), engine);
-    } catch (MathRuntimeException mre) {
-      Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
-      return F.CEmptyList;
-    }
-  }
-
-  @Override
-  public int status() {
-    return ImplementationStatus.PARTIAL_SUPPORT;
-  }
-
-  @Override
-  public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_3;
-  }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(Attribute.HOLDALL);
-    setOptions(newSymbol, //
-        new IBuiltInSymbol[] {//
-            S.MaxIterations, S.Method}, //
-        new IExpr[] {//
-            F.C100, S.Automatic});
+  protected GoalType goalType() {
+    return GoalType.MAXIMIZE;
   }
 }

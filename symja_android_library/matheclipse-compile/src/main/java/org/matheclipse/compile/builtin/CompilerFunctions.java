@@ -9,8 +9,8 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.compile.CompilationOptions;
 import org.matheclipse.compile.CompileAnalyzer;
 import org.matheclipse.compile.CompileFactory;
-import org.matheclipse.compile.CompiledFunctionArg;
 import org.matheclipse.compile.CompileRewrites;
+import org.matheclipse.compile.CompiledFunctionArg;
 import org.matheclipse.compile.CompoundAssignment;
 import org.matheclipse.compile.ConstantHoisting;
 import org.matheclipse.compile.InlineDefinitions;
@@ -43,6 +43,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
@@ -186,13 +187,33 @@ public class CompilerFunctions {
 
         int attributes = compiledFunction.getAttributes();
         if (attributes != ISymbol.NOATTRIBUTE) {
+          // Listable is handled below, not by the engine: the engine threads over every list
+          // argument, and so would take an array-typed argument apart down to its scalars
           IASTMutable copy = (ast instanceof IASTMutable) ? (IASTMutable) ast : ast.copy();
-          IExpr temp = engine.evalAttributes(copy, copy.size(), S.None, attributes);
+          IExpr temp = engine.evalAttributes(copy, copy.size(), S.None,
+              Attribute.LISTABLE.clearIn(attributes));
           if (temp.isAST()) {
             if (!(temp.head() instanceof CompiledFunctionExpr)) {
               return temp;
             }
             ast = (IAST) temp;
+          }
+          if (Attribute.LISTABLE.isSetIn(attributes)) {
+            IExpr threaded = threadOverExcessRank(compiledFunction, ast, engine);
+            if (threaded == ast) {
+              // the threaded arguments have different lengths: after CompiledFunction::tdlen the
+              // uncompiled expression is evaluated instead
+              if (!runtimeOptions.isEvaluateSymbolically()) {
+                return F.NIL;
+              }
+              IExpr uncompiled = engine.evaluate(
+                  F.subst(compiledFunction.getExpr(), Functors.equalRules(variables, ast)));
+              printArgumentTypeMessage(compiledFunction, ast, runtimeOptions, engine);
+              return uncompiled;
+            }
+            if (threaded.isPresent()) {
+              return threaded;
+            }
           }
         }
 
@@ -234,6 +255,8 @@ public class CompilerFunctions {
           }
           return result;
         }
+      } else if (head.isAST(S.CompiledFunction)) {
+        return applySerializedForm((IAST) head, ast);
       }
       return F.NIL;
     }
@@ -246,6 +269,9 @@ public class CompilerFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.HOLDALL);
+      // General::tdlen reads "Objects of unequal length ..."
+      newSymbol.putMessage(IPatternMatcher.SET, "tdlen",
+          F.stringx("Arguments of unequal length in `1` cannot be combined."));
     }
   }
 
@@ -283,6 +309,111 @@ public class CompilerFunctions {
   }
 
   /**
+   * Call the serialized form of a compiled function -
+   * <code>CompiledFunction[version, argumentTypes, ..., Function[...], ...]</code>, as a notebook
+   * saved with <code>SaveDefinitions -> True</code> or the <code>InputForm</code> of a compiled
+   * function writes it - through the uncompiled <code>Function</code> it embeds next to the
+   * bytecode.
+   *
+   * <p>
+   * Mathematica additionally rejects an object whose version tuple its compiler does not accept
+   * with <code>CompiledFunction::cfnv</code> and leaves the call unevaluated. That check is not
+   * reproduced: every serialized form is applied, so a dump from any Mathematica version works.
+   *
+   * @return the application of the embedded function, or {@link F#NIL} if there is none
+   */
+  private static IExpr applySerializedForm(IAST compiledFunction, IAST ast) {
+    IExpr function = F.NIL;
+    for (int i = compiledFunction.argSize(); i >= 1; i--) {
+      if (compiledFunction.get(i).isAST(S.Function)) {
+        function = compiledFunction.get(i);
+        break;
+      }
+    }
+    if (function.isNIL()) {
+      return F.NIL;
+    }
+    IAST types = compiledFunction.argSize() >= 2 && compiledFunction.arg2().isList()
+        ? (IAST) compiledFunction.arg2()
+        : F.CEmptyList;
+    IASTAppendable call = F.ast(function, ast.argSize());
+    for (int i = 1; i <= ast.argSize(); i++) {
+      IExpr argument = ast.get(i);
+      IExpr type = i <= types.argSize() ? types.get(i) : F.NIL;
+      boolean machineNumber = type.isBlank()
+          && (((Blank) type).getHeadTest() == S.Real || ((Blank) type).getHeadTest() == S.Complex);
+      call.append(machineNumber ? F.N(argument) : argument);
+    }
+    return call;
+  }
+
+  /**
+   * The array depth of <code>expr</code>: 0 for anything but a list, otherwise 1 plus the depth of
+   * its first element. The arguments of a compiled function are rectangular in practice, so the
+   * first element stands for all of them.
+   */
+  private static int arrayDepth(IExpr expr) {
+    int depth = 0;
+    while (expr.isList()) {
+      depth++;
+      if (expr.argSize() == 0) {
+        break;
+      }
+      expr = expr.first();
+    }
+    return depth;
+  }
+
+  /**
+   * Thread a <code>RuntimeAttributes -> {Listable}</code> compiled function over the outermost
+   * dimension of every argument which is deeper than the rank its argument template declares.
+   *
+   * <p>
+   * The other arguments are broadcast. Each element of the returned list is again a call of the
+   * compiled function, so an argument which exceeds its declared rank by more than one dimension is
+   * threaded over the remaining dimensions when those calls are evaluated, one dimension at a time
+   * - which is what <code>Listable</code> means for an array-typed argument. An argument of exactly
+   * its declared rank, or of a smaller one, is passed through unchanged.
+   *
+   * @return the list of threaded calls; {@link F#NIL} if no argument exceeds its rank; or
+   *         <code>ast</code> itself, after the <code>CompiledFunction::tdlen</code> message, if the
+   *         threaded arguments do not all have the same length
+   */
+  private static IExpr threadOverExcessRank(CompiledFunctionExpr compiledFunction, IAST ast,
+      EvalEngine engine) {
+    int[] ranks = compiledFunction.getRanks();
+    int argSize = ast.argSize();
+    boolean[] threads = new boolean[argSize + 1];
+    int length = -1;
+    for (int i = 1; i <= argSize; i++) {
+      IExpr arg = ast.get(i);
+      int rank = i <= ranks.length ? ranks[i - 1] : 0;
+      if (arg.isList() && arrayDepth(arg) > rank) {
+        threads[i] = true;
+        if (length < 0) {
+          length = arg.argSize();
+        } else if (length != arg.argSize()) {
+          // Arguments of unequal length in `1` cannot be combined.
+          Errors.printMessage(S.CompiledFunction, "tdlen", F.list(ast), engine);
+          return ast;
+        }
+      }
+    }
+    if (length < 0) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ListAlloc(length);
+    for (int j = 1; j <= length; j++) {
+      IASTAppendable call = F.ast(ast.head(), argSize);
+      for (int i = 1; i <= argSize; i++) {
+        call.append(threads[i] ? ((IAST) ast.get(i)).get(j) : ast.get(i));
+      }
+      result.append(call);
+    }
+    return result;
+  }
+
+  /**
    * Report why the compiled code could not take this call, naming the argument which is at fault
    * where one can be found.
    *
@@ -295,31 +426,87 @@ public class CompilerFunctions {
    *
    * <p>
    * The arguments are checked in order, the same way the generated code reads them, and the first
-   * one which does not fit its declared type is reported. A list is skipped: this expression
-   * records the type of a vector or matrix argument but not its rank, so a list may well be exactly
-   * what the argument template asks for. If no argument is at fault - the call failed somewhere
-   * inside the body - the general message is reported instead.
+   * one which does not fit its declared type and rank is reported. If no argument is at fault - the
+   * call failed somewhere inside the body - the general message is reported instead.
    */
   private static void printArgumentError(CompiledFunctionExpr compiledFunction, IAST ast,
       RuntimeOptions runtimeOptions, EvalEngine engine) {
-    if (!runtimeOptions.isWarningMessages()) {
-      return;
+    if (!printArgumentTypeMessage(compiledFunction, ast, runtimeOptions, engine)) {
+      printNumericalError(runtimeOptions, engine);
     }
+  }
+
+  /**
+   * Report the first argument which does not fit its declared type and rank as
+   * <code>CompiledFunction::cfsa</code> or <code>CompiledFunction::cfta</code>.
+   *
+   * @return <code>true</code> if an argument was at fault (whether or not
+   *         <code>"WarningMessages" -> False</code> silenced the message)
+   */
+  private static boolean printArgumentTypeMessage(CompiledFunctionExpr compiledFunction, IAST ast,
+      RuntimeOptions runtimeOptions, EvalEngine engine) {
+    boolean warn = runtimeOptions.isWarningMessages();
     IAST types = compiledFunction.getTypes();
+    int[] ranks = compiledFunction.getRanks();
     for (int i = 1; i < types.size() && i <= ast.argSize(); i++) {
       IExpr argument = ast.get(i);
-      if (argument.isList()) {
+      int rank = i <= ranks.length ? ranks[i - 1] : 0;
+      if (rank > 0) {
+        String expected = expectedTensorKind(types.get(i), rank, argument);
+        if (expected != null) {
+          if (warn) {
+            // Argument `1` at position `2` should be a rank `3` tensor of machine-size `4`.
+            Errors.printMessage(S.CompiledFunction, "cfta",
+                F.List(argument, F.ZZ(i), F.ZZ(rank), F.stringx(expected)), engine);
+          }
+          return true;
+        }
         continue;
       }
+      // a scalar position: now that ranks are recorded, a list here is at fault too
       String expected = expectedNumberKind(types.get(i), argument, engine);
       if (expected != null) {
-        // Argument `1` at position `2` should be a machine-size `3`.
-        Errors.printMessage(S.CompiledFunction, "cfsa",
-            F.list(argument, F.ZZ(i), F.stringx(expected)), engine);
-        return;
+        if (warn) {
+          // Argument `1` at position `2` should be a machine-size `3`.
+          Errors.printMessage(S.CompiledFunction, "cfsa",
+              F.list(argument, F.ZZ(i), F.stringx(expected)), engine);
+        }
+        return true;
       }
     }
-    printNumericalError(runtimeOptions, engine);
+    return false;
+  }
+
+  /**
+   * The plural kind of number a rank <code>rank</code> array of <code>type</code> holds, if
+   * <code>argument</code> cannot be read as such an array, and <code>null</code> if it can - the
+   * same conversions the generated code uses to read it.
+   */
+  private static String expectedTensorKind(IExpr type, int rank, IExpr argument) {
+    if (!type.isBuiltInSymbol()) {
+      return null;
+    }
+    boolean readable;
+    String kind;
+    switch (((IBuiltInSymbol) type).ordinal()) {
+      case ID.Real:
+        readable =
+            rank == 1 ? argument.toDoubleVector() != null : argument.toDoubleMatrix() != null;
+        kind = "real numbers";
+        break;
+      case ID.Integer:
+        readable = rank == 1 ? argument.toIntVector() != null : argument.toIntMatrix() != null;
+        kind = "integers";
+        break;
+      case ID.Complex:
+        readable =
+            rank == 1 ? argument.toComplexVector() != null : argument.toComplexMatrix() != null;
+        kind = "complex numbers";
+        break;
+      default:
+        return null;
+    }
+    return readable ? null : kind;
   }
 
   /**
@@ -433,12 +620,11 @@ public class CompilerFunctions {
    * iterator spec of a <code>Do</code>/<code>Table</code>/<code>Sum</code>/<code>Product</code>.
    *
    * <p>
-   * A parameter with no declared type defaults to <code>_Real</code>, matching the Wolfram
-   * Language - unless it is only ever used this way, in which case real <code>Compile</code>'s
-   * usage-based type inference settles on <code>_Integer</code> instead. Without this, a bare
-   * argument driving one of these reaches the compiled body as e.g. <code>100.</code> instead of
-   * <code>100</code>, and <code>NestList</code> (which insists on an exact integer count) throws
-   * rather than compute anything.
+   * A parameter with no declared type defaults to <code>_Real</code>, unless it is only ever used
+   * this way, in which case real <code>Compile</code>'s usage-based type inference settles on
+   * <code>_Integer</code> instead. Without this, a bare argument driving one of these reaches the
+   * compiled body as e.g. <code>100.</code> instead of <code>100</code>, and <code>NestList</code>
+   * (which insists on an exact integer count) throws rather than compute anything.
    */
   private static boolean isUsedAsIntegerCount(ISymbol symbol, IExpr body) {
     if (!body.isAST()) {
@@ -538,9 +724,11 @@ public class CompilerFunctions {
     try {
       IASTAppendable variables = F.ListAlloc(args.length);
       IASTAppendable types = F.ListAlloc(args.length);
-      for (CompiledFunctionArg arg : args) {
-        variables.append(arg.argument());
-        types.append(arg.type());
+      int[] ranks = new int[args.length];
+      for (int i = 0; i < args.length; i++) {
+        variables.append(args[i].argument());
+        types.append(args[i].type());
+        ranks[i] = args[i].rank().ordinal();
       }
       String source = compilePrint(ast, args, runtimeOptions, compilationOptions, engine);
       if (source != null) {
@@ -548,13 +736,17 @@ public class CompilerFunctions {
         comp.cook(source);
         ClassLoader loader = comp.getClassLoader();
         Class<?> clazz = loader.loadClass(GENERATED_PACKAGE + "." + GENERATED_CLASS);
-        return CompiledFunctionExpr.newInstance(variables, types, ast.arg2(), clazz,
+        return CompiledFunctionExpr.newInstance(variables, types, ranks, ast.arg2(), clazz,
             runtimeAttributes, runtimeOptions);
       }
     } catch (CompileException | ClassNotFoundException | RuntimeException e) {
       Errors.printMessage(S.Compile, e, engine);
     }
     return null;
+  }
+
+  private static boolean isInexact(CompileAnalyzer.VarType type) {
+    return type == CompileAnalyzer.VarType.REAL || type == CompileAnalyzer.VarType.COMPLEX;
   }
 
   public static String compilePrint(final IAST ast, CompiledFunctionArg[] args,
@@ -657,6 +849,15 @@ public class CompilerFunctions {
       classBuilder.addField(finalTypeName, fieldName, Modifier.PRIVATE);
       evalMethod.addStatement("this.$L = engine.eval$L$L(ast.get($L))", fieldName, evalName,
           evalRankStr, j + 1);
+      if (args[j].rank != CompiledFunctionArg.Rank.SCALAR) {
+        // the vector and matrix conversions answer null rather than throw for an argument which
+        // is not an array of that rank; without this the null reached the body as a silent Null or
+        // a NullPointerException instead of taking the uncompiled fallback
+        evalMethod.beginControlFlow("if (this.$L == null)", fieldName);
+        evalMethod.addStatement("throw new $T($S)", ArgumentTypeException.class,
+            "argument " + (j + 1) + " is not a rank " + args[j].rank().ordinal() + " array");
+        evalMethod.endControlFlow();
+      }
 
       symbolicVariables.put(variable, variable.toString());
       numericVariables.put(variable, "this." + fieldName);
@@ -775,6 +976,10 @@ public class CompilerFunctions {
       String wrapper = runtimeOptions.isCatchMachineIntegerOverflow() ? "symjifyInteger"
           : "symjifyIntegerUnchecked";
       evalMethod.addStatement("return $T.$L($L)", CompiledFunctionExpr.class, wrapper, exprStr);
+    } else if (isInexact(analyzer.tensorResultType(expression))) {
+      // a real or complex result tensor is packed: an exact element which came from a literal in
+      // the body, such as the 1 in {x, 1} or the bound Clip returns, is a machine number too
+      evalMethod.addStatement("return engine.evalN($T.symjify($L))", F.class, exprStr);
     } else {
       evalMethod.addStatement("return $T.symjify($L)", F.class, exprStr);
     }

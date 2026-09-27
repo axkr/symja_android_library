@@ -25,6 +25,14 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicIntegerQ());
       S.AlgebraicNumberQ
           .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicNumberQ());
+      S.AlgebraicNumber.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumber());
+      S.AlgebraicNumberDenominator.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumberDenominator());
+      S.AlgebraicNumberPolynomial.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumberPolynomial());
+      S.ToNumberField.setEvaluator(
+          new org.matheclipse.core.reflection.system.NumberFieldFunctions.ToNumberField());
       S.AlgebraicNumberNorm.setEvaluator(
           new org.matheclipse.core.reflection.system.NumberFieldFunctions.AlgebraicNumberNorm());
       S.AlgebraicNumberTrace.setEvaluator(
@@ -91,8 +99,10 @@ public final class FunctionDefinitions {
       S.Wronskian.setEvaluator(new org.matheclipse.core.reflection.system.Wronskian());
       S.EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       S.ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
+      org.matheclipse.core.data.Entities.register("Element", S.ElementData);
       S.Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
       S.EntityList.setEvaluator(new org.matheclipse.core.reflection.system.EntityList());
+      S.EntityValue.setEvaluator(new org.matheclipse.core.reflection.system.EntityValue());
       S.ExponentialGeneratingFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.ExponentialGeneratingFunction());
       S.ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
@@ -237,6 +247,7 @@ public final class FunctionDefinitions {
       S.Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
       S.Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
 
+      S.ParallelTable.setEvaluator(new org.matheclipse.core.reflection.system.ParallelTable());
       S.Part.setEvaluator(new org.matheclipse.core.reflection.system.Part());
       S.Partition.setEvaluator(new org.matheclipse.core.reflection.system.Partition());
       S.Perimeter.setEvaluator(new org.matheclipse.core.reflection.system.Perimeter());
@@ -282,6 +293,11 @@ public final class FunctionDefinitions {
       S.RegionDistance.setEvaluator(new org.matheclipse.core.reflection.system.RegionDistance());
       S.RegionMeasure.setEvaluator(new org.matheclipse.core.reflection.system.RegionMeasure());
       S.ConstantRegionQ.setEvaluator(new org.matheclipse.core.reflection.system.ConstantRegionQ());
+      S.RegionIntersection
+          .setEvaluator(new org.matheclipse.core.reflection.system.RegionIntersection());
+      S.RegionUnion.setEvaluator(new org.matheclipse.core.reflection.system.RegionUnion());
+      S.RegionDifference
+          .setEvaluator(new org.matheclipse.core.reflection.system.RegionDifference());
       S.RegionMember.setEvaluator(new org.matheclipse.core.reflection.system.RegionMember());
       S.RegionMemberFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.RegionMemberFunction());
@@ -388,6 +404,7 @@ public final class FunctionDefinitions {
       S.ListLinePlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListLinePlot3D());
       S.ListPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListPlot3D());
       S.ListPointPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListPointPlot3D());
+      S.SectorChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.SectorChart3D());
       S.Plot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.Plot3D());
       S.ParametricPlot3D
           .setEvaluator(new org.matheclipse.core.builtin.graphics3d.ParametricPlot3D());

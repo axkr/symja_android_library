@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.DLeibnitzRule;
+import org.matheclipse.core.eval.DSymbolicOrder;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.ArrayDerivative;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
@@ -19,7 +20,6 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryBindIth1st;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -233,7 +233,7 @@ public class D extends AbstractFunctionOptionEvaluator {
    * @return
    */
   private static IExpr chainRuleArg1(final IAST functionArg1, IExpr x, EvalEngine engine) {
-    final ISymbol header = (ISymbol) functionArg1.head();
+    final IExpr header = functionArg1.head();
     IExpr arg1 = functionArg1.arg1();
     IAST fDerivParam = Derivative.createDerivative(1, header, arg1);
     IAST dDxArgFunction = F.D(functionArg1, x);
@@ -264,10 +264,18 @@ public class D extends AbstractFunctionOptionEvaluator {
           || id == ID.InverseZTransform) {
         return F.NIL;
       }
+      if (ast.exists(arg -> arg.isList())) {
+        // an iterator or option list like in Table(f, {k, 1, n}) has no partial derivative
+        return F.NIL;
+      }
     }
     IAST[] deriv = ast.isDerivative();
     int size = ast.size();
     if (deriv != null) {
+      if (deriv[2] == null) {
+        // the operator Derivative(n)[f] applied to nothing
+        return F.NIL;
+      }
       IASTAppendable plus = F.PlusAlloc(size);
       ast.forEach(size, (expr, i) -> {
         if (!expr.isFree(x)) { // Cut off AST explosion for constant terms
@@ -276,7 +284,7 @@ public class D extends AbstractFunctionOptionEvaluator {
       });
       return engine.addTraceStep(ast, plus, "ChainRule");
     }
-    if (head.isSymbol()) {
+    if (isFunctionHead(head, x)) {
       IASTAppendable plus = F.PlusAlloc(size);
       ast.forEach(size, (expr, i) -> {
         plus.append(F.Times(F.D(expr, x), createDerivative(i, head, ast)));
@@ -309,14 +317,16 @@ public class D extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Find rule for <code>Derivative(0,...,n,...,n,...)[header]</code>. Set <code>0</code> where the
-   * arguments in <code>args</code> are free of <code>x</code>. Set <code>1</code> where the
-   * arguments in <code>args</code> equals <code>x</code>. Return {@link F.NIL} otherwise.
-   * 
+   * Create <code>Derivative(0,...,n,...,0)[header][args]</code> for the <code>n</code>-th derivative
+   * with respect to <code>x</code>, if <code>x</code> is exactly one of the arguments in
+   * <code>args</code> and all other arguments are free of <code>x</code>. Return {@link F#NIL}
+   * otherwise - an argument depending on <code>x</code> would need the chain rule, which has no
+   * closed form for a symbolic order.
+   *
    * @param header
    * @param args
    * @param x
-   * @param n
+   * @param n the symbolic order
    * @return
    */
   private static IAST createDerivativeN(final IExpr header, final IAST args, IExpr x, IExpr n) {
@@ -324,7 +334,7 @@ public class D extends AbstractFunctionOptionEvaluator {
     IASTAppendable derivativeHead1 = F.ast(S.Derivative, size);
     boolean evaled = false;
     for (int i = 1; i < size; i++) {
-      if (args.get(i).equals(x)) {
+      if (args.get(i).equals(x) && !evaled) {
         derivativeHead1.append(n);
         evaled = true;
       } else if (args.get(i).isFree(x)) {
@@ -341,6 +351,40 @@ public class D extends AbstractFunctionOptionEvaluator {
       return derivativeAST;
     }
     return F.NIL;
+  }
+
+  /**
+   * Test if <code>head(args...)</code> is a function whose partial derivatives can be written as
+   * <code>Derivative(...)[head][args...]</code>: a symbol, or a compound head like
+   * <code>f(a)</code> which doesn't depend on <code>x</code>.
+   *
+   * @param head
+   * @param x the differentiation variable
+   * @return
+   */
+  private static boolean isFunctionHead(IExpr head, IExpr x) {
+    if (head.isSymbol()) {
+      return true;
+    }
+    // D(f(a)[x], x) -> Derivative(1)[f(a)][x]; an operator Derivative(n)[f] applied to the wrong
+    // number of arguments stays unevaluated
+    return head.isAST() && !head.head().isAST(S.Derivative) && head.isFree(x, true);
+  }
+
+  /**
+   * Test if the <code>n</code>-th derivative of a function with this head can be written as
+   * <code>Derivative(..., n, ...)[head][...]</code> for a symbolic order <code>n</code>: a user
+   * defined function symbol or a built-in numeric function. Structural built-ins like
+   * <code>Piecewise</code> or <code>Integrate</code> are excluded.
+   *
+   * @param head
+   * @return
+   */
+  private static boolean isSymbolicOrderHead(IExpr head) {
+    if (!head.isSymbol() || head == S.Plus || head == S.Times || head == S.Power) {
+      return false;
+    }
+    return !head.isBuiltInSymbol() || ((ISymbol) head).hasNumericFunctionAttribute();
   }
 
   private static IAST addDerivative(final int pos, IAST deriveHead, final IExpr header,
@@ -373,10 +417,14 @@ public class D extends AbstractFunctionOptionEvaluator {
     }
 
     IASTAppendable dAST = ast.copyUntil(argSize + 1);
-    dAST.copyFlagsFrom(ast, Flag.IS_DERIVATIVE_EVALED);
     IExpr nonConstants = options.length > 0 && options[0] != null ? options[0] : F.CEmptyList;
     IAST nonConstantsList = normalizeNonConstants(nonConstants);
     if (nonConstantsList.isEmpty()) {
+      // the down rules of D only saw the expression with the options; give them the plain form
+      IExpr ruleResult = S.D.evalDownRule(engine, dAST);
+      if (ruleResult.isPresent()) {
+        return ruleResult;
+      }
       return evaluateD(dAST, engine);
     }
     return nonConstantsD(dAST, nonConstantsList, ast, engine);
@@ -435,6 +483,11 @@ public class D extends AbstractFunctionOptionEvaluator {
         return Errors.printMessage(ast.topHead(), "ivar", F.list(x), engine);
       }
 
+      if (fx.isAST() && fx.head().isAST(S.Inactive, 2) && fx.head().first() == S.Integrate
+          && fx.argSize() >= 2 && isDerivativeVariable(x)) {
+        return inactiveIntegrate((IAST) fx, x, engine);
+      }
+
       if (fx.isList()) {
         IAST list = (IAST) fx;
         // thread over first list
@@ -475,9 +528,6 @@ public class D extends AbstractFunctionOptionEvaluator {
           IAST subList = (IAST) xList.arg1();
           return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluateNIL(F.D(a, b)), fx);
         } else if (xList.isAST2()) {
-          if (ast.hasFlag(Flag.IS_DERIVATIVE_EVALED)) {
-            return F.NIL;
-          }
           IExpr xListN = xList.arg2();
           if (xList.arg1().isList()) {
             x = F.list(xList.arg1());
@@ -511,12 +561,7 @@ public class D extends AbstractFunctionOptionEvaluator {
               if (numberOfTerms > Config.MAX_AST_SIZE || numberOfTerms >= Integer.MAX_VALUE) {
                 throw new ASTElementLimitExceeded(numberOfTerms);
               }
-              IExpr result =
-                  DLeibnitzRule.nThDerivative(timesAST, x, n, (int) numberOfTerms, engine);
-              // IExpr result = generalizedProductRule((IAST) fx, x, n, engine);
-              // if (!result.isNIL()) {
-              return result;
-              // }
+              return DLeibnitzRule.nThDerivative(timesAST, x, n, (int) numberOfTerms, engine);
             }
             if (n >= 2 && fx.isAST1() && fx.head().isSymbol() && !fx.first().isFree(x, true)) {
               IExpr head = fx.head();
@@ -565,13 +610,28 @@ public class D extends AbstractFunctionOptionEvaluator {
               IAST timesAST = (IAST) fx;
               final IExpr v = x;
               IASTAppendable[] filter = timesAST.filter(m -> m.isFree(v));
-              if (filter[0].size() > 0) {
-                return F.Times(filter[0], F.D(filter[1], xList));
+              if (filter[0].argSize() > 0) {
+                return F.Times(filter[0], F.D(filter[1].oneIdentity1(), xList));
               }
             }
             if (fx.isPower() && fx.base().isE() && fx.exponent().equals(x)) {
               // D(E^x, x) -> E^x
               return F.Power(S.E, x);
+            }
+            if (arg2.isSymbol()) {
+              // D(Sin(x)*Cos(x), {x, n}) -> 2^(-1+n)*Sin(2*x+1/2*n*Pi)
+              IExpr closedForm = DSymbolicOrder.nThDerivative(fx, x, arg2, engine);
+              if (closedForm.isPresent()) {
+                return closedForm;
+              }
+            }
+            if (fx.isTimes()) {
+              return F.NIL;
+            }
+            if (arg2.isSymbol() && fx.isAST() && isSymbolicOrderHead(fx.head())) {
+              // D(f(a, x, b), {x, n}) -> Derivative(0, n, 0)[f][a, x, b]; like in Mathematica a
+              // compound order like n-1 stays unevaluated
+              return createDerivativeN(fx.head(), (IAST) fx, x, arg2);
             }
             return F.NIL;
           }
@@ -642,12 +702,6 @@ public class D extends AbstractFunctionOptionEvaluator {
       return freeOfX(functionOfX, engine);
     }
 
-    if (functionOfX.isNumber()) {
-      // D[x_?NumberQ,y_] -> 0
-      engine.addTraceStep(() -> F.D(functionOfX, x), F.C0,
-          F.List(S.D, F.$str("ConstantRule"), F.C0));
-      return F.C0;
-    }
     if (functionOfX.equals(x)) {
       // D[x_,x_] -> 1
       engine.addTraceStep(() -> F.D(functionOfX, x), F.C1,
@@ -672,13 +726,7 @@ public class D extends AbstractFunctionOptionEvaluator {
             return engine.addEvaluatedTraceStep(ast, plusResult, "PlusRule");
 
           case ID.Times:
-            if (function.argSize() > 4) {
-              // Apply Logarithmic Differentiation for products with 5 or more terms
-              // to prevent combinatorial AST explosion of the standard product rule.
-              IExpr logDeriv = logarithmicDerivative(function, x, engine);
-              return engine.addEvaluatedTraceStep(F.D(function, x), logDeriv, S.D,
-                  F.$str("LogarithmicDerivativeRule"));
-            }
+            // the product rule builds n products of n factors, it never expands them
             IExpr result =
                 function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
             return engine.addEvaluatedTraceStep(F.D(function, x), result, S.D, F.$str("MulRule"));
@@ -713,15 +761,18 @@ public class D extends AbstractFunctionOptionEvaluator {
             break;
 
           case ID.Integrate:
-            if (function.argSize() == 2 && function.second().isList3()
-                && function.second().getAt(3).equals(x)) {
-              // D(Integrate(f(t), {t, a, x}),x) -> f(x)
-              // https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus#First_part
-              IAST list = (IAST) function.second();
-              IExpr t = list.arg1();
-              if (t.isFree(x, true) && list.arg2().isFree(x, true) && list.arg2().isFree(t, true)) {
-                return F.subst(function.arg1(), arg -> arg.equals(t) ? x : F.NIL);
+            if (function.argSize() >= 2) {
+              IExpr integrateResult = integrate(function, x, engine);
+              if (integrateResult.isPresent()) {
+                return integrateResult;
               }
+              return F.NIL;
+            }
+            break;
+
+          case ID.Sum:
+            if (function.argSize() >= 2) {
+              return sum(function, x, engine);
             }
             break;
 
@@ -754,39 +805,133 @@ public class D extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      // Fallback for AST1 and other derivatives
-      if (function.isAST1() && ast.hasNoFlag(Flag.IS_DERIVATIVE_EVALED)) {
-        IAST[] derivStruct = function.isDerivativeAST1();
-        if (derivStruct != null && derivStruct[2] != null) {
-          IAST headAST = derivStruct[1];
-          IAST a1Head = derivStruct[0];
-          if (a1Head.isAST1() && a1Head.arg1().isInteger()) {
-            try {
-              int n = ((IInteger) a1Head.arg1()).toInt();
-              IExpr arg1 = function.arg1();
-              if (n > 0) {
-                IAST fDerivParam = Derivative.createDerivative(n + 1, headAST.arg1(), arg1);
-                if (x.equals(arg1)) {
-                  return fDerivParam;
-                }
-                return F.Times(F.D(arg1, x), fDerivParam);
-              }
-            } catch (ArithmeticException ae) {
-
-            }
-          }
-          return F.NIL;
-        }
-        if (function.head().isSymbol()) {
-          return chainRuleArg1(function, x, engine);
-        }
-        return F.NIL;
+      if (function.isAST1() && isFunctionHead(function.head(), x)) {
+        return chainRuleArg1(function, x, engine);
       }
-      if (ast.hasNoFlag(Flag.IS_DERIVATIVE_EVALED)) {
-        return getDerivativeArgN(x, function, function.head(), engine);
-      }
+      // the chain rule for f(a1, a2, ...) and Derivative(n1, n2, ...)[f][a1, a2, ...]
+      return getDerivativeArgN(x, function, function.head(), engine);
     }
     return F.NIL;
+  }
+
+  /**
+   * Differentiate the inert <code>Inactive(Integrate)(f, ...)</code> by the same rules as the active
+   * integral, keeping every integral which is left inert:
+   * <code>D(Inactive(Integrate)(f(t), {t, 1, y(x)}), x) == f(y(x))*y'(x)</code> and
+   * <code>D(Inactive(Integrate)(f(t, x), {t, a, b}), x) ==
+   * Inactive(Integrate)(D(f(t, x), x), {t, a, b})</code>, as in Mathematica. Without this the
+   * general rule for a compound head took the iterator list for an argument.
+   *
+   * @return the derivative, or the unevaluated <code>D</code> ({@link F#NIL}) for an iterator the
+   *         rule does not cover
+   */
+  private static IExpr inactiveIntegrate(final IAST inactive, final IExpr x, EvalEngine engine) {
+    if (inactive.isFree(x, true)) {
+      return F.C0;
+    }
+    IExpr active = integrate(inactive.setAtCopy(0, S.Integrate), x, engine);
+    if (active.isNIL()) {
+      return F.NIL;
+    }
+    // the integrals the rule builds are active ones; they must not be evaluated
+    final IExpr inactiveHead = inactive.head();
+    if (active.isAST(S.Integrate)) {
+      return ((IAST) active).setAtCopy(0, inactiveHead);
+    }
+    if (active.isPlus()) {
+      return ((IAST) active).map(term -> term.isAST(S.Integrate)
+          ? ((IAST) term).setAtCopy(0, inactiveHead)
+          : F.NIL);
+    }
+    return active;
+  }
+
+  /**
+   * Differentiate <code>Integrate(f, {t, a, b})</code> or <code>Integrate(f, t)</code> with respect
+   * to <code>x</code> by the Leibniz integral rule:
+   *
+   * <pre>
+   * D(Integrate(f, {t, a, b}), x) = f(t = b)*D(b, x) - f(t = a)*D(a, x) + Integrate(D(f, x), {t, a, b})
+   * </pre>
+   *
+   * <p>
+   * <code>Integrate</code> holds its arguments, so the derivative of the integrand is evaluated
+   * before it is put back under the integral sign.
+   *
+   * @param integrate an <code>Integrate(...)</code> expression which isn't free of <code>x</code>
+   * @param x the differentiation variable
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} for an unsupported iterator
+   */
+  private static IExpr integrate(final IAST integrate, final IExpr x, EvalEngine engine) {
+    final IExpr f = integrate.arg1();
+    if (integrate.argSize() > 2) {
+      // several iterators: only differentiate under the integral sign
+      for (int i = 2; i < integrate.size(); i++) {
+        if (!integrate.get(i).isFree(x, true)) {
+          return F.NIL;
+        }
+      }
+      return integrate.setAtCopy(1, engine.evaluate(F.D(f, x)));
+    }
+    final IExpr iterator = integrate.arg2();
+    if (iterator.isVariable()) {
+      if (iterator.equals(x)) {
+        // D(Integrate(f, x), x) -> f
+        return f;
+      }
+      return F.Integrate(engine.evaluate(F.D(f, x)), iterator);
+    }
+    // the bound variable may be an indexed one like DSolve's K(1)
+    if (!iterator.isList3() || !isDerivativeVariable(iterator.first())) {
+      return F.NIL;
+    }
+    final IAST list = (IAST) iterator;
+    final IExpr t = list.arg1();
+    final IExpr lower = list.arg2();
+    final IExpr upper = list.arg3();
+    if (t.equals(x)) {
+      // the integration variable is bound, the value doesn't depend on it
+      return lower.isFree(x, true) && upper.isFree(x, true) ? F.C0 : F.NIL;
+    }
+    if (!lower.isFree(t, true) || !upper.isFree(t, true)) {
+      return F.NIL;
+    }
+    IASTAppendable plus = F.PlusAlloc(3);
+    if (!upper.isFree(x, true)) {
+      plus.append(F.Times(F.subst(f, arg -> arg.equals(t) ? upper : F.NIL), F.D(upper, x)));
+    }
+    if (!lower.isFree(x, true)) {
+      plus.append(
+          F.Times(F.CN1, F.subst(f, arg -> arg.equals(t) ? lower : F.NIL), F.D(lower, x)));
+    }
+    if (!f.isFree(x, true)) {
+      plus.append(F.Integrate(engine.evaluate(F.D(f, x)), list));
+    }
+    return plus.oneIdentity0();
+  }
+
+  /**
+   * Differentiate <code>Sum(f, iterators...)</code> with respect to <code>x</code>, if all
+   * iterators are free of <code>x</code>:
+   *
+   * <pre>
+   * D(Sum(f, {k, a, b}), x) = Sum(D(f, x), {k, a, b})
+   * </pre>
+   *
+   * @param sum a <code>Sum(...)</code> expression
+   * @param x the differentiation variable
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if an iterator depends on <code>x</code>
+   */
+  private static IExpr sum(final IAST sum, final IExpr x, EvalEngine engine) {
+    for (int i = 2; i < sum.size(); i++) {
+      if (!sum.get(i).isFree(x, true)) {
+        return F.NIL;
+      }
+    }
+    // Sum holds its arguments, so the summand is evaluated here
+    return sum.setAtCopy(1, engine.evaluate(F.D(sum.arg1(), x)));
   }
 
   /**
@@ -845,58 +990,6 @@ public class D extends AbstractFunctionOptionEvaluator {
       return F.SymbolicZerosArray(dimensions);
     }
     return F.NIL;
-  }
-
-  /**
-   * Applies Logarithmic Differentiation: D(y, x) = y * D(Log(y), x). This avoids the combinatorial
-   * AST explosion of the standard product rule for large multiplications and powers, keeping the
-   * result strictly factored.
-   * 
-   * @param timesAST the product expression to differentiate
-   * @param x the variable of differentiation
-   * @param engine the evaluation engine
-   * @return the logarithmically differentiated expression
-   */
-  private static IExpr logarithmicDerivative(final IAST timesAST, IExpr x, EvalEngine engine) {
-    IASTAppendable sum = F.PlusAlloc(timesAST.argSize());
-    IASTAppendable constants = F.TimesAlloc(timesAST.argSize());
-    IASTAppendable variables = F.TimesAlloc(timesAST.argSize());
-
-    for (int i = 1; i <= timesAST.argSize(); i++) {
-      IExpr fi = timesAST.get(i);
-      if (fi.isFree(x)) {
-        constants.append(fi);
-      } else {
-        variables.append(fi);
-
-        // Fast path for nested powers to prevent unnecessary expansion
-        if (fi.isPower()) {
-          IExpr base = fi.base();
-          IExpr exp = fi.exponent();
-          if (exp.isFree(x)) {
-            sum.append(F.Times(exp, F.D(base, x), F.Power(base, F.CN1)));
-          } else {
-            sum.append(F.Plus(F.Times(exp, F.D(base, x), F.Power(base, F.CN1)),
-                F.Times(F.D(exp, x), F.Log(base))));
-          }
-        } else {
-          // General case: f' / f
-          sum.append(F.Times(F.D(fi, x), F.Power(fi, F.CN1)));
-        }
-      }
-    }
-
-    if (variables.argSize() == 0) {
-      return F.C0;
-    }
-
-    IExpr y = engine.evaluate(variables);
-    IExpr dy = engine.evaluate(F.Expand(F.Times(y, sum)));
-
-    if (constants.argSize() > 0) {
-      return engine.evaluate(F.Times(constants, dy));
-    }
-    return dy;
   }
 
   private static IExpr power(final IAST function, IExpr x, EvalEngine engine) {
@@ -1002,6 +1095,10 @@ public class D extends AbstractFunctionOptionEvaluator {
     if (condition.isFree(x, true)) {
       return condition;
     }
+    if (condition.isAST(S.Equal)) {
+      // a point of the differentiation variable has no interior
+      return S.False;
+    }
     if (condition.isAST(S.LessEqual)) {
       return ((IAST) condition).apply(S.Less);
     }
@@ -1039,15 +1136,27 @@ public class D extends AbstractFunctionOptionEvaluator {
 
     IAST list = (IAST) piecewiseFunction.arg1();
     if (list.size() > 1) {
-      IASTAppendable pwResult = F.ListAlloc(list.size());
+      IASTAppendable pwResult = F.ListAlloc(list.size() + 1);
+      IASTAppendable conditions = F.ast(S.Or, list.size());
       for (int i = 1; i < list.size(); i++) {
         IASTMutable piecewiseD = ast.copy();
         piecewiseD.set(1, list.get(i).first());
         pwResult.append(F.list(piecewiseD, openCondition(list.get(i).second(), x)));
+        conditions.append(list.get(i).second());
       }
-      // The opened conditions leave exactly the transition points to the default value, and there
-      // the derivative doesn't exist - so the default becomes Indeterminate and the derivative of
-      // the original default value isn't carried over.
+      // The default value holds where no condition is true. Where that region has an interior,
+      // the derivative of the default value applies; the transition points which remain
+      // uncovered get the default Indeterminate, because there the derivative doesn't exist.
+      IExpr defaultValue = piecewiseFunction.argSize() > 1 ? piecewiseFunction.arg2() : F.C0;
+      IExpr complement = engine.evaluate(F.Not(conditions));
+      if (!complement.isFalse() && complement.isFree(S.Not, true)) {
+        IExpr openedComplement = engine.evaluate(openCondition(complement, x));
+        if (!openedComplement.isFalse()) {
+          IASTMutable defaultD = ast.copy();
+          defaultD.set(1, defaultValue);
+          pwResult.append(F.list(defaultD, openedComplement));
+        }
+      }
       return F.Piecewise(pwResult, S.Indeterminate);
     }
     return F.NIL;

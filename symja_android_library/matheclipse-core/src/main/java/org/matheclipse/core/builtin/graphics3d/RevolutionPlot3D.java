@@ -1,6 +1,6 @@
 package org.matheclipse.core.builtin.graphics3d;
 
-import java.util.ArrayList;
+import org.matheclipse.core.builtin.graphics.PlotEndpoints;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -33,6 +33,10 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    if (PlotEndpoints.degenerate(S.ParametricPlot3D, ast, 2, 3, false, engine)) {
+      // a sweep over nothing: RevolutionPlot3D is a ParametricPlot3D inside, and gives up
+      return S.$Failed;
+    }
     // a display wrapper comes off before the argument's shape is read, so a labelled dataset is
     // still recognised as a dataset; Plot3DTools.graphics3D puts the label back on the finished
     // primitives, reading it from the original call
@@ -62,20 +66,12 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
 
     double[] axis = revolutionAxis(options[Plot3DTools.X_REVOLUTION_AXIS]);
 
-    List<IExpr> functions = new ArrayList<>();
     IExpr funcExpr = ast.arg1();
-    if (funcExpr.isList()) {
-      IAST listArg = (IAST) funcExpr;
-      if (listArg.argSize() > 0 && listArg.arg1().isList()) {
-        for (int i = 1; i <= listArg.argSize(); i++) {
-          functions.add(listArg.get(i));
-        }
-      } else {
-        functions.add(listArg);
-      }
-    } else {
-      functions.add(funcExpr);
-    }
+    // a list of lists is a list of surfaces, anything else is a single one
+    List<IExpr> functions =
+        funcExpr.isList() && ((IAST) funcExpr).argSize() > 0 && ((IAST) funcExpr).arg1().isList()
+            ? ((IAST) funcExpr).asArgsList()
+            : List.of(funcExpr);
 
     int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS], 40);
     PlotColorFunction.Builder colorBuilder = Plot3DTools

@@ -3,6 +3,7 @@ package org.matheclipse.core.graphics;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.awt.Color;
 import java.util.Locale;
@@ -100,6 +101,29 @@ public class ColorDirectiveTest {
         .getBlue(), "the last colour of a directive list is the one that applies");
   }
 
+  /**
+   * The channels packed into one list are the same colour as the channels spread out -
+   * {@code Table(RGBColor(RandomReal(1, 3)), ...)} produces the packed form. {@code Hue({h,s,b})}
+   * used to read its list as the hue alone and draw red whatever the list said.
+   */
+  @Test
+  public void testPackedChannelListsAreTheSameColour() {
+    String[][] pairs = {{"RGBColor({1,0,0})", "RGBColor(1,0,0)"},
+        {"RGBColor({1,0,0,0.5})", "RGBColor(1,0,0,0.5)"}, {"Hue({0.3,1,1})", "Hue(0.3,1,1)"},
+        {"Hue({0.3,0.5,0.5,0.25})", "Hue(0.3,0.5,0.5,0.25)"}, {"GrayLevel({0.5})", "GrayLevel(0.5)"},
+        {"GrayLevel({0.5,0.5})", "GrayLevel(0.5,0.5)"}, {"CMYKColor({0,1,1,0})", "CMYKColor(0,1,1,0)"},
+        {"XYZColor({0.4,0.2,0.1})", "XYZColor(0.4,0.2,0.1)"},
+        {"LABColor({0.5,0.1,-0.1})", "LABColor(0.5,0.1,-0.1)"}};
+    for (String[] pair : pairs) {
+      Color packed = ColorUtil.parse(eval(pair[0]));
+      assertNotNull(packed, pair[0] + " should be a colour");
+      assertEquals(ColorUtil.parse(eval(pair[1])), packed, pair[0] + " is " + pair[1]);
+      assertTrue(GraphicsOptions.isColorExpr(eval(pair[0])), pair[0] + " should be a colour");
+    }
+    assertEquals(new Color(0, 255, 0), ColorUtil.parse(eval("Hue({1/3,1,1})")),
+        "a packed hue of a third is green, not the red a misread list gave");
+  }
+
   @Test
   public void testTheTwoColourSpacesTheChemModuleAlreadyUsed() {
     assertTrue(GraphicsOptions.isColorExpr(eval("XYZColor(0.4, 0.2, 0.1)")));
@@ -193,14 +217,47 @@ public class ColorDirectiveTest {
 
   // ------------------------------------------------------------- ColorRules
 
-  /** A rule written with an integer has to match data that came back as a real. */
+  /**
+   * A rule names a value the way {@code Replace} names one, so an integer rule does not reach a
+   * real: {@code 1.0 /. 1 -> Red} leaves the real alone, and so does the option.
+   */
   @Test
-  public void testColorRulesMatchAcrossNumberTypes() {
+  public void testColorRulesUseReplaceSemantics() {
+    EvalEngine engine = EvalEngine.get();
     IAST rules = (IAST) eval("{1 -> Red, 2 -> Blue}");
-    assertNotNull(GraphicsOptions.colorRule(rules, F.C1), "1 should match the rule for 1");
-    assertNotNull(GraphicsOptions.colorRule(rules, F.num(1.0)),
-        "1.0 should match the rule written as 1");
-    assertNotNull(GraphicsOptions.colorRule(rules, F.num(2.0)));
-    org.junit.jupiter.api.Assertions.assertNull(GraphicsOptions.colorRule(rules, F.num(3.0)));
+    assertNotNull(GraphicsOptions.colorRule(rules, F.C1, engine), "1 matches the rule for 1");
+    assertNull(GraphicsOptions.colorRule(rules, F.num(1.0), engine),
+        "1.0 is not the integer the rule names");
+    assertNotNull(GraphicsOptions.colorRule((IAST) eval("{1.0 -> Red}"), F.num(1.0), engine),
+        "a rule written as a real matches a real");
+    assertNull(GraphicsOptions.colorRule(rules, F.C3, engine));
+  }
+
+  /** A pattern on the left names every value it matches, and the first rule written wins. */
+  @Test
+  public void testColorRulesMatchPatterns() {
+    EvalEngine engine = EvalEngine.get();
+    // eval resolves a named colour to its RGBColor, so the expectations are written the same way
+    IAST rules = (IAST) eval("{_?Positive -> Red, _Integer -> Blue}");
+    assertEquals(eval("Red"), GraphicsOptions.colorRule(rules, F.C1, engine));
+    assertEquals(eval("Blue"), GraphicsOptions.colorRule(rules, F.CN2, engine));
+    assertNull(GraphicsOptions.colorRule(rules, F.num(-0.5), engine));
+  }
+
+  /** A delayed rule computes its colour from the value it matched. */
+  @Test
+  public void testColorRulesEvaluateADelayedRightHandSide() {
+    EvalEngine engine = EvalEngine.get();
+    IAST rules = (IAST) eval("{x_ :> GrayLevel(x)}");
+    IExpr color = GraphicsOptions.colorRule(rules, F.num(0.25), engine);
+    assertNotNull(color);
+    assertEquals("GrayLevel(0.25)", color.toString());
+  }
+
+  /** A right hand side a renderer cannot draw is no rule at all - the colour scale still paints. */
+  @Test
+  public void testColorRulesIgnoreARightHandSideWhichIsNoColour() {
+    EvalEngine engine = EvalEngine.get();
+    assertNull(GraphicsOptions.colorRule((IAST) eval("{1 -> \"red\"}"), F.C1, engine));
   }
 }

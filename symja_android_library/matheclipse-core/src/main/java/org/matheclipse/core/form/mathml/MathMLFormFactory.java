@@ -134,14 +134,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   private static final class C extends AbstractConverter {
 
     /**
-     * Convert C(1) to <code><msub><mi>c</mi><mn>1</mn></msub></code>
+     * Convert C(1) to <code><msub><mi>c</mi><mn>1</mn></msub></code>, and C(n) to
+     * <code><msub><mi>c</mi><mi>n</mi></msub></code> alike
      *
      * @param buf StringBuilder for MathML output
      * @param f The math function which should be converted to MathML
      */
     @Override
     public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.isAST1() && f.head() == S.C && f.arg1().isInteger()) {
+      if (f.isAST1() && f.head() == S.C) {
         fFactory.tagStart(buf, "msub");
         buf.append("<mi>c</mi>");
         fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
@@ -447,10 +448,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
      */
     @Override
     public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-      if (f.size() != 2) {
+      if (f.size() < 2 || (!tableForm && f.size() != 2)) {
         return false;
       }
       IExpr arg1 = f.arg1();
+      if (!arg1.isList() && !arg1.isSparseArray()) {
+        // TableForm or MatrixForm of something which is no table displays it as it is
+        fFactory.convertInternal(buf, arg1, precedence, false);
+        return true;
+      }
       int[] dims = arg1.isMatrix();
       if (dims == null) {
         int dim = arg1.isVector();
@@ -1109,6 +1115,50 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
    * the picture layouts use, so a grid of expressions and a grid of graphics agree about what
    * <code>Dividers -&gt; {All, Center}</code> means.
    */
+  /**
+   * <code>Text(expr)</code> outside a picture is its contents: <code>Text@Grid(...)</code> is how a
+   * notebook sets a table as plain text, and writing the head round it printed the source.
+   */
+  private static final class Text extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() != 2) {
+        return false;
+      }
+      fFactory.convertInternal(buf, f.arg1(), precedence, false);
+      return true;
+    }
+  }
+
+  /** <code>Framed(expr)</code> - the expression in a box. */
+  private static final class Framed extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      fFactory.tagStart(buf, "menclose", "notation=\"box\"");
+      fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
+      fFactory.tagEnd(buf, "menclose");
+      return true;
+    }
+  }
+
+  /** <code>Pane(expr, ...)</code> - the expression; the size options belong to a notebook box. */
+  private static final class Pane extends AbstractConverter {
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      fFactory.convertInternal(buf, f.arg1(), precedence, false);
+      return true;
+    }
+  }
+
   private static final class Grid extends AbstractConverter {
 
     @Override
@@ -3409,6 +3459,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.Row, new Row());
     CONVERTERS.put(S.Column, new Column());
     CONVERTERS.put(S.Grid, new Grid());
+    CONVERTERS.put(S.Text, new Text());
+    CONVERTERS.put(S.Framed, new Framed());
+    CONVERTERS.put(S.Pane, new Pane());
     GraphicsInline graphicsInline = new GraphicsInline();
     CONVERTERS.put(S.Graphics, graphicsInline);
     // the layout heads draw themselves the same way, so a picture inside a Column or a Grid is a

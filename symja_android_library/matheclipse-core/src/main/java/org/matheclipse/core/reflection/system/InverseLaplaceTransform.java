@@ -121,6 +121,18 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
     IExpr s = ast.arg2();
     IExpr t = ast.arg3();
 
+    if (s.isList() && t.isList() && s.argSize() == t.argSize() && s.argSize() > 0) {
+      // InverseLaplaceTransform(f, {s1, s2}, {t1, t2}) is the transform in one variable at a time
+      IExpr result = f;
+      for (int i = 1; i <= s.argSize(); i++) {
+        result = engine.evaluate(F.InverseLaplaceTransform(result, s.getAt(i), t.getAt(i)));
+        if (result.has(S.InverseLaplaceTransform)) {
+          return F.NIL;
+        }
+      }
+      return result;
+    }
+
     if (!s.isSymbol()) {
       return F.NIL;
     }
@@ -493,6 +505,43 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
 
     int degD = dc.length - 1;
 
+    if (degD > 0 && nc.length - 1 >= degD) {
+      // An improper fraction, which Apart leaves whole when a coefficient is inexact:
+      // (2.0*s)/(3.0 + 2.0*s). The branches below read the numerator as having a lower degree than
+      // the denominator, and took the coefficient of s as the constant, which answered E^(-1.5*t)
+      // for s/(s + 1.5) instead of DiracDelta(t) - 1.5*E^(-1.5*t). Divide first - by hand, on the
+      // coefficients, since PolynomialQuotientRemainder does not take inexact ones.
+      int quotientLength = nc.length - degD;
+      IExpr[] rest = nc.clone();
+      IASTAppendable quotient = F.PlusAlloc(quotientLength);
+      for (int i = 0; i < quotientLength; i++) {
+        IExpr q = rest[i];
+        quotient.append(F.Times(q, F.Power(s, F.ZZ(quotientLength - 1 - i))));
+        for (int j = 0; j <= degD; j++) {
+          rest[i + j] = engine.evaluate(F.Subtract(rest[i + j], F.Times(q, dc[j])));
+        }
+      }
+      IASTAppendable remainder = F.PlusAlloc(degD);
+      IASTAppendable monic = F.PlusAlloc(degD + 1);
+      for (int k = 0; k < degD; k++) {
+        remainder.append(F.Times(rest[quotientLength + k], F.Power(s, F.ZZ(degD - 1 - k))));
+      }
+      for (int j = 0; j <= degD; j++) {
+        monic.append(F.Times(dc[j], F.Power(s, F.ZZ(degD - j))));
+      }
+      IExpr polynomialPart =
+          engine.evaluate(F.InverseLaplaceTransform(engine.evaluate(quotient), s, t));
+      IExpr remainderPolynomial = engine.evaluate(remainder);
+      IExpr properPart = remainderPolynomial.isZero() ? F.C0
+          : engine.evaluate(F.InverseLaplaceTransform(
+              F.Divide(remainderPolynomial, engine.evaluate(monic)), s, t));
+      if (polynomialPart.has(S.InverseLaplaceTransform)
+          || properPart.has(S.InverseLaplaceTransform)) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Plus(polynomialPart, properPart));
+    }
+
     // deg(D) == 0: polynomial in s => sum of DiracDelta derivatives
     if (degD == 0) {
       // nc are coefficients: nc[0]*s^N + nc[1]*s^(N-1) + ... + nc[N]
@@ -569,8 +618,80 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
       return engine.evaluate(r);
     }
 
-    // deg(D) >= 3: fall through, let the generic pipeline handle it
-    return F.NIL;
+    // deg(D) >= 3: a power of a quadratic, which Apart leaves as one term, or the generic pipeline
+    return powerOfQuadratic(num, den, s, t, engine);
+  }
+
+  /** The highest power of a quadratic denominator {@link #powerOfQuadratic} inverts. */
+  private static final int MAX_QUADRATIC_POWER = 8;
+
+  /**
+   * The inverse transform of <code>(l*s + m)/(c*Q^n)</code> for a quadratic <code>Q</code> in
+   * <code>s</code> with two distinct roots and <code>n &gt;= 2</code>, or {@link F#NIL}.
+   *
+   * <p>
+   * Written as <code>Q == alpha*((s + a)^2 + b2)</code>, the shift <code>a</code> is a factor
+   * <code>E^(-a*t)</code>, and for <code>g(n) == L^-1{1/(s^2 + b2)^n}</code> and
+   * <code>h(n) == L^-1{s/(s^2 + b2)^n}</code> differentiating in <code>s</code> gives
+   * <code>h(n+1) == t*g(n)/(2*n)</code>, while
+   * <code>1/(s^2+b2)^(n+1) == (1/(s^2+b2)^n - s*s/(s^2+b2)^(n+1))/b2</code> gives
+   * <code>g(n+1) == (g(n) - D(h(n+1), t))/b2</code>, as <code>h(n+1)</code> vanishes at 0. This is
+   * the term <code>1/(1+s^2)^2</code> a resonant forcing leaves, <code>(Sin(t) - t*Cos(t))/2</code>.
+   */
+  private static IExpr powerOfQuadratic(IExpr num, IExpr den, IExpr s, IExpr t,
+      EvalEngine engine) {
+    IExpr power = F.NIL;
+    IExpr constant = F.C1;
+    if (den.isPower()) {
+      power = den;
+    } else if (den.isTimes()) {
+      IAST times = (IAST) den;
+      int index = times.indexOf(x -> x.isPower() && !x.isFree(s));
+      if (index <= 0) {
+        return F.NIL;
+      }
+      power = times.get(index);
+      constant = times.removeAtCopy(index).oneIdentity1();
+      if (!constant.isFree(s)) {
+        return F.NIL;
+      }
+    }
+    if (power.isNIL() || !power.exponent().isInteger()) {
+      return F.NIL;
+    }
+    int n = power.exponent().toIntDefault();
+    if (n < 2 || n > MAX_QUADRATIC_POWER) {
+      return F.NIL;
+    }
+    IExpr[] qc = polynomialCoeffsDescending(power.base(), s, engine);
+    IExpr[] nc = polynomialCoeffsDescending(num, s, engine);
+    if (qc == null || qc.length != 3 || nc == null || nc.length > 2) {
+      return F.NIL;
+    }
+    IExpr alpha = qc[0];
+    IExpr a = engine.evaluate(F.Divide(qc[1], F.Times(F.C2, alpha)));
+    IExpr b2 = engine.evaluate(F.Subtract(F.Divide(qc[2], alpha), F.Sqr(a)));
+    if (b2.isZero() || !b2.isRealResult()) {
+      return F.NIL;
+    }
+    boolean hyperbolic = b2.isNegativeResult();
+    if (!hyperbolic && !b2.isPositiveResult()) {
+      return F.NIL;
+    }
+    IExpr b = engine.evaluate(F.PowerExpand(F.Sqrt(hyperbolic ? F.Negate(b2) : b2)));
+    IExpr g = hyperbolic ? F.Divide(F.Sinh(F.Times(b, t)), b)
+        : F.Divide(F.Sin(F.Times(b, t)), b);
+    IExpr h = F.NIL;
+    for (int k = 1; k < n; k++) {
+      h = engine.evaluate(F.Divide(F.Times(t, g), F.ZZ(2 * k)));
+      g = engine.evaluate(F.Expand(F.Divide(F.Subtract(g, F.D(h, t)), b2)));
+    }
+    IExpr l = nc.length == 2 ? nc[0] : F.C0;
+    IExpr m = nc.length == 2 ? nc[1] : nc[0];
+    // l*s + m == l*(s + a) + (m - a*l)
+    IExpr body = F.Plus(F.Times(l, h), F.Times(F.Subtract(m, F.Times(a, l)), g));
+    return engine.evaluate(F.Expand(F.Divide(F.Times(F.Exp(F.Times(F.CN1, a, t)), body),
+        F.Times(constant, F.Power(alpha, F.ZZ(n))))));
   }
 
   // =====================================================================
@@ -618,10 +739,85 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
           return engine.evaluate(F.Divide(
               F.Times(F.Power(t, F.Subtract(c, F.C1)), F.Exp(F.Times(F.CN1, a, t))), F.Gamma(c)));
         }
+        // base = k*s + d == k*(s + d/k), with k free of s: 1/Sqrt(1 + p*q) in p
+        IExpr k = engine.evaluate(F.Coefficient(base, s, F.C1));
+        IExpr d = engine.evaluate(F.Subtract(base, F.Times(k, s)));
+        if (!k.isZero() && !k.isOne() && k.isFree(s) && d.isFree(s)) {
+          IExpr c = engine.evaluate(F.Negate(exp));
+          IExpr shift = engine.evaluate(F.Divide(d, k));
+          return engine.evaluate(F.Times(F.Power(k, exp), F.Divide(
+              F.Times(F.Power(t, F.Subtract(c, F.C1)), F.Exp(F.Times(F.CN1, shift, t))),
+              F.Gamma(c))));
+        }
       }
     }
 
-    return F.NIL;
+    IExpr bessel = inverseOfSqrtQuadratic(f, s, t, engine);
+    if (bessel.isPresent()) {
+      return bessel;
+    }
+    return inverseOfExponentialOfReciprocal(f, s, t, engine);
+  }
+
+  /**
+   * <code>L^-1{1/Sqrt(alpha*((s+b)^2 + c))} == E^(-b*t)*BesselJ(0, Sqrt(c)*t)/Sqrt(alpha)</code>,
+   * written with <code>BesselI(0, Sqrt(-c)*t)</code> when <code>c</code> is negative, or
+   * {@link F#NIL}.
+   */
+  private static IExpr inverseOfSqrtQuadratic(IExpr f, IExpr s, IExpr t, EvalEngine engine) {
+    if (!f.isPower() || !f.exponent().equals(F.CN1D2)) {
+      return F.NIL;
+    }
+    IExpr[] qc = polynomialCoeffsDescending(f.base(), s, engine);
+    if (qc == null || qc.length != 3) {
+      return F.NIL;
+    }
+    IExpr alpha = qc[0];
+    IExpr b = engine.evaluate(F.Divide(qc[1], F.Times(F.C2, alpha)));
+    IExpr c = engine.evaluate(F.Subtract(F.Divide(qc[2], alpha), F.Sqr(b)));
+    if (c.isZero()) {
+      return F.NIL;
+    }
+    IExpr negated = engine.evaluate(F.Negate(c));
+    boolean modified = c.isNegativeResult() || (c.isTimes() && c.first().isNegative());
+    IExpr root = engine.evaluate(F.PowerExpand(F.Sqrt(modified ? negated : c)));
+    IExpr function = modified ? F.BesselI(F.C0, F.Times(root, t)) : F.BesselJ(F.C0, F.Times(root, t));
+    return engine.evaluate(
+        F.Divide(F.Times(F.Exp(F.Times(F.CN1, b, t)), function), F.Sqrt(alpha)));
+  }
+
+  /**
+   * <code>L^-1{s^(-nu)*E^(-k/s)} == (t/k)^((nu-1)/2)*BesselJ(nu-1, 2*Sqrt(k*t))</code> for
+   * <code>nu &gt; 0</code>, or {@link F#NIL}. The inverse of <code>1/(1 + p*q)</code> in
+   * <code>p</code> is <code>E^(-x/q)/q</code>, whose inverse in <code>q</code> this is.
+   */
+  private static IExpr inverseOfExponentialOfReciprocal(IExpr f, IExpr s, IExpr t,
+      EvalEngine engine) {
+    IAST factors = f.isTimes() ? (IAST) f : F.Times(f);
+    IExpr k = F.NIL;
+    IExpr nu = F.C0;
+    for (int i = 1; i <= factors.argSize(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isExp() && k.isNIL()) {
+        IExpr reciprocal = engine.evaluate(F.Negate(F.Times(factor.exponent(), s)));
+        if (!reciprocal.isFree(s)) {
+          return F.NIL;
+        }
+        k = reciprocal;
+      } else if (factor.equals(s)) {
+        nu = engine.evaluate(F.Subtract(nu, F.C1));
+      } else if (factor.isPower() && factor.base().equals(s) && factor.exponent().isFree(s)) {
+        nu = engine.evaluate(F.Subtract(nu, factor.exponent()));
+      } else {
+        return F.NIL;
+      }
+    }
+    if (k.isNIL() || k.isZero() || !engine.evaluate(F.Greater(nu, F.C0)).isTrue()) {
+      return F.NIL;
+    }
+    IExpr order = engine.evaluate(F.Subtract(nu, F.C1));
+    return engine.evaluate(F.Times(F.Power(F.Divide(t, k), F.Divide(order, F.C2)),
+        F.BesselJ(order, F.Times(F.C2, F.Sqrt(F.Times(k, t))))));
   }
 
   /**

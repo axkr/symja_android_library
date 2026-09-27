@@ -4,6 +4,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -36,6 +38,13 @@ public final class SolveOptions {
    */
   static final IExpr[] SOLVE_DEFAULTS =
       new IExpr[] {S.Automatic, S.True, S.Automatic, F.C0, F.C1000, F.C0};
+
+  /** The option keys of {@link S#Eliminate}. */
+  public static final IBuiltInSymbol[] ELIMINATE_KEYS =
+      new IBuiltInSymbol[] {S.InverseFunctions, S.WorkingPrecision};
+
+  /** The option defaults of {@link S#Eliminate}. */
+  static final IExpr[] ELIMINATE_DEFAULTS = new IExpr[] {S.Automatic, S.Automatic};
 
   /** The option keys of {@link S#NSolve} and {@link S#NSolveValues}. */
   static final IBuiltInSymbol[] NSOLVE_KEYS =
@@ -163,6 +172,25 @@ public final class SolveOptions {
       }
     }
     return undeclared;
+  }
+
+  /**
+   * The options of a {@code Reduce} call which change what an internal {@code Reduce} of a sub
+   * problem returns, as a list of rules. Only values which differ from the {@code Reduce} defaults
+   * are listed; the other options are applied to the final result.
+   */
+  public IAST reduceRecursionRules() {
+    IASTAppendable rules = F.ListAlloc(3);
+    if (!cubics.isFalse()) {
+      rules.append(F.Rule(S.Cubics, cubics));
+    }
+    if (!quartics.isFalse()) {
+      rules.append(F.Rule(S.Quartics, quartics));
+    }
+    if (!backsubstitution.isFalse()) {
+      rules.append(F.Rule(S.Backsubstitution, backsubstitution));
+    }
+    return rules;
   }
 
   /** The value of the {@link S#GenerateConditions} option. */

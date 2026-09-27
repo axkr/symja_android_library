@@ -41,6 +41,10 @@ public class MD2Symja {
     // symbols but not their evaluators, so without this call they stay unevaluated and the Graph3D
     // blocks in graphics3Dtest.md print as text instead of drawing a picture.
     GraphTheoryInit.init();
+
+    // initialize from module matheclipse-jsgraphics: the JSXGraph, ECharts and MathCell examples,
+    // and the iframe pages every JSFormData result is shown in
+    org.matheclipse.jsgraphics.JSGraphicsInit.init();
   }
 
   public static String generateHTMLString(final String markdownStr) {

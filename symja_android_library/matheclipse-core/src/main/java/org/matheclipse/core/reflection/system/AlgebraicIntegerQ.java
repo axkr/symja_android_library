@@ -8,7 +8,10 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.AlgebraicNumberField;
+import org.matheclipse.core.numbertheory.NumberFieldUtils;
 
 /**
  * AlgebraicIntegerQ(x)
@@ -35,6 +38,20 @@ public class AlgebraicIntegerQ extends AbstractFunctionEvaluator {
       // For complex numbers with rational parts (a + bi), it is an algebraic integer
       // if and only if both real and imaginary parts are integers (Gaussian integers).
       return F.booleSymbol(c.re().isInteger() && c.im().isInteger());
+    }
+
+    if (AlgebraicNumberField.isObject(arg1) || !arg1.isFree(x -> x.isAST(S.Root), true)) {
+      // an algebraic integer has a monic minimal polynomial with integer coefficients
+      IRational[] monic = NumberFieldUtils.minimalPolynomialCoefficients(arg1, engine);
+      if (monic == null) {
+        return F.NIL;
+      }
+      for (IRational c : monic) {
+        if (!c.isInteger()) {
+          return S.False;
+        }
+      }
+      return S.True;
     }
 
     // Algebraic integers are exact. If the expression contains any inexact numbers,

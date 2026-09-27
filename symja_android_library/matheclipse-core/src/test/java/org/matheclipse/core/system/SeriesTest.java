@@ -858,7 +858,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Series(Sin(z) - z, {z, 0, 5}) // InputForm", //
         "SeriesData(z,0,{-1/6,0,1/120},3,6,1)");
 
-    // Check the raw inversion of the inner argument (Tests the probeLimit loop!)
+    // Check the raw inversion of the inner argument
     check("Series(1 / (Sin(z) - z), {z, 0, 1})// InputForm", //
         "SeriesData(z,0,{-6,0,-3/10,0,-11/1400},-3,2,1)");
 
@@ -2006,8 +2006,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   /**
    * A product containing a power series multiplies through it. A factor which the Puiseux shift
-   * cannot express is expanded into a series of its own instead of being kept beside the series, and
-   * a bare <code>O()</code> term shifts rather than losing its order.
+   * cannot express is expanded into a series of its own instead of being kept beside the series,
+   * and a bare <code>O()</code> term shifts rather than losing its order.
    */
   @Test
   public void testTimesSeries() {

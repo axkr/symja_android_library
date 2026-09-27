@@ -7,13 +7,15 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
-import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.IntervalMarkerType;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -62,21 +64,25 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       int cols = ((IAST) firstRow).argSize();
       // three columns of numbers are {x, y, z} triples. DataRange used to be part of this test,
       // so giving it silently reinterpreted a coordinate list as a rectangular height array.
-      if (cols == 3 && ((IAST) firstRow).forAll(x -> x.isNumber())) {
+      // the height may be uncertain (Around, Interval, IntervalData), the position may not
+      IAST triple = (IAST) firstRow;
+      if (cols == 3 && triple.arg1().isNumber() && triple.arg2().isNumber()
+          && (triple.arg3().isNumber() || UncertainValue.isUncertain(triple.arg3()))) {
         treatAsCoordinates = true;
       }
     }
 
     if (treatAsCoordinates) {
       return processCoordinateList(listData, boxRatiosOpt, plotRangeOpt, meshOpt, plotStyleOpt,
-          originalAST, argSize,
-          RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine));
+          options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
+          RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine), Plot3DTools
+              .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D, engine));
     } else {
       if (isRectangularArray(listData)) {
         // InterpolationOrder 2 or more: the data is a smooth surface through the samples, drawn
-        // on a finer grid over the same range, as the Wolfram Language draws it
-        IAST refined =
-            refine(listData, options[Plot3DTools.indexOf(Plot3DTools.listPlot(), S.InterpolationOrder)]);
+        // on a finer grid over the same range.
+        IAST refined = refine(listData,
+            options[Plot3DTools.indexOf(Plot3DTools.listPlot(), S.InterpolationOrder)]);
         if (refined != listData) {
           if (!dataRangeOpt.isList()) {
             int cols = ((IAST) listData.arg1()).argSize();
@@ -87,9 +93,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         return processHeightMap(listData, dataRangeOpt, boxRatiosOpt, plotRangeOpt, meshOpt,
             plotStyleOpt, options[Plot3DTools.X_MESH_STYLE], originalAST, argSize,
             RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine),
-            options[Plot3DTools.X_BOUNDARY_STYLE],
-            Plot3DTools.plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D,
-                engine));
+            options[Plot3DTools.X_BOUNDARY_STYLE], Plot3DTools
+                .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.ListPlot3D, engine));
       }
     }
 
@@ -147,19 +152,25 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
   /**
    * Processes a list of {x,y,z} coordinates using Delaunay Triangulation.
+   *
+   * <p>
+   * The scattered points are coloured and meshed as the height array is: the same
+   * <code>ColorFunction</code> colours each vertex by its position, and <code>Mesh</code> draws the
+   * edges of the triangles the points were joined into, since a triangulation has no grid lines
+   * to thin out.
    */
   private IExpr processCoordinateList(IAST data, IExpr boxRatiosOpt, IExpr plotRangeOpt,
-      IExpr meshOpt, IExpr plotStyleOpt, IAST originalAST, int argSize,
-      RegionFunctionFilter region) {
+      IExpr meshOpt, IExpr plotStyleOpt, IExpr meshStyleOpt, IAST originalAST, int argSize,
+      RegionFunctionFilter region, PlotColorFunction.Builder colorBuilder) {
     int n = data.argSize();
     if (n < 3)
       return F.NIL; // Need at least 3 points for a surface
 
-    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
-    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
-
-    // 1. Extract Points and Register with Builder
-    List<PointXYZ> points = new ArrayList<>(n);
+    // 1. Extract the points
+    List<double[]> samples = new ArrayList<>(n);
+    List<IExpr> heights = new ArrayList<>(n);
+    double[] box = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
     for (int i = 1; i <= n; i++) {
       if (!data.get(i).isList() || ((IAST) data.get(i)).argSize() != 3) {
         return F.NIL;
@@ -167,23 +178,47 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       IAST row = (IAST) data.get(i);
       double x = row.arg1().evalfNaN();
       double y = row.arg2().evalfNaN();
-      double z = row.arg3().evalfNaN();
+      double z = height(row.arg3());
 
-      if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z) && !Double.isInfinite(x)
-          && !Double.isInfinite(y) && !Double.isInfinite(z)
+      if (Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z)
           && (region == null || region.accepts(x, y, z))) {
-        int idx = builder.addVertex(x, y, z, null, null);
-        points.add(new PointXYZ(x, y, z, idx));
+        samples.add(new double[] {x, y, z});
+        heights.add(row.arg3());
+        box[0] = Math.min(box[0], x);
+        box[1] = Math.max(box[1], x);
+        box[2] = Math.min(box[2], y);
+        box[3] = Math.max(box[3], y);
+        box[4] = Math.min(box[4], z);
+        box[5] = Math.max(box[5], z);
       }
     }
+    PlotColorFunction colorMap = samples.isEmpty() ? null
+        : colorBuilder.ranges(box[0], box[1], box[2], box[3], box[4], box[5]).build();
 
-    // 2. Triangulate (Projected to XY plane)
+    // 2. Register them with the builder
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, colorMap != null);
+    Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
+    List<PointXYZ> points = new ArrayList<>(samples.size());
+    List<double[]> bars = new ArrayList<>();
+    for (int i = 0; i < samples.size(); i++) {
+      double[] p = samples.get(i);
+      IExpr color = colorMap == null ? null : colorMap.color(p[0], p[1], p[2]);
+      int idx = builder.addVertex(p[0], p[1], p[2], null, color);
+      points.add(new PointXYZ(p[0], p[1], p[2], idx));
+      addBar(bars, p[0], p[1], heights.get(i));
+    }
+
+    // 3. Triangulate (Projected to XY plane)
     List<Triangle> triangles = Triangulator.delaunay(points);
 
-    // 3. Construct Polygons
+    // 4. Construct Polygons
     for (Triangle t : triangles) {
       builder.addPolygon(t.p1, t.p2, t.p3); // Triangulator retains builder indices
     }
+    if (Plot3DTools.showMesh(meshOpt)) {
+      addTriangleEdges(builder, triangles, meshStyleOpt);
+    }
+    addIntervalMarkers(builder, bars, originalAST);
 
     IExpr graphicsComplex = builder.build();
     if (graphicsComplex.equals(F.NIL)) {
@@ -194,6 +229,36 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),
             F.Rule(S.BoxRatios, boxRatiosOpt.isList() ? boxRatiosOpt : Plot3DTools.FLAT_BOX_RATIOS),
             F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+  }
+
+  /**
+   * The mesh of a triangulated surface: every edge once, whichever triangles share it, drawn in
+   * the <code>MeshStyle</code> or the default grey the grid surfaces use.
+   */
+  private static void addTriangleEdges(GraphicsComplexBuilder builder, List<Triangle> triangles,
+      IExpr meshStyle) {
+    if (triangles.isEmpty()) {
+      return;
+    }
+    java.util.Set<Long> seen = new java.util.HashSet<>();
+    IASTAppendable edges = F.ListAlloc(triangles.size() * 3);
+    for (Triangle t : triangles) {
+      addEdge(edges, seen, t.p1, t.p2);
+      addEdge(edges, seen, t.p2, t.p3);
+      addEdge(edges, seen, t.p3, t.p1);
+    }
+    builder.addPrimitive(
+        meshStyle != null && !meshStyle.isAutomatic() && !meshStyle.isNone() ? meshStyle
+            : Plot3DTools.MESH_STYLE);
+    builder.addPrimitive(F.Line(edges));
+  }
+
+  private static void addEdge(IASTAppendable edges, java.util.Set<Long> seen, int from, int to) {
+    int low = Math.min(from, to);
+    int high = Math.max(from, to);
+    if (seen.add(((long) low << 32) | high)) {
+      edges.append(F.List(F.ZZ(low), F.ZZ(high)));
+    }
   }
 
   /**
@@ -235,6 +300,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     // the grid is handed to the shared surface builder, so this plot gets the same winding,
     // vertex normals and mesh lines as the ones that sample a function
     double[][][] grid = new double[rows][cols][];
+    List<double[]> bars = new ArrayList<>();
     for (int i = 1; i <= rows; i++) {
       IExpr arg = heightData.get(i);
       if (!arg.isAST() || arg.argSize() != cols) {
@@ -245,9 +311,10 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
       for (int j = 1; j <= cols; j++) {
         double x = (cols > 1) ? xMin + (j - 1) * (xMax - xMin) / (cols - 1.0) : xMin;
-        double z = row.get(j).evalfNaN();
+        double z = height(row.get(j));
         if (Double.isFinite(z) && (region == null || region.accepts(x, y, z))) {
           grid[i - 1][j - 1] = new double[] {x, y, z};
+          addBar(bars, x, y, row.get(j));
         }
       }
     }
@@ -269,6 +336,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colors != null);
     Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(0, plotStyleOpt), meshOpt);
     Plot3DTools.addSurface(builder, grid, false, false, colors, true, meshOpt, meshStyleOpt);
+    addIntervalMarkers(builder, bars, originalAST);
 
     // the rim of the surface, and the rim of every hole a RegionFunction or a datum without a
     // value left in it; Automatic draws it, as Mathematica does
@@ -281,6 +349,63 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         new IExpr[] {F.Rule(S.PlotRange, plotRangeOpt),
             F.Rule(S.BoxRatios, boxRatiosOpt.isList() ? boxRatiosOpt : Plot3DTools.FLAT_BOX_RATIOS),
             F.Rule(S.Axes, S.True), F.Rule(S.Lighting, Plot3DTools.PLOT_LIGHTING)});
+  }
+
+  /**
+   * A height: a number, or the centre of an {@code Around}, {@code Interval} or
+   * {@code IntervalData}.
+   */
+  private static double height(IExpr expr) {
+    if (expr.isAST() && UncertainValue.isUncertain(expr)) {
+      return UncertainValue.center(expr);
+    }
+    return expr.evalfNaN();
+  }
+
+  /** Record the {x, y, lower, upper} bar of an uncertain height. */
+  private static void addBar(List<double[]> bars, double x, double y, IExpr height) {
+    if (!height.isAST()) {
+      return;
+    }
+    UncertainValue uncertain = UncertainValue.of(height);
+    if (uncertain != null && uncertain.hasExtent()) {
+      bars.add(new double[] {x, y, uncertain.lo, uncertain.hi});
+    }
+  }
+
+  /**
+   * The interval markers of uncertain heights: a bar or a tube from the lower to the upper limit.
+   *
+   * <p>
+   * The heights of the surface are numbers in the vertex table, so unlike a point plot the markers
+   * cannot be left to the renderer and are drawn here, in a scope of their own so that neither
+   * their style nor the surface's leaks into the other. A surface hides a bar in its own colour, so
+   * they are dark unless {@code IntervalMarkersStyle} says otherwise.
+   */
+  private static void addIntervalMarkers(GraphicsComplexBuilder builder, List<double[]> bars,
+      IAST originalAST) {
+    IntervalMarkerType type = IntervalMarkerType
+        .of(GraphicsOptions.optionValue(originalAST, S.IntervalMarkers, S.Automatic));
+    if (bars.isEmpty() || type == IntervalMarkerType.NONE) {
+      return;
+    }
+    IExpr style = GraphicsOptions.optionValue(originalAST, S.IntervalMarkersStyle, S.Automatic);
+    if (style.isAutomatic()) {
+      style = F.GrayLevel(F.num(0.2));
+    }
+    double zMin = Double.MAX_VALUE;
+    double zMax = -Double.MAX_VALUE;
+    IASTAppendable lines = F.ListAlloc(bars.size());
+    for (double[] bar : bars) {
+      lines.append(F.List(F.List(F.num(bar[0]), F.num(bar[1]), F.num(bar[2])),
+          F.List(F.num(bar[0]), F.num(bar[1]), F.num(bar[3]))));
+      zMin = Math.min(zMin, bar[2]);
+      zMax = Math.max(zMax, bar[3]);
+    }
+    IExpr marker = type == IntervalMarkerType.TUBES
+        ? F.binaryAST2(S.Tube, lines, F.num(Math.max(1e-6, 0.01 * (zMax - zMin))))
+        : F.Line(lines);
+    builder.addPrimitive(F.List(style, marker));
   }
 
   private boolean isRectangularArray(IAST list) {

@@ -21,6 +21,56 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMatrixFormOfANonList() {
+    // MatrixForm of something which is no matrix displays it as it is
+    check("TeXForm(MatrixForm(x^2))", //
+        "{x}^{2}");
+  }
+
+  @Test
+  public void testTableFormOfANonList() {
+    // TableForm of something which is no table displays it as it is
+    check("TeXForm(TableForm(Framed(\"hi\")))", //
+        "\\boxed{\\textnormal{hi}}");
+    check("TeXForm(Pane(x^2))", //
+        "{x}^{2}");
+  }
+
+  @Test
+  public void testGeneratedConstant() {
+    // the constant C(k) of DSolve, Integrate and Reduce is typeset as a subscripted c
+    check("TeXForm(C(1))", //
+        "c_1");
+    check("TeXForm(C(n))", //
+        "c_n");
+    check("TeXForm(C(12))", //
+        "c_{12}");
+    check("TeXForm(2*C(1)+x*C(2))", //
+        "2 \\cdot c_1 + x \\cdot c_2");
+    check("TeXForm(C(1)^2)", //
+        "{c_1}^{2}");
+    // not the generated constant
+    check("TeXForm(C(1,2))", //
+        "C(1,2)");
+  }
+
+  @Test
+  public void testEvaluatesItsArgument() {
+    check("TeXForm(1+1)", //
+        "2");
+    check("TeXForm(DSolve(y'(x)==y(x),y(x),x))", //
+        "\\{\\{y(x)\\to {e}^{x} \\cdot c_1\\}\\}");
+    // HoldForm still keeps its argument unevaluated
+    check("TeXForm(HoldForm(1+1))", //
+        "1 + 1");
+    // an ordinary function: Attributes[TeXForm] is {Protected}
+    check("Attributes(TeXForm)", //
+        "{Protected}");
+    check("TeXForm(Unevaluated(1+1))", //
+        "1 + 1");
+  }
+
+  @Test
   public void testBeta() {
     check("TeXForm(Beta(a,b))", //
         "B(a,b)");
@@ -615,9 +665,9 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The operators built from the Mathics3 tables get their LaTeX from
-   * {@code OperatorMarkup} rather than from a line of their own in {@code TeXFormFactory}, so
-   * these check the wiring, not each of the 182 macros.
+   * The operators built from the Mathics3 tables get their LaTeX from {@code OperatorMarkup} rather
+   * than from a line of their own in {@code TeXFormFactory}, so these check the wiring, not each of
+   * the 182 macros.
    */
   @Test
   public void testOperatorTableInfix() {

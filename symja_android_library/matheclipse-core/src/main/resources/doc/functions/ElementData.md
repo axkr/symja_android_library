@@ -39,6 +39,13 @@ which of the three it is, and the fifteen heaviest elements have neither.
 [IsotopeData](IsotopeData.md) reads, which lives in `matheclipse-chem`. In a build without that
 module they report themselves unavailable, as everything else of that module's does.
 
+`StableIsotopes` comes from the same table, as `Entity("Isotope", name)`:
+
+```
+>> ElementData(6, "StableIsotopes")
+{Entity(Isotope,Carbon12),Entity(Isotope,Carbon13)}
+```
+
 A property that is a measurement is returned as a [Quantity](Quantity.md), so it carries its unit
 and converts like any other quantity. Properties that are not measurements - an atomic number, a
 Pauling electronegativity, a Mohs hardness, a Poisson ratio, a name or an electron configuration -

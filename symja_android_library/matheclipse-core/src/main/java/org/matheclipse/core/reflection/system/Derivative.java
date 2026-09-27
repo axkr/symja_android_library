@@ -13,7 +13,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -51,7 +50,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * -Cos(#1)&amp;
  *
  * &gt;&gt; Derivative(2)[# ^ 3&amp;]
- * 6*(#1&amp;)
+ * 6*#1&amp;
  * </pre>
  *
  * <p>
@@ -62,7 +61,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Cos(x)
  *
  * &gt;&gt; (# ^ 4&amp;)''
- * 12*(#1^2&amp;)
+ * 12*#1^2&amp;
  *
  * &gt;&gt; f'(x) // FullForm
  * "Derivative(1)[f][x]"
@@ -93,89 +92,54 @@ public class Derivative extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    if (isDiracDeltaDerivativeAwayFromZero(ast)) {
+      // like DiracDelta(x) itself, every derivative of it vanishes where x is a nonzero real
+      return F.C0;
+    }
     IAST[] derivativeAST = ast.isDerivative();
-    if (derivativeAST != null) {
-      IAST derivativeHead = derivativeAST[0];
-      IAST functions = derivativeAST[1];
-      if (functions.size() == 2 && functions.arg1().isNumber()) {
-        return F.Function(F.C0);
-      }
-      boolean isZero = true;
-      for (int i = 1; i < derivativeHead.size(); i++) {
-        if (!derivativeHead.get(i).isZero()) {
-          isZero = false;
-          break;
-        }
-      }
-      if (isZero) {
-        if (derivativeAST[2] == null) {
-          if (derivativeAST[1].size() > 1) {
-            return derivativeAST[1].arg1();
-          }
-          return F.NIL;
-        }
-      }
-
-      // if (derivativeHead.size() == 2) {
-      // IExpr nTimes = derivativeHead.arg1();
-      // if (functions.size() >= 2) {
-      // int n = nTimes.toIntDefault();
-      // if (n >= 0 || nTimes.isFree(num -> num.isNumber(), false)) {
-      // IAST fullDerivative = derivativeAST[2];
-      // return evaluateDArg1IfPossible(
-      // nTimes, derivativeHead, (IAST) functions, fullDerivative, engine);
-      // }
-      // // Multiple derivative specifier `1` does not have the form {variable, n} where n
-      // is a
-      // // symbolic expression or a non-negative integer.
-      // return IOFunctions.printMessage(
-      // ast.topHead(), "dvar", F.List(F.List(F.Slot1, nTimes)), engine);
-      // }
-      // } else
-      if (derivativeHead.size() >= 2) {
-        IExpr result = F.NIL;
-        for (int i = 1; i < derivativeHead.size(); i++) {
-          IExpr nTimes = derivativeHead.get(i);
-          if (result.isNIL()) {
-            result = functions;
-          }
-          if (result.size() >= 2) {
-            if (isInvalidDerivativeOrder(nTimes)) {
-              // Multiple derivative specifier `1` does not have the form {variable, n} where n is a
-              // symbolic expression or a non-negative integer.
-              return Errors.printMessage(ast.topHead(), "dvar", F.list(F.list(F.Slot(i), nTimes)),
-                  engine);
-            }
-          }
-        }
-        if (result.isPresent()) {
-          if (result.size() >= 2) {
-            IAST fullDerivative = derivativeAST[2];
-            return evaluateDIfPossible(derivativeHead, functions, fullDerivative, engine);
-          }
-          return result;
-        }
-      }
-      if (ast.head().isAST(S.Derivative, 2)) {
-        // Derivative(n)
-        IAST head = (IAST) ast.head();
-        if (head.arg1().isInteger()) {
-          try {
-            int n = ((IInteger) head.arg1()).toInt();
-            IExpr arg1 = ast.arg1();
-            if (n >= 0) {
-              if (arg1.isFunction()) {
-                return derivative(n, (IAST) arg1, engine);
-              }
-            }
-          } catch (ArithmeticException ae) {
-
-          }
-        }
+    if (derivativeAST == null) {
+      return F.NIL;
+    }
+    IAST derivativeHead = derivativeAST[0];
+    IAST functions = derivativeAST[1];
+    boolean isZero = derivativeHead.forAll(n -> n.isZero());
+    if (isZero && derivativeAST[2] == null) {
+      // Derivative(0, 0, ...)[f] -> f
+      return functions.size() > 1 ? functions.arg1() : F.NIL;
+    }
+    if (functions.size() != 2) {
+      return F.NIL;
+    }
+    if (functions.arg1().isNumber()) {
+      return F.Function(F.C0);
+    }
+    for (int i = 1; i < derivativeHead.size(); i++) {
+      if (isInvalidDerivativeOrder(derivativeHead.get(i))) {
+        // like in Mathematica an explicit negative or non-integer order stays unevaluated
         return F.NIL;
       }
     }
-    return F.NIL;
+    return evaluateDIfPossible(derivativeHead, functions, derivativeAST[2], engine);
+  }
+
+  /**
+   * Whether <code>ast</code> is <code>Derivative(n1, n2, ...)[DiracDelta][x1, x2, ...]</code> with
+   * non-negative integer orders and one of the <code>xi</code> a nonzero real: the residual of a
+   * step-forced equation, differentiated twice, holds <code>DiracDelta'(7/10 - Pi)</code>.
+   */
+  private static boolean isDiracDeltaDerivativeAwayFromZero(IAST ast) {
+    IExpr head = ast.head();
+    if (ast.argSize() < 1 || !head.isAST1() || head.first() != S.DiracDelta
+        || !head.head().isAST(S.Derivative) || ((IAST) head.head()).argSize() != ast.argSize()) {
+      return false;
+    }
+    IAST orders = (IAST) head.head();
+    for (int i = 1; i <= orders.argSize(); i++) {
+      if (!orders.get(i).isInteger() || orders.get(i).isNegative()) {
+        return false;
+      }
+    }
+    return ast.exists(x -> x.isNonZeroRealResult());
   }
 
   /**
@@ -192,75 +156,6 @@ public class Derivative extends AbstractFunctionEvaluator {
   private static boolean isInvalidDerivativeOrder(IExpr n) {
     return n.isNegativeResult() || (!n.isInteger() && n.isNumericFunction());
   }
-
-  /**
-   * Evaluate a <code>Derivative(1)[f]</code> or <code>Derivative(1)[f][x]</code> expression.
-   *
-   * @param n the number of derivative depth
-   * @param head
-   * @param headDerivative
-   * @param fullDerivative
-   * @param engine
-   * @return
-   */
-  // private static IExpr evaluateDArg1IfPossible(IExpr n, IAST head, IAST headDerivative,
-  // IAST fullDerivative, EvalEngine engine) {
-  // IExpr newFunction;
-  // IExpr symbol = F.Slot1;
-  // if (fullDerivative != null) {
-  // if (fullDerivative.size() != 2) {
-  // return F.NIL;
-  // }
-  // symbol = fullDerivative.arg1();
-  // if (!symbol.isVariable()) {
-  // return F.NIL;
-  // }
-  // }
-  // newFunction = engine.evaluate(F.unaryAST1(headDerivative.arg1(), symbol));
-  //
-  // IAST dExpr;
-  // if (n.isOne()) {
-  // dExpr = F.D(newFunction, symbol);
-  // } else {
-  // int ni = n.toIntDefault();
-  // if (ni > 0) {
-  // int iterationLimit = engine.getIterationLimit();
-  // if (iterationLimit > 0 && iterationLimit < ni) {
-  // // Iteration limit of `1` exceeded.
-  // return Errors.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)), engine);
-  // }
-  // }
-  // dExpr = F.D(newFunction, F.list(symbol, n));
-  // }
-  // dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
-  //
-  // IExpr dResult = engine.evalRules(S.D, dExpr);
-  //
-  // if (dResult.isPresent()) {
-  // dResult = engine.evaluate(dResult);
-  // return F.Function(dResult);
-  // }
-  // if (!n.isOne()) {
-  // if (!symbol.isVariable()) {
-  // return F.NIL;
-  // }
-  // int length = n.toIntDefault();
-  // if (length > 1) {
-  // for (int i = 0; i < length; i++) {
-  // dExpr = F.D(newFunction, symbol);
-  // dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
-  // dResult = engine.evalRules(S.D, dExpr);
-  // if (dResult.isNIL()) {
-  // return F.NIL;
-  // } else {
-  // newFunction = engine.evaluate(dResult);
-  // }
-  // }
-  // return F.Function(newFunction);
-  // }
-  // }
-  // return F.NIL;
-  // }
 
   private static IExpr evaluateDIfPossible(IAST head, IAST headDerivative, IAST fullDerivative,
       EvalEngine engine) {
@@ -438,32 +333,6 @@ public class Derivative extends AbstractFunctionEvaluator {
       return F.Function(F.Times(
           F.Plus(F.Negate(F.HarmonicNumber(F.Slot(harmonicIndex))), F.HarmonicNumber(harmonicPlus)),
           multinomial));
-    }
-    return F.NIL;
-  }
-
-  /**
-   * @param n
-   * @param function
-   * @param engine
-   * @return
-   */
-  private static IExpr derivative(int n, IAST function, EvalEngine engine) {
-    if (n == 0) {
-      return function;
-    }
-    if (n >= 1) {
-      if (function.isAST1()) {
-        // Derivative[1][(...)&]
-        IExpr arg1 = function.arg1();
-        if (arg1.isPower()) {
-          IExpr exponent = arg1.exponent();
-          if (arg1.base().equals(F.Slot1) && exponent.isFree(F.Slot1)) {
-            return F.Times(exponent, createDerivative(n - 1,
-                F.Function(engine.evaluate(F.Power(F.Slot1, exponent.dec())))));
-          }
-        }
-      }
     }
     return F.NIL;
   }

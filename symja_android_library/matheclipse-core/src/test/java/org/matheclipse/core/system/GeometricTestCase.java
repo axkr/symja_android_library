@@ -684,6 +684,69 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "2");
     check("RegionDimension(Annulus({0, 0}, {1, 2}))", //
         "2");
+
+    // an ImplicitRegion loses one dimension per equation, and none to an inequality
+    check("RegionDimension(ImplicitRegion(x+y==1,{x,y,z}))", //
+        "2");
+    check("RegionDimension(ImplicitRegion(x^2+y^2<1,{x,y}))", //
+        "2");
+    check("RegionDimension(ImplicitRegion(x^2+y^2<1&&x>0,{x,y}))", //
+        "2");
+    // several equations cut away as many dimensions as they are independent, which is the rank of
+    // the system they make up: two planes of the space meet in a line
+    check("RegionDimension(ImplicitRegion(x==1&&y==1,{x,y,z}))", //
+        "1");
+    check("RegionDimension(ImplicitRegion(x==1&&y==1&&z==1,{x,y,z}))", //
+        "0");
+    check("RegionDimension(ImplicitRegion(x==1&&y==1&&z>0,{x,y,z}))", //
+        "1");
+    // the same plane written twice is still a plane
+    check("RegionDimension(ImplicitRegion(x+y==1&&2*x+2*y==2,{x,y,z}))", //
+        "2");
+    // equations that contradict each other describe nothing at all, and curved surfaces are not
+    // counted together - neither dimension is decided here, and neither is what an Or describes
+    check("RegionDimension(ImplicitRegion(x+y==1&&2*x+2*y==3,{x,y,z}))", //
+        "RegionDimension(ImplicitRegion(x+y==1&&2*x+2*y==3,{x,y,z}))");
+    check("RegionDimension(ImplicitRegion(x^2+y^2==1&&z==0,{x,y,z}))", //
+        "RegionDimension(ImplicitRegion(x^2+y^2==1&&z==0,{x,y,z}))");
+    check("RegionDimension(ImplicitRegion(x==1||y==1,{x,y,z}))", //
+        "RegionDimension(ImplicitRegion(x==1||y==1,{x,y,z}))");
+
+    // a BooleanRegion asking for all of its parts is as thin as the thinnest of them: a box cut by
+    // a plane is a surface, two solids meet in a solid
+    check("RegionDimension(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})))", //
+        "2");
+    check(
+        "RegionDimension(RegionIntersection(Ball({0.5,0.5,0.5},0.5),"
+            + " RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "2");
+    check("RegionDimension(RegionIntersection(Ball({0,0,0},1), Ball({0,0,1},1)))", //
+        "3");
+    check("RegionDimension(RegionIntersection(Disk({0,0},2), Disk({0,3},2)))", //
+        "2");
+    // asking for either part is a union, which is as wide as the widest of them
+    check("RegionDimension(BooleanRegion(#1||#2&, {Disk({0,0},1), Circle({3,0},1)}))", //
+        "2");
+    // implicit parts over the same variables are asked for at once, so their equations are counted
+    // together: two planes of the space meet in a line, the same plane twice is still a plane
+    check(
+        "RegionDimension(BooleanRegion(#1&&#2&, {ImplicitRegion(x+y==1,{x,y,z}),"
+            + " ImplicitRegion(x-y==0,{x,y,z})}))", //
+        "1");
+    check(
+        "RegionDimension(BooleanRegion(#1&&#2&, {ImplicitRegion(x+y==1,{x,y,z}),"
+            + " ImplicitRegion(2*x+2*y==2,{x,y,z})}))", //
+        "2");
+    check(
+        "RegionDimension(BooleanRegion(#1&&#2&&#3&, {Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}), ImplicitRegion(x-y==0,{x,y,z})}))", //
+        "1");
+    // parts of different spaces are no region at all, and have no dimension either
+    check(
+        "RegionDimension(BooleanRegion(#1&&#2&, {ImplicitRegion(x+y==1,{x,y,z}),"
+            + " ImplicitRegion(x+y==1,{x,y})}))", //
+        "RegionDimension(BooleanRegion(#1&&#2&,{ImplicitRegion(x+y==1,{x,y,z}),ImplicitRegion(x+y=="
+            + "\n1,{x,y})}))");
   }
 
   @Test
@@ -709,6 +772,24 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     // Unevaluated cases
     check("RegionEmbeddingDimension(x)", //
         "RegionEmbeddingDimension(x)");
+  }
+
+  /**
+   * The surface of a solid mesh is the sum of its faces, a machine number; a mesh in the plane
+   * bounds an area and has no surface. The values are the reference implementation's.
+   */
+  @Test
+  public void testSurfaceAreaOfAMesh() {
+    checkNumeric("SurfaceArea(ConvexHullMesh({{0,0,0},{1,0,0},{0,1,0},{0,0,1}}))", //
+        "2.3660254037844384");
+    checkNumeric(
+        "SurfaceArea(ConvexHullMesh({{0,0,0},{2,0,0},{0,2,0},{0,0,2},{2,2,2},{2,2,0},{1,1,3}}))", //
+        "21.797958971132715");
+    check(
+        "SurfaceArea(ConvexHullMesh({{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,1},{1,0,1},{1,1,1},{0,1,1}}))", //
+        "6.0");
+    check("SurfaceArea(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))", //
+        "Undefined");
   }
 
   @Test
@@ -1525,8 +1606,166 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         + "-PolyhedronData(\"TruncatedIcosahedron\",\"EdgeCount\")"
         + "+PolyhedronData(\"TruncatedIcosahedron\",\"FaceCount\")", //
         "2");
+    // 12 pentagons and 20 hexagons, the same tally as above but read off directly
+    check("PolyhedronData(\"TruncatedIcosahedron\", \"FaceCountRules\")", //
+        "{5->12,6->20}");
+    check("PolyhedronData(\"Icosahedron\", \"FaceCountRules\")", //
+        "{3->20}");
+    check("Total(Last/@PolyhedronData(\"TruncatedIcosahedron\", \"FaceCountRules\"))"
+        + "==PolyhedronData(\"TruncatedIcosahedron\", \"FaceCount\")", //
+        "True");
+    // the coordinates are exact, although the combinatorics above are derived from machine numbers
+    check("First(PolyhedronData(\"Icosahedron\", \"VertexCoordinates\"))", //
+        "{0,1,GoldenRatio}");
+    check("Head(PolyhedronData(\"Icosahedron\"))", //
+        "Graphics3D");
+    check("PolyhedronData()", //
+        "{Icosahedron,Icosidodecahedron,RhombicTriacontahedron,TruncatedIcosahedron}");
+    check("PolyhedronData(\"Properties\")", //
+        "{Circumradius,EdgeCount,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+    // a question this function does not understand is a message, not missing data
     check("PolyhedronData(\"Icosahedron\", \"Nonsense\")", //
-        "Missing(NotAvailable)");
+        "PolyhedronData(Icosahedron,Nonsense)");
+    // a solid this table never heard of stays unevaluated too
+    check("PolyhedronData(\"Nonesuch\", \"FaceCount\")", //
+        "PolyhedronData(Nonesuch,FaceCount)");
+  }
+
+  /**
+   * The knots of the Rolfsen table, named by {n, k} or a standard name, and every coprime
+   * {"TorusKnot", {p, q}}. The table entries, names and forms are the reference implementation's.
+   */
+  @Test
+  public void testKnotData() {
+    check("KnotData(\"Trefoil\", \"CrossingNumber\")", //
+        "3");
+    check("KnotData(\"Trefoil\", \"AlexanderBriggsNotation\")", //
+        "Subscript(3,1)");
+    check("KnotData(\"Trefoil\", \"AlexanderBriggsList\")", //
+        "{3,1}");
+    check("Table({KnotData(k, \"StandardName\"), KnotData(k, \"Name\"), "
+        + "KnotData(k, \"CrossingNumber\")}, "
+        + "{k, {{0,1}, {3,1}, {4,1}, {5,1}, {5,2}, {6,1}, {10,161}}})", //
+        "{{Unknot,unknot,0},{Trefoil,trefoil,3},{FigureEight,figure eight knot,4},{SolomonSeal,Solomon seal knot,\n"
+            + "5},{{Knot,{5,2}},knot 5-2,5},{Stevedore,Stevedore knot,6},{PerkoPair,Perko pair,\n"
+            + "10}}");
+    check("KnotData()", //
+        "{Unknot,Trefoil,FigureEight,SolomonSeal,Stevedore,PerkoPair}");
+    // the table: every prime knot of up to ten crossings, and the unknot
+    check("{Length(KnotData(All)), Take(KnotData(All), 5), Last(KnotData(All)), "
+        + "Counts(First /@ KnotData(All))}", //
+        "{250,{{0,1},{3,1},{4,1},{5,1},{5,2}},{10,165},<|0->1,3->1,4->1,5->2,6->3,7->7,8->\n"
+            + "21,9->49,10->165|>}");
+    // the trefoil's space curve is the classic one
+    check("KnotData(\"Trefoil\", \"SpaceCurve\")", //
+        "{Sin(#1)+2*Sin(2*#1),Cos(#1)-2*Cos(2*#1),-Sin(3*#1)}&");
+    check("KnotData(\"Trefoil\", \"SpaceCurve\") @ 0", //
+        "{0,-1,0}");
+    check("Chop(N(KnotData(\"Trefoil\", \"SpaceCurve\") @ (2*Pi) - "
+        + "KnotData(\"Trefoil\", \"SpaceCurve\") @ 0))", //
+        "{0,0,0}");
+    // a torus knot winds round a tube of radius 1 about the core circle of radius 2
+    check("KnotData({\"TorusKnot\", {2, 5}}, \"SpaceCurve\")", //
+        "{Cos(2*#1)*(2+Cos(5*#1)),(2+Cos(5*#1))*Sin(2*#1),Sin(5*#1)}&");
+    check("With({r = KnotData(\"SolomonSeal\", \"SpaceCurve\")}, "
+        + "N(Table(Round((Sqrt(r(t)[[1]]^2 + r(t)[[2]]^2) - 2)^2 + r(t)[[3]]^2, 10^-9), "
+        + "{t, 0, 2*Pi, Pi/5})))", //
+        "{1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0}");
+    check("{KnotData({\"TorusKnot\", {2, 5}}, \"CrossingNumber\"), "
+        + "KnotData({\"TorusKnot\", {3, 5}}, \"CrossingNumber\"), "
+        + "KnotData({\"TorusKnot\", {3, 4}}, \"AlexanderBriggsList\"), "
+        + "KnotData({\"TorusKnot\", {3, 4}}, \"Name\"), "
+        + "KnotData({\"TorusKnot\", {3, 4}}, \"StandardName\")}", //
+        "{5,10,Missing(NotApplicable),(3,4)-torus knot,{TorusKnot,{3,4}}}");
+    // not coprime: several loops and no knot; an Alexander-Briggs label is no name, and the
+    // table ends at ten crossings
+    check("KnotData({\"TorusKnot\", {2, 4}}, \"CrossingNumber\")", //
+        "KnotData({TorusKnot,{2,4}},CrossingNumber)");
+    check("KnotData(\"NoSuchKnot\", \"CrossingNumber\")", //
+        "KnotData(NoSuchKnot,CrossingNumber)");
+    check("KnotData(\"3_1\", \"CrossingNumber\")", //
+        "KnotData(3_1,CrossingNumber)");
+    check("KnotData({11, 1}, \"CrossingNumber\")", //
+        "KnotData({11,1},CrossingNumber)");
+    check("KnotData(\"Trefoil\", \"NoSuchProperty\")", //
+        "KnotData(Trefoil,NoSuchProperty)");
+    check("KnotData(\"Properties\")", //
+        "{AlexanderBriggsList,AlexanderBriggsNotation,CrossingNumber,ImageData,Name,SpaceCurve,StandardName}");
+    // ImageData is the tube as one closed surface: a list of one GraphicsComplex whose rings are
+    // centred on the space curve at t = 2 Pi k/96
+    check("{Head(#), Length(#), Head(First(#))}&(KnotData(\"Trefoil\", \"ImageData\"))", //
+        "{List,1,GraphicsComplex}");
+    check("With({r = KnotData(\"Trefoil\", \"SpaceCurve\"), "
+        + "pts = First(KnotData(\"Trefoil\", \"ImageData\"))[[1]]}, "
+        + "With({centers = Mean /@ Partition(pts, Length(pts)/96)}, "
+        + "Max(Norm /@ (centers - Table(r(2*Pi*k/96), {k, 0, 95}))) < 10^-9))", //
+        "True");
+    check("Head(Graphics3D(Scale(KnotData({\"TorusKnot\", {2, 7}}, \"ImageData\"), 6)))", //
+        "Graphics3D");
+    check("Head(First(KnotData({\"TorusKnot\", {3, 4}}, \"ImageData\")))", //
+        "GraphicsComplex");
+    check("Head(KnotData(\"Trefoil\"))", //
+        "Graphics3D");
+    // no curve is known for a knot which is neither the trefoil nor a torus knot
+    check("KnotData(\"FigureEight\")", //
+        "KnotData(FigureEight)");
+    check("EntityValue(Entity(\"Knot\", \"Trefoil\"), \"CrossingNumber\")", //
+        "3");
+  }
+
+  @Test
+  public void testPolyhedronDataEntity() {
+    // an entity and a bare name are the same question, and so are a property and its name
+    check("PolyhedronData(Entity(\"Polyhedron\", \"Icosahedron\"), \"FaceCount\")", //
+        "20");
+    check("PolyhedronData(\"Icosahedron\", EntityProperty(\"Polyhedron\", \"FaceCount\"))", //
+        "20");
+    check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), \"FaceCount\")", //
+        "20");
+    check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), {\"VertexCount\",\"EdgeCount\"})", //
+        "{12,30}");
+    check("EntityValue(\"Polyhedron\", \"Properties\")", //
+        "{Circumradius,EdgeCount,FaceCount,FaceCountRules,FaceIndices,Faces,VertexCoordinates,VertexCount,Volume}");
+    check("EntityList(\"Polyhedron\")", //
+        "{Entity(Polyhedron,Icosahedron),Entity(Polyhedron,Icosidodecahedron),Entity(Polyhedron,"
+            + "RhombicTriacontahedron),Entity(Polyhedron,TruncatedIcosahedron)}");
+    // which half of the question was not understood
+    check("EntityValue(Entity(\"Polyhedron\", \"Nonesuch\"), \"FaceCount\")", //
+        "Missing(UnknownEntity,{Polyhedron,Nonesuch})");
+    check("EntityValue(Entity(\"Polyhedron\", \"Icosahedron\"), \"Nonsense\")", //
+        "Missing(UnknownProperty,{Polyhedron,Nonsense})");
+  }
+
+  @Test
+  public void testPolyhedronDataNormal() {
+    // Normal substitutes the indices of a GraphicsComplex with the points they stand for; a
+    // Point becomes a list of single points
+    check("Normal(GraphicsComplex({{0,0},{Sqrt(3),Sqrt(3)/2}}, {Point(1), Line({1,2})}))", //
+        "{{Point({0,0})},Line({{0,0},{Sqrt(3),Sqrt(3)/2}})}");
+    // data which is not a list becomes one
+    check("Normal(GraphicsComplex({{0,0},{1,0},{1,1}}, Polygon({1,2,3})))", //
+        "{Polygon({{0,0},{1,0},{1,1}})}");
+    check("Normal(GraphicsComplex({{0,0},{1,0}}, Point(1)))", //
+        "{{Point({0,0})}}");
+    // a primitive of several index lists becomes one primitive each
+    check("Normal(GraphicsComplex({{0,0,0},{1,0,0},{0,1,0},{0,0,1}}, Polygon({{1,2,3},{1,2,4}})))", //
+        "{{Polygon({{0,0,0},{1,0,0},{0,1,0}}),Polygon({{0,0,0},{1,0,0},{0,0,1}})}}");
+    check("Normal(GraphicsComplex({{0,0},{1,1},{2,0}}, {Point({1,2}), Line({{1,2},{2,3}})}))", //
+        "{{Point({0,0}),Point({1,1})},{Line({{0,0},{1,1}}),Line({{1,1},{2,0}})}}");
+    // the point arguments of shapes are resolved too
+    check(
+        "Normal(GraphicsComplex({{0,0},{1,1},{2,0}}, {Disk(1,0.1), Circle(3), Rectangle(1,2), Inset(x,2)}))", //
+        "{Disk({0,0},0.1),Circle({2,0}),Rectangle({0,0},{1,1}),Inset(x,{1,1})}");
+    // the vertex colors move onto each polygon, a line gets none
+    check(
+        "Normal(GraphicsComplex({{0,0},{1,1},{2,0}}, {Polygon({1,2,3}), Line({1,2})}, VertexColors->{Red,Green,Blue}))", //
+        "{Polygon({{0,0},{1,1},{2,0}},VertexColors->{RGBColor(1,0,0),RGBColor(0,1,0),RGBColor(\n"
+            + "0,0,1)}),Line({{0,0},{1,1}})}");
+    // the directives between the primitives are carried over
+    check("Normal(GraphicsComplex({{0,0},{1,0},{0,1}}, {Red, Polygon({1,2,3})}))", //
+        "{RGBColor(1,0,0),Polygon({{0,0},{1,0},{0,1}})}");
+    check("Normal(PolyhedronData(\"Icosahedron\", \"Faces\"))[[1,1,1]]", //
+        "{{0,1,GoldenRatio},{1,GoldenRatio,0},{GoldenRatio,0,1}}");
   }
 
   @Test
@@ -1559,5 +1798,224 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
         "Circle({0,0},2)");
     check("RegionBoundary(Ball({0,0,0},2))", //
         "Sphere({0,0,0},2)");
+  }
+
+  /**
+   * <code>RegionIntersection</code> works the intersection out where it is certainly known, and is
+   * otherwise left standing - which is itself a region, and the form <code>RegionMember</code>
+   * reads as the conjunction of its parts. Every answer below was measured in Mathematica on
+   * 2026-09-20.
+   */
+  /**
+   * <code>RegionUnion</code> and <code>RegionDifference</code> are carried as a
+   * <code>BooleanRegion</code>, a nested one inlined with its slots renumbered - the forms
+   * Mathematica gives.
+   */
+  @Test
+  public void testRegionUnionAndDifference() {
+    check("RegionUnion(Disk(), Disk({3,0},1))", //
+        "BooleanRegion(#1||#2&,{Disk({0,0}),Disk({3,0},1)})");
+    check("RegionUnion(Disk(), RegionUnion(Disk({3,0},1), Disk({6,0},1)))", //
+        "BooleanRegion(#1||#2||#3&,{Disk({0,0}),Disk({3,0},1),Disk({6,0},1)})");
+    check("RegionIntersection(RegionUnion(Ball(), ImplicitRegion(x==0,{x,y,z})), Cube())", //
+        "BooleanRegion((#1||#2)&&#3&,{Ball(),ImplicitRegion(x==0,{x,y,z}),Cube()})");
+    check("RegionDifference(Cube(), RegionUnion(Ball(), ImplicitRegion(x==0,{x,y,z})))", //
+        "BooleanRegion(#1&&!(#2||#3)&,{Cube(),Ball(),ImplicitRegion(x==0,{x,y,z})})");
+    // an empty part adds nothing, a full one covers everything, a repeated one counts once
+    check("RegionUnion(Disk(), EmptyRegion(2))", //
+        "Disk({0,0})");
+    check("RegionUnion(Disk(), FullRegion(2))", //
+        "FullRegion(2)");
+    check("RegionUnion(Disk(), Disk())", //
+        "Disk({0,0})");
+    check("RegionUnion(Interval({0,1}), Interval({3,4}))", //
+        "Interval({0,1},{3,4})");
+    check("RegionDifference(Disk(), Disk())", //
+        "EmptyRegion(2)");
+    check("RegionDifference(Disk(), EmptyRegion(2))", //
+        "Disk({0,0})");
+    check("RegionDifference(Disk(), FullRegion(2))", //
+        "EmptyRegion(2)");
+    check("RegionUnion(Disk(), Ball())", //
+        "RegionUnion(Disk({0,0}),Ball())");
+    check("RegionDimension(RegionUnion(Disk(), Line({{0,0},{1,1}})))", //
+        "2");
+  }
+
+  @Test
+  public void testRegionIntersection() {
+    // one region is itself, and a region intersected with itself is itself
+    check("RegionIntersection(Disk({0,0},1))", //
+        "Disk({0,0},1)");
+    check("RegionIntersection(Disk({0,0},1), Disk({0,0},1))", //
+        "Disk({0,0},1)");
+    // boxes overlap in a box, and keep exact corners and the head they were written with
+    check("RegionIntersection(Rectangle({0,0},{2,2}), Rectangle({1,1},{3,3}))", //
+        "Rectangle({1,1},{2,2})");
+    check("RegionIntersection(Cuboid({0,0},{2,2}), Cuboid({1,1},{3,3}))", //
+        "Cuboid({1,1},{2,2})");
+    check("RegionIntersection(Cuboid({0,0,0},{2,2,2}), Cuboid({1,1,1},{3,3,3}))", //
+        "Cuboid({1,1,1},{2,2,2})");
+    check("Area(RegionIntersection(Rectangle({0,0},{2,2}), Rectangle({1,1},{3,3})))", //
+        "1");
+    // boxes that do not overlap meet in nothing
+    check("RegionIntersection(Rectangle({0,0},{1,1}), Rectangle({5,5},{6,6}))", //
+        "EmptyRegion(2)");
+    // balls about one centre: the smallest lies inside the others
+    check("RegionIntersection(Disk({0,0},2), Disk({0,0},1))", //
+        "Disk({0,0},1)");
+    check("RegionIntersection(Ball({0,0,0},2), Ball({0,0,0},1))", //
+        "Ball({0,0,0},1)");
+    // regions that lie apart from one another meet in nothing
+    check("RegionIntersection(Disk({0,0},1), Disk({9,9},1))", //
+        "EmptyRegion(2)");
+    // intervals of the line have an intersection of their own
+    check("RegionIntersection(Interval({0,3}), Interval({1,5}))", //
+        "Interval({1,3})");
+    // nothing lies in the empty region; everything lies in the full one
+    check("RegionIntersection(Disk({0,0},1), EmptyRegion(2))", //
+        "EmptyRegion(2)");
+    check("RegionIntersection(Disk({0,0},1), FullRegion(2))", //
+        "Disk({0,0},1)");
+    check("RegionIntersection(FullRegion(2), FullRegion(2))", //
+        "FullRegion(2)");
+    // formula regions over the same variables are one formula region
+    check("RegionIntersection(ImplicitRegion(x^2+y^2<1,{x,y}), ImplicitRegion(x>0,{x,y}))", //
+        "ImplicitRegion(x^2+y^2<1&&x>0,{x,y})");
+    // intersecting is associative
+    check("RegionIntersection(RegionIntersection(Disk({0,0},2), Disk({0,0},1)), Disk({0,0},3))", //
+        "Disk({0,0},1)");
+    // two disks that are not concentric cannot be drawn as one shape, so the intersection is
+    // carried as the condition a point has to meet - which still answers who lies in both
+    check("ToString(RegionIntersection(Disk({0,0},2), Disk({0,3},2)), InputForm)", //
+        "BooleanRegion(#1&&#2&,{Disk({0,0},2),Disk({0,3},2)})");
+    check("RegionMember(RegionIntersection(Disk({0,0},2), Disk({0,3},2)), {x,y})", //
+        "x^2+y^2<=4&&x^2+(3-y)^2<=4");
+    // a BooleanRegion written by hand answers the same way
+    check("RegionMember(BooleanRegion(#1 || #2 &, {Disk({0,0},1), Disk({3,0},1)}), {3,0})", //
+        "True");
+    check("RegionMember(RegionIntersection(Disk({0,0},1), Disk({1,0},1)), {1/2,0})", //
+        "True");
+    check("RegionMember(RegionIntersection(Disk({0,0},1), Disk({3,0},1)), {1/2,0})", //
+        "False");
+    check("RegionEmbeddingDimension(RegionIntersection(Disk({0,0},2), Disk({0,3},2)))", //
+        "2");
+    // parts of different spaces are no region at all, and RegionIntersection::regdims says so
+    check("RegionIntersection(Disk({0,0},1), Ball({0,0,0},1))", //
+        "RegionIntersection(Disk({0,0},1),Ball({0,0,0},1))");
+    // an intersection carried as a BooleanRegion asks for all of its parts, so intersecting it
+    // again takes it apart rather than nesting it
+    check("RegionIntersection(Disk({1,0},2), RegionIntersection(Disk({0,0},2), Disk({0,3},2)))", //
+        "BooleanRegion(#1&&#2&&#3&,{Disk({1,0},2),Disk({0,0},2),Disk({0,3},2)})");
+    check(
+        "RegionIntersection(Ball({0.5,0.5,0.5},0.5), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z})))", //
+        // the long line is wrapped where the output wraps it
+        "BooleanRegion(#1&&#2&&#3&,{Ball({0.5,0.5,0.5},0.5),Cube({0.5,0.5,0.5},1),ImplicitRegion(x+"
+            + "y==\n1,{x,y,z})})");
+    // a region that asks for either of its parts is inlined with its slots renumbered
+    check(
+        "RegionIntersection(Disk({0,0},2), BooleanRegion(#1||#2&, {Disk({0,3},2), Disk({1,1},1)}))", //
+        "BooleanRegion(#1&&(#2||#3)&,{Disk({0,0},2),Disk({0,3},2),Disk({1,1},1)})");
+  }
+
+  /**
+   * A solid and a plane meet in a flat cross section, which has an area although neither of the
+   * two regions does. The cube cut by <code>x + y == 1</code> is a rectangle of the face diagonal
+   * by the height, <code>Sqrt(2)</code>.
+   */
+  @Test
+  public void testAreaOfABoxCutByAPlane() {
+    checkNumeric("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})))", //
+        "1.4142135623730951");
+    // straight through the middle: the unit square
+    check("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(z==1/2,{x,y,z})))", //
+        "1.0");
+    // the long diagonal cuts a regular hexagon of 3*Sqrt(3)/4
+    checkNumeric(
+        "Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y+z==3/2,{x,y,z})))", //
+        "1.299038105676658");
+    // a Cuboid says the same as the Cube it equals
+    checkNumeric(
+        "Area(RegionIntersection(Cuboid({0,0,0},{1,1,1}), ImplicitRegion(x+y==1,{x,y,z})))", //
+        "1.4142135623730951");
+    // a plane that misses the box cuts nothing, and there is no region to measure
+    check("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x==10,{x,y,z})))", //
+        "Area(BooleanRegion(#1&&#2&,{Cube({0.5,0.5,0.5},1),ImplicitRegion(x==10,{x,y,z})}))");
+    // a surface that is not flat, and a region that asks for either part rather than both, are
+    // left alone
+    check("Area(RegionIntersection(Cube({0.5,0.5,0.5},1), ImplicitRegion(x^2+y==1,{x,y,z})))", //
+        "Area(BooleanRegion(#1&&#2&,{Cube({0.5,0.5,0.5},1),ImplicitRegion(x^2+y==1,{x,y,z})}))");
+    // a region that asks for either part is as wide as the cube, and a solid has no area
+    check(
+        "Area(BooleanRegion(#1||#2&, {Cube({0.5,0.5,0.5},1), ImplicitRegion(x+y==1,{x,y,z})}))", //
+        "Undefined");
+  }
+
+  /**
+   * A ball cut by a plane is a disk, and a ball and a box together cut the plane down to the part
+   * of that disk lying inside the box's cross section.
+   */
+  @Test
+  public void testAreaOfABallCutByAPlane() {
+    // the great circle of the unit ball, whatever direction the plane runs in
+    checkNumeric("Area(RegionIntersection(Ball({0,0,0},1), ImplicitRegion(z==0,{x,y,z})))", //
+        "3.141592653589793");
+    checkNumeric("Area(RegionIntersection(Ball({0,0,0},1), ImplicitRegion(x+y+z==0,{x,y,z})))", //
+        "3.141592653589793");
+    // a plane off the middle cuts a smaller disk, of radius Sqrt(r^2-d^2): here Sqrt(3)
+    checkNumeric("Area(RegionIntersection(Ball({0,0,0},2), ImplicitRegion(z==1,{x,y,z})))", //
+        "9.42477796076938");
+    // a plane past the ball, and one tangent to it, cut nothing
+    check("Area(RegionIntersection(Ball({0,0,0},2), ImplicitRegion(z==5,{x,y,z})))", //
+        "Area(BooleanRegion(#1&&#2&,{Ball({0,0,0},2),ImplicitRegion(z==5,{x,y,z})}))");
+    check("Area(RegionIntersection(Ball({0,0,0},2), ImplicitRegion(z==2,{x,y,z})))", //
+        "Area(BooleanRegion(#1&&#2&,{Ball({0,0,0},2),ImplicitRegion(z==2,{x,y,z})}))");
+    // a small ball which the plane misses inside the box
+    check(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},0.1), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1.9,{x,y,z}))))", //
+        "Area(BooleanRegion(#1&&#2&&#3&,{Ball({0.5,0.5,0.5},0.1),Cube({0.5,0.5,0.5},1),ImplicitRegion(x+y==1.9,{x,y,z})}))");
+
+    // the cube's inscribed ball meets the diagonal cross section at its great circle, and that
+    // disk of radius 1/2 just fits inside the Sqrt(2) by 1 rectangle: Pi/4
+    checkNumeric(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},0.5), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "0.7853981633974483");
+    // a small ball about the middle of the cross section keeps its whole disk: Pi/100
+    checkNumeric(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},0.1), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "0.03141592653589794");
+    // a wider ball has the rectangle's two long sides cut a cap off its disk each
+    checkNumeric(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},0.6), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "1.0409422430387167");
+    // a ball about the rectangle's short side keeps half of its disk: Pi*0.4^2/2
+    checkNumeric(
+        "Area(RegionIntersection(Ball({1,0,0.5},0.4), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "0.25132741228718347");
+    // a ball that swallows the box leaves the whole cross section
+    checkNumeric(
+        "Area(RegionIntersection(Ball({0.5,0.5,0.5},10), RegionIntersection(Cube({0.5,0.5,0.5},1),"
+            + " ImplicitRegion(x+y==1,{x,y,z}))))", //
+        "1.4142135623730951");
+    // the parts may arrive in any order and as one intersection: Pi/16
+    checkNumeric(
+        "Area(RegionIntersection(Cuboid({0,0,0},{1,1,1}), ImplicitRegion(z==1/2,{x,y,z}),"
+            + " Ball({0.5,0.5,0.5},0.25)))", //
+        "0.19634954084936207");
+
+    // a Sphere is a surface, and meets a plane in a circle rather than a disk, so it is left alone
+    check("Area(RegionIntersection(Sphere({0,0,0},1), ImplicitRegion(z==0,{x,y,z})))", //
+        "Area(BooleanRegion(#1&&#2&,{Sphere({0,0,0},1),ImplicitRegion(z==0,{x,y,z})}))");
+    // two balls meet in a solid, which has a volume and no area
+    check("Area(RegionIntersection(Ball({0,0,0},1), Ball({0,0,1},1)))", //
+        "Undefined");
+    check("Area(RegionIntersection(Ball({0,0,0},2), Ball({0,0,0},1)))", //
+        "Undefined");
   }
 }

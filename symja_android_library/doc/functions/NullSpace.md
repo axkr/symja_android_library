@@ -6,11 +6,26 @@ NullSpace(matrix)
 
 > returns a list of vectors that span the nullspace of the `matrix`.
 
+The options are those of `RowReduce`:
+
+- `Modulus -> n` - the null space over the integers modulo `n`
+- `Tolerance -> t` - entries of a numeric matrix smaller than `t` are taken as zero
+- `ZeroTest -> f` - an entry `e` is taken as zero when `f(e)` is `True`; by default `PossibleZeroQ`
+- `Method` - accepted and ignored
+
 See:     
 * [Wikipedia - Kernel (linear algebra)](http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29)
 * [Youtube - Inverse matrices, column space and null space | Essence of linear algebra, chapter 7](https://youtu.be/uQhTuRlWMxw)
 
 ### Examples
+
+```
+>> NullSpace({{1, a}, {a, a^2}}, ZeroTest -> (Simplify(#) === 0 &))
+{{-a,1}}
+
+>> NullSpace({{1, 2}, {2, 4}}, Modulus -> 5)
+{{3,1}}
+```
 
 ```
 >> NullSpace({{1,0,-3,0,2,-8},{0,1,5,0,-1,4},{0,0,0,1,7,-9},{0,0,0,0,0,0}})

@@ -400,7 +400,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     String method = "Newton";
     int accuracyGoal = 6;
     // S.MaxIterations
-    int maxIterations = optionMaxIterations(options[0], engine);
+    int maxIterations = optionMaxIterations(options[0], S.FindRoot, engine);
     if (maxIterations < 0) {
       return F.NIL;
     }
@@ -470,12 +470,13 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    * Determine the value of the <code>MaxIterations</code> option.
    *
    * @param option the value of the {@link S#MaxIterations} option
+   * @param head the symbol which prints the message
    * @param engine the evaluation engine
    * @return the maximum number of iterations, {@link Integer#MAX_VALUE} for {@link S#Infinity}, or
    *         <code>-1</code> if the value is not a valid option value - the <code>ioppfa</code>
    *         message was printed in that case
    */
-  private static int optionMaxIterations(IExpr option, EvalEngine engine) {
+  static int optionMaxIterations(IExpr option, ISymbol head, EvalEngine engine) {
     if (option.isAutomatic()) {
       return DEFAULT_MAX_ITERATIONS;
     }
@@ -490,7 +491,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     }
     // The value of the option MaxIterations -> `1` should be a positive integer, Infinity or
     // Automatic.
-    Errors.printMessage(S.FindRoot, "ioppfa", F.list(option), engine);
+    Errors.printMessage(head, "ioppfa", F.list(option), engine);
     return -1;
   }
 

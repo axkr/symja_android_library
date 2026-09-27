@@ -6,8 +6,8 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.tasks.EventLoop;
 import org.matheclipse.core.expression.F;
@@ -28,8 +28,8 @@ import org.matheclipse.core.io.net.SocketRegistry;
  * <p>
  * A server is <code>SocketOpen</code>, a connection is <code>SocketConnect</code>, and what arrives
  * either goes to the handlers of a <code>SocketListen</code> or waits for <code>SocketReadMessage
- * </code> to take it. Reading blocks the way the Wolfram Language blocks: the evaluation waits, and
- * while it waits the {@link EventLoop} runs whatever else has come due, so a program written as
+ * </code> to take it. Reading blocks: the evaluation waits, and while it waits the
+ * {@link EventLoop} runs whatever else has come due, so a program written as
  * <code>While[True, Pause[0.01]]</code> still serves its sockets.
  */
 public class SocketFunctions {
@@ -185,7 +185,8 @@ public class SocketFunctions {
   }
 
   /**
-   * <code>SocketListen[socket, f]</code>, <code>SocketListen[socket, HandlerFunctions -> &lt;|…|&gt;]
+   * <code>SocketListen[socket, f]</code>,
+   * <code>SocketListen[socket, HandlerFunctions -> &lt;|…|&gt;]
    * </code>: call these when something happens on the socket.
    *
    * @return <code>SocketListener[n]</code>
@@ -410,8 +411,7 @@ public class SocketFunctions {
         return write(entry, (ast.arg2().toString() + "\n").getBytes(StandardCharsets.UTF_8),
             S.WriteLine, engine);
       }
-      return engine
-          .evaluate(F.binaryAST2(S.WriteString, ast.arg1(), F.stringx(ast.arg2() + "\n")));
+      return engine.evaluate(F.binaryAST2(S.WriteString, ast.arg1(), F.stringx(ast.arg2() + "\n")));
     }
 
     @Override
@@ -445,8 +445,8 @@ public class SocketFunctions {
    * The channel is non-blocking because the selector thread reads from it, so a large write has to
    * be repeated until it has all gone out.
    */
-  public static IExpr write(SocketEntry entry, byte[] bytes, org.matheclipse.core.interfaces.ISymbol
-      caller, EvalEngine engine) {
+  public static IExpr write(SocketEntry entry, byte[] bytes,
+      org.matheclipse.core.interfaces.ISymbol caller, EvalEngine engine) {
     SocketChannel channel = entry.socketChannel();
     if (channel == null || entry.isClosed()) {
       return S.$Failed;

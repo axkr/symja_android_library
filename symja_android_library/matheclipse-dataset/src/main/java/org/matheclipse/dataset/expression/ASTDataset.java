@@ -77,7 +77,7 @@ public class ASTDataset extends AbstractAST
     Table table = Table.create();
     // a real name, not the empty one it is shown under: the CSV that writeExternal produces has a
     // header line, and an empty header does not survive being read back
-    table.addColumns(ExprColumn.create(VECTOR_COLUMN, listValues(values)));
+    table.addColumns(ExprColumn.create(VECTOR_COLUMN, values.asArgsList()));
     ASTDataset dataset = new ASTDataset(table);
     dataset.fShape = Shape.VECTOR;
     return dataset;
@@ -104,14 +104,6 @@ public class ASTDataset extends AbstractAST
     ASTDataset dataset = new ASTDataset(table);
     dataset.fShape = Shape.ASSOCIATION;
     return dataset;
-  }
-
-  private static List<IExpr> listValues(IAST list) {
-    List<IExpr> values = new ArrayList<IExpr>(list.argSize());
-    for (int i = 1; i < list.size(); i++) {
-      values.add(list.get(i));
-    }
-    return values;
   }
 
   /** The name the single column of a {@link Shape#VECTOR} is stored under, and never shown under. */

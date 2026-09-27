@@ -79,6 +79,10 @@ public final class IntegerReduceEngine {
       if (result == null) {
         return F.NIL;
       }
+      IExpr parametrized = ResidueClasses.form(result, request.targets());
+      if (parametrized.isPresent()) {
+        return engine.evaluate(parametrized);
+      }
       IExpr expression = Emitter.formula(result, request.targets());
       return engine.evaluate(Emitter.withDomainConditions(expression, request.targets(), domain));
     }
@@ -227,7 +231,13 @@ public final class IntegerReduceEngine {
     if (normalized == null) {
       return F.NIL;
     }
-    IExpr expression = Emitter.formula(Presburger.simplify(normalized), request.targets());
+    Formula simplified = Presburger.simplify(normalized);
+    // a residue class is written with a generated parameter, the way Mathematica does
+    IExpr parametrized = ResidueClasses.form(simplified, request.targets());
+    if (parametrized.isPresent()) {
+      return engine.evaluate(parametrized);
+    }
+    IExpr expression = Emitter.formula(simplified, request.targets());
     return engine.evaluate(Emitter.withDomainConditions(expression, request.targets(), domain));
   }
 

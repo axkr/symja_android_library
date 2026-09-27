@@ -1,10 +1,7 @@
 package org.matheclipse.core.convert;
 
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.IInteger;
-import java.math.BigInteger;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import org.apfloat.Apfloat;
@@ -14,8 +11,11 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.Scanner;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -83,7 +83,7 @@ public class ExpressionJSONConvert {
    * @throws JsonMappingException
    */
   public static JsonNode exportExpressionJSON(IExpr expr) {
-    // every exact number is a number or a structure of numbers, as the Wolfram Language writes it:
+    // every exact number is a number or a structure of numbers:
     // a front end reads ["List",1,2] as two numbers, and read ["List","1","2"] as two symbols
     if (expr.isTrue()) {
       return BooleanNode.TRUE;

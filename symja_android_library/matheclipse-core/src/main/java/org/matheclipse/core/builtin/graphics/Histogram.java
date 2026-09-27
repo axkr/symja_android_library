@@ -9,8 +9,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
-import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -49,8 +49,8 @@ public class Histogram extends ListPlot {
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
     IExpr chartStyle = GraphicsOptions.optionValue(originalAST, S.ChartStyle, S.Automatic);
-    IExpr chartLabels = GraphicsOptions.chartLabels(
-        GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None), keyLabels);
+    IExpr chartLabels = GraphicsOptions
+        .chartLabels(GraphicsOptions.optionValue(originalAST, S.ChartLabels, S.None), keyLabels);
     IExpr chartLegends = GraphicsOptions.optionValue(originalAST, S.ChartLegends, S.None);
     IExpr baseStyle = GraphicsOptions.optionValue(originalAST, S.ChartBaseStyle, F.NIL);
     IExpr layout = GraphicsOptions.optionValue(originalAST, S.ChartLayout, S.Automatic);
@@ -134,21 +134,18 @@ public class Histogram extends ListPlot {
     double maxY = 0;
     double[] stackBase = new double[numBins];
 
-    // A ColorFunction colours each bar by its own height, so it takes the place of ChartStyle -
-    // the Wolfram Language gives it the higher priority of the two. The tallest bin sets the top
-    // of the scale.
+    // A ColorFunction colours each bar by its own height, so it takes the place of ChartStyle. The
+    // tallest bin sets the top of the scale.
     double tallest = 0;
     for (int d = 0; d < datasetCount; d++) {
       for (int i = 0; i < numBins; i++) {
         tallest = Math.max(tallest, counts[d][i] * scale);
       }
     }
-    PlotColorFunction barColors = PlotColorFunction
-        .of(PlotColorFunction.Family.CHART,
-            GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic),
-            GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True), S.Histogram,
-            engine)
-        .range(1, 0, tallest).build();
+    PlotColorFunction barColors = PlotColorFunction.of(PlotColorFunction.Family.CHART,
+        GraphicsOptions.optionValue(originalAST, S.ColorFunction, S.Automatic),
+        GraphicsOptions.optionValue(originalAST, S.ColorFunctionScaling, S.True), S.Histogram,
+        engine).range(1, 0, tallest).build();
 
     for (int d = 0; d < datasetCount; d++) {
       IExpr color = getChartStyle(chartStyle, d);
@@ -210,8 +207,8 @@ public class Histogram extends ListPlot {
    *
    * <p>
    * The function is handed the bar's rectangle, what the bar is worth and its position, as
-   * {@code f[{{x0, x1}, {y0, y1}}, height, {}]} - the shape the Wolfram Language passes it, which
-   * is what lets a function that draws a bar also collect it, as {@code Sow} does.
+   * {@code f[{{x0, x1}, {y0, y1}}, height, {}]}, which is what lets a function that draws a bar
+   * also collect it, as {@code Sow} does.
    */
   private static IExpr barPrimitive(IExpr elementFunction, double x0, double x1, double y0,
       double y1, IExpr height, EvalEngine engine) {

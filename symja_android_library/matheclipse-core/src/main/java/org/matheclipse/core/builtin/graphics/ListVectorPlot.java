@@ -18,17 +18,17 @@ import org.matheclipse.core.interfaces.IExpr;
  *
  * <p>
  * An array of vectors places <code>array[[i, j]]</code> at <code>{j, i}</code> and
- * <code>array[[i, j, k]]</code> at <code>{k, j, i}</code>, as the Wolfram Language does, or spreads
- * each axis over <code>DataRange -> {{xmin, xmax}, {ymin, ymax}[, {zmin, zmax}]}</code>. A dense
- * array is thinned to at most 15 (in 3D 7) evenly spaced entries along each axis, so the arrows stay
- * readable, and its plot range is the extent of the data. A list of <code>{point, vector}</code>
- * pairs places each vector at its point.
+ * <code>array[[i, j, k]]</code> at <code>{k, j, i}</code>, or spreads each axis over
+ * <code>DataRange -> {{xmin, xmax}, {ymin, ymax}[, {zmin, zmax}]}</code>. A dense array is thinned
+ * to at most 15 (in 3D 7) evenly spaced entries along each axis, so the arrows stay readable, and
+ * its plot range is the extent of the data. A list of <code>{point, vector}</code> pairs places
+ * each vector at its point.
  *
  * <p>
  * Each arrow is centred on its point and the longest spans <code>VectorScale</code> of the spacing
- * between points. They are coloured by their length unless <code>VectorColorFunction -> None</code>.
- * Entries that are not numeric vectors, and zero vectors, get no arrow. Any other option is handed on
- * to the <code>Graphics</code>/<code>Graphics3D</code>.
+ * between points. They are coloured by their length unless
+ * <code>VectorColorFunction -> None</code>. Entries that are not numeric vectors, and zero vectors,
+ * get no arrow. Any other option is handed on to the <code>Graphics</code>/<code>Graphics3D</code>.
  */
 public class ListVectorPlot extends AbstractFunctionEvaluator {
 
@@ -136,8 +136,7 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
       for (int d = 0; d < dimension; d++) {
         int level = dimension - 1 - d;
         if (kept[level] > 1) {
-          spacing = Math.min(spacing,
-              Math.abs(step[d]) * (counts[level] - 1) / (kept[level] - 1));
+          spacing = Math.min(spacing, Math.abs(step[d]) * (counts[level] - 1) / (kept[level] - 1));
         }
       }
       if (spacing == Double.MAX_VALUE || spacing == 0.0) {
@@ -178,8 +177,8 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
         max[d] = Math.max(max[d], p[d]);
       }
       IAST arrow = VectorPlot.arrow(from, to, dimension);
-      primitives.append(
-          colored ? F.list(VectorPlot.color(VectorPlot.norm(v) / longest), arrow) : arrow);
+      primitives
+          .append(colored ? F.list(VectorPlot.color(VectorPlot.norm(v) / longest), arrow) : arrow);
     }
 
     IASTAppendable result = dimension == 3 ? F.Graphics3D(primitives) : F.Graphics(primitives);
@@ -189,7 +188,7 @@ public class ListVectorPlot extends AbstractFunctionEvaluator {
       IASTAppendable range = F.ListAlloc(dimension);
       for (int d = 0; d < dimension; d++) {
         if (extent != null && extent[d][1] > extent[d][0]) {
-          // an array's plot range is the extent of its data, as the Wolfram Language draws it
+          // an array's plot range is the extent of its data
           range.append(F.list(F.num(extent[d][0]), F.num(extent[d][1])));
         } else {
           range.append(F.list(F.num(min[d] - pad), F.num(max[d] + pad)));

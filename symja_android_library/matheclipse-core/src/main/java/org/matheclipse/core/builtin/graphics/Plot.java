@@ -3,17 +3,16 @@ package org.matheclipse.core.builtin.graphics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleUnaryOperator;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -41,18 +40,13 @@ public class Plot extends ListPlot {
       return Errors.printMessage(S.Plot, "pllim", F.list(arg2), engine);
     }
 
-    if (options[0].isTrue()) {
-      IExpr temp = S.Manipulate.funEval(engine, ast);
-      if (temp.headID() == ID.JSFormData) {
-        return temp;
-      }
-      return F.NIL;
-    }
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
     graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
+    // the points are adaptive samples of a function, not data, so markers are spaced out
+    graphicsOptions.setSampledCurve(true);
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
@@ -88,25 +82,12 @@ public class Plot extends ListPlot {
               return F.NIL;
             }
 
-            if (ToggleFeature.JS_ECHARTS) {
-              String graphicsPrimitivesStr = listPlotECharts(listOfLines, graphicsOptions);
-              if (graphicsPrimitivesStr != null) {
-                StringBuilder jsControl = new StringBuilder();
-                jsControl.append("var eChart = echarts.init(document.getElementById('main'));\n");
-                jsControl.append(graphicsPrimitivesStr);
-                jsControl.append("\neChart.setOption(option);");
-
-                return F.JSFormData(jsControl.toString(), "echarts");
-              }
-              return F.NIL;
-            } else {
-              // simulate ListPlot data
-              GraphicsOptions listPlotOptions = graphicsOptions.copy();
-              IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
-              IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
-              if (graphicsPrimitives.isPresent()) {
-                return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
-              }
+            // simulate ListPlot data
+            GraphicsOptions listPlotOptions = graphicsOptions.copy();
+            IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
+            IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
+            if (graphicsPrimitives.isPresent()) {
+              return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
             }
 
           }
@@ -145,7 +126,12 @@ public class Plot extends ListPlot {
         .evalN(quantityRange.isPresent() ? quantityRange.arg2() : rangeList.arg3());
     if ((!(xMin instanceof INum)) || (!(xMax instanceof INum)) || xMin.equals(xMax)) {
       // Endpoints in `1` must be distinct machine-size real numbers.
-      return Errors.printMessage(ast.topHead(), "plld", F.List(x, rangeList), engine);
+      // the log plots are a Plot inside, and report it under that name as the reference does
+      IExpr head = ast.topHead();
+      if (head == S.LogPlot || head == S.LogLogPlot || head == S.LogLinearPlot) {
+        head = S.Plot;
+      }
+      return Errors.printMessage((ISymbol) head, "plld", F.List(x, rangeList), engine);
     }
     double xMinD = ((INum) xMin).getRealPart();
     double xMaxD = ((INum) xMax).getRealPart();
@@ -157,7 +143,11 @@ public class Plot extends ListPlot {
 
     // which curve carries which label; the rule lives in PlotWrapper so that every plot family
     // reads a wrapped argument the same way
-    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions);
+    // f(x) with f(u_?NumericQ) := {Sin(u), Cos(u)} is two curves, which only its value can say
+    final List<IAST> probes =
+        PlotShapeProbe.rangeProbes(new IExpr[] {x}, new double[] {xMinD}, new double[] {xMaxD});
+    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions).splitEach(
+        f -> PlotShapeProbe.split(f, probes, PlotShapeProbe.SCALAR, false, engine));
     final IAST list = curves.functions;
     int size = list.size();
     List<double[][]> dataList = new ArrayList<double[][]>(size - 1);

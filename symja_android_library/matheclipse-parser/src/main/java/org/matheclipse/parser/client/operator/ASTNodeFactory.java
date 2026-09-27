@@ -191,8 +191,8 @@ public class ASTNodeFactory implements INodeParserFactory {
         }
         if (rhs instanceof FunctionNode) {
           FunctionNode optional = (FunctionNode) rhs;
-          if (optional.size() == 3 && optional.get(0)
-              .equals(factory.createSymbol(IConstantOperators.Optional))) {
+          if (optional.size() == 3
+              && optional.get(0).equals(factory.createSymbol(IConstantOperators.Optional))) {
             // `name : pattern : default`. The default is read while the pattern is, so what
             // arrives here is already Optional[pattern, default] and the name belongs inside it.
             return factory.createFunction(factory.createSymbol(IConstantOperators.Optional),
@@ -212,9 +212,8 @@ public class ASTNodeFactory implements INodeParserFactory {
      * <p>
      * <code>:</code> collects its arguments flat, so <code>name : pattern : default</code> arrives
      * here as a three-argument <code>Pattern</code>. It is an optional argument that also carries a
-     * name, which the Wolfram Language reads as
-     * <code>Optional[Pattern[name, pattern], default]</code> - the spelling every argument of
-     * <code>CreateUType</code> is written in.
+     * name, which is read as <code>Optional[Pattern[name, pattern], default]</code> - the spelling
+     * every argument of <code>CreateUType</code> is written in.
      */
     @Override
     public FunctionNode endFunction(final INodeParserFactory factory, final FunctionNode function,

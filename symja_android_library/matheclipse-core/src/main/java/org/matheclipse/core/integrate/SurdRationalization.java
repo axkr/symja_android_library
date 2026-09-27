@@ -251,6 +251,9 @@ public class SurdRationalization {
       return false;
     }
     try {
+      if (AntiderivativeCheck.agrees(result, integrand, x, engine)) {
+        return true;
+      }
       IExpr diff = F.Subtract(F.D(result, x), integrand);
       if (engine.evaluate(F.Together(diff)).isZero()) {
         return true;

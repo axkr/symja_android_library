@@ -104,6 +104,7 @@ public class ConstantDefinitions {
       S.$RecursionLimit.setEvaluator(new $RecursionLimit());
       S.$RootDirectory.setEvaluator(new $RootDirectory());
       S.$ScriptCommandLine.setEvaluator(new $ScriptCommandLine());
+      S.$ScriptInputString.setEvaluator(new $ScriptInputString());
       S.$SystemCharacterEncoding.setEvaluator(new $SystemCharacterEncoding());
       S.$UnitSystem.setEvaluator(new $UnitSystem());
       S.$CharacterEncoding.setEvaluator(new $CharacterEncoding());
@@ -204,8 +205,8 @@ public class ConstantDefinitions {
    * <code>$ContextAliases = &lt;|...|&gt;</code> replaces them all. An alias applies to the names
    * read after it, so <code>Graphics3D`Materials["Glass"]</code> in a notebook cell is the
    * <code>CoffeeLiqueur`Extensions`Graphics3D`Tools`Materials</code> the module defines. Without
-   * this evaluator both assignments were stored as rules nothing read back, and such a name stayed a
-   * symbol of its own.
+   * this evaluator both assignments were stored as rules nothing read back, and such a name stayed
+   * a symbol of its own.
    */
   private static class $ContextAliases extends AbstractSymbolEvaluator
       implements ISetValueEvaluator, ISetEvaluator {
@@ -219,7 +220,9 @@ public class ConstantDefinitions {
       return engine.evaluate(association);
     }
 
-    /** <code>$ContextAliases["a`"]</code> - the context an alias stands for, as in an association. */
+    /**
+     * <code>$ContextAliases["a`"]</code> - the context an alias stands for, as in an association.
+     */
     @Override
     public IExpr evaluate(final org.matheclipse.core.interfaces.IAST ast, EvalEngine engine) {
       if (ast.argSize() == 1) {
@@ -664,8 +667,8 @@ public class ConstantDefinitions {
         // the notebook's shared directory that way at every launch
         return assigned;
       }
-      // The directories Get and Needs search for a package - as in the Wolfram Language, a
-      // list of directories. This used to return the operating system's PATH variable, which
+      // The directories Get and Needs search for a package, a list of directories. This used to
+      // return the operating system's PATH variable, which
       // is the search path for executables and has nothing to do with packages.
       // through FileSandbox, so that a sandboxed session reports the directory it can actually
       // read rather than the host's home directory
@@ -749,6 +752,22 @@ public class ConstantDefinitions {
     }
   }
 
+  /**
+   * The line of standard input a <code>-linewise</code> script is running for.
+   *
+   * <p>
+   * The evaluator is also what makes the symbol usable at all: a <code>$</code> built-in without
+   * one keeps an assigned value but never reads it back, so <code>$ScriptInputString = "x"</code>
+   * would leave <code>$ScriptInputString</code> evaluating to itself.
+   */
+  private static class $ScriptInputString extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return Config.SCRIPT_INPUT_STRING == null ? S.None : Config.SCRIPT_INPUT_STRING;
+    }
+  }
+
   private static class $SystemCharacterEncoding extends AbstractSymbolEvaluator {
 
     @Override
@@ -784,8 +803,8 @@ public class ConstantDefinitions {
         return rightHandSide;
       }
       // Cannot set `1` to `2`; value must be "Metric" or "Imperial".
-      return Errors.printMessage(S.$UnitSystem, "unitsys",
-          F.list(S.$UnitSystem, rightHandSide), engine);
+      return Errors.printMessage(S.$UnitSystem, "unitsys", F.list(S.$UnitSystem, rightHandSide),
+          engine);
     }
   }
 
@@ -955,12 +974,11 @@ public class ConstantDefinitions {
 
     /**
      * The platform in the spelling <code>wolframscript</code> uses, for example
-     * <code>MacOSX-ARM64</code> or <code>Linux-x86-64</code>. Scripts use it to pick the directory a
-     * platform-specific resource lives in, so the spelling has to match.
+     * <code>MacOSX-ARM64</code> or <code>Linux-x86-64</code>. Scripts use it to pick the directory
+     * a platform-specific resource lives in, so the spelling has to match.
      */
     static String systemID() {
-      String operatingSystem =
-          System.getProperty("os.name", "Unknown").toLowerCase(Locale.ENGLISH);
+      String operatingSystem = System.getProperty("os.name", "Unknown").toLowerCase(Locale.ENGLISH);
       String architecture = System.getProperty("os.arch", "").toLowerCase(Locale.ENGLISH);
       String system;
       if (operatingSystem.contains("mac") || operatingSystem.contains("darwin")) {
@@ -1011,7 +1029,7 @@ public class ConstantDefinitions {
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       if (Config.WOLFRAMSCRIPT_COMPAT) {
         // A script gates its features on this number, so in a wolframscript-compatible run it has
-        // to name the Wolfram Language version Symja follows. $Version still says Symja.
+        // to name the WMA version Symja follows. $Version still says Symja.
         return F.num(Config.WOLFRAM_LANGUAGE_VERSION);
       }
       return F.num(symjaVersionNumber());
@@ -1045,10 +1063,10 @@ public class ConstantDefinitions {
     }
 
     /**
-     * The banner Mathematica shows as <code>$Version</code>, naming Symja rather than a Wolfram
-     * kernel. A script that has to know what it is really talking to reads this - in
+     * The banner shows as <code>$Version</code>, naming Symja rather than a WMA kernel. A script
+     * that has to know what it is really talking to reads this - in
      * {@link Config#WOLFRAMSCRIPT_COMPAT} mode <code>$VersionNumber</code> deliberately reports the
-     * Wolfram Language version instead, so the name is the only thing left that tells the truth.
+     * WMA version instead, so the name is the only thing left that tells the truth.
      */
     public static String versionBanner() {
       String version = Config.VERSION;

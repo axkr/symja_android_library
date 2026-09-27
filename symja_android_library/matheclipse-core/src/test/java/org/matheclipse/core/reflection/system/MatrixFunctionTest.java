@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 public class MatrixFunctionTest extends ExprEvaluatorTestCase {
   @Test
@@ -320,6 +322,7 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testMatrixLog() {
     check("MatrixLog({{3.4, 1.2}, {0.001, -0.9}})", //
         "{{1.22377+I*0.00020385,0.37081+I*(-0.87661)},\n"//

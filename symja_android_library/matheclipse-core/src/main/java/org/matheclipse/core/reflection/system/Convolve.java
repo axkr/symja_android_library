@@ -79,15 +79,20 @@ public class Convolve extends AbstractFunctionEvaluator {
       }
     }
 
-    // 4. Gaussian (*) Gaussian:
-    // Convolve(A*E^(-a*x^2), B*E^(-b*x^2), x, y) == A*B*Sqrt(Pi/(a+b))*E^(-(a*b/(a+b))*y^2)
+    // 4. Gaussian (*) Gaussian, shifted or not:
+    // Convolve(A*E^(-a*(x-m)^2), B*E^(-b*(x-n)^2), x, y)
+    // == A*B*Sqrt(Pi/(a+b))*E^(-(a*b/(a+b))*(y-m-n)^2)
     final IExpr[] fGauss = gaussianParameters(f, x, engine);
     final IExpr[] gGauss = gaussianParameters(g, x, engine);
     if (fGauss != null && gGauss != null) {
-      IExpr sum = F.Plus(fGauss[1], gGauss[1]);
-      IExpr amplitude = F.Times(fGauss[0], gGauss[0], F.Sqrt(F.Divide(S.Pi, sum)));
-      IExpr exponent =
-          F.Times(F.CN1, F.Divide(F.Times(fGauss[1], gGauss[1]), sum), F.Power(y, F.C2));
+      IExpr sum = engine.evaluate(F.Together(F.Plus(fGauss[1], gGauss[1])));
+      // Sqrt(Pi/2) for a number, Sqrt(Pi)/Sqrt(a+b) for a symbolic width, as Mathematica writes them
+      IExpr root = sum.isNumber() ? F.Sqrt(F.Divide(S.Pi, sum))
+          : F.Divide(F.Sqrt(S.Pi), F.Sqrt(sum));
+      IExpr amplitude = F.Times(fGauss[0], gGauss[0], root);
+      IExpr shift = F.Subtract(y, F.Plus(fGauss[2], gGauss[2]));
+      IExpr width = F.Together(F.Divide(F.Times(fGauss[1], gGauss[1]), sum));
+      IExpr exponent = F.Times(F.CN1, width, F.Power(shift, F.C2));
       return engine.evaluate(F.Times(amplitude, F.Exp(exponent)));
     }
 
@@ -140,44 +145,58 @@ public class Convolve extends AbstractFunctionEvaluator {
   }
 
   /**
-   * If <code>f</code> is a centered Gaussian <code>A*E^(-a*x^2)</code> (with <code>A</code> and
-   * <code>a</code> free of <code>x</code>) return the array <code>{A, a}</code>. Otherwise return
-   * <code>null</code>.
+   * If <code>f</code> is a Gaussian <code>A*E^(-a*(x-m)^2)</code> return the array
+   * <code>{A, a, m}</code>, with <code>A</code>, <code>a</code> and <code>m</code> free of
+   * <code>x</code>. Otherwise return <code>null</code>.
+   *
+   * <p>
+   * The exponent may be any quadratic polynomial <code>c2*x^2 + c1*x + c0</code> in <code>x</code>,
+   * spread over several <code>E^(...)</code> factors: completing the square gives
+   * <code>a = -c2</code>, <code>m = c1/(2*a)</code>, and the constant
+   * <code>E^(c0 + c1^2/(4*a))</code> moves into <code>A</code>. This covers the shifted
+   * <code>E^(-(x-2)^2)</code> and the densities <code>PDF(NormalDistribution(m, s), x)</code>. A
+   * symbolic <code>c2</code> is accepted unless it is known to be non-negative, since the integral
+   * only converges for <code>a > 0</code>.
    */
   private static IExpr[] gaussianParameters(IExpr f, IExpr x, EvalEngine engine) {
-    IExpr amplitude = F.C1;
-    IExpr exponent = F.NIL;
-    if (f.isTimes()) {
-      IAST times = (IAST) f;
-      IASTAppendable rest = F.TimesAlloc(times.size());
-      for (int i = 1; i < times.size(); i++) {
-        IExpr factor = times.get(i);
-        IExpr candidate = gaussianExponent(factor);
-        if (candidate.isPresent() && !candidate.isFree(x) && exponent.isNIL()) {
-          exponent = candidate;
-        } else if (factor.isFree(x)) {
-          rest.append(factor);
-        } else {
-          return null;
-        }
+    IASTAppendable amplitude = F.TimesAlloc(4);
+    IASTAppendable exponent = F.PlusAlloc(4);
+    IAST factors = f.isTimes() ? (IAST) f : F.Times(f);
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      IExpr candidate = gaussianExponent(factor);
+      if (candidate.isPresent() && !candidate.isFree(x)) {
+        exponent.append(candidate);
+      } else if (factor.isFree(x)) {
+        amplitude.append(factor);
+      } else {
+        return null;
       }
-      amplitude = rest.oneIdentity1();
-    } else {
-      exponent = gaussianExponent(f);
     }
-    if (exponent.isNIL()) {
+    if (exponent.argSize() == 0) {
       return null;
     }
-    // exponent must equal -a*x^2 with a free of x (no linear or constant term in x)
-    IExpr a2 = engine.evaluate(F.Coefficient(exponent, x, F.C2));
-    if (!a2.isFree(x) || a2.isZero() || !a2.isNegativeResult()) {
+    IExpr quadratic = engine.evaluate(F.Expand(exponent.oneIdentity0()));
+    IExpr c2 = engine.evaluate(F.Coefficient(quadratic, x, F.C2));
+    IExpr c1 = engine.evaluate(F.Coefficient(quadratic, x, F.C1));
+    IExpr c0 = engine.evaluate(F.Coefficient(quadratic, x, F.C0));
+    if (!c2.isFree(x) || !c1.isFree(x) || !c0.isFree(x) || c2.isZero() || c2.isPositiveResult()
+        || (c2.isReal() && !c2.isNegative())) {
       return null;
     }
-    IExpr remainder = engine.evaluate(F.Subtract(exponent, F.Times(a2, F.Power(x, F.C2))));
+    IExpr remainder = engine.evaluate(F.Expand(F.Subtract(quadratic,
+        F.Plus(F.Times(c2, F.Power(x, F.C2)), F.Times(c1, x), c0))));
     if (!remainder.isZero()) {
       return null;
     }
-    return new IExpr[] {amplitude, a2.negate()};
+    IExpr a = engine.evaluate(F.Negate(c2));
+    IExpr m = engine.evaluate(F.Together(F.Divide(c1, F.Times(F.C2, a))));
+    IExpr constant =
+        engine.evaluate(F.Together(F.Plus(c0, F.Divide(F.Sqr(c1), F.Times(F.C4, a)))));
+    if (!constant.isZero()) {
+      amplitude.append(F.Exp(constant));
+    }
+    return new IExpr[] {engine.evaluate(amplitude.oneIdentity1()), a, m};
   }
 
   /** Return the exponent of an <code>E^(...)</code> or <code>Exp(...)</code> expression. */

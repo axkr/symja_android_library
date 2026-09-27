@@ -33,9 +33,9 @@ import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -47,6 +47,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.PolynomialsUtils;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
+import org.matheclipse.core.polynomials.GroebnerBasisJAS;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
@@ -59,12 +60,9 @@ import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.gb.GroebnerBaseAbstract;
-import edu.jas.gbufd.GroebnerBasePartial;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
-import edu.jas.poly.OptimizedPolynomialList;
-import edu.jas.poly.OrderedPolynomialList;
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 import edu.jas.ufd.GCDFactory;
@@ -896,6 +894,62 @@ public class PolynomialFunctions {
    * <p>
    * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
    */
+  /**
+   * The term order a third argument of {@link S#CoefficientRules} or {@link S#MonomialList} asks
+   * for, or <code>null</code> if it is not an order.
+   *
+   * <p>
+   * Mathematica writes these as strings - <code>"DegreeLexicographic"</code> - and also takes the
+   * symbol of the same name and a matrix of weight vectors, one row at a time, which is how an
+   * order outside the named ones is given.
+   */
+  private static ExprTermOrder termOrderOf(IExpr orderSpec) {
+    if (orderSpec.isString()) {
+      IExpr named = F.symbol(orderSpec.toString());
+      ExprTermOrder order = namedTermOrder(named);
+      return order;
+    }
+    if (orderSpec.isSymbol()) {
+      return namedTermOrder(orderSpec);
+    }
+    if (orderSpec.isListOfLists()) {
+      IAST rows = (IAST) orderSpec;
+      long[][] weights = new long[rows.argSize()][];
+      for (int i = 1; i <= rows.argSize(); i++) {
+        IAST row = (IAST) rows.get(i);
+        long[] weight = new long[row.argSize()];
+        for (int j = 1; j <= row.argSize(); j++) {
+          int value = row.get(j).toIntDefault();
+          if (F.isNotPresent(value)) {
+            return null;
+          }
+          weight[j - 1] = value;
+        }
+        weights[i - 1] = weight;
+      }
+      return weights.length == 0 ? null : new ExprTermOrder(weights);
+    }
+    return null;
+  }
+
+  /** The order of that name, or <code>null</code>. */
+  private static ExprTermOrder namedTermOrder(IExpr name) {
+    TermOrder termOrder = JASIExpr.monomialOrder(name, null);
+    return termOrder == null ? null : new ExprTermOrder(termOrder.getEvord());
+  }
+
+  /**
+   * The variables a second argument names, with <code>All</code> standing for every symbol in the
+   * expression - the coefficients then count as variables too, and every coefficient is 1.
+   */
+  private static IAST variablesOf(IExpr specification, IExpr expr, IAST ast, int position,
+      EvalEngine engine) {
+    if (specification == S.All) {
+      return new VariablesSet(expr).getVarList();
+    }
+    return Validate.checkIsVariableOrVariableList(ast, position, ast.topHead(), engine);
+  }
+
   private static class CoefficientRules extends AbstractFunctionEvaluator {
     /**
      * Get exponent vectors and coefficients of monomials of a polynomial expression.
@@ -948,7 +1002,7 @@ public class PolynomialFunctions {
         // varList = eVar.getVarList();
         symbolList = eVar.getVarList();
       } else {
-        symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
+        symbolList = variablesOf(ast.arg2(), ast.arg1(), ast, 2, engine);
         if (symbolList.isNIL()) {
           return F.NIL;
         }
@@ -956,12 +1010,11 @@ public class PolynomialFunctions {
         // symbolList.forEach(x -> varList.add(x));
       }
       TermOrder termOrder = TermOrderByName.Lexicographic;
+      ExprTermOrder exprTermOrder = null;
 
       if (ast.size() > 3) {
-
-        if (ast.arg3().isSymbol()) {
-          termOrder = JASIExpr.monomialOrder(ast.arg3(), termOrder);
-        } else {
+        exprTermOrder = termOrderOf(ast.arg3());
+        if (exprTermOrder == null) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
           IExpr option = options.getOption(S.Modulus);
           if (option.isInteger()) {
@@ -979,8 +1032,8 @@ public class PolynomialFunctions {
       }
 
       try {
-        ExprPolynomialRing ring =
-            new ExprPolynomialRing(symbolList, new ExprTermOrder(termOrder.getEvord()));
+        ExprPolynomialRing ring = new ExprPolynomialRing(symbolList,
+            exprTermOrder == null ? new ExprTermOrder(termOrder.getEvord()) : exprTermOrder);
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.coefficientRules();
       } catch (RuntimeException rex) {
@@ -1522,6 +1575,78 @@ public class PolynomialFunctions {
    *
    *
    * <pre>
+   * <code>FromCoefficientRules(list-of-rules, list-of-variables)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * build the polynomial the rules <code>{exponent-vector -&gt; coefficient, ...}</code> describe,
+   * which is the inverse of {@link S#CoefficientRules}.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; FromCoefficientRules({{2,0}-&gt;1, {1,1}-&gt;3, {0,0}-&gt;-5}, {x,y})
+   * -5+x^2+3*x*y
+   *
+   * &gt;&gt; FromCoefficientRules(CoefficientRules(x^3-2*x*y+7, {x,y}), {x,y})
+   * 7+x^3-2*x*y
+   * </code>
+   * </pre>
+   */
+  private static class FromCoefficientRules extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+      if (!ast.arg1().isList()) {
+        return F.NIL;
+      }
+      IAST rules = (IAST) ast.arg1();
+      if (rules.argSize() > 0 && !rules.arg1().isRuleAST()) {
+        // a list of rule lists is the shape CoefficientRules answers a list of polynomials with
+        return rules.mapThread(ast, 1);
+      }
+      IAST variables = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
+      if (variables.argSize() == 0 || !variables.forAll(x -> x.isVariable())) {
+        return F.NIL;
+      }
+
+      IASTAppendable sum = F.PlusAlloc(rules.argSize());
+      for (int i = 1; i <= rules.argSize(); i++) {
+        IExpr rule = rules.get(i);
+        if (!rule.isRuleAST() || !rule.first().isList()
+            || ((IAST) rule.first()).argSize() != variables.argSize()) {
+          // the exponent vectors have one entry for each variable
+          return F.NIL;
+        }
+        IAST exponents = (IAST) rule.first();
+        IASTAppendable monomial = F.TimesAlloc(variables.argSize() + 1);
+        monomial.append(rule.second());
+        for (int v = 1; v <= variables.argSize(); v++) {
+          IExpr exponent = exponents.get(v);
+          if (!exponent.isZero()) {
+            monomial.append(F.Power(variables.get(v), exponent));
+          }
+        }
+        sum.append(monomial.oneIdentity1());
+      }
+      return engine.evaluate(sum.oneIdentity0());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
    * GroebnerBasis({polynomial-list},{variable-list})
    * </pre>
    *
@@ -1579,271 +1704,6 @@ public class PolynomialFunctions {
   private static final class GroebnerBasis extends AbstractFunctionOptionEvaluator {
 
     /**
-     * @param listOfPolynomials a list of polynomials
-     * @param listOfVariables a list of variable symbols
-     * @param termOrder the term order
-     * @return <code>F.NIL</code> if no valid expression can be returned
-     */
-    private static IAST computeGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables,
-        TermOrder termOrder) {
-      String[] pvars = new String[listOfVariables.argSize()];
-
-      for (int i = 1; i < listOfVariables.size(); i++) {
-        if (!listOfVariables.get(i).isSymbol()) {
-          return F.NIL;
-        }
-        pvars[i - 1] = listOfVariables.get(i).toString();
-      }
-
-      List<GenPolynomial<BigRational>> polyList =
-          new ArrayList<GenPolynomial<BigRational>>(listOfPolynomials.argSize());
-      JASConvert<BigRational> jas =
-          new JASConvert<BigRational>(listOfVariables, BigRational.ZERO, termOrder);
-
-      // collect non-polynomial expressions to pass them through
-      IASTAppendable rest = F.ListAlloc(listOfPolynomials.argSize());
-
-      for (int i = 1; i < listOfPolynomials.size(); i++) {
-        IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
-        try {
-          GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-          if (poly == null) {
-            rest.append(expr);
-          } else {
-            polyList.add(poly);
-          }
-        } catch (JASConversionException e) {
-          rest.append(expr);
-        }
-      }
-
-      // return the passed-through expressions if no JAS polynomials exist
-      if (polyList.size() == 0) {
-        if (rest.argSize() > 0) {
-          return rest;
-        }
-        return F.NIL;
-      }
-
-      GroebnerBasePartial<BigRational> gbp = new GroebnerBasePartial<BigRational>();
-      OptimizedPolynomialList<BigRational> opl = gbp.partialGB(polyList, pvars);
-      List<GenPolynomial<BigRational>> list = OrderedPolynomialList.sort(opl.list);
-
-      IASTAppendable resultList = F.ListAlloc(list.size() + rest.argSize());
-      for (int i = 0; i < list.size(); i++) {
-        GenPolynomial<BigRational> p = list.get(i);
-        resultList.append(
-            jas.integerPoly2Expr((GenPolynomial<edu.jas.arith.BigInteger>) jas.factorTerms(p)[2]));
-      }
-
-      // append the non-polynomials to the final basis
-      resultList.appendArgs(rest);
-
-      return resultList;
-    }
-
-    /**
-     * Compute the Groebner basis over the finite field <code>GF(p)</code> instead of over the
-     * rational numbers.
-     *
-     * <p>
-     * Reducing a rational Groebner basis modulo <code>p</code> afterwards would not do: over
-     * <code>GF(2)</code> the ideal generated by <code>{x^2+y^2-1, x-y}</code> is the whole ring
-     * (basis <code>{1}</code>) although it is a proper ideal over the rationals, so the basis has
-     * to be computed in <code>GF(p)[variables]</code> from the start.
-     *
-     * @param listOfPolynomials a list of polynomials
-     * @param listOfVariables a list of variable symbols
-     * @param termOrder the term order
-     * @param modLongRing the coefficient field <code>GF(p)</code>
-     * @return <code>F.NIL</code> if no valid expression can be returned
-     */
-    private static IAST modularGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables,
-        TermOrder termOrder, ModLongRing modLongRing) {
-      String[] pvars = new String[listOfVariables.argSize()];
-      for (int i = 1; i < listOfVariables.size(); i++) {
-        if (!listOfVariables.get(i).isSymbol()) {
-          return F.NIL;
-        }
-        pvars[i - 1] = listOfVariables.get(i).toString();
-      }
-
-      JASModInteger jas = new JASModInteger(listOfVariables, modLongRing, termOrder);
-      List<GenPolynomial<ModLong>> polyList =
-          new ArrayList<GenPolynomial<ModLong>>(listOfPolynomials.argSize());
-
-      // collect non-polynomial expressions to pass them through, like the rational case does
-      IASTAppendable rest = F.ListAlloc(listOfPolynomials.argSize());
-
-      for (int i = 1; i < listOfPolynomials.size(); i++) {
-        IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
-        try {
-          GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
-          if (poly == null) {
-            rest.append(expr);
-          } else {
-            polyList.add(poly);
-          }
-        } catch (JASConversionException e) {
-          rest.append(expr);
-        }
-      }
-
-      if (polyList.size() == 0) {
-        // nothing was a polynomial in the given variables: stay unevaluated
-        return F.NIL;
-      }
-
-      List<GenPolynomial<ModLong>> list;
-      try {
-        GroebnerBasePartial<ModLong> gbp = new GroebnerBasePartial<ModLong>();
-        OptimizedPolynomialList<ModLong> opl = gbp.partialGB(polyList, pvars);
-        list = OrderedPolynomialList.sort(opl.list);
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        return F.NIL;
-      }
-
-      IASTAppendable resultList = F.ListAlloc(list.size() + rest.argSize());
-      for (int i = 0; i < list.size(); i++) {
-        GenPolynomial<ModLong> p = list.get(i);
-        if (p.isZERO()) {
-          // a generator which vanishes modulo p contributes nothing to the ideal
-          continue;
-        }
-        ModLong lc = p.leadingBaseCoefficient();
-        if (!lc.isONE()) {
-          // GF(p) is a field, so every basis element can be normalized to a monic one
-          p = p.multiply(lc.inverse());
-        }
-        resultList.append(jas.modLongPoly2Expr(p));
-      }
-
-      // append the non-polynomials to the final basis
-      resultList.appendArgs(rest);
-
-      return resultList;
-    }
-
-    /**
-     * @param listOfPolynomials a list of polynomials
-     * @param listOfVariables a list of variable symbols
-     * @param termOrder the term order
-     * @return <code>F.NIL</code> if no valid expression can be returned
-     */
-    private static IAST exprPolynomialGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables,
-        TermOrder termOrder) {
-      String[] pvars = new String[listOfVariables.argSize()];
-      List<IExpr> varList = new ArrayList<IExpr>(listOfVariables.argSize());
-
-      for (int i = 1; i < listOfVariables.size(); i++) {
-        if (!listOfVariables.get(i).isSymbol()) {
-          return F.NIL;
-        }
-        varList.add(listOfVariables.get(i));
-        pvars[i - 1] = listOfVariables.get(i).toString();
-      }
-
-      List<GenPolynomial<IExpr>> polyList =
-          new ArrayList<GenPolynomial<IExpr>>(listOfPolynomials.argSize());
-
-      // Initialize JASIExpr using the ExprRingFactory constant[cite: 3, 5]
-      JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST_FIELD, termOrder, false);
-      ExprPolynomialRing ring =
-          new ExprPolynomialRing(listOfVariables, new ExprTermOrder(termOrder.getEvord()));
-
-      IASTAppendable rest = F.ListAlloc(listOfPolynomials.argSize());
-
-      for (int i = 1; i < listOfPolynomials.size(); i++) {
-        IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
-        try {
-          // Convert IExpr to ExprPolynomial[cite: 4]
-          ExprPolynomial exprPoly = ring.create(expr, false, true, true);
-
-          // Convert ExprPolynomial to GenPolynomial<IExpr>[cite: 3]
-          GenPolynomial<IExpr> poly = jas.expr2IExprJAS(exprPoly);
-          if (poly == null) {
-            rest.append(expr);
-          } else {
-            polyList.add(poly);
-          }
-        } catch (RuntimeException e) {
-          rest.append(expr);
-        }
-      }
-
-      if (polyList.size() == 0) {
-        // nothing was a polynomial in the given variables: stay unevaluated instead of handing
-        // back the input as if it were a basis
-        return F.NIL;
-      }
-
-      GroebnerBasePartial<IExpr> gbp = new GroebnerBasePartial<IExpr>();
-      OptimizedPolynomialList<IExpr> opl = gbp.partialGB(polyList, pvars);
-      List<GenPolynomial<IExpr>> list = OrderedPolynomialList.sort(opl.list);
-
-      IASTAppendable resultList = F.ListAlloc(list.size() + rest.argSize());
-
-      for (int i = 0; i < list.size(); i++) {
-        GenPolynomial<IExpr> p = list.get(i);
-
-        java.math.BigInteger lcm = java.math.BigInteger.ONE;
-        boolean allRationals = true;
-
-        // 1. Find the LCM of all denominators to clear fractions[cite: 2, 3]
-        for (Monomial<IExpr> monomial : p) {
-          IExpr coeff = monomial.coefficient();
-          if (coeff instanceof IFraction) {
-            java.math.BigInteger denom = ((IFraction) coeff).toBigDenominator();
-            java.math.BigInteger gcdVal = lcm.gcd(denom);
-            lcm = lcm.multiply(denom.divide(gcdVal));
-          } else if (!(coeff instanceof IInteger)) {
-            allRationals = false;
-            break;
-          }
-        }
-
-        // 2. Perform normalization ONLY if all coefficients are standard rationals/integers[cite:
-        // 2]
-        if (allRationals) {
-          // Clear fractional denominators
-          if (!lcm.equals(java.math.BigInteger.ONE)) {
-            p = p.multiply(F.ZZ(lcm));
-          }
-
-          // Find GCD to make the integer polynomial primitive
-          java.math.BigInteger gcd = java.math.BigInteger.ZERO;
-          for (Monomial<IExpr> monomial : p) {
-            IExpr coeff = monomial.coefficient();
-            if (coeff instanceof IInteger) {
-              gcd = gcd.gcd(((IInteger) coeff).toBigNumerator());
-            } else if (coeff instanceof IFraction) {
-              gcd = gcd.gcd(((IFraction) coeff).toBigNumerator());
-            }
-          }
-
-          // Divide by the GCD[cite: 2]
-          if (!gcd.equals(java.math.BigInteger.ONE) && !gcd.equals(java.math.BigInteger.ZERO)) {
-            p = p.multiply(F.fraction(java.math.BigInteger.ONE, gcd));
-          }
-
-          // Ensure the leading coefficient is strictly positive[cite: 4]
-          if (p.leadingBaseCoefficient().signum() < 0) {
-            p = p.multiply(F.CN1);
-          }
-        }
-
-        // Convert the normalized Groebner Basis back to IExpr format[cite: 3]
-        resultList.append(jas.exprPoly2Expr(p));
-      }
-
-      // Append the passed-through non-polynomials
-      resultList.appendArgs(rest);
-
-      return resultList;
-    }
-
-    /**
      * Compute the Groebner basis for a list of polynomials.
      *
      * <p>
@@ -1861,17 +1721,40 @@ public class PolynomialFunctions {
 
       if (argSize >= 2) {
 
-        if (!ast.arg1().isList() || !ast.arg2().isList()) {
+        if (!ast.arg1().isList()) {
           return F.NIL;
         }
-
-        TermOrder termOrder = TermOrderByName.Lexicographic;
-        termOrder = JASIExpr.monomialOrder(options[0], termOrder);
-        IAST polys = (IAST) ast.arg1();
-        IAST vars = (IAST) ast.arg2();
+        // a single variable needs no list of its own
+        IAST vars = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
         if (vars.size() <= 1) {
           return F.NIL;
         }
+        if (!vars.forAll(x -> x.isSymbol())) {
+          return kernelVariables(ast, argSize, options, engine);
+        }
+        // equations are the polynomials of their difference
+        IASTAppendable polys = F.ListAlloc(ast.arg1().argSize());
+        for (int i = 1; i <= ((IAST) ast.arg1()).argSize(); i++) {
+          IExpr poly = ((IAST) ast.arg1()).get(i);
+          polys.append(poly.isEqual() ? F.Subtract(poly.first(), poly.second()) : poly);
+        }
+        if (polys.argSize() == 0) {
+          // the ideal generated by nothing is the zero ideal, whose basis is empty
+          return F.CEmptyList;
+        }
+
+        TermOrder termOrder = GroebnerBasisJAS.termOrder(options[0], TermOrderByName.Lexicographic);
+        if (termOrder == null) {
+          return F.NIL;
+        }
+
+        if (options[2] == S.Integers) {
+          // Z is not a field, so the basis is the strong one, which carries the extra generators
+          // whose leading coefficients are not units
+          return GroebnerBasisJAS.integerBasis(polys, vars, termOrder);
+        }
+
+        IExpr eliminated = argSize >= 3 ? ast.arg3() : F.NIL;
 
         IExpr modulus = options[1];
         if (!modulus.isZero()) {
@@ -1887,13 +1770,64 @@ public class PolynomialFunctions {
           } catch (ArithmeticException aex) {
             return F.NIL;
           }
-          return modularGroebnerBasis(polys, vars, termOrder, modLongRing);
+          return GroebnerBasisJAS.modularBasis(polys, vars, termOrder, modLongRing);
         }
 
-        return exprPolynomialGroebnerBasis(polys, vars, termOrder);
+        if (eliminated.isPresent()) {
+          IAST elimVars = eliminated.isList() ? (IAST) eliminated : F.list(eliminated);
+          if (elimVars.size() <= 1 || !elimVars.forAll(x -> x.isSymbol())) {
+            return F.NIL;
+          }
+          return GroebnerBasisJAS.eliminationBasis(polys, vars, elimVars, termOrder);
+        }
+
+        return GroebnerBasisJAS.basis(polys, vars, termOrder);
       }
       return F.NIL;
     }
+
+    /**
+     * A basis in indeterminates which are not symbols - <code>{f(x), g(y)}</code> - computed in
+     * fresh symbols standing for them, and given back in the indeterminates again. The polynomial
+     * code only knows symbols as variables; <code>PolynomialReduce</code> accepts such kernels, and
+     * the two should agree on what an indeterminate is.
+     */
+    private IExpr kernelVariables(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
+      IAST vars = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
+      IAST eliminated = argSize >= 3 ? (ast.arg3().isList() ? (IAST) ast.arg3() : F.list(ast.arg3()))
+          : F.CEmptyList;
+      java.util.Map<IExpr, IExpr> toSymbols = new java.util.HashMap<IExpr, IExpr>();
+      java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+      for (IAST list : new IAST[] {vars, eliminated}) {
+        for (int i = 1; i < list.size(); i++) {
+          IExpr variable = list.get(i);
+          if (variable.isSymbol() || toSymbols.containsKey(variable)) {
+            continue;
+          }
+          if (!variable.isAST() || !variable.isVariable() || variable.isNumericFunction()) {
+            return F.NIL;
+          }
+          ISymbol dummy = F.Dummy();
+          toSymbols.put(variable, dummy);
+          back.put(dummy, variable);
+        }
+      }
+      IASTMutable call = ast.copy();
+      for (int i = 1; i <= argSize; i++) {
+        call.set(i, F.subst(ast.get(i), toSymbols));
+      }
+      if (!call.arg2().isList() ? !call.arg2().isSymbol()
+          : !((IAST) call.arg2()).forAll(x -> x.isSymbol())) {
+        // a kernel nested inside another, f(g(x)) beside g(x), cannot be renamed on its own
+        return F.NIL;
+      }
+      IExpr basis = evaluate(call, argSize, options, engine, call);
+      if (basis.isNIL()) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.subst(basis, back));
+    }
+
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -1903,8 +1837,9 @@ public class PolynomialFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       super.setUp(newSymbol);
-      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.MonomialOrder, S.Modulus};
-      IExpr[] optionValues = new IExpr[] {S.Lexicographic, F.C0};
+      IBuiltInSymbol[] optionKeys =
+          new IBuiltInSymbol[] {S.MonomialOrder, S.Modulus, S.CoefficientDomain};
+      IExpr[] optionValues = new IExpr[] {S.Lexicographic, F.C0, S.RationalFunctions};
       setOptions(newSymbol, optionKeys, optionValues);
     }
   }
@@ -2095,6 +2030,7 @@ public class PolynomialFunctions {
       S.Cyclotomic.setEvaluator(new Cyclotomic());
       S.Discriminant.setEvaluator(new Discriminant());
       S.Exponent.setEvaluator(new Exponent());
+      S.FromCoefficientRules.setEvaluator(new FromCoefficientRules());
       S.GroebnerBasis.setEvaluator(new GroebnerBasis());
       S.HermiteH.setEvaluator(new HermiteH());
       S.JacobiP.setEvaluator(new JacobiP());
@@ -3083,16 +3019,20 @@ public class PolynomialFunctions {
         eVar = new VariablesSet(ast.arg1());
         symbolList = eVar.getVarList();
       } else {
-        symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
+        symbolList = variablesOf(ast.arg2(), ast.arg1(), ast, 2, engine);
         if (symbolList.isNIL()) {
           return F.NIL;
         }
       }
       TermOrder termOrder = TermOrderByName.Lexicographic;
+      ExprTermOrder exprTermOrder = null;
 
-      if (argSize == 3 && ast.arg3().isSymbol()) {
-        // String orderStr = ast.arg3().toString(); // NegativeLexicographic
-        termOrder = JASIExpr.monomialOrder(ast.arg3(), termOrder);
+      if (argSize == 3) {
+        // a string, the symbol of the same name, or a matrix of weight vectors
+        exprTermOrder = termOrderOf(ast.arg3());
+        if (exprTermOrder == null) {
+          return F.NIL;
+        }
       }
 
       try {
@@ -3100,8 +3040,8 @@ public class PolynomialFunctions {
         if (option.isInteger() && !option.isZero()) {
           return monomialListModulus(expr, symbolList, termOrder, option);
         }
-        ExprPolynomialRing ring =
-            new ExprPolynomialRing(symbolList, new ExprTermOrder(termOrder.getEvord()));
+        ExprPolynomialRing ring = new ExprPolynomialRing(symbolList,
+            exprTermOrder == null ? new ExprTermOrder(termOrder.getEvord()) : exprTermOrder);
         ExprPolynomial poly = ring.create(expr, false, true, true);
         return poly.monomialList();
       } catch (RuntimeException rex) {
@@ -3207,8 +3147,7 @@ public class PolynomialFunctions {
         ExprPolynomialRing ring = new ExprPolynomialRing(vars);
         ExprPolynomial pol1 = ring.create(a);
         ExprPolynomial pol2 = ring.create(b);
-        List<IExpr> varList = eVar.getVarList().copyTo();
-        JASIExpr jas = new JASIExpr(varList, true);
+        JASIExpr jas = new JASIExpr(vars.asArgsList(), true);
         GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
         GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 

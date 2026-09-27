@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Tests for <code>NResidue</code>, the numerical residue by contour integration.
@@ -47,6 +48,7 @@ public class NResidueTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNResidueTranscendental() {
     check("Chop(NResidue(Cot(z), {z, 0}))", //
         "1.0");
@@ -103,6 +105,7 @@ public class NResidueTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNResidueWorkingPrecision() {
     check("NResidue(1/(x-2), {x, 2}, WorkingPrecision -> 30)", //
         "1");

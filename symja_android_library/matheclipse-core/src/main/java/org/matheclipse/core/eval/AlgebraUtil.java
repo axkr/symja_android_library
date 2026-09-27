@@ -21,9 +21,9 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.AbstractFractionSym;
-import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -39,6 +39,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.AlgebraicCoefficientGCD;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
@@ -1076,10 +1077,34 @@ public class AlgebraUtil {
         ExprPolynomialRing ring = new ExprPolynomialRing(vars);
         ExprPolynomial pol1 = ring.create(numeratorPolynomial);
         ExprPolynomial pol2 = ring.create(denominatorPolynomial);
-        List<IExpr> varList = eVar.getVarList().copyTo();
-        JASIExpr jas = new JASIExpr(varList, true);
+        JASIExpr jas = new JASIExpr(vars.asArgsList(), true);
         GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
         GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
+
+        if (!hasNumberCoefficients(p1) || !hasNumberCoefficients(p2)) {
+          // Radical coefficients such as 3-2*Sqrt(2): take the GCD in the number field they
+          // generate. Over IExpr coefficients the same GCD has no normal form - every product is a
+          // full evaluation, every quotient a nested fraction - and it swells at every step.
+          AlgebraicCoefficientGCD.Quotients quotients =
+              AlgebraicCoefficientGCD.cancel(p1, p2, EvalEngine.get());
+          if (quotients == AlgebraicCoefficientGCD.COPRIME) {
+            return Optional.empty();
+          }
+          if (quotients != null) {
+            IExpr[] result = new IExpr[3];
+            result[0] = F.C1;
+            result[1] =
+                substitutions.replaceBackward(F.eval(jas.exprPoly2Expr(quotients.numerator)));
+            result[2] =
+                substitutions.replaceBackward(F.eval(jas.exprPoly2Expr(quotients.denominator)));
+            return Optional.of(result);
+          }
+          // No number field for these coefficients: the IExpr GCD below is the only way left, and
+          // its cost grows with the term counts, so it is only attempted for small polynomials.
+          if ((long) p1.length() * (long) p2.length() > Config.MAX_CANCEL_GCD_TERM_PRODUCT) {
+            return Optional.empty();
+          }
+        }
 
         GreatestCommonDivisor<IExpr> engine;
         engine = GCDFactory.getImplementation(ExprRingFactory.CONST);
@@ -1157,6 +1182,16 @@ public class AlgebraUtil {
       }
     }
     return Optional.empty();
+  }
+
+  /** Are all coefficients of <code>p</code> numbers (rational, complex or inexact)? */
+  private static boolean hasNumberCoefficients(GenPolynomial<IExpr> p) {
+    for (IExpr c : p.getMap().values()) {
+      if (!c.isNumber()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -1743,14 +1778,14 @@ public class AlgebraUtil {
     return expr;
   }
 
-  public static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree,
-      IExpr option) throws JASConversionException {
+  public static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree, IExpr option)
+      throws JASConversionException {
     try {
       // found "Modulus" option => use ModIntegerRing
       ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
       JASModInteger jas = new JASModInteger(varList, modIntegerRing);
       GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
-  
+
       return AlgebraUtil.factorModulus(jas, modIntegerRing, poly, factorSquareFree);
     } catch (ArithmeticException ae) {
       // toInt() conversion failed
@@ -1924,7 +1959,10 @@ public class AlgebraUtil {
   public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar, boolean trig,
       EvalEngine engine) {
     boolean originalHasComplex = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
-    PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, trig);
+    // The trigonometric rewriting (TrigExpand, Cos(x)^2 -> 1-Sin(x)^2, ...) doesn't depend on the
+    // Trig option: Simplify() and TrigFactor() call Factor() without it and rely on the rewriting
+    // to cancel trigonometric expressions.
+    PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, true);
     IExpr subsPolynomial = substitutions.replaceForward(expr);
 
     // Update gaussianIntegers based on the homogenized polynomial to support TrigToExp complex
@@ -2534,17 +2572,17 @@ public class AlgebraUtil {
     if (!denominatorTimes.isTimes()) {
       return S.Times.of(engine, numerator, F.Power(denominatorTimes, -1));
     }
-  
+
     IAST denomAST = (IAST) denominatorTimes;
     int argSize = denomAST.argSize();
-  
+
     // Allocate a flat Plus buffer to collect the decomposed terms
     IASTAppendable resultPlus = F.PlusAlloc(argSize + 1);
-  
+
     IExpr currentNumerator = numerator;
     IExpr currentFirst = denomAST.arg1();
     IExpr currentRest = denomAST.splice(1).oneIdentity0();
-  
+
     for (int i = 1; i <= argSize; i++) {
       if (currentFirst.isFree(variable)) {
         // Factor is constant with respect to the variable, pull it into the numerator
@@ -2553,7 +2591,7 @@ public class AlgebraUtil {
         IExpr v1 = S.Expand.of(engine, currentFirst);
         IExpr v2 = S.Expand.of(engine, currentRest);
         IExpr peGCD = S.PolynomialExtendedGCD.of(engine, v1, v2, variable);
-  
+
         if (peGCD.isList() && peGCD.second().isList()) {
           // PolynomialExtendedGCD returns {g, {A, B}} with A*v1 + B*v2 == g. Splitting
           // n/(v1*v2) into n*B/v1 + n*A/v2 needs g to be a unit; when g still contains the
@@ -2569,11 +2607,11 @@ public class AlgebraUtil {
           IExpr n = gcd.isOne() ? currentNumerator
               : S.Times.of(engine, currentNumerator, F.Power(gcd, -1));
 
-          IExpr qr1 = S.PolynomialQuotientRemainder.ofNIL(engine, F.Expand(F.Times(B, n)), v1,
-              variable);
+          IExpr qr1 =
+              S.PolynomialQuotientRemainder.ofNIL(engine, F.Expand(F.Times(B, n)), v1, variable);
           if (qr1.isList2()) {
-            IExpr qr2 = S.PolynomialQuotientRemainder.ofNIL(engine, F.Expand(F.Times(A, n)), v2,
-                variable);
+            IExpr qr2 =
+                S.PolynomialQuotientRemainder.ofNIL(engine, F.Expand(F.Times(A, n)), v2, variable);
             if (qr2.isList2()) {
               // n*B/v1 == q1 + u1/v1 and n*A/v2 == q2 + u2/v2. The quotients carry the polynomial
               // part of an improper fraction and cancel each other for a proper one, so keeping
@@ -2594,7 +2632,7 @@ public class AlgebraUtil {
           return F.NIL;
         }
       }
-  
+
       // Advance to the next factor in the denominator
       if (!currentRest.isTimes()) {
         // Base case: we have reached the last factor.
@@ -2607,7 +2645,7 @@ public class AlgebraUtil {
         currentRest = restAST.splice(1).oneIdentity0();
       }
     }
-  
+
     return engine.evaluate(resultPlus);
   }
 
@@ -2639,15 +2677,15 @@ public class AlgebraUtil {
           FactorFactory.getImplementation(BigRational.ZERO);
       SortedMap<GenPolynomial<BigRational>, Long> sfactors =
           factorAbstract.baseFactors(denominator);
-  
+
       List<GenPolynomial<BigRational>> D =
           new ArrayList<GenPolynomial<BigRational>>(sfactors.keySet());
-  
+
       SquarefreeAbstract<BigRational> sqf = SquarefreeFactory.getImplementation(BigRational.ZERO);
       List<List<GenPolynomial<BigRational>>> Ai = sqf.basePartialFraction(numerator, sfactors);
       // returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
       // A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
-  
+
       if (Ai.size() > 0) {
         // IAST result = F.Plus();
         pf.allocPlus(Ai.size() * 2);
@@ -2701,7 +2739,8 @@ public class AlgebraUtil {
    * iteration of {@link #partialFractionDecomposition(IExpr, IExpr, IExpr, EvalEngine)} - which
    * cannot express a repeated denominator factor at all. Running the same JAS algorithm over
    * <code>ComplexRing&lt;BigRational&gt;</code> decomposes those completely, which is what
-   * <code>Apart(1/((1-I*x)*(1+x^2)))</code> needs: its denominator is <code>-I*(x-I)*(x+I)^2</code>.
+   * <code>Apart(1/((1-I*x)*(1+x^2)))</code> needs: its denominator is
+   * <code>-I*(x-I)*(x+I)^2</code>.
    *
    * <p>
    * Only call this after the rational decomposition declined. A real irreducible quadratic must not
@@ -2759,8 +2798,8 @@ public class AlgebraUtil {
               IExpr numeratorExpr = jas.complexPoly2Expr(genPolynomial);
               IExpr temp = (j == 0) //
                   ? F.eval(numeratorExpr)
-                  : F.eval(F.Times(numeratorExpr,
-                      F.Power(jas.complexPoly2Expr(Di_1), F.ZZ(j * (-1L)))));
+                  : F.eval(
+                      F.Times(numeratorExpr, F.Power(jas.complexPoly2Expr(Di_1), F.ZZ(j * (-1L)))));
               appendPartialFraction(result, temp);
             }
             j++;
@@ -2804,8 +2843,8 @@ public class AlgebraUtil {
    *         numerator and denominator parts. Otherwise return F.NIL
    */
   public static IExpr partsApart(IExpr[] parts, IExpr variable, EvalEngine engine) {
-    IExpr temp = AlgebraUtil.partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
-        variable);
+    IExpr temp = AlgebraUtil.partialFractionDecompositionRational(new PartialFractionGenerator(),
+        parts, variable);
     if (temp.isPresent()) {
       return temp;
     }
@@ -2829,8 +2868,9 @@ public class AlgebraUtil {
     try {
       IExpr exprNumerator = F.evalExpandAll(parts[0]);
       IExpr exprDenominator = F.evalExpandAll(parts[1]);
-  
-      final UnivPowerSeries<BigRational> ps = AlgebraUtil.quotientPS(exprNumerator, exprDenominator, x);
+
+      final UnivPowerSeries<BigRational> ps =
+          AlgebraUtil.quotientPS(exprNumerator, exprDenominator, x);
       if (ps != null && !ps.isZERO()) {
         ASTSeriesData seriesData = new ASTSeriesData(x, x0, 0, n + expDenominator, expDenominator);
         // reversed order seems to be a bit faster
@@ -2912,6 +2952,11 @@ public class AlgebraUtil {
           gcd = engine.evaluate(c);
         }
         if (gcd.isFree(S.GCD)) {
+          if (!gcd.isNumber() || gcd.isZero()) {
+            // the GCD of rationalized inexact coefficients can collapse: dividing by it gave
+            // Indeterminate for Together(q^2-0.9978377499999949)
+            return p;
+          }
           return F.Times(gcd, S.Distribute.of(engine, F.Divide(plusAST, gcd)));
         }
       }
@@ -3304,6 +3349,12 @@ public class AlgebraUtil {
   public static IExpr togetherNull(IAST ast, EvalEngine engine) {
     boolean evaled = false;
     IExpr temp = F.NIL;
+    if (ast.isPlus()) {
+      temp = togetherUnexpanded(ast, engine);
+      if (temp.isPresent()) {
+        return engine.evaluate(temp);
+      }
+    }
 
     // Skip expensive deep expansions if the expression is already marked as expanded
     if (!ast.isAllExpanded()) {
@@ -3335,6 +3386,61 @@ public class AlgebraUtil {
    * 
    * @return F.NIL if together couldn't be performed
    */
+  /**
+   * A sum free of inexact numbers, of heads other than <code>Plus, Times, Power</code> and of
+   * non-integer powers.
+   */
+  private static boolean isUnivariateRationalSum(IAST plusAST) {
+    return plusAST.isFree(
+        x -> x.isInexactNumber()
+            || (x.isAST() && (!x.isPlusTimesPower() || (x.isPower() && !x.exponent().isInteger()))),
+        false);
+  }
+
+  private static void fractionalParts(IAST plusAST, IASTAppendable numerators,
+      IASTAppendable denominators) {
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr arg = plusAST.get(i);
+      Optional<IExpr[]> fractionalParts = fractionalPartsRational(arg, false, false);
+      if (fractionalParts.isPresent()) {
+        IExpr[] parts = fractionalParts.get();
+        numerators.append(parts[0]);
+        denominators.append(parts[1]);
+      } else {
+        numerators.append(arg);
+        denominators.append(F.C1);
+      }
+    }
+  }
+
+  /**
+   * <code>Together</code> of a univariate sum with the denominators as the terms have them, before
+   * <code>ExpandAll</code> multiplies them out: WMA keeps <code>(-1+x)*(2+x)</code> in
+   * <code>Together(1/((x-1)*(x+2))+1/(x^2+x-2))</code>.
+   */
+  private static IExpr togetherUnexpanded(IAST plusAST, EvalEngine engine) {
+    if (plusAST.argSize() < 2 || !isUnivariateRationalSum(plusAST)
+        || plusAST.isFree(x -> x.isFraction() || x.isPower() && x.exponent().isNegative(), false)) {
+      return F.NIL;
+    }
+    VariablesSet eVar = new VariablesSet(plusAST);
+    if (eVar.size() != 1) {
+      return F.NIL;
+    }
+    IASTAppendable numerators = F.ListAlloc(plusAST.argSize());
+    IASTAppendable denominators = F.ListAlloc(plusAST.argSize());
+    fractionalParts(plusAST, numerators, denominators);
+    if (!denominators.exists(a -> !a.isOne())) {
+      return F.NIL;
+    }
+    try {
+      return CoprimeDenominators.together(numerators, denominators, eVar.firstVariable(), engine);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
   public static IExpr togetherPlus(final IAST plusAST, EvalEngine engine) {
     if (plusAST.argSize() <= 1) {
       return F.NIL;
@@ -3345,10 +3451,7 @@ public class AlgebraUtil {
       return mergedRoots;
     }
 
-    if (plusAST.isFree(
-        x -> x.isInexactNumber()
-            || (x.isAST() && (!x.isPlusTimesPower() || (x.isPower() && !x.exponent().isInteger()))),
-        false)) {
+    if (isUnivariateRationalSum(plusAST)) {
       if (plusAST.isFree(x -> x.isFraction() || x.isPower() && x.exponent().isNegative(), false)) {
         return F.NIL;
       }
@@ -3356,26 +3459,16 @@ public class AlgebraUtil {
       if (eVar.size() == 1) {
         try {
           IExpr variable = eVar.firstVariable();
-          IAST termList = plusAST.setAtCopy(0, S.List);
-          int argSize = termList.argSize();
-
-          IASTAppendable numerators = F.ListAlloc(argSize);
-          IASTAppendable denominators = F.ListAlloc(argSize);
-
-          for (int i = 1; i <= argSize; i++) {
-            IExpr arg = termList.get(i);
-            Optional<IExpr[]> fractionalParts = fractionalPartsRational(arg, false, false);
-            if (fractionalParts.isPresent()) {
-              IExpr[] parts = fractionalParts.get();
-              numerators.append(parts[0]);
-              denominators.append(parts[1]);
-            } else {
-              numerators.append(arg);
-              denominators.append(F.C1);
-            }
-          }
+          IASTAppendable numerators = F.ListAlloc(plusAST.argSize());
+          IASTAppendable denominators = F.ListAlloc(plusAST.argSize());
+          fractionalParts(plusAST, numerators, denominators);
 
           if (denominators.exists(a -> !a.isOne())) {
+            IExpr coprime =
+                CoprimeDenominators.together(numerators, denominators, variable, engine);
+            if (coprime.isPresent()) {
+              return coprime;
+            }
             IExpr commonDenominator = engine.evaluate(denominators.setAtCopy(0, S.PolynomialLCM));
             IASTAppendable sum = F.PlusAlloc(numerators.argSize()); // 2025-12-05]
 
@@ -3640,8 +3733,7 @@ public class AlgebraUtil {
           // is not an exotic one - it is what the cube roots in an Airy solution look like - so
           // c1*(-1)^(1/3) + c2*(-1)^(1/3) used to come back with the second coefficient replaced
           // by its complex conjugate, a wrong value rather than a wrong form.
-          IExpr difference =
-              engine.evaluate(F.Subtract(F.Power(y, p), F.Power(x, F.Negate(p))));
+          IExpr difference = engine.evaluate(F.Subtract(F.Power(y, p), F.Power(x, F.Negate(p))));
           if (!difference.isZero()) {
             continue;
           }

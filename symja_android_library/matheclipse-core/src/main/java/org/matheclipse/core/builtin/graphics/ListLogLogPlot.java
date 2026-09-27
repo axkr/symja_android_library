@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin.graphics;
 
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -17,9 +16,6 @@ public class ListLogLogPlot extends ListPlot {
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
     ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
-    if (ToggleFeature.JS_ECHARTS) {
-      return evaluateECharts(ast, argSize, options, engine, originalAST);
-    }
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
@@ -28,7 +24,7 @@ public class ListLogLogPlot extends ListPlot {
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
     graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);

@@ -5,20 +5,19 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.jgrapht.Graph;
+import org.matheclipse.core.builtin.graphics3d.Plot3DTools;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
-import org.matheclipse.core.builtin.graphics3d.Plot3DTools;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.graphtheory.expression.data.GraphExpr;
-import org.matheclipse.graphtheory.expression.data.IExprEdge;
-import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.graphtheory.expression.data.GraphExpr;
+import org.matheclipse.graphtheory.expression.data.IExprEdge;
 
 public class Graph3D extends AbstractFunctionOptionEvaluator {
 
@@ -222,11 +221,11 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
       if (p1 != null && p2 != null) {
         IAST points = F.List(F.List(F.num(p1.x), F.num(p1.y), F.num(p1.z)),
             F.List(F.num(p2.x), F.num(p2.y), F.num(p2.z)));
-        // Arrow[{p1, p2}, setback], as the Wolfram Language writes it: the WLJS notebook reads the
+        // Arrow[{p1, p2}, setback]: the WLJS notebook reads the
         // points straight from the first argument and dropped the whole scene for Arrow[Line[...]].
         // The setback stops the arrowhead short of the target sphere, or it disappears inside it.
-        primitives.append(
-            directed ? F.binaryAST2(S.Arrow, points, F.num(vertexRadius)) : F.Line(points));
+        primitives
+            .append(directed ? F.binaryAST2(S.Arrow, points, F.num(vertexRadius)) : F.Line(points));
       }
     }
 
@@ -353,8 +352,8 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
       IExpr label = labelFor(vertexLabels, v, v);
       if (label.isPresent()) {
         // just clear of the sphere, so the text is not buried in it
-        primitives.append(F.Text(label,
-            F.List(F.num(p.x), F.num(p.y), F.num(p.z + vertexRadius * 2.0))));
+        primitives
+            .append(F.Text(label, F.List(F.num(p.x), F.num(p.y), F.num(p.z + vertexRadius * 2.0))));
       }
     }
   }

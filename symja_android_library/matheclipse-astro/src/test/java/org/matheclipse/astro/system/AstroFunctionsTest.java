@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Values for the astronomy functions, checked against published tables where one exists and against
@@ -263,6 +264,7 @@ public class AstroFunctionsTest extends AbstractTestCase {
   }
 
   @Test
+  @Tag("slow")
   public void testFindAstroEventSeasons() {
     // published UTC instants for 2026: 14:46, 08:24, 00:05 and 20:50
     check("FindAstroEvent(\"MarchEquinox\", DateObject({2026,1,1}))", //
@@ -670,6 +672,148 @@ public class AstroFunctionsTest extends AbstractTestCase {
     // a quarter of the equator, 40075/4 kilometers
     check("GeoDistance({0,0},{0,90})", //
         "Quantity(1.00188*10^7,\"Meters\")");
+  }
+
+  /**
+   * <code>AstronomicalData(n)</code> names the nth major body counting outwards from the Sun, and
+   * the name it gives feeds straight back in as the body of a position query - the two compose,
+   * which is how a notebook walks the planets.
+   */
+  @Test
+  public void testAstronomicalDataNames() {
+    check("AstronomicalData(1)", //
+        "Mercury");
+    check("AstronomicalData(3)", //
+        "Earth");
+    check("AstronomicalData(9)", //
+        "Pluto");
+    check("AstronomicalData(\"Mars\")", //
+        "Mars");
+    // out of the range of the classic nine, and an unknown body
+    check("AstronomicalData(10)", //
+        "AstronomicalData(10)");
+    check("AstronomicalData(\"Vulcan\", {\"Position\"})", //
+        "AstronomicalData(Vulcan,{Position})");
+    check("AstronomicalData(\"Mars\", {\"Mass\"})", //
+        "AstronomicalData(Mars,{Mass})");
+  }
+
+  /**
+   * The position is heliocentric and referred to the ecliptic of J2000, in meters. The Earth is at
+   * perihelion in early January, 1.471*10^11 meters from the Sun, and lies in the ecliptic plane -
+   * which is what tells this frame from the equatorial one, where its z would be 5.8*10^10.
+   */
+  @Test
+  public void testAstronomicalDataPosition() {
+    check(
+        "Round(Norm(AstronomicalData(\"Earth\","
+            + " {\"Position\", DateObject({2020,1,1})}))/10^9)", //
+        "147");
+    check(
+        "Abs(Last(AstronomicalData(\"Earth\","
+            + " {\"Position\", DateObject({2020,1,1})}))) < 10^10", //
+        "True");
+    check("AstronomicalData(\"Sun\", {\"Position\", DateObject({2020,1,1})})", //
+        "{0.0,0.0,0.0}");
+    // every date puts Mars between its perihelion and its aphelion, 1.381 and 1.666 au
+    check(
+        "Table(1.38 < Norm(AstronomicalData(\"Mars\", {\"Position\", DateObject({y,1,1})}))"
+            + "/1.495978707*^11 < 1.67, {y, 1995, 2145, 30})", //
+        "{True,True,True,True,True,True}");
+    // the date may be left out, and is then the current instant
+    check("Length(AstronomicalData(\"Jupiter\", \"Position\"))", //
+        "3");
+  }
+
+  /**
+   * <code>PlanetData</code> is the spelling which superseded <code>AstronomicalData</code>: the
+   * eight planets, and coordinates in astronomical units. Measured 2026-09-18, where
+   * <code>PlanetData[]</code> is those eight entities and <code>"Position"</code> is not a property
+   * of a planet.
+   */
+  @Test
+  public void testPlanetData() {
+    check("PlanetData()", //
+        "{Entity(Planet,Mercury),Entity(Planet,Venus),Entity(Planet,Earth),Entity(Planet,Mars),"
+            + "Entity(Planet,Jupiter),Entity(Planet,Saturn),Entity(Planet,Uranus),"
+            + "Entity(Planet,Neptune)}");
+    check("PlanetData(\"Mars\")", //
+        "Entity(Planet,Mars)");
+    check("QuantityUnit(First(PlanetData(\"Mars\", \"HelioCoordinates\")))", //
+        "AstronomicalUnit");
+    // the Earth is at perihelion in early January, 0.983 astronomical units from the Sun
+    check(
+        "Round(1000*Norm(QuantityMagnitude(PlanetData(\"Earth\","
+            + " {\"HelioCoordinates\", DateObject({2020,1,1})}))))", //
+        "983");
+    // Pluto is a planet to the older function and not to this one
+    check("PlanetData(\"Pluto\", \"HelioCoordinates\")", //
+        "PlanetData(Pluto,HelioCoordinates)");
+    check("PlanetData(\"Mars\", \"Position\")", //
+        "PlanetData(Mars,Position)");
+  }
+
+  /**
+   * The ground truth the frame was settled against: WMA's <code>HelioCoordinates</code> for Mars at
+   * one instant, measured 2026-09-18, which this matches to about 150 km. The ecliptic is the one
+   * of the date asked for - pinned at J2000 the vector stays turned by the precession since then
+   * and lands 0.014 astronomical units away.
+   */
+  @Test
+  public void testPlanetDataAgreesWithWMA() {
+    check(
+        "Max(Abs(QuantityMagnitude(PlanetData(\"Mars\","
+            + " {\"HelioCoordinates\", {2026,9,18,16,39,57}}))"
+            + " - {0.281385, 1.516740, 0.0246979})) < 10^-5", //
+        "True");
+  }
+
+  /** The two spellings read the same ephemerides, so they answer with the same vector. */
+  @Test
+  public void testPlanetDataAgreesWithAstronomicalData() {
+    check(
+        "Chop(149597870700 * QuantityMagnitude(PlanetData(\"Mars\","
+            + " {\"HelioCoordinates\", DateObject({2020,1,1})}))"
+            + " - AstronomicalData(\"Mars\", {\"Position\", DateObject({2020,1,1})}), 1)", //
+        "{0,0,0}");
+  }
+
+  /**
+   * The astro types join the entity registry, so the generic <code>EntityValue</code> and
+   * <code>EntityList</code> reach them without knowing anything about astronomy.
+   */
+  @Test
+  public void testAstroEntities() {
+    check("EntityList(\"Planet\")[[4]]", //
+        "Entity(Planet,Mars)");
+    check("Length(EntityValue(Entity(\"Planet\", \"Mars\"), \"HelioCoordinates\"))", //
+        "3");
+    // a list is a list of properties to EntityValue, so a date is asked of PlanetData itself
+    check(
+        "QuantityUnit(First(EntityValue(Entity(\"Planet\", \"Earth\"),"
+            + " EntityProperty(\"Planet\", \"HelioCoordinates\"))))", //
+        "AstronomicalUnit");
+    check(
+        "Round(1000*Norm(QuantityMagnitude(PlanetData(Entity(\"Planet\", \"Earth\"),"
+            + " {\"HelioCoordinates\", DateObject({2020,1,1})}))))", //
+        "983");
+    // a star is a different type, answered by a different function through the same call
+    check("EntityValue(Entity(\"Star\", \"Sirius\"), \"ApparentMagnitude\")", //
+        "-1.44");
+    check("StarData(Entity(\"Star\", \"Sirius\"), \"Constellation\")", //
+        "Canis Major");
+    check("Head(First(StarData()))", //
+        "Entity");
+    check("Take(StarData(\"Properties\"), 2)", //
+        "{EntityProperty(Star,Name),EntityProperty(Star,AlternateNames)}");
+    // an entity of the wrong type is not silently read as a name of the right one
+    check("PlanetData(Entity(\"Element\", \"Iron\"), \"HelioCoordinates\")", //
+        "PlanetData(Entity(Element,Iron),HelioCoordinates)");
+    // and what PlanetData cannot answer is reported as the half that was unknown
+    check("EntityValue(Entity(\"Planet\", \"Vulcan\"), \"HelioCoordinates\")", //
+        "Missing(UnknownEntity,{Planet,Vulcan})");
+    check("EntityValue(Entity(\"Planet\", \"Mars\"), \"Nonsense\")", //
+        "Missing(UnknownProperty,{Planet,Nonsense})");
   }
 
   @Test

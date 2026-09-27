@@ -1,12 +1,10 @@
 package org.matheclipse.core.builtin;
 
-import java.util.ArrayDeque;
 import java.math.BigInteger;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
@@ -14,10 +12,10 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ExitException;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
+import org.matheclipse.core.eval.exception.ExitException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -25,8 +23,6 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
-import org.matheclipse.core.eval.util.Lambda;
-import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.eval.util.positions.FlattenPositions;
 import org.matheclipse.core.eval.util.positions.MapPositions;
@@ -37,6 +33,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.generic.PredicateSort;
 import org.matheclipse.core.generic.Predicates.IsBinaryFalse;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
@@ -46,14 +43,13 @@ import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.visit.IndexedLevel;
-import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.external.fastutil.ints.IntList;
 
@@ -277,11 +273,10 @@ public class StructureFunctions {
    * <code>ByteCount(expr)</code> - how much memory the expression takes.
    *
    * <p>
-   * What "how much" means is the implementation's own business - the Wolfram Language documents
-   * this as the bytes <i>it</i> uses - so this is Symja's storage that is counted: a reference per
-   * slot of every node, the object header each one carries, and the digits, characters or bits its
-   * atoms hold. Subexpressions are counted wherever they appear rather than once, which is what
-   * the Wolfram Language says of its own answer too.
+   * What "how much" means is the implementation's own business - so this is Symja's storage that is
+   * counted: a reference per slot of every node, the object header each one carries, and the
+   * digits, characters or bits its atoms hold. Subexpressions are counted wherever they appear
+   * rather than once.
    *
    * <p>
    * The walk is iterative. A structural walk is not counted by <code>$RecursionLimit</code>, so a
@@ -1859,8 +1854,8 @@ public class StructureFunctions {
       // applying a new head is exactly what Operate does, which leaves a series no longer a
       // series. Carry on with the plain expression it is equivalent to, which is what the answer
       // has to be anyway; without this the NIL reaches head.head() below.
-      IAST operand = (arg2 instanceof ASTSeriesData) ? ((ASTSeriesData) arg2).toPlainAST()
-          : (IAST) arg2;
+      IAST operand =
+          (arg2 instanceof ASTSeriesData) ? ((ASTSeriesData) arg2).toPlainAST() : (IAST) arg2;
       IASTAppendable result = operand.copyAppendable();
       if (result.isNIL()) {
         return F.NIL;
@@ -1890,37 +1885,97 @@ public class StructureFunctions {
   }
 
 
-  private static class ParallelMap extends AbstractFunctionOptionEvaluator {
+  /**
+   * <code>ParallelMap(f, expr)</code> applies <code>f</code> to the elements of <code>expr</code>
+   * on several threads at the same time, through the kernels of {@code ParallelTable}: the user's
+   * symbols are copied for each thread and their definitions distributed. A level specification,
+   * <code>Heads-&gt;True</code>, a held head, an association or a sparse array are mapped as
+   * <code>Map</code> does it, on this thread.
+   */
+  private static class ParallelMap extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine, IAST originalAST) {
-      boolean includeHeads = option[0].isTrue();
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      if (ast.isAST2()) {
-        if (arg2.isSparseArray()) {
-          return ((ISparseArray) arg2).map(x -> F.unaryAST1(arg1, x));
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // Heads -> ..., Method -> ..., DistributedContexts -> ..., ProgressReporting -> ...
+      int last = ast.argSize();
+      boolean includeHeads = false;
+      IASTAppendable parallelOptions = F.ListAlloc();
+      while (last > 2 && ast.get(last).isRuleAST() && ast.get(last).first().isSymbol()) {
+        String name =
+            ((ISymbol) ast.get(last).first()).getSymbolName().toLowerCase(java.util.Locale.US);
+        if (name.equals("heads")) {
+          includeHeads = ast.get(last).second().isTrue();
+        } else if (name.equals("method") || name.equals("distributedcontexts")
+            || name.equals("progressreporting")) {
+          parallelOptions.append(ast.get(last));
+        } else {
+          break;
+        }
+        last--;
+      }
+      if (last < 2 || last > 3) {
+        return F.NIL;
+      }
+      final IExpr f = ast.arg1();
+      final IExpr expr = ast.arg2();
+      if (last == 2) {
+        if (expr.isSparseArray()) {
+          return ((ISparseArray) expr).map(x -> F.unaryAST1(f, x));
+        }
+        if (!includeHeads) {
+          IExpr result = parallelMap(f, expr, parallelOptions, engine);
+          if (result.isPresent()) {
+            return result;
+          }
         }
       }
       VisitorLevelSpecification level;
-      if (argSize == 3) {
-        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(argSize),
-            includeHeads, engine);
+      if (last == 3) {
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(f, x), ast.arg3(), includeHeads,
+            engine);
       } else {
-        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, includeHeads);
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(f, x), 1, includeHeads);
       }
-      return arg2.accept(level).orElse(arg2);
+      return expr.accept(level).orElse(expr);
+    }
+
+    /**
+     * <code>h(f(e1), f(e2), ...)</code> evaluated as
+     * <code>ParallelTable(With({w=v}, f(w)), {v, {e1, e2, ...}})</code>; <code>With</code> puts each
+     * element into <code>f(...)</code> as it is, so a held <code>f</code> gets the element and not
+     * the variable.
+     *
+     * @return {@link F#NIL} if <code>expr</code> is mapped on this thread
+     */
+    private static IExpr parallelMap(IExpr f, IExpr expr, IAST parallelOptions,
+        EvalEngine engine) {
+      if (!expr.isAST() || expr.argSize() < 2 || expr.isAssociation() || !expr.head().isSymbol()) {
+        return F.NIL;
+      }
+      final IAST elements = (IAST) expr;
+      final ISymbol head = (ISymbol) elements.head();
+      if ((head.getAttributes() & (ISymbol.HOLDALL | ISymbol.HOLDALLCOMPLETE)) != 0) {
+        // the elements of Hold(...) must not be evaluated
+        return F.NIL;
+      }
+      final String suffix = EvalEngine.uniqueName("$");
+      final ISymbol v = F.Dummy("v" + suffix);
+      final ISymbol w = F.Dummy("w" + suffix);
+      IASTAppendable parallelTable = F.ast(S.ParallelTable, parallelOptions.argSize() + 2);
+      parallelTable.append(F.With(F.list(F.Set(w, v)), F.unaryAST1(f, w)));
+      parallelTable.append(F.list(v, elements.setAtCopy(0, S.List)));
+      parallelTable.appendArgs(parallelOptions);
+      IExpr result = engine.evaluate(parallelTable);
+      if (!result.isList() || result.argSize() != elements.argSize()) {
+        // ParallelTable didn't run, for example in the sandbox
+        return F.NIL;
+      }
+      return ((IAST) result).setAtCopy(0, head);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.Heads, S.False);
+      return ARGS_2_INFINITY;
     }
   }
 
@@ -2189,6 +2244,9 @@ public class StructureFunctions {
         comparator = new Predicates.IsBinaryFalse(arg2);
       }
       IExpr arg1 = IASTDataset.normalizeDataset(ast.arg1());
+      if (ast.isAST2() && arg1 == ast.arg1() && arg1.isASTOrAssociation()) {
+        return sortByPredicate((IAST) arg1, arg2, engine);
+      }
       if (comparator == null && arg1.isList() && !arg1.isAssociation()
           && ((IAST) arg1).exists(x -> x.isQuantity())) {
         // quantities order by magnitude, not canonically - see Comparators.QuantityComparator.
@@ -2202,6 +2260,33 @@ public class StructureFunctions {
             .restoreDataset(sortByComparator(comparator, ast.setAtCopy(1, arg1), engine));
       }
       return sortByComparator(comparator, ast, engine);
+    }
+
+    /**
+     * <code>Sort(list, p)</code>: a merge sort which keeps <code>a</code> before <code>b</code> unless
+     * <code>p(a, b)</code> is <code>False</code>, see {@link PredicateSort}. The values of an
+     * association are sorted, and its rules are reordered with them.
+     */
+    private static IExpr sortByPredicate(IAST list, IExpr p, EvalEngine engine) {
+      final int n = list.argSize();
+      final boolean association = list.isAssociation();
+      final IExpr[] elements = new IExpr[n];
+      for (int i = 0; i < n; i++) {
+        elements[i] = association ? list.getRule(i + 1).second() : list.get(i + 1);
+      }
+      final int[] permutation = PredicateSort.permutation(elements, p, engine);
+      if (association) {
+        final IASTAppendable rules = F.ListAlloc(n);
+        for (int j : permutation) {
+          rules.append(list.getRule(j + 1));
+        }
+        return F.assoc(rules);
+      }
+      final IASTAppendable result = F.ast(list.head(), n);
+      for (int j : permutation) {
+        result.append(elements[j]);
+      }
+      return result;
     }
 
     protected static IExpr sortByComparator(Comparator<IExpr> comparator, final IAST ast,
@@ -2312,14 +2397,17 @@ public class StructureFunctions {
             final IExpr arg2 = ast.arg2();
 
             // sort a list of indices. after sorting, we reorder the leaves.
+            // elements with the same f(x) are in the canonical order of the elements, the rules of
+            // an association: SortBy({{1,"b"},{1,"a"}}, First) is {{1,"a"},{1,"b"}}
             final IASTAppendable sortAST = F.mapRange(1, arg1.size(), i -> {
               IExpr unary = engine.evaluate(F.unaryAST1(arg2, arg1.get(i)));
-              return F.binaryAST2(S.List, unary, F.ZZ(i));
+              IExpr element = arg1.isAssociation() ? arg1.getRule(i) : arg1.get(i);
+              return F.List(unary, element, F.ZZ(i));
             });
             EvalAttributes.sort(sortAST);
 
             return F.mapFunction(arg1.head(), sortAST, t -> {
-              int sortedIndex = t.second().toIntDefault(-1);
+              int sortedIndex = ((IAST) t).arg3().toIntDefault(-1);
               if (sortedIndex < 0) {
                 // stop iterating and return fFalse
                 return null;

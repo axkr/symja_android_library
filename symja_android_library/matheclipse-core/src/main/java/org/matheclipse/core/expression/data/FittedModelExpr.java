@@ -1,10 +1,13 @@
 package org.matheclipse.core.expression.data;
 
+import java.io.EOFException;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.OptionalDataException;
 import java.util.Arrays;
+import org.hipparchus.distribution.continuous.TDistribution;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.ArrayFieldVector;
 import org.hipparchus.linear.FieldMatrix;
@@ -13,7 +16,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.ExprOLSLinearRegression;
@@ -21,7 +23,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implements Externalizable {
+public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegression>
+    implements Externalizable {
 
   /** */
   private static final long serialVersionUID = -2779698690575246663L;
@@ -124,7 +127,7 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implement
         FieldVector<IExpr> yv = Convert.list2Vector(y);
         FieldMatrix<IExpr> xm = Convert.list2Matrix(x);
         FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
-        return FittedModelExpr.newInstance(xm, yv, basis);
+        return FittedModelExpr.newInstance(xm, yv, basis, variables);
       }
       return F.NIL;
     } catch (Exception e) {
@@ -157,7 +160,7 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implement
       }
       FieldMatrix<IExpr> designMatrix =
           designMatrixSymbolic(matrix, basisFunctions, variables, engine);
-      return newInstance(designMatrix, y, basisFunctions);
+      return newInstance(designMatrix, y, basisFunctions, Convert.vector2List(variables));
     } catch (Exception e) {
       if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
@@ -174,8 +177,6 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implement
       double[] doubleVector = responseVector.toDoubleVector();
       if (doubleMatrix != null && doubleVector != null) {
         // numeric solution
-        ExprOLSLinearRegression regression = new ExprOLSLinearRegression();
-        regression.setNoIntercept(true);
         FieldMatrix<IExpr> designFieldMatrix = Convert.list2Matrix(doubleMatrix);
         FieldVector<IExpr> responseFieldVector = Convert.list2Vector(doubleVector);
         FittedModelExpr model = newInstance(designFieldMatrix, responseFieldVector);
@@ -196,97 +197,259 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implement
 
   private static FittedModelExpr newInstance(final FieldMatrix<IExpr> designMatrix,
       final FieldVector<IExpr> responseVector) {
-    // use slots as basis functions placeholder
+    // slots stand in for the basis functions, and are the variables a point is given in
     final int columnDimension = designMatrix.getColumnDimension();
     FieldVector<IExpr> basisFunctions = new ArrayFieldVector<IExpr>(F.EXPR_FIELD, columnDimension);
     for (int i = 0; i < columnDimension; i++) {
       basisFunctions.setEntry(i, F.Slot(i + 1));
     }
-    return newInstance(designMatrix, responseVector, basisFunctions);
+    return newInstance(designMatrix, responseVector, basisFunctions,
+        Convert.vector2List(basisFunctions));
   }
 
   private static FittedModelExpr newInstance(final FieldMatrix<IExpr> designMatrix,
-      final FieldVector<IExpr> responseVector, final FieldVector<IExpr> basisFunctions) {
+      final FieldVector<IExpr> responseVector, final FieldVector<IExpr> basisFunctions,
+      final IAST variables) {
+    return new FittedModelExpr(regression(designMatrix, responseVector), designMatrix,
+        responseVector, basisFunctions, variables);
+  }
+
+  /**
+   * The regression over a design matrix that already carries its intercept, if it has one, as a
+   * column.
+   *
+   * <p>
+   * It is run "without intercept" so that the column is not added a second time; whether the model
+   * has a constant term is told to it separately, because that - and not the flag - decides whether
+   * R-squared is measured against the mean of the data or against zero.
+   */
+  private static ExprOLSLinearRegression regression(FieldMatrix<IExpr> designMatrix,
+      FieldVector<IExpr> responseVector) {
     ExprOLSLinearRegression regression = new ExprOLSLinearRegression();
     regression.setNoIntercept(true);
+    regression.setConstantBasis(hasConstantColumn(designMatrix));
     regression.newSampleData(responseVector, designMatrix);
-    return new FittedModelExpr(regression, designMatrix, responseVector, basisFunctions);
+    return regression;
   }
+
+  /**
+   * Whether some column of the design matrix is one constant, non-zero value - the intercept.
+   *
+   * <p>
+   * The matrix is looked at rather than the basis functions, which covers the basis form (where the
+   * prepended <code>1</code> is a column of ones), the design-matrix form (whose basis is only
+   * slots) and a deserialized model alike.
+   */
+  private static boolean hasConstantColumn(FieldMatrix<IExpr> designMatrix) {
+    int rows = designMatrix.getRowDimension();
+    for (int j = 0; j < designMatrix.getColumnDimension(); j++) {
+      double first = designMatrix.getEntry(0, j).evalfNaN();
+      if (Double.isNaN(first) || first == 0.0) {
+        continue;
+      }
+      boolean constant = true;
+      for (int i = 1; i < rows && constant; i++) {
+        constant = designMatrix.getEntry(i, j).evalfNaN() == first;
+      }
+      if (constant) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static final String[] PROPERTIES = {"AdjustedRSquared", "BestFit", "BestFitParameters",
+      "EstimatedVariance", "FitResiduals", "ParameterConfidenceIntervals", "ParameterErrors",
+      "ParameterPValues", "ParameterTStatistics", "ParameterTable", "ParameterTableEntries",
+      "PredictedResponse", "RSquared"};
 
   private FieldMatrix<IExpr> designMatrix;
   private FieldVector<IExpr> responseVector;
   private FieldVector<IExpr> basisFunctions;
+  /** The variables a point is given in, or {@link F#NIL} for a model read from an older stream. */
+  private IAST variables = F.NIL;
 
   /**
    * No-argument constructor required for {@link Externalizable} deserialization. Initializes the
    * expression with the {@link S#FittedModel} head and a null data payload.
    */
   public FittedModelExpr() {
-    super(S.FittedModel, null);
+    super(null);
   }
 
   protected FittedModelExpr(final ExprOLSLinearRegression function, FieldMatrix<IExpr> designMatrix,
-      FieldVector<IExpr> responseVector, FieldVector<IExpr> basisFunctions) {
-    super(S.FittedModel, function);
+      FieldVector<IExpr> responseVector, FieldVector<IExpr> basisFunctions, IAST variables) {
+    super(function);
     this.designMatrix = designMatrix;
     this.responseVector = responseVector;
     this.basisFunctions = basisFunctions;
+    this.variables = variables == null ? F.NIL : variables;
   }
 
   @Override
   public IExpr copy() {
-    return new FittedModelExpr(fData, designMatrix, responseVector, basisFunctions);
+    return new FittedModelExpr(fData, designMatrix, responseVector, basisFunctions, variables);
   }
 
+  /**
+   * Two models are equal when they were fitted to the same data with the same basis.
+   *
+   * <p>
+   * The regression object itself has no equality of its own, so comparing it compared identities,
+   * and a model never equalled its own serialized copy.
+   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
       return true;
     }
     if (obj instanceof FittedModelExpr) {
-      return fData.equals(((FittedModelExpr) obj).fData);
+      FittedModelExpr other = (FittedModelExpr) obj;
+      return designMatrix.equals(other.designMatrix) && responseVector.equals(other.responseVector)
+          && basisFunctions.equals(other.basisFunctions);
     }
     return false;
   }
 
-  public IExpr evaluate(IAST ast, EvalEngine engine) {
-    if (ast.head() instanceof FittedModelExpr && ast.isAST1()) {
-      IExpr arg1 = ast.arg1();
-      String property = arg1.toString();
-      if (arg1.isString()) {
-        ExprOLSLinearRegression regression = toData();
-        switch (property) {
-          case "AdjustedRSquared":
-            return F.num(regression.calculateAdjustedRSquared());
-          case "BestFit":
-            return normal(false);
-          case "BestFitParameters":
-            return F.List(regression.estimateRegressionParameters());
-          case "EstimatedVariance":
-            return regression.estimateErrorVariance();
-          case "FitResiduals":
-            return F.List(regression.estimateResiduals());
-          case "ParameterErrors":
-            return F.List(regression.estimateRegressionParametersStandardErrors());
-          case "RSquared":
-            return F.num(regression.calculateRSquared());
-          default:
-            // Fall through to return F.NIL for unhandled properties
-            break;
-        }
-      }
+  @Override
+  protected String[] propertyNames() {
+    return PROPERTIES;
+  }
+
+  @Override
+  protected IExpr property(String name, EvalEngine engine) {
+    ExprOLSLinearRegression regression = toData();
+    switch (name) {
+      case "AdjustedRSquared":
+        return F.num(regression.calculateAdjustedRSquared());
+      case "BestFit":
+        return normal(false);
+      case "BestFitParameters":
+        return F.List(regression.estimateRegressionParameters());
+      case "EstimatedVariance":
+        return regression.estimateErrorVariance();
+      case "FitResiduals":
+        return F.List(regression.estimateResiduals());
+      case "ParameterErrors":
+        return F.List(regression.estimateRegressionParametersStandardErrors());
+      case "ParameterConfidenceIntervals":
+        return confidenceIntervals(regression, 0.95);
+      case "ParameterPValues":
+        return parameterColumn(regression, 3);
+      case "ParameterTable":
+        return parameterTable(regression);
+      case "ParameterTableEntries":
+        return parameterTableEntries(regression);
+      case "ParameterTStatistics":
+        return parameterColumn(regression, 2);
+      case "PredictedResponse":
+        return predictedResponse(regression);
+      case "RSquared":
+        return F.num(regression.calculateRSquared());
+      default:
+        return F.NIL;
     }
-    return F.NIL;
+  }
+
+  /** The residual degrees of freedom: data points less parameters. */
+  private int degreesOfFreedom() {
+    return designMatrix.getRowDimension() - designMatrix.getColumnDimension();
+  }
+
+  /**
+   * One row <code>{estimate, standard error, t, p}</code> per parameter, with the two-tailed
+   * p-value of Student's t distribution. Without residual degrees of freedom only the estimates are
+   * known; everything else is <code>Indeterminate</code>.
+   */
+  private IExpr[][] parameterStatistics(ExprOLSLinearRegression regression) {
+    IExpr[] estimates = regression.estimateRegressionParameters();
+    int df = degreesOfFreedom();
+    IExpr[] errors = df > 0 ? regression.estimateRegressionParametersStandardErrors() : null;
+    TDistribution t = df > 0 ? new TDistribution(df) : null;
+    IExpr[][] rows = new IExpr[estimates.length][4];
+    for (int i = 0; i < estimates.length; i++) {
+      double estimate = estimates[i].evalfNaN();
+      rows[i][0] = F.num(estimate);
+      double error = errors == null ? Double.NaN : errors[i].evalfNaN();
+      if (!(error > 0.0) || Double.isNaN(estimate)) {
+        rows[i][1] = rows[i][2] = rows[i][3] = S.Indeterminate;
+        continue;
+      }
+      double statistic = estimate / error;
+      rows[i][1] = F.num(error);
+      rows[i][2] = F.num(statistic);
+      rows[i][3] = F.num(2.0 * t.cumulativeProbability(-Math.abs(statistic)));
+    }
+    return rows;
+  }
+
+  private IAST parameterTableEntries(ExprOLSLinearRegression regression) {
+    IExpr[][] rows = parameterStatistics(regression);
+    return F.mapRange(0, rows.length, i -> F.List(rows[i]));
+  }
+
+  /** One column of the parameter table, for every parameter. */
+  private IAST parameterColumn(ExprOLSLinearRegression regression, int column) {
+    IExpr[][] rows = parameterStatistics(regression);
+    return F.mapRange(0, rows.length, i -> rows[i][column]);
+  }
+
+  /** <code>{estimate - q se, estimate + q se}</code> with q the Student t quantile. */
+  private IAST confidenceIntervals(ExprOLSLinearRegression regression, double level) {
+    IExpr[][] rows = parameterStatistics(regression);
+    int df = degreesOfFreedom();
+    double q =
+        df > 0 ? new TDistribution(df).inverseCumulativeProbability(0.5 + 0.5 * level) : Double.NaN;
+    return F.mapRange(0, rows.length, i -> {
+      if (!rows[i][1].isReal()) {
+        return F.List(S.Indeterminate, S.Indeterminate);
+      }
+      double estimate = rows[i][0].evalf();
+      double halfWidth = q * rows[i][1].evalf();
+      return F.List(F.num(estimate - halfWidth), F.num(estimate + halfWidth));
+    });
+  }
+
+  /** The parameter table, one row per basis function. */
+  private IExpr parameterTable(ExprOLSLinearRegression regression) {
+    IExpr[][] rows = parameterStatistics(regression);
+    IASTAppendable grid = F.ListAlloc(rows.length + 1);
+    grid.append(F.List(F.stringx(""), F.stringx("Estimate"), F.stringx("Standard Error"),
+        F.stringx("t\u2010Statistic"), F.stringx("P\u2010Value")));
+    for (int i = 0; i < rows.length; i++) {
+      IASTAppendable row = F.ListAlloc(5);
+      row.append(basisFunctions.getEntry(i));
+      row.appendAll(rows[i], 0, 4);
+      grid.append(row);
+    }
+    IExpr gray = F.GrayLevel(F.num(0.7));
+    return F.binaryAST2(S.Style,
+        F.function(S.Grid, grid, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
+            F.Rule(S.Dividers, F.List(F.List(F.Rule(F.C2, gray)), F.List(F.Rule(F.C2, gray)))),
+            F.Rule(S.Spacings,
+                F.List(F.List(F.Rule(F.C2, F.C1)), F.List(F.Rule(F.C2, F.num(0.75)))))),
+        F.stringx("DialogStyle"));
+  }
+
+  /** The fitted value at each data point: the observed value less its residual. */
+  private IAST predictedResponse(ExprOLSLinearRegression regression) {
+    IExpr[] residuals = regression.estimateResiduals();
+    IASTAppendable predicted = F.ListAlloc(residuals.length);
+    for (int i = 0; i < residuals.length; i++) {
+      predicted
+          .append(EvalEngine.get().evaluate(F.Subtract(responseVector.getEntry(i), residuals[i])));
+    }
+    return predicted;
+  }
+
+  @Override
+  protected IAST fitVariables() {
+    return variables;
   }
 
   @Override
   public int hashCode() {
-    return (fData == null) ? 461 : 461 + fData.hashCode();
-  }
-
-  @Override
-  public int hierarchy() {
-    return FITTEDMODELID;
+    return (responseVector == null) ? 461 : 461 + responseVector.hashCode();
   }
 
   @Override
@@ -327,10 +490,15 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implement
     responseVector = Convert.list2Vector(v);
     IExpr b = (IExpr) in.readObject();
     basisFunctions = Convert.list2Vector(b);
-    ExprOLSLinearRegression regression = new ExprOLSLinearRegression();
-    regression.setNoIntercept(true);
-    regression.newSampleData(responseVector, designMatrix);
-    fData = regression;
+    try {
+      IExpr vars = (IExpr) in.readObject();
+      variables = vars.isList() ? (IAST) vars : F.NIL;
+    } catch (OptionalDataException | EOFException e) {
+      // a stream written before the variables were stored: the model still answers every
+      // property, it only cannot be evaluated at a point
+      variables = F.NIL;
+    }
+    fData = regression(designMatrix, responseVector);
   }
 
   @Override
@@ -341,5 +509,6 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implement
     output.writeObject(v);
     IExpr b = Convert.vector2Expr(basisFunctions);
     output.writeObject(b);
+    output.writeObject(variables.isPresent() ? variables : F.CEmptyList);
   }
 }

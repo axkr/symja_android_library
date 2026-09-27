@@ -1496,6 +1496,10 @@ public class IntegerFunctions {
           return F.Quantity(integerPart, quantity.arg2());
         }
 
+        if (!arg1.isNumericFunction()) {
+          // a symbolic argument like `x` stays unevaluated
+          return F.NIL;
+        }
         final IReal realNumber = arg1.evalReal();
         if (realNumber != null) {
           return realNumber.integerPart();

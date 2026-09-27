@@ -108,12 +108,16 @@ public class ManipulateSpecTest {
     assertEquals(ManipulateControl.TRIGGER, control.getKind());
   }
 
+  /** No control is drawn for k, but k stays the widget's own variable, starting at 0. */
   @Test
-  public void testControlTypeNoneDropsTheControl() {
+  public void testControlTypeNoneDrawsNoControl() {
     ManipulateSpec spec = parse("Manipulate(k, {k, 0, 5, ControlType -> None}, {j, 0, 1})");
     assertNotNull(spec);
-    assertEquals(1, spec.getControls().size());
-    assertEquals("j", spec.getControls().get(0).getName());
+    assertEquals(2, spec.getControls().size());
+    assertEquals(ManipulateControl.NONE, spec.getControls().get(0).getKind());
+    assertEquals("k", spec.getControls().get(0).getName());
+    assertEquals(ManipulateControl.SLIDER, spec.getControls().get(1).getKind());
+    assertEquals("j", spec.getControls().get(1).getName());
   }
 
   @Test
@@ -198,8 +202,7 @@ public class ManipulateSpecTest {
   public void testARowWithADynamicIsALiveReadOut() {
     // Manipulate[..., Row[{"moves: ", Dynamic[moves]}]] is the usual way to put a counter beside
     // the sliders. Taking its text once - which is what a heading row does - would freeze it.
-    ManipulateSpec spec =
-        parse("Manipulate(k, {k, 0, 5}, Row({\"moves: \", Dynamic(k)}))");
+    ManipulateSpec spec = parse("Manipulate(k, {k, 0, 5}, Row({\"moves: \", Dynamic(k)}))");
     assertNotNull(spec);
     assertEquals(2, spec.getControls().size());
     ManipulateControl display = spec.getControls().get(1);
@@ -391,8 +394,111 @@ public class ManipulateSpecTest {
     assertNull(parse("Plot(Sin(x), {x, 0, 1})"));
   }
 
+  /**
+   * A control and its read-out laid out in one Row, a styled read-out of a variable the body
+   * writes, and that variable declared with ControlType -> None.
+   */
+  @Test
+  public void testAControlInsideARowIsAControlAndTheRestItsReadOut() {
+    ManipulateSpec spec =
+        parse("Manipulate(status = If(target >= 8, \"reached\", \"not yet\"); target,"
+            + " Row({Control({{target, 1, \"target\"}, 0, 10}), Style(\" \"),"
+            + " Style(Dynamic(target))}),"
+            + " Style(Dynamic(status), Bold, Red), {{status, \"\", \"\"}, ControlType -> None})");
+    assertNotNull(spec);
+    List<ManipulateControl> controls = spec.getControls();
+    assertEquals(4, controls.size());
+    assertEquals(ManipulateControl.SLIDER, controls.get(0).getKind());
+    assertEquals("target", controls.get(0).getName());
+
+    ManipulateControl readOut = controls.get(1);
+    assertEquals(ManipulateControl.DISPLAY, readOut.getKind());
+    assertTrue(readOut.getDisplay().isAST(S.Row));
+    assertTrue(!readOut.getDisplay().toString().contains("Control"),
+        "the control is not drawn a second time inside the read-out: " + readOut.getDisplay());
+
+    assertEquals(ManipulateControl.DISPLAY, controls.get(2).getKind());
+
+    ManipulateControl status = controls.get(3);
+    assertEquals(ManipulateControl.NONE, status.getKind());
+    assertTrue(status.bindsVariable());
+    assertTrue(status.getInitial().isString());
+    assertEquals("", status.getInitial().toString());
+  }
+
+  @Test
+  public void testALayoutOfControlsWithOnlyTextLeftBecomesAHeading() {
+    ManipulateSpec spec = parse("Manipulate(u, Row({\"speed\", Control({u, 0, 1})}))");
+    assertNotNull(spec);
+    assertEquals(2, spec.getControls().size());
+    assertEquals(ManipulateControl.SLIDER, spec.getControls().get(0).getKind());
+    assertEquals(ManipulateControl.HEADING, spec.getControls().get(1).getKind());
+  }
+
+  /** ControlType -> None keeps the variable local with a starting value, and draws nothing. */
+  @Test
+  public void testControlTypeNoneBindsWithoutAControl() {
+    ManipulateControl range = singleControl("Manipulate(u, {u, 2, 5, ControlType -> None})");
+    assertEquals(ManipulateControl.NONE, range.getKind());
+    assertEquals("2", range.getInitial().toString(), "a range starts at its lower end");
+
+    ManipulateControl choice = singleControl("Manipulate(u, {u, {a, b, c}, ControlType -> None})");
+    assertEquals(ManipulateControl.NONE, choice.getKind());
+    assertEquals("a", choice.getInitial().toString(), "a choice starts at the first one");
+
+    ManipulateControl initial = singleControl("Manipulate(u, {{u, 7}, ControlType -> None})");
+    assertEquals(ManipulateControl.NONE, initial.getKind());
+    assertEquals("7", initial.getInitial().toString());
+  }
+
   @Test
   public void testManipulateWithoutAControl() {
     assertNull(parse("Manipulate(x)"));
+  }
+  /**
+   * <code>"Advanced" -&gt; spec</code> names a group of controls. A string keyed rule used to be read
+   * as an option and dropped, so a panel made only of groups had no control and the whole
+   * <code>Manipulate</code> vanished.
+   */
+  @Test
+  public void testNamedControlGroups() {
+    String[][] cases = {{"Manipulate(x, \"None\" -> {{x,0},-5,5})", "x"},
+        {"Manipulate(x, \"None\" :> {{x,0},-5,5})", "x"},
+        {"Manipulate(x+y, \"Basic\" -> {{x,0},-5,5}, \"Advanced\" -> {{y,0},-5,5})", "x y"},
+        {"Manipulate(x+y+z, \"Group\" -> {{{x,0},-5,5},{{y,0},-5,5},{{z,0},-5,5}})", "x y z"}};
+    for (String[] c : cases) {
+      ManipulateSpec spec = parse(c[0]);
+      assertNotNull(spec, c[0]);
+      StringBuilder names = new StringBuilder();
+      for (ManipulateControl control : spec.getControls()) {
+        names.append(names.length() > 0 ? " " : "").append(control.getName());
+      }
+      assertEquals(c[1], names.toString(), c[0]);
+    }
+    // a single control with a list of choices is one control, not a list of them
+    ManipulateSpec choices = parse("Manipulate(x, \"G\" -> {{x,1},{1,2,3}})");
+    assertEquals(1, choices.getControls().size());
+    assertEquals(ManipulateControl.DISCRETE, choices.getControls().get(0).getKind());
+    // options keep being options
+    ManipulateSpec withOption = parse("Manipulate(x, {x,0,10}, Initialization :> (x=3))");
+    assertEquals(1, withOption.getControls().size());
+  }
+  /**
+   * Item("background") or Text("background") between groups of controls is a subheading, as a
+   * bare string is; they used to be dropped. An Item holding a Control still gives the control.
+   */
+  @Test
+  public void testItemAndTextAreHeadings() {
+    for (String annotation : new String[] {"Item(\"background\")", "Text(\"background\")",
+        "Item(Style(\"background\", Bold), Alignment -> Left)"}) {
+      ManipulateSpec spec = parse("Manipulate(x, " + annotation + ", {x, 0, 10})");
+      assertNotNull(spec, annotation);
+      assertEquals(2, spec.getControls().size(), annotation);
+      assertEquals(ManipulateControl.HEADING, spec.getControls().get(0).getKind(), annotation);
+      assertEquals(ManipulateControl.SLIDER, spec.getControls().get(1).getKind(), annotation);
+    }
+    ManipulateSpec wrapped = parse("Manipulate(x, Item(Control({x, 0, 10})))");
+    assertEquals(1, wrapped.getControls().size());
+    assertEquals(ManipulateControl.SLIDER, wrapped.getControls().get(0).getKind());
   }
 }

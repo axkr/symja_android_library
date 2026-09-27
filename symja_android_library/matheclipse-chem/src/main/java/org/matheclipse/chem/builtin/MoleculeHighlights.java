@@ -72,18 +72,12 @@ final class MoleculeHighlights {
       return specs.isEmpty() ? null : new MoleculeHighlights(specs, labels);
     }
     if (arg.isList()) {
-      IAST list = (IAST) arg;
-      List<IExpr> specs = new ArrayList<IExpr>();
-      for (int i = 1; i < list.size(); i++) {
-        specs.add(list.get(i));
-      }
+      List<IExpr> specs = ((IAST) arg).asArgsList();
       return specs.isEmpty() ? null : new MoleculeHighlights(specs, new ArrayList<String>());
     }
     if (arg.isAST(S.Atom) || arg.isAST(S.Bond) || arg.isString()
         || arg.isAST(S.MoleculePattern, 2)) {
-      List<IExpr> specs = new ArrayList<IExpr>();
-      specs.add(arg);
-      return new MoleculeHighlights(specs, new ArrayList<String>());
+      return new MoleculeHighlights(List.of(arg), new ArrayList<String>());
     }
     return null;
   }

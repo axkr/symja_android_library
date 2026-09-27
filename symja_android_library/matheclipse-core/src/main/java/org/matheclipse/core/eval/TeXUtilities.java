@@ -60,6 +60,21 @@ public class TeXUtilities {
    * @param out
    */
   public synchronized boolean toTeX(final IExpr objectExpression, final Writer out) {
+    return toTeX(objectExpression, out, true);
+  }
+
+  /**
+   * Converts the objectExpression into a TeX expression and writes the result to the given <code>
+   * Writer</code>
+   *
+   * @param objectExpression
+   * @param out
+   * @param evaluate evaluate <code>objectExpression</code> before converting it; the function
+   *        <code>TeXForm</code> has its argument evaluated already, and does not evaluate
+   *        <code>TeXForm(Unevaluated(1+1))</code> a second time
+   */
+  public synchronized boolean toTeX(final IExpr objectExpression, final Writer out,
+      boolean evaluate) {
     final StringBuilder buf = new StringBuilder();
 
     if (objectExpression != null) {
@@ -67,7 +82,7 @@ public class TeXUtilities {
       int significantFigures = fEvalEngine.getSignificantFigures() + 1;
       try {
         IExpr result = objectExpression;
-        if (objectExpression.isAST()) {
+        if (evaluate && objectExpression.isAST()) {
           result = fEvalEngine.evalHoldPattern((IAST) objectExpression, true, true);
         }
 

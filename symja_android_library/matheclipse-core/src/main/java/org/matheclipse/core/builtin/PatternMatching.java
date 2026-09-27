@@ -34,8 +34,8 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.EvalFlags.Group;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -276,8 +276,8 @@ public final class PatternMatching {
   }
 
   /**
-   * <code>obj[Sequence["k"]] = v</code> assigns
-   * <code>obj["k"]</code>. A pattern variable bound to a sequence - the WLJS up-value
+   * <code>obj[Sequence["k"]] = v</code> assigns <code>obj["k"]</code>. A pattern variable bound to
+   * a sequence - the WLJS up-value
    * <code>nb /: Set[nb[keys__], value_] := object[keys] = value</code> - leaves a
    * <code>Sequence</code> in the held left side; Mathematica splices it when it evaluates the
    * arguments of the left side, and the up-values of <code>object</code> then take the assignment.
@@ -761,8 +761,8 @@ public final class PatternMatching {
     @Override
     public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
-      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol,
-          engine, false);
+      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol, engine,
+          false);
     }
 
 
@@ -1291,7 +1291,8 @@ public final class PatternMatching {
               // how a front end collects what it shows beside a completion
               arg1 = F.symbol(arg1.toString(), engine);
             }
-            if (arg1.head() == S.Image && arg1 instanceof org.matheclipse.core.interfaces.IDataExpr) {
+            if (arg1.head() == S.Image
+                && arg1 instanceof org.matheclipse.core.interfaces.IDataExpr) {
               // an image's properties, as Information[image] and Information[image, "Property"]
               // answer them; the WLJS notebook reads them before it shows an image
               return imageInformation(arg1,
@@ -1714,8 +1715,8 @@ public final class PatternMatching {
     @Override
     public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
-      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol,
-          engine, false);
+      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol, engine,
+          false);
     }
 
 
@@ -2478,20 +2479,40 @@ public final class PatternMatching {
   }
 
 
+  /**
+   * <code>SetSystemOptions(name -> value)</code> - resets an internal system option.
+   *
+   * <p>
+   * The only system options here are the ones {@link SystemOptions} reports, and none of them is
+   * stored, so a known name is accepted and given back as it was written - the form a notebook
+   * uses as a statement whose result is discarded. A name that is not a system option is
+   * <code>SetSystemOptions::sysname</code> and the call stays unevaluated, which is what the
+   * reference implementation does; it does not quietly answer <code>Null</code>.
+   */
   private static final class SetSystemOptions extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // stub implementation
-      if (ast.isAST1() && ast.arg1().isString()) {
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        IAST rules = arg.isList() ? (IAST) arg : F.List(arg);
+        for (int j = 1; j < rules.size(); j++) {
+          IExpr rule = rules.get(j);
+          if (!rule.isRuleAST()) {
+            return F.NIL;
+          }
+          IExpr name = rule.first();
+          if (!SystemOptions.isKnown(name)) {
+            return Errors.printMessage(S.SetSystemOptions, "sysname", F.list(name), engine);
+          }
+        }
       }
-
-      return S.Null;
+      return ast.isAST1() ? ast.arg1() : ast.setAtCopy(0, S.List);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_INFINITY;
     }
 
     @Override
@@ -2576,6 +2597,22 @@ public final class PatternMatching {
   }
 
   private static final class SystemOptions extends AbstractFunctionEvaluator {
+
+    /** The names this table answers for, which are the only ones that can be set. */
+    private static final String[] KNOWN = {"DifferentiationOptions"};
+
+    static boolean isKnown(IExpr name) {
+      if (!name.isString() && !name.isSymbol()) {
+        return false;
+      }
+      String str = name.toString();
+      for (String known : KNOWN) {
+        if (known.equals(str)) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2988,8 +3025,8 @@ public final class PatternMatching {
         } else if (lhsAST.isCondition() && lhsAST.first().isAST()
             && lhsAST.first().head().equals(tagSymbol)) {
           removed = tagSymbol.removeRule(IPatternMatcher.SET, false, lhsAST, packageMode);
-        } else if (TagSet.isTagAvailable(tagSymbol, (lhsAST.isCondition()
-            && lhsAST.first().isAST()) ? (IAST) lhsAST.first() : lhsAST)) {
+        } else if (TagSet.isTagAvailable(tagSymbol,
+            (lhsAST.isCondition() && lhsAST.first().isAST()) ? (IAST) lhsAST.first() : lhsAST)) {
           removed = tagSymbol.removeRule(IPatternMatcher.TAGSET, false, lhsAST, packageMode);
         } else {
           // Tag `1` not found in `2`
@@ -3246,12 +3283,12 @@ public final class PatternMatching {
 
     /**
      * <code>a[key] =.</code> where <code>a</code> holds an association removes <code>key</code>
-     * from it, as the Wolfram Language does.
+     * from it.
      *
      * <p>
      * Left to the general path, the head was evaluated first and the rule was looked for on
-     * <code>Association</code> itself, so every such Unset said "Assignment ... not found" and
-     * kept the key. The WLJS notebook drops cells, notifications and event handlers this way after
+     * <code>Association</code> itself, so every such Unset said "Assignment ... not found" and kept
+     * the key. The WLJS notebook drops cells, notifications and event handlers this way after
      * nearly every evaluation, and the associations only ever grew.
      *
      * @return <code>true</code> when a key was removed
@@ -3520,8 +3557,8 @@ public final class PatternMatching {
     @Override
     public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
-      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol,
-          engine, true);
+      return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol, engine,
+          true);
     }
 
 
@@ -3551,8 +3588,7 @@ public final class PatternMatching {
   }
 
   private static IExpr evalLHS(IExpr leftHandSide, int[] flags, EvalEngine engine) {
-    if (leftHandSide.isAST()
-        && ((IAST) leftHandSide).hasNoFlag(Group.FLATTENED_OR_SORTED)) {
+    if (leftHandSide.isAST() && ((IAST) leftHandSide).hasNoFlag(Group.FLATTENED_OR_SORTED)) {
       if (leftHandSide.isHoldPatternOrLiteral()) {
         flags[0] = leftHandSide.isAST(S.HoldPattern, 2) ? IPatternMatcher.HOLDPATTERN
             : IPatternMatcher.LITERAL;

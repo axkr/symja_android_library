@@ -12,13 +12,12 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.io.paclet.PacletInfo;
 import org.matheclipse.core.io.paclet.PacletRegistry;
 
 /**
- * Paclets: the directories an application says its Wolfram Language code lives in.
+ * Paclets: the directories an application says its script code lives in.
  *
  * <p>
  * A notebook or an application starts by loading its own directory -
@@ -72,7 +71,7 @@ public class PacletFunctions {
           loaded.add(key);
         }
       }
-      // the whole list of loaded directories, as in the Wolfram Language
+      // the whole list of loaded directories
       return directoryList(PacletRegistry.directories());
     }
 
@@ -157,7 +156,7 @@ public class PacletFunctions {
    * which is how a paclet's loader file asks for the paclet's own code.
    *
    * <p>
-   * Everything is read at once. The Wolfram Language uses this to arrange for symbols to be loaded
+   * Everything is read at once. The script language uses this to arrange for symbols to be loaded
    * when they are first touched; Symja has no autoloading, and reading the file now is the same
    * thing to anyone who then uses those symbols.
    */

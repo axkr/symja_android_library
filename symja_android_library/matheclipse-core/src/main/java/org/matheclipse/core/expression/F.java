@@ -61,7 +61,9 @@ import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
-import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.HtmlTemplates;
+import org.matheclipse.core.form.output.JSPageProvider;
+import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.ObjIntFunction;
 import org.matheclipse.core.interfaces.Attribute;
@@ -7976,6 +7978,22 @@ public class F extends S {
     return new AST2(MatchQ, expr, form);
   }
 
+  public static IAST MathieuC(final IExpr a, final IExpr q, final IExpr z) {
+    return new AST3(S.MathieuC, a, q, z);
+  }
+
+  public static IAST MathieuCPrime(final IExpr a, final IExpr q, final IExpr z) {
+    return new AST3(S.MathieuCPrime, a, q, z);
+  }
+
+  public static IAST MathieuS(final IExpr a, final IExpr q, final IExpr z) {
+    return new AST3(S.MathieuS, a, q, z);
+  }
+
+  public static IAST MathieuSPrime(final IExpr a, final IExpr q, final IExpr z) {
+    return new AST3(S.MathieuSPrime, a, q, z);
+  }
+
   public static IAST MathMLForm(final IExpr expr) {
     return new AST1(MathMLForm, expr);
   }
@@ -8715,7 +8733,7 @@ public class F extends S {
   public static String openJSONOnDesktop(String html) throws IOException {
     java.lang.String escapedStr = html.replaceAll("(\\r|\\n|\\r\\n)+", " ");
     escapedStr = StringEscapeUtils.escapeEcmaScript(escapedStr);
-    String jsonScriptStr = StringUtils.replace(JSBuilder.JSON_HTML_VIEWER, "`1`", escapedStr);
+    String jsonScriptStr = StringUtils.replace(HtmlTemplates.JSON_HTML_VIEWER, "`1`", escapedStr);
     File temp = java.io.File.createTempFile("tempfile", ".html");
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
       bw.write(jsonScriptStr);
@@ -9562,80 +9580,14 @@ public class F extends S {
 
   private static String printJSFormData(IExpr expr) {
     IAST jsFormData = (IAST) expr;
-    if (jsFormData.arg2().toString().equals(JSBuilder.MATHCELL_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildMathcell(JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
+    // the page loads the library from its CDN; it is built by matheclipse-jsgraphics
+    try {
+      String html = JSPageProvider.pageOf(jsFormData.arg2().toString(), jsFormData.arg1().toString());
+      if (html != null) {
         return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
       }
-      // } else if (jsFormData.arg2().toString().equals("graphics3d")) {
-      // try {
-      // String graphics3dStr = jsFormData.arg1().toString();
-      // String html = Config.GRAPHICS3D_PAGE;
-      // html = StringUtils.replace(html, "`1`", graphics3dStr);
-      // return openHTMLOnDesktop(html);
-      // } catch (Exception ex) {
-      // LOGGER.debug("F.printJSFormData() failed", ex);
-      // }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.ECHARTS_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildECharts(JSBuilder.ECHARTS_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.JSXGRAPH_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.MERMAID_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildMermaid(JSBuilder.MERMAID_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.PLOTLY_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.TREEFORM_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = Config.VISJS_PAGE;
-        html = StringUtils.replace(html, "`1`", manipulateStr);
-        html = StringUtils.replace(html, "`2`", //
-            "  var options = {\n" + "          edges: {\n" + "              smooth: {\n"
-                + "                  type: 'cubicBezier',\n"
-                + "                  forceDirection:  'vertical',\n"
-                + "                  roundness: 0.4\n" + "              }\n" + "          },\n"
-                + "          layout: {\n" + "              hierarchical: {\n"
-                + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
-                + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
-                + "          physics:false\n" + "      }; " //
-        );
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
+    } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
     }
     return null;
   }
@@ -10531,37 +10483,14 @@ public class F extends S {
     try {
       if (expr.isSameHeadSizeGE(Graphics, 2)) {
         StringBuilder buf = new StringBuilder();
-        // if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) expr, EvalEngine.get())) {
-        // try {
-        // String graphicsStr = buf.toString();
-        // String html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
-        // return openHTMLOnDesktop(html);
-        // } catch (Exception ex) {
-        // Errors.rethrowsInterruptException(ex);
-        // }
-        // }
-        if (GraphicsUtil.renderGraphics2D(buf, (IAST) expr, EvalEngine.get())) {
-          try {
-            String graphicsStr = buf.toString();
-            String html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
-            return openHTMLOnDesktop(html);
-          } catch (Exception ex) {
-            Errors.rethrowsInterruptException(ex);
-            // LOGGER.debug("JSBuilder.buildGraphics2D() failed", ex);
-          }
+        if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) expr, EvalEngine.get())) {
+          String htmlPage = StringUtils.replace(Config.HTML_PAGE, "`1`", buf.toString());
+          return openHTMLOnDesktop(htmlPage);
         }
-        // return openSVGOnDesktop((IAST) expr);
       } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
-        StringBuilder buf = new StringBuilder();
-        if (GraphicsUtil.renderGraphics3D(buf, (IAST) expr, EvalEngine.get())) {
-          try {
-            String graphics3DStr = buf.toString();
-            String html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphics3DStr);
-            return openHTMLOnDesktop(html);
-          } catch (Exception ex) {
-            Errors.rethrowsInterruptException(ex);
-            logger().debug("JSBuilder.buildGraphics3D() failed", ex);
-          }
+        String html = WebGLGraphics3D.generateStandaloneHTML((IAST) expr);
+        if (!html.isEmpty()) {
+          return openHTMLOnDesktop(html);
         }
       } else if (expr instanceof DataExpr) {
         String html = ((DataExpr) expr).toHTML();

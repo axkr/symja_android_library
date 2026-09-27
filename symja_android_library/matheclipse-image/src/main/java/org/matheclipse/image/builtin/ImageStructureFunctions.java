@@ -2,6 +2,7 @@ package org.matheclipse.image.builtin;
 
 import java.awt.image.BufferedImage;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -12,6 +13,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Kernels;
+import org.matheclipse.image.algo.Masks;
 import org.matheclipse.image.algo.Pixels;
 import org.matheclipse.image.expression.data.ImageExpr;
 
@@ -38,7 +40,15 @@ public class ImageStructureFunctions {
     }
   }
 
-  /** <code>ImageApply(f, image)</code> - replace every sample by <code>f</code> of it. */
+  /**
+   * <code>ImageApply(f, image)</code> - replace every sample by <code>f</code> of it.
+   *
+   * <p>
+   * <code>Masking -&gt; mask</code> applies <code>f</code> only where the mask is positive and passes
+   * every other pixel through unchanged: an image or a matrix of the same size, or a smaller one
+   * centred on the image, or a <code>Graphics</code> drawn at the image's size, whose drawn pixels
+   * are the ones included. <code>All</code> and <code>None</code> apply <code>f</code> everywhere.
+   */
   private static class ImageApply extends AbstractEvaluator {
 
     @Override
@@ -47,32 +57,75 @@ public class ImageStructureFunctions {
       if (image == null) {
         return F.NIL;
       }
+      IExpr maskSpec = S.All;
+      for (int i = 3; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (option.isRuleAST() && option.first() == S.Masking) {
+          maskSpec = option.second();
+          continue;
+        }
+        // Unknown option `1` in `2`.
+        return Errors.printMessage(S.ImageApply, "optx", F.list(option, ast), engine);
+      }
       IExpr function = ast.arg1();
       int channels = Boof.channels(image);
       int colorChannels = channels == 4 ? 3 : channels;
       int width = image.getWidth();
       int height = image.getHeight();
+      boolean[][] mask = Masks.of(maskSpec, width, height);
+      if (mask == Masks.UNREADABLE) {
+        return F.NIL;
+      }
 
+      // the number of channels of the result is the length of what f returns, as in the
+      // reference implementation: a color for every gray sample widens the image to RGB, Max of
+      // every color narrows it to gray. It is read from the first sample f is applied to.
+      int outColorChannels = -1;
       float[][] result = new float[width * height][];
+      boolean[] masked = new boolean[width * height];
       for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
           float[] values = Pixels.pixel(image, x, y, channels);
+          if (mask != null && !mask[y][x]) {
+            result[y * width + x] = values;
+            masked[y * width + x] = true;
+            continue;
+          }
           IExpr applied =
               engine.evaluate(F.unaryAST1(function, samplesOf(values, colorChannels)));
-          float[] replaced = valuesOf(applied, values, colorChannels);
+          if (outColorChannels < 0) {
+            outColorChannels = applied.isList() ? applied.argSize() : 1;
+            if (outColorChannels != 1 && outColorChannels != 3 && outColorChannels != 4) {
+              return F.NIL;
+            }
+          }
+          float[] replaced = valuesOf(applied, values, colorChannels, outColorChannels);
           if (replaced == null) {
             return F.NIL;
           }
           result[y * width + x] = replaced;
         }
       }
+      if (outColorChannels < 0) {
+        outColorChannels = colorChannels;
+      }
+      // an alpha channel is carried along when the colors stay colors
+      boolean alpha = channels == 4 && outColorChannels == 3;
+      int outChannels = alpha ? 4 : outColorChannels;
+      if (outColorChannels != colorChannels) {
+        for (int i = 0; i < result.length; i++) {
+          if (masked[i]) {
+            result[i] = converted(result[i], colorChannels, outChannels);
+          }
+        }
+      }
       return new ImageExpr(
-          Pixels.fromPixels(width, height, channels, (x, y) -> result[y * width + x]), null);
+          Pixels.fromPixels(width, height, outChannels, (x, y) -> result[y * width + x]), null);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_INFINITY;
     }
 
     @Override
@@ -383,6 +436,43 @@ public class ImageStructureFunctions {
    * @return <code>null</code> if the function did not return a number or a list of the right length
    */
   private static float[] valuesOf(IExpr applied, float[] original, int colorChannels) {
+    return valuesOf(applied, original, colorChannels, colorChannels);
+  }
+
+  /**
+   * The value the user function returned, as {@code outColorChannels} samples on the 0 ... 255
+   * scale; the alpha channel of <code>original</code> follows the colors when they stay colors.
+   *
+   * @return <code>null</code> if the function did not return a number or a list of that length
+   */
+  private static float[] valuesOf(IExpr applied, float[] original, int colorChannels,
+      int outColorChannels) {
+    if (outColorChannels != colorChannels) {
+      boolean alpha = original.length == 4 && outColorChannels == 3;
+      float[] result = new float[alpha ? 4 : outColorChannels];
+      if (alpha) {
+        result[3] = original[3];
+      }
+      if (outColorChannels == 1) {
+        double value = applied.evalfNaN();
+        if (Double.isNaN(value)) {
+          return null;
+        }
+        result[0] = (float) (255.0 * value);
+        return result;
+      }
+      if (!applied.isList() || applied.argSize() != outColorChannels) {
+        return null;
+      }
+      for (int c = 0; c < outColorChannels; c++) {
+        double value = ((IAST) applied).get(c + 1).evalfNaN();
+        if (Double.isNaN(value)) {
+          return null;
+        }
+        result[c] = (float) (255.0 * value);
+      }
+      return result;
+    }
     float[] result = original.clone();
     if (colorChannels == 1) {
       double value = applied.evalfNaN();
@@ -402,6 +492,31 @@ public class ImageStructureFunctions {
         return null;
       }
       result[c] = (float) (255.0 * value);
+    }
+    return result;
+  }
+
+  /**
+   * A pixel masked out of <code>ImageApply</code> in the result's channels: a gray sample repeated
+   * into r, g and b, or the mean of the colors when the result is gray.
+   */
+  private static float[] converted(float[] values, int colorChannels, int outChannels) {
+    float[] result = new float[outChannels];
+    if (colorChannels == 1) {
+      for (int c = 0; c < Math.min(outChannels, 3); c++) {
+        result[c] = values[0];
+      }
+    } else {
+      float sum = 0.0f;
+      for (int c = 0; c < colorChannels; c++) {
+        sum += values[c];
+      }
+      for (int c = 0; c < Math.min(outChannels, 3); c++) {
+        result[c] = sum / colorChannels;
+      }
+    }
+    if (outChannels == 4) {
+      result[3] = values.length == 4 ? values[3] : 255.0f;
     }
     return result;
   }

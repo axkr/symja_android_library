@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.core.builtin.MeshFunctions;
-import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -131,6 +131,8 @@ public class RegionMember extends AbstractFunctionEvaluator {
       case ID.RegionDifference:
       case ID.RegionSymmetricDifference:
         return combinedRegionMember(reg, point, engine);
+      case ID.BooleanRegion:
+        return booleanRegionMember(reg, point, engine);
     }
     return F.NIL;
   }
@@ -179,6 +181,34 @@ public class RegionMember extends AbstractFunctionEvaluator {
    *
    * @return {@link F#NIL} if one of the parts has no membership condition
    */
+  /**
+   * Membership of a <code>BooleanRegion(f, {reg1, reg2, ...})</code>: the point lies in it when
+   * <code>f</code> says so of the parts it lies in.
+   *
+   * <p>
+   * The function is applied to the parts' own conditions rather than to true and false, so a
+   * symbolic point gives back the condition the same way every other region does.
+   */
+  private static IExpr booleanRegionMember(IAST reg, IExpr point, EvalEngine engine) {
+    if (reg.argSize() != 2 || !reg.arg2().isList() || reg.arg2().argSize() == 0) {
+      return F.NIL;
+    }
+    IAST regions = (IAST) reg.arg2();
+    IExpr[] parts = new IExpr[regions.argSize()];
+    for (int i = 1; i <= regions.argSize(); i++) {
+      IExpr part = regions.get(i);
+      if (!part.isAST()) {
+        return F.NIL;
+      }
+      IExpr condition = memberCondition((IAST) part, point, engine);
+      if (condition.isNIL()) {
+        return F.NIL;
+      }
+      parts[i - 1] = condition;
+    }
+    return engine.evaluate(F.ast(parts, reg.arg1()));
+  }
+
   private static IExpr combinedRegionMember(IAST reg, IExpr point, EvalEngine engine) {
     if (reg.argSize() < 1) {
       return F.NIL;

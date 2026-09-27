@@ -46,6 +46,7 @@ public class ConstantRegionQ extends AbstractFunctionEvaluator {
       case ID.ParametricRegion:
       case ID.EmptyRegion:
       case ID.FullRegion:
+      case ID.BooleanRegion:
       case ID.RegionUnion:
       case ID.RegionIntersection:
       case ID.RegionDifference:

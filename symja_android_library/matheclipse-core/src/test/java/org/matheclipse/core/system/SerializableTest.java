@@ -29,6 +29,7 @@ import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.Share;
 import org.matheclipse.core.visit.AbstractVisitor;
+import org.junit.jupiter.api.Tag;
 
 public class SerializableTest {
 
@@ -48,6 +49,20 @@ public class SerializableTest {
   public void testByteArray() {
     ByteArrayExpr ba = ByteArrayExpr.newInstance(new byte[] {0, 1, 2, 3});
     equalsCopy(ba);
+  }
+
+  /**
+   * A fitted model survives a round trip and equals its copy. It used to compare its regression
+   * object by identity, so no copy was ever equal.
+   */
+  @Test
+  public void testFittedModel() {
+    org.matheclipse.core.eval.ExprEvaluator evaluator =
+        new org.matheclipse.core.eval.ExprEvaluator();
+    equalsCopy(evaluator.eval("LinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, x, x)"));
+    equalsCopy(evaluator.eval("LinearModelFit({{{1,1},{1,2},{1,3},{1,4}},{2.1,3.9,6.2,7.8}})"));
+    equalsCopy(
+        evaluator.eval("NonlinearModelFit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}}, a*x+b, {a,b}, x)"));
   }
 
   @Test
@@ -188,6 +203,7 @@ public class SerializableTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateDefinition() {
     // do a dummy evaluation to load integration rules
     F.Integrate.of(F.x, F.x);

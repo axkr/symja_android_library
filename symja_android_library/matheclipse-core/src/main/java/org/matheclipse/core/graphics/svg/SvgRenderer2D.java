@@ -244,9 +244,9 @@ public final class SvgRenderer2D {
     ContainerTag<?> rect =
         tag("rect").attr("x", fmt(Math.min(x1, x2))).attr("y", fmt(Math.min(y1, y2)))
             .attr("width", fmt(Math.abs(x2 - x1))).attr("height", fmt(Math.abs(y2 - y1)));
-    if (prim.rounding > 0) {
-      rect.attr("rx", fmt(Math.abs(viewport.lengthX(prim.rounding))));
-      rect.attr("ry", fmt(Math.abs(viewport.lengthY(prim.rounding))));
+    if (prim.roundingX > 0 && prim.roundingY > 0) {
+      rect.attr("rx", fmt(Math.abs(viewport.lengthX(prim.roundingX))));
+      rect.attr("ry", fmt(Math.abs(viewport.lengthY(prim.roundingY))));
     }
     Color stroke = edgeStroke(prim.style);
     Color fill = prim.style.effectiveFill();

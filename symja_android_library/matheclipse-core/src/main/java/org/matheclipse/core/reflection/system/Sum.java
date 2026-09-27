@@ -359,6 +359,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
         }
 
+        // the variables of the outer iterators are symbolic while the innermost sum is reduced on
+        // its own; a global value like i=7 in Sum(x,{i,2},{x,0,i}) must not leak into it
+        final IAST outerVariables = Iterator.outerIteratorVariables(preevaledSum);
         IAST sumForm = preevaledSum;
         IAST lastList = list;
         if (list.isAST2()) {
@@ -372,9 +375,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
           // evaluated sum, or a DifferenceRoot recurrence, would be pushed into the outer iterator
           // in a shape no outer summation can work with.
           IAST reducedSumForm = F.Sum(preevaledSum.arg1(), lastList);
-          IExpr reducedResult = engine.evalQuietNIL(reducedSumForm);
+          IExpr reducedResult =
+              engine.evalBlock(() -> engine.evalQuietNIL(reducedSumForm), outerVariables);
           if (reducedResult.isPresent() && !reducedResult.equals(reducedSumForm)
-              && reducedResult.isFreeAST(S.Sum) && reducedResult.isFreeAST(S.DifferenceRoot)) {
+              && reducedResult.isFreeAST(S.Sum) && reducedResult.isFreeAST(S.DifferenceRoot)
+              && !Iterator.losesVariable(lastList, reducedResult, outerVariables)) {
             IASTMutable result = sumForm.removeAtCopy(sumForm.argSize());
             result.set(1, reducedResult);
             return result;
@@ -396,7 +401,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
         if (lastArg.isList()) {
           lastArg = evalBlockWithoutReap(lastArg, varList);
           if (lastArg.isList()) {
-            iterator = Iterator.create((IAST) lastArg, preevaledSum.argSize(), engine);
+            iterator = Iterator.createLocal((IAST) lastArg, preevaledSum.argSize(), outerVariables,
+                engine);
           } else {
             if (lastArg.isReal()) {
               iterator = Iterator.create(F.list(lastArg), preevaledSum.argSize(), engine);

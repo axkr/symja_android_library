@@ -4,6 +4,12 @@
 AlgebraicNumberNorm(a)
 ```
 
+```
+AlgebraicNumberNorm(a, Extension -> theta)
+```
+
+> gives the norm of `a` relative to the field `Q(theta)`, which has to contain `a`.
+
 > gives the norm of the algebraic number `a` in the field `Q(a)` it generates.
 
 The norm is `(-1)^n` times the constant coefficient of the monic minimal polynomial of `a`,
@@ -23,6 +29,19 @@ See
 
 >> AlgebraicNumberNorm(2^(1/3))
 2
+```
+
+With `Extension -> theta` the norm is taken in the tower `Q <= Q(a) <= Q(theta)`:
+
+```
+>> AlgebraicNumberNorm(Sqrt(5),Extension->Sqrt(5))
+-5
+
+>> AlgebraicNumberNorm(2,Extension->Sqrt(5))
+4
+
+>> AlgebraicNumberNorm(Sqrt(2),Extension->E^(Pi*I/4))
+4
 ```
 
 ### Related terms

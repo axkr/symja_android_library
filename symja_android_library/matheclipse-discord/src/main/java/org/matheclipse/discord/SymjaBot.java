@@ -62,7 +62,6 @@ public class SymjaBot {
       // symbols stay unevaluated. See COMPILE_MODULE_PLAN.md section 6.2.
       Config.JAVA_UNSAFE = true;
       Config.SHORTEN_STRING_LENGTH = 512;
-      Config.USE_VISJS = true;
       Config.FILESYSTEM_ENABLED = false;
       Config.FUZZY_PARSER = true;
       Config.UNPROTECT_ALLOWED = false;

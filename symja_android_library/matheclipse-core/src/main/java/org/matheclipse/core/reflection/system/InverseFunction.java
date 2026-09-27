@@ -264,7 +264,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
     Collections.sort(analyzerList);
 
     IAST[] slotEliminated =
-        Eliminate.eliminateOneVariable(analyzerList, F.Slot1, false, false, engine);
+        Eliminate.eliminateOneVariable(analyzerList, F.Slot1, false, engine);
     if (slotEliminated != null && slotEliminated[1].isList()) {
       // List results are not allowed in S.InverseFunction
       return null;

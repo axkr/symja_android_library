@@ -33,6 +33,40 @@ public abstract class Prim2D {
   /** Draw into {@code parent}, dispatching to the matching method of {@code renderer}. */
   public abstract void render(SvgRenderer2D renderer, ContainerTag<?> parent);
 
+  /** Dispatch to the method of {@code visitor} for this kind of primitive. */
+  public abstract <R> R accept(Visitor<R> visitor);
+
+  /**
+   * One method per kind of primitive, for renderers other than {@link SvgRenderer2D}.
+   *
+   * @param <R> what a visit returns; use {@link Void} when the visitor only accumulates
+   */
+  public interface Visitor<R> {
+    R visitPoints(PointsPrim p);
+
+    R visitLine(LinePrim p);
+
+    R visitPolygon(PolygonPrim p);
+
+    R visitRect(RectPrim p);
+
+    R visitEllipse(EllipsePrim p);
+
+    R visitText(TextPrim p);
+
+    R visitArrow(ArrowPrim p);
+
+    R visitBezier(BezierPrim p);
+
+    R visitBSpline(BSplinePrim p);
+
+    R visitRaster(RasterPrim p);
+
+    R visitInset(InsetPrim p);
+
+    R visitHalfPlane(HalfPlanePrim p);
+  }
+
   static List<double[]> mapPoints(List<double[]> points, AffineMap2D map) {
     List<double[]> out = new ArrayList<>(points.size());
     for (double[] p : points) {
@@ -68,6 +102,11 @@ public abstract class Prim2D {
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawPoints(this, parent);
     }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitPoints(this);
+    }
   }
 
   // ----------------------------------------------------------------- lines
@@ -76,11 +115,23 @@ public abstract class Prim2D {
   public static final class LinePrim extends Prim2D {
     public final List<List<double[]>> segments;
     public final boolean closed;
+    /**
+     * For the bars of {@code IntervalMarkers -> "Fences"}: per segment, whether its first and its
+     * last point get a cap. The caps are sized from the plot range, so they are added once that is
+     * known ({@code IntervalMarkers2D.addFenceCaps}); {@code null} for every other line.
+     */
+    public final List<boolean[]> fenceCaps;
 
     public LinePrim(List<List<double[]>> segments, boolean closed, Style2D style) {
+      this(segments, closed, style, null);
+    }
+
+    public LinePrim(List<List<double[]>> segments, boolean closed, Style2D style,
+        List<boolean[]> fenceCaps) {
       super(style);
       this.segments = segments;
       this.closed = closed;
+      this.fenceCaps = fenceCaps;
     }
 
     @Override
@@ -98,12 +149,17 @@ public abstract class Prim2D {
       for (List<double[]> seg : segments) {
         out.add(mapPoints(seg, map));
       }
-      return new LinePrim(out, closed, style);
+      return new LinePrim(out, closed, style, fenceCaps);
     }
 
     @Override
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawLine(this, parent);
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitLine(this);
     }
   }
 
@@ -144,6 +200,11 @@ public abstract class Prim2D {
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawPolygon(this, parent);
     }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitPolygon(this);
+    }
   }
 
   // ------------------------------------------------------------- rectangle
@@ -154,15 +215,19 @@ public abstract class Prim2D {
     public final double y1;
     public final double x2;
     public final double y2;
-    public final double rounding;
+    /** The corner radii along x and along y; {@code 0} for square corners. */
+    public final double roundingX;
+    public final double roundingY;
 
-    public RectPrim(double x1, double y1, double x2, double y2, double rounding, Style2D style) {
+    public RectPrim(double x1, double y1, double x2, double y2, double roundingX,
+        double roundingY, Style2D style) {
       super(style);
       this.x1 = Math.min(x1, x2);
       this.y1 = Math.min(y1, y2);
       this.x2 = Math.max(x1, x2);
       this.y2 = Math.max(y1, y2);
-      this.rounding = rounding;
+      this.roundingX = roundingX;
+      this.roundingY = roundingY;
     }
 
     @Override
@@ -176,7 +241,7 @@ public abstract class Prim2D {
       if (map.isAxisAligned()) {
         double[] a = map.apply(x1, y1);
         double[] b = map.apply(x2, y2);
-        return new RectPrim(a[0], a[1], b[0], b[1], rounding, style);
+        return new RectPrim(a[0], a[1], b[0], b[1], roundingX, roundingY, style);
       }
       // a rotated or sheared rectangle is no longer axis aligned, so it becomes a polygon
       List<double[]> corners = new ArrayList<>(4);
@@ -190,6 +255,11 @@ public abstract class Prim2D {
     @Override
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawRect(this, parent);
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitRect(this);
     }
   }
 
@@ -288,6 +358,11 @@ public abstract class Prim2D {
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawEllipse(this, parent);
     }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitEllipse(this);
+    }
   }
 
   // ------------------------------------------------------------------ text
@@ -336,6 +411,11 @@ public abstract class Prim2D {
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawText(this, parent);
     }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitText(this);
+    }
   }
 
   // ----------------------------------------------------------------- arrow
@@ -368,6 +448,11 @@ public abstract class Prim2D {
     @Override
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawArrow(this, parent);
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitArrow(this);
     }
   }
 
@@ -402,6 +487,11 @@ public abstract class Prim2D {
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawBezier(this, parent);
     }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitBezier(this);
+    }
   }
 
   /** {@code BSplineCurve[...]}, already evaluated into a polyline by the collector. */
@@ -432,6 +522,11 @@ public abstract class Prim2D {
     @Override
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawBSpline(this, parent);
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitBSpline(this);
     }
   }
 
@@ -491,6 +586,11 @@ public abstract class Prim2D {
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawRaster(this, parent);
     }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitRaster(this);
+    }
   }
 
   // ----------------------------------------------------------------- inset
@@ -532,6 +632,11 @@ public abstract class Prim2D {
     @Override
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawInset(this, parent);
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitInset(this);
     }
   }
 
@@ -583,6 +688,11 @@ public abstract class Prim2D {
     @Override
     public void render(SvgRenderer2D renderer, ContainerTag<?> parent) {
       renderer.drawHalfPlane(this, parent);
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+      return visitor.visitHalfPlane(this);
     }
   }
 }

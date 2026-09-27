@@ -29,7 +29,7 @@ public class PacletTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * A file name as Wolfram Language source.
+   * A file name .
    *
    * <p>
    * A backslash begins an escape inside a string literal, so a Windows temporary directory written

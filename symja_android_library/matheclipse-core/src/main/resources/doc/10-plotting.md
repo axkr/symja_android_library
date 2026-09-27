@@ -52,25 +52,26 @@ The following example displays an undirected weighted [Graph](functions/Graph.md
 >> TreeForm(a+(b*q*s)^(2*y)+Sin(c)^(3-z)) 
 ```
 
-## Used JavaScript libraries
+## JavaScript libraries
 
-For the generation of these controls, Symja uses the following JavaScript libraries
+Graphics are drawn as SVG, and 3D graphics with WebGL. With the optional `matheclipse-jsgraphics` module a 2D graphic can be drawn by a JavaScript library instead, which runs in a sandboxed frame that loads the library from its CDN and has a button that opens the example in [JSFiddle](https://jsfiddle.net):
 
-- [Math](https://github.com/paulmasson/math) for evaluating common mathematical operations in JavaScript 
-- [JSXGraph](https://github.com/jsxgraph/jsxgraph) for  interactive function plotting and charting 
-- [MathCell](https://github.com/paulmasson/mathcell) for displaying 3D function plots
-- [vis-network](https://github.com/visjs/vis-network) for (graph) network views
+- [JSXGraph](functions/JSXGraph.md) draws it with [JSXGraph](https://github.com/jsxgraph/jsxgraph), as a board that can be panned and zoomed
+- [ECharts](functions/ECharts.md) draws a plot of lines and points as an [Apache ECharts](https://echarts.apache.org) chart
+- [MathCell](functions/MathCell.md) draws it with [MathCell](https://github.com/paulmasson/mathcell), and hands the function of a `Plot` or `Plot3D` to the browser, where the [Math](https://github.com/paulmasson/math) library evaluates it
 
-You can get the HTML source code of the generated controls in most browser by doing a right-mouse-click on the control and selecting menu: `This Frame -> View Frame Source` and save the HTML source code as standalone example on your file system.
+```
+>> JSXGraph(Plot(Sin(x)*Cos(1 + x), {x, 0, 2*Pi}))
+
+>> MathCell(Plot3D(Sin(x*y), {x, -1.5, 1.5}, {y, -1.5, 1.5}))
+```
 
 ## Generating JavaScript output
 
-If you would like to use the output from the plot or graph functions in your own web pages, you can generate the JavaScript source code with the [JSForm](functions/JSForm.md) function.
-
-You can for example display the generated JavaScript form of the [Manipulate](functions/Manipulate.md) function:
+To use a formula in your own web pages, [JSForm](functions/JSForm.md) translates it to JavaScript:
 
 ```
->> Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}), {a,0,10}) // JSForm
-```
+>> JSForm(Sin(x)*Cos(1 + x))
 
-and insert it in a HTML template from the [JSXGraph.org](https://jsxgraph.org/wp/index.html) project.
+>> JSForm(Sin(x)*Cos(1 + x), "Mathcell")
+```

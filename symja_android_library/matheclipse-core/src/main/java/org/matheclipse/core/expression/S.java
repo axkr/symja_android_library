@@ -4,7 +4,6 @@ import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -300,6 +299,9 @@ public class S {
   public final static IBuiltInSymbol $ScriptCommandLine =
       S.initFinalSymbol("$ScriptCommandLine", ID.$ScriptCommandLine);
 
+  public final static IBuiltInSymbol $ScriptInputString =
+      S.initFinalSymbol("$ScriptInputString", ID.$ScriptInputString);
+
   /**
    * $StandardOutputStream(x) - TODO describe `$StandardOutputStream`.
    * 
@@ -327,6 +329,15 @@ public class S {
 
   public final static IBuiltInSymbol $TemporaryDirectory =
       S.initFinalSymbol("$TemporaryDirectory", ID.$TemporaryDirectory);
+
+  /**
+   * $TimedOut(x) - TODO describe `$TimedOut`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$TimedOut.md">$TimedOut
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $TimedOut = S.initFinalSymbol("$TimedOut", ID.$TimedOut);
 
   /**
    * $TimeZone(x) - TODO describe `$TimeZone`.
@@ -626,6 +637,16 @@ public class S {
    *      documentation</a>
    */
   /**
+   * AlgebraicNumberDenominator(x) - TODO describe `AlgebraicNumberDenominator`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AlgebraicNumberDenominator.md">AlgebraicNumberDenominator
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlgebraicNumberDenominator =
+      S.initFinalSymbol("AlgebraicNumberDenominator", ID.AlgebraicNumberDenominator);
+
+  /**
    * AlgebraicNumberNorm(x) - see the documentation page for details.
    *
    * @see <a href=
@@ -634,6 +655,16 @@ public class S {
    */
   public final static IBuiltInSymbol AlgebraicNumberNorm =
       S.initFinalSymbol("AlgebraicNumberNorm", ID.AlgebraicNumberNorm);
+
+  /**
+   * AlgebraicNumberPolynomial(x) - TODO describe `AlgebraicNumberPolynomial`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AlgebraicNumberPolynomial.md">AlgebraicNumberPolynomial
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AlgebraicNumberPolynomial =
+      S.initFinalSymbol("AlgebraicNumberPolynomial", ID.AlgebraicNumberPolynomial);
 
   public final static IBuiltInSymbol AlgebraicNumberQ =
       S.initFinalSymbol("AlgebraicNumberQ", ID.AlgebraicNumberQ);
@@ -1181,6 +1212,15 @@ public class S {
       S.initFinalSymbol("ArithmeticGeometricMean", ID.ArithmeticGeometricMean);
 
   /**
+   * ARMAProcess(x) - TODO describe `ARMAProcess`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ARMAProcess.md">ARMAProcess
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ARMAProcess = S.initFinalSymbol("ARMAProcess", ID.ARMAProcess);
+
+  /**
    * Around(x) - TODO describe `Around`.
    * 
    * @see <a href=
@@ -1481,6 +1521,16 @@ public class S {
    */
   public final static IBuiltInSymbol AstroGridLinesStyle =
       S.initFinalSymbol("AstroGridLinesStyle", ID.AstroGridLinesStyle);
+
+  /**
+   * AstronomicalData(x) - TODO describe `AstronomicalData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AstronomicalData.md">AstronomicalData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AstronomicalData =
+      S.initFinalSymbol("AstronomicalData", ID.AstronomicalData);
 
   /**
    * AstroPosition(x) - TODO describe `AstroPosition`.
@@ -2514,6 +2564,16 @@ public class S {
   public final static IBuiltInSymbol BooleanQ = S.initFinalSymbol("BooleanQ", ID.BooleanQ);
 
   /**
+   * BooleanRegion(x) - TODO describe `BooleanRegion`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BooleanRegion.md">BooleanRegion
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BooleanRegion =
+      S.initFinalSymbol("BooleanRegion", ID.BooleanRegion);
+
+  /**
    * Booleans - is the set of boolean values.
    * 
    * @see <a href=
@@ -2841,6 +2901,16 @@ public class S {
    */
   public final static IBuiltInSymbol CandlestickChart =
       S.initFinalSymbol("CandlestickChart", ID.CandlestickChart);
+
+  /**
+   * CanonicalGraph(x) - TODO describe `CanonicalGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CanonicalGraph.md">CanonicalGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CanonicalGraph =
+      S.initFinalSymbol("CanonicalGraph", ID.CanonicalGraph);
 
   /**
    * CantorMesh(x) - TODO describe `CantorMesh`.
@@ -3355,6 +3425,16 @@ public class S {
       S.initFinalSymbol("CirclePoints", ID.CirclePoints);
 
   public final static IBuiltInSymbol CircleTimes = S.initFinalSymbol("CircleTimes", ID.CircleTimes);
+
+  /**
+   * CirculantGraph(x) - TODO describe `CirculantGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CirculantGraph.md">CirculantGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CirculantGraph =
+      S.initFinalSymbol("CirculantGraph", ID.CirculantGraph);
 
   /**
    * CircularArcThrough(x) - TODO describe `CircularArcThrough`.
@@ -4207,6 +4287,16 @@ public class S {
    */
   public final static IBuiltInSymbol ConstantArray =
       S.initFinalSymbol("ConstantArray", ID.ConstantArray);
+
+  /**
+   * ConstantImage(x) - TODO describe `ConstantImage`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConstantImage.md">ConstantImage
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ConstantImage =
+      S.initFinalSymbol("ConstantImage", ID.ConstantImage);
 
   /**
    * ConstantRegionQ(x) - TODO describe `ConstantRegionQ`.
@@ -5421,6 +5511,16 @@ public class S {
    */
   public final static IBuiltInSymbol Degree = S.initFinalSymbol("Degree", ID.Degree);
 
+  /**
+   * DegreeCentrality(x) - TODO describe `DegreeCentrality`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DegreeCentrality.md">DegreeCentrality
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DegreeCentrality =
+      S.initFinalSymbol("DegreeCentrality", ID.DegreeCentrality);
+
   public final static IBuiltInSymbol DegreeLexicographic =
       S.initFinalSymbol("DegreeLexicographic", ID.DegreeLexicographic);
 
@@ -5850,6 +5950,16 @@ public class S {
   public final static IBuiltInSymbol DirectedEdges =
       S.initFinalSymbol("DirectedEdges", ID.DirectedEdges);
 
+  /**
+   * DirectedGraph(x) - TODO describe `DirectedGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirectedGraph.md">DirectedGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DirectedGraph =
+      S.initFinalSymbol("DirectedGraph", ID.DirectedGraph);
+
   public final static IBuiltInSymbol DirectedGraphQ =
       S.initFinalSymbol("DirectedGraphQ", ID.DirectedGraphQ);
 
@@ -6081,6 +6191,16 @@ public class S {
    */
   public final static IBuiltInSymbol DistributionChart =
       S.initFinalSymbol("DistributionChart", ID.DistributionChart);
+
+  /**
+   * DistributionFitTest(x) - TODO describe `DistributionFitTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DistributionFitTest.md">DistributionFitTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DistributionFitTest =
+      S.initFinalSymbol("DistributionFitTest", ID.DistributionFitTest);
 
   /**
    * DistributionParameterQ(x) - TODO describe `DistributionParameterQ`.
@@ -6543,8 +6663,8 @@ public class S {
   public final static IBuiltInSymbol Dt = S.initFinalSymbol("Dt", ID.Dt);
 
   /**
-   * DualPlanarGraph(graph) - gives the dual of the planar `graph`: one vertex for each face,
-   * and an edge for each pair of faces separated from each other by an edge.
+   * DualPlanarGraph(graph) - gives the dual of the planar `graph`: one vertex for each face, and an
+   * edge for each pair of faces separated from each other by an edge.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DualPlanarGraph.md">DualPlanarGraph
@@ -6600,6 +6720,19 @@ public class S {
   public final static IBuiltInSymbol EasterSunday =
       S.initFinalSymbol("EasterSunday", ID.EasterSunday);
 
+  /** Render a 2D graphic with the Apache ECharts JavaScript library (module matheclipse-jsgraphics). */
+  /**
+   * EccentricityCentrality(x) - TODO describe `EccentricityCentrality`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EccentricityCentrality.md">EccentricityCentrality
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EccentricityCentrality =
+      S.initFinalSymbol("EccentricityCentrality", ID.EccentricityCentrality);
+
+  public final static IBuiltInSymbol ECharts = S.initFinalSymbol("ECharts", ID.ECharts);
+
   /**
    * Echo(expr) - prints the `expr` to the default output stream and returns `expr`.
    * 
@@ -6650,8 +6783,28 @@ public class S {
   public final static IBuiltInSymbol EdgeCount = S.initFinalSymbol("EdgeCount", ID.EdgeCount);
 
   /**
-   * EdgeChromaticNumber(graph) - gives the smallest number of colors that can be assigned to
-   * the edges of `graph` such that no two edges sharing an endpoint have the same color.
+   * EdgeBetweennessCentrality(x) - TODO describe `EdgeBetweennessCentrality`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeBetweennessCentrality.md">EdgeBetweennessCentrality
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeBetweennessCentrality =
+      S.initFinalSymbol("EdgeBetweennessCentrality", ID.EdgeBetweennessCentrality);
+
+  /**
+   * EdgeCapacity(x) - TODO describe `EdgeCapacity`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeCapacity.md">EdgeCapacity
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeCapacity =
+      S.initFinalSymbol("EdgeCapacity", ID.EdgeCapacity);
+
+  /**
+   * EdgeChromaticNumber(graph) - gives the smallest number of colors that can be assigned to the
+   * edges of `graph` such that no two edges sharing an endpoint have the same color.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeChromaticNumber.md">EdgeChromaticNumber
@@ -6660,12 +6813,22 @@ public class S {
   public final static IBuiltInSymbol EdgeChromaticNumber =
       S.initFinalSymbol("EdgeChromaticNumber", ID.EdgeChromaticNumber);
 
+  /**
+   * EdgeConnectivity(x) - TODO describe `EdgeConnectivity`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeConnectivity.md">EdgeConnectivity
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeConnectivity =
+      S.initFinalSymbol("EdgeConnectivity", ID.EdgeConnectivity);
+
   public final static IBuiltInSymbol EdgeContract =
       S.initFinalSymbol("EdgeContract", ID.EdgeContract);
 
   /**
-   * EdgeCoverQ(graph, edges) - yields `True` if the edge list `edges` is an edge cover of
-   * `graph`, and `False` otherwise.
+   * EdgeCoverQ(graph, edges) - yields `True` if the edge list `edges` is an edge cover of `graph`,
+   * and `False` otherwise.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeCoverQ.md">EdgeCoverQ
@@ -6685,6 +6848,15 @@ public class S {
   public final static IBuiltInSymbol EdgeDetect = S.initFinalSymbol("EdgeDetect", ID.EdgeDetect);
 
   public final static IBuiltInSymbol EdgeForm = S.initFinalSymbol("EdgeForm", ID.EdgeForm);
+
+  /**
+   * EdgeIndex(x) - TODO describe `EdgeIndex`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeIndex.md">EdgeIndex
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeIndex = S.initFinalSymbol("EdgeIndex", ID.EdgeIndex);
 
   public final static IBuiltInSymbol EdgeLabels = S.initFinalSymbol("EdgeLabels", ID.EdgeLabels);
 
@@ -6732,6 +6904,16 @@ public class S {
   public final static IBuiltInSymbol EdgeStyle = S.initFinalSymbol("EdgeStyle", ID.EdgeStyle);
 
   public final static IBuiltInSymbol EdgeWeight = S.initFinalSymbol("EdgeWeight", ID.EdgeWeight);
+
+  /**
+   * EdgeWeightedGraphQ(x) - TODO describe `EdgeWeightedGraphQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeWeightedGraphQ.md">EdgeWeightedGraphQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeWeightedGraphQ =
+      S.initFinalSymbol("EdgeWeightedGraphQ", ID.EdgeWeightedGraphQ);
 
   /**
    * EditDistance(a, b) - returns the Levenshtein distance of `a` and `b`, which is defined as the
@@ -6891,6 +7073,15 @@ public class S {
 
   public final static IBuiltInSymbol EmpiricalDistribution =
       S.initFinalSymbol("EmpiricalDistribution", ID.EmpiricalDistribution);
+
+  /**
+   * EmptyGraphQ(x) - TODO describe `EmptyGraphQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EmptyGraphQ.md">EmptyGraphQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EmptyGraphQ = S.initFinalSymbol("EmptyGraphQ", ID.EmptyGraphQ);
 
   /**
    * EmptyRegion(x) - TODO describe `EmptyRegion`.
@@ -7907,8 +8098,8 @@ public class S {
       S.initFinalSymbol("FindAstroEvent", ID.FindAstroEvent);
 
   /**
-   * FindClique(graph) - finds a largest clique of `graph` - a set of vertices every two of
-   * which are joined by an edge.
+   * FindClique(graph) - finds a largest clique of `graph` - a set of vertices every two of which
+   * are joined by an edge.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindClique.md">FindClique
@@ -7949,8 +8140,8 @@ public class S {
 
   /**
    * FindEdgeColoring(graph) - finds a coloring with a minimal number of colors for the edges of
-   * `graph`. The result is a list of integers, one per edge, in the order of `EdgeList(graph)`, with
-   * different values for any two edges that share an endpoint.
+   * `graph`. The result is a list of integers, one per edge, in the order of `EdgeList(graph)`,
+   * with different values for any two edges that share an endpoint.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindEdgeColoring.md">FindEdgeColoring
@@ -7960,8 +8151,8 @@ public class S {
       S.initFinalSymbol("FindEdgeColoring", ID.FindEdgeColoring);
 
   /**
-   * FindEdgeCover(graph) - finds an edge cover of `graph` with a minimum number of edges - a set
-   * of edges touching every vertex.
+   * FindEdgeCover(graph) - finds an edge cover of `graph` with a minimum number of edges - a set of
+   * edges touching every vertex.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindEdgeCover.md">FindEdgeCover
@@ -7969,6 +8160,15 @@ public class S {
    */
   public final static IBuiltInSymbol FindEdgeCover =
       S.initFinalSymbol("FindEdgeCover", ID.FindEdgeCover);
+
+  /**
+   * FindEdgeCut(x) - TODO describe `FindEdgeCut`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindEdgeCut.md">FindEdgeCut
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindEdgeCut = S.initFinalSymbol("FindEdgeCut", ID.FindEdgeCut);
 
   /**
    * FindEulerianCycle(graph) - find an eulerian cycle in the `graph`.
@@ -8028,6 +8228,16 @@ public class S {
       S.initFinalSymbol("FindHamiltonianCycle", ID.FindHamiltonianCycle);
 
   /**
+   * FindHamiltonianPath(x) - TODO describe `FindHamiltonianPath`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindHamiltonianPath.md">FindHamiltonianPath
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindHamiltonianPath =
+      S.initFinalSymbol("FindHamiltonianPath", ID.FindHamiltonianPath);
+
+  /**
    * FindIndependentEdgeSet(graph) - finds an independent edge set of `graph` with a maximum number
    * of edges - a set of edges no two of which are incident to the same vertex.
    * 
@@ -8063,9 +8273,9 @@ public class S {
       S.initFinalSymbol("FindInstance", ID.FindInstance);
 
   /**
-   * FindKClan(graph, k) - finds a largest k-clan of `graph` - a k-clique whose induced
-   * subgraph has diameter at most `k`. FindKClan(graph, k, nspec, s) gives up to `s` of them, and
-   * `All` in place of `s` gives every one.
+   * FindKClan(graph, k) - finds a largest k-clan of `graph` - a k-clique whose induced subgraph has
+   * diameter at most `k`. FindKClan(graph, k, nspec, s) gives up to `s` of them, and `All` in place
+   * of `s` gives every one.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKClan.md">FindKClan
@@ -8074,9 +8284,9 @@ public class S {
   public final static IBuiltInSymbol FindKClan = S.initFinalSymbol("FindKClan", ID.FindKClan);
 
   /**
-   * FindKClique(graph, k) - finds a largest k-clique of `graph` - a maximal set of vertices
-   * that are at a distance no greater than `k` from each other. FindKClique(graph, k, nspec, s)
-   * gives up to `s` of them, and `All` in place of `s` gives every one.
+   * FindKClique(graph, k) - finds a largest k-clique of `graph` - a maximal set of vertices that
+   * are at a distance no greater than `k` from each other. FindKClique(graph, k, nspec, s) gives up
+   * to `s` of them, and `All` in place of `s` gives every one.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKClique.md">FindKClique
@@ -8085,9 +8295,9 @@ public class S {
   public final static IBuiltInSymbol FindKClique = S.initFinalSymbol("FindKClique", ID.FindKClique);
 
   /**
-   * FindKClub(graph, k) - finds a largest k-club of `graph` - a maximal set of vertices
-   * whose induced subgraph has diameter at most `k`. FindKClub(graph, k, nspec, s) gives up to `s`
-   * of them, and `All` in place of `s` gives every one.
+   * FindKClub(graph, k) - finds a largest k-club of `graph` - a maximal set of vertices whose
+   * induced subgraph has diameter at most `k`. FindKClub(graph, k, nspec, s) gives up to `s` of
+   * them, and `All` in place of `s` gives every one.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKClub.md">FindKClub
@@ -8096,8 +8306,8 @@ public class S {
   public final static IBuiltInSymbol FindKClub = S.initFinalSymbol("FindKClub", ID.FindKClub);
 
   /**
-   * FindKPlex(graph, k) - finds a largest k-plex of `graph` - a maximal set of vertices in
-   * which every vertex is adjacent to all but `k` of the members.
+   * FindKPlex(graph, k) - finds a largest k-plex of `graph` - a maximal set of vertices in which
+   * every vertex is adjacent to all but `k` of the members.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindKPlex.md">FindKPlex
@@ -8151,6 +8361,16 @@ public class S {
       S.initFinalSymbol("FindMinimumCostFlow", ID.FindMinimumCostFlow);
 
   /**
+   * FindMinimumCut(x) - TODO describe `FindMinimumCut`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindMinimumCut.md">FindMinimumCut
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindMinimumCut =
+      S.initFinalSymbol("FindMinimumCut", ID.FindMinimumCut);
+
+  /**
    * FindMoleculeSubstructure(x) - TODO describe `FindMoleculeSubstructure`.
    * 
    * @see <a href=
@@ -8159,6 +8379,15 @@ public class S {
    */
   public final static IBuiltInSymbol FindMoleculeSubstructure =
       S.initFinalSymbol("FindMoleculeSubstructure", ID.FindMoleculeSubstructure);
+
+  /**
+   * FindPath(x) - TODO describe `FindPath`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindPath.md">FindPath
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindPath = S.initFinalSymbol("FindPath", ID.FindPath);
 
   /**
    * FindPermutation(list1, list2) - create a `Cycles({{...},{...}, ...})` permutation expression,
@@ -8172,8 +8401,8 @@ public class S {
       S.initFinalSymbol("FindPermutation", ID.FindPermutation);
 
   /**
-   * FindPlanarColoring(graph) - finds a coloring with a minimal number of colors for the faces
-   * of the planar `graph`, so that two faces sharing an edge get different colors.
+   * FindPlanarColoring(graph) - finds a coloring with a minimal number of colors for the faces of
+   * the planar `graph`, so that two faces sharing an edge get different colors.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindPlanarColoring.md">FindPlanarColoring
@@ -8290,9 +8519,9 @@ public class S {
    *      documentation</a>
    */
   /**
-   * FindVertexColoring(graph) - finds a coloring with a minimal number of colors for the vertices of
-   * `graph`. The result is a list of integers, one per vertex, in the order of `VertexList(graph)`,
-   * with different values for the two endpoints of every edge.
+   * FindVertexColoring(graph) - finds a coloring with a minimal number of colors for the vertices
+   * of `graph`. The result is a list of integers, one per vertex, in the order of
+   * `VertexList(graph)`, with different values for the two endpoints of every edge.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindVertexColoring.md">FindVertexColoring
@@ -8300,6 +8529,16 @@ public class S {
    */
   public final static IBuiltInSymbol FindVertexColoring =
       S.initFinalSymbol("FindVertexColoring", ID.FindVertexColoring);
+
+  /**
+   * FindVertexCut(x) - TODO describe `FindVertexCut`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindVertexCut.md">FindVertexCut
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindVertexCut =
+      S.initFinalSymbol("FindVertexCut", ID.FindVertexCut);
 
   /**
    * FiniteAbelianGroupCount(order) - returns the number of finite Abelian groups of order `order`.
@@ -8721,6 +8960,17 @@ public class S {
    */
   public final static IBuiltInSymbol FromCharacterCode =
       S.initFinalSymbol("FromCharacterCode", ID.FromCharacterCode);
+
+  /**
+   * FromCoefficientRules(list-of-rules, list-of-variables) - build the polynomial the rules
+   * `{exponent-vector -> coefficient, ...}` describe, which is the inverse of `CoefficientRules`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromCoefficientRules.md">FromCoefficientRules
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FromCoefficientRules =
+      S.initFinalSymbol("FromCoefficientRules", ID.FromCoefficientRules);
 
   /**
    * FromContinuedFraction({n1, n2, ...}) - reconstructs a number from the list of its continued
@@ -9323,6 +9573,16 @@ public class S {
   public final static IBuiltInSymbol Graph3D = S.initFinalSymbol("Graph3D", ID.Graph3D);
 
   /**
+   * GraphAutomorphismGroup(x) - TODO describe `GraphAutomorphismGroup`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphAutomorphismGroup.md">GraphAutomorphismGroup
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GraphAutomorphismGroup =
+      S.initFinalSymbol("GraphAutomorphismGroup", ID.GraphAutomorphismGroup);
+
+  /**
    * GraphCenter(graph) - compute the `graph` center. The center of a `graph` is the set of vertices
    * of graph eccentricity equal to the `graph` radius.
    * 
@@ -9343,6 +9603,16 @@ public class S {
       S.initFinalSymbol("GraphComplement", ID.GraphComplement);
 
   public final static IBuiltInSymbol GraphData = S.initFinalSymbol("GraphData", ID.GraphData);
+
+  /**
+   * GraphDensity(x) - TODO describe `GraphDensity`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphDensity.md">GraphDensity
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GraphDensity =
+      S.initFinalSymbol("GraphDensity", ID.GraphDensity);
 
   /**
    * GraphDiameter(graph) - return the diameter of the `graph`.
@@ -9377,6 +9647,16 @@ public class S {
 
   public final static IBuiltInSymbol GraphDistance =
       S.initFinalSymbol("GraphDistance", ID.GraphDistance);
+
+  /**
+   * GraphDistanceMatrix(x) - TODO describe `GraphDistanceMatrix`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphDistanceMatrix.md">GraphDistanceMatrix
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GraphDistanceMatrix =
+      S.initFinalSymbol("GraphDistanceMatrix", ID.GraphDistanceMatrix);
 
   /**
    * GraphEmbedding(x) - TODO describe `GraphEmbedding`.
@@ -9511,6 +9791,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol GraphStyle = S.initFinalSymbol("GraphStyle", ID.GraphStyle);
+
+  /**
+   * GraphTriangleCount(x) - TODO describe `GraphTriangleCount`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphTriangleCount.md">GraphTriangleCount
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GraphTriangleCount =
+      S.initFinalSymbol("GraphTriangleCount", ID.GraphTriangleCount);
 
   /**
    * GraphUnion(graph1, graph2, graph3,...) - returns the graph union of `graph1`, `graph2`,
@@ -9843,6 +10133,15 @@ public class S {
   public final static IBuiltInSymbol HannWindow = S.initFinalSymbol("HannWindow", ID.HannWindow);
 
   /**
+   * HararyGraph(x) - TODO describe `HararyGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HararyGraph.md">HararyGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HararyGraph = S.initFinalSymbol("HararyGraph", ID.HararyGraph);
+
+  /**
    * HarmonicMean({a, b, c,...}) - returns the harmonic mean of `{a, b, c,...}`.
    * 
    * @see <a href=
@@ -10119,6 +10418,16 @@ public class S {
       S.initFinalSymbol("HistogramTransform", ID.HistogramTransform);
 
   /**
+   * HITSCentrality(x) - TODO describe `HITSCentrality`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HITSCentrality.md">HITSCentrality
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HITSCentrality =
+      S.initFinalSymbol("HITSCentrality", ID.HITSCentrality);
+
+  /**
    * HodgeDual(tensor,dimensions,slots) - `HodgeDual` evaluates the Hodge star of a tensor.
    * 
    * @see <a href=
@@ -10373,6 +10682,16 @@ public class S {
    */
   public final static IBuiltInSymbol HypoexponentialDistribution =
       S.initFinalSymbol("HypoexponentialDistribution", ID.HypoexponentialDistribution);
+
+  /**
+   * HypothesisTestData(x) - TODO describe `HypothesisTestData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HypothesisTestData.md">HypothesisTestData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HypothesisTestData =
+      S.initFinalSymbol("HypothesisTestData", ID.HypothesisTestData);
 
   /**
    * I - Imaginary unit - internally converted to the complex number `0+1*i`. `I` represents the
@@ -10893,6 +11212,16 @@ public class S {
       S.initFinalSymbol("IncludeAromaticBonds", ID.IncludeAromaticBonds);
 
   /**
+   * IncludeConstantBasis(x) - TODO describe `IncludeConstantBasis`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IncludeConstantBasis.md">IncludeConstantBasis
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol IncludeConstantBasis =
+      S.initFinalSymbol("IncludeConstantBasis", ID.IncludeConstantBasis);
+
+  /**
    * IncludeHydrogens(x) - TODO describe `IncludeHydrogens`.
    * 
    * @see <a href=
@@ -10920,8 +11249,8 @@ public class S {
    *      documentation</a>
    */
   /**
-   * IncludeOuterFace - an option for `PlanarFaceList`, specifying whether the unbounded outer
-   * face of a planar graph is part of the result.
+   * IncludeOuterFace - an option for `PlanarFaceList`, specifying whether the unbounded outer face
+   * of a planar graph is part of the result.
    */
   public final static IBuiltInSymbol IncludeOuterFace =
       S.initFinalSymbol("IncludeOuterFace", ID.IncludeOuterFace);
@@ -10939,8 +11268,8 @@ public class S {
   public final static IBuiltInSymbol Increment = S.initFinalSymbol("Increment", ID.Increment);
 
   /**
-   * IndependentEdgeSetQ(graph, edges) - yields `True` if the edge list `edges` is an
-   * independent edge set of `graph`, and `False` otherwise.
+   * IndependentEdgeSetQ(graph, edges) - yields `True` if the edge list `edges` is an independent
+   * edge set of `graph`, and `False` otherwise.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/IndependentEdgeSetQ.md">IndependentEdgeSetQ
@@ -11963,6 +12292,9 @@ public class S {
 
   public final static IBuiltInSymbol JSFormData = S.initFinalSymbol("JSFormData", ID.JSFormData);
 
+  /** Render a 2D graphic with the JSXGraph JavaScript library (module matheclipse-jsgraphics). */
+  public final static IBuiltInSymbol JSXGraph = S.initFinalSymbol("JSXGraph", ID.JSXGraph);
+
   /**
    * JulianDate(x) - TODO describe `JulianDate`.
    * 
@@ -11989,6 +12321,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol KaryTree = S.initFinalSymbol("KaryTree", ID.KaryTree);
+
+  /**
+   * KatzCentrality(x) - TODO describe `KatzCentrality`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KatzCentrality.md">KatzCentrality
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KatzCentrality =
+      S.initFinalSymbol("KatzCentrality", ID.KatzCentrality);
 
   /**
    * KCoreComponents(graph, k) - gives the k-core components of `graph` - the maximal weakly
@@ -12157,6 +12499,15 @@ public class S {
   public final static IBuiltInSymbol KleinInvariantJ =
       S.initFinalSymbol("KleinInvariantJ", ID.KleinInvariantJ);
 
+  /**
+   * KnotData(x) - TODO describe `KnotData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KnotData.md">KnotData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KnotData = S.initFinalSymbol("KnotData", ID.KnotData);
+
   public final static IBuiltInSymbol KnownUnitQ = S.initFinalSymbol("KnownUnitQ", ID.KnownUnitQ);
 
   /**
@@ -12240,8 +12591,8 @@ public class S {
   public final static IBuiltInSymbol LaguerreL = S.initFinalSymbol("LaguerreL", ID.LaguerreL);
 
   /**
-   * LambdaComponents(graph) - gives the lambda components of `graph` - sets of vertices
-   * joined to each other by more edge-independent paths than to any vertex outside the set.
+   * LambdaComponents(graph) - gives the lambda components of `graph` - sets of vertices joined to
+   * each other by more edge-independent paths than to any vertex outside the set.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LambdaComponents.md">LambdaComponents
@@ -13001,6 +13352,15 @@ public class S {
   public final static IBuiltInSymbol LightYellow = S.initFinalSymbol("LightYellow", ID.LightYellow);
 
   /**
+   * Likelihood(x) - TODO describe `Likelihood`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Likelihood.md">Likelihood
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Likelihood = S.initFinalSymbol("Likelihood", ID.Likelihood);
+
+  /**
    * Limit(expr, x->x0) - gives the limit of `expr` as `x` approaches `x0`
    * 
    * @see <a href=
@@ -13592,6 +13952,16 @@ public class S {
   public final static IBuiltInSymbol LogisticSigmoid =
       S.initFinalSymbol("LogisticSigmoid", ID.LogisticSigmoid);
 
+  /**
+   * LogLikelihood(x) - TODO describe `LogLikelihood`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LogLikelihood.md">LogLikelihood
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LogLikelihood =
+      S.initFinalSymbol("LogLikelihood", ID.LogLikelihood);
+
   public final static IBuiltInSymbol LogLinearPlot =
       S.initFinalSymbol("LogLinearPlot", ID.LogLinearPlot);
 
@@ -13674,6 +14044,16 @@ public class S {
   public final static IBuiltInSymbol Lookup = S.initFinalSymbol("Lookup", ID.Lookup);
 
   /**
+   * LoopFreeGraphQ(x) - TODO describe `LoopFreeGraphQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LoopFreeGraphQ.md">LoopFreeGraphQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LoopFreeGraphQ =
+      S.initFinalSymbol("LoopFreeGraphQ", ID.LoopFreeGraphQ);
+
+  /**
    * LowerCaseQ(str) - is `True` if the given `str` is a string which only contains lower case
    * characters.
    * 
@@ -13733,9 +14113,8 @@ public class S {
   public final static IBuiltInSymbol LucasL = S.initFinalSymbol("LucasL", ID.LucasL);
 
   /**
-   * LuccioSamiComponents(graph) - gives the Luccio-Sami components of `graph` - sets of
-   * vertices in which every proper subset has more ties to the rest of the set than to
-   * anything outside it.
+   * LuccioSamiComponents(graph) - gives the Luccio-Sami components of `graph` - sets of vertices in
+   * which every proper subset has more ties to the rest of the set than to anything outside it.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LuccioSamiComponents.md">LuccioSamiComponents
@@ -13952,6 +14331,72 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol MatchQ = S.initFinalSymbol("MatchQ", ID.MatchQ);
+
+  /** Render a graphic with the MathCell JavaScript library (module matheclipse-jsgraphics). */
+  public final static IBuiltInSymbol MathCell = S.initFinalSymbol("MathCell", ID.MathCell);
+
+  /**
+   * MathieuC(a, q, z) - the even Mathieu function with characteristic value `a` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuC.md">MathieuC
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuC = S.initFinalSymbol("MathieuC", ID.MathieuC);
+
+  /**
+   * MathieuCharacteristicA(r, q) - the characteristic value `a` of the even Mathieu function with characteristic exponent `r` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCharacteristicA.md">MathieuCharacteristicA
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuCharacteristicA = S.initFinalSymbol("MathieuCharacteristicA", ID.MathieuCharacteristicA);
+
+  /**
+   * MathieuCharacteristicB(r, q) - the characteristic value `b` of the odd Mathieu function with characteristic exponent `r` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCharacteristicB.md">MathieuCharacteristicB
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuCharacteristicB = S.initFinalSymbol("MathieuCharacteristicB", ID.MathieuCharacteristicB);
+
+  /**
+   * MathieuCharacteristicExponent(a, q) - the characteristic exponent `r` of the Mathieu functions with characteristic value `a` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCharacteristicExponent.md">MathieuCharacteristicExponent
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuCharacteristicExponent = S.initFinalSymbol("MathieuCharacteristicExponent", ID.MathieuCharacteristicExponent);
+
+  /**
+   * MathieuCPrime(a, q, z) - the derivative with respect to `z` of the even Mathieu function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuCPrime.md">MathieuCPrime
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuCPrime = S.initFinalSymbol("MathieuCPrime", ID.MathieuCPrime);
+
+  /**
+   * MathieuS(a, q, z) - the odd Mathieu function with characteristic value `a` and parameter `q`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuS.md">MathieuS
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuS = S.initFinalSymbol("MathieuS", ID.MathieuS);
+
+  /**
+   * MathieuSPrime(a, q, z) - the derivative with respect to `z` of the odd Mathieu function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MathieuSPrime.md">MathieuSPrime
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MathieuSPrime = S.initFinalSymbol("MathieuSPrime", ID.MathieuSPrime);
 
   /**
    * MathMLForm(expr) - returns the MathML form of the evaluated `expr`.
@@ -14217,6 +14662,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol MeanFilter = S.initFinalSymbol("MeanFilter", ID.MeanFilter);
+
+  /**
+   * MeanGraphDistance(x) - TODO describe `MeanGraphDistance`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeanGraphDistance.md">MeanGraphDistance
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MeanGraphDistance =
+      S.initFinalSymbol("MeanGraphDistance", ID.MeanGraphDistance);
 
   /**
    * MeanShiftFilter(x) - TODO describe `MeanShiftFilter`.
@@ -14679,6 +15134,15 @@ public class S {
    */
   public final static IBuiltInSymbol MissingValuePattern =
       S.initFinalSymbol("MissingValuePattern", ID.MissingValuePattern);
+
+  /**
+   * MixedGraphQ(x) - TODO describe `MixedGraphQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MixedGraphQ.md">MixedGraphQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MixedGraphQ = S.initFinalSymbol("MixedGraphQ", ID.MixedGraphQ);
 
   /**
    * MixedMagnitude(x) - TODO describe `MixedMagnitude`.
@@ -15499,6 +15963,16 @@ public class S {
   public final static IBuiltInSymbol NoneTrue = S.initFinalSymbol("NoneTrue", ID.NoneTrue);
 
   public final static IBuiltInSymbol Nonexistent = S.initFinalSymbol("Nonexistent", ID.Nonexistent);
+
+  /**
+   * NonlinearModelFit(x) - TODO describe `NonlinearModelFit`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NonlinearModelFit.md">NonlinearModelFit
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NonlinearModelFit =
+      S.initFinalSymbol("NonlinearModelFit", ID.NonlinearModelFit);
 
   /**
    * NonNegative(x) - returns `True` if `x` is a positive real number or zero.
@@ -16696,6 +17170,16 @@ public class S {
       S.initFinalSymbol("OrderlessPatternSequence", ID.OrderlessPatternSequence);
 
   /**
+   * OrnsteinUhlenbeckProcess(x) - TODO describe `OrnsteinUhlenbeckProcess`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OrnsteinUhlenbeckProcess.md">OrnsteinUhlenbeckProcess
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol OrnsteinUhlenbeckProcess =
+      S.initFinalSymbol("OrnsteinUhlenbeckProcess", ID.OrnsteinUhlenbeckProcess);
+
+  /**
    * Orthogonalize(matrix) - returns a basis for the orthogonalized set of vectors defined by
    * `matrix`.
    * 
@@ -16792,6 +17276,15 @@ public class S {
    */
   public final static IBuiltInSymbol OverwriteTarget =
       S.initFinalSymbol("OverwriteTarget", ID.OverwriteTarget);
+
+  /**
+   * OwenT(x) - TODO describe `OwenT`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OwenT.md">OwenT
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol OwenT = S.initFinalSymbol("OwenT", ID.OwenT);
 
   /**
    * OwnValues(symbol) - prints the own-value rule associated with `symbol`.
@@ -16912,6 +17405,16 @@ public class S {
   public final static IBuiltInSymbol PadRight = S.initFinalSymbol("PadRight", ID.PadRight);
 
   /**
+   * PageRankCentrality(x) - TODO describe `PageRankCentrality`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PageRankCentrality.md">PageRankCentrality
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PageRankCentrality =
+      S.initFinalSymbol("PageRankCentrality", ID.PageRankCentrality);
+
+  /**
    * PairedBarChart(x) - TODO describe `PairedBarChart`.
    * 
    * @see <a href=
@@ -17006,6 +17509,16 @@ public class S {
    */
   public final static IBuiltInSymbol ParallelSubmit =
       S.initFinalSymbol("ParallelSubmit", ID.ParallelSubmit);
+
+  /**
+   * ParallelTable(x) - TODO describe `ParallelTable`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParallelTable.md">ParallelTable
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ParallelTable =
+      S.initFinalSymbol("ParallelTable", ID.ParallelTable);
 
   /**
    * ParameterMixtureDistribution(x) - TODO describe `ParameterMixtureDistribution`.
@@ -17434,8 +17947,8 @@ public class S {
   public final static IBuiltInSymbol PlanarAngle = S.initFinalSymbol("PlanarAngle", ID.PlanarAngle);
 
   /**
-   * PlanarFaceList(graph) - gives the list of faces of the planar `graph`. Each face is the
-   * list of vertices bounding it, and the outer face is included.
+   * PlanarFaceList(graph) - gives the list of faces of the planar `graph`. Each face is the list of
+   * vertices bounding it, and the outer face is included.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlanarFaceList.md">PlanarFaceList
@@ -17455,6 +17968,15 @@ public class S {
    */
   public final static IBuiltInSymbol PlanarGraphQ =
       S.initFinalSymbol("PlanarGraphQ", ID.PlanarGraphQ);
+
+  /**
+   * PlanetData(x) - TODO describe `PlanetData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlanetData.md">PlanetData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PlanetData = S.initFinalSymbol("PlanetData", ID.PlanetData);
 
   /**
    * Plot(function, {x, xMin, xMax}, PlotRange->{yMin,yMax}) - generate a JavaScript control for the
@@ -17512,8 +18034,9 @@ public class S {
   public final static IBuiltInSymbol PlotLegends = S.initFinalSymbol("PlotLegends", ID.PlotLegends);
 
   /**
-   * PlotMarkers(x) - TODO describe `PlotMarkers`.
-   * 
+   * PlotMarkers - an option for plots, giving the markers drawn at each data point. `Automatic` is
+   * a standard sequence of shapes, one per dataset.
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PlotMarkers.md">PlotMarkers
    *      documentation</a>
@@ -18290,6 +18813,15 @@ public class S {
 
   public final static IBuiltInSymbol Prolog = S.initFinalSymbol("Prolog", ID.Prolog);
 
+  /**
+   * Properties(x) - TODO describe `Properties`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Properties.md">Properties
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Properties = S.initFinalSymbol("Properties", ID.Properties);
+
   public final static IBuiltInSymbol Proportion = S.initFinalSymbol("Proportion", ID.Proportion);
 
   public final static IBuiltInSymbol Proportional =
@@ -18626,6 +19158,16 @@ public class S {
    */
   public final static IBuiltInSymbol RandomComplex =
       S.initFinalSymbol("RandomComplex", ID.RandomComplex);
+
+  /**
+   * RandomFunction(x) - TODO describe `RandomFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomFunction.md">RandomFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RandomFunction =
+      S.initFinalSymbol("RandomFunction", ID.RandomFunction);
 
   /**
    * RandomGraph({number-of-vertices,number-of-edges}) - create a random graph with
@@ -19524,6 +20066,16 @@ public class S {
       S.initFinalSymbol("ReverseEquilibrium", ID.ReverseEquilibrium);
 
   /**
+   * ReverseGraph(x) - TODO describe `ReverseGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReverseGraph.md">ReverseGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ReverseGraph =
+      S.initFinalSymbol("ReverseGraph", ID.ReverseGraph);
+
+  /**
    * ReverseSort(list) - sorts `list` (or the leaves of any other expression) according to reversed
    * canonical ordering.
    * 
@@ -20116,6 +20668,16 @@ public class S {
   public final static IBuiltInSymbol SectorChart = S.initFinalSymbol("SectorChart", ID.SectorChart);
 
   /**
+   * SectorChart3D(x) - TODO describe `SectorChart3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SectorChart3D.md">SectorChart3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SectorChart3D =
+      S.initFinalSymbol("SectorChart3D", ID.SectorChart3D);
+
+  /**
    * SectorOrigin(x) - TODO describe `SectorOrigin`.
    * 
    * @see <a href=
@@ -20521,6 +21083,16 @@ public class S {
   public final static IBuiltInSymbol SimilarityRules =
       S.initFinalSymbol("SimilarityRules", ID.SimilarityRules);
 
+  /**
+   * SimpleGraphQ(x) - TODO describe `SimpleGraphQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SimpleGraphQ.md">SimpleGraphQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SimpleGraphQ =
+      S.initFinalSymbol("SimpleGraphQ", ID.SimpleGraphQ);
+
   public final static IBuiltInSymbol Simplex = S.initFinalSymbol("Simplex", ID.Simplex);
 
   /**
@@ -20642,6 +21214,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Skewness = S.initFinalSymbol("Skewness", ID.Skewness);
+
+  /**
+   * SkewNormalDistribution(x) - TODO describe `SkewNormalDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SkewNormalDistribution.md">SkewNormalDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SkewNormalDistribution =
+      S.initFinalSymbol("SkewNormalDistribution", ID.SkewNormalDistribution);
 
   /**
    * Slider(x) - TODO describe `Slider`.
@@ -22558,6 +23140,16 @@ public class S {
   public final static IBuiltInSymbol TemplateSlot =
       S.initFinalSymbol("TemplateSlot", ID.TemplateSlot);
 
+  /**
+   * TemporalData(x) - TODO describe `TemporalData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TemporalData.md">TemporalData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TemporalData =
+      S.initFinalSymbol("TemporalData", ID.TemporalData);
+
   public final static IBuiltInSymbol TensorContract =
       S.initFinalSymbol("TensorContract", ID.TensorContract);
 
@@ -23016,6 +23608,16 @@ public class S {
    */
   public final static IBuiltInSymbol ToLowerCase = S.initFinalSymbol("ToLowerCase", ID.ToLowerCase);
 
+  /**
+   * ToNumberField(x) - TODO describe `ToNumberField`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToNumberField.md">ToNumberField
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ToNumberField =
+      S.initFinalSymbol("ToNumberField", ID.ToNumberField);
+
   public final static IBuiltInSymbol TooLarge = S.initFinalSymbol("TooLarge", ID.TooLarge);
 
   public final static IBuiltInSymbol Tooltip = S.initFinalSymbol("Tooltip", ID.Tooltip);
@@ -23162,8 +23764,7 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TraceDialog.md">TraceDialog
    *      documentation</a>
    */
-  public final static IBuiltInSymbol TraceDialog =
-      S.initFinalSymbol("TraceDialog", ID.TraceDialog);
+  public final static IBuiltInSymbol TraceDialog = S.initFinalSymbol("TraceDialog", ID.TraceDialog);
 
   public final static IBuiltInSymbol TraceForm = S.initFinalSymbol("TraceForm", ID.TraceForm);
 
@@ -23467,6 +24068,15 @@ public class S {
    */
   public final static IBuiltInSymbol Tuples = S.initFinalSymbol("Tuples", ID.Tuples);
 
+  /**
+   * TuranGraph(x) - TODO describe `TuranGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TuranGraph.md">TuranGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TuranGraph = S.initFinalSymbol("TuranGraph", ID.TuranGraph);
+
   public final static IBuiltInSymbol TwoWayRule = S.initFinalSymbol("TwoWayRule", ID.TwoWayRule);
 
   public final static IBuiltInSymbol UnaryMinusPlus =
@@ -23535,6 +24145,26 @@ public class S {
    */
   public final static IBuiltInSymbol UndirectedEdge =
       S.initFinalSymbol("UndirectedEdge", ID.UndirectedEdge);
+
+  /**
+   * UndirectedGraph(x) - TODO describe `UndirectedGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UndirectedGraph.md">UndirectedGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol UndirectedGraph =
+      S.initFinalSymbol("UndirectedGraph", ID.UndirectedGraph);
+
+  /**
+   * UndirectedGraphQ(x) - TODO describe `UndirectedGraphQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UndirectedGraphQ.md">UndirectedGraphQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol UndirectedGraphQ =
+      S.initFinalSymbol("UndirectedGraphQ", ID.UndirectedGraphQ);
 
   /**
    * Unequal(x, y) - yields `False` if `x` and `y` are known to be equal, or `True` if `x` and `y`
@@ -24210,6 +24840,16 @@ public class S {
    *      documentation</a>
    */
   /**
+   * VertexCapacity(x) - TODO describe `VertexCapacity`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexCapacity.md">VertexCapacity
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexCapacity =
+      S.initFinalSymbol("VertexCapacity", ID.VertexCapacity);
+
+  /**
    * VertexChromaticNumber(graph) - gives the smallest number of colors that can be assigned to the
    * vertices of `graph` such that no two adjacent vertices have the same color.
    * 
@@ -24222,6 +24862,16 @@ public class S {
 
   public final static IBuiltInSymbol VertexColors =
       S.initFinalSymbol("VertexColors", ID.VertexColors);
+
+  /**
+   * VertexConnectivity(x) - TODO describe `VertexConnectivity`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexConnectivity.md">VertexConnectivity
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexConnectivity =
+      S.initFinalSymbol("VertexConnectivity", ID.VertexConnectivity);
 
   public final static IBuiltInSymbol VertexContract =
       S.initFinalSymbol("VertexContract", ID.VertexContract);
@@ -24239,8 +24889,8 @@ public class S {
   public final static IBuiltInSymbol VertexCount = S.initFinalSymbol("VertexCount", ID.VertexCount);
 
   /**
-   * VertexCoverQ(graph, vertices) - yields `True` if the vertex list `vertices` is a vertex
-   * cover of `graph`, and `False` otherwise.
+   * VertexCoverQ(graph, vertices) - yields `True` if the vertex list `vertices` is a vertex cover
+   * of `graph`, and `False` otherwise.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexCoverQ.md">VertexCoverQ
@@ -24268,6 +24918,15 @@ public class S {
 
   public final static IBuiltInSymbol VertexInDegree =
       S.initFinalSymbol("VertexInDegree", ID.VertexInDegree);
+
+  /**
+   * VertexIndex(x) - TODO describe `VertexIndex`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexIndex.md">VertexIndex
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexIndex = S.initFinalSymbol("VertexIndex", ID.VertexIndex);
 
   public final static IBuiltInSymbol VertexLabels =
       S.initFinalSymbol("VertexLabels", ID.VertexLabels);
@@ -24305,6 +24964,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol VertexQ = S.initFinalSymbol("VertexQ", ID.VertexQ);
+
+  /**
+   * VertexReplace(x) - TODO describe `VertexReplace`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexReplace.md">VertexReplace
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexReplace =
+      S.initFinalSymbol("VertexReplace", ID.VertexReplace);
 
   /**
    * VertexShape(x) - TODO describe `VertexShape`.
@@ -24476,6 +25145,16 @@ public class S {
    */
   public final static IBuiltInSymbol WatershedComponents =
       S.initFinalSymbol("WatershedComponents", ID.WatershedComponents);
+
+  /**
+   * WeaklyConnectedComponents(x) - TODO describe `WeaklyConnectedComponents`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeaklyConnectedComponents.md">WeaklyConnectedComponents
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WeaklyConnectedComponents =
+      S.initFinalSymbol("WeaklyConnectedComponents", ID.WeaklyConnectedComponents);
 
   public final static IBuiltInSymbol WeaklyConnectedGraphQ =
       S.initFinalSymbol("WeaklyConnectedGraphQ", ID.WeaklyConnectedGraphQ);
@@ -24661,6 +25340,16 @@ public class S {
    */
   public final static IBuiltInSymbol WienerFilter =
       S.initFinalSymbol("WienerFilter", ID.WienerFilter);
+
+  /**
+   * WienerProcess(x) - TODO describe `WienerProcess`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WienerProcess.md">WienerProcess
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WienerProcess =
+      S.initFinalSymbol("WienerProcess", ID.WienerProcess);
 
   /**
    * WignerD({j,m1,m2},a,b,c) - the Wigner D-function returns the matrix element of a rotation

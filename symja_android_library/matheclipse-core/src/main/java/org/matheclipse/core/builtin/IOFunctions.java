@@ -1,9 +1,9 @@
 package org.matheclipse.core.builtin;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.io.OutputStream;
-import java.io.IOException;
 import java.util.Map;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -217,9 +217,9 @@ public class IOFunctions {
    *
    * <p>
    * The same as <code>Echo(expr, label)</code>, which is what it is answered with. A notebook uses
-   * it to say where a line of output came from - WLJS labels what the evaluation kernel prints
-   * with <code>EchoLabel["KernelPrint"]</code> before showing it - and left unevaluated it takes
-   * the message with it.
+   * it to say where a line of output came from - WLJS labels what the evaluation kernel prints with
+   * <code>EchoLabel["KernelPrint"]</code> before showing it - and left unevaluated it takes the
+   * message with it.
    */
   private static final class EchoLabel extends Print {
     @Override
@@ -379,12 +379,12 @@ public class IOFunctions {
   }
 
   /**
-   * <code>Short[expr]</code> and <code>Short[expr, n]</code> are display wrappers, as in the
-   * Wolfram Language: they stay as they are - <code>InputForm</code> and <code>FullForm</code>
-   * write the wrapper and the whole expression - and the printer decides what to show. Where the
-   * output has no page width (<code>ToString</code>) that is the whole expression; where it has one
-   * (a console, a printed result) the elements that do not fit into about <code>n</code> lines are
-   * replaced by <code>Skeleton[k]</code>, written <code>&lt;&lt;k&gt;&gt;</code>.
+   * <code>Short[expr]</code> and <code>Short[expr, n]</code> are display wrappers: they stay as
+   * they are - <code>InputForm</code> and <code>FullForm</code> write the wrapper and the whole
+   * expression - and the printer decides what to show. Where the output has no page width
+   * (<code>ToString</code>) that is the whole expression; where it has one (a console, a printed
+   * result) the elements that do not fit into about <code>n</code> lines are replaced by
+   * <code>Skeleton[k]</code>, written <code>&lt;&lt;k&gt;&gt;</code>.
    */
   private static class Short extends AbstractEvaluator {
 

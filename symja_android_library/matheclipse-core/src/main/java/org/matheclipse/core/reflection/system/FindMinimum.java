@@ -1,12 +1,18 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.ArrayRealVector;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.InitialGuess;
 import org.hipparchus.optim.MaxEval;
@@ -16,8 +22,6 @@ import org.hipparchus.optim.PointValuePair;
 import org.hipparchus.optim.SimpleBounds;
 import org.hipparchus.optim.SimpleValueChecker;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
-import org.hipparchus.optim.nonlinear.scalar.GradientMultivariateOptimizer;
-import org.hipparchus.optim.nonlinear.scalar.MultiStartMultivariateOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunction;
 import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunctionGradient;
 import org.hipparchus.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer;
@@ -26,18 +30,15 @@ import org.hipparchus.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.CMAESOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.CMAESOptimizer.PopulationSize;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.CMAESOptimizer.Sigma;
-import org.hipparchus.optim.nonlinear.scalar.noderiv.NelderMeadSimplex;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.hipparchus.optim.nonlinear.vector.constrained.ConstraintOptimizer;
+import org.hipparchus.optim.nonlinear.vector.constrained.EqualityConstraint;
+import org.hipparchus.optim.nonlinear.vector.constrained.InequalityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.LagrangeSolution;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearEqualityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearInequalityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.SQPOptimizerS2;
-import org.hipparchus.random.GaussianRandomGenerator;
-import org.hipparchus.random.JDKRandomGenerator;
 import org.hipparchus.random.RandomDataGenerator;
-import org.hipparchus.random.RandomVectorGenerator;
-import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -92,6 +93,39 @@ import org.matheclipse.core.interfaces.ISymbol;
  * variables <code>x, y,...</code> and the corresponding start values
  * <code>xstart, ystart,...</code>.
  * </p>
+ *
+ * <pre>
+ * <code>FindMinimum(f, {x, xstart}, {y, ystart}, ...)
+ * </code>
+ * </pre>
+ *
+ * <p>
+ * is the same search with one search specification per argument.
+ * </p>
+ *
+ * <pre>
+ * <code>FindMinimum({f, constraints}, {{x, xstart},{y, ystart},...})
+ * </code>
+ * </pre>
+ *
+ * <p>
+ * searches for a local numerical minimum subject to the <code>constraints</code>. Bounds of a
+ * single variable like <code>x&gt;=1</code> are taken by the methods &quot;CMAES&quot; and
+ * &quot;BOBYQA&quot;; other equations and inequalities like <code>x+y&gt;=4</code> or
+ * <code>x^2+y^2&lt;3</code> select the &quot;SequentialQuadratic&quot; method and must be
+ * symbolically differentiable. <code>&lt;</code> and <code>&gt;</code> are read as
+ * <code>&lt;=</code> and <code>&gt;=</code>.
+ * </p>
+ * <p>
+ * A search specification can be <code>x</code> or <code>{x}</code> (start value chosen
+ * automatically), <code>{x, xstart}</code>, <code>{x, xstart, xstart2}</code> or
+ * <code>{x, xstart, xmin, xmax}</code> (the search stays in <code>xmin&lt;=x&lt;=xmax</code>). The
+ * variables are localized like in <code>Block</code>.
+ * </p>
+ * <p>
+ * The option <code>MaxIterations</code> (default <code>100</code>) limits the iterations of a
+ * method; <code>Automatic</code> and <code>Infinity</code> are possible values.
+ * </p>
  * 
  * <p>
  * See
@@ -141,7 +175,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <h4>&quot;CMAES&quot;</h4>
  * <p>
  * Implements the <a href=
- * "https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/BOBYQAOptimizer.java">Covariance
+ * "https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/CMAESOptimizer.java">Covariance
  * Matrix Adaptation Evolution Strategy (CMA-ES)</a> optimizer.
  * </p>
  * <h3>Examples</h3>
@@ -163,15 +197,28 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
   public static final String POWELL_METHOD = "Powell";
   public static final String SEQUENTIAL_QUADRATIC_METHOD = "SequentialQuadratic";
 
+  private static final String[] METHODS = {POWELL_METHOD, CONJUGATEGRADIENT_METHOD,
+      SEQUENTIAL_QUADRATIC_METHOD, BOBYQA_METHOD, CMAES_METHOD};
+
+  /** Start value of a variable which has none in its search specification. */
+  private static final double DEFAULT_START_VALUE = 1.999999999999999;
+
+  /** Lower limit of the ceiling for the number of function evaluations. */
+  private static final int MIN_EVALUATIONS = 10000;
+
+  private static final int EVALUATIONS_PER_ITERATION = 100;
+
+  /** A search which reaches a function value of this size ran away on an unbounded function. */
+  private static final double DIVERGED = 1e300;
+
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
-    GoalType goalType = GoalType.MINIMIZE;
+    if (argSize > 0 && argSize < ast.size()) {
+      ast = ast.copyUntil(argSize + 1);
+    }
     try {
-      return findExtremum(ast, goalType, engine, options);
-    } catch (MathIllegalArgumentException miae) {
-      // `1`.
-      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())), engine);
+      return findExtremum(ast, goalType(), engine, options);
     } catch (MathIllegalStateException mise) {
       if (mise.getSpecifier().equals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED)) {
         Object[] parts = mise.getParts();
@@ -184,90 +231,303 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       // `1`.
       return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mise.getMessage())), engine);
     } catch (MathRuntimeException mre) {
-      mre.printStackTrace();
-      Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
-      return F.CEmptyList;
+      // `1`.
+      return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mre.getMessage())), engine);
     }
   }
 
+  /**
+   * The direction of the search; {@link FindMaximum} overrides this method.
+   */
+  protected GoalType goalType() {
+    return GoalType.MINIMIZE;
+  }
+
+  /**
+   * One search specification <code>x</code>, <code>{x}</code>, <code>{x, x0}</code>,
+   * <code>{x, x0, x1}</code> or <code>{x, x0, xmin, xmax}</code>.
+   */
+  private static final class VariableSpec {
+    final IExpr variable;
+    final double start;
+    final double lower;
+    final double upper;
+
+    VariableSpec(IExpr variable, double start, double lower, double upper) {
+      this.variable = variable;
+      this.start = start;
+      this.lower = lower;
+      this.upper = upper;
+    }
+  }
 
   protected static IExpr findExtremum(IAST ast, GoalType goalType, EvalEngine engine,
       IExpr[] options) {
+    final ISymbol head = goalType == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum;
     IAST relationList = ast.arg1().makeList();
     if (relationList.argSize() == 0) {
       return F.NIL;
     }
     IExpr function = relationList.arg1();
-    if (relationList.argSize() > 2 && !relationList.arg2().isAnd()) {
-      relationList = F.List(function, relationList.subList(2).apply(S.And));
-    } else if (relationList.argSize() > 1 && !relationList.arg2().isAnd()) {
-      relationList = F.List(function, relationList.subList(2).apply(S.And));
+
+    // The search specifications are the leading run of list arguments behind the function. Several
+    // of them are the form FindMinimum(f, {x,x0}, {y,y0}), which is the same as the nested
+    // FindMinimum(f, {{x,x0},{y,y0}}).
+    int lastSpecPosition = 1;
+    for (int i = 2; i < ast.size(); i++) {
+      if (!ast.get(i).isList()) {
+        break;
+      }
+      lastSpecPosition = i;
     }
-    IExpr arg2 = ast.arg2();
-    if (!arg2.isList()) {
-      arg2 = engine.evaluate(arg2);
+    if (lastSpecPosition < 2) {
+      // FindMinimum(f, x) or a symbol which holds the specifications
+      lastSpecPosition = 2;
     }
-    VariablesSet vars = new VariablesSet(arg2);
-    if (vars.size() == 0) {
+    List<VariableSpec> specs = variableSpecs(ast, lastSpecPosition, head, engine);
+    if (specs == null) {
+      return F.NIL;
+    }
+
+    int maxIterations = FindRoot.optionMaxIterations(options[0], head, engine);
+    if (maxIterations < 0) {
       return F.NIL;
     }
     String method = POWELL_METHOD;
-    int maxIterations = 100;
-    if (options[0].isInteger()) {
-      // determine option S.MaxIterations
-      maxIterations = options[0].toIntDefault();
-      if (F.isNotPresent(maxIterations)) {
-        return F.NIL;
-      }
-      if (maxIterations < 0) {
-        maxIterations = 100;
-      }
-    }
+    boolean automaticMethod = true;
     if (options[1] != S.Automatic) {
       if (options[1].isSymbol() || options[1].isString()) {
         // determine option S.Method
         method = options[1].toString();
+        automaticMethod = false;
       }
-    } else {
-      if (ast.size() >= 4) {
-        if (ast.arg3().isSymbol()) {
-          method = ast.arg3().toString();
+    } else if (lastSpecPosition < ast.argSize() && ast.last().isSymbol()) {
+      // FindMinimum(f, {x, x0}, methodName) - the bare method name behind the specifications
+      method = ast.last().toString();
+      automaticMethod = false;
+    }
+    final String methodName = method;
+    method = canonicalMethod(methodName);
+    if (method == null) {
+      // `1`.
+      return Errors.printMessage(head, "error", F.list(
+          F.$str("Method " + methodName + " is not one of " + String.join(", ", METHODS))), engine);
+    }
+
+    // FindMinimum has attribute HoldAll and localizes its variables like Block does
+    final int n = specs.size();
+    ISymbol[] blockedSymbols = new ISymbol[n];
+    IExpr[] blockedValues = new IExpr[n];
+    boolean[] blockedDelayed = new boolean[n];
+    for (int i = 0; i < n; i++) {
+      IExpr variable = specs.get(i).variable;
+      if (variable.isSymbol() && ((ISymbol) variable).hasAssignedSymbolValue()) {
+        ISymbol symbol = (ISymbol) variable;
+        blockedSymbols[i] = symbol;
+        blockedValues[i] = symbol.assignedValue();
+        blockedDelayed[i] = symbol.isEvalFlagOn(ISymbol.SETDELAYED_FLAG_ASSIGNED_VALUE);
+        symbol.clearValue();
+      }
+    }
+    try {
+      return findExtremum(head, function, relationList, specs, goalType, maxIterations, method,
+          automaticMethod, engine);
+    } finally {
+      for (int i = 0; i < n; i++) {
+        if (blockedSymbols[i] != null) {
+          blockedSymbols[i].assignValue(blockedValues[i], blockedDelayed[i]);
         }
       }
     }
-    SimpleBounds simpleBounds = null;
-    OptimizationData[] optimizationData = new OptimizationData[0];
-    IASTAppendable varsList = vars.getVarList();
-    if (relationList.argSize() > 1) {
-      IASTAppendable reduceRelations = ((IAST) relationList.arg2()).copyAppendable();
-      if (reduceRelations.argSize() > 0 && reduceRelations.isSameHeadSizeGE(S.And, 2)) {
-        if (method.equalsIgnoreCase(SEQUENTIAL_QUADRATIC_METHOD)) {
-          optimizationData = new OptimizationData[2];
-          if (!createLinearConstraints(reduceRelations, varsList, engine, optimizationData)) {
-            // Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal'
-            // constraints. Constraints with Unequal(!=) are not supported.
-            return Errors.printMessage(ast.topHead(), "eqgele", F.List(reduceRelations), engine);
-          }
-        } else {
-          simpleBounds = createSimpleBounds(reduceRelations, varsList, engine);
-          if (simpleBounds != null //
-              && !method.equalsIgnoreCase(BOBYQA_METHOD) //
-              && !method.equalsIgnoreCase(CMAES_METHOD) //
-              && !method.equalsIgnoreCase(CONJUGATEGRADIENT_METHOD)) {
-            method = CMAES_METHOD;
-          }
-        }
-      }
-    }
-    if (arg2.isList() && arg2.argSize() >= 2) {
-      return optimizeGoal(goalType, function, (IAST) arg2, maxIterations, method, simpleBounds,
-          optimizationData, engine);
-    }
-    return F.NIL;
   }
 
+  private static IExpr findExtremum(ISymbol head, IExpr function, IAST relationList,
+      List<VariableSpec> specs, GoalType goalType, int maxIterations, String method,
+      boolean automaticMethod, EvalEngine engine) {
+    final int n = specs.size();
+    // the one and only order of the variables: the order of the search specifications
+    IASTAppendable varsList = F.ListAlloc(n);
+    double[] initialValues = new double[n];
+    double[] lowerBounds = new double[n];
+    double[] upperBounds = new double[n];
+    boolean specBounds = false;
+    for (int i = 0; i < n; i++) {
+      VariableSpec spec = specs.get(i);
+      varsList.append(spec.variable);
+      initialValues[i] = spec.start;
+      lowerBounds[i] = spec.lower;
+      upperBounds[i] = spec.upper;
+      specBounds |= !Double.isInfinite(spec.lower) || !Double.isInfinite(spec.upper);
+    }
 
-  private static boolean createLinearConstraints(IAST andAST, IASTAppendable varsList,
+    SimpleBounds simpleBounds = specBounds ? new SimpleBounds(lowerBounds, upperBounds) : null;
+    OptimizationData[] optimizationData = new OptimizationData[2];
+    IASTAppendable constraints = F.ast(S.And, relationList.argSize());
+    for (int i = 2; i < relationList.size(); i++) {
+      IExpr relation = relationList.get(i);
+      if (relation.isAnd()) {
+        constraints.appendArgs((IAST) relation);
+      } else {
+        constraints.append(relation);
+      }
+    }
+    if (constraints.argSize() > 0 && !method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
+      IASTAppendable remaining = constraints.copyAppendable();
+      SimpleBounds relationBounds = createSimpleBounds(remaining, varsList, engine);
+      if (relationBounds != null && remaining.argSize() == 0) {
+        simpleBounds = intersect(simpleBounds, relationBounds);
+      } else if (automaticMethod) {
+        // constraints which are no bounds of a single variable need a constrained optimizer
+        method = SEQUENTIAL_QUADRATIC_METHOD;
+      } else {
+        // `1`.
+        return Errors.printMessage(head, "error",
+            F.list(F.$str("Method " + method + " only takes bounds of a single variable, not "
+                + remaining + "; use Method -> \"" + SEQUENTIAL_QUADRATIC_METHOD + "\"")),
+            engine);
+      }
+    }
+    if (method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
+      // SQPOptimizerS2 takes no SimpleBounds before Hipparchus PR #455: {x, x0, xmin, xmax}
+      for (int i = 0; specBounds && i < n; i++) {
+        if (!Double.isInfinite(lowerBounds[i])) {
+          constraints.append(F.GreaterEqual(varsList.get(i + 1), F.num(lowerBounds[i])));
+        }
+        if (!Double.isInfinite(upperBounds[i])) {
+          constraints.append(F.LessEqual(varsList.get(i + 1), F.num(upperBounds[i])));
+        }
+      }
+      simpleBounds = null;
+    } else if (simpleBounds != null && method.equals(POWELL_METHOD)) {
+      // Powell is unbounded
+      method = CMAES_METHOD;
+    }
+    final boolean constrained = constraints.argSize() > 0;
+    if (constrained && method.equals(SEQUENTIAL_QUADRATIC_METHOD)
+        && !createLinearConstraints(constraints, varsList, engine, optimizationData)
+        && !createNonlinearConstraints(constraints, varsList, initialValues, engine,
+            optimizationData)) {
+      // Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal'
+      // constraints. Constraints with Unequal(!=) are not supported.
+      return Errors.printMessage(head, "eqgele", F.List(constraints), engine);
+    }
+
+    IExpr initialValue = testInitialValue(function, varsList, initialValues, goalType, engine);
+    if (initialValue.isNIL()) {
+      return F.NIL;
+    }
+    if (n == 1 && method.equals(SEQUENTIAL_QUADRATIC_METHOD) && !constrained) {
+      method = POWELL_METHOD;
+    }
+    OptimizeSupplier optimizeSupplier = new OptimizeSupplier(head, goalType, function, varsList,
+        initialValues, maxIterations, method, simpleBounds, optimizationData, constrained, engine);
+    return optimizeSupplier.get();
+  }
+
+  /**
+   * The method name in the spelling of the <code>*_METHOD</code> constants or <code>null</code> if
+   * there is no such method.
+   */
+  private static String canonicalMethod(String method) {
+    for (int i = 0; i < METHODS.length; i++) {
+      if (METHODS[i].equalsIgnoreCase(method)) {
+        return METHODS[i];
+      }
+    }
+    return null;
+  }
+
+  private static SimpleBounds intersect(SimpleBounds first, SimpleBounds second) {
+    if (first == null) {
+      return second;
+    }
+    double[] lower = first.getLower();
+    double[] upper = first.getUpper();
+    double[] lower2 = second.getLower();
+    double[] upper2 = second.getUpper();
+    for (int i = 0; i < lower.length; i++) {
+      lower[i] = Math.max(lower[i], lower2[i]);
+      upper[i] = Math.min(upper[i], upper2[i]);
+    }
+    return new SimpleBounds(lower, upper);
+  }
+
+  /**
+   * Read the search specifications <code>ast.get(2) ... ast.get(lastSpecPosition)</code>.
+   *
+   * @return <code>null</code> if a specification isn't valid - the message was printed in that case
+   */
+  private static List<VariableSpec> variableSpecs(final IAST ast, int lastSpecPosition,
+      ISymbol head, EvalEngine engine) {
+    IAST entries;
+    if (lastSpecPosition > 2) {
+      entries = F.mapRange(2, lastSpecPosition + 1, i -> ast.get(i));
+    } else {
+      IExpr arg2 = ast.arg2();
+      if (!arg2.isList()) {
+        IExpr evaluated = engine.evaluate(arg2);
+        if (evaluated.isList()) {
+          arg2 = evaluated;
+        }
+      }
+      if (!arg2.isList()) {
+        entries = F.List(arg2);
+      } else {
+        IAST list = (IAST) arg2;
+        if (list.argSize() >= 2 && list.argSize() <= 4 && !list.exists(x -> x.isList())
+            && engine.evaluate(list.arg2()).isNumericFunction(true)) {
+          // {x, x0}, {x, x0, x1}, {x, x0, xmin, xmax}
+          entries = F.List(list);
+        } else {
+          // {{x, x0}, {y, y0}, ...} or the variables {x, y, ...}
+          entries = list;
+        }
+      }
+    }
+    if (entries.argSize() == 0) {
+      // Search specification `1` should be a list with 1 to 3 elements.
+      Errors.printMessage(head, "fdss", F.List(entries), engine);
+      return null;
+    }
+    List<VariableSpec> specs = new ArrayList<VariableSpec>(entries.argSize());
+    for (int i = 1; i < entries.size(); i++) {
+      IExpr entry = entries.get(i);
+      IExpr variable = entry.isList() ? entry.first() : entry;
+      if (entry.isList() && (entry.argSize() < 1 || entry.argSize() > 4)) {
+        // Search specification `1` should be a list with 1 to 3 elements.
+        Errors.printMessage(head, "fdss", F.List(entry), engine);
+        return null;
+      }
+      if (!variable.isVariable() || variable.isBuiltInSymbol()) {
+        // `1` is not a valid variable.
+        Errors.printMessage(head, "ivar", F.List(variable), engine);
+        return null;
+      }
+      double start = DEFAULT_START_VALUE;
+      double lower = Double.NEGATIVE_INFINITY;
+      double upper = Double.POSITIVE_INFINITY;
+      if (entry.isList()) {
+        IAST spec = (IAST) entry;
+        if (spec.argSize() >= 2) {
+          // {x, x0, x1} - the second start value x1 is of no use for the optimizers
+          start = engine.evaluate(spec.arg2()).evalfNaN();
+        }
+        if (spec.argSize() == 4) {
+          lower = engine.evaluate(spec.arg3()).evalfNaN();
+          upper = engine.evaluate(spec.arg4()).evalfNaN();
+        }
+        if (Double.isNaN(start) || Double.isNaN(lower) || Double.isNaN(upper) || lower > upper) {
+          // Search specification `1` should be a list with 1 to 3 elements.
+          Errors.printMessage(head, "fdss", F.List(entry), engine);
+          return null;
+        }
+      }
+      specs.add(new VariableSpec(variable, start, lower, upper));
+    }
+    return specs;
+  }
+
+  private static boolean createLinearConstraints(IAST andAST, IAST varsList,
       EvalEngine engine, OptimizationData[] optimizationData) {
     if (andAST.size() > 1) {
       int varsSize = varsList.argSize();
@@ -281,20 +541,20 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         IExpr temp = andAST.get(i);
         if (temp.isRelationalBinary()) {
           if (temp.isEqual()) {
-            if (!createEqualityRelation((IAST) temp, equalitiesList, equalitiesConstants,
-                equalitiesConstantsIndex, varsList, engine)) {
+            if (!createLinearRelation(F.Subtract(temp.first(), temp.second()), equalitiesList,
+                equalitiesConstants, equalitiesConstantsIndex, varsList, engine)) {
               return false;
             }
           } else if (temp.isAST(S.LessEqual, 3)) {
             // see https://github.com/Hipparchus-Math/hipparchus/discussions/334
-            if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
-                inequalitiesConstantsIndex, varsList, true, engine)) {
+            if (!createLinearRelation(F.Subtract(temp.second(), temp.first()), inequalitiesList,
+                inequalitiesConstants, inequalitiesConstantsIndex, varsList, engine)) {
               return false;
             }
           } else if (temp.isAST(S.GreaterEqual, 3)) {
             // https://github.com/Hipparchus-Math/hipparchus/discussions/334
-            if (!createInequalityRelation((IAST) temp, inequalitiesList, inequalitiesConstants,
-                inequalitiesConstantsIndex, varsList, false, engine)) {
+            if (!createLinearRelation(F.Subtract(temp.first(), temp.second()), inequalitiesList,
+                inequalitiesConstants, inequalitiesConstantsIndex, varsList, engine)) {
               return false;
             }
           } else {
@@ -319,103 +579,187 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     return false;
   }
 
-  private static boolean createEqualityRelation(IAST relation, ArrayList<double[]> equalitiesList,
-      double[] equalitiesConstants, int[] equalitiesConstantsIndex, IASTAppendable varsList,
-      EvalEngine engine) {
-    double[] coefficients = new double[varsList.argSize()];
-    equalitiesList.add(coefficients);
-    IASTAppendable rhs = F.PlusAlloc(4);
-    IExpr lhs;
-    lhs = engine.evaluate(F.Subtract(relation.first(), relation.second()));
-    IAST plus = lhs.makeAST(S.Plus);
-    for (int j = 1; j < plus.size(); j++) {
-      IExpr addend = plus.get(j);
-      if (addend.isFree(x -> varsList.contains(x), false)) {
-        rhs.append(addend.negate());
-        continue;
-      }
-      if (addend.isTimes()) {
-        IAST times = (IAST) addend;
-        for (int k = 1; k < times.size(); k++) {
-          IExpr factor = times.get(k);
-          int offset = getVariableOffset(varsList, factor);
-          if (offset >= 0) {
-            IASTMutable coefficient = times.removeAtCopy(k);
-            if (!coefficient.isFree(x -> varsList.contains(x), false)) {
-              return false;
-            }
-            coefficients[offset] = coefficient.evalfNaN();
-            if (Double.isNaN(coefficients[offset])) {
-              return false;
-            }
-          }
-        }
-        continue;
-      }
-      int offset = getVariableOffset(varsList, addend);
-      if (offset < 0) {
+  /**
+   * Read the relations as the vector valued constraints <code>g(x) &gt;= 0</code> and
+   * <code>h(x) == 0</code> with symbolic Jacobian matrices. Strict inequalities are read as
+   * <code>&gt;=</code>.
+   *
+   * @return <code>false</code> if a relation is no equation or inequality, or isn't a real number
+   *         at the start values
+   */
+  private static boolean createNonlinearConstraints(IAST andAST, IAST varsList,
+      double[] initialValues, EvalEngine engine, OptimizationData[] optimizationData) {
+    List<IExpr> inequalities = new ArrayList<IExpr>();
+    List<IExpr> equalities = new ArrayList<IExpr>();
+    for (int i = 1; i < andAST.size(); i++) {
+      IExpr temp = andAST.get(i);
+      if (!temp.isAST() || temp.argSize() < 2) {
         return false;
       }
-      coefficients[offset] = 1.0;
+      IAST relation = (IAST) temp;
+      final boolean less = relation.isAST(S.Less) || relation.isAST(S.LessEqual);
+      if (!less && !relation.isAST(S.Greater) && !relation.isAST(S.GreaterEqual)
+          && !relation.isAST(S.Equal)) {
+        return false;
+      }
+      // a < b < c
+      for (int j = 1; j < relation.argSize(); j++) {
+        IExpr lhs = relation.get(j);
+        IExpr rhs = relation.get(j + 1);
+        IExpr difference = engine.evaluate(less ? F.Subtract(rhs, lhs) : F.Subtract(lhs, rhs));
+        (relation.isAST(S.Equal) ? equalities : inequalities).add(F.substAbs(difference));
+      }
     }
-    double equalityConstant = rhs.evalfNaN();
-    if (Double.isNaN(equalityConstant)) {
+    SymbolicVectorFunction g = new SymbolicVectorFunction(inequalities, varsList, engine);
+    SymbolicVectorFunction h = new SymbolicVectorFunction(equalities, varsList, engine);
+    RealVector start = new ArrayRealVector(initialValues, false);
+    if (!g.isNumeric(start) || !h.isNumeric(start)) {
       return false;
     }
-    equalitiesConstants[equalitiesConstantsIndex[0]++] = equalityConstant;
+    optimizationData[0] = null;
+    optimizationData[1] = null;
+    if (inequalities.size() > 0) {
+      optimizationData[0] = new InequalityConstraint(new ArrayRealVector(inequalities.size())) {
+        @Override
+        public int dim() {
+          return g.dim();
+        }
+
+        @Override
+        public RealVector value(RealVector x) {
+          return g.value(x);
+        }
+
+        @Override
+        public RealMatrix jacobian(RealVector x) {
+          return g.jacobian(x);
+        }
+      };
+    }
+    if (equalities.size() > 0) {
+      optimizationData[1] = new EqualityConstraint(new ArrayRealVector(equalities.size())) {
+        @Override
+        public int dim() {
+          return h.dim();
+        }
+
+        @Override
+        public RealVector value(RealVector x) {
+          return h.value(x);
+        }
+
+        @Override
+        public RealMatrix jacobian(RealVector x) {
+          return h.jacobian(x);
+        }
+      };
+    }
     return true;
   }
 
-  private static boolean createInequalityRelation(IAST relation,
-      ArrayList<double[]> inequalitiesList, double[] inequalitiesConstants,
-      int[] inequalitiesConstantsIndex, IASTAppendable varsList, boolean lessOperator,
-      EvalEngine engine) {
-    double[] coefficients = new double[varsList.argSize()];
-    inequalitiesList.add(coefficients);
-    IASTAppendable rhs = F.PlusAlloc(4);
-    IExpr lhs;
-    if (lessOperator) {
-      // negate both sides to get a "greater" relation
-      lhs = engine.evaluate(F.Subtract(F.Negate(relation.first()), F.Negate(relation.second())));
-    } else {
-      lhs = engine.evaluate(F.Subtract(relation.first(), relation.second()));
+  /**
+   * Expressions in the variables of the search together with their symbolic derivatives.
+   */
+  private static final class SymbolicVectorFunction {
+    final IExpr[] functions;
+    final IExpr[][] jacobian;
+    final IAST varsList;
+
+    SymbolicVectorFunction(List<IExpr> functions, IAST varsList, EvalEngine engine) {
+      this.varsList = varsList;
+      this.functions = functions.toArray(new IExpr[0]);
+      this.jacobian = new IExpr[this.functions.length][varsList.argSize()];
+      for (int i = 0; i < this.functions.length; i++) {
+        for (int j = 0; j < varsList.argSize(); j++) {
+          jacobian[i][j] = engine.evaluate(F.D(this.functions[i], varsList.get(j + 1)));
+        }
+      }
     }
-    IAST plus = lhs.makeAST(S.Plus);
+
+    int dim() {
+      return varsList.argSize();
+    }
+
+    private Function<IExpr, IExpr> at(RealVector x) {
+      return v -> {
+        int index = varsList.indexOf(v);
+        return index > 0 ? F.num(x.getEntry(index - 1)) : F.NIL;
+      };
+    }
+
+    RealVector value(RealVector x) {
+      Function<IExpr, IExpr> point = at(x);
+      double[] result = new double[functions.length];
+      for (int i = 0; i < functions.length; i++) {
+        result[i] = functions[i].evalfNaN(point);
+      }
+      return new ArrayRealVector(result, false);
+    }
+
+    RealMatrix jacobian(RealVector x) {
+      Function<IExpr, IExpr> point = at(x);
+      double[][] result = new double[functions.length][varsList.argSize()];
+      for (int i = 0; i < functions.length; i++) {
+        for (int j = 0; j < result[i].length; j++) {
+          result[i][j] = jacobian[i][j].evalfNaN(point);
+        }
+      }
+      return new Array2DRowRealMatrix(result, false);
+    }
+
+    boolean isNumeric(RealVector x) {
+      if (functions.length == 0) {
+        return true;
+      }
+      return !value(x).isNaN() && Arrays.stream(jacobian(x).getData())
+          .allMatch(row -> Arrays.stream(row).noneMatch(Double::isNaN));
+    }
+  }
+
+  /**
+   * Read the linear relation <code>difference &gt;= 0</code> or <code>difference == 0</code> as a
+   * row of coefficients and a constant.
+   *
+   * @return <code>false</code> if <code>difference</code> is not linear in the variables
+   */
+  private static boolean createLinearRelation(IExpr difference, ArrayList<double[]> rowList,
+      double[] constants, int[] constantsIndex, IAST varsList, EvalEngine engine) {
+    double[] coefficients = new double[varsList.argSize()];
+    IASTAppendable rhs = F.PlusAlloc(4);
+    IAST plus = engine.evaluate(F.Expand(difference)).makeAST(S.Plus);
     for (int j = 1; j < plus.size(); j++) {
       IExpr addend = plus.get(j);
       if (addend.isFree(x -> varsList.contains(x), false)) {
         rhs.append(addend.negate());
         continue;
       }
-      if (addend.isTimes()) {
+      int offset = getVariableOffset(varsList, addend);
+      double coefficient = 1.0;
+      if (offset < 0 && addend.isTimes()) {
         IAST times = (IAST) addend;
         for (int k = 1; k < times.size(); k++) {
-          IExpr factor = times.get(k);
-          int offset = getVariableOffset(varsList, factor);
+          offset = getVariableOffset(varsList, times.get(k));
           if (offset >= 0) {
-            IASTMutable coefficient = times.removeAtCopy(k);
-            if (!coefficient.isFree(x -> varsList.contains(x), false)) {
+            IASTMutable rest = times.removeAtCopy(k);
+            if (!rest.isFree(x -> varsList.contains(x), false)) {
               return false;
             }
-            coefficients[offset] = coefficient.evalfNaN();
-            if (Double.isNaN(coefficients[offset])) {
-              return false;
-            }
+            coefficient = rest.evalfNaN();
+            break;
           }
         }
-        continue;
       }
-      int offset = getVariableOffset(varsList, addend);
-      if (offset < 0) {
+      if (offset < 0 || Double.isNaN(coefficient)) {
         return false;
       }
-      coefficients[offset] = 1.0;
+      coefficients[offset] += coefficient;
     }
-    double inequalityConstant = rhs.evalfNaN();
-    if (Double.isNaN(inequalityConstant)) {
+    double constant = rhs.evalfNaN();
+    if (Double.isNaN(constant)) {
       return false;
     }
-    inequalitiesConstants[inequalitiesConstantsIndex[0]++] = inequalityConstant;
+    rowList.add(coefficients);
+    constants[constantsIndex[0]++] = constant;
     return true;
   }
 
@@ -467,7 +811,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
    * @return the simple bounds for the variables extracted from the given <code>reducedAndAST</code>
    */
   private static SimpleBounds createSimpleBounds(IASTAppendable reducedAndAST,
-      IASTAppendable varsList, EvalEngine engine) {
+      IAST varsList, EvalEngine engine) {
     int varsSize = varsList.argSize();
     if (varsSize <= 0) {
       return null;
@@ -491,8 +835,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         if (relationAST.argSize() == 2) {
           IExpr[] value = extractVariable(relationHead, relationAST.arg1(), relationAST.arg2(),
               variable, engine);
-          if (value != null) {
-            int offset = getVariableOffset(varsList, variable);
+          int offset = getVariableOffset(varsList, variable);
+          if (value != null && offset >= 0) {
             double bound = value[0].evalfNaN();
             if (Double.isNaN(bound)) {
               return null;
@@ -517,7 +861,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
             reducedAndAST.remove(j);
             continue;
           }
-        } else if (relationAST.argSize() == 3 && relationAST.arg2().equals(variable)) {
+        } else if (relationAST.argSize() == 3 && relationAST.arg2().equals(variable)
+            && getVariableOffset(varsList, variable) >= 0) {
           int offset = getVariableOffset(varsList, variable);
           double lowerBound = relationAST.arg1().evalfNaN();
           double upperBound = relationAST.arg3().evalfNaN();
@@ -611,7 +956,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
    * @param variable the variable to be searched
    * @return <code>-1</code> if the variable is not found in the list of variables
    */
-  private static int getVariableOffset(IASTAppendable varsList, IExpr variable) {
+  private static int getVariableOffset(IAST varsList, IExpr variable) {
     for (int k = 1; k < varsList.size(); k++) {
       if (variable.equals(varsList.get(k))) {
         return k - 1;
@@ -619,77 +964,6 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     }
     return -1;
   }
-
-  private static IExpr optimizeGoal(GoalType goalType, IExpr function, IAST list, int maxIterations,
-      String method, SimpleBounds simpleBounds, OptimizationData[] optimizationData,
-      EvalEngine engine) {
-    double[] initialValues = null;
-    IAST variableList = null;
-    int[] dimension = list.isMatrix();
-    if (dimension == null) {
-      if (list.argSize() == 1) {
-        initialValues = new double[1];
-        initialValues[0] = 1.999999999999999;
-        variableList = F.list(list.arg1());
-      } else if (list.argSize() == 2 && !list.arg2().isSymbol()) {
-        initialValues = new double[1];
-        initialValues[0] = list.arg2().evalfNaN();
-        if (Double.isNaN(initialValues[0])) {
-          return F.NIL;
-        }
-        variableList = F.list(list.arg1());
-      } else {
-        initialValues = new double[list.argSize()];
-        variableList = list;
-        for (int i = 0; i < initialValues.length; i++) {
-          initialValues[i] = 1.999999999999999;
-        }
-      }
-    } else {
-      if (dimension[0] == list.argSize()) {
-        IASTAppendable vars = F.ListAlloc();
-        if (dimension[1] == 1) {
-          initialValues = new double[list.argSize()];
-          for (int i = 0; i < list.argSize(); i++) {
-            IAST row = (IAST) list.get(i + 1);
-            initialValues[i] = list.getPart(i + 1, 2).evalfNaN();
-            if (Double.isNaN(initialValues[i])) {
-              return F.NIL;
-            }
-            vars.append(row.arg1());
-          }
-          variableList = vars;
-        } else if (dimension[1] == 2) {
-          initialValues = new double[list.argSize()];
-          for (int i = 0; i < list.argSize(); i++) {
-            IAST row = (IAST) list.get(i + 1);
-            initialValues[i] = row.arg2().evalfNaN();
-            if (Double.isNaN(initialValues[i])) {
-              return F.NIL;
-            }
-            vars.append(row.arg1());
-          }
-          variableList = vars;
-        }
-      }
-    }
-    if (initialValues != null) {
-      IExpr initialValue =
-          testInitialValue(function, variableList, initialValues, goalType, engine);
-      if (initialValue.isNIL()) {
-        return F.NIL;
-      }
-
-      if (variableList.argSize() == 1 && method.equalsIgnoreCase("sequentialquadratic")) {
-        method = POWELL_METHOD;
-      }
-      OptimizeSupplier optimizeSupplier = new OptimizeSupplier(goalType, function, variableList,
-          initialValues, maxIterations, method, simpleBounds, optimizationData, engine);
-      return optimizeSupplier.get();
-    }
-    return F.NIL;
-  }
-
 
   /**
    * Print message &quot;nrnum&quot; if the function doesn't evaluate to a real number for the
@@ -735,19 +1009,22 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
   }
 
   private static class OptimizeSupplier implements Supplier<IExpr> {
+    final ISymbol head;
     final int maxIterations;
     final GoalType goalType;
     final IExpr originalFunction;
     final IAST variableList;
     final double[] initialValues;
     final SimpleBounds simpleBounds;
-    OptimizationData[] optimizationData;
+    final OptimizationData[] optimizationData;
+    final boolean constrained;
     String method;
     final EvalEngine engine;
 
-    public OptimizeSupplier(GoalType goalType, IExpr function, IAST variableList,
+    public OptimizeSupplier(ISymbol head, GoalType goalType, IExpr function, IAST variableList,
         double[] initialValues, int maxIterations, String method, SimpleBounds simpleBounds,
-        OptimizationData[] optimizationData, EvalEngine engine) {
+        OptimizationData[] optimizationData, boolean constrained, EvalEngine engine) {
+      this.head = head;
       this.goalType = goalType;
       this.originalFunction = function;
       this.variableList = variableList;
@@ -755,11 +1032,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       this.maxIterations = maxIterations;
       this.method = method;
       this.simpleBounds = simpleBounds;
-      if (optimizationData == null || optimizationData.length < 2) {
-        this.optimizationData = new OptimizationData[2];
-      } else {
-        this.optimizationData = optimizationData;
-      }
+      this.optimizationData = optimizationData;
+      this.constrained = constrained;
       this.engine = engine;
     }
 
@@ -767,20 +1041,28 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     public IExpr get() {
       PointValuePair optimum = null;
       InitialGuess initialGuess = new InitialGuess(initialValues);
+      // MaxIterations counts the iterations of a method; the function evaluations only get a
+      // ceiling which keeps a diverging search from running forever
+      final MaxIter maxIter = new MaxIter(maxIterations);
+      final int maxEvaluations = (int) Math.min(Integer.MAX_VALUE,
+          Math.max(MIN_EVALUATIONS, EVALUATIONS_PER_ITERATION * (long) maxIterations));
+      final MaxEval maxEval = new MaxEval(maxEvaluations);
       IExpr function = engine.evaluate(originalFunction);
-      if (method.equalsIgnoreCase(SEQUENTIAL_QUADRATIC_METHOD)) {
+      if (method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
         try {
           // https://github.com/Hipparchus-Math/hipparchus/pull/404
+          // SQPOptimizerS2 doesn't read the GoalType and always minimizes
+          final boolean maximize = goalType == GoalType.MAXIMIZE;
           ConstraintOptimizer optim = new SQPOptimizerS2();
           TwiceDifferentiableMultiVariateNumerical twiceDifferentiableFunction =
-              new TwiceDifferentiableMultiVariateNumerical(function, variableList, true);
-          // x > 0, y > 0
-          // LinearInequalityConstraint ineqc = new LinearInequalityConstraint(
-          // new double[][] {{1.0, 0.0}, {0.0, 1.0}}, new double[] {0.0, 0.0});
+              new TwiceDifferentiableMultiVariateNumerical(
+                  maximize ? engine.evaluate(F.Negate(function)) : function, variableList, true);
+          twiceDifferentiableFunction.setMaxEval(maxEvaluations);
           LagrangeSolution lagrangeSolution = optim.optimize( //
-              new MaxEval(maxIterations), //
+              maxEval, //
+              maxIter, //
               new ObjectiveFunction(twiceDifferentiableFunction), //
-              goalType, //
+              GoalType.MINIMIZE, //
               initialGuess, //
               optimizationData[0], //
               optimizationData[1]);
@@ -789,22 +1071,59 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
             IASTAppendable ruleList = F.mapRange(1, variableList.size(),
                 j -> F.Rule(variableList.get(j), F.num(solutionVector.getEntry(j - 1))));
             final double value = lagrangeSolution.getValue();
-            return F.list(F.num(value), ruleList);
+            return F.list(F.num(maximize ? -value : value), ruleList);
           }
           return F.NIL;
+        } catch (MathIllegalStateException mise) {
+          if (mise.getSpecifier().equals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED)) {
+            throw mise;
+          }
+          if (constrained) {
+            // the other methods can't take the constraints
+            throw mise;
+          }
+          method = POWELL_METHOD;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          // rex.printStackTrace();
+          if (constrained) {
+            // `1`.
+            return Errors.printMessage(head, "error", F.list(F.$str(String.valueOf(rex.getMessage()))),
+                engine);
+          }
           method = POWELL_METHOD;
         }
       }
       MultiVariateNumerical multiVariateNumerical =
           new MultiVariateNumerical(function, variableList);
-      if (method.equalsIgnoreCase(BOBYQA_METHOD) && initialValues.length < 2) {
+      if (method.equals(CONJUGATEGRADIENT_METHOD)) {
+        MultiVariateVectorGradient multiVariateVectorGradient =
+            new MultiVariateVectorGradient(function, variableList, true);
+        if (isNumeric(multiVariateVectorGradient.value(initialValues))) {
+          try {
+            Formula formula = NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE;
+            optimum = conjugateGradient(multiVariateVectorGradient, multiVariateNumerical, formula,
+                initialGuess, maxEval, maxIter);
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            Formula formula = NonLinearConjugateGradientOptimizer.Formula.FLETCHER_REEVES;
+            optimum = conjugateGradient(multiVariateVectorGradient, multiVariateNumerical, formula,
+                initialGuess, maxEval, maxIter);
+          }
+          if (optimum != null && simpleBounds != null && !inBounds(optimum.getPointRef())) {
+            // the conjugate gradient method takes no bounds and left them
+            optimum = null;
+            method = CMAES_METHOD;
+          }
+        } else {
+          // no symbolic gradient, for example f(x_?NumericQ):=... - use a derivative free method
+          method = simpleBounds == null ? POWELL_METHOD : CMAES_METHOD;
+        }
+      }
+      if (method.equals(BOBYQA_METHOD) && initialValues.length < 2) {
         method = CMAES_METHOD;
       }
-      if (method.equalsIgnoreCase(CMAES_METHOD)) {
-        final CMAESOptimizer optim = new CMAESOptimizer(30000, // Max Evaluations
+      if (method.equals(CMAES_METHOD)) {
+        final CMAESOptimizer optim = new CMAESOptimizer(Math.max(30000, maxIterations), // Max Iterations
             0.0, // Stop fitness
             true, // Is active CMA?
             10, //
@@ -816,50 +1135,46 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         Sigma sigma = calculateCMAESSigma(initialValues.length, simpleBounds, initialValues);
 
         optimum = optim.optimize(//
-            new MaxEval(10000), //
+            maxEval, //
             new ObjectiveFunction(multiVariateNumerical), //
             populationSize, //
             sigma, //
             goalType, //
             initialGuess, //
-            simpleBounds, //
-            new NelderMeadSimplex(initialValues.length));
-      } else if (method.equalsIgnoreCase(BOBYQA_METHOD)) {
-        BOBYQAOptimizer optim = new BOBYQAOptimizer(5);
+            simpleBounds == null ? SimpleBounds.unbounded(initialValues.length) : simpleBounds);
+      } else if (method.equals(BOBYQA_METHOD)) {
+        BOBYQAOptimizer optim = new BOBYQAOptimizer(2 * initialValues.length + 1);
         optimum = optim.optimize(//
-            new MaxEval(10000), //
-            new MaxIter(maxIterations), //
+            maxEval, //
+            maxIter, //
             new ObjectiveFunction(multiVariateNumerical), //
             goalType, //
             initialGuess, //
-            simpleBounds, //
-            new NelderMeadSimplex(initialValues.length));
-      } else if (method.equalsIgnoreCase(POWELL_METHOD)) {
+            simpleBounds == null ? SimpleBounds.unbounded(initialValues.length) : simpleBounds);
+      } else if (method.equals(POWELL_METHOD)) {
+        // The default convergence check of the PowellOptimizer, 2*(fX-fVal) <= threshold, is true
+        // after the first sweep of every maximization, so the negated function is minimized.
+        final boolean maximize = goalType == GoalType.MAXIMIZE;
         final PowellOptimizer optim = new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d));
         optimum = optim.optimize( //
-            new MaxEval(maxIterations), //
-            new ObjectiveFunction(multiVariateNumerical), //
-            goalType, //
+            maxEval, //
+            maxIter, //
+            new ObjectiveFunction(
+                maximize ? point -> -multiVariateNumerical.value(point) : multiVariateNumerical), //
+            GoalType.MINIMIZE, //
             initialGuess);
-      } else if (method.equalsIgnoreCase(CONJUGATEGRADIENT_METHOD)) {
-
-        MultiVariateVectorGradient multiVariateVectorGradient =
-            new MultiVariateVectorGradient(function, variableList, true);
-        try {
-          Formula formula = NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE;
-          optimum = conjugateGradient(multiVariateVectorGradient, multiVariateNumerical, formula,
-              initialGuess);
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Formula formula = NonLinearConjugateGradientOptimizer.Formula.FLETCHER_REEVES;
-          optimum = conjugateGradient(multiVariateVectorGradient, multiVariateNumerical, formula,
-              initialGuess);
+        if (maximize) {
+          optimum = new PointValuePair(optimum.getPointRef(), -optimum.getValue(), false);
         }
       }
 
-
       if ((optimum != null)) {
         final double[] point = optimum.getPointRef();
+        if (!isNumeric(point) || !(Math.abs(optimum.getValue()) < DIVERGED)) {
+          // the function is unbounded in the direction of the search
+          // Failed to converge to the requested accuracy or precision within `1` iterations.
+          return Errors.printMessage(head, "cvmit", F.list(F.ZZ(maxIterations)), engine);
+        }
         IASTAppendable ruleList = F.mapRange(1, variableList.size(),
             j -> F.Rule(variableList.get(j), F.num(point[j - 1])));
         final double value = optimum.getValue();
@@ -868,32 +1183,40 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-    private PointValuePair conjugateGradient(MultiVariateVectorGradient multiVariateVectorGradient,
-        MultiVariateNumerical multiVariateNumerical, Formula formula, InitialGuess initialGuess) {
-      PointValuePair optimum;
-      GradientMultivariateOptimizer underlying =
-          new NonLinearConjugateGradientOptimizer(formula, new SimpleValueChecker(1e-10, 1e-10));
-      JDKRandomGenerator g = new JDKRandomGenerator();
-      g.setSeed(753289573253l);
-      double[] mean = new double[initialValues.length];
-      for (int i = 0; i < mean.length; i++) {
-        mean[i] = 0.0;
+    private boolean inBounds(double[] point) {
+      double[] lower = simpleBounds.getLower();
+      double[] upper = simpleBounds.getUpper();
+      for (int i = 0; i < point.length; i++) {
+        if (point[i] < lower[i] || point[i] > upper[i]) {
+          return false;
+        }
       }
-      double[] standardDeviation =
-          calculateMultiStartStandardDeviations(initialValues.length, simpleBounds, initialValues);
-      RandomVectorGenerator generator = new UncorrelatedRandomVectorGenerator(mean,
-          standardDeviation, new GaussianRandomGenerator(g));
-      int nbStarts = 10;
-      MultiStartMultivariateOptimizer optimizer =
-          new MultiStartMultivariateOptimizer(underlying, nbStarts, generator);
+      return true;
+    }
 
-      optimum = optimizer.optimize(//
-          new MaxEval(maxIterations), //
+    private static boolean isNumeric(double[] values) {
+      for (int i = 0; i < values.length; i++) {
+        if (Double.isNaN(values[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    private PointValuePair conjugateGradient(MultiVariateVectorGradient multiVariateVectorGradient,
+        MultiVariateNumerical multiVariateNumerical, Formula formula, InitialGuess initialGuess,
+        MaxEval maxEval, MaxIter maxIter) {
+      // a local search from the start value: no MultiStartMultivariateOptimizer, which returns the
+      // best of some random starts and with it a minimum far away from the start value
+      NonLinearConjugateGradientOptimizer optimizer =
+          new NonLinearConjugateGradientOptimizer(formula, new SimpleValueChecker(1e-10, 1e-10));
+      return optimizer.optimize(//
+          maxEval, //
+          maxIter, //
           new ObjectiveFunction(multiVariateNumerical), //
           new ObjectiveFunctionGradient(multiVariateVectorGradient), //
           goalType, //
           initialGuess);
-      return optimum;
     }
   }
 
@@ -997,97 +1320,6 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     return new Sigma(calculatedSigma);
   }
 
-  /**
-   * Calculates standard deviations for MultiStart RandomVectorGenerator based on bounds and an
-   * initial guess point.
-   *
-   * @param dimension Problem dimension.
-   * @param bounds SimpleBounds (can be null or have infinite values).
-   * @param initialGuessPoint The central initial guess for the MultiStartOptimizer.
-   * @param rangeFraction Fraction of finite bound range to use (e.g., 0.25 for 1/4).
-   * @param guessFraction Fraction of initial guess magnitude to use (e.g., 1.0).
-   * @param defaultStdDev Default value if bounds are infinite and guess is zero.
-   * @param minStdDev Minimum allowed standard deviation.
-   * @return Array of standard deviations.
-   */
-  private static double[] calculateMultiStartStandardDeviations(int dimension, SimpleBounds bounds,
-      double[] initialGuessPoint, double rangeFraction, double guessFraction, double defaultStdDev,
-      double minStdDev) {
-    if (initialGuessPoint.length != dimension) {
-      throw new MathIllegalArgumentException(
-          org.hipparchus.exception.LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-          initialGuessPoint.length, dimension);
-    }
-
-    double[] stdDevs = new double[dimension];
-    double[] lower = (bounds == null) ? null : bounds.getLower();
-    double[] upper = (bounds == null) ? null : bounds.getUpper();
-
-    for (int i = 0; i < dimension; i++) {
-      double L = (lower == null || lower.length <= i) ? Double.NEGATIVE_INFINITY : lower[i];
-      double U = (upper == null || upper.length <= i) ? Double.POSITIVE_INFINITY : upper[i];
-      double guess = initialGuessPoint[i];
-
-      boolean isLowerFinite = Double.isFinite(L);
-      boolean isUpperFinite = Double.isFinite(U);
-
-      if (isLowerFinite && isUpperFinite) {
-        // Strategy 1: Use finite bounds range
-        double range = U - L;
-        if (range > minStdDev) { // Avoid issues if U == L
-          stdDevs[i] = range * rangeFraction;
-        } else {
-          // If range is tiny or zero, maybe use guess or default?
-          // Using guessFraction * abs(guess) or default might be better
-          // Here, we just use minStdDev for simplicity if range is too small.
-          stdDevs[i] = (guess == 0.0) ? Math.max(minStdDev, defaultStdDev)
-              : Math.max(minStdDev, Math.abs(guess) * guessFraction);
-
-          // If the variable is essentially fixed (L == U), a very small std dev is appropriate
-          if (range == 0.0) {
-            stdDevs[i] = minStdDev;
-          }
-        }
-
-      } else {
-        // Strategy 2/3: Bounds are infinite, use initial guess or default
-        if (guess == 0.0) {
-          // Strategy 3: Guess is zero, use default
-          stdDevs[i] = defaultStdDev;
-        } else {
-          // Strategy 2: Use guess magnitude
-          stdDevs[i] = Math.abs(guess) * guessFraction;
-        }
-      }
-
-      // Ensure minimum standard deviation
-      stdDevs[i] = Math.max(minStdDev, stdDevs[i]);
-      // Ensure positivity just in case
-      if (stdDevs[i] <= 0) {
-        stdDevs[i] = minStdDev; // Should be covered by max, but belt-and-suspenders
-      }
-    }
-    return stdDevs;
-  }
-
-  /**
-   * Simplified version with default heuristic parameters. Uses range/4, abs(guess)*1.0, default
-   * 1.0, min 1e-6.
-   *
-   * @param dimension Problem dimension.
-   * @param bounds SimpleBounds (can be null or have infinite values).
-   * @param initialGuessPoint The central initial guess for the MultiStartOptimizer.
-   * @return Array of standard deviations.
-   */
-  private static double[] calculateMultiStartStandardDeviations(int dimension, SimpleBounds bounds,
-      double[] initialGuessPoint) {
-    return calculateMultiStartStandardDeviations(dimension, bounds, initialGuessPoint, 0.25, // rangeFraction
-        // (1/4)
-        1.0, // guessFraction (1.0)
-        1.0, // defaultStdDev
-        1e-6); // minStdDev
-  }
-
   @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
@@ -1095,7 +1327,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_3;
+    return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 
   @Override
@@ -1105,7 +1337,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         new IBuiltInSymbol[] {//
             S.MaxIterations, S.Method}, //
         new IExpr[] {//
-            F.C100, S.Automatic});
+            S.Automatic, S.Automatic});
   }
 
 }

@@ -8,7 +8,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.graphics.ECharts;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
@@ -80,7 +79,7 @@ public class ListStepPlot extends ListPlot {
         extent = Math.min(1.0, e);
       }
     }
-    IExpr stepMarkers = GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic);
+    IExpr stepMarkers = GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None);
 
     IAST dataList = (IAST) dataArg;
     if (dataList.isAssociation()) {
@@ -162,6 +161,9 @@ public class ListStepPlot extends ListPlot {
   private boolean generateStepPrimitives(IASTAppendable primitives, IAST data, StepType type,
       boolean joined, IExpr style, GraphicsOptions opts, EvalEngine engine, double extent,
       IExpr markers) {
+    // the same reading of PlotMarkers the rest of the family uses
+    final org.matheclipse.core.graphics.PlotMarkersSpec markerSpec =
+        org.matheclipse.core.graphics.PlotMarkersSpec.of(markers);
 
     Function<IExpr, IExpr> fx = opts.xFunction();
     Function<IExpr, IExpr> fy = opts.yFunction();
@@ -257,10 +259,8 @@ public class ListStepPlot extends ListPlot {
       if (extent < 1.0) {
         xNext = x + (xNext - x) * extent;
       }
-      if (markers.isPresent() && markers != S.Automatic && !markers.isNone() && !Double.isNaN(y)) {
-        IExpr marker =
-            markers.isList() && ((IAST) markers).argSize() > 0 ? ((IAST) markers).arg1() : markers;
-        group.append(F.Text(marker, F.List(F.num(x), F.num(y))));
+      if (markerSpec != null && !Double.isNaN(y)) {
+        group.append(F.Text(markerSpec.markerAt(0), F.List(F.num(x), F.num(y))));
       }
 
       double[] pNextVal = (i < n - 1) ? points.get(i + 1) : null;
@@ -392,116 +392,6 @@ public class ListStepPlot extends ListPlot {
   private void addScaledPoint(IASTAppendable list, double x, double y, Function<IExpr, IExpr> fx,
       Function<IExpr, IExpr> fy) {
     list.append(F.List(fx.apply(F.num(x)), fy.apply(F.num(y))));
-  }
-
-  protected static IExpr listStepPlotEChart(IAST ast, IExpr[] options, EvalEngine engine) {
-    StringBuilder jsControl = new StringBuilder();
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-    String graphicsPrimitivesStr = listStepPlot(ast, options, graphicsOptions, engine);
-    if (graphicsPrimitivesStr != null) {
-      jsControl.append("var eChart = echarts.init(document.getElementById('main'));\n");
-      jsControl.append(graphicsPrimitivesStr);
-      jsControl.append("\neChart.setOption(option);");
-      // jsControl.append("var eChart = echarts.init(document.getElementById(\"main\"));\n");
-      // jsControl.append("\neChart.setOption(");
-      // jsControl.append(graphicsPrimitivesStr);
-      // jsControl.append(");");
-
-      return F.JSFormData(jsControl.toString(), "echarts");
-    }
-    return F.NIL;
-  }
-
-  protected static String listStepPlot(IAST plot, IExpr[] options, GraphicsOptions graphicsOptions,
-      EvalEngine engine) {
-    if (plot.size() < 2) {
-      return null;
-    }
-    // graphicsOptions.setGraphicOptions(options, engine);
-    // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, 2, engine, true);
-    // if (options[ECharts.X_JOINED].isTrue()) {
-    // graphicsOptions.setJoined(true);
-    // }
-    // graphicsOptions.setOptions(optionArgs);
-    // graphicsOptions.setScalingFunctions(options);
-
-    IExpr arg1 = plot.arg1();
-    if (!arg1.isList()) {
-      arg1 = engine.evaluate(arg1);
-    }
-    if (arg1.isAssociation()) {
-      IAssociation assoc = ((IAssociation) arg1);
-      arg1 = assoc.matrixOrList();
-    }
-    if (arg1.isNonEmptyList()) {
-      IAST pointList = (IAST) arg1;
-      // TODO Labeled lists
-      if (pointList.isList()) {// x -> x.isList())) {
-        if (pointList.isListOfPoints(2)) {
-          return point2DListStepPlot(pointList, graphicsOptions);
-        }
-        if (pointList.isListOfLists()) {
-          IAST listOfLists = pointList;
-          StringBuilder yAxisSeriesBuffer = new StringBuilder();
-          String type = graphicsOptions.isJoined() ? ECharts.TYPE_LINE : ECharts.TYPE_SCATTER;
-          ECharts.seriesData(yAxisSeriesBuffer, listOfLists, graphicsOptions, type, "step");
-          StringBuilder xAxisCategoryBuffer = new StringBuilder();
-          ECharts.xAxisCategory(xAxisCategoryBuffer, (IAST) listOfLists.arg1());
-          ECharts echarts = ECharts.build(graphicsOptions, xAxisCategoryBuffer, yAxisSeriesBuffer);
-          echarts.setXAxis();
-          echarts.setYAxis("value");
-          return echarts.getJSONStr();
-        }
-
-      }
-      return yValueListStepPlot(pointList, graphicsOptions);
-    }
-    return null;
-  }
-
-  /**
-   * Plot a list of 2D points.
-   * 
-   * @param pointList2D list of 2D points
-   * @return
-   */
-  private static String point2DListStepPlot(IAST pointList2D, GraphicsOptions graphicsOptions) {
-    StringBuilder xAxisString = new StringBuilder();
-    StringBuilder yAxisString = new StringBuilder();
-    // yAxisString.append( //
-    // "{\n" //
-    // + " name: 'ListStepPlot',\n" //
-    // + " type: 'line',\n" //
-    // + " step: '1',"); // step must contain a string with length greater than 0
-    String type = graphicsOptions.isJoined() ? ECharts.TYPE_LINE : ECharts.TYPE_SCATTER;
-    ECharts.xyAxesPoint2D(pointList2D, xAxisString, yAxisString, graphicsOptions, type, "1");
-
-    ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
-    echarts.setXAxis();
-    echarts.setYAxis("value");
-    return echarts.getJSONStr();
-  }
-
-  private static String yValueListStepPlot(IAST pointList, GraphicsOptions graphicsOptions) {
-    double[] minMax = new double[] {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
-        Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
-    // y-axis values
-    StringBuilder yAxisString = new StringBuilder();
-    // yAxisString.append( //
-    // "{\n" //
-    // + " name: 'ListStepPlot',\n" //
-    // + " type: 'line',\n" //
-    // + " step: '1',\n"); // step must contain a string with length greater than 0
-    String type = graphicsOptions.isJoined() ? ECharts.TYPE_LINE : ECharts.TYPE_SCATTER;
-    ECharts.yAxisSingleSeries(yAxisString, pointList, graphicsOptions, type, "1", minMax);
-
-    // x-axis categories
-    StringBuilder xAxisString = new StringBuilder();
-    ECharts.xAxisCategory(xAxisString, pointList);
-    ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
-    echarts.setXAxis();
-    echarts.setYAxis("value");
-    return echarts.getJSONStr();
   }
 
   /** The step line, painted by {@code ColorFunction} when one was asked for. */

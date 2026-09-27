@@ -1,0 +1,22 @@
+{
+  "reflection": [
+    {
+      "type": "org.matheclipse.graphtheory.expression.data.ExprEdge",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.matheclipse.graphtheory.expression.data.ExprWeightedEdge",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    }
+  ]
+}

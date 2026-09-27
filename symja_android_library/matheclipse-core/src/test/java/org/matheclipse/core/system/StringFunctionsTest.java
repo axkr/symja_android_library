@@ -452,6 +452,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "\"ab\"");
     check("StringJoin(\"test\")", //
         "test");
+    // nothing joined is the empty string
+    check("{StringJoin(), StringJoin({}), StringJoin @@ {}} // InputForm", //
+        "{\"\",\"\",\"\"}");
     check("\"Hello\" <> \" \" <> \"world!\"", //
         "Hello world!");
 
@@ -468,6 +471,16 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStringLength() {
+    // a backslash before a space only marks it: "a\ b" is "a b", as in Mathematica. The space was
+    // dropped with the backslash, which made the string two characters long
+    check("StringLength(\"a\\ b\")", //
+        "3");
+    check("ToCharacterCode(\"a\\ b\")", //
+        "{97,32,98}");
+    check("\"2\\ \\ \\ \" === \"2   \"", //
+        "True");
+    check("StringLength(\"a\\\\ b\")", //
+        "4");
     check("StringLength(\"symja\")", //
         "5");
   }

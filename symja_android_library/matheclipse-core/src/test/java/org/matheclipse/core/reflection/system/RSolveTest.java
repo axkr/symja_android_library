@@ -434,6 +434,7 @@ public class RSolveTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRSolveHigherOrderFallbacks() {
     // TODO output a better symbolic solution
 

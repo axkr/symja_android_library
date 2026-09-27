@@ -194,14 +194,15 @@ public class AJAXManipulateServlet extends HttpServlet {
           merged.setAll(updated);
           effective = merged;
         }
+        ManipulateSession.Frame frame = ManipulateSession.evaluateFrame(engine, spec, effective);
         IExpr result = ManipulateSession.registerBodyInteractions(engine, spec, effective,
-            widgetId, ManipulateSession.evaluateBody(engine, spec, effective));
+            widgetId, frame.result);
         String[] rendered =
             AJAXQueryServlet.renderResult(engine, result, outWriter, errorWriter);
         return withExtras(rendered[1], updated,
             ManipulateSession.resolveEnabled(engine, spec, effective),
             ManipulateSession.resolveVisible(engine, spec, effective),
-            ManipulateSession.renderDisplays(engine, spec, effective, outWriter, errorWriter),
+            ManipulateSession.renderDisplays(engine, spec, frame.locals, outWriter, errorWriter),
             ManipulateSession.bodyControlsJSON(widgetId));
       } catch (AbortException ae) {
         String[] aborted =

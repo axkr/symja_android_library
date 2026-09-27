@@ -249,7 +249,7 @@ public final class Lowering {
     if (head == S.Divisible && ast.isAST2()) {
       return divisible(ast.arg1(), ast.arg2(), false);
     }
-    if (head == S.Inequality && ast.argSize() >= 5 && (ast.argSize() % 2) == 1) {
+    if (head == S.Inequality && ast.argSize() >= 5 && (ast.argSize() % 2) != 0) {
       List<Formula> parts = new ArrayList<Formula>();
       for (int i = 2; i < ast.size(); i += 2) {
         Relation relation = relationOf(ast.get(i));

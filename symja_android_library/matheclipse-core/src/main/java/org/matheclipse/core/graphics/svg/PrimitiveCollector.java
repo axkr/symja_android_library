@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Locale;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.IntervalMarkerType;
 import org.matheclipse.core.graphics.PlotWrapper;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
@@ -32,8 +34,29 @@ public final class PrimitiveCollector {
   /** Vertex table of the enclosing {@code GraphicsComplex}, or {@code null}. */
   private List<double[]> vertices;
 
+  /** {@code IntervalMarkers}: how uncertain coordinates of points and lines are marked. */
+  private IntervalMarkerType intervalMarkers = IntervalMarkerType.BARS;
+  /** {@code IntervalMarkersStyle}, or {@code null} for the style of the marked primitive. */
+  private IExpr intervalMarkersStyle = null;
+
+  /**
+   * While a {@code Point} or {@code Line} is read, the points of each of its groups (a segment of a
+   * line) with the uncertainty of their coordinates; {@code null} otherwise.
+   */
+  private List<List<IntervalMarkers2D.Marker>> markerGroups;
+
   public PrimitiveCollector(double imageWidth) {
     this.imageWidth = imageWidth > 0 ? imageWidth : 360.0;
+  }
+
+  /** Set the {@code IntervalMarkers} and {@code IntervalMarkersStyle} options. */
+  void setIntervalMarkers(IExpr markers, IExpr style) {
+    if (markers != null) {
+      intervalMarkers = IntervalMarkerType.of(markers);
+    }
+    if (style != null) {
+      intervalMarkersStyle = style.isAutomatic() || style.isNone() ? null : style;
+    }
   }
 
   public List<Prim2D> primitives() {
@@ -149,9 +172,7 @@ public final class PrimitiveCollector {
         applyArrowheads(ast, style);
         break;
       case ID.Directive:
-        for (int i = 1; i <= ast.argSize(); i++) {
-          collect(ast.get(i), style);
-        }
+        applyDirective(ast, style);
         break;
       case ID.Rule:
       case ID.RuleDelayed:
@@ -186,8 +207,7 @@ public final class PrimitiveCollector {
           Style2D scoped = style.clone();
           // Tooltip(expr) shows the expression itself, which is what makes wrapping a table of
           // bare values worth doing at all
-          scoped.tooltip =
-              PlotWrapper.tooltipLabel(ast.argSize() >= 2 ? ast.arg2() : ast.arg1());
+          scoped.tooltip = PlotWrapper.tooltipLabel(ast.argSize() >= 2 ? ast.arg2() : ast.arg1());
           collect(ast.arg1(), scoped);
         }
         break;
@@ -236,6 +256,12 @@ public final class PrimitiveCollector {
       case ID.Annulus:
         collectEllipse(ast, style, true, true);
         break;
+      case ID.Sphere:
+        collectSphere(ast, style, false);
+        break;
+      case ID.Ball:
+        collectSphere(ast, style, true);
+        break;
       case ID.StadiumShape:
         collectStadiumShape(ast, style);
         break;
@@ -254,6 +280,15 @@ public final class PrimitiveCollector {
       case ID.Inset:
         collectInset(ast, style);
         break;
+      case ID.BoundaryMeshRegion: {
+        // drawn the way Show draws it: the region as a GraphicsComplex in its own scope
+        IExpr complex = org.matheclipse.core.builtin.MeshFunctions.meshGraphicsComplex(ast,
+            org.matheclipse.core.eval.EvalEngine.get());
+        if (complex.isPresent()) {
+          collect(org.matheclipse.core.expression.F.list(complex), style);
+        }
+        break;
+      }
       case ID.BezierCurve:
         collectBezier(ast, style, false);
         break;
@@ -525,6 +560,26 @@ public final class PrimitiveCollector {
     return ColorUtil.dbl(expr, 0.015);
   }
 
+  /**
+   * The parts of a <code>Directive</code>, all applied to the style in force.
+   *
+   * <p>
+   * A list inside it is only a way of writing several parts - <code>Directive[{Red,
+   * EdgeForm[Blue]}]</code> is how a mesh region is drawn - so it is walked in the same style
+   * rather than collected, which would give it a scope of its own and throw every part of it away
+   * at the end.
+   */
+  private void applyDirective(IAST directive, Style2D style) {
+    for (int i = 1; i <= directive.argSize(); i++) {
+      IExpr part = directive.get(i);
+      if (part.isList()) {
+        applyDirective((IAST) part, style);
+      } else {
+        collect(part, style);
+      }
+    }
+  }
+
   private void applyEdgeForm(IAST ast, Style2D style) {
     style.edgeFormSet = true;
     if (ast.argSize() < 1) {
@@ -543,17 +598,7 @@ public final class PrimitiveCollector {
     Style2D edge = style.clone();
     edge.setColor(Color.BLACK);
     edge.opacity = 1.0;
-    List<IExpr> items = new ArrayList<>();
-    if (arg.isList()) {
-      IAST list = (IAST) arg;
-      for (int i = 1; i <= list.argSize(); i++) {
-        items.add(list.get(i));
-      }
-    } else {
-      for (int i = 1; i <= ast.argSize(); i++) {
-        items.add(ast.get(i));
-      }
-    }
+    List<IExpr> items = arg.isList() ? ((IAST) arg).asArgsList() : ast.asArgsList();
     for (IExpr item : items) {
       collectDirectiveOnly(item, edge);
     }
@@ -869,7 +914,14 @@ public final class PrimitiveCollector {
     if (ast.argSize() < 1) {
       return;
     }
-    List<double[]> pts = pointsOf(ast.arg1());
+    beginMarkers(ast.arg1());
+    List<double[]> pts;
+    try {
+      startMarkerGroup();
+      pts = pointsOf(ast.arg1());
+    } finally {
+      endMarkers(style, true);
+    }
     if (pts.isEmpty()) {
       return;
     }
@@ -880,11 +932,83 @@ public final class PrimitiveCollector {
     if (ast.argSize() < 1) {
       return;
     }
-    List<List<double[]>> segments = segmentsOf(ast.arg1());
+    beginMarkers(ast.arg1());
+    List<List<double[]>> segments;
+    try {
+      segments = segmentsOf(ast.arg1());
+    } finally {
+      endMarkers(style, false);
+    }
     if (segments.isEmpty()) {
       return;
     }
     primitives.add(new Prim2D.LinePrim(segments, false, style.clone()));
+  }
+
+  // ------------------------------------------------------- interval markers
+
+  /**
+   * Start recording the uncertain coordinates of a {@code Point} or {@code Line}. Only an
+   * expression that contains an uncertain form is recorded, so plain data pays one tree scan.
+   */
+  private void beginMarkers(IExpr points) {
+    markerGroups = null;
+    if (intervalMarkers != IntervalMarkerType.NONE
+        && points.has(x -> x.isAST() && UncertainValue.isUncertain(x), false)) {
+      markerGroups = new ArrayList<>();
+    }
+  }
+
+  /** Start the group of the next segment, if uncertain coordinates are being recorded. */
+  private void startMarkerGroup() {
+    if (markerGroups != null) {
+      markerGroups.add(new ArrayList<>());
+    }
+  }
+
+  /** Record one point read by {@link #pointOf}, if a group is being recorded. */
+  private void recordMarker(IAST point, double[] centre) {
+    if (markerGroups == null || markerGroups.isEmpty() || !isFinite(centre)) {
+      return;
+    }
+    UncertainValue x = UncertainValue.of(point.arg1());
+    UncertainValue y = UncertainValue.of(point.arg2());
+    markerGroups.get(markerGroups.size() - 1)
+        .add(new IntervalMarkers2D.Marker(x == null ? UncertainValue.exact(centre[0]) : x,
+            y == null ? UncertainValue.exact(centre[1]) : y));
+  }
+
+  /**
+   * Add the markers recorded since {@link #beginMarkers()}, ahead of the primitive they mark so it
+   * is drawn on top of them.
+   */
+  private void endMarkers(Style2D style, boolean unconnected) {
+    List<List<IntervalMarkers2D.Marker>> groups = markerGroups;
+    markerGroups = null;
+    if (groups == null) {
+      return;
+    }
+    Style2D markerStyle = style.clone();
+    Style2D bandStyle = IntervalMarkers2D.bandStyle(style);
+    if (intervalMarkersStyle != null) {
+      applyStyleTo(intervalMarkersStyle, markerStyle);
+      applyStyleTo(intervalMarkersStyle, bandStyle);
+    }
+    markerStyle.intervalMarker = true;
+    bandStyle.intervalMarker = true;
+    if (intervalMarkers == IntervalMarkerType.BANDS && unconnected) {
+      // the points of a Point are one band, not one per nesting level
+      List<IntervalMarkers2D.Marker> all = new ArrayList<>();
+      for (List<IntervalMarkers2D.Marker> group : groups) {
+        all.addAll(group);
+      }
+      groups = new ArrayList<>();
+      groups.add(all);
+    }
+    for (List<IntervalMarkers2D.Marker> group : groups) {
+      primitives.addAll(
+          IntervalMarkers2D.build(group, intervalMarkers, markerStyle, bandStyle, unconnected));
+    }
   }
 
   private void collectArrow(IAST ast, Style2D style) {
@@ -919,12 +1043,20 @@ public final class PrimitiveCollector {
     double[] p1 = ast.argSize() >= 1 ? pointOf(ast.arg1()) : new double[] {0, 0};
     double[] p2 = ast.argSize() >= 2 && !ast.arg2().isRuleAST() ? pointOf(ast.arg2())
         : new double[] {p1[0] + 1, p1[1] + 1};
-    double rounding = 0;
+    double roundingX = 0;
+    double roundingY = 0;
     IExpr r = optionValue(ast, S.RoundingRadius);
     if (r != null) {
-      rounding = ColorUtil.dbl(r, 0);
+      if (r.isList2()) {
+        // RoundingRadius -> {rx, ry}: elliptical corners
+        roundingX = ColorUtil.dbl(r.first(), 0);
+        roundingY = ColorUtil.dbl(r.second(), 0);
+      } else {
+        roundingX = roundingY = ColorUtil.dbl(r, 0);
+      }
     }
-    primitives.add(new Prim2D.RectPrim(p1[0], p1[1], p2[0], p2[1], rounding, style.clone()));
+    primitives
+        .add(new Prim2D.RectPrim(p1[0], p1[1], p2[0], p2[1], roundingX, roundingY, style.clone()));
   }
 
   private void collectPolygon(IAST ast, Style2D style) {
@@ -1037,6 +1169,27 @@ public final class PrimitiveCollector {
     }
     primitives.add(new Prim2D.EllipsePrim(centre[0], centre[1], rx, ry, innerRx, innerRy, 0, angles,
         filled, style.clone()));
+  }
+
+  /**
+   * {@code Sphere} and {@code Ball} in the plane are the outline and the filled disk.
+   *
+   * <p>
+   * Unlike {@code Circle} and {@code Disk} they take a list of centres, {@code Sphere[{p1, p2,
+   * ...}, r]}, one shape of the same radii around each. In the plane a radius list is still
+   * {@code {rx, ry}} for every centre, not a radius per centre as it is in {@code Graphics3D}:
+   * {@code Graphics[Sphere[{{0, 0}, {3, 0}}, {1, 2}]]} draws two ellipses.
+   */
+  private void collectSphere(IAST ast, Style2D style, boolean filled) {
+    IExpr centres = ast.argSize() >= 1 ? ast.arg1() : null;
+    if (centres != null && centres.isListOfLists()) {
+      IAST list = (IAST) centres;
+      for (int i = 1; i <= list.argSize(); i++) {
+        collectEllipse(ast.setAtCopy(1, list.get(i)), style, filled, false);
+      }
+      return;
+    }
+    collectEllipse(ast, style, filled, false);
   }
 
   private void collectStadiumShape(IAST ast, Style2D style) {
@@ -1225,10 +1378,7 @@ public final class PrimitiveCollector {
 
   /** The displayed form of a label. Strings lose their quotes; anything else prints as is. */
   private String textOf(IExpr expr) {
-    if (expr.isString()) {
-      return expr.toString();
-    }
-    return unquote(expr.toString());
+    return LabelText.of(expr);
   }
 
   private void collectInset(IAST ast, Style2D style) {
@@ -1516,7 +1666,9 @@ public final class PrimitiveCollector {
     }
     if (expr.isList() && ((IAST) expr).argSize() >= 2) {
       IAST list = (IAST) expr;
-      return new double[] {coordinate(list.arg1(), true), coordinate(list.arg2(), false)};
+      double[] p = new double[] {coordinate(list.arg1(), true), coordinate(list.arg2(), false)};
+      recordMarker(list, p);
+      return p;
     }
     return new double[] {Double.NaN, Double.NaN};
   }
@@ -1526,8 +1678,8 @@ public final class PrimitiveCollector {
    *
    * <p>
    * A corner of the drawing area can be written with the words for it: {@code {Right, Bottom}}
-   * means the same place as {@code {1, 0}} does in scaled coordinates. Read as a number those
-   * words are nothing, and anything positioned with them was quietly dropped.
+   * means the same place as {@code {1, 0}} does in scaled coordinates. Read as a number those words
+   * are nothing, and anything positioned with them was quietly dropped.
    *
    * @param horizontal whether this is the first coordinate, since {@code Center} is the middle of
    *        whichever direction it is used in and the other words only belong to one of them
@@ -1548,6 +1700,10 @@ public final class PrimitiveCollector {
         default:
           break;
       }
+    }
+    if (expr.isAST() && UncertainValue.isUncertain(expr)) {
+      // Around, Interval or IntervalData: drawn at the centre, the markers show the rest
+      return UncertainValue.center(expr);
     }
     return ColorUtil.dbl(expr, Double.NaN);
   }
@@ -1625,12 +1781,14 @@ public final class PrimitiveCollector {
     }
     if (multi) {
       for (int i = 1; i <= list.argSize(); i++) {
+        startMarkerGroup();
         List<double[]> seg = pointsOf(list.get(i));
         if (!seg.isEmpty()) {
           out.add(seg);
         }
       }
     } else {
+      startMarkerGroup();
       List<double[]> seg = pointsOf(list);
       if (!seg.isEmpty()) {
         out.add(seg);

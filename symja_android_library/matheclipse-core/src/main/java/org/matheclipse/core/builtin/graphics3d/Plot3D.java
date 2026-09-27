@@ -1,7 +1,9 @@
 package org.matheclipse.core.builtin.graphics3d;
 
-import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.builtin.graphics.PlotEndpoints;
+import java.util.List;
 import org.matheclipse.core.builtin.QuantityFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -13,6 +15,7 @@ import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionClip;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
@@ -38,6 +41,9 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    if (PlotEndpoints.degenerate(S.Plot3D, ast, 2, 3, false, engine)) {
+      return F.NIL;
+    }
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
@@ -82,25 +88,31 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       final ISymbol yVar = (ISymbol) lst2.arg1();
       // the four wrapper levels are read the same way a two dimensional plot reads them, so a
       // surface can be labelled without Plot3D knowing anything about tooltips
-      final PlotWrapper.Curves curves = PlotWrapper.curves(ast.arg1());
+      // f(x, y) with f(u_?NumericQ, v_?NumericQ) := {u v, u + v} is two surfaces, which only its
+      // value can say
+      final List<IAST> probes = PlotShapeProbe.rangeProbes(new IExpr[] {xVar, yVar},
+          new double[] {xMinD, yMinD}, new double[] {xMaxD, yMaxD});
+      final PlotWrapper.Curves curves = PlotWrapper.curves(ast.arg1())
+          .splitEach(f -> PlotShapeProbe.split(f, probes, PlotShapeProbe.SCALAR, false, engine));
       final IExpr functions = curves.functions;
 
       int[] samples = Plot3DTools.plotPoints(options[X_PLOT_POINTS], 40);
       final int nx = samples[0];
       final int ny = samples[1];
-      PlotColorFunction.Builder colorBuilder = Plot3DTools
-          .plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.Plot3D, engine);
+      PlotColorFunction.Builder colorBuilder =
+          Plot3DTools.plotColors(PlotColorFunction.Family.SURFACE_3D, options, S.Plot3D, engine);
 
       final IASTAppendable surfaces = F.ListAlloc(functions.argSize());
-      final IExpr targetUnits = GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic);
+      final IExpr targetUnits =
+          GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic);
       final IAST samplePoint = F.List(F.Rule(xVar, F.num((xMinD + xMaxD) / 2.0)),
           F.Rule(yVar, F.num((yMinD + yMaxD) / 2.0)));
       for (int f = 1; f <= functions.argSize(); f++) {
         // a quantity valued function is plotted by its magnitude
         IExpr plotted = QuantityFunctions.quantityPlotFunction(((IAST) functions).get(f),
             samplePoint, targetUnits, engine);
-        IExpr surface = buildSurface(plotted, f - 1, xVar, yVar, xMinD, xMaxD, yMinD,
-            yMaxD, nx, ny, options, colorBuilder, engine);
+        IExpr surface = buildSurface(plotted, f - 1, xVar, yVar, xMinD, xMaxD, yMinD, yMaxD, nx, ny,
+            options, colorBuilder, engine);
         if (surface.isPresent()) {
           surfaces.append(curves.decorate(f, surface));
         }
@@ -167,8 +179,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         options[Plot3DTools.X_EXCLUSIONS], engine);
 
     // Exclusions -> Automatic: where neighbouring samples jump the function is discontinuous - a
-    // branch cut, a step - and the surface is left open there rather than stitched across it,
-    // which is where the Wolfram Language draws its exclusion curves
+    // branch cut, a step - and the surface is left open there rather than stitched across it.
     boolean[][] cut = null;
     if (options[Plot3DTools.X_EXCLUSIONS] == S.Automatic) {
       cut = detectJumps(z, nx, ny);
@@ -187,8 +198,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     // samples are part of the picture, which is what the visible band is then measured over.
     RegionFunctionFilter region =
         RegionFunctionFilter.of(options[Plot3DTools.X_REGION_FUNCTION], engine);
-    boolean[][] inside =
-        applyRegionFunction(z, xMinD, xStep, yMinD, yStep, nx, ny, region, engine);
+    boolean[][] inside = applyRegionFunction(z, xMinD, xStep, yMinD, yStep, nx, ny, region, engine);
 
     int finiteCount = 0;
     for (int i = 0; i < nx; i++) {
@@ -259,30 +269,29 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     GraphicsComplexBuilder builder = new GraphicsComplexBuilder(true, colors != null);
     Plot3DTools.applyStyle(builder, Plot3DTools.surfaceStyle(index, options[X_PLOT_STYLE]),
         options[X_MESH]);
-    Plot3DTools.addSurface(builder, grid, false, false, colors, true, options[X_MESH],
-        options[Plot3DTools.X_MESH_STYLE], unmasked, inside,
-        regionEdge(unmasked, region, zMin, zMax));
-    // the rim of the surface belongs to the complex, as Mathematica writes it, and Automatic
-    // draws it; the mesh and exclusion lines below stay outside with their own colours
-    IExpr complex = Plot3DTools.withBoundary(builder, grid,
-        options[Plot3DTools.X_BOUNDARY_STYLE], true);
+    // explicit mesh functions draw the mesh in place of the sampling grid's lines, not beside them
+    IExpr meshFunctions = options[Plot3DTools.X_MESH_FUNCTIONS];
+    boolean byFunctions = meshFunctions != S.Automatic && !meshFunctions.isNone();
+    Plot3DTools.addSurface(builder, grid, false, false, colors, true,
+        byFunctions ? S.None : options[X_MESH], options[Plot3DTools.X_MESH_STYLE], unmasked,
+        inside, regionEdge(unmasked, region, zMin, zMax));
+    // the lines of the mesh functions, and the rim of the surface, belong to the complex as
+    // Mathematica writes them; Automatic draws the rim. The exclusion lines below stay outside
+    Plot3DTools.addMeshSegments(builder,
+        meshFunctionSegments(builder, grid, options[Plot3DTools.X_MESH_FUNCTIONS],
+            options[X_MESH], engine),
+        options[Plot3DTools.X_MESH_STYLE]);
+    IExpr complex =
+        Plot3DTools.withBoundary(builder, grid, options[Plot3DTools.X_BOUNDARY_STYLE], true);
 
     if (complex.isNIL()) {
       return complex;
     }
 
-    // the lines are kept outside the GraphicsComplex so that they carry their own colour rather
-    // than being shaded along with the surface they lie on
+    // the exclusion lines are kept outside the GraphicsComplex so that they carry their own
+    // colour rather than being shaded along with the surface they lie on
     IASTAppendable decorated = F.ListAlloc(6);
     decorated.append(complex);
-
-    IAST meshLines = meshFunctionLines(grid, nx, ny, options[Plot3DTools.X_MESH_FUNCTIONS],
-        options[X_MESH], engine);
-    if (meshLines.argSize() > 0) {
-      IExpr meshStyle = options[Plot3DTools.X_MESH_STYLE];
-      decorated.append(meshStyle == S.Automatic ? S.Black : meshStyle);
-      decorated.append(meshLines);
-    }
 
     // ExclusionsStyle -> {surfaces, curves}: the edges the surface was opened along, in the style
     // the curves are given
@@ -613,43 +622,24 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     return exclusion.isNumber() ? F.NIL : exclusion;
   }
 
-  /** How many mesh levels a {@code MeshFunctions} entry draws when {@code Mesh} does not say. */
-  private static final int MESH_FUNCTION_LEVELS = 8;
-
   /**
-   * The mesh lines {@code MeshFunctions} asks for, as levels of each function it names.
+   * The mesh segments {@code MeshFunctions} asks for, as levels of each function it names.
    *
    * <p>
    * {@code Automatic} keeps the lines on the sampling grid, which the surface builder already
    * draws, so only an explicit list produces anything here.
    */
-  private static IAST meshFunctionLines(double[][][] grid, int nx, int ny, IExpr meshFunctions,
-      IExpr meshOption, EvalEngine engine) {
+  private static IAST meshFunctionSegments(GraphicsComplexBuilder builder, double[][][] grid,
+      IExpr meshFunctions, IExpr meshOption, EvalEngine engine) {
     if (meshFunctions == S.Automatic || meshFunctions.isNone() || meshOption.isNone()) {
       return F.CEmptyList;
     }
     IAST list = meshFunctions.isList() ? (IAST) meshFunctions : F.list(meshFunctions);
-    int levels = meshOption.toIntDefault(MESH_FUNCTION_LEVELS);
-    if (levels < 1) {
-      levels = MESH_FUNCTION_LEVELS;
-    }
     IASTAppendable all = F.ListAlloc(list.argSize() * 8);
     for (int k = 1; k < list.size(); k++) {
-      IExpr meshFunction = list.get(k);
-      double[][] values = new double[nx][ny];
-      for (int i = 0; i < nx; i++) {
-        for (int j = 0; j < ny; j++) {
-          double[] point = grid[i][j];
-          if (point == null) {
-            values[i][j] = Double.NaN;
-            continue;
-          }
-          IExpr value = engine.evalN(
-              F.ternaryAST3(meshFunction, F.num(point[0]), F.num(point[1]), F.num(point[2])));
-          values[i][j] = value.isNumber() ? value.evalfNaN() : Double.NaN;
-        }
-      }
-      all.appendArgs(Plot3DTools.meshLines(grid, values, levels));
+      double[][] values = Plot3DTools.meshFunctionValues(grid, list.get(k), null, null, engine);
+      all.appendArgs(Plot3DTools.meshSegments(builder, grid, values,
+          Plot3DTools.meshLevels(meshOption, k - 1, values)));
     }
     return all;
   }

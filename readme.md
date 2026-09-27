@@ -141,6 +141,10 @@ public class Example {
       // print: Cos(x)^2-Sin(x)^2
       System.out.println("Out[2]: " + result.toString());
 
+      // An IAST can be read as a java.util.List: index 0 is the head
+      // print: [D, Cos(x)*Sin(x), x]
+      System.out.println(function.asList());
+
       // Note "diff" is an alias for the "D" function
       result = util.eval("diff(sin(x)*cos(x),x)");
       // print: Cos(x)^2-Sin(x)^2

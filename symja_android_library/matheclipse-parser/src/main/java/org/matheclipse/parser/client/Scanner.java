@@ -54,6 +54,18 @@ public abstract class Scanner {
   protected static final int TT_PARTCLOSE = 19;
 
   /** Token type: operator ';;' */
+  /** <code>\u230A</code> - the opening bracket of <code>Floor</code>, as in <code>⌊x⌋</code> */
+  protected static final int TT_FLOOR_OPEN = 20;
+
+  /** <code>\u230B</code> - the closing bracket of <code>Floor</code> */
+  protected static final int TT_FLOOR_CLOSE = 21;
+
+  /** <code>\u2308</code> - the opening bracket of <code>Ceiling</code>, as in <code>⌈x⌉</code> */
+  protected static final int TT_CEILING_OPEN = 22;
+
+  /** <code>\u2309</code> - the closing bracket of <code>Ceiling</code> */
+  protected static final int TT_CEILING_CLOSE = 23;
+
   protected static final int TT_SPAN = 30;
 
   /** Token type: operator found in input string */
@@ -474,10 +486,10 @@ public abstract class Scanner {
    * The name after <code>&lt;&lt;</code>, read as a name rather than as an expression.
    *
    * <p>
-   * <code>&lt;&lt;CoffeeLiqueur`CUSockets`</code> loads a context and <code>&lt;&lt;dir/file.wl</code>
-   * a file; neither is an expression - the backticks would be read as contexts of nothing and the
-   * slashes as division. The Wolfram Language reads everything up to the first space as the name,
-   * and so does this.
+   * <code>&lt;&lt;CoffeeLiqueur`CUSockets`</code> loads a context and
+   * <code>&lt;&lt;dir/file.wl</code> a file; neither is an expression - the backticks would be read
+   * as contexts of nothing and the slashes as division. Reads everything up to the first space as
+   * the name.
    *
    * @return the name, or <code>null</code> when what follows is not one (a quoted string, which is
    *         read as the expression it is)
@@ -508,10 +520,9 @@ public abstract class Scanner {
    * Is this character part of a file name written without quotes?
    *
    * <p>
-   * The Wolfram Language allows letters and digits and the punctuation a path is made of; anything
-   * else ends the name, so <code>&lt;&lt;a+b</code> is <code>Get["a"] + b</code> while
-   * <code>&lt;&lt;dir/file.wl</code> is one name. A name with other characters in it is written in
-   * quotes.
+   * Allows letters and digits and the punctuation a path is made of; anything else ends the name,
+   * so <code>&lt;&lt;a+b</code> is <code>Get["a"] + b</code> while <code>&lt;&lt;dir/file.wl</code>
+   * is one name. A name with other characters in it is written in quotes.
    */
   private static boolean isFileNameCharacter(char ch) {
     if (Character.isLetterOrDigit(ch)) {
@@ -987,6 +998,13 @@ public abstract class Scanner {
             }
             break;
           default:
+            if (fCurrentChar >= '\u2308' && fCurrentChar <= '\u230B') {
+              // ⌈x⌉ and ⌊x⌋ enclose one expression, like parentheses
+              fToken = fCurrentChar == '\u2308' ? TT_CEILING_OPEN
+                  : fCurrentChar == '\u2309' ? TT_CEILING_CLOSE
+                      : fCurrentChar == '\u230A' ? TT_FLOOR_OPEN : TT_FLOOR_CLOSE;
+              return;
+            }
             if (isOperatorCharacters()) {
               fOperList = getOperator();
               fToken = TT_OPERATOR;
@@ -1268,9 +1286,10 @@ public abstract class Scanner {
       throwSyntaxError("string -" + ident.toString() + "- contains no character.");
     }
     if (fCurrentChar == '\n') {
-      // A string may begin with a newline. Wolfram Language sources write multi-line text that way
-      // - a usage message, or the HTML a template builds - and the newline is part of the string,
-      // so it is counted here and appended by the loop below like any other character.
+      // A string may begin with a newline. Multi-line text sources
+      // are written that way - a usage message, or the HTML a template builds - and the newline is
+      // part of the string, so it is counted here and appended by the loop below like any other
+      // character.
       fRowCounter++;
       fCurrentColumnStartPosition = fCurrentPosition;
     }
@@ -1293,6 +1312,10 @@ public abstract class Scanner {
               break;
             case 't':
               ident.append('\t');
+              break;
+            case ' ':
+              // "a\ b" is "a b", as in WMA: the backslash only marks the space
+              ident.append(' ');
               break;
             case '\"':
               ident.append('\"');

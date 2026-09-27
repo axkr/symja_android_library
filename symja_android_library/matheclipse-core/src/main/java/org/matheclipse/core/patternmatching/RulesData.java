@@ -6,6 +6,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -186,6 +187,10 @@ public final class RulesData implements Serializable {
    * the epoch did not change while it was built.
    */
   private transient volatile int fRuleIndexEpoch;
+
+  /** Increments {@link #fRuleIndexEpoch} atomically: concurrent invalidations must not merge. */
+  private static final AtomicIntegerFieldUpdater<RulesData> RULE_INDEX_EPOCH =
+      AtomicIntegerFieldUpdater.newUpdater(RulesData.class, "fRuleIndexEpoch");
 
   /**
    * <code>true</code> as soon as one up-value was installed anywhere in this JVM.
@@ -690,7 +695,7 @@ public final class RulesData implements Serializable {
 
   /** Discard the rule index; called by everything which changes {@link #fPatternDownRules}. */
   private void invalidateRuleIndex() {
-    fRuleIndexEpoch++;
+    RULE_INDEX_EPOCH.incrementAndGet(this);
     fRuleIndex = null;
     fRuleIndexUnusable = false;
   }

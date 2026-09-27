@@ -192,7 +192,7 @@ public class Parser extends Scanner {
    * Asks the operator, not the token text. A unicode spelling is registered as a second token for
    * the very same operator instance, so testing the text made the chaining loops skip
    * <code>a \u2264 b \u2264 c</code> while running for <code>a &lt;= b &lt;= c</code> - the first
-   * nested, the second flattened, for what Wolfram treats as one expression.
+   * nested, the second flattened.
    */
   private boolean isComparatorToken() {
     InfixOperator infixOperator = determineBinaryOperator();
@@ -259,6 +259,27 @@ public class Parser extends Scanner {
           return getFunctionArguments(temp);
         }
         return temp;
+
+      case TT_FLOOR_OPEN:
+      case TT_CEILING_OPEN: {
+        // ⌊x⌋ is Floor(x) and ⌈x⌉ is Ceiling(x)
+        final boolean floor = fToken == TT_FLOOR_OPEN;
+        fRecursionDepth++;
+        try {
+          getNextToken();
+          temp = parseExpression();
+          if (fToken != (floor ? TT_FLOOR_CLOSE : TT_CEILING_CLOSE)) {
+            throwSyntaxError(floor ? "'\u230B' expected." : "'\u2309' expected.");
+          }
+        } finally {
+          fRecursionDepth--;
+        }
+        getNextToken();
+        final FunctionNode rounded =
+            fFactory.createFunction(fFactory.createSymbol(floor ? "Floor" : "Ceiling"));
+        rounded.add(temp);
+        return rounded;
+      }
 
       case TT_LIST_OPEN:
         return parseArguments(getList());
@@ -718,10 +739,10 @@ public class Parser extends Scanner {
    * Read <code>= .</code> as the <code>=.</code> that means <code>Unset</code>.
    *
    * <p>
-   * An operator token is one run of operator characters, so a space between the two - which the
-   * Wolfram Language allows, and packages write - made the <code>.</code> the start of a number
-   * instead. Only a <code>.</code> that begins nothing else counts: <code>x = .5</code> is a
-   * number, and <code>x = ..</code> is not an unset.
+   * An operator token is one run of operator characters, so a space between the two and packages
+   * write - made the <code>.</code> the start of a number instead. Only a <code>.</code> that
+   * begins nothing else counts: <code>x = .5</code> is a number, and <code>x = ..</code> is not an
+   * unset.
    *
    * @param afterOperator the position just after the <code>=</code>
    * @return the position just after the <code>.</code>, or <code>-1</code> if this is not an unset
@@ -922,17 +943,39 @@ public class Parser extends Scanner {
     while (fToken == TT_PARTOPEN) {
       function = null;
       do {
-      if (function == null) {
-        function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
-      } else {
-        function =
-            fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), function);
-      }
+        if (function == null) {
+          function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), temp);
+        } else {
+          function =
+              fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Part), function);
+        }
 
-      fRecursionDepth++;
-      try {
-        do {
-          getNextToken();
+        fRecursionDepth++;
+        try {
+          do {
+            getNextToken();
+
+            if (fToken == TT_ARGUMENTS_CLOSE) {
+              skipWhitespace();
+              // scanner-step begin: (instead of getNextToken() call):
+              if (fInputString.length > fCurrentPosition) {
+                if (fInputString[fCurrentPosition] == ']') {
+                  fCurrentPosition++;
+                  getNextToken();
+                  // fToken = TT_PARTCLOSE;
+                  return function;
+                }
+              }
+              // scanner-step end
+              // if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] ==
+              // ']')
+              // {
+              // throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
+              // }
+            }
+
+            function.add(parseExpression());
+          } while (fToken == TT_COMMA);
 
           if (fToken == TT_ARGUMENTS_CLOSE) {
             skipWhitespace();
@@ -940,39 +983,18 @@ public class Parser extends Scanner {
             if (fInputString.length > fCurrentPosition) {
               if (fInputString[fCurrentPosition] == ']') {
                 fCurrentPosition++;
-                getNextToken();
-                // fToken = TT_PARTCLOSE;
-                return function;
+                fToken = TT_PARTCLOSE;
               }
             }
             // scanner-step end
-            // if (fInputString.length > fCurrentPosition && fInputString[fCurrentPosition] == ']')
-            // {
-            // throwSyntaxError("Statement (i.e. index) expected in [[ ]].");
-            // }
           }
-
-          function.add(parseExpression());
-        } while (fToken == TT_COMMA);
-
-        if (fToken == TT_ARGUMENTS_CLOSE) {
-          skipWhitespace();
-          // scanner-step begin: (instead of getNextToken() call):
-          if (fInputString.length > fCurrentPosition) {
-            if (fInputString[fCurrentPosition] == ']') {
-              fCurrentPosition++;
-              fToken = TT_PARTCLOSE;
-            }
+          if (fToken != TT_PARTCLOSE) {
+            throwSyntaxError("']]' expected.");
           }
-          // scanner-step end
+        } finally {
+          fRecursionDepth--;
         }
-        if (fToken != TT_PARTCLOSE) {
-          throwSyntaxError("']]' expected.");
-        }
-      } finally {
-        fRecursionDepth--;
-      }
-      getNextToken();
+        getNextToken();
       } while (fToken == TT_PARTOPEN);
 
       // whatever is applied to the part, as in t[[i]]["key"]; the loop then reads a part applied
@@ -1260,7 +1282,7 @@ public class Parser extends Scanner {
   private boolean isOperandStart() {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_IDENTIFIER
         || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
-        || fToken == TT_SLOTSEQUENCE;
+        || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN;
   }
 
   private ASTNode parseExpression(ASTNode lhs, final int min_precedence) {
@@ -1306,6 +1328,10 @@ public class Parser extends Scanner {
       }
       if (fToken == TT_DERIVATIVE) {
         lhs = parseDerivative(lhs);
+        // f'[x] may be followed by a juxtaposed factor (f'[x] g[x]), another operator or a span,
+        // so the climb starts over; falling through to the operator test made f'[x] g[x] a syntax
+        // error and f'[x] == g'[x] h[x] the product (f'[x] == g'[x])*h[x]
+        continue;
       }
       if (fToken != TT_OPERATOR) {
         break;

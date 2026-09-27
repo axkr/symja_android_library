@@ -6,10 +6,12 @@ import java.util.List;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.PlotRangePaddingSpec;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.manipulate.Dynamics;
 
 /**
  * The options of a {@code Graphics3D} expression, parsed into plain fields.
@@ -146,10 +148,14 @@ public final class GraphicsOptions3D {
    * The style every primitive starts from, or {@code null} when there is none.
    *
    * <p>
-   * {@code BaseStyle} is the style the contents inherit before any directive of their own, which
-   * is what makes {@code BaseStyle -> Red} colour a whole graphic without touching its primitives.
+   * {@code BaseStyle} is the style the contents inherit before any directive of their own, which is
+   * what makes {@code BaseStyle -> Red} colour a whole graphic without touching its primitives.
    */
   public IExpr baseStyle = null;
+
+  /** {@code IntervalMarkers} and {@code IntervalMarkersStyle}, or {@code null} when not given. */
+  public IExpr intervalMarkers = null;
+  public IExpr intervalMarkersStyle = null;
 
   /** Field of view in degrees, or {@code NaN} to let the renderer fit the scene. */
   public double viewAngle = Double.NaN;
@@ -183,7 +189,8 @@ public final class GraphicsOptions3D {
       }
       IAST rule = (IAST) arg;
       IExpr key = rule.arg1();
-      IExpr value = rule.arg2();
+      // PlotRange -> Dynamic[r] is drawn with the current value of r, not as if it were absent
+      IExpr value = Dynamics.currentValue(rule.arg2());
       if (!key.isBuiltInSymbol()) {
         continue;
       }
@@ -311,6 +318,12 @@ public final class GraphicsOptions3D {
         case ID.BaseStyle:
           baseStyle = value.isNone() ? null : value;
           break;
+        case ID.IntervalMarkers:
+          intervalMarkers = value;
+          break;
+        case ID.IntervalMarkersStyle:
+          intervalMarkersStyle = value;
+          break;
         case ID.ViewPoint:
           parseViewPoint(value);
           break;
@@ -365,7 +378,7 @@ public final class GraphicsOptions3D {
     }
     if (lighting == null && ast.argSize() >= 1 && !ast.arg1().isFree(
         x -> x.isRuleAST() && x.first() == org.matheclipse.core.expression.S.Lighting, false)) {
-      // Surfaces which carry lights of their own colour, the way a Mathematica ContourPlot3D writes
+      // Surfaces which carry lights of their own colour, the way ContourPlot3D writes
       // them, and no Lighting for the picture: this renderer lights a whole scene alike, so it
       // lights them neutrally, which keeps each surface its own colour - the point of those lights.
       lighting = org.matheclipse.core.expression.F.stringx("Neutral");
@@ -636,8 +649,8 @@ public final class GraphicsOptions3D {
         if (a != null && b != null && c != null) {
           double[] u = {b[0] - a[0], b[1] - a[1], b[2] - a[2]};
           double[] v = {c[0] - a[0], c[1] - a[1], c[2] - a[2]};
-          double[] n = {u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2],
-              u[0] * v[1] - u[1] * v[0]};
+          double[] n =
+              {u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]};
           double length = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
           if (length > 1e-12) {
             return new double[] {n[0] / length, n[1] / length, n[2] / length,
@@ -852,8 +865,8 @@ public final class GraphicsOptions3D {
   }
 
   /**
-   * The transparency an {@code Opacity} inside a style specification asks for, or {@code NaN}
-   * when it names none.
+   * The transparency an {@code Opacity} inside a style specification asks for, or {@code NaN} when
+   * it names none.
    *
    * <p>
    * {@code Opacity[o, colour]} is a colour rather than a directive, and its transparency reaches
@@ -964,17 +977,29 @@ public final class GraphicsOptions3D {
       return null;
     }
     IAST list = (IAST) expr;
-    double x = ColorUtil.dbl(list.arg1(), Double.NaN);
-    double y = ColorUtil.dbl(list.arg2(), Double.NaN);
-    double z = ColorUtil.dbl(list.arg3(), Double.NaN);
+    double x = coordinate(list.arg1());
+    double y = coordinate(list.arg2());
+    double z = coordinate(list.arg3());
     if (!Double.isFinite(x) || !Double.isFinite(y) || !Double.isFinite(z)) {
       return null;
     }
     return new double[] {x, y, z};
   }
 
+  /** A number, or the centre of an {@code Around}, {@code Interval} or {@code IntervalData}. */
+  static double coordinate(IExpr expr) {
+    if (expr.isAST() && UncertainValue.isUncertain(expr)) {
+      return UncertainValue.center(expr);
+    }
+    return ColorUtil.dbl(expr, Double.NaN);
+  }
+
   /** The plain text of a label expression, with the quotes a string carries removed. */
   public static String text(IExpr expr) {
+    while ((expr.isAST(S.Rotate) || expr.isAST(S.Style)) && ((IAST) expr).argSize() >= 1) {
+      // a rotated or styled label is drawn as its text
+      expr = expr.first();
+    }
     if (expr.isString()) {
       return expr.toString();
     }

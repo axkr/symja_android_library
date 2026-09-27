@@ -6,7 +6,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.data.FittedModelExpr;
+import org.matheclipse.core.expression.data.AbstractFittedModelExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -18,9 +18,9 @@ public class FittedModel extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr head = ast.head();
-    if (head instanceof FittedModelExpr) {
+    if (head instanceof AbstractFittedModelExpr) {
       try {
-        return ((FittedModelExpr) head).evaluate(ast, engine);
+        return ((AbstractFittedModelExpr<?>) head).evaluate(ast, engine);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.FittedModel, rex, engine);

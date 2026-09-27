@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * What a <code>PacletInfo.wl</code> (or <code>PacletInfo.m</code>) says about a paclet: its name and
- * version, where it lives, and which Wolfram Language context each of its files provides.
+ * What a <code>PacletInfo.wl</code> (or <code>PacletInfo.m</code>) says about a paclet: its name
+ * and version, where it lives, and which script context each of its files provides.
  *
  * <p>
- * Only the "Kernel" extension is read. That is the one that says where a context's code is, which is
- * what <code>Needs</code> has to know; the other extensions describe documentation and front-end
+ * Only the "Kernel" extension is read. That is the one that says where a context's code is, which
+ * is what <code>Needs</code> has to know; the other extensions describe documentation and front-end
  * resources that Symja has no use for.
  */
 public final class PacletInfo {
@@ -78,8 +78,8 @@ public final class PacletInfo {
    *
    * <p>
    * A context declared without a file name is looked for by the usual conventions:
-   * <code>A`B`</code> lives in <code>A/B.wl</code>, in <code>B.wl</code> beside the paclet, or in an
-   * <code>init.m</code> of its own directory.
+   * <code>A`B`</code> lives in <code>A/B.wl</code>, in <code>B.wl</code> beside the paclet, or in
+   * an <code>init.m</code> of its own directory.
    */
   public Path fileFor(String context) {
     for (ContextFile contextFile : contexts) {

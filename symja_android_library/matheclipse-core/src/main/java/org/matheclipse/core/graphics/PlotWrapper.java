@@ -1,5 +1,6 @@
 package org.matheclipse.core.graphics;
 
+import java.util.List;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -255,6 +256,27 @@ public final class PlotWrapper {
     }
 
     /**
+     * These curves with every function replaced by the curves it splits into, each carrying the
+     * tooltip of the function it came from.
+     */
+    public Curves splitEach(java.util.function.Function<IExpr, List<IExpr>> splitter) {
+      IASTAppendable split = F.ListAlloc(functions.argSize());
+      List<IExpr> splitTooltips = new java.util.ArrayList<>();
+      splitTooltips.add(null);
+      for (int i = 1; i <= functions.argSize(); i++) {
+        for (IExpr curve : splitter.apply(functions.get(i))) {
+          split.append(curve);
+          splitTooltips.add(tooltips[i]);
+        }
+      }
+      if (split.argSize() == functions.argSize()) {
+        // nothing was split; the same functions may still have been rewritten, so keep them
+        return new Curves(split, tooltips);
+      }
+      return new Curves(split, splitTooltips.toArray(new IExpr[0]));
+    }
+
+    /**
      * The finished primitive of curve {@code i}, wrapped as a caller could have typed it.
      *
      * <p>
@@ -286,5 +308,25 @@ public final class PlotWrapper {
       tooltips[i] = outer.tooltipOf(each);
     }
     return new Curves(stripped, tooltips);
+  }
+
+  /**
+   * The curves (or surfaces) a first argument describes, in order.
+   *
+   * <p>
+   * A list whose first entry is itself a list is a list of curves rather than one curve, and that
+   * holds at every level: substituting a solution into a curve, {@code {x(t), y(t), t} /. sol},
+   * wraps it in one more list, because a solution is a list of rule lists. Flattening those groups
+   * is what lets {@code {c1 /. sol, c2 /. sol, c3 /. sol}} draw three curves instead of none.
+   */
+  public static void collectCurves(IExpr spec, List<IExpr> out) {
+    if (spec.isList() && ((IAST) spec).argSize() > 0
+        && PlotWrapper.strip(((IAST) spec).arg1()).isList()) {
+      for (IExpr item : (IAST) spec) {
+        collectCurves(item, out);
+      }
+      return;
+    }
+    out.add(spec);
   }
 }

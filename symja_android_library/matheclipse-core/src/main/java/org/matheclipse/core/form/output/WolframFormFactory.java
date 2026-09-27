@@ -31,7 +31,7 @@ public class WolframFormFactory extends OutputFormFactory {
 
     String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbol.getSymbolName());
     if (str != null) {
-      // assuming Wolfram language built-in function
+      // assuming WMA language built-in function
       append(buf, str);
       return;
     }
@@ -49,19 +49,18 @@ public class WolframFormFactory extends OutputFormFactory {
   }
 
   /**
-   * Render the non-finite machine doubles as the symbols the Wolfram Language uses for them, and
-   * everything else the way {@link OutputFormFactory} does.
+   * Render the non-finite machine doubles as the symbols the WMA uses for them, and everything else
+   * the way {@link OutputFormFactory} does.
    *
    * <p>
    * The inherited input form appends the precision marker to whatever
    * {@link Double#toString(double)} produced, turning the three non-finite values into
-   * <code>Infinity`</code>,
-   * <code>-Infinity`</code> and <code>NaN`</code>. Symja reads all three back, so its own
-   * <code>InputForm</code> is right to print them; the Wolfram Language does not. There a backtick
-   * separates a context from a symbol rather than marking precision, so <code>Infinity`</code> is
-   * not a number at all, and <code>NaN</code> is not a symbol it knows &mdash; the name is
-   * <code>Indeterminate</code>. Bridging differences of exactly this kind is what this class is
-   * for; it already does it for symbol names and for pattern objects.
+   * <code>Infinity`</code>, <code>-Infinity`</code> and <code>NaN`</code>. Symja reads all three
+   * back, so its own <code>InputForm</code> is right to print them; the WMA does not. There a
+   * backtick separates a context from a symbol rather than marking precision, so
+   * <code>Infinity`</code> is not a number at all, and <code>NaN</code> is not a symbol it knows
+   * &mdash; the name is <code>Indeterminate</code>. Bridging differences of exactly this kind is
+   * what this class is for; it already does it for symbol names and for pattern objects.
    *
    * <p>
    * The substitutions are the ones Symja itself displays for these values in
@@ -122,7 +121,7 @@ public class WolframFormFactory extends OutputFormFactory {
     }
   }
 
-  /** Append {@code value} as Wolfram Language input, naming the non-finite values symbolically. */
+  /** Append {@code value} as input, naming the non-finite values symbolically. */
   private void appendNonFinite(final Appendable buf, final double value) throws IOException {
     if (Double.isNaN(value)) {
       append(buf, "Indeterminate");

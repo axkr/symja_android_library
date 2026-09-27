@@ -16,12 +16,11 @@ import org.matheclipse.core.interfaces.ISymbol;
  * gets at the sample point {@code z}.
  *
  * <p>
- * A colour is made of two independent parts, the way the Wolfram Language describes them. The
- * <b>base colour</b> comes from {@code Arg(f)} running round the colour wheel - red on the positive
- * real axis, counterclockwise - or from a colour function the caller supplied. The <b>shading</b>
- * then lightens or darkens that colour to bring out a feature: how large {@code Abs(f)} is, or
- * which band of {@code Log(Abs(f))} the point falls in. {@code ColorFunction -> {cfunc, sfunc}}
- * names the two separately.
+ * A colour is made of two independent parts. The <b>base colour</b> comes from {@code Arg(f)}
+ * running round the colour wheel - red on the positive real axis, counterclockwise - or from a
+ * colour function the caller supplied. The <b>shading</b> then lightens or darkens that colour to
+ * bring out a feature: how large {@code Abs(f)} is, or which band of {@code Log(Abs(f))} the point
+ * falls in. {@code ColorFunction -> {cfunc, sfunc}} names the two separately.
  *
  * <p>
  * The shading is a single signed factor. Negative blends the base colour towards black, positive
@@ -38,7 +37,7 @@ public final class ComplexColoring {
 
   // --------------------------------------------------------------- tunable constants
   //
-  // The Wolfram Language documents which quantity each scheme cycles over but never the period,
+  // Documents which quantity each scheme cycles over but never the period,
   // the count, or the amplitude, so every constant here was chosen by eye against the reference
   // pictures rather than derived. They are the knobs to turn when the look needs adjusting.
 
@@ -57,7 +56,9 @@ public final class ComplexColoring {
   /** The lightest point of a light cycle, as a fraction of the way to white. */
   static final double CYCLE_LIGHT = 0.5;
 
-  /** Softness of the {@code Automatic} shading, in units of {@code Log(Abs(f))}. Larger is gentler. */
+  /**
+   * Softness of the {@code Automatic} shading, in units of {@code Log(Abs(f))}. Larger is gentler.
+   */
   static final double AUTOMATIC_SOFTNESS = 3.0;
 
   /** The quantile of {@code Abs(f)} above which {@code "LocalMaxAbs"} starts to lighten. */
@@ -75,7 +76,7 @@ public final class ComplexColoring {
   /** {@code Log(Abs(f))} at {@code Abs(f) == 0}, so that the cyclic schemes stay defined there. */
   private static final double MIN_LOG_ABS = Math.log(Double.MIN_NORMAL);
 
-  /** The shading schemes, under the names the Wolfram Language gives them. */
+  /** The shading schemes. */
   public enum Shading {
     /** Gentle shading by {@code Abs(f)}: zeros dark, poles light. */
     AUTOMATIC("Automatic"),
@@ -100,15 +101,15 @@ public final class ComplexColoring {
     /** Cyclic bands of {@code Log(Abs(f))}, but only outside {@code Abs(f) <= 1}. */
     SHIFTED_CYCLIC_LOG_ABS("ShiftedCyclicLogAbs");
 
-    private final String wolframName;
+    private final String scriptName;
 
-    Shading(String wolframName) {
-      this.wolframName = wolframName;
+    Shading(String scriptName) {
+      this.scriptName = scriptName;
     }
 
-    /** The name the Wolfram Language uses for this scheme. */
-    public String wolframName() {
-      return wolframName;
+    /** The name the script language uses for this scheme. */
+    public String scriptName() {
+      return scriptName;
     }
 
     /**
@@ -118,7 +119,7 @@ public final class ComplexColoring {
     public static Shading byName(String name) {
       if (name != null) {
         for (Shading shading : values()) {
-          if (shading.wolframName.equalsIgnoreCase(name)) {
+          if (shading.scriptName.equalsIgnoreCase(name)) {
             return shading;
           }
         }
@@ -137,7 +138,9 @@ public final class ComplexColoring {
   private final BaseColor base;
   private final boolean scaled;
 
-  /** The sampled rectangle, {@code {x0, x1, y0, y1}}, which scales {@code Re(z)} and {@code Im(z)}. */
+  /**
+   * The sampled rectangle, {@code {x0, x1, y0, y1}}, which scales {@code Re(z)} and {@code Im(z)}.
+   */
   private final double[] plotBox;
 
   /** Every finite {@code Abs(f)} that was observed; sorted by {@link #prepare}. */
@@ -165,12 +168,11 @@ public final class ComplexColoring {
    * Read the {@code ColorFunction} and {@code ColorFunctionScaling} of a complex plot.
    *
    * <p>
-   * A name this class knows selects a shading scheme over the default hue. A name
-   * {@code ColorData} knows is a gradient, and colours the plot by phase with no shading, which is
-   * what a caller writing {@code ColorFunction -> "Rainbow"} is asking for. A function colours the
-   * plot itself and is shaded automatically, the way the Wolfram Language treats a bare function.
-   * A name that is neither falls back to {@code Automatic} and says so once, rather than drawing
-   * nothing.
+   * A name this class knows selects a shading scheme over the default hue. A name {@code ColorData}
+   * knows is a gradient, and colours the plot by phase with no shading, which is what a caller
+   * writing {@code ColorFunction -> "Rainbow"} is asking for. A function colours the plot itself
+   * and is shaded automatically. A name that is neither falls back to {@code Automatic} and says so
+   * once, rather than drawing nothing.
    *
    * @param plotBox the sampled rectangle {@code {x0, x1, y0, y1}}
    * @param plotSymbol the plot an unknown name is reported against
@@ -204,8 +206,7 @@ public final class ComplexColoring {
     if (colorFunction.isList() && ((IAST) colorFunction).argSize() == 2) {
       return true;
     }
-    return colorFunction.isString()
-        && Shading.byName(colorFunction.toString()) != null;
+    return colorFunction.isString() && Shading.byName(colorFunction.toString()) != null;
   }
 
   /** The shading half of the option, given the base colour half for the bare forms. */
@@ -240,7 +241,7 @@ public final class ComplexColoring {
       return gradientFunction(colorSpec, engine) != null ? Shading.NONE
           : unknownShading(colorSpec, plotSymbol, engine);
     }
-    // a bare function is a base colour, and the Wolfram Language shades it automatically
+    // a bare function is a base colour, and shaded automatically
     return Shading.AUTOMATIC;
   }
 
@@ -285,9 +286,9 @@ public final class ComplexColoring {
   // --------------------------------------------------------------- sampling
 
   /**
-   * Record one sample, so that the scaling and the schemes that need the distribution of the
-   * values have something to work from. A pole - a value that is not finite - is counted as a
-   * sample but contributes no magnitude.
+   * Record one sample, so that the scaling and the schemes that need the distribution of the values
+   * have something to work from. A pole - a value that is not finite - is counted as a sample but
+   * contributes no magnitude.
    */
   public void observe(double re, double im, double fre, double fim) {
     maxAbsZ = Math.max(maxAbsZ, Math.hypot(re, im));
@@ -462,11 +463,11 @@ public final class ComplexColoring {
    * A colour function the caller supplied.
    *
    * <p>
-   * The Wolfram Language hands such a function eight arguments - the real part, imaginary part,
-   * magnitude and phase of the sample point, then the same four of the value - so that a colour can
-   * be built out of whichever of them the picture is about. A gradient takes one argument instead,
-   * the phase, which is the older and much more common spelling. Which of the two a function wants
-   * is settled by trying and remembered, exactly as the surface plots do it.
+   * Such a function has eight arguments - the real part, imaginary part, magnitude and phase of the
+   * sample point, then the same four of the value - so that a colour can be built out of whichever
+   * of them the picture is about. A gradient takes one argument instead, the phase, which is the
+   * older and much more common spelling. Which of the two a function wants is settled by trying and
+   * remembered, exactly as the surface plots do it.
    */
   private final class FunctionColor implements BaseColor {
     private final IExpr function;
@@ -484,11 +485,12 @@ public final class ComplexColoring {
     @Override
     public float[] rgb(double re, double im, double fre, double fim) {
       if (arity != 1) {
-        float[] full = tryApply(F.ast(new IExpr[] {F.num(scale(re, plotBox[0], plotBox[1])),
-            F.num(scale(im, plotBox[2], plotBox[3])),
-            F.num(scale(Math.hypot(re, im), 0.0, maxAbsZ)), F.num(scaledArg(im, re)),
-            F.num(scale(fre, minRe, maxRe)), F.num(scale(fim, minIm, maxIm)),
-            F.num(scale(Math.hypot(fre, fim), minAbs, maxAbs)), F.num(scaledArg(fim, fre))},
+        float[] full = tryApply(F.ast(
+            new IExpr[] {F.num(scale(re, plotBox[0], plotBox[1])),
+                F.num(scale(im, plotBox[2], plotBox[3])),
+                F.num(scale(Math.hypot(re, im), 0.0, maxAbsZ)), F.num(scaledArg(im, re)),
+                F.num(scale(fre, minRe, maxRe)), F.num(scale(fim, minIm, maxIm)),
+                F.num(scale(Math.hypot(fre, fim), minAbs, maxAbs)), F.num(scaledArg(fim, fre))},
             function));
         if (full != null) {
           arity = 8;

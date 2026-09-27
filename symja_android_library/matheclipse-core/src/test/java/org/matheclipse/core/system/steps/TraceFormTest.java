@@ -102,8 +102,7 @@ public class TraceFormTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMathMLForm() {
-    // through MathMLUtilities, the way the servlets reach the MathML factory. Note that the
-    // MathMLForm() function does not evaluate its argument, so it cannot be used here.
+    // through MathMLUtilities, the way the servlets reach the MathML factory
     EvalEngine engine = EvalEngine.get();
     IExpr traceForm = engine.evaluate(engine.parse("TraceForm(D(x^2,x))"));
     StringBuilderWriter out = new StringBuilderWriter();

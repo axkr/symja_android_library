@@ -63,6 +63,19 @@ public class Dynamics {
     return isDynamic(expr) ? ((IAST) expr).arg1() : expr;
   }
 
+  /**
+   * The value an option of a picture has now: <code>PlotRange -> Dynamic[r]</code> is drawn with
+   * the current value of <code>r</code>, the way a front end shows it, rather than as if the option
+   * were not there at all. An option without a <code>Dynamic</code> in it is returned untouched and
+   * unevaluated.
+   */
+  public static IExpr currentValue(IExpr value) {
+    if (!containsDynamic(value)) {
+      return value;
+    }
+    return resolve(value, EvalEngine.get());
+  }
+
   /** Whether a <code>Dynamic</code> appears anywhere inside <code>expr</code>. */
   public static boolean containsDynamic(IExpr expr) {
     if (isDynamic(expr)) {
@@ -283,6 +296,68 @@ public class Dynamics {
       return paneSelector.arg3();
     }
     return F.stringx("");
+  }
+
+  /**
+   * The position, from one, of the tab a <code>TabView</code> is showing.
+   *
+   * <p>
+   * <code>TabView[{lbl1 -&gt; e1, ...}, i]</code> shows its <code>i</code>th pane, and
+   * <code>TabView[{v1 -&gt; {lbl1, e1}, ...}, v]</code> the pane whose value is <code>v</code>. The
+   * selector may be a <code>Dynamic</code>, and is read at its current value; one that names no
+   * pane - an unset variable, a position past the end - shows the first, as a front end does.
+   *
+   * @return the position, or <code>0</code> when the expression is no <code>TabView</code> of panes
+   */
+  public static int selectedTab(IAST tabView, EvalEngine engine) {
+    if (tabView.argSize() < 1 || !tabView.arg1().isList() || tabView.arg1().argSize() == 0) {
+      return 0;
+    }
+    IAST panes = (IAST) tabView.arg1();
+    if (tabView.argSize() < 2 || tabView.arg2().isRuleAST()) {
+      return 1;
+    }
+    IExpr selector = evaluateQuietly(release(tabView.arg2()), engine);
+    if (!selector.isPresent()) {
+      return 1;
+    }
+    for (int i = 1; i < panes.size(); i++) {
+      IExpr pane = panes.get(i);
+      if ((pane.isRule() || pane.isRuleDelayed()) && ((IAST) pane).arg2().isList()
+          && ((IAST) pane).arg2().argSize() == 2 && pane.first().equals(selector)) {
+        return i;
+      }
+    }
+    int position = selector.toIntDefault();
+    return position >= 1 && position < panes.size() ? position : 1;
+  }
+
+  /**
+   * The label and the contents of a <code>TabView</code>'s pane number {@code i}, from one: a
+   * <code>lbl -&gt; e</code> pane, a keyed <code>v -&gt; {lbl, e}</code> one when it was selected by
+   * its key, or a bare pane labelled by its position.
+   */
+  public static IExpr[] tabPane(IAST tabView, int i, boolean keyed) {
+    IExpr pane = ((IAST) tabView.arg1()).get(i);
+    if (pane.isRule() || pane.isRuleDelayed()) {
+      IExpr contents = ((IAST) pane).arg2();
+      if (keyed && contents.isList() && contents.argSize() == 2) {
+        return new IExpr[] {contents.first(), contents.second()};
+      }
+      return new IExpr[] {pane.first(), contents};
+    }
+    return new IExpr[] {F.ZZ(i), pane};
+  }
+
+  /** Whether a <code>TabView</code> was selected by one of its keys rather than by a position. */
+  public static boolean isKeyedTab(IAST tabView, int i, EvalEngine engine) {
+    if (tabView.argSize() < 2 || i < 1) {
+      return false;
+    }
+    IExpr pane = ((IAST) tabView.arg1()).get(i);
+    IExpr selector = evaluateQuietly(release(tabView.arg2()), engine);
+    return (pane.isRule() || pane.isRuleDelayed()) && ((IAST) pane).arg2().isList()
+        && ((IAST) pane).arg2().argSize() == 2 && pane.first().equals(selector);
   }
 
   /**

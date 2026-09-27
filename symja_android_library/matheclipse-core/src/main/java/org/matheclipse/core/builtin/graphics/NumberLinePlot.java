@@ -162,7 +162,7 @@ public class NumberLinePlot extends ListPlot {
       if (!Double.isFinite(spacing) || spacing <= 0) {
         spacing = 1.0;
       }
-      IExpr markers = GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic);
+      IExpr markers = GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None);
 
       for (int i = 1; i < numLevels; i++) {
         IExpr levelItem = levels.get(i);
@@ -331,16 +331,17 @@ public class NumberLinePlot extends ListPlot {
     setOptions(newSymbol, optionSet.keys(), optionSet.values());
   }
 
-  /** The marker for one row of a {@code PlotMarkers} list, or {@link F#NIL} for the plain dot. */
+  /**
+   * The marker for one row of a {@code PlotMarkers} setting, or {@link F#NIL} for the plain dot.
+   *
+   * <p>
+   * The reading is the family's, so every setting the other plots take works here too - the rows
+   * are what the markers cycle over.
+   */
   private static IExpr markerAt(IExpr markers, int rowIndex) {
-    if (markers == null || markers == S.Automatic || markers.isNone()) {
-      return F.NIL;
-    }
-    if (markers.isList() && ((IAST) markers).argSize() > 0) {
-      IAST list = (IAST) markers;
-      return list.get(Math.floorMod(rowIndex, list.argSize()) + 1);
-    }
-    return markers;
+    org.matheclipse.core.graphics.PlotMarkersSpec spec =
+        org.matheclipse.core.graphics.PlotMarkersSpec.of(markers);
+    return spec == null ? F.NIL : spec.markerAt(rowIndex);
   }
 
   @Override

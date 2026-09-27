@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics;
 
+import java.util.List;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -7,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
@@ -32,6 +34,16 @@ public class DiscretePlot extends ListPlot {
       IAST iteratorList = (IAST) arg2;
       IExpr variable = iteratorList.arg1();
       if (variable.isVariable()) {
+        // f(n) with a value of {n, n^2} is two sequences, which only its value can say; the
+        // probes are the iterator's own values, where a function of an integer is defined
+        List<IExpr> written =
+            function.isList() ? ((IAST) function).asArgsList() : List.of(function);
+        List<IExpr> split = PlotShapeProbe.split(written,
+            PlotShapeProbe.iteratorProbes(new IAST[] {iteratorList}, engine),
+            PlotShapeProbe.SCALAR, false, engine);
+        if (split.size() != written.size()) {
+          function = F.List(split.toArray(new IExpr[0]));
+        }
         IExpr tableValues;
         if (function.isList()) {
           IASTMutable listPlotPoints = ((IAST) function).copy();
@@ -61,7 +73,7 @@ public class DiscretePlot extends ListPlot {
           // PlotMarkers and Mesh are family options appended after the positional block, so they
           // are read from the call rather than by index
           graphicsOptions
-              .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+              .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
           graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
           graphicsOptions.readColorFunction(originalAST);
           graphicsOptions.applyPlotTheme(originalAST);

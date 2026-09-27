@@ -39,6 +39,20 @@ public class InverseFunctionExpander {
   }
 
   /**
+   * Whether <code>value</code> is a value a variable can take. Inverting a function for a value it
+   * never takes gives a value which is not finite, so that the equation has no solution at all:
+   * <code>Coth(x) == -1</code> gives <code>x == ArcCoth(-1) == -Infinity</code>,
+   * <code>Sech(x) == 0</code> gives <code>x == ArcSech(0) == Infinity</code> and
+   * <code>E^x == 0</code> gives <code>x == Log(0) == -Infinity</code>.
+   *
+   * @param value the value of an inverse function
+   */
+  public static boolean isFiniteValue(IExpr value) {
+    return value.isFree(x -> x.isDirectedInfinity() || x.isIndeterminate() || x == S.Undefined,
+        true);
+  }
+
+  /**
    * Substitute the dummy {@link ExprAnalyzer#$InverseFunction} in the <code>expr</code> with the
    * inverse function associated with the <code>symbol</code>.
    *
@@ -104,6 +118,10 @@ public class InverseFunctionExpander {
                 F.Plus(F.ArcCoth(arg), F.Times(F.CI, S.Pi, c_n)), //
                 c1Integers);
           case ID.Csc:
+            if (arg.isZero()) {
+              // Csc never takes the value 0; the solution is dropped as not finite
+              return F.CComplexInfinity;
+            }
             return F.List(//
                 F.ConditionalExpression(//
                     F.Plus(S.Pi, F.Negate(F.ArcSin(F.Power(arg, F.CN1))), F.Times(2, S.Pi, c_n)), //
@@ -112,6 +130,10 @@ public class InverseFunctionExpander {
                     F.Plus(F.ArcSin(F.Power(arg, F.CN1)), F.Times(2, S.Pi, c_n)), //
                     c1Integers));
           case ID.Csch:
+            if (arg.isZero()) {
+              // Csch never takes the value 0; the solution is dropped as not finite
+              return F.CComplexInfinity;
+            }
             return F.List(//
                 F.ConditionalExpression(//
                     F.Plus(F.Times(F.CI, S.Pi), F.Negate(F.ArcSinh(F.Power(arg, F.CN1))),
@@ -126,6 +148,10 @@ public class InverseFunctionExpander {
                 F.Power(S.E, arg), //
                 F.And(F.Less(F.CNPi, imArg), F.LessEqual(imArg, S.Pi)));
           case ID.Sec:
+            if (arg.isZero()) {
+              // Sec never takes the value 0; the solution is dropped as not finite
+              return F.CComplexInfinity;
+            }
             return F.List(//
                 F.ConditionalExpression(//
                     F.Plus(F.Negate(F.ArcCos(F.Power(arg, F.CN1))), F.Times(2, S.Pi, c_n)), //
@@ -134,6 +160,10 @@ public class InverseFunctionExpander {
                     F.Plus(F.ArcCos(F.Power(arg, F.CN1)), F.Times(2, S.Pi, c_n)), //
                     c1Integers));
           case ID.Sech:
+            if (arg.isZero()) {
+              // Sech never takes the value 0; the solution is dropped as not finite
+              return F.CComplexInfinity;
+            }
             return F.List(//
                 F.ConditionalExpression(//
                     F.Plus(F.Negate(F.ArcCosh(F.Power(arg, F.CN1))), F.Times(2, F.CI, S.Pi, c_n)), //

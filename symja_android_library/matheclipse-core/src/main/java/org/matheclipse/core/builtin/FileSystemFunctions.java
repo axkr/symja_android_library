@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -31,9 +31,9 @@ import org.matheclipse.core.io.FileSandbox;
  * manager needs to install them.
  *
  * <p>
- * <code>Directory[]</code> lives on the evaluation engine rather than in the process, because a Java
- * process cannot change its own working directory. Every relative name resolves against it, through
- * {@link FileSandbox}, so <code>SetDirectory</code> means what it says.
+ * <code>Directory[]</code> lives on the evaluation engine rather than in the process, because a
+ * Java process cannot change its own working directory. Every relative name resolves against it,
+ * through {@link FileSandbox}, so <code>SetDirectory</code> means what it says.
  */
 public class FileSystemFunctions {
 
@@ -150,7 +150,10 @@ public class FileSystemFunctions {
           if (Files.isDirectory(source)) {
             Files.createDirectories(target);
           } else {
-            Files.createDirectories(target.getParent());
+            final Path parent = target.getParent();
+            if (parent != null) {
+              Files.createDirectories(parent);
+            }
             Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
           }
         }
@@ -361,12 +364,11 @@ public class FileSystemFunctions {
   }
 
   /**
-   * <code>LibraryFunctionLoad[…]</code>: Symja has no LibraryLink, so no shared library ever
-   * loads.
+   * <code>LibraryFunctionLoad[…]</code>: Symja has no LibraryLink, so no shared library ever loads.
    *
    * <p>
-   * Answering <code>$Failed</code> rather than staying unevaluated is what lets a package fall
-   * back to a Wolfram Language implementation of the same function: the usual shape is
+   * Answering <code>$Failed</code> rather than staying unevaluated is what lets a package fall back
+   * to a implementation of the same function: the usual shape is
    * <code>If[FailureQ[f = LibraryFunctionLoad[…]], f = Compile[…]]</code>, and an unevaluated
    * <code>LibraryFunctionLoad</code> takes neither branch.
    */
@@ -619,8 +621,7 @@ public class FileSystemFunctions {
           continue;
         }
         final int from = minDepth;
-        try (Stream<Path> walk =
-            Files.walk(directory, maxDepth, FileVisitOption.FOLLOW_LINKS)) {
+        try (Stream<Path> walk = Files.walk(directory, maxDepth, FileVisitOption.FOLLOW_LINKS)) {
           walk.filter(p -> !p.equals(directory)) //
               .filter(p -> directory.relativize(p).getNameCount() >= from) //
               .filter(p -> {

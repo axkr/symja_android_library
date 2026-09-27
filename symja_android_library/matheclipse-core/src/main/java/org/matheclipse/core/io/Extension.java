@@ -143,7 +143,7 @@ public enum Extension {
         return DAT;
       }
       if (ucExtension.equals("TEXT")) {
-        // "Text" is what the Wolfram Language calls this format; TXT is the file name it uses
+        // "Text" is what the script language calls this format; TXT is the file name it uses
         return TXT;
       }
       if (ucExtension.equals("JPG")) {

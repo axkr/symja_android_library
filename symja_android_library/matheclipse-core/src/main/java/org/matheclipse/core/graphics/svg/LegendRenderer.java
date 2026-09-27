@@ -71,28 +71,12 @@ public final class LegendRenderer {
       drawBarLegend((IAST) spec, gradientId, parent);
       return;
     }
-    List<String> labels = new ArrayList<>();
+    List<String> labels = labels(spec);
     IExpr markerSource = spec;
     boolean swatch = spec.isAST(S.SwatchLegend);
-    if (spec.isAST() && spec.head().isBuiltInSymbol()) {
-      int id = ((IBuiltInSymbol) spec.head()).ordinal();
-      if (id == ID.LineLegend || id == ID.PointLegend || id == ID.SwatchLegend) {
-        // LineLegend[colours, labels]
-        IAST ast = (IAST) spec;
-        markerSource = ast.argSize() >= 1 ? ast.arg1() : spec;
-        if (ast.argSize() >= 2 && ast.arg2().isList()) {
-          IAST labelList = (IAST) ast.arg2();
-          for (int i = 1; i <= labelList.argSize(); i++) {
-            labels.add(PrimitiveCollector.unquote(labelList.get(i).toString()));
-          }
-        }
-      }
-    }
-    if (labels.isEmpty() && spec.isList()) {
-      IAST list = (IAST) spec;
-      for (int i = 1; i <= list.argSize(); i++) {
-        labels.add(PrimitiveCollector.unquote(list.get(i).toString()));
-      }
+    if (isListLegend(spec)) {
+      // LineLegend[colours, labels]
+      markerSource = spec.argSize() >= 1 ? ((IAST) spec).arg1() : spec;
     }
     if (labels.isEmpty()) {
       return;
@@ -102,8 +86,44 @@ public final class LegendRenderer {
     drawListLegend(labels, markerSource, swatch, line, parent);
   }
 
-  private void drawListLegend(List<String> labels, IExpr markerSource, boolean swatch,
-      boolean line, ContainerTag<?> parent) {
+  private static boolean isListLegend(IExpr spec) {
+    if (spec.isAST() && spec.head().isBuiltInSymbol()) {
+      int id = ((IBuiltInSymbol) spec.head()).ordinal();
+      return id == ID.LineLegend || id == ID.PointLegend || id == ID.SwatchLegend;
+    }
+    return false;
+  }
+
+  /**
+   * The entries of a <code>PlotLegends</code> value that names its curves one by one: a
+   * <code>LineLegend</code>, <code>PointLegend</code> or <code>SwatchLegend</code>, or a bare list
+   * of labels. Empty for anything else, a <code>BarLegend</code> among them.
+   */
+  public static List<String> labels(IExpr spec) {
+    List<String> labels = new ArrayList<>();
+    if (spec == null) {
+      return labels;
+    }
+    if (isListLegend(spec)) {
+      IAST ast = (IAST) spec;
+      if (ast.argSize() >= 2 && ast.arg2().isList()) {
+        IAST labelList = (IAST) ast.arg2();
+        for (int i = 1; i <= labelList.argSize(); i++) {
+          labels.add(LabelText.of(labelList.get(i)));
+        }
+      }
+    }
+    if (labels.isEmpty() && spec.isList()) {
+      IAST list = (IAST) spec;
+      for (int i = 1; i <= list.argSize(); i++) {
+        labels.add(LabelText.of(list.get(i)));
+      }
+    }
+    return labels;
+  }
+
+  private void drawListLegend(List<String> labels, IExpr markerSource, boolean swatch, boolean line,
+      ContainerTag<?> parent) {
     int count = labels.size();
     double lineHeight = 18;
     double xBase = options.imageSize[0] - LEGEND_WIDTH + 10;
@@ -120,10 +140,10 @@ public final class LegendRenderer {
       double y = yBase + i * lineHeight;
       if (swatch) {
         // a SwatchLegend names areas rather than curves or points, so its marker is the area
-        parent.with(tag("rect").attr("x", SvgRenderer2D.fmt(xBase + 2))
-            .attr("y", SvgRenderer2D.fmt(y - 11)).attr("width", "11").attr("height", "11")
-            .attr("fill", ColorUtil.css(color)).attr("stroke", "#666666")
-            .attr("stroke-width", "0.5"));
+        parent.with(
+            tag("rect").attr("x", SvgRenderer2D.fmt(xBase + 2)).attr("y", SvgRenderer2D.fmt(y - 11))
+                .attr("width", "11").attr("height", "11").attr("fill", ColorUtil.css(color))
+                .attr("stroke", "#666666").attr("stroke-width", "0.5"));
       } else if (line) {
         parent.with(
             tag("line").attr("x1", SvgRenderer2D.fmt(xBase)).attr("y1", SvgRenderer2D.fmt(y - 4))
@@ -157,7 +177,7 @@ public final class LegendRenderer {
 
   /**
    * The colour function and the range of a bar legend, in either spelling:
-   * <code>BarLegend[{colorFunction, {min, max}}]</code>, the Wolfram Language's own, or
+   * <code>BarLegend[{colorFunction, {min, max}}]</code>, or
    * <code>BarLegend[colorFunction, {min, max}]</code>.
    */
   private static IExpr[] barParts(IAST barLegend) {
@@ -265,7 +285,8 @@ public final class LegendRenderer {
     if (colors.isEmpty()) {
       double[][] fallback = GraphicsOptions.SUNSET_COLORS;
       for (int i = 0; i < fallback.length; i++) {
-        colors.add(new Color((float) fallback[i][0], (float) fallback[i][1], (float) fallback[i][2]));
+        colors
+            .add(new Color((float) fallback[i][0], (float) fallback[i][1], (float) fallback[i][2]));
       }
     }
     return colors;

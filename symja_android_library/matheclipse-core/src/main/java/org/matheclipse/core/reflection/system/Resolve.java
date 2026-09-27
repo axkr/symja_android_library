@@ -1,7 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -16,7 +19,12 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reduce.Formula;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
+import org.matheclipse.core.reduce.Lowering;
+import org.matheclipse.core.reduce.RationalQE;
+import org.matheclipse.core.reduce.Variable;
+import org.matheclipse.core.eval.util.SolveUtils;
 
 /**
  * Resolve(expr) and Resolve(expr, domain) - eliminate the {@link S#ForAll} and {@link S#Exists}
@@ -82,8 +90,8 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    long precision = Solve.workingPrecision(ast, solveOptions.workingPrecision(), engine);
-    if (precision == Solve.INVALID_PRECISION) {
+    long precision = SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
+    if (precision == SolveUtils.INVALID_PRECISION) {
       return F.NIL;
     }
 
@@ -110,7 +118,7 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
     if (result.isNIL()) {
       return F.NIL;
     }
-    if (precision != Solve.MACHINE_PRECISION_REQUESTED) {
+    if (precision != SolveUtils.MACHINE_PRECISION_REQUESTED) {
       // the quantifier elimination itself is exact; the requested precision is applied to its
       // result
       result = engine.evaluate(F.N(result, F.ZZ(precision)));
@@ -131,12 +139,27 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
     if (!hasQuantifier(expr)) {
       return expr;
     }
+    if (domain == S.Reals || (domain == null && containsInequality(expr))) {
+      IExpr linear = resolveLinear(expr, engine);
+      if (linear.isPresent()) {
+        return linear;
+      }
+    }
     if (expr.isAST(S.Exists) || expr.isAST(S.ForAll)) {
       return resolveQuantifier((IAST) expr, domain, engine);
     }
     if (expr.isNot()) {
       IExpr negated = resolve(expr.first(), domain, engine);
       return negated.isPresent() ? engine.evaluate(F.Not(negated)) : F.NIL;
+    }
+    if (expr.isAST(S.Implies, 3)) {
+      // a => b is !a || b
+      return resolve(F.Or(F.Not(expr.first()), expr.second()), domain, engine);
+    }
+    if (expr.isAST(S.Equivalent, 3)) {
+      IExpr a = expr.first();
+      IExpr b = expr.second();
+      return resolve(F.Or(F.And(a, b), F.And(F.Not(a), F.Not(b))), domain, engine);
     }
     if (expr.isAnd() || expr.isOr()) {
       IAST logic = (IAST) expr;
@@ -374,6 +397,12 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
     }
     if (existsSampledWitness(vars, cond, engine)) {
       return S.True;
+    }
+    if (vars.isList1()) {
+      IExpr projected = existsByEquation(vars.arg1(), cond, engine);
+      if (projected.isPresent()) {
+        return projected;
+      }
     }
     if (vars.isList1()) {
       IExpr reduced = existsByReduce(vars, cond, engine);
@@ -874,6 +903,340 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
       IExpr sliced = engine.evaluate(F.subst(cond, rules));
       if (exists(F.list(vars.get(i)), sliced, S.Reals, engine).isTrue()) {
         return S.True;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Decide <code>Exists(y, eq &amp;&amp; rest)</code> with parameters by the real solutions of the
+   * equation: <code>Exists(y, y&gt;0 &amp;&amp; y^2==x)</code> is <code>x&gt;0</code>. The equation is
+   * solved with {@link S#Reduce}, every root is put into the other conditions, and the sign
+   * conditions of a square root which this creates are written without it.
+   *
+   * @return {@link F#NIL} if the condition isn't of this form
+   */
+  private static IExpr existsByEquation(IExpr y, IExpr cond, EvalEngine engine) {
+    if (!cond.isAnd() || !y.isSymbol()) {
+      return F.NIL;
+    }
+    IAST and = (IAST) cond;
+    int index = and.indexOf(atom -> atom.isEqual() && !atom.isFree(y)
+        && engine.evaluate(F.PolynomialQ(F.Subtract(atom.first(), atom.second()), y)).isTrue());
+    if (index < 0) {
+      return F.NIL;
+    }
+    IExpr equation = and.get(index);
+    IAST rest = and.removeAtCopy(index);
+    IExpr solutions;
+    final boolean quietMode = engine.isQuietMode();
+    engine.setQuietMode(true);
+    try {
+      solutions = engine.evaluate(F.Reduce(equation, y, S.Reals));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    } finally {
+      engine.setQuietMode(quietMode);
+    }
+    // P && (y==e1 || y==e2 || ...)
+    IASTAppendable conditions = F.And();
+    IASTAppendable roots = F.ListAlloc();
+    IAST parts = solutions.isAnd() ? (IAST) solutions : F.And(solutions);
+    for (IExpr part : parts) {
+      if (part.isFree(y)) {
+        conditions.append(part);
+      } else if (part.isOr()) {
+        for (IExpr alternative : (IAST) part) {
+          if (!addRoot(alternative, y, roots)) {
+            return F.NIL;
+          }
+        }
+      } else if (!addRoot(part, y, roots)) {
+        return F.NIL;
+      }
+    }
+    if (roots.isEmpty()) {
+      return F.NIL;
+    }
+    IASTAppendable alternatives = F.Or();
+    for (IExpr root : roots) {
+      IExpr substituted = engine.evaluate(F.subst(rest.oneIdentity1(), y, root));
+      IExpr withoutRoot = sqrtSignConditions(substituted, engine);
+      if (withoutRoot.isNIL()) {
+        return F.NIL;
+      }
+      IASTAppendable branch = conditions.copyAppendable();
+      branch.append(withoutRoot);
+      alternatives.append(branch);
+    }
+    // evaluated first: an unevaluated False would count as a variable
+    IExpr combined = engine.evaluate(alternatives);
+    IAST parameters = new VariablesSet(combined).getVarList();
+    if (parameters.isEmpty()) {
+      return combined;
+    }
+    IExpr reduced = engine.evalQuiet(F.Reduce(combined, parameters, S.Reals));
+    return reduced.isFree(S.Reduce) && reduced.isFree(y) ? reduced : F.NIL;
+  }
+
+  private static boolean addRoot(IExpr equation, IExpr y, IASTAppendable roots) {
+    if (equation.isEqual() && equation.first().equals(y) && equation.second().isFree(y)) {
+      roots.append(equation.second());
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Write the sign conditions <code>c*Sqrt(u) REL 0</code> of a condition without the square root,
+   * for a nonnegative <code>u</code>: <code>Sqrt(u)&gt;0</code> is <code>u&gt;0</code>,
+   * <code>Sqrt(u)&gt;=0</code> is <code>True</code>, <code>Sqrt(u)&lt;0</code> is <code>False</code>
+   * and <code>Sqrt(u)&lt;=0</code> is <code>u==0</code>.
+   *
+   * @return {@link F#NIL} if a square root is left in another position
+   */
+  private static IExpr sqrtSignConditions(IExpr expr, EvalEngine engine) {
+    if (expr.isAnd() || expr.isOr()) {
+      IAST logic = (IAST) expr;
+      IASTMutable result = logic.copy();
+      for (int i = 1; i < logic.size(); i++) {
+        IExpr arg = sqrtSignConditions(logic.get(i), engine);
+        if (arg.isNIL()) {
+          return F.NIL;
+        }
+        result.set(i, arg);
+      }
+      return engine.evaluate(result);
+    }
+    if (expr.isFree(x -> x.isPower() && x.exponent().isFraction(), true)) {
+      return expr;
+    }
+    if (expr.isAST2() && expr.isFunctionID(ID.Less, ID.LessEqual, ID.Greater, ID.GreaterEqual)) {
+      IExpr f = engine.evaluate(F.Subtract(expr.first(), expr.second()));
+      IExpr c = F.C1;
+      IExpr root = f;
+      if (f.isTimes() && f.size() == 3 && f.first().isReal()) {
+        c = f.first();
+        root = f.second();
+      }
+      if (root.isSqrt() && root.base().isFree(x -> x.isPower() && x.exponent().isFraction(), true)
+          && !c.isZero()) {
+        IExpr u = root.base();
+        IExpr head = expr.head();
+        if (c.isNegative()) {
+          // c*Sqrt(u) REL 0 is Sqrt(u) REL' 0
+          head = head == S.Less ? S.Greater
+              : head == S.LessEqual ? S.GreaterEqual : head == S.Greater ? S.Less : S.LessEqual;
+        }
+        if (head == S.Greater) {
+          return F.Greater(u, F.C0);
+        }
+        if (head == S.GreaterEqual) {
+          return S.True;
+        }
+        if (head == S.Less) {
+          return S.False;
+        }
+        return F.Equal(u, F.C0);
+      }
+    }
+    return F.NIL;
+  }
+
+  /** At most this many <code>Abs</code> terms are split into their two sign cases. */
+  private static final int MAX_ABS_SPLITS = 6;
+
+  /**
+   * Decide a real sentence with linear atoms by quantifier elimination over an ordered field
+   * ({@link RationalQE}). An <code>Abs(u)</code> is split into the cases <code>u&gt;=0</code> and
+   * <code>u&lt;0</code> inside the scope of the quantifier whose body contains it, so that e.g. the
+   * epsilon-delta sentence of a linear limit
+   * <code>ForAll(eps, eps&gt;0, Exists(del, del&gt;0, ForAll(x, 0&lt;Abs(x-1)&lt;del, Abs(2*x-2)&lt;eps)))</code>
+   * is decided.
+   *
+   * @return {@link F#NIL} if the sentence isn't linear
+   */
+  private static IExpr resolveLinear(IExpr expr, EvalEngine engine) {
+    int[] budget = new int[] {MAX_ABS_SPLITS};
+    IExpr split = withoutAbs(absComparisons(expr, engine), budget);
+    if (split.isNIL()) {
+      return F.NIL;
+    }
+    split = splitAbs(split, budget);
+    if (split.isNIL() || !split.isFree(S.Element)) {
+      return F.NIL;
+    }
+    Formula formula = Lowering.lower(split);
+    if (formula == null || formula.containsDivisibility() || !RationalQE.hasOrdering(formula)) {
+      return F.NIL;
+    }
+    List<Variable> targets = new ArrayList<Variable>(new TreeSet<Variable>(formula.freeVariables()));
+    IExpr reduced = RationalQE.reduce(formula, targets, false);
+    return reduced.isPresent() ? absorb(engine.evaluate(reduced)) : F.NIL;
+  }
+
+  /**
+   * Drop the alternatives of a disjunction which another alternative absorbs:
+   * <code>A || (A &amp;&amp; B)</code> is <code>A</code>.
+   */
+  private static IExpr absorb(IExpr expr) {
+    if (!expr.isOr()) {
+      return expr;
+    }
+    IAST or = (IAST) expr;
+    List<Set<IExpr>> branches = new ArrayList<Set<IExpr>>(or.argSize());
+    for (IExpr alternative : or) {
+      Set<IExpr> atoms = new LinkedHashSet<IExpr>();
+      if (alternative.isAnd()) {
+        for (IExpr atom : (IAST) alternative) {
+          atoms.add(atom);
+        }
+      } else {
+        atoms.add(alternative);
+      }
+      branches.add(atoms);
+    }
+    IASTAppendable result = F.ast(S.Or, or.argSize());
+    for (int i = 0; i < branches.size(); i++) {
+      boolean absorbed = false;
+      for (int j = 0; j < branches.size() && !absorbed; j++) {
+        if (i != j && branches.get(i).containsAll(branches.get(j))
+            // of two equal alternatives the first one is kept
+            && (branches.get(i).size() > branches.get(j).size() || j < i)) {
+          absorbed = true;
+        }
+      }
+      if (!absorbed) {
+        result.append(or.get(i + 1));
+      }
+    }
+    return result.oneIdentity0();
+  }
+
+  /**
+   * Rewrite a comparison of an <code>Abs(u)</code> with a term which is free of <code>Abs</code>
+   * without splitting the whole formula into cases: <code>Abs(u)&lt;c</code> is
+   * <code>-c&lt;u&lt;c</code> and <code>Abs(u)&gt;c</code> is <code>u&gt;c || u&lt;-c</code>, for
+   * every real <code>c</code>. A chained <code>Inequality</code> is written as a conjunction first.
+   */
+  private static IExpr absComparisons(IExpr expr, EvalEngine engine) {
+    if (expr.isAST(S.Inequality) && expr.argSize() >= 3 && (expr.argSize() & 1) == 1) {
+      IAST chain = (IAST) expr;
+      IASTAppendable and = F.ast(S.And, chain.argSize() / 2);
+      for (int i = 1; i + 2 < chain.size(); i += 2) {
+        and.append(F.binaryAST2(chain.get(i + 1), chain.get(i), chain.get(i + 2)));
+      }
+      return absComparisons(and, engine);
+    }
+    if (expr.isAST2() && expr.isFunctionID(ID.Less, ID.LessEqual, ID.Greater, ID.GreaterEqual)) {
+      IExpr lhs = expr.first();
+      IExpr rhs = expr.second();
+      IExpr head = expr.head();
+      if (!lhs.isAbs() && rhs.isAbs()) {
+        // c < Abs(u) is Abs(u) > c
+        IExpr swap = lhs;
+        lhs = rhs;
+        rhs = swap;
+        head = head == S.Less ? S.Greater
+            : head == S.LessEqual ? S.GreaterEqual : head == S.Greater ? S.Less : S.LessEqual;
+      }
+      if (lhs.isAbs() && lhs.isAST1() && rhs.isFree(S.Abs)) {
+        IExpr u = lhs.first();
+        IExpr minusC = F.Negate(rhs);
+        if (head == S.Less || head == S.LessEqual) {
+          return F.And(F.binaryAST2(head, minusC, u), F.binaryAST2(head, u, rhs));
+        }
+        IExpr below = head == S.Greater ? S.Less : S.LessEqual;
+        return F.Or(F.binaryAST2(head, u, rhs), F.binaryAST2(below, u, minusC));
+      }
+      return expr;
+    }
+    if (expr.isAST() && (isConnective(expr.head()) || expr.isAST(S.ForAll)
+        || expr.isAST(S.Exists))) {
+      IAST ast = (IAST) expr;
+      IASTMutable result = ast.copy();
+      int start = ast.isAST(S.ForAll) || ast.isAST(S.Exists) ? 2 : 1;
+      for (int i = start; i < ast.size(); i++) {
+        result.set(i, absComparisons(ast.get(i), engine));
+      }
+      return result;
+    }
+    return expr;
+  }
+
+  /**
+   * Split the <code>Abs</code> terms in the bodies of all quantifiers, innermost first, and write a
+   * restricted quantifier with two arguments.
+   */
+  private static IExpr withoutAbs(IExpr expr, int[] budget) {
+    if ((expr.isAST(S.ForAll) || expr.isAST(S.Exists)) && (expr.isAST2() || expr.isAST3())) {
+      IAST quantifier = (IAST) expr;
+      boolean forAll = quantifier.isAST(S.ForAll);
+      IExpr body = quantifier.arg2();
+      if (quantifier.isAST3()) {
+        body = forAll ? F.Implies(quantifier.arg2(), quantifier.arg3())
+            : F.And(quantifier.arg2(), quantifier.arg3());
+      }
+      IExpr inner = withoutAbs(body, budget);
+      IExpr split = inner.isPresent() ? splitAbs(inner, budget) : F.NIL;
+      return split.isPresent() ? F.binaryAST2(quantifier.head(), quantifier.arg1(), split) : F.NIL;
+    }
+    if (expr.isAST() && isConnective(expr.head())) {
+      IAST ast = (IAST) expr;
+      IASTMutable result = ast.copy();
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = withoutAbs(ast.get(i), budget);
+        if (arg.isNIL()) {
+          return F.NIL;
+        }
+        result.set(i, arg);
+      }
+      return result;
+    }
+    return expr;
+  }
+
+  private static boolean isConnective(IExpr head) {
+    return head == S.And || head == S.Or || head == S.Not || head == S.Implies
+        || head == S.Equivalent || head == S.Xor || head == S.Nand || head == S.Nor;
+  }
+
+  /**
+   * <code>F(Abs(u))</code> is <code>u&gt;=0 &amp;&amp; F(u) || u&lt;0 &amp;&amp; F(-u)</code>, for the
+   * <code>Abs</code> terms outside of a nested quantifier.
+   *
+   * @return {@link F#NIL} if there are more than {@link #MAX_ABS_SPLITS} of them
+   */
+  private static IExpr splitAbs(IExpr formula, int[] budget) {
+    IExpr abs = findAbs(formula);
+    if (abs.isNIL()) {
+      return formula;
+    }
+    if (--budget[0] < 0) {
+      return F.NIL;
+    }
+    IExpr u = abs.first();
+    IExpr positive = splitAbs(F.And(F.GreaterEqual(u, F.C0), F.subst(formula, abs, u)), budget);
+    if (positive.isNIL()) {
+      return F.NIL;
+    }
+    IExpr negative = splitAbs(F.And(F.Less(u, F.C0), F.subst(formula, abs, F.Negate(u))), budget);
+    return negative.isPresent() ? F.Or(positive, negative) : F.NIL;
+  }
+
+  /** The first <code>Abs(u)</code> outside of a nested quantifier, or {@link F#NIL}. */
+  private static IExpr findAbs(IExpr expr) {
+    if (expr.isAbs() && expr.isAST1()) {
+      return expr;
+    }
+    if (expr.isAST(S.ForAll) || expr.isAST(S.Exists) || !expr.isAST()) {
+      return F.NIL;
+    }
+    for (IExpr arg : (IAST) expr) {
+      IExpr abs = findAbs(arg);
+      if (abs.isPresent()) {
+        return abs;
       }
     }
     return F.NIL;

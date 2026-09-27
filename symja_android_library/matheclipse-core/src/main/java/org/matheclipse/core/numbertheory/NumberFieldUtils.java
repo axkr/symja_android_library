@@ -57,7 +57,43 @@ public final class NumberFieldUtils {
    *         have rational coefficients
    */
   public static IRational[] minimalPolynomialCoefficients(IExpr theta, EvalEngine engine) {
+    if (theta == S.GoldenRatio) {
+      // x^2 - x - 1
+      return new IRational[] {F.CN1, F.CN1, F.C1};
+    }
+    if (AlgebraicNumberField.isObject(theta)) {
+      return AlgebraicNumberField.minimalPolynomialOfObject(theta, engine);
+    }
+    IRational[] rootOfUnity = rootOfUnityMinimalPolynomial(theta, engine);
+    if (rootOfUnity != null) {
+      return rootOfUnity;
+    }
+    if (theta.isAST() && !theta.isFree(AlgebraicNumberField::isObject, true)) {
+      // an expression with AlgebraicNumber objects in it: write them as polynomials in their
+      // generators, which MinimalPolynomial can read
+      IExpr explicit = theta.replaceAll(x -> {
+        AlgebraicNumberField field = AlgebraicNumberField.fieldOfObject(x, engine);
+        return field == null ? F.NIL : field.polynomialValue((IAST) x.second());
+      });
+      if (explicit.isPresent() && !explicit.equals(theta)) {
+        return minimalPolynomialCoefficients(engine.evaluate(explicit), engine);
+      }
+    }
+    if (theta.isAST() && !theta.isAST(S.Root)) {
+      IRational[] inRoot = polynomialInOneRoot(theta, engine);
+      if (inRoot != null) {
+        return inRoot;
+      }
+    }
     if (!AlgebraicNumberUtils.isExplicitAlgebraicNumber(theta)) {
+      if (!theta.isFree(S.GoldenRatio, true)) {
+        // GoldenRatio is the only algebraic named constant
+        IExpr radical = engine.evaluate(
+            F.subst(theta, S.GoldenRatio, F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))));
+        if (radical.isFree(S.GoldenRatio, true)) {
+          return minimalPolynomialCoefficients(radical, engine);
+        }
+      }
       return null;
     }
     if (theta.isRational()) {
@@ -99,6 +135,82 @@ public final class NumberFieldUtils {
       for (int i = 0; i < result.length; i++) {
         result[i] = (IRational) result[i].divide(leading);
       }
+    }
+    return result;
+  }
+
+  /**
+   * The minimal polynomial of a rational polynomial in one <code>Root</code> object, such as
+   * <code>(r + r^2)/2</code>, computed in the field of the root.
+   *
+   * @return <code>null</code> if <code>theta</code> is not such a polynomial
+   */
+  public static IRational[] polynomialInOneRoot(IExpr theta, EvalEngine engine) {
+    java.util.Set<IExpr> roots = new java.util.HashSet<IExpr>();
+    collectRoots(theta, roots);
+    if (roots.size() != 1) {
+      return null;
+    }
+    IExpr root = roots.iterator().next();
+    ISymbol t = F.Dummy("t");
+    IExpr polynomial = engine.evaluate(F.Expand(F.subst(theta, root, t)));
+    if (!polynomial.isFree(S.Root, true) || !polynomial.isPolynomial(t)) {
+      return null;
+    }
+    IExpr coefficients = engine.evaluate(F.CoefficientList(polynomial, t));
+    if (!coefficients.isList() || !((IAST) coefficients).forAll(IExpr::isRational)) {
+      return null;
+    }
+    IExpr element = engine.evaluate(F.binaryAST2(S.AlgebraicNumber, root, coefficients));
+    if (element.isRational()) {
+      return new IRational[] {((IRational) element).negate(), F.C1};
+    }
+    return AlgebraicNumberField.isObject(element)
+        ? AlgebraicNumberField.minimalPolynomialOfObject(element, engine)
+        : null;
+  }
+
+  private static void collectRoots(IExpr expr, java.util.Set<IExpr> roots) {
+    if (expr.isAST(S.Root, 3) || expr.isAST(S.Root, 4)) {
+      roots.add(expr);
+      return;
+    }
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      for (int i = 1; i < ast.size(); i++) {
+        collectRoots(ast.get(i), roots);
+      }
+    }
+  }
+
+  /**
+   * The minimal polynomial of a root of unity <code>E^(I*Pi*r)</code> with rational <code>r</code>:
+   * the cyclotomic polynomial of its order, the denominator of <code>r/2</code>.
+   *
+   * @return <code>null</code> if <code>theta</code> is no such power
+   */
+  private static IRational[] rootOfUnityMinimalPolynomial(IExpr theta, EvalEngine engine) {
+    if (!theta.isPower() || !theta.base().isE()) {
+      return null;
+    }
+    IExpr r = engine.evaluate(F.Divide(theta.exponent(), F.Times(F.CI, S.Pi)));
+    if (!r.isRational()) {
+      return null;
+    }
+    IInteger order = ((IRational) r).multiply(F.C1D2).denominator();
+    ISymbol x = F.Dummy("x");
+    IExpr coefficients =
+        engine.evaluate(F.CoefficientList(F.binaryAST2(S.Cyclotomic, order, x), x));
+    if (!coefficients.isList()) {
+      return null;
+    }
+    IAST list = (IAST) coefficients;
+    IRational[] result = new IRational[list.argSize()];
+    for (int i = 1; i < list.size(); i++) {
+      if (!list.get(i).isRational()) {
+        return null;
+      }
+      result[i - 1] = (IRational) list.get(i);
     }
     return result;
   }
@@ -226,7 +338,7 @@ public final class NumberFieldUtils {
       if (exponent < 0) {
         return null;
       }
-      if (exponent % 2 == 1) {
+      if (exponent % 2 != 0) {
         result = result.multiply(prime);
       }
     }
@@ -328,6 +440,30 @@ public final class NumberFieldUtils {
       return null;
     }
     return new int[] {n % 2 == 0 ? sign : -sign, sign};
+  }
+
+  /**
+   * The polynomial with coprime integer coefficients and a positive leading coefficient which is a
+   * rational multiple of the monic polynomial <code>monic</code> - the form
+   * <code>MinimalPolynomial</code> and <code>Root</code> objects use.
+   */
+  public static IExpr primitiveIntegerPolynomial(IRational[] monic, ISymbol x) {
+    IInteger lcm = F.C1;
+    for (IRational c : monic) {
+      lcm = lcm.lcm(c.denominator());
+    }
+    IRational[] scaled = new IRational[monic.length];
+    IInteger gcd = F.C0;
+    for (int i = 0; i < monic.length; i++) {
+      scaled[i] = (IRational) monic[i].multiply(lcm);
+      gcd = gcd.gcd((IInteger) scaled[i]);
+    }
+    if (!gcd.isZero() && !gcd.isOne()) {
+      for (int i = 0; i < scaled.length; i++) {
+        scaled[i] = (IRational) scaled[i].divide(gcd);
+      }
+    }
+    return polynomial(scaled, x);
   }
 
   /** Build the polynomial with the given coefficients in ascending order of the exponent. */

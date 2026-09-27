@@ -13,9 +13,135 @@ public class GraphFunctionsTest extends AbstractTestCase {
    * <code>Graph</code> as <code>GraphPlot(g, ImageSize->70, AspectRatio->1, ...)</code>.
    */
   /**
-   * A directed <code>Graph3D</code> edge is <code>Arrow[{p1, p2}, setback]</code>: the WLJS notebook
-   * reads the points straight from the arrow and drew nothing for <code>Arrow[Line[...]]</code>.
+   * A directed <code>Graph3D</code> edge is <code>Arrow[{p1, p2}, setback]</code>: the WLJS
+   * notebook reads the points straight from the arrow and drew nothing for
+   * <code>Arrow[Line[...]]</code>.
    */
+  /**
+   * TreePlot(g, pos), TreePlot(g, root) and TreePlot(g, pos, root), as in the reference
+   * implementation: an integer which is no vertex is ignored, anything else is refused.
+   */
+  /**
+   * The internal edge form {directed, undirected} of a SparseArray cached or Compress restored
+   * graph: each side Null, an adjacency SparseArray or a list of index pairs.
+   */
+  @Test
+  public void testInternalEdgeForm() {
+    check(
+        "EdgeList(Graph({1,2,3,4}, {Null, SparseArray(Automatic, {4, 4}, 0, "
+            + "{1, {{0, 2, 4, 6, 6}, {{2}, {3}, {1}, {3}, {1}, {2}}}, Pattern})}))", //
+        "{1<->2,1<->3,2<->3}");
+    check(
+        "EdgeList(Graph({1,2,3}, {SparseArray(Automatic, {3, 3}, 0, "
+            + "{1, {{0, 1, 2, 2}, {{2}, {3}}}, Pattern}), Null}))", //
+        "{1->2,2->3}");
+    check(
+        "g = Graph({1,2,3,4}, {Null, SparseArray(Automatic, {4, 4}, 0, "
+            + "{1, {{0, 2, 4, 6, 6}, {{2}, {3}, {1}, {3}, {1}, {2}}}, Pattern})}); "
+            + "EdgeCount(Graph(EdgeList(g)))", //
+        "3");
+    check("EdgeList(Graph({1,2,3}, {Null, {{1,2},{2,3}}}))", //
+        "{1<->2,2<->3}");
+    check("EdgeList(Graph({1,2,3}, {{{1,2},{2,3}}, Null}))", //
+        "{1->2,2->3}");
+  }
+
+  /** The graph combinators take trailing options, which go onto the result. */
+  @Test
+  public void testCombinatorsTakeOptions() {
+    check(
+        "EdgeList(GraphIntersection(CompleteGraph(3), PathGraph({1,2,3}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
+        "{1<->2,2<->3}");
+    check(
+        "EdgeCount(GraphUnion(PathGraph({1,2,3}), PathGraph({3,4,5}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
+        "4");
+    check(
+        "Head(GraphUnion(PathGraph({1,2}), PathGraph({2,3}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
+        "Graph");
+    check(
+        "VertexCount(GraphDisjointUnion(CycleGraph(3), PathGraph({1,2}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
+        "5");
+    check("Head(GraphDisjointUnion(CycleGraph(3), GraphLayout -> \"CircularEmbedding\"))", //
+        "Graph");
+    check(
+        "EdgeList(GraphDifference(Graph({1<->2,2<->3}), Graph({2<->3}), "
+            + "GraphLayout -> \"CircularEmbedding\"))", //
+        "{1<->2}");
+    // a non graph operand still leaves the call alone
+    check("GraphUnion(PathGraph({1,2}), x)", //
+        "GraphUnion(Graph({1,2},{1<->2}),x)");
+  }
+
+  /**
+   * GraphPlot and TreePlot take the graph options - VertexLabels, and the legacy VertexLabeling -
+   * as their own, and a Graph exports to SVG as its picture.
+   */
+  @Test
+  public void testGraphPlotLabelsAndSVGExport() {
+    check(
+        "StringCases(ExportString(GraphPlot({1 -> 2}, VertexLabeling -> True), \"SVG\"),"
+            + " \">\" ~~ Shortest(t : Except(\">\") ..) ~~ \"</text>\" :> t)", //
+        "{1,2}");
+    check(
+        "StringCount(ExportString(GraphPlot({1 -> 2}, VertexLabeling -> False), \"SVG\"), \"<text\")", //
+        "0");
+    check(
+        "StringCases(ExportString(GraphPlot({1 -> 2}, VertexLabels -> \"Name\"), \"SVG\"),"
+            + " \">\" ~~ Shortest(t : Except(\">\") ..) ~~ \"</text>\" :> t)", //
+        "{1,2}");
+    check(
+        "StringCases(ExportString(GraphPlot({Subscript(x, 1) -> Subscript(x, 2)}, VertexLabeling -> True), \"SVG\"),"
+            + " \">\" ~~ Shortest(t : Except(\">\") ..) ~~ \"</text>\" :> t)", //
+        "{x\u2081,x\u2082}");
+    check("Length(Cases(TreePlot({1 -> 2, 2 -> 3}, VertexLabeling -> True), _Text, Infinity))", //
+        "3");
+    // a Graph exports as a picture, with its PlotLabel
+    check("StringContainsQ(ExportString(Graph({1 <-> 2}), \"SVG\"), \"<svg\")", //
+        "True");
+    check(
+        "StringCases(ExportString(Graph({1 <-> 2}, PlotLabel -> Subscript(\"I\", 4)), \"SVG\"),"
+            + " \">\" ~~ Shortest(t : Except(\">\") ..) ~~ \"</text>\" :> t)", //
+        "{I\u2084}");
+    // TreePlot draws a copy: the graph keeps its own options
+    check(
+        "g = Graph({1 -> 2, 2 -> 3}, VertexLabels -> \"Name\"); TreePlot(g);"
+            + " Length(Cases(GraphPlot(g), _Text, Infinity))", //
+        "3");
+  }
+
+  @Test
+  public void testTreePlotRootAndPosition() {
+    check("Head(TreePlot({1 -> 2, 2 -> 3}, 3))", //
+        "Graphics");
+    check("Head(TreePlot({a -> b}, a))", //
+        "Graphics");
+    check("Head(TreePlot({\"a\" -> \"b\"}, \"a\"))", //
+        "Graphics");
+    check("Head(TreePlot({1 -> 2, 2 -> 3}, 7))", //
+        "Graphics");
+    check("Head(TreePlot({1 -> 2, 2 -> 3}, Center))", //
+        "Graphics");
+    check("Head(TreePlot({1 -> 2, 2 -> 3}, Top, 3))", //
+        "Graphics");
+    check("TreePlot({1 -> 2, 2 -> 3}, x)", //
+        "TreePlot({1->2,2->3},x)");
+    check("TreePlot({a -> b}, f(a))", //
+        "TreePlot({a->b},f(a))");
+    // the tree hangs from its root: from 3 the vertices climb, from 1 they descend
+    check("Cases(TreePlot({1 -> 2, 2 -> 3}, 3), Disk(p_, ___) :> p[[2]], Infinity)", //
+        "{-1.5,0.0,1.5}");
+    check("Cases(TreePlot({1 -> 2, 2 -> 3}, 1), Disk(p_, ___) :> p[[2]], Infinity)", //
+        "{1.5,0.0,-1.5}");
+    check("Cases(TreePlot({1 -> 2, 2 -> 3}, Bottom), Disk(p_, ___) :> p[[2]], Infinity)", //
+        "{-1.5,0.0,1.5}");
+    check("Cases(TreePlot({1 -> 2, 2 -> 3}, Left), Disk(p_, ___) :> p[[1]], Infinity)", //
+        "{-1.5,0.0,1.5}");
+  }
+
   @Test
   public void testGraph3DArrowsHoldTheirPoints() {
     check("a=Cases(Graph3D({1->2,2->3,3->1}),_Arrow,Infinity);" //
@@ -28,9 +154,10 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("p=GraphPlot(Graph({1->2,2->3,3->1}),ImageSize->70,AspectRatio->1);" //
         + "{Head(p), Cases(List@@p,(ImageSize->s_):>s), Cases(List@@p,(AspectRatio->a_):>a)}", //
         "{Graphics,{200},{1}}");
-    // a directed edge ends at the edge of its target vertex, with Mathematica's Medium arrowheads
-    check("p=GraphPlot(Graph({1->2}));{Cases(p,_Arrowheads,Infinity),"
-        + "Cases(p,Arrow({_,e_}):>e,Infinity)==Cases(p,Disk(c_,_):>c,Infinity)[[{2}]]}", //
+    // a directed edge ends at the edge of its target vertex, with Medium arrowheads
+    check(
+        "p=GraphPlot(Graph({1->2}));{Cases(p,_Arrowheads,Infinity),"
+            + "Cases(p,Arrow({_,e_}):>e,Infinity)==Cases(p,Disk(c_,_):>c,Infinity)[[{2}]]}", //
         "{{Arrowheads(Medium)},False}");
   }
 
@@ -38,8 +165,15 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testAdjacencyGraph() {
     check("AdjacencyGraph(SparseArray({{i_, j_} /; 0<Abs(i-j) <= 3 -> 1}, {6, 6}))// InputForm", //
         "Graph({1,2,3,4,5,6},{Null,SparseArray(Automatic,{6,6},0,{1,{{0,3,7,12,17,21,24},{{2},{3},{4},{1},{3},{4},{5},{1},{2},{4},{5},{6},{1},{2},{3},{5},{6},{2},{3},{4},{6},{3},{4},{5}}},Pattern})})");
+    // a directed graph carries its matrix on the directed side of {directed, undirected}
     check("AdjacencyGraph({{0,1,1,0},{0,0,1,0},{0,0,0,0},{0,1,0,0}}) // InputForm", //
-        "Graph({1,2,3,4},{Null,SparseArray(Automatic,{4,4},0,{1,{{0,2,3,3,4},{{2},{3},{3},{2}}},Pattern})})");
+        "Graph({1,2,3,4},{SparseArray(Automatic,{4,4},0,{1,{{0,2,3,3,4},{{2},{3},{3},{2}}},Pattern}),Null})");
+    // both read back as they were written
+    check("EdgeList(ToExpression(ToString(InputForm(AdjacencyGraph({{0,1,1},{1,0,1},{1,1,0}})))))", //
+        "{1<->2,1<->3,2<->3}");
+    check(
+        "EdgeList(ToExpression(ToString(InputForm(AdjacencyGraph({{0,1,1,0},{0,0,1,0},{0,0,0,0},{0,1,0,0}})))))", //
+        "{1->2,1->3,2->3,4->2}");
 
   }
 
@@ -104,43 +238,48 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * The graphs of the WLJS demo notebook: Mathematica's default look, and the options a
-   * <code>Graph</code> keeps for drawing it.
+   * The graphs of the WLJS demo notebook and the options a <code>Graph</code> keeps for drawing it.
    */
   @Test
   public void testGraphDrawingOptions() {
-    // Mathematica's colours; the edges and the vertices each in a list of their own
+    // The edges and the vertices each in a list of their own colours
     check("Cases(GraphPlot(Graph({1->2,2->3,3->1})),_Hue,Infinity)", //
         "{Hue(0.6,0.7,0.7),Hue(0.6,0.5,1.0)}");
     // VertexShapeFunction and VertexSize are kept by Graph
-    check("Length(Cases(GraphPlot(Graph({1->2,2->3,3->1},VertexShapeFunction->\"Diamond\","
-        + "VertexSize->Medium)),_Polygon,Infinity))", //
+    check(
+        "Length(Cases(GraphPlot(Graph({1->2,2->3,3->1},VertexShapeFunction->\"Diamond\","
+            + "VertexSize->Medium)),_Polygon,Infinity))", //
         "3");
     // an annotated vertex is the vertex itself, with a size and a style of its own
-    check("g=Graph(Table(Annotation(v,{VertexSize->0.2+0.2*Mod(v,5),VertexStyle->Hue(v/15,1,1)}),"
-        + "{v,0,14}),Table(v<->Mod(v+1,15),{v,0,14}));"
-        + "{VertexCount(g),Length(Cases(GraphPlot(g),Hue(_,1,1),Infinity))}", //
+    check(
+        "g=Graph(Table(Annotation(v,{VertexSize->0.2+0.2*Mod(v,5),VertexStyle->Hue(v/15,1,1)}),"
+            + "{v,0,14}),Table(v<->Mod(v+1,15),{v,0,14}));"
+            + "{VertexCount(g),Length(Cases(GraphPlot(g),Hue(_,1,1),Infinity))}", //
         "{15,15}");
     // a list of rules is options too; a named GraphStyle draws labelled rectangles, and the graph
     // options do not reach Graphics
-    check("p=GraphPlot(Graph({1,2,3},{1<->2,2<->3},{GraphStyle->\"DiagramGreen\"}));"
-        + "{Length(Cases(p,_Rectangle,Infinity)),Length(Cases(p,_Text,Infinity)),"
-        + "FreeQ(p,GraphStyle)}", //
+    check(
+        "p=GraphPlot(Graph({1,2,3},{1<->2,2<->3},{GraphStyle->\"DiagramGreen\"}));"
+            + "{Length(Cases(p,_Rectangle,Infinity)),Length(Cases(p,_Text,Infinity)),"
+            + "FreeQ(p,GraphStyle)}", //
         "{3,3,True}");
     // "GridEmbedding" with "Dimension" -> {columns, rows}
-    check("p=GraphPlot(Graph({1,2,3,4,5,6},{1<->2,2<->3,4<->5,5<->6,1<->4},"
-        + "GraphLayout->{\"VertexLayout\"->{\"GridEmbedding\",\"Dimension\"->{3,2}}}));"
-        + "Length(Union(Cases(p,Disk({x_,y_},_):>y,Infinity)))", //
+    check(
+        "p=GraphPlot(Graph({1,2,3,4,5,6},{1<->2,2<->3,4<->5,5<->6,1<->4},"
+            + "GraphLayout->{\"VertexLayout\"->{\"GridEmbedding\",\"Dimension\"->{3,2}}}));"
+            + "Length(Union(Cases(p,Disk({x_,y_},_):>y,Infinity)))", //
         "2");
-    check("Cases(GraphPlot(HighlightGraph(PathGraph(Range(3)),{Style(2,Green)})),_RGBColor,"
-        + "Infinity)", //
+    check(
+        "Cases(GraphPlot(HighlightGraph(PathGraph(Range(3)),{Style(2,Green)})),_RGBColor,"
+            + "Infinity)", //
         "{RGBColor(0,1,0)}");
     check("{VertexCount(ButterflyGraph(3)),EdgeCount(ButterflyGraph(3))}", //
         "{32,48}");
     // Graph3D(vertices, edges) with annotated vertices
-    check("p=Graph3D(Table(Annotation(v,{VertexStyle->Hue(v/15,1,1)}),{v,0,14}),"
-        + "Table(v<->Mod(v+1,15),{v,0,14}));"
-        + "{Head(p),Length(Cases(p,_Sphere,Infinity)),Length(Cases(p,Hue(_,1,1),Infinity))}", //
+    check(
+        "p=Graph3D(Table(Annotation(v,{VertexStyle->Hue(v/15,1,1)}),{v,0,14}),"
+            + "Table(v<->Mod(v+1,15),{v,0,14}));"
+            + "{Head(p),Length(Cases(p,_Sphere,Infinity)),Length(Cases(p,Hue(_,1,1),Infinity))}", //
         "{Graphics3D,15,15}");
   }
 
@@ -231,20 +370,20 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testCycle() {
     check(
         "FindCycle({2 -> 1, 1 -> 4, 3 -> 2, 2 -> 5, 6 -> 3, 5 -> 4, 4 -> 7, 6 -> 5, 8 -> 5, 6 -> 9, 7 -> 8, 7 -> 10, 9 -> 8, 11 -> 8, 12 -> 9, 10 -> 11, 12 -> 11}, {6,6}, All)", //
-        "{{8->5,5->4,4->7,7->10,10->11,11->8}}");
+        "{{4->7,7->10,10->11,11->8,8->5,5->4}}");
     check(
         "FindCycle({2 -> 1, 1 -> 4, 3 -> 2, 2 -> 5, 6 -> 3, 5 -> 4, 4 -> 7, 6 -> 5, 8 -> 5, 6 -> 9, 7 -> 8, 7 -> 10, 9 -> 8, 11 -> 8, 12 -> 9, 10 -> 11, 12 -> 11})", //
-        "{{8->5,5->4,4->7,7->8}}");
+        "{{4->7,7->8,8->5,5->4}}");
     check(
         "FindCycle({2 -> 1, 1 -> 4, 3 -> 2, 2 -> 5, 6 -> 3, 5 -> 4, 4 -> 7, 6 -> 5, 8 -> 5, 6 -> 9, 7 -> 8, 7 -> 10, 9 -> 8, 11 -> 8, 12 -> 9, 10 -> 11, 12 -> 11},Infinity,All)", //
-        "{{8->5,5->4,4->7,7->8},{8->5,5->4,4->7,7->10,10->11,11->8}}");
+        "{{4->7,7->8,8->5,5->4},{4->7,7->10,10->11,11->8,8->5,5->4}}");
 
     check("FindCycle(Graph({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 6, 4 -> 5, 4 -> 6, 5 -> 1}))", //
         "{{1->2,2->3,3->4,4->5,5->1}}");
     check("WheelGraph(4)", //
-        "Graph({1,2,3,4},{1<->2,2<->3,3<->1,1<->4,2<->4,3<->4})");
+        "Graph({1,2,3,4},{1<->2,1<->3,1<->4,2<->3,2<->4,3<->4})");
     check("FindCycle(WheelGraph(4))", //
-        "{{2<->4,1<->4,1<->2}}");
+        "{{1<->2,2<->3,3<->1}}");
   }
 
   @Test
@@ -277,14 +416,14 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testFindGraphIsomorphism() {
     check(
         "FindGraphIsomorphism(Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4}), Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4}))", //
-        "{<|1->2,2->3,3->1,4->4|>}");
+        "{<|1->1,2->3,3->2,4->4|>}");
 
     check("g=Graph({a,b,c,d},{a<->b,a<->d,b<->c,c<->d})", //
         "Graph({a,b,c,d},{a<->b,a<->d,b<->c,c<->d})");
     check("h=Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})", //
         "Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4})");
     check(" FindGraphIsomorphism(g, h)", //
-        "{<|a->2,b->3,c->1,d->4|>}");
+        "{<|a->1,b->3,c->2,d->4|>}");
   }
 
   @Test
@@ -327,20 +466,20 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testFindVertexCover() {
     // example from wikipedia: https://en.wikipedia.org/wiki/Vertex_cover
     check("FindVertexCover({1<->2,1<->3,2<->3,3<->4,3<->5,3<->6})", //
-        "{3,1}");
+        "{1,3}");
 
     check(
         "FindVertexCover({UndirectedEdge(2,1), UndirectedEdge(1,3), UndirectedEdge(3,6), UndirectedEdge(6,1)," //
             + " UndirectedEdge(4,6), UndirectedEdge(1,5), UndirectedEdge(5,4) })", //
-        "{1,6,4}");
+        "{1,3,4}");
     check(
         "FindVertexCover({UndirectedEdge(1,2), UndirectedEdge(2,3), UndirectedEdge(3,4), UndirectedEdge(3,6)," //
             + " UndirectedEdge(3,7), UndirectedEdge(6,4), UndirectedEdge(4,7), UndirectedEdge(4,5), UndirectedEdge(5,1)})", //
-        "{3,4,1}");
+        "{1,3,4}");
 
     check(
         "FindVertexCover({DirectedEdge(2,1), DirectedEdge(1,3), DirectedEdge(3,6), DirectedEdge(6,1),DirectedEdge(4,6), DirectedEdge(1,5), DirectedEdge(5,4) })", //
-        "{1,6,4}");
+        "{1,3,4}");
   }
 
   @Test
@@ -350,6 +489,10 @@ public class GraphFunctionsTest extends AbstractTestCase {
         "{1,3,2,4}");
 
     check("FindShortestPath({1 -> 2, 2 -> 3, 3 -> 1,  3 -> 4, 4 -> 5, 3 -> 5},1,4)", //
+        "{1,2,3,4}");
+    check("FindShortestPath(Graph({1,2,3},{1->2}),1,3)", //
+        "{}");
+    check("FindShortestPath(CycleGraph(6),1,4)", //
         "{1,2,3,4}");
   }
 
@@ -476,12 +619,12 @@ public class GraphFunctionsTest extends AbstractTestCase {
   public void testGraphFullForm() {
     check(
         "Graph({1, 2, 3}, {UndirectedEdge(1, 2), UndirectedEdge(2, 3), UndirectedEdge(3, 1)}, {EdgeWeight -> {5, 4, 3}})", //
-        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{5.0,4.0,3.0}})");
+        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{5,4,3}})");
     check("Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})", //
         "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
     check(
         "Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1}, {EdgeWeight -> {2, 3, 4}})", //
-        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2.0,3.0,4.0}})");
+        "Graph({1,2,3},{1<->2,2<->3,3<->1},{EdgeWeight->{2,3,4}})");
   }
 
   @Test
@@ -762,7 +905,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
   @Test
   public void testPetersenGraph() {
     check("PetersenGraph()", //
-        "Graph({1,2,3,4,5,6,7,8,9,10},{1<->3,1<->2,2<->6,3<->5,3<->4,4<->8,5<->7,5<->6,6<->10,7<->9,7<->8,8<->2,9<->1,9<->10,10<->4})");
+        "Graph({1,2,3,4,5,6,7,8,9,10},{1<->3,1<->4,1<->6,2<->4,2<->5,2<->7,3<->5,3<->8,4<->9,5<->10,6<->7,6<->10,7<->8,8<->9,9<->10})");
   }
 
   @Test
@@ -866,7 +1009,11 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("StarGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},{1,0,0,0},{1,0,0,0},{1,0,0,0}}");
     check("StarGraph(6)", //
-        "Graph({1,2,3,4,5,6},{2<->1,3<->1,4<->1,5<->1,6<->1})");
+        "Graph({1,2,3,4,5,6},{1<->2,1<->3,1<->4,1<->5,1<->6})");
+    check("EdgeList(StarGraph(4))", //
+        "{1<->2,1<->3,1<->4}");
+    check("StarGraph(0)", //
+        "StarGraph(0)");
     check(
         "SparseArray(Automatic, {4, 4}, 0, {1, {{0, 3, 4, 5, 6}, {{2}, {3}, {4}, {1}, {1}, {1}}}, {1, 1, 1, 1, 1, 1}}) // Normal", //
         "{{0,1,1,1},{1,0,0,0},{1,0,0,0},{1,0,0,0}}");
@@ -897,6 +1044,75 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
     check("WeightedAdjacencyMatrix(wgd) // Normal", //
         "{{0,5.061,0},{0,0,2.282},{5.086,0,0}}");
+  }
+
+  @Test
+  public void testWeightedGraphExactWeights() {
+    check("InputForm(Graph({1,2},{1<->2},EdgeWeight->{3}))", //
+        "Graph({1,2},{1<->2},{EdgeWeight->{3}})");
+    check("InputForm(Graph({1,2},{1<->2},EdgeWeight->{1/3}))", //
+        "Graph({1,2},{1<->2},{EdgeWeight->{1/3}})");
+    check("WeightedAdjacencyMatrix(Graph({1,2,3},{1->2,2->3},EdgeWeight->{5,7})) // Normal", //
+        "{{0,5,0},{0,0,7},{0,0,0}}");
+    check("Subgraph(Graph({1,2,3},{1<->2,2<->3},EdgeWeight->{1/2,3}),{1,2})", //
+        "Graph({1,2},{1<->2},{EdgeWeight->{1/2}})");
+    // isolated vertices are kept
+    check("VertexList(Graph({1,2,3},{1->2},EdgeWeight->{5}))", //
+        "{1,2,3}");
+    check("GraphDistance(Graph({1,2,3},{1->2},EdgeWeight->{5}),1,3)", //
+        "Infinity");
+    check("FindShortestPath(Graph({1,2,3},{1->2},EdgeWeight->{5}),1,3)", //
+        "{}");
+    check("GraphDistance(Graph({1,2,3},{1->2,2->3},EdgeWeight->{5,7}),1,3)", //
+        "12.0");
+    check("GraphDistance(Graph({1,2,3},{1->2,2->3},EdgeWeight->{1/2,1/3}),1,3)", //
+        "0.833333");
+    check("FindShortestPath(Graph({1,2,3,4},{1->2,2->3,3->4,1->4},EdgeWeight->{1,1,1,10}),1,4)", //
+        "{1,2,3,4}");
+    // negative weights use Bellman-Ford
+    check("GraphDistance(Graph({1,2,3},{1->2,2->3},EdgeWeight->{-1,7}),1,3)", //
+        "6.0");
+    check("FindShortestPath(Graph({1,2,3},{1->2,2->3},EdgeWeight->{-1,7}),1,3)", //
+        "{1,2,3}");
+  }
+
+  @Test
+  public void testWeaklyConnectedComponents() {
+    check("WeaklyConnectedComponents(Graph({1->2,3->4,4->3,5->5}))", //
+        "{{2,1},{4,3},{5}}");
+    check("WeaklyConnectedComponents(Graph({1->2,3->4,5->6,6->7}))", //
+        "{{7,6,5},{2,1},{4,3}}");
+    check("WeaklyConnectedComponents(Graph({1,2},{2->1}))", //
+        "{{1,2}}");
+    check("WeaklyConnectedComponents(Graph({1->2,3->2}))", //
+        "{{1,2,3}}");
+    check("WeaklyConnectedComponents(Graph({1->2,2->3,1->4}))", //
+        "{{1,2,3,4}}");
+    check("WeaklyConnectedComponents(Graph({1<->2,2<->3}))", //
+        "{{1,2,3}}");
+    check("WeaklyConnectedComponents(Graph({1,2,3},{1->2,2->3}))", //
+        "{{1,2,3}}");
+    check("ConnectedComponents(Graph({1,2,3},{1->2,2->3}))", //
+        "{{3},{2},{1}}");
+    check("WeaklyConnectedComponents(Graph({1->2,3->4}),{3})", //
+        "{{4,3}}");
+  }
+
+  @Test
+  public void testVertexConnectivity() {
+    check("VertexConnectivity(PetersenGraph())", //
+        "3");
+    check("VertexConnectivity(CompleteGraph(4))", //
+        "3");
+    check("VertexConnectivity(Graph({1->2,2->3}))", //
+        "0");
+    check("VertexConnectivity(Graph({1,2,3},{1<->2,2<->3}))", //
+        "1");
+    check("VertexConnectivity(CycleGraph(5),1,3)", //
+        "2");
+    // adjacent vertices
+    check("VertexConnectivity(CycleGraph(5),1,2)", //
+        "0");
   }
 
   @Test
@@ -986,7 +1202,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
     check("EdgeCount(CycleGraph(5))", "5");
     check("VertexDegree(CycleGraph(5))", "{2,2,2,2,2}");
-    check("EdgeList(CycleGraph(4))", "{1<->2,2<->3,3<->4,4<->1}");
+    check("EdgeList(CycleGraph(4))", "{1<->2,2<->3,3<->4,1<->4}");
 
     check("EdgeCount(PathGraph({a,b,c,d}))", "3");
     check("VertexDegree(PathGraph({a,b,c,d,e}))", "{1,2,2,2,1}");
@@ -1186,7 +1402,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("Max(FindVertexColoring(Graph({1,2},{1->2})))", "2");
     check("Max(FindVertexColoring(Graph({1,2,3,4},{1<->2,3<->4})))", "2");
 
-    // self loops are ignored, matching Mathematica: FindVertexColoring[Graph[{1,2},{1<->1}]]
+    // self loops are ignored: FindVertexColoring[Graph[{1,2},{1<->1}]]
     // answers {1,1} there rather than refusing
     check("FindVertexColoring(Graph({1,2},{1<->1}))", "{1,1}");
     check("FindVertexColoring(Graph({1,2},{1<->1,1<->2}))", "{1,2}");
@@ -1314,7 +1530,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("PlanarFaceList(GridGraph({3,3}), IncludeOuterFace->False)"
         + "===Rest(PlanarFaceList(GridGraph({3,3})))", "True");
     check("Union(Map(Length,PlanarFaceList(GridGraph({3,3}), IncludeOuterFace->False)))", "{4}");
-    check("PlanarFaceList(WheelGraph(5))[[1]]", "{2,1,4,3}");
+    check("PlanarFaceList(WheelGraph(5))[[1]]", "{2,3,4,5}");
     // a tree has nothing but the outer face
     check("PlanarFaceList(PathGraph({1,2,3}), IncludeOuterFace->False)", "{}");
   }
@@ -1364,7 +1580,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("FindEdgeCover(CycleGraph(4))", "{1<->2,3<->4}");
     check("FindEdgeCover(PathGraph({1,2,3}))", "{1<->2,2<->3}");
     check("FindEdgeCover(PathGraph({1,2,3,4}))", "{1<->2,3<->4}");
-    check("FindEdgeCover(StarGraph(5))", "{2<->1,3<->1,4<->1,5<->1}");
+    check("FindEdgeCover(StarGraph(5))", "{1<->2,1<->3,1<->4,1<->5}");
     check("FindEdgeCover(CompleteGraph(4))", "{1<->2,3<->4}");
     check("FindEdgeCover({1<->2,2<->3})", "{1<->2,2<->3}");
 
@@ -1438,11 +1654,11 @@ public class GraphFunctionsTest extends AbstractTestCase {
     // a largest clique: every two of its vertices are joined by an edge
     check("FindClique(CompleteGraph(4))", "{{1,2,3,4}}");
     check("FindClique({1<->2,2<->3,3<->1,3<->4})", "{{1,2,3}}");
-    check("FindClique(WheelGraph(5))", "{{1,2,5}}");
+    check("FindClique(WheelGraph(5))", "{{1,2,3}}");
     // a triangle-free graph has nothing bigger than an edge
     check("FindClique(CycleGraph(4))", "{{1,2}}");
     check("FindClique(CycleGraph(5))", "{{1,2}}");
-    check("FindClique(PetersenGraph())", "{{1,2}}");
+    check("FindClique(PetersenGraph())", "{{1,3}}");
     // and without edges, nothing bigger than a single vertex
     check("FindClique(Graph({1,2,3},{}))", "{{1}}");
     check("FindClique(Graph({},{}))", "{}");
@@ -1920,8 +2136,8 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("IndependentVertexSetQ(CompleteGraph(4), {1,2})", "False");
     // in a 5-cycle, 5 closes back onto 1
     check("IndependentVertexSetQ(CycleGraph(5), {1,3,5})", "False");
-    // a repeated vertex makes the list something other than a set
-    check("IndependentVertexSetQ(CycleGraph(4), {1,1})", "False");
+    // accept a repeated vertex
+    check("IndependentVertexSetQ(CycleGraph(4), {1,1})", "True");
     // every entry has to be a vertex of the graph
     check("IndependentVertexSetQ(CycleGraph(4), {1,5})", "False");
 
@@ -2147,8 +2363,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("FindVertexColoring(CycleGraph(4), 2)", "{1,2,1,2}");
     check("FindVertexColoring(CycleGraph(4), 2)===FindVertexColoring(CycleGraph(4))", "True");
     check("FindVertexColoring(CompleteGraph(3), 3)", "{1,2,3}");
-    // fewer colors than the chromatic number: no coloring exists, and Mathematica returns the
-    // expression unevaluated rather than an empty list
+    // fewer colors than the chromatic number: no coloring exists
     check("Head(FindVertexColoring(CycleGraph(5), 2))", "FindVertexColoring");
     check("Head(FindVertexColoring(CompleteGraph(3), 2))", "FindVertexColoring");
     check("Head(FindVertexColoring(CycleGraph(4), 0))", "FindVertexColoring");
@@ -2345,6 +2560,236 @@ public class GraphFunctionsTest extends AbstractTestCase {
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
     EvalEngine.get().setIterationLimit(50000);
+  }
+
+  @Test
+  public void testGraphFunctionsWMA() {
+    check("g1=Graph({1<->2,2<->3,3<->1,3<->4,4<->5});" //
+        + "d1=Graph({1->2,2->3,3->1,3->4,4->5,5->3});" //
+        + "m1=Graph({1->2,2<->3,3->1});" //
+        + "w1=Graph({1<->2,2<->3,1<->3,3<->4},EdgeWeight->{2,3,7,1});", //
+        "");
+    check("FindCycle(g1)", //
+        "{{1<->2,2<->3,3<->1}}");
+    check("FindCycle(CompleteGraph(4),3,All)", //
+        "{{1<->2,2<->3,3<->1},{1<->2,2<->4,4<->1},{1<->3,3<->4,4<->1},{2<->3,3<->4,4<->2}}");
+    check("FindCycle(CompleteGraph(4),{4},All)", //
+        "{{1<->2,2<->3,3<->4,4<->1},{1<->2,2<->4,4<->3,3<->1},{1<->3,3<->2,2<->4,4<->1}}");
+    check("FindCycle(d1,Infinity,All)", //
+        "{{1->2,2->3,3->1},{3->4,4->5,5->3}}");
+    check("FindCycle({g1,4})", //
+        "{}");
+    check("FindHamiltonianCycle(CycleGraph(5))", //
+        "{{1<->2,2<->3,3<->4,4<->5,5<->1}}");
+    check("Length(FindHamiltonianCycle(CompleteGraph(4),All))", //
+        "3");
+    check("FindVertexCover(PetersenGraph())", //
+        "{1,2,3,7,9,10}");
+    check("FindVertexCover(g1)", //
+        "{1,2,4}");
+    check("{IsomorphicGraphQ(CycleGraph(4),GridGraph({2,2})),IsomorphicGraphQ(g1,g1,g1)," //
+        + "Length(FindGraphIsomorphism(CycleGraph(4),GridGraph({2,2}),All))}", //
+        "{True,True,8}");
+    check("ClosenessCentrality(d1)", //
+        "{0.4,0.5,0.666667,0.4,0.5}");
+    check("ClosenessCentrality(Graph({1<->2,3<->4}))", //
+        "{1.0,1.0,1.0,1.0}");
+    check("{VertexEccentricity(Graph({1->2,2->3}),1),VertexEccentricity(Graph({1<->2,3<->4}),1)}", //
+        "{2,1}");
+    check("{GraphRadius(Graph({1->2,2->3})),GraphDiameter(Graph({1<->2,3<->4}))," //
+        + "GraphCenter(Graph({1->2,2->3})),GraphPeriphery(Graph({1<->2,3<->4}))}", //
+        "{Infinity,Infinity,{},{}}");
+    check("BetweennessCentrality(w1)", //
+        "{0.0,0.0,2.0,0.0}");
+    check("EigenvectorCentrality(g1)", //
+        "{0.237286,0.237286,0.288141,0.163465,0.0738216}");
+    check("EigenvectorCentrality(d1)", //
+        "{0.206299,0.16374,0.259921,0.206299,0.16374}");
+    check("EdgeList(LineGraph(g1))", //
+        "{2<->1,3<->2,3<->1,4<->2,4<->3,5<->4}");
+    check("EdgeList(LineGraph(d1))", //
+        "{1->2,2->3,2->4,3->1,4->5,5->6,6->3,6->4}");
+    check("{TreeGraphQ(Graph({1->2,1->3,2->4,3->4})),PathGraphQ(CycleGraph(3))," //
+        + "PathGraphQ(Graph({1},{})),EdgeQ(g1,1->2),EdgeQ(g1,2<->1),DirectedGraphQ(m1)," //
+        + "AcyclicGraphQ(m1),IndependentVertexSetQ(CycleGraph(5),{1,1,3})}", //
+        "{False,True,True,True,True,False,False,True}");
+    check("EdgeList(WheelGraph(5))", //
+        "{1<->2,1<->3,1<->4,1<->5,2<->3,2<->5,3<->4,4<->5}");
+    check("{VertexCount(HypercubeGraph(0)),EdgeCount(GridGraph({2,2,2}))}", //
+        "{1,12}");
+    check("IndexGraph(Graph({a<->b},EdgeWeight->{5}))", //
+        "Graph({1,2},{1<->2},{EdgeWeight->{5}})");
+    check("{Normal(AdjacencyMatrix(m1)),Normal(IncidenceMatrix(m1))}", //
+        "{{{0,1,0},{0,0,1},{1,1,0}},{{-1,0,1},{1,1,0},{0,1,-1}}}");
+    check("Normal(KirchhoffMatrix(d1))", //
+        "{{2,-1,0,0,0},{0,2,-1,0,0},{-1,0,4,-1,0},{0,0,0,2,-1},{0,0,-1,0,2}}");
+    check("Normal(KirchhoffMatrix(w1))", //
+        "{{2,-1,-1,0},{-1,2,-1,0},{-1,-1,3,-1},{0,0,-1,1}}");
+    check("LocalClusteringCoefficient(Graph({1->2,2->3,3->1,3->4}))", //
+        "{1,1,1/2,0}");
+    check("GraphIntersection(Graph({1<->2,2<->3}),Graph({2<->1,3<->4}))", //
+        "Graph({1,2,3,4},{1<->2})");
+    check(
+        "{GraphUnion(g1)===g1,TopologicalSort({1->3,2->3,3->4}),TopologicalSort(Graph({3->1,2->1}))}", //
+        "{True,{1,2,3,4},{3,2,1}}");
+    check("{VertexList(Subgraph(g1,{4,1,3})),VertexList(VertexDelete(g1,_?EvenQ))," //
+        + "VertexList(NeighborhoodGraph(g1,{1,5})),CompleteGraphQ(g1,{1,2,3})}", //
+        "{{4,1,3},{1,3,5},{1,5,2,3,4},True}");
+    check("EdgeList(EdgeAdd(g1,1->5))", //
+        "{1<->2,2<->3,3<->1,3<->4,4<->5,1<->5}");
+    check("EdgeDelete(g1,1<->5)", //
+        "EdgeDelete(Graph({1,2,3,4,5},{1<->2,2<->3,3<->1,3<->4,4<->5}),1<->5)");
+    check("FindMaximumFlow(Graph({1->2,1->3,2->4,3->4},EdgeCapacity->{3,2,1,4}),1,4)", //
+        "3");
+    check("FindMaximumFlow(Graph({1->2,1->3,2->4,3->4},EdgeCapacity->{3,2,1,4}),1,4,\"EdgeList\")", //
+        "{1->2,1->3,2->4,3->4}");
+    check("FindMaximumFlow(Graph({1->2,2->3},VertexCapacity->{5,2,5}),1,3)", //
+        "1");
+
+    check("{VertexIndex(g1,3),VertexIndex(g1,{5,1}),EdgeIndex(g1,3<->1),EdgeIndex(g1,1<->3)," //
+        + "EdgeIndex(d1,3->4)}", //
+        "{3,{5,1},3,3,4}");
+    check("{EdgeWeightedGraphQ(w1),EdgeWeightedGraphQ(g1),EdgeWeightedGraphQ(5)}", //
+        "{True,False,False}");
+    check("EdgeList(VertexReplace(g1,{1->a,2->b}))", //
+        "{a<->b,b<->3,3<->a,3<->4,4<->5}");
+    check("EdgeList(VertexReplace(g1,x_/;x>3:>0))", //
+        "{1<->2,2<->3,3<->1,3<->0,0<->0}");
+    check("EdgeList(CirculantGraph(6,2))", //
+        "{1<->3,1<->5,2<->4,2<->6,3<->5,4<->6}");
+    check("EdgeList(CirculantGraph(7,{1,3}))", //
+        "{1<->2,1<->4,1<->5,1<->7,2<->3,2<->5,2<->6,3<->4,3<->6,3<->7,4<->5,4<->7,5<->6,6<->7}");
+    check("EdgeList(CirculantGraph(4,2))", //
+        "{1<->3,2<->4}");
+    check("EdgeList(HararyGraph(3,7))", //
+        "{1<->2,1<->4,1<->5,1<->7,2<->3,2<->6,3<->4,3<->7,4<->5,5<->6,6<->7}");
+    check("EdgeList(HararyGraph(4,7))", //
+        "{1<->2,1<->3,1<->6,1<->7,2<->3,2<->4,2<->7,3<->4,3<->5,4<->5,4<->6,5<->6,5<->7,6<->7}");
+    check("EdgeList(HararyGraph(2,5))", //
+        "{1<->2,1<->5,2<->3,3<->4,4<->5}");
+    check("EdgeList(TuranGraph(7,3))", //
+        "{1<->4,1<->5,1<->6,1<->7,2<->4,2<->5,2<->6,2<->7,3<->4,3<->5,3<->6,3<->7,4<->6,4<->7," //
+            + "5<->6,5<->7}");
+    check("HararyGraph(1,5)", //
+        "HararyGraph(1,5)");
+    check(
+        "{EdgeCount(TuranGraph(3,5)),VertexCount(CirculantGraph(5,0)),EdgeCount(CirculantGraph(5,0))}", //
+        "{3,5,0}");
+    check("{DegreeCentrality(g1),DegreeCentrality(d1),DegreeCentrality(d1,\"In\")," //
+        + "DegreeCentrality(d1,\"Out\"),DegreeCentrality(m1)}", //
+        "{{2,2,3,2,1},{2,2,4,2,2},{1,1,2,1,1},{1,1,2,1,1},{2,3,3}}");
+    check("HITSCentrality(d1)", //
+        "{{0.5,0.0,0.0,0.5,0.0},{0.0,0.0,1.0,0.0,0.0}}");
+    check("HITSCentrality(g1)", //
+        "{{0.237286,0.237286,0.288141,0.163465,0.0738216},{0.525428,0.525428,0.638037,0.361963,0.163465}}");
+    check("EccentricityCentrality(g1)", //
+        "{0.333333,0.333333,0.5,0.5,0.333333}");
+    check("EccentricityCentrality(d1)", //
+        "{0.25,0.333333,0.5,0.25,0.333333}");
+    check("EccentricityCentrality(w1)", //
+        "{0.166667,0.25,0.2,0.166667}");
+
+    check("ml=Graph({1<->2,2<->2});" //
+        + "Table(f(x),{f,{SimpleGraphQ,LoopFreeGraphQ,EmptyGraphQ,UndirectedGraphQ,MixedGraphQ}}," //
+        + "{x,{g1,d1,m1,w1,ml,Graph({1,2},{}),5}})", //
+        "{{True,True,True,True,False,True,False},{True,True,True,True,False,True,False}," //
+            + "{False,False,False,False,False,True,False},{True,False,False,True,True,True,False}," //
+            + "{False,False,True,False,False,False,False}}");
+    check("EdgeList(DirectedGraph(g1))", //
+        "{1->2,1->3,2->1,2->3,3->1,3->2,3->4,4->3,4->5,5->4}");
+    check("EdgeList(DirectedGraph(g1,\"Acyclic\"))", //
+        "{1->2,1->3,2->3,3->4,4->5}");
+    check("EdgeList(DirectedGraph(m1))", //
+        "{1->2,2->3,3->2,3->1}");
+    check("{EdgeList(UndirectedGraph(d1)),EdgeList(UndirectedGraph(m1))}", //
+        "{{1<->3,1<->2,2<->3,3<->5,3<->4,4<->5},{1<->3,1<->2,2<->3}}");
+    check("UndirectedGraph(Graph({1->2,2->1},EdgeWeight->{2,5}))", //
+        "Graph({1,2},{1<->2},{EdgeWeight->{7}})");
+    check("{EdgeList(ReverseGraph(d1)),EdgeList(ReverseGraph(m1))}", //
+        "{{1->3,2->1,3->2,3->5,4->3,5->4},{2->1,2<->3,1->3}}");
+    check("{GraphDensity(g1),GraphDensity(d1),GraphDensity(m1),GraphTriangleCount(g1)," //
+        + "GraphTriangleCount(d1),GraphTriangleCount(CompleteGraph(5))}", //
+        "{1/2,3/10,2/3,1,2,10}");
+    check("GraphDistanceMatrix(d1)", //
+        "{{0,1,2,3,4},{2,0,1,2,3},{1,2,0,1,2},{3,4,2,0,1},{2,3,1,2,0}}");
+    check("GraphDistanceMatrix(g1,1)[[1;;3]]", //
+        "{{0,1,1,Infinity,Infinity},{1,0,1,Infinity,Infinity},{1,1,0,1,Infinity}}");
+    check("GraphDistanceMatrix(g1,1)[[4;;5]]", //
+        "{{Infinity,Infinity,1,0,1},{Infinity,Infinity,Infinity,1,0}}");
+    check("GraphDistanceMatrix(w1)", //
+        "{{0.0,2.0,5.0,6.0},{2.0,0.0,3.0,4.0},{5.0,3.0,0.0,1.0},{6.0,4.0,1.0,0.0}}");
+    check("{MeanGraphDistance(g1),MeanGraphDistance(d1),MeanGraphDistance(w1)," //
+        + "MeanGraphDistance(Graph({1<->2,3<->4}))}", //
+        "{17/10,21/10,3.5,Infinity}");
+    check("PageRankCentrality(g1)", //
+        "{0.191822,0.191822,0.283403,0.212599,0.120355}");
+    check("PageRankCentrality(d1,1/2)", //
+        "{0.171429,0.185714,0.285714,0.171429,0.185714}");
+    check("PageRankCentrality(Graph({1->2,2->3}))", //
+        "{0.184417,0.341171,0.474412}");
+    check("KatzCentrality(g1,1/10)", //
+        "{1.26421,1.26421,1.37787,1.25029,1.12503}");
+    check("KatzCentrality(d1,1/5,2)", //
+        "{2.60163,2.52033,3.00813,2.60163,2.52033}");
+    check("KatzCentrality(d1,0.2,{1,2,3,4,5})", //
+        "{1.93496,2.38699,4.6748,4.93496,5.98699}");
+    check(
+        "{EdgeBetweennessCentrality(g1),EdgeBetweennessCentrality(d1),EdgeBetweennessCentrality(w1)}", //
+        "{{2.0,6.0,6.0,12.0,8.0},{7.0,7.0,7.0,7.0,7.0,7.0},{6.0,8.0,0.0,6.0}}");
+    check(
+        "{FindMinimumCut(g1),FindMinimumCut(w1),FindMinimumCut(d1),FindMinimumCut(CycleGraph(5))}", //
+        "{{1,{{5},{1,2,3,4}}},{1,{{4},{1,2,3}}},{1,{{5},{1,2,3,4}}},{2,{{5},{1,2,3,4}}}}");
+    check("{EdgeConnectivity(g1),EdgeConnectivity(CompleteGraph(5)),EdgeConnectivity(d1)," //
+        + "EdgeConnectivity(w1),EdgeConnectivity(g1,1,5),EdgeConnectivity(CompleteGraph(5),1,2)}", //
+        "{1,4,1,1,1,4}");
+    check("{FindEdgeCut(g1),FindEdgeCut(CompleteGraph(4)),FindEdgeCut(d1),FindEdgeCut(g1,1,5)," //
+        + "FindEdgeCut(CycleGraph(6),1,4),FindEdgeCut(w1,1,4)}", //
+        "{{4<->5},{1<->4,2<->4,3<->4},{5->3},{3<->4},{1<->2,1<->6},{3<->4}}");
+    check("{FindVertexCut(g1),FindVertexCut(CycleGraph(6)),FindVertexCut(CycleGraph(6),1,4)," //
+        + "FindVertexCut(g1,1,2),FindVertexCut(CompleteGraph(4)),FindVertexCut(PathGraph(Range(5)))}", //
+        "{{4},{1,5},{3,5},{},{1,2,3},{4}}");
+    check(
+        "{FindPath(g1,1,5),FindPath(CycleGraph(6),1,4,Infinity,All),FindPath(CompleteGraph(4),1,4,{2},All)," //
+            + "FindPath(CompleteGraph(4),1,4,2,All)}", //
+        "{{{1,2,3,4,5}},{{1,6,5,4},{1,2,3,4}},{{1,3,4},{1,2,4}},{{1,4},{1,3,4},{1,2,4}}}");
+    check("{FindPath(d1,5,1),FindPath(d1,1,2,{1,3},5),FindPath(w1,1,4,8,All)," //
+        + "FindPath(CycleGraph(8),1,5,Infinity,All)}", //
+        "{{{5,3,1}},{{1,2}},{{1,3,4},{1,2,3,4}},{{1,8,7,6,5},{1,2,3,4,5}}}");
+    check(
+        "{FindHamiltonianPath(g1),FindHamiltonianPath(CycleGraph(5)),FindHamiltonianPath(CycleGraph(5),1,3)," //
+            + "FindHamiltonianPath(StarGraph(4)),FindHamiltonianPath(d1),FindHamiltonianPath(Graph({1},{}))," //
+            + "FindHamiltonianPath(CycleGraph(6)),FindHamiltonianPath(PathGraph({3,1,2}))}", //
+        "{{1,2,3,4,5},{2,1,5,4,3},{},{},{1,2,3,4,5},{},{2,1,6,5,4,3},{3,1,2}}");
+    check("FindHamiltonianPath(CycleGraph(5),1,2)", //
+        "{1,5,4,3,2}");
+    // WMA gives {4,9,10,6,1,3,8,7,2,5}; both are Hamiltonian paths
+    check("FindHamiltonianPath(PetersenGraph())", //
+        "{1,3,5,2,4,9,8,7,6,10}");
+    check("EdgeList(PetersenGraph(6,2))", //
+        "{1<->3,1<->5,1<->7,2<->4,2<->6,2<->8,3<->5,3<->9,4<->6,4<->10,5<->11,6<->12,7<->8," //
+            + "7<->12,8<->9,9<->10,10<->11,11<->12}");
+    check("FindGraphIsomorphism(Graph({1<->2,1<->4,2<->3,3<->4}),Graph({1<->3,1<->4,2<->3,2<->4}))", //
+        "{<|1->1,2->3,4->4,3->2|>}");
+
+    check("g12=Graph({2->1,1->4,3->2,2->5,6->3,5->4,4->7,6->5,8->5,6->9,7->8,7->10,9->8,11->8," //
+        + "12->9,10->11,12->11});" //
+        + "{FindCycle(g12,{6,6},All),FindCycle(g12),FindCycle(g12,Infinity,All)}", //
+        "{{{4->7,7->10,10->11,11->8,8->5,5->4}},{{4->7,7->8,8->5,5->4}}," //
+            + "{{4->7,7->8,8->5,5->4},{4->7,7->10,10->11,11->8,8->5,5->4}}}");
+    check("{FindCycle(d1),FindCycle(CycleGraph(5))}", //
+        "{{{1->2,2->3,3->1}},{{1<->2,2<->3,3<->4,4<->5,5<->1}}}");
+    check("FindCycle(CompleteGraph(4))", //
+        "{{1<->2,2<->3,3<->1}}");
+    check("FindHamiltonianCycle(CompleteGraph(4))", //
+        "{{1<->2,2<->3,3<->4,4<->1}}");
+    check(
+        "Normal(FindMaximumFlow(Graph({1->2,1->3,2->4,3->4},EdgeCapacity->{3,2,1,4}),1,4,\"FlowMatrix\"))", //
+        "{{0,1,2,0},{0,0,0,1},{0,0,0,2},{0,0,0,0}}");
+    // an undirected edge of a mixed graph can be walked either way, but not twice
+    check("{AcyclicGraphQ(Graph({1->2,3<->2})),AcyclicGraphQ(Graph({1->2,2<->3,3->4,4<->1}))," //
+        + "AcyclicGraphQ(Graph({1->2,2<->3,4->3,4<->1})),AcyclicGraphQ(Graph({1<->2,2<->3}))," //
+        + "AcyclicGraphQ(Graph({1->2,2->1}))}", //
+        "{True,False,True,True,False}");
   }
 
   @AfterEach

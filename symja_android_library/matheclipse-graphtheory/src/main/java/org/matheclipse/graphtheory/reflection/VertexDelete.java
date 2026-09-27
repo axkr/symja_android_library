@@ -1,5 +1,7 @@
 package org.matheclipse.graphtheory.reflection;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -15,6 +17,7 @@ import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
 import org.matheclipse.graphtheory.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /**
  * Returns a graph with the specified vertices removed.
@@ -51,12 +54,8 @@ public class VertexDelete extends AbstractEvaluator {
       Graphs.addAllVertices(resultGraph, g.vertexSet());
       Graphs.addAllEdges(resultGraph, g, g.edgeSet());
 
-      if (arg2.isList()) {
-        for (IExpr v : (IAST) arg2) {
-          resultGraph.removeVertex(v);
-        }
-      } else {
-        resultGraph.removeVertex(arg2);
+      for (IExpr v : verticesToDelete(g, arg2, engine)) {
+        resultGraph.removeVertex(v);
       }
 
       return GraphExpr.newInstance(resultGraph);
@@ -77,16 +76,35 @@ public class VertexDelete extends AbstractEvaluator {
       Graphs.addAllVertices(resultGraph, g.vertexSet());
       Graphs.addAllEdges(resultGraph, g, g.edgeSet());
 
-      if (arg2.isList()) {
-        for (IExpr v : (IAST) arg2) {
-          resultGraph.removeVertex(v);
-        }
-      } else {
-        resultGraph.removeVertex(arg2);
+      for (IExpr v : verticesToDelete(g, arg2, engine)) {
+        resultGraph.removeVertex(v);
       }
 
       return GraphExpr.newInstance(resultGraph);
     }
+  }
+
+  /**
+   * The vertices named by <code>arg2</code>: a vertex, a list of vertices, or a pattern the
+   * vertices are matched against.
+   */
+  private static List<IExpr> verticesToDelete(Graph<IExpr, ?> g, IExpr arg2, EvalEngine engine) {
+    List<IExpr> result = new ArrayList<IExpr>();
+    if (arg2.isList()) {
+      for (IExpr v : (IAST) arg2) {
+        result.add(v);
+      }
+    } else if (g.containsVertex(arg2)) {
+      result.add(arg2);
+    } else {
+      IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
+      for (IExpr v : g.vertexSet()) {
+        if (matcher.test(v, engine)) {
+          result.add(v);
+        }
+      }
+    }
+    return result;
   }
 
   @Override

@@ -56,7 +56,9 @@ import org.matheclipse.core.visit.IVisitor;
  * <p>
  * The {@code IAST} interface extends {@link Iterable}. The iterator provided by this interface
  * typically iterates over the <b>Arguments</b> (indices 1 to N), skipping the Head (index 0). This
- * allows for convenient "for-each" loops over the operands.
+ * allows for convenient "for-each" loops over the operands. {@link #asList()} instead gives a
+ * read-only {@link java.util.List} of Head and Arguments, with the Head at index 0, and
+ * {@link #asArgsList()} one of the Arguments alone.
  * </p>
  *
  * <h3>3. Evaluation Flags</h3>
@@ -98,6 +100,16 @@ import org.matheclipse.core.visit.IVisitor;
  * // Map a function over arguments: {1, 2, 3} -> {f(1), f(2), f(3)}
  * IAST list = F.List(F.C1, F.C2, F.C3);
  * IAST mapped = list.map(x -> F.unary(F.f, x));
+ * </pre>
+ *
+ * <h4>As a java.util.List</h4>
+ *
+ * <pre>
+ * IAST expr = F.Plus(F.x, F.y);
+ * List&lt;IExpr&gt; view = expr.asList(); // [Plus, x, y], read-only
+ * IExpr head = view.get(0); // Returns S.Plus
+ * List&lt;IExpr&gt; args = expr.asArgsList(); // [x, y], read-only
+ * List&lt;IExpr&gt; copy = new ArrayList&lt;&gt;(view); // mutable copy including the head
  * </pre>
  *
  * @see org.matheclipse.core.expression.F
@@ -698,7 +710,47 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public IASTAppendable copyHead(final int intialCapacity);
 
+  /**
+   * A read-only {@link java.util.List} view of this AST. Index <code>0</code> is the
+   * {@link #head()}, indices <code>1 .. argSize()</code> are the arguments as
+   * {@link #getRule(int)} returns them; for an {@link IAssociation} these are the stored
+   * <code>Rule(key, value)</code> expressions. The view is backed by this AST, so it copies nothing
+   * and shows later changes of an {@link IASTAppendable}, but it is not fail-fast. Every mutator
+   * throws {@link UnsupportedOperationException}. Unlike {@link #iterator()}, {@link #forEach}
+   * and {@link #stream()}, which skip the head, the view includes it: <code>subList(1, size())</code>
+   * is the arguments alone and <code>new ArrayList&lt;&gt;(view)</code> a mutable copy with the head.
+   *
+   * <p>
+   * Reading an element costs an {@link #getRule(int)} call rather than an array access, so a view
+   * of a large tree backed AST which is read several times over is slower than
+   * {@link #copyTo()}, whose one pass amortises the tree walk. For the small lists a function's
+   * arguments usually are, the view is cheaper: it allocates nothing.
+   *
+   * @return a read-only list view of head and arguments
+   * @see #asArgsList()
+   * @see #copyTo()
+   */
+  default List<IExpr> asList() {
+    return new ASTListView(this, 0);
+  }
 
+  /**
+   * A read-only {@link java.util.List} view of the arguments of this AST, without the
+   * {@link #head()}: index <code>0</code> is {@link #arg1()} and index <code>argSize() - 1</code>
+   * the last argument, as {@link #getRule(int)} returns them; for an {@link IAssociation} these are
+   * the stored <code>Rule(key, value)</code> expressions. Otherwise the contract of
+   * {@link #asList()}: backed by this AST, copies nothing, shows later changes of an
+   * {@link IASTAppendable}, is not fail-fast, and every mutator throws
+   * {@link UnsupportedOperationException}. It is the read-only counterpart of {@link #copyTo()},
+   * which copies the arguments into a new mutable list. <code>F.NIL.asArgsList()</code> is empty.
+   *
+   * @return a read-only list view of the arguments
+   * @see #asList()
+   * @see #copyTo()
+   */
+  default List<IExpr> asArgsList() {
+    return new ASTListView(this, 1);
+  }
 
   /**
    * Copy the arguments of this AST to a list.

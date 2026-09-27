@@ -538,7 +538,150 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testInverseGammaDistribution() {
+    check("PDF(InverseGammaDistribution(a, b), x)", //
+        "Piecewise({{(b/x)^a/(E^(b/x)*x*Gamma(a)),x>0}},0)");
+    check("CDF(InverseGammaDistribution(a, b), x)", //
+        "Piecewise({{GammaRegularized(a,b/x),x>0}},0)");
+    check("PDF(InverseGammaDistribution(a, b, g, m), x)", //
+        "Piecewise({{(g*(b/(-m+x))^(1+a*g))/(b*E^(b/(-m+x))^g*Gamma(a)),x>m}},0)");
+    check("CDF(InverseGammaDistribution(a, b, g, m), x)", //
+        "Piecewise({{GammaRegularized(a,(b/(-m+x))^g),x>m}},0)");
+    check("{PDF(InverseGammaDistribution(2, 3), 1), CDF(InverseGammaDistribution(2, 3), 1), " //
+        + "PDF(InverseGammaDistribution(2, 3), -1), CDF(InverseGammaDistribution(2,3,2,1), 5/2)}", //
+        "{9/E^3,4/E^3,0,5/E^4}");
+    // machine numbers agree with the exact form
+    check("{PDF(InverseGammaDistribution(2.5, 1.5), 2.3), CDF(InverseGammaDistribution(2.5, 1.5), 2.3), " //
+        + "PDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), 2.3), " //
+        + "CDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), 2.3)}", //
+        "{0.0585206,0.934484,0.200833,0.814662}");
+    check("{N(PDF(InverseGammaDistribution(5/2, 3/2), 23/10)), " //
+        + "N(CDF(InverseGammaDistribution(5/2, 3/2, 4/5, 1), 23/10))}", //
+        "{0.0585206,0.814662}");
+    // a large shape does not overflow
+    check("{PDF(InverseGammaDistribution(300.0, 500.0), 1.7), " //
+        + "CDF(InverseGammaDistribution(300.0, 500.0), 1.7)}", //
+        "{3.83286,0.626495}");
+    check("NIntegrate(PDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), x), {x, 1, Infinity})", //
+        "1.0");
+    check("CDF(InverseGammaDistribution(2.5,1.5,0.8,1), Median(InverseGammaDistribution(2.5,1.5,0.8,1)))", //
+        "0.5");
+    // sampler
+    check("AllTrue(RandomVariate(InverseGammaDistribution(2, 3), 50), #>0&)", //
+        "True");
+    check("AllTrue(RandomVariate(InverseGammaDistribution(2, 3, 2, -1), 50), #>-1&)", //
+        "True");
+    check("Dimensions(RandomVariate(InverseGammaDistribution(2, 3), {2,3}))", //
+        "{2,3}");
+    check("Table(SeedRandom(9); RandomVariate(InverseGammaDistribution(2,3,2,1), 4), {2}) // Apply(SameQ)", //
+        "True");
+    check("RandomVariate(InverseGammaDistribution(-2, 3))", //
+        "RandomVariate(InverseGammaDistribution(-2,3))");
+    check("PDF(InverseGammaDistribution(-2, 3), 1)", //
+        "PDF(InverseGammaDistribution(-2,3),1)");
+    // Skewness and InverseCDF
+    check("Skewness(InverseGammaDistribution(a, b))", //
+        "Piecewise({{(4*Sqrt(-2+a))/(-3+a),a>3}},Indeterminate)");
+    check("Skewness(InverseGammaDistribution(a, b, g, m)) === " //
+        + "Piecewise({{(Gamma(a)^2*Gamma(a-3/g)-3*Gamma(a)*Gamma(a-2/g)*Gamma(a-1/g)" //
+        + "+2*Gamma(a-1/g)^3)/(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2)^(3/2),a*g>3}},Indeterminate)", //
+        "True");
+    check("{Variance(InverseGammaDistribution(5, 2)), Skewness(InverseGammaDistribution(5, 2)), " //
+        + "Variance(InverseGammaDistribution(3/2, 2)), Skewness(InverseGammaDistribution(3, 2))}", //
+        "{1/12,2*Sqrt(3),Indeterminate,Indeterminate}");
+    // the moments by quadrature
+    check("Module({d=InverseGammaDistribution(4.5, 1.5, 1.3, 0.5), m1, m2, m3}, " //
+        + "m1=NIntegrate(x*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m2=NIntegrate((x-m1)^2*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m3=NIntegrate((x-m1)^3*PDF(d,x),{x,0.5,Infinity}); " //
+        + "{m1, N(Mean(d)), m2, N(Variance(d)), m3/m2^(3/2), N(Skewness(d))})", //
+        "{1.05758,1.05758,0.0625915,0.0625915,2.5741,2.5741}");
+    check("InverseCDF(InverseGammaDistribution(a, b), q) === " //
+        + "ConditionalExpression(Piecewise({{b/InverseGammaRegularized(a,q),0<q<1},{0,q<=0}}," //
+        + "Infinity),0<=q<=1)", //
+        "True");
+    check("InverseCDF(InverseGammaDistribution(a, b, g, m), q) === " //
+        + "ConditionalExpression(Piecewise({{m+b/InverseGammaRegularized(a,q)^(1/g),0<q<1}," //
+        + "{m,q<=0}},Infinity),0<=q<=1)", //
+        "True");
+    check("{InverseCDF(InverseGammaDistribution(2, 3), 0), InverseCDF(InverseGammaDistribution(2, 3), 1), " //
+        + "InverseCDF(InverseGammaDistribution(2, 3, 2, 1), 0)}", //
+        "{0,Infinity,1}");
+    check("InverseCDF(InverseGammaDistribution(2, 3), 1/2)", //
+        "3/InverseGammaRegularized(2,1/2)");
+    check("Table(CDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), " //
+        + "InverseCDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), q)) - q, {q, {0.001, 0.3, 0.9}}) // Chop", //
+        "{0,0,0}");
+    check("Quantile(InverseGammaDistribution(2.5, 1.5), {0.1, 0.3, 0.9})", //
+        "{0.324803,0.494688,1.863}");
+    // Kurtosis
+    check("Kurtosis(InverseGammaDistribution(a, b))", //
+        "Piecewise({{3+(-66+30*a)/((-4+a)*(-3+a)),a>4}},Indeterminate)");
+    check("Kurtosis(InverseGammaDistribution(a, b, g, m)) === " //
+        + "Piecewise({{(Gamma(a)^3*Gamma(a-4/g)-4*Gamma(a)^2*Gamma(a-3/g)*Gamma(a-1/g)" //
+        + "+6*Gamma(a)*Gamma(a-2/g)*Gamma(a-1/g)^2-3*Gamma(a-1/g)^4)" //
+        + "/(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2)^2,a*g>4}},Indeterminate)", //
+        "True");
+    check("{Kurtosis(InverseGammaDistribution(5, 2)), Kurtosis(InverseGammaDistribution(4, 2)), " //
+        + "Kurtosis(InverseGammaDistribution(9/2, 1, 1, 0))}", //
+        "{45,Indeterminate,95}");
+    check("Module({d=InverseGammaDistribution(6.0, 1.5, 1.2, 0.5), m1, m2, m4}, " //
+        + "m1=NIntegrate(x*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m2=NIntegrate((x-m1)^2*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m4=NIntegrate((x-m1)^4*PDF(d,x),{x,0.5,Infinity}); {m4/m2^2, Kurtosis(d)})", //
+        "{13.11791,13.11791}");
+    // machine numbers with a large shape: the Gamma values overflow a double and the central
+    // moments cancel most of their digits (reference values from 80 digit arithmetic)
+    check("{Mean(InverseGammaDistribution(1000.0, 1.5, 0.7, 2.0)), " //
+        + "Variance(InverseGammaDistribution(1000.0, 1.5, 0.7, 2.0)), " //
+        + "Skewness(InverseGammaDistribution(1000.0, 1.5, 0.7, 2.0)), " //
+        + "Kurtosis(InverseGammaDistribution(1000.0, 1.5, 0.7, 2.0))}", //
+        "{2.00008,1.23979*10^-11,0.167664,3.05218}");
+    check("{Skewness(InverseGammaDistribution(1000000.0, 1.5, 0.7, 2.0)), " //
+        + "Kurtosis(InverseGammaDistribution(1000000.0, 1.5, 0.7, 2.0))}", //
+        "{0.00528573,3.00005}");
+    check("{Variance(InverseGammaDistribution(2.5, 1, 0.8, 0)), Kurtosis(InverseGammaDistribution(4.5, 1, 0.8, 0))}", //
+        "{Indeterminate,Indeterminate}");
+    // an exact large shape evaluates; N needs the digits the central moments cancel
+    check("N(Kurtosis(InverseGammaDistribution(300, 3/2, 7/10, 2)), 40)", //
+        "3.177016612594827128643611533494056882297");
+  }
+
+  @Test
   public void testGammaDistribution() {
+    // PDF and CDF of the 4 argument form for machine numbers and a large shape, where Gamma(a)
+    // overflows a double (reference values from 20 digit arithmetic)
+    check("{PDF(GammaDistribution(150.0, 1.5, 0.7, 2.0), 1932.5), " //
+        + "PDF(GammaDistribution(1000.0, 1.5, 0.7, 2.0), 28971.3)}", //
+        "{0.00177043,0.000304806}");
+    check("{CDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0), " //
+        + "CDF(GammaDistribution(1000.0, 1.5, 0.7, 2.0), 28971.3)}", //
+        "{0.509403,0.506898}");
+    check("{PDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0) - PDF(GammaDistribution(200.0, 1.0), 200.0), " //
+        + "CDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0) - CDF(GammaDistribution(200.0, 1.0), 200.0)} // Chop", //
+        "{0,0}");
+    check("{PDF(GammaDistribution(2.0, 1.5, 0.05, 0.0), 10.0^19), CDF(GammaDistribution(2.0, 1.5, 0.05, 0.0), 10.0^19)}", //
+        "{6.1431*10^-23,0.998432}");
+    check("{PDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 5.0), N(PDF(GammaDistribution(9/2, 3/2, 4/5, 2), 5)), " //
+        + "PDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 1.0), CDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 1.0)}", //
+        "{0.0487396,0.0487396,0,0}");
+    // machine numbers in the 4 argument form: Gamma(a) overflows a double from a > 171 on and the
+    // central moments cancel most of their digits (reference values from 80 digit arithmetic)
+    check("{Mean(GammaDistribution(1000.0, 1.5, 0.7, 2.0)), Kurtosis(GammaDistribution(1000.0, 1.5, 0.7, 2.0))}", //
+        "{28971.33,3.01752}");
+    check("{Mean(GammaDistribution(1000000.0, 1.5, 0.7, 2.0)), " //
+        + "Kurtosis(GammaDistribution(1000000.0, 1.5, 0.7, 2.0))}", //
+        "{5.59139*10^8,3.00002}");
+    check("{Mean(GammaDistribution(2.0, 1.5, 0.05, 0.0)), Kurtosis(GammaDistribution(2.0, 1.5, 0.05, 0.0))}", //
+        "{7.66364*10^19,5.1803*10^21}");
+    check("N({Mean(GammaDistribution(9/2, 3/2, 4/5, 2)), Kurtosis(GammaDistribution(9/2, 3/2, 4/5, 2))}) - " //
+        + "{Mean(GammaDistribution(4.5, 1.5, 0.8, 2.0)), Kurtosis(GammaDistribution(4.5, 1.5, 0.8, 2.0))} // Chop", //
+        "{0,0}");
+    check("Module({d=GammaDistribution(2.5, 1.5, 1.3, 0.5), m1, m2, m4}, " //
+        + "m1=NIntegrate(x*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m2=NIntegrate((x-m1)^2*PDF(d,x),{x,0.5,Infinity}); " //
+        + "m4=NIntegrate((x-m1)^4*PDF(d,x),{x,0.5,Infinity}); {m1, Mean(d), m4/m2^2, Kurtosis(d)})", //
+        "{3.43353,3.43353,3.93407,3.93407}");
     check("CentralMoment(GammaDistribution(a, b),n)", //
         "b^n*Hypergeometric1F1(-n,1-a-n,-a)*Pochhammer(a,n)");
     check("CentralMoment(GammaDistribution(a, b),2)", //
@@ -629,6 +772,26 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{3,2}");
     check("Dimensions(RandomVariate(MultinormalDistribution({0,0},IdentityMatrix(2)),{2,3}))", //
         "{2,3,2}");
+    // a general covariance matrix in any dimension
+    check(
+        "Dimensions(RandomVariate(MultinormalDistribution({1,2,3},{{2,1/2,0},{1/2,1,1/4},{0,1/4,3}}),5))", //
+        "{5,3}");
+    check("Dimensions(RandomVariate(MultinormalDistribution({{1,1/2},{1/2,1}}),4))", //
+        "{4,2}");
+    check("SeedRandom(42);s=RandomVariate(MultinormalDistribution({1,-2},{{2,3/2},{3/2,3}}),5000);" //
+        + "{Max(Abs(Mean(s)-{1,-2}))<0.1, Max(Abs(Flatten(Covariance(s)-{{2,3/2},{3/2,3}})))<0.25}", //
+        "{True,True}");
+    // MultinormalDistribution: The value {{1,2},{2,1}} at position 2 in
+    // MultinormalDistribution({0,0},{{1,2},{2,1}}) is expected to be a symmetric positive definite
+    // matrix
+    check("RandomVariate(MultinormalDistribution({0,0},{{1,2},{2,1}}),3)", //
+        "RandomVariate(MultinormalDistribution({0,0},\n{{1,2},\n {2,1}}),3)");
+    // asymmetric
+    check("RandomVariate(MultinormalDistribution({0,0},{{1,0},{1,1}}),3)", //
+        "RandomVariate(MultinormalDistribution({0,0},\n{{1,0},\n {1,1}}),3)");
+    // singular
+    check("RandomVariate(MultinormalDistribution({{1,1},{1,1}}))", //
+        "RandomVariate(MultinormalDistribution(\n{{1,1},\n {1,1}}))");
     check("Dimensions(RandomVariate(BinormalDistribution(1/2)))", //
         "{2}");
     check("Dimensions(RandomVariate(BinormalDistribution(1/2),3))", //
@@ -811,6 +974,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testGompertzMakehamDistributionSkewness() {
     check("Skewness(GompertzMakehamDistribution(m,n))", //
         "(2*E^(3*n)*Gamma(0,n)^3-3*E^(2*n)*Gamma(0,n)*(Pi^2/6-2*n*HypergeometricPFQ({1,1,\n"
@@ -1608,5 +1772,31 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     IExpr result = exprEvaluator.eval("N[ChiSquareTest[M1, M2]]");
     assertEquals(result.toString(), //
         "{chi2->2.75265,p->0.600033,df->4.0,expected->{{7.0,9.33333,8.75,8.75,8.16667},{5.0,6.66667,6.25,6.25,5.83333}}}");
+  }
+
+  @Test
+  public void testSkewNormalDistribution() {
+    check("PDF(SkewNormalDistribution(m, s, a), x)", //
+        "Erfc((a*(m-x))/(Sqrt(2)*s))/(E^((-m+x)^2/(2*s^2))*Sqrt(2*Pi)*s)");
+    check("CDF(SkewNormalDistribution(m, s, a), x)", //
+        "Erfc((m-x)/(Sqrt(2)*s))/2-2*OwenT((-m+x)/s,a)");
+    check("Mean(SkewNormalDistribution(m, s, a))", //
+        "m+(a*Sqrt(2/Pi)*s)/Sqrt(1+a^2)");
+    check("Variance(SkewNormalDistribution(m, s, a))", //
+        "(1+(-2*a^2)/((1+a^2)*Pi))*s^2");
+    check("Skewness(SkewNormalDistribution(m, s, a))", //
+        "(Sqrt(2)*a^3*(4-Pi))/(a^2*(-2+Pi)+Pi)^(3/2)");
+    check("Kurtosis(SkewNormalDistribution(m, s, a))", //
+        "3+(8*a^4*(-3+Pi))/(a^2*(-2+Pi)+Pi)^2");
+    check("Simplify(PDF(SkewNormalDistribution(m, s, 0), x) - PDF(NormalDistribution(m, s), x))", //
+        "0");
+    checkNumeric("CDF(SkewNormalDistribution(2), 0.5)", //
+        "0.4083012539660562");
+    checkNumeric("N(Mean(SkewNormalDistribution(1, 2, 3)))", //
+        "2.513879513212096");
+    check("Skewness(SkewNormalDistribution(1, 2, -3)) + Skewness(SkewNormalDistribution(1, 2, 3))", //
+        "0");
+    check("PDF(SkewNormalDistribution(0, -1, 1), x)", //
+        "PDF(SkewNormalDistribution(0,-1,1),x)");
   }
 }

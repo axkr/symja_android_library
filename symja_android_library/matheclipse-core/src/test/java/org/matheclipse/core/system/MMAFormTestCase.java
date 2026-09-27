@@ -57,20 +57,17 @@ public class MMAFormTestCase extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The non-finite machine doubles have to be named the way the Wolfram Language names them.
    * Symja's own input form appends the precision marker to <code>Double.toString()</code> and so
    * prints <code>Infinity`</code>, <code>-Infinity`</code> and <code>NaN`</code>, all of which
-   * Symja reads back. The Wolfram Language reads none of them: a backtick separates a context from
-   * a symbol there rather than marking precision, and it calls <code>NaN</code>
-   * <code>Indeterminate</code>.
+   * Symja reads back. A backtick separates a context from a symbol rather than marking precision,
+   * and it calls <code>NaN</code> <code>Indeterminate</code>.
    */
   @Test
   public void testWLNonFiniteDoubles() {
     assertEquals(F.num(Double.POSITIVE_INFINITY).toMMA(), "Infinity");
     assertEquals(F.num(Double.NEGATIVE_INFINITY).toMMA(), "-Infinity");
     assertEquals(F.num(Double.NaN).toMMA(), "Indeterminate");
-    assertEquals(F.List(F.C1, F.num(Double.POSITIVE_INFINITY), F.C2).toMMA(),
-        "{1,Infinity,2}");
+    assertEquals(F.List(F.C1, F.num(Double.POSITIVE_INFINITY), F.C2).toMMA(), "{1,Infinity,2}");
   }
 
   /** A leading minus has to be parenthesised exactly as it is for a finite negative number. */

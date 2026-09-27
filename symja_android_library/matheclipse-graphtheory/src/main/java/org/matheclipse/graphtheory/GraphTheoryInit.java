@@ -22,6 +22,37 @@ public class GraphTheoryInit {
     GraphDataFunctions.initialize();
 
     S.AcyclicGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.AcyclicGraphQ());
+    S.CirculantGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.CirculantGraph());
+    S.DegreeCentrality.setEvaluator(new org.matheclipse.graphtheory.reflection.DegreeCentrality());
+    S.EccentricityCentrality.setEvaluator(new org.matheclipse.graphtheory.reflection.EccentricityCentrality());
+    S.EdgeIndex.setEvaluator(new org.matheclipse.graphtheory.reflection.EdgeIndex());
+    S.EdgeWeightedGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.EdgeWeightedGraphQ());
+    S.HITSCentrality.setEvaluator(new org.matheclipse.graphtheory.reflection.HITSCentrality());
+    S.HararyGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.HararyGraph());
+    S.TuranGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.TuranGraph());
+    S.VertexIndex.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexIndex());
+    S.VertexReplace.setEvaluator(new org.matheclipse.graphtheory.reflection.VertexReplace());
+    S.SimpleGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.SimpleGraphQ());
+    S.LoopFreeGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.LoopFreeGraphQ());
+    S.EmptyGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.EmptyGraphQ());
+    S.UndirectedGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.UndirectedGraphQ());
+    S.MixedGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.MixedGraphQ());
+    S.DirectedGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.DirectedGraph());
+    S.UndirectedGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.UndirectedGraph());
+    S.ReverseGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.ReverseGraph());
+    S.GraphDensity.setEvaluator(new org.matheclipse.graphtheory.reflection.GraphDensity());
+    S.GraphTriangleCount.setEvaluator(new org.matheclipse.graphtheory.reflection.GraphTriangleCount());
+    S.GraphDistanceMatrix.setEvaluator(new org.matheclipse.graphtheory.reflection.GraphDistanceMatrix());
+    S.MeanGraphDistance.setEvaluator(new org.matheclipse.graphtheory.reflection.MeanGraphDistance());
+    S.PageRankCentrality.setEvaluator(new org.matheclipse.graphtheory.reflection.PageRankCentrality());
+    S.KatzCentrality.setEvaluator(new org.matheclipse.graphtheory.reflection.KatzCentrality());
+    S.EdgeBetweennessCentrality.setEvaluator(new org.matheclipse.graphtheory.reflection.EdgeBetweennessCentrality());
+    S.EdgeConnectivity.setEvaluator(new org.matheclipse.graphtheory.reflection.EdgeConnectivity());
+    S.FindEdgeCut.setEvaluator(new org.matheclipse.graphtheory.reflection.FindEdgeCut());
+    S.FindMinimumCut.setEvaluator(new org.matheclipse.graphtheory.reflection.FindMinimumCut());
+    S.FindVertexCut.setEvaluator(new org.matheclipse.graphtheory.reflection.FindVertexCut());
+    S.FindPath.setEvaluator(new org.matheclipse.graphtheory.reflection.FindPath());
+    S.FindHamiltonianPath.setEvaluator(new org.matheclipse.graphtheory.reflection.FindHamiltonianPath());
     S.AdjacencyGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.AdjacencyGraph());
     S.AdjacencyList.setEvaluator(new org.matheclipse.graphtheory.reflection.AdjacencyList());
     S.FindEdgeColoring.setEvaluator(new org.matheclipse.graphtheory.reflection.FindEdgeColoring());
@@ -78,6 +109,10 @@ public class GraphTheoryInit {
     S.NeighborhoodGraph
         .setEvaluator(new org.matheclipse.graphtheory.reflection.NeighborhoodGraph());
     S.Subgraph.setEvaluator(new org.matheclipse.graphtheory.reflection.Subgraph());
+    S.VertexConnectivity
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.VertexConnectivity());
+    S.WeaklyConnectedComponents
+        .setEvaluator(new org.matheclipse.graphtheory.reflection.WeaklyConnectedComponents());
     S.TopologicalSort.setEvaluator(new org.matheclipse.graphtheory.reflection.TopologicalSort());
     S.TreeGraph.setEvaluator(new org.matheclipse.graphtheory.reflection.TreeGraph());
     S.TreeGraphQ.setEvaluator(new org.matheclipse.graphtheory.reflection.TreeGraphQ());

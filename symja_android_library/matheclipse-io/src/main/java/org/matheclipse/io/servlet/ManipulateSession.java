@@ -280,12 +280,12 @@ public class ManipulateSession {
     }
 
     ObjectNode bindings = initialBindings(spec);
-    IExpr result = registerBodyInteractions(engine, spec, bindings, id,
-        evaluateBody(engine, spec, bindings));
+    Frame frame = evaluateFrame(engine, spec, bindings);
+    IExpr result = registerBodyInteractions(engine, spec, bindings, id, frame.result);
     String[] rendered = AJAXQueryServlet.renderResult(engine, result, outWriter, errorWriter);
     return JSONBuilder.createJSONManipulate(id, spec, rendered[1],
         resolveEnabled(engine, spec, bindings), resolveVisible(engine, spec, bindings),
-        renderDisplays(engine, spec, bindings, outWriter, errorWriter), bodyControlsJSON(id),
+        renderDisplays(engine, spec, frame.locals, outWriter, errorWriter), bodyControlsJSON(id),
         spec.warnings());
   }
 
@@ -293,7 +293,7 @@ public class ManipulateSession {
   private static ObjectNode initialBindings(ManipulateSpec spec) {
     ObjectNode bindings = JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
     for (ManipulateControl control : spec.getControls()) {
-      if (!control.bindsVariable()) {
+      if (!control.bindsVariable() || ManipulateControl.NONE.equals(control.getKind())) {
         continue;
       }
       Object value = control.initialValue();
@@ -324,19 +324,65 @@ public class ManipulateSession {
     return bindings;
   }
 
+  /** One frame of a widget: what the body gave, and the values its variables were left with. */
+  static final class Frame {
+    /** The body's result, with any <code>Dynamic</code> it produced resolved. */
+    final IExpr result;
+
+    /**
+     * The <code>Block</code> local assignments of the control variables as the body left them,
+     * which the read-outs of the same frame are rendered with.
+     */
+    final IAST locals;
+
+    Frame(IExpr result, IAST locals) {
+      this.result = result;
+      this.locals = locals;
+    }
+  }
+
   /**
-   * Evaluate the body of a widget with the control values the browser sent.
+   * Evaluate the body of a widget with the control values the browser sent, and read back the
+   * control variables before its <code>Block</code> ends.
    *
    * <p>
    * The bindings are installed with {@link S#Block}, so the control variables are local to this
    * evaluation and a global symbol of the same name is left alone.
+   *
+   * <p>
+   * <code>Manipulate[status = If[u &gt; 5, "high", "low"]; u, {u, 0, 10},
+   * Style[Dynamic[status]], {{status, ""}, ControlType -&gt; None}]</code> writes a variable in the
+   * body for a read-out to show. The read-outs are rendered after the body's <code>Block</code> has
+   * ended, so they are handed the values the body left rather than the ones the browser sent -
+   * which is what a notebook shows, where the body and the read-outs share one set of variables.
    */
-  static IExpr evaluateBody(EvalEngine engine, ManipulateSpec spec, JsonNode bindings) {
-    IExpr result = engine.evaluate(
-        F.Block(bindingList(engine, spec, bindings), Dynamics.releaseAll(spec.getBody())));
+  static Frame evaluateFrame(EvalEngine engine, ManipulateSpec spec, JsonNode bindings) {
+    IASTAppendable locals = bindingList(engine, spec, bindings);
+    IASTAppendable variables = F.ListAlloc(locals.argSize());
+    for (int i = 1; i < locals.size(); i++) {
+      variables.append(((IAST) locals.get(i)).arg1());
+    }
+    // {{body}, {u1, u2, ...}}: a List evaluates in order, so the variables are read after the body
+    // ran; the body is wrapped once more so a Sequence it returns cannot shift the pair
+    IExpr evaluated = engine.evaluate(F.Block(locals,
+        F.List(F.List(Dynamics.releaseAll(spec.getBody())), variables)));
+    IExpr result = evaluated;
+    IAST after = locals;
+    if (evaluated.isList() && evaluated.argSize() == 2 && evaluated.first().isList()
+        && evaluated.second().isList()
+        && ((IAST) evaluated.second()).argSize() == variables.argSize()) {
+      IAST body = (IAST) evaluated.first();
+      result = body.argSize() == 1 ? body.arg1() : body.setAtCopy(0, S.Sequence);
+      IAST values = (IAST) evaluated.second();
+      IASTAppendable updated = F.ListAlloc(variables.argSize());
+      for (int i = 1; i <= variables.argSize(); i++) {
+        updated.append(F.Set(variables.get(i), values.get(i)));
+      }
+      after = updated;
+    }
     // the wrappers of the body itself came off before it ran; this catches one the evaluation
     // produced, from a definition such as caption[] := Dynamic[k]
-    return Dynamics.resolve(result, engine);
+    return new Frame(Dynamics.resolve(result, engine), after);
   }
 
   /**
@@ -350,18 +396,14 @@ public class ManipulateSession {
    * @return the renderings by control index, or <code>null</code> when the widget has no display
    *         row
    */
-  static ObjectNode renderDisplays(EvalEngine engine, ManipulateSpec spec, JsonNode bindings,
+  static ObjectNode renderDisplays(EvalEngine engine, ManipulateSpec spec, IAST locals,
       StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
     List<ManipulateControl> controls = spec.getControls();
     ObjectNode displays = null;
-    IASTAppendable locals = F.NIL;
     for (int i = 0; i < controls.size(); i++) {
       ManipulateControl control = controls.get(i);
       if (!ManipulateControl.DISPLAY.equals(control.getKind())) {
         continue;
-      }
-      if (!locals.isPresent()) {
-        locals = bindingList(engine, spec, bindings);
       }
       if (displays == null) {
         displays = JSONBuilder.JSON_OBJECT_MAPPER.createObjectNode();
@@ -469,6 +511,10 @@ public class ManipulateSession {
    */
   static IExpr valueOf(ManipulateControl control, JsonNode node, EvalEngine engine) {
     String kind = control.getKind();
+    if (ManipulateControl.NONE.equals(kind)) {
+      // no widget sends a value for it; the variable always starts where it was declared
+      return control.getInitial();
+    }
     if (node == null || node.isNull()) {
       IExpr initial = fromInitial(control);
       return initial;

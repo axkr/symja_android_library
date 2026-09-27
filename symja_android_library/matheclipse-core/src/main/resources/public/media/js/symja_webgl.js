@@ -133,7 +133,8 @@
         // A mathematical surface is a sheet and has to be lit from both sides, but a box or a
         // sphere is closed: drawing its interior as well means a translucent one is blended twice
         // over, which turns a half transparent bar into a muddy solid.
-        var closed = CLOSED_SOLIDS[el.type] === true;
+        // CapForm[None] leaves a cylinder or a cone open, and then its inside can be seen
+        var closed = CLOSED_SOLIDS[el.type] === true && !el.openEnded;
         var params = {
             color: el.color,
             transparent: el.opacity < 1.0,
@@ -267,7 +268,15 @@
                 var path = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.0);
                 var segments = Math.min(600, Math.max(points.length * 2, 8));
                 var tube = new THREE.TubeGeometry(path, segments, radius, 8, false);
-                group.add(new THREE.Mesh(tube, surfaceMaterial(el)));
+                var tubeMaterial = surfaceMaterial(el);
+                if (el.onSurface) {
+                    // a thick line lies half inside the surface it is drawn on; pulling it towards
+                    // the camera keeps the faces from cutting ragged bites out of its edge
+                    tubeMaterial.polygonOffset = true;
+                    tubeMaterial.polygonOffsetFactor = -1;
+                    tubeMaterial.polygonOffsetUnits = -1;
+                }
+                group.add(new THREE.Mesh(tube, tubeMaterial));
             } else {
                 var geometry = new THREE.BufferGeometry().setFromPoints(points);
                 var line = new THREE.Line(geometry, lineMaterial(el, diagonal));
@@ -319,12 +328,14 @@
         group.add(mesh);
     }
 
-    function buildSpheres(el, group) {
+    function buildSpheres(el, diagonal, group) {
         var THREE = global.THREE;
         var flat = el.centers || [];
         var count = Math.floor(flat.length / 3);
         if (count === 0) { return; }
-        var geometry = new THREE.SphereGeometry(el.radius, 40, 30);
+        // Sphere[c, Scaled[s]] is s of the scene diagonal, which only the finished scene knows
+        var radius = typeof el.radiusScaled === 'number' ? el.radiusScaled * diagonal : el.radius;
+        var geometry = new THREE.SphereGeometry(radius, 40, 30);
         var material = surfaceMaterial(el);
         if (count === 1) {
             var mesh = new THREE.Mesh(geometry, material);
@@ -358,7 +369,7 @@
         var THREE = global.THREE;
         var start = vec(el.start, 0), end = vec(el.end, 0);
         var height = start.distanceTo(end);
-        var geometry = new THREE.CylinderGeometry(el.radius, el.radius, height, 40, 1);
+        var geometry = new THREE.CylinderGeometry(el.radius, el.radius, height, 40, 1, !!el.openEnded);
         geometry.translate(0, height / 2, 0);
         var mesh = new THREE.Mesh(geometry, surfaceMaterial(el));
         orientAlong(mesh, start, end);
@@ -369,7 +380,7 @@
         var THREE = global.THREE;
         var start = vec(el.start, 0), end = vec(el.end, 0);
         var height = start.distanceTo(end);
-        var geometry = new THREE.ConeGeometry(el.radius, height, 40, 1);
+        var geometry = new THREE.ConeGeometry(el.radius, height, 40, 1, !!el.openEnded);
         geometry.translate(0, height / 2, 0);
         var mesh = new THREE.Mesh(geometry, surfaceMaterial(el));
         orientAlong(mesh, start, end);
@@ -420,7 +431,9 @@
         }
         if (!path) { return null; }
         var geometry = new THREE.TubeGeometry(path, 128, el.radius, 16, !!el.closed);
-        return addOutline(new THREE.Mesh(geometry, surfaceMaterial(el)), geometry, el);
+        // a tube is one smooth surface: the seams between its facets are no edges, and the rims of
+        // an open one would show as a dark ring wherever its ends meet
+        return new THREE.Mesh(geometry, surfaceMaterial(el));
     }
 
     function buildCurve(el, diagonal, group, curve) {
@@ -850,7 +863,7 @@
                 var group = new THREE.Group();
                 switch (el.type) {
                     case 'Polygon': built = buildPolygon(el); break;
-                    case 'Sphere': buildSpheres(el, group); built = group; break;
+                    case 'Sphere': buildSpheres(el, diagonal, group); built = group; break;
                     case 'Cylinder': built = buildCylinder(el); break;
                     case 'Cone': built = buildCone(el); break;
                     case 'Cuboid': built = buildCuboid(el); break;

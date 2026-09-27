@@ -16,10 +16,9 @@ import org.matheclipse.core.interfaces.IRational;
  * Deterministic conversion of the linear IR back into a Symja expression.
  *
  * <p>
- * The decision procedures produce formulas; this class produces the surface form Wolfram Language
- * uses for them: a relation solved for its target, a congruence written with <code>Mod</code>, a
- * conjunction whose conditions on the parameters come first, and an explicit domain membership on
- * a solution set which is not finite.
+ * The decision procedures produce formulas; this class produces the surface form: a relation solved
+ * for its target, a congruence written with <code>Mod</code>, a conjunction whose conditions on the
+ * parameters come first, and an explicit domain membership on a solution set which is not finite.
  */
 public final class Emitter {
 
@@ -50,11 +49,10 @@ public final class Emitter {
         List<Formula> children = new ArrayList<Formula>(formula.children());
         if (formula.kind() == Formula.Kind.AND && !targets.isEmpty()) {
           // a condition on the parameters is a premise of the solution set, so it reads first
-          Collections.sort(children, (left, right) -> Boolean.compare(mentions(left, targets),
-              mentions(right, targets)));
+          Collections.sort(children,
+              (left, right) -> Boolean.compare(mentions(left, targets), mentions(right, targets)));
         }
-        IASTAppendable result = formula.kind() == Formula.Kind.AND
-            ? F.ast(S.And, children.size())
+        IASTAppendable result = formula.kind() == Formula.Kind.AND ? F.ast(S.And, children.size())
             : F.ast(S.Or, children.size());
         for (Formula child : children) {
           result.append(formula(child, targets));
@@ -89,11 +87,10 @@ public final class Emitter {
     Variable isolated = chooseIsolatedVariable(atom.term(), targets);
     if (isolated != null) {
       IRational coefficient = atom.term().coefficient(isolated);
-      AffineTerm rest = atom.term()
-          .subtract(AffineTerm.variable(isolated).scale(coefficient));
+      AffineTerm rest = atom.term().subtract(AffineTerm.variable(isolated).scale(coefficient));
       AffineTerm boundary = rest.scale(coefficient.inverse().negate());
-      Relation relation = coefficient.complexSign() < 0 ? atom.relation().reversed()
-          : atom.relation();
+      Relation relation =
+          coefficient.complexSign() < 0 ? atom.relation().reversed() : atom.relation();
       return comparison(relation, isolated.symbol(), term(boundary));
     }
     return comparison(atom.relation(), term(atom.term()), F.C0);
@@ -169,8 +166,7 @@ public final class Emitter {
    *
    * <p>
    * A finite set names its members and needs no membership; an unbounded one, such as a ray or a
-   * residue class, describes integers only together with <code>Element(x, Integers)</code>, which
-   * is how Wolfram Language reports it.
+   * residue class, describes integers only together with <code>Element(x, Integers)</code>.
    */
   public static IExpr withDomainConditions(IExpr expression, List<Variable> targets,
       IntegerDomain domain) {
@@ -195,7 +191,7 @@ public final class Emitter {
   }
 
   /**
-   * The Wolfram Language form of a parametrized integer solution set.
+   * Form of a parametrized integer solution set.
    *
    * <p>
    * A variable the system never mentions is unconstrained and keeps its own membership; the fresh

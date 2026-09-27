@@ -1,17 +1,17 @@
 package org.matheclipse.core.builtin.graphics;
 
+import java.util.List;
 import java.util.function.DoubleUnaryOperator;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
@@ -37,13 +37,6 @@ public class PolarPlot extends Plot {
       // Range specification `1` is not of the form {x, xmin, xmax}.
       return Errors.printMessage(S.PolarPlot, "pllim", F.list(arg2), engine);
     }
-    if (options[0].isTrue()) {
-      IExpr temp = S.Manipulate.funEval(engine, ast);
-      if (temp.headID() == ID.JSFormData) {
-        return temp;
-      }
-      return F.NIL;
-    }
 
     if (argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
@@ -53,7 +46,9 @@ public class PolarPlot extends Plot {
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
     graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
+    // the points are adaptive samples of a function, not data, so markers are spaced out
+    graphicsOptions.setSampledCurve(true);
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     // a polar curve's colour function is given its angle and radius as well as its coordinates
@@ -75,27 +70,23 @@ public class PolarPlot extends Plot {
         return F.NIL;
       }
 
-      if (ToggleFeature.JS_ECHARTS) {
-        return evaluateECharts(ast, argSize, options, engine, originalAST);
-      } else {
-        // Use ListPlot logic to render the lines with proper styles/options
-        GraphicsOptions listPlotOptions = graphicsOptions.copy();
-        IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
-        IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
+      // Use ListPlot logic to render the lines with proper styles/options
+      GraphicsOptions listPlotOptions = graphicsOptions.copy();
+      IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
+      IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
 
-        if (graphicsPrimitives.isPresent()) {
-          // the polar scale is drawn first so that it sits behind the curve
-          IAST polar = polarScale(GraphicsOptions.optionValue(originalAST, S.PolarAxes, S.False),
-              GraphicsOptions.optionValue(originalAST, S.PolarGridLines, S.None),
-              listPlotOptions.boundingBox());
-          if (polar.isPresent()) {
-            IASTAppendable withScale = F.ListAlloc(graphicsPrimitives.size() + 1);
-            withScale.append(polar);
-            withScale.appendArgs(graphicsPrimitives);
-            graphicsPrimitives = withScale;
-          }
-          return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
+      if (graphicsPrimitives.isPresent()) {
+        // the polar scale is drawn first so that it sits behind the curve
+        IAST polar = polarScale(GraphicsOptions.optionValue(originalAST, S.PolarAxes, S.False),
+            GraphicsOptions.optionValue(originalAST, S.PolarGridLines, S.None),
+            listPlotOptions.boundingBox());
+        if (polar.isPresent()) {
+          IASTAppendable withScale = F.ListAlloc(graphicsPrimitives.size() + 1);
+          withScale.append(polar);
+          withScale.appendArgs(graphicsPrimitives);
+          graphicsPrimitives = withScale;
         }
+        return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
       }
 
     } catch (RuntimeException rex) {
@@ -199,7 +190,11 @@ public class PolarPlot extends Plot {
 
     // a wrapped radius is unwrapped before it is sampled, and its label put back on the finished
     // curve; the same reading of the four wrapper levels as every other plot family
-    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions);
+    // r(t) with r(u_?NumericQ) := {1, 2} is two curves, which only its value can say
+    final List<IAST> probes = PlotShapeProbe.rangeProbes(new IExpr[] {theta},
+        new double[] {tMinD}, new double[] {tMaxD});
+    final PlotWrapper.Curves curves = PlotWrapper.curves(functionOrListOfFunctions).splitEach(
+        f -> PlotShapeProbe.split(f, probes, PlotShapeProbe.SCALAR, false, engine));
     final IAST list = curves.functions;
     int size = list.size();
     final IASTAppendable listOfLines = F.ListAlloc(size - 1);

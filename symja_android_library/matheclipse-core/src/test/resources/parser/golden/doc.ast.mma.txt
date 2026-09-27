@@ -385,7 +385,7 @@ AstroSubpoint("Sun", DateObject({2026,12,21,12,0,0}))	!syntax@20: ')' expected.
 AstroSubpoint("Sun", DateObject({2026,6,21,12,0,0}))	!syntax@20: ')' expected.
 AstroZoomLevel(x)	Times(AstroZoomLevel, x)
 Asymptotic(Tan(x), {x, 0, 5})	!syntax@18: ')' expected.
-AsymptoticDSolveValue({y'(x) == y(x), y(0) == 1}, y(x), {x, 0, 3})	!syntax@26: '}' expected.
+AsymptoticDSolveValue({y'(x) == y(x), y(0) == 1}, y(x), {x, 0, 3})	!syntax@49: ')' expected.
 AsymptoticIntegrate(Cos(t), t->0)	!syntax@27: ')' expected.
 AsymptoticIntegrate(Cos(t), {t, 0, x}, {x, 0, 4})	!syntax@27: ')' expected.
 AsymptoticIntegrate(Sin(x), x, x -> 0)	!syntax@27: ')' expected.
@@ -410,8 +410,8 @@ Attributes(SetDelayed)	Times(Attributes, SetDelayed)
 Attributes(Unevaluated)	Times(Attributes, Unevaluated)
 Attributes(f)	Times(Attributes, f)
 Attributes(f) = {Flat};	CompoundExpression(Set(Times(Attributes, f), List(Flat)), Null)
-Attributes(f) = {HoldAll}; Apart(f''(x + x))	!syntax@37: ')' expected.
-Attributes(f) = {}; Apart(f''(x + x))	!syntax@30: ')' expected.
+Attributes(f) = {HoldAll}; Apart(f''(x + x))	CompoundExpression(Set(Times(Attributes, f), List(HoldAll)), Times(Apart, Times(Derivative(2)[f], Plus(x, x))))
+Attributes(f) = {}; Apart(f''(x + x))	CompoundExpression(Set(Times(Attributes, f), List()), Times(Apart, Times(Derivative(2)[f], Plus(x, x))))
 Attributes(g)	Times(Attributes, g)
 AudioOverlay(x)	Times(AudioOverlay, x)
 AudioTrim(x)	Times(AudioTrim, x)
@@ -997,32 +997,32 @@ DSolve(x*y'(x)^2 - (x + y(x))*y'(x) + y(x) == 0, y(x), x)	!syntax@48: ')' expect
 DSolve(x^3*y'''(x) + 2*x^2*y''(x) - 4*x*y'(x) + 4*y(x) - x^3*y'(x) - 2*x^2*y(x) == 0, y(x), x)	!syntax@85: ')' expected.
 DSolve(x^3*y''(x) == (y(x) - x*y'(x))^2, y(x), x)	!syntax@40: ')' expected.
 DSolve(y' == y)	Times(DSolve, Equal(Derivative(1)[y], y))
-DSolve(y'''(x) - 4*(x + 2)*y'(x) - 2*y(x) == 0, y(x), x)	!syntax@12: ')' expected.
-DSolve(y'''(x) - 6*y''(x) + 11*y'(x) - 6*y(x) == 0, y(x), x)	!syntax@12: ')' expected.
-DSolve(y''(x) + y(x) == Sec(x), y(x), x)	!syntax@11: ')' expected.
-DSolve(y''(x) - 4*y(x) == 0, y(x), x, GeneratedParameters -> f)	!syntax@11: ')' expected.
-DSolve(y''(x) - x^4*y(x) == 0, y(x), x)	!syntax@11: ')' expected.
-DSolve(y''(x) == (x/4 + 5/(16*x^2))*y(x), y(x), x)	!syntax@11: ')' expected.
-DSolve(y''(x) == (x^2 - 1)*y(x), y(x), x)	!syntax@11: ')' expected.
-DSolve(y''(x) == 0, y(x), x)	!syntax@11: ')' expected.
-DSolve(y''(x) == y(x), y(x), x)	!syntax@11: ')' expected.
-DSolve(y''(x) == y(x), y, x)	!syntax@11: ')' expected.
-DSolve(y'(x) == (x + y(x))^2, y(x), x)	!syntax@10: ')' expected.
-DSolve(y'(x) == (y(x) - 2)/(x + y(x) - 3), y(x), x)	!syntax@10: ')' expected.
-DSolve(y'(x) == y(x))	!syntax@10: ')' expected.
-DSolve(y'(x) == y(x)*(E^x + Log(y(x))), y(x), x)	!syntax@10: ')' expected.
+DSolve(y'''(x) - 4*(x + 2)*y'(x) - 2*y(x) == 0, y(x), x)	!syntax@47: ')' expected.
+DSolve(y'''(x) - 6*y''(x) + 11*y'(x) - 6*y(x) == 0, y(x), x)	!syntax@51: ')' expected.
+DSolve(y''(x) + y(x) == Sec(x), y(x), x)	!syntax@31: ')' expected.
+DSolve(y''(x) - 4*y(x) == 0, y(x), x, GeneratedParameters -> f)	!syntax@28: ')' expected.
+DSolve(y''(x) - x^4*y(x) == 0, y(x), x)	!syntax@30: ')' expected.
+DSolve(y''(x) == (x/4 + 5/(16*x^2))*y(x), y(x), x)	!syntax@41: ')' expected.
+DSolve(y''(x) == (x^2 - 1)*y(x), y(x), x)	!syntax@32: ')' expected.
+DSolve(y''(x) == 0, y(x), x)	!syntax@19: ')' expected.
+DSolve(y''(x) == y(x), y(x), x)	!syntax@22: ')' expected.
+DSolve(y''(x) == y(x), y, x)	!syntax@22: ')' expected.
+DSolve(y'(x) == (x + y(x))^2, y(x), x)	!syntax@29: ')' expected.
+DSolve(y'(x) == (y(x) - 2)/(x + y(x) - 3), y(x), x)	!syntax@42: ')' expected.
+DSolve(y'(x) == y(x))	Times(DSolve, Equal(Times(Derivative(1)[y], x), Times(y, x)))
+DSolve(y'(x) == y(x)*(E^x + Log(y(x))), y(x), x)	!syntax@39: ')' expected.
 DSolve({D(u(t,x),t) + c*D(u(t,x),x) == 0, u(0,x) == E^(-x^2)}, u, {t, x})	!syntax@14: ')' expected.
 DSolve({D(u(x,t),t) == D(u(x,t),{x,2}), u(x,0) == f(x)}, u(x,t), {x,t})	!syntax@14: ')' expected.
 DSolve({D(u(x,t),{t,2}) == D(u(x,t),{x,2}), u(x,0) == f(x), Derivative(0,1)[u][x,0] == g(x)}, u(x,t), {x,t})	!syntax@14: ')' expected.
-DSolve({x'(t) == x(t)/t + y(t), y'(t) == -x(t) + y(t)/t}, {x(t), y(t)}, t)	!syntax@11: '}' expected.
-DSolve({x'(t) == y(t), y'(t) == y(t)^2/x(t)}, {x(t), y(t)}, t)	!syntax@11: '}' expected.
-DSolve({x'(t)==y(t), y'(t)==-x(t)}, {x(t), y(t)}, t)	!syntax@11: '}' expected.
-DSolve({y'(t) == t^2*y(t), x'(t) == y(t)}, {x(t), y(t)}, t)	!syntax@11: '}' expected.
-DSolve({y'(x) == x^2*y(x), z'(x) == 5*z(x)}, {y, z}, x)	!syntax@11: '}' expected.
-DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)	!syntax@11: '}' expected.
-DSolve({y'(x)==y(x)+2},y(x), x)	!syntax@11: '}' expected.
-DSolveValue({y'(x)==y(x)+2,y(0)==1},y(x), x)	!syntax@16: '}' expected.
-DSolveValue({y'(x)==y(x)+2},y(x), x)	!syntax@16: '}' expected.
+DSolve({x'(t) == x(t)/t + y(t), y'(t) == -x(t) + y(t)/t}, {x(t), y(t)}, t)	!syntax@57: ')' expected.
+DSolve({x'(t) == y(t), y'(t) == y(t)^2/x(t)}, {x(t), y(t)}, t)	!syntax@45: ')' expected.
+DSolve({x'(t)==y(t), y'(t)==-x(t)}, {x(t), y(t)}, t)	!syntax@35: ')' expected.
+DSolve({y'(t) == t^2*y(t), x'(t) == y(t)}, {x(t), y(t)}, t)	!syntax@42: ')' expected.
+DSolve({y'(x) == x^2*y(x), z'(x) == 5*z(x)}, {y, z}, x)	!syntax@44: ')' expected.
+DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)	!syntax@31: ')' expected.
+DSolve({y'(x)==y(x)+2},y(x), x)	!syntax@23: ')' expected.
+DSolveValue({y'(x)==y(x)+2,y(0)==1},y(x), x)	!syntax@36: ')' expected.
+DSolveValue({y'(x)==y(x)+2},y(x), x)	!syntax@28: ')' expected.
 DataDistribution(x)	Times(DataDistribution, x)
 DataReversed(x)	Times(DataReversed, x)
 DataStructure(x)	Times(DataStructure, x)
@@ -1835,12 +1835,12 @@ GreaterTilde(x)	Times(GreaterTilde, x)
 Green	Green
 GreenFunction({-u''(x), u(0) == 0, u(1) == 0}, u(x), {x, 0, 1}, y)	!syntax@46: ')' expected.
 GreenFunction({T*u''(x), u(0) == 0, u(p) == 0}, u(x), {x, 0, p}, y)	!syntax@47: ')' expected.
-GreenFunction({u''(x) + 5*u'(x) + 6*u(x), u(0) == 0, u'(0) == 0}, u(x), {x, 0, Infinity}, y)	!syntax@19: '}' expected.
-GreenFunction({u''(x) + 5*u'(x) + 6*u(x), u(0) == 0, u'(0) == 0}, u, {x, 0, Infinity}, y)	!syntax@19: '}' expected.
-GreenFunction({u''(x) + u(x), u'(0) == 0, u'(Pi/2) == 0}, u(x), {x, 0, Pi/2}, s)	!syntax@19: '}' expected.
-GreenFunction({u''(x) + u(x), u(0) == 0, u(Pi) == 0}, u(x), {x, 0, Pi}, s)	!syntax@19: '}' expected.
-GreenFunction({u''(x) + u(x), u(0) == 0, u(Pi/2) == 0}, u(x), {x, 0, Pi/2}, s)	!syntax@19: '}' expected.
-GreenFunction({u'(x) + u(x), u(0) == 0}, u(x), {x, 0, Infinity}, y)	!syntax@18: '}' expected.
+GreenFunction({u''(x) + 5*u'(x) + 6*u(x), u(0) == 0, u'(0) == 0}, u(x), {x, 0, Infinity}, y)	!syntax@65: ')' expected.
+GreenFunction({u''(x) + 5*u'(x) + 6*u(x), u(0) == 0, u'(0) == 0}, u, {x, 0, Infinity}, y)	!syntax@65: ')' expected.
+GreenFunction({u''(x) + u(x), u'(0) == 0, u'(Pi/2) == 0}, u(x), {x, 0, Pi/2}, s)	!syntax@57: ')' expected.
+GreenFunction({u''(x) + u(x), u(0) == 0, u(Pi) == 0}, u(x), {x, 0, Pi}, s)	!syntax@53: ')' expected.
+GreenFunction({u''(x) + u(x), u(0) == 0, u(Pi/2) == 0}, u(x), {x, 0, Pi/2}, s)	!syntax@55: ')' expected.
+GreenFunction({u'(x) + u(x), u(0) == 0}, u(x), {x, 0, Infinity}, y)	!syntax@40: ')' expected.
 GreenFunction({x^2*u''(x) + x*u'(x), u(1) == 0, u(E) == 0}, u(x), {x, 1, E}, s)	!syntax@59: ')' expected.
 GreenFunction({y(n+1) - 2*y(n), y(0) == 0}, y(n), {n, 0, Infinity}, m)	!syntax@43: ')' expected.
 GreenFunction({y(n+2) - 2*y(n+1) + y(n), y(0) == 0, y(1) == 0}, y(n), {n, 0, Infinity}, m)	!syntax@63: ')' expected.
@@ -2740,9 +2740,9 @@ NCache(1/3, 0.3333333333333333)	!syntax@11: ')' expected.
 NCache(Pi, 3.141592653589793) + 1	!syntax@10: ')' expected.
 ND(BesselY(10.0,x), x, 1)	!syntax@16: ')' expected.
 ND(Cos(x)^3, {x,2}, 1)	!syntax@12: ')' expected.
-NDSolve({y'(t)==-y(t),y(0)==1},y,{t,0,10},Method->{"EventLocator","Event"->y(t)-0.5,"EventAction":>Throw(stop=t,"StopIntegration")});stop	!syntax@12: '}' expected.
-NDSolveValue({x'(t)==y(t),y'(t)==-x(t),x(0)==1,y(0)==0},{x,y},{t,0,4})	!syntax@17: '}' expected.
-NDSolveValue({y'(x)==-y(x),y(0)==1},y,{x,0,10})	!syntax@17: '}' expected.
+NDSolve({y'(t)==-y(t),y(0)==1},y,{t,0,10},Method->{"EventLocator","Event"->y(t)-0.5,"EventAction":>Throw(stop=t,"StopIntegration")});stop	!syntax@31: ')' expected.
+NDSolveValue({x'(t)==y(t),y'(t)==-x(t),x(0)==1,y(0)==0},{x,y},{t,0,4})	!syntax@56: ')' expected.
+NDSolveValue({y'(x)==-y(x),y(0)==1},y,{x,0,10})	!syntax@36: ')' expected.
 NExpectation(x, Distributed(x, TruncatedDistribution({1,Infinity}, ExponentialDistribution(2))))	!syntax@15: ')' expected.
 NExpectation(x^2+7*x+8, Distributed(x, NormalDistribution()))	!syntax@23: ')' expected.
 NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1})	!syntax@41: ')' expected.
@@ -3787,7 +3787,7 @@ Simplify(Sum(x ^ 2, {x, 1, y}) - y * (y + 1) * (2 * y + 1) / 6)	!syntax@19: ')' 
 Simplify(a*x^2+b*x^2)	Times(Simplify, Plus(Times(a, Power(x, 2)), Times(b, Power(x, 2))))
 Simplify(f(x))	Times(Simplify, Times(f, x))
 Simplify(x)	Times(Simplify, x)
-Sin'(x)	!syntax@5: End-of-file not reached.
+Sin'(x)	Times(Derivative(1)[Sin], x)
 Sin(0)	Times(Sin, 0)
 Sin(0.5)	Times(Sin, 0.5)
 Sin(1 / (x ^ 2 - y ^ 2)) // Apart	Apart(Times(Sin, Power(Plus(Power(x, 2), Times(-1, Power(y, 2))), -1)))
@@ -4536,12 +4536,12 @@ WordSpacings(x)	Times(WordSpacings, x)
 Write(str, x^2 + y^2)	!syntax@10: ')' expected.
 Write(str, x^2 - y^2)	!syntax@10: ')' expected.
 WriteLine(x)	Times(WriteLine, x)
-Wronskian(y'''(x) - 5*y''(x) + 11*y(x) == 0, y, x)	!syntax@15: ')' expected.
-Wronskian(y''(x) + a*y'(x) + b*y(x) == 0, y, x)	!syntax@14: ')' expected.
-Wronskian(y''(x) + y'(x) + BesselJ(1, x)*y(x) == 0, y, x)	!syntax@14: ')' expected.
-Wronskian(y''(x) - x*y'(x) + y(x) == 0, y, x)	!syntax@14: ')' expected.
-Wronskian(y''(x) - x*y(x) == 0, y, x)	!syntax@14: ')' expected.
-Wronskian(y'(x)^2 == 0, y, x)	!syntax@13: ')' expected.
+Wronskian(y'''(x) - 5*y''(x) + 11*y(x) == 0, y, x)	!syntax@44: ')' expected.
+Wronskian(y''(x) + a*y'(x) + b*y(x) == 0, y, x)	!syntax@41: ')' expected.
+Wronskian(y''(x) + y'(x) + BesselJ(1, x)*y(x) == 0, y, x)	!syntax@37: ')' expected.
+Wronskian(y''(x) - x*y'(x) + y(x) == 0, y, x)	!syntax@39: ')' expected.
+Wronskian(y''(x) - x*y(x) == 0, y, x)	!syntax@31: ')' expected.
+Wronskian(y'(x)^2 == 0, y, x)	!syntax@23: ')' expected.
 Wronskian({1/x, 1/(x + 1)}, x)	!syntax@27: ')' expected.
 Wronskian({Cos(x), Sin(x)}, x)	!syntax@27: ')' expected.
 Wronskian({Exp(x), Exp(2*x)}, x)	!syntax@29: ')' expected.
@@ -4550,8 +4550,8 @@ Wronskian({f(x), c*f(x)}, x)	!syntax@25: ')' expected.
 Wronskian({f(x), g(x)}, x)	!syntax@23: ')' expected.
 Wronskian({x, x^2}, x)	!syntax@19: ')' expected.
 Wronskian({x^2, 3*x^2 + 5*x + 1, x^2 + 5*x + 1}, x)	!syntax@48: ')' expected.
-Wronskian({y'(x) == v(x), v'(x) == z(x), z'(x) == y(x) - z(x)}, {v, y, z}, x)	!syntax@14: '}' expected.
-Wronskian({y'(x) == y(x) - z(x), z'(x) == y(x) + z(x)}, {y, z}, x)	!syntax@14: '}' expected.
+Wronskian({y'(x) == v(x), v'(x) == z(x), z'(x) == y(x) - z(x)}, {v, y, z}, x)	!syntax@63: ')' expected.
+Wronskian({y'(x) == y(x) - z(x), z'(x) == y(x) + z(x)}, {y, z}, x)	!syntax@55: ')' expected.
 XYZColor(x)	Times(XYZColor, x)
 Xor()	!syntax@5: Too much closing ) in factor.
 Xor(False)	Times(Xor, False)
@@ -4647,7 +4647,7 @@ a_ != b_	Unequal(a_, b_)
 arr = ArrayReshape(Range(24),{2,3,4})	!syntax@29: ')' expected.
 assoc = <|"A" -> <|"a" -> 1, "b" -> 2, "c" -> 3|>|>	Set(assoc, Association(List(Rule(A, Association(List(Rule(a, 1), Rule(b, 2), Rule(c, 3)))))))
 assoc = AssociationThread({"U","V"},{1,2})	!syntax@36: ')' expected.
-b = NDSolve({y'(t) == y(t)^2, y(0) == 1}, y, {t, 0, 2}); fb = y /. Part(b, 1); fb(0.5)	!syntax@16: '}' expected.
+b = NDSolve({y'(t) == y(t)^2, y(0) == 1}, y, {t, 0, 2}); fb = y /. Part(b, 1); fb(0.5)	!syntax@41: ')' expected.
 b =.	Unset(b)
 ba1 = BaseEncode(StringToByteArray("Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."	!syntax@307: ')' expected.
 ba1 = BaseEncode(StringToByteArray("Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."))	Set(ba1, Times(BaseEncode, Times(StringToByteArray, Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.)))
@@ -4693,7 +4693,7 @@ f = CompilePrint({{n, _Integer}}, Module({p = Range(n),i,x,t}, Do(x = RandomInte
 f = FileNameJoin({$TemporaryDirectory, \\"test_open.txt\\"})	!syntax@41: unexpected (named unicode) character: '\\[RawDoubleQuote]'
 f @@ (a + b + c)	Apply(f, Plus(a, b, c))
 f @@ {1, 2, 3}	Apply(f, List(1, 2, 3))
-f'(x) // FullForm	!syntax@3: End-of-file not reached.
+f'(x) // FullForm	FullForm(Times(Derivative(1)[f], x))
 f() := z; DynamicModule({z = 3}, f())	!syntax@3: Too much closing ) in factor.
 f(-1)	Times(f, -1)
 f(-3)	Times(f, -3)
@@ -4754,9 +4754,9 @@ f({1, 2, 3}, {4, 5, 6})	!syntax@12: ')' expected.
 f=BooleanFunction(42,3);	!syntax@21: ')' expected.
 f=Compile({{x, _Real}}, E^3-Cos(Pi^2/x));	!syntax@23: ')' expected.
 f=CompilePrint({x, _Real}, E^3-Cos(Pi^2/x))	!syntax@26: ')' expected.
-f=NDSolveValue({y'(x)==-y(x),y(0)==1},y,{x,0,10}); f(1.0)	!syntax@19: '}' expected.
-f=NDSolveValue({y'(x)==y(x),y(0)==1},y,{x,0,1},AccuracyGoal->6,PrecisionGoal->6);f(1.0)	!syntax@19: '}' expected.
-f=NDSolveValue({y'(x)==y(x),y(0)==1},y,{x,0,1},Method->"Adams");f(1.0)	!syntax@19: '}' expected.
+f=NDSolveValue({y'(x)==-y(x),y(0)==1},y,{x,0,10}); f(1.0)	!syntax@38: ')' expected.
+f=NDSolveValue({y'(x)==y(x),y(0)==1},y,{x,0,1},AccuracyGoal->6,PrecisionGoal->6);f(1.0)	!syntax@37: ')' expected.
+f=NDSolveValue({y'(x)==y(x),y(0)==1},y,{x,0,1},Method->"Adams");f(1.0)	!syntax@37: ')' expected.
 f[a -> Print["value"]] /. f[OptionsPattern[{}]] :> (OptionValue[a]; Print["between"]; OptionValue[a]);	CompoundExpression(ReplaceAll(f(Rule(a, Print(value))), RuleDelayed(f(OptionsPattern(List())), CompoundExpression(OptionValue(a), Print(between), OptionValue(a)))), Null)
 f[a :> Print["value"]] /. f[OptionsPattern[{}]] :> (OptionValue[a]; Print["between"]; OptionValue[a]);	CompoundExpression(ReplaceAll(f(RuleDelayed(a, Print(value))), RuleDelayed(f(OptionsPattern(List())), CompoundExpression(OptionValue(a), Print(between), OptionValue(a)))), Null)
 f[x_) =.	!syntax@5: ']' expected.
@@ -4777,9 +4777,9 @@ g(x_) := x^3;	CompoundExpression(SetDelayed(Times(g, x_), Power(x, 3)), Null)
 g(x_,y_) := f(x,y);	!syntax@5: ')' expected.
 g(y_) := Module({}, z = f(y); 2)	!syntax@19: ')' expected.
 g=Graph({1,2,3,4,5,6,7,8,9},{1<->9,2<->3,4<->8,5<->4,1<->5,4<->2,7<->6,7<->5,6<->2,3<->8,3<->9,9<->2,7<->1,8<->7}); FindKClan(g,2)	!syntax@28: ')' expected.
-g=NDSolveValue({y''(x)+y(x)==0,y(0)==1,y'(0)==0},y,{x,0,4}); g(N(Pi))	!syntax@20: '}' expected.
+g=NDSolveValue({y''(x)+y(x)==0,y(0)==1,y'(0)==0},y,{x,0,4}); g(N(Pi))	!syntax@49: ')' expected.
 g[Unevaluated[Sequence[a, b, c]]]	g(Unevaluated(Sequence(a, b, c)))
-h = NDSolve({w'(t) == w(t), w(1) == 1}, w, {t, 0, 2}); fw = w /. Part(h, 1); {fw(0.0), fw(2.0)}	!syntax@16: '}' expected.
+h = NDSolve({w'(t) == w(t), w(1) == 1}, w, {t, 0, 2}); fw = w /. Part(h, 1); {fw(0.0), fw(2.0)}	!syntax@39: ')' expected.
 h @@@ {{a, b}, {c, d}}	Apply(h, List(List(a, b), List(c, d)), List(1))
 h(-1) // FullForm	FullForm(Times(h, -1))
 h(1)	Times(h, 1)
@@ -4799,11 +4799,11 @@ loc1= JavaNew["java.util.Locale","US"]	Set(loc1, JavaNew(java.util.Locale, US))
 loc2= JavaNew["java.util.Locale","US"]	Set(loc2, JavaNew(java.util.Locale, US))
 logrules = {Log(x_ * y_) :> Log(x) + Log(y), Log(x_^y_) :> y * Log(x)};	CompoundExpression(Set(logrules, List(RuleDelayed(Times(Log, Times(x_, y_)), Plus(Times(Log, x), Times(Log, y))), RuleDelayed(Times(Log, Power(x_, y_)), Times(Times(y, Log), x)))), Null)
 lst = {1, 2, 3};	CompoundExpression(Set(lst, List(1, 2, 3)), Null)
-m = NDSolve({y'(x) == y(x), y(0) == 1}, y, {x, 0, 1}); f = y /. Part(m, 1); f(0.5)	!syntax@16: '}' expected.
+m = NDSolve({y'(x) == y(x), y(0) == 1}, y, {x, 0, 1}); f = y /. Part(m, 1); f(0.5)	!syntax@39: ')' expected.
 m = {{{1, 2}, {3}}, {{4}, {5, 6}}}	Set(m, List(List(List(1, 2), List(3)), List(List(4), List(5, 6))))
 m3 = {{{1,0},{0,1},{0,0}},{{0,0},{0,1},{1,0}}}; Normal@HodgeDual(m3, 3, {2})	!syntax@68: ')' expected.
 mf=MatrixFunction(Gamma, {{1,3},{2,1}})	!syntax@24: ')' expected.
-model=NDSolve({x'(t) == 10*(y(t) - x(t)), y'(t) == x(t)*(28 - z(t)) - y(t), z'(t) == x(t)*y(t) - 8/3*z(t), x(0)== 0, y(0) == 1, z(0) == 0}, {x, y, z}, {t, 0, 20})	!syntax@18: '}' expected.
+model=NDSolve({x'(t) == 10*(y(t) - x(t)), y'(t) == x(t)*(28 - z(t)) - y(t), z'(t) == x(t)*y(t) - 8/3*z(t), x(0)== 0, y(0) == 1, z(0) == 0}, {x, y, z}, {t, 0, 20})	!syntax@139: ')' expected.
 m{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};	CompoundExpression(Times(m, List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))), Null)
 n	n
 n := 1	SetDelayed(n, 1)
@@ -4811,7 +4811,7 @@ n = 0	Set(n, 0)
 n = 1	Set(n, 1)
 n == 10!	Equal(n, Factorial(10))
 n=0	Set(n, 0)
-n=0;NDSolve({y''(t)+y(t)==0,y(0)==1,y'(0)==0},y,{t,0,10},Method->{"EventLocator","Event"->y(t),"Direction"->1,"EventAction":>(n=n+1)});n	!syntax@17: '}' expected.
+n=0;NDSolve({y''(t)+y(t)==0,y(0)==1,y'(0)==0},y,{t,0,10},Method->{"EventLocator","Event"->y(t),"Direction"->1,"EventAction":>(n=n+1)});n	!syntax@46: ')' expected.
 n=5;	CompoundExpression(Set(n, 5), Null)
 newton(9)	Times(newton, 9)
 newton(n_) := FixedPointList(.5(# + n/#) &, 1.);	!syntax@43: ')' expected.
@@ -4840,7 +4840,7 @@ reg = BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}}, {Line({{1,2},{2,3},{3,4},{4,
 right = SemanticImportString("id,owner\\n1,ann\\n2,bob\\n");	CompoundExpression(Set(right, Times(SemanticImportString, id,owner\n1,ann\n2,bob\n)), Null)
 rul=Dispatch({\\"a\\" -> 1, \\"b\\" -> 2, \\"c\\" -> 3})	!syntax@16: unexpected (named unicode) character: '\\[RawDoubleQuote]'
 s	s
-s = NDSolve({y''(x) + y(x) == 0, y(0) == 1, y'(0) == 0}, y, {x, 0, 4}); g = y /. Part(s, 1); g(N(Pi))	!syntax@17: '}' expected.
+s = NDSolve({y''(x) + y(x) == 0, y(0) == 1, y'(0) == 0}, y, {x, 0, 4}); g = y /. Part(s, 1); g(N(Pi))	!syntax@56: ')' expected.
 s = SparseArray({{1, 1} -> 1, {2, 3} -> 4, {3, 1} -> -1});	CompoundExpression(Set(s, Times(SparseArray, List(Rule(List(1, 1), 1), Rule(List(2, 3), 4), Rule(List(3, 1), -1)))), Null)
 s = {1, 2, 4, 9}	Set(s, List(1, 2, 4, 9))
 s = {}	Set(s, List())

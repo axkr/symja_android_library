@@ -147,7 +147,8 @@ public class CharlwoodProblemsTests extends AbstractRubiTestCase {
   @Test
   public void test12() {
     // KNOWN GAP - this test does not pass. The expected value is Rubi's reference, not a form Symja
-    // has ever produced. Symja returns a partial result containing an unevaluated Integrate.
+    // produces. Symja's answer is correct (verified by differentiating, see
+    // IntegrateTest.testIntegrateFinishesPartialRubiAnswer) but written with complex ArcTan terms.
     check( //
         "Integrate[ArcTan[x+Sqrt[1-x^2]], x]", //
         "-ArcSin[x]/2+1/4*Sqrt[3]*ArcTan[(-1+Sqrt[3]*x)/Sqrt[1-x^2]]+1/4*Sqrt[3]*ArcTan[(1+Sqrt[3]*x)/Sqrt[1-x^2]]-1/4*Sqrt[3]*ArcTan[(-1+2*x^2)/Sqrt[3]]+x*ArcTan[x+Sqrt[1-x^2]]-ArcTanh[x*Sqrt[1-x^2]]/4-Log[1-x^2+x^4]/8" //

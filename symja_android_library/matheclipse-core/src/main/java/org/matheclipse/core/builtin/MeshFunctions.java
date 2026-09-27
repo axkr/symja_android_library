@@ -9,19 +9,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.graphics.Dimensions2D;
-import org.matheclipse.core.graphics.GraphicsOptions;
-import org.matheclipse.core.graphics.IGraphics2D;
-import org.matheclipse.core.graphics.IGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.external.fastutil.longs.LongOpenHashSet;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Functions for the mesh region objects <code>BoundaryMeshRegion</code> and
@@ -328,6 +321,273 @@ public class MeshFunctions {
   }
 
   /**
+   * The number of cells of each dimension, <code>0</code> up to the embedding dimension.
+   *
+   * <p>
+   * A full dimensional cell that is not stored is still one cell - the square the boundary of a
+   * two dimensional mesh encloses, the solid a three dimensional one does - which is how the
+   * reference implementation counts when it styles every cell of a mesh.
+   */
+  private static int[] cellCounts(IAST meshRegion) {
+    int dimension = embeddingDimension(meshRegion);
+    int[] counts = new int[dimension + 1];
+    for (int d = 0; d <= dimension; d++) {
+      IAST cells = meshCells(meshRegion, d);
+      counts[d] = cells.isPresent() ? cells.argSize() : (d == dimension ? 1 : 0);
+    }
+    return counts;
+  }
+
+  /**
+   * A <code>MeshCellStyle</code> setting, written out cell by cell as the <code>Properties</code> a
+   * mesh region carries.
+   *
+   * <p>
+   * The reference implementation does not keep the setting as it was given. A bare style applies
+   * to every cell of every dimension, <code>{d, All} -&gt; s</code> to every cell of dimension
+   * <code>d</code> and <code>{d, i} -&gt; s</code> to one cell; each cell gets its own
+   * <code>{d, i} -&gt; MeshCellStyle -&gt; s</code>, ordered by dimension and then by index, and each
+   * dimension that got any closes with <code>{d, Default} -&gt; MeshCellStyle -&gt; Automatic</code>.
+   * A later rule wins over an earlier one for the same cell; one that names no cell of the mesh is
+   * dropped.
+   *
+   * @param meshRegion the mesh the setting is for
+   * @param spec the right hand side of <code>MeshCellStyle -&gt; spec</code>
+   * @return the list for <code>Properties -&gt; list</code>, or {@link F#NIL} when it styles nothing
+   */
+  public static IAST meshCellStyleProperties(IAST meshRegion, IExpr spec) {
+    int[] counts = cellCounts(meshRegion);
+    java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles =
+        new java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>>();
+    if (spec.isList() && spec.argSize() > 0 && ((IAST) spec).forAll(x -> x.isRuleAST())) {
+      for (IExpr rule : (IAST) spec) {
+        addCellStyle(styles, counts, rule.first(), rule.second());
+      }
+    } else if (!spec.isRuleAST()) {
+      // one style for everything
+      for (int d = 0; d < counts.length; d++) {
+        for (int i = 1; i <= counts[d]; i++) {
+          styles.computeIfAbsent(d, k -> new java.util.TreeMap<Integer, IExpr>()).put(i, spec);
+        }
+      }
+    }
+    if (styles.isEmpty()) {
+      return F.NIL;
+    }
+    IASTAppendable properties = F.ListAlloc();
+    for (java.util.Map.Entry<Integer, java.util.TreeMap<Integer, IExpr>> dimension : styles
+        .entrySet()) {
+      IExpr d = F.ZZ(dimension.getKey());
+      for (java.util.Map.Entry<Integer, IExpr> cell : dimension.getValue().entrySet()) {
+        properties.append(F.Rule(F.list(d, F.ZZ(cell.getKey())),
+            F.Rule(S.MeshCellStyle, cell.getValue())));
+      }
+      properties.append(F.Rule(F.list(d, S.Default), F.Rule(S.MeshCellStyle, S.Automatic)));
+    }
+    return properties;
+  }
+
+  /** One <code>{d, cells} -&gt; style</code> rule of a <code>MeshCellStyle</code> list. */
+  private static void addCellStyle(java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles,
+      int[] counts, IExpr key, IExpr style) {
+    if (!key.isList2() || !key.first().isInteger()) {
+      return;
+    }
+    int d = key.first().toIntDefault();
+    if (d < 0 || d >= counts.length) {
+      return;
+    }
+    java.util.TreeMap<Integer, IExpr> cells =
+        styles.computeIfAbsent(d, k -> new java.util.TreeMap<Integer, IExpr>());
+    IExpr which = key.second();
+    if (which == S.All) {
+      for (int i = 1; i <= counts[d]; i++) {
+        cells.put(i, style);
+      }
+    } else if (which.isInteger()) {
+      int i = which.toIntDefault();
+      if (i >= 1 && i <= counts[d]) {
+        cells.put(i, style);
+      }
+    } else if (which.isList()) {
+      for (IExpr index : (IAST) which) {
+        int i = index.toIntDefault();
+        if (i >= 1 && i <= counts[d]) {
+          cells.put(i, style);
+        }
+      }
+    }
+    if (cells.isEmpty()) {
+      styles.remove(d);
+    }
+  }
+
+  /**
+   * The styles a mesh region's <code>Properties</code> give its cells, by dimension and then by
+   * index - the setting {@link #meshCellStyleProperties(IAST, IExpr)} wrote, read back for drawing.
+   * The closing <code>Default -&gt; Automatic</code> entries style nothing and are left out.
+   */
+  public static java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> meshCellStyles(
+      IAST meshRegion) {
+    java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles =
+        new java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>>();
+    for (int i = optionsStartIndex(meshRegion); i < meshRegion.size(); i++) {
+      IExpr option = meshRegion.get(i);
+      if (!option.isRuleAST() || option.first() != S.Properties || !option.second().isList()) {
+        continue;
+      }
+      for (IExpr entry : (IAST) option.second()) {
+        if (entry.isRuleAST() && entry.first().isList2() && entry.first().first().isInteger()
+            && entry.first().second().isInteger() && entry.second().isRuleAST()
+            && entry.second().first() == S.MeshCellStyle
+            && entry.second().second() != S.Automatic) {
+          styles
+              .computeIfAbsent(entry.first().first().toIntDefault(),
+                  k -> new java.util.TreeMap<Integer, IExpr>())
+              .put(entry.first().second().toIntDefault(), entry.second().second());
+        }
+      }
+    }
+    return styles;
+  }
+
+  /** The face colour the reference implementation draws a two dimensional mesh region in. */
+  private static final IAST FACE_2D = F.RGBColor(F.num(0.6260033081763745),
+      F.num(0.8359330492764128), F.num(0.9185378316380052));
+
+  /** The edge colour of a two dimensional mesh region. */
+  private static final IAST EDGE_2D = F.RGBColor(F.num(0.372575209344428),
+      F.num(0.6124949134587575), F.num(0.706900379014863));
+
+  /** The face and edge colour of a three dimensional mesh region. */
+  private static final IAST FACE_3D = F.RGBColor(F.num(0.465719011680535),
+      F.num(0.7656186418234469), F.num(0.8836254737685788));
+
+  /**
+   * The picture of a boundary mesh region, as <code>Show</code> gives it and as the renderers draw
+   * it - the form the reference implementation produces, measured in Mathematica on 2026-09-19:
+   *
+   * <pre>
+   * Graphics[GraphicsComplex[N[coordinates], {Directive[{face, EdgeForm[{edge}]}],
+   *     {Annotation[Polygon[faces], "Geometry"]}, styled}]]
+   * </pre>
+   *
+   * <p>
+   * A two dimensional region is drawn as the polygon its boundary encloses, a three dimensional
+   * one as its faces, with <code>Boxed -&gt; False</code> and four lights. Cells that
+   * <code>MeshCellStyle</code> styled follow the geometry as <code>{Directive[style], Line[...]}</code>
+   * groups, one per style and dimension; a styled face is taken out of the unstyled polygon, so
+   * that a translucent face is not drawn over an opaque copy of itself.
+   *
+   * @return the <code>Graphics</code> or <code>Graphics3D</code>, or {@link F#NIL} for a region
+   *         that is not two or three dimensional
+   */
+  public static IAST meshToGraphics(IAST meshRegion, EvalEngine engine) {
+    IAST complex = meshGraphicsComplex(meshRegion, engine);
+    if (complex.isNIL()) {
+      return F.NIL;
+    }
+    if (embeddingDimension(meshRegion) == 2) {
+      return F.Graphics(complex);
+    }
+    IAST lighting = F.List( //
+        F.list(F.stringx("Ambient"), F.GrayLevel(F.num(0.45))), //
+        F.list(F.stringx("Directional"), F.GrayLevel(F.num(0.3)),
+            F.unaryAST1(S.ImageScaled, F.list(F.C2, F.C0, F.C2))), //
+        F.list(F.stringx("Directional"), F.GrayLevel(F.num(0.33)),
+            F.unaryAST1(S.ImageScaled, F.list(F.C2, F.C2, F.C2))), //
+        F.list(F.stringx("Directional"), F.GrayLevel(F.num(0.3)),
+            F.unaryAST1(S.ImageScaled, F.list(F.C0, F.C2, F.C2))));
+    return F.Graphics3D(complex,
+        F.list(F.Rule(S.Boxed, S.False), F.Rule(S.Lighting, lighting)));
+  }
+
+  /**
+   * The <code>GraphicsComplex</code> of {@link #meshToGraphics(IAST, EvalEngine)}, which is what the
+   * renderers draw when a mesh region sits among other primitives.
+   */
+  public static IAST meshGraphicsComplex(IAST meshRegion, EvalEngine engine) {
+    if (!isBoundaryMeshRegion(meshRegion)) {
+      return F.NIL;
+    }
+    int dimension = embeddingDimension(meshRegion);
+    if (dimension != 2 && dimension != 3) {
+      return F.NIL;
+    }
+    IAST faces = meshCells(meshRegion, 2);
+    if (faces.isNIL()) {
+      return F.NIL;
+    }
+    java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles =
+        meshCellStyles(meshRegion);
+    java.util.Map<Integer, IExpr> styledFaces =
+        styles.getOrDefault(2, new java.util.TreeMap<Integer, IExpr>());
+
+    IASTAppendable unstyledFaces = F.ListAlloc(faces.argSize());
+    for (int i = 1; i <= faces.argSize(); i++) {
+      if (!styledFaces.containsKey(i)) {
+        unstyledFaces.append(faces.get(i).first());
+      }
+    }
+    IAST face = dimension == 2 ? FACE_2D : FACE_3D;
+    IAST edge = dimension == 2 ? EDGE_2D : FACE_3D;
+    IASTAppendable primitives = F.ListAlloc(3);
+    primitives.append(F.Directive(F.list(face, F.unaryAST1(S.EdgeForm, F.list(edge)))));
+    if (unstyledFaces.argSize() > 0) {
+      primitives.append(F.list(
+          F.binaryAST2(S.Annotation, F.Polygon(unstyledFaces), F.stringx("Geometry"))));
+    }
+    IAST styled = styledGroups(meshRegion, styles);
+    if (styled.argSize() > 0) {
+      primitives.append(styled);
+    }
+    return F.binaryAST2(S.GraphicsComplex, engine.evaluate(F.N(meshCoordinates(meshRegion))),
+        primitives);
+  }
+
+  /**
+   * The styled cells as <code>{Directive[style], Head[cells]}</code> groups - one per dimension
+   * and style, in the order the styles first appear, every cell of a group gathered into one
+   * primitive as <code>Line[{{1,2},{2,3},...}]</code>.
+   */
+  private static IAST styledGroups(IAST meshRegion,
+      java.util.TreeMap<Integer, java.util.TreeMap<Integer, IExpr>> styles) {
+    IASTAppendable groups = F.ListAlloc();
+    for (java.util.Map.Entry<Integer, java.util.TreeMap<Integer, IExpr>> dimension : styles
+        .entrySet()) {
+      int d = dimension.getKey();
+      IAST cells = meshCells(meshRegion, d);
+      if (cells.isNIL()) {
+        // the solid of a three dimensional region has no primitive to draw it with
+        continue;
+      }
+      java.util.LinkedHashMap<IExpr, IASTAppendable> byStyle =
+          new java.util.LinkedHashMap<IExpr, IASTAppendable>();
+      for (java.util.Map.Entry<Integer, IExpr> cell : dimension.getValue().entrySet()) {
+        int i = cell.getKey();
+        if (i < 1 || i > cells.argSize()) {
+          continue;
+        }
+        IExpr indices = cells.get(i).first();
+        IASTAppendable members = byStyle.computeIfAbsent(cell.getValue(), k -> F.ListAlloc());
+        if (d == 0 && indices.isList()) {
+          // a point cell holds one index; the group is one list of them
+          members.appendArgs((IAST) indices);
+        } else {
+          members.append(indices);
+        }
+      }
+      IBuiltInSymbol head = d == 0 ? S.Point : d == 1 ? S.Line : S.Polygon;
+      for (java.util.Map.Entry<IExpr, IASTAppendable> group : byStyle.entrySet()) {
+        IExpr style = group.getKey();
+        groups.append(F.list(style.isAST(S.Directive) ? style : F.Directive(style),
+            F.unaryAST1(head, group.getValue())));
+      }
+    }
+    return groups;
+  }
+
+  /**
    * The index of the first argument which is an option; all arguments from index <code>2</code> up
    * to (but excluding) that index are boundary cell lists.
    */
@@ -373,7 +633,13 @@ public class MeshFunctions {
     for (int i = 2; i < optionsStart; i++) {
       IExpr boundary = meshRegion.get(i);
       if (!boundary.isList()) {
-        return false;
+        // one cell on its own, as BoundaryMeshRegion({...}, Line({1,2,3,1})) is written, rather
+        // than a list of them
+        if (boundary.isAST1() && cellDimension(boundary.head()) != NO_CELL) {
+          boundary = F.list(boundary);
+        } else {
+          return false;
+        }
       }
       IAST boundaryList = (IAST) boundary;
       for (int j = 1; j < boundaryList.size(); j++) {
@@ -395,6 +661,15 @@ public class MeshFunctions {
             }
             if (!addCell(head, (IAST) indexList.get(k), numberOfCoordinates, cellHeads,
                 cellIndices)) {
+              return false;
+            }
+          }
+        } else if (head == S.Line && indexList.argSize() > 2) {
+          // a walk along the boundary, Line({1,2,3,1}), is that many edges - one per step, so
+          // that every edge is a cell of its own as it is when the pairs are written out
+          for (int k = 1; k < indexList.argSize(); k++) {
+            if (!addCell(head, F.list(indexList.get(k), indexList.get(k + 1)), numberOfCoordinates,
+                cellHeads, cellIndices)) {
               return false;
             }
           }
@@ -1017,65 +1292,7 @@ public class MeshFunctions {
     return F.GraphicsComplex(meshCoordinates(meshRegion), cells);
   }
 
-  private static class BoundaryMeshRegion extends AbstractEvaluator
-      implements IGraphics2D, IGraphics3D {
-
-    @Override
-    public boolean graphics2D(ArrayNode arrayNode, IAST ast, GraphicsOptions options) {
-      IExpr complex = toGraphicsComplex(ast);
-      if (complex.isPresent()) {
-        IEvaluator evaluator = S.GraphicsComplex.getEvaluator();
-        if (evaluator instanceof IGraphics2D) {
-          return ((IGraphics2D) evaluator).graphics2D(arrayNode, (IAST) complex, options);
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public boolean graphics2DDimension(IAST ast, Dimensions2D dim) {
-      IExpr complex = toGraphicsComplex(ast);
-      if (complex.isPresent()) {
-        IEvaluator evaluator = S.GraphicsComplex.getEvaluator();
-        if (evaluator instanceof IGraphics2D) {
-          return ((IGraphics2D) evaluator).graphics2DDimension((IAST) complex, dim);
-        }
-      }
-      return false;
-    }
-
-    @Override
-    public boolean graphics3D(ObjectNode json, IAST ast, IAST color, IExpr opacity) {
-      // the 3D GraphicsComplex renderer doesn't resolve the indices of a Polygon cell, so the
-      // faces are rendered as polygons with absolute coordinates
-      if (!isMeshRegion(ast) || embeddingDimension(ast) != 3) {
-        return false;
-      }
-      IAST faces = boundaryCells(ast, 2);
-      if (faces.isNIL() || faces.argSize() == 0) {
-        return false;
-      }
-      IEvaluator evaluator = S.Polygon.getEvaluator();
-      if (!(evaluator instanceof IGraphics3D)) {
-        return false;
-      }
-      IAST coordinates = meshCoordinates(ast);
-      json.put("type", "graphicscomplex");
-      ArrayNode elements = json.arrayNode();
-      for (int i = 1; i < faces.size(); i++) {
-        IAST indices = (IAST) faces.get(i).first();
-        IASTAppendable points = F.ListAlloc(indices.argSize());
-        for (int j = 1; j < indices.size(); j++) {
-          points.append(coordinates.get(indices.get(j).toIntDefault()));
-        }
-        ObjectNode faceNode = GraphicsOptions.jsonObjectMapper().createObjectNode();
-        if (((IGraphics3D) evaluator).graphics3D(faceNode, F.Polygon(points), color, opacity)) {
-          elements.add(faceNode);
-        }
-      }
-      json.set("elements", elements);
-      return elements.size() > 0;
-    }
+  private static class BoundaryMeshRegion extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {

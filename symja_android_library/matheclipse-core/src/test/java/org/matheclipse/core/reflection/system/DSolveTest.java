@@ -512,6 +512,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveVariationOfParametersOnAFoundBasis() {
     // The methods for variable coefficients answer the homogeneous equation, and the inhomogeneous
     // one used to be declined though its homogeneous part was solved. Its basis {t, t*E^t} is all
@@ -588,6 +589,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveImplicitSolution() {
     // A first integral which does not solve for y is the answer, left for Solve, which is what
     // Mathematica returns for these: Solve[E^y[x] + x Log[y[x]] + Sin[x] == C[1], y[x]].
@@ -607,6 +609,191 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // an equation which is answered explicitly still is
     check("DSolve(y'(x) == 2*x*y(x), y(x), x)", //
         "{{y(x)->E^x^2*C(1)}}");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolveLinearFractionalRightSide() {
+    // (t+y+1)/(t-y+3) is homogeneous about the point (-2, 1) where both lines meet: moving the
+    // origin there leaves (T+Y)/(T-Y), and its relation is written back in t and y.
+    check("DSolve(y'(t)==(t+y(t)+1)/(t-y(t)+3), y(t), t)", //
+        "Solve(-ArcTan((-1+y(t))/(2+t))+Log(2+t)+Log(1+(1-y(t))^2/(2+t)^2)/2==C(1),y(t))");
+    check("DSolve(1+t-2*y(t)+(-6+4*t-3*y(t))*y'(t)==0, y(t), t)", //
+        "Solve(Log(-3+t)-Log(1+(2-y(t))/(-3+t))/4+5/4*Log(1/3+(-2+y(t))/(-3+t))==C(1),y(t))");
+    check("DSolve(y'(x)==(2*x+y(x)-4)/(x-3*y(x)+5), y(x), x)", //
+        "Solve(-ArcTan((Sqrt(3/2)*(-2+y(x)))/(-1+x))/Sqrt(6)+Log(-1+x)+Log(2/3+(2-y(x))^2/(\n"
+            + "1-x)^2)/2==C(1),y(x))");
+    // parallel lines have no common point, and were already answered by a substitution
+    check("DSolve(y'(x)==(x+y(x)+1)/(2*x+2*y(x)+3), y(x), x)", //
+        "{{y(x)->-4/3-x+ProductLog(6*E^(8+9*x-9*C(1)))/6}}");
+  }
+
+  @Test
+  public void testDSolveParallelLinearCoefficients() {
+    // (a*x + b*y + c1) + (k*(a*x + b*y) + c2)*y' == 0 has no point where its two lines meet, but
+    // u == a*x + b*y separates it. These declined, while the crossing lines were already answered.
+    check("DSolve(x-3*y(x)==(-x+3*y(x)+2)*y'(x), y(x), x)", //
+        "Solve(3/4*x+3/8*Log(1/2-x+3*y(x))+3/4*y(x)==C(1),y(x))");
+    check("DSolve(x-y(x)+1+(-1+x-y(x))*y'(x)==0, y(x), x)", //
+        "Solve(x+1/2*(-x+Log(x-y(x))+y(x))==C(1),y(x))");
+    // no branch of the explicit solution passes through the point, and the relation does
+    check("DSolve({2*x+y(x)+(4*x+2*y(x)+1)*y'(x)==0, y(-1/6)==0}, y(x), x)", //
+        "Solve(-x/3+Log(2/3+2*x+y(x))/9-2/3*y(x)==1/18-Log(3)/9,y(x))");
+    // not in the corpus: the same shape with a condition it can meet explicitly
+    check("DSolve(x+2*y(x)+1+(2*x+4*y(x)+3)*y'(x)==0, y(x), x)", //
+        "{{y(x)->-3/4-x/2-Sqrt(36+16*x+16*C(1))/8},{y(x)->-3/4-x/2+Sqrt(36+16*x+16*C(1))/\n"
+            + "8}}");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolveIntegratingFactorAPowerOfXAndY() {
+    // x^p*y^q makes these exact; the exponents come from the exactness condition, which is linear
+    // in them. The relation is the answer where its inversion is not one.
+    check("DSolve(y(x)*3+x*y(x)^3+(x+x^2*y(x)^2)*y'(x)==0, y(x), x)", //
+        "Solve((2*(x^(3/2)*y(x)+1/5*x^(5/2)*y(x)^3))/Sqrt(y(x))==C(1),y(x))");
+    check("DSolve(y(x)*(3*x^2+y(x))-x*(x^2-y(x))*y'(x)==0, y(x), x)", //
+        "Solve((4/3*x^(9/4)*y(x)+4*x^(1/4)*y(x)^2)/y(x)^(7/4)==C(1),y(x))");
+    // 1/(x^2*y^2) resp. 1/(x^2*y), whose relations do invert
+    check("DSolve(y(x)+x*y(x)^2+(x-x^2*y(x))*y'(x)==0, y(x), x)", //
+        "{{y(x)->-1/(x*ProductLog(-E^C(1)/x^2))}}");
+    check("DSolve(-y(x)^2+(y(x)*x-x^2)*y'(x)==0, y(x), x)", //
+        "{{y(x)->-x*ProductLog(-1/(E^C(1)*x))}}");
+    // the relation is a first integral: along it y' == -G_x/G_y solves the equation
+    check("With({g=(2*(x^(3/2)*Y+x^(5/2)*Y^3/5))/Sqrt(Y)}, Simplify(Y*3+x*Y^3+(x+x^2*Y^2)*"
+        + "(-D(g,x)/D(g,Y))))", //
+        "0");
+  }
+
+  @Test
+  public void testDSolveSecantForcingWithASymbolicFrequency() {
+    // y'' + a^2*y == Sec(a*x) answered ComplexInfinity: the variation of parameters integral
+    // E^(-I*a*x)*Sec(a*x) was read as the degenerate case of two different frequencies.
+    check("With({s=DSolve(y''(x)+a^2*y(x)==Sec(a*x), y(x), x)}, Head(s)===List && "
+        + "Chop(N(D(y(x) /. s[[1]],{x,2})+a^2*(y(x) /. s[[1]])-Sec(a*x) /. "
+        + "{a->3/7, C(1)->2/5, C(2)->3/11, x->7/10}))===0)", //
+        "True");
+    // the same equation with a number for the frequency was always answered
+    check("DSolve(y''(x)+y(x)==Sec(x), y(x), x)", //
+        "{{y(x)->C(1)*Cos(x)+Cos(x)*Log(Cos(x))+x*Sin(x)+C(2)*Sin(x)}}");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolveHomogeneousInXOverY() {
+    // The Solve which inverts Log(1+E^(1/v)*v) == c kept taking logarithms of an equation it was
+    // already solving and overflowed the stack; the relation is now the answer.
+    check("DSolve(E^(t/y(t))*(-t+y(t))*y'(t)+y(t)*(1+E^(t/y(t)))==0, y(t), t)", //
+        "Solve(t+E^(t/y(t))*y(t)==C(1),y(t))");
+    check("DSolve(1+2*E^(x/y(x))+2*E^(x/y(x))*(1-x/y(x))*y'(x)==0, y(x), x)", //
+        "{{y(x)->-x/ProductLog(-2/(-1+E^(2*C(1))/x))}}");
+    checkResidual("1+2*E^(x/y(x))+2*E^(x/y(x))*(1-x/y(x))*y'(x)==0", //
+        "1+2*E^(x/y(x))+2*E^(x/y(x))*(1-x/y(x))*y'(x)", "{x->7/2, C(1)->-1/3}");
+  }
+
+  @Test
+  public void testDSolveHomogeneousWithARadical() {
+    // y == v*x turns Sqrt(x*y) into Sqrt(v*x^2); expanded to Sqrt(v)*x the reduced equation is
+    // (-v^(3/2)*x)/(x - Sqrt(v)*x), in which x only drops out once it is cancelled.
+    check("DSolve((t-Sqrt(t*y(t)))*y'(t)==y(t), y(t), t)", //
+        "{{y(t)->t/ProductLog(-1/Sqrt(1/(E^C(1)*t)))^2}}");
+    check("DSolve((x+Sqrt(x*y(x)))*y'(x)==y(x), y(x), x)", //
+        "{{y(x)->x/ProductLog(1/Sqrt(E^C(1)/x))^2}}");
+    checkResidual("(x+Sqrt(x*y(x)))*y'(x)==y(x)", //
+        "(x+Sqrt(x*y(x)))*y'(x)-y(x)", "{x->13/10, C(1)->3/7}");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolvePowerPotentialWithSymbolicExponent() {
+    // y'' + A*x^m*y == 0 is Bessel's equation in x^((m+2)/2); the exponent and the coefficient
+    // may be symbols, where the sign is unknown and J/Y is the answer for either one
+    check("DSolve(y''(x) + x^n*y(x) == 0, y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselJ(1/(2+n),(2*x^(1+n/2))/(2+n))*C(1)+Sqrt(x)*BesselY(1/(2+n),(\n"
+            + "2*x^(1+n/2))/(2+n))*C(2)}}");
+    check("With({s=DSolve(y''(x) + a*x^k*y(x) == 0, y, x)}, Head(s)===List && "
+        + "Chop(N((y''(x) + a*x^k*y(x)) /. s[[1]] /. "
+        + "{a->-1, k->3, C(1)->9/10, C(2)->11/10, x->4/5}))===0)", //
+        "True");
+    // a number for the exponent keeps the modified Bessel form where the potential grows
+    check("DSolve(y''(x) - x^4*y(x) == 0, y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselI(1/6,x^3/3)*C(1)+Sqrt(x)*BesselK(1/6,x^3/3)*C(2)}}");
+  }
+
+  @Test
+  public void testDSolveTwoTermPowerPotential() {
+    // y'' + (A*x^(2*m) + B*x^(m-1))*y == 0 is Whittaker's equation in x^(m+1)
+    check("With({s=DSolve(y''(x) + (x^4 + x)*y(x) == 0, y, x)}, Head(s)===List && "
+        + "Chop(N((y''(x) + (x^4 + x)*y(x)) /. s[[1]] /. "
+        + "{C(1)->6/5, C(2)->7/10, x->7/10}))===0)", //
+        "True");
+    // with symbols for both coefficients and the exponent
+    check("With({s=DSolve(y''(x) + (a*x^(2*k) + b*x^(k-1))*y(x) == 0, y, x)}, "
+        + "Head(s)===List && Chop(N((y''(x) + (a*x^(2*k) + b*x^(k-1))*y(x)) /. s[[1]] /. "
+        + "{a->-1, b->2, k->3, C(1)->6/5, C(2)->7/10, x->7/10}))===0)", //
+        "True");
+  }
+
+  @Test
+  public void testDSolveHermiteRegularAtTheOrigin() {
+    // The odd solution of y'' + t*y' + y == 0 is a confluent series in -t^2/2, which evaluates to
+    // incomplete gamma functions of it over Sqrt(-t^2): no value at t == 0, so the conditions
+    // there could not be fitted. Written with a positive argument it is Erfi, and real.
+    check("DSolve({y''(t) + t*y'(t) + y(t) == 0, y(0) == 0, y'(0) == 1}, y(t), t)", //
+        "{{y(t)->(Sqrt(Pi)*Erfi(t/Sqrt(2)))/(Sqrt(2)*E^(t^2/2))}}");
+    checkResidualIn("y''(t) + t*y'(t) + y(t) == 0", "y''(t) + t*y'(t) + y(t)",
+        "{C(1)->3/7, C(2)->5/11, t->-7/10}");
+    // a series which terminates is still the polynomial
+    check("DSolve(y''(x) - 2*x*y'(x) + 4*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)-2*x^2*C(1)+x*C(2)*Hypergeometric1F1(-1/2,3/2,x^2)}}");
+  }
+
+  @Test
+  public void testDSolveFirstOrderPiecewiseForcing() {
+    // A step or a piecewise forcing term used to be given to the first order linear method, whose
+    // integral of E^t times it does not close; the failure was returned and the Laplace transform
+    // was never asked. Its closed interval 0 <= t <= 1 is also one the transform did not read.
+    check("DSolve({y'(t) + y(t) == Piecewise({{2, 0 <= t <= 1}, {0, 1 < t}}, 0), y(0) == 0},"
+        + " y(t), t)", //
+        "{{y(t)->2-2/E^t-2*HeavisideTheta(-1+t)+2*E^(1-t)*HeavisideTheta(-1+t)}}");
+    // 2*(1 - E^(-t)) up to t == 1 and 2*(E - 1)*E^(-t) after
+    check("With({s=DSolve({y'(t) + y(t) == Piecewise({{2, 0 <= t <= 1}, {0, 1 < t}}, 0),"
+        + " y(0) == 0}, y(t), t)}, Chop(N({y(t) /. s[[1]] /. t -> 1/2, y(t) /. s[[1]] /. t -> 3})"
+        + " - N({2*(1 - E^(-1/2)), 2*(E - 1)*E^(-3)})))", //
+        "{0,0}");
+    check("DSolve({y'(t) + y(t) == 2*UnitStep(t) - 2*UnitStep(t - 1), y(0) == 0}, y(t), t)", //
+        "{{y(t)->2-2/E^t-2*HeavisideTheta(-1+t)+2*E^(1-t)*HeavisideTheta(-1+t)}}");
+    check("LaplaceTransform(Piecewise({{3, 1 > t > 0}}, 0), t, s)", //
+        "3/s-3/(E^s*s)");
+    // a continuous forcing term is still the linear method's
+    check("DSolve(y'(t) + y(t) == Sin(t), y(t), t)", //
+        "{{y(t)->C(1)/E^t-Cos(t)/2+Sin(t)/2}}");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testDSolvePiecewiseTrigonometricForcing() {
+    // Sin(t) on 0 <= t < Pi resonates with y'' + y, and its transform leaves 1/(1 + s^2)^2, which
+    // was not inverted; Sin(2*t) on 0 <= t < Pi/2 needed the transform of Sin(2*(t + Pi/2)).
+    checkPiecewiseIVP("y''(t)+y(t)==Piecewise({{Sin(t),0<=t<Pi},{Cos(t),Pi<=t}},0)", //
+        "y''(t)+y(t)-Piecewise({{Sin(t),0<=t<Pi},{Cos(t),Pi<=t}},0)", "y(0)==1,y'(0)==0");
+    checkPiecewiseIVP("y''(t)+y(t)==Piecewise({{Cos(t),0<=t<Pi/2},{0,Pi/2<=t}},0)", //
+        "y''(t)+y(t)-Piecewise({{Cos(t),0<=t<Pi/2}},0)", "y(0)==3,y'(0)==-1");
+    checkPiecewiseIVP("y''(t)+2*y'(t)+y(t)==Piecewise({{Sin(2*t),0<=t<Pi/2},{0,Pi/2<=t}},0)", //
+        "y''(t)+2*y'(t)+y(t)-Piecewise({{Sin(2*t),0<=t<Pi/2}},0)", "y(0)==1,y'(0)==0");
+    // not in any corpus: a phase in the forcing and a repeated quadratic at once
+    checkPiecewiseIVP("y''(t)+4*y(t)==Piecewise({{Cos(2*t+1),0<=t<1}},0)", //
+        "y''(t)+4*y(t)-Piecewise({{Cos(2*t+1),0<=t<1}},0)", "y(0)==0,y'(0)==1");
+  }
+
+  /** The solution of the problem, checked in both pieces and at the initial point. */
+  private void checkPiecewiseIVP(String equation, String residual, String conditions) {
+    String solve = "s=DSolve({" + equation + "," + conditions + "}, y, t)";
+    check("With({" + solve + "}, Head(s)===List && Chop(N({" //
+        + residual + " /. s[[1]] /. t->7/10, " //
+        + residual + " /. s[[1]] /. t->4, " //
+        + "Apply(Subtract, {" + conditions + "}, {1}) /. s[[1]]})) === {0,0,{0,0}})", //
+        "True");
   }
 
   /** {@link #checkResidual} for an equation in <code>t</code>. */
@@ -652,6 +839,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveExactAfterClearingTheDenominator() {
     // Exact as written, and not exact by the time the solvers see it: the coefficient of y' is
     // cleared of its denominator first, which multiplies the pair by x. The integrating factor
@@ -676,6 +864,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveProductLogRelation() {
     // A relation which mixes a linear form with its own logarithm is what a first order equation
     // separates into whenever the denominator shares a factor with the numerator. Nothing
@@ -723,6 +912,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSeparableConstantFromTheRelation() {
     // The relation these separate into is a cubic in y, and inverting it puts the constant under a
     // square root and inside a cube root, where solving for it afterwards fails. The condition
@@ -885,6 +1075,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSecondOrderSymmetryFamilies() {
     // The same symmetry with other coefficients, so that the method is not fitted to one equation.
     for (int k : new int[] {1, 2, 3, -1, -2}) {
@@ -964,6 +1155,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSystemHigherOrder() {
     // Carrying the first derivatives as unknowns of their own turns these into first order
     // systems, which is the shape the matrix engine solves.
@@ -1002,6 +1194,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * methods to the ones which cannot answer it.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveFirstOrderSummedCoefficient() {
     check("DSolve(y'(x) == (1+x)*y(x), y(x), x)", //
         "{{y(x)->E^(x+x^2/2)*C(1)}}");
@@ -1038,6 +1231,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * substitution, so the solution can come back with the round trip still in it.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveChangeOfVariableUndoesTheRoundTrip() {
     // The coefficients here become rational in t == Tan(x), and the solution in t carries
     // ArcTan(t); putting Tan(x) back left ArcTan(Tan(x)) standing, which is a sawtooth rather than
@@ -1060,6 +1254,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * are a linear and a quadratic polynomial.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveWeber() {
     check("DSolve(y''(x) + 3*x*y'(x) + (2*x^2 + 4)*y(x) == 0, y(x), x)", //
         "{{y(x)->C(1)/E^x^2+(-x^2*C(1))/E^x^2+(x*C(2)*Hypergeometric1F1(2,3/2,-x^2/2))/E^(x^\n"
@@ -1204,6 +1399,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * by <code>y == Exp(-Integrate(p/2))*z</code>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveNormalFormPrePass() {
     check("DSolve(y''(x) + 2*y'(x) + (1-x)*y(x) == 0, y(x), x)", //
         "{{y(x)->(AiryAi(x)*C(1))/E^x+(AiryBi(x)*C(2))/E^x}}");
@@ -1299,7 +1495,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // solving the general solution for its constant is what failed, not the problem. Naming the
     // constant on the separated relation instead gives (1 + 2*x/3)^(3/2), which is the answer.
     check("DSolve({y'(x) == y(x)^(1/3), y(0) == 1}, y(x), x)", //
-        "{{y(x)->Sqrt(2/3)*Sqrt(3/2+x)+2/3*Sqrt(2/3)*x*Sqrt(3/2+x)}}");
+        "{{y(x)->Sqrt(1+2/3*x)+2/3*Sqrt(1+2/3*x)*x}}");
     checkResidual("{y'(x) == y(x)^(1/3), y(0) == 1}", //
         "y'(x) - y(x)^(1/3)", "{x->13/10}");
     checkResidual("{y'(x) == y(x)^(1/3), y(0) == 0}", //
@@ -1388,6 +1584,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveKovacicAlgebraicPair() {
     // The logarithmic derivative is -1/(4*x) +- Sqrt(x)/2, which is not rational; what is rational
     // is the sum of the two, and that is what the search looks for.
@@ -1517,6 +1714,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveKovacicCase1() {
     // z1 == x*(x-1) solves the reduced form, so the logarithmic derivative 1/x + 1/(x-1) is
     // rational and the pole part of the guess reaches it.
@@ -1543,6 +1741,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveOperatorFactor() {
     // The operator of this equation is (D^2 - 1)(D + 2/x), so 1/x^2 solves it and dividing that
     // factor out leaves an equation of the second order which the cascade already answers.
@@ -1722,6 +1921,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveRiccatiWithAiryReduction() {
     // y' == x + y^2 reduces to u''(x) + x*u(x) == 0, whose solutions are Airy functions of
     // (-1)^(1/3)*x. Putting the answer over a common denominator used to change its value, so it
@@ -1750,6 +1950,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveBesselFamilies() {
     // y'' == A*x^m*y is Bessel's equation of order 1/(m+2) in x^((m+2)/2).
     check("DSolve(y''(x) - x^4*y(x) == 0, y(x), x)", //
@@ -1896,6 +2097,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveDeclinesInsteadOfAnswering() {
     // The first order solvers used to be offered this, and answered from the part of it they could
     // read, which produced an expression containing y''(x) itself. It has an answer of its own now:
@@ -1904,9 +2106,11 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(x*y''(x) + 2*y'(x) - x*y(x) == Sin(x), y(x), x)", //
         "{{y(x)->C(1)/(E^x*x)+(E^x*C(2))/x-Sin(x)/(2*x)}}");
 
-    // The second integration is elliptic, so this has no solution in elementary terms.
+    // The second integration is elliptic, so this has no solution in elementary terms; the answer
+    // is the relation with that integral inert, as Mathematica gives it.
     check("DSolve(y''(x) == y(x)^2 + 1, y(x), x)", //
-        "DSolve(y''(x)==1+y(x)^2,y(x),x)");
+        "Solve(Inactive(Integrate)[1/(Sqrt(2)*Sqrt(C(1)+K(1)+K(1)^3/3)),{K(1),1,y(x)}]^2==(x+C(\n"
+            + "2))^2,y(x))");
 
     // A system which is not linear in its unknowns has no coefficient matrix. Treating E^z(x) as
     // if it were a forcing function produced an answer to a different system.
@@ -2170,5 +2374,76 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   public void tearDown() throws Exception {
     // super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
+  }
+
+  /**
+   * An autonomous equation of the third order, reduced by p == y'(y) to one of the second order in
+   * p(y) and then to the separable y' == p(y). Where that quadrature is not elementary the answer
+   * is the relation it gives, with the integral inert, as in Mathematica; the constants of p come
+   * first and the one of the quadrature last.
+   */
+  @Test
+  public void testDSolveAutonomousThirdOrder() {
+    check("DSolve(y(x)*y'''(x) == y'(x)*y''(x), y(x), x)", //
+        "{{y(x)->Sqrt(C(2))*Sinh(E^C(1)*x+C(3))}}");
+    check("DSolve(y(x)^2*y'''(x) == y'(x)^3, y(x), x)", //
+        "{{y(x)->(Sqrt(C(2))*Sinh(3/2*E^C(1)*x+3/2*C(3)))^(2/3)}}");
+    check("DSolve(2*y(x)*y'''(x) == y'(x), y(x), x)", //
+        "Solve(Inactive(Integrate)[1/(Sqrt(2)*Sqrt(C(1)+1/2*(-K(1)+2*C(2)*K(1)+K(1)*Log(K(\n"
+            + "1))))),{K(1),1,y(x)}]^2==(x+C(3))^2,y(x))");
+    // the second order case is what it was
+    check("DSolve(y(x)*y''(x) == y'(x)^2, y(x), x)", //
+        "{{y(x)->E^(x*C(1))*C(2)}}");
+  }
+
+  /**
+   * An autonomous equation of the second order whose quadrature is not elementary: the relation,
+   * inert. With conditions the first integral is fitted as before and the quadrature may become
+   * elementary.
+   */
+  @Test
+  public void testDSolveAutonomousRelation() {
+    check("DSolve(y''(x) == 2*y(x)^3, y(x), x)", //
+        "Solve(Inactive(Integrate)[1/Sqrt(-C(1)+K(1)^4),{K(1),1,y(x)}]^2==(x+C(2))^2,y(x))");
+    check("DSolve(y''(x) == Sin(y(x)), y(x), x)", //
+        "Solve(Inactive(Integrate)[1/Sqrt(-C(1)-2*Cos(K(1))),{K(1),1,y(x)}]^2==(x+C(2))^2,y(x))");
+    check("DSolve({y''(x) == y(x)^3, y(0) == 5, y'(0) == 25/Sqrt(2)}, y(x), x)", //
+        "{{y(x)->1/(1/5-x/Sqrt(2))}}");
+    // the relation differentiates back to the equation
+    check("D(Inactive(Integrate)[1/Sqrt(-c+K(1)^4),{K(1),1,y(x)}], x)", //
+        "y'(x)/Sqrt(-c+y(x)^4)");
+  }
+
+  /**
+   * The antiderivative of 1/Sqrt(y^2 + a) with a parameter in it comes as
+   * ArcTanh(y/Sqrt(a + y^2)), or as the two logarithms it stands for, which nothing inverted; the
+   * ArcSinh(y/Sqrt(a)) it equals is inverted at once.
+   */
+  @Test
+  public void testDSolveSeparableRadicalWithParameter() {
+    check("DSolve(y'(x) == Sqrt(y(x)^2 + a), y(x), x)", //
+        "{{y(x)->Sqrt(a)*Sinh(x+C(1))}}");
+    check("DSolve(y'(x) == b*Sqrt(y(x)^2 + a), y(x), x)", //
+        "{{y(x)->Sqrt(a)*Sinh(b*x+C(1))}}");
+    check("DSolve(y'(x) == Sqrt(a - y(x)^2), y(x), x)", //
+        "{{y(x)->Sqrt(a)*Sin(x+C(1))}}");
+    check("DSolve(y'(x) == Sqrt(y(x)^2 - a), y(x), x)", //
+        "{{y(x)->Sqrt(a)*Cosh(x+C(1))}}");
+    // with a generated constant as the parameter FullSimplify leaves the logarithms alone
+    check("DSolve(y'(x) == Sqrt(y(x)^2 + C(3)), y(x), x)", //
+        "{{y(x)->Sqrt(C(3))*Sinh(x+C(1))}}");
+  }
+
+  /**
+   * The unknown and the variable named like the dummies the integrating-factor method makes for
+   * them. Two symbols of one name used to sort as equal without being equal, so products of them
+   * came out in either order and the exactness test's zero did not cancel.
+   */
+  @Test
+  public void testDSolveUnknownNamedLikeADummy() {
+    check("DSolve(p''(Y) + p'(Y)^2/p(Y) - p'(Y)/Y == 0, p(Y), Y)", //
+        "{{p(Y)->-Sqrt(Y^2*C(1)-C(2))},{p(Y)->Sqrt(Y^2*C(1)-C(2))}}");
+    check("DSolve(q''(t) + q'(t)^2/q(t) - q'(t)/t == 0, q(t), t)", //
+        "{{q(t)->E^C(1)*Sqrt(t^2+C(2))}}");
   }
 }

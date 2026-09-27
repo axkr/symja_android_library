@@ -281,15 +281,24 @@ public class ASTRRBTree extends AbstractAST
   }
 
   /**
-   * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity
-   * as this {@code HMArrayList}.
+   * A shallow copy of this tree, like {@link #copy()}: the elements themselves are not copied, the
+   * tree holding them is, and the evaluation flags start cleared.
    *
-   * @return a shallow copy of this {@code ArrayList}
+   * @return a shallow copy of this {@code ASTRRBTree}
    * @see java.lang.Cloneable
    */
   @Override
-  final public IAST clone() {
-    return copy();
+  public ASTRRBTree clone() {
+    try {
+      ASTRRBTree result = (ASTRRBTree) super.clone();
+      result.resetFlags();
+      result.fEvalEpoch = 0L;
+      result.rrbTree = shallowCopy(rrbTree);
+      return result;
+    } catch (CloneNotSupportedException e) {
+      // AbstractAST implements Cloneable
+      throw new AssertionError(e);
+    }
   }
 
   /** {@inheritDoc} */

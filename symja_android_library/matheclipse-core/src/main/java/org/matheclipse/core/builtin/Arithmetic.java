@@ -113,7 +113,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.core.numbertheory.AlgebraicNumberField;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
@@ -124,6 +124,7 @@ import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimesPower;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.units.QuantityOps;
+import org.matheclipse.parser.client.ParserConfig;
 
 public final class Arithmetic {
   /**
@@ -3171,7 +3172,14 @@ public final class Arithmetic {
           }
         }
         if (ast.exists(x -> x instanceof IDataExpr || x.isQuantity() || AroundFunctions.isAround(x)
-            || AroundFunctions.isVectorAround(x))) {
+            || AroundFunctions.isVectorAround(x) || AlgebraicNumberField.isObject(x))) {
+          if (ast.exists(AlgebraicNumberField::isObject)) {
+            // objects of one number field add in that field
+            IExpr algebraicResult = AlgebraicNumberField.plus(ast, engine);
+            if (algebraicResult.isPresent()) {
+              return algebraicResult;
+            }
+          }
           if (ast.exists(x -> AroundFunctions.isVectorAround(x))) {
             IExpr vectorResult = AroundFunctions.plusVectorAround(ast, engine);
             if (vectorResult.isPresent()) {
@@ -3575,6 +3583,13 @@ public final class Arithmetic {
         if (base.isQuantity()) {
           return QuantityOps.power((IAST) base, exponent, EvalEngine.get());
         } else if (base.isAST()) {
+          if (exponent.isInteger() && AlgebraicNumberField.isObject(base)) {
+            IExpr algebraicResult =
+                AlgebraicNumberField.power(base, (IInteger) exponent, EvalEngine.get());
+            if (algebraicResult.isPresent()) {
+              return algebraicResult;
+            }
+          }
           if (base.isInterval()) {
             if (exponent.isInteger()) {
               return IntervalSym.power((IAST) base, (IInteger) exponent);
@@ -4396,10 +4411,26 @@ public final class Arithmetic {
      * @return the result of the power operation if it can be computed, otherwise returns
      *         {@link F#NIL}
      */
+    /**
+     * A symbolic expression which the current assumptions make positive. Numeric constants like
+     * <code>Pi</code> are excluded, so that <code>Sqrt(2*Pi)</code> keeps its form.
+     */
+    private static boolean isAssumedPositiveSymbolic(IExpr x) {
+      return EvalEngine.get().getAssumptions() != null && !x.isNumericFunction(true)
+          && (x.isPositiveResult() || AbstractAssumptions.assumePositive(x));
+    }
+
     private static IExpr powerASTBase(final IAST base, final IExpr exponent) {
       if (base.isTimes()) {
         final IAST baseTimes = base;
         if (exponent.isInteger() || exponent.isMinusOne()) {
+          return baseTimes.mapThread(F.Power(F.Slot1, exponent), 1);
+        }
+        if (exponent.isReal() && baseTimes.exists(x -> x.isPower())
+            && baseTimes.forAll(x -> (x.isRational() && x.isPositive()) || (x.isPower()
+                && isAssumedPositiveSymbolic(x.base()) && x.exponent().isRealResult()))) {
+          // (a^m * b^n)^r => (a^m)^r * (b^n)^r /; a > 0 && b > 0, e.g.
+          // Refine(Sqrt(x^2*y^2), x>0 && y>0) is x*y
           return baseTimes.mapThread(F.Power(F.Slot1, exponent), 1);
         }
         if (exponent.isFraction()) {
@@ -4459,6 +4490,10 @@ public final class Arithmetic {
         if (!baseExponent.isNumericFunction(true)
             && AbstractAssumptions.assumeAbsLessThanOne(baseExponent)) {
           // (a^b)^c => a^(b*c) /; -1 < b < 1
+          return F.Power(base.base(), F.Times(baseExponent, exponent));
+        }
+        if (isAssumedPositiveSymbolic(base.base()) && baseExponent.isRealResult()) {
+          // (a^b)^c => a^(b*c) /; a > 0 && b real, e.g. Refine((x^2)^r, x>0) is x^(2*r)
           return F.Power(base.base(), F.Times(baseExponent, exponent));
         }
       } else if (base.isAbs() && base.isAST1()) {
@@ -4521,6 +4556,10 @@ public final class Arithmetic {
             }
           }
           IExpr i = Times.of(times, F.CNI, F.Power(S.Pi, F.CN1));
+          if (!i.isNumber() && i.isIntegerResult()) {
+            // E^(I*Pi*n) == (-1)^n for an integer n, and 1 for an even one: E^(2*I*Pi*k) == 1
+            return Times.of(F.C1D2, i).isIntegerResult() ? F.C1 : F.Power(F.CN1, i);
+          }
           if (i.isRational()) {
             IRational rat = (IRational) i;
             if (rat.isGT(F.C1) || rat.isLE(F.CN1)) {
@@ -4780,8 +4819,8 @@ public final class Arithmetic {
         }
       }
 
-      if (exponent.isNumEqualRational(F.C1D2) && base.isNegativeResult()) {
-        // extract I for sqrt
+      if (exponent.isNumEqualRational(F.C1D2) && base.isNonPositiveResult()) {
+        // extract I for sqrt; Sqrt(z) == I*Sqrt(-z) holds at z == 0 too
         return F.Times(F.CI, F.Power(F.Negate(base), exponent));
       } else if (exponent.isNumEqualRational(F.CN1D2) && base.isNegativeResult()) {
         // extract I for sqrt
@@ -5218,7 +5257,7 @@ public final class Arithmetic {
     }
   }
 
-   
+
   private static final class Accuracy extends AbstractCoreFunctionEvaluator {
 
     @Override
@@ -5252,8 +5291,8 @@ public final class Arithmetic {
         INum number = (INum) expr;
         // Symja gives a machine double a nominal precision of 15, but WMA reports
         // $MachinePrecision for it and defines Accuracy in terms of that value.
-        double precision = number.isMachineNumber() ? ParserConfig.MACHINE_PRECISION_DOUBLE
-            : number.precision();
+        double precision =
+            number.isMachineNumber() ? ParserConfig.MACHINE_PRECISION_DOUBLE : number.precision();
         double value = number.doubleValue();
         if (value == 0.0) {
           // Zero has no significant digits of its own, so its accuracy is bounded by the
@@ -5299,8 +5338,8 @@ public final class Arithmetic {
      * The precision of an expression, or {@link Long#MAX_VALUE} when it is exact.
      *
      * <p>
-     * A compound expression is only as precise as its least precise part, so this recurses over
-     * the whole tree. Returning {@code Infinity} for anything that was not itself a number made
+     * A compound expression is only as precise as its least precise part, so this recurses over the
+     * whole tree. Returning {@code Infinity} for anything that was not itself a number made
      * {@code Precision({1, 1.0})} claim exactness for a list holding an inexact value.
      */
     private static long precision(IExpr expr) {
@@ -5795,6 +5834,10 @@ public final class Arithmetic {
       if (arg1.isNumericFunction()) {
         try {
           IExpr evalN = engine.evalN(arg1, engine.getNumericPrecision());
+          if (evalN.isReal() && !arg1.isNumber() && arg1.isFree(x -> x.isInexactNumber(), false)) {
+            IExpr sign = exactNumericSign(arg1, (IReal) evalN, engine);
+            return sign.isPresent() ? sign : result;
+          }
           if (evalN.isZero()) {
             return F.C0;
           }
@@ -5916,23 +5959,22 @@ public final class Arithmetic {
         return F
             .IntervalData(F.List(F.ZZ(lowestSign), S.LessEqual, S.LessEqual, F.ZZ(highestSign)));
       }
-      IExpr temp = engine.evaluateNIL(F.Abs(arg1));
-      if (temp.isPresent() && !temp.isAST(S.Abs)) {
-        return F.Divide(arg1, temp);
-      }
-      if (AbstractAssumptions.assumeNegative(arg1)) {
+      if (arg1.isNegativeResult() || AbstractAssumptions.assumeNegative(arg1)) {
         return F.CN1;
       }
-      if (AbstractAssumptions.assumePositive(arg1)) {
+      if (arg1.isPositiveResult() || AbstractAssumptions.assumePositive(arg1)) {
         return F.C1;
+      }
+      // arg1/Abs(arg1) is the sign only where arg1 != 0, which Abs(arg1) > 0 certifies: under x>=0
+      // Abs(x) is x, and x/x is not Sign(x) at x == 0
+      IExpr temp = engine.evaluateNIL(F.Abs(arg1));
+      if (temp.isPresent() && !temp.isAST(S.Abs) && temp.isPositiveResult()) {
+        return F.Divide(arg1, temp);
       }
 
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return F.Times(F.CN1, F.Sign(negExpr));
-      }
-      if (arg1.isRealResult() && !arg1.isZero()) {
-        return F.Divide(arg1, F.Abs(arg1));
       }
       IExpr y = AbstractFunctionEvaluator.imaginaryPart(arg1, true);
       if (y.isPresent() && y.isRealResult()) {
@@ -5943,6 +5985,47 @@ public final class Arithmetic {
         }
       }
       return result;
+    }
+
+    /** Extra digits for deciding the sign of an exact value, similar to $MaxExtraPrecision */
+    private static final int MAX_EXTRA_PRECISION = 50;
+
+    /**
+     * The sign of an exact numeric expression whose machine value is <code>value</code>. A value
+     * that is small against the size of the terms may be rounding noise of an exact 0, e.g.
+     * <code>(Sqrt(2)+Sqrt(3))^2-5-2*Sqrt(6)</code>: it is evaluated again with
+     * {@link #MAX_EXTRA_PRECISION} more digits, and if it is still indistinguishable from 0 the
+     * sign is left undecided with the message <code>N::meprec</code>.
+     *
+     * @return {@link F#NIL} if the sign can't be decided
+     */
+    private static IExpr exactNumericSign(IExpr arg1, IReal value, EvalEngine engine) {
+      double scale = Math.abs(value.evalf());
+      if (arg1.isPlus()) {
+        for (IExpr term : (IAST) arg1) {
+          IExpr termValue = engine.evalN(term, engine.getNumericPrecision());
+          if (termValue.isNumber()) {
+            scale = Math.max(scale, ((INumber) termValue).abs().evalf());
+          }
+        }
+      }
+      double v = value.evalf();
+      if (Math.abs(v) > 1.0e-10 * scale) {
+        return F.ZZ(v > 0 ? 1 : -1);
+      }
+      long digits = Math.max(engine.getNumericPrecision(), ParserConfig.MACHINE_PRECISION)
+          + MAX_EXTRA_PRECISION;
+      IExpr high = engine.evalN(arg1, digits);
+      if (high.isReal()) {
+        double h = high.evalf();
+        if (Math.abs(h) > Math.pow(10.0, -(digits - 5)) * Math.max(1.0, scale)) {
+          return F.ZZ(h > 0 ? 1 : -1);
+        }
+      }
+      // Internal precision limit `1` reached while evaluating `2`.
+      Errors.printMessage(S.N, "meprec",
+          F.List(F.stringx("$MaxExtraPrecision = " + MAX_EXTRA_PRECISION + "."), arg1), engine);
+      return F.NIL;
     }
 
     @Override
@@ -7225,7 +7308,7 @@ public final class Arithmetic {
         // Evaluation arrives here all the same, because AbstractAST#evaluate() dispatches on
         // topHead(), which looks through nested heads so that Derivative(1)[f] can work. Without
         // this the outer arguments are multiplied as though the head were the plain symbol and
-        // (2*Sqrt(5))[3,4] answers 12, where Mathematica leaves the expression alone. The two
+        // (2*Sqrt(5))[3,4] answers 12. The two
         // branches below already made this test for one and two arguments.
         return F.NIL;
       }
@@ -7245,6 +7328,13 @@ public final class Arithmetic {
         IExpr arrayResult = SymbolicArrayFunctions.timesSymbolicArrays(ast, engine);
         if (arrayResult.isPresent()) {
           return arrayResult;
+        }
+      }
+      if (ast.exists(AlgebraicNumberField::isObject)) {
+        // objects of one number field multiply in that field
+        IExpr algebraicResult = AlgebraicNumberField.times(ast, engine);
+        if (algebraicResult.isPresent()) {
+          return algebraicResult;
         }
       }
       if (ast.exists(x -> AroundFunctions.isAround(x))) {
@@ -7894,6 +7984,8 @@ public final class Arithmetic {
         // numeric bases are combined by the rules below, merging them here would compete with
         // the normalization of numbers and constants and can run into an endless recursion
         && !base1.isNumericFunction(true) && !base2.isNumericFunction(true) //
+        // (a*b)^n with an integer n is distributed again: an endless recursion
+        && !exponent1.isInteger() //
         && base1.isPositiveResult() && base2.isPositiveResult()) {
       // https://functions.wolfram.com/ElementaryFunctions/Power/16/08/01/0004/
       // a^(c)*b^(c) => (a*b)^c holds for arbitrary c if a and b are assumed to be positive
@@ -7932,8 +8024,8 @@ public final class Arithmetic {
    * Only worth doing while the collected exponent stays inside one turn. Beyond that
    * <code>(-1)^(4/3)</code> is written back as <code>-(-1)^(1/3)</code>, whose sign this method
    * would collect again, and the two forms would be rewritten into each other for as long as the
-   * evaluation loop allows. An exponent which is already a whole number is a plain sign rather
-   * than a root, and collecting it buys nothing while risking the same.
+   * evaluation loop allows. An exponent which is already a whole number is a plain sign rather than
+   * a root, and collecting it buys nothing while risking the same.
    */
   private static boolean isSignToCollect(int base, IExpr exponent1, IExpr exponent2) {
     if (base != -1 || exponent1.isInteger() || exponent2.isInteger()) {

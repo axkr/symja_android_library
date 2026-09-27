@@ -151,6 +151,13 @@ public class Symbol implements ISymbol, Serializable {
    */
   protected String fSymbolName;
 
+  /** Numbers the symbols in the order they were made, see {@link #compareSameName}. */
+  private static final java.util.concurrent.atomic.AtomicInteger SERIAL =
+      new java.util.concurrent.atomic.AtomicInteger();
+
+  /** The place of this symbol in the order they were made, see {@link #compareSameName}. */
+  private transient int fSerial;
+
   /**
    * The collation key of {@link #fSymbolName}, computed on the first comparison of this symbol
    * against another one. See {@link #collationKey()}.
@@ -192,6 +199,29 @@ public class Symbol implements ISymbol, Serializable {
   public Symbol(String symbolName, Context context) {
     fContext = context;
     fSymbolName = symbolName;
+    fSerial = SERIAL.incrementAndGet();
+  }
+
+  /**
+   * Orders two different symbols of one name, so that the order of the terms of a sum or product
+   * does not depend on which of them was met first.
+   *
+   * <p>
+   * Two symbols are two variables however they are called: a {@link F#Dummy(String)} made by a
+   * solver beside the user's symbol of the same name, or a formal symbol beside the built-in one.
+   * Read as equal in the order, <code>a*b</code> and <code>b*a</code> for such a pair sorted
+   * either way and <code>a*b - b*a</code> did not cancel. The context comes first, then the order
+   * in which the symbols were made.
+   */
+  static int compareSameName(ISymbol a, ISymbol b) {
+    int cp = a.getContext().completeContextName().compareTo(b.getContext().completeContextName());
+    if (cp != 0) {
+      return cp;
+    }
+    if (a instanceof Symbol && b instanceof Symbol) {
+      return Integer.compare(((Symbol) a).fSerial, ((Symbol) b).fSerial);
+    }
+    return Integer.compare(System.identityHashCode(a), System.identityHashCode(b));
   }
 
   /** {@inheritDoc} */
@@ -340,10 +370,9 @@ public class Symbol implements ISymbol, Serializable {
         return 0;
       }
       // sort lexicographically
-      if (expr instanceof Symbol) {
-        return collationKey().compareTo(((Symbol) expr).collationKey());
-      }
-      return IStringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
+      int cp = expr instanceof Symbol ? collationKey().compareTo(((Symbol) expr).collationKey())
+          : IStringX.US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
+      return cp != 0 ? cp : compareSameName(this, (ISymbol) expr);
     }
     if (expr.isAST()) {
       int id = expr.headID();

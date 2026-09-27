@@ -5,6 +5,30 @@ import org.junit.jupiter.api.Test;
 public class ResolveTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testResolveNestedAndAbs() {
+    // restricted and nested quantifiers
+    check("Resolve(ForAll(x, x > 0, Exists(y, y > 0, y^2 == x)), Reals)", //
+        "True");
+    check("Resolve(ForAll({x, y}, x > 0 && y > 0, x + y > 0), Reals)", //
+        "True");
+    check("Resolve(Exists(y, y > 0 && y^2 == x), Reals)", //
+        "x>0");
+    check("Resolve(ForAll(x, x > -1, Exists(y, y > 0, y^2 == x)), Reals)", //
+        "False");
+    // Abs in a quantified body, and the epilon-dlta sentences of a linear limit
+    check("Resolve(ForAll(x, 0 < Abs(x - 1) < 1, Abs(2*x - 2) < 3), Reals)", //
+        "True");
+    check(
+        "Resolve(ForAll(ep, ep > 0, Exists(dl, dl > 0, ForAll(x, 0 < Abs(x - 1) < dl, Abs((2*x + 1) - 3) < ep))), Reals)", //
+        "True");
+    check(
+        "Resolve(ForAll(ep, ep > 0, Exists(dl, dl > 0, ForAll(x, 0 < Abs(x - 1) < dl, Abs((2*x + 1) - 4) < ep))), Reals)", //
+        "False");
+    check("Resolve(Exists(x, 1 < x < 1 + dl && 2*x - 2 >= ep), Reals)", //
+        "dl>0&&ep<2*dl");
+  }
+
+  @Test
   public void testResolveExistsReals() {
     check("Resolve(Exists(x, x^2 == 4), Reals)", //
         "True");

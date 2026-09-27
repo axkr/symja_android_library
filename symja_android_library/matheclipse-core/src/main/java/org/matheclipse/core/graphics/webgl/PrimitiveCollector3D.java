@@ -3,11 +3,15 @@ package org.matheclipse.core.graphics.webgl;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.IntervalMarkerType;
 import org.matheclipse.core.graphics.PlotWrapper;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.graphics.svg.ColorUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -37,11 +41,17 @@ public final class PrimitiveCollector3D {
     final IAST points;
     final IAST vertexColors;
     final IAST vertexNormals;
+    /**
+     * Whether the complex draws a surface. A line in such a complex lies on it - its rim, its
+     * mesh, the levels of its mesh functions - which is how Mathematica writes those lines.
+     */
+    final boolean hasSurface;
 
-    ComplexContext(IAST points, IAST vertexColors, IAST vertexNormals) {
+    ComplexContext(IAST points, IAST vertexColors, IAST vertexNormals, boolean hasSurface) {
       this.points = points;
       this.vertexColors = vertexColors;
       this.vertexNormals = vertexNormals;
+      this.hasSurface = hasSurface;
     }
 
     /** The coordinate an index refers to, or {@code null} when it is out of range. */
@@ -60,6 +70,26 @@ public final class PrimitiveCollector3D {
 
   /** The extent of the data, which the renderer frames the scene and the box against. */
   public final Bounds3D bounds = new Bounds3D();
+
+  /** The opacity an interval band is drawn with, times that of its colour. */
+  private static final double BAND_OPACITY = 0.3;
+
+  /** The radius of an interval tube, as a fraction of the scene diagonal. */
+  private static final double TUBE_FRACTION = 0.004;
+
+  /** {@code IntervalMarkers}: how uncertain coordinates of points and lines are marked. */
+  private IntervalMarkerType intervalMarkers = IntervalMarkerType.BARS;
+  /** {@code IntervalMarkersStyle}, or {@code null} for the style of the marked primitive. */
+  private IExpr intervalMarkersStyle = null;
+
+  /**
+   * While a {@code Point} or {@code Line} is read, per group (a line segment) the points with
+   * {centre, lower, upper} per axis; {@code null} otherwise.
+   */
+  private List<List<double[][]>> markerGroups;
+
+  /** The tubes of {@code IntervalMarkers -> "Tubes"}, sized by {@link #finishIntervalMarkers()}. */
+  private final List<ObjectNode> intervalTubes = new ArrayList<>();
 
   public PrimitiveCollector3D(ArrayNode elements, String[] scaling) {
     this.elements = elements;
@@ -156,12 +186,22 @@ public final class PrimitiveCollector3D {
         }
         return;
       }
+      case ID.BoundaryMeshRegion: {
+        // drawn the way Show draws it: the region as a GraphicsComplex in its own scope
+        IExpr complex = org.matheclipse.core.builtin.MeshFunctions.meshGraphicsComplex(ast,
+            org.matheclipse.core.eval.EvalEngine.get());
+        if (complex.isPresent()) {
+          process(complex, style.clone(), context, transform);
+        }
+        return;
+      }
       case ID.GraphicsComplex: {
         if (ast.argSize() >= 2) {
           IAST pts = ast.arg1().isList() ? (IAST) ast.arg1() : null;
           IAST colors = optionList(ast, S.VertexColors);
           IAST normals = optionList(ast, S.VertexNormals);
-          process(ast.arg2(), style.clone(), new ComplexContext(pts, colors, normals), transform);
+          process(ast.arg2(), style.clone(),
+              new ComplexContext(pts, colors, normals, containsPolygon(ast.arg2())), transform);
         }
         return;
       }
@@ -231,6 +271,10 @@ public final class PrimitiveCollector3D {
         }
         return true;
       }
+      case ID.CapForm:
+        // only None changes a solid: the other cap forms shape the ends of a line
+        style.openEnded = ast.argSize() == 1 && ast.arg1().isNone();
+        return true;
       case ID.ColorDataFunction: {
         Color c = ColorUtil.parse(ast);
         if (c != null) {
@@ -339,9 +383,69 @@ public final class PrimitiveCollector3D {
         }
         return applied;
       }
+      case ID.Rule:
+      case ID.RuleDelayed:
+        return applyFontRule(ast, style);
       default:
         return false;
     }
+  }
+
+  /** The font options <code>Style</code> takes as rules, as the 2D pipeline reads them. */
+  private static boolean applyFontRule(IAST rule, Style3D style) {
+    if (rule.argSize() != 2 || !rule.arg1().isBuiltInSymbol()) {
+      return false;
+    }
+    IExpr value = rule.arg2();
+    switch (((IBuiltInSymbol) rule.arg1()).ordinal()) {
+      case ID.FontColor: {
+        Color c = ColorUtil.parse(value);
+        if (c != null) {
+          style.textColor = c;
+        }
+        return true;
+      }
+      case ID.FontSize:
+        style.fontSize = fontSizeOf(value, style.fontSize);
+        return true;
+      case ID.FontFamily:
+        style.fontFamily = unquote(value);
+        return true;
+      case ID.FontWeight:
+        style.fontWeight =
+            unquote(value).toLowerCase(Locale.US).contains("bold") ? "bold" : "normal";
+        return true;
+      case ID.FontSlant: {
+        String slant = unquote(value).toLowerCase(Locale.US);
+        style.fontStyle =
+            slant.contains("italic") || slant.contains("oblique") ? "italic" : "normal";
+        return true;
+      }
+      default:
+        return false;
+    }
+  }
+
+  private static double fontSizeOf(IExpr value, double current) {
+    if (value.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) value).ordinal()) {
+        case ID.Tiny:
+          return 6.0;
+        case ID.Small:
+          return 9.0;
+        case ID.Medium:
+          return 12.0;
+        case ID.Large:
+          return 18.0;
+        default:
+          return current;
+      }
+    }
+    return ColorUtil.dbl(value, current);
+  }
+
+  private static String unquote(IExpr value) {
+    return value.toString().replace("\"", "");
   }
 
   private boolean applySymbolDirective(IBuiltInSymbol symbol, Style3D style) {
@@ -382,6 +486,16 @@ public final class PrimitiveCollector3D {
         return true;
       case ID.Large:
         style.pointSize = Style3D.Size.ofScaled(0.018);
+        return true;
+      case ID.Bold:
+        style.fontWeight = "bold";
+        return true;
+      case ID.Italic:
+        style.fontStyle = "italic";
+        return true;
+      case ID.Plain:
+        style.fontWeight = "normal";
+        style.fontStyle = "normal";
         return true;
       default:
         return false;
@@ -587,13 +701,23 @@ public final class PrimitiveCollector3D {
     if (ast.argSize() < 1) {
       return;
     }
-    List<List<double[]>> polylines = polylines(ast.arg1(), context);
+    List<List<double[]>> polylines;
+    beginMarkers(ast.arg1());
+    try {
+      polylines = polylines(ast.arg1(), context);
+    } finally {
+      endMarkers(style, transform, true);
+    }
     if (polylines.isEmpty()) {
       return;
     }
     ObjectNode node = newElement(asArrow ? "Arrow" : "Line", style, transform);
     node.put("color", rgb(style.effectiveLine()));
     node.put("opacity", style.alphaOf(style.effectiveLine()));
+    if (!asArrow && context != null && context.hasSurface) {
+      // drawn on the surface of its complex: a renderer has to let it win against those faces
+      node.put("onSurface", true);
+    }
     writePolylines(node, polylines, transform);
     writeLineStyle(node, style);
     IAST vertexColors = optionList(ast, S.VertexColors);
@@ -612,6 +736,23 @@ public final class PrimitiveCollector3D {
       }
       node.put("color", 0xFFFFFF);
     }
+  }
+
+  /** Whether the primitives of a complex hold a polygon anywhere among their groups. */
+  private static boolean containsPolygon(IExpr primitives) {
+    if (primitives.isAST(S.Polygon)) {
+      return true;
+    }
+    if (primitives.isList() || primitives.isAST(S.Style) || primitives.isAST(S.Annotation)
+        || primitives.isAST(S.Tooltip)) {
+      IAST ast = (IAST) primitives;
+      for (int i = 1; i < ast.size(); i++) {
+        if (containsPolygon(ast.get(i))) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private void emitArrow(IAST ast, Style3D style, ComplexContext context, Transform3D transform) {
@@ -646,7 +787,13 @@ public final class PrimitiveCollector3D {
       return;
     }
     List<double[]> points = new ArrayList<>();
-    collectPoints(ast.arg1(), context, points);
+    beginMarkers(ast.arg1());
+    try {
+      startMarkerGroup();
+      collectPoints(ast.arg1(), context, points);
+    } finally {
+      endMarkers(style, transform, false);
+    }
     if (points.isEmpty()) {
       return;
     }
@@ -672,7 +819,6 @@ public final class PrimitiveCollector3D {
   }
 
   private void emitSphere(IAST ast, Style3D style, ComplexContext context, Transform3D transform) {
-    double radius = ast.argSize() >= 2 ? ColorUtil.dbl(ast.arg2(), 1.0) : 1.0;
     List<double[]> centers = new ArrayList<>();
     if (ast.argSize() == 0) {
       centers.add(new double[] {0, 0, 0});
@@ -682,14 +828,80 @@ public final class PrimitiveCollector3D {
     if (centers.isEmpty()) {
       return;
     }
+    IExpr radiusArg = ast.argSize() >= 2 ? ast.arg2() : null;
+    if (radiusArg != null && radiusArg.isList()
+        && ((IAST) radiusArg).argSize() == centers.size()) {
+      // Sphere[{p1, p2, ...}, {r1, r2, ...}] gives each centre its own radius; a list whose
+      // length does not match the centres is no radius at all, and every sphere is a unit one.
+      // Centres sharing a radius stay one element, so a field of equal spheres is still one
+      // instanced mesh.
+      IAST radii = (IAST) radiusArg;
+      Map<Radius, List<double[]>> byRadius = new LinkedHashMap<>();
+      for (int i = 0; i < centers.size(); i++) {
+        byRadius.computeIfAbsent(Radius.of(radii.get(i + 1)), r -> new ArrayList<>())
+            .add(centers.get(i));
+      }
+      for (Map.Entry<Radius, List<double[]>> entry : byRadius.entrySet()) {
+        emitSphereElement(entry.getValue(), entry.getKey(), style, transform);
+      }
+      return;
+    }
+    emitSphereElement(centers, Radius.of(radiusArg), style, transform);
+  }
+
+  /**
+   * How big a sphere is: a length in the data's own units, or - written {@code Scaled[s]} - a
+   * fraction of the scene's diagonal, which is only known once every primitive has been collected
+   * and is therefore resolved by the renderer.
+   */
+  private static final class Radius {
+    final double value;
+    final boolean scaled;
+
+    private Radius(double value, boolean scaled) {
+      this.value = value;
+      this.scaled = scaled;
+    }
+
+    static Radius of(IExpr expr) {
+      if (expr != null && expr.isAST(S.Scaled, 2)) {
+        return new Radius(ColorUtil.dbl(((IAST) expr).arg1(), 0.01), true);
+      }
+      return new Radius(expr == null ? 1.0 : ColorUtil.dbl(expr, 1.0), false);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (!(other instanceof Radius)) {
+        return false;
+      }
+      Radius radius = (Radius) other;
+      return scaled == radius.scaled
+          && Double.doubleToLongBits(value) == Double.doubleToLongBits(radius.value);
+    }
+
+    @Override
+    public int hashCode() {
+      return Double.hashCode(value) * 31 + (scaled ? 1 : 0);
+    }
+  }
+
+  private void emitSphereElement(List<double[]> centers, Radius radius, Style3D style,
+      Transform3D transform) {
     ObjectNode node = newElement("Sphere", style, transform);
     node.put("color", rgb(style.effectiveFace()));
     node.put("opacity", style.alphaOf(style.effectiveFace()));
-    node.put("radius", radius);
+    node.put(radius.scaled ? "radiusScaled" : "radius", radius.value);
     ArrayNode array = node.putArray("centers");
     for (double[] c : centers) {
       array.add(c[0]).add(c[1]).add(c[2]);
-      trackBall(c, radius, transform);
+      if (radius.scaled) {
+        // a fraction of the diagonal cannot widen the very extent it is measured against, so only
+        // the centre counts towards it - the same way a PointSize does
+        track(c, transform);
+      } else {
+        trackBall(c, radius.value, transform);
+      }
     }
     writeSurfaceStyle(node, style);
   }
@@ -715,6 +927,9 @@ public final class PrimitiveCollector3D {
       node.put("radius", radius);
       node.set("start", vector(axis.get(i)));
       node.set("end", vector(axis.get(i + 1)));
+      if (style.openEnded) {
+        node.put("openEnded", true);
+      }
       trackBall(axis.get(i), radius, transform);
       trackBall(axis.get(i + 1), radius, transform);
       writeSurfaceStyle(node, style);
@@ -807,7 +1022,36 @@ public final class PrimitiveCollector3D {
     if (lines.isEmpty()) {
       return;
     }
+    if (lines.size() == 1 && isClosed(lines.get(0))) {
+      // a path that returns to where it started is one closed tube, not a tube whose two ends
+      // happen to touch: those ends would show as a seam across it
+      List<double[]> loop = new ArrayList<>(lines.get(0));
+      loop.remove(loop.size() - 1);
+      lines = List.of(loop);
+      node.put("closed", true);
+    }
     writePolylines(node, lines, transform);
+  }
+
+  /** Whether a path of at least three distinct points ends where it starts. */
+  private static boolean isClosed(List<double[]> path) {
+    if (path.size() < 4) {
+      return false;
+    }
+    double[] first = path.get(0);
+    double[] last = path.get(path.size() - 1);
+    double span = 0;
+    for (double[] p : path) {
+      for (int k = 0; k < 3; k++) {
+        span = Math.max(span, Math.abs(p[k] - first[k]));
+      }
+    }
+    for (int k = 0; k < 3; k++) {
+      if (Math.abs(first[k] - last[k]) > 1e-9 * Math.max(1, span)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void emitBSpline(IAST ast, Style3D style, ComplexContext context, Transform3D transform) {
@@ -1033,13 +1277,12 @@ public final class PrimitiveCollector3D {
    * multi face specification is a list of those.
    */
   private List<IExpr> faces(IExpr data, ComplexContext context) {
-    List<IExpr> result = new ArrayList<>();
     if (!data.isList()) {
-      return result;
+      return List.of();
     }
     IAST list = (IAST) data;
     if (list.argSize() == 0) {
-      return result;
+      return List.of();
     }
     IExpr first = list.arg1();
     boolean multi;
@@ -1049,14 +1292,7 @@ public final class PrimitiveCollector3D {
     } else {
       multi = first.isList() && ((IAST) first).argSize() > 0 && ((IAST) first).arg1().isList();
     }
-    if (multi) {
-      for (int i = 1; i <= list.argSize(); i++) {
-        result.add(list.get(i));
-      }
-    } else {
-      result.add(list);
-    }
-    return result;
+    return multi ? list.asArgsList() : List.of(list);
   }
 
   /** Split a line specification into its polylines. */
@@ -1064,6 +1300,7 @@ public final class PrimitiveCollector3D {
     List<List<double[]>> result = new ArrayList<>();
     for (IExpr face : faces(data, context)) {
       List<double[]> line = new ArrayList<>();
+      startMarkerGroup();
       collectPoints(face, context, line);
       if (line.size() >= 2) {
         result.add(line);
@@ -1123,7 +1360,183 @@ public final class PrimitiveCollector3D {
       return point == null ? null : applyScaling(point);
     }
     double[] v = GraphicsOptions3D.vector(expr);
-    return v == null ? null : applyScaling(v);
+    if (v == null) {
+      return null;
+    }
+    double[] scaled = applyScaling(v);
+    if (markerGroups != null && !markerGroups.isEmpty()) {
+      recordMarker((IAST) expr, scaled);
+    }
+    return scaled;
+  }
+
+  // -------------------------------------------------------- interval markers
+
+  /**
+   * Record the limits of each coordinate of a point about to be drawn, scaled like the point.
+   * Every point is recorded, certain ones with limits at the centre, so a band runs through them.
+   */
+  private void recordMarker(IAST point, double[] centre) {
+    if (!Double.isFinite(centre[0]) || !Double.isFinite(centre[1])
+        || !Double.isFinite(centre[2])) {
+      return;
+    }
+    double[][] marker = new double[3][];
+    for (int i = 0; i < 3; i++) {
+      UncertainValue u = UncertainValue.of(point.get(i + 1));
+      if (u == null) {
+        marker[i] = new double[] {centre[i], centre[i], centre[i]};
+      } else {
+        double lo = scale(u.lo, scaling[i]);
+        double hi = scale(u.hi, scaling[i]);
+        if (!Double.isFinite(lo) || !Double.isFinite(hi)) {
+          lo = hi = centre[i];
+        }
+        marker[i] = new double[] {centre[i], Math.min(lo, hi), Math.max(lo, hi)};
+      }
+    }
+    markerGroups.get(markerGroups.size() - 1).add(marker);
+  }
+
+  /** Set the {@code IntervalMarkers} and {@code IntervalMarkersStyle} options. */
+  public void setIntervalMarkers(IExpr markers, IExpr style) {
+    if (markers != null) {
+      intervalMarkers = IntervalMarkerType.of(markers);
+    }
+    if (style != null) {
+      intervalMarkersStyle = style.isAutomatic() || style.isNone() ? null : style;
+    }
+  }
+
+  /**
+   * Start recording the uncertain coordinates of a {@code Point} or {@code Line}. Only data that
+   * contains an uncertain form is recorded; an index into a {@code GraphicsComplex} never is.
+   */
+  private void beginMarkers(IExpr data) {
+    markerGroups = null;
+    if (intervalMarkers != IntervalMarkerType.NONE
+        && data.has(x -> x.isAST() && UncertainValue.isUncertain(x), false)) {
+      markerGroups = new ArrayList<>();
+    }
+  }
+
+  private void startMarkerGroup() {
+    if (markerGroups != null) {
+      markerGroups.add(new ArrayList<>());
+    }
+  }
+
+  private static boolean hasExtent(double[] axis) {
+    return axis[1] < axis[0] || axis[2] > axis[0];
+  }
+
+  /** Emit the markers recorded since {@link #beginMarkers}, as lines, tubes or bands. */
+  private void endMarkers(Style3D style, Transform3D transform, boolean connected) {
+    List<List<double[][]>> groups = markerGroups;
+    markerGroups = null;
+    if (groups == null) {
+      return;
+    }
+    Style3D markerStyle = style.clone();
+    if (intervalMarkersStyle != null) {
+      applyDirective(intervalMarkersStyle, markerStyle);
+    }
+    List<List<double[]>> bars = new ArrayList<>();
+    for (List<double[][]> group : groups) {
+      if (intervalMarkers == IntervalMarkerType.BANDS && connected && group.size() >= 2
+          && emitBand(group, markerStyle, transform)) {
+        continue;
+      }
+      for (double[][] m : group) {
+        for (int axis = 0; axis < 3; axis++) {
+          if (hasExtent(m[axis])) {
+            double[] lo = new double[] {m[0][0], m[1][0], m[2][0]};
+            double[] hi = lo.clone();
+            lo[axis] = m[axis][1];
+            hi[axis] = m[axis][2];
+            List<double[]> bar = new ArrayList<>(2);
+            bar.add(lo);
+            bar.add(hi);
+            bars.add(bar);
+          }
+        }
+      }
+    }
+    if (bars.isEmpty()) {
+      return;
+    }
+    if (intervalMarkers == IntervalMarkerType.TUBES) {
+      // coloured like the points and lines they mark, not with the default face colour
+      Color tube = markerStyle.effectiveLine();
+      ObjectNode node = newElement("Tube", markerStyle, transform);
+      node.put("color", rgb(tube));
+      node.put("opacity", markerStyle.alphaOf(tube));
+      // sized from the whole scene by finishIntervalMarkers()
+      node.put("radius", 0.0);
+      node.put("pathType", "CatmullRom");
+      writeSurfaceStyle(node, markerStyle);
+      writePolylines(node, bars, transform);
+      intervalTubes.add(node);
+      return;
+    }
+    ObjectNode node = newElement("Line", markerStyle, transform);
+    node.put("color", rgb(markerStyle.effectiveLine()));
+    node.put("opacity", markerStyle.alphaOf(markerStyle.effectiveLine()));
+    writePolylines(node, bars, transform);
+    writeLineStyle(node, markerStyle);
+  }
+
+  /**
+   * A translucent strip between the lower and the upper z limits along a line; {@code false} when
+   * no point of the line is uncertain in z, which leaves it to the bars.
+   */
+  private boolean emitBand(List<double[][]> group, Style3D style, Transform3D transform) {
+    boolean any = false;
+    for (double[][] m : group) {
+      any |= hasExtent(m[2]);
+    }
+    if (!any) {
+      return false;
+    }
+    Style3D band = style.clone();
+    band.showEdges = false;
+    // the colour of the line the band belongs to, as in 2D, not the default face colour
+    band.faceColor = style.effectiveLine();
+    ObjectNode node = newElement("Polygon", band, transform);
+    Color face = band.effectiveFace();
+    node.put("color", rgb(face));
+    node.put("opacity", BAND_OPACITY * band.alphaOf(face));
+    ArrayNode points = node.putArray("points");
+    for (double[][] m : group) {
+      double[] lower = {m[0][0], m[1][0], m[2][1]};
+      double[] upper = {m[0][0], m[1][0], m[2][2]};
+      points.add(lower[0]).add(lower[1]).add(lower[2]);
+      points.add(upper[0]).add(upper[1]).add(upper[2]);
+      track(lower, transform);
+      track(upper, transform);
+    }
+    ArrayNode indices = node.putArray("indices");
+    for (int i = 0; i + 1 < group.size(); i++) {
+      int l0 = 2 * i;
+      int u0 = l0 + 1;
+      int l1 = l0 + 2;
+      int u1 = l0 + 3;
+      indices.add(l0).add(l1).add(u1);
+      indices.add(l0).add(u1).add(u0);
+    }
+    writeSurfaceStyle(node, band);
+    return true;
+  }
+
+  /**
+   * Size the tubes of {@code IntervalMarkers -> "Tubes"} from the extent of the whole scene, which
+   * is only known once every primitive has been collected.
+   */
+  public void finishIntervalMarkers() {
+    double radius = TUBE_FRACTION * bounds.diagonal();
+    for (ObjectNode tube : intervalTubes) {
+      tube.put("radius", radius);
+    }
   }
 
   private double[] applyScaling(double[] v) {

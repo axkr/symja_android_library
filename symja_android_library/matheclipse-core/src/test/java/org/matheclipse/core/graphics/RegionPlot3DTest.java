@@ -10,6 +10,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 
 /**
  * {@code RegionPlot3D}: the surface of the solid where a condition holds, closed where it meets
@@ -88,6 +90,7 @@ public class RegionPlot3DTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testConditions() {
     // And, Or, Not and a chain of comparisons
     assertEquals("Graphics3D",

@@ -324,7 +324,9 @@ public class ArchiveFunctions {
     }
 
     private static ZipArchive.Entry entryOf(Path file) throws IOException {
-      return new ZipArchive.Entry(file.getFileName().toString(), Files.readAllBytes(file));
+      final Path name = file.getFileName();
+      return new ZipArchive.Entry(name != null ? name.toString() : file.toString(),
+          Files.readAllBytes(file));
     }
 
     @Override

@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,13 +16,13 @@ import org.commonmark.node.Node;
 import org.commonmark.renderer.html.CoreHtmlNodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IGraphExpr;
-import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.JSPageProvider;
+import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
@@ -110,14 +109,6 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) result, true, EvalEngine.get())) {
             html.raw(buf.toString());
             return true;
-          } else if (GraphicsUtil.renderGraphics2D(buf, (IAST) result, EvalEngine.get())) {
-            String graphicsStr = buf.toString();
-            String htmlStr =
-                JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE, graphicsStr);
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
           }
           // return openSVGOnDesktop((IAST) expr);
         } else if (WebGLGraphics3D.isRenderable(result)) {
@@ -125,17 +116,12 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           html.raw(webglSnippet);
           return true;
         } else if (result instanceof IGraphExpr) {
-          String javaScriptStr = ((IGraphExpr) result).graphToJSForm();
-          if (javaScriptStr != null) {
-            String htmlStr = JSBuilder.VISJS_IFRAME;
-            htmlStr = StringUtils.replace(htmlStr, "`1`", javaScriptStr);
-            htmlStr = StringUtils.replace(htmlStr, "`2`", //
-                "  var options = { };\n" //
-            );
-
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
+          // a graph draws as the picture its Graphics form describes, as in the servlets
+          IAST graphics = new GraphGraphics(result).toGraphics();
+          StringBuilder buf = new StringBuilder();
+          if (graphics.isPresent()
+              && GraphicsUtil.renderGraphics2DSVG(buf, graphics, true, EvalEngine.get())) {
+            html.raw(buf.toString());
             return true;
           }
         } else if (result instanceof ImageExpr) {
@@ -150,65 +136,12 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           }
         } else if (result.isAST(F.JSFormData, 3)) {
           IAST jsFormData = (IAST) result;
-          if (jsFormData.arg2().toString().equals(JSBuilder.MATHCELL_STR)) {
-
-            String htmlStr = JSBuilder.buildMathcell(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
-                jsFormData.arg1().toString());
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
+          // a sandboxed iframe loading the library from its CDN, from matheclipse-jsgraphics
+          String iframe = JSPageProvider.iframeOf(jsFormData.arg2().toString(),
+              jsFormData.arg1().toString());
+          if (iframe != null) {
+            html.raw(iframe);
             return true;
-          } else if (jsFormData.arg2().toString().equals(JSBuilder.ECHARTS_STR)) {
-
-            String htmlStr = JSBuilder.buildECharts(JSBuilder.ECHARTS_IFRAME_TEMPLATE,
-                jsFormData.arg1().toString());
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
-          } else if (jsFormData.arg2().toString().equals(JSBuilder.JSXGRAPH_STR)) {
-
-            String htmlStr = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
-                jsFormData.arg1().toString());
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
-
-          } else if (jsFormData.arg2().toString().equals(JSBuilder.PLOTLY_STR)) {
-            String htmlStr = JSBuilder.buildPlotly(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
-                jsFormData.arg1().toString());
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
-          } else if (jsFormData.arg2().toString().equals(JSBuilder.TREEFORM_STR)) {
-            String manipulateStr = jsFormData.arg1().toString();
-            String htmlStr = JSBuilder.VISJS_IFRAME;
-            htmlStr = StringUtils.replace(htmlStr, "`1`", manipulateStr);
-            htmlStr = StringUtils.replace(htmlStr, "`2`", //
-                "  var options = {\n" + //
-                    "         edges: {\n" + //
-                    "              smooth: {\n" + //
-                    "                  type: 'cubicBezier',\n" + //
-                    "                  forceDirection:  'vertical',\n" + //
-                    "                  roundness: 0.4\n" + //
-                    "              }\n" + //
-                    "          },\n" + //
-                    "          layout: {\n" + //
-                    "              hierarchical: {\n" + //
-                    "                  direction: \"UD\"\n" + //
-                    "              }\n" + //
-                    "          },\n" + //
-                    "          nodes: {\n" + "            shape: 'box'\n" + "          },\n" + //
-                    "          physics:false\n" + //
-                    "      }; " //
-            );
-            htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
-            html.raw("<iframe srcdoc=\"" + htmlStr
-                + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
-            return true;
-
           }
         } else {
           html.tag("pre");

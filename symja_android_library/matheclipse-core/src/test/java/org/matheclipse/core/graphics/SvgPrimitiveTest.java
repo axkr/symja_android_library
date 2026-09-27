@@ -93,6 +93,35 @@ public class SvgPrimitiveTest {
   }
 
   @Test
+  public void testBallIsAFilledDiskAndSphereItsOutline() {
+    Prim2D.EllipsePrim ball = (Prim2D.EllipsePrim) collect("Graphics[Ball[{0, 0}, 1]]").get(0);
+    assertTrue(ball.filled, "Ball in the plane is a disk");
+    assertEquals(1.0, ball.rx, 1e-9);
+    assertEquals(1.0, ball.ry, 1e-9);
+    Prim2D.EllipsePrim sphere = (Prim2D.EllipsePrim) collect("Graphics[Sphere[]]").get(0);
+    assertFalse(sphere.filled, "Sphere in the plane is a circle");
+    assertEquals(1.0, sphere.rx, 1e-9);
+  }
+
+  /**
+   * {@code Sphere[{p1, p2}, {rx, ry}]} draws one ellipse of semi-axes {@code rx, ry} around each
+   * centre. In Mathematica the plane reads a radius list as the two semi-axes even when its length
+   * matches the number of centres; only {@code Graphics3D} reads it as a radius per centre.
+   */
+  @Test
+  public void testSphereWithSeveralCentresKeepsBothRadiiForEach() {
+    List<Prim2D> prims = collect("Graphics[{Sphere[{{0, 0}, {3, 0}}, {1, 2}]}]");
+    assertEquals(2, prims.size());
+    for (int i = 0; i < 2; i++) {
+      Prim2D.EllipsePrim e = (Prim2D.EllipsePrim) prims.get(i);
+      assertEquals(3.0 * i, e.cx, 1e-9);
+      assertEquals(1.0, e.rx, 1e-9);
+      assertEquals(2.0, e.ry, 1e-9);
+      assertFalse(e.filled);
+    }
+  }
+
+  @Test
   public void testCircleAnglesAreKept() {
     Prim2D.EllipsePrim e =
         (Prim2D.EllipsePrim) collect("Graphics[Circle[{0, 0}, 1, {0, Pi/2}]]").get(0);
@@ -717,6 +746,146 @@ public class SvgPrimitiveTest {
   }
 
   // ------------------------------------------------------------- edge form
+
+  /**
+   * {@code PlotRange -> Dynamic[r]} is drawn with the current value of {@code r}. The wrapper used to
+   * make the option unreadable, so the picture was drawn as if it had no plot range at all.
+   */
+  @Test
+  public void testDynamicPlotRangeIsResolved() {
+    String bare = svg("Graphics[{Red, Disk[{0, 0}, 10]}, PlotRange -> {{-5, 5}, {-2, 8}}]");
+    assertEquals(bare,
+        svg("Graphics[{Red, Disk[{0, 0}, 10]}, PlotRange -> Dynamic[{{-5, 5}, {-2, 8}}]]"));
+    assertFalse(bare.equals(svg("Graphics[{Red, Disk[{0, 0}, 10]}]")),
+        "the range is a different picture from none at all");
+  }
+
+  /** What {@code ExportString[expr, "SVG"]} gives. */
+  private static String export(String input) {
+    return evaluator.eval("ExportString(" + input + ", \"SVG\")").toString();
+  }
+
+  private static int occurrences(String text, String part) {
+    int n = 0;
+    for (int i = text.indexOf(part); i >= 0; i = text.indexOf(part, i + part.length())) {
+      n++;
+    }
+    return n;
+  }
+
+  /**
+   * A {@code Row}, {@code Column} or {@code Grid} is drawn as a table of its cells when a picture of
+   * it is asked for; it used to leave {@code ExportString} unevaluated. A {@code Spacer} is a gap,
+   * not the text of its name.
+   */
+  @Test
+  public void testLayoutHeadsExportAsPictures() {
+    String row = export("Row({Graphics(Circle()), Spacer(20), Graphics(Disk())})");
+    assertTrue(row.startsWith("<?xml"), row);
+    assertEquals(2, occurrences(row, "<ellipse"));
+    assertFalse(row.contains("Spacer"), row);
+
+    String column = export("Column({Grid({{1,2},{3,4}}), Grid({{5,6}})})");
+    assertTrue(column.startsWith("<?xml"), column);
+    for (String cell : new String[] {">1<", ">4<", ">6<"}) {
+      assertTrue(column.contains(cell), cell + " in " + column);
+    }
+    assertFalse(column.contains("Grid"), column);
+
+    String plain = export("Column({1,2,3})");
+    assertEquals(3, occurrences(plain, "<text"));
+
+    // a frame all round is drawn as the dividers between the cells
+    assertTrue(export("Grid({{\"a\",\"b\"},{1,2}}, Frame->All)").contains("<line"));
+  }
+
+  /**
+   * A legend on its own is the small picture it is beside a plot, and a still picture of an
+   * animation is its first frame.
+   */
+  @Test
+  public void testLegendAndAnimationExportAsPictures() {
+    String legend = export("SwatchLegend({Red,Blue},{\"A\",\"B\"})");
+    assertTrue(legend.contains("fill=\"rgb(255,0,0)\""), legend);
+    assertTrue(legend.contains("fill=\"rgb(0,0,255)\""), legend);
+    assertTrue(legend.contains(">A<") && legend.contains(">B<"), legend);
+    assertTrue(export("Grid({{Graphics(Disk()), SwatchLegend({Red,Blue},{\"A\",\"B\"})}})")
+        .contains("fill=\"rgb(0,0,255)\""));
+
+    String pane = export("Pane(Animate(Graphics(Disk({t,0},1)),{t,0,1}),{100,100})");
+    assertEquals(1, occurrences(pane, "<ellipse"), pane);
+  }
+
+  /**
+   * A {@code TabView} is the pane its selector picks under the strip of tab labels. The selector may
+   * be a {@code Dynamic}; an unset one shows the first pane, as a front end does.
+   */
+  @Test
+  public void testTabViewShowsTheSelectedPane() {
+    String code = "TabView({\"a\" -> Plot(Sin(x), {x, 0, 2*Pi}), "
+        + "\"b\" -> Plot(Cos(x), {x, 0, 2*Pi})}, Dynamic(tabSvg))";
+    String unset = export(code);
+    evaluator.eval("tabSvg = 1");
+    String first = export(code);
+    evaluator.eval("tabSvg = 2");
+    String second = export(code);
+    assertEquals(unset, first);
+    assertFalse(first.equals(second), "the selector changes the pane");
+    assertTrue(second.contains(">a<") && second.contains(">b<"), second);
+    // a keyed pane is picked by its key, and shows its own label
+    String keyed = export("TabView({x -> {\"one\", 11}, y -> {\"two\", 22}}, y)");
+    assertTrue(keyed.contains(">two<") && keyed.contains(">22<"), keyed);
+    assertFalse(keyed.contains(">11<"), keyed);
+  }
+
+  /**
+   * A {@code Dynamic} cell of a layout drawn as a picture shows what it currently evaluates to, and
+   * {@code Text@Grid(...)} is the table it sets. Both used to print their source.
+   */
+  @Test
+  public void testDynamicCellsAndTextGridAsPictures() {
+    String grid = export("Grid({{\"a\", Dynamic(1+1)}, {Dynamic(Round(Pi, 0.01)), 3}})");
+    assertTrue(grid.contains(">2<") && grid.contains(">3.14<"), grid);
+    assertFalse(grid.contains("Dynamic"), grid);
+    assertTrue(export("Row({\"v: \", Dynamic(2+2)})").contains(">4<"));
+    String text = export("Text(Grid({{1,2}}))");
+    assertTrue(text.startsWith("<?xml") && text.contains(">1<") && text.contains(">2<"), text);
+    assertFalse(text.contains("Grid"), text);
+  }
+
+  /**
+   * {@code FrameLabel -> Grid[...]} is a table under the frame. Written out as text it put the
+   * source of the grid there.
+   */
+  @Test
+  public void testFrameLabelTableIsEmbedded() {
+    String svg = export("Plot(Sin(x),{x,0,2*Pi},Frame->True,"
+        + "FrameLabel->Grid({{\"a\",\"b\"},{1,2}},Frame->All))");
+    assertTrue(occurrences(svg, "<svg") > 1, svg);
+    assertTrue(svg.contains(">a<"), svg);
+    assertFalse(svg.contains("Grid"), svg);
+    // a label that is text stays text
+    assertEquals(1, occurrences(export("Plot(Sin(x),{x,0,2*Pi},Frame->True,FrameLabel->\"t\")"),
+        "<svg"));
+  }
+
+  /**
+   * A power, a {@code Superscript} or a {@code Subscript} in a label is set with the Unicode script
+   * characters instead of being written out, or dropped.
+   */
+  @Test
+  public void testScriptsInLabels() {
+    String svg = export("Plot(Sin(x),{x,0,2*Pi},Frame->True,FrameLabel->{\"t\",x^2})");
+    assertTrue(svg.contains(">x\u00b2<"), svg);
+    svg = export("Plot(Sin(x),{x,0,2*Pi},AxesLabel->{Subscript(x,1),Superscript(y,2)})");
+    assertTrue(svg.contains(">x\u2081<") && svg.contains(">y\u00b2<"), svg);
+    svg = export("Plot(Sin(x),{x,0,2*Pi},Frame->True,FrameLabel->Row({\"H(\", "
+        + "Style(\"e\", Italic)^Row({Style(\"i\", Italic), \"t\"}), \")\"}))");
+    assertTrue(svg.contains(">e\u2071\u1d57<"), svg);
+    // a script without Unicode characters keeps its written form
+    svg = export("Plot(Sin(x),{x,0,2*Pi},PlotLabel->x^(1/3))");
+    assertTrue(svg.contains(">x^(1/3)<"), svg);
+  }
 
   /** The SVG of a {@code Graphics[...]} expression, at a fixed size. */
   private static String svg(String input) {

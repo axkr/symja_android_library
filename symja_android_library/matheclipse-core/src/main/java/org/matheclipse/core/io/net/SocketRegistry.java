@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * The sockets a session has open.
  *
  * <p>
- * A socket is named by a string, the way the Wolfram Language names one, so that an expression can
- * carry it around and hand it back. A server's name begins with <code>TCPSERVER-</code>, which is
- * what a caller looks at to tell one from a connection.
+ * A socket is named by a string, so that an expression can carry it around and hand it back. A
+ * server's name begins with <code>TCPSERVER-</code>, which is what a caller looks at to tell one
+ * from a connection.
  */
 public final class SocketRegistry {
 
@@ -39,8 +39,8 @@ public final class SocketRegistry {
     channel.socket().setReuseAddress(true);
     channel.bind(new InetSocketAddress(host, port));
     int boundPort = channel.socket().getLocalPort();
-    SocketEntry entry = new SocketEntry(newUuid(true), SocketEntry.Role.SERVER, channel, host,
-        boundPort, null);
+    SocketEntry entry =
+        new SocketEntry(newUuid(true), SocketEntry.Role.SERVER, channel, host, boundPort, null);
     SOCKETS.put(entry.uuid(), entry);
     SocketReactor.instance().register(entry);
     COUNTER.incrementAndGet();

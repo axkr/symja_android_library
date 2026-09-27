@@ -89,6 +89,12 @@ public final class Style3D implements Cloneable {
    */
   public boolean showEdges = true;
 
+  /**
+   * <code>CapForm[None]</code>: a cylinder or a cone is drawn as its open side alone, without the
+   * discs that close its ends.
+   */
+  public boolean openEnded = false;
+
   /** {@code EdgeForm} colour, or {@code null} to let the renderer pick a contrasting default. */
   public Color edgeColor = null;
 

@@ -9,8 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
@@ -150,7 +150,7 @@ public class PackageUtil {
 
   /**
    * The source without a leading <code>#!</code> line, which a Unix script executable starts with
-   * and which is not Wolfram Language code.
+   * and which is not script code.
    */
   public static String withoutShebang(final String source) {
     if (!source.startsWith("#!")) {

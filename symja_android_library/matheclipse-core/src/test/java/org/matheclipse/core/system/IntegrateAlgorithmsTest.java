@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,12 +8,16 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.integrate.AntiderivativeCheck;
+import org.matheclipse.core.integrate.AntiderivativeCheck.Verdict;
 import org.matheclipse.core.integrate.DerivativeDivides;
 import org.matheclipse.core.integrate.IntegralTable;
 import org.matheclipse.core.integrate.ProductPowerIntegration;
 import org.matheclipse.core.integrate.RadicalSubstitution;
 import org.matheclipse.core.integrate.RationalIntegration;
+import org.matheclipse.core.integrate.SurdRationalization;
 import org.matheclipse.core.interfaces.IExpr;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Tests for the native integration algorithm stages ({@link IntegralTable},
@@ -114,6 +119,25 @@ public class IntegrateAlgorithmsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
+  public void testRadicalSubstitutionPrefersClosedForm() {
+    // t = Sqrt(x) gives 2*t^2/(1+t^4), which the rules answer in ArcTan and Log; a bare RootSum
+    // here is refused by the Rubi rule for Tan(x)^n and left Sqrt(Tan(x)) unevaluated
+    check("Integrate(Sqrt(x)/(1+x^2), x)", //
+        "2*(ArcTan(1+Sqrt(2)*Sqrt(x))/(2*Sqrt(2))-ArcTan(1-Sqrt(2)*Sqrt(x))/(2*Sqrt(2))-Log(\n"
+            + "1+Sqrt(2)*Sqrt(x)+x)/(4*Sqrt(2))+Log(1-Sqrt(2)*Sqrt(x)+x)/(4*Sqrt(2)))");
+    check("Integrate(Sqrt(Tan(x)), x)", //
+        "1/8*(4*Sqrt(2)*ArcTan(1+Sqrt(2)*Sqrt(Tan(x)))-4*Sqrt(2)*ArcTan(1-Sqrt(2)*Sqrt(Tan(x)))-\n"
+            + "2*Sqrt(2)*Log(1+Sqrt(2)*Sqrt(Tan(x))+Tan(x))+2*Sqrt(2)*Log(1-Sqrt(2)*Sqrt(Tan(x))+Tan(x)))");
+    check("D(Integrate(Sqrt(Tan(x)), x), x)-Sqrt(Tan(x)) /. x->0.7 // Chop", //
+        "0");
+    check("FreeQ(Integrate(Sqrt(Cot(x)), x), Integrate)", //
+        "True");
+    check("FreeQ(Integrate(Tan(x)^(3/2), x), Integrate)", //
+        "True");
+  }
+
+  @Test
   public void testDerivativeDividesStage() {
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = engine.parse("x");
@@ -121,6 +145,38 @@ public class IntegrateAlgorithmsTest extends ExprEvaluatorTestCase {
     IExpr integrand = engine.parse("Cos(x)*E^Sin(x)");
     IExpr result = DerivativeDivides.integrate(integrand, x, engine);
     assertAntiderivative(result, integrand, x, engine);
+  }
+
+  @Test
+  public void testAntiderivativeCheck() {
+    EvalEngine engine = evaluator.getEvalEngine();
+    IExpr x = engine.parse("x");
+
+    IExpr integrand = engine.parse("x/Sqrt(1+x^2)");
+    assertEquals(Verdict.AGREES,
+        AntiderivativeCheck.differentiatesBack(engine.parse("Sqrt(1+x^2)"), integrand, x, 3,
+            engine));
+    assertEquals(Verdict.DISAGREES,
+        AntiderivativeCheck.differentiatesBack(engine.parse("2*Sqrt(1+x^2)"), integrand, x, 3,
+            engine));
+    // no sample point where the integrand is real
+    assertEquals(Verdict.INCONCLUSIVE,
+        AntiderivativeCheck.differentiatesBack(engine.parse("-Sqrt(-1-x^2)"),
+            engine.parse("x/Sqrt(-1-x^2)"), x, 3, engine));
+  }
+
+  @Test
+  public void testSurdRationalizationStage() {
+    EvalEngine engine = evaluator.getEvalEngine();
+    IExpr x = engine.parse("x");
+
+    // a piece of Integrate(Log(1+x*Sqrt(1+x^2)),x); its antiderivative carries nested radical
+    // constants, on which the symbolic verification took seconds
+    IExpr integrand = engine.parse("x^3/(x+x^3+Sqrt(1+x^2))");
+    IExpr result = SurdRationalization.integrate(integrand, x, engine);
+    assertTrue(result.isPresent(), "no result returned");
+    assertTrue(result.isFree(S.Integrate, true), result.toString());
+    assertTrue(AntiderivativeCheck.agrees(result, integrand, x, engine), result.toString());
   }
 
   @Test

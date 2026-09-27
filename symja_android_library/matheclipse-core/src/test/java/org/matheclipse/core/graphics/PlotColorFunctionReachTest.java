@@ -77,6 +77,16 @@ public class PlotColorFunctionReachTest {
             + "really being applied");
   }
 
+  /**
+   * Scattered {x,y,z} points are triangulated rather than gridded, and used to be handed no colour
+   * builder at all, so the option changed nothing on them while it worked on a height array.
+   */
+  @Test
+  public void testListPlot3DColorsATriangulatedPointCloud() {
+    assertColorFunctionActs("ListPlot3D({{0,0,0},{1,0,1},{0,1,2},{1,1,3},{0.5,0.5,1},{0.2,0.7,0.5}}",
+        "\"SouthwestColors\"", "Function({x,y,z}, Hue(z))");
+  }
+
   @Test
   public void testListPointPlot3DColorsItsPoints() {
     assertColorFunctionActs(

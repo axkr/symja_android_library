@@ -81,6 +81,148 @@ public class WebGLGraphics3DTest {
 
   // ------------------------------------------------------------------ options
 
+  /**
+   * An option given as a <code>Dynamic</code> is drawn with its current value, not as if it were
+   * absent; that is what <code>ViewPoint -&gt; Dynamic[vp]</code> means outside a Manipulate too.
+   */
+  @Test
+  public void dynamicOptionValuesAreResolved() {
+    evaluator.eval("vpDyn = {0, 0, 5}");
+    JsonNode scene = scene("Graphics3D[Sphere[], ViewPoint -> Dynamic[vpDyn]]");
+    assertEquals(0.0, scene.get("viewPoint").get(0).asDouble(), 1e-9);
+    assertEquals(5.0, scene.get("viewPoint").get(2).asDouble(), 1e-9);
+  }
+
+  /** {@code CapForm[None]} leaves a cylinder or a cone open; the default closes both ends. */
+  @Test
+  public void capFormNoneOpensCylindersAndCones() {
+    JsonNode capped = element(scene("Graphics3D[{Cylinder[{{0,0,0},{0,0,1}},1]}]"), "Cylinder");
+    assertFalse(capped.has("openEnded"), "a cylinder is closed by default");
+    JsonNode open =
+        element(scene("Graphics3D[{CapForm[None], Cylinder[{{0,0,0},{0,0,1}},1]}]"), "Cylinder");
+    assertTrue(open.get("openEnded").asBoolean());
+    assertTrue(
+        element(scene("Graphics3D[{CapForm[None], Cone[]}]"), "Cone").get("openEnded").asBoolean());
+    // the static renderer leaves the discs off as well
+    String closedSvg = org.matheclipse.core.graphics.SVGGraphics3D
+        .toSVG((IAST) evaluator.eval("Graphics3D[{Cylinder[{{0,0,0},{0,0,1}},1]}]"));
+    String openSvg = org.matheclipse.core.graphics.SVGGraphics3D
+        .toSVG((IAST) evaluator.eval("Graphics3D[{CapForm[None], Cylinder[{{0,0,0},{0,0,1}},1]}]"));
+    assertTrue(openSvg.length() < closedSvg.length(), "the caps are faces of their own");
+  }
+
+  /**
+   * {@code MeshShading} colours the bands the {@code MeshFunctions} lines cut a parametric surface
+   * into: the plane cut at x = 0 is red on one side and blue on the other.
+   */
+  @Test
+  public void parametricPlot3DMeshShading() {
+    JsonNode polygon = element(scene("ParametricPlot3D[{u,v,u},{u,-2,2},{v,-2,2}, "
+        + "MeshFunctions->(#1&), Mesh->{{0}}, MeshShading->{Red,Blue}]"), "Polygon");
+    java.util.Set<String> colours = new java.util.TreeSet<>();
+    // the colours are one flat list of red, green and blue triples
+    JsonNode vertexColors = polygon.get("vertexColors");
+    for (int i = 0; i + 2 < vertexColors.size(); i += 3) {
+      colours.add(vertexColors.get(i).asDouble() + "," + vertexColors.get(i + 1).asDouble() + ","
+          + vertexColors.get(i + 2).asDouble());
+    }
+    assertEquals(2, colours.size(), colours::toString);
+    assertTrue(colours.contains("1.0,0.0,0.0") && colours.contains("0.0,0.0,1.0"),
+        colours::toString);
+  }
+
+  /**
+   * The lines of {@code MeshFunctions} are drawn inside the surface's {@code GraphicsComplex}, as
+   * indexed segments in a group of their own, the way Mathematica writes a mesh; they used to be
+   * separate lines with coordinates beside it. They replace the sampling grid's lines, and every
+   * vertex they add carries a real colour, so the colour list stays aligned with the points.
+   */
+  @Test
+  public void meshFunctionLinesAreInsideTheComplex() {
+    for (String plot : new String[] {
+        "ParametricPlot3D[{u,v,u},{u,-1,1},{v,-1,1}, PlotPoints->3, MeshFunctions->(#1&), "
+            + "Mesh->{{0.5}}, MeshShading->{Red,Blue}]",
+        "Plot3D[x*y,{x,-1,1},{y,-1,1}, PlotPoints->3, MaxRecursion->0, MeshFunctions->{#3&}, "
+            + "Mesh->{{0.1}}]"}) {
+      evaluator.eval("meshPlot = " + plot);
+      assertEquals("0", evaluator
+          .eval("Length[Cases[meshPlot /. _GraphicsComplex -> Null, _Line, Infinity]]").toString(),
+          plot + ": no line outside the complex");
+      assertEquals("1",
+          evaluator
+              .eval("Length[Cases[meshPlot, {RGBColor[0,0,0], "
+                  + "Line[{{_Integer, _Integer} ..}, VertexColors -> None]}, Infinity]]")
+              .toString(),
+          plot + ": one indexed group of mesh segments");
+      assertEquals("0",
+          evaluator.eval(
+              "Length[Cases[meshPlot, Line[{_Integer, _Integer, _Integer, ___}], " + "Infinity]]")
+              .toString(),
+          plot + ": no line along the sampling grid");
+    }
+    assertEquals("True",
+        evaluator.eval("With[{gc = First[Cases[ParametricPlot3D[{u,v,u},"
+            + "{u,-1,1},{v,-1,1}, PlotPoints->3, MeshFunctions->(#1&), Mesh->{{0.5}}, "
+            + "MeshShading->{Red,Blue}], _GraphicsComplex, Infinity]]}, "
+            + "Length[gc[[1]]] == Length[VertexColors /. List @@ Rest[Rest[gc]]] && "
+            + "FreeQ[VertexColors /. List @@ Rest[Rest[gc]], Automatic]]").toString());
+  }
+
+  /**
+   * A line inside a {@code GraphicsComplex} that draws a surface lies on it, and is marked so that
+   * a renderer lets it win against the faces under it. A line on its own, or in a complex of lines
+   * only, is not.
+   */
+  @Test
+  public void linesOnASurfaceAreMarked() {
+    JsonNode onPlot = element(
+        scene("Plot3D[x+y, {x,0,1}, {y,0,1}, PlotPoints->3, " + "MaxRecursion->0]"), "Line");
+    assertTrue(onPlot.path("onSurface").asBoolean(false), "a plot's mesh lies on its surface");
+    JsonNode bare = element(scene("Graphics3D[Line[{{0,0,0},{1,1,1}}]]"), "Line");
+    assertFalse(bare.has("onSurface"), "a line in space is not on a surface");
+    JsonNode linesOnly =
+        element(scene("Graphics3D[GraphicsComplex[{{0,0,0},{1,1,1}}, " + "Line[{1,2}]]]"), "Line");
+    assertFalse(linesOnly.has("onSurface"), "a complex of lines has no surface to lie on");
+  }
+
+  /**
+   * A tube whose path returns to its start is one closed tube, and the repeated end point is
+   * dropped; an open path stays open. The knot's tube used to be open, and its two ends met in a
+   * seam with a dark rim round it.
+   */
+  @Test
+  public void aTubeAlongAClosedPathIsClosed() {
+    JsonNode loop =
+        element(scene("Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0},{0,0,0}}, 0.1]]"), "Tube");
+    assertTrue(loop.path("closed").asBoolean(false), "a path back to its start is one closed tube");
+    assertEquals(4 * 3, loop.get("polylines").get(0).size(), "the repeated end point is dropped");
+    JsonNode open =
+        element(scene("Graphics3D[Tube[{{0,0,0},{1,0,0},{1,1,0},{0,1,0}}, 0.1]]"), "Tube");
+    assertFalse(open.has("closed"), "a path that does not return stays open");
+  }
+
+  /**
+   * A plot of one surface is that surface's GraphicsComplex, as Mathematica writes it, so
+   * First(plot) can be moved or rotated into another scene. Several surfaces stay a list.
+   */
+  @Test
+  public void oneSurfaceIsItsGraphicsComplex() {
+    for (String plot : new String[] {"Plot3D[x*y,{x,0,1},{y,0,1},PlotPoints->3]",
+        "ParametricPlot3D[{u,v,u},{u,0,1},{v,0,1},PlotPoints->3]",
+        "RegionPlot3D[x^2 + z^2 < 1, {x, 0, 1}, {y, 0, 0.001}, {z, -1, 1}]"}) {
+      assertEquals("GraphicsComplex", evaluator.eval("Head[First[" + plot + "]]").toString(), plot);
+    }
+    assertEquals("{GraphicsComplex,GraphicsComplex}",
+        evaluator
+            .eval(
+                "Head /@ First[ParametricPlot3D[{{u,v,u},{u,v,-u}},{u,0,1},{v,0,1},PlotPoints->3]]")
+            .toString());
+    // The cap of a cylinder, moved and turned, beside itself
+    JsonNode scene = scene("capW = First[RegionPlot3D[x^2 + z^2 < 1, {x, 0, 1}, {y, 0, 0.001}, "
+        + "{z, -1, 1}]]; Graphics3D[{Rotate[Translate[capW, {2, 0, 0}], Pi/2, {0, 0, 1}], capW}]");
+    assertEquals(2, count(scene, "Polygon"));
+  }
+
   @Test
   public void defaultsFollowTheWMA() {
     JsonNode scene = scene("Graphics3D[Sphere[]]");
@@ -194,6 +336,64 @@ public class WebGLGraphics3DTest {
     assertEquals(0.5, sphere.get("radius").asDouble(), 1e-9);
   }
 
+  /**
+   * {@code Sphere[{p1, p2, ...}, {r1, r2, ...}]} gives each centre its own radius. A radius list
+   * used to read as no number at all, and every sphere came out with radius 1.
+   */
+  @Test
+  public void sphereAcceptsAListOfRadii() {
+    for (String head : new String[] {"Sphere", "Ball"}) {
+      JsonNode scene = scene("Graphics3D[" + head + "[{{1,0,0},{-1,0,0}},{0.25,0.75}]]");
+      assertEquals(2, count(scene, "Sphere"), head + ": one element per distinct radius");
+      double sum = 0;
+      for (JsonNode element : scene.get("elements")) {
+        assertEquals(3, element.get("centers").size());
+        sum += element.get("radius").asDouble();
+      }
+      assertEquals(1.0, sum, 1e-9, head + ": radii 0.25 and 0.75");
+    }
+    JsonNode equal = scene("Graphics3D[Sphere[{{1,0,0},{-1,0,0}},{0.5,0.5}]]");
+    assertEquals(1, count(equal, "Sphere"), "equal radii stay one instanced element");
+    assertEquals(6, element(equal, "Sphere").get("centers").size());
+  }
+
+  /**
+   * {@code Sphere[c, Scaled[s]]} is a fraction of the scene diagonal, which only the renderer
+   * knows, so it travels as {@code radiusScaled} and never as a length of its own.
+   */
+  @Test
+  public void sphereAcceptsAScaledRadius() {
+    JsonNode sphere = element(scene("Graphics3D[Sphere[{0,0,0},Scaled[0.1]]]"), "Sphere");
+    assertEquals(0.1, sphere.get("radiusScaled").asDouble(), 1e-9);
+    assertFalse(sphere.has("radius"), "a scaled radius is not also written as a length");
+
+    // a scaled sphere does not widen the extent its own size is measured against
+    JsonNode scaled = scene("Graphics3D[Sphere[{0,0,0},Scaled[0.5]]]");
+    JsonNode plain = scene("Graphics3D[Point[{0,0,0}]]");
+    assertEquals(plain.get("plotRange").toString(), scaled.get("plotRange").toString());
+
+    // mixed with a plain radius, each kind keeps its own element
+    JsonNode mixed = scene("Graphics3D[{Sphere[{1,0,0},Scaled[0.1]], Sphere[{-1,0,0},0.3]}]");
+    assertEquals(2, count(mixed, "Sphere"));
+    assertEquals(0.1, mixed.get("elements").get(0).get("radiusScaled").asDouble(), 1e-9);
+    assertEquals(0.3, mixed.get("elements").get(1).get("radius").asDouble(), 1e-9);
+
+    // and a list of equal scaled radii stays one instanced element
+    JsonNode list = element(
+        scene("Graphics3D[Sphere[{{1,0,0},{-1,0,0}},{Scaled[0.1],Scaled[0.1]}]]"), "Sphere");
+    assertEquals(0.1, list.get("radiusScaled").asDouble(), 1e-9);
+    assertEquals(6, list.get("centers").size());
+  }
+
+  /** A radius list that does not match the centres one-for-one draws unit spheres, as in WMA. */
+  @Test
+  public void sphereWithAMismatchedRadiusListIsUnitSpheres() {
+    JsonNode sphere =
+        element(scene("Graphics3D[Sphere[{{1,0,0},{-1,0,0},{0,1,0}},{0.25,0.75}]]"), "Sphere");
+    assertEquals(9, sphere.get("centers").size());
+    assertEquals(1.0, sphere.get("radius").asDouble(), 1e-9);
+  }
+
   // --------------------------------------------------------------- directives
 
   @Test
@@ -237,6 +437,17 @@ public class WebGLGraphics3DTest {
         element(scene("Graphics3D[{Red,Text[\"a\",{0,0,0}]}]"), "Text").get("color").asInt());
   }
 
+  @Test
+  public void textFollowsTheFontOptionsOfAStyle() {
+    JsonNode text = element(scene("Graphics3D[{Red,Style[Text[\"a\",{0,0,0}],"
+        + "FontColor->Blue,FontSize->20,FontFamily->\"Courier\",Bold,Italic]}]"), "Text");
+    assertEquals(0x0000FF, text.get("color").asInt());
+    assertEquals(20.0, text.get("fontSize").asDouble());
+    assertEquals("Courier", text.get("fontFamily").asText());
+    assertEquals("bold", text.get("fontWeight").asText());
+    assertEquals("italic", text.get("fontStyle").asText());
+  }
+
   // ---------------------------------------------------------- transformations
 
   @Test
@@ -268,6 +479,23 @@ public class WebGLGraphics3DTest {
    * normal, which leaves the surface unlit; that is invisible to any test that only counts
    * elements, so the orientation is checked here directly.
    */
+  /**
+   * A triangulated point cloud has no grid lines to thin out, so its mesh is every triangle edge
+   * once; {@code Mesh -> None} leaves the surface bare, and {@code MeshStyle} colours the edges.
+   */
+  @Test
+  public void listPlot3DPointCloudMeshIsItsTriangleEdges() {
+    String cloud = "ListPlot3D[{{0,0,0},{1,0,1},{0,1,2},{1,1,3},{0.5,0.5,1}}";
+    JsonNode meshed = scene(cloud + "]");
+    assertNotNull(element(meshed, "Polygon"), "no surface");
+    JsonNode line = element(meshed, "Line");
+    assertNotNull(line, "the default mesh draws the triangulation");
+    assertEquals(0, count(scene(cloud + ", Mesh -> None]"), "Line"), "Mesh -> None draws no edges");
+    JsonNode red = element(scene(cloud + ", MeshStyle -> Red]"), "Line");
+    assertNotNull(red);
+    assertFalse(line.get("color").equals(red.get("color")), "MeshStyle colours the edges");
+  }
+
   @Test
   public void surfaceNormalsAgreeWithTheWinding() {
     for (String plot : new String[] { //
@@ -592,8 +820,8 @@ public class WebGLGraphics3DTest {
    */
   @Test
   public void surfacesWithTheirOwnLightsAreLitNeutrally() {
-    JsonNode lights = scene(
-        "ContourPlot3D[x^2+y^2+z^2,{x,-1,1},{y,-1,1},{z,-1,1},Contours->{1},PlotPoints->8]")
+    JsonNode lights =
+        scene("ContourPlot3D[x^2+y^2+z^2,{x,-1,1},{y,-1,1},{z,-1,1},Contours->{1},PlotPoints->8]")
             .get("lights");
     assertEquals(4, lights.size(), "the neutral set, not the coloured automatic one");
     assertEquals(rgb(0.35, 0.35, 0.35), lights.get(0).get("color").asInt());
@@ -654,7 +882,8 @@ public class WebGLGraphics3DTest {
   /** {@code Opacity} tints the face; the outline keeps its own transparency. */
   @Test
   public void opacityDoesNotReachTheOutline() {
-    JsonNode faded = element(scene("Graphics3D[{Opacity[0.3],EdgeForm[Black],Cuboid[]}]"), "Cuboid");
+    JsonNode faded =
+        element(scene("Graphics3D[{Opacity[0.3],EdgeForm[Black],Cuboid[]}]"), "Cuboid");
     assertEquals(0.3, faded.get("opacity").asDouble(), 1e-9);
     assertEquals(1.0, faded.get("edgeOpacity").asDouble(), 1e-9, "the outline stays opaque");
 
@@ -669,7 +898,9 @@ public class WebGLGraphics3DTest {
     }
   }
 
-  /** A plotted surface carries an explicit {@code EdgeForm[None]}, so the default cannot reach it. */
+  /**
+   * A plotted surface carries an explicit {@code EdgeForm[None]}, so the default cannot reach it.
+   */
   @Test
   public void aPlottedSurfaceKeepsItsCleanSkin() {
     for (String input : new String[] {"Plot3D[Sin[x y],{x,-1,1},{y,-1,1},PlotPoints->4]",

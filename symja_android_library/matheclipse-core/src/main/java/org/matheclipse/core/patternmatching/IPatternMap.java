@@ -15,8 +15,8 @@ import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.GenericPair;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.EvalFlags;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -3481,8 +3481,8 @@ public interface IPatternMap {
         }
       }
       if (optionsPattern == null && insideOptionsPattern && !quiet) {
-        // An option which is neither supplied nor a default answers its own name, as in the
-        // Wolfram Language. Leaving OptionValue[name] unevaluated instead let it be handed on as
+        // An option which is neither supplied nor a default answers its own name. Leaving
+        // OptionValue[name] unevaluated instead let it be handed on as
         // the *value* of an option, and the next lookup then found itself: the two of them never
         // came to a stop.
         //
@@ -3517,14 +3517,6 @@ public interface IPatternMap {
     // set for example Flag.CONTAINS_DEFAULT_PATTERN after substituting a pattern in lhsPatternAST
     lhsPatternAST.isFreeOfPatterns();
   }
-
-
-
-
-
-
-
-
 
 
 

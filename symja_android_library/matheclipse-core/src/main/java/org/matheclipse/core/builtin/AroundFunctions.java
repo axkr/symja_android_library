@@ -441,12 +441,12 @@ public class AroundFunctions {
   }
 
   /** The downward uncertainty of an {@code Around}; the only one, when it is symmetric. */
-  private static IExpr lower(IAST around) {
+  public static IExpr lower(IAST around) {
     return isAsymmetric(around) ? ((IAST) around.arg2()).arg1() : around.arg2();
   }
 
   /** The upward uncertainty of an {@code Around}; the only one, when it is symmetric. */
-  private static IExpr upper(IAST around) {
+  public static IExpr upper(IAST around) {
     return isAsymmetric(around) ? ((IAST) around.arg2()).arg2() : around.arg2();
   }
 

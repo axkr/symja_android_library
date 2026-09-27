@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigInteger;
 import java.util.Random;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 
 public class LLLTest {
@@ -117,6 +118,8 @@ public class LLLTest {
    * On random input the reduction must preserve the lattice and must not make the basis longer.
    */
   @Test
+  @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE",
+      justification = "fixed seed for a reproducible fuzz loop")
   public void testRandomBasesPreserveTheLattice() {
     Random random = new Random(42);
     for (int round = 0; round < 40; round++) {

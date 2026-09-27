@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * {@code AbstractFractionSym.rationalize} and fail there with a Hipparchus "cannot convert
    * infinite value", before Integrate ever looked at what it was being asked to integrate over.
    * Nothing about such an argument is rationalizable, so it is left alone and the second argument
-   * is judged on its own merits, which is what Mathematica reports for this input as well:
+   * is judged on its own merits:
    * {@code Integrate::ilim Invalid integration variable or limit(s) in 2.}
    *
    * <p>
@@ -39,7 +40,8 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testIntegrateFermiDirac() {
-    // Integrate(x^(s-1)/(E^(c*x)+z), {x,0,Infinity}) == -Gamma(s)*PolyLog(s,-z)/(z*c^s), for z >= -1.
+    // Integrate(x^(s-1)/(E^(c*x)+z), {x,0,Infinity}) == -Gamma(s)*PolyLog(s,-z)/(z*c^s), for z >=
+    // -1.
     // The general route cannot answer these: the antiderivative of x/(E^x+1) is three terms which
     // each diverge at infinity while their sum does not.
     check("Integrate(x/(E^x + 1), {x, 0, Infinity})", //
@@ -250,6 +252,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegratePrimitiveTowerHermite() {
     check("FreeQ(Integrate((1-Log(x))/(x-Log(x))^2, x), Integrate)", //
         "True");
@@ -309,6 +312,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateIssue851() {
     check("Integrate(x^n*Haversine(m*x^p),x)", //
         "(x^(1+n)*(2*p*(m^2*x^(2*p))^((1+n)/p)+(1+n)*(I*m*x^p)^((1+n)/p)*Gamma((1+n)/p,-I*m*x^p)+(\n" //
@@ -386,6 +390,42 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntegrateExponentialTimesTrigOfTheSameFrequency() {
+    // the generic rule divides by the difference of the two frequencies, and answered
+    // ComplexInfinity where they agree; written as Cos and Sin the integrand is 1 - I*Tan(a*x)
+    check("Integrate(E^(-I*a*x)*Sec(a*x), x)", //
+        "x+(I*Log(Cos(a*x)))/a");
+    check("Integrate(E^(-I*a*x)*Csc(a*x), x)", //
+        "-I*x+Log(Sin(a*x))/a");
+    check("Integrate(E^(-2*x)*Sech(2*x), x)", //
+        "2*x-Log(1+E^(4*x))/2");
+    // two different frequencies keep the hypergeometric answer
+    check("Integrate(E^(-I*a*x)*Sec(b*x), x)", //
+        "(I*2*E^((-I*a+I*b)*x)*Hypergeometric2F1(1,1/2*(1-a/b),1/2*(3-a/b),-E^(I*2*b*x)))/(a-b)");
+  }
+
+  @Test
+  public void testIntegratePiecewiseFactorDeclines() {
+    // used to leak Rubi's utility function into the unevaluated integral:
+    // Integrate(E^t*Piecewise({{2,0<=t<=1}},Rubi`trigsimplifyrecur(0)),t).
+    // TrigSimplifyRecur maps itself over the arguments of the HoldAll Piecewise, where the calls
+    // are never evaluated.
+    String[] integrals = {"Integrate(E^t*Piecewise({{2,0<=t<=1}},0), t)",
+        "Integrate(Log(t)*Piecewise({{2,0<=t<=1}},3), t)"};
+    for (String integral : integrals) {
+      String result = evaluator.eval(integral).toString();
+      assertFalse(result.contains("Rubi`"), integral + " => " + result);
+    }
+    check("Integrate(E^t*Piecewise({{2,0<=t<=1}},0), t)", //
+        "Integrate(E^t*Piecewise({{2,0<=t<=1}},0),t)");
+    // the rules used to return part of an antiderivative around the leaked integral
+    check("Integrate(Log(t)*Piecewise({{2,0<=t<=1}},3), t)", //
+        "Integrate(Log(t)*Piecewise({{2,0<=t<=1}},3),t)");
+    check("Integrate(x*Piecewise({{Sin(x),x<1}},Cos(x)), x)", //
+        "Integrate(x*Piecewise({{Sin(x),x<1}},Cos(x)),x)");
+  }
+
+  @Test
   public void testIntegrateMessage() {
     // message Integrate: Invalid integration variable or limit(s) in {x}.
     check("Integrate(x^2,{x})", //
@@ -405,6 +445,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateIncomplete() {
     check("Integrate(Csch(x)/x,x)", //
         "Integrate(Csch(x)/x,x)");
@@ -426,6 +467,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrate() {
 
     check("Integrate(Piecewise({{1/(2 x^2), Abs(x) > 1} },4),x)", //
@@ -458,7 +500,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "x^5/5");
 
     check("Refine(Integrate(Abs(x^(-1)),x), Element(x,Reals))", //
-        "(x*Log(Abs(x)))/Abs(x)");
+        "Log(Abs(x))*Sign(x)");
     check("Refine(Integrate(Abs(x^(-5)),x), Element(x,Reals))", //
         "-Abs(x)/(4*x^5)");
     check("Refine(Integrate(Abs(x^(-7)),x), Element(x,Reals))", //
@@ -610,8 +652,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "1.772453850905516");
 
     // integrable singularity at x==0
+    // exact 2 - the QUADPACK extrapolation
     checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->GaussKronrod)", //
-        "1.9999999999924798");
+        "2.0000000000000004");
     checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->LegendreGauss )", //
         "1.9913364016175945");
     checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->GaussKronrod)", //
@@ -658,7 +701,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate (x, {x, 0,2}, Method->Simpson)", //
         "2.0");
     checkNumeric("NIntegrate(Cos(x), {x, 0, Pi})", //
-        "1.0E-16");
+        "0.0");
     checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
         "2.1195255867");
   }
@@ -966,9 +1009,150 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(1/x, {x,0,1})", //
         "Integrate(1/x,{x,0,1})");
 
+    // 2008/3 - the integrand is split at the kinks x==0 and x==2
     checkNumeric("Integrate(Abs(x^2-2*x), {x, -10, 10}) // N", //
-        "669.3282335875249");
+        "669.3333333333334");
 
+  }
+
+  @Test
+  public void testNIntegrateAutomaticSplitting() {
+    // the integrand is split where its symbolic form has a kink or a jump
+    check("NIntegrate(Sign(x-1/4),{x,0,1})", //
+        "0.5");
+    check("NIntegrate(UnitStep(x-1/2)*x,{x,0,1})", //
+        "0.375");
+    check("NIntegrate(Floor(x),{x,0,5})", //
+        "10.0");
+    // 1/81 + 2/9
+    check("NIntegrate(Piecewise({{x^2,x<1/3},{1-x,x>=1/3}}),{x,0,1})", //
+        "0.234568");
+    check("NIntegrate(Max(x,1-x),{x,0,1})", //
+        "0.75");
+    check("NIntegrate(Clip(3*x-1),{x,-1,1})", //
+        "-0.666667");
+    // a pole at the centre node of [-1,1]: split there, and recognized as divergent
+    check("NIntegrate(1/Sin(x),{x,-1,1})", //
+        "NIntegrate(1/Sin(x),{x,-1,1})");
+    // QAGI would fold x+(-x) to 0
+    check("NIntegrate(x,{x,-Infinity,Infinity})", //
+        "NIntegrate(x,{x,-Infinity,Infinity})");
+  }
+
+  @Test
+  public void testNIntegrateAutomaticSingularities() {
+    // the QUADPACK epsilon extrapolation at endpoint singularities
+    checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1})", //
+        "2.0000000000000004");
+    // 2*(Log(2)^2-2*Log(2)+2)
+    check("NIntegrate(Log(x)^2,{x,0,2})", //
+        "2.18832");
+    check("NIntegrate(x^x,{x,0,1},Method->GlobalAdaptive)", //
+        "0.783431");
+    // message - NIntegrate failed to converge to prescribed accuracy after 237 recursive
+    // bisections in x near {x} = {2.26392*10^-72}. NIntegrate obtained 171.9885 and 9.35056 for
+    // the integral and error estimates.
+    check("NIntegrate(1/x,{x,0,1})", //
+        "NIntegrate(1/x,{x,0,1})");
+  }
+
+  @Test
+  public void testNIntegrateAutomaticOscillatory() {
+    // half periods summed with Wynn epsilon acceleration
+    check("NIntegrate(Sin(x)/x,{x,0,Infinity})", //
+        "1.5708");
+    check("NIntegrate(Sin(x)/x,{x,-Infinity,Infinity})", //
+        "3.14159");
+    // Pi/(2*E)
+    check("NIntegrate(Cos(x)/(1+x^2),{x,0,Infinity})", //
+        "0.577864");
+    check("NIntegrate(Exp(-x)*Sin(x),{x,0,Infinity})", //
+        "0.5");
+    // divergent - an accelerated sum of the half periods would be 1
+    // message - Numerical integration converging too slowly; ...
+    check("NIntegrate(Sin(x),{x,0,Infinity})", //
+        "NIntegrate(Sin(x),{x,0,Infinity})");
+  }
+
+  @Test
+  public void testNIntegrateGoals() {
+    check("NIntegrate(Sin(x^3),{x,0,2},PrecisionGoal->4)", //
+        "0.4519");
+    check("NIntegrate(Sin(x),{x,-1,1},AccuracyGoal->Infinity)", //
+        "0.0");
+    // message - Inappropriate parameter: AccuracyGoal.
+    check("NIntegrate(x,{x,0,1},AccuracyGoal->-1)", //
+        "NIntegrate(x,{x,0,1},AccuracyGoal->-1)");
+  }
+
+  @Test
+  public void testIntegrateDivergentInteriorPole() {
+    // the antiderivatives -ArcTanh(Cos(x)) and ExpIntegralEi(x) report no singularities, split
+    // at the poles of the integrand - Newton-Leibniz across them gave the principal values 0 and
+    // -ExpIntegralEi(-1)+ExpIntegralEi(1)
+    // message - Integrate: Integral of 1/Sin(x) does not converge on {x,-1,1}.
+    check("Integrate(1/Sin(x),{x,-1,1})", //
+        "Integrate(1/Sin(x),{x,-1,1})");
+    // message - Integrate: Integral of E^x/x does not converge on {x,-1,1}.
+    check("Integrate(Exp(x)/x,{x,-1,1})", //
+        "Integrate(E^x/x,{x,-1,1})");
+    check("Integrate(Cot(x),{x,-1,1})", //
+        "Integrate(Cot(x),{x,-1,1})");
+    // the NIntegrate symbolic fallback no longer returns 0.0 and 2.1145
+    check("NIntegrate(1/Sin(x),{x,-1,1})", //
+        "NIntegrate(1/Sin(x),{x,-1,1})");
+    check("NIntegrate(Exp(x)/x,{x,-1,1})", //
+        "NIntegrate(E^x/x,{x,-1,1})");
+
+    // no pole inside, or a removable one
+    check("Integrate(1/Sin(x),{x,1/2,1})", //
+        "ArcTanh(Cos(1/2))-ArcTanh(Cos(1))");
+    check("Integrate(Exp(x)/x,{x,1,2})", //
+        "-ExpIntegralEi(1)+ExpIntegralEi(2)");
+    check("Integrate(Sin(x)/x,{x,-1,1})", //
+        "2*SinIntegral(1)");
+    check("Integrate(1/(2+Sin(x)),{x,0,2*Pi})", //
+        "(2*Pi)/Sqrt(3)");
+  }
+
+  @Test
+  public void testNIntegrateAbsDivergent() {
+    // WMA gives NIntegrate::ncvb for these divergent integrals, the fixed-order LegendreGauss
+    // rule used to return a finite number
+    // message - NIntegrate failed to converge after 10000 refinements in x in the region {-1,1}.
+    check("NIntegrate(Abs(1/x),{x,-1,1})", //
+        "NIntegrate(Abs(1/x),{x,-1,1})");
+    check("NIntegrate(RealAbs(1/x),{x,-1,1})", //
+        "NIntegrate(RealAbs(1/x),{x,-1,1})");
+    check("NIntegrate(1/Abs(x),{x,-1,2})", //
+        "NIntegrate(1/Abs(x),{x,-1,2})");
+    check("NIntegrate(Abs(1/(x-1/3)),{x,0,1})", //
+        "NIntegrate(Abs(1/(-1/3+x)),{x,0,1})");
+    check("N(Integrate(Abs(1/x),{x,-1,1}))", //
+        "Integrate(Abs(1/x),{x,-1,1})");
+    check("NIntegrate(1/x^2,{x,-1,1})", //
+        "NIntegrate(1/x^2,{x,-1,1})");
+  }
+
+  @Test
+  public void testNIntegrateAbsKinks() {
+    // 2008/3 - no Gauss-Kronrod node of [-10,10] falls into (0,2), where x^2-2*x < 0
+    checkNumeric("NIntegrate(Abs(x^2-2*x),{x,-10,10})", //
+        "669.3333333333334");
+    checkNumeric("NIntegrate(Abs(x^2-2*x),{x,-10,10},Method->Romberg)", //
+        "669.3333333333334");
+    checkNumeric("NIntegrate(Abs(x),{x,-1,2})", //
+        "2.5");
+    checkNumeric("NIntegrate(Abs(x^3-x),{x,-2,2})", //
+        "5.0");
+    // 6+Cos(10)
+    checkNumeric("NIntegrate(Abs(Sin(x)),{x,0,10})", //
+        "6.160928470923547");
+    // integrable singularity
+    check("NIntegrate(1/Sqrt(Abs(x)),{x,-1,1})", //
+        "4.0");
+    checkNumeric("NIntegrate(RealAbs(x-1/3),{x,0,1})", //
+        "0.2777777777777778");
   }
 
   @Test
@@ -1121,6 +1305,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLogOverQuadratic() {
     // Rubi 3044 integrates Log(u)/Qx by parts with v=IntHide(1/Qx,x), which leaves
     // Int(ArcTan(x)*2/(x*(1+x^2))). That one is finished by rule 2897, whose
@@ -1211,8 +1396,49 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // Integrate() subexpressions left inside an otherwise closed form.
     check("Cases(Integrate(E^x/(x^2*(6-6*x+x^2)^2), x), Integrate(__), Infinity) // Length", //
         "0");
-    check("Max(Abs(N(Table(D(Integrate(E^x/(x^2*(6-6*x+x^2)^2), x), x)"
-        + " - E^x/(x^2*(6-6*x+x^2)^2) /. x->pt, {pt, {17/13, -7/5, 11/3}})))) < 10^-8", //
+    check(
+        "Max(Abs(N(Table(D(Integrate(E^x/(x^2*(6-6*x+x^2)^2), x), x)"
+            + " - E^x/(x^2*(6-6*x+x^2)^2) /. x->pt, {pt, {17/13, -7/5, 11/3}})))) < 10^-8", //
+        "True");
+  }
+
+  /**
+   * The rules integrate <code>ArcTan(x+Sqrt(1-x^2))</code> by parts and leave two algebraic
+   * integrals they could not finish in their budget; each is asked for again with a budget of its
+   * own (Charlwood problem 12). A partial answer remembered on the way used to come back to every
+   * later request of the same integral.
+   */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testIntegrateFinishesPartialRubiAnswer() {
+    check("r = Integrate(ArcTan(x+Sqrt(1-x^2)), x); {FreeQ(r, Integrate), "
+        + "Max(Abs(N(Table(D(r, x) - ArcTan(x+Sqrt(1-x^2)) /. x->pt, {pt, {1/7, 3/8, 3/5}})))) < 10^-8}", //
+        "{True,True}");
+    check("FreeQ(Integrate(x^2*Sqrt(1-x^2)/(1-x^2+x^4), x), Integrate)", //
+        "True");
+  }
+
+  /**
+   * An integral which re-enters itself: the rules write {@code Tan(Sqrt(1+x^2))} with exponentials,
+   * a post-Rubi stage wrote those as {@code Cos} and {@code Sin} again, and a rule asked for the
+   * original integral once more, until the recursion limit ended it with a {@code Hold(...)}.
+   */
+  @Test
+  public void testIntegrateReentersItself() {
+    check("Integrate(Tan(Sqrt(x^2+1)),x)", //
+        "Integrate(Tan(Sqrt(1+x^2)),x)");
+    check("Integrate(1/(x*Log(x+Sqrt(x^2+1))),x)", //
+        "Integrate(1/(x*Log(x+Sqrt(1+x^2))),x)");
+    // the shape the exponential-times-trig stage is for, unchanged
+    check("Integrate(E^(-I*a*x)*Sec(a*x),x)", //
+        "x+(I*Log(Cos(a*x)))/a");
+    check("Integrate(Tan(Sqrt(x))/Sqrt(x),x)", //
+        "-2*Log(Cos(Sqrt(x)))");
+    check("Integrate(1/(x*(Log(x)^2+1)),x)", //
+        "ArcTan(Log(x))");
+    check(
+        "Max(Abs(N(Table(D(Integrate(x^3*ArcSin(x)/Sqrt(1-x^4),x),x)"
+            + " - x^3*ArcSin(x)/Sqrt(1-x^4) /. x->pt, {pt, {1/7, 3/8, 3/5}})))) < 10^-8", //
         "True");
   }
 
@@ -1224,6 +1450,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * integrals are unchanged by its being there.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateDiffUnderInt() {
     check("Integrate(Log(1+x)/(x*Sqrt(1-x^2)), {x,0,1})", //
         "Pi^2/8");

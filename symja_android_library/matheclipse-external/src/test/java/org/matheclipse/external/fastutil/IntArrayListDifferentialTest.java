@@ -12,6 +12,7 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.external.fastutil.ints.IntList;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Compares {@link IntArrayList} against the original {@code it.unimi.dsi.fastutil} implementation
@@ -32,6 +33,7 @@ public class IntArrayListDifferentialTest {
   }
 
   @Test
+  @Tag("slow")
   public void testRandomOperationSequence() {
     final Random random = new Random(0xC0FFEE);
     final it.unimi.dsi.fastutil.ints.IntArrayList expected =

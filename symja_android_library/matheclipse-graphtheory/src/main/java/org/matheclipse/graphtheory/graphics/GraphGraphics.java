@@ -19,14 +19,15 @@ import org.jgrapht.alg.drawing.model.Point2D;
 import org.jgrapht.graph.AsSubgraph;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.graphtheory.expression.data.GraphExpr;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.graphics.SVGGraphics;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.graphtheory.expression.data.GraphExpr;
 
 /**
  * Utility class to convert a {@link GraphExpr} (or Graph IAST) into a {@link S#Graphics} expression
@@ -77,14 +78,19 @@ public class GraphGraphics {
   }
 
   private final Graph<IExpr, ?> graph;
+  /** the vertex a tree layout hangs from, or {@link F#NIL} to choose one */
+  private IExpr treeRoot = F.NIL;
+  /** where the root of a tree layout sits: <code>Top</code>, <code>Bottom</code>, ... */
+  private IExpr treeOrientation = S.Top;
   private final IAST options;
   // Configuration
   /** The options that describe the graph and mean nothing to <code>Graphics</code>. */
-  private static final Set<IExpr> GRAPH_OPTIONS = new HashSet<>(java.util.Arrays.asList(
-      S.VertexStyle, S.EdgeStyle, S.VertexSize, S.VertexLabels, S.VertexShapeFunction,
-      S.VertexShape, S.GraphLayout, S.GraphStyle, S.DirectedEdges, S.VertexCoordinates,
-      S.EdgeWeight, S.VertexWeight, S.VertexLabelStyle, S.EdgeLabels, S.EdgeLabelStyle,
-      S.EdgeShapeFunction, S.GraphHighlight, S.GraphHighlightStyle, S.Arrowheads));
+  private static final Set<IExpr> GRAPH_OPTIONS =
+      new HashSet<>(java.util.Arrays.asList(S.VertexStyle, S.EdgeStyle, S.VertexSize,
+          S.VertexLabels, S.VertexShapeFunction, S.VertexShape, S.GraphLayout, S.GraphStyle,
+          S.DirectedEdges, S.VertexCoordinates, S.EdgeWeight, S.VertexWeight, S.VertexLabelStyle,
+          S.EdgeLabels, S.EdgeLabelStyle, S.EdgeShapeFunction, S.GraphHighlight,
+          S.GraphHighlightStyle, S.Arrowheads));
 
   private Map<IExpr, double[]> vertexCoords = new HashMap<>();
   private IExpr vertexStyle = defaultVertexStyle();
@@ -102,12 +108,14 @@ public class GraphGraphics {
   private double vertexSize = 0.05;
   /**
    * <code>VertexSize -> s</code>: the diameter of a vertex as a fraction of the smallest distance
-   * between two vertices, as in Mathematica; <code>NaN</code> when no size is given
+   * between two vertices; <code>NaN</code> when no size is given
    */
   private double vertexSizeFraction = Double.NaN;
   /** <code>"Disk"</code>, <code>"Diamond"</code>, <code>"Square"</code>, ... */
   private String vertexShape = "Disk";
-  /** the width and height of a vertex of a named graph style, as fractions of the vertex distance */
+  /**
+   * the width and height of a vertex of a named graph style, as fractions of the vertex distance
+   */
   private double themeWidth = 0.2;
   private double themeHeight = 0.2;
   /** the columns of <code>"GridEmbedding"</code>, or 0 for a square grid */
@@ -143,6 +151,15 @@ public class GraphGraphics {
     }
 
     this.directed = this.graph.getType().isDirected();
+  }
+
+  /**
+   * Hang a tree layout from <code>root</code> - {@link F#NIL} to choose one - with the root at the
+   * <code>Top</code>, <code>Bottom</code>, <code>Left</code> or <code>Right</code>.
+   */
+  public void setTreeRoot(IExpr root, IExpr orientation) {
+    this.treeRoot = root;
+    this.treeOrientation = orientation;
   }
 
   private <E> void calculateLayout(Graph<IExpr, E> g) {
@@ -599,7 +616,9 @@ public class GraphGraphics {
     // For undirected (or cycle), picking the one with max degree or first available is acceptable
     // fallback.
     IExpr rootExpr = component.iterator().next();
-    if (directed) {
+    if (treeRoot.isPresent() && component.contains(treeRoot)) {
+      rootExpr = treeRoot;
+    } else if (directed) {
       for (IExpr v : component) {
         // We must check degree *within the subgraph* of the component
         // Using Graphs.neighborListOf would check global
@@ -690,6 +709,14 @@ public class GraphGraphics {
       // Let's center it vertically around 0.
       double normY = (n.y - (minY + maxY) / 2.0) / maxDim;
 
+      if (treeOrientation == S.Bottom) {
+        normY = -normY;
+      } else if (treeOrientation == S.Left || treeOrientation == S.Right) {
+        // the levels run across instead of down
+        double across = treeOrientation == S.Left ? -normY : normY;
+        normY = normX;
+        normX = across;
+      }
       // Translate to final grid cell center and apply final scale
       double finalX = centerX + normX * scale;
       double finalY = centerY + normY * scale;
@@ -836,7 +863,7 @@ public class GraphGraphics {
 
   /**
    * The look of a named <code>GraphStyle</code> - the colours, a rectangle with the vertex name on
-   * it, and its size - read off Mathematica's drawings of it. Unknown names change nothing.
+   * it, and its size. Unknown names change nothing.
    */
   private void applyGraphStyle(IExpr style) {
     if (!style.isString()) {
@@ -926,6 +953,57 @@ public class GraphGraphics {
     return GRAPH_OPTIONS.contains(name);
   }
 
+  /**
+   * Whether an option of a plot function such as <code>GraphPlot</code> is meant for the graph it
+   * draws: one of {@link #isGraphOption(IExpr)}, or the legacy <code>VertexLabeling</code>.
+   */
+  public static boolean isPlotGraphOption(IExpr option) {
+    return option.isRuleAST()
+        && (isGraphOption(option.first()) || isVertexLabeling(option.first()));
+  }
+
+  private static boolean isVertexLabeling(IExpr name) {
+    // the relaxed syntax lowercases the name of a symbol it does not know
+    return name.isSymbol() && "VertexLabeling".equalsIgnoreCase(((ISymbol) name).getSymbolName());
+  }
+
+  /**
+   * The graph with the graph options a plot function was given - <code>GraphPlot(g,
+   * VertexLabels -&gt; "Name")</code> - taking the place of its own ones of the same name. The
+   * legacy <code>VertexLabeling -&gt; True</code> stands for
+   * <code>VertexLabels -&gt; "Name"</code>. A copy is made; the caller's graph is not changed.
+   *
+   * @param from the position of the first option in <code>ast</code>
+   */
+  public static GraphExpr<?> withPlotOptions(GraphExpr<?> graph, IAST ast, int from) {
+    IASTAppendable given = F.ListAlloc();
+    for (int i = from; i < ast.size(); i++) {
+      IExpr option = ast.get(i);
+      if (!isPlotGraphOption(option)) {
+        continue;
+      }
+      if (isVertexLabeling(option.first())) {
+        option = F.Rule(S.VertexLabels, option.second().isTrue() ? F.stringx("Name") : S.None);
+      }
+      given.append(option);
+    }
+    if (given.isEmpty()) {
+      return graph;
+    }
+    IASTAppendable merged = F.ListAlloc();
+    IAST own = graph.options();
+    if (own != null) {
+      for (IExpr option : own) {
+        if (option.isRuleAST() && given.exists(x -> x.first().equals(option.first()))) {
+          continue;
+        }
+        merged.append(option);
+      }
+    }
+    merged.appendArgs(given);
+    return GraphExpr.newInstance(graph.toData(), merged);
+  }
+
   /** <code>Hue(h, s, b)</code> */
   public static IAST hue(double h, double s, double b) {
     return ast(S.Hue, F.num(h), F.num(s), F.num(b));
@@ -939,19 +1017,19 @@ public class GraphGraphics {
     return result;
   }
 
-  /** Mathematica's vertices: light blue, with a thin dark outline. */
+  /** Vertices: light blue, with a thin dark outline. */
   private static IExpr defaultVertexStyle() {
-    return ast(S.Directive, hue(0.6, 0.5, 1.0), ast(S.EdgeForm,
-        ast(S.Directive, ast(S.GrayLevel, F.C0), ast(S.Opacity, F.num(0.7)))));
+    return ast(S.Directive, hue(0.6, 0.5, 1.0),
+        ast(S.EdgeForm, ast(S.Directive, ast(S.GrayLevel, F.C0), ast(S.Opacity, F.num(0.7)))));
   }
 
-  /** Mathematica's edges: a translucent darker blue with round ends. */
+  /** Edges: a translucent darker blue with round ends. */
   private static IExpr defaultEdgeStyle() {
     return ast(S.Directive, ast(S.Opacity, F.num(0.7)), hue(0.6, 0.7, 0.7),
         ast(S.CapForm, F.stringx("Round")));
   }
 
-  /** The smallest distance between two vertices, which Mathematica measures vertex sizes in. */
+  /** The smallest distance between two vertices. */
   private double smallestVertexDistance() {
     List<double[]> points = new ArrayList<>(vertexCoords.values());
     int n = points.size();
@@ -993,7 +1071,7 @@ public class GraphGraphics {
     double y = p[1];
     switch (vertexShape) {
       case "Diamond": {
-        // Mathematica's diamond reaches a little further than the disk of the same size
+        // Diamond reaches a little further than the disk of the same size
         double h = 1.118 * r;
         return ast(S.Polygon,
             F.List(point(x, y - h), point(x + h, y), point(x, y + h), point(x - h, y)));
@@ -1004,8 +1082,8 @@ public class GraphGraphics {
         return ast(S.Rectangle, point(x - 1.25 * r, y - 0.8 * r), point(x + 1.25 * r, y + 0.8 * r));
       case "Triangle": {
         double c = Math.sqrt(3.0) / 2.0 * r;
-        return ast(S.Polygon, F.List(point(x, y + r), point(x - c, y - r / 2.0),
-            point(x + c, y - r / 2.0)));
+        return ast(S.Polygon,
+            F.List(point(x, y + r), point(x - c, y - r / 2.0), point(x + c, y - r / 2.0)));
       }
       case "Theme": {
         double w = themeWidth * distance / 2.0;
@@ -1043,7 +1121,7 @@ public class GraphGraphics {
     calculateLayout(this.graph);
 
     int vertexCount = graph.vertexSet().size();
-    // Mathematica's arrowheads: Medium, and a fixed smaller size for big graphs (about 0.015 for
+    // Arrowheads: Medium, and a fixed smaller size for big graphs (about 0.015 for
     // 100 vertices)
     IExpr arrowHeads = getOption(S.Arrowheads);
     if (arrowHeads.isNIL()) {
@@ -1063,7 +1141,7 @@ public class GraphGraphics {
     }
     double distance = smallestVertexDistance();
 
-    // the edges and the vertices each in a list of their own, as Mathematica draws them, so the
+    // the edges and the vertices each in a list of their own, so the
     // opacity of the edges does not reach the vertices
     IASTAppendable edgePrimitives = F.ListAlloc(graph.edgeSet().size() + 2);
     if (directed) {
@@ -1098,7 +1176,12 @@ public class GraphGraphics {
         graphicsOptions.append(option);
       }
     }
-    return F.Graphics(F.List(edgePrimitives, vertexPrimitives), graphicsOptions);
+    // the options stand as rules of their own: Graphics(prims, {opts}) keeps them from the
+    // renderer, which reads a PlotLabel only as a rule
+    IASTAppendable graphics = F.ast(S.Graphics, graphicsOptions.argSize() + 1);
+    graphics.append(F.List(edgePrimitives, vertexPrimitives));
+    graphics.appendArgs(graphicsOptions);
+    return graphics;
   }
 
   /**

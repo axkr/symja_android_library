@@ -2,8 +2,8 @@ package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,7 +20,7 @@ import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * Wolfram Language behaviour that packages rely on and Symja did not have.
+ * Behaviour that packages rely on and Symja did not have.
  *
  * <p>
  * Every one of these was found by loading the packages of a real application - the WLJS Notebook -
@@ -30,13 +30,12 @@ import org.matheclipse.parser.client.SyntaxError;
 public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
-   * The engine these tests run in: Wolfram Language syntax, where <code>f[x]</code> is a call and
+   * The engine these tests run in: WMA syntax, where <code>f[x]</code> is a call and
    * <code>key</code> is not the built-in <code>Key</code>.
    *
    * <p>
    * The rest of the suite runs in Symja's relaxed syntax, which lowercases identifiers and reads
-   * <code>f(x)</code> as a call. The packages these tests come from are Wolfram Language source,
-   * and reading them the relaxed way silently changes what they say.
+   * <code>f(x)</code> as a call.
    */
   static {
     // Before anything of Symja is loaded: the built-in symbol table is keyed by name, and with
@@ -59,7 +58,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     wolframLanguage = new ExprEvaluator(engine, false, (short) 100);
   }
 
-  /** Evaluate one input in Wolfram Language syntax and compare what it writes. */
+  /** Evaluate one input in script syntax and compare what it writes. */
   @Override
   public void check(String evalString, String expectedResult) {
     checkWolframLanguage(evalString, expectedResult, "");
@@ -74,8 +73,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     checkWolframLanguage(evalString, expectedResult, strException);
   }
 
-  private void checkWolframLanguage(String evalString, String expectedResult,
-      String strException) {
+  private void checkWolframLanguage(String evalString, String expectedResult, String strException) {
     EvalEngine previous = EvalEngine.get();
     try {
       EvalEngine.set(wolframLanguage.getEvalEngine());
@@ -106,7 +104,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   public void testTagIsFoundInsideAPattern() {
     // UObject /: MakeBoxes[object : UObject[…], form : StandardForm | TraditionalForm] := …
     // The tag stands under a Pattern, and the rule used to be refused as "tag not found".
-    check("UObject /: MakeBoxes[object : UObject[symbol_Symbol], form : StandardForm | TraditionalForm] := \"boxed\"", //
+    check(
+        "UObject /: MakeBoxes[object : UObject[symbol_Symbol], form : StandardForm | TraditionalForm] := \"boxed\"", //
         "");
     check("MakeBoxes[UObject[x], StandardForm]", //
         "boxed");
@@ -142,14 +141,17 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{,Users,someone,x.wl}");
     // FileNameJoin writes the separator of the host it runs on, so what is asserted is that the
     // root is still there and still a separator - naming "/" would only hold away from Windows
-    check("StringTake[FileNameJoin[FileNameSplit[\"/Users/someone/x.wl\"]], 1] "
-        + "=== $PathnameSeparator", //
+    check(
+        "StringTake[FileNameJoin[FileNameSplit[\"/Users/someone/x.wl\"]], 1] "
+            + "=== $PathnameSeparator", //
         "True");
-    check("FileNameJoin[FileNameSplit[\"/Users/someone/x.wl\"]] "
-        + "=== StringRiffle[{\"\", \"Users\", \"someone\", \"x.wl\"}, $PathnameSeparator]", //
+    check(
+        "FileNameJoin[FileNameSplit[\"/Users/someone/x.wl\"]] "
+            + "=== StringRiffle[{\"\", \"Users\", \"someone\", \"x.wl\"}, $PathnameSeparator]", //
         "True");
-    check("FileNameJoin[{\"\", \"Users\", \"someone\"}] "
-        + "=== StringRiffle[{\"\", \"Users\", \"someone\"}, $PathnameSeparator]", //
+    check(
+        "FileNameJoin[{\"\", \"Users\", \"someone\"}] "
+            + "=== StringRiffle[{\"\", \"Users\", \"someone\"}, $PathnameSeparator]", //
         "True");
   }
 
@@ -200,22 +202,27 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("f[<|\"n\" -> \"v\"|>]", //
         "{v-><|key->v,n->v|>}");
   }
+
   @Test
   public void testStringCasesCanSayWhatToMakeOfEachMatch() {
     // A rule answers with what it builds from each match rather than with the matched text, and a
     // regular expression's groups are written "$1", "$2", ... anywhere inside it. This is how a
     // template engine reads the attributes out of a tag.
-    check("StringCases[\"<Tag attr=1>\", RegularExpression[\"\\\\<\\\\/?([^\\\\<|\\\\>|\\\\/|\\\\s]*)[^\\\\<|\\\\>]*\\\\>\"] -> \"$1\"]", //
+    check(
+        "StringCases[\"<Tag attr=1>\", RegularExpression[\"\\\\<\\\\/?([^\\\\<|\\\\>|\\\\/|\\\\s]*)[^\\\\<|\\\\>]*\\\\>\"] -> \"$1\"]", //
         "{Tag}");
-    check("StringCases[\"x={a} y={b}\", RegularExpression[\"(\\\\w*)=\\\\{(\\\\w*)\\\\}\"] -> (\"$1\" -> \"$2\")]", //
+    check(
+        "StringCases[\"x={a} y={b}\", RegularExpression[\"(\\\\w*)=\\\\{(\\\\w*)\\\\}\"] -> (\"$1\" -> \"$2\")]", //
         "{x->a,y->b}");
-    check("StringCases[\"class=\\\"p{q}r\\\"\", RegularExpression[\"([\\\\w|\\\\-]*)=\\\"([^\\\"|=|{|}]*)\\\\{([^{}]*)\\\\}([^\\\"|=|{|}]*)\\\"\"] -> (\"$1\" -> {\"$2\", \"$3\", \"$4\"})]", //
+    check(
+        "StringCases[\"class=\\\"p{q}r\\\"\", RegularExpression[\"([\\\\w|\\\\-]*)=\\\"([^\\\"|=|{|}]*)\\\\{([^{}]*)\\\\}([^\\\"|=|{|}]*)\\\"\"] -> (\"$1\" -> {\"$2\", \"$3\", \"$4\"})]", //
         "{class->{p,q,r}}");
     // $0 is the whole match and $$ a literal dollar
     check("StringCases[\"ab\", RegularExpression[\"(a)(b)\"] -> \"$0|$$|$2\"]", //
         "{ab|$|b}");
     // the delayed form evaluates the right hand side once per match
-    check("StringCases[\"a1b2\", RegularExpression[\"([a-z])(\\\\d)\"] :> StringJoin[\"$2\", \"$1\"]]", //
+    check(
+        "StringCases[\"a1b2\", RegularExpression[\"([a-z])(\\\\d)\"] :> StringJoin[\"$2\", \"$1\"]]", //
         "{1a,2b}");
     // a pattern written in the language names its parts with symbols instead
     check("StringCases[\"the cat\", \"c\" ~~ x__ -> x]", //
@@ -224,9 +231,11 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("StringCases[\"nothing here\", RegularExpression[\"(z)(q)\"] -> \"$1\"]", //
         "{}");
     // and the pattern itself is evaluated, so a regular expression may be built
-    check("innerPart = \"[a-z]+\"; StringCases[\"k={vv}\", RegularExpression[\"(\\\\w*)=\\\\{(\" <> innerPart <> \")\\\\}\"] -> (\"$1\" -> \"$2\")]", //
+    check(
+        "innerPart = \"[a-z]+\"; StringCases[\"k={vv}\", RegularExpression[\"(\\\\w*)=\\\\{(\" <> innerPart <> \")\\\\}\"] -> (\"$1\" -> \"$2\")]", //
         "{k->vv}");
   }
+
   @Test
   public void testAPatternNameStandingForSeveralArgumentsIsSpreadIn() {
     // x__ holds its arguments as a Sequence, and putting one where a single argument was leaves
@@ -322,8 +331,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   @Test
   public void testAnArgumentSkipsAnOptionalItDoesNotFit() {
     // CreateUType is declared as
-    //   CreateUType[type_Symbol, parent:_Symbol?UTypeQ:UObject, init:_Symbol|_Function:Automatic,
-    //               fields_List:{}]
+    // CreateUType[type_Symbol, parent:_Symbol?UTypeQ:UObject, init:_Symbol|_Function:Automatic,
+    // fields_List:{}]
     // and called with two arguments as often as with four. Which optional a supplied argument
     // belongs to is not settled by counting: an argument skips over an optional whose pattern it
     // does not fit.
@@ -354,7 +363,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   @Test
   public void testTheWebSocketAcceptKey() {
     // Packages/WebSocketHandler/Kernel/WebSocketHandler.wl answers a handshake with
-    //   BaseEncode[Hash[key <> $guid, "SHA1", "ByteArray"], "Base64"]
+    // BaseEncode[Hash[key <> $guid, "SHA1", "ByteArray"], "Base64"]
     // The key and its answer here are the worked example in RFC 6455 section 1.3.
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     try {
@@ -441,7 +450,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   @Test
   public void testAnUnloadableLibraryFallsBackToWolframLanguage() {
     // Packages/Internal/Kernel/byteMask.wl is
-    //   If[FailureQ[f = LibraryFunctionLoad[…]], f = Compile[…], f]
+    // If[FailureQ[f = LibraryFunctionLoad[…]], f = Compile[…], f]
     // and unmasks every WebSocket frame the browser sends. Symja has no LibraryLink, so the
     // fallback is the only branch there is - which needs LibraryFunctionLoad to fail, FailureQ
     // to see that it did, and Compile to hold its body until it has arguments.
@@ -513,8 +522,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Uncompress[Compress[Expand[(a + b)^3]]]", //
         "a^3+3*a^2*b+3*a*b^2+b^3");
     // every kind of atom the format has a token for
-    check("Uncompress[Compress[{1.5, 2/3, 3 + 4*I, \"text\", Sin, 12345678901234567890, "
-        + "myContext`name}]]", //
+    check(
+        "Uncompress[Compress[{1.5, 2/3, 3 + 4*I, \"text\", Sin, 12345678901234567890, "
+            + "myContext`name}]]", //
         "{1.5,2/3,3+I*4,text,Sin,12345678901234567890,myContext`name}");
     check("Uncompress[Compress[N[Pi, 100]]] == N[Pi, 100]", //
         "True");
@@ -532,7 +542,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   @Test
   public void testWritingToTheProcessOutput() {
     // Kernel/Utils.wl says
-    //   WriteString[$StandardOutputStream, "<<<IPC>>>" <> ExportString[msg, "RawJSON"] <> "\n"]
+    // WriteString[$StandardOutputStream, "<<<IPC>>>" <> ExportString[msg, "RawJSON"] <> "\n"]
     // which is how the notebook tells the application around it which port it came up on. The
     // stream has to exist, and WriteString has to take one instead of a file name.
     check("Head[$StandardOutputStream]", //
@@ -563,7 +573,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   @Test
   public void testOnceEvaluatesItsExpressionOnlyOnce() {
     // Components/Notifications/Notifications.wlx reads a component with
-    //   MessageList = Once[ImportComponent["Components/MessagesList.wlx"]]
+    // MessageList = Once[ImportComponent["Components/MessagesList.wlx"]]
     // and several modules attach their listeners with Once[attachListeners[#]] &, where a second
     // evaluation would attach them twice. Without an evaluator the call stayed as it was and the
     // unevaluated Once[...] was printed into the page.
@@ -591,7 +601,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   @Test
   public void testAComposedHeadIsBuiltBeforeItsArgumentIsEvaluated() {
     // WLX interpolates the text of an attribute with
-    //   ToExpression[text, InputForm, FakeHold @* ToString]
+    // ToExpression[text, InputForm, FakeHold @* ToString]
     // and FakeHold being HoldAll is what keeps that text unevaluated until the page is rendered.
     // Evaluating the argument first ran the interpolation while the component's own variables
     // were still unassigned - a menu with class="{StringRiffle[ulStyles]}" complained that
@@ -672,8 +682,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("f5[]", //
         "$Failed");
     // Break and Continue still belong to the loop
-    check("g[] := Module[{n = 0, s = 0}, While[n < 5, n = n + 1; If[n === 3, Continue[]]; "
-        + "s = s + n]; s]", //
+    check(
+        "g[] := Module[{n = 0, s = 0}, While[n < 5, n = n + 1; If[n === 3, Continue[]]; "
+            + "s = s + n]; s]", //
         "");
     check("{g[], Module[{n = 0}, While[True, n = n + 1; If[n > 3, Break[]]]; n]}", //
         "{12,4}");
@@ -695,12 +706,13 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The attributes of a symbol say how the arguments of <code>f[...]</code> are evaluated, not those
-   * of <code>f[a][b]</code> - in the second the head is <code>f[a]</code>, which is no symbol at
-   * all. WLJS's object system gives every type HoldFirst (so that <code>obj = UObject[sym]</code>
-   * can rewrite the assignment), and every property access is written <code>obj[key]</code>. With
-   * the attribute leaking through, a held argument still standing as a local symbol was matched
-   * against the "look up a key" rule instead of the rule meant for its value.
+   * The attributes of a symbol say how the arguments of <code>f[...]</code> are evaluated, not
+   * those of <code>f[a][b]</code> - in the second the head is <code>f[a]</code>, which is no symbol
+   * at all. WLJS's object system gives every type HoldFirst (so that
+   * <code>obj = UObject[sym]</code> can rewrite the assignment), and every property access is
+   * written <code>obj[key]</code>. With the attribute leaking through, a held argument still
+   * standing as a local symbol was matched against the "look up a key" rule instead of the rule
+   * meant for its value.
    */
   @Test
   public void testAttributesBelongToTheHeadNotToTheTopHead() {
@@ -787,9 +799,10 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * A stream whose behaviour is written in the Wolfram Language: <code>DefineOutputStreamMethod</code>
-   * names the functions, <code>OpenWrite[Method -> name]</code> opens one, and
-   * <code>$Output</code> is the list of streams a print goes to.
+   * A stream whose behaviour is written in the script language:
+   * <code>DefineOutputStreamMethod</code> names the functions,
+   * <code>OpenWrite[Method -> name]</code> opens one, and <code>$Output</code> is the list of
+   * streams a print goes to.
    *
    * <p>
    * That is how a front end puts what a kernel prints where it belongs. The WLJS notebook opens
@@ -827,8 +840,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    * <p>
    * Such a symbol keeps its value in the engine rather than in the symbol, and the restore put it
    * back into the symbol - so the block's value stood afterwards. WLJS wraps its printing in
-   * <code>Block[{$Output = {}}, …]</code> to keep it from printing into itself, so the first line
-   * a cell printed switched the redirection off and every later one went to a console nobody was
+   * <code>Block[{$Output = {}}, …]</code> to keep it from printing into itself, so the first line a
+   * cell printed switched the redirection off and every later one went to a console nobody was
    * reading.
    */
   @Test
@@ -895,8 +908,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "");
     check("fields = <||>", //
         "<||>");
-    check("((\"After\" -> Sequence[cell, ___?outputQ]) /. "
-        + "{_[k_String, v_] :> SetDelayed[fields[k], v]}); Keys[fields]", //
+    check(
+        "((\"After\" -> Sequence[cell, ___?outputQ]) /. "
+            + "{_[k_String, v_] :> SetDelayed[fields[k], v]}); Keys[fields]", //
         "{After}");
     // the field holds the whole Sequence, which spreads out only when it is evaluated in a
     // position that allows it
@@ -917,12 +931,13 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * <code>Information</code> takes a name as well as a symbol, and answers a single property
-   * rather than printing everything.
+   * <code>Information</code> takes a name as well as a symbol, and answers a single property rather
+   * than printing everything.
    *
    * <p>
-   * WLJS's autocompletion asks <code>ToString@Information[#, "Usage"] &amp;/@ Names[#&lt;&gt;"*"]</code>,
-   * and <code>Names</code> answers with strings - so every one of the ~4000 names produced an
+   * WLJS's autocompletion asks
+   * <code>ToString@Information[#, "Usage"] &amp;/@ Names[#&lt;&gt;"*"]</code>, and
+   * <code>Names</code> answers with strings - so every one of the ~4000 names produced an
    * <code>Information::sym</code> message at startup.
    */
   @Test
@@ -947,8 +962,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    * <p>
    * WLJS's kernel abort is such a function - <code>Module[{token}, token = Function[Null, ...
    * token = Null;]; ...]</code> in <code>Kernel/Evaluator.wl</code>. Taking Null for a formal
-   * parameter renamed it to <code>Null$nnn</code> throughout the body and then refused to apply
-   * the function at all, so pressing "Abort evaluation" never reached the kernel.
+   * parameter renamed it to <code>Null$nnn</code> throughout the body and then refused to apply the
+   * function at all, so pressing "Abort evaluation" never reached the kernel.
    */
   @Test
   public void testFunctionWithoutParametersBindsNothing() {
@@ -959,8 +974,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Module[{tok}, tok = Function[Null, tok = 1]; tok[]; tok]", //
         "1");
     // and Null inside a Module body is left alone
-    check("Module[{a}, StringContainsQ[ToString[Hold[Function[Null, a = Null]], InputForm], "
-        + "\"Null$\"]]", //
+    check(
+        "Module[{a}, StringContainsQ[ToString[Hold[Function[Null, a = Null]], InputForm], "
+            + "\"Null$\"]]", //
         "False");
   }
 
@@ -974,8 +990,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    * WLJS's <code>BoxesWorkarounds.wl</code> defines the boxes of each legend head with
    * <code>With[{sym = #}, sym /: MakeBoxes[a_sym, StandardForm] := ...] &amp; /@ {LineLegend, ...}</code>.
    * With the head test left as <code>sym</code>, <code>TagSetDelayed::tagnf</code> was raised, the
-   * <code>Get</code> of the file failed half way, and the notebook showed a
-   * <code>Get::error</code> warning for every new kernel.
+   * <code>Get</code> of the file failed half way, and the notebook showed a <code>Get::error</code>
+   * warning for every new kernel.
    */
   @Test
   public void testWithSubstitutesTheHeadOfAPattern() {
@@ -999,9 +1015,10 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testAPlotHandsOnOnlyWhatSaysSomething() {
-    check("Intersection[First /@ Rest[List @@ Plot[Sin[x], {x, 0, 1}]], {JSForm, PlotLegends, "
-        + "Filling, Joined, PlotStyle, PlotLabels, FillingStyle, DataRange, ChartLegends, "
-        + "$Scaling}]", //
+    check(
+        "Intersection[First /@ Rest[List @@ Plot[Sin[x], {x, 0, 1}]], {JSForm, PlotLegends, "
+            + "Filling, Joined, PlotStyle, PlotLabels, FillingStyle, DataRange, ChartLegends, "
+            + "$Scaling}]", //
         "{}");
     // the scaling, which is also what tells the SVG renderer the picture came from a plot, travels
     // under Method, written with strings only so that a front end needs no definition for it
@@ -1049,15 +1066,16 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "120");
     check("Head[Developer`RawCompress[ByteArray[{1, 2, 3}]]]", //
         "ByteArray");
-    check("ImportByteArray[ByteArray[Developer`RawUncompress[Normal[BaseDecode[BaseEncode["
-        + "ByteArray[Developer`RawCompress[Normal[ExportByteArray[{1, 2.5, \"a\"}, "
-        + "\"ExpressionJSON\"]]]]]]]]], \"ExpressionJSON\"]", //
+    check(
+        "ImportByteArray[ByteArray[Developer`RawUncompress[Normal[BaseDecode[BaseEncode["
+            + "ByteArray[Developer`RawCompress[Normal[ExportByteArray[{1, 2.5, \"a\"}, "
+            + "\"ExpressionJSON\"]]]]]]]]], \"ExpressionJSON\"]", //
         "{1,2.5,a}");
   }
 
   /**
    * <code>ExpressionJSON</code> writes exact numbers as numbers: an integer as a JSON number, a
-   * rational and a complex number as a structure of numbers, as the Wolfram Language does.
+   * rational and a complex number as a structure of numbers.
    *
    * <p>
    * It is the format the WLJS notebook sends every result to the browser in. Integers used to be
@@ -1075,8 +1093,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "[\"Rational\",1,2]");
     check("ExportString[\"a\", \"ExpressionJSON\"]", //
         "\"'a'\"");
-    check("e = {1, 2^70, -1/2, 1 + 2 I, 1.5, \"s\", GrayLevel[1], f[x]}; "
-        + "ImportString[ExportString[e, \"ExpressionJSON\"], \"ExpressionJSON\"] === e", //
+    check(
+        "e = {1, 2^70, -1/2, 1 + 2 I, 1.5, \"s\", GrayLevel[1], f[x]}; "
+            + "ImportString[ExportString[e, \"ExpressionJSON\"], \"ExpressionJSON\"] === e", //
         "True");
     // what an older export wrote still reads back as the numbers it meant
     check("Head /@ ImportString[\"[\\\"List\\\",\\\"1\\\",\\\"-2\\\"]\", \"ExpressionJSON\"]", //
@@ -1092,8 +1111,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testUnsetRemovesAnAssociationKey() {
-    check("a = <|\"k1\" -> 1, \"a76bf884-fac0-4ded-916d-439bbfd509af\" -> 2, \"k3\" -> 3|>; "
-        + "a[\"k1\"] =.; a", //
+    check(
+        "a = <|\"k1\" -> 1, \"a76bf884-fac0-4ded-916d-439bbfd509af\" -> 2, \"k3\" -> 3|>; "
+            + "a[\"k1\"] =.; a", //
         "<|a76bf884-fac0-4ded-916d-439bbfd509af->2,k3->3|>");
     check("k = \"a76bf884-fac0-4ded-916d-439bbfd509af\"; a[k] =.; a", //
         "<|k3->3|>");
@@ -1106,8 +1126,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
    * <code>Import["!command", "Text"]</code> reads what a shell command prints, where the session
-   * may run programs. The WLJS notebook asks the shell for the user's <code>PATH</code> that way
-   * at startup and got <code>Import::noopen</code>.
+   * may run programs. The WLJS notebook asks the shell for the user's <code>PATH</code> that way at
+   * startup and got <code>Import::noopen</code>.
    */
   @Test
   public void testImportReadsWhatACommandPrints() {
@@ -1126,37 +1146,66 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
    * <code>VectorPlot</code> and <code>VectorPlot3D</code> draw the field as arrows on a grid,
-   * centred on the grid points; a zero vector gets no arrow. Both used to come back unevaluated,
-   * so the notebook drew nothing.
+   * centred on the grid points; a zero vector gets no arrow. Both used to come back unevaluated, so
+   * the notebook drew nothing.
    */
   @Test
   public void testVectorPlotDrawsArrows() {
     check("Head[VectorPlot[{x + y, y - x}, {x, -3, 3}, {y, -3, 3}]]", //
         "Graphics");
-    check("Count[VectorPlot[{x + y, y - x}, {x, -3, 3}, {y, -3, 3}, VectorPoints -> 5], "
-        + "_Arrow, Infinity]", //
+    check(
+        "Count[VectorPlot[{x + y, y - x}, {x, -3, 3}, {y, -3, 3}, VectorPoints -> 5], "
+            + "_Arrow, Infinity]", //
         "24");
     check("Head[VectorPlot3D[{x, y, z}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}]]", //
         "Graphics3D");
-    check("Count[VectorPlot3D[{x, y, z}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, VectorPoints -> 3], "
-        + "_Arrow, Infinity]", //
+    check(
+        "Count[VectorPlot3D[{x, y, z}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, VectorPoints -> 3], "
+            + "_Arrow, Infinity]", //
         "26");
-    check("Chop[Mean[First[Cases[VectorPlot[{1, 0}, {x, 0, 1}, {y, 0, 1}, VectorPoints -> 2], "
-        + "Arrow[p_] :> p, Infinity]]]] == {0, 0}", //
+    check(
+        "Chop[Mean[First[Cases[VectorPlot[{1, 0}, {x, 0, 1}, {y, 0, 1}, VectorPoints -> 2], "
+            + "Arrow[p_] :> p, Infinity]]]] == {0, 0}", //
         "True");
-    check("Count[VectorPlot[{1, 0}, {x, 0, 1}, {y, 0, 1}, VectorColorFunction -> None], "
-        + "_RGBColor, Infinity]", //
+    check(
+        "Count[VectorPlot[{1, 0}, {x, 0, 1}, {y, 0, 1}, VectorColorFunction -> None], "
+            + "_RGBColor, Infinity]", //
         "1");
     // a field held in a function is evaluated at each point too
-    check("fld[a_, b_] := {-b, a}; Count[VectorPlot[fld[x, y], {x, -1, 1}, {y, -1, 1}, "
-        + "VectorPoints -> 3], _Arrow, Infinity]", //
+    check(
+        "fld[a_, b_] := {-b, a}; Count[VectorPlot[fld[x, y], {x, -1, 1}, {y, -1, 1}, "
+            + "VectorPoints -> 3], _Arrow, Infinity]", //
         "8");
   }
 
   /**
+   * An explicit list of <code>VectorPoints</code> puts one arrow at each point instead of on the
+   * grid, and <code>VectorStyle</code> is the arrows' style. Both used to be ignored: the list gave
+   * the default grid's 216 arrows, and the arrows kept their colours by length.
+   */
+  @Test
+  public void testVectorPointsListAndVectorStyle() {
+    check("Count[VectorPlot3D[{1, 0, 0}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
+        + "VectorPoints -> {{0, 0, 0}, {0.5, 0.5, 0.5}}, VectorScale -> 0.5], _Arrow, Infinity]", //
+        "2");
+    check("Count[VectorPlot[{y, -x}, {x, -1, 1}, {y, -1, 1}, "
+        + "VectorPoints -> {{0, 0.5}, {0.5, 0}}], _Arrow, Infinity]", //
+        "2");
+    // a colour in the style replaces the colouring by length, and a list of directives is spread
+    // out so that it reaches the arrows beside it
+    check("Cases[VectorPlot3D[{1, 0, 0}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
+        + "VectorPoints -> {{0, 0, 0}}, VectorStyle -> {Red, Thickness[0.01]}], _RGBColor, Infinity]", //
+        "{RGBColor[1,0,0]}");
+    // an explicit VectorColorFunction still colours them
+    check("Count[VectorPlot[{y, -x}, {x, -1, 1}, {y, -1, 1}, VectorPoints -> 3, "
+        + "VectorStyle -> Red, VectorColorFunction -> Automatic], _RGBColor, Infinity] > 1", //
+        "True");
+  }
+
+  /**
    * A subscript with several indices is a variable like one with a single index:
-   * <code>Subscript[Y, 4, 0]</code> as well as <code>Subscript[Y, 4]</code>. The notebook writes
-   * a typeset subscript that way.
+   * <code>Subscript[Y, 4, 0]</code> as well as <code>Subscript[Y, 4]</code>. The notebook writes a
+   * typeset subscript that way.
    */
   @Test
   public void testASubscriptWithSeveralIndicesIsAVariable() {
@@ -1185,8 +1234,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("s = 0; Do[s += Subscript[i, 1], {Subscript[i, 1], 4}]; s", //
         "10");
     // a later iterator's bound may use an earlier subscript
-    check("Table[Subscript[a, 1] + Subscript[a, 2], {Subscript[a, 1], 2}, "
-        + "{Subscript[a, 2], Subscript[a, 1]}]", //
+    check(
+        "Table[Subscript[a, 1] + Subscript[a, 2], {Subscript[a, 1], 2}, "
+            + "{Subscript[a, 2], Subscript[a, 1]}]", //
         "{{2},{3,4}}");
     // what stays symbolic still reads in terms of the subscript
     check("Sum[f[Subscript[k, 1]], {Subscript[k, 1], 1, n}]", //
@@ -1195,13 +1245,14 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
    * A compiled function's parameters are variables holding the arguments, not values pasted into
-   * the body. Pasted in, a Table over a list argument walked the whole list at every step: the
-   * WLJS notebook unmasks each WebSocket frame that way, and a large frame hung the server.
+   * the body. Pasted in, a Table over a list argument walked the whole list at every step: the WLJS
+   * notebook unmasks each WebSocket frame that way, and a large frame hung the server.
    */
   @Test
   public void testCompiledTableOverAListArgumentIsLinear() {
-    check("cc = Compile[{{p, _Integer, 1}}, Table[BitXor[p[[i]], 1], {i, 1, Length[p]}]]; "
-        + "cc[{1, 2, 3}]", //
+    check(
+        "cc = Compile[{{p, _Integer, 1}}, Table[BitXor[p[[i]], 1], {i, 1, Length[p]}]]; "
+            + "cc[{1, 2, 3}]", //
         "{0,3,2}");
     // quadratic in the length before: 10^8 steps (the test engine caps a list at 20000 elements)
     check("Length[cc[Range[10000]]]", //
@@ -1220,8 +1271,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   public void testOptionValueWrapperAndApplyOperatorForm() {
     check("Options[og] = {\"Garbage\" :> ogv}; ogv = {1}; OptionValue[og, {}, \"Garbage\", Hold]", //
         "Hold[ogv]");
-    check("oh[opts : OptionsPattern[{\"k\" :> ohv}]] := "
-        + "OptionValue[Automatic, Automatic, \"k\", Hold]; oh[]", //
+    check(
+        "oh[opts : OptionsPattern[{\"k\" :> ohv}]] := "
+            + "OptionValue[Automatic, Automatic, \"k\", Hold]; oh[]", //
         "Hold[ohv]");
     check("Apply[f][{1, 2}]", //
         "f[1,2]");
@@ -1251,38 +1303,38 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     // Symja's own renderer still draws the legend: the label can only reach the SVG from the
     // PlotLegends it decoded out of Method, since that is now the only place the legend is kept
     check("lg = Plot[{Sin[x], Cos[x]}, {x, 0, 3}, PlotLegends -> {\"sine\", \"cosine\"}]; "
-        + "{Head[lg], Head[lg[[2]]], lg[[2, 2]], "
-        + "FreeQ[lg, PlotLegends | PlotStyle | Joined], "
+        + "{Head[lg], Head[lg[[2]]], lg[[2, 2]], " + "FreeQ[lg, PlotLegends | PlotStyle | Joined], "
         + "StringContainsQ[ExportString[lg, \"SVG\"], \"cosine\"]}", //
         "{Legended,LineLegend,{sine,cosine},True,True}");
-    // a colour scale is written the way the Wolfram Language writes one
-    check("MatchQ[ComplexPlot[z, {z, -1 - I, 1 + I}, PlotLegends -> Automatic], "
-        + "Legended[_Graphics, BarLegend[{_, {_, _}}]]]", //
+    check(
+        "MatchQ[ComplexPlot[z, {z, -1 - I, 1 + I}, PlotLegends -> Automatic], "
+            + "Legended[_Graphics, BarLegend[{_, {_, _}}]]]", //
         "True");
   }
 
   /**
-   * A plot's raster is numbers, as in the Wolfram Language: <code>{r, g, b}</code> cells, not
-   * <code>RGBColor</code> objects, and the smoothing hint of a domain colouring under
-   * <code>Method</code>. The WLJS notebook could not draw a <code>ComplexPlot</code> - ten thousand
-   * colour objects - and reported <code>InterpolationOrder</code> as an undefined symbol.
+   * A plot's raster is numbers: <code>{r, g, b}</code> cells, not <code>RGBColor</code> objects,
+   * and the smoothing hint of a domain colouring under <code>Method</code>. The WLJS notebook could
+   * not draw a <code>ComplexPlot</code> - ten thousand colour objects - and reported
+   * <code>InterpolationOrder</code> as an undefined symbol.
    */
   @Test
   public void testAPlotRasterIsNumbers() {
-    check("cp = ComplexPlot[(z^2 + 1)/(z^2 - 1), {z, -2 - 2 I, 2 + 2 I}]; "
-        + "rs = Cases[cp, _Raster, Infinity]; "
-        + "{Length[rs], FreeQ[rs, InterpolationOrder | _RGBColor], "
-        + "MatchQ[rs[[1, 1, 1, 1]], {_Real, _Real, _Real} | {_Real, _Real, _Real, _Real}], "
-        + "Cases[rs, (Method -> m_) :> m, Infinity], "
-        + "StringLength[ExportString[cp, \"SVG\"]] > 1000}", //
+    check(
+        "cp = ComplexPlot[(z^2 + 1)/(z^2 - 1), {z, -2 - 2 I, 2 + 2 I}]; "
+            + "rs = Cases[cp, _Raster, Infinity]; "
+            + "{Length[rs], FreeQ[rs, InterpolationOrder | _RGBColor], "
+            + "MatchQ[rs[[1, 1, 1, 1]], {_Real, _Real, _Real} | {_Real, _Real, _Real, _Real}], "
+            + "Cases[rs, (Method -> m_) :> m, Infinity], "
+            + "StringLength[ExportString[cp, \"SVG\"]] > 1000}", //
         "{1,True,True,{{InterpolationOrder->1}},True}");
     check("FreeQ[Cases[ArrayPlot[{{1, 0}, {0, 1}}], _Raster, Infinity], _RGBColor]", //
         "True");
   }
 
   /**
-   * The option names a Wolfram Language front end knows are built-in System symbols, so a package
-   * that writes one refers to that symbol and not to a new one in its own context.
+   * The option names a front end knows are built-in System symbols, so a package that writes one
+   * refers to that symbol and not to a new one in its own context.
    *
    * <p>
    * The WLJS notebook draws a colour-scale legend with <code>TickLabels -> {...}</code>, written in
@@ -1291,8 +1343,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testFrontEndOptionNamesAreSystemSymbols() {
-    check("Map[Context, {ColorOutput, ControllerMethod, CurrentValue, "
-        + "ImageSizeAction, Selectable, TickLabels, TransitionDuration}]", //
+    check(
+        "Map[Context, {ColorOutput, ControllerMethod, CurrentValue, "
+            + "ImageSizeAction, Selectable, TickLabels, TransitionDuration}]", //
         "{System`,System`,System`,System`,System`,System`,System`}");
     // AutomaticImageSize is carried by Graphics3D in Mathematica but is no System symbol there:
     // Context[AutomaticImageSize] answers Global` in Mathematica too
@@ -1313,34 +1366,36 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * A parametric region is drawn translucent, with mesh lines of constant u and constant v over
-   * it: <code>Mesh -> Automatic</code> (the default for a region) draws about fifteen each way,
+   * A parametric region is drawn translucent, with mesh lines of constant u and constant v over it:
+   * <code>Mesh -> Automatic</code> (the default for a region) draws about fifteen each way,
    * <code>Mesh -> n</code> n, and <code>Mesh -> None</code> none. The region used to be opaque and
    * without a mesh, hiding the axes beneath it.
    */
   @Test
   public void testAParametricRegionHasAMesh() {
-    check("pp = ParametricPlot[With[{z = u + I v}, {Re[z + 1/z], Im[z + 1/z]}], "
-        + "{u, -1/2, 1/2}, {v, -1/2, 1/2}, PlotRange -> 5, Mesh -> Automatic]; "
-        + "{Count[pp, _Line, Infinity] >= 20, MemberQ[pp, _Opacity, Infinity], "
-        + "Count[ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}, Mesh -> None], _Line, Infinity], "
-        + "Count[ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}, Mesh -> 3], _Line, Infinity], "
-        + "Count[ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}], _Line, Infinity] > 0}", //
+    check(
+        "pp = ParametricPlot[With[{z = u + I v}, {Re[z + 1/z], Im[z + 1/z]}], "
+            + "{u, -1/2, 1/2}, {v, -1/2, 1/2}, PlotRange -> 5, Mesh -> Automatic]; "
+            + "{Count[pp, _Line, Infinity] >= 20, MemberQ[pp, _Opacity, Infinity], "
+            + "Count[ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}, Mesh -> None], _Line, Infinity], "
+            + "Count[ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}, Mesh -> 3], _Line, Infinity], "
+            + "Count[ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}], _Line, Infinity] > 0}", //
         "{True,True,0,6,True}");
   }
 
   /**
-   * A plot writes <code>Ticks -> {Automatic, Automatic}</code>, one setting for each axis, as the
-   * Wolfram Language does; the WLJS notebook reads only that shape and left the vertical axis of
-   * every Symja plot unlabelled. A parametric region is written as plain polygons, which a front
-   * end draws in the same layer as the mesh over it.
+   * A plot writes <code>Ticks -> {Automatic, Automatic}</code>, one setting for each axis; the WLJS
+   * notebook reads only that shape and left the vertical axis of every Symja plot unlabelled. A
+   * parametric region is written as plain polygons, which a front end draws in the same layer as
+   * the mesh over it.
    */
   @Test
   public void testAPlotLabelsBothAxesAndDrawsItsRegionWithItsMesh() {
     check("Ticks /. Rest[List @@ Plot[Sin[x], {x, 0, 1}]]", //
         "{Automatic,Automatic}");
-    check("pr = ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}]; "
-        + "{FreeQ[pr, _GraphicsComplex], Count[pr, _Polygon, Infinity] > 0}", //
+    check(
+        "pr = ParametricPlot[{u, v}, {u, 0, 1}, {v, 0, 1}]; "
+            + "{FreeQ[pr, _GraphicsComplex], Count[pr, _Polygon, Infinity] > 0}", //
         "{True,True}");
   }
 
@@ -1359,8 +1414,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "");
     check("{ToBoxes[ByteArray[{1, 2}], StandardForm], ToBoxes[{ByteArray[{1, 2}]}, StandardForm]}", //
         "{bytes,RowBox[{{,RowBox[{bytes}],}}]}");
-    check("ByteArray /: MakeBoxes[b_ByteArray, StandardForm] =.; "
-        + "ToBoxes[ByteArray[{1, 2}], StandardForm] === \"bytes\"", //
+    check(
+        "ByteArray /: MakeBoxes[b_ByteArray, StandardForm] =.; "
+            + "ToBoxes[ByteArray[{1, 2}], StandardForm] === \"bytes\"", //
         "False");
   }
 
@@ -1372,13 +1428,16 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testListVectorPlotDrawsDataAsArrows() {
-    check("p = ListVectorPlot[Table[{y, -x}, {x, -3, 3}, {y, -3, 3}]]; "
-        + "{Head[p], Count[p, _Arrow, Infinity]}", //
+    check(
+        "p = ListVectorPlot[Table[{y, -x}, {x, -3, 3}, {y, -3, 3}]]; "
+            + "{Head[p], Count[p, _Arrow, Infinity]}", //
         "{Graphics,48}");
-    check("Cases[ListVectorPlot[{{{1, 0}, {1, 0}, {1, 0}}}], Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
+    check(
+        "Cases[ListVectorPlot[{{{1, 0}, {1, 0}, {1, 0}}}], Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
         "{{1,1},{2,1},{3,1}}");
-    check("Cases[ListVectorPlot[{{{0, 0}, {1, 0}}, {{2, 2}, {0, 1}}, {{4, 0}, {1, 1}}}], "
-        + "Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
+    check(
+        "Cases[ListVectorPlot[{{{0, 0}, {1, 0}}, {{2, 2}, {0, 1}}, {{4, 0}, {1, 1}}}], "
+            + "Arrow[{a_, b_}] :> Round[(a + b)/2], Infinity]", //
         "{{0,0},{2,2},{4,0}}");
   }
 
@@ -1388,13 +1447,16 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testListVectorPlot3DDrawsDataAsArrows() {
-    check("p = ListVectorPlot3D[Table[{y, -x, z}, {z, -1, 1}, {y, -1, 1}, {x, -1, 1}]]; "
-        + "{Head[p], Count[p, _Arrow, Infinity], Axes /. Rest[List @@ p]}", //
+    check(
+        "p = ListVectorPlot3D[Table[{y, -x, z}, {z, -1, 1}, {y, -1, 1}, {x, -1, 1}]]; "
+            + "{Head[p], Count[p, _Arrow, Infinity], Axes /. Rest[List @@ p]}", //
         "{Graphics3D,26,True}");
-    check("Cases[ListVectorPlot3D[{{{{1, 0, 0}, {1, 0, 0}}}}], Arrow[Tube[{a_, b_}, _]] :> Round[(a + b)/2], Infinity]", //
+    check(
+        "Cases[ListVectorPlot3D[{{{{1, 0, 0}, {1, 0, 0}}}}], Arrow[Tube[{a_, b_}, _]] :> Round[(a + b)/2], Infinity]", //
         "{{1,1,1},{2,1,1}}");
-    check("Cases[ListVectorPlot3D[{{{0, 0, 0}, {1, 0, 0}}, {{2, 2, 2}, {0, 0, 1}}}], "
-        + "Arrow[Tube[{a_, b_}, _]] :> Round[(a + b)/2], Infinity]", //
+    check(
+        "Cases[ListVectorPlot3D[{{{0, 0, 0}, {1, 0, 0}}, {{2, 2, 2}, {0, 0, 1}}}], "
+            + "Arrow[Tube[{a_, b_}, _]] :> Round[(a + b)/2], Infinity]", //
         "{{0,0,0},{2,2,2}}");
   }
 
@@ -1414,26 +1476,27 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
    * <code>StreamPlot</code> draws the field as streamlines, each an <code>Arrow</code> through the
-   * points of a curve that follows the field, over the plot range the iterators give, as the
-   * Wolfram Language draws it.
+   * points of a curve that follows the field, over the plot range the iterators give.
    */
   @Test
   public void testStreamPlotDrawsStreamlines() {
-    check("p = StreamPlot[{-1 - x^2 + y, 1 + x - y^2}, {x, -3, 3}, {y, -3, 3}, StreamScale -> Large]; "
-        + "{Head[p], Count[p, _Arrow, Infinity] > 20, Min[Cases[p, Arrow[l_] :> Length[l], Infinity]] >= 2, "
-        + "PlotRange /. Rest[List @@ p]}", //
+    check(
+        "p = StreamPlot[{-1 - x^2 + y, 1 + x - y^2}, {x, -3, 3}, {y, -3, 3}, StreamScale -> Large]; "
+            + "{Head[p], Count[p, _Arrow, Infinity] > 20, Min[Cases[p, Arrow[l_] :> Length[l], Infinity]] >= 2, "
+            + "PlotRange /. Rest[List @@ p]}", //
         "{Graphics,True,True,{{-3.0,3.0},{-3.0,3.0}}}");
   }
 
   /**
    * <code>ListVectorPlot</code> thins a dense array to at most 15 entries along each axis and plots
-   * the extent of the data, as the Wolfram Language does: 31 x 31 vectors are 15 x 15 arrows over
+   * the extent of the data: 31 x 31 vectors are 15 x 15 arrows over
    * <code>{{1, 31}, {1, 31}}</code>.
    */
   @Test
   public void testListVectorPlotThinsADenseArray() {
-    check("p = ListVectorPlot[Table[{y, -x}, {x, -3, 3, 0.2}, {y, -3, 3, 0.2}]]; "
-        + "{Count[p, _Arrow, Infinity], PlotRange /. Rest[List @@ p]}", //
+    check(
+        "p = ListVectorPlot[Table[{y, -x}, {x, -3, 3, 0.2}, {y, -3, 3, 0.2}]]; "
+            + "{Count[p, _Arrow, Infinity], PlotRange /. Rest[List @@ p]}", //
         "{225,{{1.0,31.0},{1.0,31.0}}}");
   }
 
@@ -1444,7 +1507,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testMedianOfManyDuplicates() {
-    check("Median[{23,23,23,22,22,22,22,22,22,22,22,22,23,25,23,11,29,23,10,30,11,30,19,23,26,28,28,28,28,28,23,24,28,23,18,25,28,23,13,24,22,28,10,10,23,25,28,30,23,26,21,2,23,10,19,10,23,23,28,23,18,10,19,10,23,20,27,23,24,22,28,16,11,23,10,19,10,23,23,24,24,23,22,22,9,23,28,23,24,24,22,28,30,10,22,19,24,10,20,21,21,10,19,25,12,16,10,10,19,10,26}]", //
+    check(
+        "Median[{23,23,23,22,22,22,22,22,22,22,22,22,23,25,23,11,29,23,10,30,11,30,19,23,26,28,28,28,28,28,23,24,28,23,18,25,28,23,13,24,22,28,10,10,23,25,28,30,23,26,21,2,23,10,19,10,23,23,28,23,18,10,19,10,23,20,27,23,24,22,28,16,11,23,10,19,10,23,23,24,24,23,22,22,9,23,28,23,24,24,22,28,30,10,22,19,24,10,20,21,21,10,19,25,12,16,10,10,19,10,26}]", //
         "23");
     check("Median[Join[Table[23, {60}], Range[80], Table[7, {50}]]]", //
         "23");
@@ -1452,12 +1516,13 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
    * <code>Take[list, UpTo[n]]</code> takes as many as there are, at most <code>n</code>. The WLJS
-   * notebook shortens a long output with it, and every one of those drew a
-   * <code>Take::seqs</code> warning.
+   * notebook shortens a long output with it, and every one of those drew a <code>Take::seqs</code>
+   * warning.
    */
   @Test
   public void testTakeUpTo() {
-    check("{Take[{1, 2, 3, 4}, UpTo[2]], Take[{1, 2}, UpTo[5]], Take[HoldComplete[1 + 1, 2 + 2, 3 + 3], UpTo[2]]}", //
+    check(
+        "{Take[{1, 2, 3, 4}, UpTo[2]], Take[{1, 2}, UpTo[5]], Take[HoldComplete[1 + 1, 2 + 2, 3 + 3], UpTo[2]]}", //
         "{{1,2},{1,2},HoldComplete[1+1,2+2]}");
   }
 
@@ -1469,11 +1534,13 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testPlotRastersAreNumbers() {
-    check("r = FirstCase[MatrixPlot[{{1, -1}, {I, 1 - I}}], Raster[d_, ___] :> d, None, Infinity]; "
-        + "Count[r, {_, _, _, a_ /; a == 0}, {2}]", //
+    check(
+        "r = FirstCase[MatrixPlot[{{1, -1}, {I, 1 - I}}], Raster[d_, ___] :> d, None, Infinity]; "
+            + "Count[r, {_, _, _, a_ /; a == 0}, {2}]", //
         "0");
-    check("r = FirstCase[ArrayPlot[{{1, 0, 0, Pink}, {1, 1, 0, Pink}, {1, 0, 1, Red}}], Raster[d_, ___] :> d, None, Infinity]; "
-        + "MatchQ[r, {{{__Real} ..} ..}]", //
+    check(
+        "r = FirstCase[ArrayPlot[{{1, 0, 0, Pink}, {1, 1, 0, Pink}, {1, 0, 1, Red}}], Raster[d_, ___] :> d, None, Infinity]; "
+            + "MatchQ[r, {{{__Real} ..} ..}]", //
         "True");
     check("ToBoxes[Texture[x], StandardForm] === ToBoxes[x, StandardForm]", //
         "True");
@@ -1481,9 +1548,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
    * A parametric region with <code>PlotStyle -> Texture[...]</code> is a
-   * <code>GraphicsComplex</code> whose points carry <code>VertexTextureCoordinates</code>, as the
-   * Wolfram Language writes it: a front end can lay a texture on nothing else, and the notebook
-   * drew no region at all.
+   * <code>GraphicsComplex</code> whose points carry <code>VertexTextureCoordinates</code>: a front
+   * end can lay a texture on nothing else, and the notebook drew no region at all.
    */
   @Test
   public void testATexturedRegionCarriesTextureCoordinates() {
@@ -1495,14 +1561,14 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * <code>VertexTextureCoordinates</code> is an option of <code>GraphicsComplex</code>, as in the
-   * Wolfram Language; a textured region drew <code>GraphicsComplex::optx</code> each time the
-   * notebook showed it.
+   * <code>VertexTextureCoordinates</code> is an option of <code>GraphicsComplex</code>; a textured
+   * region drew <code>GraphicsComplex::optx</code> each time the notebook showed it.
    */
   @Test
   public void testGraphicsComplexTakesTextureCoordinates() {
-    check("Head[Check[GraphicsComplex[{{0, 0}, {1, 0}, {1, 1}}, Polygon[{1, 2, 3}], "
-        + "VertexTextureCoordinates -> {{0, 0}, {1, 0}, {1, 1}}], \"msg\"]]", //
+    check(
+        "Head[Check[GraphicsComplex[{{0, 0}, {1, 0}, {1, 1}}, Polygon[{1, 2, 3}], "
+            + "VertexTextureCoordinates -> {{0, 0}, {1, 0}, {1, 1}}], \"msg\"]]", //
         "GraphicsComplex");
   }
 
@@ -1539,14 +1605,15 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   /**
    * <code>NDSolve</code> of the heat equation, by the method of lines. With
    * <code>u(0, x) = Sin(Pi x)</code> and zero at both ends the solution is
-   * <code>Exp(-Pi^2 t) Sin(Pi x)</code>; the numerical one agrees to better than 10^-3. The notebook's
-   * 3D plot demo solves this kind of problem and drew nothing.
+   * <code>Exp(-Pi^2 t) Sin(Pi x)</code>; the numerical one agrees to better than 10^-3. The
+   * notebook's 3D plot demo solves this kind of problem and drew nothing.
    */
   @Test
   public void testNDSolveHeatEquation() {
-    check("sol = NDSolve[{D[u[t, x], t] == D[u[t, x], x, x], u[0, x] == Sin[Pi x], u[t, 0] == 0, "
-        + "u[t, 1] == 0}, u, {t, 0, 0.5}, {x, 0, 1}]; "
-        + "{Head[u /. First[sol]], Abs[(u[0.1, 0.5] /. First[sol]) - Exp[-Pi^2/10]] < 10^-3}", //
+    check(
+        "sol = NDSolve[{D[u[t, x], t] == D[u[t, x], x, x], u[0, x] == Sin[Pi x], u[t, 0] == 0, "
+            + "u[t, 1] == 0}, u, {t, 0, 0.5}, {x, 0, 1}]; "
+            + "{Head[u /. First[sol]], Abs[(u[0.1, 0.5] /. First[sol]) - Exp[-Pi^2/10]] < 10^-3}", //
         "{InterpolatingFunction,True}");
     check("sol = NDSolve[{D[u[t, x], t] == D[u[t, x], x, x], u[0, x] == 0, u[t, 0] == Sin[t], "
         + "u[t, 5] == 0}, u, {t, 0, 10}, {x, 0, 5}]; "
@@ -1561,8 +1628,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testListInterpolation() {
-    check("f = ListInterpolation[Table[Sin[x] Cos[y], {x, 0, 2, 0.25}, {y, 0, 2, 0.25}], {{0, 2}, {0, 2}}]; "
-        + "{Head[f], Abs[f[1.1, 0.7] - Sin[1.1] Cos[0.7]] < 10^-3, Abs[f[2, 2] - Sin[2] Cos[2]] < 10^-12}", //
+    check(
+        "f = ListInterpolation[Table[Sin[x] Cos[y], {x, 0, 2, 0.25}, {y, 0, 2, 0.25}], {{0, 2}, {0, 2}}]; "
+            + "{Head[f], Abs[f[1.1, 0.7] - Sin[1.1] Cos[0.7]] < 10^-3, Abs[f[2, 2] - Sin[2] Cos[2]] < 10^-12}", //
         "{InterpolatingFunction,True,True}");
     check("g = ListInterpolation[{1, 4, 9, 16, 25, 36}]; {g[2], Abs[g[2.5] - 6.25] < 10^-9}", //
         "{4.0,True}");
@@ -1572,26 +1640,29 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
    * <code>SphericalPlot3D</code> keeps the proportions of what it draws unless
-   * <code>BoxRatios</code> is given, as the Wolfram Language does: a cube squashed the tall
-   * spherical harmonic of the 3D plot demo.
+   * <code>BoxRatios</code> is given: a cube squashed the tall spherical harmonic of the 3D plot
+   * demo.
    */
   @Test
   public void testSphericalPlot3DKeepsItsProportions() {
-    check("MemberQ[List @@ SphericalPlot3D[Cos[t]^2, {t, 0, Pi}, {p, 0, 2 Pi}], BoxRatios -> {1, 1, 1}]", //
+    check(
+        "MemberQ[List @@ SphericalPlot3D[Cos[t]^2, {t, 0, Pi}, {p, 0, 2 Pi}], BoxRatios -> {1, 1, 1}]", //
         "False");
     // Automatic goes out as the numbers, because the WLJS renderer draws nothing for the symbol
     check("Cases[List @@ SphericalPlot3D[Cos[t]^2, {t, 0, Pi}, {p, 0, 2 Pi}], "
         + "(BoxRatios -> {a_?NumberQ, b_?NumberQ, c_?NumberQ}) :> (c == 1.0 && 0 < a < 0.5 && 0 < b < 0.5)]", //
         "{True}");
-    check("Cases[List @@ SphericalPlot3D[1, {t, 0, Pi}, {p, 0, 2 Pi}, BoxRatios -> {1, 2, 3}], "
-        + "HoldPattern[BoxRatios -> _]]", //
+    check(
+        "Cases[List @@ SphericalPlot3D[1, {t, 0, Pi}, {p, 0, 2 Pi}, BoxRatios -> {1, 2, 3}], "
+            + "HoldPattern[BoxRatios -> _]]", //
         "{BoxRatios->{1,2,3}}");
     // the same for the other surfaces whose default is Automatic: a cylinder three high
     check("Cases[List @@ ParametricPlot3D[{Cos[u], Sin[u], 3 v}, {u, 0, 2 Pi}, {v, 0, 1}], "
         + "(BoxRatios -> {a_?NumberQ, b_?NumberQ, c_?NumberQ}) :> (c == 1.0 && Abs[a - 2/3] < 0.01)]", //
         "{True}");
-    check("Cases[List @@ RevolutionPlot3D[t, {t, 0, 1}], "
-        + "(BoxRatios -> {_?NumberQ, _?NumberQ, _?NumberQ}) :> True]", //
+    check(
+        "Cases[List @@ RevolutionPlot3D[t, {t, 0, 1}], "
+            + "(BoxRatios -> {_?NumberQ, _?NumberQ, _?NumberQ}) :> True]", //
         "{True}");
   }
 
@@ -1604,8 +1675,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   public void testLineTakesOptions() {
     check("Check[Line[{{1, 2}, {3, 4}}, VertexColors -> None], \"message\"]", //
         "Line[{{1,2},{3,4}},VertexColors->None]");
-    check("Check[Cases[Plot3D[x + y, {x, 0, 1}, {y, 0, 1}, Mesh -> None], "
-        + "{GrayLevel[0], _Line}, Infinity] // Length, \"message\"]", //
+    check(
+        "Check[Cases[Plot3D[x + y, {x, 0, 1}, {y, 0, 1}, Mesh -> None], "
+            + "{GrayLevel[0], _Line}, Infinity] // Length, \"message\"]", //
         "1");
   }
 
@@ -1615,8 +1687,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testStringPadLinesUpItsRepetitions() {
-    check("{StringPadLeft[\"abc\", 8, \"xy\"], StringPadLeft[\"abc\", 9, \"xy\"], "
-        + "StringPadRight[\"abc\", 8, \"xy\"], StringPadRight[\"abc\", 9, \"xy\"]}", //
+    check(
+        "{StringPadLeft[\"abc\", 8, \"xy\"], StringPadLeft[\"abc\", 9, \"xy\"], "
+            + "StringPadRight[\"abc\", 8, \"xy\"], StringPadRight[\"abc\", 9, \"xy\"]}", //
         "{xyxyxabc,yxyxyxabc,abcyxyxy,abcyxyxyx}");
     check("{StringPadLeft[\"abcdefgh\", 5, \"xy\"], StringPadRight[\"abcdefgh\", 5, \"xy\"]}", //
         "{defgh,abcde}");
@@ -1633,8 +1706,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testContourPlot3DLightsEachSurface() {
-    check("cp = ContourPlot3D[x^3 + y^2 - z^2, {x, -2, 2}, {y, -2, 2}, {z, -2, 2}, PlotPoints -> 10];"
-        + " Length[Cases[cp, Directive[___, Lighting -> _, ___], Infinity]]", //
+    check(
+        "cp = ContourPlot3D[x^3 + y^2 - z^2, {x, -2, 2}, {y, -2, 2}, {z, -2, 2}, PlotPoints -> 10];"
+            + " Length[Cases[cp, Directive[___, Lighting -> _, ___], Infinity]]", //
         "3");
     check("MatchQ[First[Cases[cp, Directive[___, Lighting -> _, ___], Infinity]], "
         + "Directive[Specularity[GrayLevel[1], 3], RGBColor[0.880722, 0.611041, 0.142051], "
@@ -1645,8 +1719,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Cases[Rest[List @@ cp], HoldPattern[Lighting -> _]]", //
         "{}");
     // the rim where a sphere is cut by the bottom of the box
-    check("Length[Cases[ContourPlot3D[x^2 + y^2 + z^2, {x, -1, 1}, {y, -1, 1}, {z, 0, 1}, "
-        + "Contours -> {1}, Mesh -> None, PlotPoints -> 10], {GrayLevel[0], _Line}, Infinity]]", //
+    check(
+        "Length[Cases[ContourPlot3D[x^2 + y^2 + z^2, {x, -1, 1}, {y, -1, 1}, {z, 0, 1}, "
+            + "Contours -> {1}, Mesh -> None, PlotPoints -> 10], {GrayLevel[0], _Line}, Infinity]]", //
         "1");
     check("Length[Cases[ContourPlot3D[x^2 + y^2 + z^2, {x, -1, 1}, {y, -1, 1}, {z, 0, 1}, "
         + "Contours -> {1}, Mesh -> None, PlotPoints -> 10, BoundaryStyle -> None], _Line, Infinity]]", //
@@ -1683,11 +1758,12 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testFrameTicksStyleDoesNotSwallowTheFrame() {
-    check("g = Plot[x, {x, 0, 1}, Frame -> True, FrameLabel -> {\"x\", \"y\"}, "
-        + "FrameTicksStyle -> Directive[FontSize -> 14]]; "
-        + "{MemberQ[List @@ g, HoldPattern[Frame -> True]], "
-        + "MemberQ[List @@ g, HoldPattern[FrameLabel -> {\"x\", \"y\"}]], "
-        + "MemberQ[List @@ g, HoldPattern[FrameTicksStyle -> Directive[FontSize -> 14]]]}", //
+    check(
+        "g = Plot[x, {x, 0, 1}, Frame -> True, FrameLabel -> {\"x\", \"y\"}, "
+            + "FrameTicksStyle -> Directive[FontSize -> 14]]; "
+            + "{MemberQ[List @@ g, HoldPattern[Frame -> True]], "
+            + "MemberQ[List @@ g, HoldPattern[FrameLabel -> {\"x\", \"y\"}]], "
+            + "MemberQ[List @@ g, HoldPattern[FrameTicksStyle -> Directive[FontSize -> 14]]]}", //
         "{True,True,True}");
     check("g = ListLinePlot[{1, 2, 3}, Frame -> True, TicksStyle -> Red]; "
         + "{MemberQ[List @@ g, HoldPattern[Frame -> True]], MemberQ[List @@ g, HoldPattern[TicksStyle -> _]]}", //
@@ -1703,10 +1779,11 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testDateListPlot() {
-    check("g = DateListPlot[{{DateObject[{2022, 12}], 1}, {DateObject[{2023, 12}], 2}, "
-        + "{DateObject[{2026, 9, 11}], 3}}]; "
-        + "{Head[g], MemberQ[List @@ g, HoldPattern[Frame -> True]], "
-        + "MemberQ[List @@ g, HoldPattern[Axes -> False]]}", //
+    check(
+        "g = DateListPlot[{{DateObject[{2022, 12}], 1}, {DateObject[{2023, 12}], 2}, "
+            + "{DateObject[{2026, 9, 11}], 3}}]; "
+            + "{Head[g], MemberQ[List @@ g, HoldPattern[Frame -> True]], "
+            + "MemberQ[List @@ g, HoldPattern[Axes -> False]]}", //
         "{Graphics,True,True}");
     // the first point is at the AbsoluteTime of December 2022, as in Mathematica's output
     check("Round[First[Cases[g, Line[l_] :> l[[1, 1]], Infinity]]] == 3878841600", //
@@ -1714,8 +1791,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Cases[List @@ g, HoldPattern[FrameTicks -> {_, {b_, _}}] :> b[[All, 2]]]", //
         "{{2023,2024,2025,2026}}");
     // two series, dates given as date lists
-    check("Length[Cases[DateListPlot[{{{{2020, 1, 1}, 1}, {{2021, 1, 1}, 2}}, "
-        + "{{{2020, 1, 1}, 3}, {{2021, 1, 1}, 1}}}], _Line, Infinity]]", //
+    check(
+        "Length[Cases[DateListPlot[{{{{2020, 1, 1}, 1}, {{2021, 1, 1}, 2}}, "
+            + "{{{2020, 1, 1}, 3}, {{2021, 1, 1}, 1}}}], _Line, Infinity]]", //
         "2");
   }
 
@@ -1725,14 +1803,15 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testListCurvePathPlot() {
-    check("pts = Table[{Cos[2 Pi k/40], Sin[2 Pi k/40]}, {k, 0, 39}][[Mod[7 Range[40], 40] + 1]]; "
-        + "Cases[ListCurvePathPlot[pts], Line[l_] :> Length[l], Infinity]", //
+    check(
+        "pts = Table[{Cos[2 Pi k/40], Sin[2 Pi k/40]}, {k, 0, 39}][[Mod[7 Range[40], 40] + 1]]; "
+            + "Cases[ListCurvePathPlot[pts], Line[l_] :> Length[l], Infinity]", //
         "{40}");
   }
 
   /**
-   * Two datasets of two points each have the shape of a list of pairs; they are still two lines,
-   * as in Mathematica - Symja took them for two points with lists for coordinates and drew nothing.
+   * Two datasets of two points each have the shape of a list of pairs; they are still two lines, as
+   * in Mathematica - Symja took them for two points with lists for coordinates and drew nothing.
    */
   @Test
   public void testListLinePlotOfTwoShortSeries() {
@@ -1754,15 +1833,15 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     int iterationLimit = engine.getIterationLimit();
     engine.setIterationLimit(100000);
     try {
-    check("SeedRandom[7]; bh = <||>; bref = <||>; bkeys = Table[\"k\" <> ToString[i], {i, 400}]; "
-        + "Do[bh[k] = k; bref[k] = k, {k, bkeys}]; "
-        + "Do[With[{k = RandomChoice[bkeys], op = RandomInteger[{1, 3}]}, "
-        + "Which[op == 1, bh[k] = n; bref[k] = n, "
-        + "op == 2, If[KeyExistsQ[bh, k], bh[k] = .]; bref = KeyDrop[bref, k], "
-        + "True, bh[k] = -n; bref[k] = -n]], {n, 3000}]; "
-        + "{Length[bh] == Length[bref], "
-        + "AllTrue[bkeys, Lookup[bh, #, None] === Lookup[bref, #, None] &]}", //
-        "{True,True}");
+      check(
+          "SeedRandom[7]; bh = <||>; bref = <||>; bkeys = Table[\"k\" <> ToString[i], {i, 400}]; "
+              + "Do[bh[k] = k; bref[k] = k, {k, bkeys}]; "
+              + "Do[With[{k = RandomChoice[bkeys], op = RandomInteger[{1, 3}]}, "
+              + "Which[op == 1, bh[k] = n; bref[k] = n, "
+              + "op == 2, If[KeyExistsQ[bh, k], bh[k] = .]; bref = KeyDrop[bref, k], "
+              + "True, bh[k] = -n; bref[k] = -n]], {n, 3000}]; " + "{Length[bh] == Length[bref], "
+              + "AllTrue[bkeys, Lookup[bh, #, None] === Lookup[bref, #, None] &]}", //
+          "{True,True}");
     } finally {
       engine.setIterationLimit(iterationLimit);
     }
@@ -1771,17 +1850,19 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   /**
    * <code>obj["k"] = v</code> with <code>obj = Wrap[s]</code> is an assignment to
    * <code>Wrap[s]["k"]</code>, which the up-values of <code>Wrap</code> handle - how every WLJS
-   * object sets a property. It was stored as a sub-value of <code>Wrap</code> the object never
-   * saw, and the notebook server's cell list split in two.
+   * object sets a property. It was stored as a sub-value of <code>Wrap</code> the object never saw,
+   * and the notebook server's cell list split in two.
    */
   @Test
   public void testAssignmentThroughEvaluatedHead() {
-    check("Wrap /: Set[Wrap[s_][k_String], v_] := (s[k] = v); "
-        + "wobj = Wrap[wstore]; wobj[\"y\"] = 6; wobj[\"y\"] = 7; "
-        + "{wstore[\"y\"], SubValues[Wrap]}", //
+    check(
+        "Wrap /: Set[Wrap[s_][k_String], v_] := (s[k] = v); "
+            + "wobj = Wrap[wstore]; wobj[\"y\"] = 6; wobj[\"y\"] = 7; "
+            + "{wstore[\"y\"], SubValues[Wrap]}", //
         "{7,{}}");
-    check("Wrap /: SetDelayed[Wrap[s_][k_String], v_] := (s[k] := v); "
-        + "wobj2 = Wrap[wstore2]; wobj2[\"z\"] := 1 + 1; wstore2[\"z\"]", //
+    check(
+        "Wrap /: SetDelayed[Wrap[s_][k_String], v_] := (s[k] := v); "
+            + "wobj2 = Wrap[wstore2]; wobj2[\"z\"] := 1 + 1; wstore2[\"z\"]", //
         "2");
     // a head that evaluates to a symbol still defines that symbol, as before
     check("wf = wg; wf[1] = 2; {DownValues[wf], wg[1]}", //
@@ -1801,8 +1882,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testUnsetAssociationKeyAndRemove() {
-    check("wh = <|\"u1\" -> 11, \"u2\" -> 22, \"u3\" -> 33|>; wh[\"u1\"] = .; "
-        + "{KeyExistsQ[wh, \"u1\"], wh[\"u2\"], wh[\"u3\"], Keys[wh]}", //
+    check(
+        "wh = <|\"u1\" -> 11, \"u2\" -> 22, \"u3\" -> 33|>; wh[\"u1\"] = .; "
+            + "{KeyExistsQ[wh, \"u1\"], wh[\"u2\"], wh[\"u3\"], Keys[wh]}", //
         "{False,22,33,{u2,u3}}");
     check("wr = <|\"Data\" -> \"x\"|>; Remove[wr]; ValueQ[wr]", //
         "False");
@@ -1822,17 +1904,19 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Length[Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}, {3, 1, 9}}], _Disk, Infinity]]", //
         "3");
     // the radii of 1, 4 and 9 grow as their roots do, between a hundredth and a tenth of the width
-    check("Round[100*Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}, {3, 1, 9}}], "
-        + "Disk[_, {rx_, _}] :> rx, Infinity]]", //
+    check(
+        "Round[100*Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}, {3, 1, 9}}], "
+            + "Disk[_, {rx_, _}] :> rx, Infinity]]", //
         "{2,12,20}");
     // several datasets, each in a colour of its own
     check("Length[Cases[BubbleChart[Table[{i, j, i + j}, {i, 3}, {j, 4}]], _Disk, Infinity]]", //
         "12");
     // "NoiseBubble" draws a wobbly rim instead of a disk
-    check("{Length[Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}}, "
-        + "ChartElementFunction -> \"NoiseBubble\"], _Polygon, Infinity]], "
-        + "Length[Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}}, "
-        + "ChartElementFunction -> \"NoiseBubble\"], _Disk, Infinity]]}", //
+    check(
+        "{Length[Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}}, "
+            + "ChartElementFunction -> \"NoiseBubble\"], _Polygon, Infinity]], "
+            + "Length[Cases[BubbleChart[{{1, 1, 1}, {2, 2, 4}}, "
+            + "ChartElementFunction -> \"NoiseBubble\"], _Disk, Infinity]]}", //
         "{2,0}");
   }
 
@@ -1845,8 +1929,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Cases[SectorChart[{{1, 1}, {1, 2}, {1, 3}}], Disk[_, r_, _] :> r, Infinity]", //
         "{1.0,2.0,3.0}");
     // the sectors start at the left and follow one another clockwise, as in Mathematica
-    check("Round[180/Pi*Cases[SectorChart[{{1, 1}, {1, 2}, {1, 3}}], Disk[_, _, a_] :> a, "
-        + "Infinity]]", //
+    check(
+        "Round[180/Pi*Cases[SectorChart[{{1, 1}, {1, 2}, {1, 3}}], Disk[_, _, a_] :> a, "
+            + "Infinity]]", //
         "{{60,180},{-60,60},{-180,-60}}");
     // a hole in the middle turns the sectors into rings
     check("{Length[Cases[SectorChart[{{1, 1}, {1, 2}}, SectorOrigin -> {Automatic, 1}], _Polygon, "
@@ -1854,20 +1939,23 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         + "_Disk, Infinity]]}", //
         "{2,0}");
     // PolarAxes draws the polar scale behind the sectors
-    check("Length[Cases[SectorChart[{{1, 1}, {1, 2}}, PolarAxes -> True, "
-        + "PolarGridLines -> Automatic], _Circle, Infinity]] > 0", //
+    check(
+        "Length[Cases[SectorChart[{{1, 1}, {1, 2}}, PolarAxes -> True, "
+            + "PolarGridLines -> Automatic], _Circle, Infinity]] > 0", //
         "True");
   }
 
   /** Several datasets of a <code>PieChart</code> are drawn as rings around one another. */
   @Test
   public void testPieChartRings() {
-    check("{Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}], _Disk, Infinity]], "
-        + "Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}], _Polygon, Infinity]]}", //
+    check(
+        "{Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}], _Disk, Infinity]], "
+            + "Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}], _Polygon, Infinity]]}", //
         "{3,3}");
     // every sector of every ring is named
-    check("Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}, ChartLabels -> {\"a\", \"b\", \"c\"}], "
-        + "_Text, Infinity]]", //
+    check(
+        "Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}, ChartLabels -> {\"a\", \"b\", \"c\"}], "
+            + "_Text, Infinity]]", //
         "6");
     // the first sector runs from 144 to 180 degrees, as Mathematica draws it
     check("Round[180/Pi*First[Cases[PieChart[{1, 2, 3, 4}], Disk[_, _, a_] :> a, Infinity]]]", //
@@ -1881,16 +1969,19 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testHistogramBinsAndElements() {
-    check("Union[Cases[Histogram[Range[0, 100]], Rectangle[{x_, _}, {y_, _}] :> "
-        + "{Round[Mod[x, 20]], Round[y - x]}, Infinity]]", //
+    check(
+        "Union[Cases[Histogram[Range[0, 100]], Rectangle[{x_, _}, {y_, _}] :> "
+            + "{Round[Mod[x, 20]], Round[y - x]}, Infinity]]", //
         "{{0,20}}");
     // a function that draws a bar also sees it, which is what the demo's sowing bar relies on
-    check("Total[Flatten[Last[Reap[Histogram[{1, 2, 2, 3}, Automatic, \"Count\", "
-        + "ChartElementFunction -> Function[{r, v, p}, (Sow[v]; Rectangle @@ r)]]]]]]", //
+    check(
+        "Total[Flatten[Last[Reap[Histogram[{1, 2, 2, 3}, Automatic, \"Count\", "
+            + "ChartElementFunction -> Function[{r, v, p}, (Sow[v]; Rectangle @@ r)]]]]]]", //
         "4");
     // "Probability" scales the bars to the share of the data each bin holds
-    check("Max[Cases[Histogram[{1, 2, 2, 3}, Automatic, \"Probability\"], "
-        + "Rectangle[_, {_, y_}] :> y, Infinity]] <= 1", //
+    check(
+        "Max[Cases[Histogram[{1, 2, 2, 3}, Automatic, \"Probability\"], "
+            + "Rectangle[_, {_, y_}] :> y, Infinity]] <= 1", //
         "True");
     // a named ChartStyle scheme colours the bars; the name itself never reaches the picture
     check("{FreeQ[BarChart[{1, 2, 3}, ChartStyle -> \"Pastel\"], \"Pastel\"], "

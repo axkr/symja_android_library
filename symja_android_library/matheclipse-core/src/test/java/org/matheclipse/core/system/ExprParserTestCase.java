@@ -15,7 +15,7 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
 
   /** Read an input in script mode and join the expressions it holds with " | ". */
   private static String scriptExpressions(String input) {
-    // Read and render in Wolfram Language syntax, whatever the rest of the suite left the global
+    // Whatever the rest of the suite left the global
     // parser configuration on: it decides whether a full form is written with `[]` or with `()`,
     // and these tests compare the text.
     boolean lowercaseSymbols = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS;
@@ -74,8 +74,7 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     assertEquals("List[1, 2]", scriptExpressions("{1,\n2}"));
     assertEquals("Plus[1, 2]", scriptExpressions("(1 +\n2)"));
     assertEquals("Part[m, 1, 2]", scriptExpressions("m[[1,\n2]]"));
-    assertEquals("Association[Rule[a, 1], Rule[b, 2]]",
-        scriptExpressions("<|a -> 1,\nb -> 2|>"));
+    assertEquals("Association[Rule[a, 1], Rule[b, 2]]", scriptExpressions("<|a -> 1,\nb -> 2|>"));
 
     // a line ending in an operator carries on
     assertEquals("Set[a, Plus[1, 2]]", scriptExpressions("a = 1 +\n2"));
@@ -85,7 +84,7 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     assertEquals("Set[a, Plus[1, 2]]", scriptExpressions("a = 1 \\\n+ 2"));
 
     // ... and an operator at the START of the next line does not: what came before it was already
-    // a complete expression, so this is two of them. The Wolfram Language reads it the same way.
+    // a complete expression, so this is two of them.
     assertEquals("Set[a, 1] | 2", scriptExpressions("a = 1\n+ 2"));
   }
 
@@ -199,9 +198,10 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     IExpr parseBack = new ExprEvaluator().parse(text);
     assertEquals(parseBack.fullFormString(), "Transpose(List(List(1, 2), List(3, 4), List(5, 6)))");
   }
+
   /**
-   * Wolfram Language source that Symja used to reject, all of it taken from packages that failed to
-   * read. These go through {@code Parser}/{@code AST2Expr}, which is the path a file takes.
+   * Source that Symja used to reject, all of it taken from packages that failed to read. These go
+   * through {@code Parser}/{@code AST2Expr}, which is the path a file takes.
    */
   @Test
   public void testFormsFromRealPackages() {
@@ -219,5 +219,18 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
 
     // a string may begin with a newline - a usage message or a template body is written that way
     assertEquals("Set[MessageName[f, usage], \"\na\"]", scriptExpressions("f::usage = \"\na\""));
+  }
+
+  /** A derivative followed by a juxtaposed factor is a product, in the relaxed syntax as well. */
+  @Test
+  public void testDerivativeFollowedByFactor() {
+    check("Hold(f'(x) g'(x) == 1)", //
+        "Hold(f'(x)*g'(x)==1)");
+    check("Hold(f'(x) == g'(x) h(x))", //
+        "Hold(f'(x)==g'(x)*h(x))");
+    check("Hold(y(x) y'''(x) == y'(x) y''(x))", //
+        "Hold(y(x)*Derivative(3)[y][x]==y'(x)*y''(x))");
+    check("Hold(f'(x)^2 + 2 g'(x) - g(x) h'(x))", //
+        "Hold(f'(x)^2+2*g'(x)-g(x)*h'(x))");
   }
 }

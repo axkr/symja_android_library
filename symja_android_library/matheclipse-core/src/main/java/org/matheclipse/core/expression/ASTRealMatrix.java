@@ -65,7 +65,7 @@ public final class ASTRealMatrix extends AbstractAST
    *
    * @param matrixAST an AST which could be converted into a <code>double[][]</code> matrix array.
    * @param function Function to apply to each entry.
-   * @return a new matrix.
+   * @return a new matrix, or <code>null</code> if an entry maps to <code>NaN</code>
    */
   public static ASTRealMatrix map(final IAST matrixAST, DoubleUnaryOperator function) {
     double[][] matrix = matrixAST.toDoubleMatrix();
@@ -74,6 +74,10 @@ public final class ASTRealMatrix extends AbstractAST
     for (int i = 0; i < rows; i++) {
       for (int j = 0; j < cols; j++) {
         matrix[i][j] = function.applyAsDouble(matrix[i][j]);
+        if (Double.isNaN(matrix[i][j])) {
+          // outside the real domain, e.g. ArcCos(2.0); the caller evaluates element-wise
+          return null;
+        }
       }
     }
     return new ASTRealMatrix(matrix, false);

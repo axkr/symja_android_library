@@ -12,7 +12,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.OutputFormats;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -45,7 +45,7 @@ public class SymjaServer {
           String strict = SymjaServer.getParam(queryParameters, "strict", "s", "");
           String inputStr = SymjaServer.getParam(queryParameters, "input", "i", "");
           String[] formformatStrs =
-              SymjaServer.getParams(queryParameters, "format", "f", JSBuilder.PLAIN_STR);
+              SymjaServer.getParams(queryParameters, "format", "f", OutputFormats.PLAIN_STR);
           int formats = Pods.internFormat(formformatStrs);
           try {
             jsonStr = Pods.calculateResult(inputStr, formats, !strict.isEmpty(), EvalEngine.get());
@@ -133,6 +133,8 @@ public class SymjaServer {
     // the graph functions moved to matheclipse-graphtheory; the API server renders graph pods,
     // so it registers them itself rather than going through IOInit like the servlets do
     org.matheclipse.graphtheory.GraphTheoryInit.init();
+    // JSXGraph / ECharts / MathCell and the iframe pages of the JavaScript pods
+    org.matheclipse.jsgraphics.JSGraphicsInit.init();
     // The free form parser leaves the tracing functions out, because Trace, On and TraceDialog are
     // unbounded or need a reader to wait for. TraceForm is neither - it stops at three levels and
     // five thousand steps unless asked for more - and a derivation is worth answering with, so

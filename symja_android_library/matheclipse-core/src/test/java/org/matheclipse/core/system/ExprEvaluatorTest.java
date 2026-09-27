@@ -29,6 +29,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.polynomials.longexponent.ExprTermOrderByName;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
+import org.junit.jupiter.api.Tag;
 
 public class ExprEvaluatorTest {
 
@@ -129,6 +130,7 @@ public class ExprEvaluatorTest {
    * function.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactorInteger() {
     try {
       ExprEvaluator util = new ExprEvaluator(false, (short) 100);

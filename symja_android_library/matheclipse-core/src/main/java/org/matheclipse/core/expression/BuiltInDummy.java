@@ -287,7 +287,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
         return 0;
       }
       // sort lexicographically
-      return US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName()); // fSymbolName);
+      int cp = US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());
+      return cp != 0 ? cp : Symbol.compareSameName(this, (ISymbol) expr);
     }
     if (expr.isNot() && expr.first().isSymbol()) {
       int cp = compareTo(expr.first());

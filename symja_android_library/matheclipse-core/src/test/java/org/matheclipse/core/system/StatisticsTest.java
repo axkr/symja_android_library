@@ -213,10 +213,10 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "-EulerGamma*m+n");
     check("Mean(HypergeometricDistribution(n, ns, nt))", //
         "(n*ns)/nt");
-    // check("Mean(InverseGammaDistribution(n, m))", //
-    // "Piecewise({{m/(-1+n),n>1}},Indeterminate)");
-    // check("Mean(InverseGammaDistribution(a,b,g,d))", //
-    // "Piecewise({{d+(b*Gamma(a-1/g))/Gamma(a),a*g>1}},Indeterminate)");
+    check("Mean(InverseGammaDistribution(n, m))", //
+        "Piecewise({{m/(-1+n),n>1}},Indeterminate)");
+    check("Mean(InverseGammaDistribution(a,b,g,d))", //
+        "Piecewise({{d+(b*Gamma(a-1/g))/Gamma(a),a*g>1}},Indeterminate)");
     check("Mean(StudentTDistribution(4))", //
         "0");
     check("Mean(StudentTDistribution(4.0))", //
@@ -348,10 +348,10 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "m*InverseGammaRegularized(n,0,1/2)");
     check("Median(GammaDistribution(a,b,g,d))", //
         "d+b*InverseGammaRegularized(a,1/2)^(1/g)");
-    // check("Median(InverseGammaDistribution(n, m))", //
-    // "m/InverseGammaRegularized(n,1/2)");
-    // check("Median(InverseGammaDistribution(a,b,g,d))", //
-    // "d+b*((1/InverseGammaRegularized(a,1/2)))^(1/g)");
+    check("Median(InverseGammaDistribution(n, m))", //
+        "m/InverseGammaRegularized(n,1/2)");
+    check("Median(InverseGammaDistribution(a,b,g,d))", //
+        "d+b*((1/InverseGammaRegularized(a,1/2)))^(1/g)");
     check("Median(GeometricDistribution(n))", //
         "Median(GeometricDistribution(n))");
     check("Median(GumbelDistribution( ))", //
@@ -496,7 +496,8 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     // also left this path disagreeing with the exact path through Quantile on the same data.
     check("Median({-1.0*10^308, 1.0*10^308})", //
         "0.0");
-    check("Median({-1.0*10^308, 1.0*10^308}) == Quantile({-1.0*10^308, 1.0*10^308}, 1/2, {{1/2,0},{0,1}})", //
+    check(
+        "Median({-1.0*10^308, 1.0*10^308}) == Quantile({-1.0*10^308, 1.0*10^308}, 1/2, {{1/2,0},{0,1}})", //
         "True");
 
     // MeanDeviation, machine-precision path: the deviations are both 1.0*10^308, so their sum
@@ -685,8 +686,8 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
   /**
    * Inputs this family used to fail on in silence, or by leaking a message from the arithmetic
-   * rather than reporting the argument. The results are all unevaluated either way; what changed
-   * is which message reaches the user.
+   * rather than reporting the argument. The results are all unevaluated either way; what changed is
+   * which message reaches the user.
    */
   @Test
   public void testQuantileFamilyMessages() {
@@ -715,7 +716,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     check("Quartiles({1,2,3}, {{0,0},{1,0},{1,1}})", //
         "Quartiles({1,2,3},\n{{0,0},\n {1,0},\n {1,1}})");
 
-    // an empty list is silent across the whole family, as it is in Wolfram Language. Quantile
+    // an empty list is silent across the whole family. Quantile
     // used to be the one head that printed a message here
     check("Median({})", //
         "Median({})");
@@ -945,10 +946,10 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
             "1},{2,2,2},-n)+12*EulerGamma*Log(n)+6*Log(n)^2))/(6*m^2)");
     check("Variance(HypergeometricDistribution(n, ns, nt))", //
         "(n*ns*(1-ns/nt)*(-n+nt))/((-1+nt)*nt)");
-    // check("Variance(InverseGammaDistribution(n, m))", //
-    // "Piecewise({{m^2/((1-n)^2*(-2+n)),n>2}},Indeterminate)");
-    // check("Variance(InverseGammaDistribution(a,b,g,d))", //
-    // "Piecewise({{(b^2*(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2))/Gamma(a)^2,a*g>2}},Indeterminate)");
+    check("Variance(InverseGammaDistribution(n, m))", //
+        "Piecewise({{m^2/((1-n)^2*(-2+n)),n>2}},Indeterminate)");
+    check("Variance(InverseGammaDistribution(a,b,g,d))", //
+        "Piecewise({{(b^2*(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2))/Gamma(a)^2,a*g>2}},Indeterminate)");
     check("Variance(PoissonDistribution(n))", //
         "n");
     check("Variance(StudentTDistribution(4))", //

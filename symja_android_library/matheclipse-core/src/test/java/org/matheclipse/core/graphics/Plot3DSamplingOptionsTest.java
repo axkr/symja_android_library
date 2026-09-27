@@ -45,7 +45,8 @@ public class Plot3DSamplingOptionsTest {
 
   /** How many vertices the surface was built from. */
   private static int vertices(String plot) {
-    IExpr count = evaluator.eval("Length(Part(" + plot + ",1,1,1))");
+    IExpr count =
+        evaluator.eval("Length(First(Cases(" + plot + ", _GraphicsComplex, Infinity))[[1]])");
     assertTrue(count.isInteger(), plot + " did not produce a GraphicsComplex: " + count);
     return count.toIntDefault(-1);
   }
@@ -122,17 +123,34 @@ public class Plot3DSamplingOptionsTest {
     assertEquals(capped, vertices(base + ",ClippingStyle->Automatic]"));
   }
 
+  /**
+   * The segments of the mesh the mesh functions draw: indexed pairs in a group of their own inside
+   * the surface's {@code GraphicsComplex}, the way Mathematica writes a mesh.
+   */
+  private static int meshSegments(String plot) {
+    return evaluator.eval("Total(Map(Length, Cases(" + plot
+        + ", {RGBColor(0,0,0), Line(s_, VertexColors->None)} :> s, Infinity)))").toIntDefault(-1);
+  }
+
+  /**
+   * Explicit mesh functions draw the mesh in place of the sampling grid's lines, as Mathematica
+   * does, rather than beside them.
+   */
   @Test
   public void meshFunctionsDrawLevelsOfTheirOwn() {
     String base = "Plot3D[x+y,{x,0,1},{y,0,1},PlotPoints->15";
     int grid = lines(base + "]");
-    int oneFunction = lines(base + ",MeshFunctions->{Function({x,y,z},x)}]");
-    int twoFunctions = lines(base + ",MeshFunctions->{Function({x,y,z},x),Function({x,y,z},y)}]");
-    assertTrue(oneFunction > grid, "a mesh function adds lines of its own");
+    int oneFunction = meshSegments(base + ",MeshFunctions->{Function({x,y,z},x)}]");
+    int twoFunctions =
+        meshSegments(base + ",MeshFunctions->{Function({x,y,z},x),Function({x,y,z},y)}]");
+    assertEquals(0, meshSegments(base + "]"), "the grid mesh is no function's");
+    assertTrue(oneFunction > 0, "a mesh function draws lines of its own");
     assertTrue(twoFunctions > oneFunction, "a second one adds more");
+    assertTrue(lines(base + ",MeshFunctions->{Function({x,y,z},x)}]") < grid,
+        "the sampling grid's lines are replaced, not kept beside them");
     assertEquals(grid, lines(base + ",MeshFunctions->Automatic]"),
         "Automatic leaves the mesh on the sampling grid");
-    assertTrue(lines(base + ",MeshFunctions->{Function({x,y,z},x)},Mesh->3]") < lines(
+    assertTrue(meshSegments(base + ",MeshFunctions->{Function({x,y,z},x)},Mesh->3]") < meshSegments(
         base + ",MeshFunctions->{Function({x,y,z},x)},Mesh->12]"), "Mesh sets the level count");
   }
 

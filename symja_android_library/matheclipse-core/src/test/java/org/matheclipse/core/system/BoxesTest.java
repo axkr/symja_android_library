@@ -62,6 +62,13 @@ public class BoxesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testEmptyListAndCallHaveNoEmptyRow() {
+    // the empty row was joined by the notebook into StringJoin() and showed as {StringJoin[]}
+    check("{ToBoxes[{}], ToBoxes[f[]]} // InputForm", //
+        "{RowBox({\"{\",\"}\"}),RowBox({\"f\",\"[\",\"]\"})}");
+  }
+
+  @Test
   public void testMachineRealsKeepAllTheirDigits() {
     // a notebook showed 0.0159723 where the saved output has 0.8459659909775918`
     check("Map[ToBoxes, {0.8459659909775918, 1., -2.5, 123456., 1234567., 0.00001, 1.5*^-7}] // InputForm", //

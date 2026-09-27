@@ -2024,7 +2024,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     int d;
     final int start = includeHeads ? 0 : 1;
     for (int i = start; i < size(); i++) {
-      if (get(i).isAST()) {
+      // an association is atomic but counts as a level: Depth(<|a-><|b->1|>|>) == 3
+      if (get(i).isAST() || get(i).isAssociation()) {
         d = get(i).depth(includeHeads);
         if (d > maxDepth) {
           maxDepth = d;
@@ -2845,7 +2846,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return that;
     }
     // This is the ring-level GCD that JAS calls on polynomial coefficients, not the GCD() builtin,
-    // which stays unevaluated on irrational arguments exactly as Wolfram's does. Reporting the
+    // which stays unevaluated on irrational arguments. Reporting the
     // rational content lets a polynomial such as 2*x^2+2*Sqrt(3) keep its content 2, which
     // answering 1 here silently dropped.
     return NumberUtil.rationalContentGCD(this, that);
@@ -4740,6 +4741,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     } else if (isPiecewise() != null) {
       VariablesSet varSet = new VariablesSet(this);
       return varSet.size() == 0;
+    } else if (isAST(S.AlgebraicNumber, 3) && arg2().isList()) {
+      // an element of a number field is always a numeric quantity
+      return ((IAST) arg2()).forAll(IExpr::isRational)
+          && (arg1().isNumericFunction(allowList) || arg1().isAST(S.Root));
     }
 
     return false;
@@ -5170,7 +5175,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     if (isPower() && !(exponent().isZero() || base().isZero())) {
       final IExpr base = base();
-      return base.isRealResult() && !base.isNegativeResult() && exponent().isRealResult();
+      // a base which may be negative, like -x for x>=0, isn't excluded by !isNegativeResult()
+      return base.isRealResult() && !base.isNegativeResult() && !base.isNonPositiveResult()
+          && exponent().isRealResult();
     }
     if (isInfinity() || isNegativeInfinity()) {
       return true;

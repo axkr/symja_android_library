@@ -7,6 +7,23 @@ import org.matheclipse.core.eval.EvalEngine;
 /** Tests for tensor functions */
 public class TensorTest extends ExprEvaluatorTestCase {
 
+  /** A transformation function applied to a list of points transforms each of them. */
+  @Test
+  public void testTransformationFunctionOfAPointList() {
+    check("RotationTransform(Pi/2) @ ({{1, 0}, {0, 1}})", //
+        "{{0,1},{-1,0}}");
+    check("TranslationTransform({1, 2}) @ ({{0, 0}, {1, 1}})", //
+        "{{1,2},{2,3}}");
+    check("ScalingTransform({2, 3}) @ ({{1, 1}, {2, 2}})", //
+        "{{2,3},{4,6}}");
+    check("RotationTransform(Pi/2, {0, 0, 1}) @ ({{1, 0, 0}, {0, 1, 0}, {1, 1, 0}, {2, 0, 0}, {0, 2, 0}})", //
+        "{{0,1,0},{-1,0,0},{-1,1,0},{0,2,0},{-2,0,0}}");
+    check("AffineTransform({{1, 2}, {3, 4}}) @ ({{1, 0}, {0, 1}})", //
+        "{{1,3},{2,4}}");
+    check("RotationTransform(Pi/2) @ ({1, 0})", //
+        "{0,1}");
+  }
+
   @Test
   public void testHodgeDual() {
     // check(

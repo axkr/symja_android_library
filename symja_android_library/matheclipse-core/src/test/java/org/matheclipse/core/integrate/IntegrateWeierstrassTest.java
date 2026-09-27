@@ -13,6 +13,7 @@ import org.matheclipse.core.system.TestTags;
 public class IntegrateWeierstrassTest extends AbstractIntegrateCorpusTest {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void weierstrassForced() {
     runCorpusResource("/integrate/weierstrass_seed.txt", "Weierstrass");
   }
@@ -24,6 +25,7 @@ public class IntegrateWeierstrassTest extends AbstractIntegrateCorpusTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void weierstrassAddedCoverageOverRubi() {
     boolean old = Config.INTEGRATE_ALGORITHM_WEIERSTRASS;
     Config.INTEGRATE_ALGORITHM_WEIERSTRASS = false;

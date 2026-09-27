@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.builtin.graphics.PlotEndpoints;
 import org.matheclipse.core.graphics.ComplexColoring;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
@@ -60,9 +61,29 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
       minIm = min.imDoubleValue();
       maxRe = max.reDoubleValue();
       maxIm = max.imDoubleValue();
+    } else if (range.argSize() == 2) {
+      // {z, r} is the square with the corners -|r| (1 + I) and |r| (1 + I)
+      double r = engine.evaluate(F.Abs(range.arg2())).evalfNaN();
+      minRe = minIm = -r;
+      maxRe = maxIm = r;
     }
-    if (!(maxRe > minRe) || !(maxIm > minIm)) {
+    if (!Double.isFinite(minRe) || !Double.isFinite(minIm) || !Double.isFinite(maxRe)
+        || !Double.isFinite(maxIm)) {
       return Errors.printMessage(S.ComplexPlot3D, "pllim", F.list(range), engine);
+    }
+    if (PlotEndpoints.degenerateCorners(S.ComplexPlot3D, range, minRe, minIm, maxRe, maxIm,
+        engine)) {
+      return F.NIL;
+    }
+    if (maxRe < minRe) {
+      double swap = minRe;
+      minRe = maxRe;
+      maxRe = swap;
+    }
+    if (maxIm < minIm) {
+      double swap = minIm;
+      minIm = maxIm;
+      maxIm = swap;
     }
 
     int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS], 50);
@@ -284,6 +305,7 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
+    PlotEndpoints.cornerMessage(newSymbol);
     // The surface is read by its colour, so draws no mesh over it and outlines the domain
     // in black instead. Both are changes of default only: they are applied with override so that
     // the options keep the positions the shared X_* constants name them by. Declaring them ahead

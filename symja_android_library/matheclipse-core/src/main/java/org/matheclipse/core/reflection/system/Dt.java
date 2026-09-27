@@ -1,5 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -11,6 +17,21 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <code>Dt(f, x)</code> - the total derivative of <code>f</code> with respect to <code>x</code>.
+ *
+ * <p>
+ * Every symbol in <code>f</code> which isn't a constant is assumed to depend on <code>x</code>. The
+ * total derivative is assembled from the partial derivatives of {@link D}:
+ *
+ * <pre>
+ * Dt(f, x) = D(f, x) + D(f, y1)*Dt(y1, x) + D(f, y2)*Dt(y2, x) + ...
+ * Dt(f)    = D(f, y1)*Dt(y1) + D(f, y2)*Dt(y2) + ...
+ * </pre>
+ *
+ * so all the differentiation rules of <code>D</code> (special functions, <code>Piecewise</code>,
+ * <code>Integrate</code>, ...) are available for <code>Dt</code> too.
+ */
 public class Dt extends AbstractFunctionOptionEvaluator {
 
   public Dt() {}
@@ -18,12 +39,18 @@ public class Dt extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
+    for (int i = 2; i <= argSize; i++) {
+      if (ast.get(i).isRuleAST()) {
+        // an unknown option was given - leave the expression unevaluated
+        return F.NIL;
+      }
+    }
     IAST constantsList = option[0].makeList();
     IExpr f = ast.arg1();
 
     // Dt(f) -> total differential
     if (argSize == 1) {
-      return totalDifferential(f, constantsList, engine);
+      return totalDerivative(f, F.NIL, constantsList, engine);
     }
 
     // Dt(f, x1, x2, ...) -> successive derivatives
@@ -32,6 +59,15 @@ public class Dt extends AbstractFunctionOptionEvaluator {
       boolean evaluated = false;
       for (int i = 2; i <= argSize; i++) {
         IExpr xi = ast.get(i);
+        if (temp.isAST(S.Dt) && i > 2) {
+          // an unevaluated Dt(y, x1, ...) - fold the variable in without evaluating, otherwise the
+          // folded Dt(y, x1, xi) would come back here
+          IExpr folded = foldSpec((IAST) temp, xi);
+          if (folded.isPresent()) {
+            temp = folded;
+            continue;
+          }
+        }
         IExpr nextDt = buildDt(temp, xi, constantsList);
         IExpr evalNext = engine.evaluateNIL(nextDt);
         if (evalNext.isPresent()) {
@@ -41,13 +77,10 @@ public class Dt extends AbstractFunctionOptionEvaluator {
           temp = nextDt;
         }
       }
-      if (evaluated) {
-        if (temp.equals(ast)) {
-          return F.NIL;
-        }
-        return temp;
+      if (temp.equals(ast) || temp.equals(originalAST)) {
+        return F.NIL;
       }
-      return F.NIL;
+      return evaluated || folded(temp, ast) ? temp : F.NIL;
     }
 
     IExpr x = ast.arg2();
@@ -55,215 +88,338 @@ public class Dt extends AbstractFunctionOptionEvaluator {
     // Dt(f, {x, n})
     if (x.isList()) {
       IAST xList = (IAST) x;
-      if (xList.isAST2()) {
-        IExpr var = xList.arg1();
-        IExpr nExpr = xList.arg2();
-        if (nExpr.isInteger()) {
-          int n = engine.evaluate(nExpr).toIntDefault();
-          if (n >= 0) {
-            IExpr temp = f;
-            for (int i = 0; i < n; i++) {
-              IExpr nextDt = buildDt(temp, var, constantsList);
-              IExpr evalNext = engine.evaluateNIL(nextDt);
-              temp = evalNext.isPresent() ? evalNext : nextDt;
+      if (xList.isAST2() && xList.arg2().isInteger()) {
+        IExpr variable = xList.arg1();
+        int n = xList.arg2().toIntDefault();
+        if (n >= 0) {
+          IExpr temp = f;
+          for (int i = 0; i < n; i++) {
+            IExpr evalNext = engine.evaluateNIL(buildDt(temp, variable, constantsList));
+            if (evalNext.isNIL()) {
+              // an unevaluated step like Dt(y, x) would be folded back into Dt(y, {x, n}) forever
+              return F.NIL;
             }
-            return temp;
+            temp = evalNext;
           }
+          return temp;
         }
       }
       return F.NIL;
     }
-
+    if (!isDifferentiationVariable(x)) {
+      return F.NIL;
+    }
     return totalDerivative(f, x, constantsList, engine);
   }
 
   /**
-   * Evaluate the total derivative Dt(f, x).
+   * Evaluate the total derivative <code>Dt(f, x)</code>, or the total differential
+   * <code>Dt(f)</code> if <code>x</code> is {@link F#NIL}.
    */
-  private IExpr totalDerivative(final IExpr f, final IExpr x, final IAST constants,
+  private static IExpr totalDerivative(final IExpr f, final IExpr x, final IAST constants,
       EvalEngine engine) {
+    if (f.isList() || f.isAST(S.Equal)) {
+      // thread over lists and equations
+      return ((IAST) f).mapThread(buildDt(F.Slot1, x, constants), 1);
+    }
     if (isConstant(f, constants)) {
       return F.C0;
     }
-    if (f.equals(x)) {
+    if (x.isPresent() && f.equals(x)) {
       return F.C1;
     }
-    if (f.isSymbol()) {
-      return F.NIL; // Keeps unevaluated Dt(y, x)
+    if (f.isAST(S.Dt)) {
+      return x.isPresent() ? nestedDt((IAST) f, x) : F.NIL;
     }
-
-    if (f.isAST()) {
-      IAST ast = (IAST) f;
-      switch (ast.headID()) {
-        case ID.Plus:
-          return ast.mapThread(buildDt(F.Slot1, x, constants), 1);
-
-        case ID.Times: {
-          IASTAppendable plus = F.PlusAlloc(ast.argSize());
-          for (int i = 1; i <= ast.argSize(); i++) {
-            IASTAppendable times = F.TimesAlloc(ast.argSize());
-            for (int j = 1; j <= ast.argSize(); j++) {
-              times
-                  .append(i == j ? engine.evaluate(buildDt(ast.get(j), x, constants)) : ast.get(j));
-            }
-            plus.append(times);
-          }
-          return engine.evaluate(plus);
-        }
-
-        case ID.Power: {
-          IExpr a = ast.base();
-          IExpr b = ast.exponent();
-          IExpr dtA = engine.evaluate(buildDt(a, x, constants));
-          IExpr dtB = engine.evaluate(buildDt(b, x, constants));
-          IExpr term1 = F.Times(dtB, F.Log(a));
-          IExpr term2 = F.Times(b, dtA, F.Power(a, F.CN1));
-          return engine.evaluate(F.Times(ast, F.Plus(term1, term2)));
-        }
-
-        case ID.Dt: {
-          // Dt(Dt(y, x), x) collapses to Dt(y, {x, 2}).
-          IAST dtAst = (IAST) f;
-          if (dtAst.argSize() >= 2) {
-            IExpr dtX = dtAst.arg2();
-            if (dtX.isList() && dtX.isAST2()) {
-              IAST list = (IAST) dtX;
-              if (list.arg1().equals(x) && list.arg2().isInteger()) {
-                int n = list.arg2().toIntDefault();
-                IASTAppendable newDt = F.ast(S.Dt);
-                newDt.append(dtAst.arg1());
-                newDt.append(F.List(x, F.ZZ(n + 1)));
-                for (int j = 3; j <= dtAst.argSize(); j++) {
-                  newDt.append(dtAst.get(j));
-                }
-                return newDt;
-              } else if (!list.arg1().equals(x)) {
-                return F.C0;
-              }
-            } else if (!dtX.isList()) {
-              if (dtX.equals(x)) {
-                IASTAppendable newDt = F.ast(S.Dt);
-                newDt.append(dtAst.arg1());
-                newDt.append(F.List(x, F.ZZ(2)));
-                for (int j = 3; j <= dtAst.argSize(); j++) {
-                  newDt.append(dtAst.get(j));
-                }
-                return newDt;
-              } else {
-                return F.C0;
-              }
-            }
-          }
-          return F.NIL;
-        }
-      }
-
-      // General Chain Rule calculation
-      IExpr head = ast.head();
-      int argSize = ast.argSize();
-      IASTAppendable plus = F.PlusAlloc(argSize);
-      for (int i = 1; i <= argSize; i++) {
-        IExpr expr = ast.get(i);
-        IExpr dtExpr = engine.evaluate(buildDt(expr, x, constants));
-        if (!dtExpr.isZero()) {
-          IAST partial = createDerivative(i, head, ast);
-          plus.append(F.Times(dtExpr, partial));
-        }
-      }
-      return engine.evaluate(plus);
+    if (!f.isAST()) {
+      // keeps Dt(y, x) and Dt(y) unevaluated
+      return F.NIL;
     }
-
-    return F.NIL;
+    return chainRule((IAST) f, x, constants, engine);
   }
 
   /**
-   * Evaluate the total differential Dt(f).
+   * Apply the chain rule <code>Dt(f, x) = D(f, x) + Sum(D(f, y)*Dt(y, x))</code> over all the
+   * symbols <code>y</code> which <code>f</code> depends on.
+   *
+   * <p>
+   * A nested <code>Dt(...)</code> expression is treated like an independent variable, and a
+   * function with a constant head like an independent constant, while the partial derivatives are
+   * computed; both are substituted back afterwards.
+   *
+   * @param f the function
+   * @param x the differentiation variable, or {@link F#NIL} for the total differential
+   * @param constants the value of the {@link S#Constants} option
+   * @param engine
+   * @return
    */
-  private IExpr totalDifferential(final IExpr f, final IAST constants, EvalEngine engine) {
-    if (isConstant(f, constants)) {
-      return F.C0;
+  private static IExpr chainRule(final IAST f, final IExpr x, final IAST constants,
+      EvalEngine engine) {
+    final Map<IExpr, IExpr> dummyToOriginal = new HashMap<IExpr, IExpr>();
+    final Map<IExpr, IExpr> originalToDummy = new HashMap<IExpr, IExpr>();
+    final Set<IExpr> variableDummies = new HashSet<IExpr>();
+    IExpr g = F.subst(f, node -> {
+      boolean isDt = node.isAST(S.Dt);
+      if (isDt || (node.isAST() && isConstantHead(node.head(), constants))) {
+        IExpr dummy = originalToDummy.get(node);
+        if (dummy == null) {
+          dummy = F.Dummy();
+          originalToDummy.put(node, dummy);
+          dummyToOriginal.put(dummy, node);
+          if (isDt) {
+            variableDummies.add(dummy);
+          }
+        }
+        return dummy;
+      }
+      return F.NIL;
+    });
+
+    Set<IExpr> variables = new LinkedHashSet<IExpr>();
+    collectVariables(g, variables, new HashSet<IExpr>(), constants);
+    // a dummy for a function with a constant head is a constant
+    variables.removeIf(v -> dummyToOriginal.containsKey(v) && !variableDummies.contains(v));
+    if (x.isPresent()) {
+      // the partial derivative D(g, x) already accounts for the symbols in x
+      if (x.isSymbol()) {
+        variables.remove(x);
+      } else {
+        variables.removeIf(v -> !x.isFree(v, true));
+      }
     }
-    if (f.isSymbol()) {
+
+    IASTAppendable plus = F.PlusAlloc(variables.size() + 1);
+    if (x.isPresent()) {
+      plus.append(F.D(g, x));
+    }
+    for (IExpr y : variables) {
+      IExpr original = dummyToOriginal.get(y);
+      plus.append(F.Times(F.D(g, y), buildDt(original == null ? y : original, x, constants)));
+    }
+    IExpr result = engine.evaluate(plus.oneIdentity0());
+    if (!dummyToOriginal.isEmpty()) {
+      result = engine.evaluate(F.subst(result, dummyToOriginal));
+    }
+    return result;
+  }
+
+  /**
+   * Fold a derivative of an unevaluated <code>Dt(...)</code> into a single <code>Dt</code> with
+   * the variables in canonical order, like in Mathematica:
+   *
+   * <pre>
+   * Dt(Dt(y, z), x)      -> Dt(y, x, z)
+   * Dt(Dt(y, x), y)      -> 0
+   * Dt(Dt(y, x), x)      -> Dt(y, {x, 2})
+   * Dt(Dt(y, {x, n}), x) -> Dt(y, {x, n + 1})
+   * </pre>
+   *
+   * @param dtAst the inner <code>Dt(y, spec1, spec2, ...)</code> expression
+   * @param x the variable of the outer derivative
+   * @return {@link F#NIL} for a total differential <code>Dt(y)</code> or a non-integer order
+   */
+  private static IExpr nestedDt(final IAST dtAst, final IExpr x) {
+    Map<IExpr, Integer> orders = new TreeMap<IExpr, Integer>();
+    orders.put(x, 1);
+    IASTAppendable options = F.ListAlloc();
+    for (int i = 2; i < dtAst.size(); i++) {
+      IExpr spec = dtAst.get(i);
+      if (spec.isRuleAST()) {
+        options.append(spec);
+        continue;
+      }
+      IExpr variable = spec;
+      int n = 1;
+      if (spec.isList()) {
+        if (!spec.isAST2() || !spec.second().isInteger()) {
+          return F.NIL;
+        }
+        variable = spec.first();
+        n = spec.second().toIntDefault();
+        if (n < 0) {
+          return F.NIL;
+        }
+      }
+      orders.merge(variable, n, Integer::sum);
+    }
+    if (orders.size() == 1 && orders.get(x) == 1) {
+      // the total differential Dt(y) isn't folded
       return F.NIL;
     }
-
-    if (f.isAST()) {
-      IAST ast = (IAST) f;
-      switch (ast.headID()) {
-        case ID.Plus:
-          return ast.mapThread(buildDt(F.Slot1, F.NIL, constants), 1);
-
-        case ID.Times: {
-          IASTAppendable plus = F.PlusAlloc(ast.argSize());
-          for (int i = 1; i <= ast.argSize(); i++) {
-            IASTAppendable times = F.TimesAlloc(ast.argSize());
-            for (int j = 1; j <= ast.argSize(); j++) {
-              times.append(
-                  i == j ? engine.evaluate(buildDt(ast.get(j), F.NIL, constants)) : ast.get(j));
-            }
-            plus.append(times);
-          }
-          return engine.evaluate(plus);
-        }
-
-        case ID.Power: {
-          IExpr a = ast.base();
-          IExpr b = ast.exponent();
-          IExpr dtA = engine.evaluate(buildDt(a, F.NIL, constants));
-          IExpr dtB = engine.evaluate(buildDt(b, F.NIL, constants));
-          IExpr term1 = F.Times(dtB, F.Log(a));
-          IExpr term2 = F.Times(b, dtA, F.Power(a, F.CN1));
-          return engine.evaluate(F.Times(ast, F.Plus(term1, term2)));
-        }
-
-        case ID.Dt: {
-          return F.NIL; // Keeps nested differentials safely unevaluated.
-        }
-      }
-
-      IExpr head = ast.head();
-      int argSize = ast.argSize();
-      IASTAppendable plus = F.PlusAlloc(argSize);
-      for (int i = 1; i <= argSize; i++) {
-        IExpr expr = ast.get(i);
-        IExpr dtExpr = engine.evaluate(buildDt(expr, F.NIL, constants));
-        if (!dtExpr.isZero()) {
-          IAST partial = createDerivative(i, head, ast);
-          plus.append(F.Times(dtExpr, partial));
-        }
-      }
-      return engine.evaluate(plus);
+    Integer selfOrder = orders.get(dtAst.arg1());
+    if (selfOrder != null && selfOrder > 0) {
+      // total derivatives commute: Dt(Dt(y, x), y) == Dt(Dt(y, y), x) == Dt(1, x) == 0
+      return F.C0;
     }
+    IASTAppendable result = F.ast(S.Dt, orders.size() + options.size() + 1);
+    result.append(dtAst.arg1());
+    for (Map.Entry<IExpr, Integer> entry : orders.entrySet()) {
+      int n = entry.getValue();
+      if (n == 1) {
+        result.append(entry.getKey());
+      } else if (n > 1) {
+        result.append(F.List(entry.getKey(), F.ZZ(n)));
+      }
+    }
+    result.appendArgs(options);
+    return result;
+  }
 
-    return F.NIL;
+  /**
+   * Test if the successive derivatives only folded the variables of <code>ast</code>, i.e.
+   * <code>result</code> is a canonical <code>Dt(...)</code> or a <code>0</code> from
+   * <code>Dt(y, x, y)</code>.
+   */
+  private static boolean folded(final IExpr result, final IAST ast) {
+    return result.isAST(S.Dt) || (result.isZero() && ast.arg1().isSymbol());
+  }
+
+  /**
+   * Fold the variable specification <code>x</code> or <code>{x, n}</code> into the unevaluated
+   * <code>dtAst</code>.
+   */
+  private static IExpr foldSpec(final IAST dtAst, final IExpr spec) {
+    if (spec.isList()) {
+      if (!spec.isAST2() || !spec.second().isInteger()) {
+        return F.NIL;
+      }
+      int n = spec.second().toIntDefault();
+      if (n < 0) {
+        return F.NIL;
+      }
+      IExpr result = dtAst;
+      for (int i = 0; i < n && result.isPresent(); i++) {
+        result = nestedDt((IAST) result, spec.first());
+      }
+      return result;
+    }
+    return spec.isRuleAST() ? F.NIL : nestedDt(dtAst, spec);
+  }
+
+  /**
+   * Collect the symbols in <code>expr</code> which <code>expr</code> can depend on. Function heads,
+   * constants and variables which are bound by a scoping construct like <code>Sum</code>,
+   * <code>Integrate</code>, <code>Function</code> or <code>Module</code> are skipped.
+   */
+  private static void collectVariables(IExpr expr, Set<IExpr> variables, Set<IExpr> bound,
+      IAST constants) {
+    if (expr.isSymbol()) {
+      ISymbol symbol = (ISymbol) expr;
+      if (symbol.isVariable() && !symbol.isBuiltInSymbolID() && !constants.contains(symbol)
+          && !bound.contains(symbol)) {
+        variables.add(symbol);
+      }
+      return;
+    }
+    if (!expr.isAST()) {
+      return;
+    }
+    IAST ast = (IAST) expr;
+    switch (ast.headID()) {
+      case ID.Sum:
+      case ID.Product:
+      case ID.NSum:
+      case ID.NProduct:
+      case ID.Table:
+      case ID.Do:
+      case ID.Integrate:
+      case ID.NIntegrate:
+        if (ast.argSize() >= 2) {
+          Set<IExpr> innerBound = new HashSet<IExpr>(bound);
+          for (int i = 2; i < ast.size(); i++) {
+            IExpr iterator = ast.get(i);
+            if (iterator.isList() && iterator.argSize() >= 1) {
+              if (iterator.first().isSymbol()) {
+                innerBound.add(iterator.first());
+              }
+              for (int j = 2; j < ((IAST) iterator).size(); j++) {
+                collectVariables(((IAST) iterator).get(j), variables, bound, constants);
+              }
+            } else if (iterator.isSymbol()) {
+              innerBound.add(iterator);
+            } else {
+              collectVariables(iterator, variables, bound, constants);
+            }
+          }
+          collectVariables(ast.arg1(), variables, innerBound, constants);
+          return;
+        }
+        break;
+      case ID.Function:
+        if (ast.argSize() >= 2) {
+          Set<IExpr> innerBound = new HashSet<IExpr>(bound);
+          if (ast.arg1().isList()) {
+            ((IAST) ast.arg1()).forEach(innerBound::add);
+          } else {
+            innerBound.add(ast.arg1());
+          }
+          collectVariables(ast.arg2(), variables, innerBound, constants);
+          return;
+        }
+        break;
+      case ID.Module:
+      case ID.Block:
+      case ID.With:
+        if (ast.isAST2() && ast.arg1().isList()) {
+          Set<IExpr> innerBound = new HashSet<IExpr>(bound);
+          for (IExpr local : (IAST) ast.arg1()) {
+            if (local.isAST(S.Set, 3) || local.isAST(S.SetDelayed, 3)) {
+              innerBound.add(local.first());
+              collectVariables(local.second(), variables, bound, constants);
+            } else {
+              innerBound.add(local);
+            }
+          }
+          collectVariables(ast.arg2(), variables, innerBound, constants);
+          return;
+        }
+        break;
+      default:
+        break;
+    }
+    // the head is a function name or operator, only the arguments are variables
+    ast.forEach(arg -> collectVariables(arg, variables, bound, constants));
+  }
+
+  /**
+   * Test if <code>x</code> can be used as the differentiation variable of <code>Dt(f, x)</code>.
+   */
+  private static boolean isDifferentiationVariable(IExpr x) {
+    if (x.isVariable()) {
+      return true;
+    }
+    return x.isAST() && !x.isList() && !x.isPlusTimesPower() && !x.isRuleAST();
   }
 
   /**
    * Checks if an expression is considered constant per Dt definitions.
    */
-  private boolean isConstant(IExpr expr, IAST constants) {
-    if (expr.isNumber()) {
+  private static boolean isConstant(IExpr expr, IAST constants) {
+    if (expr.isNumber() || expr.isString()) {
       return true;
     }
     if (expr.isSymbol()) {
       ISymbol sym = (ISymbol) expr;
-      if (sym.isConstantAttribute()) {
-        return true;
-      }
-      if (constants.contains(sym)) {
-        return true;
-      }
+      return sym.isConstantAttribute() || constants.contains(sym);
     }
-    if (expr.isAST()) {
-      return isConstant(expr.head(), constants);
+    return expr.isAST() && isConstantHead(expr.head(), constants);
+  }
+
+  /**
+   * A function whose head has the {@link ISymbol#CONSTANT} attribute or is listed in the
+   * {@link S#Constants} option is a constant.
+   */
+  private static boolean isConstantHead(IExpr head, IAST constants) {
+    if (!head.isSymbol() || head.isBuiltInSymbolID()) {
+      return false;
     }
-    return false;
+    return ((ISymbol) head).isConstantAttribute() || constants.contains(head);
   }
 
   /**
    * Helper utility for creating nested `Dt` nodes to feed back into the evaluation loop.
    */
-  private IAST buildDt(IExpr expr, IExpr x, IAST constants) {
+  private static IAST buildDt(IExpr expr, IExpr x, IAST constants) {
     IASTAppendable dt = F.ast(S.Dt);
     dt.append(expr);
     if (x.isPresent()) {
@@ -273,22 +429,6 @@ public class Dt extends AbstractFunctionOptionEvaluator {
       dt.append(F.Rule(S.Constants, constants));
     }
     return dt;
-  }
-
-  /**
-   * Create Derivative(..., 1, ...)(header)(arg1, arg2, ...)
-   */
-  private static IAST createDerivative(final int pos, final IExpr header, final IAST args) {
-    final int argSize = args.argSize();
-    IASTAppendable derivativeHead1 = F.ast(S.Derivative, argSize);
-    for (int i = 1; i <= argSize; i++) {
-      derivativeHead1.append(i == pos ? F.C1 : F.C0);
-    }
-    IASTAppendable derivativeHead2 = F.ast(derivativeHead1);
-    derivativeHead2.append(header);
-    IASTAppendable derivativeAST = F.ast(derivativeHead2, argSize);
-    derivativeAST.appendArgs(args);
-    return derivativeAST;
   }
 
   @Override

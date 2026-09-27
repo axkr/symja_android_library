@@ -1,9 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.builtin.MeshFunctions;
-import org.matheclipse.core.builtin.RegionPrimitives;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
+import org.matheclipse.core.eval.util.RegionPrimitives;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -93,6 +95,459 @@ public class Area extends AbstractFunctionOptionEvaluator {
         RegionPrimitives.requestsNumericIntegration(options), engine);
   }
 
+
+  /** How close to the plane a corner has to be to count as lying on it. */
+  private static final double PLANE_TOLERANCE = 1.0e-12;
+
+  /**
+   * The area of a <code>BooleanRegion</code> that is a flat cross section: a plane, together with
+   * the solids that cut it down.
+   *
+   * <p>
+   * A solid and a plane meet in a flat cross section - the shape a saw leaves - which has an area
+   * although neither of the two regions has one. That is a region an intersection cannot draw as a
+   * single shape, so it arrives here as <code>BooleanRegion(#1 && #2 &, {solid, plane})</code>: a
+   * cube cut by <code>x + y == 1</code> is a rectangle, a ball cut by a plane is a disk, and a ball
+   * and a cube together leave the part of that disk lying inside that rectangle. A plane that
+   * misses the solid cuts nothing.
+   *
+   * <p>
+   * Anything else - two solids of the same kind, no plane at all, a plane that is not flat in the
+   * coordinates - is left alone.
+   */
+  private static IExpr booleanRegion(IAST region, EvalEngine engine) {
+    List<IExpr> parts = new ArrayList<IExpr>();
+    if (!conjunctionParts(region, parts)) {
+      return F.NIL;
+    }
+    double[][] box = null;
+    double[] plane = null;
+    double[] ball = null;
+    for (int i = 0; i < parts.size(); i++) {
+      IExpr part = parts.get(i);
+      double[][] nextBox = box(part);
+      if (nextBox != null) {
+        if (box != null) {
+          return F.NIL;
+        }
+        box = nextBox;
+        continue;
+      }
+      double[] nextPlane = plane(part, engine);
+      if (nextPlane != null) {
+        if (plane != null) {
+          return F.NIL;
+        }
+        plane = nextPlane;
+        continue;
+      }
+      double[] nextBall = ball(part);
+      if (nextBall != null) {
+        if (ball != null) {
+          return F.NIL;
+        }
+        ball = nextBall;
+        continue;
+      }
+      return F.NIL;
+    }
+    if (plane == null || (box == null && ball == null)) {
+      // without a plane the parts meet in a solid, which has a volume and no area; without a solid
+      // the plane itself is unbounded
+      return F.NIL;
+    }
+    double area = crossSectionArea(box, ball, plane);
+    // a plane which misses the solid leaves no region to measure; the call stays as it is
+    return area > 0.0 ? F.num(area) : F.NIL;
+  }
+
+  /**
+   * The parts of a conjunction of <code>BooleanRegion</code>s, a nested one taken apart -
+   * intersecting a region with an intersection asks for all of them at once.
+   *
+   * @return whether the region is such a conjunction
+   */
+  private static boolean conjunctionParts(IExpr region, List<IExpr> parts) {
+    if (!region.isAST(S.BooleanRegion, 3) || !region.second().isList()) {
+      return false;
+    }
+    IAST list = (IAST) region.second();
+    if (!isConjunction(region.first(), list.argSize())) {
+      return false;
+    }
+    for (int i = 1; i <= list.argSize(); i++) {
+      IExpr part = list.get(i);
+      if (part.isAST(S.BooleanRegion)) {
+        if (!conjunctionParts(part, parts)) {
+          return false;
+        }
+      } else {
+        parts.add(part);
+      }
+    }
+    return true;
+  }
+
+  /** Whether the function of a <code>BooleanRegion</code> asks for all of its parts at once. */
+  private static boolean isConjunction(IExpr function, int partCount) {
+    if (!function.isAST(S.Function, 2) || !function.first().isAST(S.And)) {
+      return false;
+    }
+    IAST and = (IAST) function.first();
+    if (and.argSize() != partCount) {
+      return false;
+    }
+    for (int i = 1; i <= and.argSize(); i++) {
+      if (!and.get(i).isAST(S.Slot, 2) || and.get(i).first().toIntDefault() != i) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * An axis aligned box of the space as its lower and upper corner, or <code>null</code>.
+   * <code>Cube(c, a)</code> is the box of edge <code>a</code> about <code>c</code>.
+   */
+  private static double[][] box(IExpr region) {
+    if (region.isAST(S.Cuboid)) {
+      IAST corners = RegionPrimitives.boxCorners((IAST) region);
+      if (corners.isNIL() || corners.arg1().argSize() != 3) {
+        return null;
+      }
+      return corners(((IAST) corners.arg1()), ((IAST) corners.arg2()));
+    }
+    if (!region.isAST(S.Cube)) {
+      return null;
+    }
+    IAST cube = (IAST) region;
+    IExpr centre = cube.argSize() >= 1 ? cube.arg1() : F.List(F.C0, F.C0, F.C0);
+    if (!centre.isList() || centre.argSize() != 3) {
+      return null;
+    }
+    double edge = cube.argSize() >= 2 ? cube.arg2().evalfNaN() : 1.0;
+    if (!Double.isFinite(edge) || edge <= 0.0) {
+      return null;
+    }
+    double[][] box = new double[2][3];
+    for (int i = 0; i < 3; i++) {
+      double middle = ((IAST) centre).get(i + 1).evalfNaN();
+      if (!Double.isFinite(middle)) {
+        return null;
+      }
+      box[0][i] = middle - edge / 2.0;
+      box[1][i] = middle + edge / 2.0;
+    }
+    return box;
+  }
+
+  private static double[][] corners(IAST lower, IAST upper) {
+    double[][] box = new double[2][3];
+    for (int i = 0; i < 3; i++) {
+      double low = lower.get(i + 1).evalfNaN();
+      double high = upper.get(i + 1).evalfNaN();
+      if (!Double.isFinite(low) || !Double.isFinite(high)) {
+        return null;
+      }
+      box[0][i] = Math.min(low, high);
+      box[1][i] = Math.max(low, high);
+    }
+    return box;
+  }
+
+  /**
+   * A ball of the space as <code>{x, y, z, radius}</code>, or <code>null</code>. A
+   * <code>Sphere</code> is none: its surface meets a plane in a circle, which is a curve and has no
+   * area.
+   */
+  private static double[] ball(IExpr region) {
+    if (!region.isAST(S.Ball)) {
+      return null;
+    }
+    IAST region1 = (IAST) region;
+    IExpr centre = region1.argSize() >= 1 ? region1.arg1() : F.List(F.C0, F.C0, F.C0);
+    if (!centre.isList() || centre.argSize() != 3) {
+      return null;
+    }
+    double[] ball = new double[4];
+    for (int i = 0; i < 3; i++) {
+      ball[i] = ((IAST) centre).get(i + 1).evalfNaN();
+      if (!Double.isFinite(ball[i])) {
+        return null;
+      }
+    }
+    ball[3] = region1.argSize() >= 2 ? region1.arg2().evalfNaN() : 1.0;
+    if (!Double.isFinite(ball[3]) || ball[3] < 0.0) {
+      return null;
+    }
+    return ball;
+  }
+
+  /**
+   * A plane <code>ImplicitRegion(lhs == rhs, {x, y, z})</code> as <code>{a, b, c, d}</code> with
+   * <code>a x + b y + c z == d</code>, or <code>null</code> when the equation is not flat.
+   */
+  private static double[] plane(IExpr region, EvalEngine engine) {
+    if (!region.isAST(S.ImplicitRegion, 3) || !region.first().isAST(S.Equal, 3)
+        || !region.second().isList() || region.second().argSize() != 3) {
+      return null;
+    }
+    IAST variables = (IAST) region.second();
+    for (int i = 1; i <= 3; i++) {
+      if (!variables.get(i).isVariable()) {
+        return null;
+      }
+    }
+    IAST equation = (IAST) region.first();
+    IExpr form = engine.evaluate(F.Subtract(equation.arg1(), equation.arg2()));
+    double[] plane = new double[4];
+    IASTAppendable origin = F.ListAlloc(3);
+    for (int i = 1; i <= 3; i++) {
+      // the coefficient of each coordinate, which has to be a number for the equation to be a
+      // plane rather than a curved surface
+      IExpr slope = engine.evaluate(F.D(form, variables.get(i)));
+      plane[i - 1] = slope.evalfNaN();
+      if (!Double.isFinite(plane[i - 1]) || !slope.isNumber()) {
+        return null;
+      }
+      origin.append(F.Rule(variables.get(i), F.C0));
+    }
+    if (plane[0] == 0.0 && plane[1] == 0.0 && plane[2] == 0.0) {
+      return null;
+    }
+    double constant = engine.evaluate(F.subst(form, origin)).evalfNaN();
+    if (!Double.isFinite(constant)) {
+      return null;
+    }
+    plane[3] = -constant;
+    return plane;
+  }
+
+  /**
+   * The area of the cross section the plane is cut down to by the box and the ball, either of
+   * which may be missing.
+   *
+   * <p>
+   * Everything is measured in the plane's own two directions, where the box leaves a polygon and
+   * the ball a disk, so that the two shapes can be cut against each other.
+   */
+  private static double crossSectionArea(double[][] box, double[] ball, double[] plane) {
+    double length =
+        Math.sqrt(plane[0] * plane[0] + plane[1] * plane[1] + plane[2] * plane[2]);
+    double[] normal = {plane[0] / length, plane[1] / length, plane[2] / length};
+    // the point of the plane closest to the origin, which serves as the origin of its coordinates
+    double offset = plane[3] / length;
+    double[] origin = {normal[0] * offset, normal[1] * offset, normal[2] * offset};
+    double[][] basis = basis(normal);
+
+    double[] disk = null;
+    if (ball != null) {
+      double distance =
+          ball[0] * normal[0] + ball[1] * normal[1] + ball[2] * normal[2] - offset;
+      double radius = ball[3] * ball[3] - distance * distance;
+      if (radius <= 0.0) {
+        // the plane misses the ball, or touches it in the single point where it is tangent
+        return 0.0;
+      }
+      double[] middle = new double[3];
+      for (int i = 0; i < 3; i++) {
+        middle[i] = ball[i] - distance * normal[i];
+      }
+      double[] flat = project(middle, origin, basis);
+      disk = new double[] {flat[0], flat[1], Math.sqrt(radius)};
+    }
+    if (box == null) {
+      return Math.PI * disk[2] * disk[2];
+    }
+    List<double[]> corners = crossSectionCorners(box, plane, origin, basis);
+    if (corners.size() < 3) {
+      // the plane misses the box, touches it at a corner, or grazes one edge: nothing is cut
+      return 0.0;
+    }
+    sortAround(corners);
+    return disk == null ? polygonArea(corners) : diskPolygonArea(disk, corners);
+  }
+
+  /**
+   * The corners of the polygon the plane cuts out of the box, in the plane's own coordinates.
+   *
+   * <p>
+   * Every edge of the box that crosses the plane gives one corner.
+   */
+  private static List<double[]> crossSectionCorners(double[][] box, double[] plane,
+      double[] origin, double[][] basis) {
+    List<double[]> corners = new ArrayList<double[]>();
+    for (int axis = 0; axis < 3; axis++) {
+      for (int first = 0; first < 2; first++) {
+        for (int second = 0; second < 2; second++) {
+          double[] from = new double[3];
+          double[] to = new double[3];
+          for (int i = 0; i < 3; i++) {
+            int which = i == axis ? 0 : i == (axis + 1) % 3 ? first : second;
+            from[i] = box[which][i];
+            to[i] = box[which][i];
+          }
+          from[axis] = box[0][axis];
+          to[axis] = box[1][axis];
+          double[] crossing = crossing(from, to, plane);
+          if (crossing != null) {
+            add(corners, project(crossing, origin, basis));
+          }
+        }
+      }
+    }
+    return corners;
+  }
+
+  /** Where the segment meets the plane, or <code>null</code> when it does not cross it. */
+  private static double[] crossing(double[] from, double[] to, double[] plane) {
+    double atFrom = plane[0] * from[0] + plane[1] * from[1] + plane[2] * from[2] - plane[3];
+    double atTo = plane[0] * to[0] + plane[1] * to[1] + plane[2] * to[2] - plane[3];
+    if (Math.abs(atFrom) <= PLANE_TOLERANCE) {
+      return from;
+    }
+    if (Math.abs(atTo) <= PLANE_TOLERANCE) {
+      return to;
+    }
+    if (atFrom * atTo > 0.0) {
+      return null;
+    }
+    double t = atFrom / (atFrom - atTo);
+    double[] point = new double[3];
+    for (int i = 0; i < 3; i++) {
+      point[i] = from[i] + t * (to[i] - from[i]);
+    }
+    return point;
+  }
+
+  /** Add a corner, unless the same one is there already - box edges share their ends. */
+  private static void add(List<double[]> corners, double[] point) {
+    for (double[] corner : corners) {
+      if (Math.abs(corner[0] - point[0]) <= 1.0e-9 && Math.abs(corner[1] - point[1]) <= 1.0e-9) {
+        return;
+      }
+    }
+    corners.add(point);
+  }
+
+  /**
+   * Put the corners in order around their middle. An edge list alone does not say which corner
+   * follows which, and a polygon whose corners are in the wrong order is a different shape.
+   */
+  private static void sortAround(List<double[]> corners) {
+    double[] middle = new double[2];
+    for (double[] corner : corners) {
+      middle[0] += corner[0] / corners.size();
+      middle[1] += corner[1] / corners.size();
+    }
+    corners.sort((a, b) -> Double.compare(Math.atan2(a[1] - middle[1], a[0] - middle[0]),
+        Math.atan2(b[1] - middle[1], b[0] - middle[0])));
+  }
+
+  /** The area of a polygon given by its corners in order. */
+  private static double polygonArea(List<double[]> corners) {
+    double sum = 0.0;
+    for (int i = 0; i < corners.size(); i++) {
+      sum += cross2(corners.get(i), corners.get((i + 1) % corners.size()));
+    }
+    return Math.abs(sum) / 2.0;
+  }
+
+  /**
+   * The area of the part of a disk that lies inside a polygon.
+   *
+   * <p>
+   * The polygon is cut into triangles from the middle of the disk, and each triangle contributes
+   * the part of itself that is inside the circle: a straight piece where the triangle's far side
+   * runs inside the circle, and a circular wedge where it runs outside. The pieces are signed, so
+   * that the ones a triangle reaching around the middle counts twice cancel again.
+   */
+  private static double diskPolygonArea(double[] disk, List<double[]> corners) {
+    double area = 0.0;
+    for (int i = 0; i < corners.size(); i++) {
+      double[] from = relative(corners.get(i), disk);
+      double[] to = relative(corners.get((i + 1) % corners.size()), disk);
+      area += insideCircle(from, to, disk[2]);
+    }
+    return Math.abs(area);
+  }
+
+  private static double[] relative(double[] point, double[] disk) {
+    return new double[] {point[0] - disk[0], point[1] - disk[1]};
+  }
+
+  /** The signed area of the part of the triangle <code>(0, from, to)</code> inside the circle. */
+  private static double insideCircle(double[] from, double[] to, double radius) {
+    double[] step = {to[0] - from[0], to[1] - from[1]};
+    double along = step[0] * step[0] + step[1] * step[1];
+    if (along <= 0.0) {
+      return 0.0;
+    }
+    double half = from[0] * step[0] + from[1] * step[1];
+    double outside = from[0] * from[0] + from[1] * from[1] - radius * radius;
+    double discriminant = half * half - along * outside;
+    if (discriminant <= 0.0) {
+      return sector(from, to, radius);
+    }
+    double root = Math.sqrt(discriminant);
+    double enter = (-half - root) / along;
+    double leave = (-half + root) / along;
+    if (enter >= 1.0 || leave <= 0.0) {
+      // the side's own line meets the circle, but the side itself stays outside of it
+      return sector(from, to, radius);
+    }
+    enter = Math.max(enter, 0.0);
+    leave = Math.min(leave, 1.0);
+    double[] in = {from[0] + enter * step[0], from[1] + enter * step[1]};
+    double[] out = {from[0] + leave * step[0], from[1] + leave * step[1]};
+    return sector(from, in, radius) + cross2(in, out) / 2.0 + sector(out, to, radius);
+  }
+
+  /** The signed area of the circular wedge between two directions. */
+  private static double sector(double[] from, double[] to, double radius) {
+    return 0.5 * radius * radius
+        * Math.atan2(cross2(from, to), from[0] * to[0] + from[1] * to[1]);
+  }
+
+  private static double cross2(double[] a, double[] b) {
+    return a[0] * b[1] - a[1] * b[0];
+  }
+
+  /** Two directions at right angles within the plane of the normal. */
+  private static double[][] basis(double[] normal) {
+    double[] first = Math.abs(normal[0]) < 0.9 ? new double[] {1, 0, 0} : new double[] {0, 1, 0};
+    double[] u = cross(normal, first);
+    normalize(u);
+    double[] v = cross(normal, u);
+    normalize(v);
+    return new double[][] {u, v};
+  }
+
+  /** A point of the plane in the plane's own coordinates. */
+  private static double[] project(double[] point, double[] origin, double[][] basis) {
+    double[] flat = new double[2];
+    for (int i = 0; i < 3; i++) {
+      flat[0] += (point[i] - origin[i]) * basis[0][i];
+      flat[1] += (point[i] - origin[i]) * basis[1][i];
+    }
+    return flat;
+  }
+
+  private static double[] cross(double[] a, double[] b) {
+    return new double[] {a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0]};
+  }
+
+  private static void normalize(double[] vector) {
+    double length = Math.sqrt(
+        vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2]);
+    if (length > 0.0) {
+      for (int i = 0; i < 3; i++) {
+        vector[i] /= length;
+      }
+    }
+  }
+
   /**
    * The closed form area of a two dimensional region primitive.
    *
@@ -104,6 +559,8 @@ public class Area extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     switch (headID) {
+      case ID.BooleanRegion:
+        return booleanRegion(geoForm, engine);
       case ID.Disk:
       case ID.Ball:
         // in the plane a ball is a disk

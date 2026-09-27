@@ -19,6 +19,9 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.graph.SimpleGraph;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.GraphicsUtil;
+import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
@@ -37,8 +40,8 @@ import org.matheclipse.parser.trie.Trie;
  *
  * <p>
  * This class provides conversion utilities between JGraphT graphs and the project's expression
- * representations (IAST/IASTAppendable), support for VisJS JavaScript output, and helpers to
- * produce adjacency matrices in sparse array form. The generic type parameter T denotes the edge
+ * representations (IAST/IASTAppendable), and helpers to produce adjacency matrices in sparse array
+ * form. The generic type parameter T denotes the edge
  * object type used by the underlying graph (typically {@code ExprEdge} or
  * {@code ExprWeightedEdge}).
  * </p>
@@ -67,12 +70,10 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
       options = (IAST) fullForm.arg3();
     }
 
-    // Check if the input is in the SparseArray CSR format: {Null, SparseArray(...)}
-    if (edgesArg.isList()//
-        && edgesArg.isAST2() //
-        && edgesArg.first() == S.Null //
-        && (edgesArg.second() instanceof SparseArrayExpr)) {
-      return createGraph(vertices, (SparseArrayExpr) edgesArg.second(), options);
+    // the internal form {directed, undirected}, each side Null, a SparseArray adjacency matrix or
+    // a list of 1-based index pairs - what a SparseArray cached or Compress restored graph carries
+    if (isInternalEdges(edgesArg)) {
+      return createGraph(vertices, edgesArg.first(), edgesArg.second(), options);
     }
 
     IAST edges = (IAST) edgesArg;
@@ -124,13 +125,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         IExpr source = edgeAST.arg1();
         IExpr target = edgeAST.arg2();
         IExpr weight = weights.get(i);
-        ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
-        if (edge != null) {
-          double edgeWeightValue = F.eval(weight).evalfNaN();
-          if (!Double.isNaN(edgeWeightValue)) {
-            weightedGraph.setEdgeWeight(edge, edgeWeightValue);
-          }
-        }
+        setWeight(weightedGraph, weightedGraph.addEdge(source, target), F.eval(weight));
       }
     } else {
       Graph<IExpr, ExprEdge> unweightedGraph = (Graph<IExpr, ExprEdge>) graph;
@@ -145,16 +140,39 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
   }
 
   /**
-   * Create a new JGraphT Graph instance from the SparseArray input format.
-   * 
-   * @param <T>
+   * Whether <code>edges</code> is the internal form <code>{directed, undirected}</code>: two sides
+   * each <code>Null</code>, a <code>SparseArray</code> or a list of index pairs, not both
+   * <code>Null</code>.
+   */
+  public static boolean isInternalEdges(IExpr edges) {
+    return edges.isList2() && isEdgeSide(edges.first()) && isEdgeSide(edges.second())
+        && !(edges.first() == S.Null && edges.second() == S.Null);
+  }
+
+  private static boolean isEdgeSide(IExpr side) {
+    if (side == S.Null || side instanceof SparseArrayExpr) {
+      return true;
+    }
+    if (!side.isList() || side.argSize() == 0) {
+      return false;
+    }
+    return ((IAST) side).forAll(pair -> pair.isList2() && pair.first().isInteger()
+        && pair.second().isInteger());
+  }
+
+  /**
+   * Create a new JGraphT Graph instance from the internal form <code>{directed, undirected}</code>.
+   * A graph with directed edges is directed; the adjacency matrix of the undirected side lists
+   * every edge in both directions, and gives it once.
+   *
    * @param vertices the list of graph vertices
-   * @param sparseArray the SparseArrayExpr representing the adjacency matrix
+   * @param directedSide <code>Null</code>, a <code>SparseArray</code> or a list of index pairs
+   * @param undirectedSide likewise
    * @param options the graph options, or F.NIL
    * @return a Graph instance
    */
-  public static <T> Graph<IExpr, T> createGraph(IAST vertices, SparseArrayExpr sparseArray,
-      IAST options) {
+  public static <T> Graph<IExpr, T> createGraph(IAST vertices, IExpr directedSide,
+      IExpr undirectedSide, IAST options) {
     boolean isWeighted = false;
     if (options.isList() && options.argSize() > 0 && options.arg1().isRuleAST()) {
       IAST rule = (IAST) options.arg1();
@@ -162,52 +180,81 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         isWeighted = true;
       }
     }
-
-    // Default to directed when creating from an adjacency matrix.
+    boolean directed = directedSide != S.Null;
     final Graph<IExpr, T> graph;
     if (isWeighted) {
-      graph =
-          (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>(
+      graph = directed
+          ? (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>(
+              ExprWeightedEdge.class)
+          : (Graph<IExpr, T>) new org.jgrapht.graph.DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>(
               ExprWeightedEdge.class);
     } else {
-      graph = (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedGraph<IExpr, ExprEdge>(
-          ExprEdge.class);
+      graph = directed
+          ? (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedGraph<IExpr, ExprEdge>(
+              ExprEdge.class)
+          : (Graph<IExpr, T>) new org.jgrapht.graph.DefaultUndirectedGraph<IExpr, ExprEdge>(
+              ExprEdge.class);
     }
     for (int i = 1; i <= vertices.argSize(); i++) {
       graph.addVertex(vertices.get(i));
     }
+    addEdges(graph, vertices, directedSide, false, isWeighted);
+    // in a mixed graph the undirected edges run both ways
+    addEdges(graph, vertices, undirectedSide, !directed, isWeighted);
+    if (directed && undirectedSide != S.Null) {
+      addEdges(graph, vertices, transposed(undirectedSide), false, isWeighted);
+    }
+    return graph;
+  }
 
-    // Iterate directly over the non-default entries in the sparse array's Trie structure
-    org.matheclipse.parser.trie.Trie<int[], IExpr> trie = sparseArray.toData();
-    for (org.matheclipse.parser.trie.TrieNode<int[], IExpr> entry : trie.nodeSet()) {
-      int[] key = entry.getKey();
+  /** The index pairs of a side the other way round; a SparseArray is symmetric already. */
+  private static IExpr transposed(IExpr side) {
+    if (side.isList()) {
+      return ((IAST) side).map(pair -> F.list(pair.second(), pair.first()), 1);
+    }
+    return S.Null;
+  }
 
-      // The sparse array for an adjacency matrix is 2D
-      if (key.length >= 2) {
-        // Symja sparse arrays are 1-based, aligning perfectly with IAST 1-based indexing
-        int row = key[0];
-        int col = key[1];
-
-        IExpr source = vertices.get(row);
-        IExpr target = vertices.get(col);
-
-        if (isWeighted) {
-          Graph<IExpr, ExprWeightedEdge> weightedGraph = (Graph<IExpr, ExprWeightedEdge>) graph;
-          ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
-          if (edge != null) {
-            double edgeWeightValue = entry.getValue().evalfNaN();
-            if (!Double.isNaN(edgeWeightValue)) {
-              weightedGraph.setEdgeWeight(edge, edgeWeightValue);
-            }
-          }
-        } else {
-          Graph<IExpr, ExprEdge> unweightedGraph = (Graph<IExpr, ExprEdge>) graph;
-          unweightedGraph.addEdge(source, target);
+  /**
+   * Add the edges of one side of the internal form.
+   *
+   * @param once whether a symmetric adjacency matrix gives each edge once, from its upper triangle
+   */
+  private static <T> void addEdges(Graph<IExpr, T> graph, IAST vertices, IExpr side,
+      boolean once, boolean isWeighted) {
+    if (side instanceof SparseArrayExpr) {
+      org.matheclipse.parser.trie.Trie<int[], IExpr> trie = ((SparseArrayExpr) side).toData();
+      for (org.matheclipse.parser.trie.TrieNode<int[], IExpr> entry : trie.nodeSet()) {
+        int[] key = entry.getKey();
+        // Symja sparse arrays are 1-based, aligning with IAST 1-based indexing
+        if (key.length >= 2 && (!once || key[0] <= key[1])) {
+          addEdge(graph, vertices, key[0], key[1], entry.getValue(), isWeighted);
         }
       }
+    } else if (side.isList()) {
+      for (IExpr pair : (IAST) side) {
+        addEdge(graph, vertices, pair.first().toIntDefault(), pair.second().toIntDefault(), F.C1,
+            isWeighted);
+      }
     }
+  }
 
-    return graph;
+  private static <T> void addEdge(Graph<IExpr, T> graph, IAST vertices, int row, int col,
+      IExpr weight, boolean isWeighted) {
+    if (row < 1 || row > vertices.argSize() || col < 1 || col > vertices.argSize()) {
+      return;
+    }
+    IExpr source = vertices.get(row);
+    IExpr target = vertices.get(col);
+    if (isWeighted) {
+      Graph<IExpr, ExprWeightedEdge> weightedGraph = (Graph<IExpr, ExprWeightedEdge>) graph;
+      ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
+      if (edge != null) {
+        setWeight(weightedGraph, edge, weight);
+      }
+    } else {
+      ((Graph<IExpr, ExprEdge>) graph).addEdge(source, target);
+    }
   }
 
 
@@ -232,39 +279,42 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         g = new DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class);
       }
 
+      if (vertices.isPresent()) {
+        for (int i = 1; i < vertices.size(); i++) {
+          g.addVertex(vertices.get(i));
+        }
+      }
       IAST list = arg1;
       for (int i = 1; i < list.size(); i++) {
         IAST edge = list.getAST(i);
         g.addVertex(edge.arg1());
         g.addVertex(edge.arg2());
-        g.addEdge(edge.arg1(), edge.arg2());
-      }
-
-      if (t == EdgeListType.DIRECTED) {
-        DefaultDirectedWeightedGraph gw = (DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>) g;
-        for (int i = 1; i < list.size(); i++) {
-          IAST edge = list.getAST(i);
-          double edgeWeightValue = edgeWeight.get(i).evalfNaN();
-          if (!Double.isNaN(edgeWeightValue)) {
-            gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeightValue);
-          }
-        }
-      } else {
-        DefaultUndirectedWeightedGraph gw =
-            (DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>) g;
-        for (int i = 1; i < list.size(); i++) {
-          IAST edge = list.getAST(i);
-          double edgeWeightValue = edgeWeight.get(i).evalfNaN();
-          if (!Double.isNaN(edgeWeightValue)) {
-            gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeightValue);
-          }
-        }
+        setWeight(g, g.addEdge(edge.arg1(), edge.arg2()), edgeWeight.get(i));
       }
 
       return newInstance(g);
     }
 
     return null;
+  }
+
+  /**
+   * Set the double weight JGraphT's algorithms use (if <code>weight</code> is numeric) and remember
+   * the exact weight for display.
+   *
+   * @param graph the weighted graph
+   * @param edge the new edge, or <code>null</code> if it wasn't added
+   * @param weight the weight as given by the user
+   */
+  private static void setWeight(Graph<IExpr, ExprWeightedEdge> graph, ExprWeightedEdge edge,
+      IExpr weight) {
+    if (edge != null) {
+      double edgeWeightValue = weight.evalfNaN();
+      if (!Double.isNaN(edgeWeightValue)) {
+        graph.setEdgeWeight(edge, edgeWeightValue);
+      }
+      edge.setExactWeight(weight);
+    }
   }
 
   /**
@@ -299,89 +349,13 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         if (weights == null) {
           weights = F.ListAlloc(edgeSet.size());
         }
-        weights.append(weightedEdge.weight());
+        weights.append(weightedEdge.weightExpr());
       } else if (edge instanceof ExprEdge) {
         ExprEdge exprEdge = (ExprEdge) edge;
         edges.append(F.Rule(exprEdge.lhs(), exprEdge.rhs()));
       }
     }
     return new IASTAppendable[] {edges, weights};
-  }
-
-  public static void edgesToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
-      Graph<IExpr, ExprEdge> g) {
-    Set<ExprEdge> edgeSet = g.edgeSet();
-    GraphType type = g.getType();
-    boolean first = true;
-    if (type.isDirected()) {
-      buf.append("var edges = new vis.DataSet([\n");
-      for (Object object : edgeSet) {
-        if (object instanceof ExprEdge) {
-          ExprEdge edge = (ExprEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-          buf.append(map.get(edge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(edge.rhs()));
-          // , arrows: { to: { enabled: true, type: 'arrow'}}
-          buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
-          buf.append("}\n");
-          first = false;
-        } else if (object instanceof ExprWeightedEdge) {
-          ExprWeightedEdge weightedEdge = (ExprWeightedEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-          buf.append(map.get(weightedEdge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(weightedEdge.rhs()));
-          // , arrows: { to: { enabled: true, type: 'arrow'}}
-          buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
-          buf.append("}\n");
-          first = false;
-        }
-      }
-    } else {
-      //
-      buf.append("var edges = new vis.DataSet([\n");
-      for (Object object : edgeSet) {
-        if (object instanceof ExprEdge) {
-          ExprEdge edge = (ExprEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-          buf.append(map.get(edge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(edge.rhs()));
-          buf.append("}\n");
-          first = false;
-        } else if (object instanceof ExprWeightedEdge) {
-          ExprWeightedEdge weightedEdge = (ExprWeightedEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-          buf.append(map.get(weightedEdge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(weightedEdge.rhs()));
-          buf.append("}\n");
-          first = false;
-        }
-      }
-    }
-    buf.append("]);\n");
   }
 
   public static void edgeToIExpr(GraphType type, Object edge, IASTAppendable edges,
@@ -393,7 +367,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
       } else {
         edges.append(F.UndirectedEdge(weightedEdge.lhs(), weightedEdge.rhs()));
       }
-      weights.append(weightedEdge.weight());
+      weights.append(weightedEdge.weightExpr());
     } else if (edge instanceof ExprEdge) {
       ExprEdge exprEdge = (ExprEdge) edge;
       // in a mixed graph the orientation is stored per edge, not per graph
@@ -433,7 +407,9 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         csrData.set(3, S.Pattern);
       }
 
-      IAST edgesArg = F.List(S.Null, sparseAST);
+      // {directed, undirected}, as in the reference implementation
+      IAST edgesArg = graph.getType().isDirected() ? F.List(sparseAST, S.Null)
+          : F.List(S.Null, sparseAST);
 
       IASTAppendable[] edgeData = edgesToIExpr(graph);
       if (edgeData[1].isNIL()) {
@@ -478,18 +454,13 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         int from = map.get(lhs);
         int to = map.get(rhs);
         trie.put(new int[] {from, to}, F.C1);
-        if (!type.isDirected()) {
+        // an undirected edge of a mixed graph counts in both directions
+        if (!type.isDirected() || exprEdge.isUndirected()) {
           trie.put(new int[] {to, from}, F.C1);
         }
       }
     }
     return new SparseArrayExpr(trie, new int[] {size, size}, F.C0, false);
-  }
-
-  private static void graphToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
-      AbstractBaseGraph<IExpr, ExprEdge> g) {
-    vertexToVisjs(map, buf, g);
-    edgesToVisjs(map, buf, g);
   }
 
   /**
@@ -500,30 +471,58 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
    * @return <code>null</code> if the graph type is <code>null</code>.
    */
   public static Graph<IExpr, ? extends IExprEdge> createGraph(Graph<IExpr, ?> graph, int newIndex) {
-    Graph<IExpr, ? extends IExprEdge> resultGraph;
     GraphType t = graph.getType();
     if (t == null) {
       return null;
     }
-    if (t.isDirected()) {
+    HashMap<IExpr, IExpr> hashMap = new HashMap<IExpr, IExpr>();
+    if (t.isWeighted()) {
+      // keep the edge weights
+      Graph<IExpr, ExprWeightedEdge> weightedGraph = t.isDirected()
+          ? new DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class)
+          : new DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class);
+      for (IExpr v : graph.vertexSet()) {
+        IInteger indexExpr = F.ZZ(newIndex++);
+        hashMap.put(v, indexExpr);
+        weightedGraph.addVertex(indexExpr);
+      }
+      Graph<IExpr, ExprWeightedEdge> source = (Graph<IExpr, ExprWeightedEdge>) graph;
+      for (ExprWeightedEdge e : source.edgeSet()) {
+        ExprWeightedEdge edge = weightedGraph.addEdge(hashMap.get(e.lhs()), hashMap.get(e.rhs()));
+        if (edge != null) {
+          weightedGraph.setEdgeWeight(edge, source.getEdgeWeight(e));
+          ExprWeightedEdge.copyExactWeight(e, edge);
+        }
+      }
+      return weightedGraph;
+    }
+    final boolean mixed = isMixedGraph(graph);
+    Graph<IExpr, ExprEdge> resultGraph;
+    if (mixed) {
+      resultGraph = new DirectedPseudograph<IExpr, ExprEdge>(ExprEdge.class);
+    } else if (t.isDirected()) {
       resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
     } else {
       resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
     }
 
-    HashMap<IExpr, IExpr> hashMap = new HashMap<IExpr, IExpr>();
     for (IExpr v : graph.vertexSet()) {
       IInteger indexExpr = F.ZZ(newIndex++);
       hashMap.put(v, indexExpr);
       resultGraph.addVertex(indexExpr);
     }
     Set<? extends IExprEdge> edgeSet = (Set<? extends IExprEdge>) graph.edgeSet();
+    int id = 1;
     for (IExprEdge e : edgeSet) {
-      IExpr v1 = e.lhs();
-      IExpr v2 = e.rhs();
-      IExpr lhs = hashMap.get(v1);
-      IExpr rhs = hashMap.get(v2);
-      resultGraph.addEdge(lhs, rhs);
+      IExpr lhs = hashMap.get(e.lhs());
+      IExpr rhs = hashMap.get(e.rhs());
+      if (mixed) {
+        // keep the undirected edges of a mixed graph
+        resultGraph.addEdge(lhs, rhs,
+            new ExprEdge(e instanceof ExprEdge && ((ExprEdge) e).isUndirected(), id++));
+      } else {
+        resultGraph.addEdge(lhs, rhs);
+      }
     }
     return resultGraph;
 
@@ -828,29 +827,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
     return F.mapSet(graph.vertexSet(), x -> x);
   }
 
-  private static void vertexToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
-      Graph<IExpr, ?> g) {
-    Set<IExpr> vertexSet = g.vertexSet();
-    buf.append("var nodes = new vis.DataSet([\n");
-    boolean first = true;
-    int counter = 1;
-    for (IExpr expr : vertexSet) {
-      // {id: 1, label: 'Node 1'},
-      if (first) {
-        buf.append("  {id: ");
-      } else {
-        buf.append(", {id: ");
-      }
-      buf.append(counter);
-      map.put(expr, counter++);
-      buf.append(", label: '");
-      buf.append(expr.toString());
-      buf.append("'}\n");
-      first = false;
-    }
-    buf.append("]);\n");
-  }
-
   /**
    * Return an array of 2 lists. At index 0 the list of edges. At index 1 the list of corresponding
    * weights.
@@ -879,63 +855,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
   // return new IASTAppendable[] {edges, weights};
   // }
 
-  private static void weightedEdgesToVisjs(Map<IExpr, Integer> map, StringBuilder buf,
-      Graph<IExpr, ExprWeightedEdge> graph) {
-
-    Set<ExprWeightedEdge> edgeSet = graph.edgeSet();
-    GraphType type = graph.getType();
-    boolean first = true;
-    if (type.isDirected()) {
-      buf.append("var edges = new vis.DataSet([\n");
-      for (Object object : edgeSet) {
-        if (object instanceof ExprWeightedEdge) {
-          ExprWeightedEdge edge = (ExprWeightedEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-
-          buf.append(map.get(edge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(edge.rhs()));
-
-          buf.append(", label: '");
-          buf.append(edge.weight());
-          buf.append("'");
-          // , arrows: { to: { enabled: true, type: 'arrow'}}
-          buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
-          buf.append("}\n");
-          first = false;
-        }
-      }
-    } else {
-      buf.append("var edges = new vis.DataSet([\n");
-      for (Object object : edgeSet) {
-        if (object instanceof ExprWeightedEdge) {
-          ExprWeightedEdge edge = (ExprWeightedEdge) object;
-          // {from: 1, to: 3},
-          if (first) {
-            buf.append("  {from: ");
-          } else {
-            buf.append(", {from: ");
-          }
-
-          buf.append(map.get(edge.lhs()));
-          buf.append(", to: ");
-          buf.append(map.get(edge.rhs()));
-          buf.append(", label: '");
-          buf.append(edge.weight());
-          buf.append("'");
-          buf.append("}\n");
-          first = false;
-        }
-      }
-    }
-    buf.append("]);\n");
-  }
-
   public static IExpr weightedGraphToAdjacencyMatrix(Graph<IExpr, ExprWeightedEdge> g) {
     Set<IExpr> vertexSet = g.vertexSet();
     int size = vertexSet.size();
@@ -960,12 +879,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
     return new SparseArrayExpr(trie, new int[] {size, size}, F.C0, false);
   }
 
-  private static void weightedGraphToVisjs(IdentityHashMap<IExpr, Integer> map, StringBuilder buf,
-      AbstractBaseGraph<IExpr, ExprWeightedEdge> g) {
-    vertexToVisjs(map, buf, g);
-    weightedEdgesToVisjs(map, buf, g);
-  }
-
   public static IExpr weightedGraphToWeightedAdjacencyMatrix(Graph<IExpr, ExprWeightedEdge> g) {
     Set<IExpr> vertexSet = g.vertexSet();
     int size = vertexSet.size();
@@ -982,9 +895,9 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
       IExpr rhs = edge.rhs();
       int from = map.get(lhs);
       int to = map.get(rhs);
-      trie.put(new int[] {from, to}, F.num(edge.weight()));
+      trie.put(new int[] {from, to}, edge.weightExpr());
       if (g.containsEdge(rhs, lhs)) {
-        trie.put(new int[] {to, from}, F.num(edge.weight()));
+        trie.put(new int[] {to, from}, edge.weightExpr());
       }
     }
     return new SparseArrayExpr(trie, new int[] {size, size}, F.C0, false);
@@ -1049,30 +962,6 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
     return options;
   }
 
-  // private static IExpr fullFormWeightedGraph(AbstractBaseGraph<IExpr, ExprWeightedEdge> graph) {
-  // IASTAppendable vertexes = vertexToIExpr(graph);
-  // IASTAppendable[] res = weightedEdgesToIExpr(graph);
-  // return F.Graph(vertexes, res[0], F.list(F.Rule(S.EdgeWeight, res[1])));
-  // }
-  /**
-   * Convert a Graph into a JavaScript visjs.org form
-   *
-   * @param graphExpr
-   * @return
-   */
-  public String graphToJSForm() {
-    GraphExpr<ExprEdge> gex = (GraphExpr<ExprEdge>) this;
-    AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) gex.toData();
-    IdentityHashMap<IExpr, Integer> map = new IdentityHashMap<IExpr, Integer>();
-    StringBuilder buf = new StringBuilder();
-    if (g.getType().isWeighted()) {
-      weightedGraphToVisjs(map, buf, (AbstractBaseGraph<IExpr, ExprWeightedEdge>) g);
-    } else {
-      graphToVisjs(map, buf, (AbstractBaseGraph<IExpr, ExprEdge>) g);
-    }
-    return buf.toString();
-  }
-
   @Override
   public int hashCode() {
     return (fData == null) ? 283 : 283 + fData.hashCode();
@@ -1114,11 +1003,14 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
 
   @Override
   public String toHTML() {
-    String javaScriptStr = graphToJSForm();
-    String html = Config.VISJS_PAGE;
-    html = StringUtils.replace(html, "`1`", javaScriptStr);
-    html = StringUtils.replace(html, "`2`", "var options = {};");
-    return html;
+    // the picture Graph draws everywhere else, as SVG in a plain page
+    IAST graphics = new GraphGraphics(this).toGraphics();
+    StringBuilder svg = new StringBuilder();
+    if (!graphics.isPresent()
+        || !GraphicsUtil.renderGraphics2DSVG(svg, graphics, EvalEngine.get())) {
+      return null;
+    }
+    return StringUtils.replace(Config.HTML_PAGE, "`1`", svg.toString());
   }
 
   @Override

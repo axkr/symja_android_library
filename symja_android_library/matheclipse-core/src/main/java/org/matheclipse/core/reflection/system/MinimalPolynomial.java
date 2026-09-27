@@ -1,5 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.numbertheory.NumberFieldUtils;
+
+import org.matheclipse.core.numbertheory.AlgebraicNumberField;
+
 import java.util.HashMap;
 import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
@@ -55,6 +59,24 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
 
 
   private IExpr computeMinimalPolynomial(IExpr s, ISymbol x, EvalEngine engine) {
+    if (AlgebraicNumberField.isObject(s) || s.isAST(S.Root, 3) || s.isAST(S.Root, 4)
+        || (s.isPower() && s.base().isE())) {
+      // AlgebraicNumber and Root objects carry their minimal polynomial, and E^(I*Pi*r) is a root
+      // of unity with a cyclotomic one
+      IRational[] monic = NumberFieldUtils.minimalPolynomialCoefficients(s, engine);
+      if (monic != null) {
+        return engine.evaluate(NumberFieldUtils.primitiveIntegerPolynomial(monic, x));
+      }
+      if (!s.isPower()) {
+        return F.NIL;
+      }
+    }
+    if (!s.isFree(expr -> expr.isAST(S.Root), true)) {
+      // a Root object is a number, not a variable: compute in its field, or decline
+      IRational[] monic = NumberFieldUtils.polynomialInOneRoot(s, engine);
+      return monic == null ? F.NIL
+          : engine.evaluate(NumberFieldUtils.primitiveIntegerPolynomial(monic, x));
+    }
     return computeMinimalPolynomial(s, x, engine, true);
   }
 

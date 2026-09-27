@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -7,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.PlotShapeProbe;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotColorFunction;
@@ -51,7 +54,17 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     ISymbol thetaVar = (ISymbol) ((IAST) ast.arg2()).arg1();
     ISymbol phiVar = (ISymbol) ((IAST) ast.arg3()).arg1();
 
-    IAST functions = ast.arg1().isList() ? (IAST) ast.arg1() : F.List(ast.arg1());
+    // r(theta, phi) with a value of {1, 2} is two surfaces, which only its value can say
+    List<IExpr> written = new ArrayList<>();
+    if (ast.arg1().isList()) {
+      ((IAST) ast.arg1()).forEach(written::add, 1);
+    } else {
+      written.add(ast.arg1());
+    }
+    IAST functions = F.List(PlotShapeProbe.split(written,
+        PlotShapeProbe.rangeProbes(new IExpr[] {thetaVar, phiVar},
+            new double[] {theta[0], phi[0]}, new double[] {theta[1], phi[1]}),
+        PlotShapeProbe.SCALAR, false, engine).toArray(new IExpr[0]));
     int[] samples = Plot3DTools.plotPoints(options[Plot3DTools.X_PLOT_POINTS], 40);
     PlotColorFunction.Builder colorBuilder = Plot3DTools
         .plotColors(PlotColorFunction.Family.SPHERICAL_3D, options, S.SphericalPlot3D, engine);

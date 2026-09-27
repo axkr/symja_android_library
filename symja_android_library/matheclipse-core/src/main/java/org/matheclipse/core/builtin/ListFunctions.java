@@ -32,8 +32,8 @@ import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.NoEvalException;
-import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ResultException;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -54,10 +54,10 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.DispatchExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr.RangeException;
@@ -439,7 +439,7 @@ public final class ListFunctions {
           // Letting the exception through made `f() := (Table(Return(1), {2}); 9)` answer 1
           // instead of 9 - the Return escaped two levels out.
           //
-          // The returned value becomes the element. Mathematica instead leaves an unevaluated
+          // The returned value becomes the element. WMA instead leaves an unevaluated
           // `Return(1)` sitting in the list, which cannot be reproduced here: `Return` throws
           // whenever it is evaluated, and the result list is evaluated again on the way out.
           return e.getValue();
@@ -646,8 +646,8 @@ public final class ListFunctions {
       if (arg1.isDataset()) {
         // Append holds its arguments, so the dataset is only here once arg1 is evaluated - the
         // call still carries the unevaluated one, which is what onDatasetRows would look at
-        return IASTDataset.restoreDataset(
-            engine.evaluate(ast.setAtCopy(1, IASTDataset.normalizeDataset(arg1))));
+        return IASTDataset
+            .restoreDataset(engine.evaluate(ast.setAtCopy(1, IASTDataset.normalizeDataset(arg1))));
       }
       IAST arg1AST = Validate.checkASTOrAssociationType(ast, arg1, 1, engine);
       if (arg1AST.isNIL()) {
@@ -657,7 +657,13 @@ public final class ListFunctions {
       if (arg1.isAssociation()) {
         if (arg2.isRuleAST() || arg2.isListOfRules() || arg2.isAssociation()) {
           IAssociation result = ((IAssociation) arg1).copy();
-          result.appendRules((IAST) arg2);
+          // an existing key moves to the end: Append(<|a->1,b->2|>, a->9) is <|b->2,a->9|>
+          IAST rules = arg2.isRuleAST() ? F.list(arg2)
+              : arg2.isAssociation() ? ((IAssociation) arg2).normal(false) : (IAST) arg2;
+          for (int i = 1; i < rules.size(); i++) {
+            result.removeRule(rules.get(i).first());
+          }
+          result.appendRules(rules);
           return result;
         } else {
           // The argument is not a rule or a list of rules.
@@ -788,8 +794,8 @@ public final class ListFunctions {
         ISymbol sym = (ISymbol) arg1.first();
         return assignPartTo(sym, (IAST) arg1, S.Append, ast, engine);
       }
-      IExpr indexed =
-          assignIndexedTo(arg1, new AppendToFunction(engine.evaluate(ast.arg2())), ast.arg2(), engine);
+      IExpr indexed = assignIndexedTo(arg1, new AppendToFunction(engine.evaluate(ast.arg2())),
+          ast.arg2(), engine);
       if (indexed.isPresent()) {
         return indexed;
       }
@@ -2594,8 +2600,8 @@ public final class ListFunctions {
    * its bytes, answered as a byte array again.
    *
    * <p>
-   * A WebSocket frame is read this way - the header is dropped and the payload is what remains -
-   * so what comes back has to be a byte array, not the list it was worked out on.
+   * A WebSocket frame is read this way - the header is dropped and the payload is what remains - so
+   * what comes back has to be a byte array, not the list it was worked out on.
    */
   private static IExpr byteArrayPart(IAST ast, ByteArrayExpr bytes, EvalEngine engine) {
     IASTAppendable onList = ast.copyAppendable();
@@ -3139,6 +3145,10 @@ public final class ListFunctions {
       RecursionData recursionData =
           new RecursionData(level, matcher, positionConverter, headOffset);
       recursionData.positionRecursive(ast, cloneList);
+      if (level.getFromLevel() == 0 && matcher.test(ast)) {
+        // the whole expression is at level 0, and comes last in depth-first order
+        throw new ResultException(F.CEmptyList);
+      }
     }
 
     @Override
@@ -5379,8 +5389,8 @@ public final class ListFunctions {
         ISymbol sym = (ISymbol) arg1.first();
         return assignPartTo(sym, (IAST) arg1, S.Prepend, ast, engine);
       }
-      IExpr indexed =
-          assignIndexedTo(arg1, new PrependToFunction(engine.evaluate(ast.arg2())), ast.arg2(), engine);
+      IExpr indexed = assignIndexedTo(arg1, new PrependToFunction(engine.evaluate(ast.arg2())),
+          ast.arg2(), engine);
       if (indexed.isPresent()) {
         return indexed;
       }
@@ -5629,8 +5639,8 @@ public final class ListFunctions {
 
   /**
    * Test if <code>rules</code> is a list of rule sets in which at least one element is an
-   * {@link IAssociation}, so that the replacement threads over the elements like it does for a
-   * list of lists of rules. <code>{{x -> a}, &lt;|x -> b|&gt;}</code> is such a list,
+   * {@link IAssociation}, so that the replacement threads over the elements like it does for a list
+   * of lists of rules. <code>{{x -> a}, &lt;|x -> b|&gt;}</code> is such a list,
    * <code>{x -> a, x -> b}</code> - a plain list of rules - is not.
    *
    * @param rules the second argument of a replacement function
@@ -7056,7 +7066,8 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // Table[..., {Subscript[a, 1], 3}]: a subscript as the iterator variable, or a formal symbol
-      IExpr localized = org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
+      IExpr localized =
+          org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
       if (localized != null) {
         return localized;
       }
@@ -7082,32 +7093,14 @@ public final class ListFunctions {
       if (ast.size() <= 2) {
         return F.NIL;
       }
-      final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-      try {
-        for (int i = 2; i < ast.size(); i++) {
-          IExpr arg = ast.get(i);
-          if (arg.isList()) {
-            iterList.add(Iterator.create((IAST) arg, i, engine));
-          } else {
-            IExpr evaledArg = engine.evaluate(arg);
-            if (evaledArg.isReal()) {
-              iterList.add(Iterator.create(F.list(evaledArg), i, engine));
-            } else {
-              // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
-              return Errors.printMessage(ast.topHead(), "nliter", F.list(arg, F.ZZ(i)), engine);
-            }
-          }
-        }
-      } catch (final ArrayIndexOutOfBoundsException e) {
-        return Errors.printMessage(ast.topHead(), e, engine);
-      }
-      return generate(ast.topHead(), iterList, resultList, ast.arg1(), defaultValue, false, engine);
+      return generate(ast.topHead(), Iterator.createIterators(ast, false, engine), resultList,
+          ast.arg1(), defaultValue, false, engine);
     }
 
     /**
-     * Like {@link #evaluateTable(IAST, IAST, IExpr, EvalEngine)}, but every argument is taken as an
-     * iterator specification without checking it first, and an iterator which does not determine
-     * the values it iterates over aborts the generation instead of being skipped.
+     * Like {@link #evaluateTable(IAST, IAST, IExpr, EvalEngine)}, but an argument which is not a
+     * list is taken as the only element of an iterator specification, and an iterator which does
+     * not determine the values it iterates over aborts the generation instead of being skipped.
      *
      * @see Product
      * @see Sum
@@ -7117,15 +7110,8 @@ public final class ListFunctions {
       if (ast.size() <= 2) {
         return F.NIL;
       }
-      final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-      try {
-        for (int i = 2; i < ast.size(); i++) {
-          iterList.add(Iterator.create(ast.get(i).makeList(), i, engine));
-        }
-      } catch (final ArrayIndexOutOfBoundsException e) {
-        return Errors.printMessage(ast.topHead(), e, engine);
-      }
-      return generate(ast.topHead(), iterList, resultList, ast.arg1(), defaultValue, true, engine);
+      return generate(ast.topHead(), Iterator.createIterators(ast, true, engine), resultList,
+          ast.arg1(), defaultValue, true, engine);
     }
 
     /**
@@ -7164,7 +7150,8 @@ public final class ListFunctions {
       try {
         final TableGenerator generator =
             new TableGenerator(iterList, resultList, new TableFunction(engine, expr), defaultValue);
-        return throwOnInvalidIterator ? generator.tableThrowRecursive() : generator.tableRecursive();
+        return throwOnInvalidIterator ? generator.tableThrowRecursive()
+            : generator.tableRecursive();
       } catch (final ArrayIndexOutOfBoundsException e) {
         return Errors.printMessage(head, e, engine);
       } catch (final NoEvalException | ClassCastException | ArithmeticException e) {
@@ -8285,7 +8272,7 @@ public final class ListFunctions {
         // reads its variable, expansion point, coefficient list, exponents and denominator as if
         // they were elements of a collection and adds them together - Total(SeriesData(x,0,{1},0,
         // 3,1)) came out as {5+x}. They are the fields of an object, not a list of terms, and
-        // there is no total of a series to give; Mathematica leaves this alone as well.
+        // there is no total of a series to give.
         return F.NIL;
       }
       if (arg1.isASTOrAssociation()) {
@@ -8756,7 +8743,7 @@ public final class ListFunctions {
             padRecursive(origElement, dims, margins, padElements, depth + 1, isLeftArr, head));
       } else {
         // The cycle of the padding is lined up with the far end: counted from the end of the list
-        // on the left, from its start on the right. Mathematica (2026-09-11):
+        // on the left, from its start on the right:
         // PadLeft[{a, b, c}, 9, {x, y}] is {y, x, y, x, y, x, a, b, c} and
         // PadRight[{a, b, c}, 9, {x, y}] is {a, b, c, y, x, y, x, y, x}.
         int cyclicIndex;

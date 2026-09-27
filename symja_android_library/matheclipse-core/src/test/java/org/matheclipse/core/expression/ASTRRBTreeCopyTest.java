@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,36 @@ class ASTRRBTreeCopyTest {
     for (int i = 1; i <= size; i++) {
       assertEquals(F.ZZ(i), ast.get(i), message + ": element " + i);
     }
+  }
+
+  @Test
+  void testCloneIsIndependentOfTheOriginal() {
+    for (int size : new int[] {5, 32, 33, 100, 1000}) {
+      ASTRRBTree original = rrbList(size);
+      ASTRRBTree clone = original.clone();
+      assertNotSame(original, clone);
+      assertEquals(ASTRRBTree.class, clone.getClass());
+
+      clone.append(F.ZZ(size + 1));
+      clone.set(1, F.ZZ(-1));
+
+      assertIsRange(original, size, "original after changing the clone, size " + size);
+    }
+  }
+
+  @Test
+  void testAssociationCloneHasItsOwnKeys() {
+    ASTAssociation original = new ASTAssociation();
+    original.appendRules(F.list(F.Rule(F.a, F.C1), F.Rule(F.b, F.C2)));
+    ASTAssociation clone = original.clone();
+    assertEquals(ASTAssociation.class, clone.getClass());
+    assertEquals(F.C2, clone.getValue(F.b));
+
+    clone.appendRules(F.list(F.Rule(F.c, F.C3)));
+
+    assertEquals(F.C3, clone.getValue(F.c));
+    assertFalse(original.isKey(F.c));
+    assertEquals(2, original.argSize());
   }
 
   @Test

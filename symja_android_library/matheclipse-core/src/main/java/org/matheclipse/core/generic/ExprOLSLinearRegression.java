@@ -173,11 +173,40 @@ public class ExprOLSLinearRegression extends ExprAbstractLinearRegression {
   public double calculateTotalSumOfSquares() {
     FieldVector<IExpr> y = getY();
     double[] array = Convert.vector2List(y).toDoubleVector();
-    if (isNoIntercept()) {
-      return StatUtils.sumSq(array);
-    } else {
+    if (centered()) {
       return new SecondMoment().evaluate(array);
     }
+    return StatUtils.sumSq(array);
+  }
+
+  /**
+   * Whether the design matrix carries a constant column of its own.
+   *
+   * <p>
+   * {@code LinearModelFit} puts the intercept into the design matrix as an explicit column of 1s and
+   * then runs the regression "without intercept", so that the column is not added twice. The flag
+   * {@link #isNoIntercept()} therefore cannot say whether the model has a constant term - and a model
+   * that has one measures its fit against the mean of Y, not against zero. This is that other half.
+   */
+  private boolean constantBasis = false;
+
+  public void setConstantBasis(boolean constantBasis) {
+    this.constantBasis = constantBasis;
+  }
+
+  public boolean isConstantBasis() {
+    return constantBasis;
+  }
+
+  /**
+   * Whether the sums of squares are taken about the mean of Y.
+   *
+   * <p>
+   * They are whenever the model has a constant term, whether it was added by the regression or was
+   * already a column of the design matrix. Only a fit through the origin compares itself with zero.
+   */
+  private boolean centered() {
+    return !isNoIntercept() || constantBasis;
   }
 
   /**
@@ -239,7 +268,7 @@ public class ExprOLSLinearRegression extends ExprAbstractLinearRegression {
    */
   public double calculateAdjustedRSquared() {
     final double n = getX().getRowDimension();
-    if (isNoIntercept()) {
+    if (!centered()) {
       return 1 - (1 - calculateRSquared()) * (n / (n - getX().getColumnDimension()));
     } else {
       return 1 - (calculateResidualSumOfSquares().evalfNaN() * (n - 1))

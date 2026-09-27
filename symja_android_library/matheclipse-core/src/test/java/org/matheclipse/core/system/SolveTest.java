@@ -13,6 +13,48 @@ import org.matheclipse.core.interfaces.IExpr;
 public class SolveTest extends ExprEvaluatorTestCase {
 
 
+  /**
+   * An underdetermined system is solved for its last variables, the earlier ones staying free
+   * parameters, and svars says so when the variables were asked for. NSolve keeps the first ones.
+   * The answers are Mathematica's.
+   */
+  @Test
+  public void testUnderdeterminedSolvesForTheLastVariables() {
+    check("Solve(x + y == 3)", //
+        "{{y->3-x}}");
+    check("Solve({y + z == 1, y + z + x == 2})", //
+        "{{x->1,z->1-y}}");
+    check("Solve(x + y^2 == 2)", //
+        "{{x->2-y^2}}");
+    check("Solve(a*x + b == 0)", //
+        "{{b->-a*x}}");
+    check("Solve(x*y == 1)", //
+        "{{y->1/x}}");
+    check("Solve({y == 1, x == 2})", //
+        "{{x->2,y->1}}");
+    check("Solve(x + y == 2, {x, y})", //
+        "{{y->2-x}}");
+    check("Solve(x + 2*y == 3, {y, x})", //
+        "{{x->3-2*y}}");
+    check("Solve(a*x + b*y + c*z == d, {x, y, z})", //
+        "{{z->(d-a*x-b*y)/c}}");
+    check("Solve({2*x + y + 2*z == 2, x - y + 3*z == 1}, {x, y, z})", //
+        "{{y->1/5*(4-4*x),z->1/5*(3-3*x)}}");
+    check("Solve({x + y + z == 2, 2*x + 2*y + 2*z == 4, x - z == 1}, {x, y, z})", //
+        "{{y->3-2*x,z->-1+x}}");
+    check("Solve(x^2 + y^2 == 1, {x, y})", //
+        "{{y->-Sqrt(1-x^2)},{y->Sqrt(1-x^2)}}");
+    check("Solve(x + y == 2, Reals)", //
+        "{{y->2-x}}");
+    check("NSolve({x + y + z == 2, x - y == 1}, {x, y, z})", //
+        "{{x->0.5*(3.0-z),y->0.5*(1.0-z)}}");
+    // no solution, and a unique one, are not affected
+    check("Solve({x + y == 2, x + y == 3}, {x, y})", //
+        "{}");
+    check("Solve({x + 2*y == 3, 3*x + 4*y == 5, x + y + z == 1}, {x, y, z})", //
+        "{{x->-1,y->2,z->0}}");
+  }
+
   @Test
   public void testSimple() {
     check("Solve(True,{x,y,z})", //
@@ -50,6 +92,19 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-3},{x->3}}");
     check("Solve(Log(x) == 2, x)", //
         "{{x->E^2}}");
+  }
+
+  @Test
+  public void testSolveLogarithmsDoNotRestateTheEquation() {
+    // Taking logarithms of 1 + E^(1/v)*v == E^c gives an equation which exponentiates back to
+    // E^c - E^(1/v)*v == 1, whose logarithms are the equation again: StackOverflowError.
+    check("Solve(Log(1+E^(1/v)*v)==c, v)", //
+        "Solve(Log(1+E^(1/v)*v)==c,v)");
+    // one round of it is still what answers these
+    check("Solve(Log(1+E^(1/v)*v)==C-Log(x), v)", //
+        "{{v->-1/ProductLog(-1/(-1+E^C/x))}}");
+    check("Solve(E^(1/v)*v==c, v)", //
+        "{{v->-1/ProductLog(-1/c)}}");
   }
 
   @Test
@@ -114,6 +169,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // check(
     // "Eliminate(E^(-x)==0,x)", //
     // "False");
+    // the elimination is algebraic and doesn't decide whether the equation has a solution
     checkNumeric("Eliminate(Abs(x-1)==(-1),x)", //
         "True");
   }
@@ -473,6 +529,19 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1},{x->5,y->3},{x->5,y->5}}");
   }
 
+  /** Mod takes the sign of the divisor and Quotient rounds towards minus infinity. */
+  @Test
+  public void testSolveIntegersFlooredModQuotient() {
+    check("Solve({y==Mod(x,3), -4<=x<=0, -2<=y<=2},{x,y},Integers)", //
+        "{{x->-4,y->2},{x->-3,y->0},{x->-2,y->1},{x->-1,y->2},{x->0,y->0}}");
+    check("Solve({y==Mod(x,-3), 0<=x<=4, -2<=y<=2},{x,y},Integers)", //
+        "{{x->0,y->0},{x->1,y->-2},{x->2,y->-1},{x->3,y->0},{x->4,y->-2}}");
+    check("Solve({y==Quotient(x,3), -4<=x<=0, -2<=y<=2},{x,y},Integers)", //
+        "{{x->-4,y->-2},{x->-3,y->-1},{x->-2,y->-1},{x->-1,y->-1},{x->0,y->0}}");
+    check("Solve({y==Quotient(x,-3), 0<=x<=4, -2<=y<=2},{x,y},Integers)", //
+        "{{x->0,y->0},{x->1,y->-1},{x->2,y->-1},{x->3,y->-1},{x->4,y->-2}}");
+  }
+
   /**
    * An integer condition whose solution set was not proved finite stays unevaluated. Enumerating a
    * search window answers a different question, and an empty list would be plainly wrong.
@@ -541,7 +610,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x^5 - y^2 == 1, {x, y})", //
         "{{y->-I*Sqrt(1-x^5)},{y->I*Sqrt(1-x^5)}}");
     check("Solve(x + y == 1, {x, y})", //
-        "{{x->1-y}}");
+        "{{y->1-x}}");
     // on equal degree the later variable is solved for, keeping x as the free parameter
     check("Solve(x*y == 1, {x, y})", //
         "{{y->1/x}}");
@@ -756,6 +825,38 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "Solve({x<y,y>2},x)");
   }
 
+  /**
+   * <code>Solve(eqns, dom)</code> gives the domain in place of the variables, which are then found
+   * in the equations as the one argument form finds them. An <code>Element(x, dom)</code> which
+   * only repeats the domain says nothing more and is dropped rather than rejected as no equation.
+   */
+  @Test
+  public void testSolveDomainOnly() {
+    check("Solve(x^2==1, Reals)", //
+        "{{x->-1},{x->1}}");
+    check("Solve({x^2-4==0,x>0}, Reals)", //
+        "{{x->2}}");
+    check("Solve(x^2==-1, Reals)", //
+        "{}");
+    check("Solve(x^2==-1, Complexes)", //
+        "{{x->-I},{x->I}}");
+    check("Solve(x^2==4, Integers)", //
+        "{{x->-2},{x->2}}");
+    check("NSolve({x^2-4==0,x>0}, Reals)", //
+        "{{x->2.0}}");
+    check("NSolve({x^2+y==1,x+y^2==1,0<x<1,0<y<1}, Reals)", //
+        "{{x->0.618034,y->0.618034}}");
+    check("NSolve(x^5-x-1==0, Reals)", //
+        "{{x->1.1673}}");
+    // the same answer as the three argument form gives
+    check("Solve({x+y==3, Element(x,Reals)}, Reals)", //
+        "{{y->3-x}}");
+    check("Solve(x^2==1 && Element(x,Reals), Reals)", //
+        "{{x->-1},{x->1}}");
+    check("Solve(a && b, Booleans)", //
+        "{{a->True,b->True}}");
+  }
+
   @Test
   @Tag(TestTags.SLOW)
   public void testSolve() {
@@ -800,8 +901,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(2*Log(2)* x^2 - Log(4)*x^2 + x - 1 == 0, x)", //
         "{{x->1}}");
     // message - Solve: Maximum AST dimension 9223372036854775807 exceeded
+    // x == 0 is the root of the repeated factor t^30 with t = x^(1/210)
     check("Solve(x^(1/7)-x^(1/5)==x^(1/3)-x^(1/2),x)", //
-        "{{x->1}}");
+        "{{x->0},{x->1}}");
     check("Solve(Log(2,x)+4*Log(x,2)-5==0,x)", //
         "{{x->2},{x->16}}");
     // TODO
@@ -842,9 +944,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // -6x - 12y + 20z = 8
     // 6x + 62y - 18z = 12
     check("Solve({50*y+2*z==20, -6*x-12*y+20*z==8, 6*x+62*y-18*z==12},{x,y,z})", //
-        "{{x->1/75*(-160+256*z),y->1/25*(10-z)}}");
+        "{{y->1/256*(96-3*x),z->1/256*(160+75*x)}}");
     check("Solve({50*y+2*z==20, -6*x-12*y+20*z==8, 6*x+62*y-18*z==12},{x,y,z}) // N", //
-        "{{x->0.0133333*(-160.0+256.0*z),y->0.04*(10.0-z)}}");
+        "{{y->0.00390625*(96.0-3.0*x),z->0.00390625*(160.0+75.0*x)}}");
 
     // 0x + 50y + 2z = 20
     // -6x - 12y + 20z = 8
@@ -976,6 +1078,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(a^x==b,x)", //
         "{{x->Log(b)/Log(a)}}");
 
+    // the elimination is algebraic and doesn't decide whether the equation has a solution
     checkNumeric("Eliminate(Abs(x-1)==(-1),x)", //
         "True");
     checkNumeric("Solve(Abs(x-1)==(-1),x)", //
@@ -1929,11 +2032,195 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSolveHO7() {
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(Cos(x) + Tan(3*x) + Cos(5*x) ==0,x)", //
         "Solve(Cos(x)+Cos(5*x)+Tan(3*x)==0,x)");
+  }
+
+  @Test
+  public void testSolvePRESSTanMultipleAngle() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // PRESS (3) - Tan(3*x) is a rational function of t = Tan(x): 3*t^2-4*t-1 == 0
+    check("Solve(3*Tan(3*x)-Tan(x)+2==0,x)", //
+        "{{x->ConditionalExpression(ArcTan(1/3*(2-Sqrt(7)))+Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcTan(\n" //
+            + "1/3*(2+Sqrt(7)))+Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  @Test
+  public void testSolvePRESSSechTanh() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // PRESS (5) - Sech(x)^2 == 1-Tanh(x)^2 gives 3*t^2-4*t-4 == 0 for t = Tanh(x);
+    // the paper's real solution is Tanh(x) == -2/3
+    check("Solve(3*Sech(x)^2+4*Tanh(x)+1==0,x)", //
+        "{{x->ConditionalExpression(-ArcTanh(2/3)+I*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcTanh(\n" //
+            + "2)+I*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  @Test
+  public void testSolvePRESSLogarithms() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // PRESS 3.1 Isolation
+    check("Solve(Log(x^2-1)==3,x)", //
+        "{{x->-Sqrt(1+E^3)},{x->Sqrt(1+E^3)}}");
+    // PRESS (6) - Attraction and Collection give Log(x^2-1) == 3, which is isolated as in 3.1;
+    // the negative root is no solution: Log(-1-Sqrt(1+E^3))+Log(1-Sqrt(1+E^3)) == 3+I*2*Pi
+    check("Solve(Log(x+1)+Log(x-1)==3,x)", //
+        "{{x->Sqrt(1+E^3)}}");
+    check("Solve(Log(x+1)+Log(x-1)-3==0,x)", //
+        "{{x->Sqrt(1+E^3)}}");
+    // x == -2 is no solution
+    check("Solve(Log(x)+Log(x-3)==Log(10),x)", //
+        "{{x->5}}");
+    // x == 1 is no solution
+    check("Solve(Log(x-2)+Log(x-3)==Log(2),x)", //
+        "{{x->4}}");
+    // integer multiples: x^2/(x+2) == 1; x == -1 is no solution
+    check("Solve(2*Log(x)-Log(x+2)==0,x)", //
+        "{{x->2}}");
+    check("Solve(Log(x+1)-Log(x-1)==1,x)", //
+        "{{x->(-1-E)/(1-E)}}");
+    check("Solve(Log(2,x)+Log(2,x-2)==3,x)", //
+        "{{x->4}}");
+    // both roots of -x^2 == E are solutions
+    check("Solve(Log(x)+Log(-x)==1,x)", //
+        "{{x->-I*Sqrt(E)},{x->I*Sqrt(E)}}");
+    // a root with parameters cannot be checked
+    check("Solve(Log(x)+Log(x+a)==b,x)", //
+        "{{x->1/2*(-a-Sqrt(a^2+4*E^b))},{x->1/2*(-a+Sqrt(a^2+4*E^b))}}");
+  }
+
+  @Test
+  public void testSolvePRESSPolysolve() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // PRESS 3.2 - a disguised quadratic
+    check("Solve(x^4-4*x^2+3==0,x)", //
+        "{{x->-1},{x->1},{x->-Sqrt(3)},{x->Sqrt(3)}}");
+  }
+
+  @Test
+  public void testSolvePRESSHomogenization() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // PRESS 3.5 - the same equation as (7) in testSolveHO1(); real solutions 0 and Log(3)/2
+    check("Solve((E^x)^3-4*E^x+3/E^x==0,x)", //
+        "{{x->ConditionalExpression(I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n" //
+            + "I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*2*Pi*C(1)+Log(3)/2,C(1)∈Integers)},{x->ConditionalExpression(I*Pi+\n" //
+            + "I*2*Pi*C(1)+Log(3)/2,C(1)∈Integers)}}");
+  }
+
+  @Test
+  public void testSolvePRESSSinCos() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // PRESS 3.7 - a*Sin(x) + b*Cos(x) == c
+    check("Solve(2*Sin(x)+Cos(x)==1,x)", //
+        "{{x->ConditionalExpression(Pi-ArcTan(4/3)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n" //
+            + "2*Pi*C(1),C(1)∈Integers)}}");
+    // symbolic coefficients: the arguments of ArcTan are Cos(x) and Sin(x). Mathematica gives the
+    // same two families with Sqrt(a^4+a^2*b^2-a^2*c^2) instead of a*Sqrt(a^2+b^2-c^2)
+    check("Solve(a*Sin(x)+b*Cos(x)==c,x)", //
+        "{{x->ConditionalExpression(ArcTan((b*c-a*Sqrt(a^2+b^2-c^2))/(a^2+b^2),(a*c+b*Sqrt(a^\n" //
+            + "2+b^2-c^2))/(a^2+b^2))+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcTan((b*c+a*Sqrt(a^\n" //
+            + "2+b^2-c^2))/(a^2+b^2),(a*c-b*Sqrt(a^2+b^2-c^2))/(a^2+b^2))+2*Pi*C(1),C(1)∈Integers)}}");
+    // the residual of both families for some coefficients
+    check("Chop(N((a*Sin(x)+b*Cos(x)-c) /. (Solve(a*Sin(x)+b*Cos(x)==c,x) /. C(1)->1)" //
+        + " /. {a->2,b->3/2,c->1/3}),10^-9)", //
+        "{0,0}");
+    check("Chop(N((a*Sin(x)+b*Cos(x)-c) /. (Solve(a*Sin(x)+b*Cos(x)==c,x) /. C(1)->-2)" //
+        + " /. {a->-2,b->1/7,c->-5/3}),10^-9)", //
+        "{0,0}");
+    check("Solve(a*Sin(x)+b*Cos(x)==0,x)", //
+        "{{x->ConditionalExpression(ArcTan(-a/Sqrt(a^2+b^2),b/Sqrt(a^2+b^2))+2*Pi*C(1),C(\n" //
+            + "1)∈Integers)},{x->ConditionalExpression(ArcTan(a/Sqrt(a^2+b^2),-b/Sqrt(a^2+b^2))+\n" //
+            + "2*Pi*C(1),C(1)∈Integers)}}");
+    // the argument 3*x+1 is isolated afterwards
+    check("Solve(a*Sin(3*x+1)+b*Cos(3*x+1)-c==0,x)", //
+        "{{x->ConditionalExpression(-1/3+ArcTan((b*c-a*Sqrt(a^2+b^2-c^2))/(a^2+b^2),(a*c+b*Sqrt(a^\n" //
+            + "2+b^2-c^2))/(a^2+b^2))/3+2/3*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n" //
+            + "1/3+ArcTan((b*c+a*Sqrt(a^2+b^2-c^2))/(a^2+b^2),(a*c-b*Sqrt(a^2+b^2-c^2))/(a^2+b^\n" //
+            + "2))/3+2/3*Pi*C(1),C(1)∈Integers)}}");
+    check("Solve(2*Sin(x)+Cos(x)==c,x)", //
+        "{{x->ConditionalExpression(ArcTan(1/5*(c-2*Sqrt(5-c^2)),1/5*(2*c+Sqrt(5-c^2)))+2*Pi*C(\n" //
+            + "1),C(1)∈Integers)},{x->ConditionalExpression(ArcTan(1/5*(c+2*Sqrt(5-c^2)),1/5*(2*c-Sqrt(\n" //
+            + "5-c^2)))+2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  @Test
+  public void testSolvePRESSSimultaneous() {
+    // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
+    // PRESS (8) - the elimination of x gives an equation in Log(Sinh(y)) and
+    // Log(29-60*Cosh(y)+36*Cosh(y)^2), which is solved by attraction. The solution of the paper
+    // is x == -Log(2) == ArcSinh(-3/4), y == Log(3/2) == ArcCosh(13/12); y == -ArcCosh(13/12) is a
+    // root of the squared equation only and is dropped by the cross check.
+    check("Solve({Cosh(x)-3*Sinh(y)==0,2*Sinh(x)+6*Cosh(y)==5},{x,y})", //
+        "{{y->ConditionalExpression(ArcCosh(13/12)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcSinh(\n" //
+            + "5/2-3*Cosh(ArcCosh(13/12)+I*2*Pi*C(1))),C(1)∈Integers)}}");
+    check("N(Solve({Cosh(x)-3*Sinh(y)==0,2*Sinh(x)+6*Cosh(y)==5},{x,y}) /. C(1)->0)", //
+        "{{y->0.405465,x->-0.693147}}");
+  }
+
+  @Test
+  public void testHomogenizationSharedIntegerBase() {
+    // 4^x == (2^x)^2
+    check("Solve(4^x-2^x-2==0,x)", //
+        "{{x->1},{x->(I*Pi)/Log(2)}}");
+    check("Solve(9^x-4*3^x+3==0,x)", //
+        "{{x->0},{x->1}}");
+    // 4^(1+x/2) == 4*2^x
+    check("Solve(4^(1+x/2)+2^x==10,x)", //
+        "{{x->1}}");
+  }
+
+  @Test
+  public void testHomogenizationFractionalKernel() {
+    // t = Sqrt(Sin(x)) gives t == 1/2; the kernel has to be inverted as Sin(x) == (1/2)^2
+    check("Solve(Sin(x)+Sqrt(Sin(x))-3/4==0,x)", //
+        "{{x->ArcSin(1/4)}}");
+    // x^(1/4) has to be the kernel in both equations: t1^2+t2 == 5, t1+t2^2 == 17
+    check("Solve({Sqrt(x)+Sqrt(y)==5, x^(1/4)+y==17},{x,y})", //
+        "{{x->1,y->16}}");
+  }
+
+  @Test
+  public void testSolveNonFiniteSolution() {
+    // an equation has no solution, if the inverse function of its kernel has no finite value:
+    // ArcCoth(-1) == -Infinity, ArcTanh(1) == Infinity, ArcSech(0) == Infinity,
+    // ArcCsch(0) == ComplexInfinity, Log(0) == -Infinity and Tan(Pi/2) == ComplexInfinity
+    check("Solve(Coth(x)==-1,x)", //
+        "{}");
+    check("Solve(Coth(x)==1,x)", //
+        "{}");
+    check("Solve(Tanh(x)==1,x)", //
+        "{}");
+    check("Solve(Tanh(x)==-1,x)", //
+        "{}");
+    check("Solve(Sech(x)==0,x)", //
+        "{}");
+    check("Solve(Csch(x)==0,x)", //
+        "{}");
+    check("Solve(E^x==0,x)", //
+        "{}");
+    check("Solve(E^(I*5*x)==0,x)", //
+        "{}");
+    check("Solve(2^x==0,x)", //
+        "{}");
+    check("Solve(ArcTan(x)==Pi/2,x)", //
+        "{}");
+    // only the -Infinity family of Coth(x) == -1 is dropped
+    check("Solve(3*Csch(x)^2-Coth(x)==1,x)", //
+        "{{x->ConditionalExpression(ArcCoth(4/3)+I*Pi*C(1),C(1)∈Integers)}}");
+    // an equation whose solutions are merely not found stays unevaluated instead, see
+    // testSolveHO7(): Solve(Cos(x)+Tan(3*x)+Cos(5*x)==0,x)
+    check("Solve(Log(x)==Infinity,x)", //
+        "Solve(Log(x)==Infinity,x)");
+  }
+
+  @Test
+  public void testHomogenizationRepeatedFactor() {
+    // the repeated factor (I-t)^2 has the root of I-t
+    check("Solve((I-E^(I*x))^2==0,x)", //
+        "{{x->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers)}}");
   }
 
   @Test
@@ -2282,8 +2569,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check(
         "Solve(2sin(x)^(2)+3*sin(x) * cos(x)-5cos(x)^(2) == 0, x, GenerateConditions -> True)// ExpToTrig // FullSimplify",
         "{{x->ConditionalExpression(Pi*(-3/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
-            + "1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-ArcTan(5/2)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(\n" //
-            + "5/2)+2*Pi*C(1),C(1)∈Integers)}}");
+            + "1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(5/2)+2*Pi*C(1),C(\n" //
+            + "1)∈Integers)},{x->ConditionalExpression(1/2*(-Pi+ArcTan(20/21)+4*Pi*C(1)),C(1)∈Integers)}}");
 
     // \begin{aligned}
     // &\Leftrightarrow\left(3 \sin 3 x-4 \sin ^3 3 x\right)-\sqrt{3} \cos 9 x=1\\
@@ -2440,12 +2727,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testWrongVariables() {
     check(
         "Solve({a1==a4,a2==a3,a3==a5,a4==a3*t62/(t62+t63)+a8*t63/(t62+t63),a5==0,a6==1,a7==0,a8==a9*t22,a9==a10},{a1,a2,a3,a4,a5,a6,a7,a8,a9,a10})", //
-        "{{a1->(a10*t22*t63)/(t62+t63),a2->0,a3->0,a4->(a10*t22*t63)/(t62+t63),a5->0,a6->\n"
-            + "1,a7->0,a8->a10*t22,a9->a10}}");
+        "{{a10->(a1*t62+a1*t63)/(t22*t63),a2->0,a3->0,a4->a1,a5->0,a6->1,a7->0,a8->(a1*t62+a1*t63)/t63,a9->(a1*t62+a1*t63)/(t22*t63)}}");
     check(
         "Solve({x1==x4,x2==x3,x3==x5,x4==x3*t62/(t62+t63)+x8*t63/(t62+t63),x5==0,x6==1,x7==0,x8==x9*t22,x9==x10},{x1,x2,x3,x4,x5,x6,x7,x8,x9,x10})", //
-        "{{x1->(t22*t63*x10)/(t62+t63),x2->0,x3->0,x4->(t22*t63*x10)/(t62+t63),x5->0,x6->\n" //
-            + "1,x7->0,x8->t22*x10,x9->x10}}");
+        "{{x10->(t62*x1+t63*x1)/(t22*t63),x2->0,x3->0,x4->x1,x5->0,x6->1,x7->0,x8->(t62*x1+t63*x1)/t63,x9->(t62*x1+t63*x1)/(t22*t63)}}");
   }
 
   @Test
@@ -2993,7 +3278,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolveConstraints() {
     check("Solve({x + y==4, 1 <= x <= 3 && 0 <= y <= 2}, {x, y})", //
-        "{{x->ConditionalExpression(4-y,y>=1&&y<=2)}}");
+        "{{y->ConditionalExpression(4-x,x>=2&&x<=3)}}");
   }
 
   @Test
@@ -3110,19 +3395,27 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testTrigSystemPhase1() {
     // kernel soln s=Sin(x)=1/2, t=Sin(y)=1 -> x=Pi/6 (& 5Pi/6), y=Pi/2
     check("Solve({3*Sin(x)+2*Sin(y)==7/2, 2*Sin(x)-3*Sin(y)==-2},{x,y})", //
-        "{{y->Pi/2,x->Pi/6}}");
+        "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/\n" //
+            + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/\n" //
+            + "2+2*Pi*C(1),C(1)∈Integers)}}");
     // kernel soln Cos(x)=1/2, Cos(y)=-1/2 -> x=Pi/3 (&-Pi/3), y=2Pi/3 (&-2Pi/3)
     check("Solve({Cos(x)+Cos(y)==0, Cos(x)-Cos(y)==1},{x,y})", //
-        "{{y->2/3*Pi,x->Pi/3}}");
+        "{{x->ConditionalExpression(-Pi/3+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(-\n" //
+            + "2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/3+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(\n" //
+            + "2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/3+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(-\n" //
+            + "2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/3+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(\n" //
+            + "2/3*Pi+2*Pi*C(1),C(1)∈Integers)}}");
     // kernel soln Tan(x)=1, Tan(y)=-1 -> x=Pi/4, y=-Pi/4 (period Pi, one family each)
     check("Solve({Tan(x)+Tan(y)==0, 2*Tan(x)+Tan(y)==1},{x,y})", //
-        "{{y->ConditionalExpression(-Pi/4+Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcTan(Cot(Pi*(\n" //
-            + "1/4+C(1)))),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(Pi/4+Pi*C(1),C(1)∈Integers),y->ConditionalExpression(-Pi/\n" //
+            + "4+Pi*C(1),C(1)∈Integers)}}");
     // mixed heads: Sin(x)=1/2, Cos(y)=1/2 -> x=Pi/6, y=Pi/3
     check("Solve({2*Sin(x)+2*Cos(y)==2, 4*Sin(x)-2*Cos(y)==1},{x,y})", //
-        "{{y->ConditionalExpression(-Pi/3+2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcSin(\n" //
-            + "1-Sin(Pi*(1/6+2*C(1)))),C(1)∈Integers)},{y->ConditionalExpression(Pi/3+2*Pi*C(1),C(\n" //
-            + "1)∈Integers),x->ConditionalExpression(ArcSin(1-Cos(Pi*(1/3+2*C(1)))),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(-Pi/\n" //
+            + "3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/\n" //
+            + "3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(-Pi/\n" //
+            + "3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/\n" //
+            + "3+2*Pi*C(1),C(1)∈Integers)}}");
     // three variables: Sin(x)=1/2, Sin(y)=1, Sin(z)=-1/2 -> x=Pi/6, y=Pi/2, z=-Pi/6
     check(
         "Solve({Sin(x)+Sin(y)+Sin(z)==1, Sin(x)-Sin(y)+Sin(z)==-1, Sin(x)+Sin(y)-Sin(z)==2},{x,y,z})", //
@@ -3146,20 +3439,24 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testHyperbolicSystemPhase1() {
     // Sinh(x)=3/4 -> x=Log(2); Sinh(y)=4/3 -> y=Log(3) (ArcSinh[3/4]=Log2, ArcSinh[4/3]=Log3)
     check("Solve({4*Sinh(x)+3*Sinh(y)==7, 4*Sinh(x)-3*Sinh(y)==-1},{x,y})", //
-        "{{y->ConditionalExpression(I*Pi-ArcSinh(4/3)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(-ArcSinh(\n" //
-            + "1/4*(1-3*Sinh(ArcSinh(4/3)-I*2*Pi*C(1)))),C(1)∈Integers)},{y->ConditionalExpression(ArcSinh(\n" //
-            + "4/3)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(-ArcSinh(1/4*(1-3*Sinh(ArcSinh(\n" //
-            + "4/3)+I*2*Pi*C(1)))),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(I*Pi-ArcSinh(3/4)+I*2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(I*Pi-ArcSinh(\n" //
+            + "4/3)+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*Pi-ArcSinh(3/4)+I*2*Pi*C(\n" //
+            + "1),C(1)∈Integers),y->ConditionalExpression(ArcSinh(4/3)+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSinh(\n" //
+            + "3/4)+I*2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(I*Pi-ArcSinh(4/3)+I*2*Pi*C(\n" //
+            + "1),C(1)∈Integers)},{x->ConditionalExpression(ArcSinh(3/4)+I*2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(ArcSinh(\n" //
+            + "4/3)+I*2*Pi*C(1),C(1)∈Integers)}}");
     // Cosh(x)=5/4 -> x=+-Log(2); Cosh(y)=5/3 -> y=+-Log(3) (Cosh even -> +- branches)
     check("Solve({4*Cosh(x)+4*Cosh(y)==17, 4*Cosh(x)-4*Cosh(y)==7},{x,y})", //
-        "{{y->ConditionalExpression(-ArcCosh(5/4)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcCosh(\n" //
-            + "7/4+Cosh(ArcCosh(5/4)-I*2*Pi*C(1))),C(1)∈Integers)},{y->ConditionalExpression(ArcCosh(\n"
-            + "5/4)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcCosh(7/4+Cosh(ArcCosh(\n"
-            + "5/4)+I*2*Pi*C(1))),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(-ArcCosh(3)+I*2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(-ArcCosh(\n" //
+            + "5/4)+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-ArcCosh(3)+I*2*Pi*C(\n" //
+            + "1),C(1)∈Integers),y->ConditionalExpression(ArcCosh(5/4)+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcCosh(\n" //
+            + "3)+I*2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(-ArcCosh(5/4)+I*2*Pi*C(1),C(\n" //
+            + "1)∈Integers)},{x->ConditionalExpression(ArcCosh(3)+I*2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(ArcCosh(\n" //
+            + "5/4)+I*2*Pi*C(1),C(1)∈Integers)}}");
     // Tanh(x)=3/5 -> x=Log(2); Tanh(y)=4/5 -> y=Log(3) (ArcTanh[3/5]=Log2, ArcTanh[4/5]=Log3)
     check("Solve({5*Tanh(x)+5*Tanh(y)==7, 5*Tanh(x)-5*Tanh(y)==-1},{x,y})", //
-        "{{y->ConditionalExpression(ArcTanh(4/5)+I*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(-ArcTanh(\n"
-            + "1/5-Tanh(ArcTanh(4/5)+I*Pi*C(1))),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(ArcTanh(3/5)+I*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(ArcTanh(\n" //
+            + "4/5)+I*Pi*C(1),C(1)∈Integers)}}");
   }
 
   @Test
@@ -3209,5 +3506,51 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // x^(1/2) form (not Sqrt) + Tanh: Sqrt(x)=2 -> x=4; Tanh(y)=3/5 -> y=Log(2)
     check("Solve({x^(1/2)+Tanh(y)==13/5, x^(1/2)-Tanh(y)==7/5},{x,y})", //
         "{{x->4,y->ConditionalExpression(ArcTanh(3/5)+I*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  /**
+   * A root of the numerator where the equation is undefined isn't a solution (sympy #7870); an
+   * equation which cancels to an identity is solved by everything.
+   */
+  @Test
+  public void testSolveUndefinedRoots() {
+    // WMA keeps x->0, because 0/-Infinity is 0
+    check("Solve(x/Log(x)==0,x)", //
+        "{{x->0}}");
+    check("Solve(x/Exp(1/x)==0,x)", //
+        "{}");
+    check("Solve(x/Sin(x)==0,x)", //
+        "{}");
+    check("Solve(x*(x-1)*Csc(x)==0,x)", //
+        "{{x->1}}");
+    // without the message "Infinite expression 1/0"
+    check("Solve(x*Csc(x)==0,x)", //
+        "{}");
+    check("Solve(Sech(x)==0,x)", //
+        "{}");
+    check("Solve(x/(x-2)==0,x)", //
+        "{{x->0}}");
+    check("Solve((x^2-1)/(x-1)-x-1==0,x)", //
+        "{{}}");
+    check("Solve({(x^2-1)/(x-1)-x-1==0, y-1==0},{x,y})", //
+        "{{y->1}}");
+  }
+
+  /** A periodic family of real solutions belongs to the Reals domain. */
+  @Test
+  public void testSolveRealsPeriodic() {
+    check("Solve(Cos(x)==0, x, Reals)[[2]]", //
+        "{x->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers)}");
+    check("Length(Solve(Cos(x)==0, x, Reals))", //
+        "2");
+    check("Solve(Sin(x)==2, x, Reals)", //
+        "{}");
+    // the real member of a complex family; WMA: {{x->0},{x->0}} for Sinh
+    check("Solve(Sinh(x)==0, x, Reals)", //
+        "{{x->0}}");
+    check("Solve(Cosh(x)==1, x, Reals)", //
+        "{{x->0},{x->0}}");
+    check("Solve(Tanh(x)==0, x, Reals)", //
+        "{{x->0}}");
   }
 }

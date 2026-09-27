@@ -3,11 +3,9 @@ package org.matheclipse.core.system;
 import org.junit.jupiter.api.Test;
 
 /**
- * <code>CodeParser`</code>: reading Wolfram Language source as source.
- *
- * <p>
+ * 
  * The names print in lower case here because this suite runs in relaxed syntax, where every symbol
- * name is folded; under the Wolfram Language syntax the console uses they read
+ * name is folded; under the WMA syntax the console uses they read
  * <code>LeafNode[Token`Symbol, …]</code>.
  *
  * <p>
@@ -41,7 +39,8 @@ public class CodeParserTest extends ExprEvaluatorTestCase {
     check("CodeTokenize(\"a = 1\")[[All, 1]]", //
         "{Token`symbol,Token`whitespace,Token`operator,Token`whitespace,Token`integer}");
     // and each one says where it is
-    check("CodeTokenize(\"ab\", CodeParser`SourceConvention -> \"SourceCharacterIndex\")[[1, 3, Key(Source)]]", //
+    check(
+        "CodeTokenize(\"ab\", CodeParser`SourceConvention -> \"SourceCharacterIndex\")[[1, 3, Key(Source)]]", //
         "{1,2}");
   }
 
@@ -54,7 +53,8 @@ public class CodeParserTest extends ExprEvaluatorTestCase {
     check("CodeParser`CodeConcreteParse(\"f[1]\")[[2, 2, 1]]", //
         "groupsquare");
     // the group covers the whole bracketed run
-    check("CodeParser`CodeConcreteParse(\"f[1]\", CodeParser`SourceConvention -> \"SourceCharacterIndex\")[[2, 2, 3, Key(Source)]]", //
+    check(
+        "CodeParser`CodeConcreteParse(\"f[1]\", CodeParser`SourceConvention -> \"SourceCharacterIndex\")[[2, 2, 3, Key(Source)]]", //
         "{2,4}");
   }
 
@@ -63,9 +63,10 @@ public class CodeParserTest extends ExprEvaluatorTestCase {
     check("Needs(\"CodeParser`\")", //
         "");
     // the newline inside f[x,\ny] is inside the group, so it is not one of these
-    check("Cases(CodeParser`CodeConcreteParse(\"a = 1\\nf[x,\\ny]\\nb = 2\","
-        + " CodeParser`SourceConvention -> \"SourceCharacterIndex\")[[2]],"
-        + " LeafNode(Token`Newline, _, a_) :> Lookup(a, Source, Nothing))", //
+    check(
+        "Cases(CodeParser`CodeConcreteParse(\"a = 1\\nf[x,\\ny]\\nb = 2\","
+            + " CodeParser`SourceConvention -> \"SourceCharacterIndex\")[[2]],"
+            + " LeafNode(Token`Newline, _, a_) :> Lookup(a, Source, Nothing))", //
         "{{6,6},{14,14}}");
   }
 
@@ -87,8 +88,8 @@ public class CodeParserTest extends ExprEvaluatorTestCase {
   public void testALineBreakInsideAnExpressionDoesNotSplitIt() {
     defineSplitExpression();
     // Components/FakeMenuBrowser.wlx is written
-    //   Component[OptionsPattern[]] :=
-    //   With[{...}, ...]
+    // Component[OptionsPattern[]] :=
+    // With[{...}, ...]
     // and splitting it there left a definition of nothing followed by a loose body, which then
     // ran with no options around it - the whole menu came back as OptionValue["Plugins"].
     check("SplitExpression(\"f(x_) := \\nWith({y = 1}, y)\\ng(z_) := z\")", //
@@ -106,9 +107,10 @@ public class CodeParserTest extends ExprEvaluatorTestCase {
     check("SplitExpression(\"f(1) &\\ng = 2\") // Length", //
         "2");
     // the line break which does not end anything is not a Token`Newline at the top level
-    check("Cases(CodeParser`CodeConcreteParse(\"a :=\\n1\\nb = 2\","
-        + " CodeParser`SourceConvention -> \"SourceCharacterIndex\")[[2]],"
-        + " LeafNode(Token`Newline, _, x_) :> Lookup(x, Source, Nothing))", //
+    check(
+        "Cases(CodeParser`CodeConcreteParse(\"a :=\\n1\\nb = 2\","
+            + " CodeParser`SourceConvention -> \"SourceCharacterIndex\")[[2]],"
+            + " LeafNode(Token`Newline, _, x_) :> Lookup(x, Source, Nothing))", //
         "{{7,7}}");
   }
 

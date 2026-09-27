@@ -59,7 +59,7 @@ public class AssumptionFunctions {
 
   /**
    * <code>Matrices({d1,d2})</code> - the domain of the <code>d1</code> x <code>d2</code> matrices.
-   * The component domain defaults to {@link S#Complexes}, as in the Wolfram Language.
+   * The component domain defaults to {@link S#Complexes}.
    */
   private static final class Matrices extends AbstractEvaluator {
 
@@ -72,7 +72,7 @@ public class AssumptionFunctions {
             F.List(dimensions, F.C2, F.stringx("for a matrix")), engine);
       }
       // Matrices(dims) and Matrices(dims, domain) both canonicalize to the 3-argument form with
-      // an explicit empty symmetry {} - confirmed against real Mathematica (2026-09-12):
+      // an explicit empty symmetry {}:
       // Matrices({2,3},Reals) prints back as Matrices({2,3},Reals,{}).
       if (ast.isAST1()) {
         return F.Matrices((IAST) dimensions, S.Complexes);
@@ -96,7 +96,7 @@ public class AssumptionFunctions {
 
   /**
    * <code>Vectors(d)</code> - the domain of the vectors of length <code>d</code>. The component
-   * domain defaults to {@link S#Complexes}, as in the Wolfram Language.
+   * domain defaults to {@link S#Complexes}.
    */
   private static final class Vectors extends AbstractEvaluator {
 
@@ -262,8 +262,8 @@ public class AssumptionFunctions {
     private IExpr assumeDomain(final IExpr expr, final ISymbol domain, EvalEngine engine) {
       if (expr.isAST(S.Indexed, 3) && expr.first() instanceof IArraySymbol) {
         // a component of a symbolic array lies in the element domain the array declares
-        return SymbolicArrayFunctions
-            .domainSubset(((IArraySymbol) expr.first()).getDomain(), domain) ? S.True : F.NIL;
+        return SymbolicArrayFunctions.domainSubset(((IArraySymbol) expr.first()).getDomain(),
+            domain) ? S.True : F.NIL;
       }
       if (domain.isBuiltInSymbol()) {
         ISymbol truthValue;
@@ -448,12 +448,101 @@ public class AssumptionFunctions {
       IAssumptions oldAssumptions = engine.getAssumptions();
       try {
         engine.setAssumptions(assumptions);
-        return engine.evalWithoutNumericReset(expr);
+        IExpr result = engine.evalWithoutNumericReset(expr);
+        return decideRelation(result, assumptions, engine).orElse(result);
       } finally {
         engine.setAssumptions(oldAssumptions);
       }
     }
     return engine.evalWithoutNumericReset(expr);
+  }
+
+  /** At most this many relational assumptions are combined pairwise in {@link #keySum}. */
+  private static final int MAX_KEYS = 12;
+
+  /**
+   * Decide a relation which the evaluation left open with the assumptions: the sign of
+   * <code>lhs-rhs</code> decides it, e.g. <code>x^3 &gt; 0</code> for <code>x&gt;0</code> and
+   * <code>a &gt; c</code> for <code>a&gt;b &amp;&amp; b&gt;c</code>. An inequality assumption makes
+   * its variables real: <code>Element(x, Reals)</code> holds for <code>x^2&lt;1</code>.
+   *
+   * @return {@link F#NIL} if the relation isn't decided
+   */
+  private static IExpr decideRelation(IExpr expr, IAssumptions assumptions, EvalEngine engine) {
+    if (expr.isAST(S.Element, 3) && expr.second() == S.Reals && expr.first().isVariable()) {
+      IExpr x = expr.first();
+      return assumptions.relationalKeys().exists(key -> !key.isFree(x)) ? S.True : F.NIL;
+    }
+    if (!expr.isAST2()) {
+      return F.NIL;
+    }
+    IExpr head = expr.head();
+    if (head != S.Greater && head != S.Less && head != S.GreaterEqual && head != S.LessEqual
+        && head != S.Equal && head != S.Unequal) {
+      return F.NIL;
+    }
+    IExpr d = engine.evaluate(F.Subtract(expr.first(), expr.second()));
+    if (d.isNumber()) {
+      return F.NIL;
+    }
+    IExpr minusD = engine.evaluate(F.Negate(d));
+    boolean positive = d.isPositiveResult() || keySum(d, true, assumptions, engine);
+    boolean negative =
+        !positive && (minusD.isPositiveResult() || keySum(minusD, true, assumptions, engine));
+    boolean nonNegative =
+        positive || d.isNonNegativeResult() || keySum(d, false, assumptions, engine);
+    boolean nonPositive =
+        negative || d.isNonPositiveResult() || keySum(minusD, false, assumptions, engine);
+    if (head == S.Greater) {
+      return positive ? S.True : nonPositive ? S.False : F.NIL;
+    }
+    if (head == S.Less) {
+      return negative ? S.True : nonNegative ? S.False : F.NIL;
+    }
+    if (head == S.GreaterEqual) {
+      return nonNegative ? S.True : negative ? S.False : F.NIL;
+    }
+    if (head == S.LessEqual) {
+      return nonPositive ? S.True : positive ? S.False : F.NIL;
+    }
+    if (positive || negative) {
+      return head == S.Equal ? S.False : S.True;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * <code>d</code> is one or the sum of two relational assumptions which are non negative (and at
+   * least one of them positive if <code>strict</code>), plus a non negative rest.
+   */
+  private static boolean keySum(IExpr d, boolean strict, IAssumptions assumptions,
+      EvalEngine engine) {
+    IAST keys = assumptions.relationalKeys();
+    if (keys.argSize() > MAX_KEYS) {
+      return false;
+    }
+    for (int i = 1; i < keys.size(); i++) {
+      IExpr k1 = keys.get(i);
+      boolean strict1 = assumptions.isPositive(k1);
+      if (!strict1 && !assumptions.isNonNegative(k1)) {
+        continue;
+      }
+      for (int j = i; j < keys.size(); j++) {
+        IExpr k2 = keys.get(j);
+        boolean strict2 = assumptions.isPositive(k2);
+        if (!strict2 && !assumptions.isNonNegative(k2)) {
+          continue;
+        }
+        if (strict && !strict1 && !strict2) {
+          continue;
+        }
+        IExpr rest = engine.evaluate(F.Expand(F.Subtract(d, i == j ? k1 : F.Plus(k1, k2))));
+        if (rest.isZero() || (i != j && rest.isNonNegativeResult())) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public static void initialize() {

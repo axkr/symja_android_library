@@ -3,6 +3,7 @@ package org.matheclipse.astro.builtin;
 import java.util.List;
 import java.util.Locale;
 import org.hipparchus.util.FastMath;
+import org.matheclipse.core.data.Entities;
 import org.matheclipse.astro.convert.AstroConvert;
 import org.matheclipse.astro.convert.AstroObserver;
 import org.matheclipse.astro.data.AstroDataContext;
@@ -63,10 +64,14 @@ public class StarDataFunctions {
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
    */
+  /** The entity type these stars belong to. */
+  private static final String STAR = "Star";
+
   private static class Initializer {
 
     private static void init() {
       S.StarData.setEvaluator(new StarData());
+      Entities.register(STAR, S.StarData);
     }
   }
 
@@ -78,7 +83,11 @@ public class StarDataFunctions {
       if (ast.isAST1() && ast.arg1().isString()) {
         String argument = ast.arg1().toString();
         if ("Properties".equalsIgnoreCase(argument)) {
-          return stringList(ALL_PROPERTIES);
+          IASTAppendable properties = F.ListAlloc(ALL_PROPERTIES.length);
+          for (String name : ALL_PROPERTIES) {
+            properties.append(Entities.property(STAR, name));
+          }
+          return properties;
         }
       }
       if (ast.isAST0()) {
@@ -103,6 +112,7 @@ public class StarDataFunctions {
 
     /** One star, with the property and any location or date taken from the outer call. */
     private IExpr evaluateSingle(IExpr starSpec, IAST ast, EvalEngine engine) {
+      starSpec = Entities.nameOf(starSpec, STAR);
       if (!starSpec.isString()) {
         return F.NIL;
       }
@@ -127,8 +137,9 @@ public class StarDataFunctions {
           date = argDate;
           continue;
         }
-        if (arg.isString()) {
-          propertyName = arg.toString();
+        IExpr argProperty = Entities.propertyOf(arg, STAR);
+        if (argProperty.isString()) {
+          propertyName = argProperty.toString();
           continue;
         }
         return AstroConvert.reportUnreadableArgument(S.StarData, arg, ast, engine);
@@ -326,12 +337,12 @@ public class StarDataFunctions {
       return result;
     }
 
-    /** The stars which have a proper name, brightest first. */
+    /** The stars which have a proper name, brightest first, as the entities standing for them. */
     private static IExpr namedStarList() {
       List<SkyCatalog.Star> stars = SkyCatalog.get().namedStars();
       IASTAppendable result = F.ListAlloc(stars.size());
       for (SkyCatalog.Star star : stars) {
-        result.append(F.stringx(star.properName));
+        result.append(Entities.entity(STAR, F.stringx(star.properName)));
       }
       return result;
     }

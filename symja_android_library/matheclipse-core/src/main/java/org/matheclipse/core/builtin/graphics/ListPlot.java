@@ -3,26 +3,24 @@ package org.matheclipse.core.builtin.graphics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.builtin.QuantityFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.graphics.ECharts;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.PlotWrapper;
+import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -50,11 +48,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * otherwise.
    *
    * <p>
-   * For the one-column dataset these plots are usually handed -
-   * <code>planets[All, "radius"]</code> - the rows are already the bare list of numbers
-   * <code>checkList</code> is looking for, and without this that check rejects the dataset before
-   * anything else runs. Deliberately not applied to an <code>Association</code>, which this family
-   * already plots its own way.
+   * For the one-column dataset these plots are usually handed - <code>planets[All, "radius"]</code>
+   * - the rows are already the bare list of numbers <code>checkList</code> is looking for, and
+   * without this that check rejects the dataset before anything else runs. Deliberately not applied
+   * to an <code>Association</code>, which this family already plots its own way.
    */
   protected static IAST withDatasetRows(IAST ast) {
     IExpr rows = IASTDataset.normalizeDataset(ast.arg1());
@@ -65,8 +62,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * Replace quantity data by its magnitudes before the plotting pipeline sees it.
    *
    * <p>
-   * That pipeline reaches {@code toDoubleVectorIgnore}, which cannot turn a quantity into a
-   * machine number and drops it in silence, so plotting a list of quantities produced a
+   * That pipeline reaches {@code toDoubleVectorIgnore}, which cannot turn a quantity into a machine
+   * number and drops it in silence, so plotting a list of quantities produced a
    * <code>Graphics</code> holding no <code>Line</code> at all. See
    * {@link QuantityFunctions#quantityPlotMagnitudes}.
    */
@@ -74,132 +71,6 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     IExpr data = QuantityFunctions.quantityPlotMagnitudes(ast.arg1(),
         GraphicsOptions.optionValue(originalAST, S.TargetUnits, S.Automatic), engine);
     return data == ast.arg1() ? ast : ast.setAtCopy(1, data);
-  }
-
-  public IExpr evaluateECharts(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
-    ast = withQuantityMagnitudes(withDatasetRows(ast), originalAST, engine);
-    if (argSize > 0 && argSize < ast.size()) {
-      ast = ast.copyUntil(argSize + 1);
-    }
-
-    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine, originalAST);
-    // PlotMarkers and Mesh are family options appended after the positional block, so they
-    // are read from the call rather than by index
-    graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
-    graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
-    graphicsOptions.readColorFunction(originalAST);
-    graphicsOptions.applyPlotTheme(originalAST);
-    graphicsOptions.readPassThroughOptions(originalAST);
-    String graphicsPrimitivesStr = listPlotECharts(ast, options, graphicsOptions, engine);
-    if (graphicsPrimitivesStr != null) {
-      StringBuilder jsControl = new StringBuilder();
-      jsControl.append("var eChart = echarts.init(document.getElementById('main'));\n");
-      jsControl.append(graphicsPrimitivesStr);
-      jsControl.append("\neChart.setOption(option);");
-
-      return F.JSFormData(jsControl.toString(), "echarts");
-    }
-    return F.NIL;
-  }
-
-  protected static String listPlotECharts(IAST plot, IExpr[] options,
-      GraphicsOptions graphicsOptions, EvalEngine engine) {
-    if (plot.size() < 2) {
-      return null;
-    }
-
-    IExpr arg1 = plot.arg1();
-    if (!arg1.isList()) {
-      arg1 = engine.evaluate(arg1);
-    }
-    if (arg1.isAssociation()) {
-      IAssociation assoc = ((IAssociation) arg1);
-      arg1 = assoc.matrixOrList();
-    }
-    return listPlotECharts(arg1, graphicsOptions);
-  }
-
-  protected static String listPlotECharts(IExpr listData, GraphicsOptions graphicsOptions) {
-    if (listData.isNonEmptyList()) {
-      IAST pointList = (IAST) listData;
-      double[] minMax = new double[] {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
-          Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
-      if (pointList.isListOfLists()) {
-        StringBuilder yAxisSeriesBuffer = new StringBuilder();
-        if (pointList.isListOfPoints(2)) {
-          ECharts.yAxisSingleSeries(yAxisSeriesBuffer, pointList, graphicsOptions, minMax);
-        } else {
-          for (int i = 1; i < pointList.size(); i++) {
-            IExpr pointSet = pointList.get(i);
-            if (pointSet != null && pointSet.isListOfLists()) {
-              if (i > 1) {
-                yAxisSeriesBuffer.append(",\n");
-              }
-              ECharts.yAxisSingleSeries(yAxisSeriesBuffer, (IAST) pointSet, graphicsOptions,
-                  minMax);
-            }
-          }
-        }
-        ECharts echarts = ECharts.build(graphicsOptions, null, yAxisSeriesBuffer);
-        echarts.setXAxisPlot();
-        if (minMax[2] < -1000.0) {
-          minMax[2] = -50;
-        }
-        if (minMax[3] > 1000.0) {
-          minMax[3] = 50;
-        }
-        echarts.setYAxisPlot(minMax[2], minMax[3]);
-        return echarts.getJSONStr();
-      }
-
-      if (pointList.isList()) {
-        if (pointList.isListOfPoints(2)) {
-          return point2DListLinePlot(pointList, graphicsOptions);
-        }
-        if (pointList.isListOfLists()) {
-          IAST listOfLists = pointList;
-          StringBuilder yAxisSeriesBuffer = new StringBuilder();
-          String type = graphicsOptions.isJoined() ? ECharts.TYPE_LINE : ECharts.TYPE_SCATTER;
-          ECharts.seriesData(yAxisSeriesBuffer, listOfLists, graphicsOptions, type, "");
-          StringBuilder xAxisCategoryBuffer = new StringBuilder();
-          ECharts.xAxisCategory(xAxisCategoryBuffer, (IAST) listOfLists.arg1());
-          ECharts echarts = ECharts.build(graphicsOptions, xAxisCategoryBuffer, yAxisSeriesBuffer);
-          echarts.setXAxisPlot();
-          echarts.setYAxisPlot(minMax[2], minMax[3]);
-          return echarts.getJSONStr();
-        }
-
-      }
-      return yValueListLinePlot(pointList, graphicsOptions);
-    }
-    return null;
-  }
-
-  private static String point2DListLinePlot(IAST pointList2D, GraphicsOptions graphicsOptions) {
-    StringBuilder xAxisString = new StringBuilder();
-    StringBuilder yAxisString = new StringBuilder();
-    ECharts.xyAxesPoint2D(pointList2D, xAxisString, yAxisString, graphicsOptions);
-
-    ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
-    echarts.setXAxis();
-    echarts.setYAxis("value");
-    return echarts.getJSONStr();
-  }
-
-  private static String yValueListLinePlot(IAST pointList, GraphicsOptions graphicsOptions) {
-    double[] minMax = new double[] {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
-        Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
-    StringBuilder yAxisString = new StringBuilder();
-    ECharts.yAxisSingleSeries(yAxisString, pointList, graphicsOptions, minMax);
-
-    StringBuilder xAxisString = new StringBuilder();
-    ECharts.xAxisCategory(xAxisString, pointList);
-    ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
-    echarts.setXAxis();
-    echarts.setYAxis("value");
-    return echarts.getJSONStr();
   }
 
   @Override
@@ -210,23 +81,12 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (!checkList(engine, arg1)) {
       return Errors.printMessage(ast.topHead(), "lpn", F.List(arg1), engine);
     }
-    if (ToggleFeature.JS_ECHARTS) {
-      return evaluateECharts(ast, argSize, options, engine, originalAST);
-    }
-    if (options[GraphicsOptions.X_JSFORM].isTrue()) {
-      IExpr temp = S.Manipulate.funEval(engine, ast);
-      if (temp.headID() == ID.JSFormData) {
-        return temp;
-      }
-      return F.NIL;
-    }
     GraphicsOptions graphicsOptions =
         setGraphicsOptions(options, GraphicsOptions.listPlotDefaultOptionKeys(), engine);
     graphicsOptions.forwardOptions(originalAST);
     // PlotMarkers and Mesh are family options appended after the positional block, so they
     // are read from the call rather than by index
-    graphicsOptions
-        .setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.Automatic));
+    graphicsOptions.setPlotMarkers(GraphicsOptions.optionValue(originalAST, S.PlotMarkers, S.None));
     graphicsOptions.setMesh(GraphicsOptions.optionValue(originalAST, S.Mesh, S.None));
     graphicsOptions.readColorFunction(originalAST);
     graphicsOptions.applyPlotTheme(originalAST);
@@ -311,8 +171,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * Whether this plot already takes a display wrapper off its first argument itself.
    *
    * <p>
-   * The plots that read their data point by point put each label where it belongs and must not
-   * have one applied over the whole picture afterwards - an outer label wins in the renderer, so a
+   * The plots that read their data point by point put each label where it belongs and must not have
+   * one applied over the whole picture afterwards - an outer label wins in the renderer, so a
    * second one would overwrite every label the plot had just placed. The plots that draw their data
    * as a single field or raster do not read wrappers at all, and say so by overriding this, which
    * is what gets them a label over the picture for free.
@@ -330,8 +190,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    *
    * <p>
    * A field or raster plot draws its data as one picture, so the only level a label can sit at is
-   * the whole of it. The plots that read their data point by point have already placed their
-   * labels and say so through {@link #readsArgumentWrapper()}.
+   * the whole of it. The plots that read their data point by point have already placed their labels
+   * and say so through {@link #readsArgumentWrapper()}.
    */
   protected IExpr labelledContent(IAST graphicsPrimitives, IAST plotAST) {
     if (readsArgumentWrapper() || plotAST == null || plotAST.size() <= 1) {
@@ -346,7 +206,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
    * <p>
    * {@link IAST#isListOfPoints(int)} only asks for pairs, so two datasets of two points each -
    * <code>{{{0, 1}, {1, 2}}, {{0, 3}, {1, 1}}}</code> - pass for a list of two "points" with lists
-   * for coordinates, and read that way nothing at all was drawn. Mathematica draws two lines.
+   * for coordinates, and read that way nothing at all was drawn.
    */
   private static boolean isListOfPlainPoints(IAST list) {
     if (!list.isListOfPoints(2)) {
@@ -464,8 +324,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           }
         }
         if (curvePrimitives != graphicsPrimitives && curvePrimitives.argSize() > 0) {
-          graphicsPrimitives
-              .append(F.binaryAST2(S.Tooltip, curvePrimitives, curveWrapper.tooltip));
+          graphicsPrimitives.append(F.binaryAST2(S.Tooltip, curvePrimitives, curveWrapper.tooltip));
         }
       }
       return graphicsPrimitives;
@@ -479,7 +338,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (plot.size() < 2) {
       return F.NIL;
     }
-    if (options[GraphicsOptions.X_JOINED].isTrue()) {
+    IExpr joinedSpec = options[GraphicsOptions.X_JOINED];
+    if (joinedSpec.isTrue()) {
       graphicsOptions.setJoined(true);
     }
     graphicsOptions.setScalingFunctions(options);
@@ -555,6 +415,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
               style = F.Directive(defaultColor, userStyle);
             }
 
+            if (joinedSpec.isList() && joinedSpec.argSize() > 0) {
+              // Joined -> {b1, b2, ...}: one flag per dataset, cycled
+              graphicsOptions
+                  .setJoined(joinedSpec.get((i - 1) % joinedSpec.argSize() + 1).isTrue());
+            }
             PlotWrapper each =
                 datasetWrappers != null && i < datasetWrappers.length ? datasetWrappers[i] : null;
             final IASTAppendable into =
@@ -638,8 +503,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
               IExpr yLast = yFunction.apply(lastPoint.arg2());
               if (xBoundingBox(boundingbox, xLast, engine)
                   && yBoundingBox(boundingbox, yLast, engine)) {
-                addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
-                    yLast, lastArg);
+                addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives,
+                    boundingbox, engine, xLast, yLast, lastArg);
               }
             }
 
@@ -658,14 +523,14 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
             IExpr yLast = yFunction.apply(lastPoint.arg2());
             if (xBoundingBox(boundingbox, xLast, engine)
                 && yBoundingBox(boundingbox, yLast, engine)) {
-              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
-                  yLast, lastArg);
+              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
+                  engine, xLast, yLast, lastArg);
             }
 
             if (xBoundingBox(boundingbox, xValue, engine)
                 && yBoundingBox(boundingbox, yValue, engine)) {
-              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
-                  yValue, (IAST) arg);
+              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
+                  engine, xValue, yValue, (IAST) arg);
               isConnected = true;
               continue;
             }
@@ -673,8 +538,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           if (isConnected) {
             if (xBoundingBox(boundingbox, xValue, engine)
                 && yBoundingBox(boundingbox, yValue, engine)) {
-              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xValue,
-                  yValue, (IAST) arg);
+              addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
+                  engine, xValue, yValue, (IAST) arg);
             }
           }
           lastPoint = point;
@@ -684,10 +549,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IExpr yLast = yFunction.apply(lastPoint.arg2());
           if (xBoundingBox(boundingbox, xLast, engine)
               && yBoundingBox(boundingbox, yLast, engine)) {
-            addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
-                yLast, lastArg);
-            addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox, engine, xLast,
-                yLast, lastArg);
+            addSinglePoint(graphicsOptions, pointPrimitives, graphicsExtraPrimitives, boundingbox,
+                engine, xLast, yLast, lastArg);
           }
         }
 
@@ -839,8 +702,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   private static boolean addSinglePoint(GraphicsOptions graphicsOptions,
       IASTAppendable pointPrimitives, IASTAppendable graphicsExtraPrimitives, double[] boundingbox,
       EvalEngine engine, IExpr xScaled, IExpr yScaled, IAST arg) {
-    IReal x = xScaled.evalReal();
-    IReal y = yScaled.evalReal();
+    IExpr x = realOrUncertain(xScaled);
+    IExpr y = realOrUncertain(yScaled);
     if (x != null && y != null) {
       if (xBoundingBox(boundingbox, x, engine) && yBoundingBox(boundingbox, y, engine)) {
         IAST scaledPoint = F.List(x, y);
@@ -899,16 +762,14 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     double drawn = graphicsOptions == null ? 0.0 : graphicsOptions.pointSize();
     // never smaller than the mark it covers, and large enough to be worth aiming at
     double hitSize = Math.max(drawn * 1.5, 0.02);
-    extraPrimitives.append(F.binaryAST2(S.Tooltip,
-        F.List(F.unaryAST1(S.Opacity, F.C0), F.unaryAST1(S.PointSize, F.num(hitSize)),
-            F.Point(scaledPoint)),
-        label));
+    extraPrimitives.append(F.binaryAST2(S.Tooltip, F.List(F.unaryAST1(S.Opacity, F.C0),
+        F.unaryAST1(S.PointSize, F.num(hitSize)), F.Point(scaledPoint)), label));
   }
 
   protected static boolean addIndexedYPoint(IASTAppendable pointPrimitives,
       IASTAppendable textPrimitives, double[] boundingbox, EvalEngine engine, IExpr xScaled,
       IExpr yScaled, IExpr currentYPrimitive) {
-    IReal y = yScaled.evalReal();
+    IExpr y = realOrUncertain(yScaled);
     if (y != null && yBoundingBox(boundingbox, yScaled, engine)) {
       if (currentYPrimitive.isAST(S.Labeled, 3)) {
         // Manual Text creation with offset
@@ -938,7 +799,33 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return isNonReal(lastPointX) || isNonReal(lastPointY);
   }
 
+  /**
+   * A real number, or an uncertain value ({@code Around}, {@code Interval}, {@code IntervalData})
+   * kept as it is so the renderer can draw its interval markers; {@code null} for anything else.
+   */
+  protected static IExpr realOrUncertain(IExpr value) {
+    IReal real = value.evalReal();
+    if (real != null) {
+      return real;
+    }
+    return UncertainValue.of(value) != null ? value : null;
+  }
+
+  /** Extend the {@code [lo, hi]} pair at {@code offset} to the limits of an uncertain value. */
+  private static boolean uncertainBoundingBox(double[] boundingbox, int offset, IExpr value) {
+    UncertainValue uncertain = UncertainValue.of(value);
+    if (uncertain == null) {
+      return false;
+    }
+    boundingbox[offset] = Math.min(boundingbox[offset], uncertain.lo);
+    boundingbox[offset + 1] = Math.max(boundingbox[offset + 1], uncertain.hi);
+    return true;
+  }
+
   protected static boolean xBoundingBox(double[] boundingbox, IExpr xExpr, EvalEngine engine) {
+    if (uncertainBoundingBox(boundingbox, 0, xExpr)) {
+      return true;
+    }
     try {
       double xValue = engine.evalDouble(xExpr);
       if (Double.isFinite(xValue)) {
@@ -957,6 +844,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   }
 
   protected static boolean yBoundingBox(double[] boundingbox, IExpr yExpr, EvalEngine engine) {
+    if (uncertainBoundingBox(boundingbox, 2, yExpr)) {
+      return true;
+    }
     try {
       double yValue = engine.evalDouble(yExpr);
       if (Double.isFinite(yValue)) {
@@ -1153,8 +1043,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           }
         }
         extractCurvesRecursive(ast.arg1(), curves, newColor);
-      } else if (head == S.GraphicsGroup || head == S.Annotation
-          || head == S.Tooltip) {
+      } else if (head == S.GraphicsGroup || head == S.Annotation || head == S.Tooltip) {
         // a fully transparent group is a hover target rather than something drawn, so it has no
         // curve to fill under; without this the mark over a tooltipped point becomes a spurious
         // one point curve and the fill goes down to the axis beneath it
@@ -1182,10 +1071,9 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   private static boolean isColor(IExpr e) {
     return e.isAST(S.RGBColor) || e.isAST(S.Hue) || e.isAST(S.GrayLevel) || e.isAST(S.CMYKColor)
-        || e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue
-            || e == S.Black || e == S.White || e == S.Gray || e == S.Yellow
-            || e == S.Cyan || e == S.Magenta || e == S.Orange || e == S.Pink
-            || e == S.Purple || e == S.Brown);
+        || e.isSymbol() && (e == S.Red || e == S.Green || e == S.Blue || e == S.Black
+            || e == S.White || e == S.Gray || e == S.Yellow || e == S.Cyan || e == S.Magenta
+            || e == S.Orange || e == S.Pink || e == S.Purple || e == S.Brown);
   }
 
   private static IExpr createStemsToBottom(IAST pts, double yBottom) {

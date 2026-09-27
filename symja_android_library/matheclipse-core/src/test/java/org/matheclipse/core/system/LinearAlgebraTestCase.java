@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.junit.jupiter.api.Tag;
 
 /** Tests built-in functions */
 public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
@@ -494,6 +495,24 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{Min(a,c,e),Min(b,d,f)},{Max(a,c,e),Max(b,d,f)}}");
     check("CoordinateBoundingBox({{0, 1}, {1, 2}, {2, 1}, {3, 2}, {4, 0}})", //
         "{{0,0},{4,2}}");
+  }
+
+  /**
+   * The points may be nested - the faces of <code>Cases(g, Polygon(x_) :> x, Infinity)</code> are
+   * lists of point lists - and the box is taken around their corners, not around the faces. The
+   * first face used to be read as a three dimensional point.
+   */
+  @Test
+  public void testCoordinateBoundingBoxNestedPoints() {
+    check("CoordinateBoundingBox({{{0,0},{1,0},{1,1}},{{2,2},{3,2},{3,3}}})", //
+        "{{0,0},{3,3}}");
+    check("CoordinateBounds({{{0,0},{1,0},{1,1}},{{2,2},{3,2},{3,3}}})", //
+        "{{0,3},{0,3}}");
+    check("CoordinateBoundingBox({{{0,0},{1,0},{1,1}},{{2,2},{3,2},{3,3}}}, 1)", //
+        "{{-1,-1},{4,4}}");
+    // points of different dimensions have no box
+    check("CoordinateBoundingBox({{{0,0},{1,0}},{{2,2,2}}})", //
+        "CoordinateBoundingBox({{{0,0},{1,0}},{{2,2,2}}})");
   }
 
   @Test
@@ -1872,6 +1891,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testLinearSolveRadicalCosines() {
+    // The LU steps cancel fractions whose coefficients lie in Q(Sqrt(2),Sqrt(3)); over IExpr
+    // coefficients two of those GCDs took several seconds each. Now they run in the number field.
+    // Roots from a 50 digit solve: 0.63991519622033242272, 0.75145976466452541197,
+    // 1.1478791808063615053
+    check("N(LinearSolve({{Cos(7/36*Pi),-Cos(Pi/9),1},{1/Sqrt(2),-Cos(7/36*Pi),1},"
+        + "{1/2,-Cos(5/18*Pi),1}},{(1+Sqrt(3))/(2*Sqrt(2)),Cos(Pi/18),Cos(Pi/18)}))", //
+        "{0.639915,0.75146,1.14788}");
+  }
+
+  @Test
   public void testLinearSolveFunction001() {
     check("lsf=LinearSolve({{1, 2}, {3, 4}})", //
         "LinearSolveFunction(Matrix dimensions: {2,2})");
@@ -2331,6 +2361,22 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNullSpace() {
+    // Mathematica's options and answers
+    check("Options(NullSpace)", //
+        "{Method->Automatic,Modulus->0,Tolerance->Automatic,ZeroTest->Automatic}");
+    check("NullSpace({{1, Sqrt(2) + Sqrt(3)}, {Sqrt(2) - Sqrt(3), -1}})", //
+        "{{-Sqrt(2)-Sqrt(3),1}}");
+    check("NullSpace({{1, Sqrt(2)}, {Sqrt(2), 2}}, ZeroTest -> PossibleZeroQ)", //
+        "{{-Sqrt(2),1}}");
+    check("NullSpace({{1, a}, {a, a^2}}, ZeroTest -> (Simplify(#) === 0 &))", //
+        "{{-a,1}}");
+    check("NullSpace({{1, 2}, {2, 4}}, Modulus -> 5)", //
+        "{{3,1}}");
+    // a tolerance decides which entries of a numeric matrix are zero
+    check("NullSpace({{1.0, 2.0}, {2.0, 4.0000000001}}, Tolerance -> 10^-6)", //
+        "{{-2.0,1}}");
+    check("NullSpace({{1.0, 2.0}, {2.0, 4.0000000001}})", //
+        "{}");
     check("NullSpace({{0,0,0}, {0,3*E,-4*E}, {0,4*E,3*E}})", //
         "{{1,0,0}}");
     // TODO improve Zero tests
@@ -2941,6 +2987,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
    * page</a>.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testRotationMatrixReference() {
     check("RotationMatrix(t) . {1,0}", //
         "{Cos(t),Sin(t)}");
@@ -3218,6 +3265,65 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{1,0,-1,0,-8/3,5/3},\n" //
             + " {0,1,2,0,7/3,-4/3},\n" //
             + " {0,0,0,1,-2,1}}");
+  }
+
+  @Test
+  public void testExactRationalMatrices() {
+    // rational matrices are reduced fraction-free over the integers
+    check("RowReduce({{2,-3,-3,2,4,0,1,-3},{-3,-3,3,3,-3,-4,-4,3},{-2,-1,2,1,-2,4,0,4},{1,4,3,4,-1,4,3,0},{-1,0,1,2,-4,2,-4,4}})", //
+        "{{1,0,0,0,0,-39,-299/24,-329/24},\n" //
+            + " {0,1,0,0,0,19,51/8,49/8},\n" //
+            + " {0,0,1,0,0,-73/3,-55/8,-199/24},\n" //
+            + " {0,0,0,1,0,37/3,89/24,33/8},\n" //
+            + " {0,0,0,0,1,28/3,17/4,29/12}}");
+    check("m58={{2,-3,-3,2,4,0,1,-3},{-3,-3,3,3,-3,-4,-4,3},{-2,-1,2,1,-2,4,0,4},{1,4,3,4,-1,4,3,0},{-1,0,1,2,-4,2,-4,4}};NullSpace(m58)", //
+        "{{329,-147,199,-99,-58,0,0,24},\n" //
+            + " {299,-153,165,-89,-102,0,24,0},\n" //
+            + " {117,-57,73,-37,-28,3,0,0}}");
+    check("m58.Transpose(NullSpace(m58))==ConstantArray(0,{5,3})", //
+        "True");
+    check("m6={{-2,-3/4,4,3,4/3,-4},{1/4,-2/3,-1,0,1,2/3},{-3/4,-5/3,-4,5/3,1/3,-2},{-4/3,2/3,3,4/3,1/4,3},{-2/3,-5/3,1/2,-5,1,-1/4},{5,5,-3,-3/4,5/4,4/3}};Det(m6)", //
+        "468430955/248832");
+    check("Det(m6)*Det(Inverse(m6))", //
+        "1");
+    check("Inverse(m6).m6==IdentityMatrix(6)", //
+        "True");
+    check("b={1,-2,0,3/5,7,-1};m6.LinearSolve(m6,b)==b", //
+        "True");
+    check("RowReduce(m6)==IdentityMatrix(6)", //
+        "True");
+    check("mr=Join(m6[[1;;4]],{m6[[1]]-3*m6[[2]],m6[[3]]/2});MatrixRank(mr)", //
+        "4");
+    check("RowReduce(mr)==RowReduce(mr,Method->\"DivisionFreeRowReduction\")", //
+        "True");
+    check("Det(mr)", //
+        "0");
+    check("Head(Quiet(Inverse(mr)))", //
+        "Inverse");
+    // the division-free elimination has to rescale the free columns of the rows above the pivot
+    check("RowReduce({{2,1,4},{1,3,5}}, Method->\"DivisionFreeRowReduction\")", //
+        "{{1,0,7/5},{0,1,6/5}}");
+    check("RowReduce({{1,a,2,c},{2,2*a,5,c}}, Method->\"DivisionFreeRowReduction\")", //
+        "{{1,a,0,3*c},{0,0,1,-c}}");
+  }
+
+  @Test
+  public void testExactGaussianMatrices() {
+    // Gaussian rational matrices are reduced fraction-free over the Gaussian integers
+    check("g={{2+I,1/2,-I,3},{1,1+I,2,-1/3},{I,0,1-I,2},{3,-2*I,1/2+I,1}};Det(g)", //
+        "-131/6-I*127/4");
+    check("Inverse(g).g==IdentityMatrix(4)", //
+        "True");
+    check("Adjugate(g)==Det(g)*Inverse(g)", //
+        "True");
+    check("v={1,I,-1/2,2-I};g.LinearSolve(g,v)==v", //
+        "True");
+    check("RowReduce({{1+I,2,I},{2,2-2*I,1+I}})", //
+        "{{1,1-I,1/2+I*1/2},\n" //
+            + " {0,0,0}}");
+    check("NullSpace({{1+I,2,I},{2,2-2*I,1+I}})", //
+        "{{-1-I,0,2},\n" //
+            + " {-1+I,1,0}}");
   }
 
   @Test
@@ -3559,6 +3665,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTranspose() {
+    // Mathematica: Transpose::nmtx, unevaluated - the first two levels aren't rectangular
+    // (\uF3C7 is the \[Transpose] glyph of the unevaluated Transpose)
+    check("InputForm(Transpose({{a,b,c},{d,e}}))", //
+        "{{a,b,c},{d,e}}\uF3C7");
+    check("InputForm(Transpose({{1,2},3}))", //
+        "{{1,2},3}\uF3C7");
+    // only the first two levels have to be rectangular
+    check("Transpose({{{a,b,c},{d,e,f}},{t1,t2}})", //
+        "{{{a,b,c},t1},{{d,e,f},t2}}");
+    check("Dimensions(Transpose(Array(a, {2,3,4}), {3,1,2}))", //
+        "{3,4,2}");
     // A permutation shorter than the tensor left the trailing entries of the internal positions
     // array at 0, and index 0 is the head: this returned {List,List} instead of declining.
     check("Transpose({{1,2},{3,4}}, {1})", //

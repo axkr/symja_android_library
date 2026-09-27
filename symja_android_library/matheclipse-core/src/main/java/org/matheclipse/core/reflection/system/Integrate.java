@@ -262,6 +262,30 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   private static final ThreadLocal<java.util.Set<IExpr>> DEFERRED_ROOTSUM =
       ThreadLocal.withInitial(java.util.HashSet::new);
 
+  /**
+   * The indefinite integrals being evaluated further up this thread's stack. The native stages and
+   * the rules rewrite an integrand and re-enter {@code Integrate}, and some rewrites lead back to
+   * where they started: {@code Tan(Sqrt(1+x^2))} is written with exponentials, a rule asks for
+   * {@code Integrate(Tan(Sqrt(1+x^2)),x)} again, and so on until the recursion limit. The same
+   * integral inside its own evaluation can only loop, so it is declined.
+   */
+  /**
+   * The integrals whose remembered answer of the rules still has integrals in it. Such an answer
+   * depends on the budget it was computed under - inside a rule the sub-integrals run with what is
+   * left of the outer budget - so it is remembered only until the top-level integration ends, and
+   * forgotten before {@link #finishPartialAnswer} asks again. Remembering it for good made every
+   * later request get the same partial answer back: after
+   * <code>Integrate(ArcTan(x+Sqrt(1-x^2)), x)</code>,
+   * <code>Integrate(x^2*Sqrt(1-x^2)/(1-x^2+x^4), x)</code> came back with an integral in it. Not
+   * remembering it at all is no option: the rules then compute the same partial sub-integrals over
+   * and over.
+   */
+  private static final ThreadLocal<java.util.Set<IExpr>> PARTIAL_RUBI_ANSWERS =
+      ThreadLocal.withInitial(java.util.HashSet::new);
+
+  private static final ThreadLocal<java.util.Set<IExpr>> IN_PROGRESS =
+      ThreadLocal.withInitial(java.util.HashSet::new);
+
   @Override
   public IExpr evaluate(IAST holdallAST, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
@@ -321,6 +345,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         EVAL_DEPTH.remove();
         IN_RUBI_RULES.remove();
         DEFERRED_ROOTSUM.remove();
+        IN_PROGRESS.remove();
+        forgetPartialAnswers(engine);
+        PARTIAL_RUBI_ANSWERS.remove();
       } else {
         EVAL_DEPTH.set(depth);
       }
@@ -347,6 +374,114 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * {@code Unintegrable} and {@code CannotIntegrate} are in the context too, but they are mapped
    * back to an unevaluated {@code Integrate()} before this runs, so they never reach here.
    */
+  /**
+   * Whether a result of the rules is an antiderivative with nothing left to integrate. One which
+   * is not is remembered only until the top-level integration ends, see
+   * {@link #PARTIAL_RUBI_ANSWERS}.
+   */
+  private static boolean isCompleteAntiderivative(IExpr result) {
+    return result.isFree(part -> part.isAST(S.Integrate)
+        || part.isAST(UtilityFunctionCtors.Unintegrable)
+        || part.isAST(F.$rubi("CannotIntegrate")), true) && !containsRubiInternals(result);
+  }
+
+  /**
+   * Finish an answer of the rules which still has integrals in it, at the top level only: each
+   * leftover <code>Integrate(g, x)</code> is asked for again through the whole cascade, with a
+   * budget of its own, and the answer is kept only if every leftover was integrated and the
+   * assembled antiderivative differentiates back to the integrand.
+   *
+   * <p>
+   * The rules integrate by parts and hand the pieces back to <code>Integrate</code> with what is
+   * left of their own budget. <code>Integrate(ArcTan(x+Sqrt(1-x^2)), x)</code> left
+   * <code>Integrate(x/(1+x*Sqrt(1-x^2)), x)</code> and
+   * <code>Integrate(x^2/(x-x^3+Sqrt(1-x^2)), x)</code>, which the surd stage integrates on their
+   * own in a few seconds. The partial answers remembered on the way are forgotten first, or the
+   * second attempt would get them back.
+   *
+   * @return the finished antiderivative, or {@link F#NIL}
+   */
+  private static IExpr finishPartialAnswer(IExpr partial, IAST fx, IExpr x, EvalEngine engine) {
+    if (EVAL_DEPTH.get() != 1 || !x.isSymbol()) {
+      return F.NIL;
+    }
+    java.util.Set<IExpr> leftovers = new java.util.LinkedHashSet<>();
+    collectLeftovers(partial, x, leftovers);
+    if (leftovers.isEmpty() || leftovers.contains(fx)) {
+      return F.NIL;
+    }
+    forgetPartialAnswers(engine);
+    IASTAppendable rules = F.ListAlloc(leftovers.size());
+    for (IExpr g : leftovers) {
+      long budget = rubiBudgetMillis(engine);
+      IExpr integrated = IntegrateTimeBudget.runWithin(
+          () -> engine.evaluate(F.Integrate(g, x)), budget > 0 ? budget : 0);
+      if (integrated.isNIL() || !integrated.isFree(S.Integrate, true)
+          || !isFiniteAntiderivative(integrated) || containsRubiInternals(integrated)) {
+        return F.NIL;
+      }
+      rules.append(F.Rule(F.Integrate(g, x), integrated));
+    }
+    IExpr finished = engine.evaluate(F.subst(partial, rules));
+    if (!finished.isFree(S.Integrate, true) || !differentiatesBack(finished, fx, x, engine)) {
+      return F.NIL;
+    }
+    return finished;
+  }
+
+  private static void collectLeftovers(IExpr expr, IExpr x, java.util.Set<IExpr> leftovers) {
+    if (expr.isAST(S.Integrate, 3) && expr.second().equals(x)) {
+      leftovers.add(expr.first());
+      return;
+    }
+    if (expr.isAST()) {
+      for (IExpr arg : (IAST) expr) {
+        collectLeftovers(arg, x, leftovers);
+      }
+    }
+  }
+
+  /**
+   * <code>D(antiderivative, x) == integrand</code> numerically, at the sample points where the
+   * integrand is real: every one of them has to agree, and there have to be two at least. The
+   * points outside the real domain are skipped, because the two sides may be continued there on
+   * different branches.
+   */
+  private static boolean differentiatesBack(IExpr antiderivative, IExpr integrand, IExpr x,
+      EvalEngine engine) {
+    IExpr difference = engine.evaluate(F.Subtract(F.D(antiderivative, x), integrand));
+    double[] points = {0.37, 0.61, 1.37, 2.19, -0.43};
+    int checked = 0;
+    for (double point : points) {
+      IExpr f = engine.evaluate(F.N(F.subst(integrand, x, F.num(point))));
+      if (!f.isReal()) {
+        continue;
+      }
+      double scale = Math.abs(f.evalf());
+      if (Double.isNaN(scale) || Double.isInfinite(scale)) {
+        continue;
+      }
+      IExpr d = engine.evaluate(F.N(F.Abs(F.subst(difference, x, F.num(point)))));
+      double deviation = d.evalfNaN();
+      if (Double.isNaN(deviation) || deviation > 1e-8 * (1.0 + scale)) {
+        return false;
+      }
+      checked++;
+    }
+    return checked >= 2;
+  }
+
+  /** Forget the partial answers of the rules remembered during this top-level integration. */
+  private static void forgetPartialAnswers(EvalEngine engine) {
+    java.util.Set<IExpr> partial = PARTIAL_RUBI_ANSWERS.get();
+    if (engine.rubiASTCache != null) {
+      for (IExpr ast : partial) {
+        engine.rubiASTCache.invalidate(ast);
+      }
+    }
+    partial.clear();
+  }
+
   private static boolean containsRubiInternals(IExpr expr) {
     return !expr.isFree(part -> {
       if (!part.isSymbol()) {
@@ -376,6 +511,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
     final IAssumptions oldAssumptions = engine.getAssumptions();
     final boolean oldNumericMode = engine.isNumericMode();
+    IAST inProgressKey = null;
     try {
       IExpr assumptionOption = option[0];
       IExpr assumptionExpr = OptionArgs.determineAssumptions(assumptionOption);
@@ -501,7 +637,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           boolean antiderivative = temp.isFreeAST(h -> h == S.Integrate || h == S.Boole) //
               && temp.isSpecialsFree();
           if (antiderivative) {
-            IExpr value = definiteIntegral(temp, xList, holdallAST, engine);
+            IExpr value = definiteIntegral(temp, arg1, xList, holdallAST, engine);
             if (value.isPresent()) {
               return value;
             }
@@ -564,6 +700,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         if (fx.topHead().equals(x)) {
           // issue #91
           return F.NIL;
+        }
+        if (engine.getAssumptions() == null) {
+          // under assumptions the same integral may be asked for with different ones
+          IAST key = F.list(fx, x);
+          if (!IN_PROGRESS.get().add(key)) {
+            return F.NIL;
+          }
+          inProgressKey = key;
         }
         if (forcedMethod != null) {
           // Integrate[f, x, Method -> "..."] forces a single native stage, bypassing the Automatic
@@ -671,10 +815,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         // integrand to itself and is applied again, forever, and the endless-iteration guard turns
         // that into an unevaluated - or, inside a larger integral, a partly evaluated - answer.
         IExpr normalized = normalizePerfectPowerBase(fx, x, engine);
-        result = normalized.isPresent() //
+        // the rules integrate many pieces of the integrand on their way, each through Integrate:
+        // the radical tower stage is tried on the whole integrand afterwards, not on every piece
+        result = RischNorman.withoutRadicalTower(() -> normalized.isPresent() //
             ? integrateByRubiRulesWithBudget((IAST) normalized, x, ast.setAtCopy(1, normalized),
                 engine)
-            : integrateByRubiRulesWithBudget(fx, x, ast, engine);
+            : integrateByRubiRulesWithBudget(fx, x, ast, engine));
         if (result.isPresent()) {
           IExpr rubiResult = F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
@@ -705,7 +851,33 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // and bailing out on those cost testIntegrateRationalizeSurdDenominator its answer.
           boolean unfinishedSubstitution =
               containsRubiInternals(rubiResult) && !rubiResult.isFree(S.Integrate, true);
-          if (!rubiResult.equals(ast) && !unfinishedSubstitution) {
+          // A finite integrand has no infinite antiderivative: the generic rule for
+          // E^(I*k*x)*Sec(a*x) divides by a - k, which is zero when the two frequencies agree, and
+          // answered ComplexInfinity. Leave it to the stages below, which write the exponential as
+          // Cos and Sin.
+          // A finite integrand has no infinite antiderivative: the generic rule for
+          // E^(I*k*x)*Sec(a*x) divides by a - k, which is zero when the two frequencies agree, and
+          // answered ComplexInfinity. Leave it to the stages below, which write the exponential as
+          // Cos and Sin.
+          if (!rubiResult.equals(ast) && !unfinishedSubstitution
+              && isFiniteAntiderivative(rubiResult)) {
+            if (!rubiResult.isFree(S.Integrate, true)) {
+              IExpr finished = finishPartialAnswer(rubiResult, fx, x, engine);
+              if (finished.isPresent()) {
+                return finished;
+              }
+            }
+            if (!rubiResult.isFree(S.Integrate, true) && RischNorman.isRadicalTower(fx, x)) {
+              // the rules integrated a sum term by term and left terms which are not elementary on
+              // their own, like Log(x)/Sqrt(1+x^2) in the derivative of Log(x)*ArcSinh(x): the
+              // radical tower stage takes the integrand as a whole
+              IExpr whole = quietStage(engine, fx, x, "parallel integration over a radical tower",
+                  () -> IntegrateTimeBudget.runWithin(() -> RischNorman.integrate(fx, x, engine),
+                      MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS)));
+              if (whole.isPresent()) {
+                return whole;
+              }
+            }
             return rubiResult;
           }
         }
@@ -733,11 +905,34 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (result.isPresent()) {
             return result;
           }
+          // Parallel integration over a tower with one radical in it, such as the derivative of
+          // Log(x)*Log(x+Sqrt(x^2+1)): a class the rules measurably leave unanswered. Only for a
+          // root together with Log, Exp or Tan, and verified by differentiation before it returns.
+          if (RischNorman.isRadicalTower(fx, x)) {
+            result = quietStage(engine, fx, x, "parallel integration over a radical tower",
+                () -> IntegrateTimeBudget.runWithin(() -> RischNorman.integrate(fx, x, engine),
+                    MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS)));
+            if (result.isPresent()) {
+              return result;
+            }
+          }
           // Conjugate rationalization of a denominator containing a single square root, e.g.
           // x^2/(x^2+Sqrt(1-x^2)) -> x^2*(x^2-Sqrt(1-x^2))/(x^4+x^2-1). Post-Rubi because it only
           // rewrites the integrand and re-enters Integrate: whenever Rubi has an answer for the
           // original form, that (more canonical) form wins.
-          result = quietStage(engine, fx, x, "rationalising the surd", () -> SurdRationalization.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "rationalising the surd",
+              () -> RischNorman.withoutRadicalTower(() -> SurdRationalization.integrate(fx, x, engine)));
+          if (result.isPresent()) {
+            return result;
+          }
+          // An exponential times a trigonometric function of the same frequency, written with
+          // Cos and Sin: E^(-I*a*x)*Sec(a*x) is 1 - I*Tan(a*x), whose integral is elementary,
+          // while the rules read it as the degenerate case of two different frequencies.
+          // An exponential times a trigonometric function of the same frequency, written with
+          // Cos and Sin: E^(-I*a*x)*Sec(a*x) is 1 - I*Tan(a*x), whose integral is elementary,
+          // while the rules read it as the degenerate case of two different frequencies.
+          result = quietStage(engine, fx, x, "writing the exponential as Cos and Sin",
+              () -> integrateExponentialTimesTrig(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -766,9 +961,50 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       return evaled ? ast : F.NIL;
     } finally {
+      if (inProgressKey != null) {
+        IN_PROGRESS.get().remove(inProgressKey);
+      }
       engine.setAssumptions(oldAssumptions);
       engine.setNumericMode(oldNumericMode);
     }
+  }
+
+  /**
+   * Whether <code>antiderivative</code> is a function rather than an infinity: an indefinite
+   * integral of a finite integrand never is one.
+   */
+  private static boolean isFiniteAntiderivative(IExpr antiderivative) {
+    return antiderivative.isFree(x -> x.isDirectedInfinity() || x.isIndeterminate()
+        || x == S.ComplexInfinity || x == S.Infinity, true);
+  }
+
+  /**
+   * The integral of an exponential times a trigonometric or hyperbolic function, both of a linear
+   * argument, with the exponential written as <code>Cos</code> and <code>Sin</code>, or
+   * {@link F#NIL}.
+   *
+   * <p>
+   * The rules integrate <code>E^(I*k*x)*Sec(a*x)</code> through a hypergeometric function over
+   * <code>a - k</code>, which is the wrong form when the two frequencies agree: there the
+   * integrand is <code>1 - I*Tan(a*x)</code> and the integral elementary. Expanding the
+   * exponential first leaves a sum of such terms.
+   */
+  private static IExpr integrateExponentialTimesTrig(IAST fx, IExpr x, EvalEngine engine) {
+    if (!fx.isTimes() || fx.isFree(y -> y.isExp() && !y.exponent().isFree(x), true)) {
+      return F.NIL;
+    }
+    if (fx.isFree(y -> y.isTrigFunction() || y.isHyperbolicFunction(), true)) {
+      return F.NIL;
+    }
+    IExpr expanded = engine.evaluate(F.Expand(F.ExpToTrig(fx)));
+    if (expanded.equals(fx) || !expanded.isFree(y -> y.isExp(), true)) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(F.Integrate(expanded, x));
+    if (result.isFree(S.Integrate, true) && isFiniteAntiderivative(result)) {
+      return result;
+    }
+    return F.NIL;
   }
 
   /**
@@ -1497,13 +1733,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * continuous.
    * 
    * @param function a function of <code>x</code>
+   * @param integrand the integrand <code>function</code> is an antiderivative of
    * @param xValueList a list of the form <code>{x, lower, upper}</code> with <code>3</code>
    *        arguments
    * @param engine the evaluation engine
    * @return
    */
-  private static IExpr definiteIntegral(IExpr function, IAST xValueList, IAST originalAST,
-      EvalEngine engine) {
+  private static IExpr definiteIntegral(IExpr function, IExpr integrand, IAST xValueList,
+      IAST originalAST, EvalEngine engine) {
     IExpr x = xValueList.arg1();
     IExpr lower = xValueList.arg2();
     IExpr upper = xValueList.arg3();
@@ -1514,15 +1751,35 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     // trip, which would otherwise run for every simple definite integral.
     IAST potentialSingularityEquations =
         function.isPolynomial(F.list(x)) ? F.NIL : collectBranchPoints(function, x, engine);
+    // Poles of the integrand. The antiderivative's own singularities are not always known:
+    // -ArcTanh(Cos(x)) for 1/Sin(x) and ExpIntegralEi(x) for E^x/x report none, and
+    // Newton-Leibniz across the pole then gives a principal value instead of divergence
+    if (!integrand.isPolynomial(F.list(x))) {
+      IAST integrandEquations = collectBranchPoints(integrand, x, engine);
+      if (integrandEquations.isPresent()) {
+        if (potentialSingularityEquations.isPresent()) {
+          IASTAppendable merged = potentialSingularityEquations.copyAppendable();
+          for (IExpr eq : integrandEquations) {
+            if (!merged.contains(eq)) {
+              merged.append(eq);
+            }
+          }
+          potentialSingularityEquations = merged;
+        } else {
+          potentialSingularityEquations = integrandEquations;
+        }
+      }
+    }
 
     // Solve and Split
     if (potentialSingularityEquations.isPresent()) {
       IASTAppendable singularities = F.ListAlloc();
       // Solve eq for x
       for (IExpr eq : potentialSingularityEquations) {
-        // Solve({eq, x >= lower, x <= upper}, x)
-        IExpr solved = engine
-            .evaluate(F.Solve(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
+        // Solve({eq, x >= lower, x <= upper}, x) - quiet, its messages (InverseFunction::ifun for
+        // Sin(x)==0) are about a search the caller never sees
+        IExpr solved = engine.evalQuiet(
+            F.Solve(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
         if (solved.isList()) {
           singularities.appendArgs((IAST) solved);
         }
@@ -1545,13 +1802,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               if (engine
                   .evalTrue(F.And(F.Less(lower, singularPoint), F.Less(singularPoint, upper)))) {
                 // Singularity/Branch point found strictly inside. Split.
-                IExpr left = definiteIntegral(function, F.List(x, lower, singularPoint),
-                    originalAST, engine);
+                IExpr left = definiteIntegral(function, integrand,
+                    F.List(x, lower, singularPoint), originalAST, engine);
                 if (left.isNIL()) {
                   return F.NIL;
                 }
-                IExpr right = definiteIntegral(function, F.List(x, singularPoint, upper),
-                    originalAST, engine);
+                IExpr right = definiteIntegral(function, integrand,
+                    F.List(x, singularPoint, upper), originalAST, engine);
                 if (right.isNIL()) {
                   return F.NIL;
                 }
@@ -1813,7 +2070,27 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     return budgetMillis;
   }
 
+  /**
+   * Does the variable occur inside an argument which a head of <code>integrand</code> holds?
+   *
+   * <p>
+   * The rules cannot integrate such an integrand, but they rewrite it before they find that out.
+   * Their utility function {@code TrigSimplifyRecur} maps itself over every subexpression, and
+   * under a held head, for example the {@code HoldAll} {@code Piecewise}, those calls are never
+   * evaluated. So {@code E^t*Piecewise({{2,0<=t<=1}},0)} came back as the unevaluated integral of
+   * {@code E^t*Piecewise({{2,0<=t<=1}},Rubi`trigsimplifyrecur(0))}. The rewritten integral carries
+   * a Rubi symbol, so it bypasses the rules too and is returned as it stands.
+   */
+  private static boolean holdsTheVariable(IAST integrand, IExpr x) {
+    return !integrand.isFree(part -> part.isAST() && part.head().isSymbol()
+        && (((ISymbol) part.head()).getAttributes() & ISymbol.HOLDALL) != 0 && !part.isFree(x),
+        true);
+  }
+
   private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast, EvalEngine engine) {
+    if (holdsTheVariable(arg1, x)) {
+      return F.NIL;
+    }
     if (arg1.isFreeAST(s -> s.isSymbol() && ((ISymbol) s).isContext(Context.RUBI))) {
       int limit = engine.getRecursionLimit();
       boolean quietMode = engine.isQuietMode();
@@ -1870,6 +2147,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               }
               if (!assumptionsActive && temp.isAST()) {
                 engine.rubiASTCache.put(ast, temp);
+                if (!isCompleteAntiderivative(temp)) {
+                  PARTIAL_RUBI_ANSWERS.get().add(ast);
+                }
               }
               return temp;
             }

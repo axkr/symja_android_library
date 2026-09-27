@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.numbertheory.AlgebraicNumberField;
+
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
@@ -60,7 +62,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
       // Only attempt if the expression is numeric (no free symbolic variables)
       // i.e. it's a closed-form algebraic number expression
       VariablesSet vars = new VariablesSet(arg1);
-      if (!vars.isEmpty()) {
+      if (!vars.isEmpty() && !AlgebraicNumberField.isObject(arg1)) {
         // has symbolic variables - there's nothing to reduce, so RootReduce is the identity here
         return arg1;
       }
@@ -110,9 +112,9 @@ public class RootReduce extends AbstractFunctionEvaluator {
    * <code>numericValue</code> and return it as a <code>Root[f, k, 0]</code> object.
    *
    * <p>
-   * The roots are ordered the way Wolfram Language indexes them: real roots first (ascending), then
-   * the complex roots (real part ascending, imaginary part ascending). This has to agree with the
-   * sort in {@link ToRadicals#rootToRadicals(IAST, EvalEngine)} so that the resulting
+   * The roots are ordered: real roots first (ascending), then the complex roots (real part
+   * ascending, imaginary part ascending). This has to agree with the sort in
+   * {@link ToRadicals#rootToRadicals(IAST, EvalEngine)} so that the resulting
    * <code>Root[..., k, 0]</code> expands back to the same algebraic number.
    *
    * @param polyInX a univariate polynomial in <code>x</code>

@@ -1,44 +1,40 @@
 package org.matheclipse.graphtheory.builtin;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import org.hipparchus.util.MathArrays;
 import org.jgrapht.Graph;
+import org.jgrapht.GraphMapping;
 import org.jgrapht.GraphPath;
 import org.jgrapht.GraphTests;
 import org.jgrapht.GraphType;
 import org.jgrapht.Graphs;
-import org.jgrapht.alg.cycle.DirectedSimpleCycles;
-import org.jgrapht.alg.flow.EdmondsKarpMFImpl;
 import org.jgrapht.alg.cycle.HierholzerEulerianCycle;
-import org.jgrapht.alg.cycle.PatonCycleBase;
-import org.jgrapht.alg.cycle.SzwarcfiterLauerSimpleCycles;
+import org.jgrapht.alg.flow.EdmondsKarpMFImpl;
 import org.jgrapht.alg.flow.mincost.CapacityScalingMinimumCostFlow;
 import org.jgrapht.alg.flow.mincost.MinimumCostFlowProblem;
-import org.jgrapht.alg.interfaces.CycleBasisAlgorithm;
-import org.jgrapht.alg.interfaces.CycleBasisAlgorithm.CycleBasis;
 import org.jgrapht.alg.interfaces.EulerianCycleAlgorithm;
-import org.jgrapht.alg.interfaces.HamiltonianCycleAlgorithm;
 import org.jgrapht.alg.interfaces.MaximumFlowAlgorithm;
 import org.jgrapht.alg.interfaces.MinimumCostFlowAlgorithm;
 import org.jgrapht.alg.interfaces.MinimumCostFlowAlgorithm.MinimumCostFlow;
 import org.jgrapht.alg.interfaces.PlanarityTestingAlgorithm;
-import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.SingleSourcePaths;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
-import org.jgrapht.alg.interfaces.VertexCoverAlgorithm;
-import org.jgrapht.alg.interfaces.VertexScoringAlgorithm;
-import org.jgrapht.alg.isomorphism.AHUUnrootedTreeIsomorphismInspector;
-import org.jgrapht.alg.isomorphism.IsomorphicGraphMapping;
+import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector;
 import org.jgrapht.alg.planar.BoyerMyrvoldPlanarityInspector;
+import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.GraphMeasurer;
+import org.jgrapht.alg.shortestpath.NegativeCycleDetectedException;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 import org.jgrapht.alg.tour.HeldKarpTSP;
-import org.jgrapht.alg.vertexcover.GreedyVCImpl;
 import org.jgrapht.generate.ComplementGraphGenerator;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
@@ -47,28 +43,22 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.interfaces.Attribute;
-import org.matheclipse.graphtheory.eval.GraphUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.graphtheory.expression.data.ExprEdge;
-import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
-import org.matheclipse.graphtheory.expression.data.GraphExpr;
-import org.matheclipse.graphtheory.expression.data.IExprEdge;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
-import org.matheclipse.graphtheory.graphics.GraphGraphics;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EdgeListType;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -76,6 +66,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.geodesy.GeodesicSolver;
 import org.matheclipse.core.numerics.geodesy.ReferenceEllipsoid;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.graphtheory.eval.GraphUtil;
+import org.matheclipse.graphtheory.eval.GraphView;
+import org.matheclipse.graphtheory.expression.data.ExprEdge;
+import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
+import org.matheclipse.graphtheory.expression.data.GraphExpr;
+import org.matheclipse.graphtheory.expression.data.IExprEdge;
+import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import com.google.common.collect.Sets;
 
 /** Functions for graph theory algorithms. */
@@ -300,71 +297,224 @@ public class GraphFunctions {
 
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      // FindMaximumFlow(g, s, t), FindMaximumFlow(g, s, t, "prop"); s and t may be lists
       GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
       if (gex == null) {
         return F.NIL;
       }
-      Graph<IExpr, Object> g = (Graph<IExpr, Object>) gex.toData();
-      IExpr source = ast.arg2();
-      IExpr target = ast.arg3();
-      if (!g.containsVertex(source) || !g.containsVertex(target)) {
+      String property = "FlowValue";
+      if (ast.argSize() == 4) {
+        if (!ast.arg4().isString()) {
+          return F.NIL;
+        }
+        property = ast.arg4().toString();
+        if (!property.equals("FlowValue") && !property.equals("EdgeList")
+            && !property.equals("FlowMatrix")) {
+          return F.NIL;
+        }
+      }
+      GraphView view = GraphView.of(gex.toData());
+      int[] sources = vertexPositions(view, ast.arg2());
+      int[] sinks = vertexPositions(view, ast.arg3());
+      if (sources == null || sinks == null) {
         return F.NIL;
       }
-      if (source.equals(target)) {
+      IAST options = gex.options();
+      double[] edgeCapacity = capacities(options, S.EdgeCapacity, view.m, 1.0);
+      double[] vertexCapacity =
+          capacities(options, S.VertexCapacity, view.n, Double.POSITIVE_INFINITY);
+      if (edgeCapacity == null || vertexCapacity == null) {
         return F.NIL;
       }
+      boolean exact = isIntegerCapacity(options, S.EdgeCapacity)
+          && isIntegerCapacity(options, S.VertexCapacity);
+      for (int s : sources) {
+        for (int t : sinks) {
+          if (s == t) {
+            return property.equals("FlowValue") ? F.C0 : F.CEmptyList;
+          }
+        }
+      }
+      // the network: vertex v is split into 2v -> 2v+1 carrying its capacity; edge e runs through
+      // a node of its own, 2n+2+2e (and 2n+3+2e for the reverse direction of an undirected edge)
+      final int n = view.n;
+      final int superSource = 2 * n;
+      final int superSink = 2 * n + 1;
+      Graph<Integer, DefaultWeightedEdge> network =
+          GraphTypeBuilder.<Integer, DefaultWeightedEdge>directed().allowingMultipleEdges(false)
+              .allowingSelfLoops(false).weighted(true).edgeClass(DefaultWeightedEdge.class)
+              .buildGraph();
+      for (int i = 0; i < 2 * n + 2 + 2 * view.m; i++) {
+        network.addVertex(i);
+      }
+      for (int v = 0; v < n; v++) {
+        arc(network, 2 * v, 2 * v + 1, vertexCapacity[v]);
+      }
+      DefaultWeightedEdge[] forward = new DefaultWeightedEdge[view.m];
+      DefaultWeightedEdge[] backward = new DefaultWeightedEdge[view.m];
+      for (int e = 0; e < view.m; e++) {
+        int u = view.source[e];
+        int v = view.target[e];
+        if (u == v) {
+          continue;
+        }
+        int node = 2 * n + 2 + 2 * e;
+        forward[e] = arc(network, 2 * u + 1, node, edgeCapacity[e]);
+        arc(network, node, 2 * v, edgeCapacity[e]);
+        if (view.undirected[e]) {
+          backward[e] = arc(network, 2 * v + 1, node + 1, edgeCapacity[e]);
+          arc(network, node + 1, 2 * u, edgeCapacity[e]);
+        }
+      }
+      for (int s : sources) {
+        arc(network, superSource, 2 * s, Double.POSITIVE_INFINITY);
+      }
+      for (int t : sinks) {
+        arc(network, 2 * t + 1, superSink, Double.POSITIVE_INFINITY);
+      }
+      MaximumFlowAlgorithm<Integer, DefaultWeightedEdge> algorithm =
+          new EdmondsKarpMFImpl<Integer, DefaultWeightedEdge>(network);
+      MaximumFlowAlgorithm.MaximumFlow<DefaultWeightedEdge> flow =
+          algorithm.getMaximumFlow(superSource, superSink);
+      if (property.equals("FlowValue")) {
+        return flowNumber(flow.getValue(), exact);
+      }
+      if (property.equals("FlowMatrix")) {
+        // the net flow from vertex i to vertex j as a SparseArray
+        double[][] matrix = new double[n][n];
+        for (int e = 0; e < view.m; e++) {
+          if (forward[e] == null) {
+            continue;
+          }
+          double f = flow.getFlowMap().get(forward[e]);
+          if (backward[e] != null) {
+            f -= flow.getFlowMap().get(backward[e]);
+          }
+          if (f >= 0.0) {
+            matrix[view.source[e]][view.target[e]] += f;
+          } else {
+            matrix[view.target[e]][view.source[e]] -= f;
+          }
+        }
+        IASTAppendable rules = F.ListAlloc();
+        for (int i = 0; i < n; i++) {
+          for (int j = 0; j < n; j++) {
+            if (matrix[i][j] > Config.DOUBLE_TOLERANCE) {
+              rules.append(
+                  F.Rule(F.list(F.ZZ(i + 1), F.ZZ(j + 1)), flowNumber(matrix[i][j], exact)));
+            }
+          }
+        }
+        return F.sparseArray(rules, new int[] {n, n});
+      }
+      // "EdgeList": the edges carrying flow, oriented along the flow, in flow matrix row order
+      List<int[]> carrying = new ArrayList<int[]>();
+      for (int e = 0; e < view.m; e++) {
+        if (forward[e] == null) {
+          continue;
+        }
+        double f = flow.getFlowMap().get(forward[e]);
+        if (backward[e] != null) {
+          f -= flow.getFlowMap().get(backward[e]);
+        }
+        if (f > Config.DOUBLE_TOLERANCE) {
+          carrying.add(new int[] {view.source[e], view.target[e], e});
+        } else if (f < -Config.DOUBLE_TOLERANCE) {
+          carrying.add(new int[] {view.target[e], view.source[e], e});
+        }
+      }
+      carrying.sort((x, y) -> x[0] != y[0] ? Integer.compare(x[0], y[0])
+          : x[1] != y[1] ? Integer.compare(x[1], y[1]) : Integer.compare(x[2], y[2]));
+      IASTAppendable result = F.ListAlloc(carrying.size());
+      for (int[] c : carrying) {
+        IExpr from = view.vertex(c[0]);
+        IExpr to = view.vertex(c[1]);
+        result
+            .append(view.undirected[c[2]] ? F.UndirectedEdge(from, to) : F.DirectedEdge(from, to));
+      }
+      return result;
+    }
 
-      MaximumFlowAlgorithm<IExpr, DefaultWeightedEdge> algorithm =
-          new EdmondsKarpMFImpl<IExpr, DefaultWeightedEdge>(flowNetwork(g));
-      double value = algorithm.getMaximumFlowValue(source, target);
-      double rounded = Math.rint(value);
-      if (Math.abs(value - rounded) < Config.DOUBLE_TOLERANCE) {
-        return F.ZZ((long) rounded);
+    private static DefaultWeightedEdge arc(Graph<Integer, DefaultWeightedEdge> network, int u,
+        int v, double capacity) {
+      DefaultWeightedEdge edge = network.addEdge(u, v);
+      network.setEdgeWeight(edge, capacity);
+      return edge;
+    }
+
+    /** The 0-based positions of a vertex or a list of vertices, or <code>null</code>. */
+    private static int[] vertexPositions(GraphView view, IExpr arg) {
+      if (view.index.containsKey(arg)) {
+        return new int[] {view.index.get(arg)};
       }
-      return F.num(value);
+      if (!arg.isList()) {
+        return null;
+      }
+      IAST list = (IAST) arg;
+      int[] result = new int[list.argSize()];
+      for (int i = 1; i < list.size(); i++) {
+        Integer v = view.index.get(list.get(i));
+        if (v == null) {
+          return null;
+        }
+        result[i - 1] = v;
+      }
+      return result;
     }
 
     /**
-     * A directed weighted copy of the graph in which every edge carries its capacity. The capacity
-     * of an unweighted edge is <code>1</code>, an undirected edge becomes a pair of anti parallel
-     * edges.
+     * The capacities given by the graph option <code>key</code> as a list in <code>EdgeList</code>
+     * or <code>VertexList</code> order.
+     *
+     * @return <code>null</code> for a negative or symbolic capacity
      */
-    private static Graph<IExpr, DefaultWeightedEdge> flowNetwork(Graph<IExpr, Object> g) {
-      Graph<IExpr, DefaultWeightedEdge> weighted =
-          GraphTypeBuilder.<IExpr, DefaultWeightedEdge>directed().allowingMultipleEdges(false)
-              .allowingSelfLoops(false).weighted(true).edgeClass(DefaultWeightedEdge.class)
-              .buildGraph();
-      for (IExpr vertex : g.vertexSet()) {
-        weighted.addVertex(vertex);
+    private static double[] capacities(IAST options, IExpr key, int size, double defaultValue) {
+      double[] result = new double[size];
+      java.util.Arrays.fill(result, defaultValue);
+      if (options == null || options.isNIL()) {
+        return result;
       }
-      boolean isWeighted = g.getType().isWeighted();
-      boolean isUndirected = !g.getType().isDirected();
-      for (Object edge : g.edgeSet()) {
-        IExpr u = g.getEdgeSource(edge);
-        IExpr v = g.getEdgeTarget(edge);
-        double capacity = isWeighted ? g.getEdgeWeight(edge) : 1.0;
-        addCapacity(weighted, u, v, capacity);
-        if (isUndirected || (edge instanceof ExprEdge && ((ExprEdge) edge).isUndirected())) {
-          addCapacity(weighted, v, u, capacity);
+      for (IExpr option : options) {
+        if (option.isRuleAST() && option.first().equals(key)) {
+          IExpr value = option.second();
+          if (!value.isList() || value.argSize() != size) {
+            return null;
+          }
+          for (int i = 0; i < size; i++) {
+            IExpr c = ((IAST) value).get(i + 1);
+            double d = c.isInfinity() ? Double.POSITIVE_INFINITY : c.evalfNaN();
+            if (Double.isNaN(d) || d < 0.0) {
+              return null;
+            }
+            result[i] = d;
+          }
         }
       }
-      return weighted;
+      return result;
     }
 
-    private static void addCapacity(Graph<IExpr, DefaultWeightedEdge> weighted, IExpr u, IExpr v,
-        double capacity) {
-      if (u.equals(v)) {
-        // a self-loop can't contribute to the flow
-        return;
+    /** Whether the capacities of option <code>key</code> are all integers (or absent). */
+    private static boolean isIntegerCapacity(IAST options, IExpr key) {
+      if (options == null || options.isNIL()) {
+        return true;
       }
-      DefaultWeightedEdge edge = weighted.getEdge(u, v);
-      if (edge == null) {
-        edge = weighted.addEdge(u, v);
-        weighted.setEdgeWeight(edge, capacity);
-      } else {
-        // parallel edges add up their capacities
-        weighted.setEdgeWeight(edge, weighted.getEdgeWeight(edge) + capacity);
+      for (IExpr option : options) {
+        if (option.isRuleAST() && option.first().equals(key)) {
+          return ((IAST) option.second()).forAll(c -> c.isInteger() || c.isInfinity());
+        }
       }
+      return true;
+    }
+
+    /** An exact integer for integer capacities, else a machine real. */
+    private static IExpr flowNumber(double value, boolean exact) {
+      if (Double.isInfinite(value)) {
+        return S.Infinity;
+      }
+      if (exact) {
+        return F.ZZ(Math.round(value));
+      }
+      return F.num(value);
     }
 
     @Override
@@ -374,7 +524,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_3_4;
     }
   }
 
@@ -461,6 +611,8 @@ public class GraphFunctions {
           return F.NIL;
         }
         try {
+          // VertexLabels, GraphLayout, ... given to GraphPlot describe the graph it draws
+          graph = GraphGraphics.withPlotOptions(graph, ast, 2);
           GraphGraphics gg = new GraphGraphics(graph);
           IExpr gExpr = gg.toGraphics();
 
@@ -470,11 +622,12 @@ public class GraphFunctions {
             gApp.append(F.Rule(S.BaseStyle, F.List(F.PointSize(0.04), F.Thickness(0.005))));
             // the caller's Graphics options (AspectRatio, ...) are kept, as trailing rules, except
             // ImageSize: the WLJS notebook draws a Graph as GraphPlot[g, ImageSize -> 70, ...],
-            // and Mathematica's picture of it has ImageSize -> 200 all the same, unless the graph
+            // picture has ImageSize -> 200 all the same, unless the graph
             // was given a size of its own
             for (int i = 2; i < ast.size(); i++) {
               IExpr option = ast.get(i);
-              if (option.isRuleAST() && option.first() != S.ImageSize) {
+              if (option.isRuleAST() && option.first() != S.ImageSize
+                  && !GraphGraphics.isPlotGraphOption(option)) {
                 gApp.append(option);
               }
             }
@@ -545,8 +698,10 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        // GraphUnion(g1, g2, ..., opts) - the trailing options go onto the result
+        int graphs = graphArguments(ast);
         GraphExpr<?> gex1 = GraphExpr.newInstance(ast.arg1());
-        if (gex1 == null) {
+        if (gex1 == null || graphs < 1) {
           return F.NIL;
         }
         Graph<IExpr, ? extends IExprEdge> resultGraph =
@@ -556,7 +711,7 @@ public class GraphFunctions {
           return F.NIL;
         }
         resultGraph = applyFunctionArg1(resultGraph);
-        for (int i = 2; i < ast.size(); i++) {
+        for (int i = 2; i <= graphs; i++) {
           GraphExpr<?> gexArg = GraphExpr.newInstance(ast.get(i));
           if (gexArg == null) {
             return F.NIL;
@@ -573,7 +728,7 @@ public class GraphFunctions {
           setOperation(resultGraph, graphArg, newGraph);
           resultGraph = newGraph;
         }
-        return GraphExpr.newInstance(resultGraph);
+        return withOptions(resultGraph, ast, graphs);
 
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
@@ -605,14 +760,14 @@ public class GraphFunctions {
      */
     protected void setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
         Graph<IExpr, ? extends IExprEdge> graph2, Graph<IExpr, ? extends IExprEdge> resultGraph) {
-      for (IExpr v : Sets.intersection(graph1.vertexSet(), graph2.vertexSet())) {
+      for (IExpr v : Sets.union(graph1.vertexSet(), graph2.vertexSet())) {
         resultGraph.addVertex(v);
       }
-      Set<? extends IExprEdge> graphSet = Sets.intersection(graph1.edgeSet(), graph2.edgeSet());
-      for (IExprEdge e : graphSet) {
+      // an undirected edge is the same whichever way round it is written
+      for (IExprEdge e : graph1.edgeSet()) {
         IExpr v1 = e.lhs();
         IExpr v2 = e.rhs();
-        if (resultGraph.containsVertex(v1) && resultGraph.containsVertex(v2)) {
+        if (graph2.containsEdge(v1, v2)) {
           resultGraph.addEdge(v1, v2);
         }
       }
@@ -625,10 +780,43 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_INFINITY;
+      // GraphUnion(g), GraphIntersection(g) give g
+      return ARGS_1_INFINITY;
     }
   }
 
+
+  /**
+   * The number of leading arguments of a graph combinator which are graphs: the arguments before
+   * the first option rule, or <code>-1</code> when a rule is followed by something else.
+   */
+  private static int graphArguments(IAST ast) {
+    int graphs = ast.argSize();
+    for (int i = 1; i < ast.size(); i++) {
+      if (ast.get(i).isRuleAST()) {
+        graphs = i - 1;
+        break;
+      }
+    }
+    for (int i = graphs + 1; i < ast.size(); i++) {
+      if (!ast.get(i).isRuleAST()) {
+        return -1;
+      }
+    }
+    return graphs;
+  }
+
+  /** The graph with the trailing option rules of the combinator call, such as a GraphLayout. */
+  private static IExpr withOptions(Graph<IExpr, ?> graph, IAST ast, int graphs) {
+    if (graphs == ast.argSize()) {
+      return GraphExpr.newInstance(graph);
+    }
+    IASTAppendable options = F.ListAlloc(ast.argSize() - graphs);
+    for (int i = graphs + 1; i < ast.size(); i++) {
+      options.append(ast.get(i));
+    }
+    return GraphExpr.newInstance(graph, options);
+  }
 
   private static class GraphComplement extends AbstractEvaluator {
 
@@ -680,6 +868,9 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        if (graphArguments(ast) != 2) {
+          return F.NIL;
+        }
         GraphExpr<?> gex1 = GraphExpr.newInstance(ast.arg1());
         if (gex1 == null) {
           return F.NIL;
@@ -699,7 +890,8 @@ public class GraphFunctions {
           } else {
             resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
           }
-          return setOperation(g1, g2, resultGraph);
+          setOperation(g1, g2, resultGraph);
+          return withOptions(resultGraph, ast, 2);
         }
 
       } catch (RuntimeException rex) {
@@ -716,10 +908,10 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_INFINITY;
     }
 
-    protected IExpr setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
+    protected void setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
         Graph<IExpr, ? extends IExprEdge> graph2, Graph<IExpr, ExprEdge> resultGraph) {
       for (IExpr v : Sets.union(graph1.vertexSet(), graph2.vertexSet())) {
         resultGraph.addVertex(v);
@@ -732,7 +924,6 @@ public class GraphFunctions {
           resultGraph.addEdge(v1, v2);
         }
       }
-      return GraphExpr.newInstance(resultGraph);
     }
 
   }
@@ -880,13 +1071,13 @@ public class GraphFunctions {
             return gex;
           }
         } else if (ast.size() >= 3 && ast.arg1().isList()) {
-          if (ast.isAST2() //
-              && ast.arg1().isList() //
-              && ast.arg2().isList2() //
-              && (ast.arg2().second() instanceof SparseArrayExpr)) {
+          if (ast.isAST2() && GraphExpr.isInternalEdges(ast.arg2())) {
+            // {directed, undirected}: a SparseArray keeps its form, index pairs become edges
             Graph<IExpr, Object> graph = GraphExpr.createGraph((IAST) ast.arg1(),
-                (SparseArrayExpr) ast.arg2().second(), F.CEmptyList);
-            return GraphExpr.newInstance(graph, true);
+                ast.arg2().first(), ast.arg2().second(), F.CEmptyList);
+            boolean sparse = ast.arg2().first() instanceof SparseArrayExpr
+                || ast.arg2().second() instanceof SparseArrayExpr;
+            return sparse ? GraphExpr.newInstance(graph, true) : GraphExpr.newInstance(graph);
           }
           IExpr edgeWeight = F.NIL;
           final OptionArgs options = new OptionArgs(S.Graph, ast, ast.argSize(), engine);
@@ -902,7 +1093,8 @@ public class GraphFunctions {
             IExpr arg = ast.get(i);
             if (arg.isRuleAST()) {
               graphOptions.append(arg);
-            } else if (arg.isList() && arg.argSize() > 0 && ((IAST) arg).forAll(x -> x.isRuleAST())) {
+            } else if (arg.isList() && arg.argSize() > 0
+                && ((IAST) arg).forAll(x -> x.isRuleAST())) {
               graphOptions.appendArgs((IAST) arg);
             }
           }
@@ -983,11 +1175,7 @@ public class GraphFunctions {
           return F.NIL;
         }
 
-        Graph<IExpr, ?> g = gex.toData();
-        GraphMeasurer<IExpr, ?> graphMeasurer = new GraphMeasurer<>(g);
-        Set<IExpr> centerSet = graphMeasurer.getGraphCenter();
-        IASTMutable list = F.ListAlloc(centerSet);
-        return list;
+        return eccentricityVertices(gex, true);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphCenter, rex, engine);
@@ -1040,17 +1228,7 @@ public class GraphFunctions {
         if (gex == null) {
           return F.NIL;
         }
-        Graph<IExpr, ?> g = gex.toData();
-        GraphMeasurer<IExpr, ?> graphMeasurer = new GraphMeasurer<>(g);
-        INum diameter = F.num(graphMeasurer.getDiameter());
-        if (gex.isWeightedGraph()) {
-          return diameter;
-        }
-        int intDiameter = diameter.toIntDefault();
-        if (F.isPresent(intDiameter)) {
-          return F.ZZ(intDiameter);
-        }
-        return diameter;
+        return eccentricityBound(gex, false);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphDiameter, rex, engine);
@@ -1108,9 +1286,7 @@ public class GraphFunctions {
         // }
         // }
 
-        GraphMeasurer<IExpr, ?> graphMeasurer = new GraphMeasurer<>(g);
-        Set<IExpr> centerSet = graphMeasurer.getGraphPeriphery();
-        return F.ListAlloc(centerSet);
+        return eccentricityVertices(gex, false);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphPeriphery, rex, engine);
@@ -1288,18 +1464,7 @@ public class GraphFunctions {
         if (gex == null) {
           return F.NIL;
         }
-        Graph<IExpr, ?> g = gex.toData();
-
-        GraphMeasurer<IExpr, ?> graphMeasurer = new GraphMeasurer<>(g);
-        INum radius = F.num(graphMeasurer.getRadius());
-        if (gex.isWeightedGraph()) {
-          return radius;
-        }
-        int intRadius = radius.toIntDefault();
-        if (F.isPresent(intRadius)) {
-          return F.ZZ(intRadius);
-        }
-        return radius;
+        return eccentricityBound(gex, true);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.GraphRadius, rex, engine);
@@ -1850,43 +2015,29 @@ public class GraphFunctions {
 
   private static class ClosenessCentrality extends AbstractEvaluator {
 
-    protected Map<IExpr, Double> getScores(Graph<IExpr, ExprEdge> g) {
-      final VertexScoringAlgorithm<IExpr, Double> bc =
-          new org.jgrapht.alg.scoring.ClosenessCentrality<IExpr, ExprEdge>(g);
-
-      Map<IExpr, Double> scores = bc.getScores();
-      return scores;
-    }
-
-    protected Map<IExpr, Double> getWeightedScores(Graph<IExpr, ExprWeightedEdge> g) {
-      final VertexScoringAlgorithm<IExpr, Double> bc =
-          new org.jgrapht.alg.scoring.ClosenessCentrality<IExpr, ExprWeightedEdge>(g);
-
-      Map<IExpr, Double> scores = bc.getScores();
-      return scores;
-    }
-
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
       GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
       if (gex == null) {
         return F.NIL;
       }
-      Graph<IExpr, ?> g = gex.toData();
-      Map<IExpr, Double> scores;
-      if (gex.isWeightedGraph()) {
-        scores = getWeightedScores((Graph<IExpr, ExprWeightedEdge>) g);
-      } else {
-        scores = getScores((Graph<IExpr, ExprEdge>) g);
+      GraphView view = GraphView.of(gex.toData());
+      if (view.hasNegativeWeight()) {
+        return F.NIL;
       }
-
-      Set<IExpr> vertexSet = g.vertexSet();
-      return F.mapSet(vertexSet, expr -> {
-        Double value = scores.get(expr);
-        if (value == null) {
-          return null;
+      // the number of vertices reachable from v divided by the sum of their distances,
+      // 0 if no vertex can be reached
+      return F.mapRange(0, view.n, v -> {
+        int reachable = 0;
+        double sum = 0.0;
+        double[] distance = view.distances(v);
+        for (int w = 0; w < view.n; w++) {
+          if (w != v && !Double.isInfinite(distance[w])) {
+            reachable++;
+            sum += distance[w];
+          }
         }
-        return F.num(value);
+        return F.num(sum > 0.0 ? reachable / sum : 0.0);
       });
     }
 
@@ -1933,15 +2084,27 @@ public class GraphFunctions {
     }
   }
 
-  private static class BetweennessCentrality extends ClosenessCentrality {
+  private static class BetweennessCentrality extends AbstractEvaluator {
 
     @Override
-    protected Map<IExpr, Double> getScores(Graph<IExpr, ExprEdge> g) {
-      final VertexScoringAlgorithm<IExpr, Double> bc =
-          new org.jgrapht.alg.scoring.BetweennessCentrality<IExpr, ExprEdge>(g);
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
+      }
+      GraphView view = GraphView.of(gex.toData());
+      double[] score = GraphUtil.betweenness(view, null);
+      return F.mapRange(0, view.n, v -> F.num(score[v]));
+    }
 
-      Map<IExpr, Double> scores = bc.getScores();
-      return scores;
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
@@ -1974,35 +2137,38 @@ public class GraphFunctions {
 
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
-      // try {
-      // GraphExpr<?> gex = createGraph(ast.arg1());
-      // if (gex == null) {
-      // return F.NIL;
-      // }
-      // Graph<IExpr, IExpr> g = (Graph<IExpr, IExpr>) gex.toData();
-      // org.jgrapht.alg.scoring.EigenvectorCentrality<IExpr, IExpr> evc =
-      // new org.jgrapht.alg.scoring.EigenvectorCentrality<IExpr, IExpr>(g);
-      // Set<IExpr> vertexSet = g.vertexSet();
-      // IASTAppendable list = F.ListAlloc(vertexSet.size());
-      // for (IExpr entry : vertexSet) {
-      //
-      // Double score = evc.getVertexScore(entry);
-      // list.append(F.num(score));
-      // }
-      // return list;
-      // } catch (RuntimeException rex) {
-      // }
-      return F.NIL;
+      GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
+      }
+      boolean in = true;
+      if (ast.isAST2()) {
+        if (ast.arg2().isString("In")) {
+          in = true;
+        } else if (ast.arg2().isString("Out")) {
+          in = false;
+        } else {
+          return F.NIL;
+        }
+      }
+      GraphView view = GraphView.of(gex.toData());
+      // the Perron vector of every strongly connected component, a vertex scoring the
+      // sum over its predecessors ("In") or successors ("Out")
+      double[] x = GraphUtil.eigenvectorCentrality(view, in);
+      if (x == null) {
+        return F.NIL;
+      }
+      return F.mapRange(0, view.n, v -> F.num(x[v]));
     }
 
     @Override
     public int status() {
-      return ImplementationStatus.NO_SUPPORT;
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
   }
   /**
@@ -2112,12 +2278,13 @@ public class GraphFunctions {
           return F.NIL;
         }
 
-        // Graph<IExpr, ?> g = gex.toData();
-        GraphPath<IExpr, ?> path = hamiltonianCycle(gex);
-        if (path != null) {
-          // Graph is Hamiltonian
-          return S.True;
+        List<int[][]> cycles =
+            GraphUtil.hamiltonianCycles(GraphView.of(gex.toData()), 1, HAMILTONIAN_SEARCH_NODES);
+        if (cycles == null) {
+          // the search gave up
+          return F.NIL;
         }
+        return F.booleSymbol(!cycles.isEmpty());
       }
 
       return S.False;
@@ -2144,18 +2311,26 @@ public class GraphFunctions {
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
 
+      // IsomorphicGraphQ(g1, g2, ...) - all graphs are isomorphic to the first
       GraphExpr<?> gex1 = getGraphExpr(ast.arg1());
       if (gex1 == null) {
-        return F.NIL;
+        return F.False;
       }
-      GraphExpr<?> gex2 = getGraphExpr(ast.arg2());
-      if (gex2 == null) {
-        return F.NIL;
+      for (int i = 2; i < ast.size(); i++) {
+        GraphExpr<?> gex2 = getGraphExpr(ast.get(i));
+        if (gex2 == null) {
+          return F.False;
+        }
+        Iterator<? extends GraphMapping<IExpr, ?>> mappings =
+            isomorphisms(gex1.toData(), gex2.toData());
+        if (mappings == null) {
+          return F.NIL;
+        }
+        if (!mappings.hasNext()) {
+          return F.False;
+        }
       }
-      AHUUnrootedTreeIsomorphismInspector<IExpr, ExprEdge> isomorphism =
-          new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
-              (Graph<IExpr, ExprEdge>) gex2.toData());
-      return F.booleSymbol(isomorphism.isomorphismExists());
+      return F.True;
     }
 
     @Override
@@ -2165,7 +2340,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_INFINITY;
     }
   }
 
@@ -2174,57 +2349,68 @@ public class GraphFunctions {
 
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
-
-      int minCycleLength = 0;
+      // FindCycle(g), FindCycle(g, k) - length at most k, FindCycle(g, {k}) - length k,
+      // FindCycle(g, {kmin, kmax}), FindCycle(g, kspec, n); FindCycle({g, v}, ...) - through v
+      int minCycleLength = 1;
       int maxCycleLength = Integer.MAX_VALUE;
       int atMostCycles = 1;
       if (ast.argSize() >= 2) {
         IExpr arg2 = ast.arg2();
         if (arg2.isInfinity()) {
           // fall through
+        } else if (arg2.isList1()) {
+          minCycleLength = arg2.first().toIntDefault();
+          maxCycleLength = minCycleLength;
+        } else if (arg2.isList2()) {
+          minCycleLength = arg2.first().toIntDefault();
+          maxCycleLength =
+              arg2.second().isInfinity() ? Integer.MAX_VALUE : arg2.second().toIntDefault();
         } else {
-          int vertexes = arg2.toMachineInt();
-          if (vertexes > 0) {
-            minCycleLength = vertexes;
-            maxCycleLength = vertexes;
-          } else if (arg2.isList2()) {
-            vertexes = arg2.first().toMachineInt();
-            if (vertexes <= 0) {
-              // The argument `2` in `1` is not a valid parameter.
-              return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
-            }
-            minCycleLength = vertexes;
-            vertexes = arg2.second().toMachineInt();
-            if (vertexes <= 0) {
-              // The argument `2` in `1` is not a valid parameter.
-              return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
-            }
-            maxCycleLength = vertexes;
-          } else {
-            // The argument `2` in `1` is not a valid parameter.
-            return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
-          }
+          maxCycleLength = arg2.toIntDefault();
+        }
+        if (minCycleLength <= 0 || maxCycleLength <= 0) {
+          // The argument `2` in `1` is not a valid parameter.
+          return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg2), engine);
         }
       }
       if (ast.isAST3()) {
         IExpr arg3 = ast.arg3();
-        if (arg3 == S.All) {
+        if (arg3 == S.All || arg3.isInfinity()) {
           atMostCycles = Integer.MAX_VALUE;
         } else {
-          atMostCycles = arg3.toMachineInt();
+          atMostCycles = arg3.toIntDefault();
           if (atMostCycles <= 0) {
             // The argument `2` in `1` is not a valid parameter.
             return Errors.printMessage(ast.topHead(), "inv", F.List(ast, arg3), engine);
           }
         }
       }
-      GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
+      IExpr arg1 = ast.arg1();
+      IExpr through = F.NIL;
+      if (arg1.isList2() && arg1.first() instanceof GraphExpr) {
+        through = arg1.second();
+        arg1 = arg1.first();
+      }
+      GraphExpr<?> gex = GraphExpr.newInstance(arg1);
       if (gex == null) {
         return F.NIL;
       }
-
-      return findCycles(gex, minCycleLength, maxCycleLength, atMostCycles);
-
+      GraphView view = GraphView.of(gex.toData());
+      int throughIndex = -1;
+      if (through.isPresent()) {
+        Integer index = view.index.get(through);
+        if (index == null) {
+          return F.NIL;
+        }
+        throughIndex = index;
+      }
+      List<int[][]> cycles =
+          GraphUtil.simpleCycles(view, minCycleLength, maxCycleLength, atMostCycles, throughIndex);
+      IASTAppendable result = F.ListAlloc(cycles.size());
+      for (int[][] cycle : cycles) {
+        result.append(GraphUtil.walkEdges(view, cycle[0], cycle[1]));
+      }
+      return result;
     }
 
     @Override
@@ -2369,15 +2555,22 @@ public class GraphFunctions {
       if (gex == null) {
         return F.NIL;
       }
-      GraphPath<IExpr, ?> path = hamiltonianCycle(gex);
-      if (path == null) {
-        // Graph is not Hamiltonian
-        return F.CEmptyList;
+      int limit = 1;
+      if (ast.isAST2()) {
+        IExpr arg2 = ast.arg2();
+        limit = (arg2.isInfinity() || arg2 == S.All) ? Integer.MAX_VALUE : arg2.toIntDefault();
       }
-      final List<IExpr> iList = path.getVertexList();
-      // a list of cycles holding the one that was found, as FindEulerianCycle reports its cycles
-      return F.list(
-          F.mapRange(0, iList.size() - 1, i -> F.DirectedEdge(iList.get(i), iList.get(i + 1))));
+      GraphView view = GraphView.of(gex.toData());
+      List<int[][]> cycles = GraphUtil.hamiltonianCycles(view, limit, HAMILTONIAN_SEARCH_NODES);
+      if (cycles == null) {
+        // the search gave up
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(cycles.size());
+      for (int[][] cycle : cycles) {
+        result.append(GraphUtil.walkEdges(view, cycle[0], cycle[1]));
+      }
+      return result;
     }
 
     @Override
@@ -2397,7 +2590,7 @@ public class GraphFunctions {
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
 
-      GraphExpr<?> gex1 = getGraphExpr(ast.arg1());
+      GraphExpr<?> gex1 = GraphExpr.newInstance(ast.arg1());
       if (gex1 == null) {
         return F.NIL;
       }
@@ -2405,14 +2598,32 @@ public class GraphFunctions {
       if (gex2 == null) {
         return F.NIL;
       }
-      AHUUnrootedTreeIsomorphismInspector<IExpr, ExprEdge> isomorphism =
-          new AHUUnrootedTreeIsomorphismInspector<>((Graph<IExpr, ExprEdge>) gex1.toData(),
-              (Graph<IExpr, ExprEdge>) gex2.toData());
-      IsomorphicGraphMapping<IExpr, ExprEdge> mapping = isomorphism.getMapping();
-      if (mapping == null) {
-        return F.CEmptyList;
+      int maximum = 1;
+      if (ast.isAST3()) {
+        if (ast.arg3() == S.All || ast.arg3().isInfinity()) {
+          maximum = Integer.MAX_VALUE;
+        } else {
+          maximum = ast.arg3().toIntDefault();
+          if (maximum < 1) {
+            // Positive machine-sized integer expected at position `2` in `1`.
+            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C3), engine);
+          }
+        }
       }
-      return F.list(F.assoc(F.mapMap(mapping.getForwardMapping(), (k, v) -> F.Rule(k, v))));
+      Graph<IExpr, ?> g1 = gex1.toData();
+      Iterator<? extends GraphMapping<IExpr, ?>> mappings = isomorphisms(g1, gex2.toData());
+      if (mappings == null) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc();
+      while (mappings.hasNext() && result.argSize() < maximum) {
+        OperationSystem.checkInterrupt();
+        GraphMapping<IExpr, ?> mapping = mappings.next();
+        // the rules in VertexList order of the first graph
+        result.append(F.assoc(
+            F.mapSet(g1.vertexSet(), v -> F.Rule(v, mapping.getVertexCorrespondence(v, true)))));
+      }
+      return result;
     }
 
     @Override
@@ -2422,7 +2633,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
   }
 
@@ -2530,23 +2741,13 @@ public class GraphFunctions {
           if (gex == null) {
             return F.NIL;
           }
-          final Graph<IExpr, ?> g = gex.toData();
-          Graph<IExpr, ?> processGraph = g;
-          if (g.getType().isDirected()) {
-            // JGraphT's GreedyVCImpl requires an undirected graph.
-            // If the graph is directed, we create a temporary undirected copy
-            // to compute the vertex cover.
-            processGraph = Graphs.undirectedGraph(g);
-          }
-
-          VertexCoverAlgorithm<IExpr> greedy = new GreedyVCImpl<>(processGraph);
-          VertexCoverAlgorithm.VertexCover<IExpr> cover = greedy.getVertexCover();
+          GraphView view = GraphView.of(gex.toData());
+          // a minimum cover; of those the lexicographically smallest in VertexList order
+          int[] cover = GraphUtil.minimumVertexCover(view, 50_000_000L);
           if (cover == null) {
-            return F.List();
+            return F.NIL;
           }
-          IASTAppendable result = F.ListAlloc(10);
-          cover.forEach(x -> result.append(x));
-          return result;
+          return F.mapRange(0, cover.length, i -> view.vertex(cover[i]));
         }
       } catch (IllegalArgumentException iae) {
         // Fallback catch if algorithm constraints are violated
@@ -2605,11 +2806,22 @@ public class GraphFunctions {
       }
 
       Graph<IExpr, ?> g = gex.toData();
+      if (!g.containsVertex(ast.arg2()) || !g.containsVertex(ast.arg3())) {
+        return F.NIL;
+      }
 
-      DijkstraShortestPath<IExpr, ?> dijkstraAlg = new DijkstraShortestPath<>(g);
-      SingleSourcePaths<IExpr, ?> iPaths = dijkstraAlg.getPaths(ast.arg2());
-      GraphPath<IExpr, ?> path = iPaths.getPath(ast.arg3());
-
+      ShortestPathAlgorithm<IExpr, ?> alg =
+          GraphUtil.hasNegativeEdgeWeight(g) ? new BellmanFordShortestPath<>(g)
+              : new DijkstraShortestPath<>(g);
+      GraphPath<IExpr, ?> path;
+      try {
+        path = alg.getPaths(ast.arg2()).getPath(ast.arg3());
+      } catch (NegativeCycleDetectedException ncde) {
+        return F.NIL;
+      }
+      if (path == null) {
+        return F.CEmptyList;
+      }
       return Object2Expr.convertList(path.getVertexList(), true, false);
     }
 
@@ -2629,26 +2841,47 @@ public class GraphFunctions {
 
     @Override
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
-      // TODO
-      // try {
-      // GraphExpr<ExprEdge> gex1 = createGraph(ast.arg1());
-      // if (gex1 == null) {
-      // return F.NIL;
-      // }
-      // Graph<IExpr, ExprEdge> g1 = gex1.toData();
-      // LineGraphConverter<IExpr, ExprEdge, ExprEdge> lgc =
-      // new LineGraphConverter<IExpr, ExprEdge, ExprEdge>(g1);
-      // Graph<ExprEdge, ExprEdge> target = new SimpleGraph<>(ExprEdge.class);
-      // lgc.convertToLineGraph(target);
-      // // return GraphExpr.newInstance(target);
-      // } catch (RuntimeException rex) {
-      // }
-      return F.NIL;
+      GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
+      }
+      GraphView view = GraphView.of(gex.toData());
+      if (view.isMixed()) {
+        return F.NIL;
+      }
+      // the vertices of the line graph are the edge indices
+      IASTAppendable vertices = F.ListAlloc(view.m);
+      for (int e = 1; e <= view.m; e++) {
+        vertices.append(F.ZZ(e));
+      }
+      IASTAppendable edges = F.ListAlloc();
+      if (view.hasDirectedEdge()) {
+        // i -> j if edge j starts where edge i ends
+        for (int i = 0; i < view.m; i++) {
+          for (int j : view.out[view.target[i]]) {
+            edges.append(F.DirectedEdge(F.ZZ(i + 1), F.ZZ(j + 1)));
+          }
+        }
+      } else {
+        // edge j is joined to the earlier edges at its first, then at its second end
+        for (int j = 0; j < view.m; j++) {
+          java.util.Set<Integer> joined = new java.util.HashSet<Integer>();
+          for (int end : new int[] {view.source[j], view.target[j]}) {
+            for (int i : view.out[end]) {
+              if (i < j && joined.add(i)) {
+                edges.append(F.UndirectedEdge(F.ZZ(j + 1), F.ZZ(i + 1)));
+              }
+            }
+          }
+        }
+      }
+      GraphExpr<?> result = GraphExpr.newInstance(vertices, edges);
+      return result == null ? F.NIL : result;
     }
 
     @Override
     public int status() {
-      return ImplementationStatus.NO_SUPPORT;
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -2676,6 +2909,10 @@ public class GraphFunctions {
       GraphType t = graph.getType();
       if (t == null) {
         return F.NIL;
+      }
+      if (graph.vertexSet().size() == 1 && graph.edgeSet().isEmpty()) {
+        // a single vertex is a path
+        return S.True;
       }
       if (t.isDirected()) {
         for (IExpr v : graph.vertexSet()) {
@@ -2786,6 +3023,18 @@ public class GraphFunctions {
         return F.NIL;
       }
       Graph<IExpr, ?> g = gex.toData();
+      GraphView view = GraphView.of(g);
+      Integer v = view.index.get(arg2);
+      if (v != null && !view.hasNegativeWeight()) {
+        // measure the eccentricity over the vertices reachable from v
+        double max = 0.0;
+        for (double d : view.distances(v)) {
+          if (!Double.isInfinite(d)) {
+            max = Math.max(max, d);
+          }
+        }
+        return view.weighted ? F.num(max) : F.ZZ((int) max);
+      }
       GraphMeasurer<IExpr, ?> graphMeasurer = new GraphMeasurer<>(g);
       Map<IExpr, Double> centerSet = graphMeasurer.getVertexEccentricityMap();
 
@@ -3052,6 +3301,93 @@ public class GraphFunctions {
   }
 
   /**
+   * The graph radius (<code>radius=true</code>) or diameter: the smallest or largest vertex
+   * eccentricity. A graph which isn't (strongly) connected has the radius and diameter
+   * <code>Infinity</code>.
+   */
+  private static IExpr eccentricityBound(GraphExpr<?> gex, boolean radius) {
+    Graph<IExpr, ?> g = gex.toData();
+    GraphView view = GraphView.of(g);
+    if (view.n == 0) {
+      return F.NIL;
+    }
+    if (view.hasNegativeWeight()) {
+      GraphMeasurer<IExpr, ?> graphMeasurer = new GraphMeasurer<>(g);
+      return F.num(radius ? graphMeasurer.getRadius() : graphMeasurer.getDiameter());
+    }
+    double[] eccentricity = view.eccentricities();
+    double bound = radius ? Double.POSITIVE_INFINITY : 0.0;
+    for (double e : eccentricity) {
+      bound = radius ? Math.min(bound, e) : Math.max(bound, e);
+    }
+    if (!view.isStronglyConnected() || Double.isInfinite(bound)) {
+      return S.Infinity;
+    }
+    return view.weighted ? F.num(bound) : F.ZZ((int) bound);
+  }
+
+  /**
+   * The graph center (<code>center=true</code>) or periphery: the vertices whose eccentricity is
+   * the radius or diameter, in <code>VertexList</code> order. <code>{}</code> for a graph which
+   * isn't (strongly) connected.
+   */
+  private static IExpr eccentricityVertices(GraphExpr<?> gex, boolean center) {
+    Graph<IExpr, ?> g = gex.toData();
+    GraphView view = GraphView.of(g);
+    if (view.hasNegativeWeight()) {
+      GraphMeasurer<IExpr, ?> graphMeasurer = new GraphMeasurer<>(g);
+      return F
+          .ListAlloc(center ? graphMeasurer.getGraphCenter() : graphMeasurer.getGraphPeriphery());
+    }
+    if (!view.isStronglyConnected()) {
+      return F.CEmptyList;
+    }
+    double[] eccentricity = view.eccentricities();
+    double bound = center ? Double.POSITIVE_INFINITY : 0.0;
+    for (double e : eccentricity) {
+      bound = center ? Math.min(bound, e) : Math.max(bound, e);
+    }
+    IASTAppendable result = F.ListAlloc();
+    for (int v = 0; v < view.n; v++) {
+      if (Math.abs(eccentricity[v] - bound) <= 1.0e-12 * Math.max(1.0, bound)) {
+        result.append(view.vertex(v));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The isomorphisms between two graphs (VF2).
+   *
+   * @return <code>null</code> for a mixed graph or a multigraph, which VF2 doesn't handle; an empty
+   *         iterator if the graphs aren't isomorphic
+   */
+  private static Iterator<? extends GraphMapping<IExpr, ?>> isomorphisms(Graph<IExpr, ?> g1,
+      Graph<IExpr, ?> g2) {
+    if (GraphExpr.isMixedGraph(g1) || GraphExpr.isMixedGraph(g2)) {
+      return null;
+    }
+    if (g1.getType().isDirected() != g2.getType().isDirected()
+        || g1.vertexSet().size() != g2.vertexSet().size()
+        || g1.edgeSet().size() != g2.edgeSet().size()) {
+      return Collections.emptyIterator();
+    }
+    try {
+      @SuppressWarnings({"unchecked", "rawtypes"})
+      VF2GraphIsomorphismInspector<IExpr, Object> inspector =
+          new VF2GraphIsomorphismInspector<IExpr, Object>((Graph) g1, (Graph) g2);
+      Iterator<GraphMapping<IExpr, Object>> mappings = inspector.getMappings();
+      return mappings;
+    } catch (IllegalArgumentException iae) {
+      // multigraphs aren't supported
+      return null;
+    }
+  }
+
+  /** The size of the search tree after which a Hamiltonian cycle search gives up. */
+  private static final long HAMILTONIAN_SEARCH_NODES = 20_000_000L;
+
+  /**
    * Get the <code>GraphExpr<?></code>.
    *
    * @param arg1
@@ -3092,83 +3428,6 @@ public class GraphFunctions {
     return counter;
   }
 
-  private static IAST findCycles(GraphExpr<?> gex, int minCycleLength, int maxCycleLength,
-      int atMostCycles) {
-    if (gex.isWeightedGraph()) {
-      Graph<IExpr, ExprWeightedEdge> g = (Graph<IExpr, ExprWeightedEdge>) gex.toData();
-      DirectedSimpleCycles<IExpr, ExprWeightedEdge> algorithm =
-          new SzwarcfiterLauerSimpleCycles<IExpr, ExprWeightedEdge>(g);
-      return findCyclesList(algorithm, minCycleLength, maxCycleLength, atMostCycles);
-    } else {
-      if (gex.isUndirectedGraph()) {
-        Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
-        GraphType type = g.getType();
-        CycleBasisAlgorithm<IExpr, ExprEdge> algorithm = new PatonCycleBase<IExpr, ExprEdge>(g);
-        return findCyclesSet(algorithm, minCycleLength, maxCycleLength, atMostCycles, type);
-      } else {
-        Graph<IExpr, ExprEdge> g = (Graph<IExpr, ExprEdge>) gex.toData();
-        DirectedSimpleCycles<IExpr, ExprEdge> algorithm =
-            new SzwarcfiterLauerSimpleCycles<IExpr, ExprEdge>(g);
-        return findCyclesList(algorithm, minCycleLength, maxCycleLength, atMostCycles);
-      }
-    }
-  }
-
-  private static IAST findCyclesSet(CycleBasisAlgorithm<IExpr, ExprEdge> algorithm,
-      int minCycleLength, int maxCycleLength, int atMostCycles, GraphType type) {
-    try {
-      CycleBasis<IExpr, ExprEdge> cycleBasis = algorithm.getCycleBasis();
-      Set<List<ExprEdge>> cycles = cycleBasis.getCycles();
-      // System.out.println(cycles.toString());
-      IASTAppendable result =
-          F.ListAlloc(cycles.size() < atMostCycles ? cycles.size() : atMostCycles);
-      int counter = 0;
-      for (List<ExprEdge> list : cycles) {
-        if (list.size() >= minCycleLength && list.size() <= maxCycleLength) {
-          if (counter++ >= atMostCycles) {
-            break;
-          }
-          int size = list.size();
-          IASTAppendable cycle = F.ListAlloc(size);
-          IASTAppendable weights = F.ListAlloc(size);
-          for (int i = 0; i < size; i++) {
-            GraphExpr.edgeToIExpr(type, list.get(i), cycle, weights, size);
-          }
-          result.append(cycle);
-        }
-      }
-      return result;
-    } catch (IllegalArgumentException iae) {
-    }
-    return F.NIL;
-  }
-
-  private static IAST findCyclesList(DirectedSimpleCycles<IExpr, ?> algorithm, int minCycleLength,
-      int maxCycleLength, int atMostCycles) {
-    try {
-      List<List<IExpr>> path = algorithm.findSimpleCycles();
-      IASTAppendable result = F.ListAlloc(path.size() < atMostCycles ? path.size() : atMostCycles);
-      int counter = 0;
-      for (int i = 0; i < path.size(); i++) {
-        List<IExpr> vertexPath = path.get(i);
-        if (vertexPath.size() >= minCycleLength && vertexPath.size() <= maxCycleLength) {
-          if (counter++ >= atMostCycles) {
-            break;
-          }
-          IASTAppendable list = F.ListAlloc(vertexPath.size() + 1);
-          for (int j = 0; j < vertexPath.size() - 1; j++) {
-            list.append(F.DirectedEdge(vertexPath.get(j), vertexPath.get(j + 1)));
-          }
-          list.append(F.DirectedEdge(vertexPath.get(vertexPath.size() - 1), vertexPath.get(0)));
-          result.append(list);
-        }
-      }
-      return result;
-    } catch (IllegalArgumentException iae) {
-    }
-    return F.NIL;
-  }
-
   /**
    * Create an eulerian cycle.
    *
@@ -3183,19 +3442,6 @@ public class GraphFunctions {
     } catch (IllegalArgumentException iae) {
       // Graph is not Eulerian
     }
-    return null;
-  }
-
-  private static GraphPath<IExpr, ?> hamiltonianCycle(GraphExpr<?> gex) {
-
-    Graph<IExpr, IExprEdge> g = (Graph<IExpr, IExprEdge>) gex.toData();
-    HamiltonianCycleAlgorithm<IExpr, IExprEdge> eca = new HeldKarpTSP<>();
-    try {
-      return eca.getTour(g);
-    } catch (IllegalArgumentException iae) {
-      // Graph is not Hamiltonian
-    }
-
     return null;
   }
 

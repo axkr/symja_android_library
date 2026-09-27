@@ -7,6 +7,7 @@ import org.matheclipse.core.graphics.PlotRangePaddingSpec;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.manipulate.Dynamics;
 
 /** The options of a 2D {@code Graphics} expression, parsed into plain fields. */
 public final class GraphicsOptions2D {
@@ -136,7 +137,8 @@ public final class GraphicsOptions2D {
       }
       IAST rule = (IAST) arg;
       IExpr key = rule.arg1();
-      IExpr value = rule.arg2();
+      // PlotRange -> Dynamic[r] is drawn with the current value of r, not as if it were absent
+      IExpr value = Dynamics.currentValue(rule.arg2());
       if (!key.isBuiltInSymbol()) {
         continue;
       }
@@ -266,6 +268,16 @@ public final class GraphicsOptions2D {
         break;
       case ID.Joined:
         joined = value.isTrue();
+        break;
+      case ID.IntervalMarkers:
+        if (collector != null) {
+          collector.setIntervalMarkers(value, null);
+        }
+        break;
+      case ID.IntervalMarkersStyle:
+        if (collector != null) {
+          collector.setIntervalMarkers(null, value);
+        }
         break;
       // LabelStyle used to be applied here too, but it styles the labels rather than the
       // primitives, and the colour a plot puts on its own curves overrode it anyway

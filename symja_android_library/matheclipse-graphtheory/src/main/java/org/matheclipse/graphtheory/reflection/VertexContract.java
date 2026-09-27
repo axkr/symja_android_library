@@ -131,6 +131,7 @@ public class VertexContract extends AbstractFunctionEvaluator {
             ExprWeightedEdge newEdge = resultGraph.addEdge(repS, repT);
             if (newEdge != null) {
               resultGraph.setEdgeWeight(newEdge, origG.getEdgeWeight(edge));
+              ExprWeightedEdge.copyExactWeight(edge, newEdge);
             }
           } catch (IllegalArgumentException e) {
             // Ignore if edge already exists

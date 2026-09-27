@@ -102,7 +102,8 @@ public final class SymjaDirectories {
       }
       try (Stream<Path> entries = Files.list(autoload)) {
         entries.filter(Files::isDirectory)
-            .sorted(Comparator.comparing(p -> p.getFileName().toString()))
+            // entries of one directory: ordering by the full path orders by name
+            .sorted(Comparator.comparing(Path::toString))
             .forEach(directories::add);
       } catch (IOException ioe) {
         // an unreadable Autoload directory simply contributes nothing
@@ -113,7 +114,7 @@ public final class SymjaDirectories {
 
   /**
    * The start-up files of the autoloaded applications: both {@code <app>/init.m} and
-   * {@code <app>/Kernel/init.m} are recognised, as in the Wolfram Language.
+   * {@code <app>/Kernel/init.m} are recognised.
    */
   public static List<Path> autoloadInitFiles() {
     List<Path> files = new ArrayList<Path>();

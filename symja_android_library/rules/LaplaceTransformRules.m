@@ -19,7 +19,7 @@
  LaplaceTransform(a_*DiracDelta(t_), t_, s_) := a
    /; FreeQ({a,s}, t),
  LaplaceTransform(a_.*DiracDelta(b_.+t_), t_, s_) := a*E^(b*s)*HeavisideTheta(-b)
-   /; FreeQ({a,b,s}, t),
+   /; FreeQ({a,b,s}, t) && b=!=0,
   LaplaceTransform(a_.*HeavisideTheta(b_.+c_.*t_), t_, s_) := a*Which(Sign(c)==1,1/(E^(s*Max(0,-(b/c)))*s),Sign(c)==-1,0,True,0)
    /; FreeQ({a,b,c,s}, t),
  LaplaceTransform(E^t_, t_, s_) := 1/(s-1)

@@ -7,8 +7,8 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
-import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.PlotColorFunction;
+import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -137,8 +137,8 @@ public class ArrayPlot extends ListPlot {
         IAST rowAst = (IAST) rowExpr;
         // argSize(), not size(): the loop indexes get(c + 1), so a row shorter than the widest
         // one would otherwise read one position past its last argument. The cells a ragged row
-        // leaves unset stay null and are skipped when drawing, which is what Mathematica shows
-        // for them as well - transparent, rather than the default value of the array.
+        // leaves unset stay null and are skipped when drawing - transparent, rather than the
+        // default value of the array.
         for (int c = 0; c < Math.min(cols, rowAst.argSize()); c++) {
           IExpr val = rowAst.get(c + 1);
           grid[r][c] = val;
@@ -172,6 +172,8 @@ public class ArrayPlot extends ListPlot {
         .of(PlotColorFunction.Family.ARRAY, colorFunctionOpt, F.bool(scaling), S.ArrayPlot, engine)
         .range(1, min, max).sink(PlotColorFunction.Sink.FLAT)
         .fallback(t -> greyColor(t, greyLimit, scaling)).build();
+    // compiled once for the whole array: the rules are matched like Replace, once per cell
+    GraphicsOptions.ColorRuleTable colorRules = GraphicsOptions.colorRules(colorRulesOpt, engine);
     IExpr[][] cells = new IExpr[rows][cols];
 
     // Draw cells
@@ -204,7 +206,7 @@ public class ArrayPlot extends ListPlot {
         }
 
         // an explicit rule for this value takes precedence over the colour scale
-        IExpr ruleColor = GraphicsOptions.colorRule(colorRulesOpt, list.getAt(r + 1).getAt(c + 1));
+        IExpr ruleColor = colorRules == null ? null : colorRules.color(val);
         if (ruleColor != null) {
           color = ruleColor;
         }
@@ -227,8 +229,14 @@ public class ArrayPlot extends ListPlot {
       graphicsOptions.setAspectRatio(F.num((double) rows / (double) cols));
     }
 
-    // Default FrameTicks -> None for ArrayPlot
-    if (graphicsOptions.frameTicks().isNone() && options[GraphicsOptions.X_FRAMETICKS].isNone()) {
+    IExpr frameTicksOpt = GraphicsOptions.optionValue(originalAST, S.FrameTicks, S.None);
+    if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
+      // asked-for ticks count cells, as MatrixPlot's do, rather than coordinates
+      graphicsOptions
+          .addOption(F.Rule(S.FrameTicks, GraphicsOptions.matrixIndexFrameTicks(rows, cols)));
+    } else if (graphicsOptions.frameTicks().isNone()
+        && options[GraphicsOptions.X_FRAMETICKS].isNone()) {
+      // Default FrameTicks -> None for ArrayPlot
       // Ensure options reflect this so SVG doesn't draw default ticks
       graphicsOptions.setFrameTicks(S.None);
     }

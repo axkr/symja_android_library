@@ -23,9 +23,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * one alone. A data structure is the exception - <code>ds["Append", x]</code> changes the very
  * object every other expression holding it can see, which is what makes it usable as the buffer of
  * a server that is filled by one packet and read by the next.
- *
- * <p>
- * The methods are those of the Wolfram Language, spelled as a first string argument.
+ * 
  */
 public class DataStructureExpr extends DataExpr<Object> {
 
@@ -122,7 +120,7 @@ public class DataStructureExpr extends DataExpr<Object> {
     }
   }
 
-  /** The contents as a list; for a hash table the values, as the Wolfram Language answers them. */
+  /** The contents as a list. */
   private IAST elements() {
     IASTAppendable result = F.ListAlloc(length());
     switch (type) {

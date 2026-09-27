@@ -4,15 +4,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.tasks.EventLoop;
+import org.junit.jupiter.api.Tag;
 
 /**
  * Scheduled tasks and the pause that runs them.
  *
  * <p>
- * <code>Pause</code> is the point where a Wolfram Language program yields, so it is where a task
- * that has come due is evaluated. Without that, a main loop written as
- * <code>While[True, Pause[0.01]]</code> - which is how the WLJS notebook's server is written - would
- * spin forever and never do any of its work.
+ * <code>Pause</code> is the point where a program yields, so it is where a task that has come due
+ * is evaluated. Without that, a main loop written as <code>While[True, Pause[0.01]]</code> - which
+ * is how the WLJS notebook's server is written - would spin forever and never do any of its work.
  */
 public class EventLoopTest extends ExprEvaluatorTestCase {
 
@@ -22,6 +22,7 @@ public class EventLoopTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPauseRunsATaskThatIsDue() {
     boolean osAccess = Config.OS_ACCESS_ENABLED;
     Config.OS_ACCESS_ENABLED = true;
@@ -45,11 +46,13 @@ public class EventLoopTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testATaskWithACountRunsThatOften() {
     check("counter = 0", //
         "0");
-    check("task = SessionSubmit(ScheduledTask(counter = counter + 1, {0.01, 3}));"
-        + "Pause(0.3); counter", //
+    check(
+        "task = SessionSubmit(ScheduledTask(counter = counter + 1, {0.01, 3}));"
+            + "Pause(0.3); counter", //
         "3");
     check("Tasks()", //
         "{}");

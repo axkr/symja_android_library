@@ -9,9 +9,9 @@ NumberFieldDiscriminant(theta)
 For a quadratic field `Q(Sqrt(d))` with `d` squarefree the discriminant is `d` when
 `d` is congruent to `1` modulo `4`, and `4*d` otherwise.
 
-For a degree above two the result is only given when the discriminant of the minimal polynomial is
-squarefree, because `Z[theta]` is the maximal order in that case. Otherwise the expression stays
-unevaluated.
+For a degree above two it is the discriminant of the minimal polynomial of the algebraic integer
+`n*theta`, divided by the square of the index of `Z[n*theta]` in the ring of integers, which is
+computed with the Round 2 algorithm (see `NumberFieldIntegralBasis`).
 
 See
 * [Wikipedia - Discriminant of an algebraic number field](https://en.wikipedia.org/wiki/Discriminant_of_an_algebraic_number_field)
@@ -27,6 +27,14 @@ See
 
 >> NumberFieldDiscriminant(I)
 -4
+```
+
+```
+>> NumberFieldDiscriminant(2^(1/3))
+-108
+
+>> NumberFieldDiscriminant(Root(#^3-#^2-2*#-8&,1))
+-503
 ```
 
 ### Related terms
