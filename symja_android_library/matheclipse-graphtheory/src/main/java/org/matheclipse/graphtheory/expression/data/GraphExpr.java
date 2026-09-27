@@ -454,7 +454,8 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
         int from = map.get(lhs);
         int to = map.get(rhs);
         trie.put(new int[] {from, to}, F.C1);
-        if (!type.isDirected()) {
+        // an undirected edge of a mixed graph counts in both directions
+        if (!type.isDirected() || exprEdge.isUndirected()) {
           trie.put(new int[] {to, from}, F.C1);
         }
       }
@@ -470,30 +471,58 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>>
    * @return <code>null</code> if the graph type is <code>null</code>.
    */
   public static Graph<IExpr, ? extends IExprEdge> createGraph(Graph<IExpr, ?> graph, int newIndex) {
-    Graph<IExpr, ? extends IExprEdge> resultGraph;
     GraphType t = graph.getType();
     if (t == null) {
       return null;
     }
-    if (t.isDirected()) {
+    HashMap<IExpr, IExpr> hashMap = new HashMap<IExpr, IExpr>();
+    if (t.isWeighted()) {
+      // keep the edge weights
+      Graph<IExpr, ExprWeightedEdge> weightedGraph = t.isDirected()
+          ? new DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class)
+          : new DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class);
+      for (IExpr v : graph.vertexSet()) {
+        IInteger indexExpr = F.ZZ(newIndex++);
+        hashMap.put(v, indexExpr);
+        weightedGraph.addVertex(indexExpr);
+      }
+      Graph<IExpr, ExprWeightedEdge> source = (Graph<IExpr, ExprWeightedEdge>) graph;
+      for (ExprWeightedEdge e : source.edgeSet()) {
+        ExprWeightedEdge edge = weightedGraph.addEdge(hashMap.get(e.lhs()), hashMap.get(e.rhs()));
+        if (edge != null) {
+          weightedGraph.setEdgeWeight(edge, source.getEdgeWeight(e));
+          ExprWeightedEdge.copyExactWeight(e, edge);
+        }
+      }
+      return weightedGraph;
+    }
+    final boolean mixed = isMixedGraph(graph);
+    Graph<IExpr, ExprEdge> resultGraph;
+    if (mixed) {
+      resultGraph = new DirectedPseudograph<IExpr, ExprEdge>(ExprEdge.class);
+    } else if (t.isDirected()) {
       resultGraph = new DefaultDirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
     } else {
       resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
     }
 
-    HashMap<IExpr, IExpr> hashMap = new HashMap<IExpr, IExpr>();
     for (IExpr v : graph.vertexSet()) {
       IInteger indexExpr = F.ZZ(newIndex++);
       hashMap.put(v, indexExpr);
       resultGraph.addVertex(indexExpr);
     }
     Set<? extends IExprEdge> edgeSet = (Set<? extends IExprEdge>) graph.edgeSet();
+    int id = 1;
     for (IExprEdge e : edgeSet) {
-      IExpr v1 = e.lhs();
-      IExpr v2 = e.rhs();
-      IExpr lhs = hashMap.get(v1);
-      IExpr rhs = hashMap.get(v2);
-      resultGraph.addEdge(lhs, rhs);
+      IExpr lhs = hashMap.get(e.lhs());
+      IExpr rhs = hashMap.get(e.rhs());
+      if (mixed) {
+        // keep the undirected edges of a mixed graph
+        resultGraph.addEdge(lhs, rhs,
+            new ExprEdge(e instanceof ExprEdge && ((ExprEdge) e).isUndirected(), id++));
+      } else {
+        resultGraph.addEdge(lhs, rhs);
+      }
     }
     return resultGraph;
 

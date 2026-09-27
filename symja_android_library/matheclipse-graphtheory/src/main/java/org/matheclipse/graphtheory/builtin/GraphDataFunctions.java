@@ -8,12 +8,9 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.jgrapht.Graph;
 import org.jgrapht.generate.CompleteGraphGenerator;
-import org.jgrapht.generate.GeneralizedPetersenGraphGenerator;
 import org.jgrapht.generate.GnmRandomGraphGenerator;
 import org.jgrapht.generate.GridGraphGenerator;
 import org.jgrapht.generate.HyperCubeGraphGenerator;
-import org.jgrapht.generate.RingGraphGenerator;
-import org.jgrapht.generate.WheelGraphGenerator;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.matheclipse.core.basic.Config;
@@ -25,16 +22,16 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.graphtheory.expression.data.ExprEdge;
-import org.matheclipse.graphtheory.expression.data.GraphExpr;
-import org.matheclipse.graphtheory.expression.data.IExprEdge;
-import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.graphtheory.expression.data.ExprEdge;
+import org.matheclipse.graphtheory.expression.data.GraphExpr;
+import org.matheclipse.graphtheory.expression.data.IExprEdge;
+import org.matheclipse.graphtheory.graphics.GraphGraphics;
 import org.matheclipse.parser.trie.TrieBuilder;
 import org.matheclipse.parser.trie.TrieMatch;
 
@@ -418,12 +415,20 @@ public class GraphDataFunctions {
     }
 
     private static IExpr cycleGraph(EvalEngine engine, int order, IASTAppendable optionsList) {
-      RingGraphGenerator<IExpr, ExprEdge> gen = new RingGraphGenerator<IExpr, ExprEdge>(order);
+      // 1<->2, 2<->3, ..., (n-1)<->n and the closing edge 1<->n
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
-          .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
-          .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+          .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .edgeClass(ExprEdge.class) //
           .buildGraph();
-      gen.generateGraph(target);
+      for (int i = 1; i <= order; i++) {
+        target.addVertex(F.ZZ(i));
+      }
+      for (int i = 1; i < order; i++) {
+        target.addEdge(F.ZZ(i), F.ZZ(i + 1));
+      }
+      if (order > 2) {
+        target.addEdge(F.C1, F.ZZ(order));
+      }
       return GraphExpr.newInstance(target, optionsList);
     }
 
@@ -467,7 +472,59 @@ public class GraphDataFunctions {
         }
         return gridGraph(engine, m, n);
       }
+      if (list.isList() && list.argSize() > 0) {
+        int[] dimensions = new int[list.argSize()];
+        long size = 1;
+        for (int i = 0; i < dimensions.length; i++) {
+          dimensions[i] = list.getAt(i + 1).toMachineInt();
+          if (dimensions[i] <= 0) {
+            // Positive machine-sized integer expected at position `2` in `1`
+            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
+          }
+          size *= dimensions[i];
+          if (size > Config.MAX_GRAPH_VERTICES_SIZE) {
+            ASTElementLimitExceeded.throwIt(size);
+          }
+        }
+        return gridGraph(dimensions);
+      }
       return F.NIL;
+    }
+
+    /**
+     * The grid graph of any dimension: the vertices <code>1..n1*n2*...*nk</code> numbered with the
+     * last coordinate running fastest, and an edge between vertices which differ by 1 in one
+     * coordinate.
+     */
+    private static IExpr gridGraph(int[] dimensions) {
+      int size = 1;
+      for (int d : dimensions) {
+        size *= d;
+      }
+      Graph<IExpr, ExprEdge> grid = GraphTypeBuilder //
+          .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .edgeClass(ExprEdge.class) //
+          .buildGraph();
+      for (int i = 1; i <= size; i++) {
+        grid.addVertex(F.ZZ(i));
+      }
+      int[] stride = new int[dimensions.length];
+      int s = 1;
+      for (int k = dimensions.length - 1; k >= 0; k--) {
+        stride[k] = s;
+        s *= dimensions[k];
+      }
+      for (int v = 0; v < size; v++) {
+        // the edges to the neighbours with a larger index, the smallest stride first so the edges
+        // come out as sorted pairs
+        for (int k = dimensions.length - 1; k >= 0; k--) {
+          int coordinate = (v / stride[k]) % dimensions[k];
+          if (coordinate + 1 < dimensions[k]) {
+            grid.addEdge(F.ZZ(v + 1), F.ZZ(v + stride[k] + 1));
+          }
+        }
+      }
+      return GraphExpr.newInstance(grid);
     }
 
     private static IExpr gridGraph(EvalEngine engine, int m, int n) {
@@ -513,7 +570,11 @@ public class GraphDataFunctions {
     public IExpr evalCatched(final IAST ast, EvalEngine engine) {
 
       int order = ast.arg1().toMachineInt();
-      if (order <= 0) {
+      if (order == 0) {
+        // the 0-dimensional hypercube is a single vertex
+        return GraphExpr.newInstance(F.List(F.C1), F.List());
+      }
+      if (order < 0) {
         // Positive machine-sized integer expected at position `2` in `1`
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
@@ -625,26 +686,40 @@ public class GraphDataFunctions {
       return F.NIL;
     }
 
+    /**
+     * The generalized Petersen graph numbers <code>PetersenGraph()</code>: the star
+     * <code>i - i+k (mod n)</code> on the vertices <code>1..n</code>, the spokes
+     * <code>i - n+i</code> and the cycle on <code>n+1..2n</code>; the edges are sorted pairs.
+     */
     private IExpr petersenGraph(EvalEngine engine, int order, int k) {
+      java.util.TreeSet<int[]> pairs = new java.util.TreeSet<int[]>(
+          (x, y) -> x[0] != y[0] ? Integer.compare(x[0], y[0]) : Integer.compare(x[1], y[1]));
+      for (int i = 1; i <= order; i++) {
+        int j = (i - 1 + k) % order + 1;
+        if (i != j) {
+          pairs.add(new int[] {Math.min(i, j), Math.max(i, j)});
+        }
+        pairs.add(new int[] {i, order + i});
+        int next = order + i % order + 1;
+        if (order + i != next) {
+          pairs.add(new int[] {Math.min(order + i, next), Math.max(order + i, next)});
+        }
+      }
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
-          .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
-          .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+          .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .edgeClass(ExprEdge.class) //
           .buildGraph();
-      GeneralizedPetersenGraphGenerator<IExpr, ExprEdge> gpgg =
-          new GeneralizedPetersenGraphGenerator<>(order, k);
-      gpgg.generateGraph(target);
+      for (int i = 1; i <= 2 * order; i++) {
+        target.addVertex(F.ZZ(i));
+      }
+      for (int[] pair : pairs) {
+        target.addEdge(F.ZZ(pair[0]), F.ZZ(pair[1]));
+      }
       return GraphExpr.newInstance(target);
     }
 
     private IExpr petersenGraphNoArg() {
-      Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
-          .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
-          .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
-          .buildGraph();
-      GeneralizedPetersenGraphGenerator<IExpr, ExprEdge> gpgg =
-          new GeneralizedPetersenGraphGenerator<>(5, 2);
-      gpgg.generateGraph(target);
-      return GraphExpr.newInstance(target);
+      return petersenGraph(EvalEngine.get(), 5, 2);
     }
 
     @Override
@@ -803,14 +878,25 @@ public class GraphDataFunctions {
     }
 
     private IExpr wheelGraph(EvalEngine engine, int order, IASTAppendable options) {
-      WheelGraphGenerator<IExpr, ExprEdge> gen = new WheelGraphGenerator<IExpr, ExprEdge>(order);
+      // the hub is vertex 1 and the rim 2, 3, ..., order; the edges are sorted pairs
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
-          .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
-          .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
+          .<IExpr, ExprEdge>undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
+          .edgeClass(ExprEdge.class) //
           .buildGraph();
-      // Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
-      // ExprEdge>(ExprEdge.class);
-      gen.generateGraph(target);
+      for (int i = 1; i <= order; i++) {
+        target.addVertex(F.ZZ(i));
+      }
+      for (int i = 2; i <= order; i++) {
+        target.addEdge(F.C1, F.ZZ(i));
+      }
+      for (int i = 2; i <= order; i++) {
+        if (i == 2) {
+          target.addEdge(F.C2, F.C3);
+          target.addEdge(F.C2, F.ZZ(order));
+        } else if (i < order) {
+          target.addEdge(F.ZZ(i), F.ZZ(i + 1));
+        }
+      }
       return GraphExpr.newInstance(target, options);
     }
 

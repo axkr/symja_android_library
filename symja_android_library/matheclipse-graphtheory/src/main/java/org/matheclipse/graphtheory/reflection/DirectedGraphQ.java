@@ -26,7 +26,8 @@ public class DirectedGraphQ extends AbstractFunctionEvaluator {
 
     Graph<IExpr, ?> g = gex.toData();
 
-    return F.booleSymbol(g.getType().isDirected());
+    // a mixed graph is stored as a directed pseudograph, but is not directed
+    return F.booleSymbol(g.getType().isDirected() && !GraphExpr.isMixedGraph(g));
   }
 
   @Override

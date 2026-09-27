@@ -8,16 +8,18 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultUndirectedGraph;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
-import org.matheclipse.graphtheory.builtin.GraphFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.graphtheory.builtin.GraphFunctions;
 import org.matheclipse.graphtheory.expression.data.ExprEdge;
 import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
 import org.matheclipse.graphtheory.expression.data.GraphExpr;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * Returns a graph with the specified edges matching the pattern removed.
@@ -68,10 +70,19 @@ public class EdgeDelete extends AbstractFunctionEvaluator {
           IAST edgeExprSugar = isDirected ? F.Rule(source, target) : F.TwoWayRule(source, target);
 
           // Check if either form matches the user's pattern
+          // an undirected edge may be named either way round
           if (engine.evaluate(F.MatchQ(edgeExprCanonical, pattern)).isTrue()
-              || engine.evaluate(F.MatchQ(edgeExprSugar, pattern)).isTrue()) {
+              || engine.evaluate(F.MatchQ(edgeExprSugar, pattern)).isTrue()
+              || (!isDirected && (engine
+                  .evaluate(F.MatchQ(F.UndirectedEdge(target, source), pattern)).isTrue()
+                  || engine.evaluate(F.MatchQ(F.TwoWayRule(target, source), pattern)).isTrue()))) {
             edgesToRemove.add(edge);
           }
+        }
+
+        if (edgesToRemove.isEmpty() && isExplicitEdge(arg2)) {
+          // The argument `2` in `1` is not a valid parameter.
+          return Errors.printMessage(ast.topHead(), "inv", F.list(ast, arg2), engine);
         }
 
         // Apply deletion
@@ -110,10 +121,19 @@ public class EdgeDelete extends AbstractFunctionEvaluator {
           IAST edgeExprSugar = isDirected ? F.Rule(source, target) : F.TwoWayRule(source, target);
 
           // Check if either form matches the user's pattern
+          // an undirected edge may be named either way round
           if (engine.evaluate(F.MatchQ(edgeExprCanonical, pattern)).isTrue()
-              || engine.evaluate(F.MatchQ(edgeExprSugar, pattern)).isTrue()) {
+              || engine.evaluate(F.MatchQ(edgeExprSugar, pattern)).isTrue()
+              || (!isDirected && (engine
+                  .evaluate(F.MatchQ(F.UndirectedEdge(target, source), pattern)).isTrue()
+                  || engine.evaluate(F.MatchQ(F.TwoWayRule(target, source), pattern)).isTrue()))) {
             edgesToRemove.add(edge);
           }
+        }
+
+        if (edgesToRemove.isEmpty() && isExplicitEdge(arg2)) {
+          // The argument `2` in `1` is not a valid parameter.
+          return Errors.printMessage(ast.topHead(), "inv", F.list(ast, arg2), engine);
         }
 
         // Apply deletion
@@ -130,6 +150,15 @@ public class EdgeDelete extends AbstractFunctionEvaluator {
   @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
+  }
+
+  /**
+   * Whether <code>expr</code> names an edge explicitly (not by a pattern). Deleting an edge which
+   * isn't in the graph leaves <code>EdgeDelete</code> unevaluated with a message .
+   */
+  private static boolean isExplicitEdge(IExpr expr) {
+    return (expr.isAST(S.DirectedEdge, 3) || expr.isAST(S.UndirectedEdge, 3) || expr.isRuleAST()
+        || expr.isAST(S.TwoWayRule, 3)) && expr.isFreeOfPatterns();
   }
 
   @Override

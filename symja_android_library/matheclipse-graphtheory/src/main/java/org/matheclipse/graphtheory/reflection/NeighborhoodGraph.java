@@ -1,6 +1,8 @@
 package org.matheclipse.graphtheory.reflection;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
@@ -36,10 +38,19 @@ public class NeighborhoodGraph extends AbstractFunctionEvaluator {
     @SuppressWarnings("unchecked")
     Graph<IExpr, ?> baseGraph = gex.toData();
 
-    IExpr vertex = ast.arg2();
-
-    // If the vertex is not in the graph, return unevaluated
-    if (!baseGraph.containsVertex(vertex)) {
+    // a vertex or a list of vertices; vertices which aren't in the graph are ignored
+    IExpr arg2 = ast.arg2();
+    List<IExpr> centres = new ArrayList<>();
+    if (baseGraph.containsVertex(arg2)) {
+      centres.add(arg2);
+    } else if (arg2.isList()) {
+      for (IExpr v : (IAST) arg2) {
+        if (baseGraph.containsVertex(v)) {
+          centres.add(v);
+        }
+      }
+    }
+    if (centres.isEmpty()) {
       return F.NIL;
     }
 
@@ -51,15 +62,13 @@ public class NeighborhoodGraph extends AbstractFunctionEvaluator {
       }
     }
 
-    // Collect vertices up to distance d using Breadth-First traversal
-    Set<IExpr> vertexSet = new HashSet<>();
-    vertexSet.add(vertex);
-
-    Set<IExpr> currentLayer = new HashSet<>();
-    currentLayer.add(vertex);
+    // Collect vertices up to distance d using Breadth-First traversal; the result lists the
+    // centres first, then the vertices in the order they are found
+    Set<IExpr> vertexSet = new LinkedHashSet<>(centres);
+    Set<IExpr> currentLayer = new LinkedHashSet<>(centres);
 
     for (int i = 0; i < d; i++) {
-      Set<IExpr> nextLayer = new HashSet<>();
+      Set<IExpr> nextLayer = new LinkedHashSet<>();
       for (IExpr u : currentLayer) {
         if (baseGraph.getType().isDirected()) {
           nextLayer.addAll(Graphs.successorListOf(baseGraph, u));

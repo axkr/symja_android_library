@@ -1,6 +1,6 @@
 package org.matheclipse.graphtheory.reflection;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -17,6 +17,7 @@ import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
 import org.matheclipse.graphtheory.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /**
  * Returns the subgraph induced by a specified set of vertices.
@@ -32,16 +33,25 @@ public class Subgraph extends AbstractFunctionEvaluator {
       }
 
       IExpr arg2 = ast.arg2();
-      Set<IExpr> vertexSet = new HashSet<>();
+      // the vertices of the result come in the given order
+      Set<IExpr> vertexSet = new LinkedHashSet<>();
 
       // Extract the target vertices to form the induced subgraph
       if (arg2.isList()) {
         for (IExpr v : (IAST) arg2) {
           vertexSet.add(v);
         }
-      } else {
-        // Fallback for a single vertex argument
+      } else if (gex.toData().containsVertex(arg2)) {
+        // a single vertex argument
         vertexSet.add(arg2);
+      } else {
+        // the vertices which match a pattern
+        IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
+        for (IExpr v : gex.toData().vertexSet()) {
+          if (matcher.test(v, engine)) {
+            vertexSet.add(v);
+          }
+        }
       }
 
       // 1. Handle Weighted Graphs

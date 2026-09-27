@@ -30,6 +30,32 @@ public class CompleteGraphQ extends AbstractEvaluator {
     }
 
     Graph<IExpr, ?> graph = gex.toData();
+    if (ast.isAST2()) {
+      // CompleteGraphQ(g, vlist): the vertices of vlist are pairwise adjacent
+      if (!ast.arg2().isList()) {
+        return F.NIL;
+      }
+      IAST vertices = (IAST) ast.arg2();
+      for (int i = 1; i < vertices.size(); i++) {
+        if (!graph.containsVertex(vertices.get(i))) {
+          return F.False;
+        }
+      }
+      boolean directed = graph.getType().isDirected();
+      for (int i = 1; i < vertices.size(); i++) {
+        for (int j = i + 1; j < vertices.size(); j++) {
+          IExpr u = vertices.get(i);
+          IExpr v = vertices.get(j);
+          if (u.equals(v)) {
+            continue;
+          }
+          if (!graph.containsEdge(u, v) || (directed && !graph.containsEdge(v, u))) {
+            return F.False;
+          }
+        }
+      }
+      return F.True;
+    }
     int n = graph.vertexSet().size();
 
     // 1. Check for self-loops (complete graphs cannot have them)
@@ -60,6 +86,6 @@ public class CompleteGraphQ extends AbstractEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_1;
+    return ARGS_1_2;
   }
 }

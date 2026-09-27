@@ -6,15 +6,15 @@ import java.util.List;
 import java.util.Set;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
-import org.matheclipse.graphtheory.builtin.GraphFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.graphtheory.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.graphtheory.builtin.GraphFunctions;
+import org.matheclipse.graphtheory.expression.data.GraphExpr;
 
 /**
  * Returns the local clustering coefficient for vertices in a graph. For a vertex with degree k, it
@@ -58,13 +58,10 @@ public class LocalClusteringCoefficient extends AbstractFunctionEvaluator {
    * Helper method to compute the exact fractional clustering coefficient for a single vertex.
    */
   public static IExpr getLocalCC(Graph<IExpr, ?> g, IExpr v, boolean isDirected) {
-    Set<IExpr> nSet = new HashSet<>();
     if (isDirected) {
-      nSet.addAll(Graphs.predecessorListOf(g, v));
-      nSet.addAll(Graphs.successorListOf(g, v));
-    } else {
-      nSet.addAll(Graphs.neighborListOf(g, v));
+      return directedLocalCC(g, v);
     }
+    Set<IExpr> nSet = new HashSet<>(Graphs.neighborListOf(g, v));
     nSet.remove(v); // Ignore self-loops
 
     int k = nSet.size();
@@ -74,29 +71,45 @@ public class LocalClusteringCoefficient extends AbstractFunctionEvaluator {
 
     int actualEdges = 0;
     List<IExpr> nList = new ArrayList<>(nSet);
-
-    if (isDirected) {
-      for (int i = 0; i < k; i++) {
-        for (int j = 0; j < k; j++) {
-          if (i != j && g.containsEdge(nList.get(i), nList.get(j))) {
-            actualEdges++;
-          }
-        }
-      }
-    } else {
-      for (int i = 0; i < k; i++) {
-        for (int j = i + 1; j < k; j++) {
-          if (g.containsEdge(nList.get(i), nList.get(j))) {
-            actualEdges++;
-          }
+    for (int i = 0; i < k; i++) {
+      for (int j = i + 1; j < k; j++) {
+        if (g.containsEdge(nList.get(i), nList.get(j))) {
+          actualEdges++;
         }
       }
     }
+    return F.QQ(actualEdges, (long) k * (k - 1) / 2L);
+  }
 
-    long num = actualEdges;
-    long den = isDirected ? (long) k * (k - 1) : (long) k * (k - 1) / 2L;
-
-    return F.fraction(num, den);
+  /**
+   * The clustering coefficient of <code>v</code> in a directed graph: the number of directed
+   * triangles <code>v -&gt; a -&gt; b -&gt; v</code> divided by <code>in(v)*out(v) - r(v)</code>,
+   * where <code>r(v)</code> counts the neighbours joined to <code>v</code> in both directions.
+   */
+  private static IExpr directedLocalCC(Graph<IExpr, ?> g, IExpr v) {
+    Set<IExpr> successors = new HashSet<>(Graphs.successorListOf(g, v));
+    Set<IExpr> predecessors = new HashSet<>(Graphs.predecessorListOf(g, v));
+    successors.remove(v);
+    predecessors.remove(v);
+    long reciprocal = 0;
+    for (IExpr u : successors) {
+      if (predecessors.contains(u)) {
+        reciprocal++;
+      }
+    }
+    long denominator = (long) successors.size() * predecessors.size() - reciprocal;
+    if (denominator <= 0) {
+      return F.C0;
+    }
+    long triangles = 0;
+    for (IExpr a : successors) {
+      for (IExpr b : predecessors) {
+        if (!a.equals(b) && g.containsEdge(a, b)) {
+          triangles++;
+        }
+      }
+    }
+    return F.QQ(triangles, denominator);
   }
 
   @Override

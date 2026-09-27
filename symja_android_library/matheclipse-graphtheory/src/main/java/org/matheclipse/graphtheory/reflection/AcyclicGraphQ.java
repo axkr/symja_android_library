@@ -1,20 +1,18 @@
 package org.matheclipse.graphtheory.reflection;
 
-import org.jgrapht.Graph;
-import org.jgrapht.GraphTests;
-import org.jgrapht.traverse.TopologicalOrderIterator;
-import org.matheclipse.graphtheory.builtin.GraphFunctions;
+import java.util.ArrayDeque;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
-import org.matheclipse.graphtheory.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.graphtheory.builtin.GraphFunctions;
+import org.matheclipse.graphtheory.eval.GraphView;
+import org.matheclipse.graphtheory.expression.data.GraphExpr;
 
 /**
- * Returns True if the graph is acyclic (a forest for undirected graphs, or a DAG for directed
- * graphs), False otherwise.
+ * Returns True if the graph has no cycle: a forest for undirected graphs, a DAG for directed graphs.
+ * In a mixed graph an undirected edge can be walked either way, but no edge twice.
  */
 public class AcyclicGraphQ extends AbstractFunctionEvaluator {
 
@@ -24,38 +22,79 @@ public class AcyclicGraphQ extends AbstractFunctionEvaluator {
     if (gex == null) {
       return F.False;
     }
-
-    @SuppressWarnings("unchecked")
-    Graph<IExpr, ?> g = gex.toData();
-
-    if (g.getType().isDirected()) {
-      try {
-        // Directed: Use TopologicalOrderIterator to detect cycles
-        TopologicalOrderIterator<IExpr, ?> iterator = new TopologicalOrderIterator<>(g);
-        while (iterator.hasNext()) {
-          iterator.next();
-        }
-        return S.True;
-      } catch (IllegalArgumentException e) {
-        return S.False;
-      }
-    } else {
-      // Undirected: A graph is acyclic (a forest) if it has no cycles.
-      // JGraphT's GraphTests.isTree(g) checks for connectivity + acyclic.
-      // For general forest detection, we check if the graph contains any cycles.
-      // A common property: Cycle-free if EdgeCount == VertexCount - ConnectedComponentsCount
-      return GraphTests.isTree(g) || isForest(g) ? S.True : S.False;
-    }
+    return F.booleSymbol(isAcyclic(GraphView.of(gex.toData())));
   }
 
-  private static boolean isForest(Graph<?, ?> g) {
-    // A graph is a forest if it contains no cycles.
-    // JGraphT doesn't have a direct "isForest" method, so we use CycleBasis.
-    try {
-      return new org.jgrapht.alg.cycle.PatonCycleBase<>(g).getCycleBasis().getCycles().isEmpty();
-    } catch (Exception e) {
-      return false;
+  /**
+   * A mixed graph has a cycle iff its undirected edges have one, a directed edge joins two vertices
+   * of one undirected component, or the directed edges form a cycle between the components.
+   */
+  private static boolean isAcyclic(GraphView view) {
+    final int n = view.n;
+    int[] parent = new int[n];
+    for (int v = 0; v < n; v++) {
+      parent[v] = v;
     }
+    for (int e = 0; e < view.m; e++) {
+      if (view.source[e] == view.target[e]) {
+        // a self-loop
+        return false;
+      }
+      if (view.undirected[e]) {
+        int a = find(parent, view.source[e]);
+        int b = find(parent, view.target[e]);
+        if (a == b) {
+          return false;
+        }
+        parent[a] = b;
+      }
+    }
+    // Kahn's algorithm on the components joined by the directed edges
+    int[] inDegree = new int[n];
+    java.util.List<java.util.List<Integer>> successors = new java.util.ArrayList<>(n);
+    for (int v = 0; v < n; v++) {
+      successors.add(new java.util.ArrayList<Integer>());
+    }
+    for (int e = 0; e < view.m; e++) {
+      if (!view.undirected[e]) {
+        int a = find(parent, view.source[e]);
+        int b = find(parent, view.target[e]);
+        if (a == b) {
+          return false;
+        }
+        successors.get(a).add(b);
+        inDegree[b]++;
+      }
+    }
+    ArrayDeque<Integer> queue = new ArrayDeque<Integer>();
+    int components = 0;
+    for (int v = 0; v < n; v++) {
+      if (find(parent, v) == v) {
+        components++;
+        if (inDegree[v] == 0) {
+          queue.add(v);
+        }
+      }
+    }
+    int removed = 0;
+    while (!queue.isEmpty()) {
+      int c = queue.poll();
+      removed++;
+      for (int d : successors.get(c)) {
+        if (--inDegree[d] == 0) {
+          queue.add(d);
+        }
+      }
+    }
+    return removed == components;
+  }
+
+  private static int find(int[] parent, int v) {
+    while (parent[v] != v) {
+      parent[v] = parent[parent[v]];
+      v = parent[v];
+    }
+    return v;
   }
 
   @Override
