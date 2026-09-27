@@ -1048,6 +1048,15 @@ public class S {
   public final static IBuiltInSymbol ApplySides = S.initFinalSymbol("ApplySides", ID.ApplySides);
 
   /**
+   * ApplyTo(x) - TODO describe `ApplyTo`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ApplyTo.md">ApplyTo
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ApplyTo = S.initFinalSymbol("ApplyTo", ID.ApplyTo);
+
+  /**
    * ArcCos(expr) - returns the arc cosine (inverse cosine) of `expr` (measured in radians).
    * 
    * @see <a href=
@@ -1408,6 +1417,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Association = S.initFinalSymbol("Association", ID.Association);
+
+  /**
+   * AssociationComap(x) - TODO describe `AssociationComap`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AssociationComap.md">AssociationComap
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AssociationComap =
+      S.initFinalSymbol("AssociationComap", ID.AssociationComap);
 
   /**
    * AssociationMap(header, <|k1->v1, k2->v2,...|>) - create an association `<|header(k1->v1),
@@ -4759,6 +4778,16 @@ public class S {
       S.initFinalSymbol("CountDistinct", ID.CountDistinct);
 
   /**
+   * CountDistinctBy(x) - TODO describe `CountDistinctBy`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CountDistinctBy.md">CountDistinctBy
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CountDistinctBy =
+      S.initFinalSymbol("CountDistinctBy", ID.CountDistinctBy);
+
+  /**
    * Counts({elem1, elem2, elem3, ...}) - count the number of each distinct element in the list
    * `{elem1, elem2, elem3, ...}` and return the result as an association `<|elem1->counter1,
    * ...|>`.
@@ -6040,6 +6069,15 @@ public class S {
 
   public final static IBuiltInSymbol DirichletWindow =
       S.initFinalSymbol("DirichletWindow", ID.DirichletWindow);
+
+  /**
+   * Discard(x) - TODO describe `Discard`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Discard.md">Discard
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Discard = S.initFinalSymbol("Discard", ID.Discard);
 
   /**
    * DiscreteDelta(n1, n2, n3, ...) - `DiscreteDelta` function returns `1` if all the `ni` are `0`.
@@ -20084,6 +20122,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol ReverseSort = S.initFinalSymbol("ReverseSort", ID.ReverseSort);
+
+  /**
+   * ReverseSortBy(x) - TODO describe `ReverseSortBy`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReverseSortBy.md">ReverseSortBy
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ReverseSortBy =
+      S.initFinalSymbol("ReverseSortBy", ID.ReverseSortBy);
 
   public final static IBuiltInSymbol ReverseUpEquilibrium =
       S.initFinalSymbol("ReverseUpEquilibrium", ID.ReverseUpEquilibrium);
