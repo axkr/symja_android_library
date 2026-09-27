@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import org.matheclipse.core.builtin.AttributeFunctions;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -14,6 +15,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.patternmatching.CaptureAvoidance;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
 
@@ -174,6 +176,15 @@ public final class PureFunctions {
       // body binds its own slots
       return body;
     }
+    java.util.Set<ISymbol> locals = CaptureAvoidance.scopeLocals(body);
+    if (!locals.isEmpty() && CaptureAvoidance.collides(application.subList(1), locals)) {
+      // (Module({e=1}, #+e)&)(e+1) is 2+e (WMA)
+      IExpr renamed = CaptureAvoidance.renameColliding(body, application.subList(1),
+          java.util.Collections.<ISymbol>emptyList(), engine);
+      if (renamed.isPresent()) {
+        body = renamed;
+      }
+    }
     VisitorReplaceSlots visitor = new VisitorReplaceSlots(application);
     IExpr result = body.accept(visitor).orElse(body);
     IExpr unfillable = visitor.getUnfillableSlot();
@@ -209,6 +220,22 @@ public final class PureFunctions {
     }
 
     IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
+    // a Module/With local which collides with a free symbol of an argument is renamed as well:
+    // Function(v, Module({e=1}, v+e))(e+1) is 2+e (WMA)
+    java.util.Set<ISymbol> locals = CaptureAvoidance.scopeLocals(body);
+    if (!locals.isEmpty() && CaptureAvoidance.collides(application.subList(1), locals)) {
+      for (int i = 1; i < application.size(); i++) {
+        IExpr argument = application.get(i);
+        if (!argument.isNumber() && !argument.isString()) {
+          new VariablesSet(argument).initSymbols(moduleVariables);
+        }
+      }
+      for (IExpr parameter : parameters) {
+        if (parameter.isSymbol()) {
+          moduleVariables.remove(parameter);
+        }
+      }
+    }
     IExpr renamed =
         body.accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
     if (renamed.isPresent()) {

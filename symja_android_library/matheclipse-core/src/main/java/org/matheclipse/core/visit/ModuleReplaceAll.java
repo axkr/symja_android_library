@@ -22,6 +22,12 @@ public class ModuleReplaceAll extends VisitorExpr {
   final int fOffset;
   final EvalEngine fEngine;
   private final String moduleCounter;
+  /**
+   * Whether the parameters of a nested <code>Function</code> are always renamed, or, like the
+   * locals of <code>Module</code> and <code>With</code>, only when they collide with a symbol mapped
+   * to {@link F#NIL}.
+   */
+  private final boolean renameFunctionParameters;
 
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter) {
@@ -30,10 +36,20 @@ public class ModuleReplaceAll extends VisitorExpr {
 
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter, int offset) {
+    this(moduleVariables, engine, moduleCounter, offset, true);
+  }
+
+  /**
+   * @param renameFunctionParameters <code>false</code> to rename the parameters of a nested
+   *        <code>Function</code> only when they collide with a symbol mapped to {@link F#NIL}
+   */
+  public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
+      String moduleCounter, int offset, boolean renameFunctionParameters) {
     this.fModuleVariables = moduleVariables;
     this.fOffset = offset;
     this.fEngine = engine;
     this.moduleCounter = moduleCounter;
+    this.renameFunctionParameters = renameFunctionParameters;
   }
 
   private IExpr apply(final ISymbol arg) {
@@ -149,7 +165,8 @@ public class ModuleReplaceAll extends VisitorExpr {
     if (localVariablesList.isPresent()) {
       IdentityHashMap<ISymbol, IExpr> variables = renamedVariables(localVariablesList, isFunction);
       if (variables != null) {
-        visitor = new ModuleReplaceAll(variables, fEngine, moduleCounter);
+        visitor = new ModuleReplaceAll(variables, fEngine, moduleCounter, 0,
+            renameFunctionParameters);
       }
     }
     return visitAST(ast, visitor, fOffset);
@@ -214,7 +231,7 @@ public class ModuleReplaceAll extends VisitorExpr {
   private IdentityHashMap<ISymbol, IExpr> putSingleVariable(ISymbol symbol,
       IdentityHashMap<ISymbol, IExpr> variables, final String varAppend, boolean isFunction) {
     IExpr temp = fModuleVariables.get(symbol);
-    if (isFunction) {
+    if (isFunction && renameFunctionParameters) {
       if (variables == null) {
         variables = new IdentityHashMap<>(fModuleVariables);
       }

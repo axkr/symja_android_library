@@ -631,6 +631,10 @@ public final class Validate {
           if (arg.first().isSymbol()) {
             continue;
           }
+          // Local variable specification `1` contains `2`, which is an assignment to `3`; only
+          // assignments to symbols are allowed.
+          return Errors.printMessage(ast.topHead(), "lvset",
+              F.list(ast.get(position), arg, arg.first()), engine);
         }
         // Local variable specification `1` contains `2` which is not a symbol or an assignment to
         // a symbol.

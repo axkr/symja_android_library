@@ -4064,9 +4064,41 @@ public final class Arithmetic {
       }
       INum pow = base.pow(exponent);
       if (pow.isInfinite()) {
-        return F.Overflow();
+        // WMA: an arbitrary precision number of machine precision, e.g. 10.0^400
+        IExpr promoted = machinePrecisionPower(base.doubleValue(), exponent.doubleValue());
+        return promoted.isPresent() ? promoted : F.Overflow();
       }
       return pow;
+    }
+
+    /**
+     * <code>base^exponent</code> computed with 17 digits and rounded to machine precision, for a
+     * result out of the double range.
+     *
+     * @return {@link F#NIL} if the result is out of the range of arbitrary precision numbers too
+     */
+    private static IExpr machinePrecisionPower(double base, double exponent) {
+      final long precision = ParserConfig.MACHINE_PRECISION;
+      try {
+        org.apfloat.FixedPrecisionApfloatHelper h =
+            new org.apfloat.FixedPrecisionApfloatHelper(precision + 1);
+        org.apfloat.Apfloat b = new org.apfloat.Apfloat(base, precision + 1);
+        org.apfloat.Apfloat result;
+        if (exponent == Math.rint(exponent) && Math.abs(exponent) < Long.MAX_VALUE / 2) {
+          result = h.pow(b, (long) exponent);
+        } else {
+          result = h.pow(b, new org.apfloat.Apfloat(exponent, precision + 1));
+        }
+        if (Math.abs(result.scale()) > Integer.MAX_VALUE) {
+          // far beyond anything which can still be printed or rounded to an integer
+          return F.NIL;
+        }
+        return F.num(result.precision(precision));
+      } catch (RuntimeException rex) {
+        // an org.apfloat.OverflowException
+        Errors.rethrowsInterruptException(rex);
+        return F.NIL;
+      }
     }
 
     private static IExpr e2DblComArg(final IComplexNum base, final IComplexNum exponent) {

@@ -59,6 +59,8 @@ import org.matheclipse.core.expression.BuiltinFunctionCalls;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.S;
@@ -357,6 +359,40 @@ public class EvalEngine implements Serializable {
       h = new FixedPrecisionApfloatHelper(Config.MAX_PRECISION_APFLOAT - 1);
     }
     return h;
+  }
+
+  /** Helpers of small precisions, shared - see {@link #getApfloat(long)}. */
+  private static final FixedPrecisionApfloatHelper[] APFLOAT_HELPERS =
+      new FixedPrecisionApfloatHelper[128];
+
+  /**
+   * The helper for calculations with an arbitrary precision number of the given
+   * <code>precision</code>: the engine's helper while a precision is set (<code>N(expr, n)</code>),
+   * otherwise one of <code>precision</code> digits, so that e.g. <code>N(Pi,20)+1.0</code> or a
+   * machine precision number out of the double range isn't computed to
+   * {@link Config#MAX_PRECISION_APFLOAT} digits, most of them meaningless.
+   *
+   * @param precision the precision of the operand, {@link Apfloat#INFINITE} for an exact one
+   */
+  public static FixedPrecisionApfloatHelper getApfloat(long precision) {
+    EvalEngine engine = get();
+    FixedPrecisionApfloatHelper h = engine.fApfloatHelper;
+    if (h != null) {
+      return h;
+    }
+    if (precision <= 0 || precision >= Config.MAX_PRECISION_APFLOAT
+        || precision == Apfloat.INFINITE) {
+      return getApfloat(engine);
+    }
+    if (precision < APFLOAT_HELPERS.length) {
+      h = APFLOAT_HELPERS[(int) precision];
+      if (h == null) {
+        h = new FixedPrecisionApfloatHelper(precision);
+        APFLOAT_HELPERS[(int) precision] = h;
+      }
+      return h;
+    }
+    return new FixedPrecisionApfloatHelper(precision);
   }
 
   /**
@@ -4932,7 +4968,16 @@ public class EvalEngine implements Serializable {
   private IExpr numericFunction(final IBuiltInSymbol symbol, final IAST ast) {
     final IFunctionEvaluator functionEvaluator = symbol.getEvaluator();
     try {
-      return functionEvaluator.numericFunction(ast, this);
+      IExpr result = functionEvaluator.numericFunction(ast, this);
+      if (result.isPresent() && isMachineOverflow(result) && hasFiniteMachineArguments(ast)) {
+        // WMA: a machine precision result out of the double range is an arbitrary precision
+        // number of machine precision, not Overflow() or Infinity
+        IExpr promoted = promotedNumericFunction(functionEvaluator, ast);
+        if (promoted.isPresent()) {
+          return promoted;
+        }
+      }
+      return result;
     } catch (ValidateException ve) {
       ve.printStackTrace();
       return Errors.printMessage(ast.topHead(), ve, this);
@@ -4945,6 +4990,89 @@ public class EvalEngine implements Serializable {
     } catch (BackingStorageException | SymjaMathException ve) {
       return Errors.printMessage(ast.topHead(), ve, this);
     }
+  }
+
+  /** Whether <code>result</code> is an infinite machine number or <code>Overflow()</code>. */
+  private static boolean isMachineOverflow(IExpr result) {
+    if (result instanceof Num) {
+      return Double.isInfinite(((Num) result).doubleValue());
+    }
+    if (result instanceof ComplexNum) {
+      ComplexNum c = (ComplexNum) result;
+      return Double.isInfinite(c.reDoubleValue()) || Double.isInfinite(c.imDoubleValue());
+    }
+    return result.isAST(S.Overflow, 1);
+  }
+
+  /**
+   * Whether the arguments are finite machine numbers or exact numbers, with at least one machine
+   * number.
+   */
+  private static boolean hasFiniteMachineArguments(IAST ast) {
+    boolean machine = false;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg instanceof Num) {
+        if (!Double.isFinite(((Num) arg).doubleValue())) {
+          return false;
+        }
+        machine = true;
+      } else if (arg instanceof ComplexNum) {
+        ComplexNum c = (ComplexNum) arg;
+        if (!Double.isFinite(c.reDoubleValue()) || !Double.isFinite(c.imDoubleValue())) {
+          return false;
+        }
+        machine = true;
+      } else if (!arg.isRational() && !(arg.isNumber() && arg.isExactNumber())) {
+        return false;
+      }
+    }
+    return machine;
+  }
+
+  /**
+   * Evaluate <code>ast</code> again with its machine numbers as arbitrary precision numbers, and
+   * round the result to machine precision.
+   *
+   * @return {@link F#NIL} if that doesn't give a finite number either
+   */
+  private IExpr promotedNumericFunction(IFunctionEvaluator functionEvaluator, IAST ast) {
+    final long precision = ParserConfig.MACHINE_PRECISION;
+    FixedPrecisionApfloatHelper oldHelper = fApfloatHelper;
+    try {
+      fApfloatHelper = new FixedPrecisionApfloatHelper(precision + 1);
+      SYSTEM_EPOCH.incrementAndGet();
+      IASTMutable promoted = ast.copy();
+      for (int i = 1; i < promoted.size(); i++) {
+        IExpr arg = promoted.get(i);
+        if (arg instanceof Num) {
+          promoted.set(i, ApfloatNum.valueOf(new Apfloat(((Num) arg).doubleValue(), precision + 1)));
+        } else if (arg instanceof ComplexNum) {
+          ComplexNum c = (ComplexNum) arg;
+          promoted.set(i,
+              ApcomplexNum.valueOf(new org.apfloat.Apcomplex(new Apfloat(c.reDoubleValue(), precision + 1),
+                  new Apfloat(c.imDoubleValue(), precision + 1))));
+        }
+      }
+      IExpr result = functionEvaluator.numericFunction(promoted, this);
+      if (result instanceof ApfloatNum) {
+        Apfloat value = ((ApfloatNum) result).apfloatValue();
+        if (Math.abs(value.scale()) <= Integer.MAX_VALUE) {
+          return ApfloatNum.valueOf(value.precision(precision));
+        }
+      } else if (result instanceof ApcomplexNum) {
+        org.apfloat.Apcomplex value = ((ApcomplexNum) result).apcomplexValue();
+        if (Math.abs(value.scale()) <= Integer.MAX_VALUE) {
+          return ApcomplexNum.valueOf(value.precision(precision));
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    } finally {
+      fApfloatHelper = oldHelper;
+      SYSTEM_EPOCH.incrementAndGet();
+    }
+    return F.NIL;
   }
 
   public Iterator<IdentityHashMap<ISymbol, IASTAppendable>> optionsStackIterator() {

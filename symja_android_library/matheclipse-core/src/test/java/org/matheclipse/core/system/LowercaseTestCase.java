@@ -1984,9 +1984,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-x+1/2*(1+Log(2*Pi))+(-1+x)*PolyGamma(0,x)");
     check("LogBarnesG(0.7)", //
         "-0.21459");
-    // TODO
+    // 15.0^500 is an arbitrary precision number of machine precision (WMA)
     check("LogBarnesG(15.^500)", //
-        "LogBarnesG(Overflow())");
+        "8.344001886972788*10^1178");
     check("N(LogBarnesG(1/5), 20)", //
         "-1.4678549668316788416");
     check("LogBarnesG(0.2225566255555666222222222222222)", //
@@ -25983,6 +25983,74 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b,c,d},{a,c,d,b},{a,d,b,c},{b,a,d,c},{b,c,a,d},{b,d,c,a},{c,a,b,d},{c,b,d,a},{c,d,a,b},{d,a,c,b},{d,b,a,c},{d,c,b,a}}");
     check("Array(Signature({##})&,{3,3,3})", //
         "{{{0,0,0},{0,0,1},{0,-1,0}},{{0,0,-1},{0,0,0},{1,0,0}},{{0,1,0},{-1,0,0},{0,0,0}}}");
+  }
+
+  /** Results for substituting into Module, With and Function. */
+  @Test
+  public void testCaptureAvoidingSubstitutionWMA() {
+    // a local which collides with a symbol of the substituted value is renamed; Block, Table and
+    // Sum
+    // scope dynamically and aren't renamed
+    check("g1(v_) := Module({e = 1}, v + e); g2(v_) := Block({e = 1}, v + e);" //
+        + "g3(v_) := With({e = 1}, v + e); g4(v_) := Function(e, v + e)[1];" //
+        + "g5(v_) := Table(v + e, {e, 1, 2}); g6(v_) := Sum(v + k, {k, 1, 2});" //
+        + "g7(v_) := Module({x}, x = 1; v + x); g10(v_) := Function({e}, v + e)[1];" //
+        + "g11 = Function(v, Module({e = 1}, v + e));" //
+        + "{g1(e + 1), g2(e + 1), g3(e + 1), g4(e + 1), g5(e), g6(k), g7(x), g10(e), g11(e + 1)}", //
+        "{2+e,3,2+e,2+e,{2,4},6,1+x,1+e,2+e}");
+    // the pattern variable is substituted into the local list as well
+    check("sh(e_) := Module({e = 1}, e + 1); sh(99)", //
+        "Module({99=1},99+1)");
+    check("sw(e_) := With({e = 1}, e + 1); sw(99)", //
+        "With({99=1},99+1)");
+    check("(Module({e = 1}, # + e) &)[e + 1]", //
+        "2+e");
+    // no collision, no renaming
+    check("f2(a_) := Function(x, x + a); f2(1)", //
+        "Function(x,x+1)");
+  }
+
+  /** Results for Coefficient with a symbolic exponent. */
+  @Test
+  public void testCoefficientSymbolicExponentWMA() {
+    check(
+        "{Coefficient(t + 2*t^2, t, i), Coefficient(x^n + x, x, n), Coefficient(t + 2*t^2, t, 1/2), " //
+            + "Coefficient(x^(1/2) + x, x, 1/2), Coefficient(a*x^n + b*x^m, x, n), " //
+            + "Coefficient(t + 2*t^2, t, -1)}", //
+        "{0,1,0,1,a,0}");
+    check("Sum(Coefficient(t + 2*t^2, t, i)*t^i, {i, 0, 1})", //
+        "t");
+  }
+
+  /**
+   * a machine precision result out of the double range is an arbitrary precision number; an
+   * underflow is 0.
+   */
+  @Test
+  public void testMachineOverflowWMA() {
+    check("{Exp(1000.), Gamma(300.), Factorial(200.), Sinh(1000.), Binomial(2000., 1000.)}", //
+        "{1.970071114017046*10^434,1.020191707388135*10^612,7.886578673647905*10^374,9.850355570085234*10^433,2.048151626989489*10^600}");
+    check("{10.^400, 2.^5000, 10.^1000000000}", //
+        "{1.000000000000000*10^400,1.412467032139426*10^1505,1.000000000000000*10^1000000000}");
+    check("{N(Gamma(300)), N(10^400), 1.*10^400, N(Exp(1000))}", //
+        "{1.020191707388135*10^612,1.000000000000000*10^400,1.000000000000000*10^400,1.970071114017046*10^434}");
+    check("{Hypergeometric1F1(1, 2, 800.), Exp(800.) + 1., MachineNumberQ(Exp(800.))}", //
+        "{3.407968215140708*10^344,2.726374572112566*10^347,False}");
+    check("{10.^-400, Exp(-1000.), 1.5*10^-400, Erfc(40.), N(Exp(-1000)), BesselK(0, 1000.)}", //
+        "{0.0,0.0,0.0,0.0,0.0,0.0}");
+    check("Exp(10.^20)", //
+        "Overflow()");
+  }
+
+  /** PolynomialGCD over the number field of a Root object (2026-09-27). */
+  @Test
+  public void testPolynomialGCDExtensionWMA() {
+    check("c = Root(-1 + 15*#1 - 80*#1^2 + 160*#1^3 + 2869*#1^5 &, 1);" //
+        + "PolynomialGCD(x^5 - x + 1, 256/2869 - 625*x/2869 - 500*x^2/2869 - 400*x^3/2869 - 320*x^4/2869 - c, " //
+        + "Extension -> Automatic) - (256 + 625*x + 309*c + 21716*c^2 + 45904*c^3 + 183616*c^4)", //
+        "0");
+    check("PolynomialGCD(x^2 - 2, x - Root(#^2 - 2 &, 2), Extension -> Automatic)", //
+        "Sqrt(2)-x");
   }
 
   @Test

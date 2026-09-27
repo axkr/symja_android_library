@@ -90,24 +90,23 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
 
   /**
    * The one argument forms. Both were advertised by <code>expectedArgSize</code> and then read a
-   * second argument that was not there, so they answered an
-   * <code>IndexOutOfBoundsException</code> rather than a value.
+   * second argument that was not there, so they answered an <code>IndexOutOfBoundsException</code>
+   * rather than a value.
    *
    * <p>
    * <code>DatePlus[n]</code> shifts the current instant by the increment, and
    * <code>DateDifference[date]</code> measures from the current instant to the date, which is why
    * it is negative for a date in the past. A bare number is a count of seconds from 1900, so
-   * <code>DateDifference[0]</code> reaches back more than a century. Mathematica answers
-   * <code>Quantity[-46254.72271229039, "Days"]</code> and
-   * <code>{2026,8,22,22,22,29.42}</code> for these; the assertions below are the parts of that
-   * which do not depend on when the test runs.
+   * <code>DateDifference[0]</code> reaches back more than a century. WMA answers
+   * <code>Quantity[-46254.72271229039, "Days"]</code> and <code>{2026,8,22,22,22,29.42}</code> for
+   * these; the assertions below are the parts of that which do not depend on when the test runs.
    */
   /**
    * Differences reaching further apart than about 292 years. {@link java.time.Duration#toNanos()}
    * holds only that much in a long and threw an <code>ArithmeticException</code> beyond it, which
-   * is every difference reaching back past the 1900 epoch that a bare number denotes. Mathematica
-   * answers the first of these with <code>Quantity[29979111601/43200, "Days"]</code>, exactly as
-   * below: the exact rational is a convention the two share.
+   * is every difference reaching back past the 1900 epoch that a bare number denotes. WMA answers
+   * the first of these with <code>Quantity[29979111601/43200, "Days"]</code>, exactly as below: the
+   * exact rational is a convention the two share.
    */
   @Test
   public void testDateDifferenceBeyondLongNanos() {
@@ -125,7 +124,7 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
   /**
    * A bare number is a count of seconds from 1900, and one large enough carries the date past the
    * range {@link java.time.LocalDate} can hold. That used to escape as a
-   * <code>DateTimeException</code> from whichever function asked for the date; Mathematica answers
+   * <code>DateTimeException</code> from whichever function asked for the date; WMA answers
    * <code>DayMatchQ[9223372036854775807, 2]</code> with the unevaluated expression, which is what
    * the null contract of the date specification reader already meant to produce.
    */
@@ -136,14 +135,14 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
    * <code>MidDate</code> accumulated nanosecond offsets through
    * {@link java.time.Duration#toNanos()}, which overflows past about 292 years, and
    * <code>DayRange</code> read a year of 2147483647 straight into {@link java.time.LocalDate},
-   * which cannot express it. Neither is a memory problem, which is what Mathematica runs into on
-   * the second one; Symja declines earlier and leaves the expression alone.
+   * which cannot express it. Neither is a memory problem, which is what WMA runs into on the second
+   * one; Symja declines earlier and leaves the expression alone.
    *
    * <p>
-   * On the first, Symja and Mathematica agree exactly once they are given the same dates:
-   * <code>MidDate[{{1,0},{0,1}}]</code> is <code>{-1, 7, 2, 0, 0, 0}</code> in both. Mathematica
-   * answers a three element argument from the first two dates alone, where Symja takes the mean of
-   * all three, so <code>{{1,0},{0,1},0}</code> is the one place the two part company.
+   * On the first, Symja and WMA agree exactly once they are given the same dates:
+   * <code>MidDate[{{1,0},{0,1}}]</code> is <code>{-1, 7, 2, 0, 0, 0}</code> in both. WMA answers a
+   * three element argument from the first two dates alone, where Symja takes the mean of all three,
+   * so <code>{{1,0},{0,1},0}</code> is the one place the two part company.
    */
   @Test
   public void testSpansBeyondLongNanos() {
@@ -162,8 +161,9 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     check("DayMatchQ(9223372036854775807, Monday)", "DayMatchQ(9223372036854775807,Monday)");
     check("DayMatchQ(-9223372036854775807, Monday)", "DayMatchQ(-9223372036854775807,Monday)");
     check("DayMatchQ(1.0*^30, Monday)", "DayMatchQ(1.*10^30,Monday)");
-    // an infinity reaches the same reader and used to be narrowed to a long on the way in
-    check("DayMatchQ(Sinh(1000.0), Monday)", "DayMatchQ(Infinity,Monday)");
+    // a number out of the long range reaches the same reader and used to be narrowed to a long on
+    // the way in; Sinh(1000.0) is a machine precision number out of the double range (WMA)
+    check("DayMatchQ(Sinh(1000.0), Monday)", "DayMatchQ(9.850355570085234*10^433,Monday)");
     check("DateObject(9223372036854775807)", "DateObject(9223372036854775807)");
     check("DayName(9223372036854775807)", "DayName(9223372036854775807)");
     check("DateDifference(9223372036854775807, 0)", "DateDifference(9223372036854775807,0)");
@@ -199,8 +199,7 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
   @Test
   public void testDatePlusFractionalCalendarUnit() {
     // 2020 is a leap year, so half of it is 183 whole days: 1 January + 183 days is 2 July, and
-    // the answer is a day list because there is no time of day to carry. Measured in Mathematica
-    // 2026-09-18, which gives {2020, 7, 2} for this.
+    // the answer is a day list because there is no time of day to carry.
     check("DatePlus({2020}, {0.5, \"Year\"})", "{2020,7,2}");
     // half of the 365 days of 2021 is 182.5 days, which does land at noon
     check("DatePlus({2021}, {0.5, \"Year\"})", "{2021,7,2,12,0,0.0}");

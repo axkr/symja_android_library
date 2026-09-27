@@ -190,10 +190,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "98.0");
     checkNumeric("HermiteH(7.0,8.0)", //
         "2.26102144E8");
-    // TODO
+    // out of the double range: an arbitrary precision number of machine precision (WMA)
     checkNumeric("HermiteH({-1,2.987,0,1},-1009)", //
-        // "{HermiteH(-1,-1009),-1.3103460085601044*10^442134,1,-2018}");
-        "{HermiteH(-1,-1009),-Infinity,1,-2018}");
+        "{HermiteH(-1,-1009),-1.310346008560087*10^442134,1,-2018}");
     checkNumeric("HermiteH( 1 ,-1009)", //
         "-2018");
     checkNumeric("HermiteH(3.1, 5)", //

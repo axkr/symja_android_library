@@ -13,6 +13,8 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.ruleindex.SubstitutionPlanStats;
 
 /**
@@ -128,6 +130,14 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    *        {@link SubstitutionPlan#substitute(IPatternMap, IExpr)}
    */
   private IExpr substituteRightHandSide(IPatternMap patternMap, IExpr nilOrEmptySequence) {
+    java.util.Set<ISymbol> locals = rightHandSideLocals();
+    if (!locals.isEmpty()) {
+      // rename the Module/With/Function locals which would capture a symbol of a value
+      IExpr renamed = renameCollidingLocals(fRightHandSide, patternMap, locals);
+      if (renamed.isPresent()) {
+        return patternMap.substituteSymbols(renamed, nilOrEmptySequence);
+      }
+    }
     if (Config.SUBSTITUTION_PLAN && !fRightHandSidePlanRefused) {
       SubstitutionPlan plan = fRightHandSidePlan;
       if (plan == null) {
@@ -156,6 +166,44 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
     SubstitutionPlanStats.genericSubstitution();
     return patternMap.substituteSymbols(fRightHandSide, nilOrEmptySequence);
+  }
+
+  /** The locals of the scoping constructs of the right-hand side, <code>null</code> until computed. */
+  private transient java.util.Set<ISymbol> fRightHandSideLocals;
+
+  private java.util.Set<ISymbol> rightHandSideLocals() {
+    java.util.Set<ISymbol> locals = fRightHandSideLocals;
+    if (locals == null) {
+      locals = CaptureAvoidance.scopeLocals(fRightHandSide);
+      fRightHandSideLocals = locals;
+    }
+    return locals;
+  }
+
+  /**
+   * Rename the locals of the scoping constructs in <code>rhs</code> which collide with a symbol of
+   * the pattern values - see {@link CaptureAvoidance}.
+   *
+   * @return {@link F#NIL} if nothing collides
+   */
+  static IExpr renameCollidingLocals(IExpr rhs, IPatternMap patternMap,
+      java.util.Set<ISymbol> locals) {
+    int size = patternMap.size();
+    java.util.List<IExpr> values = new java.util.ArrayList<IExpr>(size);
+    java.util.List<ISymbol> symbols = new java.util.ArrayList<ISymbol>(size);
+    for (int i = 0; i < size; i++) {
+      values.add(patternMap.getValue(i));
+      IExpr key = patternMap.getKey(i);
+      if (key instanceof ISymbol) {
+        symbols.add((ISymbol) key);
+      } else if (key instanceof IPatternObject && ((IPatternObject) key).getSymbol() != null) {
+        symbols.add(((IPatternObject) key).getSymbol());
+      }
+    }
+    if (!CaptureAvoidance.collides(values, locals)) {
+      return F.NIL;
+    }
+    return CaptureAvoidance.renameColliding(rhs, values, symbols, EvalEngine.get());
   }
 
   public PatternMatcherAndEvaluator() {

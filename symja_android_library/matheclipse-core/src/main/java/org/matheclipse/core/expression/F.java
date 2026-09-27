@@ -8546,7 +8546,15 @@ public class F extends S {
     if (engine.isArbitraryMode()) {
       return ApfloatNum.valueOf(value.toBigNumerator(), value.toBigDenominator());
     }
-    return Num.valueOf(value.doubleValue());
+    double d = value.doubleValue();
+    if (Double.isInfinite(d)) {
+      // WMA: out of the double range the value is an arbitrary precision number of machine
+      // precision
+      final long precision = ParserConfig.MACHINE_PRECISION;
+      return ApfloatNum.valueOf(new Apfloat(value.toBigNumerator(), precision)
+          .divide(new Apfloat(value.toBigDenominator(), precision)));
+    }
+    return Num.valueOf(d);
   }
 
   public static INum num(final IInteger value) {
@@ -8554,7 +8562,13 @@ public class F extends S {
     if (engine.isArbitraryMode()) {
       return ApfloatNum.valueOf(value.toBigNumerator());
     }
-    return num(value.doubleValue());
+    double d = value.doubleValue();
+    if (Double.isInfinite(d)) {
+      // WMA: out of the double range the value is an arbitrary precision number of machine
+      // precision
+      return ApfloatNum.valueOf(new Apfloat(value.toBigNumerator(), ParserConfig.MACHINE_PRECISION));
+    }
+    return num(d);
   }
 
   /**

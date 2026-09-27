@@ -926,6 +926,36 @@ public final class ExpVectorSymbolic implements Serializable {
   }
 
   /**
+   * A total order of two exponents: the numeric order where <code>Greater</code> or
+   * <code>Less</code> decide it, otherwise the canonical order. An undecided pair like a symbol
+   * <code>n</code> and <code>1</code> is not taken as equal, which merged the terms
+   * <code>x^n</code> and <code>x</code> of a polynomial.
+   *
+   * @return <code>1</code>, <code>0</code> or <code>-1</code>
+   */
+  private static int compareExponent(IExpr a, IExpr b) {
+    if (S.Greater.ofQ(a, b)) {
+      return 1;
+    }
+    if (S.Less.ofQ(a, b)) {
+      return -1;
+    }
+    if (a.equals(b)) {
+      return 0;
+    }
+    int c = a.compareTo(b);
+    return c < 0 ? -1 : (c > 0 ? 1 : 0);
+  }
+
+  private static boolean greaterOrder(IExpr a, IExpr b) {
+    return compareExponent(a, b) > 0;
+  }
+
+  private static boolean lessOrder(IExpr a, IExpr b) {
+    return compareExponent(a, b) < 0;
+  }
+
+  /**
    * ExpVectorLong inverse lexicographical compareTo.
    *
    * @param V
@@ -936,10 +966,10 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr[] v = V.val;
     int t = 0;
     for (int i = 0; i < u.length; i++) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         return 1;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         return -1;
       }
     }
@@ -960,10 +990,10 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr[] v = V.val;
     int t = 0;
     for (int i = begin; i < end; i++) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         return 1;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         return -1;
       }
     }
@@ -983,11 +1013,11 @@ public final class ExpVectorSymbolic implements Serializable {
     int t = 0;
     int i;
     for (i = 0; i < u.length; i++) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1003,10 +1033,10 @@ public final class ExpVectorSymbolic implements Serializable {
     }
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (greaterOrder(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (S.Less.ofQ(upEvaled, vpEvaled)) {
+      if (lessOrder(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1028,11 +1058,11 @@ public final class ExpVectorSymbolic implements Serializable {
     int t = 0;
     int i;
     for (i = begin; i < end; i++) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1049,10 +1079,10 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
 
-    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (greaterOrder(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (S.Less.ofQ(upEvaled, vpEvaled)) {
+      if (lessOrder(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1070,10 +1100,10 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr[] v = V.val;
     int t = 0;
     for (int i = u.length - 1; i >= 0; i--) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         return 1;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         return -1;
       }
     }
@@ -1094,10 +1124,10 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr[] v = V.val;
     int t = 0;
     for (int i = end - 1; i >= begin; i--) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         return 1;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         return -1;
       }
     }
@@ -1117,11 +1147,11 @@ public final class ExpVectorSymbolic implements Serializable {
     int t = 0;
     int i;
     for (i = u.length - 1; i >= 0; i--) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1139,10 +1169,10 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
 
-    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (greaterOrder(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (S.Less.ofQ(upEvaled, vpEvaled)) {
+      if (lessOrder(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1164,11 +1194,11 @@ public final class ExpVectorSymbolic implements Serializable {
     int t = 0;
     int i;
     for (i = end - 1; i >= begin; i--) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1185,10 +1215,10 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
 
-    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (greaterOrder(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (S.Less.ofQ(upEvaled, vpEvaled)) {
+      if (lessOrder(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1208,11 +1238,11 @@ public final class ExpVectorSymbolic implements Serializable {
     int t = 0;
     int i;
     for (i = 0; i < u.length; i++) {
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1230,10 +1260,10 @@ public final class ExpVectorSymbolic implements Serializable {
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
 
-    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (greaterOrder(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (S.Less.ofQ(upEvaled, vpEvaled)) {
+      if (lessOrder(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1252,11 +1282,11 @@ public final class ExpVectorSymbolic implements Serializable {
     int t = 0;
     int i;
     for (i = u.length - 1; i >= 0; i--) {
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1273,10 +1303,10 @@ public final class ExpVectorSymbolic implements Serializable {
     }
     IExpr upEvaled = EvalEngine.get().evaluate(up);
     IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-    if (S.Greater.ofQ(upEvaled, vpEvaled)) {
+    if (greaterOrder(upEvaled, vpEvaled)) {
       t = 1;
     } else {
-      if (S.Less.ofQ(upEvaled, vpEvaled)) {
+      if (lessOrder(upEvaled, vpEvaled)) {
         t = -1;
       }
     }
@@ -1296,11 +1326,11 @@ public final class ExpVectorSymbolic implements Serializable {
     int t = 0;
     int i;
     for (i = 0; i < u.length; i++) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1319,10 +1349,10 @@ public final class ExpVectorSymbolic implements Serializable {
       }
       IExpr upEvaled = EvalEngine.get().evaluate(up);
       IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-      if (S.Greater.ofQ(upEvaled, vpEvaled)) {
+      if (greaterOrder(upEvaled, vpEvaled)) {
         return 1;
       }
-      if (S.Less.ofQ(upEvaled, vpEvaled)) {
+      if (lessOrder(upEvaled, vpEvaled)) {
         return -1;
       }
     }
@@ -1345,11 +1375,11 @@ public final class ExpVectorSymbolic implements Serializable {
     int t = 0;
     int i;
     for (i = begin; i < end; i++) {
-      if (S.Greater.ofQ(u[i], v[i])) {
+      if (greaterOrder(u[i], v[i])) {
         t = 1;
         break;
       }
-      if (S.Less.ofQ(u[i], v[i])) {
+      if (lessOrder(u[i], v[i])) {
         t = -1;
         break;
       }
@@ -1368,10 +1398,10 @@ public final class ExpVectorSymbolic implements Serializable {
       }
       IExpr upEvaled = EvalEngine.get().evaluate(up);
       IExpr vpEvaled = EvalEngine.get().evaluate(vp);
-      if (S.Greater.ofQ(upEvaled, vpEvaled)) {
+      if (greaterOrder(upEvaled, vpEvaled)) {
         return 1;
       }
-      if (S.Less.ofQ(upEvaled, vpEvaled)) {
+      if (lessOrder(upEvaled, vpEvaled)) {
         return -1;
       }
     }
