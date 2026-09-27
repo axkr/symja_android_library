@@ -2903,6 +2903,16 @@ public class S {
       S.initFinalSymbol("CandlestickChart", ID.CandlestickChart);
 
   /**
+   * CanonicalGraph(x) - TODO describe `CanonicalGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CanonicalGraph.md">CanonicalGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CanonicalGraph =
+      S.initFinalSymbol("CanonicalGraph", ID.CanonicalGraph);
+
+  /**
    * CantorMesh(x) - TODO describe `CantorMesh`.
    * 
    * @see <a href=
@@ -3415,6 +3425,16 @@ public class S {
       S.initFinalSymbol("CirclePoints", ID.CirclePoints);
 
   public final static IBuiltInSymbol CircleTimes = S.initFinalSymbol("CircleTimes", ID.CircleTimes);
+
+  /**
+   * CirculantGraph(x) - TODO describe `CirculantGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CirculantGraph.md">CirculantGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CirculantGraph =
+      S.initFinalSymbol("CirculantGraph", ID.CirculantGraph);
 
   /**
    * CircularArcThrough(x) - TODO describe `CircularArcThrough`.
@@ -5491,6 +5511,16 @@ public class S {
    */
   public final static IBuiltInSymbol Degree = S.initFinalSymbol("Degree", ID.Degree);
 
+  /**
+   * DegreeCentrality(x) - TODO describe `DegreeCentrality`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DegreeCentrality.md">DegreeCentrality
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DegreeCentrality =
+      S.initFinalSymbol("DegreeCentrality", ID.DegreeCentrality);
+
   public final static IBuiltInSymbol DegreeLexicographic =
       S.initFinalSymbol("DegreeLexicographic", ID.DegreeLexicographic);
 
@@ -6681,6 +6711,16 @@ public class S {
       S.initFinalSymbol("EasterSunday", ID.EasterSunday);
 
   /** Render a 2D graphic with the Apache ECharts JavaScript library (module matheclipse-jsgraphics). */
+  /**
+   * EccentricityCentrality(x) - TODO describe `EccentricityCentrality`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EccentricityCentrality.md">EccentricityCentrality
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EccentricityCentrality =
+      S.initFinalSymbol("EccentricityCentrality", ID.EccentricityCentrality);
+
   public final static IBuiltInSymbol ECharts = S.initFinalSymbol("ECharts", ID.ECharts);
 
   /**
@@ -6733,6 +6773,16 @@ public class S {
   public final static IBuiltInSymbol EdgeCount = S.initFinalSymbol("EdgeCount", ID.EdgeCount);
 
   /**
+   * EdgeCapacity(x) - TODO describe `EdgeCapacity`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeCapacity.md">EdgeCapacity
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeCapacity =
+      S.initFinalSymbol("EdgeCapacity", ID.EdgeCapacity);
+
+  /**
    * EdgeChromaticNumber(graph) - gives the smallest number of colors that can be assigned to the
    * edges of `graph` such that no two edges sharing an endpoint have the same color.
    * 
@@ -6768,6 +6818,15 @@ public class S {
   public final static IBuiltInSymbol EdgeDetect = S.initFinalSymbol("EdgeDetect", ID.EdgeDetect);
 
   public final static IBuiltInSymbol EdgeForm = S.initFinalSymbol("EdgeForm", ID.EdgeForm);
+
+  /**
+   * EdgeIndex(x) - TODO describe `EdgeIndex`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeIndex.md">EdgeIndex
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeIndex = S.initFinalSymbol("EdgeIndex", ID.EdgeIndex);
 
   public final static IBuiltInSymbol EdgeLabels = S.initFinalSymbol("EdgeLabels", ID.EdgeLabels);
 
@@ -6815,6 +6874,16 @@ public class S {
   public final static IBuiltInSymbol EdgeStyle = S.initFinalSymbol("EdgeStyle", ID.EdgeStyle);
 
   public final static IBuiltInSymbol EdgeWeight = S.initFinalSymbol("EdgeWeight", ID.EdgeWeight);
+
+  /**
+   * EdgeWeightedGraphQ(x) - TODO describe `EdgeWeightedGraphQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EdgeWeightedGraphQ.md">EdgeWeightedGraphQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EdgeWeightedGraphQ =
+      S.initFinalSymbol("EdgeWeightedGraphQ", ID.EdgeWeightedGraphQ);
 
   /**
    * EditDistance(a, b) - returns the Levenshtein distance of `a` and `b`, which is defined as the
@@ -9417,6 +9486,16 @@ public class S {
   public final static IBuiltInSymbol Graph3D = S.initFinalSymbol("Graph3D", ID.Graph3D);
 
   /**
+   * GraphAutomorphismGroup(x) - TODO describe `GraphAutomorphismGroup`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphAutomorphismGroup.md">GraphAutomorphismGroup
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GraphAutomorphismGroup =
+      S.initFinalSymbol("GraphAutomorphismGroup", ID.GraphAutomorphismGroup);
+
+  /**
    * GraphCenter(graph) - compute the `graph` center. The center of a `graph` is the set of vertices
    * of graph eccentricity equal to the `graph` radius.
    * 
@@ -9937,6 +10016,15 @@ public class S {
   public final static IBuiltInSymbol HannWindow = S.initFinalSymbol("HannWindow", ID.HannWindow);
 
   /**
+   * HararyGraph(x) - TODO describe `HararyGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HararyGraph.md">HararyGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HararyGraph = S.initFinalSymbol("HararyGraph", ID.HararyGraph);
+
+  /**
    * HarmonicMean({a, b, c,...}) - returns the harmonic mean of `{a, b, c,...}`.
    * 
    * @see <a href=
@@ -10211,6 +10299,16 @@ public class S {
    */
   public final static IBuiltInSymbol HistogramTransform =
       S.initFinalSymbol("HistogramTransform", ID.HistogramTransform);
+
+  /**
+   * HITSCentrality(x) - TODO describe `HITSCentrality`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HITSCentrality.md">HITSCentrality
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HITSCentrality =
+      S.initFinalSymbol("HITSCentrality", ID.HITSCentrality);
 
   /**
    * HodgeDual(tensor,dimensions,slots) - `HodgeDual` evaluates the Hodge star of a tensor.
@@ -23784,6 +23882,15 @@ public class S {
    */
   public final static IBuiltInSymbol Tuples = S.initFinalSymbol("Tuples", ID.Tuples);
 
+  /**
+   * TuranGraph(x) - TODO describe `TuranGraph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TuranGraph.md">TuranGraph
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TuranGraph = S.initFinalSymbol("TuranGraph", ID.TuranGraph);
+
   public final static IBuiltInSymbol TwoWayRule = S.initFinalSymbol("TwoWayRule", ID.TwoWayRule);
 
   public final static IBuiltInSymbol UnaryMinusPlus =
@@ -24527,6 +24634,16 @@ public class S {
    *      documentation</a>
    */
   /**
+   * VertexCapacity(x) - TODO describe `VertexCapacity`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexCapacity.md">VertexCapacity
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexCapacity =
+      S.initFinalSymbol("VertexCapacity", ID.VertexCapacity);
+
+  /**
    * VertexChromaticNumber(graph) - gives the smallest number of colors that can be assigned to the
    * vertices of `graph` such that no two adjacent vertices have the same color.
    * 
@@ -24596,6 +24713,15 @@ public class S {
   public final static IBuiltInSymbol VertexInDegree =
       S.initFinalSymbol("VertexInDegree", ID.VertexInDegree);
 
+  /**
+   * VertexIndex(x) - TODO describe `VertexIndex`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexIndex.md">VertexIndex
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexIndex = S.initFinalSymbol("VertexIndex", ID.VertexIndex);
+
   public final static IBuiltInSymbol VertexLabels =
       S.initFinalSymbol("VertexLabels", ID.VertexLabels);
 
@@ -24632,6 +24758,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol VertexQ = S.initFinalSymbol("VertexQ", ID.VertexQ);
+
+  /**
+   * VertexReplace(x) - TODO describe `VertexReplace`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexReplace.md">VertexReplace
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexReplace =
+      S.initFinalSymbol("VertexReplace", ID.VertexReplace);
 
   /**
    * VertexShape(x) - TODO describe `VertexShape`.
