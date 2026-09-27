@@ -14,21 +14,19 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.util.InverseFunctionExpander;
+import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.core.eval.util.InverseFunctionExpander;
-import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -336,13 +334,12 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
    * @return {@link #CONTRADICTION} if the system contains a contradiction, or {@link F#NIL} if one
    *         of the elements is not a well-formed equation.
    */
-  private static IAST checkEquations(final IAST ast, int position,
-      IASTAppendable constraints, EvalEngine engine) {
+  private static IAST checkEquations(final IAST ast, int position, IASTAppendable constraints,
+      EvalEngine engine) {
     IExpr arg = ast.get(position);
     if (arg.isList() || arg.isAnd()) {
       IASTAppendable equations = F.ListAlloc(arg.size());
-      return collectEquations((IAST) arg, ast.topHead(), equations, constraints, engine)
-          ? equations
+      return collectEquations((IAST) arg, ast.topHead(), equations, constraints, engine) ? equations
           : F.NIL;
     }
     if (arg.isEqual()) {
@@ -351,8 +348,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
       if (components.isPresent()) {
         // a relation between two lists holds componentwise, e.g. `{x,y} == {1,2}` is the system
         // `x == 1` and `y == 2`
-        return F.mapList(components, t -> F.Equal(F.evalExpandAll(t.first(), engine),
-            F.evalExpandAll(t.second(), engine)));
+        return F.mapList(components,
+            t -> F.Equal(F.evalExpandAll(t.first(), engine), F.evalExpandAll(t.second(), engine)));
       }
       return F.list(F.Equal(F.evalExpandAll(equalAST.arg1(), engine),
           F.evalExpandAll(equalAST.arg2(), engine)));
@@ -529,8 +526,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
       IExpr variable, boolean multipleValues, EvalEngine engine) {
     IASTAppendable eliminatedResultEquations = F.ListAlloc(analyzerList.size());
     for (int i = 0; i < analyzerList.size(); i++) {
-      IExpr variableValues = eliminateAnalyze(analyzerList.get(i).getExpr(), variable,
-          multipleValues, engine);
+      IExpr variableValues =
+          eliminateAnalyze(analyzerList.get(i).getExpr(), variable, multipleValues, engine);
       if (variableValues.isPresent()) {
         analyzerList.remove(i);
         IAST[] result = new IAST[2];
@@ -631,8 +628,7 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
     Predicate<IExpr> predicate = Predicates.in(variable);
     IExpr result = F.NIL;
     if (!expr.isFree(predicate, true)) {
-      result =
-          extractVariableRecursive(expr, F.C0, predicate, variable, multipleValues, engine);
+      result = extractVariableRecursive(expr, F.C0, predicate, variable, multipleValues, engine);
     }
     return result;
   }
@@ -649,8 +645,7 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
    * @return F.NIL if we can't find an equation for the given variable.
    */
   private static IExpr extractVariableRecursive(IExpr exprWithVariable, IExpr exprWithoutVariable,
-      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues,
-      EvalEngine engine) {
+      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues, EvalEngine engine) {
     if (exprWithVariable.equals(variable)) {
       return exprWithoutVariable;
     }
@@ -686,8 +681,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
             return lambertWEquationResult;
           }
           if (exprWithoutVariable.isZero() && ast.isPlus()) {
-            IExpr zeroPlus = applyMatcher(zeroPlusMatcher(), elimzeroplus, ast,
-                exprWithoutVariable, variable, multipleValues, engine);
+            IExpr zeroPlus = applyMatcher(zeroPlusMatcher(), elimzeroplus, ast, exprWithoutVariable,
+                variable, multipleValues, engine);
             if (zeroPlus.isPresent()) {
               return zeroPlus;
             }
@@ -795,7 +790,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
             // the elimination is algebraic: raising the equation to a power may gain roots,
             // which `Solve` sorts out by cross checking its solutions
             IExpr value = engine.evaluate(F.Power(exprWithoutVariable, reversedPower));
-            IExpr res1 = extractVariableRecursive(base, value, predicate, variable, multipleValues, engine);
+            IExpr res1 =
+                extractVariableRecursive(base, value, predicate, variable, multipleValues, engine);
             // For even integer exponent with multipleValues, also consider the negative root
             if (multipleValues && exponent.isInteger() && exponent.isEvenResult()) {
               IExpr negValue = engine.evaluate(F.Negate(value));
@@ -824,7 +820,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
             }
             return res1;
           } else if (base.isFree(predicate, true)) {
-            if (!InverseFunctionExpander.isFiniteValue(engine.evaluate(F.Log(exprWithoutVariable)))) {
+            if (!InverseFunctionExpander
+                .isFiniteValue(engine.evaluate(F.Log(exprWithoutVariable)))) {
               // a power never takes the value 0: Log(0) would give f(x) == -Infinity, so the
               // equation has no solution
               return S.True;
@@ -837,18 +834,20 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
               // otherwise return the periodic complex family.
               principalOnly = exponent.isRealResult();
             } else {
-              // For a numeric base `a != E` expand into the periodic family when the exponent is a
-              // genuine function of the variable. If the exponent is the bare variable itself
-              // (e.g. `a^x == c`) the principal value is the expected single solution.
+              // For a numeric base `a != E` expand into the periodic family
+              // even for a bare variable: Solve(2^x == 60, x) gives
+              // (2*I*Pi*C(1))/Log(2) + Log(60)/Log(2)
               principalOnly = exponent.isRealResult() //
                   || !base.isNumericFunction() //
-                  || exponent.equals(variable);
+                  // a single value - InverseFunction(2^# &) is Log(#1)/Log(2)&
+                  || (!multipleValues && exponent.equals(variable));
             }
             if (principalOnly) {
               // base ^ f(x) == exprWithoutVariable -> f(x) == Log(exprWithoutVariable)/Log(base)
               IExpr value = base.isE() ? F.Log(exprWithoutVariable)
                   : F.Divide(F.Log(exprWithoutVariable), F.Log(base));
-              return extractVariableRecursive(exponent, value, predicate, variable, multipleValues, engine);
+              return extractVariableRecursive(exponent, value, predicate, variable, multipleValues,
+                  engine);
             }
 
             // base ^ f(x) == exprWithoutVariable /; Element(f(x), Complexes)
@@ -862,7 +861,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
                 expr = F.Divide(expr, F.Log(base));
               }
               IExpr temp = F.ConditionalExpression(expr, F.Element(c_n, S.Integers));
-              return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues, engine);
+              return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues,
+                  engine);
             } finally {
               engine.decConstantCounter();
             }
@@ -906,8 +906,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
     // the isolation of the variable, which also inverts the elementary functions and applies the
     // rules of `EliminateRules`
     Predicate<IExpr> predicate = Predicates.in(variable);
-    IExpr isolated = extractVariableRecursive(termsEqualZero, F.C0, predicate, variable,
-        multipleValues, engine);
+    IExpr isolated =
+        extractVariableRecursive(termsEqualZero, F.C0, predicate, variable, multipleValues, engine);
     if (isolated.isPresent() && !isolated.isTrue()) {
       return isolated;
     }
@@ -1002,8 +1002,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
   /**
    * Solve <code>kernel == root</code> for <code>variable</code>. A periodic kernel like
    * <code>Cosh(variable)</code> has infinitely many solutions, which are returned as the
-   * {@link S#ConditionalExpression} families of {@link InverseFunctionExpander}; every other
-   * kernel is inverted by its principal inverse function.
+   * {@link S#ConditionalExpression} families of {@link InverseFunctionExpander}; every other kernel
+   * is inverted by its principal inverse function.
    *
    * @return the value(s) of the variable or {@link F#NIL}
    */
@@ -1070,7 +1070,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
   }
 
   /**
-   * Apply one of the rule sets of {@link EliminateRules} to <code>ast == exprWithoutVariable</code>.
+   * Apply one of the rule sets of {@link EliminateRules} to
+   * <code>ast == exprWithoutVariable</code>.
    *
    * @param matcher the rules to apply
    * @param head the dummy head the rules are defined for
@@ -1260,8 +1261,7 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
    *         no real solution
    */
   private static IExpr tryLinearSinCos(IAST plusAST, IExpr exprWithoutVariable,
-      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues,
-      EvalEngine engine) {
+      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues, EvalEngine engine) {
     IASTAppendable sinCoefficient = F.PlusAlloc(2);
     IASTAppendable cosCoefficient = F.PlusAlloc(2);
     IASTAppendable rest = F.PlusAlloc(plusAST.argSize());
@@ -1317,7 +1317,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
         IExpr family = F.ConditionalExpression(
             F.Plus(engine.evaluate(F.ArcTan(cosU, sinU)), F.Times(F.C2, S.Pi, c_n)),
             F.Element(c_n, S.Integers));
-        IExpr solution = extractVariableRecursive(u, family, predicate, variable, multipleValues, engine);
+        IExpr solution =
+            extractVariableRecursive(u, family, predicate, variable, multipleValues, engine);
         if (solution.isNIL()) {
           return F.NIL;
         }
@@ -1351,9 +1352,9 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
    * equation.
    * <p>
    * <code>Log(u) + Log(v) == Log(u*v)</code> only holds on the principal branch, so a root is only
-   * a solution if it satisfies the equation which was asked:
-   * <code>Log(x+1) + Log(x-1) == 3</code> gives <code>x^2-1 == E^3</code> with the roots
-   * <code>-Sqrt(1+E^3)</code> and <code>Sqrt(1+E^3)</code>, and only the second one is a solution.
+   * a solution if it satisfies the equation which was asked: <code>Log(x+1) + Log(x-1) == 3</code>
+   * gives <code>x^2-1 == E^3</code> with the roots <code>-Sqrt(1+E^3)</code> and
+   * <code>Sqrt(1+E^3)</code>, and only the second one is a solution.
    * <p>
    * See: <a href=
    * "https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf">Solving
@@ -1471,8 +1472,8 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
 
   /** {@inheritDoc} */
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
     SolveOptions eliminateOptions = SolveOptions.of(SolveOptions.ELIMINATE_KEYS, options);
     for (int i = 3; i < originalAST.size(); i++) {
       IExpr option = originalAST.get(i);
@@ -1484,15 +1485,13 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    long precision =
-        SolveUtils.workingPrecision(ast, eliminateOptions.workingPrecision(), engine);
+    long precision = SolveUtils.workingPrecision(ast, eliminateOptions.workingPrecision(), engine);
     if (precision == SolveUtils.INVALID_PRECISION) {
       return F.NIL;
     }
     // the sites which apply an inverse function sit several layers below this call, so the
     // `InverseFunctions` mode travels with the engine for its dynamic extent
-    int oldInverseFunctions =
-        engine.setInverseFunctions(eliminateOptions.inverseFunctionsMode());
+    int oldInverseFunctions = engine.setInverseFunctions(eliminateOptions.inverseFunctionsMode());
     IExpr result;
     try {
       result = eliminate(ast, engine);

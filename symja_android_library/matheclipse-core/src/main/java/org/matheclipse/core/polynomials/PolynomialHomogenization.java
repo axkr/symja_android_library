@@ -47,6 +47,14 @@ public class PolynomialHomogenization {
   private static final int MAX_SPLIT_EXPONENT = 1024;
 
   /**
+   * Largest integer multiplier split off an exponent as the power of a kernel:
+   * <code>E^(3*x) -> t^3</code>, but <code>10^(-1500/t)</code> stays a kernel of its own - as the
+   * power <code>-1500</code> of <code>10^(1/t)</code> it made a degree 1500 polynomial which
+   * Factor, called by Solve, never finished.
+   */
+  private static final int MAX_KERNEL_MULTIPLIER = 64;
+
+  /**
    * Rewrite <code>Sech(u)^(2*n) -> (1 - Tanh(u)^2)^n</code> and
    * <code>Csch(u)^(2*n) -> (Coth(u)^2 - 1)^n</code>, but only for an argument <code>u</code> whose
    * <code>Tanh(u)</code> (respectively <code>Coth(u)</code>) occurs as well. A <code>Sech(u)</code>
@@ -573,13 +581,15 @@ public class PolynomialHomogenization {
     IExpr first = timesExponent.first();
     if (first.isComplex() && ((IComplex) first).reRational().isZero()) {
       int n = ((IComplex) first).imRational().toIntDefault();
-      if (F.isPresent(n) && (n > 0 || (n < 0 && base.isNumericFunction()))) {
+      if (F.isPresent(n) && Math.abs(n) <= MAX_KERNEL_MULTIPLIER
+          && (n > 0 || (n < 0 && base.isNumericFunction()))) {
         return new PowerKernel(base.power(timesExponent.setAtCopy(1, F.CI)), n);
       }
       return null;
     }
     int n = first.toIntDefault();
-    if (F.isPresent(n) && (n > 0 || (n < 0 && base.isNumericFunction()))) {
+    if (F.isPresent(n) && Math.abs(n) <= MAX_KERNEL_MULTIPLIER
+        && (n > 0 || (n < 0 && base.isNumericFunction()))) {
       return new PowerKernel(base.power(timesExponent.rest().oneIdentity1()), n);
     }
     return null;

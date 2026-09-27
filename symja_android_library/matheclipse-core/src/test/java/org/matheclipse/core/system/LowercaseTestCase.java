@@ -10955,6 +10955,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveNumericBasePowerFamily() {
+    // WMA gives the family of complex solutions for a numeric base, even a^x == c
+    check("Solve(2^x == 60, x)", //
+        "{{x->ConditionalExpression((I*2*Pi*C(1)+Log(60))/Log(2),C(1)∈Integers)}}");
+    check("Solve(2^x/12 == 5, x)", //
+        "{{x->ConditionalExpression((I*2*Pi*C(1)+Log(60))/Log(2),C(1)∈Integers)}}");
+    check("Solve(10^u == y, u)", //
+        "{{u->ConditionalExpression((I*2*Pi*C(1)+Log(y))/Log(10),C(1)∈Integers)}}");
+    check("Solve(2^x == 60, x, Reals)", //
+        "{{x->Log(60)/Log(2)}}");
+    // an Antoine vapour pressure equation: 10^(-1500/t) was a degree 1500 polynomial to Factor
+    check("sol = Solve(10^(8 - 1500/(t + 230))/760 == y, t);"
+        + " Chop(N(10^(8 - 1500/(t + 230))/760 /. t -> (sol[[1, 1, 2, 1]] /. C(1) -> 0) /. y -> 2)"
+        + " - 2)", //
+        "0");
+  }
+
+  @Test
+  public void testSolveCoincidingPeriodicBranches() {
+    // one family where the two branches of the inverse meet
+    check("Solve(Sin(x) == 1, x)", //
+        "{{x->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers)}}");
+    check("Solve(Cos(x) == 1, x)", //
+        "{{x->ConditionalExpression(2*Pi*C(1),C(1)∈Integers)}}");
+    // different expressions
+    check("Solve(Cos(x) == -1, x)[[All, 1, 2, 1]]", //
+        "{-Pi+2*Pi*C(1),Pi+2*Pi*C(1)}");
+  }
+
+  @Test
   public void testMathMLFormMatrixFormOfANonList() {
     // MatrixForm of something which is no matrix displays it as it is
     check(

@@ -54,14 +54,13 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.PolynomialHomogenization;
+import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.reduce.Emitter;
 import org.matheclipse.core.reduce.IntegerDomain;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.IntegerSolveResult;
 import org.matheclipse.core.reduce.QuadraticDiophantine;
-import org.matheclipse.core.polynomials.PolynomialHomogenization;
-import org.matheclipse.core.polynomials.QuarticSolver;
-import org.matheclipse.parser.client.ParserConfig;
 
 /**
  *
@@ -1328,7 +1327,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // copy the termsEqualZeroList back to a list of F.Equal(...) expressions
       // because Eliminate() operates on equations.
       IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Slot1, F.C0), 1);
-      IAST[] tempAST = Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues, engine);
+      IAST[] tempAST =
+          Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues, engine);
       if (tempAST != null) {
         IAST lastRuleUsedForVariableElimination = tempAST[1];
         if (lastRuleUsedForVariableElimination != null) {
@@ -2040,8 +2040,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           maxRoots = 1000;
         } else {
           // The value `1` of the `2` options is not a positive integer, Infinity or Automatic
-          return Errors.printMessage(ast.topHead(), "maxrts",
-              F.List(maxRootsOption, S.MaxRoots));
+          return Errors.printMessage(ast.topHead(), "maxrts", F.List(maxRootsOption, S.MaxRoots));
         }
       }
       try {
@@ -2060,8 +2059,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IExpr modulus = modulus();
         if (!modulus.isZero() && variables.isPresent()) {
           IAST modulusTerms = Validate.checkEquationsAndInequations(ast, 1);
-          IExpr modulusResult = SolveUtils.solveModulus(modulusTerms, variables, modulus,
-              ast.topHead(), engine);
+          IExpr modulusResult =
+              SolveUtils.solveModulus(modulusTerms, variables, modulus, ast.topHead(), engine);
           if (modulusResult.isListOfLists() && maxRoots < modulusResult.argSize()) {
             return ((IAST) modulusResult).subList(1, maxRoots + 1);
           }
@@ -2115,8 +2114,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         // `InverseFunctions` mode travels with the engine for its dynamic extent
         int oldInverseFunctions = engine.setInverseFunctions(options.inverseFunctionsMode());
         try {
-          IAssumptions assum = solveAssumptions(variables, domain, options.assumptions(),
-              oldAssumptions, engine);
+          IAssumptions assum =
+              solveAssumptions(variables, domain, options.assumptions(), oldAssumptions, engine);
           if (assum != null) {
             engine.setAssumptions(assum);
           }
@@ -2372,6 +2371,28 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
 
   /**
+   * Drop a solution which repeats an earlier one and is a periodic family: the two branches of an
+   * inverse function meet at <code>Sin(x) == 1</code>, where WMA gives the family
+   * <code>Pi/2+2*Pi*C(1)</code> once. A repeated root like <code>x^2 == 0</code> stays repeated,
+   * and so does, for <code>realOnly</code>, a family with non-real members: WMA gives
+   * <code>{{x->0},{x->0}}</code> for <code>Solve(Cosh(x) == 1, x, Reals)</code>.
+   */
+  private static IAST distinctFamilies(IAST solutions, boolean realOnly) {
+    java.util.Set<IExpr> seen = new java.util.HashSet<IExpr>();
+    IASTAppendable result = F.ListAlloc(solutions.argSize());
+    for (IExpr solution : solutions) {
+      IAST rules = (IAST) solution;
+      boolean family = rules.exists(r -> r.isRuleAST() && r.second().isConditionalExpression()
+          && (!realOnly || isRealValue(r.second())));
+      if (family && !seen.add(solution)) {
+        continue;
+      }
+      result.append(solution);
+    }
+    return result.argSize() == solutions.argSize() ? solutions : result;
+  }
+
+  /**
    * Check if all solutions are in the given domain (currently {@link S#Reals}, {@link S#Rationals}
    * and {@link S#Primes} are checked).
    *
@@ -2382,6 +2403,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   private static IExpr checkDomain(IExpr expr, ISymbol domain, int maxRoots) {
     if (expr.isListOfRules() && expr.argSize() > 0) {
       expr = F.list(expr);
+    }
+    if (expr.isListOfLists()) {
+      expr = distinctFamilies((IAST) expr, domain == S.Reals);
     }
     IExpr result = expr;
     if (expr.isList()) {
@@ -2839,8 +2863,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    */
   private static boolean isFiniteQuadratic(IExpr polynomial, IAST variables, int limit,
       EvalEngine engine) {
-    java.math.BigInteger[] coefficients = QuadraticDiophantine.coefficients(polynomial,
-        variables.arg1(), variables.arg2(), engine);
+    java.math.BigInteger[] coefficients =
+        QuadraticDiophantine.coefficients(polynomial, variables.arg1(), variables.arg2(), engine);
     if (coefficients == null) {
       return false;
     }
@@ -2890,9 +2914,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           case INFEASIBLE:
             return F.CEmptyList;
           case FINITE:
-            return checkDomain(
-                Emitter.tuplesToRules(exact, IntegerDomain.of((ISymbol) domain)), domain,
-                maximumNumberOfResults);
+            return checkDomain(Emitter.tuplesToRules(exact, IntegerDomain.of((ISymbol) domain)),
+                domain, maximumNumberOfResults);
           case PARAMETRIC:
             if (allowParametricSolution) {
               return Emitter.latticeSolveRules(exact.family(), exact.untouched(),
@@ -3018,10 +3041,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * An equation of rational functions which holds identically once the common factors are
-   * cancelled constrains nothing: <code>(x^2-1)/(x-1)-x-1==0</code> is solved by every
-   * <code>x</code>, so <code>Solve</code> gives <code>{{}}</code> for it and drops it from a
-   * system.
+   * An equation of rational functions which holds identically once the common factors are cancelled
+   * constrains nothing: <code>(x^2-1)/(x-1)-x-1==0</code> is solved by every <code>x</code>, so
+   * <code>Solve</code> gives <code>{{}}</code> for it and drops it from a system.
    *
    * @return the <code>Solve(...)</code> ast without these equations, <code>{{}}</code> if no other
    *         relation remains, or {@link F#NIL} if there is no such equation
@@ -3088,8 +3110,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
   /**
    * Inverting a function for a value it cannot take gives a solution which is not finite:
-   * <code>E^(I*x) == 0</code> gives <code>x -> ComplexInfinity</code> and <code>Coth(x) == -1</code>
-   * gives <code>x -> -Infinity</code>. Drop these solutions.
+   * <code>E^(I*x) == 0</code> gives <code>x -> ComplexInfinity</code> and
+   * <code>Coth(x) == -1</code> gives <code>x -> -Infinity</code>. Drop these solutions.
    * <p>
    * An empty list is returned, if no finite solution remains: every value which solves the equation
    * is unattainable, so the equation has no solution. An equation whose solutions were merely not
@@ -3124,8 +3146,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    */
   /**
    * Build the assumptions which apply while the equations are solved: the {@link S#Reals} domain
-   * assumption for the solved variables, combined with the conditions of the
-   * {@link S#Assumptions} option.
+   * assumption for the solved variables, combined with the conditions of the {@link S#Assumptions}
+   * option.
    *
    * <p>
    * The option adds to the assumptions the engine already carries (the global

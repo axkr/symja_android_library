@@ -629,6 +629,9 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
         if (plusRest.isFree(variable)) {
           IInteger b = (IInteger) base;
           IAST c1 = F.C(fEngine.incConstantCounter());
+          // the counter goes back once the family is built, as in Eliminate: a result which is
+          // not used left it raised, and the next family was numbered C(2)
+          fEngine.decConstantCounter();
           if (b.isNegative()) {
             // if (generateConditions().isTrue()) {
             return F.ConditionalExpression(F.Times( //

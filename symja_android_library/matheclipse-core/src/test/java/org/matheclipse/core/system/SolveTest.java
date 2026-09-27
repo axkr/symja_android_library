@@ -16,7 +16,6 @@ public class SolveTest extends ExprEvaluatorTestCase {
   /**
    * An underdetermined system is solved for its last variables, the earlier ones staying free
    * parameters, and svars says so when the variables were asked for. NSolve keeps the first ones.
-   * The answers are Mathematica's.
    */
   @Test
   public void testUnderdeterminedSolvesForTheLastVariables() {
@@ -2117,7 +2116,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(2*Sin(x)+Cos(x)==1,x)", //
         "{{x->ConditionalExpression(Pi-ArcTan(4/3)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n" //
             + "2*Pi*C(1),C(1)∈Integers)}}");
-    // symbolic coefficients: the arguments of ArcTan are Cos(x) and Sin(x). Mathematica gives the
+    // symbolic coefficients: the arguments of ArcTan are Cos(x) and Sin(x). WMA gives the
     // same two families with Sqrt(a^4+a^2*b^2-a^2*c^2) instead of a*Sqrt(a^2+b^2-c^2)
     check("Solve(a*Sin(x)+b*Cos(x)==c,x)", //
         "{{x->ConditionalExpression(ArcTan((b*c-a*Sqrt(a^2+b^2-c^2))/(a^2+b^2),(a*c+b*Sqrt(a^\n" //
@@ -2163,13 +2162,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testHomogenizationSharedIntegerBase() {
     // 4^x == (2^x)^2
-    check("Solve(4^x-2^x-2==0,x)", //
-        "{{x->1},{x->(I*Pi)/Log(2)}}");
-    check("Solve(9^x-4*3^x+3==0,x)", //
-        "{{x->0},{x->1}}");
+    // WMA: the families 1+(2*I*Pi*C(1))/Log(2) and (I*Pi)/Log(2)+(2*I*Pi*C(1))/Log(2)
+    check("Solve(4^x-2^x-2==0,x)[[All, 1, 2, 1]]", //
+        "{(I*Pi+I*2*Pi*C(1))/Log(2),(I*2*Pi*C(1)+Log(2))/Log(2)}");
+    // the complex families, as WMA gives them for 4^x-2^x-2==0
+    check("Solve(9^x-4*3^x+3==0,x)[[All, 1, 2, 1]]", //
+        "{(I*2*Pi*C(1))/Log(3),(I*2*Pi*C(1)+Log(3))/Log(3)}");
     // 4^(1+x/2) == 4*2^x
     check("Solve(4^(1+x/2)+2^x==10,x)", //
-        "{{x->1}}");
+        "{{x->ConditionalExpression((I*2*Pi*C(1)+Log(2))/Log(2),C(1)∈Integers)}}");
   }
 
   @Test
@@ -2458,10 +2459,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHomogenization() {
-    check("Solve(9*6^(2*x) - 10*6^x + 1 == 0, x)", //
-        "{{x->0},{x->-Log(9)/Log(6)}}");
-    check("Solve( 10*(-6)^x + 1 == 0, x)", //
-        "{{x->(I*Pi-Log(10))/(I*Pi+Log(6))}}");
+    // WMA gives only {{x->0},{x->-Log(9)/(Log(2)+Log(3))}} here (it splits 6^x into
+    // 2^x*3^x), but the families for 6^x == 1 on its own; Symja gives the families for both
+    check("Solve(9*6^(2*x) - 10*6^x + 1 == 0, x)[[All, 1, 2, 1]]", //
+        "{(I*2*Pi*C(1))/Log(6),(I*2*Pi*C(1)-Log(9))/Log(6)}");
+    // a single power gives the family, as WMA's Solve(2^x == 60, x) does
+    check("Solve( 10*(-6)^x + 1 == 0, x)[[All, 1, 2, 1]]", //
+        "{(I*Pi+I*2*Pi*C(1)-Log(10))/(I*Pi+Log(6))}");
     check("Solve(Log(2, x)+4*Log(x, 2)==0,x)", //
         "{{x->1/2^(I*2)},{x->2^(I*2)}}");
   }
