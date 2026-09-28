@@ -826,7 +826,10 @@ public class IntegerSym extends AbstractIntegerSym {
       }
     } else {
       IInteger result;
-      IInteger temp = this;
+      // start Newton's iteration with 2^ceil(bitLength/n), which is greater or equal than the
+      // root; starting with this needs about log2(this) iterations
+      final int bitLength = (int) bitLength();
+      IInteger temp = AbstractIntegerSym.valueOf(BigInteger.ONE.shiftLeft((bitLength + n - 1) / n));
       do {
         result = temp;
         temp = divideAndRemainder(temp.powerRational(((long) n) - 1))[0]

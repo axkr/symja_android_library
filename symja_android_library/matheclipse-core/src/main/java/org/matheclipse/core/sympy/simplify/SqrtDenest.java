@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Denest nested square roots. Ported from
@@ -101,15 +102,23 @@ public class SqrtDenest {
     IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
     IASTAppendable multiplier = F.TimesAlloc(factors.size());
     IExpr radicand = null;
+    boolean imaginaryUnit = false;
     for (int i = 1; i < factors.size(); i++) {
       IExpr factor = factors.get(i);
       if (sqrtDepth(factor) < depth) {
         multiplier.append(factor);
       } else if (radicand == null && factor.isSqrt()) {
         radicand = factor.base();
+      } else if (!imaginaryUnit && factor.isNumber() && factor.re().isZero()) {
+        // k*I == k*Sqrt(-1) like in sympy
+        imaginaryUnit = true;
+        multiplier.append(factor.im());
       } else {
         return null;
       }
+    }
+    if (imaginaryUnit) {
+      radicand = radicand == null ? F.CN1 : eval(F.Negate(radicand));
     }
     if (radicand == null) {
       return null;
@@ -553,7 +562,12 @@ public class SqrtDenest {
         }
       }
     }
-    // else: z = _sqrt_symbolic_denest(a, b, r) isn't ported
+    else {
+      IExpr z = sqrtSymbolicDenest(a, b, r);
+      if (z.isPresent()) {
+        return z;
+      }
+    }
 
     if (!denester || !isAlgebraic(expr)) {
       return expr;
@@ -579,6 +593,72 @@ public class SqrtDenest {
       return z;
     }
     return expr;
+  }
+
+  /**
+   * Given an expression, <code>sqrt(a + b*sqrt(r))</code>, return the denested expression or
+   * {@link F#NIL}.
+   *
+   * <p>
+   * If <code>r = ra + rb*sqrt(rr)</code>, try replacing <code>sqrt(rr)</code> in <code>a</code>
+   * with <code>(y**2 - ra)/rb</code>, and if the result is a quadratic, <code>ca*y**2 + cb*y +
+   * cc</code>, and <code>(cb + b)**2 - 4*ca*cc</code> is 0, then <code>sqrt(a + b*sqrt(r))</code>
+   * can be rewritten as <code>sqrt(ca*(sqrt(r) + (cb + b)/(2*ca))**2)</code>.
+   */
+  private static IExpr sqrtSymbolicDenest(IExpr a, IExpr b, IExpr r) {
+    // >>> a, b, r = 16 - 2*sqrt(29), 2, -10*sqrt(29) + 55
+    // >>> _sqrt_symbolic_denest(a, b, r)
+    // sqrt(11 - 2*sqrt(29)) + sqrt(5)
+    IExpr[] rval = sqrtMatch(r);
+    if (rval == null) {
+      return F.NIL;
+    }
+    IExpr ra = rval[0];
+    IExpr rb = rval[1];
+    IExpr rr = rval[2];
+    if (rb.isZero()) {
+      return F.NIL;
+    }
+    try {
+      final ISymbol y = F.Dummy("y");
+      // newa = Poly(a.subs(sqrt(rr), (y**2 - ra)/rb), y)
+      final IExpr sqrtRR = sqrt(rr);
+      final IExpr replacement = F.Times(F.Subtract(F.Sqr(y), ra), F.Power(rb, F.CN1));
+      IExpr newa = F.subst(a, t -> t.equals(sqrtRR) ? replacement : F.NIL);
+      newa = eval(F.Expand(newa));
+      if (!newa.isPolynomial(F.List(y))) {
+        return F.NIL;
+      }
+      IExpr coefficients = eval(F.CoefficientList(newa, y));
+      if (!coefficients.isList() || coefficients.argSize() != 3) {
+        return F.NIL;
+      }
+      IExpr cc = coefficients.first();
+      IExpr cb = eval(F.Plus(coefficients.second(), b));
+      IExpr ca = coefficients.getAt(3);
+      // if _mexpand(cb**2 - 4*ca*cc).equals(0):
+      IExpr discriminant = mexpand(F.Subtract(F.Sqr(cb), F.Times(F.C4, ca, cc)));
+      if (!discriminant.isZero()) {
+        discriminant = eval(F.Simplify(discriminant));
+        if (!discriminant.isZero()) {
+          return F.NIL;
+        }
+      }
+      // z = sqrt(ca*(sqrt(r) + cb/(2*ca))**2)
+      IExpr w = eval(F.Plus(F.Sqrt(r), F.Times(cb, F.Power(F.Times(F.C2, ca), F.CN1))));
+      if (ca.isRational() && ca.isPositive() && w.isNumericFunction(true)) {
+        // if z.is_number: z = _mexpand(Mul._from_args(z.as_content_primitive()))
+        double value = numeric(w);
+        if (Double.isNaN(value) || value == 0.0) {
+          return F.NIL;
+        }
+        return mexpand(F.Times(F.Sqrt(ca), value < 0 ? F.CN1 : F.C1, w));
+      }
+      return F.Sqrt(F.Times(ca, F.Sqr(w)));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+    }
+    return F.NIL;
   }
 
   /**

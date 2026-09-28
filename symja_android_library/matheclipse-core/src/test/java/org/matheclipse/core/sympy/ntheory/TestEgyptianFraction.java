@@ -78,7 +78,48 @@ public class TestEgyptianFraction extends ExprEvaluatorTestCase {
           "{1,3}");
     }
 
+    // assert egyptian_fraction(Rational(23, 101), "Greedy") == \
+    // [5, 37, 1438, 2985448, 40108045937720]
+    assertEquals(EgyptianFraction.egyptianFraction(F.QQ(23, 101), Algorithm.GREEDY).toString(), //
+        "{5,37,1438,2985448,40108045937720}");
+    // assert egyptian_fraction(Rational(18, 23), "Takenouchi") == \
+    // [2, 6, 12, 35, 276, 2415]
+    assertEquals(EgyptianFraction.egyptianFraction(F.QQ(18, 23), Algorithm.TAKENOUCHI).toString(), //
+        "{2,6,12,35,276,2415}");
+    // assert egyptian_fraction(Rational(5, 6), "Graham Jewett") == [6, 7, 8, ...]
+    assertEquals(
+        // toString() inserts a line break into a long list
+        EgyptianFraction.egyptianFraction(F.QQ(5, 6), Algorithm.GRAHAM_JEWETT).toString()
+            .replace("\n", ""), //
+        "{6,7,8,9,10,42,43,44,45,56,57,58,72,73,90,1806,1807,1808,1892,1893,1980,3192,3193,"
+            + "3306,5256,3263442,3263443,3267056,3581556,10192056,10650056950806}");
+    // assert egyptian_fraction(Rational(8, 3), "Golomb") == [1, 2, 3, 4, 5, 6, 7,
+    // 14, 574, 2788, 6460, 11590, 33062, 113820]
+    assertEquals(EgyptianFraction.egyptianFraction(F.QQ(8, 3), Algorithm.GOLOMB).toString(), //
+        "{1,2,3,4,5,6,7,14,574,2788,6460,11590,33062,113820}");
+    // assert egyptian_fraction(Rational(355, 113)) == [1, 2, 3, 4, 5, 6, 7, 8, 9,
+    // 10, 11, 12, 27, 744, 893588, 1251493536607, 20361068938197002344405230]
+    assertEquals(EgyptianFraction.egyptianFraction(F.QQ(355, 113)).toString().replace("\n", ""), //
+        "{1,2,3,4,5,6,7,8,9,10,11,12,27,744,893588,1251493536607,20361068938197002344405230}");
     // raises(ValueError, lambda: egyptian_fraction(Rational(-4, 9)))
     assertThrows(ValueError.class, () -> EgyptianFraction.egyptianFraction(F.QQ(-4, 9)));
+  }
+
+  @Test
+  public void testInput() {
+    // r = (2,3), Rational(2, 3), (Rational(2), Rational(3))
+    // for m in ["Greedy", "Graham Jewett", "Takenouchi", "Golomb"]:
+    // ...
+    // if m == "Graham Jewett": assert d == [3, 4, 12]
+    // else: assert d == [2, 6]
+    for (Algorithm algorithm : Algorithm.values()) {
+      assertEquals(EgyptianFraction.egyptianFraction(F.QQ(2, 3), algorithm).toString(), //
+          algorithm == Algorithm.GRAHAM_JEWETT ? "{3,4,12}" : "{2,6}");
+    }
+    // # check prefix
+    // d = egyptian_fraction(Rational(5, 3))
+    // assert d == [1, 2, 6] and all(i.is_Integer for i in d)
+    assertEquals(EgyptianFraction.egyptianFraction(F.QQ(5, 3)).toString(), //
+        "{1,2,6}");
   }
 }

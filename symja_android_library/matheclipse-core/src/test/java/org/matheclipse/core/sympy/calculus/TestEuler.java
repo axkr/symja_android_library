@@ -29,6 +29,12 @@ public class TestEuler extends ExprEvaluatorTestCase {
     // raises(ValueError, lambda: euler(D(x(t), t)*x(y), [x(t), x(y)]))
     assertThrows(ValueError.class, () -> Euler.eulerEquations(eval("D(x(t), t)*x(y)"),
         F.List(parse("x(t)"), parse("x(y)")), (IAST) parse("{t}")));
+    // raises(TypeError, lambda: euler(D(x(t), t)**2, x(0)))
+    assertThrows(ValueError.class, () -> Euler.eulerEquations(eval("D(x(t), t)^2"),
+        F.List(parse("x(0)")), (IAST) parse("{t}")));
+    // raises(TypeError, lambda: euler(D(x(t), t)*y(t), [t]))
+    assertThrows(ValueError.class, () -> Euler.eulerEquations(eval("D(x(t), t)*y(t)"),
+        F.List(parse("t")), (IAST) parse("{t}")));
     // assert euler(D(x(t), t)**2/2, {x(t)}) == [Eq(-D(x(t), t, t), 0)]
     assertEquals(
         Euler.eulerEquations(eval("D(x(t), t)^2/2"), F.List(parse("x(t)")), (IAST) parse("{t}"))
@@ -90,5 +96,16 @@ public class TestEuler extends ExprEvaluatorTestCase {
     assertEquals(
         Euler.eulerEquations(L, F.List(parse("x(t,w)")), (IAST) parse("{t,w}")).toString(), //
         "{Derivative(2,2)[x][t,w]==0}");
+  }
+
+  @Test
+  public void testIssue18653() {
+    // f, g, h = symbols("f g h", cls=Function, args=(x, y))
+    // expr2 = f.diff(x)*h.diff(z)
+    // assert euler(expr2, (f,), (x, y)) == []
+    IExpr expr2 = eval("D(f(x,y), x)*D(h(x,y), z)");
+    assertEquals(
+        Euler.eulerEquations(expr2, F.List(parse("f(x,y)")), (IAST) parse("{x,y}")).toString(), //
+        "{}");
   }
 }

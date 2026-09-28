@@ -2,11 +2,12 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.calculus.Singularities;
@@ -41,8 +42,12 @@ import org.matheclipse.core.sympy.calculus.Util;
  * <code>Indeterminate</code> for a function which is neither convex nor concave.
  * </p>
  * </blockquote>
+ *
+ * <p>
+ * With the option <code>StrictInequalities-&gt;True</code> the functions test for a strictly
+ * monotonic or a strictly convex/concave function.
  */
-public class FunctionMonotonicity extends AbstractFunctionEvaluator {
+public class FunctionMonotonicity extends AbstractFunctionOptionEvaluator {
 
   private final boolean convexity;
 
@@ -55,8 +60,12 @@ public class FunctionMonotonicity extends AbstractFunctionEvaluator {
   }
 
   @Override
-  public IExpr evaluate(final IAST ast, final EvalEngine engine) {
-    if (ast.isAST3() && ast.arg3() != S.Reals) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine,
+      IAST originalAST) {
+    if (argSize < 2 || argSize > 3) {
+      return F.NIL;
+    }
+    if (argSize == 3 && ast.arg3() != S.Reals) {
       return F.NIL;
     }
     IExpr function = ast.arg1();
@@ -74,8 +83,7 @@ public class FunctionMonotonicity extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     final ISymbol x = (ISymbol) variable;
-    // TODO option StrictInequalities
-    final boolean strict = false;
+    final boolean strict = option[0].isTrue();
     try {
       // the function must be real valued on the domain
       IExpr functionDomain = engine.evaluate(F.binaryAST2(S.FunctionDomain, function, x));
@@ -158,6 +166,11 @@ public class FunctionMonotonicity extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_3;
+    return ARGS_2_INFINITY;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol, new IBuiltInSymbol[] {S.StrictInequalities}, new IExpr[] {S.False});
   }
 }

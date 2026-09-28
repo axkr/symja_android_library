@@ -48,11 +48,11 @@ public class Util {
     if (!derivative.isFree(S.D, true) || !derivative.isFree(S.Derivative, true)) {
       return F.NIL;
     }
-    IExpr reduced = Singularities.reduce(F.Less(derivative, F.C0), domain, x, engine);
-    if (reduced.isNIL()) {
+    IExpr satisfiable = Singularities.isSatisfiable(F.Less(derivative, F.C0), domain, x, engine);
+    if (satisfiable.isNIL()) {
       return F.NIL;
     }
-    return reduced.isFalse() ? S.True : S.False;
+    return satisfiable.isFalse() ? S.True : S.False;
   }
 
   /**

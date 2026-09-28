@@ -144,6 +144,48 @@ public class ResidueNTheoryTest extends ExprEvaluatorTestCase {
     checkDiscreteLogPower("32942478", 11, 127);
     // assert discrete_log(432751500361, 7**324, 7) == 324
     checkDiscreteLogPower("432751500361", 7, 324);
+    // args = 5779, 3528, 6215
+    // assert discrete_log(*args) == 687
+    checkDiscreteLog("5779", "3528", "6215", "687");
+    // assert _discrete_log_trial_mul(587, 2**7, 2) == 7
+    checkDiscreteLogPower("587", 2, 7);
+    // assert _discrete_log_trial_mul(389, 3**81, 3) == 81
+    checkDiscreteLogPower("389", 3, 81);
+    // assert _discrete_log_trial_mul(191, 19**123, 19) == 123
+    checkDiscreteLogPower("191", 19, 123);
+    // assert _discrete_log_shanks_steps(442879, 7**2, 7) == 2
+    checkDiscreteLogPower("442879", 7, 2);
+    // assert _discrete_log_shanks_steps(874323, 5**19, 5) == 19
+    checkDiscreteLogPower("874323", 5, 19);
+    // assert _discrete_log_shanks_steps(6876342, 7**71, 7) == 71
+    checkDiscreteLogPower("6876342", 7, 71);
+    // assert _discrete_log_pollard_rho(6013199, 2**6, 2, rseed=0) == 6
+    checkDiscreteLogPower("6013199", 2, 6);
+    // assert _discrete_log_pollard_rho(6138719, 2**19, 2, rseed=0) == 19
+    checkDiscreteLogPower("6138719", 2, 19);
+    // assert _discrete_log_pollard_rho(36721943, 2**40, 2, rseed=0) == 40
+    checkDiscreteLogPower("36721943", 2, 40);
+    // raises(ValueError, lambda: _discrete_log_pollard_rho(11, 7, 31, rseed=0))
+    checkDiscreteLog("11", "7", "31", "NIL");
+    // raises(ValueError, lambda: _discrete_log_pollard_rho(227, 3**7, 5, rseed=0))
+    // the randomized Pollard rho of sympy fails with rseed=0, but the logarithm exists:
+    // 5^132 == 3^7 (mod 227)
+    checkDiscreteLog("227", "2187", "5", "132");
+    // assert _discrete_log_index_calculus(983, 948, 2, 491) == 183
+    checkDiscreteLog("983", "948", "2", "183");
+    // assert _discrete_log_index_calculus(633383, 21794, 2, 316691) == 68048
+    checkDiscreteLog("633383", "21794", "2", "68048");
+    // assert _discrete_log_index_calculus(941762639, 68822582, 2, 470881319) == 338029275
+    checkDiscreteLog("941762639", "68822582", "2", "338029275");
+    // assert _discrete_log_pohlig_hellman(98376431, 11**9, 11) == 9
+    checkDiscreteLogPower("98376431", 11, 9);
+    // assert _discrete_log_pohlig_hellman(78723213, 11**31, 11) == 31
+    checkDiscreteLogPower("78723213", 11, 31);
+    // index calculus isn't ported; these large prime orders are too slow for baby-step giant-step
+    // or Pollard rho:
+    // assert _discrete_log_index_calculus(999231337607, 888188918786, 2, 499615668803) == 142811376514
+    // assert _discrete_log_index_calculus(47747730623, 19410045286, 43425105668, 645239603) ==
+    // 590504662
     // assert discrete_log(265390227570863,184500076053622, 2) == 17835221372061
     checkDiscreteLog("265390227570863", "184500076053622", "2", "17835221372061");
     // assert discrete_log(22708823198678103974314518195029102158525052496759285596453269189798311427475159776411276642277139650833937,

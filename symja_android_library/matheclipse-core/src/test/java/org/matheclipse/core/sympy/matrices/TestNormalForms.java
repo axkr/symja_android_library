@@ -120,4 +120,72 @@ public class TestNormalForms extends ExprEvaluatorTestCase {
     check("Head(SmithDecomposition({{a,2},{3,4}}))", //
         "SmithDecomposition");
   }
+
+  private static String str(BigInteger[][] m) {
+    return java.util.Arrays.deepToString(m);
+  }
+
+  @Test
+  public void testSmithNormalSympy() {
+    // https://github.com/sympy/sympy/blob/master/sympy/polys/matrices/tests/test_normalforms.py
+    BigInteger[][] m = matrix(new long[][] {//
+        {12, 6, 4, 8}, {3, 9, 6, 12}, {2, 16, 14, 28}, {20, 10, 10, 20}});
+    // assert smith_normal_decomp(m) == (smf, s, t)
+    BigInteger[][][] ast = NormalForms.smithNormalDecomp(m);
+    assertEquals("[[1, 0, 0, 0], [0, 10, 0, 0], [0, 0, 30, 0], [0, 0, 0, 0]]", str(ast[0]));
+    assertEquals("[[0, 1, -1, 0], [1, -4, 0, 0], [0, -2, 3, 0], [-2, 2, -1, 1]]", str(ast[1]));
+    assertEquals("[[1, 1, 10, 0], [0, -1, -2, 0], [0, 1, 3, -2], [0, 0, 0, 1]]", str(ast[2]));
+    assertTrue(NormalForms.isSmithNormalForm(ast[0]));
+
+    // m00 = DomainMatrix.zeros((0, 0), ZZ)
+    // assert smith_normal_form(m00) == m00.to_sparse()
+    // assert smith_normal_decomp(m00) == (m00, m00, m00)
+    BigInteger[][] m00 = new BigInteger[0][0];
+    assertEquals("[]", str(NormalForms.smithNormalForm(m00)));
+    ast = NormalForms.smithNormalDecomp(m00);
+    assertEquals("[][][]", str(ast[0]) + str(ast[1]) + str(ast[2]));
+    // m10 = DomainMatrix.zeros((1, 0), ZZ)
+    // assert smith_normal_decomp(m10) == (m10, i11, m00)
+    BigInteger[][] m10 = new BigInteger[1][0];
+    ast = NormalForms.smithNormalDecomp(m10);
+    assertEquals("[[]]", str(ast[0]));
+    assertEquals("[[1]]", str(ast[1]));
+    assertEquals("[]", str(ast[2]));
+    // m01 (0 rows, 1 column) can't be represented by a Java array of rows
+    // i11 = DM([[1]], ZZ)
+    // assert smith_normal_form(i11) == i11.to_sparse()
+    // assert smith_normal_decomp(i11) == (i11, i11, i11)
+    ast = NormalForms.smithNormalDecomp(matrix(new long[][] {{1}}));
+    assertEquals("[[1]][[1]][[1]]", str(ast[0]) + str(ast[1]) + str(ast[2]));
+
+    // zc = DomainMatrix([[], []], (2, 0), ZZ)
+    // assert smith_normal_form(zc).to_dense() == zc
+    assertEquals("[[], []]", str(NormalForms.smithNormalForm(new BigInteger[2][0])));
+
+    // assert smith_normal_decomp(DM([[0, -2]], ZZ)) == (
+    // DM([[2, 0]], ZZ), DM([[-1]], ZZ), DM([[0, 1], [1, 0]], ZZ))
+    ast = NormalForms.smithNormalDecomp(matrix(new long[][] {{0, -2}}));
+    assertEquals("[[2, 0]]", str(ast[0]));
+    assertEquals("[[-1]]", str(ast[1]));
+    assertEquals("[[0, 1], [1, 0]]", str(ast[2]));
+    // assert smith_normal_decomp(DM([[0], [-2]], ZZ)) == (
+    // DM([[2], [0]], ZZ), DM([[0, -1], [1, 0]], ZZ), DM([[1]], ZZ))
+    ast = NormalForms.smithNormalDecomp(matrix(new long[][] {{0}, {-2}}));
+    assertEquals("[[2], [0]]", str(ast[0]));
+    assertEquals("[[0, -1], [1, 0]]", str(ast[1]));
+    assertEquals("[[1]]", str(ast[2]));
+
+    // m = DM([[3, 0, 0, 0], [0, 0, 0, 0], [0, 0, 2, 0]], ZZ)
+    // snf = DM([[1, 0, 0, 0], [0, 6, 0, 0], [0, 0, 0, 0]], ZZ)
+    // s = DM([[1, 0, 1], [2, 0, 3], [0, 1, 0]], ZZ)
+    // t = DM([[1, -2, 0, 0], [0, 0, 0, 1], [-1, 3, 0, 0], [0, 0, 1, 0]], ZZ)
+    // assert smith_normal_decomp(m) == (snf, s, t)
+    ast = NormalForms.smithNormalDecomp(matrix(new long[][] {{3, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 2, 0}}));
+    assertEquals("[[1, 0, 0, 0], [0, 6, 0, 0], [0, 0, 0, 0]]", str(ast[0]));
+    assertEquals("[[1, 0, 1], [2, 0, 3], [0, 1, 0]]", str(ast[1]));
+    assertEquals("[[1, -2, 0, 0], [0, 0, 0, 1], [-1, 3, 0, 0], [0, 0, 1, 0]]", str(ast[2]));
+
+    // the invariant factors over QQ[x] aren't ported (only integer matrices are supported):
+    // assert invariant_factors(m) == (1, dx-1, dx**2-1)
+  }
 }

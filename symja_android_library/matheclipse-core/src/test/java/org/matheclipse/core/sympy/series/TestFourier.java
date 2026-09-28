@@ -29,6 +29,8 @@ public class TestFourier extends ExprEvaluatorTestCase {
   @Test
   public void testFourierSeries() {
     // https://github.com/sympy/sympy/blob/master/sympy/series/tests/test_fourier.py
+    // Deviation: sympy's truncate(n) returns the first n nonzero terms, the Java API returns the
+    // terms up to the harmonic of the given order. The order is chosen to return the same terms.
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = parse("x");
     IExpr pi = S.Pi;
@@ -50,22 +52,94 @@ public class TestFourier extends ExprEvaluatorTestCase {
 
     // assert fo.term(3) == 2*sin(3*x) / 3
     checkEqual("2/3", Fourier.fourierSinCoefficient(x, x, mpi, pi, F.C3, engine));
+    checkEqual("0", Fourier.fourierCosCoefficient(x, x, mpi, pi, F.C3, engine));
     // assert fe.term(3) == -4*cos(3*x) / 9
     checkEqual("-4/9", Fourier.fourierCosCoefficient(parse("x^2"), x, mpi, pi, F.C3, engine));
+    checkEqual("0", Fourier.fourierSinCoefficient(parse("x^2"), x, mpi, pi, F.C3, engine));
+    // assert fp.term(3) == 2*sin(3*x) / 3
+    checkEqual("2/3", Fourier.fourierSinCoefficient(parse("Piecewise({{0, x < 0}}, Pi)"), x, mpi,
+        pi, F.C3, engine));
 
-    // s = fourier_series(x, (x, 0, pi))
-    // assert s.truncate(4) == pi/2 - sin(2*x) - sin(4*x)/2 - sin(6*x)/3
-    checkEqual("Pi/2 - Sin(2*x) - Sin(4*x)/2 - Sin(6*x)/3",
-        Fourier.fourierSeries(x, x, F.C0, pi, 3, engine));
-    // s = fourier_series(x, (x, 0, 1))
-    // assert s.truncate(4) == S.Half - sin(2*pi*x)/pi - sin(4*pi*x)/(2*pi) - sin(6*pi*x)/(3*pi)
-    checkEqual("1/2 - Sin(2*Pi*x)/Pi - Sin(4*Pi*x)/(2*Pi) - Sin(6*Pi*x)/(3*Pi)",
-        Fourier.fourierSeries(x, x, F.C0, F.C1, 3, engine));
+    // assert fo.as_leading_term(x) == 2*sin(x)
+    checkEqual("2*Sin(x)", Fourier.fourierSeries(x, x, mpi, pi, 1, engine));
+    // assert fe.as_leading_term(x) == pi**2 / 3
+    checkEqual("Pi^2/3", Fourier.fourierSeries(parse("x^2"), x, mpi, pi, 0, engine));
+    // assert fp.as_leading_term(x) == pi / 2
+    checkEqual("Pi/2",
+        Fourier.fourierSeries(parse("Piecewise({{0, x < 0}}, Pi)"), x, mpi, pi, 0, engine));
 
     // raises(ValueError, lambda: fourier_series(x, (x, 0, oo)))
     assertThrows(ValueError.class,
         () -> Fourier.fourierSeries(x, x, F.C0, F.CInfinity, 3, engine));
+    // the iteration, subs and the lazy FourierSeries object aren't ported
   }
+
+  @Test
+  public void testFourierSeries2() {
+    EvalEngine engine = evaluator.getEvalEngine();
+    IExpr x = parse("x");
+    // p = Piecewise((0, x < 0), (x, True))
+    // f = fourier_series(p, (x, -2, 2))
+    IExpr p = parse("Piecewise({{0, x < 0}}, x)");
+    // assert f.term(3) == (2*sin(3*pi*x / 2) / (3*pi) - 4*cos(3*pi*x / 2) / (9*pi**2))
+    checkEqual("2/(3*Pi)", Fourier.fourierSinCoefficient(p, x, F.CN2, F.C2, F.C3, engine));
+    checkEqual("-4/(9*Pi^2)", Fourier.fourierCosCoefficient(p, x, F.CN2, F.C2, F.C3, engine));
+    // assert f.truncate() == (2*sin(pi*x / 2) / pi - sin(pi*x) / pi -
+    // 4*cos(pi*x / 2) / pi**2 + S.Half)
+    checkEqual("2*Sin(Pi*x/2)/Pi - Sin(Pi*x)/Pi - 4*Cos(Pi*x/2)/Pi^2 + 1/2",
+        Fourier.fourierSeries(p, x, F.CN2, F.C2, 2, engine));
+  }
+
+  @Test
+  public void testSquareWave() {
+    EvalEngine engine = evaluator.getEvalEngine();
+    IExpr x = parse("x");
+    // square_wave = Piecewise((1, x < pi), (-1, True))
+    // s = fourier_series(square_wave, (x, 0, 2*pi))
+    // assert s.truncate(3) == 4 / pi * sin(x) + 4 / (3 * pi) * sin(3 * x) +
+    // 4 / (5 * pi) * sin(5 * x)
+    checkEqual("4/Pi*Sin(x) + 4/(3*Pi)*Sin(3*x) + 4/(5*Pi)*Sin(5*x)", Fourier.fourierSeries(
+        parse("Piecewise({{1, x < Pi}}, -1)"), x, F.C0, F.C2Pi, 5, engine));
+    // sigma_approximation isn't ported
+  }
+
+  @Test
+  public void testSawtoothWave() {
+    EvalEngine engine = evaluator.getEvalEngine();
+    IExpr x = parse("x");
+    // s = fourier_series(x, (x, 0, pi))
+    // assert s.truncate(4) == pi/2 - sin(2*x) - sin(4*x)/2 - sin(6*x)/3
+    checkEqual("Pi/2 - Sin(2*x) - Sin(4*x)/2 - Sin(6*x)/3",
+        Fourier.fourierSeries(x, x, F.C0, S.Pi, 3, engine));
+    // s = fourier_series(x, (x, 0, 1))
+    // assert s.truncate(4) == S.Half - sin(2*pi*x)/pi - sin(4*pi*x)/(2*pi) - sin(6*pi*x)/(3*pi)
+    checkEqual("1/2 - Sin(2*Pi*x)/Pi - Sin(4*Pi*x)/(2*Pi) - Sin(6*Pi*x)/(3*Pi)",
+        Fourier.fourierSeries(x, x, F.C0, F.C1, 3, engine));
+  }
+
+  @Test
+  public void testFourierSeriesFinite() {
+    EvalEngine engine = evaluator.getEvalEngine();
+    IExpr x = parse("x");
+    IExpr pi = S.Pi;
+    IExpr mpi = F.Negate(S.Pi);
+    // assert fourier_series(sin(x)).truncate(1) == sin(x)
+    checkEqual("Sin(x)", Fourier.fourierSeries(parse("Sin(x)"), x, mpi, pi, 1, engine));
+    // assert fourier_series(sin(x)*log(y)*exp(z),(x,pi,-pi)).truncate() == sin(x)*log(y)*exp(z)
+    checkEqual("Sin(x)*Log(y)*Exp(z)",
+        Fourier.fourierSeries(parse("Sin(x)*Log(y)*Exp(z)"), x, pi, mpi, 3, engine));
+    // assert fourier_series(sin(x)**6).truncate(oo) == -15*cos(2*x)/32 + 3*cos(4*x)/16 -
+    // cos(6*x)/32 + Rational(5, 16)
+    checkEqual("-15*Cos(2*x)/32 + 3*Cos(4*x)/16 - Cos(6*x)/32 + 5/16",
+        Fourier.fourierSeries(parse("Sin(x)^6"), x, mpi, pi, 8, engine));
+    // assert fourier_series(sin(x) ** 6).truncate() == -15 * cos(2 * x) / 32 + 3 * cos(4 * x) / 16
+    // + Rational(5, 16)
+    checkEqual("-15*Cos(2*x)/32 + 3*Cos(4*x)/16 + 5/16",
+        Fourier.fourierSeries(parse("Sin(x)^6"), x, mpi, pi, 4, engine));
+  }
+
+  // the operations shift, shiftx, scale, scalex, neg, add, sub of the FourierSeries object aren't
+  // ported
 
   @Test
   public void testSymbolicCoefficient() {

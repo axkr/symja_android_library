@@ -199,6 +199,21 @@ public class SympyPortBuiltinsTest extends ExprEvaluatorTestCase {
         "1");
     check("FunctionMonotonicity(E^(-x), x)", //
         "-1");
+    // x^3 has an isolated stationary point
+    // confirmed with WMA
+    check("FunctionMonotonicity(x^3, x, StrictInequalities->True)", //
+        "1");
+    check("FunctionMonotonicity(-x^3-x, x, StrictInequalities->True)", //
+        "-1");
+    // confirmed with WMA
+    check("FunctionMonotonicity(5, x, StrictInequalities->True)", //
+        "Indeterminate");
+    check("FunctionMonotonicity(x^2, x, StrictInequalities->True)", //
+        "Indeterminate");
+    check("FunctionMonotonicity({x^2, x>0}, x, Reals, StrictInequalities->True)", //
+        "1");
+    check("FunctionMonotonicity(x^3, x, StrictInequalities->False)", //
+        "1");
   }
 
   @Test
@@ -215,6 +230,13 @@ public class SympyPortBuiltinsTest extends ExprEvaluatorTestCase {
         "1");
     check("FunctionConvexity({x^3, x>0}, x)", //
         "1");
+    check("FunctionConvexity(x^4, x, StrictInequalities->True)", //
+        "1");
+    check("FunctionConvexity(-E^x, x, StrictInequalities->True)", //
+        "-1");
+    // confirmed with WMA
+    check("FunctionConvexity(2*x+1, x, StrictInequalities->True)", //
+        "Indeterminate");
   }
 
   @Test

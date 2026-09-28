@@ -70,42 +70,98 @@ public class Factor {
     // (3, 8)
     // >>> perfect_power(3**8, [4, 8], big=False)
     // (9, 4)
+    // negative handling
+    if (n.isNegative()) {
+      IReal minusN = (IReal) n.negate();
+      if (candidates.isNIL()) {
+        IPair pp = perfectPower(minusN, F.NIL, true, factor);
+        if (pp.isNIL()) {
+          return F.NIL;
+        }
+        IExpr b = pp.first();
+        long e = pp.second().toLongDefault();
+        // e2 = e & (-e)
+        long e2 = e & (-e);
+        b = F.eval(F.Power(b, F.ZZ(e2)));
+        e = e / e2;
+        if (e <= 1) {
+          return F.NIL;
+        }
+        if (big || BigInteger.valueOf(e).isProbablePrime(32)) {
+          return F.pair(b.negate(), F.ZZ(e));
+        }
+        for (long p = 3; p <= e; p += 2) {
+          if (e % p == 0 && BigInteger.valueOf(p).isProbablePrime(32)) {
+            return F.pair(F.eval(F.Power(b, F.ZZ(e / p))).negate(), F.ZZ(p));
+          }
+        }
+        return F.NIL;
+      }
+      // odd_candidates = {i for i in candidates if i % 2}
+      IAST oddCandidates = candidates.select(x -> x.isInteger() && ((IInteger) x).isOdd());
+      if (oddCandidates.argSize() == 0) {
+        return F.NIL;
+      }
+      IPair pp = perfectPower(minusN, oddCandidates, big, factor);
+      if (pp.isPresent()) {
+        return F.pair(pp.first().negate(), pp.second());
+      }
+      return F.NIL;
+    }
+
+    // non-integer handling
     if (n.isFraction()) {
       IInteger p = ((IFraction) n).numerator();
       IInteger q = ((IFraction) n).denominator();
-      IPair pp = F.NIL;
       if (p.isOne()) {
-        pp = perfectPower(q);
-        if (pp.isPresent()) {
-          pp = F.pair(F.C1.divide(pp.first()), pp.second());
-        }
-      } else {
-        pp = perfectPower(p);
-        if (pp.isPresent()) {
-          IExpr num = pp.first();
-          IExpr e = pp.second();
-          IPair pq = perfectPower(q, F.List(e));
-          if (pq.isPresent()) {
-            IExpr denom = pq.first();
-            pp = F.pair(num.divide(denom), e);
+        IPair qq = perfectPower(q, candidates, big, factor);
+        return qq.isPresent() ? F.pair(F.C1.divide(qq.first()), qq.second()) : F.NIL;
+      }
+      IPair pp = perfectPower(p, F.NIL, true, factor);
+      if (pp.isNIL()) {
+        return F.NIL;
+      }
+      IPair qq = perfectPower(q, F.NIL, true, factor);
+      if (qq.isNIL()) {
+        return F.NIL;
+      }
+      final IInteger numBase = (IInteger) pp.first();
+      final long numExp = pp.second().toLongDefault();
+      final IInteger denBase = (IInteger) qq.first();
+      final long denExp = qq.second().toLongDefault();
+      long e;
+      if (candidates.isPresent()) {
+        long best = -1;
+        for (int i = 1; i < candidates.size(); i++) {
+          long c = candidates.get(i).toLongDefault();
+          if (c > 0 && numExp % c == 0 && denExp % c == 0) {
+            if (best < 0 || (big ? c > best : c < best)) {
+              best = c;
+            }
           }
         }
+        if (best < 0) {
+          return F.NIL;
+        }
+        e = best;
+      } else {
+        long g = BigInteger.valueOf(numExp).gcd(BigInteger.valueOf(denExp)).longValue();
+        if (g == 1) {
+          return F.NIL;
+        }
+        e = big ? g : smallestPrimeFactor(g);
       }
-      return pp;
+      // compute_tuple(exponent)
+      IInteger newNum = numBase.powerRational(numExp / e);
+      IInteger newDen = denBase.powerRational(denExp / e);
+      return F.pair(F.QQ(newNum, newDen), F.ZZ(e));
     }
 
     if (n.isInteger()) {
       IInteger ni = (IInteger) n;
-      if (ni.isNegative()) {
-        IPair pp = perfectPower(ni.negate());
-        if (pp.isPresent()) {
-          IExpr b = pp.first();
-          IExpr e = pp.second();
-          if (((IInteger) e).isOdd()) {
-            return F.pair(b.negate(), e);
-          }
-        }
-        return F.NIL;
+      // positive integer handling
+      if (candidates.isNIL() && big) {
+        return perfectPowerPrivate(ni.toBigNumerator(), 2);
       }
       if (ni.isLE(F.C3)) {
         // no unique exponent for 0, 1
@@ -115,6 +171,7 @@ public class Factor {
 
       // logn = math.log(n, 2)
       long logn = ni.bitLength();
+      final double log2 = log2(ni);
       long maxPossible = logn + 2;
       // n % 10 in [2, 3, 7, 8] # squares cannot end in 2, 3, 7, 8
       int notSquare = 0;
@@ -125,9 +182,7 @@ public class Factor {
 
       long minPossible = 2L + notSquare;
       if (maxPossible > 0) {
-        if (candidates.isNIL()) {
-          candidates = Generate.primeRange(minPossible, maxPossible);
-        } else {
+        if (candidates.isPresent()) {
           IASTAppendable newCandidates = F.ListAlloc();
           for (int i = 1; i < candidates.size(); i++) {
             int a = candidates.get(i).toIntDefault();
@@ -158,13 +213,12 @@ public class Factor {
         }
 
         IInteger fac = ni.mod(2).add(F.C2);
-        for (int i = 1; i < candidates.size(); i++) {
+        // candidates = primerange(min_possible, max_possible) as a generator
+        for (BigInteger candidate = BigInteger.valueOf(minPossible - 1)
+            .nextProbablePrime(); candidate.longValue() < maxPossible; candidate =
+                candidate.nextProbablePrime()) {
           fac = Generate.nextPrime(fac);
-          IExpr arg = candidates.get(i);
-          if (!arg.isInteger()) {
-            break;
-          }
-          IInteger e = (IInteger) arg;
+          IInteger e = F.ZZ(candidate);
           // see if there is a factor present
           if (factor && ni.mod(fac).isZero()) {
             // find what the potential power is
@@ -223,9 +277,13 @@ public class Factor {
           try {
 
             // Weed out downright impossible candidates
+            // if logn/e < 40:
+            // b = 2.0**(logn/e)
+            // if abs(int(b + 0.5) - b) > 0.01:
+            // continue
             long ei = e.toLong();
-            long lValue = logn / ei;
-            if ((logn / ei) < 40) {
+            double lValue = log2 / ei;
+            if (lValue < 40) {
               double b = Math.pow(2.0, lValue);
               double intPart = b < 0.0 ? Math.ceil(b + 0.5) - b : Math.floor(b + 0.5) - b;
               if (Math.abs(intPart) > 0.01) {
@@ -259,6 +317,264 @@ public class Factor {
   // private static IInteger _Factors(IInteger n) {
   // return Generate.nextPrime(n);
   // }
+
+  private static long smallestPrimeFactor(long g) {
+    for (long p = 2; p * p <= g; p++) {
+      if (g % p == 0) {
+        return p;
+      }
+    }
+    return g;
+  }
+
+  /**
+   * Integer n-th root.
+   *
+   * @return <code>{root, remainder}</code> with <code>root^e + remainder == n</code>
+   */
+  private static BigInteger[] iroot(BigInteger n, int e) {
+    if (n.signum() == 0 || e == 1) {
+      return new BigInteger[] {n, BigInteger.ZERO};
+    }
+    if (e == 2) {
+      BigInteger[] sr = n.sqrtAndRemainder();
+      return sr;
+    }
+    // Newton's iteration starting with 2^ceil(bitLength/e) >= root
+    BigInteger x = BigInteger.ONE.shiftLeft((n.bitLength() + e - 1) / e);
+    BigInteger eBig = BigInteger.valueOf(e);
+    BigInteger eMinus1 = BigInteger.valueOf(e - 1L);
+    while (true) {
+      BigInteger y = eMinus1.multiply(x).add(n.divide(x.pow(e - 1))).divide(eBig);
+      if (y.compareTo(x) >= 0) {
+        break;
+      }
+      x = y;
+    }
+    return new BigInteger[] {x, n.subtract(x.pow(e))};
+  }
+
+  /** Divide out the factor <code>p</code> completely: <code>{n/p^t, t}</code> */
+  private static long remove(BigInteger[] n, BigInteger p) {
+    long t = 0;
+    while (true) {
+      BigInteger[] qr = n[0].divideAndRemainder(p);
+      if (qr[1].signum() != 0) {
+        return t;
+      }
+      n[0] = qr[0];
+      t++;
+    }
+  }
+
+  private static IPair done(BigInteger n, java.util.Map<BigInteger, Long> factors, long g,
+      long multi) {
+    g = BigInteger.valueOf(g).gcd(BigInteger.valueOf(multi)).longValue();
+    if (g == 1) {
+      return F.NIL;
+    }
+    factors.put(n, factors.getOrDefault(n, 0L) + multi);
+    BigInteger result = BigInteger.ONE;
+    for (java.util.Map.Entry<BigInteger, Long> entry : factors.entrySet()) {
+      result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g)));
+    }
+    return F.pair(F.ZZ(result), F.ZZ(g));
+  }
+
+  /**
+   * Return <code>(b, e)</code> such that <code>n == b**e</code> if <code>n</code> is a unique
+   * perfect power with <code>e &gt; 1</code>, else {@link F#NIL}. The largest possible
+   * <code>e</code> is returned. Port of <code>_perfect_power()</code> of
+   * <a href="https://github.com/sympy/sympy/blob/master/sympy/ntheory/factor_.py">factor_.py</a>
+   *
+   * @param n a positive integer
+   * @param nextP the next prime to check as a factor
+   */
+  private static IPair perfectPowerPrivate(BigInteger n, long nextP) {
+    if (n.compareTo(BigInteger.valueOf(3)) <= 0) {
+      return F.NIL;
+    }
+    java.util.Map<BigInteger, Long> factors = new java.util.TreeMap<BigInteger, Long>();
+    long g = 0;
+    long multi = 1;
+    // If n is small, only trial factoring is faster
+    if (n.compareTo(BigInteger.valueOf(1_000_000L)) <= 0) {
+      long m = n.longValue();
+      for (long p = nextP; p * p <= m; p++) {
+        long t = 0;
+        while (m % p == 0) {
+          m /= p;
+          t++;
+        }
+        if (t > 0) {
+          factors.put(BigInteger.valueOf(p), t);
+          g = BigInteger.valueOf(g).gcd(BigInteger.valueOf(t)).longValue();
+          if (g == 1) {
+            return F.NIL;
+          }
+        }
+      }
+      if (m > 1) {
+        return F.NIL;
+      }
+      BigInteger result = BigInteger.ONE;
+      for (java.util.Map.Entry<BigInteger, Long> entry : factors.entrySet()) {
+        result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g)));
+      }
+      return F.pair(F.ZZ(result), F.ZZ(g));
+    }
+    // divide by 2
+    if (nextP < 3) {
+      g = n.getLowestSetBit();
+      if (g > 0) {
+        if (g == 1) {
+          return F.NIL;
+        }
+        n = n.shiftRight((int) g);
+        factors.put(BigInteger.TWO, g);
+        if (n.equals(BigInteger.ONE)) {
+          return F.pair(F.C2, F.ZZ(g));
+        }
+        // If `m**g`, then we have found perfect power.
+        // Otherwise, there is no possibility of perfect power, especially if `g` is prime.
+        BigInteger[] mr = iroot(n, (int) g);
+        if (mr[1].signum() == 0) {
+          return F.pair(F.ZZ(mr[0].shiftLeft(1)), F.ZZ(g));
+        } else if (BigInteger.valueOf(g).isProbablePrime(32)) {
+          return F.NIL;
+        }
+      }
+      nextP = 3;
+    }
+    // square number?
+    while (n.testBit(0) && !n.testBit(1) && !n.testBit(2)) {
+      // n % 8 == 1
+      BigInteger[] mr = iroot(n, 2);
+      if (mr[1].signum() == 0) {
+        n = mr[0];
+        multi <<= 1;
+      } else {
+        break;
+      }
+    }
+    if (n.compareTo(BigInteger.valueOf(nextP).pow(3)) < 0) {
+      return done(n, factors, g, multi);
+    }
+    // trial factoring
+    // Since the maximum value an exponent can take is `log_{next_p}(n)`,
+    // the number of exponents to be checked can be reduced by performing a trial factoring.
+    long tfMax = n.bitLength() / 27 + 24;
+    if (nextP < tfMax) {
+      for (long p = nextP; p < tfMax; p++) {
+        if (!BigInteger.valueOf(p).isProbablePrime(32)) {
+          continue;
+        }
+        BigInteger[] m = new BigInteger[] {n};
+        long t = remove(m, BigInteger.valueOf(p));
+        if (t > 0) {
+          n = m[0];
+          t *= multi;
+          long g1 = BigInteger.valueOf(g).gcd(BigInteger.valueOf(t)).longValue();
+          if (g1 == 1) {
+            return F.NIL;
+          }
+          factors.put(BigInteger.valueOf(p), t);
+          if (n.equals(BigInteger.ONE)) {
+            BigInteger result = BigInteger.ONE;
+            for (java.util.Map.Entry<BigInteger, Long> entry : factors.entrySet()) {
+              result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g1)));
+            }
+            return F.pair(F.ZZ(result), F.ZZ(g1));
+          } else if (g == 0 || g1 < g) {
+            // If g is updated
+            g = g1;
+            BigInteger[] mr = iroot(n.pow((int) multi), (int) g);
+            if (mr[1].signum() == 0) {
+              BigInteger result = mr[0];
+              for (java.util.Map.Entry<BigInteger, Long> entry : factors.entrySet()) {
+                result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g)));
+              }
+              return F.pair(F.ZZ(result), F.ZZ(g));
+            } else if (BigInteger.valueOf(g).isProbablePrime(32)) {
+              return F.NIL;
+            }
+          }
+        }
+      }
+      nextP = tfMax;
+    }
+    if (n.compareTo(BigInteger.valueOf(nextP).pow(3)) < 0) {
+      return done(n, factors, g, multi);
+    }
+    // check iroot
+    java.util.List<Long> primes = new java.util.ArrayList<Long>();
+    if (g != 0) {
+      // If g is non-zero, the exponent is a divisor of g.
+      // 2 can be omitted since it has already been checked.
+      long odd = g >> Long.numberOfTrailingZeros(g);
+      for (long p = 3; p <= odd; p += 2) {
+        if (odd % p == 0) {
+          primes.add(p);
+          while (odd % p == 0) {
+            odd /= p;
+          }
+        }
+      }
+    } else {
+      // The maximum possible value of the exponent is `log_{next_p}(n)`.
+      // To compensate for the presence of computational error, 2 is added.
+      long maxExponent = (long) (log2(n) / (Math.log(nextP) / Math.log(2.0))) + 2;
+      for (long p = 3; p < maxExponent; p += 2) {
+        if (BigInteger.valueOf(p).isProbablePrime(32)) {
+          primes.add(p);
+        }
+      }
+    }
+    double logn = log2(n);
+    // Threshold for direct calculation
+    double threshold = logn / 40;
+    for (long p : primes) {
+      if (threshold < p) {
+        // If p is large, find the power root p directly without `iroot`.
+        while (true) {
+          double b = Math.pow(2.0, logn / p);
+          long rb = (long) (b + 0.5);
+          if (Math.abs(rb - b) < 0.01 && BigInteger.valueOf(rb).pow((int) p).equals(n)) {
+            n = BigInteger.valueOf(rb);
+            multi *= p;
+            logn = log2(n);
+          } else {
+            break;
+          }
+        }
+      } else {
+        while (true) {
+          BigInteger[] mr = iroot(n, (int) p);
+          if (mr[1].signum() == 0) {
+            n = mr[0];
+            multi *= p;
+            logn = log2(n);
+          } else {
+            break;
+          }
+        }
+      }
+      if (n.compareTo(BigInteger.valueOf(nextP).pow((int) p + 2)) < 0) {
+        break;
+      }
+    }
+    return done(n, factors, g, multi);
+  }
+
+  private static double log2(BigInteger value) {
+    int shift = Math.max(0, value.bitLength() - 60);
+    return Math.log(value.shiftRight(shift).doubleValue()) / Math.log(2.0) + shift;
+  }
+
+  /** <code>math.log2(n)</code> for a positive integer <code>n</code> */
+  private static double log2(IInteger n) {
+    return log2(n.toBigNumerator());
+  }
 
   public static IASTAppendable primeFactors(int n) {
     return primeFactors(F.ZZ(n), F.NIL, false);

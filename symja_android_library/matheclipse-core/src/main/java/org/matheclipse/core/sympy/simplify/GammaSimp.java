@@ -60,9 +60,27 @@ public class GammaSimp {
               F.Power(F.Gamma(F.Plus(F.C1, n, F.Negate(k))), F.CN1));
         }
         if (ast.isAST(S.Pochhammer, 3)) {
+          IExpr a = ast.arg1();
+          IExpr n = ast.arg2();
+          if (a.isInteger() && !a.isPositive()) {
+            // rf(x, k) == (-1)**k*gamma(1 - x)/gamma(-k - x + 1) for a nonpositive integer x
+            return F.Times(F.Power(F.CN1, n), F.Gamma(F.Subtract(F.C1, a)),
+                F.Power(F.Gamma(F.Plus(F.C1, F.Negate(a), F.Negate(n))), F.CN1));
+          }
           // Gamma(a+n)/Gamma(a)
-          return F.Times(F.Gamma(F.Plus(ast.arg1(), ast.arg2())),
-              F.Power(F.Gamma(ast.arg1()), F.CN1));
+          return F.Times(F.Gamma(F.Plus(a, n)), F.Power(F.Gamma(a), F.CN1));
+        }
+        if (ast.isAST(S.FactorialPower, 3)) {
+          IExpr a = ast.arg1();
+          IExpr n = ast.arg2();
+          if (a.isInteger() && a.isNegative()) {
+            // ff(x, k) == (-1)**k*gamma(k - x)/gamma(-x) for a negative integer x
+            return F.Times(F.Power(F.CN1, n), F.Gamma(F.Subtract(n, a)),
+                F.Power(F.Gamma(F.Negate(a)), F.CN1));
+          }
+          // Gamma(a+1)/Gamma(a-n+1)
+          return F.Times(F.Gamma(F.Plus(a, F.C1)),
+              F.Power(F.Gamma(F.Plus(a, F.Negate(n), F.C1)), F.CN1));
         }
         if (ast.isAST(S.Beta, 3)) {
           // Gamma(a)*Gamma(b)/Gamma(a+b)
@@ -89,7 +107,7 @@ public class GammaSimp {
     IAST ast = (IAST) expr;
     IExpr head = ast.head();
     int result = (head == S.Gamma || head == S.Factorial || head == S.Binomial
-        || head == S.Pochhammer || head == S.Beta) ? 1 : 0;
+        || head == S.Pochhammer || head == S.Beta || head == S.FactorialPower) ? 1 : 0;
     for (int i = 1; i < ast.size() && result < 2; i++) {
       result += countCombinatorial(ast.get(i));
     }
@@ -98,7 +116,7 @@ public class GammaSimp {
 
   private static boolean hasCombinatorialFunction(IExpr expr) {
     return !expr.isFree(x -> x == S.Gamma || x == S.Factorial || x == S.Binomial
-        || x == S.Pochhammer || x == S.Beta, true);
+        || x == S.Pochhammer || x == S.Beta || x == S.FactorialPower, true);
   }
 
   /**
@@ -111,30 +129,53 @@ public class GammaSimp {
     // (x - 3)*(x - 2)*(x - 1)
     // >>> gammasimp(gamma(n + 3))
     // gamma(n + 3)
+    return gammasimp(expr, false);
+  }
+
+  /**
+   * @param asComb if <code>true</code> the arguments of the combinatorial functions are assumed
+   *        to be integers and the identities for gamma functions with non-integer arguments
+   *        (reflection, duplication and multiplication theorem) aren't applied
+   */
+  private static IExpr gammasimp(IExpr expr, final boolean asComb) {
     if (!hasCombinatorialFunction(expr)) {
       // avoid side effects like factoring
       return expr;
     }
     try {
       IExpr rewritten = eval(rewriteGamma(expr));
+      // expr.replace(gamma, lambda n: _rf(1, (n - 1).expand()))
+      rewritten = eval(F.subst(rewritten, x -> x.isAST(S.Gamma, 2) && x.first().isPlusTimesPower()
+          ? F.Gamma(F.Expand(x.first()))
+          : F.NIL));
       if (rewritten.isFree(S.Gamma, true)) {
         return rewritten;
       }
-      IExpr was = rewritten;
-      IExpr result = Traversal.bottomUp(was, x -> {
-        if (x.isTimes() || isGammaPower(x)) {
-          return ruleGamma(x, true);
+      IExpr was = eval(F.Factor(rewritten));
+      if (was.leafCount() > rewritten.leafCount()) {
+        was = rewritten;
+      }
+      IExpr result = was;
+      // iteration until constant
+      for (int i = 0; i < 8; i++) {
+        IExpr previous = result;
+        result = eval(Traversal.bottomUp(result, x -> {
+          if (x.isTimes() || isGammaPower(x)) {
+            return ruleGamma(x, true, asComb);
+          }
+          if (x.isPlus()) {
+            return ruleGammaPlus((IAST) x, asComb);
+          }
+          return x;
+        }));
+        if (!result.equals(previous)) {
+          IExpr factored = eval(F.Factor(result));
+          if (factored.leafCount() <= result.leafCount()) {
+            result = factored;
+          }
         }
-        if (x.isPlus()) {
-          return ruleGammaPlus((IAST) x);
-        }
-        return x;
-      });
-      result = eval(result);
-      if (!result.equals(was)) {
-        IExpr factored = eval(F.Factor(result));
-        if (factored.leafCount() <= result.leafCount()) {
-          result = factored;
+        if (result.equals(previous)) {
+          break;
         }
       }
       return result;
@@ -145,22 +186,129 @@ public class GammaSimp {
   }
 
   /**
-   * Simplify combinatorial expressions. The result is expressed with factorials, if the expression
-   * contains no gamma functions.
+   * Simplify combinatorial expressions. The arguments of the combinatorial functions are assumed
+   * to be integers, if the expression contains no gamma functions. The result is expressed with
+   * factorials and binomials in this case.
    */
   public static IExpr combsimp(IExpr expr) {
     // >>> combsimp(factorial(n)/factorial(n - 3))
     // n*(n - 2)*(n - 1)
     // >>> combsimp(binomial(n+1, k+1)/binomial(n, k))
     // (n + 1)/(k + 1)
-    final boolean hasGamma = !expr.isFree(S.Gamma, true);
-    IExpr result = gammasimp(expr);
-    if (!hasGamma && !result.isFree(S.Gamma, true)) {
+    if (!expr.isFree(S.Gamma, true)) {
+      return gammasimp(expr, false);
+    }
+    IExpr result = gammasimp(expr, true);
+    if (!result.isFree(S.Gamma, true)) {
       // expr = expr.rewrite(factorial)
       result = eval(F.subst(result,
           x -> x.isAST(S.Gamma, 2) ? F.Factorial(F.Plus(F.CN1, x.first())) : F.NIL));
+      result = gammaAsComb(result);
+    }
+    if (countCombinatorial(result) >= countCombinatorial(expr) && count(result) > count(expr)) {
+      return expr;
     }
     return result;
+  }
+
+  private static int count(IExpr expr) {
+    if (!expr.isAST()) {
+      return 0;
+    }
+    IAST ast = (IAST) expr;
+    IExpr head = ast.head();
+    int result = (head == S.Gamma || head == S.Factorial || head == S.Binomial
+        || head == S.Pochhammer || head == S.Beta || head == S.FactorialPower) ? 1 : 0;
+    for (int i = 1; i < ast.size(); i++) {
+      result += count(ast.get(i));
+    }
+    return result;
+  }
+
+  /**
+   * Rewrite products of factorials as binomials: <code>(a+b)!/(a!*b!) -&gt; Binomial(a+b, a)
+   * </code>
+   */
+  private static IExpr gammaAsComb(IExpr expr) {
+    return eval(Traversal.bottomUp(expr, rv -> {
+      if (!rv.isTimes()) {
+        return rv;
+      }
+      // rvd = rv.as_powers_dict()
+      IAST times = (IAST) rv;
+      List<IExpr> numerArgs = new ArrayList<IExpr>();
+      List<IExpr> denomArgs = new ArrayList<IExpr>();
+      IASTAppendable others = F.TimesAlloc(times.size());
+      for (int i = 1; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        IExpr base = factor;
+        int exponent = 1;
+        if (factor.isPower() && factor.exponent().isInteger()) {
+          exponent = factor.exponent().toIntDefault();
+          base = factor.base();
+        }
+        if (base.isAST(S.Factorial, 2) && exponent != Integer.MIN_VALUE
+            && Math.abs(exponent) <= MAX_EXPONENT) {
+          for (int j = 0; j < Math.abs(exponent); j++) {
+            (exponent > 0 ? numerArgs : denomArgs).add(base.first());
+          }
+        } else {
+          others.append(factor);
+        }
+      }
+      if (numerArgs.isEmpty() || denomArgs.isEmpty()) {
+        return rv;
+      }
+      boolean hit = false;
+      List<List<IExpr>> nd = new ArrayList<List<IExpr>>();
+      nd.add(numerArgs);
+      nd.add(denomArgs);
+      for (int m = 0; m < 2; m++) {
+        List<IExpr> current = nd.get(m);
+        List<IExpr> other = nd.get(1 - m);
+        int i = 0;
+        while (i < current.size()) {
+          IExpr ai = current.get(i);
+          boolean found = false;
+          for (int j = i + 1; j < current.size(); j++) {
+            IExpr aj = current.get(j);
+            IExpr sum = eval(F.Expand(F.Plus(ai, aj)));
+            int index = -1;
+            for (int l = 0; l < other.size(); l++) {
+              if (eval(F.Expand(other.get(l))).equals(sum)) {
+                index = l;
+                break;
+              }
+            }
+            if (index >= 0) {
+              hit = true;
+              other.remove(index);
+              current.remove(j);
+              current.remove(i);
+              // the binomial with the simpler second argument
+              IExpr binomial =
+                  F.Binomial(sum, ai.leafCount() < aj.leafCount() ? ai : aj);
+              others.append(m == 0 ? F.Power(binomial, F.CN1) : binomial);
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            i++;
+          }
+        }
+      }
+      if (!hit) {
+        return rv;
+      }
+      for (IExpr a : numerArgs) {
+        others.append(F.Factorial(a));
+      }
+      for (IExpr a : denomArgs) {
+        others.append(F.Power(F.Factorial(a), F.CN1));
+      }
+      return others;
+    }));
   }
 
   private static boolean isGammaPower(IExpr x) {
@@ -217,12 +365,17 @@ public class GammaSimp {
     for (int i = 0; i < gammas.size(); i++) {
       IExpr g = gammas.get(i);
       IExpr[] split = asCoeffAdd(g);
-      if (split[1].isZero()) {
-        // numeric argument
-        continue;
-      }
       IRational c = (IRational) split[0];
-      int n = c.floor().toIntDefault() - 1;
+      int n;
+      if (split[1].isZero()) {
+        if (c.isInteger()) {
+          continue;
+        }
+        // expand_func(gamma(n)) for a rational n: shift the argument into the interval (0, 1)
+        n = c.ceil().toIntDefault() - 1;
+      } else {
+        n = c.floor().toIntDefault() - 1;
+      }
       if (n == Integer.MIN_VALUE + 1 || Math.abs(n) > 64) {
         continue;
       }
@@ -560,18 +713,18 @@ public class GammaSimp {
    * Simplify a sum of terms with gamma functions. The gamma functions in the terms are normalized
    * to a common argument, so that the common gamma functions can be factored out.
    */
-  private static IExpr ruleGammaPlus(IAST plus) {
+  private static IExpr ruleGammaPlus(IAST plus, boolean asComb) {
     final int gammas = countGamma(plus);
     if (gammas < 2) {
       return plus;
     }
     IASTAppendable sum = F.PlusAlloc(plus.argSize());
     for (int i = 1; i < plus.size(); i++) {
-      sum.append(ruleGamma(plus.get(i), false));
+      sum.append(ruleGamma(plus.get(i), false, asComb));
     }
     IExpr factored = eval(F.Factor(sum));
     if (factored.isTimes() || isGammaPower(factored)) {
-      factored = ruleGamma(factored, true);
+      factored = ruleGamma(factored, true, asComb);
     }
     return countGamma(factored) < gammas ? factored : plus;
   }
@@ -581,7 +734,7 @@ public class GammaSimp {
    *
    * @param absorb if <code>true</code> try to absorb factors into the gamma functions
    */
-  private static IExpr ruleGamma(IExpr expr, boolean absorb) {
+  private static IExpr ruleGamma(IExpr expr, boolean absorb, boolean asComb) {
     if (expr.isFree(S.Gamma, true)) {
       return expr;
     }
@@ -603,15 +756,17 @@ public class GammaSimp {
     cancel(numerGammas, denomGammas);
 
     // =========== level 2 work: pure gamma manipulation =========
-    reflection(numerGammas, numerOthers, denomOthers);
-    reflection(denomGammas, denomOthers, numerOthers);
+    if (!asComb) {
+      reflection(numerGammas, numerOthers, denomOthers);
+      reflection(denomGammas, denomOthers, numerOthers);
 
-    duplication(numerGammas, denomGammas, numerOthers, denomOthers);
-    duplication(denomGammas, numerGammas, denomOthers, numerOthers);
+      duplication(numerGammas, denomGammas, numerOthers, denomOthers);
+      duplication(denomGammas, numerGammas, denomOthers, numerOthers);
 
-    multiplicationTheorem(numerGammas, numerOthers);
-    multiplicationTheorem(denomGammas, denomOthers);
-    cancel(numerGammas, denomGammas);
+      multiplicationTheorem(numerGammas, numerOthers);
+      multiplicationTheorem(denomGammas, denomOthers);
+      cancel(numerGammas, denomGammas);
+    }
 
     // =========== level >= 2 work: factor absorption =========
     cancel(numerOthers, denomOthers);
