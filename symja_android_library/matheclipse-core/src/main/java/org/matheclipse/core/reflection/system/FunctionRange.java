@@ -575,6 +575,204 @@ public class FunctionRange extends AbstractFunctionEvaluator {
    * unbounded, and a chained inequality (or {@code Inequality[...]} for a mixed open/closed pair)
    * when both sides are finite.
    */
+  /**
+   * The range of a quotient <code>num/den</code> of a pole free numerator and a polynomial
+   * denominator with real poles or a restricted real domain (e.g. <code>Sqrt(x)/(x-1)</code>), as
+   * the union of its ranges on the open intervals of the domain between consecutive poles and its
+   * values at the closed ends of the domain.
+   *
+   * @return the range as relation of <code>y</code>, {@link F#NIL} if the function has no real
+   *         pole or restricted domain, or {@link #UNDECIDED} if the range of a function with a
+   *         restricted domain couldn't be determined
+   */
+  /** A pole aware range which applies but couldn't be determined. */
+  private static final IExpr UNDECIDED = F.List(S.Undefined);
+
+  private static IExpr rangeBetweenPoles(IExpr function, ISymbol x, ISymbol y,
+      EvalEngine engine) {
+    if (!Maximize.isPoleAwareQuotient(function, x, engine)) {
+      return F.NIL;
+    }
+    List<IExpr> poles = Maximize.quotientPoles(function, x, engine);
+    IAST domain = Maximize.quotientDomain(function, x, engine);
+    if (poles == null || domain == null || (poles.isEmpty() && Maximize.isRealLine(domain))) {
+      return F.NIL;
+    }
+    // the heuristics of FunctionRange ignore a restricted real domain like x>=0 of Sqrt(x), but
+    // may still decide a function which is real everywhere
+    final IExpr undecided = Maximize.isRealLine(domain) ? F.NIL : UNDECIDED;
+    List<RangePiece> pieces = new ArrayList<RangePiece>();
+    for (int i = 1; i < domain.size(); i++) {
+      IAST interval = (IAST) domain.get(i);
+      IExpr lo = interval.arg1();
+      IExpr hi = interval.arg4();
+      // the ends of the domain interval which belong to it are attained values
+      for (int j = 0; j < 2; j++) {
+        IExpr end = j == 0 ? lo : hi;
+        boolean closed = (j == 0 ? interval.arg2() : interval.arg3()) == S.LessEqual;
+        if (closed && !end.isInfinity() && !end.isNegativeInfinity()) {
+          IExpr value = engine.evaluate(F.xreplace(function, x, end));
+          if (!value.isRealResult() || value.isDirectedInfinity() || value.isComplexInfinity()) {
+            return undecided;
+          }
+          value = simplifyBound(value, engine);
+          RangePiece point = RangePiece.of(value, true, value, true, engine);
+          if (point == null) {
+            return undecided;
+          }
+          pieces.add(point);
+        }
+      }
+      if (lo.equals(hi)) {
+        continue;
+      }
+      // the open pieces between the poles inside the domain interval
+      double loValue = lo.isNegativeInfinity() ? Double.NEGATIVE_INFINITY : lo.evalDouble();
+      double hiValue = hi.isInfinity() ? Double.POSITIVE_INFINITY : hi.evalDouble();
+      List<IExpr> ends = new ArrayList<IExpr>();
+      ends.add(lo);
+      for (IExpr pole : poles) {
+        double d = pole.evalDouble();
+        if (d > loValue && d < hiValue) {
+          ends.add(pole);
+        }
+      }
+      ends.add(hi);
+      for (int k = 0; k + 1 < ends.size(); k++) {
+        IExpr lower = ends.get(k);
+        IExpr upper = ends.get(k + 1);
+        Maximize.QuotientExtremum min =
+            Maximize.quotientExtremumOn(function, x, lower, upper, false, engine);
+        Maximize.QuotientExtremum max =
+            Maximize.quotientExtremumOn(function, x, lower, upper, true, engine);
+        if (min == null || max == null) {
+          return undecided;
+        }
+        RangePiece piece = RangePiece.of(simplifyBound(min.value, engine), min.attained,
+            simplifyBound(max.value, engine), max.attained, engine);
+        if (piece == null) {
+          return undecided;
+        }
+        pieces.add(piece);
+      }
+    }
+    // merged numerically: a bound with a numeric `Root({eq&, c})` can't be ordered exactly
+    IAST range = RangePiece.union(pieces);
+    if (range.argSize() == 1) {
+      IAST only = (IAST) range.arg1();
+      if (only.arg1().isNegativeInfinity() && only.arg4().isInfinity()) {
+        return S.True;
+      }
+    }
+    IExpr relational = IntervalDataSym.asRelational(range, y);
+    return relational.isPresent() ? relational
+        : engine.evaluate(IntervalDataSym.intervalToOr(range, y));
+  }
+
+  /** A piece <code>lo &lt;(=) y &lt;(=) hi</code> of a range with the numeric values of its ends. */
+  private static final class RangePiece {
+    IExpr lo;
+    boolean loClosed;
+    double loValue;
+    IExpr hi;
+    boolean hiClosed;
+    double hiValue;
+
+    /** @return the piece or <code>null</code> if an end has no real numeric value */
+    static RangePiece of(IExpr lo, boolean loClosed, IExpr hi, boolean hiClosed,
+        EvalEngine engine) {
+      RangePiece piece = new RangePiece();
+      piece.lo = lo;
+      piece.loClosed = loClosed && !lo.isNegativeInfinity();
+      piece.loValue = numericBound(lo, engine);
+      piece.hi = hi;
+      piece.hiClosed = hiClosed && !hi.isInfinity();
+      piece.hiValue = numericBound(hi, engine);
+      if (Double.isNaN(piece.loValue) || Double.isNaN(piece.hiValue)) {
+        return null;
+      }
+      return piece;
+    }
+
+    private static double numericBound(IExpr value, EvalEngine engine) {
+      if (value.isNegativeInfinity()) {
+        return Double.NEGATIVE_INFINITY;
+      }
+      if (value.isInfinity()) {
+        return Double.POSITIVE_INFINITY;
+      }
+      double d = engine.evalQuiet(F.N(value)).evalfNaN();
+      return Double.isInfinite(d) ? Double.NaN : d;
+    }
+
+    private static boolean equal(double a, double b) {
+      if (Double.isInfinite(a) || Double.isInfinite(b)) {
+        return a == b;
+      }
+      return Math.abs(a - b) <= 1.0e-12 * Math.max(1.0, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    /** The union of the pieces as {@link S#IntervalData}, merged by their numeric ends. */
+    static IAST union(List<RangePiece> pieces) {
+      pieces.sort((a, b) -> {
+        int c = Double.compare(a.loValue, b.loValue);
+        return c != 0 ? c : Boolean.compare(b.loClosed, a.loClosed);
+      });
+      IASTAppendable result = F.IntervalDataAlloc(pieces.size());
+      RangePiece current = null;
+      for (RangePiece next : pieces) {
+        if (current == null) {
+          current = next;
+          continue;
+        }
+        boolean touching = equal(next.loValue, current.hiValue);
+        if (next.loValue < current.hiValue && !touching
+            || touching && (next.loClosed || current.hiClosed)) {
+          // overlapping or adjacent: extend the current piece
+          if (equal(next.loValue, current.loValue)) {
+            current.loClosed |= next.loClosed;
+          }
+          if (equal(next.hiValue, current.hiValue)) {
+            current.hiClosed |= next.hiClosed;
+          } else if (next.hiValue > current.hiValue) {
+            current.hi = next.hi;
+            current.hiClosed = next.hiClosed;
+            current.hiValue = next.hiValue;
+          }
+          continue;
+        }
+        result.append(current.toList());
+        current = next;
+      }
+      if (current != null) {
+        result.append(current.toList());
+      }
+      return result;
+    }
+
+    private IAST toList() {
+      return F.List(lo, loClosed ? S.LessEqual : S.Less, hiClosed ? S.LessEqual : S.Less, hi);
+    }
+  }
+
+  private static IExpr simplifyBound(IExpr value, EvalEngine engine) {
+    if (value.isNumber() || value.isInfinity() || value.isNegativeInfinity()
+        || !value.isFree(S.Root, true)) {
+      // a numeric Root({eq&, c}) isn't simplified any further
+      return value;
+    }
+    IExpr simplified = engine.evalQuiet(F.Simplify(value));
+    return simplified.isPresent() ? simplified : value;
+  }
+
+  /** Test whether the finite lower bound is known to be greater than the finite upper bound. */
+  private static boolean isInverted(Bound lo, Bound hi) {
+    if (lo.unbounded || hi.unbounded) {
+      return false;
+    }
+    return S.Greater.ofQ(lo.value, hi.value);
+  }
+
   private static IExpr buildRangeRelational(Bound lo, Bound hi, ISymbol y) {
     if (lo.unbounded && hi.unbounded) {
       return S.True;
@@ -710,6 +908,17 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         // critical-point fallback first so the WMA-style Root[{f, c}] inequality is
         // returned when possible. Polynomial / rational inputs skip this branch and use the
         // existing exact paths unchanged.
+        // A quotient with real poles: the union of the ranges between consecutive poles, e.g.
+        // x+1/x -> y<=-2||y>=2. The extrema on all of Reals can't describe such a range.
+        IExpr poleRange = rangeBetweenPoles(function, x, y, engine);
+        if (poleRange == UNDECIDED) {
+          // the heuristics below ignore the poles and the real domain and give a wrong range
+          return F.NIL;
+        }
+        if (poleRange.isPresent()) {
+          return poleRange;
+        }
+
         if (containsTranscendental(function)) {
           IExpr critRange = numericalCriticalPointRange(function, x, y, engine);
           if (critRange.isPresent()) {
@@ -730,7 +939,9 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         IExpr max = engine.evalQuiet(F.Maximize(function, x));
         Bound lo = interpretExtremum(min, true);
         Bound hi = interpretExtremum(max, false);
-        if (lo.known && hi.known) {
+        if (lo.known && hi.known && !isInverted(lo, hi)) {
+          // an inverted pair (a local minimum above a local maximum, e.g. on both sides of a pole
+          // of (x^2+x+1)/(x^2-1)) doesn't describe the range
           return buildRangeRelational(lo, hi, y);
         }
         // Minimize/Maximize could not determine a closed-form extremum for at least one

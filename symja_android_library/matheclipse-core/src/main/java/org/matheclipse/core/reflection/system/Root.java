@@ -133,6 +133,17 @@ public class Root extends AbstractFunctionEvaluator {
     // implements the real-first ordering, so both forms are treated equivalently to Root[f, k].
     if ((ast.isAST2() || ast.isAST3()) && ast.arg2().isInteger()) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isAST(S.Function, 3)) {
+        // Root[Function[y, poly], k] and Root[Function[{y}, poly], k] name the same root as
+        // Root[poly /. y -> #1 &, k]: the code below reads the body of a slot function, and took
+        // the parameter list {y} for the polynomial
+        IExpr parameters = arg1.first();
+        IExpr parameter = parameters.isList1() ? parameters.first() : parameters;
+        if (!parameter.isSymbol()) {
+          return F.NIL;
+        }
+        return ast.setAtCopy(1, F.Function(F.subst(arg1.second(), parameter, F.Slot1)));
+      }
       if (!arg1.isFunction() && !arg1.isList()) {
         // Root[poly, k] with a plain polynomial expression instead of a pure function of Slot1:
         // rewrite it, so that Root[x^2-2, 1] and Root[#^2-2 &, 1] denote the same object. Only a

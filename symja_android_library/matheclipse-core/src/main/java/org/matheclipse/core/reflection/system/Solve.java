@@ -890,8 +890,45 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      */
     private IExpr solveUnderdetermined(IASTMutable termsEqualZeroList, IAST inequationsList,
         boolean numericFlag, IAST variables, EvalEngine engine) {
-      if (termsEqualZeroList.argSize() != 1 || variables.argSize() < 2
+      if (termsEqualZeroList.argSize() >= variables.argSize() || variables.argSize() < 2
           || !inequationsList.isEmpty()) {
+        return F.NIL;
+      }
+      if (termsEqualZeroList.argSize() > 1) {
+        // several equations: solve for as many variables as there are equations, the others stay
+        // free; the sets of later variables are tried first, and the first which gives solutions
+        // is taken - Solve({a*c==0, b*c==1}, {a, b, c}) is {{a->0, c->1/b}}
+        int n = variables.argSize();
+        int k = termsEqualZeroList.argSize();
+        if (n > 8) {
+          return F.NIL;
+        }
+        java.util.List<int[]> subsets = new java.util.ArrayList<int[]>();
+        collectSubsets(n, k, 0, new int[k], 0, subsets);
+        subsets.sort((p, q) -> {
+          int sumP = java.util.Arrays.stream(p).sum();
+          int sumQ = java.util.Arrays.stream(q).sum();
+          if (sumP != sumQ) {
+            return Integer.compare(sumQ, sumP);
+          }
+          for (int i = k - 1; i >= 0; i--) {
+            if (p[i] != q[i]) {
+              return Integer.compare(q[i], p[i]);
+            }
+          }
+          return 0;
+        });
+        for (int[] subset : subsets) {
+          IASTAppendable solveVariables = F.ListAlloc(k);
+          for (int index : subset) {
+            solveVariables.append(variables.get(index + 1));
+          }
+          IExpr result = solveRecursive(termsEqualZeroList.copy(), inequationsList, numericFlag,
+              solveVariables, engine);
+          if (result.isListOfLists() && result.argSize() > 0) {
+            return result;
+          }
+        }
         return F.NIL;
       }
       IExpr equation = termsEqualZeroList.arg1();
@@ -935,6 +972,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
       return solveRecursive(termsEqualZeroList, inequationsList, numericFlag, F.list(solveVariable),
           engine);
+    }
+
+    /** All sets of <code>k</code> of the positions <code>0..n-1</code>, in increasing order. */
+    private static void collectSubsets(int n, int k, int start, int[] current, int size,
+        java.util.List<int[]> subsets) {
+      if (size == k) {
+        subsets.add(current.clone());
+        return;
+      }
+      for (int i = start; i < n; i++) {
+        current[size] = i;
+        collectSubsets(n, k, i + 1, current, size + 1, subsets);
+      }
     }
 
     private static IAST reversed(IAST list) {
@@ -3003,6 +3053,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    IExpr withRenamedVariables = SolveUtils.solveWithRenamedBuiltinVariables(originalAST, engine);
+    if (withRenamedVariables.isPresent()) {
+      // solved with the renamed variables, or unsolved there - which isn't tried a second time
+      return withRenamedVariables.equals(originalAST) ? F.NIL : withRenamedVariables;
+    }
     boolean isNumericArgument = !ast.arg1().isFree(x -> x.isInexactNumber(), false);
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);

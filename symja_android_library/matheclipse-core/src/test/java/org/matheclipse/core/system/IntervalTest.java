@@ -1042,6 +1042,13 @@ public class IntervalTest extends ExprEvaluatorTestCase {
     check("Positive(Interval({0,5}))", "False");
     check("NonNegative(Interval({0,5}))", "True");
     check("NonPositive(Interval({-5,0}))", "True");
+    // a union encloses one unknown value (WMA): undecided unless every part decides alike
+    check("Positive(Interval({-2,-1},{1,2}))", "Positive(Interval({-2,-1},{1,2}))");
+    check("Negative(Interval({-2,-1},{1,2}))", "Negative(Interval({-2,-1},{1,2}))");
+    check("Positive(Interval({1,2},{-2,-1}))", "Positive(Interval({-2,-1},{1,2}))");
+    check("Positive(Interval({1,2},{3,4}))", "True");
+    check("Positive(Interval({-4,-3},{-2,-1}))", "False");
+    check("Positive(Interval({-5,5},{-3,-2}))", "Positive(Interval({-5,5}))");
   }
 
   @Test

@@ -117,7 +117,7 @@ public class PolynomialModTest extends ExprEvaluatorTestCase {
         "0");
   }
 
-  /** Mathematica ground truth for rational, complex and multivariate moduli. */
+  /** rational, complex and multivariate moduli. */
   @Test
   public void testPolynomialModMathematica() {
     check("PolynomialMod(2/3, 7)", //

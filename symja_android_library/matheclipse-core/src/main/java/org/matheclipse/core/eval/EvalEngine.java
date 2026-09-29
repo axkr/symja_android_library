@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -228,7 +230,7 @@ public class EvalEngine implements Serializable {
     /** The enclosing <code>Check</code>s of the calling thread, which see the messages. */
     private final Object fCheckScopes;
     private IExpr fExpr;
-    private long fSeconds;
+    private long fMillis;
 
     /**
      * Copy the current threads engine state into a new <code>EvalEngine</code> and do the
@@ -246,7 +248,7 @@ public class EvalEngine implements Serializable {
       EvalEngine.set(fEngine);
       Errors.inheritCheckScopes(fCheckScopes);
       try {
-        long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
+        long timeConstrainedMillis = System.currentTimeMillis() + fMillis;
         // System.out.println("TimeConstrainedMillis: " + timeConstrainedMillis);
         fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
         return fEngine.evaluate(fExpr);
@@ -255,7 +257,7 @@ public class EvalEngine implements Serializable {
           | com.google.common.util.concurrent.UncheckedTimeoutException e) {
         if (Config.DEBUG) {
           System.out
-              .println("TimeConstrained evaluation failed: " + fExpr + "\nseconds: " + fSeconds);
+              .println("TimeConstrained evaluation failed: " + fExpr + "\nmillis: " + fMillis);
         }
         // Errors.printMessage(S.TimeConstrained, e, fEngine);
         return S.$Aborted;
@@ -281,9 +283,9 @@ public class EvalEngine implements Serializable {
     // // thread.stop();
     // }
 
-    public void setExpr(IExpr fExpr, long seconds) {
+    public void setExpr(IExpr fExpr, long millis) {
       this.fExpr = fExpr;
-      this.fSeconds = seconds;
+      this.fMillis = millis;
     }
   }
   public static class OptionsResult {
@@ -996,6 +998,16 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * The transient fields a deserialized engine starts with, as a constructor sets them: no session
+   * ID and no <code>Out[]</code> history.
+   */
+  private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+    stream.defaultReadObject();
+    fSessionID = "";
+    fOutListDisabled = true;
+  }
+
+  /**
    * Constructor for an evaluation engine. A single <code>EvalEngine</code> is associated with the
    * current thread through a
    * <a href="https://en.wikipedia.org/wiki/Thread-local_storage">ThreadLocal</a> mechanism.
@@ -1515,6 +1527,9 @@ public class EvalEngine implements Serializable {
     engine.fRelaxedSyntax = fRelaxedSyntax;
     engine.fSeconds = fSeconds;
     engine.fTimeConstrainedMillis = fTimeConstrainedMillis;
+    // the constants C(k) go on counting in the copy: a Solve in a TimeConstrained worker named
+    // its integer family C(1), the constant DSolve already had
+    engine.fConstantCounter = fConstantCounter;
     engine.fSessionID = fSessionID;
     // engine.fStopRequested = false;
     engine.fTogetherMode = fTogetherMode;
@@ -3914,13 +3929,40 @@ public class EvalEngine implements Serializable {
    *         longer than <code>seconds</code>.
    */
   public IExpr evalTimeConstrained(final IExpr expr, IExpr defaultValue, long seconds) {
+    return evalTimeConstrainedMillis(expr, defaultValue, seconds * 1000L);
+  }
+
+  /**
+   * Like {@link #evalTimeConstrained(IExpr, IExpr, long)}, with the time limit in milliseconds -
+   * <code>TimeConstrained(expr, 0.3)</code> stops after 0.3 seconds, as in WMA.
+   *
+   * <p>
+   * The engine's time constraint stays set afterwards, so a later <code>TimeConstrained</code> of
+   * the same evaluation runs inline without a limit of its own. That is a known limitation, and
+   * deliberately kept: Rubi's rules call <code>TimeConstrained</code> while
+   * <code>Symbol.evalDownRule</code> holds the symbol's lock, and a worker thread started there
+   * which needs the same rules blocks - a timed out one kept blocking every later evaluation.
+   *
+   * @param millis the time in milliseconds; a value greater than 0 is expected
+   */
+  public IExpr evalTimeConstrainedMillis(final IExpr expr, IExpr defaultValue, long millis) {
     TimeConstrainedExecutor executor = TimeConstrainedExecutor.create();
     try {
       TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor.service());
       EvalControlledCallable work = new EvalControlledCallable(this);
-      seconds = setSeconds(seconds);
-      work.setExpr(expr, seconds);
-      return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
+      // the engine keeps whole seconds for TimeRemaining and nesting; an enclosing, shorter
+      // constraint wins
+      long seconds = Math.max(1L, (millis + 999L) / 1000L);
+      long allowedSeconds = setSeconds(seconds);
+      if (allowedSeconds < seconds) {
+        millis = allowedSeconds * 1000L;
+      }
+      work.setExpr(expr, millis);
+      IExpr result = timeLimiter.callWithTimeout(work, millis, TimeUnit.MILLISECONDS);
+      // the constants the worker created are taken - read only after it returned, which orders the
+      // read after its writes; a timed out worker's result, and with it its constants, is dropped
+      fConstantCounter = Math.max(fConstantCounter, work.fEngine.fConstantCounter);
+      return result;
     } catch (org.matheclipse.core.eval.exception.TimeoutException
         | java.util.concurrent.TimeoutException
         | com.google.common.util.concurrent.UncheckedTimeoutException e) {

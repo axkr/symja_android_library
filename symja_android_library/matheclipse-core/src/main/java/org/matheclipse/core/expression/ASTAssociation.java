@@ -315,12 +315,9 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
         if (!rule.first().equals(otherRule.first())) {
           return IExpr.COMPARE_TERNARY.FALSE;
         }
-        final IExpr.COMPARE_TERNARY b = rule.second().equalTernary(otherRule.second(), engine);
-        if (b == IExpr.COMPARE_TERNARY.FALSE) {
+        result = result.and(rule.second().equalTernary(otherRule.second(), engine));
+        if (result == IExpr.COMPARE_TERNARY.FALSE) {
           return IExpr.COMPARE_TERNARY.FALSE;
-        }
-        if (b != IExpr.COMPARE_TERNARY.TRUE) {
-          result = IExpr.COMPARE_TERNARY.UNDECIDABLE;
         }
       }
       return result;

@@ -14,6 +14,7 @@ import org.apfloat.Apint;
 import org.apfloat.Aprational;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.data.GeoLocations;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
@@ -83,6 +84,7 @@ public class ConstantDefinitions {
       S.$ContextAliases.setEvaluator(new $ContextAliases());
       S.$CreationDate.setEvaluator(new $CreationDate());
       S.$GeoLocation.setEvaluator(new $GeoLocation());
+      S.$GeoLocationSource.setEvaluator(new $GeoLocationSource());
       S.$HistoryLength.setEvaluator(new $HistoryLength());
       S.$HomeDirectory.setEvaluator(new $HomeDirectory());
       S.$Input.setEvaluator(new $Input());
@@ -405,22 +407,46 @@ public class ConstantDefinitions {
    * The observer's position on Earth, for the functions which need somewhere to stand.
    *
    * <p>
-   * Unset it evaluates to itself rather than to a default: guessing a location would silently give
-   * a sunrise time or a sky chart for the wrong place, which is worse than reporting that no
-   * location is known.
+   * An assigned value always wins. Unassigned, a kernel on the user's own machine falls back on the
+   * configured location or the time zone estimate of {@link GeoLocations#automatic(EvalEngine)},
+   * and <code>$GeoLocationSource</code> says which. Anywhere else it evaluates to itself rather
+   * than to a default: guessing would silently give a sunrise time or a sky chart for the wrong
+   * place, and on a server the host's time zone says nothing about its user.
    */
   private static class $GeoLocation extends AbstractSymbolEvaluator implements ISetValueEvaluator {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       IExpr location = S.$GeoLocation.assignedValue();
-      return location == null ? F.NIL : location;
+      if (location != null) {
+        return location;
+      }
+      GeoLocations.Estimate estimate = GeoLocations.automatic(engine);
+      return estimate == null ? F.NIL : GeoLocations.toGeoPosition(estimate);
     }
 
     @Override
     public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
       S.$GeoLocation.assignValue(rightHandSide, setDelayed);
       return rightHandSide;
+    }
+  }
+
+  /**
+   * Where the value of <code>$GeoLocation</code> comes from: <code>"User"</code> for an assigned
+   * value, <code>"Configuration"</code> for the <code>symja.geolocation</code> setting,
+   * <code>"TimeZone"</code> for the estimate from the time zone, and <code>None</code> when there is
+   * no location.
+   */
+  private static class $GeoLocationSource extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (S.$GeoLocation.assignedValue() != null) {
+        return F.stringx(GeoLocations.SOURCE_USER);
+      }
+      GeoLocations.Estimate estimate = GeoLocations.automatic(engine);
+      return estimate == null ? S.None : F.stringx(estimate.source);
     }
   }
 

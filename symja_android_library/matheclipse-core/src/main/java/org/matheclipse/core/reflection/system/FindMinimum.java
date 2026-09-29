@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.hipparchus.analysis.MultivariateFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -210,6 +211,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
 
   /** A search which reaches a function value of this size ran away on an unbounded function. */
   private static final double DIVERGED = 1e300;
+
+  /** The best value of a search stopped by MaxIterations which went off towards infinity. */
+  private static final double RAN_AWAY = 1e100;
 
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
@@ -1037,8 +1041,50 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       this.engine = engine;
     }
 
+    /** The best point any method evaluated the function at, and its value. */
+    private double[] bestPoint = null;
+
+    private double bestValue = Double.NaN;
+
+    /** Record an evaluated point, <code>value</code> being the value of the original function. */
+    private void record(double[] point, double value) {
+      if (Double.isNaN(value) || constrained) {
+        // the methods also evaluate points which violate the constraints, and the best of those
+        // is no answer - a constrained search stopped by MaxIterations stays unevaluated
+        return;
+      }
+      if (bestPoint == null || (goalType == GoalType.MAXIMIZE ? value > bestValue
+          : value < bestValue)) {
+        bestPoint = point.clone();
+        bestValue = value;
+      }
+    }
+
+    /**
+     * WMA answers with the point it reached when the iterations run out, and says so with
+     * <code>cvmit</code>: <code>FindMinimum(x^2+3*x+2, {x,5}, MaxIterations->1)</code> gives a
+     * message and a result, not the call unevaluated.
+     */
     @Override
     public IExpr get() {
+      try {
+        return optimize();
+      } catch (MathIllegalStateException mise) {
+        // a search which ran away on an unbounded function has no point worth giving
+        if (bestPoint != null && isNumeric(bestPoint) && Math.abs(bestValue) < RAN_AWAY
+            && mise.getSpecifier().equals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED)) {
+          // Failed to converge to the requested accuracy or precision within `1` iterations.
+          Errors.printMessage(head, "cvmit", F.list(F.ZZ(maxIterations)), engine);
+          final double[] point = bestPoint;
+          IASTAppendable ruleList = F.mapRange(1, variableList.size(),
+              j -> F.Rule(variableList.get(j), F.num(point[j - 1])));
+          return F.list(F.num(bestValue), ruleList);
+        }
+        throw mise;
+      }
+    }
+
+    private IExpr optimize() {
       PointValuePair optimum = null;
       InitialGuess initialGuess = new InitialGuess(initialValues);
       // MaxIterations counts the iterations of a method; the function evaluations only get a
@@ -1058,6 +1104,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
               new TwiceDifferentiableMultiVariateNumerical(
                   maximize ? engine.evaluate(F.Negate(function)) : function, variableList, true);
           twiceDifferentiableFunction.setMaxEval(maxEvaluations);
+          twiceDifferentiableFunction
+              .setObserver((point, value) -> record(point, maximize ? -value : value));
           LagrangeSolution lagrangeSolution = optim.optimize( //
               maxEval, //
               maxIter, //
@@ -1093,8 +1141,12 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           method = POWELL_METHOD;
         }
       }
-      MultiVariateNumerical multiVariateNumerical =
-          new MultiVariateNumerical(function, variableList);
+      final MultiVariateNumerical numerical = new MultiVariateNumerical(function, variableList);
+      final MultivariateFunction multiVariateNumerical = point -> {
+        double value = numerical.value(point);
+        record(point, value);
+        return value;
+      };
       if (method.equals(CONJUGATEGRADIENT_METHOD)) {
         MultiVariateVectorGradient multiVariateVectorGradient =
             new MultiVariateVectorGradient(function, variableList, true);
@@ -1204,7 +1256,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     }
 
     private PointValuePair conjugateGradient(MultiVariateVectorGradient multiVariateVectorGradient,
-        MultiVariateNumerical multiVariateNumerical, Formula formula, InitialGuess initialGuess,
+        MultivariateFunction multiVariateNumerical, Formula formula, InitialGuess initialGuess,
         MaxEval maxEval, MaxIter maxIter) {
       // a local search from the start value: no MultiStartMultivariateOptimizer, which returns the
       // best of some random starts and with it a minimum far away from the start value

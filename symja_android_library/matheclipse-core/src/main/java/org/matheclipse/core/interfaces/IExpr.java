@@ -215,7 +215,42 @@ public interface IExpr
    * See: <a href"https://en.wikipedia.org/wiki/Three-valued_logic">Three-valued logic</a>
    */
   public static enum COMPARE_TERNARY {
-    TRUE, FALSE, UNDECIDABLE
+    TRUE, FALSE, UNDECIDABLE;
+
+    /**
+     * Three-valued (Kleene) conjunction: <code>FALSE</code> if either value is <code>FALSE</code>,
+     * <code>TRUE</code> if both are <code>TRUE</code>, otherwise <code>UNDECIDABLE</code>.
+     */
+    public COMPARE_TERNARY and(COMPARE_TERNARY other) {
+      if (this == FALSE || other == FALSE) {
+        return FALSE;
+      }
+      return this == TRUE && other == TRUE ? TRUE : UNDECIDABLE;
+    }
+
+    /**
+     * Three-valued (Kleene) disjunction: <code>TRUE</code> if either value is <code>TRUE</code>,
+     * <code>FALSE</code> if both are <code>FALSE</code>, otherwise <code>UNDECIDABLE</code>.
+     */
+    public COMPARE_TERNARY or(COMPARE_TERNARY other) {
+      if (this == TRUE || other == TRUE) {
+        return TRUE;
+      }
+      return this == FALSE && other == FALSE ? FALSE : UNDECIDABLE;
+    }
+
+    /**
+     * Three-valued negation: <code>TRUE</code> and <code>FALSE</code> swap,
+     * <code>UNDECIDABLE</code> stays.
+     */
+    public COMPARE_TERNARY not() {
+      return this == TRUE ? FALSE : this == FALSE ? TRUE : UNDECIDABLE;
+    }
+
+    /** <code>TRUE</code> or <code>FALSE</code> for a decided boolean. */
+    public static COMPARE_TERNARY of(boolean value) {
+      return value ? TRUE : FALSE;
+    }
   }
 
   public static final int ASTID = 1024;
@@ -338,11 +373,52 @@ public interface IExpr
   static IExpr freeQ(IExpr expr, IExpr form, EvalEngine engine) {
     final IExpr arg1 = expr.isAtomicConstant() ? expr : engine.evaluate(expr);
     final IExpr arg2 = form.isAtomicConstant() ? form : engine.evalPattern(form);
+    if (containsNumberWithHead(arg1, arg2, true)) {
+      return S.False;
+    }
     if ((arg1.isSymbol() || arg1.isAtomicConstant())
         && (arg2.isSymbol() || arg2.isAtomicConstant())) {
       return F.booleSymbol(!arg1.equals(arg2));
     }
     return F.booleSymbol(arg1.isFree(arg2, true));
+  }
+
+  /**
+   * WMA's <code>FreeQ</code> - and only <code>FreeQ</code>, not <code>MemberQ</code>,
+   * <code>Position</code> or <code>Cases</code> - sees the head of a complex or rational number
+   * atom: <code>FreeQ(1+2*I, Complex)</code> and <code>FreeQ(1/2, Rational)</code> are
+   * <code>False</code>. The parts stay invisible (<code>FreeQ(1/2, 2)</code> is <code>True</code>),
+   * and so do the heads of the other atoms (<code>FreeQ(1.5, Real)</code> is <code>True</code>).
+   *
+   * <p>
+   * Only a literal <code>Complex</code> or <code>Rational</code>, or an alternative of them, is
+   * tested here, so the usual <code>FreeQ(u, x)</code> costs nothing more.
+   *
+   * @param expr the evaluated expression
+   * @param form the evaluated form
+   * @param heads whether heads are searched (the <code>Heads</code> option)
+   */
+  static boolean containsNumberWithHead(IExpr expr, IExpr form, boolean heads) {
+    if (!heads) {
+      return false;
+    }
+    boolean complexHead = form == S.Complex;
+    boolean rationalHead = form == S.Rational;
+    if (!complexHead && !rationalHead) {
+      if (!form.isAlternatives()) {
+        return false;
+      }
+      complexHead = ((IAST) form).exists(x -> x == S.Complex);
+      rationalHead = ((IAST) form).exists(x -> x == S.Rational);
+      if (!complexHead && !rationalHead) {
+        return false;
+      }
+    }
+    final boolean complex = complexHead;
+    final boolean rational = rationalHead;
+    return !expr.isFree(
+        x -> (complex && (x.isComplex() || x.isComplexNumeric())) || (rational && x.isFraction()),
+        true);
   }
 
   public static IASTAppendable join(IExpr head, IAST... lists) {

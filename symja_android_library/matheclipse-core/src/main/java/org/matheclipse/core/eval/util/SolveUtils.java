@@ -1,26 +1,75 @@
 package org.matheclipse.core.eval.util;
 
-import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.ExprAnalyzer;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.Solve;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class SolveUtils {
+
+  /**
+   * Solve or reduce with the built-in symbols named in the variable list - <code>C</code>,
+   * <code>D</code>, ... - renamed to fresh symbols, because it takes any symbol listed there as a
+   * variable: <code>Reduce({X*C==1}, {X, C})</code> is <code>X != 0 &amp;&amp; C == 1/X</code>.
+   * Symja's algorithms take a built-in symbol for a constant, so it is renamed on the way in and
+   * back in the result. A numeric constant like <code>Pi</code>, and <code>True, False,
+   * Null</code>, are not renamed.
+   *
+   * @param ast <code>Solve(eqns, vars, ...)</code> or <code>Reduce(eqns, vars, ...)</code> with its
+   *        options
+   * @return the result with the original symbols - the call itself if the renamed call stays
+   *         unevaluated, which the caller must not solve a second time - or {@link F#NIL} if no
+   *         variable is a built-in symbol
+   */
+  public static IExpr solveWithRenamedBuiltinVariables(IAST ast, EvalEngine engine) {
+    if (ast.argSize() < 2) {
+      return F.NIL;
+    }
+    IExpr variables = ast.arg2();
+    IAST list = variables.isList() ? (IAST) variables : F.list(variables);
+    java.util.Map<IExpr, IExpr> forward = new java.util.IdentityHashMap<IExpr, IExpr>();
+    java.util.Map<IExpr, IExpr> backward = new java.util.IdentityHashMap<IExpr, IExpr>();
+    for (IExpr variable : list) {
+      if (variable.isBuiltInSymbol() && !variable.isConstantAttribute() && !variable.isTrue()
+          && !variable.isFalse() && variable != S.Null && !isDomain(variable)
+          && !forward.containsKey(variable)) {
+        ISymbol dummy = F.Dummy(((ISymbol) variable).getSymbolName());
+        forward.put(variable, dummy);
+        backward.put(dummy, variable);
+      }
+    }
+    if (forward.isEmpty()) {
+      return F.NIL;
+    }
+    IAST renamed = (IAST) F.subst(ast, x -> {
+      IExpr dummy = forward.get(x);
+      return dummy == null ? F.NIL : dummy;
+    });
+    IExpr result = engine.evaluate(renamed);
+    return F.subst(result, x -> {
+      IExpr original = backward.get(x);
+      return original == null ? F.NIL : original;
+    });
+  }
+
+  /** A domain like <code>Reals</code>, which Solve(x^2 == 1, Reals) takes in place of variables. */
+  private static boolean isDomain(IExpr symbol) {
+    return symbol == S.Reals || symbol == S.Complexes || symbol == S.Integers
+        || symbol == S.Rationals || symbol == S.Primes || symbol == S.Booleans
+        || symbol == S.Algebraics;
+  }
 
   /**
    * Rewrite an <code>And(...)</code> of equations into the equivalent <code>List(...)</code> of
@@ -297,8 +346,8 @@ public class SolveUtils {
    * @return the (possibly empty) list of solution lists or {@link F#NIL} if the system cannot be
    *         solved this way
    */
-  public static IExpr solveModulus(IAST termsList, IAST userDefinedVariables,
-      IExpr modulusOption, ISymbol reportingSymbol, EvalEngine engine) {
+  public static IExpr solveModulus(IAST termsList, IAST userDefinedVariables, IExpr modulusOption,
+      ISymbol reportingSymbol, EvalEngine engine) {
     int modulus = modulusOption.toIntDefault();
     if (!modulusOption.isInteger() || modulus < 1) {
       // Value of option `1` should be a prime number or zero.

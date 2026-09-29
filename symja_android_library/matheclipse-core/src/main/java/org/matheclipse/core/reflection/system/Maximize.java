@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -198,6 +199,27 @@ public class Maximize extends AbstractFunctionEvaluator {
         if (intervalData.argSize() == 0) {
           // empty feasible region -> the extremum is not attained at any point
           return Errors.printMessage(head, "natt", F.List(isMax ? "maximum" : "minimum"), engine);
+        }
+        if (isPoleAwareQuotient(objective, x, engine)) {
+          // a rational objective (or one with only polynomial poles) is decided with its poles
+          IAST domain = quotientDomain(objective, x, engine);
+          IAST feasible = domain == null ? F.NIL
+              : isRealLine(domain) ? intervalData
+                  : IntervalDataSym.intersection(intervalData, domain, engine, true);
+          if (feasible.isPresent()) {
+            if (feasible.argSize() == 0) {
+              // no feasible point where the objective is real valued (like WMA)
+              Errors.printMessage(head, "infeas", F.List(F.List(x), constraint, objective),
+                  engine);
+              return F.list(isMax ? F.CNInfinity : F.CInfinity,
+                  F.list(F.Rule(x, S.Indeterminate)));
+            }
+            IExpr quotient =
+                quotientConstrainedExtremum(head, objective, x, feasible, isMax, engine);
+            if (quotient.isPresent()) {
+              return quotient;
+            }
+          }
         }
         IExpr unbounded = unboundedUnivariateExtremum(objective, x, intervalData, isMax, engine);
         if (unbounded.isPresent()) {
@@ -1702,6 +1724,629 @@ public class Maximize extends AbstractFunctionEvaluator {
     }
   }
 
+  /**
+   * The global extremum of a univariate function which is a quotient <code>num/den</code> of a
+   * pole free numerator and a polynomial denominator, e.g. a rational function or
+   * <code>E^x/(x^2-1)</code>. Unlike a pure critical point search this takes the real poles and
+   * the limits at <code>+/-Infinity</code> into account:
+   * <ul>
+   * <li>if the function tends to <code>-Infinity</code> (minimum) at a real pole, the result is
+   * <code>{-Infinity, {x -&gt; pole}}</code> for the smallest such pole,</li>
+   * <li>if a limit at <code>+/-Infinity</code> is smaller than every critical value, the extremum
+   * isn't attained and the result is <code>{limit, {x -&gt; -Infinity}}</code> (or
+   * <code>Infinity</code>),</li>
+   * <li>otherwise the smallest critical value with the smallest critical point.</li>
+   * </ul>
+   * The message <code>natt</code> is printed if the extremum is not attained (like WMA).
+   *
+   * @param head {@code Maximize} or {@code Minimize}, used for messages
+   * @param function the objective
+   * @param x the variable
+   * @param isMax <code>true</code> for the maximum
+   * @param engine the evaluation engine
+   * @return the extremum or {@link F#NIL} if the function isn't of this form or the extremum
+   *         couldn't be determined
+   */
+  public static IExpr quotientExtremum(ISymbol head, IExpr function, IExpr x, boolean isMax,
+      EvalEngine engine) {
+    if (!isPoleAwareQuotient(function, x, engine)) {
+      return F.NIL;
+    }
+    IAST domain = quotientDomain(function, x, engine);
+    if (domain == null) {
+      return F.NIL;
+    }
+    if (!isRealLine(domain)) {
+      // e.g. `Sqrt(x)/(x^2+1)` is only real for x>=0; a closed end of the domain is attained
+      return quotientConstrainedExtremum(head, function, x, domain, isMax, engine);
+    }
+    QuotientExtremum extremum =
+        quotientExtremumOn(function, x, F.CNInfinity, F.CInfinity, isMax, engine);
+    if (extremum == null) {
+      return F.NIL;
+    }
+    boolean unboundedAtInfinity = extremum.unbounded
+        && (extremum.point.isInfinity() || extremum.point.isNegativeInfinity());
+    if (!extremum.attained && !unboundedAtInfinity) {
+      Errors.printMessage(head, "natt", F.List(isMax ? "maximum" : "minimum"), engine);
+    }
+    return F.list(extremum.value, F.list(F.Rule(x, extremum.point)));
+  }
+
+  /**
+   * The extremum of a function for which {@link #isPoleAwareQuotient(IExpr, IExpr, EvalEngine)}
+   * holds over a feasible region given as {@link F#IntervalData}. The interior of every interval
+   * is decided by {@link #quotientExtremumOn(IExpr, IExpr, IExpr, IExpr, boolean, EvalEngine)},
+   * its closed finite ends which aren't poles are attained candidates. An unbounded interval
+   * (e.g. <code>-Infinity</code> at a pole inside the region) decides the result; the first one in
+   * ascending order is taken. An attained value wins a tie against a limit.
+   *
+   * @return <code>{value, {x -&gt; point}}</code> or {@link F#NIL} if it couldn't be determined
+   */
+  private static IExpr quotientConstrainedExtremum(ISymbol head, IExpr objective, IExpr x,
+      IAST intervalData, boolean isMax, EvalEngine engine) {
+    List<IExpr> poles = quotientPoles(objective, x, engine);
+    if (poles == null) {
+      return F.NIL;
+    }
+    IExpr bestValue = F.NIL;
+    IExpr bestPoint = F.NIL;
+    boolean bestAttained = false;
+    for (int i = 1; i < intervalData.size(); i++) {
+      IExpr entry = intervalData.get(i);
+      if (!entry.isList() || ((IAST) entry).argSize() != 4) {
+        return F.NIL;
+      }
+      IAST interval = (IAST) entry;
+      IExpr lo = interval.arg1();
+      IExpr hi = interval.arg4();
+      if (!(lo.isNegativeInfinity() || lo.isNumericFunction(true))
+          || !(hi.isInfinity() || hi.isNumericFunction(true))) {
+        // a bound with a parameter
+        return F.NIL;
+      }
+      List<QuotientExtremum> candidates = new ArrayList<QuotientExtremum>();
+      if (lo.equals(hi)) {
+        // a single point
+        if (!isPole(lo, poles)) {
+          IExpr value = engine.evaluate(F.xreplace(objective, x, lo));
+          candidates.add(new QuotientExtremum(value, lo, true, false));
+        }
+      } else {
+        QuotientExtremum inner = quotientExtremumOn(objective, x, lo, hi, isMax, engine);
+        if (inner == null) {
+          return F.NIL;
+        }
+        if (inner.unbounded) {
+          boolean atInfinity = inner.point.isInfinity() || inner.point.isNegativeInfinity();
+          if (!atInfinity) {
+            Errors.printMessage(head, "natt", F.List(isMax ? "maximum" : "minimum"), engine);
+          }
+          return F.list(inner.value, F.list(F.Rule(x, inner.point)));
+        }
+        candidates.add(inner);
+        for (int j = 0; j < 2; j++) {
+          IExpr end = j == 0 ? lo : hi;
+          boolean closed = (j == 0 ? interval.arg2() : interval.arg3()) == S.LessEqual;
+          if (closed && !end.isInfinity() && !end.isNegativeInfinity() && !isPole(end, poles)) {
+            IExpr value = engine.evaluate(F.xreplace(objective, x, end));
+            candidates.add(new QuotientExtremum(value, end, true, false));
+          }
+        }
+      }
+      for (QuotientExtremum candidate : candidates) {
+        if (!isRealValue(candidate.value, engine)) {
+          return F.NIL;
+        }
+        if (bestValue.isNIL()) {
+          bestValue = candidate.value;
+          bestPoint = candidate.point;
+          bestAttained = candidate.attained;
+          continue;
+        }
+        int compare = compareValues(candidate.value, bestValue, engine);
+        if (compare == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        if (isMax) {
+          compare = -compare;
+        }
+        if (compare < 0) {
+          bestValue = candidate.value;
+          bestPoint = candidate.point;
+          bestAttained = candidate.attained;
+        } else if (compare == 0 && candidate.attained && !bestAttained) {
+          bestPoint = candidate.point;
+          bestAttained = true;
+        }
+      }
+    }
+    if (bestValue.isNIL()) {
+      return F.NIL;
+    }
+    if (!bestAttained) {
+      Errors.printMessage(head, "natt", F.List(isMax ? "maximum" : "minimum"), engine);
+    }
+    return F.list(bestValue, F.list(F.Rule(x, bestPoint)));
+  }
+
+  /** Test whether the numeric value of <code>point</code> is one of the <code>poles</code>. */
+  private static boolean isPole(IExpr point, List<IExpr> poles) {
+    for (IExpr pole : poles) {
+      if (pole.equals(point)) {
+        return true;
+      }
+      try {
+        double p = pole.evalDouble();
+        double d = point.evalDouble();
+        if (Math.abs(p - d) <= Config.SPECIAL_FUNCTIONS_TOLERANCE * Math.max(1.0, Math.abs(p))) {
+          return true;
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+      }
+    }
+    return false;
+  }
+
+  /** The extremum of a function on an open interval. */
+  static final class QuotientExtremum {
+    /** the extremal value, or the infimum/supremum if it isn't attained */
+    final IExpr value;
+    /** the point where the value is attained, or approached */
+    final IExpr point;
+    /** <code>true</code> if the value is attained at <code>point</code> */
+    final boolean attained;
+    /** <code>true</code> if the value is <code>+/-Infinity</code> */
+    final boolean unbounded;
+
+    QuotientExtremum(IExpr value, IExpr point, boolean attained, boolean unbounded) {
+      this.value = value;
+      this.point = point;
+      this.attained = attained;
+      this.unbounded = unbounded;
+    }
+  }
+
+  /**
+   * Test whether <code>function</code> is a quotient <code>num/den</code> of a pole free numerator
+   * and a polynomial denominator in <code>x</code>, which isn't a polynomial itself.
+   */
+  static boolean isPoleAwareQuotient(IExpr function, IExpr x, EvalEngine engine) {
+    if (!function.isAST() || function.isPolynomial(x) || !x.isSymbol()
+        || !function.isFree(t -> t.isInexactNumber(), true)) {
+      return false;
+    }
+    IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) function, true, engine);
+    IExpr denominator = parts[1];
+    IExpr numerator = denominator.isOne() ? parts[2] : parts[0];
+    // a numerator like `Sqrt(x)` which isn't real for every x restricts the domain, see
+    // quotientDomain()
+    return denominator.isPolynomial(x) && !Reduce.hasPole(numerator, x);
+  }
+
+  /**
+   * The real domain of a function for which
+   * {@link #isPoleAwareQuotient(IExpr, IExpr, EvalEngine)} holds, without its poles: all
+   * {@link S#Reals} if the numerator is real for every real <code>x</code>, otherwise the
+   * {@link S#FunctionDomain} as {@link F#IntervalData}, e.g. <code>0&lt;=x&lt;1||x&gt;1</code> for
+   * <code>Sqrt(x)/(x-1)</code>.
+   *
+   * @return the domain or <code>null</code> if it couldn't be determined as intervals with
+   *         numeric bounds
+   */
+  static IAST quotientDomain(IExpr function, IExpr x, EvalEngine engine) {
+    IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) function, true, engine);
+    IExpr numerator = parts[1].isOne() ? parts[2] : parts[0];
+    if (Reduce.isTotalRealFunction(numerator, x)) {
+      return F.CRealsIntervalData;
+    }
+    IExpr domain = engine.evalQuiet(F.FunctionDomain(function, x));
+    if (domain.isAST(S.FunctionDomain) || domain.isFalse()) {
+      return null;
+    }
+    IAST intervalData = IntervalDataSym.toIntervalData(domain, x, engine, true);
+    if (intervalData == null || intervalData.isNIL() || !intervalData.isIntervalData()) {
+      return null;
+    }
+    for (int i = 1; i < intervalData.size(); i++) {
+      IExpr entry = intervalData.get(i);
+      if (!entry.isList() || ((IAST) entry).argSize() != 4) {
+        return null;
+      }
+      IExpr lo = entry.first();
+      IExpr hi = ((IAST) entry).arg4();
+      if (!(lo.isNegativeInfinity() || lo.isNumericFunction(true))
+          || !(hi.isInfinity() || hi.isNumericFunction(true))) {
+        return null;
+      }
+    }
+    return intervalData;
+  }
+
+  /** Test whether the interval data is the whole real line. */
+  static boolean isRealLine(IAST intervalData) {
+    if (intervalData.argSize() != 1 || !intervalData.arg1().isList()) {
+      return false;
+    }
+    IAST only = (IAST) intervalData.arg1();
+    return only.argSize() == 4 && only.arg1().isNegativeInfinity() && only.arg4().isInfinity();
+  }
+
+  /**
+   * The real poles of a function for which {@link #isPoleAwareQuotient(IExpr, IExpr, EvalEngine)}
+   * holds, sorted ascending, or <code>null</code> if they couldn't be determined.
+   */
+  static List<IExpr> quotientPoles(IExpr function, IExpr x, EvalEngine engine) {
+    IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) function, true, engine);
+    return realSolutions(parts[1], x, engine);
+  }
+
+  /**
+   * The extremum of a function for which {@link #isPoleAwareQuotient(IExpr, IExpr, EvalEngine)}
+   * holds on the open interval <code>lower &lt; x &lt; upper</code>. The ends may be
+   * <code>-Infinity</code> / <code>Infinity</code> or poles of the function.
+   *
+   * @return the extremum or <code>null</code> if it couldn't be determined
+   */
+  static QuotientExtremum quotientExtremumOn(IExpr function, IExpr x, IExpr lower, IExpr upper,
+      boolean isMax, EvalEngine engine) {
+    // minimize s*f
+    final IExpr s = isMax ? F.CN1 : F.C1;
+    final IExpr g = engine.evaluate(F.Times(s, function));
+    final IExpr worst = isMax ? F.CInfinity : F.CNInfinity;
+    final double lowerValue = lower.isNegativeInfinity() ? Double.NEGATIVE_INFINITY //
+        : lower.evalDouble();
+    final double upperValue = upper.isInfinity() ? Double.POSITIVE_INFINITY //
+        : upper.evalDouble();
+
+    // an interior pole where the function tends to -Infinity
+    List<IExpr> poles = quotientPoles(function, x, engine);
+    if (poles == null) {
+      return null;
+    }
+    for (IExpr pole : poles) {
+      double d = pole.evalDouble();
+      if (d <= lowerValue || d >= upperValue) {
+        continue;
+      }
+      for (String direction : new String[] {"FromBelow", "FromAbove"}) {
+        if (oneSidedLimit(g, x, pole, direction, engine).isNegativeInfinity()) {
+          return new QuotientExtremum(worst, pole, false, true);
+        }
+      }
+    }
+
+    // the limits at the ends of the interval
+    IExpr lowerLimit = lower.isNegativeInfinity() //
+        ? engine.evalQuiet(F.Limit(g, F.Rule(x, F.CNInfinity))) //
+        : oneSidedLimit(g, x, lower, "FromAbove", engine);
+    IExpr upperLimit = upper.isInfinity() //
+        ? engine.evalQuiet(F.Limit(g, F.Rule(x, F.CInfinity))) //
+        : oneSidedLimit(g, x, upper, "FromBelow", engine);
+    if (lowerLimit.isNegativeInfinity()) {
+      return new QuotientExtremum(worst, lower, false, true);
+    }
+    if (upperLimit.isNegativeInfinity()) {
+      return new QuotientExtremum(worst, upper, false, true);
+    }
+
+    // the critical points inside the interval, in ascending order
+    IExpr derivative = engine.evaluate(F.Together(F.D(g, x)));
+    IExpr derivativeNumerator = derivative;
+    if (derivative.isAST()) {
+      IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) derivative, true, engine);
+      derivativeNumerator = parts[1].isOne() ? parts[2] : parts[0];
+    }
+    List<IExpr> critical = realSolutions(derivativeNumerator, x, engine);
+    if (critical == null) {
+      // e.g. `ArcSin(x)/(x-2)`: the critical points can't be solved, but on a bounded interval the
+      // derivative may be proven to keep its sign - then the extrema lie at the ends
+      if (lower.isNegativeInfinity() || upper.isInfinity()) {
+        return null;
+      }
+      if (derivativeSign(engine.evaluate(F.D(g, x)), x, lower, upper, engine) != 0) {
+        critical = new ArrayList<IExpr>();
+      } else {
+        // e.g. `ArcCos(x)/(x-1/2)`: locate the critical points numerically as
+        // `Root({eq&, c})`
+        critical = numericCriticalPoints(derivativeNumerator, x, lowerValue, upperValue, engine);
+        if (critical == null) {
+          return null;
+        }
+      }
+    }
+    IExpr bestValue = F.NIL;
+    IExpr bestPoint = F.NIL;
+    for (IExpr point : critical) {
+      double d = engine.evalQuiet(F.N(point)).evalfNaN();
+      if (Double.isNaN(d) || d <= lowerValue || d >= upperValue) {
+        continue;
+      }
+      IExpr value = engine.evaluate(F.xreplace(g, x, point));
+      if (!isRealValue(value, engine)) {
+        continue;
+      }
+      if (bestValue.isNIL()) {
+        bestValue = value;
+        bestPoint = point;
+        continue;
+      }
+      int compare = compareValues(value, bestValue, engine);
+      if (compare == Integer.MIN_VALUE) {
+        return null;
+      }
+      if (compare < 0) {
+        bestValue = value;
+        bestPoint = point;
+      }
+    }
+
+    // the smaller one of the limits at the ends, which is never attained
+    IExpr limit = F.NIL;
+    IExpr limitPoint = F.NIL;
+    for (int i = 0; i < 2; i++) {
+      IExpr value = i == 0 ? lowerLimit : upperLimit;
+      if (value.isInfinity()) {
+        continue;
+      }
+      if (!value.isRealResult() || value.isDirectedInfinity() || value.isComplexInfinity()) {
+        return null;
+      }
+      if (limit.isNIL() || S.Less.ofQ(engine, value, limit)) {
+        limit = value;
+        limitPoint = i == 0 ? lower : upper;
+      }
+    }
+    if (bestValue.isPresent()) {
+      int compare = limit.isNIL() ? -1 : compareValues(bestValue, limit, engine);
+      if (compare == Integer.MIN_VALUE) {
+        return null;
+      }
+      if (compare <= 0) {
+        IExpr value = simplifyCriticalValue(engine.evaluate(F.Times(s, bestValue)), engine);
+        return new QuotientExtremum(value, simplifyCriticalValue(bestPoint, engine), true, false);
+      }
+    }
+    if (limit.isNIL()) {
+      // both limits are +Infinity and there's no critical point
+      return null;
+    }
+    return new QuotientExtremum(engine.evaluate(F.Times(s, limit)), limitPoint, false, false);
+  }
+
+  /**
+   * Simplify the value of the objective (or the point) at a critical point, e.g.
+   * <code>(-1+Sqrt(3)+(2-Sqrt(3))^2)/(-1+(2-Sqrt(3))^2)</code> to <code>-Sqrt(3)/2</code>. The
+   * simplified form is only taken if it isn't larger.
+   */
+  private static IExpr simplifyCriticalValue(IExpr value, EvalEngine engine) {
+    if (value.isNumber() || !value.isAST() || !value.isFree(S.Root, true)) {
+      return value;
+    }
+    IExpr simplified = engine.evalQuiet(F.Simplify(value));
+    if (simplified.isPresent() && simplified.leafCount() <= value.leafCount()) {
+      return simplified;
+    }
+    return value;
+  }
+
+  /**
+   * Compare two real values: exactly by the sign of their difference (<code>Less(-2/15*Pi,
+   * -2/15*Pi)</code> isn't decided), otherwise numerically, e.g. for values at a numeric
+   * <code>Root({eq&amp;, c})</code>.
+   *
+   * @return <code>-1</code>, <code>0</code>, <code>1</code> or {@link Integer#MIN_VALUE} if the
+   *         values can't be compared
+   */
+  private static int compareValues(IExpr a, IExpr b, EvalEngine engine) {
+    IExpr difference = engine.evaluate(F.Subtract(a, b));
+    if (difference.isZero()) {
+      return 0;
+    }
+    if (difference.isNegativeResult()) {
+      return -1;
+    }
+    if (difference.isPositiveResult()) {
+      return 1;
+    }
+    double d = engine.evalQuiet(F.N(difference)).evalfNaN();
+    double scale = Math.abs(engine.evalQuiet(F.N(a)).evalfNaN());
+    if (Double.isNaN(d) || Double.isInfinite(d) || Double.isNaN(scale)) {
+      return Integer.MIN_VALUE;
+    }
+    if (Math.abs(d) <= Config.SPECIAL_FUNCTIONS_TOLERANCE * Math.max(1.0, scale)) {
+      return 0;
+    }
+    return d < 0.0 ? -1 : 1;
+  }
+
+  /** Test whether the value is real: exactly or numerically, e.g. with a numeric root inside. */
+  private static boolean isRealValue(IExpr value, EvalEngine engine) {
+    if (value.isDirectedInfinity() || value.isComplexInfinity() || value.isIndeterminate()) {
+      return false;
+    }
+    if (value.isRealResult()) {
+      return true;
+    }
+    if (!value.isFree(S.Root, true)) {
+      IExpr numeric = engine.evalQuiet(F.N(value));
+      if (numeric.isReal()) {
+        double d = numeric.evalfNaN();
+        return !Double.isNaN(d) && !Double.isInfinite(d);
+      }
+    }
+    return false;
+  }
+
+  /** The number of samples of the numeric critical point search. */
+  private static final int CRITICAL_POINT_SAMPLES = 400;
+
+  /**
+   * Locate the real roots of <code>eq</code> inside the open interval <code>(lower, upper)</code>
+   * numerically by the sign changes between equidistant samples, refined by bisection. Every root
+   * is returned as <code>Root({eq&amp;, c})</code>.
+   *
+   * @return the roots sorted ascending, or <code>null</code> if <code>eq</code> can't be evaluated
+   *         numerically
+   */
+  private static List<IExpr> numericCriticalPoints(IExpr eq, IExpr x, double lower,
+      double upper, EvalEngine engine) {
+    IAST pureFunction = F.Function(F.subst(eq, x, F.Slot1));
+    List<IExpr> roots = new ArrayList<IExpr>();
+    double width = (upper - lower) / CRITICAL_POINT_SAMPLES;
+    double previousX = lower + 0.5 * width;
+    double previous = numericValue(eq, x, previousX, engine);
+    if (Double.isNaN(previous)) {
+      return null;
+    }
+    for (int k = 1; k < CRITICAL_POINT_SAMPLES; k++) {
+      double currentX = lower + (k + 0.5) * width;
+      double current = numericValue(eq, x, currentX, engine);
+      if (Double.isNaN(current)) {
+        return null;
+      }
+      if (current == 0.0 || previous * current < 0.0) {
+        double a = previousX;
+        double b = currentX;
+        double fa = previous;
+        for (int i = 0; i < 100 && current != 0.0; i++) {
+          double m = 0.5 * (a + b);
+          double fm = numericValue(eq, x, m, engine);
+          if (Double.isNaN(fm)) {
+            return null;
+          }
+          if (fm == 0.0) {
+            a = m;
+            b = m;
+            break;
+          }
+          if (fa * fm < 0.0) {
+            b = m;
+          } else {
+            a = m;
+            fa = fm;
+          }
+        }
+        double c = current == 0.0 ? currentX : 0.5 * (a + b);
+        roots.add(F.Root(F.list(pureFunction, F.num(c))));
+      }
+      previousX = currentX;
+      previous = current;
+    }
+    return roots;
+  }
+
+  private static double numericValue(IExpr expr, IExpr x, double value, EvalEngine engine) {
+    try {
+      double d = engine.evalQuiet(F.N(F.subst(expr, x, F.num(value)))).evalfNaN();
+      return Double.isInfinite(d) ? Double.NaN : d;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return Double.NaN;
+    }
+  }
+
+  /** The number of subintervals for the interval arithmetic sign test of a derivative. */
+  private static final int SIGN_TEST_SUBINTERVALS = 64;
+
+  /**
+   * Prove with interval arithmetic that <code>derivative</code> keeps its sign on the bounded
+   * interval <code>[lower, upper]</code>: the interval is split into subintervals, the derivative
+   * is evaluated on each of them, and every enclosure must lie in <code>[0, Infinity]</code> (or
+   * every one in <code>[-Infinity, 0]</code>). Enclosures with an infinite end, e.g. from
+   * <code>1/Sqrt(1-x^2)</code> at the end <code>x==1</code>, are allowed.
+   *
+   * @return <code>1</code> if the derivative is non negative, <code>-1</code> if it is non positive,
+   *         <code>0</code> if its sign couldn't be proven
+   */
+  private static int derivativeSign(IExpr derivative, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (derivative.isAST(S.D)) {
+      return 0;
+    }
+    IExpr step = engine.evaluate(F.Divide(F.Subtract(upper, lower), F.ZZ(SIGN_TEST_SUBINTERVALS)));
+    int sign = 0;
+    for (int k = 0; k < SIGN_TEST_SUBINTERVALS; k++) {
+      IExpr a = engine.evaluate(F.Plus(lower, F.Times(F.ZZ(k), step)));
+      IExpr b = k == SIGN_TEST_SUBINTERVALS - 1 ? upper
+          : engine.evaluate(F.Plus(lower, F.Times(F.ZZ(k + 1), step)));
+      IExpr enclosure =
+          engine.evalQuiet(F.subst(derivative, x, F.Interval(F.List(a, b))));
+      if (!enclosure.isAST(S.Interval) || enclosure.argSize() < 1) {
+        return 0;
+      }
+      for (IExpr part : (IAST) enclosure) {
+        if (!part.isList2()) {
+          return 0;
+        }
+        double min;
+        double max;
+        try {
+          min = part.first().isNegativeInfinity() ? Double.NEGATIVE_INFINITY
+              : part.first().evalDouble();
+          max = part.second().isInfinity() ? Double.POSITIVE_INFINITY
+              : part.second().evalDouble();
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          return 0;
+        }
+        final int partSign = min >= 0.0 ? 1 : max <= 0.0 ? -1 : 0;
+        if (partSign == 0 || (sign != 0 && partSign != sign)) {
+          return 0;
+        }
+        sign = partSign;
+      }
+    }
+    return sign;
+  }
+
+  private static IExpr oneSidedLimit(IExpr g, IExpr x, IExpr point, String direction,
+      EvalEngine engine) {
+    return engine.evalQuiet(
+        F.Limit(g, F.Rule(x, point), F.Rule(S.Direction, F.stringx(direction))));
+  }
+
+  /**
+   * The real solutions of <code>expr == 0</code> sorted ascending, or <code>null</code> if they
+   * couldn't be determined.
+   */
+  private static List<IExpr> realSolutions(IExpr expr, IExpr x, EvalEngine engine) {
+    List<IExpr> result = new ArrayList<>();
+    if (expr.isFree(x)) {
+      return expr.isZero() ? null : result;
+    }
+    IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(expr, F.C0), x, S.Reals));
+    if (!solutions.isList() || !solutions.isFree(S.Solve, true)
+        || !solutions.isFree(S.ConditionalExpression, true)) {
+      return null;
+    }
+    List<Double> values = new ArrayList<>();
+    for (IExpr rules : (IAST) solutions) {
+      if (!rules.isList1() || !rules.first().isRule() || !rules.first().first().equals(x)) {
+        return null;
+      }
+      IExpr value = rules.first().second();
+      double d;
+      try {
+        d = value.evalDouble();
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return null;
+      }
+      if (Double.isNaN(d) || Double.isInfinite(d)) {
+        return null;
+      }
+      int pos = 0;
+      while (pos < values.size() && values.get(pos) < d) {
+        pos++;
+      }
+      values.add(pos, d);
+      result.add(pos, value);
+    }
+    return result;
+  }
+
   public static IExpr maximize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
     try {
       // bounded linear-trigonometric objective (a*Sin(x) + b*Cos(x) + c)
@@ -1709,9 +2354,16 @@ public class Maximize extends AbstractFunctionEvaluator {
       if (trig.isPresent()) {
         return trig;
       }
-      IExpr temp = maximizeExprPolynomial(function, F.list(x));
-      if (temp.isPresent()) {
-        return temp;
+      if (function.isPolynomial(x)) {
+        // the objective of `x+1/x` must not be multiplied by `x`
+        IExpr temp = maximizeExprPolynomial(function, F.list(x));
+        if (temp.isPresent()) {
+          return temp;
+        }
+      }
+      IExpr quotient = quotientExtremum(head, function, x, true, engine);
+      if (quotient.isPresent()) {
+        return quotient;
       }
 
       IExpr yNInf = S.Limit.funEval(function, F.Rule(x, F.CNInfinity));

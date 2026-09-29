@@ -26,6 +26,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -1405,8 +1406,8 @@ public class MinMaxFunctions {
    * <p>
    * the <code>NMaximize</code> function provides an implementation of
    * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
-   * for solving linear optimization problems with linear equality and inequality constraints and
-   * implicit non-negative variables.
+   * for solving linear optimization problems with linear equality and inequality constraints. The
+   * variables are free, as in WMA; a non-negative variable needs its constraint.
    *
    * </blockquote>
    *
@@ -1499,8 +1500,8 @@ public class MinMaxFunctions {
    * <p>
    * the <code>NMinimize</code> function provides an implementation of
    * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
-   * for solving linear optimization problems with linear equality and inequality constraints and
-   * implicit non-negative variables.
+   * for solving linear optimization problems with linear equality and inequality constraints. The
+   * variables are free, as in WMA; a non-negative variable needs its constraint.
    *
    * </blockquote>
    *
@@ -1632,12 +1633,25 @@ public class MinMaxFunctions {
         VariablesSet vars = new VariablesSet(listOfVariables);
         if (list1.argSize() > 0 && vars.size() > 0) {
           IExpr function = list1.first();
+          // {f, c1, c2, ...} and {f, c1 && c2 && ...} are the same problem
+          IExpr constraints = F.NIL;
+          if (list1.argSize() == 2) {
+            constraints = list1.arg2();
+          } else if (list1.argSize() > 2) {
+            constraints = list1.rest().setAtCopy(0, S.And);
+          }
           ExprAnalyzer exprAnalyzer = new ExprAnalyzer(function, listOfVariables, engine);
           int typeOfExpression = exprAnalyzer.simplifyAndAnalyze();
-          if (typeOfExpression == ExprAnalyzer.LINEAR) {
-            if (list1.isAST2()) {
-              return optimizeSimplexSolver(list1, vars, function);
+          if (typeOfExpression == ExprAnalyzer.LINEAR && constraints.isPresent()) {
+            IExpr linear = optimizeSimplexSolver(constraints, vars, function);
+            if (linear.isPresent()) {
+              return linear;
             }
+          }
+          if (constraints.isPresent()) {
+            // the Powell search below knows nothing of constraints - it returned the
+            // unconstrained optimum, one which violates them
+            return constrainedOptimum(function, constraints, vars, engine);
           }
           final MultivariateFunction func = new MultiVariateNumerical(function, listOfVariables);
           int dimension = vars.size();
@@ -1664,15 +1678,50 @@ public class MinMaxFunctions {
       return F.NIL;
     }
 
-    private IAST optimizeSimplexSolver(IAST list1, VariablesSet variables, IExpr function) {
-      IExpr listOfconstraints = list1.arg2().makeAST(S.And);
+    /**
+     * The linear program, or {@link F#NIL} if a constraint isn't linear. The variables are free:
+     * <code>NMinimize({x+y, x>=-1 && y>=-2}, {x,y})</code> is <code>-3</code>, not the <code>0</code>
+     * a non-negativity constraint gave.
+     */
+    private IExpr optimizeSimplexSolver(IExpr constraintExpr, VariablesSet variables,
+        IExpr function) {
+      IExpr listOfconstraints = constraintExpr.makeAST(S.And);
+      try {
+        // lc1 && lc2 && lc3...
+        LinearObjectiveFunction objectiveFunction = getObjectiveFunction(variables, function);
+        List<LinearConstraint> constraints = getConstraints(variables, (IAST) listOfconstraints);
+        return simplexSolver(variables, objectiveFunction, objectiveFunction,
+            new LinearConstraintSet(constraints), getGoalType(), new NonNegativeConstraint(false),
+            PivotSelectionRule.BLAND);
+      } catch (ArgumentTypeException | ClassCastException | ArithmeticException ex) {
+        // a constraint which isn't linear
+        return F.NIL;
+      }
+    }
 
-      // lc1 && lc2 && lc3...
-      LinearObjectiveFunction objectiveFunction = getObjectiveFunction(variables, function);
-      List<LinearConstraint> constraints = getConstraints(variables, (IAST) listOfconstraints);
-      return simplexSolver(variables, objectiveFunction, objectiveFunction,
-          new LinearConstraintSet(constraints), getGoalType(), new NonNegativeConstraint(true),
-          PivotSelectionRule.BLAND);
+    /**
+     * The constrained optimum found by the local constrained solver of <code>FindMinimum</code> /
+     * <code>FindMaximum</code>, from the origin or - if that search fails - from the next start
+     * point.
+     */
+    private IExpr constrainedOptimum(IExpr function, IExpr constraints, VariablesSet variables,
+        EvalEngine engine) {
+      final boolean minimize = getGoalType() == GoalType.MINIMIZE;
+      final IAST problem = F.list(function, constraints);
+      final IExpr[] starts = {F.C0, F.C1, F.CN1};
+      for (int i = 0; i < starts.length; i++) {
+        IASTAppendable specs = F.ListAlloc(variables.size());
+        for (IExpr variable : variables.getArrayList()) {
+          specs.append(F.list(variable, starts[i]));
+        }
+        IAST search = F.binaryAST2(minimize ? S.FindMinimum : S.FindMaximum, problem, specs);
+        // the other starts are fallbacks: their failures are quiet, the last one says why
+        IExpr result = i < starts.length - 1 ? engine.evalQuiet(search) : engine.evaluate(search);
+        if (result.isList2() && result.first().isReal() && result.second().isListOfRules()) {
+          return result;
+        }
+      }
+      return F.NIL;
     }
 
     @Override

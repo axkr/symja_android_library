@@ -1331,6 +1331,11 @@ public class IntervalSym {
     if (interval.size() <= 1) {
       return COMPARE_TERNARY.FALSE;
     }
+    // The interval set encloses one unknown value (like WMA): the property holds if it holds on
+    // every sub-interval and fails if it fails on every one, e.g. Positive(Interval({-2,-1},{1,2}))
+    // is undecided.
+    boolean allTrue = true;
+    boolean allFalse = true;
     for (int i = 1; i < interval.size(); i++) {
       IAST list = (IAST) interval.get(i);
       IExpr min = list.arg1();
@@ -1339,13 +1344,15 @@ public class IntervalSym {
       boolean p1Max = predicate1.test(max);
       if (p1Min && p1Max) {
         // the whole sub-interval satisfies predicate1
+        allFalse = false;
         continue;
       }
+      allTrue = false;
       boolean p2Min = predicate2.test(min);
       boolean p2Max = predicate2.test(max);
       if (p2Min && p2Max) {
         // the whole sub-interval satisfies predicate2 (the negation region)
-        return COMPARE_TERNARY.FALSE;
+        continue;
       }
       // The sub-interval is mixed: one endpoint satisfies predicate1, the other predicate2.
       // When the predicate2 endpoint is exactly the zero boundary (e.g. Positive(Interval({0,5}))
@@ -1354,13 +1361,16 @@ public class IntervalSym {
       // interval that straddles zero with a non-zero part on the other side (e.g.
       // Positive(Interval({-1,5}))) stays undecidable.
       if (min.isZero() && p2Min && p1Max) {
-        return COMPARE_TERNARY.FALSE;
+        continue;
       }
       if (max.isZero() && p2Max && p1Min) {
-        return COMPARE_TERNARY.FALSE;
+        continue;
       }
       return COMPARE_TERNARY.UNDECIDABLE;
     }
-    return COMPARE_TERNARY.TRUE;
+    if (allTrue) {
+      return COMPARE_TERNARY.TRUE;
+    }
+    return allFalse ? COMPARE_TERNARY.FALSE : COMPARE_TERNARY.UNDECIDABLE;
   }
 }

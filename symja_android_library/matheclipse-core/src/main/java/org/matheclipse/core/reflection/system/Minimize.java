@@ -215,9 +215,16 @@ public class Minimize extends AbstractFunctionEvaluator {
       if (trig.isPresent()) {
         return trig;
       }
-      IExpr temp = minimizeExprPolynomial(function, F.list(x));
-      if (temp.isPresent()) {
-        return temp;
+      if (function.isPolynomial(x)) {
+        // the objective of `x+1/x` must not be multiplied by `x`
+        IExpr temp = minimizeExprPolynomial(function, F.list(x));
+        if (temp.isPresent()) {
+          return temp;
+        }
+      }
+      IExpr quotient = Maximize.quotientExtremum(head, function, x, false, engine);
+      if (quotient.isPresent()) {
+        return quotient;
       }
 
       IExpr yNInf = S.Limit.funEval(function, F.Rule(x, F.CNInfinity));

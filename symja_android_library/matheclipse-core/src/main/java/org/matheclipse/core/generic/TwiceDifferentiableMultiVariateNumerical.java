@@ -30,6 +30,9 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
   private int evaluationCount = 0;
   private int maxEval = Integer.MAX_VALUE;
 
+  /** Sees every point the function is evaluated at, with its value; <code>null</code> for none. */
+  private java.util.function.ObjDoubleConsumer<double[]> observer = null;
+
   /**
    * Create a multivariate twice differentiable vectorial function.
    * 
@@ -151,6 +154,14 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
     this.maxEval = max;
   }
 
+  /**
+   * Let <code>observer</code> see every point the function is evaluated at - FindMinimum keeps the
+   * best one for the answer it gives when the iterations run out.
+   */
+  public void setObserver(java.util.function.ObjDoubleConsumer<double[]> observer) {
+    this.observer = observer;
+  }
+
   @Override
   public double value(RealVector v) {
     if (++evaluationCount > maxEval) {
@@ -164,7 +175,11 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
         }
         return F.NIL;
       };
-      return fFunction.evalfNaN(function);
+      double value = fFunction.evalfNaN(function);
+      if (observer != null) {
+        observer.accept(v.toArray(), value);
+      }
+      return value;
     } catch (MathRuntimeException | ArgumentTypeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Double.NaN;

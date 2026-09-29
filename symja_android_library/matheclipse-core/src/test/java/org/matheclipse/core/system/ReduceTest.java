@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class ReduceTest extends ExprEvaluatorTestCase {
@@ -1480,5 +1481,109 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x==-2");
     check("Reduce(x/(x-2)>0, x)", //
         "x<0||x>2");
+  }
+
+  @Test
+  @Tag("#1523")
+  public void testReduceIssue1523() {
+    check("Reduce((x^2+x+1)/(x^2-1)<0,x,Reals)", //
+        "x>-1&&x<1");
+    check("Reduce((x^2+x+1)/(x^2-1)>0,x,Reals)", //
+        "x<-1||x>1");
+    check("Reduce((x^2+x+1)/(x^2-1)<=0,x,Reals)", //
+        "x>-1&&x<1");
+    check("Reduce((x^2+x+1)/(x^2-1)>=0,x,Reals)", //
+        "x<-1||x>1");
+    check("Reduce((x^2+x+1)/(x^2-1)>1,x,Reals)", //
+        "(x>-2&&x<-1)||x>1");
+    check("Reduce((x^2+x+1)/(x^2-1)<0,x)", //
+        "x>-1&&x<1");
+    check("Reduce((x^2+1)/(x^4+1)<1/2,x,Reals)", //
+        "x<Root(-1-2*#1^2+#1^4&,1,0)||x>Root(-1-2*#1^2+#1^4&,2,0)");
+    check("Reduce((x^2+1)/(x^4+1)<=1/2,x,Reals)", //
+        "x<=Root(-1-2*#1^2+#1^4&,1,0)||x>=Root(-1-2*#1^2+#1^4&,2,0)");
+    check("Reduce((x^4+1)/(x^2-1)<0,x,Reals)", //
+        "x>-1&&x<1");
+    check("Reduce(x+1/x<0,x,Reals)", //
+        "x<0");
+    // not decided, but no longer False
+    check("Reduce(E^x/(x^2-1)<0,x,Reals)", //
+        "E^x/(-1+x^2)<0");
+    check("Reduce((x^2-1)/(x-3)<0,x,Reals)", //
+        "x<-1||(x>1&&x<3)");
+    check("Reduce(1/(x^2-1)>0,x,Reals)", //
+        "x<-1||x>1");
+    check("Reduce(x/(x^2+1)>1/2,x,Reals)", //
+        "False");
+    check("Reduce(Sin(x)>2,x,Reals)", //
+        "False");
+    check("Reduce(Sqrt(x)+1<0,x,Reals)", //
+        "False");
+  }
+
+  @Test
+  @Tag("#1524")
+  public void testReduceIssue1524() {
+    check("Reduce((x^2-1)/(x-1)<3,x,Reals)", //
+        "x<2");
+    check("Reduce(2*x/(x^2-9)<1/(x+3),x,Reals)", //
+        "x<3");
+    check("Reduce((x^2-6*x+5)/(x^2-2*x-15)>0,x,Reals)", //
+        "x<-3||x>1");
+    check("Reduce((x^2-3*x+2)/(x^2+x-6)<0,x,Reals)", //
+        "x>-3&&x<1");
+    check("Reduce((x^2-1)/(x-1)==2,x,Reals)", //
+        "x==1");
+  }
+
+  @Test
+  @Tag("#1525")
+  public void testReduceIssue1525() {
+    check("Reduce(Abs(x)>=x+1,x,Reals)", //
+        "x<=-1/2");
+    check("Reduce(Abs(x-2)<x,x,Reals)", //
+        "x>1");
+    check("Reduce(Abs(x)<x,x,Reals)", //
+        "False");
+    check("Reduce(Abs(x)>x,x,Reals)", //
+        "x<0");
+    check("Reduce(x>=0&&x>=x+1,x,Reals)", //
+        "False");
+    check("Reduce(x>=0&&x>x+Sin(x),x,Reals)", //
+        "x>=0&&x>x+Sin(x)");
+    check("Reduce(x+1>x,x,Reals)", //
+        "True");
+    check("Reduce(x<x,x,Reals)", //
+        "False");
+    check("Reduce(Abs(x)-x-1>=0,x,Reals)", //
+        "x<=-1/2");
+    check("Reduce(Abs(x-2)-x<0,x,Reals)", //
+        "x>1");
+    check("Reduce(Abs(x)-x>0,x,Reals)", //
+        "x<0");
+  }
+
+  @Test
+  @Tag("#1525")
+  public void testReduceIncomparableParameterBounds() {
+    // a bound which can't be compared with the current one must not be dropped
+    check("Reduce(x>a&&x>b,x,Reals)", //
+        "x>a&&x>b");
+    check("Reduce(x>b&&x>a,x,Reals)", //
+        "x>a&&x>b");
+    check("Reduce(x<a&&x<b,x,Reals)", //
+        "x<a&&x<b");
+    check("Reduce(x>a&&x>b&&x>c,x,Reals)", //
+        "x>a&&x>b&&x>c");
+    check("Reduce(x>a&&x>a+1,x,Reals)", //
+        "x>a&&x>1+a");
+    check("Reduce(x>a&&x>2&&x<5,x,Reals)", //
+        "x>2&&x<5&&x>a");
+    check("Reduce((x>a||x<-1)&&x>b,x,Reals)", //
+        "(x>a&&x>b)||(x>b&&x<-1)");
+    check("Reduce(x>a&&x<b,x,Reals)", //
+        "x>a&&x<b");
+    check("Reduce(x>2&&x>3,x,Reals)", //
+        "x>3");
   }
 }

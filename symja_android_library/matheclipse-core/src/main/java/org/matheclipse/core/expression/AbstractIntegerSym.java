@@ -72,37 +72,43 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
    * @return {@link F#NIL} if the result is not rational.
    */
   public static IExpr baseBLog(final IInteger b, final IInteger arg) {
-    try {
-      long l1 = b.toLong();
-      long l2 = arg.toLong();
-      if (l1 > 0L && l2 > 0L) {
-        boolean inverse = false;
-        if (l1 > l2) {
-          long t = l2;
-          l2 = l1;
-          l1 = t;
-          inverse = true;
-        }
-        double numericResult = Math.log(l2) / Math.log(l1);
-        if (F.isNumIntValue(numericResult)) {
-          long symbolicResult = DoubleMath.roundToLong(numericResult, Config.ROUNDING_MODE);
-          if (inverse) {
-            if (b.equals(arg.powerRational(symbolicResult))) {
-              // cross checked result
-              return F.QQ(1L, symbolicResult);
-            }
-          } else {
-            if (arg.equals(b.powerRational(symbolicResult))) {
-              // cross checked result
-              return F.ZZ(symbolicResult);
-            }
-          }
-        }
+    final java.math.BigInteger base = b.toBigNumerator();
+    final java.math.BigInteger z = arg.toBigNumerator();
+    if (base.signum() <= 0 || z.signum() <= 0 || base.equals(java.math.BigInteger.ONE)) {
+      return F.NIL;
+    }
+    if (z.equals(java.math.BigInteger.ONE)) {
+      return F.C0;
+    }
+    // Log(z)/Log(b) == p/q exactly iff b^p == z^q. The quotient of the logarithms proposes p/q -
+    // for numbers of any size, Log(10, 10^30) is 30 - and the powers decide.
+    final double ratio = log(z) / log(base);
+    final int maxDenominator = 64;
+    for (int q = 1; q <= maxDenominator; q++) {
+      final double pDouble = ratio * q;
+      final long p = Math.round(pDouble);
+      if (p <= 0 || Math.abs(pDouble - p) > 1.0e-9 * Math.max(1.0, Math.abs(pDouble))) {
+        continue;
       }
-    } catch (ArithmeticException ae) {
-      // toLong() method failed
+      if (java.math.BigInteger.valueOf(p).gcd(java.math.BigInteger.valueOf(q)).intValue() != 1) {
+        continue;
+      }
+      // b^p and z^q have about the same size; don't build a power of more than 2^24 bits
+      if ((double) p * base.bitLength() > (1 << 24)) {
+        return F.NIL;
+      }
+      if (base.pow((int) p).equals(z.pow(q))) {
+        return F.QQ(p, q);
+      }
+      return F.NIL;
     }
     return F.NIL;
+  }
+
+  /** The natural logarithm of a positive big integer, also beyond the double range. */
+  private static double log(java.math.BigInteger x) {
+    int shift = Math.max(0, x.bitLength() - 62);
+    return Math.log(x.shiftRight(shift).doubleValue()) + shift * Math.log(2.0);
   }
 
   /**

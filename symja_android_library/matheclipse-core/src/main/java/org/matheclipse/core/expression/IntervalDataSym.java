@@ -468,6 +468,23 @@ public class IntervalDataSym {
    * @return the intersection of the two intervals
    */
   public static IAST intersection(final IAST interval1, final IAST interval2, EvalEngine engine) {
+    return intersection(interval1, interval2, engine, false);
+  }
+
+  /**
+   * Returns the intersection of two intervals.
+   *
+   * @param interval1 the first interval
+   * @param interval2 the second interval
+   * @param engine the evaluation engine
+   * @param strict if <code>true</code> return {@link F#NIL} if two bounds can't be compared, e.g.
+   *        the lower bounds <code>a</code> and <code>b</code> of <code>x&gt;a</code> and
+   *        <code>x&gt;b</code>. Otherwise the bound of <code>interval1</code> is kept, which may give
+   *        a too wide interval.
+   * @return the intersection of the two intervals, or {@link F#NIL} in strict mode
+   */
+  public static IAST intersection(final IAST interval1, final IAST interval2, EvalEngine engine,
+      boolean strict) {
     IASTAppendable result = F.IntervalDataAlloc(interval1.argSize() + interval2.argSize());
     for (int i = 1; i < interval1.size(); i++) {
       IAST list1 = (IAST) interval1.get(i);
@@ -513,6 +530,9 @@ public class IntervalDataSym {
               min1 = min2;
               left1 = left2;
             }
+          } else if (strict && !S.Greater.ofQ(engine, min1, min2)) {
+            // max(min1, min2) is undecided
+            return F.NIL;
           }
         }
         // Narrow to the more restrictive upper bound min(max1, max2). +Infinity is the largest
@@ -531,6 +551,9 @@ public class IntervalDataSym {
               max1 = max2;
               right1 = right2;
             }
+          } else if (strict && !S.Less.ofQ(engine, max1, max2)) {
+            // min(max1, max2) is undecided
+            return F.NIL;
           }
         }
         result.append(F.List(min1, left1, right1, max1));
@@ -983,7 +1006,7 @@ public class IntervalDataSym {
    * @param predicate1 holds for a bound if the whole interval satisfies the tested property
    * @param predicate2 holds for a bound if the whole interval satisfies the negated property
    * @return {@link IExpr.COMPARE_TERNARY#TRUE} if every sub-interval satisfies
-   *         <code>predicate1</code>, {@link IExpr.COMPARE_TERNARY#FALSE} if a sub-interval
+   *         <code>predicate1</code>, {@link IExpr.COMPARE_TERNARY#FALSE} if every sub-interval
    *         satisfies <code>predicate2</code> throughout, otherwise
    *         {@link IExpr.COMPARE_TERNARY#UNDECIDABLE}
    */
@@ -992,6 +1015,11 @@ public class IntervalDataSym {
     if (intervalData.size() <= 1) {
       return IExpr.COMPARE_TERNARY.FALSE;
     }
+    // The interval set encloses one unknown value (like WMA): the property holds if it holds on
+    // every sub-interval and fails if it fails on every one, e.g. Positive(Interval({-2,-1},{1,2}))
+    // is undecided.
+    boolean allTrue = true;
+    boolean allFalse = true;
     for (int i = 1; i < intervalData.size(); i++) {
       IExpr sub = intervalData.get(i);
       if (!sub.isList4()) {
@@ -1005,26 +1033,31 @@ public class IntervalDataSym {
 
       if (predicate1.test(min, lowerClosed) && predicate1.test(max, upperClosed)) {
         // the whole sub-interval satisfies predicate1
+        allFalse = false;
         continue;
       }
+      allTrue = false;
       if (predicate2.test(min, lowerClosed) && predicate2.test(max, upperClosed)) {
         // the whole sub-interval satisfies predicate2 (the negation region)
-        return IExpr.COMPARE_TERNARY.FALSE;
+        continue;
       }
       // Mixed sub-interval. If the predicate2 endpoint is a *closed* zero boundary the interval
       // only touches zero and never reaches the opposite sign region, so the answer is definitely
       // FALSE. An open zero bound excludes zero and can never witness FALSE.
       if (min.isZero() && lowerClosed && predicate2.test(min, lowerClosed)
           && predicate1.test(max, upperClosed)) {
-        return IExpr.COMPARE_TERNARY.FALSE;
+        continue;
       }
       if (max.isZero() && upperClosed && predicate2.test(max, upperClosed)
           && predicate1.test(min, lowerClosed)) {
-        return IExpr.COMPARE_TERNARY.FALSE;
+        continue;
       }
       return IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
-    return IExpr.COMPARE_TERNARY.TRUE;
+    if (allTrue) {
+      return IExpr.COMPARE_TERNARY.TRUE;
+    }
+    return allFalse ? IExpr.COMPARE_TERNARY.FALSE : IExpr.COMPARE_TERNARY.UNDECIDABLE;
   }
 
   /**

@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
@@ -211,9 +212,9 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "{5,{x->3/5,y->4/5}}");
 
     // print message - Maximize: The maximum is not attained at any point satisfying the
-    // constraints.
+    // constraints. (WMA: {Infinity,{x->0}})
     check("Maximize(1/x, x)", //
-        "{}");
+        "{Infinity,{x->0}}");
 
     check("Maximize(-x^4-7*x^3+2*x^2 - 42,x)", //
         "{-42-7/512*(-21-Sqrt(505))^3+(21+Sqrt(505))^2/32-(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
@@ -237,9 +238,9 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     // "");
 
     // print message - Minimize: The minimum is not attained at any point satisfying the
-    // constraints.
+    // constraints. (WMA: {-Infinity,{x->0}})
     check("Minimize(1/x, x)", //
-        "{}");
+        "{-Infinity,{x->0}}");
 
 
     check("Minimize(x^2+4*x+4, {x})", //
@@ -268,7 +269,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
 
     checkNumeric("NArgMin((x*y-3)^2+1, {x,y})", //
         "{1.0,3.0}");
-    checkNumeric("NArgMin({x-2*y, x+y<= 1}, {x, y})", //
+    checkNumeric("NArgMin({x-2*y, x+y<= 1 && x>=0 && y>=0}, {x, y})", //
         "{0.0,1.0}");
   }
 
@@ -287,16 +288,28 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
 
     checkNumeric("NMinValue((x*y-3)^2+1, {x,y})", //
         "1.0");
-    checkNumeric("NMinValue({x-2*y, x+y<= 1}, {x, y})", //
+    checkNumeric("NMinValue({x-2*y, x+y<= 1 && x>=0 && y>=0}, {x, y})", //
         "-2.0");
+  }
+
+  /**
+   * The variables of a linear problem are free, as in WMA - the non-negativity these problems need
+   * is written out. Without it the problem is unbounded and stays unevaluated.
+   */
+  @Test
+  public void testLinearProblemsHaveFreeVariables() {
+    check("NMinimize({x+y, x>=-1 && y>=-2}, {x,y})", //
+        "{-3.0,{x->-1.0,y->-2.0}}");
+    check("NMinimize({-5-2*x+y,x+2*y<=6&&3*x+2*y<=12},{x,y})", //
+        "NMinimize({-5-2*x+y,x+2*y<=6&&3*x+2*y<=12},{x,y})");
   }
 
   @Test
   public void testIssue80() {
     // issue #80: LinearProgramming with expressions
-    check("NMinimize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", //
+    check("NMinimize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&x>=0&&y>=0},{x,y})", //
         "{-13.0,{x->4.0,y->0.0}}");
-    check("NMaximize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", //
+    check("NMaximize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&x>=0&&y>=0},{x,y})", //
         "{-2.0,{x->0.0,y->3.0}}");
   }
 
@@ -308,7 +321,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     checkNumeric("NMaximize(-x^4 - 3* x^2 + x, x)", //
         "{0.08258881886826407,{x->0.16373996720676331}}");
 
-    check("NMaximize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
+    check("NMaximize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 && x>=0 && y>=0}, {x, y})", //
         "{-2.0,{x->0.0,y->3.0}}");
     check("NMaximize({-x - y, 3*x + 2*y >= 7 && x + 2*y >= 6}, {x, y})", //
         "{-3.25,{x->0.5,y->2.75}}");
@@ -316,7 +329,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNMinimize() {
-    check("NMinimize({-5-2*x+y,x+2*y<=6&&3*x+2*y<=12},{x,y})", //
+    check("NMinimize({-5-2*x+y,x+2*y<=6&&3*x+2*y<=12&&x>=0&&y>=0},{x,y})", //
         "{-13.0,{x->4.0,y->0.0}}");
 
     check("NMinimize({-Sinc(x)-Sinc(y)}, {x, y})", //
@@ -337,11 +350,11 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
 
     // TODO non-linear not supported
     // check("NMinimize({x^2 - (y - 1)^2, x^2 + y^2 <= 4}, {x, y})", "");
-    check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
+    check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 && x>=0 && y>=0}, {x, y})", //
         "{-11.0,{x->0.0,y->3.0}}");
-    check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
+    check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 && x>=0 && y>=0}, {x, y})", //
         "{-11.0,{x->0.0,y->3.0}}");
-    check("NMinimize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", //
+    check("NMinimize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 && x>=0 && y>=0}, {x, y})", //
         "{-13.0,{x->4.0,y->0.0}}");
     check("NMinimize({x + 2*y, -5*x + y == 7 && x + y >= 26 && x >= 3 && y >= 4}, {x, y})", //
         "{48.83333,{x->3.16667,y->22.83333}}");
@@ -376,5 +389,103 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     // unbounded below: stays unevaluated instead of a wrong minimum
     check("Minimize({t*Sin(t), t>0}, t)", //
         "Minimize({t*Sin(t),t>0},t)");
+  }
+
+  @Test
+  @Tag("#1523")
+  public void testMinMaxPolesAndLimits() {
+    // a pole or a limit at +/-Infinity bounds the extremum, not only the critical points
+    check("Minimize(x+1/x,x)", //
+        "{-Infinity,{x->0}}");
+    check("Maximize(x+1/x,x)", //
+        "{Infinity,{x->0}}");
+    check("Minimize(1/x^2,x)", //
+        "{0,{x->-Infinity}}");
+    check("Minimize((x^2+x+1)/(x^2-1),x)", //
+        "{-Infinity,{x->-1}}");
+    check("Maximize((x^2+x+1)/(x^2-1),x)", //
+        "{Infinity,{x->-1}}");
+    check("Minimize((x^2+1)/(x^4+1),x)", //
+        "{0,{x->-Infinity}}");
+    check("Maximize((x^2+1)/(x^4+1),x)", //
+        "{1/2+1/Sqrt(2),{x->-Sqrt(-1+Sqrt(2))}}");
+    check("Minimize(x/(x^2+1),x)", //
+        "{-1/2,{x->-1}}");
+    check("Minimize(E^x/(x^2-1),x)", //
+        "{-Infinity,{x->-1}}");
+    check("Minimize(1/(x^2+1),x)", //
+        "{0,{x->-Infinity}}");
+  }
+
+  @Test
+  @Tag("#1523")
+  public void testConstrainedMinMaxPoles() {
+    // the poles inside and at the ends of the feasible region
+    check("Minimize({(x^2+x+1)/(x^2-1),x>1},x)", //
+        "{1,{x->Infinity}}");
+    check("Maximize({(x^2+x+1)/(x^2-1),x>1},x)", //
+        "{Infinity,{x->1}}");
+    check("Minimize({(x^2+x+1)/(x^2-1),-1<x<1},x)", //
+        "{-Infinity,{x->-1}}");
+    check("Maximize({(x^2+x+1)/(x^2-1),-1<x<1},x)", //
+        "{-Sqrt(3)/2,{x->-2+Sqrt(3)}}");
+    check("Minimize({(x^2+x+1)/(x^2-1),x<-1},x)", //
+        "{Sqrt(3)/2,{x->-2-Sqrt(3)}}");
+    check("Minimize({x+1/x,x>0},x)", //
+        "{2,{x->1}}");
+    check("Maximize({x+1/x,x<0},x)", //
+        "{-2,{x->-1}}");
+    check("Minimize({1/x,-1<=x<=1},x)", //
+        "{-Infinity,{x->0}}");
+    check("Minimize({1/x,1<=x<=3},x)", //
+        "{1/3,{x->3}}");
+    check("Minimize({1/(x-1),x>=1},x)", //
+        "{0,{x->Infinity}}");
+    check("Maximize({1/(x-1),x>=1},x)", //
+        "{Infinity,{x->1}}");
+    check("Minimize({x/(1+x),x>0},x)", //
+        "{0,{x->0}}");
+    check("Minimize({1/x,x<-1||x>1},x)", //
+        "{-1,{x->-1}}");
+    check("Minimize({1/(x^2+1),x==2||x>5},x)", //
+        "{0,{x->Infinity}}");
+    check("Minimize({1/x,x>a},x)", //
+        "Minimize({1/x,x>a},x)");
+  }
+
+  @Test
+  @Tag("#1523")
+  public void testMinMaxRestrictedRealDomain() {
+    // Sqrt(x) is only real for x>=0: the closed end x==0 of the domain is attained
+    check("Minimize(Sqrt(x)/(x^2+1),x)", //
+        "{0,{x->0}}");
+    check("Maximize(Sqrt(x)/(x^2+1),x)", //
+        "{3^(3/4)/4,{x->1/Sqrt(3)}}");
+    check("Minimize(Sqrt(x)/(x-1),x)", //
+        "{-Infinity,{x->1}}");
+    check("Maximize({Sqrt(x)/(x-1),x<1},x)", //
+        "{0,{x->0}}");
+    check("Maximize(Sqrt(x)/(x+1),x)", //
+        "{1/2,{x->1}}");
+    // ArcSin(x) is only real for -1<=x<=1, the objective is monotone there
+    check("Minimize(ArcSin(x)/(x^2+1),x)", //
+        "{-Pi/4,{x->-1}}");
+    check("Maximize(ArcSin(x)/(x^2+1),x)", //
+        "{Pi/4,{x->1}}");
+    check("Minimize(ArcSin(x)/(x-2),x)", //
+        "{-Pi/2,{x->1}}");
+    check("Maximize(ArcSin(x)/(x-2),x)", //
+        "{Pi/6,{x->-1}}");
+    check("Maximize({ArcSin(x)/(x-2),0<=x<=1/2},x)", //
+        "{0,{x->0}}");
+    check("Maximize(ArcCos(x)/(x+2),x)", //
+        "{Pi,{x->-1}}");
+    check("N(Maximize({ArcCos(x)/(x-1/2),x<1/2},x))", //
+        "{-1.91611,{x->-0.853013}}");
+    // WMA: Minimize::infeas - no feasible point where the objective is real valued
+    check("Minimize({Sqrt(x)/(x+1),x<-1},x)", //
+        "{Infinity,{x->Indeterminate}}");
+    check("Maximize({Sqrt(x)/(x+1),x<-1},x)", //
+        "{-Infinity,{x->Indeterminate}}");
   }
 }

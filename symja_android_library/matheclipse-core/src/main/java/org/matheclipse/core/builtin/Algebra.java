@@ -1396,11 +1396,10 @@ public class Algebra {
     }
 
     /**
-     * <code>a*t^k + b == 0</code> for an exponential kernel <code>t = base^f(x)</code> is the single
-     * power <code>base^(k*f(x)) == -b/a</code>, which Mathematica solves as one family:
-     * <code>Solve(3^(-2*x) == 5, x)</code> gives <code>((2*I*Pi*C(1))/Log(3) -
-     * Log(5)/Log(3))/2</code> and <code>Solve(E^(3*x) == 8, x)</code> gives
-     * <code>(2*I*Pi*C(1) + Log(8))/3</code>. The k roots of <code>t^k == -b/a</code> gave k
+     * <code>a*t^k + b == 0</code> for an exponential kernel <code>t = base^f(x)</code> is the
+     * single power <code>base^(k*f(x)) == -b/a</code>, <code>Solve(3^(-2*x) == 5, x)</code> gives
+     * <code>((2*I*Pi*C(1))/Log(3) - Log(5)/Log(3))/2</code> and <code>Solve(E^(3*x) == 8, x)</code>
+     * gives <code>(2*I*Pi*C(1) + Log(8))/3</code>. The k roots of <code>t^k == -b/a</code> gave k
      * families which together are the same set.
      *
      * @return the values of the variable or {@link F#NIL}
@@ -1433,8 +1432,7 @@ public class Algebra {
         return F.NIL;
       }
       IAST valueList = values.isList() ? (IAST) values : F.list(values);
-      // a real principal value: Log(4)/2 is Log(2), as Mathematica gives Solve(E^(2*x) == 4, x,
-      // Reals)
+      // a real principal value: Log(4)/2 is Log(2)
       return valueList.map(v -> {
         if (v.isNumericFunction() && v.isRealResult() && !v.isFree(S.Log)) {
           IExpr expanded = engine.evalQuiet(F.PowerExpand(v));
@@ -2513,6 +2511,106 @@ public class Algebra {
       return F.NIL;
     }
 
+    /** A list argument is threaded over by the other paths. */
+    private static boolean hasListArgument(IAST ast, int argSize) {
+      for (int i = 1; i <= argSize; i++) {
+        if (ast.get(i).isList()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * The GCD of polynomials with inexact coefficients, as WMA computes it: the coefficients are
+     * rationalized, the exact GCD is taken, made monic in its leading monomial - lexicographic, the
+     * last variable highest - and given back with machine coefficients.
+     * <code>PolynomialGCD(x+1.5*y, x^2+1.5*x*y)</code> is <code>0.666667*x+1.0*y</code>, and a
+     * coefficient without a rational form leaves the constant <code>1.0</code>.
+     *
+     * @return {@link F#NIL} if no argument has an inexact number
+     */
+    private static IExpr inexactGCD(IAST ast, int argSize, EvalEngine engine) {
+      boolean inexact = false;
+      for (int i = 1; i <= argSize; i++) {
+        if (!ast.get(i).isFree(x -> x.isInexactNumber(), false)) {
+          inexact = true;
+          break;
+        }
+      }
+      if (!inexact) {
+        return F.NIL;
+      }
+      // only polynomials have a GCD; anything else is left to report "not a polynomial"
+      VariablesSet variableSet = new VariablesSet();
+      variableSet.addVarList(ast, 1);
+      IAST variableList = variableSet.getVarList();
+      for (int i = 1; i <= argSize; i++) {
+        if (!ast.get(i).isPolynomial(variableList)) {
+          return F.NIL;
+        }
+      }
+      // the options of the call - Extension, say - carry over to the exact GCD
+      IASTMutable exact = ast.copy();
+      for (int i = 1; i <= argSize; i++) {
+        // a coefficient without a rational form is an expected outcome, not the user's message
+        IExpr rationalized = engine.evalQuiet(F.Rationalize(ast.get(i)));
+        if (!rationalized.isFree(x -> x.isInexactNumber(), false)) {
+          return F.CD1;
+        }
+        exact.set(i, rationalized);
+      }
+      IExpr gcd = engine.evaluate(exact);
+      if (gcd.isAST(S.PolynomialGCD)) {
+        return F.NIL;
+      }
+      IAST variables = new VariablesSet(gcd).getVarList();
+      if (variables.argSize() == 0) {
+        return F.CD1;
+      }
+      IAST reversed = variables.reverse(F.NIL);
+      IExpr rules = engine.evaluate(F.CoefficientRules(gcd, reversed));
+      if (!rules.isList() || rules.argSize() == 0 || !rules.first().isRuleAST()) {
+        return F.NIL;
+      }
+      IExpr leadingCoefficient = rules.first().second();
+      return engine.evaluate(F.N(F.Expand(F.Divide(gcd, leadingCoefficient))));
+    }
+
+    /**
+     * Without <code>Extension</code> an <code>AlgebraicNumber</code> coefficient is a generator of
+     * its own, as a radical is: WMA gives <code>x+y*a</code> for
+     * <code>PolynomialGCD((x+a*y)*(x+1), (x+a*y)*(x+2))</code> and <code>1</code> for
+     * <code>PolynomialGCD(x^2-2, x-a)</code>, <code>a = AlgebraicNumber(Sqrt(2), {0,1})</code>.
+     *
+     * @return {@link F#NIL} if no argument has an <code>AlgebraicNumber</code>
+     */
+    private static IExpr generatorGCD(IAST ast, int argSize, EvalEngine engine) {
+      final java.util.Map<IExpr, IExpr> generators = new java.util.HashMap<IExpr, IExpr>();
+      IASTAppendable masked = F.ast(S.PolynomialGCD, argSize);
+      for (int i = 1; i <= argSize; i++) {
+        masked.append(F.subst(ast.get(i), x -> {
+          if (x.isAST(S.AlgebraicNumber, 3)) {
+            return generators.computeIfAbsent(x, k -> F.Dummy("algebraic" + generators.size()));
+          }
+          return F.NIL;
+        }));
+      }
+      if (generators.isEmpty()) {
+        return F.NIL;
+      }
+      IExpr gcd = engine.evaluate(masked);
+      if (gcd.isAST(S.PolynomialGCD)) {
+        return F.NIL;
+      }
+      final java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
+      generators.forEach((number, symbol) -> back.put(symbol, number));
+      return engine.evaluate(F.subst(gcd, x -> {
+        IExpr number = back.get(x);
+        return number == null ? F.NIL : number;
+      }));
+    }
+
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -2526,6 +2624,18 @@ public class Algebra {
         IExpr result = extensionGCD(ast, argSize, engine);
         if (result.isPresent()) {
           return result;
+        }
+      }
+      if (argSize >= 2 && options[MODULUS_OPTION].isZero() && !hasListArgument(ast, argSize)) {
+        IExpr result = inexactGCD(ast, argSize, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+        if (options[1] != S.Automatic) {
+          result = generatorGCD(ast, argSize, engine);
+          if (result.isPresent()) {
+            return result;
+          }
         }
       }
       if (checkPolyStruct(ast, engine)) {

@@ -564,12 +564,82 @@ public class PredicateQ {
         IExpr a2 = ast.arg2();
         return IExpr.freeQ(a1, a2, engine);
       }
+      if (ast.argSize() == 3 || ast.argSize() == 4) {
+        // FreeQ(expr, form, levelspec), FreeQ(expr, form, Heads->False) or both
+        IExpr levelSpec = null;
+        boolean heads = true;
+        for (int i = 3; i < ast.size(); i++) {
+          IExpr arg = engine.evaluate(ast.get(i));
+          if (arg.isRuleAST() && arg.first() == S.Heads) {
+            if (!arg.second().isTrue() && !arg.second().isFalse()) {
+              return F.NIL;
+            }
+            heads = arg.second().isTrue();
+          } else if (levelSpec == null && i == 3) {
+            levelSpec = arg;
+          } else {
+            return F.NIL;
+          }
+        }
+        IExpr expr = engine.evaluate(ast.arg1());
+        IExpr form = engine.evalPattern(ast.arg2());
+        if (levelSpec == null) {
+          levelSpec = F.list(F.C0, F.CInfinity);
+        }
+        final IPatternMatcher matcher = engine.evalPatternMatcher(form);
+        final boolean includeHeads = heads;
+        Predicate<IExpr> occurs = x -> matcher.test(x)
+            || (x.isNumber() && IExpr.containsNumberWithHead(x, form, includeHeads));
+        if (!expr.isASTOrAssociation()) {
+          // an atom has only its level 0, which is also its level -1: FreeQ(x, x, {1}) is True
+          return F.booleSymbol(!atomLevelIncluded(levelSpec) || !occurs.test(expr));
+        }
+        // All is the levels 0 to Infinity: the expression itself counts - FreeQ(f(x), f(x), All)
+        // is False - where the visitor would read All as Infinity, from level 1
+        IVisitorBoolean level = new VisitorBooleanLevelSpecification(occurs,
+            levelSpec == S.All ? F.list(F.C0, F.CInfinity) : levelSpec, heads, engine);
+        return F.booleSymbol(!expr.accept(level));
+      }
       return F.NIL;
+    }
+
+    /**
+     * Whether the level specification includes the only level of an atom: level 0, which for its
+     * depth 1 is also level -1. <code>n</code> and <code>Infinity</code> start at level 1,
+     * <code>All</code>, <code>{0}</code>, <code>{-1}</code> and <code>{0, n}</code> include it.
+     */
+    private static boolean atomLevelIncluded(IExpr levelSpec) {
+      if (levelSpec == S.All) {
+        return true;
+      }
+      if (!levelSpec.isList()) {
+        // n and Infinity mean the levels 1 to n
+        return false;
+      }
+      IAST list = (IAST) levelSpec;
+      if (list.argSize() < 1 || list.argSize() > 2) {
+        return false;
+      }
+      double from = atomLevel(list.arg1());
+      double to = list.argSize() == 2 ? atomLevel(list.arg2()) : from;
+      return from <= 0.0 && 0.0 <= to;
+    }
+
+    /** A level of an atom as a positive level: -1 is level 0 of a depth 1 expression. */
+    private static double atomLevel(IExpr level) {
+      if (level.isInfinity()) {
+        return Double.POSITIVE_INFINITY;
+      }
+      int n = level.toIntDefault();
+      if (F.isNotPresent(n)) {
+        return Double.NaN;
+      }
+      return n < 0 ? n + 1 : n;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2_1;
+      return ARGS_1_4_1;
     }
   }
 

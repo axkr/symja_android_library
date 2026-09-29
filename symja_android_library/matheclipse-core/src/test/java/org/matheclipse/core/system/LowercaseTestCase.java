@@ -2798,8 +2798,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Check(1/0, 1 + 1)", //
         "2");
     // only the listed messages count
-    check("{Check(1/0; 2, bad, Power::infy), Check(1/0; 2, bad, Sin::argx), "
-        + "Check(Sin(1, 2); 3, bad, {Power::infy, Sin::argx})}", //
+    check(
+        "{Check(1/0; 2, bad, Power::infy), Check(1/0; 2, bad, Sin::argx), "
+            + "Check(Sin(1, 2); 3, bad, {Power::infy, Sin::argx})}", //
         "{bad,2,bad}");
     // a message of the user's own
     check("f::boom = \"boom\"; Check(Message(f::boom); 1, bad)", //
@@ -9586,8 +9587,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFindMaximum() {
     // FindMaximum: Failed to converge to the requested accuracy or precision within 2 iterations.
-    check("FindMaximum(-(1-x)^2-100*(y-x^2)^2, {{x,-1.2},{y,1}}, MaxIterations->2)", //
-        "FindMaximum(-(1-x)^2-100*(-x^2+y)^2,{{x,-1.2},{y,1}},MaxIterations->2)");
+    // WMA answers with the point reached, and the message
+    check("Head(FindMaximum(-(1-x)^2-100*(y-x^2)^2, {{x,-1.2},{y,1}}, MaxIterations->2))", //
+        "List");
     check(
         "FindMaximum({2/3*x^2*Cos(x^2/3)+Sin(x^2/3), x>=-19.1 && x<=-19.05}, {x, -19.1}, Method -> \"ConjugateGradient\")", //
         "{-2.91515,{x->-19.05}}");
@@ -9724,8 +9726,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindMinimum((x-1)^2, {x, 0}, MaxIterations->-1)", //
         "FindMinimum((-1+x)^2,{x,0},MaxIterations->-1)");
     // message: Failed to converge to the requested accuracy or precision within 5 iterations.
-    check("FindMinimum((1-x)^2+100*(y-x^2)^2, {{x,-1.2},{y,1}}, MaxIterations->5)", //
-        "FindMinimum((1-x)^2+100*(-x^2+y)^2,{{x,-1.2},{y,1}},MaxIterations->5)");
+    // WMA answers with the point reached, and the message
+    check("Head(FindMinimum((1-x)^2+100*(y-x^2)^2, {{x,-1.2},{y,1}}, MaxIterations->5))", //
+        "List");
     // MaxIterations doesn't count the function evaluations
     check("FindMinimum((1-x)^2+100*(y-x^2)^2, {{x,-1.2},{y,1}}) // Chop", //
         "{0,{x->1.0,y->1.0}}");
@@ -10850,7 +10853,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{9/5,7/5}");
     check("LinearSolve({{1, 2}, {3, 4}}, {5, 6}, Method -> \"Krylov\")", //
         "{-4,9/2}");
-    // Mathematica: Cholesky needs a Hermitian positive definite matrix (herm, npdef), an unknown
+    // Cholesky needs a Hermitian positive definite matrix (herm, npdef), an unknown
     // method is rmeth, Banded needs machine numbers (bdnmt); LinearSolve stays unevaluated
     check("Head(Head(LinearSolve({{1, 2}, {3, 4}}, Method -> \"Cholesky\") @ {5, 6}))", //
         "LinearSolve");
@@ -11045,7 +11048,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDistributionFitTestAllTestsAndInvalidProperty() {
-    // Mathematica leaves Cramer-von Mises out below 7 points
+    // leaves Cramer-von Mises out below 7 points
     check("DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3), \"AllTests\")", //
         "{AndersonDarling,KolmogorovSmirnov,Kuiper,PearsonChiSquare,WatsonUSquare}");
     check("DistributionFitTest(N(Range(7)), ExponentialDistribution(1/3), \"AllTests\")", //
@@ -11058,9 +11061,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testRandomFunctionPoissonProcess() {
     // a counting process: integer values from 0, never decreasing
-    check("r = RandomFunction(PoissonProcess(1), {0, 1, 0.1}); {Length(r @ \"Times\"),"
-        + " First(r @ \"Path\"), And @@ IntegerQ /@ (r @ \"Values\"),"
-        + " Min(Differences(r @ \"Values\")) >= 0}", //
+    check(
+        "r = RandomFunction(PoissonProcess(1), {0, 1, 0.1}); {Length(r @ \"Times\"),"
+            + " First(r @ \"Path\"), And @@ IntegerQ /@ (r @ \"Values\"),"
+            + " Min(Differences(r @ \"Values\")) >= 0}", //
         "{11,{0.0,0},True,True}");
     check("RandomFunction(PoissonProcess(x), {0, 1, 0.1})", //
         "RandomFunction(PoissonProcess(x),{0,1,0.1})");
@@ -11068,10 +11072,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveBinomialExponential() {
-    // one family, as Mathematica: ((2*I*Pi*C(1))/Log(3) - Log(5)/Log(3))/2
+    // one family: ((2*I*Pi*C(1))/Log(3) - Log(5)/Log(3))/2
     check("Solve(3^(-2*x) == 5, x)", //
         "{{x->ConditionalExpression((I*Pi*C(1))/Log(3)-Log(5)/(2*Log(3)),C(1)∈Integers)}}");
-    // Mathematica: (2*I*Pi*C(1) + Log(8))/3
+    // WMA: (2*I*Pi*C(1) + Log(8))/3
     check("Solve(E^(3*x) == 8, x)", //
         "{{x->ConditionalExpression(I*2/3*Pi*C(1)+Log(8)/3,C(1)∈Integers)}}");
     check("Solve(E^(3*x) == 8, x, Reals)", //
@@ -11086,9 +11090,93 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ExportString(Rotate(Graphics({Circle({1, 0}, 0.2)}, PlotRange -> 2), Pi/3), \"SVG\") =="
         + " ExportString(Graphics({Rotate(Circle({1, 0}, 0.2), Pi/3)}, PlotRange -> 2), \"SVG\")", //
         "True");
-    check("ExportString(Rotate(Graphics({Circle({1, 0}, 0.2)}, PlotRange -> 2), Pi/2, {0, 0}),"
-        + " \"SVG\") == ExportString(Graphics({Rotate(Circle({1, 0}, 0.2), Pi/2, {0, 0})},"
-        + " PlotRange -> 2), \"SVG\")", //
+    check(
+        "ExportString(Rotate(Graphics({Circle({1, 0}, 0.2)}, PlotRange -> 2), Pi/2, {0, 0}),"
+            + " \"SVG\") == ExportString(Graphics({Rotate(Circle({1, 0}, 0.2), Pi/2, {0, 0})},"
+            + " PlotRange -> 2), \"SVG\")", //
+        "True");
+  }
+
+  @Test
+  public void testReduceProductEquationSystems() {
+    // WMA: A == 0 && B != 0 && C == 1/B (the same set, solved for the other variable)
+    check("Reduce({A*C==0, B*C==1}, {A,B,C})", //
+        "A==0&&B==1/C&&C!=0");
+    // a listed built-in symbol is a variable; X != 0 && C == 1/X
+    check("Reduce({X*C==1}, {X, C})", //
+        "X==1/C&&C!=0");
+    check("Solve(x + D == 3, D)", //
+        "{{D->3-x}}");
+    // message ::svars and {{a->0, c->1/b}}
+    check("Solve({a*c==0, b*c==1}, {a,b,c})", //
+        "{{a->0,c->1/b}}");
+    // a disjunction among the conditions is reduced one alternative at a time
+    check(
+        "q={0,0,1,0}; Reduce({A*C==q[[1]],A*D==q[[2]],B*C==q[[3]],B*D==q[[4]],A^2+B^2==1,"
+            + "C^2+D^2==1,A>=0,C>=0,B!=-1||D!=-1},{A,B,C,D})", //
+        "A==0&&B==1&&C==1&&D==0");
+    check(
+        "q={0,0,0,1}; Reduce({A*C==q[[1]],A*D==q[[2]],B*C==q[[3]],B*D==q[[4]],A^2+B^2==1,"
+            + "C^2+D^2==1,A>=0,C>=0,B!=-1||D!=-1},{A,B,C,D})", //
+        "A==0&&B==1&&C==0&&D==1");
+    check(
+        "q={1/Sqrt(2),0,1/Sqrt(2),0}; Reduce({A*C==q[[1]],A*D==q[[2]],B*C==q[[3]],"
+            + "B*D==q[[4]],A^2+B^2==1,C^2+D^2==1,A>=0,C>=0,B!=-1||D!=-1},{A,B,C,D})", //
+        "A==1/Sqrt(2)&&B==1/Sqrt(2)&&C==1&&D==0");
+  }
+
+  @Test
+  public void testMultiLineLabelsInSVG() {
+    // one tspan per line: SVG draws a newline as a space
+    check(
+        "StringCount(ExportString(Plot(x, {x, 0, 1}, PlotLabel -> \"top\\nbottom\"), \"SVG\"),"
+            + " \"<tspan\")", //
+        "2");
+    check(
+        "StringCount(ExportString(Graphics({Text(\"top\\nbottom\", {0, 0})}), \"SVG\"),"
+            + " \"<tspan\")", //
+        "2");
+    check(
+        "StringCount(ExportString(Plot(x, {x, 0, 1}, PlotLabel -> \"one\"), \"SVG\"),"
+            + " \"<tspan\")", //
+        "0");
+    // the box of a framed two-line text is two lines high
+    check("StringCount(ExportString(Graphics({Text(Framed(\"top\\nbottom\", Background -> Yellow),"
+        + " {0, 0})}), \"SVG\"), \"height=\\\"34\\\"\")", //
+        "1");
+  }
+
+  @Test
+  public void testThreeValuedComparisonFolds() {
+    // a definite difference decides even after an undecided element (Kleene "and")
+    check("{x, 1} == {y, 2}", //
+        "False");
+    check("{x, 1} == {y, 1}", //
+        "{x,1}=={y,1}");
+    check("<|a -> x, b -> 1|> == <|a -> y, b -> 2|>", //
+        "False");
+    // Mathematica leaves Unequal unevaluated at the first undecided pair, in the given order
+    check("a != b != a", //
+        "a!=b!=a");
+    check("Unequal(x, 1, 2)", //
+        "x!=1!=2");
+    // the union encloses one unknown value (WMA): it may lie in {-1,5} and be positive
+    check("Positive(Interval({-1, 5}, {-3, -2}))", //
+        "Positive(Interval({-3,-2},{-1,5}))");
+    check("Positive(Interval({-1, 5}))", //
+        "Positive(Interval({-1,5}))");
+  }
+
+  @Test
+  public void testFreeQLevelAll() {
+    // All is the levels 0 to Infinity: the expression itself counts, as it does for an atom
+    check("FreeQ(f(x), f(x), All)", //
+        "False");
+    check("FreeQ(x, x, All)", //
+        "False");
+    check("FreeQ(f(x), y, All)", //
+        "True");
+    check("FreeQ(f(x), f(x), Infinity)", //
         "True");
   }
 
@@ -12034,6 +12122,42 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionRange() {
+    // the real domain of the numerator restricts the range, e.g. x>=0 for Sqrt(x)
+    check("FunctionRange(Sqrt(x)/(x-1),x,y)", //
+        "True");
+    check("FunctionRange(Sqrt(x)/(x+1),x,y)", //
+        "0<=y<=1/2");
+    check("FunctionRange(Sqrt(x-1)/(x-2),x,y)", //
+        "True");
+    check("FunctionRange(Sqrt(x)/(x^2+1),x,y)", //
+        "0<=y<=3^(3/4)/4");
+    // monotone on the domain -1<=x<=1, proven with interval arithmetic
+    check("FunctionRange(ArcSin(x)/(x-2),x,y)", //
+        "-Pi/2<=y<=Pi/6");
+    check("FunctionRange(ArcSin(x)/(x^2+1),x,y)", //
+        "-Pi/4<=y<=Pi/4");
+    check("FunctionRange(ArcSin(x)/(x+2)^2,x,y)", //
+        "-Pi/2<=y<=Pi/18");
+    check("FunctionRange(Sqrt(1-x^2)/(x-2),x,y)", //
+        "-1/Sqrt(3)<=y<=0");
+    // a critical point which Solve can't find is located numerically as Root({eq&, c})
+    check("N(FunctionRange(ArcCos(x)/(x-1/2),x,y))", //
+        "y<=-1.91611||y>=0.0");
+    check("N(FunctionRange(ArcSin(x)*(x-1/3)/(x+2),x,y))", //
+        "-0.0128954<=y<=2.0944");
+    // the union of the ranges between the real poles
+    check("FunctionRange(x+1/x,x,y)", //
+        "y<=-2||y>=2");
+    check("FunctionRange(1/x,x,y)", //
+        "y<0||y>0");
+    check("FunctionRange(1/(x^2-1),x,y)", //
+        "y<=-1||y>0");
+    check("FunctionRange((x-1)/(x+2),x,y)", //
+        "y<1||y>1");
+    check("FunctionRange((x^2+x+1)/(x^2-1),x,y)", //
+        "y<=-Sqrt(3)/2||y>=Sqrt(3)/2");
+    check("FunctionRange(E^x/(x^2-1),x,y)", //
+        "y<=E^(1-Sqrt(2))/(2-2*Sqrt(2))||y>0");
     check("FunctionRange(Sin(x)/Sqrt(x), x, y)", //
         "Sin(Root({2*#1-Tan(#1)&,4.60422}))/Sqrt(Root({2*#1-Tan(#1)&,4.60422}))<=y<=Sin(Root({\n"
             + "2*#1-Tan(#1)&,1.16556}))/Sqrt(Root({2*#1-Tan(#1)&,1.16556}))");
@@ -20222,8 +20346,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //
         "1/2");
 
+    // WMA: inexact coefficients are rationalized, a constant GCD is 1.
     check("PolynomialGCD(3*x+9,-3.14159)", //
-        "PolynomialGCD(9+3*x,-3.14159)");
+        "1.0");
 
     check("PolynomialGCD({},0.5,x^4+(-1)*1,x^5+(-1)*1,x^6+(-1)*1,x^7+(-1)*1)", //
         "{}");

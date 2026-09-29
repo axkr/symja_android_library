@@ -15,6 +15,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
@@ -172,25 +173,49 @@ public class ToRadicals extends AbstractFunctionEvaluator {
             // still take over: a degenerate formula divides by zero on its way to returning
             // nothing, and that isn't the user's problem.
             final boolean quietMode = engine.isQuietMode();
-            IExpr[] radicalRoots;
-            try {
-              engine.setQuietMode(quietMode || maxDegree >= 4);
-              radicalRoots = radicalRoots(polynomial, degree, engine);
-            } finally {
-              engine.setQuietMode(quietMode);
+            IExpr[] radicalRoots = null;
+            if (maxDegree >= 4 && degree == 4) {
+              // cyclotomic, biquadratic and (anti)palindromic quartics have roots in nested
+              // square roots, which WMA prints - (-1)^(3/4), Sqrt(5+2*Sqrt(6)) - where Ferrari's
+              // formula builds cube roots of complex numbers
+              radicalRoots = structuredQuarticRoots(expr, engine);
+            }
+            if (radicalRoots == null) {
+              try {
+                engine.setQuietMode(quietMode || maxDegree >= 4);
+                radicalRoots = radicalRoots(polynomial, degree, engine);
+              } finally {
+                engine.setQuietMode(quietMode);
+              }
+            }
+            // stablySorted gives a new array ordered by the validated values - which the machine
+            // values of the symbolic Re/Im mustn't reorder again - the same array for symbolic
+            // roots, and null for roots which aren't stable
+            boolean sorted = false;
+            if (maxDegree >= 4 && degree >= 3 && radicalRoots != null) {
+              IExpr[] unsorted = radicalRoots;
+              radicalRoots = stablySorted(unsorted, engine);
+              sorted = radicalRoots != null && radicalRoots != unsorted;
             }
             if (radicalRoots == null && maxDegree >= 4) {
               // The closed formulas degenerate for this polynomial - Ferrari's formula divides by
-              // zero for #^4-2, for instance. Solve knows the special cases (binomials among
-              // them), so fall back to it before giving up.
+              // zero for #^4-2, for instance - or name a root only up to rounding. Solve knows the
+              // special cases (binomials among them), so fall back to it before giving up.
               radicalRoots = solveToRadicals(expr, degree, engine);
+              if (radicalRoots != null && degree >= 3) {
+                IExpr[] unsorted = radicalRoots;
+                radicalRoots = stablySorted(unsorted, engine);
+                sorted = radicalRoots != null && radicalRoots != unsorted;
+              }
             }
             if (radicalRoots == null) {
               return F.NIL;
             }
 
-            // Sort by (real-first, then Re asc, then Im asc) to match k-indexing.
-            radicalRoots = sortRootsByMmaOrder(radicalRoots);
+            if (!sorted) {
+              // Sort by (real-first, then Re asc, then Im asc) to match k-indexing.
+              radicalRoots = sortRootsByMmaOrder(radicalRoots);
+            }
 
             if (k < 1 || k > degree) {
               return F.NIL;
@@ -218,6 +243,146 @@ public class ToRadicals extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The roots of a quartic whose structure gives them as nested square roots, or <code>null</code>:
+   * <ul>
+   * <li>a multiple of <code>Cyclotomic(n, #)</code> - the roots of unity <code>(-1)^(2*j/n)</code>
+   * <li>a biquadratic <code>e*#^4+c*#^2+a</code> - <code>+/-Sqrt(t)</code> for the roots
+   * <code>t</code> of <code>e*t^2+c*t+a</code>
+   * <li>a palindromic <code>e*#^4+d*#^3+c*#^2+d*#+e</code> - a quadratic in <code>y=x+1/x</code>,
+   * and an antipalindromic <code>e*#^4+d*#^3+c*#^2-d*#+e</code> - a quadratic in
+   * <code>y=x-1/x</code>
+   * </ul>
+   *
+   * @param body the quartic in {@link F#Slot1}
+   */
+  private static IExpr[] structuredQuarticRoots(IExpr body, EvalEngine engine) {
+    IExpr coefficients = engine.evaluate(F.CoefficientList(body, F.Slot1));
+    if (!coefficients.isList() || coefficients.argSize() != 5
+        || !((IAST) coefficients).forAll(IExpr::isRational)) {
+      return null;
+    }
+    IAST list = (IAST) coefficients;
+    IExpr a = list.arg1();
+    IExpr b = list.arg2();
+    IExpr c = list.arg3();
+    IExpr d = list.arg4();
+    IExpr e = list.arg5();
+
+    for (int n : new int[] {5, 8, 10, 12}) {
+      // the cyclotomic polynomials of degree 4
+      IExpr cyclotomic = engine.evaluate(F.Expand(F.Times(e, F.binaryAST2(S.Cyclotomic, F.ZZ(n),
+          F.Slot1))));
+      if (engine.evaluate(F.Expand(F.Subtract(body, cyclotomic))).isZero()) {
+        IExpr[] roots = new IExpr[4];
+        int k = 0;
+        for (int j = 1; j < n; j++) {
+          if (java.math.BigInteger.valueOf(j).gcd(java.math.BigInteger.valueOf(n)).intValue() == 1) {
+            roots[k++] = engine.evaluate(F.Power(F.CN1, F.QQ(2 * j, n)));
+          }
+        }
+        return roots;
+      }
+    }
+
+    if (b.isZero() && d.isZero()) {
+      IExpr[] roots = new IExpr[4];
+      IExpr discriminant = sqrtOf(F.Subtract(F.Sqr(c), F.Times(F.C4, e, a)), engine);
+      IExpr t1 = F.Divide(F.Plus(F.Negate(c), discriminant), F.Times(F.C2, e));
+      IExpr t2 = F.Divide(F.Subtract(F.Negate(c), discriminant), F.Times(F.C2, e));
+      IExpr s1 = sqrtOf(t1, engine);
+      IExpr s2 = sqrtOf(t2, engine);
+      roots[0] = s1;
+      roots[1] = engine.evaluate(F.Negate(s1));
+      roots[2] = s2;
+      roots[3] = engine.evaluate(F.Negate(s2));
+      return roots;
+    }
+
+    final boolean palindromic = a.equals(e) && b.equals(d);
+    final boolean antipalindromic = a.equals(e) && engine.evaluate(F.Plus(b, d)).isZero();
+    if (palindromic || antipalindromic) {
+      // e*(x^2 + 1/x^2) + d*(x +/- 1/x) + c == 0, and x^2 + 1/x^2 == y^2 -/+ 2
+      final IExpr sign = palindromic ? F.CN2 : F.C2;
+      IExpr yDiscriminant = sqrtOf(
+          F.Subtract(F.Sqr(d), F.Times(F.C4, e, F.Plus(c, F.Times(sign, e)))), engine);
+      IExpr[] ys = {F.Divide(F.Plus(F.Negate(d), yDiscriminant), F.Times(F.C2, e)),
+          F.Divide(F.Subtract(F.Negate(d), yDiscriminant), F.Times(F.C2, e))};
+      IExpr[] roots = new IExpr[4];
+      int k = 0;
+      for (IExpr y : ys) {
+        y = engine.evaluate(F.Expand(y));
+        // x^2 - y*x + 1 == 0, or x^2 - y*x - 1 == 0
+        IExpr xDiscriminant = sqrtOf(F.Plus(F.Sqr(y), palindromic ? F.CN4 : F.C4), engine);
+        roots[k++] = engine.evaluate(F.Times(F.C1D2, F.Plus(y, xDiscriminant)));
+        roots[k++] = engine.evaluate(F.Times(F.C1D2, F.Subtract(y, xDiscriminant)));
+      }
+      return roots;
+    }
+    return null;
+  }
+
+  /**
+   * The principal square root of a real algebraic <code>radicand</code> in WMA's form: the
+   * radicand expanded with its content factored out, and <code>I*Sqrt(-r)</code> for a negative one
+   * - <code>Sqrt(5+2*Sqrt(6))</code>, <code>I*Sqrt(2*(-1+Sqrt(5)))</code>.
+   */
+  private static IExpr sqrtOf(IExpr radicand, EvalEngine engine) {
+    IExpr r = engine.evaluate(F.Expand(radicand));
+    if (r.isRealResult() && engine.evaluate(F.Less(r, F.C0)).isTrue()) {
+      return engine.evaluate(
+          F.Times(F.CI, F.Sqrt(engine.evaluate(F.FactorTerms(engine.evaluate(F.Negate(r)))))));
+    }
+    return engine.evaluate(F.Sqrt(engine.evaluate(F.FactorTerms(r))));
+  }
+
+  /**
+   * The roots, in the {@code Root} order of their values, if every value is stable - the same at
+   * machine precision, 30 and 60 digits - or <code>null</code>.
+   *
+   * <p>
+   * Ferrari's formula for <code>#^4+1</code> builds a radicand which is exactly <code>-2</code> as
+   * a sum of cube roots of complex numbers. On the branch cut of the square root its value is a
+   * matter of rounding - machine precision says <code>-0.707+0.707*I</code>, 30 digits
+   * <code>-0.707-0.707*I</code> - so it names no particular root, and ordering it by one of those
+   * values returned the conjugate root.
+   */
+  private static IExpr[] stablySorted(IExpr[] roots, EvalEngine engine) {
+    final int n = roots.length;
+    for (IExpr root : roots) {
+      if (!root.isNumericFunction()) {
+        // symbolic coefficients: no values to order by, the formula's own order is kept
+        return roots;
+      }
+    }
+    double[] re = new double[n];
+    double[] im = new double[n];
+    try {
+      for (int i = 0; i < n; i++) {
+        IExpr machine = engine.evalN(roots[i]);
+        IExpr value30 = engine.evalN(roots[i], 30);
+        IExpr value60 = engine.evalN(roots[i], 60);
+        if (!machine.isNumber() || !value30.isNumber() || !value60.isNumber()) {
+          return null;
+        }
+        INumber v60 = (INumber) value60;
+        re[i] = v60.reDoubleValue();
+        im[i] = v60.imDoubleValue();
+        double scale = Math.max(1.0, Math.hypot(re[i], im[i]));
+        for (IExpr value : new IExpr[] {machine, value30}) {
+          INumber v = (INumber) value;
+          if (Math.hypot(v.reDoubleValue() - re[i], v.imDoubleValue() - im[i]) > 1.0e-9 * scale) {
+            return null;
+          }
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return null;
+    }
+    return sortByValues(roots, re, im);
   }
 
   /**
@@ -405,6 +570,13 @@ public class ToRadicals extends AbstractFunctionEvaluator {
         return roots;
       }
     }
+    return sortByValues(roots, reVals, imVals);
+  }
+
+  /** Sort the roots by the {@code Root} k-indexing convention of their given values. */
+  private static IExpr[] sortByValues(IExpr[] roots, final double[] reVals,
+      final double[] imVals) {
+    final int n = roots.length;
     Integer[] order = new Integer[n];
     for (int i = 0; i < n; i++) {
       order[i] = i;

@@ -18,11 +18,11 @@ import org.matheclipse.core.interfaces.ISymbol;
  * paths.
  *
  * <p>
- * <code>{tmin, tmax}</code> steps by <code>1</code> for a discrete time process and by a
- * hundredth of the range for a continuous one; <code>{tmax}</code> starts at <code>0</code>. The
- * processes are <code>WienerProcess</code>, <code>OrnsteinUhlenbeckProcess</code> and
- * <code>ARMAProcess</code>, simulated by their exact transitions. <code>SeedRandom</code> makes
- * the paths repeatable.
+ * <code>{tmin, tmax}</code> steps by <code>1</code> for a discrete time process and by a hundredth
+ * of the range for a continuous one; <code>{tmax}</code> starts at <code>0</code>. The processes
+ * are <code>WienerProcess</code>, <code>OrnsteinUhlenbeckProcess</code> and
+ * <code>ARMAProcess</code>, simulated by their exact transitions. <code>SeedRandom</code> makes the
+ * paths repeatable.
  */
 public class RandomFunction extends AbstractFunctionEvaluator {
 
@@ -32,10 +32,11 @@ public class RandomFunction extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr process = ast.arg1();
-    Boolean discrete = StochasticProcesses.isDiscrete(process);
-    if (discrete == null || !ast.arg2().isList()) {
+    IExpr.COMPARE_TERNARY timeKind = StochasticProcesses.isDiscrete(process);
+    if (timeKind == IExpr.COMPARE_TERNARY.UNDECIDABLE || !ast.arg2().isList()) {
       return F.NIL;
     }
+    final boolean discrete = timeKind == IExpr.COMPARE_TERNARY.TRUE;
     IAST range = (IAST) ast.arg2();
     IExpr tmin;
     IExpr tmax;

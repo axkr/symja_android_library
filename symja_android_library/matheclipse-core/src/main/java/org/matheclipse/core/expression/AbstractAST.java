@@ -2202,17 +2202,16 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (size1 != list2.size()) {
           return IExpr.COMPARE_TERNARY.FALSE;
         }
+        // a pair of different elements decides FALSE even after an undecided pair:
+        // {x, 1} == {y, 2} is False
         IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
         for (int i = 1; i < size1; i++) {
-          b = get(i).equalTernary(list2.get(i), engine);
+          b = b.and(get(i).equalTernary(list2.get(i), engine));
           if (b == IExpr.COMPARE_TERNARY.FALSE) {
             return IExpr.COMPARE_TERNARY.FALSE;
           }
-          if (b != IExpr.COMPARE_TERNARY.TRUE) {
-            return IExpr.COMPARE_TERNARY.UNDECIDABLE;
-          }
         }
-        return IExpr.COMPARE_TERNARY.TRUE;
+        return b;
       } else {
         int size1 = size();
         if (size1 == list2.size() && size1 > 0 && Objects.equals(head(), list2.head())) {
@@ -4707,6 +4706,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (memoized != Ternary.UNKNOWN) {
       return memoized == Ternary.TRUE;
     }
+    if (isAST(S.Root) && (size() == 3 || size() == 4)) {
+      // Root(#^5-#+1&, 1) is a number, as in WMA - Root(#^2+a&, 1) isn't. Tested before the
+      // NumericFunction attribute of Root, whose pure function argument isn't numeric itself
+      boolean numeric = isNumericRootObject();
+      setTrait(trait, numeric);
+      return numeric;
+    }
 
     if (allowList) {
       if (isIntervalData()) {
@@ -4750,6 +4756,44 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     return false;
+  }
+
+  /**
+   * Whether this is <code>Root(f, k)</code> or <code>Root(f, k, 0|1)</code> of a pure function whose
+   * body is a polynomial in <code>#1</code> with numeric coefficients. The multivariate
+   * <code>Root({f1, f2}, {k1, k2})</code> is not numeric in WMA.
+   */
+  private boolean isNumericRootObject() {
+    if ((size() != 3 && size() != 4) || !head().equals(S.Root) || !arg2().isInteger()) {
+      return false;
+    }
+    if (size() == 4 && !(arg3().isZero() || arg3().isOne())) {
+      return false;
+    }
+    // the parameter of the pure function: #1, or the y of Function(y, ...) / Function({y}, ...)
+    IExpr parameter;
+    IExpr functionBody;
+    if (arg1().isAST(S.Function, 2)) {
+      parameter = F.Slot1;
+      functionBody = arg1().first();
+    } else if (arg1().isAST(S.Function, 3)) {
+      IExpr parameters = arg1().first();
+      parameter = parameters.isList1() ? parameters.first() : parameters;
+      if (!parameter.isSymbol()) {
+        return false;
+      }
+      functionBody = arg1().second();
+    } else {
+      return false;
+    }
+    // a fresh symbol for it: a Slot is neither a polynomial variable nor free of variables
+    final ISymbol variable = F.Dummy("root");
+    IExpr body = F.subst(functionBody, parameter, variable);
+    if (!body.isPolynomial(F.list(variable))) {
+      return false;
+    }
+    VariablesSet variables = new VariablesSet(body);
+    return variables.size() == 0 || (variables.size() == 1 && variables.contains(variable));
   }
 
   @Override

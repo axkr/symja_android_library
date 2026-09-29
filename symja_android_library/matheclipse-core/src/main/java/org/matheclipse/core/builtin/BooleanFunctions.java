@@ -2321,8 +2321,7 @@ public final class BooleanFunctions {
       evaled = false;
       IASTAppendable result = astEvaled.copyAppendable();
       for (int j = 1; j < astEvaled.size(); j++) {
-        if (cResult[j - 1] == IExpr.COMPARE_TERNARY.TRUE
-            && cResult[j] == IExpr.COMPARE_TERNARY.TRUE) {
+        if (cResult[j - 1].and(cResult[j]) == IExpr.COMPARE_TERNARY.TRUE) {
           evaled = true;
           result.remove(i - 1);
           continue;
@@ -4097,6 +4096,7 @@ public final class BooleanFunctions {
 
         IASTMutable result = ast.copy();
         result.setArgs(result.size(), i -> F.expandAll(result.get(i), true, true));
+        // leave Unequal unevaluated at the first undecided pair: a != b != a
         int i = 2;
         int j;
         while (i < result.size()) {
@@ -4367,8 +4367,8 @@ public final class BooleanFunctions {
    * non zero and a power <code>b^e</code> with a numeric exponent is non zero if the base is non
    * zero.
    */
-  private static boolean isAssumedNonZero(IExpr expr, IAssumptions assumptions,
-      EvalEngine engine, int depth) {
+  private static boolean isAssumedNonZero(IExpr expr, IAssumptions assumptions, EvalEngine engine,
+      int depth) {
     if (expr.isNumber()) {
       return !expr.isZero();
     }

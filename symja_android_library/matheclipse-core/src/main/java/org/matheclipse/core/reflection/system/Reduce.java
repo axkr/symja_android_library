@@ -15,11 +15,11 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.eval.util.InverseFunctionExpander;
+import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -33,13 +33,13 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.reduce.Formula;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.Lowering;
 import org.matheclipse.core.reduce.QuadraticDiophantine;
 import org.matheclipse.core.reduce.RationalQE;
 import org.matheclipse.core.reduce.Variable;
-import org.matheclipse.core.polynomials.PolynomialHomogenization;
 
 public class Reduce extends AbstractFunctionOptionEvaluator {
   // Internal signal to indicate successful absorption into the variable interval
@@ -114,7 +114,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
        */
       public boolean reduceAnd(IAST otherIntervalData) {
         IAST intersection =
-            IntervalDataSym.intersection(intervalData, otherIntervalData, engine);
+            IntervalDataSym.intersection(intervalData, otherIntervalData, engine, true);
         if (intersection.isPresent()) {
           this.intervalData = intersection;
           return true;
@@ -125,6 +125,10 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       public IExpr reduceAnd(int headID, IExpr lhs, IExpr rhs) throws ArgumentTypeException {
         if (!isRelationID(headID)) {
           // `g(x, 2)` has the shape `variable OP value` too, but no interval
+          return F.NIL;
+        }
+        if (!rhs.isFree(variable, true)) {
+          // `x > x + Sin(x)` isn't a bound of `x`; the relation has to be kept as a condition
           return F.NIL;
         }
         try {
@@ -142,7 +146,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
 
         IAST newIntervalData = IntervalDataSym.relationToIntervalSet(headID, rhs);
         IAST intersection =
-            IntervalDataSym.intersection(intervalData, newIntervalData, engine);
+            IntervalDataSym.intersection(intervalData, newIntervalData, engine, true);
         if (intersection.isPresent()) {
           if (intersection.isAST0()) {
             return S.False;
@@ -537,7 +541,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       if (lastArg.isFree(cd.variable, true)) {
         return lastArg;
       }
-            final boolean isEquation = lastArg.isEqual() || lastArg.isAST(S.Unequal, 3);
+      final boolean isEquation = lastArg.isEqual() || lastArg.isAST(S.Unequal, 3);
       if (!isEquation || domainMap.get(cd.variable) == S.Reals) {
         // An ordering relation is real valued in every domain, so its sign analysis always
         // applies. An equation is only equivalent to a set of real intervals if the variable is
@@ -1103,8 +1107,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * <code>u == (Log(value) + 2*I*Pi*C(k))/Log(base)</code>.
    *
    * @return a {@link S#List} with the single {@link S#ConditionalExpression} branch,
-   *         {@link S#False} if the equation has no solution at all, or {@link F#NIL} if it
-   *         isn't supported
+   *         {@link S#False} if the equation has no solution at all, or {@link F#NIL} if it isn't
+   *         supported
    */
   private static IExpr expandExponentialInverse(IExpr base, IExpr value, EvalEngine engine) {
     if (value.isZero()) {
@@ -2012,8 +2016,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       IExpr f = engine.evaluate(F.Subtract(arg.first(), arg.second()));
-      PeriodicTerm term =
-          parsePeriodicTerm(f, variable, Reduce::isForwardPeriodicFunction);
+      PeriodicTerm term = parsePeriodicTerm(f, variable, Reduce::isForwardPeriodicFunction);
       if (term != null) {
         if (relation.isPresent() || term.isPower() || !isPoleFreeTrigFunction(term.head)) {
           return F.NIL;
@@ -2136,8 +2139,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * {@link S#Log}.
    * <p>
    * {@link InverseFunctionExpander} returns the inverse of such a function together with the
-   * condition under which the value lies in the range of its principal branch. If that condition
-   * is <code>False</code> the equation has no solution at all: <code>ArcTan(x) == Pi/2</code> would
+   * condition under which the value lies in the range of its principal branch. If that condition is
+   * <code>False</code> the equation has no solution at all: <code>ArcTan(x) == Pi/2</code> would
    * need <code>x == Tan(Pi/2) == ComplexInfinity</code>.
    *
    * @param equation an {@link S#Equal} equation
@@ -2216,9 +2219,9 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
     if (lhs.isPower() && !lhs.base().isFree(variable) && !lhs.exponent().isFree(variable)) {
       // g^h == c => h*Log(g) == Log(c)
-      IExpr logged = reduceRecursive(
-          F.Equal(F.Times(lhs.exponent(), F.Log(lhs.base())), F.Log(rhs)), variable, domain,
-          options, engine);
+      IExpr logged =
+          reduceRecursive(F.Equal(F.Times(lhs.exponent(), F.Log(lhs.base())), F.Log(rhs)), variable,
+              domain, options, engine);
       return logged.isFree(S.Reduce) ? logged : F.NIL;
     }
     // u*Log(u) == z => u == z/ProductLog(z)
@@ -2416,8 +2419,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       // `g(variable) == value` is inverted by the other reductions, not by this one
       return F.NIL;
     }
-    IExpr roots =
-        rootsOf(F.Equal(engine.evaluate(poly), F.C0), kernelVariable, options, engine);
+    IExpr roots = rootsOf(F.Equal(engine.evaluate(poly), F.C0), kernelVariable, options, engine);
     if (roots.isNIL() || !roots.isFree(S.Roots)) {
       return F.NIL;
     }
@@ -2556,16 +2558,21 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   public Reduce() {}
 
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
+    IExpr withRenamedVariables = SolveUtils.solveWithRenamedBuiltinVariables(originalAST, engine);
+    if (withRenamedVariables.isPresent()) {
+      // solved with the renamed variables, or unsolved there - which isn't tried a second time
+      return withRenamedVariables.equals(originalAST) ? F.NIL : withRenamedVariables;
+    }
     SolveOptions solveOptions = SolveOptions.of(SolveOptions.REDUCE_KEYS, options);
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
     // `Infinity` is the default of `Reduce`: the exact result is kept
-    long precision = solveOptions.workingPrecision().isInfinity()
-        ? SolveUtils.MACHINE_PRECISION_REQUESTED
-        : SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
+    long precision =
+        solveOptions.workingPrecision().isInfinity() ? SolveUtils.MACHINE_PRECISION_REQUESTED
+            : SolveUtils.workingPrecision(ast, solveOptions.workingPrecision(), engine);
     if (precision == SolveUtils.INVALID_PRECISION) {
       return F.NIL;
     }
@@ -2577,6 +2584,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (result.isNIL()) {
       return F.NIL;
     }
+    result = distinctConjuncts(result);
     result = renameGeneratedParameters(result, solveOptions.generatedParameters(), engine);
     if (precision != SolveUtils.MACHINE_PRECISION_REQUESTED) {
       // the reduction itself is exact; the requested precision is applied to its result
@@ -2651,8 +2659,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * The intervals of the argument <code>u</code> of the only integer valued kernel of the
-   * relation, or {@link F#NIL}.
+   * The intervals of the argument <code>u</code> of the only integer valued kernel of the relation,
+   * or {@link F#NIL}.
    */
   private static IExpr integerValuedKernelIntervals(IExpr expr, IExpr variable,
       SolveOptions options, EvalEngine engine) {
@@ -2809,8 +2817,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * @param rationals <code>true</code> for the {@link S#Rationals}
    * @return {@link F#NIL} if the condition isn't linear or not of this kind
    */
-  private static IExpr reduceLinear(IExpr condition, IAST vars, ISymbol domain,
-      EvalEngine engine) {
+  private static IExpr reduceLinear(IExpr condition, IAST vars, ISymbol domain, EvalEngine engine) {
     final boolean rationals = domain == S.Rationals;
     if (condition.isList()) {
       condition = ((IAST) condition).setAtCopy(0, S.And);
@@ -2841,8 +2848,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
 
   /** Test if <code>domain</code> is one of the domains {@code Reduce} supports. */
   private static boolean isReduceDomain(IExpr domain) {
-    return domain == S.Reals || domain == S.Complexes || domain == S.Integers
-        || domain == S.Primes || domain == S.Booleans || domain == S.Rationals;
+    return domain == S.Reals || domain == S.Complexes || domain == S.Integers || domain == S.Primes
+        || domain == S.Booleans || domain == S.Rationals;
   }
 
   /** Test if <code>domain</code> is a discrete number domain. */
@@ -2868,6 +2875,80 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return list.forAll(x -> x.isSymbol() && !x.isBuiltInSymbol());
     }
     return false;
+  }
+
+  /**
+   * A system with a disjunction among its conditions - <code>b != -1 || d != -1</code> next to the
+   * equations - reduced one alternative at a time: <code>eqns &amp;&amp; (p || q)</code> is
+   * <code>(eqns &amp;&amp; p) || (eqns &amp;&amp; q)</code>. A solution both alternatives admit is
+   * given once.
+   *
+   * @return {@link F#NIL} if there is no such disjunction or an alternative stays unevaluated
+   */
+  private static IExpr reduceOrBranches(IExpr system, IAST vars, ISymbol domain,
+      EvalEngine engine) {
+    if (!(system.isAnd() || system.isList())) {
+      return F.NIL;
+    }
+    IAST conjunction = (IAST) system;
+    int orIndex = conjunction.indexOf(x -> x.isOr());
+    if (orIndex <= 0) {
+      return F.NIL;
+    }
+    IAST or = (IAST) conjunction.get(orIndex);
+    java.util.Set<IExpr> seen = new java.util.LinkedHashSet<IExpr>();
+    for (IExpr alternative : or) {
+      IExpr branch =
+          engine.evaluate(F.Reduce(conjunction.setAtCopy(orIndex, alternative), vars, domain));
+      if (branch.isAST(S.Reduce)) {
+        return F.NIL;
+      }
+      if (branch.isFalse()) {
+        continue;
+      }
+      if (branch.isTrue()) {
+        return S.True;
+      }
+      if (branch.isOr()) {
+        for (IExpr disjunct : (IAST) branch) {
+          seen.add(disjunct);
+        }
+      } else {
+        seen.add(branch);
+      }
+    }
+    if (seen.isEmpty()) {
+      return S.False;
+    }
+    IASTAppendable result = F.ast(S.Or, seen.size());
+    for (IExpr disjunct : seen) {
+      result.append(disjunct);
+    }
+    return result.oneIdentity1();
+  }
+
+  /**
+   * The result with a condition that repeats in one conjunction written once, in every branch of an
+   * <code>Or</code>: <code>a==0&amp;&amp;b==1/c&amp;&amp;c!=0&amp;&amp;c!=0</code> is
+   * <code>a==0&amp;&amp;b==1/c&amp;&amp;c!=0</code>, <code>And</code> drops duplicates.
+   */
+  private static IExpr distinctConjuncts(IExpr result) {
+    if (result.isOr()) {
+      return ((IAST) result).map(Reduce::distinctConjuncts, 1);
+    }
+    if (result.isAnd()) {
+      java.util.Set<IExpr> seen = new java.util.HashSet<IExpr>();
+      IASTAppendable distinct = F.ast(S.And, result.argSize());
+      for (IExpr conjunct : (IAST) result) {
+        if (seen.add(conjunct)) {
+          distinct.append(conjunct);
+        }
+      }
+      if (distinct.argSize() < result.argSize()) {
+        return distinct.oneIdentity1();
+      }
+    }
+    return result;
   }
 
   /**
@@ -3026,6 +3107,10 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         if (multivariate.isPresent()) {
           return multivariate;
         }
+        IExpr branches = reduceOrBranches(arg1, vars, domain, engine);
+        if (branches.isPresent()) {
+          return branches;
+        }
         // a multivariate system which none of the strategies reduces stays unevaluated - `Reduce`
         // never answers a statement it cannot justify
         return F.NIL;
@@ -3175,7 +3260,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       // e.g. 4*x^3-4*x>0 reduces to the interval set (-1<x<0)||x>1
       IExpr solved = reducePolynomialInequalityReals(arg1, variable, solveOptions, engine);
       if (solved.isPresent()) {
-        return solved;
+        return domain == S.Reals && solved.isAST(S.Element) ? S.True : solved;
       }
 
       IExpr logicalExpand = S.LogicalExpand.of(engine, expr);
@@ -3241,7 +3326,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           && containsOrderRelation(reduced, variable)) {
         // `ReduceComparison` reduces with real intervals, so it renders `x != value` as
         // `x < value || x > value`. That ordering is only valid if the variable is real - and a
-        // variable which the input compares with `<`/`>` is real by `setInequalityDomainsRecursive`.
+        // variable which the input compares with `<`/`>` is real by
+        // `setInequalityDomainsRecursive`.
         // The interval reasoning itself stays sound, so a decided result (`True`/`False`, or roots
         // without an ordering) is kept and only the ordered rendering is dropped.
         return logicalExpand;
@@ -3771,8 +3857,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Reduce a system of relations over a discrete domain by reducing it over the
-   * {@link S#Complexes} first and keeping the solutions whose values belong to the domain.
+   * Reduce a system of relations over a discrete domain by reducing it over the {@link S#Complexes}
+   * first and keeping the solutions whose values belong to the domain.
    *
    * @param expr the condition of the reduction
    * @param vars the variables to reduce
@@ -3923,8 +4009,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
 
   /**
    * Enumerate the integer (or prime) points of a real solution set. A bounded interval contributes
-   * its points, a one-sided interval the ray of integers beyond its bound, e.g.
-   * <code>x&gt;0</code> over the {@link S#Integers} is <code>x&gt;=1</code>.
+   * its points, a one-sided interval the ray of integers beyond its bound, e.g. <code>x&gt;0</code>
+   * over the {@link S#Integers} is <code>x&gt;=1</code>.
    *
    * @param realReduced the solution set over the {@link S#Reals}
    * @param variable the reduced variable
@@ -4053,9 +4139,9 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (coefficients == null) {
       return F.NIL;
     }
-    List<BigInteger[]> finite = QuadraticDiophantine.finiteSolutions(coefficients[0],
-        coefficients[1], coefficients[2], coefficients[3], coefficients[4], coefficients[5],
-        MAX_INTEGER_INTERVAL);
+    List<BigInteger[]> finite =
+        QuadraticDiophantine.finiteSolutions(coefficients[0], coefficients[1], coefficients[2],
+            coefficients[3], coefficients[4], coefficients[5], MAX_INTEGER_INTERVAL);
     if (finite == null) {
       return F.NIL;
     }
@@ -4098,8 +4184,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         }
         IExpr value = rule.second();
         if (domain == S.Primes //
-            && !(value.isInteger() && value.isPositive()
-                && ((IInteger) value).isProbablePrime())) {
+            && !(value.isInteger() && value.isPositive() && ((IInteger) value).isProbablePrime())) {
           ok = false;
           break;
         }
@@ -4119,8 +4204,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * Reduce a multivariate system of relations over {@link S#Reals}/{@link S#Complexes}. A
    * disjunction is reduced alternative by alternative, a conjunction which contains at least one
    * equation is handed to
-   * {@link #reduceEquationSystem(IAST, IAST, ISymbol, SolveOptions, EvalEngine)}. Anything
-   * else returns {@link F#NIL} so the caller can leave the expression unevaluated.
+   * {@link #reduceEquationSystem(IAST, IAST, ISymbol, SolveOptions, EvalEngine)}. Anything else
+   * returns {@link F#NIL} so the caller can leave the expression unevaluated.
    */
   private static IExpr reduceMultivariate(IExpr arg1, IAST vars, ISymbol domain,
       SolveOptions options, EvalEngine engine) {
@@ -4206,8 +4291,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     IASTAppendable result = F.ast(S.And, relationsOfVariable.size() + 1);
     for (Map.Entry<IExpr, IASTAppendable> entry : relationsOfVariable.entrySet()) {
       IASTAppendable relations = entry.getValue();
-      IExpr reduced = reduceRecursive(relations.oneIdentity1(), entry.getKey(), domain, options,
-          engine);
+      IExpr reduced =
+          reduceRecursive(relations.oneIdentity1(), entry.getKey(), domain, options, engine);
       if (!reduced.isFree(S.Reduce)) {
         return F.NIL;
       }
@@ -4520,9 +4605,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (lowerEquation.isFalse()) {
       return F.CEmptyList;
     }
-    IASTAppendable degenerateEquations =
-        lowerEquation.isTrue() ? equations.removeAtClone(position)
-            : equations.setAtCopy(position, lowerEquation).copyAppendable();
+    IASTAppendable degenerateEquations = lowerEquation.isTrue() ? equations.removeAtClone(position)
+        : equations.setAtCopy(position, lowerEquation).copyAppendable();
     degenerateEquations.append(F.Equal(leadingCoefficient, F.C0));
     return solveSystemRecursive(degenerateEquations, constraints, vars, domain, options, splits,
         engine);
@@ -4531,8 +4615,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   /** Test if <code>value</code> contains a constant which is not real, like <code>I</code>. */
   private static boolean containsNonRealConstant(IExpr value) {
     return value.has(x -> x.isComplex() || x.isComplexNumeric() //
-        || (x.isPower() && x.base().isReal() && x.base().isNegative()
-            && x.exponent().isRational() && !x.exponent().isInteger()),
+        || (x.isPower() && x.base().isReal() && x.base().isNegative() && x.exponent().isRational()
+            && !x.exponent().isInteger()),
         false);
   }
 
@@ -4721,8 +4805,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * Substituting the value of another variable usually shortens the result - <code>1-y</code> with
    * <code>y==-1</code> becomes <code>2</code> - and then the explicit form is the better answer. A
    * {@link S#Root} object is the case where it doesn't: it has no closed form to collapse into, so
-   * substituting only duplicates it into every variable which refers to it, and
-   * <code>x==1+y</code> is easier to read than <code>x==1+Root(-1-#1+#1^5&amp;,1,0)</code>.
+   * substituting only duplicates it into every variable which refers to it, and <code>x==1+y</code>
+   * is easier to read than <code>x==1+Root(-1-#1+#1^5&amp;,1,0)</code>.
    *
    * @param value the value of the variable, still referring to the other variables
    * @param substituted the same value after the other variables were substituted
@@ -4955,6 +5039,11 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     if (!f.isPolynomial(variable)) {
+      if (isRationalFunction(f, variable, engine)) {
+        // The range of a rational function is derived from its local extrema, which ignore its
+        // poles and its limits at +/-Infinity. The exact sign analysis decides it instead.
+        return F.NIL;
+      }
       // the optimizers only handle polynomials; the range of the function decides the rest
       return decideInequalityByRange(headID, f, variable, engine);
     }
@@ -5045,19 +5134,96 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (relationIntervals.isNIL()) {
       return F.NIL;
     }
-    IAST intersection = IntervalDataSym.intersection(rangeIntervals, relationIntervals, engine);
+    // strict: a bound which can't be compared with 0 must not be kept, or the intersection looks
+    // like the whole range
+    IAST intersection =
+        IntervalDataSym.intersection(rangeIntervals, relationIntervals, engine, true);
     if (intersection.isNIL()) {
       return F.NIL;
     }
     if (intersection.isAST0()) {
-      // no attained value fulfills the relation
-      return S.False;
+      // No attained value fulfills the relation. The range is only trustworthy if the function has
+      // no poles: `FunctionRange` is built from local extrema, which don't see the values of
+      // `E^x/(x^2-1)` beyond its poles.
+      return hasPole(f, variable) ? F.NIL : S.False;
     }
     if (intersection.equals(rangeIntervals) && isTotalRealFunction(f, variable)) {
       // every attained value fulfills the relation, and every real argument is attained
       return F.Element(variable, S.Reals);
     }
     return F.NIL;
+  }
+
+  /**
+   * Test whether <code>f</code> is a quotient of two polynomials in <code>variable</code>.
+   */
+  private static boolean isRationalFunction(IExpr f, IExpr variable, EvalEngine engine) {
+    if (!f.isAST()) {
+      return false;
+    }
+    IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) f, true, engine);
+    IExpr numerator = parts[1].isOne() ? parts[2] : parts[0];
+    return numerator.isPolynomial(variable) && parts[1].isPolynomial(variable);
+  }
+
+  /**
+   * Test whether the expression may have a pole for a real value of the variable: it contains a
+   * power with a negative exponent or a function like <code>Tan</code>, <code>Log</code> whose
+   * argument depends on the variable. Only functions which are known to be finite for every finite
+   * argument are accepted.
+   */
+  static boolean hasPole(IExpr expr, IExpr variable) {
+    if (expr.isFree(variable, true) || !expr.isAST()) {
+      return false;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isPower()) {
+      IExpr base = ast.base();
+      IExpr exponent = ast.exponent();
+      if (!exponent.isFree(variable, true)) {
+        // `b^u` is finite for a positive constant base `b`
+        return !(base.isFree(variable, true) && base.isPositiveResult())
+            || hasPole(exponent, variable);
+      }
+      if (!exponent.isRealResult()) {
+        return true;
+      }
+      if (exponent.isNegativeResult() && !hasNoRealRoot(base, variable)) {
+        return true;
+      }
+      return hasPole(base, variable);
+    }
+    switch (ast.headID()) {
+      case ID.Plus:
+      case ID.Times:
+      case ID.Abs:
+      case ID.ArcSinh:
+      case ID.ArcTan:
+      case ID.ArcSin:
+      case ID.ArcCos:
+      case ID.Cos:
+      case ID.Cosh:
+      case ID.Erf:
+      case ID.Exp:
+      case ID.Max:
+      case ID.Min:
+      case ID.Sign:
+      case ID.Sin:
+      case ID.Sinh:
+      case ID.Sqrt:
+      case ID.Surd:
+      case ID.Tanh:
+      case ID.UnitStep:
+        break;
+      default:
+        return true;
+    }
+    for (int i = 1; i < ast.size(); i++) {
+      if (hasPole(ast.get(i), variable)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -5068,7 +5234,22 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * @param expr the expression to test
    * @param variable the variable of the reduction
    */
-  private static boolean isTotalRealFunction(IExpr expr, IExpr variable) {
+  /**
+   * Test whether <code>polynomial</code> is a polynomial with rational coefficients in
+   * <code>variable</code> without a real root, e.g. <code>x^2+1</code>.
+   */
+  private static boolean hasNoRealRoot(IExpr polynomial, IExpr variable) {
+    if (!polynomial.isPolynomial(variable)) {
+      return false;
+    }
+    @SuppressWarnings("unchecked")
+    edu.jas.poly.GenPolynomial<edu.jas.arith.BigRational>[] jas =
+        new edu.jas.poly.GenPolynomial[1];
+    java.util.List<?> roots = CountRoots.realRoots(polynomial, variable, jas);
+    return roots != null && roots.isEmpty();
+  }
+
+  static boolean isTotalRealFunction(IExpr expr, IExpr variable) {
     if (expr.equals(variable)) {
       return true;
     }
@@ -5164,7 +5345,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     // rewrite `lhs OP rhs` as `f OP 0` with f = lhs - rhs
     IExpr f = engine.evaluate(F.ExpandAll(F.Subtract(comparator.arg1(), comparator.arg2())));
     if (f.isFree(variable)) {
-      IExpr decided = engine.evaluate(relation);
+      // the variable cancels between the sides, e.g. `x >= x+1` is `-1 >= 0`
+      IExpr decided = engine.evaluate(F.binaryAST2(relation.head(), f, F.C0));
       if (decided.isTrue()) {
         return IntervalDataSym.reals();
       }
@@ -5185,11 +5367,22 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) f, true, engine);
-      numerator = parts[0];
       denominator = parts[1];
+      // for a unit denominator `parts[0]` is the original expression, `parts[2]` the cancelled one
+      numerator = denominator.isOne() ? parts[2] : parts[0];
       if (!numerator.isPolynomial(variable) || !denominator.isPolynomial(variable)) {
         return F.NIL;
       }
+    }
+    // Like WMA, common factors of numerator and denominator are cancelled first, e.g.
+    // `(x^2-1)/(x-1) < 3` is reduced as `x+1 < 3`. The sign is sampled on the cancelled form, so a
+    // sample never hits a removable singularity of the uncancelled `f`. The cancellation of an
+    // inexact `f` isn't reliable, so its sign is sampled on `f` itself.
+    final IExpr cancelled;
+    if (!f.isFree(t -> t.isInexactNumber(), true)) {
+      cancelled = f;
+    } else {
+      cancelled = denominator.isOne() ? numerator : F.Divide(numerator, denominator);
     }
 
     // the breakpoints of the sign: the real roots of the numerator and the poles
@@ -5222,7 +5415,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       } else {
         sample = (breakValues.get(k - 1) + breakValues.get(k)) / 2.0;
       }
-      int sign = polynomialSignAt(f, variable, sample, engine);
+      int sign = polynomialSignAt(cancelled, variable, sample, engine);
       if (sign == 0) {
         return F.NIL;
       }
@@ -5398,9 +5591,9 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   /**
    * Reduce a single univariate inequality <code>lhs OP rhs</code> (with <code>OP</code> one of
    * {@link S#Less}, {@link S#LessEqual}, {@link S#Greater}, {@link S#GreaterEqual}) over the
-   * {@link S#Reals} by the sign analysis of {@link #realAtomToIntervals(IExpr, IExpr, SolveOptions,
-   * EvalEngine)}. For example <code>4*x^3-4*x&gt;0</code> reduces to
-   * <code>(-1&lt;x&lt;0)||x&gt;1</code>.
+   * {@link S#Reals} by the sign analysis of
+   * {@link #realAtomToIntervals(IExpr, IExpr, SolveOptions, EvalEngine)}. For example
+   * <code>4*x^3-4*x&gt;0</code> reduces to <code>(-1&lt;x&lt;0)||x&gt;1</code>.
    *
    * <p>
    * Inequalities are inherently real-valued, so this reduction is applied independent of the

@@ -63,6 +63,14 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     check("Negative(IntervalData({-1,LessEqual,LessEqual,5}))", //
         "Negative(IntervalData({-1,LessEqual,LessEqual,5}))");
 
+    // a union encloses one unknown value (WMA): undecided unless every part decides alike
+    check("Positive(IntervalData({-2,LessEqual,LessEqual,-1},{1,LessEqual,LessEqual,2}))", //
+        "Positive(IntervalData({-2,LessEqual,LessEqual,-1},{1,LessEqual,LessEqual,2}))");
+    check("Positive(IntervalData({1,LessEqual,LessEqual,2},{3,LessEqual,LessEqual,4}))", //
+        "True");
+    check("Positive(IntervalData({-4,LessEqual,LessEqual,-3},{-2,LessEqual,LessEqual,-1}))", //
+        "False");
+
     // Closed zero boundary includes zero
     check("Positive(IntervalData({0,LessEqual,LessEqual,5}))", //
         "False");

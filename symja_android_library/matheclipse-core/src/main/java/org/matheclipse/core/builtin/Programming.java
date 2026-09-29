@@ -3062,26 +3062,28 @@ public final class Programming {
 
         IExpr arg2 = engine.evaluate(ast.arg2());
         // System.out.println(ast.setAtCopy(2, arg2));
-        long seconds = 0L;
+        long millis = 0L;
         try {
           if (arg2.isReal()) {
-            arg2 = ((IReal) arg2).ceilFraction();
-            seconds = ((IReal) arg2).toLong();
-            if (seconds <= 0L) {
+            // WMA honours fractions of a second: TimeConstrained(expr, 0.3) stops after 0.3 s
+            double seconds = arg2.evalf();
+            if (!(seconds > 0.0) || Double.isInfinite(seconds)) {
               // Positive machine-sized integer expected at position `2` in `1`.
-              return Errors.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
+              return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
             }
+            // capped far below Long.MAX_VALUE, the engine still adds to it
+            millis = Math.min(Math.max(1L, Math.round(seconds * 1000.0)), Long.MAX_VALUE / 4L);
           } else {
             // Positive machine-sized integer expected at position `2` in `1`.
-            return Errors.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
+            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
           }
 
         } catch (ArithmeticException ae) {
           // Positive machine-sized integer expected at position `2` in `1`.
-          return Errors.printMessage(ast.topHead(), "intpm", F.list(F.C2, ast), engine);
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
         }
-        return engine.evalTimeConstrained(ast.arg1(), ast.argSize() >= 3 ? ast.arg3() : F.NIL,
-            seconds);
+        return engine.evalTimeConstrainedMillis(ast.arg1(),
+            ast.argSize() >= 3 ? ast.arg3() : F.NIL, millis);
       }
       return engine.checkBuiltinArgsSize(ast, this);
     }
