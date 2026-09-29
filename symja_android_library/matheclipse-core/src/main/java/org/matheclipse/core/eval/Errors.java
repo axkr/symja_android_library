@@ -98,8 +98,10 @@ public class Errors {
       "astrocsys", "`1` is not a supported celestial system in `2`.", //
       "astrodms", "`1` in `2` is not a sexagesimal angle.", //
       "astroevent", "`1` is not a supported astronomical event in `2`.", //
+      "astrofallback",
+      "The date `1` is outside the range of the Orekit ephemerides; the lower accuracy algorithms of Meeus were used.", //
       "astroframe",
-      "Value of option `1` -> `2` is not a usable reference frame; a horizon frame also needs a location.", //
+      "Value of option `1` -> `2` is not a usable reference frame.", //
       "astroloc", "`1` in `2` needs an observer location.", //
       "astromethod", "`1` is not a supported computation method in `2`.", //
       "astronotimpl", "`1` is not implemented.", //
@@ -278,6 +280,8 @@ public class Errors {
       "incompCF", "Warning: `1` terminated before `2` terms.", //
       "incpt", "incompatible elements in `1` cannot be joined.", //
       "indet", "Indeterminate expression `1` encountered.", //
+      "infeas",
+      "There are no values of `1` for which the constraints `2` are satisfied and the objective function `3` is real valued.", //
       "infy", "Infinite expression `1` encountered.", //
       "innf", "Non-negative integer or Infinity expected at position `1` in `2`.", //
       "ins", "Cannot insert at position `1` in `2`.", //

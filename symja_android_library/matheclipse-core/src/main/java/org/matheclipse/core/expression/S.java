@@ -119,6 +119,16 @@ public class S {
       S.initFinalSymbol("$GeoLocation", ID.$GeoLocation);
 
   /**
+   * $GeoLocationSource - where the value of `$GeoLocation` comes from.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$GeoLocationSource.md">$GeoLocationSource
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $GeoLocationSource =
+      S.initFinalSymbol("$GeoLocationSource", ID.$GeoLocationSource);
+
+  /**
    * $HistoryLength - specifies the maximum number of `In` and `Out` entries.
    * 
    * @see <a href=
@@ -8325,6 +8335,16 @@ public class S {
    */
   public final static IBuiltInSymbol FindGeneratingFunction =
       S.initFinalSymbol("FindGeneratingFunction", ID.FindGeneratingFunction);
+
+  /**
+   * FindGeoLocation() - an estimate of the computer's position on Earth.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindGeoLocation.md">FindGeoLocation
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindGeoLocation =
+      S.initFinalSymbol("FindGeoLocation", ID.FindGeoLocation);
 
   public final static IBuiltInSymbol FindGraphCommunities =
       S.initFinalSymbol("FindGraphCommunities", ID.FindGraphCommunities);

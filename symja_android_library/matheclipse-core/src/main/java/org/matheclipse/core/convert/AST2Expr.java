@@ -113,7 +113,7 @@ public class AST2Expr {
   // START_FUNCTION_SYMBOLS
 
   public static final String[] FUNCTION_STRINGS = {"$BoxForms", "$CommandLine", "$ContextAliases",
-      "$GeoLocation", "$InstallationDirectory", "$MachineName", "$Messages", "$Output",
+      "$GeoLocation", "$GeoLocationSource", "$InstallationDirectory", "$MachineName", "$Messages", "$Output",
       "$ParentLink", "$ProcessID", "$StandardOutputStream", "$SystemID", "$TimedOut", "$TimeUnit",
       "$TimeZone", "$UnitSystem", "$UserDocumentsDirectory", "$VersionNumber", "AASTriangle",
       "AbelianGroup", "Abort", "AbortProtect", "Abs", "AbsArg", "AbsoluteDashing",
@@ -281,7 +281,8 @@ public class AST2Expr {
       "FiniteGroupCount", "FiniteAbelianGroupCount", "File", "FileFormat", "FileHash",
       "FileNameDrop", "FileNameJoin", "FileNames", "FileNameTake", "FilePrint", "FilterRules",
       "FindClusters", "FindCycle", "FindEdgeColoring", "FindEdgeCover", "FindEulerianCycle",
-      "FindFit", "FindFormula", "FindGeneratingFunction", "FindGraphCommunities",
+      "FindFit", "FindFormula", "FindGeneratingFunction", "FindGeoLocation",
+      "FindGraphCommunities",
       "FindGraphIsomorphism", "FindHamiltonianCycle", "FindIndependentEdgeSet",
       "FindIndependentVertexSet", "FindInstance", "FindLinearRecurrence", "FindList", "FindMaximum",
       "FindMinimum", "FindMinimumCostFlow", "FindPermutation", "FindRoot", "FindSequenceFunction",
