@@ -98,18 +98,19 @@ public class ImageOptionSemanticsTest extends AbstractTestCase {
   // -------------------------------------------------------------------- sample type
 
   /**
-   * <code>Image(data, type)</code> writes the data on the scale <code>type</code> names, which is
-   * what <code>ImageType</code> then reports.
+   * <code>Image(data, type)</code> takes the data as raw samples of <code>type</code>, rounded half
+   * to even and clipped to its range, and <code>ImageType</code> reports that type (WMA).
    */
   @Test
   public void theSampleTypeArgumentIsHonoured() {
     check("ImageType(Image({{0.0,0.5}},\"Byte\"))", //
         "Byte");
-    check("ImageData(Image({{0.0,0.5}},\"Byte\"),\"Byte\")=={{0,128}}", //
+    // raw Byte samples: 0.5 rounds to 0
+    check("ImageData(Image({{0.0,0.5}},\"Byte\"),\"Byte\")=={{0,0}}", //
         "True");
     check("ImageType(Image({{0,255}},\"Real32\"))", //
         "Real32");
-    check("ImageData(Image({{0,255}},\"Real32\"))=={{0.0,1.0}}", //
+    check("ImageData(Image({{0,255}},\"Real32\"))=={{0.0,255.0}}", //
         "True");
     check("ImageType(Image({{0.0,1.0}},\"Bit\"))", //
         "Bit");
@@ -241,5 +242,14 @@ public class ImageOptionSemanticsTest extends AbstractTestCase {
   public void aGraphicsObjectStillRasterizes() {
     check("ImageDimensions(Image(Graphics(Disk()),ImageSize->200))", //
         "{600,600}");
+  }
+
+  @Test
+  public void typedDataOfNoImageShapeStaysUnevaluated() {
+    // a vector, a ragged matrix: no picture, as without a stated type
+    check("Image({1,2,3},\"Byte\")", //
+        "Image({1,2,3},Byte)");
+    check("Image({{1,2},{3}},\"Real32\")", //
+        "Image({{1,2},{3}},Real32)");
   }
 }

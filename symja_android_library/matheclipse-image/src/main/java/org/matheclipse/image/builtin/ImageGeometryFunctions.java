@@ -97,7 +97,15 @@ public class ImageGeometryFunctions {
         return F.NIL;
       }
       if (ast.argSize() == 1) {
-        return new ImageExpr(Geometry.rotateQuarters(image, 1), null);
+        return quarterTurns(ast.arg1(), image, 1);
+      }
+      if (ast.argSize() == 2) {
+        // WMA's side forms: ImageRotate(img, side) puts the top at side, side1 -> side2 moves
+        // side1 to side2
+        int turns = sideTurns(ast.arg2());
+        if (turns >= 0) {
+          return quarterTurns(ast.arg1(), image, turns);
+        }
       }
       double radians = ast.arg2().evalfNaN();
       if (Double.isNaN(radians)) {
@@ -106,7 +114,7 @@ public class ImageGeometryFunctions {
       // an exact quarter turn is a transposition, and doing it by resampling would blur it
       double quarters = radians / (Math.PI / 2.0);
       if (ast.argSize() == 2 && Math.abs(quarters - Math.rint(quarters)) < 1e-12) {
-        return new ImageExpr(Geometry.rotateQuarters(image, (int) Math.rint(quarters)), null);
+        return quarterTurns(ast.arg1(), image, (int) Math.rint(quarters));
       }
       int width = -1;
       int height = -1;
@@ -120,6 +128,103 @@ public class ImageGeometryFunctions {
       }
       return new ImageExpr(
           Geometry.rotate(image, radians, width, height, Geometry.transparentOrWhite()), null);
+    }
+
+    /**
+     * The counterclockwise quarter turns of <code>side</code> or <code>side1 -> side2</code>, or
+     * <code>-1</code>: <code>Top</code>, <code>Left</code>, <code>Bottom</code>, <code>Right</code>
+     * lie a quarter turn apart counterclockwise, and a single side means <code>Top -> side</code>.
+     */
+    private static int sideTurns(IExpr spec) {
+      if (spec.isRuleAST()) {
+        int from = sidePosition(spec.first());
+        int to = sidePosition(spec.second());
+        return from < 0 || to < 0 ? -1 : Math.floorMod(to - from, 4);
+      }
+      return sidePosition(spec);
+    }
+
+    private static int sidePosition(IExpr side) {
+      if (side == S.Top) {
+        return 0;
+      }
+      if (side == S.Left) {
+        return 1;
+      }
+      if (side == S.Bottom) {
+        return 2;
+      }
+      if (side == S.Right) {
+        return 3;
+      }
+      return -1;
+    }
+
+    /**
+     * The image turned by <code>turns</code> counterclockwise quarter turns. The matrix an image was
+     * built from turns with it, exactly, so its type and its samples are kept rather than read back
+     * off the 8 bit bitmap.
+     */
+    private static IExpr quarterTurns(IExpr arg, BufferedImage image, int turns) {
+      BufferedImage rotated = Geometry.rotateQuarters(image, turns);
+      if (arg instanceof ImageExpr) {
+        ImageExpr source = (ImageExpr) arg;
+        IAST matrix = source.getMatrix();
+        if (matrix != null && source.getOptions().interleaved()) {
+          IAST turned = rotateMatrix(matrix, Math.floorMod(turns, 4));
+          if (turned != null) {
+            turned.isMatrix(true);
+            return new ImageExpr(rotated, turned, source.getOptions(), source.sampleType());
+          }
+        }
+      }
+      return new ImageExpr(rotated, null);
+    }
+
+    /**
+     * The rows of <code>matrix</code> (each pixel a sample or a list of channels) turned
+     * counterclockwise by <code>turns</code> quarter turns, or <code>null</code> if it is ragged.
+     */
+    private static IAST rotateMatrix(IAST matrix, int turns) {
+      int rows = matrix.argSize();
+      if (rows == 0 || !matrix.arg1().isList()) {
+        return null;
+      }
+      int cols = matrix.arg1().argSize();
+      for (int i = 1; i <= rows; i++) {
+        if (!matrix.get(i).isList() || matrix.get(i).argSize() != cols) {
+          return null;
+        }
+      }
+      if (turns == 0) {
+        return matrix;
+      }
+      final boolean odd = turns % 2 == 1;
+      int newRows = odd ? cols : rows;
+      int newCols = odd ? rows : cols;
+      org.matheclipse.core.interfaces.IASTAppendable result = F.ListAlloc(newRows);
+      for (int i = 0; i < newRows; i++) {
+        org.matheclipse.core.interfaces.IASTAppendable row = F.ListAlloc(newCols);
+        for (int j = 0; j < newCols; j++) {
+          int r;
+          int c;
+          if (turns == 1) {
+            // counterclockwise: the last column becomes the first row
+            r = j;
+            c = cols - 1 - i;
+          } else if (turns == 2) {
+            r = rows - 1 - i;
+            c = cols - 1 - j;
+          } else {
+            // clockwise: the last row becomes the first column
+            r = rows - 1 - j;
+            c = i;
+          }
+          row.append(((IAST) matrix.get(r + 1)).get(c + 1));
+        }
+        result.append(row);
+      }
+      return result;
     }
 
     @Override

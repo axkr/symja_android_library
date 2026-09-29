@@ -234,6 +234,56 @@ public final class Pixels {
     return bilevel ? BIT : BYTE;
   }
 
+  /**
+   * The samples of <code>data</code> written as raw values of <code>type</code>, as WMA's
+   * <code>Image(data, type)</code> takes them: rounded half to even and clipped to
+   * <code>0..1</code>, <code>0..255</code> or <code>0..65535</code> for <code>"Bit"</code>,
+   * <code>"Byte"</code> and <code>"Bit16"</code>, and machine reals, unclipped, for
+   * <code>"Real32"</code> and <code>"Real64"</code> - <code>Image({{0,300}}, "Byte")</code> holds
+   * <code>{{0,255}}</code> and <code>Image({{0.5,1.7}}, "Byte")</code> holds <code>{{0,2}}</code>.
+   *
+   * @return <code>null</code> if a sample isn't a real number
+   */
+  public static IAST coerceToType(IAST data, String type) {
+    final double max;
+    if (BIT.equals(type)) {
+      max = 1.0;
+    } else if (BYTE.equals(type)) {
+      max = 255.0;
+    } else if (BIT16.equals(type)) {
+      max = 65535.0;
+    } else {
+      max = -1.0;
+    }
+    return coerce(data, max);
+  }
+
+  private static IAST coerce(IAST list, double max) {
+    org.matheclipse.core.interfaces.IASTAppendable result = F.ListAlloc(list.argSize());
+    for (int i = 1; i < list.size(); i++) {
+      IExpr element = list.get(i);
+      if (element.isList()) {
+        IAST coerced = coerce((IAST) element, max);
+        if (coerced == null) {
+          return null;
+        }
+        result.append(coerced);
+        continue;
+      }
+      if (!element.isReal()) {
+        return null;
+      }
+      double value = element.evalf();
+      if (max < 0.0) {
+        result.append(F.num(value));
+      } else {
+        // Math.rint rounds half to even, as WMA does: 0.5 is 0
+        result.append(F.ZZ((long) Math.min(max, Math.max(0.0, Math.rint(value)))));
+      }
+    }
+    return result;
+  }
+
   /** Whether <code>type</code> names one of the five sample types. */
   public static boolean isImageType(String type) {
     return BIT.equals(type) || BYTE.equals(type) || BIT16.equals(type) || REAL32.equals(type)

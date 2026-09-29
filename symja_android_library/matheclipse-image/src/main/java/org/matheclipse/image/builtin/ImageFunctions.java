@@ -156,7 +156,7 @@ public class ImageFunctions {
           return F.NIL;
         }
         IAST matrix = image.getMatrix();
-        String currentType = matrix == null ? Pixels.BYTE : Pixels.imageTypeOf(matrix);
+        String currentType = image.sampleType();
         String newType = argSize >= 2 && ast.arg2().isString() ? ast.arg2().toString()
             : currentType;
         if (!Pixels.isImageType(newType)) {
@@ -213,6 +213,17 @@ public class ImageFunctions {
           if (message != null) {
             return message;
           }
+        }
+        if (type != null && !data.isGraphicsObject() && !data.isAST(S.Graphics3D)) {
+          // WMA takes the data as raw samples of the stated type, rounded and clipped to it
+          IAST coerced = Pixels.coerceToType(data, type);
+          if (coerced == null) {
+            return F.NIL;
+          }
+          // null for data of no image shape - a vector, a ragged matrix, 2 channels - which
+          // leaves Image unevaluated, as the untyped path does
+          ImageExpr typedImage = ImageExpr.toImageExpr(coerced, imageOptions, type);
+          return typedImage == null ? F.NIL : typedImage;
         }
         ImageExpr imageExpr = ImageExpr.toImageExpr(data, imageOptions);
         if (imageExpr == null) {
@@ -369,7 +380,7 @@ public class ImageFunctions {
       // right way up
       IAST matrix = imageExpr.getMatrix();
       if (matrix != null && !dataReversed && interleaved == imageExpr.getOptions().interleaved()
-          && Pixels.sameScale(Pixels.imageTypeOf(matrix), type)) {
+          && Pixels.sameScale(imageExpr.sampleType(), type)) {
         return matrix;
       }
 

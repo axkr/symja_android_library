@@ -32,6 +32,12 @@ final public class ImageExpr extends DataExpr<byte[]> {
 
   private final ImageOptions options;
 
+  /**
+   * The sample type <code>Image(data, type)</code> stated, or <code>null</code> to read it off the
+   * matrix: <code>Image({{0,1}}, "Byte")</code> is a Byte image although its samples look bilevel.
+   */
+  private final String sampleType;
+
   private transient SoftReference<BufferedImage> buffer;
 
   /**
@@ -53,7 +59,19 @@ final public class ImageExpr extends DataExpr<byte[]> {
    * @param options never <code>null</code>; use {@link ImageOptions#DEFAULT}
    */
   public ImageExpr(final BufferedImage buffer, IAST matrix, ImageOptions options) {
+    this(buffer, matrix, options, null);
+  }
+
+  /**
+   * Represent a BufferedImage by the PNG byte array, remembering the options and the stated sample
+   * type.
+   *
+   * @param sampleType one of the five image types, or <code>null</code> to read it off the matrix
+   */
+  public ImageExpr(final BufferedImage buffer, IAST matrix, ImageOptions options,
+      String sampleType) {
     super(S.Image, null);
+    this.sampleType = sampleType;
     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final OutputStream b64 = Base64.getEncoder().wrap(outputStream)) {
       ImageIO.write(buffer, "png", b64);
@@ -71,7 +89,12 @@ final public class ImageExpr extends DataExpr<byte[]> {
    * {@link #withOptions(ImageOptions)} free rather than another trip through the png encoder.
    */
   private ImageExpr(ImageExpr original, IAST matrix, ImageOptions options) {
+    this(original, matrix, options, original.sampleType);
+  }
+
+  private ImageExpr(ImageExpr original, IAST matrix, ImageOptions options, String sampleType) {
     super(S.Image, original.fData);
+    this.sampleType = sampleType;
     this.buffer = original.buffer;
     this.matrix = matrix;
     this.options = options;
@@ -97,6 +120,17 @@ final public class ImageExpr extends DataExpr<byte[]> {
     return matrix;
   }
 
+  /**
+   * The image type: the one <code>Image(data, type)</code> stated, else the type of the matrix it
+   * was built from, else <code>"Byte"</code> for a picture stored as an 8 bit bitmap.
+   */
+  public String sampleType() {
+    if (sampleType != null) {
+      return sampleType;
+    }
+    return matrix == null ? Pixels.BYTE : Pixels.imageTypeOf(matrix);
+  }
+
   /** The options this image carries; never <code>null</code>. */
   public ImageOptions getOptions() {
     return options;
@@ -119,6 +153,11 @@ final public class ImageExpr extends DataExpr<byte[]> {
     return newMatrix == matrix ? this : new ImageExpr(this, newMatrix, options);
   }
 
+  /** The same picture with a different record of its data and the sample type it is written in. */
+  public ImageExpr withMatrix(IAST newMatrix, String newSampleType) {
+    return new ImageExpr(this, newMatrix, options, newSampleType);
+  }
+
   @Override
   public int hierarchy() {
     return IMAGEID;
@@ -130,7 +169,8 @@ final public class ImageExpr extends DataExpr<byte[]> {
     BufferedImage newBufferedImage = new BufferedImage(oldBufferedImage.getWidth(),
         oldBufferedImage.getHeight(), oldBufferedImage.getType());
     newBufferedImage.setData(oldBufferedImage.getRaster());
-    return new ImageExpr(newBufferedImage, matrix, options);
+    // the copy keeps the stated sample type: a copy of Image({{0,1}}, "Byte") is "Byte", not "Bit"
+    return new ImageExpr(newBufferedImage, matrix, options, sampleType);
   }
 
   public BufferedImage getBufferedImage() {
@@ -158,7 +198,7 @@ final public class ImageExpr extends DataExpr<byte[]> {
    */
   @Override
   public IAST normal(boolean nilIfUnevaluated) {
-    String type = matrix == null ? Pixels.BYTE : Pixels.imageTypeOf(matrix);
+    String type = sampleType();
     IExpr data = matrix;
     if (data == null) {
       BufferedImage image = getBufferedImage();
@@ -226,6 +266,14 @@ final public class ImageExpr extends DataExpr<byte[]> {
    * @return <code>null</code> if <code>imageData</code> is neither
    */
   public static ImageExpr toImageExpr(IAST imageData, ImageOptions options) {
+    return toImageExpr(imageData, options, null);
+  }
+
+  /**
+   * Like {@link #toImageExpr(IAST, ImageOptions)}, with the samples read on the scale of the stated
+   * <code>sampleType</code> - <code>null</code> reads the type off the data.
+   */
+  public static ImageExpr toImageExpr(IAST imageData, ImageOptions options, String sampleType) {
     if (imageData.isGraphicsObject()) {
       int rowSize = 600;
       int colSize = 400;
@@ -255,17 +303,17 @@ final public class ImageExpr extends DataExpr<byte[]> {
     if (samples == null) {
       return null;
     }
-    BufferedImage bufferedImage =
-        Pixels.toBufferedImage(samples, space, Pixels.scaleOf(Pixels.imageTypeOf(imageData)));
+    String type = sampleType != null ? sampleType : Pixels.imageTypeOf(imageData);
+    BufferedImage bufferedImage = Pixels.toBufferedImage(samples, space, Pixels.scaleOf(type));
     if (bufferedImage == null) {
       return null;
     }
     if (!Pixels.describesPixels(space, samples.channels())) {
-      return new ImageExpr(bufferedImage, null, options);
+      return new ImageExpr(bufferedImage, null, options, sampleType);
     }
     // mark it for the matrix layout of OutputForm, so that ImageData prints one row per line
     imageData.isMatrix(true);
-    return new ImageExpr(bufferedImage, imageData, options);
+    return new ImageExpr(bufferedImage, imageData, options, sampleType);
   }
 
   /**

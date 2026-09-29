@@ -109,8 +109,7 @@ public class ImagePropertyFunctions {
       if (!(arg1 instanceof ImageExpr)) {
         return F.NIL;
       }
-      IAST matrix = ((ImageExpr) arg1).getMatrix();
-      return F.stringx(matrix == null ? Pixels.BYTE : Pixels.imageTypeOf(matrix));
+      return F.stringx(((ImageExpr) arg1).sampleType());
     }
 
     @Override
