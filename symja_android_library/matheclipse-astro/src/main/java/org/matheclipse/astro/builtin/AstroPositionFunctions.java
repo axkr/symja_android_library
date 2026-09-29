@@ -28,6 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TrackingCoordinates;
 
@@ -99,11 +100,14 @@ public class AstroPositionFunctions {
           date = AstroConvert.nowUTC();
         }
         Frame frame = AstroConvert.earthFrame();
-        CelestialBody body = CelestialBodyFactory.getBody(bodyName());
+        ExtendedPositionProvider body = AstroBodies.provider(bodyName());
         Vector3D position = body.getPosition(date, frame);
 
         String system = AstroConvert.optionString(options[0], "Horizon");
         if ("Horizon".equalsIgnoreCase(system)) {
+          if (point == null) {
+            point = AstroConvert.defaultObserver(engine);
+          }
           if (point == null) {
             // `1` called without a location; a GeoPosition argument or $GeoLocation is required.
             return Errors.printMessage(symbol(), "argillegal", F.List(ast, ast), engine);
@@ -263,27 +267,64 @@ public class AstroPositionFunctions {
       AbsoluteDate date = null;
       for (int i = 2; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
-        if (arg.isString()) {
-          frameName = arg.toString();
-          continue;
+        // a frame with its parameters, as the Wolfram Language writes it: {frame, date, location}
+        // in any order, or {frame, "Date" -> date, "Location" -> location}
+        IAST parts = arg.isList() && arg.argSize() >= 1 && arg.first().isString() ? (IAST) arg
+            : F.List(arg);
+        for (IExpr part : parts) {
+          if (part.isString()) {
+            String name = part.toString();
+            // a frame name, or else a date string - "July 1, 2022 12:00 am", as a DateRange of
+            // strings gives it; anything else is reported as an unknown frame below
+            AbsoluteDate stringDate = "Horizon".equalsIgnoreCase(name)
+                || celestialFrame(name) != null ? null : AstroConvert.toAbsoluteDate(part);
+            if (stringDate != null) {
+              date = stringDate;
+            } else {
+              frameName = name;
+            }
+            continue;
+          }
+          if (part.isRuleAST() && part.first().isString()) {
+            String key = part.first().toString();
+            if ("Date".equalsIgnoreCase(key) || "ObservationDate".equalsIgnoreCase(key)) {
+              AbsoluteDate ruleDate = AstroConvert.toAbsoluteDate(part.second());
+              if (ruleDate == null) {
+                return AstroConvert.reportUnreadableArgument(S.AstroPosition, part, ast, engine);
+              }
+              date = ruleDate;
+            } else if ("Location".equalsIgnoreCase(key)) {
+              GeodeticPoint rulePoint = AstroConvert.toGeodeticPoint(part.second());
+              if (rulePoint == null) {
+                return AstroConvert.reportUnreadableArgument(S.AstroPosition, part, ast, engine);
+              }
+              point = rulePoint;
+            }
+            // other frame parameters - aberration, refraction and the like - are accepted and
+            // ignored, as AstroGraphics does
+            continue;
+          }
+          GeodeticPoint argPoint = AstroConvert.toGeodeticPoint(part);
+          if (argPoint != null) {
+            point = argPoint;
+            continue;
+          }
+          AbsoluteDate argDate = AstroConvert.toAbsoluteDate(part);
+          if (argDate != null) {
+            date = argDate;
+            continue;
+          }
+          return AstroConvert.reportUnreadableArgument(S.AstroPosition, arg, ast, engine);
         }
-        GeodeticPoint argPoint = AstroConvert.toGeodeticPoint(arg);
-        if (argPoint != null) {
-          point = argPoint;
-          continue;
-        }
-        AbsoluteDate argDate = AstroConvert.toAbsoluteDate(arg);
-        if (argDate != null) {
-          date = argDate;
-          continue;
-        }
-        return AstroConvert.reportUnreadableArgument(S.AstroPosition, arg, ast, engine);
       }
       if (date == null) {
         date = AstroConvert.nowUTC();
       }
       try {
         if ("Horizon".equalsIgnoreCase(frameName)) {
+          if (point == null) {
+            point = AstroConvert.defaultObserver(engine);
+          }
           if (point == null) {
             return Errors.printMessage(S.AstroPosition, "argillegal", F.List(ast, ast), engine);
           }
@@ -377,10 +418,10 @@ public class AstroPositionFunctions {
       }
       try {
         Frame frame = FramesFactory.getGCRF();
-        Vector3D target = CelestialBodyFactory.getBody(targetName).getPosition(date, frame);
+        Vector3D target = AstroBodies.provider(targetName).getPosition(date, frame);
         Vector3D observer;
         if (observerName != null) {
-          observer = CelestialBodyFactory.getBody(observerName).getPosition(date, frame);
+          observer = AstroBodies.provider(observerName).getPosition(date, frame);
         } else if (point != null) {
           observer =
               AstroConvert.toTopocentricFrame(point).getPVCoordinates(date, frame).getPosition();

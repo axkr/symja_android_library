@@ -43,6 +43,12 @@ import org.orekit.time.TimeScalesFactory;
  * has to stay loadable so that the rest of the engine keeps working. Every astronomy evaluator
  * instead calls {@link #checkAvailable(ISymbol, EvalEngine)} first and returns the
  * <code>orekitdata</code> message when the files were not found.
+ *
+ * <p>
+ * The leap second and Earth orientation files are enough for frames and time scales at any date;
+ * only the JPL ephemerides have a hard range. Outside it the solar system bodies fall back to the
+ * Meeus theories of {@link org.matheclipse.astro.meeus}, see
+ * {@link org.matheclipse.astro.convert.FallbackBodyProvider} and {@link AstroFallback}.
  */
 public class AstroDataContext {
 
@@ -231,6 +237,7 @@ public class AstroDataContext {
    */
   public static boolean checkAvailable(ISymbol symbol, EvalEngine engine) {
     if (isAvailable()) {
+      AstroFallback.begin(symbol, engine);
       return true;
     }
     // The external Orekit data files are not available: `1`

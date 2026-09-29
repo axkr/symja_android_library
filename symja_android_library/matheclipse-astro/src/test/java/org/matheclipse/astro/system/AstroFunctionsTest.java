@@ -1,10 +1,10 @@
 package org.matheclipse.astro.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.junit.jupiter.api.Tag;
 
 /**
  * Values for the astronomy functions, checked against published tables where one exists and against
@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Tag;
  * <p>
  * Every date here lies inside the range of the bundled <code>orekit-data</code> files, which is
  * 1990 to 2149 for the DE 440 ephemerides and 1973 to late 2026 for the Earth orientation
- * parameters. Tests which are checked against a published value name the source in a comment.
+ * parameters, except in {@link #testMeeusFallback()}. Tests which are checked against a published
+ * value name the source in a comment.
  */
 public class AstroFunctionsTest extends AbstractTestCase {
 
@@ -46,6 +47,78 @@ public class AstroFunctionsTest extends AbstractTestCase {
   /** A four element date list whose hour is <code>hour</code>. */
   private static IAST dateSpec(double hour) {
     return F.List(F.C1, F.C1, F.C1, F.num(hour));
+  }
+
+  /**
+   * Outside the 1990-2149 range of the bundled JPL ephemerides the bodies fall back to the Meeus
+   * theories (with the astrofallback message); outside 1583-3000 and for eclipses the functions
+   * still decline with the orekitdata message.
+   */
+  @Test
+  public void testMeeusFallback() {
+    // the June solstice at Berlin in 1600 looks like the one in 2026: about 60.9 degrees
+    check("SunPosition(GeoPosition({52.52,13.405}), DateObject({1600,6,21,11,0,0}))", //
+        "{Quantity(176.5746,\"AngularDegrees\"),Quantity(60.93791,\"AngularDegrees\")}");
+    // in J2000 coordinates the New Year Sun has moved back by 500 years of precession, about 7
+    // degrees, from 281.3 degrees in 2000
+    check("SunPosition(DateObject({2500,1,1,12,0,0}), CelestialSystem->\"Equatorial\")", //
+        "{Quantity(274.4015,\"AngularDegrees\"),Quantity(-23.31454,\"AngularDegrees\")}");
+    check("MoonPosition(DateObject({1700,3,1,0,0,0}), CelestialSystem->\"Equatorial\")", //
+        "{Quantity(105.6713,\"AngularDegrees\"),Quantity(17.94449,\"AngularDegrees\")}");
+    check("Sunrise(GeoPosition({52.52,13.405}), DateObject({1650,6,21}))", //
+        "DateObject({1650,6,21,2,41,20.7601},Instant,Gregorian,0.0)");
+    // the full moon of 1950-01-04 07:48 UT
+    check("FullMoon(DateObject({1950,1,1}))", //
+        "DateObject({1950,1,4,7,48,24.86852},Instant,Gregorian,0.0)");
+    check("NewMoon(DateObject({2600,1,1}))", //
+        "DateObject({2600,1,7,11,27,15.83926},Instant,Gregorian,0.0)");
+
+    // before the Gregorian calendar and after 3000 there is no fallback
+    check("SunPosition(DateObject({1200,1,1,12,0,0}), CelestialSystem->\"Equatorial\")", //
+        "SunPosition(DateObject({1200,1,1,12,0,0},Instant,Gregorian,0.0),CelestialSystem->Equatorial)");
+    // eclipses and orbital elements are too sensitive for the Meeus theories
+    check("SolarEclipse(DateObject({1700,1,1}))", //
+        "SolarEclipse(DateObject({1700,1,1},Day))");
+    check("OrbitalElements(\"Mars\", \"SemimajorAxis\", DateObject({2300,1,1}))", //
+        "OrbitalElements(Mars,SemimajorAxis,DateObject({2300,1,1},Day))");
+  }
+
+  /**
+   * A function given no location stands at <code>$GeoLocation</code>. Here it is assigned; on the
+   * user's own machine it can also come from the <code>symja.geolocation</code> setting or the time
+   * zone (see <code>FindGeoLocation</code>), which this kernel - with the file system off - does
+   * not look at.
+   */
+  @Test
+  public void testDefaultObserver() {
+    // without a location there is nothing to stand on
+    check("SunPosition(DateObject({2026,6,21,11,0,0}))", //
+        "SunPosition(DateObject({2026,6,21,11,0,0},Instant,Gregorian,0.0))");
+    check("$GeoLocation = GeoPosition({52.52,13.405}); $GeoLocationSource", //
+        "User");
+    check(
+        "Sunrise(DateObject({2026,6,21})) == "
+            + "Sunrise(GeoPosition({52.52,13.405}), DateObject({2026,6,21}))", //
+        "True");
+    check(
+        "SunPosition(DateObject({2026,6,21,11,0,0})) == "
+            + "SunPosition(GeoPosition({52.52,13.405}), DateObject({2026,6,21,11,0,0}))", //
+        "True");
+    check(
+        "SiderealTime(DateObject({2026,6,21,11,0,0})) == "
+            + "SiderealTime(GeoPosition({52.52,13.405}), DateObject({2026,6,21,11,0,0}))", //
+        "True");
+    // a horizon chart needs somewhere to stand, and takes the same place
+    check(
+        "Cases(AstroGraphics(AstroReferenceFrame -> {\"Horizon\", "
+            + "DateObject({2026,9,25,20,0,0})}), Rule(MetaInformation, m_) :> m[\"Location\"], "
+            + "Infinity) == Cases(AstroGraphics(AstroReferenceFrame -> {\"Horizon\", "
+            + "DateObject({2026,9,25,20,0,0}), GeoPosition({52.52,13.405})}), "
+            + "Rule(MetaInformation, m_) :> m[\"Location\"], Infinity)", //
+        "True");
+    // unset again, the functions have no location to use
+    check("$GeoLocation =.; {$GeoLocationSource, SunPosition(DateObject({2026,6,21,11,0,0}))}", //
+        "{None,SunPosition(DateObject({2026,6,21,11,0,0},Instant,Gregorian,0.0))}");
   }
 
   @Test
@@ -148,6 +221,15 @@ public class AstroFunctionsTest extends AbstractTestCase {
         "0.501277");
     check("MoonPhase(DateObject({2026,6,29,23,57,24}))", //
         "0.998754");
+    // Meeus example 48.a: the bright limb on 1992 April 12 is at position angle 285.0 degrees
+    check("MoonPhase(DateObject({1992,4,12,0,0,0}), \"BrightLimbAngle\")", //
+        "Quantity(285.0464,\"AngularDegrees\")");
+    // a waxing Moon has its bright limb towards the west (about 270 degrees), a waning one
+    // towards the east (about 90 degrees)
+    check("MoonPhase(DateObject({2026,9,25,0,0,0}), \"BrightLimbAngle\")", //
+        "Quantity(250.4577,\"AngularDegrees\")");
+    check("MoonPhase(DateObject({2026,10,9,0,0,0}), \"BrightLimbAngle\")", //
+        "Quantity(107.1928,\"AngularDegrees\")");
   }
 
   @Test
@@ -199,6 +281,16 @@ public class AstroFunctionsTest extends AbstractTestCase {
     // TT is TAI plus a fixed 32.184 seconds
     check("TimeSystemConvert(DateObject({2026,1,1,0,0,0}), \"TT\")", //
         "DateObject({2026,1,1,0,1,9.184},Instant,Gregorian,0.0)");
+    // delta T = TT - UT1: measured, 63.83 s at the start of 2000 ...
+    check("TimeSystemConvert(DateObject({2000,1,1,0,0,0}), \"DeltaT\")", //
+        "Quantity(63.8285,\"Seconds\")");
+    check("TimeSystemConvert(DateObject({2026,1,1,0,0,0}), \"DeltaT\")", //
+        "Quantity(69.10986,\"Seconds\")");
+    // ... from the delta T table in 1700 and from the Meeus polynomial in 2500
+    check("TimeSystemConvert(DateObject({1700,1,1,0,0,0}), \"DeltaT\")", //
+        "Quantity(9.0,\"Seconds\")");
+    check("TimeSystemConvert(DateObject({2500,1,1,0,0,0}), \"DeltaT\")", //
+        "Quantity(1185.709,\"Seconds\")");
   }
 
   @Test
@@ -231,6 +323,47 @@ public class AstroFunctionsTest extends AbstractTestCase {
         "{52,31,12.0}");
     check("DMSString(52.52)", //
         "52d31m12.00s");
+  }
+
+  /**
+   * The documentation example of the Wolfram Language: bodies as entities, and the frame written
+   * with its parameters, {frame, date} or {frame, "Date" -> date, "Location" -> location}.
+   */
+  @Test
+  public void testAstroPositionEntitiesAndFrameSpecs() {
+    check(
+        "AstroPosition(Entity(\"Planet\", \"Mars\"), {\"Equatorial\", DateObject({2022,7,1})}) "
+            + "== AstroPosition(\"Mars\", \"Equatorial\", DateObject({2022,7,1}))", //
+        "True");
+    check("AstroPosition(Entity(\"Planet\", \"Mars\"), {\"Horizon\", "
+        + "\"Date\" -> DateObject({2022,7,1,22,0,0}), \"Location\" -> GeoPosition({52.52,13.405})}) "
+        + "== AstroPosition(\"Mars\", \"Horizon\", DateObject({2022,7,1,22,0,0}), "
+        + "GeoPosition({52.52,13.405}))", //
+        "True");
+    check(
+        "AstroPosition(Entity(\"Star\", \"Sirius\"), {\"Equatorial\", DateObject({2022,7,1})}) "
+            + "== AstroPosition(\"Sirius\", \"Equatorial\", DateObject({2022,7,1}))", //
+        "True");
+    // an entity of the wrong type names nothing
+    check("AstroPosition(Entity(\"Star\", \"Mars\"), {\"Equatorial\", DateObject({2022,7,1})})", //
+        "AstroPosition(Entity(Star,Mars),{Equatorial,DateObject({2022,7,1},Day)})");
+    check("AstroPosition(Entity(\"Planet\", \"Sirius\"), {\"Equatorial\", DateObject({2022,7,1})})", //
+        "AstroPosition(Entity(Planet,Sirius),{Equatorial,DateObject({2022,7,1},Day)})");
+    // DateRange of date strings gives date strings, "July 1, 2022 12:00 am", as in the Wolfram
+    // Language, and AstroPosition reads them
+    check(
+        "mars = AstroPosition(Entity(\"Planet\", \"Mars\"), {\"Equatorial\", #}) & /@ "
+            + "DateRange(\"1 Jul 2022\", \"1 July 2023\", \"Week\"); "
+            + "{Length(mars), MatchQ(mars, {{_Quantity, _Quantity, _Quantity}..}), "
+            + "mars[[1]] == AstroPosition(\"Mars\", \"Equatorial\", DateObject({2022,7,1}))}", //
+        "{53,True,True}");
+    // the path plotted: the {ra, dec, distance} results are positions, and the chart centres on
+    // them - Mars' retrograde loop in Taurus
+    check("Cases(AstroGraphics({Red, Point(AstroPosition(Entity(\"Planet\", \"Mars\"), "
+        + "{\"Equatorial\", #}) & /@ DateRange(\"1 Jul 2022\", \"1 July 2023\", \"Week\"))}, "
+        + "AstroReferenceFrame -> \"Equatorial\", AstroRange -> Quantity(60, \"AngularDegrees\")), "
+        + "Rule(MetaInformation, m_) :> Round(QuantityMagnitude(m[\"Center\"])), Infinity)", //
+        "{{81,24}}");
   }
 
   @Test
@@ -471,20 +604,195 @@ public class AstroFunctionsTest extends AbstractTestCase {
     // the chart is an ordinary Graphics, so the existing SVG pipeline draws it
     check("Head(AstroGraphics())", //
         "Graphics");
-    // one point per star down to the magnitude limit of a whole-sky chart
-    check("Count(AstroGraphics(), _Point, Infinity)", //
-        "5044");
+    // a whole-sky chart draws the naked eye stars to magnitude 4.5, about 950 as in the Wolfram
+    // Language; the twenty brightest named ones are drawn with their names in LabeledData
+    check(stars("AstroGraphics()"), //
+        "895");
+    // at a fixed date, since the Sun, the Moon and the planets name themselves first and a star
+    // whose name would run into one already placed goes without
+    check("Cases(AstroGraphics(AstroReferenceFrame -> DateObject({2026,9,25,20,0,0})), "
+        + "Annotation(g_,\"LabeledData\",_) :> "
+        + "Cases(DeleteCases(g, _Annotation), Text(Style(t_,___),__) :> t, Infinity), Infinity)", //
+        "{{Sirius,Canopus,Arcturus,Rigil Kentaurus,Vega,Capella,Rigel,Procyon,Achernar,Altair,"
+            + "Antares,Pollux,Fomalhaut,Deneb,Regulus,Adhara,Polaris}}");
+    // gathered into one Point per colour and half-magnitude size step rather than one per star
+    check("Count(AstroGraphics(), _Point, Infinity) < 100", //
+        "True");
     // a narrow view draws far fewer stars, not more - without the range filter the whole
     // catalogue lands off-canvas instead
     check(
-        "Count(AstroGraphics(AstroCenter->{83,0}, "
-            + "AstroRange->Quantity(10,\"AngularDegrees\")), _Point, Infinity)", //
-        "449");
+        stars(
+            "AstroGraphics(AstroCenter->{83,0}, " + "AstroRange->Quantity(10,\"AngularDegrees\"))"), //
+        "888");
     // an azimuthal projection shows one hemisphere, so about half the stars
     check(
-        "Count(AstroGraphics(AstroProjection->\"Orthographic\", "
-            + "AstroRange->Quantity(89,\"AngularDegrees\")), _Point, Infinity)", //
-        "2434");
+        stars("AstroGraphics(AstroProjection->\"Orthographic\", "
+            + "AstroRange->Quantity(89,\"AngularDegrees\"))"), //
+        "431");
+  }
+
+  /**
+   * The number of stars a chart draws: the coordinates of the <code>Point</code>s in its
+   * <code>AstroStars</code> layer, which holds one multi-point <code>Point</code> per colour and
+   * size step.
+   */
+  private static String stars(String chart) {
+    return "Total(Cases(" + chart + ", Annotation(g_,\"AstroStars\",_) :> "
+        + "Total(Cases(g, Point(p_) :> Length(p), Infinity)), Infinity))";
+  }
+
+  /**
+   * Fainter than magnitude 8.5 the stars come from the ASCC-2.5 catalogue of Night Vision, capped
+   * at the brightest 8000; every chart colours its stars by spectral class unless it is printed on
+   * white.
+   */
+  @Test
+  public void testAstroGraphicsDeepStars() {
+    String orion =
+        "AstroGraphics(AstroCenter->{83.8,-5.4}, " + "AstroRange->Quantity(1,\"AngularDegrees\"))";
+    // a telescope field goes down to magnitude 11.1 by itself; the view is a square, so the stars
+    // reach past the circle of the range into its corners, and a little beyond where the plot
+    // range clips them
+    check(stars(orion), //
+        "257");
+    check(
+        "Cases(" + orion + ", Rule(MetaInformation, m_) :> "
+            + "{m[\"MagnitudeLimit\"],m[\"StarCatalog\"]}, Infinity)", //
+        "{{11.1,ASCC-2.5}}");
+    // a wide field at magnitude 11 would hold 300000 stars; the brightest 8000 are drawn and the
+    // chart says how deep that reaches
+    String wide = "AstroGraphics(AstroCenter->{83.8,-5.4}, "
+        + "AstroRange->Quantity(30,\"AngularDegrees\"), AstroZoomLevel->11)";
+    check(stars(wide), //
+        "8000");
+    check(
+        "Cases(" + wide + ", Rule(MetaInformation, m_) :> m[\"EffectiveMagnitudeLimit\"], "
+            + "Infinity)", //
+        "{7.99}");
+    // the stars are coloured by spectral class - six of them are present on a naked eye chart -
+    // and plain dark on a white sky
+    check(
+        "Cases(AstroGraphics(), Annotation(g_,\"AstroStars\",_) :> "
+            + "Length(Union(Cases(g, _RGBColor, 1))), Infinity)", //
+        "{6}");
+    check(
+        "Cases(AstroGraphics(AstroBackground -> \"WhiteSky\"), Annotation(g_,\"AstroStars\",_) "
+            + ":> Union(Cases(g, _GrayLevel|_RGBColor, 1)), Infinity)", //
+        "{{GrayLevel(0.1)}}");
+  }
+
+  /**
+   * A dated chart shows the Sun, the Moon and the planets, farthest first, nested in LabeledData as
+   * AstroSolarSystem the way the Wolfram Language nests them; a horizon chart only those above the
+   * horizon. 2026-09-25 20:00 UTC is the evening before a full moon, with Saturn near opposition.
+   */
+  @Test
+  public void testAstroGraphicsSolarSystem() {
+    String dated = "AstroGraphics(AstroReferenceFrame -> DateObject({2026,9,25,20,0,0}))";
+    // the nearer bodies name themselves first; a name which would run into one of theirs is left
+    // out, as the Wolfram Language leaves it out
+    check(
+        "Cases(" + dated + ", Annotation(g_,\"AstroSolarSystem\",_) :> "
+            + "Cases(g, Text(t_,__) :> t, Infinity), Infinity)", //
+        "{{Pluto,Uranus,Mars,Mercury,Sun,Venus,Moon}}");
+    // planets are points, the Sun a disk, the Moon a dark disk with its lit part on top
+    check(
+        "Cases(" + dated + ", Annotation(g_,\"AstroSolarSystem\",_) :> "
+            + "{Count(g,_Point,Infinity),Count(g,_Disk,Infinity),Count(g,_Polygon,Infinity)}, "
+            + "Infinity)", //
+        "{{8,2,1}}");
+    check("Cases(" + dated + ", Rule(MetaInformation, m_) :> m[\"Ephemeris\"], Infinity)", //
+        "{JPL DE440}");
+    String horizon = "AstroGraphics(AstroReferenceFrame -> {\"Horizon\", "
+        + "DateObject({2026,9,25,20,0,0}), GeoPosition({52.52,13.405})})";
+    check(
+        "Cases(" + horizon + ", Annotation(g_,\"AstroSolarSystem\",_) :> "
+            + "Cases(g, Text(t_,__) :> t, Infinity), Infinity)", //
+        "{{Pluto,Neptune,Uranus,Saturn,Moon}}");
+    // a horizon chart is the sky at its instant, so it has the solar system even when the instant
+    // is left to be now
+    check(
+        "Length(Cases(AstroGraphics(AstroReferenceFrame -> {\"Horizon\", "
+            + "GeoPosition({52.52,13.405})}), Annotation(_,\"AstroSolarSystem\",_), Infinity))", //
+        "1");
+    // outside the JPL ephemerides the Meeus theories place the bodies
+    check(
+        "Cases(AstroGraphics(AstroReferenceFrame -> DateObject({1700,9,25,20,0,0})), "
+            + "Rule(MetaInformation, m_) :> m[\"Ephemeris\"], Infinity)", //
+        "{Meeus}");
+    // as in the Wolfram Language an undated chart is the sky now, the solar system included
+    check("Length(Cases(AstroGraphics(), Annotation(_,\"AstroSolarSystem\",_), Infinity))", //
+        "1");
+  }
+
+  /**
+   * A zoomed chart shows what the Wolfram Language shows at that scale: all the constellations in
+   * view, the names or Bayer letters of the brighter stars and the Messier, NGC and IC objects with
+   * the symbol of their kind - the Orion field of the Wolfram Language documentation.
+   */
+  @Test
+  public void testAstroGraphicsZoomedDetail() {
+    String betelgeuse = "AstroGraphics(Entity(\"Star\", \"Betelgeuse\"), "
+        + "AstroRange -> Quantity(20, \"AngularDegrees\"), AstroReferenceFrame -> \"Equatorial\")";
+    check(
+        "Intersection(Flatten(Cases(" + betelgeuse + ", Annotation(g_,\"Constellations\",_) :> "
+            + "Cases(g, Text(Style(t_,___),__) :> t, Infinity), Infinity)), "
+            + "{\"Orion\",\"Gemini\"})", //
+        "{Gemini,Orion}");
+    check("Intersection(Flatten(Cases(" + betelgeuse + ", Annotation(g_,\"LabeledData\",_) :> "
+        + "Cases(g, Text(Style(t_,___),__) :> t, Infinity), Infinity)), "
+        + "{\"Meissa\",\"Bellatrix\",\"Rigel\",\"Saiph\",\"Alhena\",\"\u03bb Gem\",\"\u03c4 Ori\"})", //
+        "{Alhena,Bellatrix,Meissa,Rigel,Saiph,λ Gem,τ Ori}");
+    // clusters as dashed circles, nebulae as squares; the name of M42 gives way to those of the
+    // stars of the sword
+    check(
+        "Intersection(Flatten(Cases(" + betelgeuse + ", Annotation(g_,\"DeepSkyObjects\",_) :> "
+            + "Cases(g, Text(Style(t_,___),__) :> t, Infinity), Infinity)), "
+            + "{\"M35\",\"M42\",\"NGC 1909\",\"IC 434\"})", //
+        "{IC 434,M35,NGC 1909}");
+    check(
+        "Cases(" + betelgeuse + ", Annotation(g_,\"DeepSkyObjects\",_) :> "
+            + "{Count(g,_Rectangle,Infinity) > 3, Count(g,_Dashing,Infinity) > 10}, Infinity)", //
+        "{{True,True}}");
+    // the square is what is shown
+    check("Cases(" + betelgeuse + ", Rule(PlotRangeClipping, c_) :> c, Infinity)", //
+        "{True}");
+  }
+
+  /**
+   * Objects can be named by entity as well as by string. One standing on its own is drawn as a
+   * labelled marker, and an automatic centre follows the named objects, so a zoomed chart shows
+   * what it was asked for.
+   */
+  @Test
+  public void testAstroGraphicsEntities() {
+    String betelgeuse = "AstroGraphics(Entity(\"Star\", \"Betelgeuse\"), "
+        + "AstroRange -> Quantity(20, \"AngularDegrees\"), AstroReferenceFrame -> \"Equatorial\")";
+    // Betelgeuse: 5h55m10s, +7 24' 25"
+    check("Cases(" + betelgeuse + ", Rule(MetaInformation, m_) :> m[\"Center\"], Infinity)", //
+        "{{Quantity(88.7929,\"AngularDegrees\"),Quantity(7.4071,\"AngularDegrees\")}}");
+    // the point and the name, in a colour that shows on the night sky
+    check("Last(First(" + betelgeuse + "))", //
+        "{RGBColor(1.0,0.45,0.35),{Point({0.0,0.0}),"
+            + "Text(Betelgeuse,{0.0,0.0},{-1.15,-1.15})}}");
+    // inside a primitive an entity is a position; the user's own colour comes after the default
+    check(
+        "Cases(AstroGraphics({Red, Point(Entity(\"Star\",\"Rigel\"))}, "
+            + "AstroRange -> Quantity(20, \"AngularDegrees\")), "
+            + "{RGBColor(__), {Red, p_Point}} :> p, Infinity)", //
+        "{Point({0.0,0.0})}");
+    // an explicit centre wins over the named objects
+    check(
+        "Cases(AstroGraphics(Entity(\"Star\", \"Rigel\"), "
+            + "AstroCenter -> Entity(\"Star\",\"Betelgeuse\"), "
+            + "AstroRange -> Quantity(20, \"AngularDegrees\")), "
+            + "Rule(MetaInformation, m_) :> m[\"Center\"], Infinity)", //
+        "{{Quantity(88.7929,\"AngularDegrees\"),Quantity(7.4071,\"AngularDegrees\")}}");
+    // an unknown object is reported and the chart stays unevaluated
+    check(
+        "AstroGraphics(Entity(\"Star\", \"Nonexistent\"), "
+            + "AstroRange -> Quantity(20, \"AngularDegrees\"))", //
+        "AstroGraphics(Entity(Star,Nonexistent),AstroRange->Quantity(20,\"AngularDegrees\"))");
   }
 
   @Test
@@ -497,28 +805,46 @@ public class AstroFunctionsTest extends AbstractTestCase {
 
   @Test
   public void testAstroGraphicsLayers() {
-    // every group of primitives is a named layer, so a chart can be taken apart again
+    // every group of primitives is a named layer, so a chart can be taken apart again - the
+    // layers of the Wolfram Language, AstroBackground and AstroGridLines empty unless asked for
     check("Cases(AstroGraphics(), Annotation(_,n_,_) :> n, Infinity)", //
-        "{AstroBackground,MainPlanes,AstroGridLines,Constellations,DeepSkyObjects,AstroStars}");
+        "{AstroBackground,AstroGridLines,MainPlanes,Constellations,AstroStars,AstroSolarSystem,"
+            + "LabeledData}");
     // Symja's own namespace
     check("Union(Cases(AstroGraphics(), Annotation(_,_,ns_) :> ns, Infinity))", //
         "{SymjaAstroGraphics}");
     // Annotation renders its first argument and ignores the rest, so the stars are still drawn
+    check(stars("AstroGraphics()"), //
+        "895");
+    // the main planes carry their scales: 24 hours on the equator, the months on the ecliptic and
+    // every 45 degrees of galactic longitude
     check(
-        "Count(Cases(AstroGraphics(), Annotation(g_,\"AstroStars\",_) :> g, Infinity), "
-            + "_Point, Infinity)", //
-        "5044");
-    // the deep sky objects are circles rather than points, so an extended object does not read
-    // as one more star
-    check("Count(AstroGraphics(), _Circle, Infinity)", //
-        "206");
-    // the catalogue records the Lynds opacity class of a dark nebula in the same field as a
-    // magnitude, and writes an unknown magnitude as 999 - neither is a brightness, and taking
-    // them for one used to admit two thousand objects to a naked eye chart
+        "Length(Cases(AstroGraphics(), Annotation(g_,\"MainPlanes\",_) :> "
+            + "Cases(g, Text(t_,__) :> t, Infinity), Infinity)[[1]])", //
+        "44");
+    // the Milky Way, the grid and the constellations are opt-in, as in the Wolfram Language
     check(
-        "Count(AstroGraphics(AstroCenter->{83.8,-5.4}, "
-            + "AstroRange->Quantity(12,\"AngularDegrees\")), _Circle, Infinity)", //
-        "18");
+        "Cases(AstroGraphics(), Annotation(g_,\"AstroBackground\"|\"AstroGridLines\""
+            + "|\"Constellations\",_) :> g, Infinity)", //
+        "{{},{},{}}");
+    // the Milky Way is one smooth raster, the grid 12 meridians and 11 parallels
+    check("Map(Length, Cases(AstroGraphics(AstroBackground -> \"GalacticSky\", "
+        + "AstroGridLines -> 12), Annotation(g_,\"AstroBackground\"|\"AstroGridLines\",_) :> g, "
+        + "Infinity))", //
+        "{1,25}");
+    // a named constellation is drawn on any chart and centres it - on a wide one it is the only
+    // constellation drawn
+    String orion = "AstroGraphics(Entity(\"Constellation\", \"Orion\"), "
+        + "AstroRange -> Quantity(70, \"AngularDegrees\"))";
+    check(
+        "Cases(" + orion + ", Annotation(g_,\"Constellations\",_) :> "
+            + "Cases(g, Text(t_,__) :> t, Infinity), Infinity)", //
+        "{{Orion}}");
+    // the four figure polylines of Orion in the catalogue, and its IAU boundary
+    check(
+        "Count(Cases(" + orion + ", Annotation(g_,\"Constellations\",_) :> g, Infinity), "
+            + "_Line, Infinity)", //
+        "5");
   }
 
   @Test
@@ -528,13 +854,19 @@ public class AstroFunctionsTest extends AbstractTestCase {
     // the frame is now honoured rather than being read only for its date
     check("Cases(" + horizon + ", Rule(MetaInformation, m_) :> m[\"ReferenceFrame\"], Infinity)", //
         "{Horizon}");
-    // a horizon chart is a planisphere: zenith centred, ninety degrees to the horizon
+    // a horizon chart is a planisphere: zenith centred, ninety degrees to the horizon, and
+    // stereographic as in the Wolfram Language, which puts the horizon at radius 2
     check("Cases(" + horizon + ", Rule(MetaInformation, m_) :> m[\"Projection\"], Infinity)", //
-        "{LambertAzimuthal}");
+        "{Stereographic}");
+    // with the compass directions along the horizon
+    check("Cases(" + horizon + ", Annotation(g_,\"MainPlanes\",_) :> "
+        + "Intersection(Cases(g, Text(Style(t_,___),__) :> t, Infinity), {\"N\",\"NE\",\"E\",\"SE\",\"S\",\"SW\",\"W\",\"NW\"}), "
+        + "Infinity)", //
+        "{{E,N,NE,NW,S,SE,SW,W}}");
     check("Cases(" + horizon + ", Rule(MetaInformation, m_) :> m[\"Center\"], Infinity)", //
         "{{Quantity(0.0,\"AngularDegrees\"),Quantity(90.0,\"AngularDegrees\")}}");
     // half the sky is below the horizon and is not drawn
-    check("Count(" + horizon + ", _Point, Infinity) < Count(AstroGraphics(), _Point, Infinity)", //
+    check(stars(horizon) + " < " + stars("AstroGraphics()"), //
         "True");
     // the galactic frame has no Orekit frame behind it, so it is worth checking it resolves
     check(
@@ -543,11 +875,113 @@ public class AstroFunctionsTest extends AbstractTestCase {
         "{Galactic}");
     check("Head(AstroGraphics(AstroReferenceFrame -> \"Ecliptic\"))", //
         "Graphics");
-    // a horizon frame with nowhere to stand reports and stays unevaluated rather than guessing
-    check("AstroGraphics(AstroReferenceFrame -> \"Horizon\")", //
-        "AstroGraphics(AstroReferenceFrame->Horizon)");
+    // a horizon frame with nowhere known to stand stands at GeoPosition({0, 0}), as in the
+    // Wolfram Language
+    check(
+        "Cases(AstroGraphics(AstroReferenceFrame -> \"Horizon\"), "
+            + "Rule(MetaInformation, m_) :> m[\"Location\"], Infinity)", //
+        "{GeoPosition({0.0,0.0,0.0})}");
     check("AstroGraphics(AstroReferenceFrame -> \"Nonsense\")", //
         "AstroGraphics(AstroReferenceFrame->Nonsense)");
+  }
+
+  /**
+   * With a location on record a plain AstroGraphics() is the sky above it, now, as in the Wolfram
+   * Language; asking for objects, a centre or a range asks for a chart of that part of the sky.
+   */
+  @Test
+  public void testAstroGraphicsSkyAbove() {
+    check(
+        "($GeoLocation = GeoPosition({52.52,13.405}); "
+            + "Cases(AstroGraphics(), Rule(MetaInformation, m_) :> "
+            + "{m[\"ReferenceFrame\"], m[\"Projection\"], m[\"MagnitudeLimit\"]}, Infinity))", //
+        "{{Horizon,Stereographic,4.5}}");
+    check(
+        "($GeoLocation = GeoPosition({52.52,13.405}); "
+            + "Cases(AstroGraphics(Entity(\"Constellation\", \"Orion\")), "
+            + "Rule(MetaInformation, m_) :> m[\"ReferenceFrame\"], Infinity))", //
+        "{ICRS}");
+    check(
+        "($GeoLocation = GeoPosition({52.52,13.405}); "
+            + "Cases(AstroGraphics(AstroRange -> Quantity(30, \"AngularDegrees\")), "
+            + "Rule(MetaInformation, m_) :> m[\"ReferenceFrame\"], Infinity))", //
+        "{ICRS}");
+  }
+
+  /**
+   * The planisphere looks like the charts of the Wolfram Language documentation: a black disk of
+   * sky in a slate ground, reaching 4.5 degrees below the horizon as the Wolfram Language does, and
+   * the planes' scales turned to run along the lines.
+   */
+  @Test
+  public void testAstroGraphicsGround() {
+    String sky = "AstroGraphics(AstroReferenceFrame -> {\"Horizon\", "
+        + "DateObject({2026,6,15,15,0,0},\"Instant\",\"Gregorian\",0.), GeoPosition({40.11,-88.24})})";
+    check("Cases(" + sky + ", Annotation(_,n_,_) :> n, Infinity)", //
+        "{AstroBackground,AstroGridLines,MainPlanes,Constellations,AstroStars,AstroSolarSystem,"
+            + "LabeledData,AstroGround}");
+    // the ground is the square with the sky cut out of it, laid over the sky at 0.78 opacity
+    check(
+        "Cases(" + sky + ", Annotation(g_,\"AstroGround\",_) :> "
+            + "{Cases(g, _Opacity), Cases(g, Polygon(_Rule) :> True)}, Infinity)", //
+        "{{{Opacity(0.78)},{True}}}");
+    // the stereographic radius of an altitude of -4.5 degrees is 2 Tan(47.25 Degree)
+    check(
+        "Cases(" + sky + ", Rule(PlotRange, {{a_,b_},_}) :> "
+            + "Abs(b - 2*Tan(47.25*Degree)) < 0.01, Infinity)", //
+        "{True}");
+    // the scales are Text with a direction, so they follow the lines
+    check(
+        "Cases(" + sky + ", Annotation(g_,\"MainPlanes\",_) :> "
+            + "Count(g, Text(_,_,_,{_?NumberQ,_?NumberQ}), Infinity) > 20, Infinity)", //
+        "{True}");
+    // an equatorial chart has no horizon, and so no ground
+    check("Cases(AstroGraphics(AstroCenter -> {0,0}), Annotation(_,\"AstroGround\",_), Infinity)", //
+        "{}");
+  }
+
+  /**
+   * The documentation example of the Wolfram Language. With no location known, a horizon chart
+   * stands at GeoPosition({0, 0}), as the Wolfram Language's own chart does, rather than failing;
+   * the Milky Way is a glow painted cell by cell, bright near the galactic centre and nothing near
+   * the galactic poles, and hidden below the horizon.
+   */
+  @Test
+  public void testAstroGraphicsGalacticSky() {
+    String example = "AstroGraphics(AstroReferenceFrame -> {\"Horizon\", "
+        + "DateObject({2022,10,23,15,0,0})}, AstroBackground -> \"GalacticSky\")";
+    check(
+        "Cases(" + example + ", Rule(MetaInformation, m_) :> "
+            + "{m[\"ReferenceFrame\"], m[\"Location\"]}, Infinity)", //
+        "{{Horizon,GeoPosition({0.0,0.0,0.0})}}");
+    check(
+        "Cases(" + example + ", Annotation(g_,\"AstroBackground\",_) :> "
+            + "Cases(g, Raster(c_,__) :> Dimensions(c), Infinity), Infinity)", //
+        "{{{200,200,4}}}");
+  }
+
+  /**
+   * The Wolfram Language example of Venus passing Jupiter on 2065-11-22, seen from the south pole
+   * in a view 0.04 degrees across: the date with TimeZone -> 0 and a fractional hour, a plot range
+   * that small, the planets as disks of their true size, and the light time, without which Venus
+   * misses Jupiter by 20 arcseconds.
+   */
+  @Test
+  public void testAstroGraphicsVenusJupiter() {
+    String chart = "AstroGraphics(Entity(\"Planet\", \"Jupiter\"), AstroReferenceFrame -> "
+        + "{\"Equatorial\", DateObject({2065, 11, 22, 12.75, 0, 0}, TimeZone -> 0), "
+        + "GeoPosition({-90, 0})}, AstroRange -> Quantity(0.02, \"AngularDegrees\"))";
+    check(
+        "Cases(" + chart + ", Annotation(g_,\"AstroSolarSystem\",_) :> "
+            + "{Count(g, _Disk, Infinity), Count(g, _Polygon, Infinity)}, Infinity)", //
+        "{{2,2}}");
+    // the disks of Jupiter and Venus overlap: the distance of their centres is less than the sum
+    // of their radii
+    check(
+        "Cases(" + chart + ", Annotation(g_,\"AstroSolarSystem\",_) :> "
+            + "Apply(EuclideanDistance(#1[[1]], #2[[1]]) < #1[[2]] + #2[[2]] &, "
+            + "Cases(g, Disk(c_, r_) :> {c, r}, Infinity)), Infinity)", //
+        "{True}");
   }
 
   @Test
@@ -591,16 +1025,22 @@ public class AstroFunctionsTest extends AbstractTestCase {
     check(
         "Cases(AstroGraphics(AstroBackground -> \"BlackSky\"), Rule(Background, b_) :> b, "
             + "Infinity)", //
-        "{GrayLevel(0.06)}");
+        "{GrayLevel(0.0)}");
+    // a colour is the colour of the sky
+    check(
+        "Cases(AstroGraphics(AstroBackground -> RGBColor(0,0,0.2)), Rule(Background, b_) :> b, "
+            + "Infinity)", //
+        "{RGBColor(0,0,0.2)}");
   }
 
   @Test
   public void testAstroGraphicsMetaInformation() {
     // a chart records how it was made
     check("Sort(Keys(Cases(AstroGraphics(), Rule(MetaInformation, m_) :> m, Infinity)[[1]]))", //
-        "{Center,Date,Location,MagnitudeLimit,Projection,Range,ReferenceFrame}");
+        "{Center,Date,EffectiveMagnitudeLimit,Location,MagnitudeLimit,Projection,Range,"
+            + "ReferenceFrame,StarCatalog}");
     check("Cases(AstroGraphics(), Rule(MetaInformation, m_) :> m[\"MagnitudeLimit\"], Infinity)", //
-        "{6.0}");
+        "{4.5}");
     check("Cases(AstroGraphics(), Rule(MetaInformation, m_) :> m[\"Location\"], Infinity)", //
         "{None}");
   }
@@ -657,9 +1097,13 @@ public class AstroFunctionsTest extends AbstractTestCase {
         "StarData(\"Polaris\", \"Altitude\", GeoPosition({52.52,13.405}), "
             + "DateObject({2026,1,15,22,0,0}))", //
         "Quantity(52.89931,\"AngularDegrees\")");
-    // the astrophysical properties need a catalogue which is not bundled
-    check("StarData(\"Sirius\", \"SpectralClass\")", //
-        "StarData(Sirius,SpectralClass)");
+    // the spectral class comes from the ASCC-2.5 star database of Night Vision
+    check(
+        "StarData({\"Sirius\",\"Vega\",\"Betelgeuse\",\"Arcturus\",\"Rigel\"}, \"SpectralClass\")", //
+        "{A1,A0,M2,K2,B8}");
+    // the other astrophysical properties need a catalogue which is not bundled
+    check("StarData(\"Sirius\", \"Mass\")", //
+        "StarData(Sirius,Mass)");
     check("StarData(\"Nonexistent\", \"Name\")", //
         "StarData(Nonexistent,Name)");
   }
@@ -754,10 +1198,60 @@ public class AstroFunctionsTest extends AbstractTestCase {
   }
 
   /**
-   * The ground truth the frame was settled against: WMA's <code>HelioCoordinates</code> for Mars at
-   * one instant, measured 2026-09-18, which this matches to about 150 km. The ecliptic is the one
-   * of the date asked for - pinned at J2000 the vector stays turned by the precession since then
-   * and lands 0.014 astronomical units away.
+   * The observed properties: geometry from the ephemerides, magnitude and size formulas from Meeus
+   * via Night Vision. Venus on 1992-12-20 is Meeus example 41.a: magnitude -4.2, phase angle 72.96
+   * degrees, 0.910947 AU from the Earth and 0.724604 AU from the Sun.
+   */
+  @Test
+  public void testPlanetDataObserved() {
+    check("PlanetData(\"Properties\")", //
+        "{AngularDiameter,ApparentMagnitude,DistanceFromEarth,DistanceFromSun,HelioCoordinates,"
+            + "IlluminationFraction,PhaseAngle}");
+    check("PlanetData(\"Venus\", {\"ApparentMagnitude\", DateObject({1992,12,20})})", //
+        "-4.21679");
+    check("PlanetData(\"Venus\", {\"PhaseAngle\", DateObject({1992,12,20})})", //
+        "Quantity(72.96186,\"AngularDegrees\")");
+    check("PlanetData(\"Venus\", {\"IlluminationFraction\", DateObject({1992,12,20})})", //
+        "0.646504");
+    check("PlanetData(\"Venus\", {\"DistanceFromEarth\", DateObject({1992,12,20})})", //
+        "Quantity(0.910841,\"AstronomicalUnit\")");
+    check("PlanetData(\"Venus\", {\"DistanceFromSun\", DateObject({1992,12,20})})", //
+        "Quantity(0.724602,\"AstronomicalUnit\")");
+    check("PlanetData(\"Venus\", {\"AngularDiameter\", DateObject({1992,12,20})})", //
+        "Quantity(18.46645,\"Arcseconds\")");
+    // Mars at its closest approach of 2003 and Jupiter at the opposition of January 2026
+    check("PlanetData(\"Mars\", {\"ApparentMagnitude\", DateObject({2003,8,28})})", //
+        "-2.88338");
+    check("PlanetData(\"Jupiter\", {\"ApparentMagnitude\", DateObject({2026,1,10})})", //
+        "-2.6806");
+    check("PlanetData(\"Jupiter\", {\"AngularDiameter\", DateObject({2026,1,10})})", //
+        "Quantity(46.52434,\"Arcseconds\")");
+    // Saturn's rings are nearly edge on in 2025-2026, which leaves the planet fainter
+    check("PlanetData(\"Saturn\", {\"ApparentMagnitude\", DateObject({2026,9,21})})", //
+        "0.364164");
+    // what does not apply to a body is Missing
+    check("PlanetData(\"Earth\", {\"ApparentMagnitude\", DateObject({2003,8,28})})", //
+        "Missing(NotApplicable)");
+    check("PlanetData(\"Earth\", {\"DistanceFromSun\", DateObject({2003,8,28})})", //
+        "Quantity(1.01031,\"AstronomicalUnit\")");
+    // the Sun and the Moon at perihelion and at the perigee full moon of 2026-01-03, both about
+    // 32.5 and 33 minutes of arc
+    check("AstronomicalData(\"Sun\", {\"ApparentMagnitude\", DateObject({2026,1,3})})", //
+        "-26.77656");
+    check("AstronomicalData(\"Sun\", {\"AngularDiameter\", DateObject({2026,1,3})})", //
+        "Quantity(1951.848,\"Arcseconds\")");
+    check("AstronomicalData(\"Moon\", {\"AngularDiameter\", DateObject({2026,1,3})})", //
+        "Quantity(1983.932,\"Arcseconds\")");
+    check("AstronomicalData(\"Moon\", {\"ApparentMagnitude\", DateObject({2026,1,3})})", //
+        "Missing(NotApplicable)");
+    check("AstronomicalData(\"Pluto\", {\"ApparentMagnitude\", DateObject({2026,1,3})})", //
+        "14.54846");
+  }
+
+  /**
+   * <code>HelioCoordinates</code> for Mars at one instant, measured 2026-09-18, which this matches
+   * to about 150 km. The ecliptic is the one of the date asked for - pinned at J2000 the vector
+   * stays turned by the precession since then and lands 0.014 astronomical units away.
    */
   @Test
   public void testPlanetDataAgreesWithWMA() {

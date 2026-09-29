@@ -92,7 +92,7 @@ public class AstroFindEventFunctions {
    * body's motion during it, far below the accuracy of the ephemerides.
    */
   static Vector3D apparentPosition(String bodyName, AbsoluteDate date, Frame frame) {
-    PVCoordinatesProvider body = CelestialBodyFactory.getBody(bodyName);
+    PVCoordinatesProvider body = AstroBodies.provider(bodyName);
     Vector3D position = body.getPosition(date, frame);
     for (int i = 0; i < 2; i++) {
       double lightTime = position.getNorm() / Constants.SPEED_OF_LIGHT;
@@ -113,30 +113,30 @@ public class AstroFindEventFunctions {
   /** The angle between a body and the Sun seen from the Earth, in <code>[0, pi]</code>. */
   static double separationFromSun(String bodyName, AbsoluteDate date) {
     Frame frame = FramesFactory.getGCRF();
-    Vector3D body = CelestialBodyFactory.getBody(bodyName).getPosition(date, frame);
-    Vector3D sun = CelestialBodyFactory.getSun().getPosition(date, frame);
+    Vector3D body = AstroBodies.provider(bodyName).getPosition(date, frame);
+    Vector3D sun = AstroBodies.sun().getPosition(date, frame);
     return Vector3D.angle(body, sun);
   }
 
   /** The angle between two bodies seen from the centre of the Earth, in radians. */
   static double separation(String firstName, String secondName, AbsoluteDate date) {
     Frame frame = FramesFactory.getGCRF();
-    Vector3D first = CelestialBodyFactory.getBody(firstName).getPosition(date, frame);
-    Vector3D second = CelestialBodyFactory.getBody(secondName).getPosition(date, frame);
+    Vector3D first = AstroBodies.provider(firstName).getPosition(date, frame);
+    Vector3D second = AstroBodies.provider(secondName).getPosition(date, frame);
     return Vector3D.angle(first, second);
   }
 
   /** The distance from the Earth's centre to a body, in meters. */
   static double geocentricDistance(String bodyName, AbsoluteDate date) {
-    return CelestialBodyFactory.getBody(bodyName)
+    return AstroBodies.provider(bodyName)
         .getPosition(date, FramesFactory.getGCRF()).getNorm();
   }
 
   /** The distance from a body to the body it orbits, in meters. */
   static double primaryDistance(String bodyName, AbsoluteDate date) {
     Frame frame = FramesFactory.getGCRF();
-    Vector3D body = CelestialBodyFactory.getBody(bodyName).getPosition(date, frame);
-    Vector3D primary = CelestialBodyFactory.getBody(AstroBodies.primaryOf(bodyName))
+    Vector3D body = AstroBodies.provider(bodyName).getPosition(date, frame);
+    Vector3D primary = AstroBodies.provider(AstroBodies.primaryOf(bodyName))
         .getPosition(date, frame);
     return body.subtract(primary).getNorm();
   }
@@ -202,6 +202,10 @@ public class AstroFindEventFunctions {
           continue;
         }
         return AstroConvert.reportUnreadableArgument(S.FindAstroEvent, arg, ast, engine);
+      }
+      if (point == null) {
+        // only the rise, set and equilux events look at it
+        point = AstroConvert.defaultObserver(engine);
       }
       if (date == null) {
         date = AstroConvert.nowUTC();

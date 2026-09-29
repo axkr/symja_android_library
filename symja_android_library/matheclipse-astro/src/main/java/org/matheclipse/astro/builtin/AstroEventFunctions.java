@@ -8,6 +8,7 @@ import org.matheclipse.astro.convert.AstroConvert;
 import org.matheclipse.astro.convert.AstroObserver;
 import org.matheclipse.astro.convert.ReferenceAltitudes;
 import org.matheclipse.astro.data.AstroDataContext;
+import org.matheclipse.astro.meeus.MoonTheory;
 import org.matheclipse.astro.solve.DateRootFinder;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -86,7 +87,7 @@ public class AstroEventFunctions {
     AbsoluteDate date;
     IExpr rejected;
 
-    static Arguments of(IAST ast, int from, int argSize) {
+    static Arguments of(IAST ast, int from, int argSize, EvalEngine engine) {
       Arguments arguments = new Arguments();
       for (int i = from; i <= argSize; i++) {
         IExpr arg = ast.get(i);
@@ -105,6 +106,9 @@ public class AstroEventFunctions {
       }
       if (arguments.date == null) {
         arguments.date = AstroConvert.nowUTC();
+      }
+      if (arguments.point == null) {
+        arguments.point = AstroConvert.defaultObserver(engine);
       }
       return arguments;
     }
@@ -149,7 +153,7 @@ public class AstroEventFunctions {
   /** The next rise, set or culmination of a body. */
   static AbsoluteDate riseSetDate(String bodyName, String eventType, GeodeticPoint point,
       AbsoluteDate date, ReferenceAltitudes reference, int direction) {
-    return riseSetDateOf(CelestialBodyFactory.getBody(bodyName), AstroBodies.meanRadius(bodyName),
+    return riseSetDateOf(AstroBodies.provider(bodyName), AstroBodies.meanRadius(bodyName),
         eventType, point, date, reference, direction);
   }
 
@@ -230,7 +234,7 @@ public class AstroEventFunctions {
       if (!AstroDataContext.checkAvailable(symbol(), engine)) {
         return F.NIL;
       }
-      Arguments arguments = Arguments.of(ast, 1, argSize);
+      Arguments arguments = Arguments.of(ast, 1, argSize, engine);
       if (arguments.rejected != null) {
         return AstroConvert.reportUnreadableArgument(symbol(), arguments.rejected, ast, engine);
       }
@@ -301,7 +305,7 @@ public class AstroEventFunctions {
         return Errors.printMessage(S.AstroRiseSet, "astrobody", F.List(ast.arg1(), ast), engine);
       }
       IExpr eventSpec = argSize >= 2 ? ast.arg2() : F.List(F.stringx("Rise"), F.stringx("Set"));
-      Arguments arguments = Arguments.of(ast, 3, argSize);
+      Arguments arguments = Arguments.of(ast, 3, argSize, engine);
       if (arguments.rejected != null) {
         return AstroConvert.reportUnreadableArgument(S.AstroRiseSet, arguments.rejected, ast,
             engine);
@@ -381,7 +385,7 @@ public class AstroEventFunctions {
       if (!AstroDataContext.checkAvailable(S.DaylightQ, engine)) {
         return F.NIL;
       }
-      Arguments arguments = Arguments.of(ast, 1, argSize);
+      Arguments arguments = Arguments.of(ast, 1, argSize, engine);
       if (arguments.rejected != null || arguments.point == null) {
         return F.NIL;
       }
@@ -390,7 +394,7 @@ public class AstroEventFunctions {
         return Errors.printMessage(S.DaylightQ, "astrorefalt", F.List(options[0], ast), engine);
       }
       try {
-        AstroObserver observer = new AstroObserver(arguments.point, CelestialBodyFactory.getSun(),
+        AstroObserver observer = new AstroObserver(arguments.point, AstroBodies.sun(),
             AstroBodies.meanRadius(CelestialBodyFactory.SUN));
         return observer.elevationExcess(arguments.date, reference) > 0.0 ? S.True : S.False;
       } catch (OrekitException oex) {
@@ -416,11 +420,25 @@ public class AstroEventFunctions {
    */
   static double illuminationFraction(AbsoluteDate date) {
     Frame frame = FramesFactory.getGCRF();
-    Vector3D moon = CelestialBodyFactory.getMoon().getPosition(date, frame);
-    Vector3D sun = CelestialBodyFactory.getSun().getPosition(date, frame);
+    Vector3D moon = AstroBodies.moon().getPosition(date, frame);
+    Vector3D sun = AstroBodies.sun().getPosition(date, frame);
     // both vectors start at the Moon: one towards the Sun, one towards the observer on Earth
     double phaseAngle = Vector3D.angle(sun.subtract(moon), moon.negate());
     return (1.0 + FastMath.cos(phaseAngle)) / 2.0;
+  }
+
+  /**
+   * The position angle of the midpoint of the Moon's bright limb, measured from the north point of
+   * the disk towards the east, in radians (Meeus, chapter 48, as ported from Night Vision). It is
+   * the direction of the Sun seen from the Moon, so it tells which way the crescent faces. The
+   * positions are geocentric and referred to the true equator and equinox of the date.
+   */
+  static double brightLimbAngle(AbsoluteDate date) {
+    Frame frame = FramesFactory.getTOD(org.orekit.utils.IERSConventions.IERS_2010, true);
+    Vector3D moon = AstroBodies.moon().getPosition(date, frame);
+    Vector3D sun = AstroBodies.sun().getPosition(date, frame);
+    return MoonTheory.brightLimbAngle(moon.getAlpha(), moon.getDelta(), sun.getAlpha(),
+        sun.getDelta());
   }
 
   /**
@@ -429,8 +447,8 @@ public class AstroEventFunctions {
    */
   static double elongation(AbsoluteDate date) {
     Frame ecliptic = FramesFactory.getEcliptic(org.orekit.utils.IERSConventions.IERS_2010);
-    Vector3D moon = CelestialBodyFactory.getMoon().getPosition(date, ecliptic);
-    Vector3D sun = CelestialBodyFactory.getSun().getPosition(date, ecliptic);
+    Vector3D moon = AstroBodies.moon().getPosition(date, ecliptic);
+    Vector3D sun = AstroBodies.sun().getPosition(date, ecliptic);
     double difference = moon.getAlpha() - sun.getAlpha();
     return normalizeAngle(difference);
   }
@@ -512,6 +530,9 @@ public class AstroEventFunctions {
           return F.num(angle / (2.0 * FastMath.PI));
         case "name":
           return F.stringx(phaseName(angle));
+        case "brightlimbangle":
+        case "brightlimbpositionangle":
+          return AstroConvert.degreesPositive(brightLimbAngle(date));
         default:
           return Errors.printMessage(S.MoonPhase, "astroprop", F.List(F.stringx(property), ast),
               engine);
@@ -582,7 +603,7 @@ public class AstroEventFunctions {
       if (!AstroDataContext.checkAvailable(symbol(), engine)) {
         return F.NIL;
       }
-      Arguments arguments = Arguments.of(ast, dateArgumentFrom(), argSize);
+      Arguments arguments = Arguments.of(ast, dateArgumentFrom(), argSize, engine);
       if (arguments.rejected != null) {
         return AstroConvert.reportUnreadableArgument(symbol(), arguments.rejected, ast, engine);
       }
@@ -715,7 +736,7 @@ public class AstroEventFunctions {
       if (!AstroDataContext.checkAvailable(S.LunationNumber, engine)) {
         return F.NIL;
       }
-      Arguments arguments = Arguments.of(ast, 1, argSize);
+      Arguments arguments = Arguments.of(ast, 1, argSize, engine);
       if (arguments.rejected != null) {
         return AstroConvert.reportUnreadableArgument(S.LunationNumber, arguments.rejected, ast,
             engine);

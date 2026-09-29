@@ -1,0 +1,25 @@
+{
+  "resources": [
+    {
+      "glob": "star-data/star.db"
+    },
+    {
+      "glob": "sky-data/*.json"
+    },
+    {
+      "glob": "geo-data/*.geojson"
+    },
+    {
+      "glob": "orekit-data/tai-utc.dat"
+    },
+    {
+      "glob": "orekit-data/itrf-versions.conf"
+    },
+    {
+      "glob": "orekit-data/Earth-Orientation-Parameters/IAU-2000/finals2000A.all"
+    },
+    {
+      "glob": "orekit-data/DE-440-ephemerides/lnxp1990.440"
+    }
+  ]
+}

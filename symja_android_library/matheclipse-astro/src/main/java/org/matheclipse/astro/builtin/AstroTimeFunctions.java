@@ -8,8 +8,11 @@ import java.time.ZonedDateTime;
 import java.util.Locale;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.matheclipse.astro.convert.AstroBodies;
 import org.matheclipse.astro.convert.AstroConvert;
+import org.matheclipse.astro.convert.MeeusBodyProvider;
 import org.matheclipse.astro.data.AstroDataContext;
+import org.matheclipse.astro.meeus.DeltaT;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -135,6 +138,9 @@ public class AstroTimeFunctions {
         }
         return AstroConvert.reportUnreadableArgument(S.SiderealTime, arg, ast, engine);
       }
+      if (point == null) {
+        point = AstroConvert.defaultObserver(engine);
+      }
       if (date == null) {
         date = AstroConvert.nowUTC();
       }
@@ -199,6 +205,9 @@ public class AstroTimeFunctions {
         return AstroConvert.reportUnreadableArgument(S.SolarTime, arg, ast, engine);
       }
       if (point == null) {
+        point = AstroConvert.defaultObserver(engine);
+      }
+      if (point == null) {
         return F.NIL;
       }
       if (date == null) {
@@ -207,7 +216,7 @@ public class AstroTimeFunctions {
       try {
         // the hour angle is the difference in longitude between the observer and the Sun's
         // ground point, measured westwards
-        Vector3D sun = CelestialBodyFactory.getSun().getPosition(date, AstroConvert.earthFrame());
+        Vector3D sun = AstroBodies.sun().getPosition(date, AstroConvert.earthFrame());
         double sunLongitude = sun.getAlpha();
         double hourAngle = point.getLongitude() - sunLongitude;
         double hours = FastMath.toDegrees(hourAngle) / 15.0 + 12.0;
@@ -250,7 +259,11 @@ public class AstroTimeFunctions {
         return F.NIL;
       }
       try {
-        TimeScale target = timeScale(ast.arg2().toString());
+        String system = ast.arg2().toString();
+        if ("DeltaT".equalsIgnoreCase(system)) {
+          return F.Quantity(F.num(deltaT(date)), F.stringx("Seconds"));
+        }
+        TimeScale target = timeScale(system);
         if (target == null) {
           return Errors.printMessage(S.TimeSystemConvert, "astrotimesys", F.List(ast.arg2(), ast),
               engine);
@@ -266,6 +279,19 @@ public class AstroTimeFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
+  }
+
+  /**
+   * Delta T = TT - UT1 in seconds at {@code date}: measured, from Orekit's leap second and Earth
+   * orientation data, inside the span of the bundled leap second table, and from the delta T model
+   * of Night Vision (a table from 1620 to 2024 and the polynomials of Meeus outside it) elsewhere.
+   */
+  static double deltaT(AbsoluteDate date) {
+    if (MeeusBodyProvider.inLeapSecondEra(date)) {
+      TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
+      return (date.getJD(TimeScalesFactory.getTT()) - date.getJD(ut1)) * 86400.0;
+    }
+    return DeltaT.seconds(date.getJD(TimeScalesFactory.getUTC()));
   }
 
   /**

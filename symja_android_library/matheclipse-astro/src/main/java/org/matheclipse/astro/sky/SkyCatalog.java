@@ -94,8 +94,13 @@ public final class SkyCatalog {
     public final double rightAscension;
     public final double declination;
 
+    /** Apparent major and minor axis in minutes of arc; NaN where the catalogue has none. */
+    public final double majorAxis;
+    public final double minorAxis;
+
     DeepSkyObject(String name, String designation, String alternateName, String type,
-        double magnitude, double rightAscension, double declination) {
+        double magnitude, double rightAscension, double declination, double majorAxis,
+        double minorAxis) {
       this.name = name;
       this.designation = designation;
       this.alternateName = alternateName;
@@ -103,6 +108,8 @@ public final class SkyCatalog {
       this.magnitude = magnitude;
       this.rightAscension = rightAscension;
       this.declination = declination;
+      this.majorAxis = majorAxis;
+      this.minorAxis = minorAxis;
     }
   }
 
@@ -153,11 +160,12 @@ public final class SkyCatalog {
   private Map<String, Constellation> constellationsByName;
   private List<Constellation> constellationList;
   private List<double[][]> constellationLines;
-  private List<double[][]> constellationBoundaries;
+  private Map<String, List<double[][]>> constellationLinesByCode;
+  private List<DeepSkyObject> deepSky;
+  private Map<String, List<double[][]>> constellationBoundariesByCode;
   private List<double[][]> milkyWay;
   private List<List<double[][]>> milkyWayPolygons;
   private List<DeepSkyObject> messier;
-  private List<DeepSkyObject> deepSky;
 
   private SkyCatalog() {}
 
@@ -382,14 +390,44 @@ public final class SkyCatalog {
     }
   }
 
-  /** The IAU constellation boundaries. */
-  public List<double[][]> constellationBoundaries() {
+  /**
+   * The figure lines of one constellation, looked up by its three letter code; empty when the code
+   * is unknown. Serpens is two figures, {@code "Ser1"} and {@code "Ser2"} in the file, and
+   * {@code "Ser"} returns both.
+   */
+  public List<double[][]> constellationLines(String code) {
     synchronized (lock) {
-      if (constellationBoundaries == null) {
-        constellationBoundaries = loadRings("/sky-data/constellations.bounds.json");
+      if (constellationLinesByCode == null) {
+        constellationLinesByCode = loadRingsByCode("/sky-data/constellations.lines.json");
       }
-      return constellationBoundaries;
+      return ringsOf(constellationLinesByCode, code);
     }
+  }
+
+  /** The IAU boundary of one constellation, looked up by its three letter code. */
+  public List<double[][]> constellationBoundary(String code) {
+    synchronized (lock) {
+      if (constellationBoundariesByCode == null) {
+        constellationBoundariesByCode = loadRingsByCode("/sky-data/constellations.bounds.json");
+      }
+      return ringsOf(constellationBoundariesByCode, code);
+    }
+  }
+
+  private static List<double[][]> ringsOf(Map<String, List<double[][]>> byCode, String code) {
+    List<double[][]> rings = byCode.get(normalize(code));
+    return rings == null ? Collections.<double[][]>emptyList() : rings;
+  }
+
+  /** Rings grouped by the feature id, with a trailing digit dropped so Ser1 and Ser2 are Ser. */
+  private static Map<String, List<double[][]>> loadRingsByCode(String resource) {
+    Map<String, List<double[][]>> result = new LinkedHashMap<String, List<double[][]>>();
+    for (JsonNode feature : GeoJson.features(GeoJson.read(resource))) {
+      String code = normalize(feature.path("id").asText("").replaceAll("\\d+$", ""));
+      result.computeIfAbsent(code, k -> new ArrayList<double[][]>())
+          .addAll(GeoJson.rings(feature.path("geometry")));
+    }
+    return result;
   }
 
   /** The outline of the Milky Way, as a set of closed rings. */
@@ -443,7 +481,10 @@ public final class SkyCatalog {
     }
   }
 
-  /** Deep sky objects at least as bright as {@code magnitudeLimit}, from the magnitude 14 set. */
+  /**
+   * Deep sky objects at least as bright as {@code magnitudeLimit}, from the magnitude 14 set.
+   * Objects without a recorded magnitude - the dark nebulae among them - are left out.
+   */
   public List<DeepSkyObject> deepSkyObjects(double magnitudeLimit) {
     synchronized (lock) {
       if (deepSky == null) {
@@ -452,13 +493,27 @@ public final class SkyCatalog {
     }
     List<DeepSkyObject> result = new ArrayList<DeepSkyObject>();
     for (DeepSkyObject object : deepSky) {
-      // objects with no recorded magnitude are kept only when no limit is being applied
-      if (object.magnitude <= magnitudeLimit
-          || (Double.isNaN(object.magnitude) && Double.isInfinite(magnitudeLimit))) {
+      if (object.magnitude <= magnitudeLimit) {
         result.add(object);
       }
     }
     return result;
+  }
+
+  /**
+   * One axis of the {@code dim} field, written <code>"110x110"</code> or <code>"4.2x2.5"</code> in
+   * minutes of arc; a single number is a round object.
+   */
+  private static double dimension(JsonNode properties, int axis) {
+    String[] parts = GeoJson.text(properties, "dim").trim().split("\\s*x\\s*");
+    if (parts.length == 0 || parts[0].isEmpty()) {
+      return Double.NaN;
+    }
+    try {
+      return Double.parseDouble(parts[Math.min(axis, parts.length - 1)]);
+    } catch (NumberFormatException nfe) {
+      return Double.NaN;
+    }
   }
 
   private static List<DeepSkyObject> loadDeepSky(String resource) {
@@ -472,7 +527,8 @@ public final class SkyCatalog {
           GeoJson.text(properties, "alt"), //
           GeoJson.text(properties, "type"), //
           deepSkyMagnitude(properties), //
-          normalizeRightAscensionDegrees(position[0]), position[1]));
+          normalizeRightAscensionDegrees(position[0]), position[1], //
+          dimension(properties, 0), dimension(properties, 1)));
     }
     return Collections.unmodifiableList(result);
   }

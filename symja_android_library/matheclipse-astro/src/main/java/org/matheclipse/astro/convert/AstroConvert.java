@@ -73,6 +73,18 @@ public class AstroConvert {
   }
 
   /**
+   * The observer to fall back on when a function is given no location: the value of
+   * <code>$GeoLocation</code>. That is an assigned position, or on the user's own machine the
+   * configured location or the time zone estimate (see <code>FindGeoLocation</code>).
+   *
+   * @return the location, or <code>null</code> when none is known
+   */
+  public static GeodeticPoint defaultObserver(EvalEngine engine) {
+    IExpr value = engine.evaluate(S.$GeoLocation);
+    return value == S.$GeoLocation ? null : toGeodeticPoint(value);
+  }
+
+  /**
    * Convert a location argument into a {@link GeodeticPoint}. Accepts a
    * <code>GeoPosition(...)</code> object as well as a plain <code>{latitude, longitude}</code> or
    * <code>{latitude, longitude, altitude}</code> list of degrees and meters.
@@ -152,6 +164,22 @@ public class AstroConvert {
         return dateTime.minusNanos((long) (offsetHours * 3600.0 * 1.0e9));
       }
       return dateTime;
+    }
+    if (date.isString() && date.toString().matches(".*\\d.*")) {
+      // A date string - "1 Jul 2022", or "July 1, 2022 12:00 am" as a DateRange of strings gives
+      // it - read by DateObject, which knows the notations. Every date string has a digit, a day
+      // or a year, and no frame or body name has one, so names such as "Horizon", which callers
+      // try as a date first, never get here; the rest is read quietly all the same.
+      EvalEngine engine = EvalEngine.get();
+      boolean quiet = engine.isQuietMode();
+      IExpr dateObject;
+      try {
+        engine.setQuietMode(true);
+        dateObject = engine.evaluate(F.unaryAST1(S.DateObject, date));
+      } finally {
+        engine.setQuietMode(quiet);
+      }
+      return dateObject instanceof DateObjectExpr ? toLocalDateTime(dateObject) : null;
     }
     if (date.isList()) {
       double[] vector = date.toDoubleVector();

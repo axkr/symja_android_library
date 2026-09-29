@@ -3,7 +3,10 @@ package org.matheclipse.astro.builtin;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.matheclipse.astro.convert.AstroBodies;
 import org.matheclipse.astro.convert.AstroConvert;
+import org.matheclipse.astro.convert.MeeusBodyProvider;
 import org.matheclipse.astro.data.AstroDataContext;
+import org.matheclipse.astro.meeus.MeeusBody;
+import org.matheclipse.astro.meeus.PlanetPhotometry;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.data.Entities;
 import org.matheclipse.core.eval.Errors;
@@ -46,6 +49,11 @@ import org.orekit.utils.IERSConventions;
  * for</em> - measured 2026-09-18, where its <code>HelioCoordinates</code> for Mars agrees with this
  * to 1.5e-6 astronomical units, about 150 km. It comes from the bundled DE ephemerides rather than
  * from a two body approximation, which is what {@link AstroOrbitFunctions} would give.
+ *
+ * <p>
+ * The observed properties - distances, phase angle, illuminated fraction, magnitude and angular
+ * diameter - take their geometry from the same ephemerides and their magnitude and size formulas
+ * from {@link PlanetPhotometry}, ported from Night Vision.
  */
 public class SolarSystemDataFunctions {
 
@@ -70,6 +78,21 @@ public class SolarSystemDataFunctions {
   /** The planets, as <code>PlanetData()</code> counts them: the eight, without Pluto. */
   private static final String[] PLANETS =
       {"Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"};
+
+  /**
+   * The properties which depend on where the body is seen from: computed from the geocentric
+   * positions of the body and the Sun, with the magnitude and size formulas of Meeus.
+   */
+  private static final String[] OBSERVED_PROPERTIES = {"AngularDiameter", "ApparentMagnitude",
+      "DistanceFromEarth", "DistanceFromSun", "IlluminationFraction", "PhaseAngle"};
+
+  /** What <code>PlanetData("Properties")</code> lists. */
+  private static final String[] PLANET_PROPERTIES = {"AngularDiameter", "ApparentMagnitude",
+      "DistanceFromEarth", "DistanceFromSun", "HelioCoordinates", "IlluminationFraction",
+      "PhaseAngle"};
+
+  /** The visual magnitude of the Sun at one astronomical unit. */
+  private static final double SUN_MAGNITUDE = -26.74;
 
   private static class Initializer {
 
@@ -118,7 +141,8 @@ public class SolarSystemDataFunctions {
         }
       }
       property = Entities.propertyOf(property, PLANET);
-      if (!property.isString("Position")) {
+      boolean observed = isObservedProperty(property);
+      if (!property.isString("Position") && !observed) {
         return Errors.printMessage(S.AstronomicalData, "astroprop", F.List(property, ast), engine);
       }
       if (!AstroDataContext.checkAvailable(S.AstronomicalData, engine)) {
@@ -129,6 +153,9 @@ public class SolarSystemDataFunctions {
         return F.NIL;
       }
       try {
+        if (observed) {
+          return observedProperty(bodyName, property.toString(), date);
+        }
         Vector3D position = heliocentricEclipticPosition(bodyName, date);
         return F.List(F.num(position.getX()), F.num(position.getY()), F.num(position.getZ()));
       } catch (OrekitException oex) {
@@ -168,6 +195,13 @@ public class SolarSystemDataFunctions {
         }
         return planets;
       }
+      if (ast.isAST1() && ast.arg1().isString("Properties")) {
+        IASTAppendable properties = F.ListAlloc(PLANET_PROPERTIES.length);
+        for (String property : PLANET_PROPERTIES) {
+          properties.append(F.stringx(property));
+        }
+        return properties;
+      }
       String bodyName = planetNamed(ast.arg1());
       if (bodyName == null) {
         return Errors.printMessage(S.PlanetData, "astrobody", F.List(ast.arg1(), ast), engine);
@@ -186,7 +220,8 @@ public class SolarSystemDataFunctions {
         }
       }
       property = Entities.propertyOf(property, PLANET);
-      if (!property.isString("HelioCoordinates")) {
+      boolean observed = isObservedProperty(property);
+      if (!property.isString("HelioCoordinates") && !observed) {
         return Errors.printMessage(S.PlanetData, "astroprop", F.List(property, ast), engine);
       }
       if (!AstroDataContext.checkAvailable(S.PlanetData, engine)) {
@@ -197,6 +232,9 @@ public class SolarSystemDataFunctions {
         return F.NIL;
       }
       try {
+        if (observed) {
+          return observedProperty(bodyName, property.toString(), date);
+        }
         Vector3D position = heliocentricEclipticPosition(bodyName, date);
         return F.List(astronomicalUnits(position.getX()), astronomicalUnits(position.getY()),
             astronomicalUnits(position.getZ()));
@@ -266,11 +304,103 @@ public class SolarSystemDataFunctions {
    */
   static Vector3D heliocentricEclipticPosition(String bodyName, AbsoluteDate date) {
     Frame gcrf = FramesFactory.getGCRF();
-    Vector3D heliocentric = CelestialBodyFactory.getBody(bodyName).getPosition(date, gcrf)
-        .subtract(CelestialBodyFactory.getSun().getPosition(date, gcrf));
+    Vector3D heliocentric = AstroBodies.provider(bodyName).getPosition(date, gcrf)
+        .subtract(AstroBodies.sun().getPosition(date, gcrf));
     StaticTransform toEcliptic =
         gcrf.getStaticTransformTo(FramesFactory.getEcliptic(IERSConventions.IERS_2010), date);
     return toEcliptic.transformVector(heliocentric);
+  }
+
+  private static boolean isObservedProperty(IExpr property) {
+    if (property.isString()) {
+      String name = property.toString();
+      for (String observed : OBSERVED_PROPERTIES) {
+        if (observed.equals(name)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * A property of {@link #OBSERVED_PROPERTIES} for {@code bodyName} at {@code date}.
+   *
+   * <p>
+   * The geometry comes from the ephemerides (JPL, or Meeus outside their range); only the
+   * magnitude and diameter formulas are Meeus's, from Night Vision. Positions are geometric, so a
+   * planet's distance differs from the light-time corrected one Night Vision shows by a fraction of
+   * the distance it travels in a few minutes, far below the precision of these formulas.
+   *
+   * @return the value, or <code>Missing("NotApplicable")</code> for a property which does not
+   *         apply to the body, such as the phase angle of the Sun or the magnitude of the Moon
+   */
+  static IExpr observedProperty(String bodyName, String property, AbsoluteDate date) {
+    MeeusBody body = MeeusBody.of(bodyName);
+    if (body == null) {
+      // the Earth, seen from the Earth
+      if (!"DistanceFromSun".equals(property)) {
+        return notApplicable();
+      }
+    }
+    Frame gcrf = FramesFactory.getGCRF();
+    double au = Constants.IAU_2012_ASTRONOMICAL_UNIT;
+    Vector3D sun = AstroBodies.sun().getPosition(date, gcrf);
+    Vector3D position =
+        body == null ? Vector3D.ZERO : AstroBodies.provider(bodyName).getPosition(date, gcrf);
+    double earthDistance = position.getNorm() / au;
+    double sunDistance = position.subtract(sun).getNorm() / au;
+    double earthSunDistance = sun.getNorm() / au;
+    boolean isSun = body == MeeusBody.SUN;
+    switch (property) {
+      case "DistanceFromEarth":
+        return F.Quantity(F.num(earthDistance), F.stringx("AstronomicalUnit"));
+      case "DistanceFromSun":
+        return isSun ? notApplicable()
+            : F.Quantity(F.num(sunDistance), F.stringx("AstronomicalUnit"));
+      case "AngularDiameter":
+        return F.Quantity(F.num(PlanetPhotometry.angularDiameter(body, earthDistance)),
+            F.stringx("Arcseconds"));
+      default:
+        break;
+    }
+    if (isSun) {
+      if ("ApparentMagnitude".equals(property)) {
+        return F.num(SUN_MAGNITUDE + 5 * Math.log10(earthSunDistance));
+      }
+      return notApplicable();
+    }
+    // the angle Sun - body - Earth
+    double phaseAngle = Vector3D.angle(sun.subtract(position), position.negate());
+    switch (property) {
+      case "PhaseAngle":
+        return AstroConvert.degrees(phaseAngle);
+      case "IlluminationFraction":
+        return F.num((1.0 + Math.cos(phaseAngle)) / 2.0);
+      case "ApparentMagnitude":
+        if (!body.isPlanet()) {
+          // Night Vision has no magnitude formula for the Moon
+          return notApplicable();
+        }
+        double lambda = 0.0;
+        double beta = 0.0;
+        if (body == MeeusBody.SATURN) {
+          // the tilt of the rings needs the geocentric ecliptic coordinates of date
+          Vector3D ecliptic = gcrf
+              .getStaticTransformTo(FramesFactory.getEcliptic(IERSConventions.IERS_2010), date)
+              .transformVector(position);
+          lambda = ecliptic.getAlpha();
+          beta = ecliptic.getDelta();
+        }
+        return F.num(PlanetPhotometry.magnitude(body, earthDistance, sunDistance,
+            earthSunDistance, MeeusBodyProvider.julianEphemerisDay(date), lambda, beta));
+      default:
+        return notApplicable();
+    }
+  }
+
+  private static IExpr notApplicable() {
+    return F.Missing(F.stringx("NotApplicable"));
   }
 
   public static void initialize() {

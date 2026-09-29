@@ -32,13 +32,29 @@ Only what positional astronomy needs is included.
 
 ## Date range
 
-A date outside the range of these files does not throw - the astronomy functions
-report the `orekitdata` message and stay unevaluated:
+Only the DE 440 ephemerides have a hard range. Outside 1990-2149 the Sun, the
+Moon and the planets fall back to the Meeus theories of the
+`org.matheclipse.astro.meeus` package (ported from Night Vision), for dates from
+1583 to 3000, and the functions say so with the `astrofallback` message:
 
 ```
->> SunPosition(GeoPosition({0,0}), DateObject({1989,1,1,12,0,0}))
-SunPosition: The external Orekit data files are not available: no data generated around date: 1989-01-01T12:00:00.000Z
+>> SunPosition(GeoPosition({52.52,13.405}), DateObject({1600,6,21,11,0,0}))
+SunPosition: The date 1600-06-21 is outside the range of the Orekit ephemerides; the lower accuracy algorithms of Meeus were used.
+{Quantity(176.5746,"AngularDegrees"),Quantity(60.93791,"AngularDegrees")}
 ```
+
+Before 1583, after 3000, and for the eclipse functions and `OrbitalElements`,
+which are too sensitive for those theories, the functions still report the
+`orekitdata` message and stay unevaluated:
+
+```
+>> SunPosition(DateObject({1200,1,1,12,0,0}), CelestialSystem->"Equatorial")
+SunPosition: The external Orekit data files are not available: no data generated around date: 1200-01-01T12:00:00.000Z
+```
+
+The leap second and Earth orientation files end in late 2026. After that Orekit
+keeps TT - UTC and UT1 - UTC frozen at their last values; the frames, the Earth
+rotation and the rise and set times stay usable.
 
 To widen the range, or to refresh the leap seconds and Earth orientation
 parameters as IERS publishes new ones, install the full bundle externally. An

@@ -30,9 +30,9 @@ Each file is parsed on first use and then cached, so a session that only asks fo
 
 The **HYG database** would add distance, parallax, spectral class, absolute magnitude and proper
 motion, and would let `StarData` cover most of what the Wolfram Language offers. It is
-CC BY-SA 4.0, which would put a share-alike obligation on this otherwise LGPL-3.0 module, so it was
-left out by decision. `StarData` reports those properties as unsupported rather than guessing at
-them.
+CC BY-SA 4.0, which is not compatible with the GPL-3.0 licence of this module, so it was left out
+by decision. `StarData` reports those properties as unsupported rather than guessing at them. The
+spectral class is the exception: it comes from the ASCC-2.5 file in `../star-data/`.
 
 The magnitude-14 and magnitude-20 star files, the Chinese sky culture, the asterism set and the
 timezone polygons are all present upstream and are not needed here.

@@ -76,7 +76,7 @@ public class AstroGeoFunctions {
    */
   static GeodeticPoint subsolarPoint(AbsoluteDate date) {
     Frame frame = AstroConvert.earthFrame();
-    Vector3D position = CelestialBodyFactory.getSun().getPosition(date, frame);
+    Vector3D position = AstroBodies.sun().getPosition(date, frame);
     return AstroConvert.earthEllipsoid().transform(position, frame, date);
   }
 
@@ -232,7 +232,7 @@ public class AstroGeoFunctions {
   /** The angular radius of the solar disk seen from the Earth, in radians. */
   private static double solarApparentRadius(AbsoluteDate date) {
     Frame frame = AstroConvert.earthFrame();
-    double distance = CelestialBodyFactory.getSun().getPosition(date, frame).getNorm();
+    double distance = AstroBodies.sun().getPosition(date, frame).getNorm();
     double radius = AstroBodies.meanRadius(CelestialBodyFactory.SUN);
     return distance <= radius ? 0.0 : FastMath.asin(radius / distance);
   }

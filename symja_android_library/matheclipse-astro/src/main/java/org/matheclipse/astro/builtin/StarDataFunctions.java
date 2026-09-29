@@ -7,6 +7,7 @@ import org.matheclipse.core.data.Entities;
 import org.matheclipse.astro.convert.AstroConvert;
 import org.matheclipse.astro.convert.AstroObserver;
 import org.matheclipse.astro.data.AstroDataContext;
+import org.matheclipse.astro.sky.DeepStarCatalog;
 import org.matheclipse.astro.sky.SkyCatalog;
 import org.matheclipse.astro.sky.StarProvider;
 import org.matheclipse.core.eval.Errors;
@@ -46,7 +47,7 @@ public class StarDataFunctions {
   /** Everything {@link #property} can return, in a readable order. */
   private static final String[] ALL_PROPERTIES =
       {"Name", "AlternateNames", "Position", "RightAscension", "Declination", "ApparentMagnitude",
-          "BVColorIndex", "Color", "Constellation", "ConstellationCode", "BayerName",
+          "BVColorIndex", "Color", "SpectralClass", "Constellation", "ConstellationCode", "BayerName",
           "FlamsteedName", "HDNumber", "HipparcosNumber", "GlieseName", "VariableName", "Altitude",
           "Azimuth", "RiseTime", "SetTime", "TransitTime", "DailyTimeAboveHorizon"};
 
@@ -55,7 +56,7 @@ public class StarDataFunctions {
    * real but unavailable, rather than simply unknown.
    */
   private static final String[] UNSUPPORTED_PROPERTIES =
-      {"mass", "radius", "distance", "distancefromearth", "parallax", "spectralclass", "startype",
+      {"mass", "radius", "distance", "distancefromearth", "parallax", "startype",
           "luminosity", "effectivetemperature", "density", "gravity", "age", "rotationperiod",
           "orbitperiod", "absolutemagnitude", "absolutemagnitudebolometric", "propermotion",
           "radialvelocity", "satellites", "eccentricity", "semimajoraxis"};
@@ -66,6 +67,12 @@ public class StarDataFunctions {
    */
   /** The entity type these stars belong to. */
   private static final String STAR = "Star";
+
+  /** How far apart, in degrees, a star may be in the two catalogues. */
+  private static final double MATCH_RADIUS = 2.0 / 60.0;
+
+  /** How far apart, in magnitudes, a star may be in the two catalogues. */
+  private static final double MATCH_MAGNITUDE = 0.7;
 
   private static class Initializer {
 
@@ -179,6 +186,8 @@ public class StarDataFunctions {
           return Double.isNaN(star.colorIndex) ? S.Missing : F.num(star.colorIndex);
         case "color":
           return Double.isNaN(star.colorIndex) ? S.Missing : F.stringx(colorName(star.colorIndex));
+        case "spectralclass":
+          return spectralClass(star);
         case "constellation": {
           SkyCatalog.Constellation constellation =
               SkyCatalog.get().constellation(star.constellation);
@@ -213,6 +222,28 @@ public class StarDataFunctions {
           }
           return Errors.printMessage(S.StarData, "astroprop", F.List(nameExpr, ast), engine);
       }
+    }
+
+    /**
+     * The spectral class, which the d3-celestial catalogue lacks, from the ASCC-2.5 star database
+     * of Night Vision. The two catalogues are matched by position and magnitude: the brightest
+     * ASCC star within {@link #MATCH_RADIUS} degrees whose magnitude is within
+     * {@link #MATCH_MAGNITUDE} of the catalogue value. The tolerances are generous because the two
+     * catalogues differ in epoch and photometry - Sirius sits 12" apart in them - and a star with
+     * no counterpart, or no spectral type in ASCC, is Missing rather than guessed.
+     */
+    private static IExpr spectralClass(SkyCatalog.Star star) {
+      if (Double.isNaN(star.magnitude) || !DeepStarCatalog.isAvailable()) {
+        return S.Missing;
+      }
+      DeepStarCatalog catalog = DeepStarCatalog.get();
+      int index = catalog.match(star.rightAscension, star.declination, MATCH_RADIUS,
+          star.magnitude, MATCH_MAGNITUDE);
+      if (index < 0) {
+        return S.Missing;
+      }
+      String type = catalog.spectralType(index);
+      return type.isEmpty() ? S.Missing : F.stringx(type);
     }
 
     /** The properties which depend on an observer, and so need the Orekit data and a location. */

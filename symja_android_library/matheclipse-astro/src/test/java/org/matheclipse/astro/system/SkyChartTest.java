@@ -7,6 +7,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.astro.project.MapProjection;
 import org.matheclipse.astro.convert.AstroConvert;
+import org.matheclipse.astro.sky.MilkyWayMap;
 import org.matheclipse.astro.sky.SkyCatalog;
 import org.matheclipse.astro.sky.SkyFrame;
 import org.orekit.bodies.GeodeticPoint;
@@ -226,6 +227,49 @@ public class SkyChartTest {
     assertTrue(visible > clipped * 0.8 && clipped > visible * 0.8,
         "orthographic shows about half the sphere: " + visible + " visible, " + clipped
             + " clipped");
+  }
+
+  /** Every projection runs backwards to the direction it was given. */
+  @Test
+  public void testInverseProjections() {
+    double[][] directions = {{10.0, 20.0}, {-70.0, -35.0}, {120.0, 60.0}, {0.0, 0.0},
+        {-150.0, -80.0}};
+    for (String name : MapProjection.names()) {
+      MapProjection projection =
+          MapProjection.of(name, FastMath.toRadians(30.0), FastMath.toRadians(15.0));
+      for (double[] direction : directions) {
+        double longitude = FastMath.toRadians(direction[0]);
+        double latitude = FastMath.toRadians(direction[1]);
+        double[] xy = projection.project(longitude, latitude);
+        if (xy == null || "Mercator".equals(name) && FastMath.abs(direction[1]) > 85.0) {
+          continue;
+        }
+        double[] back = projection.inverse(xy[0], xy[1]);
+        assertTrue(back != null, name + " " + direction[0] + "," + direction[1]);
+        double deltaLongitude = FastMath.IEEEremainder(back[0] - longitude, 2.0 * FastMath.PI);
+        assertEquals(0.0, deltaLongitude, 1.0e-6, name + " longitude");
+        assertEquals(latitude, back[1], 1.0e-6, name + " latitude");
+      }
+    }
+    // outside the projected sphere there is no direction
+    assertEquals(null, MapProjection.of("Mollweide", 0.0, 0.0).inverse(2.9, 0.0));
+    assertEquals(null, MapProjection.of("Orthographic", 0.0, 0.0).inverse(1.2, 0.0));
+  }
+
+  /**
+   * The Milky Way map: brightest in the star clouds of Sagittarius, dimmer on the galactic centre
+   * itself, which dust hides, and dark at the galactic pole.
+   */
+  @Test
+  public void testMilkyWayMap() {
+    MilkyWayMap map = MilkyWayMap.get();
+    // the Great Sagittarius Star Cloud, and the galactic centre at RA 266.4, Dec -28.9
+    assertTrue(map.brightness(270.0, -30.0) > 4.0, "the star cloud is bright");
+    assertTrue(map.brightness(266.4, -28.9) < map.brightness(270.0, -30.0), "dust on the centre");
+    // the north galactic pole, RA 192.9, Dec 27.1
+    assertEquals(0.0, map.brightness(192.9, 27.1), 1.0e-9, "the pole is outside the band");
+    // Deneb, in the band in Cygnus
+    assertTrue(map.brightness(310.4, 45.3) > 1.0, "Cygnus is in the band");
   }
 
   @Test

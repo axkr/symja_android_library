@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -138,7 +139,7 @@ public class AstroOrbitFunctions {
           return result;
         }
         return element(orbit, elementSpec, dimensionless, ast, engine);
-      } catch (OrekitException oex) {
+      } catch (OrekitException | OrekitIllegalStateException oex) {
         return Errors.printMessage(S.OrbitalElements, "orekitdata",
             F.List(F.stringx(oex.getMessage())), engine);
       }

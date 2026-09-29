@@ -6,6 +6,7 @@ import org.hipparchus.util.FastMath;
 import org.matheclipse.astro.convert.AstroConvert;
 import org.matheclipse.astro.convert.EclipseGeometry;
 import org.matheclipse.astro.data.AstroDataContext;
+import org.matheclipse.astro.data.AstroFallback;
 import org.matheclipse.astro.solve.DateRootFinder;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
@@ -21,6 +22,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -222,6 +224,17 @@ public class AstroEclipseFunctions {
       if (!AstroDataContext.checkAvailable(symbol(), engine)) {
         return F.NIL;
       }
+      // eclipse type, magnitude and gamma are too sensitive for the Meeus theories
+      AstroFallback.forbid();
+      try {
+        return evaluateWithoutFallback(ast, argSize, options, engine);
+      } finally {
+        AstroFallback.end();
+      }
+    }
+
+    private IExpr evaluateWithoutFallback(IAST ast, int argSize, IExpr[] options,
+        EvalEngine engine) {
       AbsoluteDate date = null;
       String propertyName = null;
       for (int i = 1; i <= argSize; i++) {
@@ -251,7 +264,7 @@ public class AstroEclipseFunctions {
         }
         return property(propertyName, EclipseGeometry.at(greatest), F.stringx(propertyName), ast,
             engine);
-      } catch (OrekitException oex) {
+      } catch (OrekitException | OrekitIllegalStateException oex) {
         return Errors.printMessage(symbol(), "orekitdata", F.List(F.stringx(oex.getMessage())),
             engine);
       }
