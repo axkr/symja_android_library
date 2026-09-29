@@ -2,6 +2,7 @@ package org.matheclipse.core.graphics;
 
 import org.matheclipse.core.graphics.svg.SvgGraphics2D;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import j2html.tags.ContainerTag;
@@ -61,6 +62,25 @@ public class SVGGraphics {
   }
 
   /**
+   * <code>Rotate(Graphics(primitives, options), angle(, center))</code> is shown as the whole
+   * picture turned: <code>Graphics({Rotate(primitives, angle(, center))}, options)</code>. The
+   * expression itself stays a <code>Rotate</code>, as in Mathematica, where it is a display
+   * wrapper.
+   *
+   * @return the picture to draw, or <code>expr</code> itself
+   */
+  public static IExpr rotatedPicture(IExpr expr) {
+    if ((expr.isAST(S.Rotate, 3) || expr.isAST(S.Rotate, 4)) && expr.first().isAST(S.Graphics)
+        && expr.first().argSize() >= 1) {
+      IAST rotate = (IAST) expr;
+      IAST graphics = (IAST) rotate.arg1();
+      IAST rotatedPrimitives = rotate.setAtCopy(1, graphics.arg1());
+      return graphics.setAtCopy(1, F.list(rotatedPrimitives));
+    }
+    return expr;
+  }
+
+  /**
    * Render a <code>Graphics</code> or <code>Graphics3D</code> expression as a <b>standalone</b>
    * SVG document: an XML declaration, and no responsive root style. This is what
    * <code>Export["f.svg", g]</code> and <code>ExportString[g, "SVG"]</code> hand out, so the
@@ -74,6 +94,7 @@ public class SVGGraphics {
    * @return the SVG document, or <code>null</code> when the expression is not a graphic
    */
   public static String svgDocument(IExpr graphics) {
+    graphics = rotatedPicture(graphics);
     if (org.matheclipse.core.builtin.MeshFunctions.isBoundaryMeshRegion(graphics)) {
       // a mesh region is exported as the picture Show makes of it
       IExpr picture = org.matheclipse.core.builtin.MeshFunctions.meshToGraphics((IAST) graphics,

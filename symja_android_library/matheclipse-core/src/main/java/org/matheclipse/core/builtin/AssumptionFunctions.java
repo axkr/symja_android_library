@@ -449,6 +449,14 @@ public class AssumptionFunctions {
       try {
         engine.setAssumptions(assumptions);
         IExpr result = engine.evalWithoutNumericReset(expr);
+        IAST pointValues = assumptions.pointValues();
+        if (pointValues.argSize() > 0) {
+          // a variable which is assumed to be equal to a number, e.g. Refine(x, x==0) -> 0
+          IExpr substituted = F.subst(result, pointValues);
+          if (substituted != result) {
+            result = engine.evalWithoutNumericReset(substituted);
+          }
+        }
         result = org.matheclipse.core.sympy.assumptions.Refine.refine(result, engine);
         return decideRelation(result, assumptions, engine).orElse(result);
       } finally {

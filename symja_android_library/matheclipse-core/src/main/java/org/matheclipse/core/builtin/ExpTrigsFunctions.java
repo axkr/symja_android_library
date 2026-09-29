@@ -126,6 +126,78 @@ public class ExpTrigsFunctions {
       S.Tanh.setEvaluator(new Tanh());
     }
   }
+  /**
+   * The shift of <code>head(plus)</code> for <code>head</code> one of <code>Cos, Sin, Sec, Csc</code>
+   * by the integer multiples of <code>Pi/2</code> in the sum <code>plus</code>, whose coefficients
+   * add up to <code>k</code>. Like WMA:
+   * <ul>
+   * <li>if the parity of <code>k</code> is unknown the function stays unevaluated, even if some of
+   * the multiples could be removed: <code>Refine(Cos(x+n*Pi+m*Pi/2),
+   * Element(n,Integers)&amp;&amp;Element(m,Integers))</code> stays unevaluated;</li>
+   * <li>several multiples are removed at once as <code>I^k</code>:
+   * <code>Refine(Cos(x+n*Pi+m*Pi), ...)</code> gives <code>I^(2*m+2*n)*Cos(x)</code> and
+   * <code>Refine(Cos(x+n*Pi+m*Pi/2), Element(n,Integers)&amp;&amp;Element((m-1)/2,Integers))</code>
+   * gives <code>-I^(-1+m+2*n)*Sin(x)</code>.</li>
+   * </ul>
+   *
+   * @param plus a <code>Plus(...)</code> expression
+   * @param head <code>Cos, Sin, Sec</code> or <code>Csc</code>
+   * @return {@link F#NIL} if the function stays unevaluated, <code>null</code> if a single multiple
+   *         is removed by the caller as <code>(-1)^k</code>, otherwise the shifted function
+   */
+  private static IExpr piHalfShift(IAST plus, ISymbol head, EvalEngine engine) {
+    IASTAppendable k = F.PlusAlloc(plus.argSize());
+    IASTAppendable rest = F.PlusAlloc(plus.argSize());
+    // the parity of k is the sum of the parities of its terms
+    boolean odd = false;
+    boolean unknownParity = false;
+    for (int i = 1; i < plus.size(); i++) {
+      IExpr term = plus.get(i);
+      if (!term.isFree(S.Pi, false)) {
+        IExpr c = engine.evaluate(F.Times(F.C2, term, F.Power(S.Pi, F.CN1)));
+        if (c.isFree(S.Pi, true)) {
+          if (org.matheclipse.core.sympy.assumptions.Refine.isEven(c, engine)) {
+            k.append(c);
+            continue;
+          }
+          if (org.matheclipse.core.sympy.assumptions.Refine.isOdd(c, engine)) {
+            k.append(c);
+            odd = !odd;
+            continue;
+          }
+          if (c.isIntegerResult()) {
+            k.append(c);
+            unknownParity = true;
+            continue;
+          }
+        }
+      }
+      rest.append(term);
+    }
+    if (unknownParity) {
+      return F.NIL;
+    }
+    IExpr sum = engine.evaluate(k.oneIdentity0());
+    boolean even = !odd;
+    if (k.argSize() < 2) {
+      return null;
+    }
+    IExpr x = rest.oneIdentity0();
+    if (even) {
+      // f(x + k*Pi/2) == (-1)^(k/2)*f(x) == I^k*f(x)
+      return F.Times(F.Power(F.CI, sum), F.unaryAST1(head, x));
+    }
+    if (head == S.Cos) {
+      // Cos(x + k*Pi/2) == -I^(k-1)*Sin(x) for odd k
+      return F.Times(F.CN1, F.Power(F.CI, F.Plus(F.CN1, sum)), F.Sin(x));
+    }
+    if (head == S.Sin) {
+      // Sin(x + k*Pi/2) == I^(k-1)*Cos(x) for odd k
+      return F.Times(F.Power(F.CI, F.Plus(F.CN1, sum)), F.Cos(x));
+    }
+    return null;
+  }
+
   private static final class AnglePath extends AbstractFunctionEvaluator {
 
     @Override
@@ -1518,6 +1590,10 @@ public class ExpTrigsFunctions {
               return F.Sin(F.Plus(arg1, F.Times(F.CN3D2, S.Pi)));
             }
           } else if (k.isIntegerResult()) {
+            IExpr shifted = piHalfShift((IAST) arg1, S.Cos, engine);
+            if (shifted != null) {
+              return shifted;
+            }
             // (-1)^k * Cos( arg1 - k*Pi )
             return F.Times(F.Power(-1, k), F.Cos(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
@@ -1871,6 +1947,10 @@ public class ExpTrigsFunctions {
             // Csc(arg1 - 2*Pi*IntegerPart(1/2*t) )
             return F.Csc(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
+            IExpr shifted = piHalfShift((IAST) arg1, S.Csc, engine);
+            if (shifted != null) {
+              return shifted;
+            }
             // (-1)^k * Csc( arg1 - k*Pi )
             return F.Times(F.Power(-1, k), F.Csc(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
@@ -3114,6 +3194,10 @@ public class ExpTrigsFunctions {
             // Sec(arg1 - 2*Pi*IntegerPart(1/2*t) )
             return F.Sec(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
+            IExpr shifted = piHalfShift((IAST) arg1, S.Sec, engine);
+            if (shifted != null) {
+              return shifted;
+            }
             // (-1)^k * Sec( arg1 - k*Pi )
             return F.Times(F.Power(-1, k), F.Sec(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
@@ -3443,6 +3527,10 @@ public class ExpTrigsFunctions {
               return F.Negate(F.Cos(F.Plus(arg1, F.Times(F.CN3D2, S.Pi))));
             }
           } else if (k.isIntegerResult()) {
+            IExpr shifted = piHalfShift((IAST) arg1, S.Sin, engine);
+            if (shifted != null) {
+              return shifted;
+            }
             // (-1)^k * Sin( arg1 - k*Pi )
             return F.Times(F.Power(-1, k), F.Sin(F.Subtract(arg1, F.Times(k, S.Pi))));
           }

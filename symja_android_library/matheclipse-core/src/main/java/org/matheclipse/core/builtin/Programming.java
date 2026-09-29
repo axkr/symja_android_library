@@ -4,7 +4,9 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
@@ -26,6 +28,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.steps.DialogStepsListener;
@@ -51,6 +54,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 
@@ -92,6 +96,7 @@ public final class Programming {
       S.NestWhile.setEvaluator(new NestWhile());
       S.NestWhileList.setEvaluator(NestWhileListEvaluator);
       S.Pause.setEvaluator(new Pause());
+      S.SessionTime.setEvaluator(new SessionTime());
       S.Quiet.setEvaluator(new Quiet());
       S.Reap.setEvaluator(new Reap());
       S.RepeatedTiming.setEvaluator(new RepeatedTiming());
@@ -103,6 +108,8 @@ public final class Programming {
       S.TimeConstrained.setEvaluator(new TimeConstrained());
       S.TimeRemaining.setEvaluator(new TimeRemaining());
       S.Timing.setEvaluator(new Timing());
+      S.TimeUsed.setEvaluator(new TimeUsed());
+      S.$TimeUnit.setEvaluator(new $TimeUnit());
       S.Throw.setEvaluator(new Throw());
       S.Unevaluated.setEvaluator(new Unevaluated());
       S.Which.setEvaluator(new Which());
@@ -426,20 +433,41 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int argSize = ast.argSize();
       if (argSize >= 2 && argSize <= 3) {
-        // messageShortcut may be null
-        String messageShortcut = engine.getMessageShortcut();
+        Set<String> messageNames = argSize == 3 ? messageNames(ast.arg3()) : null;
+        // inside Quiet the messages of expr are still seen by this Check, only not printed; the
+        // quiet mode of an internal speculative evaluation below it still hides them
+        final boolean quiet = engine.isQuietMode();
+        final Errors.CheckScope scope = Errors.enterCheck(quiet, messageNames);
+        IExpr arg1;
         try {
-          engine.setMessageShortcut(null);
-          IExpr arg1 = engine.evaluate(ast.arg1());
-          if (engine.getMessageShortcut() != null) {
-            return ast.arg2();
-          }
-          return arg1;
+          engine.setQuietMode(false);
+          arg1 = engine.evaluate(ast.arg1());
         } finally {
-          engine.setMessageShortcut(messageShortcut);
+          engine.setQuietMode(quiet);
+          Errors.exitCheck(scope);
         }
+        if (scope.isFired()) {
+          return engine.evaluate(ast.arg2());
+        }
+        return arg1;
       }
       return engine.checkBuiltinArgsSize(ast, this);
+    }
+
+    /**
+     * The <code>symbol::tag</code> names of <code>Check(expr, failexpr, {s1::t1, s2::t2, ...})</code>.
+     * An entry which isn't a message name (a message group name) matches no message.
+     */
+    private static Set<String> messageNames(IExpr messages) {
+      Set<String> names = new HashSet<String>();
+      IAST list = messages.makeList();
+      for (int i = 1; i < list.size(); i++) {
+        IExpr entry = list.get(i);
+        if (entry.isAST(S.MessageName, 3) && entry.first().isSymbol()) {
+          names.add(entry.first().toString() + "::" + entry.second().toString());
+        }
+      }
+      return names;
     }
 
     @Override
@@ -1548,6 +1576,10 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
+        if (!FileSandbox.isHostVisible(engine)) {
+          // the memory of the process is shared by every session of a server
+          return F.NIL;
+        }
         long freeMemory = Runtime.getRuntime().totalMemory();
         return F.ZZ(freeMemory);
       }
@@ -1571,6 +1603,10 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
+        if (!FileSandbox.isHostVisible(engine)) {
+          // the memory of the process is shared by every session of a server
+          return F.NIL;
+        }
         long freeMemory = Runtime.getRuntime().freeMemory();
         return F.ZZ(freeMemory);
       }
@@ -1594,6 +1630,10 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
+        if (!FileSandbox.isHostVisible(engine)) {
+          // the memory of the process is shared by every session of a server
+          return F.NIL;
+        }
         long freeMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         return F.ZZ(freeMemory);
       }
@@ -3080,6 +3120,96 @@ public final class Programming {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.HOLDALL);
+    }
+  }
+
+  /** When the process's session started, for a kernel which is the user's own. */
+  private static final long PROCESS_START_NANOS = System.nanoTime();
+
+  /**
+   * Seconds since the session started. A sandboxed kernel counts from the creation of its own
+   * engine: how long a server has been running is not the business of one of its sessions.
+   */
+  private static double sessionSeconds(EvalEngine engine) {
+    long start =
+        FileSandbox.isHostVisible(engine) ? PROCESS_START_NANOS : engine.getSessionStartNanos();
+    return (System.nanoTime() - start) / 1.0e9;
+  }
+
+  /** <code>SessionTime()</code> - the wall-clock seconds since the session started. */
+  private static final class SessionTime extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        return F.num(sessionSeconds(engine));
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_0;
+    }
+  }
+
+  /**
+   * <code>TimeUsed()</code> - the CPU seconds the process has used. Where that can't be known - on
+   * Android, with {@link Config#DISABLE_JMX}, or in a sandbox, where the process is shared by every
+   * session of a server - the session's own wall-clock time, as <code>Timing</code> falls back on
+   * <code>AbsoluteTiming</code>.
+   */
+  private static final class TimeUsed extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        if (FileSandbox.isHostVisible(engine) && !Config.DISABLE_JMX) {
+          double seconds = processCpuSeconds();
+          if (seconds >= 0.0) {
+            return F.num(seconds);
+          }
+        }
+        return F.num(sessionSeconds(engine));
+      }
+      return engine.checkBuiltinArgsSize(ast, this);
+    }
+
+    /** The CPU seconds of the process, or <code>-1.0</code> if the platform can't tell. */
+    private static double processCpuSeconds() {
+      try {
+        java.lang.management.OperatingSystemMXBean system =
+            ManagementFactory.getOperatingSystemMXBean();
+        if (system instanceof com.sun.management.OperatingSystemMXBean) {
+          long nanos = ((com.sun.management.OperatingSystemMXBean) system).getProcessCpuTime();
+          if (nanos >= 0L) {
+            return nanos / 1.0e9;
+          }
+        }
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        if (bean.isCurrentThreadCpuTimeSupported()) {
+          return bean.getCurrentThreadCpuTime() / 1.0e9;
+        }
+      } catch (LinkageError | RuntimeException ex) {
+        // a platform without java.lang.management or com.sun.management
+      }
+      return -1.0;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_0;
+    }
+  }
+
+  /** <code>$TimeUnit</code> - the smallest time interval in seconds recorded, WMA's value. */
+  private static final class $TimeUnit extends AbstractSymbolEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.QQ(1, 100);
     }
   }
 

@@ -11,7 +11,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
     // "");
     // prints RecursionLimitExeceeded
     check("Product(f(x), {x, x, x+1})", //
-        "Product(f(x),{x,x,x+1})");
+        "Product(f(x),{x,x,1+x})");
 
     // message Product: Argument {} at position 2 does not have the correct form for an iterator.
     check("Product(-3/2,\"\",{-1/2,-2,3},-1+I,{0,0,0,0})", //
@@ -264,12 +264,13 @@ public class ProductTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSymbolicProduct016() {
+    // a shifted factor gives Gamma, Product(k, {k,3,n}) gives n!/2
     check("Product(k + 2, {k, 1, n})", //
-        "(2+n)!/2");
+        "Gamma(3+n)/2");
 
     // Product(k + 3, {k, 1, n}) -> Pochhammer(1, n + 3) / Pochhammer(1, 3) -> / 6
     check("Product(k + 3, {k, 1, n})", //
-        "(3+n)!/6");
+        "Gamma(4+n)/6");
   }
 
   @Test
@@ -427,5 +428,69 @@ public class ProductTest extends ExprEvaluatorTestCase {
   public void testProductListFactor() {
     check("Product({i,i^2}, {i,1,n})", //
         "{n!,(n!)^2}");
+  }
+
+  @Test
+  public void testProductRationalFunctionGamma() {
+    // Product(p(i), {i,a,n}) over the exact complex roots r of p: Gamma(n+1-r)/Gamma(a-r);
+    // the constant Gammas of root pairs are combined by the reflection formula
+    check("Product(1 + 1/(i + 1)^2, {i, 1, n})", //
+        "(Gamma(2-I+n)*Gamma(2+I+n)*Sinh(Pi))/(2*Pi*Gamma(2+n)^2)");
+    // compare with the explicit product for n == 5
+    check(
+        "Chop(N((Product(1 + 1/(i + 1)^2, {i, 1, n}) /. n -> 5) / Product(1 + 1/(i + 1)^2, {i, 1, 5}) - 1))", //
+        "0");
+    // only the bare iterator gives a factorial
+    check("Product(2*k, {k, 1, n})", //
+        "2^n*Gamma(1+n)");
+    check("Product(2*k + 2, {k, 1, n})", //
+        "2^n*Gamma(2+n)");
+    check("Product(k, {k, 3, n})", //
+        "n!/2");
+    check("Product((i^2 + 1)/i^2, {i, 1, n})", //
+        "(Gamma(1-I+n)*Gamma(1+I+n)*Sinh(Pi))/(Pi*Gamma(1+n)^2)");
+    check("Pochhammer(2, n)", //
+        "Pochhammer(2,n)");
+    check("Pochhammer(3, n - 2)", //
+        "Pochhammer(3,-2+n)");
+    check("Product(i^2+1, {i, 1, n})", //
+        "(Gamma(1-I+n)*Gamma(1+I+n)*Sinh(Pi))/Pi");
+    // compare with the explicit product for n == 5
+    check("Chop(N((Product(i^2+1, {i, 1, n}) /. n -> 5) / Product(i^2+1, {i, 1, 5}) - 1))", //
+        "0");
+    // Gamma(1/2+z)*Gamma(1/2-z) == Pi/Cos(Pi*z)
+    check("Product(i^2+i+1, {i, 0, n})", //
+        "(Cosh(1/2*Sqrt(3)*Pi)*Gamma(3/2-I*1/2*Sqrt(3)+n)*Gamma(3/2+I*1/2*Sqrt(3)+n))/Pi");
+    // compare with the explicit product for n == 5
+    check("Chop(N((Product(i^2+i+1, {i, 0, n}) /. n -> 5) / Product(i^2+i+1, {i, 0, 5}) - 1))", //
+        "0");
+    // real irrational roots
+    check("Product(i^2-2, {i, 2, n})", //
+        "(-Gamma(1-Sqrt(2)+n)*Gamma(1+Sqrt(2)+n)*Sin(Sqrt(2)*Pi))/(Sqrt(2)*Pi)");
+    // compare with the explicit product for n == 5
+    check("Chop(N((Product(i^2-2, {i, 2, n}) /. n -> 5) / Product(i^2-2, {i, 2, 5}) - 1))", //
+        "0");
+    check("Product(i^2+4, {i, 1, n})", //
+        "(Cosh(Pi)*Gamma(1-I*2+n)*Gamma(1+I*2+n)*Sinh(Pi))/Pi");
+    // compare with the explicit product for n == 5
+    check("Chop(N((Product(i^2+4, {i, 1, n}) /. n -> 5) / Product(i^2+4, {i, 1, 5}) - 1))", //
+        "0");
+    check("Product(i^3+1, {i, 1, n})", //
+        "(Cosh(1/2*Sqrt(3)*Pi)*Gamma(2+n)*Gamma(1/2-I*1/2*Sqrt(3)+n)*Gamma(1/2+I*1/2*Sqrt(\n"
+            + "3)+n))/Pi");
+    // compare with the explicit product for n == 5
+    check("Chop(N((Product(i^3+1, {i, 1, n}) /. n -> 5) / Product(i^3+1, {i, 1, 5}) - 1))", //
+        "0");
+    check("Product(2*i^2+2, {i, 1, n})", //
+        "(2^n*Gamma(1-I+n)*Gamma(1+I+n)*Sinh(Pi))/Pi");
+    // compare with the explicit product for n == 5
+    check("Chop(N((Product(2*i^2+2, {i, 1, n}) /. n -> 5) / Product(2*i^2+2, {i, 1, 5}) - 1))", //
+        "0");
+    check("Product((i^2+1)/(i^2+4), {i, 1, n})", //
+        "(Gamma(1-I+n)*Gamma(1+I+n)*Sech(Pi))/(Gamma(1-I*2+n)*Gamma(1+I*2+n))");
+    // compare with the explicit product for n == 5
+    check(
+        "Chop(N((Product((i^2+1)/(i^2+4), {i, 1, n}) /. n -> 5) / Product((i^2+1)/(i^2+4), {i, 1, 5}) - 1))", //
+        "0");
   }
 }

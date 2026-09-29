@@ -81,7 +81,7 @@ public class RSolveTest {
   public void testFirstOrderVariableCoefficients() {
     // a(n+1) == (n+1)*a(n)
     check("RSolve(a(n+1) == (n+1)*a(n), a(n), n)", //
-        "{{a(n)->C(1)*n!}}");
+        "{{a(n)->C(1)*Pochhammer(1,n)}}");
   }
 
   @Test
@@ -140,7 +140,7 @@ public class RSolveTest {
     // The EGF method maps this to y'(x) = y(x), yields y(x) = C e^x,
     // and extracts the coefficient n! * C(1).
     check("RSolve(a(n+1) == (n+1)*a(n), a(n), n)", //
-        "{{a(n)->C(1)*n!}}");
+        "{{a(n)->C(1)*Pochhammer(1,n)}}");
   }
 
   // Hypergeometric / Pochhammer Mapping
@@ -157,7 +157,7 @@ public class RSolveTest {
     // Tests A != 1 scaling factor: A^n * Gamma(...)
     check("RSolve(a(n+1) == 3*(n + 2)*a(n), a(n), n)", //
         // "{{a(n)->3^(1+n)*C(1)*Pochhammer(1,1+n)}}");
-        "{{a(n)->(C(1)*(1+n)!)/(2*3^(1-n))}}");
+        "{{a(n)->3^(1+n)*C(1)*Pochhammer(1,1+n)}}");
   }
 
   // Systems of Recurrence Equations
@@ -263,7 +263,7 @@ public class RSolveTest {
     // Verifies fractional Pochhammer index mapping and fraction absorption
     check("RSolve(a(n+1) == 3*(n + 2)*a(n), a(n), n)", //
         // "{{a(n)->3^(1+n)*C(1)*Pochhammer(1,1+n)}}");
-        "{{a(n)->(C(1)*(1+n)!)/(2*3^(1-n))}}");
+        "{{a(n)->3^(1+n)*C(1)*Pochhammer(1,1+n)}}");
 
     check("RSolve(a(n+1) == (n + 1/2)*a(n), a(n), n)", //
         // "{{a(n)->C(1)*Pochhammer(3/2,-1+n)}}");

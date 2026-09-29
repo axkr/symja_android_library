@@ -8,6 +8,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apfloat.ApfloatInterruptedException;
@@ -232,6 +233,8 @@ public class Errors {
       "dtop", "Directory stack is empty.", //
       "filex", "Cannot overwrite existing file `1`.", //
       "nffil", "File not found during `1`.", //
+      "fdnfnd", "Directory or file `1` not found.", //
+      "badfile", "The specified argument, `1`, should be a valid string or File object.", //
       "nodir", "Directory `1` not found.", //
       "fitc", "The number of coordinates (`1`) is not equal to the number of variables (`2`).", //
       "flpar", "Parameter specification `1` in `2` should be a symbol or a list of symbols.", //
@@ -248,6 +251,13 @@ public class Errors {
       "heads", "Heads `1` and `2` are expected to be the same.", //
       "heads2", "Heads `1` and `2` at positions `3` and `4` are expected to be the same.", //
       "herm", "The matrix `1` is not hermitian or real and symmetric.", //
+      "npdef", "The matrix `1` is not positive definite.", //
+      "rmeth",
+      "The value of the option Method -> `1` should be Cholesky, Multifrontal, Krylov, CofactorExpansion, OneStepRowReduction, DivisionFreeRowReduction, Direct, IterativeRefinement, Banded or Automatic.", //
+      "bdnmt",
+      "The method \"Banded\" accepts only matrices with elements that are machine-real or machine-complex numbers.", //
+      "invprp",
+      "The argument `1` is not a valid property. Specify \"Properties\" to obtain a list of valid properties.", //
       "hshtype", "`1` is not a known type of hash.", //
       "ibase", "Base `1` is not an integer greater than `2`.", //
       "idim", "`1` and `2` must have the same length.", //
@@ -851,11 +861,11 @@ public class Errors {
     }
     if (engine.isMessageDisabled(symbol.toString(), messageShortcut)) {
       // Off[Symbol::tag] - the message is not printed, and everything else about the evaluation
-      // stays as it was
+      // stays as it was. Check doesn't see it either.
       engine.setMessageShortcut(messageShortcut);
       return F.NIL;
     }
-    if (engine.getMessageListener() != null && !engine.isQuietMode()) {
+    if (engine.getMessageListener() != null && !isSilenced(engine)) {
       // a kernel driven over a link sends its messages on rather than printing them
       engine.getMessageListener().message(symbol, messageShortcut);
     }
@@ -871,14 +881,15 @@ public class Errors {
     }
     if (message == null) {
       message = "Undefined message shortcut: " + messageShortcut;
-      engine.setMessageShortcut(messageShortcut);
+      noteMessage(symbol, messageShortcut, engine);
       logMessage(symbol.toString(), message, engine);
     } else {
       try {
         final IAST cacheKey = F.List(symbol, F.stringx(messageShortcut), listOfParameters);
         Object value = engine.getObjectCache(cacheKey);
         if (value instanceof Errors) {
-          engine.setMessageShortcut(messageShortcut);
+          // printed once already in this evaluation, but generated again
+          noteMessage(symbol, messageShortcut, engine);
           return F.NIL;
         }
         Writer writer = new StringBuilderWriter();
@@ -890,7 +901,12 @@ public class Errors {
         }
 
         templateApply(message, writer, context);
-        engine.setMessageShortcut(messageShortcut);
+        noteMessage(symbol, messageShortcut, engine);
+        if (isSilenced(engine)) {
+          // not printed - so not remembered as printed either, or the same message generated
+          // later outside quiet mode would never be shown
+          return F.NIL;
+        }
         logMessage(symbol.toString(), writer.toString(), engine);
 
         engine.putObjectCache(cacheKey, ERRORS_INSTANCE);
@@ -917,8 +933,140 @@ public class Errors {
     logMessage(symbol.toString(), str, engine);
   }
 
-  public static void logMessage(String symbol, String str, EvalEngine engine) {
+  /**
+   * An enclosing <code>Check(expr, failexpr, messages)</code>. It records whether a message it
+   * listens to was generated while <code>expr</code> was evaluated.
+   */
+  public static final class CheckScope {
+    /**
+     * The Check was entered inside <code>Quiet</code>. It sees the messages of its own expression,
+     * but they are not printed, and an enclosing Check outside the <code>Quiet</code> doesn't see
+     * them.
+     */
+    private final boolean silent;
+
+    /** The <code>symbol::tag</code> names this Check listens to, or <code>null</code> for all. */
+    private final Set<String> messageNames;
+
+    /** Set by the thread which evaluates, also a worker thread of <code>TimeConstrained</code>. */
+    private volatile boolean fired = false;
+
+    private CheckScope(boolean silent, Set<String> messageNames) {
+      this.silent = silent;
+      this.messageNames = messageNames;
+    }
+
+    /** Whether a message this Check listens to was generated. */
+    public boolean isFired() {
+      return fired;
+    }
+  }
+
+  /**
+   * The Check scopes of the current thread, innermost first. An evaluation engine belongs to one
+   * thread, and a parallel kernel runs on a thread of its own.
+   */
+  private static final ThreadLocal<ArrayDeque<CheckScope>> CHECK_SCOPES =
+      ThreadLocal.withInitial(ArrayDeque::new);
+
+  /**
+   * Open the scope of a <code>Check</code>. It must be closed with {@link #exitCheck(CheckScope)}
+   * in a <code>finally</code> block.
+   *
+   * @param silent the Check was entered inside <code>Quiet</code>
+   * @param messageNames the <code>symbol::tag</code> names the Check listens to, or
+   *        <code>null</code> for all messages
+   */
+  public static CheckScope enterCheck(boolean silent, Set<String> messageNames) {
+    CheckScope scope = new CheckScope(silent, messageNames);
+    CHECK_SCOPES.get().push(scope);
+    return scope;
+  }
+
+  public static void exitCheck(CheckScope scope) {
+    ArrayDeque<CheckScope> scopes = CHECK_SCOPES.get();
+    if (scopes.peek() == scope) {
+      scopes.pop();
+    } else {
+      scopes.remove(scope);
+    }
+  }
+
+  /**
+   * The Check scopes of the current thread, to hand to a worker thread which evaluates on its
+   * behalf with {@link #inheritCheckScopes(Object)}: <code>TimeConstrained</code> evaluates its
+   * expression on a thread of its own, and <code>Check(TimeConstrained(1/0, 5), bad)</code> is
+   * <code>bad</code>.
+   *
+   * @return an opaque snapshot of the scopes
+   */
+  public static Object checkScopes() {
+    return new ArrayDeque<CheckScope>(CHECK_SCOPES.get());
+  }
+
+  /**
+   * Make the scopes of {@link #checkScopes()} the scopes of the current (worker) thread. It must be
+   * undone with {@link #clearCheckScopes()} in a <code>finally</code> block, the threads are
+   * pooled.
+   */
+  @SuppressWarnings("unchecked")
+  public static void inheritCheckScopes(Object scopes) {
+    CHECK_SCOPES.set(new ArrayDeque<CheckScope>((ArrayDeque<CheckScope>) scopes));
+  }
+
+  public static void clearCheckScopes() {
+    CHECK_SCOPES.remove();
+  }
+
+  /**
+   * Record that the message <code>symbol::tag</code> was generated, for the enclosing
+   * <code>Check</code>s.
+   *
+   * <p>
+   * A message generated in quiet mode - inside <code>Quiet</code>, or in an internal speculative
+   * evaluation like the ones <code>Limit</code> makes - is invisible to every Check, as WMA's
+   * <code>Check(Limit(Sin(x)/x,x->0),bad)</code> gives <code>1</code>. Otherwise each enclosing
+   * Check which listens to the message sees it, up to the first one entered inside
+   * <code>Quiet</code>: the Checks outside that <code>Quiet</code> don't.
+   */
+  public static void noteMessage(ISymbol symbol, String tag, EvalEngine engine) {
+    engine.setMessageShortcut(tag);
     if (engine.isQuietMode()) {
+      return;
+    }
+    ArrayDeque<CheckScope> scopes = CHECK_SCOPES.get();
+    if (scopes.isEmpty()) {
+      return;
+    }
+    String messageName = symbol.toString() + "::" + tag;
+    for (CheckScope scope : scopes) {
+      if (scope.messageNames == null || scope.messageNames.contains(messageName)) {
+        scope.fired = true;
+      }
+      if (scope.silent) {
+        break;
+      }
+    }
+  }
+
+  /**
+   * Whether messages must not be printed: in quiet mode, or inside a <code>Check</code> which was
+   * entered inside <code>Quiet</code>.
+   */
+  public static boolean isSilenced(EvalEngine engine) {
+    if (engine.isQuietMode()) {
+      return true;
+    }
+    for (CheckScope scope : CHECK_SCOPES.get()) {
+      if (scope.silent) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static void logMessage(String symbol, String str, EvalEngine engine) {
+    if (isSilenced(engine)) {
       // LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, str);
     } else {
       engine.getErrorPrintStream().append(symbol + ": " + str + "\n");

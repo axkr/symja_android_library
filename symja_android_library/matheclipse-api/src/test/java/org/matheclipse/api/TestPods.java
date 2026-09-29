@@ -2111,32 +2111,17 @@ public class TestPods {
     JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
 
     assertEquals(jsonStr, //
-        "{\n" //
-            + "  \"queryresult\" : {\n" //
-            + "    \"success\" : \"true\",\n" //
-            + "    \"numpods\" : 2,\n" //
-            + "    \"version\" : \"0.1\",\n" //
-            + "    \"pods\" : [ {\n" //
-            + "      \"title\" : \"Input\",\n" //
-            + "      \"scanner\" : \"Identity\",\n" //
-            + "      \"error\" : \"false\",\n" //
-            + "      \"numsubpods\" : 1,\n" //
-            + "      \"subpods\" : [ {\n" //
-            + "        \"plaintext\" : \"111*cm*convert*In*m\",\n" //
-            + "        \"sinput\" : \"111*cm*convert*In*m\"\n" //
-            + "      } ]\n" //
-            + "    }, {\n" //
-            + "      \"title\" : \"Evaluated result\",\n" //
-            + "      \"scanner\" : \"Expression\",\n" //
-            + "      \"error\" : \"false\",\n" //
-            + "      \"numsubpods\" : 1,\n" //
-            + "      \"subpods\" : [ {\n" //
-            + "        \"plaintext\" : \"111*cm*convert*In*m\",\n" //
-            + "        \"sinput\" : \"111*cm*convert*In*m\"\n" //
-            + "      } ]\n" //
-            + "    } ]\n" //
-            + "  }\n" //
-            + "}"); //
+        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
+            + "    \"numpods\" : 2,\n" + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
+            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
+            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
+            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"convert*111*cm*In*m\",\n"
+            + "        \"sinput\" : \"convert*111*cm*In*m\"\n" + "      } ]\n" + "    }, {\n"
+            + "      \"title\" : \"Result\",\n" + "      \"scanner\" : \"Identity\",\n"
+            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
+            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"111*cm*convert*In*m\",\n"
+            + "        \"sinput\" : \"convert*111*cm*In*m\"\n" + "      } ]\n" + "    } ]\n"
+            + "  }\n" + "}"); //
   }
 
   // @Test

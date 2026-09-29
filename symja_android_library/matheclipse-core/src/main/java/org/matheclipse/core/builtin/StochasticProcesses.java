@@ -293,7 +293,16 @@ public final class StochasticProcesses {
       }
       return Boolean.FALSE;
     }
+    if (process.isAST(S.PoissonProcess, 2)) {
+      double rate = process.first().evalfNaN();
+      return rate > 0.0 && Double.isFinite(rate) ? Boolean.FALSE : null;
+    }
     return null;
+  }
+
+  /** Whether the values of the process are integers: a counting process. */
+  public static boolean isIntegerValued(IExpr process) {
+    return process.isAST(S.PoissonProcess, 2);
   }
 
   /**
@@ -303,6 +312,23 @@ public final class StochasticProcesses {
   public static double[] simulate(IAST process, double[] times, Random random) {
     int n = times.length;
     double[] x = new double[n];
+    if (process.isAST(S.PoissonProcess, 2)) {
+      // a counting process: 0 at time 0, independent Poisson(rate*dt) increments
+      double rate = process.first().evalf();
+      double previous = 0.0;
+      double count = 0.0;
+      for (int i = 0; i < n; i++) {
+        double t = Math.max(times[i], 0.0);
+        double mean = rate * (t - previous);
+        if (mean > 0.0) {
+          count += new org.hipparchus.distribution.discrete.PoissonDistribution(mean)
+              .inverseCumulativeProbability(random.nextDouble());
+        }
+        x[i] = count;
+        previous = t;
+      }
+      return x;
+    }
     if (process.isAST(S.ARMAProcess)) {
       Arma arma = Arma.of(process);
       int p = arma.a.length;

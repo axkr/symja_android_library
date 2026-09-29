@@ -440,9 +440,15 @@ public class Assumptions extends AbstractAssumptions {
    * @return <code>null</code> if assumptions couldn't be assigned
    */
   private static IAssumptions addList(IAST ast, boolean intersection, Assumptions assumptions) {
+    if (!intersection) {
+      addUnequalsOfOr(ast, assumptions);
+    }
     if (ast.size() > 1 && ast.arg1().isAST()) {
       IAST temp = (IAST) ast.arg1();
-      if (!addSingleRelation(temp, true, assumptions)) {
+      // the first interval of an Or is intersected with the reals, but an unequal inside an Or
+      // isn't a fact
+      boolean firstIntersection = intersection || !temp.isAST(S.Unequal, 3);
+      if (!addSingleRelation(temp, firstIntersection, assumptions)) {
         return null;
       }
     }
@@ -521,7 +527,7 @@ public class Assumptions extends AbstractAssumptions {
         return false;
       }
     } else if (temp.isAST(S.Unequal, 3)) {
-      if (!addUnequal(temp, assumptions)) {
+      if (!addUnequal(temp, intersection, assumptions)) {
         return false;
       }
     } else if (temp.isAST(S.Inequality)) {
@@ -643,32 +649,83 @@ public class Assumptions extends AbstractAssumptions {
     assumptions.realRelationsMap.put(key, relations);
   }
 
-  private static boolean addUnequal(IAST equalsAST, Assumptions assumptions) {
-    // arg1 != arg2
-    if (equalsAST.arg2().isNumber()) {
-      INumber num = (INumber) equalsAST.arg2();
-      IExpr key = equalsAST.arg1();
+  /**
+   * An unequal <code>key != c</code> of a branch of the <code>Or</code> expression is a fact, if
+   * every branch implies it. For example <code>x != 0 || x &gt; 1</code> implies
+   * <code>x != 0</code>.
+   */
+  private static void addUnequalsOfOr(IAST or, Assumptions assumptions) {
+    Assumptions[] branches = new Assumptions[or.argSize()];
+    for (int i = 1; i < or.size(); i++) {
+      if (!or.get(i).isAST()) {
+        return;
+      }
+      Assumptions branch = new Assumptions();
+      if (branch.addAssumption(or.get(i)) == null) {
+        return;
+      }
+      branches[i - 1] = branch;
+    }
+    for (Assumptions branch : branches) {
+      for (Map.Entry<IExpr, ComplexRelations> entry : branch.complexRelationsMap.entrySet()) {
+        for (INumber value : entry.getValue().getUnequals()) {
+          boolean implied = true;
+          for (Assumptions other : branches) {
+            if (!other.isUnequal(entry.getKey(), value)) {
+              implied = false;
+              break;
+            }
+          }
+          if (implied) {
+            ComplexRelations relations = assumptions.complexRelationsMap.get(entry.getKey());
+            if (relations == null) {
+              relations = new ComplexRelations();
+            }
+            relations.addUnequals(value);
+            assumptions.complexRelationsMap.put(entry.getKey(), relations);
+          }
+        }
+      }
+    }
+  }
 
-      ComplexRelations relations = assumptions.complexRelationsMap.get(key);
-      if (relations == null) {
-        relations = new ComplexRelations();
-      }
-      relations.addUnequals(num);
-      assumptions.complexRelationsMap.put(key, relations);
+  /**
+   * Add the assumption <code>arg1 != arg2</code>.
+   *
+   * @param intersection <code>false</code> if the assumption is part of an <code>Or</code>
+   *        expression; an unequal isn't a fact in this case and is ignored here, see
+   *        {@link #addUnequalsOfOr(IAST, Assumptions)}
+   * @return always <code>true</code>, an unsupported unequal only weakens the assumptions
+   */
+  private static boolean addUnequal(IAST equalsAST, boolean intersection,
+      Assumptions assumptions) {
+    if (!intersection) {
       return true;
     }
-    if (equalsAST.arg1().isNumber()) {
-      INumber num = (INumber) equalsAST.arg1();
-      IExpr key = equalsAST.arg2();
-      ComplexRelations relations = assumptions.complexRelationsMap.get(key);
-      if (relations == null) {
-        relations = new ComplexRelations();
+    // arg1 != arg2
+    IExpr key;
+    INumber num;
+    if (equalsAST.arg2().isNumber()) {
+      num = (INumber) equalsAST.arg2();
+      key = equalsAST.arg1();
+    } else if (equalsAST.arg1().isNumber()) {
+      num = (INumber) equalsAST.arg1();
+      key = equalsAST.arg2();
+    } else {
+      // arg1 - arg2 != 0
+      key = EvalEngine.get().evaluate(F.Subtract(equalsAST.arg1(), equalsAST.arg2()));
+      if (key.isNumber()) {
+        return true;
       }
-      relations.addUnequals(num);
-      assumptions.complexRelationsMap.put(key, relations);
-      return true;
+      num = F.C0;
     }
-    return false;
+    ComplexRelations relations = assumptions.complexRelationsMap.get(key);
+    if (relations == null) {
+      relations = new ComplexRelations();
+    }
+    relations.addUnequals(num);
+    assumptions.complexRelationsMap.put(key, relations);
+    return true;
   }
 
   @Override
@@ -782,7 +839,7 @@ public class Assumptions extends AbstractAssumptions {
             return this;
           }
         } else if (ast.isAST(S.Unequal, 3)) {
-          if (addUnequal(ast, this)) {
+          if (addUnequal(ast, true, this)) {
             return this;
           }
         } else if (ast.isAST(S.Inequality)) {
@@ -860,6 +917,20 @@ public class Assumptions extends AbstractAssumptions {
   }
 
   @Override
+  public IAST pointValues() {
+    IASTAppendable result = F.ListAlloc(realRelationsMap.size());
+    for (Map.Entry<IExpr, RealRelations> entry : realRelationsMap.entrySet()) {
+      if (entry.getKey().isVariable()) {
+        IExpr point = IntervalDataSym.toSinglePoint(entry.getValue().getInterval());
+        if (point.isPresent()) {
+          result.append(F.Rule(entry.getKey(), point));
+        }
+      }
+    }
+    return result;
+  }
+
+  @Override
   public IAST zeroPolynomials() {
     IASTAppendable result = F.ListAlloc(realRelationsMap.size());
     for (Map.Entry<IExpr, RealRelations> entry : realRelationsMap.entrySet()) {
@@ -892,13 +963,18 @@ public class Assumptions extends AbstractAssumptions {
     if (realRelationsMap.isEmpty()) {
       return false;
     }
-    for (RealRelations val : realRelationsMap.values()) {
-      IAST interval = val.getInterval();
+    for (Map.Entry<IExpr, RealRelations> entry : realRelationsMap.entrySet()) {
+      IAST interval = entry.getValue().getInterval();
       if (IntervalDataSym.isEmptySet(interval)) {
         return true;
       }
     }
     return false;
+  }
+
+  @Override
+  public boolean hasRelations() {
+    return !complexRelationsMap.isEmpty() || !realRelationsMap.isEmpty();
   }
 
   private final boolean isDomain(IExpr expr, ISymbol domain) {

@@ -81,7 +81,7 @@ public class CasoratianTest extends ExprEvaluatorTestCase {
 
     // A coefficient depending on n leaves a product, which is evaluated when it closes.
     check("Casoratian(y(n+2) - (n+1)*y(n) == 0, y, n)", //
-        "(-1)^n*n!");
+        "(-1)^n*Gamma(1+n)");
 
     // Third order: the ratio is (-1)^3*11 == -11.
     check("Casoratian(y(n+3) - 5*y(n+1+1) + 11*y(n) == 0, y, n)", //
@@ -91,9 +91,9 @@ public class CasoratianTest extends ExprEvaluatorTestCase {
     check("Casoratian(y(n+2) == y(n+1) + y(n), y, n)", //
         "(-1)^n");
 
-    // A coefficient which is a polynomial in n leaves a factorial.
+    // A coefficient which is a polynomial in n leaves a Gamma (a shifted factorial).
     check("Casoratian(y(n+2) - (n + 5)*y(n) == 0, y, n)", //
-        "1/24*(-1)^n*(4+n)!");
+        "1/24*(-1)^n*Gamma(5+n)");
 
     // The dependent variable may be given applied to the variable as well.
     check("Casoratian(y(n+2) - 3*y(n+1) + 2*y(n) == 0, y(n), n)", //

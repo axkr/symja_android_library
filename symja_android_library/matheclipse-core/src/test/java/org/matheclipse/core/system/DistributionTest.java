@@ -551,9 +551,10 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         + "PDF(InverseGammaDistribution(2, 3), -1), CDF(InverseGammaDistribution(2,3,2,1), 5/2)}", //
         "{9/E^3,4/E^3,0,5/E^4}");
     // machine numbers agree with the exact form
-    check("{PDF(InverseGammaDistribution(2.5, 1.5), 2.3), CDF(InverseGammaDistribution(2.5, 1.5), 2.3), " //
-        + "PDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), 2.3), " //
-        + "CDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), 2.3)}", //
+    check(
+        "{PDF(InverseGammaDistribution(2.5, 1.5), 2.3), CDF(InverseGammaDistribution(2.5, 1.5), 2.3), " //
+            + "PDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), 2.3), " //
+            + "CDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), 2.3)}", //
         "{0.0585206,0.934484,0.200833,0.814662}");
     check("{N(PDF(InverseGammaDistribution(5/2, 3/2), 23/10)), " //
         + "N(CDF(InverseGammaDistribution(5/2, 3/2, 4/5, 1), 23/10))}", //
@@ -564,7 +565,8 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{3.83286,0.626495}");
     check("NIntegrate(PDF(InverseGammaDistribution(2.5, 1.5, 0.8, 1), x), {x, 1, Infinity})", //
         "1.0");
-    check("CDF(InverseGammaDistribution(2.5,1.5,0.8,1), Median(InverseGammaDistribution(2.5,1.5,0.8,1)))", //
+    check(
+        "CDF(InverseGammaDistribution(2.5,1.5,0.8,1), Median(InverseGammaDistribution(2.5,1.5,0.8,1)))", //
         "0.5");
     // sampler
     check("AllTrue(RandomVariate(InverseGammaDistribution(2, 3), 50), #>0&)", //
@@ -573,7 +575,8 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "True");
     check("Dimensions(RandomVariate(InverseGammaDistribution(2, 3), {2,3}))", //
         "{2,3}");
-    check("Table(SeedRandom(9); RandomVariate(InverseGammaDistribution(2,3,2,1), 4), {2}) // Apply(SameQ)", //
+    check(
+        "Table(SeedRandom(9); RandomVariate(InverseGammaDistribution(2,3,2,1), 4), {2}) // Apply(SameQ)", //
         "True");
     check("RandomVariate(InverseGammaDistribution(-2, 3))", //
         "RandomVariate(InverseGammaDistribution(-2,3))");
@@ -604,8 +607,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         + "ConditionalExpression(Piecewise({{m+b/InverseGammaRegularized(a,q)^(1/g),0<q<1}," //
         + "{m,q<=0}},Infinity),0<=q<=1)", //
         "True");
-    check("{InverseCDF(InverseGammaDistribution(2, 3), 0), InverseCDF(InverseGammaDistribution(2, 3), 1), " //
-        + "InverseCDF(InverseGammaDistribution(2, 3, 2, 1), 0)}", //
+    check(
+        "{InverseCDF(InverseGammaDistribution(2, 3), 0), InverseCDF(InverseGammaDistribution(2, 3), 1), " //
+            + "InverseCDF(InverseGammaDistribution(2, 3, 2, 1), 0)}", //
         "{0,Infinity,1}");
     check("InverseCDF(InverseGammaDistribution(2, 3), 1/2)", //
         "3/InverseGammaRegularized(2,1/2)");
@@ -640,7 +644,8 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("{Skewness(InverseGammaDistribution(1000000.0, 1.5, 0.7, 2.0)), " //
         + "Kurtosis(InverseGammaDistribution(1000000.0, 1.5, 0.7, 2.0))}", //
         "{0.00528573,3.00005}");
-    check("{Variance(InverseGammaDistribution(2.5, 1, 0.8, 0)), Kurtosis(InverseGammaDistribution(4.5, 1, 0.8, 0))}", //
+    check(
+        "{Variance(InverseGammaDistribution(2.5, 1, 0.8, 0)), Kurtosis(InverseGammaDistribution(4.5, 1, 0.8, 0))}", //
         "{Indeterminate,Indeterminate}");
     // an exact large shape evaluates; N needs the digits the central moments cancel
     check("N(Kurtosis(InverseGammaDistribution(300, 3/2, 7/10, 2)), 40)", //
@@ -657,25 +662,31 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("{CDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0), " //
         + "CDF(GammaDistribution(1000.0, 1.5, 0.7, 2.0), 28971.3)}", //
         "{0.509403,0.506898}");
-    check("{PDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0) - PDF(GammaDistribution(200.0, 1.0), 200.0), " //
-        + "CDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0) - CDF(GammaDistribution(200.0, 1.0), 200.0)} // Chop", //
+    check(
+        "{PDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0) - PDF(GammaDistribution(200.0, 1.0), 200.0), " //
+            + "CDF(GammaDistribution(200.0, 1.0, 1.0, 0.0), 200.0) - CDF(GammaDistribution(200.0, 1.0), 200.0)} // Chop", //
         "{0,0}");
-    check("{PDF(GammaDistribution(2.0, 1.5, 0.05, 0.0), 10.0^19), CDF(GammaDistribution(2.0, 1.5, 0.05, 0.0), 10.0^19)}", //
+    check(
+        "{PDF(GammaDistribution(2.0, 1.5, 0.05, 0.0), 10.0^19), CDF(GammaDistribution(2.0, 1.5, 0.05, 0.0), 10.0^19)}", //
         "{6.1431*10^-23,0.998432}");
-    check("{PDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 5.0), N(PDF(GammaDistribution(9/2, 3/2, 4/5, 2), 5)), " //
-        + "PDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 1.0), CDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 1.0)}", //
+    check(
+        "{PDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 5.0), N(PDF(GammaDistribution(9/2, 3/2, 4/5, 2), 5)), " //
+            + "PDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 1.0), CDF(GammaDistribution(4.5, 1.5, 0.8, 2.0), 1.0)}", //
         "{0.0487396,0.0487396,0,0}");
     // machine numbers in the 4 argument form: Gamma(a) overflows a double from a > 171 on and the
     // central moments cancel most of their digits (reference values from 80 digit arithmetic)
-    check("{Mean(GammaDistribution(1000.0, 1.5, 0.7, 2.0)), Kurtosis(GammaDistribution(1000.0, 1.5, 0.7, 2.0))}", //
+    check(
+        "{Mean(GammaDistribution(1000.0, 1.5, 0.7, 2.0)), Kurtosis(GammaDistribution(1000.0, 1.5, 0.7, 2.0))}", //
         "{28971.33,3.01752}");
     check("{Mean(GammaDistribution(1000000.0, 1.5, 0.7, 2.0)), " //
         + "Kurtosis(GammaDistribution(1000000.0, 1.5, 0.7, 2.0))}", //
         "{5.59139*10^8,3.00002}");
-    check("{Mean(GammaDistribution(2.0, 1.5, 0.05, 0.0)), Kurtosis(GammaDistribution(2.0, 1.5, 0.05, 0.0))}", //
+    check(
+        "{Mean(GammaDistribution(2.0, 1.5, 0.05, 0.0)), Kurtosis(GammaDistribution(2.0, 1.5, 0.05, 0.0))}", //
         "{7.66364*10^19,5.1803*10^21}");
-    check("N({Mean(GammaDistribution(9/2, 3/2, 4/5, 2)), Kurtosis(GammaDistribution(9/2, 3/2, 4/5, 2))}) - " //
-        + "{Mean(GammaDistribution(4.5, 1.5, 0.8, 2.0)), Kurtosis(GammaDistribution(4.5, 1.5, 0.8, 2.0))} // Chop", //
+    check(
+        "N({Mean(GammaDistribution(9/2, 3/2, 4/5, 2)), Kurtosis(GammaDistribution(9/2, 3/2, 4/5, 2))}) - " //
+            + "{Mean(GammaDistribution(4.5, 1.5, 0.8, 2.0)), Kurtosis(GammaDistribution(4.5, 1.5, 0.8, 2.0))} // Chop", //
         "{0,0}");
     check("Module({d=GammaDistribution(2.5, 1.5, 1.3, 0.5), m1, m2, m4}, " //
         + "m1=NIntegrate(x*PDF(d,x),{x,0.5,Infinity}); " //
@@ -816,7 +827,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testVonMisesDistribution() {
-    // Mathematica: Piecewise[{{E^(2*Cos[1-x])/(2*Pi*BesselI[0,2]), 1-Pi <= x <= 1+Pi}}, 0]
+    // Piecewise[{{E^(2*Cos[1-x])/(2*Pi*BesselI[0,2]), 1-Pi <= x <= 1+Pi}}, 0]
     check("PDF(VonMisesDistribution(m,k),x)", //
         "Piecewise({{E^(k*Cos(m-x))/(2*Pi*BesselI(0,k)),m-Pi<=x<=m+Pi}},0)");
     check("Mean(VonMisesDistribution(m,k))", //
@@ -849,8 +860,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "0.75");
     check("Length(RandomVariate(VonMisesDistribution(1,2),100))", //
         "100");
-    check("Module({s=RandomVariate(VonMisesDistribution(1,2),2000)},"
-        + " {Min(s)>1-Pi, Max(s)<1+Pi})", //
+    check(
+        "Module({s=RandomVariate(VonMisesDistribution(1,2),2000)},"
+            + " {Min(s)>1-Pi, Max(s)<1+Pi})", //
         "{True,True}");
   }
 
@@ -870,7 +882,6 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     // symbolic parameters keep returning unevaluated instead of a number
     check("N(Variance(VonMisesDistribution(m,k)))", //
         "Variance(VonMisesDistribution(m,k))");
-    // Mathematica leaves this unevaluated for exact parameters too - only N(...) integrates
     check("Variance(VonMisesDistribution(1,2))", //
         "Variance(VonMisesDistribution(1,2))");
     // a closed form always wins over the fallback
@@ -911,16 +922,19 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("N(Mean(TruncatedDistribution({-Infinity,0}, NormalDistribution(0,1))))", //
         "-0.797885");
     // the exponential distribution is memoryless, so truncating from below shifts it by 1
-    check("NExpectation(x, Distributed(x, TruncatedDistribution({1,Infinity}, ExponentialDistribution(2))))", //
+    check(
+        "NExpectation(x, Distributed(x, TruncatedDistribution({1,Infinity}, ExponentialDistribution(2))))", //
         "1.5");
-    check("NExpectation(x, Distributed(x, TruncatedDistribution({0,Infinity}, ExponentialDistribution(2))))", //
+    check(
+        "NExpectation(x, Distributed(x, TruncatedDistribution({0,Infinity}, ExponentialDistribution(2))))", //
         "0.5");
     check("NExpectation(x, Distributed(x, TruncatedDistribution({0,1}, NormalDistribution(0,1))))", //
         "0.459862");
     check("Length(RandomVariate(TruncatedDistribution({0,1}, NormalDistribution(0,1)), 50))", //
         "50");
-    check("Module({s=RandomVariate(TruncatedDistribution({0,1},NormalDistribution(0,1)),200)},"
-        + " {Min(s)>=0, Max(s)<=1})", //
+    check(
+        "Module({s=RandomVariate(TruncatedDistribution({0,1},NormalDistribution(0,1)),200)},"
+            + " {Min(s)>=0, Max(s)<=1})", //
         "{True,True}");
     // a discrete distribution isn't supported and stays unevaluated instead of being wrong
     check("PDF(TruncatedDistribution({1,5}, PoissonDistribution(3)), x)", //
@@ -1626,8 +1640,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "0");
     check("Probability(Abs(x) > 1, Distributed(x,ExponentialDistribution(2/3)))", //
         "1/E^(2/3)");
+    // was the wrong answer -1/E^y before the definite integral was split at x == -1, 1
     check("Probability(Abs(x) < 1, Distributed(x,ExponentialDistribution(y)))", //
-        "-1/E^y");
+        "1-1/E^y");
 
     check("Probability(Abs(x-1) < 1, Distributed(x,ExponentialDistribution(y)))", //
         "1-1/E^(2*y)");

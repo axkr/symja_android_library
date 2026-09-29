@@ -341,6 +341,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       Path path = SymjaDirectories.baseDirectory();
       return path == null ? F.CEmptyString : F.stringx(path.toString());
     }
@@ -470,6 +474,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       String userHome = System.getProperty("user.home");
       if (userHome == null) {
         return F.CEmptyString;
@@ -672,6 +680,10 @@ public class ConstantDefinitions {
       // is the search path for executables and has nothing to do with packages.
       // through FileSandbox, so that a sandboxed session reports the directory it can actually
       // read rather than the host's home directory
+      if (!Config.isFileSystemEnabled(engine)) {
+        // nothing is read from a directory, and the host's directories are not to be named
+        return F.CEmptyList;
+      }
       List<java.nio.file.Path> searchPath = FileSandbox.searchPath(engine);
       IASTAppendable list = F.ListAlloc(searchPath.size());
       for (java.nio.file.Path directory : searchPath) {
@@ -782,9 +794,9 @@ public class ConstantDefinitions {
    * {@code "Imperial"}.
    *
    * <p>
-   * Mathematica seeds this from the geodetic location of the machine at the start of a session.
-   * Symja has no such location, so it starts at {@code "Metric"}; assigning to the symbol changes
-   * it for the session.
+   * WMA seeds this from the geodetic location of the machine at the start of a session. Symja has
+   * no such location, so it starts at {@code "Metric"}; assigning to the symbol changes it for the
+   * session.
    */
   private static class $UnitSystem extends AbstractSymbolEvaluator implements ISetValueEvaluator {
 
@@ -812,6 +824,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       long totalMemory = Runtime.getRuntime().maxMemory();
       return F.ZZ(totalMemory);
     }
@@ -821,6 +837,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       String tempDirectory = System.getProperty("java.io.tmpdir");
       if (tempDirectory == null) {
         return F.CEmptyString;
@@ -833,6 +853,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       // Deliberately not the same directory as $BaseDirectory: the user directory is read
       // after it, so a user can override an installation-wide setting.
       Path path = SymjaDirectories.userBaseDirectory();
@@ -844,6 +868,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       String userName = System.getProperty("user.name");
       if (userName == null) {
         return F.stringx("");
@@ -888,6 +916,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       String property = System.getProperty("symja.installation.directory");
       if (property != null && !property.isEmpty()) {
         return F.stringx(property);
@@ -936,6 +968,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       String name = System.getenv("HOSTNAME");
       if (name == null || name.isEmpty()) {
         name = System.getenv("COMPUTERNAME");
@@ -948,7 +984,7 @@ public class ConstantDefinitions {
           name = "";
         }
       }
-      // Mathematica reports the host name without its domain
+      // WMA reports the host name without its domain
       int dotPosition = name.indexOf('.');
       if (dotPosition > 0) {
         name = name.substring(0, dotPosition);
@@ -961,6 +997,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       return F.ZZ(ProcessHandle.current().pid());
     }
   }
@@ -1011,6 +1051,10 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel says nothing about the host
+        return F.NIL;
+      }
       String home = System.getProperty("user.home");
       if (home == null || home.isEmpty()) {
         return F.CEmptyString;

@@ -123,8 +123,8 @@ public class FormalSymbolTest extends ExprEvaluatorTestCase {
   @Test
   public void testBuiltinRules() {
     check("D(Tan(x),{x,n})", //
-        "KroneckerDelta(-1+n)*Sec(x)^2+n*Sum(((-1)^k*Binomial(-1+n,k)*Binomial(2*k,j)*Sin(\n"
-            + "1/2*n*Pi+2*(-j+k)*x))/((1+k)*Cos(x)^(2+2*k)*2^(2*k-n)*(-j+k)^(1-n)),{k,0,-1+n},{j,\n"
+        "KroneckerDelta(-1+n)*Sec(x)^2+n*Sum(((-1)^k*Binomial(2*k,j)*Binomial(-1+n,k)*Sin(\n"
+            + "1/2*n*Pi+2*(-j+k)*x))/(2^(2*k-n)*(1+k)*(-j+k)^(1-n)*Cos(x)^(2+2*k)),{k,0,-1+n},{j,\n"
             + "0,-1+k})+KroneckerDelta(n)*Tan(x)");
     check("Simplify(D(Tan(x),{x,n}) /. n->4)", //
         "16*Sec(x)^4*Tan(x)+8*Sec(x)^2*Tan(x)^3");

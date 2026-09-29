@@ -1662,7 +1662,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    * of this expression, because an argument is going to be added or replaced.
    * <p>
    * Call this instead of assigning <code>hashValue = 0</code> in every method which appends or
-   * replaces an argument. Methods which only remove or reorder arguments don't have to call it.
+   * replaces an argument. Methods which only remove or reorder arguments don't have to drop the
+   * eval flags, but they still have to reset <code>hashValue</code>, because the hash code depends
+   * on the number and the order of the arguments.
    *
    * @see IAST#IS_LISTABLE_THREADED
    */

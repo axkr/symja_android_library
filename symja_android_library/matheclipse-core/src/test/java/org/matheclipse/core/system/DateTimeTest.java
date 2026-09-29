@@ -544,6 +544,15 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     check("UnixTime(FromUnixTime(1577836800, TimeZone -> 0))", "1577836800");
     check("UnixTime(FromUnixTime(1577836800, TimeZone -> -5))", "1577836800");
     check("UnixTime(FromUnixTime(1000000000, TimeZone -> 5.5))", "1000000000");
+    // WMA: always an integer, a fraction of a second is dropped
+    check("{UnixTime({2020,1,1,0,0,0.6}), UnixTime({2020,1,1,0,0,0.4}), UnixTime({2000,1,1})}", //
+        "{1577836800,1577836800,946684800}");
+    check("IntegerQ(UnixTime())", //
+        "True");
+    // the instant itself, not the local wall clock read as GMT
+    long now = System.currentTimeMillis() / 1000L;
+    check("Abs(UnixTime()-" + now + ")<=2", //
+        "True");
   }
 
   @Test

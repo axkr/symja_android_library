@@ -2768,6 +2768,47 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testCheckQuietWMA() {
+    // the internal speculative evaluations of Limit hit 0*ComplexInfinity in quiet mode - WMA 1
+    check("Check(Limit(Sin(x)/x, x -> 0), bad)", //
+        "1");
+    check("Check(Limit(x*Log(x), x -> 0), bad)", //
+        "0");
+    // a message suppressed by Quiet or Off is not seen by an enclosing Check
+    check("Check(Quiet(1/0), bad)", //
+        "ComplexInfinity");
+    check("Off(Power::infy); r = Check(1/0, bad); On(Power::infy); r", //
+        "ComplexInfinity");
+    // ... but a Check inside Quiet sees the messages of its own expression
+    check("Quiet(Check(1/0, bad))", //
+        "bad");
+    check("Quiet(Check(Limit(Sin(x)/x, x -> 0), bad))", //
+        "1");
+    // every enclosing Check sees a message, up to a Quiet
+    check("Check(Check(1/0, in1), out1)", //
+        "out1");
+    check("Check(Quiet(Check(1/0, in1)), out1)", //
+        "in1");
+    // TimeConstrained evaluates on a thread of its own
+    check("Check(TimeConstrained(1/0, 5), bad)", //
+        "bad");
+    check("Check(TimeConstrained(1 + 1, 5), bad)", //
+        "2");
+    // the failure expression is evaluated
+    check("Check(1/0, 1 + 1)", //
+        "2");
+    // only the listed messages count
+    check("{Check(1/0; 2, bad, Power::infy), Check(1/0; 2, bad, Sin::argx), "
+        + "Check(Sin(1, 2); 3, bad, {Power::infy, Sin::argx})}", //
+        "{bad,2,bad}");
+    // a message of the user's own
+    check("f::boom = \"boom\"; Check(Message(f::boom); 1, bad)", //
+        "bad");
+    check("f::boom = \"boom\"; Off(f::boom); r = Check(Message(f::boom); 1, bad); On(f::boom); r", //
+        "1");
+  }
+
+  @Test
   public void testCheckAbort() {
     check("CheckAbort(Abort(); -1, 41) + 1", //
         "42");
@@ -10731,8 +10772,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "d = {1., 2., 3., 4., 5.}; e = ExponentialDistribution(1/3);"
             + " Round(10^12*DistributionFitTest(d, e, {\"KolmogorovSmirnov\", \"TestData\"}))", //
         "{716218417415,{286582880967,716218417415}}");
-    check("DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3), \"AllTests\")", //
-        "{AndersonDarling,CramerVonMises,KolmogorovSmirnov,Kuiper,PearsonChiSquare,WatsonUSquare}");
     check(
         "h = DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3),"
             + " \"HypothesisTestData\"); {Head(h), h(\"FittedDistribution\"), h(\"NotAProperty\")}", //
@@ -10804,11 +10843,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLinearSolveFunctionWithOptions() {
-    // the Method option is accepted, so LinearSolve(m, opts) is a LinearSolveFunction
-    check("LinearSolve({{1, 2}, {3, 4}}, Method -> \"Cholesky\") @ {1, 2}", //
-        "{0,1/2}");
+    // LinearSolve(m, opts) is a LinearSolveFunction
     check("LinearSolve({{2, 1}, {1, 2}}, Method -> \"Cholesky\") @ {1, 2}", //
         "{0,1}");
+    check("LinearSolve({{2, 1}, {1, 3}}, Method -> \"Cholesky\") @ {5, 6}", //
+        "{9/5,7/5}");
+    check("LinearSolve({{1, 2}, {3, 4}}, {5, 6}, Method -> \"Krylov\")", //
+        "{-4,9/2}");
+    // Mathematica: Cholesky needs a Hermitian positive definite matrix (herm, npdef), an unknown
+    // method is rmeth, Banded needs machine numbers (bdnmt); LinearSolve stays unevaluated
+    check("Head(Head(LinearSolve({{1, 2}, {3, 4}}, Method -> \"Cholesky\") @ {5, 6}))", //
+        "LinearSolve");
+    check("Head(LinearSolve({{1, 2}, {3, 4}}, {5, 6}, Method -> \"Cholesky\"))", //
+        "LinearSolve");
+    check("Head(LinearSolve({{1, 1}, {1, 1}}, {5, 5}, Method -> \"Cholesky\"))", //
+        "LinearSolve");
+    check("Head(LinearSolve({{-4, 2}, {2, -3}}, {5, 6}, Method -> \"Cholesky\"))", //
+        "LinearSolve");
+    check("LinearSolve({{2, I}, {-I, 3}}, {5, 6}, Method -> \"Cholesky\")", //
+        "{3-I*6/5,12/5+I}");
+    check("Head(LinearSolve({{1, 2}, {3, 4}}, {5, 6}, Method -> \"Foo\"))", //
+        "LinearSolve");
+    check("Head(LinearSolve({{1, 2}, {3, 4}}, {5, 6}, Method -> \"Banded\"))", //
+        "LinearSolve");
+    check("LinearSolve({{1.0, 2.0}, {3.0, 4.0}}, {5, 6}, Method -> \"Banded\")", //
+        "{-4.0,4.5}");
   }
 
   @Test
@@ -10982,6 +11041,55 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // different expressions
     check("Solve(Cos(x) == -1, x)[[All, 1, 2, 1]]", //
         "{-Pi+2*Pi*C(1),Pi+2*Pi*C(1)}");
+  }
+
+  @Test
+  public void testDistributionFitTestAllTestsAndInvalidProperty() {
+    // Mathematica leaves Cramer-von Mises out below 7 points
+    check("DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3), \"AllTests\")", //
+        "{AndersonDarling,KolmogorovSmirnov,Kuiper,PearsonChiSquare,WatsonUSquare}");
+    check("DistributionFitTest(N(Range(7)), ExponentialDistribution(1/3), \"AllTests\")", //
+        "{AndersonDarling,CramerVonMises,KolmogorovSmirnov,Kuiper,PearsonChiSquare,WatsonUSquare}");
+    // DistributionFitTest::invprp, unevaluated
+    check("Head(DistributionFitTest({1., 2., 3., 4., 5.}, ExponentialDistribution(1/3), \"Foo\"))", //
+        "DistributionFitTest");
+  }
+
+  @Test
+  public void testRandomFunctionPoissonProcess() {
+    // a counting process: integer values from 0, never decreasing
+    check("r = RandomFunction(PoissonProcess(1), {0, 1, 0.1}); {Length(r @ \"Times\"),"
+        + " First(r @ \"Path\"), And @@ IntegerQ /@ (r @ \"Values\"),"
+        + " Min(Differences(r @ \"Values\")) >= 0}", //
+        "{11,{0.0,0},True,True}");
+    check("RandomFunction(PoissonProcess(x), {0, 1, 0.1})", //
+        "RandomFunction(PoissonProcess(x),{0,1,0.1})");
+  }
+
+  @Test
+  public void testSolveBinomialExponential() {
+    // one family, as Mathematica: ((2*I*Pi*C(1))/Log(3) - Log(5)/Log(3))/2
+    check("Solve(3^(-2*x) == 5, x)", //
+        "{{x->ConditionalExpression((I*Pi*C(1))/Log(3)-Log(5)/(2*Log(3)),C(1)∈Integers)}}");
+    // Mathematica: (2*I*Pi*C(1) + Log(8))/3
+    check("Solve(E^(3*x) == 8, x)", //
+        "{{x->ConditionalExpression(I*2/3*Pi*C(1)+Log(8)/3,C(1)∈Integers)}}");
+    check("Solve(E^(3*x) == 8, x, Reals)", //
+        "{{x->Log(2)}}");
+  }
+
+  @Test
+  public void testRotateGraphicsPicture() {
+    // a display wrapper: the picture is drawn turned, the expression stays
+    check("Head(Rotate(Graphics({Circle({1, 0}, 0.2)}, PlotRange -> 2), Pi/3))", //
+        "Rotate");
+    check("ExportString(Rotate(Graphics({Circle({1, 0}, 0.2)}, PlotRange -> 2), Pi/3), \"SVG\") =="
+        + " ExportString(Graphics({Rotate(Circle({1, 0}, 0.2), Pi/3)}, PlotRange -> 2), \"SVG\")", //
+        "True");
+    check("ExportString(Rotate(Graphics({Circle({1, 0}, 0.2)}, PlotRange -> 2), Pi/2, {0, 0}),"
+        + " \"SVG\") == ExportString(Graphics({Rotate(Circle({1, 0}, 0.2), Pi/2, {0, 0})},"
+        + " PlotRange -> 2), \"SVG\")", //
+        "True");
   }
 
   @Test

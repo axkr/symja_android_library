@@ -4285,7 +4285,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           return S.Indeterminate;
         }
         if (first.isRealResult() || second.isRealResult()) {
-          IExpr temp = engine.evaluate(F.Times(first, second));
+          // 0*Infinity is an expected outcome here - it is Indeterminate, and the reciprocal
+          // strategy below takes over - so its Infinity::indet message is not the user's
+          IExpr temp = engine.evalQuiet(F.Times(first, second));
           if (!temp.isIndeterminate()) {
             return temp;
           }

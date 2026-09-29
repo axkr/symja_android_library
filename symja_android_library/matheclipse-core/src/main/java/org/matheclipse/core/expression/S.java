@@ -340,6 +340,15 @@ public class S {
   public final static IBuiltInSymbol $TimedOut = S.initFinalSymbol("$TimedOut", ID.$TimedOut);
 
   /**
+   * $TimeUnit(x) - TODO describe `$TimeUnit`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/$TimeUnit.md">$TimeUnit
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol $TimeUnit = S.initFinalSymbol("$TimeUnit", ID.$TimeUnit);
+
+  /**
    * $TimeZone(x) - TODO describe `$TimeZone`.
    * 
    * @see <a href=
@@ -21287,6 +21296,15 @@ public class S {
       S.initFinalSymbol("SessionSubmit", ID.SessionSubmit);
 
   /**
+   * SessionTime(x) - TODO describe `SessionTime`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SessionTime.md">SessionTime
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SessionTime = S.initFinalSymbol("SessionTime", ID.SessionTime);
+
+  /**
    * Set(expr, value) - evaluates `value` and assigns it to `expr`.
    * 
    * @see <a href=
@@ -23910,6 +23928,15 @@ public class S {
    */
   public final static IBuiltInSymbol TimeSystemConvert =
       S.initFinalSymbol("TimeSystemConvert", ID.TimeSystemConvert);
+
+  /**
+   * TimeUsed(x) - TODO describe `TimeUsed`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TimeUsed.md">TimeUsed
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TimeUsed = S.initFinalSymbol("TimeUsed", ID.TimeUsed);
 
   /**
    * TimeValue(p, i, n) - returns a time value calculation.

@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.Errors;
@@ -12,6 +11,7 @@ import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -41,8 +41,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     {
-      // Product[..., {Subscript[k, 1], 1, n}]: a subscript as the iterator variable, or a formal symbol
-      IExpr localized = org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
+      // Product[..., {Subscript[k, 1], 1, n}]: a subscript as the iterator variable, or a formal
+      // symbol
+      IExpr localized =
+          org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
       if (localized != null) {
         return localized;
       }
@@ -53,7 +55,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
         // An iterator is either a list, {i, imax} or {i, imin, imax}, or the bare symbol of an
         // indefinite product. A number is neither: Product inherits its unrolling from Table,
         // where a count is a valid specification - Table[x, 3] is {x, x, x} - and so answered
-        // Product(x, 3) with x^3. Mathematica leaves it alone.
+        // Product(x, 3) with x^3.
         return F.NIL;
       }
     }
@@ -66,14 +68,19 @@ public class Product extends ListFunctions.Table implements ProductRules {
       // F.expand() falls back to its argument and never returns NIL
       arg1 = F.expand(arg1, false, false, false);
     }
-    if (arg1.isTimes()) {
+    if (arg1.isTimes() && !isLinearIn(arg1, ast.last(), engine)) {
       IExpr resultTimes = engine.evaluate(arg1.mapThread(ast, 1));
       if (resultTimes.isTimes()) {
-        return engine.evaluate(F.FullSimplify(resultTimes));
+        return factorialsToGamma(engine.evaluate(F.FullSimplify(resultTimes)), engine);
       }
       return resultTimes;
     }
     IAST preevaledProduct = engine.preevalForwardBackwardAST(ast, 1);
+    if (preevaledProduct != ast && !preevaledProduct.equals(ast)) {
+      // continue with the evaluated arguments, so that a product which can't be computed is
+      // returned with them
+      return preevaledProduct;
+    }
     arg1 = preevaledProduct.arg1();
     return evaluateProduct(preevaledProduct, arg1, false, engine);
   }
@@ -141,8 +148,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
         // A zero factor does NOT make the product zero on its own: an empty range is the empty
         // product 1, so Product(0,{i,1,0}) is 1 and not 0. The range is examined below.
         try {
-          iterator = Iterator.createLocal((IAST) argN, preevaledProduct.argSize(), outerVariables,
-              engine);
+          iterator =
+              Iterator.createLocal((IAST) argN, preevaledProduct.argSize(), outerVariables, engine);
         } catch (final ValidateException ve) {
           return Errors.printMessage(S.Product, ve, engine);
         }
@@ -176,6 +183,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
               // Simplify the result to ensure factorial ratios are reduced
               symProd = engine.evaluate(F.Simplify(symProd));
+              symProd = factorialsToGamma(symProd, engine);
 
               if (preevaledProduct.isAST2()) {
                 return symProd;
@@ -268,6 +276,20 @@ public class Product extends ListFunctions.Table implements ProductRules {
    */
   public static IExpr tryClosedFormReduction(IExpr pK, IExpr k, IExpr lower, IExpr upper,
       EvalEngine engine) {
+    return tryClosedFormReduction(pK, k, lower, upper, false, engine);
+  }
+
+  /**
+   * Hypergeometric Term Recognition, see
+   * {@link #tryClosedFormReduction(IExpr, IExpr, IExpr, IExpr, EvalEngine)}.
+   *
+   * @param pochhammerForm write the product of a linear factor as <code>Pochhammer(start, count)
+   *        </code>, like WMA's <code>RSolve</code> does: <code>RSolve(a(n+1) == (n+1)*a(n), a(n),
+   *        n)</code> gives <code>C(1)*Pochhammer(1,n)</code>. Otherwise like WMA's
+   *        <code>Product</code>: <code>n!/2</code> and <code>Gamma(3+n)/2</code>
+   */
+  public static IExpr tryClosedFormReduction(IExpr pK, IExpr k, IExpr lower, IExpr upper,
+      boolean pochhammerForm, EvalEngine engine) {
     if (pK.isFree(k)) {
       IExpr count = engine.evaluate(F.Simplify(F.Plus(F.Subtract(upper, lower), F.C1)));
       return engine.evaluate(F.Power(pK, count));
@@ -285,18 +307,19 @@ public class Product extends ListFunctions.Table implements ProductRules {
         }
       } else {
         // Constant power: f(k)^p -> Product(f(k))^p
-        IExpr baseProd = tryClosedFormReduction(base, k, lower, upper, engine);
+        IExpr baseProd = tryClosedFormReduction(base, k, lower, upper, pochhammerForm, engine);
         if (baseProd.isPresent()) {
           return engine.evaluate(F.Power(baseProd, exponent));
         }
       }
     }
 
-    // 2. Intercept already-factored terms (e.g. (k + 1/2) * (k + 3/2))
-    if (pK.isTimes()) {
+    // 2. Intercept already-factored terms (e.g. (k + 1/2) * (k + 3/2)); a linear 2*k is a single
+    // factor below
+    if (pK.isTimes() && !isLinearIn(pK, F.list(k, lower, upper), engine)) {
       IASTAppendable res = F.TimesAlloc(pK.argSize());
       for (IExpr arg : (IAST) pK) {
-        IExpr termProd = tryClosedFormReduction(arg, k, lower, upper, engine);
+        IExpr termProd = tryClosedFormReduction(arg, k, lower, upper, pochhammerForm, engine);
         if (!termProd.isPresent()) {
           return F.NIL;
         }
@@ -322,7 +345,14 @@ public class Product extends ListFunctions.Table implements ProductRules {
       }
 
       IExpr poch;
-      if (startVal.isOne()) {
+      if (pochhammerForm && startVal.isInteger() && startVal.isPositive()) {
+        poch = F.Pochhammer(startVal, count);
+      } else if (!(A.isOne() && B.isZero()) && startVal.isInteger() && startVal.isPositive()) {
+        // like WMA only the bare iterator gives a factorial, Product(k, {k,3,n}) == n!/2, a
+        // shifted or scaled factor gives Gamma: Product(k+2, {k,1,n}) == Gamma(3+n)/2 and
+        // Product(2*k, {k,1,n}) == 2^n*Gamma(1+n)
+        poch = engine.evaluate(F.Divide(F.Gamma(F.Plus(count, startVal)), F.Gamma(startVal)));
+      } else if (startVal.isOne()) {
         // Pochhammer(1, count) is strictly Factorial(count)
         poch = F.Factorial(count);
       } else if (startVal.isInteger() && startVal.greaterThan(F.C0).isTrue()) {
@@ -352,7 +382,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
     if (!factored.equals(pK) && factored.isTimes()) {
       IASTAppendable res = F.TimesAlloc(factored.argSize());
       for (IExpr arg : (IAST) factored) {
-        IExpr termProd = tryClosedFormReduction(arg, k, lower, upper, engine);
+        IExpr termProd = tryClosedFormReduction(arg, k, lower, upper, pochhammerForm, engine);
         if (!termProd.isPresent()) {
           return F.NIL;
         }
@@ -361,7 +391,184 @@ public class Product extends ListFunctions.Table implements ProductRules {
       return engine.evaluate(res);
     }
 
-    return F.NIL;
+    // 5. A polynomial which is irreducible over the rationals (e.g. k^2 + 2k + 2): split it over
+    // its exact complex roots
+    return polynomialRootProduct(pK, k, lower, upper, engine);
+  }
+
+  /**
+   * If the closed form of a product contains <code>Gamma</code> factors (the roots of a polynomial
+   * factor aren't rational), write its factorials as <code>Gamma</code> too, like WMA:
+   * <code>Product(1+1/(i+1)^2, {i,1,n})</code> contains <code>1/Gamma(2+n)^2</code> and not
+   * <code>1/((1+n)!)^2</code>. A product of linear factors keeps its factorials:
+   * <code>Product(k, {k,3,n}) == n!/2</code>.
+   */
+  private static IExpr factorialsToGamma(IExpr closedForm, EvalEngine engine) {
+    if (!closedForm.has(S.Gamma, true) || !closedForm.has(S.Factorial, true)) {
+      return closedForm;
+    }
+    IExpr gammaForm = closedForm
+        .replaceAll(e -> e.isAST(S.Factorial, 2) ? F.Gamma(F.Plus(F.C1, e.first())) : F.NIL);
+    return gammaForm.isPresent() ? engine.evaluate(gammaForm) : closedForm;
+  }
+
+  /**
+   * Is <code>factor</code> linear in the variable of the <code>iterator</code>? A linear factor
+   * like <code>2*k</code> isn't split into <code>Product(2)*Product(k)</code>, like WMA it gives
+   * <code>2^n*Gamma(1+n)</code> and not <code>2^n*n!</code>.
+   */
+  private static boolean isLinearIn(IExpr factor, IExpr iterator, EvalEngine engine) {
+    IExpr k = iterator.isList() && iterator.argSize() >= 2 ? iterator.first() : F.NIL;
+    if (!k.isSymbol() || !factor.isPolynomial(F.list(k))) {
+      return false;
+    }
+    return engine.evaluate(F.Exponent(factor, k)).isOne();
+  }
+
+  /** Polynomials of higher degree have roots which aren't given by radicals. */
+  private static final int MAX_ROOT_PRODUCT_DEGREE = 4;
+
+  /**
+   * <code>Product(p(k), {k, lower, upper})</code> for a polynomial <code>p(k) = c*(k-r1)*...*(k-rd)
+   * </code> with exact (possibly complex) roots <code>rj</code>:
+   *
+   * <pre>
+   * c^(upper-lower+1) * Product(Gamma(upper+1-rj) / Gamma(lower-rj), {j, 1, d})
+   * </pre>
+   *
+   * The constant denominators of pairs of roots whose sum is an integer are combined with the
+   * reflection formula, e.g. <code>Gamma(2-I)*Gamma(2+I) == 2*Pi/Sinh(Pi)</code>.
+   *
+   * @return {@link F#NIL} if <code>p</code> isn't such a polynomial, a root can't be found exactly
+   *         or a factor of the product is zero
+   */
+  private static IExpr polynomialRootProduct(IExpr p, IExpr k, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (!k.isSymbol() || !p.isPolynomial(F.list(k)) || !lower.isNumber()) {
+      return F.NIL;
+    }
+    IExpr degreeExpr = engine.evaluate(F.Exponent(p, k));
+    if (!degreeExpr.isInteger()) {
+      return F.NIL;
+    }
+    int degree = degreeExpr.toIntDefault();
+    if (degree < 2 || degree > MAX_ROOT_PRODUCT_DEGREE) {
+      return F.NIL;
+    }
+    IExpr leadingCoefficient = engine.evaluate(F.Coefficient(p, k, degreeExpr));
+    IExpr solved = engine.evalQuiet(F.Solve(F.Equal(p, F.C0), k));
+    if (!solved.isList() || ((IAST) solved).argSize() != degree) {
+      // no multiple roots: an irreducible polynomial is square free
+      return F.NIL;
+    }
+    IASTAppendable numerator = F.TimesAlloc(degree + 1);
+    IASTAppendable gammaArgs = F.ListAlloc(degree);
+    for (IExpr solution : (IAST) solved) {
+      IExpr root = F.NIL;
+      if (solution.isList1() && solution.first().isRule() && solution.first().first().equals(k)) {
+        root = solution.first().second();
+      }
+      if (root.isNIL() || !root.isFree(k) || !root.isNumericFunction(true)
+          || !root.isFree(h -> h == S.Root || h == S.RootSum, true)) {
+        return F.NIL;
+      }
+      // Solve returns 1/2*(-1+I*Sqrt(3)); the real and imaginary parts are needed below
+      root = engine.evaluate(F.Expand(root));
+      IExpr start = engine.evaluate(F.Subtract(lower, root));
+      if (start.isInteger() && !start.isPositive()) {
+        // Gamma(lower - root) is singular: the integer root is inside the range
+        return F.NIL;
+      }
+      numerator.append(F.Gamma(F.Plus(upper, F.C1, F.Negate(root))));
+      gammaArgs.append(start);
+    }
+    IExpr count = engine.evaluate(F.Plus(F.Subtract(upper, lower), F.C1));
+    numerator.append(F.Power(leadingCoefficient, count));
+    IExpr denominator = gammaProduct(gammaArgs, engine);
+    return engine.evaluate(F.Divide(numerator, denominator));
+  }
+
+  /**
+   * The product of <code>Gamma(s)</code> for the arguments <code>s</code> in <code>args</code>. Two
+   * arguments <code>c+z, c-z</code> with a positive <code>c</code> which is an integer or a half
+   * integer are combined with the reflection formula (<code>m</code> is a non negative integer):
+   *
+   * <pre>
+   * Gamma(m+z)*Gamma(m-z) == Pi*z/Sin(Pi*z) * Product(j^2-z^2, {j, 1, m-1})
+   * Gamma(m+1/2+z)*Gamma(m+1/2-z) == Pi/Cos(Pi*z) * Product((j+1/2)^2-z^2, {j, 0, m-1})
+   * </pre>
+   */
+  private static IExpr gammaProduct(IAST args, EvalEngine engine) {
+    IASTAppendable result = F.TimesAlloc(args.argSize());
+    boolean[] used = new boolean[args.size()];
+    for (int i = 1; i < args.size(); i++) {
+      if (used[i]) {
+        continue;
+      }
+      IExpr s1 = args.get(i);
+      IExpr paired = F.NIL;
+      for (int j = i + 1; j < args.size() && paired.isNIL(); j++) {
+        if (!used[j]) {
+          paired = reflectionPair(s1, args.get(j), engine);
+          if (paired.isPresent()) {
+            used[j] = true;
+          }
+        }
+      }
+      result.append(paired.isPresent() ? paired : F.Gamma(s1));
+    }
+    return engine.evaluate(result.oneIdentity1());
+  }
+
+  /**
+   * <code>Gamma(s1)*Gamma(s2)</code> by the reflection formula, if <code>s1 == c+z</code> and
+   * <code>s2 == c-z</code> for a positive integer <code>2*c</code> and a <code>z</code> where both
+   * Gammas are finite. Like WMA also for a real <code>z</code>:
+   * <code>Gamma(2-Sqrt(2))*Gamma(2+Sqrt(2)) == -Sqrt(2)*Pi/Sin(Sqrt(2)*Pi)</code>.
+   *
+   * @return {@link F#NIL} if the arguments aren't of this form
+   */
+  private static IExpr reflectionPair(IExpr s1, IExpr s2, EvalEngine engine) {
+    IExpr twoC = engine.evaluate(F.Plus(s1, s2));
+    if (!twoC.isInteger() || !twoC.isPositive()) {
+      return F.NIL;
+    }
+    IExpr c = engine.evaluate(F.Times(F.C1D2, twoC));
+    IExpr z = engine.evaluate(F.Expand(F.Subtract(s1, c)));
+    if (z.isRational() || !z.isNumericFunction(true)) {
+      // a rational z belongs to linear factors, which are multiplied elsewhere
+      return F.NIL;
+    }
+    int twoCInt = twoC.toIntDefault();
+    if (twoCInt <= 0 || twoCInt > 200) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.TimesAlloc(twoCInt / 2 + 2);
+    IExpr zSquared = F.Sqr(z);
+    if (twoCInt % 2 == 0) {
+      // Gamma(m+z)*Gamma(m-z) == Pi*z/Sin(Pi*z) * Product(j^2-z^2, {j, 1, m-1})
+      int m = twoCInt / 2;
+      IExpr sin = engine.evaluate(F.Sin(F.Times(S.Pi, z)));
+      if (sin.isZero()) {
+        return F.NIL;
+      }
+      result.append(F.Divide(F.Times(S.Pi, z), sin));
+      for (int j = 1; j < m; j++) {
+        result.append(F.Subtract(F.ZZ(j * j), zSquared));
+      }
+    } else {
+      // Gamma(m+1/2+z)*Gamma(m+1/2-z) == Pi/Cos(Pi*z) * Product((j+1/2)^2-z^2, {j, 0, m-1})
+      int m = twoCInt / 2;
+      IExpr cos = engine.evaluate(F.Cos(F.Times(S.Pi, z)));
+      if (cos.isZero()) {
+        return F.NIL;
+      }
+      result.append(F.Divide(S.Pi, cos));
+      for (int j = 0; j < m; j++) {
+        result.append(F.Subtract(F.Sqr(F.Plus(F.ZZ(j), F.C1D2)), zSquared));
+      }
+    }
+    return engine.evaluate(result);
   }
 
   private static IExpr productPowerFormula(IExpr powerAST, IExpr k, IExpr from, IExpr to) {

@@ -1,7 +1,7 @@
 package org.matheclipse.core.system;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 public class SumTest extends ExprEvaluatorTestCase {
 
@@ -103,9 +103,9 @@ public class SumTest extends ExprEvaluatorTestCase {
    * <p>
    * Sum inherits its unrolling from Table, where a count <em>is</em> a valid specification -
    * <code>Table[x, 3]</code> is <code>{x, x, x}</code> - so <code>Sum(x, 3)</code> answered
-   * <code>3*x</code> where Mathematica leaves it alone. Accepting it also let a first argument of
-   * <code>Times()</code> reach the rule index with no factors at all, which no bucket describes,
-   * and the index answered an array index of <code>-1</code>.
+   * <code>3*x</code>. Accepting it also let a first argument of <code>Times()</code> reach the rule
+   * index with no factors at all, which no bucket describes, and the index answered an array index
+   * of <code>-1</code>.
    */
   @Test
   public void testSumIteratorMustBeListOrSymbol() {
@@ -127,8 +127,7 @@ public class SumTest extends ExprEvaluatorTestCase {
   @Test
   public void testSum004() {
     // a number is not an iterator, so this is left alone rather than wrapped in Hold, which was
-    // Symja's way of saying it declined to unroll something this large. Mathematica also answers
-    // Sum[10007, 2147483647] with the expression itself.
+    // Symja's way of saying it declined to unroll something this large.
     check("Sum(10007,2147483647)", //
         "Sum(10007,2147483647)");
     check("Sum(1.5708,{i,1,10},{1->0})", //
@@ -260,6 +259,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "Pi^2/6");
     check("Sum(i / Log(i), {i, 1, Infinity})", //
         "Sum(i/Log(i),{i,1,Infinity})");
+    // returns the unevaluated sum with its evaluated arguments
     check("Sum(Cos(Pi*i), {i, 1, Infinity})", //
         "Sum(Cos(i*Pi),{i,1,Infinity})");
     check("Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})", //
@@ -650,6 +650,9 @@ public class SumTest extends ExprEvaluatorTestCase {
   @Test
   public void testSumFactorial() {
     // 1!+1!+2!+6!
+    // the Gamma of the iterator is summed like a factorial
+    check("Sum(Gamma(1 + k), {k, 0, n})", //
+        "-Subfactorial(-1)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)");
     check("Sum(k!, {k, 0, 7/2})", //
         "10");
     check("Sum(k!, {k, 0, 5})", //

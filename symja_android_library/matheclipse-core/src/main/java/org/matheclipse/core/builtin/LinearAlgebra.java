@@ -3878,6 +3878,60 @@ public final class LinearAlgebra {
       return F.List(solution);
     }
 
+    /** The values of the option <code>Method</code> Mathematica knows for LinearSolve. */
+    private static final java.util.Set<String> METHODS = java.util.Set.of("Cholesky",
+        "Multifrontal", "Krylov", "CofactorExpansion", "OneStepRowReduction",
+        "DivisionFreeRowReduction", "Direct", "IterativeRefinement", "Banded");
+
+    /**
+     * Whether the matrix can be solved with the given <code>Method</code>, as Mathematica checks
+     * it: an unknown method, <code>"Cholesky"</code> for a matrix which is not Hermitian and
+     * positive definite, and <code>"Banded"</code> for entries which are not machine numbers are
+     * reported and leave LinearSolve unevaluated. The method itself doesn't change how the system
+     * is solved.
+     */
+    private static boolean validMethod(IExpr matrix, IExpr method, EvalEngine engine) {
+      String name = method.isString() ? method.toString()
+          : method.isSymbol() ? ((ISymbol) method).getSymbolName() : "";
+      if (method.isList() && method.argSize() > 0 && method.first().isString()) {
+        // Method -> {"Krylov", options...}
+        name = method.first().toString();
+      }
+      if (name.equals("Automatic")) {
+        return true;
+      }
+      if (!METHODS.contains(name)) {
+        // The value of the option Method -> `1` should be Cholesky, ... or Automatic.
+        Errors.printMessage(S.LinearSolve, "rmeth", F.list(method), engine);
+        return false;
+      }
+      if (matrix.isMatrix() == null) {
+        return true;
+      }
+      if (name.equals("Cholesky")) {
+        if (!engine.evalTrue(F.unaryAST1(S.HermitianMatrixQ, matrix))) {
+          // The matrix `1` is not hermitian or real and symmetric.
+          Errors.printMessage(S.LinearSolve, "herm", F.list(matrix), engine);
+          return false;
+        }
+        if (!engine.evalTrue(F.unaryAST1(S.PositiveDefiniteMatrixQ, matrix))) {
+          // The matrix `1` is not positive definite.
+          Errors.printMessage(S.LinearSolve, "npdef", F.list(matrix), engine);
+          return false;
+        }
+      } else if (name.equals("Banded")) {
+        IExpr entries = engine.evaluate(F.Flatten(matrix));
+        if (!entries.isList()
+            || !((IAST) entries).forAll(x -> x.isReal() && !x.isRational() || x.isComplexNumeric())) {
+          // The method "Banded" accepts only matrices with elements that are machine-real or
+          // machine-complex numbers.
+          Errors.printMessage(S.LinearSolve, "bdnmt", F.CEmptyList, engine);
+          return false;
+        }
+      }
+      return true;
+    }
+
     private static IExpr createLinearSolveFunction(final IAST ast, final int argSize,
         final int[] matrixDims, Predicate<IExpr> zeroChecker, EvalEngine engine) {
       if (matrixDims[0] > matrixDims[1]) {
@@ -4056,6 +4110,9 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
+      if (!options[3].isAutomatic() && !validMethod(ast.arg1(), options[3], engine)) {
+        return F.NIL;
+      }
       final int[] matrixDims = ast.arg1().isMatrix();
       if (matrixDims != null) {
         IInteger modulus = modulusOption(options[2]);

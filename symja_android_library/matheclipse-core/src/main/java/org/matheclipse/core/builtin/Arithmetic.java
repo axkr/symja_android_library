@@ -3390,12 +3390,7 @@ public final class Arithmetic {
           return pochhammer(bf, ni);
         }
       }
-      if (a.isInteger() && a.isPositive()) {
-        IExpr temp = EvalEngine.get().evaluate(F.Plus(((IInteger) a).subtract(F.C1), n));
-        if (temp.isSymbol()) {
-          return F.Divide(F.Factorial(temp), F.Gamma(a));
-        }
-      }
+      // a symbolic Pochhammer(1, n) stays unevaluated and isn't rewritten to n!
 
       EvalEngine engine = EvalEngine.get();
       if (engine.isDoubleMode() || engine.isArbitraryMode()) {
@@ -4064,7 +4059,7 @@ public final class Arithmetic {
       }
       INum pow = base.pow(exponent);
       if (pow.isInfinite()) {
-        // WMA: an arbitrary precision number of machine precision, e.g. 10.0^400
+        // an arbitrary precision number of machine precision, e.g. 10.0^400
         IExpr promoted = machinePrecisionPower(base.doubleValue(), exponent.doubleValue());
         return promoted.isPresent() ? promoted : F.Overflow();
       }
@@ -4778,6 +4773,12 @@ public final class Arithmetic {
             if (temp.isPresent()) {
               return temp.oneIdentity1();
             }
+          } else if (numerator < 0 && numerator != Integer.MIN_VALUE && num.isPositive()) {
+            // -1 < exponent < 0: 1 / (num ^ (-exponent))
+            IAST temp = num.factorSmallPrimes(-numerator, denominator);
+            if (temp.isPresent()) {
+              return F.Power(temp.oneIdentity1(), F.CN1);
+            }
           }
         }
         if (ast.isPresent()) {
@@ -5382,7 +5383,7 @@ public final class Arithmetic {
     @Override
     public int status() {
       // Only partial: Symja has no literal for an arbitrary-precision number of a stated
-      // precision (WMA's 3.1416`2), so accuracy below machine precision cannot be expressed.
+      // precision, so accuracy below machine precision cannot be expressed.
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
@@ -7333,7 +7334,7 @@ public final class Arithmetic {
         }
       }
 
-      // Quantities: a non-quantity factor is absorbed into the magnitude (WMA behavior)
+      // Quantities: a non-quantity factor is absorbed into the magnitude
       if (arg1.isQuantity()) {
         if (arg2.isQuantity()) {
           return QuantityOps.times((IAST) arg1, (IAST) arg2, EvalEngine.get());

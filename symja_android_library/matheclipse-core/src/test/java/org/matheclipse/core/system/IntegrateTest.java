@@ -467,6 +467,97 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntegratePiecewiseDefinite() {
+    // the interval is split at the break points and the active branches are integrated
+    check("Integrate(Piecewise({{0, x < 0}}, Pi), {x,-Pi,Pi})", //
+        "Pi^2");
+    check("Integrate(Piecewise({{0, x < 0}}, Pi*Sin(3*x)), {x,-Pi,Pi})", //
+        "2/3*Pi");
+    check("Integrate(UnitStep(x)*Pi*Sin(3*x), {x,-Pi,Pi})", //
+        "2/3*Pi");
+    check("Integrate(Abs(x)*Cos(3*x), {x,-Pi,Pi})", //
+        "-4/9");
+    // the pole of Tan at Pi/2 is a break point although it's no zero of a denominator
+    check("Integrate(Sign(Tan(x)), {x,0,3})", //
+        "-3+Pi");
+    check("Integrate(Sign(Sin(x)), {x,0,10})", //
+        "-10+4*Pi");
+    // the jumps of Floor aren't found as break points
+    check("Integrate(Abs(Floor(x)-1), {x,0,3})", //
+        "Integrate(Abs(-1+Floor(x)),{x,0,3})");
+    check("Integrate(HeavisideTheta(x-1)*x^2, {x,0,3})", //
+        "26/3");
+    check("Integrate(Sign(x-1/2)*x, {x,0,1})", //
+        "1/4");
+    check("Integrate(Max(x,1-x), {x,0,1})", //
+        "3/4");
+    check("Integrate(Min(x^2,x), {x,0,2})", //
+        "11/6");
+    check("Integrate(Abs(x^2-2*x), {x,-10,10})", //
+        "2008/3");
+    // break points from a transcendental argument
+    check("Integrate(Abs(Sin(x)), {x,0,10})", //
+        "7+Cos(10)");
+    check("Integrate(UnitStep(x)*E^(-x), {x,-Infinity,Infinity})", //
+        "1");
+    check("Integrate(Piecewise({{x^2,x<1/3},{1-x,x>=1/3}}),{x,0,1})", //
+        "19/81");
+    // nested piecewise functions
+    check("Integrate(Piecewise({{Abs(x), x<1}}, Max(x,2)), {x,-1,3})", //
+        "11/2");
+    // reversed limits
+    check("Integrate(Abs(x), {x,1,-2})", //
+        "-5/2");
+
+    // one symbolic break point: the cases of its position are combined with UnitStep
+    check("Integrate(UnitStep(x-a)*x, {x,0,1})", //
+        "1/2*UnitStep(1-a)*(1-a^2+a^2*UnitStep(-a))");
+    check("Integrate(UnitStep(x-a)*x, {x,0,1}, Assumptions -> 0<a<1)", //
+        "1/2-a^2/2");
+    check("Integrate(UnitStep(x-a)*x, {x,0,1}, Assumptions -> a>2)", //
+        "0");
+
+    check("Integrate(UnitStep(x-a)*E^(-x), {x,0,Infinity})", //
+        "(1+(-1+E^a)*UnitStep(-a))/E^a");
+    // without UnitStep the cases are returned as a Piecewise
+    check("Integrate(Max(x,a), {x,0,2})", //
+        "Piecewise({{2,a<=0},{2*a,a>=2}},1/2*(4+a^2))");
+    // Piecewise({{1/3,a>0},{1/2,a<=-1/2},{(1+2*a)^3/3,a==0}},(1+6*a^2+8*a^3)/3)
+    check("Integrate(Piecewise({{x^2, x<2*a+1}}, x), {x,0,1})", //
+        "Piecewise({{1/2,a<=-1/2},{1/3,a>=0}},1/3*(1+6*a^2+8*a^3))");
+    // ConditionalExpression(1/2*(-((-1+a)*Abs(1-a))+a*Abs(a)),a==1||(-1+a)^2>=0)
+    check("Integrate(Abs(x-a), {x,0,1})", //
+        "Piecewise({{1/2*(1-2*a),a<=0},{1/2*(-1+2*a),a>=1}},1/2*(1-2*a+2*a^2))");
+    // compare with the integrals for numeric values of the parameter
+    check(
+        "Simplify(Table((Integrate(UnitStep(x-a)*x, {x,0,1}) /. a -> v) - Integrate(UnitStep(x-v)*x, {x,0,1}), {v, {-1, 1/2, 2}}))", //
+        "{0,0,0}");
+    check(
+        "Simplify(Table((Integrate(Abs(x-a), {x,0,1}) /. a -> v) - Integrate(Abs(x-v), {x,0,1}), {v, {-1, 1/2, 2}}))", //
+        "{0,0,0}");
+    check(
+        "Simplify(Table((Integrate(Max(x,a), {x,0,2}) /. a -> v) - Integrate(Max(x,v), {x,0,2}), {v, {-1, 1/2, 2}}))", //
+        "{0,0,0}");
+    check(
+        "Simplify(Table((Integrate(Piecewise({{x^2, x<2*a+1}}, x), {x,0,1}) /. a -> v) - Integrate(Piecewise({{x^2, x<2*v+1}}, x), {x,0,1}), {v, {-1, 1/2, 2}}))", //
+        "{0,0,0}");
+    check(
+        "Simplify(Table((Integrate(UnitStep(x-a)*Abs(x-1/2), {x,0,1}) /. a -> v) - Integrate(UnitStep(x-v)*Abs(x-1/2), {x,0,1}), {v, {-1, 1/2, 2}}))", //
+        "{0,0,0}");
+    check(
+        "Simplify(Table((Integrate(UnitStep(x-a)*E^(-x), {x,0,Infinity}) /. a -> v) - Integrate(UnitStep(x-v)*E^(-x), {x,0,Infinity}), {v, {-1, 1/2, 2}}))", //
+        "{0,0,0}");
+    // several symbolic break points or a condition on the parameter alone
+    check("Integrate(UnitStep(x-a)*UnitStep(x-b), {x,0,1})", //
+        "Integrate(UnitStep(-a+x)*UnitStep(-b+x),{x,0,1})");
+    check("Integrate(Piecewise({{x, x<a && a>1/2}}, 0), {x,0,1})", //
+        "Integrate(Piecewise({{x,x<a&&a>1/2}},0),{x,0,1})");
+    // a divergent piece
+    check("Integrate(Abs(1/x),{x,-1,1})", //
+        "Integrate(Abs(1/x),{x,-1,1})");
+  }
+
+  @Test
   @Tag(TestTags.SLOW)
   public void testIntegrate() {
 

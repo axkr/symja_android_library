@@ -909,6 +909,77 @@ public class Primality implements IPrimality {
   }
 
   /**
+   * Floor of the <code>n</code>-th root of a non-negative integer.
+   *
+   * @param val a value <code>&gt;= 0</code>
+   * @param n the degree of the root <code>&gt;= 2</code>
+   * @return <code>r</code> with <code>r^n &lt;= val &lt; (r+1)^n</code>
+   */
+  public static BigInteger nthRootFloor(final BigInteger val, int n) {
+    if (n == 2) {
+      return BigIntegerMath.sqrt(val, RoundingMode.FLOOR);
+    }
+    final int bitLength = val.bitLength();
+    if (bitLength <= n) {
+      // val < 2^n
+      return val.signum() == 0 ? BigInteger.ZERO : BigInteger.ONE;
+    }
+    // start Newton's iteration with an upper bound of the root from a double estimate
+    final int shift = Math.max(0, bitLength - 62);
+    final double rootLog2 =
+        (Math.log(val.shiftRight(shift).doubleValue()) / Math.log(2.0) + shift) / n;
+    final int intPart = (int) rootLog2;
+    BigInteger x;
+    if (intPart < 52) {
+      x = BigInteger.valueOf((long) Math.ceil(Math.pow(2.0, rootLog2)));
+    } else {
+      x = BigInteger.valueOf((long) Math.ceil(Math.pow(2.0, rootLog2 - intPart + 52)))
+          .shiftLeft(intPart - 52);
+    }
+    // a relative safety margin of 2^(-20) keeps x >= root
+    x = x.add(x.shiftRight(20)).add(BigInteger.TWO);
+    final BigInteger bigN = BigInteger.valueOf(n);
+    final BigInteger bigNMinus1 = BigInteger.valueOf(n - 1L);
+    while (true) {
+      BigInteger y = x.multiply(bigNMinus1).add(val.divide(x.pow(n - 1))).divide(bigN);
+      if (y.compareTo(x) >= 0) {
+        return x;
+      }
+      x = y;
+    }
+  }
+
+  /**
+   * Write <code>val</code> as a perfect power <code>root^exponent</code> with the largest possible
+   * <code>exponent</code>.
+   *
+   * @param val a value <code>&gt;= 2</code>
+   * @param minRootBitLength a lower bound for the bit length of every possible <code>root</code>,
+   *        for example <code>11</code> if <code>val</code> has no prime factor less than
+   *        <code>1024</code>. It limits the exponents which must be tested.
+   * @return <code>{root, exponent}</code>; <code>{val, 1}</code> if <code>val</code> isn't a
+   *         perfect power
+   */
+  public static BigInteger[] perfectPower(final BigInteger val, int minRootBitLength) {
+    // root >= 2^(minRootBitLength-1) ==> root^e >= 2^(e*(minRootBitLength-1))
+    final int minRootBits = Math.max(1, minRootBitLength - 1);
+    BigInteger root = val;
+    long exponent = 1;
+    int e = 2;
+    while ((root.bitLength() - 1) / minRootBits >= e) {
+      BigInteger r = nthRootFloor(root, e);
+      if (r.pow(e).equals(root)) {
+        // test the same exponent again for the root
+        root = r;
+        exponent *= e;
+      } else {
+        e = BigInteger.valueOf(e).nextProbablePrime().intValueExact();
+      }
+    }
+    return new BigInteger[] {root, BigInteger.valueOf(exponent)};
+  }
+
+  /**
    * Determine the n-th root from the prime decomposition of the primes[] array.
    *
    * @param val a BigInteger value which should be factored by all primes less equal than 1021

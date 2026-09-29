@@ -52,7 +52,8 @@ public class HypothesisTestData extends AbstractEvaluator {
       case "Properties":
         return F.mapRange(0, PROPERTIES.length, i -> F.stringx(PROPERTIES[i]));
       case "AllTests":
-        return testData.keys();
+        return F.mapRange(1, testData.argSize() + 1, i -> testData.getRule(i).first())
+            .filter(name -> validTest(fields, name))[0];
       case "AutomaticTest":
         return automatic;
       case "FittedDistribution":
@@ -72,6 +73,21 @@ public class HypothesisTestData extends AbstractEvaluator {
       default:
         return F.Missing(S.NotAvailable, property);
     }
+  }
+
+  /** Whether a property name is one of the properties this object answers. */
+  static boolean isProperty(IExpr property) {
+    return property.isString() && (property.isString("Properties")
+        || java.util.Arrays.asList(PROPERTIES).contains(property.toString()));
+  }
+
+  /**
+   * Whether the test is valid for the sample: Mathematica leaves Cramer-von Mises out below 7
+   * points, from <code>"AllTests"</code> as from the tables.
+   */
+  private static boolean validTest(IAssociation fields, IExpr name) {
+    int sampleSize = fields.getValue(F.stringx("SampleSize")).toIntDefault();
+    return !(name.isString("CramerVonMises") && sampleSize < 7);
   }
 
   /** <code>{statistic, p}</code> (part 0), the statistic (1) or the p-value (2) of a test. */
@@ -116,11 +132,9 @@ public class HypothesisTestData extends AbstractEvaluator {
       header.append(F.stringx("P\u2010Value"));
     }
     rows.append(header);
-    int sampleSize = fields.getValue(F.stringx("SampleSize")).toIntDefault();
     for (IExpr name : testData.keys()) {
       if (test == S.All) {
-        if (name.isString("CramerVonMises") && sampleSize < 7) {
-          // not valid for so small a sample
+        if (!validTest(fields, name)) {
           continue;
         }
       } else if (!(test.isPresent() ? test : automatic).equals(name)) {

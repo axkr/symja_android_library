@@ -80,7 +80,11 @@ public class RandomFunction extends AbstractFunctionEvaluator {
     IASTAppendable paths = F.ListAlloc(pathCount);
     for (int k = 0; k < pathCount; k++) {
       double[] values = StochasticProcesses.simulate((IAST) process, times, random);
-      paths.append(F.List(values));
+      if (StochasticProcesses.isIntegerValued(process)) {
+        paths.append(F.mapRange(0, values.length, i -> F.ZZ((long) values[i])));
+      } else {
+        paths.append(F.List(values));
+      }
     }
     // the last time is tmax itself when the steps reach it
     IExpr last = Math.abs(times[points - 1] - max) <= 1.0e-9 * Math.max(1.0, Math.abs(max)) ? tmax

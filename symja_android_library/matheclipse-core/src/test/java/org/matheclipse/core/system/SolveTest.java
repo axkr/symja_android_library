@@ -1434,7 +1434,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->0.0}}");
 
     check("NSolve((-3+E^(2*x))==0,x)", //
-        "{{x->0.549306}}");
+        "{{x->ConditionalExpression(0.549306+(I*3.14159)*C(1),C(1)∈Integers)}}");
     check("NSolve(E^(3*x)-4*E^x+3*E^(-x)==0,x)", //
         "{{x->ConditionalExpression((I*6.28319)*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*3.14159+(I*6.28319)*C(\n"
             + "1),C(1)∈Integers)},{x->ConditionalExpression(0.549306+(I*6.28319)*C(1),C(1)∈Integers)},{x->ConditionalExpression(0.549306+I*3.14159+(I*6.28319)*C(\n"

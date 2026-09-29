@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -22,6 +21,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DifferenceRootExpr;
+import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -272,7 +272,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     {
       // Sum[..., {Subscript[k, 1], 1, n}]: a subscript as the iterator variable, or a formal symbol
-      IExpr localized = org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
+      IExpr localized =
+          org.matheclipse.core.eval.util.Iterator.evaluateWithLocalizedVariables(ast, engine);
       if (localized != null) {
         return localized;
       }
@@ -293,7 +294,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
         // An iterator is either a list, {i, imax} or {i, imin, imax}, or the bare symbol of an
         // indefinite sum. A number is neither: Sum inherits its unrolling from Table, where a
         // count is a valid specification - Table[x, 3] is {x, x, x} - and so answered
-        // Sum(x, 3) with 3*x. Mathematica leaves it alone.
+        // Sum(x, 3) with 3*x.
         return F.NIL;
       }
     }
@@ -309,7 +310,56 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return arg1.mapThread(ast, 1);
     }
     IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
+    if (forcedMethod == null && preevaledSum != ast && !preevaledSum.equals(ast)) {
+      // continue with the evaluated arguments, so that a sum which can't be computed is returned
+      // with them, like WMA does: Sum(1/(i+1),{i,1,Infinity}) gives Sum(1/(1+i),{i,1,Infinity})
+      return preevaledSum;
+    }
+    if (forcedMethod == null && preevaledSum.isAST2()) {
+      IExpr byFactorial = sumGammaAsFactorial(preevaledSum, engine);
+      if (byFactorial.isPresent()) {
+        return byFactorial;
+      }
+    }
     return evaluateSum(preevaledSum, forcedMethod, engine);
+  }
+
+  /**
+   * The summation rules know factorials of the iterator variable, but not the equivalent
+   * <code>Gamma</code> - which is how <code>Product</code> writes a shifted linear factor, like
+   * WMA: <code>Product(k+1, {k,1,n}) == Gamma(2+n)</code>. Retry the sum with
+   * <code>Gamma(k+m) -&gt; (k+m-1)!</code> for integers <code>m &gt;= 0</code>.
+   *
+   * @return {@link F#NIL} if the summand contains no such <code>Gamma</code> or the rewritten sum
+   *         has no closed form
+   */
+  private static IExpr sumGammaAsFactorial(IAST sum, EvalEngine engine) {
+    IExpr iterator = sum.arg2();
+    IExpr k = iterator.isList() && iterator.argSize() >= 1 ? iterator.first() : iterator;
+    if (!k.isSymbol()) {
+      return F.NIL;
+    }
+    IExpr summand = sum.arg1();
+    if (!summand.has(S.Gamma, true)) {
+      return F.NIL;
+    }
+    IExpr rewritten = summand.replaceAll(e -> {
+      if (e.isAST(S.Gamma, 2) && !e.first().isFree(k)) {
+        IExpr shift = engine.evaluate(F.Subtract(e.first(), k));
+        if (shift.isInteger() && !shift.isNegative()) {
+          return F.Factorial(F.Plus(k, shift, F.CN1));
+        }
+      }
+      return F.NIL;
+    });
+    if (rewritten.isNIL()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evalQuiet(F.Sum(rewritten, iterator));
+    if (result.isFreeAST(S.Sum) && result.isFreeAST(S.DifferenceRoot)) {
+      return result;
+    }
+    return F.NIL;
   }
 
   /**
@@ -925,8 +975,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
           if (shift.isInteger()) {
             // HarmonicNumber reads better than PolyGamma for an integer shift
-            result.append(F.Times(coefficient,
-                F.Subtract(F.HarmonicNumber(F.Plus(to, shift), F.ZZ(power)),
+            result.append(
+                F.Times(coefficient, F.Subtract(F.HarmonicNumber(F.Plus(to, shift), F.ZZ(power)),
                     F.HarmonicNumber(F.Plus(from, shift, F.CN1), F.ZZ(power)))));
           } else {
             result.append(F.Times(factor, F.Subtract(F.PolyGamma(F.ZZ(power - 1), lower),
@@ -959,8 +1009,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
           return F.NIL;
         }
         // FunctionExpand resolves the FactorialPower() basis the antidifference is built in
-        result.append(engine.evaluate(F.Expand(F.FunctionExpand(
-            F.Subtract(F.xreplace(antidifference, var, F.Plus(to, C1)),
+        result.append(engine.evaluate(
+            F.Expand(F.FunctionExpand(F.Subtract(F.xreplace(antidifference, var, F.Plus(to, C1)),
                 F.xreplace(antidifference, var, from))))));
       }
       if (result.isAST0()) {

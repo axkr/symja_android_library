@@ -7,6 +7,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.eval.Errors;
@@ -48,6 +49,22 @@ import org.matheclipse.core.interfaces.ISymbol;
 public final class FileSandbox {
 
   private FileSandbox() {}
+
+  /**
+   * Whether the built-ins may report facts about the host they run on: environment variables, the
+   * user and machine name, the process id, host directories, the memory and CPU time of the
+   * process.
+   *
+   * <p>
+   * Only a kernel whose file system is enabled and which has no sandbox root is the user's own - a
+   * console, a notebook on the user's machine. A server with the file system disabled, and a
+   * browser session confined to its own directory, answer for someone who must not learn anything
+   * about the machine: <code>Environment("DB_PASSWORD")</code> would otherwise read the server's
+   * secrets. The built-ins return unevaluated there.
+   */
+  public static boolean isHostVisible(EvalEngine engine) {
+    return Config.isFileSystemEnabled(engine) && engine.getFileSandboxRoot() == null;
+  }
 
   /**
    * Resolve a user-supplied file name for reading.

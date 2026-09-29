@@ -1766,6 +1766,9 @@ public final class BooleanFunctions {
       if (temp.isPresent()) {
         return temp;
       }
+      if (checkUnequalAssumptions(arg1, arg2, engine)) {
+        return S.False;
+      }
 
       return BooleanFunctions.Equal.simplifyCompare(S.Equal, a1, a2);
     }
@@ -1790,7 +1793,7 @@ public final class BooleanFunctions {
      * @return {@link S#True} or {@link S#False} if the equation could be decided, {@link F#NIL}
      *         otherwise
      */
-    private static IExpr checkPolynomialAssumptions(IExpr arg1, IExpr arg2, EvalEngine engine) {
+    static IExpr checkPolynomialAssumptions(IExpr arg1, IExpr arg2, EvalEngine engine) {
       IAssumptions assumptions = engine.getAssumptions();
       if (assumptions == null) {
         return F.NIL;
@@ -4326,8 +4329,69 @@ public final class BooleanFunctions {
     if (b == IExpr.COMPARE_TERNARY.TRUE) {
       return S.False;
     }
+    IExpr temp = Equal.checkPolynomialAssumptions(arg1, arg2, engine);
+    if (temp.isPresent()) {
+      return temp.isTrue() ? S.False : S.True;
+    }
+    if (checkUnequalAssumptions(arg1, arg2, engine)) {
+      return S.True;
+    }
 
     return Equal.simplifyCompare(S.Unequal, arg1, arg2);
+  }
+
+  /**
+   * Test if the assumptions of the evaluation engine prove <code>arg1 != arg2</code>: an unequal
+   * assumption like <code>x != c</code> or <code>x - y != 0</code>, or an interval of real values
+   * which doesn't contain the value.
+   *
+   * @return <code>true</code> if <code>arg1 != arg2</code> is proven
+   */
+  static boolean checkUnequalAssumptions(IExpr arg1, IExpr arg2, EvalEngine engine) {
+    IAssumptions assumptions = engine.getAssumptions();
+    if (assumptions == null || !assumptions.hasRelations()) {
+      return false;
+    }
+    if (arg2.isNumber() && assumptions.isUnequal(arg1, (INumber) arg2)) {
+      return true;
+    }
+    if (arg1.isNumber() && assumptions.isUnequal(arg2, (INumber) arg1)) {
+      return true;
+    }
+    IExpr difference = engine.evaluate(F.Subtract(arg1, arg2));
+    return isAssumedNonZero(difference, assumptions, engine, 0);
+  }
+
+  /**
+   * Test if the assumptions prove <code>expr != 0</code>. A product is non zero if all factors are
+   * non zero and a power <code>b^e</code> with a numeric exponent is non zero if the base is non
+   * zero.
+   */
+  private static boolean isAssumedNonZero(IExpr expr, IAssumptions assumptions,
+      EvalEngine engine, int depth) {
+    if (expr.isNumber()) {
+      return !expr.isZero();
+    }
+    if (assumptions.isUnequal(expr, F.C0)
+        || assumptions.isUnequal(engine.evaluate(F.Negate(expr)), F.C0)) {
+      return true;
+    }
+    if (depth > 8) {
+      return false;
+    }
+    if (expr.isTimes()) {
+      IAST times = (IAST) expr;
+      for (int i = 1; i < times.size(); i++) {
+        if (!isAssumedNonZero(times.get(i), assumptions, engine, depth + 1)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (expr.isPower() && expr.exponent().isReal() && !expr.exponent().isZero()) {
+      return isAssumedNonZero(expr.base(), assumptions, engine, depth + 1);
+    }
+    return false;
   }
 
   private static IExpr equals(final IAST ast) {

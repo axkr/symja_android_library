@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.FileExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -61,6 +62,7 @@ public class FileSystemFunctions {
         S.FileNameDepth.setEvaluator(new FileNameDepth());
         S.FileNames.setEvaluator(new FileNames());
         S.FileNameSplit.setEvaluator(new FileNameSplit());
+        S.FileSize.setEvaluator(new FileSize());
         S.FileType.setEvaluator(new FileType());
         S.ParentDirectory.setEvaluator(new ParentDirectory());
         S.RenameFile.setEvaluator(new RenameFile());
@@ -76,6 +78,21 @@ public class FileSystemFunctions {
       return null;
     }
     return FileSandbox.resolveReadPath(symbol, name.toString(), engine);
+  }
+
+  /**
+   * The current directory as <code>Directory()</code>, <code>SetDirectory()</code> and
+   * <code>ResetDirectory()</code> report it. In a sandbox it is relative to the session's directory
+   * - the name that works there, and one that doesn't tell where on the host the sandbox is kept.
+   */
+  private static IExpr currentDirectoryName(EvalEngine engine) {
+    Path current = engine.getCurrentDirectory();
+    Path root = engine.getFileSandboxRoot();
+    if (root == null) {
+      return F.stringx(current.toString());
+    }
+    Path relative = current.startsWith(root) ? root.relativize(current) : null;
+    return F.stringx(relative == null || relative.toString().isEmpty() ? "." : relative.toString());
   }
 
   /**
@@ -285,7 +302,10 @@ public class FileSystemFunctions {
   private static class Directory extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.stringx(engine.getCurrentDirectory().toString());
+      if (!Config.isFileSystemEnabled(engine)) {
+        return F.NIL;
+      }
+      return currentDirectoryName(engine);
     }
 
     @Override
@@ -393,6 +413,10 @@ public class FileSystemFunctions {
       if (!(ast.arg1() instanceof IStringX)) {
         return F.NIL;
       }
+      if (!FileSandbox.isHostVisible(engine)) {
+        // a sandboxed kernel must not read the server's environment - it holds its secrets
+        return F.NIL;
+      }
       String value = System.getenv(ast.arg1().toString());
       return value == null ? S.$Failed : F.stringx(value);
     }
@@ -457,6 +481,51 @@ public class FileSystemFunctions {
         return F.ZZ(Files.size(path));
       } catch (IOException ex) {
         Errors.printMessage(S.FileByteCount, ex, engine);
+        return S.$Failed;
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /**
+   * <code>FileSize("file")</code> - the size of a file as a <code>Quantity</code> in bytes.
+   */
+  private static class FileSize extends AbstractEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr name = ast.arg1();
+      if (name instanceof FileExpr) {
+        // File("name") - the name it was made from, which the sandbox then resolves like any other
+        name = F.stringx(((FileExpr) name).toData().getPath());
+      } else if (name.isAST(S.File, 2)) {
+        name = name.first();
+      }
+      if (!name.isString()) {
+        // The specified argument, `1`, should be a valid string or File object.
+        return Errors.printMessage(S.FileSize, "badfile", F.list(ast.arg1()), engine);
+      }
+      if (!Config.isFileSystemEnabled(engine)) {
+        return F.NIL;
+      }
+      // in a sandbox a name outside the session's directory is refused for where it is, whether a
+      // file of that name exists or not
+      Path path = path(S.FileSize, name, engine);
+      if (path == null) {
+        return F.NIL;
+      }
+      if (!Files.exists(path)) {
+        // Directory or file `1` not found.
+        return Errors.printMessage(S.FileSize, "fdnfnd", F.list(name), engine);
+      }
+      try {
+        // WMA's magnitude is a machine real: Quantity(5., "Bytes")
+        return F.Quantity(F.num(Files.size(path)), F.stringx("Bytes"));
+      } catch (IOException ex) {
+        Errors.printMessage(S.FileSize, ex, engine);
         return S.$Failed;
       }
     }
@@ -744,7 +813,7 @@ public class FileSystemFunctions {
       }
       Path previous = stack.pop();
       engine.setCurrentDirectory(previous);
-      return F.stringx(engine.getCurrentDirectory().toString());
+      return currentDirectoryName(engine);
     }
 
     @Override
@@ -761,8 +830,14 @@ public class FileSystemFunctions {
       }
       Path directory;
       if (ast.isAST0()) {
-        String home = System.getProperty("user.home");
-        directory = home == null ? engine.getCurrentDirectory() : Path.of(home);
+        Path root = engine.getFileSandboxRoot();
+        if (root != null) {
+          // the session's own directory stands in for the home directory
+          directory = root;
+        } else {
+          String home = System.getProperty("user.home");
+          directory = home == null ? engine.getCurrentDirectory() : Path.of(home);
+        }
       } else {
         directory = path(S.SetDirectory, ast.arg1(), engine);
       }
@@ -771,12 +846,14 @@ public class FileSystemFunctions {
       }
       if (!Files.isDirectory(directory)) {
         // SetDirectory::cdir: Cannot set current directory to `1`.
-        return Errors.printMessage(S.SetDirectory, "cdir", F.list(F.stringx(directory.toString())),
-            engine);
+        IExpr name = engine.getFileSandboxRoot() == null || ast.isAST0()
+            ? F.stringx(directory.toString())
+            : ast.arg1();
+        return Errors.printMessage(S.SetDirectory, "cdir", F.list(name), engine);
       }
       engine.getDirectoryStack().push(engine.getCurrentDirectory());
       engine.setCurrentDirectory(directory);
-      return F.stringx(engine.getCurrentDirectory().toString());
+      return currentDirectoryName(engine);
     }
 
     @Override

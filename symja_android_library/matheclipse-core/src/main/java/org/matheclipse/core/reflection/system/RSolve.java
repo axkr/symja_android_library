@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -258,7 +259,7 @@ public class RSolve extends AbstractFunctionEvaluator {
           newCoeff.append(F.Power(arg.base(), cleanPower));
           continue;
         }
-        newCoeff.append(arg);
+        newCoeff.append(pochhammerFromOne(arg));
       }
     } else if (coeff.isPower() && coeff.exponent().isPlus()) {
       IAST plus = (IAST) coeff.exponent();
@@ -272,7 +273,7 @@ public class RSolve extends AbstractFunctionEvaluator {
       IExpr cleanPower = newPlus.argSize() == 1 ? newPlus.arg1() : newPlus;
       newCoeff.append(F.Power(coeff.base(), cleanPower));
     } else {
-      newCoeff.append(coeff);
+      newCoeff.append(pochhammerFromOne(coeff));
     }
 
     IExpr simplifiedCoeff = newCoeff.argSize() == 1 ? newCoeff.arg1() : newCoeff;
@@ -280,6 +281,21 @@ public class RSolve extends AbstractFunctionEvaluator {
       simplifiedCoeff = F.C1;
 
     return engine.evaluate(F.Plus(rest, F.Times(cVar, simplifiedCoeff)));
+  }
+
+  /**
+   * <code>Pochhammer(m, e) == Pochhammer(1, e+m-1)/(m-1)!</code> for an integer <code>m &gt; 1</code>;
+   * the constant factor is absorbed into the integration constant like WMA does:
+   * <code>RSolve(a(n+1) == 3*(n+2)*a(n), a(n), n)</code> gives
+   * <code>3^(1+n)*C(1)*Pochhammer(1,1+n)</code>.
+   */
+  private static IExpr pochhammerFromOne(IExpr factor) {
+    if (factor.isAST(S.Pochhammer, 3) && factor.first().isInteger()
+        && ((IInteger) factor.first()).isGT(F.C1)) {
+      return F.Pochhammer(F.C1,
+          F.Plus(factor.second(), ((IInteger) factor.first()).subtract(F.C1)));
+    }
+    return factor;
   }
 
   // ====================================================================================
@@ -852,7 +868,7 @@ public class RSolve extends AbstractFunctionEvaluator {
     IExpr p_K = engine.evaluate(F.subst(p_n, nVar, K));
 
     IExpr prod = org.matheclipse.core.reflection.system.Product.tryClosedFormReduction(p_K, K, F.C1,
-        F.Subtract(nVar, F.C1), engine);
+        F.Subtract(nVar, F.C1), true, engine);
     if (!prod.isPresent()) {
       prod = F.Product(p_K, F.List(K, F.C1, F.Subtract(nVar, F.C1)));
     }

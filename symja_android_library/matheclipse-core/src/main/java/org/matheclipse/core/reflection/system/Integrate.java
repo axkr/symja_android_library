@@ -1,14 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.interfaces.Attribute;
-import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Integrate;
 import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.S.Integrate;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -18,15 +15,14 @@ import java.util.function.Supplier;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.MachineProfile;
-import org.matheclipse.core.integrate.IntegrateTimeBudget;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
+import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -43,6 +39,8 @@ import org.matheclipse.core.integrate.ChebyshevIntegration;
 import org.matheclipse.core.integrate.DerivativeDivides;
 import org.matheclipse.core.integrate.DiffUnderIntegral;
 import org.matheclipse.core.integrate.IntegralTable;
+import org.matheclipse.core.integrate.IntegrateTimeBudget;
+import org.matheclipse.core.integrate.PiecewiseIntegration;
 import org.matheclipse.core.integrate.PrimitiveTowerIntegration;
 import org.matheclipse.core.integrate.ProductPowerIntegration;
 import org.matheclipse.core.integrate.RadicalCoefficients;
@@ -53,6 +51,8 @@ import org.matheclipse.core.integrate.SurdRationalization;
 import org.matheclipse.core.integrate.TranscendentalRisch;
 import org.matheclipse.core.integrate.WeierstrassIntegration;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
+import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -303,7 +303,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       IExpr result = evaluateIntegrate(holdallAST, argSize, option, engine, originalAST);
       if (depth > 0) {
         // A sub-integral a Rubi rule asked for must not come back as a bare RootSum: it is a
-        // construct the rules have never seen, because Mathematica
+        // construct the rules have never seen, because WMA
         // answers these inner algebraic integrals in closed form. Handing one back corrupts the
         // answer - SubstAux's fallback for an unknown head is Map(Function(SubstAux(#1,x,v,flag)),
         // u), which wraps each of RootSum's pure-function arguments in a SECOND function whose #1
@@ -375,14 +375,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * back to an unevaluated {@code Integrate()} before this runs, so they never reach here.
    */
   /**
-   * Whether a result of the rules is an antiderivative with nothing left to integrate. One which
-   * is not is remembered only until the top-level integration ends, see
-   * {@link #PARTIAL_RUBI_ANSWERS}.
+   * Whether a result of the rules is an antiderivative with nothing left to integrate. One which is
+   * not is remembered only until the top-level integration ends, see {@link #PARTIAL_RUBI_ANSWERS}.
    */
   private static boolean isCompleteAntiderivative(IExpr result) {
     return result.isFree(part -> part.isAST(S.Integrate)
-        || part.isAST(UtilityFunctionCtors.Unintegrable)
-        || part.isAST(F.$rubi("CannotIntegrate")), true) && !containsRubiInternals(result);
+        || part.isAST(UtilityFunctionCtors.Unintegrable) || part.isAST(F.$rubi("CannotIntegrate")),
+        true) && !containsRubiInternals(result);
   }
 
   /**
@@ -414,8 +413,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     IASTAppendable rules = F.ListAlloc(leftovers.size());
     for (IExpr g : leftovers) {
       long budget = rubiBudgetMillis(engine);
-      IExpr integrated = IntegrateTimeBudget.runWithin(
-          () -> engine.evaluate(F.Integrate(g, x)), budget > 0 ? budget : 0);
+      IExpr integrated = IntegrateTimeBudget.runWithin(() -> engine.evaluate(F.Integrate(g, x)),
+          budget > 0 ? budget : 0);
       if (integrated.isNIL() || !integrated.isFree(S.Integrate, true)
           || !isFiniteAntiderivative(integrated) || containsRubiInternals(integrated)) {
         return F.NIL;
@@ -489,9 +488,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       ISymbol symbol = (ISymbol) part;
       // the inert markers are plain symbols, not Rubi context ones, so the prefix is the only test
-      return symbol.getSymbolName().startsWith("§")
-          || (symbol.getContext() == Context.RUBI
-              && symbol.getSymbolName().equalsIgnoreCase("subst"));
+      return symbol.getSymbolName().startsWith("§") || (symbol.getContext() == Context.RUBI
+          && symbol.getSymbolName().equalsIgnoreCase("subst"));
     }, true);
   }
 
@@ -612,6 +610,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (fermiDirac.isPresent()) {
             return fermiDirac;
           }
+          if (forcedMethod == null) {
+            // Integrate(Abs(x)*Cos(3*x), {x,-Pi,Pi}) - split the interval at the numeric break
+            // points of Piecewise, UnitStep, HeavisideTheta, Abs, Sign, Max, Min and integrate the
+            // active branches piece by piece
+            IExpr pieces = PiecewiseIntegration.integrate(arg1, xList.arg1(), xList.arg2(),
+                xList.arg3(), engine);
+            if (pieces.isPresent()) {
+              return pieces;
+            }
+          }
           // Integrate(f(x), {x,a,b}) by differentiating under the integral sign. Before the
           // antiderivative is attempted, not after: these are exact shapes, recognized or declined
           // in a millisecond, and none of them has an antiderivative for the Rubi rules to spend
@@ -619,8 +627,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           boolean forcedDiffUnderInt =
               forcedMethod != null && DiffUnderIntegral.isMethodName(forcedMethod);
           if (forcedDiffUnderInt || forcedMethod == null) {
-            IExpr byShape = DiffUnderIntegral.integrate(arg1, xList.arg1(), xList.arg2(),
-                xList.arg3(), engine);
+            IExpr byShape =
+                DiffUnderIntegral.integrate(arg1, xList.arg1(), xList.arg2(), xList.arg3(), engine);
             if (byShape.isPresent()) {
               return byShape;
             }
@@ -648,16 +656,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             // sign by a parameter the integrand already carries. Here and not above: this one has
             // no shape to recognize and costs two integrals per parameter, which an integral that
             // Newton-Leibniz can do must not pay for.
-            IExpr byParameter = DiffUnderIntegral.general(arg1, xList.arg1(), xList.arg2(),
-                xList.arg3(), engine);
+            IExpr byParameter =
+                DiffUnderIntegral.general(arg1, xList.arg1(), xList.arg2(), xList.arg3(), engine);
             if (byParameter.isPresent()) {
               return byParameter;
             }
           }
           // An antiderivative was found but would not evaluate at the limits. That is not a region
           // problem, so it stays unevaluated, as it did before there was anything to try here.
-          return antiderivative ? F.NIL
-              : integrateBooleTimesFxRegion(arg1, xList, false, engine);
+          return antiderivative ? F.NIL : integrateBooleTimesFxRegion(arg1, xList, false, engine);
         }
         // Invalid integration variable or limit(s) in `1`.
         return Errors.printMessage(S.Integrate, "ilim", F.List(arg2), engine);
@@ -670,9 +677,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       ast.set(2, arg2);
       final IExpr x = ast.arg2();
       if (!x.isVariable()) {
-        // Invalid integration variable or limit(s) in `1`. This is "ilim" rather than the general
-        // "ivar" because that is the message Mathematica answers Integrate[f, 2] with, and the two
-        // read differently: what is wrong is the place being integrated over, not a variable.
+        // Invalid integration variable or limit(s) in `1`.
         return Errors.printMessage(ast.topHead(), "ilim", F.list(x), engine);
       }
       if (arg1.isNumber()) {
@@ -760,19 +765,20 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // the RootSum only as a post-Rubi fallback (see below). Closed-form results, including a
           // mixed Log(..)+RootSum(..), are still produced here.
           // the stage narrates its own pipeline, so a step naming the method would only repeat it
-          result = quietStage(engine, fx, x, null,
-              () -> RationalIntegration.integrate(fx, x, engine,
-                  RationalIntegration.RootSumMode.DEFER));
+          result = quietStage(engine, fx, x, null, () -> RationalIntegration.integrate(fx, x,
+              engine, RationalIntegration.RootSumMode.DEFER));
           if (result.isPresent()) {
             return result;
           }
           // Stage: substitution t = (a+b*x)^(1/n) for radicals of a linear function
-          result = quietStage(engine, fx, x, "substituting for the radical of a linear function", () -> RadicalSubstitution.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "substituting for the radical of a linear function",
+              () -> RadicalSubstitution.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
           // Stage: Chebyshev binomial differentials x^m (a+b*x^n)^p (correct-by-construction).
-          result = quietStage(engine, fx, x, "the Chebyshev method for binomial differentials", () -> ChebyshevIntegration.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "the Chebyshev method for binomial differentials",
+              () -> ChebyshevIntegration.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -782,7 +788,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // unresolved pieces), and its own 40s grind on them would otherwise exhaust the test
           // timeout, so this runs before the rules. Restricted to >= 2 power factors to avoid the
           // single-power integrals Rubi already renders canonically. Diff-back self-verified.
-          result = quietStage(engine, fx, x, "expanding a product of polynomial powers", () -> ProductPowerIntegration.integrate(fx, x, engine, 2));
+          result = quietStage(engine, fx, x, "expanding a product of polynomial powers",
+              () -> ProductPowerIntegration.integrate(fx, x, engine, 2));
           if (result.isPresent()) {
             return result;
           }
@@ -792,7 +799,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // rules have nothing for this shape and grind until the deadline, while partial
           // fractions in the monomial plus the logarithmic-derivative test settle it. The stage
           // gates on that shape itself and diff-back verifies.
-          result = quietStage(engine, fx, x, "integrating over the primitive tower", () -> PrimitiveTowerIntegration.integrate(fx, x, engine));
+          result = quietStage(engine, fx, x, "integrating over the primitive tower",
+              () -> PrimitiveTowerIntegration.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -803,7 +811,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // these by substituting the inner function, runs before them instead of after. Only for
           // this shape, so no integral the rules can render more canonically is intercepted; the
           // stage diff-back verifies its result as always.
-          result = quietStage(engine, fx, x, "recognising that the derivative divides the integrand", () -> DerivativeDivides.integrate(fx, x, engine));
+          result =
+              quietStage(engine, fx, x, "recognising that the derivative divides the integrand",
+                  () -> DerivativeDivides.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -873,7 +883,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               // radical tower stage takes the integrand as a whole
               IExpr whole = quietStage(engine, fx, x, "parallel integration over a radical tower",
                   () -> IntegrateTimeBudget.runWithin(() -> RischNorman.integrate(fx, x, engine),
-                      MachineProfile.millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS)));
+                      MachineProfile
+                          .millis(Config.INTEGRATE_RISCH_NORMAN_RADICAL_TIMELIMIT_MILLIS)));
               if (whole.isPresent()) {
                 return whole;
               }
@@ -899,9 +910,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // it
           // has one) always wins. Correct-by-construction (Trager), reuses the full general logic.
           // the stage narrates its own pipeline, so a step naming the method would only repeat it
-          result = quietStage(engine, fx, x, null,
-              () -> RationalIntegration.integrate(fx, x, engine,
-                  RationalIntegration.RootSumMode.EMIT));
+          result = quietStage(engine, fx, x, null, () -> RationalIntegration.integrate(fx, x,
+              engine, RationalIntegration.RootSumMode.EMIT));
           if (result.isPresent()) {
             return result;
           }
@@ -920,8 +930,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // x^2/(x^2+Sqrt(1-x^2)) -> x^2*(x^2-Sqrt(1-x^2))/(x^4+x^2-1). Post-Rubi because it only
           // rewrites the integrand and re-enters Integrate: whenever Rubi has an answer for the
           // original form, that (more canonical) form wins.
-          result = quietStage(engine, fx, x, "rationalising the surd",
-              () -> RischNorman.withoutRadicalTower(() -> SurdRationalization.integrate(fx, x, engine)));
+          result = quietStage(engine, fx, x, "rationalising the surd", () -> RischNorman
+              .withoutRadicalTower(() -> SurdRationalization.integrate(fx, x, engine)));
           if (result.isPresent()) {
             return result;
           }
@@ -942,7 +952,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // return result;
           // }
           // Derivative-divides (Geddes) u-substitution heuristic.
-          result = quietStage(engine, fx, x, "recognising that the derivative divides the integrand", () -> DerivativeDivides.integrate(fx, x, engine));
+          result =
+              quietStage(engine, fx, x, "recognising that the derivative divides the integrand",
+                  () -> DerivativeDivides.integrate(fx, x, engine));
           if (result.isPresent()) {
             return result;
           }
@@ -985,9 +997,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    *
    * <p>
    * The rules integrate <code>E^(I*k*x)*Sec(a*x)</code> through a hypergeometric function over
-   * <code>a - k</code>, which is the wrong form when the two frequencies agree: there the
-   * integrand is <code>1 - I*Tan(a*x)</code> and the integral elementary. Expanding the
-   * exponential first leaves a sum of such terms.
+   * <code>a - k</code>, which is the wrong form when the two frequencies agree: there the integrand
+   * is <code>1 - I*Tan(a*x)</code> and the integral elementary. Expanding the exponential first
+   * leaves a sum of such terms.
    */
   private static IExpr integrateExponentialTimesTrig(IAST fx, IExpr x, EvalEngine engine) {
     if (!fx.isTimes() || fx.isFree(y -> y.isExp() && !y.exponent().isFree(x), true)) {
@@ -1051,8 +1063,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * method is what can honestly be said about them, and it is better than a derivation with nothing
    * in it at all.
    *
-   * @param method how the algorithm is named in the sentence, for example "the rational
-   *        function algorithm", or <code>null</code> for a stage which narrates itself
+   * @param method how the algorithm is named in the sentence, for example "the rational function
+   *        algorithm", or <code>null</code> for a stage which narrates itself
    */
   private static IExpr quietStage(final EvalEngine engine, final IExpr fx, final IExpr x,
       final String method, final Supplier<IExpr> stage) {
@@ -1288,7 +1300,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           return step(engine, function, x, function, "ExponentialERule", x);
         }
         // a^x / Log(a)
-        return step(engine, function, x, F.Divide(function, F.Log(base)), "ExponentialRule", base, x);
+        return step(engine, function, x, F.Divide(function, F.Log(base)), "ExponentialRule", base,
+            x);
       }
     }
     return F.NIL;
@@ -1607,8 +1620,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       IExpr rate = engine.evaluate(F.Coefficient(power, x, F.C1));
       IExpr offset = engine.evaluate(F.Coefficient(power, x, F.C0));
-      if (!rate.isFree(x) || !engine.evaluate(F.Subtract(power, F.Plus(F.Times(rate, x), offset)))
-          .isZero()) {
+      if (!rate.isFree(x)
+          || !engine.evaluate(F.Subtract(power, F.Plus(F.Times(rate, x), offset))).isZero()) {
         return F.NIL;
       }
       // a*E^(rate*x + offset) is (a*E^offset)*E^(rate*x)
@@ -1778,8 +1791,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       for (IExpr eq : potentialSingularityEquations) {
         // Solve({eq, x >= lower, x <= upper}, x) - quiet, its messages (InverseFunction::ifun for
         // Sin(x)==0) are about a search the caller never sees
-        IExpr solved = engine.evalQuiet(
-            F.Solve(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
+        IExpr solved = engine
+            .evalQuiet(F.Solve(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
         if (solved.isList()) {
           singularities.appendArgs((IAST) solved);
         }
@@ -1802,13 +1815,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               if (engine
                   .evalTrue(F.And(F.Less(lower, singularPoint), F.Less(singularPoint, upper)))) {
                 // Singularity/Branch point found strictly inside. Split.
-                IExpr left = definiteIntegral(function, integrand,
-                    F.List(x, lower, singularPoint), originalAST, engine);
+                IExpr left = definiteIntegral(function, integrand, F.List(x, lower, singularPoint),
+                    originalAST, engine);
                 if (left.isNIL()) {
                   return F.NIL;
                 }
-                IExpr right = definiteIntegral(function, integrand,
-                    F.List(x, singularPoint, upper), originalAST, engine);
+                IExpr right = definiteIntegral(function, integrand, F.List(x, singularPoint, upper),
+                    originalAST, engine);
                 if (right.isNIL()) {
                   return F.NIL;
                 }
@@ -1959,8 +1972,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * The integrand with a polynomial base which is a perfect power written as that power.
    *
    * <p>
-   * <code>u*(1-2*x+x^2)^p</code> becomes <code>u*(1-x)^(2*p)</code>. Only an integer
-   * <code>p</code> qualifies: for a fractional one the two are different functions, since
+   * <code>u*(1-2*x+x^2)^p</code> becomes <code>u*(1-x)^(2*p)</code>. Only an integer <code>p</code>
+   * qualifies: for a fractional one the two are different functions, since
    * <code>((1-x)^2)^(1/2)</code> is <code>Abs(1-x)</code> rather than <code>1-x</code>.
    *
    * @return {@link F#NIL} if nothing in the integrand is of that shape
@@ -2000,8 +2013,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * Only a quadratic is looked at, and only through its discriminant, so that no factorization is
    * needed: <code>a + b*x + c*x^2</code> with <code>b^2 == 4*a*c</code> is
    * <code>c*(x + b/(2*c))^2</code> whatever the coefficients are made of. Factoring would not do
-   * here anyway - it leaves <code>Sqrt(3)*x^2 - 6*(1+Sqrt(3))*x + 6*(3+2*Sqrt(3))</code> alone,
-   * and that is one of the squares this has to see.
+   * here anyway - it leaves <code>Sqrt(3)*x^2 - 6*(1+Sqrt(3))*x + 6*(3+2*Sqrt(3))</code> alone, and
+   * that is one of the squares this has to see.
    */
   private static IExpr perfectPower(IExpr factor, IExpr x, EvalEngine engine) {
     if (!factor.isPower() || !factor.exponent().isInteger() || factor.exponent().isZero()) {
@@ -2020,22 +2033,19 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       // A missing middle term is the case the rules already read correctly.
       return F.NIL;
     }
-    IExpr discriminant =
-        engine.evaluate(F.Simplify(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c))));
+    IExpr discriminant = engine.evaluate(F.Simplify(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c))));
     if (!discriminant.isZero()) {
       return F.NIL;
     }
     IExpr root = engine.evaluate(F.Plus(x, F.Divide(b, F.Times(F.C2, c))));
     // The discriminant was simplified to reach zero, so what it implies is checked rather than
     // taken: a wrong root here would silently change the integrand.
-    IExpr residual =
-        engine.evaluate(F.Simplify(F.Subtract(F.Times(c, F.Sqr(root)), base)));
+    IExpr residual = engine.evaluate(F.Simplify(F.Subtract(F.Times(c, F.Sqr(root)), base)));
     if (!residual.isZero()) {
       return F.NIL;
     }
     IExpr exponent = factor.exponent();
-    return engine.evaluate(
-        F.Times(F.Power(c, exponent), F.Power(root, F.Times(F.C2, exponent))));
+    return engine.evaluate(F.Times(F.Power(c, exponent), F.Power(root, F.Times(F.C2, exponent))));
   }
 
   /**
@@ -2082,8 +2092,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * a Rubi symbol, so it bypasses the rules too and is returned as it stands.
    */
   private static boolean holdsTheVariable(IAST integrand, IExpr x) {
-    return !integrand.isFree(part -> part.isAST() && part.head().isSymbol()
-        && (((ISymbol) part.head()).getAttributes() & ISymbol.HOLDALL) != 0 && !part.isFree(x),
+    return !integrand.isFree(
+        part -> part.isAST() && part.head().isSymbol()
+            && (((ISymbol) part.head()).getAttributes() & ISymbol.HOLDALL) != 0 && !part.isFree(x),
         true);
   }
 

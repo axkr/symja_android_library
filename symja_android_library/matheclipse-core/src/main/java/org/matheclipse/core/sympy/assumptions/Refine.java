@@ -11,8 +11,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.sympy.core.Traversal;
 
 /**
- * Handlers for the refinement of expressions with assumptions. Ported from
- * <a href="https://github.com/sympy/sympy/blob/master/sympy/assumptions/refine.py">sympy/assumptions/refine.py</a>
+ * Handlers for the refinement of expressions with assumptions. Ported from <a href=
+ * "https://github.com/sympy/sympy/blob/master/sympy/assumptions/refine.py">sympy/assumptions/refine.py</a>
  *
  * <p>
  * Only the handlers which aren't covered by the evaluation with assumptions are ported. The
@@ -30,8 +30,8 @@ public class Refine {
    * @return the refined expression or <code>expr</code> if no handler could be applied
    */
   public static IExpr refine(IExpr expr, EvalEngine engine) {
-    if (expr.isFree(x -> x == S.ArcTan || x == S.Sign || x == S.Sin || x == S.Cos
-        || x == S.Floor || x == S.Ceiling || x == S.Re || x == S.Im || x.isPower(), true)) {
+    if (expr.isFree(x -> x == S.ArcTan || x == S.Sign || x == S.Sin || x == S.Cos || x == S.Floor
+        || x == S.Ceiling || x == S.Re || x == S.Im || x.isPower(), true)) {
       return expr;
     }
     IExpr result = Traversal.bottomUp(expr, x -> refineHandler(x, engine).orElse(x));
@@ -72,11 +72,11 @@ public class Refine {
     return F.NIL;
   }
 
-  private static boolean isEven(IExpr expr, EvalEngine engine) {
+  public static boolean isEven(IExpr expr, EvalEngine engine) {
     return isEven(expr, engine, 2);
   }
 
-  private static boolean isOdd(IExpr expr, EvalEngine engine) {
+  public static boolean isOdd(IExpr expr, EvalEngine engine) {
     return isOdd(expr, engine, 2);
   }
 
@@ -92,7 +92,7 @@ public class Refine {
     if (expr.isNumber()) {
       return false;
     }
-    return isInteger(engine.evaluate(F.Times(F.C1D2, expr)), engine, depth - 1);
+    return isIntegerHalf(engine.evaluate(F.Times(F.C1D2, expr)), engine, depth - 1);
   }
 
   /** <code>expr</code> is odd, if <code>(expr-1)/2</code> is an integer */
@@ -103,7 +103,38 @@ public class Refine {
     if (expr.isNumber()) {
       return false;
     }
-    return isInteger(engine.evaluate(F.Times(F.C1D2, F.Plus(F.CN1, expr))), engine, depth - 1);
+    return isIntegerHalf(engine.evaluate(F.Times(F.C1D2, F.Plus(F.CN1, expr))), engine, depth - 1);
+  }
+
+  /**
+   * <code>k/2</code>, expanded if that removes all fractions: <code>(2*m+2*n)/2</code> gives
+   * <code>m+n</code>, but <code>(3+n)/2</code> stays <code>1/2*(3+n)</code>.
+   */
+  private static IExpr halfExponent(IExpr k, EvalEngine engine) {
+    IExpr half = engine.evaluate(F.Times(F.C1D2, k));
+    if (half.isTimes() && half.exists(IExpr::isPlus)) {
+      IExpr expanded = engine.evaluate(F.Expand(half));
+      if (expanded.isFree(IExpr::isFraction, true)) {
+        return expanded;
+      }
+    }
+    return half;
+  }
+
+  /**
+   * Test if the half <code>expr/2</code> (or <code>(expr-1)/2</code>) is an integer. The
+   * assumptions are recorded for the unexpanded form like <code>1/2*(-1+n)</code>; the expanded
+   * form is needed for sums like <code>1/2*(2*m+2*n)</code>.
+   */
+  private static boolean isIntegerHalf(IExpr half, EvalEngine engine, int depth) {
+    if (isInteger(half, engine, depth)) {
+      return true;
+    }
+    if (half.isTimes() && half.exists(IExpr::isPlus)) {
+      IExpr expanded = engine.evaluate(F.Expand(half));
+      return !expanded.equals(half) && isInteger(expanded, engine, depth);
+    }
+    return false;
   }
 
   private static boolean isInteger(IExpr expr, EvalEngine engine, int depth) {
@@ -236,7 +267,8 @@ public class Refine {
     // I
     // >>> refine_exp(exp(pi*I*2*(x + 3/4)), Q.integer(x))
     // -I
-    IExpr coeff = engine.evaluate(F.Expand(F.Times(exp.exponent(), F.Power(F.Times(F.CI, S.Pi), F.CN1))));
+    IExpr coeff =
+        engine.evaluate(F.Expand(F.Times(exp.exponent(), F.Power(F.Times(F.CI, S.Pi), F.CN1))));
     if (!coeff.isFree(S.Pi, true) || !coeff.isFree(t -> t.isNumber() && !t.isReal(), true)) {
       return F.NIL;
     }
@@ -310,19 +342,24 @@ public class Refine {
     if (!found || known.isZero()) {
       return F.NIL;
     }
+    if (!engine.evaluate(unknown).isZero()) {
+      // deviation from sympy: an integer multiple of Pi/2 with unknown parity
+      // leaves the function unevaluated (see ExpTrigsFunctions#piHalfShift)
+      return F.NIL;
+    }
     // Treat sin as a phase-shifted cosine so a single logic path can handle both.
     IExpr k = isSin ? engine.evaluate(F.Subtract(known, F.C1)) : known;
     boolean kIsEven = isSin ? !knownIsEven : knownIsEven;
     IExpr rem = F.Plus(remainingTerms.oneIdentity0(), F.Times(unknown, S.Pi, F.C1D2));
     IExpr remEvaled = engine.evaluate(rem);
     if (!remEvaled.isZero() && remEvaled.isNumericFunction(true)) {
-      // deviation from sympy, confirmed with WMA: Refine(Sin(Pi*(1/4+m)), Element(m, Integers))
+      // deviation from sympy: Refine(Sin(Pi*(1/4+m)), Element(m, Integers))
       // stays Sin((1/4+m)*Pi)
       return F.NIL;
     }
     // If k is even: `cos(rem + k*pi/2)` -> `(-1)^(k/2) * cos(rem)`
     // If k is odd: `cos(rem + k*pi/2)` -> `(-1)^((k+1)/2) * sin(rem)`
-    IAST powExpr = kIsEven ? F.Power(F.CN1, engine.evaluate(F.Times(F.C1D2, k)))
+    IAST powExpr = kIsEven ? F.Power(F.CN1, halfExponent(k, engine))
         : F.Power(F.CN1, engine.evaluate(F.Times(F.C1D2, F.Plus(k, F.C1))));
     IExpr sign = refinePow(powExpr, engine).orElse(powExpr);
     return F.Times(sign, kIsEven ? F.Cos(rem) : F.Sin(rem));
@@ -386,8 +423,10 @@ public class Refine {
     IExpr denominator = engine.evaluate(F.Denominator(together));
     IExpr conjugate = engine.evaluate(F.ComplexExpand(F.Conjugate(denominator)));
     IExpr newNumerator = engine.evaluate(F.Expand(F.Times(numerator, conjugate)));
-    IExpr newDenominator = engine.evaluate(F.Expand(F.ComplexExpand(F.Times(denominator, conjugate))));
-    if (!newDenominator.isFree(S.I, true) || !newDenominator.isFree(t -> t.isNumber() && !t.isReal(), true)) {
+    IExpr newDenominator =
+        engine.evaluate(F.Expand(F.ComplexExpand(F.Times(denominator, conjugate))));
+    if (!newDenominator.isFree(S.I, true)
+        || !newDenominator.isFree(t -> t.isNumber() && !t.isReal(), true)) {
       return F.NIL;
     }
     IExpr part = engine.evaluate(F.ComplexExpand(F.unaryAST1(expr.head(), newNumerator)));

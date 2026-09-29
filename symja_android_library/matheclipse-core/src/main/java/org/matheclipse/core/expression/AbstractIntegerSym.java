@@ -207,11 +207,34 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       BigIntegerLimitExceeded.throwIt(number.bitLength());
     }
     BigInteger rest = Primality.countPrimes32749(number, map);
-    if (map.size() == 0) {
-      return F.NIL;
-    }
     final IASTAppendable result = F.TimesAlloc(map.size() + 4);
     boolean evaled = false;
+    if (rest.compareTo(BigInteger.ONE) > 0) {
+      // the rest has no prime factors less than 1031 (bit length 11), but may be a perfect power
+      BigInteger[] perfectPower = Primality.perfectPower(rest, 11);
+      int exponent = perfectPower[1].intValueExact();
+      if (exponent > 1) {
+        BigInteger root = perfectPower[0];
+        int mod = exponent % rootDenominator;
+        int div = exponent / rootDenominator;
+        if (div != 0) {
+          result.append(valueOf(root.pow(div)));
+          if (mod != 0) {
+            result.append(F.Power(valueOf(root), F.QQ(mod, rootDenominator)));
+          }
+          rest = BigInteger.ONE;
+          evaled = true;
+        } else if (IntMath.gcd(exponent, rootDenominator) > 1) {
+          // for example (p^2)^(1/4) ==> p^(1/2)
+          result.append(F.Power(valueOf(root), F.QQ(exponent, rootDenominator)));
+          rest = BigInteger.ONE;
+          evaled = true;
+        }
+      }
+    }
+    if (map.size() == 0 && !evaled) {
+      return F.NIL;
+    }
     for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
       int key = entry.getIntKey();
       int value = entry.getIntValue();
@@ -227,17 +250,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
         result.append(F.Power(F.Power(valueOf(key), valueOf(value)), F.QQ(1, rootDenominator)));
       }
     }
-    if (rootDenominator == 2 && rootNumerator == 1
-        && rest.compareTo(BigInteger.valueOf(Short.MAX_VALUE - 20)) > 0) {
-      // exponent 1/2 ==> special case - try to get exact square root of rest
-      IInteger[] sr = F.ZZ(rest).sqrtAndRemainder();
-      if (sr != null && sr[1].isZero()) {
-        result.append(sr[0]);
-        rest = BigInteger.ONE;
-        evaled = true;
-      }
-    }
-
     if (evaled) {
       if (!rest.equals(BigInteger.ONE)) {
         result.append(F.Power(valueOf(rest), F.QQ(1, rootDenominator)));

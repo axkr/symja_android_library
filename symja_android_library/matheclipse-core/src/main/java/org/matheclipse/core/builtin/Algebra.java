@@ -1364,6 +1364,13 @@ public class Algebra {
             AlgebraUtil.numeratorDenominator((IAST) subsPolynomial, true, engine);
         subsPolynomial = fractionParts[0]; // For solving, the roots are determined by the numerator
       }
+      if (varSet.size() == 1) {
+        IAST binomialSolution = solveBinomialExponential(subsPolynomial, varSet.iterator().next(),
+            substitutions, variable, solveData, engine);
+        if (binomialSolution.isPresent()) {
+          return binomialSolution;
+        }
+      }
 
       IExpr factorization =
           AlgebraUtil.factorComplex(subsPolynomial, varList, S.Times, gaussianIntegers, engine);
@@ -1386,6 +1393,57 @@ public class Algebra {
       }
       return solveEquationTrigRecursive(factorization, originalVarList, substitutions, varSet,
           solveData, engine);
+    }
+
+    /**
+     * <code>a*t^k + b == 0</code> for an exponential kernel <code>t = base^f(x)</code> is the single
+     * power <code>base^(k*f(x)) == -b/a</code>, which Mathematica solves as one family:
+     * <code>Solve(3^(-2*x) == 5, x)</code> gives <code>((2*I*Pi*C(1))/Log(3) -
+     * Log(5)/Log(3))/2</code> and <code>Solve(E^(3*x) == 8, x)</code> gives
+     * <code>(2*I*Pi*C(1) + Log(8))/3</code>. The k roots of <code>t^k == -b/a</code> gave k
+     * families which together are the same set.
+     *
+     * @return the values of the variable or {@link F#NIL}
+     */
+    private static IAST solveBinomialExponential(IExpr polynomial, ISymbol kernelVariable,
+        PolynomialHomogenization substitutions, IExpr variable, SolveData solveData,
+        EvalEngine engine) {
+      IExpr kernel = substitutions.replaceBackward(kernelVariable);
+      if (!kernel.isPower() || !kernel.base().isNumericFunction()
+          || !polynomial.isPolynomial(F.list(kernelVariable))) {
+        return F.NIL;
+      }
+      IExpr coefficients = engine.evaluate(F.CoefficientList(polynomial, kernelVariable));
+      if (!coefficients.isList() || coefficients.argSize() < 3 || coefficients.first().isZero()) {
+        return F.NIL;
+      }
+      IAST list = (IAST) coefficients;
+      int k = list.argSize() - 1;
+      for (int i = 2; i <= k; i++) {
+        if (!list.get(i).isZero()) {
+          return F.NIL;
+        }
+      }
+      IExpr value = engine.evaluate(F.Negate(F.Divide(list.first(), list.last())));
+      IExpr power = engine.evaluate(F.Power(kernel, F.ZZ(k)));
+      // inverted by Eliminate, not Solve: Solve would homogenize the power into the same binomial
+      IExpr values = org.matheclipse.core.reflection.system.Eliminate
+          .extractVariable(engine.evaluate(F.Subtract(power, value)), variable, true, engine);
+      if (values.isNIL() || values.isTrue() || values.isFalse()) {
+        return F.NIL;
+      }
+      IAST valueList = values.isList() ? (IAST) values : F.list(values);
+      // a real principal value: Log(4)/2 is Log(2), as Mathematica gives Solve(E^(2*x) == 4, x,
+      // Reals)
+      return valueList.map(v -> {
+        if (v.isNumericFunction() && v.isRealResult() && !v.isFree(S.Log)) {
+          IExpr expanded = engine.evalQuiet(F.PowerExpand(v));
+          if (expanded.isRealResult() && expanded.leafCount() <= v.leafCount()) {
+            return expanded;
+          }
+        }
+        return v;
+      }, 1);
     }
 
     private static IExpr getVariableValue(IExpr possibleList1, IExpr variable) {

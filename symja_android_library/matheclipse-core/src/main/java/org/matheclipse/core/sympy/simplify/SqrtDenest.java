@@ -1,6 +1,5 @@
 package org.matheclipse.core.sympy.simplify;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
@@ -9,7 +8,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -44,17 +42,6 @@ public class SqrtDenest {
   }
 
   private static IExpr sqrt(IExpr expr) {
-    if (expr.isRational() && !expr.isNegative()) {
-      // the evaluation of Sqrt() doesn't detect a big perfect square
-      BigInteger numerator = ((IRational) expr).toBigNumerator();
-      BigInteger denominator = ((IRational) expr).toBigDenominator();
-      BigInteger numeratorRoot = numerator.sqrt();
-      BigInteger denominatorRoot = denominator.sqrt();
-      if (numeratorRoot.multiply(numeratorRoot).equals(numerator)
-          && denominatorRoot.multiply(denominatorRoot).equals(denominator)) {
-        return F.QQ(numeratorRoot, denominatorRoot);
-      }
-    }
     return eval(F.Sqrt(expr));
   }
 

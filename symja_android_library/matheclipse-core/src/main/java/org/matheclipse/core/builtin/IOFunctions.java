@@ -322,10 +322,16 @@ public class IOFunctions {
           IAST messageName = (IAST) ast.arg1();
           String messageShortcut = messageName.arg2().toString();
           if (messageName.arg1().isSymbol()) {
-            IExpr temp = Errors.message((ISymbol) messageName.arg1(), messageShortcut, ast,
-                engine.getOutputSizeLimit());
+            ISymbol symbol = (ISymbol) messageName.arg1();
+            if (engine.isMessageDisabled(symbol.toString(), messageShortcut)) {
+              // Off(symbol::tag) - neither printed nor seen by Check
+              return S.Null;
+            }
+            IExpr temp = Errors.message(symbol, messageShortcut, ast, engine.getOutputSizeLimit());
             if (temp.isPresent()) {
-              if (!engine.isQuietMode()) {
+              // a generated message, which an enclosing Check sees
+              Errors.noteMessage(symbol, messageShortcut, engine);
+              if (!Errors.isSilenced(engine)) {
                 engine.getErrorPrintStream().append(temp.toString() + "\n");
               }
               return temp;

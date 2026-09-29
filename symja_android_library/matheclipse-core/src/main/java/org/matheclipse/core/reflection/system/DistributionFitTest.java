@@ -80,11 +80,31 @@ public class DistributionFitTest extends AbstractFunctionEvaluator {
     if (property.isList()) {
       // a list of properties, a test's name among them standing for its p-value:
       // {"Kuiper", "TestData"} is {Kuiper p-value, TestData of the automatic test}
-      return ((IAST) property).map(p -> p.isString() && Arrays.asList(TESTS).contains(p.toString())
+      for (IExpr p : (IAST) property) {
+        if (!isTest(p) && !HypothesisTestData.isProperty(p)) {
+          return invalidProperty(p, engine);
+        }
+      }
+      return ((IAST) property).map(p -> isTest(p)
           ? HypothesisTestData.property(object, F.stringx("PValue"), p)
           : HypothesisTestData.property(object, p, F.NIL), 1);
     }
+    if (!HypothesisTestData.isProperty(property)) {
+      return invalidProperty(property, engine);
+    }
     return HypothesisTestData.property(object, property, F.NIL);
+  }
+
+  private static boolean isTest(IExpr name) {
+    return name.isString() && Arrays.asList(TESTS).contains(name.toString());
+  }
+
+  /** Mathematica reports an unknown property and leaves the call unevaluated. */
+  private static IExpr invalidProperty(IExpr property, EvalEngine engine) {
+    // The argument `1` is not a valid property. Specify "Properties" to obtain a list of valid
+    // properties.
+    Errors.printMessage(S.DistributionFitTest, "invprp", F.list(property), engine);
+    return F.NIL;
   }
 
   /**

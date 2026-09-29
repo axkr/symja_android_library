@@ -1149,6 +1149,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
         if (symbol == S.Abs && (assumeNegative(arg1) || assumePositive(arg1))) {
           return true;
         }
+        if (symbol == S.Abs && arg1.isNonZeroComplexResult()) {
+          // Abs(z) > 0 <=> z != 0
+          return true;
+        }
         if (symbol == S.Log && assumeGreaterThan(arg1, F.C1)) {
           return true;
         }

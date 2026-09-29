@@ -1282,6 +1282,8 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public void sortInplace(Comparator<IExpr> comparator) {
     if (size() > 1) {
+      // the hash code depends on the order of the arguments
+      hashValue = 0;
       if (Config.FUZZ_TESTING) {
         try {
           Arrays.sort(array, firstIndex + 1, lastIndex, comparator);

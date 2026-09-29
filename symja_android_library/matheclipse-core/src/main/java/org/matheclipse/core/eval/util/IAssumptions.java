@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.util;
 import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -62,6 +63,16 @@ public interface IAssumptions {
   public IAST zeroPolynomials();
 
   /**
+   * The rules <code>x -&gt; c</code> for the variables <code>x</code> which are assumed to be
+   * equal to the number <code>c</code>.
+   *
+   * @return an empty list if there are no such variables
+   */
+  default IAST pointValues() {
+    return F.CEmptyList;
+  }
+
+  /**
    * Get the expressions for which a relation against a bound is assumed, i.e. the keys for which
    * {@link #intervalData(IExpr)} returns an interval.
    *
@@ -117,6 +128,15 @@ public interface IAssumptions {
    * @return
    */
   public boolean isContradictory();
+
+  /**
+   * Test if the assumptions contain equal, unequal or inequality relations.
+   *
+   * @return <code>false</code> if there are no such relations
+   */
+  default boolean hasRelations() {
+    return false;
+  }
 
   /**
    * Gives <code>true</code>, if the expression is assumed to equal the number, <code>false

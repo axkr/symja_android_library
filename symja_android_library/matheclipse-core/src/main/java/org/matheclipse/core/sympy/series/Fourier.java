@@ -1,12 +1,8 @@
 package org.matheclipse.core.sympy.series;
 
-import java.util.Map;
-import java.util.TreeMap;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.sympy.exception.ValueError;
@@ -30,13 +26,7 @@ public class Fourier {
    */
   private static IExpr integrate(IExpr function, IExpr x, IExpr lower, IExpr upper, IExpr n,
       EvalEngine engine) {
-    IExpr integral = F.NIL;
-    if (!function.isFree(S.Piecewise, true)) {
-      integral = integratePiecewise(function, x, lower, upper, engine);
-    }
-    if (integral.isNIL()) {
-      integral = engine.evaluate(F.Integrate(function, F.List(x, lower, upper)));
-    }
+    IExpr integral = engine.evaluate(F.Integrate(function, F.List(x, lower, upper)));
     if (!integral.isFree(S.Integrate, true) || integral.isIndeterminate()
         || integral.isDirectedInfinity()) {
       return F.NIL;
@@ -46,120 +36,6 @@ public class Fourier {
       integral = engine.evaluate(F.Simplify(integral, F.Element(n, S.Integers)));
     }
     return integral;
-  }
-
-  /**
-   * Integrate a piecewise defined function by splitting the interval <code>(lower, upper)</code>
-   * at the break points of the conditions.
-   *
-   * @return {@link F#NIL} if the function can't be splitted into pieces
-   */
-  private static IExpr integratePiecewise(IExpr function, IExpr x, IExpr lower, IExpr upper,
-      EvalEngine engine) {
-    IExpr expanded = engine.evaluate(F.PiecewiseExpand(function));
-    if (!expanded.isAST(S.Piecewise) || ((IAST) expanded).argSize() < 1
-        || !expanded.first().isListOfLists()) {
-      return F.NIL;
-    }
-    IAST piecewise = (IAST) expanded;
-    IAST pieces = (IAST) piecewise.arg1();
-    IExpr defaultValue = piecewise.argSize() >= 2 ? piecewise.arg2() : F.C0;
-    try {
-      final double low = lower.evalf();
-      final double up = upper.evalf();
-      if (!(low < up)) {
-        return F.NIL;
-      }
-      TreeMap<Double, IExpr> points = new TreeMap<Double, IExpr>();
-      points.put(low, lower);
-      points.put(up, upper);
-      for (int i = 1; i < pieces.size(); i++) {
-        IAST piece = (IAST) pieces.get(i);
-        if (!piece.isAST2() || !piece.arg1().isFree(S.Piecewise, true)
-            || !collectBreakPoints(piece.arg2(), x, low, up, points)) {
-          return F.NIL;
-        }
-      }
-      if (!defaultValue.isFree(S.Piecewise, true)) {
-        return F.NIL;
-      }
-      IASTAppendable sum = F.PlusAlloc(points.size());
-      Map.Entry<Double, IExpr> previous = null;
-      for (Map.Entry<Double, IExpr> entry : points.entrySet()) {
-        if (previous != null) {
-          final IExpr middle = F.num(0.5 * (previous.getKey() + entry.getKey()));
-          IExpr active = defaultValue;
-          for (int i = 1; i < pieces.size(); i++) {
-            IAST piece = (IAST) pieces.get(i);
-            IExpr condition = engine.evaluate(F.subst(piece.arg2(), x, middle));
-            if (condition.isTrue()) {
-              active = piece.arg1();
-              break;
-            }
-            if (!condition.isFalse()) {
-              return F.NIL;
-            }
-          }
-          IExpr integral = engine
-              .evaluate(F.Integrate(active, F.List(x, previous.getValue(), entry.getValue())));
-          if (!integral.isFree(S.Integrate, true)) {
-            return F.NIL;
-          }
-          sum.append(integral);
-        }
-        previous = entry;
-      }
-      return engine.evaluate(sum);
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Collect the break points <code>c</code> of the inequalities <code>x &lt; c</code> in the
-   * <code>condition</code>, which are inside the open interval <code>(low, up)</code>.
-   *
-   * @return <code>false</code> if the condition contains unsupported expressions
-   */
-  private static boolean collectBreakPoints(IExpr condition, IExpr x, double low, double up,
-      Map<Double, IExpr> points) {
-    if (condition.isTrue() || condition.isFalse()) {
-      return true;
-    }
-    if (!condition.isAST()) {
-      return false;
-    }
-    IAST ast = (IAST) condition;
-    if (ast.isAnd() || ast.isOr() || ast.isNot()) {
-      for (int i = 1; i < ast.size(); i++) {
-        if (!collectBreakPoints(ast.get(i), x, low, up, points)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    if (ast.isRelational() || ast.isEqual() || ast.isAST(S.Unequal)) {
-      // also chained inequalities like a < x < b
-      for (int i = 1; i < ast.size(); i++) {
-        IExpr arg = ast.get(i);
-        if (arg.equals(x)) {
-          continue;
-        }
-        if (!arg.isFree(x)) {
-          return false;
-        }
-        double point = arg.evalf();
-        if (Double.isNaN(point)) {
-          return false;
-        }
-        if (low < point && point < up) {
-          points.put(point, arg);
-        }
-      }
-      return true;
-    }
-    return false;
   }
 
   private static void checkLimits(IExpr x, IExpr lower, IExpr upper) {

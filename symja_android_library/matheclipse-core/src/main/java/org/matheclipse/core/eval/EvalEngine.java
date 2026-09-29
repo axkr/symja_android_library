@@ -225,6 +225,8 @@ public class EvalEngine implements Serializable {
 
   private static class EvalControlledCallable implements Callable<IExpr> {
     private final EvalEngine fEngine;
+    /** The enclosing <code>Check</code>s of the calling thread, which see the messages. */
+    private final Object fCheckScopes;
     private IExpr fExpr;
     private long fSeconds;
 
@@ -236,11 +238,13 @@ public class EvalEngine implements Serializable {
      */
     public EvalControlledCallable(EvalEngine engine) {
       fEngine = engine.copy();
+      fCheckScopes = Errors.checkScopes();
     }
 
     @Override
     public IExpr call() {
       EvalEngine.set(fEngine);
+      Errors.inheritCheckScopes(fCheckScopes);
       try {
         long timeConstrainedMillis = System.currentTimeMillis() + fSeconds * 1000L;
         // System.out.println("TimeConstrainedMillis: " + timeConstrainedMillis);
@@ -266,6 +270,7 @@ public class EvalEngine implements Serializable {
         }
       } finally {
         fEngine.setTimeConstrainedMillis(-1);
+        Errors.clearCheckScopes();
         EvalEngine.remove();
       }
       return S.$Aborted;
@@ -785,6 +790,13 @@ public class EvalEngine implements Serializable {
   transient java.util.Set<String> fDisabledMessages;
 
   transient String fSessionID;
+
+  /**
+   * When this engine was created, in {@link System#nanoTime()} units - the start of the session
+   * <code>SessionTime()</code> counts from in a sandboxed kernel. <code>0</code> after
+   * deserialization, then set on first use.
+   */
+  private transient long fSessionStartNanos = System.nanoTime();
 
   private transient String fMessageShortcut;
 
@@ -2177,7 +2189,20 @@ public class EvalEngine implements Serializable {
 
     if (astSize > 2 && ISymbol.hasOrderlessAttribute(attributes)) {
       // commutative symbol
-      EvalAttributes.sortWithFlags(mutableAST);
+      if (mutableAST.getHashCache() != 0 && mutableAST.hasNoFlag(Flag.IS_SORTED)) {
+        // the hash code was already computed, so the ast may be an argument of expressions whose
+        // cached hash codes depend on the order of its arguments; an in-place sort would make them
+        // stale, e.g. Refine(Cos((2*n+1)*Pi+x), Element(n,Integers)) looped endlessly
+        IASTMutable sorted = mutableAST.copy();
+        if (EvalAttributes.sortWithFlags(sorted)) {
+          mutableAST = sorted;
+          returnResult = sorted;
+        } else {
+          mutableAST.addFlag(Flag.IS_SORTED);
+        }
+      } else {
+        EvalAttributes.sortWithFlags(mutableAST);
+      }
     }
     IExpr temp = mutableAST.extractConditionalExpression(false);
     if (temp.isPresent()) {
@@ -2829,13 +2854,33 @@ public class EvalEngine implements Serializable {
       }
     }
     if (ISymbol.hasOrderlessAttribute(attributes)) {
-      if (EvalAttributes.sortWithFlags((IASTMutable) ast)) {
-        ast.addFlag(Flag.IS_FLAT_ORDERLESS_EVALED);
-        return ast;
+      IAST sorted = sortOrderlessCopy(ast);
+      if (sorted != ast) {
+        sorted.addFlag(Flag.IS_FLAT_ORDERLESS_EVALED);
       }
-      return ast;
+      return sorted;
     }
     return F.NIL;
+  }
+
+  /**
+   * Sort the arguments of an <code>Orderless</code> ast. The ast itself is never sorted in place:
+   * it may be a (held) argument of other expressions, whose cached hash codes depend on the order
+   * of its arguments.
+   *
+   * @param ast
+   * @return a sorted copy of <code>ast</code> or <code>ast</code> itself if it's already sorted
+   */
+  private static IAST sortOrderlessCopy(IAST ast) {
+    if (ast.hasFlag(Flag.IS_SORTED)) {
+      return ast;
+    }
+    IASTMutable copy = ast.copy();
+    if (EvalAttributes.sortWithFlags(copy)) {
+      return copy;
+    }
+    ast.addFlag(Flag.IS_SORTED);
+    return ast;
   }
 
   /**
@@ -3805,7 +3850,7 @@ public class EvalEngine implements Serializable {
    */
   private IExpr evalSetOrderless(IAST ast, final int attributes, boolean noEvaluation, int level) {
     if (ISymbol.hasOrderlessAttribute(attributes)) {
-      EvalAttributes.sortWithFlags((IASTMutable) ast);
+      ast = sortOrderlessCopy(ast);
       // if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
       if (!noEvaluation) {
         if (ast.isPlus()) {
@@ -4399,6 +4444,17 @@ public class EvalEngine implements Serializable {
 
   public String getMessageShortcut() {
     return fMessageShortcut;
+  }
+
+  /**
+   * When this engine's session started, in {@link System#nanoTime()} units.
+   */
+  public final long getSessionStartNanos() {
+    if (fSessionStartNanos == 0L) {
+      // a deserialized engine: its session starts now
+      fSessionStartNanos = System.nanoTime();
+    }
+    return fSessionStartNanos;
   }
 
   /**

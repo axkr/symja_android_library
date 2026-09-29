@@ -4,14 +4,16 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 /**
- * Port of <a href="https://github.com/sympy/sympy/blob/master/sympy/assumptions/tests/test_refine.py">test_refine.py</a>.
+ * Port of <a href=
+ * "https://github.com/sympy/sympy/blob/master/sympy/assumptions/tests/test_refine.py">test_refine.py</a>.
  *
  * <p>
- * The sympy predicates are translated to Symja assumptions: <code>Q.positive(x) -&gt; x&gt;0</code>,
- * <code>Q.real(x) -&gt; Element(x,Reals)</code>, <code>Q.integer(x) -&gt; Element(x,Integers)</code>,
+ * The sympy predicates are translated to Symja assumptions:
+ * <code>Q.positive(x) -&gt; x&gt;0</code>, <code>Q.real(x) -&gt; Element(x,Reals)</code>,
+ * <code>Q.integer(x) -&gt; Element(x,Integers)</code>,
  * <code>Q.even(x) -&gt; Element(x/2,Integers)</code>, <code>Q.odd(x) -&gt;
- * Element((x-1)/2,Integers)</code>, <code>Q.zero(x) -&gt; x==0</code>. The expected values are
- * the Symja forms of sympy's results. Not ported: the cases with <code>Q.imaginary</code>,
+ * Element((x-1)/2,Integers)</code>, <code>Q.zero(x) -&gt; x==0</code>. The expected values are the
+ * Symja forms of sympy's results. Not ported: the cases with <code>Q.imaginary</code>,
  * <code>Q.infinite</code>, <code>Q.extended_real</code> (no Symja assumptions), non-commutative
  * symbols, matrix elements, Heaviside with a second argument, and the rule
  * <code>refine((x**3)**(1/3), Q.real(x))</code>, which is wrong for odd powers in sympy.
@@ -66,7 +68,8 @@ public class TestRefine extends ExprEvaluatorTestCase {
     // sympy: Refine((-1)^(x + y), Element(x/2,Integers)) == (-1)^y
     check("Refine((-1)^(x + y), Element(x/2,Integers))", //
         "(-1)^y");
-    // sympy: Refine((-1)^(x + y + z), Element((x-1)/2,Integers) && Element((z-1)/2,Integers)) == (-1)^y
+    // sympy: Refine((-1)^(x + y + z), Element((x-1)/2,Integers) && Element((z-1)/2,Integers)) ==
+    // (-1)^y
     check("Refine((-1)^(x + y + z), Element((x-1)/2,Integers) && Element((z-1)/2,Integers))", //
         "(-1)^y");
     // sympy: Refine((-1)^(x + y + 1), Element((x-1)/2,Integers)) == (-1)^y
@@ -184,11 +187,14 @@ public class TestRefine extends ExprEvaluatorTestCase {
     check("Refine(Piecewise({{1, x == 0}}, 3), 0 == x)", //
         "1");
     // sympy: Refine(Piecewise({{1, x == 0}}, 3), !(x == 0)) == 3
-    // TODO the assumption isn't recorded by the evaluation engine; Symja returns: Piecewise({{1,x==0}},3)
+    check("Refine(Piecewise({{1, x == 0}}, 3), !(x == 0))", //
+        "3");
     // sympy: Refine(Piecewise({{1, x != 0}}, 3), x != 0) == 1
-    // TODO the assumption isn't recorded by the evaluation engine; Symja returns: Piecewise({{1,x!=0}},3)
+    check("Refine(Piecewise({{1, x != 0}}, 3), x != 0)", //
+        "1");
     // sympy: Refine(Piecewise({{1, x != 0}}, 3), !(x != 0)) == 3
-    // TODO the assumption isn't recorded by the evaluation engine; Symja returns: Piecewise({{1,x!=0}},3)
+    check("Refine(Piecewise({{1, x != 0}}, 3), !(x != 0))", //
+        "3");
   }
 
   @Test
@@ -250,11 +256,15 @@ public class TestRefine extends ExprEvaluatorTestCase {
     // sympy: Refine(Im(1/(x + I*y)), Element(x,Reals) && Element(y,Reals)) == -y/(x^2 + y^2)
     check("Refine(Im(1/(x + I*y)), Element(x,Reals) && Element(y,Reals))", //
         "-y/(x^2+y^2)");
-    // sympy: Refine(Re((w + I*x)*(y + I*z)), Element(w,Reals) && Element(x,Reals) && Element(y,Reals) && Element(z,Reals)) == w*y - x*z
-    check("Refine(Re((w + I*x)*(y + I*z)), Element(w,Reals) && Element(x,Reals) && Element(y,Reals) && Element(z,Reals))", //
+    // sympy: Refine(Re((w + I*x)*(y + I*z)), Element(w,Reals) && Element(x,Reals) &&
+    // Element(y,Reals) && Element(z,Reals)) == w*y - x*z
+    check(
+        "Refine(Re((w + I*x)*(y + I*z)), Element(w,Reals) && Element(x,Reals) && Element(y,Reals) && Element(z,Reals))", //
         "w*y-x*z");
-    // sympy: Refine(Im((w + I*x)*(y + I*z)), Element(w,Reals) && Element(x,Reals) && Element(y,Reals) && Element(z,Reals)) == w*z + x*y
-    check("Refine(Im((w + I*x)*(y + I*z)), Element(w,Reals) && Element(x,Reals) && Element(y,Reals) && Element(z,Reals))", //
+    // sympy: Refine(Im((w + I*x)*(y + I*z)), Element(w,Reals) && Element(x,Reals) &&
+    // Element(y,Reals) && Element(z,Reals)) == w*z + x*y
+    check(
+        "Refine(Im((w + I*x)*(y + I*z)), Element(w,Reals) && Element(x,Reals) && Element(y,Reals) && Element(z,Reals))", //
         "x*y+w*z");
   }
 
@@ -273,7 +283,8 @@ public class TestRefine extends ExprEvaluatorTestCase {
     check("Refine(Sign(x))", //
         "Sign(x)");
     // sympy: Refine(Sign(Abs(x)), x!=0) == 1
-    // TODO the assumption isn't recorded by the evaluation engine; Symja returns: Sign(Abs(x))
+    check("Refine(Sign(Abs(x)), x!=0)", //
+        "1");
   }
 
   @Test
@@ -332,7 +343,8 @@ public class TestRefine extends ExprEvaluatorTestCase {
     // sympy: Refine(Sin(n*Pi/2), Element((n-1)/2,Integers) && Element((n-1)/4,Integers)) == 1
     check("Refine(Sin(n*Pi/2), Element((n-1)/2,Integers) && Element((n-1)/4,Integers))", //
         "1");
-    // sympy: Refine(Sin(n*Pi/2), Element((n-1)/2,Integers) && Element(((n-1)/2-1)/2,Integers)) == -1
+    // sympy: Refine(Sin(n*Pi/2), Element((n-1)/2,Integers) && Element(((n-1)/2-1)/2,Integers)) ==
+    // -1
     check("Refine(Sin(n*Pi/2), Element((n-1)/2,Integers) && Element(((n-1)/2-1)/2,Integers))", //
         "-1");
     // sympy: Refine(Cos(n*Pi), Element(n,Integers)) == (-1)^n
@@ -404,29 +416,77 @@ public class TestRefine extends ExprEvaluatorTestCase {
     // sympy: Refine(Cos(x + y + n*Pi/2), Element(n,Integers)) == Cos(x + y + n*Pi/2)
     check("Refine(Cos(x + y + n*Pi/2), Element(n,Integers))", //
         "Cos(1/2*n*Pi+x+y)");
-    // sympy: Refine(Cos(x + n*Pi + m*Pi/2), Element(n,Integers) && Element(m/2,Integers)) == (-1)^(n + m/2)*Cos(x)
+    // sympy: Refine(Cos(x + n*Pi + m*Pi/2), Element(n,Integers) && Element(m/2,Integers)) ==
+    // (-1)^(n + m/2)*Cos(x)
+    // WMA writes several multiples of Pi/2 as I^k
     check("Refine(Cos(x + n*Pi + m*Pi/2), Element(n,Integers) && Element(m/2,Integers))", //
-        "(-1)^(m/2+n)*Cos(x)");
-    // sympy: Refine(Cos(x + n*Pi + m*Pi/2), Element(n,Integers) && Element((m-1)/2,Integers)) == (-1)^(n + (m + 1)/2)*Sin(x)
+        "I^(m+2*n)*Cos(x)");
+    // sympy: Refine(Cos(x + n*Pi + m*Pi/2), Element(n,Integers) && Element((m-1)/2,Integers)) ==
+    // (-1)^(n + (m + 1)/2)*Sin(x)
+    // WMA: -I^(-1+m+2*n)*Sin(x)
     check("Refine(Cos(x + n*Pi + m*Pi/2), Element(n,Integers) && Element((m-1)/2,Integers))", //
-        "(-1)^(1/2*(1+m)+n)*Sin(x)");
-    // sympy: Refine(Cos(x + n*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers)) == (-1)^n*Cos(x + m*Pi/2)
+        "-Sin(x)/I^(1-m-2*n)");
+    // sympy: Refine(Cos(x + n*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers)) ==
+    // (-1)^n*Cos(x + m*Pi/2)
+    // WMA: unevaluated, the integer m has an unknown parity
     check("Refine(Cos(x + n*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers))", //
-        "(-1)^n*Cos(1/2*m*Pi+x)");
-    // sympy: Refine(Cos(x + (2*n + 1)*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers)) == -Cos(x + m*Pi/2)
-    // TODO $RecursionLimit exceeded in the native evaluation; Symja returns: Hold(Refine(Cos(x+(1+2*n)*Pi+m*Pi/2),n∈Integers&&m∈Integers))
-    // sympy: Refine(Sin(x - (2*n)*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers)) == Sin(x + m*Pi/2)
+        "Cos(1/2*m*Pi+n*Pi+x)");
+    // sympy: Refine(Cos(x + (2*n + 1)*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers)) ==
+    // -Cos(x + m*Pi/2)
+    // WMA: unevaluated, the integer m has an unknown parity
+    check("Refine(Cos(x + (2*n + 1)*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers))", //
+        "Cos(1/2*m*Pi+(1+2*n)*Pi+x)");
+    // the held (2*n+1) was sorted in place, which left a stale hash code in its parent
+    check("Refine(Cos((2*n + 1)*Pi + x), Element(n,Integers))", //
+        "-Cos(x)");
+    check("Refine(Sin((2*n + 1)*Pi + x), Element(n,Integers))", //
+        "-Sin(x)");
+    check("Hold((2*n + 1)*Pi) // FullForm", //
+        "Hold(Times(Plus(Times(2, n), 1), Pi))");
+    // sympy: Refine(Sin(x - (2*n)*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers)) ==
+    // Sin(x + m*Pi/2)
+    // WMA: unevaluated, the integer m has an unknown parity
     check("Refine(Sin(x - (2*n)*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers))", //
-        "Sin(1/2*m*Pi+x)");
-    // sympy: Refine(Cos(x + n*Pi + k*Pi/2 + m*Pi/2), Element(n,Integers) && Element((k-1)/2,Integers) && Element(m,Integers)) == (-1)^(n + (k + 1)/2)*Sin(x + m*Pi/2)
-    check("Refine(Cos(x + n*Pi + k*Pi/2 + m*Pi/2), Element(n,Integers) && Element((k-1)/2,Integers) && Element(m,Integers))", //
-        "(-1)^(1/2*(1+k)+n)*Sin(1/2*m*Pi+x)");
-    // sympy: Refine(Sin(x + n*Pi + k*Pi/2 + m*Pi/2), Element(n,Integers) && Element((k-1)/2,Integers) && Element(m,Integers)) == (-1)^(n + (k + 3)/2)*Cos(x + m*Pi/2)
-    check("Refine(Sin(x + n*Pi + k*Pi/2 + m*Pi/2), Element(n,Integers) && Element((k-1)/2,Integers) && Element(m,Integers))", //
-        "(-1)^(1/2*(-1+k)+n)*Cos(1/2*m*Pi+x)");
-    // sympy: Refine(Cos(x + n*Pi/2 + k*Pi/2 + m*Pi/2), Element((n-1)/2,Integers) && Element((k-1)/2,Integers) && Element(m,Integers)) == (-1)^((n + k)/2)*Cos(x + m*Pi/2)
-    check("Refine(Cos(x + n*Pi/2 + k*Pi/2 + m*Pi/2), Element((n-1)/2,Integers) && Element((k-1)/2,Integers) && Element(m,Integers))", //
-        "(-1)^(1/2*(k+n))*Cos(1/2*m*Pi+x)");
+        "Sin(1/2*m*Pi-2*n*Pi+x)");
+    // sympy: Refine(Cos(x + n*Pi + k*Pi/2 + m*Pi/2), Element(n,Integers) &&
+    // Element((k-1)/2,Integers) && Element(m,Integers)) == (-1)^(n + (k + 1)/2)*Sin(x + m*Pi/2)
+    // WMA: unevaluated, the integer m has an unknown parity
+    check(
+        "Refine(Cos(x + n*Pi + k*Pi/2 + m*Pi/2), Element(n,Integers) && Element((k-1)/2,Integers) && Element(m,Integers))", //
+        "Cos(1/2*k*Pi+1/2*m*Pi+n*Pi+x)");
+    // sympy: Refine(Sin(x + n*Pi + k*Pi/2 + m*Pi/2), Element(n,Integers) &&
+    // Element((k-1)/2,Integers) && Element(m,Integers)) == (-1)^(n + (k + 3)/2)*Cos(x + m*Pi/2)
+    // WMA: unevaluated, the integer m has an unknown parity
+    check(
+        "Refine(Sin(x + n*Pi + k*Pi/2 + m*Pi/2), Element(n,Integers) && Element((k-1)/2,Integers) && Element(m,Integers))", //
+        "Sin(1/2*k*Pi+1/2*m*Pi+n*Pi+x)");
+    // sympy: Refine(Cos(x + n*Pi/2 + k*Pi/2 + m*Pi/2), Element((n-1)/2,Integers) &&
+    // Element((k-1)/2,Integers) && Element(m,Integers)) == (-1)^((n + k)/2)*Cos(x + m*Pi/2)
+    // WMA: unevaluated, the integer m has an unknown parity
+    check(
+        "Refine(Cos(x + n*Pi/2 + k*Pi/2 + m*Pi/2), Element((n-1)/2,Integers) && Element((k-1)/2,Integers) && Element(m,Integers))", //
+        "Cos(1/2*k*Pi+1/2*m*Pi+1/2*n*Pi+x)");
+
+    // the multiples of Pi/2 are only removed if the parity of their sum is known
+    check("Refine(Cos(x + n*Pi), Element(n, Integers))", //
+        "(-1)^n*Cos(x)");
+    check("Refine(Cos(x + 2*n*Pi + m*Pi/2), Element(n, Integers) && Element(m, Integers))", //
+        "Cos(1/2*m*Pi+2*n*Pi+x)");
+    check("Refine(Cos(x + n*Pi + m*Pi), Element(n, Integers) && Element(m, Integers))", //
+        "I^(2*m+2*n)*Cos(x)");
+    // WMA: -I^(-1+m+2*n)*Sin(x), Symja's normal form of that product
+    check("Refine(Cos(x + n*Pi + m*Pi/2), Element(n, Integers) && Element((m - 1)/2, Integers))", //
+        "-Sin(x)/I^(1-m-2*n)");
+    check("Refine(Cos(x + n*Pi + y*Pi), Element(n, Integers))", //
+        "(-1)^n*Cos(x+Pi*y)");
+    check("Assuming(Element(n, Integers), Cos(x + (2*n + 1)*Pi))", //
+        "Cos((1+2*n)*Pi+x)");
+    check("Refine(Sec(x + n*Pi + m*Pi/2), Element(n,Integers) && Element(m,Integers))", //
+        "Sec(1/2*m*Pi+n*Pi+x)");
+    check("Refine(Csc(x + n*Pi + m*Pi), Element(n,Integers) && Element(m,Integers))", //
+        "I^(2*m+2*n)*Csc(x)");
+    check("I^(2*n) // FullForm", //
+        "Power(Complex(0,1), Times(2, n))");
     // sympy: Refine(Cos(x), x==0) == 1
     check("Refine(Cos(x), x==0)", //
         "1");
@@ -455,10 +515,12 @@ public class TestRefine extends ExprEvaluatorTestCase {
     // sympy: Refine(Ceiling(x + y), Element(x,Integers)) == x + Ceiling(y)
     check("Refine(Ceiling(x + y), Element(x,Integers))", //
         "x+Ceiling(y)");
-    // sympy: Refine(Floor(x + y + z), Element(x,Integers) && Element(y,Integers)) == x + y + Floor(z)
+    // sympy: Refine(Floor(x + y + z), Element(x,Integers) && Element(y,Integers)) == x + y +
+    // Floor(z)
     check("Refine(Floor(x + y + z), Element(x,Integers) && Element(y,Integers))", //
         "x+y+Floor(z)");
-    // sympy: Refine(Ceiling(x + y + z), Element(x,Integers) && Element(z,Integers)) == x + z + Ceiling(y)
+    // sympy: Refine(Ceiling(x + y + z), Element(x,Integers) && Element(z,Integers)) == x + z +
+    // Ceiling(y)
     check("Refine(Ceiling(x + y + z), Element(x,Integers) && Element(z,Integers))", //
         "x+z+Ceiling(y)");
     // sympy: Refine(Floor(x + y - z)) == Floor(x + y - z)
@@ -496,7 +558,7 @@ public class TestRefine extends ExprEvaluatorTestCase {
 
   @Test
   public void testSinCosNumericRemainder() {
-    // deviation from sympy, confirmed with WMA: a numeric remainder isn't split off
+    // deviation from sympy: a numeric remainder isn't split off
     check("Refine(Sin(Pi*(1/4+m)), Element(m, Integers))", //
         "Sin((1/4+m)*Pi)");
     check("Refine(Csc(Pi*(1/4+m)), Element(m, Integers))", //

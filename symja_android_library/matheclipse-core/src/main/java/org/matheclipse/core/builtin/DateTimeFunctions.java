@@ -4,9 +4,11 @@ import java.math.BigInteger;
 import java.time.DateTimeException;
 import java.time.DayOfWeek;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -324,9 +326,9 @@ public class DateTimeFunctions {
    * Two ways to miss. A number large enough carries the date past the range of
    * {@link LocalDate#ofEpochDay(long)}, which complains rather than answering, and
    * <code>DayMatchQ(9223372036854775807, 2)</code> failed with that complaint instead of the
-   * unevaluated expression Mathematica gives. A {@code NaN} misses more quietly: narrowing it to a
-   * long gives <code>0</code>, so the date would come back as the 1900 epoch itself, which is a
-   * wrong answer rather than no answer.
+   * unevaluated expression WMA gives. A {@code NaN} misses more quietly: narrowing it to a long
+   * gives <code>0</code>, so the date would come back as the 1900 epoch itself, which is a wrong
+   * answer rather than no answer.
    *
    * @return the date, or <code>null</code> if <code>seconds</code> does not denote one
    */
@@ -731,14 +733,14 @@ public class DateTimeFunctions {
     return F.ZZ(seconds);
   }
 
-  /** Seconds since 1970-01-01, as an exact integer if possible. */
-  static IExpr unixTime(LocalDateTime date, boolean real) {
-    long seconds = ChronoUnit.SECONDS.between(EPOCH_1970, date);
-    int nanos = date.getNano();
-    if (real || nanos != 0) {
-      return F.num(seconds + nanos / 1.0e9);
-    }
-    return F.ZZ(seconds);
+  /**
+   * Whole seconds since 1970-01-01. WMA's <code>UnixTime</code> is always an integer and drops a
+   * fraction of a second: <code>UnixTime({2020,1,1,0,0,0.6})</code> and
+   * <code>UnixTime({2020,1,1,0,0,0.4})</code> are the same.
+   */
+  static IExpr unixTime(LocalDateTime date) {
+    // toEpochSecond() rounds towards negative infinity, also before 1970
+    return F.ZZ(date.toEpochSecond(ZoneOffset.UTC));
   }
 
   /**
@@ -1181,8 +1183,7 @@ public class DateTimeFunctions {
       }
       LocalDateTime date = plusSecondsOrNull(EPOCH_1900, arg1.evalf());
       if (date == null) {
-        // a number of seconds so large that it names no representable date; Mathematica leaves
-        // the expression alone rather than reporting it
+        // a number of seconds so large that it names no representable date
         return F.NIL;
       }
       return instantObject(date, F.CD0, arg1.isInexactNumber());
@@ -1204,7 +1205,8 @@ public class DateTimeFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return unixTime(LocalDateTime.now(), false);
+        // the instant itself - LocalDateTime.now() is the wall clock of the local time zone
+        return F.ZZ(Instant.now().getEpochSecond());
       }
       DateSpec spec = dateSpec(ast.arg1());
       if (spec == null) {
@@ -1219,7 +1221,7 @@ public class DateTimeFunctions {
           return F.NIL;
         }
       }
-      return unixTime(date, spec.real);
+      return unixTime(date);
     }
 
     @Override
@@ -1314,7 +1316,7 @@ public class DateTimeFunctions {
             .plusNanos(Math.round(dayFraction * NANOS_PER_DAY));
       } catch (DateTimeException | ArithmeticException ex) {
         // A LocalDateTime runs to year +/-999999999 and no further, so a Julian day this large
-        // names no date it can hold. Mathematica answers a DateObject with a year of a few hundred
+        // names no date it can hold. WMA answers a DateObject with a year of a few hundred
         // digits, which would need a date representation of arbitrary precision rather than the
         // java.time one used throughout here; leaving the expression alone is the honest answer
         // until there is one.
@@ -2121,7 +2123,7 @@ public class DateTimeFunctions {
       }
       if (spec.listSize > 0) {
         // a date list carries a time of day only when there is one to carry: half of 2020 is 183
-        // whole days, and Mathematica answers {2020, 7, 2} rather than spelling out the midnight
+        // whole days, and WMA answers {2020, 7, 2} rather than spelling out the midnight
         return hasTimeIncrement(increments) || spec.listSize > 3
             || !result.toLocalTime().equals(LocalTime.MIDNIGHT) ? dateListOf(result)
                 : dayListOf(result);
