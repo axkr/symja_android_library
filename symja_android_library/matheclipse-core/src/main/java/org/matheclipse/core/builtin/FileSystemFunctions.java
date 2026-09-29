@@ -323,8 +323,9 @@ public class FileSystemFunctions {
       int levels = 1;
       if (ast.isAST2()) {
         levels = ast.arg2().toIntDefault();
-        if (levels < 0) {
-          return F.NIL;
+        if (levels < 1) {
+          // Positive machine-sized integer expected at position `2` in `1`.
+          return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C2), engine);
         }
       }
       Path path = namePath(S.DirectoryName, ast.arg1().toString(), engine);
@@ -334,7 +335,13 @@ public class FileSystemFunctions {
       for (int i = 0; i < levels; i++) {
         path = path == null ? null : path.getParent();
       }
-      return path == null ? F.CEmptyString : F.stringx(path.toString());
+      if (path == null) {
+        return F.CEmptyString;
+      }
+      // WMA ends a directory name with the separator: DirectoryName("/a/b/c.m") is "/a/b/"
+      String directory = path.toString();
+      String separator = path.getFileSystem().getSeparator();
+      return F.stringx(directory.endsWith(separator) ? directory : directory + separator);
     }
 
     @Override

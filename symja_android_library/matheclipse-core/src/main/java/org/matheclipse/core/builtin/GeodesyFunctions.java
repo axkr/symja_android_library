@@ -1,14 +1,20 @@
 package org.matheclipse.core.builtin;
 
+import java.time.DateTimeException;
+import java.time.ZoneId;
+import org.matheclipse.core.data.GeoLocations;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.io.FileSandbox;
 import org.matheclipse.core.numerics.geodesy.ReferenceEllipsoid;
 
 public class GeodesyFunctions {
@@ -22,9 +28,79 @@ public class GeodesyFunctions {
     private static void init() {
       S.GeodesyData.setEvaluator(new GeodesyData());
       S.GeoPosition.setEvaluator(new GeoPosition());
+      S.FindGeoLocation.setEvaluator(new FindGeoLocation());
       // S.GeoDistance is implemented in the matheclipse-astro module, which measures it along a
       // rhumb line with Orekit's LoxodromeArc. The geodesic solver in
       // org.matheclipse.core.numerics.geodesy stays here and is what FindShortestTour uses.
+    }
+  }
+
+  /**
+   * <code>FindGeoLocation()</code> - an estimate of where this computer is, and
+   * <code>FindGeoLocation("zone")</code> - the principal city of an IANA time zone.
+   *
+   * <p>
+   * There is no permission-free way for a Java process to ask the operating system where it is, so
+   * the estimate comes from the <code>symja.geolocation</code> setting or, failing that, from the
+   * time zone (see {@link GeoLocations}). <code>Method -&gt; "Configuration"</code> or
+   * <code>"TimeZone"</code> picks one of them. Both describe the host, so outside a kernel on the
+   * user's own machine the result is <code>Missing("NotAvailable")</code>; a time zone given as an
+   * argument is no host information and works everywhere.
+   */
+  private static class FindGeoLocation extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      String method = options[0] == S.Automatic ? "Automatic" : options[0].toString();
+      if (!"Automatic".equals(method) && !GeoLocations.SOURCE_CONFIGURATION.equals(method)
+          && !GeoLocations.SOURCE_TIME_ZONE.equals(method)) {
+        // `1` is not a supported computation method in `2`.
+        return Errors.printMessage(S.FindGeoLocation, "astromethod", F.List(options[0], ast),
+            engine);
+      }
+      GeoLocations.Estimate estimate;
+      if (argSize == 1) {
+        if (!ast.arg1().isString() || GeoLocations.SOURCE_CONFIGURATION.equals(method)) {
+          // `1` in `2` is not a time zone offset or an IANA time zone name.
+          return Errors.printMessage(S.FindGeoLocation, "astrotimezone", F.List(ast.arg1(), ast),
+              engine);
+        }
+        if (!isZoneId(ast.arg1().toString())) {
+          return Errors.printMessage(S.FindGeoLocation, "astrotimezone", F.List(ast.arg1(), ast),
+              engine);
+        }
+        estimate = GeoLocations.ofTimeZone(ast.arg1().toString());
+      } else if (!FileSandbox.isHostVisible(engine)) {
+        estimate = null;
+      } else if (GeoLocations.SOURCE_TIME_ZONE.equals(method)) {
+        estimate = GeoLocations.ofTimeZone(ZoneId.systemDefault());
+      } else if (GeoLocations.SOURCE_CONFIGURATION.equals(method)) {
+        estimate = GeoLocations.configured();
+      } else {
+        estimate = GeoLocations.automatic(engine);
+      }
+      return estimate == null ? F.Missing(F.stringx("NotAvailable"))
+          : GeoLocations.toGeoPosition(estimate);
+    }
+
+    private static boolean isZoneId(String name) {
+      try {
+        ZoneId.of(name);
+        return true;
+      } catch (DateTimeException dte) {
+        return false;
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      setOptions(newSymbol, S.Method, S.Automatic);
     }
   }
 

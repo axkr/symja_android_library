@@ -443,7 +443,23 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDateObjectTimeZoneOption() {
+    // TimeZone -> tz gives the zone as the fourth argument does; a fractional hour normalises
+    check("DateObject({2065, 11, 22, 12.5, 0, 0}, TimeZone -> 0)", //
+        "DateObject({2065,11,22,12,30,0.0},Instant,Gregorian,0.0)");
+    check("DateObject({2065, 11, 22, 12, 45, 0}, TimeZone -> 1)", //
+        "DateObject({2065,11,22,12,45,0},Instant,Gregorian,1.0)");
+    check("DateObject({2024, 1, 1}, TimeZone -> 0)", //
+        "DateObject({2024,1,1},Day,Gregorian,0.0)");
+    check("DateObject({2024, 1, 1, 12, 0, 0}, \"Instant\", \"Gregorian\", 2.)", //
+        "DateObject({2024,1,1,12,0,0},Instant,Gregorian,2.0)");
+    check("DateObject({2024, 1, 1}, \"Month\", \"Gregorian\", 0.)", //
+        "DateObject({2024,1},Month,Gregorian,0.0)");
+  }
+
+  @Test
   public void testDateRange() {
+    // date lists in, date lists out - as in the Wolfram Language
     check("DateRange({2024, 1, 1}, {2024, 1, 3})",
         "{{2024,1,1,0,0,0.0},{2024,1,2,0,0,0.0},{2024,1,3,0,0,0.0}}");
     check("DateRange({2024, 1, 1}, {2024, 1, 1})", "{{2024,1,1,0,0,0.0}}");
@@ -463,6 +479,35 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     check("DateRange({2024, 1, 1}, {2024, 3, 1}, \"Month\")",
         "{{2024,1,1,0,0,0.0},{2024,2,1,0,0,0.0},{2024,3,1,0,0,0.0}}");
     check("DateRange({2024, 1, 5}, {2024, 1, 1})", "{}");
+    // 25 hourly date lists, ending at the next midnight
+    check("{Length(#), First(#), Last(#)}&(DateRange({2024,1,1},{2024,1,2},\"Hour\"))",
+        "{25,{2024,1,1,0,0,0.0},{2024,1,2,0,0,0.0}}");
+
+    // date strings in, date strings out, in the WMA form
+    check("DateRange(\"1 Jul 2022\", \"15 Jul 2022\", \"Week\")", //
+        "{July 1, 2022 12:00 am,July 8, 2022 12:00 am,July 15, 2022 12:00 am}");
+    check("DateRange(\"1 Jul 2022\", \"1 Jul 2022 13:30\", Quantity(13.5, \"Hours\"))", //
+        "{July 1, 2022 12:00 am,July 1, 2022 1:30 pm}");
+    // and those strings read back
+    check("DateObject(\"July 1, 2022 12:00 am\") == DateObject({2022,7,1,0,0,0})", //
+        "True");
+    check("DateList(\"July 8, 2022 1:30 pm\")", //
+        "{2022,7,8,13,30,0.0}");
+    check("DateList(\"July 8, 2022 12:05 pm\")", //
+        "{2022,7,8,12,5,0.0}");
+
+    // DateObjects in give DateObjects, at the granularity of the start
+    check("DateRange(DateObject({2024, 1, 1}), DateObject({2024, 1, 3}))", //
+        "{DateObject({2024,1,1},Day),DateObject({2024,1,2},Day),DateObject({2024,1,3},Day)}");
+    // a step finer than the start refines the granularity: hours from a day, the instant from a
+    // fraction of a day
+    check("DateRange(DateObject({2024,1,1}), DateObject({2024,1,2}), Quantity(12, \"Hours\"))",
+        "{DateObject({2024,1,1,0},Hour,Gregorian,0.0),DateObject({2024,1,1,12},Hour,Gregorian,0.0),"
+            + "DateObject({\n2024,1,2,0},Hour,Gregorian,0.0)}");
+    check(
+        "Union(Map(DateValue(#, \"Granularity\") &, "
+            + "DateRange(DateObject({2024, 1, 1}), DateObject({2024, 1, 2}), 0.5)))", //
+        "{Instant}");
   }
 
   @Test

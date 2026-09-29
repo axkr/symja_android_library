@@ -3,9 +3,7 @@ package org.matheclipse.core.builtin;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -15,15 +13,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class GraphicsFunctions {
@@ -272,10 +267,11 @@ public class GraphicsFunctions {
    *
    * <p>
    * A mesh region is shown as its picture: <code>Show(ConvexHullMesh(...))</code> is the
-   * <code>Graphics</code> or <code>Graphics3D</code> the reference implementation draws it as. Several
-   * graphics of the same kind become one, each keeping its primitives in a list of their own so that
-   * one's directives do not reach into the next, and their options merged with the first setting of
-   * each winning - so the options given to <code>Show</code> itself win over all of them.
+   * <code>Graphics</code> or <code>Graphics3D</code> the reference implementation draws it as.
+   * Several graphics of the same kind become one, each keeping its primitives in a list of their
+   * own so that one's directives do not reach into the next, and their options merged with the
+   * first setting of each winning - so the options given to <code>Show</code> itself win over all
+   * of them.
    *
    * <p>
    * Not done: the plot ranges are not joined into one, so the first graphic's range can clip the
@@ -589,9 +585,8 @@ public class GraphicsFunctions {
    *
    * <p>
    * Not an {@code AbstractCoreFunctionEvaluator}: that would hold the arguments, and a tooltip
-   * labels a value rather than the expression that computed it -
-   * <code>Tooltip(Prime(4))</code> has to become <code>Tooltip(7)</code> before a plot can read
-   * either the number or the label.
+   * labels a value rather than the expression that computed it - <code>Tooltip(Prime(4))</code> has
+   * to become <code>Tooltip(7)</code> before a plot can read either the number or the label.
    */
   private static final class Tooltip extends AbstractFunctionEvaluator {
 
@@ -624,7 +619,7 @@ public class GraphicsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      // options may follow the points, as for Polygon and Point: Mathematica writes the outline of
+      // options may follow the points, as for Polygon and Point: WMA writes the outline of
       // a surface as Line[{{i, j}, ...}, VertexColors -> None]
       return ARGS_1_INFINITY;
     }
@@ -769,8 +764,9 @@ public class GraphicsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      // Text(expr,coords,offset) specifies an offset for the block
-      return ARGS_1_3;
+      // Text(expr,coords,offset) specifies an offset for the block, Text(expr,coords,offset,dir)
+      // also the direction its baseline runs in
+      return ARGS_1_4;
     }
 
     @Override
@@ -814,8 +810,8 @@ public class GraphicsFunctions {
    * one primitive each - <code>Polygon({{1,2,3},{1,2,4}})</code> two polygons, a <code>Point</code>
    * a list of single points - the point arguments of shapes such as <code>Disk</code>,
    * <code>Rectangle</code> and <code>Inset</code> are resolved too, and the complex's
-   * <code>VertexColors</code> and <code>VertexNormals</code> move onto each polygon with the
-   * values of its own corners. The coordinates are the ones in the table, exact ones included.
+   * <code>VertexColors</code> and <code>VertexNormals</code> move onto each polygon with the values
+   * of its own corners. The coordinates are the ones in the table, exact ones included.
    *
    * @return {@link F#NIL} if this is not a <code>GraphicsComplex</code> with a point table
    */
@@ -827,8 +823,9 @@ public class GraphicsFunctions {
     IASTAppendable vertexData = F.ListAlloc(2);
     for (int i = 3; i < graphicsComplex.size(); i++) {
       IExpr option = graphicsComplex.get(i);
-      if ((option.isRuleAST() && (option.first() == S.VertexColors
-          || option.first() == S.VertexNormals)) && option.second().isList()) {
+      if ((option.isRuleAST()
+          && (option.first() == S.VertexColors || option.first() == S.VertexNormals))
+          && option.second().isList()) {
         vertexData.append(option);
       }
     }

@@ -82,4 +82,24 @@ public class FileNameValidationTest extends ExprEvaluatorTestCase {
     check("StringQ(ParentDirectory(\"/a/b\"))", //
         "True");
   }
+
+  /** WMA ends a directory name with the separator. */
+  @Test
+  public void testDirectoryNameSeparator() {
+    if (!"/".equals(java.io.File.separator)) {
+      return;
+    }
+    check("{DirectoryName(\"/a/b/c.m\"), DirectoryName(\"a/b/\"), DirectoryName(\"c.m\"), "
+        + "DirectoryName(\"/a/b/c.m\", 2), DirectoryName(\"/a\")}", //
+        "{/a/b/,a/,,/a/,/}");
+  }
+
+  @Test
+  public void testDirectoryNameLevel() {
+    // Mathematica: DirectoryName::intpm, unevaluated
+    check("DirectoryName(\"/a/b/c.m\", 0)", //
+        "DirectoryName(/a/b/c.m,0)");
+    check("DirectoryName(\"/a/b/c.m\", -1)", //
+        "DirectoryName(/a/b/c.m,-1)");
+  }
 }

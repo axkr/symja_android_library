@@ -277,27 +277,31 @@ public final class StochasticProcesses {
   /**
    * Whether <code>RandomFunction</code> can simulate the process, and whether its time is discrete.
    *
-   * @return <code>null</code> for a process that cannot be simulated
+   * @return {@link IExpr.COMPARE_TERNARY#TRUE} for discrete time,
+   *         {@link IExpr.COMPARE_TERNARY#FALSE} for continuous time and
+   *         {@link IExpr.COMPARE_TERNARY#UNDECIDABLE} for a process that cannot be simulated
    */
-  public static Boolean isDiscrete(IExpr process) {
+  public static IExpr.COMPARE_TERNARY isDiscrete(IExpr process) {
     if (process.isAST(S.ARMAProcess)) {
-      return Arma.of((IAST) process) != null ? Boolean.TRUE : null;
+      return Arma.of((IAST) process) != null ? IExpr.COMPARE_TERNARY.TRUE
+          : IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
     if (process.isAST(S.WienerProcess, 1) || process.isAST(S.WienerProcess, 3)
         || process.isAST(S.OrnsteinUhlenbeckProcess, 4)
         || process.isAST(S.OrnsteinUhlenbeckProcess, 5)) {
       for (IExpr parameter : (IAST) process) {
         if (!Double.isFinite(parameter.evalfNaN())) {
-          return null;
+          return IExpr.COMPARE_TERNARY.UNDECIDABLE;
         }
       }
-      return Boolean.FALSE;
+      return IExpr.COMPARE_TERNARY.FALSE;
     }
     if (process.isAST(S.PoissonProcess, 2)) {
       double rate = process.first().evalfNaN();
-      return rate > 0.0 && Double.isFinite(rate) ? Boolean.FALSE : null;
+      return rate > 0.0 && Double.isFinite(rate) ? IExpr.COMPARE_TERNARY.FALSE
+          : IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
-    return null;
+    return IExpr.COMPARE_TERNARY.UNDECIDABLE;
   }
 
   /** Whether the values of the process are integers: a counting process. */

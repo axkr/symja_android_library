@@ -422,16 +422,26 @@ public class DateTimeFunctions {
     if (text.isEmpty()) {
       return null;
     }
-    // split off a time of day
+    // split off a time of day, on the 24 hour clock or the 12 hour one - "July 1, 2022 12:00 am"
+    // is how the Wolfram Language writes the dates of a DateRange of strings
     LocalTime time = null;
     java.util.regex.Matcher timeMatcher = java.util.regex.Pattern
-        .compile("[T ](\\d{1,2}):(\\d{2})(?::(\\d{2}(?:\\.\\d+)?))?\\s*$").matcher(text);
+        .compile("[T ](\\d{1,2}):(\\d{2})(?::(\\d{2}(?:\\.\\d+)?))?\\s*([AaPp]\\.?[Mm]\\.?)?\\s*$")
+        .matcher(text);
     if (timeMatcher.find()) {
       int hour = Integer.parseInt(timeMatcher.group(1));
       int minute = Integer.parseInt(timeMatcher.group(2));
       double second = timeMatcher.group(3) == null ? 0.0 : Double.parseDouble(timeMatcher.group(3));
       int wholeSecond = (int) second;
       int nanos = (int) Math.round((second - wholeSecond) * 1.0e9);
+      String meridiem = timeMatcher.group(4);
+      if (meridiem != null) {
+        if (hour < 1 || hour > 12) {
+          return null;
+        }
+        boolean pm = Character.toLowerCase(meridiem.charAt(0)) == 'p';
+        hour = hour % 12 + (pm ? 12 : 0);
+      }
       if (hour > 23 || minute > 59 || wholeSecond > 59) {
         return null;
       }
@@ -1374,21 +1384,50 @@ public class DateTimeFunctions {
             DateGranularity.DAY);
       }
       IExpr arg1 = ast.arg1();
-      if (ast.isAST2()) {
-        if (arg1 instanceof DateObjectExpr && ast.arg2() instanceof TimeObjectExpr) {
-          LocalDate localDate = ((DateObjectExpr) arg1).start().toLocalDate();
-          LocalTime localTime = ((TimeObjectExpr) ast.arg2()).toData();
-          return instantObject(LocalDateTime.of(localDate, localTime), F.CD0, false);
+      // DateObject(date, gran, cal, tz, opts): the options come last, and TimeZone -> tz gives the
+      // zone as the fourth argument does - the components are then local time in that zone
+      int positional = ast.argSize();
+      IExpr timeZone = null;
+      while (positional >= 2 && ast.get(positional).isRuleAST()) {
+        IAST rule = (IAST) ast.get(positional);
+        if (rule.arg1() == S.TimeZone) {
+          timeZone = rule.arg2();
+        } else if (rule.arg1() != S.CalendarType) {
+          return F.NIL;
         }
+        positional--;
+      }
+      if (timeZone == null && positional >= 4) {
+        timeZone = ast.get(4);
+      }
+      if (timeZone != null) {
+        if (!timeZone.isReal()) {
+          // a named zone is not supported
+          return F.NIL;
+        }
+        timeZone = F.num(timeZone.evalf());
+      }
+      if (positional == 2 && arg1 instanceof DateObjectExpr
+          && ast.arg2() instanceof TimeObjectExpr) {
+        LocalDate localDate = ((DateObjectExpr) arg1).start().toLocalDate();
+        LocalTime localTime = ((TimeObjectExpr) ast.arg2()).toData();
+        return instantObject(LocalDateTime.of(localDate, localTime),
+            timeZone == null ? F.CD0 : timeZone, false);
+      }
+      DateSpec spec;
+      if (positional >= 2) {
         DateGranularity granularity = toGranularity(ast.arg2());
         if (granularity == null) {
           return F.NIL;
         }
-        DateSpec spec = dateSpec(arg1, granularity);
-        return spec == null ? F.NIL : spec.dateObject;
+        spec = dateSpec(arg1, granularity);
+      } else {
+        spec = dateSpec(arg1);
       }
-      DateSpec spec = dateSpec(arg1);
-      return spec == null ? F.NIL : spec.dateObject;
+      if (spec == null) {
+        return F.NIL;
+      }
+      return timeZone == null ? spec.dateObject : spec.dateObject.withTimeZone(timeZone);
     }
 
     /** Evaluate <code>DateObject(...)("element")</code>. */
@@ -1991,15 +2030,79 @@ public class DateTimeFunctions {
       }
       LocalDateTime current = from.instant;
       LocalDateTime end = to.instant;
+      // As in the Wolfram Language: date lists in, date lists out; otherwise DateObjects, in the
+      // calendar and time zone of the start, at its granularity - or at the step's, where the step
+      // is finer, so that an hourly range from a day shows its hours
+      boolean dateLists = from.listSize > 0 && to.listSize > 0;
+      boolean dateStrings = ast.arg1().isString() && ast.arg2().isString();
+      DateObjectExpr start = from.dateObject;
+      DateGranularity granularity = start.getGranularity();
+      DateGranularity stepGranularity = stepGranularity(increments);
+      if (stepGranularity.ordinal() > granularity.ordinal()) {
+        granularity = stepGranularity;
+      }
+      IExpr timeZone = start.getTimeZone();
+      if (!granularity.isDateOnly() && (timeZone == null || timeZone == S.None)) {
+        timeZone = F.CD0;
+      }
       IASTAppendable result = F.ListAlloc();
       int iterations = 0;
       while (!current.isAfter(end)) {
-        result.append(dateListOf(current));
+        result.append(dateLists ? dateListOf(current)
+            : dateStrings ? F.stringx(dateRangeString(current))
+            : DateObjectExpr.newInstance(granularity.truncate(current), granularity,
+                start.getCalendar(), timeZone, start.isRealSeconds()));
         LocalDateTime next = applyIncrements(current, increments);
         if (next == null || !next.isAfter(current) || ++iterations > 100000) {
           break;
         }
         current = next;
+      }
+      return result;
+    }
+
+    /**
+     * A date of a range of date strings, in the form the Wolfram Language writes it:
+     * <code>"July 1, 2022 12:00 am"</code>.
+     */
+    private static String dateRangeString(LocalDateTime dateTime) {
+      int hour = dateTime.getHour() % 12;
+      return String.format(Locale.US, "%s %d, %d %d:%02d %s",
+          dateTime.getMonth().getDisplayName(java.time.format.TextStyle.FULL, Locale.US),
+          dateTime.getDayOfMonth(), DateObjectExpr.toDisplayYear(dateTime.getYear()),
+          hour == 0 ? 12 : hour, dateTime.getMinute(), dateTime.getHour() < 12 ? "am" : "pm");
+    }
+
+    /**
+     * The granularity the step itself resolves: a whole number of days or coarser units needs no
+     * more than a day, an hour step hours and so on, and a fraction of a unit the instant.
+     */
+    private static DateGranularity stepGranularity(List<Object[]> increments) {
+      DateGranularity result = DateGranularity.YEAR;
+      for (Object[] increment : increments) {
+        double count = ((Double) increment[1]).doubleValue();
+        DateGranularity unit;
+        if (count != Math.rint(count)) {
+          unit = DateGranularity.INSTANT;
+        } else {
+          switch ((String) increment[0]) {
+            case "Hour":
+              unit = DateGranularity.HOUR;
+              break;
+            case "Minute":
+              unit = DateGranularity.MINUTE;
+              break;
+            case "Second":
+              unit = DateGranularity.SECOND;
+              break;
+            default:
+              unit = DateGranularity.YEAR;
+              break;
+          }
+        }
+        if (unit.ordinal() > result.ordinal()) {
+          result = unit;
+        }
       }
       return result;
     }
