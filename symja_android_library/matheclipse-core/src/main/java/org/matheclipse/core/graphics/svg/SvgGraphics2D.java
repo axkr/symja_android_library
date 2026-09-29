@@ -497,7 +497,9 @@ public class SvgGraphics2D {
     double top = options.frame[3] && frameTicks ? TICK_LABEL_HEIGHT + 8.0 : edgePadding(options.frame[3]);
 
     if (options.plotLabel != null) {
-      top += PLOT_LABEL_HEIGHT;
+      // one more line height for each further line of a multi-line label
+      top += PLOT_LABEL_HEIGHT
+          + (SvgRenderer2D.lineCount(labelText(options.plotLabel)) - 1) * 1.2 * 14;
     }
     // Only for a label that is actually written. Testing the option for null counted
     // `AxesLabel -> None`, which every plot emits by default, so each picture reserved a strip on
@@ -527,9 +529,10 @@ public class SvgGraphics2D {
     if (options.plotLabel != null) {
       double cx = (viewport.plotX1 + viewport.plotX2) / 2.0;
       double cy = Math.max(14, viewport.plotY1 - 12);
-      elements.add(
+      elements.add(SvgRenderer2D.withLines(
           labelled(tag("text").attr("x", SvgRenderer2D.fmt(cx)).attr("y", SvgRenderer2D.fmt(cy))
-              .attr("text-anchor", "middle"), 14, true).withText(labelText(options.plotLabel)));
+              .attr("text-anchor", "middle"), 14, true),
+          labelText(options.plotLabel), cx, 14, 1.0));
     }
     if (options.axesLabel != null) {
       String[] labels = labelPair(options.axesLabel);

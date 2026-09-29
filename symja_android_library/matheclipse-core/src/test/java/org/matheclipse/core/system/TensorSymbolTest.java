@@ -437,7 +437,7 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNonThreadablePartialThreading() {
-    // WMA ground truth (2026-09-12): a non-threadable argument of Plus or Times is kept apart, and
+    // a non-threadable argument of Plus or Times is kept apart, and
     // the remaining arguments are still threaded over the list
     check("SetAttributes(ntf, NonThreadable);Sin(ntf(1, 2)) + Sin(g(1, 2)) + {1, 2, 3}", //
         "{1+Sin(g(1,2)),2+Sin(g(1,2)),3+Sin(g(1,2))}+Sin(ntf(1,2))");
@@ -480,8 +480,9 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testArrayDerivative() {
-    check("a=MatrixSymbol(a,{m,n}); s=MatrixSymbol(s,{n,n}); u=VectorSymbol(u,n); "
-        + "v=VectorSymbol(v,n);", //
+    check(
+        "a=MatrixSymbol(a,{m,n}); s=MatrixSymbol(s,{n,n}); u=VectorSymbol(u,n); "
+            + "v=VectorSymbol(v,n);", //
         "");
     check("D(v, v)", //
         "SymbolicIdentityArray({n})");
@@ -641,8 +642,9 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testArrayExpand() {
-    check("s=MatrixSymbol(s,{n,n}); t=MatrixSymbol(t,{n,n}); u=MatrixSymbol(u,{n,n}); "
-        + "w=VectorSymbol(w,n);", //
+    check(
+        "s=MatrixSymbol(s,{n,n}); t=MatrixSymbol(t,{n,n}); u=MatrixSymbol(u,{n,n}); "
+            + "w=VectorSymbol(w,n);", //
         "");
     check("ArrayExpand(s.(t+u))", //
         "MatrixSymbol(s,{n,n}).MatrixSymbol(t,{n,n})+MatrixSymbol(s,{n,n}).MatrixSymbol(u,{n,n})");
@@ -681,6 +683,7 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
     check("ComponentExpand(MatrixSymbol(g,{m,n}))", //
         "MatrixSymbol(g,{m,n})");
   }
+
   @Test
   public void testOneArgumentAndScalarDimensionForms() {
     // from the MatrixSymbol, VectorSymbol and ArraySymbol reference pages: the one-argument forms

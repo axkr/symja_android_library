@@ -162,7 +162,20 @@ public final class SvgRenderer2D {
   // ---------------------------------------------------------------- points
 
   void drawPoints(Prim2D.PointsPrim prim, ContainerTag<?> parent) {
-    double r = Math.max(0.5, prim.style.pointRadius);
+    // a floor that only stops a point from vanishing: a star chart draws its faintest stars as
+    // sub-pixel dots, which anti-aliasing turns into the dim specks they should be
+    double r = Math.max(0.15, prim.style.pointRadius);
+    // A multi-point Point shares one style, so its paint goes on a group once instead of on every
+    // circle - fill and stroke are inherited. That halves the size of a star chart, which is
+    // thousands of points in a few colours. paint() never sets opacity, the one attribute that
+    // would composite differently on a group.
+    boolean grouped = prim.points.size() > 1;
+    ContainerTag<?> target = parent;
+    if (grouped) {
+      target = tag("g");
+      paint(target, prim.style, prim.style.strokeColor, null);
+    }
+    boolean any = false;
     for (double[] p : prim.points) {
       double x = viewport.mapX(p[0]);
       double y = viewport.mapY(p[1]);
@@ -171,8 +184,14 @@ public final class SvgRenderer2D {
       }
       ContainerTag<?> circle =
           tag("circle").attr("cx", fmt(x)).attr("cy", fmt(y)).attr("r", fmt(r));
-      paint(circle, prim.style, prim.style.strokeColor, null);
-      parent.with(circle);
+      if (!grouped) {
+        paint(circle, prim.style, prim.style.strokeColor, null);
+      }
+      target.with(circle);
+      any = true;
+    }
+    if (grouped && any) {
+      parent.with(target);
     }
   }
 
@@ -408,10 +427,16 @@ public final class SvgRenderer2D {
     double dy = (0.32 + 0.5 * prim.offsetY) * style.fontSize;
 
     if (prim.background != null || prim.frameColor != null) {
-      double width = estimateTextWidth(prim.text, style.fontSize);
-      double height = style.fontSize * 1.3;
+      // the widest line and all the lines: withLines centres a block of n lines on the anchor
+      int lines = lineCount(prim.text);
+      double width = 0;
+      for (String line : prim.text == null ? new String[] {""} : prim.text.split("\n", -1)) {
+        width = Math.max(width, estimateTextWidth(line, style.fontSize));
+      }
+      double extra = (lines - 1) * 1.2 * style.fontSize;
+      double height = style.fontSize * 1.3 + extra;
       double left = "start".equals(anchor) ? x : "end".equals(anchor) ? x - width : x - width / 2;
-      double top = y + dy - style.fontSize * 0.85;
+      double top = y + dy - style.fontSize * 0.85 - 0.5 * extra;
       ContainerTag<?> box = tag("rect").attr("x", fmt(left - 3)).attr("y", fmt(top - 2))
           .attr("width", fmt(width + 6)).attr("height", fmt(height + 4))
           .attr("fill", prim.background == null ? "none" : ColorUtil.css(prim.background))
@@ -440,8 +465,33 @@ public final class SvgRenderer2D {
       text.attr("transform",
           String.format(Locale.US, "rotate(%.3f %s %s)", angle, fmt(x), fmt(y + dy)));
     }
-    text.withText(prim.text);
+    withLines(text, prim.text, x, style.fontSize, 0.5);
     parent.with(text);
+  }
+
+  /**
+   * The text of a <code>&lt;text&gt;</code> element: a string with line breaks is one
+   * <code>&lt;tspan&gt;</code> per line, as SVG draws a newline as a space. The block of lines is
+   * moved up by <code>shift</code> times its extra height: <code>0.5</code> centres it on the
+   * anchor, <code>1</code> keeps the last line on the baseline.
+   */
+  static ContainerTag<?> withLines(ContainerTag<?> text, String content, double x, double fontSize,
+      double shift) {
+    if (content == null || content.indexOf('\n') < 0) {
+      return text.withText(content == null ? "" : content);
+    }
+    String[] lines = content.split("\n", -1);
+    double lineHeight = 1.2 * fontSize;
+    for (int i = 0; i < lines.length; i++) {
+      double dy = i == 0 ? -shift * (lines.length - 1) * lineHeight : lineHeight;
+      text.with(tag("tspan").attr("x", fmt(x)).attr("dy", fmt(dy)).withText(lines[i]));
+    }
+    return text;
+  }
+
+  /** The number of lines of a label text. */
+  static int lineCount(String content) {
+    return content == null ? 1 : content.split("\n", -1).length;
   }
 
   static double estimateTextWidth(String text, double fontSize) {

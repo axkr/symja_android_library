@@ -87,9 +87,9 @@ public class IsotopeDataFunctions {
    * Stability is not in CDK's table, which records natural abundance and nothing about decay, and
    * the two are not the same thing: uranium occurs in nature and has no stable isotope. So this is
    * copied from the reference implementation - <code>ElementData[z, "StableIsotopes"]</code> for
-   * every element, measured in Mathematica on 2026-09-19 - rather than worked out, and it keeps
-   * that answer's order, which is the order of the entity names. That is why ruthenium lists 100,
-   * 101, 102 and 104 ahead of 96, 98 and 99.
+   * every element, measured on 2026-09-19 - rather than worked out, and it keeps that answer's
+   * order, which is the order of the entity names. That is why ruthenium lists 100, 101, 102 and
+   * 104 ahead of 96, 98 and 99.
    *
    * <p>
    * Its choices are not the textbook's in a handful of places, and are kept as they are:

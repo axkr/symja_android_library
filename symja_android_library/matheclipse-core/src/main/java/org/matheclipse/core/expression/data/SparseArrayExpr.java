@@ -1507,6 +1507,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    */
   public static SparseArrayExpr newArrayRules(IAST arrayRulesList, int[] dimension,
       int defaultDimension, IExpr defaultValue) {
+    arrayRulesList = expandPositionListRules(arrayRulesList);
     IExpr[] defValue = new IExpr[] {defaultValue};
     final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
     int[] determinedDimension =
@@ -1520,6 +1521,34 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       return new SparseArrayExpr(trie, determinedDimension, defaultValue, false);
     }
     return null;
+  }
+
+  /**
+   * WMA's rule <code>{p1, p2, ...} -> {v1, v2, ...}</code> - a list of positions and the list of
+   * their values - as the single rules <code>p1 -> v1, p2 -> v2, ...</code>. It was read as one
+   * position of the wrong depth: with dimensions given the array silently came out all zeros.
+   */
+  private static IAST expandPositionListRules(IAST arrayRulesList) {
+    IASTAppendable expanded = null;
+    for (int i = 1; i < arrayRulesList.size(); i++) {
+      IExpr rule = arrayRulesList.get(i);
+      if (rule.isRuleAST() && rule.first().isList() && rule.second().isList()
+          && rule.first().argSize() > 0 && rule.first().argSize() == rule.second().argSize()
+          && ((IAST) rule.first()).forAll(p -> p.isList() && ((IAST) p).forAll(IExpr::isInteger))) {
+        if (expanded == null) {
+          expanded = F.ListAlloc(arrayRulesList.argSize() + rule.first().argSize());
+          expanded.appendArgs(arrayRulesList, i);
+        }
+        IAST positions = (IAST) rule.first();
+        IAST values = (IAST) rule.second();
+        for (int k = 1; k < positions.size(); k++) {
+          expanded.append(F.Rule(positions.get(k), values.get(k)));
+        }
+      } else if (expanded != null) {
+        expanded.append(rule);
+      }
+    }
+    return expanded == null ? arrayRulesList : expanded;
   }
 
   /**

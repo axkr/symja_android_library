@@ -3255,6 +3255,14 @@ public final class PatternMatching {
             throw new FailedException();
           }
         }
+        if (leftHandSide.isBuiltInSymbol()
+            && ((IBuiltInSymbol) leftHandSide).getEvaluator() instanceof ISetValueEvaluator
+            && ((IBuiltInSymbol) leftHandSide).isDollarSymbol()) {
+          // An assignable $ symbol such as $GeoLocation keeps its value in the engine, where Set
+          // put it through ISetValueEvaluator; dropping it there brings back the symbol's default.
+          engine.setDollarValue((IBuiltInSymbol) leftHandSide, null);
+          return S.Null;
+        }
         if (leftHandSide.isSymbol()) {
           final ISymbol lhsSymbol = (ISymbol) leftHandSide;
           if (lhsSymbol.hasProtectedAttribute()) {
