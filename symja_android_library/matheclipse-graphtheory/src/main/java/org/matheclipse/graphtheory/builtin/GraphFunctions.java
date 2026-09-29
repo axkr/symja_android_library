@@ -66,6 +66,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.geodesy.GeodesicSolver;
 import org.matheclipse.core.numerics.geodesy.ReferenceEllipsoid;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.graphtheory.eval.SpanningTree;
 import org.matheclipse.graphtheory.eval.GraphUtil;
 import org.matheclipse.graphtheory.eval.GraphView;
 import org.matheclipse.graphtheory.expression.data.ExprEdge;
@@ -1692,9 +1693,25 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        if (ast.isAST1()) {
-          GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
+        if (ast.argSize() >= 1) {
+          // FindSpanningTree({g, v}) grows the tree from v
+          IExpr graph = ast.arg1();
+          IExpr root = F.NIL;
+          if (graph.isList2() && (graph.first() instanceof GraphExpr || graph.first().isAST(S.Graph))) {
+            // not a bare list of two edges
+            root = graph.second();
+            graph = graph.first();
+          }
+          GraphExpr<?> gex = GraphExpr.newInstance(graph);
           if (gex == null) {
+            return F.NIL;
+          }
+          IAST fullForm = gex.fullForm();
+          if (fullForm.argSize() >= 2 && fullForm.arg2().isList()) {
+            // WMA's trees: Kruskal, BFS, Chu-Liu/Edmonds - see SpanningTree
+            return SpanningTree.of(fullForm, root, engine);
+          }
+          if (root.isPresent()) {
             return F.NIL;
           }
 
@@ -1731,7 +1748,8 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      // options such as Method are accepted and ignored
+      return ARGS_1_2;
     }
   }
 

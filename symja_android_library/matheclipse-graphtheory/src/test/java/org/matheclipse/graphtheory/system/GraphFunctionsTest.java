@@ -517,7 +517,7 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check(
         "FindSpanningTree(Graph({a,b,c,d,e,f},{a<->b,a<->d,b<->c,b<->d,b<->e,c<->e,c<->f,d<->e,e<->f}," //
             + "{EdgeWeight->{1.0,3.0,6.0,5.0,1.0,5.0,2.0,1.0,4.0}}))", //
-        "Graph({a,b,d,e,c,f},{a->b,d->e,c->f,b->e,e->f},{EdgeWeight->{1.0,1.0,2.0,1.0,4.0}})");
+        "Graph({a,b,c,d,e,f},{a<->b,b<->e,c<->f,d<->e,e<->f},{EdgeWeight->{1.0,1.0,2.0,1.0,4.0}})");
 
     check("g=Graph({1,2,3,4,5,6,7,8},\n"
         + "{UndirectedEdge(1,2),UndirectedEdge(1,3),UndirectedEdge(1,4),UndirectedEdge(3,4),UndirectedEdge(2,6),\n"
@@ -525,8 +525,9 @@ public class GraphFunctionsTest extends AbstractTestCase {
         + "UndirectedEdge(5,8),UndirectedEdge(6,7),UndirectedEdge(7,8),UndirectedEdge(4,8)});", //
         "");
 
+    // WMA: the BFS tree of an unweighted graph, its edges undirected and sorted by position
     check("FindSpanningTree(g)", //
-        "Graph({1,2,3,4,6,5,7,8},{1->2,1->3,1->4,2->6,5->3,5->7,5->8})");
+        "Graph({1,2,3,4,5,6,7,8},{1<->2,1<->3,1<->4,2<->6,3<->5,4<->8,6<->7})");
   }
 
   @Test

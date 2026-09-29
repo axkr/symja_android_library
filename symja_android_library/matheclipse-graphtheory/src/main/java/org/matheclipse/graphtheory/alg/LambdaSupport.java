@@ -91,12 +91,14 @@ public final class LambdaSupport {
    * the set is connected - that shortcut is what lets a whole graph be tested without walking its
    * subsets.
    *
-   * @return <code>null</code> when the set is too large to test, otherwise the verdict
+   * @return {@link IExpr.COMPARE_TERNARY#UNDECIDABLE} when the set is too large to test,
+   *         otherwise {@link IExpr.COMPARE_TERNARY#TRUE} or {@link IExpr.COMPARE_TERNARY#FALSE}
    */
-  public static Boolean isLuccioSami(Graph<IExpr, ExprEdge> graph, Set<IExpr> set) {
+  public static IExpr.COMPARE_TERNARY isLuccioSami(Graph<IExpr, ExprEdge> graph,
+      Set<IExpr> set) {
     int n = set.size();
     if (n <= 1) {
-      return Boolean.TRUE;
+      return IExpr.COMPARE_TERNARY.TRUE;
     }
     List<IExpr> members = new ArrayList<IExpr>(set);
     int[] external = new int[n];
@@ -124,10 +126,10 @@ public final class LambdaSupport {
 
     if (!anyExternal) {
       // nothing outside to lose ties to, so the condition reduces to connectedness
-      return Boolean.valueOf(isConnected(inside, n));
+      return IExpr.COMPARE_TERNARY.of(isConnected(inside, n));
     }
     if (n > MAX_LUCCIO_SAMI_SIZE) {
-      return null;
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
     for (int mask = 1; mask < (1 << n) - 1; mask++) {
       int internalTies = 0;
@@ -144,10 +146,10 @@ public final class LambdaSupport {
         }
       }
       if (internalTies <= externalTies) {
-        return Boolean.FALSE;
+        return IExpr.COMPARE_TERNARY.FALSE;
       }
     }
-    return Boolean.TRUE;
+    return IExpr.COMPARE_TERNARY.TRUE;
   }
 
   private static boolean isConnected(int[][] inside, int n) {

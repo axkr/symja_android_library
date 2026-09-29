@@ -59,10 +59,10 @@ public class LuccioSamiComponents extends AbstractFunctionEvaluator {
     List<Set<IExpr>> components = new ArrayList<Set<IExpr>>();
     boolean skipped = false;
     for (Set<IExpr> candidate : LambdaSupport.lambdaComponents(undirected)) {
-      Boolean verdict = LambdaSupport.isLuccioSami(undirected, candidate);
-      if (verdict == null) {
+      IExpr.COMPARE_TERNARY verdict = LambdaSupport.isLuccioSami(undirected, candidate);
+      if (verdict == IExpr.COMPARE_TERNARY.UNDECIDABLE) {
         skipped = true; // too large to walk every proper subset of
-      } else if (verdict.booleanValue()) {
+      } else if (verdict == IExpr.COMPARE_TERNARY.TRUE) {
         components.add(candidate);
       }
     }
