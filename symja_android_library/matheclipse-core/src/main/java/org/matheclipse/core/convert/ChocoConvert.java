@@ -310,6 +310,12 @@ public class ChocoConvert {
    */
   final public static short CHOCO_MAX_PRIME = 32749;
 
+  /**
+   * Name of the {@link Model} hook which is set if an intermediate value range had to be restricted
+   * to choco's safe <code>int</code> range.
+   */
+  private static final String RESTRICTED_RANGE = "symja.restrictedRange";
+
   private ChocoConvert() {}
 
   /**
@@ -369,8 +375,13 @@ public class ChocoConvert {
     model.getSolver()
         .setSearch(new IntStrategy(vars, new InputOrder<>(model), new IntDomainClosest()));
     List<ReExpression> constraints = new java.util.ArrayList<ReExpression>(list.argSize());
-    for (int i = 1; i < list.size(); i++) {
-      IExpr element = list.get(i);
+    // the constraints are a conjunction, so the bounds of single variables are translated first:
+    // they narrow the domains from which the ranges of powers and products are computed
+    IASTAppendable ordered = F.ListAlloc(list.argSize());
+    ordered.appendArgs(list.select(ChocoConvert::isVariableBound));
+    ordered.appendArgs(list.select(x -> !isVariableBound(x)));
+    for (int i = 1; i < ordered.size(); i++) {
+      IExpr element = ordered.get(i);
       if (element.isTrue()) {
         // a constraint which always holds constrains nothing
         continue;
@@ -410,7 +421,7 @@ public class ChocoConvert {
       } else if (temp.isAST(S.Unequal, 3)) {
         return lhs.ne(rhs);
       } else if (temp.isAST(S.Greater, 3)) {
-        if (lhs instanceof IntVar) {
+        if (lhs instanceof IntVar && temp.arg2().isInteger()) {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int lowerBound = temp.arg2().toIntDefault();
@@ -419,7 +430,7 @@ public class ChocoConvert {
             }
           } catch (ContradictionException e) {
           }
-        } else if (rhs instanceof IntVar) {
+        } else if (rhs instanceof IntVar && temp.arg1().isInteger()) {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int upperBound = temp.arg1().toIntDefault();
@@ -431,7 +442,7 @@ public class ChocoConvert {
         }
         return lhs.gt(rhs);
       } else if (temp.isAST(S.GreaterEqual, 3)) {
-        if (lhs instanceof IntVar) {
+        if (lhs instanceof IntVar && temp.arg2().isInteger()) {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int lowerBound = temp.arg2().toIntDefault();
@@ -440,7 +451,7 @@ public class ChocoConvert {
             }
           } catch (ContradictionException e) {
           }
-        } else if (rhs instanceof IntVar) {
+        } else if (rhs instanceof IntVar && temp.arg1().isInteger()) {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int upperBound = temp.arg1().toIntDefault();
@@ -452,7 +463,7 @@ public class ChocoConvert {
         }
         return lhs.ge(rhs);
       } else if (temp.isAST(S.LessEqual, 3)) {
-        if (lhs instanceof IntVar) {
+        if (lhs instanceof IntVar && temp.arg2().isInteger()) {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int upperBound = temp.arg2().toIntDefault();
@@ -461,7 +472,7 @@ public class ChocoConvert {
             }
           } catch (ContradictionException e) {
           }
-        } else if (rhs instanceof IntVar) {
+        } else if (rhs instanceof IntVar && temp.arg1().isInteger()) {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int lowerBound = temp.arg1().toIntDefault();
@@ -473,7 +484,7 @@ public class ChocoConvert {
         }
         return lhs.le(rhs);
       } else if (temp.isAST(S.Less, 3)) {
-        if (lhs instanceof IntVar) {
+        if (lhs instanceof IntVar && temp.arg2().isInteger()) {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int upperBound = temp.arg2().toIntDefault();
@@ -482,7 +493,7 @@ public class ChocoConvert {
             }
           } catch (ContradictionException e) {
           }
-        } else if (rhs instanceof IntVar) {
+        } else if (rhs instanceof IntVar && temp.arg1().isInteger()) {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int lowerBound = temp.arg1().toIntDefault();
@@ -506,6 +517,78 @@ public class ChocoConvert {
    */
   private static ReExpression floorCorrection(ArExpression r, ArExpression b) {
     return r.lt(0).and(b.gt(0)).or(r.gt(0).and(b.lt(0)));
+  }
+
+  /**
+   * An <code>int</code> variable for a value between <code>lb</code> and <code>ub</code>, restricted
+   * to choco's safe range {@link IntVar#MIN_INT_BOUND}..{@link IntVar#MAX_INT_BOUND}.
+   *
+   * <p>
+   * choco refuses a variable whose bounds reach <code>Integer.MIN_VALUE</code> or
+   * <code>Integer.MAX_VALUE</code>, which is where its own bounds for <code>x^3</code> or
+   * <code>x*y*z</code> over the default search box saturate. Restricting the range instead limits
+   * the search to the solutions whose intermediate values fit, like the search box itself does. The
+   * model is marked with {@link #RESTRICTED_RANGE}, because an empty result doesn't prove the
+   * absence of a solution then.
+   */
+  private static IntVar boundedIntVar(Model net, String prefix, double lb, double ub) {
+    if (lb < IntVar.MIN_INT_BOUND || ub > IntVar.MAX_INT_BOUND) {
+      net.addHook(RESTRICTED_RANGE, Boolean.TRUE);
+    }
+    int min = (int) Math.max(lb, IntVar.MIN_INT_BOUND);
+    int max = (int) Math.min(ub, IntVar.MAX_INT_BOUND);
+    return net.intVar(net.generateName(prefix), min, max);
+  }
+
+  /**
+   * Test if <code>expr</code> compares a symbol with an integer, like <code>x &gt;= -5</code>.
+   */
+  private static boolean isVariableBound(IExpr expr) {
+    if (expr.isAST2() && (expr.isAST(S.Greater) || expr.isAST(S.GreaterEqual)
+        || expr.isAST(S.Less) || expr.isAST(S.LessEqual))) {
+      return (expr.first().isSymbol() && expr.second().isInteger())
+          || (expr.first().isInteger() && expr.second().isSymbol());
+    }
+    return false;
+  }
+
+  /**
+   * <code>a * b</code>; with a variable of restricted range if choco's own bounds of the product
+   * don't fit into an <code>int</code>.
+   */
+  private static ArExpression multiply(Model net, ArExpression a, ArExpression b) {
+    IntVar x = a.intVar();
+    IntVar y = b.intVar();
+    double p1 = (double) x.getLB() * y.getLB();
+    double p2 = (double) x.getLB() * y.getUB();
+    double p3 = (double) x.getUB() * y.getLB();
+    double p4 = (double) x.getUB() * y.getUB();
+    double lb = Math.min(Math.min(p1, p2), Math.min(p3, p4));
+    double ub = Math.max(Math.max(p1, p2), Math.max(p3, p4));
+    if (lb > Integer.MIN_VALUE && ub < Integer.MAX_VALUE && ub - lb < Integer.MAX_VALUE) {
+      return x.mul(y);
+    }
+    IntVar product = boundedIntVar(net, "mul_", lb, ub);
+    net.times(x, y, product).post();
+    return product;
+  }
+
+  /**
+   * <code>base ^ exponent</code> for an exponent <code>&gt;= 3</code>. choco's own
+   * {@link ArExpression#pow(int)} computes the result bounds with a saturating cast and then
+   * refuses them for the default search box.
+   */
+  private static ArExpression power(Model net, IntVar base, int exponent) {
+    double lbPow = Math.pow(base.getLB(), exponent);
+    double ubPow = Math.pow(base.getUB(), exponent);
+    double lb = Math.min(lbPow, ubPow);
+    double ub = Math.max(lbPow, ubPow);
+    if ((exponent & 1) == 0 && base.getLB() <= 0 && base.getUB() >= 0) {
+      lb = 0;
+    }
+    IntVar result = boundedIntVar(net, "pow_", lb, ub);
+    net.pow(base, exponent, result).post();
+    return result;
   }
 
   private static ArExpression integerExpression(Model net, IExpr expr, Map<ISymbol, IntVar> map)
@@ -549,7 +632,7 @@ public class ChocoConvert {
         }
         ArExpression result = integerExpression(net, ast.arg1(), map);
         for (int i = 2; i < ast.size(); i++) {
-          result = result.mul(integerExpression(net, ast.get(i), map));
+          result = multiply(net, result, integerExpression(net, ast.get(i), map));
         }
         return result;
       } else if (ast.isPower()) {
@@ -559,12 +642,13 @@ public class ChocoConvert {
           if (value > 0) {
             IExpr base = ast.base();
             ArExpression result = integerExpression(net, base, map);
-            if (value == 2) {
-              result = result.sqr();
-            } else {
-              result = result.pow(value);
+            if (value == 1) {
+              return result;
             }
-            return result;
+            if (value == 2) {
+              return result.sqr();
+            }
+            return power(net, result.intVar(), value);
           }
           // if (value == -1) {
           // IExpr base = ast.base();
@@ -600,8 +684,9 @@ public class ChocoConvert {
         return floorCorrection(a.mod(b), b).ift(q.sub(1), q);
       } else if (ast.isAbs()) {
         return integerExpression(net, ast.arg1(), map).abs();
-        // } else if (ast.isAST(F.Sign, 2)) {
-        // return integerVariable(net, ast.arg1()).sign();
+      } else if (ast.isAST(S.Sign, 2)) {
+        ArExpression a = integerExpression(net, ast.arg1(), map);
+        return a.gt(0).ift(1, a.lt(0).ift(-1, 0));
       } else if (ast.isAST1()) {
         IExpr head = ast.head();
         if (head instanceof IBuiltInSymbol) {
@@ -682,7 +767,8 @@ public class ChocoConvert {
     List<Solution> res = model.getSolver().findAllSolutions(new SolutionCounter(model,
         maximumNumberOfResults < 0 ? Short.MAX_VALUE : maximumNumberOfResults));
     if (res.size() == 0) {
-      return F.CEmptyList;
+      // a solution may lie outside a restricted intermediate range
+      return model.getHook(RESTRICTED_RANGE) != null ? F.NIL : F.CEmptyList;
     }
     IASTAppendable result = F.ListAlloc(res.size());
     for (int i = 0; i < res.size(); i++) {

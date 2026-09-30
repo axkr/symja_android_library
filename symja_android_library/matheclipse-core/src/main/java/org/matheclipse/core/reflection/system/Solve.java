@@ -20,7 +20,6 @@ import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.convert.ChocoConvert;
 import org.matheclipse.core.convert.Convert;
-import org.matheclipse.core.convert.CreamConvert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -2264,10 +2263,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
   }
 
-  private static boolean chocoSolver(IExpr x) {
-    return x.isPower() && (!x.second().isInteger() || x.second().greaterEqualThan(3).isTrue());
-  }
-
   /**
    * Check if all rules in the list return a real result.
    *
@@ -3014,31 +3009,18 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
         }
 
-        if (equationsAndInequations.isFreeAST(x -> chocoSolver(x))) {
-          // choco-solver doesn't handle Power() expressions very well at the moment!
-          try {
-            // LOGGER.debug("Choco solver");
-            IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
-                userDefinedVariables, maximumNumberOfResults, hybridVars, hybridTuples, domain,
-                engine);
-            if (resultList.isPresent()) {
-              EvalAttributes.sort((IASTMutable) resultList);
-              return resultList;
-            }
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            // the constraint solver could not build a model for this system; fall through and
-            // leave the expression unevaluated rather than report a stack trace
-          }
-        } else {
-          // call cream solver
-          CreamConvert converter = new CreamConvert();
-          IAST resultList = converter.integerSolve(equationsAndInequations, equationVariables,
-              userDefinedVariables, maximumNumberOfResults, engine);
+        try {
+          IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
+              userDefinedVariables, maximumNumberOfResults, hybridVars, hybridTuples, domain,
+              engine);
           if (resultList.isPresent()) {
             EvalAttributes.sort((IASTMutable) resultList);
             return resultList;
           }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // the constraint solver could not build a model for this system; fall through and
+          // leave the expression unevaluated rather than report a stack trace
         }
       } catch (LimitException le) {
         throw le;

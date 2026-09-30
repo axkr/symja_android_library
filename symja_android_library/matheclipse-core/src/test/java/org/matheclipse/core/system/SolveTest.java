@@ -1177,7 +1177,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x^3==-2,x)", //
         "{{x->(-2)^(1/3)},{x->-2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");
 
-    // timeouts in Cream engine
+    // timeouts in the integer constraint solver
     // check("Solve({x^2 + x y + y^2 == 109}, {x, y}, )", "");
     // check("Solve({x^12345 - 2 x^777 + 1 == 0}, {x}, )", "");
     // check("Solve({2 x + 3 y - 5 z == 1 , 3 x - 4 y + 7 z == 3}, {x,
@@ -1589,7 +1589,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // check("NSolve(x^3==-2,x)", //
     // "{{x->(-2)^(1/3)},{x->-2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");
     //
-    // // timeouts in Cream engine
+    // // timeouts in the integer constraint solver
     // // check("NSolve({x^2 + x y + y^2 == 109}, {x, y}, )", "");
     // // check("NSolve({x^12345 - 2 x^777 + 1 == 0}, {x}, Integers)", "");
     // // check("NSolve({2 x + 3 y - 5 z == 1 , 3 x - 4 y + 7 z == 3}, {x,
@@ -1774,6 +1774,20 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveIntegers() {
     check("Solve({x > 0, y > 0, x^2 + 2*y^3 == 3681}, {x, y}, Integers)", //
         "{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
+    // powers with an exponent >= 3 used to go through the Cream solver, which lost solutions
+    check("Solve(x^3+y^3==1729 && x<y, {x,y}, Integers)", //
+        "{{x->1,y->12},{x->9,y->10}}");
+    check("Solve(x^3 + y == 10 && y^3 + x == 10, {x,y}, Integers)", //
+        "{{x->2,y->2}}");
+    check("Solve(x^3*y == 16 && Abs(x)<=5, {x,y}, Integers)", //
+        "{{x->-2,y->-2},{x->-1,y->-16},{x->1,y->16},{x->2,y->2}}");
+    check("Solve(Sign(x-3)==1 && x^3<100, x, Integers)", //
+        "{{x->4}}");
+    check("Solve(x^4 - 2*x^2*y^2 + x == 7 && -5<=x<=5 && -5<=y<=5, {x,y}, Integers)", //
+        "{}");
+    // a solution may lie outside the search range of x^3, so no solution is not an answer
+    check("Solve(x^3 + y^3 == 300^3 && x>0 && y>0, {x,y}, Integers)", //
+        "Solve(x^3+y^3==27000000&&x>0&&y>0,{x,y},Integers)");
     // this system used to enumerate a truncated prefix of its infinitely many solutions out of the
     // constraint solver's search box; it is now the parametrized family, in milliseconds.
     // See testSolveIntegersLinearSystem.
