@@ -1,5 +1,6 @@
 package org.matheclipse.core.convert;
 
+import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
@@ -463,7 +464,7 @@ public class JASConvert<C extends RingElem<C>> {
     // TODO convert to long value
     long longValue = option.toLong();
     final BigInteger value = BigInteger.valueOf(longValue);
-    return new ModIntegerRing(longValue, value.isProbablePrime(32));
+    return new ModIntegerRing(longValue, MachinePrime.isProbablePrime(value, 32));
   }
 
   /**

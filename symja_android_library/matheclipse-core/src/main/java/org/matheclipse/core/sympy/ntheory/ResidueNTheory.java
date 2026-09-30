@@ -1,5 +1,6 @@
 package org.matheclipse.core.sympy.ntheory;
 
+import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -653,7 +654,7 @@ public class ResidueNTheory {
       }
     }
     if (primeOrder == null) {
-      primeOrder = order.isProbablePrime(32);
+      primeOrder = MachinePrime.isProbablePrime(order, 32);
     }
 
     if (order.compareTo(BigInteger.valueOf(1000L)) < 0) {

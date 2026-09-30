@@ -1,5 +1,6 @@
 package org.matheclipse.core.sympy.ntheory;
 
+import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -87,11 +88,11 @@ public class Factor {
         if (e <= 1) {
           return F.NIL;
         }
-        if (big || BigInteger.valueOf(e).isProbablePrime(32)) {
+        if (big || MachinePrime.isPrime(e)) {
           return F.pair(b.negate(), F.ZZ(e));
         }
         for (long p = 3; p <= e; p += 2) {
-          if (e % p == 0 && BigInteger.valueOf(p).isProbablePrime(32)) {
+          if (e % p == 0 && MachinePrime.isPrime(p)) {
             return F.pair(F.eval(F.Power(b, F.ZZ(e / p))).negate(), F.ZZ(p));
           }
         }
@@ -440,7 +441,7 @@ public class Factor {
         BigInteger[] mr = iroot(n, (int) g);
         if (mr[1].signum() == 0) {
           return F.pair(F.ZZ(mr[0].shiftLeft(1)), F.ZZ(g));
-        } else if (BigInteger.valueOf(g).isProbablePrime(32)) {
+        } else if (MachinePrime.isPrime(g)) {
           return F.NIL;
         }
       }
@@ -466,7 +467,7 @@ public class Factor {
     long tfMax = n.bitLength() / 27 + 24;
     if (nextP < tfMax) {
       for (long p = nextP; p < tfMax; p++) {
-        if (!BigInteger.valueOf(p).isProbablePrime(32)) {
+        if (!MachinePrime.isPrime(p)) {
           continue;
         }
         BigInteger[] m = new BigInteger[] {n};
@@ -495,7 +496,7 @@ public class Factor {
                 result = result.multiply(entry.getKey().pow((int) (entry.getValue() / g)));
               }
               return F.pair(F.ZZ(result), F.ZZ(g));
-            } else if (BigInteger.valueOf(g).isProbablePrime(32)) {
+            } else if (MachinePrime.isPrime(g)) {
               return F.NIL;
             }
           }
@@ -525,7 +526,7 @@ public class Factor {
       // To compensate for the presence of computational error, 2 is added.
       long maxExponent = (long) (log2(n) / (Math.log(nextP) / Math.log(2.0))) + 2;
       for (long p = 3; p < maxExponent; p += 2) {
-        if (BigInteger.valueOf(p).isProbablePrime(32)) {
+        if (MachinePrime.isPrime(p)) {
           primes.add(p);
         }
       }

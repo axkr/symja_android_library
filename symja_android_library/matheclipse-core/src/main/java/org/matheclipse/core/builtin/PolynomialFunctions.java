@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,6 @@ import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
 import org.matheclipse.core.polynomials.symbolicexponent.ExpVectorSymbolic;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomial;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomialRing;
-import com.google.common.math.LongMath;
 import edu.jas.application.GBAlgorithmBuilder;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
@@ -1135,7 +1135,7 @@ public class PolynomialFunctions {
       if (x.isZero()) {
         return F.C1;
       }
-      if (LongMath.isPrime(n)) {
+      if (MachinePrime.isPrime(n)) {
         if (x.isRational()) {
           return F.sumRational(i -> ((IRational) x).powerRational(i), 0, n - 1);
         }
@@ -1146,7 +1146,7 @@ public class PolynomialFunctions {
         int nHalf = n / 2;
         if ((nHalf & 0x00000001) == 0x00000001) {
           // nHalf is odd
-          if (LongMath.isPrime(nHalf)) {
+          if (MachinePrime.isPrime(nHalf)) {
             return F.sum(i -> x.negate().power(i), 0, nHalf - 1);
           }
           return cyclotomic(nHalf, x.negate());

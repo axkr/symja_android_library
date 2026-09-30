@@ -332,7 +332,7 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
             if (i++ >= n) {
                 break;
             }
-            isPrime = p.isProbablePrime(63);
+            isPrime = MachinePrime.isProbablePrime(p, 63);
             if (!isPrime) {
                 System.out.println("not prime = " + p);
                 return false;

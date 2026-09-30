@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import java.util.Random;
 import org.apfloat.Apfloat;
@@ -604,7 +605,7 @@ public final class RandomFunctions {
           // There are no primes in the specified interval.
           return Errors.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
         }
-        if (!lowerLimit.isProbablePrime(32)
+        if (!MachinePrime.isProbablePrime(lowerLimit, 32)
             && upperLimit.compareTo(lowerLimit.nextProbablePrime()) < 0) {
           // There are no primes in the specified interval.
           return Errors.printMessage(ast.topHead(), "noprime", F.CEmptyList, engine);
@@ -639,7 +640,7 @@ public final class RandomFunctions {
     private static IExpr randomPrime(BigInteger lowerLimit, BigInteger upperLimit,
         EvalEngine engine) {
 
-      if (lowerLimit.isProbablePrime(32)
+      if (MachinePrime.isProbablePrime(lowerLimit, 32)
           && upperLimit.compareTo(lowerLimit.nextProbablePrime()) < 0) {
         return F.ZZ(lowerLimit);
       }

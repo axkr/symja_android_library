@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import edu.jas.arith.MachinePrime;
 import static org.matheclipse.core.expression.NumberUtil.intValueExact;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -592,7 +593,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
   /** {@inheritDoc} */
   @Override
   public boolean isProbablePrime(int certainty) {
-    return fBigIntValue.isProbablePrime(certainty);
+    return MachinePrime.isProbablePrime(fBigIntValue, certainty);
   }
 
   /** {@inheritDoc} */

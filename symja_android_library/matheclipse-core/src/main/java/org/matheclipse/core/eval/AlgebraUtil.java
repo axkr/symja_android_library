@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import edu.jas.arith.MachinePrime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -2477,7 +2478,7 @@ public class AlgebraUtil {
       }
       if (a.equals(one) && b.equals(one) && c.equals(one)) {
         if (expC == 0L && (p != 3L) && (expA == p * 2)
-            && java.math.BigInteger.valueOf(p).isProbablePrime(32)) {
+            && MachinePrime.isPrime(p)) {
           // polynomials of the form x^(2*p) + x^p + 1 have exactly two factors for
           // all primes p != 3. One is x^2 + x + 1, and its cofactor is a polynomial whose
           // coefficients are all 1, 0, or −1.

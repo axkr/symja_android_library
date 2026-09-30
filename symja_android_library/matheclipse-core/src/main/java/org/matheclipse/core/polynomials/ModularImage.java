@@ -1,5 +1,6 @@
 package org.matheclipse.core.polynomials;
 
+import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import java.util.Map;
 import org.matheclipse.core.interfaces.IRational;
@@ -33,7 +34,7 @@ final class ModularImage {
     java.util.List<long[]> result = new java.util.ArrayList<long[]>();
     long p = FIRST_PRIME;
     for (int searched = 0; searched < MAX_PRIMES_SEARCHED && result.size() < count; searched++) {
-      while (!BigInteger.valueOf(p).isProbablePrime(30)) {
+      while (!MachinePrime.isPrime(p)) {
         p += 2;
       }
       long[] m = new long[n + 1];

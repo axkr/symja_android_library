@@ -1,5 +1,6 @@
 package org.matheclipse.core.convert;
 
+import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -331,6 +332,6 @@ public class JASModInteger {
     // maybe throw ArithmeticException
     long longValue = option.toLong();
     final BigInteger value = BigInteger.valueOf(longValue);
-    return new ModLongRing(longValue, value.isProbablePrime(32));
+    return new ModLongRing(longValue, MachinePrime.isProbablePrime(value, 32));
   }
 }

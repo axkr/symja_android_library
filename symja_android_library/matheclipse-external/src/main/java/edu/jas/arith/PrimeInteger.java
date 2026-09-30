@@ -315,8 +315,7 @@ public final class PrimeInteger {
    * @return true if n is prime, else false.
    */
   public static boolean isPrime(long n) {
-    java.math.BigInteger N = java.math.BigInteger.valueOf(n);
-    return isPrime(N);
+    return MachinePrime.isPrime(n);
   }
 
 
@@ -327,11 +326,26 @@ public final class PrimeInteger {
    * @return true if N is prime, else false.
    */
   public static boolean isPrime(java.math.BigInteger N) {
+    if (N.bitLength() < 64) {
+      return MachinePrime.isPrime(N.longValue());
+    }
     if (N.isProbablePrime(N.bitLength())) {
       return true;
     }
     SortedMap<java.math.BigInteger, Integer> F = factors(N);
     return (F.size() == 1) && F.values().contains(1);
+  }
+
+
+  /**
+   * Primality test for factor candidates: deterministic for numbers with less than 64 bits,
+   * probabilistic otherwise.
+   * 
+   * @param N positive integer to test.
+   * @return true if N is (probably) prime.
+   */
+  private static boolean isProbablePrime(java.math.BigInteger N) {
+    return MachinePrime.isProbablePrime(N, 32);
   }
 
 
@@ -443,8 +457,7 @@ public final class PrimeInteger {
     } while (PL != 1L);
     // fixed: the ILPDS should also be in the while loop, was already wrong in SAC2/Aldes and MAS
     // seems to be okay for integers smaller than beta
-    java.math.BigInteger N = java.math.BigInteger.valueOf(ML);
-    if (N.isProbablePrime(N.bitLength())) {
+    if (MachinePrime.isPrime(ML)) {
       F.put(ML, 1);
       return F;
     }
@@ -987,7 +1000,7 @@ public final class PrimeInteger {
   static void factorsPollardRho(java.math.BigInteger rest,
       SortedMap<java.math.BigInteger, Integer> F, int recursionDepth) {
     while (!rest.equals(java.math.BigInteger.ONE)) {
-      if (rest.isProbablePrime(32)) {
+      if (isProbablePrime(rest)) {
         addToMap(F, rest, 1);
         return;
       }
@@ -998,7 +1011,7 @@ public final class PrimeInteger {
         addToMap(F, rest, 1);
         return;
       }
-      if (divisor.isProbablePrime(32)) {
+      if (isProbablePrime(divisor)) {
         // divide out the complete prime power in one step
         int exponent = 0;
         java.math.BigInteger[] divRem = rest.divideAndRemainder(divisor);
@@ -1127,7 +1140,7 @@ public final class PrimeInteger {
    */
   static void factorsPollardRho(long rest, SortedMap<Long, Integer> F, int recursionDepth) {
     while (rest != 1L) {
-      if (java.math.BigInteger.valueOf(rest).isProbablePrime(32)) {
+      if (MachinePrime.isPrime(rest)) {
         addToMap(F, rest, 1);
         return;
       }
@@ -1137,7 +1150,7 @@ public final class PrimeInteger {
         addToMap(F, rest, 1);
         return;
       }
-      if (java.math.BigInteger.valueOf(divisor).isProbablePrime(32)) {
+      if (MachinePrime.isPrime(divisor)) {
         // divide out the complete prime power in one step
         int exponent = 0;
         while (rest % divisor == 0L) {

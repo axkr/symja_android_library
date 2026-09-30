@@ -283,8 +283,7 @@ public final class ModLongRing implements ModularRingFactory<ModLong>, Iterable<
             return false;
         }
         //System.out.println("isProbablePrime " + modul + " = " + modul.isProbablePrime(certainty));
-        java.math.BigInteger m = new java.math.BigInteger(Long.toString(modul));
-        if (m.isProbablePrime(m.bitLength())) {
+        if (MachinePrime.isPrime(Math.abs(modul))) {
             isField = 1;
             return true;
         }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.numbertheory;
 
+import edu.jas.arith.MachinePrime;
 import static org.matheclipse.core.expression.NumberUtil.intValueExact;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -668,7 +669,7 @@ public class Primality implements IPrimality {
         map.put(PRIMES_2_1021[i], count);
       }
     }
-    if (result.isProbablePrime(32)) {
+    if (MachinePrime.isProbablePrime(result, 32)) {
       return result;
     }
     BigInteger b;
@@ -754,7 +755,7 @@ public class Primality implements IPrimality {
   private static void pollardRhoFactors(BigInteger rest, Map<BigInteger, Integer> map,
       int recursionDepth) {
     while (!rest.equals(BigInteger.ONE)) {
-      if (rest.isProbablePrime(PRIME_CERTAINTY)) {
+      if (MachinePrime.isProbablePrime(rest, PRIME_CERTAINTY)) {
         addToMap(rest, 1, map);
         return;
       }
@@ -765,7 +766,7 @@ public class Primality implements IPrimality {
         addToMap(rest, 1, map);
         return;
       }
-      if (divisor.isProbablePrime(PRIME_CERTAINTY)) {
+      if (MachinePrime.isProbablePrime(divisor, PRIME_CERTAINTY)) {
         // divide out the complete prime power in one step
         int exponent = 0;
         BigInteger[] divRem = rest.divideAndRemainder(divisor);
@@ -1539,7 +1540,7 @@ public class Primality implements IPrimality {
     if (rest.equals(BigInteger.ONE)) {
       return result;
     }
-    if (rest.isProbablePrime(IInteger.PRIME_CERTAINTY)) {
+    if (MachinePrime.isProbablePrime(rest, IInteger.PRIME_CERTAINTY)) {
       result.append(AbstractIntegerSym.valueOf(rest));
       return result;
     }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import edu.jas.arith.MachinePrime;
 import static java.lang.Math.addExact;
 import static java.lang.Math.floorMod;
 import static java.lang.Math.multiplyExact;
@@ -4258,7 +4259,7 @@ public final class NumberTheory {
         if (n < Integer.MAX_VALUE) {
           // 2^n - 1
           BigInteger b2nm1 = BigInteger.ONE.shiftLeft((int) n).subtract(BigInteger.ONE);
-          return F.booleSymbol(b2nm1.isProbablePrime(32));
+          return F.booleSymbol(MachinePrime.isProbablePrime(b2nm1, 32));
         }
       } catch (ArithmeticException ae) {
       }
@@ -4840,7 +4841,7 @@ public final class NumberTheory {
         // Use the absolute value since negative prime numbers (like -2, -3) are mathematically
         // valid
         // and BigInteger.isProbablePrime() requires positive numbers for correct certainty checks.
-        if (temp.abs().isProbablePrime(100)) {
+        if (MachinePrime.isProbablePrime(temp.abs(), 100)) {
           return temp;
         }
         temp = temp.subtract(BigInteger.ONE);

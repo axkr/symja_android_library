@@ -1,5 +1,6 @@
 package org.matheclipse.core.sympy.ntheory;
 
+import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -26,7 +27,7 @@ public class Generate {
     }
     BigInteger primeCandidate = a.toBigNumerator();
     BigInteger bb = b.toBigNumerator();
-    if (primeCandidate.isProbablePrime(IInteger.PRIME_CERTAINTY)) {
+    if (MachinePrime.isProbablePrime(primeCandidate, IInteger.PRIME_CERTAINTY)) {
       list.append(F.ZZ(primeCandidate));
     }
     do {

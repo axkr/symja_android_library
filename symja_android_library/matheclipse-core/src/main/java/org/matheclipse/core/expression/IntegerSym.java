@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import edu.jas.arith.MachinePrime;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -20,7 +21,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.IntMath;
-import com.google.common.math.LongMath;
 import edu.jas.arith.BigRational;
 
 /**
@@ -606,14 +606,13 @@ public class IntegerSym extends AbstractIntegerSym {
     if (fIntValue < 0) {
       return negate().isProbablePrime();
     }
-    return LongMath.isPrime(fIntValue);
+    return MachinePrime.isPrime(fIntValue);
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isProbablePrime(int certainty) {
-    return LongMath.isPrime(fIntValue);
-    // return toBigNumerator().isProbablePrime(certainty);
+    return isProbablePrime();
   }
 
   /** {@inheritDoc} */

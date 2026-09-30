@@ -236,7 +236,7 @@ public final class ModIntegerRing implements ModularRingFactory<ModInteger>, Ite
         }
         //System.out.println("isProbablePrime " + modul + " = " + modul.isProbablePrime(certainty));
         // if ( modul.isProbablePrime(certainty) ) {
-        if (modul.isProbablePrime(modul.bitLength())) {
+        if (MachinePrime.isProbablePrime(modul, modul.bitLength())) {
             isField = 1;
             return true;
         }
