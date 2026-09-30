@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.util.function.Supplier;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.matheclipse.core.basic.Config;
@@ -19,6 +20,7 @@ import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.core.numerics.functions.EllipticFunctionsJS;
 import org.matheclipse.core.numerics.functions.EllipticIntegralsJS;
 
@@ -89,6 +91,24 @@ public class EllipticIntegrals {
    * symmetric form</a>
    * </ul>
    */
+  /**
+   * The arguments of a Carlson symmetric integral in the current arbitrary precision and the guard
+   * digits of {@link ArbitraryPrecision}; the value is rounded back by {@link #carlson}.
+   *
+   * @return <code>null</code> if an argument isn't a number
+   */
+  private static IExpr[] arbitraryArguments(EvalEngine engine, IExpr... args) {
+    IExpr[] result = new IExpr[args.length];
+    for (int i = 0; i < args.length; i++) {
+      result[i] = engine.evalN(args[i],
+          engine.getNumericPrecision() + ArbitraryPrecision.GUARD_DIGITS);
+      if (!result[i].isNumber()) {
+        return null;
+      }
+    }
+    return result;
+  }
+
   private static class CarlsonRC extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
@@ -203,11 +223,18 @@ public class EllipticIntegrals {
       IExpr x = ast.arg1();
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
-      return carlsonRD(x, y, z, engine.isDoubleMode()).eval(engine);
+      return carlsonRD(x, y, z, engine).eval(engine);
     }
 
-    private static IExpr carlsonRD(IExpr x, IExpr y, IExpr z, boolean doubleMode) {
-      if (doubleMode) {
+    private static IExpr carlsonRD(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
+      if (engine.isArbitraryMode()) {
+        IExpr[] args = arbitraryArguments(engine, x, y, z);
+        return args == null ? F.NIL
+            : carlson(S.CarlsonRD, engine,
+                () -> CarlsonArbitraryPrecision.rD(args[0], args[1], args[2],
+                    ArbitraryPrecision.digits(engine)));
+      }
+      if (engine.isDoubleMode()) {
         double xd = x.evalfNaN();
         double yd = y.evalfNaN();
         double zd = z.evalfNaN();
@@ -261,15 +288,22 @@ public class EllipticIntegrals {
       IExpr x = ast.arg1();
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
-      return carlsonRF(x, y, z, engine.isDoubleMode()).eval(engine);
+      return carlsonRF(x, y, z, engine).eval(engine);
     }
 
-    private static IExpr carlsonRF(IExpr x, IExpr y, IExpr z, boolean doubleMode) {
+    private static IExpr carlsonRF(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
       if (x.equals(y) && x.equals(z)) {
         // 1 / Sqrt(x)
         return F.Power(x, F.CN1D2);
       }
-      if (doubleMode) {
+      if (engine.isArbitraryMode()) {
+        IExpr[] args = arbitraryArguments(engine, x, y, z);
+        return args == null ? F.NIL
+            : carlson(S.CarlsonRF, engine,
+                () -> CarlsonArbitraryPrecision.rF(args[0], args[1], args[2],
+                    ArbitraryPrecision.digits(engine)));
+      }
+      if (engine.isDoubleMode()) {
         double xd = x.evalfNaN();
         double yd = y.evalfNaN();
         double zd = z.evalfNaN();
@@ -323,19 +357,30 @@ public class EllipticIntegrals {
       IExpr x = ast.arg1();
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
-      return carlsonRG(x, y, z, engine.isDoubleMode()).eval();
+      return carlsonRG(x, y, z, engine).eval();
     }
 
-    private static IExpr carlsonRG(IExpr x, IExpr y, IExpr z, boolean doubleMode) {
+    private static IExpr carlsonRG(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
       if (x.equals(y)) {
         if (x.equals(z)) {
           // 1 / Sqrt(x)
           return F.Power(x, F.CN1D2);
         }
+        if (x.isZero()) {
+          // CarlsonRG(0,0,z) == Sqrt(z)/2, where the form below would be 0*ComplexInfinity
+          return F.Times(F.C1D2, F.Sqrt(z));
+        }
         // (1/2) * (Sqrt(z) + x*CarlsonRF(x,x,z))
         return F.Times(F.C1D2, F.Plus(F.Sqrt(z), F.Times(x, F.CarlsonRF(x, x, z))));
       }
-      if (doubleMode) {
+      if (engine.isArbitraryMode()) {
+        IExpr[] args = arbitraryArguments(engine, x, y, z);
+        return args == null ? F.NIL
+            : carlson(S.CarlsonRG, engine,
+                () -> CarlsonArbitraryPrecision.rG(args[0], args[1], args[2],
+                    ArbitraryPrecision.digits(engine)));
+      }
+      if (engine.isDoubleMode()) {
         try {
           double xd = x.evalfNaN();
           double yd = y.evalfNaN();
@@ -397,11 +442,18 @@ public class EllipticIntegrals {
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
       IExpr p = ast.arg4();
-      return carlsonRG(x, y, z, p, engine.isDoubleMode()).eval(engine);
+      return carlsonRJ(x, y, z, p, engine).eval(engine);
     }
 
-    private static IExpr carlsonRG(IExpr x, IExpr y, IExpr z, IExpr p, boolean doubleMode) {
-      if (doubleMode) {
+    private static IExpr carlsonRJ(IExpr x, IExpr y, IExpr z, IExpr p, EvalEngine engine) {
+      if (engine.isArbitraryMode()) {
+        IExpr[] args = arbitraryArguments(engine, x, y, z, p);
+        return args == null ? F.NIL
+            : carlson(S.CarlsonRJ, engine,
+                () -> CarlsonArbitraryPrecision.rJ(args[0], args[1], args[2], args[3],
+                    ArbitraryPrecision.digits(engine)));
+      }
+      if (engine.isDoubleMode()) {
         try {
           double xd = x.evalfNaN();
           double yd = y.evalfNaN();
@@ -516,6 +568,10 @@ public class EllipticIntegrals {
           Errors.printMessage(S.EllipticE, rex);
           return F.NIL;
         }
+      }
+      if (engine.isArbitraryMode() && z.isNumber() && m.isNumber()) {
+        return arbitraryPrecision(S.EllipticE, engine,
+            () -> ArbitraryPrecision.ellipticE(z, m, engine));
       }
 
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
@@ -714,6 +770,10 @@ public class EllipticIntegrals {
           return Errors.printMessage(S.EllipticF, rex);
         }
       }
+      if (engine.isArbitraryMode() && z.isNumber() && m.isNumber()) {
+        return arbitraryPrecision(S.EllipticF, engine,
+            () -> ArbitraryPrecision.ellipticF(z, m, engine));
+      }
 
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
       if (negExpr.isPresent()) {
@@ -746,6 +806,155 @@ public class EllipticIntegrals {
     }
   }
 
+
+  /**
+   * The incomplete elliptic integrals in arbitrary precision, from their Carlson symmetric forms.
+   * {@link EllipticIntegralsJS} evaluates the same forms in machine precision.
+   *
+   * <p>
+   * The forms are evaluated with {@link #GUARD_DIGITS} more digits, against the cancellation in
+   * <code>1-m*Sin(phi)^2</code> and the period terms, and rounded to the requested precision at the
+   * end. The Carlson integrals come from {@link CarlsonArbitraryPrecision}, not hipparchus, whose
+   * generic duplication stops after 16 steps and loses digits.
+   */
+  private static final class ArbitraryPrecision {
+
+    static final int GUARD_DIGITS = 10;
+
+    private ArbitraryPrecision() {}
+
+    /** the precision of the evaluation, the requested one and the guard digits */
+    static int digits(EvalEngine engine) {
+      return (int) engine.getNumericPrecision() + GUARD_DIGITS;
+    }
+
+    /** <code>expr</code> with the guard digits */
+    private static IExpr n(IExpr expr, EvalEngine engine) {
+      return engine.evalN(expr, engine.getNumericPrecision() + GUARD_DIGITS);
+    }
+
+    /** round the result to the requested precision */
+    private static IExpr result(IExpr expr, EvalEngine engine) {
+      return engine.evalN(expr, engine.getNumericPrecision());
+    }
+
+    /**
+     * Split <code>phi == reduced + k*Pi</code> with <code>|Re(reduced)| &lt;= Pi/2</code>, because
+     * the Carlson forms are only valid on the principal strip. Like the machine precision version
+     * an amplitude on the strip, <code>Pi/2</code> included, isn't reduced: rounding
+     * <code>Re(phi)/Pi == 1/2</code> could otherwise give <code>k == 1</code>, and the complete
+     * integral <code>EllipticPi(n,Pi/2,m)</code> in the period term would reduce itself forever.
+     *
+     * @return <code>{reduced, k}</code>
+     */
+    private static IExpr[] reduce(IExpr phi, EvalEngine engine) {
+      IExpr pi = n(S.Pi, engine);
+      IExpr offStrip = engine.evaluate(F.Greater(F.Abs(n(F.Re(phi), engine)), F.Times(F.C1D2, pi)));
+      if (!offStrip.isTrue()) {
+        return new IExpr[] {phi, F.C0};
+      }
+      IExpr k = engine.evaluate(F.Round(F.Divide(n(F.Re(phi), engine), pi)));
+      if (!k.isInteger() || k.isZero()) {
+        return new IExpr[] {phi, F.C0};
+      }
+      return new IExpr[] {n(F.Subtract(phi, F.Times(k, pi)), engine), k};
+    }
+
+    /** <code>{Sin(phi), Cos(phi)^2, 1-m*Sin(phi)^2, 1}</code> for the reduced amplitude */
+    private static IExpr[] carlsonArguments(IExpr phi, IExpr m, EvalEngine engine) {
+      IExpr sin = n(F.Sin(phi), engine);
+      return new IExpr[] {sin, n(F.Sqr(F.Cos(phi)), engine),
+          n(F.Subtract(F.C1, F.Times(m, F.Sqr(sin))), engine), n(F.C1, engine)};
+    }
+
+    static IExpr ellipticF(IExpr phi, IExpr m, EvalEngine engine) {
+      IExpr[] reduced = reduce(n(phi, engine), engine);
+      IExpr[] args = carlsonArguments(reduced[0], m, engine);
+      IExpr rf = CarlsonArbitraryPrecision.rF(args[1], args[2], args[3], digits(engine));
+      // Sin(phi)*CarlsonRF(Cos(phi)^2, 1-m*Sin(phi)^2, 1) + 2*k*EllipticK(m)
+      return result(F.Plus(F.Times(args[0], rf), //
+          F.Times(F.C2, reduced[1], F.EllipticK(n(m, engine)))), engine);
+    }
+
+    static IExpr ellipticE(IExpr phi, IExpr m, EvalEngine engine) {
+      IExpr[] reduced = reduce(n(phi, engine), engine);
+      IExpr[] args = carlsonArguments(reduced[0], m, engine);
+      IExpr rf = CarlsonArbitraryPrecision.rF(args[1], args[2], args[3], digits(engine));
+      IExpr rd = CarlsonArbitraryPrecision.rD(args[1], args[2], args[3], digits(engine));
+      // Sin(phi)*RF - m/3*Sin(phi)^3*RD + 2*k*EllipticE(m)
+      return result(F.Plus(F.Times(args[0], rf), //
+          F.Times(F.CN1D3, m, F.Power(args[0], F.C3), rd), //
+          F.Times(F.C2, reduced[1], F.EllipticE(n(m, engine)))), engine);
+    }
+
+    static IExpr ellipticPi(IExpr nParameter, IExpr phi, IExpr m, EvalEngine engine) {
+      return result(ellipticPiGuarded(nParameter, n(phi, engine), m, engine), engine);
+    }
+
+    private static IExpr ellipticPiGuarded(IExpr nParameter, IExpr phi, IExpr m,
+        EvalEngine engine) {
+      IExpr[] reduced = reduce(phi, engine);
+      IExpr[] args = carlsonArguments(reduced[0], m, engine);
+      IExpr rf = CarlsonArbitraryPrecision.rF(args[1], args[2], args[3], digits(engine));
+      IExpr p = n(F.Subtract(F.C1, F.Times(nParameter, F.Sqr(args[0]))), engine);
+      IExpr rj = CarlsonArbitraryPrecision.rJ(args[1], args[2], args[3], p, digits(engine));
+      // Sin(phi)*RF + n/3*Sin(phi)^3*RJ + 2*k*EllipticPi(n,m)
+      IExpr value = F.Plus(F.Times(args[0], rf), //
+          F.Times(F.C1D3, nParameter, F.Power(args[0], F.C3), rj));
+      if (!reduced[1].isZero()) {
+        // Pi/2 is on the principal strip, so this doesn't reduce again
+        value = F.Plus(value, F.Times(F.C2, reduced[1],
+            ellipticPiGuarded(nParameter, n(F.CPiHalf, engine), m, engine)));
+      }
+      return n(value, engine);
+    }
+  }
+
+  /**
+   * A Carlson symmetric integral of {@link #arbitraryArguments}, rounded to the requested precision.
+   */
+  private static IExpr carlson(ISymbol symbol, EvalEngine engine, Supplier<IExpr> evaluation) {
+    IExpr value = arbitraryPrecision(symbol, engine, evaluation);
+    return value.isPresent() ? engine.evalN(value, engine.getNumericPrecision()) : F.NIL;
+  }
+
+  /**
+   * Evaluate one of the arbitrary precision forms, printing a message instead of throwing if the
+   * evaluation fails.
+   */
+  private static IExpr arbitraryPrecision(ISymbol symbol, EvalEngine engine,
+      Supplier<IExpr> evaluation) {
+    try {
+      return evaluation.get();
+    } catch (ValidateException ve) {
+      throw ve;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      Errors.printMessage(symbol, rex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * <code>EllipticPi(n,phi,m)</code> with a real characteristic <code>n &gt; 1</code> has a pole on
+   * the path of integration. For real <code>phi</code> and <code>m*Sin(phi)^2 &lt;= 1</code> the
+   * rest of the integrand is real, so the Cauchy principal value is the real part of the complex
+   * value the Carlson form continues to.
+   *
+   * @param value the complex value of <code>EllipticPi(n,phi,m)</code>
+   * @param phi the amplitude or <code>Pi/2</code> for the complete integral
+   */
+  private static IExpr ellipticPiPrincipalValue(IExpr value, IExpr n, IExpr phi, IExpr m,
+      EvalEngine engine) {
+    if (value.isNumber() && n.isReal() && phi.isReal() && m.isReal()
+        && ((IReal) n).isGT(F.C1)) {
+      IExpr bound = engine.evaluate(F.Times(m, F.Sqr(F.Sin(phi))));
+      if (bound.isReal() && !((IReal) bound).isGT(F.C1)) {
+        return value.re();
+      }
+    }
+    return value;
+  }
 
   private static class EllipticK extends AbstractFunctionEvaluator {
 
@@ -1012,13 +1221,14 @@ public class EllipticIntegrals {
       if (ast.isAST3()) {
         IExpr z = ast.arg2();
         IExpr m = ast.arg3();
-        return ellipticPi3(n, z, m, engine.isDoubleMode()).eval(engine);
+        return ellipticPi3(n, z, m, engine).eval(engine);
       }
       IExpr m = ast.arg2();
-      return ellipticPi2(n, m, engine.isDoubleMode()).eval(engine);
+      return ellipticPi2(n, m, engine).eval(engine);
     }
 
-    private static IExpr ellipticPi2(IExpr n, IExpr m, boolean doubleMode) {
+    private static IExpr ellipticPi2(IExpr n, IExpr m, EvalEngine engine) {
+      final boolean doubleMode = engine.isDoubleMode();
       if (n.isZero()) {
         return F.EllipticK(m);
       }
@@ -1047,7 +1257,9 @@ public class EllipticIntegrals {
             Complex mc = m.evalfc();
             return F.complexNum(EllipticIntegralsJS.ellipticPi(nc, new Complex(Math.PI / 2.0), mc));
           } else {
-            return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, Math.PI / 2.0, mDouble));
+            return ellipticPiPrincipalValue(
+                F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, Math.PI / 2.0, mDouble)), n,
+                F.num(Math.PI / 2.0), m, engine);
           }
         } catch (ValidateException ve) {
           throw ve;
@@ -1056,6 +1268,11 @@ public class EllipticIntegrals {
           Errors.printMessage(S.EllipticPi, rex);
           return F.NIL;
         }
+      }
+      if (engine.isArbitraryMode() && n.isNumber() && m.isNumber()) {
+        final IExpr piHalf = engine.evalN(F.CPiHalf, engine.getNumericPrecision());
+        return arbitraryPrecision(S.EllipticPi, engine, () -> ellipticPiPrincipalValue(
+            ArbitraryPrecision.ellipticPi(n, piHalf, m, engine), n, piHalf, m, engine));
       }
 
       // if (n.isReal() && m.isReal()) {
@@ -1077,8 +1294,8 @@ public class EllipticIntegrals {
       return F.NIL;
     }
 
-    private static IExpr ellipticPi3(IExpr n, IExpr z, final IExpr m, boolean doubleMode) {
-      if (doubleMode && z.isNumber() && n.isNumber() && m.isNumber()) {
+    private static IExpr ellipticPi3(IExpr n, IExpr z, final IExpr m, EvalEngine engine) {
+      if (engine.isDoubleMode() && z.isNumber() && n.isNumber() && m.isNumber()) {
         try {
           double nDouble = n.evalfNaN();
           double zDouble = z.evalfNaN();
@@ -1093,7 +1310,9 @@ public class EllipticIntegrals {
             }
             return F.complexNum(ellipticPi);
           } else {
-            return F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, zDouble, mDouble));
+            return ellipticPiPrincipalValue(
+                F.complexNum(EllipticIntegralsJS.ellipticPi(nDouble, zDouble, mDouble)), n, z, m,
+                engine);
           }
         } catch (ValidateException ve) {
           throw ve;
@@ -1102,6 +1321,11 @@ public class EllipticIntegrals {
           Errors.printMessage(S.EllipticPi, rex);
           return F.NIL;
         }
+      }
+      if (engine.isArbitraryMode() && z.isNumber() && n.isNumber() && m.isNumber()) {
+        return arbitraryPrecision(S.EllipticPi, engine,
+            () -> ellipticPiPrincipalValue(ArbitraryPrecision.ellipticPi(n, z, m, engine), n,
+                engine.evalN(z, engine.getNumericPrecision()), m, engine));
       }
       if (z.equals(F.CPiHalf)) {
         if (n.isZero()) {

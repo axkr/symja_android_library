@@ -327,6 +327,7 @@ public class Errors {
       "Argument `1` at position `2` is not a 2x2 or larger numerica matrix of real values.", //
       "ivar", "`1` is not a valid variable.", //
       "jointype", "`1` is not a known join type. Use \"Inner\", \"Left\", \"Right\" or \"Outer\".", //
+      "kval", "The value for the key `1` does not exist.", //
       "ldata", "`1` is not a valid dataset or a list of datasets.", //
       "ldir",
       "Value of `1` should be a number, Reals, Complexes, FromAbove, FromBelow, TwoSided or a list of these.", //

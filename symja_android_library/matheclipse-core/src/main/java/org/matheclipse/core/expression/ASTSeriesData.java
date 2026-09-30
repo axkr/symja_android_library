@@ -2248,21 +2248,48 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       return series;
     }
-    if (expansionPoint.isDirectedInfinity()) {
-      // seriesDataRecursive() expands around a finite point only; at an infinite expansion point it
-      // would write the expansion point itself into the constant coefficient. The `isFree` branch
-      // above is the only sound one here.
-      return null;
-    }
     if (!isAnalyticTerm(b)) {
       return null;
     }
-    ASTSeriesData bSeries =
-        seriesDataRecursive(b, expansionVariable, expansionPoint, truncateOrder, EvalEngine.get());
+    ASTSeriesData bSeries = expansionPoint.isDirectedInfinity() //
+        ? seriesAtInfinity(b, EvalEngine.get())
+        : seriesDataRecursive(b, expansionVariable, expansionPoint, truncateOrder,
+            EvalEngine.get());
     if (bSeries == null) {
       return null;
     }
     return plusPS(bSeries);
+  }
+
+  /**
+   * Expand {@code b} at this series' infinite expansion point. seriesDataRecursive() expands around
+   * a finite point only (at an infinite point it would write the expansion point itself into the
+   * constant coefficient), so substitute <code>x -&gt; 1/x</code>, expand at zero and re-tag the
+   * result with the infinite point, the same way <code>Series()</code> does it.
+   *
+   * @return {@code null} if {@code b} can't be expanded, or if the expansion only consists of
+   *         unevaluated limits (for example of an undefined function <code>f(1/x)</code>)
+   */
+  private ASTSeriesData seriesAtInfinity(IExpr b, EvalEngine engine) {
+    int direction;
+    if (expansionPoint.isInfinity()) {
+      direction = -1;
+    } else if (expansionPoint.isNegativeInfinity()) {
+      direction = 1;
+    } else {
+      return null;
+    }
+    IExpr function =
+        engine.evaluate(F.subst(b, expansionVariable, F.Power(expansionVariable, F.CN1)));
+    // truncateOrder counts steps of 1/puiseuxDenominator, the expansion of b whole powers
+    int order = Math.max(0, Math.floorDiv(truncateOrder + puiseuxDenominator - 1, puiseuxDenominator));
+    ASTSeriesData series =
+        seriesDataRecursive(function, expansionVariable, F.C0, order, direction, engine);
+    if (series == null || !series.arg3().isFree(S.Limit)) {
+      return null;
+    }
+    return new ASTSeriesData(expansionVariable, expansionPoint, series.arg3(),
+        series.minExponent(), series.truncateOrder(), series.puiseuxDenominator());
   }
 
   /**
@@ -2958,15 +2985,13 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (isScalarTimesFactor(b)) {
       return times(b);
     }
-    if (expansionPoint.isDirectedInfinity()) {
-      // seriesDataRecursive() expands around a finite point only; see plusExpr()
-      return null;
-    }
     if (!isAnalyticTerm(b)) {
       return null;
     }
-    ASTSeriesData bSeries =
-        seriesDataRecursive(b, expansionVariable, expansionPoint, truncateOrder, EvalEngine.get());
+    ASTSeriesData bSeries = expansionPoint.isDirectedInfinity() //
+        ? seriesAtInfinity(b, EvalEngine.get())
+        : seriesDataRecursive(b, expansionVariable, expansionPoint, truncateOrder,
+            EvalEngine.get());
     if (bSeries == null) {
       return null;
     }

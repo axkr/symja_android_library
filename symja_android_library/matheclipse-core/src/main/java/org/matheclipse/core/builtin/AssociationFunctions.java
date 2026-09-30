@@ -385,10 +385,14 @@ public class AssociationFunctions {
         return result;
       }
       final int index = assoc.getRulePosition(key);
-      final IExpr nested = index == 0 ? F.NIL : assoc.getValue(index);
+      if (index == 0) {
+        // The value for the key `1` does not exist.
+        return Errors.printMessage(builtinSymbol, "kval", F.list(key), engine);
+      }
+      final IExpr nested = assoc.getValue(index);
       if (!nested.isAssociation()) {
-        // Part `1` of `2` does not exist.
-        return Errors.printMessage(builtinSymbol, "partw", F.list(key, assoc), engine);
+        // WMA leaves the association unchanged without a message
+        return F.NIL;
       }
       IExpr temp =
           assignKeys((IAssociation) nested, keys, keyPosition + 1, value, builtinSymbol, engine);

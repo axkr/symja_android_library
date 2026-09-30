@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -843,9 +844,9 @@ public class SeriesFunctions {
     }
 
     /**
-     * Truncate an existing series in the same variable and at the same point down to
-     * <code>n</code> orders. Precision can only be dropped, never added: the discarded coefficients
-     * are gone, so a higher requested order is silently kept at the order already computed.
+     * Truncate an existing series in the same variable and at the same point down to <code>n</code>
+     * orders. Precision can only be dropped, never added: the discarded coefficients are gone, so a
+     * higher requested order is silently kept at the order already computed.
      *
      * @return the truncated series, or {@link F#NIL} when nothing needs to change
      */
@@ -871,6 +872,19 @@ public class SeriesFunctions {
         return F.NIL;
       }
       IExpr currentExpr = ast.arg1();
+      if (currentExpr.isList() || currentExpr.isAST(S.Equal)) {
+        if (!validIterators(ast, engine)) {
+          return F.NIL;
+        }
+        // a list of series and an equation of series, like in WMA
+        return ((IAST) currentExpr).mapThread(ast, 1);
+      }
+      if (currentExpr.isRuleAST() || currentExpr.isBooleanFunction()
+          || currentExpr.isComparatorFunction()) {
+        // no function of x which could be expanded: a Taylor series would differentiate the head
+        // itself (Derivative(0,1)[Less]), WMA returns the input unevaluated
+        return F.NIL;
+      }
 
       // Process iterators from LEFT to RIGHT to build the SeriesData hierarchy correctly!
       // Series(f, {x, x0, nx}, {y, y0, ny}) -> expands x first, then y.
@@ -941,6 +955,20 @@ public class SeriesFunctions {
           }
         }
 
+        if (isInfinity && !leadingTermMode) {
+          currentExpr = shiftGammaArguments(currentExpr, x, engine);
+          if (currentExpr.isFree(x)) {
+            continue;
+          }
+          if (x0.isInfinity()) {
+            IExpr stirling = stirlingSeries(currentExpr, x, n, engine);
+            if (stirling.isPresent()) {
+              currentExpr = stirling;
+              continue;
+            }
+          }
+        }
+
         // At an infinite expansion point substitute x -> 1/x and expand at zero; the result is
         // re-tagged with the infinite point afterwards, so index i then means x^(-i).
         IExpr seriesX0 = isInfinity ? F.C0 : x0;
@@ -952,6 +980,11 @@ public class SeriesFunctions {
             : fixedOrderSeries(seriesFunction, x, x0, seriesX0, n, direction, isInfinity, engine);
         if (expanded.isPresent()) {
           currentExpr = expanded;
+          continue;
+        }
+        if (isInfinity && isUndefinedFunction(currentExpr)) {
+          // WMA: Series(f(x),{x,Infinity,n}) returns f(x), an undefined function has no known
+          // behaviour at infinity
           continue;
         }
 
@@ -976,6 +1009,10 @@ public class SeriesFunctions {
       if (series == null) {
         return F.NIL;
       }
+      if (isInfinity && !series.arg3().isFree(S.Limit)) {
+        // the Taylor coefficients at 1/x == 0 are unevaluated limits, e.g. of an undefined f(1/x)
+        return F.NIL;
+      }
       return isInfinity //
           ? new ASTSeriesData(x, x0, series.arg3(), series.minExponent(), series.truncateOrder(),
               series.puiseuxDenominator())
@@ -983,18 +1020,173 @@ public class SeriesFunctions {
     }
 
     /**
+     * Test the variables of the iterators <code>{x, x0, n}</code> and <code>x -&gt; x0</code>, and
+     * print <code>Series::ivar</code> for the first one which isn't a variable.
+     */
+    private static boolean validIterators(IAST ast, EvalEngine engine) {
+      for (int i = 2; i <= ast.argSize(); i++) {
+        IExpr iterator = ast.get(i);
+        if (iterator.isList3() || iterator.isRuleAST()) {
+          IExpr x = iterator.first();
+          if (!x.isVariable()) {
+            Errors.printMessage(S.Series, "ivar", F.List(x), engine);
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    /**
+     * <code>true</code> for an application of a symbol without a built-in definition, like
+     * <code>f(x)</code>.
+     */
+    private static boolean isUndefinedFunction(IExpr expr) {
+      return expr.isAST() && expr.head().isSymbol() && !(expr.head() instanceof IBuiltInSymbol);
+    }
+
+    /**
+     * Rewrite <code>Gamma(x+k)</code> for an integer <code>k</code> as a rational function of
+     * <code>x</code> times <code>Gamma(x)</code>, so that quotients like
+     * <code>Gamma(x+1)/Gamma(x)</code> cancel before they are expanded at infinity.
+     */
+    private static IExpr shiftGammaArguments(IExpr expr, IExpr x, EvalEngine engine) {
+      IExpr result = expr.replaceAll(e -> {
+        if (e.isAST(S.Gamma, 2)) {
+          IExpr k = engine.evaluate(F.Subtract(e.first(), x));
+          if (k.isInteger() && !k.isZero()) {
+            int shift = k.toIntDefault();
+            if (shift != Integer.MIN_VALUE && Math.abs(shift) <= 32) {
+              IASTAppendable factors = F.TimesAlloc(Math.abs(shift) + 1);
+              factors.append(F.Gamma(x));
+              if (shift > 0) {
+                // Gamma(x+k) == x*(x+1)*...*(x+k-1)*Gamma(x)
+                for (int i = 0; i < shift; i++) {
+                  factors.append(F.Plus(x, F.ZZ(i)));
+                }
+              } else {
+                // Gamma(x-k) == Gamma(x)/((x-1)*(x-2)*...*(x-k))
+                for (int i = 1; i <= -shift; i++) {
+                  factors.append(F.Power(F.Subtract(x, F.ZZ(i)), F.CN1));
+                }
+              }
+              return factors;
+            }
+          }
+        }
+        return F.NIL;
+      });
+      return result.isPresent() ? engine.evaluate(result) : expr;
+    }
+
+    /**
+     * The asymptotic (Stirling) series of <code>LogGamma(x+a)</code>, <code>Gamma(x+a)</code> and
+     * <code>Factorial(x+a)</code> for a rational <code>a</code> at <code>x == Infinity</code>, in
+     * the form WMA returns for <code>a == 0</code>. With
+     * <code>c(k) == (-1)^(k+1)*BernoulliB(k+1,a)/(k*(k+1))</code> (DLMF 5.11.8):
+     *
+     * <ul>
+     * <li><code>LogGamma(x+a) == x*(-1+Log(x)) + (Log(2*Pi)+(2*a-1)*Log(x))/2 + Sum(c(k)/x^k)</code>
+     * <li><code>Gamma(x+a) == E^(x*(-1+Log(x))) * Sqrt(2*Pi)*x^(a-1/2) * Exp(Sum(c(k)/x^k))</code>
+     * <li><code>Factorial(x+a) == Gamma(x+a+1)</code>
+     * </ul>
+     *
+     * @return {@link F#NIL} if <code>expr</code> isn't one of these functions
+     */
+    private static IExpr stirlingSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
+      if (n < 0 || !expr.isAST1()) {
+        return F.NIL;
+      }
+      final IExpr head = expr.head();
+      if (head != S.LogGamma && head != S.Gamma && head != S.Factorial) {
+        return F.NIL;
+      }
+      IExpr shift = engine.evaluate(F.Subtract(expr.first(), x));
+      if (!shift.isRational()) {
+        return F.NIL;
+      }
+      IRational a = (IRational) shift;
+      if (head == S.Factorial) {
+        a = a.add(F.C1);
+      }
+      final IExpr xTimesLogPart = F.Plus(F.CN1, F.Log(x));
+      if (head == S.LogGamma) {
+        IASTAppendable coefficients = F.ListAlloc(n + 2);
+        coefficients.append(xTimesLogPart);
+        coefficients.append(F.Times(F.C1D2, F.Plus(F.Log(F.Times(F.C2, S.Pi)),
+            F.Times(F.Subtract(F.Times(F.C2, a), F.C1), F.Log(x)))));
+        for (int k = 1; k <= n; k++) {
+          coefficients.append(stirlingCoefficient(a, k));
+        }
+        return new ASTSeriesData(x, F.CInfinity, (IAST) engine.evaluate(coefficients), -1, n + 1,
+            1);
+      }
+      // Sqrt(2*Pi)*(1/x)^(1/2-a)*Sum(b(j)/x^j) with the Puiseux denominator q
+      final int denominator;
+      final int numerator;
+      try {
+        denominator = a.toBigDenominator().intValueExact();
+        numerator = a.toBigNumerator().intValueExact();
+      } catch (ArithmeticException aex) {
+        return F.NIL;
+      }
+      final int q = (int) ArithmeticUtils.lcm(2L, denominator);
+      if (q > 64 || Math.abs(numerator) > 1024) {
+        return F.NIL;
+      }
+      final int minExponent = q / 2 - numerator * (q / denominator);
+      // truncate at (1/x)^(n+1/2) like WMA, but keep at least the leading term
+      final int truncateOrder = Math.max((2 * n + 1) * q / 2, minExponent + q);
+      final int terms = (truncateOrder - minExponent + q - 1) / q;
+      IExpr t = F.Dummy("t");
+      IASTAppendable sum = F.PlusAlloc(terms);
+      for (int k = 1; k < terms; k++) {
+        sum.append(F.Times(stirlingCoefficient(a, k), F.Power(t, F.ZZ(k))));
+      }
+      IASTAppendable coefficients = F.ListAlloc(terms * q);
+      IExpr sqrt2Pi = F.Sqrt(F.Times(F.C2, S.Pi));
+      if (terms == 1) {
+        coefficients.append(sqrt2Pi);
+      } else {
+        IExpr exp =
+            engine.evaluate(F.Series(F.Exp(sum.oneIdentity0()), F.list(t, F.C0, F.ZZ(terms))));
+        if (!(exp instanceof ASTSeriesData)) {
+          return F.NIL;
+        }
+        ASTSeriesData expSeries = (ASTSeriesData) exp;
+        for (int k = 0; k < terms; k++) {
+          for (int j = 1; k > 0 && j < q; j++) {
+            coefficients.append(F.C0);
+          }
+          coefficients.append(F.Times(sqrt2Pi, expSeries.coefficient(k)));
+        }
+      }
+      ASTSeriesData series = new ASTSeriesData(x, F.CInfinity, (IAST) engine.evaluate(coefficients),
+          minExponent, truncateOrder, q);
+      ASTSeriesData exponent =
+          new ASTSeriesData(x, F.CInfinity, F.list(xTimesLogPart), -1, n + 1, 1);
+      return F.Times(F.Power(S.E, exponent), series);
+    }
+
+    /** <code>(-1)^(k+1)*BernoulliB(k+1,a)/(k*(k+1))</code> */
+    private static IExpr stirlingCoefficient(IRational a, int k) {
+      return F.Times(F.ZZ(k % 2 == 1 ? 1 : -1), F.BernoulliB(F.ZZ(k + 1), a),
+          F.QQ(1, (long) k * (k + 1)));
+    }
+
+    /**
      * The <code>x -&gt; x0</code> form: the lowest-order non-vanishing term alone, returned as a
      * series with a single coefficient.
      *
      * <p>
-     * This deliberately does NOT delegate to the shared {@link org.matheclipse.core.series.LeadTerm}
-     * primitive, although every other leading-term site in the code base now does. What is wanted
-     * here is a truncated <em>series</em>, and the <code>O(...)</code> boundary it carries is the
-     * index of the next non-vanishing term - series information that a leading term does not have.
-     * Measured: substituting the primitive here reproduces every leading coefficient but shifts
-     * that boundary on Laurent and at-infinity expansions (e.g. the tail of
-     * <code>Series(Gamma(Sin(x)-x), x -&gt; 0)</code> ends at index -7, not -8), so the expansion
-     * would have to be run anyway to recover it.
+     * This deliberately does NOT delegate to the shared
+     * {@link org.matheclipse.core.series.LeadTerm} primitive, although every other leading-term
+     * site in the code base now does. What is wanted here is a truncated <em>series</em>, and the
+     * <code>O(...)</code> boundary it carries is the index of the next non-vanishing term - series
+     * information that a leading term does not have. Measured: substituting the primitive here
+     * reproduces every leading coefficient but shifts that boundary on Laurent and at-infinity
+     * expansions (e.g. the tail of <code>Series(Gamma(Sin(x)-x), x -&gt; 0)</code> ends at index
+     * -7, not -8), so the expansion would have to be run anyway to recover it.
      */
     private static IExpr leadingTermSeries(IExpr seriesFunction, IExpr x, IExpr x0, IExpr seriesX0,
         int direction, boolean isInfinity, EvalEngine engine) {
@@ -1002,9 +1194,8 @@ public class SeriesFunctions {
       // low-order coefficients all cancel sits deeper than any fixed order would reach.
       int currentN = 1;
       final int probeLimit = 30;
-      ASTSeriesData series =
-          ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, currentN, direction,
-              engine);
+      ASTSeriesData series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0,
+          currentN, direction, engine);
       while (series != null && currentN < probeLimit && !hasNonZeroCoefficient(series)) {
         currentN += 4;
         series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, currentN, direction,
@@ -2053,11 +2244,11 @@ public class SeriesFunctions {
       int denominator = 1;
       if (ast.size() == 6 || ast.size() == 7) {
         if (ast.arg3().isVector() < 0 || !ast.arg3().isAST()) {
-          // Before the numeric first argument below, which is how Mathematica orders the two: an
+          // Before the numeric first argument below: an
           // argument list that does not describe a series at all is reported as such rather than
           // read as a request to evaluate one somewhere. Dropping an argument from a series -
           // Rest() or Delete() of one - shifts a number into this position, and the "evaluate at
-          // a number" path then answered Indeterminate where Mathematica answers sdatc.
+          // a number" path then answered Indeterminate.
           // Coefficient specification `1` in `2` is not a list.
           return Errors.printMessage(S.SeriesData, "sdatc", F.List(ast.arg3(), ast), engine);
         }
@@ -2097,7 +2288,7 @@ public class SeriesFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       // Without a declared arity nothing checked the count, so Append() of a series produced a
-      // seven argument SeriesData that was simply left standing. Mathematica reports argb.
+      // seven argument SeriesData that was simply left standing.
       return ARGS_3_6;
     }
 

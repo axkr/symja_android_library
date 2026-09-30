@@ -14,6 +14,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.reflection.system.DSolve;
 import org.matheclipse.core.reflection.system.Eliminate;
 
 /**
@@ -298,8 +299,7 @@ final class DSolveODE {
     IExpr p = F.Dummy("p");
     IExpr q = F.Dummy("q");
     // x*y*(M_y - N_x) - p*y*N + q*x*M == 0
-    IExpr equation = F.Equal(F.Plus(
-        F.Times(x, yDummy, F.Subtract(dMdy, dNdx)), //
+    IExpr equation = F.Equal(F.Plus(F.Times(x, yDummy, F.Subtract(dMdy, dNdx)), //
         F.Times(F.CN1, p, yDummy, n), //
         F.Times(q, x, m)), F.C0);
     IExpr solutions;
@@ -415,8 +415,8 @@ final class DSolveODE {
       if (fxIntegral.isNIL()) {
         return F.NIL;
       }
-      IExpr constant = point == null ? C_1 : separationConstant(engine, gyExpr, fxIntegral, x, y,
-          point);
+      IExpr constant =
+          point == null ? C_1 : separationConstant(engine, gyExpr, fxIntegral, x, y, point);
       if (constant.isNIL()) {
         return F.NIL;
       }
@@ -434,7 +434,8 @@ final class DSolveODE {
       // something still carrying y is no answer, and letting it stand as one is what stopped the
       // methods below from ever being reached for the equations whose relation has a lone y in it
       // beside a logarithm.
-      IExpr result = usableBranches(engine, Eliminate.extractVariable(yEquation, y, true, engine), y);
+      IExpr result =
+          usableBranches(engine, Eliminate.extractVariable(yEquation, y, true, engine), y);
       if (result.isNIL()) {
         // The antiderivative is not always in a form the equation can be solved for y in. A sum
         // of logarithms is the usual case: Integrate answers 1/(1-y^2) with
@@ -443,8 +444,9 @@ final class DSolveODE {
         // again, which is what makes y'(x) == (y(x)^2 + x*y(x) - x^2)/x^2 solvable.
         IExpr collected = engine.evaluate(F.FullSimplify(gyExpr));
         if (collected.isPresent() && !collected.equals(gyExpr)) {
-          result = usableBranches(engine, Eliminate
-              .extractVariable(S.Subtract.of(engine, collected, fxExpr), y, true, engine), y);
+          result = usableBranches(engine,
+              Eliminate.extractVariable(S.Subtract.of(engine, collected, fxExpr), y, true, engine),
+              y);
         }
         if (result.isNIL()) {
           // With a parameter in the radicand the antiderivative of 1/Sqrt(y^2 + a) is written
@@ -456,8 +458,9 @@ final class DSolveODE {
             inverse = inverseHyperbolicForm(collected, y, engine);
           }
           if (inverse.isPresent()) {
-            result = usableBranches(engine, Eliminate
-                .extractVariable(S.Subtract.of(engine, inverse, fxExpr), y, true, engine), y);
+            result = usableBranches(engine,
+                Eliminate.extractVariable(S.Subtract.of(engine, inverse, fxExpr), y, true, engine),
+                y);
           }
         }
       }
@@ -486,8 +489,8 @@ final class DSolveODE {
    * <code>ArcCosh(u/Sqrt(a))</code> and <code>ArcTan(u/Sqrt(a - u^2))</code> as
    * <code>ArcSin(u/Sqrt(a))</code>, for an <code>a</code> free of <code>y</code>; a
    * <code>Log(1+v)/2 - Log(1-v)/2</code> is read as <code>ArcTanh(v)</code> first. The forms are
-   * equal where the radicand is positive, which is where the equation is real. Every answer built on
-   * this is put back into the equation by the callers.
+   * equal where the radicand is positive, which is where the equation is real. Every answer built
+   * on this is put back into the equation by the callers.
    *
    * @return {@link F#NIL} if nothing was rewritten
    */
@@ -568,10 +571,9 @@ final class DSolveODE {
    * An autonomous equation separates into a sum of logarithms, which is what the antiderivative of
    * a rational function is, and nothing inverts a sum of logarithms as it stands. Exponentiating
    * turns that sum into a product of powers -- <code>E</code> is one to one, so the relation is the
-   * same one -- and the product is algebraic in <code>y</code>:
-   * <code>y' == y*(y-2)*(y-1)</code> separates into
-   * <code>Log(y^2-2*y)/2 - Log(1-y) == x + C</code>, whose exponential is a quadratic in
-   * <code>y</code> over another, and it is solved outright.
+   * same one -- and the product is algebraic in <code>y</code>: <code>y' == y*(y-2)*(y-1)</code>
+   * separates into <code>Log(y^2-2*y)/2 - Log(1-y) == x + C</code>, whose exponential is a
+   * quadratic in <code>y</code> over another, and it is solved outright.
    *
    * @param gyExpr the antiderivative in <code>y</code>
    * @param fxExpr the antiderivative in <code>x</code>, with the constant already in it
@@ -653,8 +655,8 @@ final class DSolveODE {
       q = engine.evaluate(F.Negate(q));
     }
     IExpr ratio = engine.evaluate(F.Divide(p, q));
-    IExpr s = engine.evaluate(F.Times(F.Power(ratio, F.CN1),
-        F.ProductLog(F.Times(ratio, F.Exp(F.Divide(t, q))))));
+    IExpr s = engine.evaluate(
+        F.Times(F.Power(ratio, F.CN1), F.ProductLog(F.Times(ratio, F.Exp(F.Divide(t, q))))));
     IExpr u = reciprocal ? engine.evaluate(F.Power(s, F.CN1)) : s;
     // linear is gamma*y + delta, so y is (u - delta)/gamma.
     IExpr gamma = engine.evaluate(F.Coefficient(linear, y, F.C1));
@@ -771,14 +773,14 @@ final class DSolveODE {
     if (slope.isZero() || !slope.isFree(y, true) || !offset.isFree(y, true)) {
       return false;
     }
-    return DSolveODE.isVanishing(
-        engine.evaluate(F.Subtract(expr, F.Plus(F.Times(slope, y), offset))), engine);
+    return DSolveODE
+        .isVanishing(engine.evaluate(F.Subtract(expr, F.Plus(F.Times(slope, y), offset))), engine);
   }
 
   /**
-   * The power the relation is raised to before it is exponentiated  /**
-   * The power the relation is raised to before it is exponentiated, or <code>0</code> when
-   * exponentiating it gives nothing algebraic in <code>y</code>.
+   * The power the relation is raised to before it is exponentiated /** The power the relation is
+   * raised to before it is exponentiated, or <code>0</code> when exponentiating it gives nothing
+   * algebraic in <code>y</code>.
    *
    * <p>
    * Every term has to be a logarithm, or <code>y</code> itself, or free of <code>y</code>: those
@@ -854,8 +856,8 @@ final class DSolveODE {
   }
 
   /**
-   * The constant of separation which the condition <code>y(x0) == y0</code> names.  /**
-   * The constant of separation which the condition <code>y(x0) == y0</code> names.
+   * The constant of separation which the condition <code>y(x0) == y0</code> names. /** The constant
+   * of separation which the condition <code>y(x0) == y0</code> names.
    *
    * <p>
    * The separated relation is <code>G(y) == F(x) + C</code>, so <code>C</code> is
@@ -1006,8 +1008,7 @@ final class DSolveODE {
    * The answer to a first order equation whose first integral does not solve for the unknown: the
    * relation <code>G(x, y(x)) == C(1)</code>, or with the constant named by a condition
    * <code>y(x0) == y0</code> as <code>G(x, y(x)) == G(x0, y0)</code>. The caller wraps it in
-   * <code>Solve</code>, which is how Mathematica writes an equation it cannot solve for the
-   * unknown.
+   * <code>Solve</code>.
    *
    * <p>
    * Only a last resort: every method which answers explicitly has declined before this is asked.
@@ -1048,8 +1049,8 @@ final class DSolveODE {
       }
       right = engine.evaluate(F.subst(F.subst(level, x, point[0]), yVar, point[1]));
       if (!right.isFree(x, true) || !right.isFree(yVar, true) || right.isIndeterminate()
-          || right.isDirectedInfinity() || !right.isFree(x2 -> x2.isIndeterminate()
-              || x2.isDirectedInfinity(), true)) {
+          || right.isDirectedInfinity()
+          || !right.isFree(x2 -> x2.isIndeterminate() || x2.isDirectedInfinity(), true)) {
         return F.NIL;
       }
     }
@@ -1156,8 +1157,8 @@ final class DSolveODE {
     if (line2 == null || line1[1].isZero()) {
       return F.NIL;
     }
-    IExpr determinant = engine.evaluate(
-        F.Subtract(F.Times(line1[0], line2[1]), F.Times(line1[1], line2[0])));
+    IExpr determinant =
+        engine.evaluate(F.Subtract(F.Times(line1[0], line2[1]), F.Times(line1[1], line2[0])));
     if (!determinant.isZero()) {
       return F.NIL;
     }
@@ -1194,16 +1195,16 @@ final class DSolveODE {
     if (line2 == null || (line1[2].isZero() && line2[2].isZero())) {
       return null;
     }
-    IExpr determinant = engine.evaluate(
-        F.Subtract(F.Times(line1[0], line2[1]), F.Times(line1[1], line2[0])));
+    IExpr determinant =
+        engine.evaluate(F.Subtract(F.Times(line1[0], line2[1]), F.Times(line1[1], line2[0])));
     if (!determinant.isNumber() || determinant.isZero()) {
       return null;
     }
     // Cramer's rule for a1*h + b1*k == -c1, a2*h + b2*k == -c2
-    IExpr h = engine.evaluate(F.Divide(
-        F.Subtract(F.Times(line1[1], line2[2]), F.Times(line2[1], line1[2])), determinant));
-    IExpr k = engine.evaluate(F.Divide(
-        F.Subtract(F.Times(line2[0], line1[2]), F.Times(line1[0], line2[2])), determinant));
+    IExpr h = engine.evaluate(F
+        .Divide(F.Subtract(F.Times(line1[1], line2[2]), F.Times(line2[1], line1[2])), determinant));
+    IExpr k = engine.evaluate(F
+        .Divide(F.Subtract(F.Times(line2[0], line1[2]), F.Times(line1[0], line2[2])), determinant));
     return new IExpr[] {h, k};
   }
 
@@ -1218,8 +1219,7 @@ final class DSolveODE {
     if (!a.isNumber() || !b.isNumber() || (a.isZero() && b.isZero())) {
       return null;
     }
-    IExpr c = engine.evaluate(
-        F.Expand(F.Subtract(expanded, F.Plus(F.Times(a, x), F.Times(b, y)))));
+    IExpr c = engine.evaluate(F.Expand(F.Subtract(expanded, F.Plus(F.Times(a, x), F.Times(b, y)))));
     if (!c.isNumber()) {
       return null;
     }
@@ -1231,8 +1231,8 @@ final class DSolveODE {
 
   /**
    * Whether <code>level</code> is constant along the solutions of <code>M + N*y' == 0</code>:
-   * <code>M*G_y - N*G_x</code> vanishes at sample points of both variables, and <code>G</code>
-   * does depend on <code>y</code>.
+   * <code>M*G_y - N*G_x</code> vanishes at sample points of both variables, and <code>G</code> does
+   * depend on <code>y</code>.
    */
   private static boolean isFirstIntegral(IExpr level, IExpr m, IExpr n, IExpr x, IExpr y,
       EvalEngine engine) {
@@ -1334,8 +1334,8 @@ final class DSolveODE {
    * A basis can be singular where the condition is: <code>t*x''(t) + (t-2)*x'(t) + x(t) == 0</code>
    * has a solution written with <code>ExpIntegralEi(t)</code>, and putting <code>t == 0</code> into
    * it gives <code>Indeterminate</code> from <code>0*(-Infinity)</code>, not because the condition
-   * cannot be met but because that is not how to ask. The limit there is <code>-C(2)/3</code>, which
-   * says <code>C(2) == 0</code>, and what is left solves the equation exactly.
+   * cannot be met but because that is not how to ask. The limit there is <code>-C(2)/3</code>,
+   * which says <code>C(2) == 0</code>, and what is left solves the equation exactly.
    *
    * @return the one condition rewritten, or <code>null</code> when the limit does not exist, cannot
    *         be found, or the conditions are not a single prescribed value
@@ -1364,11 +1364,11 @@ final class DSolveODE {
     return conditions;
   }
 
-  /** Each condition with the candidate solution put in place of the unknown function. */  /** Each condition with the candidate solution put in place of the unknown function. */
+  /** Each condition with the candidate solution put in place of the unknown function. */
+  /** Each condition with the candidate solution put in place of the unknown function. */
   private static IASTAppendable evaluatedConditions(IExpr root, IAST uFunction1Arg, IExpr xVar,
       IAST boundaryConditions, EvalEngine engine) {
-    IAST headRules =
-        F.List(F.Rule(uFunction1Arg.head(), F.Function(F.List(xVar), root)));
+    IAST headRules = F.List(F.Rule(uFunction1Arg.head(), F.Function(F.List(xVar), root)));
     IASTAppendable evaluatedBCs = F.ListAlloc(boundaryConditions.argSize());
     for (int k = 1; k <= boundaryConditions.argSize(); k++) {
       IExpr evaluatedBC = engine.evaluate(F.subst(boundaryConditions.get(k), headRules));
@@ -1409,8 +1409,7 @@ final class DSolveODE {
 
   private static boolean meetsConditions(IExpr root, IAST uFunction1Arg, IExpr xVar,
       IAST boundaryConditions, EvalEngine engine) {
-    IAST evaluatedBCs =
-        evaluatedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
+    IAST evaluatedBCs = evaluatedConditions(root, uFunction1Arg, xVar, boundaryConditions, engine);
     for (int k = 1; k <= evaluatedBCs.argSize(); k++) {
       IExpr bc = evaluatedBCs.get(k);
       IExpr residual = bc.isEqual() ? engine.evaluate(F.Subtract(bc.first(), bc.second())) : bc;
@@ -1460,8 +1459,8 @@ final class DSolveODE {
    * <code>Solve</code> gives for the constants.
    *
    * <p>
-   * All of them, because a condition can have more than one solution for the constant and only
-   * some of those solve the equation. <code>y'(x) - 2*y(x) == 2*Sqrt(y(x))</code> has the general
+   * All of them, because a condition can have more than one solution for the constant and only some
+   * of those solve the equation. <code>y'(x) - 2*y(x) == 2*Sqrt(y(x))</code> has the general
    * solution <code>(C(1)*E^x - 1)^2</code>, and <code>y(0) == 1</code> asks for
    * <code>(C(1) - 1)^2 == 1</code>, which is <code>C(1) == 0</code> or <code>C(1) == 2</code>. The
    * first gives <code>y == 1</code>, which meets the condition and is not a solution at all -- the
@@ -1610,8 +1609,8 @@ final class DSolveODE {
         return false;
       }
     }
-    return fitted.isFree(x -> x == S.Undefined || x == S.Indeterminate
-        || x == S.ComplexInfinity || x.isAST(S.ConditionalExpression), true);
+    return fitted.isFree(x -> x == S.Undefined || x == S.Indeterminate || x == S.ComplexInfinity
+        || x.isAST(S.ConditionalExpression), true);
   }
 
   /**
@@ -2002,11 +2001,10 @@ final class DSolveODE {
    * <code>D_(k+1) == p*dD_k/dy</code> (<code>y'' == p*p'</code>, <code>y''' == p^2*p'' +
    * p*p'^2</code>, ...), and putting them in leaves an equation of order <code>n-1</code> in
    * <code>p(y)</code>, which the cascade is asked for. What is left, <code>y' == p(y)</code>, is
-   * separable. The constants are numbered as Mathematica numbers them: those of <code>p</code>
-   * first, the one of the quadrature last. For <code>n == 2</code> this is the second case of
-   * {@link #solveReductionOfOrderODE}, which is kept as it is. When the quadrature is not
-   * elementary the answer is the relation {@link #autonomousRelation} gives, once nothing else in
-   * the cascade has answered the equation.
+   * separable. The constants are numbered: those of <code>p</code> first, the one of the quadrature
+   * last. For <code>n == 2</code> this is the second case of {@link #solveReductionOfOrderODE},
+   * which is kept as it is. When the quadrature is not elementary the answer is the relation
+   * {@link #autonomousRelation} gives, once nothing else in the cascade has answered the equation.
    *
    * @return the branches of the solution, or {@link F#NIL}
    */
@@ -2164,9 +2162,8 @@ final class DSolveODE {
    * The answer to an autonomous equation of order <code>n &gt;= 2</code> whose reduction to
    * <code>y' == p(y)</code> works but whose quadrature does not: the relation
    * <code>Inactive(Integrate)[1/p(K(1)), {K(1), 1, y(x)}] == x + C(n)</code> for the equation to be
-   * solved for <code>y(x)</code>, as Mathematica answers it. A pair of branches <code>+-p</code>
-   * is one relation, squared on both sides. The integral is inert: it is not elementary, and
-   * integrating it would not end.
+   * solved for <code>y(x)</code>. A pair of branches <code>+-p</code> is one relation, squared on
+   * both sides. The integral is inert: it is not elementary, and integrating it would not end.
    *
    * <p>
    * Every <code>p</code> is put back into the equation before it is used: the derivatives it
@@ -2181,8 +2178,8 @@ final class DSolveODE {
     if (ctx.conditions.argSize() > 0 || !c_n.isAST(S.C, 2)) {
       return F.NIL;
     }
-    IExpr lhs = equation.isEqual() ? S.Subtract.of(engine, equation.first(), equation.second())
-        : equation;
+    IExpr lhs =
+        equation.isEqual() ? S.Subtract.of(engine, equation.first(), equation.second()) : equation;
     lhs = engine.evaluate(F.ExpandAll(lhs));
     int n = LinearODEForm.highestDerivativeOrder(lhs, yFunction.head(), xVar);
     if (n < 2) {
@@ -2215,8 +2212,7 @@ final class DSolveODE {
     int first = c_n.first().toIntDefault();
     IExpr k1 = F.unaryAST1(S.initFinalHiddenSymbol("K"), F.C1);
     IExpr integrand = engine.evaluate(F.Power(F.subst(p, yDummy, k1), F.CN1));
-    IExpr integral =
-        F.binaryAST2(F.Inactive(S.Integrate), integrand, F.list(k1, F.C1, yFunction));
+    IExpr integral = F.binaryAST2(F.Inactive(S.Integrate), integrand, F.list(k1, F.C1, yFunction));
     IExpr right = F.Plus(xVar, F.C(first + n - 1));
     IExpr relation = squared ? F.Equal(F.Sqr(integral), F.Sqr(right)) : F.Equal(integral, right);
     return F.Solve(relation, yFunction);
@@ -2276,13 +2272,13 @@ final class DSolveODE {
   }
 
   /**
-   * A first order Riccati equation, solved through a particular solution, when nothing else in
-   * the cascade has answered it.
+   * A first order Riccati equation, solved through a particular solution, when nothing else in the
+   * cascade has answered it.
    *
    * <p>
    * Once one solution <code>y_p</code> of <code>y' == a*y^2 + b*y + c</code> is known,
-   * <code>y == y_p + 1/v</code> leaves <code>v' + (2*a*y_p + b)*v == -a</code>, which is linear. The
-   * Riccati equations of the textbooks are set so that one can be guessed:
+   * <code>y == y_p + 1/v</code> leaves <code>v' + (2*a*y_p + b)*v == -a</code>, which is linear.
+   * The Riccati equations of the textbooks are set so that one can be guessed:
    * <code>y' == 1 + x - (2*x + 1)*y + x*y^2</code> has <code>y == 1</code> and
    * <code>x^3*y' == -2*x^4 + 2*x^2*y + 2*y^2</code> has <code>y == x^2</code>.
    *
@@ -2297,16 +2293,16 @@ final class DSolveODE {
    * @return {@link F#NIL} if the equation is not a Riccati equation or no particular solution of
    *         the kinds tried is found
    */
-  static IExpr solveRiccatiThroughParticular(IExpr equation, IExpr xVar, IExpr yFunction,
-      IExpr C_1, EvalEngine engine) {
+  static IExpr solveRiccatiThroughParticular(IExpr equation, IExpr xVar, IExpr yFunction, IExpr C_1,
+      EvalEngine engine) {
     IExpr lhs = equation.isEqual() ? F.Subtract(equation.first(), equation.second()) : equation;
     lhs = engine.evaluate(F.ExpandAll(lhs));
     IExpr yPrime = engine.evaluate(F.D(yFunction, xVar));
     IExpr coeffDyx = engine.evaluate(F.Coefficient(lhs, yPrime, F.C1));
     IExpr rest = engine.evaluate(F.Coefficient(lhs, yPrime, F.C0));
     if (coeffDyx.isZero() || !coeffDyx.isFree(yPrime) || !rest.isFree(yPrime)
-        || !coeffDyx.isFree(yFunction) || !engine
-            .evaluate(F.ExpandAll(F.Subtract(lhs, F.Plus(F.Times(coeffDyx, yPrime), rest))))
+        || !coeffDyx.isFree(yFunction)
+        || !engine.evaluate(F.ExpandAll(F.Subtract(lhs, F.Plus(F.Times(coeffDyx, yPrime), rest))))
             .isZero()) {
       return F.NIL;
     }
@@ -2348,9 +2344,10 @@ final class DSolveODE {
   }
 
   /**
-   * A particular solution of <code>y' == a*y^2 + b*y + c</code> of the form <code>k*m(x)</code>, for  /**
-   * A particular solution of <code>y' == a*y^2 + b*y + c</code> of the form <code>k*m(x)</code>, for
-   * a constant <code>k</code> and <code>m</code> one of a few simple functions, or {@link F#NIL}.
+   * A particular solution of <code>y' == a*y^2 + b*y + c</code> of the form <code>k*m(x)</code>,
+   * for /** A particular solution of <code>y' == a*y^2 + b*y + c</code> of the form
+   * <code>k*m(x)</code>, for a constant <code>k</code> and <code>m</code> one of a few simple
+   * functions, or {@link F#NIL}.
    *
    * <p>
    * The candidates for <code>m</code> are the low powers of <code>x</code>, the simplest
@@ -2359,8 +2356,7 @@ final class DSolveODE {
    * <code>k*m' - a*k^2*m^2 - b*k*m - c</code> is solved for <code>k</code> at one point, and a
    * <code>k</code> is only used if it makes that expression vanish identically.
    */
-  private static IExpr riccatiParticular(IExpr a, IExpr b, IExpr c, IExpr xVar,
-      EvalEngine engine) {
+  private static IExpr riccatiParticular(IExpr a, IExpr b, IExpr c, IExpr xVar, EvalEngine engine) {
     IASTAppendable candidates = F.ListAlloc();
     candidates.append(F.C1);
     candidates.append(xVar);
@@ -2381,14 +2377,14 @@ final class DSolveODE {
     for (int i = 1; i <= candidates.argSize(); i++) {
       IExpr m = candidates.get(i);
       IExpr guess = F.Times(k, m);
-      IExpr residual = engine.evaluate(F.Subtract(F.D(guess, xVar),
-          F.Plus(F.Times(a, F.Sqr(guess)), F.Times(b, guess), c)));
+      IExpr residual = engine.evaluate(
+          F.Subtract(F.D(guess, xVar), F.Plus(F.Times(a, F.Sqr(guess)), F.Times(b, guess), c)));
       IExpr atPoint = engine.evaluate(F.subst(residual, xVar, point));
       if (!atPoint.isFree(xVar) || atPoint.isFree(k)) {
         continue;
       }
-      IAST roots = DSolveUtil.extractSolveResults(
-          engine.evaluate(F.Solve(F.Equal(atPoint, F.C0), F.List(k))));
+      IAST roots = DSolveUtil
+          .extractSolveResults(engine.evaluate(F.Solve(F.Equal(atPoint, F.C0), F.List(k))));
       for (int j = 1; j <= roots.argSize(); j++) {
         IExpr value = roots.get(j);
         if (value.isZero() || !value.isFree(xVar) || !value.isFree(k)) {
@@ -2540,6 +2536,51 @@ final class DSolveODE {
     return usable;
   }
 
+  /**
+   * Clairaut's equation in the implicit form <code>F(y-x*y', y') == 0</code>, e.g.
+   * <code>(y-x*y')^2 == 1+y'^2</code>. Every straight line <code>y == C*x+u</code> with
+   * <code>F(u, C) == 0</code> solves it, so the families are the roots <code>u(C)</code>.
+   *
+   * @param lhs the expanded equation <code>F(y-x*y', y') == 0</code> as <code>lhs == 0</code>
+   * @param lhsP <code>lhs</code> with <code>y'</code> replaced by <code>p</code>
+   * @return the list of families <code>C*x+u(C)</code> or {@link F#NIL}
+   */
+  private static IExpr clairautRelation(IExpr lhs, IExpr lhsP, IExpr p, IExpr yFunction, IExpr head,
+      IExpr xVar, IExpr C_1, EvalEngine engine) {
+    if (LinearODEForm.highestDerivativeOrder(lhs, head, xVar) != 1 || lhsP.isFree(p)) {
+      return F.NIL;
+    }
+    IExpr u = F.Dummy("u");
+    IExpr relation =
+        engine.evaluate(F.ExpandAll(F.subst(lhsP, yFunction, F.Plus(F.Times(xVar, p), u))));
+    if (!relation.isFree(xVar) || relation.isFree(u) || !relation.isFree(head, true)
+        || !relation.isPolynomial(F.list(u))) {
+      return F.NIL;
+    }
+    IExpr content = engine.evaluate(F.Apply(S.PolynomialGCD, F.CoefficientList(relation, u)));
+    if (!content.isFree(p)) {
+      // a factor free of u, like p-1 in (p-1)*u == 0, is a family no root u(p) describes
+      return F.NIL;
+    }
+    IExpr roots = engine.evaluate(F.Solve(F.Equal(relation, F.C0), u));
+    if (!roots.isListOfLists() || roots.argSize() == 0) {
+      return F.NIL;
+    }
+    IASTAppendable families = F.ListAlloc(roots.argSize());
+    for (int i = 1; i <= roots.argSize(); i++) {
+      IAST rules = (IAST) roots.getAt(i);
+      if (!rules.isList1() || !rules.arg1().isRuleAST() || !rules.arg1().first().equals(u)) {
+        return F.NIL;
+      }
+      IExpr root = rules.arg1().second();
+      if (!root.isFree(u) || !root.isFree(xVar)) {
+        return F.NIL;
+      }
+      families.append(engine.evaluate(F.Plus(F.Times(C_1, xVar), F.subst(root, p, C_1))));
+    }
+    return families;
+  }
+
   private static IExpr solveSingleODEImpl(IExpr equation, IExpr xVar, IAST listOfVariables,
       IExpr C_1, DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
@@ -2602,6 +2643,13 @@ final class DSolveODE {
     if (factoredSol.isPresent()) {
       return factoredSol;
     }
+    // after the factored equations: (x*y'-y)*(y'-1) == 0 is a relation in y-x*y' and y' too, but
+    // the factor y'-1 is a second family, which a root of the relation cannot express
+    IExpr clairautFamilies =
+        clairautRelation(lhs, lhsP, pClairaut, yFunction, head, xVar, C_1, engine);
+    if (clairautFamilies.isPresent()) {
+      return clairautFamilies;
+    }
 
     // The one place which decides whether the equation is linear in the function it is solved
     // for. Reading coefficients off an equation which is not makes the solvers below answer
@@ -2628,6 +2676,12 @@ final class DSolveODE {
           IExpr symmetricSquare = DSolveSymmetricSquare.solve(normalized, xVar, C_1, ctx);
           if (symmetricSquare.isPresent())
             return symmetricSquare;
+        }
+
+        if (n >= 3) {
+          IExpr powerPotential = DSolvePowerPotential.solve(normalized, xVar, C_1, ctx);
+          if (powerPotential.isPresent())
+            return powerPotential;
         }
       }
 
@@ -2718,8 +2772,7 @@ final class DSolveODE {
           // it came from: -y(x) - x*y(x) + (1+x)*y(x) is zero without being written that way, and
           // an unexpanded difference still mentions the unknown, which reads as a forcing term
           // that is not free of it and sends the equation past this method.
-          IExpr freeTerm =
-              engine.evaluate(F.Expand(F.Subtract(rest, F.Times(coeffY, yFunction))));
+          IExpr freeTerm = engine.evaluate(F.Expand(F.Subtract(rest, F.Times(coeffY, yFunction))));
 
           if (freeTerm.isFree(head)) {
             if (!freeTerm.isFree(
@@ -2873,10 +2926,10 @@ final class DSolveODE {
    * The first fitted candidate which solves the equation, or {@link F#NIL}.
    *
    * <p>
-   * The general solution was checked against the equation before it was fitted, and fitting it
-   * does not keep that true: a constant which meets the condition can pick the part of a squared
-   * relation which was never a solution. So the fitted candidate is checked again, in the same
-   * way, and one which the equation refutes is passed over for the next.
+   * The general solution was checked against the equation before it was fitted, and fitting it does
+   * not keep that true: a constant which meets the condition can pick the part of a squared
+   * relation which was never a solution. So the fitted candidate is checked again, in the same way,
+   * and one which the equation refutes is passed over for the next.
    */
   private static IExpr firstSolvingCandidate(IAST candidates, IAST listOfEquations,
       IAST uFunction1Arg, IExpr xVar, EvalEngine engine) {
@@ -2890,7 +2943,7 @@ final class DSolveODE {
   }
 
   /**
-   * The branches which answer the equation, written the way <code>DSolve</code> returns them.  /**
+   * The branches which answer the equation, written the way <code>DSolve</code> returns them. /**
    * The branches which answer the equation, written the way <code>DSolve</code> returns them.
    *
    * @param fitted whether the branches already have the conditions in them, in which case there is
@@ -2898,9 +2951,9 @@ final class DSolveODE {
    * @param bcUnsatisfiable set when a branch was ruled out by the conditions, which is only worth
    *        reporting once no branch is left
    */
-  private static IASTAppendable acceptBranches(IAST roots, IAST listOfEquations,
-      IAST uFunction1Arg, IExpr arg2, IExpr xVar, IAST boundaryConditions, IExpr c_n,
-      boolean fitted, boolean[] bcUnsatisfiable, EvalEngine engine) {
+  private static IASTAppendable acceptBranches(IAST roots, IAST listOfEquations, IAST uFunction1Arg,
+      IExpr arg2, IExpr xVar, IAST boundaryConditions, IExpr c_n, boolean fitted,
+      boolean[] bcUnsatisfiable, EvalEngine engine) {
     IASTAppendable resultList = F.ListAlloc();
     for (int r = 1; r <= roots.argSize(); r++) {
       IExpr root = roots.get(r);
@@ -2921,8 +2974,8 @@ final class DSolveODE {
           }
         } else {
           root = firstSolvingCandidate(
-              fitCandidates(root, uFunction1Arg, xVar, boundaryConditions, engine),
-              listOfEquations, uFunction1Arg, xVar, engine);
+              fitCandidates(root, uFunction1Arg, xVar, boundaryConditions, engine), listOfEquations,
+              uFunction1Arg, xVar, engine);
           if (!root.isPresent()) {
             // Skip this root branch if the BCs cannot be satisfied. A general solution with
             // more than one branch normally has branches which the conditions rule out, so this
@@ -2955,9 +3008,9 @@ final class DSolveODE {
    * With conditions, only a relation which <code>Solve</code> cannot invert is offered. One it can
    * invert comes back as explicit branches, and which of them holds at the point of a condition is
    * the question the explicit path has just failed to answer: the cubic relation of
-   * <code>y'(x) == (2*x + y)/(3 - x + 3*y^2)</code> with <code>y(0) == 0</code> gave a branch
-   * which does not solve the equation. Without conditions every branch of the relation is a
-   * solution, so the inversion is welcome.
+   * <code>y'(x) == (2*x + y)/(3 - x + 3*y^2)</code> with <code>y(0) == 0</code> gave a branch which
+   * does not solve the equation. Without conditions every branch of the relation is a solution, so
+   * the inversion is welcome.
    */
   private static IExpr uninvertibleRelation(IASTAppendable listOfEquations, IExpr arg2, IExpr xVar,
       IAST uFunction1Arg, IExpr c_n, IAST boundaryConditions, EvalEngine engine) {
@@ -3016,7 +3069,7 @@ final class DSolveODE {
           }
           if (temp.isNIL()) {
             // Nothing answers the equation explicitly. Its first integral may still be found, and
-            // the answer is then that relation left for Solve, as Mathematica gives it.
+            // the answer is then that relation left for Solve.
             IExpr answer = uninvertibleRelation(listOfEquations, arg2, xVar, uFunction1Arg, c_n,
                 boundaryConditions, engine);
             if (answer.isPresent()) {
@@ -3060,16 +3113,27 @@ final class DSolveODE {
                 }
               }
             }
-            if (LinearODEForm.highestDerivativeOrder(listOfEquations.arg1(),
-                uFunction1Arg.head(), xVar) == 1) {
+            if (LinearODEForm.highestDerivativeOrder(listOfEquations.arg1(), uFunction1Arg.head(),
+                xVar) == 1) {
               // No branch of the explicit solution passes through the point - the relation the
               // branches were inverted from still does. y(-1/6) == 0 on
               // 2*x + y + (4*x + 2*y + 1)*y' == 0 asks its ProductLog branch for the value -2,
               // which that function does not take, while the relation is satisfied there.
-              IExpr answer = uninvertibleRelation(listOfEquations, arg2, xVar, uFunction1Arg,
-                  c_n, boundaryConditions, engine);
+              IExpr answer = uninvertibleRelation(listOfEquations, arg2, xVar, uFunction1Arg, c_n,
+                  boundaryConditions, engine);
               if (answer.isPresent()) {
                 return answer;
+              }
+            }
+            if (point != null) {
+              // An equilibrium y == y0 can pass through the point although no member of the
+              // general solution does: y' == x^2*y^2, y(1) == 0 is solved by y == 0 alone. The back
+              // substitution in acceptBranches() refuses a constant which doesn't solve the
+              // equation.
+              resultList = acceptBranches(F.list(point[1]), listOfEquations, uFunction1Arg, arg2,
+                  xVar, boundaryConditions, c_n, true, new boolean[1], engine);
+              if (resultList.argSize() > 0) {
+                return resultList;
               }
             }
             ctx.addMessage("bvfail", F.CEmptyList);
@@ -3079,10 +3143,10 @@ final class DSolveODE {
           // branches were inverted from can still be the answer, so ask for it rather than
           // declining here: the equations whose integrating factor is x^p*y^q arrive with an
           // inversion which does not solve them, and their relation does.
-          if (LinearODEForm.highestDerivativeOrder(listOfEquations.arg1(),
-              uFunction1Arg.head(), xVar) == 1) {
-            IExpr answer = uninvertibleRelation(listOfEquations, arg2, xVar, uFunction1Arg,
-                c_n, boundaryConditions, engine);
+          if (LinearODEForm.highestDerivativeOrder(listOfEquations.arg1(), uFunction1Arg.head(),
+              xVar) == 1) {
+            IExpr answer = uninvertibleRelation(listOfEquations, arg2, xVar, uFunction1Arg, c_n,
+                boundaryConditions, engine);
             if (answer.isPresent()) {
               return answer;
             }
@@ -3254,20 +3318,20 @@ final class DSolveODE {
    *
    * <p>
    * The roots of <code>r^4 + 4</code> come back as <code>(-1)^(1/4)*Sqrt(2)</code> and its
-   * relatives. Those are <code>1+I</code>, <code>-1-I</code>, <code>-1+I</code> and <code>1-I</code>,
-   * but the conjugate of one is not recognizably the same number as another in that spelling, so no
-   * pair was found and the basis came out as complex exponentials. A root which is already written
-   * with its real and imaginary parts apart, or which is real, is returned as it is.
+   * relatives. Those are <code>1+I</code>, <code>-1-I</code>, <code>-1+I</code> and
+   * <code>1-I</code>, but the conjugate of one is not recognizably the same number as another in
+   * that spelling, so no pair was found and the basis came out as complex exponentials. A root
+   * which is already written with its real and imaginary parts apart, or which is real, is returned
+   * as it is.
    */
   private static IExpr rectangular(IExpr root, EvalEngine engine) {
     if (root.isFree(x -> x.isPower() && x.base().isMinusOne() && x.exponent().isRational(), true)) {
       return root;
     }
     IExpr expanded = engine.evaluate(F.ComplexExpand(root));
-    if (expanded.isPresent() && expanded.isFree(
-        x -> x.isAST(S.Re) || x.isAST(S.Im) || x.isAST(S.Arg) || x.isAST(S.Abs)
-            || x.isAST(S.ComplexExpand) || (x.isPower() && x.base().isMinusOne()),
-        true)) {
+    if (expanded.isPresent()
+        && expanded.isFree(x -> x.isAST(S.Re) || x.isAST(S.Im) || x.isAST(S.Arg) || x.isAST(S.Abs)
+            || x.isAST(S.ComplexExpand) || (x.isPower() && x.base().isMinusOne()), true)) {
       return expanded;
     }
     return root;
@@ -3321,8 +3385,8 @@ final class DSolveODE {
   }
 
   /**
-   * The coefficient <code>c</code> of an argument which is <code>c*x</code>, or {@link F#NIL} if the
-   * argument is not a multiple of the variable.
+   * The coefficient <code>c</code> of an argument which is <code>c*x</code>, or {@link F#NIL} if
+   * the argument is not a multiple of the variable.
    *
    * <p>
    * A constant term is refused rather than absorbed: <code>Cos(2*x + 1)</code> would need the
@@ -3352,9 +3416,9 @@ final class DSolveODE {
    * <p>
    * Undetermined coefficients reads a forcing term as a power of the variable, an exponential and a
    * cosine or sine. A hyperbolic function is two such terms and not a new kind of one, so
-   * <code>Sinh(x)*Cos(x) - Cosh(x)*Sin(x)</code> is four ordinary terms once it is written out; left
-   * as it was, it made the method decline and handed the equation to variation of parameters, whose
-   * integrals do not close at the fourth order.
+   * <code>Sinh(x)*Cos(x) - Cosh(x)*Sin(x)</code> is four ordinary terms once it is written out;
+   * left as it was, it made the method decline and handed the equation to variation of parameters,
+   * whose integrals do not close at the fourth order.
    */
   private static IExpr hyperbolicAsExponentials(IExpr forcing, IExpr xVar) {
     IExpr rewritten = forcing.replaceAll(f -> {
@@ -3599,11 +3663,10 @@ final class DSolveODE {
 
   /**
    * The equations which say that <code>polynomial</code> vanishes identically: its terms are
-   * gathered by the monomial they carry in <code>atoms</code>, and each of those coefficients has to
-   * be zero.
+   * gathered by the monomial they carry in <code>atoms</code>, and each of those coefficients has
+   * to be zero.
    */
-  private static IAST coefficientEquations(IExpr polynomial, List<IExpr> atoms,
-      EvalEngine engine) {
+  private static IAST coefficientEquations(IExpr polynomial, List<IExpr> atoms, EvalEngine engine) {
     IAST plus = polynomial.isPlus() ? (IAST) polynomial : F.Times(polynomial);
     Map<IExpr, IASTAppendable> byMonomial = new LinkedHashMap<>();
     for (int i = 1; i <= plus.argSize(); i++) {
@@ -3677,7 +3740,8 @@ final class DSolveODE {
     int rewriting = ctx.enterUnrewritten();
     IAST branches;
     try {
-      branches = solveSubODE(F.Equal(engine.evaluate(homogeneous), F.C0), xVar, yFunction, C_1, ctx);
+      branches =
+          solveSubODE(F.Equal(engine.evaluate(homogeneous), F.C0), xVar, yFunction, C_1, ctx);
     } finally {
       ctx.leaveUnrewritten(rewriting);
     }
@@ -3708,9 +3772,132 @@ final class DSolveODE {
     }
     IExpr particular = variationOfParameters(basis, lf, xVar, ctx);
     if (particular.isNIL() || !DSolveContext.isUsable(particular)) {
-      return F.NIL;
+      // The integrals of variation of parameters don't close, but the equation may still have a
+      // rational solution: x^2*y''+x*y'+(x^2-1)*y == x is solved by 1/x.
+      particular = rationalParticularSolution(lf, xVar, engine);
+      if (particular.isNIL()) {
+        return F.NIL;
+      }
     }
     return engine.evaluate(F.Plus(general, particular));
+  }
+
+  /** The number of unknown coefficients the rational particular solution is searched with. */
+  private static final int MAX_RATIONAL_PARTICULAR_UNKNOWNS = 16;
+
+  /**
+   * A rational particular solution <code>N(x)/D(x)</code> of a linear equation whose coefficients
+   * are polynomials and whose forcing is a rational function. A pole of a rational solution can
+   * only be at a zero of the leading coefficient or at a pole of the forcing, so <code>D</code> is
+   * a power of the square-free product of those factors, and <code>N</code> a polynomial whose
+   * coefficients solve the linear equations the substitution leaves.
+   *
+   * <p>
+   * The bounds: a pole of the forcing of order <code>r</code> needs at most order <code>r+n</code>
+   * in the solution's denominator, and <code>L(x^d)</code> has degree <code>d+delta</code> with
+   * <code>delta == Max(Exponent(a(k),x)-k)</code>, so the polynomial part has degree
+   * <code>deg(forcing)-delta</code>, plus <code>n</code> for the degrees where the leading terms
+   * cancel.
+   *
+   * @return {@link F#NIL} if no such solution of the searched degrees exists
+   */
+  private static IExpr rationalParticularSolution(LinearODEForm lf, IExpr xVar, EvalEngine engine) {
+    final int n = lf.order;
+    IAST variables = F.list(xVar);
+    for (int k = 0; k <= n; k++) {
+      if (!lf.a[k].isPolynomial(variables)) {
+        return F.NIL;
+      }
+    }
+    IExpr forcing = engine.evaluate(F.Together(lf.g));
+    IExpr forcingNumerator = engine.evaluate(F.Numerator(forcing));
+    IExpr forcingDenominator = engine.evaluate(F.Denominator(forcing));
+    if (!forcingNumerator.isPolynomial(variables) || !forcingDenominator.isPolynomial(variables)) {
+      return F.NIL;
+    }
+    IExpr poles = engine.evaluate(F.Times(lf.a[n], forcingDenominator));
+    IExpr squareFree =
+        engine.evaluate(F.Cancel(F.Divide(poles, F.PolynomialGCD(poles, F.D(poles, xVar)))));
+    int poleDegree =
+        squareFree.isFree(xVar) ? 0 : engine.evaluate(F.Exponent(squareFree, xVar)).toIntDefault();
+    int forcingDegree = engine.evaluate(F.Exponent(forcingNumerator, xVar)).toIntDefault();
+    int forcingPoleDegree = forcingDenominator.isFree(xVar) ? 0
+        : engine.evaluate(F.Exponent(forcingDenominator, xVar)).toIntDefault();
+    if (poleDegree < 0 || forcingDegree < 0 || forcingPoleDegree < 0) {
+      return F.NIL;
+    }
+    int delta = Integer.MIN_VALUE;
+    for (int k = 0; k <= n; k++) {
+      if (!lf.a[k].isZero()) {
+        int degree =
+            lf.a[k].isFree(xVar) ? 0 : engine.evaluate(F.Exponent(lf.a[k], xVar)).toIntDefault();
+        if (degree < 0) {
+          return F.NIL;
+        }
+        delta = Math.max(delta, degree - k);
+      }
+    }
+    int poleOrder = forcingPoleDegree + n;
+    IExpr denominator =
+        poleDegree == 0 ? F.C1 : engine.evaluate(F.Power(squareFree, F.ZZ(poleOrder)));
+    int numeratorDegree = (poleDegree == 0 ? 0 : poleDegree * poleOrder)
+        + Math.max(0, forcingDegree - forcingPoleDegree - delta) + n;
+    if (numeratorDegree + 1 > MAX_RATIONAL_PARTICULAR_UNKNOWNS) {
+      return F.NIL;
+    }
+    IASTAppendable unknowns = F.ListAlloc(numeratorDegree + 1);
+    IASTAppendable numerator = F.PlusAlloc(numeratorDegree + 1);
+    for (int i = 0; i <= numeratorDegree; i++) {
+      IExpr unknown = F.Dummy("r" + i);
+      unknowns.append(unknown);
+      numerator.append(F.Times(unknown, F.Power(xVar, F.ZZ(i))));
+    }
+    IExpr candidate = F.Divide(numerator, denominator);
+    IASTAppendable residual = F.PlusAlloc(n + 2);
+    for (int k = 0; k <= n; k++) {
+      if (!lf.a[k].isZero()) {
+        residual
+            .append(F.Times(lf.a[k], k == 0 ? candidate : F.D(candidate, F.List(xVar, F.ZZ(k)))));
+      }
+    }
+    residual.append(F.Negate(lf.g));
+    IExpr residualNumerator = engine.evaluate(F.Expand(F.Numerator(F.Together(residual))));
+    IExpr equations = engine.evaluate(F.CoefficientList(residualNumerator, xVar));
+    if (!equations.isList()) {
+      return F.NIL;
+    }
+    IASTAppendable system = F.ListAlloc(equations.argSize());
+    for (int i = 1; i <= equations.argSize(); i++) {
+      system.append(F.Equal(((IAST) equations).get(i), F.C0));
+    }
+    IExpr solutions = engine.evaluate(F.Solve(system, unknowns));
+    if (!solutions.isListOfLists() || solutions.argSize() == 0) {
+      return F.NIL;
+    }
+    // unknowns which the equations leave free belong to a rational solution of the homogeneous
+    // equation, which the general solution already contains
+    IExpr particular = engine.evaluate(F.ReplaceAll(candidate, solutions.first()));
+    IASTAppendable zeros = F.ListAlloc(unknowns.argSize());
+    for (int i = 1; i <= unknowns.argSize(); i++) {
+      zeros.append(F.Rule(unknowns.get(i), F.C0));
+    }
+    final IExpr result = engine.evaluate(F.Together(F.ReplaceAll(particular, zeros)));
+    if (result.isZero() || unknowns.exists(unknown -> !result.isFree(unknown))) {
+      return F.NIL;
+    }
+    particular = result;
+    IASTAppendable check = F.PlusAlloc(n + 2);
+    for (int k = 0; k <= n; k++) {
+      if (!lf.a[k].isZero()) {
+        check
+            .append(F.Times(lf.a[k], k == 0 ? particular : F.D(particular, F.List(xVar, F.ZZ(k)))));
+      }
+    }
+    check.append(F.Negate(lf.g));
+    if (!isVanishing(engine.evaluate(F.Together(check)), engine)) {
+      return F.NIL;
+    }
+    return particular;
   }
 
   /**

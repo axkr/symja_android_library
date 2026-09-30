@@ -905,6 +905,17 @@ public class AssociationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAssociationAssignMissingIntermediateKey() {
+    // WMA: a = <||>; a["k", "s"] = 7 prints Set::kval and leaves the association unchanged
+    check("a=<||>;a[\"k\",\"s\"]=7;a", //
+        "<||>", //
+        "Set: The value for the key k does not exist.");
+    // WMA: a value which isn't an association stays unchanged without a message
+    check("c=<|\"k\"->1|>;c[\"k\",\"s\"]=7;c", //
+        "<|k->1|>");
+  }
+
+  @Test
   public void testAssociationApplication() {
     // an association applied to keys looks up the keys one after another
     check("assoc=<|\"outer\"-><|\"inner\"->8|>|>;assoc[[\"outer\",\"inner\"]]", //

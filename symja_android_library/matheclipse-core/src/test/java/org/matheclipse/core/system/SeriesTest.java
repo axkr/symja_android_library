@@ -9,10 +9,6 @@ public class SeriesTest extends ExprEvaluatorTestCase {
    * A series is an object, not a six element collection, but it answers a size of seven and serves
    * every position, so the generic parts of the engine rearrange and rebuild it. What comes out is
    * then no series at all, and saying so is better than throwing from inside the representation.
-   *
-   * <p>
-   * Mathematica reports the same two complaints, word for word, and returns the malformed
-   * expression rather than a value.
    */
   @Test
   public void testMalformedSeriesData() {
@@ -1999,9 +1995,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // the expansion point and lose the branch, so it stays an explicit summand
     check("1 + Series(ArcTan(x), {x, I, 3}) // InputForm", //
         "SeriesData(x,I,{1+1/4*(Pi+I*2*Log(2)-I*2*Log(-I+x)),1/4,I*1/16,-1/48},0,4,1) + Pi*Floor((Pi/2 - Arg( - I + x))/(2*Pi))");
-    // an infinite expansion point is out of reach of the expansion engine used here
+    // at an infinite expansion point x is expanded in 1/x and absorbed, like in WMA
     check("x + Series(Exp(1/x), {x, Infinity, 3}) // InputForm", //
-        "SeriesData(x,Infinity,{1,1,1/2,1/6},0,4,1) + x");
+        "SeriesData(x,Infinity,{1,1,1,1/2,1/6},-1,4,1)");
   }
 
   /**
@@ -2033,9 +2029,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,0,{1,1,1/3},1,5,1)");
     check("(1+x) * Series(Exp(x), {x, 0, 3}) // InputForm", //
         "SeriesData(x,0,{1,2,3/2,2/3},0,4,1)");
-    // an infinite expansion point is out of reach of the expansion engine used here
+    // at an infinite expansion point x is expanded in 1/x and absorbed, like in WMA
     check("x * Series(Exp(1/x), {x, Infinity, 3}) // InputForm", //
-        "SeriesData(x,Infinity,{1,1,1/2,1/6},0,4,1)*x");
+        "SeriesData(x,Infinity,{1,1,1/2,1/6},-1,3,1)");
     // a shift onto a finer lattice is exact: O(x^a)*x^(p/q) is O(x^(a+p/q)), and the last
     // coefficient used to be dropped along with a whole unit of the truncation order
     check("Sqrt(x) * Series(Exp(x), {x, 0, 3}) // InputForm", //
@@ -2115,5 +2111,79 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // an unrecognized symbolic-index form stays unevaluated
     check("SeriesCoefficient(Exp(x^2), {x, 0, n})", //
         "SeriesCoefficient(E^x^2,{x,0,n})");
+  }
+
+  @Test
+  public void testSeriesThreadsOverListsAndEquations() {
+    // WMA: a list of series, not a series with list coefficients
+    check("Series({Sin(x), Cos(x)}, {x, 0, 2})", //
+        "{x+O(x)^3,1-x^2/2+O(x)^3}");
+    check("Series({{Sin(x)},{Cos(x)}}, {x, 0, 2})", //
+        "{{x+O(x)^3},{1-x^2/2+O(x)^3}}");
+    check("Series(Sin(x) == x, {x, 0, 3})", //
+        "x-x^3/6+O(x)^4==x+O(x)^4");
+    // WMA: a rule is no function of x
+    check("Series(Sin(x) -> x, {x, 0, 3})", //
+        "Series(Sin(x)->x,{x,0,3})");
+    // neither are the other relations and logical functions
+    check("Series(Sin(x) < x, {x, 0, 3})", //
+        "Series(Sin(x)<x,{x,0,3})");
+    check("Series(Sin(x) != x, {x, 0, 2})", //
+        "Series(Sin(x)!=x,{x,0,2})");
+    // an invalid variable leaves the whole call unevaluated
+    check("Series({Sin(x), Cos(x)}, {5, 0, 2})", //
+        "Series({Sin(x),Cos(x)},{5,0,2})", //
+        "Series: 5 is not a valid variable.");
+  }
+
+  @Test
+  public void testSeriesAtInfinityOfUnknownFunctions() {
+    // WMA: Series(f(x), {x, Infinity, 2}) == f(x)
+    check("Series(f(x), {x, Infinity, 2})", //
+        "f(x)");
+    // WMA: E^SeriesData(x,Infinity,{1},-1,4,1) and Sin(SeriesData(x,Infinity,{1},-1,4,1))
+    check("Series(Exp(x), {x, Infinity, 3})", //
+        "E^(x+O(1/x)^4)");
+    check("Series(Sin(x), {x, Infinity, 3})", //
+        "Sin(x+O(1/x)^4)");
+  }
+
+  @Test
+  public void testSeriesArithmeticAtInfinity() {
+    // terms depending on x are absorbed into a series at infinity
+    check("Series(ArcTan(x), {x, Infinity, 3}) + 1/x^2", //
+        "Pi/2-1/x+1/x^2+1/(3*x^3)+O(1/x)^4");
+    check("Series(ArcTan(x), {x, Infinity, 3}) * x", //
+        "1/2*Pi*x-1+1/(3*x^2)+O(1/x)^3");
+    check("Series(ArcTan(x), {x, Infinity, 3}) * Sin(1/x)", //
+        "Pi/(2*x)-1/x^2-Pi/(12*x^3)+1/(2*x^4)+O(1/x)^5");
+  }
+
+  @Test
+  public void testSeriesStirling() {
+    // WMA: SeriesData(x,Infinity,{-1+Log(x),(Log(2*Pi)-Log(x))/2,1/12,0,-1/360},-1,4,1)
+    check("Series(LogGamma(x), {x, Infinity, 3})", //
+        "(-1+Log(x))*x+1/2*(Log(2*Pi)-Log(x))+1/(12*x)-1/(360*x^3)+O(1/x)^4");
+    // WMA: E^SeriesData(x,Infinity,{-1+Log(x)},-1,4,1) *
+    // SeriesData(x,Infinity,{Sqrt(2*Pi),0,Sqrt(Pi/2)/6,0,Sqrt(Pi/2)/144},1,7,2)
+    check("Series(Gamma(x), {x, Infinity, 3}) // InputForm", //
+        "SeriesData(x,Infinity,{Sqrt(2*Pi),0,Sqrt(2*Pi)/12,0,Sqrt(2*Pi)/288},1,7,2)*E^SeriesData(x,Infinity,{-1+Log(x)},-1,4,1)");
+    // WMA: the same series times x, from (1/x)^(-1/2) to O(1/x)^(5/2)
+    check("Series(x!, {x, Infinity, 2}) // InputForm", //
+        "SeriesData(x,Infinity,{Sqrt(2*Pi),0,Sqrt(2*Pi)/12,0,Sqrt(2*Pi)/288},-1,5,2)*E^SeriesData(x,Infinity,{-1+Log(x)},-1,3,1)");
+    // WMA: SeriesData(x,Infinity,{1},-2,8,2)
+    check("Series(Gamma(x + 1)/Gamma(x), {x, Infinity, 3})", //
+        "x+O(1/x)^4");
+    check("Series(Gamma(x + 2)/Gamma(x), {x, Infinity, 3})", //
+        "x^2+x+O(1/x)^4");
+    // order 0 keeps the leading term
+    check("Series(Gamma(x), {x, Infinity, 0}) // InputForm", //
+        "SeriesData(x,Infinity,{Sqrt(2*Pi)},1,3,2)*E^SeriesData(x,Infinity,{-1+Log(x)},-1,1,1)");
+    // a rational shift of the argument: DLMF 5.11.8 with BernoulliB(k+1,1/2)
+    check("Series(LogGamma(x+1/2), {x, Infinity, 3})", //
+        "(-1+Log(x))*x+Log(2*Pi)/2-1/(24*x)+7/(2880*x^3)+O(1/x)^4");
+    check("Series(Gamma(x+1/2), {x, Infinity, 2}) // InputForm", //
+        "SeriesData(x,Infinity,{Sqrt(2*Pi),0,-Sqrt(2*Pi)/24,0,Sqrt(2*Pi)/1152},0,5,2)*E^SeriesData(x,"
+            + "Infinity,{-1+Log(x)},-1,3,1)");
   }
 }

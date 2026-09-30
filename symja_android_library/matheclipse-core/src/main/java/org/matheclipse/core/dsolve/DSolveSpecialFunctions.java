@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 
 /**
@@ -62,6 +63,9 @@ final class DSolveSpecialFunctions {
     }
     if (basis == null) {
       basis = besselNormalForm(p, q, xVar, engine);
+    }
+    if (basis == null) {
+      basis = besselTwoPowers(p, q, yFunction, xVar, engine);
     }
     if (basis == null) {
       // After the Bessel rows, whose potential has no 1/x term and so cannot be this, and before
@@ -412,6 +416,86 @@ final class DSolveSpecialFunctions {
             F.Times(root, F.BesselK(nu, argument))}
         : new IExpr[] {F.Times(root, F.BesselJ(nu, argument)),
             F.Times(root, F.BesselY(nu, argument))};
+  }
+
+  /**
+   * <code>y'' == (A*x^m + B/x^2)*y</code>, which is Bessel's equation of order
+   * <code>Sqrt(1+4*B)/(m+2)</code> in the variable <code>x^((m+2)/2)</code>. The row
+   * {@link #besselPurePower} is the case <code>B == 0</code> and {@link #besselNormalForm} the
+   * case <code>m == 0</code>.
+   */
+  private static IExpr[] besselTwoPowers(IExpr p, IExpr q, IExpr yFunction, IExpr xVar,
+      EvalEngine engine) {
+    if (!p.isZero()) {
+      return null;
+    }
+    // the potential Q == -q == A*x^m + B*x^(-2)
+    IExpr potential = engine.evaluate(F.Expand(F.Negate(q)));
+    if (!potential.isPlus() || potential.argSize() != 2) {
+      return null;
+    }
+    IAST terms = (IAST) potential;
+    IExpr[] first = powerTerm(terms.arg1(), xVar, engine);
+    IExpr[] second = powerTerm(terms.arg2(), xVar, engine);
+    if (first == null || second == null) {
+      return null;
+    }
+    IExpr[] power;
+    IExpr b;
+    if (second[1].equals(F.CN2) && !first[1].equals(F.CN2)) {
+      power = first;
+      b = second[0];
+    } else if (first[1].equals(F.CN2) && !second[1].equals(F.CN2)) {
+      power = second;
+      b = first[0];
+    } else {
+      return null;
+    }
+    IAST residuals = F.list(engine.evaluate(
+        F.Subtract(F.D(yFunction, F.list(xVar, F.C2)), F.Times(potential, yFunction))));
+    if (power[1].isOne() && b.equals(F.QQ(3, 4))) {
+      // order 2/3 in 2/3*x^(3/2) is Airy's derivative, like in WMA: y'' == (A*x+3/(4*x^2))*y is
+      // solved by AiryAiPrime(A^(1/3)*x)/Sqrt(x) and AiryBiPrime(A^(1/3)*x)/Sqrt(x)
+      IExpr argument = engine.evaluate(F.Times(F.Power(power[0], F.QQ(1, 3)), xVar));
+      IExpr root = F.Power(xVar, F.CN1D2);
+      IExpr[] basis = new IExpr[] {engine.evaluate(F.Times(root, F.AiryAiPrime(argument))),
+          engine.evaluate(F.Times(root, F.AiryBiPrime(argument)))};
+      for (int i = 0; i < 2; i++) {
+        if (!DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, basis[i], engine)) {
+          return null;
+        }
+      }
+      return basis;
+    }
+    IExpr shifted = engine.evaluate(F.Plus(power[1], F.C2));
+    int sign = numericSign(power[0], engine);
+    if (!shifted.isNumber() || shifted.isZero() || power[1].isZero() || sign == 0) {
+      return null;
+    }
+    IExpr magnitude = engine.evaluate(sign > 0 ? power[0] : F.Negate(power[0]));
+    IExpr scale = engine.evaluate(F.Abs(F.Divide(shifted, F.C2)));
+    IExpr nu = engine.evaluate(
+        F.Divide(F.Sqrt(F.Plus(F.C1, F.Times(F.C4, b))), F.Abs(shifted)));
+    IExpr twiceNu = engine.evaluate(F.Times(F.C2, nu));
+    if (twiceNu.isInteger() && ((IInteger) twiceNu).isOdd()) {
+      // Bessel functions of half-integer order are elementary: y'' == (x/4+5/(16*x^2))*y is
+      // x^(-1/4)*E^(+-x^(3/2)/3), which Kovacic's algorithm writes without the Bessel detour
+      return null;
+    }
+    IExpr argument = engine.evaluate(F.Times(F.Divide(F.Sqrt(magnitude), scale),
+        F.Power(xVar, F.Divide(shifted, F.C2))));
+    IExpr root = F.Sqrt(xVar);
+    IExpr[] basis = sign > 0 //
+        ? new IExpr[] {engine.evaluate(F.Times(root, F.BesselI(nu, argument))),
+            engine.evaluate(F.Times(root, F.BesselK(nu, argument)))}
+        : new IExpr[] {engine.evaluate(F.Times(root, F.BesselJ(nu, argument))),
+            engine.evaluate(F.Times(root, F.BesselY(nu, argument)))};
+    for (int i = 0; i < 2; i++) {
+      if (!DSolveVerify.acceptODEStrict(residuals, yFunction, xVar, basis[i], engine)) {
+        return null;
+      }
+    }
+    return basis;
   }
 
   /** Kummer's equation <code>x*y'' + (b - x)*y' - a*y == 0</code>. */
@@ -889,6 +973,9 @@ final class DSolveSpecialFunctions {
       }
       if (reduced == null) {
         reduced = besselNormalForm(F.C0, potential, xVar, engine);
+      }
+      if (reduced == null) {
+        reduced = besselTwoPowers(F.C0, potential, yFunction, xVar, engine);
       }
       if (reduced == null) {
         reduced = weber(F.C0, potential, xVar, engine);

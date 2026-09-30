@@ -860,7 +860,7 @@ public class ApfloatNum implements INum {
     } catch (ArithmeticException aex) {
       // java.lang.ArithmeticException: Result would be complex
     }
-    return F.complexNum(h().ellipticE(apcomplexValue()));
+    return F.complexNum(h().ellipticK(apcomplexValue()));
   }
 
   @Override

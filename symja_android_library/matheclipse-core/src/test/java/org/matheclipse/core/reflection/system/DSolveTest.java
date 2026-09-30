@@ -535,8 +535,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // equation was declined although its homogeneous part was solved a moment before.
     check("DSolve(y''(x) + 4*x*y'(x) + (4*x^2 + 2)*y(x) == 8*E^(-x*(x + 2)), y(x), x)", //
         "{{y(x)->2/E^(2*x+x^2)+C(1)/E^x^2+(x*C(2))/E^x^2}}");
-    check("Simplify(D(2*E^(-x*(x + 2)), {x, 2}) + 4*x*D(2*E^(-x*(x + 2)), x)"
-        + " + (4*x^2 + 2)*2*E^(-x*(x + 2)) - 8*E^(-x*(x + 2)))", //
+    check(
+        "Simplify(D(2*E^(-x*(x + 2)), {x, 2}) + 4*x*D(2*E^(-x*(x + 2)), x)"
+            + " + (4*x^2 + 2)*2*E^(-x*(x + 2)) - 8*E^(-x*(x + 2)))", //
         "0");
     // a second equation of the same shape, whose homogeneous basis is (C(1) + C(2)*x)*E^(-x^2/2)
     check("DSolve(y''(x) + 2*x*y'(x) + (x^2 + 1)*y(x) == E^(-x^2/2 - x), y(x), x)", //
@@ -591,20 +592,19 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testDSolveImplicitSolution() {
-    // A first integral which does not solve for y is the answer, left for Solve, which is what
-    // Mathematica returns for these: Solve[E^y[x] + x Log[y[x]] + Sin[x] == C[1], y[x]].
     check("DSolve(Cos(x) + Log(y(x)) + (x/y(x) + E^y(x))*y'(x) == 0, y(x), x)", //
         "Solve(E^y(x)+x*Log(y(x))+Sin(x)==C(1),y(x))");
-    // with a condition the constant is named in the relation, as Mathematica does:
+    // with a condition the constant is named in the relation:
     // Solve[E^y[x] + x*Log[y[x]] + Sin[x] == E + Sin[1], y[x]]
     check("DSolve({Cos(x) + Log(y(x)) + (x/y(x) + E^y(x))*y'(x) == 0, y(1) == 1}, y(x), x)", //
         "Solve(E^y(x)+x*Log(y(x))+Sin(x)==E+Sin(1),y(x))");
-    // homogeneous: the relation Mathematica gives, with Log(x) on the other side
+    // homogeneous: the relation with Log(x) on the other side
     check("DSolve((x - y(x))*y'(x) == x + y(x), y(x), x)", //
         "Solve(-ArcTan(y(x)/x)+Log(x)+Log(1+y(x)^2/x^2)/2==C(1),y(x))");
     // The relation is a first integral: along it y' == -G_x/G_y, which solves the equation.
-    check("With({g=E^Y + x*Log(Y) + Sin(x)}, Simplify((Cos(x) + Log(Y) + (x/Y + E^Y)*"
-        + "(-D(g, x)/D(g, Y)))))", //
+    check(
+        "With({g=E^Y + x*Log(Y) + Sin(x)}, Simplify((Cos(x) + Log(Y) + (x/Y + E^Y)*"
+            + "(-D(g, x)/D(g, Y)))))", //
         "0");
     // an equation which is answered explicitly still is
     check("DSolve(y'(x) == 2*x*y(x), y(x), x)", //
@@ -660,8 +660,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(-y(x)^2+(y(x)*x-x^2)*y'(x)==0, y(x), x)", //
         "{{y(x)->-x*ProductLog(-1/(E^C(1)*x))}}");
     // the relation is a first integral: along it y' == -G_x/G_y solves the equation
-    check("With({g=(2*(x^(3/2)*Y+x^(5/2)*Y^3/5))/Sqrt(Y)}, Simplify(Y*3+x*Y^3+(x+x^2*Y^2)*"
-        + "(-D(g,x)/D(g,Y))))", //
+    check(
+        "With({g=(2*(x^(3/2)*Y+x^(5/2)*Y^3/5))/Sqrt(Y)}, Simplify(Y*3+x*Y^3+(x+x^2*Y^2)*"
+            + "(-D(g,x)/D(g,Y))))", //
         "0");
   }
 
@@ -669,9 +670,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   public void testDSolveSecantForcingWithASymbolicFrequency() {
     // y'' + a^2*y == Sec(a*x) answered ComplexInfinity: the variation of parameters integral
     // E^(-I*a*x)*Sec(a*x) was read as the degenerate case of two different frequencies.
-    check("With({s=DSolve(y''(x)+a^2*y(x)==Sec(a*x), y(x), x)}, Head(s)===List && "
-        + "Chop(N(D(y(x) /. s[[1]],{x,2})+a^2*(y(x) /. s[[1]])-Sec(a*x) /. "
-        + "{a->3/7, C(1)->2/5, C(2)->3/11, x->7/10}))===0)", //
+    check(
+        "With({s=DSolve(y''(x)+a^2*y(x)==Sec(a*x), y(x), x)}, Head(s)===List && "
+            + "Chop(N(D(y(x) /. s[[1]],{x,2})+a^2*(y(x) /. s[[1]])-Sec(a*x) /. "
+            + "{a->3/7, C(1)->2/5, C(2)->3/11, x->7/10}))===0)", //
         "True");
     // the same equation with a number for the frequency was always answered
     check("DSolve(y''(x)+y(x)==Sec(x), y(x), x)", //
@@ -711,9 +713,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y''(x) + x^n*y(x) == 0, y(x), x)", //
         "{{y(x)->Sqrt(x)*BesselJ(1/(2+n),(2*x^(1+n/2))/(2+n))*C(1)+Sqrt(x)*BesselY(1/(2+n),(\n"
             + "2*x^(1+n/2))/(2+n))*C(2)}}");
-    check("With({s=DSolve(y''(x) + a*x^k*y(x) == 0, y, x)}, Head(s)===List && "
-        + "Chop(N((y''(x) + a*x^k*y(x)) /. s[[1]] /. "
-        + "{a->-1, k->3, C(1)->9/10, C(2)->11/10, x->4/5}))===0)", //
+    check(
+        "With({s=DSolve(y''(x) + a*x^k*y(x) == 0, y, x)}, Head(s)===List && "
+            + "Chop(N((y''(x) + a*x^k*y(x)) /. s[[1]] /. "
+            + "{a->-1, k->3, C(1)->9/10, C(2)->11/10, x->4/5}))===0)", //
         "True");
     // a number for the exponent keeps the modified Bessel form where the potential grows
     check("DSolve(y''(x) - x^4*y(x) == 0, y(x), x)", //
@@ -723,14 +726,16 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testDSolveTwoTermPowerPotential() {
     // y'' + (A*x^(2*m) + B*x^(m-1))*y == 0 is Whittaker's equation in x^(m+1)
-    check("With({s=DSolve(y''(x) + (x^4 + x)*y(x) == 0, y, x)}, Head(s)===List && "
-        + "Chop(N((y''(x) + (x^4 + x)*y(x)) /. s[[1]] /. "
-        + "{C(1)->6/5, C(2)->7/10, x->7/10}))===0)", //
+    check(
+        "With({s=DSolve(y''(x) + (x^4 + x)*y(x) == 0, y, x)}, Head(s)===List && "
+            + "Chop(N((y''(x) + (x^4 + x)*y(x)) /. s[[1]] /. "
+            + "{C(1)->6/5, C(2)->7/10, x->7/10}))===0)", //
         "True");
     // with symbols for both coefficients and the exponent
-    check("With({s=DSolve(y''(x) + (a*x^(2*k) + b*x^(k-1))*y(x) == 0, y, x)}, "
-        + "Head(s)===List && Chop(N((y''(x) + (a*x^(2*k) + b*x^(k-1))*y(x)) /. s[[1]] /. "
-        + "{a->-1, b->2, k->3, C(1)->6/5, C(2)->7/10, x->7/10}))===0)", //
+    check(
+        "With({s=DSolve(y''(x) + (a*x^(2*k) + b*x^(k-1))*y(x) == 0, y, x)}, "
+            + "Head(s)===List && Chop(N((y''(x) + (a*x^(2*k) + b*x^(k-1))*y(x)) /. s[[1]] /. "
+            + "{a->-1, b->2, k->3, C(1)->6/5, C(2)->7/10, x->7/10}))===0)", //
         "True");
   }
 
@@ -753,8 +758,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // A step or a piecewise forcing term used to be given to the first order linear method, whose
     // integral of E^t times it does not close; the failure was returned and the Laplace transform
     // was never asked. Its closed interval 0 <= t <= 1 is also one the transform did not read.
-    check("DSolve({y'(t) + y(t) == Piecewise({{2, 0 <= t <= 1}, {0, 1 < t}}, 0), y(0) == 0},"
-        + " y(t), t)", //
+    check(
+        "DSolve({y'(t) + y(t) == Piecewise({{2, 0 <= t <= 1}, {0, 1 < t}}, 0), y(0) == 0},"
+            + " y(t), t)", //
         "{{y(t)->2-2/E^t-2*HeavisideTheta(-1+t)+2*E^(1-t)*HeavisideTheta(-1+t)}}");
     // 2*(1 - E^(-t)) up to t == 1 and 2*(E - 1)*E^(-t) after
     check("With({s=DSolve({y'(t) + y(t) == Piecewise({{2, 0 <= t <= 1}, {0, 1 < t}}, 0),"
@@ -798,8 +804,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
   /** {@link #checkResidual} for an equation in <code>t</code>. */
   private void checkResidualIn(String equation, String residual, String point) {
-    check("With({s=DSolve(" + equation + ", y, t)}, Head(s)===List && Abs(N((" + residual
-        + ") /. s[[1]] /. " + point + ")) < 10^-6)", //
+    check(
+        "With({s=DSolve(" + equation + ", y, t)}, Head(s)===List && Abs(N((" + residual
+            + ") /. s[[1]] /. " + point + ")) < 10^-6)", //
         "True");
   }
 
@@ -921,13 +928,15 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // equation and meet the condition.
     checkResidual("{y'(x) == (3*x^2 + 1)/(-6*y(x) + 3*y(x)^2), y(0) == 1}", //
         "y'(x) - (3*x^2 + 1)/(-6*y(x) + 3*y(x)^2)", "{x->7/10}");
-    check("With({s = DSolve({y'(x) == (3*x^2 + 1)/(-6*y(x) + 3*y(x)^2), y(0) == 1}, y, x)},"
-        + " Abs(N((y(0) /. s[[1]]) - 1)) < 10^-6)", //
+    check(
+        "With({s = DSolve({y'(x) == (3*x^2 + 1)/(-6*y(x) + 3*y(x)^2), y(0) == 1}, y, x)},"
+            + " Abs(N((y(0) /. s[[1]]) - 1)) < 10^-6)", //
         "True");
     checkResidual("{y'(x) == 3*x^2/(-4 + 3*y(x)^2), y(1) == 0}", //
         "y'(x) - 3*x^2/(-4 + 3*y(x)^2)", "{x->13/10}");
-    check("With({s = DSolve({y'(x) == 3*x^2/(-4 + 3*y(x)^2), y(1) == 0}, y, x)},"
-        + " Abs(N(y(1) /. s[[1]])) < 10^-6)", //
+    check(
+        "With({s = DSolve({y'(x) == 3*x^2/(-4 + 3*y(x)^2), y(1) == 0}, y, x)},"
+            + " Abs(N(y(1) /. s[[1]])) < 10^-6)", //
         "True");
     // the general solution is unchanged: it keeps its constant, and both branches of it
     check("Length(DSolve(y'(x) == 3*x^2/(-4 + 3*y(x)^2), y(x), x))", //
@@ -940,11 +949,13 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // answer such a system without mentioning a constant which one condition fixes on its own
     // (y(0) == 0 makes C(1) == 0 outright). What it left out is asked about again, rather than the
     // whole problem being refused as unfitted.
-    check("DSolve({Derivative(4)[y][x]+8*y''(x)+16*y(x)==0, y(0)==0, y'(0)==0, y''(0)==0, "
-        + "Derivative(3)[y][0]==1}, y(x), x)", //
+    check(
+        "DSolve({Derivative(4)[y][x]+8*y''(x)+16*y(x)==0, y(0)==0, y'(0)==0, y''(0)==0, "
+            + "Derivative(3)[y][0]==1}, y(x), x)", //
         "{{y(x)->1/16*(-2*x*Cos(2*x)+Sin(2*x))}}");
-    check("DSolve({Derivative(4)[y][x]+2*y''(x)+y(x)==E^(2*x), y(0)==0, y'(0)==0, y''(0)==0, "
-        + "Derivative(3)[y][0]==0}, y(x), x)", //
+    check(
+        "DSolve({Derivative(4)[y][x]+2*y''(x)+y(x)==E^(2*x), y(0)==0, y'(0)==0, y''(0)==0, "
+            + "Derivative(3)[y][0]==0}, y(x), x)", //
         "{{y(x)->1/50*(2*E^(2*x)-2*Cos(x)+10*x*Cos(x)-14*Sin(x)-5*x*Sin(x))}}");
     // the shapes which already worked are unchanged
     check("DSolve({y''(x)+4*y(x)==0, y(0)==1, y'(0)==0}, y(x), x)", //
@@ -984,9 +995,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * Variation of parameters answers this one too, but it spends a minute and a half on the integrals
-   * of its basis against the forcing function -- the integrands send a zero test inside the
-   * integration into a factorization over the Gaussian rationals -- and the answer it produces
+   * Variation of parameters answers this one too, but it spends a minute and a half on the
+   * integrals of its basis against the forcing function -- the integrands send a zero test inside
+   * the integration into a factorization over the Gaussian rationals -- and the answer it produces
    * carries eleven terms where four will do.
    */
   @Test
@@ -1236,8 +1247,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // The coefficients here become rational in t == Tan(x), and the solution in t carries
     // ArcTan(t); putting Tan(x) back left ArcTan(Tan(x)) standing, which is a sawtooth rather than
     // the x it stands for, and no method after this one could work with it.
-    check("FreeQ(DSolve(Sin(x)*y''(x) + (2*Sin(x) - Cos(x))*y'(x) + (Sin(x) - Cos(x))*y(x) == 0,"
-        + " y(x), x), ArcTan)", //
+    check(
+        "FreeQ(DSolve(Sin(x)*y''(x) + (2*Sin(x) - Cos(x))*y'(x) + (Sin(x) - Cos(x))*y(x) == 0,"
+            + " y(x), x), ArcTan)", //
         "True");
     checkResidual("Sin(x)*y''(x) + (2*Sin(x) - Cos(x))*y'(x) + (Sin(x) - Cos(x))*y(x) == 0", //
         "Sin(x)*y''(x) + (2*Sin(x) - Cos(x))*y'(x) + (Sin(x) - Cos(x))*y(x)",
@@ -1298,8 +1310,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     checkResidual("y''(x) + (-1/4 + 2/x - 3/(4*x^2))*y(x) == 0", //
         "y''(x) + (-1/4 + 2/x - 3/(4*x^2))*y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
     // and the two of them are a basis rather than one solution twice
-    check("N(Wronskian({x^(3/2)*Hypergeometric1F1(-1/2,3,x)/E^(x/2),"
-        + " x^(3/2)*HypergeometricU(-1/2,3,x)/E^(x/2)}, x) /. x -> 13/10) != 0", //
+    check(
+        "N(Wronskian({x^(3/2)*Hypergeometric1F1(-1/2,3,x)/E^(x/2),"
+            + " x^(3/2)*HypergeometricU(-1/2,3,x)/E^(x/2)}, x) /. x -> 13/10) != 0", //
         "True");
 
     // A potential which is a simple pole and a constant is this equation with the double pole
@@ -1340,15 +1353,16 @@ public class DSolveTest extends ExprEvaluatorTestCase {
             + " Integrate)", //
         "True");
 
-    // one finite singular point is a confluent equation, which the rows above answer, and this
-    // one is not asked about it
-    check("Head(DSolve(x^2*y''(x) + x*y'(x) + (x^3-1)*y(x) == 0, y(x), x))", //
-        "DSolve");
+    // one finite singular point is a confluent equation, which the rows above answer and this one
+    // is not asked about; its normal form is y'' == (-x + 3/(4*x^2))*y, whose solutions WMA writes
+    // with the derivatives of Airy's functions
+    check("DSolve(x^2*y''(x) + x*y'(x) + (x^3-1)*y(x) == 0, y(x), x)", //
+        "{{y(x)->(AiryAiPrime((-1)^(1/3)*x)*C(1))/x+(AiryBiPrime((-1)^(1/3)*x)*C(2))/x}}");
   }
 
   /**
-   * The same equation with singular points which are irrational, which used to be refused before the
-   * change of variable was even tried.
+   * The same equation with singular points which are irrational, which used to be refused before
+   * the change of variable was even tried.
    */
   @Test
   @Tag(TestTags.SLOW)
@@ -1362,9 +1376,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     checkResidual("(3*x^2 + 1)*y''(x) - 2*x*y'(x) + 4*y(x) == 0", //
         "(3*x^2 + 1)*y''(x) - 2*x*y'(x) + 4*y(x)", "{C(1)->3/7, C(2)->5/11, x->13/10}");
     // an initial value problem, with the conditions met
-    check("With({s=DSolve({(x^2 + 2)*y''(x) - x*y'(x) + 4*y(x) == 0, y(0) == -1, y'(0) == 3},"
-        + " y(x), x)}, Abs(N(y(x) /. s[[1]] /. x -> 0) + 1) < 10^-6"
-        + " && Abs(N(D(y(x) /. s[[1]], x) /. x -> 0) - 3) < 10^-6)", //
+    check(
+        "With({s=DSolve({(x^2 + 2)*y''(x) - x*y'(x) + 4*y(x) == 0, y(0) == -1, y'(0) == 3},"
+            + " y(x), x)}, Abs(N(y(x) /. s[[1]] /. x -> 0) + 1) < 10^-6"
+            + " && Abs(N(D(y(x) /. s[[1]], x) /. x -> 0) - 3) < 10^-6)", //
         "True");
   }
 
@@ -1385,9 +1400,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     checkResidual("(x^2 + 1)*y''(x) + x*y'(x) + y(x) == 0", //
         "(x^2 + 1)*y''(x) + x*y'(x) + y(x)", "{C(1)->3/7, C(2)->5/11, x->-23/10}");
     // and the two of them are a basis rather than one solution twice
-    check("With({b=DSolve((x^2 + 1)*y''(x) + x*y'(x) + y(x) == 0, y(x), x)[[1]]},"
-        + " N(Wronskian({y(x) /. b /. {C(1)->1, C(2)->0}, y(x) /. b /. {C(1)->0, C(2)->1}}, x)"
-        + " /. x -> 13/10) != 0)", //
+    check(
+        "With({b=DSolve((x^2 + 1)*y''(x) + x*y'(x) + y(x) == 0, y(x), x)[[1]]},"
+            + " N(Wronskian({y(x) /. b /. {C(1)->1, C(2)->0}, y(x) /. b /. {C(1)->0, C(2)->1}}, x)"
+            + " /. x -> 13/10) != 0)", //
         "True");
     // an equation whose poles are real is still checked between them
     check("DSolve(x*(x - 1)*y''(x) + (3*x - 1)*y'(x) + y(x) == 0, y(x), x)", //
@@ -2101,13 +2117,14 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   public void testDSolveDeclinesInsteadOfAnswering() {
     // The first order solvers used to be offered this, and answered from the part of it they could
     // read, which produced an expression containing y''(x) itself. It has an answer of its own now:
-    // (x*y)'' is x*y'' + 2*y', so this is w'' - w == Sin(x) in w == x*y, and variation of parameters
+    // (x*y)'' is x*y'' + 2*y', so this is w'' - w == Sin(x) in w == x*y, and variation of
+    // parameters
     // on the homogeneous basis E^(+-x)/x gives the particular solution -Sin(x)/(2*x).
     check("DSolve(x*y''(x) + 2*y'(x) - x*y(x) == Sin(x), y(x), x)", //
         "{{y(x)->C(1)/(E^x*x)+(E^x*C(2))/x-Sin(x)/(2*x)}}");
 
     // The second integration is elliptic, so this has no solution in elementary terms; the answer
-    // is the relation with that integral inert, as Mathematica gives it.
+    // is the relation with that integral inert.
     check("DSolve(y''(x) == y(x)^2 + 1, y(x), x)", //
         "Solve(Inactive(Integrate)[1/(Sqrt(2)*Sqrt(C(1)+K(1)+K(1)^3/3)),{K(1),1,y(x)}]^2==(x+C(\n"
             + "2))^2,y(x))");
@@ -2379,8 +2396,8 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   /**
    * An autonomous equation of the third order, reduced by p == y'(y) to one of the second order in
    * p(y) and then to the separable y' == p(y). Where that quadrature is not elementary the answer
-   * is the relation it gives, with the integral inert, as in Mathematica; the constants of p come
-   * first and the one of the quadrature last.
+   * is the relation it gives, with the integral inert; the constants of p come first and the one of
+   * the quadrature last.
    */
   @Test
   public void testDSolveAutonomousThirdOrder() {
@@ -2415,9 +2432,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * The antiderivative of 1/Sqrt(y^2 + a) with a parameter in it comes as
-   * ArcTanh(y/Sqrt(a + y^2)), or as the two logarithms it stands for, which nothing inverted; the
-   * ArcSinh(y/Sqrt(a)) it equals is inverted at once.
+   * The antiderivative of 1/Sqrt(y^2 + a) with a parameter in it comes as ArcTanh(y/Sqrt(a + y^2)),
+   * or as the two logarithms it stands for, which nothing inverted; the ArcSinh(y/Sqrt(a)) it
+   * equals is inverted at once.
    */
   @Test
   public void testDSolveSeparableRadicalWithParameter() {
@@ -2445,5 +2462,84 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{p(Y)->-Sqrt(Y^2*C(1)-C(2))},{p(Y)->Sqrt(Y^2*C(1)-C(2))}}");
     check("DSolve(q''(t) + q'(t)^2/q(t) - q'(t)/t == 0, q(t), t)", //
         "{{q(t)->E^C(1)*Sqrt(t^2+C(2))}}");
+  }
+
+  @Test
+  public void testDSolveEquilibriumThroughThePoint() {
+    // WMA: {{y(x)->0}} - no member of the family 1/(-x^3/3-C(1)) takes the value 0
+    check("DSolve({y'(x) == x^2*y(x)^2, y(1) == 0}, y(x), x)", //
+        "{{y(x)->0}}");
+    check("DSolve({y'(x) == x^2*y(x)^2, y(1) == 2}, y(x), x)", //
+        "{{y(x)->6/(5-2*x^3)}}");
+  }
+
+  @Test
+  public void testDSolveClairautRelation() {
+    // WMA: {{y[x] -> x C[1] - Sqrt[1 + C[1]^2]}, {y[x] -> x C[1] + Sqrt[1 + C[1]^2]}}
+    check("DSolve((y(x) - x*y'(x))^2 == 1 + y'(x)^2, y(x), x)", //
+        "{{y(x)->x*C(1)-Sqrt(1+C(1)^2)},{y(x)->x*C(1)+Sqrt(1+C(1)^2)}}");
+  }
+
+  @Test
+  public void testDSolveGeneralizedAiry() {
+    // WMA: C[1] HypergeometricPFQ[{}, {1/2, 3/4}, x^4/64] + ..., constant factors absorbed
+    check("DSolve(y'''(x) == x*y(x), y(x), x)", //
+        "{{y(x)->C(1)*HypergeometricPFQ({},{1/2,3/4},x^4/64)+x*C(2)*HypergeometricPFQ({},{\n"
+            + "3/4,5/4},x^4/64)+x^2*C(3)*HypergeometricPFQ({},{5/4,3/2},x^4/64)}}");
+    check("DSolve(y''''(x) == x*y(x), y(x), x)", //
+        "{{y(x)->C(1)*HypergeometricPFQ({},{2/5,3/5,4/5},x^5/625)+x*C(2)*HypergeometricPFQ({},{\n"
+            + "3/5,4/5,6/5},x^5/625)+x^2*C(3)*HypergeometricPFQ({},{4/5,6/5,7/5},x^5/625)+x^3*C(\n"
+            + "4)*HypergeometricPFQ({},{6/5,7/5,8/5},x^5/625)}}");
+    // WMA returns {}
+    check("DSolve(y'''(x) == k*x^2*y(x), y(x), x)", //
+        "{{y(x)->C(1)*HypergeometricPFQ({},{3/5,4/5},1/125*k*x^5)+x*C(2)*HypergeometricPFQ({},{\n"
+            + "4/5,6/5},1/125*k*x^5)+x^2*C(3)*HypergeometricPFQ({},{6/5,7/5},1/125*k*x^5)}}");
+    // the truncated series of a basis function leaves only the truncation term
+    check(
+        "s = Normal(Series(x^2*HypergeometricPFQ({},{5/4,3/2},x^4/64), {x, 0, 20})); "
+            + "Expand(D(s,{x,3}) - x*s)", //
+        "-x^19/923863449600");
+  }
+
+  @Test
+  public void testDSolveBesselTwoPowers() {
+    // WMA: Sqrt(x)*BesselI(-Sqrt(5)/3, 2*x^(3/2)/3) and Sqrt(x)*BesselI(Sqrt(5)/3, 2*x^(3/2)/3)
+    check("DSolve(y''(x) == (x + 1/x^2)*y(x), y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselI(Sqrt(5)/3,2/3*x^(3/2))*C(1)+Sqrt(x)*BesselK(Sqrt(5)/3,2/\n"
+            + "3*x^(3/2))*C(2)}}");
+    check("DSolve(y''(x) == (-x^3 + 2/x^2)*y(x), y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselJ(3/5,2/5*x^(5/2))*C(1)+Sqrt(x)*BesselY(3/5,2/5*x^(5/2))*C(\n"
+            + "2)}}");
+  }
+
+  @Test
+  public void testDSolveRationalParticularSolution() {
+    // WMA: 1/2*(Pi*BesselJ(1,x)*BesselY(0,x)-Pi*BesselJ(0,x)*BesselY(1,x)), which is 1/x
+    check("DSolve(x^2*y''(x) + x*y'(x) + (x^2 - 1)*y(x) == x, y(x), x)", //
+        "{{y(x)->1/x+BesselJ(1,x)*C(1)+BesselY(1,x)*C(2)}}");
+    // a pole of order 3, beyond a fixed bound of 2: the forcing's pole order bounds the solution's
+    check("DSolve(x^2*y''(x) + x*y'(x) + (x^2 - 1)*y(x) == 8/x^3 + 1/x, y(x), x)", //
+        "{{y(x)->1/x^3+BesselJ(1,x)*C(1)+BesselY(1,x)*C(2)}}");
+  }
+
+  @Test
+  public void testDSolveBesselOfOrderOneAndTwoThirdsIsAiry() {
+    // WMA: Bessel's functions of order 1/3 and 2/3 in 2/3*x^(3/2) are written as Airy functions
+    check("DSolve(x^2*y''(x) + x*y'(x) + (x^3 - 1/4)*y(x) == 0, y(x), x)", //
+        "{{y(x)->(AiryAi((-1)^(1/3)*x)*C(1))/Sqrt(x)+(AiryBi((-1)^(1/3)*x)*C(2))/Sqrt(x)}}");
+    check("DSolve(x^2*y''(x) + x*y'(x) + (-x^3 - 1)*y(x) == 0, y(x), x)", //
+        "{{y(x)->(AiryAiPrime(x)*C(1))/x+(AiryBiPrime(x)*C(2))/x}}");
+    check("DSolve(x^2*y''(x) + x*y'(x) + (4*x^3 - 1)*y(x) == 0, y(x), x)", //
+        "{{y(x)->(AiryAiPrime((-1)^(1/3)*2^(2/3)*x)*C(1))/x+(AiryBiPrime((-1)^(1/3)*2^(2/\n"
+            + "3)*x)*C(2))/x}}");
+    check("DSolve(y''(x) == (x + 3/(4*x^2))*y(x), y(x), x)", //
+        "{{y(x)->(AiryAiPrime(x)*C(1))/Sqrt(x)+(AiryBiPrime(x)*C(2))/Sqrt(x)}}");
+    // WMA: order 4/3 and 1/5, and order 1/3 in x^3/3, stay Bessel functions
+    check("DSolve(x^2*y''(x) + x*y'(x) + (x^3 - 4)*y(x) == 0, y(x), x)", //
+        "{{y(x)->BesselJ(4/3,2/3*x^(3/2))*C(1)+BesselY(4/3,2/3*x^(3/2))*C(2)}}");
+    check("DSolve(x^2*y''(x) + x*y'(x) + (x^3 - 9/100)*y(x) == 0, y(x), x)", //
+        "{{y(x)->BesselJ(1/5,2/3*x^(3/2))*C(1)+BesselY(1/5,2/3*x^(3/2))*C(2)}}");
+    check("DSolve(y''(x) == (x^4 + 3/(4*x^2))*y(x), y(x), x)", //
+        "{{y(x)->Sqrt(x)*BesselI(1/3,x^3/3)*C(1)+Sqrt(x)*BesselK(1/3,x^3/3)*C(2)}}");
   }
 }

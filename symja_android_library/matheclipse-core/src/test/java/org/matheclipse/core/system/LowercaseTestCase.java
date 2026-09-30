@@ -22223,6 +22223,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("PrimeQ(99999999999971)", //
         "True");
+
+    // negative integers: PrimeQ(-n) == PrimeQ(n)
+    check("PrimeQ({-2,-1,0,-4,-65521,-65535})", //
+        "{True,False,False,False,True,False}");
+    check("PrimeQ(-2147483647)", //
+        "True");
+    // Integer.MIN_VALUE
+    check("PrimeQ(-2147483648)", //
+        "False");
+    check("PrimeQ(-9223372036854775783)", //
+        "True");
+    // Long.MIN_VALUE
+    check("PrimeQ(-9223372036854775808)", //
+        "False");
+
+    // integers in the long range
+    // largest prime below 2^32, smallest prime above 2^32
+    check("PrimeQ({4294967291, 4294967311})", //
+        "{True,True}");
+    // 2^61-1, largest prime below 2^63
+    check("PrimeQ({2305843009213693951, 9223372036854775783})", //
+        "{True,True}");
+    // Long.MAX_VALUE, (2^31-1)^2, 1000000007*1000000009
+    check("PrimeQ({9223372036854775807, 4611686014132420609, 1000000016000000063})", //
+        "{False,False,False}");
+    // strong pseudoprimes to base 2: 2^32+1, strong pseudoprimes to the first 4, 5, 6, 7, 9 prime
+    // bases
+    check("PrimeQ({4294967297, 3215031751, 2152302898747, 3474749660383, 341550071728321, "
+        + "3825123056546413051})", //
+        "{False,False,False,False,False,False}");
+    // largest prime below 2^64 and 2^64+1 (outside the long range)
+    check("PrimeQ({18446744073709551557, 18446744073709551617})", //
+        "{True,False}");
+
     check("Select(Range(100), PrimeQ)", //
         "{2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97}");
     check("PrimeQ(Range(20))", //
