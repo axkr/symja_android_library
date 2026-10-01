@@ -350,7 +350,7 @@ public class SolveUtils {
       ISymbol reportingSymbol, EvalEngine engine) {
     int modulus = modulusOption.toIntDefault();
     if (!modulusOption.isInteger() || modulus < 1) {
-      // Value of option `1` should be a prime number or zero.
+      // The value of the option `1` should be a prime number or zero.
       return Errors.printMessage(reportingSymbol, "modp", F.List(F.Rule(S.Modulus, modulusOption)),
           engine);
     }

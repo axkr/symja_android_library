@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import edu.jas.arith.MachinePrime;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +8,7 @@ import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
-import org.matheclipse.core.convert.JASModInteger;
+import org.matheclipse.core.convert.JASModular;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -29,8 +28,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
-import org.matheclipse.core.numerics.functions.HermiteFunction;
-import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -41,14 +38,15 @@ import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.core.numerics.functions.HermiteFunction;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.polynomials.GroebnerBasisJAS;
 import org.matheclipse.core.polynomials.PolynomialsUtils;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
-import org.matheclipse.core.polynomials.GroebnerBasisJAS;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
@@ -57,14 +55,15 @@ import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomial;
 import org.matheclipse.core.polynomials.symbolicexponent.SymbolicPolynomialRing;
 import edu.jas.application.GBAlgorithmBuilder;
 import edu.jas.arith.BigRational;
-import edu.jas.arith.ModLong;
-import edu.jas.arith.ModLongRing;
+import edu.jas.arith.MachinePrime;
+import edu.jas.arith.Modular;
 import edu.jas.gb.GroebnerBaseAbstract;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
+import edu.jas.structure.GcdRingElem;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
@@ -899,9 +898,9 @@ public class PolynomialFunctions {
    * for, or <code>null</code> if it is not an order.
    *
    * <p>
-   * Mathematica writes these as strings - <code>"DegreeLexicographic"</code> - and also takes the
-   * symbol of the same name and a matrix of weight vectors, one row at a time, which is how an
-   * order outside the named ones is given.
+   * WMA writes these as strings - <code>"DegreeLexicographic"</code> - and also takes the symbol of
+   * the same name and a matrix of weight vectors, one row at a time, which is how an order outside
+   * the named ones is given.
    */
   private static ExprTermOrder termOrderOf(IExpr orderSpec) {
     if (orderSpec.isString()) {
@@ -963,27 +962,31 @@ public class PolynomialFunctions {
     private static IAST coefficientRulesModulus(IExpr polynomial, IAST variablesList,
         final TermOrder termOrder, IExpr option) throws JASConversionException {
       try {
-        // found "Modulus" option => use ModIntegerRing
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-        JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
-        GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
-        IASTAppendable resultList = F.ListAlloc(polyExpr.length());
-        for (Monomial<ModLong> monomial : polyExpr) {
-          ModLong coeff = monomial.coefficient();
-          ExpVector exp = monomial.exponent();
-          int len = exp.length();
-          IASTAppendable ruleList = F.ListAlloc(len);
-          for (int i = 0; i < len; i++) {
-            ruleList.append(exp.getVal(len - i - 1));
-          }
-          resultList.append(F.Rule(ruleList, F.ZZ(coeff.getVal())));
+        if (!((IInteger) option).isPositive()) {
+          return F.NIL;
         }
-        return resultList;
+        return coefficientRules(JASModular.ofRing((IInteger) option, variablesList), polynomial);
       } catch (ArithmeticException ae) {
         Errors.printMessage(S.CoefficientRules, ae);
         // LOGGER.debug("CoefficientRules.coefficientRulesModulus() failed", ae);
       }
       return F.NIL;
+    }
+
+    private static <C extends GcdRingElem<C> & Modular> IAST coefficientRules(JASModular<C> jas,
+        IExpr polynomial) throws JASConversionException {
+      GenPolynomial<C> polyExpr = jas.expr2JAS(polynomial);
+      IASTAppendable resultList = F.ListAlloc(polyExpr.length());
+      for (Monomial<C> monomial : polyExpr) {
+        ExpVector exp = monomial.exponent();
+        int len = exp.length();
+        IASTAppendable ruleList = F.ListAlloc(len);
+        for (int i = 0; i < len; i++) {
+          ruleList.append(exp.getVal(len - i - 1));
+        }
+        resultList.append(F.Rule(ruleList, F.ZZ(monomial.coefficient().getInteger().getVal())));
+      }
+      return resultList;
     }
 
     @Override
@@ -1764,13 +1767,7 @@ public class PolynomialFunctions {
               || !((IInteger) modulus).isProbablePrime()) {
             return F.NIL;
           }
-          ModLongRing modLongRing;
-          try {
-            modLongRing = JASModInteger.option2ModLongRing((IReal) modulus);
-          } catch (ArithmeticException aex) {
-            return F.NIL;
-          }
-          return GroebnerBasisJAS.modularBasis(polys, vars, termOrder, modLongRing);
+          return GroebnerBasisJAS.modularBasis(polys, vars, termOrder, (IInteger) modulus);
         }
 
         if (eliminated.isPresent()) {
@@ -1794,8 +1791,9 @@ public class PolynomialFunctions {
      */
     private IExpr kernelVariables(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
       IAST vars = ast.arg2().isList() ? (IAST) ast.arg2() : F.list(ast.arg2());
-      IAST eliminated = argSize >= 3 ? (ast.arg3().isList() ? (IAST) ast.arg3() : F.list(ast.arg3()))
-          : F.CEmptyList;
+      IAST eliminated =
+          argSize >= 3 ? (ast.arg3().isList() ? (IAST) ast.arg3() : F.list(ast.arg3()))
+              : F.CEmptyList;
       java.util.Map<IExpr, IExpr> toSymbols = new java.util.HashMap<IExpr, IExpr>();
       java.util.Map<IExpr, IExpr> back = new java.util.HashMap<IExpr, IExpr>();
       for (IAST list : new IAST[] {vars, eliminated}) {
@@ -2654,8 +2652,7 @@ public class PolynomialFunctions {
    * 55/24*z-35/8*z^3-3/16*Log(1-z)+15/8*z^2*Log(1-z)-35/16*z^4*Log(1-z)+3/16*Log(1+z)-15/8*z^2*Log(1+z)+35/16*z^4*Log(1+z)
    * </pre>
    */
-  static final class LegendreQ extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
+  static final class LegendreQ extends AbstractFunctionEvaluator implements IFunctionExpand {
     /**
      * @param n a Legendre degree, whatever numeric type it arrived as
      * @return {@code true} if it is an even integer
@@ -2979,19 +2976,10 @@ public class PolynomialFunctions {
     private static IAST monomialListModulus(IExpr polynomial, IAST variablesList,
         final TermOrder termOrder, IExpr option) throws JASConversionException {
       try {
-        // found "Modulus" option => use ModIntegerRing
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-        JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
-        GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
-        IASTAppendable list = F.ListAlloc(polyExpr.length());
-        for (Monomial<ModLong> monomial : polyExpr) {
-          ModLong coeff = monomial.coefficient();
-          ExpVector exp = monomial.exponent();
-          IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
-          jas.monomialToExpr(F.ZZ(coeff.getVal()), exp, monomTimes);
-          list.append(monomTimes);
+        if (!((IInteger) option).isPositive()) {
+          return F.NIL;
         }
-        return list;
+        return JASModular.ofRing((IInteger) option, variablesList).monomialList(polynomial);
       } catch (ArithmeticException ae) {
         // toInt() conversion failed
         Errors.printMessage(S.MonomialList, ae);
@@ -3173,7 +3161,11 @@ public class PolynomialFunctions {
       }
       IExpr arg3 = Validate.checkIsVariable(ast, 3, engine);
       IExpr modulus = options[0];
+      if (modulus.isInteger() && JASModular.isModpMessage(S.Resultant, modulus)) {
+        return F.NIL;
+      }
       if (arg3.isPresent() && modulus.isInteger()) {
+        modulus = ((IInteger) modulus).abs();
         IExpr x = arg3;
         IExpr a = F.evalExpandAll(arg1, engine);
         IExpr b = F.evalExpandAll(arg2, engine);
@@ -3440,8 +3432,7 @@ public class PolynomialFunctions {
         int size = N - 2 * j;
         if (size <= 0) {
           // 0x0 determinant by convention
-          result.append(
-              useMod ? engine.evaluate(F.PolynomialMod(F.C1, modulus)) : F.C1);
+          result.append(useMod ? engine.evaluate(F.PolynomialMod(F.C1, modulus)) : F.C1);
           continue;
         }
         // rows: the top (n-j) shift-rows of the first polynomial and the top (m-j) shift-rows of
@@ -3540,8 +3531,7 @@ public class PolynomialFunctions {
   }
 
 
-  private static final class SphericalHarmonicY extends AbstractFunctionEvaluator
- {
+  private static final class SphericalHarmonicY extends AbstractFunctionEvaluator {
     /** Highest degree summed over; 5000 already takes five seconds. */
     private static final int MAX_SPHERICAL_DEGREE = 5000;
 

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
-import org.matheclipse.core.convert.JASModInteger;
+import org.matheclipse.core.convert.JASModular;
 import org.matheclipse.core.convert.JASQuotient;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
@@ -20,8 +20,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
 import edu.jas.arith.BigRational;
-import edu.jas.arith.ModLong;
-import edu.jas.arith.ModLongRing;
+import edu.jas.arith.Modular;
 import edu.jas.gb.EGroebnerBaseSeq;
 import edu.jas.gb.GroebnerBaseSeq;
 import edu.jas.gbufd.GroebnerBasePartial;
@@ -30,6 +29,7 @@ import edu.jas.poly.Monomial;
 import edu.jas.poly.OptimizedPolynomialList;
 import edu.jas.poly.OrderedPolynomialList;
 import edu.jas.poly.TermOrder;
+import edu.jas.structure.GcdRingElem;
 import edu.jas.ufd.Quotient;
 
 /**
@@ -262,11 +262,17 @@ public class GroebnerBasisJAS {
    * @param listOfPolynomials a list of polynomials
    * @param listOfVariables a list of variable symbols
    * @param termOrder the term order
-   * @param modLongRing the coefficient field <code>GF(p)</code>
+   * @param modulus the prime <code>p</code> of the coefficient field <code>GF(p)</code>
    * @return <code>F.NIL</code> if no valid expression can be returned
    */
   public static IAST modularBasis(IAST listOfPolynomials, IAST listOfVariables,
-      TermOrder termOrder, ModLongRing modLongRing) {
+      TermOrder termOrder, IInteger modulus) {
+    return modularBasis(listOfPolynomials, listOfVariables,
+        JASModular.of(modulus, listOfVariables, termOrder));
+  }
+
+  private static <C extends GcdRingElem<C> & Modular> IAST modularBasis(IAST listOfPolynomials,
+      IAST listOfVariables, JASModular<C> jas) {
     String[] pvars = new String[listOfVariables.argSize()];
     for (int i = 1; i < listOfVariables.size(); i++) {
       if (!listOfVariables.get(i).isSymbol()) {
@@ -275,9 +281,8 @@ public class GroebnerBasisJAS {
       pvars[i - 1] = listOfVariables.get(i).toString();
     }
 
-    JASModInteger jas = new JASModInteger(listOfVariables, modLongRing, termOrder);
-    List<GenPolynomial<ModLong>> polyList =
-        new ArrayList<GenPolynomial<ModLong>>(listOfPolynomials.argSize());
+    List<GenPolynomial<C>> polyList =
+        new ArrayList<GenPolynomial<C>>(listOfPolynomials.argSize());
 
     // collect non-polynomial expressions to pass them through, like the rational case does
     IASTAppendable rest = F.ListAlloc(listOfPolynomials.argSize());
@@ -285,7 +290,7 @@ public class GroebnerBasisJAS {
     for (int i = 1; i < listOfPolynomials.size(); i++) {
       IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
       try {
-        GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
+        GenPolynomial<C> poly = jas.expr2JAS(expr);
         if (poly == null) {
           rest.append(expr);
         } else {
@@ -301,10 +306,10 @@ public class GroebnerBasisJAS {
       return F.NIL;
     }
 
-    List<GenPolynomial<ModLong>> list;
+    List<GenPolynomial<C>> list;
     try {
-      GroebnerBasePartial<ModLong> gbp = new GroebnerBasePartial<ModLong>();
-      OptimizedPolynomialList<ModLong> opl = gbp.partialGB(polyList, pvars);
+      GroebnerBasePartial<C> gbp = new GroebnerBasePartial<C>();
+      OptimizedPolynomialList<C> opl = gbp.partialGB(polyList, pvars);
       list = OrderedPolynomialList.sort(opl.list);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
@@ -313,17 +318,17 @@ public class GroebnerBasisJAS {
 
     IASTAppendable resultList = F.ListAlloc(list.size() + rest.argSize());
     for (int i = 0; i < list.size(); i++) {
-      GenPolynomial<ModLong> p = list.get(i);
+      GenPolynomial<C> p = list.get(i);
       if (p.isZERO()) {
         // a generator which vanishes modulo p contributes nothing to the ideal
         continue;
       }
-      ModLong lc = p.leadingBaseCoefficient();
+      C lc = p.leadingBaseCoefficient();
       if (!lc.isONE()) {
         // GF(p) is a field, so every basis element can be normalized to a monic one
         p = p.multiply(lc.inverse());
       }
-      resultList.append(jas.modLongPoly2Expr(p));
+      resultList.append(jas.poly2Expr(p));
     }
 
     // append the non-polynomials to the final basis

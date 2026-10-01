@@ -15,7 +15,9 @@ import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.combinatoric.KSubsets.KSubsetsList;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ReturnException;
+import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
@@ -761,10 +763,11 @@ public class Primality implements IPrimality {
       }
       BigInteger divisor = recursionDepth > 0 ? pollardRhoDivisor(rest) : BigInteger.ONE;
       if (divisor.equals(BigInteger.ONE)) {
-        // no divisor could be determined - store the composite rest as a factor, to avoid an
-        // endless loop
-        addToMap(rest, 1, map);
-        return;
+        // No divisor could be determined. The composite rest is no prime factor: recording it as
+        // one would make MoebiusMu, PrimeNu, PrimeOmega, EulerPhi, ... answer for another number,
+        // so the factorization is given up and the function which asked for it stays unevaluated.
+        throw new ArgumentTypeException(
+            "The integer " + rest + " is composite, but no factor of it could be found.");
       }
       if (MachinePrime.isProbablePrime(divisor, PRIME_CERTAINTY)) {
         // divide out the complete prime power in one step
@@ -898,8 +901,14 @@ public class Primality implements IPrimality {
     BigInteger c = new BigInteger(val.bitLength(), random);
     BigInteger x = new BigInteger(val.bitLength(), random);
     BigInteger xx = x;
+    int steps = 0;
 
     do {
+      if ((++steps & 0xFFF) == 0 && Thread.currentThread().isInterrupted()) {
+        // the number of steps grows with the square root of the smallest prime factor, and no
+        // evaluation in between would notice a time limit
+        throw TimeoutException.TIMED_OUT;
+      }
       x = x.multiply(x).mod(val).add(c).mod(val);
       xx = xx.multiply(xx).mod(val).add(c).mod(val);
       xx = xx.multiply(xx).mod(val).add(c).mod(val);

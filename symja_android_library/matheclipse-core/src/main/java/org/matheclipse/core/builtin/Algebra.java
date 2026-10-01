@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
-import org.matheclipse.core.convert.JASModInteger;
+import org.matheclipse.core.convert.JASModular;
 import org.matheclipse.core.convert.JASQuotient;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -67,8 +67,8 @@ import org.matheclipse.core.reflection.system.Solve.SolveData;
 import org.matheclipse.core.reflection.system.TrigExpand;
 import org.matheclipse.core.visit.VisitorExpr;
 import edu.jas.arith.BigRational;
-import edu.jas.arith.ModLong;
-import edu.jas.arith.ModLongRing;
+import edu.jas.arith.Modular;
+import edu.jas.structure.GcdRingElem;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
@@ -414,7 +414,16 @@ public class Algebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (ast.isAST1() && arg1.isAtom()) {
+      if (ast.isAST2()) {
+        IExpr modulus = modulusOption(ast, engine);
+        if (modulus.isNIL()) {
+          return F.NIL;
+        }
+        if (!modulus.isZero()) {
+          return togetherModulus(S.Cancel, arg1, modulus, engine);
+        }
+      }
+      if (arg1.isAtom()) {
         return arg1;
       }
       IExpr temp = CompareUtil.threadPlusLogicEquationOperators(arg1, ast, 1);
@@ -434,7 +443,7 @@ public class Algebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
     @Override
@@ -1311,12 +1320,37 @@ public class Algebra {
      * @param factorSquareFree
      * @throws JASConversionException
      */
+    /**
+     * Factor over <code>GF(modulus)</code>. A modulus which is no prime number is reported, and a
+     * polynomial which can't be factored over the field stays unevaluated: the factorization over
+     * the integers is no answer to a question about another domain.
+     *
+     * @return <code>F.NIL</code> if the function has no result
+     */
+    private static IExpr factorModulus(IBuiltInSymbol head, IExpr arg1, VariablesSet eVar,
+        boolean factorSquareFree, IExpr modulus, EvalEngine engine) {
+      if (JASModular.isModpMessage(head, modulus)) {
+        return F.NIL;
+      }
+      try {
+        IExpr expr = F.evalExpandAll(arg1, engine);
+        if (eVar.size() == 0) {
+          return expr.isInteger() ? ((IInteger) expr).mod(((IInteger) modulus).abs()) : F.NIL;
+        }
+        return AlgebraUtil.factorModulus(expr, eVar.getVarList(), factorSquareFree, modulus);
+      } catch (JASConversionException e) {
+        return F.NIL;
+      }
+    }
+
     public static IExpr factorWithOption(final IAST ast, IExpr expr, IAST varList,
         boolean factorSquareFree, final IExpr[] options, final EvalEngine engine)
         throws JASConversionException {
       IExpr option = options[MODULUS_OPTION];
-      if (option.isInteger() && !option.isZero()) {
-        return AlgebraUtil.factorModulus(expr, varList, factorSquareFree, option);
+      if (!option.isZero()) {
+        return JASModular.isPrimeModulus(option)
+            ? AlgebraUtil.factorModulus(expr, varList, factorSquareFree, option)
+            : F.NIL;
       }
       if (!factorSquareFree) {
         option = options[1];
@@ -1554,8 +1588,15 @@ public class Algebra {
       IExpr extension = options[1];
       IExpr gaussianIntegers = options[2];
       boolean trig = options[3].isTrue();
-      if (options[MODULUS_OPTION].isZero() && extension == S.None && gaussianIntegers.isFalse()) {
+      // WMA: a modulus which is no integer is ignored - Factor(x^2+1, Modulus->a) is 1+x^2
+      if (!modulus.isInteger()) {
+        modulus = F.C0;
+      }
+      if (modulus.isZero() && extension == S.None && gaussianIntegers.isFalse()) {
         return AlgebraUtil.factor(ast, arg1, eVar, false, true, true, trig, engine);
+      }
+      if (!modulus.isZero()) {
+        return factorModulus(S.Factor, arg1, eVar, false, modulus, engine);
       }
 
       try {
@@ -1627,6 +1668,9 @@ public class Algebra {
         return arg1;
       }
       try {
+        if (!options[MODULUS_OPTION].isInteger()) {
+          options[MODULUS_OPTION] = F.C0;
+        }
         if (options[MODULUS_OPTION].isZero() && options[1] == S.None && options[2].isFalse()) {
           // structure-preserving square-free factorization (see AlgebraUtil#factorSquareFree)
           IExpr temp = AlgebraUtil.factorSquareFree(arg1, eVar, engine);
@@ -1634,6 +1678,9 @@ public class Algebra {
           if (temp.isPresent()) {
             return temp;
           }
+        } else if (!options[MODULUS_OPTION].isZero()) {
+          return Factor.factorModulus(S.FactorSquareFree, arg1, eVar, true,
+              options[MODULUS_OPTION], engine);
         } else {
           IExpr expr = F.evalExpandAll(arg1, engine);
           IExpr temp = factorWithOption(ast, expr, eVar.getVarList(), true, options, engine);
@@ -1757,6 +1804,27 @@ public class Algebra {
         final EvalEngine engine, IAST originalAST) {
 
       VariablesSet eVar = new VariablesSet(ast.arg1());
+      if (options[MODULUS_OPTION].isInteger() && !options[MODULUS_OPTION].isZero()) {
+        // the square-free parts over GF(p), as the list of their bases and exponents
+        IExpr factored = Factor.factorModulus(S.FactorSquareFreeList, ast.arg1(), eVar, true,
+            options[MODULUS_OPTION], engine);
+        if (factored.isNIL()) {
+          return F.NIL;
+        }
+        IASTAppendable result = F.ListAlloc(factored.argSize() + 1);
+        if (factored.isAST() && factored.head() == S.Times) {
+          for (IExpr factor : (IAST) factored) {
+            result.append(factor.isPower() ? F.list(factor.base(), factor.exponent())
+                : F.list(factor, F.C1));
+          }
+        } else {
+          result.append(F.list(factored, F.C1));
+        }
+        if (!result.arg1().first().isNumber()) {
+          result.append(1, F.list(F.C1, F.C1));
+        }
+        return result;
+      }
       try {
         IExpr expr = F.evalExpandAll(ast.arg1(), engine);
         return factorList(expr, eVar.getVarList(), true);
@@ -2294,28 +2362,28 @@ public class Algebra {
 
     private static IExpr polynomialExtendedGCDModulus(IExpr expr1, IExpr expr2, IExpr modulus,
         IAST varList, EvalEngine engine) {
-      if (modulus.isInteger()) {
-        try {
-          // found "Modulus" option => use ModIntegerRing
-          ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) modulus);
-          JASModInteger jas = new JASModInteger(varList, modIntegerRing);
-          GenPolynomial<ModLong> poly1 = jas.expr2JAS(expr1);
-          GenPolynomial<ModLong> poly2 = jas.expr2JAS(expr2);
-          GenPolynomial<ModLong>[] result = poly1.egcd(poly2);
-          IASTAppendable list = F.ListAlloc(2);
-          list.append(jas.modLongPoly2Expr(result[0]));
-          IASTAppendable subList = F.ListAlloc(2);
-          subList.append(jas.modLongPoly2Expr(result[1]));
-          subList.append(jas.modLongPoly2Expr(result[2]));
-          list.append(subList);
-          return list;
-        } catch (ArithmeticException aex) {
-          // LOGGER.log(engine.getLogLevel(), S.PolynomialExtendedGCD, aex);
-        } catch (JASConversionException e) {
-          // LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", e);
-        }
+      // the arguments are held, and the modulus may be the value of a variable
+      modulus = engine.evaluate(modulus);
+      if (JASModular.isModpMessage(S.PolynomialExtendedGCD, modulus)) {
+        return F.NIL;
+      }
+      try {
+        return extendedGCDModulus(JASModular.of((IInteger) modulus, varList), expr1, expr2);
+      } catch (ArithmeticException aex) {
+        // LOGGER.log(engine.getLogLevel(), S.PolynomialExtendedGCD, aex);
+      } catch (JASConversionException e) {
+        // LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", e);
       }
       return F.NIL;
+    }
+
+    private static <C extends GcdRingElem<C> & Modular> IExpr extendedGCDModulus(
+        JASModular<C> jas, IExpr expr1, IExpr expr2) throws JASConversionException {
+      GenPolynomial<C> poly1 = jas.expr2JAS(expr1);
+      GenPolynomial<C> poly2 = jas.expr2JAS(expr2);
+      GenPolynomial<C>[] result = poly1.egcd(poly2);
+      return F.List(jas.poly2Expr(result[0]),
+          F.List(jas.poly2Expr(result[1]), jas.poly2Expr(result[2])));
     }
 
     @Override
@@ -2713,43 +2781,33 @@ public class Algebra {
 
     private IExpr gcdWithOption(final IAST ast, IExpr arg1, IAST variables, IExpr option,
         final EvalEngine engine) {
-      if (option.isInteger()) {
-        return polynomialGCDModulus(ast, arg1, option, variables);
+      if (JASModular.isModpMessage(S.PolynomialGCD, option)) {
+        return F.NIL;
+      }
+      try {
+        return polynomialGCDModulus(JASModular.of((IInteger) option, variables), ast, arg1);
+      } catch (JASConversionException e) {
+        // LOGGER.debug("PolynomialGCD.modulusGCD() failed", e);
+      } catch (ArithmeticException aex) {
+        // a coefficient whose denominator is a multiple of the modulus
       }
       return F.NIL;
     }
 
-    private IExpr polynomialGCDModulus(final IAST ast, IExpr arg1, IExpr modulus, IAST variables) {
-      try {
-        // found "Modulus" option => use ModIntegerRing
-        // ASTRange r = new ASTRange(eVar.getVarList(), 1);
-        // ModIntegerRing modIntegerRing =
-        // JASConvert.option2ModIntegerRing((IReal) option);
-        // JASConvert<ModInteger> jas = new
-        // JASConvert<ModInteger>(r.toList(), modIntegerRing);
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) modulus);
-        JASModInteger jas = new JASModInteger(variables, modIntegerRing);
-        GenPolynomial<ModLong> poly = jas.expr2JAS(arg1);
-        GenPolynomial<ModLong> temp;
-        GreatestCommonDivisorAbstract<ModLong> factory =
-            GCDFactory.getImplementation(modIntegerRing);
-
-        for (int i = 2; i < ast.argSize(); i++) {
-          final IExpr arg = ast.get(i);
-          VariablesSet eVar = new VariablesSet(arg);
-          if (!eVar.isSize(1)) {
-            // gcd only possible for univariate polynomials
-            return F.NIL;
-          }
-          arg1 = F.evalExpandAll(arg);
-          temp = jas.expr2JAS(arg1);
-          poly = factory.gcd(poly, temp);
+    private static <C extends GcdRingElem<C> & Modular> IExpr polynomialGCDModulus(
+        JASModular<C> jas, final IAST ast, IExpr arg1) throws JASConversionException {
+      GenPolynomial<C> poly = jas.expr2JAS(arg1);
+      GreatestCommonDivisorAbstract<C> factory = jas.gcd();
+      for (int i = 2; i < ast.argSize(); i++) {
+        final IExpr arg = ast.get(i);
+        VariablesSet eVar = new VariablesSet(arg);
+        if (!eVar.isSize(1)) {
+          // gcd only possible for univariate polynomials
+          return F.NIL;
         }
-        return AlgebraUtil.factorModulus(jas, modIntegerRing, poly, false);
-      } catch (JASConversionException e) {
-        // LOGGER.debug("PolynomialGCD.modulusGCD() failed", e);
+        poly = factory.gcd(poly, jas.expr2JAS(F.evalExpandAll(arg)));
       }
-      return F.NIL;
+      return AlgebraUtil.factorModulus(jas, poly, false);
     }
 
     @Override
@@ -3038,45 +3096,45 @@ public class Algebra {
     }
 
     private static IExpr polynomialLCMModulus(IAST ast, int argSize, IExpr modulus, IAST varList) {
-      if (modulus.isInteger()) {
-        try {
-          IExpr expr = F.evalExpand(ast.arg1());
-          ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) modulus);
-          JASModInteger jas = new JASModInteger(varList, modIntegerRing);
-          GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
-          GenPolynomial<ModLong> temp = poly;
-          GreatestCommonDivisorAbstract<ModLong> factory =
-              GCDFactory.getImplementation(modIntegerRing);
-          // Fold with lcm(a, b) == (a / gcd(a, b)) * b and keep the last two factors apart. The
-          // cofactor is computed rather than taken from factory.lcm(), because that normalizes the
-          // result to a monic polynomial and would drop a leading coefficient the arguments carry.
-          GenPolynomial<ModLong> cofactor = poly;
-          for (int i = 2; i <= argSize; i++) {
-            expr = F.evalExpandAll(ast.get(i));
-            temp = jas.expr2JAS(expr);
-            cofactor = poly.divide(factory.gcd(poly, temp));
-            poly = cofactor.multiply(temp);
-          }
-          if (poly.isZERO()) {
-            return F.C0;
-          }
-          if (cofactor.isONE()) {
-            return jas.modLongPoly2Expr(poly);
-          }
-          return F.Times(jas.modLongPoly2Expr(cofactor), jas.modLongPoly2Expr(temp));
-        } catch (ArithmeticException aex) {
-          Errors.printMessage(S.PolynomialLCM, aex);
-          return F.NIL;
-        } catch (JASConversionException e) {
-          if (Config.SHOW_STACKTRACE) {
-            e.printStackTrace();
-          }
-          // no fallback over ExprPolynomial here: its coefficient domain is the symbolic one, so
-          // the
-          // result would silently ignore the requested modulus
+      if (JASModular.isModpMessage(S.PolynomialLCM, modulus)) {
+        return F.NIL;
+      }
+      try {
+        return polynomialLCMModulus(JASModular.of((IInteger) modulus, varList), ast, argSize);
+      } catch (ArithmeticException aex) {
+        Errors.printMessage(S.PolynomialLCM, aex);
+        return F.NIL;
+      } catch (JASConversionException e) {
+        if (Config.SHOW_STACKTRACE) {
+          e.printStackTrace();
         }
+        // no fallback over ExprPolynomial here: its coefficient domain is the symbolic one, so
+        // the result would silently ignore the requested modulus
       }
       return F.NIL;
+    }
+
+    private static <C extends GcdRingElem<C> & Modular> IExpr polynomialLCMModulus(
+        JASModular<C> jas, IAST ast, int argSize) throws JASConversionException {
+      GenPolynomial<C> poly = jas.expr2JAS(F.evalExpand(ast.arg1()));
+      GenPolynomial<C> temp = poly;
+      GreatestCommonDivisorAbstract<C> factory = jas.gcd();
+      // Fold with lcm(a, b) == (a / gcd(a, b)) * b and keep the last two factors apart. The
+      // cofactor is computed rather than taken from factory.lcm(), because that normalizes the
+      // result to a monic polynomial and would drop a leading coefficient the arguments carry.
+      GenPolynomial<C> cofactor = poly;
+      for (int i = 2; i <= argSize; i++) {
+        temp = jas.expr2JAS(F.evalExpandAll(ast.get(i)));
+        cofactor = poly.divide(factory.gcd(poly, temp));
+        poly = cofactor.multiply(temp);
+      }
+      if (poly.isZERO()) {
+        return F.C0;
+      }
+      if (cofactor.isONE()) {
+        return jas.poly2Expr(poly);
+      }
+      return F.Times(jas.poly2Expr(cofactor), jas.poly2Expr(temp));
     }
 
     @Override
@@ -3273,12 +3331,7 @@ public class Algebra {
         return modded;
       }
       try {
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing(m);
-        JASModInteger jas = new JASModInteger(vars, modIntegerRing);
-        GenPolynomial<ModLong> p = jas.expr2JAS(expr);
-        if (p != null) {
-          return jas.modLongPoly2Expr(p);
-        }
+        return JASModular.ofRing(m, vars).reduce(expr);
       } catch (JASConversionException e) {
         // LOGGER.debug("PolynomialMod.polynomialModInteger() JAS conversion failed", e);
       } catch (RuntimeException rex) {
@@ -4081,23 +4134,26 @@ public class Algebra {
     public Optional<IExpr[]> quotientRemainderModInteger(IExpr arg1, IExpr arg2, IExpr variable,
         IExpr option) {
       try {
-        // found "Modulus" option => use ModIntegerRing
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-        JASModInteger jas = new JASModInteger(variable.makeList(), modIntegerRing);
-        GenPolynomial<ModLong> poly1 = jas.expr2JAS(arg1);
-        GenPolynomial<ModLong> poly2 = jas.expr2JAS(arg2);
-        if (poly2.isZERO()) {
+        if (!JASModular.isPrimeModulus(option)) {
           return Optional.empty();
         }
-        GenPolynomial<ModLong>[] divRem = poly1.quotientRemainder(poly2);
-        IExpr[] result = new IExpr[2];
-        result[0] = jas.modLongPoly2Expr(divRem[0]);
-        result[1] = jas.modLongPoly2Expr(divRem[1]);
-        return Optional.of(result);
+        return quotientRemainder(JASModular.of((IInteger) option, variable.makeList()), arg1,
+            arg2);
       } catch (JASConversionException e) {
         // LOGGER.debug("PolynomialQuotientRemainder.quotientRemainderModInteger() failed", e);
       }
       return Optional.empty();
+    }
+
+    private static <C extends GcdRingElem<C> & Modular> Optional<IExpr[]> quotientRemainder(
+        JASModular<C> jas, IExpr arg1, IExpr arg2) throws JASConversionException {
+      GenPolynomial<C> poly1 = jas.expr2JAS(arg1);
+      GenPolynomial<C> poly2 = jas.expr2JAS(arg2);
+      if (poly2.isZERO()) {
+        return Optional.empty();
+      }
+      GenPolynomial<C>[] divRem = poly1.quotientRemainder(poly2);
+      return Optional.of(new IExpr[] {jas.poly2Expr(divRem[0]), jas.poly2Expr(divRem[1])});
     }
 
     @Override
@@ -4482,6 +4538,15 @@ public class Algebra {
       if (list.isPresent()) {
         return list;
       }
+      if (ast.isAST2()) {
+        IExpr modulus = modulusOption(ast, engine);
+        if (modulus.isNIL()) {
+          return F.NIL;
+        }
+        if (!modulus.isZero()) {
+          return togetherModulus(S.Together, arg1, modulus, engine);
+        }
+      }
       if (arg1.isAST()) {
         return AlgebraUtil.togetherExpr(arg1, engine);
       }
@@ -4490,7 +4555,7 @@ public class Algebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_2;
     }
 
 
@@ -4574,7 +4639,7 @@ public class Algebra {
    * {@code modulus}.
    *
    * <p>
-   * First attempts a lossless round-trip through {@link JASModInteger} (polynomial ring over Z/pZ).
+   * First attempts a lossless round-trip through {@link JASModular} (polynomial ring over Z/pZ).
    * Falls back to a simple tree walk that replaces every {@link IInteger} leaf {@code n} with
    * {@code n mod modulus} when JAS conversion is not possible (e.g. non-polynomial expressions).
    *
@@ -4587,7 +4652,7 @@ public class Algebra {
    * Reduces integer coefficients of an already-expanded expression modulo {@code modulus}.
    *
    * <p>
-   * First tries a lossless round-trip through {@link JASModInteger} for pure polynomial
+   * First tries a lossless round-trip through {@link JASModular} for pure polynomial
    * expressions. Falls back to {@link #reduceCoefficients} when JAS conversion fails (e.g. the
    * expression contains function calls like {@code Sin}, {@code Cos}).
    *
@@ -4608,10 +4673,7 @@ public class Algebra {
     IAST varList = varSet.getVarList();
     if (varList.argSize() > 0) {
       try {
-        ModLongRing modRing = JASModInteger.option2ModLongRing(modulus);
-        JASModInteger jas = new JASModInteger(varList, modRing);
-        GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
-        return jas.modLongPoly2Expr(poly);
+        return JASModular.ofRing(modulus, varList).reduce(expr);
       } catch (JASConversionException | ArithmeticException e) {
         // fall through to structural reduction
       }
@@ -4624,26 +4686,85 @@ public class Algebra {
   }
 
   /**
-   * Print message <code>Value of option `1` should be a prime number or zero.</code>, if option is
+   * Print message <code>The value of the option `1` should be a prime number or zero.</code>, if option is
    * not zero or prime.
    * 
    * @param option
    * @return <code>true</code> if the &quot;modp&quot; message was printed
    */
   private static boolean isModpMessage(IBuiltInSymbol symbol, IExpr option) {
-    if (!option.isInteger()) {
-      // Value of option `1` should be a prime number or zero.
-      Errors.printMessage(S.PolynomialQuotientRemainder, "modp", F.List(F.Rule(S.Modulus, option)));
-      return true;
-    } else {
-      IInteger optionInteger = (IInteger) option;
-      if (!optionInteger.isZero() && !optionInteger.isProbablePrime()) {
-        // Value of option `1` should be a prime number or zero.
-        Errors.printMessage(symbol, "modp", F.List(F.Rule(S.Modulus, option)));
-        return true;
-      }
+    return JASModular.isModpMessage(symbol, option);
+  }
+
+  /**
+   * The value of the <code>Modulus</code> option which is the second argument of
+   * <code>Cancel</code> or <code>Together</code>.
+   *
+   * @return <code>F.NIL</code> if the second argument is something else, which is reported
+   */
+  private static IExpr modulusOption(IAST ast, EvalEngine engine) {
+    IExpr arg2 = ast.arg2();
+    if (arg2.isRuleAST() && arg2.first() == S.Modulus) {
+      return arg2.second();
     }
-    return false;
+    // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule or
+    // a list of rules.
+    return Errors.printMessage(ast.topHead(), "nonopt", F.List(arg2, F.C1, ast), engine);
+  }
+
+  /**
+   * <code>Together(expr, Modulus -> p)</code> and <code>Cancel(expr, Modulus -> p)</code>: the
+   * expression as one fraction over the field <code>GF(p)</code>, without a common factor of its
+   * numerator and denominator, both written as their factors over that field. WMA:
+   * <code>Together(1/x + 1/(x+1), Modulus -> 5)</code> is <code>(2*(3+x))/(x*(1+x))</code>.
+   *
+   * @return <code>F.NIL</code> if the modulus is no prime number, or the expression no rational
+   *         function with rational coefficients
+   */
+  private static IExpr togetherModulus(IBuiltInSymbol head, IExpr expr, IExpr modulus,
+      EvalEngine engine) {
+    if (JASModular.isModpMessage(head, modulus)) {
+      return F.NIL;
+    }
+    IExpr together = engine.evaluate(F.Together(expr));
+    IExpr numerator = F.evalExpandAll(engine.evaluate(F.Numerator(together)), engine);
+    IExpr denominator = F.evalExpandAll(engine.evaluate(F.Denominator(together)), engine);
+    VariablesSet eVar = new VariablesSet(together);
+    try {
+      return togetherModulus(JASModular.of((IInteger) modulus, eVar.getVarList()), numerator,
+          denominator, engine);
+    } catch (JASConversionException | ArithmeticException e) {
+      // no polynomials over GF(p)
+      return F.NIL;
+    }
+  }
+
+  private static <C extends GcdRingElem<C> & Modular> IExpr togetherModulus(JASModular<C> jas,
+      IExpr numerator, IExpr denominator, EvalEngine engine) throws JASConversionException {
+    GenPolynomial<C> num = jas.expr2JAS(numerator);
+    GenPolynomial<C> den = jas.expr2JAS(denominator);
+    if (den.isZERO()) {
+      // the denominator vanishes in GF(p)
+      return F.NIL;
+    }
+    GenPolynomial<C> gcd = jas.gcd().gcd(num, den);
+    if (!gcd.isONE()) {
+      num = num.divide(gcd);
+      den = den.divide(gcd);
+    }
+    // the denominator is written monic; its leading coefficient goes into the numerator
+    C leading = den.leadingBaseCoefficient();
+    if (!leading.isONE()) {
+      C inverse = leading.inverse();
+      num = num.multiply(inverse);
+      den = den.multiply(inverse);
+    }
+    IExpr numeratorFactors = num.isZERO() ? F.C0 : AlgebraUtil.factorModulus(jas, num, false);
+    IExpr denominatorFactors = AlgebraUtil.factorModulus(jas, den, false);
+    if (numeratorFactors.isNIL() || denominatorFactors.isNIL()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Times(numeratorFactors, F.Power(denominatorFactors, F.CN1)));
   }
 
   /**

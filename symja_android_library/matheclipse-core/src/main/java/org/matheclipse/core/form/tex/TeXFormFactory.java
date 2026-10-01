@@ -1052,19 +1052,20 @@ public class TeXFormFactory {
         buffer.append('}');
         return true;
       }
+      // the radicand is delimited by the root sign itself and needs no parentheses
       if (arg2.isNumEqualRational(F.C1D2)) {
         buffer.append("\\sqrt{");
-        fFactory.convertInternal(buffer, arg1, fPrecedence, NO_PLUS_CALL);
+        fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
         buffer.append('}');
         return true;
       }
       if (arg2.isFraction()) {
         if (((IFraction) arg2).numerator().isOne()) {
           buffer.append("\\sqrt[");
-          fFactory.convertInternal(buffer, ((IFraction) arg2).denominator(), fPrecedence,
-              NO_PLUS_CALL);
+          fFactory.convertInternal(buffer, ((IFraction) arg2).denominator(),
+              Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           buffer.append("]{");
-          fFactory.convertInternal(buffer, arg1, fPrecedence, NO_PLUS_CALL);
+          fFactory.convertInternal(buffer, arg1, Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
           buffer.append('}');
           return true;
         }

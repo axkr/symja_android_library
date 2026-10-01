@@ -24,7 +24,12 @@ import edu.jas.poly.TermOrderByName;
 
 /**
  * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to Symja objects.
+ *
+ * @deprecated the coefficients are <code>ModLong</code>, which is only right for a modulus up to
+ *             {@link Integer#MAX_VALUE}; use {@link JASModular}, which chooses the coefficient
+ *             type by the modulus
  */
+@Deprecated
 public class JASModInteger {
   private final ModLongRing fRingFactory;
   private final TermOrder fTermOrder;
@@ -328,9 +333,16 @@ public class JASModInteger {
     return true;
   }
 
+  /**
+   * @throws ArithmeticException if the modulus is larger than {@link Integer#MAX_VALUE}: the
+   *         product of two residues overflows a <code>long</code> then
+   */
   public static ModLongRing option2ModLongRing(IReal option) throws ArithmeticException {
     // maybe throw ArithmeticException
     long longValue = option.toLong();
+    if (longValue > Integer.MAX_VALUE) {
+      throw new ArithmeticException("modulus too large for ModLong: " + longValue);
+    }
     final BigInteger value = BigInteger.valueOf(longValue);
     return new ModLongRing(longValue, MachinePrime.isProbablePrime(value, 32));
   }

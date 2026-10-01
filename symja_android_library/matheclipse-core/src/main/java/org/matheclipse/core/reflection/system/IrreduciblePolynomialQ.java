@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.convert.JASModular;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -24,6 +25,9 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
     IExpr poly = ast.arg1();
+    if (options[2].isInteger() && JASModular.isModpMessage(S.IrreduciblePolynomialQ, options[2])) {
+      return F.NIL;
+    }
 
     // Find the variables of the expression
     VariablesSet variablesSet = new VariablesSet(poly);

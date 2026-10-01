@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
-import org.matheclipse.core.convert.JASModInteger;
+import org.matheclipse.core.convert.JASModular;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -50,8 +50,8 @@ import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import com.google.common.math.LongMath;
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
-import edu.jas.arith.ModLong;
-import edu.jas.arith.ModLongRing;
+import edu.jas.arith.Modular;
+import edu.jas.structure.GcdRingElem;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
@@ -1798,18 +1798,16 @@ public class AlgebraUtil {
 
   public static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree, IExpr option)
       throws JASConversionException {
-    try {
-      // found "Modulus" option => use ModIntegerRing
-      ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-      JASModInteger jas = new JASModInteger(varList, modIntegerRing);
-      GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
-
-      return AlgebraUtil.factorModulus(jas, modIntegerRing, poly, factorSquareFree);
-    } catch (ArithmeticException ae) {
-      // toInt() conversion failed
-      // LOGGER.debug("Algebra.factorModulus() failed", ae);
+    if (!JASModular.isPrimeModulus(option)) {
+      // only a prime gives a field, and the factorization isn't defined over anything else
+      return F.NIL;
     }
-    return F.NIL;
+    return factorModulus(JASModular.of((IInteger) option, varList), expr, factorSquareFree);
+  }
+
+  private static <C extends GcdRingElem<C> & Modular> IAST factorModulus(JASModular<C> jas,
+      IExpr expr, boolean factorSquareFree) throws JASConversionException {
+    return factorModulus(jas, jas.expr2JAS(expr), factorSquareFree);
   }
 
   /**
@@ -1819,26 +1817,21 @@ public class AlgebraUtil {
    * @param factorSquareFree
    * @return {@link F#NIL} if evaluation is impossible.
    */
-  public static IAST factorModulus(JASModInteger jas, ModLongRing modIntegerRing,
-      GenPolynomial<ModLong> poly, boolean factorSquareFree) {
-    SortedMap<GenPolynomial<ModLong>, Long> map;
+  public static <C extends GcdRingElem<C> & Modular> IAST factorModulus(JASModular<C> jas,
+      GenPolynomial<C> poly, boolean factorSquareFree) {
+    SortedMap<GenPolynomial<C>, Long> map;
     try {
-      FactorAbstract<ModLong> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
-      if (factorSquareFree) {
-        map = factorAbstract.squarefreeFactors(poly);
-      } else {
-        map = factorAbstract.factors(poly);
-      }
+      map = jas.factors(poly, factorSquareFree);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       // JAS may throw RuntimeExceptions
       return F.NIL;
     }
     IASTAppendable result = F.TimesAlloc(map.size());
-    for (SortedMap.Entry<GenPolynomial<ModLong>, Long> entry : map.entrySet()) {
-      final GenPolynomial<ModLong> singleFactor = entry.getKey();
+    for (SortedMap.Entry<GenPolynomial<C>, Long> entry : map.entrySet()) {
+      final GenPolynomial<C> singleFactor = entry.getKey();
       final Long val = entry.getValue();
-      result.append(F.Power(jas.modLongPoly2Expr(singleFactor), F.ZZ(val)));
+      result.append(F.Power(jas.poly2Expr(singleFactor), F.ZZ(val)));
     }
     return result;
   }

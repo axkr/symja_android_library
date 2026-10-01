@@ -738,4 +738,18 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check("ToExpression(\"\\\\arccot (x)\", TeXForm)", //
         "ArcCot(x)");
   }
+
+  /** The root sign delimits its radicand: WMA writes \\sqrt{f+g}, without parentheses. */
+  @Test
+  public void testRootWithoutParentheses() {
+    check("TeXForm(Sqrt(f + g))", //
+        "\\sqrt{f + g}");
+    check("TeXForm(a/(b*Sqrt(f + g)))", //
+        "\\frac{a}{b \\cdot \\sqrt{f + g}}");
+    check("TeXForm((f + g)^(1/3))", //
+        "\\sqrt[3]{f + g}");
+    // a power of a sum keeps its parentheses
+    check("TeXForm((f + g)^2)", //
+        "{\\left( f + g\\right) }^{2}");
+  }
 }

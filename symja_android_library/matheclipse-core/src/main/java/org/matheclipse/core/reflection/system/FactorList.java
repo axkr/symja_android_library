@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.convert.JASModular;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -47,6 +48,10 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
     // Apply TrigExpand if Trig->True
     if (options[3].isTrue()) {
       arg1 = TrigExpand.trigExpand(arg1, engine);
+    }
+
+    if (options[0].isInteger() && JASModular.isModpMessage(S.FactorList, options[0])) {
+      return F.NIL;
     }
 
     // Reconstruct the Factor AST to delegate the primary evaluation

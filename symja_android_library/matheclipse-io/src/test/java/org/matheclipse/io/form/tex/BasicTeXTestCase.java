@@ -457,7 +457,7 @@ public class BasicTeXTestCase {
   public void testTeX042() {
     IExpr expr = EvalEngine.get().evaluate("Cot(Interval({3*Pi/4,6*Pi/5}))");
     check(expr, //
-        "Interval(\\{-\\infty,-1\\},\\{\\sqrt{\\left( 1 + \\frac{2}{\\sqrt{5}}\\right) },\\infty\\})");
+        "Interval(\\{-\\infty,-1\\},\\{\\sqrt{1 + \\frac{2}{\\sqrt{5}}},\\infty\\})");
   }
 
   @Test
