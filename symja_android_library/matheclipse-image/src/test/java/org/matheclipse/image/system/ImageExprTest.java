@@ -48,7 +48,7 @@ public class ImageExprTest extends AbstractTestCase {
    */
   @Test
   public void functionsWithoutAnEvaluatorStayUnevaluated() {
-    check("Dilation(Image({{0.0,1.0}}),1)", //
-        "Dilation(Image(Dimensions: 2,1 Transparency: 1),1)");
+    check("EdgeDetect(Image({{0.0,1.0}}),1)", //
+        "EdgeDetect(Image(Dimensions: 2,1 Transparency: 1),1)");
   }
 }

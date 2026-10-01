@@ -16,10 +16,9 @@ import org.matheclipse.image.expression.data.ImageExpr;
  * Crops an image to a specified size or removes uniform borders.
  * </p>
  * <p>
- * The returned {@link ImageExpr} passes null for the data matrix. Recalculating the high-precision
- * matrix (if it existed) for the cropped area is computationally expensive and complex (requires
- * slicing nested lists). If the user calls {@link S#ImageData} on the result, it will be
- * regenerated from the cropped BufferedImage.
+ * A crop which lies inside of the image cuts the matrix the image was built from along with the
+ * pixels, so {@link S#ImageData} of the result has the samples and the type of the image. A crop
+ * to a larger size pads the image and is read back off the bitmap.
  * </p>
  */
 public class ImageCrop extends AbstractEvaluator {
@@ -41,7 +40,7 @@ public class ImageCrop extends AbstractEvaluator {
 
     // Case: ImageCrop(image) -> Auto-crop uniform borders
     if (ast.argSize() == 1) {
-      return autoCrop(src, imgExpr.getMatrix());
+      return autoCrop(imgExpr, src);
     }
 
     // Case: ImageCrop[image, {width, height}, {alignX, alignY} (optional)]
@@ -91,7 +90,7 @@ public class ImageCrop extends AbstractEvaluator {
       }
     }
 
-    return cropFixedSize(src, targetW, targetH, alignX, alignY);
+    return cropFixedSize(imgExpr, src, targetW, targetH, alignX, alignY);
   }
 
   @Override
@@ -102,7 +101,7 @@ public class ImageCrop extends AbstractEvaluator {
   /**
    * Auto-crops borders of uniform color.
    */
-  private static IExpr autoCrop(BufferedImage src, IAST originalData) {
+  private static IExpr autoCrop(ImageExpr image, BufferedImage src) {
     int w = src.getWidth();
     int h = src.getHeight();
 
@@ -181,18 +180,16 @@ public class ImageCrop extends AbstractEvaluator {
       return new ImageExpr(new BufferedImage(1, 1, src.getType()), null);
     }
 
-    BufferedImage subImg = src.getSubimage(minX, minY, newW, newH);
-    // Note: We lose the originalData matrix correlation here unless we also slice the matrix.
-    // For simplicity, we pass null as the matrix argument for the new crop.
-    return new ImageExpr(subImg, null);
+    // the matrix the image was built from is cut with it
+    return ImageGeometryFunctions.part(image, src, minX, minY, newW, newH);
   }
 
   /**
    * Crops (or pads) to a fixed size with alignment. alignX: -1 (Left), 0 (Center), 1 (Right)
    * alignY: -1 (Bottom), 0 (Center), 1 (Top)
    */
-  private static IExpr cropFixedSize(BufferedImage src, int targetW, int targetH, double alignX,
-      double alignY) {
+  private static IExpr cropFixedSize(ImageExpr image, BufferedImage src, int targetW,
+      int targetH, double alignX, double alignY) {
     int srcW = src.getWidth();
     int srcH = src.getHeight();
 
@@ -212,6 +209,12 @@ public class ImageCrop extends AbstractEvaluator {
 
     int x = (int) Math.round((srcW - targetW) * factorX);
     int y = (int) Math.round((srcH - targetH) * factorY);
+
+    if (targetW > 0 && targetH > 0 && x >= 0 && y >= 0 && x + targetW <= srcW
+        && y + targetH <= srcH) {
+      // a crop inside of the image keeps its channels, and the matrix it was built from
+      return ImageGeometryFunctions.part(image, src, x, y, targetW, targetH);
+    }
 
     // Create new image
     // Use TYPE_INT_ARGB to support transparency if padding is needed

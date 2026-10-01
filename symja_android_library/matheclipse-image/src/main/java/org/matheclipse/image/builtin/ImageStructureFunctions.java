@@ -334,7 +334,8 @@ public class ImageStructureFunctions {
           if (j == 0) {
             rowHeights[i] = block.getHeight();
           } else if (rowHeights[i] != block.getHeight()) {
-            return F.NIL;
+            // Expecting images of the same height in one row.
+            return Errors.printMessage(S.ImageAssemble, "row", F.CEmptyList, engine);
           }
           if (i == 0) {
             columnWidths[j] = block.getWidth();
@@ -354,6 +355,11 @@ public class ImageStructureFunctions {
       int totalHeight = 0;
       for (int height : rowHeights) {
         totalHeight += height;
+      }
+
+      IExpr exact = assembleMatrices(rows, columnWidths, rowHeights, totalWidth, totalHeight);
+      if (exact != null) {
+        return exact;
       }
 
       boolean anyColor = false;
@@ -384,6 +390,56 @@ public class ImageStructureFunctions {
         float[] values = Pixels.pixel(block, localX, localY, Boof.channels(block));
         return spread(values, channels);
       }), null);
+    }
+
+    /**
+     * The image assembled from the matrices the tiles were built from, which keeps their samples
+     * and their type.
+     *
+     * @return <code>null</code> unless every tile kept a matrix, of one type and one number of
+     *         channels
+     */
+    private static IExpr assembleMatrices(IAST rows, int[] widths, int[] heights, int totalWidth,
+        int totalHeight) {
+      IAST[][] matrices = new IAST[rows.argSize()][widths.length];
+      ImageExpr first = null;
+      int channels = 0;
+      for (int i = 0; i < rows.argSize(); i++) {
+        IAST row = (IAST) rows.get(i + 1);
+        for (int j = 0; j < widths.length; j++) {
+          IAST matrix = PixelMatrix.of(row.get(j + 1));
+          if (matrix == null || PixelMatrix.width(matrix) != widths[j]
+              || PixelMatrix.height(matrix) != heights[i]) {
+            return null;
+          }
+          ImageExpr tile = (ImageExpr) row.get(j + 1);
+          if (first == null) {
+            first = tile;
+            channels = PixelMatrix.channels(matrix);
+          } else if (!first.sampleType().equals(tile.sampleType())
+              || channels != PixelMatrix.channels(matrix)
+              || !first.getOptions().equals(tile.getOptions())) {
+            return null;
+          }
+          matrices[i][j] = matrix;
+        }
+      }
+      if (first == null) {
+        return null;
+      }
+      return PixelMatrix.image(first, totalWidth, totalHeight, (x, y) -> {
+        int row = 0;
+        int localY = y;
+        while (localY >= heights[row]) {
+          localY -= heights[row++];
+        }
+        int column = 0;
+        int localX = x;
+        while (localX >= widths[column]) {
+          localX -= widths[column++];
+        }
+        return PixelMatrix.pixel(matrices[row][column], localX, localY);
+      });
     }
 
     /** Widen a greyscale pixel to the channel count of the assembled image. */

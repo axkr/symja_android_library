@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.hipparchus.analysis.MultivariateFunction;
+import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -39,6 +40,10 @@ import org.hipparchus.optim.nonlinear.vector.constrained.LagrangeSolution;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearEqualityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearInequalityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.SQPOptimizerS2;
+import org.hipparchus.optim.univariate.BrentOptimizer;
+import org.hipparchus.optim.univariate.SearchInterval;
+import org.hipparchus.optim.univariate.UnivariateObjectiveFunction;
+import org.hipparchus.optim.univariate.UnivariatePointValuePair;
 import org.hipparchus.random.RandomDataGenerator;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -222,7 +227,26 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       ast = ast.copyUntil(argSize + 1);
     }
     try {
-      return findExtremum(ast, goalType(), engine, options);
+      IExpr result = findExtremum(ast, goalType(), engine, options);
+      int precision =
+          FindRoot.workingPrecision(options.length > 3 ? options[3] : S.MachinePrecision);
+      if (precision > 0 && result.isList2() && result.second().isListOfRules()
+          && !ast.arg1().isList()) {
+        // WorkingPrecision -> p for a search without constraints: the machine optimum is the start
+        // of a Newton iteration with p digits for the stationary point
+        IAST rules = (IAST) result.second();
+        IExpr function = engine.evaluate(ast.arg1());
+        IAST gradient = F.mapRange(1, rules.size(), i -> F.D(function, rules.get(i).first()));
+        IExpr exact =
+            FindRoot.refineExact((IAST) engine.evaluate(gradient), rules, precision, engine);
+        if (exact.isPresent()) {
+          IAST exactRules = (IAST) exact;
+          return F.list(engine.evalN(F.subst(function, exactRules), precision),
+              F.mapRange(1, exactRules.size(), i -> F.Rule(exactRules.get(i).first(),
+                  engine.evalN(exactRules.get(i).second(), precision))));
+        }
+      }
+      return result;
     } catch (MathIllegalStateException mise) {
       if (mise.getSpecifier().equals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED)) {
         Object[] parts = mise.getParts();
@@ -314,8 +338,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     method = canonicalMethod(methodName);
     if (method == null) {
       // `1`.
-      return Errors.printMessage(head, "error", F.list(
-          F.$str("Method " + methodName + " is not one of " + String.join(", ", METHODS))), engine);
+      return Errors.printMessage(head, "error",
+          F.list(F.$str("Method " + methodName + " is not one of " + String.join(", ", METHODS))),
+          engine);
     }
 
     // FindMinimum has attribute HoldAll and localizes its variables like Block does
@@ -334,8 +359,12 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       }
     }
     try {
-      return findExtremum(head, function, relationList, specs, goalType, maxIterations, method,
-          automaticMethod, engine);
+      // The objective is held, so a symbol which stands for it - rosen = (1-x)^2+100*(y-x^2)^2;
+      // FindMinimum(rosen, {{x,-1.2},{y,1}}) - is only replaced by its value here, with the
+      // variables localized. Substituting the start values into the symbol itself found no
+      // variable.
+      return findExtremum(head, engine.evaluate(function), relationList, specs, goalType,
+          maxIterations, method, automaticMethod, options.length > 2 ? options[2] : S.None, engine);
     } finally {
       for (int i = 0; i < n; i++) {
         if (blockedSymbols[i] != null) {
@@ -347,7 +376,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
 
   private static IExpr findExtremum(ISymbol head, IExpr function, IAST relationList,
       List<VariableSpec> specs, GoalType goalType, int maxIterations, String method,
-      boolean automaticMethod, EvalEngine engine) {
+      boolean automaticMethod, IExpr evaluationMonitor, EvalEngine engine) {
     final int n = specs.size();
     // the one and only order of the variables: the order of the search specifications
     IASTAppendable varsList = F.ListAlloc(n);
@@ -385,10 +414,11 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         method = SEQUENTIAL_QUADRATIC_METHOD;
       } else {
         // `1`.
-        return Errors.printMessage(head, "error",
-            F.list(F.$str("Method " + method + " only takes bounds of a single variable, not "
-                + remaining + "; use Method -> \"" + SEQUENTIAL_QUADRATIC_METHOD + "\"")),
-            engine);
+        return Errors
+            .printMessage(head, "error",
+                F.list(F.$str("Method " + method + " only takes bounds of a single variable, not "
+                    + remaining + "; use Method -> \"" + SEQUENTIAL_QUADRATIC_METHOD + "\"")),
+                engine);
       }
     }
     if (method.equals(SEQUENTIAL_QUADRATIC_METHOD)) {
@@ -416,6 +446,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       return Errors.printMessage(head, "eqgele", F.List(constraints), engine);
     }
 
+    if (simpleBounds != null) {
+      moveIntoBounds(initialValues, simpleBounds);
+    }
     IExpr initialValue = testInitialValue(function, varsList, initialValues, goalType, engine);
     if (initialValue.isNIL()) {
       return F.NIL;
@@ -425,6 +458,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     }
     OptimizeSupplier optimizeSupplier = new OptimizeSupplier(head, goalType, function, varsList,
         initialValues, maxIterations, method, simpleBounds, optimizationData, constrained, engine);
+    optimizeSupplier.evaluationMonitor = evaluationMonitor;
     return optimizeSupplier.get();
   }
 
@@ -437,6 +471,16 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       if (METHODS[i].equalsIgnoreCase(method)) {
         return METHODS[i];
       }
+    }
+    // the method names of WMA, answered by the method here which is nearest to them
+    if ("Newton".equalsIgnoreCase(method) || "QuasiNewton".equalsIgnoreCase(method)) {
+      return CONJUGATEGRADIENT_METHOD;
+    }
+    if ("PrincipalAxis".equalsIgnoreCase(method)) {
+      return POWELL_METHOD;
+    }
+    if ("InteriorPoint".equalsIgnoreCase(method)) {
+      return SEQUENTIAL_QUADRATIC_METHOD;
     }
     return null;
   }
@@ -454,6 +498,25 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       upper[i] = Math.min(upper[i], upper2[i]);
     }
     return new SimpleBounds(lower, upper);
+  }
+
+  /**
+   * A start value outside of the bounds - the default one for <code>0 &lt;= x &lt;= 1</code>, for
+   * example - is replaced by the middle of the box, or by the bound it violates if the box is open
+   * on the other side. The bounded optimizers refuse a start point outside of the box.
+   */
+  private static void moveIntoBounds(double[] initialValues, SimpleBounds bounds) {
+    double[] lower = bounds.getLower();
+    double[] upper = bounds.getUpper();
+    for (int i = 0; i < initialValues.length; i++) {
+      if (initialValues[i] < lower[i] || initialValues[i] > upper[i]) {
+        if (!Double.isInfinite(lower[i]) && !Double.isInfinite(upper[i])) {
+          initialValues[i] = 0.5 * (lower[i] + upper[i]);
+        } else {
+          initialValues[i] = initialValues[i] < lower[i] ? lower[i] : upper[i];
+        }
+      }
+    }
   }
 
   /**
@@ -531,8 +594,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     return specs;
   }
 
-  private static boolean createLinearConstraints(IAST andAST, IAST varsList,
-      EvalEngine engine, OptimizationData[] optimizationData) {
+  private static boolean createLinearConstraints(IAST andAST, IAST varsList, EvalEngine engine,
+      OptimizationData[] optimizationData) {
     if (andAST.size() > 1) {
       int varsSize = varsList.argSize();
       double[] inequalitiesConstants = new double[andAST.argSize()];
@@ -814,8 +877,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
    * @param engine
    * @return the simple bounds for the variables extracted from the given <code>reducedAndAST</code>
    */
-  private static SimpleBounds createSimpleBounds(IASTAppendable reducedAndAST,
-      IAST varsList, EvalEngine engine) {
+  private static SimpleBounds createSimpleBounds(IASTAppendable reducedAndAST, IAST varsList,
+      EvalEngine engine) {
     int varsSize = varsList.argSize();
     if (varsSize <= 0) {
       return null;
@@ -1024,6 +1087,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     final boolean constrained;
     String method;
     final EvalEngine engine;
+    /** the expression of the option <code>EvaluationMonitor :> expr</code>, or <code>None</code> */
+    IExpr evaluationMonitor = S.None;
 
     public OptimizeSupplier(ISymbol head, GoalType goalType, IExpr function, IAST variableList,
         double[] initialValues, int maxIterations, String method, SimpleBounds simpleBounds,
@@ -1048,20 +1113,45 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
 
     /** Record an evaluated point, <code>value</code> being the value of the original function. */
     private void record(double[] point, double value) {
+      if (evaluationMonitor != S.None) {
+        monitor(point);
+      }
       if (Double.isNaN(value) || constrained) {
         // the methods also evaluate points which violate the constraints, and the best of those
         // is no answer - a constrained search stopped by MaxIterations stays unevaluated
         return;
       }
-      if (bestPoint == null || (goalType == GoalType.MAXIMIZE ? value > bestValue
-          : value < bestValue)) {
+      if (bestPoint == null
+          || (goalType == GoalType.MAXIMIZE ? value > bestValue : value < bestValue)) {
         bestPoint = point.clone();
         bestValue = value;
       }
     }
 
     /**
-     * WMA answers with the point it reached when the iterations run out, and says so with
+     * Evaluate the <code>EvaluationMonitor</code> expression with the variables set to the point
+     * the function was just evaluated at. The variables are localized by <code>FindMinimum</code>,
+     * so their values are free to be set and cleared here.
+     */
+    private void monitor(double[] point) {
+      for (int i = 1; i < variableList.size(); i++) {
+        if (variableList.get(i).isSymbol()) {
+          ((ISymbol) variableList.get(i)).assignValue(F.num(point[i - 1]), false);
+        }
+      }
+      try {
+        engine.evaluate(evaluationMonitor);
+      } finally {
+        for (int i = 1; i < variableList.size(); i++) {
+          if (variableList.get(i).isSymbol()) {
+            ((ISymbol) variableList.get(i)).clearValue();
+          }
+        }
+      }
+    }
+
+    /**
+     * Answers with the point it reached when the iterations run out, and says so with
      * <code>cvmit</code>: <code>FindMinimum(x^2+3*x+2, {x,5}, MaxIterations->1)</code> gives a
      * message and a result, not the call unevaluated.
      */
@@ -1135,8 +1225,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           Errors.rethrowsInterruptException(rex);
           if (constrained) {
             // `1`.
-            return Errors.printMessage(head, "error", F.list(F.$str(String.valueOf(rex.getMessage()))),
-                engine);
+            return Errors.printMessage(head, "error",
+                F.list(F.$str(String.valueOf(rex.getMessage()))), engine);
           }
           method = POWELL_METHOD;
         }
@@ -1175,7 +1265,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         method = CMAES_METHOD;
       }
       if (method.equals(CMAES_METHOD)) {
-        final CMAESOptimizer optim = new CMAESOptimizer(Math.max(30000, maxIterations), // Max Iterations
+        final CMAESOptimizer optim = new CMAESOptimizer(Math.max(30000, maxIterations), // Max
+                                                                                        // Iterations
             0.0, // Stop fitness
             true, // Is active CMA?
             10, //
@@ -1218,6 +1309,16 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         if (maximize) {
           optimum = new PointValuePair(optimum.getPointRef(), -optimum.getValue(), false);
         }
+        if (initialValues.length == 1) {
+          // The line search of the Powell method brackets with large steps, which can carry it
+          // across a pole: FindMinimum(Gamma(x), {x, 1.5}) ended at the pole x == 0. The local
+          // minimum next to the start value lies in the downhill bracket.
+          double[] bracket = downhillBracket(multiVariateNumerical, maximize);
+          double x = optimum.getPointRef()[0];
+          if (bracket != null && !(x >= bracket[0] && x <= bracket[1])) {
+            optimum = brent(multiVariateNumerical, maximize, bracket, maxEval, maxIter);
+          }
+        }
       }
 
       if ((optimum != null)) {
@@ -1233,6 +1334,67 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         return F.list(F.num(value), ruleList);
       }
       return F.NIL;
+    }
+
+    /**
+     * The bracket of the local minimum of a function of one variable which is next to the start
+     * value: walk downhill from the start value with doubling steps until the function rises again.
+     *
+     * @return <code>{left, right}</code>, or <code>null</code> if the function doesn't rise again
+     *         or isn't a real number on the way
+     */
+    private double[] downhillBracket(MultivariateFunction function, boolean maximize) {
+      final UnivariateFunction f = t -> {
+        double value = function.value(new double[] {t});
+        return maximize ? -value : value;
+      };
+      final double x0 = initialValues[0];
+      final double h = 0.1 * Math.max(1.0, Math.abs(x0));
+      final double f0 = f.value(x0);
+      final double left = x0 - h;
+      final double right = x0 + h;
+      final double fLeft = f.value(left);
+      final double fRight = f.value(right);
+      if (Double.isNaN(f0) || Double.isNaN(fLeft) || Double.isNaN(fRight)) {
+        return null;
+      }
+      if (fLeft >= f0 && fRight >= f0) {
+        return new double[] {left, right};
+      }
+      final int direction = fRight < fLeft ? 1 : -1;
+      double previous = x0;
+      double current = direction > 0 ? right : left;
+      double fCurrent = direction > 0 ? fRight : fLeft;
+      double step = h;
+      for (int i = 0; i < 60; i++) {
+        step *= 2.0;
+        double next = current + direction * step;
+        double fNext = f.value(next);
+        if (Double.isNaN(fNext)) {
+          return null;
+        }
+        if (fNext >= fCurrent) {
+          return new double[] {Math.min(previous, next), Math.max(previous, next)};
+        }
+        previous = current;
+        current = next;
+        fCurrent = fNext;
+      }
+      return null;
+    }
+
+    /** Brent's method on the bracket of {@link #downhillBracket}. */
+    private PointValuePair brent(MultivariateFunction function, boolean maximize, double[] bracket,
+        MaxEval maxEval, MaxIter maxIter) {
+      final UnivariateFunction f = t -> {
+        double value = function.value(new double[] {t});
+        return maximize ? -value : value;
+      };
+      UnivariatePointValuePair result = new BrentOptimizer(1e-10, 1e-14).optimize(maxEval, maxIter,
+          new UnivariateObjectiveFunction(f), GoalType.MINIMIZE,
+          new SearchInterval(bracket[0], bracket[1]));
+      return new PointValuePair(new double[] {result.getPoint()},
+          maximize ? -result.getValue() : result.getValue(), false);
     }
 
     private boolean inBounds(double[] point) {
@@ -1387,9 +1549,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     newSymbol.setAttributes(Attribute.HOLDALL);
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
-            S.MaxIterations, S.Method}, //
+            S.MaxIterations, S.Method, S.EvaluationMonitor, S.WorkingPrecision}, //
         new IExpr[] {//
-            S.Automatic, S.Automatic});
+            S.Automatic, S.Automatic, S.None, S.MachinePrecision});
   }
 
 }

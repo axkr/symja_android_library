@@ -123,6 +123,26 @@ public abstract class Scanner {
    */
   protected static final int TT_NEWLINE = 150;
 
+  /**
+   * Token type: a box escape <code>\( ... \)</code> or <code>\!\( ... \)</code>, the way a
+   * notebook writes a formula or an image into plain text. The whole escape is one token:
+   * {@link #fBoxText} is the text between the delimiters and {@link #fBoxInterpret} tells whether
+   * it began with <code>\!</code>, which asks for the expression the boxes stand for instead of
+   * the boxes themselves.
+   */
+  protected static final int TT_BOX_ESCAPE = 151;
+
+  /**
+   * The characters WMA keeps in a string for the box escapes <code>\!</code>, <code>\(</code>,
+   * <code>\*</code>, <code>\)</code> and <code>\`</code>. In input they are read like the
+   * escapes they stand for, so that a string which holds a box escape can be parsed again.
+   */
+  public static final char BOX_BANG = '\uF7C1';
+  public static final char BOX_OPEN = '\uF7C9';
+  public static final char BOX_SEPARATOR = '\uF7C8';
+  public static final char BOX_CLOSE = '\uF7C0';
+  public static final char BOX_FORM = '\uF7CD';
+
   // ----------------optimized identifier management------------------
   private static final String string_a = "a", string_b = "b", string_c = "c", string_d = "d",
       string_e = "e", string_f = "f", string_g = "g", string_h = "h", string_i = "i",
@@ -327,6 +347,12 @@ public abstract class Scanner {
 
   /** The last determined operator string */
   protected String fOperatorString;
+
+  /** The text between the delimiters of the box escape which was scanned last. */
+  protected String fBoxText;
+
+  /** Whether the box escape which was scanned last began with <code>\!</code>. */
+  protected boolean fBoxInterpret;
 
   /** protected List<Operator> fOperList; */
   protected List<Operator> fOperList;
@@ -798,6 +824,82 @@ public abstract class Scanner {
   }
 
   /**
+   * The length of a box delimiter at <code>position</code>: <code>2</code> for a backslash followed
+   * by <code>ascii</code>, <code>1</code> for the character WMA keeps for it in a string, and
+   * <code>0</code> if there is none.
+   */
+  private int boxDelimiter(int position, char ascii, char stored) {
+    if (position >= fInputString.length) {
+      return 0;
+    }
+    if (fInputString[position] == stored) {
+      return 1;
+    }
+    return fInputString[position] == '\\' && position + 1 < fInputString.length
+        && fInputString[position + 1] == ascii ? 2 : 0;
+  }
+
+  /**
+   * Read a box escape <code>\( ... \)</code> or <code>\!\( ... \)</code> which starts at
+   * <code>start</code>, up to the <code>\)</code> which closes it. Escapes nest, and a
+   * <code>\)</code> inside of a string doesn't close one.
+   *
+   * @return <code>false</code> if no box escape starts there; nothing is consumed then
+   */
+  private boolean scanBoxEscape(int start) throws SyntaxError {
+    final char[] input = fInputString;
+    int position = start;
+    final int bang = boxDelimiter(position, '!', BOX_BANG);
+    position += bang;
+    final int open = boxDelimiter(position, '(', BOX_OPEN);
+    if (open == 0) {
+      return false;
+    }
+    final int contentStart = position + open;
+    position = contentStart;
+    int depth = 1;
+    while (position < input.length) {
+      final char ch = input[position];
+      if (ch == '"') {
+        position++;
+        while (position < input.length && input[position] != '"') {
+          position += input[position] == '\\' ? 2 : 1;
+        }
+        position++;
+        continue;
+      }
+      int length = boxDelimiter(position, '(', BOX_OPEN);
+      if (length > 0) {
+        depth++;
+        position += length;
+        continue;
+      }
+      length = boxDelimiter(position, ')', BOX_CLOSE);
+      if (length > 0) {
+        if (--depth == 0) {
+          fBoxText = new String(input, contentStart, position - contentStart);
+          fBoxInterpret = bang > 0;
+          position += length;
+          for (int i = start; i < position; i++) {
+            if (input[i] == '\n') {
+              fRowCounter++;
+              fCurrentColumnStartPosition = i + 1;
+            }
+          }
+          fCurrentPosition = position;
+          return true;
+        }
+        position += length;
+        continue;
+      }
+      position += ch == '\\' ? 2 : 1;
+    }
+    fCurrentPosition = Math.min(contentStart, input.length);
+    throwSyntaxError("box escape - '\\)' expected.");
+    return false;
+  }
+
+  /**
    * Get the next token from the input string
    *
    * @throws SyntaxError
@@ -805,6 +907,7 @@ public abstract class Scanner {
   protected void getNextToken() throws SyntaxError {
 
     while (isValidPosition()) {
+      final int tokenStart = fCurrentPosition;
       getNextChar();
       fToken = TT_EOF;
 
@@ -813,6 +916,11 @@ public abstract class Scanner {
           && (fCurrentChar != ' ')//
           && (fCurrentChar != '\uF360') // \[InvisibleSpace]
       ) {
+        if ((fCurrentChar == '\\' || fCurrentChar == BOX_BANG || fCurrentChar == BOX_OPEN)
+            && scanBoxEscape(tokenStart)) {
+          fToken = TT_BOX_ESCAPE;
+          return;
+        }
         if (fCurrentChar == '\n') {
           fRowCounter++;
           fCurrentColumnStartPosition = fCurrentPosition;
@@ -1319,6 +1427,22 @@ public abstract class Scanner {
               break;
             case '\"':
               ident.append('\"');
+              break;
+            case '!':
+              // the box escapes stay in the string, as the characters WMA keeps for them
+              ident.append(BOX_BANG);
+              break;
+            case '(':
+              ident.append(BOX_OPEN);
+              break;
+            case ')':
+              ident.append(BOX_CLOSE);
+              break;
+            case '*':
+              ident.append(BOX_SEPARATOR);
+              break;
+            case '`':
+              ident.append(BOX_FORM);
               break;
             case '\n':
               fRowCounter++;

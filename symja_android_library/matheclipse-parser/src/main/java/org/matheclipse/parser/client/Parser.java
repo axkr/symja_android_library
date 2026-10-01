@@ -294,6 +294,21 @@ public class Parser extends Scanner {
       case TT_STRING:
         ASTNode str = getString();
         return parseArguments(str);
+      case TT_BOX_ESCAPE: {
+        // a box escape \!\( ... \) is read into an expression, which this parser doesn't build:
+        // the node hands the text on to ToExpression, written with the characters a string keeps
+        // for the delimiters
+        final StringBuilder escape = new StringBuilder(fBoxText.length() + 3);
+        if (fBoxInterpret) {
+          escape.append(BOX_BANG);
+        }
+        escape.append(BOX_OPEN).append(fBoxText).append(BOX_CLOSE);
+        final FunctionNode toExpression =
+            fFactory.createFunction(fFactory.createSymbol("ToExpression"));
+        toExpression.add(fFactory.createString(escape));
+        getNextToken();
+        return parseArguments(toExpression);
+      }
       case TT_PERCENT:
         final FunctionNode out =
             fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Out));

@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 
@@ -235,7 +236,7 @@ public final class Pixels {
   }
 
   /**
-   * The samples of <code>data</code> written as raw values of <code>type</code>, as WMA's
+   * The samples of <code>data</code> written as raw values of <code>type</code>, as
    * <code>Image(data, type)</code> takes them: rounded half to even and clipped to
    * <code>0..1</code>, <code>0..255</code> or <code>0..65535</code> for <code>"Bit"</code>,
    * <code>"Byte"</code> and <code>"Bit16"</code>, and machine reals, unclipped, for
@@ -277,14 +278,96 @@ public final class Pixels {
       if (max < 0.0) {
         result.append(F.num(value));
       } else {
-        // Math.rint rounds half to even, as WMA does: 0.5 is 0
+        // Math.rint rounds half to even: 0.5 is 0
         result.append(F.ZZ((long) Math.min(max, Math.max(0.0, Math.rint(value)))));
       }
     }
     return result;
   }
 
+  /**
+   * The data with every exact sample replaced by its machine number; <code>data</code> itself if it
+   * has none.
+   */
+  public static IAST realSamples(IAST data) {
+    IASTMutable copy = null;
+    for (int i = 1; i < data.size(); i++) {
+      IExpr element = data.get(i);
+      IExpr real = element;
+      if (element.isList()) {
+        real = realSamples((IAST) element);
+      } else if (!element.isInexactNumber()) {
+        double value = element.evalfNaN();
+        if (!Double.isNaN(value)) {
+          real = F.num(value);
+        }
+      }
+      if (real != element) {
+        if (copy == null) {
+          copy = data.copy();
+        }
+        copy.set(i, real);
+      }
+    }
+    return copy == null ? data : copy;
+  }
+
+  /**
+   * The data of the one layout written in the other: <code>{row, column, channel}</code> from
+   * <code>{channel, row, column}</code> if <code>toInterleaved</code>, else the other way round.
+   * One channel is a matrix of samples in the first layout and a list of that one matrix in the
+   * second.
+   *
+   * @return <code>null</code> if <code>data</code> is no rectangular array of depth 2 or 3
+   */
+  public static IAST relayout(IAST data, boolean toInterleaved) {
+    IntArrayList dimensions = LinearAlgebraUtil.dimensions(data);
+    if (dimensions == null || dimensions.size() < 2 || dimensions.size() > 3) {
+      return null;
+    }
+    if (dimensions.size() == 2) {
+      // one channel: a matrix of samples pixel by pixel, and the one plane of the planes
+      if (toInterleaved) {
+        return data;
+      }
+      // a plane isn't the matrix which OutputForm writes one row per line
+      IASTAppendable plane = F.ListAlloc(data.argSize());
+      plane.appendArgs(data);
+      return F.List(plane);
+    }
+    if (toInterleaved && dimensions.getInt(0) == 1) {
+      return (IAST) data.arg1();
+    }
+    final int first = toInterleaved ? dimensions.getInt(1) : dimensions.getInt(2);
+    final int second = toInterleaved ? dimensions.getInt(2) : dimensions.getInt(0);
+    final int third = toInterleaved ? dimensions.getInt(0) : dimensions.getInt(1);
+    IASTAppendable result = F.ListAlloc(first);
+    for (int i = 1; i <= first; i++) {
+      IASTAppendable inner = F.ListAlloc(second);
+      for (int j = 1; j <= second; j++) {
+        IASTAppendable innermost = F.ListAlloc(third);
+        for (int k = 1; k <= third; k++) {
+          // interleaved[row][column][channel] == planar[channel][row][column]
+          innermost.append(toInterleaved //
+              ? ((IAST) ((IAST) data.get(k)).get(i)).get(j)
+              : ((IAST) ((IAST) data.get(j)).get(k)).get(i));
+        }
+        inner.append(innermost);
+      }
+      result.append(inner);
+    }
+    return result;
+  }
+
   /** Whether <code>type</code> names one of the five sample types. */
+  /**
+   * The image type a name stands for: <code>"Real"</code> is the name which
+   * <code>"Real64"</code> has in the box of an image and in older input.
+   */
+  public static String imageType(String name) {
+    return "Real".equals(name) ? REAL64 : name;
+  }
+
   public static boolean isImageType(String type) {
     return BIT.equals(type) || BYTE.equals(type) || BIT16.equals(type) || REAL32.equals(type)
         || REAL64.equals(type);

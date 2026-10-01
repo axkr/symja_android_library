@@ -77,8 +77,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <p>
  * This is what a notebook front end reads: the WLJS Notebook keeps compressed strings in its cells
- * and unpacks them in the browser, so a string Symja writes has to be one Mathematica would have
- * written.
+ * and unpacks them in the browser, so a string Symja writes has to be one WMA would have written.
  */
 public class WMACompress {
 
@@ -134,7 +133,7 @@ public class WMACompress {
 
   /**
    * A compressed string copied out of a notebook carries the quotes, backslashes and line breaks of
-   * however it was quoted there. Mathematica's own readers drop them, and so does this one.
+   * however it was quoted there.
    */
   private static String strip(String compressed) {
     StringBuilder buf = new StringBuilder(compressed.length());
@@ -203,7 +202,7 @@ public class WMACompress {
     }
     if (expr instanceof IPatternObject) {
       // a pattern is an atom here and an expression in the format: `_` travels as Blank[] and
-      // `x_` as Pattern[x, Blank[]], which is how Mathematica writes them too
+      // `x_` as Pattern[x, Blank[]]
       IAST fullForm = ((IPatternObject) expr).toFullFormAST();
       return fullForm != null && writeAST(fullForm, out);
     }
@@ -240,8 +239,8 @@ public class WMACompress {
   }
 
   /**
-   * The name a symbol is written under: its context and its name, as Mathematica writes them.
-   * <code>System`</code> and <code>Global`</code> are the two a reader puts back by itself.
+   * The name a symbol is written under: its context and its name. <code>System`</code> and
+   * <code>Global`</code> are the two a reader puts back by itself.
    */
   private static String fullName(ISymbol symbol) {
     if (symbol instanceof FormalSymbol) {
@@ -312,9 +311,17 @@ public class WMACompress {
   }
 
   /**
+   * The most bytes a stream may inflate to. A compressed string is input of a user, and a short one
+   * can stand for an arbitrary amount of zeros.
+   */
+  private static final int MAX_INFLATED_BYTES = 1 << 27;
+
+  /**
    * Undo {@link #deflate(byte[])}.
    *
    * @return <code>null</code> when <code>data</code> ends before the stream does
+   * @throws DataFormatException if the stream isn't one, or inflates to more than
+   *         {@link #MAX_INFLATED_BYTES}
    */
   public static byte[] inflate(byte[] data) throws DataFormatException {
     Inflater inflater = new Inflater();
@@ -326,6 +333,9 @@ public class WMACompress {
         int read = inflater.inflate(buffer);
         if (read == 0 && (inflater.needsInput() || inflater.needsDictionary())) {
           return null;
+        }
+        if (out.size() + read > MAX_INFLATED_BYTES) {
+          throw new DataFormatException("inflated data too large");
         }
         out.write(buffer, 0, read);
       }
@@ -412,6 +422,12 @@ public class WMACompress {
             }
             ast.append(argument);
           }
+          if (argSize == 2 && head.isSymbol() && ast.arg1().isString()
+              && ((ISymbol) head).getSymbolName().equalsIgnoreCase("RawArray")) {
+            // RawArray[type, data] is what a NumericArray was called before it had that name, and
+            // what the pixels of an image in a notebook still are written as
+            return F.binaryAST2(S.NumericArray, ast.arg2(), ast.arg1());
+          }
           return isPatternConstruct(ast) ? engine.evaluate(ast) : ast;
         }
         case 'e':
@@ -476,6 +492,10 @@ public class WMACompress {
             }
           }
           break;
+      }
+      if ((long) elements * width > data.length - position) {
+        // the dimensions ask for more elements than the stream has bytes for
+        return fail();
       }
       IExpr[] values = new IExpr[elements];
       for (int i = 0; i < elements; i++) {

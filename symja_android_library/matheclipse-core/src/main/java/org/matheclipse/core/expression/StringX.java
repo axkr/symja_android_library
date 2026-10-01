@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.function.Function;
+import org.matheclipse.core.parser.BoxNotation;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -333,7 +334,7 @@ public class StringX implements IStringX {
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
-    return "\"" + fString + "\"";
+    return "\"" + BoxNotation.writeEscapes(fString) + "\"";
   }
 
   /** @return */

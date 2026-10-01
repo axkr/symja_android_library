@@ -11,8 +11,10 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.image.expression.data.Image3DExpr;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.image.expression.data.ImageOptions;
 
@@ -24,8 +26,73 @@ public class ImageFunctions {
     private static void init() {
       S.ConstantImage.setEvaluator(new ConstantImage());
       S.Image.setEvaluator(new Image());
+      S.Image3D.setEvaluator(new Image3D());
       S.ImageData.setEvaluator(new ImageData());
       S.ImageDimensions.setEvaluator(new ImageDimensions());
+    }
+  }
+
+  /**
+   * <code>Image3D(data)</code> - the 3D image of the array <code>{slice, row, column}</code> of the
+   * samples, or <code>{slice, row, column, channel}</code>. <code>Image3D(data, type)</code> takes
+   * the samples as the ones of the type <code>"Bit"</code>, <code>"Byte"</code>,
+   * <code>"Bit16"</code>, <code>"Real32"</code> or <code>"Real64"</code>. The data may be a
+   * <code>NumericArray</code>, whose type then is the type of the image unless one is given.
+   */
+  private static class Image3D extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1 instanceof Image3DExpr && ast.argSize() == 1) {
+        return arg1;
+      }
+      String type = null;
+      if (arg1.isNumericArray()) {
+        INumericArray array = (INumericArray) arg1;
+        type = Image.imageTypeOfArray(array.getStringType());
+        arg1 = array.normal(false);
+      }
+      if (!arg1.isList()) {
+        return F.NIL;
+      }
+      IExpr colorSpace = S.Automatic;
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (i == 2 && arg.isString()) {
+          type = Pixels.imageType(arg.toString());
+          if (!Pixels.isImageType(type)) {
+            return Errors.printMessage(S.Image3D, "imgtype", F.list(arg), engine);
+          }
+        } else if (arg.isRuleAST()) {
+          if (arg.first() == S.ColorSpace) {
+            colorSpace = arg.second();
+          } else if (arg.first() == S.Interleaving && arg.second().isFalse()) {
+            // one array per channel isn't read
+            return F.NIL;
+          }
+        } else {
+          return F.NIL;
+        }
+      }
+      try {
+        Image3DExpr image =
+            Image3DExpr.of((IAST) arg1, type, ImageOptions.DEFAULT.withColorSpace(colorSpace));
+        return image == null ? F.NIL : image;
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return Errors.printMessage(S.Image3D, rex, engine);
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -157,8 +224,9 @@ public class ImageFunctions {
         }
         IAST matrix = image.getMatrix();
         String currentType = image.sampleType();
-        String newType = argSize >= 2 && ast.arg2().isString() ? ast.arg2().toString()
-            : currentType;
+        String newType =
+            argSize >= 2 && ast.arg2().isString() ? Pixels.imageType(ast.arg2().toString())
+                : currentType;
         if (!Pixels.isImageType(newType)) {
           return Errors.printMessage(S.Image, "imgtype", F.list(ast.arg2()), engine);
         }
@@ -167,6 +235,19 @@ public class ImageFunctions {
           return F.NIL;
         }
         ast = ast.setAtCopy(1, pixels);
+      }
+      // Image[NumericArray[data, "UnsignedInteger8"], ...]: writes an image in InputForm,
+      // and what the pixels of an image pasted out of a notebook are. The type of the array is
+      // the type of the image unless one is given.
+      String arrayType = null;
+      if (ast.arg1().isNumericArray()) {
+        INumericArray array = (INumericArray) ast.arg1();
+        arrayType = imageTypeOfArray(array.getStringType());
+        IExpr list = array.normal(false);
+        if (!list.isList()) {
+          return F.NIL;
+        }
+        ast = ast.setAtCopy(1, list);
       }
       if (!ast.arg1().isAST()) {
         return F.NIL;
@@ -186,17 +267,21 @@ public class ImageFunctions {
         if (!ast.arg2().isString()) {
           return F.NIL;
         }
-        type = ast.arg2().toString();
+        type = Pixels.imageType(ast.arg2().toString());
         if (!Pixels.isImageType(type)) {
           return Errors.printMessage(S.Image, "imgtype", F.list(ast.arg2()), engine);
         }
       }
+      if (type == null) {
+        type = arrayType;
+      }
 
       IExpr interleavingValue = options[OPTION_INTERLEAVING];
+      // Writes the image of one channel with Interleaving -> None
       if (!interleavingValue.isTrue() && !interleavingValue.isFalse()
-          && interleavingValue != S.Automatic) {
-        return Errors.printMessage(S.Image, "opttfa",
-            F.list(S.Interleaving, interleavingValue), engine);
+          && interleavingValue != S.Automatic && interleavingValue != S.None) {
+        return Errors.printMessage(S.Image, "opttfa", F.list(S.Interleaving, interleavingValue),
+            engine);
       }
       // Automatic reads the data the way it is usually written, which is interleaved
       boolean interleaved = !interleavingValue.isFalse();
@@ -215,7 +300,7 @@ public class ImageFunctions {
           }
         }
         if (type != null && !data.isGraphicsObject() && !data.isAST(S.Graphics3D)) {
-          // WMA takes the data as raw samples of the stated type, rounded and clipped to it
+          // Takes the data as raw samples of the stated type, rounded and clipped to it
           IAST coerced = Pixels.coerceToType(data, type);
           if (coerced == null) {
             return F.NIL;
@@ -233,6 +318,22 @@ public class ImageFunctions {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.Image, rex, engine);
+      }
+    }
+
+    /** The image type of the elements of a <code>NumericArray</code>, or <code>null</code>. */
+    static String imageTypeOfArray(String arrayType) {
+      switch (arrayType) {
+        case "UnsignedInteger8":
+          return Pixels.BYTE;
+        case "UnsignedInteger16":
+          return Pixels.BIT16;
+        case "Real32":
+          return Pixels.REAL32;
+        case "Real64":
+          return Pixels.REAL64;
+        default:
+          return null;
       }
     }
 
@@ -286,8 +387,7 @@ public class ImageFunctions {
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, //
           new IBuiltInSymbol[] {S.AlignmentPoint, S.BaselinePosition, S.ColorSpace,
-              S.ImageResolution, S.ImageSize, S.Interleaving, S.Magnification,
-              S.MetaInformation}, //
+              S.ImageResolution, S.ImageSize, S.Interleaving, S.Magnification, S.MetaInformation}, //
           new IExpr[] {S.Center, S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic,
               S.Automatic, F.assoc()});
     }
@@ -336,6 +436,18 @@ public class ImageFunctions {
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
       IExpr arg1 = ast.arg1();
+      if (arg1 instanceof Image3DExpr) {
+        // the array {slice, row, column} of the voxels, on the scale of the type asked for
+        String type = Pixels.REAL32;
+        if (argSize >= 2) {
+          if (!ast.arg2().isString()
+              || !Pixels.isImageType(Pixels.imageType(ast.arg2().toString()))) {
+            return F.NIL;
+          }
+          type = Pixels.imageType(ast.arg2().toString());
+        }
+        return ((Image3DExpr) arg1).data(type);
+      }
       if (!(arg1 instanceof ImageExpr)) {
         return F.NIL;
       }
@@ -351,13 +463,13 @@ public class ImageFunctions {
         if (!ast.arg2().isString()) {
           return F.NIL;
         }
-        type = ast.arg2().toString();
+        type = Pixels.imageType(ast.arg2().toString());
       }
 
       IExpr dataReversedValue = options[OPTION_DATA_REVERSED];
       if (!dataReversedValue.isTrue() && !dataReversedValue.isFalse()) {
-        return Errors.printMessage(S.ImageData, "opttf",
-            F.list(S.DataReversed, dataReversedValue), engine);
+        return Errors.printMessage(S.ImageData, "opttf", F.list(S.DataReversed, dataReversedValue),
+            engine);
       }
       boolean dataReversed = dataReversedValue.isTrue();
 
@@ -370,8 +482,8 @@ public class ImageFunctions {
       } else if (interleavingValue.isTrue() || interleavingValue.isFalse()) {
         interleaved = interleavingValue.isTrue();
       } else {
-        return Errors.printMessage(S.ImageData, "opttfa",
-            F.list(S.Interleaving, interleavingValue), engine);
+        return Errors.printMessage(S.ImageData, "opttfa", F.list(S.Interleaving, interleavingValue),
+            engine);
       }
 
       // an image built from a matrix hands that matrix straight back, but only when it is the
@@ -379,9 +491,15 @@ public class ImageFunctions {
       // not the answer to a Real32 request - written the way round that was asked for, and the
       // right way up
       IAST matrix = imageExpr.getMatrix();
-      if (matrix != null && !dataReversed && interleaved == imageExpr.getOptions().interleaved()
-          && Pixels.sameScale(imageExpr.sampleType(), type)) {
-        return matrix;
+      if (matrix != null && !dataReversed && Pixels.sameScale(imageExpr.sampleType(), type)) {
+        if (interleaved == imageExpr.getOptions().interleaved()) {
+          return matrix;
+        }
+        // the other layout has the same samples in another order
+        IAST relayout = Pixels.relayout(matrix, interleaved);
+        if (relayout != null) {
+          return relayout;
+        }
       }
 
       BufferedImage bufferedImage = imageExpr.getBufferedImage();
@@ -432,6 +550,11 @@ public class ImageFunctions {
         if (bufferedImage != null) {
           return F.List(F.ZZ(bufferedImage.getWidth()), F.ZZ(bufferedImage.getHeight()));
         }
+      }
+      if (arg1 instanceof Image3DExpr) {
+        // {width, depth, height}
+        int[] dimensions = ((Image3DExpr) arg1).dimensions();
+        return F.List(F.ZZ(dimensions[0]), F.ZZ(dimensions[1]), F.ZZ(dimensions[2]));
       }
       return F.NIL;
     }

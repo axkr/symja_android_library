@@ -86,6 +86,22 @@ public class GraphUtil {
     CycleSearch search = new CycleSearch(view, view.n, view.n, limit, result);
     search.maxNodes = maxNodes;
     search.run(0, false);
+    if (search.exhausted && result.size() < limit) {
+      // Plain backtracking in EdgeList order is lost on graphs like the knight's graph of a
+      // chess board. Try once more with Warnsdorff's rule: the neighbour with the fewest ways on
+      // goes first, which walks into the corners while they can still be left.
+      List<int[][]> found = new ArrayList<int[][]>();
+      CycleSearch warnsdorff = new CycleSearch(view, view.n, view.n, limit, found);
+      warnsdorff.maxNodes = maxNodes;
+      warnsdorff.fewestFirst = true;
+      // one cycle is asked for: either direction of it is an answer
+      warnsdorff.anyDirection = limit == 1;
+      warnsdorff.run(0, false);
+      if (warnsdorff.exhausted && found.size() < limit) {
+        return null;
+      }
+      return found;
+    }
     return search.exhausted ? null : result;
   }
 
@@ -104,6 +120,10 @@ public class GraphUtil {
     boolean exhausted = false;
     int start;
     boolean higherOnly;
+    /** visit the neighbour with the fewest unvisited neighbours first (Warnsdorff's rule) */
+    boolean fewestFirst = false;
+    /** report a cycle of undirected edges in the direction it was found in */
+    boolean anyDirection = false;
 
     CycleSearch(GraphView view, int minLength, int maxLength, int limit, List<int[][]> result) {
       this.view = view;
@@ -142,7 +162,10 @@ public class GraphUtil {
       if ((nodes & 0xFFF) == 0) {
         org.matheclipse.core.basic.OperationSystem.checkInterrupt();
       }
-      for (int e : view.out[v]) {
+      if (fewestFirst && length + 1 < minLength && !canReturnToStart(v)) {
+        return;
+      }
+      for (int e : fewestFirst ? fewestOnwardFirst(v) : view.out[v]) {
         if (length > 0 && e == pathEdges[length - 1]) {
           // an undirected edge can't be walked back
           continue;
@@ -172,6 +195,53 @@ public class GraphUtil {
       }
     }
 
+    /**
+     * A cycle has to come back to the start vertex through a vertex which is still free, or through
+     * the current vertex <code>v</code>.
+     */
+    private boolean canReturnToStart(int v) {
+      for (int e : view.in[start]) {
+        int u = view.other(e, start);
+        if (u == v || !onPath[u]) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * The edges leaving <code>v</code>, those to the vertex with the fewest unvisited neighbours
+     * first; edges with the same count keep their <code>EdgeList</code> order.
+     */
+    private int[] fewestOnwardFirst(int v) {
+      int[] edges = view.out[v].clone();
+      int[] onward = new int[edges.length];
+      for (int i = 0; i < edges.length; i++) {
+        int w = view.other(edges[i], v);
+        int count = 0;
+        for (int e : view.out[w]) {
+          if (!onPath[view.other(e, w)]) {
+            count++;
+          }
+        }
+        onward[i] = count;
+      }
+      // insertion sort: stable, and the lists are short
+      for (int i = 1; i < edges.length; i++) {
+        int edge = edges[i];
+        int count = onward[i];
+        int j = i - 1;
+        while (j >= 0 && onward[j] > count) {
+          edges[j + 1] = edges[j];
+          onward[j + 1] = onward[j];
+          j--;
+        }
+        edges[j + 1] = edge;
+        onward[j + 1] = count;
+      }
+      return edges;
+    }
+
     private void report(int length) {
       boolean allUndirected = true;
       for (int i = 0; i < length; i++) {
@@ -180,7 +250,7 @@ public class GraphUtil {
           break;
         }
       }
-      if (allUndirected && length > 1) {
+      if (allUndirected && length > 1 && !anyDirection) {
         // the reverse walk is the same cycle; keep the direction with the smaller first edge
         int first = pathEdges[0];
         int last = pathEdges[length - 1];
@@ -1188,9 +1258,9 @@ public class GraphUtil {
   }
 
   /**
-   * The weakly connected components in WMA's order: a connected graph gives its vertex list; else
-   * each component lists its vertices in the post-order of a depth-first search which ignores the
-   * edge directions, larger components first.
+   * The weakly connected components: a connected graph gives its vertex list; else each component
+   * lists its vertices in the post-order of a depth-first search which ignores the edge directions,
+   * larger components first.
    *
    * @param graph the graph
    */
@@ -1252,7 +1322,7 @@ public class GraphUtil {
       connectedSets = weaklyConnectedSets(jGraph);
     } else if (jGraph.getType().isDirected()) {
       // For directed graphs, strongly connected components are computed.
-      // WMA specifies: "given in an order such that there are no edges from ci to ci+1".
+      // "given in an order such that there are no edges from ci to ci+1".
       // This implies a Reverse Topological Sort (Sink components first).
       // KosarajuStrongConnectivityInspector returns components in Topological Order (Source to
       // Sink).

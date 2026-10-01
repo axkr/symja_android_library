@@ -496,7 +496,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTheWolframLanguageWireFormatIsRead() {
-    // These three strings were written by Mathematica: they are taken from the WLJS Notebook's
+    // These three strings were written by WMA: they are taken from the WLJS Notebook's
     // own test suite and its demo notebooks, where the browser reads them with mma.js. A cell
     // carries its content compressed, so a notebook is unreadable until these are.
     check("Uncompress[\"1:eJxTTMoPSmNkYGAo5gESAZmpyanlmcWpTvkVmUxAAQBzVQdd\"]", //
@@ -513,8 +513,30 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTheWireFormatOfNumericArrays() {
+    // the pixels of an image in a notebook: RawArray["UnsignedInteger8", bytes], which is what a
+    // NumericArray was called before it had that name
+    check(
+        "Uncompress[\"1:eJxTTMoPSmNiYGAo5gASQYnljkVFiZXBAkBOaF5xZnpeaopnXklqemqRRRJIGQyf4GL4DwC5VA4w\"]", //
+        "NumericArray(Type: UnsignedInteger8 Dimensions: {2,2})");
+    check(
+        "Normal[Uncompress[\"1:eJxTTMoPSmNiYGAo5gASQYnljkVFiZXBAkBOaF5xZnpeaopnXklqemqRRRJIGQyf4GL4DwC5VA4w\"]]", //
+        "{{200,10},{0,255}}");
+    // an array of bytes
+    check("Uncompress[\"1:eJxTTMoPSmJiYGAAYWYgZqj/z8jEDAApIgMy\"]", //
+        "{{0,127,255},{1,2,3}}");
+    // the line breaks of a notebook cell are no part of the text
+    check(
+        "Normal[Uncompress[\"\n1:eJxTTMoPSmNiYGAo5gASQYnljkVFiZXBAkBOaF5xZnpe\naopnXklqemqRRRJIGQyf4GL4DwC5VA4w\n\"]]", //
+        "{{200,10},{0,255}}");
+    // dimensions which ask for more elements than the stream has bytes for are refused
+    check("Uncompress[\"1:eJxTTMoPSmJkAAMHABIFAeg=\"]", //
+        "Uncompress[1:eJxTTMoPSmJkAAMHABIFAeg=]");
+  }
+
+  @Test
   public void testTheWolframLanguageWireFormatIsWritten() {
-    // Compress writes what Mathematica writes, so the browser can read it
+    // Compress writes what WMA writes, so the browser can read it
     check("StringTake[Compress[Hold[1 + 1]], 2]", //
         "1:");
     check("Uncompress[Compress[Hold[1 + 1]]]", //
@@ -1188,8 +1210,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
     check("Count[VectorPlot3D[{1, 0, 0}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1}, "
         + "VectorPoints -> {{0, 0, 0}, {0.5, 0.5, 0.5}}, VectorScale -> 0.5], _Arrow, Infinity]", //
         "2");
-    check("Count[VectorPlot[{y, -x}, {x, -1, 1}, {y, -1, 1}, "
-        + "VectorPoints -> {{0, 0.5}, {0.5, 0}}], _Arrow, Infinity]", //
+    check(
+        "Count[VectorPlot[{y, -x}, {x, -1, 1}, {y, -1, 1}, "
+            + "VectorPoints -> {{0, 0.5}, {0.5, 0}}], _Arrow, Infinity]", //
         "2");
     // a colour in the style replaces the colouring by length, and a list of directives is spread
     // out so that it reaches the arrows beside it
@@ -1197,8 +1220,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         + "VectorPoints -> {{0, 0, 0}}, VectorStyle -> {Red, Thickness[0.01]}], _RGBColor, Infinity]", //
         "{RGBColor[1,0,0]}");
     // an explicit VectorColorFunction still colours them
-    check("Count[VectorPlot[{y, -x}, {x, -1, 1}, {y, -1, 1}, VectorPoints -> 3, "
-        + "VectorStyle -> Red, VectorColorFunction -> Automatic], _RGBColor, Infinity] > 1", //
+    check(
+        "Count[VectorPlot[{y, -x}, {x, -1, 1}, {y, -1, 1}, VectorPoints -> 3, "
+            + "VectorStyle -> Red, VectorColorFunction -> Automatic], _RGBColor, Infinity] > 1", //
         "True");
   }
 
@@ -1347,8 +1371,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "Map[Context, {ColorOutput, ControllerMethod, CurrentValue, "
             + "ImageSizeAction, Selectable, TickLabels, TransitionDuration}]", //
         "{System`,System`,System`,System`,System`,System`,System`}");
-    // AutomaticImageSize is carried by Graphics3D in Mathematica but is no System symbol there:
-    // Context[AutomaticImageSize] answers Global` in Mathematica too
+    // AutomaticImageSize is carried by Graphics3D in WMA but is no System symbol there:
+    // Context[AutomaticImageSize] answers Global`
     check("Context[AutomaticImageSize]", //
         "Global`");
     // written inside a package's private context, the name still means the built-in symbol. One
@@ -1667,9 +1691,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * <code>Line</code> takes options after its points, as Mathematica writes the outline of a
-   * surface - <code>Line[{{i, j}, ...}, VertexColors -> None]</code> drew <code>Line::argx</code>
-   * in the notebook for every Plot3D.
+   * <code>Line</code> takes options after its points of a surface -
+   * <code>Line[{{i, j}, ...}, VertexColors -> None]</code> drew <code>Line::argx</code> in the
+   * notebook for every Plot3D.
    */
   @Test
   public void testLineTakesOptions() {
@@ -1683,7 +1707,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
    * <code>StringPadLeft</code> lines the repetitions of the padding up with the right end of the
-   * finished string, <code>StringPadRight</code> with its left end. Mathematica, 2026-09-11.
+   * finished string, <code>StringPadRight</code> with its left end.
    */
   @Test
   public void testStringPadLinesUpItsRepetitions() {
@@ -1702,7 +1726,6 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   /**
    * <code>ContourPlot3D</code> lights each contour surface with lights of its own colour and gives
    * the picture no <code>Lighting</code> of its own, and outlines where a surface leaves the box.
-   * Mathematica, 2026-09-11.
    */
   @Test
   public void testContourPlot3DLightsEachSurface() {
@@ -1733,10 +1756,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * <code>Short</code> is a display wrapper. Mathematica (2026-09-11): <code>FullForm</code> and
-   * <code>InputForm</code> keep the wrapper with the whole list, and
-   * <code>ToString[Short[Range[100], 2], OutputForm]</code> is the whole list - only a display with
-   * a page width leaves anything out.
+   * <code>Short</code> is a display wrapper. <code>FullForm</code> and <code>InputForm</code> keep
+   * the wrapper with the whole list, and <code>ToString[Short[Range[100], 2], OutputForm]</code> is
+   * the whole list - only a display with a page width leaves anything out.
    */
   @Test
   public void testShortIsADisplayWrapper() {
@@ -1774,7 +1796,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * <code>DateListPlot</code> draws values against dates as Mathematica does: a line through
+   * <code>DateListPlot</code> draws values against dates: a line through
    * <code>{AbsoluteTime, value}</code> points, framed, without axes, dates under the frame.
    */
   @Test
@@ -1785,7 +1807,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
             + "{Head[g], MemberQ[List @@ g, HoldPattern[Frame -> True]], "
             + "MemberQ[List @@ g, HoldPattern[Axes -> False]]}", //
         "{Graphics,True,True}");
-    // the first point is at the AbsoluteTime of December 2022, as in Mathematica's output
+    // the first point is at the AbsoluteTime of December 2022, as in WMA's output
     check("Round[First[Cases[g, Line[l_] :> l[[1, 1]], Infinity]]] == 3878841600", //
         "True");
     check("Cases[List @@ g, HoldPattern[FrameTicks -> {_, {b_, _}}] :> b[[All, 2]]]", //
@@ -1810,8 +1832,8 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * Two datasets of two points each have the shape of a list of pairs; they are still two lines, as
-   * in Mathematica - Symja took them for two points with lists for coordinates and drew nothing.
+   * Two datasets of two points each have the shape of a list of pairs; they are still two lines -
+   * Symja took them for two points with lists for coordinates and drew nothing.
    */
   @Test
   public void testListLinePlotOfTwoShortSeries() {
@@ -1928,7 +1950,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   public void testSectorChart() {
     check("Cases[SectorChart[{{1, 1}, {1, 2}, {1, 3}}], Disk[_, r_, _] :> r, Infinity]", //
         "{1.0,2.0,3.0}");
-    // the sectors start at the left and follow one another clockwise, as in Mathematica
+    // the sectors start at the left and follow one another clockwise
     check(
         "Round[180/Pi*Cases[SectorChart[{{1, 1}, {1, 2}, {1, 3}}], Disk[_, _, a_] :> a, "
             + "Infinity]]", //
@@ -1957,7 +1979,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "Length[Cases[PieChart[{{1, 2, 3}, {2, 2, 1}}, ChartLabels -> {\"a\", \"b\", \"c\"}], "
             + "_Text, Infinity]]", //
         "6");
-    // the first sector runs from 144 to 180 degrees, as Mathematica draws it
+    // the first sector runs from 144 to 180 degrees
     check("Round[180/Pi*First[Cases[PieChart[{1, 2, 3, 4}], Disk[_, _, a_] :> a, Infinity]]]", //
         "{144,180}");
   }

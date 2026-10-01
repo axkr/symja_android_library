@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Colors;
@@ -68,8 +69,100 @@ public class ImageGeometryFunctions {
       if (size == null) {
         return F.NIL;
       }
-      boolean smooth = !"Nearest".equals(resamplingOption(ast, 3, engine));
-      return new ImageExpr(Geometry.resize(image, size[0], size[1], smooth), null);
+      String resampling = resamplingOption(ast, 3, engine);
+      // an enlargement by whole factors replicates the pixels unless a resampling is asked
+      // for - ImageResize(Image({{1,2,3},{4,5,6}}/10.), {6,4}) has every pixel four times
+      boolean wholeFactors = "Automatic".equals(resampling) && size[0] >= image.getWidth()
+          && size[1] >= image.getHeight() && size[0] % image.getWidth() == 0
+          && size[1] % image.getHeight() == 0;
+      if (wholeFactors || "Nearest".equals(resampling)) {
+        return nearest(ast.arg1(), image, size[0], size[1]);
+      }
+      if (size[0] <= image.getWidth() && size[1] <= image.getHeight()) {
+        IExpr averaged = averaged(ast.arg1(), size[0], size[1], engine);
+        if (averaged.isPresent()) {
+          return averaged;
+        }
+      }
+      return new ImageExpr(Geometry.resize(image, size[0], size[1], true), null);
+    }
+
+    /**
+     * A smaller image of real samples: every pixel is the mean of the block of pixels behind it,
+     * like {@link Geometry#resize} does it for the bitmap, but of the samples themselves and
+     * without rounding the result to <code>1/255</code>.
+     *
+     * @return <code>F.NIL</code> if the image has no real samples
+     */
+    private static IExpr averaged(IExpr arg, int width, int height, EvalEngine engine) {
+      if (!(arg instanceof ImageExpr) || PixelMatrix.of(arg) == null) {
+        return F.NIL;
+      }
+      ImageExpr source = (ImageExpr) arg;
+      String type = source.sampleType();
+      if (!Pixels.REAL32.equals(type) && !Pixels.REAL64.equals(type)) {
+        return F.NIL;
+      }
+      double[][][] channels = ImageFilterFunctions.channels(source, engine);
+      if (channels == null) {
+        return F.NIL;
+      }
+      final int sourceHeight = channels[0].length;
+      final int sourceWidth = channels[0][0].length;
+      final double scaleX = (double) sourceWidth / width;
+      final double scaleY = (double) sourceHeight / height;
+      double[][][] result = new double[channels.length][height][width];
+      for (int c = 0; c < channels.length; c++) {
+        for (int y = 0; y < height; y++) {
+          int fromY = (int) Math.floor(y * scaleY);
+          int toY = Math.min(sourceHeight, Math.max(fromY + 1, (int) Math.ceil((y + 1) * scaleY)));
+          for (int x = 0; x < width; x++) {
+            int fromX = (int) Math.floor(x * scaleX);
+            int toX = Math.min(sourceWidth, Math.max(fromX + 1, (int) Math.ceil((x + 1) * scaleX)));
+            double sum = 0.0;
+            for (int row = fromY; row < toY; row++) {
+              for (int column = fromX; column < toX; column++) {
+                sum += channels[c][row][column];
+              }
+            }
+            result[c][y][x] = sum / ((toY - fromY) * (toX - fromX));
+          }
+        }
+      }
+      return ImageFilterFunctions.toImage(result, source.getOptions(), type);
+    }
+
+    /**
+     * Point sampling. The matrix an image was built from is sampled with it, so its type and its
+     * samples are kept rather than read back off the 8 bit bitmap.
+     */
+    private static IExpr nearest(IExpr arg, BufferedImage image, int width, int height) {
+      BufferedImage resized = Geometry.resize(image, width, height, false);
+      if (arg instanceof ImageExpr) {
+        ImageExpr source = (ImageExpr) arg;
+        IAST matrix = source.getMatrix();
+        if (matrix != null && source.getOptions().interleaved() && matrix.argSize() > 0
+            && matrix.arg1().isList()) {
+          int rows = matrix.argSize();
+          int columns = matrix.arg1().argSize();
+          IASTAppendable sampled = F.ListAlloc(height);
+          for (int y = 0; y < height; y++) {
+            IExpr row = matrix.get(clamp((int) Math.floor((y + 0.5) * rows / height), rows) + 1);
+            if (!row.isList() || row.argSize() != columns) {
+              return new ImageExpr(resized, null);
+            }
+            IASTAppendable sampledRow = F.ListAlloc(width);
+            for (int x = 0; x < width; x++) {
+              sampledRow.append(((IAST) row)
+                  .get(clamp((int) Math.floor((x + 0.5) * columns / width), columns) + 1));
+            }
+            sampled.append(sampledRow);
+          }
+          sampled.isMatrix(true);
+          return new ImageExpr(resized, sampled, source.getOptions(), source.sampleType());
+        }
+      }
+      return new ImageExpr(resized, null);
     }
 
     @Override
@@ -100,7 +193,7 @@ public class ImageGeometryFunctions {
         return quarterTurns(ast.arg1(), image, 1);
       }
       if (ast.argSize() == 2) {
-        // WMA's side forms: ImageRotate(img, side) puts the top at side, side1 -> side2 moves
+        // Side forms: ImageRotate(img, side) puts the top at side, side1 -> side2 moves
         // side1 to side2
         int turns = sideTurns(ast.arg2());
         if (turns >= 0) {
@@ -161,9 +254,9 @@ public class ImageGeometryFunctions {
     }
 
     /**
-     * The image turned by <code>turns</code> counterclockwise quarter turns. The matrix an image was
-     * built from turns with it, exactly, so its type and its samples are kept rather than read back
-     * off the 8 bit bitmap.
+     * The image turned by <code>turns</code> counterclockwise quarter turns. The matrix an image
+     * was built from turns with it, exactly, so its type and its samples are kept rather than read
+     * back off the 8 bit bitmap.
      */
     private static IExpr quarterTurns(IExpr arg, BufferedImage image, int turns) {
       BufferedImage rotated = Geometry.rotateQuarters(image, turns);
@@ -252,7 +345,7 @@ public class ImageGeometryFunctions {
         return F.NIL;
       }
       if (ast.argSize() == 1) {
-        return new ImageExpr(Geometry.flip(image, false, true), null);
+        return flip(ast.arg1(), image, false, true);
       }
       IExpr side = ast.arg2();
       if (side.isRuleAST()) {
@@ -260,24 +353,56 @@ public class ImageGeometryFunctions {
         IExpr from = rule.arg1();
         IExpr to = rule.arg2();
         if (isVertical(from) && isVertical(to)) {
-          return new ImageExpr(Geometry.flip(image, false, from != to), null);
+          return flip(ast.arg1(), image, false, from != to);
         }
         if (isHorizontal(from) && isHorizontal(to)) {
-          return new ImageExpr(Geometry.flip(image, from != to, false), null);
+          return flip(ast.arg1(), image, from != to, false);
         }
         // Top -> Left is the main diagonal, Top -> Right the other one
         boolean antiDiagonal =
             (from == S.Top && to == S.Right) || (from == S.Bottom && to == S.Left)
                 || (from == S.Left && to == S.Bottom) || (from == S.Right && to == S.Top);
-        return new ImageExpr(Geometry.transpose(image, antiDiagonal), null);
+        return transpose(ast.arg1(), image, antiDiagonal);
       }
       if (isVertical(side)) {
-        return new ImageExpr(Geometry.flip(image, false, true), null);
+        return flip(ast.arg1(), image, false, true);
       }
       if (isHorizontal(side)) {
-        return new ImageExpr(Geometry.flip(image, true, false), null);
+        return flip(ast.arg1(), image, true, false);
       }
       return F.NIL;
+    }
+
+    /** The mirrored image; the matrix an image was built from is mirrored with it. */
+    private static IExpr flip(IExpr arg, BufferedImage image, boolean horizontal,
+        boolean vertical) {
+      IAST matrix = PixelMatrix.of(arg);
+      if (matrix != null) {
+        final int width = PixelMatrix.width(matrix);
+        final int height = PixelMatrix.height(matrix);
+        IExpr result = PixelMatrix.image(arg, width, height, (x, y) -> PixelMatrix.pixel(matrix,
+            horizontal ? width - 1 - x : x, vertical ? height - 1 - y : y));
+        if (result != null) {
+          return result;
+        }
+      }
+      return new ImageExpr(Geometry.flip(image, horizontal, vertical), null);
+    }
+
+    /** The image reflected about a diagonal, and its matrix with it. */
+    private static IExpr transpose(IExpr arg, BufferedImage image, boolean antiDiagonal) {
+      IAST matrix = PixelMatrix.of(arg);
+      if (matrix != null) {
+        final int width = PixelMatrix.width(matrix);
+        final int height = PixelMatrix.height(matrix);
+        IExpr result = PixelMatrix.image(arg, height, width, (x, y) -> antiDiagonal //
+            ? PixelMatrix.pixel(matrix, width - 1 - y, height - 1 - x)
+            : PixelMatrix.pixel(matrix, y, x));
+        if (result != null) {
+          return result;
+        }
+      }
+      return new ImageExpr(Geometry.transpose(image, antiDiagonal), null);
     }
 
     private static boolean isVertical(IExpr side) {
@@ -302,7 +427,9 @@ public class ImageGeometryFunctions {
   /**
    * <code>ImagePad(image, m)</code> - the image with <code>m</code> pixels added on every side.
    * <code>{left, right}</code> pads horizontally, <code>{{left, right}, {bottom, top}}</code> gives
-   * all four, and a negative amount trims instead. A second argument is the colour to pad with.
+   * all four, and a negative amount trims instead. A third argument is the colour to pad with, or
+   * <code>"Fixed"</code> to repeat the pixels of the border and <code>"Periodic"</code> to repeat
+   * the image.
    */
   private static class ImagePad extends AbstractEvaluator {
 
@@ -317,10 +444,20 @@ public class ImageGeometryFunctions {
         return F.NIL;
       }
       float[] padding = null;
+      boolean fixed = false;
+      boolean periodic = false;
       if (ast.argSize() >= 3) {
-        padding = Colors.toRgba(ast.arg3());
-        if (padding == null) {
-          return F.NIL;
+        if (ast.arg3().isString()) {
+          fixed = "Fixed".equals(ast.arg3().toString());
+          periodic = "Periodic".equals(ast.arg3().toString());
+          if (!fixed && !periodic) {
+            return F.NIL;
+          }
+        } else {
+          padding = Colors.toRgba(ast.arg3());
+          if (padding == null) {
+            return F.NIL;
+          }
         }
       }
       int left = margins[0];
@@ -333,6 +470,46 @@ public class ImageGeometryFunctions {
         return F.NIL;
       }
       int channels = Boof.channels(image);
+      final int sourceWidth = image.getWidth();
+      final int sourceHeight = image.getHeight();
+      final boolean repeatBorder = fixed;
+      final boolean repeatImage = periodic;
+      // the matrix an image was built from is padded with it
+      IAST matrix = PixelMatrix.of(ast.arg1());
+      if (matrix != null && PixelMatrix.width(matrix) == sourceWidth
+          && PixelMatrix.height(matrix) == sourceHeight) {
+        ImageExpr source = (ImageExpr) ast.arg1();
+        double[] colour = new double[4];
+        if (padding != null) {
+          double gray = ast.arg3().isList() ? Double.NaN : ast.arg3().evalfNaN();
+          for (int c = 0; c < 4; c++) {
+            // a number is a grey level, and is kept as it was given
+            colour[c] = c < 3 && !Double.isNaN(gray) ? gray : padding[c];
+          }
+        }
+        final IExpr outside = repeatBorder || repeatImage ? null
+            : PixelMatrix.constant(colour, PixelMatrix.channels(matrix), source.sampleType());
+        if (outside != null || repeatBorder || repeatImage) {
+          IExpr result = PixelMatrix.image(source, width, height, (x, y) -> {
+            int sourceX = x - left;
+            int sourceY = y - top;
+            if (repeatBorder) {
+              sourceX = clamp(sourceX, sourceWidth);
+              sourceY = clamp(sourceY, sourceHeight);
+            } else if (repeatImage) {
+              sourceX = Math.floorMod(sourceX, sourceWidth);
+              sourceY = Math.floorMod(sourceY, sourceHeight);
+            } else if (sourceX < 0 || sourceY < 0 || sourceX >= sourceWidth
+                || sourceY >= sourceHeight) {
+              return outside;
+            }
+            return PixelMatrix.pixel(matrix, sourceX, sourceY);
+          });
+          if (result != null) {
+            return result;
+          }
+        }
+      }
       // without an explicit colour the new pixels are black, or transparent where the image has an
       // alpha channel to be transparent in
       Geometry.Background background = padding == null //
@@ -341,8 +518,14 @@ public class ImageGeometryFunctions {
       return new ImageExpr(Pixels.fromPixels(width, height, channels, (x, y) -> {
         int sourceX = x - left;
         int sourceY = y - top;
-        if (sourceX < 0 || sourceY < 0 || sourceX >= image.getWidth()
-            || sourceY >= image.getHeight()) {
+        if (repeatBorder) {
+          sourceX = clamp(sourceX, sourceWidth);
+          sourceY = clamp(sourceY, sourceHeight);
+        } else if (repeatImage) {
+          sourceX = Math.floorMod(sourceX, sourceWidth);
+          sourceY = Math.floorMod(sourceY, sourceHeight);
+        } else if (sourceX < 0 || sourceY < 0 || sourceX >= sourceWidth
+            || sourceY >= sourceHeight) {
           return background.outside(channels);
         }
         return Pixels.pixel(image, sourceX, sourceY, channels);
@@ -428,11 +611,7 @@ public class ImageGeometryFunctions {
       if (right < left || bottom < top) {
         return F.NIL;
       }
-      final int originX = left;
-      final int originY = top;
-      int channels = Boof.channels(image);
-      return new ImageExpr(Pixels.fromPixels(right - left + 1, bottom - top + 1, channels,
-          (x, y) -> Pixels.pixel(image, originX + x, originY + y, channels)), null);
+      return part(ast.arg1(), image, left, top, right - left + 1, bottom - top + 1);
     }
 
     @Override
@@ -468,11 +647,8 @@ public class ImageGeometryFunctions {
       if (columns == null) {
         return F.NIL;
       }
-      final int originX = columns[0];
-      final int originY = rows[0];
-      int channels = Boof.channels(image);
-      return new ImageExpr(Pixels.fromPixels(columns[1] - columns[0] + 1, rows[1] - rows[0] + 1,
-          channels, (x, y) -> Pixels.pixel(image, originX + x, originY + y, channels)), null);
+      return part(ast.arg1(), image, columns[0], rows[0], columns[1] - columns[0] + 1,
+          rows[1] - rows[0] + 1);
     }
 
     /** A <code>Take</code> style specification as zero based inclusive bounds. */
@@ -930,6 +1106,26 @@ public class ImageGeometryFunctions {
       return 0;
     }
     return value >= size ? size - 1 : value;
+  }
+
+  /**
+   * The rectangle of the image which starts at column <code>left</code> and row <code>top</code>.
+   * The matrix an image was built from is cut with it, so its type and its samples are kept rather
+   * than read back off the 8 bit bitmap.
+   */
+  static IExpr part(IExpr arg, BufferedImage image, int left, int top, int width, int height) {
+    IAST matrix = PixelMatrix.of(arg);
+    if (matrix != null && PixelMatrix.width(matrix) == image.getWidth()
+        && PixelMatrix.height(matrix) == image.getHeight()) {
+      IExpr result = PixelMatrix.image(arg, width, height,
+          (x, y) -> PixelMatrix.pixel(matrix, left + x, top + y));
+      if (result != null) {
+        return result;
+      }
+    }
+    int channels = Boof.channels(image);
+    return new ImageExpr(Pixels.fromPixels(width, height, channels,
+        (x, y) -> Pixels.pixel(image, left + x, top + y, channels)), null);
   }
 
   public static void initialize() {

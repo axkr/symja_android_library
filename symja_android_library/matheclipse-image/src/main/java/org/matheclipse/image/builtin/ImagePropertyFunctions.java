@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Pixels;
 import org.matheclipse.image.expression.data.ImageExpr;
+import org.matheclipse.image.expression.data.Image3DExpr;
 
 /**
  * What an image is, rather than what it looks like: <code>ImageQ</code>,
@@ -40,7 +41,7 @@ public class ImagePropertyFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.booleSymbol(ast.arg1() instanceof ImageExpr);
+      return F.booleSymbol(ast.arg1() instanceof ImageExpr || ast.arg1() instanceof Image3DExpr);
     }
 
     @Override
@@ -59,6 +60,9 @@ public class ImagePropertyFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1() instanceof Image3DExpr) {
+        return F.ZZ(((Image3DExpr) ast.arg1()).channels());
+      }
       BufferedImage image = bufferedImage(ast.arg1());
       return image == null ? F.NIL : F.ZZ(Boof.channels(image));
     }
@@ -79,6 +83,11 @@ public class ImagePropertyFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1() instanceof Image3DExpr) {
+        Image3DExpr volume = (Image3DExpr) ast.arg1();
+        String stated = volume.getOptions().colorSpaceName();
+        return F.stringx(stated != null ? stated : volume.channels() == 1 ? "Grayscale" : "RGB");
+      }
       BufferedImage image = bufferedImage(ast.arg1());
       return image == null ? F.NIL : F.stringx(Pixels.colorSpaceOf(image));
     }
@@ -106,6 +115,9 @@ public class ImagePropertyFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1 instanceof Image3DExpr) {
+        return F.stringx(((Image3DExpr) arg1).sampleType());
+      }
       if (!(arg1 instanceof ImageExpr)) {
         return F.NIL;
       }

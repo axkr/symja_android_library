@@ -720,4 +720,22 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
+  public void testTrigonometricFunctionNames() {
+    // LaTeX only defines \arccos, \arcsin, \arctan and the direct functions up to \coth; the other
+    // names are no commands of LaTeX, KaTeX or MathJax
+    check("TeXForm({ArcCot(x), ArcSec(x), ArcCsc(x), Coth(x), Sech(x), Csch(x)})", //
+        "\\{\\operatorname{arccot}(x),\\operatorname{arcsec}(x),\\operatorname{arccsc}(x),"
+            + "\\coth (x),\\operatorname{sech}(x),\\operatorname{csch}(x)\\}");
+    check("TeXForm({ArcSinh(x), ArcCosh(x), ArcTanh(x), ArcCoth(x), ArcSech(x), ArcCsch(x)})", //
+        "\\{\\operatorname{arcsinh}(x),\\operatorname{arccosh}(x),\\operatorname{arctanh}(x),"
+            + "\\operatorname{arccoth}(x),\\operatorname{arcsech}(x),\\operatorname{arccsch}(x)\\}");
+    check("TeXForm({Sin(x), ArcTan(x), Tanh(x)})", //
+        "\\{\\sin (x),\\arctan (x),\\tanh (x)\\}");
+    // the new form and the old one are both read back
+    check("ToExpression(\"\\\\operatorname{sech}(x)+\\\\operatorname{arcsinh}(y)\", TeXForm)", //
+        "ArcSinh(y)+Sech(x)");
+    check("ToExpression(\"\\\\arccot (x)\", TeXForm)", //
+        "ArcCot(x)");
+  }
 }

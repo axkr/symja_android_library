@@ -3,6 +3,7 @@ package org.matheclipse.image.builtin;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -15,6 +16,7 @@ import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Colors;
 import org.matheclipse.image.algo.Pixels;
 import org.matheclipse.image.expression.data.ImageExpr;
+import org.matheclipse.image.expression.data.ImageOptions;
 
 /**
  * Colour: <code>ColorConvert</code>, <code>ColorNegate</code>, <code>ColorSeparate</code>,
@@ -27,7 +29,8 @@ import org.matheclipse.image.expression.data.ImageExpr;
  * -&gt; "HSB"]</code> already <em>interprets</em> its data as HSB and stores the RGB result. So
  * <code>ColorConvert</code> of an image accepts only <code>"Grayscale"</code> and
  * <code>"RGB"</code>; handing back an image whose channels are secretly H, S and B would make
- * <code>ImageColorSpace</code> lie and would break the round trip through <code>ColorConvert</code>.
+ * <code>ImageColorSpace</code> lie and would break the round trip through
+ * <code>ColorConvert</code>.
  *
  * <p>
  * The other colour spaces are reachable one channel at a time, where there is no ambiguity:
@@ -65,12 +68,47 @@ public class ColorFunctions {
         return F.NIL;
       }
       String space = ast.arg2().toString();
+      if (ast.arg1() instanceof ImageExpr
+          && ("Grayscale".equalsIgnoreCase(space) || "Gray".equalsIgnoreCase(space))) {
+        IExpr gray = realGrayscale((ImageExpr) ast.arg1(), engine);
+        if (gray.isPresent()) {
+          return gray;
+        }
+      }
       BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
       if (image != null) {
         return convertImage(image, space);
       }
       float[] rgba = Colors.toRgba(ast.arg1());
       return rgba == null ? F.NIL : convertColor(rgba, space);
+    }
+
+    /**
+     * The grey level <code>0.299*r + 0.587*g + 0.114*b</code> of an image of real samples, from the
+     * samples themselves: it gives <code>0.299</code> for a red pixel, where the 8 bit bitmap can
+     * only say <code>76/255</code>.
+     *
+     * @return {@link F#NIL} for an image which isn't of a real type or has no three channels
+     */
+    private static IExpr realGrayscale(ImageExpr image, EvalEngine engine) {
+      String type = image.sampleType();
+      if (!"Real32".equals(type) && !"Real64".equals(type)) {
+        return F.NIL;
+      }
+      double[][][] channels = ImageFilterFunctions.channels(image, engine);
+      if (channels == null || channels.length < 3) {
+        return F.NIL;
+      }
+      int height = channels[0].length;
+      int width = channels[0][0].length;
+      double[][] gray = new double[height][width];
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          gray[y][x] =
+              0.299 * channels[0][y][x] + 0.587 * channels[1][y][x] + 0.114 * channels[2][y][x];
+        }
+      }
+      return ImageFilterFunctions.toImage(new double[][][] {gray}, ImageOptions.DEFAULT);
     }
 
     private static IExpr convertImage(BufferedImage image, String space) {
@@ -125,7 +163,9 @@ public class ColorFunctions {
     }
   }
 
-  /** <code>ColorNegate(image)</code> or <code>ColorNegate(color)</code> - the complementary colour. */
+  /**
+   * <code>ColorNegate(image)</code> or <code>ColorNegate(color)</code> - the complementary colour.
+   */
   private static class ColorNegate extends AbstractEvaluator {
 
     @Override
@@ -148,8 +188,8 @@ public class ColorFunctions {
       if (rgba == null) {
         return F.NIL;
       }
-      return Colors.toRGBColor(
-          new float[] {1.0f - rgba[0], 1.0f - rgba[1], 1.0f - rgba[2], rgba[3]});
+      return Colors
+          .toRGBColor(new float[] {1.0f - rgba[0], 1.0f - rgba[1], 1.0f - rgba[2], rgba[3]});
     }
 
     @Override
@@ -242,8 +282,8 @@ public class ColorFunctions {
       IASTAppendable result = F.ListAlloc(planes);
       for (int p = 0; p < planes; p++) {
         final int plane = p;
-        result.append(new ImageExpr(
-            Pixels.fromPixels(image.getWidth(), image.getHeight(), 1, (x, y) -> {
+        result.append(
+            new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 1, (x, y) -> {
               float[] rgb = unit(Pixels.pixel(image, x, y, channels), channels);
               if (gray) {
                 return new float[] {(0.299f * rgb[0] + 0.587f * rgb[1] + 0.114f * rgb[2]) * 255.0f};
@@ -264,10 +304,8 @@ public class ColorFunctions {
       IASTAppendable result = F.ListAlloc(channels);
       for (int c = 0; c < channels; c++) {
         final int channel = c;
-        result.append(new ImageExpr(
-            Pixels.fromPixels(image.getWidth(), image.getHeight(), 1,
-                (x, y) -> new float[] {Pixels.pixel(image, x, y, channels)[channel]}),
-            null));
+        result.append(new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 1,
+            (x, y) -> new float[] {Pixels.pixel(image, x, y, channels)[channel]}), null));
       }
       return result;
     }
@@ -309,8 +347,7 @@ public class ColorFunctions {
       }
       boolean hsb = "HSB".equalsIgnoreCase(space) || "HSV".equalsIgnoreCase(space);
       boolean cmyk = "CMYK".equalsIgnoreCase(space);
-      if (!hsb && !cmyk && !"RGB".equalsIgnoreCase(space)
-          && !"Grayscale".equalsIgnoreCase(space)) {
+      if (!hsb && !cmyk && !"RGB".equalsIgnoreCase(space) && !"Grayscale".equalsIgnoreCase(space)) {
         return F.NIL;
       }
       if (cmyk && count != 4) {
@@ -332,8 +369,8 @@ public class ColorFunctions {
       int outputChannels = count == 1 ? 1 : (cmyk ? 3 : Math.min(count, 4));
       final boolean toHsb = hsb;
       final boolean toCmyk = cmyk;
-      return new ImageExpr(Pixels.fromPixels(planes[0].getWidth(), planes[0].getHeight(),
-          outputChannels, (x, y) -> {
+      return new ImageExpr(
+          Pixels.fromPixels(planes[0].getWidth(), planes[0].getHeight(), outputChannels, (x, y) -> {
             float[] samples = new float[count];
             for (int i = 0; i < count; i++) {
               samples[i] = Pixels.pixel(planes[i], x, y, Boof.channels(planes[i]))[0] / 255.0f;
@@ -373,8 +410,8 @@ public class ColorFunctions {
    *
    * <p>
    * Median cut splits the box of colours present in the image along its longest channel, at the
-   * median, until there are <code>n</code> boxes; each box then contributes the mean of its colours.
-   * It is deterministic, which a k-means palette would not be.
+   * median, until there are <code>n</code> boxes; each box then contributes the mean of its
+   * colours. It is deterministic, which a k-means palette would not be.
    */
   private static class ColorQuantize extends AbstractEvaluator {
 
@@ -497,9 +534,9 @@ public class ColorFunctions {
   }
 
   /**
-   * <code>ColorReplace(image, old -&gt; new)</code> - replace every pixel close to <code>old</code>.
-   * A list of rules replaces several colours at once, and a third argument widens the tolerance,
-   * measured the way {@link ColorDistance} measures it.
+   * <code>ColorReplace(image, old -&gt; new)</code> - replace every pixel close to
+   * <code>old</code>. A list of rules replaces several colours at once, and a third argument widens
+   * the tolerance, measured the way {@link ColorDistance} measures it.
    */
   private static class ColorReplace extends AbstractEvaluator {
 
@@ -571,7 +608,8 @@ public class ColorFunctions {
 
   /**
    * <code>ColorDistance(color1, color2)</code> - the CIE 1976 difference between two colours.
-   * <code>ColorDistance(image, color)</code> gives a greyscale image of the distance of every pixel.
+   * <code>ColorDistance(image, color)</code> gives a greyscale image of the distance of every
+   * pixel.
    */
   private static class ColorDistance extends AbstractEvaluator {
 
@@ -584,12 +622,11 @@ public class ColorFunctions {
       BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
       if (image != null) {
         int channels = Boof.channels(image);
-        return new ImageExpr(
-            Pixels.fromPixels(image.getWidth(), image.getHeight(), 1, (x, y) -> {
-              float[] rgb = unit(Pixels.pixel(image, x, y, channels), channels);
-              // CIE76 runs to about 100, and the result has to fit in a greyscale image
-              return new float[] {(float) (255.0 * Colors.distance(rgb, second) / 100.0)};
-            }), null);
+        return new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 1, (x, y) -> {
+          float[] rgb = unit(Pixels.pixel(image, x, y, channels), channels);
+          // CIE76 runs to about 100, and the result has to fit in a greyscale image
+          return new float[] {(float) (255.0 * Colors.distance(rgb, second) / 100.0)};
+        }), null);
       }
       float[] first = Colors.toRgba(ast.arg1());
       return first == null ? F.NIL : F.num(Colors.distance(first, second));
@@ -619,9 +656,8 @@ public class ColorFunctions {
         return F.NIL;
       }
       int channels = Boof.channels(image);
-      return new ImageExpr(
-          Pixels.fromPixels(image.getWidth(), image.getHeight(), 1, (x, y) -> new float[] {
-              channels == 4 ? Pixels.pixel(image, x, y, channels)[3] : 255.0f}),
+      return new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 1,
+          (x, y) -> new float[] {channels == 4 ? Pixels.pixel(image, x, y, channels)[3] : 255.0f}),
           null);
     }
 
@@ -637,8 +673,8 @@ public class ColorFunctions {
   }
 
   /**
-   * <code>SetAlphaChannel(image, alpha)</code> - the image with the given transparency, taken from a
-   * number or from a greyscale image. Without a second argument the image becomes fully opaque.
+   * <code>SetAlphaChannel(image, alpha)</code> - the image with the given transparency, taken from
+   * a number or from a greyscale image. Without a second argument the image becomes fully opaque.
    */
   private static class SetAlphaChannel extends AbstractEvaluator {
 
@@ -666,18 +702,56 @@ public class ColorFunctions {
       }
       final BufferedImage alphaPlane = alphaImage;
       final float constantAlpha = alpha;
-      return new ImageExpr(
-          Pixels.fromPixels(image.getWidth(), image.getHeight(), 4, (x, y) -> {
-            float[] values = Pixels.pixel(image, x, y, channels);
-            float[] result = new float[4];
-            for (int c = 0; c < 3; c++) {
-              result[c] = channels == 1 ? values[0] : values[c];
+      if (alphaPlane == null) {
+        IExpr exact = withAlpha(ast.arg1(), constantAlpha / 255.0);
+        if (exact != null) {
+          return exact;
+        }
+      }
+      return new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 4, (x, y) -> {
+        float[] values = Pixels.pixel(image, x, y, channels);
+        float[] result = new float[4];
+        for (int c = 0; c < 3; c++) {
+          result[c] = channels == 1 ? values[0] : values[c];
+        }
+        result[3] = alphaPlane == null //
+            ? constantAlpha
+            : Pixels.pixel(alphaPlane, x, y, Boof.channels(alphaPlane))[0];
+        return result;
+      }), null);
+    }
+
+    /**
+     * The matrix an image of real samples was built from, with the alpha value as the fourth
+     * channel of every pixel, so that the samples aren't rounded to <code>1/255</code>. A grey
+     * level becomes the three equal colour channels an image with an alpha channel has here.
+     *
+     * @return <code>null</code> if the image kept no matrix of real samples
+     */
+    private static IExpr withAlpha(IExpr arg, double alpha) {
+      IAST matrix = PixelMatrix.of(arg);
+      if (matrix == null) {
+        return null;
+      }
+      ImageExpr source = (ImageExpr) arg;
+      String type = source.sampleType();
+      if ((!Pixels.REAL32.equals(type) && !Pixels.REAL64.equals(type))
+          || source.getOptions().colorSpaceName() != null) {
+        return null;
+      }
+      final IExpr alphaSample = F.num(alpha);
+      return PixelMatrix.image(source, PixelMatrix.width(matrix), PixelMatrix.height(matrix),
+          (x, y) -> {
+            IExpr pixel = PixelMatrix.pixel(matrix, x, y);
+            if (!pixel.isList()) {
+              return F.List(pixel, pixel, pixel, alphaSample);
             }
-            result[3] = alphaPlane == null //
-                ? constantAlpha
-                : Pixels.pixel(alphaPlane, x, y, Boof.channels(alphaPlane))[0];
-            return result;
-          }), null);
+            if (pixel.argSize() != 3 && pixel.argSize() != 4) {
+              return null;
+            }
+            IAST channels = (IAST) pixel;
+            return F.List(channels.arg1(), channels.arg2(), channels.arg3(), alphaSample);
+          });
     }
 
     @Override
@@ -692,8 +766,8 @@ public class ColorFunctions {
   }
 
   /**
-   * <code>RemoveAlphaChannel(image)</code> - the image composed onto white, or onto the colour given
-   * as a second argument.
+   * <code>RemoveAlphaChannel(image)</code> - the image composed onto white, or onto the colour
+   * given as a second argument.
    */
   private static class RemoveAlphaChannel extends AbstractEvaluator {
 
@@ -705,9 +779,10 @@ public class ColorFunctions {
       }
       float[] background = new float[] {1.0f, 1.0f, 1.0f, 1.0f};
       if (ast.argSize() >= 2) {
-        background = Colors.toRgba(ast.arg2());
+        // a number is no colour here - RemoveAlphaChannel(image, 0.) is ::invcolor
+        background = ast.arg2().isNumber() ? null : Colors.toRgba(ast.arg2());
         if (background == null) {
-          return F.NIL;
+          return Errors.printMessage(S.RemoveAlphaChannel, "invcolor", F.List(ast.arg2()), engine);
         }
       }
       int channels = Boof.channels(image);
@@ -715,16 +790,15 @@ public class ColorFunctions {
         return ast.arg1();
       }
       final float[] onto = background;
-      return new ImageExpr(
-          Pixels.fromPixels(image.getWidth(), image.getHeight(), 3, (x, y) -> {
-            float[] values = Pixels.pixel(image, x, y, 4);
-            float alpha = values[3] / 255.0f;
-            float[] result = new float[3];
-            for (int c = 0; c < 3; c++) {
-              result[c] = values[c] * alpha + onto[c] * 255.0f * (1.0f - alpha);
-            }
-            return result;
-          }), null);
+      return new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 3, (x, y) -> {
+        float[] values = Pixels.pixel(image, x, y, 4);
+        float alpha = values[3] / 255.0f;
+        float[] result = new float[3];
+        for (int c = 0; c < 3; c++) {
+          result[c] = values[c] * alpha + onto[c] * 255.0f * (1.0f - alpha);
+        }
+        return result;
+      }), null);
     }
 
     @Override

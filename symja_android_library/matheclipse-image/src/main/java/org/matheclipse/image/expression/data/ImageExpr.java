@@ -311,6 +311,10 @@ final public class ImageExpr extends DataExpr<byte[]> {
     if (!Pixels.describesPixels(space, samples.channels())) {
       return new ImageExpr(bufferedImage, null, options, sampleType);
     }
+    if (Pixels.REAL32.equals(type) || Pixels.REAL64.equals(type)) {
+      // Image({{1, 0, 0.5}}) is an image of reals, and ImageData gives {{1., 0., 0.5}}
+      imageData = Pixels.realSamples(imageData);
+    }
     // mark it for the matrix layout of OutputForm, so that ImageData prints one row per line
     imageData.isMatrix(true);
     return new ImageExpr(bufferedImage, imageData, options, sampleType);

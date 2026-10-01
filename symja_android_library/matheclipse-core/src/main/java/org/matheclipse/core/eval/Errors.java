@@ -100,8 +100,7 @@ public class Errors {
       "astroevent", "`1` is not a supported astronomical event in `2`.", //
       "astrofallback",
       "The date `1` is outside the range of the Orekit ephemerides; the lower accuracy algorithms of Meeus were used.", //
-      "astroframe",
-      "Value of option `1` -> `2` is not a usable reference frame.", //
+      "astroframe", "Value of option `1` -> `2` is not a usable reference frame.", //
       "astroloc", "`1` in `2` needs an observer location.", //
       "astromethod", "`1` is not a supported computation method in `2`.", //
       "astronotimpl", "`1` is not implemented.", //
@@ -306,6 +305,7 @@ public class Errors {
       "`1` should be a rectangular array of machine-sized real numbers of any depth, whose dimensions are greater than 1.", //
       "inv02", "The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.", //
       "invak", "The argument is not a rule or a list of rules.", //
+      "invcolor", "`1` is an invalid color specification.", //
       "invdt", "The argument `1` is not a valid Association.", //
       "invdt2", "The argument `1` is not a rule or a list of rules.", //
       "invidx2", "Index `1` should be a machine sized integer between `2` and `3`.", //
@@ -450,6 +450,7 @@ public class Errors {
       "nquan",
       "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
       "nrnum", "The Function value `1` is not a real number at `2`=`3`.", //
+      "nsol", "There are no points that satisfy the constraints `1`.", //
       "nresbc",
       "The integrand `1` does not appear to be analytic on the contour of radius `2` around `3`; a branch cut seems to cross it and the result is unreliable.", //
       "nrescnv",
@@ -557,6 +558,7 @@ public class Errors {
       "rrlim", "Exiting after `1` scanned `2` times.", //
       "rspec",
       "Rotation specification `1` should be a machine-sized integer or list of machine-sized integers.", //
+      "row", "Expecting images of the same height in one row.", //
       "rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
       "rvec", "Input `1` is not a vector of reals or integers.", //
       "rvec2", "Input `1` is not a real-valued vector.", //
@@ -708,7 +710,7 @@ public class Errors {
     }
     // "or" only reads correctly for two adjacent counts. For a wider range it names two of the
     // several that are allowed and silently excludes the rest - "3 or 6 arguments are expected"
-    // for a function taking 3 to 6. WMA reports that range as argb.
+    // for a function taking 3 to 6.
     // `1` called with `2` arguments; between `3` and `4` arguments are expected.
     return printMessage(topHead, "argb",
         F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);

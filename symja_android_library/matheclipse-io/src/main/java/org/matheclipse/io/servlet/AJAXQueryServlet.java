@@ -1,10 +1,13 @@
 package org.matheclipse.io.servlet;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -18,35 +21,32 @@ import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
+import org.matheclipse.core.eval.steps.StepsTree;
 import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Locale;
+import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.graphics.WebGLGraphics3D;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTDataset;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IGraphExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.io.ImageFormatIO;
 import org.matheclipse.core.io.TableFormatIO;
-import org.matheclipse.core.interfaces.IASTDataset;
-import org.matheclipse.core.interfaces.IGraphExpr;
-import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.graphtheory.graphics.GraphGraphics;
-import org.matheclipse.core.graphics.WebGLGraphics3D;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.manipulate.Dynamics;
 import org.matheclipse.core.manipulate.ManipulateSpec;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
+import org.matheclipse.graphtheory.graphics.GraphGraphics;
+import org.matheclipse.image.expression.data.Image3DExpr;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.io.IOInit;
 import org.matheclipse.logging.ThreadLocalNotifyingAppender.ThreadLocalNotifierClosable;
@@ -68,11 +68,11 @@ public class AJAXQueryServlet extends HttpServlet {
    * evaluations against it.
    *
    * <p>
-   * The two are one object because they have to be evicted as one. They used to be two maps, and
-   * an eviction from the lock map alone would have handed the next request a fresh lock for an
-   * engine another thread was already inside - two evaluations in one engine, which is exactly
-   * what the lock exists to prevent. Paired, an eviction gives the next request a new engine
-   * <em>and</em> a new lock, and the evaluation still running keeps the pair it started with.
+   * The two are one object because they have to be evicted as one. They used to be two maps, and an
+   * eviction from the lock map alone would have handed the next request a fresh lock for an engine
+   * another thread was already inside - two evaluations in one engine, which is exactly what the
+   * lock exists to prevent. Paired, an eviction gives the next request a new engine <em>and</em> a
+   * new lock, and the evaluation still running keeps the pair it started with.
    *
    * <p>
    * The lock is deliberately NOT the engine itself: {@link EvalEngine#copy()} is synchronized, and
@@ -85,14 +85,14 @@ public class AJAXQueryServlet extends HttpServlet {
     final Object lock = new Object();
 
     /**
-     * Whatever a deployment needs to remember about this session for as long as this instance
-     * holds its engine, and no longer.
+     * Whatever a deployment needs to remember about this session for as long as this instance holds
+     * its engine, and no longer.
      *
      * <p>
-     * It lives here rather than in a map of the deployment's own so that the two cannot fall out
-     * of step: a note about an engine that has been evicted is worse than no note, because the
-     * next request builds a new engine and the stale note describes the old one. Written and read
-     * only while {@link #lock} is held, which every caller of {@link #beforeEvaluation} and
+     * It lives here rather than in a map of the deployment's own so that the two cannot fall out of
+     * step: a note about an engine that has been evicted is worse than no note, because the next
+     * request builds a new engine and the stale note describes the old one. Written and read only
+     * while {@link #lock} is held, which every caller of {@link #beforeEvaluation} and
      * {@link #afterEvaluation} does.
      */
     Object attachment;
@@ -200,15 +200,13 @@ public class AJAXQueryServlet extends HttpServlet {
 
     // named by the content, so that re-evaluating a cell reuses the file rather than filling the
     // session's quota with copies, and so that the session id never reaches the page
-    String name = SessionSandbox.safeName(
-        "export-" + Integer.toHexString(Arrays.hashCode(bytes)) + "."
-            + formatArg.toString().toLowerCase(Locale.US),
-        formatArg.toString());
+    String name = SessionSandbox.safeName("export-" + Integer.toHexString(Arrays.hashCode(bytes))
+        + "." + formatArg.toString().toLowerCase(Locale.US), formatArg.toString());
     if (name == null || SessionSandbox.store(engine.getSessionID(), name, bytes) == null) {
       return null;
     }
-    return "<a href=\"/ajax/download/?name=" + name + "\" download=\"" + name + "\">"
-        + name + " (" + bytes.length + " bytes)</a>";
+    return "<a href=\"/ajax/download/?name=" + name + "\" download=\"" + name + "\">" + name + " ("
+        + bytes.length + " bytes)</a>";
   }
 
   protected boolean isRelaxedSyntax() {
@@ -248,10 +246,10 @@ public class AJAXQueryServlet extends HttpServlet {
         functionValue = "";
       }
       value = value.trim();
-      if (value.length() > Short.MAX_VALUE) {
-        out.println(JSONBuilder.createJSONErrorString("Input expression to large!"));
-        return;
-      }
+      // if (value.length() > Short.MAX_VALUE) {
+      // out.println(JSONBuilder.createJSONErrorString("Input expression to large!"));
+      // return;
+      // }
 
       String result = evaluate(req, value, numericModeValue, functionValue, 0);
       out.println(result);
@@ -274,9 +272,9 @@ public class AJAXQueryServlet extends HttpServlet {
     }
     if (expression.trim().length() == 0) {
       return JSONBuilder.createJSONErrorString("No input expression posted!");
-    } else if (expression.length() >= Short.MAX_VALUE) {
-      return JSONBuilder.createJSONErrorString(
-          "Input expression greater than: " + Short.MAX_VALUE + " characters!");
+      // } else if (expression.length() >= Short.MAX_VALUE) {
+      // return JSONBuilder.createJSONErrorString(
+      // "Input expression greater than: " + Short.MAX_VALUE + " characters!");
     }
 
     String[] result = null;
@@ -482,101 +480,109 @@ public class AJAXQueryServlet extends HttpServlet {
    * an image, a dataset, an iframe or - for everything else - the MathML of the expression.
    *
    * <p>
-   * Shared with {@link AJAXManipulateServlet}, so the body of a <code>Manipulate</code> is shown the
-   * same way a plain result is and every kind of body works.
+   * Shared with {@link AJAXManipulateServlet}, so the body of a <code>Manipulate</code> is shown
+   * the same way a plain result is and every kind of body works.
    */
   static String[] renderResult(EvalEngine engine, IExpr outExpr, StringBuilderWriter outWriter,
       StringBuilderWriter errorWriter) throws IOException {
-        if (outExpr instanceof IGraphExpr) {
-          GraphGraphics graphGraphics = new GraphGraphics(outExpr);
-          IAST graphics = graphGraphics.toGraphics();
-          if (graphics.isPresent()) {
-            outExpr = graphics;
-          }
+    if (outExpr instanceof IGraphExpr) {
+      GraphGraphics graphGraphics = new GraphGraphics(outExpr);
+      IAST graphics = graphGraphics.toGraphics();
+      if (graphics.isPresent()) {
+        outExpr = graphics;
+      }
+    }
+    if (outExpr.isAST(S.TabView)) {
+      // the pane the tab strip has selected is what is shown, drawn as it would be on its own:
+      // a 3D pane keeps its interactive view
+      int selected = Dynamics.selectedTab((IAST) outExpr, engine);
+      if (selected > 0) {
+        boolean keyed = Dynamics.isKeyedTab((IAST) outExpr, selected, engine);
+        outExpr = Dynamics.tabPane((IAST) outExpr, selected, keyed)[1];
+      }
+    }
+    if (org.matheclipse.core.builtin.MeshFunctions.isBoundaryMeshRegion(outExpr)) {
+      // a mesh region is shown as its picture, as the reference shows it - without Show
+      IAST graphics =
+          org.matheclipse.core.builtin.MeshFunctions.meshToGraphics((IAST) outExpr, engine);
+      if (graphics.isPresent()) {
+        outExpr = graphics;
+      }
+    }
+    if (outExpr.isGraphicsObject()) {
+      StringBuilder buf = new StringBuilder();
+      // the converter emits its own <svg> root, sized from the ImageSize option; wrapping it
+      // in a second fixed size root here would override that
+      if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, true, engine)) {
+        return JSONBuilder.createJSONJavaScript(buf.toString());
+      }
+    } else if (WebGLGraphics3D.isRenderable(outExpr)) {
+      String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) outExpr);
+      // Return as a JSON JavaScript result (which creates a line in the output UI)
+      return JSONBuilder.createJSONJavaScript(webglSnippet);
+    }
+    if (outExpr.isASTSizeGE(S.Show, 2)) {
+      IAST show = (IAST) outExpr;
+      return JSONBuilder.createJSONShow(engine, show);
+    } else if (outExpr instanceof ImageExpr) {
+      ImageExpr imageExpr = (ImageExpr) outExpr;
+      // BufferedImage bImage = imageExpr.getBufferedImage();
+      byte[] data = imageExpr.toData();
+      if (data != null) {
+        // An image is inert content and needs no document of its own. Delivering it in an
+        // iframe gave it a fixed height, so a picture taller than that scrolled inside the
+        // frame instead of being shown; sent as an img it scales with the output column.
+        return JSONBuilder.createJSONJavaScript(
+            "<img alt=\"image\" style=\"max-width: 100%; height: auto;\" src=\"data:image/png;base64,"
+                + imageExpr.toBase64EncodedString() + "\"/>");
+      }
+    } else if (outExpr instanceof Image3DExpr) {
+      // a volume is shown as the picture of its brightest voxels
+      String picture = ((Image3DExpr) outExpr).toBase64EncodedString();
+      if (!picture.isEmpty()) {
+        return JSONBuilder.createJSONJavaScript(
+            "<img alt=\"image3d\" style=\"max-width: 100%; height: auto;\" src=\"data:image/png;base64,"
+                + picture + "\"/>");
+      }
+    } else if (outExpr.isAST(S.ExportForm, 3)) {
+      String link = exportFormLink(engine, (IAST) outExpr);
+      if (link != null) {
+        return JSONBuilder.createJSONHTML(engine, link, outWriter, errorWriter);
+      }
+    } else if (outExpr.isDataset()) {
+      // through the IASTDataset interface in matheclipse-core, so that the servlet needs no
+      // compile time knowledge of matheclipse-dataset
+      String javaScriptStr = ((IASTDataset) outExpr).datasetToJSForm();
+      if (javaScriptStr != null) {
+        String htmlSnippet = javaScriptStr.trim();
+        return JSONBuilder.createJSONHTML(engine, htmlSnippet, outWriter, errorWriter);
+      }
+    } else if (outExpr.isAST(S.JSFormData, 3)) {
+      IAST jsFormData = (IAST) outExpr;
+      // a sandboxed iframe loading the library from its CDN, built by matheclipse-jsgraphics;
+      // without that module the result is shown as text
+      try {
+        String[] iframe =
+            JSONBuilder.createJSIFrame(jsFormData.arg2().toString(), jsFormData.arg1().toString());
+        if (iframe != null) {
+          return iframe;
         }
-        if (outExpr.isAST(S.TabView)) {
-          // the pane the tab strip has selected is what is shown, drawn as it would be on its own:
-          // a 3D pane keeps its interactive view
-          int selected = Dynamics.selectedTab((IAST) outExpr, engine);
-          if (selected > 0) {
-            boolean keyed = Dynamics.isKeyedTab((IAST) outExpr, selected, engine);
-            outExpr = Dynamics.tabPane((IAST) outExpr, selected, keyed)[1];
-          }
-        }
-        if (org.matheclipse.core.builtin.MeshFunctions.isBoundaryMeshRegion(outExpr)) {
-          // a mesh region is shown as its picture, as the reference shows it - without Show
-          IAST graphics =
-              org.matheclipse.core.builtin.MeshFunctions.meshToGraphics((IAST) outExpr, engine);
-          if (graphics.isPresent()) {
-            outExpr = graphics;
-          }
-        }
-        if (outExpr.isGraphicsObject()) {
-          StringBuilder buf = new StringBuilder();
-          // the converter emits its own <svg> root, sized from the ImageSize option; wrapping it
-          // in a second fixed size root here would override that
-          if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, true, engine)) {
-            return JSONBuilder.createJSONJavaScript(buf.toString());
-          }
-        } else if (WebGLGraphics3D.isRenderable(outExpr)) {
-          String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) outExpr);
-          // Return as a JSON JavaScript result (which creates a line in the output UI)
-          return JSONBuilder.createJSONJavaScript(webglSnippet);
-        }
-        if (outExpr.isASTSizeGE(S.Show, 2)) {
-          IAST show = (IAST) outExpr;
-          return JSONBuilder.createJSONShow(engine, show);
-        } else if (outExpr instanceof ImageExpr) {
-          ImageExpr imageExpr = (ImageExpr) outExpr;
-          // BufferedImage bImage = imageExpr.getBufferedImage();
-          byte[] data = imageExpr.toData();
-          if (data != null) {
-            // An image is inert content and needs no document of its own. Delivering it in an
-            // iframe gave it a fixed height, so a picture taller than that scrolled inside the
-            // frame instead of being shown; sent as an img it scales with the output column.
-            return JSONBuilder.createJSONJavaScript(
-                "<img alt=\"image\" style=\"max-width: 100%; height: auto;\" src=\"data:image/png;base64,"
-                    + imageExpr.toBase64EncodedString() + "\"/>");
-          }
-        } else if (outExpr.isAST(S.ExportForm, 3)) {
-          String link = exportFormLink(engine, (IAST) outExpr);
-          if (link != null) {
-            return JSONBuilder.createJSONHTML(engine, link, outWriter, errorWriter);
-          }
-        } else if (outExpr.isDataset()) {
-          // through the IASTDataset interface in matheclipse-core, so that the servlet needs no
-          // compile time knowledge of matheclipse-dataset
-          String javaScriptStr = ((IASTDataset) outExpr).datasetToJSForm();
-          if (javaScriptStr != null) {
-            String htmlSnippet = javaScriptStr.trim();
-            return JSONBuilder.createJSONHTML(engine, htmlSnippet, outWriter, errorWriter);
-          }
-        } else if (outExpr.isAST(S.JSFormData, 3)) {
-          IAST jsFormData = (IAST) outExpr;
-          // a sandboxed iframe loading the library from its CDN, built by matheclipse-jsgraphics;
-          // without that module the result is shown as text
-          try {
-            String[] iframe = JSONBuilder.createJSIFrame(jsFormData.arg2().toString(),
-                jsFormData.arg1().toString());
-            if (iframe != null) {
-              return iframe;
-            }
-          } catch (Exception ex) {
-            LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
-          }
-        } else if (StepsTree.isTraceForm(outExpr)) {
-          // a derivation: the steps travel as their own tree so the page can lay them out
-          return JSONBuilder.createJSONSteps(engine, (IAST) outExpr, outWriter, errorWriter);
-        } else if (outExpr.isString()) {
-          IStringX str = (IStringX) outExpr;
-          if (str.getMimeType() == IStringX.TEXT_HTML) {
-            String htmlSnippet = str.toString();
-            String htmlPage = HTML_IFRAME;
-            htmlPage = htmlPage.replace("`1`", htmlSnippet);
-            return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + htmlPage
-                + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-          }
-        }
+      } catch (Exception ex) {
+        LOGGER.debug("{}.evaluateString() failed", AJAXQueryServlet.class.getSimpleName(), ex);
+      }
+    } else if (StepsTree.isTraceForm(outExpr)) {
+      // a derivation: the steps travel as their own tree so the page can lay them out
+      return JSONBuilder.createJSONSteps(engine, (IAST) outExpr, outWriter, errorWriter);
+    } else if (outExpr.isString()) {
+      IStringX str = (IStringX) outExpr;
+      if (str.getMimeType() == IStringX.TEXT_HTML) {
+        String htmlSnippet = str.toString();
+        String htmlPage = HTML_IFRAME;
+        htmlPage = htmlPage.replace("`1`", htmlSnippet);
+        return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + htmlPage
+            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+      }
+    }
     return JSONBuilder.createJSONResult(engine, outExpr, outWriter, errorWriter);
   }
 
@@ -871,7 +877,8 @@ public class AJAXQueryServlet extends HttpServlet {
       EvalEngine engine = new EvalEngine(isRelaxedSyntax());
       EvalEngine.set(engine);
       // A few modules decide at registration time whether to install an evaluator at all - Dataset,
-      // SemanticImport and the Swing functions - so the switch has to be on while IOInit runs. It is
+      // SemanticImport and the Swing functions - so the switch has to be on while IOInit runs. It
+      // is
       // turned back off immediately: from here on the permission is per session, granted on the
       // engine together with that session's sandbox directory.
       Config.FILESYSTEM_ENABLED = true;

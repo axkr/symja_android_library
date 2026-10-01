@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.parser.BoxNotation;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -468,6 +470,21 @@ public class FuzzyParser extends Scanner {
       case TT_STRING:
         IStringX str = getString();
         return parseArguments(str);
+      case TT_BOX_ESCAPE: {
+        // \( ... \) and \!\( ... \): a formula or an image which was copied out of a notebook
+        final String boxText = fBoxText;
+        final boolean interpret = fBoxInterpret;
+        final BoxNotation.SourceParser boxParser =
+            source -> new ExprParser(fEngine, fFactory, false, false, fExplicitTimes)
+                .parse(source);
+        temp = interpret ? BoxNotation.interpret(boxText, boxParser)
+            : BoxNotation.boxes(boxText, boxParser);
+        if (temp == null) {
+          temp = BoxNotation.unread(boxText, interpret);
+        }
+        getNextToken();
+        return parseArguments(temp);
+      }
       case TT_PERCENT:
         final IASTAppendable out = F.ast(S.Out);
         int countPercent = 1;

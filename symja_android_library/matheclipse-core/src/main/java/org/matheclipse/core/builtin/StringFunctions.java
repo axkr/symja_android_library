@@ -45,6 +45,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.BoxNotation;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
@@ -3621,7 +3622,7 @@ public final class StringFunctions {
         ISymbol form = S.InputForm;
         if (ast.argSize() >= 2) {
           IExpr arg2 = ast.arg2();
-          if (arg2 == S.InputForm) {
+          if (arg2 == S.InputForm || arg2 == S.StandardForm) {
             form = S.InputForm;
           } else if (arg2 == S.TeXForm) {
             form = S.TeXForm;
@@ -3649,6 +3650,20 @@ public final class StringFunctions {
           }
         } catch (SyntaxError sntx) {
           return S.$Failed;
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.ToExpression, rex, engine);
+          return S.$Failed;
+        }
+      } else if (BoxNotation.isBox(arg1)) {
+        // ToExpression[boxes]: the expression which the boxes are the typeset form of
+        try {
+          IExpr temp =
+              BoxNotation.toExpression(arg1, source -> new ExprParser(engine, false).parse(source));
+          if (temp == null) {
+            return S.$Failed;
+          }
+          return ast.isAST3() ? F.unaryAST1(ast.arg3(), temp) : temp;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.ToExpression, rex, engine);

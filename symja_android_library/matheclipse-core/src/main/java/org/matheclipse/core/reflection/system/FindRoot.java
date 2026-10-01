@@ -28,7 +28,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
-import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -103,8 +102,8 @@ import com.google.common.collect.ImmutableMap;
  * method - one evaluation of the equations per step, where a fresh finite difference matrix would
  * cost one per entry. This matters when evaluating the equations is expensive. Steps are halved
  * until they make the residual smaller. Complex start values keep the differentiated jacobian
- * matrix. The same difference quotient iteration takes over for one variable when the derivative
- * is not a finite number at the start value, where Newton's method could not take a step.
+ * matrix. The same difference quotient iteration takes over for one variable when the derivative is
+ * not a finite number at the start value, where Newton's method could not take a step.
  * </p>
  * 
  * <p>
@@ -396,6 +395,117 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
+    IExpr result = machineRoot(ast, options, engine);
+    int precision = workingPrecision(options.length > 3 ? options[3] : S.MachinePrecision);
+    if (precision > 0 && result.isListOfRules()) {
+      // WorkingPrecision -> p: the machine root is the start of a Newton iteration with p digits
+      IAST equations = ast.arg1().makeList();
+      IASTAppendable functions = F.ListAlloc(equations.argSize());
+      for (int i = 1; i < equations.size(); i++) {
+        IExpr equation = equations.get(i);
+        functions.append(
+            equation.isEqual() ? F.Subtract(equation.first(), equation.second()) : equation);
+      }
+      IExpr refined = refine(functions, (IAST) result, precision, engine);
+      if (refined.isPresent()) {
+        return refined;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The digits of the option <code>WorkingPrecision -> p</code>, or <code>0</code> for
+   * <code>MachinePrecision</code> and for a precision which is no more than that.
+   */
+  static int workingPrecision(IExpr option) {
+    int precision = option.toIntDefault();
+    return precision > 16 ? precision : 0;
+  }
+
+  /**
+   * Newton's iteration with <code>precision</code> digits for the system
+   * <code>functions == 0</code>, started at the machine precision solution <code>rules</code>. It
+   * doubles the number of correct digits in every step, so the 16 digits of the start are more than
+   * <code>precision</code> digits after a few steps.
+   *
+   * @param functions as many expressions as there are rules
+   * @param rules <code>{x -> x0, y -> y0, ...}</code>
+   * @return the rules with the refined values, or {@link F#NIL} if the functions have no
+   *         derivative, the iteration doesn't settle or it leaves the solution it started from
+   */
+  static IExpr refine(IAST functions, IAST rules, int precision, EvalEngine engine) {
+    IExpr exact = refineExact(functions, rules, precision, engine);
+    if (exact.isNIL()) {
+      return F.NIL;
+    }
+    final IAST refined = (IAST) engine.evalN(
+        F.subst(F.mapRange(1, rules.size(), i -> rules.get(i).first()), (IAST) exact), precision);
+    return F.mapRange(1, rules.size(), i -> F.Rule(rules.get(i).first(), refined.get(i)));
+  }
+
+  /**
+   * Like {@link #refine}, with the refined values as exact rational numbers: an expression in them
+   * is evaluated with <code>precision</code> digits by <code>N(expr /. rules, precision)</code>.
+   */
+  static IExpr refineExact(IAST functions, IAST rules, int precision, EvalEngine engine) {
+    final int n = rules.argSize();
+    if (functions.argSize() != n || n == 0) {
+      return F.NIL;
+    }
+    IAST variables = F.mapRange(1, n + 1, i -> rules.get(i).first());
+    IAST jacobian = F.mapRange(1, n + 1,
+        i -> F.mapRange(1, n + 1, j -> F.D(functions.get(i), variables.get(j))));
+    IExpr evaluatedJacobian = engine.evaluate(jacobian);
+    if (!evaluatedJacobian.isFree(S.Derivative) || !evaluatedJacobian.isFree(S.D)) {
+      return F.NIL;
+    }
+    // a few guard digits for the last step
+    final long digits = precision + 5L;
+    // The iterate is kept as an exact rational number. Numbers of a higher precision are only
+    // combined with that precision inside of N(), and N() evaluates its argument before it raises
+    // the precision - an iterate of 45 digits would be cut back to machine precision on the way.
+    IExpr exactPoint =
+        engine.evaluate(F.mapRange(1, n + 1, i -> F.Rationalize(rules.get(i).second(), F.C0)));
+    if (!exactPoint.isList() || !((IAST) exactPoint).forAll(x -> x.isRational())) {
+      return F.NIL;
+    }
+    IAST point = (IAST) exactPoint;
+    IExpr tolerance = F.Power(F.C10, F.ZZ(-precision));
+    boolean settled = false;
+    for (int iteration = 0; iteration < 16 && !settled; iteration++) {
+      final IAST current = point;
+      IAST substitution = F.mapRange(1, n + 1, i -> F.Rule(variables.get(i), current.get(i)));
+      IExpr values = engine.evalN(F.subst(functions, substitution), digits);
+      IExpr matrix = engine.evalN(F.subst(evaluatedJacobian, substitution), digits);
+      IExpr step = engine.evaluate(F.Rationalize(F.LinearSolve(matrix, F.Negate(values)), F.C0));
+      if (!step.isList() || step.argSize() != n || !((IAST) step).forAll(x -> x.isRational())) {
+        return F.NIL;
+      }
+      IExpr next = engine.evaluate(F.Plus(point, step));
+      if (!next.isList()) {
+        return F.NIL;
+      }
+      point = (IAST) next;
+      settled = engine.evaluate(F.Less(F.Max(F.Abs(step)), tolerance)).isTrue();
+    }
+    if (!settled) {
+      return F.NIL;
+    }
+    // the same solution the machine search found, not another one the iteration jumped to
+    for (int i = 1; i <= n; i++) {
+      double start = rules.get(i).second().evalfNaN();
+      double end = point.get(i).evalfNaN();
+      if (!Double.isNaN(start) && !(Math.abs(end - start) <= 1e-4 * (1.0 + Math.abs(start)))) {
+        return F.NIL;
+      }
+    }
+    final IAST exactPointResult = point;
+    return F.mapRange(1, n + 1, i -> F.Rule(variables.get(i), exactPointResult.get(i)));
+  }
+
+  /** The root in machine precision. */
+  private IExpr machineRoot(IAST ast, final IExpr[] options, final EvalEngine engine) {
     // default: BracketingNthOrderBrentSolver
     String method = "Newton";
     int accuracyGoal = 6;
@@ -417,9 +527,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
 
     // The search specifications are the leading run of list arguments behind the equations. One
     // list is the single variable form FindRoot(f, {x,x0}) or the nested multivariate form
-    // FindRoot({f1,f2}, {{x,x0},{y,y0}}); several are the multivariate form Mathematica documents,
-    // FindRoot({f1,f2}, {x,x0}, {y,y0}), which is collected into the same nested shape here so
-    // that only one of them has to be understood further down.
+    // FindRoot({f1,f2}, {{x,x0},{y,y0}}).
     int lastSpecPosition = 1;
     for (int i = 2; i < ast.size(); i++) {
       if (!ast.get(i).isList()) {
@@ -791,8 +899,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
    * derivative and is seeded again from the current point.
    *
    * <p>
-   * Real start values only. The finite differences and the residual comparison are real
-   * arithmetic, and a complex problem stays with the symbolic jacobian matrix of
+   * Real start values only. The finite differences and the residual comparison are real arithmetic,
+   * and a complex problem stays with the symbolic jacobian matrix of
    * {@link #multivariateNewton(IAST, IAST, IAST, double, int, EvalEngine)}.
    *
    * <p>
@@ -1130,8 +1238,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     // newSymbol.setAttributes(Attribute.HOLDALL);
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
-            S.MaxIterations, S.Method, S.AccuracyGoal}, //
+            S.MaxIterations, S.Method, S.AccuracyGoal, S.WorkingPrecision}, //
         new IExpr[] {//
-            F.C100, S.Automatic, S.Automatic});
+            F.C100, S.Automatic, S.Automatic, S.MachinePrecision});
   }
 }

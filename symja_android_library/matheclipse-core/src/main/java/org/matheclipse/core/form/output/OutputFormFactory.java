@@ -8,6 +8,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.matheclipse.core.parser.BoxNotation;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -1174,7 +1175,9 @@ public class OutputFormFactory {
     }
   }
 
-  public void convertString(final Appendable buf, final String str) throws IOException {
+  public void convertString(final Appendable buf, String str) throws IOException {
+    // a box escape in a string is written the way it is typed, not as the characters kept for it
+    str = BoxNotation.writeEscapes(str);
     if (fInputForm) {
       append(buf, "\"");
       append(buf, str);

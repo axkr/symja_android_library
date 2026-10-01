@@ -66,9 +66,10 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.geodesy.GeodesicSolver;
 import org.matheclipse.core.numerics.geodesy.ReferenceEllipsoid;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.graphtheory.eval.SpanningTree;
+import org.matheclipse.graphtheory.eval.CanonicalLabeling;
 import org.matheclipse.graphtheory.eval.GraphUtil;
 import org.matheclipse.graphtheory.eval.GraphView;
+import org.matheclipse.graphtheory.eval.SpanningTree;
 import org.matheclipse.graphtheory.expression.data.ExprEdge;
 import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
 import org.matheclipse.graphtheory.expression.data.GraphExpr;
@@ -108,6 +109,8 @@ public class GraphFunctions {
       S.FindShortestTour.setEvaluator(new FindShortestTour());
       S.FindSpanningTree.setEvaluator(new FindSpanningTree());
       S.Graph.setEvaluator(new GraphCTor());
+      S.CanonicalGraph.setEvaluator(new CanonicalGraph());
+      S.GraphAutomorphismGroup.setEvaluator(new GraphAutomorphismGroup());
       S.GraphCenter.setEvaluator(new GraphCenter());
       S.GraphComplement.setEvaluator(new GraphComplement());
       S.GraphDifference.setEvaluator(new GraphDifference());
@@ -303,8 +306,16 @@ public class GraphFunctions {
       if (gex == null) {
         return F.NIL;
       }
+      // the options of the call, e.g. EdgeCapacity -> {...}, are behind the property
+      int lastArgument = ast.argSize();
+      while (lastArgument > 3 && ast.get(lastArgument).isRuleAST()) {
+        lastArgument--;
+      }
+      if (lastArgument > 4) {
+        return F.NIL;
+      }
       String property = "FlowValue";
-      if (ast.argSize() == 4) {
+      if (lastArgument == 4) {
         if (!ast.arg4().isString()) {
           return F.NIL;
         }
@@ -320,7 +331,26 @@ public class GraphFunctions {
       if (sources == null || sinks == null) {
         return F.NIL;
       }
+      // an option of the call replaces the option of the graph
       IAST options = gex.options();
+      if (lastArgument < ast.argSize()) {
+        IASTAppendable merged = F.ListAlloc();
+        if (options != null && options.isPresent()) {
+          for (IExpr option : options) {
+            boolean replaced = false;
+            for (int i = lastArgument + 1; i < ast.size(); i++) {
+              replaced |= option.isRuleAST() && option.first().equals(ast.get(i).first());
+            }
+            if (!replaced) {
+              merged.append(option);
+            }
+          }
+        }
+        for (int i = lastArgument + 1; i < ast.size(); i++) {
+          merged.append(ast.get(i));
+        }
+        options = merged;
+      }
       double[] edgeCapacity = capacities(options, S.EdgeCapacity, view.m, 1.0);
       double[] vertexCapacity =
           capacities(options, S.VertexCapacity, view.n, Double.POSITIVE_INFINITY);
@@ -525,7 +555,7 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_4;
+      return ARGS_3_INFINITY;
     }
   }
 
@@ -1697,7 +1727,8 @@ public class GraphFunctions {
           // FindSpanningTree({g, v}) grows the tree from v
           IExpr graph = ast.arg1();
           IExpr root = F.NIL;
-          if (graph.isList2() && (graph.first() instanceof GraphExpr || graph.first().isAST(S.Graph))) {
+          if (graph.isList2()
+              && (graph.first() instanceof GraphExpr || graph.first().isAST(S.Graph))) {
             // not a bare list of two edges
             root = graph.second();
             graph = graph.first();
@@ -1708,7 +1739,7 @@ public class GraphFunctions {
           }
           IAST fullForm = gex.fullForm();
           if (fullForm.argSize() >= 2 && fullForm.arg2().isList()) {
-            // WMA's trees: Kruskal, BFS, Chu-Liu/Edmonds - see SpanningTree
+            // Trees: Kruskal, BFS, Chu-Liu/Edmonds - see SpanningTree
             return SpanningTree.of(fullForm, root, engine);
           }
           if (root.isPresent()) {
@@ -2319,6 +2350,144 @@ public class GraphFunctions {
     }
   }
 
+
+  /** The size of the search tree after which the canonical labelling of a graph gives up. */
+  private static final long CANONICAL_LABELING_NODES = 2_000_000L;
+
+  /**
+   * <pre>
+   * <code>CanonicalGraph(graph)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * returns the graph with the vertices <code>1, 2, ..., n</code> in a canonical order: isomorphic
+   * graphs have the same canonical graph.
+   * </p>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; CanonicalGraph(CycleGraph(4)) === CanonicalGraph(Graph({a &lt;-&gt; b, b &lt;-&gt; d, d &lt;-&gt; c, c &lt;-&gt; a}))
+   * True
+   * </code>
+   * </pre>
+   */
+  private static class CanonicalGraph extends AbstractEvaluator {
+
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
+      }
+      GraphView view = GraphView.of(gex.toData());
+      CanonicalLabeling labeling = CanonicalLabeling.of(view, CANONICAL_LABELING_NODES);
+      if (labeling == null) {
+        // the search gave up
+        return F.NIL;
+      }
+      final int n = view.n;
+      int[] position = labeling.canonicalPosition();
+      int[] vertexAt = new int[n];
+      for (int v = 0; v < n; v++) {
+        vertexAt[position[v]] = v;
+      }
+      IASTAppendable vertices = F.ListAlloc(n);
+      for (int i = 1; i <= n; i++) {
+        vertices.append(F.ZZ(i));
+      }
+      IASTAppendable edges = F.ListAlloc(view.m);
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          if (j >= i) {
+            for (int k = labeling.undirectedEdges(vertexAt, i, j); k > 0; k--) {
+              edges.append(F.UndirectedEdge(F.ZZ(i + 1), F.ZZ(j + 1)));
+            }
+          }
+          for (int k = labeling.directedEdges(vertexAt, i, j); k > 0; k--) {
+            edges.append(F.DirectedEdge(F.ZZ(i + 1), F.ZZ(j + 1)));
+          }
+        }
+      }
+      return F.Graph(vertices, edges);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  /**
+   * <pre>
+   * <code>GraphAutomorphismGroup(graph)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * returns the automorphism group of the graph as a <code>PermutationGroup</code> on the positions
+   * <code>1, 2, ..., n</code> of the vertices in <code>VertexList(graph)</code>.
+   * </p>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; GroupOrder(GraphAutomorphismGroup(PetersenGraph()))
+   * 120
+   * </code>
+   * </pre>
+   */
+  private static class GraphAutomorphismGroup extends AbstractEvaluator {
+
+    @Override
+    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+      GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
+      if (gex == null) {
+        return F.NIL;
+      }
+      GraphView view = GraphView.of(gex.toData());
+      CanonicalLabeling labeling = CanonicalLabeling.of(view, CANONICAL_LABELING_NODES);
+      if (labeling == null) {
+        // the search gave up
+        return F.NIL;
+      }
+      IASTAppendable generators = F.ListAlloc(labeling.generators().size());
+      for (int[] image : labeling.generators()) {
+        // the cycles of the permutation, without the fixed points
+        IASTAppendable cycles = F.ListAlloc();
+        boolean[] visited = new boolean[image.length];
+        for (int v = 0; v < image.length; v++) {
+          if (visited[v] || image[v] == v) {
+            continue;
+          }
+          IASTAppendable cycle = F.ListAlloc();
+          for (int w = v; !visited[w]; w = image[w]) {
+            visited[w] = true;
+            cycle.append(F.ZZ(w + 1));
+          }
+          cycles.append(cycle);
+        }
+        generators.append(F.unaryAST1(S.Cycles, cycles));
+      }
+      return F.unaryAST1(S.PermutationGroup, generators);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
 
   private static class IsomorphicGraphQ extends AbstractEvaluator {
     @Override

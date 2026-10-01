@@ -344,6 +344,13 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       int step = span[2];
       IASTAppendable result = F.NIL;
       IExpr element;
+      final int size = assignedAST.size();
+      if (start < 0 || last < 0 || start >= size || last >= size) {
+        // a span which runs past the end is an error message, not an IndexOutOfBoundsException
+        // Cannot take positions `1` through `2` in `3`.
+        return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), assignedAST),
+            engine);
+      }
 
       if (step < 0 && start >= last) {
         for (int i = start; i >= last; i += step) {
@@ -942,13 +949,15 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           }
           return F.NIL;
         }
+        if (i >= size || i < 0) {
+          // tested before the element is read: a span which runs past the end is an error message
+          // and not an IndexOutOfBoundsException
+          // Cannot take positions `1` through `2` in `3`.
+          return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
+              engine);
+        }
         IAST target = partTarget(arg1.get(i));
         if (target.isPresent()) {
-          if (i >= size) {
-            // Cannot take positions `1` through `2` in `3`.
-            return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
-                engine);
-          }
           IExpr temp = part(target, ast, p1, engine);
           if (temp.isPresent()) {
             result.append(temp);
@@ -970,13 +979,15 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           }
           return F.NIL;
         }
+        if (i >= size || i < 0) {
+          // tested before the element is read: a span which runs past the end is an error message
+          // and not an IndexOutOfBoundsException
+          // Cannot take positions `1` through `2` in `3`.
+          return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
+              engine);
+        }
         IAST target = partTarget(arg1.get(i));
         if (target.isPresent()) {
-          if (i >= size) {
-            // Cannot take positions `1` through `2` in `3`.
-            return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
-                engine);
-          }
 
           if (arg1.isAssociation()) {
             IAST rule = (IAST) arg1.getRule(i);

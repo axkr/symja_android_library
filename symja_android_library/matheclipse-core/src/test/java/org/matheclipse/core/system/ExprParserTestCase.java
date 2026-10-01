@@ -233,4 +233,177 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     check("Hold(f'(x)^2 + 2 g'(x) - g(x) h'(x))", //
         "Hold(f'(x)^2+2*g'(x)-g(x)*h'(x))");
   }
+
+  /**
+   * <code>\!\( ... \)</code> is the expression which the boxes between the delimiters are the
+   * typeset form of. A notebook copies a formula as such an escape into plain text.
+   */
+  @Test
+  public void testBoxEscapeFormulas() {
+    // \* is followed by a box in ordinary syntax, \( ... \) is the text of a box
+    assertEquals("Power[x, 2]", scriptExpressions("\\!\\(\\*SuperscriptBox[\\(x\\), \\(2\\)]\\)"));
+    assertEquals("Power[x, 2]", scriptExpressions("\\!\\(\\*SuperscriptBox[\"x\", \"2\"]\\)"));
+    assertEquals("Subscript[a, b]",
+        scriptExpressions("\\!\\(\\*SubscriptBox[\\(a\\), \\(b\\)]\\)"));
+    assertEquals("Power[Subscript[x, 1], 2]",
+        scriptExpressions("\\!\\(\\*SubsuperscriptBox[\"x\", \"1\", \"2\"]\\)"));
+    assertEquals("Hold[Rational[1,2]]",
+        scriptExpressions("Hold[\\!\\(\\*FractionBox[\\(1\\), \\(2\\)]\\)]"));
+    // (what the parser makes of Sqrt depends on the configuration the suite left behind)
+    assertEquals(scriptExpressions("Sqrt[x + 1]"),
+        scriptExpressions("\\!\\(\\*SqrtBox[\\(x + 1\\)]\\)"));
+    assertEquals("Surd[x, 3]", scriptExpressions("\\!\\(\\*RadicalBox[\"x\", \"3\"]\\)"));
+    assertEquals("4", scriptExpressions("\\!\\(\\*InterpretationBox[\"four\", 4]\\)"));
+    assertEquals("List[List[a, b], List[c, d]]",
+        scriptExpressions("\\!\\(\\*GridBox[{{\"a\", \"b\"}, {\"c\", \"d\"}}]\\)"));
+    assertEquals("Row[List[1, 2]]",
+        scriptExpressions("\\!\\(\\*TemplateBox[{\"1\", \"2\"}, \"RowDefault\"]\\)"));
+    assertEquals("Quantity[19400, \"USDollars\"]", scriptExpressions(
+        "\\!\\(\\*TemplateBox[{\"19400\", \"$\", \"US dollars\", \"\\\"USDollars\\\"\"}, "
+            + "\"QuantityPrefix\"]\\)"));
+    // a derivative is written with primes, or with its orders in a tagged script
+    assertEquals("Derivative[2][f][x]",
+        scriptExpressions("\\!\\(\\*SuperscriptBox[\"f\", \"\\[Prime]\\[Prime]\"]\\)[x]"));
+    assertEquals("Derivative[1, 0][p]", scriptExpressions("\\!\\(\\*SuperscriptBox[\"p\", "
+        + "TagBox[RowBox[{\"(\", RowBox[{\"1\", \",\", \"0\"}], \")\"}], Derivative]]\\)"));
+    // a script which is no expression stays the mark it is drawn as
+    assertEquals("Overscript[x, \"_\"]",
+        scriptExpressions("\\!\\(\\*OverscriptBox[\\(x\\), \\(_\\)]\\)"));
+    assertEquals("Superscript[H, \"-\"]",
+        scriptExpressions("\\!\\(\\*SuperscriptBox[\"H\", \"-\"]\\)"));
+    // the escape is a factor like any other
+    assertEquals("Plus[1, Times[Power[y, 3], z]]",
+        scriptExpressions("1 + \\!\\(\\*SuperscriptBox[\\(y\\), \\(3\\)]\\) z"));
+    assertEquals("f[Subscript[x, 1], 2]",
+        scriptExpressions("f[\\!\\(\\*SubscriptBox[\\(x\\), \\(1\\)]\\), 2]"));
+    // without a box the text is the expression itself, with the operators of the linear syntax
+    assertEquals("Plus[2, 2]", scriptExpressions("\\!\\(2+2\\)"));
+    assertEquals("Power[x, 2]", scriptExpressions("\\!\\(x \\^ 2\\)"));
+  }
+
+  /** A row is its strings one after the other; some rows are an operator and its body. */
+  @Test
+  public void testBoxEscapeRows() {
+    assertEquals("Sum[i, List[i, 1, n]]", scriptExpressions("\\!\\(\\*RowBox[{UnderoverscriptBox["
+        + "\"\\[Sum]\", RowBox[{\"i\", \"=\", \"1\"}], \"n\"], \"i\"}]\\)"));
+    assertEquals("Integrate[Power[x, 2], List[x, 0, 1]]",
+        scriptExpressions("\\!\\(\\*RowBox[{SubsuperscriptBox[\"\\[Integral]\", \"0\", \"1\"], "
+            + "RowBox[{SuperscriptBox[\"x\", \"2\"], RowBox[{\"\\[DifferentialD]\", \"x\"}]}]}]\\)"));
+    assertEquals("D[Power[x, 3], x]", scriptExpressions("\\!\\(\\*RowBox[{SubscriptBox["
+        + "\"\\[PartialD]\", \"x\"], SuperscriptBox[\"x\", \"3\"]}]\\)"));
+    assertEquals("Abs[x]", scriptExpressions("\\!\\(\\*RowBox[{\"\\[LeftBracketingBar]\", \"x\", "
+        + "\"\\[RightBracketingBar]\"}]\\)"));
+    // f(x, y) of a textbook is a call, two rows side by side are a product
+    assertEquals("f[x, y]", scriptExpressions(
+        "\\!\\(\\*RowBox[{\"f\", \"(\", RowBox[{\"x\", \",\", \"y\"}], \")\"}]\\)"));
+    assertEquals("Times[a, Power[x, 3]]",
+        scriptExpressions("\\!\\(\\*RowBox[{\"a\", RowBox[{\"x\", \"^\", \"3\"}]}]\\)"));
+    assertEquals("Times[2, x]",
+        scriptExpressions("\\!\\(\\*RowBox[{\"2\", \"\\[InvisibleTimes]\", \"x\"}]\\)"));
+    assertEquals("Rule[x, 1]",
+        scriptExpressions("\\!\\(\\*RowBox[{\"x\", \"\\[Rule]\", \"1\"}]\\)"));
+    assertEquals(scriptExpressions("Sqrt[Sin[x]]"),
+        scriptExpressions("\\!\\(\\*SqrtBox[RowBox[{\"Sin\", \"[\", \"x\", \"]\"}]]\\)"));
+  }
+
+  /** <code>FormBox</code> says which form the boxes are written in. */
+  @Test
+  public void testBoxEscapeForms() {
+    assertEquals(scriptExpressions("Sqrt[x]"),
+        scriptExpressions("\\!\\(\\*FormBox[SqrtBox[\"x\"], TraditionalForm]\\)"));
+    assertEquals("ArcSin[y]", scriptExpressions(
+        "\\!\\(\\*FormBox[RowBox[{\"ArcSin[\", \"y\", \"]\"}], TraditionalForm]\\)"));
+    assertEquals("3", scriptExpressions("\\!\\(\\*FormBox[\"3\", TraditionalForm]\\)"));
+    assertEquals("\"3\"", scriptExpressions("\\!\\(\\*FormBox[\"\\\"3\\\"\", TraditionalForm]\\)"));
+    assertEquals("Plus[x, 1]", scriptExpressions("\\!\\(\\*FormBox[\"x + 1\", TraditionalForm]\\)"));
+    // boxes which have no reading are kept as their text
+    assertEquals("HoldComplete[\"\\!\\(\\*FormBox[SqrtBox[\"x\"], OutputForm]\\)\"]",
+        scriptExpressions("\\!\\(\\*FormBox[SqrtBox[\"x\"], OutputForm]\\)"));
+    assertEquals("HoldComplete[\"\\!\\(\\*Graphics3DBox[{}]\\)\"]",
+        scriptExpressions("\\!\\(\\*Graphics3DBox[{}]\\)"));
+  }
+
+  /** <code>\( ... \)</code> without <code>\!</code> is the boxes of the linear syntax. */
+  @Test
+  public void testBoxNotation() {
+    assertEquals("RowBox[List[FractionBox[\"x\", \"y\"], \"+\", \"z\"]]",
+        scriptExpressions("\\(x \\/ y + z\\)"));
+    assertEquals("FractionBox[\"x\", RowBox[List[\"(\", RowBox[List[\"y\", \"+\", \"z\"]], \")\"]]]",
+        scriptExpressions("\\(x \\/ (y + z)\\)"));
+    assertEquals("UnderoverscriptBox[\"a\", \"c\", \"b\"]",
+        scriptExpressions("\\( a \\& b \\% c\\)"));
+    assertEquals("UnderoverscriptBox[\"a\", \"b\", \"c\"]",
+        scriptExpressions("\\( a \\+ b \\% c\\)"));
+    // \^ and \_ take everything on their right
+    assertEquals("SuperscriptBox[\"x\", SubscriptBox[\"2\", \"4\"]]",
+        scriptExpressions("\\( x \\^ 2 \\_ 4 \\)"));
+    assertEquals("SqrtBox[\"x\"]", scriptExpressions("\\(\\@ x\\)"));
+    assertEquals("FormBox[RowBox[List[\"a\", \"+\", \"b\"]], TraditionalForm]",
+        scriptExpressions("\\(TraditionalForm \\` a + b\\)"));
+  }
+
+  /** The box of an image is the image, the box of a graphics its primitives. */
+  @Test
+  public void testBoxEscapeGraphics() {
+    // the cell a notebook writes for an image, with the line breaks it has there: the compressed
+    // pixels stay compressed, and a newline inside the escape doesn't end the expression
+    assertEquals(
+        "Closing[Image[Uncompress[\"1:eJxTTMoPSmNiYGAo5gASQYnljkVFiZXBzECOU2ZJEkgGxGYBYgZGRiACEgyM"
+            + "DAAX8Qc4\"], \"Bit\", Rule[ColorSpace, Automatic], Rule[Interleaving, None]], "
+            + "DiskMatrix[1]]",
+        scriptExpressions("Closing[\\!\\(\\*\nGraphicsBox[\nTagBox[RasterBox[CompressedData[\"\n"
+            + "1:eJxTTMoPSmNiYGAo5gASQYnljkVFiZXBzECOU2ZJEkgGxGYBYgZGRiAC\nEgyMDAAX8Qc4\n\"], "
+            + "{{0, 3}, {4, 0}}, {0, 1},\nColorFunction->GrayLevel],\n"
+            + "BoxForm`ImageTag[\"Bit\", ColorSpace -> Automatic, Interleaving -> None],\n"
+            + "Selectable->False],\nBaseStyle->\"ImageGraphics\",\nImageSizeRaw->{4, 3},\n"
+            + "PlotRange->{{0, 4}, {0, 3}}]\\), DiskMatrix[1]]"));
+    // a rectangle which isn't turned over has the rows from the bottom
+    assertEquals(
+        "ImageReflect[Image[List[List[0, 1], List[2, 3]], \"Byte\"], Rule[Top, Bottom]]",
+        scriptExpressions("\\!\\(\\*GraphicsBox[TagBox[RasterBox[{{0, 1}, {2, 3}}, "
+            + "{{0, 0}, {2, 2}}, {0, 255}], BoxForm`ImageTag[\"Byte\"]]]\\)"));
+    // the box of a 3D image
+    assertEquals(
+        "Closing[Image3D[List[List[List[0, 1]], List[List[2, 3]]], \"Byte\", "
+            + "Rule[ColorSpace, \"Grayscale\"], Rule[Interleaving, None]], 6]",
+        scriptExpressions("Closing[\\!\\(\\*\nGraphics3DBox[\nTagBox[Raster3DBox["
+            + "{{{0, 1}}, {{2, 3}}}, {{0, 1, 2}, {2, 0, 0}}, {0, 255},\n"
+            + "ColorFunction->\"GrayLevelDefaultColorFunction\"],\nBoxForm`ImageTag[\n"
+            + "     \"Byte\", ColorSpace -> \"Grayscale\", Interleaving -> None],\n"
+            + "Selectable->False],\nBoxed->False,\nImageSizeRaw->2]\\), 6]"));
+    assertEquals("Hold[Graphics[Disk[List[0, 0]]]]",
+        scriptExpressions("Hold[\\!\\(\\*GraphicsBox[DiskBox[{0, 0}]]\\)]"));
+    // the directives of a StyleBox stand before what they style
+    assertEquals(
+        "Graphics[List[Polygon[List[List[0, 0], List[1, 0], List[0, 1]]], "
+            + "List[RGBColor[0, 0, 1], List[Point[List[0, 0]]]]], Rule[ImageSize, 100]]",
+        scriptExpressions("\\!\\(\\*GraphicsBox[{PolygonBox[{{0, 0}, {1, 0}, {0, 1}}], "
+            + "StyleBox[{PointBox[{0, 0}]}, RGBColor[0, 0, 1], StripOnInput -> False]}, "
+            + "ImageSize -> 100]\\)"));
+  }
+
+  /**
+   * The escape ends at the <code>\)</code> which closes it: escapes nest, a <code>\)</code> in a
+   * string is none, and a string keeps an escape as characters of its own which are read again.
+   */
+  @Test
+  public void testBoxEscapeDelimiters() {
+    assertEquals("f[x, 1]", scriptExpressions("f[\\!\\(\\*RowBox[{\"x\"}]\\), 1]"));
+    assertEquals("\"a)b\"", scriptExpressions("\\!\\(\\*RowBox[{\"\\\"a)b\\\"\"}]\\)"));
+    assertEquals("StringLength[\"\\!\\(\\*SubscriptBox[\\(p\\), \\(0\\)]\\)\"]",
+        scriptExpressions("StringLength[\"\\!\\(\\*SubscriptBox[\\(p\\), \\(0\\)]\\)\"]"));
+    check("StringLength(\"\\!\\(\\*SubscriptBox[\\(p\\), \\(0\\)]\\)\")", //
+        "26");
+    check("FullForm(ToExpression(\"\\!\\(\\*SubscriptBox[\\(p\\), \\(0\\)]\\)\"))", //
+        "Subscript(p, 0)");
+    check("FullForm(ToExpression(RowBox({\"1\", \"+\", \"x\"})))", //
+        "Plus(1, x)");
+    check("FullForm(ToExpression(MakeBoxes(x^2/y)))", //
+        "Times(Power(x, 2), Power(y, -1))");
+    check("\\!\\(\\*SuperscriptBox[\\(x\\), \\(2\\)]\\) + \\!\\(\\*FractionBox[\\(1\\), \\(2\\)]\\)", //
+        "1/2+x^2");
+    check("\\!\\(\\*SuperscriptBox[\\(x\\), \\(2\\)]", //
+        "Syntax error in line: 1 - box escape - '\\)' expected.\n"
+            + "\\!\\(\\*SuperscriptBox[\\(x\\), \\(2\\)]\n" + "   ^");
+  }
 }

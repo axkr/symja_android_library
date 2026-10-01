@@ -2792,30 +2792,32 @@ public class TeXFormFactory {
     initTeXConverter(S.CenterDot, new TeXFormOperator(this, Precedence.CENTERDOT, " \\cdot "));
     initTeXConverter(S.CircleDot, new TeXFormOperator(this, Precedence.CIRCLEDOT, " \\odot "));
 
+    // LaTeX (and KaTeX and MathJax) only define the commands arccos, arcsin, arctan, cos, cosh, cot,
+    // coth, csc, sec, sin, sinh, tan and tanh; every other name needs operatorname{...}
     initTeXConverter(S.ArcCos, new TeXFunction(this, "arccos "));
-    initTeXConverter(S.ArcCot, new TeXFunction(this, "arccot "));
-    initTeXConverter(S.ArcCsc, new TeXFunction(this, "arccsc "));
-    initTeXConverter(S.ArcSec, new TeXFunction(this, "arcsec "));
+    initTeXConverter(S.ArcCot, new TeXFunction(this, "operatorname{arccot}"));
+    initTeXConverter(S.ArcCsc, new TeXFunction(this, "operatorname{arccsc}"));
+    initTeXConverter(S.ArcSec, new TeXFunction(this, "operatorname{arcsec}"));
     initTeXConverter(S.ArcSin, new TeXFunction(this, "arcsin "));
     initTeXConverter(S.ArcTan, new TeXFunction(this, "arctan "));
 
-    initTeXConverter(S.ArcCosh, new TeXFunction(this, "arccosh "));
-    initTeXConverter(S.ArcCoth, new TeXFunction(this, "arccoth "));
-    initTeXConverter(S.ArcCsch, new TeXFunction(this, "arccsch "));
-    initTeXConverter(S.ArcSech, new TeXFunction(this, "arcsech "));
-    initTeXConverter(S.ArcSinh, new TeXFunction(this, "arcsinh "));
-    initTeXConverter(S.ArcTanh, new TeXFunction(this, "arctanh "));
+    initTeXConverter(S.ArcCosh, new TeXFunction(this, "operatorname{arccosh}"));
+    initTeXConverter(S.ArcCoth, new TeXFunction(this, "operatorname{arccoth}"));
+    initTeXConverter(S.ArcCsch, new TeXFunction(this, "operatorname{arccsch}"));
+    initTeXConverter(S.ArcSech, new TeXFunction(this, "operatorname{arcsech}"));
+    initTeXConverter(S.ArcSinh, new TeXFunction(this, "operatorname{arcsinh}"));
+    initTeXConverter(S.ArcTanh, new TeXFunction(this, "operatorname{arctanh}"));
 
     initTeXConverter(S.Cos, new TeXFunction(this, "cos "));
     initTeXConverter(S.Cosh, new TeXFunction(this, "cosh "));
     initTeXConverter(S.Cot, new TeXFunction(this, "cot "));
     initTeXConverter(S.Coth, new TeXFunction(this, "coth "));
     initTeXConverter(S.Csc, new TeXFunction(this, "csc "));
-    initTeXConverter(S.Csch, new TeXFunction(this, "csch "));
+    initTeXConverter(S.Csch, new TeXFunction(this, "operatorname{csch}"));
     initTeXConverter(S.Log, new TeXFunction(this, symbolOptions.getLogFunction()));
     initTeXConverter(S.LogisticSigmoid, new TeXFunction(this, "sigma "));
     initTeXConverter(S.Sec, new TeXFunction(this, "sec "));
-    initTeXConverter(S.Sech, new TeXFunction(this, "sech "));
+    initTeXConverter(S.Sech, new TeXFunction(this, "operatorname{sech}"));
     initTeXConverter(S.Sin, new TeXFunction(this, "sin "));
     initTeXConverter(S.Sinh, new TeXFunction(this, "sinh "));
     initTeXConverter(S.Tan, new TeXFunction(this, "tan "));

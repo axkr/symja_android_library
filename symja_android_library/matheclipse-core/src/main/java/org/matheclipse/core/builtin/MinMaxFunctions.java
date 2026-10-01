@@ -7,9 +7,11 @@ import java.util.Optional;
 import java.util.Set;
 import org.hipparchus.analysis.MultivariateFunction;
 import org.hipparchus.optim.InitialGuess;
+import org.hipparchus.optim.LocalizedOptimFormats;
 import org.hipparchus.optim.MaxEval;
 import org.hipparchus.optim.OptimizationData;
 import org.hipparchus.optim.PointValuePair;
+import org.hipparchus.optim.SimpleBounds;
 import org.hipparchus.optim.linear.LinearConstraint;
 import org.hipparchus.optim.linear.LinearConstraintSet;
 import org.hipparchus.optim.linear.LinearObjectiveFunction;
@@ -19,7 +21,12 @@ import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
 import org.hipparchus.optim.nonlinear.scalar.MultivariateOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunction;
+import org.hipparchus.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.PowellOptimizer;
+import org.hipparchus.optim.univariate.BrentOptimizer;
+import org.hipparchus.optim.univariate.SearchInterval;
+import org.hipparchus.optim.univariate.UnivariateObjectiveFunction;
+import org.hipparchus.optim.univariate.UnivariatePointValuePair;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
@@ -1294,8 +1301,8 @@ public class MinMaxFunctions {
       if (cond.isAST()) {
         IAST ast = (IAST) cond;
         ISymbol head = ast.topHead();
-        if (head == S.Less || head == S.LessEqual || head == S.Greater
-            || head == S.GreaterEqual || head == S.Equal || head == S.Unequal) {
+        if (head == S.Less || head == S.LessEqual || head == S.Greater || head == S.GreaterEqual
+            || head == S.Equal || head == S.Unequal) {
 
           // Simple heuristic: LHS == RHS
           if (ast.size() == 3) {
@@ -1407,7 +1414,7 @@ public class MinMaxFunctions {
    * the <code>NMaximize</code> function provides an implementation of
    * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
    * for solving linear optimization problems with linear equality and inequality constraints. The
-   * variables are free, as in WMA; a non-negative variable needs its constraint.
+   * variables are free; a non-negative variable needs its constraint.
    *
    * </blockquote>
    *
@@ -1501,7 +1508,7 @@ public class MinMaxFunctions {
    * the <code>NMinimize</code> function provides an implementation of
    * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a>
    * for solving linear optimization problems with linear equality and inequality constraints. The
-   * variables are free, as in WMA; a non-negative variable needs its constraint.
+   * variables are free; a non-negative variable needs its constraint.
    *
    * </blockquote>
    *
@@ -1582,7 +1589,7 @@ public class MinMaxFunctions {
           new PowellOptimizer(tolerance, Math.ulp(1d), lineTolerance, Math.ulp(1d));
 
       final PointValuePair solution = optim.optimize(//
-          new MaxEval(1000), //
+          new MaxEval(100000), //
           new ObjectiveFunction(func), //
           goal, //
           new InitialGuess(init) //
@@ -1618,15 +1625,50 @@ public class MinMaxFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_INFINITY;
     }
 
     protected GoalType getGoalType() {
       return GoalType.MINIMIZE;
     }
 
+    /** The number of relaxations a search for integer values may solve. */
+    private static final int MAX_BRANCH_AND_BOUND_NODES = 500;
+
+    /** The number of local searches which are started from the best points of a scanned box. */
+    private static final int MAX_BOX_STARTS = 8;
+
+    /** How far a constraint may be violated by a numerical solution. */
+    private static final double FEASIBILITY_TOLERANCE = 1e-6;
+
+    /** The state of one <code>NMinimize</code> call. */
+    private static final class Search {
+      final IAST listOfVariables;
+      final VariablesSet vars;
+      final EvalEngine engine;
+      /** a problem was found to have no point which satisfies its constraints */
+      boolean infeasible = false;
+      int nodes = 0;
+
+      Search(IAST listOfVariables, VariablesSet vars, EvalEngine engine) {
+        this.listOfVariables = listOfVariables;
+        this.vars = vars;
+        this.engine = engine;
+      }
+    }
+
     @Override
     public IExpr numericEval(final IAST ast, EvalEngine engine) {
+      for (int i = 3; i < ast.size(); i++) {
+        // NMinimize(f, vars, Method -> ..., MaxIterations -> ...): the options are accepted, the
+        // method is chosen from the problem
+        if (!ast.get(i).isRuleAST()) {
+          // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule
+          // or a list of rules.
+          return Errors.printMessage(ast.topHead(), "nonopt", F.List(ast.get(i), F.C2, ast),
+              engine);
+        }
+      }
       try {
         IAST list1 = ast.arg1().makeList();
         IAST listOfVariables = ast.arg2().makeList();
@@ -1634,42 +1676,46 @@ public class MinMaxFunctions {
         if (list1.argSize() > 0 && vars.size() > 0) {
           IExpr function = list1.first();
           // {f, c1, c2, ...} and {f, c1 && c2 && ...} are the same problem
-          IExpr constraints = F.NIL;
+          IExpr constraints = S.True;
           if (list1.argSize() == 2) {
             constraints = list1.arg2();
           } else if (list1.argSize() > 2) {
             constraints = list1.rest().setAtCopy(0, S.And);
           }
-          ExprAnalyzer exprAnalyzer = new ExprAnalyzer(function, listOfVariables, engine);
-          int typeOfExpression = exprAnalyzer.simplifyAndAnalyze();
-          if (typeOfExpression == ExprAnalyzer.LINEAR && constraints.isPresent()) {
-            IExpr linear = optimizeSimplexSolver(constraints, vars, function);
-            if (linear.isPresent()) {
-              return linear;
-            }
-          }
-          if (constraints.isPresent()) {
-            // the Powell search below knows nothing of constraints - it returned the
-            // unconstrained optimum, one which violates them
-            return constrainedOptimum(function, constraints, vars, engine);
-          }
-          final MultivariateFunction func = new MultiVariateNumerical(function, listOfVariables);
-          int dimension = vars.size();
-          final double[] minPoint = new double[dimension];
-          for (int i = 0; i < dimension; i++) {
-            minPoint[i] = 0;
-          }
-          double[] init = new double[dimension];
-          // Initial is minimum.
-          for (int i = 0; i < dimension; i++) {
-            init[i] = minPoint[i];
-          }
-          return optimizePowell(func, //
-              vars,
-              // minPoint,
-              init, getGoalType(), 1e-9, 1e-9, 1e-9);
-        }
+          Search search = new Search(listOfVariables, vars, engine);
+          List<IExpr> integerVariables = new ArrayList<IExpr>();
+          constraints = withoutDomains(constraints, integerVariables, engine);
 
+          // c1 || c2: the best of the optima of the alternatives
+          // an Or at the top keeps its order: of two equal optima the first alternative's is the
+          // answer, NMinimize({x^2, x<=-2 || x>=2}, x) is {4.,{x->-2.}}
+          IExpr alternatives = constraints.isFree(S.Or) || constraints.isOr() ? constraints
+              : engine.evaluate(F.unaryAST1(S.LogicalExpand, constraints));
+          IAST branches = alternatives.isOr() ? (IAST) alternatives : F.List(alternatives);
+          IExpr best = F.NIL;
+          for (int i = 1; i < branches.size(); i++) {
+            IExpr branch = branches.get(i);
+            if (branch.isFalse()) {
+              search.infeasible = true;
+              continue;
+            }
+            IExpr result = integerVariables.isEmpty() //
+                ? optimum(function, branch, search)
+                : branchAndBound(function, branch, integerVariables, search);
+            best = better(best, result);
+          }
+          if (best.isNIL() && search.infeasible) {
+            // There are no points that satisfy the constraints `1`.
+            Errors.printMessage(ast.topHead(), "nsol",
+                F.List(constraints.isAnd() ? ((IAST) constraints).setAtCopy(0, S.List)
+                    : F.List(constraints)),
+                engine);
+            IASTAppendable rules = F.mapRange(1, listOfVariables.size(),
+                i -> F.Rule(listOfVariables.get(i), S.Indeterminate));
+            return F.list(getGoalType() == GoalType.MINIMIZE ? F.CInfinity : F.CNInfinity, rules);
+          }
+          return best;
+        }
       } catch (ValidateException ve) {
         return Errors.printMessage(ast.topHead(), ve, engine);
       } catch (org.hipparchus.exception.MathRuntimeException e) {
@@ -1678,10 +1724,97 @@ public class MinMaxFunctions {
       return F.NIL;
     }
 
+    /** The better one of two results <code>{value, rules}</code>; {@link F#NIL} is no result. */
+    private IExpr better(IExpr first, IExpr second) {
+      if (first.isNIL()) {
+        return second;
+      }
+      if (second.isNIL()) {
+        return first;
+      }
+      double a = first.first().evalf();
+      double b = second.first().evalf();
+      return (getGoalType() == GoalType.MINIMIZE ? b < a : b > a) ? second : first;
+    }
+
+    /**
+     * Take the domain conditions <code>Element(x, Integers)</code> and
+     * <code>Element({x,y}, Integers)</code> out of the constraints; <code>Element(x, Reals)</code>
+     * says nothing new.
+     *
+     * @param integerVariables gets the variables which have to be integers
+     * @return the remaining constraints, <code>True</code> if there are none
+     */
+    private static IExpr withoutDomains(IExpr constraints, List<IExpr> integerVariables,
+        EvalEngine engine) {
+      if (constraints.isFree(S.Element)) {
+        return constraints;
+      }
+      IAST conjuncts = constraints.isAnd() ? (IAST) constraints : F.And(constraints);
+      IASTAppendable rest = F.ast(S.And, conjuncts.argSize());
+      for (int i = 1; i < conjuncts.size(); i++) {
+        IExpr conjunct = conjuncts.get(i);
+        if (conjunct.isAST(S.Element, 3)
+            && (conjunct.second() == S.Integers || conjunct.second() == S.Reals)) {
+          if (conjunct.second() == S.Integers) {
+            IAST variables = conjunct.first().makeList();
+            for (int j = 1; j < variables.size(); j++) {
+              if (!integerVariables.contains(variables.get(j))) {
+                integerVariables.add(variables.get(j));
+              }
+            }
+          }
+          continue;
+        }
+        rest.append(conjunct);
+      }
+      return rest.argSize() == 0 ? S.True : rest.oneIdentity1();
+    }
+
+    /**
+     * The optimum of <code>function</code> under the conjunction <code>constraints</code>:
+     * <ul>
+     * <li>no constraints: a Powell search from the origin,
+     * <li>a linear objective and linear constraints: the simplex algorithm,
+     * <li>every variable in a finite interval: local searches from the best points of a scan of the
+     * box, so that the answer is the global optimum and not the local one next to the origin,
+     * <li>else the local constrained search from a few start points.
+     * </ul>
+     *
+     * @return {@link F#NIL} if no point which satisfies the constraints was found
+     */
+    private IExpr optimum(IExpr function, IExpr constraints, Search search) {
+      if (constraints.isTrue()) {
+        return unconstrainedOptimum(function, search);
+      }
+      ExprAnalyzer exprAnalyzer = new ExprAnalyzer(function, search.listOfVariables, search.engine);
+      if (exprAnalyzer.simplifyAndAnalyze() == ExprAnalyzer.LINEAR) {
+        try {
+          IExpr linear = optimizeSimplexSolver(constraints, search.vars, function);
+          if (linear.isPresent()) {
+            return linear;
+          }
+        } catch (org.hipparchus.exception.MathIllegalStateException mise) {
+          if (mise.getSpecifier() == LocalizedOptimFormats.NO_FEASIBLE_SOLUTION) {
+            search.infeasible = true;
+            return F.NIL;
+          }
+          throw mise;
+        }
+      }
+      return constrainedOptimum(function, constraints, search);
+    }
+
+    private IExpr unconstrainedOptimum(IExpr function, Search search) {
+      final MultivariateFunction func = new MultiVariateNumerical(function, search.listOfVariables);
+      double[] init = new double[search.vars.size()];
+      return optimizePowell(func, search.vars, init, getGoalType(), 1e-9, 1e-9, 1e-9);
+    }
+
     /**
      * The linear program, or {@link F#NIL} if a constraint isn't linear. The variables are free:
-     * <code>NMinimize({x+y, x>=-1 && y>=-2}, {x,y})</code> is <code>-3</code>, not the <code>0</code>
-     * a non-negativity constraint gave.
+     * <code>NMinimize({x+y, x>=-1 && y>=-2}, {x,y})</code> is <code>-3</code>, not the
+     * <code>0</code> a non-negativity constraint gave.
      */
     private IExpr optimizeSimplexSolver(IExpr constraintExpr, VariablesSet variables,
         IExpr function) {
@@ -1701,27 +1834,423 @@ public class MinMaxFunctions {
 
     /**
      * The constrained optimum found by the local constrained solver of <code>FindMinimum</code> /
-     * <code>FindMaximum</code>, from the origin or - if that search fails - from the next start
-     * point.
+     * <code>FindMaximum</code>. A result which violates the constraints is no answer: for
+     * contradictory constraints the local solver stops at a point which satisfies none of them.
      */
-    private IExpr constrainedOptimum(IExpr function, IExpr constraints, VariablesSet variables,
-        EvalEngine engine) {
-      final boolean minimize = getGoalType() == GoalType.MINIMIZE;
-      final IAST problem = F.list(function, constraints);
+    private IExpr constrainedOptimum(IExpr function, IExpr constraints, Search search) {
+      final EvalEngine engine = search.engine;
+      final List<IExpr> variables = search.vars.getArrayList();
+      boolean[] onlyBounds = new boolean[1];
+      double[][] box = box(constraints, variables, onlyBounds, engine);
+      if (box != null) {
+        return boxOptimum(function, constraints, box, onlyBounds[0], search);
+      }
+      boolean violated = false;
       final IExpr[] starts = {F.C0, F.C1, F.CN1};
       for (int i = 0; i < starts.length; i++) {
         IASTAppendable specs = F.ListAlloc(variables.size());
-        for (IExpr variable : variables.getArrayList()) {
+        for (IExpr variable : variables) {
           specs.append(F.list(variable, starts[i]));
         }
-        IAST search = F.binaryAST2(minimize ? S.FindMinimum : S.FindMaximum, problem, specs);
         // the other starts are fallbacks: their failures are quiet, the last one says why
-        IExpr result = i < starts.length - 1 ? engine.evalQuiet(search) : engine.evaluate(search);
-        if (result.isList2() && result.first().isReal() && result.second().isListOfRules()) {
-          return result;
+        IExpr result = localSearch(function, constraints, specs, i < starts.length - 1, engine);
+        if (result.isPresent()) {
+          if (isFeasible(constraints, (IAST) result.second(), engine)) {
+            return result;
+          }
+          violated = true;
         }
       }
+      if (violated) {
+        search.infeasible = true;
+      }
       return F.NIL;
+    }
+
+    private IExpr localSearch(IExpr function, IExpr constraints, IAST specs, boolean quiet,
+        EvalEngine engine) {
+      final IAST problem = F.list(function, constraints);
+      IAST search = F.binaryAST2(getGoalType() == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum,
+          problem, specs);
+      IExpr result = quiet ? engine.evalQuiet(search) : engine.evaluate(search);
+      if (result.isList2() && result.first().isReal() && result.second().isListOfRules()) {
+        return result;
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The global optimum on a box: scan the box, and start the local constrained search from the
+     * best points of the scan which satisfy the constraints.
+     * <code>NMaximize({x*Cos(x), 0<=x<=16}, x)</code> is <code>12.6</code> at
+     * <code>x == 12.6</code>, where the search from the origin stopped at the first local maximum
+     * <code>0.56</code>.
+     */
+    private IExpr boxOptimum(IExpr function, IExpr constraints, double[][] box, boolean onlyBounds,
+        Search search) {
+      final EvalEngine engine = search.engine;
+      final List<IExpr> variables = search.vars.getArrayList();
+      final int dimension = variables.size();
+      final boolean minimize = getGoalType() == GoalType.MINIMIZE;
+      final MultivariateFunction func = new MultiVariateNumerical(function, search.listOfVariables);
+      final int perDimension =
+          dimension == 1 ? 1000 : dimension == 2 ? 61 : dimension == 3 ? 15 : 0;
+      final int samples = perDimension == 0 ? 4000 : (int) Math.pow(perDimension, dimension);
+      double[][] points = new double[samples][];
+      double[] values = new double[samples];
+      int count = 0;
+      double[] point = new double[dimension];
+      for (int k = 0; k < samples; k++) {
+        int index = k;
+        for (int d = 0; d < dimension; d++) {
+          double fraction;
+          if (perDimension == 0) {
+            fraction = halton(k + 1, PRIMES[d % PRIMES.length]);
+          } else {
+            fraction = (index % perDimension + 0.5) / perDimension;
+            index /= perDimension;
+          }
+          point[d] = box[d][0] + fraction * (box[d][1] - box[d][0]);
+        }
+        double value;
+        try {
+          value = func.value(point);
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          continue;
+        }
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+          continue;
+        }
+        points[count] = point.clone();
+        values[count++] = minimize ? value : -value;
+      }
+      // the best points of the scan first; the starts are taken apart from each other, so that
+      // they are not all in the one basin which has the best samples
+      Integer[] order = new Integer[count];
+      for (int i = 0; i < count; i++) {
+        order[i] = i;
+      }
+      final double[] sortValues = values;
+      java.util.Arrays.sort(order, (a, b) -> Double.compare(sortValues[a], sortValues[b]));
+      final double separation = perDimension == 0 ? 0.1 : 2.5 / perDimension;
+      double[][] bestPoints = new double[MAX_BOX_STARTS][];
+      int found = 0;
+      int tested = 0;
+      for (int i = 0; i < count && found < MAX_BOX_STARTS && tested < 40 * MAX_BOX_STARTS; i++) {
+        double[] candidate = points[order[i]];
+        boolean apart = true;
+        for (int j = 0; j < found && apart; j++) {
+          double distance = 0.0;
+          for (int d = 0; d < dimension; d++) {
+            double width = box[d][1] - box[d][0];
+            distance = Math.max(distance,
+                width == 0.0 ? 0.0 : Math.abs(candidate[d] - bestPoints[j][d]) / width);
+          }
+          apart = distance > separation;
+        }
+        if (!apart) {
+          continue;
+        }
+        tested++;
+        if (isFeasible(constraints, rules(variables, candidate), engine)) {
+          bestPoints[found++] = candidate;
+        }
+      }
+      if (found == 0) {
+        // no point of the scan satisfies the constraints: the middle of the box is the start
+        bestPoints[0] = new double[dimension];
+        for (int d = 0; d < dimension; d++) {
+          bestPoints[0][d] = 0.5 * (box[d][0] + box[d][1]);
+        }
+        found = 1;
+      }
+      IExpr best = F.NIL;
+      boolean violated = false;
+      for (int k = 0; k < found; k++) {
+        if (onlyBounds) {
+          // the box is all there is: a deterministic local search inside of it, where the bounded
+          // method of FindMinimum is a randomized one
+          double[] local = boxLocalSearch(func, box, bestPoints[k], minimize,
+              perDimension == 0 ? 0.05 : 1.0 / perDimension);
+          if (local != null) {
+            best = better(best, F.list(F.num(func.value(local)), rules(variables, local)));
+            continue;
+          }
+        }
+        IASTAppendable specs = F.ListAlloc(dimension);
+        for (int d = 0; d < dimension; d++) {
+          specs.append(F.list(variables.get(d), F.num(bestPoints[k][d])));
+        }
+        IExpr result = localSearch(function, constraints, specs, true, engine);
+        if (result.isPresent()) {
+          if (isFeasible(constraints, (IAST) result.second(), engine)) {
+            best = better(best, result);
+          } else {
+            violated = true;
+          }
+        }
+      }
+      if (best.isNIL() && violated) {
+        search.infeasible = true;
+      }
+      return best;
+    }
+
+    /**
+     * The local optimum of <code>func</code> in the box next to <code>start</code>: Brent's method
+     * on the neighbouring cells of the scan for one variable, Powell's BOBYQA method for more.
+     *
+     * @param cell the size of a cell of the scan, as a fraction of the width of the box
+     * @return <code>null</code> if the search fails
+     */
+    private static double[] boxLocalSearch(MultivariateFunction func, double[][] box,
+        double[] start, boolean minimize, double cell) {
+      final int dimension = start.length;
+      final double[] width = new double[dimension];
+      for (int d = 0; d < dimension; d++) {
+        width[d] = box[d][1] - box[d][0];
+        if (!(width[d] > 0.0)) {
+          return null;
+        }
+      }
+      try {
+        if (dimension == 1) {
+          double left = Math.max(box[0][0], start[0] - cell * width[0]);
+          double right = Math.min(box[0][1], start[0] + cell * width[0]);
+          UnivariatePointValuePair result =
+              new BrentOptimizer(1e-12, 1e-14).optimize(new MaxEval(10000),
+                  new UnivariateObjectiveFunction(t -> func.value(new double[] {t})),
+                  minimize ? GoalType.MINIMIZE : GoalType.MAXIMIZE,
+                  new SearchInterval(left, right, Math.min(right, Math.max(left, start[0]))));
+          return new double[] {result.getPoint()};
+        }
+        // in the coordinates u of the unit cube, so that one trust region radius fits every
+        // variable
+        final MultivariateFunction scaled = u -> {
+          double[] x = new double[dimension];
+          for (int d = 0; d < dimension; d++) {
+            x[d] = box[d][0] + Math.min(1.0, Math.max(0.0, u[d])) * width[d];
+          }
+          return func.value(x);
+        };
+        double[] u0 = new double[dimension];
+        double[] zeros = new double[dimension];
+        double[] ones = new double[dimension];
+        for (int d = 0; d < dimension; d++) {
+          u0[d] = (start[d] - box[d][0]) / width[d];
+          ones[d] = 1.0;
+        }
+        PointValuePair result = new BOBYQAOptimizer(2 * dimension + 1, Math.min(0.25, cell), 1e-12)
+            .optimize(new MaxEval(20000), new ObjectiveFunction(scaled),
+                minimize ? GoalType.MINIMIZE : GoalType.MAXIMIZE, new InitialGuess(u0),
+                new SimpleBounds(zeros, ones));
+        double[] u = result.getPointRef();
+        double[] x = new double[dimension];
+        for (int d = 0; d < dimension; d++) {
+          x[d] = box[d][0] + Math.min(1.0, Math.max(0.0, u[d])) * width[d];
+        }
+        return x;
+      } catch (org.hipparchus.exception.MathRuntimeException mre) {
+        return null;
+      }
+    }
+
+    private static final int[] PRIMES = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37};
+
+    /** The <code>index</code>-th member of the Halton sequence to the given base. */
+    private static double halton(int index, int base) {
+      double result = 0.0;
+      double fraction = 1.0 / base;
+      for (int i = index; i > 0; i /= base) {
+        result += fraction * (i % base);
+        fraction /= base;
+      }
+      return result;
+    }
+
+    private static IAST rules(List<IExpr> variables, double[] point) {
+      return F.mapRange(0, variables.size(), i -> F.Rule(variables.get(i), F.num(point[i])));
+    }
+
+    /**
+     * The finite interval of every variable which the constraints state as bounds of the single
+     * variable, like <code>0 <= x <= 16</code> or <code>x >= -3 && x < 5</code>.
+     *
+     * @return <code>{{lower, upper}, ...}</code> in the order of the variables, or
+     *         <code>null</code> if a variable has no finite interval
+     */
+    private static double[][] box(IExpr constraints, List<IExpr> variables, boolean[] onlyBounds,
+        EvalEngine engine) {
+      onlyBounds[0] = true;
+      final int n = variables.size();
+      double[][] box = new double[n][];
+      for (int i = 0; i < n; i++) {
+        box[i] = new double[] {Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY};
+      }
+      IAST conjuncts = constraints.isAnd() ? (IAST) constraints : F.And(constraints);
+      for (int i = 1; i < conjuncts.size(); i++) {
+        IExpr conjunct = conjuncts.get(i);
+        if (conjunct.isTrue()) {
+          continue;
+        }
+        if (!conjunct.isAST() || conjunct.argSize() < 2) {
+          onlyBounds[0] = false;
+          continue;
+        }
+        final boolean less = conjunct.isAST(S.Less) || conjunct.isAST(S.LessEqual);
+        if (!less && !conjunct.isAST(S.Greater) && !conjunct.isAST(S.GreaterEqual)) {
+          onlyBounds[0] = false;
+          continue;
+        }
+        IAST relation = (IAST) conjunct;
+        for (int j = 1; j < relation.argSize(); j++) {
+          // smaller <= larger
+          IExpr smaller = less ? relation.get(j) : relation.get(j + 1);
+          IExpr larger = less ? relation.get(j + 1) : relation.get(j);
+          boolean bound = false;
+          int variable = variables.indexOf(larger);
+          if (variable >= 0) {
+            double lower = engine.evalN(smaller).evalfNaN();
+            if (!Double.isNaN(lower)) {
+              box[variable][0] = Math.max(box[variable][0], lower);
+              bound = true;
+            }
+          }
+          variable = variables.indexOf(smaller);
+          if (variable >= 0) {
+            double upper = engine.evalN(larger).evalfNaN();
+            if (!Double.isNaN(upper)) {
+              box[variable][1] = Math.min(box[variable][1], upper);
+              bound = true;
+            }
+          }
+          if (!bound) {
+            onlyBounds[0] = false;
+          }
+        }
+      }
+      for (int i = 0; i < n; i++) {
+        if (Double.isInfinite(box[i][0]) || Double.isInfinite(box[i][1]) || box[i][0] > box[i][1]) {
+          return null;
+        }
+      }
+      return box;
+    }
+
+    /**
+     * Test a point against the conjunction <code>constraints</code>, with the tolerance a numerical
+     * solution on the boundary needs.
+     */
+    private static boolean isFeasible(IExpr constraints, IAST rules, EvalEngine engine) {
+      IAST conjuncts = constraints.isAnd() ? (IAST) constraints : F.And(constraints);
+      for (int i = 1; i < conjuncts.size(); i++) {
+        IExpr conjunct = conjuncts.get(i);
+        if (!conjunct.isAST() || conjunct.argSize() < 2) {
+          continue;
+        }
+        final boolean less = conjunct.isAST(S.Less) || conjunct.isAST(S.LessEqual);
+        final boolean equal = conjunct.isAST(S.Equal);
+        if (!less && !equal && !conjunct.isAST(S.Greater) && !conjunct.isAST(S.GreaterEqual)) {
+          continue;
+        }
+        IAST relation = (IAST) conjunct;
+        double previous = engine.evalN(F.subst(relation.arg1(), rules)).evalfNaN();
+        for (int j = 2; j < relation.size(); j++) {
+          double next = engine.evalN(F.subst(relation.get(j), rules)).evalfNaN();
+          if (Double.isNaN(previous) || Double.isNaN(next)) {
+            return false;
+          }
+          double tolerance =
+              FEASIBILITY_TOLERANCE * Math.max(1.0, Math.max(Math.abs(previous), Math.abs(next)));
+          double difference = next - previous;
+          if (equal ? Math.abs(difference) > tolerance
+              : less ? difference < -tolerance : difference > tolerance) {
+            return false;
+          }
+          previous = next;
+        }
+      }
+      return true;
+    }
+
+    /** <code>constraints && relation</code> as one flat conjunction */
+    private static IExpr and(IExpr constraints, IExpr relation) {
+      if (constraints.isTrue()) {
+        return relation;
+      }
+      if (constraints.isAnd()) {
+        return ((IAST) constraints).appendClone(relation);
+      }
+      return F.And(constraints, relation);
+    }
+
+    /**
+     * The optimum with integer values for the <code>integerVariables</code> by branch and bound:
+     * solve the problem without the integer conditions, and where an integer variable comes out as
+     * <code>v</code> with a fractional part, solve the two problems with <code>x <= Floor(v)</code>
+     * and with <code>x >= Ceiling(v)</code>.
+     */
+    private IExpr branchAndBound(IExpr function, IExpr constraints, List<IExpr> integerVariables,
+        Search search) {
+      final boolean minimize = getGoalType() == GoalType.MINIMIZE;
+      IExpr incumbent = F.NIL;
+      java.util.ArrayDeque<IExpr> open = new java.util.ArrayDeque<IExpr>();
+      open.push(constraints);
+      while (!open.isEmpty() && search.nodes < MAX_BRANCH_AND_BOUND_NODES) {
+        search.nodes++;
+        IExpr node = open.pop();
+        IExpr relaxed = optimum(function, node, search);
+        if (relaxed.isNIL()) {
+          continue;
+        }
+        if (incumbent.isPresent()) {
+          double bound = relaxed.first().evalf();
+          double value = incumbent.first().evalf();
+          if (minimize ? bound >= value : bound <= value) {
+            // no integer point of this node is better than the one which is known
+            continue;
+          }
+        }
+        IAST rules = (IAST) relaxed.second();
+        IExpr fractional = F.NIL;
+        double fractionalValue = 0.0;
+        for (int i = 1; i < rules.size(); i++) {
+          IExpr variable = rules.get(i).first();
+          if (integerVariables.contains(variable)) {
+            double v = rules.get(i).second().evalf();
+            if (Math.abs(v - Math.rint(v)) > FEASIBILITY_TOLERANCE) {
+              fractional = variable;
+              fractionalValue = v;
+              break;
+            }
+          }
+        }
+        if (fractional.isNIL()) {
+          // an integer point: write the integer variables as integers
+          IASTAppendable integerRules = F.ListAlloc(rules.argSize());
+          for (int i = 1; i < rules.size(); i++) {
+            IExpr variable = rules.get(i).first();
+            integerRules.append(integerVariables.contains(variable)
+                ? F.Rule(variable, F.ZZ(Math.round(rules.get(i).second().evalf())))
+                : rules.get(i));
+          }
+          IExpr value = search.engine.evalN(F.subst(function, integerRules));
+          if (value.isReal()) {
+            incumbent = better(incumbent, F.list(value, integerRules));
+          }
+          continue;
+        }
+        IExpr upper = F.LessEqual(fractional, F.ZZ((long) Math.floor(fractionalValue)));
+        IExpr lower = F.GreaterEqual(fractional, F.ZZ((long) Math.ceil(fractionalValue)));
+        open.push(and(node, upper));
+        open.push(and(node, lower));
+      }
+      if (incumbent.isPresent()) {
+        // a branch without points is no failure once an integer point is known
+        search.infeasible = false;
+      }
+      return incumbent;
     }
 
     @Override

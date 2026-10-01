@@ -504,6 +504,10 @@ public class ExprParser extends Scanner {
       case TT_STRING:
         IStringX str = getString();
         return parseArguments(str);
+      case TT_BOX_ESCAPE:
+        temp = getBoxEscape();
+        getNextToken();
+        return parseArguments(temp);
       case TT_PERCENT:
         int countPercent = 1;
         getNextToken();
@@ -1258,6 +1262,36 @@ public class ExprParser extends Scanner {
     getNextToken();
 
     return F.stringx(ident);
+  }
+
+  /** How deep this parser is nested in the box escapes of the parsers which created it. */
+  private int fBoxEscapeDepth;
+
+  /** Box escapes nested deeper than this are a syntax error; the text is input of a user. */
+  private static final int MAX_BOX_ESCAPE_DEPTH = 64;
+
+  /**
+   * The boxes of <code>\( ... \)</code>, or the expression which <code>\!\( ... \)</code> is the
+   * typeset form of - a formula or an image which was copied out of a notebook. An escape which has
+   * no reading stays as its text in <code>HoldComplete</code>.
+   *
+   * @see BoxNotation
+   */
+  private IExpr getBoxEscape() throws SyntaxError {
+    if (fBoxEscapeDepth >= MAX_BOX_ESCAPE_DEPTH) {
+      throwSyntaxError("box escape - nested too deep.");
+    }
+    final String text = fBoxText;
+    final boolean interpret = fBoxInterpret;
+    // the text of a box is wmasyntax, also where the input around it is relaxed syntax
+    final BoxNotation.SourceParser parser = source -> {
+      ExprParser sourceParser = new ExprParser(fEngine, fFactory, false, false, fExplicitTimes);
+      sourceParser.fBoxEscapeDepth = fBoxEscapeDepth + 1;
+      return sourceParser.parse(source);
+    };
+    IExpr result =
+        interpret ? BoxNotation.interpret(text, parser) : BoxNotation.boxes(text, parser);
+    return result == null ? BoxNotation.unread(text, interpret) : result;
   }
 
   /**
