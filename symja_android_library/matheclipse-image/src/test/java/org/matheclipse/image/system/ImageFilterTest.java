@@ -31,7 +31,7 @@ public class ImageFilterTest extends AbstractTestCase {
   }
 
   @Test
-  public void testConvolveAndCorrelate() {
+  public void testConvolveAndCorrelate1() {
     // the convolution reflects the kernel, the correlation doesn't
     check("delta = Image({{0., 1., 0.}}); {ImageData(ImageConvolve(delta, {{1, 2, 3}})), "
         + "ImageData(ImageCorrelate(delta, {{1, 2, 3}}))} == " + "{{{1., 2., 3.}}, {{3., 2., 1.}}}", //
@@ -44,7 +44,7 @@ public class ImageFilterTest extends AbstractTestCase {
   }
 
   @Test
-  public void testConvolveAndCorrelate() {
+  public void testConvolveAndCorrelate2() {
     // {{0.4, 0.7, 1.}} - the border is continued with its own pixels
     check(
         "Max(Abs(ImageData(ImageConvolve(Image({{0.1, 0.2, 0.4}}), {{1, 1, 1}})) "
