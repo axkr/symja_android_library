@@ -265,6 +265,29 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testCancelGaussianCoefficients() {
+    // issue #1528: Gaussian rational coefficients are cancelled over Q(I). The polynomial GCD over
+    // expression coefficients answered ComplexInfinity for the first one, and for the last one,
+    // which the Rubi rules ask for on the way through Integrate(Sin(Cos(Tan(x))),x), its remainder
+    // sequence did not end.
+    check("Cancel(Expand(I*(a-b-c+d)*(1+x)^2)/Expand(u^2*(1+x)^3))", //
+        "(I*a-I*b-I*c+I*d)/(u^2+u^2*x)");
+    check("Cancel(Expand((2+3*I)*(a-b)*(x+I)^3)/Expand((4-I)*u*(x+I)^2*(x-I)))", //
+        "((-5/17-I*14/17)*(a-b)*(I+x))/(u*(I-x))");
+    check("Together((x^2+1)/(x+I)+1/(x-I))", //
+        "(-I*2*x+x^2)/(-I+x)");
+    check("Cancel(Expand(32768*I*(a-b-c+d)*(1+x)^10)/Expand(65536*u^2*(1+x)^12))", //
+        "(I*a-I*b-I*c+I*d)/(2*u^2+4*u^2*x+2*u^2*x^2)");
+    // a unit of Q(I) which is left over goes to the numerator: not -I*(1+I*x), not -I*(I*x+y)
+    check("Cancel((x^2+1)/(x+I))", //
+        "-I+x");
+    check("Together((x^2+1)/(x+I))", //
+        "-I+x");
+    check("Cancel((x^2+y^2)/(x+I*y))", //
+        "x-I*y");
+  }
+
+  @Test
   public void testCancel() {
     // Cancel reduces a single fraction by cancelling common factors of numerator and denominator;
     // it must NOT split a single fraction into a partial-fraction-like sum (that was a bug: e.g.
@@ -306,7 +329,8 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     // 3+2*Sqrt(2) in numerator and denominator, and not a page of nested fractions
     check("Cancel(Expand((1+Sqrt(2)+x)^4*(2+x))/Expand((1+Sqrt(2)+x)^2*(2+x)^2))", //
         "(3+2*Sqrt(2)+(2+2*Sqrt(2))*x+x^2)/(2+x)");
-    check("Cancel(Expand((1+Sqrt(2)+E^Sqrt(3))^4*(2+E^Sqrt(3)))/Expand((1+Sqrt(2)+E^Sqrt(3))^2*(2+E^Sqrt(3))^2))", //
+    check(
+        "Cancel(Expand((1+Sqrt(2)+E^Sqrt(3))^4*(2+E^Sqrt(3)))/Expand((1+Sqrt(2)+E^Sqrt(3))^2*(2+E^Sqrt(3))^2))", //
         "(3+2*Sqrt(2)+(2+2*Sqrt(2))*E^Sqrt(3)+E^(2*Sqrt(3)))/(2+E^Sqrt(3))");
     check("Cancel((4*x^2 - 2*x)/(2 + 3*x))", //
         "(-2*x+4*x^2)/(2+3*x)");
@@ -457,7 +481,7 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTogetherKeepsDenominators() {
-    // as in Mathematica: the denominators are split only as far as they share a factor, not
+    // the denominators are split only as far as they share a factor, not
     // factored into irreducibles
     check("Together(1/(x^2-1)+1/(x^2-4))", //
         "(-5+2*x^2)/((-4+x^2)*(-1+x^2))");
@@ -467,7 +491,7 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "(3+2*x)/((1+x)*(2+x))");
     check("Together(1/(x^2-1)+1/(x+1))", //
         "x/((-1+x)*(1+x))");
-    // Mathematica: (2*x)/((-1+x)^2*(1+x)); Symja's Power writes (-1+x)^2 as (1-x)^2
+    // (2*x)/((-1+x)^2*(1+x)); Symja's Power writes (-1+x)^2 as (1-x)^2
     check("Together(1/(x^2-1)+1/(x-1)^2)", //
         "(2*x)/((1-x)^2*(1+x))");
     check("Together(1/(x^2+3*x+2)+1/(x+1))", //
@@ -573,7 +597,7 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     // below are -I*(x-I)*(x+I)^2 up to a unit, and a repeated factor is something that iteration
     // cannot express at all - it returned a wrong value for each of them. They now go through
     // AlgebraUtil.partialFractionDecompositionComplexRational(), which redoes the same JAS
-    // algorithm over ComplexRing<BigRational>. Values verified against Mathematica.
+    // algorithm over ComplexRing<BigRational>.
     check("Apart(1/((1-I*x)*(1+x^2)))", //
         "(-I*1/4)/(-I+x)-1/(2*(I+x)^2)+(I*1/4)/(I+x)");
     check("Apart(x/((1-I*x)*(1+x^2)))", //

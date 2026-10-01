@@ -1582,6 +1582,11 @@ public class GenPolynomial<C extends RingElem<C>>
         GenPolynomial<C> p = ring.getZERO().copy();
         SortedMap<ExpVector, C> pv = p.val;
         for (Map.Entry<ExpVector, C> m1 : val.entrySet()) {
+            // One product of two polynomials with swollen coefficients was measured running for
+            // tens of seconds, far longer than the loops which call it can be asked to wait: see
+            // PolyUtil.checkInterrupted(). Looked at once per term of this, next to a whole row
+            // of coefficient products.
+            PolyUtil.checkInterrupted();
             C c1 = m1.getValue();
             ExpVector e1 = m1.getKey();
             for (Map.Entry<ExpVector, C> m2 : S.val.entrySet()) {

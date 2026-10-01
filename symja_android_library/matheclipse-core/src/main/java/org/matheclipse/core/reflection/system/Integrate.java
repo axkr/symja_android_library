@@ -286,6 +286,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   private static final ThreadLocal<java.util.Set<IExpr>> IN_PROGRESS =
       ThreadLocal.withInitial(java.util.HashSet::new);
 
+  /**
+   * Set while a watchdog for the Rubi rules is running on this thread, see
+   * {@link #integrateByRubiRulesWithBudget}.
+   */
+  private static final ThreadLocal<Boolean> RUBI_BUDGET_ARMED =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
   @Override
   public IExpr evaluate(IAST holdallAST, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
@@ -303,8 +310,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       IExpr result = evaluateIntegrate(holdallAST, argSize, option, engine, originalAST);
       if (depth > 0) {
         // A sub-integral a Rubi rule asked for must not come back as a bare RootSum: it is a
-        // construct the rules have never seen, because WMA
-        // answers these inner algebraic integrals in closed form. Handing one back corrupts the
+        // construct the rules have never seen, because WMA answers these inner algebraic integrals
+        // in closed form. Handing one back corrupts the
         // answer - SubstAux's fallback for an unknown head is Map(Function(SubstAux(#1,x,v,flag)),
         // u), which wraps each of RootSum's pure-function arguments in a SECOND function whose #1
         // captures the RootSum's own #1 (the root); the substitution is dropped and the integral
@@ -2052,17 +2059,30 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * Run the Rubi rules under the budget of {@link #rubiBudgetMillis(EvalEngine)}.
    *
    * <p>
-   * Only the integral the user asked for arms a watchdog. A nested {@code Integrate} is already
-   * covered by the one its caller armed, and a second watchdog would interrupt the same thread a
-   * second time for a budget which is not its own.
+   * A watchdog is armed whenever none is running for this thread. An {@code Integrate} which the
+   * rules themselves ask for is covered by the one its caller armed, and a second watchdog would
+   * interrupt the same thread a second time for a budget which is not its own.
+   *
+   * <p>
+   * The nesting depth does not tell the two apart. A definite integral asks for its antiderivative
+   * one level down without ever running the rules itself, and the stages behind the rules - the
+   * rewrite with {@code TrigToExp} in {@link #callRestIntegrate}, the exponential and the surd
+   * stage - ask for a rewritten integral after the budget of their own level has ended. Arming only
+   * at depth 1 left the rules of all of these without any limit:
+   * <code>Integrate(Sin(Cos(Tan(x))), {x,1,3})</code> did not return (issue #1528).
    */
   private static IExpr integrateByRubiRulesWithBudget(IAST arg1, IExpr x, IAST ast,
       EvalEngine engine) {
-    if (EVAL_DEPTH.get() != 1) {
+    if (RUBI_BUDGET_ARMED.get()) {
       return integrateByRubiRules(arg1, x, ast, engine);
     }
-    return IntegrateTimeBudget.runWithin(() -> integrateByRubiRules(arg1, x, ast, engine),
-        rubiBudgetMillis(engine));
+    RUBI_BUDGET_ARMED.set(Boolean.TRUE);
+    try {
+      return IntegrateTimeBudget.runWithin(() -> integrateByRubiRules(arg1, x, ast, engine),
+          rubiBudgetMillis(engine));
+    } finally {
+      RUBI_BUDGET_ARMED.remove();
+    }
   }
 
   /** The Rubi budget for this evaluation, or {@code <= 0} to run the rules unbounded. */

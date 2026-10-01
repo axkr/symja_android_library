@@ -27,6 +27,7 @@ import edu.jas.arith.Product;
 import edu.jas.arith.ProductRing;
 import edu.jas.arith.Rational;
 import edu.jas.arith.Roots;
+import edu.jas.kern.PreemptingException;
 import edu.jas.structure.Element;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingElem;
@@ -49,6 +50,24 @@ public class PolyUtil {
 
 
     private static final boolean debug = logger.isDebugEnabled();
+
+
+    /**
+     * Stop a pseudo division whose thread has been interrupted.
+     * <p>
+     * Symja switches the preemption check of the {@link GenPolynomial} constructor off, and the
+     * GCD remainder sequences only look at the interrupt flag once per round. A single round over
+     * swelling coefficients - a pseudo remainder followed by an exact division, every step of them
+     * a product of polynomials with coefficients of many thousand digits - was measured running for
+     * minutes after the interrupt, so the loops of the pseudo division look at the flag themselves.
+     * The flag is left set, as in <code>GreatestCommonDivisorAbstract.checkInterrupted()</code>.
+     * @throws PreemptingException if the current thread has been interrupted.
+     */
+    public static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new PreemptingException("polynomial division interrupted");
+        }
+    }
 
 
     /**
@@ -953,6 +972,7 @@ public class PolyUtil {
         GenPolynomial<C> h;
         GenPolynomial<C> r = P;
         while (!r.isZERO()) {
+            checkInterrupted();
             ExpVector f = r.leadingExpVector();
             if (f.multipleOf(e)) {
                 C a = r.leadingBaseCoefficient();
@@ -1000,6 +1020,7 @@ public class PolyUtil {
         GenPolynomial<C> h;
         GenPolynomial<C> r = P;
         for (long i = m; i >= n; i--) {
+            checkInterrupted();
             if (r.isZERO()) {
                 return r;
             }
@@ -1100,6 +1121,7 @@ public class PolyUtil {
         GenPolynomial<C> q = S.ring.getZERO().copy();
 
         while (!r.isZERO()) {
+            checkInterrupted();
             ExpVector f = r.leadingExpVector();
             if (f.multipleOf(e)) {
                 C a = r.leadingBaseCoefficient();
@@ -1265,6 +1287,7 @@ public class PolyUtil {
         GenPolynomial<GenPolynomial<C>> p = P.ring.getZERO().copy();
         SortedMap<ExpVector, GenPolynomial<C>> pv = p.val; //getMap();
         for (Map.Entry<ExpVector, GenPolynomial<C>> m1 : P.getMap().entrySet()) {
+            checkInterrupted();
             GenPolynomial<C> c1 = m1.getValue();
             ExpVector e1 = m1.getKey();
             GenPolynomial<C> c = PolyUtil.<C> basePseudoDivide(c1, s);
@@ -1401,6 +1424,7 @@ public class PolyUtil {
         GenPolynomial<GenPolynomial<C>> h;
         GenPolynomial<GenPolynomial<C>> r = P;
         while (!r.isZERO()) {
+            checkInterrupted();
             ExpVector f = r.leadingExpVector();
             if (f.multipleOf(e)) {
                 GenPolynomial<C> a = r.leadingBaseCoefficient();
@@ -1447,6 +1471,7 @@ public class PolyUtil {
         GenPolynomial<GenPolynomial<C>> h;
         GenPolynomial<GenPolynomial<C>> r = P;
         for (long i = m; i >= n; i--) {
+            checkInterrupted();
             if (r.isZERO()) {
                 return r;
             }

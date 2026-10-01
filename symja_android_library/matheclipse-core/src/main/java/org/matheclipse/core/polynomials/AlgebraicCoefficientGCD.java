@@ -331,9 +331,11 @@ public final class AlgebraicCoefficientGCD {
 
   /**
    * The coefficient of <code>q1</code> or <code>q2</code> whose division leaves the fewest terms in
-   * the basis of atom products, then the fewest fractions, the smallest numerators and the fewest
-   * negative signs - <code>(Sqrt(3)+x)</code> rather than <code>(3+Sqrt(3)*x)</code> or
-   * <code>(-Sqrt(3)-x)</code>. <code>1</code> if none is simpler than now.
+   * the basis of atom products, then the fewest fractions, the smallest numerators, the fewest
+   * irrational coefficients in the denominator and the fewest negative signs -
+   * <code>(Sqrt(3)+x)</code> rather than <code>(3+Sqrt(3)*x)</code> or <code>(-Sqrt(3)-x)</code>,
+   * and <code>(-I+x)/1</code> rather than <code>(1+I*x)/I</code>. <code>1</code> if none is simpler
+   * than now.
    */
   private static AlgebraicNumber<BigRational> simplestUnit(
       GenPolynomial<AlgebraicNumber<BigRational>> q1,
@@ -358,6 +360,21 @@ public final class AlgebraicCoefficientGCD {
         }
       }
     }
+    // The atoms themselves, which need not be among the coefficients: the denominator of
+    // (-a+b)/(I*2*u+I*4*u*x) has the coefficients I*2 and I*4, and dividing by either leaves
+    // fractions, while dividing by I leaves (I*a-I*b)/(2*u+4*u*x).
+    for (AlgebraicNumber<BigRational> atom : coefficients.atoms.values()) {
+      AlgebraicNumber<BigRational> c = best.multiply(atom);
+      if (c.isZERO() || !tried.add(c)) {
+        continue;
+      }
+      AlgebraicNumber<BigRational> inverse = c.inverse();
+      long[] w = weight(q1.multiply(inverse), q2.multiply(inverse), coefficients);
+      if (isLighter(w, bestWeight)) {
+        bestWeight = w;
+        best = c;
+      }
+    }
     return best;
   }
 
@@ -372,23 +389,33 @@ public final class AlgebraicCoefficientGCD {
 
   /**
    * For all coefficients of both polynomials in the basis of atom products: the number of non-zero
-   * coordinates, how many of them are not integers, the total bit length of their numerators and
-   * how many of them are negative.
+   * coordinates, how many of them are not integers, the total bit length of their numerators, how
+   * many of those of the denominator <code>q2</code> are not rational and how many are negative.
+   *
+   * <p>
+   * The denominator is counted before the signs, because a unit left in it does not stay there:
+   * <code>(1+I*x)/I</code> is evaluated to <code>-I*(1+I*x)</code>, a product where the cancelled
+   * fraction was the polynomial <code>-I+x</code>.
    */
   private static long[] weight(GenPolynomial<AlgebraicNumber<BigRational>> q1,
       GenPolynomial<AlgebraicNumber<BigRational>> q2, CoefficientField coefficients) {
-    long[] weight = new long[4];
+    long[] weight = new long[5];
     for (GenPolynomial<AlgebraicNumber<BigRational>> q : java.util.Arrays.asList(q1, q2)) {
       for (BigRational[] vector : basisCoordinates(q, coefficients).values()) {
-        for (BigRational a : vector) {
+        for (int i = 0; i < vector.length; i++) {
+          BigRational a = vector[i];
           if (!a.isZERO()) {
             weight[0]++;
             if (!a.den.equals(java.math.BigInteger.ONE)) {
               weight[1]++;
             }
             weight[2] += a.num.abs().bitLength();
-            if (a.signum() < 0) {
+            if (i > 0 && q == q2) {
+              // element 0 of the basis is 1, every other one is a product of atoms
               weight[3]++;
+            }
+            if (a.signum() < 0) {
+              weight[4]++;
             }
           }
         }

@@ -2,9 +2,11 @@ package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.BuiltinFunctionCalls;
@@ -309,6 +311,17 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   public void testIntegratePower() {
     check("Integrate((x+1)^3 ,x)", //
         "(1+x)^4/4");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  @Timeout(value = 5, unit = TimeUnit.MINUTES)
+  public void testIntegrateIssue1528() {
+    // did not return: the rules of a nested Integrate ran without their time budget, inside a
+    // polynomial GCD which neither ended nor looked at the interrupt flag. The timeout interrupts
+    // this thread, so a relapse fails here instead of holding up the whole tier.
+    check("Integrate(Sin(Cos(Tan(x))),{x,1,3})", //
+        "Integrate(Sin(Cos(Tan(x))),{x,1,3})");
   }
 
   @Test
@@ -1208,7 +1221,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNIntegrateAbsDivergent() {
-    // WMA gives NIntegrate::ncvb for these divergent integrals, the fixed-order LegendreGauss
+    // gives NIntegrate::ncvb for these divergent integrals, the fixed-order LegendreGauss
     // rule used to return a finite number
     // message - NIntegrate failed to converge after 10000 refinements in x in the region {-1,1}.
     check("NIntegrate(Abs(1/x),{x,-1,1})", //

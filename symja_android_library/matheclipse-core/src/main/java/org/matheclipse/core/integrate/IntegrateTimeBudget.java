@@ -51,36 +51,76 @@ public final class IntegrateTimeBudget {
       return result == null ? F.NIL : result;
     }
     final Thread evaluationThread = Thread.currentThread();
-    final boolean[] finished = new boolean[] {false};
-    final boolean[] budgetExceeded = new boolean[] {false};
-    final Object lock = new Object();
+    final Budget budget = new Budget(ACTIVE.get());
     ScheduledFuture<?> watchdog = scheduler().schedule(() -> {
-      synchronized (lock) {
-        if (!finished[0]) {
-          budgetExceeded[0] = true;
+      synchronized (budget) {
+        if (!budget.finished) {
+          budget.exceeded = true;
           evaluationThread.interrupt();
         }
       }
     }, budgetMillis, TimeUnit.MILLISECONDS);
+    ACTIVE.set(budget);
     try {
       IExpr result = work.get();
       return result == null ? F.NIL : result;
     } catch (RuntimeException rex) {
-      synchronized (lock) {
-        if (!budgetExceeded[0]) {
-          throw rex; // not our interrupt - the caller's deadline or a genuine failure
-        }
+      if (!budget.isExceeded() || budget.isEnclosingExceeded()) {
+        // not our interrupt - the caller's deadline or a genuine failure - or not only ours
+        throw rex;
       }
       return F.NIL;
     } finally {
-      synchronized (lock) {
-        finished[0] = true;
+      synchronized (budget) {
+        budget.finished = true;
       }
       watchdog.cancel(false);
-      if (budgetExceeded[0]) {
+      if (budget.parent == null) {
+        ACTIVE.remove();
+      } else {
+        ACTIVE.set(budget.parent);
+      }
+      if (budget.isExceeded() && !budget.isEnclosingExceeded()) {
         // clear the flag we raised, or the caller aborts on the next interruption check
         Thread.interrupted();
       }
+    }
+  }
+
+  /** The innermost budget running on this thread. */
+  private static final ThreadLocal<Budget> ACTIVE = new ThreadLocal<Budget>();
+
+  /**
+   * One call of {@link #runWithin}, linked to the one it runs inside.
+   *
+   * <p>
+   * All budgets of a thread share its one interrupt flag. When a budget and one around it run out
+   * close together - a nested <code>Integrate</code> arms the budget of its rules a few
+   * milliseconds after the stage which asked for it armed its own, of the same length - both
+   * watchdogs have fired before the thread looks at the flag. The inner call must then neither
+   * answer "did not finish" nor clear the flag: the interrupt is the outer one's as well, whose
+   * watchdog has fired and will not fire again, so the work would go on without any limit.
+   */
+  private static final class Budget {
+    final Budget parent;
+    boolean exceeded;
+    boolean finished;
+
+    Budget(Budget parent) {
+      this.parent = parent;
+    }
+
+    synchronized boolean isExceeded() {
+      return exceeded;
+    }
+
+    boolean isEnclosingExceeded() {
+      for (Budget b = parent; b != null; b = b.parent) {
+        if (b.isExceeded()) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 

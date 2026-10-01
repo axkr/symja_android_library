@@ -1082,10 +1082,16 @@ public class AlgebraUtil {
         GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
         GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 
-        if (!hasNumberCoefficients(p1) || !hasNumberCoefficients(p2)) {
+        final boolean numberCoefficients = hasNumberCoefficients(p1) && hasNumberCoefficients(p2);
+        if (!numberCoefficients || hasComplexCoefficient(p1) || hasComplexCoefficient(p2)) {
           // Radical coefficients such as 3-2*Sqrt(2): take the GCD in the number field they
           // generate. Over IExpr coefficients the same GCD has no normal form - every product is a
           // full evaluation, every quotient a nested fraction - and it swells at every step.
+          //
+          // Gaussian rationals are numbers, but they take this way too, through Q(I). The IExpr GCD
+          // below does not get them right: (I*(a-b-c+d)*(1+x)^2)/(u^2*(1+x)^3), expanded, came back
+          // as ComplexInfinity, and with (1+x)^10 over (1+x)^12 its remainder sequence swelled to
+          // coefficients of thousands of digits and did not end (issue #1528).
           AlgebraicCoefficientGCD.Quotients quotients =
               AlgebraicCoefficientGCD.cancel(p1, p2, EvalEngine.get());
           if (quotients == AlgebraicCoefficientGCD.COPRIME) {
@@ -1102,7 +1108,8 @@ public class AlgebraUtil {
           }
           // No number field for these coefficients: the IExpr GCD below is the only way left, and
           // its cost grows with the term counts, so it is only attempted for small polynomials.
-          if ((long) p1.length() * (long) p2.length() > Config.MAX_CANCEL_GCD_TERM_PRODUCT) {
+          if (!numberCoefficients
+              && (long) p1.length() * (long) p2.length() > Config.MAX_CANCEL_GCD_TERM_PRODUCT) {
             return Optional.empty();
           }
         }
@@ -1193,6 +1200,16 @@ public class AlgebraUtil {
       }
     }
     return true;
+  }
+
+  /** Is a coefficient of <code>p</code> an exact complex number which is not real? */
+  private static boolean hasComplexCoefficient(GenPolynomial<IExpr> p) {
+    for (IExpr c : p.getMap().values()) {
+      if (c instanceof IComplex) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
