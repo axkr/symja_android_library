@@ -282,6 +282,23 @@ public class Config {
   public static boolean RULE_DISPATCH_STATISTICS = false;
 
   /**
+   * Set to <code>false</code> to switch off the fixed point stamps of the evaluation loop, so that
+   * an expression is evaluated again every time the loop sees it. For bisecting a wrong result
+   * which a stale stamp could explain.
+   *
+   * @see org.matheclipse.core.eval.EvalEngine#evaluate(org.matheclipse.core.interfaces.IExpr)
+   */
+  public static boolean EVAL_EPOCH_CACHE = !Boolean.getBoolean("symja.evalEpoch.off");
+
+  /**
+   * Set to <code>true</code> to check every use of a fixed point stamp: the expression is evaluated
+   * anyway, and a result is a stamp which should not have been trusted. Those are reported on
+   * <code>System.err</code> and counted in
+   * {@link org.matheclipse.core.eval.EvalEpochValidation}. Slow - for testing only.
+   */
+  public static boolean EVAL_EPOCH_VALIDATE = Boolean.getBoolean("symja.evalEpoch.validate");
+
+  /**
    * Set to <code>true</code> to collect the counters in
    * {@link org.matheclipse.core.expression.AstAllocationStats}: how appendable argument lists are
    * created, how often they outgrow their initial capacity, and from which call sites. Every

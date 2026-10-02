@@ -2656,6 +2656,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   @Override
   public IExpr set(int location, IExpr object) {
     hashValue = 0;
+    clearEvalEpoch();
     IExpr result;
     switch (location) {
       case 1:

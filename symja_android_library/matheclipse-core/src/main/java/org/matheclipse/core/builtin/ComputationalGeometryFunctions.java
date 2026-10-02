@@ -1586,15 +1586,15 @@ public class ComputationalGeometryFunctions {
           // pad))
           IExpr bbox;
           if (ast.isAST1()) {
-            bbox = F.CoordinateBoundingBox.funEval(engine, listOfPoints);
+            bbox = F.CoordinateBoundingBox.of(engine, listOfPoints);
           } else if (ast.isAST2()) {
-            bbox = F.CoordinateBoundingBox.funEval(engine, listOfPoints, ast.arg2());
+            bbox = F.CoordinateBoundingBox.of(engine, listOfPoints, ast.arg2());
           } else {
             return F.NIL;
           }
 
           if (bbox.isList()) {
-            return S.Transpose.funEval(engine, bbox);
+            return S.Transpose.of(engine, bbox);
           }
         }
       }
@@ -2398,8 +2398,8 @@ public class ComputationalGeometryFunctions {
         IAST previous = (IAST) corners.get(i == 1 ? 4 : i - 1);
         IAST corner = (IAST) corners.get(i);
         IAST next = (IAST) corners.get(i == 4 ? 1 : i + 1);
-        IExpr dot = dot(difference(previous, corner, engine), difference(next, corner, engine),
-            engine);
+        IExpr dot =
+            dot(difference(previous, corner, engine), difference(next, corner, engine), engine);
         if (dot.isNIL()) {
           return F.NIL;
         }
@@ -2750,12 +2750,9 @@ public class ComputationalGeometryFunctions {
         return F.NIL;
       }
       return F.List( //
-          engine.evaluate(
-              F.Subtract(F.Times(u.arg2(), v.arg3()), F.Times(u.arg3(), v.arg2()))), //
-          engine.evaluate(
-              F.Subtract(F.Times(u.arg3(), v.arg1()), F.Times(u.arg1(), v.arg3()))), //
-          engine.evaluate(
-              F.Subtract(F.Times(u.arg1(), v.arg2()), F.Times(u.arg2(), v.arg1()))));
+          engine.evaluate(F.Subtract(F.Times(u.arg2(), v.arg3()), F.Times(u.arg3(), v.arg2()))), //
+          engine.evaluate(F.Subtract(F.Times(u.arg3(), v.arg1()), F.Times(u.arg1(), v.arg3()))), //
+          engine.evaluate(F.Subtract(F.Times(u.arg1(), v.arg2()), F.Times(u.arg2(), v.arg1()))));
     }
 
     private static IAST difference(IAST p, IAST q, EvalEngine engine) {
@@ -2810,8 +2807,7 @@ public class ComputationalGeometryFunctions {
 
       // an interval times an interval is an axis-aligned rectangle
       if (firstExtent.isPresent() && secondExtent.isPresent()) {
-        return F.binaryAST2(S.Rectangle,
-            F.List(firstExtent.arg1(), secondExtent.arg1()), //
+        return F.binaryAST2(S.Rectangle, F.List(firstExtent.arg1(), secondExtent.arg1()), //
             F.List(firstExtent.arg2(), secondExtent.arg2()));
       }
       // a planar region extruded along an interval
@@ -2976,10 +2972,10 @@ public class ComputationalGeometryFunctions {
    *
    * <p>
    * A question this function does not understand at all - a property which is not in
-   * {@link PolyhedronData#PROPERTIES}, a solid which is not in {@link PolyhedronData#SOLIDS} - is no
-   * answer rather than missing data: the call stays unevaluated, with a message for the property.
-   * That is what {@link org.matheclipse.core.reflection.system.EntityValue} needs to tell an unknown
-   * solid from an unknown property, and it is what the reference implementation does.
+   * {@link PolyhedronData#PROPERTIES}, a solid which is not in {@link PolyhedronData#SOLIDS} - is
+   * no answer rather than missing data: the call stays unevaluated, with a message for the
+   * property. That is what {@link org.matheclipse.core.reflection.system.EntityValue} needs to tell
+   * an unknown solid from an unknown property, and it is what the reference implementation does.
    */
   private static class PolyhedronData extends AbstractEvaluator {
 
@@ -2997,8 +2993,8 @@ public class ComputationalGeometryFunctions {
      * is what lets {@link org.matheclipse.core.reflection.system.EntityValue} tell an unknown solid
      * from an unknown property.
      */
-    private static final String[] SOLIDS = {"Icosahedron", "Icosidodecahedron",
-        "RhombicTriacontahedron", "TruncatedIcosahedron"};
+    private static final String[] SOLIDS =
+        {"Icosahedron", "Icosidodecahedron", "RhombicTriacontahedron", "TruncatedIcosahedron"};
 
     /**
      * The properties one solid answers for, in the order <code>PolyhedronData("Properties")</code>
@@ -3091,7 +3087,7 @@ public class ComputationalGeometryFunctions {
       return false;
     }
 
-    /** A listing - of solids or of properties - as the plain strings Mathematica reports. */
+    /** A listing - of solids or of properties. */
     private static IAST names(String[] names) {
       return F.mapRange(0, names.length, i -> F.stringx(names[i]));
     }
@@ -3115,8 +3111,7 @@ public class ComputationalGeometryFunctions {
     private static IExpr graphics(String name) {
       double[][] vertices = vertices(name);
       List<int[]> faces = vertices == null ? null : faces(name, vertices);
-      return faces == null ? F.Missing(S.NotAvailable)
-          : F.Graphics3D(facesComplex(name, faces));
+      return faces == null ? F.Missing(S.NotAvailable) : F.Graphics3D(facesComplex(name, faces));
     }
 
     private static IExpr volume(String name) {
@@ -3211,7 +3206,7 @@ public class ComputationalGeometryFunctions {
      * <p>
      * The truncated icosahedron's faces come from the solid it was cut from: one pentagon around
      * each of the 12 original vertices and one hexagon in each of the 20 original faces. Pentagons
-     * are emitted first, which is the order Mathematica reports.
+     * are emitted first.
      */
     private static List<int[]> faces(String name, double[][] vertices) {
       if ("Icosahedron".equals(name)) {
@@ -3329,7 +3324,7 @@ public class ComputationalGeometryFunctions {
       return result;
     }
 
-    /** Face vertex indices, 1-based as Mathematica reports them. */
+    /** Face vertex indices. */
     private static IAST faceIndices(List<int[]> faces) {
       IASTAppendable result = F.ListAlloc(faces.size());
       for (int[] face : faces) {

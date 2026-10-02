@@ -1675,6 +1675,23 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     // an appended or replaced argument may be one of the expressions IAST#hasSpecialArg() looks
     // for, so the arguments have to be scanned again
     fEvalFlags &= ~EvalFlags.Mask.ARGUMENTS_CHANGED;
+    clearEvalEpoch();
+  }
+
+  /**
+   * Forget that the evaluation loop stamped this expression as a fixed point, because the
+   * expression is changed in place: the stamp describes the expression it was before.
+   * <p>
+   * Call this in every method which removes or reorders arguments; the methods which append or
+   * replace one get it from {@link #argumentsChanged()}. The test keeps the volatile write off the
+   * path which builds a new expression argument by argument.
+   *
+   * @see EvalEngine#evaluate(IExpr)
+   */
+  protected final void clearEvalEpoch() {
+    if (fEvalEpoch != 0L) {
+      fEvalEpoch = 0L;
+    }
   }
 
   @Override

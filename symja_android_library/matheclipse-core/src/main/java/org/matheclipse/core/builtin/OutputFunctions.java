@@ -589,7 +589,7 @@ public final class OutputFunctions {
           }
         }
         if (floatJava) {
-          IExpr optimized = S.OptimizeExpression.funEval(engine, arg1);
+          IExpr optimized = S.OptimizeExpression.of(engine, arg1);
           if (optimized.isList2() && optimized.second().isListOfRules()
               && !optimized.second().isEmptyList()) {
             IExpr newExpr = optimized.first();

@@ -1633,7 +1633,7 @@ public class StatisticsContinousDistribution {
                 reference >= StatisticsFunctions.NEXTDOWNONE ? StatisticsFunctions.NEXTDOWNONE
                     : Math.nextUp(reference);
             uniform = -Math.log(uniform);
-            list.append(m.times(S.Power.funEval(F.num(uniform), n.reciprocal().negate())));
+            list.append(m.times(S.Power.of(F.num(uniform), n.reciprocal().negate())));
           }
           return list;
         }

@@ -3744,7 +3744,7 @@ public final class LinearAlgebra {
             return Errors.printMessage(ast.topHead(), e, engine);
           }
           try {
-            IAST matrixTransposed = (IAST) S.ConjugateTranspose.funEval(engine, matrix);
+            IAST matrixTransposed = (IAST) S.ConjugateTranspose.of(engine, matrix);
             return F.Expand.of(F.LinearSolve(F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
                 F.Dot(matrixTransposed, vector)));
           } catch (final ClassCastException | IndexOutOfBoundsException e) {
@@ -3878,17 +3878,16 @@ public final class LinearAlgebra {
       return F.List(solution);
     }
 
-    /** The values of the option <code>Method</code> Mathematica knows for LinearSolve. */
+    /** The values of the option <code>Method</code> for LinearSolve. */
     private static final java.util.Set<String> METHODS = java.util.Set.of("Cholesky",
         "Multifrontal", "Krylov", "CofactorExpansion", "OneStepRowReduction",
         "DivisionFreeRowReduction", "Direct", "IterativeRefinement", "Banded");
 
     /**
-     * Whether the matrix can be solved with the given <code>Method</code>, as Mathematica checks
-     * it: an unknown method, <code>"Cholesky"</code> for a matrix which is not Hermitian and
-     * positive definite, and <code>"Banded"</code> for entries which are not machine numbers are
-     * reported and leave LinearSolve unevaluated. The method itself doesn't change how the system
-     * is solved.
+     * Whether the matrix can be solved with the given <code>Method</code>: an unknown method,
+     * <code>"Cholesky"</code> for a matrix which is not Hermitian and positive definite, and
+     * <code>"Banded"</code> for entries which are not machine numbers are reported and leave
+     * LinearSolve unevaluated. The method itself doesn't change how the system is solved.
      */
     private static boolean validMethod(IExpr matrix, IExpr method, EvalEngine engine) {
       String name = method.isString() ? method.toString()
@@ -3921,8 +3920,8 @@ public final class LinearAlgebra {
         }
       } else if (name.equals("Banded")) {
         IExpr entries = engine.evaluate(F.Flatten(matrix));
-        if (!entries.isList()
-            || !((IAST) entries).forAll(x -> x.isReal() && !x.isRational() || x.isComplexNumeric())) {
+        if (!entries.isList() || !((IAST) entries)
+            .forAll(x -> x.isReal() && !x.isRational() || x.isComplexNumeric())) {
           // The method "Banded" accepts only matrices with elements that are machine-real or
           // machine-complex numbers.
           Errors.printMessage(S.LinearSolve, "bdnmt", F.CEmptyList, engine);
@@ -8250,11 +8249,11 @@ public final class LinearAlgebra {
     } else if (rows == 3 && cols == 4) {
       smallList = cramersRule3x4(matrix, true, engine);
     }
-    if (smallList != null) {
-      if (smallList.isNIL()) {
-        // no solution
-        return F.ListAlloc();
-      }
+    // A determinant of zero does not say that there is no solution: {x+y==2, x+y==2} has the
+    // solutions y == 2-x and {x+y==2, x+y==3} has none, and both have the determinant 0. Cramer's
+    // rule answers neither, so such a system is row reduced below, where a row 0 == c with c != 0
+    // is what reports "no solution".
+    if (smallList != null && smallList.isPresent()) {
       // The rule for a variable which was eliminated before this system was formed is part of the
       // answer just as much as the ones Cramer's rule produces here, and the branch below which
       // row reduces a larger system includes it. Leaving it out reported a solved variable as

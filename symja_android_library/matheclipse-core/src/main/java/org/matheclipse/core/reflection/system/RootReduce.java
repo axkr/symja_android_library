@@ -68,7 +68,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
       }
 
       // Step 1: compute the minimal polynomial as a pure Function of Slot(1)
-      IExpr minPoly = S.MinimalPolynomial.funEval(engine, arg1);
+      IExpr minPoly = S.MinimalPolynomial.of(engine, arg1);
       if (minPoly.isNIL() || minPoly.equals(arg1)) {
         return F.NIL;
       }
@@ -86,13 +86,13 @@ public class RootReduce extends AbstractFunctionEvaluator {
       IExpr degree = engine.evaluate(F.Exponent(polyInX, x));
       if (F.C1.equals(degree)) {
         // Degree 1 → rational, solve directly: return -c0/c1
-        IExpr c1 = S.Coefficient.funEval(engine, polyInX, x, F.C1);
-        IExpr c0 = S.Coefficient.funEval(engine, polyInX, x, F.C0);
+        IExpr c1 = S.Coefficient.of(engine, polyInX, x, F.C1);
+        IExpr c0 = S.Coefficient.of(engine, polyInX, x, F.C0);
         return engine.evaluate(F.Divide(F.Negate(c0), c1));
       }
 
       // Step 5: numerically evaluate the input expression
-      IExpr numericArg1 = S.N.funEval(engine, arg1);
+      IExpr numericArg1 = S.N.of(engine, arg1);
       if (!numericArg1.isNumber()) {
         return F.NIL;
       }
@@ -131,7 +131,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
       IExpr numericValue, double tolerance, EvalEngine engine) {
     try {
       // Step 4: compute numerical roots of the polynomial
-      IExpr nrootsResult = S.NRoots.funEval(engine, polyInX, x);
+      IExpr nrootsResult = S.NRoots.of(engine, polyInX, x);
       if (!nrootsResult.isList()) {
         return F.NIL;
       }

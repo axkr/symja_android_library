@@ -87,7 +87,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
           case ID.Triangle:
             if (reg.argSize() == 0)
               return F.C1D2;
-            IExpr area = S.Area.funEval(engine, reg);
+            IExpr area = S.Area.of(engine, reg);
             return area.isPresent() ? area : F.NIL;
           case ID.Polygon:
             return polygonMeasure(reg, engine);
@@ -134,7 +134,7 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
           case ID.StadiumShape:
           case ID.DiskSegment:
             // the measure of a two dimensional region is its area
-            return S.Area.funEval(engine, reg);
+            return S.Area.of(engine, reg);
           case ID.EmptyRegion:
             return reg.argSize() == 1 ? F.C0 : F.NIL;
           case ID.FullRegion:

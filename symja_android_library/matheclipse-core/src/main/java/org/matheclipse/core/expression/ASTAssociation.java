@@ -36,9 +36,12 @@ import org.organicdesign.fp.collections.UnmodMap.UnEntry;
 public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /**
-   * Map the <code>IExpr()</code> keys to the index of the values in this AST.
+   * Map the <code>IExpr()</code> keys to the index of the values in this AST, or <code>null</code>
+   * in a copy which has not looked up a key yet. Read it through {@link #keyMap()}.
+   * <p>
+   * Volatile, because the index of a copy is built by whichever thread asks first.
    */
-  private transient MutMap<IExpr, Integer> keyToIndexMap;
+  private transient volatile MutMap<IExpr, Integer> keyToIndexMap;
 
   /** Public no-arg constructor needed for serialization. */
   public ASTAssociation() {
@@ -127,7 +130,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
       final int value = getRulePosition(rule.first());
       if (value == 0) {
         append(rule);
-        keyToIndexMap.assoc(rule.first(), index);
+        keyMap().assoc(rule.first(), index);
       } else {
         set(value, rule);
       }
@@ -152,6 +155,27 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   /**
+   * The index from the keys to the positions of their rules. {@link #copy()} leaves it out, so
+   * that a copy which is only read by position - or not read at all - costs nothing more than the
+   * shared tree; this builds it from the rules the first time a key is asked for.
+   * <p>
+   * A method which changes the rules and then corrects the index has to call this <b>before</b>
+   * the change: an index built afterwards is already the corrected one.
+   */
+  private MutMap<IExpr, Integer> keyMap() {
+    MutMap<IExpr, Integer> map = keyToIndexMap;
+    if (map == null) {
+      map = StaticImports.mutableMap();
+      final int size = size();
+      for (int i = 1; i < size; i++) {
+        map.assoc(super.get(i).first(), i);
+      }
+      keyToIndexMap = map;
+    }
+    return map;
+  }
+
+  /**
    * Get the value-index from the internal map for the <code>key</code>
    * 
    * @param key
@@ -159,7 +183,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
    */
   @Override
   public int getRulePosition(IExpr key) {
-    Integer value = keyToIndexMap.get(key);
+    Integer value = keyMap().get(key);
     return (value == null) ? 0 : value;
   }
 
@@ -238,8 +262,8 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public ASTAssociation clone() {
     ASTAssociation result = (ASTAssociation) super.clone();
-    // rebuilt rather than shared, for the reason given in copy()
-    result.keyToIndexMap = keyToIndexMap.toMutMap(x -> x);
+    // not shared, for the reason given in copy()
+    result.keyToIndexMap = null;
     return result;
   }
 
@@ -248,11 +272,14 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     ASTAssociation ast = new ASTAssociation();
     ast.rrbTree = shallowCopy(rrbTree);
     ast.hashValue = 0;
-    // keyToIndexMap is deliberately left as an O(n) rebuild: MutMap is a Clojure style transient
+    // The key index cannot be shared the way the tree is: MutMap is a Clojure style transient
     // whose immutable() hands over its edit token, so immutable().mutable() would invalidate the
     // map this association keeps. ASTRRBTree#shallowCopy is safe only because MutRrbt has no such
-    // token - its nodes are final and its immutable() does not touch the source.
-    ast.keyToIndexMap = keyToIndexMap.toMutMap(x -> x);
+    // token - its nodes are final and its immutable() does not touch the source. So the copy
+    // starts without an index and builds its own when a key is looked up, see keyMap(). A copy
+    // which is handed out as a value and never asked for a key - what AssociateTo returns in a
+    // loop - then costs the same whatever its size.
+    ast.keyToIndexMap = null;
     return ast;
   }
 
@@ -667,7 +694,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public boolean isKey(IExpr key) {
-    return keyToIndexMap.containsKey(key);
+    return keyMap().containsKey(key);
   }
 
   /** {@inheritDoc} */
@@ -762,7 +789,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public ArrayList<String> keyNames() {
     ArrayList<String> list = new ArrayList<String>();
-    UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
+    UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyMap().iterator();
     while (iterator.hasNext()) {
       UnEntry<IExpr, Integer> element = iterator.next();
       list.add(element.getKey().toString());
@@ -778,7 +805,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   protected IASTMutable keys(IBuiltInSymbol symbol) {
     IASTMutable list = F.astMutable(symbol, argSize());
 
-    UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
+    UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyMap().iterator();
     while (iterator.hasNext()) {
       UnEntry<IExpr, Integer> element = iterator.next();
       int value = element.getValue();
@@ -850,6 +877,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public IAST matrixOrList() {
 
+    final MutMap<IExpr, Integer> keyToIndexMap = keyMap();
     boolean numericKeys = true;
     try {
       UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
@@ -933,7 +961,10 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
    * @param rule
    */
   private void insertAt(int position, IExpr rule) {
+    // before the rule goes in, see keyMap()
+    final MutMap<IExpr, Integer> keyToIndexMap = keyMap();
     rrbTree.insert(position, rule);
+    argumentsChanged();
     UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
     while (iterator.hasNext()) {
       UnEntry<IExpr, Integer> element = iterator.next();
@@ -952,7 +983,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
       if (valueIndex == 0) {
         final int index = size();
         append(rule.setAtClone(2, F.List(rule.second())));
-        keyToIndexMap.assoc(rule.first(), index);
+        keyMap().assoc(rule.first(), index);
       } else {
         IExpr value = getValue(valueIndex);
         IASTMutable newRule = rule.copy();
@@ -1012,6 +1043,8 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public IExpr remove(int location) throws IndexOutOfBoundsException {
     hashValue = 0;
+    // before the rule goes out, see keyMap()
+    final MutMap<IExpr, Integer> keyToIndexMap = keyMap();
     // throws IndexOutOfBoundsException
     IExpr result = super.remove(location);
     IExpr removedKey = result.first();
@@ -1029,7 +1062,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
         mutable = mutable.assoc(element.getKey(), indx - 1);
       }
     }
-    keyToIndexMap = mutable;
+    this.keyToIndexMap = mutable;
     return result;
   }
 
@@ -1124,11 +1157,14 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     if (location > 0) {
       if (rule.isRuleAST()) {
         final IAST oldRule = getRule(location);
+        MutMap<IExpr, Integer> map = keyMap();
         if (oldRule.isPresent()) {
-          keyToIndexMap = keyToIndexMap.without(oldRule.first());
+          map = map.without(oldRule.first());
         }
-        keyToIndexMap = keyToIndexMap.assoc(rule.first(), location);
+        keyToIndexMap = map.assoc(rule.first(), location);
         rrbTree = rrbTree.replace(location, rule);
+        // the tree is written directly here, so the cached hash and the eval state go by hand
+        argumentsChanged();
         return oldRule;
       }
       // Anything else is the value at that position, and the key stays as it was. That is what
@@ -1146,7 +1182,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   public IExpr setValue(final int location, final IExpr value) {
     if (location > 0) {
       final IAST oldRule = getRule(location);
-      MutMap<IExpr, Integer> mutable = keyToIndexMap.toMutMap(x -> x);
+      MutMap<IExpr, Integer> mutable = keyMap().toMutMap(x -> x);
       // mutable.without(oldRule.first());
       mutable = mutable.assoc(oldRule.first(), location);
       keyToIndexMap = mutable;
@@ -1185,6 +1221,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     }
     Collections.sort(indices, comparator);
     ASTAssociation result = copy();
+    final MutMap<IExpr, Integer> keyToIndexMap = keyMap();
     MutMap<IExpr, Integer> mutable = keyToIndexMap.toMutMap(x -> x);
     UnmodIterator<UnEntry<IExpr, Integer>> iterator = keyToIndexMap.iterator();
     while (iterator.hasNext()) {

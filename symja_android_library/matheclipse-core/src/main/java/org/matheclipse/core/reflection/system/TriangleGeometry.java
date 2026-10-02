@@ -234,7 +234,7 @@ public final class TriangleGeometry {
 
   /** The area of the triangle; delegates to <code>Area(Triangle(points))</code>. */
   public static IExpr area(IAST points, EvalEngine engine) {
-    return S.Area.funEval(engine, F.Triangle(points));
+    return S.Area.of(engine, F.Triangle(points));
   }
 
   /**

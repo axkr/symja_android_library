@@ -51,7 +51,7 @@ public class MomentOfInertia extends AbstractFunctionEvaluator {
       point = ast.arg2();
     } else {
       // without an explicit point the moments are taken around the centroid
-      point = S.RegionCentroid.funEval(engine, reg);
+      point = S.RegionCentroid.of(engine, reg);
       if (!point.isPresent()) {
         return F.NIL;
       }

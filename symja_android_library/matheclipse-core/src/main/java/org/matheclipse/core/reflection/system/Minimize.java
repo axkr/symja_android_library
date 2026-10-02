@@ -227,17 +227,17 @@ public class Minimize extends AbstractFunctionEvaluator {
         return quotient;
       }
 
-      IExpr yNInf = S.Limit.funEval(function, F.Rule(x, F.CNInfinity));
+      IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
       if (yNInf.isNegativeInfinity()) {
         return F.list(F.CNInfinity, F.list(F.Rule(x, F.CNInfinity)));
       }
-      IExpr yInf = S.Limit.funEval(function, F.Rule(x, F.CInfinity));
+      IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
       if (yInf.isNegativeInfinity()) {
         return F.list(F.CNInfinity, F.list(F.Rule(x, F.CInfinity)));
       }
 
       IExpr first_derivative = S.D.of(engine, function, x);
-      IExpr second_derivative = S.D.funEval(engine, first_derivative, x);
+      IExpr second_derivative = S.D.of(engine, first_derivative, x);
       IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
       if (candidates.isFree(S.Solve)) {
         IExpr minCandidate = F.NIL;

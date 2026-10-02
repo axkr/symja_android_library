@@ -203,7 +203,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      return S.If.evaluate(this, engine);
+      return S.If.evalBuiltinStep(this, engine);
     }
   }
 

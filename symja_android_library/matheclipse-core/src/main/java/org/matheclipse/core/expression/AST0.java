@@ -517,6 +517,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   @Override
   public IExpr set(int location, IExpr object) {
     hashValue = 0;
+    clearEvalEpoch();
     if (location == 0) {
       IExpr result;
       result = arg0;

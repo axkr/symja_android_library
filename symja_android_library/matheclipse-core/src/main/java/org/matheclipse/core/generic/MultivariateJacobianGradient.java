@@ -49,7 +49,7 @@ public final class MultivariateJacobianGradient implements MultivariateJacobianF
     }
     fEngine = engine;
     fFunction = function;
-    IExpr gradientList = S.Grad.funEval(engine, function, fVariableList);
+    IExpr gradientList = S.Grad.of(engine, function, fVariableList);
     if (gradientList.isList() && gradientList.size() >= variablesList.size()) {
       fGradientFunctions = (IAST) gradientList;
     } else {

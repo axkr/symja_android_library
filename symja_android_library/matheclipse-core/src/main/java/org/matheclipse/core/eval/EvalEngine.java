@@ -225,6 +225,18 @@ public class EvalEngine implements Serializable {
    */
   private static final AtomicLong SYSTEM_EPOCH = new AtomicLong(1L);
 
+  /**
+   * A fixed point stamp is the epoch shifted left by this, with the numeric modes in which the
+   * expression is a fixed point in the low bits. The numeric mode belongs to one engine, the epoch
+   * to all of them, so the mode is recorded in the stamp instead of moving the epoch whenever an
+   * engine switches it.
+   */
+  private static final int STAMP_EPOCH_SHIFT = 2;
+
+  private static final long STAMP_SYMBOLIC_MODE = 1L;
+
+  private static final long STAMP_NUMERIC_MODE = 2L;
+
   private static class EvalControlledCallable implements Callable<IExpr> {
     private final EvalEngine fEngine;
     /** The enclosing <code>Check</code>s of the calling thread, which see the messages. */
@@ -2046,7 +2058,6 @@ public class EvalEngine implements Serializable {
 
       OptionsResult options = checkBuiltinArguments(ast, functionEvaluator);
       if (options == null) {
-        ast.functionEvaled();
         return F.NIL;
       }
       IAST newAST = options.result;
@@ -2099,18 +2110,9 @@ public class EvalEngine implements Serializable {
       } catch (LinkageError le) {
         return awtUnavailable(ast, le);
       }
-      // cannot generally set the result as evaluated in built-in function. Especially problems in
-      // `togetherMode`
-      // if ((Attribute.NUMERICFUNCTION.isSetIn(attributes))//
-      // && ast.argSize() == 1 //
-      // && ast.isNumericFunction()) {
-      // ast.functionEvaled();
-      // }
-
-      // } else {
-      // System.out.println(symbol);
-      // ast.functionEvaled();
-      // }
+      // An expression the built-in leaves unevaluated cannot be marked with a flag as "evaluated":
+      // whether it evaluates depends on the engine state, `togetherMode` in particular. The fixed
+      // point stamp of the evaluation loop does that job, see #stampFixedPoint(IAST).
     }
     return F.NIL;
   }
@@ -3092,8 +3094,7 @@ public class EvalEngine implements Serializable {
       // If the AST's epoch is greater than or equal to the top head's update epoch,
       // its rules haven't changed! We can safely skip deep evaluation.
       // =========================================================================
-      long astEpoch = ast.getEvalEpoch();
-      if (astEpoch > 0 && astEpoch >= SYSTEM_EPOCH.get()) {
+      if (isFixedPoint(ast, true)) {
         // It's already at a fixed point for the current global state!
         return F.NIL;
       }
@@ -3173,7 +3174,7 @@ public class EvalEngine implements Serializable {
                 Errors.printMessage(result.topHead(), "itendless", F.list(temp), this);
               }
               if (result instanceof IAST) {
-                ((IAST) result).setEvalEpoch(SYSTEM_EPOCH.get());
+                stampFixedPoint((IAST) result);
               }
               return iterationCounter == 0 ? F.NIL : result;
             }
@@ -3185,6 +3186,13 @@ public class EvalEngine implements Serializable {
             if (++iterationCounter >= fIterationLimit && fIterationLimit >= 0) {
               IterationLimitExceeded.throwIt(iterationCounter, result);
             }
+            if (temp instanceof IAST && isFixedPoint((IAST) temp, false)) {
+              // The rewrite handed back an expression which an inner evaluation already took to
+              // its fixed point - a built-in ending in `return engine.evaluate(...)`, a rule whose
+              // right-hand side was evaluated, the value of a variable. Evaluating it once more
+              // to learn that nothing changes is what the stamp is there to avoid.
+              return result;
+            }
 
             continue;
           }
@@ -3195,7 +3203,7 @@ public class EvalEngine implements Serializable {
           // We stamp it with the current global epoch so we can skip it next time.
           // =========================================================================
           if (result instanceof IAST) {
-            ((IAST) result).setEvalEpoch(SYSTEM_EPOCH.get());
+            stampFixedPoint((IAST) result);
           }
           return iterationCounter == 0 ? F.NIL : result;
         }
@@ -3219,7 +3227,94 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * 
+   * Test if the evaluation loop stamped <code>ast</code> as a fixed point and nothing changed since
+   * which could make it evaluate to something else.
+   *
+   * @param ast the expression the loop is about to evaluate
+   * @param entry <code>true</code> at the entry of the loop, <code>false</code> inside it, where
+   *        the frame of the evaluation is already open
+   * @see #stampFixedPoint(IAST)
+   */
+  private boolean isFixedPoint(final IAST ast, final boolean entry) {
+    final long stamp = ast.getEvalEpoch();
+    if (stamp == 0L) {
+      // never evaluated, or changed since
+      return false;
+    }
+    if ((stamp & (fNumericMode ? STAMP_NUMERIC_MODE : STAMP_SYMBOLIC_MODE)) == 0L
+        || (stamp >>> STAMP_EPOCH_SHIFT) < SYSTEM_EPOCH.get() || fEvalLHSMode
+        || !Config.EVAL_EPOCH_CACHE) {
+      return false;
+    }
+    if (Config.EVAL_EPOCH_VALIDATE) {
+      validateFixedPoint(ast, entry);
+    }
+    return true;
+  }
+
+  /**
+   * The loop evaluated <code>ast</code> and got no result: remember that, so the next evaluation of
+   * this expression in the same numeric mode can be skipped until the system epoch moves.
+   * <p>
+   * Nothing is remembered while a left-hand side is evaluated: that mode leaves expressions
+   * unevaluated which evaluate elsewhere, and the stamp has no bit for it. The same goes for an
+   * expression with the head <code>Sequence</code>.
+   * <p>
+   * A result which a time budget or a recursion guard cut short is stamped like any other: an
+   * <code>Integrate</code> which stays unevaluated is not tried again until a definition changes.
+   * That is deliberate. Not stamping it makes every expression it is part of evaluate it again,
+   * and the integration rules, which ask for the same sub-integral many times, then no longer
+   * finish.
+   *
+   * @see #isFixedPoint(IAST, boolean)
+   */
+  private void stampFixedPoint(final IAST ast) {
+    if (fEvalLHSMode || ast.head() == S.Sequence) {
+      // Sequence(...) evaluates differently depending on where it stands: an argument stays as
+      // it is and is spliced by the enclosing expression, the same expression at the top level
+      // becomes Identity(...). No stamp, so both get to evaluate.
+      return;
+    }
+    final long epoch = SYSTEM_EPOCH.get();
+    final long mode = fNumericMode ? STAMP_NUMERIC_MODE : STAMP_SYMBOLIC_MODE;
+    final long stamp = ast.getEvalEpoch();
+    // a fixed point in the other mode too, if that was found in this epoch
+    ast.setEvalEpoch((stamp >>> STAMP_EPOCH_SHIFT) == epoch ? stamp | mode
+        : (epoch << STAMP_EPOCH_SHIFT) | mode);
+  }
+
+  /**
+   * {@link Config#EVAL_EPOCH_VALIDATE}: evaluate an expression the loop is about to skip. Its
+   * arguments are checked in turn when this evaluation reaches them. The check runs quiet, because
+   * an expression which stays unevaluated with a message would print it once more. An expression
+   * which contains an <code>Integrate</code> is not checked.
+   */
+  private void validateFixedPoint(final IAST ast, final boolean entry) {
+    if (!ast.isFree(x -> x == S.Integrate, true)) {
+      // an unevaluated integral is the known exception, see #stampFixedPoint(IAST): how far it
+      // evaluates depends on the time budget and on the integrals already under way
+      return;
+    }
+    final boolean quietMode = fQuietMode;
+    try {
+      fQuietMode = true;
+      if (entry) {
+        // the same frame the loop would have opened: an evaluator may look at the stack
+        fRecursionCounter++;
+        stackPush(ast);
+      }
+      EvalEpochValidation.checked(ast, ast.evaluate(this));
+    } finally {
+      if (entry) {
+        stackPop();
+        fRecursionCounter--;
+      }
+      fQuietMode = quietMode;
+    }
+  }
+
+  /**
+   *
    * Evaluate an object in <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Trace.md">trace
    * mode</a>, if evaluation is not possible return <code>F.NIL</code>.
@@ -3445,7 +3540,7 @@ public class EvalEngine implements Serializable {
       if (oldDigitPrecision <= ParserConfig.MACHINE_PRECISION - 1 && expr.isAST()) {
         INumber cache = doublePrecisionCache.getIfPresent(expr);
         if (cache != null//
-            && (((IAST) expr).getEvalEpoch() >= SYSTEM_EPOCH.get() //
+            && ((((IAST) expr).getEvalEpoch() >>> STAMP_EPOCH_SHIFT) >= SYSTEM_EPOCH.get() //
                 || expr.isNumericConstant())) {
           return cache;
         }
@@ -5578,9 +5673,8 @@ public class EvalEngine implements Serializable {
    * @param numericMode if <code>true</code> evaluate in floating number mode
    */
   final public void setNumericMode(final boolean numericMode) {
-    if (numericMode != fNumericMode) {
-      EvalEngine.SYSTEM_EPOCH.incrementAndGet();
-    }
+    // the epoch does not move: a fixed point stamp records the numeric mode it was reached in, see
+    // #stampFixedPoint(IAST)
     fNumericMode = numericMode;
   }
 
@@ -5602,12 +5696,17 @@ public class EvalEngine implements Serializable {
   }
 
   public FixedPrecisionApfloatHelper setNumericPrecision(long precision) {
+    final long oldPrecision = getNumericPrecision();
     if (ParserConfig.MACHINE_PRECISION > precision) {
       fApfloatHelper = null;
     } else {
       fApfloatHelper = new FixedPrecisionApfloatHelper(precision);
     }
-    EvalEngine.SYSTEM_EPOCH.incrementAndGet();
+    if (oldPrecision != getNumericPrecision()) {
+      // setting the precision it already has changes no result; numeric evaluation does that on
+      // every call
+      EvalEngine.SYSTEM_EPOCH.incrementAndGet();
+    }
     return fApfloatHelper;
   }
 

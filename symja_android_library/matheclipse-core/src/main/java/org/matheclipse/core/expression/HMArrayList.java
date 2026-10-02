@@ -580,6 +580,7 @@ public abstract class HMArrayList extends AbstractAST
       firstIndex = lastIndex = 0;
     }
     hashValue = 0;
+    clearEvalEpoch();
   }
 
   /**
@@ -1156,6 +1157,7 @@ public abstract class HMArrayList extends AbstractAST
       throw new NullPointerException("Index: " + location);
     }
     hashValue = 0;
+    clearEvalEpoch();
     IExpr result;
     final int size = lastIndex - firstIndex;
     if (0 <= location && location < size) {
@@ -1201,6 +1203,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public void removeRange(int start, int end) {
     hashValue = 0;
+    clearEvalEpoch();
     if (start >= 0 && start <= end && end <= (lastIndex - firstIndex)) {
       if (start == end) {
         return;
@@ -1284,6 +1287,7 @@ public abstract class HMArrayList extends AbstractAST
     if (size() > 1) {
       // the hash code depends on the order of the arguments
       hashValue = 0;
+      clearEvalEpoch();
       if (Config.FUZZ_TESTING) {
         try {
           Arrays.sort(array, firstIndex + 1, lastIndex, comparator);

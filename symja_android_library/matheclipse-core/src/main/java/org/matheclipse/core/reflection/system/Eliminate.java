@@ -748,8 +748,12 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
           } else if (ast.isFree(x -> x.isLog(), true)) {
             return tryPowerExpand(ast, exprWithoutVariable, variable, multipleValues, engine);
           } else {
-            return tryLogAttraction(ast, exprWithoutVariable, predicate, variable, multipleValues,
-                engine);
+            IExpr attracted = tryLogAttraction(ast, exprWithoutVariable, predicate, variable,
+                multipleValues, engine);
+            if (attracted.isPresent()) {
+              return attracted;
+            }
+            return tryAffineLog(ast, exprWithoutVariable, variable, multipleValues, engine);
           }
         } else if (ast.isTimes()) {
           // a * b * c....
@@ -769,6 +773,26 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
                     return numerLinear[0].negate().plus(denomLinear[0].times(exprWithoutVariable))
                         .times(temp.power(-1L));
                   }
+                }
+              }
+              if (!exprWithoutVariable.isZero() && !numerDenom[1].isFree(
+                  x -> x.isPower() && x.exponent().isFraction() && !x.base().isFree(variable),
+                  false)) {
+                // u/Sqrt(v) == c is u - c*Sqrt(v) == 0, the two terms tryPowerExpand is for. The
+                // right side stays one factor, whatever it is made of: y/Sqrt(1+y^2) == x + c.
+                // one symbol stands for the right side while the equation is solved, so that the
+                // answer is written in x + c and not in its expanded powers
+                boolean compound = exprWithoutVariable.isPlus();
+                IExpr side = compound ? F.Dummy("k") : exprWithoutVariable;
+                IExpr cleared =
+                    engine.evaluate(F.Subtract(numerDenom[0], F.Times(side, numerDenom[1])));
+                if (cleared.isPlus() && cleared.argSize() == 2
+                    && isPolynomialAndRadical((IAST) cleared, variable)) {
+                  IExpr solved =
+                      tryPowerExpand((IAST) cleared, F.C0, variable, multipleValues, engine);
+                  return compound && solved.isPresent()
+                      ? engine.evaluate(F.subst(solved, side, exprWithoutVariable))
+                      : solved;
                 }
               }
             }
@@ -1190,12 +1214,161 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
    * @param engine
    * @return
    */
+  /**
+   * Whether the two terms are a polynomial in the variable and a factor free of the variable
+   * times one fractional power of a polynomial in it: <code>y - (c+x)*Sqrt(1+y^2)</code>.
+   *
+   * <p>
+   * That is the equation which clearing the radical solves. Anything wider is not worth offering:
+   * a sum with nested roots or with logarithms beside them comes back unsolved after a long time
+   * spent on its logarithms, which is what the equations of a higher degree in <code>y'</code>
+   * hand over by the dozen.
+   */
+  private static boolean isPolynomialAndRadical(IAST twoTerms, IExpr variable) {
+    IAST variables = F.list(variable);
+    for (int i = 1; i <= 2; i++) {
+      IExpr polynomial = twoTerms.get(i);
+      IExpr radicalTerm = twoTerms.get(3 - i);
+      if (!polynomial.isPolynomial(variables)) {
+        continue;
+      }
+      IAST factors = radicalTerm.isTimes() ? (IAST) radicalTerm : F.Times(radicalTerm);
+      int radicals = 0;
+      boolean other = false;
+      for (int j = 1; j <= factors.argSize(); j++) {
+        IExpr factor = factors.get(j);
+        if (factor.isFree(variable)) {
+          continue;
+        }
+        if (factor.isPower() && factor.exponent().isFraction()
+            && factor.base().isPolynomial(variables)) {
+          radicals++;
+        } else {
+          other = true;
+        }
+      }
+      if (radicals == 1 && !other) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The sum collected in the first power with a fractional exponent whose base contains the
+   * variable, or {@link F#NIL} if there is none.
+   *
+   * @param radical receives that power
+   */
+  private static IExpr collectInRadical(IAST plusAST, IExpr variable, IExpr[] radical,
+      EvalEngine engine) {
+    plusAST.isFree(x -> {
+      if (radical[0] == null && x.isPower() && x.exponent().isFraction()
+          && !x.base().isFree(variable)) {
+        radical[0] = x;
+      }
+      return false;
+    }, true);
+    if (radical[0] == null) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Collect(plusAST, radical[0]));
+  }
+
+  /**
+   * Solves <code>p*x + q*Log(gamma*x + delta) + rest == exprWithoutVariable</code>, with
+   * <code>delta != 0</code>, through the unknown <code>u == gamma*x + delta</code>.
+   *
+   * <p>
+   * In <code>u</code> the equation is <code>(p/gamma)*u + q*Log(u) + ... == 0</code>, which the
+   * rules answer with <code>ProductLog</code>; with the logarithm of anything but a multiple of
+   * the variable they do not match. <code>y + 2*Log(1+y) == x</code> is such an equation, and so
+   * is the relation every equation <code>y' == (b+a*y)/(d+c*y)</code> integrates to.
+   *
+   * @return the value of the variable, or {@link F#NIL} if the logarithms of the equation do not
+   *         all have the same argument of the first degree
+   */
+  private static IExpr tryAffineLog(IAST plusAST, IExpr exprWithoutVariable, IExpr variable,
+      boolean multipleValues, EvalEngine engine) {
+    IExpr[] argument = new IExpr[1];
+    boolean[] several = new boolean[1];
+    plusAST.isFree(x -> {
+      if (x.isLog() && !x.first().isFree(variable)) {
+        if (argument[0] == null) {
+          argument[0] = x.first();
+        } else if (!argument[0].equals(x.first())) {
+          several[0] = true;
+        }
+      }
+      return false;
+    }, true);
+    IExpr arg = argument[0];
+    if (arg == null || several[0] || !arg.isPolynomial(F.list(variable))) {
+      return F.NIL;
+    }
+    IExpr gamma = engine.evaluate(F.Coefficient(arg, variable, F.C1));
+    IExpr delta = engine.evaluate(F.Coefficient(arg, variable, F.C0));
+    if (gamma.isZero() || delta.isZero() || !gamma.isFree(variable) || !delta.isFree(variable)
+        || !engine.evaluate(F.Expand(F.Subtract(arg, F.Plus(F.Times(gamma, variable), delta))))
+            .isZero()) {
+      return F.NIL;
+    }
+    ISymbol u = F.Dummy("u");
+    IExpr transformed = F.subst(F.Subtract(plusAST, exprWithoutVariable), F.Log(arg), F.Log(u));
+    transformed = F.subst(transformed, variable, F.Divide(F.Subtract(u, delta), gamma));
+    transformed = engine.evaluate(F.Collect(F.ExpandAll(transformed), F.Log(u)));
+    if (!transformed.isFree(variable)) {
+      return F.NIL;
+    }
+    IExpr value = solveTransformed(transformed, u, multipleValues, engine);
+    if (value.isNIL() || !value.isFree(u) || value.isTrue() || value.isFalse()) {
+      return F.NIL;
+    }
+    IExpr back = engine.evaluate(F.Divide(F.Subtract(value, delta), gamma));
+    // gamma and delta can share a factor, E^(4*x) in Log(3*E^(4*x)+2*E^(4*x)*y), which then
+    // stands in the numerator and in the denominator of every term
+    IExpr together = engine.evaluate(F.Together(back));
+    return together.isPresent() && together.leafCount() < back.leafCount() ? together : back;
+  }
+
   /** The equations {@link #tryPowerExpand} is solving on this thread. */
   private static final ThreadLocal<Set<IExpr>> POWER_EXPAND_IN_PROGRESS =
       ThreadLocal.withInitial(HashSet::new);
 
   private static IExpr tryPowerExpand(IAST plusAST, IExpr exprWithoutVariable, IExpr variable,
       boolean multipleValues, EvalEngine engine) {
+    if (plusAST.argSize() > 2) {
+      // y/Sqrt(1+y^2) == c + x arrives expanded, as y - c*Sqrt(1+y^2) - x*Sqrt(1+y^2), which is
+      // the two terms y - (c+x)*Sqrt(1+y^2) this method is for once the radical is collected. One
+      // symbol stands for the collected coefficient while the equation is solved, so that the
+      // answer is written in c + x and not in its expanded powers.
+      IExpr[] radical = new IExpr[1];
+      IExpr collected = collectInRadical(plusAST, variable, radical, engine);
+      if (collected.isPlus() && collected.argSize() == 2
+          && isPolynomialAndRadical((IAST) collected, variable)) {
+        for (int i = 1; i <= 2; i++) {
+          IExpr term = ((IAST) collected).get(i);
+          IExpr coefficient = engine.evaluate(F.Divide(term, radical[0]));
+          if (coefficient.isPlus() && coefficient.isFree(variable)) {
+            IExpr k = F.Dummy("k");
+            // -c-x is written as -(c+x), so that the answer has c+x in it and no doubled sign
+            boolean negative = ((IAST) coefficient).forAll(x -> x.isNegativeSigned());
+            if (negative) {
+              coefficient = engine.evaluate(F.Negate(coefficient));
+            }
+            IAST withSymbol = ((IAST) collected).setAtCopy(i,
+                negative ? F.Times(F.CN1, k, radical[0]) : F.Times(k, radical[0]));
+            IExpr evaluated = engine.evaluate(withSymbol);
+            if (evaluated.isPlus() && evaluated.argSize() == 2) {
+              IExpr solved = tryPowerExpand((IAST) evaluated, exprWithoutVariable, variable,
+                  multipleValues, engine);
+              return solved.isPresent() ? engine.evaluate(F.subst(solved, k, coefficient)) : solved;
+            }
+          }
+        }
+        plusAST = (IAST) collected;
+      }
+    }
     if (plusAST.argSize() == 2) {
       // The equation is a + b == exprWithoutVariable, so what the logarithm of the left side is
       // equated with is the logarithm of exprWithoutVariable - b. Reading it as -b instead solves

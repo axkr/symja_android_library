@@ -10,7 +10,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -20,8 +19,8 @@ import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -218,7 +217,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     }
     fValue = value;
     EvalEngine.incEpoch();
-    clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
+    // an assigned value is not this symbol's alone, see Symbol#assignValue()
+    fEvalFlags |= DIRTY_FLAG_ASSIGNED_VALUE;
     if (setDelayed) {
       addEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
     } else {
@@ -905,64 +905,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     return globalSubstitute;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public IExpr of(EvalEngine engine, IExpr... args) {
-    return engine.evaluate(F.ast(args, this));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr of(EvalEngine engine, Object... args) {
-    IExpr[] convertedArgs = Object2Expr.convertArray(args, false, false);
-    return engine.evaluate(F.ast(convertedArgs, this));
-  }
-
-  @Override
-  public IExpr funEval(EvalEngine engine, IExpr... args) {
-    return engine.evaluate(F.ast(args, this));
-  }
-
-  @Override
-  public IExpr funSEval(EvalEngine engine, IExpr... args) {
-    boolean oldNumericMode = engine.isNumericMode();
-    try {
-      engine.setNumericMode(false);
-      return funEval(engine, args);
-    } finally {
-      engine.setNumericMode(oldNumericMode);
-    }
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts) {
-    IASTAppendable ast = F.ast(this, 1 + parts.length);
-    ast.append(arg);
-    ast.appendAll(parts, 0, parts.length);
-    return engine.evaluate(ast);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr ofNIL(EvalEngine engine, IExpr... args) {
-    IAST ast = F.ast(args, this);
-    return engine.evaluateNIL(ast);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean ofQ(EvalEngine engine, IExpr... args) {
-    IAST ast = F.ast(args, this);
-    return engine.evalTrue(ast);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean ofQ(IExpr... args) {
-    return ofQ(EvalEngine.get(), args);
-  }
-
   // public Object readResolve() throws ObjectStreamException {
   // ISymbol sym = fContext.get(fSymbolName);
   // if (sym != null) {
@@ -1067,23 +1009,30 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     if (assignedValue != null) {
       IExpr[] result = new IExpr[2];
       result[0] = assignedValue;
-      if (isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE) && result[0].isAST()) {
-        result[0] = ((IAST) result[0]).copy();
+      IExpr value = assignedValue;
+      final boolean association = value.isAssociation();
+      if (association && isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE)) {
+        // see Symbol#reassignSymbolValue(): an association which may be known elsewhere is copied
+        // before the function changes it in place
+        value = ((IAssociation) value).copy();
       }
-      IExpr calculatedResult = function.apply(result[0]);
+      IExpr calculatedResult = function.apply(value);
       if (calculatedResult.isPresent()) {
         assignValue(calculatedResult, false);
-        result[1] = calculatedResult;
+        if (association && calculatedResult == value && fValue == calculatedResult) {
+          // this symbol's alone now; the caller gets a copy of its own
+          fEvalFlags &= ~DIRTY_FLAG_ASSIGNED_VALUE;
+          result[1] = ((IAssociation) calculatedResult).copy();
+        } else {
+          result[1] = calculatedResult;
+        }
         return result;
       }
+      // the function has said what is wrong with the value, see Symbol#reassignSymbolValue()
+      return null;
     }
     // `1` is not a variable with a value, so its value cannot be changed.
     Errors.printMessage(functionSymbol, "rvalue", F.list(this), engine);
-    // engine.printMessage(
-    // functionSymbol.toString()
-    // + ": "
-    // + toString()
-    // + " is not a variable with a value, so its value cannot be changed.");
     return null;
   }
 

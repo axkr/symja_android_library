@@ -766,8 +766,12 @@ public final class ListFunctions {
     private static class AppendToFunction implements Function<IExpr, IExpr> {
       private final IExpr value;
 
-      public AppendToFunction(final IExpr value) {
+      /** The <code>AppendTo(...)</code> expression, for the message. */
+      private final IAST ast;
+
+      public AppendToFunction(final IExpr value, final IAST ast) {
         this.value = value;
+        this.ast = ast;
       }
 
       @Override
@@ -783,7 +787,8 @@ public final class ListFunctions {
           }
         }
         if (!symbolValue.isASTOrAssociation()) {
-          return F.NIL;
+          // Nonatomic expression expected at position `1` in `2`.
+          return Errors.printMessage(S.AppendTo, "normal", F.list(F.C1, ast), EvalEngine.get());
         }
         return ((IAST) symbolValue).appendClone(value);
       }
@@ -796,8 +801,8 @@ public final class ListFunctions {
         ISymbol sym = (ISymbol) arg1.first();
         return assignPartTo(sym, (IAST) arg1, S.Append, ast, engine);
       }
-      IExpr indexed = assignIndexedTo(arg1, new AppendToFunction(engine.evaluate(ast.arg2())),
-          ast.arg2(), engine);
+      IExpr indexed = assignIndexedTo(arg1,
+          new AppendToFunction(engine.evaluate(ast.arg2()), ast), ast.arg2(), engine);
       if (indexed.isPresent()) {
         return indexed;
       }
@@ -805,7 +810,7 @@ public final class ListFunctions {
       IExpr sym = Validate.checkIsVariable(ast, 1, engine);
       if (sym.isSymbol()) {
         IExpr arg2 = engine.evaluate(ast.arg2());
-        Function<IExpr, IExpr> function = new AppendToFunction(arg2);
+        Function<IExpr, IExpr> function = new AppendToFunction(arg2, ast);
         IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, ast.topHead(), engine);
         if (results != null) {
           return results[1];
@@ -5385,8 +5390,12 @@ public final class ListFunctions {
     private static class PrependToFunction implements Function<IExpr, IExpr> {
       private final IExpr value;
 
-      public PrependToFunction(final IExpr value) {
+      /** The <code>PrependTo(...)</code> expression, for the message. */
+      private final IAST ast;
+
+      public PrependToFunction(final IExpr value, final IAST ast) {
         this.value = value;
+        this.ast = ast;
       }
 
       @Override
@@ -5402,7 +5411,8 @@ public final class ListFunctions {
           }
         }
         if (!symbolValue.isASTOrAssociation()) {
-          return F.NIL;
+          // Nonatomic expression expected at position `1` in `2`.
+          return Errors.printMessage(S.PrependTo, "normal", F.list(F.C1, ast), EvalEngine.get());
         }
         return ((IAST) symbolValue).appendAtClone(1, value);
       }
@@ -5415,8 +5425,8 @@ public final class ListFunctions {
         ISymbol sym = (ISymbol) arg1.first();
         return assignPartTo(sym, (IAST) arg1, S.Prepend, ast, engine);
       }
-      IExpr indexed = assignIndexedTo(arg1, new PrependToFunction(engine.evaluate(ast.arg2())),
-          ast.arg2(), engine);
+      IExpr indexed = assignIndexedTo(arg1,
+          new PrependToFunction(engine.evaluate(ast.arg2()), ast), ast.arg2(), engine);
       if (indexed.isPresent()) {
         return indexed;
       }
@@ -5424,7 +5434,7 @@ public final class ListFunctions {
       IExpr sym = Validate.checkIsVariable(ast, 1, engine);
       if (sym.isSymbol()) {
         IExpr arg2 = engine.evaluate(ast.arg2());
-        Function<IExpr, IExpr> function = new PrependToFunction(arg2);
+        Function<IExpr, IExpr> function = new PrependToFunction(arg2, ast);
         IExpr[] results = ((ISymbol) sym).reassignSymbolValue(function, S.PrependTo, engine);
         if (results != null) {
           return results[1];

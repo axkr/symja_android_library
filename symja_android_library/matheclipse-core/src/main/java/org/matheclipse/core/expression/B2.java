@@ -321,7 +321,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      return S.If.evaluate(this, engine);
+      return S.If.evalBuiltinStep(this, engine);
     }
 
     @Override
@@ -1022,7 +1022,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      return S.With.evaluate(this, engine);
+      return S.With.evalBuiltinStep(this, engine);
     }
 
     @Override

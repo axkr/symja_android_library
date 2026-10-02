@@ -433,10 +433,10 @@ public class RootsFunctions {
       expr = AlgebraUtil.together((IAST) expr, engine);
 
       // split expr into numerator and denominator
-      denom = S.Denominator.funEval(engine, expr);
+      denom = S.Denominator.of(engine, expr);
       if (!denom.isOne()) {
         // search roots for the numerator expression
-        expr = S.Numerator.funEval(engine, expr);
+        expr = S.Numerator.of(engine, expr);
       }
     }
     IAST result = rootsOfVariable(expr, denom, variables, numericSolutions, createSet, sort, true,

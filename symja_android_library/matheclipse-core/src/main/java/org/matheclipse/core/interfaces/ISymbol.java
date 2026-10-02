@@ -1038,7 +1038,9 @@ public interface ISymbol extends IExpr {
    * @return the evaluated expression; if no evaluation was possible return the created input
    *         expression.
    */
-  public IExpr of(EvalEngine engine, IExpr... args);
+  default IExpr of(EvalEngine engine, IExpr... args) {
+    return engine.evaluate(F.ast(args, this));
+  }
 
   /**
    * Evaluate this symbol for the arguments converted to {@link IExpr} function
@@ -1049,7 +1051,10 @@ public interface ISymbol extends IExpr {
    * @return the evaluated expression; if no evaluation was possible return the created input
    *         expression
    */
-  public IExpr of(EvalEngine engine, Object... args);
+  default IExpr of(EvalEngine engine, Object... args) {
+    IExpr[] convertedArgs = Object2Expr.convertArray(args, false, false);
+    return engine.evaluate(F.ast(convertedArgs, this));
+  }
 
   /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
@@ -1103,8 +1108,15 @@ public interface ISymbol extends IExpr {
    * @param parts the arguments for which this function symbol should be evaluated
    * @return the evaluated expression; if no evaluation was possible return the created input
    *         expression.
+   * @deprecated use {@link #of(EvalEngine, IExpr...)}
    */
-  public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts);
+  @Deprecated
+  default IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts) {
+    IASTAppendable ast = F.ast(this, 1 + parts.length);
+    ast.append(arg);
+    ast.appendAll(parts, 0, parts.length);
+    return engine.evaluate(ast);
+  }
 
   /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
@@ -1126,23 +1138,16 @@ public interface ISymbol extends IExpr {
    *
    * @param engine the current evaluation engine
    * @param args the arguments for which this function symbol should be evaluated
-   * @return <code>F.NIL</code> if no evaluation was possible.
+   * @return <code>F.NIL</code> if no evaluation was possible, which includes a result that still
+   *         has this symbol as its head
    */
-  public IExpr ofNIL(EvalEngine engine, IExpr... args);
-
-  /**
-   * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
-   * The objects are converted from Java form to IExpr for according to method
-   * {@link Object2Expr#convert(Object, boolean, boolean)}.
-   *
-   * @param args the objects which should be used as arguments
-   */
-  default IExpr ofObject(Object... args) {
-    IExpr[] array = new IExpr[args.length];
-    for (int i = 0; i < array.length; i++) {
-      array[i] = Object2Expr.convert(args[i], true, false);
+  default IExpr ofNIL(EvalEngine engine, IExpr... args) {
+    IAST ast = F.function(this, args);
+    IExpr temp = engine.evaluateNIL(ast);
+    if (temp.isPresent() && temp.head() == this) {
+      return F.NIL;
     }
-    return of(array);
+    return temp;
   }
 
   /**
@@ -1153,7 +1158,10 @@ public interface ISymbol extends IExpr {
    * @param args the arguments for which this function symbol should be evaluated
    * @return if the result isn't a boolean value return <code>false</code>.
    */
-  public boolean ofQ(EvalEngine engine, IExpr... args);
+  default boolean ofQ(EvalEngine engine, IExpr... args) {
+    IAST ast = F.function(this, args);
+    return engine.evalTrue(ast);
+  }
 
   /**
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>
@@ -1162,7 +1170,9 @@ public interface ISymbol extends IExpr {
    * @param args the arguments for which this function symbol should be evaluated
    * @return if the result isn't a boolean value return <code>false</code>.
    */
-  public boolean ofQ(IExpr... args);
+  default boolean ofQ(IExpr... args) {
+    return ofQ(EvalEngine.get(), args);
+  }
 
   /**
    * Return the ordinal number ({@link org.matheclipse.core.expression.ID}) of this built-in symbol

@@ -274,8 +274,8 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      // {Flat, Listable, OneIdentity, Orderless}, as in Mathematica.
-      newSymbol.setAttributes(Attribute.FLAT, Attribute.LISTABLE, Attribute.ONEIDENTITY, Attribute.ORDERLESS);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.LISTABLE, Attribute.ONEIDENTITY,
+          Attribute.ORDERLESS);
     }
   }
 
@@ -325,9 +325,8 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      // {Flat, Listable, OneIdentity, Orderless} in Mathematica. OneIdentity is the one that shows:
-      // BitOr(e) is e, where only Listable left it as an unevaluated BitOr(e) for a non-integer.
-      newSymbol.setAttributes(Attribute.FLAT, Attribute.LISTABLE, Attribute.ONEIDENTITY, Attribute.ORDERLESS);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.LISTABLE, Attribute.ONEIDENTITY,
+          Attribute.ORDERLESS);
     }
   }
 
@@ -370,8 +369,8 @@ public class IntegerFunctions {
 
     @Override
     public void setUp(ISymbol newSymbol) {
-      // {Flat, Listable, OneIdentity, Orderless}, as in Mathematica.
-      newSymbol.setAttributes(Attribute.FLAT, Attribute.LISTABLE, Attribute.ONEIDENTITY, Attribute.ORDERLESS);
+      newSymbol.setAttributes(Attribute.FLAT, Attribute.LISTABLE, Attribute.ONEIDENTITY,
+          Attribute.ORDERLESS);
     }
   }
 
@@ -689,7 +688,7 @@ public class IntegerFunctions {
       IExpr result = F.NIL;
       int radix = 10;
       if (ast.isAST1()) {
-        result = S.IntegerDigits.funEval(engine, ast.arg1());
+        result = S.IntegerDigits.of(engine, ast.arg1());
       } else if (ast.size() >= 3) {
         if (ast.isAST3() && ast.arg3().isList()) {
           return ast.arg3().mapThread(ast, 3);
@@ -699,7 +698,7 @@ public class IntegerFunctions {
         if (radix <= 0) {
           return F.NIL;
         }
-        result = S.IntegerDigits.funEval(engine, ast.arg1(), ast.arg2());
+        result = S.IntegerDigits.of(engine, ast.arg1(), ast.arg2());
       }
       if (result.isList()) {
         IAST list = (IAST) result;
@@ -1207,7 +1206,7 @@ public class IntegerFunctions {
       }
       if (arg1.isQuantity()) {
         IAST quantity = (IAST) arg1;
-        IExpr fractionalPart = S.FractionalPart.funEval(engine, quantity.arg1());
+        IExpr fractionalPart = S.FractionalPart.of(engine, quantity.arg1());
         return F.Quantity(fractionalPart, quantity.arg2());
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
@@ -1492,7 +1491,7 @@ public class IntegerFunctions {
         }
         if (arg1.isQuantity()) {
           IAST quantity = (IAST) arg1;
-          IExpr integerPart = S.IntegerPart.funEval(engine, quantity.arg1());
+          IExpr integerPart = S.IntegerPart.of(engine, quantity.arg1());
           return F.Quantity(integerPart, quantity.arg2());
         }
 
@@ -1711,8 +1710,8 @@ public class IntegerFunctions {
      *      integers</a>
      */
     private static IExpr modComplex(IExpr m, IExpr n, IExpr quotient, EvalEngine engine) {
-      IExpr re = S.Round.funEval(engine, quotient.re());
-      IExpr im = S.Round.funEval(engine, quotient.im());
+      IExpr re = S.Round.of(engine, quotient.re());
+      IExpr im = S.Round.of(engine, quotient.im());
       // The whole rounded quotient is multiplied by n. Scaling only the real part and then adding a
       // bare I*im broke Mod(m, n, 0) == Mod(m, n).
       return F.Subtract(m, F.Times(n, F.Plus(re, F.Times(F.CI, im))));
@@ -2163,8 +2162,8 @@ public class IntegerFunctions {
             || n.isComplexNumeric() || d.isComplexNumeric()) {
           // https://mathematica.stackexchange.com/a/114373/21734
           IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
-          IExpr re = S.Round.funSEval(engine, subExpr.re());
-          IExpr im = S.Round.funSEval(engine, subExpr.im());
+          IExpr re = engine.evaluateNonNumeric(F.Round(subExpr.re()));
+          IExpr im = engine.evaluateNonNumeric(F.Round(subExpr.im()));
           return F.Plus(re, F.Times(F.CI, im));
         }
         // Floor((-d+m)/n)

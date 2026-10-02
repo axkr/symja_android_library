@@ -919,56 +919,56 @@ public class F extends S {
       PatternTest.setAttributes(Attribute.HOLDREST);
       List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
-      CMissingNotFound = Missing("NotFound").functionEvaled();
-      CListC0 = new B1.List(C0).functionEvaled();
-      CListC1 = new B1.List(C1).functionEvaled();
-      CListC2 = new B1.List(C2).functionEvaled();
-      CListCN1 = new B1.List(CN1).functionEvaled();
+      CMissingNotFound = Missing("NotFound");
+      CListC0 = new B1.List(C0);
+      CListC1 = new B1.List(C1);
+      CListC2 = new B1.List(C2);
+      CListCN1 = new B1.List(CN1);
 
-      CListC0C0 = new B2.List(C0, C0).functionEvaled();
-      CListC1C1 = new B2.List(C1, C1).functionEvaled();
-      CListC1C2 = new B2.List(C1, C2).functionEvaled();
-      CListC2C1 = new B2.List(C2, C1).functionEvaled();
-      CListC2C2 = new B2.List(C2, C2).functionEvaled();
+      CListC0C0 = new B2.List(C0, C0);
+      CListC1C1 = new B2.List(C1, C1);
+      CListC1C2 = new B2.List(C1, C2);
+      CListC2C1 = new B2.List(C2, C1);
+      CListC2C2 = new B2.List(C2, C2);
 
       CReturnFalse = new B1.Return(False);
       CReturnTrue = new B1.Return(True);
       CThrowFalse = new B1.Throw(False);
       CThrowTrue = new B1.Throw(True);
 
-      CInfinity = DirectedInfinity(C1).functionEvaled();
+      CInfinity = DirectedInfinity(C1);
       oo = CInfinity;
-      CNInfinity = DirectedInfinity(CN1).functionEvaled();
+      CNInfinity = DirectedInfinity(CN1);
       Noo = CNInfinity;
-      CIInfinity = DirectedInfinity(CI).functionEvaled();
-      CNIInfinity = DirectedInfinity(CNI).functionEvaled();
-      CComplexInfinity = headAST0(DirectedInfinity).functionEvaled();
+      CIInfinity = DirectedInfinity(CI);
+      CNIInfinity = DirectedInfinity(CNI);
+      CComplexInfinity = headAST0(DirectedInfinity);
 
-      CNPi = new B2.Times(CN1, Pi).functionEvaled();
-      CN2Pi = new B2.Times(CN2, Pi).functionEvaled();
-      C2Pi = new B2.Times(C2, Pi).functionEvaled();
-      CNPiHalf = new B2.Times(CN1D2, Pi).functionEvaled();
-      CPiHalf = new B2.Times(C1D2, Pi).functionEvaled();
-      CNPiThird = new B2.Times(CN1D3, Pi).functionEvaled();
-      CPiThird = new B2.Times(C1D3, Pi).functionEvaled();
-      CNPiQuarter = new B2.Times(CN1D4, Pi).functionEvaled();
-      CPiQuarter = new B2.Times(C1D4, Pi).functionEvaled();
+      CNPi = new B2.Times(CN1, Pi);
+      CN2Pi = new B2.Times(CN2, Pi);
+      C2Pi = new B2.Times(C2, Pi);
+      CNPiHalf = new B2.Times(CN1D2, Pi);
+      CPiHalf = new B2.Times(C1D2, Pi);
+      CNPiThird = new B2.Times(CN1D3, Pi);
+      CPiThird = new B2.Times(C1D3, Pi);
+      CNPiQuarter = new B2.Times(CN1D4, Pi);
+      CPiQuarter = new B2.Times(C1D4, Pi);
 
-      CSqrtPi = new B2.Power(Pi, C1D2).functionEvaled();
+      CSqrtPi = new B2.Power(Pi, C1D2);
 
-      CSqrt2 = new B2.Power(C2, C1D2).functionEvaled();
-      CSqrt3 = new B2.Power(C3, C1D2).functionEvaled();
-      CSqrt5 = new B2.Power(C5, C1D2).functionEvaled();
-      CSqrt6 = new B2.Power(C6, C1D2).functionEvaled();
-      CSqrt7 = new B2.Power(C7, C1D2).functionEvaled();
-      CSqrt10 = new B2.Power(C10, C1D2).functionEvaled();
+      CSqrt2 = new B2.Power(C2, C1D2);
+      CSqrt3 = new B2.Power(C3, C1D2);
+      CSqrt5 = new B2.Power(C5, C1D2);
+      CSqrt6 = new B2.Power(C6, C1D2);
+      CSqrt7 = new B2.Power(C7, C1D2);
+      CSqrt10 = new B2.Power(C10, C1D2);
 
-      C1DSqrt2 = new B2.Power(C2, CN1D2).functionEvaled();
-      C1DSqrt3 = new B2.Power(C3, CN1D2).functionEvaled();
-      C1DSqrt5 = new B2.Power(C5, CN1D2).functionEvaled();
-      C1DSqrt6 = new B2.Power(C6, CN1D2).functionEvaled();
-      C1DSqrt7 = new B2.Power(C7, CN1D2).functionEvaled();
-      C1DSqrt10 = new B2.Power(C10, CN1D2).functionEvaled();
+      C1DSqrt2 = new B2.Power(C2, CN1D2);
+      C1DSqrt3 = new B2.Power(C3, CN1D2);
+      C1DSqrt5 = new B2.Power(C5, CN1D2);
+      C1DSqrt6 = new B2.Power(C6, CN1D2);
+      C1DSqrt7 = new B2.Power(C7, CN1D2);
+      C1DSqrt10 = new B2.Power(C10, CN1D2);
 
       IAST Slot0 = new B1.Slot(C0);
       Slot1 = new B1.Slot(C1);
@@ -988,9 +988,9 @@ public class F extends S {
         SLOT_CACHE[i] = new B1.Slot(i);
       }
       CEmptySequence = headAST0(Sequence);
-      CEmptyList = headAST0(List).functionEvaled();
-      CEmptyInterval = headAST0(Interval).functionEvaled();
-      CEmptyIntervalData = headAST0(IntervalData).functionEvaled();
+      CEmptyList = headAST0(List);
+      CEmptyInterval = headAST0(Interval);
+      CEmptyIntervalData = headAST0(IntervalData);
       CRealsRange = F.List(F.CNInfinity, S.Less, S.Less, CInfinity);
       CRealsIntervalData = unary(IntervalData, CRealsRange);
       CEmptyString = $str("");

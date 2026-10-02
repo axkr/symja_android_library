@@ -83,6 +83,13 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
     public IExpr visit(IASTMutable ast) {
       if ((ast.isRe() || ast.isIm() || ast.isAST(S.Arg, 2))//
           && ast.arg1().isSymbol()) {
+        if (!ast.isAST(S.Arg, 2) && ast.arg1().isRealResult()) {
+          // The variable is one of those taken as real, so its real part is the variable and its
+          // imaginary part is zero. Inside a sum or a product the evaluation after the visit says
+          // so; an expression which is nothing but Re(x) or Im(x) is never evaluated again, and
+          // ComplexExpand(Im(I*w)), which arrives here as Re(w), came back unchanged.
+          return ast.isRe() ? ast.arg1() : F.C0;
+        }
         return F.NIL;
       }
 

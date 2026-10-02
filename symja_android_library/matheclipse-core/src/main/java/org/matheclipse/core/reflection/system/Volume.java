@@ -65,7 +65,7 @@ public class Volume extends AbstractFunctionEvaluator {
           case ID.Torus:
           case ID.FilledTorus:
             if (reg.head() == S.FilledTorus) {
-              return S.RegionMeasure.funEval(engine, reg);
+              return S.RegionMeasure.of(engine, reg);
             }
             // a Torus is a 2D surface; its 3-volume is Undefined
             return S.Undefined;

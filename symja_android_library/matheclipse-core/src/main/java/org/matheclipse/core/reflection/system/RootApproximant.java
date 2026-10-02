@@ -306,8 +306,8 @@ public class RootApproximant extends AbstractFunctionEvaluator {
     }
 
     if (degreeInt == 1) {
-      IExpr c1 = S.Coefficient.funEval(engine, polyInX, x, F.C1);
-      IExpr c0 = S.Coefficient.funEval(engine, polyInX, x, F.C0);
+      IExpr c1 = S.Coefficient.of(engine, polyInX, x, F.C1);
+      IExpr c0 = S.Coefficient.of(engine, polyInX, x, F.C0);
       return engine.evaluate(F.Divide(F.Negate(c0), c1));
     }
 

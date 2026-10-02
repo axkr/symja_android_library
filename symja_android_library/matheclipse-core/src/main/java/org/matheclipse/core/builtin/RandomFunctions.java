@@ -111,18 +111,18 @@ public final class RandomFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int argSize = ast.argSize();
       if (argSize == 0) {
-        return S.RandomReal.evaluate(F.RandomReal(), engine);
+        return S.RandomReal.evalBuiltinStep(F.RandomReal(), engine);
       }
       if (argSize == 1) {
         IExpr arg1 = ast.arg1();
         if (arg1.isBuiltInSymbol()) {
           switch (((IBuiltInSymbol) arg1).ordinal()) {
             case ID.Integer:
-              return S.RandomInteger.evaluate(F.RandomInteger(), engine);
+              return S.RandomInteger.evalBuiltinStep(F.RandomInteger(), engine);
             case ID.Real:
-              return S.RandomReal.evaluate(F.RandomReal(), engine);
+              return S.RandomReal.evalBuiltinStep(F.RandomReal(), engine);
             case ID.Complex:
-              return S.RandomReal.evaluate(F.RandomComplex(), engine);
+              return S.RandomReal.evalBuiltinStep(F.RandomComplex(), engine);
           }
         }
         return F.NIL;
@@ -133,11 +133,11 @@ public final class RandomFunctions {
         if (arg1.isBuiltInSymbol()) {
           switch (((IBuiltInSymbol) arg1).ordinal()) {
             case ID.Integer:
-              return S.RandomInteger.evaluate(F.RandomInteger(arg2), engine);
+              return S.RandomInteger.evalBuiltinStep(F.RandomInteger(arg2), engine);
             case ID.Real:
-              return S.RandomReal.evaluate(F.RandomReal(arg2), engine);
+              return S.RandomReal.evalBuiltinStep(F.RandomReal(arg2), engine);
             case ID.Complex:
-              return S.RandomReal.evaluate(F.RandomComplex(arg2), engine);
+              return S.RandomReal.evalBuiltinStep(F.RandomComplex(arg2), engine);
           }
         }
       }

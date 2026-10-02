@@ -515,13 +515,13 @@ public class Maximize extends AbstractFunctionEvaluator {
       IExpr min = sub.arg1();
       IExpr max = sub.arg4();
       if (max.isInfinity()) {
-        IExpr limit = S.Limit.funEval(objective, F.Rule(x, F.CInfinity));
+        IExpr limit = S.Limit.of(objective, F.Rule(x, F.CInfinity));
         if (isMax ? limit.isInfinity() : limit.isNegativeInfinity()) {
           return F.list(isMax ? F.CInfinity : F.CNInfinity, F.list(F.Rule(x, F.CInfinity)));
         }
       }
       if (min.isNegativeInfinity()) {
-        IExpr limit = S.Limit.funEval(objective, F.Rule(x, F.CNInfinity));
+        IExpr limit = S.Limit.of(objective, F.Rule(x, F.CNInfinity));
         if (isMax ? limit.isInfinity() : limit.isNegativeInfinity()) {
           return F.list(isMax ? F.CInfinity : F.CNInfinity, F.list(F.Rule(x, F.CNInfinity)));
         }
@@ -2366,17 +2366,17 @@ public class Maximize extends AbstractFunctionEvaluator {
         return quotient;
       }
 
-      IExpr yNInf = S.Limit.funEval(function, F.Rule(x, F.CNInfinity));
+      IExpr yNInf = S.Limit.of(function, F.Rule(x, F.CNInfinity));
       if (yNInf.isInfinity()) {
         return F.list(F.CInfinity, F.list(F.Rule(x, F.CNInfinity)));
       }
-      IExpr yInf = S.Limit.funEval(function, F.Rule(x, F.CInfinity));
+      IExpr yInf = S.Limit.of(function, F.Rule(x, F.CInfinity));
       if (yInf.isInfinity()) {
         return F.list(F.CInfinity, F.list(F.Rule(x, F.CInfinity)));
       }
 
       IExpr first_derivative = S.D.of(engine, function, x);
-      IExpr second_derivative = S.D.funEval(engine, first_derivative, x);
+      IExpr second_derivative = S.D.of(engine, first_derivative, x);
       IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
       if (candidates.isFree(S.Solve)) {
         IExpr maxCandidate = F.NIL;

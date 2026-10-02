@@ -3243,10 +3243,10 @@ public final class StringFunctions {
       final IExpr head = ast.head();
       if (head.isAST(S.StringTemplate, 2)) {
         if (ast.isAST1()) {
-          return S.TemplateApply.funEval(engine, head, ast.arg1());
+          return S.TemplateApply.of(engine, head, ast.arg1());
         }
         // more than one argument fills the slots in order, as TemplateApply does from a list
-        return S.TemplateApply.funEval(engine, head, ast.setAtCopy(0, S.List));
+        return S.TemplateApply.of(engine, head, ast.setAtCopy(0, S.List));
       }
       return F.NIL;
     }

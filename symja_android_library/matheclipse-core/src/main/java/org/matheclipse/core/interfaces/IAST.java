@@ -1319,16 +1319,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   }
 
   /**
-   * Set {@link IAST#BUILT_IN_EVALED} flag.
-   * 
-   * @return <code>this</code> instance
-   */
-  default IAST functionEvaled() {
-    // addEvalFlags(IAST.BUILT_IN_EVALED);
-    return this;
-  }
-
-  /**
    * Returns the element at the specified location in this {@code IAST}.
    *
    * @param location the index of the element to return.
@@ -1368,6 +1358,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     return -1;
   }
 
+  /**
+   * The fixed point stamp of the evaluation loop, or <code>0</code> if this expression carries
+   * none. The value is the engine's own encoding of the system epoch and the numeric modes the
+   * expression is a fixed point in; only the engine reads it.
+   */
   public long getEvalEpoch();
 
   /**
@@ -2321,6 +2316,12 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     return result;
   }
 
+  /**
+   * Set the fixed point stamp of the evaluation loop.
+   *
+   * @param epoch the engine's stamp, or <code>0</code> to remove it
+   * @see #getEvalEpoch()
+   */
   public void setEvalEpoch(long epoch);
 
   /**

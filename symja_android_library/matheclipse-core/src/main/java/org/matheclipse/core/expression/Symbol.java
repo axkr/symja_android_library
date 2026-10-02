@@ -13,7 +13,6 @@ import java.util.function.Function;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -23,8 +22,8 @@ import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -283,7 +282,10 @@ public class Symbol implements ISymbol, Serializable {
     if (this instanceof IBuiltInSymbol) {
       return fValue;
     }
-    addEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
+    // the flag is set directly, because addEvalFlags() moves the system epoch: reading a value
+    // changes no definition, and moving the epoch here made every read of a variable evaluate its
+    // whole value again
+    fEvalFlags |= DIRTY_FLAG_ASSIGNED_VALUE;
     return fValue;
   }
 
@@ -297,7 +299,9 @@ public class Symbol implements ISymbol, Serializable {
     // }
     fValue = value;
     EvalEngine.incEpoch();
-    clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
+    // whoever assigns a value may keep it or have it from another variable, so it is not this
+    // symbol's alone, see #reassignSymbolValue(Function, ISymbol, EvalEngine)
+    fEvalFlags |= DIRTY_FLAG_ASSIGNED_VALUE;
     if (setDelayed) {
       addEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
     } else {
@@ -352,7 +356,12 @@ public class Symbol implements ISymbol, Serializable {
   public void clearValue(IExpr resetValue) {
     fValue = resetValue;
     EvalEngine.incEpoch();
-    clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
+    if (resetValue == null) {
+      clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
+    } else {
+      // a value which is put back, as Block does at its end, was kept somewhere in the meantime
+      fEvalFlags |= DIRTY_FLAG_ASSIGNED_VALUE;
+    }
   }
 
   /**
@@ -1043,51 +1052,6 @@ public class Symbol implements ISymbol, Serializable {
         && this != S.Infinity;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public IExpr of(EvalEngine engine, IExpr... args) {
-    return engine.evaluate(F.ast(args, this));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr of(EvalEngine engine, Object... args) {
-    IExpr[] convertedArgs = Object2Expr.convertArray(args, false, false);
-    return engine.evaluate(F.ast(convertedArgs, this));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts) {
-    IASTAppendable ast = F.ast(this, 1 + parts.length);
-    ast.append(arg);
-    ast.appendAll(parts, 0, parts.length);
-    return engine.evaluate(ast);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final IExpr ofNIL(EvalEngine engine, IExpr... args) {
-    IAST ast = F.function(this, args);
-    IExpr temp = engine.evaluateNIL(ast);
-    if (temp.isPresent() && temp.head() == this) {
-      return F.NIL;
-    }
-    return temp;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean ofQ(EvalEngine engine, IExpr... args) {
-    IAST ast = F.function(this, args);
-    return engine.evalTrue(ast);
-  }
-
-  @Override
-  public final boolean ofQ(IExpr... args) {
-    return ofQ(EvalEngine.get(), args);
-  }
-
   @Override
   public IExpr opposite() {
     if (hasNoValue()) {
@@ -1251,23 +1215,36 @@ public class Symbol implements ISymbol, Serializable {
     if (assignedValue != null) {
       IExpr[] result = new IExpr[2];
       result[0] = assignedValue;
-      if (isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE) && result[0].isAST()) {
-        result[0] = ((IAST) result[0]).copy();
+      IExpr value = assignedValue;
+      final boolean association = value.isAssociation();
+      if (association && isEvalFlagOn(DIRTY_FLAG_ASSIGNED_VALUE)) {
+        // The functions change an association in place, and this one may be known elsewhere: it
+        // was assigned from outside - `b = a` gives both variables the same object - or it was
+        // read since. The test used to be isAST(), which an association answers with false, so
+        // it was never copied and AssociateTo(a, ...) changed b as well.
+        value = ((IAssociation) value).copy();
       }
-      IExpr calculatedResult = function.apply(result[0]);
+      IExpr calculatedResult = function.apply(value);
       if (calculatedResult.isPresent()) {
         assignValue(calculatedResult, false);
-        result[1] = calculatedResult;
+        if (association && calculatedResult == value && fValue == calculatedResult) {
+          // Changed in place, and from here on nobody but this symbol has it: the next call may
+          // change it again without a copy. That is why the caller gets a copy of its own - the
+          // result of AssociateTo can be kept, and must not follow the variable afterwards.
+          fEvalFlags &= ~DIRTY_FLAG_ASSIGNED_VALUE;
+          result[1] = ((IAssociation) calculatedResult).copy();
+        } else {
+          result[1] = calculatedResult;
+        }
         return result;
       }
+      // The function could not work with the value and has said why. The message below is for a
+      // symbol without a value; printed here as well, it told the user that a variable which has
+      // a value has none.
+      return null;
     }
     // `1` is not a variable with a value, so its value cannot be changed.
     Errors.printMessage(functionSymbol, "rvalue", F.list(this), engine);
-    // engine.printMessage(
-    // functionSymbol.toString()
-    // + ": "
-    // + toString()
-    // + " is not a variable with a value, so its value cannot be changed.");
     return null;
   }
 

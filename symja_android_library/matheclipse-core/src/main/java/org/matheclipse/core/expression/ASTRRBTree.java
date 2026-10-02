@@ -622,6 +622,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public void sortInplace(Comparator<IExpr> comparator) {
     hashValue = 0;
+    clearEvalEpoch();
     int size = rrbTree.size();
     IExpr[] a = new IExpr[size];
     rrbTree.toArray(a);
@@ -831,6 +832,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public void clear() {
     hashValue = 0;
+    clearEvalEpoch();
     fEvalFlags = EvalFlags.Mask.NONE;
     rrbTree = StaticImports.mutableRrb();
   }
@@ -838,6 +840,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public IExpr remove(int location) {
     hashValue = 0;
+    clearEvalEpoch();
 
     final int size = rrbTree.size();
     if (location >= 0 && location < size) {
@@ -856,6 +859,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public void removeRange(int start, int end) {
     hashValue = 0;
+    clearEvalEpoch();
     final int size = rrbTree.size();
     if (start >= 0 && start <= end && end <= size) {
       if (start == end) {

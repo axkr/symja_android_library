@@ -1,9 +1,16 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.io.PrintStream;
+import java.io.StringWriter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.WriterOutputStream;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAssociation;
 
 public class AssociationTest extends ExprEvaluatorTestCase {
 
@@ -223,6 +230,182 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "{<|a->1,b->2|>,<|c->17,d->4|>}");
     check("a", //
         "{<|a->1,b->2|>,<|c->17,d->4|>}");
+  }
+
+  /**
+   * <code>AssociateTo</code> changes the value of one variable. A second variable which was given
+   * the same association, a list which contains it and the result of an earlier call are values of
+   * their own and stay as they are. The association used to be changed in place whoever else had
+   * it.
+   */
+  @Test
+  public void testAssociateToChangesOneVariable() {
+    // the variable which was copied from
+    check("p = <|1->2|>; q = p; AssociateTo(p, 3->4); {p, q}", //
+        "{<|1->2,3->4|>,<|1->2|>}");
+    // the variable which was copied to
+    check("p = <|1->2|>; q = p; AssociateTo(q, 3->4); {p, q}", //
+        "{<|1->2|>,<|1->2,3->4|>}");
+    // both, one after the other
+    check("p = <|1->2|>; AssociateTo(p, 3->4); q = p; AssociateTo(p, 5->6); "
+        + "AssociateTo(q, 7->8); {p, q}", //
+        "{<|1->2,3->4,5->6|>,<|1->2,3->4,7->8|>}");
+    // inside another expression
+    check("p = <|1->2|>; l = {p, p}; AssociateTo(p, 3->4); {p, l}", //
+        "{<|1->2,3->4|>,{<|1->2|>,<|1->2|>}}");
+    check("p = <|1->2|>; q = <|\"k\"->p|>; AssociateTo(p, 3->4); {p, q}", //
+        "{<|1->2,3->4|>,<|k-><|1->2|>|>}");
+    // through a function
+    check("p = <|1->2|>; idf(x_) := x; q = idf(p); AssociateTo(p, 3->4); {p, q}", //
+        "{<|1->2,3->4|>,<|1->2|>}");
+    // a value which Block puts back
+    check("p = <|1->2|>; q = p; Block({p = <|9->9|>}, AssociateTo(p, 8->8)); "
+        + "AssociateTo(p, 3->4); {p, q}", //
+        "{<|1->2,3->4|>,<|1->2|>}");
+  }
+
+  /**
+   * Two things can be wrong with a call, and each has its message: the variable does not hold an
+   * association (<code>invak</code>), or what should be added is no rule (<code>invdt</code>).
+   * The two texts stood under each other's name.
+   */
+  @Test
+  public void testAssociateToSaysWhatIsWrong() {
+    String messages = messages("p = 5; AssociateTo(p, 1->2)");
+    assertTrue(messages.contains("The argument 5 is not a valid Association."), messages);
+
+    messages = messages("p = <|1->2|>; AssociateTo(p, 3)");
+    assertTrue(messages.contains("The argument is not a rule or a list of rules."), messages);
+
+    messages = messages("p = {5, 6}; AssociateTo(p[[1]], 1->2)");
+    assertTrue(messages.contains("The argument 5 is not a valid Association."), messages);
+
+    // the other functions which use the second message
+    for (String input : new String[] {"p = <|1->2|>; AppendTo(p, 3)",
+        "p = <|1->2|>; PrependTo(p, 3)", "Append(<|1->2|>, 3)", "Prepend(<|1->2|>, 3)"}) {
+      messages = messages(input);
+      assertTrue(messages.contains("The argument is not a rule or a list of rules."),
+          input + ": " + messages);
+    }
+  }
+
+  /**
+   * "Not a variable with a value" is the message for a symbol which has no value. It used to be
+   * printed as well whenever one of these functions could not work with the value a variable does
+   * have, after the message which says what is wrong with it.
+   */
+  @Test
+  public void testNoValueMessageOnlyWithoutAValue() {
+    final String noValue = "is not a variable with a value";
+    for (String input : new String[] {"p = 5; AssociateTo(p, 1->2)",
+        "p = <|1->2|>; AssociateTo(p, 3)", "p = <|1->2|>; AppendTo(p, 3)",
+        "p = <|1->2|>; PrependTo(p, 3)", "p = 5; AppendTo(p, 1)", "p = \"abc\"; PrependTo(p, 1)"}) {
+      String messages = messages(input);
+      assertTrue(!messages.contains(noValue), input + ": " + messages);
+      // exactly one message, the one about the value
+      assertEquals(1, messages.strip().split("\n").length, input + ": " + messages);
+    }
+    // a value which is no list and no association
+    assertTrue(messages("p = 5; AppendTo(p, 1)")
+        .contains("Nonatomic expression expected at position 1 in AppendTo(p,1)."));
+    assertTrue(messages("p = 5; PrependTo(p, 1)")
+        .contains("Nonatomic expression expected at position 1 in PrependTo(p,1)."));
+    check("p = 5; AppendTo(p, 1)", //
+        "AppendTo(p,1)");
+    check("p", //
+        "5");
+
+    // and a symbol without a value still says so
+    for (String input : new String[] {"ClearAll(nv); AssociateTo(nv, 1->2)",
+        "ClearAll(nv); AppendTo(nv, 1)", "ClearAll(nv); PrependTo(nv, 1)"}) {
+      String messages = messages(input);
+      assertTrue(messages.contains("nv " + noValue), input + ": " + messages);
+    }
+  }
+
+  /** Evaluate <code>input</code> and return what was printed as messages. */
+  private String messages(String input) {
+    EvalEngine engine = evaluator.getEvalEngine();
+    PrintStream previous = engine.getErrorPrintStream();
+    StringWriter errorWriter = new StringWriter();
+    PrintStream errors = new PrintStream(new WriterOutputStream(errorWriter));
+    engine.setErrorPrintStream(errors);
+    try {
+      evaluator.eval(input);
+    } finally {
+      errors.flush();
+      engine.setErrorPrintStream(previous);
+    }
+    return errorWriter.toString();
+  }
+
+  /** What <code>AssociateTo</code> returns is the value at that moment. */
+  @Test
+  public void testAssociateToResultIsAValue() {
+    check("p = <|1->2|>; r = AssociateTo(p, 3->4); AssociateTo(p, 5->6); {p, r}", //
+        "{<|1->2,3->4,5->6|>,<|1->2,3->4|>}");
+    check("p = <||>; Table(AssociateTo(p, i->i), {i, 3})", //
+        "{<|1->1|>,<|1->1,2->2|>,<|1->1,2->2,3->3|>}");
+    // the returned copy answers for its keys like any association
+    check("p = <|1->2|>; r = AssociateTo(p, 3->4); "
+        + "{r[3], Keys(r), KeyExistsQ(r, 1), KeyExistsQ(r, 5), KeyDrop(r, 1), r}", //
+        "{4,{1,3},True,False,<|3->4|>,<|1->2,3->4|>}");
+    // a loop still collects everything, and a key which is there already is replaced
+    check("p = <|\"x\"->1|>; Do(AssociateTo(p, i->i^2), {i, 4}); AssociateTo(p, 2->0); p", //
+        "<|x->1,1->1,2->0,3->9,4->16|>");
+    check("p = <|\"x\"->1|>; sq(k_) := AssociateTo(p, k->k^2); sq(2); sq(3); p", //
+        "<|x->1,2->4,3->9|>");
+  }
+
+  /** The same for the other two functions which extend the association of a variable. */
+  @Test
+  public void testAppendToAndPrependToChangeOneVariable() {
+    check("p = <|1->2|>; q = p; AppendTo(p, 3->4); {p, q}", //
+        "{<|1->2,3->4|>,<|1->2|>}");
+    check("p = <|1->2|>; q = p; PrependTo(p, 3->4); {p, q}", //
+        "{<|3->4,1->2|>,<|1->2|>}");
+    check("p = <|1->2|>; q = p; PrependTo(q, 3->4); AppendTo(q, 5->6); {p, q}", //
+        "{<|1->2|>,<|3->4,1->2,5->6|>}");
+    check("p = <|1->2|>; r = AppendTo(p, 3->4); PrependTo(p, 0->0); {p, r}", //
+        "{<|0->0,1->2,3->4|>,<|1->2,3->4|>}");
+    // these already kept the other variable
+    check("p = <|1->2, 3->4|>; q = p; KeyDropFrom(p, 1); {p, q}", //
+        "{<|3->4|>,<|1->2,3->4|>}");
+    check("p = <|1->2|>; q = p; p[7] = 8; {p, q}", //
+        "{<|1->2,7->8|>,<|1->2|>}");
+    check("l = {1,2}; m = l; AppendTo(l, 3); PrependTo(m, 0); {l, m}", //
+        "{{1,2,3},{0,1,2}}");
+  }
+
+  /**
+   * A copy of an association builds its key index when a key is first asked for. Whatever is done
+   * to the copy or to the original before that, both must answer for their own keys.
+   */
+  @Test
+  public void testCopyBuildsItsOwnKeyIndex() {
+    IAssociation original = F.assoc(F.List(F.Rule(F.C1, F.C2), F.Rule(F.C3, F.C4)));
+    IAssociation copy = original.copy();
+    original.appendRule(F.Rule(F.C5, F.C6));
+    assertEquals("<|1->2,3->4|>", copy.toString());
+    assertEquals(0, copy.getRulePosition(F.C5));
+    assertEquals(2, copy.getRulePosition(F.C3));
+    assertEquals(3, original.getRulePosition(F.C5));
+
+    // removing from a copy which has no index yet: the positions behind move up by one
+    IAssociation removed = original.copy();
+    removed.remove(1);
+    assertEquals("<|3->4,5->6|>", removed.toString());
+    assertEquals(0, removed.getRulePosition(F.C1));
+    assertEquals(1, removed.getRulePosition(F.C3));
+    assertEquals(2, removed.getRulePosition(F.C5));
+
+    // putting a rule in front of one
+    IAssociation prepended = original.copy();
+    prepended.prependRule(F.Rule(F.C7, F.C8));
+    assertEquals("<|7->8,1->2,3->4,5->6|>", prepended.toString());
+    assertEquals(1, prepended.getRulePosition(F.C7));
+    assertEquals(4, prepended.getRulePosition(F.C5));
+    assertEquals("<|1->2,3->4,5->6|>", original.toString());
   }
 
   @Test

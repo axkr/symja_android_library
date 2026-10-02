@@ -264,6 +264,39 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "{{2,1},{-1+x,-1},{1+x,-1}}");
   }
 
+  /**
+   * Over the Gaussian rationals a factorization is unique up to the units 1, -1, I and -I, and the
+   * factors only multiply to the polynomial when every unit is kept. The content of
+   * <code>I*a-b+a*z+I*b*z</code> with respect to <code>z</code> is found as <code>b-I*a</code> or
+   * as <code>I*b+a</code>, depending on which of two GCD algorithms running side by side answers
+   * first; with the second one the unit <code>I</code> was dropped, in about one evaluation out of
+   * seven. One evaluation therefore proves nothing here.
+   */
+  @Test
+  public void testFactorKeepsTheUnitOfAGaussianContent() {
+    for (int i = 0; i < 120; i++) {
+      check("Factor(I*a-b+a*z+I*b*z)", //
+          "I*(-I*a+b)*(I+z)");
+      check("Factor(I*u-v+u*w^2+I*v*w^2)", //
+          "I*(-I*u+v)*(I+w^2)");
+      // whatever the units are distributed like, the factors have to multiply to the polynomial
+      check("Expand(Factor(I*a-b+a*z+I*b*z) - (I*a-b+a*z+I*b*z))", //
+          "0");
+      check("Expand(Factor(-1-I+(1+I)*p+(1-I)*q+(-1+I)*p*q-z+p*z-I*q*z+I*p*q*z)"
+          + " - (-1-I+(1+I)*p+(1-I)*q+(-1+I)*p*q-z+p*z-I*q*z+I*p*q*z))", //
+          "0");
+      check("Expand(Factor(-2-I*2+(-2-I*2)*p+I*2*q+I*2*p*q+I*2*z+I*2*p*z+(1-I)*q*z+(1-I)*p*q*z)"
+          + " - (-2-I*2+(-2-I*2)*p+I*2*q+I*2*p*q+I*2*z+I*2*p*z+(1-I)*q*z+(1-I)*p*q*z))", //
+          "0");
+    }
+    // the expression the defect was seen in
+    for (int i = 0; i < 120; i++) {
+      check("Factor(a/(2*E^x)+(a*E^x)/2+(I*1/2*b)/E^x+I*1/2*b*E^x+(I*1/2*a)/E^x-I*1/2*a*E^x"
+          + "-b/(2*E^x)+(b*E^x)/2)", //
+          "((1/2+I*1/2)*(-I*a+b)*(I+E^(2*x)))/E^x");
+    }
+  }
+
   @Test
   public void testCancelGaussianCoefficients() {
     // issue #1528: Gaussian rational coefficients are cancelled over Q(I). The polynomial GCD over

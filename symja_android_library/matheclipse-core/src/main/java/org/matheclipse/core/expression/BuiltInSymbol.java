@@ -1,13 +1,10 @@
 package org.matheclipse.core.expression;
 
-import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import java.io.IOException;
 import java.util.function.DoubleFunction;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractPredicateEvaluator;
@@ -15,8 +12,10 @@ import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
+import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBooleanFormula;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComparatorFunction;
@@ -40,9 +39,9 @@ import org.matheclipse.parser.client.ParserConfig;
  * This class is designed for speed:
  * </p>
  * <ul>
- * <li><b>Direct Delegation:</b> The {@link #evaluate(IAST, EvalEngine)} method delegates directly
- * to the associated {@code IFunctionEvaluator}, bypassing the overhead of looking up and matching
- * {@code DownValues} rules.</li>
+ * <li><b>Direct Delegation:</b> The {@link #evalBuiltinStep(IAST, EvalEngine)} method delegates
+ * directly to the associated {@code IFunctionEvaluator}, bypassing the overhead of looking up and
+ * matching {@code DownValues} rules.</li>
  * <li><b>Ordinal IDs:</b> Each built-in symbol is assigned a unique integer {@code ordinal}. This
  * allows for fast switch-case dispatching and array lookups inside the evaluation engine.</li>
  * <li><b>Singleton Identity:</b> Built-in symbols are singletons. Serialization is handled via
@@ -229,8 +228,15 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     // never found it and answered "not a variable with a value"
     IExpr oldValue = dollarValueToChange(engine);
     if (oldValue != null) {
-      IExpr newValue = function.apply(oldValue.isAST() ? ((IAST) oldValue).copy() : oldValue);
-      if (newValue.isPresent() && assignDollarValue(newValue, engine)) {
+      // isASTOrAssociation(): an association does not answer isAST(), and it is the one value the
+      // functions change in place
+      IExpr newValue =
+          function.apply(oldValue.isASTOrAssociation() ? ((IAST) oldValue).copy() : oldValue);
+      if (newValue.isNIL()) {
+        // the function has said what is wrong with the value, see Symbol#reassignSymbolValue()
+        return null;
+      }
+      if (assignDollarValue(newValue, engine)) {
         return new IExpr[] {oldValue, newValue};
       }
     }
@@ -599,56 +605,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
       }
     }
     return F.NIL;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr of(EvalEngine engine, IExpr... args) {
-    if (fEvaluator instanceof ICoreFunctionEvaluator) {
-      // evaluate a core function (without no rule definitions)
-      final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) getEvaluator();
-      IAST ast = F.ast(args, this);
-      return coreFunction.evaluate(ast, engine).orElse(ast);
-    }
-
-    return super.of(engine, args);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr of(EvalEngine engine, Object... args) {
-    IExpr[] convertedArgs = Object2Expr.convertArray(args, false, false);
-    if (fEvaluator instanceof ICoreFunctionEvaluator) {
-      // evaluate a core function (without no rule definitions)
-      final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) getEvaluator();
-      IAST ast = F.ast(convertedArgs, this);
-      return coreFunction.evaluate(ast, engine).orElse(ast);
-    }
-
-    return super.of(engine, convertedArgs);
-  }
-
-  @Override
-  final public IExpr funEval(EvalEngine engine, IExpr... args) {
-    // evaluate a core function (without using rule definitions)
-    final IFunctionEvaluator function = getEvaluator();
-    final IAST ast = F.ast(args, this);
-    IExpr temp = function.evaluate(ast, engine).orElse(ast);
-    if (temp.isPresent()) {
-      return engine.evaluate(temp);
-    }
-    return F.NIL;
-  }
-
-  @Override
-  final public IExpr funSEval(EvalEngine engine, IExpr... args) {
-    boolean oldNumericMode = engine.isNumericMode();
-    try {
-      engine.setNumericMode(false);
-      return funEval(engine, args);
-    } finally {
-      engine.setNumericMode(oldNumericMode);
-    }
   }
 
   /** {@inheritDoc} */
