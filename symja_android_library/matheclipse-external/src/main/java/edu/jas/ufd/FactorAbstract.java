@@ -556,7 +556,15 @@ public abstract class FactorAbstract<C extends GcdRingElem<C>> implements Factor
                 GenPolynomial<C> g = me.getKey();
                 Long d = me.getValue();
                 GenPolynomial<C> pn = g.extend(pfac,0,0L);
-                factors.put(pn,d);
+                // Symja: add the exponents, as the loop at the end does. A constant factor of the
+                // content can be the constant recorded above as the leading coefficient - over
+                // Q(i), the unit I of I*(b - I*a)*(z + I) and the unit which makes the content
+                // I*b + a monic. put() alone replaced the first one and the product of the
+                // factors was off by that unit. Whether the content comes out as I*b + a or as
+                // b - I*a depends on which engine of the GCDProxy answers first, so the wrong
+                // factorization appeared in one evaluation out of seven.
+                Long j = factors.get(pn);
+                factors.put(pn, j == null ? d : Long.valueOf(d + j));
             }
             logger.info("content factors = {}", factors);
         }
