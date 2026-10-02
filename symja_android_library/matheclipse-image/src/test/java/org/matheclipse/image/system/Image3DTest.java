@@ -1,8 +1,5 @@
 package org.matheclipse.image.system;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -16,17 +13,52 @@ public class Image3DTest extends AbstractTestCase {
    * way a notebook writes the cell of a 3D image:
    * <code>\!\(\*Graphics3DBox[TagBox[Raster3DBox[CompressedData["..."], ...], ...]]\)</code>.
    */
-  private static String cell() {
-    return cell("image3d-cell.txt");
-  }
+  private static final String BYTE_CELL = //
+      "\\!\\(\\*\n"
+      + "Graphics3DBox[\n"
+      + "TagBox[Raster3DBox[CompressedData[\"\n"
+      + "1:eJxTTMoPSmNiYGAo5gASQYnljkVFiZXBAkBOaF5xZnpeaopnXklqemqRRR\n"
+      + "IzUBCkiguIeRgGIQgAAmqwSQUpQIDK3rl+6WxS2OSBCiBAZUPMJJ5NHugBAl\n"
+      + "Q2xEzi2eSBBUCAyoaYSTybPLAFCKjBHmQAAJFGgBo=\n"
+      + "\"], {{0, 10, 8}, {12, 0, 0}}, {0, 255},\n"
+      + "ColorFunction->\"GrayLevelDefaultColorFunction\",\n"
+      + "Method->{\"FastRendering\" -> True}],\n"
+      + "BoxForm`ImageTag[\n"
+      + "     \"Byte\", ColorSpace -> \"Grayscale\", Interleaving -> None],\n"
+      + "Selectable->False],\n"
+      + "AxesStyle->{},\n"
+      + "Background->None,\n"
+      + "BoxRatios->Automatic,\n"
+      + "Boxed->False,\n"
+      + "DefaultBaseStyle->\"Image3DGraphics3D\",\n"
+      + "ImageSizeRaw->12,\n"
+      + "PlotRange->{{0, 12}, {0, 10}, {0, 8}}]\\)";
 
-  private static String cell(String resource) {
-    try (InputStream in = Image3DTest.class.getResourceAsStream(resource)) {
-      return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
+  /**
+   * The cell of a 7 x 7 x 7 volume of reals - three lines through its centre. It names the type
+   * <code>"Real"</code>, which is <code>"Real64"</code>, and holds the samples as a packed array
+   * of reals.
+   */
+  private static final String REAL_CELL = //
+      "\\!\\(\\*\n"
+      + "Graphics3DBox[\n"
+      + "TagBox[Raster3DBox[CompressedData[\"\n"
+      + "1:eJxTTMoPSmVmYGBgR8LDA3ywH2gXjAIQGI2HwQGGezyQ6z9a6YPJk0qTa9\n"
+      + "9g0TdUwHD331ABo/EwOMDQjwcAU9oYPw==\n"
+      + "\"], {{0, 7, 7}, {7, 0, 0}}, {0., 1.},\n"
+      + "ColorFunction->\"GrayLevelDefaultColorFunction\",\n"
+      + "Method->{\"FastRendering\" -> True}],\n"
+      + "BoxForm`ImageTag[\n"
+      + "     \"Real\", ColorSpace -> Automatic, Interleaving -> None],\n"
+      + "Selectable->False],\n"
+      + "AxesStyle->{},\n"
+      + "Background->None,\n"
+      + "BaseStyle->\"Image3DGraphics3D\",\n"
+      + "BoxRatios->Automatic,\n"
+      + "Boxed->False,\n"
+      + "ImageSize->150,\n"
+      + "ImageSizeRaw->7,\n"
+      + "PlotRange->{{0, 7}, {0, 7}, {0, 7}}]\\)";
 
   @Test
   public void testImage3D() {
@@ -117,14 +149,14 @@ public class Image3DTest extends AbstractTestCase {
 
   @Test
   public void testPastedImage3D() {
-    check("img = " + cell() + "; {ImageQ(img), ImageDimensions(img), ImageType(img), "
+    check("img = " + BYTE_CELL + "; {ImageQ(img), ImageDimensions(img), ImageType(img), "
         + "ImageChannels(img), Dimensions(ImageData(img)), "
         + "Total(ImageData(img, \"Byte\"), 3)}", //
         "{True,{12,10,8},Byte,1,{8,10,12},29600}");
     // slice 3, row 4: the two blocks and the gap
     check("ImageData(img, \"Byte\")[[3, 4]]", //
         "{0,100,100,100,100,0,0,185,175,165,155,0}");
-    check("c = Closing(" + cell() + ", 1); {Head(c), ImageDimensions(c), ImageType(c), "
+    check("c = Closing(" + BYTE_CELL + ", 1); {Head(c), ImageDimensions(c), ImageType(c), "
         + "Total(ImageData(c, \"Byte\"), 3)}", //
         "{Image3D,{12,10,8},Byte,48720}");
     check("{Total(ImageData(Dilation(img, 1), \"Byte\"), 3), "
@@ -141,12 +173,12 @@ public class Image3DTest extends AbstractTestCase {
    */
   @Test
   public void testPastedRealImage3D() {
-    check("img = " + cell("image3d-real-cell.txt") + "; {ImageDimensions(img), ImageType(img), "
+    check("img = " + REAL_CELL + "; {ImageDimensions(img), ImageType(img), "
         + "ImageChannels(img), Total(ImageData(img), 3)}", //
         "{{7,7,7},Real64,1,19.0}");
     check("ImageData(img)[[4, 4]] == {1, 1, 1, 1, 1, 1, 1}", //
         "True");
-    check("d = Dilation(" + cell("image3d-real-cell.txt") + ", 1); "
+    check("d = Dilation(" + REAL_CELL + ", 1); "
         + "{Head(d), ImageDimensions(d), ImageType(d), Total(ImageData(d), 3)}", //
         "{Image3D,{7,7,7},Real64,135.0}");
   }
