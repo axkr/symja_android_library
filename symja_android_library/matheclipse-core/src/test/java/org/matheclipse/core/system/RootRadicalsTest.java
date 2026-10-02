@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /** ToRadicals of quartics, NumericQ of Root objects and CountRoots on a complex rectangle. */
@@ -19,6 +20,7 @@ public class RootRadicalsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testToRadicalsNamesTheRoot() {
     // Ferrari's formula for #^4+1 builds a radicand which is exactly -2, on the branch cut of Sqrt:
     // the expression was the conjugate root. Every radical form must name its own root.

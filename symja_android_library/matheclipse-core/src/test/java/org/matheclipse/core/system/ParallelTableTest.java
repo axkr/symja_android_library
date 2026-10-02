@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 
@@ -168,6 +169,7 @@ public class ParallelTableTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testTimeConstrained() {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     Config.FILESYSTEM_ENABLED = true;

@@ -166,6 +166,7 @@ public class IntegrateAlgorithmsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSurdRationalizationStage() {
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = engine.parse("x");

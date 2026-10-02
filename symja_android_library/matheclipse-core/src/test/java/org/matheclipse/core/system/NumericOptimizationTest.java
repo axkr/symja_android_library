@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /** NMinimize/NMaximize with constraints, and FindMinimum when MaxIterations runs out . */
@@ -105,6 +106,7 @@ public class NumericOptimizationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testWorkingPrecision() {
     // {x -> 1.461632144968362341262659542325721328468}
     check("FindRoot(PolyGamma(x), {x, 1.5}, WorkingPrecision -> 40)", //

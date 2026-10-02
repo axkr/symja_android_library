@@ -10874,6 +10874,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNIntegrateIteratedBoole() {
     // the inner integral of an iterated Boole indicator is split at its exact jumps
     check("Chop(NIntegrate(Boole(p^2 + q^2 < 1), {p, -1, 1}, {q, -1, 1}) - Pi, 10^-10)", //
@@ -12075,6 +12076,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPositivePowersIntegerExponent() {
     // (a*b)^2 is distributed again - an endless recursion
     check("Refine(a^2*b^2, a>0&&b>0)", //
@@ -12121,6 +12123,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFunctionRange() {
     // the real domain of the numerator restricts the range, e.g. x>=0 for Sqrt(x)
     check("FunctionRange(Sqrt(x)/(x-1),x,y)", //
@@ -26311,6 +26314,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   /** PolynomialGCD over the number field of a Root object (2026-09-27). */
   @Test
+  @Tag(TestTags.SLOW)
   public void testPolynomialGCDExtensionWMA() {
     check("c = Root(-1 + 15*#1 - 80*#1^2 + 160*#1^3 + 2869*#1^5 &, 1);" //
         + "PolynomialGCD(x^5 - x + 1, 256/2869 - 625*x/2869 - 500*x^2/2869 - 400*x^3/2869 - 320*x^4/2869 - c, " //

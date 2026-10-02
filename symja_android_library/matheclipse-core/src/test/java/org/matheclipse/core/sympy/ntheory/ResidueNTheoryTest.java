@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigInteger;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.matheclipse.core.system.TestTags;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -118,6 +120,7 @@ public class ResidueNTheoryTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDiscreteLog() {
     // https://github.com/sympy/sympy/blob/master/sympy/ntheory/tests/test_residue.py
     // assert discrete_log(1, 0, 2) == 0

@@ -2400,6 +2400,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * the quadrature last.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveAutonomousThirdOrder() {
     check("DSolve(y(x)*y'''(x) == y'(x)*y''(x), y(x), x)", //
         "{{y(x)->Sqrt(C(2))*Sinh(E^C(1)*x+C(3))}}");
@@ -2419,6 +2420,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * elementary.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveAutonomousRelation() {
     check("DSolve(y''(x) == 2*y(x)^3, y(x), x)", //
         "Solve(Inactive(Integrate)[1/Sqrt(-C(1)+K(1)^4),{K(1),1,y(x)}]^2==(x+C(2))^2,y(x))");
@@ -2513,6 +2515,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveRationalParticularSolution() {
     // WMA: 1/2*(Pi*BesselJ(1,x)*BesselY(0,x)-Pi*BesselJ(0,x)*BesselY(1,x)), which is 1/x
     check("DSolve(x^2*y''(x) + x*y'(x) + (x^2 - 1)*y(x) == x, y(x), x)", //
@@ -2523,6 +2526,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveBesselOfOrderOneAndTwoThirdsIsAiry() {
     // WMA: Bessel's functions of order 1/3 and 2/3 in 2/3*x^(3/2) are written as Airy functions
     check("DSolve(x^2*y''(x) + x*y'(x) + (x^3 - 1/4)*y(x) == 0, y(x), x)", //

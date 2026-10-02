@@ -3,6 +3,7 @@ package org.matheclipse.core.system;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
@@ -56,6 +57,7 @@ public class ZetaZeroTest {
    * their Gram interval. The values are Mathematica's.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testZerosOffTheirGramInterval() {
     ExprEvaluator eval = new ExprEvaluator();
     double[][] zeros = {{126, 279.22925092774518923}, {127, 282.46511476505209623},
@@ -68,6 +70,7 @@ public class ZetaZeroTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testTwentyDigits() {
     ExprEvaluator eval = new ExprEvaluator();
     // Mathematica: N[ZetaZero[6710], 20] = 0.5 + 7005.1005646726467216 I
@@ -79,6 +82,7 @@ public class ZetaZeroTest {
 
   /** Consecutive zeros increase, and none of them is skipped or found twice. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testConsecutiveZerosIncrease() {
     ExprEvaluator eval = new ExprEvaluator();
     double previous = 0.0;

@@ -12,6 +12,7 @@ import org.matheclipse.core.system.TestTags;
 public class AiryZerosTest {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAiryAiZero() {
     // https://dlmf.nist.gov/9.9#T1
     assertEquals(-2.33810741, AiryZeros.airyAiZero(1), 1e-8);
@@ -21,6 +22,7 @@ public class AiryZerosTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAiryBiZero() {
     // https://dlmf.nist.gov/9.9#T1
     assertEquals(-1.17371322, AiryZeros.airyBiZero(1), 1e-8);
