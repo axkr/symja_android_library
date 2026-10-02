@@ -141,7 +141,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
     // Full Riccati Equation with different constants: y'(x) = y(x)^2 - 1
     check("DSolve(y'(x) == y(x)^2 - 1, y(x), x)", //
-        "{{y(x)->-E^(2*x)/(E^(2*x)+C(1))+C(1)/(E^(2*x)+C(1))}}");
+        "{{y(x)->(-E^(2*x)+C(1))/(E^(2*x)+C(1))}}");
   }
 
   @Test
@@ -505,7 +505,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // The linearization y == -u'/(a*u) gives u'' - (b + a'/a)*u' + a*c*u == 0; the sign of a'/a
     // was the other one, which agrees only when a is constant, and this was declined.
     check("DSolve(y'(x) == y(x)^2/E^x + 4*y(x) + 2*E^x, y(x), x)", //
-        "{{y(x)->(-2*E^(2*x))/(E^x+C(1))+(-E^x*C(1))/(E^x+C(1))}}");
+        "{{y(x)->(-2*E^(2*x)-E^x*C(1))/(E^x+C(1))}}");
     // and with a constant the linearization is unchanged
     check("DSolve(y'(x) == 1 + y(x)^2, y(x), x)", //
         "{{y(x)->Tan(x+C(1))}}");
@@ -2473,6 +2473,189 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->0}}");
     check("DSolve({y'(x) == x^2*y(x)^2, y(1) == 2}, y(x), x)", //
         "{{y(x)->6/(5-2*x^3)}}");
+  }
+
+  @Test
+  public void testDSolveFewerConditionsThanConstants() {
+    // The condition names one constant by the other, and the answer keeps the first: this used to
+    // refuse every fit which left a constant, and then answered with the equilibrium y == 2 alone.
+    check("DSolve({y''(x)==3*y'(x), y(0)==2}, y(x), x)", //
+        "{{y(x)->E^(3*x)*(2-C(1))+C(1)}}");
+    check("DSolve({y''(x)==3*y'(x), y(0)==2}, y, x)", //
+        "{{y->Function({x},E^(3*x)*(2-C(1))+C(1))}}");
+    check("DSolve({y''(x)==4*y(x), y(0)==3}, y(x), x)", //
+        "{{y(x)->E^(2*x)*(3-C(1))+C(1)/E^(2*x)}}");
+    // one condition on an equation of the third order leaves two constants, two leave one
+    check("DSolve({y'''(x)==4*y'(x), y(0)==1}, y(x), x)", //
+        "{{y(x)->C(1)/E^(2*x)+E^(2*x)*(1-C(1)-C(2))+C(2)}}");
+    check("DSolve({y'''(x)==4*y'(x), y(0)==1, y'(0)==2}, y(x), x)", //
+        "{{y(x)->-2*C(1)+C(1)/E^(2*x)+E^(2*x)*(1+C(1))}}");
+    // a constant inside a logarithm: Solve answers for the one outside it, not for the pair
+    check("DSolve({y''(x)+y'(x)^2+2*y'(x)==0, y(0)==0}, y(x), x)", //
+        "{{y(x)->-2*x-Log(1-2*C(1))+Log(1-2*E^(2*x)*C(1))}}");
+    check("DSolve({y''(x)+2*y'(x)^2==0, y(1)==0}, y(x), x)", //
+        "{{y(x)->1/2*(-Log(2-C(1))+Log(2*x-C(1)))}}");
+    // the family meets the condition and solves the equation, whatever the constant is
+    check("With({s=DSolve({y''(x)+y'(x)^2+2*y'(x)==0, y(0)==0}, y, x)}, "
+        + "{Simplify((y''(x)+y'(x)^2+2*y'(x)) /. s[[1]]), y(0) /. s[[1]]})", //
+        "{0,0}");
+    // a condition given twice is one condition
+    check("DSolve({y''(x)==3*y'(x), y(0)==2, 2*y(0)==4}, y(x), x)", //
+        "{{y(x)->E^(3*x)*(2-C(1))+C(1)}}");
+    // conditions which do determine the solution are fitted as before
+    check("DSolve({y''(x)==3*y'(x), y(0)==2, y'(0)==0, y(1)==2}, y(x), x)", //
+        "{{y(x)->2}}");
+    check("DSolve({y''(x)+y(x)==0, y(0)==0, y(Pi)==0}, y(x), x)", //
+        "{{y(x)->C(2)*Sin(x)}}");
+  }
+
+  @Test
+  public void testDSolveContradictoryConditions() {
+    // DSolve: For some branches of the general solution, the given boundary conditions lead to an
+    // empty solution.
+    check("DSolve({y''(x)+4*y(x)==0, y(0)==0, y(Pi/2)==3}, y(x), x)", //
+        "{}");
+    check("DSolve({y'(x)==2*y(x), y(0)==1, y(1)==5}, y(x), x)", //
+        "{}");
+    check("DSolve({y''(x)==3*y'(x), y(0)==2, y(0)==3}, y(x), x)", //
+        "{}");
+    check("DSolve({y'(x)==2*y(x), y(0)==1, y(1)==E^2}, y(x), x)", //
+        "{{y(x)->E^(2*x)}}");
+    // not of the first degree in the constant, so a contradiction is not a proof: stays as it is
+    // DSolve: For some branches of the general solution, unable to solve for the conditions
+    check("DSolve({y'(x)==y(x)^2, y(0)==1, y(1)==5}, y(x), x)", //
+        "DSolve({y'(x)==y(x)^2,y(0)==1,y(1)==5},y(x),x)");
+  }
+
+  @Test
+  public void testDSolveFittedAnswerAsHyperbolicFunction() {
+    // was (2-2*E^(4*x))/(-1-E^(4*x))
+    check("DSolve({y''(x)+2*y(x)*y'(x)==0, y(0)==0, y'(0)==4}, y(x), x)", //
+        "{{y(x)->2*Tanh(2*x)}}");
+    check("DSolve({y''(x)-2*y(x)*y'(x)==0, y(0)==0, y'(0)==-4}, y(x), x)", //
+        "{{y(x)->-2*Tanh(2*x)}}");
+  }
+
+  @Test
+  public void testDSolveHigherDegreeInTheDerivative() {
+    // Solved for y'(x), every root is an equation of its own and every one of them is answered.
+    check("DSolve(y'(x)^2+4*y(x)^2==9, y(x), x)", //
+        "{{y(x)->-3/2*Sin(2*x-2*C(1))},{y(x)->3/2*Sin(2*x+2*C(1))}}");
+    check("DSolve(y'(x)^2==9*y(x), y(x), x)", //
+        "{{y(x)->9/4*x^2+3*x*C(1)+C(1)^2},{y(x)->9/4*x^2-3*x*C(1)+C(1)^2}}");
+    check("DSolve(9*y(x)^2==x^2*y'(x)^2, y(x), x)", //
+        "{{y(x)->C(1)/x^3},{y(x)->x^3*C(1)}}");
+    check("DSolve(x*y'(x)^2-2*y(x)*y'(x)-x==0, y(x), x)", //
+        "{{y(x)->x*Sinh(C(1)-Log(x))},{y(x)->x*Sinh(C(1)+Log(x))}}");
+    check("DSolve({y'(x)^2+4*y(x)^2==9, y(0)==0}, y(x), x)", //
+        "{{y(x)->-3/2*Sin(2*x)},{y(x)->3/2*Sin(2*x)}}");
+    // roots with a first integral only: one relation for each
+    check("DSolve((4-y(x)^2)*y'(x)^2==1, y(x), x)", //
+        "{Solve(x+2*ArcSin(y(x)/2)+1/2*y(x)*Sqrt(4-y(x)^2)==C(1),y(x)),Solve(-x+2*ArcSin(y(x)/\n"
+            + "2)+1/2*y(x)*Sqrt(4-y(x)^2)==C(1),y(x))}");
+    // a Lagrange equation has a parametric solution only, and that is not returned
+    check("DSolve(y(x)==3*x*y'(x)+y'(x)^2, y(x), x)", //
+        "DSolve(y(x)==3*x*y'(x)+y'(x)^2,y(x),x)");
+    // roots free of y, and an equation which factors, as before
+    check("DSolve(y'(x)^2 - 5*y'(x) + 6 == 0, y(x), x)", //
+        "{{y(x)->3*x+C(1)},{y(x)->2*x+C(1)}}");
+  }
+
+  @Test
+  public void testDSolveTotalDerivative() {
+    // (y^2)''' + (y^2)'' == Cos(x): the left side is integrated and the cascade asked again
+    // two branches +-Sqrt(...) with three constants; put back into the equation at a point
+    check(
+        "With({s=DSolve(2*y(x)*y'''(x)+2*(y(x)+3*y'(x))*y''(x)+2*y'(x)^2==Cos(x), y, x)}, "
+            + "{Length(s), Length(Union(Cases(s, C(_), Infinity))), "
+            + "Chop(N((2*y(x)*y'''(x)+2*(y(x)+3*y'(x))*y''(x)+2*y'(x)^2-Cos(x)) /. s "
+            + "/. {C(1)->2, C(2)->3, C(3)->5, x->7/10}))})", //
+        "{2,3,{0,0}}");
+    // (y^3)''' == x
+    check("DSolve(3*y(x)^2*y'''(x)+18*y(x)*y'(x)*y''(x)+6*y'(x)^3==x, y(x), x)", //
+        "{{y(x)->3^(1/3)*(x^4/72+1/6*x^2*C(1)+1/3*x*C(2)+C(3))^(1/3)}}");
+    // (y^2)'''/2 == -x
+    check("DSolve(y(x)*y'''(x)+3*y'(x)*y''(x)+x==0, y(x), x)", //
+        "{{y(x)->Sqrt(2)*Sqrt(-x^4/24+1/2*x^2*C(1)+x*C(2)+C(3))},{y(x)->-Sqrt(2)*Sqrt(-x^\n"
+            + "4/24+1/2*x^2*C(1)+x*C(2)+C(3))}}");
+    check(
+        "With({s=DSolve(y(x)*y'''(x)+3*y'(x)*y''(x)+x==0, y, x)}, "
+            + "Chop(N((y(x)*y'''(x)+3*y'(x)*y''(x)+x) /. s "
+            + "/. {C(1)->2, C(2)->3, C(3)->5, x->7/10})))", //
+        "{0,0}");
+  }
+
+  @Test
+  public void testDSolveBesselOfImaginaryOrder() {
+    // printed "General: Invalid comparison with I*2*Sqrt(5) attempted." from the rule for the
+    // half-integer orders, which asked whether the order is positive
+    check("DSolve(x^2*y''(x)+x*y'(x)+(x+5)*y(x)==0, y(x), x)", //
+        "{{y(x)->BesselJ(I*2*Sqrt(5),2*Sqrt(x))*C(1)+BesselY(I*2*Sqrt(5),2*Sqrt(x))*C(2)}}");
+    check("BesselK(I*Sqrt(3), z)", //
+        "BesselK(I*Sqrt(3),z)");
+    check("BesselI(3/2, z)", //
+        "Sqrt(2/Pi)*Sqrt(z)*(Cosh(z)/z-Sinh(z)/z^2)");
+  }
+
+  @Test
+  public void testDSolveSymbolicConjugateRoots() {
+    // The roots +-I*w are a conjugate pair when w is read as real, which is how a coefficient is
+    // meant: these came back as C(1)/E^(I*w*x)+E^(I*w*x)*C(2), and with a number for w as Cos/Sin.
+    check("DSolve(y''(x) + q^2*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*Cos(q*x)+C(2)*Sin(q*x)}}");
+    check("DSolve(y''(x) + q*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*Cos(Sqrt(q)*x)+C(2)*Sin(Sqrt(q)*x)}}");
+    check("DSolve(y''(x) + 2*p*y'(x) + (p^2 + 9)*y(x) == 0, y(x), x)", //
+        "{{y(x)->(C(1)*Cos(3*x))/E^(p*x)+(C(2)*Sin(3*x))/E^(p*x)}}");
+    // WMA: a symbolic frequency beside a damping term stays E^((-p-I*q)*x), E^((-p+I*q)*x)
+    check("DSolve(y''(x) + 2*p*y'(x) + (p^2 + q^2)*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)/E^(p*x+I*q*x)+C(2)/E^(p*x-I*q*x)}}");
+    check("DSolve(y'''(x) + q^2*y'(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)+C(2)*Cos(q*x)+C(3)*Sin(q*x)}}");
+    // the characteristic polynomial is (r^2+q^2)*(r^2+9*q^2); a double pair
+    check("DSolve(y''''(x) + 10*q^2*y''(x) + 9*q^4*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*Cos(q*x)+C(3)*Cos(3*q*x)+C(2)*Sin(q*x)+C(4)*Sin(3*q*x)}}");
+    check("DSolve(y''''(x) + 2*q^2*y''(x) + q^4*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*Cos(q*x)+x*C(3)*Cos(q*x)+C(2)*Sin(q*x)+x*C(4)*Sin(q*x)}}");
+    // fitted and forced
+    check("DSolve({y''(x) + q^2*y(x) == 0, y(0) == 3, y'(0) == 0}, y(x), x)", //
+        "{{y(x)->3*Cos(q*x)}}");
+    check("DSolve(y''(x) + q^2*y(x) == Cos(2*x), y(x), x)", //
+        "{{y(x)->Cos(2*x)/(-4+q^2)+C(1)*Cos(q*x)+C(2)*Sin(q*x)}}");
+    // real roots, and a discriminant of unknown sign, stay exponentials
+    check("DSolve(y''(x) - q^2*y(x) == 0, y(x), x)", //
+        "{{y(x)->E^(q*x)*C(1)+C(2)/E^(q*x)}}");
+    check("DSolve(y''(x) + p*y'(x) + q*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)/E^(1/2*p*x+1/2*Sqrt(p^2-4*q)*x)+C(2)/E^(1/2*p*x-1/2*Sqrt(p^2-4*q)*x)}}");
+    // numbers, as before
+    check("DSolve(y''(x) + 9*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)*Cos(3*x)+C(2)*Sin(3*x)}}");
+    check("ComplexExpand(Im(I*q))", //
+        "q");
+    check("ComplexExpand(Re(-I*q))", //
+        "0");
+    check("ComplexExpand(Re(q), q)", //
+        "Re(q)");
+  }
+
+  @Test
+  public void testDSolveThroughRadicalAndProductLog() {
+    // p/Sqrt(1+p^2) == x/3 + c is solved for p now, and the equation of a circle of radius 3
+    // follows; put back into the equation at a point
+    check(
+        "With({s=DSolve(3*y''(x) == (1 + y'(x)^2)^(3/2), y, x)}, {Length(s), "
+            + "Length(Union(Cases(s, C(_), Infinity))), Chop(N((3*y''(x) - (1 + y'(x)^2)^(3/2)) "
+            + "/. s[[1]] /. {C(1) -> 1/7, C(2) -> 2, x -> 3/10}))})", //
+        "{1,2,0}");
+    // the relation c*y/a + ... Log(b+a*y) == x + C(1) is inverted with ProductLog
+    check(
+        "With({s=DSolve(y'(x) == (2 + p*y(x))/(5 + q*y(x)), y, x)}, {Length(s), "
+            + "!FreeQ(s, ProductLog), Chop(N((y'(x) - (2 + p*y(x))/(5 + q*y(x))) "
+            + "/. s[[1]] /. {C(1) -> 1/3, p -> 3/2, q -> 7/10, x -> 1/5}))})", //
+        "{1,True,0}");
+    // one fraction instead of three with the same denominator
+    check("DSolve(y'(x) == -p*(y(x) - 2)^2, y(x), x)", //
+        "{{y(x)->(1+2*p*x+2*p*C(1))/(p*x+p*C(1))}}");
   }
 
   @Test

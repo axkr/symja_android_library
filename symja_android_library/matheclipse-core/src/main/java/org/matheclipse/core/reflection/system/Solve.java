@@ -515,6 +515,16 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                   F.ListAlloc(), maximumNumberOfResults, subMatrix, subVector, numericFlag, engine);
               if (subResultList.isPresent()) {
                 evaled = true;
+                if (subResultList.isEmpty() && subVector.size() <= 1) {
+                  // Every equation which was left holds once the rule is put in, so the rule is
+                  // the solution: Solve({a+b==2, a+b==2}, a) is {{a->2-b}}. There is no sub-result
+                  // to attach it to, and it used to be dropped for that reason.
+                  resultList.append(F.list(substitutionRule));
+                  if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
+                    return resultList;
+                  }
+                  continue;
+                }
                 IASTAppendable tempResult = addSubResultsToResultsList(resultList, subResultList,
                     substitutionRule, maximumNumberOfResults);
                 if (tempResult.isPresent()) {
@@ -864,6 +874,49 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             variables, engine);
       }
       return result;
+    }
+
+    /** The largest system in which an equation is also compared as a multiple of another. */
+    private static final int MAX_MULTIPLE_TEST_EQUATIONS = 6;
+
+    /** The largest term which is compared as a multiple of another. */
+    private static final int MAX_MULTIPLE_TEST_LEAVES = 120;
+
+    /**
+     * The equations without the ones which say what an earlier one already said: the same term, or
+     * a numeric multiple of it.
+     *
+     * <p>
+     * A repeated equation changes nothing about the solutions and a good deal about how they are
+     * looked for: <code>{x^2+y==2, x^2+y==2}</code> in <code>{x, y}</code> counts as two equations
+     * for two variables, so it was not read as the underdetermined system it is.
+     */
+    private static IASTMutable dropRepeatedEquations(IASTMutable termsEqualZeroList,
+        EvalEngine engine) {
+      int size = termsEqualZeroList.argSize();
+      if (size < 2) {
+        return termsEqualZeroList;
+      }
+      IASTAppendable kept = F.ListAlloc(size);
+      for (int i = 1; i <= size; i++) {
+        IExpr term = termsEqualZeroList.get(i);
+        boolean repeated = false;
+        for (int k = 1; k <= kept.argSize() && !repeated; k++) {
+          IExpr earlier = kept.get(k);
+          if (term.equals(earlier)) {
+            repeated = true;
+          } else if (size <= MAX_MULTIPLE_TEST_EQUATIONS && !term.isNumber() && !earlier.isNumber()
+              && term.leafCount() <= MAX_MULTIPLE_TEST_LEAVES
+              && earlier.leafCount() <= MAX_MULTIPLE_TEST_LEAVES) {
+            IExpr quotient = engine.evaluate(F.Cancel(F.Divide(term, earlier)));
+            repeated = quotient.isNumber() && !quotient.isZero();
+          }
+        }
+        if (!repeated) {
+          kept.append(term);
+        }
+      }
+      return kept.argSize() == size ? termsEqualZeroList : kept;
     }
 
     /**
@@ -2173,7 +2226,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
 
           // Early extraction of IntervalData
-          IASTMutable termsEqualZeroList = lists[0];
+          IASTMutable termsEqualZeroList = dropRepeatedEquations(lists[0], engine);
           IASTMutable inequationsList = lists[1];
           if ((domain == S.Reals || domain == S.Complexes) && inequationsList.argSize() > 0) {
             IASTAppendable remainingInequations = inequationsList.copyAppendable();

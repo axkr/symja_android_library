@@ -155,7 +155,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
               && normalPoly.isSpecialsFree()) {
             // Collect arbitrary constants to match canonical grouping: (1+2/n+...)*C(1)
             IExpr cPattern = F.C(F.$b());
-            return S.Collect.funEval(engine, normalPoly, cPattern);
+            return S.Collect.of(engine, normalPoly, cPattern);
           }
         } else if (exactSol.isFreeAST(S.Sum) && exactSol.isFreeAST(S.Product)
             && exactSol.isSpecialsFree()) {
@@ -163,7 +163,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
           // exponentially growing solutions have no asymptotic power series. The exact
           // solution itself is the sharpest asymptotic answer, so return it directly.
           IExpr cPattern = F.C(F.$b());
-          return S.Collect.funEval(engine, exactSol, cPattern);
+          return S.Collect.of(engine, exactSol, cPattern);
         }
       }
     }

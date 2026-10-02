@@ -297,6 +297,120 @@ final class DSolveUtil {
     return expr;
   }
 
+  /**
+   * A sum whose terms all have the same denominator with an arbitrary constant in it, written as
+   * one fraction.
+   *
+   * <p>
+   * Solving a relation for the unknown, and expanding the answer afterwards, distributes a
+   * numerator over its denominator: <code>y' == -k*(y-1)^2</code> came back as
+   * <code>1/(k*x+k*C(1)) + (k*x)/(k*x+k*C(1)) + (k*C(1))/(k*x+k*C(1))</code>, where
+   * <code>(1+k*x+k*C(1))/(k*x+k*C(1))</code> is meant. Anything else is returned as it is. The
+   * solution of a linear equation in particular stays the sum over its constants that it is:
+   * <code>C(1)/E^x + (x*C(2))/E^x</code> has a common denominator as well, and no constant in it.
+   */
+  static IExpr overCommonDenominator(IExpr expr, EvalEngine engine) {
+    if (!expr.isPlus()) {
+      return expr;
+    }
+    IExpr denominator = F.NIL;
+    for (int i = 1; i <= expr.argSize(); i++) {
+      IExpr termDenominator = engine.evaluate(F.Denominator(((IAST) expr).get(i)));
+      if (termDenominator.isFree(x -> x.isAST(S.C, 2), true)
+          || (denominator.isPresent() && !denominator.equals(termDenominator))) {
+        return expr;
+      }
+      denominator = termDenominator;
+    }
+    IExpr together = engine.evaluate(F.Together(expr));
+    return together.isPresent() && together.leafCount() <= expr.leafCount() ? together : expr;
+  }
+
+  /**
+   * Writes a quotient of exponentials as the hyperbolic function it is.
+   *
+   * <p>
+   * Fitting the constants of <code>y''(x) + 2*y(x)*y'(x) == 0</code> to <code>y(0) == 0</code>,
+   * <code>y'(0) == 1</code> leaves <code>(1-E^(2*x))/(-1-E^(2*x))</code>, which is
+   * <code>Tanh(x)</code> and is not simplified to it. The quotients
+   * <code>(E^w - 1)/(E^w + 1)</code> and its reciprocal are the only forms read here, with a
+   * number in front.
+   *
+   * @return the rewritten expression, or <code>expr</code> itself
+   */
+  static IExpr hyperbolicForm(IExpr expr, EvalEngine engine) {
+    IExpr rewritten = expr.replaceAll(x -> x.isTimes() ? hyperbolicQuotient((IAST) x) : F.NIL);
+    return rewritten.isPresent() ? engine.evaluate(rewritten) : expr;
+  }
+
+  private static IExpr hyperbolicQuotient(IAST times) {
+    for (int d = 1; d <= times.argSize(); d++) {
+      IExpr factor = times.get(d);
+      if (!factor.isPower() || !factor.second().isMinusOne()) {
+        continue;
+      }
+      IExpr[] denominator = exponentialBinomial(factor.first());
+      if (denominator == null) {
+        continue;
+      }
+      for (int n = 1; n <= times.argSize(); n++) {
+        IExpr[] numerator = n == d ? null : exponentialBinomial(times.get(n));
+        if (numerator == null || !numerator[2].equals(denominator[2])) {
+          continue;
+        }
+        // {constant, coefficient, exponent} stands for constant + coefficient*E^exponent
+        boolean minusOver = numerator[0].plus(numerator[1]).isZero();
+        boolean plusOver = numerator[0].equals(numerator[1]);
+        boolean minusUnder = denominator[0].plus(denominator[1]).isZero();
+        boolean plusUnder = denominator[0].equals(denominator[1]);
+        IExpr half = F.Times(F.C1D2, numerator[2]);
+        IExpr function;
+        if (minusOver && plusUnder) {
+          function = F.Tanh(half);
+        } else if (plusOver && minusUnder) {
+          function = F.Coth(half);
+        } else {
+          continue;
+        }
+        IASTAppendable result = F.TimesAlloc(times.argSize());
+        for (int i = 1; i <= times.argSize(); i++) {
+          if (i != d && i != n) {
+            result.append(times.get(i));
+          }
+        }
+        result.append(F.Divide(numerator[1], denominator[1]));
+        result.append(function);
+        return result;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The parts <code>{c, q, w}</code> of <code>c + q*E^w</code> with numbers <code>c</code> and
+   * <code>q</code> which are not zero, or <code>null</code>.
+   */
+  private static IExpr[] exponentialBinomial(IExpr expr) {
+    if (!expr.isPlus() || expr.argSize() != 2) {
+      return null;
+    }
+    for (int i = 1; i <= 2; i++) {
+      IExpr constant = ((IAST) expr).get(i);
+      IExpr term = ((IAST) expr).get(3 - i);
+      if (!constant.isNumber() || constant.isZero()) {
+        continue;
+      }
+      IExpr coefficient = F.C1;
+      if (term.isTimes() && term.argSize() == 2 && term.first().isNumber()) {
+        coefficient = term.first();
+        term = term.second();
+      }
+      if (term.isPower() && term.first() == S.E && !coefficient.isZero()) {
+        return new IExpr[] {constant, coefficient, term.second()};
+      }
+    }
+    return null;
+  }
 
   static IExpr extractBasis(IExpr term, java.util.Set<IExpr> cSet, IExpr[] cPart) {
     if (term.isTimes()) {

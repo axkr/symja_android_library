@@ -1964,8 +1964,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // Taking the logarithm of each side of a + b == c used to equate Log(a) with Log(-b), which is
     // the logarithm of each side of a + b == 0. So a different equation was solved, and answered:
     // this came back as y -> -ProductLog(-10/E^(4*x))/10, whose residual at x == 1 is about -54.
+    // The equation which is asked, 10*y - Log(3/2+y) == 4*x, is solved through u == 3/2+y.
     check("Solve(E^(10*y)/(3/2 + y) == E^(4*x), y)", //
-        "Solve(E^(10*y)/(3/2+y)==E^(4*x),y)");
+        "{{y->1/10*(-15-ProductLog(-10/E^(15+4*x)))}}");
+    check("Chop((E^(10*y)/(3/2 + y) - E^(4*x)) /. Solve(E^(10*y)/(3/2 + y) == E^(4*x), y)[[1]] "
+        + "/. x -> -7/2 // N)", //
+        "0");
     // and with the right hand side zero, which is the case that always worked, the answer stands
     check("Solve(E^(10*y)/y == 1, y)", //
         "{{y->-ProductLog(-10)/10}}");
@@ -3572,5 +3576,108 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->0},{x->0}}");
     check("Solve(Tanh(x)==0, x, Reals)", //
         "{{x->0}}");
+  }
+
+  /**
+   * An equation which repeats another one, or is a multiple of it, changes nothing about the
+   * solutions. Three places read such a system as one without a solution.
+   */
+  @Test
+  public void testSolveRepeatedEquations() {
+    // The two by two and three by three systems went through Cramer's rule, where a determinant
+    // of zero was taken for "no solution". With symbols for variables the Groebner basis had
+    // removed the repeated equation before; with C(1), f(1) or a transcendental coefficient it
+    // had not.
+    check("Solve({C(1)+3*C(2)==5, C(1)+3*C(2)==5},{C(1),C(2)})", //
+        "{{C(2)->1/3*(5-C(1))}}");
+    check("Solve({C(1)+3*C(2)==5, 2*C(1)+6*C(2)==10},{C(1),C(2)})", //
+        "{{C(2)->1/3*(5-C(1))}}");
+    check("Solve({g(1)-g(2)==4, g(1)-g(2)==4},{g(1),g(2)})", //
+        "{{g(2)->-4+g(1)}}");
+    check("Solve({u+v==Cos(2), u+v==Cos(2)},{u,v})", //
+        "{{v->-u+Cos(2)}}");
+    check("Solve({u+v+w==7, u+v+w==7},{u,v})", //
+        "{{v->7-u-w}}");
+    check("Solve({C(1)+C(2)+C(3)==4, C(1)+C(2)+C(3)==4, C(1)-C(3)==0},{C(1),C(2),C(3)})", //
+        "{{C(2)->2*(2-C(1)),C(3)->C(1)}}");
+    check("Solve({C(1)+C(2)+C(3)==4, 2*C(1)+2*C(2)+2*C(3)==8, 3*C(1)+3*C(2)+3*C(3)==12},"
+        + "{C(1),C(2),C(3)})", //
+        "{{C(3)->4-C(1)-C(2)}}");
+    // a determinant of zero and no solution
+    check("Solve({C(1)+3*C(2)==5, C(1)+3*C(2)==6},{C(1),C(2)})", //
+        "{}");
+    check("Solve({C(1)+C(2)+C(3)==4, C(1)+C(2)+C(3)==4, C(1)+C(2)+C(3)==5},{C(1),C(2),C(3)})", //
+        "{}");
+    // a determinant which is not zero, as before
+    check("Solve({C(1)+3*C(2)==5, C(1)-C(2)==1},{C(1),C(2)})", //
+        "{{C(1)->2,C(2)->1}}");
+
+    // One variable: the solution of the first equation was dropped when the equations after it
+    // held identically, because there was no sub-result to attach it to.
+    check("Solve({u+3*v==5, u+3*v==5}, u)", //
+        "{{u->5-3*v}}");
+    check("Solve({u+3*v==5, 2*u+6*v==10}, v)", //
+        "{{v->1/3*(5-u)}}");
+    check("Solve({u==3, u==3},{u,v})", //
+        "{{u->3}}");
+    check("Solve({u^2==9, u^2==9}, u)", //
+        "{{u->-3},{u->3}}");
+    check("Solve({u+3*v==5, u+3*v==6}, u)", //
+        "{}");
+    check("Solve({u^2==9, u==3}, u)", //
+        "{{u->3}}");
+    check("Solve({u^2==9, u==4}, u)", //
+        "{}");
+
+    // Not linear: two equations for two variables, and still the underdetermined system that
+    // one of them is.
+    check("Solve({x^3+y==5, x^3+y==5},{x,y})", //
+        "{{y->5-x^3}}");
+    check("Solve({x^3+y==5, 3*x^3+3*y==15},{x,y})", //
+        "{{y->5-x^3}}");
+    check("Solve({x*y==3, x*y==3},{x,y})", //
+        "{{y->3/x}}");
+    check("Solve({x^3+y==5, x^3+y==5}, y)", //
+        "{{y->5-x^3}}");
+    // a third equation which is not a repetition still counts
+    check("Solve({x+y==6, x+y==6, x-y==0},{x,y})", //
+        "{{x->3,y->3}}");
+  }
+
+  @Test
+  public void testSolveRadicalWithCompoundRightSide() {
+    // u/Sqrt(v) == c was solved for a right side of one symbol only: with a sum there the
+    // equation arrives as three terms, and the method which clears the radical took two.
+    check("Solve(z/Sqrt(4+z^2) == p, z)", //
+        "{{z->(-I*2*p)/Sqrt(-1+p^2)},{z->(I*2*p)/Sqrt(-1+p^2)}}");
+    check("Solve(z/Sqrt(4+z^2) == p+q, z)", //
+        "{{z->(-I*2*(p+q))/Sqrt(-1+(p+q)^2)},{z->(I*2*(p+q))/Sqrt(-1+(p+q)^2)}}");
+    check("Solve(t - z/Sqrt(4+z^2) == p, z)", //
+        "{{z->(-I*2*(-p+t))/Sqrt(-1+(-p+t)^2)},{z->(I*2*(-p+t))/Sqrt(-1+(-p+t)^2)}}");
+    // one of the two is the root, the other the one squaring brought in
+    check("Sort(Chop(N((z/Sqrt(4+z^2) - p - q) /. Solve(z/Sqrt(4+z^2) == p+q, z) "
+        + "/. {p -> 1/5, q -> 3/10})))", //
+        "{-1.0,0}");
+  }
+
+  @Test
+  public void testSolveLinearPlusLogOfLinear() {
+    // p*z + q*Log(g*z + d) == rhs through u == g*z + d; the rule which answers with ProductLog
+    // needs the logarithm of a multiple of the variable
+    check("Solve(z + 3*Log(2 + z) == t, z)", //
+        "{{z->-2+3*ProductLog(E^(1/3*(2+t))/3)}}");
+    check("Solve(5*z - Log(4*z + 7) == t + 2, z)", //
+        "{{z->1/20*(-35-4*ProductLog(-5/(4*E^(43/4+t))))}}");
+    check("Chop(N((z + 3*Log(2 + z) - t) /. Solve(z + 3*Log(2 + z) == t, z)[[1]] /. t -> 5/2))", //
+        "0");
+    check("Chop(N((5*z - Log(4*z + 7) - t - 2) /. Solve(5*z - Log(4*z + 7) == t + 2, z)[[1]] "
+        + "/. t -> 3/2))", //
+        "0");
+    // the logarithm of a multiple of the variable, as before
+    check("Solve(z + 3*Log(z) == t, z)", //
+        "{{z->3*ProductLog(E^(t/3)/3)}}");
+    // two different logarithms are not this shape
+    check("Solve(z + Log(1 + z) + Log(2 + z) == t, z)", //
+        "Solve(z+Log(1+z)+Log(2+z)==t,z)");
   }
 }

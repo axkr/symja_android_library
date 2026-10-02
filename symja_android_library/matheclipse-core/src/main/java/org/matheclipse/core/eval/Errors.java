@@ -154,6 +154,8 @@ public class Errors {
       "bdomv", "Warning: `1` is not a valid domain specification.", //
       "bspec", "`1` is not a valid `2` specification.", //
       "bvfail", "For some branches of the general solution, unable to solve for the conditions", //
+      "bvnul",
+      "For some branches of the general solution, the given boundary conditions lead to an empty solution.", //
       "cas", "Warning contradictory assumption(s) `1` encountered.", //
       "cfco",
       "Value of option CompilationOptions -> `1` should be Automatic, a rule or a list of rules.", //
@@ -304,9 +306,9 @@ public class Errors {
       "invcpts",
       "`1` should be a rectangular array of machine-sized real numbers of any depth, whose dimensions are greater than 1.", //
       "inv02", "The argument `2`  in  `1`  is not valid. 0 or 2 arguments expected.", //
-      "invak", "The argument is not a rule or a list of rules.", //
+      "invak", "The argument `1` is not a valid Association.", //
       "invcolor", "`1` is an invalid color specification.", //
-      "invdt", "The argument `1` is not a valid Association.", //
+      "invdt", "The argument is not a rule or a list of rules.", //
       "invdt2", "The argument `1` is not a rule or a list of rules.", //
       "invidx2", "Index `1` should be a machine sized integer between `2` and `3`.", //
       "invl", "The argument `1` is not a list.", //
