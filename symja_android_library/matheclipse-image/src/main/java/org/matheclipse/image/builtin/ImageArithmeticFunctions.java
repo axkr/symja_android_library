@@ -57,6 +57,11 @@ public class ImageArithmeticFunctions {
       IExpr result = ast.arg1();
       // ImageAdd(image, a, b, ...) folds left, the way Plus does
       for (int i = 2; i < ast.size(); i++) {
+        IExpr real = combineReal(result, ast.get(i), this::apply);
+        if (real.isPresent()) {
+          result = real;
+          continue;
+        }
         image = ImagePropertyFunctions.bufferedImage(result);
         IExpr combined = combine(image, ast.get(i), this::apply);
         if (!combined.isPresent()) {
@@ -217,6 +222,68 @@ public class ImageArithmeticFunctions {
       }
       return result;
     }));
+  }
+
+  /**
+   * Combine an image of reals with a number, a colour or a list of channel values on its own
+   * samples: the result is an image of the same type, and its samples are not rounded to the 256
+   * levels of the bitmap.
+   *
+   * @return {@link F#NIL} when <code>image</code> is not an image of reals which still has its
+   *         samples, or <code>operand</code> is not a constant
+   */
+  private static IExpr combineReal(IExpr image, IExpr operand, DoubleBinaryOperator operator) {
+    if (!(image instanceof ImageExpr)) {
+      return F.NIL;
+    }
+    ImageExpr imageExpr = (ImageExpr) image;
+    IAST matrix = imageExpr.getMatrix();
+    String type = imageExpr.sampleType();
+    if (matrix == null || matrix.argSize() == 0 || !matrix.arg1().isList()
+        || ((IAST) matrix.arg1()).argSize() == 0
+        || !(Pixels.REAL32.equals(type) || Pixels.REAL64.equals(type))) {
+      return F.NIL;
+    }
+    IExpr firstPixel = ((IAST) matrix.arg1()).arg1();
+    int channels = firstPixel.isList() ? firstPixel.argSize() : 1;
+    // the alpha channel is carried through, so it is not an operand
+    int colorChannels = channels == 4 || channels == 2 ? channels - 1 : channels;
+    double[] operands = constantOperand(operand, colorChannels);
+    if (operands == null) {
+      return F.NIL;
+    }
+    final boolean[] failed = new boolean[1];
+    IAST combined = F.mapRange(1, matrix.size(), r -> {
+      IExpr row = matrix.get(r);
+      if (!row.isList()) {
+        failed[0] = true;
+        return row;
+      }
+      return F.mapRange(1, ((IAST) row).size(), c -> {
+        IExpr pixel = ((IAST) row).get(c);
+        if (!pixel.isList()) {
+          double sample = pixel.evalfNaN();
+          failed[0] |= Double.isNaN(sample) || channels != 1;
+          return F.num(operator.applyAsDouble(sample, operands[0]));
+        }
+        IAST samples = (IAST) pixel;
+        if (samples.argSize() != channels) {
+          failed[0] = true;
+          return pixel;
+        }
+        return F.mapRange(1, samples.size(), k -> {
+          double sample = samples.get(k).evalfNaN();
+          failed[0] |= Double.isNaN(sample);
+          return k <= colorChannels ? F.num(operator.applyAsDouble(sample, operands[k - 1]))
+              : samples.get(k);
+        });
+      });
+    });
+    if (failed[0]) {
+      return F.NIL;
+    }
+    ImageExpr result = ImageExpr.toImageExpr(combined, imageExpr.getOptions(), type);
+    return result == null ? F.NIL : result;
   }
 
   /** A number, an <code>RGBColor</code> or a list of channel values, spread over the channels. */

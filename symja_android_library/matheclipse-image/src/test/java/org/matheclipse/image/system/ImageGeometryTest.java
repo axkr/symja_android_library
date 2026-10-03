@@ -97,6 +97,26 @@ public class ImageGeometryTest extends AbstractTestCase {
         "{{255,255},{255,255}}");
   }
 
+  /** The position in the background, and the point of the overlay which is put there. */
+  @Test
+  public void composePutsAPointOfTheOverlayOnAPosition() {
+    check("ImageData(ImageCompose(Image(ConstantArray(0,{3,3})),Image({{1}}),{0.5,2.5}))", //
+        "{{1.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}}");
+    check("ImageData(ImageCompose(Image(ConstantArray(0,{3,3})),Image({{1}}),{Right,Top},{Right,Top}))", //
+        "{{0.0,0.0,1.0},{0.0,0.0,0.0},{0.0,0.0,0.0}}");
+    check("ImageData(ImageCompose(Image(ConstantArray(0,{3,3})),Image({{1}}),{Left,Bottom},{Left,Bottom}))", //
+        "{{0.0,0.0,0.0},{0.0,0.0,0.0},{1.0,0.0,0.0}}");
+  }
+
+  /** Scaled with a pair scales the two directions on their own. */
+  @Test
+  public void resizeScalesTheTwoDirections() {
+    check("ImageDimensions(ImageResize(Image(ConstantArray(0.5,{60,80})),Scaled({0.5,0.25})))", //
+        "{40,15}");
+    check("ImageDimensions(ImageResize(Image(ConstantArray(0.5,{60,80})),Scaled(0.5)))", //
+        "{40,30}");
+  }
+
   @Test
   public void composeBlendsWithAnOpacity() {
     check("ImageData(ImageCompose(Image(ConstantArray(0.0,{2,2})),"

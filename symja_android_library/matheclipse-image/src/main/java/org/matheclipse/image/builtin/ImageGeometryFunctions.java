@@ -725,23 +725,26 @@ public class ImageGeometryFunctions {
       }
 
       int backgroundHeight = background.getHeight();
-      // the centre of the overlay lands here, in image coordinates
-      double centreX = background.getWidth() / 2.0;
-      double centreY = backgroundHeight / 2.0;
+      // the position in the background, in image coordinates, on which the overlay's own position
+      // lands; both are the centre unless they are given
+      double[] position = {background.getWidth() / 2.0, backgroundHeight / 2.0};
+      double[] overlayPosition = {overlay.getWidth() / 2.0, overlay.getHeight() / 2.0};
       if (ast.argSize() >= 3) {
-        if (!ast.arg3().isList() || ((IAST) ast.arg3()).argSize() != 2) {
+        position = anchor(ast.arg3(), background.getWidth(), backgroundHeight);
+        if (position == null) {
           return F.NIL;
         }
-        IAST position = (IAST) ast.arg3();
-        centreX = position.arg1().evalfNaN();
-        centreY = position.arg2().evalfNaN();
-        if (Double.isNaN(centreX) || Double.isNaN(centreY)) {
+      }
+      if (ast.argSize() >= 4) {
+        overlayPosition = anchor(ast.arg4(), overlay.getWidth(), overlay.getHeight());
+        if (overlayPosition == null) {
           return F.NIL;
         }
       }
       // to raster coordinates: the top left corner of the overlay
-      final int offsetX = (int) Math.round(centreX - overlay.getWidth() / 2.0);
-      final int offsetY = (int) Math.round(backgroundHeight - centreY - overlay.getHeight() / 2.0);
+      final int offsetX = (int) Math.round(position[0] - overlayPosition[0]);
+      final int offsetY = (int) Math.round(
+          backgroundHeight - position[1] - (overlay.getHeight() - overlayPosition[1]));
 
       int backgroundChannels = Boof.channels(background);
       int overlayChannels = Boof.channels(overlay);
@@ -768,6 +771,43 @@ public class ImageGeometryFunctions {
           }), null);
     }
 
+    /**
+     * A position in an image of the given size: <code>{x, y}</code>, where each of the two may be
+     * the name of a side or <code>Center</code>, or one such name alone.
+     *
+     * @return <code>null</code> if it is no position
+     */
+    private static double[] anchor(IExpr spec, int width, int height) {
+      if (spec.isList2()) {
+        double x = anchorCoordinate(spec.first(), width, true);
+        double y = anchorCoordinate(spec.second(), height, false);
+        return Double.isNaN(x) || Double.isNaN(y) ? null : new double[] {x, y};
+      }
+      if (spec == S.Center) {
+        return new double[] {width / 2.0, height / 2.0};
+      }
+      if (spec == S.Left || spec == S.Right) {
+        return new double[] {anchorCoordinate(spec, width, true), height / 2.0};
+      }
+      if (spec == S.Bottom || spec == S.Top) {
+        return new double[] {width / 2.0, anchorCoordinate(spec, height, false)};
+      }
+      return null;
+    }
+
+    private static double anchorCoordinate(IExpr spec, int extent, boolean horizontal) {
+      if (spec == S.Center) {
+        return extent / 2.0;
+      }
+      if (spec == (horizontal ? S.Left : S.Bottom)) {
+        return 0.0;
+      }
+      if (spec == (horizontal ? S.Right : S.Top)) {
+        return extent;
+      }
+      return spec.isSymbol() ? Double.NaN : spec.evalfNaN();
+    }
+
     /** Widen a greyscale pixel to the channel count of the composed image. */
     private static float[] spread(float[] values, int from, int to) {
       if (from == to) {
@@ -785,7 +825,7 @@ public class ImageGeometryFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_4;
     }
 
     @Override
@@ -1039,6 +1079,16 @@ public class ImageGeometryFunctions {
    * A size given as <code>w</code>, <code>{w, h}</code> with Automatic, or <code>Scaled(s)</code>.
    */
   private static int[] targetSize(IExpr spec, int width, int height) {
+    if (spec.isAST(S.Scaled, 2) && spec.first().isList2()) {
+      // Scaled({sx, sy}) scales the two directions on their own
+      double factorX = spec.first().first().evalfNaN();
+      double factorY = spec.first().second().evalfNaN();
+      if (!(factorX > 0.0) || !(factorY > 0.0)) {
+        return null;
+      }
+      return new int[] {Math.max(1, (int) Math.round(width * factorX)),
+          Math.max(1, (int) Math.round(height * factorY))};
+    }
     if (spec.isAST(S.Scaled, 2)) {
       double factor = ((IAST) spec).arg1().evalfNaN();
       if (Double.isNaN(factor) || factor <= 0.0) {

@@ -10,7 +10,8 @@ public class ImageArithmeticTest extends AbstractTestCase {
 
   @Test
   public void addingANumberBrightens() {
-    check("ImageData(ImageAdd(Image({{0.0,0.5}}),0.25),\"Byte\")", "{{64,192}}");
+    // 0.5 + 0.25 is added on the real samples: 0.75 is the byte 191, not 128 + 64
+    check("ImageData(ImageAdd(Image({{0.0,0.5}}),0.25),\"Byte\")", "{{64,191}}");
   }
 
   @Test
@@ -68,5 +69,23 @@ public class ImageArithmeticTest extends AbstractTestCase {
   public void theAlphaChannelIsCarriedThrough() {
     check("ImageData(ImageMultiply(Image({{{1.0,1.0,1.0,0.5}}}),0.5),\"Byte\")", //
         "{{{128,128,128,128}}}");
+  }
+
+  /** An image of reals keeps its type and its exact samples through arithmetic with a constant. */
+  @Test
+  public void anImageOfRealsStaysAnImageOfReals() {
+    check("ImageType(ImageMultiply(Image({{{1, 0.5, 0.25}}}), {1., 0.5, 2.}))", //
+        "Real32");
+    check("ImageData(ImageMultiply(Image({{{1, 0.5, 0.25}}}), {1., 0.5, 2.}))", //
+        "{{{1.0,0.25,0.5}}}");
+    check("ImageData(ImageAdd(Image({{{0.5, 0.5, 0.25}}}), {0.25, 0., 0.25}))", //
+        "{{{0.75,0.5,0.5}}}");
+    check("ImageData(ImageMultiply(Image({{0.2, 0.4}}), 0.5))", //
+        "{{0.1,0.2}}");
+    // the alpha channel is not an operand
+    check("ImageData(ImageMultiply(Image({{{0.5, 0.5, 0.5, 0.25}}}), 0.5))", //
+        "{{{0.25,0.25,0.25,0.25}}}");
+    check("ImageType(ImageMultiply(Image({{10, 200}}, \"Byte\"), 0.5))", //
+        "Byte");
   }
 }
