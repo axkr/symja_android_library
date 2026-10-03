@@ -47,10 +47,36 @@ public class JavaFunctions {
     }
   }
 
+  /**
+   * Whether this kernel may reach into the JVM it runs in.
+   *
+   * <p>
+   * Reflection has no sandbox: a <code>java.io.File</code> is not resolved inside a session's
+   * directory, and a class can be asked to do anything the process may do. So it is offered only to
+   * a kernel that is the user's own - see {@link FileSandbox#isHostVisible(EvalEngine)} - and never
+   * to a browser session confined to a directory, which used to pass the plain "is the file system
+   * enabled" test these functions made.
+   *
+   * @return <code>true</code> if it may; otherwise a message has been printed where one is due
+   */
+  private static boolean javaAllowed(IAST ast, EvalEngine engine) {
+    if (FileSandbox.isHostVisible(engine)) {
+      return true;
+    }
+    if (Config.isFileSystemEnabled(engine)) {
+      // The operation `1` is not allowed in sandbox mode.
+      Errors.printMessage(ast.topHead(), "sandbox", F.List(ast.topHead()), engine);
+    }
+    return false;
+  }
+
   private static class AddToClassPath extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!javaAllowed(ast, engine)) {
+        return F.NIL;
+      }
       try {
         if (Config.URL_CLASS_LOADER == null) {
           Config.URL_CLASS_LOADER = ClassLoader.getSystemClassLoader();
@@ -125,6 +151,9 @@ public class JavaFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!javaAllowed(ast, engine)) {
+        return F.NIL;
+      }
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg2.isString()) {
@@ -216,7 +245,7 @@ public class JavaFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (Config.isFileSystemEnabled(engine)) {
+      if (javaAllowed(ast, engine)) {
         IExpr arg1 = ast.arg1();
         if (arg1.isString()) {
           try {
@@ -326,7 +355,7 @@ public class JavaFunctions {
         return F.NIL;
       }
       if (ast.head() instanceof JavaObjectExpr //
-          && ast.argSize() == 1 && ast.arg1().isAST()) {
+          && ast.argSize() == 1 && ast.arg1().isAST() && javaAllowed(ast, engine)) {
         try {
           IAST methodExpr = (IAST) ast.arg1();
           if (methodExpr.head().isSymbol()) {
@@ -467,7 +496,7 @@ public class JavaFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (Config.isFileSystemEnabled(engine)) {
+      if (javaAllowed(ast, engine)) {
         IExpr arg1 = ast.arg1();
         if (arg1.isString()) {
           try {

@@ -371,13 +371,61 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           listOfRules =
               exprAnalyzer.mapOnOriginal(exprAnalyzer.getPowerRewrittenExpr(), listOfRules);
         }
-      } else if (numericFlag) {
-        listOfRules = findRoot(exprAnalyzer, engine);
-        if (listOfRules.isPresent()) {
-          listOfRules = exprAnalyzer.mapOnOriginal(exprAnalyzer.getOriginalExpr(), listOfRules);
+      } else {
+        listOfRules = solveByKernel(exprAnalyzer, numericFlag, engine);
+        if (listOfRules.isNIL() && numericFlag) {
+          listOfRules = findRoot(exprAnalyzer, engine);
+          if (listOfRules.isPresent()) {
+            listOfRules = exprAnalyzer.mapOnOriginal(exprAnalyzer.getOriginalExpr(), listOfRules);
+          }
         }
       }
       return listOfRules;
+    }
+
+    /**
+     * An equation which is a polynomial in one radical kernel of the variable, as
+     * <code>(2+y)^(1/3) + 3/(2+y)^(1/3) == 6</code> is in <code>(2+y)^(1/3)</code>: the roots of
+     * the polynomial are the values of the kernel, which is then inverted. Isolating one of the
+     * powers instead, as the rewriting of the analyzer does, only creates other powers of it.
+     *
+     * @return the rules which solve the original equation, or {@link F#NIL}
+     */
+    private static IAST solveByKernel(ExprAnalyzer exprAnalyzer, boolean numericFlag,
+        EvalEngine engine) {
+      if (exprAnalyzer.getVariableSet().size() != 1) {
+        return F.NIL;
+      }
+      IExpr variable = exprAnalyzer.getVariableSet().iterator().next();
+      IExpr original = exprAnalyzer.getOriginalExpr();
+      if (original == null || original.isFree(x -> x.isPower() && x.exponent().isFraction()
+          && !x.base().isFree(variable) && !x.base().equals(variable), false)) {
+        return F.NIL;
+      }
+      // a variable like C(1) is no symbol, which the kernel substitution needs
+      ISymbol symbol = variable.isSymbol() ? (ISymbol) variable : F.Dummy("v");
+      IExpr values = Eliminate.solveByKernel(
+          variable.isSymbol() ? original : F.subst(original, variable, symbol), symbol, true,
+          engine);
+      if (!values.isList() || values.argSize() == 0) {
+        return F.NIL;
+      }
+      IAST rules = F.mapList((IAST) values, value -> {
+        if (!value.isFree(symbol)) {
+          return F.NIL;
+        }
+        IExpr expanded = engine.evaluate(F.Expand(value));
+        return F.Rule(variable, numericFlag ? engine.evalN(expanded) : expanded);
+      });
+      // a value of the kernel which the root does not take, as a negative one of a square root,
+      // gives no solution. The check is numeric where the radicals do not simplify:
+      // ((3-Sqrt(6))^3)^(1/3) is 3-Sqrt(6)
+      IAST checked = rules.select(rule -> {
+        IExpr value = engine.evaluate(F.Chop(F.subst(original, variable, rule.second())));
+        return value.isZero() || (value.isNumericFunction(true)
+            && value.isPossibleZero(true, Config.DEFAULT_ROOTS_CHOP_DELTA));
+      });
+      return checked.argSize() == 0 ? F.NIL : checked;
     }
 
     /**

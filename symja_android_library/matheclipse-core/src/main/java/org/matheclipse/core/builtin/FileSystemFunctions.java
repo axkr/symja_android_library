@@ -131,11 +131,14 @@ public class FileSystemFunctions {
         return Errors.printMessage(S.AbsoluteFileName, "nffil",
             F.list(F.stringx(ast.arg1().toString())), engine);
       }
+      String absolute;
       try {
-        return F.stringx(path.toRealPath().toString());
+        absolute = path.toRealPath().toString();
       } catch (IOException ex) {
-        return F.stringx(path.toAbsolutePath().normalize().toString());
+        absolute = path.toAbsolutePath().normalize().toString();
       }
+      // a confined session has no absolute names: its directory is where its names begin
+      return F.stringx(FileSandbox.displayName(path, absolute, engine));
     }
 
     @Override
@@ -434,6 +437,19 @@ public class FileSystemFunctions {
     }
   }
 
+  /**
+   * A path of a session confined to a directory, named as that session names it: relative to its
+   * directory, which is "." - never where the host keeps that directory. A path outside it has no
+   * such name and stays unevaluated.
+   */
+  private static IExpr insideSandbox(Path root, Path path) {
+    if (!path.startsWith(root)) {
+      return F.NIL;
+    }
+    String relative = root.relativize(path).toString();
+    return F.stringx(relative.isEmpty() ? "." : relative);
+  }
+
   private static class ExpandFileName extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -444,6 +460,10 @@ public class FileSystemFunctions {
       Path path = namePath(S.ExpandFileName, name, engine);
       if (path == null) {
         return F.NIL;
+      }
+      Path root = engine.getFileSandboxRoot();
+      if (root != null) {
+        return path.isAbsolute() ? F.NIL : insideSandbox(root, root.resolve(path).normalize());
       }
       if (path.isAbsolute()) {
         return F.stringx(path.normalize().toString());
@@ -766,6 +786,21 @@ public class FileSystemFunctions {
         }
       } else {
         return F.NIL;
+      }
+      Path root = engine.getFileSandboxRoot();
+      if (root != null) {
+        if (ast.isAST0()) {
+          // the session's directory has no parent the session may know
+          return F.NIL;
+        }
+        if (path.isAbsolute()) {
+          return F.NIL;
+        }
+        path = root.resolve(path).normalize();
+        for (int i = 0; i < levels && path != null; i++) {
+          path = path.getParent();
+        }
+        return path == null ? F.NIL : insideSandbox(root, path);
       }
       // a relative name has no parent of its own to name, so it is read where it is used
       if (!path.isAbsolute()) {

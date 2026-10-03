@@ -90,6 +90,20 @@ public final class ZipArchive {
    * @return the files written
    */
   public static List<Path> extract(Path archive, Path directory) throws IOException {
+    return extract(archive, directory, Long.MAX_VALUE);
+  }
+
+  /**
+   * As {@link #extract(Path, Path)}, writing no more than <code>maxBytes</code> altogether. What an
+   * archive unpacks to is not bounded by its own size - a few kilobytes of it can stand for
+   * gigabytes - so whoever has a limit on what may be written has to pass it down to here.
+   *
+   * @throws IOException also if the archive holds more than <code>maxBytes</code>; the entries
+   *         before that one have been written
+   */
+  public static List<Path> extract(Path archive, Path directory, long maxBytes)
+      throws IOException {
+    long remaining = maxBytes;
     List<Path> written = new ArrayList<Path>();
     Path root = directory.toAbsolutePath().normalize();
     Files.createDirectories(root);
@@ -109,7 +123,9 @@ public final class ZipArchive {
         if (parent != null) {
           Files.createDirectories(parent);
         }
-        Files.write(target, readAll(zip));
+        byte[] content = readAll(zip, remaining);
+        remaining -= content.length;
+        Files.write(target, content);
         written.add(target);
       }
     }
@@ -147,8 +163,19 @@ public final class ZipArchive {
   }
 
   private static byte[] readAll(InputStream in) throws IOException {
+    return readAll(in, Long.MAX_VALUE);
+  }
+
+  private static byte[] readAll(InputStream in, long maxBytes) throws IOException {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream(8192);
-    copy(in, buffer);
+    byte[] chunk = new byte[8192];
+    int read;
+    while ((read = in.read(chunk)) > 0) {
+      if (buffer.size() + (long) read > maxBytes) {
+        throw new IOException("the archive unpacks to more than may be written here");
+      }
+      buffer.write(chunk, 0, read);
+    }
     return buffer.toByteArray();
   }
 

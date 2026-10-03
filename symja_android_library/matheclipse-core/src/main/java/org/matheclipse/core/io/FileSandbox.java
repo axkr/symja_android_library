@@ -256,10 +256,93 @@ public final class FileSandbox {
           Files.createDirectories(parent);
         }
       }
+      if (forWriting && isFull(root)) {
+        // `1`
+        Errors.printMessage(symbol, "error",
+            F.List(F.stringx("This session's directory is full; delete a file first.")), engine);
+        return null;
+      }
       return resolved;
     } catch (InvalidPathException | IOException | SecurityException ex) {
       return refuse(symbol, fileName, engine);
     }
+  }
+
+  /**
+   * The most the files of one session's directory may add up to before the kernel refuses to open
+   * another one for writing, in bytes. The same setting, with the same default, that limits what a
+   * browser may upload into that directory - an upload was counted, a file the kernel wrote itself
+   * was not.
+   */
+  public static final long MAX_TOTAL_BYTES =
+      Long.getLong("symja.sandbox.maxTotalBytes", 32L * 1024 * 1024);
+
+  /**
+   * Whether the directory of a session has reached {@link #MAX_TOTAL_BYTES}. This is looked at
+   * before a file is opened, so the write that crosses the line still goes through; what it stops
+   * is a session that keeps writing.
+   */
+  private static boolean isFull(Path root) {
+    return remainingBytes(root) <= 0;
+  }
+
+  /** How many bytes may still be written into the directory of a session. */
+  private static long remainingBytes(Path root) {
+    try (java.util.stream.Stream<Path> files = Files.walk(root)) {
+      long total = 0;
+      java.util.Iterator<Path> each = files.iterator();
+      while (each.hasNext()) {
+        Path file = each.next();
+        if (Files.isRegularFile(file, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+          total += Files.size(file);
+          if (total >= MAX_TOTAL_BYTES) {
+            return 0;
+          }
+        }
+      }
+      return MAX_TOTAL_BYTES - total;
+    } catch (IOException | RuntimeException ex) {
+      // a directory that cannot be measured is not written to
+      return 0;
+    }
+  }
+
+  /**
+   * How much a kernel may still write: what is left of {@link #MAX_TOTAL_BYTES} in the directory a
+   * session is confined to, and no limit for a kernel that is not confined. For a built-in that
+   * writes more than it was handed - an archive that unpacks to a multiple of its size.
+   */
+  public static long remainingBytes(EvalEngine engine) {
+    Path root = engine == null ? null : engine.getFileSandboxRoot();
+    return root == null ? Long.MAX_VALUE : remainingBytes(root);
+  }
+
+  /**
+   * A file as a kernel names it to its user: in a session confined to a directory relative to that
+   * directory, which is ".", and never by where the host keeps it - that path has the session's id
+   * in it and tells about the machine. A kernel that is not confined gets <code>otherwise</code>,
+   * the name the caller would have used.
+   */
+  public static String displayName(Path file, String otherwise, EvalEngine engine) {
+    Path root = engine == null ? null : engine.getFileSandboxRoot();
+    if (root == null) {
+      return otherwise;
+    }
+    Path path = file.toAbsolutePath().normalize();
+    if (!path.startsWith(root)) {
+      try {
+        // the same file, reached through a link in the path to the root
+        path = path.toRealPath();
+      } catch (IOException | RuntimeException ex) {
+        // judged by the name it has
+      }
+    }
+    if (path.startsWith(root)) {
+      String relative = root.relativize(path).toString();
+      return relative.isEmpty() ? "." : relative;
+    }
+    Path name = path.getFileName();
+    return name == null ? "." : name.toString();
   }
 
   /**

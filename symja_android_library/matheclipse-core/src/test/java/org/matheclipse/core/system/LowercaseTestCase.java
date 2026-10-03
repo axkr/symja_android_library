@@ -11313,6 +11313,50 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveReciprocalRootOfSum() {
+    // a polynomial in the kernel (2+y)^(1/3): its roots are the values of the kernel
+    check("Solve((2 + y)^(1/3) + 3/(2 + y)^(1/3) == 6, y)", //
+        "{{y->79-33*Sqrt(6)},{y->79+33*Sqrt(6)}}");
+    check("Solve((2 + y)^(1/3) + 3/(2 + y)^(1/3) == 6, y, Reals)", //
+        "{{y->79-33*Sqrt(6)},{y->79+33*Sqrt(6)}}");
+    check("Solve((2 + y)^(2/3) - 5*(2 + y)^(1/3) == -3, y)", //
+        "{{y->38-11*Sqrt(13)},{y->38+11*Sqrt(13)}}");
+    // a negative value of the kernel is no root of the original equation
+    check("Solve(Sqrt(2 + y) + (2 + y)^(1/4) == 3, y)", //
+        "{{y->27/2-7/2*Sqrt(13)}}");
+    check("Solve((2 + C(1))^(1/3) + 3/(2 + C(1))^(1/3) == 6, C(1))", //
+        "{{C(1)->79-33*Sqrt(6)},{C(1)->79+33*Sqrt(6)}}");
+    check("NSolve((2 + y)^(1/3) + 3/(2 + y)^(1/3) == 6, y)", //
+        "{{y->-1.83316},{y->159.8332}}");
+    check("NSolve((2 + C(1))^(1/3) + 3/(2 + C(1))^(1/3) == 6, C(1))", //
+        "{{C(1)->-1.83316},{C(1)->159.8332}}");
+  }
+
+  @Test
+  public void testArrayPlotDataReversedAndDataRange() {
+    // the raster itself is the content
+    check("Head(First(ArrayPlot({{1, 2}, {3, 4}})))", //
+        "Raster");
+    check("First(ArrayPlot({{1, 2}, {3, 4}}))[[2]]", //
+        "{{0.0,0.0},{2.0,2.0}}");
+    // DataReversed draws the first row at the bottom
+    check("First(ArrayPlot({{3, 4}, {1, 2}}, DataReversed -> True)) === "
+        + "First(ArrayPlot({{1, 2}, {3, 4}}))", //
+        "True");
+    check("First(ArrayPlot({{1, 2}, {3, 4}}, DataReversed -> True)) === "
+        + "First(ArrayPlot({{1, 2}, {3, 4}}))", //
+        "False");
+    // DataRange gives the centres of the outer cells: the raster is half a cell wider
+    check("First(ArrayPlot({{1, 2}, {3, 4}}, DataRange -> {{-2, 2}, {-1, 1}}))[[2]]", //
+        "{{-4.0,-2.0},{4.0,2.0}}");
+    check("First(MatrixPlot({{1, 2}, {3, 4}}, DataRange -> {{0, 1}, {0, 1}}))[[1, 2]]", //
+        "{{-0.5,-0.5},{1.5,1.5}}");
+    // with a Mesh there is more than the raster
+    check("Head(First(ArrayPlot({{1, 2}, {3, 4}}, Mesh -> True)))", //
+        "List");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

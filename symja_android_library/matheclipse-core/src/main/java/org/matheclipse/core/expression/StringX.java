@@ -427,7 +427,7 @@ public class StringX implements IStringX {
   @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     if (symbolsAsFactoryMethod) {
-      return new StringBuilder("$str(\"").append(fString).append("\")");
+      return new StringBuilder("$str(\"").append(javaLiteral()).append("\")");
     }
     return new StringBuilder(fString.length() + 2).append("\"").append(fString).append("\"");
   }
@@ -437,7 +437,17 @@ public class StringX implements IStringX {
   public CharSequence internalJavaString(SourceCodeProperties properties, int depth,
       Function<ISymbol, ? extends CharSequence> variables) {
     String prefix = SourceCodeProperties.getPrefixF(properties);
-    return new StringBuilder(prefix).append("$str(\"").append(fString).append("\")");
+    return new StringBuilder(prefix).append("$str(\"").append(javaLiteral()).append("\")");
+  }
+
+  /**
+   * The characters of this string as they have to stand between the quotes of a Java string
+   * literal. The text ends up in Java source - the generated rule classes, the source
+   * <code>Compile</code> hands to its compiler - where an unescaped quote would end the literal
+   * and turn the rest of the string into code.
+   */
+  private String javaLiteral() {
+    return org.apache.commons.text.StringEscapeUtils.escapeJava(fString);
   }
 
   /**

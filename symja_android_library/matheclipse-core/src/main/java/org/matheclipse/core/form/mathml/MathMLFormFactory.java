@@ -1146,6 +1146,49 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
   }
 
+  /**
+   * <code>Panel(expr)</code> - the expression on the background of a panel, under the title of
+   * <code>Panel(expr, title)</code> if there is one.
+   *
+   * <p>
+   * The box is drawn with CSS, which a browser applies to an element of MathML as to any other.
+   * <code>menclose</code> would say the same thing in MathML itself, but it is not part of MathML
+   * Core and a browser that implements only that draws nothing for it.
+   */
+  private static final class Panel extends AbstractConverter {
+
+    private static final String BOX = "style=\"background-color:#f4f4f1;"
+        + "border:1px solid #c8c8c4;border-radius:5px;padding:0.5em 0.7em;\"";
+
+    @Override
+    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+      if (f.size() < 2) {
+        return false;
+      }
+      // Panel(expr, options) has no title; a rule in second place is the first option
+      boolean titled = f.size() > 2 && !f.arg2().isRuleAST();
+      fFactory.tagStart(buf, "mrow", BOX);
+      if (titled) {
+        fFactory.tagStart(buf, "mtable", "columnalign=\"left\"");
+        fFactory.tagStart(buf, "mtr");
+        fFactory.tagStart(buf, "mtd");
+        fFactory.convertInternal(buf, f.arg2(), Integer.MIN_VALUE, false);
+        fFactory.tagEnd(buf, "mtd");
+        fFactory.tagEnd(buf, "mtr");
+        fFactory.tagStart(buf, "mtr");
+        fFactory.tagStart(buf, "mtd");
+      }
+      fFactory.convertInternal(buf, f.arg1(), Integer.MIN_VALUE, false);
+      if (titled) {
+        fFactory.tagEnd(buf, "mtd");
+        fFactory.tagEnd(buf, "mtr");
+        fFactory.tagEnd(buf, "mtable");
+      }
+      fFactory.tagEnd(buf, "mrow");
+      return true;
+    }
+  }
+
   /** <code>Pane(expr, ...)</code> - the expression; the size options belong to a notebook box. */
   private static final class Pane extends AbstractConverter {
 
@@ -3462,6 +3505,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     CONVERTERS.put(S.Text, new Text());
     CONVERTERS.put(S.Framed, new Framed());
     CONVERTERS.put(S.Pane, new Pane());
+    CONVERTERS.put(S.Panel, new Panel());
     GraphicsInline graphicsInline = new GraphicsInline();
     CONVERTERS.put(S.Graphics, graphicsInline);
     // the layout heads draw themselves the same way, so a picture inside a Column or a Grid is a

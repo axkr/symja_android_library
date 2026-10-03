@@ -5828,6 +5828,14 @@ public class EvalEngine implements Serializable {
     fAbortRequested = true;
   }
 
+  /**
+   * Whether this engine has been asked to stop and has not acted on it yet. For code that waits
+   * rather than evaluates, and so never reaches the step of the evaluation loop that notices.
+   */
+  public boolean isStopRequested() {
+    return fAbortRequested;
+  }
+
   /** Forget an abort which was asked for but never reached an evaluation. */
   public void clearStopRequest() {
     fAbortRequested = false;

@@ -1,5 +1,9 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.io.paclet.PackageResolver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
@@ -262,4 +266,33 @@ public class PacletTest extends ExprEvaluatorTestCase {
     }
   }
 
+
+  /**
+   * The parts of a context are names, not steps of a path: one that says ".." must not lead out of
+   * the directory that is searched, least of all out of the directory a session is confined to.
+   */
+  @Test
+  public void testAContextCannotClimbOutOfItsDirectory(@TempDir Path root) throws IOException {
+    Path confined = root.resolve("session");
+    Files.createDirectories(confined.resolve("inner"));
+    Files.write(root.resolve("outside.m"), "outsideMarker = 1;\n".getBytes(StandardCharsets.UTF_8));
+    Files.write(confined.resolve("inner").resolve("inside.m"),
+        "insideMarker = 1;\n".getBytes(StandardCharsets.UTF_8));
+
+    EvalEngine engine = evaluator.getEvalEngine();
+    boolean fileSystemEnabled = Config.FILESYSTEM_ENABLED;
+    Config.FILESYSTEM_ENABLED = true;
+    engine.setFileSandboxRoot(confined);
+    try {
+      java.util.List<Path> none = java.util.Collections.emptyList();
+      assertNotNull(PackageResolver.resolve("inner`inside`", none, engine));
+      assertNull(PackageResolver.resolve("..`outside`", none, engine));
+      assertNull(PackageResolver.resolve("inner`..`..`outside`", none, engine));
+      assertNull(PackageResolver.resolve("../outside`", none, engine));
+      assertNull(PackageResolver.resolve("inner``inside`", none, engine));
+    } finally {
+      engine.setFileSandboxRoot(null);
+      Config.FILESYSTEM_ENABLED = fileSystemEnabled;
+    }
+  }
 }

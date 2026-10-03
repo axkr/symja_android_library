@@ -104,9 +104,9 @@ public class SemanticImport extends AbstractFunctionOptionEvaluator {
   private static IExpr readURL(String urlName, Extension format, IAST readOptions,
       EvalEngine engine) {
     try {
-      URL url = new URL(urlName);
       if (format.equals(Extension.CSV) || format.equals(Extension.TSV)) {
-        try (InputStream inputStream = url.openStream()) {
+        try (InputStream inputStream =
+            org.matheclipse.core.io.WebFetch.open(urlName, engine)) {
           return FORMAT_IO.importTable(inputStream, format, readOptions);
         }
       }

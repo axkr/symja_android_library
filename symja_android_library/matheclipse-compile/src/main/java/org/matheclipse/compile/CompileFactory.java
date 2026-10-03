@@ -1531,7 +1531,8 @@ public class CompileFactory {
           return constantField;
         }
         if (localVariables.contains(x.toString())) {
-          return "vars.get(\"" + x.toString() + "\")";
+          return "vars.get(\""
+              + org.apache.commons.text.StringEscapeUtils.escapeJava(x.toString()) + "\")";
         }
         String str = numericVariables.apply(x);
         if (str != null) {

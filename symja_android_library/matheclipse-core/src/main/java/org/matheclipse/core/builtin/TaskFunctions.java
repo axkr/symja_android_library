@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.List;
 import java.util.UUID;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -38,6 +39,22 @@ public class TaskFunctions {
   }
 
   /**
+   * Tasks live in one loop for the whole process and run in whichever kernel next waits on it. That
+   * is what a program of one kernel wants. A session confined to a directory shares the process
+   * with other sessions, and a task of one would run with the definitions and the files of
+   * another - so such a session has no tasks.
+   *
+   * @return <code>null</code> if the kernel may use tasks, otherwise what the call evaluates to
+   */
+  private static IExpr refusedInSandbox(IAST ast, EvalEngine engine) {
+    if (engine.getFileSandboxRoot() == null) {
+      return null;
+    }
+    // The operation `1` is not allowed in sandbox mode.
+    return Errors.printMessage(ast.topHead(), "sandbox", F.List(ast.topHead()), engine);
+  }
+
+  /**
    * <code>SessionSubmit[ScheduledTask[expr, spec]]</code> and <code>SessionSubmit[expr]</code>.
    *
    * <p>
@@ -48,6 +65,10 @@ public class TaskFunctions {
   private static final class SessionSubmit extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr refused = refusedInSandbox(ast, engine);
+      if (refused != null) {
+        return refused;
+      }
       IExpr arg1 = ast.arg1();
       IExpr held;
       long delayNanos = 0;
@@ -95,6 +116,10 @@ public class TaskFunctions {
   private static final class TaskRemove extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr refused = refusedInSandbox(ast, engine);
+      if (refused != null) {
+        return refused;
+      }
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         return F.mapList((IAST) arg1, x -> evaluate(F.unaryAST1(S.TaskRemove, x), engine));
@@ -118,6 +143,10 @@ public class TaskFunctions {
   private static final class TaskExecute extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr refused = refusedInSandbox(ast, engine);
+      if (refused != null) {
+        return refused;
+      }
       String uuid = uuidOf(ast.arg1());
       ScheduledTaskEntry task = uuid == null ? null : EventLoop.INSTANCE.task(uuid);
       if (task == null) {
@@ -137,6 +166,10 @@ public class TaskFunctions {
   private static final class Tasks extends AbstractEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr refused = refusedInSandbox(ast, engine);
+      if (refused != null) {
+        return refused;
+      }
       List<ScheduledTaskEntry> tasks = EventLoop.INSTANCE.tasks();
       IASTAppendable result = F.ListAlloc(tasks.size());
       for (ScheduledTaskEntry task : tasks) {

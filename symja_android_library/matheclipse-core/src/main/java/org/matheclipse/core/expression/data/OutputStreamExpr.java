@@ -51,6 +51,16 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
    * @throws IOException if an I/O error occurs opening the file
    */
   public static OutputStreamExpr newInstance(final File file, boolean append) throws IOException {
+    return newInstance(file, append, file.getCanonicalPath());
+  }
+
+  /**
+   * As {@link #newInstance(File, boolean)}, for a file that is not to be known by its path.
+   *
+   * @param streamName what the stream answers to <code>Streams</code> and prints as
+   */
+  public static OutputStreamExpr newInstance(final File file, boolean append, String streamName)
+      throws IOException {
 
     FileOutputStream fos = new FileOutputStream(file, append);
     if (append) {
@@ -63,7 +73,7 @@ public class OutputStreamExpr extends DataExpr<OutputStream> implements External
       }
     }
     // OutputStreamWriter osw = new OutputStreamWriter(fos);
-    return new OutputStreamExpr(fos, file.getCanonicalPath());
+    return new OutputStreamExpr(fos, streamName);
   }
 
   /**

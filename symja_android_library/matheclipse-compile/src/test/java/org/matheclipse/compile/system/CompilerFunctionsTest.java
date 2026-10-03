@@ -1619,4 +1619,21 @@ public class CompilerFunctionsTest extends AbstractTestCase {
           "CompiledFunction({1,2},{_Real})[3.0]");
     }
   }
+
+  /**
+   * A string in the body is written into the generated source as a string literal: a quote or a
+   * backslash in it belongs to the string and must come back out of the compiled function as it
+   * went in.
+   */
+  @Test
+  public void testStringWithQuoteAndBackslash() {
+    if (ToggleFeature.COMPILE) {
+      check("cq = Compile({{x, _Real}}, If(x > 0, \"say \\\"hi\\\" \\\\ there\", \"no\"));", //
+          "");
+      check("cq(1.0)", //
+          "say \"hi\" \\ there");
+      check("cq(-1.0)", //
+          "no");
+    }
+  }
 }

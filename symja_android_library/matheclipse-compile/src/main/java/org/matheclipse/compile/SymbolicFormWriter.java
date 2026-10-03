@@ -135,7 +135,11 @@ public final class SymbolicFormWriter {
       buf.append("S.").append(symbol.toString());
       return;
     }
-    buf.append("F.symbol(\"").append(symbol.toString()).append("\")");
+    // a name is letters and digits when it was read by the parser, but a symbol can be made
+    // from any string, and this one is written between quotes into source that is compiled
+    buf.append("F.symbol(\"")
+        .append(org.apache.commons.text.StringEscapeUtils.escapeJava(symbol.toString()))
+        .append("\")");
   }
 
   private void writeAST(StringBuilder buf, IAST ast) {

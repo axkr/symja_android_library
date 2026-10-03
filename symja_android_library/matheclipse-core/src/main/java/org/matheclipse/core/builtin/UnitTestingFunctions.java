@@ -91,7 +91,8 @@ public class UnitTestingFunctions {
 
         if (file.exists()) {
           return getFile(file, ast, engine);
-        } else {
+        } else if (FileSandbox.isHostVisible(engine)) {
+          // the directory the JVM was started in - which is the user's only in a kernel that is
           file = FileSystems.getDefault().getPath(arg1.toString()).toAbsolutePath().toFile();
           if (file.exists()) {
             return getFile(file, ast, engine);
@@ -119,7 +120,7 @@ public class UnitTestingFunctions {
 
     private static IExpr getURL(URL url, IAST ast, EvalEngine engine) {
       // boolean packageMode = engine.isPackageMode();
-      try (InputStream in = url.openStream()) {
+      try (InputStream in = org.matheclipse.core.io.WebFetch.open(url.toString(), engine)) {
         // engine.setPackageMode(true);
         String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         return runTests(engine, str);

@@ -71,6 +71,86 @@ public class SandboxHostInfoTest extends ExprEvaluatorTestCase {
         "{.,.,{.}}");
   }
 
+  /**
+   * Reflection reaches past any directory a session is confined to, so the Java functions belong
+   * to a kernel that is the user's own.
+   */
+  @Test
+  public void testJavaIsNotReachableFromASandbox(@TempDir Path root) {
+    String code = "{Head(JavaNew(\"java.io.File\", \"nowhere\")), "
+        + "Head(LoadJavaClass(\"java.lang.Math\")), "
+        + "Head(InstanceOf(1, \"java.lang.Object\"))}";
+    Config.FILESYSTEM_ENABLED = true;
+    check(code, //
+        "{JavaObject,JavaClass,Symbol}");
+    check("jfile = JavaNew(\"java.io.File\", \"nowhere\"); jfile@exists()", //
+        "False");
+
+    EvalEngine engine = evaluator.getEvalEngine();
+    engine.setFileSandboxRoot(root);
+    check(code, //
+        "{JavaNew,LoadJavaClass,InstanceOf}");
+    // an object made before the session was confined is no way in either
+    check("BooleanQ(jfile@exists())", //
+        "False");
+
+    engine.setFileSandboxRoot(null);
+    Config.FILESYSTEM_ENABLED = false;
+    check(code, //
+        "{JavaNew,LoadJavaClass,InstanceOf}");
+  }
+
+  /**
+   * What a confined session creates without naming it lands in its own directory, and the paths it
+   * is told are relative to that directory.
+   */
+  @Test
+  public void testASandboxKeepsToItself(@TempDir Path root) throws IOException {
+    Config.FILESYSTEM_ENABLED = true;
+    EvalEngine engine = evaluator.getEvalEngine();
+    engine.setFileSandboxRoot(root);
+    Files.createDirectories(root.resolve("sub"));
+
+    check("{ExpandFileName(\"sub/note.txt\"), ExpandFileName(\"sub/..\"), "
+        + "ParentDirectory(\"sub/deeper\")}", //
+        "{sub/note.txt,.,sub}");
+    // above the directory there is nothing the session may name
+    check("{Head(ExpandFileName(\"../x\")), Head(ParentDirectory()), "
+        + "Head(ParentDirectory(\"sub\", 2))}", //
+        "{ExpandFileName,ParentDirectory,ParentDirectory}");
+
+    check("tmpdir = CreateDirectory(); {StringQ(tmpdir), StringFreeQ(tmpdir, \"/\"), "
+        + "DirectoryQ(tmpdir)}", //
+        "{True,True,True}");
+    check("tmpfile = CreateFile(); {StringFreeQ(tmpfile, \"/\"), FileExistsQ(tmpfile)}", //
+        "{True,True}");
+    long before;
+    try (java.util.stream.Stream<Path> entries = Files.list(root)) {
+      before = entries.count();
+    }
+    check("Close(OpenWrite()); 0", //
+        "0");
+    try (java.util.stream.Stream<Path> entries = Files.list(root)) {
+      org.junit.jupiter.api.Assertions.assertEquals(before + 1, entries.count(),
+          "the unnamed stream is a file of the session's directory");
+    }
+
+    // names the session is given never say where the host keeps its directory
+    check("{CreateDirectory(\"made\"), AbsoluteFileName(\"sub\")}", //
+        "{made,sub}");
+    check("strm = OpenWrite(\"sub/out.txt\"); StringFreeQ(ToString(strm), \"" + root.getFileName()
+        + "\")", //
+        "True");
+    check("Close(strm); 0", //
+        "0");
+
+    // no tasks: they would run in whichever session next waits
+    check("{Head(SessionSubmit(aa = 1)), Head(Tasks())}", //
+        "{SessionSubmit,Tasks}");
+    check("Pause(0.01)", //
+        "");
+  }
+
   @Test
   public void testSessionTimeAndTimeUsed(@TempDir Path root) {
     // WMA: Real, positive, Protected; $TimeUnit is 1/100

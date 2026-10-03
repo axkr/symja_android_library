@@ -2393,7 +2393,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       } else {
         ISymbol headSymbol = (ISymbol) head;
         Class<?> clazz = headSymbol.getContext().getJavaClass();
-        if (clazz != null) {
+        // a static method of a loaded Java class: only in a kernel that is the user's own, as
+        // LoadJavaClass itself - a context made by one session is visible to every other
+        if (clazz != null && org.matheclipse.core.io.FileSandbox.isHostVisible(engine)) {
           String staticMethodName = headSymbol.getSymbolName();
           Method[] methods = clazz.getMethods();
           for (Method method : methods) {

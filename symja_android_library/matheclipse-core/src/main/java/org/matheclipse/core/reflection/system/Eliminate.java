@@ -977,7 +977,7 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
    *
    * @return the value(s) of the variable or {@link F#NIL}
    */
-  private static IExpr solveByKernel(IExpr termsEqualZero, IExpr variable, boolean multipleValues,
+  public static IExpr solveByKernel(IExpr termsEqualZero, IExpr variable, boolean multipleValues,
       EvalEngine engine) {
     PolynomialHomogenization homogenization = new PolynomialHomogenization(engine, true);
     IExpr poly = homogenization.replaceForward(termsEqualZero);

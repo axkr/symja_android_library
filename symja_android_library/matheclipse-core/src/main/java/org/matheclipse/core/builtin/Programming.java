@@ -2518,7 +2518,13 @@ public final class Programming {
           if (seconds >= 0.0) {
             // a pause is where a script language program yields, so it is where the handlers of a
             // socket and the tasks that are due get to run
-            EventLoop.INSTANCE.pauseAndPump(seconds, engine);
+            if (engine.getFileSandboxRoot() != null) {
+              // a confined session has no tasks, and must not run those of the kernels it shares
+              // the process with
+              EventLoop.pause(seconds, engine);
+            } else {
+              EventLoop.INSTANCE.pauseAndPump(seconds, engine);
+            }
             return S.Null;
           }
         }

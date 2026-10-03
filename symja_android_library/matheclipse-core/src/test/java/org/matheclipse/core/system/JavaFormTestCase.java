@@ -146,4 +146,21 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
         quantity2.internalJavaString(NO_SYMBOL_FACTORY_PROPERTIES, -1, null).toString());
 
   }
+
+  /**
+   * A string is written into Java source as a string literal, so what would end or alter a literal
+   * - a quote, a backslash, a line break - has to be escaped.
+   */
+  @org.junit.jupiter.api.Test
+  public void testStringLiteralIsEscaped() {
+    org.matheclipse.core.interfaces.IExpr text =
+        org.matheclipse.core.expression.F.stringx("say \"hi\" \\ there\nnext");
+    String source = text.internalJavaString(
+        org.matheclipse.core.eval.util.SourceCodeProperties.JAVA_FORM_PROPERTIES,
+        -1, x -> null).toString();
+    org.junit.jupiter.api.Assertions.assertTrue(
+        source.endsWith("$str(\"say \\\"hi\\\" \\\\ there\\nnext\")"), source);
+    org.junit.jupiter.api.Assertions.assertTrue(
+        text.internalFormString(true, -1).toString().contains("say \\\"hi\\\""));
+  }
 }

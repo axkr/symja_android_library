@@ -101,6 +101,13 @@ public class ControlObject {
     if (head == S.InputField) {
       ManipulateControl control = new ManipulateControl(ManipulateControl.INPUTFIELD, null);
       control.setInitial(current);
+      // InputField[Dynamic[x], String]: the text is the value, not something to read as code
+      if (second.isSymbol()) {
+        String type = second.toString();
+        if (type.equalsIgnoreCase("String") || type.equalsIgnoreCase("Number")) {
+          control.setInputType(type.equalsIgnoreCase("String") ? "String" : "Number");
+        }
+      }
       return control;
     }
     if (head == S.ColorSetter || head == S.ColorSlider) {

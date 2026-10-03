@@ -216,13 +216,44 @@ public final class EventLoop {
     pump(engine);
     while (true) {
       long remainingMillis = (deadline - System.nanoTime()) / 1_000_000L;
-      if (remainingMillis <= 0) {
+      if (remainingMillis <= 0 || stopped(engine)) {
         break;
       }
       awaitEvent(Math.min(remainingMillis, 50L));
       pump(engine);
     }
     pump(engine);
+  }
+
+  /**
+   * <code>Pause[seconds]</code> in a kernel that has no tasks: wait, and nothing else.
+   *
+   * @see org.matheclipse.core.builtin.TaskFunctions
+   */
+  public static void pause(double seconds, EvalEngine engine) {
+    long deadline = System.nanoTime() + (long) (seconds * 1_000_000_000L);
+    while (!stopped(engine)) {
+      long remainingMillis = (deadline - System.nanoTime()) / 1_000_000L;
+      if (remainingMillis <= 0) {
+        break;
+      }
+      try {
+        Thread.sleep(Math.min(remainingMillis, 50L));
+      } catch (InterruptedException ie) {
+        Thread.currentThread().interrupt();
+        break;
+      }
+    }
+  }
+
+  /**
+   * Whether the evaluation that is waiting has been told to end. A wait does not go through the
+   * evaluation loop, where an abort is noticed, and an interrupt taken while waiting used to turn
+   * the rest of a long pause into a loop that never slept - on a thread the request that started
+   * it had long given up on.
+   */
+  private static boolean stopped(EvalEngine engine) {
+    return Thread.currentThread().isInterrupted() || (engine != null && engine.isStopRequested());
   }
 
   private void signal() {

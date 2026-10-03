@@ -246,7 +246,7 @@ public class FileFunctions {
           DataOutput dataOutput = null;
           if (arg1 instanceof FileExpr) {
             File file = ((FileExpr) arg1).toData();
-            OutputStreamExpr out = OutputStreamExpr.newInstance(file, false);
+            OutputStreamExpr out = OutputStreamExpr.newInstance(file, false, streamName(file, engine));
             dataOutput = out.getDataOutput();
           }
           if (arg1 instanceof OutputStreamExpr) {
@@ -395,6 +395,12 @@ public class FileFunctions {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           if (ast.isAST0()) {
+            // a session confined to a directory gets its temporary directory there, named
+            // relative to it: the host's own is neither its to fill nor its to learn the name of
+            Path root = engine.getFileSandboxRoot();
+            if (root != null) {
+              return F.stringx(root.relativize(Files.createTempDirectory(root, "")).toString());
+            }
             Path tempDir = Files.createTempDirectory("");
             return F.stringx(tempDir.toString());
           } else if (ast.isAST1() && ast.arg1() instanceof IStringX) {
@@ -406,7 +412,7 @@ public class FileFunctions {
             if (!Files.exists(path)) {
               Files.createDirectory(path);
             }
-            return F.stringx(path.toString());
+            return F.stringx(FileSandbox.displayName(path, path.toString(), engine));
           }
         } catch (IOException | RuntimeException ex) {
           Errors.printMessage(S.CreateDirectory, ex);
@@ -434,6 +440,11 @@ public class FileFunctions {
       if (Config.isFileSystemEnabled(engine)) {
         try {
           if (ast.isAST0()) {
+            // as CreateDirectory: inside the directory of a confined session
+            Path root = engine.getFileSandboxRoot();
+            if (root != null) {
+              return F.stringx(root.relativize(Files.createTempFile(root, null, null)).toString());
+            }
             Path tempFile = Files.createTempFile(null, null);
             return F.stringx(tempFile.toString());
           } else if (ast.isAST1() && ast.arg1() instanceof IStringX) {
@@ -812,7 +823,8 @@ public class FileFunctions {
       try {
         engine.setPackageMode(true);
         engine.set$Input(arg1Str);
-        engine.set$InputFileName(file.toAbsolutePath().toString());
+        engine.set$InputFileName(
+            FileSandbox.displayName(file, file.toAbsolutePath().toString(), engine));
         String str = Files.readString(file, Charset.defaultCharset());
         return Get.loadPackage(engine, str);
       } catch (IOException e) {
@@ -829,7 +841,7 @@ public class FileFunctions {
       boolean packageMode = engine.isPackageMode();
       String input = engine.get$Input();
       String inputFileName = engine.get$InputFileName();
-      try (java.io.InputStream in = url.openStream()) {
+      try (java.io.InputStream in = org.matheclipse.core.io.WebFetch.open(arg1Str, engine)) {
         engine.setPackageMode(true);
         engine.set$Input(arg1Str);
         engine.set$InputFileName(url.getPath());
@@ -1116,11 +1128,20 @@ public class FileFunctions {
         try {
           IExpr name = streamName(ast);
           if (name.isNIL()) {
-            return ast.isAST0() ? OutputStreamExpr.newInstance() : F.NIL;
+            if (!ast.isAST0()) {
+              return F.NIL;
+            }
+            // the unnamed stream of a confined session is a file of that session's directory
+            Path root = engine.getFileSandboxRoot();
+            if (root == null) {
+              return OutputStreamExpr.newInstance();
+            }
+            File unnamed = Files.createTempFile(root, "symja", "").toFile();
+            return OutputStreamExpr.newInstance(unnamed, false, streamName(unnamed, engine));
           }
           File file = FileSandbox.resolveWrite(append ? S.OpenAppend : S.OpenWrite, name.toString(),
               engine);
-          return file == null ? F.NIL : OutputStreamExpr.newInstance(file, append);
+          return file == null ? F.NIL : OutputStreamExpr.newInstance(file, append, streamName(file, engine));
         } catch (IOException | RuntimeException ex) {
           Errors.printMessage(S.OpenWrite, ex);
         }
@@ -1148,7 +1169,7 @@ public class FileFunctions {
           IExpr arg1 = ast.arg1();
           if (arg1.isString()) {
             File file = FileSandbox.resolveWrite(S.OutputStream, arg1.toString(), engine);
-            return file == null ? F.NIL : OutputStreamExpr.newInstance(file, false);
+            return file == null ? F.NIL : OutputStreamExpr.newInstance(file, false, streamName(file, engine));
           }
         } catch (IOException | RuntimeException ex) {
           Errors.printMessage(S.OutputStream, ex);
@@ -1901,7 +1922,7 @@ public class FileFunctions {
         }
         String arg1 = ast.arg1().toString();
         if (arg1.startsWith("https://") || arg1.startsWith("http://")) {
-          try (java.io.InputStream in = new URL(arg1).openStream()) {
+          try (java.io.InputStream in = org.matheclipse.core.io.WebFetch.open(arg1, engine)) {
             String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             return F.stringx(str);
           } catch (IOException ex) {
@@ -2089,7 +2110,18 @@ public class FileFunctions {
   }
 
 
+  /**
+   * What a stream to a file answers to <code>Streams</code> and prints as: the file's path, or in
+   * a session confined to a directory its name there.
+   */
+  private static String streamName(File file, EvalEngine engine) throws IOException {
+    return FileSandbox.displayName(file.toPath(), file.getCanonicalPath(), engine);
+  }
+
   private static final class Uncompress extends AbstractFunctionEvaluator {
+
+    /** The most characters a compressed string may inflate to. */
+    private static final int MAX_UNCOMPRESSED_CHARS = 64 * 1024 * 1024;
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2120,6 +2152,11 @@ public class FileFunctions {
           String line;
           while ((line = buffered.readLine()) != null) {
             output.append(line);
+            if (output.length() > MAX_UNCOMPRESSED_CHARS) {
+              // a compressed string is input of a user, and a short one can stand for gigabytes
+              throw new IOException("the string inflates to more than " + MAX_UNCOMPRESSED_CHARS
+                  + " characters");
+            }
           }
 
           String inputFormStr = output.toString();
@@ -2470,7 +2507,7 @@ public class FileFunctions {
       }
       String arg1Str = ast.arg1().toString();
       if (arg1Str.startsWith("https://") || arg1Str.startsWith("http://")) {
-        try (java.io.InputStream in = new URL(arg1Str).openStream()) {
+        try (java.io.InputStream in = org.matheclipse.core.io.WebFetch.open(arg1Str, engine)) {
           String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
           return F.$s(str);
         } catch (IOException ex) {
@@ -2506,7 +2543,7 @@ public class FileFunctions {
           Writer writer = null;
           if (arg1 instanceof FileExpr) {
             File file = ((FileExpr) arg1).toData();
-            OutputStreamExpr out = OutputStreamExpr.newInstance(file, false);
+            OutputStreamExpr out = OutputStreamExpr.newInstance(file, false, streamName(file, engine));
             writer = out.getWriter();;
           }
           if (arg1 instanceof OutputStreamExpr) {

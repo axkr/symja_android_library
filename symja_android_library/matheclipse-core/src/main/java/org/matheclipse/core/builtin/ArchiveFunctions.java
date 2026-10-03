@@ -253,10 +253,11 @@ public class ArchiveFunctions {
         return F.NIL;
       }
       try {
-        List<Path> written = ZipArchive.extract(archive, directory);
+        List<Path> written =
+            ZipArchive.extract(archive, directory, FileSandbox.remainingBytes(engine));
         IASTAppendable result = F.ListAlloc(written.size());
         for (Path path : written) {
-          result.append(F.stringx(path.toString()));
+          result.append(F.stringx(FileSandbox.displayName(path, path.toString(), engine)));
         }
         return result;
       } catch (IOException | RuntimeException ex) {
@@ -315,7 +316,7 @@ public class ArchiveFunctions {
           return F.NIL;
         }
         ZipArchive.write(archive, entries);
-        return F.stringx(archive.toString());
+        return F.stringx(FileSandbox.displayName(archive, archive.toString(), engine));
       } catch (IOException | RuntimeException ex) {
         Errors.rethrowsInterruptException(ex);
         Errors.printMessage(S.CreateArchive, ex, engine);

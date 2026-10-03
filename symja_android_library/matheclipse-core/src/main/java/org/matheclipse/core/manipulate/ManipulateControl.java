@@ -186,6 +186,21 @@ public class ManipulateControl {
   /** For a {@link #FILE} control: "Open", "OpenList", "Save" or "Directory". */
   private String fileDialog = "Open";
 
+  /**
+   * For an {@link #INPUTFIELD} control: what its text is read as - "String", "Number", or
+   * "Expression", which is what <code>InputField[x]</code> without a type means.
+   */
+  private String inputType = "Expression";
+
+  /** @see #inputType */
+  public String getInputType() {
+    return inputType;
+  }
+
+  public void setInputType(String inputType) {
+    this.inputType = inputType;
+  }
+
   ManipulateControl(String kind, ISymbol variable) {
     this.kind = kind;
     this.variable = variable;

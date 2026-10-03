@@ -103,6 +103,15 @@ public final class PackageResolver {
     if (segments.length == 0) {
       return null;
     }
+    for (String segment : segments) {
+      // The parts of a context are names. Joined into a path as they are, a part of ".." would
+      // climb out of the directory being searched - out of the directory a session is confined
+      // to, when that is the one - and a part with a separator in it would name any path at all.
+      if (segment.isEmpty() || segment.equals(".") || segment.equals("..")
+          || segment.indexOf('/') >= 0 || segment.indexOf('\\') >= 0) {
+        return null;
+      }
+    }
     String nested = String.join("/", segments);
     String last = segments[segments.length - 1];
     String[] candidates = new String[] {//
