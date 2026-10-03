@@ -177,8 +177,11 @@ public class PlotRangePaddingSpecTest {
   public void scaledDistributesOverWhateverItWraps() {
     assertArrayEquals(new double[] {0.5, 0.5}, pad("Scaled[0.25]", 2, 1, 1.0), TOLERANCE);
 
-    // Scaled[{lo, hi}] is not a way to write this: Symja's Scaled unwraps a list argument, so
-    // the two sides have to carry a Scaled each
+    // Scaled[{lo, hi}] is the two sides of an axis as fractions
+    PlotRangePaddingSpec perSideScaled = spec("{Scaled[{0.25, 0}], None}", 2);
+    assertArrayEquals(new double[] {1.0 / 3.0, 0}, perSideScaled.resolve(0, 1.0, false, false),
+        TOLERANCE);
+
     PlotRangePaddingSpec perAxis = spec("{Scaled[0.25], Scaled[0]}", 2);
     assertArrayEquals(new double[] {0.5, 0.5}, perAxis.resolve(0, 1.0, false, false), TOLERANCE);
     assertArrayEquals(new double[] {0, 0}, perAxis.resolve(1, 1.0, false, false), TOLERANCE);

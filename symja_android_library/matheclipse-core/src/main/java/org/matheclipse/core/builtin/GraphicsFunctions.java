@@ -702,10 +702,7 @@ public class GraphicsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // TODO make this dependent on the graphics environment
-      if (ast.isAST1() && ast.arg1().isList()) {
-        return ast.arg1();
-      }
+      // Scaled({x, y}) is a position in the plot range, which only the renderer knows: it stays
       return F.NIL;
     }
 

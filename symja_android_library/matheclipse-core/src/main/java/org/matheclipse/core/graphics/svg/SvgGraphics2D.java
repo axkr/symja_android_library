@@ -307,7 +307,10 @@ public class SvgGraphics2D {
 
     bounds = new Bounds2D();
     for (Prim2D p : primitives) {
-      p.accumulate(bounds);
+      // a position given as a fraction of the plot range does not make the range
+      if (!collector.scaledPrimitives().contains(p)) {
+        p.accumulate(bounds);
+      }
     }
     // fence caps are sized from the data range, and stay short enough not to change it
     primitives = IntervalMarkers2D.addFenceCaps(primitives, bounds, options);
@@ -325,6 +328,8 @@ public class SvgGraphics2D {
     fitPaddingToWidth(padding);
     fitHeightToAspectRatio(padding);
     viewport.configure(bounds, padding);
+    primitives = PrimitiveCollector.resolveScaled(primitives, collector.scaledPrimitives(),
+        viewport.minX, viewport.maxX, viewport.minY, viewport.maxY);
     return collector;
   }
 
@@ -339,8 +344,13 @@ public class SvgGraphics2D {
     }
     PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
     collector.collect(expr, options.globalStyle.clone());
-    return IntervalMarkers2D.addFenceCaps(collector.primitives(),
-        bounds != null ? bounds : new Bounds2D(), options);
+    List<Prim2D> extra = collector.primitives();
+    if (viewport != null) {
+      extra = PrimitiveCollector.resolveScaled(extra, collector.scaledPrimitives(), viewport.minX,
+          viewport.maxX, viewport.minY, viewport.maxY);
+    }
+    return IntervalMarkers2D.addFenceCaps(extra, bounds != null ? bounds : new Bounds2D(),
+        options);
   }
 
   /**

@@ -28,8 +28,48 @@ public final class LabelText {
     if (expr.isAST(S.Style) && expr.argSize() >= 1) {
       return of(expr.first());
     }
-    if (expr.isAST(S.HoldForm, 2)) {
+    if (expr.isAST(S.HoldForm, 2) || expr.isAST(S.TraditionalForm, 2)
+        || expr.isAST(S.StandardForm, 2)) {
       return of(expr.first());
+    }
+    if (expr.isAST(S.Column) && expr.argSize() >= 1 && expr.first().isList()) {
+      // one line per entry
+      return joined((IAST) expr.first(), "\n");
+    }
+    if (expr.isAST(S.Grid) && expr.argSize() >= 1 && expr.first().isList()) {
+      // one line per row
+      StringBuilder text = new StringBuilder();
+      IAST rows = (IAST) expr.first();
+      for (int i = 1; i < rows.size(); i++) {
+        if (i > 1) {
+          text.append('\n');
+        }
+        text.append(rows.get(i).isList() ? joined((IAST) rows.get(i), " ") : of(rows.get(i)));
+      }
+      return text.toString();
+    }
+    if (expr.isAST(S.Overscript, 3)) {
+      String accent = combiningAccent(of(expr.second()));
+      if (accent != null) {
+        return of(expr.first()) + accent;
+      }
+    }
+    if ((expr.isAST(S.LineLegend) || expr.isAST(S.SwatchLegend) || expr.isAST(S.PointLegend))
+        && expr.argSize() >= 1) {
+      // a legend inside a label: its entries on one line, each behind the legend's own marker
+      IExpr labels = expr.argSize() >= 2 && expr.second().isList() ? expr.second() : expr.first();
+      if (labels.isList()) {
+        String marker = expr.isAST(S.LineLegend) ? "— " : expr.isAST(S.SwatchLegend) ? "■ " : "● ";
+        StringBuilder text = new StringBuilder();
+        IAST list = (IAST) labels;
+        for (int i = 1; i < list.size(); i++) {
+          if (i > 1) {
+            text.append("  ");
+          }
+          text.append(marker).append(of(list.get(i)));
+        }
+        return text.toString();
+      }
     }
     if (expr.isAST(S.Row) && expr.argSize() >= 1 && expr.first().isList()) {
       String separator = expr.argSize() >= 2 ? of(expr.second()) : "";
@@ -56,6 +96,39 @@ public final class LabelText {
       }
     }
     return PrimitiveCollector.unquote(expr.toString());
+  }
+
+  private static String joined(IAST parts, String separator) {
+    StringBuilder text = new StringBuilder();
+    for (int i = 1; i < parts.size(); i++) {
+      if (i > 1) {
+        text.append(separator);
+      }
+      text.append(of(parts.get(i)));
+    }
+    return text.toString();
+  }
+
+  /** The combining character an <code>Overscript</code> mark is written with, or <code>null</code>. */
+  private static String combiningAccent(String mark) {
+    switch (mark) {
+      case ".":
+        return "̇";
+      case "..":
+        return "̈";
+      case "-":
+      case "_":
+      case "¯":
+        return "̄";
+      case "^":
+        return "̂";
+      case "~":
+        return "̃";
+      case "→":
+        return "⃗";
+      default:
+        return null;
+    }
   }
 
   /** <code>text</code> in script characters, or <code>null</code> if one of them has none. */

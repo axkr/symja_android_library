@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.IntervalMarkerType;
@@ -30,6 +31,12 @@ public final class PrimitiveCollector {
   private final List<Prim2D> primitives = new ArrayList<>();
   private final List<String> errors = new ArrayList<>();
   private final double imageWidth;
+
+  /** Whether a position of the primitive being collected was given as {@code Scaled({x, y})}. */
+  private boolean scaledPosition;
+
+  private final Set<Prim2D> scaledPrimitives =
+      java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Prim2D, Boolean>());
 
   /** Vertex table of the enclosing {@code GraphicsComplex}, or {@code null}. */
   private List<double[]> vertices;
@@ -93,11 +100,49 @@ public final class PrimitiveCollector {
     if (!head.isBuiltInSymbol()) {
       return;
     }
+    boolean outerScaled = scaledPosition;
+    scaledPosition = false;
+    int first = primitives.size();
     try {
       dispatch((IBuiltInSymbol) head, ast, style);
     } catch (RuntimeException rex) {
       errors.add(head + ": " + rex.getClass().getSimpleName() + " " + rex.getMessage());
     }
+    if (scaledPosition) {
+      // positioned with Scaled({x, y}): placed once the plot range is known. Only the primitives
+      // of this call are meant, not the ones of a container around it.
+      for (int i = first; i < primitives.size(); i++) {
+        scaledPrimitives.add(primitives.get(i));
+      }
+    }
+    scaledPosition = outerScaled;
+  }
+
+  /**
+   * The primitives whose positions were given as <code>Scaled({x, y})</code>: their coordinates
+   * are fractions of the plot range, see {@link #resolveScaled(List, Set, double, double, double,
+   * double)}.
+   */
+  public Set<Prim2D> scaledPrimitives() {
+    return scaledPrimitives;
+  }
+
+  /**
+   * Put the primitives positioned with <code>Scaled({x, y})</code> into the plot range
+   * <code>[minX, maxX] x [minY, maxY]</code>: <code>{0, 0}</code> is its lower left corner and
+   * <code>{1, 1}</code> its upper right one.
+   */
+  public static List<Prim2D> resolveScaled(List<Prim2D> primitives, Set<Prim2D> scaled,
+      double minX, double maxX, double minY, double maxY) {
+    if (scaled.isEmpty()) {
+      return primitives;
+    }
+    AffineMap2D map = new AffineMap2D(maxX - minX, 0, 0, maxY - minY, minX, minY);
+    List<Prim2D> resolved = new ArrayList<>(primitives.size());
+    for (Prim2D p : primitives) {
+      resolved.add(scaled.contains(p) ? p.mapped(map) : p);
+    }
+    return resolved;
   }
 
   private void dispatch(IBuiltInSymbol head, IAST ast, Style2D style) {
@@ -1074,6 +1119,16 @@ public final class PrimitiveCollector {
       }
       return;
     }
+    if (vertices != null && spec.isList() && spec.argSize() > 0 && spec.first().isList()) {
+      // the faces of a GraphicsComplex, {{i, j, k}, ...}: they share their edges, so they are
+      // drawn as the sub-paths of one path, which leaves no seam between two of them
+      List<List<double[]>> faces = segmentsOf(spec);
+      if (!faces.isEmpty()) {
+        primitives.add(new Prim2D.PolygonPrim(faces.get(0),
+            new ArrayList<>(faces.subList(1, faces.size())), style.clone()));
+      }
+      return;
+    }
     if (listDepth(spec) >= 3) {
       for (List<double[]> poly : segmentsOf(spec)) {
         if (!poly.isEmpty()) {
@@ -1656,6 +1711,13 @@ public final class PrimitiveCollector {
     if (expr == null) {
       return new double[] {0, 0};
     }
+    if (expr.isAST(S.Scaled, 2) && expr.first().isList() && expr.first().argSize() >= 2) {
+      // a fraction of the plot range, resolved when the range is known
+      scaledPosition = true;
+      IAST scaled = (IAST) expr.first();
+      return new double[] {ColorUtil.dbl(scaled.arg1(), Double.NaN),
+          ColorUtil.dbl(scaled.arg2(), Double.NaN)};
+    }
     if (vertices != null && expr.isInteger()) {
       int idx = expr.toIntDefault(0);
       if (idx > 0 && idx <= vertices.size()) {
@@ -1733,6 +1795,16 @@ public final class PrimitiveCollector {
           out.addAll(pointsOf(item));
         } else {
           out.add(pointOf(item));
+        }
+      }
+      return out;
+    }
+    if (list.exists(x -> x.isAST(S.Scaled, 2))) {
+      // positions given as Scaled({x, y}), perhaps among ordinary ones
+      for (int i = 1; i <= list.argSize(); i++) {
+        double[] p = pointOf(list.get(i));
+        if (isFinite(p)) {
+          out.add(p);
         }
       }
       return out;

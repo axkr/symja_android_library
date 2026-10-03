@@ -2616,6 +2616,24 @@ public class GraphicsOptions {
                 yMinMax[0] = yMin;
                 yMinMax[1] = yMax;
               }
+            } else if (arg2.isList2()) {
+              // {All, {ymin, ymax}}: the x axis keeps its own range
+              double yMin = arg2.first().evalfNaN();
+              double yMax = arg2.second().evalfNaN();
+              if (!Double.isNaN(yMin) && !Double.isNaN(yMax)) {
+                boundingbox[2] = yMin;
+                boundingbox[3] = yMax;
+                yMinMax[0] = yMin;
+                yMinMax[1] = yMax;
+              }
+            } else if (arg1.isList2()) {
+              // {{xmin, xmax}, All}: the y axis keeps its own range
+              double xMin = arg1.first().evalfNaN();
+              double xMax = arg1.second().evalfNaN();
+              if (!Double.isNaN(xMin) && !Double.isNaN(xMax)) {
+                boundingbox[0] = xMin;
+                boundingbox[1] = xMax;
+              }
             } else {
               double yMin = arg1.evalfNaN();
               double yMax = arg2.evalfNaN();

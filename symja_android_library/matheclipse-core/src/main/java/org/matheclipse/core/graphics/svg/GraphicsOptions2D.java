@@ -502,15 +502,26 @@ public final class GraphicsOptions2D {
     if (value.isList() && ((IAST) value).argSize() >= 2) {
       IAST list = (IAST) value;
       plotRange = new double[][] {{Double.NaN, Double.NaN}, {Double.NaN, Double.NaN}};
-      if (list.arg1().isList() && list.arg2().isList()) {
-        setRange(plotRange[0], (IAST) list.arg1());
-        setRange(plotRange[1], (IAST) list.arg2());
+      if (list.arg1().isList() || list.arg2().isList() || isAxisRangeName(list.arg1())
+          || isAxisRangeName(list.arg2())) {
+        // {xspec, yspec}: an axis given as All, Full or Automatic keeps its own range
+        if (list.arg1().isList()) {
+          setRange(plotRange[0], (IAST) list.arg1());
+        }
+        if (list.arg2().isList()) {
+          setRange(plotRange[1], (IAST) list.arg2());
+        }
       } else {
         // a bare {min, max} constrains the y axis only
         setRange(plotRange[1], list);
       }
       plotRangeAutomatic = false;
     }
+  }
+
+  /** Whether the entry of a <code>PlotRange</code> pair leaves its axis to the content. */
+  private static boolean isAxisRangeName(IExpr spec) {
+    return spec == S.All || spec == S.Full || spec == S.Automatic;
   }
 
   private void setRange(double[] target, IAST pair) {

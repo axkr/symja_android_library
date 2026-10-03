@@ -185,6 +185,12 @@ public abstract class Prim2D {
       for (double[] p : outer) {
         bounds.add(p);
       }
+      // the further faces of a GraphicsComplex polygon are kept here too, and lie anywhere
+      for (List<double[]> hole : holes) {
+        for (double[] p : hole) {
+          bounds.add(p);
+        }
+      }
     }
 
     @Override
