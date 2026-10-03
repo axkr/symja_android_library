@@ -389,7 +389,61 @@ public class ElementData extends AbstractFunctionEvaluator {
     if (propertyList == null) {
       return F.NIL;
     }
+    if (ast.isAST3()) {
+      // ElementData(element, property, "Description") describes the property, not the element
+      if (!ast.arg3().isString() || !ast.arg3().toString().equals("Description")) {
+        return F.NIL;
+      }
+      String property = propertyOf(ast.arg2());
+      if (!isComputed(property) && !COLUMN_INDEX.containsKey(property)
+          && !REPLACED_PROPERTY.containsKey(property) && !DESCRIBED_ONLY.contains(property)) {
+        return Errors.printMessage(ast.topHead(), "elemdprop", F.List(F.stringx(property)), engine);
+      }
+      return F.stringx(description(property));
+    }
     return dataPoint(ast, propertyList, engine);
+  }
+
+  /** Properties which have a description, but no data in this table. */
+  private static final java.util.Set<String> DESCRIBED_ONLY = new java.util.HashSet<String>(
+      java.util.Arrays.asList("CASNumber", "Color", "CriticalPressure", "CriticalTemperature",
+          "CrystalStructure", "CuriePoint", "ElectricalConductivity", "HalfLife", "HumanAbundance",
+          "Lifetime", "MagneticType", "MeteoriteAbundance", "MolarVolume", "NeelPoint",
+          "NeutronCrossSection", "NeutronMassAbsorption", "OceanAbundance", "Radioactive",
+          "RefractiveIndex", "Resistivity", "SolarAbundance", "SoundSpeed", "ThermalConductivity",
+          "ThermalExpansion", "UniverseAbundance", "Valence", "VanDerWaalsRadius",
+          "VaporizationHeat", "VickersHardness", "YoungModulus"));
+
+  /** The words of a property name which are the name of a person and keep their capital. */
+  private static final java.util.Set<String> EPONYMS = new java.util.HashSet<String>(
+      java.util.Arrays.asList("Brinell", "Curie", "Mohs", "Neel", "Poisson", "Vickers", "Waals",
+          "Young"));
+
+  /**
+   * A property name in words: <code>AtomicNumber</code> is <code>atomic number</code>,
+   * <code>YoungModulus</code> is <code>Young modulus</code> and <code>HalfLife</code> is
+   * <code>half&#x2010;life</code>, written with the hyphen character <code>U+2010</code>.
+   */
+  private static String description(String property) {
+    if (property.equals("HalfLife")) {
+      return "half\u2010life";
+    }
+    if (property.equals("CASNumber")) {
+      return "CAS number";
+    }
+    StringBuilder text = new StringBuilder(property.length() + 4);
+    int start = 0;
+    for (int i = 1; i <= property.length(); i++) {
+      if (i == property.length() || Character.isUpperCase(property.charAt(i))) {
+        String word = property.substring(start, i);
+        if (text.length() > 0) {
+          text.append(' ');
+        }
+        text.append(EPONYMS.contains(word) ? word : word.toLowerCase(java.util.Locale.ROOT));
+        start = i;
+      }
+    }
+    return text.toString();
   }
 
   /** The entity naming an element, given anything that identifies it. */
@@ -420,7 +474,7 @@ public class ElementData extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_0_2;
+    return IFunctionEvaluator.ARGS_0_3;
   }
 
   /**
