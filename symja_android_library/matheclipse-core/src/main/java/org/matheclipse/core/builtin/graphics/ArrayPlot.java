@@ -216,13 +216,21 @@ public class ArrayPlot extends ListPlot {
         }
       }
     }
-    primitives.append(GraphicsOptions.rasterTopFirst(cells, 0, 0, cols, rows));
-    IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, 0, 0, cols, rows, cols, rows);
+    if (GraphicsOptions.optionValue(originalAST, S.DataReversed, S.False).isTrue()) {
+      GraphicsOptions.reverseRows(cells);
+    }
+    IExpr dataRange = GraphicsOptions.optionValue(originalAST, S.DataRange, S.Automatic);
+    final double[] extent = GraphicsOptions.rasterExtent(dataRange, rows, cols);
+    primitives.append(
+        GraphicsOptions.rasterTopFirst(cells, extent[0], extent[1], extent[2], extent[3]));
+    IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, extent[0], extent[1], extent[2],
+        extent[3], cols, rows);
     if (meshLines.isPresent()) {
       primitives.append(meshLines);
     }
 
-    graphicsOptions.setBoundingBox(new double[] {0, cols, 0, rows});
+    graphicsOptions
+        .setBoundingBox(new double[] {extent[0], extent[2], extent[1], extent[3]});
 
     if (graphicsOptions.aspectRatio().isAutomatic()) {
       // Square cells
@@ -230,10 +238,13 @@ public class ArrayPlot extends ListPlot {
     }
 
     IExpr frameTicksOpt = GraphicsOptions.optionValue(originalAST, S.FrameTicks, S.None);
-    if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
+    if ((frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) && !dataRange.isList()) {
       // asked-for ticks count cells, as MatrixPlot's do, rather than coordinates
       graphicsOptions
           .addOption(F.Rule(S.FrameTicks, GraphicsOptions.matrixIndexFrameTicks(rows, cols)));
+    } else if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
+      // with a DataRange the ticks are the coordinates it gives
+      graphicsOptions.addOption(F.Rule(S.FrameTicks, S.Automatic));
     } else if (graphicsOptions.frameTicks().isNone()
         && options[GraphicsOptions.X_FRAMETICKS].isNone()) {
       // Default FrameTicks -> None for ArrayPlot
@@ -241,7 +252,11 @@ public class ArrayPlot extends ListPlot {
       graphicsOptions.setFrameTicks(S.None);
     }
 
-    return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
+    // the raster alone is the content itself, so that First(ArrayPlot(...)) is the Raster
+    return createGraphicsFunction(
+        primitives.argSize() == 1 && primitives.arg1().isAST() ? (IAST) primitives.arg1()
+            : primitives,
+        graphicsOptions, wrappedAST);
   }
 
   /**

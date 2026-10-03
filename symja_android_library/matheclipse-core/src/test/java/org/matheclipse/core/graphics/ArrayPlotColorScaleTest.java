@@ -10,6 +10,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -174,7 +175,7 @@ public class ArrayPlotColorScaleTest {
    * drawn in, so they are turned back here to read in the order the array was written.
    */
   private static String cells(IExpr plot) {
-    IAST raster = (IAST) ((IAST) ((IAST) plot).arg1()).arg1();
+    IAST raster = raster(plot);
     IAST data = (IAST) raster.arg1();
     StringBuilder buf = new StringBuilder("[");
     for (int r = data.argSize(); r >= 1; r--) {
@@ -193,6 +194,12 @@ public class ArrayPlotColorScaleTest {
     return buf.append("]").toString();
   }
 
+  /** The raster of the plot, which is its content itself or the first primitive of it. */
+  private static IAST raster(IExpr plot) {
+    IAST content = (IAST) ((IAST) plot).arg1();
+    return content.isAST(S.Raster) ? content : (IAST) content.arg1();
+  }
+
   private static void assertGreys(String input, double... expected) {
     TreeSet<Double> want = new TreeSet<>();
     for (double e : expected) {
@@ -203,7 +210,7 @@ public class ArrayPlotColorScaleTest {
 
   /** The distinct grey levels of the raster the plot drew. */
   private static TreeSet<Double> greys(IExpr plot) {
-    IAST raster = (IAST) ((IAST) ((IAST) plot).arg1()).arg1();
+    IAST raster = raster(plot);
     TreeSet<Double> levels = new TreeSet<>();
     for (IExpr row : (IAST) raster.arg1()) {
       for (IExpr cell : (IAST) row) {

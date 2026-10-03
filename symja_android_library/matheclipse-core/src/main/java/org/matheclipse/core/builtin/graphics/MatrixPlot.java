@@ -176,13 +176,21 @@ public class MatrixPlot extends ListPlot {
         }
       }
     }
-    primitives.append(GraphicsOptions.rasterTopFirst(cells, 0, 0, cols, rows));
-    IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, 0, 0, cols, rows, cols, rows);
+    if (GraphicsOptions.optionValue(originalAST, S.DataReversed, S.False).isTrue()) {
+      GraphicsOptions.reverseRows(cells);
+    }
+    IExpr dataRange = GraphicsOptions.optionValue(originalAST, S.DataRange, S.Automatic);
+    final double[] extent = GraphicsOptions.rasterExtent(dataRange, rows, cols);
+    primitives.append(
+        GraphicsOptions.rasterTopFirst(cells, extent[0], extent[1], extent[2], extent[3]));
+    IExpr meshLines = GraphicsOptions.meshGrid(meshOpt, extent[0], extent[1], extent[2],
+        extent[3], cols, rows);
     if (meshLines.isPresent()) {
       primitives.append(meshLines);
     }
 
-    graphicsOptions.setBoundingBox(new double[] {0, cols, 0, rows});
+    graphicsOptions
+        .setBoundingBox(new double[] {extent[0], extent[2], extent[1], extent[3]});
 
     if (graphicsOptions.aspectRatio() == S.Automatic) {
       graphicsOptions.setAspectRatio(F.num((double) rows / (double) cols));
@@ -191,11 +199,14 @@ public class MatrixPlot extends ListPlot {
     // one tick per cell index at the centre of its cell, row 1 at the top; explicit FrameTicks of
     // the caller's own are left alone
     IExpr frameTicksOpt = GraphicsOptions.optionValue(originalAST, S.FrameTicks, S.Automatic);
-    if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
+    if ((frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) && !dataRange.isList()) {
       // through addOption, not setFrameTicks: the field is not one of the values getListOfRules
       // emits, so setting it alone leaves the registered default of None in the output
       graphicsOptions
           .addOption(F.Rule(S.FrameTicks, GraphicsOptions.matrixIndexFrameTicks(rows, cols)));
+    } else if (frameTicksOpt.isAutomatic() || frameTicksOpt.isTrue()) {
+      // with a DataRange the ticks are the coordinates it gives
+      graphicsOptions.addOption(F.Rule(S.FrameTicks, S.Automatic));
     }
 
     return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);

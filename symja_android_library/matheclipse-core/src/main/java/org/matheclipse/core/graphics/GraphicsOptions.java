@@ -361,7 +361,39 @@ public class GraphicsOptions {
   /** Options of the plots that paint a grid of cells. */
   public static OptionSet rasterExtras(OptionSet set) {
     return set.add(S.Automatic, S.ColorFunction, S.ColorRules, S.MaxPlotPoints, S.MeshStyle,
-        S.PlotTheme, S.LabelStyle).add(S.True, S.ColorFunctionScaling).add(S.None, S.Mesh);
+        S.PlotTheme, S.LabelStyle).add(S.True, S.ColorFunctionScaling).add(S.None, S.Mesh)
+        .add(S.False, S.DataReversed);
+  }
+
+  /**
+   * The rectangle <code>{x0, y0, x1, y1}</code> an array of <code>rows x cols</code> cells is
+   * drawn in. <code>DataRange -> {{xmin, xmax}, {ymin, ymax}}</code> gives the positions of the
+   * centres of the outer cells, so the rectangle is half a cell wider on every side; without it
+   * every cell is a unit square.
+   */
+  public static double[] rasterExtent(IExpr dataRange, int rows, int cols) {
+    if (dataRange.isList2() && dataRange.first().isList2() && dataRange.second().isList2()) {
+      double xMin = dataRange.first().first().evalfNaN();
+      double xMax = dataRange.first().second().evalfNaN();
+      double yMin = dataRange.second().first().evalfNaN();
+      double yMax = dataRange.second().second().evalfNaN();
+      if (Double.isFinite(xMin) && Double.isFinite(xMax) && Double.isFinite(yMin)
+          && Double.isFinite(yMax)) {
+        double halfX = cols > 1 ? (xMax - xMin) / (cols - 1) / 2.0 : 0.0;
+        double halfY = rows > 1 ? (yMax - yMin) / (rows - 1) / 2.0 : 0.0;
+        return new double[] {xMin - halfX, yMin - halfY, xMax + halfX, yMax + halfY};
+      }
+    }
+    return new double[] {0, 0, cols, rows};
+  }
+
+  /** <code>DataReversed -> True</code>: the first row of the array is drawn at the bottom. */
+  public static void reverseRows(IExpr[][] cells) {
+    for (int i = 0, j = cells.length - 1; i < j; i++, j--) {
+      IExpr[] row = cells[i];
+      cells[i] = cells[j];
+      cells[j] = row;
+    }
   }
 
   /** Options of the polar plots. */
