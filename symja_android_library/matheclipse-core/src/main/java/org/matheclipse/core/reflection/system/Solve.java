@@ -3093,9 +3093,18 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // solved with the renamed variables, or unsolved there - which isn't tried a second time
       return withRenamedVariables.equals(originalAST) ? F.NIL : withRenamedVariables;
     }
+    ast = SolveUtils.expandChainedEqual(ast);
     boolean isNumericArgument = !ast.arg1().isFree(x -> x.isInexactNumber(), false);
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
+    }
+    if (hasUnsatisfiedParameterEquation(ast, engine)) {
+      return F.CEmptyList;
+    }
+    IExpr withoutSquaredAbs = solveSquaredAbs(ast, engine);
+    if (withoutSquaredAbs.isPresent()) {
+      // solved without the Abs, or unsolved there - which isn't tried a second time
+      return withoutSquaredAbs == ast ? F.NIL : withoutSquaredAbs;
     }
     SolveData sd = new SolveData(SolveOptions.of(SolveOptions.SOLVE_KEYS, options));
     IAST withoutIdentities = dropRationalIdentities(ast, engine);
@@ -3107,6 +3116,76 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
     IExpr result = dropNonFiniteSolutions(sd.of(ast, isNumericArgument, engine));
     return dropIndeterminateSolutions(ast.arg1(), result, engine);
+  }
+
+  /**
+   * An equation without any of the variables, which does not hold identically, is a condition on
+   * the parameters: <code>Solve({a == b, b == c}, a)</code> has no solution for generic
+   * <code>b</code> and <code>c</code>, so it is <code>{}</code>.
+   */
+  private static boolean hasUnsatisfiedParameterEquation(IAST ast, EvalEngine engine) {
+    if (ast.argSize() < 2 || !(ast.arg1().isList() || ast.arg1().isAnd())) {
+      return false;
+    }
+    IAST variables = ast.arg2().makeList();
+    // Solve(eqns, Reals) names a domain in place of the variables
+    if (variables.isEmpty()
+        || !variables.forAll(x -> (x.isVariable() || x.isAST()) && !SolveUtils.isDomain(x))) {
+      return false;
+    }
+    for (IExpr relation : (IAST) ast.arg1()) {
+      if (relation.isEqual() && relation.isFree(x -> variables.contains(x), true)) {
+        IExpr difference = engine.evalQuiet(F.Subtract(relation.first(), relation.second()));
+        if (!difference.isNumber() && !engine.evalQuiet(F.Together(difference)).isZero()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Solve with every even power of <code>Abs(u)</code> written as the power of <code>u</code>
+   * itself, which is what it is for a real <code>u</code>:
+   * <code>Solve(Abs(x-1)^2 + Abs(y-1)^2 == 4 &amp;&amp; ..., {x, y})</code>. The solutions are
+   * checked with the original equations, so that <code>Abs(x)^2 == -4</code> has none.
+   *
+   * @return the solutions, <code>ast</code> itself if the rewritten system stays unsolved, or
+   *         {@link F#NIL} if there is no such power
+   */
+  private static IExpr solveSquaredAbs(IAST ast, EvalEngine engine) {
+    if (ast.argSize() < 2) {
+      return F.NIL;
+    }
+    IAST variables = ast.arg2().makeList();
+    IExpr system = ast.arg1();
+    IExpr rewritten = system.replaceAll(x -> {
+      if (x.isPower() && x.base().isAbs() && x.exponent().isInteger()
+          && ((IInteger) x.exponent()).isEven()
+          && !x.base().first().isFree(v -> variables.contains(v), true)) {
+        return F.Power(x.base().first(), x.exponent());
+      }
+      return F.NIL;
+    });
+    if (rewritten.isNIL()) {
+      return F.NIL;
+    }
+    IExpr result = engine.evaluate(ast.setAtCopy(1, rewritten));
+    if (!result.isListOfLists()) {
+      return ast;
+    }
+    if (!(ast.argSize() >= 3 && ast.arg3() == S.Reals)) {
+      Errors.printIfunMessage(S.Solve);
+    }
+    IAST equations = equationsOf(system);
+    return ((IAST) result).select(solution -> {
+      for (IExpr equation : equations) {
+        if (engine.evalQuiet(equation.replaceAll((IAST) solution).orElse(equation)).isFalse()) {
+          return false;
+        }
+      }
+      return true;
+    });
   }
 
   /**

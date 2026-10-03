@@ -65,10 +65,55 @@ public class SolveUtils {
   }
 
   /** A domain like <code>Reals</code>, which Solve(x^2 == 1, Reals) takes in place of variables. */
-  private static boolean isDomain(IExpr symbol) {
+  public static boolean isDomain(IExpr symbol) {
     return symbol == S.Reals || symbol == S.Complexes || symbol == S.Integers
         || symbol == S.Rationals || symbol == S.Primes || symbol == S.Booleans
         || symbol == S.Algebraics;
+  }
+
+  /**
+   * Write the chained equalities of the equations argument as single equations:
+   * <code>Solve(x == y == 2, {x, y})</code> solves <code>x == y &amp;&amp; y == 2</code>.
+   *
+   * @param ast <code>Solve(eqns, ...)</code> or <code>Reduce(eqns, ...)</code>
+   * @return <code>ast</code> itself if there is no chain in its first argument
+   */
+  public static IAST expandChainedEqual(IAST ast) {
+    if (ast.argSize() < 1) {
+      return ast;
+    }
+    IExpr expanded = expandChainedEqual(ast.arg1());
+    return expanded.isPresent() ? ast.setAtCopy(1, expanded) : ast;
+  }
+
+  private static IExpr expandChainedEqual(IExpr expr) {
+    if (expr.isAST(S.Equal) && expr.argSize() > 2) {
+      IAST chain = (IAST) expr;
+      return F.mapRange(S.And, 1, chain.argSize(), i -> F.Equal(chain.get(i), chain.get(i + 1)));
+    }
+    if (expr.isList() || expr.isAnd() || expr.isOr()) {
+      IAST list = (IAST) expr;
+      IASTAppendable result = F.NIL;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr expanded = expandChainedEqual(list.get(i));
+        if (expanded.isPresent()) {
+          if (result.isNIL()) {
+            result = F.ast(list.head(), list.size() + 2);
+            result.appendArgs(list, i);
+          }
+          if (expr.isOr()) {
+            result.append(expanded);
+          } else {
+            // the single equations take the place of the chain
+            result.appendArgs((IAST) expanded);
+          }
+        } else if (result.isPresent()) {
+          result.append(list.get(i));
+        }
+      }
+      return result;
+    }
+    return F.NIL;
   }
 
   /**

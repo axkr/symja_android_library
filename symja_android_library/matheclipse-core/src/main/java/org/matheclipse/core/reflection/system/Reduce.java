@@ -2565,6 +2565,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       // solved with the renamed variables, or unsolved there - which isn't tried a second time
       return withRenamedVariables.equals(originalAST) ? F.NIL : withRenamedVariables;
     }
+    ast = SolveUtils.expandChainedEqual(ast);
     SolveOptions solveOptions = SolveOptions.of(SolveOptions.REDUCE_KEYS, options);
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);

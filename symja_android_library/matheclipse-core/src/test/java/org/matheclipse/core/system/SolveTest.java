@@ -2432,8 +2432,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveIssue746() {
+    // b==3 and the other equations without a are conditions on the parameters, which do not hold
+    // for generic parameters
     check("Solve({a==b+c, b==3, c==d*e, d==3, e==5}, a)", //
-        "Solve({a==b+c,b==3,c==d*e,d==3,e==5},a)");
+        "{}");
     check("Solve({a==b+c, b==3, c==d*e, d==3, e==5}, {a,b,c,d,e})", //
         "{{a->18,b->3,c->15,d->3,e->5}}");
   }
