@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.external.apfloat.ZetaWorkaround;
 import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.BernoulliB;
 import static org.matheclipse.core.expression.F.C1;
@@ -40,11 +42,42 @@ import org.matheclipse.core.numerics.functions.ZetaJS;
 
 public class Zeta extends AbstractArg12 {
 
+  /**
+   * <code>Zeta(s)</code> for an <code>s</code> next to the pole at <code>1</code>. The value is
+   * <code>1/(s-1)+EulerGamma+...</code>, so it has only as many digits as <code>s-1</code> has,
+   * which are fewer than those of <code>s</code> by the number of zeros after the <code>1</code>.
+   * A number of fixed precision would show the missing digits filled up with noise:
+   * <code>N(Zeta(1+10^-10),30)</code> was wrong from the 21st digit on. The argument is taken as
+   * the decimal number it shows, and the digits which are lost are added to it first.
+   *
+   * @param s the argument
+   * @param precision the precision of the result
+   * @return <code>null</code> if <code>s</code> is not near to the pole
+   */
+  private static Apcomplex zetaNearPole(Apcomplex s, long precision) {
+    Apcomplex distance = s.subtract(Apcomplex.ONE);
+    if (distance.real().signum() == 0 && distance.imag().signum() == 0) {
+      return null;
+    }
+    long lostDigits = 1 - distance.scale();
+    if (lostDigits <= 1 || lostDigits > Config.MAX_PRECISION_APFLOAT) {
+      return null;
+    }
+    long workingPrecision = precision + lostDigits + 5;
+    Apcomplex extended =
+        new Apcomplex(s.real().precision(workingPrecision), s.imag().precision(workingPrecision));
+    return ZetaWorkaround.zeta(extended);
+  }
+
   @Override
   public IExpr e1ApfloatArg(Apfloat arg1) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     try {
       // Zeta(a): delegates directly to HurwitzZeta(s, 1)) (in apfloat zeta(a) is hurwitzZeta(a,1))
+      Apcomplex nearPole = zetaNearPole(arg1, h.precision());
+      if (nearPole != null) {
+        return F.num(h.valueOf(nearPole.real()));
+      }
       return F.num(h.zeta(arg1));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);
@@ -58,6 +91,10 @@ public class Zeta extends AbstractArg12 {
     FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
     try {
       // Zeta(a): delegates directly to HurwitzZeta(s, 1)) (in apfloat zeta(a) is hurwitzZeta(a,1))
+      Apcomplex nearPole = zetaNearPole(arg1, h.precision());
+      if (nearPole != null) {
+        return F.complexNum(h.valueOf(nearPole));
+      }
       return F.complexNum(h.zeta(arg1));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);

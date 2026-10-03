@@ -291,6 +291,18 @@ public class EllipticIntegralsJS extends JS {
     if (m > 1 && Math.abs(x) > Math.asin(1 / Math.sqrt(m))) {
       return ellipticE(new Complex(x), new Complex(m));
     }
+    if (Math.abs(x) > Math.PI / 2.0) {
+      // E(x + p*Pi | m) == E(x | m) + 2*p*E(m). The amplitude is reduced here: at m == 1 the
+      // reduction of hipparchus goes through K(1), which is infinite, and E(2.0, 1.0) came back
+      // as 1.3*10^10 for the 2 - Sin(2) it is.
+      long p = Math.round(x / Math.PI);
+      double reduced = x - p * Math.PI;
+      if (m == 1.0) {
+        return Complex.valueOf(Math.sin(reduced) + 2.0 * p);
+      }
+      return Complex.valueOf(LegendreEllipticIntegral.bigE(reduced, m)
+          + 2.0 * p * LegendreEllipticIntegral.bigE(m));
+    }
     return Complex.valueOf(LegendreEllipticIntegral.bigE(x, m));
     // Complex period = Complex.ZERO;
     // if (Math.abs(x) > Math.PI / 2.0) {
@@ -345,6 +357,10 @@ public class EllipticIntegralsJS extends JS {
     // return Complex.valueOf(LegendreEllipticIntegral.bigPi(n, x, m));
     Complex period = Complex.ZERO;
     if (Math.abs(x) > Math.PI / 2.0) {
+      if (m == 1.0) {
+        // the integrand has a pole at Pi/2 which is not integrable
+        return Complex.INF;
+      }
       long p = Math.round(x / Math.PI);
       x = x - p * Math.PI;
       period = ellipticPi(n, Math.PI / 2.0, m).multiply(p + p);
@@ -357,6 +373,19 @@ public class EllipticIntegralsJS extends JS {
     double p3SqrSinX = sqrSinX * sinX;
     double mSqrSinX = 1.0 - m * sqrSinX;
     double nSqrSinX = 1.0 - n * sqrSinX;
+    if (n < -1.0 && mSqrSinX >= 0.0) {
+      // For a large negative n the terms Sin*RF and n/3*Sin^3*RJ cancel, down to the order of
+      // 1/Sqrt(-n): EllipticPi(-1.0*10^30, 0.5) came back as EllipticK(0.5). With w == m/n,
+      // Pi(n) + Pi(w) == F + Sin*RC(Cos^2*(1-m*Sin^2), (1-n*Sin^2)*(1-w*Sin^2)), and
+      // Pi(w) - F == w/3*Sin^3*RJ is small and has no cancellation in it.
+      double w = m / n;
+      double wSqrSinX = 1.0 - w * sqrSinX;
+      double value = sinX * carlsonRC(sqrCosX * mSqrSinX, nSqrSinX * wSqrSinX);
+      if (w != 0.0) {
+        value -= w / 3.0 * p3SqrSinX * carlsonRJ(sqrCosX, mSqrSinX, 1, wSqrSinX);
+      }
+      return Complex.valueOf(value).add(period);
+    }
     if (mSqrSinX < 0) {
       return carlsonRF(new Complex(sqrCosX), new Complex(mSqrSinX), Complex.ONE).multiply(sinX).add(
           carlsonRJ(new Complex(sqrCosX), new Complex(mSqrSinX), Complex.ONE, new Complex(nSqrSinX))

@@ -176,6 +176,36 @@ public class IntervalDataSym {
     });
   }
 
+  /**
+   * <code>EllipticE(m)</code> is real and decreasing for <code>m &lt;= 1</code>: the end points
+   * change places, and their open/closed markers with them.
+   */
+  public static IExpr ellipticE(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult() && engine.evalLessEqual(max, F.C1)) {
+        result.append(index, F.List(F.EllipticE(max), lessMax, lessMin, F.EllipticE(min)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /**
+   * <code>EllipticK(m)</code> is real and increasing for <code>m &lt; 1</code>; an interval which
+   * reaches the pole at <code>1</code> is not mapped.
+   */
+  public static IExpr ellipticK(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult() && engine.evalLess(max, F.C1)) {
+        result.append(index, F.List(F.EllipticK(min), lessMin, lessMax, F.EllipticK(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
   public static IExpr asRelational(IAST expr, IExpr x) {
     if (expr.isIntervalData()) {
       IAST interval = expr;

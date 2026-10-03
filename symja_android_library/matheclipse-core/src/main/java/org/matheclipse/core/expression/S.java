@@ -21343,6 +21343,15 @@ public class S {
   public final static IBuiltInSymbol Set = S.initFinalSymbol("Set", ID.Set);
 
   /**
+   * SetAccuracy(x) - TODO describe `SetAccuracy`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetAccuracy.md">SetAccuracy
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SetAccuracy = S.initFinalSymbol("SetAccuracy", ID.SetAccuracy);
+
+  /**
    * SetAlphaChannel(x) - TODO describe `SetAlphaChannel`.
    * 
    * @see <a href=
@@ -21389,6 +21398,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol SetOptions = S.initFinalSymbol("SetOptions", ID.SetOptions);
+
+  /**
+   * SetPrecision(x) - TODO describe `SetPrecision`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SetPrecision.md">SetPrecision
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SetPrecision =
+      S.initFinalSymbol("SetPrecision", ID.SetPrecision);
 
   /**
    * SetSharedFunction(x) - TODO describe `SetSharedFunction`.

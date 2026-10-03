@@ -215,6 +215,8 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.MinimalPolynomial());
       S.N.setEvaluator(new org.matheclipse.core.reflection.system.N());
       S.NCache.setEvaluator(new org.matheclipse.core.reflection.system.NCache());
+      S.SetAccuracy.setEvaluator(new org.matheclipse.core.reflection.system.SetAccuracy());
+      S.SetPrecision.setEvaluator(new org.matheclipse.core.reflection.system.SetPrecision());
       S.ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
       S.NDSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.NDSolveValue());
@@ -406,6 +408,7 @@ public final class FunctionDefinitions {
       S.ListContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListContourPlot());
       S.ListDensityPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListDensityPlot());
       S.ListLinePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLinePlot());
+      S.RegionPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.RegionPlot());
       S.DateListPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DateListPlot());
       S.ListCurvePathPlot
           .setEvaluator(new org.matheclipse.core.builtin.graphics.ListCurvePathPlot());

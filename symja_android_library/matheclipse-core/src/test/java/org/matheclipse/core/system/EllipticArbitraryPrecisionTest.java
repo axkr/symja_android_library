@@ -23,11 +23,11 @@ public class EllipticArbitraryPrecisionTest extends ExprEvaluatorTestCase {
         "1.0515224356380810195");
     // quasi-periodic continuation off the principal strip
     check("N(EllipticF(5, 1/3), 20)", //
-        "5.5516548850856641336");
+        "5.5516548850856641337");
     check("N(EllipticF(1 + I, 1/3), 20)", //
-        "0.887320549393998258+I*1.1323895142289306019");
+        "0.88732054939399825808+I*1.132389514228930602");
     check("N(EllipticF(1, 3), 20)", //
-        "1.001077380456106236+I*(-0.7284539368191767961)");
+        "1.0010773804561062361+I*(-0.7284539368191767961)");
     check("N(EllipticF(1/2, 1/3), 20)", //
         "0.5068477562654311092");
     // mpmath: 0.506847756265431109203677128745872542883984995337 - the duplication runs until the
@@ -40,11 +40,11 @@ public class EllipticArbitraryPrecisionTest extends ExprEvaluatorTestCase {
   public void testEllipticEArbitraryPrecision() {
     // WMA: N[{EllipticE[1, 1/3], EllipticE[5, 1/3], EllipticE[1 + I, 1/3]}, 20]
     check("N(EllipticE(1, 1/3), 20)", //
-        "0.95265941432230398347");
+        "0.95265941432230398348");
     check("N(EllipticE(5, 1/3), 20)", //
         "4.5273618829012259406");
     check("N(EllipticE(1 + I, 1/3), 20)", //
-        "1.0767375710706947669+I*0.8550727152366340416");
+        "1.0767375710706947669+I*0.85507271523663404161");
     // mpmath: 4.52736188290122594061898647807
     check("N(EllipticE(5, 1/3), 30)", //
         "4.52736188290122594061898647807");
@@ -57,16 +57,16 @@ public class EllipticArbitraryPrecisionTest extends ExprEvaluatorTestCase {
     check("N(EllipticPi(1/2, 1/3), 20)", //
         "2.4952460470776346637");
     check("N(EllipticPi(2, 1/3), 20)", //
-        "-0.1742753207526080486");
+        "-0.17427532075260804865");
     check("N(EllipticPi(1/2, 1, 1/3), 20)", //
-        "1.2467794552770125347");
+        "1.2467794552770125348");
     check("N(EllipticPi(2, 1, 1/3), 20)", //
-        "0.7313810786756013395");
+        "0.73138107867560133953");
     check("N(EllipticPi(1/2, 5, 1/3), 20)", //
-        "8.1675311664202220788");
+        "8.1675311664202220789");
     // the amplitude Pi/2 is on the principal strip and isn't reduced
     check("N(EllipticPi(1/2, Pi/2, 1/3), 30)", //
-        "2.49524604707763466370027723507");
+        "2.49524604707763466370027723508");
   }
 
   @Test
@@ -82,16 +82,16 @@ public class EllipticArbitraryPrecisionTest extends ExprEvaluatorTestCase {
   @Test
   public void testCarlsonArbitraryPrecision() {
     check("N(CarlsonRF(1, 2, 3), 30)", //
-        "0.726945935468908198539570626019");
+        "0.72694593546890819853957062602");
     check("N(CarlsonRD(1, 2, 3), 30)", //
-        "0.290460281028990644232653385658");
+        "0.290460281028990644232653385659");
     check("N(CarlsonRG(1, 2, 3), 30)", //
         "1.40184709999089509943135215626");
     check("N(CarlsonRJ(1, 2, 3, 4), 30)", //
-        "0.239848099749567762175861671041");
+        "0.239848099749567762175861671042");
     // mpmath: 0.72694593546890819853957062601989181443786387872278
     check("N(CarlsonRF(1, 2, 3), 50)", //
-        "0.72694593546890819853957062601989181443786387872279");
+        "0.72694593546890819853957062601989181443786387872278");
     // divergent integrals, and CarlsonRG(0,0,z) == Sqrt(z)/2
     check("{N(CarlsonRF(0, 0, 1), 30), N(CarlsonRD(0, 0, 1), 30)}", //
         "{ComplexInfinity,ComplexInfinity}");

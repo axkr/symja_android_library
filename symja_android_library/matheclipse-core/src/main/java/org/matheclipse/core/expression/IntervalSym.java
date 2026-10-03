@@ -159,6 +159,36 @@ public class IntervalSym {
     });
   }
 
+  /**
+   * <code>EllipticE(m)</code> is real and decreasing for <code>m &lt;= 1</code>; the result is the
+   * exact image of the interval.
+   */
+  public static IExpr ellipticE(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult() && engine.evalLessEqual(max, F.C1)) {
+        result.append(index, F.list(F.EllipticE(max), F.EllipticE(min)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /**
+   * <code>EllipticK(m)</code> is real and increasing for <code>m &lt; 1</code>; an interval which
+   * reaches the pole at <code>1</code> is not mapped.
+   */
+  public static IExpr ellipticK(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult() && engine.evalLess(max, F.C1)) {
+        result.append(index, F.list(F.EllipticK(min), F.EllipticK(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
   public static IExpr arctanh(final IAST ast) {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, max, result, index) -> {
