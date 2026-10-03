@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 
 public class CellularAutomaton extends AbstractFunctionEvaluator {
@@ -38,6 +39,10 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
         }
 
         IExpr init = ast.arg2();
+        if (init.isSparseArray()) {
+          // a sparse initial condition is the list of its cells
+          init = ((ISparseArray) init).normal(false);
+        }
 
         // Resolve Named Rules (e.g., "Rule30" -> 30)
         if (rule instanceof IStringX) {
