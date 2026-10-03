@@ -39,10 +39,11 @@ public final class Comparators {
   }
 
   /**
-   * Compare the two {@link Complex#norm()} <code>double</code> values of the numbers. If the
-   * <code>norm()</code> values are approximately equal, use
-   * {@link ComplexNum#compare(Complex, Complex)} as the return value. Use
-   * {@link Config#DEFAULT_CHOP_DELTA} to compare for approcimate equality.
+   * Compare the two {@link Complex#norm()} <code>double</code> values of the numbers in decreasing
+   * order. If the <code>norm()</code> values are approximately equal (see
+   * {@link Config#DEFAULT_CHOP_DELTA}), a non-real number comes before a real one and of a
+   * conjugate pair the number with the positive imaginary part comes first; real numbers are in
+   * increasing order.
    */
   private static final class ComplexNormReverseComparator
       implements Comparator<Complex>, Serializable {
@@ -54,7 +55,15 @@ public final class Comparators {
       double n1 = o2.norm();
       double n2 = o1.norm();
       if (F.isFuzzyEquals(n1, n2, Config.DEFAULT_CHOP_DELTA)) {
-        return o1.compareTo(o2);
+        boolean real1 = F.isZero(o1.getImaginary());
+        boolean real2 = F.isZero(o2.getImaginary());
+        if (real1 != real2) {
+          return real1 ? 1 : -1;
+        }
+        if (!F.isFuzzyEquals(o1.getReal(), o2.getReal(), Config.DEFAULT_CHOP_DELTA)) {
+          return Double.compare(o1.getReal(), o2.getReal());
+        }
+        return Double.compare(o2.getImaginary(), o1.getImaginary());
       }
       return n1 < n2 ? -1 : 1;
     }
@@ -335,9 +344,9 @@ public final class Comparators {
 
 
   /**
-   * Compare the two {@link Complex#norm()} <code>double</code> values of the numbers. If the
-   * <code>norm()</code> values are approximately equal, use
-   * {@link ComplexNum#compare(Complex, Complex)} as the return value.
+   * The order of numeric eigenvalues: decreasing {@link Complex#norm()}; with approximately equal
+   * <code>norm()</code> values a conjugate pair comes before a real value, the positive imaginary
+   * part first.
    */
   public static final ComplexNormReverseComparator COMPLEX_NORM_REVERSE_COMPARATOR =
       new ComplexNormReverseComparator();

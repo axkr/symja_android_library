@@ -1534,7 +1534,7 @@ public final class LinearAlgebra {
             ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
             ComplexEigenDecomposition.DEFAULT_EPSILON, //
             Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
-            (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
+            Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
         Complex[] eigenvalues = ced.getEigenvalues();
         int vectorSize = eigenvalues.length;
         if (maxValues >= 0 && maxValues < vectorSize) {
@@ -2077,7 +2077,7 @@ public final class LinearAlgebra {
             ComplexEigenDecomposition.DEFAULT_EIGENVECTORS_EQUALITY, //
             ComplexEigenDecomposition.DEFAULT_EPSILON, //
             Config.DEFAULT_EPSILON_AV_VD_CHECK, // ComplexEigenDecomposition.DEFAULT_EPSILON_AV_VD_CHECK
-            (c1, c2) -> Double.compare(c2.norm(), c1.norm()));
+            Comparators.COMPLEX_NORM_REVERSE_COMPARATOR);
         int vectorSize = matrix.getColumnDimension();
         if (maxValues >= 0 && maxValues < vectorSize) {
           vectorSize = maxValues;
