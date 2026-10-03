@@ -29,6 +29,12 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>
+		<dependency>
+			<!-- org.matheclipse.external.apfloat holds functions written against the public
+				apfloat API, in apfloat's conventions, so that they can be contributed to apfloat -->
+			<groupId>org.apfloat</groupId>
+			<artifactId>apfloat</artifactId>
+		</dependency>
 		
 		<!-- test dependencies -->
 		<dependency>

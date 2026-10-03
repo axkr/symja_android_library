@@ -9,7 +9,6 @@ required. Every package keeps the license of its origin.
 | `edu.jas..` | [Java Algebra System (JAS)](https://github.com/kredel/java-algebra-system) | LGPL / GPL |
 | `tech.tablesaw.plotly..` | [Tablesaw](https://github.com/jtablesaw/tablesaw) | Apache 2.0 |
 | `uk.ac.ed.ph.snuggletex..` | [SnuggleTeX](https://www2.ph.ed.ac.uk/snuggletex/) | BSD |
-| `jp.ac.kobe_u.cs.cream..` | [Cream constraint solver](https://github.com/kobe-u/cream) | LGPL |
 | `io.github.mangara.diophantine..` | [Diophantine](https://github.com/Mangara/Diophantine) | Apache 2.0 |
 | `com.baeldung.algorithms..` | Baeldung algorithm samples | MIT |
 | `org.matheclipse.external.fastutil..` | [fastutil 8.5.19](https://fastutil.di.unimi.it/) | Apache 2.0 |
