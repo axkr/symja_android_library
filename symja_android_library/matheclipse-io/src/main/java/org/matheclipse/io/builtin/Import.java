@@ -152,16 +152,13 @@ public class Import extends AbstractEvaluator {
           reader = new FileReader(file);
           return org.matheclipse.graphtheory.io.GraphImport.fromReader(reader, format, engine);
         case EXPRESSIONJSON:
-          return expressionJSONImport(fileName);
+          return expressionJSONImport(jsonSource(fileName, file, dataFile, engine));
         case FASTA:
           return importBioSequence(format, file, engine);
         case GENBANK:
           return importBioSequence(format, file, engine);
         case JSON:
-          if (dataFile != null) {
-            return jsonImport(dataFile, false);
-          }
-          return jsonImport(fileName, false);
+          return jsonImport(jsonSource(fileName, file, dataFile, engine), false);
         case M:
           return S.Get.of(engine, pathName);
         case MAT:
@@ -172,10 +169,7 @@ public class Import extends AbstractEvaluator {
           reader = new FileReader(file);
           return Convert.fromCSV(reader);
         case RAWJSON:
-          if (dataFile != null) {
-            return jsonImport(dataFile, true);
-          }
-          return jsonImport(fileName, true);
+          return jsonImport(jsonSource(fileName, file, dataFile, engine), true);
         case STRING:
           return ofString(file, engine);
         case TXT:
@@ -223,24 +217,36 @@ public class Import extends AbstractEvaluator {
   // return rowList;
   // }
 
-  private static IExpr expressionJSONImport(String fileName)
-      throws MalformedURLException, IOException {
+  /**
+   * Where the JSON formats read from: the file the name was resolved to.
+   *
+   * <p>
+   * They used to hand the name as it was written to <code>new URL(...)</code>. That read whatever
+   * the name pointed at in any scheme the JVM knows - a <code>file:</code> address went straight
+   * past the directory a session is confined to - and it could not read a plain file name at all,
+   * since that is no URL. A web address still works in a kernel that is the user's own, and
+   * nowhere else.
+   */
+  private static URL jsonSource(String fileName, File file, File dataFile, EvalEngine engine)
+      throws MalformedURLException {
+    if (dataFile == null && FileSandbox.isHostVisible(engine)) {
+      String lower = fileName.toLowerCase(java.util.Locale.ROOT);
+      if (lower.startsWith("http://") || lower.startsWith("https://")) {
+        return new URL(fileName);
+      }
+    }
+    return file.toURI().toURL();
+  }
+
+  private static IExpr expressionJSONImport(URL source) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    JsonNode node = mapper.readTree(new URL(fileName));
+    JsonNode node = mapper.readTree(source);
     return ExpressionJSONConvert.importExpressionJSONRecursive(node);
   }
 
-  private static IExpr jsonImport(File file, boolean rawJSON)
-      throws MalformedURLException, IOException {
+  private static IExpr jsonImport(URL source, boolean rawJSON) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    JsonNode node = mapper.readTree(file);
-    return JSONConvert.importJSONRecursive(node, rawJSON);
-  }
-
-  private static IExpr jsonImport(String fileName, boolean rawJSON)
-      throws MalformedURLException, IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode node = mapper.readTree(new URL(fileName));
+    JsonNode node = mapper.readTree(source);
     return JSONConvert.importJSONRecursive(node, rawJSON);
   }
 

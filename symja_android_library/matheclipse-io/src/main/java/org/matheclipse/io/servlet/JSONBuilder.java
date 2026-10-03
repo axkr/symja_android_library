@@ -59,6 +59,9 @@ public class JSONBuilder {
    */
   public static final String FORMAT_DYNAMIC = "dynamic";
 
+  /** A <code>TabView</code> with all of its panes; see {@link #createJSONTabView}. */
+  public static final String FORMAT_TABVIEW = "tabview";
+
   /**
    * Wrap a <code>Manipulate</code> widget: its controls, its options and the rendering of the body
    * for the initial control values.
@@ -153,6 +156,43 @@ public class JSONBuilder {
     ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
     json.putPOJO("results", results);
     return new String[] {FORMAT_DYNAMIC, json.toString()};
+  }
+
+  /**
+   * A <code>TabView</code>: the label of every tab and, already rendered, what each one shows.
+   *
+   * @param bodies for each tab the JSON a cell with that result would have received
+   * @param selected the position, from zero, of the tab shown first
+   */
+  public static String[] createJSONTabView(String[] labels, String[] bodies, int selected,
+      StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
+    ObjectNode tabView = JSON_OBJECT_MAPPER.createObjectNode();
+    tabView.put("selected", selected);
+    ArrayNode tabs = tabView.putArray("tabs");
+    for (int i = 0; i < labels.length; i++) {
+      ObjectNode tab = tabs.addObject();
+      tab.put("label", labels[i]);
+      try {
+        tab.set("body", JSON_OBJECT_MAPPER.readTree(bodies[i]));
+      } catch (Exception ex) {
+        tab.putNull("body");
+      }
+    }
+
+    ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
+    resultsJSON.put("line", 21);
+    resultsJSON.put("result", "");
+    resultsJSON.put("format", FORMAT_TABVIEW);
+    resultsJSON.set("tabview", tabView);
+    ArrayNode out = JSON_OBJECT_MAPPER.createArrayNode();
+    addMessages(out, errorWriter, outWriter);
+    resultsJSON.putPOJO("out", out);
+
+    ArrayNode results = JSON_OBJECT_MAPPER.createArrayNode();
+    results.add(resultsJSON);
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    json.putPOJO("results", results);
+    return new String[] {FORMAT_TABVIEW, json.toString()};
   }
 
   /**

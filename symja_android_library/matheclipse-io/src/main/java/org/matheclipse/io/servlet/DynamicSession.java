@@ -10,6 +10,7 @@ import java.util.Set;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.manipulate.Dynamics;
@@ -112,7 +113,9 @@ public class DynamicSession {
    * offers a control that changes it.
    */
   static boolean isDynamicResult(IExpr expr) {
-    return Dynamics.containsDynamic(expr);
+    // a Button on its own changes something too: without a live cell around it there is nothing
+    // its click could be posted for, and it would be a picture of a button
+    return Dynamics.containsDynamic(expr) || !expr.isFree(x -> x.isAST(S.Button), true);
   }
 
   static synchronized String store(String sessionID, Cell cell) {
@@ -213,10 +216,31 @@ public class DynamicSession {
     node.set("body", JSONBuilder.JSON_OBJECT_MAPPER.readTree(rendered[1]));
     ArrayNode controls = JSONBuilder.JSON_OBJECT_MAPPER.createArrayNode();
     for (ManipulateControl control : cell.controls) {
-      controls.add(control.toJSON(JSONBuilder.JSON_OBJECT_MAPPER));
+      ObjectNode json = control.toJSON(JSONBuilder.JSON_OBJECT_MAPPER);
+      String target = targetOf(control);
+      if (target != null) {
+        json.put("target", target);
+      }
+      controls.add(json);
     }
     node.set("controls", controls);
     return node;
+  }
+
+  /**
+   * What a control writes to, as the names of the symbols its <code>Dynamic</code> targets. Two
+   * controls with the same target are two handles on one value, whichever cells they are in - which
+   * is what a front end has to know to move the one when the other is moved without asking.
+   *
+   * @return <code>null</code> for a control that writes to nothing
+   */
+  private static String targetOf(ManipulateControl control) {
+    if (control.isReadOnly() || !control.getDynamic().isAST()) {
+      return null;
+    }
+    Set<String> symbols = new java.util.TreeSet<String>();
+    Dynamics.collectSymbols(Dynamics.target((IAST) control.getDynamic()), symbols);
+    return symbols.isEmpty() ? null : String.join(",", symbols);
   }
 
   // ---------------------------------------------------------------- updating

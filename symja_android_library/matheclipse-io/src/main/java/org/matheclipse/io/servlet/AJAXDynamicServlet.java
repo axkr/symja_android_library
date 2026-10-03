@@ -104,6 +104,18 @@ public class AJAXDynamicServlet extends HttpServlet {
       }
     }
 
+    out.println(update(state, sessionID, id, controlIndex, value, actionIndex, poll, refresh));
+  }
+
+  /**
+   * Bring the cells of a session up to date after one of the things the page can ask for, in the
+   * engine of that session and holding its evaluation lock.
+   *
+   * @return the JSON of the cells that have to be redrawn
+   */
+  static String update(AJAXQueryServlet.SessionState state, String sessionID, String id,
+      int controlIndex, JsonNode value, int actionIndex, long poll, boolean refresh)
+      throws IOException {
     final StringBuilderWriter outWriter = new StringBuilderWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
     final StringBuilderWriter errorWriter = new StringBuilderWriter();
@@ -118,8 +130,8 @@ public class AJAXDynamicServlet extends HttpServlet {
 
       // one evaluation per session at a time, and never on the engine's own monitor
       synchronized (state.lock) {
-        out.println(evaluate(engine, sessionID, id, controlIndex, value, actionIndex, poll, refresh,
-            outWriter, errorWriter));
+        return evaluate(engine, sessionID, id, controlIndex, value, actionIndex, poll, refresh,
+            outWriter, errorWriter);
       }
     } finally {
       EvalEngine.remove();

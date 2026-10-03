@@ -131,9 +131,23 @@ public class SwingFunctions {
     }
   }
 
+  /**
+   * Whether a dialog, or a question on the terminal, reaches the person the kernel is working for.
+   * These functions are registered once for the process, when a server starts as when a console
+   * does; a browser session confined to a directory would otherwise open its dialogs on the
+   * screen of the server and read its answers from the server's standard input.
+   */
+  private static boolean onUsersOwnDesktop(EvalEngine engine) {
+    return Desktop.isDesktopSupported()
+        && org.matheclipse.core.io.FileSandbox.isHostVisible(engine);
+  }
+
   private static final class InputString extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!org.matheclipse.core.io.FileSandbox.isHostVisible(engine)) {
+        return F.NIL;
+      }
       return inputString(ast, engine);
     }
 
@@ -151,7 +165,7 @@ public class SwingFunctions {
   private static final class SystemDialogInput extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (Desktop.isDesktopSupported() && ast.arg1().isString()) {
+      if (onUsersOwnDesktop(engine) && ast.arg1().isString()) {
         String type = ast.arg1().toString().toLowerCase(Locale.US);
         if (type.equals("fileopen")) {
           JFileChooser j = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
@@ -223,7 +237,7 @@ public class SwingFunctions {
         // unevaluated so that the live cell machinery can draw it. See ControlObject.
         return F.NIL;
       }
-      if (!Desktop.isDesktopSupported()) {
+      if (!onUsersOwnDesktop(engine)) {
         return F.NIL;
       }
       String type = ast.isAST0() ? "open" : ast.arg1().toString().toLowerCase(Locale.US);
@@ -272,6 +286,9 @@ public class SwingFunctions {
   private static final class Input extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!org.matheclipse.core.io.FileSandbox.isHostVisible(engine)) {
+        return F.NIL;
+      }
       try {
         IExpr str = inputString(ast, engine);
         if (str.isPresent()) {
@@ -314,7 +331,7 @@ public class SwingFunctions {
   private static final class DialogInput extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (Desktop.isDesktopSupported()) {
+      if (onUsersOwnDesktop(engine)) {
         IAST dialogNoteBook = null;
         if (ast.isAST2() && ast.arg2().isAST(S.DialogNotebook, 2)) {
           dialogNoteBook = (IAST) ast.arg2();

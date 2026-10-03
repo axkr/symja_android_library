@@ -583,6 +583,17 @@ public class ManipulateSession {
       if (text.isEmpty()) {
         return F.NIL;
       }
+      String type = control.getInputType();
+      if ("String".equals(type)) {
+        return F.stringx(text);
+      }
+      IExpr number = numberOf(text);
+      if ("Number".equals(type)) {
+        return number;
+      }
+      if (!EXPRESSION_INPUT) {
+        return number.isPresent() ? number : F.stringx(text);
+      }
       try {
         return engine.parse(text);
       } catch (RuntimeException rex) {
@@ -596,6 +607,35 @@ public class ManipulateSession {
       return F.ZZ((long) value);
     }
     return F.num(value);
+  }
+
+  /**
+   * Whether the text of an input field without a type is read as an expression, which is then
+   * evaluated wherever the variable of the field is used.
+   *
+   * <p>
+   * That is what such a field is for when the person typing is the person whose kernel it is. A
+   * page served to others hands whoever opens it a place to type code into, and switches this off:
+   * the text of the field is then a number if it is written as one, and a string otherwise.
+   * <code>InputField[x, String]</code> and <code>InputField[x, Number]</code> never read their
+   * text as code, whatever this says.
+   */
+  public static volatile boolean EXPRESSION_INPUT = true;
+
+  /** The number a text spells out as a plain literal, or {@link F#NIL}. */
+  private static IExpr numberOf(String text) {
+    String trimmed = text.trim();
+    try {
+      return F.ZZ(Long.parseLong(trimmed));
+    } catch (NumberFormatException nfe) {
+      // not an integer
+    }
+    try {
+      double value = Double.parseDouble(trimmed);
+      return Double.isFinite(value) ? F.num(value) : F.NIL;
+    } catch (NumberFormatException nfe) {
+      return F.NIL;
+    }
   }
 
   private static boolean isIntegerStep(ManipulateControl control) {

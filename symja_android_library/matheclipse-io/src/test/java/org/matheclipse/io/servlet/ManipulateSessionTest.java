@@ -196,4 +196,61 @@ public class ManipulateSessionTest {
     assertEquals("{3,9}",
         ManipulateSession.evaluateFrame(engine, spec, bindings).result.toString());
   }
+
+  /**
+   * The text a browser sends for an input field is code only where the field says it takes an
+   * expression and the deployment lets it.
+   */
+  @Test
+  public void testInputFieldText() {
+    org.matheclipse.core.eval.EvalEngine engine = new org.matheclipse.core.eval.EvalEngine(false);
+    org.matheclipse.core.interfaces.IAST dynamic = org.matheclipse.core.expression.F
+        .unaryAST1(org.matheclipse.core.expression.S.Dynamic,
+            org.matheclipse.core.expression.F.symbol("fieldValue"));
+    org.matheclipse.core.interfaces.IExpr none = org.matheclipse.core.expression.F.NIL;
+    org.matheclipse.core.manipulate.ManipulateControl asString =
+        org.matheclipse.core.manipulate.ControlObject.parse(
+            org.matheclipse.core.expression.F.binaryAST2(
+                org.matheclipse.core.expression.S.InputField, dynamic,
+                org.matheclipse.core.expression.S.String),
+            "$c0", none);
+    org.matheclipse.core.manipulate.ManipulateControl asNumber =
+        org.matheclipse.core.manipulate.ControlObject.parse(
+            org.matheclipse.core.expression.F.binaryAST2(
+                org.matheclipse.core.expression.S.InputField, dynamic,
+                org.matheclipse.core.expression.S.Number),
+            "$c1", none);
+    org.matheclipse.core.manipulate.ManipulateControl asExpression =
+        org.matheclipse.core.manipulate.ControlObject.parse(org.matheclipse.core.expression.F
+            .unaryAST1(org.matheclipse.core.expression.S.InputField, dynamic), "$c2", none);
+    com.fasterxml.jackson.databind.node.JsonNodeFactory json =
+        com.fasterxml.jackson.databind.node.JsonNodeFactory.instance;
+
+    org.matheclipse.core.interfaces.IExpr text =
+        ManipulateSession.valueOf(asString, json.textNode("2+3"), engine);
+    assertTrue(text.isString(), "a String field keeps its text: " + text);
+    assertEquals("2+3", text.toString());
+
+    assertEquals("42",
+        ManipulateSession.valueOf(asNumber, json.textNode(" 42 "), engine).toString());
+    assertEquals("2.5",
+        ManipulateSession.valueOf(asNumber, json.textNode("2.5"), engine).toString());
+    assertTrue(ManipulateSession.valueOf(asNumber, json.textNode("2+3"), engine).isNIL(),
+        "a Number field takes a number and nothing else");
+
+    boolean expressionInput = ManipulateSession.EXPRESSION_INPUT;
+    try {
+      ManipulateSession.EXPRESSION_INPUT = true;
+      assertTrue(ManipulateSession.valueOf(asExpression, json.textNode("2+3"), engine).isAST(),
+          "an expression field reads its text as one");
+      ManipulateSession.EXPRESSION_INPUT = false;
+      org.matheclipse.core.interfaces.IExpr kept =
+          ManipulateSession.valueOf(asExpression, json.textNode("2+3"), engine);
+      assertTrue(kept.isString(), "switched off, the text stays text: " + kept);
+      assertEquals("7",
+          ManipulateSession.valueOf(asExpression, json.textNode("7"), engine).toString());
+    } finally {
+      ManipulateSession.EXPRESSION_INPUT = expressionInput;
+    }
+  }
 }

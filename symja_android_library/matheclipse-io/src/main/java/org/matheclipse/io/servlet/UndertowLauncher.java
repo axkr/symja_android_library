@@ -8,6 +8,7 @@ import static io.undertow.servlet.Servlets.servlet;
 import java.awt.Desktop;
 import java.net.InetAddress;
 import java.net.URI;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.undertow.Handlers;
@@ -46,6 +47,16 @@ final class UndertowLauncher {
    */
   static void runServer(String deploymentName, ClassLoader classLoader,
       Class<? extends Servlet> ajaxServlet, int port, String welcomeFile) {
+    runServer(deploymentName, classLoader, ajaxServlet, port, welcomeFile, Map.of());
+  }
+
+  /**
+   * @param extraServlets servlets of the caller's own, by name; each is mapped to
+   *        <code>/ajax/&lt;name&gt;/</code> beside the ones of the notebook
+   */
+  static void runServer(String deploymentName, ClassLoader classLoader,
+      Class<? extends Servlet> ajaxServlet, int port, String welcomeFile,
+      Map<String, Class<? extends Servlet>> extraServlets) {
     try {
       // https://stackoverflow.com/a/41652378/24819
       String host = ServletServer.LOCALHOST_STRING ? "localhost"
@@ -70,31 +81,158 @@ final class UndertowLauncher {
               servlet("download", AJAXDownloadServlet.class).addMapping("/download/"))
           // frees the engine, the evaluation lock and the live widgets of an ended session
           .addListener(listener(SymjaSessionListener.class));
-
-      DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
-      manager.deploy();
-
-      HttpHandler servletHandler = manager.start();
-
-      PathHandler path = Handlers.path() // Handlers.redirect(MYAPP)
-          .addPrefixPath("/ajax", servletHandler)
-          .addPrefixPath("/", resource(new ClassPathResourceManager(classLoader, "public/"))
-              .addWelcomeFiles(welcomeFile));
-
-      Undertow server = Undertow.builder().addHttpListener(port, host).setHandler(path).build();
-      server.start();
-
-      URI uri = new URI("http://" + host + ":" + port + "/" + welcomeFile);
-      // this print line is intentionally and should display the uri to the user
-      System.out.println("Open browser URL: " + uri);
-      LOGGER.info("Open browser URL: {}", uri);
-
-      if (Desktop.isDesktopSupported()) {
-        Desktop.getDesktop().browse(uri);
+      for (Map.Entry<String, Class<? extends Servlet>> extra : extraServlets.entrySet()) {
+        servletBuilder.addServlet(
+            servlet(extra.getKey(), extra.getValue()).addMapping("/" + extra.getKey() + "/"));
       }
+
+      start(servletBuilder, classLoader, host, port, welcomeFile, false, null);
 
     } catch (Exception ex) {
       ex.printStackTrace();
+    }
+  }
+
+  /**
+   * Start a server for an application that brings its own page and its own servlets, and wants
+   * none of the notebook's.
+   *
+   * <p>
+   * The two servlets that keep a <code>Manipulate</code> and a live <code>Dynamic</code> cell up
+   * to date are deployed, because a page that shows either needs them, and they accept nothing but
+   * the values of controls. What is left out is everything that takes code, a file or a document
+   * name from the browser: the query servlet above all, which evaluates whatever is posted to it.
+   *
+   * @param servlets the servlets of the application by name; each is mapped to
+   *        <code>/ajax/&lt;name&gt;/</code>
+   */
+  static void runAppServer(String deploymentName, ClassLoader classLoader, int port,
+      String welcomeFile, Map<String, Class<? extends Servlet>> servlets, PushChannel push) {
+    try {
+      String host = ServletServer.LOCALHOST_STRING ? "localhost"
+          : InetAddress.getLocalHost().getHostAddress();
+      DeploymentInfo servletBuilder = deployment().setClassLoader(classLoader)
+          .setContextPath(ServletServer.MYAPP).setDeploymentName(deploymentName)
+          .addServlets(
+              servlet("manipulate", AJAXManipulateServlet.class).addMapping("/manipulate/"),
+              servlet("dynamic", AJAXDynamicServlet.class).addMapping("/dynamic/"))
+          .addListener(listener(SymjaSessionListener.class));
+      for (Map.Entry<String, Class<? extends Servlet>> extra : servlets.entrySet()) {
+        servletBuilder.addServlet(servlet(extra.getKey(), extra.getValue()).setLoadOnStartup(1)
+            .addMapping("/" + extra.getKey() + "/"));
+      }
+      // Listening on localhost keeps other machines out, but not the pages open in a browser on
+      // this one: a page from anywhere can point a name of its own at 127.0.0.1 and then read
+      // this server as if it were its own. Such a request still carries that other name, so a
+      // server meant for this machine alone answers only to "localhost".
+      start(servletBuilder, classLoader, host, port, welcomeFile, ServletServer.LOCALHOST_STRING,
+          push);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  /**
+   * The WebSocket behind a {@link PushChannel}: every browser that connects is remembered until
+   * it goes, and a text sent to the channel is sent to each of them.
+   */
+  private static HttpHandler pushHandler(PushChannel push) {
+    java.util.Set<io.undertow.websockets.core.WebSocketChannel> browsers =
+        java.util.concurrent.ConcurrentHashMap.newKeySet();
+    push.bind(text -> {
+      for (io.undertow.websockets.core.WebSocketChannel browser : browsers) {
+        if (browser.isOpen()) {
+          io.undertow.websockets.core.WebSockets.sendText(text, browser, null);
+        }
+      }
+    });
+    return Handlers.websocket((exchange, channel) -> {
+      // A page from anywhere may open a WebSocket to this server; the browser lets it, and only
+      // says where the page is from. So the page has to be one of this server's own - the same
+      // host and port the request itself names.
+      if (!sameOrigin(exchange.getRequestHeader("Origin"), exchange.getRequestHeader("Host"))) {
+        try {
+          channel.close();
+        } catch (java.io.IOException ex) {
+          // it is gone either way
+        }
+        return;
+      }
+      browsers.add(channel);
+      channel.addCloseTask(browsers::remove);
+      // nothing a browser sends is of interest, but its close has to be read to be noticed
+      channel.getReceiveSetter().set(new io.undertow.websockets.core.AbstractReceiveListener() {});
+      channel.resumeReceives();
+      String greeting = push.greeting();
+      if (greeting != null) {
+        io.undertow.websockets.core.WebSockets.sendText(greeting, channel, null);
+      }
+    });
+  }
+
+  /** Whether the page a request comes from was served under the host and port the request names. */
+  static boolean sameOrigin(String origin, String host) {
+    if (origin == null || host == null) {
+      return false;
+    }
+    int scheme = origin.indexOf("://");
+    return scheme > 0 && origin.substring(scheme + 3).equalsIgnoreCase(host);
+  }
+
+  /** Whether a request names this machine the way a browser on it does. */
+  static boolean isLocalName(String hostName) {
+    if (hostName == null) {
+      return false;
+    }
+    String name = hostName.toLowerCase(java.util.Locale.ROOT);
+    return name.equals("localhost") || name.equals("127.0.0.1") || name.equals("::1")
+        || name.equals("[::1]") || name.endsWith(".localhost");
+  }
+
+  /**
+   * @param localNamesOnly if <code>true</code>, a request is answered only if it names this
+   *        machine as <code>localhost</code>
+   */
+  private static void start(DeploymentInfo servletBuilder, ClassLoader classLoader, String host,
+      int port, String welcomeFile, boolean localNamesOnly, PushChannel push) throws Exception {
+    DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
+    manager.deploy();
+
+    HttpHandler servletHandler = manager.start();
+
+    PathHandler path = Handlers.path() // Handlers.redirect(MYAPP)
+        .addPrefixPath("/ajax", servletHandler)
+        .addPrefixPath("/", resource(new ClassPathResourceManager(classLoader, "public/"))
+            // set, not added: the handler starts out with index.html as a welcome file, which
+            // is found first and would be served for "/" whatever page was asked for here
+            .setWelcomeFiles(welcomeFile));
+
+    if (push != null) {
+      path.addPrefixPath(push.path(), pushHandler(push));
+    }
+
+    HttpHandler handler = path;
+    if (localNamesOnly) {
+      handler = exchange -> {
+        if (isLocalName(exchange.getHostName())) {
+          path.handleRequest(exchange);
+        } else {
+          // see runAppServer
+          exchange.setStatusCode(403);
+          exchange.endExchange();
+        }
+      };
+    }
+    Undertow server = Undertow.builder().addHttpListener(port, host).setHandler(handler).build();
+    server.start();
+
+    URI uri = new URI("http://" + host + ":" + port + "/" + welcomeFile);
+    // this print line is intentionally and should display the uri to the user
+    System.out.println("Open browser URL: " + uri);
+    LOGGER.info("Open browser URL: {}", uri);
+
+    if (Desktop.isDesktopSupported()) {
+      Desktop.getDesktop().browse(uri);
     }
   }
 }

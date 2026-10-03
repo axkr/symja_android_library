@@ -1,6 +1,7 @@
 package org.matheclipse.io.servlet;
 
 import java.io.File;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
@@ -56,6 +57,50 @@ public class ServletServer {
   protected static void runServer(String deploymentName, ClassLoader classLoader,
       Class<? extends Servlet> ajaxServlet, int port, String welcomeFile) {
     UndertowLauncher.runServer(deploymentName, classLoader, ajaxServlet, port, welcomeFile);
+  }
+
+  /**
+   * Start the embedded server with servlets of the caller's own beside the ones of the notebook, for
+   * an application built on this module that serves a page of its own.
+   *
+   * @param welcomeFile the page served for <code>/</code>, found under <code>public/</code> on the
+   *        class path of <code>classLoader</code>
+   * @param extraServlets servlets by name; each is mapped to <code>/ajax/&lt;name&gt;/</code>
+   */
+  public static void runServer(String deploymentName, ClassLoader classLoader,
+      Class<? extends Servlet> ajaxServlet, int port, String welcomeFile,
+      Map<String, Class<? extends Servlet>> extraServlets) {
+    UndertowLauncher.runServer(deploymentName, classLoader, ajaxServlet, port, welcomeFile,
+        extraServlets);
+  }
+
+  /**
+   * Start the embedded server for an application that serves a page of its own and takes no code
+   * from the browser: none of the notebook's servlets is deployed except the two that carry the
+   * control values of a <code>Manipulate</code> and of a live <code>Dynamic</code> cell.
+   *
+   * <p>
+   * The application's servlets are started with the server, so one of them has to start the kernel
+   * - the query servlet, which does that for the notebook, is not there.
+   *
+   * @param welcomeFile the page served for <code>/</code>, found under <code>public/</code> on the
+   *        class path of <code>classLoader</code>
+   * @param servlets servlets by name; each is mapped to <code>/ajax/&lt;name&gt;/</code>
+   */
+  public static void runAppServer(String deploymentName, ClassLoader classLoader, int port,
+      String welcomeFile, Map<String, Class<? extends Servlet>> servlets) {
+    UndertowLauncher.runAppServer(deploymentName, classLoader, port, welcomeFile, servlets, null);
+  }
+
+  /**
+   * As {@link #runAppServer(String, ClassLoader, int, String, Map)}, with a channel through which
+   * the application can tell the pages open on it something without being asked.
+   *
+   * @param push the channel; once this returns, what is sent to it reaches the connected browsers
+   */
+  public static void runAppServer(String deploymentName, ClassLoader classLoader, int port,
+      String welcomeFile, Map<String, Class<? extends Servlet>> servlets, PushChannel push) {
+    UndertowLauncher.runAppServer(deploymentName, classLoader, port, welcomeFile, servlets, push);
   }
 
   protected static int setArgs(final String serverClass, final String args[]) {

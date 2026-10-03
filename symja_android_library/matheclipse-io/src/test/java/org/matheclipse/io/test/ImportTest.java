@@ -124,4 +124,38 @@ public class ImportTest {
 
     fail();
   }
+
+  /**
+   * The JSON formats read the file the name was resolved to. They used to open the name as a URL,
+   * which could not read a plain file name and, given a <code>file:</code> address, read past the
+   * directory a session is confined to.
+   */
+  @Test
+  public void testJSONStaysInsideTheSandbox(@org.junit.jupiter.api.io.TempDir java.nio.file.Path root)
+      throws Exception {
+    java.nio.file.Path confined = root.resolve("session");
+    java.nio.file.Files.createDirectories(confined);
+    java.nio.file.Files.writeString(confined.resolve("inside.json"), "{\"where\": \"inside\"}");
+    java.nio.file.Path outside = root.resolve("outside.json");
+    java.nio.file.Files.writeString(outside, "{\"where\": \"outside\"}");
+
+    EvalEngine previous = EvalEngine.get();
+    EvalEngine engine = new EvalEngine(false);
+    engine.setFileSandboxRoot(confined);
+    engine.setFileSystemEnabled(true);
+    EvalEngine.set(engine);
+    try {
+      IExpr inside =
+          Import.importFromPath(F.stringx("inside.json"), Extension.JSON, null, engine);
+      assertEquals("{where->inside}", inside.toString());
+      for (Extension format : new Extension[] {Extension.JSON, Extension.RAWJSON,
+          Extension.EXPRESSIONJSON}) {
+        IExpr escaped = Import.importFromPath(F.stringx(outside.toUri().toString()), format, null,
+            engine);
+        assertEquals(false, String.valueOf(escaped).contains("outside"), format + ": " + escaped);
+      }
+    } finally {
+      EvalEngine.set(previous);
+    }
+  }
 }

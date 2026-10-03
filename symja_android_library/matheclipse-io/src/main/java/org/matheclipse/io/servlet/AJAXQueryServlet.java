@@ -265,8 +265,63 @@ public class AJAXQueryServlet extends HttpServlet {
     }
   }
 
+  /**
+   * Evaluate the source of one cell in the session of a request, for a front end other than the
+   * notebook page - one that holds the source itself rather than receiving it from the browser.
+   *
+   * <p>
+   * The cell is treated exactly as one posted to this servlet: same session engine, same lock, same
+   * time limit, and a <code>Manipulate</code> or <code>Dynamic</code> result is registered with the
+   * session so that the <code>/ajax/manipulate/</code> and <code>/ajax/dynamic/</code> endpoints
+   * answer for it.
+   *
+   * @param source one or more expressions, as a notebook cell holds them
+   * @return the JSON a notebook cell would have received
+   */
+  public String evaluateCell(HttpServletRequest request, String source) {
+    return evaluate(request, source == null ? "" : source.trim(), "", "", 0);
+  }
+
+  /**
+   * Forget what the session of a request has evaluated so far: its definitions, its
+   * <code>Manipulate</code> widgets and its live <code>Dynamic</code> cells. The next cell of that
+   * session is evaluated in a new engine. The files in the session's sandbox directory stay.
+   *
+   * <p>
+   * For a front end that evaluates a whole document again from the top - without this every run
+   * would add another set of widgets to the session until it reaches its limit, and a definition
+   * removed from the document would still be in force.
+   */
+  public static void resetSession(HttpServletRequest request) {
+    HttpSession session = request.getSession(false);
+    if (session == null) {
+      return;
+    }
+    String sessionID = session.getId();
+    SessionState state = stateOf(sessionID);
+    if (state == null) {
+      return;
+    }
+    synchronized (state.lock) {
+      // the widgets are released first: their Deinitialization code still needs the engine
+      ManipulateSession.remove(state.engine, sessionID);
+      DynamicSession.remove(sessionID);
+      removeSession(sessionID);
+    }
+  }
+
   private String evaluate(HttpServletRequest request, String expression, String numericMode,
       String function, int counter) {
+    return evaluate(request, request.getSession().getId(), expression, numericMode, function);
+  }
+
+  /**
+   * @param request the request the cell came in with, or <code>null</code> for a session that is
+   *        not a browser's - see {@link DocumentSession}; the hooks of a deployment are then not
+   *        called, as they are handed the request
+   */
+  String evaluate(HttpServletRequest request, String sessionID, String expression,
+      String numericMode, String function) {
     if (expression == null || expression.length() == 0) {
       return JSONBuilder.createJSONErrorString("No input expression posted!");
     }
@@ -278,8 +333,7 @@ public class AJAXQueryServlet extends HttpServlet {
     }
 
     String[] result = null;
-    HttpSession session = request.getSession();
-    LOGGER.warn("({}) In::{}", session.getId(), expression);
+    LOGGER.warn("({}) In::{}", sessionID, expression);
     final StringBuilderWriter outWriter = new StringBuilderWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
     final StringBuilderWriter errorWriter = new StringBuilderWriter();
@@ -291,22 +345,22 @@ public class AJAXQueryServlet extends HttpServlet {
       SessionState state;
       boolean freshEngine = false;
       synchronized (SESSIONS) {
-        state = SESSIONS.get(session.getId());
+        state = SESSIONS.get(sessionID);
         if (state == null) {
           freshEngine = true;
-          EvalEngine fresh = new EvalEngine(session.getId(), Config.DEFAULT_RECURSION_LIMIT,
+          EvalEngine fresh = new EvalEngine(sessionID, Config.DEFAULT_RECURSION_LIMIT,
               Config.DEFAULT_ITERATION_LIMIT, outs, errors, isRelaxedSyntax());
           fresh.setOutListDisabled(false, (short) 100);
           fresh.setPackageMode(false);
           // the file system permission is per session here, not the global Config switch, and it
           // comes with the directory every user supplied file name is resolved inside
-          Path sandboxRoot = SessionSandbox.rootFor(session.getId());
+          Path sandboxRoot = SessionSandbox.rootFor(sessionID);
           if (sandboxRoot != null) {
             fresh.setFileSandboxRoot(sandboxRoot);
             fresh.setFileSystemEnabled(true);
           }
           state = new SessionState(fresh);
-          SESSIONS.put(session.getId(), state);
+          SESSIONS.put(sessionID, state);
         }
       }
       EvalEngine engine = state.engine;
@@ -318,7 +372,9 @@ public class AJAXQueryServlet extends HttpServlet {
       synchronized (state.lock) {
         // an engine this request built has nothing in it yet, which is the only moment stored
         // state can be restored into it without overwriting something newer
-        beforeEvaluation(request, engine, freshEngine);
+        if (request != null) {
+          beforeEvaluation(request, engine, freshEngine);
+        }
         // before evaluating, not after: the notice goes into the same response as the result, and
         // the evaluation the caller just sent runs against a context that is within its limit
         int dropped = SessionRegistry.enforceDataLimit(engine);
@@ -328,7 +384,7 @@ public class AJAXQueryServlet extends HttpServlet {
               + " a session may keep here, and has been reset.");
         }
         result = calculateString(engine, expression, numericMode, function, outWriter, errorWriter);
-        if (result != null && result.length > 1) {
+        if (request != null && result != null && result.length > 1) {
           result[1] = afterEvaluation(request, engine, result[1]);
         }
       }
@@ -432,17 +488,7 @@ public class AJAXQueryServlet extends HttpServlet {
           inExpr = parser.nextScriptExpression();
         }
         if (outExpr != null) {
-          // an interactive widget: keep the expression, hand the browser its controls
-          ManipulateSpec manipulateSpec = ManipulateSpec.parse(outExpr, engine);
-          if (manipulateSpec != null) {
-            return ManipulateSession.create(engine, manipulateSpec, outWriter, errorWriter);
-          }
-          // a live cell: a Dynamic outside a Manipulate follows the symbols of the session
-          // itself, so a control in one cell can change what another cell shows
-          if (DynamicSession.isDynamicResult(outExpr)) {
-            return DynamicSession.create(engine, outExpr, outWriter, errorWriter);
-          }
-          return renderResult(engine, outExpr, outWriter, errorWriter);
+          return renderCell(engine, outExpr, outWriter, errorWriter);
         }
         return createOutput(outBuffer, null, engine, function);
 
@@ -473,6 +519,66 @@ public class AJAXQueryServlet extends HttpServlet {
       return JSONBuilder
           .createJSONError("Error in evaluateString: " + e.getClass().getSimpleName());
     }
+  }
+
+  /**
+   * Turn the result of a cell into the JSON the browser renders. Three kinds of result are more
+   * than a rendering and are kept by the session: a <code>Manipulate</code>, a live
+   * <code>Dynamic</code> cell, and - made of those and of plain results - a <code>TabView</code>.
+   */
+  static String[] renderCell(EvalEngine engine, IExpr outExpr,
+      StringBuilderWriter outWriter, StringBuilderWriter errorWriter) throws IOException {
+    // an interactive widget: keep the expression, hand the browser its controls
+    ManipulateSpec manipulateSpec = ManipulateSpec.parse(outExpr, engine);
+    if (manipulateSpec != null) {
+      return ManipulateSession.create(engine, manipulateSpec, outWriter, errorWriter);
+    }
+    // a live cell: a Dynamic outside a Manipulate follows the symbols of the session
+    // itself, so a control in one cell can change what another cell shows
+    if (DynamicSession.isDynamicResult(outExpr)) {
+      return DynamicSession.create(engine, outExpr, outWriter, errorWriter);
+    }
+    if (outExpr.isAST(S.TabView)) {
+      String[] tabs = renderTabView(engine, (IAST) outExpr, outWriter, errorWriter);
+      if (tabs != null) {
+        return tabs;
+      }
+    }
+    return renderResult(engine, outExpr, outWriter, errorWriter);
+  }
+
+  /**
+   * A <code>TabView</code> that is the result of a cell: every pane is rendered, as it would be
+   * were it a cell of its own, and the browser switches between them without asking again.
+   *
+   * <p>
+   * One whose selector is a <code>Dynamic</code> never gets here - it is a live cell, which shows
+   * the pane its variable picks and follows that variable.
+   *
+   * @return <code>null</code> if the expression is no <code>TabView</code> of panes
+   */
+  private static String[] renderTabView(EvalEngine engine, IAST tabView,
+      StringBuilderWriter outWriter, StringBuilderWriter errorWriter) throws IOException {
+    int selected = Dynamics.selectedTab(tabView, engine);
+    if (selected < 1) {
+      return null;
+    }
+    int size = ((IAST) tabView.arg1()).argSize();
+    String[] labels = new String[size];
+    String[] bodies = new String[size];
+    for (int i = 1; i <= size; i++) {
+      // a pane given as key -> {label, contents} is that whichever way the view was selected
+      IExpr pane = ((IAST) tabView.arg1()).get(i);
+      boolean keyed = pane.isRuleAST() && ((IAST) pane).arg2().isList()
+          && ((IAST) pane).arg2().argSize() == 2 && tabView.argSize() >= 2
+          && !tabView.arg2().isRuleAST();
+      IExpr[] labelAndContents = Dynamics.tabPane(tabView, i, keyed);
+      labels[i - 1] = labelAndContents[0].toString();
+      // what was printed while the cell was evaluated belongs to the cell, not to each pane
+      bodies[i - 1] = renderCell(engine, labelAndContents[1], new StringBuilderWriter(),
+          new StringBuilderWriter())[1];
+    }
+    return JSONBuilder.createJSONTabView(labels, bodies, selected - 1, outWriter, errorWriter);
   }
 
   /**
@@ -579,7 +685,13 @@ public class AJAXQueryServlet extends HttpServlet {
         String htmlSnippet = str.toString();
         String htmlPage = HTML_IFRAME;
         htmlPage = htmlPage.replace("`1`", htmlSnippet);
-        return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + htmlPage
+        // The page is the value of an attribute, so what would end the attribute is escaped -
+        // it used to be pasted in as it was, and the first quote of the page ended it. And the
+        // frame is sandboxed without "allow-same-origin": a script in the page runs, but as a
+        // stranger to the page around it, which it could otherwise read and drive.
+        String attribute = htmlPage.replace("&", "&amp;").replace("\"", "&quot;");
+        return JSONBuilder.createJSONJavaScript("<iframe sandbox=\"allow-scripts\" srcdoc=\""
+            + attribute
             + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
       }
     }

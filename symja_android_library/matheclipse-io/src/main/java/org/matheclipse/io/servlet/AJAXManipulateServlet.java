@@ -124,6 +124,19 @@ public class AJAXManipulateServlet extends HttpServlet {
       }
     }
 
+    out.println(evaluate(session.getId(), spec, bindings, buttonIndex, bodyButtonIndex,
+        bodyControlIndex, bodyControlValue, id));
+  }
+
+  /**
+   * Evaluate the body of a widget for one set of control values, in the engine of its session and
+   * holding that session's evaluation lock.
+   *
+   * @return the JSON the browser shows the body from
+   */
+  static String evaluate(String sessionID, ManipulateSpec spec, JsonNode bindings, int buttonIndex,
+      int bodyButtonIndex, int bodyControlIndex, JsonNode bodyControlValue, String id)
+      throws IOException {
     final StringBuilderWriter outWriter = new StringBuilderWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
     final StringBuilderWriter errorWriter = new StringBuilderWriter();
@@ -133,11 +146,10 @@ public class AJAXManipulateServlet extends HttpServlet {
         ThreadLocalNotifierClosable c = ServletLogging.setLogEventNotifier(outs, errors)) {
 
       // the engine and its lock are taken together; see AJAXQueryServlet#stateOf
-      AJAXQueryServlet.SessionState state = AJAXQueryServlet.stateOf(session.getId());
+      AJAXQueryServlet.SessionState state = AJAXQueryServlet.stateOf(sessionID);
       if (state == null) {
-        out.println(JSONBuilder.createJSONErrorString(
-            "This interactive output has expired - evaluate the input again."));
-        return;
+        return JSONBuilder.createJSONErrorString(
+            "This interactive output has expired - evaluate the input again.");
       }
       EvalEngine engine = state.engine;
       engine.setOutPrintStream(outs);
@@ -146,8 +158,8 @@ public class AJAXManipulateServlet extends HttpServlet {
       // one evaluation per session at a time, and never on the engine's own monitor - a time
       // budgeted evaluation copies the engine from its worker thread
       synchronized (state.lock) {
-        out.println(evaluate(engine, spec, bindings, buttonIndex, bodyButtonIndex, bodyControlIndex,
-            bodyControlValue, id, outWriter, errorWriter));
+        return evaluate(engine, spec, bindings, buttonIndex, bodyButtonIndex, bodyControlIndex,
+            bodyControlValue, id, outWriter, errorWriter);
       }
     } finally {
       EvalEngine.remove();
