@@ -217,7 +217,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
       }
     }
     if (expr.isReal()) {
-      return Double.compare(fBigIntValue.doubleValue(), ((IReal) expr).doubleValue());
+      return RealNumberComparison.compare(this, (IReal) expr);
     }
     return super.compareTo(expr);
   }
@@ -500,7 +500,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
     if (obj instanceof IFraction) {
       return AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE).compareTo(obj) > 0;
     }
-    return fBigIntValue.doubleValue() > obj.doubleValue();
+    return RealNumberComparison.isGreater(this, obj);
   }
 
   /**
@@ -519,7 +519,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
     if (obj instanceof IFraction) {
       return AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE).compareTo(obj) < 0;
     }
-    return fBigIntValue.doubleValue() < obj.doubleValue();
+    return RealNumberComparison.isLess(this, obj);
   }
 
   @Override

@@ -32,6 +32,17 @@ public interface IReal extends INumber {
 
   public Apfloat apfloatValue();
 
+  /**
+   * Exact radix-10 representation of this finite number's stored value, for comparison only.
+   * Implementations must preserve the stored digits or exact fraction independently of the
+   * engine's numeric precision. The result may be an {@code Aprational}; Apfloat's comparison
+   * dispatch handles that representation without rounding it to a decimal approximation.
+   *
+   * <p>This does not increase the precision of the number itself. NaN and infinities must be
+   * classified with {@link #isNaN()} and {@link #isInfinite()} before calling this method.
+   */
+  public Apfloat exactComparisonValue();
+
   /** {@inheritDoc} */
   @Override
   default IExpr complexArg() {
@@ -134,10 +145,11 @@ public interface IReal extends INumber {
   /**
    * Test if <code>this</code> signed number is greater equal than <code>that</code> signed number.
    *
-   * @return <code>this > that</code>
+   * @return <code>this >= that</code>, or false if either operand is NaN
    */
   default boolean isGE(IReal that) {
-    return !isLT(that);
+    // NaN is unordered: negating a strict predicate alone would incorrectly accept it.
+    return !isNaN() && !that.isNaN() && !isLT(that);
   }
 
   /**
@@ -160,10 +172,10 @@ public interface IReal extends INumber {
   /**
    * Test if <code>this</code> signed number is less equal than <code>that</code> signed number.
    *
-   * @return <code>this > that</code>
+   * @return <code>this <= that</code>, or false if either operand is NaN
    */
   default boolean isLE(IReal that) {
-    return !isGT(that);
+    return !isNaN() && !that.isNaN() && !isGT(that);
   }
 
   /**

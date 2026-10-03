@@ -2350,12 +2350,12 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
-      if ((!a0.isReal() && a0.isNumericFunction(true))
-          || (a1.isInexactNumber() && a0.isRational())) {
+      // Only symbolic numeric expressions need evaluation. Real operands already carry their
+      // values, and converting an exact operand here would lose information before comparison.
+      if (!a0.isReal() && a0.isNumericFunction(true)) {
         a0 = engine.evalN(a0);
       }
-      if ((!a1.isReal() && a1.isNumericFunction(true))
-          || (a0.isInexactNumber() && a1.isRational())) {
+      if (!a1.isReal() && a1.isNumericFunction(true)) {
         a1 = engine.evalN(a1);
       }
 

@@ -181,7 +181,7 @@ public class BigFractionSym extends AbstractFractionSym {
       }
     }
     if (expr.isReal()) {
-      return Double.compare(fFraction.doubleValue(), ((IReal) expr).doubleValue());
+      return RealNumberComparison.compare(this, (IReal) expr);
     }
     // if (expr.isNumber()) {
     // int c = this.compareTo(((INumber) expr).re());

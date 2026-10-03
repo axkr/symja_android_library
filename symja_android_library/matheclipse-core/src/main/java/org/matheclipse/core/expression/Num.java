@@ -5,6 +5,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.Aprational;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
@@ -354,6 +355,12 @@ public class Num implements INum {
   }
 
   @Override
+  public Apfloat exactComparisonValue() {
+    // Capture the stored binary double exactly, including subnormal values.
+    return new Aprational(value, 10);
+  }
+
+  @Override
   public Apfloat apfloatValue() {
     if (!Double.isFinite(value)) {
       // Apfloat has no representation for an infinity or a NaN, and its constructor answers a
@@ -686,7 +693,8 @@ public class Num implements INum {
   }
 
   public int compareTo(final double that) {
-    return Double.compare(value, that);
+    // Signed zeros are numerically equal; keep Double.compare's ordering for NaN.
+    return value == that ? 0 : Double.compare(value, that);
   }
 
   /**
@@ -697,11 +705,11 @@ public class Num implements INum {
   @Override
   public int compareTo(final IExpr expr) {
     if (expr instanceof Num) {
-      return Double.compare(value, ((Num) expr).value);
+      return compareTo(((Num) expr).value);
     }
     if (expr.isNumber()) {
       if (expr.isReal()) {
-        return Double.compare(value, ((IReal) expr).doubleValue());
+        return RealNumberComparison.compare(this, (IReal) expr);
       }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
@@ -1674,7 +1682,7 @@ public class Num implements INum {
 
   @Override
   public boolean isGT(IReal that) {
-    return value > that.doubleValue();
+    return RealNumberComparison.isGreater(this, that);
   }
 
   /** {@inheritDoc} */
@@ -1695,7 +1703,7 @@ public class Num implements INum {
 
   @Override
   public boolean isLT(IReal that) {
-    return value < that.doubleValue();
+    return RealNumberComparison.isLess(this, that);
   }
 
   @Override

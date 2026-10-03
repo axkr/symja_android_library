@@ -250,7 +250,7 @@ public class IntegerSym extends AbstractIntegerSym {
         return -expr.compareTo(this);
       }
     } else if (expr.isReal()) {
-      return Double.compare(fIntValue, ((IReal) expr).doubleValue());
+      return RealNumberComparison.compare(this, (IReal) expr);
     }
     return super.compareTo(expr);
   }
@@ -518,7 +518,7 @@ public class IntegerSym extends AbstractIntegerSym {
     if (obj instanceof AbstractFractionSym) {
       return AbstractFractionSym.valueOf(fIntValue).compareTo(obj) > 0;
     }
-    return doubleValue() > obj.doubleValue();
+    return RealNumberComparison.isGreater(this, obj);
   }
 
   /**
@@ -540,7 +540,7 @@ public class IntegerSym extends AbstractIntegerSym {
     if (obj instanceof AbstractFractionSym) {
       return AbstractFractionSym.valueOf(fIntValue).compareTo(obj) < 0;
     }
-    return doubleValue() < obj.doubleValue();
+    return RealNumberComparison.isLess(this, obj);
   }
 
   @Override

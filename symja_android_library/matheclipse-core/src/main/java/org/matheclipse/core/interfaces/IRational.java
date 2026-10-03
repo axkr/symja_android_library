@@ -1,6 +1,9 @@
 package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
+import org.apfloat.Apfloat;
+import org.apfloat.Apint;
+import org.apfloat.Aprational;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
@@ -9,6 +12,12 @@ import edu.jas.arith.BigComplex;
 
 /** Interface for "rational" numbers (i.e. numbers implementing IInteger or IFraction) */
 public interface IRational extends IReal, IBigNumber {
+  @Override
+  default Apfloat exactComparisonValue() {
+    // Preserve numerator and denominator instead of evaluating the fraction at engine precision.
+    return new Aprational(new Apint(toBigNumerator(), 10), new Apint(toBigDenominator(), 10));
+  }
+
   /** {@inheritDoc} */
   @Override
   public IRational abs();

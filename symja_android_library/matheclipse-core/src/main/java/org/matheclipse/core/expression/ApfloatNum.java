@@ -9,6 +9,8 @@ import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
+import org.apfloat.ApintMath;
+import org.apfloat.Aprational;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
@@ -297,6 +299,12 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IReal add(IReal value) {
+    // Bypass INum's default, which narrows the operand to a machine double.
+    return (IReal) plus((INumber) value);
+  }
+
+  @Override
   public IExpr agm(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {
@@ -380,6 +388,27 @@ public class ApfloatNum implements INum {
   @Override
   public Apfloat apfloatValue() {
     return fApfloat;
+  }
+
+  @Override
+  public Apfloat exactComparisonValue() {
+    if (fApfloat.radix() == 10) {
+      // Keep the compact exponent and prevent rounding during comparison with an exact fraction.
+      return fApfloat.precision(Apfloat.INFINITE);
+    }
+    if (fApfloat instanceof Aprational) {
+      return ((Aprational) fApfloat).toRadix(10);
+    }
+    if (fApfloat.signum() == 0) {
+      return new Apint(0, 10);
+    }
+    // A finite mantissa in any radix is coefficient * radix^exponent. Convert that exact ratio;
+    // direct decimal conversion would round repeating values such as 0.1 in radix 3 (= 1/3).
+    long exponent = fApfloat.scale() - fApfloat.size();
+    Apint coefficient = ApfloatMath.scale(fApfloat.precision(Apfloat.INFINITE), -exponent)
+        .truncate().toRadix(10);
+    Apint factor = ApintMath.pow(new Apint(fApfloat.radix(), 10), Math.abs(exponent));
+    return exponent < 0 ? new Aprational(coefficient, factor) : coefficient.multiply(factor);
   }
 
   @Override
@@ -667,27 +696,9 @@ public class ApfloatNum implements INum {
   @Override
   public int compareTo(final IExpr expr) {
 
-    if (expr instanceof ApfloatNum) {
-      return fApfloat.compareTo(((ApfloatNum) expr).fApfloat);
-    }
     if (expr.isNumber()) {
       if (expr.isReal()) {
-        try {
-          return fApfloat.compareTo(((IReal) expr).apfloatValue());
-        } catch (NumberFormatException | SymjaMathException ex) {
-          // An infinity or a NaN has no arbitrary precision representation; Num#apfloatValue()
-          // reports that as a SymjaMathException and Apfloat itself as a NumberFormatException.
-          // Sorting must not fail either way, because Orderless sorts arguments before any
-          // built-in sees them, so a throw here escapes the whole evaluation rather than the
-          // function that could have handled it.
-          //
-          // Comparing as doubles rather than falling back to the expression hierarchy is what
-          // keeps the two directions symmetric: Num#compareTo answers Double.compare for the same
-          // pair, and a comparator that calls a pair equal while its mirror image calls it smaller
-          // leaves the Orderless sort without a fixed point, which shows up as an iteration limit
-          // rather than as an ordering bug.
-          return Double.compare(doubleValue(), ((IReal) expr).doubleValue());
-        }
+        return RealNumberComparison.compare(this, (IReal) expr);
       }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
@@ -1474,18 +1485,12 @@ public class ApfloatNum implements INum {
 
   @Override
   public boolean isGT(IReal that) {
-    if (that instanceof ApfloatNum) {
-      return fApfloat.compareTo(((ApfloatNum) that).fApfloat) > 0;
-    }
-    return doubleValue() > that.doubleValue();
+    return RealNumberComparison.isGreater(this, that);
   }
 
   @Override
   public boolean isLT(IReal that) {
-    if (that instanceof ApfloatNum) {
-      return fApfloat.compareTo(((ApfloatNum) that).fApfloat) < 0;
-    }
-    return doubleValue() < that.doubleValue();
+    return RealNumberComparison.isLess(this, that);
   }
 
   /** {@inheritDoc} */
@@ -1867,6 +1872,12 @@ public class ApfloatNum implements INum {
   @Override
   public INum multiply(final INum value) {
     return valueOf(h().multiply(fApfloat, value.apfloatValue()));
+  }
+
+  @Override
+  public IReal multiply(IReal value) {
+    // Use the same arbitrary-precision path regardless of the operand's static type.
+    return (IReal) times((INumber) value);
   }
 
   /** @return */
