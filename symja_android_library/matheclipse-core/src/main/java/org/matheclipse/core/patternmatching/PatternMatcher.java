@@ -2510,9 +2510,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     if (lhsPatternExpr instanceof PatternNested) {
       PatternNested pattern2 = (PatternNested) lhsPatternExpr;
       IExpr patternExpr = pattern2.getPatternExpr();
-      if (matchExpr(patternExpr, lhsEvalExpr, engine, stackMatcher)) {
-        return pattern2.matchPattern(lhsEvalExpr, fPatternMap);
+      // bind the name before the nested pattern is matched: that match continues with the rest of
+      // the stack, where a condition as in g:{__} /; Length(g)==2 already reads the name
+      final IExpr[] patternValues = fPatternMap.copyPattern();
+      if (pattern2.matchPattern(lhsEvalExpr, fPatternMap)
+          && matchExpr(patternExpr, lhsEvalExpr, engine, stackMatcher)) {
+        return true;
       }
+      fPatternMap.resetPattern(patternValues);
       return false;
     }
     return lhsPatternExpr.matchPattern(lhsEvalExpr, fPatternMap);

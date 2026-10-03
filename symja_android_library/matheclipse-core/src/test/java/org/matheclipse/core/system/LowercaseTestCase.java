@@ -11148,6 +11148,171 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNamedPatternIsBoundInItsCondition() {
+    // the name of a compound pattern is bound before the condition reads it
+    check("MatchQ({1, 2}, g:{__} /; Length(g) == 2)", //
+        "True");
+    check("MatchQ({h(1), h(2)}, g:{__h} /; Length(g) == 3)", //
+        "False");
+    check("Cases({1, 2.5, 3}, g:(_Integer | _Real) /; g > 2)", //
+        "{2.5,3}");
+    check("MatchQ(k(1, 2), g:k(a_, b_) /; g[[1]] == 1)", //
+        "True");
+    check("len2(xs:{__q} /; Length(xs) == 2) := Length(xs); {len2({q(1), q(2)}), len2({q(1)})}", //
+        "{2,len2({q(1)})}");
+    // a name used twice still has to stand for the same expression
+    check("MatchQ({{1, 2}, {1, 2}}, {g:{_, _}, g:{_, _}})", //
+        "True");
+    check("MatchQ({{1, 2}, {1, 3}}, {g:{_, _}, g:{_, _}})", //
+        "False");
+    // a failed alternative gives the name back
+    check("Replace({{1, 2}, {3}}, {g:{_, _} /; False, r_} | {r_, g:{_}} :> {g, r})", //
+        "{{3},{1,2}}");
+  }
+
+  @Test
+  public void testEigenvaluesOrderOfConjugatePairs() {
+    // the positive imaginary part first, a conjugate pair before a real value of the same norm
+    check("Eigenvalues({{0., -1.}, {1., 0.}})", //
+        "{I*1.0,I*(-1.0)}");
+    check("Eigenvalues({{2., 0., 0.}, {0., 0., -2.}, {0., 2., 0.}})", //
+        "{I*2.0,I*(-2.0),2.0}");
+    check("Eigensystem({{1., 2.}, {-2., 1.}})[[1]]", //
+        "{1.0+I*2.0,1.0+I*(-2.0)}");
+    check("Eigensystem({{2., 0., 0.}, {0., 0., -2.}, {0., 2., 0.}})[[1]]", //
+        "{I*2.0,I*(-2.0),2.0}");
+    // Eigenvalues and Eigenvectors are in the same order
+    check("m = {{0, 0.7, 2.2, 2, 0.2}, {0.4, 0, 0, 0, 0}, {0, 0.7, 0, 0, 0}, {0, 0, 0.8, 0, 0},"
+        + " {0, 0, 0, 0.3, 0}}; {Im(Eigenvalues(m)[[2]]) > 0, Max(Abs(Flatten(Table(m . Eigenvectors(m)[[k]]"
+        + " - Eigenvalues(m)[[k]]*Eigenvectors(m)[[k]], {k, 5})))) < 10^-8}", //
+        "{True,True}");
+  }
+
+  @Test
+  public void testPlotRangeWithOneAxisLeftToTheContent() {
+    // {All, {ymin, ymax}} and {Automatic, {ymin, ymax}} fix the y axis only
+    check("StringCount(ExportString(Plot(Abs(2*x), {x, -7, 7}, PlotRange -> {All, {0, 25}}),"
+        + " \"SVG\"), \">25</text>\")", //
+        "1");
+    check("StringCount(ExportString(Show(Plot(Abs(2*x), {x, -7, 7}), PlotRange -> {Automatic,"
+        + " {0, 25}}), \"SVG\"), \">25</text>\")", //
+        "1");
+    check("StringCount(ExportString(Plot(Abs(2*x), {x, -7, 7}, PlotRange -> {{-2, 2}, All}),"
+        + " \"SVG\"), \">-6</text>\")", //
+        "0");
+  }
+
+  @Test
+  public void testSolveChainedEqual() {
+    check("Solve(x == y == 2, {x, y})", //
+        "{{x->2,y->2}}");
+    check("Solve({a == b == c, c == 1}, {a, b, c})", //
+        "{{a->1,b->1,c->1}}");
+    check("Reduce(x == y == 2, {x, y})", //
+        "x==2&&y==2");
+    // an equation without the variable is a condition on the parameters, which does not hold
+    // for generic parameters
+    check("Solve(a == b == c, a)", //
+        "{}");
+    check("Solve({a == b, c == c}, a)", //
+        "{{a->b}}");
+    // Norm gives squares of Abs, which are the squares themselves for real variables
+    check("Solve(Norm({x, y} - {1, 1}) == Norm({x, y} - {3, 1}) == 2, {x, y})", //
+        "{{x->2,y->1-Sqrt(3)},{x->2,y->1+Sqrt(3)}}");
+    check("Solve(Abs(x)^2 == 4, x)", //
+        "{{x->-2},{x->2}}");
+    check("Solve(Abs(x)^2 == -4, x)", //
+        "{}");
+  }
+
+  @Test
+  public void testColumnAndOverscriptLabelsInSVG() {
+    // a Column is one line per entry
+    check("StringCases(ExportString(Graphics(Text(Column({\"one\", \"two\"}), {0, 0})), \"SVG\"),"
+        + " \"<tspan\" ~~ Shortest(___) ~~ \"</tspan>\" :> \"line\")", //
+        "{line,line}");
+    check("StringCount(ExportString(Graphics({Red, Disk()}, PlotLabel -> Column({\"caption\","
+        + " LineLegend({Red, Blue}, {\"up\", \"down\"})})), \"SVG\"), {\"Column\", \"LineLegend\","
+        + " \"RGBColor\"})", //
+        "0");
+    check("StringCount(ExportString(Graphics({Text(Row({Overscript(\"y\", \"..\"), \" = 1\"}),"
+        + " {0, 0})}), \"SVG\"), \"y\u0308 = 1</text>\")", //
+        "1");
+  }
+
+  @Test
+  public void testElementDataDescription() {
+    check("ElementData(1, \"AtomicNumber\", \"Description\")", //
+        "atomic number");
+    check("ElementData(\"Gold\", \"YoungModulus\", \"Description\")", //
+        "Young modulus");
+    check("ElementData(1, \"HalfLife\", \"Description\") == \"half\u2010life\"", //
+        "True");
+    check("ElementData(1, \"NotAProperty\", \"Description\")", //
+        "ElementData(1,NotAProperty,Description)");
+    check("ElementData(999, \"AtomicNumber\", \"Description\")", //
+        "ElementData(999,AtomicNumber,Description)");
+  }
+
+  @Test
+  public void testCellularAutomatonSparseArrayInit() {
+    check("CellularAutomaton(30, SparseArray({3 -> 1}, 5), {{1}})", //
+        "{{0,1,1,1,0}}");
+    check("CellularAutomaton(30, SparseArray({3 -> 1}, 5), {2, All}) == "
+        + "CellularAutomaton(30, {0, 0, 1, 0, 0}, {2, All})", //
+        "True");
+  }
+
+  @Test
+  public void testRegionPlot() {
+    // a Graphics whose first part are primitives: one GraphicsComplex for the region
+    check("Head(RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2}))", //
+        "Graphics");
+    check("Head /@ RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})[[1]]", //
+        "{GraphicsComplex,List}");
+    // the outline is one closed loop on the unit circle, not the staircase of the grid
+    check("With({g = RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})}, With({loops = "
+        + "Cases(g, Line(l_) :> l, Infinity)[[1]], pts = g[[1, 1, 1]]}, {Length(loops), "
+        + "First(loops[[1]]) == Last(loops[[1]]), Max(Abs(Map(Norm, pts[[loops[[1]]]]) - 1)) < 10^-3}))", //
+        "{1,True,True}");
+    // an annulus has two loops
+    check("Length(Cases(RegionPlot(1 < x^2 + y^2 < 3, {x, -2, 2}, {y, -2, 2}), Line(l_) :> l,"
+        + " Infinity)[[1]])", //
+        "2");
+    // the fill is a single path, and the picture composes with Show
+    check("StringCount(ExportString(Graphics({RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})[[1]]}),"
+        + " \"SVG\"), \"<path\")", //
+        "2");
+    check("Head(Show(RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2}), Graphics({Red, Point({0, 0})})))", //
+        "Graphics");
+    check("{AspectRatio, Frame, Axes} /. Rest(List @@ RegionPlot(x > 0, {x, -2, 2}, {y, -2, 2}))", //
+        "{1,True,False}");
+    // one region for each condition; BoundaryStyle -> None leaves the fill alone
+    check("Count(RegionPlot({x^2 + y^2 < 1, x > 1}, {x, -2, 2}, {y, -2, 2})[[1]], _GraphicsComplex)", //
+        "2");
+    check("Cases(RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2}, BoundaryStyle -> None), _Line,"
+        + " Infinity)", //
+        "{}");
+  }
+
+  @Test
+  public void testScaledPositionsInSVG() {
+    // Scaled({x, y}) stays: it is a position in the plot range, which only the picture knows
+    check("Scaled({0.5, 0.25})", //
+        "Scaled({0.5,0.25})");
+    // the middle of the plot range of a plot is the middle of its data range here
+    check("StringCases(ExportString(Plot(x, {x, 0, 10}, Epilog -> Text(\"e\", Scaled({0.5, 0.5}))),"
+        + " \"SVG\"), RegularExpression(\"<text[^>]*>e</text>\")) == "
+        + "StringCases(ExportString(Plot(x, {x, 0, 10}, Epilog -> Text(\"e\", {5, 5})), \"SVG\"),"
+        + " RegularExpression(\"<text[^>]*>e</text>\"))", //
+        "True");
+    // {0, 0} and {1, 1} are the corners of the picture's range, and do not widen it
+    check("StringCases(ExportString(Graphics({Point({0, 0}), Point({10, 10}), Line({Scaled({0, 0}),"
+        + " Scaled({1, 1})})}), \"SVG\"), RegularExpression(\"<path d=\\\"[^\\\"]*\\\"\"))", //
+        "{<path d=\"M 5 355 L 355 5\"}");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //
