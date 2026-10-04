@@ -1768,7 +1768,8 @@ public abstract class AbstractFractionSym implements IFraction {
       if (that instanceof ApfloatNum) {
         return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
       }
-      return F.num(((Num) that).value + evalf());
+      // the machine number takes this number at machine precision, or promoted beyond it
+      return ((Num) that).plus((INumber) this);
     }
     if (that instanceof IComplexNum) {
       if (that instanceof ApcomplexNum) {
@@ -1945,7 +1946,7 @@ public abstract class AbstractFractionSym implements IFraction {
       if (that instanceof ApfloatNum) {
         return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
       }
-      return F.num(((Num) that).value * evalf());
+      return ((Num) that).times((INumber) this);
     }
     if (that instanceof IComplexNum) {
       if (that instanceof ApcomplexNum) {

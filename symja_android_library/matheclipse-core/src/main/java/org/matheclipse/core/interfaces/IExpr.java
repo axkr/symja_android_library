@@ -1096,11 +1096,13 @@ public interface IExpr
       if (c != CompareUtil.NOT_COMPARABLE) {
         return c;
       }
-      if (isNumber() && expr.isNumber()) {
-        // a complex number: by the real part, then by the size and the sign of the imaginary
-        // part, so that 1. sorts before 1-I and 1-I before 1+I
-        final INumber x = (INumber) this;
-        final INumber y = (INumber) expr;
+      final INumber x = isNumber() ? (INumber) this : isNumericFunction(true) ? evalNumber() : null;
+      final INumber y =
+          expr.isNumber() ? (INumber) expr : expr.isNumericFunction(true) ? expr.evalNumber() : null;
+      if (x != null && y != null) {
+        // a complex value: by the real part, then by the size and the sign of the imaginary
+        // part, so that 1. sorts before 1-I and 1-I before 1+I. Numbers and numeric expressions
+        // are ordered by the same rule; equal values are equal, as two real numbers are.
         c = RealNumberComparison.compare(x.re(), y.re());
         if (c == 0) {
           c = RealNumberComparison.compare(x.im().abs(), y.im().abs());
@@ -1108,12 +1110,7 @@ public interface IExpr
         if (c == 0) {
           c = RealNumberComparison.compare(x.im(), y.im());
         }
-        return c != 0 ? Integer.signum(c) : compareTo(expr);
-      }
-      if (isNumericFunction(true) && expr.isNumericFunction(true)) {
-        // two numeric values which are not both real: greater() and less() would only repeat
-        // the numeric evaluation
-        return equals(expr) ? 0 : compareTo(expr);
+        return Integer.signum(c);
       }
     }
     if (greater(expr).isTrue()) {

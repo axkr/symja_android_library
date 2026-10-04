@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.Context;
@@ -508,6 +509,9 @@ public class Iterator {
    */
   private static final int END_FUZZ_BITS = -50;
 
+  /** A machine iterator counts its elements exactly up to this number of steps. */
+  private static final double MAX_STEPS = 0x1.0p53;
+
   /** Iterate over machine reals. */
   private static final class DoubleIterator extends RangeIterator {
     double count;
@@ -546,13 +550,17 @@ public class Iterator {
       this.lowerLimitNum = F.num(lowerLimit);
       this.upperLimitNum = F.num(upperLimit);
       this.stepNum = F.num(step);
-      // the end test of Range is one bit stricter than the one of Table, Sum or Do
       this.range = range;
       final double steps = (upperLimit - lowerLimit) / step;
+      if (steps >= MAX_STEPS) {
+        // an infinite limit, or more elements than a machine number can count
+        ASTElementLimitExceeded.throwIt(Long.MAX_VALUE);
+      }
       if (steps >= 0.0) {
         // a number of steps which misses an integer by the fuzz only counts as that integer; the
         // difference is exact, where steps + fuzz would be rounded
         final double next = Math.ceil(steps);
+        // the end test of Range is one bit stricter than the one of Table, Sum or Do
         final int fuzzBits = range ? END_FUZZ_BITS - 1 : END_FUZZ_BITS;
         this.last = (long) (next - steps < Math.scalb(next, fuzzBits) ? next : Math.floor(steps));
       } else {
@@ -570,10 +578,7 @@ public class Iterator {
 
     @Override
     public int allocHint() {
-      if (step < 0) {
-        return (int) Math.round((lowerLimit - upperLimit) / (-step) + 1.0);
-      }
-      return (int) Math.round((upperLimit - lowerLimit) / step + 1.0);
+      return (int) Math.min(last + 1, Integer.MAX_VALUE);
     }
 
     @Override
@@ -1540,7 +1545,7 @@ public class Iterator {
    * @throws ArgumentTypeException if <code>step</code> is zero
    */
   private static void checkNonZeroStep(final IAST list, IExpr step) throws ArgumentTypeException {
-    if (step.isZero()) {
+    if (F.isExactZero(step)) {
       // Iterator does not have appropriate bounds.
       throw new ArgumentTypeException(Errors.getMessage("iterb", F.list(list), EvalEngine.get()));
     }

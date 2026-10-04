@@ -974,7 +974,7 @@ public class AST2Expr {
         double value = doubleValue * Math.pow(10, exponent);
         if (Double.isInfinite(value) && Double.isFinite(doubleValue)) {
           // 1.*^400 is an arbitrary precision number of machine precision
-          return ApfloatNum.promotedLiteral(floatStr, exponent);
+          return ApfloatNum.promotedLiteral(floatStr, exponent, ParserConfig.MACHINE_PRECISION);
         }
         return F.num(value);
       }

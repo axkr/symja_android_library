@@ -6,6 +6,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -337,12 +338,23 @@ public class Predicates {
   }
 
   /**
+   * Whether two expressions are one element for <code>DeleteDuplicates</code>,
+   * <code>DuplicateFreeQ</code> and <code>Tally</code>: as {@link #isSameQ(IExpr, IExpr)}, but a
+   * machine number and an arbitrary precision number are two elements, although
+   * <code>SameQ</code> takes them for the same: <code>DeleteDuplicates({1., N(1,30)})</code> keeps
+   * both.
+   */
+  public static boolean isDuplicate(IExpr x, IExpr y) {
+    return (x instanceof Num) == (y instanceof Num) && isSameQ(x, y);
+  }
+
+  /**
    * The test of <code>DeleteDuplicates</code>, <code>DuplicateFreeQ</code> and <code>Tally</code>:
-   * {@link #isSameQ(IExpr, IExpr)} for <code>SameQ</code>, which needs no evaluation, every other
+   * {@link #isDuplicate(IExpr, IExpr)} by default, which needs no evaluation, every other
    * <code>head</code> is evaluated as <code>head(x,y)</code>.
    */
   public static BiPredicate<IExpr, IExpr> duplicateTest(final IExpr head) {
-    return head == S.SameQ ? Predicates::isSameQ : isBinaryTrue(head);
+    return head == S.SameQ ? Predicates::isDuplicate : isBinaryTrue(head);
   }
 
   /**

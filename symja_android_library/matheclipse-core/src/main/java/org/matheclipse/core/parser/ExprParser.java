@@ -19,7 +19,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NumStr;
@@ -1048,11 +1047,7 @@ public class ExprParser extends Scanner {
         if (Double.isInfinite(((NumStr) temp).doubleValue())) {
           // a literal beyond the double range, like 1.*^400, is an arbitrary precision number of
           // machine precision
-          int index = numberStr.indexOf("*^");
-          temp = index > 0
-              ? ApfloatNum.promotedLiteral(numberStr.substring(0, index),
-                  Long.parseLong(numberStr.substring(index + 2)))
-              : ApfloatNum.promotedLiteral(numberStr, 0);
+          temp = ((NumStr) temp).promoted();
         }
       } else {
         if (exponentStr == null || exponentStr.equals("1")) {

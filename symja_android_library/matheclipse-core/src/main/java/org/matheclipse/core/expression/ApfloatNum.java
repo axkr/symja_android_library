@@ -188,19 +188,13 @@ public class ApfloatNum implements INum {
 
   /**
    * The literal <code>mantissa*^exponent</code> as an arbitrary precision number of machine
-   * precision: a literal like <code>1.*^400</code>, which is beyond the double range. A mantissa
-   * with more digits than a machine number keeps them.
+   * precision: a literal like <code>1.*^400</code>, which is beyond the double range.
+   *
+   * @param precision the precision of the literal, at least the machine precision
    */
-  public static ApfloatNum promotedLiteral(final String mantissa, final long exponent) {
-    int digits = 0;
-    for (int i = 0; i < mantissa.length(); i++) {
-      final char c = mantissa.charAt(i);
-      if (Character.isDigit(c) && (digits > 0 || c != '0')) {
-        digits++;
-      }
-    }
-    Apfloat value = new Apfloat(mantissa,
-        digits > ParserConfig.MACHINE_PRECISION ? digits : ParserConfig.MACHINE_PRECISION);
+  public static ApfloatNum promotedLiteral(final String mantissa, final long exponent,
+      final long precision) {
+    Apfloat value = new Apfloat(mantissa, Math.max(precision, ParserConfig.MACHINE_PRECISION));
     return valueOf(exponent == 0 ? value : ApfloatMath.scale(value, exponent));
   }
 

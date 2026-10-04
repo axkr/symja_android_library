@@ -22,6 +22,8 @@ import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
@@ -605,16 +607,8 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST2()) {
-          IExpr quotient = machineQuotient(ast.arg1(), ast.arg2());
-          if (quotient.isPresent()) {
-            // Ceiling(0.6, 0.2) is 3*0.2, because 0.6/0.2 is 2.9999999999999996
-            return F.Times(F.Ceiling(quotient), ast.arg2());
-          }
-          if (ast.arg1().isReal() && ast.arg2().isReal()) {
-            // -a*Quotient(-x, a), as Floor(x, a) is a*Quotient(x, a)
-            return F.Times(F.CN1, F.Quotient(ast.arg1().negate(), ast.arg2()), ast.arg2());
-          }
-          return F.Times(F.Ceiling(F.Divide(ast.arg1(), ast.arg2())), ast.arg2());
+          // Ceiling(0.6, 0.2) is 3*0.2, because 0.6/0.2 is 2.9999999999999996
+          return F.Times(F.Ceiling(multipleQuotient(ast.arg1(), ast.arg2())), ast.arg2());
         }
         IExpr arg1 = engine.evaluateNIL(ast.arg1());
         if (arg1.isPresent()) {
@@ -1058,16 +1052,8 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST2()) {
-          IExpr quotient = machineQuotient(ast.arg1(), ast.arg2());
-          if (quotient.isPresent()) {
-            // Floor(0.7, 0.1) is 6*0.1, because 0.7/0.1 is 6.999999999999999
-            return F.Times(F.Floor(quotient), ast.arg2());
-          }
-          if (ast.arg1().isReal() && ast.arg2().isReal()) {
-            // a*Quotient(x, a)
-            return F.Times(F.Quotient(ast.arg1(), ast.arg2()), ast.arg2());
-          }
-          return F.Times(F.Floor(F.Divide(ast.arg1(), ast.arg2())), ast.arg2());
+          // Floor(0.7, 0.1) is 6*0.1, because 0.7/0.1 is 6.999999999999999
+          return F.Times(F.Floor(multipleQuotient(ast.arg1(), ast.arg2())), ast.arg2());
         }
         // IExpr arg1 = engine.evaluateNIL(ast.arg1());
         // if (arg1.isPresent()) {
@@ -2356,22 +2342,43 @@ public class IntegerFunctions {
   }
 
   /**
-   * The quotient <code>x/a</code> of two real numbers of which at least one is a machine number,
-   * as one machine division of their machine values, and not <code>x*(1/a)</code>:
-   * <code>Floor(x,a)</code>, <code>Ceiling(x,a)</code> and <code>Round(x,a)</code> round this
-   * quotient and multiply it with <code>a</code>.
+   * The quotient <code>x/a</code> which <code>Floor(x,a)</code>, <code>Ceiling(x,a)</code> and
+   * <code>Round(x,a)</code> round and multiply with <code>a</code>. For two real numbers of which
+   * at least one is a machine number it is one machine division of their machine values, and not
+   * <code>x*(1/a)</code>; if a machine value or the quotient is beyond the double range, the
+   * division is done with arbitrary precision numbers of machine precision.
    *
-   * @return {@link F#NIL} if no operand is a machine number or one has no machine value
+   * @return the quotient, or the unevaluated <code>x/a</code> for every other pair of operands
    */
-  private static IExpr machineQuotient(IExpr x, IExpr a) {
-    if ((x instanceof Num || a instanceof Num) && x.isReal() && a.isReal()) {
+  private static IExpr multipleQuotient(IExpr x, IExpr a) {
+    if ((isMachine(x) || isMachine(a)) && x.isReal() && a.isReal() && !F.isExactZero(a)) {
       final double dx = ((IReal) x).doubleValue();
       final double da = ((IReal) a).doubleValue();
-      if (Double.isFinite(dx) && Double.isFinite(da) && da != 0.0) {
-        return F.num(dx / da);
+      final double quotient = dx / da;
+      if (Double.isFinite(dx) && Double.isFinite(da) && da != 0.0 && Double.isFinite(quotient)) {
+        return F.num(quotient);
+      }
+      if (!Double.isNaN(dx) && !Double.isNaN(da) && isFiniteNumber(x) && isFiniteNumber(a)) {
+        final long precision = ParserConfig.MACHINE_PRECISION;
+        return F.num(((IReal) x).apfloatValue().precision(precision)
+            .divide(((IReal) a).apfloatValue().precision(precision)));
       }
     }
-    return F.NIL;
+    return F.Divide(x, a);
+  }
+
+  /** No machine infinity; an arbitrary precision number is always finite. */
+  private static boolean isFiniteNumber(IExpr x) {
+    return !(x instanceof Num) || Double.isFinite(((Num) x).doubleValue());
+  }
+
+  /**
+   * A machine number, or an arbitrary precision number of machine precision, which is a machine
+   * result beyond the double range.
+   */
+  private static boolean isMachine(IExpr x) {
+    return x instanceof Num || (x instanceof ApfloatNum
+        && ((ApfloatNum) x).precision() == ParserConfig.MACHINE_PRECISION);
   }
 
   public static void initialize() {
@@ -2581,10 +2588,7 @@ public class IntegerFunctions {
     private IExpr round(EvalEngine engine, IExpr expr, IExpr k) {
       // Round(0.35, 0.1) is 3*0.1 and Round(0.35, 1/10) is 3/10, because 0.35/0.1 is
       // 3.4999999999999996
-      IExpr n = machineQuotient(expr, k);
-      if (n.isNIL()) {
-        n = S.Divide.ofNIL(engine, expr, k);
-      }
+      IExpr n = engine.evaluate(multipleQuotient(expr, k));
       if (n.isPresent()) {
         if (n.isRealResult() || n.isComplex() || n.isComplexNumeric()) {
           n = S.Round.ofNIL(engine, n);

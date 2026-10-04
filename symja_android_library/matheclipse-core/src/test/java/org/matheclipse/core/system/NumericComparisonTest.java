@@ -535,4 +535,31 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
     check("{Precision(1.*^400), Precision(1.2345678901234567890*^400)}", //
         "{16,20}");
   }
+
+  @Test
+  public void testSecondReview() {
+    // a machine number and an arbitrary precision number are two elements, although SameQ takes
+    // them for the same
+    check("{Length(DeleteDuplicates({1,1.,N(1,30)})), Tally({1.,N(1,30),1}), N(1/3,20)===N(1/3,30), 1.===N(1,30)}", //
+        "{3,{{1.0,1},{1,1},{1,1}},True,True}");
+    // the groups of nearly equal machine numbers depend on their order
+    check("{Tally({1.,1.+2.^-52,1.+2.^-51})[[All,2]], Tally({1.+2.^-51,1.+2.^-52,1.})[[All,2]]}", //
+        "{{2,1},{2,1}}");
+    // a quotient or an operand beyond the double range
+    check("{Floor(1.,1.*^-320)==1, Ceiling(1.,1.*^-320)==1, Floor(N(10^400),3.)<=N(10^400), " //
+        + "Floor(N(10^400),3.)>10^399, Floor(10^400+0.5,0.5)==10^400}", //
+        "{True,True,True,True,True}");
+    check("Block({z=1.5}, {z*10^400==15*10^399, z+10^400==10^400, z-10^400==-10^400, 10^400/7-z>10^399, 2+z, 1/2*z})", //
+        "{True,True,True,True,3.5,0.75}");
+    check("{Floor(5,0), Floor(x,2), Ceiling(a,b), Round(x,2)}", //
+        "{Indeterminate,2*Floor(x/2),b*Ceiling(a/b),Round(x,2)}");
+    // complex values are ordered by their value, numbers and numeric expressions alike
+    check("NumericalSort({I, Sqrt(-2), 1, -I, 2*I, Sqrt(-3), 1+I, 0.5, Sqrt(-5)+1, 3*I, -2})", //
+        "{-2,-I,I,I*Sqrt(2),I*Sqrt(3),I*2,I*3,0.5,1,1+I,1+I*Sqrt(5)}");
+    check("{NumericalOrder(1+I,1.+I), NumericalOrder(Sqrt(-2),I*Sqrt(2)), NumericalOrder(I*Sqrt(2),1)}", //
+        "{0,0,1}");
+    // more steps than a machine number can count
+    check("Range(0.,1.,1.*^-320)", //
+        "Range(0.0,1.0,0.0)");
+  }
 }

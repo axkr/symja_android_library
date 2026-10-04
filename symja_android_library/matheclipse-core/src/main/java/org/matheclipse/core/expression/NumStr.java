@@ -64,6 +64,14 @@ public final class NumStr extends Num {
     }
   }
 
+  /**
+   * This literal as an arbitrary precision number of its precision: the value of a literal like
+   * <code>1.*^400</code>, which is beyond the double range.
+   */
+  public ApfloatNum promoted() {
+    return ApfloatNum.promotedLiteral(fFloatStr, fExponent, fPrecision);
+  }
+
   @Override
   public INum abs() {
     if (EvalEngine.isApfloatMode()) {

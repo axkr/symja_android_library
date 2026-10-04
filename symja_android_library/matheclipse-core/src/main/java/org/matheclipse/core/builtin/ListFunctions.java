@@ -5534,7 +5534,7 @@ public final class ListFunctions {
             F.List("argument " + ast.arg1() + " is greater than Javas Integer.MAX_VALUE-3."));
       }
       if (ast.isAST3()) {
-        if (ast.arg3().isZero()) {
+        if (F.isExactZero(ast.arg3())) {
           // Range specification in `1` does not have appropriate bounds.
           // A step of 0 never advances; saying so beats leaking the 1/0 that computing the number
           // of steps would produce.
@@ -8946,6 +8946,10 @@ public final class ListFunctions {
    * Count the elements of a list which are the same for <code>SameQ</code>: an inexact real number
    * is looked up among the inexact real numbers found so far, because two of them are the same if
    * they differ in their last bit; every other element is looked up by its hash value.
+   * <p>
+   * A number is counted with the first group it is the same as. Because "differs in the last bit"
+   * is not transitive, the groups of three or more nearly equal numbers depend on their order; no
+   * grouping is the right one for them.
    */
   private static IAST tallySameQ(IAST list) {
     java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
@@ -8955,7 +8959,7 @@ public final class ListFunctions {
       if (arg instanceof INum) {
         for (int j = 0; j < inexactReals.size(); j++) {
           IExpr key = inexactReals.get(j);
-          if (Predicates.isSameQ(key, arg)) {
+          if (Predicates.isDuplicate(key, arg)) {
             map.merge(key, 1, Integer::sum);
             continue iLoop;
           }

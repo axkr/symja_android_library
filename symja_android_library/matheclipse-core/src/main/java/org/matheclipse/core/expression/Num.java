@@ -2125,6 +2125,11 @@ public class Num implements INum {
     return value + that;
   }
 
+  /** A rational number beyond the double range as an arbitrary precision number. */
+  private static ApfloatNum promoted(IRational that) {
+    return ApfloatNum.promoted(that.toBigNumerator(), that.toBigDenominator());
+  }
+
   @Override
   public IExpr plus(final IExpr that) {
     if (that instanceof INumber) {
@@ -2154,6 +2159,11 @@ public class Num implements INum {
   public INumber plus(final INumber that) {
     if (that instanceof IInexactNumber) {
       return plus((IInexactNumber) that);
+    }
+    if (that instanceof IRational && Double.isInfinite(that.evalfNaN())) {
+      // an exact number beyond the double range is no Infinity
+      return ApfloatNum.machineOrPromoted(
+          apfloatNumValue().add(promoted((IRational) that)).apfloatValue());
     }
     if (that instanceof IReal) {
       return Num.valueOf(value + that.evalfNaN());
@@ -2513,6 +2523,11 @@ public class Num implements INum {
   public IInexactNumber times(final INumber that) {
     if (that instanceof IInexactNumber) {
       return times((IInexactNumber) that);
+    }
+    if (that instanceof IRational && Double.isInfinite(that.evalfNaN())) {
+      // an exact number beyond the double range is no Infinity
+      return ApfloatNum.machineOrPromoted(
+          apfloatNumValue().multiply(promoted((IRational) that)).apfloatValue());
     }
     if (that instanceof IReal) {
       return Num.valueOf(value * that.evalfNaN());
