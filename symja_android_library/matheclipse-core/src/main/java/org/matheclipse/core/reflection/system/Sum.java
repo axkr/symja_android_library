@@ -303,6 +303,12 @@ public class Sum extends ListFunctions.Table implements SumRules {
       // Sum({f,g},{i,1,n}) is the list of the two sums
       return arg1.mapThread(ast, 1);
     }
+    if (forcedMethod == null) {
+      IExpr enumerated = enumerateIndexed(ast, engine);
+      if (enumerated.isPresent()) {
+        return enumerated;
+      }
+    }
     if (arg1.isAST()) {
       arg1 = F.expand(arg1, false, false, false);
     }
@@ -312,7 +318,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
     if (forcedMethod == null && preevaledSum != ast && !preevaledSum.equals(ast)) {
       // continue with the evaluated arguments, so that a sum which can't be computed is returned
-      // with them, like WMA does: Sum(1/(i+1),{i,1,Infinity}) gives Sum(1/(1+i),{i,1,Infinity})
+      // with them: Sum(1/(i+1),{i,1,Infinity}) gives Sum(1/(1+i),{i,1,Infinity})
       return preevaledSum;
     }
     if (forcedMethod == null && preevaledSum.isAST2()) {
@@ -322,6 +328,53 @@ public class Sum extends ListFunctions.Table implements SumRules {
       }
     }
     return evaluateSum(preevaledSum, forcedMethod, engine);
+  }
+
+  /**
+   * A sum over a range of numbers whose summand has an indexed variable in it, an undefined
+   * <code>v(i)</code>: there is no closed form to look for, the terms are written out as they are.
+   * <code>Sum((v(i)-i)^2, {i,1,3})</code> is <code>(-1+v(1))^2+(-2+v(2))^2+(-3+v(3))^2</code>;
+   * expanded first, it was the polynomial <code>14-2*v(1)+v(1)^2-...</code>, which has rounding
+   * errors where the squares have none - <code>FindMinimum</code> reported
+   * <code>-1.77636*10^-15</code> as the minimum of the sum of squares.
+   *
+   * @return {@link F#NIL} if the sum is not of this form
+   */
+  private static IExpr enumerateIndexed(IAST ast, EvalEngine engine) {
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr iterator = ast.get(i);
+      if (!iterator.isList() || iterator.argSize() < 2 || iterator.argSize() > 3
+          || !iterator.first().isSymbol()) {
+        return F.NIL;
+      }
+      IAST list = (IAST) iterator;
+      for (int j = 2; j < list.size(); j++) {
+        if (!engine.evaluate(list.get(j)).isInteger()) {
+          return F.NIL;
+        }
+      }
+    }
+    final IExpr summand = ast.arg1();
+    boolean indexed = false;
+    for (int i = 2; i < ast.size() && !indexed; i++) {
+      final IExpr variable = ast.get(i).first();
+      indexed = !summand.isFree(x -> x.isAST() && x.head().isSymbol() && !x.head().isBuiltInSymbol()
+          && ((ISymbol) x.head()).getRulesData() == null && !x.isFree(variable), false);
+    }
+    if (!indexed) {
+      return F.NIL;
+    }
+    IASTAppendable table = F.ast(S.Table, ast.size());
+    table.append(summand);
+    // Table nests its first iterator outermost, as Sum does
+    for (int i = 2; i < ast.size(); i++) {
+      table.append(ast.get(i));
+    }
+    IExpr terms = engine.evaluate(table);
+    if (!terms.isList()) {
+      return F.NIL;
+    }
+    return ast.size() == 3 ? ((IAST) terms).setAtCopy(0, S.Plus) : F.Total(F.Flatten(terms));
   }
 
   /**

@@ -310,9 +310,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       IExpr result = evaluateIntegrate(holdallAST, argSize, option, engine, originalAST);
       if (depth > 0) {
         // A sub-integral a Rubi rule asked for must not come back as a bare RootSum: it is a
-        // construct the rules have never seen, because WMA answers these inner algebraic integrals
-        // in closed form. Handing one back corrupts the
-        // answer - SubstAux's fallback for an unknown head is Map(Function(SubstAux(#1,x,v,flag)),
+        // construct the rules have never seen. Handing one back corrupts the answer - SubstAux's
+        // fallback for an unknown head is Map(Function(SubstAux(#1,x,v,flag)),
         // u), which wraps each of RootSum's pure-function arguments in a SECOND function whose #1
         // captures the RootSum's own #1 (the root); the substitution is dropped and the integral
         // silently collapses to 0. Defer instead, exactly as RationalIntegration's
@@ -737,6 +736,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (result == S.Undefined) {
             return F.NIL;
           }
+          return result;
+        }
+        result = integrateSqrtOfLinearQuotient(fx, x, engine);
+        if (result.isPresent()) {
           return result;
         }
 
@@ -1397,6 +1400,65 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return piecewise;
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>Integrate(Sqrt((c+d*x)/(a+b*x)), x)</code> in the radical of the integrand:
+   * <code>(a+b*x)*Sqrt(r)/b-(a*d-b*c)/(b^(3/2)*Sqrt(d))*ArcTanh(Sqrt(b)*Sqrt(r)/Sqrt(d))</code>
+   * with <code>r == (c+d*x)/(a+b*x)</code>, and the <code>ArcTan</code> form of it where
+   * <code>b*d &lt; 0</code>.
+   * <p>
+   * The rules split the root into the roots of numerator and denominator, and for
+   * <code>b*c-a*d &lt; 0</code> they did it with the negated numerator:
+   * <code>Sqrt((2+3*x)/(1+x))</code> came back with <code>Sqrt(-2-3*x)</code> and an
+   * <code>ArcSin</code> of it - right, but in square roots of negative numbers where the integrand
+   * is real, and not to be simplified back to the integrand after differentiation.
+   *
+   * @return {@link F#NIL} if the integrand is not of this form
+   */
+  private static IExpr integrateSqrtOfLinearQuotient(IAST fx, IExpr x, EvalEngine engine) {
+    if (!fx.isSqrt() || !fx.base().isTimes()) {
+      return F.NIL;
+    }
+    final IExpr quotient = fx.base();
+    IExpr numerator = engine.evaluate(F.Numerator(quotient));
+    IExpr denominator = engine.evaluate(F.Denominator(quotient));
+    if (!numerator.isPolynomialOfMaxDegree(x, 1) || !denominator.isPolynomialOfMaxDegree(x, 1)) {
+      return F.NIL;
+    }
+    IExpr c = engine.evaluate(F.Coefficient(numerator, x, F.C0));
+    IExpr d = engine.evaluate(F.Coefficient(numerator, x, F.C1));
+    IExpr a = engine.evaluate(F.Coefficient(denominator, x, F.C0));
+    IExpr b = engine.evaluate(F.Coefficient(denominator, x, F.C1));
+    if (b.isZero() || d.isZero() || !a.isFree(x) || !b.isFree(x) || !c.isFree(x) || !d.isFree(x)) {
+      return F.NIL;
+    }
+    if (b.isNegativeResult()) {
+      // the same quotient with a positive b
+      a = a.negate();
+      b = b.negate();
+      c = c.negate();
+      d = d.negate();
+    }
+    IExpr k = engine.evaluate(F.Expand(F.Subtract(F.Times(a, d), F.Times(b, c))));
+    if (k.isZero()) {
+      return F.NIL;
+    }
+    IExpr first = F.Times(F.Plus(a, F.Times(b, x)), fx, F.Power(b, F.CN1));
+    IExpr second;
+    if (d.isNegativeResult()) {
+      // ArcTanh(z/(I*s))/(I*s) == -ArcTan(z/s)/s
+      IExpr s2 = d.negate();
+      second = F.Times(k, F.Power(b, F.CN3D2), F.Power(s2, F.CN1D2),
+          F.ArcTan(F.Times(F.Sqrt(F.Divide(b, s2)), fx)));
+    } else if (b.isRational() && d.isRational()) {
+      second = F.Times(F.CN1, k, F.Power(b, F.CN3D2), F.Power(d, F.CN1D2),
+          F.ArcTanh(F.Times(F.Sqrt(F.Divide(b, d)), fx)));
+    } else {
+      second = F.Times(F.CN1, k, F.Power(b, F.CN3D2), F.Power(d, F.CN1D2),
+          F.ArcTanh(F.Times(F.Sqrt(b), F.Power(d, F.CN1D2), fx)));
+    }
+    return engine.evaluate(F.Plus(first, second));
   }
 
   /**

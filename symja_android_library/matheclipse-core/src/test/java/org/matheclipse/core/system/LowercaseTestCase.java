@@ -590,7 +590,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     checkNumeric("ArcCos(-2.0)", //
         "3.141592653589793+I*(-1.3169578969248166)");
-    // WMA: ArcCos(2.) -> 0.+1.31696*I, the same side of the cut as N(ArcCos(2),30)
+    // ArcCos(2.) -> 0.+1.31696*I, the same side of the cut as N(ArcCos(2),30)
     checkNumeric("ArcCos(2.0)", //
         "I*1.3169578969248166");
 
@@ -11145,8 +11145,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " \"<tspan\")", //
         "0");
     // the box of a framed two-line text is two lines high
-    check("StringCount(ExportString(Graphics({Text(Framed(\"top\\nbottom\", Background -> Yellow),"
-        + " {0, 0})}), \"SVG\"), \"height=\\\"34\\\"\")", //
+    check(
+        "StringCount(ExportString(Graphics({Text(Framed(\"top\\nbottom\", Background -> Yellow),"
+            + " {0, 0})}), \"SVG\"), \"height=\\\"34\\\"\")", //
         "1");
   }
 
@@ -11194,14 +11195,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPlotRangeWithOneAxisLeftToTheContent() {
     // {All, {ymin, ymax}} and {Automatic, {ymin, ymax}} fix the y axis only
-    check("StringCount(ExportString(Plot(Abs(2*x), {x, -7, 7}, PlotRange -> {All, {0, 25}}),"
-        + " \"SVG\"), \">25</text>\")", //
+    check(
+        "StringCount(ExportString(Plot(Abs(2*x), {x, -7, 7}, PlotRange -> {All, {0, 25}}),"
+            + " \"SVG\"), \">25</text>\")", //
         "1");
-    check("StringCount(ExportString(Show(Plot(Abs(2*x), {x, -7, 7}), PlotRange -> {Automatic,"
-        + " {0, 25}}), \"SVG\"), \">25</text>\")", //
+    check(
+        "StringCount(ExportString(Show(Plot(Abs(2*x), {x, -7, 7}), PlotRange -> {Automatic,"
+            + " {0, 25}}), \"SVG\"), \">25</text>\")", //
         "1");
-    check("StringCount(ExportString(Plot(Abs(2*x), {x, -7, 7}, PlotRange -> {{-2, 2}, All}),"
-        + " \"SVG\"), \">-6</text>\")", //
+    check(
+        "StringCount(ExportString(Plot(Abs(2*x), {x, -7, 7}, PlotRange -> {{-2, 2}, All}),"
+            + " \"SVG\"), \">-6</text>\")", //
         "0");
   }
 
@@ -11231,15 +11235,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testColumnAndOverscriptLabelsInSVG() {
     // a Column is one line per entry
-    check("StringCases(ExportString(Graphics(Text(Column({\"one\", \"two\"}), {0, 0})), \"SVG\"),"
-        + " \"<tspan\" ~~ Shortest(___) ~~ \"</tspan>\" :> \"line\")", //
+    check(
+        "StringCases(ExportString(Graphics(Text(Column({\"one\", \"two\"}), {0, 0})), \"SVG\"),"
+            + " \"<tspan\" ~~ Shortest(___) ~~ \"</tspan>\" :> \"line\")", //
         "{line,line}");
     check("StringCount(ExportString(Graphics({Red, Disk()}, PlotLabel -> Column({\"caption\","
         + " LineLegend({Red, Blue}, {\"up\", \"down\"})})), \"SVG\"), {\"Column\", \"LineLegend\","
         + " \"RGBColor\"})", //
         "0");
-    check("StringCount(ExportString(Graphics({Text(Row({Overscript(\"y\", \"..\"), \" = 1\"}),"
-        + " {0, 0})}), \"SVG\"), \"y\u0308 = 1</text>\")", //
+    check(
+        "StringCount(ExportString(Graphics({Text(Row({Overscript(\"y\", \"..\"), \" = 1\"}),"
+            + " {0, 0})}), \"SVG\"), \"y\u0308 = 1</text>\")", //
         "1");
   }
 
@@ -11261,8 +11267,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testCellularAutomatonSparseArrayInit() {
     check("CellularAutomaton(30, SparseArray({3 -> 1}, 5), {{1}})", //
         "{{0,1,1,1,0}}");
-    check("CellularAutomaton(30, SparseArray({3 -> 1}, 5), {2, All}) == "
-        + "CellularAutomaton(30, {0, 0, 1, 0, 0}, {2, All})", //
+    check(
+        "CellularAutomaton(30, SparseArray({3 -> 1}, 5), {2, All}) == "
+            + "CellularAutomaton(30, {0, 0, 1, 0, 0}, {2, All})", //
         "True");
   }
 
@@ -11279,22 +11286,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "First(loops[[1]]) == Last(loops[[1]]), Max(Abs(Map(Norm, pts[[loops[[1]]]]) - 1)) < 10^-3}))", //
         "{1,True,True}");
     // an annulus has two loops
-    check("Length(Cases(RegionPlot(1 < x^2 + y^2 < 3, {x, -2, 2}, {y, -2, 2}), Line(l_) :> l,"
-        + " Infinity)[[1]])", //
+    check(
+        "Length(Cases(RegionPlot(1 < x^2 + y^2 < 3, {x, -2, 2}, {y, -2, 2}), Line(l_) :> l,"
+            + " Infinity)[[1]])", //
         "2");
     // the fill is a single path, and the picture composes with Show
-    check("StringCount(ExportString(Graphics({RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})[[1]]}),"
-        + " \"SVG\"), \"<path\")", //
+    check(
+        "StringCount(ExportString(Graphics({RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2})[[1]]}),"
+            + " \"SVG\"), \"<path\")", //
         "2");
-    check("Head(Show(RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2}), Graphics({Red, Point({0, 0})})))", //
+    check(
+        "Head(Show(RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2}), Graphics({Red, Point({0, 0})})))", //
         "Graphics");
     check("{AspectRatio, Frame, Axes} /. Rest(List @@ RegionPlot(x > 0, {x, -2, 2}, {y, -2, 2}))", //
         "{1,True,False}");
     // one region for each condition; BoundaryStyle -> None leaves the fill alone
-    check("Count(RegionPlot({x^2 + y^2 < 1, x > 1}, {x, -2, 2}, {y, -2, 2})[[1]], _GraphicsComplex)", //
+    check(
+        "Count(RegionPlot({x^2 + y^2 < 1, x > 1}, {x, -2, 2}, {y, -2, 2})[[1]], _GraphicsComplex)", //
         "2");
-    check("Cases(RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2}, BoundaryStyle -> None), _Line,"
-        + " Infinity)", //
+    check(
+        "Cases(RegionPlot(x^2 + y^2 < 1, {x, -2, 2}, {y, -2, 2}, BoundaryStyle -> None), _Line,"
+            + " Infinity)", //
         "{}");
   }
 
@@ -11310,8 +11322,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + " RegularExpression(\"<text[^>]*>e</text>\"))", //
         "True");
     // {0, 0} and {1, 1} are the corners of the picture's range, and do not widen it
-    check("StringCases(ExportString(Graphics({Point({0, 0}), Point({10, 10}), Line({Scaled({0, 0}),"
-        + " Scaled({1, 1})})}), \"SVG\"), RegularExpression(\"<path d=\\\"[^\\\"]*\\\"\"))", //
+    check(
+        "StringCases(ExportString(Graphics({Point({0, 0}), Point({10, 10}), Line({Scaled({0, 0}),"
+            + " Scaled({1, 1})})}), \"SVG\"), RegularExpression(\"<path d=\\\"[^\\\"]*\\\"\"))", //
         "{<path d=\"M 5 355 L 355 5\"}");
   }
 
@@ -11343,11 +11356,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("First(ArrayPlot({{1, 2}, {3, 4}}))[[2]]", //
         "{{0.0,0.0},{2.0,2.0}}");
     // DataReversed draws the first row at the bottom
-    check("First(ArrayPlot({{3, 4}, {1, 2}}, DataReversed -> True)) === "
-        + "First(ArrayPlot({{1, 2}, {3, 4}}))", //
+    check(
+        "First(ArrayPlot({{3, 4}, {1, 2}}, DataReversed -> True)) === "
+            + "First(ArrayPlot({{1, 2}, {3, 4}}))", //
         "True");
-    check("First(ArrayPlot({{1, 2}, {3, 4}}, DataReversed -> True)) === "
-        + "First(ArrayPlot({{1, 2}, {3, 4}}))", //
+    check(
+        "First(ArrayPlot({{1, 2}, {3, 4}}, DataReversed -> True)) === "
+            + "First(ArrayPlot({{1, 2}, {3, 4}}))", //
         "False");
     // DataRange gives the centres of the outer cells: the raster is half a cell wider
     check("First(ArrayPlot({{1, 2}, {3, 4}}, DataRange -> {{-2, 2}, {-1, 1}}))[[2]]", //
@@ -11357,6 +11372,67 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // with a Mesh there is more than the raster
     check("Head(First(ArrayPlot({{1, 2}, {3, 4}}, Mesh -> True)))", //
         "List");
+  }
+
+  @Test
+  public void testPartListSpecificationIsValidated() {
+    // a list of positions with something which is no position is no part specification: the
+    // valid positions are not taken alone
+    check("{1, 2, 3}[[{1, x}]]", //
+        "{1,2,3}[[{1,x}]]");
+    check("{1, 2, 3}[[{1, 2.5}]]", //
+        "{1,2,3}[[{1,2.5}]]");
+    check("{1, 2, 3}[[{{1, 2}}]]", //
+        "{1,2,3}[[{{1,2}}]]");
+    check("<|a -> 1|>[[{x}]]", //
+        "<|a->1|>[[{x}]]");
+    check("{1, 2, 3}[[{1, 3}]]", //
+        "{1,3}");
+    check("f(a, b, c)[[{1, -1}]]", //
+        "f(a,c)");
+    check("{<|\"a\" -> 1|>}[[1, {\"a\"}]]", //
+        "<|a->1|>");
+  }
+
+  @Test
+  public void testPartAssignmentSplicesSequence() {
+    check("m = {{1, 2}, {3, 4}}; m[[Sequence @@ {1, 2}]] *= -1; m", //
+        "{{1,-2},{3,4}}");
+    check("m = {{1, 2}, {3, 4}}; m[[Sequence @@ {2, 1}]] = 7; m", //
+        "{{1,2},{7,4}}");
+    check("m = {{1, 2}, {3, 4}}; m[[2, Sequence(1)]] = 9; m", //
+        "{{1,2},{9,4}}");
+    // an index is evaluated once
+    check("m = {{1, 2}, {3, 4}}; i = 1; m[[i++, 2]] = 9; {m, i}", //
+        "{{{1,9},{3,4}},2}");
+  }
+
+  @Test
+  public void testNIntegrateThreadsOverList() {
+    check("NIntegrate({x, 2*x, 3}, {x, 0, 1})", //
+        "{0.5,1.0,3.0}");
+    check("NIntegrate({x*y, {x, y}}, {x, 0, 1}, {y, 0, 1})", //
+        "{0.25,{0.5,0.5}}");
+  }
+
+  @Test
+  public void testPermutationsRefusesAResultWhichCannotBeBuilt() {
+    // Permutations::fac: 21 distinct elements, a length of 21
+    check("Permutations(Range(21))", //
+        "Permutations({1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21})");
+    // Permutations::len: the length 154313197509971814693626 is no machine integer
+    check("Head(Permutations(Range(25), 20))", //
+        "Permutations");
+    // Permutations::toobig
+    check("Permutations(Range(13))", //
+        "Permutations({1,2,3,4,5,6,7,8,9,10,11,12,13})");
+    // the length is counted from the multiplicities: equal elements make a short result
+    check("Length(Permutations(Join(ConstantArray(a, 20), {b})))", //
+        "21");
+    check("Length(Permutations({a, a, b, c}, {0, 3}))", //
+        "23");
+    check("Length(Permutations(Range(8)))", //
+        "40320");
   }
 
   @Test
@@ -22460,8 +22536,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{False,False,False}");
     // strong pseudoprimes to base 2: 2^32+1, strong pseudoprimes to the first 4, 5, 6, 7, 9 prime
     // bases
-    check("PrimeQ({4294967297, 3215031751, 2152302898747, 3474749660383, 341550071728321, "
-        + "3825123056546413051})", //
+    check(
+        "PrimeQ({4294967297, 3215031751, 2152302898747, 3474749660383, 341550071728321, "
+            + "3825123056546413051})", //
         "{False,False,False,False,False,False}");
     // largest prime below 2^64 and 2^64+1 (outside the long range)
     check("PrimeQ({18446744073709551557, 18446744073709551617})", //

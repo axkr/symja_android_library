@@ -254,6 +254,11 @@ public class Errors {
       "heads", "Heads `1` and `2` are expected to be the same.", //
       "heads2", "Heads `1` and `2` at positions `3` and `4` are expected to be the same.", //
       "herm", "The matrix `1` is not hermitian or real and symmetric.", //
+      "fac",
+      "In `1` there are at least 21 distinct elements in the input list, and the requested permutation lengths include one that is at least 21. The result cannot be computed because it has length at least 21 factorial, which is not a machine integer.", //
+      "len",
+      "`1` cannot be computed because its length is `2`, which is not a machine integer.", //
+      "toobig", "Insufficient memory available to evaluate `1`.", //
       "npdef", "The matrix `1` is not positive definite.", //
       "rmeth",
       "The value of the option Method -> `1` should be Cholesky, Multifrontal, Krylov, CofactorExpansion, OneStepRowReduction, DivisionFreeRowReduction, Direct, IterativeRefinement, Banded or Automatic.", //
@@ -620,6 +625,7 @@ public class Errors {
       "toggle", "ToggleFeature `1` is disabled.", //
       "tolnn", "Tolerance specification `1` must be a non-negative number.", //
       "tri", "`1` is not triangular.", //
+      "ubnd", "The problem is unbounded.", //
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
       "underdet", "The system is underdetermined.", //
       "unitsys", "Cannot set `1` to `2`; value must be \"Metric\" or \"Imperial\".", //

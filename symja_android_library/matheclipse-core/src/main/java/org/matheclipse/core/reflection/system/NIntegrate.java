@@ -84,10 +84,10 @@ import org.matheclipse.core.numerics.integral.TanhSinh;
  * <code>Method -&gt; Automatic</code> splits the interval where the symbolic integrand has a kink,
  * a jump or a pole, sums the half periods of an oscillatory factor on an infinite interval with
  * Wynn epsilon acceleration, and integrates the pieces with the globally adaptive Gauss-Kronrod
- * rule of QUADPACK (<code>QAGS</code>, <code>QAGI</code>), switching to the tanh-sinh rule and
- * then to symbolic integration for a piece which fails without looking divergent. An explicit
- * method is used as requested. LegendreGauss is a fixed-order rule without a convergence test, it
- * returns a finite number even for a divergent integral.
+ * rule of QUADPACK (<code>QAGS</code>, <code>QAGI</code>), switching to the tanh-sinh rule and then
+ * to symbolic integration for a piece which fails without looking divergent. An explicit method is
+ * used as requested. LegendreGauss is a fixed-order rule without a convergence test, it returns a
+ * finite number even for a divergent integral.
  * </p>
  *
  * <pre>
@@ -143,7 +143,10 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
   /** Most integer crossings of a <code>Floor()</code>-like argument used as break points. */
   private static final int MAX_STEP_BREAK_POINTS = 100;
 
-  /** Relative and absolute error tolerance for <code>PrecisionGoal</code>/<code>AccuracyGoal -> Automatic</code>. */
+  /**
+   * Relative and absolute error tolerance for
+   * <code>PrecisionGoal</code>/<code>AccuracyGoal -> Automatic</code>.
+   */
   private static final double DEFAULT_TOLERANCE = Config.SPECIAL_FUNCTIONS_TOLERANCE;
 
   /** QUADPACK rejects a relative tolerance below <code>50</code> machine epsilons. */
@@ -209,8 +212,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
    * @throws NonConvergence if the QUADPACK rule did not converge
    */
   private static double integrateDouble(UnaryNumerical f, ISymbol xVar, final double min,
-      final double max, String method, int maxPoints, int maxIterations, IAST rest,
-      double epsabs, double epsrel) throws MathIllegalStateException {
+      final double max, String method, int maxPoints, int maxIterations, IAST rest, double epsabs,
+      double epsrel) throws MathIllegalStateException {
     if ("Simpson".equalsIgnoreCase(method)) {
       return new SimpsonIntegrator().integrate(maxIterations, f, min, max);
     }
@@ -268,8 +271,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     double lower = min;
     for (int i = 0; i <= breakPoints.length; i++) {
       double upper = i < breakPoints.length ? breakPoints[i] : max;
-      double piece = integrateDouble(f, xVar, lower, upper, method, maxPoints, maxIterations,
-          rest, epsabs, epsrel);
+      double piece = integrateDouble(f, xVar, lower, upper, method, maxPoints, maxIterations, rest,
+          epsabs, epsrel);
       if (!Double.isFinite(piece)) {
         return piece;
       }
@@ -286,13 +289,13 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
    * <li>the real zeros and poles of the arguments of <code>Abs, RealAbs, Sign, UnitStep,
    * HeavisideTheta</code>, of the differences of the arguments of <code>Max, Min</code>, of an
    * argument of <code>Clip</code> minus its bounds, and of <code>lhs - rhs</code> for the
-   * comparisons in the conditions of <code>Piecewise</code> and <code>Boole</code>, where these
-   * are rational in <code>x</code>;</li>
+   * comparisons in the conditions of <code>Piecewise</code> and <code>Boole</code>, where these are
+   * rational in <code>x</code>;</li>
    * <li>where a linear argument of <code>Floor, Ceiling, Round, IntegerPart, FractionalPart</code>
    * crosses an integer (a half integer for <code>Round</code>);</li>
    * <li>the real poles of the integrand itself, if its denominator is a polynomial in
-   * <code>x</code>. A pole which becomes an endpoint is one the QUADPACK extrapolation can
-   * either integrate or recognize as divergent.</li>
+   * <code>x</code>. A pole which becomes an endpoint is one the QUADPACK extrapolation can either
+   * integrate or recognize as divergent.</li>
    * </ul>
    * A rule steps over a kink when none of its nodes falls where the argument changes sign: all 21
    * Gauss-Kronrod nodes of <code>Abs(x^2-2*x)</code> on <code>[-10, 10]</code> miss
@@ -356,8 +359,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       }
       addZerosAndPoles(F.Subtract(ast.arg1(), lower), x, min, max, points, engine);
       addZerosAndPoles(F.Subtract(ast.arg1(), upper), x, min, max, points, engine);
-    } else if ((head == S.Floor || head == S.Ceiling || head == S.Round
-        || head == S.IntegerPart || head == S.FractionalPart) && ast.isAST1()) {
+    } else if ((head == S.Floor || head == S.Ceiling || head == S.Round || head == S.IntegerPart
+        || head == S.FractionalPart) && ast.isAST1()) {
       addIntegerCrossings(ast.arg1(), x, min, max, head == S.Round ? 0.5 : 0.0, points);
     } else if (ast.isAST(S.Boole, 2)) {
       // the indicator jumps where its condition changes
@@ -556,20 +559,20 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
 
   /**
    * The <code>Method -> Automatic</code> strategy over <code>[min, max]</code>, piece by piece
-   * between the <code>breakPoints</code>: QAGS or QAGI (the QUADPACK port in
-   * {@link GaussKronrod}).
+   * between the <code>breakPoints</code>: QAGS or QAGI (the QUADPACK port in {@link GaussKronrod}).
    * <ul>
    * <li>A piece which stops at a sample that cannot be evaluated inside it - the pole of
    * <code>1/Sin(x)</code> is the centre node of <code>[-1, 1]</code> - is split there, so the point
-   * becomes an endpoint the extrapolation can judge (at most {@link #MAX_SAMPLE_SPLITS} times).</li>
+   * becomes an endpoint the extrapolation can judge (at most {@link #MAX_SAMPLE_SPLITS}
+   * times).</li>
    * <li>A piece which fails with anything but "divergent" gets a second try with the tanh-sinh
    * rule, which copes with endpoint behaviour it was not told about.</li>
    * </ul>
    *
    * @return the sum over the pieces; its status is the first failure, which stops the loop
    */
-  private static QuadratureResult integrateAutomatic(UnaryNumerical sampler, double min,
-      double max, double[] breakPoints, double epsabs, double epsrel, int maxEvaluations) {
+  private static QuadratureResult integrateAutomatic(UnaryNumerical sampler, double min, double max,
+      double[] breakPoints, double epsabs, double epsrel, int maxEvaluations) {
     // value() turns a sample which cannot be evaluated into NaN, applyAsDouble() rethrows
     DoubleUnaryOperator f = sampler::value;
     GaussKronrod qags = new GaussKronrod(epsabs, epsrel, maxEvaluations);
@@ -588,9 +591,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       double[] range = pieces.poll();
       QuadratureResult piece = qags.integrate(f, range[0], range[1]);
       evaluations += piece.evaluations;
-      if (piece.status == QuadratureResult.STATUS_BAD_INTEGRAND
-          && sampleSplits < MAX_SAMPLE_SPLITS && piece.worstPoint > range[0]
-          && piece.worstPoint < range[1]) {
+      if (piece.status == QuadratureResult.STATUS_BAD_INTEGRAND && sampleSplits < MAX_SAMPLE_SPLITS
+          && piece.worstPoint > range[0] && piece.worstPoint < range[1]) {
         sampleSplits++;
         pieces.addFirst(new double[] {piece.worstPoint, range[1]});
         pieces.addFirst(new double[] {range[0], piece.worstPoint});
@@ -598,8 +600,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       }
       if (piece.status != QuadratureResult.STATUS_OK
           && piece.status != QuadratureResult.STATUS_DIVERGENT) {
-        QuadratureResult tanhSinh = new TanhSinh(Math.max(epsrel, epsabs), maxEvaluations)
-            .integrate(f, range[0], range[1]);
+        QuadratureResult tanhSinh =
+            new TanhSinh(Math.max(epsrel, epsabs), maxEvaluations).integrate(f, range[0], range[1]);
         evaluations += tanhSinh.evaluations;
         if (tanhSinh.converged && Double.isFinite(tanhSinh.estimate)) {
           piece = new QuadratureResult(tanhSinh.estimate, piece.error, piece.evaluations,
@@ -623,9 +625,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
    *
    * @return <code>null</code> if the integrand does not have that shape
    */
-  private static QuadratureResult integrateOscillatory(IExpr function, ISymbol x,
-      UnaryNumerical f, double min, double max, double epsabs, double epsrel,
-      int maxEvaluations, EvalEngine engine) {
+  private static QuadratureResult integrateOscillatory(IExpr function, ISymbol x, UnaryNumerical f,
+      double min, double max, double epsabs, double epsrel, int maxEvaluations, EvalEngine engine) {
     if (Double.isFinite(min) && Double.isFinite(max)) {
       return null;
     }
@@ -647,15 +648,15 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       IExpr g = factors.removeAtCopy(i).oneIdentity1();
       if (g.isFree(S.Sin) && g.isFree(S.Cos)) {
         boolean cosine = factor.isCos();
-        return oscillatoryRange(g, x, f, min, max, w, c, cosine, epsabs, epsrel,
-            maxEvaluations, engine);
+        return oscillatoryRange(g, x, f, min, max, w, c, cosine, epsabs, epsrel, maxEvaluations,
+            engine);
       }
     }
     return null;
   }
 
-  private static QuadratureResult oscillatoryRange(IExpr g, ISymbol x, UnaryNumerical f,
-      double min, double max, double w, double c, boolean cosine, double epsabs, double epsrel,
+  private static QuadratureResult oscillatoryRange(IExpr g, ISymbol x, UnaryNumerical f, double min,
+      double max, double w, double c, boolean cosine, double epsabs, double epsrel,
       int maxEvaluations, EvalEngine engine) {
     boolean upperInfinite = max == Double.POSITIVE_INFINITY;
     boolean lowerInfinite = min == Double.NEGATIVE_INFINITY;
@@ -665,8 +666,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       return null;
     }
     if (upperInfinite && lowerInfinite) {
-      QuadratureResult right = OscillatoryTail.integrate(f::value, 0.0, w, c, cosine, epsabs, epsrel,
-          maxEvaluations);
+      QuadratureResult right =
+          OscillatoryTail.integrate(f::value, 0.0, w, c, cosine, epsabs, epsrel, maxEvaluations);
       if (right.status != QuadratureResult.STATUS_OK) {
         return right;
       }
@@ -675,8 +676,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       return sum(right, left);
     }
     if (upperInfinite) {
-      return OscillatoryTail.integrate(f::value, min, w, c, cosine, epsabs, epsrel,
-          maxEvaluations);
+      return OscillatoryTail.integrate(f::value, min, w, c, cosine, epsabs, epsrel, maxEvaluations);
     }
     // Integrate(f(x), {x, -Infinity, b}) == Integrate(f(-t), {t, -b, Infinity})
     return OscillatoryTail.integrate(t -> f.value(-t), -max, -w, c, cosine, epsabs, epsrel,
@@ -717,6 +717,11 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     }
     IAST list = (IAST) ast.arg2();
     IExpr function = ast.arg1();
+    if (function.isList()) {
+      // a list of integrands is integrated element by element
+      final IAST call = originalAST;
+      return F.mapList((IAST) function, f -> engine.evaluate(call.setAtCopy(1, f)));
+    }
     int maxPoints = DEFAULT_MAX_POINTS;
     if (!option[1].isAutomatic()) {
       maxPoints = option[1].toIntDefault(DEFAULT_MAX_POINTS);
@@ -766,8 +771,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       // segments between complex ones (a contour integral), split points on the real line
       IExpr sum = F.C0;
       for (int i = 2; i < list.argSize(); i++) {
-        IExpr segment = engine.evaluate(
-            ast.setAtCopy(2, F.list(list.arg1(), list.get(i), list.get(i + 1))));
+        IExpr segment =
+            engine.evaluate(ast.setAtCopy(2, F.list(list.arg1(), list.get(i), list.get(i + 1))));
         if (!segment.isNumber()) {
           return F.NIL;
         }
@@ -858,8 +863,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       // NIntegrate message below says what went wrong, an Integrate::idiv beside it only
       // repeats it
       final IAST symbolicIntegral = F.Integrate(function, list);
-      IExpr symbolic =
-          engine.withQuietMode(() -> engine.evaluateNonNumeric(symbolicIntegral));
+      IExpr symbolic = engine.withQuietMode(() -> engine.evaluateNonNumeric(symbolicIntegral));
       if (symbolic.isFree(S.Integrate)) {
         IExpr numeric = engine.evalQuiet(F.N(symbolic));
         if (numeric.isNumber()) {
@@ -903,7 +907,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * WMA's <code>ncvb</code> for a subdivision limit or a divergent-looking integral, else
+   * Message <code>ncvb</code> for a subdivision limit or a divergent-looking integral, else message
    * <code>slwcon</code>.
    */
   private static IExpr printNonConvergence(ISymbol head, QuadratureResult failed, ISymbol x,
@@ -932,7 +936,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
 
   /**
    * Fallback when a limit of integration has no real double value: integrate along a complex line,
-   * or print the WMA-style <code>nlim</code> message if a limit is not numeric at all.
+   * or print the message <code>nlim</code> if a limit is not numeric at all.
    */
   private static IExpr integrateComplexOrPrintInvalidLimits(IAST ast, IExpr function, IAST list,
       int maxIterations, int maxPoints, final EvalEngine engine) {

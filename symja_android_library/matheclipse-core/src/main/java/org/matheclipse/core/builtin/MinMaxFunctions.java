@@ -47,6 +47,7 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.numerics.optim.DifferentialEvolution;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -1805,10 +1806,162 @@ public class MinMaxFunctions {
       return constrainedOptimum(function, constraints, search);
     }
 
+    /**
+     * The optimum without constraints. The Powell search from the origin finds the local optimum
+     * next to the origin: <code>NMinimize(x^4-3*x^2+x, x)</code> stopped at <code>-1.07</code>,
+     * where the minimum is <code>-3.51</code> at <code>x == -1.3</code>. So a population search is
+     * started around the origin as well, and a Powell search from its best point. Its result is
+     * the answer only if it is better than the one from the origin: a problem which has one
+     * optimum gets the result it always had.
+     */
     private IExpr unconstrainedOptimum(IExpr function, Search search) {
       final MultivariateFunction func = new MultiVariateNumerical(function, search.listOfVariables);
-      double[] init = new double[search.vars.size()];
-      return optimizePowell(func, search.vars, init, getGoalType(), 1e-9, 1e-9, 1e-9);
+      final int dimension = search.vars.size();
+      final boolean minimize = getGoalType() == GoalType.MINIMIZE;
+      final MultivariateFunction cost = minimize ? func : point -> -func.value(point);
+      double[] init = new double[dimension];
+      double[] best = null;
+      double bestCost = Double.POSITIVE_INFINITY;
+      org.hipparchus.exception.MathRuntimeException failure = null;
+      try {
+        best = powell(func, init);
+        bestCost = cost.value(best);
+        if (Double.isNaN(bestCost)) {
+          best = null;
+          bestCost = Double.POSITIVE_INFINITY;
+        }
+      } catch (org.hipparchus.exception.MathRuntimeException mre) {
+        failure = mre;
+      }
+      final double[] local = best;
+      final double localCost = bestCost;
+      double[] lower = new double[dimension];
+      double[] upper = new double[dimension];
+      for (int k = 0; k < GLOBAL_START_REGIONS.length; k++) {
+        final double region = GLOBAL_START_REGIONS[k];
+        java.util.Arrays.fill(lower, -region);
+        java.util.Arrays.fill(upper, region);
+        // The population stays in the region; the Powell search from its best point is free to
+        // leave it. Of equal optima the one next to the origin is wanted, as for the periodic
+        // Sin(x)+Sin(10*x/3): a bias below the noise of the search tells them apart.
+        final MultivariateFunction biased = point -> cost.value(point) + 1e-9 * norm(point) / region;
+        DifferentialEvolution.Result global = DifferentialEvolution.minimize(biased, lower, upper,
+            true, null, populationSize(dimension), GLOBAL_GENERATIONS, GLOBAL_SEED + k);
+        if (global == null) {
+          continue;
+        }
+        double[] candidate = global.point;
+        double candidateCost = cost.value(candidate);
+        try {
+          double[] polished = powell(func, candidate);
+          double polishedCost = cost.value(polished);
+          if (polishedCost <= candidateCost) {
+            candidate = polished;
+            candidateCost = polishedCost;
+          }
+        } catch (org.hipparchus.exception.MathRuntimeException mre) {
+          // the point of the population search is the candidate
+        }
+        if (isBetter(candidateCost, bestCost)
+            // of the equal optima of a periodic function the one next to the origin
+            || (isBetter(bestCost, localCost) && !isBetter(bestCost, candidateCost)
+                && 2.0 * norm(candidate) < norm(best))) {
+          best = candidate;
+          bestCost = candidateCost;
+        }
+      }
+      if (best == null) {
+        if (failure != null) {
+          throw failure;
+        }
+        return F.NIL;
+      }
+      if (isUnbounded(cost, best, bestCost, cost.value(init))) {
+        // The problem is unbounded.
+        Errors.printMessage(minimize ? S.NMinimize : S.NMaximize, "ubnd", F.CEmptyList,
+            search.engine);
+        IAST variables = search.listOfVariables;
+        return F.list(minimize ? F.CNInfinity : F.CInfinity,
+            F.mapRange(1, variables.size(), i -> F.Rule(variables.get(i), S.Indeterminate)));
+      }
+      return F.list(F.num(func.value(best)), rules(search.vars.getArrayList(), best));
+    }
+
+    /** The half widths of the boxes in which the population searches without constraints start. */
+    private static final double[] GLOBAL_START_REGIONS = {3.0, 30.0};
+
+    private static final int GLOBAL_GENERATIONS = 300;
+
+    /** The seed of the population searches: the same problem gets the same answer every time. */
+    private static final long GLOBAL_SEED = 0x5DEECE66DL;
+
+    private static int populationSize(int dimension) {
+      return Math.min(Math.max(15 * dimension, 20), 150);
+    }
+
+    /**
+     * <code>true</code> if the cost <code>candidate</code> is lower than <code>incumbent</code> by
+     * more than the noise of two searches which end in the same optimum.
+     */
+    private static boolean isBetter(double candidate, double incumbent) {
+      if (Double.isNaN(candidate)) {
+        return false;
+      }
+      if (Double.isInfinite(incumbent)) {
+        return candidate < incumbent;
+      }
+      return candidate < incumbent - 1e-8 * (1.0 + Math.abs(incumbent));
+    }
+
+    /**
+     * <code>true</code> if the search ran away: its end point is far from the origin, and further
+     * out on the ray through it the cost does not rise - as for <code>x^3-x</code>, which has no
+     * lower bound, and for <code>Exp(x)</code>, which does not take its infimum.
+     */
+    private static boolean isUnbounded(MultivariateFunction cost, double[] point,
+        double pointCost, double originCost) {
+      if (pointCost == Double.NEGATIVE_INFINITY) {
+        return true;
+      }
+      double norm = norm(point);
+      if (norm < 0.99 * GLOBAL_START_REGIONS[GLOBAL_START_REGIONS.length - 1]) {
+        // inside of the region of the population search
+        return false;
+      }
+      if (norm > 1e8
+          && pointCost < -1e15 * (1.0 + (Double.isFinite(originCost) ? Math.abs(originCost) : 0.0))) {
+        // an oscillating objective whose amplitude grows without bound
+        return true;
+      }
+      double previous = pointCost;
+      double[] further = new double[point.length];
+      for (double scale = 2.0; scale <= 1e7; scale *= scale < 8.0 ? 2.0 : 100.0) {
+        for (int d = 0; d < point.length; d++) {
+          further[d] = scale * point[d];
+        }
+        double value = cost.value(further);
+        if (Double.isNaN(value) || value > previous) {
+          return false;
+        }
+        previous = value;
+      }
+      return true;
+    }
+
+    private static double norm(double[] point) {
+      double norm = 0.0;
+      for (double x : point) {
+        norm = Math.max(norm, Math.abs(x));
+      }
+      return norm;
+    }
+
+    /** The end point of a Powell search for the optimum of <code>func</code> from <code>init</code>. */
+    private double[] powell(MultivariateFunction func, double[] init) {
+      final MultivariateOptimizer optim =
+          new PowellOptimizer(1e-9, Math.ulp(1d), 1e-9, Math.ulp(1d));
+      return optim.optimize(new MaxEval(100000), new ObjectiveFunction(func), getGoalType(),
+          new InitialGuess(init)).getPoint();
     }
 
     /**
@@ -1991,11 +2144,64 @@ public class MinMaxFunctions {
           }
         }
       }
+      if (onlyBounds && dimension >= 2) {
+        // The scan is thin in a box of many variables, and its local searches start in the best
+        // cells only: of the 5 variables of a Schwefel function one stayed in the wrong basin. A
+        // population search finds the basin; its result is the answer only if it is better.
+        best = boxGlobalSearch(func, box, best, search);
+      }
       if (best.isNIL() && violated) {
         search.infeasible = true;
       }
       return best;
     }
+
+    private IExpr boxGlobalSearch(MultivariateFunction func, double[][] box, IExpr best,
+        Search search) {
+      final List<IExpr> variables = search.vars.getArrayList();
+      final int dimension = box.length;
+      final boolean minimize = getGoalType() == GoalType.MINIMIZE;
+      final MultivariateFunction cost = minimize ? func : point -> -func.value(point);
+      double[] lower = new double[dimension];
+      double[] upper = new double[dimension];
+      for (int d = 0; d < dimension; d++) {
+        lower[d] = box[d][0];
+        upper[d] = box[d][1];
+        if (!(upper[d] > lower[d])) {
+          return best;
+        }
+      }
+      double bestCost = Double.POSITIVE_INFINITY;
+      if (best.isPresent()) {
+        double value = best.first().evalf();
+        bestCost = minimize ? value : -value;
+      }
+      for (int k = 0; k < BOX_GLOBAL_RUNS; k++) {
+        DifferentialEvolution.Result global = DifferentialEvolution.minimize(cost, lower, upper,
+            true, null, populationSize(dimension), GLOBAL_GENERATIONS, GLOBAL_SEED + 16 + k);
+        if (global == null) {
+          continue;
+        }
+        double[] candidate = global.point;
+        double candidateCost = global.value;
+        double[] polished = boxLocalSearch(func, box, candidate, minimize, 0.01);
+        if (polished != null) {
+          double polishedCost = cost.value(polished);
+          if (polishedCost <= candidateCost) {
+            candidate = polished;
+            candidateCost = polishedCost;
+          }
+        }
+        if (isBetter(candidateCost, bestCost)) {
+          bestCost = candidateCost;
+          best = F.list(F.num(func.value(candidate)), rules(variables, candidate));
+        }
+      }
+      return best;
+    }
+
+    /** The number of population searches in a box, each with random numbers of its own. */
+    private static final int BOX_GLOBAL_RUNS = 2;
 
     /**
      * The local optimum of <code>func</code> in the box next to <code>start</code>: Brent's method

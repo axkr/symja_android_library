@@ -812,7 +812,8 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             final IExpr key = listArg.isKey() ? listArg.first() : listArg;
             final IAST rule = assoc.getRule(key);
             result.appendRule(rule.isPresent() ? rule : F.Rule(key, F.Missing(S.KeyAbsent, key)));
-          } else if (listArg.isNumber()) {
+          } else {
+            // a number which is no position, a symbol, a list: nothing of it can be a part
             // The expression `1` cannot be used as a part specification.
             return Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);
           }
@@ -854,6 +855,10 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
         if (listArg.isReal()) {
           final int indx = listArg.toIntDefault();
           if (F.isNotPresent(indx)) {
+            if (!listArg.isInteger()) {
+              // The expression `1` cannot be used as a part specification.
+              return Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);
+            }
             // Part `1` of `2` does not exist.
             return Errors.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
           }
@@ -879,7 +884,9 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           } else {
             return F.NIL;
           }
-        } else if (listArg.isNumber() || listArg.isString()) {
+        } else {
+          // a symbol or a list is no position either: {1, 2, 3}[[{1, x}]] has no part x, and is
+          // not the part 1 alone
           // The expression `1` cannot be used as a part specification.
           return Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);
         }
@@ -1125,11 +1132,40 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     return part(arg1AST, evaledAST.orElse(ast), 2, engine);
   }
 
+  /**
+   * The indices of an assignment <code>m[[Sequence @@ {i, j}]] = value</code> are the indices
+   * <code>i, j</code>: the left-hand side is held, so the evaluator does not splice the sequence.
+   * An index which may give one is evaluated here, once - its value replaces it.
+   */
+  private static IAST spliceSequences(IAST part, EvalEngine engine) {
+    if (!part.exists(x -> x.isAST() && !x.isList() && !x.isAST(S.Span) && !x.isKey(), 2)) {
+      return part;
+    }
+    IASTAppendable spliced = F.ast(part.head(), part.size() + 2);
+    spliced.append(part.arg1());
+    for (int i = 2; i < part.size(); i++) {
+      IExpr index = part.get(i);
+      if (index.isAST() && !index.isList() && !index.isAST(S.Span) && !index.isKey()) {
+        // evaluated as the element of a list, where a sequence is spliced
+        IExpr indices = engine.evaluate(F.List(index));
+        if (indices.isList()) {
+          spliced.appendArgs((IAST) indices);
+          continue;
+        }
+      }
+      spliced.append(index);
+    }
+    return spliced;
+  }
+
   @Override
   public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
       IBuiltInSymbol builtinSymbol, EvalEngine engine) {
     if (leftHandSide.size() > 1) {
-      IAST part = (IAST) leftHandSide;
+      IAST part = spliceSequences((IAST) leftHandSide, engine);
+      if (part.size() < 3) {
+        return F.NIL;
+      }
       if (part.arg1().isSymbol()) {
         ISymbol symbol = (ISymbol) part.arg1();
         IExpr temp = symbol.assignedValue();
