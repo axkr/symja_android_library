@@ -946,7 +946,69 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
       }
     }
     // a polynomial in one kernel g(variable): solve it for the kernel and invert the kernel
-    return solveByKernel(numerator, variable, multipleValues, engine);
+    IExpr kernelValues = solveByKernel(numerator, variable, multipleValues, engine);
+    if (kernelValues.isPresent()) {
+      return kernelValues;
+    }
+    // a product is zero, if one of its factors is zero
+    return solveZeroProduct(numerator, variable, multipleValues, engine);
+  }
+
+  /**
+   * Solve <code>numerator == 0</code> for a <code>numerator</code> which is a product, or which
+   * factors into one: every factor which contains the variable is solved on its own.
+   * <code>x^x == x</code> is <code>(x-1)*Log(x) == 0</code> after taking logarithms.
+   *
+   * @return the value(s) of the variable or {@link F#NIL}, if one of the factors can't be solved
+   */
+  private static IExpr solveZeroProduct(IExpr numerator, IExpr variable, boolean multipleValues,
+      EvalEngine engine) {
+    IExpr product = numerator.isTimes() ? numerator : engine.evaluateNIL(F.Factor(numerator));
+    if (!product.isTimes()) {
+      return F.NIL;
+    }
+    IAST times = (IAST) product;
+    if (times.count(x -> !x.isFree(variable)) < 2) {
+      // c*f(variable) is no simpler than the equation which was asked
+      return F.NIL;
+    }
+    IASTAppendable values = F.ListAlloc(times.size());
+    for (int i = 1; i < times.size(); i++) {
+      IExpr factor = times.get(i);
+      if (factor.isFree(variable)) {
+        continue;
+      }
+      if (factor.isPower() && factor.exponent().isFree(variable)) {
+        if (!factor.exponent().isPositiveResult()) {
+          return F.NIL;
+        }
+        factor = factor.base();
+      }
+      IExpr value = solveTransformed(factor, variable, true, engine);
+      if (value.isNIL()) {
+        // the values of this factor would be lost
+        return F.NIL;
+      }
+      if (value.isTrue()) {
+        // the factor is never zero
+        continue;
+      }
+      IAST valueList = value.isList() ? (IAST) value : F.list(value);
+      for (int j = 1; j < valueList.size(); j++) {
+        // an inverted function isn't evaluated yet: InverseFunction(Log)(0) is 1
+        IExpr v = engine.evaluate(valueList.get(j));
+        if (!values.exists(x -> x.equals(v))) {
+          values.append(v);
+        }
+      }
+    }
+    if (values.argSize() == 0) {
+      return F.NIL;
+    }
+    if (multipleValues) {
+      return values;
+    }
+    return values.argSize() == 1 ? values.arg1() : F.NIL;
   }
 
   /**

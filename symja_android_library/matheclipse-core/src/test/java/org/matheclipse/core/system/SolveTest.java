@@ -783,6 +783,17 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveIssue1533() {
+    // the logarithms of both sides give a product: (x-1)*Log(x)==0
+    check("Solve(x^x==x,x)", //
+        "{{x->1}}");
+    check("Solve(x^(1/x)==x,x)", //
+        "{{x->1}}");
+    check("Solve(x^x==1,x)", //
+        "{{x->1}}");
+  }
+
+  @Test
   public void testSolveIssue329() {
     check("Solve(a1+a2+5*x+4*Sqrt(a+b*x+25/16*x^2)+z1+z2==0, x)", //
         "{{x->(-16*a+a1^2+2*a1*a2+a2^2+2*a1*z1+2*a2*z1+z1^2+2*a1*z2+2*a2*z2+2*z1*z2+z2^2)/(\n"
