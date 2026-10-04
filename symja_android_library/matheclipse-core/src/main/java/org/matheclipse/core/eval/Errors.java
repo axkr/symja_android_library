@@ -259,6 +259,8 @@ public class Errors {
       "len",
       "`1` cannot be computed because its length is `2`, which is not a machine integer.", //
       "toobig", "Insufficient memory available to evaluate `1`.", //
+      "rsize",
+      "The specified rule number `1` is greater than the largest possible rule number (`2`).", //
       "npdef", "The matrix `1` is not positive definite.", //
       "rmeth",
       "The value of the option Method -> `1` should be Cholesky, Multifrontal, Krylov, CofactorExpansion, OneStepRowReduction, DivisionFreeRowReduction, Direct, IterativeRefinement, Banded or Automatic.", //

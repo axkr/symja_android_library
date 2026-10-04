@@ -395,6 +395,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
+    ast = unwrapSingleResidual(ast);
     IExpr result = machineRoot(ast, options, engine);
     int precision = workingPrecision(options.length > 3 ? options[3] : S.MachinePrecision);
     if (precision > 0 && result.isListOfRules()) {
@@ -412,6 +413,29 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
     return result;
+  }
+
+  /**
+   * A list of one residual is the residual itself: <code>FindRoot({2*x} == 1, {x, 1})</code>,
+   * <code>FindRoot({2*x} == {1}, {x, 1})</code> and <code>FindRoot({2*x - 1}, {x, 1})</code> are
+   * all <code>FindRoot(2*x == 1, {x, 1})</code>.
+   */
+  private static IAST unwrapSingleResidual(IAST ast) {
+    if (ast.argSize() < 2) {
+      return ast;
+    }
+    IExpr equation = ast.arg1();
+    if (equation.isList1()) {
+      equation = equation.first();
+    }
+    if (equation.isEqual() && (equation.first().isList1() || equation.second().isList1())) {
+      IExpr lhs = equation.first().isList1() ? equation.first().first() : equation.first();
+      IExpr rhs = equation.second().isList1() ? equation.second().first() : equation.second();
+      if (!lhs.isList() && !rhs.isList()) {
+        equation = F.Equal(lhs, rhs);
+      }
+    }
+    return equation == ast.arg1() ? ast : ast.setAtCopy(1, equation);
   }
 
   /**
@@ -1044,7 +1068,9 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
       double[] result = new double[argSize];
       for (int i = 0; i < argSize; i++) {
-        result[i] = ((IAST) values0).get(i + 1).evalfNaN();
+        IExpr value = ((IAST) values0).get(i + 1);
+        // a residual which is a list of one value, as g(s_?NumericQ) := {2*s} gives, is that value
+        result[i] = value.isList1() ? value.first().evalfNaN() : value.evalfNaN();
         if (!Double.isFinite(result[i])) {
           return null;
         }

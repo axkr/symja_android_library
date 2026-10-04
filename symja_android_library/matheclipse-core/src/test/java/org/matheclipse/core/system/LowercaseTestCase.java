@@ -11436,6 +11436,65 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFilledCurveFollowsItsBezierSegments() {
+    // the outline is the curve, not the polygon through its 4 control points
+    check("StringCount(ExportString(Graphics({Red, FilledCurve(BezierCurve({{0, 0}, {1, 2}, {2, 2},"
+        + " {3, 0}}))}), \"SVG\"), \" L \")", //
+        "24");
+    // a later component starts where the outline has got to
+    check("StringCount(ExportString(Graphics({Red, FilledCurve({Line({{0, 0}, {1, 0}}),"
+        + " BezierCurve({{1, 2}, {0, 2}, {0, 0}})})}), \"SVG\"), \" L \")", //
+        "26");
+    check("StringCount(ExportString(Graphics({Green, FilledCurve(Line({{0, 0}, {1, 0}, {1, 1}}))}),"
+        + " \"SVG\"), \" L \")", //
+        "2");
+  }
+
+  @Test
+  public void testRotateWithAPairOfVectors() {
+    // Rotate(g, {u, v}) turns u into v about the origin
+    check("ExportString(Graphics(Rotate(Rectangle({1, 0}, {3, 1}), {{1, 0}, {0, 1}})), \"SVG\") === "
+        + "ExportString(Graphics(Rotate(Rectangle({1, 0}, {3, 1}), Pi/2, {0, 0})), \"SVG\")", //
+        "True");
+    check("ExportString(Graphics(Rotate(Rectangle({1, 0}, {3, 1}), {{1, 0}, {0, 1}})), \"SVG\") === "
+        + "ExportString(Graphics(Rectangle({1, 0}, {3, 1})), \"SVG\")", //
+        "False");
+  }
+
+  @Test
+  public void testFindRootListOfOneResidual() {
+    check("FindRoot({2*x} == 1, {x, 1})", //
+        "{x->0.5}");
+    check("FindRoot({2*x} == {1}, {x, 1})", //
+        "{x->0.5}");
+    check("FindRoot({2*x - 1}, {x, 1})", //
+        "{x->0.5}");
+    check("gg(s_?NumericQ) := {2*s}; FindRoot(gg(s) == 3, {s, 1})", //
+        "{s->1.5}");
+  }
+
+  @Test
+  public void testCellularAutomatonOffsetNeighbourhood() {
+    // the offsets -r, ..., r are the range r
+    check("CellularAutomaton({30, 2, {{-1}, {0}, {1}}}, {0, 0, 1, 0, 0}, 3) === "
+        + "CellularAutomaton(30, {0, 0, 1, 0, 0}, 3)", //
+        "True");
+    check("CellularAutomaton({1635, 3, {{-2}, {-1}, {0}, {1}, {2}}}, {0, 0, 1, 2, 0, 1, 0}, 3) === "
+        + "CellularAutomaton({1635, 3, 2}, {0, 0, 1, 2, 0, 1, 0}, 3)", //
+        "True");
+    // two cells: rule 6 is the Xor of the two neighbours, which is rule 90
+    check("CellularAutomaton({6, 2, {{-1}, {1}}}, {0, 0, 1, 0, 0}, 3) === "
+        + "CellularAutomaton(90, {0, 0, 1, 0, 0}, 3)", //
+        "True");
+    // one cell: rule 2 copies the right neighbour
+    check("CellularAutomaton({2, 2, {{1}}}, {0, 0, 1, 0, 0}, 2)", //
+        "{{0,0,1,0,0},{0,1,0,0,0},{1,0,0,0,0}}");
+    // CellularAutomaton::rsize: two cells have the rules 0 ... 15
+    check("CellularAutomaton({150, 2, {{-1}, {1}}}, {0, 0, 1, 0, 0}, 2)", //
+        "CellularAutomaton({150,2,{{-1},{1}}},{0,0,1,0,0},2)");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

@@ -277,6 +277,13 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
     try {
       double result =
           fPrecision > 15 ? valueWithPrecision(value) : substituted(F.num(value)).evalfNaN();
+      if (Double.isNaN(result) && fPrecision <= 15) {
+        // a function which gives a list of one value, as g(s_?NumericQ) := {2*s}, has that value
+        IExpr listValue = fEngine.evalNumericFunction(substituted(F.num(value)));
+        if (listValue.isList1()) {
+          result = listValue.first().evalfNaN();
+        }
+      }
       if (Double.isNaN(result)) {
         fFailureCount++;
       }

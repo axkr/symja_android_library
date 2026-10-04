@@ -792,6 +792,18 @@ public final class PrimitiveCollector {
       return;
     }
     double angle = ColorUtil.dbl(ast.arg2(), Double.NaN);
+    // Rotate(g, {u, v}) turns the direction of u into the direction of v, about the origin
+    boolean vectors = false;
+    if (Double.isNaN(angle) && ast.arg2().isList2() && ast.arg2().first().isList2()
+        && ast.arg2().second().isList2()) {
+      double[] u = pointOf(ast.arg2().first());
+      double[] v = pointOf(ast.arg2().second());
+      if (isFinite(u) && isFinite(v) && (u[0] != 0.0 || u[1] != 0.0)
+          && (v[0] != 0.0 || v[1] != 0.0)) {
+        angle = Math.atan2(v[1], v[0]) - Math.atan2(u[1], u[0]);
+        vectors = true;
+      }
+    }
     if (Double.isNaN(angle)) {
       collect(ast.arg1(), style.clone());
       return;
@@ -801,6 +813,8 @@ public final class PrimitiveCollector {
     double[] centre;
     if (ast.argSize() >= 3) {
       centre = pointOf(ast.arg3());
+    } else if (vectors) {
+      centre = new double[] {0.0, 0.0};
     } else {
       Bounds2D b = boundsSince(start);
       centre = new double[] {b.centerX(), b.centerY()};
@@ -1554,17 +1568,94 @@ public final class PrimitiveCollector {
     IAST ast = (IAST) expr;
     switch (((IBuiltInSymbol) ast.head()).ordinal()) {
       case ID.Line:
-      case ID.BezierCurve:
-      case ID.BSplineCurve:
         if (ast.argSize() >= 1) {
           for (List<double[]> seg : segmentsOf(ast.arg1())) {
             out.addAll(seg);
           }
         }
         break;
+      case ID.BezierCurve:
+        if (ast.argSize() >= 1) {
+          int degree = 3;
+          IExpr d = optionValue(ast, S.SplineDegree);
+          if (d != null) {
+            degree = d.toIntDefault(3);
+          }
+          for (List<double[]> seg : segmentsOf(ast.arg1())) {
+            // a component after the first one starts where the outline has got to
+            List<double[]> control = seg;
+            if (!out.isEmpty()) {
+              control = new ArrayList<>(seg.size() + 1);
+              control.add(out.get(out.size() - 1));
+              control.addAll(seg);
+            }
+            out.addAll(sampleBezier(control, degree));
+          }
+        }
+        break;
+      case ID.BSplineCurve:
+        if (ast.argSize() >= 1) {
+          List<double[]> control = pointsOf(ast.arg1());
+          if (control.size() >= 2) {
+            int degree = 3;
+            IExpr d = optionValue(ast, S.SplineDegree);
+            if (d != null) {
+              degree = Math.max(1, d.toIntDefault(3));
+            }
+            out.addAll(BSpline.evaluate(control, degree, false, null));
+          }
+        }
+        break;
       default:
         break;
     }
+  }
+
+  /** How many straight pieces one Bezier segment of a filled outline is drawn with. */
+  private static final int BEZIER_SAMPLES = 24;
+
+  /**
+   * The points of a composite Bezier curve: the outline of a filled curve is one polygon, so its
+   * curved components are sampled instead of being joined through their control points.
+   *
+   * @param control the start point followed by the control points of each segment
+   * @param degree 2 for quadratic segments, cubic otherwise
+   */
+  private static List<double[]> sampleBezier(List<double[]> control, int degree) {
+    List<double[]> curve = new ArrayList<>();
+    if (control.isEmpty()) {
+      return curve;
+    }
+    int step = degree == 2 ? 2 : 3;
+    double[] start = control.get(0);
+    curve.add(start);
+    int i = 1;
+    for (; i + step - 1 < control.size(); i += step) {
+      double[] c1 = control.get(i);
+      double[] c2 = control.get(i + 1);
+      double[] end = control.get(i + step - 1);
+      for (int k = 1; k <= BEZIER_SAMPLES; k++) {
+        double t = (double) k / BEZIER_SAMPLES;
+        double u = 1.0 - t;
+        if (step == 2) {
+          curve.add(new double[] {u * u * start[0] + 2 * u * t * c1[0] + t * t * end[0],
+              u * u * start[1] + 2 * u * t * c1[1] + t * t * end[1]});
+        } else {
+          double a = u * u * u;
+          double b = 3 * u * u * t;
+          double c = 3 * u * t * t;
+          double e = t * t * t;
+          curve.add(new double[] {a * start[0] + b * c1[0] + c * c2[0] + e * end[0],
+              a * start[1] + b * c1[1] + c * c2[1] + e * end[1]});
+        }
+      }
+      start = end;
+    }
+    // fewer control points than a segment needs: a straight run
+    for (; i < control.size(); i++) {
+      curve.add(control.get(i));
+    }
+    return curve;
   }
 
   private void collectHalfPlane(IAST ast, Style2D style, boolean full, boolean lineOnly) {

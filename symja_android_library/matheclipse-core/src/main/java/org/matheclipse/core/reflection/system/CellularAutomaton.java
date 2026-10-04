@@ -135,6 +135,8 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           boolean isTotalistic = false;
           boolean is2D = false;
           int[][] explicitWeights = null;
+          // the cells of an explicit neighbourhood {{o1}, {o2}, ...}, or null
+          int[] offsets = null;
 
           if (rule.isInteger()) {
             baseRule = (IInteger) rule;
@@ -158,7 +160,15 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
                     rX = ((IAST) rspec).arg2().toIntDefault(1);
                     is2D = true;
                   } else {
-                    validRule = false; // Possibly complex offset
+                    offsets = offsetNeighbourhood((IAST) rspec);
+                    if (offsets == null) {
+                      validRule = false; // Possibly complex offset
+                    } else {
+                      r = 0;
+                      for (int offset : offsets) {
+                        r = Math.max(r, Math.abs(offset));
+                      }
+                    }
                   }
                 } else {
                   validRule = false;
@@ -277,6 +287,35 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
             }
           }
 
+          if (baseRule != null && offsets != null) {
+            if (explicitWeights != null || isTotalistic || is2D) {
+              return F.NIL;
+            }
+            // the cell at the j-th offset is the j-th digit of the neighbourhood's number, which
+            // is the weights mechanism with the weights k^(m-j)
+            final int m = offsets.length;
+            if (m * Math.log(k) > Math.log(Config.MAX_AST_SIZE)) {
+              return F.NIL;
+            }
+            explicitWeights = new int[1][2 * r + 1];
+            int weight = 1;
+            for (int j = m - 1; j >= 0; j--) {
+              explicitWeights[0][offsets[j] + r] = weight;
+              weight *= k;
+            }
+            // weight is k^m now, the number of neighbourhoods
+            if (weight <= 4096) {
+              java.math.BigInteger largest =
+                  java.math.BigInteger.valueOf(k).pow(weight).subtract(java.math.BigInteger.ONE);
+              if (baseRule.toBigNumerator().compareTo(largest) > 0) {
+                // The specified rule number `1` is greater than the largest possible rule number
+                // (`2`).
+                return Errors.printMessage(S.CellularAutomaton, "rsize",
+                    F.List(baseRule, F.ZZ(largest)));
+              }
+            }
+          }
+
           if (baseRule != null) {
             if (baseRule.isNegative()) {
               // The specified rule number `1` should be non-negative.
@@ -324,6 +363,35 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
    * Evaluates k-color, range-r, order-s generalized integer cellular automata. Supports 1D grids
    * and flat cyclic lists and superimposed states with infinite backgrounds {{...}, bg}.
    */
+  /**
+   * The offsets of an explicit one-dimensional neighbourhood <code>{{o1}, {o2}, ...}</code>, or
+   * <code>null</code> if the specification is none: every entry is a list of one integer and no
+   * offset occurs twice.
+   */
+  private static int[] offsetNeighbourhood(IAST rspec) {
+    if (rspec.argSize() < 1) {
+      return null;
+    }
+    int[] offsets = new int[rspec.argSize()];
+    for (int i = 1; i <= rspec.argSize(); i++) {
+      IExpr entry = rspec.get(i);
+      if (!entry.isList1() || !entry.first().isInteger()) {
+        return null;
+      }
+      int offset = entry.first().toIntDefault();
+      if (F.isNotPresent(offset) || Math.abs(offset) > 1000) {
+        return null;
+      }
+      for (int j = 0; j < i - 1; j++) {
+        if (offsets[j] == offset) {
+          return null;
+        }
+      }
+      offsets[i - 1] = offset;
+    }
+    return offsets;
+  }
+
   private IExpr evaluateInteger1D(IInteger ruleNum, int k, int r, int s, boolean isTotalistic,
       int[][] explicitWeights, IAST init, int steps, int tStart, int tEnd, int dt,
       boolean returnSingleStep, boolean isOperatorForm) {
