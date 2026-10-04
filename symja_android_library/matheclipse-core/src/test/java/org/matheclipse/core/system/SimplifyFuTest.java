@@ -442,6 +442,13 @@ public class SimplifyFuTest extends ExprEvaluatorTestCase {
     tr9 = TrigSimplifyFu.tr9(F.Plus(F.Sin(F.y).negate(), F.Sin(F.Times(F.x, F.y))));
     tr9 = F.eval(tr9);
     assertEquals("2*Cos(1/2*(y+x*y))*Sin(1/2*(-y+x*y))", tr9.toString());
+
+    // a machine coefficient equal to an exact one: the sum-to-product collapses to the integer 0,
+    // which processCommonAddends must accept rather than cast to IAST
+    tr9 = TrigSimplifyFu
+        .tr9(F.Subtract(F.Sin(F.Times(F.num(0.5), F.x)), F.Sin(F.Times(F.C1D2, F.x))));
+    tr9 = F.eval(tr9);
+    assertEquals("0", tr9.toString());
   }
 
   @Test

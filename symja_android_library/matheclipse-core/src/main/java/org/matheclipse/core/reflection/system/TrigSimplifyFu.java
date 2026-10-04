@@ -317,10 +317,10 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       IExpr c = k.first();
       // IExpr _c = k;
       if (v.argSize() > 1) {
-        IAST e = v;
+        IExpr e = v;
         IExpr newExpr = doIt.apply(e);
         if (newExpr.isPresent() && !newExpr.equals(e)) {
-          e = (IAST) newExpr;
+          e = newExpr;
           hit = true;
         }
         plusAST.append(c.times(e));
