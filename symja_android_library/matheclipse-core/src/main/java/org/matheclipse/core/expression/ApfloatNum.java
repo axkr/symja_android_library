@@ -103,14 +103,9 @@ public class ApfloatNum implements INum {
             final double fNum = base.evalfNaN();
             if (!Double.isFinite(fNum) || fNum <= Double.MIN_VALUE || fNum >= Double.MAX_VALUE) {
               if (ratBase.isPositive()) {
-                ApfloatNum root = ratBase.apfloatNumValue().rootN(nthRoot);
-                double d = root.doubleValue();
-                if (Double.isInfinite(d)) {
-                  // Out of the double range the root is an arbitrary precision number of
-                  // machine precision, like every other machine overflow
-                  return F.num(root.apfloatValue().precision(ParserConfig.MACHINE_PRECISION));
-                }
-                return F.num(d);
+                // out of the double range the root is an arbitrary precision number of machine
+                // precision, like every other machine overflow
+                return machineOrPromoted(ratBase.apfloatNumValue().rootN(nthRoot).apfloatValue());
               } else if (ratBase.isNegative()) {
                 ApcomplexNum apcomplex = ratBase.apcomplexNumValue();
                 return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
@@ -165,6 +160,48 @@ public class ApfloatNum implements INum {
 
   public static ApfloatNum valueOf(final Apfloat value) {
     return new ApfloatNum(value);
+  }
+
+  /**
+   * A machine precision result which may lie outside the double range: the machine number of
+   * <code>value</code>, or the arbitrary precision number of machine precision if
+   * <code>value</code> is too large for a double or too small to be one which isn't zero.
+   */
+  public static INum machineOrPromoted(final Apfloat value) {
+    final double d = value.doubleValue();
+    if (Double.isInfinite(d) || (d == 0.0 && value.signum() != 0)) {
+      return valueOf(value.precision(ParserConfig.MACHINE_PRECISION));
+    }
+    return F.num(d);
+  }
+
+  /**
+   * The quotient of two integers as an arbitrary precision number of machine precision: the
+   * machine precision value of a rational number beyond the double range.
+   */
+  public static ApfloatNum promoted(final BigInteger numerator, final BigInteger denominator) {
+    final long precision = ParserConfig.MACHINE_PRECISION;
+    Apfloat n = new Apfloat(numerator, precision);
+    return valueOf(denominator.equals(BigInteger.ONE) ? n
+        : n.divide(new Apfloat(denominator, precision)));
+  }
+
+  /**
+   * The literal <code>mantissa*^exponent</code> as an arbitrary precision number of machine
+   * precision: a literal like <code>1.*^400</code>, which is beyond the double range. A mantissa
+   * with more digits than a machine number keeps them.
+   */
+  public static ApfloatNum promotedLiteral(final String mantissa, final long exponent) {
+    int digits = 0;
+    for (int i = 0; i < mantissa.length(); i++) {
+      final char c = mantissa.charAt(i);
+      if (Character.isDigit(c) && (digits > 0 || c != '0')) {
+        digits++;
+      }
+    }
+    Apfloat value = new Apfloat(mantissa,
+        digits > ParserConfig.MACHINE_PRECISION ? digits : ParserConfig.MACHINE_PRECISION);
+    return valueOf(exponent == 0 ? value : ApfloatMath.scale(value, exponent));
   }
 
   public static ApfloatNum valueOf(final BigInteger numerator) {
@@ -659,21 +696,23 @@ public class ApfloatNum implements INum {
   }
 
   /**
-   * The result of an operation of this number with a machine number. A number of machine precision
-   * is an arbitrary precision number only because it lies beyond the double range, like
-   * <code>N(10^400)</code>; if the result is back in that range, it is a machine number again
-   * (<code>N[10^400]*1.*^-300</code>).
+   * The result of an operation of this number with a machine number: the lower precision governs,
+   * so it is a machine number (<code>N[Pi,20]*2.</code>), or an arbitrary precision number of
+   * machine precision if it lies beyond the double range (<code>N[10^400,20]*2.</code>).
    */
   private IInexactNumber machineResult(INum result) {
-    if (fApfloat.precision() == ParserConfig.MACHINE_PRECISION
-        && !EvalEngine.get().isArbitraryMode()) {
-      double d = result.doubleValue();
-      if (Double.isFinite(d)
-          && (d == 0.0 ? result.apfloatValue().signum() == 0 : Math.abs(d) >= Double.MIN_NORMAL)) {
-        return Num.valueOf(d);
-      }
+    if (EvalEngine.get().isArbitraryMode()) {
+      return result;
     }
-    return result;
+    double d = result.doubleValue();
+    if (Double.isFinite(d)
+        && (d == 0.0 ? result.apfloatValue().signum() == 0 : Math.abs(d) >= Double.MIN_NORMAL)) {
+      return Num.valueOf(d);
+    }
+    Apfloat value = result.apfloatValue();
+    return value.precision() > ParserConfig.MACHINE_PRECISION
+        ? valueOf(value.precision(ParserConfig.MACHINE_PRECISION))
+        : result;
   }
 
   /**

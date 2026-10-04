@@ -41,6 +41,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.MachineUnderflow;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
@@ -2578,13 +2579,17 @@ public class ExpTrigsFunctions {
           if (result.isInfinite()) {
             return F.Overflow();
           }
-          if ((z instanceof Num || z instanceof ComplexNum) && result.isNumber()
-              && ((INumber) result).reDoubleValue() == 0.0
-              && ((INumber) result).imDoubleValue() == 0.0 && Double.isFinite(z.reDoubleValue())
-              && Double.isFinite(z.imDoubleValue())) {
-            // the underflow is 0.0 and reported as Exp(z). A subnormal result is reported by
-            // the engine for every numeric function.
-            engine.machineUnderflow().report(ast, true);
+          if (z instanceof Num && result instanceof Num
+              && Double.isFinite(((Num) z).doubleValue())) {
+            // an underflow to a subnormal number or to 0.0 is reported as Exp(z)
+            engine.machineUnderflow().check(((Num) result).doubleValue(), ast);
+          } else if (z instanceof ComplexNum && result.isNumber()
+              && Double.isFinite(z.reDoubleValue()) && Double.isFinite(z.imDoubleValue())) {
+            final double re = ((INumber) result).reDoubleValue();
+            final double im = ((INumber) result).imDoubleValue();
+            if (MachineUnderflow.isBelowNormal(re) && MachineUnderflow.isBelowNormal(im)) {
+              engine.machineUnderflow().report(ast, re == 0.0 && im == 0.0);
+            }
           }
           return result;
         } catch (ValidateException ve) {

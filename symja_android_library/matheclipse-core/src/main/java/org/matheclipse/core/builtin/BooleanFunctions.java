@@ -55,6 +55,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.BDDExpr;
 import org.matheclipse.core.expression.data.BDDParser;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -66,7 +67,6 @@ import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IReal;
@@ -3871,17 +3871,6 @@ public final class BooleanFunctions {
     }
   }
 
-  /**
-   * <code>SameQ</code> for two expressions: two inexact real numbers are the same, if they differ
-   * in at most their last bit; everything else must be identical.
-   */
-  private static boolean isSameQ(IExpr x, IExpr y) {
-    if (x instanceof INum && y instanceof INum && !x.isNaN() && !y.isNaN()) {
-      return RealNumberComparison.isSameWithTolerance((INum) x, (INum) y);
-    }
-    return x.isSame(y);
-  }
-
   private static final class SameQ extends AbstractCoreFunctionEvaluator
       implements IPredicate, IComparatorFunction {
     @Override
@@ -3889,9 +3878,9 @@ public final class BooleanFunctions {
       if (ast.size() > 2) {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE, false).orElse(ast);
         if (temp.isAST2()) {
-          return isSameQ(temp.arg1(), temp.arg2()) ? S.True : S.False;
+          return Predicates.isSameQ(temp.arg1(), temp.arg2()) ? S.True : S.False;
         }
-        if (temp.existsLeft((x, y) -> !isSameQ(x, y))) {
+        if (temp.existsLeft((x, y) -> !Predicates.isSameQ(x, y))) {
           return S.False;
         }
       }
@@ -4212,14 +4201,14 @@ public final class BooleanFunctions {
       if (ast.size() > 2) {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE, false).orElse(ast);
         if (temp.isAST2()) {
-          return isSameQ(temp.arg1(), temp.arg2()) ? S.False : S.True;
+          return Predicates.isSameQ(temp.arg1(), temp.arg2()) ? S.False : S.True;
         }
         int i = 2;
         int j;
         while (i < temp.size()) {
           j = i;
           while (j < temp.size()) {
-            if (isSameQ(temp.get(i - 1), temp.get(j++))) {
+            if (Predicates.isSameQ(temp.get(i - 1), temp.get(j++))) {
               return S.False;
             }
           }

@@ -65,7 +65,7 @@ public class ContainsFunctions {
 
 
       if (argSize >= 2 && validateArgs(ast.arg1(), ast.arg2(), engine)) {
-        final BiPredicate<IExpr, IExpr> sameTest = Predicates.sameTest(option[0], engine);
+        final BiPredicate<IExpr, IExpr> sameTest = Predicates.identicalTest(option[0], engine);
         // IExpr sameTest = option[0].equals(S.Automatic) ? S.SameQ : option[0];
         IAST list1 = (IAST) ast.arg1();
         IAST list2 = (IAST) ast.arg2();

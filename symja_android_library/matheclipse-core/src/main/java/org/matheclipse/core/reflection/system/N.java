@@ -153,12 +153,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
 
       IExpr result = engine.evalWithoutNumericReset(expr);
       if (result instanceof ApfloatNum) {
-        double d = result.evalfNaN();
-        if (Double.isInfinite(d)) {
-          // WMA: out of the double range an arbitrary precision number of machine precision
-          return F.num(((ApfloatNum) result).apfloatValue().precision(ParserConfig.MACHINE_PRECISION));
-        }
-        return F.num(d);
+        // out of the double range an arbitrary precision number of machine precision: also
+        // below it, N((10^800+1)^(-1/2)) is no 0.0
+        return ApfloatNum.machineOrPromoted(((ApfloatNum) result).apfloatValue());
       }
       if (result instanceof ApcomplexNum) {
         org.hipparchus.complex.Complex c = result.evalfc();

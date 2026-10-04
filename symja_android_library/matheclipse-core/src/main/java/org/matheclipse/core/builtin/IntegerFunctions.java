@@ -26,6 +26,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.Attribute;
@@ -604,6 +605,15 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST2()) {
+          IExpr quotient = machineQuotient(ast.arg1(), ast.arg2());
+          if (quotient.isPresent()) {
+            // Ceiling(0.6, 0.2) is 3*0.2, because 0.6/0.2 is 2.9999999999999996
+            return F.Times(F.Ceiling(quotient), ast.arg2());
+          }
+          if (ast.arg1().isReal() && ast.arg2().isReal()) {
+            // -a*Quotient(-x, a), as Floor(x, a) is a*Quotient(x, a)
+            return F.Times(F.CN1, F.Quotient(ast.arg1().negate(), ast.arg2()), ast.arg2());
+          }
           return F.Times(F.Ceiling(F.Divide(ast.arg1(), ast.arg2())), ast.arg2());
         }
         IExpr arg1 = engine.evaluateNIL(ast.arg1());
@@ -1048,6 +1058,15 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
         if (ast.isAST2()) {
+          IExpr quotient = machineQuotient(ast.arg1(), ast.arg2());
+          if (quotient.isPresent()) {
+            // Floor(0.7, 0.1) is 6*0.1, because 0.7/0.1 is 6.999999999999999
+            return F.Times(F.Floor(quotient), ast.arg2());
+          }
+          if (ast.arg1().isReal() && ast.arg2().isReal()) {
+            // a*Quotient(x, a)
+            return F.Times(F.Quotient(ast.arg1(), ast.arg2()), ast.arg2());
+          }
           return F.Times(F.Floor(F.Divide(ast.arg1(), ast.arg2())), ast.arg2());
         }
         // IExpr arg1 = engine.evaluateNIL(ast.arg1());
@@ -1635,6 +1654,16 @@ public class IntegerFunctions {
         return i0.mod(i1);
       }
 
+      if (m instanceof Num && n instanceof Num) {
+        // the exact remainder of the two doubles, with the sign of n: Mod(1., 0.1) is
+        // 0.09999999999999995, because 0.1 is a little more than 1/10
+        final double divisor = ((Num) n).doubleValue();
+        double remainder = ((Num) m).doubleValue() % divisor;
+        if (remainder != 0.0 && (remainder < 0.0) != (divisor < 0.0)) {
+          remainder += divisor;
+        }
+        return F.num(remainder);
+      }
       if (m.isReal() && n.isReal()) {
         return F.Subtract(m, F.Times(n, F.Floor(((IReal) m).divideBy((IReal) n))));
       }
@@ -2326,6 +2355,25 @@ public class IntegerFunctions {
     }
   }
 
+  /**
+   * The quotient <code>x/a</code> of two real numbers of which at least one is a machine number,
+   * as one machine division of their machine values, and not <code>x*(1/a)</code>:
+   * <code>Floor(x,a)</code>, <code>Ceiling(x,a)</code> and <code>Round(x,a)</code> round this
+   * quotient and multiply it with <code>a</code>.
+   *
+   * @return {@link F#NIL} if no operand is a machine number or one has no machine value
+   */
+  private static IExpr machineQuotient(IExpr x, IExpr a) {
+    if ((x instanceof Num || a instanceof Num) && x.isReal() && a.isReal()) {
+      final double dx = ((IReal) x).doubleValue();
+      final double da = ((IReal) a).doubleValue();
+      if (Double.isFinite(dx) && Double.isFinite(da) && da != 0.0) {
+        return F.num(dx / da);
+      }
+    }
+    return F.NIL;
+  }
+
   public static void initialize() {
     Initializer.init();
   }
@@ -2488,6 +2536,21 @@ public class IntegerFunctions {
           }
           INumber number = expr.evalNumber();
           if (number != null) {
+            if (number.isReal() && !expr.isNumber()) {
+              IExpr floor = number.floorFraction();
+              final double value = number.reDoubleValue();
+              if (value - Math.floor(value) == 0.5) {
+                // the value was rounded to a half; on which side of it the exact value lies
+                // decides: Round(1/2+Pi^(-1000)) is 1
+                int sign = CompareUtil.numericSign(
+                    engine.evaluate(F.Subtract(expr, F.Plus(floor, F.C1D2))), engine);
+                if (sign == 1) {
+                  return floor.inc();
+                } else if (sign == -1) {
+                  return floor;
+                }
+              }
+            }
             return number.roundExpr();
           }
           if (expr.isInfinity() || expr.isNegativeInfinity() || expr.isDirectedInfinity()
@@ -2516,7 +2579,12 @@ public class IntegerFunctions {
     }
 
     private IExpr round(EvalEngine engine, IExpr expr, IExpr k) {
-      IExpr n = S.Divide.ofNIL(engine, expr, k);
+      // Round(0.35, 0.1) is 3*0.1 and Round(0.35, 1/10) is 3/10, because 0.35/0.1 is
+      // 3.4999999999999996
+      IExpr n = machineQuotient(expr, k);
+      if (n.isNIL()) {
+        n = S.Divide.ofNIL(engine, expr, k);
+      }
       if (n.isPresent()) {
         if (n.isRealResult() || n.isComplex() || n.isComplexNumeric()) {
           n = S.Round.ofNIL(engine, n);

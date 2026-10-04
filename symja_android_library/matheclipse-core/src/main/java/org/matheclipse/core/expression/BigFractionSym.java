@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.function.Function;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
@@ -25,6 +26,9 @@ import edu.jas.arith.BigRational;
  * @see FractionSym
  */
 public class BigFractionSym extends AbstractFractionSym {
+  /** The digits of a quotient which {@link #doubleValue()} rounds to a double. */
+  private static final MathContext QUOTIENT_DIGITS = new MathContext(40);
+
 
   /** */
   private static final long serialVersionUID = -553051997353641162L;
@@ -272,7 +276,15 @@ public class BigFractionSym extends AbstractFractionSym {
 
   @Override
   public double doubleValue() {
-    return fFraction.doubleValue();
+    double d = fFraction.doubleValue();
+    if (!Double.isFinite(d) || Math.abs(d) < Double.MIN_NORMAL) {
+      // numerator or denominator left the double range, their quotient need not:
+      // 1/7^365 is 3.46*10^-309 and not 0.0. The quotient has far more digits than a double, so
+      // that the conversion to the nearest double is the only rounding which counts.
+      return new BigDecimal(toBigNumerator())
+          .divide(new BigDecimal(toBigDenominator()), QUOTIENT_DIGITS).doubleValue();
+    }
+    return d;
   }
 
   @Override

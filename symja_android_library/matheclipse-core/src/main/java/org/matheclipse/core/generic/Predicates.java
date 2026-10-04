@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IReal;
@@ -309,6 +310,39 @@ public class Predicates {
     return head == S.Automatic ? //
         (x, y) -> x.isSame(y) : //
         (x, y) -> engine.evalTrue(head, x, y);
+  }
+
+  /**
+   * The test of the set operations <code>Union</code>, <code>Complement</code>,
+   * <code>Intersection</code>, <code>SubsetQ</code>, ...: as {@link #sameTest(IExpr, EvalEngine)},
+   * but by default two real numbers are the same element only if they are identical, so that
+   * <code>1.</code> and <code>1.+2.^-52</code> are two elements.
+   */
+  public static BiPredicate<IExpr, IExpr> identicalTest(final IExpr head,
+      final EvalEngine engine) {
+    return head == S.Automatic ? //
+        (x, y) -> x.isReal() && y.isReal() ? x.equals(y) : x.isSame(y) : //
+        (x, y) -> engine.evalTrue(head, x, y);
+  }
+
+  /**
+   * <code>SameQ</code> for two expressions: two inexact real numbers are the same, if they differ
+   * in at most their last bit; everything else must be identical.
+   */
+  public static boolean isSameQ(IExpr x, IExpr y) {
+    if (x instanceof INum && y instanceof INum && !x.isNaN() && !y.isNaN()) {
+      return RealNumberComparison.isSameWithTolerance((INum) x, (INum) y);
+    }
+    return x.isSame(y);
+  }
+
+  /**
+   * The test of <code>DeleteDuplicates</code>, <code>DuplicateFreeQ</code> and <code>Tally</code>:
+   * {@link #isSameQ(IExpr, IExpr)} for <code>SameQ</code>, which needs no evaluation, every other
+   * <code>head</code> is evaluated as <code>head(x,y)</code>.
+   */
+  public static BiPredicate<IExpr, IExpr> duplicateTest(final IExpr head) {
+    return head == S.SameQ ? Predicates::isSameQ : isBinaryTrue(head);
   }
 
   /**

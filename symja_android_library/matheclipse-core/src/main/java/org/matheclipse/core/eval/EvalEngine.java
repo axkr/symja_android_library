@@ -5198,10 +5198,6 @@ public class EvalEngine implements Serializable {
     final IFunctionEvaluator functionEvaluator = symbol.getEvaluator();
     try {
       IExpr result = functionEvaluator.numericFunction(ast, this);
-      if (result instanceof Num && ((Num) result).doubleValue() != 0.0) {
-        // a subnormal result; a function which underflows to 0.0 reports that itself
-        machineUnderflow().check(((Num) result).doubleValue(), ast);
-      }
       if (result.isPresent() && isMachineOverflow(result) && hasFiniteMachineArguments(ast)) {
         // A machine precision result out of the double range is an arbitrary precision
         // number of machine precision, not Overflow() or Infinity

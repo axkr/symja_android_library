@@ -1288,7 +1288,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (isZero()) {
       return that;
     }
-    if (that.isZero()) {
+    if (F.isExactZero(that)) {
       if (that.isInexactNumber()) {
         return numericNumber();
       }
@@ -1543,7 +1543,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       }
       return negate();
     }
-    if (isZero() || that.isZero()) {
+    if (isZero() || F.isExactZero(that)) {
+      // exactly zero: a small machine number is no zero
       if (that.isInexactNumber()) {
         return F.CD0;
       }

@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.function.DoubleFunction;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -373,7 +374,7 @@ public class PiecewiseFunctions {
         IExpr expr = engine.evaluate(ast.get(i));
         INumber temp = expr.evalNumber();
         if (temp != null) {
-          if (temp.isZero()) {
+          if (F.isExactZero(temp)) {
             if (result.isNIL()) {
               result = ast.removeAtClone(i);
             } else {
@@ -405,7 +406,7 @@ public class PiecewiseFunctions {
         if (size == 2) {
           INumber temp = arg1.evalNumber();
           if (temp != null) {
-            if (temp.isZero()) {
+            if (F.isExactZero(temp)) {
               return F.C1;
             }
             return F.C0;
@@ -504,10 +505,11 @@ public class PiecewiseFunctions {
           temp = arg1;
         }
         if (size == 2) {
-          if (temp.isZero()) {
+          // only zero is zero: a small machine number like 1.*^-20 is not
+          if (F.isExactZero(temp)) {
             return F.C1;
           }
-          if (temp.isNonZeroComplexResult()) {
+          if (temp.isNumber() || temp.isNonZeroComplexResult()) {
             return F.C0;
           }
           return F.NIL;
@@ -522,7 +524,9 @@ public class PiecewiseFunctions {
           if (temp == null) {
             return F.NIL;
           } else {
-            if (temp.equals(arg1)) {
+            // the arguments are equal as Equal sees them: KroneckerDelta(0.1+0.2, 0.3) is 1
+            if (temp.equals(arg1) || (arg1.isNumber()
+                && CompareUtil.isEqualWithTolerance((INumber) temp, (INumber) arg1))) {
               continue;
             }
           }
@@ -1017,7 +1021,8 @@ public class PiecewiseFunctions {
 
     private IExpr unitize(IExpr x, EvalEngine engine) {
       if (x.isNumber()) {
-        return x.isZero() ? F.C0 : F.C1;
+        // only zero is zero: Unitize(1.*^-20) is 1
+        return F.isExactZero(x) ? F.C0 : F.C1;
       }
       if (S.PossibleZeroQ.ofQ(engine, x)) {
         return F.C0;

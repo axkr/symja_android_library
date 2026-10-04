@@ -50,6 +50,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.Pair;
+import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.expression.WildPattern;
@@ -1089,6 +1090,32 @@ public interface IExpr
    * @see S#Order
    */
   default int compareToNumerical(IExpr expr) {
+    if (!isReal() || !expr.isReal()) {
+      // Pi and N(Pi) have the same value
+      int c = CompareUtil.compareNumeric(this, expr, EvalEngine.get());
+      if (c != CompareUtil.NOT_COMPARABLE) {
+        return c;
+      }
+      if (isNumber() && expr.isNumber()) {
+        // a complex number: by the real part, then by the size and the sign of the imaginary
+        // part, so that 1. sorts before 1-I and 1-I before 1+I
+        final INumber x = (INumber) this;
+        final INumber y = (INumber) expr;
+        c = RealNumberComparison.compare(x.re(), y.re());
+        if (c == 0) {
+          c = RealNumberComparison.compare(x.im().abs(), y.im().abs());
+        }
+        if (c == 0) {
+          c = RealNumberComparison.compare(x.im(), y.im());
+        }
+        return c != 0 ? Integer.signum(c) : compareTo(expr);
+      }
+      if (isNumericFunction(true) && expr.isNumericFunction(true)) {
+        // two numeric values which are not both real: greater() and less() would only repeat
+        // the numeric evaluation
+        return equals(expr) ? 0 : compareTo(expr);
+      }
+    }
     if (greater(expr).isTrue()) {
       return 1;
     }

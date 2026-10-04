@@ -316,6 +316,130 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFourthProbe() {
+    // a literal beyond the double range is an arbitrary precision number of machine precision
+    check("{MachineNumberQ(2.5*^400), 2.5*^400==25*10^399, 2.5*^400>10^400, MachineNumberQ(2.5*^300)}", //
+        "{False,True,True,True}");
+    // such a number has the tolerance of a machine number
+    check("{Select(Range(43,48), 7^500*(1+2^-#)>N(7^500)&), Select(Range(43,48), 7^500*(1+2^-#)==N(7^500)&)}", //
+        "{{43,44,45},{46,47,48}}");
+    // every machine number is smaller than a number beyond the double range
+    check("{$MaxMachineNumber<2^1024, $MaxMachineNumber==2^1024, N(2^1024)>$MaxMachineNumber}", //
+        "{True,False,True}");
+    // equal values of different precision: the less precise one first
+    check("{Order(N(1/7,20),N(1/7,30)), Order(N(1,30),1), Ordering({N(1/7,30),N(1/7),1/7})}", //
+        "{1,-1,{2,1,3}}");
+    check("NumericalOrder(0.1+0.2,0.3)", //
+        "-1");
+    check("{NumericalOrder(N(E),E), NumericalOrder(1,1.), NumericalOrder(1.,1.+2^-52)}", //
+        "{0,0,1}");
+    // a fraction in the subnormal range
+    check("{N(1/7^365)==0., N(1/7^365)>3.*^-309, N(1/7^365)<4.*^-309}", //
+        "{False,True,True}");
+    check("Check(N(1/7^365),m)", //
+        "m");
+  }
+
+  @Test
+  public void testIteratorEndTest() {
+    // an inexact upper limit may be missed by a few units in the last place only
+    check("{Select(Range(46,53), Length(Range(0,1.-2.^-#,1/10))==11&), " //
+        + "Select(Range(46,53), Length(Table(x,{x,0,1.-2.^-#,1/10}))==11&)}", //
+        "{{51,52,53},{51,52,53}}");
+    check("{Length(Range(0,100,0.1)), Length(Range(1,0,-0.1)), Length(Table(x,{x,0,100,0.1}))}", //
+        "{1001,11,1001}");
+    check("{Range(0,0.3,0.1), Range(-0.3,0,0.1), Range(0.,1,1/3)} // InputForm", //
+        "{{0.0`,0.1`,0.2`,0.3`},{-0.3`,-0.19999999999999998`,-0.09999999999999998`,0.0`},{0.0`,0.3333333333333333`,0.6666666666666666`,1.0`}}");
+  }
+
+  @Test
+  public void testFifthProbe() {
+    // identical, SameQ and Equal are three different tests
+    check("{Length(Union({1.,1.+2.^-52})), Length(DeleteDuplicates({1.,1.+2.^-52})), Length(Tally({1.,1.+2.^-52})), " //
+        + "MemberQ({1.},1.+2.^-52), MatchQ(1.+2.^-52,1.)}", //
+        "{2,1,1,False,False}");
+    check("{Length(Union({0.7,7/10,0.1+0.6},SameTest->Equal)), Length(DeleteDuplicates({1,1.,2})), Union({1,1.})} // InputForm", //
+        "{1,3,{1,1.0`}}");
+    check("Tally({0.3,3/10,0.1+0.2}) // InputForm", //
+        "{{0.3`,2},{3/10,1}}");
+    // a product with a small machine number is no exact zero
+    check("{$MinMachineNumber/2==0, $MinMachineNumber/2>0, Block({x=3.*^-20}, x/2) // InputForm}", //
+        "{False,True,1.5`*^-20}");
+    // Floor(x, a) is a*Quotient(x, a)
+    check("{Floor(0.7,1/10), Floor(0.7,0.1), Quotient(0.7,0.1), Floor(7/10,1/10)} // InputForm", //
+        "{3/5,0.6000000000000001`,6,7/10}");
+    // the exact value decides next to a half
+    check("{Round(1/2+Pi^(-900)), Round(1/2-Pi^(-900)), Round(3/2+Pi^(-900)), Round(5/2)}", //
+        "{1,0,2,2}");
+  }
+
+  @Test
+  public void testIteratorWithComputedLimits() {
+    check("{Table(x,{x,0,1,1/3.}), Range(0,1,1/3.), Table(x,{x,-0.3,0,0.1}), Range(1,0,-0.25)} // InputForm", //
+        "{{0.0`,0.3333333333333333`,0.6666666666666666`,1.0`},{0.0`,0.3333333333333333`,0.6666666666666666`,1.0`},"
+            + "{-0.3`,-0.19999999999999998`,-0.09999999999999998`,0.0`},{1.0`,0.75`,0.5`,0.25`,0.0`}}");
+    check("{Select(Range(48,53), Length(Range(0,1.-2.^-#,0.1))==11&), Select(Range(48,53), Length(Range(0.,1-2^-#,1/10))==11&)}", //
+        "{{52,53},{52,53}}");
+  }
+
+  @Test
+  public void testSixthProbe() {
+    // set operations need identical real numbers, DuplicateFreeQ tests with SameQ
+    check("{Complement({1.,2.},{1.+2.^-52}), Intersection({1.,2.},{1.+2.^-52}), SubsetQ({1.,2.},{1.+2.^-52}), " //
+        + "ContainsAll({1.,2.},{1.+2.^-52}), DuplicateFreeQ({1.,1.+2.^-52}), DuplicateFreeQ({1,1.})} // InputForm", //
+        "{{1.0`,2.0`},{},False,False,False,True}");
+    // the remainder of two machine numbers is exact
+    check("{Mod(0.7,0.1), Mod(0.3,0.1), Mod(1.,0.1), Mod(5.5,1/2), Mod(-0.7,0.1)>0, Quotient(1.,0.1)} // InputForm", //
+        "{0.09999999999999992`,0.09999999999999998`,0.09999999999999995`,0.0`,True,10}");
+    // Round(x, k) divides the machine numbers
+    check("{Round(0.35,0.1), Round(0.25,0.1), Round(0.5), Round(1.5), Round(2.5), Round(-0.5)} // InputForm", //
+        "{0.30000000000000004`,0.2`,0,2,2,0}");
+    // Sum and Do use the end test of Table
+    check("{Sum(1,{x,0,1,0.1}), Sum(x,{x,0,0.3,1/10}), Sum(x,{x,1,3.5}), Sum(1,{x,0,1.-2.^-51,0.1}), " //
+        + "Length(Range(0,1.-2.^-51,0.1))}", //
+        "{11,3/5,6,11,10}");
+    // an exact complex number sorts before the machine number of the same value
+    check("{Order(1.+I,1+I), Order(1+I,1.+I), Sort({1.+I,1+I,1-I,1.-I})} // InputForm", //
+        "{-1,1,{1 - I,1 + I,1.0`+I*(-1.0`),1.0`+I*1.0`}}");
+  }
+
+  @Test
+  public void testComplexBeyondTheMachineRange() {
+    // a part beyond the double range is no ComplexInfinity
+    check("{MachineNumberQ(N(7^450*I)), Im(N(7^450*I))==7^450, N(7^450*I)==ComplexInfinity}", //
+        "{False,True,False}");
+  }
+
+  @Test
+  public void testComplexUnderflowMessage() {
+    assertEquals("General: Exp(-715.0+I*1.0)" + MUNFL, //
+        messagesOf("Exp(-715.+I)"));
+    assertEquals("General: Exp(-1015.0+I*1.0)" + MUNFL, //
+        messagesOf("Exp(-1015.+I)"));
+  }
+
+  @Test
+  public void testSeventhProbe() {
+    // a number is zero only if it is
+    check("{KroneckerDelta(3.*^-20), DiscreteDelta(3.*^-20), Unitize(3.*^-20), Unitize(3.*^-20,1.*^-10), " //
+        + "KroneckerDelta(0.), Unitize(0.), DiscreteDelta(0,0.)}", //
+        "{0,0,1,0,1,0,1}");
+    // several arguments are compared as Equal does
+    check("{KroneckerDelta(0.1+0.2,0.3), KroneckerDelta(1,1.), KroneckerDelta(1,2), KroneckerDelta(0.3,0.4)}", //
+        "{1,1,0,0}");
+    check("{PossibleZeroQ(3.*^-320), PossibleZeroQ(3.*^-20), PossibleZeroQ(0.1+0.2-0.3), PossibleZeroQ(0.), " //
+        + "PossibleZeroQ(Sqrt(2)*Sqrt(3)-Sqrt(6)), PossibleZeroQ(7^-400)}", //
+        "{False,False,False,True,True,False}");
+    check("Block({z=N(7^-30,20)}, PossibleZeroQ(z))", //
+        "False");
+    // an arbitrary precision limit or step keeps its precision
+    check("{Precision(Last(Range(0,1,N(1/4,20)))), Precision(Last(Range(N(1,20),2,1/2)))}", //
+        "{20,20}");
+    check("Table(x,{x,1.,2,0.5}) // InputForm", //
+        "{1.0`,1.5`,2.0`}");
+  }
+
+  @Test
   public void testCancellationOfExactOperands() {
     // a machine residue which vanishes with more precision is no difference
     check("{(E+Pi)^2-E^2-Pi^2-2*E*Pi<0, (E+Pi)^2-E^2-Pi^2-2*E*Pi>=0, (E+Pi)^2-E^2-Pi^2-2*E*Pi==0}", //
@@ -358,5 +482,57 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
     check(
         "{Check(Exp(-741.),m), Check(Exp(-742.),m), Check(Exp(-743.),m), Check(Exp(-744.),m), Check(Exp(-600.)>0,m)}", //
         "{m,m,m,m,True}");
+  }
+
+  @Test
+  public void testMultiplesAndDuplicates() {
+    // the quotient is not rounded before it is rounded up or down
+    check("{Ceiling(0.6,0.2)==3*0.2, Floor(0.6,0.2)==2*0.2, Ceiling(-0.6,0.2)==-2*0.2, Ceiling(7,2), Ceiling(-7,2)}", //
+        "{True,True,True,8,-6}");
+    // machine numbers which differ in the last bit are one element, everything else is counted
+    // by identity
+    check("Tally({1.,1.+2.^-52,a,1,a,1.+2.^-50,3/10,0.3})", //
+        "{{1.0,2},{a,2},{1,1},{1.0,1},{3/10,1},{0.3,1}}");
+    check("{DeleteDuplicates({1.,1.+2.^-52,1,a,a}), DuplicateFreeQ({1.,1.+2.^-52}), DuplicateFreeQ({1.,1})}", //
+        "{{1.0,1,a},False,True}");
+    // a fraction whose numerator and denominator are both beyond the machine range
+    check("N((10^400+1)/(3*10^390)) === N(10^10/3)", //
+        "True");
+    // a range which reaches its limit ends in it
+    check("{Last(Range(0,7/10,0.1))===0.7, Last(Range(-0.3,0,0.1))===0., Last(Range(0.3,0,-0.1))===0., Range(0.5,0.5)}", //
+        "{True,True,True,{0.5}}");
+  }
+
+  @Test
+  public void testEighthProbe() {
+    // a Range never goes beyond its limit, but it doesn't end in a limit it stays below
+    check("{Last(Range(0,0.7000000000000001,0.1)), Last(Range(0,0.7+1.*^-12,0.1)), Last(Range(0,0.7-1.*^-12,0.1)), " //
+        + "Last(Range(0.1,0.5,0.1)), Last(Range(1.,2.2,0.3)), Last(Range(0,2.1,0.7))} // InputForm", //
+        "{0.7000000000000001`,0.7000000000000001`,0.6000000000000001`,0.5`,2.2`,2.0999999999999996`}");
+    check("{Last(Range(0,7/10,0.1))===0.7, Last(Table(x,{x,0,7/10,0.1}))===7*0.1}", //
+        "{True,True}");
+    // the end test of Range is one bit stricter than the one of Table
+    check("{Length(Range(0,1-2.^-49,0.1)), Length(Range(0,1-2.^-50,0.1)), Length(Range(0,1-2.^-51,0.1)), " //
+        + "Length(Range(0,1-2.^-52,0.1)), Length(Table(x,{x,0,1-2.^-49,0.1})), Length(Table(x,{x,0,1-2.^-50,0.1})), " //
+        + "Length(Table(x,{x,0,1-2.^-51,0.1})), Length(Table(x,{x,0,1-2.^-52,0.1}))}", //
+        "{10,10,10,11,10,10,11,11}");
+    // an exact number plus a small machine number
+    check("Block({z=2.^-51}, {1-z, 1/2-z, I*z}) // InputForm", //
+        "{0.9999999999999996`,0.49999999999999956`,I*4.440892098500626`*^-16}");
+    // Floor, Ceiling and Round to a multiple: one machine division, the multiple keeps its type
+    check("{Ceiling(0.6,1/5), Floor(0.6,1/5), Ceiling(3/5,0.2), Floor(3/5,0.2), Ceiling(0.7,1/10), Floor(0.7,1/10), " //
+        + "Ceiling(7/10,0.1), Floor(7/10,0.1)} // InputForm", //
+        "{3/5,2/5,0.6000000000000001`,0.4`,7/10,3/5,0.7000000000000001`,0.6000000000000001`}");
+    check("{Round(0.35,0.1), Round(0.35,1/10), Round(7/20,0.1), Round(0.25,0.1), Round(0.25,1/10), Round(0.45,0.1), " //
+        + "Round(2.5,1), Round(0.15,0.1)} // InputForm", //
+        "{0.30000000000000004`,3/10,0.30000000000000004`,0.2`,1/5,0.4`,2,0.1`}");
+    check("{Ceiling(0.7,-0.1), Floor(0.7,-0.1), Round(0.35,-0.1), Ceiling(7,-2), Floor(7,-2), Round(7,-2)} // InputForm", //
+        "{0.6000000000000001`,0.7000000000000001`,0.30000000000000004`,6,8,8}");
+    // complex numbers: by the real part, then by the size and the sign of the imaginary part
+    check("{NumericalSort({1+I,1.,1-I,I,-I}), NumericalOrder(Pi,N(Pi)), NumericalOrder(Pi,3.14), NumericalOrder(I,1)}", //
+        "{{-I,I,1.0,1-I,1+I},0,-1,1}");
+    // a literal beyond the double range keeps the digits of its mantissa
+    check("{Precision(1.*^400), Precision(1.2345678901234567890*^400)}", //
+        "{16,20}");
   }
 }

@@ -56,7 +56,6 @@ import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
@@ -80,6 +79,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -1728,7 +1728,7 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (ast.arg1().isASTOrAssociation() && ast.arg2().isASTOrAssociation()) {
-        final BiPredicate<IExpr, IExpr> test = Predicates.sameTest(option[0], engine);
+        final BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
         SameTestComparator sameTest = new Comparators.SameTestComparator(test);
         IExpr head1 = ast.arg1().head();
         if (!ast.arg2().head().equals(head1)) {
@@ -2410,7 +2410,8 @@ public final class ListFunctions {
       if (onRows.isPresent()) {
         return onRows;
       }
-      IExpr test = S.Equal;
+      // the default test is SameQ: 1 and 1. are two elements
+      IExpr test = S.SameQ;
       if (ast.isAST2()) {
         test = ast.arg2();
       }
@@ -2418,7 +2419,7 @@ public final class ListFunctions {
       if (arg1.isListOrAssociation()) {
         IAST list = (IAST) arg1;
 
-        BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
+        BiPredicate<IExpr, IExpr> biPredicate = Predicates.duplicateTest(test);
         int size = list.size();
         final IASTAppendable result = list.copyHead(size - 1);
         iLoop: for (int i = 1; i < size; i++) {
@@ -2555,14 +2556,15 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      IExpr test = S.Equal;
+      // the default test is SameQ: 1 and 1. are no duplicates
+      IExpr test = S.SameQ;
       if (ast.isAST2()) {
         test = ast.arg2();
       }
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
 
-        BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
+        BiPredicate<IExpr, IExpr> biPredicate = Predicates.duplicateTest(test);
         int size = list.size();
         for (int i = 1; i < size; i++) {
           IExpr listElement = list.get(i);
@@ -3703,7 +3705,7 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
       if (argSize > 0) {
-        final BiPredicate<IExpr, IExpr> test = Predicates.sameTest(option[0], engine);
+        final BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
         SameTestComparator sameTest = new Comparators.SameTestComparator(test);
         if (argSize == 1) {
           if (ast.arg1().isASTOrAssociation()) {
@@ -5544,15 +5546,6 @@ public final class ListFunctions {
       }
 
       IExpr result = evaluateTable(ast, F.List(), engine);
-      if (ast.size() > 2 && result.isList() && result.size() > 1 && result.last() instanceof Num) {
-        // Machine elements are min+k*step, but a range which reaches its upper limit ends in
-        // that limit - Range(0,7/10,0.1) ends in 0.7 and not in 7*0.1 = 0.7000000000000001
-        IExpr max = engine.evalN(ast.arg2());
-        if (max instanceof Num && !max.equals(result.last())
-            && RealNumberComparison.compareWithTolerance((IReal) result.last(), (IReal) max) == 0) {
-          result = ((IAST) result).setAtCopy(result.size() - 1, max);
-        }
-      }
       if (result.isEmptyList()) {
         // An empty result means one of two different things. Range(0), Range(-1) and Range(5,1)
         // really are empty ranges. Range(x) is not: the generator could make no rows of it and the
@@ -7399,7 +7392,7 @@ public final class ListFunctions {
       if (list.isPresent()) {
         int size = ast.size();
         if (size == 2) {
-          return tally(list);
+          return tallySameQ(list);
         } else if (size == 3) {
           BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(ast.arg2());
           return tally(list, biPredicate);
@@ -8443,7 +8436,7 @@ public final class ListFunctions {
         if (onRows.isPresent()) {
           return onRows;
         }
-        final BiPredicate<IExpr, IExpr> test = Predicates.sameTest(option[0], engine);
+        final BiPredicate<IExpr, IExpr> test = Predicates.identicalTest(option[0], engine);
         SameTestComparator sameTest = new Comparators.SameTestComparator(test);
         if (argSize == 1) {
           if (ast.arg1().isASTOrAssociation()) {
@@ -8949,6 +8942,31 @@ public final class ListFunctions {
    * @param test
    * @return
    */
+  /**
+   * Count the elements of a list which are the same for <code>SameQ</code>: an inexact real number
+   * is looked up among the inexact real numbers found so far, because two of them are the same if
+   * they differ in their last bit; every other element is looked up by its hash value.
+   */
+  private static IAST tallySameQ(IAST list) {
+    java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
+    List<IExpr> inexactReals = new ArrayList<IExpr>();
+    iLoop: for (int i = 1; i < list.size(); i++) {
+      IExpr arg = list.get(i);
+      if (arg instanceof INum) {
+        for (int j = 0; j < inexactReals.size(); j++) {
+          IExpr key = inexactReals.get(j);
+          if (Predicates.isSameQ(key, arg)) {
+            map.merge(key, 1, Integer::sum);
+            continue iLoop;
+          }
+        }
+        inexactReals.add(arg);
+      }
+      map.merge(arg, 1, Integer::sum);
+    }
+    return createResultList(map);
+  }
+
   public static IAST tally(IAST list, BiPredicate<IExpr, IExpr> test) {
     java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
     iLoop: for (int i = 1; i < list.size(); i++) {

@@ -250,16 +250,20 @@ public class CompareUtil {
   private static int comparePrecise(IExpr a0, boolean function0, IExpr a1, boolean function1,
       boolean certain, EvalEngine engine) {
     final int same = certain ? UNCERTAIN : 0;
-    IExpr low0 = function0 ? engine.evalN(a0, LOW_DIGITS) : a0;
-    IExpr low1 = function1 ? engine.evalN(a1, LOW_DIGITS) : a1;
     IExpr high0 = function0 ? engine.evalN(a0, HIGH_DIGITS) : a0;
     IExpr high1 = function1 ? engine.evalN(a1, HIGH_DIGITS) : a1;
-    if (!isPrecise(low0) || !isPrecise(low1) || !isPrecise(high0) || !isPrecise(high1)) {
+    if (!isPrecise(high0) || !isPrecise(high1)) {
       // no arbitrary precision value: a machine residue counts as zero
       return same;
     }
     int c = RealNumberComparison.compareWithTolerance((IReal) high0, (IReal) high1);
     if (c == 0) {
+      return same;
+    }
+    // the lower precision is only needed to see whether a difference shrinks
+    IExpr low0 = function0 ? engine.evalN(a0, LOW_DIGITS) : a0;
+    IExpr low1 = function1 ? engine.evalN(a1, LOW_DIGITS) : a1;
+    if (!isPrecise(low0) || !isPrecise(low1)) {
       return same;
     }
     Apfloat low = RealNumberComparison.absoluteDifference((IReal) low0, (IReal) low1, HIGH_DIGITS);

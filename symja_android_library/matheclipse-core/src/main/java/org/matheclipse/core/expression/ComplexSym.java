@@ -671,7 +671,7 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber plus(final INumber that) {
-    if (that.isZero()) {
+    if (F.isExactZero(that)) {
       return this;
     }
     if (that instanceof ComplexSym) {
@@ -940,7 +940,7 @@ public class ComplexSym implements IComplex {
     if (that.isMinusOne()) {
       return negate();
     }
-    if (that.isZero()) {
+    if (F.isExactZero(that)) {
       return F.C0;
     }
     if (that instanceof ComplexSym) {

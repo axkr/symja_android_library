@@ -1289,7 +1289,8 @@ public class PredicateQ {
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
       IExpr expr = arg1;
       if (expr.isNumber()) {
-        return expr.isZero();
+        // a number is zero only if it is: PossibleZeroQ(1.*^-20) is False
+        return F.isExactZero(expr);
       }
       if (expr.isAST()) {
         return CompareUtil.isPossibleZeroQ((IAST) expr, false, Config.SPECIAL_FUNCTIONS_TOLERANCE,

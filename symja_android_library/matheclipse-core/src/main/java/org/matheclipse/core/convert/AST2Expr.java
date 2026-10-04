@@ -11,6 +11,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -970,7 +971,12 @@ public class AST2Expr {
       double doubleValue = Double.parseDouble(floatStr);
       if (exponent != 1) {
         // value * 10 ^ exponent
-        return F.num(doubleValue * Math.pow(10, exponent));
+        double value = doubleValue * Math.pow(10, exponent);
+        if (Double.isInfinite(value) && Double.isFinite(doubleValue)) {
+          // 1.*^400 is an arbitrary precision number of machine precision
+          return ApfloatNum.promotedLiteral(floatStr, exponent);
+        }
+        return F.num(value);
       }
       return F.num(doubleValue);
     }

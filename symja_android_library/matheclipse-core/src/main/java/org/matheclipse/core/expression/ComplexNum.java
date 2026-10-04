@@ -746,6 +746,10 @@ public class ComplexNum implements IComplexNum {
       if (expr instanceof ComplexNum) {
         return compareTo(((ComplexNum) expr).fComplex);
       }
+      if (expr instanceof ComplexSym) {
+        // the same order from both sides: 1+I before 1.+I
+        return -expr.compareTo(this);
+      }
       if (expr instanceof ApcomplexNum) {
         ApcomplexNum apcomplexNum = (ApcomplexNum) expr;
         return -1 * apcomplexNum.compareTo(apcomplexNumValue());

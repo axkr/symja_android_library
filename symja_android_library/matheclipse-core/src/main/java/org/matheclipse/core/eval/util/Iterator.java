@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -500,9 +501,26 @@ public class Iterator {
     }
   }
 
+  /**
+   * The relative fuzz of the end test of an iterator with an inexact limit, as a power of two:
+   * <code>Range(0, 1.-2.^-51, 1/10)</code> goes up to <code>1</code>,
+   * <code>Range(0, 1.-2.^-50, 1/10)</code> does not.
+   */
+  private static final int END_FUZZ_BITS = -50;
+
   /** Iterate over machine reals. */
   private static final class DoubleIterator extends RangeIterator {
     double count;
+
+    /** The index of the last element. */
+    final long last;
+
+    /**
+     * A <code>Range</code> never goes beyond its limit: a last element which the fuzz of the end
+     * test lets pass is the limit itself, so that <code>Range(0, 7/10, 0.1)</code> ends in
+     * <code>0.7</code> and not in <code>7*0.1 = 0.7000000000000001</code>.
+     */
+    final boolean range;
 
     /** The number of steps taken: the elements are <code>lowerLimit + k*step</code>. */
     long k;
@@ -520,7 +538,7 @@ public class Iterator {
     final INum stepNum;
 
     DoubleIterator(final ISymbol symbol, final double lowerLimit, final double upperLimit,
-        final double step) {
+        final double step, final boolean range) {
       super(symbol);
       this.lowerLimit = lowerLimit;
       this.upperLimit = upperLimit;
@@ -528,6 +546,26 @@ public class Iterator {
       this.lowerLimitNum = F.num(lowerLimit);
       this.upperLimitNum = F.num(upperLimit);
       this.stepNum = F.num(step);
+      // the end test of Range is one bit stricter than the one of Table, Sum or Do
+      this.range = range;
+      final double steps = (upperLimit - lowerLimit) / step;
+      if (steps >= 0.0) {
+        // a number of steps which misses an integer by the fuzz only counts as that integer; the
+        // difference is exact, where steps + fuzz would be rounded
+        final double next = Math.ceil(steps);
+        final int fuzzBits = range ? END_FUZZ_BITS - 1 : END_FUZZ_BITS;
+        this.last = (long) (next - steps < Math.scalb(next, fuzzBits) ? next : Math.floor(steps));
+      } else {
+        this.last = -1L;
+      }
+    }
+
+    /** The element <code>value</code> of the index {@link #k}. */
+    private double clamp(double value) {
+      if (range && k == last && (step < 0.0 ? value < upperLimit : value > upperLimit)) {
+        return upperLimit;
+      }
+      return value;
     }
 
     @Override
@@ -555,12 +593,7 @@ public class Iterator {
 
     @Override
     public boolean hasNext() {
-      if (step < 0.0) {
-        return count >= upperLimit
-            || F.isFuzzyEquals(count, upperLimit, Config.SPECIAL_FUNCTIONS_TOLERANCE);
-      }
-      return count <= upperLimit
-          || F.isFuzzyEquals(count, upperLimit, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+      return k <= last;
     }
 
     @Override
@@ -573,13 +606,19 @@ public class Iterator {
       // not count += step: the rounding errors of repeated additions add up, so that
       // {x, 0, 1, 0.1} would end in 0.7999999999999999, 0.8999999999999999, 0.9999999999999999
       k++;
-      count = lowerLimit + k * step;
+      final double offset = k * step;
+      count = lowerLimit + offset;
+      if (Math.abs(count) < Math.scalb(Math.abs(offset), END_FUZZ_BITS)) {
+        // the rounding residue of a cancellation: {x, -0.3, 0, 0.1} ends in 0.0
+        count = 0.0;
+      }
+      count = clamp(count);
     }
 
     @Override
     boolean start() {
       k = 0;
-      count = lowerLimit;
+      count = clamp(lowerLimit);
       return step < 0 ? !(lowerLimit < upperLimit) : !(lowerLimit > upperLimit);
     }
   }
@@ -796,12 +835,21 @@ public class Iterator {
 
     @Override
     boolean lessEqual(IExpr a, IExpr b) {
-      return ((IReal) a).lessEqualThan((IReal) b).isTrue();
+      IReal x = (IReal) a;
+      IReal y = (IReal) b;
+      if (!x.isGT(y)) {
+        return true;
+      }
+      // an element which overshoots an inexact limit by a few units in the last place counts
+      double dx = x.doubleValue();
+      double dy = y.doubleValue();
+      return (x.isInexactNumber() || y.isInexactNumber())
+          && Math.abs(dx - dy) < Math.scalb(Math.max(Math.abs(dx), Math.abs(dy)), END_FUZZ_BITS);
     }
 
     @Override
     boolean less(IExpr a, IExpr b) {
-      return ((IReal) a).lessThan((IReal) b).isTrue();
+      return ((IReal) a).isLT((IReal) b);
     }
 
     @Override
@@ -907,7 +955,7 @@ public class Iterator {
             // variable; the number of elements determines the number of iterations
             return new ExprListIterator(null, (IAST) upperLimit, evalEngine);
           }
-          IIterator<IExpr> countIterator = rangeIterator(variable, null, upperLimit, null, true);
+          IIterator<IExpr> countIterator = rangeIterator(variable, null, upperLimit, null, true, false);
           if (countIterator != null) {
             return countIterator;
           }
@@ -985,10 +1033,20 @@ public class Iterator {
           String str = Errors.getMessage("itform", F.list(list, F.ZZ(position)), EvalEngine.get());
           throw new ArgumentTypeException(str);
       }
+      if (!evalEngine.isNumericMode() && ((list.size() >= 4 && lowerLimit.isInexactNumber())
+          || (list.size() == 5 && step.isInexactNumber()))) {
+        // an inexact lower limit or step which was no literal, as in {x, 0, 1, 1/3.}
+        fNumericMode = true;
+        IExpr[] limits = evalNumerically(evalEngine, lowerLimit, upperLimit, step);
+        lowerLimit = limits[0];
+        upperLimit = limits[1];
+        step = limits[2];
+      }
       if (list.size() > 2) {
         // {max} was tried above; a limit the specification leaves out is not tested
         IIterator<IExpr> rangeIterator = rangeIterator(variable,
-            list.size() > 3 ? lowerLimit : null, upperLimit, list.size() > 4 ? step : null, true);
+            list.size() > 3 ? lowerLimit : null, upperLimit, list.size() > 4 ? step : null, true,
+            false);
         if (rangeIterator != null) {
           return rangeIterator;
         }
@@ -1079,9 +1137,18 @@ public class Iterator {
           // Range has 1 to 3 arguments
           throw NoEvalException.CONST;
       }
+      if (!evalEngine.isNumericMode() && list.size() == 4
+          && (lowerLimit.isInexactNumber() || step.isInexactNumber())) {
+        // an inexact lower limit or step which was no literal, as in Range(0, 1, 1/3.)
+        fNumericMode = true;
+        IExpr[] limits = evalNumerically(evalEngine, lowerLimit, upperLimit, step);
+        lowerLimit = limits[0];
+        upperLimit = limits[1];
+        step = limits[2];
+      }
       // Range(n) with a machine real n counts in exact integers: Range(3.5) is {1,2,3}
       IIterator<IExpr> rangeIterator = rangeIterator(variable, list.size() > 2 ? lowerLimit : null,
-          upperLimit, list.size() > 3 ? step : null, list.size() > 2);
+          upperLimit, list.size() > 3 ? step : null, list.size() > 2, true);
       if (rangeIterator != null) {
         return rangeIterator;
       }
@@ -1365,6 +1432,18 @@ public class Iterator {
   }
 
   /**
+   * Switch the engine to numeric mode and evaluate the limits and the step of an iterator in it.
+   *
+   * @return <code>{lower, upper, step}</code>
+   */
+  private static IExpr[] evalNumerically(EvalEngine engine, IExpr lower, IExpr upper,
+      IExpr step) {
+    engine.setNumericMode(true);
+    return new IExpr[] {engine.evalWithoutNumericReset(lower),
+        engine.evalWithoutNumericReset(upper), engine.evalWithoutNumericReset(step)};
+  }
+
+  /**
    * The specialized iterator for numeric limits: machine reals, machine integers, rationals,
    * quantities or other reals, tried in this order. A limit which the specification leaves out is
    * passed as <code>null</code> and is <code>1</code>.
@@ -1378,15 +1457,20 @@ public class Iterator {
    * @param upper the upper limit
    * @param step the step or <code>null</code> for <code>1</code>
    * @param allowDouble if <code>false</code> no {@link DoubleIterator} is created
+   * @param range the iterator of <code>Range</code>, whose end test is one bit stricter than the
+   *        one of <code>Table</code>, <code>Sum</code> or <code>Do</code>, and which never goes
+   *        beyond its upper limit
    * @return <code>null</code> if the limits are not all numbers of one kind
    */
   private static IIterator<IExpr> rangeIterator(ISymbol variable, IExpr lower, IExpr upper,
-      IExpr step, boolean allowDouble) {
-    if (allowDouble && (lower instanceof INum || step instanceof INum)
-        && (lower == null || lower instanceof INum) && upper instanceof INum
-        && (step == null || step instanceof INum)) {
-      return new DoubleIterator(variable, lower == null ? 1.0 : ((INum) lower).doubleValue(),
-          ((INum) upper).doubleValue(), step == null ? 1.0 : ((INum) step).doubleValue());
+      IExpr step, boolean allowDouble, boolean range) {
+    // machine numbers only: an arbitrary precision limit or step keeps its precision
+    if (allowDouble && (lower instanceof Num || step instanceof Num)
+        && (lower == null || lower instanceof Num) && upper instanceof Num
+        && (step == null || step instanceof Num)) {
+      return new DoubleIterator(variable, lower == null ? 1.0 : ((Num) lower).doubleValue(),
+          ((Num) upper).doubleValue(), step == null ? 1.0 : ((Num) step).doubleValue(),
+          range);
     }
     if ((lower == null || lower.isInteger()) && upper.isInteger()
         && (step == null || step.isInteger())) {

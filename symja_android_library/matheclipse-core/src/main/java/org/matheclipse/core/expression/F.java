@@ -3164,8 +3164,17 @@ public class F extends S {
     double dr = realFraction.denominator().doubleValue();
     double ni = imagFraction.numerator().doubleValue();
     double di = imagFraction.denominator().doubleValue();
-
-    return complexNum(nr / dr, ni / di);
+    double re = nr / dr;
+    double im = ni / di;
+    if (!Double.isFinite(re) || !Double.isFinite(im)) {
+      // a part beyond the double range: an arbitrary precision number of machine precision
+      return ApcomplexNum.valueOf(new Apcomplex(
+          ApfloatNum.promoted(realFraction.toBigNumerator(), realFraction.toBigDenominator())
+              .apfloatValue(),
+          ApfloatNum.promoted(imagFraction.toBigNumerator(), imagFraction.toBigDenominator())
+              .apfloatValue()));
+    }
+    return complexNum(re, im);
   }
 
   public static IComplexNum complexNum(final IFraction value) {
@@ -8551,9 +8560,7 @@ public class F extends S {
     if (Double.isInfinite(d)) {
       // Out of the double range the value is an arbitrary precision number of machine
       // precision
-      final long precision = ParserConfig.MACHINE_PRECISION;
-      return ApfloatNum.valueOf(new Apfloat(value.toBigNumerator(), precision)
-          .divide(new Apfloat(value.toBigDenominator(), precision)));
+      return ApfloatNum.promoted(value.toBigNumerator(), value.toBigDenominator());
     }
     // The underflow of a fraction is 0.0 and reported
     engine.machineUnderflow().check(d, value);
@@ -8569,8 +8576,7 @@ public class F extends S {
     if (Double.isInfinite(d)) {
       // Out of the double range the value is an arbitrary precision number of machine
       // precision
-      return ApfloatNum
-          .valueOf(new Apfloat(value.toBigNumerator(), ParserConfig.MACHINE_PRECISION));
+      return ApfloatNum.promoted(value.toBigNumerator(), BigInteger.ONE);
     }
     return num(d);
   }

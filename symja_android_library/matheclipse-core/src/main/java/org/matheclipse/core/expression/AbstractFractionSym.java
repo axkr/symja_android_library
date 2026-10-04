@@ -1749,7 +1749,7 @@ public abstract class AbstractFractionSym implements IFraction {
   /** {@inheritDoc} */
   @Override
   public INumber plus(INumber that) {
-    if (that.isZero()) {
+    if (F.isExactZero(that)) {
       return this;
     }
     if (that instanceof IFraction) {
@@ -1925,7 +1925,8 @@ public abstract class AbstractFractionSym implements IFraction {
     if (that.isMinusOne()) {
       return negate();
     }
-    if (that.isZero()) {
+    if (F.isExactZero(that)) {
+      // exactly zero: a small machine number is no zero, $MinMachineNumber/2 is not 0
       return F.C0;
     }
     if (that instanceof IFraction) {

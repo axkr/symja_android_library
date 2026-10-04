@@ -114,6 +114,12 @@ public final class RealNumberComparison {
     if (c == 0) {
       return 0;
     }
+    if ((left instanceof Num && Double.isInfinite(right.doubleValue()))
+        || (right instanceof Num && Double.isInfinite(left.doubleValue()))) {
+      // every machine number is smaller than a number beyond the double range:
+      // $MaxMachineNumber < 2^1024
+      return c;
+    }
     Apfloat tolerance = tolerance(left, right, bits);
     if (tolerance == null) {
       // no operand of a finite precision
@@ -203,8 +209,15 @@ public final class RealNumberComparison {
    * @return <code>-1, 0, 1</code>
    */
   public static int order(IReal left, IReal right) {
-    final int c = Integer.signum(compare(left, right));
-    return c != 0 ? c : Integer.compare(typeRank(left), typeRank(right));
+    int c = Integer.signum(compare(left, right));
+    if (c == 0) {
+      c = Integer.compare(typeRank(left), typeRank(right));
+    }
+    if (c == 0 && left instanceof ApfloatNum && right instanceof ApfloatNum) {
+      // the less precise one first
+      c = Long.compare(((ApfloatNum) left).precision(), ((ApfloatNum) right).precision());
+    }
+    return c;
   }
 
   private static int typeRank(IReal x) {
@@ -249,7 +262,10 @@ public final class RealNumberComparison {
    * @return <code>null</code> if both numbers are exact
    */
   private static Apfloat tolerance(IReal left, IReal right, int bits) {
-    boolean machine = left instanceof Num || right instanceof Num;
+    // a number of machine precision beyond the double range, like N(10^400), counts as a machine
+    // number: 10^400*(1+2^-46) is equal to it
+    boolean machine = left instanceof Num || right instanceof Num || isMachinePrecision(left)
+        || isMachinePrecision(right);
     long precision = Apfloat.INFINITE;
     if (left instanceof ApfloatNum) {
       precision = Math.min(precision, ((ApfloatNum) left).precision());
@@ -265,6 +281,11 @@ public final class RealNumberComparison {
     }
     // 2^bits * 10^(-precision)
     return ApfloatMath.scale(new Apfloat(1L << bits, Apfloat.INFINITE), -precision);
+  }
+
+  private static boolean isMachinePrecision(IReal x) {
+    return x instanceof ApfloatNum
+        && ((ApfloatNum) x).precision() == ParserConfig.MACHINE_PRECISION;
   }
 
   private static long workingDigits(IReal left, IReal right) {

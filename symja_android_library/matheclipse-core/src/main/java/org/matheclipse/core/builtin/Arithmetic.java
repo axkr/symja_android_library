@@ -4048,6 +4048,20 @@ public final class Arithmetic {
       return base.pow(exponent);
     }
 
+    /**
+     * The machine value of an exact real number, or the arbitrary precision number of machine
+     * precision if it lies beyond the double range.
+     */
+    private static INum machineOrPromoted(IReal x) {
+      if (x instanceof IInteger) {
+        return F.num((IInteger) x);
+      }
+      if (x instanceof IFraction) {
+        return F.num((IFraction) x);
+      }
+      return x.numValue();
+    }
+
     private static IExpr e2DblArg(final INum base, final INum exponent) {
       if (F.isExactZero(base)) {
         if (exponent.isNegative()) {
@@ -4190,11 +4204,18 @@ public final class Arithmetic {
         }
       } else if (o0 instanceof Num) {
         if (o1.isReal()) {
-          result = e2DblArg((Num) o0, ((IReal) o1).numValue());
+          INum exponent = machineOrPromoted((IReal) o1);
+          result = exponent instanceof ApfloatNum
+              ? e2ApfloatArg(((Num) o0).apfloatNumValue(), (ApfloatNum) exponent)
+              : e2DblArg((Num) o0, exponent);
         }
       } else if (o1 instanceof Num) {
         if (o0.isReal()) {
-          result = e2DblArg(((IReal) o0).numValue(), (Num) o1);
+          // an exact base beyond the double range is no Infinity: (10^800+1)^(-0.5)
+          INum base = machineOrPromoted((IReal) o0);
+          result = base instanceof ApfloatNum
+              ? e2ApfloatArg((ApfloatNum) base, ((Num) o1).apfloatNumValue())
+              : e2DblArg(base, (Num) o1);
         }
       }
       if (result.isPresent()) {
