@@ -58,12 +58,12 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.BuiltinFunctionCalls;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ComplexNum;
-import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
@@ -1731,6 +1731,12 @@ public class EvalEngine implements Serializable {
         isNumericFunction = numericFunction;
       }
       final boolean isNumericArgument = ast.isNumericArgument(true);
+      if (isNumericArgument && ast.isPower() && ast.base() == S.E
+          && ast.exponent().isInexactNumber()) {
+        // E^x with a computed inexact exponent is the same Exp(x) as the literal E^(-700.) below:
+        // one function, one result and one message for both
+        return F.unaryAST1(S.Exp, ast.exponent());
+      }
       if (!fNumericMode) {
         if (isNumericFunction && isNumericArgument) {
           localNumericMode = true;
@@ -3262,9 +3268,8 @@ public class EvalEngine implements Serializable {
    * <p>
    * A result which a time budget or a recursion guard cut short is stamped like any other: an
    * <code>Integrate</code> which stays unevaluated is not tried again until a definition changes.
-   * That is deliberate. Not stamping it makes every expression it is part of evaluate it again,
-   * and the integration rules, which ask for the same sub-integral many times, then no longer
-   * finish.
+   * That is deliberate. Not stamping it makes every expression it is part of evaluate it again, and
+   * the integration rules, which ask for the same sub-integral many times, then no longer finish.
    *
    * @see #isFixedPoint(IAST, boolean)
    */
@@ -3448,6 +3453,16 @@ public class EvalEngine implements Serializable {
     return evaluate(F.N(expr, F.ZZ(precision)));
   }
 
+  private transient MachineUnderflow fMachineUnderflow;
+
+  /** The machine underflows of this engine: their count, message and quiet scope. */
+  public final MachineUnderflow machineUnderflow() {
+    if (fMachineUnderflow == null) {
+      fMachineUnderflow = new MachineUnderflow(this);
+    }
+    return fMachineUnderflow;
+  }
+
   /**
    * Evaluate an AST, which may have only the {@link ISymbol#PROTECTED} attribute set in the header
    * symbol. Only the evaluation steps are processed, where no attributes are set.
@@ -3546,14 +3561,34 @@ public class EvalEngine implements Serializable {
         }
       }
       final int oldSignificantFigures = getSignificantFigures();
-      try {
+      final boolean machinePrecision = oldDigitPrecision <= ParserConfig.MACHINE_PRECISION - 1;
+      // the value is read for a decision (a sign, an integer part), not shown as a result
+      final long underflows = machineUnderflow().zeroCount();
+      try (MachineUnderflow.Quiet quiet = machineUnderflow().quiet()) {
         setNumericMode(true, oldDigitPrecision, oldSignificantFigures);
         IExpr temp = evalWithoutNumericReset(expr);
         if (temp.isListOrAssociation() || temp.isRuleAST()) {
           return ((IAST) temp).mapThread(arg -> evalNumericFunction(arg));
         }
-        if (temp.isNumber() && expr.isAST()
-            && oldDigitPrecision <= ParserConfig.MACHINE_PRECISION - 1) {
+        if (machinePrecision && machineUnderflow().zeroCount() != underflows && expr.isAST()
+            && expr.isFree(x -> x.isInexactNumber(), false)) {
+          // A machine value underflowed to 0.0 on the way, so that `temp` isn't the value of the
+          // exact expression: 0.0 for Pi^(-1000), -1.0 for E^(-1000)*Pi^1000-1. A subnormal value
+          // on the way only lost digits and is kept.
+          setNumericMode(oldNumericMode);
+          setNumericPrecision(oldDigitPrecision);
+          IExpr precise;
+          try {
+            precise = evalN(expr, 2 * ParserConfig.MACHINE_PRECISION);
+          } finally {
+            // N(expr, digits) leaves its digits as the number of figures to display
+            fSignificantFigures = oldSignificantFigures;
+          }
+          if (precise.isNumber()) {
+            temp = precise;
+          }
+        }
+        if (temp.isNumber() && expr.isAST() && machinePrecision) {
           doublePrecisionCache.put((IAST) expr, (INumber) temp);
         }
         return temp;
@@ -4029,7 +4064,7 @@ public class EvalEngine implements Serializable {
 
   /**
    * Like {@link #evalTimeConstrained(IExpr, IExpr, long)}, with the time limit in milliseconds -
-   * <code>TimeConstrained(expr, 0.3)</code> stops after 0.3 seconds, as in WMA.
+   * <code>TimeConstrained(expr, 0.3)</code> stops after 0.3 seconds .
    *
    * <p>
    * The engine's time constraint stays set afterwards, so a later <code>TimeConstrained</code> of
@@ -4862,6 +4897,7 @@ public class EvalEngine implements Serializable {
     fSeconds = 0;
     fModifiedVariablesList = null;
     fMessageShortcut = null;
+    machineUnderflow().newCalculation();
     rubiASTCache = null;
     fOptionsStack = new OptionsStack();
     globalASTCache = CacheBuilder.newBuilder().maximumSize(500).build();
@@ -5162,8 +5198,12 @@ public class EvalEngine implements Serializable {
     final IFunctionEvaluator functionEvaluator = symbol.getEvaluator();
     try {
       IExpr result = functionEvaluator.numericFunction(ast, this);
+      if (result instanceof Num && ((Num) result).doubleValue() != 0.0) {
+        // a subnormal result; a function which underflows to 0.0 reports that itself
+        machineUnderflow().check(((Num) result).doubleValue(), ast);
+      }
       if (result.isPresent() && isMachineOverflow(result) && hasFiniteMachineArguments(ast)) {
-        // WMA: a machine precision result out of the double range is an arbitrary precision
+        // A machine precision result out of the double range is an arbitrary precision
         // number of machine precision, not Overflow() or Infinity
         IExpr promoted = promotedNumericFunction(functionEvaluator, ast);
         if (promoted.isPresent()) {
@@ -5239,12 +5279,14 @@ public class EvalEngine implements Serializable {
       for (int i = 1; i < promoted.size(); i++) {
         IExpr arg = promoted.get(i);
         if (arg instanceof Num) {
-          promoted.set(i, ApfloatNum.valueOf(new Apfloat(((Num) arg).doubleValue(), precision + 1)));
+          promoted.set(i,
+              ApfloatNum.valueOf(new Apfloat(((Num) arg).doubleValue(), precision + 1)));
         } else if (arg instanceof ComplexNum) {
           ComplexNum c = (ComplexNum) arg;
           promoted.set(i,
-              ApcomplexNum.valueOf(new org.apfloat.Apcomplex(new Apfloat(c.reDoubleValue(), precision + 1),
-                  new Apfloat(c.imDoubleValue(), precision + 1))));
+              ApcomplexNum
+                  .valueOf(new org.apfloat.Apcomplex(new Apfloat(c.reDoubleValue(), precision + 1),
+                      new Apfloat(c.imDoubleValue(), precision + 1))));
         }
       }
       IExpr result = functionEvaluator.numericFunction(promoted, this);
@@ -6008,7 +6050,7 @@ public class EvalEngine implements Serializable {
       // an expression whose head carries the ISymbol#NONTHREADABLE attribute - is never combined
       // with the elements of a S.List. The other arguments still are, though:
       // Sin(f(1,2)) + Sin(g(1,2)) + {1,2,3} with a NonThreadable f gives
-      // {1+Sin(g(1,2)),2+Sin(g(1,2)),3+Sin(g(1,2))}+Sin(f(1,2)) in WMA.
+      // {1+Sin(g(1,2)),2+Sin(g(1,2)),3+Sin(g(1,2))}+Sin(f(1,2)).
       IExpr threaded = threadAroundNonThreadable(ast);
       if (threaded.isPresent()) {
         return threaded;

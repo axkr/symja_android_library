@@ -56,6 +56,8 @@ import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.DispatchExpr;
@@ -120,6 +122,10 @@ public final class ListFunctions {
     public int compare(Integer index1, Integer index2) {
       IExpr arg1 = ast.get(index1);
       IExpr arg2 = ast.get(index2);
+      if (arg1.isReal() && arg2.isReal()) {
+        // ordered by value: Greater calls nearly equal machine numbers equal
+        return RealNumberComparison.order((IReal) arg2, (IReal) arg1);
+      }
       if (arg1.isNumericFunction(false) && arg2.isNumericFunction(false)) {
         if (engine.evalGreater(arg1, arg2)) {
           return -1;
@@ -144,6 +150,9 @@ public final class ListFunctions {
     public int compare(Integer index1, Integer index2) {
       IExpr arg1 = ast.get(index1);
       IExpr arg2 = ast.get(index2);
+      if (arg1.isReal() && arg2.isReal()) {
+        return RealNumberComparison.order((IReal) arg1, (IReal) arg2);
+      }
       if (arg1.isNumericFunction(false) && arg2.isNumericFunction(false)) {
         if (engine.evalLess(arg1, arg2)) {
           return -1;
@@ -801,8 +810,8 @@ public final class ListFunctions {
         ISymbol sym = (ISymbol) arg1.first();
         return assignPartTo(sym, (IAST) arg1, S.Append, ast, engine);
       }
-      IExpr indexed = assignIndexedTo(arg1,
-          new AppendToFunction(engine.evaluate(ast.arg2()), ast), ast.arg2(), engine);
+      IExpr indexed = assignIndexedTo(arg1, new AppendToFunction(engine.evaluate(ast.arg2()), ast),
+          ast.arg2(), engine);
       if (indexed.isPresent()) {
         return indexed;
       }
@@ -5425,8 +5434,8 @@ public final class ListFunctions {
         ISymbol sym = (ISymbol) arg1.first();
         return assignPartTo(sym, (IAST) arg1, S.Prepend, ast, engine);
       }
-      IExpr indexed = assignIndexedTo(arg1,
-          new PrependToFunction(engine.evaluate(ast.arg2()), ast), ast.arg2(), engine);
+      IExpr indexed = assignIndexedTo(arg1, new PrependToFunction(engine.evaluate(ast.arg2()), ast),
+          ast.arg2(), engine);
       if (indexed.isPresent()) {
         return indexed;
       }
@@ -5535,6 +5544,15 @@ public final class ListFunctions {
       }
 
       IExpr result = evaluateTable(ast, F.List(), engine);
+      if (ast.size() > 2 && result.isList() && result.size() > 1 && result.last() instanceof Num) {
+        // Machine elements are min+k*step, but a range which reaches its upper limit ends in
+        // that limit - Range(0,7/10,0.1) ends in 0.7 and not in 7*0.1 = 0.7000000000000001
+        IExpr max = engine.evalN(ast.arg2());
+        if (max instanceof Num && !max.equals(result.last())
+            && RealNumberComparison.compareWithTolerance((IReal) result.last(), (IReal) max) == 0) {
+          result = ((IAST) result).setAtCopy(result.size() - 1, max);
+        }
+      }
       if (result.isEmptyList()) {
         // An empty result means one of two different things. Range(0), Range(-1) and Range(5,1)
         // really are empty ranges. Range(x) is not: the generator could make no rows of it and the
@@ -6735,8 +6753,8 @@ public final class ListFunctions {
 
   /**
    * <code>Discard(list, crit)</code> - the elements of <code>list</code> for which
-   * <code>crit</code> doesn't give <code>True</code>; <code>Discard(list, crit, n)</code> drops only
-   * the first <code>n</code> elements which satisfy <code>crit</code>.
+   * <code>crit</code> doesn't give <code>True</code>; <code>Discard(list, crit, n)</code> drops
+   * only the first <code>n</code> elements which satisfy <code>crit</code>.
    */
   private static final class Discard extends AbstractEvaluator {
 

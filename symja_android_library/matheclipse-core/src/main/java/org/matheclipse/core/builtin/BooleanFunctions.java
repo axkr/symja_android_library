@@ -33,6 +33,7 @@ import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.MachineUnderflow;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.NoEvalException;
@@ -49,6 +50,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
+import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.BDDExpr;
 import org.matheclipse.core.expression.data.BDDParser;
@@ -64,6 +66,7 @@ import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IReal;
@@ -2175,8 +2178,7 @@ public final class BooleanFunctions {
       }
       if (a0.isReal()) {
         if (a1.isReal()) {
-          return ((IReal) a0).isGT((IReal) a1) ? IExpr.COMPARE_TERNARY.TRUE
-              : IExpr.COMPARE_TERNARY.FALSE;
+          return compareReals((IReal) a0, (IReal) a1);
         } else if (a1.isInfinity()) {
           return IExpr.COMPARE_TERNARY.FALSE;
         } else if (a1.isNegativeInfinity()) {
@@ -2265,16 +2267,18 @@ public final class BooleanFunctions {
         if (arg1.isUndefined() || arg2.isUndefined()) {
           return S.Undefined;
         }
-        IExpr result = simplifyCompare(arg1, arg2);
-        if (result.isPresent()) {
-          return result;
-        }
+        // two numeric operands are compared as they are: rewriting a<b to 0<b-a first would
+        // hide the size of the operands, which the tolerance is relative to
         IExpr.COMPARE_TERNARY ternaryCompare = prepareCompare(arg1, arg2, engine);
         if (ternaryCompare == IExpr.COMPARE_TERNARY.FALSE) {
           return S.False;
         }
         if (ternaryCompare == IExpr.COMPARE_TERNARY.TRUE) {
           return S.True;
+        }
+        IExpr result = simplifyCompare(arg1, arg2);
+        if (result.isPresent()) {
+          return result;
         }
         if (engine.getAssumptions() != null) {
           IExpr temp2 = checkAssumptions(arg1, arg2);
@@ -2350,16 +2354,48 @@ public final class BooleanFunctions {
 
     @Override
     public IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
-      if ((!a0.isReal() && a0.isNumericFunction(true))
-          || (a1.isInexactNumber() && a0.isRational())) {
-        a0 = engine.evalN(a0);
+      // two real numeric operands: the one three-way comparison Equal uses too
+      int c = CompareUtil.compareNumeric(a0, a1, engine);
+      if (c != CompareUtil.NOT_COMPARABLE) {
+        return relation(isLessRelation() ? -c : c);
       }
-      if ((!a1.isReal() && a1.isNumericFunction(true))
-          || (a0.isInexactNumber() && a1.isRational())) {
-        a1 = engine.evalN(a1);
+      // infinities, intervals, quantities, dates
+      try (MachineUnderflow.Quiet quiet = engine.machineUnderflow().quiet()) {
+        if (!a0.isReal() && a0.isNumericFunction(true)) {
+          a0 = engine.evalN(a0);
+        }
+        if (!a1.isReal() && a1.isNumericFunction(true)) {
+          a1 = engine.evalN(a1);
+        }
+        return compareTernary(a0, a1);
       }
+    }
 
-      return compareTernary(a0, a1);
+    /** The answer for <code>c = -1, 0, 1</code> as the result of <code>first &gt; second</code>. */
+    private IExpr.COMPARE_TERNARY relation(int c) {
+      return c > 0 || (c == 0 && orEqual()) ? IExpr.COMPARE_TERNARY.TRUE
+          : IExpr.COMPARE_TERNARY.FALSE;
+    }
+
+    /** <code>true</code> for Less and LessEqual. */
+    protected boolean isLessRelation() {
+      return false;
+    }
+
+    /** <code>true</code> for GreaterEqual and LessEqual: the relation holds for equal numbers. */
+    protected boolean orEqual() {
+      return false;
+    }
+
+    /**
+     * The relation <code>a0 &gt; a1</code> (or <code>a0 &gt;= a1</code>) between two real numbers.
+     * Less and LessEqual arrive here with their arguments swapped.
+     */
+    private IExpr.COMPARE_TERNARY compareReals(IReal a0, IReal a1) {
+      if (a0.isNaN() || a1.isNaN()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      return relation(RealNumberComparison.compareWithTolerance(a0, a1));
     }
 
     @Override
@@ -2448,6 +2484,11 @@ public final class BooleanFunctions {
   }
 
   private static final class GreaterEqual extends Greater {
+    @Override
+    protected boolean orEqual() {
+      return true;
+    }
+
     public static final GreaterEqual CONST = new GreaterEqual();
 
     @Override
@@ -2718,6 +2759,11 @@ public final class BooleanFunctions {
 
   private static final class Less extends Greater {
     @Override
+    protected boolean isLessRelation() {
+      return true;
+    }
+
+    @Override
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
         if (arg1.isPositiveResult()) {
@@ -2775,6 +2821,16 @@ public final class BooleanFunctions {
   }
 
   private static final class LessEqual extends Greater {
+    @Override
+    protected boolean isLessRelation() {
+      return true;
+    }
+
+    @Override
+    protected boolean orEqual() {
+      return true;
+    }
+
     @Override
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
@@ -2982,6 +3038,14 @@ public final class BooleanFunctions {
         if (max1.equals(max2)) {
           continue;
         }
+        int c = CompareUtil.orderNumeric(max1, max2, engine);
+        if (c != CompareUtil.NOT_COMPARABLE) {
+          if (c < 0) {
+            max1 = max2;
+          }
+          evaled = true;
+          continue;
+        }
         comp = engine.evaluate(F.Greater(max1, max2));
         if (comp.isPresent() && Min.knownEqual(max1, max2, engine)) {
           // only a==b is known: keeps Max(a,b)
@@ -3155,6 +3219,16 @@ public final class BooleanFunctions {
         }
 
         if (min1.equals(min2)) {
+          continue;
+        }
+        int c = CompareUtil.orderNumeric(min1, min2, engine);
+        if (c != CompareUtil.NOT_COMPARABLE) {
+          // A number and an exact expression of the same value, Min returns the
+          // expression and Max the number
+          if (c > 0 || (c == 0 && min1.isNumber() && !min2.isNumber())) {
+            min1 = min2;
+          }
+          evaled = true;
           continue;
         }
         comp = engine.evaluate(F.Less(min1, min2));
@@ -3496,6 +3570,10 @@ public final class BooleanFunctions {
         return org.matheclipse.core.units.QuantityOps.testMagnitude((IAST) arg1, S.NonPositive,
             engine);
       }
+      if (arg1.isReal()) {
+        // a number by its sign: isZero() takes a small machine number like 3.*^-20 for zero
+        return F.booleSymbol(!((IReal) arg1).isPositive());
+      }
       if (arg1.isNegativeResult() || arg1.isZero() || arg1.isNonPositiveResult()) {
         return S.True;
       }
@@ -3507,7 +3585,7 @@ public final class BooleanFunctions {
       }
       final IReal realNumber = arg1.evalReal();
       if (realNumber != null) {
-        return F.booleSymbol(realNumber.isNegative() || realNumber.isZero());
+        return F.booleSymbol(!realNumber.isPositive());
       }
       if (arg1.isInterval()) {
         COMPARE_TERNARY forAll = IntervalSym.forAll((IAST) arg1,
@@ -3793,6 +3871,17 @@ public final class BooleanFunctions {
     }
   }
 
+  /**
+   * <code>SameQ</code> for two expressions: two inexact real numbers are the same, if they differ
+   * in at most their last bit; everything else must be identical.
+   */
+  private static boolean isSameQ(IExpr x, IExpr y) {
+    if (x instanceof INum && y instanceof INum && !x.isNaN() && !y.isNaN()) {
+      return RealNumberComparison.isSameWithTolerance((INum) x, (INum) y);
+    }
+    return x.isSame(y);
+  }
+
   private static final class SameQ extends AbstractCoreFunctionEvaluator
       implements IPredicate, IComparatorFunction {
     @Override
@@ -3800,9 +3889,9 @@ public final class BooleanFunctions {
       if (ast.size() > 2) {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE, false).orElse(ast);
         if (temp.isAST2()) {
-          return temp.arg1().isSame(temp.arg2()) ? S.True : S.False;
+          return isSameQ(temp.arg1(), temp.arg2()) ? S.True : S.False;
         }
-        if (temp.existsLeft((x, y) -> !x.isSame(y))) {
+        if (temp.existsLeft((x, y) -> !isSameQ(x, y))) {
           return S.False;
         }
       }
@@ -4123,14 +4212,14 @@ public final class BooleanFunctions {
       if (ast.size() > 2) {
         IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE, false).orElse(ast);
         if (temp.isAST2()) {
-          return temp.arg1().isSame(temp.arg2()) ? S.False : S.True;
+          return isSameQ(temp.arg1(), temp.arg2()) ? S.False : S.True;
         }
         int i = 2;
         int j;
         while (i < temp.size()) {
           j = i;
           while (j < temp.size()) {
-            if (temp.get(i - 1).isSame(temp.get(j++))) {
+            if (isSameQ(temp.get(i - 1), temp.get(j++))) {
               return S.False;
             }
           }

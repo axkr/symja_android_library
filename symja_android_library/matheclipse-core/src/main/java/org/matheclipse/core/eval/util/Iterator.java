@@ -405,8 +405,8 @@ public class Iterator {
   }
 
   /**
-   * The common part of the iterators over a range of numbers with fixed limits and step: saving
-   * and restoring the value of the iterator variable, and assigning it the lower limit when the
+   * The common part of the iterators over a range of numbers with fixed limits and step: saving and
+   * restoring the value of the iterator variable, and assigning it the lower limit when the
    * iteration starts.
    */
   private abstract static class RangeIterator implements IIterator<IExpr> {
@@ -504,6 +504,9 @@ public class Iterator {
   private static final class DoubleIterator extends RangeIterator {
     double count;
 
+    /** The number of steps taken: the elements are <code>lowerLimit + k*step</code>. */
+    long k;
+
     final double lowerLimit;
 
     final double upperLimit;
@@ -567,11 +570,15 @@ public class Iterator {
 
     @Override
     void advance() {
-      count += step;
+      // not count += step: the rounding errors of repeated additions add up, so that
+      // {x, 0, 1, 0.1} would end in 0.7999999999999999, 0.8999999999999999, 0.9999999999999999
+      k++;
+      count = lowerLimit + k * step;
     }
 
     @Override
     boolean start() {
+      k = 0;
       count = lowerLimit;
       return step < 0 ? !(lowerLimit < upperLimit) : !(lowerLimit > upperLimit);
     }
@@ -733,8 +740,7 @@ public class Iterator {
     boolean start() {
       count = lowerLimit;
       // an empty range only if lowerLimit is decidably beyond upperLimit
-      return isNegative(step) ? !less(lowerLimit, upperLimit)
-          : !less(upperLimit, lowerLimit);
+      return isNegative(step) ? !less(lowerLimit, upperLimit) : !less(upperLimit, lowerLimit);
     }
 
   }
@@ -884,7 +890,9 @@ public class Iterator {
     // list.isMember(Predicates.isNumeric(), false);
     boolean oldNumericMode = evalEngine.isNumericMode();
     try {
-      if (list.hasNumericArgument()) {
+      // {x, min, max, step}: an inexact min or step makes the elements machine numbers
+      if ((list.size() >= 4 && list.arg2().isInexactNumber())
+          || (list.size() == 5 && list.arg4().isInexactNumber())) {
         evalEngine.setNumericMode(true);
       }
       fNumericMode = evalEngine.isNumericMode();
@@ -1057,7 +1065,8 @@ public class Iterator {
           }
           break;
         case 4:
-          if (list.hasNumericArgument()) {
+          // Range(min, max, step): an inexact min or step makes the elements machine numbers
+          if (list.arg1().isInexactNumber() || list.arg3().isInexactNumber()) {
             evalEngine.setNumericMode(true);
           }
           lowerLimit = evalEngine.evalWithoutNumericReset(list.arg1());
@@ -1071,9 +1080,8 @@ public class Iterator {
           throw NoEvalException.CONST;
       }
       // Range(n) with a machine real n counts in exact integers: Range(3.5) is {1,2,3}
-      IIterator<IExpr> rangeIterator = rangeIterator(variable,
-          list.size() > 2 ? lowerLimit : null, upperLimit, list.size() > 3 ? step : null,
-          list.size() > 2);
+      IIterator<IExpr> rangeIterator = rangeIterator(variable, list.size() > 2 ? lowerLimit : null,
+          upperLimit, list.size() > 3 ? step : null, list.size() > 2);
       if (rangeIterator != null) {
         return rangeIterator;
       }
@@ -1095,9 +1103,10 @@ public class Iterator {
    * An iterator specification which is turned into an iterator only when the iteration over it
    * starts, i.e. after the iterators in front of it have assigned their variables. Its bounds may
    * therefore depend on those variables in any way, as in
-   * <code>Table(x, {i, 3}, {x, 0, list[[i]]})</code> or <code>Table(x, {i, 3}, {x, 0, If(IntegerQ(i), i, 0)})</code>.
-   * Creating all iterators up front evaluated such a bound while <code>i</code> had no value - or
-   * a global one - and froze the wrong range for every outer step.
+   * <code>Table(x, {i, 3}, {x, 0, list[[i]]})</code> or
+   * <code>Table(x, {i, 3}, {x, 0, If(IntegerQ(i), i, 0)})</code>. Creating all iterators up front
+   * evaluated such a bound while <code>i</code> had no value - or a global one - and froze the
+   * wrong range for every outer step.
    */
   private static final class LazyIterator implements IIterator<IExpr> {
     /** The iterator specification */
@@ -1299,8 +1308,8 @@ public class Iterator {
 
   /**
    * The variables of all iterator specifications of <code>ast</code> but the last, except the
-   * variable of the last one. The innermost iterator of <code>Sum</code> or <code>Product</code>
-   * is reduced on its own; these are the variables which must stay symbolic while that happens.
+   * variable of the last one. The innermost iterator of <code>Sum</code> or <code>Product</code> is
+   * reduced on its own; these are the variables which must stay symbolic while that happens.
    *
    * @param ast <code>head(body, spec1, spec2, ..., specN)</code>
    * @return a list of symbols, possibly empty
@@ -1358,9 +1367,11 @@ public class Iterator {
   /**
    * The specialized iterator for numeric limits: machine reals, machine integers, rationals,
    * quantities or other reals, tried in this order. A limit which the specification leaves out is
-   * passed as <code>null</code>; it is <code>1</code> and does not restrict the choice, so that
-   * <code>{i, 2.5}</code> gives a {@link DoubleIterator} although the implicit lower limit is the
-   * integer <code>1</code>.
+   * passed as <code>null</code> and is <code>1</code>.
+   * <p>
+   * Elements are <code>min + k*step</code>, so their type comes from the lower limit and the step.
+   * The upper limit only bounds them: <code>{i, 2.5}</code> gives <code>1, 2</code> and
+   * <code>{x, 0, 0.3, 1/10}</code> gives <code>0, 1/10, 1/5, 3/10</code>.
    *
    * @param variable the iterator variable or <code>null</code>
    * @param lower the lower limit or <code>null</code> for <code>1</code>
@@ -1371,7 +1382,8 @@ public class Iterator {
    */
   private static IIterator<IExpr> rangeIterator(ISymbol variable, IExpr lower, IExpr upper,
       IExpr step, boolean allowDouble) {
-    if (allowDouble && (lower == null || lower instanceof INum) && upper instanceof INum
+    if (allowDouble && (lower instanceof INum || step instanceof INum)
+        && (lower == null || lower instanceof INum) && upper instanceof INum
         && (step == null || step instanceof INum)) {
       return new DoubleIterator(variable, lower == null ? 1.0 : ((INum) lower).doubleValue(),
           ((INum) upper).doubleValue(), step == null ? 1.0 : ((INum) step).doubleValue());

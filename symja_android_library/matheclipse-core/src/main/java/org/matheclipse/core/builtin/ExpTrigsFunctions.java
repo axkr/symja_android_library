@@ -126,10 +126,11 @@ public class ExpTrigsFunctions {
       S.Tanh.setEvaluator(new Tanh());
     }
   }
+
   /**
-   * The shift of <code>head(plus)</code> for <code>head</code> one of <code>Cos, Sin, Sec, Csc</code>
-   * by the integer multiples of <code>Pi/2</code> in the sum <code>plus</code>, whose coefficients
-   * add up to <code>k</code>. Like WMA:
+   * The shift of <code>head(plus)</code> for <code>head</code> one of
+   * <code>Cos, Sin, Sec, Csc</code> by the integer multiples of <code>Pi/2</code> in the sum
+   * <code>plus</code>, whose coefficients add up to <code>k</code>.
    * <ul>
    * <li>if the parity of <code>k</code> is unknown the function stays unevaluated, even if some of
    * the multiples could be removed: <code>Refine(Cos(x+n*Pi+m*Pi/2),
@@ -456,8 +457,8 @@ public class ExpTrigsFunctions {
 
   private static Apcomplex arcCosh(Apcomplex z) {
     Apcomplex one = new Apfloat(1, z.precision());
-    return ApcomplexMath.log(z.add(
-        ApcomplexMath.sqrt(z.subtract(one)).multiply(ApcomplexMath.sqrt(z.add(one)))));
+    return ApcomplexMath
+        .log(z.add(ApcomplexMath.sqrt(z.subtract(one)).multiply(ApcomplexMath.sqrt(z.add(one)))));
   }
 
   /**
@@ -2576,6 +2577,14 @@ public class ExpTrigsFunctions {
           IExpr result = z.exp();
           if (result.isInfinite()) {
             return F.Overflow();
+          }
+          if ((z instanceof Num || z instanceof ComplexNum) && result.isNumber()
+              && ((INumber) result).reDoubleValue() == 0.0
+              && ((INumber) result).imDoubleValue() == 0.0 && Double.isFinite(z.reDoubleValue())
+              && Double.isFinite(z.imDoubleValue())) {
+            // the underflow is 0.0 and reported as Exp(z). A subnormal result is reported by
+            // the engine for every numeric function.
+            engine.machineUnderflow().report(ast, true);
           }
           return result;
         } catch (ValidateException ve) {

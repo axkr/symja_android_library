@@ -42,7 +42,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
   public void testQuantityTimesSymbolic() {
     check("Quantity(a,\"m\")*Quantity(b,\"m\")//FullForm", //
         "Quantity(Times(a, b), Power(\"Meters\", 2))");
-    // a non-quantity factor is absorbed into the magnitude (WMA behavior)
+    // a non-quantity factor is absorbed into the magnitude
     check("a*Quantity(b,\"m\")//FullForm", //
         "Quantity(Times(a, b), \"Meters\")");
   }
@@ -71,7 +71,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     check("N(Quantity(2/3,\"m\"))", //
         "Quantity(0.666667,\"Meters\")");
 
-    // Plus converts to the (canonically) first argument's unit - WMA behavior
+    // Plus converts to the (canonically) first argument's unit
     check("Quantity(50, \"s\") + Quantity(1, \"min\")", //
         "Quantity(11/6,\"Minutes\")");
     check("Quantity(1, \"min\") + Quantity(50, \"s\")", //
@@ -825,8 +825,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "VectorAround({1.8,2.4},{{0.09,0.02},{0.02,0.16}})");
 
     // uncertainties with a correlation MATRIX are the general case of the pair form above:
-    // Cov(i,j) = delta(i)*delta(j)*R(i,j). Not probed directly, but it has to agree with the pair
-    // form on the input they describe in common, and it does.
+    // Cov(i,j) = delta(i)*delta(j)*R(i,j).
     check("VectorAround({1.8,2.4},{{0.3,0.4},{{1,0.5},{0.5,1}}})", //
         "VectorAround({1.8,2.4},{{0.09,0.06},{0.06,0.16}})");
     check(
@@ -993,7 +992,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     // subtracting a measurement from itself gives equal sides - negating swapped them - but the
     // pair is KEPT rather than collapsing to the one-uncertainty spelling
     check("Around(2,{0.1,0.3}) - Around(2,{0.1,0.3})", //
-        "Around(0.0,{0.3162277660168379,0.3162277660168379})");
+        "Around(0.0,{0.316228,0.316228})");
 
     // a unary function scales each side where it stands. It does NOT swap them, not even a
     // decreasing one - unlike multiplication by a negative number just above.
@@ -1023,9 +1022,8 @@ public class QuantityTest extends ExprEvaluatorTestCase {
    * <p>
    * An earlier transcript appeared to contradict this, reporting the Sin case at order 2 as the
    * FIRST-order pair (Sin[1.56], Cos[1.56]*0.01). That value sat beneath two blank output lines and
-   * turned out to be the neighbouring first-order line's answer; a clean re-probe gave the
-   * second-order value asserted below. Both orders of the Sin case are pinned here so that the
-   * apparent contradiction cannot be reintroduced.
+   * turned out to be the neighbouring first-order line's answer. Both orders of the Sin case are
+   * pinned here so that the apparent contradiction cannot be reintroduced.
    */
   @Test
   public void testAroundReplaceSecondOrder() {
@@ -1211,7 +1209,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     // absolute + difference gives an absolute temperature in the absolute unit
     check("Quantity(20., \"DegreesCelsius\") + Quantity(5, \"DegreesCelsiusDifference\")", //
         "Quantity(25.0,\"DegreesCelsius\")");
-    // absolute + absolute: both convert to Kelvins (WMA): (20+273.15)+(5+273.15) = 571.3 K
+    // absolute + absolute: both convert to Kelvins: (20+273.15)+(5+273.15) = 571.3 K
     check("Quantity(20, \"DegreesCelsius\") + Quantity(5, \"DegreesCelsius\")", //
         "Quantity(5713/10,\"Kelvins\")");
     // difference + difference converts by pure scale: 9 degF-diff = 5 degC-diff

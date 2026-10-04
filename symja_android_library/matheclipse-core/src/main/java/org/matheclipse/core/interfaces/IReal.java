@@ -4,6 +4,7 @@ import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.Binary64;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -129,15 +130,18 @@ public interface IReal extends INumber {
    *
    * @return <code>this > that</code>
    */
-  public boolean isGT(IReal that);
+  default boolean isGT(IReal that) {
+    return RealNumberComparison.isGreater(this, that);
+  }
 
   /**
    * Test if <code>this</code> signed number is greater equal than <code>that</code> signed number.
    *
-   * @return <code>this > that</code>
+   * @return <code>this >= that</code>, or false if either operand is NaN
    */
   default boolean isGE(IReal that) {
-    return !isLT(that);
+    // NaN is unordered: negating a strict predicate alone would incorrectly accept it.
+    return !isNaN() && !that.isNaN() && !isLT(that);
   }
 
   /**
@@ -155,15 +159,17 @@ public interface IReal extends INumber {
    *
    * @return <code>this < that</code>
    */
-  public boolean isLT(IReal that);
+  default boolean isLT(IReal that) {
+    return RealNumberComparison.isLess(this, that);
+  }
 
   /**
    * Test if <code>this</code> signed number is less equal than <code>that</code> signed number.
    *
-   * @return <code>this > that</code>
+   * @return <code>this <= that</code>, or false if either operand is NaN
    */
   default boolean isLE(IReal that) {
-    return !isGT(that);
+    return !isNaN() && !that.isNaN() && !isGT(that);
   }
 
   /**

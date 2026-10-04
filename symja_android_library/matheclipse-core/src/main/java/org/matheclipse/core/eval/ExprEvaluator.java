@@ -374,6 +374,7 @@ public class ExprEvaluator {
   public static IExpr evalTryCatch(final IExpr expr, EvalEngine[] engineRef) {
     EvalEngine engine = engineRef[0];
     EvalEngine.set(engine);
+    engine.machineUnderflow().newCalculation();
     // engine.reset() must be done before parsing step
     IExpr preRead = S.$PreRead.assignedValue();
     IExpr temp;

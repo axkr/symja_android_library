@@ -7,6 +7,7 @@ import org.apfloat.Apint;
 import org.apfloat.Aprational;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -627,7 +628,13 @@ public class IntegerFunctions {
       }
       INumber number = arg1.evalNumber();
       if (number != null) {
-        return number.ceilFraction();
+        IExpr ceiling = number.ceilFraction();
+        if (ceiling.equals(number.floorFraction())
+            && CompareUtil.numericSign(engine.evaluate(F.Subtract(arg1, ceiling)), engine) == 1) {
+          // the value was rounded to this integer, but lies above it: Ceiling(1+Pi^(-1000))
+          return ceiling.inc();
+        }
+        return ceiling;
       }
 
       if (arg1.isIntegerResult()) {
@@ -1065,7 +1072,13 @@ public class IntegerFunctions {
       }
       INumber number = arg1.evalNumber();
       if (number != null) {
-        return number.floorFraction();
+        IExpr floor = number.floorFraction();
+        if (floor.equals(number.ceilFraction())
+            && CompareUtil.numericSign(engine.evaluate(F.Subtract(arg1, floor)), engine) == -1) {
+          // the value was rounded to this integer, but lies below it: Floor(1-Pi^(-1000))
+          return floor.dec();
+        }
+        return floor;
       }
       if (arg1.isIntegerResult()) {
         return arg1;
@@ -1409,8 +1422,7 @@ public class IntegerFunctions {
         }
         IInteger iArg1 = (IInteger) ast.arg1();
         if (iArg1.isZero()) {
-          // Zero has no digits: WMA defines IntegerLength[0] as 0, which is also what this
-          // class's own Javadoc above and doc/functions/IntegerLength.md have always said.
+          // Zero has no digits
           return F.C0;
         }
         long l = iArg1.integerLength(radix);
@@ -2486,16 +2498,6 @@ public class IntegerFunctions {
             return org.matheclipse.core.units.QuantityOps.mapMagnitude((IAST) expr, S.Round,
                 engine);
           }
-          // if (expr.isPlus()) {
-          // not used in WMA
-          // IASTAppendable[] result = ((IAST) expr).filter(x -> x.isIntegerResult());
-          // if (result[0].size() > 1) {
-          // if (result[1].size() > 1) {
-          // result[0].append(F.Round(result[1]));
-          // }
-          // return result[0];
-          // }
-          // }
           IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
           if (negExpr.isPresent()) {
             return F.Negate(F.Round(negExpr));

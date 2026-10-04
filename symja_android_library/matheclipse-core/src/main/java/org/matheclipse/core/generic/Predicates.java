@@ -6,6 +6,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -14,6 +15,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
@@ -91,6 +93,12 @@ public class Predicates {
 
     @Override
     public int compare(final IExpr firstArg, final IExpr secondArg) {
+      if (firstArg.isReal() && secondArg.isReal() && (head == S.Less || head == S.Greater)) {
+        // Two numbers are ordered by their value. Less and Greater call nearly equal inexact numbers
+        // equal, which is no transitive relation and no order a sort can use.
+        final int c = RealNumberComparison.order((IReal) firstArg, (IReal) secondArg);
+        return head == S.Less ? c : -c;
+      }
       IAST ast = F.binaryAST2(head, firstArg, secondArg);
       IExpr temp = engine.evaluate(ast);
       if (temp.isFalse()) {

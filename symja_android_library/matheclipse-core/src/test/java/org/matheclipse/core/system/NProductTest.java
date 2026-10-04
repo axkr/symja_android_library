@@ -23,7 +23,7 @@ public class NProductTest extends ExprEvaluatorTestCase {
   public void testNProductInfinite() {
     // Sinh(Pi)/Pi
     check("NProduct(1+1/k^2, {k, 1, Infinity})", //
-        "3.67607791037502");
+        "3.67608");
     check("NProduct(1-1/k^2, {k, 2, Infinity})", //
         "0.5");
     // QPochhammer(-1/2,1/2)

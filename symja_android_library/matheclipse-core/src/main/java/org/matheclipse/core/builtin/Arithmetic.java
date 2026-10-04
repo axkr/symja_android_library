@@ -53,8 +53,10 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.BinomialCache;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.MachineUnderflow;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
 import org.matheclipse.core.eval.TimesOp;
@@ -240,6 +242,15 @@ public final class Arithmetic {
       }
       IExpr temp = engine.evalNumericFunctionNIL(arg1);
       if (temp.isReal()) {
+        if (((IReal) temp).complexSign() == 0 && !arg1.isNumber()
+            && arg1.isFree(x -> x.isInexactNumber(), false)) {
+          // the machine value is zero, the exact value may be not: Abs(1-Sqrt(1+Pi^(-1000)))
+          int sign = CompareUtil.numericSign(arg1, engine);
+          if (sign == CompareUtil.UNCERTAIN) {
+            return F.NIL;
+          }
+          return sign < 0 ? arg1.negate() : arg1;
+        }
         return arg1.copySign((IReal) temp);
       }
 
@@ -4063,6 +4074,12 @@ public final class Arithmetic {
         IExpr promoted = machinePrecisionPower(base.doubleValue(), exponent.doubleValue());
         return promoted.isPresent() ? promoted : F.Overflow();
       }
+      if (MachineUnderflow.isBelowNormal(pow.doubleValue()) && base.doubleValue() != 0.0
+          && Double.isFinite(base.doubleValue()) && Double.isFinite(exponent.doubleValue())) {
+        // the underflow is 0.0 and reported
+        EvalEngine.get().machineUnderflow().report(F.Power(base, exponent),
+            pow.doubleValue() == 0.0);
+      }
       return pow;
     }
 
@@ -5893,12 +5910,31 @@ public final class Arithmetic {
         return arg1.mapThread(F.Sign(F.Slot1), 1);
       }
 
+      if (arg1.isReal()) {
+        // a number is its own value: Sign(1/7^450) must not go through a machine number
+        return numberSign((INumber) arg1);
+      }
       if (arg1.isNumericFunction()) {
         try {
-          IExpr evalN = engine.evalN(arg1, engine.getNumericPrecision());
-          if (evalN.isReal() && !arg1.isNumber() && arg1.isFree(x -> x.isInexactNumber(), false)) {
-            IExpr sign = exactNumericSign(arg1, (IReal) evalN, engine);
-            return sign.isPresent() ? sign : result;
+          final boolean exact = arg1.isFree(x -> x.isInexactNumber(), false);
+          if (exact) {
+            // decided with as much precision as needed and without General::munfl
+            int sign = CompareUtil.numericSign(arg1, engine);
+            if (sign == CompareUtil.UNCERTAIN) {
+              // Internal precision limit `1` reached while evaluating `2`.
+              Errors.printMessage(S.N, "meprec",
+                  F.List(F.stringx("$MaxExtraPrecision = " + MAX_EXTRA_PRECISION + "."), arg1),
+                  engine);
+              return result;
+            }
+            if (sign != CompareUtil.NOT_COMPARABLE) {
+              return F.ZZ(sign);
+            }
+          }
+          IExpr evalN;
+          try (MachineUnderflow.Quiet quiet = engine.machineUnderflow().quiet()) {
+            // the value decides a sign and is no result: no General::munfl
+            evalN = engine.evalN(arg1, engine.getNumericPrecision());
           }
           if (evalN.isZero()) {
             return F.C0;
@@ -6051,44 +6087,6 @@ public final class Arithmetic {
 
     /** Extra digits for deciding the sign of an exact value, similar to $MaxExtraPrecision */
     private static final int MAX_EXTRA_PRECISION = 50;
-
-    /**
-     * The sign of an exact numeric expression whose machine value is <code>value</code>. A value
-     * that is small against the size of the terms may be rounding noise of an exact 0, e.g.
-     * <code>(Sqrt(2)+Sqrt(3))^2-5-2*Sqrt(6)</code>: it is evaluated again with
-     * {@link #MAX_EXTRA_PRECISION} more digits, and if it is still indistinguishable from 0 the
-     * sign is left undecided with the message <code>N::meprec</code>.
-     *
-     * @return {@link F#NIL} if the sign can't be decided
-     */
-    private static IExpr exactNumericSign(IExpr arg1, IReal value, EvalEngine engine) {
-      double scale = Math.abs(value.evalf());
-      if (arg1.isPlus()) {
-        for (IExpr term : (IAST) arg1) {
-          IExpr termValue = engine.evalN(term, engine.getNumericPrecision());
-          if (termValue.isNumber()) {
-            scale = Math.max(scale, ((INumber) termValue).abs().evalf());
-          }
-        }
-      }
-      double v = value.evalf();
-      if (Math.abs(v) > 1.0e-10 * scale) {
-        return F.ZZ(v > 0 ? 1 : -1);
-      }
-      long digits = Math.max(engine.getNumericPrecision(), ParserConfig.MACHINE_PRECISION)
-          + MAX_EXTRA_PRECISION;
-      IExpr high = engine.evalN(arg1, digits);
-      if (high.isReal()) {
-        double h = high.evalf();
-        if (Math.abs(h) > Math.pow(10.0, -(digits - 5)) * Math.max(1.0, scale)) {
-          return F.ZZ(h > 0 ? 1 : -1);
-        }
-      }
-      // Internal precision limit `1` reached while evaluating `2`.
-      Errors.printMessage(S.N, "meprec",
-          F.List(F.stringx("$MaxExtraPrecision = " + MAX_EXTRA_PRECISION + "."), arg1), engine);
-      return F.NIL;
-    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {

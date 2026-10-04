@@ -479,6 +479,8 @@ public class Errors {
       "orekitdata", "The external Orekit data files are not available: `1`", //
       "overdet", "The system is overdetermined .", //
       "ovfl", "Overflow occurred in computation.", //
+      "munfl",
+      "`1` is too small to represent as a normalized machine number; precision may be lost.", //
       "ovls", "Value of option `1` must be True, False or All.", //
       "padlevel",
       "The padding specification `1` involves `2` levels; the list `3` has only `4` level.", //
@@ -916,7 +918,13 @@ public class Errors {
           // later outside quiet mode would never be shown
           return F.NIL;
         }
-        logMessage(symbol.toString(), writer.toString(), engine);
+        if (MachineUnderflow.isMessage(symbol, messageShortcut)) {
+          if (!engine.machineUnderflow().print(writer.toString())) {
+            return F.NIL;
+          }
+        } else {
+          logMessage(symbol.toString(), writer.toString(), engine);
+        }
 
         engine.putObjectCache(cacheKey, ERRORS_INSTANCE);
       } catch (IOException e) {
@@ -1033,7 +1041,7 @@ public class Errors {
    *
    * <p>
    * A message generated in quiet mode - inside <code>Quiet</code>, or in an internal speculative
-   * evaluation like the ones <code>Limit</code> makes - is invisible to every Check, as WMA's
+   * evaluation like the ones <code>Limit</code> makes - is invisible to every Check, i.e.
    * <code>Check(Limit(Sin(x)/x,x->0),bad)</code> gives <code>1</code>. Otherwise each enclosing
    * Check which listens to the message sees it, up to the first one entered inside
    * <code>Quiet</code>: the Checks outside that <code>Quiet</code> don't.

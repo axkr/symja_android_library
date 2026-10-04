@@ -1513,15 +1513,17 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
 
   /**
    * <code>ListVectorPlot</code> thins a dense array to at most 15 entries along each axis and plots
-   * the extent of the data: 31 x 31 vectors are 15 x 15 arrows over
-   * <code>{{1, 31}, {1, 31}}</code>.
+   * the extent of the data: 31 x 31 vectors are 15 x 15 entries over
+   * <code>{{1, 31}, {1, 31}}</code>. The entry in the centre is the vector <code>{0., 0.}</code>,
+   * which has no arrow: the grid points are <code>min+k*step</code>, so that the centre is exactly
+   * zero and not a rounding residue of <code>10^-16</code>.
    */
   @Test
   public void testListVectorPlotThinsADenseArray() {
     check(
         "p = ListVectorPlot[Table[{y, -x}, {x, -3, 3, 0.2}, {y, -3, 3, 0.2}]]; "
             + "{Count[p, _Arrow, Infinity], PlotRange /. Rest[List @@ p]}", //
-        "{225,{{1.0,31.0},{1.0,31.0}}}");
+        "{224,{{1.0,31.0},{1.0,31.0}}}");
   }
 
   /**

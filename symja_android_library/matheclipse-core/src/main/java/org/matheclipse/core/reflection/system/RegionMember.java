@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
 import org.matheclipse.core.builtin.MeshFunctions;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.RegionPrimitives;
@@ -960,7 +961,7 @@ public class RegionMember extends AbstractFunctionEvaluator {
           IAST v2 = (IAST) pts.get(i % pts.argSize() + 1);
 
           IExpr dist = SignedRegionDistance.distanceToSegment(point, v1, v2, engine);
-          if (engine.evaluate(F.Equal(dist, F.C0)).isTrue()) {
+          if (CompareUtil.isNumericZero(dist, engine)) {
             return S.True;
           }
 

@@ -103,8 +103,14 @@ public class ApfloatNum implements INum {
             final double fNum = base.evalfNaN();
             if (!Double.isFinite(fNum) || fNum <= Double.MIN_VALUE || fNum >= Double.MAX_VALUE) {
               if (ratBase.isPositive()) {
-                ApfloatNum apfloat = ratBase.apfloatNumValue();
-                return F.num(apfloat.rootN(nthRoot).doubleValue());
+                ApfloatNum root = ratBase.apfloatNumValue().rootN(nthRoot);
+                double d = root.doubleValue();
+                if (Double.isInfinite(d)) {
+                  // Out of the double range the root is an arbitrary precision number of
+                  // machine precision, like every other machine overflow
+                  return F.num(root.apfloatValue().precision(ParserConfig.MACHINE_PRECISION));
+                }
+                return F.num(d);
               } else if (ratBase.isNegative()) {
                 ApcomplexNum apcomplex = ratBase.apcomplexNumValue();
                 return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
@@ -297,6 +303,12 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IReal add(IReal value) {
+    // Bypass INum's default, which narrows the operand to a machine double.
+    return (IReal) plus((INumber) value);
+  }
+
+  @Override
   public IExpr agm(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {
@@ -342,8 +354,7 @@ public class ApfloatNum implements INum {
     }
     if (arg2 instanceof INumber) {
       try {
-        return F.complexNum(
-            h().angerJ(fApfloat, ((INumber) arg2).apcomplexValue()));
+        return F.complexNum(h().angerJ(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -411,16 +422,14 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat besselI =
-              h().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
+          Apfloat besselI = h().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselI);
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
       try {
-        Apcomplex besselI =
-            h().besselI(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        Apcomplex besselI = h().besselI(apfloatValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(besselI);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselI, are);
@@ -434,8 +443,7 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat besselJ =
-              h().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
+          Apfloat besselJ = h().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselJ);
         } catch (LossOfPrecisionException lopex) {
           if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
@@ -446,8 +454,7 @@ public class ApfloatNum implements INum {
         }
       }
       try {
-        Apcomplex besselJ =
-            h().besselJ(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        Apcomplex besselJ = h().besselJ(apfloatValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(besselJ);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselJ, are);
@@ -461,16 +468,14 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat besselK =
-              h().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
+          Apfloat besselK = h().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselK);
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
       try {
-        Apcomplex besselK =
-            h().besselK(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        Apcomplex besselK = h().besselK(apfloatValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(besselK);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselK, are);
@@ -484,16 +489,14 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat besselY =
-              h().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
+          Apfloat besselY = h().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselY);
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
       try {
-        Apcomplex besselY =
-            h().besselY(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        Apcomplex besselY = h().besselY(apfloatValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(besselY);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselY, are);
@@ -543,8 +546,8 @@ public class ApfloatNum implements INum {
     }
     if (a instanceof INumber && b instanceof INumber) {
       try {
-        return F.complexNum(h().beta(fApfloat, ((INumber) a).apcomplexValue(),
-            ((INumber) b).apcomplexValue()));
+        return F.complexNum(
+            h().beta(fApfloat, ((INumber) a).apcomplexValue(), ((INumber) b).apcomplexValue()));
       } catch (ApfloatArithmeticException aaex) {
         if ("divide.byZero".equals(aaex.getLocalizationKey())) {
           return F.ComplexInfinity;
@@ -612,16 +615,14 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat chebyshevT =
-              h().chebyshevT(apfloatValue(), ((IReal) arg2).apfloatValue());
+          Apfloat chebyshevT = h().chebyshevT(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.complexNum(chebyshevT);
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // java.lang.ArithmeticException: Result would be complex
         }
       }
       try {
-        Apcomplex chebyshevT =
-            h().chebyshevT(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        Apcomplex chebyshevT = h().chebyshevT(apfloatValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevT);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.ChebyshevT, are);
@@ -635,16 +636,14 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat chebyshevU =
-              h().chebyshevU(apfloatValue(), ((IReal) arg2).apfloatValue());
+          Apfloat chebyshevU = h().chebyshevU(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.complexNum(chebyshevU);
         } catch (ArithmeticException | ApfloatRuntimeException are) {
 
         }
       }
       try {
-        Apcomplex chebyshevU =
-            h().chebyshevU(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        Apcomplex chebyshevU = h().chebyshevU(apfloatValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevU);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.ChebyshevU, are);
@@ -660,6 +659,24 @@ public class ApfloatNum implements INum {
   }
 
   /**
+   * The result of an operation of this number with a machine number. A number of machine precision
+   * is an arbitrary precision number only because it lies beyond the double range, like
+   * <code>N(10^400)</code>; if the result is back in that range, it is a machine number again
+   * (<code>N[10^400]*1.*^-300</code>).
+   */
+  private IInexactNumber machineResult(INum result) {
+    if (fApfloat.precision() == ParserConfig.MACHINE_PRECISION
+        && !EvalEngine.get().isArbitraryMode()) {
+      double d = result.doubleValue();
+      if (Double.isFinite(d)
+          && (d == 0.0 ? result.apfloatValue().signum() == 0 : Math.abs(d) >= Double.MIN_NORMAL)) {
+        return Num.valueOf(d);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Compares this expression with the specified expression for order. Returns a negative integer,
    * zero, or a positive integer as this expression is canonical less than, equal to, or greater
    * than the specified expression.
@@ -667,27 +684,9 @@ public class ApfloatNum implements INum {
   @Override
   public int compareTo(final IExpr expr) {
 
-    if (expr instanceof ApfloatNum) {
-      return fApfloat.compareTo(((ApfloatNum) expr).fApfloat);
-    }
     if (expr.isNumber()) {
       if (expr.isReal()) {
-        try {
-          return fApfloat.compareTo(((IReal) expr).apfloatValue());
-        } catch (NumberFormatException | SymjaMathException ex) {
-          // An infinity or a NaN has no arbitrary precision representation; Num#apfloatValue()
-          // reports that as a SymjaMathException and Apfloat itself as a NumberFormatException.
-          // Sorting must not fail either way, because Orderless sorts arguments before any
-          // built-in sees them, so a throw here escapes the whole evaluation rather than the
-          // function that could have handled it.
-          //
-          // Comparing as doubles rather than falling back to the expression hierarchy is what
-          // keeps the two directions symmetric: Num#compareTo answers Double.compare for the same
-          // pair, and a comparator that calls a pair equal while its mirror image calls it smaller
-          // leaves the Orderless sort without a fixed point, which shows up as an iteration limit
-          // rather than as an ordering bug.
-          return Double.compare(doubleValue(), ((IReal) expr).doubleValue());
-        }
+        return RealNumberComparison.order(this, (IReal) expr);
       }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
@@ -817,12 +816,10 @@ public class ApfloatNum implements INum {
       return divide(((Num) that).getRealPart());
     }
     if (that instanceof ApcomplexNum) {
-      return F.complexNum(
-          h().divide(fApfloat, ((ApcomplexNum) that).apcomplexValue()));
+      return F.complexNum(h().divide(fApfloat, ((ApcomplexNum) that).apcomplexValue()));
     }
     if (that instanceof ComplexNum) {
-      return F.complexNum(
-          h().divide(fApfloat, ((ComplexNum) that).apcomplexValue()));
+      return F.complexNum(h().divide(fApfloat, ((ComplexNum) that).apcomplexValue()));
     }
     return INum.super.divide(that);
   }
@@ -966,8 +963,7 @@ public class ApfloatNum implements INum {
     }
     if (z instanceof INumber) {
       try {
-        return F.complexNum(
-            h().expIntegralE(fApfloat, ((INumber) z).apcomplexValue()));
+        return F.complexNum(h().expIntegralE(fApfloat, ((INumber) z).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         return Errors.printMessage(S.ExpIntegralE, e);
       }
@@ -1022,8 +1018,7 @@ public class ApfloatNum implements INum {
     }
     if (arg2 instanceof INumber) {
       try {
-        return F.complexNum(
-            h().fibonacci(fApfloat, ((INumber) arg2).apcomplexValue()));
+        return F.complexNum(h().fibonacci(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1095,8 +1090,7 @@ public class ApfloatNum implements INum {
     }
     if (x instanceof INumber) {
       try {
-        return F
-            .complexNum(h().gamma(fApfloat, ((INumber) x).apcomplexValue()));
+        return F.complexNum(h().gamma(fApfloat, ((INumber) x).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException are) {
         // try as computation with complex numbers
         // java.lang.ArithmeticException: Upper gamma with first argument real part nonpositive and
@@ -1119,16 +1113,16 @@ public class ApfloatNum implements INum {
     }
     if (x0 instanceof IReal && x1 instanceof IReal) {
       try {
-        return valueOf(h().gamma(fApfloat, ((IReal) x0).apfloatValue(),
-            ((IReal) x1).apfloatValue()));
+        return valueOf(
+            h().gamma(fApfloat, ((IReal) x0).apfloatValue(), ((IReal) x1).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (x0 instanceof INumber && x1 instanceof INumber) {
       try {
-        return F.complexNum(h().gamma(fApfloat, ((INumber) x0).apcomplexValue(),
-            ((INumber) x1).apcomplexValue()));
+        return F.complexNum(
+            h().gamma(fApfloat, ((INumber) x0).apcomplexValue(), ((INumber) x1).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException are) {
         return Errors.printMessage(S.Gamma, are, EvalEngine.get());
       }
@@ -1140,16 +1134,14 @@ public class ApfloatNum implements INum {
   public IExpr gegenbauerC(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {
-        return valueOf(
-            h().gegenbauerC(fApfloat, ((IReal) arg2).apfloatValue()));
+        return valueOf(h().gegenbauerC(fApfloat, ((IReal) arg2).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber) {
       try {
-        return F.complexNum(
-            h().gegenbauerC(fApfloat, ((INumber) arg2).apcomplexValue()));
+        return F.complexNum(h().gegenbauerC(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1169,8 +1161,8 @@ public class ApfloatNum implements INum {
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
       try {
-        return F.complexNum(h().gegenbauerC(fApfloat,
-            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+        return F.complexNum(h().gegenbauerC(fApfloat, ((INumber) arg2).apcomplexValue(),
+            ((INumber) arg3).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1214,8 +1206,7 @@ public class ApfloatNum implements INum {
       if (r instanceof IReal) {
         if (this.isGE(F.C1) || r.isInteger()) {
           try {
-            Apfloat harmonicNumber =
-                h().harmonicNumber(fApfloat, ((IReal) r).apfloatValue());
+            Apfloat harmonicNumber = h().harmonicNumber(fApfloat, ((IReal) r).apfloatValue());
             return F.num(harmonicNumber);
           } catch (ArithmeticException | NumericComputationException e) {
             // try as computation with complex numbers
@@ -1223,8 +1214,7 @@ public class ApfloatNum implements INum {
         }
       }
       try {
-        Apcomplex harmonicNumber =
-            h().harmonicNumber(fApfloat, ((INumber) r).apcomplexValue());
+        Apcomplex harmonicNumber = h().harmonicNumber(fApfloat, ((INumber) r).apcomplexValue());
         return F.complexNum(harmonicNumber);
       } catch (ArithmeticException | NumericComputationException e) {
       }
@@ -1247,16 +1237,14 @@ public class ApfloatNum implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat hermiteH =
-              h().hermiteH(fApfloat, ((IReal) arg2).apfloatValue());
+          Apfloat hermiteH = h().hermiteH(fApfloat, ((IReal) arg2).apfloatValue());
           return F.num(hermiteH);
         } catch (ArithmeticException | NumericComputationException are) {
 
         }
       }
       try {
-        Apcomplex hermiteH =
-            h().hermiteH(fApfloat, ((INumber) arg2).apcomplexValue());
+        Apcomplex hermiteH = h().hermiteH(fApfloat, ((INumber) arg2).apcomplexValue());
         return F.complexNum(hermiteH);
       } catch (ArithmeticException | NumericComputationException are) {
 
@@ -1275,15 +1263,13 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometric0F1(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {
-        return valueOf(
-            h().hypergeometric0F1(fApfloat, ((IReal) arg2).apfloatValue()));
+        return valueOf(h().hypergeometric0F1(fApfloat, ((IReal) arg2).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber) {
-      return F.complexNum(
-          h().hypergeometric0F1(fApfloat, ((INumber) arg2).apcomplexValue()));
+      return F.complexNum(h().hypergeometric0F1(fApfloat, ((INumber) arg2).apcomplexValue()));
     }
     return INum.super.hypergeometric0F1(arg2);
   }
@@ -1292,15 +1278,14 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometric0F1Regularized(IExpr arg2) {
     if (arg2 instanceof IReal) {
       try {
-        return valueOf(h().hypergeometric0F1Regularized(fApfloat,
-            ((IReal) arg2).apfloatValue()));
+        return valueOf(h().hypergeometric0F1Regularized(fApfloat, ((IReal) arg2).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber) {
-      return F.complexNum(h().hypergeometric0F1Regularized(fApfloat,
-          ((INumber) arg2).apcomplexValue()));
+      return F.complexNum(
+          h().hypergeometric0F1Regularized(fApfloat, ((INumber) arg2).apcomplexValue()));
     }
     return INum.super.hypergeometric0F1Regularized(arg2);
   }
@@ -1309,16 +1294,16 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
-        return valueOf(h().hypergeometric1F1(fApfloat,
-            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()));
+        return valueOf(h().hypergeometric1F1(fApfloat, ((IReal) arg2).apfloatValue(),
+            ((IReal) arg3).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
       try {
-        return F.complexNum(h().hypergeometric1F1(fApfloat,
-            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+        return F.complexNum(h().hypergeometric1F1(fApfloat, ((INumber) arg2).apcomplexValue(),
+            ((INumber) arg3).apcomplexValue()));
       } catch (ArithmeticException | ApfloatRuntimeException e) {
         return Errors.printMessage(S.Hypergeometric1F1, e);
       }
@@ -1330,8 +1315,8 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometric1F1Regularized(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
-        return valueOf(h().hypergeometric1F1Regularized(fApfloat,
-            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()));
+        return valueOf(h().hypergeometric1F1Regularized(fApfloat, ((IReal) arg2).apfloatValue(),
+            ((IReal) arg3).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1347,18 +1332,16 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometric2F1(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof IReal && arg3 instanceof IReal && arg4 instanceof IReal) {
       try {
-        return valueOf(
-            h().hypergeometric2F1(fApfloat, ((IReal) arg2).apfloatValue(),
-                ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue()));
+        return valueOf(h().hypergeometric2F1(fApfloat, ((IReal) arg2).apfloatValue(),
+            ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       try {
-        return F.complexNum(
-            h().hypergeometric2F1(fApfloat, ((INumber) arg2).apcomplexValue(),
-                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
+        return F.complexNum(h().hypergeometric2F1(fApfloat, ((INumber) arg2).apcomplexValue(),
+            ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
       } catch (ApfloatArithmeticException aaex) {
         if ("divide.byZero".equals(aaex.getLocalizationKey())) {
           return F.ComplexInfinity;
@@ -1376,18 +1359,17 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometric2F1Regularized(IExpr arg2, IExpr arg3, IExpr arg4) {
     if (arg2 instanceof IReal && arg3 instanceof IReal && arg4 instanceof IReal) {
       try {
-        return valueOf(h().hypergeometric2F1Regularized(fApfloat,
-            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue(),
-            ((IReal) arg4).apfloatValue()));
+        return valueOf(h().hypergeometric2F1Regularized(fApfloat, ((IReal) arg2).apfloatValue(),
+            ((IReal) arg3).apfloatValue(), ((IReal) arg4).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       try {
-        return F.complexNum(h().hypergeometric2F1Regularized(fApfloat,
-            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue(),
-            ((INumber) arg4).apcomplexValue()));
+        return F.complexNum(
+            h().hypergeometric2F1Regularized(fApfloat, ((INumber) arg2).apcomplexValue(),
+                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
       } catch (NumericComputationException ex) {
         // org.apfloat.OverflowException: Apfloat disk file storage is disabled
       }
@@ -1399,15 +1381,15 @@ public class ApfloatNum implements INum {
   public IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
-        return valueOf(h().hypergeometricU(fApfloat,
-            ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()));
+        return valueOf(h().hypergeometricU(fApfloat, ((IReal) arg2).apfloatValue(),
+            ((IReal) arg3).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
-      return F.complexNum(h().hypergeometricU(fApfloat,
-          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+      return F.complexNum(h().hypergeometricU(fApfloat, ((INumber) arg2).apcomplexValue(),
+          ((INumber) arg3).apcomplexValue()));
     }
     return INum.super.hypergeometricU(arg2, arg3);
   }
@@ -1470,22 +1452,6 @@ public class ApfloatNum implements INum {
   @Override
   public boolean isE() {
     return fApfloat.compareTo(h().exp(Apfloat.ONE)) == 0;
-  }
-
-  @Override
-  public boolean isGT(IReal that) {
-    if (that instanceof ApfloatNum) {
-      return fApfloat.compareTo(((ApfloatNum) that).fApfloat) > 0;
-    }
-    return doubleValue() > that.doubleValue();
-  }
-
-  @Override
-  public boolean isLT(IReal that) {
-    if (that instanceof ApfloatNum) {
-      return fApfloat.compareTo(((ApfloatNum) that).fApfloat) < 0;
-    }
-    return doubleValue() < that.doubleValue();
   }
 
   /** {@inheritDoc} */
@@ -1594,9 +1560,8 @@ public class ApfloatNum implements INum {
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber && arg4 instanceof INumber) {
       try {
-        return F
-            .complexNum(h().jacobiP(fApfloat, ((INumber) arg2).apcomplexValue(),
-                ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
+        return F.complexNum(h().jacobiP(fApfloat, ((INumber) arg2).apcomplexValue(),
+            ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
       } catch (OverflowException of) {
         return F.Overflow();
       } catch (ArithmeticException | NumericComputationException e) {
@@ -1617,8 +1582,7 @@ public class ApfloatNum implements INum {
     }
     if (arg2 instanceof INumber) {
       try {
-        return F.complexNum(
-            h().laguerreL(fApfloat, ((INumber) arg2).apcomplexValue()));
+        return F.complexNum(h().laguerreL(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1630,16 +1594,16 @@ public class ApfloatNum implements INum {
   public IExpr laguerreL(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
-        return valueOf(h().laguerreL(fApfloat, ((IReal) arg2).apfloatValue(),
-            ((IReal) arg3).apfloatValue()));
+        return valueOf(
+            h().laguerreL(fApfloat, ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
       try {
-        return F.complexNum(h().laguerreL(fApfloat,
-            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+        return F.complexNum(h().laguerreL(fApfloat, ((INumber) arg2).apcomplexValue(),
+            ((INumber) arg3).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1663,8 +1627,7 @@ public class ApfloatNum implements INum {
     }
     if (arg2 instanceof INumber) {
       try {
-        return F.complexNum(
-            h().legendreP(fApfloat, ((INumber) arg2).apcomplexValue()));
+        return F.complexNum(h().legendreP(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1676,16 +1639,16 @@ public class ApfloatNum implements INum {
   public IExpr legendreP(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
-        return valueOf(h().legendreP(fApfloat, ((IReal) arg2).apfloatValue(),
-            ((IReal) arg3).apfloatValue()));
+        return valueOf(
+            h().legendreP(fApfloat, ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
       try {
-        return F.complexNum(h().legendreP(fApfloat,
-            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+        return F.complexNum(h().legendreP(fApfloat, ((INumber) arg2).apcomplexValue(),
+            ((INumber) arg3).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1704,8 +1667,7 @@ public class ApfloatNum implements INum {
     }
     if (arg2 instanceof INumber) {
       try {
-        return F.complexNum(
-            h().legendreQ(fApfloat, ((INumber) arg2).apcomplexValue()));
+        return F.complexNum(h().legendreQ(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1717,16 +1679,16 @@ public class ApfloatNum implements INum {
   public IExpr legendreQ(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof IReal && arg3 instanceof IReal) {
       try {
-        return valueOf(h().legendreQ(fApfloat, ((IReal) arg2).apfloatValue(),
-            ((IReal) arg3).apfloatValue()));
+        return valueOf(
+            h().legendreQ(fApfloat, ((IReal) arg2).apfloatValue(), ((IReal) arg3).apfloatValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
       try {
-        return F.complexNum(h().legendreQ(fApfloat,
-            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+        return F.complexNum(h().legendreQ(fApfloat, ((INumber) arg2).apcomplexValue(),
+            ((INumber) arg3).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -1773,13 +1735,12 @@ public class ApfloatNum implements INum {
       try {
         if (base instanceof IReal) {
           if (isNegative()) {
-            return ApcomplexNum.valueOf(
-                h().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
+            return ApcomplexNum
+                .valueOf(h().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
           }
           return valueOf(h().log(fApfloat, ((IReal) base).apfloatValue()));
         }
-        return ApcomplexNum.valueOf(
-            h().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
+        return ApcomplexNum.valueOf(h().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
       } catch (ApfloatArithmeticException aex) {
         if (aex.getLocalizationKey().equals("divide.byZero")) {
           // log(x,0) is undefined
@@ -1869,6 +1830,12 @@ public class ApfloatNum implements INum {
     return valueOf(h().multiply(fApfloat, value.apfloatValue()));
   }
 
+  @Override
+  public IReal multiply(IReal value) {
+    // Use the same arbitrary-precision path regardless of the operand's static type.
+    return (IReal) times((INumber) value);
+  }
+
   /** @return */
   @Override
   public ApfloatNum negate() {
@@ -1919,7 +1886,7 @@ public class ApfloatNum implements INum {
       if (that instanceof ApfloatNum) {
         return add((ApfloatNum) that);
       }
-      return add(ApfloatNum.valueOf(((Num) that).getRealPart()));
+      return machineResult(add(ApfloatNum.valueOf(((Num) that).getRealPart())));
     }
     if (that instanceof IComplexNum) {
       if (that instanceof ApcomplexNum) {
@@ -1938,8 +1905,7 @@ public class ApfloatNum implements INum {
       return plus((IInexactNumber) that);
     }
     if (that instanceof IReal) {
-      return ApfloatNum
-          .valueOf(h().add(fApfloat, ((IReal) that).apfloatValue()));
+      return ApfloatNum.valueOf(h().add(fApfloat, ((IReal) that).apfloatValue()));
     }
     if (that instanceof ComplexSym) {
       return F.complexNum(fApfloat.add(that.apcomplexValue()));
@@ -1951,12 +1917,10 @@ public class ApfloatNum implements INum {
   public IExpr pochhammer(IExpr arg2) {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
-        Apfloat pochhammer =
-            h().pochhammer(apfloatValue(), ((IReal) arg2).apfloatValue());
+        Apfloat pochhammer = h().pochhammer(apfloatValue(), ((IReal) arg2).apfloatValue());
         return F.num(pochhammer);
       }
-      Apcomplex pochhammer =
-          h().pochhammer(apfloatValue(), ((INumber) arg2).apcomplexValue());
+      Apcomplex pochhammer = h().pochhammer(apfloatValue(), ((INumber) arg2).apcomplexValue());
       return F.complexNum(pochhammer);
     }
     return INum.super.pochhammer(arg2);
@@ -1999,8 +1963,7 @@ public class ApfloatNum implements INum {
       }
 
       try {
-        return F.complexNum(
-            h().polylog(fApfloat, ((INumber) arg2).apcomplexValue()));
+        return F.complexNum(h().polylog(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (LossOfPrecisionException lope) {
         // Complete loss of precision
       } catch (InfiniteExpansionException iee) {
@@ -2032,8 +1995,7 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr power(final IExpr that) {
     if (that instanceof IComplexNum) {
-      return F
-          .complexNum(h().pow(fApfloat, ((IComplexNum) that).apcomplexValue()));
+      return F.complexNum(h().pow(fApfloat, ((IComplexNum) that).apcomplexValue()));
     }
     if (that instanceof INum) {
       if (fApfloat.compareTo(Apfloat.ZERO) < 0) {
@@ -2167,8 +2129,7 @@ public class ApfloatNum implements INum {
     }
     if (arg2 instanceof INumber) {
       try {
-        return F.complexNum(
-            h().struveH(fApfloat, ((INumber) arg2).apcomplexValue()));
+        return F.complexNum(h().struveH(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -2187,8 +2148,7 @@ public class ApfloatNum implements INum {
     }
     if (arg2 instanceof INumber) {
       try {
-        return F.complexNum(
-            h().struveL(fApfloat, ((INumber) arg2).apcomplexValue()));
+        return F.complexNum(h().struveL(fApfloat, ((INumber) arg2).apcomplexValue()));
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -2210,12 +2170,10 @@ public class ApfloatNum implements INum {
       return subtract(((Num) that).getRealPart());
     }
     if (that instanceof ApcomplexNum) {
-      return F.complexNum(
-          h().subtract(fApfloat, ((ApcomplexNum) that).apcomplexValue()));
+      return F.complexNum(h().subtract(fApfloat, ((ApcomplexNum) that).apcomplexValue()));
     }
     if (that instanceof ComplexNum) {
-      return F.complexNum(
-          h().subtract(fApfloat, ((ComplexNum) that).apcomplexValue()));
+      return F.complexNum(h().subtract(fApfloat, ((ComplexNum) that).apcomplexValue()));
     }
     return INum.super.subtract(that);
   }
@@ -2254,7 +2212,7 @@ public class ApfloatNum implements INum {
       if (that instanceof ApfloatNum) {
         return multiply((ApfloatNum) that);
       }
-      return multiply(ApfloatNum.valueOf(((Num) that).getRealPart()));
+      return machineResult(multiply(ApfloatNum.valueOf(((Num) that).getRealPart())));
     }
     if (that instanceof IComplexNum) {
       if (that instanceof ApcomplexNum) {
@@ -2273,8 +2231,7 @@ public class ApfloatNum implements INum {
       return times((IInexactNumber) that);
     }
     if (that instanceof IReal) {
-      return ApfloatNum
-          .valueOf(h().multiply(fApfloat, ((IReal) that).apfloatValue()));
+      return ApfloatNum.valueOf(h().multiply(fApfloat, ((IReal) that).apfloatValue()));
     }
     if (that instanceof ComplexSym) {
       return F.complexNum(fApfloat.multiply(that.apcomplexValue()));

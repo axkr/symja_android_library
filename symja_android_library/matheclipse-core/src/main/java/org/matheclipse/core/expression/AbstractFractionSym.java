@@ -1624,7 +1624,7 @@ public abstract class AbstractFractionSym implements IFraction {
       return compareTo(
           AbstractFractionSym.valueOf(((IInteger) obj).toBigNumerator(), BigInteger.ONE)) > 0;
     }
-    return doubleValue() > obj.doubleValue();
+    return RealNumberComparison.isGreater(this, obj);
   }
 
   /**
@@ -1643,7 +1643,7 @@ public abstract class AbstractFractionSym implements IFraction {
       return compareTo(
           AbstractFractionSym.valueOf(((IInteger) obj).toBigNumerator(), BigInteger.ONE)) < 0;
     }
-    return doubleValue() < obj.doubleValue();
+    return RealNumberComparison.isLess(this, obj);
   }
 
   /** {@inheritDoc} */

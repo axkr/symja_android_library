@@ -4,11 +4,14 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.ValidateException;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.RealNumberComparison;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
@@ -18,8 +21,11 @@ import org.matheclipse.core.interfaces.IComparatorFunction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class CompareUtil {
   public static IComparatorFunction CONST_EQUAL;
@@ -27,6 +33,247 @@ public class CompareUtil {
   public static ITernaryComparator CONST_LESS;
   public static ITernaryComparator CONST_GREATER_EQUAL;
   public static ITernaryComparator CONST_LESS_EQUAL;
+
+  /** {@link #compareNumeric(IExpr, IExpr, EvalEngine)} has no answer for the two operands. */
+  public static final int NOT_COMPARABLE = Integer.MIN_VALUE;
+
+  /**
+   * {@link #numericSign(IExpr, EvalEngine)} found a real value which it could not tell from zero
+   * with the precision it uses.
+   */
+  public static final int UNCERTAIN = Integer.MIN_VALUE + 1;
+
+  /** The two precisions at which a difference of two exact operands is examined. */
+  private static final long LOW_DIGITS = 70;
+
+  private static final long HIGH_DIGITS = 140;
+
+  /**
+   * Compare two real numeric operands as <code>Less</code>, <code>Greater</code> and
+   * <code>Equal</code> do. Every relational built-in derives its answer from this one result, so
+   * that <code>a&lt;b</code>, <code>a==b</code> and <code>a&gt;b</code> never contradict each
+   * other.
+   * <ul>
+   * <li>next to an inexact number the other operand is taken at the precision of that number, and
+   * inexact numbers which differ only in their last 7 bits are equal
+   * ({@link RealNumberComparison#compareWithTolerance(IReal, IReal)})
+   * <li>two exact operands are compared at machine precision first. Where the machine values cannot
+   * tell - they are equal, differ by a residue only, or an intermediate value left the machine
+   * range - the operands are evaluated with arbitrary precision.
+   * </ul>
+   * <code>General::munfl</code> is not printed for an operand, because its machine value isn't the
+   * result of the comparison.
+   *
+   * @return <code>-1, 0, 1</code> or {@link #NOT_COMPARABLE} if the operands aren't two real
+   *         numeric values
+   */
+  public static int compareNumeric(final IExpr a0, final IExpr a1, EvalEngine engine) {
+    return compareNumeric(a0, a1, false, engine);
+  }
+
+  /**
+   * The sign of a real numeric expression: <code>-1, 0, 1</code>, {@link #NOT_COMPARABLE} if it
+   * isn't a real numeric value, or {@link #UNCERTAIN} if it cannot be told from zero with the
+   * precision used. In contrast to a comparison, which calls such a value equal to zero, a sign is
+   * only answered when it is certain.
+   */
+  public static int numericSign(final IExpr x, EvalEngine engine) {
+    if (x.isReal()) {
+      return x.isNaN() ? NOT_COMPARABLE : ((IReal) x).complexSign();
+    }
+    return compareNumeric(x, F.C0, true, engine);
+  }
+
+  /**
+   * The order of two real numeric operands for a selection like <code>Min</code> or
+   * <code>Max</code>: as {@link #compareNumeric(IExpr, IExpr, EvalEngine)}, but two numbers are
+   * ordered by their value without a tolerance, so that the smaller one of two nearly equal numbers
+   * can be told.
+   */
+  public static int orderNumeric(final IExpr a0, final IExpr a1, EvalEngine engine) {
+    if (a0.isReal() && a1.isReal()) {
+      return a0.isNaN() || a1.isNaN() ? NOT_COMPARABLE
+          : RealNumberComparison.order((IReal) a0, (IReal) a1);
+    }
+    return compareNumeric(a0, a1, engine);
+  }
+
+  /**
+   * Whether <code>x</code> is zero for a geometric test: an inexact number of the size of a
+   * rounding error counts as zero, where <code>Equal</code> takes only zero for equal to zero.
+   */
+  public static boolean isNumericZero(final IExpr x, EvalEngine engine) {
+    if (x.isInexactNumber()) {
+      return ((INumber) x).isZero(Config.DEFAULT_EQUALS_TOLERANCE);
+    }
+    return engine.evaluate(F.Equal(x, F.C0)).isTrue();
+  }
+
+  /**
+   * Whether two numbers, at least one of them complex, are equal as <code>Equal</code> sees them:
+   * the real parts and the imaginary parts are compared separately, each with the tolerance of real
+   * numbers. So <code>1.+2.^-48*I</code> is not equal to <code>1.</code>, because zero is equal to
+   * zero only.
+   */
+  public static boolean isEqualWithTolerance(final INumber a, final INumber b) {
+    return RealNumberComparison.compareWithTolerance(a.re(), b.re()) == 0
+        && RealNumberComparison.compareWithTolerance(a.im(), b.im()) == 0;
+  }
+
+  private static int compareNumeric(final IExpr a0, final IExpr a1, boolean certain,
+      EvalEngine engine) {
+    final boolean function0 = !a0.isNumber() && a0.isNumericFunction(true);
+    final boolean function1 = !a1.isNumber() && a1.isNumericFunction(true);
+    if (!(function0 || a0.isReal()) || !(function1 || a1.isReal())) {
+      return NOT_COMPARABLE;
+    }
+    final boolean exact0 = function0 ? a0.isFree(x -> x.isInexactNumber(), false) : a0.isRational();
+    final boolean exact1 = function1 ? a1.isFree(x -> x.isInexactNumber(), false) : a1.isRational();
+    // N(expr, digits) leaves its digits as the number of figures to display
+    final boolean oldNumericMode = engine.isNumericMode();
+    final long oldPrecision = engine.getNumericPrecision();
+    final int oldSignificantFigures = engine.getSignificantFigures();
+    try (MachineUnderflow.Quiet quiet = engine.machineUnderflow().quiet()) {
+      IExpr v0 = function0 ? numericValue(a0, exact0, a1, engine) : a0;
+      IExpr v1 = function1 ? numericValue(a1, exact1, v0, engine) : a1;
+      if (function0 && v1 instanceof ApfloatNum && !(v0 instanceof ApfloatNum) && v0.isReal()) {
+        // the partner turned out to be an arbitrary precision number
+        v0 = numericValue(a0, exact0, v1, engine);
+      }
+      if (!v0.isReal() || !v1.isReal() || v0.isNaN() || v1.isNaN()) {
+        return NOT_COMPARABLE;
+      }
+      int c = RealNumberComparison.compareWithTolerance((IReal) v0, (IReal) v1);
+      if ((function0 || function1) && exact0 && exact1
+          && (c == 0 || isResidue(a0, function0, v0, a1, function1, v1, engine))) {
+        if (!a1.isZero()) {
+          // the difference may be simpler than its operands: Pi^1000+1 against Pi^1000
+          IExpr difference = engine.evaluate(F.Subtract(a0, a1));
+          if (difference.isRational()) {
+            return ((IRational) difference).complexSign();
+          }
+          if (difference.isFree(x -> x.isInexactNumber(), false)) {
+            int d = compareNumeric(difference, F.C0, certain, engine);
+            if (d != NOT_COMPARABLE) {
+              return d;
+            }
+          }
+        }
+        return comparePrecise(a0, function0, a1, function1, certain, engine);
+      }
+      return c;
+    } finally {
+      if (function0 || function1) {
+        engine.setNumericMode(oldNumericMode, oldPrecision, oldSignificantFigures);
+      }
+    }
+  }
+
+  /**
+   * The numeric value of an operand of a comparison: at the precision of an arbitrary precision
+   * partner, else at machine precision. If an intermediate machine value of an exact operand
+   * underflowed, as in <code>E^(-1000)*Pi^1000</code>, the machine result is not the value of the
+   * operand and it is evaluated with arbitrary precision.
+   */
+  private static IExpr numericValue(IExpr a, boolean exact, IExpr partner, EvalEngine engine) {
+    if (partner instanceof ApfloatNum) {
+      long precision = ((ApfloatNum) partner).precision();
+      if (precision <= Config.MAX_PRECISION_APFLOAT) {
+        return engine.evalN(a, Math.max(precision, ParserConfig.MACHINE_PRECISION));
+      }
+    }
+    final long underflows = engine.machineUnderflow().count();
+    IExpr value = engine.evalN(a);
+    if (exact && engine.machineUnderflow().count() != underflows) {
+      IExpr precise = engine.evalN(a, LOW_DIGITS);
+      if (precise.isReal()) {
+        return precise;
+      }
+    }
+    return value;
+  }
+
+  /**
+   * Whether the machine values of two exact operands differ by no more than the rounding error of a
+   * cancellation can be: relative to the largest term of a sum, as in
+   * <code>(E+Pi)^2-E^2-Pi^2-2*E*Pi</code> whose machine value is <code>-1.4*10^-14</code>.
+   */
+  private static boolean isResidue(IExpr a0, boolean function0, IExpr v0, IExpr a1,
+      boolean function1, IExpr v1, EvalEngine engine) {
+    final double d0 = ((IReal) v0).doubleValue();
+    final double d1 = ((IReal) v1).doubleValue();
+    final double difference = Math.abs(d0 - d1);
+    if (!Double.isFinite(difference)) {
+      // an operand beyond the double range: no cancellation can be read from machine values
+      return false;
+    }
+    if (difference < Config.DEFAULT_EQUALS_TOLERANCE) {
+      return true;
+    }
+    double scale = Math.max(Math.abs(d0), Math.abs(d1));
+    if (function0) {
+      scale = Math.max(scale, largestTerm(a0, engine));
+    }
+    if (function1) {
+      scale = Math.max(scale, largestTerm(a1, engine));
+    }
+    return difference <= 1.0e-10 * scale;
+  }
+
+  /** The largest absolute machine value of the terms of a sum, <code>0.0</code> for no sum. */
+  private static double largestTerm(IExpr a, EvalEngine engine) {
+    double scale = 0.0;
+    if (a.isPlus()) {
+      IAST plus = (IAST) a;
+      for (int i = 1; i < plus.size(); i++) {
+        IExpr term = engine.evalNumericFunction(plus.get(i));
+        if (term.isNumber()) {
+          double abs = ((INumber) term).abs().evalf();
+          if (abs > scale) {
+            scale = abs;
+          }
+        }
+      }
+    }
+    return scale;
+  }
+
+  /**
+   * Compare two exact operands with arbitrary precision. A difference which shrinks with the
+   * precision is the rounding error of a cancellation and the operands are equal:
+   * <code>Sqrt(2)*Sqrt(3)==Sqrt(6)</code>. A difference which keeps its size is real, however
+   * small: <code>Pi^(-100)&lt;E^(-100)</code>.
+   *
+   * @param certain answer {@link #NOT_COMPARABLE} instead of <code>0</code>, if the operands could
+   *        not be told apart
+   */
+  private static int comparePrecise(IExpr a0, boolean function0, IExpr a1, boolean function1,
+      boolean certain, EvalEngine engine) {
+    final int same = certain ? UNCERTAIN : 0;
+    IExpr low0 = function0 ? engine.evalN(a0, LOW_DIGITS) : a0;
+    IExpr low1 = function1 ? engine.evalN(a1, LOW_DIGITS) : a1;
+    IExpr high0 = function0 ? engine.evalN(a0, HIGH_DIGITS) : a0;
+    IExpr high1 = function1 ? engine.evalN(a1, HIGH_DIGITS) : a1;
+    if (!isPrecise(low0) || !isPrecise(low1) || !isPrecise(high0) || !isPrecise(high1)) {
+      // no arbitrary precision value: a machine residue counts as zero
+      return same;
+    }
+    int c = RealNumberComparison.compareWithTolerance((IReal) high0, (IReal) high1);
+    if (c == 0) {
+      return same;
+    }
+    Apfloat low = RealNumberComparison.absoluteDifference((IReal) low0, (IReal) low1, HIGH_DIGITS);
+    Apfloat high =
+        RealNumberComparison.absoluteDifference((IReal) high0, (IReal) high1, 2 * HIGH_DIGITS);
+    if (low.signum() == 0 || high.signum() == 0 || high.scale() < low.scale() - 5) {
+      return same;
+    }
+    return c;
+  }
+
+  private static boolean isPrecise(IExpr value) {
+    return value instanceof ApfloatNum || value instanceof IRational;
+  }
 
   private static final Set<ISymbol> LOGIC_EQUATION_HEADS =
       Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
@@ -172,6 +419,11 @@ public class CompareUtil {
       VariablesSet varSet = new VariablesSet(function);
       if (varSet.isEmpty()) {
         INumber num = function.isNumericFunction(true) ? function.evalNumber() : null;
+        if (num instanceof ApfloatNum && num.reDoubleValue() == 0.0
+            && ((ApfloatNum) num).apfloatValue().signum() != 0) {
+          // an exact value below the machine range, like Pi^(-1000)
+          return false;
+        }
         if (num == null || !(F.isZero(num.reDoubleValue(), tolerance)
             && F.isZero(num.imDoubleValue(), tolerance))) {
           return false;

@@ -686,7 +686,8 @@ public class Num implements INum {
   }
 
   public int compareTo(final double that) {
-    return Double.compare(value, that);
+    // Signed zeros are numerically equal; keep Double.compare's ordering for NaN.
+    return value == that ? 0 : Double.compare(value, that);
   }
 
   /**
@@ -697,11 +698,11 @@ public class Num implements INum {
   @Override
   public int compareTo(final IExpr expr) {
     if (expr instanceof Num) {
-      return Double.compare(value, ((Num) expr).value);
+      return compareTo(((Num) expr).value);
     }
     if (expr.isNumber()) {
       if (expr.isReal()) {
-        return Double.compare(value, ((IReal) expr).doubleValue());
+        return RealNumberComparison.order(this, (IReal) expr);
       }
       int c = this.compareTo(((INumber) expr).re());
       if (c != 0) {
@@ -1672,11 +1673,6 @@ public class Num implements INum {
     return Double.isFinite(value);
   }
 
-  @Override
-  public boolean isGT(IReal that) {
-    return value > that.doubleValue();
-  }
-
   /** {@inheritDoc} */
   @Override
   public final boolean isIndeterminate() {
@@ -1691,11 +1687,6 @@ public class Num implements INum {
   @Override
   public boolean isInfinite() {
     return Double.isInfinite(value);
-  }
-
-  @Override
-  public boolean isLT(IReal that) {
-    return value < that.doubleValue();
   }
 
   @Override

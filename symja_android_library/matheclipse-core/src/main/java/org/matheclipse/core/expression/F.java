@@ -57,15 +57,15 @@ import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.IAssumptions;
-import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.eval.util.PackageUtil;
+import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.HtmlTemplates;
 import org.matheclipse.core.form.output.JSPageProvider;
-import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.ObjIntFunction;
+import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.EvalFlags.Group;
@@ -1289,7 +1289,8 @@ public class F extends S {
    */
   public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def,
       boolean zeroArgsAllowed) {
-    return org.matheclipse.core.expression.PatternSequence.valueOf(symbol, check, def, zeroArgsAllowed);
+    return org.matheclipse.core.expression.PatternSequence.valueOf(symbol, check, def,
+        zeroArgsAllowed);
   }
 
   /**
@@ -2385,8 +2386,8 @@ public class F extends S {
   /**
    * <code>Blank(head)</code> - the <code>Blank</code> expression as an {@link IAST}.
    *
-   * In contrast to {@link #$b(IExpr)}, which creates an {@link IPattern} atom, this method
-   * creates the ordinary <code>Blank(head)</code> function expression.
+   * In contrast to {@link #$b(IExpr)}, which creates an {@link IPattern} atom, this method creates
+   * the ordinary <code>Blank(head)</code> function expression.
    *
    * @param head
    */
@@ -2541,8 +2542,8 @@ public class F extends S {
   }
 
   /**
-   * <code>C(n)</code> - represents the `n`-th constant in a solution to a differential
-   * equation or {@link S#ConditionalExpression}.
+   * <code>C(n)</code> - represents the `n`-th constant in a solution to a differential equation or
+   * {@link S#ConditionalExpression}.
    *
    * @param n
    */
@@ -8548,12 +8549,14 @@ public class F extends S {
     }
     double d = value.doubleValue();
     if (Double.isInfinite(d)) {
-      // WMA: out of the double range the value is an arbitrary precision number of machine
+      // Out of the double range the value is an arbitrary precision number of machine
       // precision
       final long precision = ParserConfig.MACHINE_PRECISION;
       return ApfloatNum.valueOf(new Apfloat(value.toBigNumerator(), precision)
           .divide(new Apfloat(value.toBigDenominator(), precision)));
     }
+    // The underflow of a fraction is 0.0 and reported
+    engine.machineUnderflow().check(d, value);
     return Num.valueOf(d);
   }
 
@@ -8564,9 +8567,10 @@ public class F extends S {
     }
     double d = value.doubleValue();
     if (Double.isInfinite(d)) {
-      // WMA: out of the double range the value is an arbitrary precision number of machine
+      // Out of the double range the value is an arbitrary precision number of machine
       // precision
-      return ApfloatNum.valueOf(new Apfloat(value.toBigNumerator(), ParserConfig.MACHINE_PRECISION));
+      return ApfloatNum
+          .valueOf(new Apfloat(value.toBigNumerator(), ParserConfig.MACHINE_PRECISION));
     }
     return num(d);
   }
@@ -9596,7 +9600,8 @@ public class F extends S {
     IAST jsFormData = (IAST) expr;
     // the page loads the library from its CDN; it is built by matheclipse-jsgraphics
     try {
-      String html = JSPageProvider.pageOf(jsFormData.arg2().toString(), jsFormData.arg1().toString());
+      String html =
+          JSPageProvider.pageOf(jsFormData.arg2().toString(), jsFormData.arg1().toString());
       if (html != null) {
         return openHTMLOnDesktop(html);
       }
@@ -10131,8 +10136,8 @@ public class F extends S {
   }
 
   /**
-   * <code>Root(listOfFunctionAndIndex)</code> - the one argument form of {@link S#Root},
-   * where the argument is the list <code>{function, k}</code>.
+   * <code>Root(listOfFunctionAndIndex)</code> - the one argument form of {@link S#Root}, where the
+   * argument is the list <code>{function, k}</code>.
    *
    * See {@link #Root(IExpr, IExpr)} for the two argument form.
    *

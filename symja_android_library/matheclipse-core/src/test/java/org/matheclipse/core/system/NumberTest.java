@@ -175,14 +175,16 @@ public class NumberTest extends ExprEvaluatorTestCase {
           "512");
       check("Precision(N(Pi,511))", //
           "511");
-      // SameQ compares the precision too, so this pins the clamp target exactly: an over-bound
-      // request is the same number as a request for the bound, and not one digit less. Note that
-      // Equal and Subtract would NOT pin it - they degrade to the lower operand precision, so
-      // N(Pi,1001)==N(Pi,511) is True and N(Pi,1001)-N(Pi,17) is 0.
+      // The clamp target is pinned by Precision(): an over-bound request has the precision of the
+      // bound, and not one digit less. SameQ, Equal and Subtract would NOT pin it, they
+      // compare at the lower operand precision (N[1/3,20]===N[1/3,30] is True), so
+      // N(Pi,1001)===N(Pi,511) is True and N(Pi,1001)-N(Pi,17) is 0.
+      check("{Precision(N(Pi,1001)), Precision(N(Pi,1001))==Precision(N(Pi,511))}", //
+          "{512,False}");
       check("N(Pi,1001)===N(Pi,512)", //
           "True");
       check("N(Pi,1001)===N(Pi,511)", //
-          "False");
+          "True");
       check("N(Pi,512)===N(Pi,513)", //
           "True");
       // the clamped precision really is on the Apfloat, not only in Precision()'s bookkeeping

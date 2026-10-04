@@ -2,8 +2,8 @@ package org.matheclipse.core.interfaces;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +34,6 @@ import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
-import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -49,8 +48,8 @@ import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.NumberUtil;
+import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.expression.WildPattern;
@@ -345,8 +344,7 @@ public interface IExpr
 
   /**
    * A chemical structure. The wrapping <code>MoleculeExpr</code> lives in the
-   * <code>matheclipse-chem</code> module; only the id is owned here, like
-   * {@link #BIOSEQUENCEID}.
+   * <code>matheclipse-chem</code> module; only the id is owned here, like {@link #BIOSEQUENCEID}.
    */
   public static final int MOLECULEID = DATAID + 28;
 
@@ -384,11 +382,11 @@ public interface IExpr
   }
 
   /**
-   * WMA's <code>FreeQ</code> - and only <code>FreeQ</code>, not <code>MemberQ</code>,
-   * <code>Position</code> or <code>Cases</code> - sees the head of a complex or rational number
-   * atom: <code>FreeQ(1+2*I, Complex)</code> and <code>FreeQ(1/2, Rational)</code> are
-   * <code>False</code>. The parts stay invisible (<code>FreeQ(1/2, 2)</code> is <code>True</code>),
-   * and so do the heads of the other atoms (<code>FreeQ(1.5, Real)</code> is <code>True</code>).
+   * Only <code>FreeQ</code>, not <code>MemberQ</code>, <code>Position</code> or <code>Cases</code>
+   * - sees the head of a complex or rational number atom: <code>FreeQ(1+2*I, Complex)</code> and
+   * <code>FreeQ(1/2, Rational)</code> are <code>False</code>. The parts stay invisible
+   * (<code>FreeQ(1/2, 2)</code> is <code>True</code>), and so do the heads of the other atoms
+   * (<code>FreeQ(1.5, Real)</code> is <code>True</code>).
    *
    * <p>
    * Only a literal <code>Complex</code> or <code>Rational</code>, or an alternative of them, is
@@ -1097,7 +1095,8 @@ public interface IExpr
     if (less(expr).isTrue()) {
       return -1;
     }
-    if (equals(expr)) {
+    if (equals(expr) || (isReal() && expr.isReal())) {
+      // two real numbers which are neither greater nor less have the same value: 3/2 and 1.5
       return 0;
     }
     return compareTo(expr);
@@ -1374,12 +1373,22 @@ public interface IExpr
       return IExpr.COMPARE_TERNARY.TRUE;
     }
 
+    if (!isNumber() && equals(that)) {
+      return IExpr.COMPARE_TERNARY.TRUE;
+    }
+    // two real numeric operands: the same three-way comparison as Less and Greater use, so that
+    // a==b and a<b never both hold
+    int c = CompareUtil.compareNumeric(this, that, engine);
+    if (c != CompareUtil.NOT_COMPARABLE) {
+      return c == 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+    }
+
     IExpr arg1 = this;
     IExpr arg2 = that;
-    if (!arg1.isReal() && arg1.isNumericFunction(x -> x.isDirectedInfinity() ? "" : null)) {
+    if (!arg1.isNumber() && arg1.isNumericFunction(x -> x.isDirectedInfinity() ? "" : null)) {
       arg1 = engine.evalNumericFunction(arg1, false);
     }
-    if (!arg2.isReal() && arg2.isNumericFunction(x -> x.isDirectedInfinity() ? "" : null)) {
+    if (!arg2.isNumber() && arg2.isNumericFunction(x -> x.isDirectedInfinity() ? "" : null)) {
       arg2 = engine.evalNumericFunction(arg2, false);
     }
     if (arg2.isInexactNumber() && arg1.isExactNumber()) {
@@ -1416,6 +1425,18 @@ public interface IExpr
       }
     }
 
+    if (arg1.isNumber() && arg2.isNumber()
+        && (arg1 instanceof ApcomplexNum || arg2 instanceof ApcomplexNum
+            || !(isFree(x -> x.isInexactNumber(), false)
+                && that.isFree(x -> x.isInexactNumber(), false)))) {
+      // Complex numbers, at least one of them inexact: the relative tolerance of the real numbers.
+      // Two exact operands keep the absolute tolerance below, which takes the machine residue of
+      // an identity for zero - unless the machine value underflowed and an arbitrary precision
+      // value was computed for it, as for (Pi+I)^(-1000).
+      return CompareUtil.isEqualWithTolerance((INumber) arg1, (INumber) arg2)
+          ? IExpr.COMPARE_TERNARY.TRUE
+          : IExpr.COMPARE_TERNARY.FALSE;
+    }
     IExpr difference = engine.evaluate(F.Subtract(arg1, arg2));
     if (difference.isNumber()) {
       if (((INumber) difference).isZero(Config.DEFAULT_EQUALS_TOLERANCE)) {// Config.SPECIAL_FUNCTIONS_TOLERANCE))
@@ -2063,7 +2084,7 @@ public interface IExpr
    */
   default IExpr greaterEqual(final IExpr that) {
     if (isReal() && that.isReal()) {
-      return ((IReal) this).isLT(((IReal) that)) ? S.False : S.True;
+      return ((IReal) this).isGE(((IReal) that)) ? S.True : S.False;
     }
     return F.GreaterEqual(this, that)//
         .eval();
@@ -3889,11 +3910,11 @@ public interface IExpr
    *
    * <p>
    * The wrapper that is applied last - the outermost - is the one that shows, so a caller that
-   * wants to know what a wrapper said should peel the layers itself rather than only asking for
-   * the payload. {@code org.matheclipse.core.graphics.PlotWrapper} does that.
+   * wants to know what a wrapper said should peel the layers itself rather than only asking for the
+   * payload. {@code org.matheclipse.core.graphics.PlotWrapper} does that.
    *
-   * @return the innermost payload, which is never itself a display wrapper; {@code this} when
-   *         there is nothing to take off
+   * @return the innermost payload, which is never itself a display wrapper; {@code this} when there
+   *         is nothing to take off
    */
   default IExpr stripDisplayWrappers() {
     IExpr datum = this;
@@ -3917,8 +3938,8 @@ public interface IExpr
    *
    * <p>
    * The last four carry no meaning Symja implements. They are listed anyway because recognising a
-   * wrapper is what keeps it from being mistaken for data, which is the failure that actually
-   * hurts - a plot that draws nothing is harder to explain than one that ignores a decoration.
+   * wrapper is what keeps it from being mistaken for data, which is the failure that actually hurts
+   * - a plot that draws nothing is harder to explain than one that ignores a decoration.
    */
   static boolean isDisplayWrapperHead(IExpr head) {
     if (!head.isBuiltInSymbol()) {
@@ -5416,8 +5437,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is the function <code>Subscript[var, index1, index2, ...]</code> with at
-   * least one index, such as <code>Subscript[x, 1]</code> or <code>Subscript[Y, 4, 0]</code>.
+   * Test if this expression is the function <code>Subscript[var, index1, index2, ...]</code> with
+   * at least one index, such as <code>Subscript[x, 1]</code> or <code>Subscript[Y, 4, 0]</code>.
    * <code>var</code> has to be a variable.
    *
    * @return
@@ -5809,7 +5830,7 @@ public interface IExpr
    */
   default IExpr lessEqual(final IExpr a1) {
     if (isReal() && a1.isReal()) {
-      return ((IReal) this).isGT(((IReal) a1)) ? S.False : S.True;
+      return ((IReal) this).isLE(((IReal) a1)) ? S.True : S.False;
     }
     return F.LessEqual(this, a1)//
         .eval();
