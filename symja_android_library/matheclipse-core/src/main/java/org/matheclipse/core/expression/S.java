@@ -19069,6 +19069,16 @@ public class S {
       S.initFinalSymbol("PrincipalComponents", ID.PrincipalComponents);
 
   /**
+   * PrincipalValue(x) - TODO describe `PrincipalValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PrincipalValue.md">PrincipalValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol PrincipalValue =
+      S.initFinalSymbol("PrincipalValue", ID.PrincipalValue);
+
+  /**
    * Print(expr) - print the `expr` to the default output stream and return `Null`.
    * 
    * @see <a href=
