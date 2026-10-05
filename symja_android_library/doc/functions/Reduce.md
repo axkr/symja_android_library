@@ -13,6 +13,16 @@ Reduce(logic-expression, var)
 x==1
 ```
 
+Two real variables, if the second one occurs with degree 1 in every factor which contains the first one:
+
+```
+>> Reduce(x/y<=0, {x,y}, Reals)
+(x<0&&y>0)||(x==0&&(y<0||y>0))||(x>0&&y<0)
+
+>> Reduce(x*y>1 && y<x, {x,y}, Reals)
+(x<=-1&&y<x)||(x>-1&&x<0&&y<1/x)||(x>1&&y>1/x&&y<x)
+```
+
 ### Related terms 
 [Solve](Solve.md), [NSolve](NSolve.md), [Roots](Roots.md), [NRoots](NRoots.md)  
 

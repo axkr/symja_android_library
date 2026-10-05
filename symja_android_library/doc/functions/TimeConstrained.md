@@ -12,6 +12,8 @@ TimeConstrained(expression, seconds, default)
 
 > return `default` instead of `$Aborted` if the evaluation exceeds `seconds`.
 
+`seconds` may be a fraction: `TimeConstrained(expr, 0.3)` stops after 0.3 seconds.
+
 ### Examples
 
 ```    

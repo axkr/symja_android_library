@@ -2,6 +2,7 @@ package org.matheclipse.core.reduce;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -95,7 +96,8 @@ public final class BivariateReduce {
     }
     try {
       return IntegrateTimeBudget
-          .runWithin(() -> new BivariateReduce(x, y, engine).reduce(formula), MAX_MILLIS);
+          .runWithin(() -> new BivariateReduce(x, y, engine).reduce(formula),
+              MachineProfile.millis(MAX_MILLIS));
     } catch (Declined declined) {
       return F.NIL;
     } catch (RuntimeException rex) {

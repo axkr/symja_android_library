@@ -343,3 +343,31 @@ f(_?NumberQ?Positive)
 (_?NumberQ?Positive)
 f(a, _?NumberQ?Positive, b)
 _?NumberQ?Positive&
+
+#| =============================================================== box escapes
+#| \( ... \) writes boxes in the linear syntax and \!\( ... \) the expression they are the typeset
+#| form of - what a notebook copies a formula or an image as. The whole escape is one token of the
+#| scanner; ExprParser reads it, Parser hands its text on to ToExpression.
+\\(x \\/ y + z\\)
+\\( x \\^ 2 \\_ 4 \\)
+\\( a \\& b \\% c\\)
+\\(\\@ x\\)
+\\!\\(x \\^ 2\\)
+\\!\\(2 + 2\\)
+\\!\\(\\*SuperscriptBox[\\(x\\), \\(2\\)]\\)
+\\!\\(\\*FractionBox["a", "b"]\\)
+1 + \\!\\(\\*SubscriptBox[\\(x\\), \\(1\\)]\\)
+\\!\\(\\*RowBox[{"f", "[", "x", "]"}]\\)
+\\!\\(\\*RowBox[{"\\"a\\\\)b\\""}]\\)
+\\!\\(\\*\nSuperscriptBox[\\(x\\),\n\\(2\\)]\\)
+#| a string keeps the escapes as characters of their own
+"a\\)b"
+"\\!\\(\\*SubscriptBox[\\(p\\), \\(0\\)]\\)"
+#| boxes without a reading stay as their text
+\\!\\(\\*FormBox["x", OutputForm]\\)
+#| an escape which isn't closed, and the escapes on their own
+\\!\\(x
+\\(
+\\)
+\\!
+\\*

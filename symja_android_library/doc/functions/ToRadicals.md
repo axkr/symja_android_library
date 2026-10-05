@@ -10,6 +10,11 @@ ToRadicals(expr)
 `ToRadicals` also applies the Cardano and Ferrari formulas for degree 3 and 4, and falls back to
 `Solve` for solvable polynomials of higher degree (e.g. binomials like `#^5 - 2`).
 
+Cyclotomic, biquadratic and (anti)palindromic quartics are written with nested square roots, as in
+WMA: `ToRadicals(Root(1+#^4&,2))` is `(-1)^(3/4)` and `ToRadicals(Root(#^4-10*#^2+1&,4))` is
+`Sqrt(5+2*Sqrt(6))`. A radical form whose value would depend on rounding - a radicand on the branch
+cut of a square root - is not returned.
+
 Polynomials which are not solvable in radicals are left unchanged - use `N` to evaluate those
 roots numerically.
 

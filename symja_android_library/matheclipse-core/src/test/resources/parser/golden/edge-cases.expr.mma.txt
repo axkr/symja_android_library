@@ -295,3 +295,23 @@ f(_?NumberQ?Positive)	Times(f, PatternTest(PatternTest(Blank(), NumberQ), Positi
 (_?NumberQ?Positive)	PatternTest(PatternTest(Blank(), NumberQ), Positive)
 f(a, _?NumberQ?Positive, b)	!syntax@4: ')' expected.
 _?NumberQ?Positive&	Function(PatternTest(PatternTest(Blank(), NumberQ), Positive))
+\\(x \\/ y + z\\)	RowBox(List(FractionBox("x", "y"), "+", "z"))
+\\( x \\^ 2 \\_ 4 \\)	SuperscriptBox("x", SubscriptBox("2", "4"))
+\\( a \\& b \\% c\\)	UnderoverscriptBox("a", "c", "b")
+\\(\\@ x\\)	SqrtBox("x")
+\\!\\(x \\^ 2\\)	Power(x, 2)
+\\!\\(2 + 2\\)	Plus(2, 2)
+\\!\\(\\*SuperscriptBox[\\(x\\), \\(2\\)]\\)	Power(x, 2)
+\\!\\(\\*FractionBox["a", "b"]\\)	Times(a, Power(b, -1))
+1 + \\!\\(\\*SubscriptBox[\\(x\\), \\(1\\)]\\)	Plus(1, Subscript(x, 1))
+\\!\\(\\*RowBox[{"f", "[", "x", "]"}]\\)	f(x)
+\\!\\(\\*RowBox[{"\\"a\\\\)b\\""}]\\)	"a\\)b"
+\\!\\(\\*\nSuperscriptBox[\\(x\\),\n\\(2\\)]\\)	Power(x, 2)
+"a\\)b"	"a\\)b"
+"\\!\\(\\*SubscriptBox[\\(p\\), \\(0\\)]\\)"	"\\!\\(\\*SubscriptBox[\\(p\\), \\(0\\)]\\)"
+\\!\\(\\*FormBox["x", OutputForm]\\)	HoldComplete("\\!\\(\\*FormBox["x", OutputForm]\\)")
+\\!\\(x	!syntax@4: box escape - '\\)' expected.
+\\(	!syntax@2: box escape - '\\)' expected.
+\\)	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
+\\!	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
+\\*	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'

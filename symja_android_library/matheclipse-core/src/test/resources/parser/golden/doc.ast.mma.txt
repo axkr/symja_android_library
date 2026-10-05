@@ -7,7 +7,6 @@
 "a string" // InputForm	InputForm(a string)
 "a" != "a"	Unequal(a, a)
 "a" != "b"	Unequal(a, b)
-"a" /. <|"a" -> 1, "b" -> 2|>	ReplaceAll(a, Association(List(Rule(a, 1), Rule(b, 2))))
 "a" ~~ "b" ~~ "c" // FullForm	FullForm(StringExpression(a, b, c))
 "a-3" // ToCharacterCode	ToCharacterCode(a-3)
 "abc"	abc
@@ -16,10 +15,8 @@
 ## // InputForm	InputForm(SlotSequence(1))
 #0 // InputForm	InputForm(Slot(0))
 #1+#2&[4, 5]	Function(Plus(Slot(1), Slot(2)))[4, 5]
-#2 &[a]	Function(Slot(2))[a]
 #^2& /@ {1, 2, 3, 4}	Map(Function(Power(Slot(1), 2)), List(1, 2, 3, 4))
 #^3& /@ {1, 2, 3}	Map(Function(Power(Slot(1), 3)), List(1, 2, 3))
-#x & [<|"x" -> 7|>]	Function(Slot(x))[Association(List(Rule(x, 7)))]
 $Assumptions = Element(a, Arrays({3, 4, 5}));	!syntax@25: ')' expected.
 $Assumptions = Element(m, Matrices({4, 4}, Reals, Symmetric({1, 2})));	!syntax@25: ')' expected.
 $Assumptions={Element(X, Matrices({4,4},Complexes)),Element(A, Matrices({4,4},Complexes)),Element(B, Matrices({4,4},Complexes))}	!syntax@24: ')' expected.
@@ -29,11 +26,16 @@ $ContextAliases(x)	Times($ContextAliases, x)
 $ContextPath	$ContextPath
 $InstallationDirectory(x)	Times($InstallationDirectory, x)
 $MachineName(x)	Times($MachineName, x)
+$Messages(x)	Times($Messages, x)
+$Output(x)	Times($Output, x)
 $ParentLink(x)	Times($ParentLink, x)
 $ProcessID(x)	Times($ProcessID, x)
+$ScriptInputString(x)	Times($ScriptInputString, x)
 $StandardOutputStream(x)	Times($StandardOutputStream, x)
 $SystemID(x)	Times($SystemID, x)
+$TimeUnit	$TimeUnit
 $TimeZone(x)	Times($TimeZone, x)
+$TimedOut(x)	Times($TimedOut, x)
 $UnitSystem(x)	Times($UnitSystem, x)
 $UserDocumentsDirectory(x)	Times($UserDocumentsDirectory, x)
 $VersionNumber(x)	Times($VersionNumber, x)
@@ -90,6 +92,7 @@ $min = 0; $max = 10^4; Union@ Flatten@ Table( n^expo, {expo, Prime@ Range@ Prime
 1 / Infinity	Power(Infinity, -1)
 1. + 0.*I	Plus(1., Times(0., I))
 1/0	1/0
+1/AlgebraicNumber(Sqrt(2),{1,1/2})	!syntax@26: ')' expected.
 10 / 3 // FullForm	FullForm(10/3)
 10!	Factorial(10)
 10*2	Times(10, 2)
@@ -102,7 +105,6 @@ $min = 0; $max = 10^4; Union@ Flatten@ Table( n^expo, {expo, Prime@ Range@ Prime
 2 ^ 2.0	Power(2, 2.0)
 2(3+2x)^2/(5+x^2+3x)^3 // Expand	Expand(Times(2, Times(Power(Plus(3, Times(2, x)), 2), Power(Power(Plus(5, Power(x, 2), Times(3, x)), 3), -1))))
 2*Length(FindIndependentEdgeSet(PetersenGraph()))===VertexCount(PetersenGraph())	!syntax@47: Too much closing ) in factor.
-2*Quantity(1, "ft")	!syntax@13: ')' expected.
 2*x^2 / x^2	Times(2, Times(Power(x, 2), Power(Power(x, 2), -1)))
 2;;-2 // FullForm	Span(2, FullForm(-2))
 2^3+3^3+4^3+6^3+10^3+19^3	Plus(Power(2, 3), Power(3, 3), Power(4, 3), Power(6, 3), Power(10, 3), Power(19, 3))
@@ -130,6 +132,7 @@ A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}; MatrixForm(A)	CompoundExpression(Set(A, L
 A = {{1, 2}, {3, 4}}	Set(A, List(List(1, 2), List(3, 4)))
 A = {{a, b, c}, {d, e, f}}	Set(A, List(List(a, b, c), List(d, e, f)))
 AASTriangle(Pi/2, Pi/3, b)	!syntax@17: ')' expected.
+ARMAProcess(x)	Times(ARMAProcess, x)
 ASATriangle(Pi/2, b, Pi/3)	!syntax@17: ')' expected.
 A[[1, 2]] = 5	Set(Part(A, 1, 2), 5)
 A[[1]] + B[[2]] + C[[3]] // Hold // FullForm	FullForm(Hold(Plus(Part(A, 1), Part(B, 2), Part(C, 3))))
@@ -139,6 +142,7 @@ AbortProtect(x)	Times(AbortProtect, x)
 Abs(-3)	Times(Abs, -3)
 Abs(Complex(3, 4))	!syntax@14: ')' expected.
 Abs(VectorAngle(Projection(u, v), v)) < (0.0 + 10^-7)	!syntax@29: ')' expected.
+Abs(f(1.1, 0.7) - Sin(1.1)*Cos(0.7)) < 10^-3	!syntax@10: ')' expected.
 AbsArg(I)	Times(AbsArg, I)
 AbsoluteFileName(x)	Times(AbsoluteFileName, x)
 AbsoluteTime("6 June 1991")	Times(AbsoluteTime, 6 June 1991)
@@ -166,16 +170,33 @@ Adjugate({{-3,2,-5}, {-1,0,-2}, {3,-4,1}})	Times(Adjugate, List(List(-3, 2, -5),
 AffineTransform({{2, 0}, {0, 2}})	Times(AffineTransform, List(List(2, 0), List(0, 2)))
 AffineTransform({{a, b}, {c, d}})[{x, y}]	Times(AffineTransform, List(List(a, b), List(c, d))[List(x, y)])
 AffineTransform({{{1, 0}, {0, 1}}, {1, 2}})	Times(AffineTransform, List(List(List(1, 0), List(0, 1)), List(1, 2)))
+AiryAiZero(2.0)	Times(AiryAiZero, 2.0)
+AlgebraicNumber((1+I)/2,{1,3})	!syntax@24: ')' expected.
+AlgebraicNumber(3,{1,2})	!syntax@18: ')' expected.
+AlgebraicNumber(3^(1/5),{1,2,1,3,3,1})	!syntax@24: ')' expected.
+AlgebraicNumber(Sqrt(2),{1,1/2})+AlgebraicNumber(Sqrt(2),{1,2})	!syntax@24: ')' expected.
+AlgebraicNumberDenominator((1+3*I)^(-1/3))	Times(AlgebraicNumberDenominator, Power(Plus(1, Times(3, I)), -1/3))
+AlgebraicNumberDenominator((1+Sqrt(5))/2)	Times(AlgebraicNumberDenominator, Times(1/2, Plus(1, Times(Sqrt, 5))))
+AlgebraicNumberDenominator(1/5+Sqrt(2))	Times(AlgebraicNumberDenominator, Plus(1/5, Times(Sqrt, 2)))
+AlgebraicNumberDenominator(1/Sqrt(3))	Times(AlgebraicNumberDenominator, Times(Power(Sqrt, -1), 3))
 AlgebraicNumberNorm(1+Sqrt(2))	Times(AlgebraicNumberNorm, Plus(1, Times(Sqrt, 2)))
+AlgebraicNumberNorm(2,Extension->Sqrt(5))	!syntax@22: ')' expected.
 AlgebraicNumberNorm(2^(1/3))	Times(AlgebraicNumberNorm, Power(2, 1/3))
 AlgebraicNumberNorm(Sqrt(2))	Times(AlgebraicNumberNorm, Times(Sqrt, 2))
+AlgebraicNumberNorm(Sqrt(2),Extension->E^(Pi*I/4))	!syntax@28: ')' expected.
+AlgebraicNumberNorm(Sqrt(5),Extension->Sqrt(5))	!syntax@28: ')' expected.
+AlgebraicNumberPolynomial(1/2,x)	!syntax@30: ')' expected.
+AlgebraicNumberPolynomial(AlgebraicNumber(Sqrt(2),{1,2}),x)	!syntax@50: ')' expected.
+AlgebraicNumberPolynomial({2,AlgebraicNumber(Sqrt(2),{1,2})},x)	!syntax@53: ')' expected.
 AlgebraicNumberQ(1.5)	Times(AlgebraicNumberQ, 1.5)
 AlgebraicNumberQ(2^(1/3) + Sqrt(5))	Times(AlgebraicNumberQ, Plus(Power(2, 1/3), Times(Sqrt, 5)))
 AlgebraicNumberQ(Pi)	Times(AlgebraicNumberQ, Pi)
 AlgebraicNumberQ(Root(-2 + #1^3&, 1))	!syntax@33: ')' expected.
 AlgebraicNumberQ({1, Sqrt(2), x})	Times(AlgebraicNumberQ, List(1, Times(Sqrt, 2), x))
+AlgebraicNumberTrace((1+Sqrt(2))/2,Extension->Sqrt(2))	!syntax@35: ')' expected.
 AlgebraicNumberTrace((1+Sqrt(5))/2)	Times(AlgebraicNumberTrace, Times(1/2, Plus(1, Times(Sqrt, 5))))
 AlgebraicNumberTrace(1+Sqrt(2))	Times(AlgebraicNumberTrace, Plus(1, Times(Sqrt, 2)))
+AlgebraicNumberTrace(3,Extension->Sqrt(2)+Sqrt(3))	!syntax@23: ')' expected.
 AlgebraicNumberTrace(Sqrt(2))	Times(AlgebraicNumberTrace, Times(Sqrt, 2))
 AlgebraicUnitQ((1+Sqrt(5))/2)	Times(AlgebraicUnitQ, Times(1/2, Plus(1, Times(Sqrt, 5))))
 AlgebraicUnitQ(1+Sqrt(2))	Times(AlgebraicUnitQ, Plus(1, Times(Sqrt, 2)))
@@ -234,6 +255,7 @@ Apply(f, {a, b, c}, {0})	!syntax@8: ')' expected.
 Apply(f, {{{{{a}}}}}, {2, -3})	!syntax@8: ')' expected.
 ApplySides(Log, E^2==b)	!syntax@15: ')' expected.
 ApplySides(f, a==a)	!syntax@13: ')' expected.
+ApplyTo(x)	Times(ApplyTo, x)
 ArcCos(0)	Times(ArcCos, 0)
 ArcCos(1)	Times(ArcCos, 1)
 ArcCosh(0)	Times(ArcCosh, 0)
@@ -276,46 +298,27 @@ ArcTanh(.5 + 2*I)	Times(ArcTanh, Plus(.5, Times(2, I)))
 ArcTanh(0)	Times(ArcTanh, 0)
 ArcTanh(1)	Times(ArcTanh, 1)
 ArcTanh(2+I)	Times(ArcTanh, Plus(2, I))
-Area(Annulus({0,0},{1,2}))	!syntax@19: ')' expected.
 Area(ArrayMesh({{1, 0}, {0, 1}}))	Times(Area, Times(ArrayMesh, List(List(1, 0), List(0, 1))))
-Area(Circle())	!syntax@13: Too much closing ) in factor.
 Area(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))	Times(Area, Times(ConvexHullMesh, List(List(0, 0), List(2, 0), List(2, 2), List(0, 2))))
-Area(Cuboid())	!syntax@13: Too much closing ) in factor.
 Area(DelaunayMesh({{0, 0}, {2, 0}, {0, 2}, {2, 2}}))	Times(Area, Times(DelaunayMesh, List(List(0, 0), List(2, 0), List(0, 2), List(2, 2))))
-Area(Disk(), WorkingPrecision -> 20)	!syntax@11: Too much closing ) in factor.
 Area(Disk({1,2}))	Times(Area, Times(Disk, List(1, 2)))
 Area(DiskSegment({0, 0}, 1, {0, Pi/2}))	!syntax@24: ')' expected.
 Area(DiskSegment({0, 0}, 1, {0, Pi}))	!syntax@24: ')' expected.
 Area(DiskSegment({0, 0}, {r1, r2}, {0, Pi/3}))	!syntax@24: ')' expected.
 Area(HalfSpace({1, 0}, 2))	!syntax@22: ')' expected.
 Area(Parallelogram({0, 0}, {{2, 0}, {1, 3}}))	!syntax@26: ')' expected.
-Area(Point({1,2}))	Times(Area, Times(Point, List(1, 2)))
-Area(Polygon({{0, 0, 0}, {4, 0, 0}, {4, 4, 0}, {0, 4, 0}} -> {{1, 1, 0}, {3, 1, 0}, {3, 3, 0}, {1, 3, 0}}))	Times(Area, Times(Polygon, Rule(List(List(0, 0, 0), List(4, 0, 0), List(4, 4, 0), List(0, 4, 0)), List(List(1, 1, 0), List(3, 1, 0), List(3, 3, 0), List(1, 3, 0)))))
-Area(Polygon({{0, 0}, {4, 0}, {4, 4}, {0, 4}} -> {{{1, 1}, {3, 1}, {3, 3}, {1, 3}}}))	Times(Area, Times(Polygon, Rule(List(List(0, 0), List(4, 0), List(4, 4), List(0, 4)), List(List(List(1, 1), List(3, 1), List(3, 3), List(1, 3))))))
-Area(Polygon({{0,0,0},{1,0,0},{0,1,0}}))	Times(Area, Times(Polygon, List(List(0, 0, 0), List(1, 0, 0), List(0, 1, 0))))
-Area(Polygon({{0,0},{4,0},{4,3},{0,3}}))	Times(Area, Times(Polygon, List(List(0, 0), List(4, 0), List(4, 3), List(0, 3))))
-Area(Polygon({{{0, 0}, {1, 0}, {0, 1}}, {{1, 1}, {2, 1}, {1, 2}}}))	Times(Area, Times(Polygon, List(List(List(0, 0), List(1, 0), List(0, 1)), List(List(1, 1), List(2, 1), List(1, 2)))))
-Area(Rectangle({0,0},{3,4}))	!syntax@21: ')' expected.
-Area(Rectangle({0,0},{a,b}))	!syntax@21: ')' expected.
-Area(Rectangle({0,0},{a,b}), Assumptions -> a>0 && b>0)	!syntax@21: ')' expected.
-Area(RegularPolygon(6))	Times(Area, Times(RegularPolygon, 6))
-Area(Simplex(2))	Times(Area, Times(Simplex, 2))
-Area(Sphere({0,0,0},2))	!syntax@20: ')' expected.
 Area(StadiumShape({{0, 0}, {4, 0}}, 2))	!syntax@35: ')' expected.
-Area(Torus())	!syntax@12: Too much closing ) in factor.
-Area(Triangle({{0,0},{1,0},{0,1}}))	Times(Area, Times(Triangle, List(List(0, 0), List(1, 0), List(0, 1))))
 Area(TriangleConstruct(Triangle({{0, 0}, {4, 0}, {0, 3}}), "AntimedialTriangle"))	!syntax@58: ')' expected.
 Area(reg)	Times(Area, reg)
-Area({Sin(u)*Cos(v), Sin(u)*Sin(v), Cos(u)}, {u,0,Pi}, {v,0,2*Pi})	!syntax@44: ')' expected.
-Area({r*Cos(t), r*Sin(t)}, {r,0,1}, {t,0,2*Pi})	!syntax@26: ')' expected.
-Area({r*Cos(t), r*Sin(t)}, {r,0,1}, {t,0,4*Pi})	!syntax@26: ')' expected.
-Area({s, t}, {s,0,3}, {t,0,4})	!syntax@12: ')' expected.
 Arg(1+I)	Times(Arg, Plus(1, I))
 Arg(DirectedInfinity(1+I))	Times(Arg, Times(DirectedInfinity, Plus(1, I)))
 ArgMax(x*10-x^2, x)	!syntax@16: ')' expected.
 ArgMin(x*10+x^2, x)	!syntax@16: ')' expected.
 ArithmeticGeometricMean({1.0, 2.0, 3.0, 4.0}, 42.0)	!syntax@45: ')' expected.
-Around(x)	Times(Around, x)
+Around(1, 0.1) + Around(2, 0.2)	!syntax@9: ')' expected.
+Around(2, 0.1)	!syntax@9: ')' expected.
+Around(2, {0.1, 0.3})	!syntax@9: ')' expected.
+Around({1, 2, 3, 4})	Times(Around, List(1, 2, 3, 4))
 AroundReplace(x)	Times(AroundReplace, x)
 Array(Cos(#/4)&, 12, 4)	!syntax@16: ')' expected.
 Array(Cos(#/4)&, 12, 4, Min)	!syntax@16: ')' expected.
@@ -339,7 +342,6 @@ ArrayPad({1, 2, 3, 4, 5}, -1)	!syntax@25: ')' expected.
 ArrayPad({a, b, c}, 1, x)	!syntax@19: ')' expected.
 ArrayPlot(RandomReal(1, {10, 20}))	!syntax@23: ')' expected.
 ArrayPlot({{0.25, 0.75, 3}}, ColorFunction -> (GrayLevel(#)&), ColorFunctionScaling -> False)	!syntax@28: ')' expected.
-ArrayPlot({{1, 2, 3}, {3, 2, 1}})	Times(ArrayPlot, List(List(1, 2, 3), List(3, 2, 1)))
 ArrayQ(a)	Times(ArrayQ, a)
 ArrayQ({a})	Times(ArrayQ, List(a))
 ArrayQ({{a, b}, {c, d}}, 2, SymbolQ)	!syntax@24: ')' expected.
@@ -360,6 +362,7 @@ ArraySymbol(a, {2, 3, 4}) - ArraySymbol(a, {2, 3, 4})	!syntax@14: ')' expected.
 AssociateTo(assoc, "A" -> 11)	!syntax@18: ')' expected.
 Association({a -> x, b -> y})	Times(Association, List(Rule(a, x), Rule(b, y)))
 Association({akey->avalue, bkey->bvalue, ckey->cvalue})	Times(Association, List(Rule(akey, avalue), Rule(bkey, bvalue), Rule(ckey, cvalue)))
+AssociationComap(x)	Times(AssociationComap, x)
 AssociationMap(Reverse,<|U->1,V->2|>)	!syntax@23: ')' expected.
 AssociationMap(f,{U,V})	!syntax@17: ')' expected.
 AssociationQ(<|a -> 1, b :> 2|>)	Times(AssociationQ, Association(List(Rule(a, 1), RuleDelayed(b, 2))))
@@ -384,6 +387,7 @@ AstroStyling(x)	Times(AstroStyling, x)
 AstroSubpoint("Sun", DateObject({2026,12,21,12,0,0}))	!syntax@20: ')' expected.
 AstroSubpoint("Sun", DateObject({2026,6,21,12,0,0}))	!syntax@20: ')' expected.
 AstroZoomLevel(x)	Times(AstroZoomLevel, x)
+AstronomicalData(x)	Times(AstronomicalData, x)
 Asymptotic(Tan(x), {x, 0, 5})	!syntax@18: ')' expected.
 AsymptoticDSolveValue({y'(x) == y(x), y(0) == 1}, y(x), {x, 0, 3})	!syntax@49: ')' expected.
 AsymptoticIntegrate(Cos(t), t->0)	!syntax@27: ')' expected.
@@ -401,7 +405,6 @@ AtomQ(x)	Times(AtomQ, x)
 Attributes(E)	Times(Attributes, E)
 Attributes(Hold)	Times(Attributes, Hold)
 Attributes(HoldComplete)	Times(Attributes, HoldComplete)
-Attributes(KroneckerProduct)	Times(Attributes, KroneckerProduct)
 Attributes(LogisticSigmoid)	Times(Attributes, LogisticSigmoid)
 Attributes(MatrixSymbol)	Times(Attributes, MatrixSymbol)
 Attributes(Plus)	Times(Attributes, Plus)
@@ -534,6 +537,7 @@ BooleanQ(False)	Times(BooleanQ, False)
 BooleanQ(Together(x/y + y/x))	Times(BooleanQ, Times(Together, Plus(Times(x, Power(y, -1)), Times(y, Power(x, -1)))))
 BooleanQ(True)	Times(BooleanQ, True)
 BooleanQ(a)	Times(BooleanQ, a)
+BooleanRegion(x)	Times(BooleanRegion, x)
 BooleanTable(Implies(Implies(p, q), r), {p, q, r})	!syntax@31: ')' expected.
 BooleanTable(Xor(p, q, r), {p, q, r})	!syntax@19: ')' expected.
 BooleanVariables(Xor(p,q,r))	!syntax@23: ')' expected.
@@ -554,7 +558,8 @@ BoxStyle(x)	Times(BoxStyle, x)
 BoxWhiskerChart(RandomVariate(NormalDistribution(0, 1), 50))	!syntax@51: ')' expected.
 BrayCurtisDistance({-1, -1}, {10, 10})	!syntax@28: ')' expected.
 Brown	Brown
-BubbleChart(x)	Times(BubbleChart, x)
+BubbleChart(RandomReal(1, {10, 3}), ChartElementFunction -> "NoiseBubble")	!syntax@25: ')' expected.
+BubbleChart({{1, 1, 1}, {2, 2, 4}, {3, 1, 9}})	Times(BubbleChart, List(List(1, 1, 1), List(2, 2, 4), List(3, 1, 9)))
 ButtonBar(x)	Times(ButtonBar, x)
 ByteArray({1,2,3})	Times(ByteArray, List(1, 2, 3))
 ByteArrayQ(ByteArray("xyz"))	Times(ByteArrayQ, Times(ByteArray, xyz))
@@ -563,10 +568,13 @@ ByteArrayQ(Range(3))	Times(ByteArrayQ, Times(Range, 3))
 ByteArrayToString(ba2)	Times(ByteArrayToString, ba2)
 CDF(BernoulliDistribution(p), x)	!syntax@29: ')' expected.
 CDF(BinomialDistribution(n, p), x)	!syntax@27: ')' expected.
+CDF(InverseGammaDistribution(a, b), x)	!syntax@31: ')' expected.
 CDF(LogisticDistribution(a,b), x)	!syntax@27: ')' expected.
 CDF(NormalDistribution( ), x)	!syntax@25: Too much closing ) in factor.
 CDF(NormalDistribution(),-0.41)	!syntax@24: Too much closing ) in factor.
 CDF(QuantityDistribution(NormalDistribution(0, 1), "Meters"), Quantity(0, "Centimeters"))	!syntax@46: ')' expected.
+CDF(SkewNormalDistribution(0, 1, 2), 0.5)	!syntax@29: ')' expected.
+CDF(SkewNormalDistribution(m, s, a), x)	!syntax@29: ')' expected.
 CachedValue(x)	Times(CachedValue, x)
 CalendarConvert(DateObject({1582, 10, 15}), "Julian")	!syntax@43: ')' expected.
 CalendarConvert(DateObject({2000, 1, 1}), "Julian")	!syntax@41: ')' expected.
@@ -578,6 +586,7 @@ Cancel(f(x) / x + x * f(x) / x ^ 2)	Times(Cancel, Plus(Times(f, Times(x, Power(x
 Cancel(x / x ^ 2 + y / y ^ 2)	Times(Cancel, Plus(Times(x, Power(Power(x, 2), -1)), Times(y, Power(Power(y, 2), -1))))
 Cancel(x / x ^ 2)	Times(Cancel, Times(x, Power(Power(x, 2), -1)))
 CandlestickChart(x)	Times(CandlestickChart, x)
+CanonicalGraph(x)	Times(CanonicalGraph, x)
 CantorMesh(0)	Times(CantorMesh, 0)
 CantorMesh(1)	Times(CantorMesh, 1)
 Cap(x)	Times(Cap, x)
@@ -668,6 +677,7 @@ Chop(0.00000000001)	Times(Chop, 0.00000000001)
 CircleMinus(x)	Times(CircleMinus, x)
 CirclePlus(x)	Times(CirclePlus, x)
 CirclePoints(4)	Times(CirclePoints, 4)
+CirculantGraph(x)	Times(CirculantGraph, x)
 CircularArcThrough({{0,0}, {1,1}})	Times(CircularArcThrough, List(List(0, 0), List(1, 1)))
 CircularArcThrough({{0,0}, {2,0}}, {1,0}, 1)	!syntax@34: ')' expected.
 CircularArcThrough({{1,0}, {0,1}, {-1,0}})	Times(CircularArcThrough, List(List(1, 0), List(0, 1), List(-1, 0)))
@@ -681,16 +691,8 @@ ClearAll(f,g)	!syntax@11: ')' expected.
 ClearAll(x)	Times(ClearAll, x)
 ClearAttributes(f, Flat)	!syntax@18: ')' expected.
 ClearAttributes({f}, {Flat})	!syntax@20: ')' expected.
-ClebschGordan({1, m}, {1, 0}, {2, 1})	!syntax@21: ')' expected.
-ClebschGordan({1.0, 0}, {1, 0}, {2, 0})	!syntax@23: ')' expected.
-ClebschGordan({1/2, 1/2}, {1, 0}, {1, 1/2})	!syntax@25: ')' expected.
 ClebschGordan({3/2, -3/2}, {3/2, 3/2}, {1, 0})	!syntax@26: ')' expected.
 ClickPane(x)	Times(ClickPane, x)
-Clip(-5, {0, Infinity})	!syntax@8: ')' expected.
-Clip(5, {-Infinity, 0})	!syntax@7: ')' expected.
-Clip(Interval({-3, 5}))	Times(Clip, Times(Interval, List(-3, 5)))
-Clip(IntervalData({-3, Less, Less, 5}))	Times(Clip, Times(IntervalData, List(-3, Less, Less, 5)))
-Clip(IntervalData({-5, Less, Less, -1}))	Times(Clip, Times(IntervalData, List(-5, Less, Less, -1)))
 Clip(Sin(Pi/7))	Times(Clip, Times(Sin, Times(1/7, Pi)))
 Clip(Tan(-2*E))	Times(Clip, Times(Tan, Times(-2, E)))
 Clip(Tan(-2*E), {-1/2,1/2})	!syntax@15: ')' expected.
@@ -701,8 +703,6 @@ Clip(Tan(2*E), {-1/2,1/2}, {a,b})	!syntax@14: ')' expected.
 Clip(Tan(E))	Times(Clip, Times(Tan, E))
 Clip(Tan(E), {-1/2,1/2}, {a,b})	!syntax@12: ')' expected.
 Clip(x)	Times(Clip, x)
-Clip({-2, 0, 2})	Times(Clip, List(-2, 0, 2))
-Clip({-5, 1, 3.5}, {0, Infinity})	!syntax@18: ')' expected.
 ClipPlanes(x)	Times(ClipPlanes, x)
 ClipPlanesStyle(x)	Times(ClipPlanesStyle, x)
 ClippingStyle(x)	Times(ClippingStyle, x)
@@ -732,8 +732,6 @@ Cofactor({{6, 0, 4, 9, 5}, {1, 9, 3, 1, 2}, {5, 4, 5, 3, 8}, {3, 9, 8, 2, 5}, {4
 Collect(a*Exp(2*x) + b*Exp(2*x), Exp(2*x))	!syntax@32: ')' expected.
 Collect(a*x^2 + b*x^2 + a*x - b*x + c, x)	!syntax@38: ')' expected.
 Collect(x^2 + y*x^2 + x*y + y + a*y, {x, y})	!syntax@36: ')' expected.
-CollinearPoints({{0,0}, {1,0}, {1,0}, {0,1}})	Times(CollinearPoints, List(List(0, 0), List(1, 0), List(1, 0), List(0, 1)))
-CollinearPoints({{0,0}, {1,1}, {2,2}, {3,3}})	Times(CollinearPoints, List(List(0, 0), List(1, 1), List(2, 2), List(3, 3)))
 CollinearPoints({{1,2,3}, {3,8,1}, {7,20,-3}})	Times(CollinearPoints, List(List(1, 2, 3), List(3, 8, 1), List(7, 20, -3)))
 ColorCombine(x)	Times(ColorCombine, x)
 ColorConvert(x)	Times(ColorConvert, x)
@@ -764,7 +762,6 @@ Compile({{x, _Real}}, x^2 + 1)[a]	!syntax@21: ')' expected.
 Compile({{x, _Real}}, x^2 + 1, RuntimeOptions -> {"EvaluateSymbolically" -> False})[a]	!syntax@21: ')' expected.
 Compile({{x, _Real}}, x^2, CompilationTarget -> "C")[3.]	!syntax@21: ')' expected.
 Compile({{x, _Real}}, x^2, Parallelization -> True)[3.]	!syntax@21: ')' expected.
-Compile({{x, _Real}}, x^2, RuntimeAttributes -> {Listable}, RuntimeOptions -> "Speed")[3.]	!syntax@21: ')' expected.
 Complement({1,2,3},{2,3,4})	!syntax@19: ')' expected.
 Complement({2,3,4},{1,2,3})	!syntax@19: ')' expected.
 Complement({3, 2, 7, 5, 2, 2, 3, 4, 5, 6, 1}, {2, 3}, {4, 6, 27, 23})	!syntax@45: ')' expected.
@@ -789,19 +786,16 @@ ComplexPlot(Exp(1/z), {z, -1 - I, 1 + I}, ColorFunction -> "None")	!syntax@21: '
 ComplexPlot(z, {z, -1 - I, 1 + I}, ColorFunction -> {Hue(#8)&, None})	!syntax@14: ')' expected.
 ComplexPlot(z, {z, -2 - 2*I, 2 + 2*I}, RegionFunction -> Function({z, f}, Abs(z) < 2))	!syntax@14: ')' expected.
 ComplexPlot3D(Gamma(z), {z, -4.9-4.9*I,4.9+4.9*I}, PlotRange->{0,8.0})	!syntax@23: ')' expected.
-ComplexPlot3D(z^2, {z, -1-I, 1+I}, ColorFunction -> "CyclicLogAbsArg")	!syntax@18: ')' expected.
 ComplexRegionPlot(x)	Times(ComplexRegionPlot, x)
 ComplexStreamPlot(x)	Times(ComplexStreamPlot, x)
 ComplexVectorPlot(x)	Times(ComplexVectorPlot, x)
 ComponentExpand(Det(MatrixSymbol(g, {2, 2})))	!syntax@35: ')' expected.
-ComponentExpand(MatrixSymbol(q, {2, 2}, Reals, Antisymmetric({1, 2})))	!syntax@31: ')' expected.
+ComponentExpand(MatrixSymbol(g, {2, 2}, Reals, Antisymmetric({1, 2})))	!syntax@31: ')' expected.
 ComponentExpand(VectorSymbol(v, 3))	!syntax@31: ')' expected.
 ComponentMeasurements(x)	Times(ComponentMeasurements, x)
 ComposeList({f,g,h}, x)	!syntax@20: ')' expected.
 ComposeSeries(SeriesData(x, 0, {1, 3}, 2, 4, 1), SeriesData(x, 0, {1, 1,0,0}, 0, 4, 1) - 1)	!syntax@27: ')' expected.
 CompositeQ(Range(20))	Times(CompositeQ, Times(Range, 20))
-Composition(TranslationTransform({1, 2}), RotationTransform(Pi/2))	!syntax@41: ')' expected.
-Composition(TranslationTransform({1, 2}), RotationTransform(Pi/2))[{1, 0}]	!syntax@41: ')' expected.
 Composition(u, v, w)[x, y]	!syntax@14: ')' expected.
 CompressionLevel(x)	Times(CompressionLevel, x)
 ConditionalExpression(Sin(x)^2, 42==1)	!syntax@31: ')' expected.
@@ -822,6 +816,7 @@ ConnectedMoleculeQ(Molecule("CCO"))	Times(ConnectedMoleculeQ, Times(Molecule, CC
 ConnectedMoleculeQ(Molecule("CCO.O"))	Times(ConnectedMoleculeQ, Times(Molecule, CCO.O))
 ConstantArray(a, 3)	!syntax@16: ')' expected.
 ConstantArray(a, {2, 3})	!syntax@16: ')' expected.
+ConstantImage(x)	Times(ConstantImage, x)
 ConstantRegionQ(42)	Times(ConstantRegionQ, 42)
 ConstantRegionQ(Disk({0,0},2))	!syntax@27: ')' expected.
 ConstantRegionQ(Disk({0,0},r))	!syntax@27: ')' expected.
@@ -873,14 +868,15 @@ ConvexRegionQ(ConvexHullMesh({{0,0},{2,0},{2,2},{0,2}}))	Times(ConvexRegionQ, Ti
 ConvexRegionQ(Disk())	!syntax@20: Too much closing ) in factor.
 ConvexRegionQ(Polygon({{0,0},{2,0},{1,1/10},{2,2},{0,2}}))	Times(ConvexRegionQ, Times(Polygon, List(List(0, 0), List(2, 0), List(1, 1/10), List(2, 2), List(0, 2))))
 Convolve(DiracDelta(x), Sin(x), x, y)	!syntax@23: ')' expected.
+Convolve(E^(-(x-2)^2), E^(-(x-1)^2), x, y)	!syntax@22: ')' expected.
 Convolve(E^(-x^2), E^(-x^2), x, y)	!syntax@18: ')' expected.
+Convolve(PDF(NormalDistribution(0, 1), x - t), PDF(NormalDistribution(0, 1), x - s), x, y)	!syntax@34: ')' expected.
 Convolve(UnitBox(x), UnitBox(x), x, y)	!syntax@20: ')' expected.
 Convolve(UnitStep(x), UnitStep(x), x, y)	!syntax@21: ')' expected.
 CoordinateBoundingBox({{0, 1}, {2, 3}, {3,4}, {2, 3}, {1,1}})	Times(CoordinateBoundingBox, List(List(0, 1), List(2, 3), List(3, 4), List(2, 3), List(1, 1)))
 CoordinateBoundingBox({{a,b,u}, {c,d,v}, {e,f,w}},Scaled(1/4))	!syntax@50: ')' expected.
 CoplanarPoints( {{0,-1,-1}, {4,5,1}, {3,9,4}, {-4,4,3}})	Times(CoplanarPoints, List(List(0, -1, -1), List(4, 5, 1), List(3, 9, 4), List(-4, 4, 3)))
 CoplanarPoints( {{3,2,-5}, {-1,4,-3}, {-3,8,-5}, {-3,2,1}})	Times(CoplanarPoints, List(List(3, 2, -5), List(-1, 4, -3), List(-3, 8, -5), List(-3, 2, 1)))
-CoplanarPoints({{0,0,0}, {1,0,0}, {1,0,0}, {0,1,0}, {0,0,1}})	Times(CoplanarPoints, List(List(0, 0, 0), List(1, 0, 0), List(1, 0, 0), List(0, 1, 0), List(0, 0, 1)))
 CoprimeQ(-4, 9)	!syntax@12: ')' expected.
 CoprimeQ(12, 15)	!syntax@12: ')' expected.
 CoprimeQ(2, 3, 5)	!syntax@11: ')' expected.
@@ -913,11 +909,13 @@ Count(AstroGraphics(AstroProjection->"Orthographic", AstroRange->Quantity(89,"An
 Count(MoleculePlot3D(Molecule("CCO")), _Cylinder, Infinity)	!syntax@38: ')' expected.
 Count(MoleculePlot3D(Molecule("CCO"), PlotTheme -> "SpaceFilling"), _Cylinder, Infinity)	!syntax@37: ')' expected.
 Count(PeriodicTablePlot(), _Rectangle, Infinity)	!syntax@25: Too much closing ) in factor.
-Count(Table(ElementData(z, "Phase"), {z, 118}), "Gas")	!syntax@26: ')' expected.
 Count({3, 7, 10, 7, 5, 3, 7, 10}, 3)	!syntax@33: ')' expected.
 Count({{a, a}, {a, a, a}, a}, a, {2})	!syntax@29: ')' expected.
 CountDistinct({3, 7, 10, 7, 5, 3, 7, 10})	Times(CountDistinct, List(3, 7, 10, 7, 5, 3, 7, 10))
 CountDistinct({{a, a}, {a, a, a}, a, a})	Times(CountDistinct, List(List(a, a), List(a, a, a), a, a))
+CountDistinctBy(x)	Times(CountDistinctBy, x)
+CountRoots((x-1)^2*(x+2), x)	!syntax@25: ')' expected.
+CountRoots(x^3-x, {x, 0, 1})	!syntax@17: ')' expected.
 Counts({1,2,3,4,5,6,7,8,9,7,5,4,5,6,7,3,2,1,3,4,5,2,2,2,3,3,3,3,3})	Times(Counts, List(1, 2, 3, 4, 5, 6, 7, 8, 9, 7, 5, 4, 5, 6, 7, 3, 2, 1, 3, 4, 5, 2, 2, 2, 3, 3, 3, 3, 3))
 Covariance({0.2, 0.3, 0.1}, {0.3, 0.3, -0.2})	!syntax@27: ')' expected.
 Covariance({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})	!syntax@50: ')' expected.
@@ -958,7 +956,13 @@ D((#1&)(t),{t,4})	!syntax@11: ')' expected.
 D(2/3*Cos(x) - 1/3*x*Cos(x)*Sin(x) ^ 2,x)//Expand	!syntax@39: ')' expected.
 D(Abs(x), x)	!syntax@9: ')' expected.
 D(Cos(t), {t, 2})	!syntax@9: ')' expected.
+D(MathieuC(a, q, z), z)	!syntax@13: ')' expected.
+D(MathieuCPrime(a, q, z), z)	!syntax@18: ')' expected.
+D(MathieuS(a, q, z), z)	!syntax@13: ')' expected.
+D(MathieuSPrime(a, q, z), z)	!syntax@18: ')' expected.
 D(MatrixSymbol(a, {2, 2}), MatrixSymbol(a, {2, 2}))	!syntax@17: ')' expected.
+D(OwenT(x, a), a)	!syntax@10: ')' expected.
+D(OwenT(x, a), x)	!syntax@10: ')' expected.
 D(RealAbs(x), x)	!syntax@13: ')' expected.
 D(Sin(Cos(x)), x)	!syntax@14: ')' expected.
 D(Sin(x) * Cos(y), {{x,y}, 2})	!syntax@18: ')' expected.
@@ -1044,15 +1048,11 @@ DateList(DateObject({2026, 3}))	Times(DateList, Times(DateObject, List(2026, 3))
 DateList({"31/10/91", {"Day", "Month", "YearShort"}})	Times(DateList, List(31/10/91, List(Day, Month, YearShort)))
 DateList({2012, 1, 300., 10})	Times(DateList, List(2012, 1, 300., 10))
 DateListLogPlot(x)	Times(DateListLogPlot, x)
-DateListPlot(x)	Times(DateListPlot, x)
+DateListPlot({{DateObject({2022, 12}), 1}, {DateObject({2023, 12}), 2}, {DateObject({2026, 9, 11}), 3}})	Times(DateListPlot, List(List(Times(DateObject, List(2022, 12)), 1), List(Times(DateObject, List(2023, 12)), 2), List(Times(DateObject, List(2026, 9, 11)), 3)))
+DateListPlot({{{2020, 1, 1}, 1}, {{2020, 7, 1}, 4}, {{2021, 1, 1}, 2}})	Times(DateListPlot, List(List(List(2020, 1, 1), 1), List(List(2020, 7, 1), 4), List(List(2021, 1, 1), 2)))
 DateListStepPlot(x)	Times(DateListStepPlot, x)
-DateObject("July 4, 1776")	Times(DateObject, July 4, 1776)
-DateObject({2020, 4, 15})	Times(DateObject, List(2020, 4, 15))
-DateObject({2024, 2, 29, 13, 5, 7}, "Month")	!syntax@35: ')' expected.
+DateObject({2016,8,1})	Times(DateObject, List(2016, 8, 1))
 DateObject({2024, 7, 4}) + Quantity(2, "Months")	!syntax@38: ')' expected.
-DateObject({2024})	Times(DateObject, List(2024))
-DateObject({2026, 1, 0})	Times(DateObject, List(2026, 1, 0))
-DateObject({2026, 13, 45})	Times(DateObject, List(2026, 13, 45))
 DateObjectQ("2026-07-04")	Times(DateObjectQ, 2026-07-04)
 DateObjectQ(DateObject({2026, 7, 4}))	Times(DateObjectQ, Times(DateObject, List(2026, 7, 4)))
 DateObjectQ(TimeObject({12, 30}))	Times(DateObjectQ, Times(TimeObject, List(12, 30)))
@@ -1070,18 +1070,8 @@ DateRange({2024, 1, 1}, {2024, 3, 1}, "Month")	!syntax@23: ')' expected.
 DateRange({2024, 1, 5}, {2024, 1, 1})	!syntax@23: ')' expected.
 DateSelect(DateInterval({{2020, 1, 1}, {2020, 1, 5}}), DateValue(#, "Day") < 3 &)	!syntax@54: ')' expected.
 DateSelect({DateObject({2020, 1, 1}), DateObject({2020, 6, 15}), DateObject({2021, 3, 1})}, DateValue(#, "Year") == 2020 &)	!syntax@91: ')' expected.
-DateString(0)	Times(DateString, 0)
-DateString(3155673600, "ISODate")	!syntax@22: ')' expected.
-DateString({1991, 10, 31}, {"Day", " ", "MonthName", " ", "Year"})	!syntax@26: ')' expected.
-DateString({2024, 12, 31}, "ISOWeekDate")	!syntax@26: ')' expected.
-DateString({2024, 3, 15, 9, 5, 0}, {"Hour12", ":", "Minute", " ", "AMPM"})	!syntax@34: ')' expected.
-DateString({2026, 2, 27, 19, 54, 40}, "ISODateTime")	!syntax@37: ')' expected.
-DateValue({2023, 1, 1}, "ISOWeek")	!syntax@23: ')' expected.
-DateValue({2023, 1, 1}, "ISOWeekYear")	!syntax@23: ')' expected.
-DateValue({2024, 6, 15}, "DayName")	!syntax@24: ')' expected.
-DateValue({2024, 6, 15}, "MonthName")	!syntax@24: ')' expected.
-DateValue({2024, 6, 15}, "Year")	!syntax@24: ')' expected.
-DateValue({2024, 6, 15}, {"Year", "Month", "Day"})	!syntax@24: ')' expected.
+DateString(3155673600)	Times(DateString, 3155673600)
+DateValue(DateObject({2016,8,1}), {"Year","Month","Day"})	!syntax@33: ')' expected.
 DateWithinQ(DateInterval({{2024, 1, 1}, {2024, 12, 31}}), DateObject({2024, 6, 15}))	!syntax@57: ')' expected.
 DateWithinQ(DateObject({2026, 7, 4}), DateObject({2026}))	!syntax@37: ')' expected.
 DateWithinQ(DateObject({2026}), DateObject({2026, 7, 4}))	!syntax@31: ')' expected.
@@ -1118,10 +1108,12 @@ DefaultDuration(x)	Times(DefaultDuration, x)
 DefaultValues /@ Names("xx*")	Times(Map(DefaultValues, Names), xx*)
 DefaultValues(tst)	Times(DefaultValues, tst)
 Defer(3*2)	Times(Defer, Times(3, 2))
+DefineOutputStreamMethod(x)	Times(DefineOutputStreamMethod, x)
 Definition(ArcSinh)	Times(Definition, ArcSinh)
 Definition(In)	Times(Definition, In)
 Definition(a)	Times(Definition, a)
 Degree == Pi / 180	Equal(Degree, Times(1/180, Pi))
+DegreeCentrality(x)	Times(DegreeCentrality, x)
 Deinitialization(x)	Times(Deinitialization, x)
 Del(x)	Times(Del, x)
 Delete({a, b, c, d}, -2)	!syntax@20: ')' expected.
@@ -1159,9 +1151,8 @@ DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)	!syntax@46: ')' expected
 DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)	!syntax@46: ')' expected.
 Det(LatticeReduce({{201,37},{1648,297}}))	Times(Det, Times(LatticeReduce, List(List(201, 37), List(1648, 297))))
 Det({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})	Times(Det, List(List(1, 1, 0), List(1, 0, 1), List(0, 1, 1)))
-Det({{1/x,1,0,1},{1,1/y,1,0},{0,1,1/z,1},{1,0,1,1/w}})	Times(Det, List(List(Power(x, -1), 1, 0, 1), List(1, Power(y, -1), 1, 0), List(0, 1, Power(z, -1), 1), List(1, 0, 1, Power(w, -1))))
-Det({{Sqrt(2),1,0,1},{1,Sqrt(3),1,0},{0,1,Sqrt(5),1},{1,0,1,Sqrt(7)}})	Times(Det, List(List(Times(Sqrt, 2), 1, 0, 1), List(1, Times(Sqrt, 3), 1, 0), List(0, 1, Times(Sqrt, 5), 1), List(1, 0, 1, Times(Sqrt, 7))))
 Det({{a, b, c}, {d, e, f}, {g, h, i}})	Times(Det, List(List(a, b, c), List(d, e, f), List(g, h, i)))
+Developer`RawUncompress(Developer`RawCompress({1,2,3,250}))	Times(RawUncompress, Times(RawCompress, List(1, 2, 3, 250)))
 Diagonal({{1,2,3},{4,5,6},{7,8,9}})	Times(Diagonal, List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9)))
 Diagonal({{1,2,3},{4,5,6},{7,8,9}}, -1)	!syntax@35: ')' expected.
 DiagonalMatrix(a + b)	Times(DiagonalMatrix, Plus(a, b))
@@ -1187,7 +1178,6 @@ DimensionalCombinations({QuantityVariable("Force"), QuantityVariable("Distance")
 DimensionalCombinations({QuantityVariable("Force")}, "Energy", IncludeQuantities -> {QuantityVariable("Distance")})	!syntax@52: ')' expected.
 Dimensions(ImageData(Image({{{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}}})))	Times(Dimensions, Times(ImageData, Times(Image, List(List(List(1.0, 0.0, 0.0), List(0.0, 1.0, 0.0))))))
 Dimensions(ImageData(Image({{{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}}}), Interleaving -> False))	!syntax@65: ')' expected.
-Dimensions(ListCorrelate(Array(k,{2,2,2}), Array(f,{4,3,5})))	!syntax@33: ')' expected.
 Dimensions(Normal(SymbolicIdentityArray({2, 3})))	Times(Dimensions, Times(Normal, Times(SymbolicIdentityArray, List(2, 3))))
 Dimensions({a, b, c})	Times(Dimensions, List(a, b, c))
 Dimensions({{a, b}, {b, c}, {c, d, e}})	Times(Dimensions, List(List(a, b), List(b, c), List(c, d, e)))
@@ -1197,6 +1187,7 @@ Dimensions({})	Times(Dimensions, List())
 Dimensions[f[f[a, b, c]]]	Dimensions(f(f(a, b, c)))
 DiracDelta(-42)	Times(DiracDelta, -42)
 DiracDelta(0)	Times(DiracDelta, 0)
+DirectedGraph(x)	Times(DirectedGraph, x)
 DirectedInfinity()	!syntax@18: Too much closing ) in factor.
 DirectedInfinity(1 + I)	Times(DirectedInfinity, Plus(1, I))
 DirectedInfinity(1)	Times(DirectedInfinity, 1)
@@ -1204,6 +1195,7 @@ DirectedInfinity(1) + DirectedInfinity(-1)	Plus(Times(DirectedInfinity, 1), Time
 Directory(x)	Times(Directory, x)
 DirectoryName(x)	Times(DirectoryName, x)
 DirectoryQ(x)	Times(DirectoryQ, x)
+Discard(x)	Times(Discard, x)
 DiscreteDelta(0, 0, 0.0)	!syntax@16: ')' expected.
 DiscreteLimit((-1)^n / n, n -> Infinity)	!syntax@25: ')' expected.
 DiscreteLimit((-1)^n, n -> Infinity)	!syntax@21: ')' expected.
@@ -1225,6 +1217,7 @@ DistanceTransform(x)	Times(DistanceTransform, x)
 Distribute((a+b)*(x+y+z))	Times(Distribute, Times(Plus(a, b), Plus(x, y, z)))
 Distribute(NonCommutativeMultiply(a + b, c), Plus, NonCommutativeMultiply)	!syntax@40: ')' expected.
 DistributionChart(x)	Times(DistributionChart, x)
+DistributionFitTest(x)	Times(DistributionFitTest, x)
 DistributionParameterQ(x)	Times(DistributionParameterQ, x)
 Dithering(x)	Times(Dithering, x)
 Div({x^2, y^3},{x, y})	!syntax@15: ')' expected.
@@ -1288,13 +1281,20 @@ DynamicModule({x = 2}, x^2)	!syntax@22: ')' expected.
 DynamicWrapper(x)	Times(DynamicWrapper, x)
 E == N(E)	Equal(E, Times(N, E))
 E > 1	Greater(E, 1)
+ECharts(ListLinePlot({1, 4, 9, 16}))	Times(ECharts, Times(ListLinePlot, List(1, 4, 9, 16)))
+ECharts(LogPlot(Exp(x), {x, 0, 5}))	!syntax@23: ')' expected.
+ECharts(Plot({Sin(x), Cos(x)}, {x, 0, 2*Pi}, PlotLegends -> {"sin", "cos"}))	!syntax@30: ')' expected.
+EccentricityCentrality(x)	Times(EccentricityCentrality, x)
 EchoLabel(x)	Times(EchoLabel, x)
 EclipseType(x)	Times(EclipseType, x)
+EdgeBetweennessCentrality(x)	Times(EdgeBetweennessCentrality, x)
+EdgeCapacity(x)	Times(EdgeCapacity, x)
 EdgeChromaticNumber(CompleteGraph(4))	Times(EdgeChromaticNumber, Times(CompleteGraph, 4))
 EdgeChromaticNumber(CompleteGraph(5))	Times(EdgeChromaticNumber, Times(CompleteGraph, 5))
 EdgeChromaticNumber(CycleGraph(4))	Times(EdgeChromaticNumber, Times(CycleGraph, 4))
 EdgeChromaticNumber(CycleGraph(5))	Times(EdgeChromaticNumber, Times(CycleGraph, 5))
 EdgeChromaticNumber(PetersenGraph())	!syntax@35: Too much closing ) in factor.
+EdgeConnectivity(x)	Times(EdgeConnectivity, x)
 EdgeCount(CompleteGraph(4))	Times(EdgeCount, Times(CompleteGraph, 4))
 EdgeCount(DualPlanarGraph(HypercubeGraph(3)))	Times(EdgeCount, Times(DualPlanarGraph, Times(HypercubeGraph, 3)))
 EdgeCoverQ(CycleGraph(4), {1<->2,3<->4})	!syntax@25: ')' expected.
@@ -1302,12 +1302,14 @@ EdgeCoverQ(CycleGraph(4), {1<->2})	!syntax@25: ')' expected.
 EdgeCoverQ(CycleGraph(4), {1<->3,2<->4})	!syntax@25: ')' expected.
 EdgeCoverQ(PetersenGraph(), FindEdgeCover(PetersenGraph()))	!syntax@26: Too much closing ) in factor.
 EdgeDetect(x)	Times(EdgeDetect, x)
+EdgeIndex(x)	Times(EdgeIndex, x)
 EdgeLabelStyle(x)	Times(EdgeLabelStyle, x)
 EdgeList(DualPlanarGraph(CycleGraph(4)))	Times(EdgeList, Times(DualPlanarGraph, Times(CycleGraph, 4)))
 EdgeList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))	Times(EdgeList, Times(Graph, List(Rule(1, 2), Rule(2, 3), Rule(1, 3), Rule(4, 2))))
 EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 3)	!syntax@46: ')' expected.
 EdgeQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),2 -> 4)	!syntax@46: ')' expected.
 EdgeRules(Graph({1 \\\\[UndirectedEdge] 2, 2 \\\\[UndirectedEdge] 3, 3 \\\\[UndirectedEdge] 1}))	!syntax@21: unexpected (named unicode) character: '\\[RawBackslash]'
+EdgeWeightedGraphQ(x)	Times(EdgeWeightedGraphQ, x)
 EditDistance("abc", "ac")	!syntax@19: ')' expected.
 EditDistance("abc", "acb")	!syntax@19: ')' expected.
 EditDistance("azbc", "abxyc")	!syntax@20: ')' expected.
@@ -1327,15 +1329,16 @@ Element(Sqrt(2) + 2^(1/3), Algebraics)	!syntax@26: ')' expected.
 Element(VectorSymbol(v, 3), Vectors(3))	!syntax@23: ')' expected.
 Element({1, Pi, I}, Vectors(3, Complexes))	!syntax@19: ')' expected.
 Element({1, Pi, I}, Vectors(3, Reals))	!syntax@19: ')' expected.
-ElementData("Br", "Phase")	!syntax@17: ')' expected.
 ElementData("Carbon", "IonizationEnergies")	!syntax@21: ')' expected.
-ElementData("He", "BoilingPoint")	!syntax@17: ')' expected.
-ElementData("He", "Electronegativity")	!syntax@17: ')' expected.
+ElementData("He", "AbsoluteBoilingPoint")	!syntax@17: ')' expected.
+ElementData("He", "ElectroNegativity")	!syntax@17: ')' expected.
+ElementData("Properties")	Times(ElementData, Properties)
 ElementData("Tc", "SpecificHeat")	!syntax@17: ')' expected.
-ElementData("Tungsten", "Density")	!syntax@23: ')' expected.
-ElementData(16, "ShortElectronicConfiguration")	!syntax@15: ')' expected.
-ElementData(73, "ElectronicConfiguration")	!syntax@15: ')' expected.
+ElementData(16, "ElectronConfigurationString")	!syntax@15: ')' expected.
+ElementData(73, "ElectronConfiguration")	!syntax@15: ')' expected.
 ElementData(74)	Times(ElementData, 74)
+Eliminate(2*x+3*y+4*z==1 && 9*x+8*y+7*z==2, z)	!syntax@43: ')' expected.
+Eliminate({f==x^5+y^5, a==x+y, b==x*y}, {x,y})	!syntax@39: ')' expected.
 Eliminate({x==2+y, y==z}, y)	!syntax@25: ')' expected.
 EllipticE(5/4,1)	!syntax@14: ')' expected.
 EllipticExp(-0.4, {4, 1})	!syntax@17: ')' expected.
@@ -1350,6 +1353,7 @@ EllipticLog({5.043827135411493, 15.333640384130709}, {4, 1})	!syntax@52: ')' exp
 EllipticLog({ComplexInfinity, ComplexInfinity}, {4, 1})	!syntax@47: ')' expected.
 EllipticPi(n,Pi/2,x)	!syntax@13: ')' expected.
 Empirical(x)	Times(Empirical, x)
+EmptyGraphQ(x)	Times(EmptyGraphQ, x)
 Enabled(x)	Times(Enabled, x)
 End()	!syntax@5: Too much closing ) in factor.
 EndOfBuffer(x)	Times(EndOfBuffer, x)
@@ -1359,6 +1363,7 @@ EngineeringForm(1.23456*^8, 3)	!syntax@27: ')' expected.
 EngineeringForm(25000000.0)	Times(EngineeringForm, 25000000.0)
 EnterExpressionPacket(x)	Times(EnterExpressionPacket, x)
 EnterTextPacket(x)	Times(EnterTextPacket, x)
+EntityValue(Entity("Polyhedron", "Icosahedron"), "FaceCount")	!syntax@32: ')' expected.
 EntityValue(x)	Times(EntityValue, x)
 Entropy(b,{a,c,c})	!syntax@10: ')' expected.
 Entropy({a, b, b,c,c,c,d})	Times(Entropy, List(a, b, b, c, c, c, d))
@@ -1385,6 +1390,7 @@ EuclideanDistance({-1, -1}, {1, 1})	!syntax@27: ')' expected.
 EuclideanDistance({a, b}, {c, d})	!syntax@25: ')' expected.
 EulerE(10,z)	!syntax@10: ')' expected.
 EulerE(6)	Times(EulerE, 6)
+EulerEquations(x'(t)^2/2 - x(t)^2/2, x(t), t)	!syntax@36: ')' expected.
 EulerPhi(10)	Times(EulerPhi, 10)
 EulerianGraphQ(Graph({1 -> 2, 2 -> 3, 3 -> 1, 1 -> 3, 3 -> 4, 4 -> 1 }))	Times(EulerianGraphQ, Times(Graph, List(Rule(1, 2), Rule(2, 3), Rule(3, 1), Rule(1, 3), Rule(3, 4), Rule(4, 1))))
 EvaluatePacket(x)	Times(EvaluatePacket, x)
@@ -1420,7 +1426,6 @@ Expand((x + 3)^(5/2)+(x + 1)^(3/2))	Times(Expand, Plus(Power(Plus(x, 3), 5/2), P
 Expand((x + y) ^ 2 + x y)	Times(Expand, Plus(Power(Plus(x, y), 2), Times(x, y)))
 Expand((x + y) ^ 3)	Times(Expand, Power(Plus(x, y), 3))
 Expand(LegendreQ(4,z))	!syntax@19: ')' expected.
-Expand(PolynomialLCM(x^2 + 7*x + 6, x^2-5*x-6))	!syntax@35: ')' expected.
 Expand(Sin(x*(1 + y)))	Times(Expand, Times(Sin, Times(x, Plus(1, y))))
 Expand({4 (x + y), 2 (x + y) -> 4 (x + y)})	Times(Expand, List(Times(4, Plus(x, y)), Rule(Times(2, Plus(x, y)), Times(4, Plus(x, y)))))
 ExpandAll(((1 + x)(1 + y))[x])	Times(ExpandAll, Times(Plus(1, x), Plus(1, y))[x])
@@ -1437,7 +1442,6 @@ Export("c:\\\\temp\\\\dotgraph.dot",Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEd
 ExportByteArray(x)	Times(ExportByteArray, x)
 ExportForm(SemanticImport("sales.csv"), "CSV")	!syntax@39: ')' expected.
 ExportString("Hello world", "Base64")	!syntax@27: ')' expected.
-ExportString(SemanticImportString("Products,Sales\\na,5500"), "TSV")	!syntax@60: ')' expected.
 ExportString({2.1+I*3.4}, "ExpressionJSON")	!syntax@25: ')' expected.
 ExpressionGraph(x)	Times(ExpressionGraph, x)
 ExtendedFullDefinition(x)	Times(ExtendedFullDefinition, x)
@@ -1500,7 +1504,7 @@ FileNameSplit(x)	Times(FileNameSplit, x)
 FileNames("*.m")	Times(FileNames, *.m)
 FileNames()	!syntax@11: Too much closing ) in factor.
 FilePrint(f)	Times(FilePrint, f)
-FileSize(x)	Times(FileSize, x)
+FileSize("hello.txt")	Times(FileSize, hello.txt)
 FileType(x)	Times(FileType, x)
 FilledCurve(x)	Times(FilledCurve, x)
 FillingTransform(x)	Times(FillingTransform, x)
@@ -1527,6 +1531,7 @@ FindEdgeCover(CycleGraph(4))	Times(FindEdgeCover, Times(CycleGraph, 4))
 FindEdgeCover(Graph({1,2,3},{1<->2}))	!syntax@28: ')' expected.
 FindEdgeCover(PathGraph({1,2,3}))	Times(FindEdgeCover, Times(PathGraph, List(1, 2, 3)))
 FindEdgeCover(StarGraph(5))	Times(FindEdgeCover, Times(StarGraph, 5))
+FindEdgeCut(x)	Times(FindEdgeCut, x)
 FindEulerianCycle(Graph({1 -> 2, 2 -> 3, 3 -> 4, 3 -> 1}))	Times(FindEulerianCycle, Times(Graph, List(Rule(1, 2), Rule(2, 3), Rule(3, 4), Rule(3, 1))))
 FindEulerianCycle(Graph({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1}))	Times(FindEulerianCycle, Times(Graph, List(Rule(1, 2), Rule(2, 3), Rule(3, 4), Rule(4, 1))))
 FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {a,w,f}, t)	!syntax@34: ')' expected.
@@ -1537,7 +1542,7 @@ FindFit({{15.2,8.9},{31.1,9.9},{38.6,10.3},{52.2,10.7},{75.4,11.4}}, a*Log(b*x),
 FindGeneratingFunction({1, 2, 3, 4}, x)	!syntax@36: ')' expected.
 FindGraphIsomorphism(Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4}), Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4}))	!syntax@37: ')' expected.
 FindHamiltonianCycle( {1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1} )	Times(FindHamiltonianCycle, List(Rule(1, 2), Rule(2, 3), Rule(3, 4), Rule(4, 1)))
-FindHamiltonianCycle(PetersenGraph())	!syntax@36: Too much closing ) in factor.
+FindHamiltonianPath(x)	Times(FindHamiltonianPath, x)
 FindIndependentEdgeSet(CycleGraph(4))	Times(FindIndependentEdgeSet, Times(CycleGraph, 4))
 FindIndependentEdgeSet(PathGraph({1,2,3,4}))	Times(FindIndependentEdgeSet, Times(PathGraph, List(1, 2, 3, 4)))
 FindIndependentVertexSet(CompleteGraph(4))	Times(FindIndependentVertexSet, Times(CompleteGraph, 4))
@@ -1571,7 +1576,10 @@ FindMaximum({(1-x)^2+100*(y-x^2)^2, x >= -2.0 && 2.0 >= x && y >= -0.5 && 1.5 >=
 FindMaximumFlow(x)	Times(FindMaximumFlow, x)
 FindMinimum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}}, Method -> "ConjugateGradient")	!syntax@28: ')' expected.
 FindMinimum(Sin(x), {x, 0.5})	!syntax@19: ')' expected.
+FindMinimum({Sin(x)*Sin(2*y), x^2+y^2<3}, {{x,2},{y,2}})	!syntax@41: ')' expected.
+FindMinimumCut(x)	Times(FindMinimumCut, x)
 FindMoleculeSubstructure(Molecule("CCO"), MoleculePattern("[OX2H]"))	!syntax@41: ')' expected.
+FindPath(x)	Times(FindPath, x)
 FindPermutation(CharacterRange("a","d"),{"a","d","c","b"})	!syntax@35: ')' expected.
 FindPlanarColoring(CompleteGraph(4))	Times(FindPlanarColoring, Times(CompleteGraph, 4))
 FindPlanarColoring(CycleGraph(4))	Times(FindPlanarColoring, Times(CycleGraph, 4))
@@ -1598,7 +1606,10 @@ FindVertexColoring(CycleGraph(4), {a,b})	!syntax@33: ')' expected.
 FindVertexColoring(CycleGraph(5), 3)	!syntax@33: ')' expected.
 FindVertexColoring({1<->2,2<->3,3<->1})	Times(FindVertexColoring, List(TwoWayRule(1, 2), TwoWayRule(2, 3), TwoWayRule(3, 1)))
 FindVertexCover({1<->2,1<->3,2<->3,3<->4,3<->5,3<->6})	Times(FindVertexCover, List(TwoWayRule(1, 2), TwoWayRule(1, 3), TwoWayRule(2, 3), TwoWayRule(3, 4), TwoWayRule(3, 5), TwoWayRule(3, 6)))
+FindVertexCut(x)	Times(FindVertexCut, x)
+First(Developer`RawCompress({1,2,3}))	Times(First, Times(RawCompress, List(1, 2, 3)))
 First(First(DayNightTerminator(DateObject({2026,6,21,12,0,0}))))	Times(First, Times(First, Times(DayNightTerminator, Times(DateObject, List(2026, 6, 21, 12, 0, 0)))))
+First(PolyhedronData("Icosahedron", "VertexCoordinates"))	!syntax@35: ')' expected.
 First(a + b + c)	Times(First, Plus(a, b, c))
 First(x)	Times(First, x)
 First({a, b, c})	Times(First, List(a, b, c))
@@ -1658,9 +1669,14 @@ FormulaData(x)	Times(FormulaData, x)
 Fourier({1 + 2*I, 3 + 11*I})	Times(Fourier, List(Plus(1, Times(2, I)), Plus(3, Times(11, I))))
 Fourier({1,2,0,0,7})	Times(Fourier, List(1, 2, 0, 0, 7))
 Fourier({1,2,0,0})	Times(Fourier, List(1, 2, 0, 0))
+FourierCoefficient(t, t, 3)	!syntax@21: ')' expected.
+FourierCoefficient(t, t, 3, FourierParameters -> {0, 2})	!syntax@21: ')' expected.
+FourierCosCoefficient(t^2, t, 0)	!syntax@26: ')' expected.
+FourierCosCoefficient(t^2, t, 2)	!syntax@26: ')' expected.
 FourierDCTMatrix(3, 1)	!syntax@19: ')' expected.
 FourierDSTMatrix(3, 1)	!syntax@19: ')' expected.
 FourierMatrix(4)	Times(FourierMatrix, 4)
+FourierSinCoefficient(t, t, 2)	!syntax@24: ')' expected.
 FractionalPart(1.5)	Times(FractionalPart, 1.5)
 FrameListVideo(x)	Times(FrameListVideo, x)
 FrameRate(x)	Times(FrameRate, x)
@@ -1679,6 +1695,11 @@ FromAbsoluteTime(0)	Times(FromAbsoluteTime, 0)
 FromAbsoluteTime(3155673600)	Times(FromAbsoluteTime, 3155673600)
 FromAbsoluteTime(AbsoluteTime({2024, 6, 14}))	Times(FromAbsoluteTime, Times(AbsoluteTime, List(2024, 6, 14)))
 FromCharacterCode({97,45,51})	Times(FromCharacterCode, List(97, 45, 51))
+FromCoefficientRules(CoefficientRules(x^3-2*x*y+7, {x,y}), {x,y})	!syntax@50: ')' expected.
+FromCoefficientRules(CoefficientRules({x^2-1, y^3}, {x,y}), {x,y})	!syntax@51: ')' expected.
+FromCoefficientRules({{-1}->1}, {x})	!syntax@31: ')' expected.
+FromCoefficientRules({{2,0}->1, {1,1}->3, {0,0}->-5}, {x,y})	!syntax@53: ')' expected.
+FromCoefficientRules({{2}->1, {0}->-1}, x)	!syntax@39: ')' expected.
 FromContinuedFraction(Range(5))	Times(FromContinuedFraction, Times(Range, 5))
 FromContinuedFraction({2,3,4,5})	Times(FromContinuedFraction, List(2, 3, 4, 5))
 FromContinuedFraction({3, 7, 15, 1, 292, 1, 1, 1, 2, 1})	Times(FromContinuedFraction, List(3, 7, 15, 1, 292, 1, 1, 1, 2, 1))
@@ -1725,14 +1746,27 @@ FullForm[a:=b]	FullForm(SetDelayed(a, b))
 FullMoon(DateObject({2026,6,1}))	Times(FullMoon, Times(DateObject, List(2026, 6, 1)))
 FullRegion(x)	Times(FullRegion, x)
 FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))	!syntax@46: ')' expected.
+FullSimplify(ExpToTrig(FourierSeries(t, t, 2)) - (2*Sin(t)-Sin(2*t)))	!syntax@39: ')' expected.
+FullSimplify(FourierCosSeries(t, t, 3) - (Pi/2 - 4*Cos(t)/Pi - 4*Cos(3*t)/(9*Pi)))	!syntax@32: ')' expected.
+FullSimplify(FourierSinSeries(1, t, 3) - (4*Sin(t)/Pi + 4*Sin(3*t)/(3*Pi)))	!syntax@32: ')' expected.
+FullSimplify(FourierTrigSeries(t, t, 3) - (2*Sin(t)-Sin(2*t)+2/3*Sin(3*t)))	!syntax@33: ')' expected.
 Function({x, y}, x * y)[2, 3]	!syntax@16: ')' expected.
 Function({x}, Function({y}, f(x, y)))[y]	!syntax@13: ')' expected.
 FunctionCompileExportLibrary(x)	Times(FunctionCompileExportLibrary, x)
+FunctionConvexity(2*x+1, x, StrictInequalities->True)	!syntax@24: ')' expected.
+FunctionConvexity(x^2, x)	!syntax@22: ')' expected.
+FunctionConvexity(x^3, x)	!syntax@22: ')' expected.
+FunctionConvexity(x^4, x, StrictInequalities->True)	!syntax@22: ')' expected.
 FunctionExpand(Beta(10, b))	!syntax@23: ')' expected.
 FunctionExpand(EllipticExp(u, {1, 2/9}))	!syntax@29: ')' expected.
 FunctionExpand(EllipticExp(u, {a, b}))	!syntax@29: ')' expected.
 FunctionExpand(EllipticLog({x, Sqrt(x^3+a*x^2+b*x)}, {a, b}))	!syntax@52: ')' expected.
 FunctionExpand(Sqrt(5 + 2*Sqrt(6)))	Times(FunctionExpand, Times(Sqrt, Plus(5, Times(Times(2, Sqrt), 6))))
+FunctionMonotonicity(5, x, StrictInequalities->True)	!syntax@23: ')' expected.
+FunctionMonotonicity(x^2, x)	!syntax@25: ')' expected.
+FunctionMonotonicity(x^3, x)	!syntax@25: ')' expected.
+FunctionMonotonicity(x^3, x, StrictInequalities->True)	!syntax@25: ')' expected.
+FunctionMonotonicity({x^2, x>0}, x)	!syntax@32: ')' expected.
 FunctionURL(NIntegrate)	Times(FunctionURL, NIntegrate)
 GCD(10, y)	!syntax@7: ')' expected.
 GCD(20, 30)	!syntax@7: ')' expected.
@@ -1784,9 +1818,14 @@ Graph({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 1})	Times(Graph, List(Rule(1, 2), Rule(2, 3)
 Graph({1 <-> 2, 2 <-> 3, 1 <-> 3, 4 <-> 2})	Times(Graph, List(TwoWayRule(1, 2), TwoWayRule(2, 3), TwoWayRule(1, 3), TwoWayRule(4, 2)))
 Graph({1 <-> 2, 2 <-> 3, 3 <-> 4, 4 <-> 1})	Times(Graph, List(TwoWayRule(1, 2), TwoWayRule(2, 3), TwoWayRule(3, 4), TwoWayRule(4, 1)))
 Graph({1 <-> 2, 2 <-> 3, 3 <-> 4, 4 <-> 1},{EdgeWeight->{2.0,3.0,4.0, 5.0}})	!syntax@43: ')' expected.
+Graph({1, 2, 3, 4, 5, 6}, {1<->2, 1<->6, 2<->3, 3<->4, 4<->5, 5<->6}, {GraphLayout -> "CircularEmbedding", GraphStyle -> "SmallNetwork"})	!syntax@25: ')' expected.
+Graph3D(ButterflyGraph(3))	Times(Graph3D, Times(ButterflyGraph, 3))
+GraphAutomorphismGroup(x)	Times(GraphAutomorphismGroup, x)
+GraphDensity(x)	Times(GraphDensity, x)
 GraphDiameter(Subgraph(g, FindKClub(g,2)[[1]]))	!syntax@25: ')' expected.
 GraphDiameter(Subgraph(h, FindKClan(h,2)[[1]]))	!syntax@25: ')' expected.
 GraphDiameter(Subgraph(h, FindKClique(h,2)[[1]]))	!syntax@25: ')' expected.
+GraphDistanceMatrix(x)	Times(GraphDistanceMatrix, x)
 GraphEmbedding(x)	Times(GraphEmbedding, x)
 GraphHighlight(x)	Times(GraphHighlight, x)
 GraphHighlightStyle(x)	Times(GraphHighlightStyle, x)
@@ -1794,18 +1833,22 @@ GraphPower({1 -> 2, 2 -> 3, 3 -> 4, 4 -> 5, 5->6}, 2)	!syntax@50: ')' expected.
 GraphQ( Graph({1->2, 2->3, 3->1}, EdgeWeight->{5.061,2.282,5.086}) )	!syntax@33: ')' expected.
 GraphQ( Sin(x) )	Times(GraphQ, Times(Sin, x))
 GraphQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}) )	Times(GraphQ, Times(Graph, List(Rule(1, 2), Rule(2, 3), Rule(1, 3), Rule(4, 2))))
+GraphTriangleCount(x)	Times(GraphTriangleCount, x)
 Graphics(Line(AnglePath(RandomReal({-1, 1}, {100}))))	!syntax@43: ')' expected.
 Graphics(Line(AnglePath(Table(1.7, {50}))))	!syntax@34: ')' expected.
+Graphics(Point({{1, Around(2, 0.5)}, {2, Interval({2, 4})}, {3, IntervalData({1, Less, LessEqual, 2})}}), IntervalMarkers -> "Fences", Axes -> True)	!syntax@29: ')' expected.
 Graphics(Table({EdgeForm({GrayLevel(0, 0.5)}), Hue((-11+q+10*r)/72, 1, 1, 0.6), Disk((8-r)*{Cos(2*Pi*q/12), Sin(2*Pi*q/12)}, (8-r)/3)}, {r,6}, {q, 12}))	!syntax@38: ')' expected.
 Graphics(Tooltip(Disk(), "a disk"))	!syntax@23: Too much closing ) in factor.
 Graphics3D(Arrow({{1, 1, -1}, {2, 2, 0}, {3, 3, -1}, {4, 4, 0}}))	Times(Graphics3D, Times(Arrow, List(List(1, 1, -1), List(2, 2, 0), List(3, 3, -1), List(4, 4, 0))))
 Graphics3D(Cuboid({0, 0, 1}))	Times(Graphics3D, Times(Cuboid, List(0, 0, 1)))
 Graphics3D(Cylinder({{0, 0, 0}, {1, 1, 1}}, 1))	!syntax@43: ')' expected.
+Graphics3D(Line(Table({Cos(t), Sin(t), Around(t/3, 0.3)}, {t, 0, 6, 0.25})), IntervalMarkers -> "Bands")	!syntax@50: ')' expected.
 Graphics3D(Polygon({{0,0,0}, {0,1,1}, {1,0,0}}))	Times(Graphics3D, Times(Polygon, List(List(0, 0, 0), List(0, 1, 1), List(1, 0, 0))))
 Graphics3D(Polygon({{0,0,0},{0,1,1},{1,0,0}}))	Times(Graphics3D, Times(Polygon, List(List(0, 0, 0), List(0, 1, 1), List(1, 0, 0))))
 Graphics3D(Sphere())	!syntax@19: Too much closing ) in factor.
 Graphics3D(Sphere({0, 0, 0}, 1))	!syntax@28: ')' expected.
 Graphics3D(Tooltip(Cuboid(), "a box"))	!syntax@27: Too much closing ) in factor.
+Graphics3D({Blue, Point({1, 2, Interval({2, 4})})}, IntervalMarkersStyle -> Directive(Red, Thickness(0.01)))	!syntax@51: ')' expected.
 Graphics3D({Orange, PointSize(0.05), Point(Table({Sin(t), Cos(t), 0}, {t, 0, 2*Pi, Pi / 15.}))})	!syntax@69: ')' expected.
 Graphics3D({Yellow, Cylinder({{-1, 0, 0}, {1, 0, 0}, {0, 0, Sqrt(3)}, {1, 1, Sqrt(3}}, 1)})	!syntax@84: ')' expected.
 Graphics3D({Yellow, Sphere({{-1, 0, 0}, {1, 0, 0}, {0, 0, Sqrt(3.)}}, 1]})	!syntax@69: ')' expected.
@@ -1870,9 +1913,23 @@ GridBox(x)	Times(GridBox, x)
 GridGraph({3,4}) // AdjacencyMatrix // MatrixForm	MatrixForm(AdjacencyMatrix(Times(GridGraph, List(3, 4))))
 GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {x, y})	!syntax@35: ')' expected.
 GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {y, x})	!syntax@35: ')' expected.
-GroebnerBasis({x^2+y^2-1, x-y}, {x, y})	!syntax@31: ')' expected.
-GroebnerBasis({x^2+y^2-1, x-y}, {x, y}, Modulus->2)	!syntax@31: ')' expected.
-GroupOrbits(x)	Times(GroupOrbits, x)
+GroupElementQ(AlternatingGroup(4), Cycles({{1,2,3}}))	!syntax@34: ')' expected.
+GroupElementQ(AlternatingGroup(4), Cycles({{1,2}}))	!syntax@34: ')' expected.
+GroupElements(SymmetricGroup(3))	Times(GroupElements, Times(SymmetricGroup, 3))
+GroupGenerators(CyclicGroup(4))	Times(GroupGenerators, Times(CyclicGroup, 4))
+GroupGenerators(DihedralGroup(5))	Times(GroupGenerators, Times(DihedralGroup, 5))
+GroupMultiplicationTable(CyclicGroup(3))	Times(GroupMultiplicationTable, Times(CyclicGroup, 3))
+GroupOrbits(PermutationGroup({Cycles({{1,2}}), Cycles({{3,4,5}})}))	Times(GroupOrbits, Times(PermutationGroup, List(Times(Cycles, List(List(1, 2))), Times(Cycles, List(List(3, 4, 5))))))
+GroupOrbits(PermutationGroup({Cycles({{1,2}}), Cycles({{3,4,5}})}), {4, 7})	!syntax@67: ')' expected.
+GroupOrder(AbelianGroup({2,3}))	Times(GroupOrder, Times(AbelianGroup, List(2, 3)))
+GroupOrder(AlternatingGroup(5))	Times(GroupOrder, Times(AlternatingGroup, 5))
+GroupOrder(CyclicGroup(7))	Times(GroupOrder, Times(CyclicGroup, 7))
+GroupOrder(DihedralGroup(6))	Times(GroupOrder, Times(DihedralGroup, 6))
+GroupOrder(GroupStabilizer(SymmetricGroup(4), 1))	!syntax@45: ')' expected.
+GroupOrder(PermutationGroup({Cycles({{1,2}}), Cycles({{1,2,3}})}))	Times(GroupOrder, Times(PermutationGroup, List(Times(Cycles, List(List(1, 2))), Times(Cycles, List(List(1, 2, 3))))))
+GroupOrder(SymmetricGroup(20))	Times(GroupOrder, Times(SymmetricGroup, 20))
+GroupOrder(SymmetricGroup(4))	Times(GroupOrder, Times(SymmetricGroup, 4))
+HITSCentrality(x)	Times(HITSCentrality, x)
 HadamardMatrix(2)	Times(HadamardMatrix, 2)
 HadamardMatrix(4)	Times(HadamardMatrix, 4)
 HadamardMatrix(4, Method->"BitComplement")	!syntax@17: ')' expected.
@@ -1884,6 +1941,7 @@ HammingDistance("TIME", "dime", IgnoreCase -> True)	!syntax@23: ')' expected.
 HammingDistance("time", "dime")	!syntax@23: ')' expected.
 HandlerFunctions(x)	Times(HandlerFunctions, x)
 HankelMatrix({f, a, b, c, d},{d, y, z})	!syntax@29: ')' expected.
+HararyGraph(x)	Times(HararyGraph, x)
 HarmonicMean({1, 2, 3, 4,5, 6, 7})	Times(HarmonicMean, List(1, 2, 3, 4, 5, 6, 7))
 Haversine(0.5 + 2 * I)	Times(Haversine, Plus(0.5, Times(2, I)))
 Haversine(1.5)	Times(Haversine, 1.5)
@@ -1920,6 +1978,8 @@ Head(NightHemisphere(DateObject({2026,6,21,12,0,0})))	Times(Head, Times(NightHem
 Head(PeriodicTablePlot())	!syntax@24: Too much closing ) in factor.
 Head(Pi * I)	Times(Head, Times(Pi, I))
 Head(RegionMember(Disk()))	!syntax@24: Too much closing ) in factor.
+Head(SessionTime())	!syntax@18: Too much closing ) in factor.
+Head(TimeUsed())	!syntax@15: Too much closing ) in factor.
 Head(Times(I, 1/2))	!syntax@13: ')' expected.
 Head(a * b)	Times(Head, Times(a, b))
 Head(x)	Times(Head, x)
@@ -1937,6 +1997,8 @@ HermiteH(8, x)	!syntax@11: ')' expected.
 Hermitian(x)	Times(Hermitian, x)
 HermitianMatrixQ({{2, 2 + I, 4}, {2-I, 3, I}, {4, -I, 1}})	Times(HermitianMatrixQ, List(List(2, Plus(2, I), 4), List(Plus(2, Times(-1, I)), 3, I), List(4, Times(-1, I), 1)))
 HiddenItems(x)	Times(HiddenItems, x)
+HighlightGraph(PathGraph(Range(5)), {Style(2, Green), 3, 1<->2})	!syntax@35: ')' expected.
+HighlightGraph(g, Table(Style(VertexList(g)[[i]], ColorData("TemperatureMap")(ClosenessCentrality(g)[[i]] / Max(ClosenessCentrality(g)))), {i, VertexCount(g)}))	!syntax@17: ')' expected.
 Highlighted(x)	Times(Highlighted, x)
 HilbertMatrix(2)	Times(HilbertMatrix, 2)
 Histogram({1, 2, 3, None, 3, 5, f(), 2, 1, 5,4,3,2,foo, 2, 3})	!syntax@35: Too much closing ) in factor.
@@ -1950,7 +2012,6 @@ Hold({a, Sequence(b, c), d})	!syntax@20: ')' expected.
 HoldComplete(3*2)	Times(HoldComplete, Times(3, 2))
 HoldForm(3*2)	Times(HoldForm, Times(3, 2))
 HoldPattern(Times(p__))===HoldPattern(And(p__))	SameQ(Times(HoldPattern, Times(Times, p__)), Times(HoldPattern, Times(And, p__)))
-HornerForm((11*x^3-4*x^2+7*x+2)/(x^2-3*x+1))	Times(HornerForm, Times(Plus(Plus(Times(11, Power(x, 3)), Times(-1, Times(4, Power(x, 2)))), Times(7, x), 2), Power(Plus(Plus(Power(x, 2), Times(-1, Times(3, x))), 1), -1)))
 HornerForm(3+4*x+5*x^2+33*x^6+x^8)	Times(HornerForm, Plus(3, Times(4, x), Times(5, Power(x, 2)), Times(33, Power(x, 6)), Power(x, 8)))
 HornerForm(a+b*x+c*x^2,x)	!syntax@23: ')' expected.
 HumpDownHump(x)	Times(HumpDownHump, x)
@@ -1964,6 +2025,7 @@ Hyperfactorial(-7)	Times(Hyperfactorial, -7)
 HypergeometricU(0, b, z)	!syntax@18: ')' expected.
 HypergeometricU(1, 4, 8)	!syntax@18: ')' expected.
 HypoexponentialDistribution(x)	Times(HypoexponentialDistribution, x)
+HypothesisTestData(x)	Times(HypothesisTestData, x)
 I == Sqrt(-1)	Equal(I, Times(Sqrt, -1))
 I ^ I	Power(I, I)
 I^2	Power(I, 2)
@@ -2028,13 +2090,12 @@ ImplicitRegion(x)	Times(ImplicitRegion, x)
 Implies(False, a)	!syntax@14: ')' expected.
 Implies(True, a)	!syntax@13: ')' expected.
 Implies(a, Implies(b, Implies(True, c)))	!syntax@10: ')' expected.
-Import("./data/whiskey.csv")	Times(Import, ./data/whiskey.csv)
 Import("c:\\\\temp\\\\dotgraph.graphml", "GraphML")	!syntax@36: ')' expected.
 Import(FileNameSetter("Open"))	Times(Import, Times(FileNameSetter, Open))
 ImportByteArray(x)	Times(ImportByteArray, x)
-ImportString("Products,Sales\\na,5500\\nb,12200", "CSV")	!syntax@47: ')' expected.
 ImportString("SGVsbG8gd29ybGQ=", "Base64")	!syntax@32: ')' expected.
 In(-1)	Times(In, -1)
+IncludeConstantBasis(x)	Times(IncludeConstantBasis, x)
 IncludeMetaInformation(x)	Times(IncludeMetaInformation, x)
 IndependentEdgeSetQ(CycleGraph(4), {1<->2,2<->3})	!syntax@34: ')' expected.
 IndependentEdgeSetQ(CycleGraph(4), {1<->2,3<->4})	!syntax@34: ')' expected.
@@ -2099,6 +2160,10 @@ IntegerPartitions(3)	Times(IntegerPartitions, 3)
 IntegerPartitions(6)	Times(IntegerPartitions, 6)
 IntegerQ(3)	Times(IntegerQ, 3)
 IntegerQ(Pi)	Times(IntegerQ, Pi)
+IntegerReverse(1234)	Times(IntegerReverse, 1234)
+IntegerReverse(6, 2)	!syntax@17: ')' expected.
+IntegerReverse(6, 2, 5)	!syntax@17: ')' expected.
+IntegerString(x)	Times(IntegerString, x)
 Integrate(ArcCos(x), {x, -1, 1})	!syntax@20: ')' expected.
 Integrate(Tan(x) ^ 5, x)	!syntax@21: ')' expected.
 Integrate(x^2, x)	!syntax@14: ')' expected.
@@ -2107,17 +2172,13 @@ InterpolatingPolynomial({{1,7},{3,11},{5,27}},x)	!syntax@46: ')' expected.
 Interpolation(Table({x, Exp(4/(1+x^2))}, {x, 0, 3, 0.5}), 2.5)	!syntax@40: ')' expected.
 Interpretation(x)	Times(Interpretation, x)
 InterpretationBox(x)	Times(InterpretationBox, x)
-InterquartileRange({1, 2, 3, 4, 5, 6, 7, 8}, {{0, 0}, {1, 0}})	!syntax@44: ')' expected.
 InterquartileRange({7,7,31,31,47,75,87,115,116,119,119,155,177})	Times(InterquartileRange, List(7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177))
-InterquartileRange({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}})	Times(InterquartileRange, List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9), List(10, 11, 12)))
 Intersection({a,a,b,c},{b,a})	!syntax@23: ')' expected.
 Interval({1, 6}) * Interval({0, 2})	Times(Times(Times(Interval, List(1, 6)), Interval), List(0, 2))
 Interval({1.5, 6}) * Interval({0.1, 2.7})	Times(Times(Times(Interval, List(1.5, 6)), Interval), List(0.1, 2.7))
 IntervalComplement(IntervalData({1/2, LessEqual, LessEqual, 3}), IntervalData({0, LessEqual, LessEqual, 1}, {E, LessEqual, Less, 4}))	!syntax@64: ')' expected.
 IntervalData({1,Less,Less, 6}) * IntervalData({0, Less,Less,2})	Times(Times(Times(IntervalData, List(1, Less, Less, 6)), IntervalData), List(0, Less, Less, 2))
 IntervalIntersection(Interval({1, 2}, {3, 4}, {5, 7}, {8, 8.5}), Interval({1.5, 3.5}, {4.1, 6}, {9, 10}))	!syntax@37: ')' expected.
-IntervalMarkers(x)	Times(IntervalMarkers, x)
-IntervalMarkersStyle(x)	Times(IntervalMarkersStyle, x)
 IntervalMemberQ(Interval({4,10}), Interval({2*Pi, 3*Pi}))	!syntax@33: ')' expected.
 IntervalMemberQ(Interval({4,10}), Interval({2*Pi, 4*Pi}))	!syntax@33: ')' expected.
 IntervalSlider(x)	Times(IntervalSlider, x)
@@ -2125,7 +2186,7 @@ IntervalUnion(Interval({1, 2}, {3, 4}, {5, 7}, {8, 8.5}), Interval({1.5, 3.5}, {
 Inverse({{1, 0, 0}, {0, Sqrt(3)/2, 1/2}, {0,-1 / 2, Sqrt(3)/2}})	Times(Inverse, List(List(1, 0, 0), List(0, Times(Sqrt, 3/2), 1/2), List(0, -1/2, Times(Sqrt, 3/2))))
 Inverse({{1, 0}, {0, 0}})	Times(Inverse, List(List(1, 0), List(0, 0)))
 Inverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})	Times(Inverse, List(List(1, 2, 0), List(2, 3, 0), List(3, 4, 1)))
-Inverse({{u, v}, {v, u}})	Times(Inverse, List(List(u, v), List(v, u)))
+InverseCDF(InverseGammaDistribution(a, b), q)	!syntax@38: ')' expected.
 InverseCDF[NormalDistribution[0, 1], x]	InverseCDF(NormalDistribution(0, 1), x)
 InverseErf /@ {-1, 0, 1}	Map(InverseErf, List(-1, 0, 1))
 InverseErf /@ {0.9, 1.0, 1.1}	Map(InverseErf, List(0.9, 1.0, 1.1))
@@ -2134,19 +2195,19 @@ InverseFourier({1,2,0,0,7})	Times(InverseFourier, List(1, 2, 0, 0, 7))
 InverseFourier({1.5,0.5+I*1.0,-0.5,0.5+I*(-1.0)})	Times(InverseFourier, List(1.5, Plus(0.5, Times(I, 1.0)), -0.5, Plus(0.5, Times(I, -1.0))))
 InverseFourier({2.82843+I*9.19239,-1.41421+I*(-6.36396)})	Times(InverseFourier, List(Plus(2.82843, Times(I, 9.19239)), Plus(-1.41421, Times(I, -6.36396))))
 InverseFunction(ReflectionTransform({1, 0}))[{-1, 1}]	Times(InverseFunction, Times(ReflectionTransform, List(1, 0))[List(-1, 1)])
-InverseFunction(ShearingTransform(Pi/4, {1, 0}, {0, 1}))[{2, 1}]	!syntax@39: ')' expected.
 InverseFunction(Sin)	Times(InverseFunction, Sin)
-InverseFunction(TranslationTransform({1, 2}))[{5, 5}]	Times(InverseFunction, Times(TranslationTransform, List(1, 2))[List(5, 5)])
-InverseFunction(TranslationTransform({a, b}))	Times(InverseFunction, Times(TranslationTransform, List(a, b)))
 InverseFunctions(x)	Times(InverseFunctions, x)
 InverseHaversine(0.5)	Times(InverseHaversine, 0.5)
 InverseHaversine(1 + 2.5 * I)	Times(InverseHaversine, Plus(1, Times(2.5, I)))
 InverseLaplaceTransform(3/(s-1)+(2*s)/(s^2+4),s,t)	!syntax@46: ')' expected.
+InversePermutation(Cycles({{1,2,3}}))	Times(InversePermutation, Times(Cycles, List(List(1, 2, 3))))
+InversePermutation({2,3,1})	Times(InversePermutation, List(2, 3, 1))
 InverseSeries(Series(Sin(x), {x, 0, 7}))	!syntax@28: ')' expected.
 InverseSurvivalFunction(x)	Times(InverseSurvivalFunction, x)
 InverseZTransform(f(z)+ g(z)+h(z),z,n)	!syntax@34: ')' expected.
 InvisiblePostfixScriptBase(x)	Times(InvisiblePostfixScriptBase, x)
 InvisiblePrefixScriptBase(x)	Times(InvisiblePrefixScriptBase, x)
+IsolatingInterval(3/4)	Times(IsolatingInterval, 3/4)
 IsomorphicGraphQ(DualPlanarGraph(CompleteGraph(4)), CompleteGraph(4))	!syntax@51: ')' expected.
 IsomorphicGraphQ(Graph({1,2,3,4},{1<->2,1<->4,2<->3,3<->4}), Graph({1,2,3,4},{1<->3,1<->4,2<->3,2<->4}))	!syntax@33: ')' expected.
 IsotopeData("C", "Abundances")	!syntax@16: ')' expected.
@@ -2156,6 +2217,8 @@ Italic(x)	Times(Italic, x)
 ItemDisplayFunction(x)	Times(ItemDisplayFunction, x)
 JSForm(4*EllipticE(x)+KleinInvariantJ(t)^3, "Mathcell")	!syntax@43: ')' expected.
 JSForm(E^3-Cos(Pi^2/x))	Times(JSForm, Plus(Power(E, 3), Times(-1, Times(Cos, Times(Power(Pi, 2), Power(x, -1))))))
+JSXGraph(Graphics({Red, Disk({0, 0}, 1), Blue, Arrow({{0, 0}, {2, 2}})}))	!syntax@36: ')' expected.
+JSXGraph(Plot(Sin(x), {x, 0, 2*Pi}))	!syntax@21: ')' expected.
 JaccardDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})	!syntax@43: ')' expected.
 JacobiCD(10.0,1/3)	!syntax@14: ')' expected.
 JacobiCN(10.0,1/3)	!syntax@14: ')' expected.
@@ -2195,6 +2258,15 @@ KCoreComponents(Graph({1,2,3,4,5,6},{1<->2,2<->3,3<->1,4<->5,5<->6,6<->4}), 2)	!
 KCoreComponents(Graph({1,2,3,4,5},{1<->2,2<->3,3<->1,3<->4,4<->5}), 2)	!syntax@34: ')' expected.
 KCoreComponents(Graph({1,2,3},{1->2,2->3}), 1, "In")	!syntax@30: ')' expected.
 KagiChart(x)	Times(KagiChart, x)
+KatzCentrality(x)	Times(KatzCentrality, x)
+KelvinBei(1.0)	Times(KelvinBei, 1.0)
+KelvinBei(2, 3.5)	!syntax@12: ')' expected.
+KelvinBer(1.0)	Times(KelvinBer, 1.0)
+KelvinBer(2, 3.5)	!syntax@12: ')' expected.
+KelvinKei(0.5, 1.5)	!syntax@14: ')' expected.
+KelvinKei(1.0)	Times(KelvinKei, 1.0)
+KelvinKer(1, 2.5)	!syntax@12: ')' expected.
+KelvinKer(1.0)	Times(KelvinKer, 1.0)
 KeyComplement({<|a->1,b->2,c->5|>,<|b->3|>,<|c->4|>})	Times(KeyComplement, List(Association(List(Rule(a, 1), Rule(b, 2), Rule(c, 5))), Association(List(Rule(b, 3))), Association(List(Rule(c, 4)))))
 KeyComplement({<|a->1,b->2|>,<|a->3,b->4|>})	Times(KeyComplement, List(Association(List(Rule(a, 1), Rule(b, 2))), Association(List(Rule(a, 3), Rule(b, 4)))))
 KeyDrop(productInfo, {"SupplierID", "InStock"})	!syntax@20: ')' expected.
@@ -2211,6 +2283,7 @@ KeyUnion({<|a->1,b->2|>,<|b->3,c->4|>})	Times(KeyUnion, List(Association(List(Ru
 KeyValueMap(f)[<|a -> 1, b -> 2, c -> 3|>]	Times(KeyValueMap, f(Association(List(Rule(a, 1), Rule(b, 2), Rule(c, 3)))))
 Keys(<|ahey->avalue, bkey->bvalue, ckey->cvalue|>)	Times(Keys, Association(List(Rule(ahey, avalue), Rule(bkey, bvalue), Rule(ckey, cvalue))))
 KillProcess(x)	Times(KillProcess, x)
+KnotData(x)	Times(KnotData, x)
 KnownUnitQ("Foo")	Times(KnownUnitQ, Foo)
 KnownUnitQ("Kilometers")	Times(KnownUnitQ, Kilometers)
 KnownUnitQ("Meters", "Time")	!syntax@20: ')' expected.
@@ -2221,6 +2294,8 @@ KolmogorovSmirnovTest(data, NormalDistribution(), "TestData")	!syntax@27: ')' ex
 KroneckerDelta(42)	Times(KroneckerDelta, 42)
 KroneckerDelta(42, 42.0, 42)	!syntax@18: ')' expected.
 KroneckerProduct(ta, tb) // MatrixForm	!syntax@20: ')' expected.
+Kurtosis(InverseGammaDistribution(a, b))	!syntax@36: ')' expected.
+Kurtosis(SkewNormalDistribution(m, s, a))	!syntax@34: ')' expected.
 Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})	Times(Kurtosis, List(1.1, 1.2, 1.4, 2.1, 2.4))
 LABColor(x)	Times(LABColor, x)
 LCHColor(x)	Times(LCHColor, x)
@@ -2288,7 +2363,6 @@ LegendreP(4, x)	!syntax@12: ')' expected.
 Length(1/3)	Times(Length, 1/3)
 Length(AtomDiagramCoordinates(Molecule("CCO")))	Times(Length, Times(AtomDiagramCoordinates, Times(Molecule, CCO)))
 Length(AtomDiagramCoordinates(Molecule("CCO"), IncludeHydrogens -> True))	!syntax@46: ')' expected.
-Length(ElementData("Properties"))	Times(Length, Times(ElementData, Properties))
 Length(Exp(x))	Times(Length, Times(Exp, x))
 Length(FindIndependentEdgeSet(StarGraph(5)))	Times(Length, Times(FindIndependentEdgeSet, Times(StarGraph, 5)))
 Length(FindIndependentVertexSet(PetersenGraph())[[1]])	!syntax@47: Too much closing ) in factor.
@@ -2347,6 +2421,7 @@ LightPurple	LightPurple
 LightRed	LightRed
 LightYellow	LightYellow
 LightingAngle(x)	Times(LightingAngle, x)
+Likelihood(x)	Times(Likelihood, x)
 Limit(7+Sin(x)/x, x->Infinity)	!syntax@17: ')' expected.
 Limit(Floor(x), x->2)	!syntax@15: ')' expected.
 Limit(Floor(x), x->2, Direction->"FromBelow")	!syntax@15: ')' expected.
@@ -2382,25 +2457,32 @@ LinkWrite(x)	Times(LinkWrite, x)
 Links(x)	Times(Links, x)
 ListAnimate(x)	Times(ListAnimate, x)
 ListConvolve({x, y}, {a, b, c, d, e, f})	!syntax@20: ')' expected.
-ListConvolve({x,y},{a,b,c,d}) == ListCorrelate({y,x},{a,b,c,d})	!syntax@19: ')' expected.
-ListConvolve({{{1,2},{3,4}},{{5,6},{7,8}}}, ArrayReshape(Range(27),{3,3,3}))	!syntax@43: ')' expected.
 ListCorrelate({{u, v}, {w, x}}, {{a,b,c,p}, {d,e,f,q}, {g, h, i,r}})	!syntax@31: ')' expected.
-ListCorrelate({{{1,1},{1,1}},{{1,1},{1,1}}}, ArrayReshape(Range(27),{3,3,3}))	!syntax@44: ')' expected.
-ListCurvePathPlot(x)	Times(ListCurvePathPlot, x)
+ListCurvePathPlot(pts)	Times(ListCurvePathPlot, pts)
 ListDensityPlot(Table(Sin(i)*Cos(j), {i, 6}, {j, 6}))	!syntax@36: ')' expected.
 ListDensityPlot({{0, 0, 1}, {1, 0, 2}, {0, 1, 3}, {1, 1, 4}})	Times(ListDensityPlot, List(List(0, 0, 1), List(1, 0, 2), List(0, 1, 3), List(1, 1, 4)))
 ListLineIntegralConvolutionPlot(x)	Times(ListLineIntegralConvolutionPlot, x)
+ListLinePlot(Table(Around(Sin(k/2), 0.2), {k, 0, 12}), IntervalMarkers -> "Bands")	!syntax@35: ')' expected.
+ListLinePlot(Table(Around(Sin(k/2), 0.2), {k, 0, 12}), IntervalMarkers -> "Bands", IntervalMarkersStyle -> Orange)	!syntax@35: ')' expected.
 ListLinePlot3D({{0,1,0}, {1,0,2}, {1,1,2}, {2,2,-3}, {2,20,3}})	Times(ListLinePlot3D, List(List(0, 1, 0), List(1, 0, 2), List(1, 1, 2), List(2, 2, -3), List(2, 20, 3)))
 ListLogLogPlot(RandomReal(1, 20)^5)	!syntax@28: ')' expected.
 ListLogPlot(RandomReal(1, 20)^3)	!syntax@25: ')' expected.
+ListPlot(Table(Around(Sin(k/2), 0.1 + 0.05*Abs(Cos(k))), {k, 0, 12}))	!syntax@31: ')' expected.
+ListPlot(Table(Around(Sin(k/2), 0.1), {k, 0, 12}))	!syntax@31: ')' expected.
+ListPlot(Table(Around(k, 1), {k, 5}), IntervalMarkers -> "Points", IntervalMarkersStyle -> Red)	!syntax@24: ')' expected.
 ListPlot(Table(ElementData(z, "AtomicRadius"), {z, 118}))	!syntax@29: ')' expected.
 ListPlot(Table(Tooltip(Prime(i)), {i, 10}))	!syntax@33: ')' expected.
+ListPlot(Table({k, Around(Sqrt(k), 0.2)}, {k, 1, 8}), IntervalMarkers -> "Ellipses")	!syntax@34: ')' expected.
 ListPlot({{1, 1}, Tooltip({2, 4}, "four"), {3, 9}})	!syntax@33: ')' expected.
+ListPointPlot3D(Table({Cos(t), Sin(t), Around(t/3, 0.3)}, {t, 0, 6, 0.5}), IntervalMarkers -> "Tubes")	!syntax@50: ')' expected.
 ListQ(x)	Times(ListQ, x)
 ListQ({1, 2, 3})	Times(ListQ, List(1, 2, 3))
 ListQ({{1, 2}, {3, 4}})	Times(ListQ, List(List(1, 2), List(3, 4)))
 ListStreamDensityPlot(x)	Times(ListStreamDensityPlot, x)
 ListVectorDensityPlot(x)	Times(ListVectorDensityPlot, x)
+ListVectorPlot3D(Table({y, -x, z}, {z, -1, 1, 0.5}, {y, -1, 1, 0.5}, {x, -1, 1, 0.5}))	!syntax@34: ')' expected.
+ListVectorPlot3D(Table({y, -x, z}, {z, -1, 1, 0.5}, {y, -1, 1, 0.5}, {x, -1, 1, 0.5}), DataRange -> {{-1, 1}, {-1, 1}, {-1, 1}})	!syntax@34: ')' expected.
+ListVectorPlot3D({{{0, 0, 0}, {1, 0, 0}}, {{1, 1, 1}, {0, 0, 1}}, {{2, 0, 1}, {1, 1, 0}}})	Times(ListVectorPlot3D, List(List(List(0, 0, 0), List(1, 0, 0)), List(List(1, 1, 1), List(0, 0, 1)), List(List(2, 0, 1), List(1, 1, 0))))
 Ln(E)	Times(Ln, E)
 Ln(x)	Times(Ln, x)
 LoadWolframLanguageCode(x)	Times(LoadWolframLanguageCode, x)
@@ -2429,6 +2511,7 @@ Log2(5.6)	Times(Log2, 5.6)
 Log2(E ^ 2)	Times(Log2, Power(E, 2))
 LogGamma(1/2)	Times(LogGamma, 1/2)
 LogIntegral(0)	Times(LogIntegral, 0)
+LogLikelihood(x)	Times(LogLikelihood, x)
 LogLogisticDistribution(x)	Times(LogLogisticDistribution, x)
 LogSeriesDistribution(x)	Times(LogSeriesDistribution, x)
 LogisticSigmoid(0.5 + 2.3*I)	Times(LogisticSigmoid, Plus(0.5, Times(2.3, I)))
@@ -2442,6 +2525,7 @@ LongRightArrow(x)	Times(LongRightArrow, x)
 Lookup(<|a -> 1, b -> 2|>, c)	!syntax@26: ')' expected.
 Lookup(<|a -> 1, b -> 2|>, c, 42)	!syntax@26: ')' expected.
 Lookup(<|a -> 11, b -> 17|>, a)	!syntax@28: ')' expected.
+LoopFreeGraphQ(x)	Times(LoopFreeGraphQ, x)
 LowerLeftArrow(x)	Times(LowerLeftArrow, x)
 LowerRightArrow(x)	Times(LowerRightArrow, x)
 LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}, -1)	!syntax@64: ')' expected.
@@ -2464,7 +2548,6 @@ Magenta	Magenta
 Magnification(x)	Times(Magnification, x)
 MangoldtLambda({1,2,3,4,5,6,7,8,9})	Times(MangoldtLambda, List(1, 2, 3, 4, 5, 6, 7, 8, 9))
 ManhattanDistance({-1, -1}, {1, 1})	!syntax@27: ')' expected.
-Manipulate(Column({Plot(Sin(k*x), {x, 0, 2*Pi}), Slider(Dynamic(k), {1, 5, 1})}), {k, 1, 5, 1})	!syntax@33: ')' expected.
 Manipulate(Factor(x^n + 1), {n, 1, 5, 1})	!syntax@27: ')' expected.
 Manipulate(Graphics(Line(Dynamic({{0, 0}, p}))), {{p, {1, 1}}, Locator})	!syntax@48: ')' expected.
 Manipulate(If(shape == 1, a, b), {shape, {1, 2}}, PaneSelector({1 -> {a, 0, 1}, 2 -> {b, 0, 1}}, Dynamic(shape)))	!syntax@25: ')' expected.
@@ -2508,10 +2591,29 @@ MatchQ(And(x, y, z), HoldPattern(Times(p__)))	!syntax@13: ')' expected.
 MatchQ(And(x, y, z), Times(p__))	!syntax@13: ')' expected.
 MatchQ(_Integer)[123]	Times(MatchQ, _Integer(123))
 MatchingDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})	!syntax@44: ')' expected.
+MathCell(Graphics({Red, Line({{0, 0}, {1, 1}}), Point({1, 0})}))	Times(MathCell, Times(Graphics, List(Red, Times(Line, List(List(0, 0), List(1, 1))), Times(Point, List(1, 0)))))
+MathCell(Plot(Sin(x), {x, 0, 2*Pi}))	!syntax@21: ')' expected.
+MathCell(Plot3D(Sin(x*y), {x, -2, 2}, {y, -2, 2}))	!syntax@25: ')' expected.
 MathMLForm(D(Sin(x)*Cos(x),x))	!syntax@27: ')' expected.
 MathMLForm(x+Parenthesis(a+b+c))	Times(MathMLForm, Plus(x, Times(Parenthesis, Plus(a, b, c))))
 Math`sin[0.5]	sin(0.5)
 Math`sinh[0.6]	sinh(0.6)
+MathieuC(2, 1, 3.2)	!syntax@11: ')' expected.
+MathieuC(a, 0, z)	!syntax@11: ')' expected.
+MathieuCPrime(2, 1, 3.2)	!syntax@16: ')' expected.
+MathieuCPrime(a, q, -z)	!syntax@16: ')' expected.
+MathieuCharacteristicA(r, 0)	!syntax@25: ')' expected.
+MathieuCharacteristicA({0,1,2}, 1.0)	!syntax@31: ')' expected.
+MathieuCharacteristicB(1.5, 1.0) - MathieuCharacteristicA(1.5, 1.0)	!syntax@27: ')' expected.
+MathieuCharacteristicB(r, 0)	!syntax@25: ')' expected.
+MathieuCharacteristicB({1,2}, 1.0)	!syntax@29: ')' expected.
+MathieuCharacteristicExponent(1.0, 1.0)	!syntax@34: ')' expected.
+MathieuCharacteristicExponent(2, 0.5)	!syntax@32: ')' expected.
+MathieuCharacteristicExponent(a, 0)	!syntax@32: ')' expected.
+MathieuS(2, 1, 3.2)	!syntax@11: ')' expected.
+MathieuS(a, 0, z)	!syntax@11: ')' expected.
+MathieuSPrime(2, 1, 0.)	!syntax@16: ')' expected.
+MathieuSPrime(a, 0, z)	!syntax@16: ')' expected.
 Matrices({2, 3})	Times(Matrices, List(2, 3))
 MatrixD(Det(A.X.B), X)	!syntax@19: ')' expected.
 MatrixExp({{3.4, 1.2}, {0.001, -0.9}})	Times(MatrixExp, List(List(3.4, 1.2), List(0.001, -0.9)))
@@ -2530,6 +2632,7 @@ MatrixRank({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})	Times(MatrixRank, List(List(1, 2, 
 MatrixRank({{a, b}, {3 a, 3 b}})	Times(MatrixRank, List(List(a, b), List(Times(3, a), Times(3, b))))
 MatrixSymbol(a, {2, 2}) + {1, 2}	!syntax@15: ')' expected.
 MatrixSymbol(a, {2, 2}) - MatrixSymbol(a, {2, 2})	!syntax@15: ')' expected.
+MatrixSymbol(a, {2, 2}).MatrixSymbol(b, {2, 2}) + {1, 2}	!syntax@15: ')' expected.
 MatrixSymbol(a, {m, n})	!syntax@15: ')' expected.
 Max()	!syntax@5: Too much closing ) in factor.
 Max(4, -8, 1)	!syntax@6: ')' expected.
@@ -2547,14 +2650,17 @@ MaxFeatures(x)	Times(MaxFeatures, x)
 MaxFilter({1, 2, 3, 2, 1}, 1)	!syntax@26: ')' expected.
 MaxLimit(x)	Times(MaxLimit, x)
 MaxStableDistribution(x)	Times(MaxStableDistribution, x)
+MaxValue(-x^2+4, x)	!syntax@16: ')' expected.
 Maximize(-x^4-7*x^3+2*x^2 - 42,x)	!syntax@31: ')' expected.
 Maximize(x^4+7*x^3-2*x^2 + 42, x)	!syntax@30: ')' expected.
 MaxwellDistribution(x)	Times(MaxwellDistribution, x)
 Mean(BernoulliDistribution(p))	Times(Mean, Times(BernoulliDistribution, p))
 Mean(BinomialDistribution(n, p))	!syntax@28: ')' expected.
+Mean(InverseGammaDistribution(n, m))	!syntax@32: ')' expected.
 Mean(LogisticDistribution(a,b))	!syntax@28: ')' expected.
 Mean(NormalDistribution(m, s))	!syntax@26: ')' expected.
 Mean(QuantityDistribution(NormalDistribution(120, 16), "Centimeters"))	!syntax@49: ')' expected.
+Mean(SkewNormalDistribution(m, s, a))	!syntax@30: ')' expected.
 Mean(TruncatedDistribution({0,1}, NormalDistribution(0,1))) // N	!syntax@33: ')' expected.
 Mean(VonMisesDistribution(m,k))	!syntax@28: ')' expected.
 Mean({1, 1, 2, 3, 5, 8})	Times(Mean, List(1, 1, 2, 3, 5, 8))
@@ -2569,6 +2675,7 @@ MeanDeviation({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})	Times(MeanDeviation, List(1
 MeanDeviation({{1, 2}, {4, 8}, {5, 3}, {2, 15}})	Times(MeanDeviation, List(List(1, 2), List(4, 8), List(5, 3), List(2, 15)))
 MeanDeviation({})	Times(MeanDeviation, List())
 MeanFilter({-3, 3, 6, 0, 0, 3, -3, -9}, 2)	!syntax@39: ')' expected.
+MeanGraphDistance(x)	Times(MeanGraphDistance, x)
 MeanShiftFilter(x)	Times(MeanShiftFilter, x)
 Median(LogNormalDistribution(m,s))	!syntax@31: ')' expected.
 Median({-11, 38, 501, 1183})	Times(Median, List(-11, 38, 501, 1183))
@@ -2629,21 +2736,21 @@ MinDate({DateObject({2022, 4, 8}), DateObject({2022, 4, 9})})	Times(MinDate, Lis
 MinDate({{2024, 6, 1}, {2024, 1, 1}, {2024, 3, 15}})	Times(MinDate, List(List(2024, 6, 1), List(2024, 1, 1), List(2024, 3, 15)))
 MinLimit(x)	Times(MinLimit, x)
 MinStableDistribution(x)	Times(MinStableDistribution, x)
+MinValue(x^2-2*x+3, x)	!syntax@19: ')' expected.
+MinValue({x+y, x^2+y^2<=1}, {x,y})	!syntax@27: ')' expected.
 Minimize(x^4+7*x^3-2*x^2 + 42, x)	!syntax@30: ')' expected.
 Minors({{1,4,7},{3,0,5},{-1,9,11}})	Times(Minors, List(List(1, 4, 7), List(3, 0, 5), List(-1, 9, 11)))
 MinusPlus(x)	Times(MinusPlus, x)
 MissingBehavior(x)	Times(MissingBehavior, x)
 MissingQ(Missing("Test message"))	Times(MissingQ, Times(Missing, Test message))
 MissingValuePattern(x)	Times(MissingValuePattern, x)
+MixedGraphQ(x)	Times(MixedGraphQ, x)
 MixtureDistribution(x)	Times(MixtureDistribution, x)
 Mod(-3, -4)	!syntax@7: ')' expected.
 Mod(-3, 4)	!syntax@7: ')' expected.
 Mod(14, 6)	!syntax@7: ')' expected.
 Mod(5, 0)	!syntax@6: ')' expected.
-Mod(7 + 3*I, 2)	!syntax@12: ')' expected.
-Mod(7, 2 + I)	!syntax@6: ')' expected.
 ModularInverse(3, 11)	!syntax@17: ')' expected.
-Module({Evaluate(a)}, a)	!syntax@21: ')' expected.
 MoebiusMu(30)	Times(MoebiusMu, 30)
 Molecule("CCO")	Times(Molecule, CCO)
 Molecule("water")	Times(Molecule, water)
@@ -2706,6 +2813,8 @@ MultiplySides(a==b, x)	!syntax@19: ')' expected.
 N(1 / 8)	Times(N, 1/8)
 N(1/7)	Times(N, 1/7)
 N(1/7, 5)	!syntax@6: ')' expected.
+N(AiryAiZero(1))	Times(N, Times(AiryAiZero, 1))
+N(AiryBiZero(2))	Times(N, Times(AiryBiZero, 2))
 N(CDF(VonMisesDistribution(1,2),1.5))	!syntax@29: ')' expected.
 N(Catalan)	Times(N, Catalan)
 N(CosineDistance({7, 9}, {71, 89}))	!syntax@24: ')' expected.
@@ -2718,8 +2827,12 @@ N(EulerGamma)	Times(N, EulerGamma)
 N(GoldenAngle)	Times(N, GoldenAngle)
 N(GoldenRatio)	Times(N, GoldenRatio)
 N(I*Pi, 30)	!syntax@7: ')' expected.
+N(KelvinBei(2), 30)	!syntax@15: ')' expected.
+N(KelvinBer(2), 30)	!syntax@15: ')' expected.
 N(Khinchin)	Times(N, Khinchin)
+N(MathieuCharacteristicA(3/2, 1), 40)	!syntax@29: ')' expected.
 N(NCache(1/3, 0.3333333333333333))	!syntax@13: ')' expected.
+N(OwenT(1/8, -1), 50)	!syntax@12: ')' expected.
 N(Pi * E, 30)	!syntax@9: ')' expected.
 N(Pi)	Times(N, Pi)
 N(Pi, 30) * E	!syntax@5: ')' expected.
@@ -2752,13 +2865,20 @@ NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Simpson)	!syntax@41: 
 NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid)	!syntax@41: ')' expected.
 NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)	!syntax@41: ')' expected.
 NIntegrate(1.25+I*2.0+(-3.25+I*0.125)*x+(I*3.0)*x^2,{x, -1.75+I*4.0, 1.5+I*(-12.0)})	!syntax@52: ')' expected.
+NIntegrate(1/Sqrt(x), {x,0,1})	!syntax@21: ')' expected.
+NIntegrate(1/x, {x,0,1})	!syntax@15: ')' expected.
+NIntegrate(Abs(x^2-2*x), {x,-10,10})	!syntax@24: ')' expected.
 NIntegrate(Cos(200*x),{x,0,1}, Method->GaussKronrod)	!syntax@22: ')' expected.
 NIntegrate(Exp(-x^2),{x,-Infinity,Infinity}, Method->GaussKronrod)	!syntax@21: ')' expected.
+NIntegrate(Sin(x)/x, {x,0,Infinity})	!syntax@20: ')' expected.
 NMaximize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})	!syntax@51: ')' expected.
 NMinimize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12}, {x, y})	!syntax@50: ')' expected.
 NProbability(Conditioned(x > 1, x > 0), Distributed(x, NormalDistribution()))	!syntax@31: ')' expected.
 NProbability(x < 3, Distributed(x, NormalDistribution()))	!syntax@19: ')' expected.
 NProbability(x >= 3, Distributed(x, GeometricDistribution(1/5)))	!syntax@20: ')' expected.
+NProduct(1+1/2^k, {k, 1, Infinity})	!syntax@17: ')' expected.
+NProduct(1-1/k^2, {k, 2, Infinity})	!syntax@17: ')' expected.
+NProduct(k, {k, 1, 5})	!syntax@11: ')' expected.
 NResidue(1/(z^2+1), {z, I}) // Chop	!syntax@19: ')' expected.
 NResidue(1/x + 1/(x+0.005), {x, 0}) // Chop	!syntax@27: ')' expected.
 NResidue(1/x + 1/(x+0.005), {x, 0}, Radius -> 0.001) // Chop	!syntax@27: ')' expected.
@@ -2820,6 +2940,7 @@ NondimensionalizationTransform(QuantityVariable("x", "Length") == 3, {QuantityVa
 NoneTrue({1, 3, 5}, EvenQ)	!syntax@19: ')' expected.
 NoneTrue({1, 4, 5}, EvenQ)	!syntax@19: ')' expected.
 NoneTrue({}, EvenQ)	!syntax@12: ')' expected.
+NonlinearModelFit(x)	Times(NonlinearModelFit, x)
 Nor(False, False, False)	!syntax@10: ')' expected.
 Nor(False, True, a)	!syntax@10: ')' expected.
 Norm(0)	Times(Norm, 0)
@@ -2836,7 +2957,9 @@ Norm({x, y}, p)	!syntax@12: ')' expected.
 Norm({{1,2}, {3,4}})	Times(Norm, List(List(1, 2), List(3, 4)))
 Norm({})	Times(Norm, List())
 Normal(AggregateBy(data, "city", "sales", Total))	!syntax@24: ')' expected.
+Normal(GraphicsComplex({{0,0},{1,0},{0,1}}, {Red, Polygon({1,2,3})}))	!syntax@43: ')' expected.
 Normal(JoinAcross(left, right))	!syntax@23: ')' expected.
+Normal(PolyhedronData("Icosahedron", "Faces"))[[1,1,1]]	!syntax@36: ')' expected.
 Normal(QuantityArray({2.3, 1.5}, "Meters"))	!syntax@32: ')' expected.
 Normal(SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1))	!syntax@20: ')' expected.
 Normal(SymbolicDeltaProductArray({2, 2}, {{1, 2}}))	!syntax@40: ')' expected.
@@ -2908,18 +3031,24 @@ NotebookFileName(x)	Times(NotebookFileName, x)
 NullSpace(A)	Times(NullSpace, A)
 NullSpace({1, {2}})	Times(NullSpace, List(1, List(2)))
 NullSpace({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})	Times(NullSpace, List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9)))
+NullSpace({{1, 2}, {2, 4}}, Modulus -> 5)	!syntax@27: ')' expected.
+NullSpace({{1, a}, {a, a^2}}, ZeroTest -> (Simplify(#) === 0 &))	!syntax@29: ')' expected.
 NullSpace({{1,0,-3,0,2,-8},{0,1,5,0,-1,4},{0,0,0,1,7,-9},{0,0,0,0,0,0}})	Times(NullSpace, List(List(1, 0, -3, 0, 2, -8), List(0, 1, 5, 0, -1, 4), List(0, 0, 0, 1, 7, -9), List(0, 0, 0, 0, 0, 0)))
 NumberFieldClassNumber(Sqrt(-163))	Times(NumberFieldClassNumber, Times(Sqrt, -163))
 NumberFieldClassNumber(Sqrt(-5))	Times(NumberFieldClassNumber, Times(Sqrt, -5))
 NumberFieldClassNumber(Sqrt(10))	Times(NumberFieldClassNumber, Times(Sqrt, 10))
+NumberFieldDiscriminant(2^(1/3))	Times(NumberFieldDiscriminant, Power(2, 1/3))
 NumberFieldDiscriminant(I)	Times(NumberFieldDiscriminant, I)
+NumberFieldDiscriminant(Root(#^3-#^2-2*#-8&,1))	!syntax@44: ')' expected.
 NumberFieldDiscriminant(Sqrt(2))	Times(NumberFieldDiscriminant, Times(Sqrt, 2))
 NumberFieldDiscriminant(Sqrt(5))	Times(NumberFieldDiscriminant, Times(Sqrt, 5))
 NumberFieldFundamentalUnits(Sqrt(-5))	Times(NumberFieldFundamentalUnits, Times(Sqrt, -5))
 NumberFieldFundamentalUnits(Sqrt(2))	Times(NumberFieldFundamentalUnits, Times(Sqrt, 2))
 NumberFieldFundamentalUnits(Sqrt(3))	Times(NumberFieldFundamentalUnits, Times(Sqrt, 3))
 NumberFieldFundamentalUnits(Sqrt(5))	Times(NumberFieldFundamentalUnits, Times(Sqrt, 5))
+NumberFieldIntegralBasis(2^(1/3))	Times(NumberFieldIntegralBasis, Power(2, 1/3))
 NumberFieldIntegralBasis(I)	Times(NumberFieldIntegralBasis, I)
+NumberFieldIntegralBasis(Root(#^3-#^2-2*#-8&,1))[[3]]	!syntax@45: ')' expected.
 NumberFieldIntegralBasis(Sqrt(2))	Times(NumberFieldIntegralBasis, Times(Sqrt, 2))
 NumberFieldIntegralBasis(Sqrt(5))	Times(NumberFieldIntegralBasis, Times(Sqrt, 5))
 NumberFieldRegulator(Sqrt(-5))	Times(NumberFieldRegulator, Times(Sqrt, -5))
@@ -2989,7 +3118,7 @@ OrderedQ({a, b})	Times(OrderedQ, List(a, b))
 OrderedQ({b, a})	Times(OrderedQ, List(b, a))
 Ordering({1,3,4,2,5,9,6})	Times(Ordering, List(1, 3, 4, 2, 5, 9, 6))
 Ordering({1,3,4,2,5,9,6}, All, Greater)	!syntax@25: ')' expected.
-Ordering({3,1,2}, x)	!syntax@17: ')' expected.
+OrnsteinUhlenbeckProcess(x)	Times(OrnsteinUhlenbeckProcess, x)
 OrthogonalMatrixQ({{0, 0, 0, 1}, {0, 0, 1, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}})	Times(OrthogonalMatrixQ, List(List(0, 0, 0, 1), List(0, 0, 1, 0), List(1, 0, 0, 0), List(0, 1, 0, 0)))
 Orthogonalize({{3,1},{2,2}})	Times(Orthogonalize, List(List(3, 1), List(2, 2)))
 Outer(StringJoin, {"", "re", "un"}, {"cover", "draw", "wind"}, {"", "ing", "s"})	!syntax@17: ')' expected.
@@ -3003,14 +3132,21 @@ Overlay({Graphics(Disk()), Graphics(Circle({0, 0}, 2))})	!syntax@24: Too much cl
 Overlay({Graphics(Disk(), ImageSize -> 300), Graphics(Rectangle(), ImageSize -> 120)}, Alignment -> {Left, Top})	!syntax@24: Too much closing ) in factor.
 Overlay({Graphics({Red, Disk()}), Graphics({Green, Rectangle()}), Graphics({Blue, Circle()})}, {2, 3, 1})	!syntax@30: Too much closing ) in factor.
 OverwriteTarget(x)	Times(OverwriteTarget, x)
+OwenT(-x, a)	!syntax@9: ')' expected.
+OwenT(0, a)	!syntax@8: ')' expected.
+OwenT(4.0, 1)	!syntax@10: ')' expected.
+OwenT(x, -a)	!syntax@8: ')' expected.
+OwenT(x, 1)	!syntax@8: ')' expected.
 OwnValues(a)	Times(OwnValues, a)
 PDF(BernoulliDistribution(p), x)	!syntax@29: ')' expected.
 PDF(BinomialDistribution(n, p), x)	!syntax@27: ')' expected.
 PDF(CauchyDistribution(a, b), x)	!syntax@25: ')' expected.
 PDF(GumbelDistribution(n, m),k)	!syntax@25: ')' expected.
+PDF(InverseGammaDistribution(a, b), x)	!syntax@31: ')' expected.
 PDF(LogisticDistribution(a,b), x)	!syntax@27: ')' expected.
 PDF(NormalDistribution(m, s), x)	!syntax@25: ')' expected.
 PDF(NormalDistribution(n, m))	!syntax@25: ')' expected.
+PDF(SkewNormalDistribution(m, s, a), x)	!syntax@29: ')' expected.
 PDF(TruncatedDistribution({0,1}, NormalDistribution(0,1)), 0.5) // N	!syntax@32: ')' expected.
 PDF(VonMisesDistribution(m,k),x)	!syntax@27: ')' expected.
 Paclet(x)	Times(Paclet, x)
@@ -3033,13 +3169,20 @@ PaddedForm(-12.3, {8, 2}, SignPadding -> True)	!syntax@17: ')' expected.
 PaddedForm(1.0*^12)	Times(PaddedForm, 1.0*^12)
 PaddedForm(12.3, {6, 2})	!syntax@16: ')' expected.
 Padding(x)	Times(Padding, x)
+PageRankCentrality(x)	Times(PageRankCentrality, x)
 PairedBarChart(x)	Times(PairedBarChart, x)
 PairedHistogram(x)	Times(PairedHistogram, x)
 PairedSmoothHistogram(x)	Times(PairedSmoothHistogram, x)
 Pane(x)	Times(Pane, x)
 Panel(x)	Times(Panel, x)
 Paneled(x)	Times(Paneled, x)
+ParallelMap(#^2&, Range(10))	!syntax@17: ')' expected.
+ParallelMap(f, g(a, b, c))	!syntax@14: ')' expected.
+ParallelMap(f, {1, 2, 3})	!syntax@14: ')' expected.
 ParallelSubmit(x)	Times(ParallelSubmit, x)
+ParallelTable(PrimeQ(2^i - 1), {i, 1, 12}, Method -> "FinestGrained")	!syntax@30: ')' expected.
+ParallelTable(i^2, {i, 10})	!syntax@18: ')' expected.
+ParallelTable({i, j}, {i, 3}, {j, i})	!syntax@21: ')' expected.
 ParameterMixtureDistribution(x)	Times(ParameterMixtureDistribution, x)
 ParametricPlot({Sin(t), Cos(t^2)}, {t, 0, 2*Pi})	!syntax@34: ')' expected.
 ParametricPlot({Sin(t), Cos(t^2)}, {t, 0, 2*Pi}) // JSForm	!syntax@34: ')' expected.
@@ -3059,37 +3202,27 @@ PauliMatrix(2)	Times(PauliMatrix, 2)
 PauliMatrix({0,1,2,3,4})	Times(PauliMatrix, List(0, 1, 2, 3, 4))
 Pause(5)	Times(Pause, 5)
 PearsonCorrelationTest({1, 2, 3, 5, 8}, {0.11, 0.12, 0.13, 0.15, 0.18}, \\"TestData\\")	!syntax@39: ')' expected.
-Perimeter(Annulus({0,0},{1,2}))	!syntax@24: ')' expected.
-Perimeter(Ball())	!syntax@16: Too much closing ) in factor.
-Perimeter(Circle())	!syntax@18: Too much closing ) in factor.
-Perimeter(Cuboid())	!syntax@18: Too much closing ) in factor.
-Perimeter(Disk({0,0},{1,3}))	!syntax@21: ')' expected.
-Perimeter(Disk({0,0},{3,1}))	!syntax@21: ')' expected.
 Perimeter(Disk({1,2}))	Times(Perimeter, Times(Disk, List(1, 2)))
 Perimeter(DiskSegment({0, 0}, 1, {0, Pi}))	!syntax@29: ')' expected.
-Perimeter(Parallelogram({0,0},{{1,0},{0,1}}))	!syntax@30: ')' expected.
-Perimeter(Polygon({{0,0,0},{1,0,0},{0,1,0}}))	Times(Perimeter, Times(Polygon, List(List(0, 0, 0), List(1, 0, 0), List(0, 1, 0))))
-Perimeter(Polygon({{0,0},{1,0},{1,1},{0,1}}))	Times(Perimeter, Times(Polygon, List(List(0, 0), List(1, 0), List(1, 1), List(0, 1))))
-Perimeter(Rectangle({0,0},{3,4}))	!syntax@26: ')' expected.
-Perimeter(Rectangle({0,0},{a,b}), Assumptions -> a>0 && b>0)	!syntax@26: ')' expected.
-Perimeter(RegularPolygon(6))	Times(Perimeter, Times(RegularPolygon, 6))
-Perimeter(Simplex(2))	Times(Perimeter, Times(Simplex, 2))
-Perimeter(Sphere())	!syntax@18: Too much closing ) in factor.
 Perimeter(StadiumShape({{0, 0}, {4, 0}}, 2))	!syntax@40: ')' expected.
-Perimeter(Torus())	!syntax@17: Too much closing ) in factor.
-Perimeter(Triangle({{0,0,0},{1,0,0},{0,1,1}}))	Times(Perimeter, Times(Triangle, List(List(0, 0, 0), List(1, 0, 0), List(0, 1, 1))))
-Perimeter(Triangle({{0,0},{1,0},{0,1}}))	Times(Perimeter, Times(Triangle, List(List(0, 0), List(1, 0), List(0, 1))))
-Perimeter({r*Cos(t), r*Sin(t)}, {r,0,1}, {t,0,2*Pi})	!syntax@31: ')' expected.
-Perimeter({s, t}, {s,0,3}, {t,0,4})	!syntax@17: ')' expected.
 PeriodicTablePlot("MeltingPoint")[[3]]	Times(PeriodicTablePlot, Part(MeltingPoint, 3))
 PeriodicTablePlot(ImageSize->500, PlotLabel->"Table")[[2;;]]	!syntax@33: ')' expected.
 PeriodicTablePlot(PlotLegends->True)[[3,2,2]]	Times(PeriodicTablePlot, Part(Rule(PlotLegends, True), 3, 2, 2))
 PermutationCycles({3, 1, 2, 5, 4})	Times(PermutationCycles, List(3, 1, 2, 5, 4))
 PermutationCycles({4,2,7,6,5,8,1,3})	Times(PermutationCycles, List(4, 2, 7, 6, 5, 8, 1, 3))
 PermutationCyclesQ(Cycles({{1, 6, 2}, {4, 11, 12, 3}}))	Times(PermutationCyclesQ, Times(Cycles, List(List(1, 6, 2), List(4, 11, 12, 3))))
+PermutationLength(Cycles({{3,5},{1,7}}))	Times(PermutationLength, Times(Cycles, List(List(3, 5), List(1, 7))))
 PermutationList(Cycles({{3, 2}, { 6, 7},{11,17}}))	Times(PermutationList, Times(Cycles, List(List(3, 2), List(6, 7), List(11, 17))))
 PermutationListQ({5, 7, 6, 1, 3, 4, 2, 8})	Times(PermutationListQ, List(5, 7, 6, 1, 3, 4, 2, 8))
+PermutationMax(Cycles({{3,5},{1,7}}))	Times(PermutationMax, Times(Cycles, List(List(3, 5), List(1, 7))))
+PermutationMax(Cycles({}))	Times(PermutationMax, Times(Cycles, List()))
+PermutationMin(Cycles({{3,5},{2,7}}))	Times(PermutationMin, Times(Cycles, List(List(3, 5), List(2, 7))))
+PermutationMin(Cycles({}))	Times(PermutationMin, Times(Cycles, List()))
+PermutationOrder(Cycles({{1,2,3},{4,5}}))	Times(PermutationOrder, Times(Cycles, List(List(1, 2, 3), List(4, 5))))
+PermutationPower(Cycles({{1,2,3,4}}), -1)	!syntax@37: ')' expected.
+PermutationPower(Cycles({{1,2,3,4}}), 2)	!syntax@37: ')' expected.
 PermutationReplace({1, b, 3, 4, 5}, Cycles({{1, 5,8}, {2, 7}}))	!syntax@35: ')' expected.
+PermutationSupport(Cycles({{3,5},{1,7}}))	Times(PermutationSupport, Times(Cycles, List(List(3, 5), List(1, 7))))
 Permutations({1, 2, 3}, 2)	!syntax@23: ')' expected.
 Permutations({a, b, c})	Times(Permutations, List(a, b, c))
 Permutations({a, b, c}, {2})	!syntax@23: ')' expected.
@@ -3116,7 +3249,6 @@ Piecewise({{0, x <= 0}}, 1)	!syntax@24: ')' expected.
 Piecewise({{1, False}})	Times(Piecewise, List(List(1, False)))
 PiecewiseExpand(Abs(x), Reals)	!syntax@23: ')' expected.
 PiecewiseExpand(Clip(x))	Times(PiecewiseExpand, Times(Clip, x))
-PiecewiseExpand(Clip(x, {-7, 5}, {a, b}))	!syntax@23: ')' expected.
 PiecewiseExpand(Ramp(x))	Times(PiecewiseExpand, Times(Ramp, x))
 Pink	Pink
 Placed(x)	Times(Placed, x)
@@ -3133,6 +3265,7 @@ PlanarGraphQ("abc")	Times(PlanarGraphQ, abc)
 PlanarGraphQ(CompleteGraph(4))	Times(PlanarGraphQ, Times(CompleteGraph, 4))
 PlanarGraphQ(CompleteGraph(5))	Times(PlanarGraphQ, Times(CompleteGraph, 5))
 PlanarGraphQ(CycleGraph(4))	Times(PlanarGraphQ, Times(CycleGraph, 4))
+PlanetData(x)	Times(PlanetData, x)
 Plot(Sin(x)*Cos(1 + x), {x, 0, 2*Pi})	!syntax@23: ')' expected.
 Plot(Sin(x)*Cos(1 + x), {x, 0, 2*Pi}) // JSForm	!syntax@23: ')' expected.
 Plot(Sin(x), {x, 0, 12}, RegionFunction -> Function({x, y}, y > 0))	!syntax@12: ')' expected.
@@ -3200,12 +3333,12 @@ PolygonalNumber(-3,-2)	!syntax@19: ')' expected.
 PolygonalNumber(4,-2)	!syntax@18: ')' expected.
 PolyhedronData("Icosahedron", "VertexCount") - PolyhedronData("Icosahedron", "EdgeCount") + PolyhedronData("Icosahedron", "FaceCount")	!syntax@29: ')' expected.
 PolyhedronData("Icosidodecahedron", "Volume")	!syntax@35: ')' expected.
+PolyhedronData("Properties")	Times(PolyhedronData, Properties)
 PolyhedronData("RhombicTriacontahedron", "Circumradius")	!syntax@40: ')' expected.
 PolyhedronData("TruncatedIcosahedron", "FaceCount")	!syntax@38: ')' expected.
+PolyhedronData("TruncatedIcosahedron", "FaceCountRules")	!syntax@38: ')' expected.
 PolynomialExtendedGCD(x^8 + x^4 + x^3 + x + 1, x^6 + x^4 + x + 1, x, Modulus->2)	!syntax@46: ')' expected.
 PolynomialGCD(x^2 + 7*x + 6, x^2-5*x-6)	!syntax@28: ')' expected.
-PolynomialLCM(2*x^2 + 2, x + 1, Modulus -> 5)	!syntax@24: ')' expected.
-PolynomialLCM(x - 1, x^2 - 1)	!syntax@20: ')' expected.
 PolynomialLCM(x^2 + 7*x + 6, x^2-5*x-6)	!syntax@28: ')' expected.
 PolynomialQ(2*x^3,x^2)	!syntax@18: ')' expected.
 PolynomialQ(Cos(x*y), Cos(x*y))	!syntax@21: ')' expected.
@@ -3308,13 +3441,13 @@ ProcessStatus(x)	Times(ProcessStatus, x)
 Product(2 ^ i, {i, 1, n})	!syntax@14: ')' expected.
 Product(k, {k, 1, 10})	!syntax@10: ')' expected.
 Product(k, {k, 3, n})	!syntax@10: ')' expected.
-Product(x, {{a, b, c}})	!syntax@10: ')' expected.
 Product(x^k, {k, 2, 20, 2})	!syntax@12: ')' expected.
 ProductDistribution(x)	Times(ProductDistribution, x)
 ProductLog(0)	Times(ProductLog, 0)
 ProductLog(E)	Times(ProductLog, E)
 ProgressIndicator(x)	Times(ProgressIndicator, x)
 Projection({5, I, 7}, {1, 1, 1})	!syntax@21: ')' expected.
+Properties(x)	Times(Properties, x)
 ProteinData(BioSequence("Peptide", "MTEYKLVVVGAGGVGKSALTIQ"), "Length")	!syntax@34: ')' expected.
 ProteinData(BioSequence("Peptide", "MTEYKLVVVGAGGVGKSALTIQ"), "MembraneBound")	!syntax@34: ')' expected.
 ProteinData(BioSequence("Peptide", "MW"), "AminoAcidComposition")	!syntax@34: ')' expected.
@@ -3329,31 +3462,23 @@ QuadraticIrrationalQ((7*Sqrt(2) + 1)/11)	Times(QuadraticIrrationalQ, Times(1/11,
 QuadraticIrrationalQ(42)	Times(QuadraticIrrationalQ, 42)
 QuadraticIrrationalQ(5*Sqrt(11))	Times(QuadraticIrrationalQ, Times(Times(5, Sqrt), 11))
 Quantile(NormalDistribution(m, s), q)	!syntax@30: ')' expected.
-Quantile(Range(10), 3/10, {1, 2})	!syntax@19: ')' expected.
 Quantile(Range(11), 1/3)	!syntax@19: ')' expected.
 Quantile(Range(17), 1/4)	!syntax@19: ')' expected.
-Quantile(WeightedData({1, 2, 3, 4}, {1, 1, 1, 1}), 1/2)	!syntax@35: ')' expected.
 Quantile({1, 2, 3, 4, 5, 6, 7}, {1/4, 3/4})	!syntax@31: ')' expected.
 Quantile({1,2}, 0.5)	!syntax@15: ')' expected.
 QuantilePlot(x)	Times(QuantilePlot, x)
-Quantity(1, "min") > Quantity(50, "s")	!syntax@11: ')' expected.
-Quantity(3, "Hz^(-2)*N*m^(-1)")	!syntax@11: ')' expected.
-Quantity(3, "m")	!syntax@11: ')' expected.
 Quantity(3, IndependentUnit("Boxes")) + Quantity(4, IndependentUnit("Boxes"))	!syntax@11: ')' expected.
-Quantity(50, "min") + Quantity(1, "s")	!syntax@12: ')' expected.
+Quantity(50, "s") + Quantity(1, "min")	!syntax@12: ')' expected.
 QuantityArray({2.3, 1.5, 9.}, "m")	!syntax@29: ')' expected.
 QuantityForm(Quantity(0.7, "Seconds"), {"LongForm", "SingularForm"})	!syntax@26: ')' expected.
 QuantityForm(Quantity(3, "Meters"/"Seconds"), "LongForm")	!syntax@24: ')' expected.
 QuantityForm(Quantity(3, "Meters"/"Seconds"^2), "LongForm")	!syntax@24: ')' expected.
-QuantityMagnitude(Quantity(3.4, "km"), "m")	!syntax@31: ')' expected.
-QuantityMagnitude(Quantity(3.4, "m"))	!syntax@31: ')' expected.
 QuantityMagnitude(Quantity(360, "deg"), "rad")	!syntax@31: ')' expected.
 QuantityQ(Quantity(3, "Foo"))	!syntax@21: ')' expected.
 QuantityQ(Quantity(3, "Meters"))	!syntax@21: ')' expected.
 QuantityQ(Quantity(300, "Meters"), "Time")	!syntax@23: ')' expected.
 QuantityQ(Quantity(300, "Seconds"), "Time")	!syntax@23: ')' expected.
 QuantityQ(Quantity(MixedMagnitude({5, 10}), MixedUnit({"Feet", "Inches"})))	!syntax@43: ')' expected.
-QuantityUnit(Quantity(3.4, "Meters"))	!syntax@26: ')' expected.
 QuantityUnit(Quantity(42, "Kilograms"))	!syntax@25: ')' expected.
 QuantityVariableCanonicalUnit(Derivative(1)[QuantityVariable("RadiantFluxDensity")][QuantityVariable("Time")])	Times(QuantityVariableCanonicalUnit, Times(Derivative, 1(Times(QuantityVariable, RadiantFluxDensity))[Times(QuantityVariable, Time)]))
 QuantityVariableCanonicalUnit(QuantityVariable("R", "ElectricResistance"))	!syntax@51: ')' expected.
@@ -3365,9 +3490,6 @@ QuantityVariableIdentifier(QuantityVariable("V", "ElectricPotential"))	!syntax@4
 QuantityVariablePhysicalQuantity(QuantityVariable("V", "ElectricPotential"))	!syntax@54: ')' expected.
 QuantityVariablePhysicalQuantity(QuantityVariable("V", "ElectricPotential"), "Entity")	!syntax@54: ')' expected.
 Quartics(x)	Times(Quartics, x)
-Quartiles(<|"a" -> 1, "b" -> 2, "c" -> 3, "d" -> 4|>)	Times(Quartiles, Association(List(Rule(a, 1), Rule(b, 2), Rule(c, 3), Rule(d, 4))))
-Quartiles(WeightedData({1, 2, 3, 4}, {1, 1, 1, 1}))	!syntax@36: ')' expected.
-Quartiles({1, 2, 3}, {1, 2})	!syntax@20: ')' expected.
 Quartiles({6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49}) // N	N(Times(Quartiles, List(6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49)))
 Quartiles({6, 7, 15, 36, 39, 40, 41, 42, 43, 47, 49}, {{0, 0}, {1, 0}}) // N	!syntax@53: ')' expected.
 Quiet(1/0)	Times(Quiet, 1/0)
@@ -3391,8 +3513,10 @@ RandomChoice({a, b, c}, {5, 2})	!syntax@23: ')' expected.
 RandomChoice({a,b,c},20)	!syntax@21: ')' expected.
 RandomComplex( )	!syntax@16: Too much closing ) in factor.
 RandomComplex({1+I, 2+2I}, {2,2,3})	!syntax@26: ')' expected.
+RandomFunction(x)	Times(RandomFunction, x)
 RandomGraph({5,10})	Times(RandomGraph, List(5, 10))
 RandomInteger(100)	Times(RandomInteger, 100)
+RandomInteger(PoissonDistribution(3), 5)	!syntax@37: ')' expected.
 RandomPermutation(10)	Times(RandomPermutation, 10)
 RandomPermutation(10,3)	!syntax@21: ')' expected.
 RandomPrime(100000000000000000000000000)	Times(RandomPrime, 100000000000000000000000000)
@@ -3403,10 +3527,12 @@ RandomPrime({14, 16}, 1)	!syntax@21: ')' expected.
 RandomPrime({14, 17})	Times(RandomPrime, List(14, 17))
 RandomPrime({8,12}, 3)	!syntax@19: ')' expected.
 RandomReal( )	!syntax@13: Too much closing ) in factor.
+RandomReal(NormalDistribution(0,1), 3)	!syntax@32: ')' expected.
 RandomSample(f(1,2,3,4,5))	!syntax@17: ')' expected.
 RandomSample(f(1,2,3,4,5),3)	!syntax@17: ')' expected.
 RandomVariate(BernoulliDistribution(0.25), 10^1)	!syntax@42: ')' expected.
 RandomVariate(BinomialDistribution(10,0.25), 10^1)	!syntax@38: ')' expected.
+RandomVariate(InverseGammaDistribution(2, 3), 3)	!syntax@41: ')' expected.
 RandomVariate(NormalDistribution(2,3), 10^1)	!syntax@35: ')' expected.
 RandomVariate(NormalDistribution(2,3),{2,3,4})	!syntax@35: ')' expected.
 Range(-3, 2)	!syntax@9: ')' expected.
@@ -3451,24 +3577,10 @@ RealValuedNumberQ[4.0]	RealValuedNumberQ(4.0)
 Reap(Do(If(GCD(num, den) == 1, Sow(num)), {den, 1, 20}, {num, 1, den-1}) )[[2, 1]]	!syntax@19: ')' expected.
 Reap(Sow(3); Sow(1))	Times(Reap, CompoundExpression(Times(Sow, 3), Times(Sow, 1)))
 RectangleChart(x)	Times(RectangleChart, x)
+RecurrenceTable({a(n)==a(n-1)+a(n-2), a(1)==1, a(2)==1}, a(n), {n, 1, 8})	!syntax@56: ')' expected.
+RecurrenceTable({a(n+1)==3*a(n), a(1)==7}, a(n), {n, 1, 5})	!syntax@42: ')' expected.
 Red	Red
-Reduce(1/x<1, x, Reals)	!syntax@13: ')' expected.
-Reduce(2*x+3*y==1, {x, y}, Integers)	!syntax@18: ')' expected.
-Reduce(4*x^3-4*x>0, x)	!syntax@19: ')' expected.
-Reduce(Abs(x)==1, x, Reals)	!syntax@17: ')' expected.
-Reduce(Abs(x-2)+Abs(x-3)==1, x, Reals)	!syntax@28: ')' expected.
-Reduce(Sin(x)==1/2 && 0<x<2*Pi, x)	!syntax@31: ')' expected.
-Reduce(Sin(x)==1/2, x)	!syntax@19: ')' expected.
-Reduce(Sin(x)==2, x, Reals)	!syntax@17: ')' expected.
-Reduce(Sin(x)>1/2 && 0<x<2*Pi, x)	!syntax@30: ')' expected.
-Reduce(Sinh(x)==1, x, Reals)	!syntax@18: ')' expected.
-Reduce(a*x==b, x)	!syntax@14: ')' expected.
-Reduce(x>0 && x<4, x, Integers)	!syntax@18: ')' expected.
-Reduce(x^2==2, x, Modulus->7)	!syntax@14: ')' expected.
-Reduce(x^2==4, x)	!syntax@14: ')' expected.
-Reduce(x^2>1, x, Integers)	!syntax@13: ')' expected.
 Reduce(x^6-1==0 && x>0, x)	!syntax@23: ')' expected.
-Reduce({x^2==4, y==2}, {x, y})	!syntax@22: ')' expected.
 ReferenceAltitude(x)	Times(ReferenceAltitude, x)
 Refine(-Infinity<x, x>0)	!syntax@19: ')' expected.
 Refine(2/3*Round(x), Element(x,Integers))	!syntax@20: ')' expected.
@@ -3570,6 +3682,8 @@ RegionMoment(Disk({0, 0}, r), {2, 0})	!syntax@25: ')' expected.
 RegionMoment(Rectangle({0, 0}, {a, b}), {1, 2})	!syntax@30: ')' expected.
 RegionMoment(Triangle(), {1, 1})	!syntax@23: Too much closing ) in factor.
 RegionPlot(x)	Times(RegionPlot, x)
+RegionPlot3D(x*y*z < 1, {x, -5, 5}, {y, -5, 5}, {z, -5, 5}, PlotStyle -> Directive(Cyan, "Roughness" -> 0.0), Mesh -> None)	!syntax@23: ')' expected.
+RegionPlot3D(x^2 + y^2 + z^2 < 1, {x, -1, 1}, {y, -1, 1}, {z, -1, 1})	!syntax@33: ')' expected.
 RegionProduct(Disk({1, 2}, 3), Interval({4, 6}))	!syntax@26: ')' expected.
 RegionProduct(Line({{0}, {2}}), Line({{0}, {3}}))	!syntax@31: ')' expected.
 RegionProduct(Triangle(), Interval({0, 2}))	!syntax@24: Too much closing ) in factor.
@@ -3588,16 +3702,10 @@ RenameDirectory(x)	Times(RenameDirectory, x)
 RenameFile(x)	Times(RenameFile, x)
 RenkoChart(x)	Times(RenkoChart, x)
 RepeatedTiming(FactorInteger(2^32-1))	Times(RepeatedTiming, Times(FactorInteger, Plus(Power(2, 32), Times(-1, 1))))
-Replace("a", <|"a" -> 1, "b" -> 2|>)	!syntax@12: ')' expected.
-Replace("c", <|"a" -> 1, "b" -> 2|>)	!syntax@12: ')' expected.
-Replace(f(a), <|f(x_) -> x^2|>)	!syntax@13: ')' expected.
-Replace(f(a), {f(x_) -> x^2})	!syntax@13: ')' expected.
 Replace(x, {{e->q, x -> a}, {x -> b}})	!syntax@10: ')' expected.
 ReplaceAll(D(CumulantGeneratingFunction(NormalDistribution(m,s), t), {t,2}), t->0)	!syntax@61: ')' expected.
 ReplaceAll(D(MomentGeneratingFunction(PoissonDistribution(l), t), t), t->0)	!syntax@61: ')' expected.
 ReplaceAt({a, a, a, a, a}, a -> xx, 2 ;; 5)	!syntax@26: ')' expected.
-ReplaceAt({a, b}, <|a -> 1|>, 1)	!syntax@17: ')' expected.
-ReplaceList("a", <|"a" -> 1, "b" -> 2|>)	!syntax@16: ')' expected.
 ReplaceList(a+b+c,(x_+y_) :> {{x},{y}})	!syntax@18: ')' expected.
 ReplacePart({a, b, c, d}, {{1}, {3}} :> n++)	!syntax@25: ')' expected.
 ReplacePart({a, b, c}, -1 -> t)	!syntax@22: ')' expected.
@@ -3625,13 +3733,14 @@ Rest(a + b + c)	Times(Rest, Plus(a, b, c))
 Rest(x)	Times(Rest, x)
 Rest({a, b, c})	Times(Rest, List(a, b, c))
 Resultant((x-y)^2-2 , y^3-5, y)	!syntax@21: ')' expected.
-Resultant(x^2 + 1, x + 1, x, Modulus -> 5)	!syntax@18: ')' expected.
 ReturnExpressionPacket(x)	Times(ReturnExpressionPacket, x)
 ReturnPacket(x)	Times(ReturnPacket, x)
 ReturnTextPacket(x)	Times(ReturnTextPacket, x)
 Reverse(x(a,b,c))	!syntax@12: ')' expected.
 Reverse({1, 2, 3})	Times(Reverse, List(1, 2, 3))
+ReverseGraph(x)	Times(ReverseGraph, x)
 ReverseSort({4, 1.0, a, 3+I})	Times(ReverseSort, List(4, 1.0, a, Plus(3, I)))
+ReverseSortBy(x)	Times(ReverseSortBy, x)
 RevolutionAxis(x)	Times(RevolutionAxis, x)
 RiccatiSolve({ {{3, -2}, {4, -1}}, {{0}, {1}} }, { {{1.0,0.0},{0.0,1.0}}, {{1.0}} })	!syntax@48: ')' expected.
 RiceDistribution(x)	Times(RiceDistribution, x)
@@ -3651,6 +3760,7 @@ RootApproximant(N(Sqrt(2)))	Times(RootApproximant, Times(N, Times(Sqrt, 2)))
 RootApproximant({0.5, N(Sqrt(3))})	Times(RootApproximant, List(0.5, Times(N, Times(Sqrt, 3))))
 RootMeanSquare({42,43})	Times(RootMeanSquare, List(42, 43))
 RootMeanSquare({x,y,z})	Times(RootMeanSquare, List(x, y, z))
+RootReduce(AlgebraicNumber(Root(#^3+#+1&,3),{1,2,1}))	!syntax@41: ')' expected.
 Roots(3*x^3-5*x^2+5*x-2==0,x)	!syntax@27: ')' expected.
 Rotate(x)	Times(Rotate, x)
 RotateLeft(Range(10), 3)	!syntax@21: ')' expected.
@@ -3663,7 +3773,6 @@ RotationAction(x)	Times(RotationAction, x)
 RotationMatrix(90*Degree)	Times(RotationMatrix, Times(90, Degree))
 RotationMatrix(t,{1,0,0})	!syntax@17: ')' expected.
 RotationTransform(Pi).TranslationTransform({1, -1})	Times(Times(RotationTransform, Dot(Pi, TranslationTransform)), List(1, -1))
-RotationTransform(Pi/2, {1, 0})	!syntax@23: ')' expected.
 Round(-3.6)	Times(Round, -3.6)
 Round(1.234512, 0.01)	!syntax@15: ')' expected.
 Round(1.235512, 0.01)	!syntax@15: ')' expected.
@@ -3687,13 +3796,6 @@ Save(temp, {f,g})	!syntax@10: ')' expected.
 SaveDefinitions(x)	Times(SaveDefinitions, x)
 SawtoothWave(41/42)	Times(SawtoothWave, 41/42)
 SawtoothWave(42/41)	Times(SawtoothWave, 42/41)
-ScalingTransform(2, {1, 1})	!syntax@19: ')' expected.
-ScalingTransform(2, {1, 1}, {1, 1})[{1, 1}]	!syntax@19: ')' expected.
-ScalingTransform(3, {1, 2, 2})	!syntax@19: ')' expected.
-ScalingTransform({2, 3})	Times(ScalingTransform, List(2, 3))
-ScalingTransform({2, 3})[{1, 1}]	Times(ScalingTransform, List(2, 3)[List(1, 1)])
-ScalingTransform({2, 3}, {1, 1})	!syntax@24: ')' expected.
-ScalingTransform({sx, sy})	Times(ScalingTransform, List(sx, sy))
 Scan(Print)({1, 2})	Times(Scan, Times(Print, List(1, 2)))
 Scan(Print, f(g(h(x))), 2)	!syntax@11: ')' expected.
 Scan(Print, {1, 2, 3})	!syntax@11: ')' expected.
@@ -3714,7 +3816,10 @@ Sec(1)	Times(Sec, 1)
 Sec(1.)	Times(Sec, 1.)
 Sech(0)	Times(Sech, 0)
 SechDistribution(x)	Times(SechDistribution, x)
-SectorChart(x)	Times(SectorChart, x)
+SectorChart({{1, 1}, {1, 2}, {1, 3}})	Times(SectorChart, List(List(1, 1), List(1, 2), List(1, 3)))
+SectorChart({{1, 1}, {1, 2}, {1, 3}}, SectorOrigin -> {Automatic, 1})	!syntax@37: ')' expected.
+SectorChart({{1, 1}, {2, 2}}, SectorOrigin -> {Pi/2, "Clockwise"}, PolarAxes -> True, PolarGridLines -> Automatic)	!syntax@29: ')' expected.
+SectorChart3D(x)	Times(SectorChart3D, x)
 SectorOrigin(x)	Times(SectorOrigin, x)
 SectorSpacing(x)	Times(SectorSpacing, x)
 Segmented(x)	Times(Segmented, x)
@@ -3736,7 +3841,6 @@ SelectComponents(x)	Times(SelectComponents, x)
 SelectFirst({-3, 0, 1, 3, a}, #>0 &)	!syntax@29: ')' expected.
 SelectFirst({-3, 0, 1, 3, a}, #>3 &)	!syntax@29: ')' expected.
 SemanticImport("./data/test.csv")	Times(SemanticImport, ./data/test.csv)
-SemanticImport("./data/test.csv", Delimiters -> ";")	!syntax@33: ')' expected.
 SemanticImportString("Products,Sales,Market_Share	!syntax@50: ')' expected.
 SeparateBoundaries(x)	Times(SeparateBoundaries, x)
 SequenceAlignment("BANANA", "ANANAS")	!syntax@27: ')' expected.
@@ -3765,10 +3869,6 @@ SetterBar(x)	Times(SetterBar, x)
 Share(people)	Times(Share, people)
 Sharpen(x)	Times(Sharpen, x)
 Sharpening(x)	Times(Sharpening, x)
-ShearingTransform(Pi/4, {1, 0, 0}, {0, 1, 0}, {1, 2, 3})	!syntax@23: ')' expected.
-ShearingTransform(Pi/4, {1, 0}, {0, 1})	!syntax@23: ')' expected.
-ShearingTransform(Pi/6, {0, 1}, {1, 0}, {1, 1})	!syntax@23: ')' expected.
-ShearingTransform(phi, {1, 0}, {0, 1})	!syntax@22: ')' expected.
 ShrinkingDelay(x)	Times(ShrinkingDelay, x)
 SiderealTime("MeanTime", GeoPosition({0,0}), DateObject({2000,1,1,12,0,0}))	!syntax@24: ')' expected.
 Sign(-2.5)	Times(Sign, -2.5)
@@ -3776,6 +3876,7 @@ Sign(Interval({-43, -42}))	Times(Sign, Times(Interval, List(-43, -42)))
 Signature({1,2,3,2})	Times(Signature, List(1, 2, 3, 2))
 Signature({1,2,3,4})	Times(Signature, List(1, 2, 3, 4))
 Signature({1,4,3,2})	Times(Signature, List(1, 4, 3, 2))
+SimpleGraphQ(x)	Times(SimpleGraphQ, x)
 Simplify(1/2*(2*x+2))	Times(Simplify, Times(1/2, Plus(Times(2, x), 2)))
 Simplify(2*Sin(x)^2 + 2*Cos(x)^2)	Times(Simplify, Plus(Times(Times(2, Sin), Power(x, 2)), Times(Times(2, Cos), Power(x, 2))))
 Simplify(Abs(x), x<0)	!syntax@16: ')' expected.
@@ -3794,6 +3895,7 @@ Sin(1 / (x ^ 2 - y ^ 2)) // Apart	Apart(Times(Sin, Power(Plus(Power(x, 2), Times
 Sin(1.0 + I)	Times(Sin, Plus(1.0, I))
 Sin(3*Pi)	Times(Sin, Times(3, Pi))
 Sin(30*Degree)	Times(Sin, Times(30, Degree))
+Sin(Around(1, 0.1))	!syntax@13: ')' expected.
 Sin(k*Pi)	Times(Sin, Times(k, Pi))
 SinIntegral(0)	Times(SinIntegral, 0)
 Sinc(0)	Times(Sinc, 0)
@@ -3804,15 +3906,13 @@ SingularValueDecomposition({{3/2, 2}, {5/2, 3}})	Times(SingularValueDecompositio
 Sinh(0)	Times(Sinh, 0)
 SinhIntegral(0)	Times(SinhIntegral, 0)
 SixJSymbol({1, 2, 3}, {1, 2, 3})	!syntax@21: ')' expected.
-SixJSymbol({1.0, 2.0, 1.0}, {2, 3, 2})	!syntax@27: ')' expected.
-SixJSymbol({1/2, 1, 1}, {1, 1, 1})	!syntax@23: ')' expected.
 SkeletonTransform(x)	Times(SkeletonTransform, x)
 Skewness(LogisticDistribution(a,b))	!syntax@32: ')' expected.
+Skewness(SkewNormalDistribution(m, s, a))	!syntax@34: ')' expected.
 Skewness({1.1, 1.2, 1.4, 2.1, 2.4})	Times(Skewness, List(1.1, 1.2, 1.4, 2.1, 2.4))
 Slider(Dynamic(x, (x = Max(0, #1))&))	!syntax@17: ')' expected.
 Slider(x)	Times(Slider, x)
 Slider2D(x)	Times(Slider2D, x)
-Slot("x")	Times(Slot, x)
 SmithWatermanSimilarity("ACGT", "ACGT", GapPenalty -> 2)	!syntax@31: ')' expected.
 SmithWatermanSimilarity("AxxxG", "AG", GapPenalty -> 100)	!syntax@32: ')' expected.
 SmithWatermanSimilarity("abc", "xyz")	!syntax@30: ')' expected.
@@ -3939,6 +4039,7 @@ StreamDensityPlot(x)	Times(StreamDensityPlot, x)
 StreamPoints(x)	Times(StreamPoints, x)
 StreamScale(x)	Times(StreamScale, x)
 StreamStyle(x)	Times(StreamStyle, x)
+StrictInequalities(x)	Times(StrictInequalities, x)
 StringCases("12341235678", "123" | "78")	!syntax@26: ')' expected.
 StringCases("a#ä_123", LetterCharacter)	!syntax@22: ')' expected.
 StringCases("a#ä_123", WordCharacter)	!syntax@22: ')' expected.
@@ -3974,6 +4075,7 @@ StringMatchQ(#,HexidecimalCharacter) & /@ {"a","1","A","x","H"," ","."}	!syntax@
 StringMatchQ(\\"\\r \\n", Whitespace)	!syntax@15: unexpected (named unicode) character: '\\[RawDoubleQuote]'
 StringMatchQ({"ExpandAll", "listable", "test"}, RegularExpression("li(.+?)le"))	!syntax@47: ')' expected.
 StringPadLeft(x)	Times(StringPadLeft, x)
+StringPadRight(x)	Times(StringPadRight, x)
 StringPart("1234567890",  {1, 3, 10})	!syntax@24: ')' expected.
 StringPosition("123ABCxyABCzzzABCABC", "ABC")	!syntax@38: ')' expected.
 StringPosition("123ABCxyABCzzzABCABC", "ABC", 2)	!syntax@38: ')' expected.
@@ -4029,8 +4131,6 @@ SudokuSolve({{0,0,3,0,0,0,0,0,0},{4,0,0,0,8,0,0,3,6},{0,0,8,0,0,0,1,0,0},{0,4,0,
 Sum(1 / 2 ^ i, {i, 1, Infinity})	!syntax@14: ')' expected.
 Sum(1 / k ^ 2, {k, 1, Infinity})	!syntax@14: ')' expected.
 Sum(1 / k ^ 2, {k, 1, n})	!syntax@14: ')' expected.
-Sum(1/(i+a), {i, 1, n})	!syntax@12: ')' expected.
-Sum(1/(i^2+i*x), {i, 1, Infinity})	!syntax@16: ')' expected.
 Sum(1/x^2, {x, 1, Infinity})	!syntax@10: ')' expected.
 Sum(2^(-i), {i, 1, Infinity})	!syntax@11: ')' expected.
 Sum(Cos(Pi i), {i, 1, Infinity})	!syntax@14: ')' expected.
@@ -4040,15 +4140,11 @@ Sum(i / Log(i), {i, 1, Infinity})	!syntax@15: ')' expected.
 Sum(i, {i, 1, 2.5})	!syntax@6: ')' expected.
 Sum(i, {i, 1.1, 2.5})	!syntax@6: ')' expected.
 Sum(k, {k, 1, 10})	!syntax@6: ')' expected.
-Sum(k, {k, 1, n, 2})	!syntax@6: ')' expected.
 Sum(k, {k, 1, n})	!syntax@6: ')' expected.
 Sum(k, {k, I, I + 1})	!syntax@6: ')' expected.
 Sum(k, {k, I, I+1.5})	!syntax@6: ')' expected.
 Sum(k, {k, n, 2*n})	!syntax@6: ')' expected.
-Sum(k^2, {k, {2, 3, 5}})	!syntax@8: ')' expected.
-Sum(x, {{a, b, c}})	!syntax@6: ')' expected.
 Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})	!syntax@16: ')' expected.
-Sum({i, i^2}, {i, 1, n})	!syntax@13: ')' expected.
 SunPosition(DateObject({2000,1,1,12,0,0}), CelestialSystem->"Equatorial")	!syntax@42: ')' expected.
 SunPosition(GeoPosition({51.4779, 0.0}), DateObject({2000,1,1,12,0,0}))	!syntax@40: ')' expected.
 Sunday(x)	Times(Sunday, x)
@@ -4120,13 +4216,11 @@ Table(x!, {x, 8})	!syntax@9: ')' expected.
 Table(x, {4})	!syntax@8: ')' expected.
 Table(x, {x, -0.2, 3.9})	!syntax@8: ')' expected.
 Table(x, {x,0,1/3})	!syntax@8: ')' expected.
-Table(x, {{a, b, c}})	!syntax@8: ')' expected.
 Table(x^2, {x, {a, b, c}})	!syntax@10: ')' expected.
 Table({i, j}, {i, {a, b}}, {j, 1, 2})	!syntax@13: ')' expected.
 TagBox(x)	Times(TagBox, x)
 Take(A, 2, 2)	!syntax@7: ')' expected.
 Take(A, All, {2})	!syntax@7: ')' expected.
-Take(ElementData("Properties"), 3)	!syntax@31: ')' expected.
 Take(Range(10), {-3, -7, -2})	!syntax@15: ')' expected.
 Take(Range(10), {8, 2, -1})	!syntax@15: ')' expected.
 Take(Range(6), {-5, -2, -2})	!syntax@14: ')' expected.
@@ -4147,7 +4241,6 @@ TakeSmallest(Prime(Range(10)), 3)	!syntax@30: ')' expected.
 TakeSmallestBy(Prime(Range(10)),Mod(#,7)&, 3)	!syntax@32: ')' expected.
 TakeWhile({1, 2, 3, 10, 5, 8, 42, 11}, # < 10 &)	!syntax@38: ')' expected.
 Tally(Characters(str)) // InputForm	InputForm(Times(Tally, Times(Characters, str)))
-Tally(Length /@ PolyhedronData("TruncatedIcosahedron", "FaceIndices"))	!syntax@54: ')' expected.
 Tan(0)	Times(Tan, 0)
 Tan(0.5 Pi)	Times(Tan, Times(0.5, Pi))
 Tan(1/4*Pi)	Times(Tan, Times(1/4, Pi))
@@ -4167,9 +4260,9 @@ TeXForm(x+Parenthesis(a+b+c))	Times(TeXForm, Plus(x, Times(Parenthesis, Plus(a, 
 TemplateApply("The quick brown `a` jumps over the lazy `b`.",<|"a" -> "fox", "b" -> "dog"|>)	!syntax@61: ')' expected.
 TemplateApply(StringTemplate("The quick brown `a` jumps over the lazy `b`."),<|"a" -> "fox", "b" -> "dog"|>)	!syntax@77: ')' expected.
 TemplateBox(x)	Times(TemplateBox, x)
+TemporalData(x)	Times(TemporalData, x)
 TensorDimensions(MatrixSymbol(a, {m, n}))	!syntax@32: ')' expected.
 TensorDimensions({{1,2},{3,4},{a,b},{c,d}})	Times(TensorDimensions, List(List(1, 2), List(3, 4), List(a, b), List(c, d)))
-TensorDimensions({{1,2},{3,4}}, Assumptions->True)	!syntax@31: ')' expected.
 TensorProduct({{{1,2,3},{4,5,6},{7,8,9}},{{2,0,0},{0,3,0},{0,0,1}}},{{2,1,4},{0,3,0},{0,0,1}})	!syntax@68: ')' expected.
 TensorRank(ArraySymbol(a, {n1, n2, n3}))	!syntax@25: ')' expected.
 TensorRank(VectorSymbol(v, n))	!syntax@26: ')' expected.
@@ -4193,10 +4286,6 @@ Thread(Tuples({0, 1}, 2) -> {a, b, c, d})	!syntax@21: ')' expected.
 Thread(f(a + b + c), Plus)	!syntax@20: ')' expected.
 Thread(f({a, b, c}))	Times(Thread, Times(f, List(a, b, c)))
 Thread(f({a, b, c}, t))	!syntax@19: ')' expected.
-ThreeJSymbol({1, 1/2}, {1, -1/2}, {1, 0})	!syntax@22: ')' expected.
-ThreeJSymbol({1, m}, {1, 0}, {2, 1})	!syntax@20: ')' expected.
-ThreeJSymbol({1/2, 1/2}, {1, 0}, {1, -1/2})	!syntax@24: ')' expected.
-ThreeJSymbol({2.0, 0}, {6, 0}, {4, 0})	!syntax@22: ')' expected.
 ThreeJSymbol({3/2, -3/2}, {3/2, 3/2}, {1, 0})	!syntax@25: ')' expected.
 Through(f()[x])	!syntax@11: Too much closing ) in factor.
 Through(f(g)[x])	Times(Through, Times(f, g(x)))
@@ -4212,11 +4301,7 @@ TimeConstrained(Pause(5), 2)	!syntax@25: ')' expected.
 TimeConstrained(Pause(5), 2, "test")	!syntax@25: ')' expected.
 TimeConstraint(x)	Times(TimeConstraint, x)
 TimeDirection(x)	Times(TimeDirection, x)
-TimeObject({14, 30, 0}) + Quantity(90, "Minutes")	!syntax@38: ')' expected.
-TimeObject({14, 30, 15})	Times(TimeObject, List(14, 30, 15))
-TimeObject({14, 30})	Times(TimeObject, List(14, 30))
-TimeObject({14, 75})	Times(TimeObject, List(14, 75))
-TimeObject({25, 30})	Times(TimeObject, List(25, 30))
+TimeObject({10,45})	Times(TimeObject, List(10, 45))
 TimeSystem(x)	Times(TimeSystem, x)
 TimeSystemConvert(DateObject({2026,1,1,0,0,0}), "TAI")	!syntax@47: ')' expected.
 TimeSystemConvert(DateObject({2026,1,1,0,0,0}), "TT")	!syntax@47: ')' expected.
@@ -4243,6 +4328,10 @@ ToExpression("{2, 3, 1}", InputForm, Max)	!syntax@25: ')' expected.
 ToExpression(DialogInput("::"))^3	Times(ToExpression, Power(Times(DialogInput, ::), 3))
 ToExpression(InputString("::"))^3	Times(ToExpression, Power(Times(InputString, ::), 3))
 ToLowerCase("This is a Test")	Times(ToLowerCase, This is a Test)
+ToNumberField(1/(1+Sqrt(3)),Sqrt(3))	!syntax@28: ')' expected.
+ToNumberField(Sqrt(2),2^(1/4))	!syntax@22: ')' expected.
+ToNumberField(Sqrt(3),Sqrt(2))	!syntax@22: ')' expected.
+ToNumberField({Sqrt(2),I},All)[[1,1]]	!syntax@26: ')' expected.
 ToPolarCoordinates({x, y, z})	Times(ToPolarCoordinates, List(x, y, z))
 ToPolarCoordinates({x, y})	Times(ToPolarCoordinates, List(x, y))
 ToRadicals(Root(#^2 - 2&, 1))	!syntax@25: ')' expected.
@@ -4294,7 +4383,6 @@ TransformedRegion(x)	Times(TransformedRegion, x)
 Translate(x)	Times(Translate, x)
 TranslationTransform({1, -1}).RotationTransform(Pi)	Times(Times(TranslationTransform, Dot(List(1, -1), RotationTransform)), Pi)
 TranslationTransform({1, 2})	Times(TranslationTransform, List(1, 2))
-TranslationTransform({x0, y0})[{x, y}]	Times(TranslationTransform, List(x0, y0)[List(x, y)])
 Transliterate("Горбачёв, Михаил Сергеевич")	Times(Transliterate, Горбачёв, Михаил Сергеевич)
 Transpose(SymbolicZerosArray({m, n}))	Times(Transpose, Times(SymbolicZerosArray, List(m, n)))
 Transpose(x)	Times(Transpose, x)
@@ -4356,6 +4444,7 @@ Tuples(f(a, b, c), 2)	!syntax@11: ')' expected.
 Tuples({a, b, c}, 2)	!syntax@17: ')' expected.
 Tuples({f(a, b), g(x, y)})	!syntax@12: ')' expected.
 Tuples[{{a, b}, {1, 2, 3}}]	Tuples(List(List(a, b), List(1, 2, 3)))
+TuranGraph(x)	Times(TuranGraph, x)
 URL(x)	Times(URL, x)
 URLBuild(x)	Times(URLBuild, x)
 URLDownload(x)	Times(URLDownload, x)
@@ -4363,21 +4452,20 @@ URLParse(x)	Times(URLParse, x)
 URLRead(x)	Times(URLRead, x)
 Uncompress(str)	Times(Uncompress, str)
 Underlined(x)	Times(Underlined, x)
+UndirectedGraph(x)	Times(UndirectedGraph, x)
+UndirectedGraphQ(x)	Times(UndirectedGraphQ, x)
 UniformSumDistribution(x)	Times(UniformSumDistribution, x)
 Union(Map(Sort,PlanarFaceList(CompleteGraph(4))))	!syntax@15: ')' expected.
 Union(Total/@Subsets(2^Range(0, 10), {2}))	!syntax@31: ')' expected.
 Union({1,2,3},{2,3,4})	!syntax@14: ')' expected.
 Unique("a")	Times(Unique, a)
 Unique(xy)	Times(Unique, xy)
-UnitConvert(ElementData("Tungsten", "MeltingPoint"), "Kelvins")	!syntax@35: ')' expected.
 UnitConvert(GeoDistance({59.914, 10.752}, {52.523, 13.412}), "km")	!syntax@41: ')' expected.
 UnitConvert(Quantity(1, "Mega"*IndependentUnit("Coins")), "Kilo"*IndependentUnit("Coins"))	!syntax@23: ')' expected.
-UnitConvert(Quantity(111, "cm"), "m")	!syntax@25: ')' expected.
-UnitConvert(Quantity(3, "Hz^-2*N*m^-1"))	!syntax@23: ')' expected.
-UnitConvert(Quantity(451, "DegreesFahrenheit"), "DegreesCelsius")	!syntax@25: ')' expected.
 UnitConvert(Quantity(50000, "Seconds"), MixedUnit({"Hours", "Minutes", "Seconds"}))	!syntax@27: ')' expected.
 UnitConvert(Quantity(MixedMagnitude({1, 30}), MixedUnit({"Minutes", "Seconds"})))	!syntax@45: ')' expected.
 UnitConvert(Quantity(MixedMagnitude({5, 10}), MixedUnit({"Feet", "Inches"})), "Centimeters")	!syntax@45: ')' expected.
+UnitConvert(Quantity(Pi, "deg"), "rad")	!syntax@24: ')' expected.
 UnitConvert(Quantity(Pi, "rad"), "deg")	!syntax@24: ')' expected.
 UnitConvert(QuantityArray({1, 2}, "Kilometers"), "Meters")	!syntax@33: ')' expected.
 UnitDimensions("Newtons")	Times(UnitDimensions, Newtons)
@@ -4431,6 +4519,7 @@ Variance(NormalDistribution(m, s))	!syntax@30: ')' expected.
 Variance(ParetoDistribution(k,a))	!syntax@30: ')' expected.
 Variance(PoissonDistribution(n))	Times(Variance, Times(PoissonDistribution, n))
 Variance(QuantityDistribution(NormalDistribution(120, 16), "Centimeters"))	!syntax@53: ')' expected.
+Variance(SkewNormalDistribution(m, s, a))	!syntax@34: ')' expected.
 Variance(StudentTDistribution(4))	Times(Variance, Times(StudentTDistribution, 4))
 Variance(StudentTDistribution(n))	Times(Variance, Times(StudentTDistribution, n))
 Variance(WeibullDistribution(n, m))	!syntax@31: ')' expected.
@@ -4439,6 +4528,7 @@ Variance({1, 2, 3})	Times(Variance, List(1, 2, 3))
 Variance({7, -5, 101, 3})	Times(Variance, List(7, -5, 101, 3))
 Variance({a, a})	Times(Variance, List(a, a))
 Variance({{1, 3, 5}, {4, 10, 100}})	Times(Variance, List(List(1, 3, 5), List(4, 10, 100)))
+VariationalD(x'(t)^2/2 - x(t)^2/2, x(t), t)	!syntax@34: ')' expected.
 VectorAngle({0, 1}, {0, 1})	!syntax@19: ')' expected.
 VectorAngle({1, 0}, {0, 1})	!syntax@19: ')' expected.
 VectorAngle({1, 1, 0}, {1, 0, 1})	!syntax@22: ')' expected.
@@ -4456,6 +4546,7 @@ VectorLess({{{0,-1}, {2,-1}}, {{1, {2,7}},{3,4}}})	Times(VectorLess, List(List(L
 VectorLess({{{0,2}, {2,-1}}, {{1, {2,7}},{3,4}}})	Times(VectorLess, List(List(List(0, 2), List(2, -1)), List(List(1, List(2, 7)), List(3, 4))))
 VectorLessEqual({{{0,-1}, {2,-1}}, {{1, {2,7}},{3,4}}})	Times(VectorLessEqual, List(List(List(0, -1), List(2, -1)), List(List(1, List(2, 7)), List(3, 4))))
 VectorMarkers(x)	Times(VectorMarkers, x)
+VectorPlot3D({x, y, z}, {x, -1, 1}, {y, -1, 1}, {z, -1, 1})	!syntax@23: ')' expected.
 VectorPoints(x)	Times(VectorPoints, x)
 VectorQ({a, b, c})	Times(VectorQ, List(a, b, c))
 VectorScale(x)	Times(VectorScale, x)
@@ -4466,11 +4557,15 @@ Vectors(3)	Times(Vectors, 3)
 VerificationTest(3! < 3^3)	Times(VerificationTest, Less(Factorial(3), Power(3, 3)))
 VerificationTest(3^3, 27)	!syntax@21: ')' expected.
 VerifySolutions(x)	Times(VerifySolutions, x)
+VertexCapacity(x)	Times(VertexCapacity, x)
 VertexChromaticNumber(CompleteGraph(4))	Times(VertexChromaticNumber, Times(CompleteGraph, 4))
 VertexChromaticNumber(CycleGraph(4))	Times(VertexChromaticNumber, Times(CycleGraph, 4))
 VertexChromaticNumber(CycleGraph(5))	Times(VertexChromaticNumber, Times(CycleGraph, 5))
 VertexChromaticNumber(Graph({1,2,3},{}))	!syntax@36: ')' expected.
 VertexChromaticNumber({1<->2,2<->3,3<->1})	Times(VertexChromaticNumber, List(TwoWayRule(1, 2), TwoWayRule(2, 3), TwoWayRule(3, 1)))
+VertexConnectivity(CompleteGraph(4))	Times(VertexConnectivity, Times(CompleteGraph, 4))
+VertexConnectivity(CycleGraph(5), 1, 3)	!syntax@33: ')' expected.
+VertexConnectivity(PetersenGraph())	!syntax@34: Too much closing ) in factor.
 VertexCount(CompleteGraph(4))	Times(VertexCount, Times(CompleteGraph, 4))
 VertexCount(DualPlanarGraph(HypercubeGraph(3)))	Times(VertexCount, Times(DualPlanarGraph, Times(HypercubeGraph, 3)))
 VertexCoverQ(CycleGraph(4), {1,2})	!syntax@27: ')' expected.
@@ -4478,10 +4573,12 @@ VertexCoverQ(CycleGraph(4), {1,3})	!syntax@27: ')' expected.
 VertexCoverQ(PetersenGraph(), FindVertexCover(PetersenGraph()))	!syntax@28: Too much closing ) in factor.
 VertexCoverQ(StarGraph(5), {1})	!syntax@26: ')' expected.
 VertexCoverQ(StarGraph(5), {2,3,4,5})	!syntax@26: ')' expected.
+VertexIndex(x)	Times(VertexIndex, x)
 VertexLabelStyle(x)	Times(VertexLabelStyle, x)
 VertexList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))	Times(VertexList, Times(Graph, List(Rule(1, 2), Rule(2, 3), Rule(1, 3), Rule(4, 2))))
 VertexQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),3)	!syntax@48: ')' expected.
 VertexQ(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}),5)	!syntax@48: ')' expected.
+VertexReplace(x)	Times(VertexReplace, x)
 VertexShape(x)	Times(VertexShape, x)
 VertexTextureCoordinates(x)	Times(VertexTextureCoordinates, x)
 VertexWeight(x)	Times(VertexWeight, x)
@@ -4504,6 +4601,8 @@ VoronoiMesh(x)	Times(VoronoiMesh, x)
 WaitAll(x)	Times(WaitAll, x)
 WaringYuleDistribution(x)	Times(WaringYuleDistribution, x)
 WatershedComponents(x)	Times(WatershedComponents, x)
+WeaklyConnectedComponents(Graph({1->2,3->4,4->3,5->5}))	Times(WeaklyConnectedComponents, Times(Graph, List(Rule(1, 2), Rule(3, 4), Rule(4, 3), Rule(5, 5))))
+WeaklyConnectedComponents(Graph({1->2,3->4}),{3})	!syntax@45: ')' expected.
 WebImageSearch(x)	Times(WebImageSearch, x)
 WebSearch(x)	Times(WebSearch, x)
 Wednesday(x)	Times(Wednesday, x)
@@ -4522,9 +4621,7 @@ While(True, If(n>10, Break()); n=n+1)	!syntax@11: ')' expected.
 While(b != 0, {a, b} = {b, Mod(a, b)});	!syntax@13: ')' expected.
 White	White
 WienerFilter(x)	Times(WienerFilter, x)
-WignerD({1, 1/2, 1/2}, ps,th,ph)	!syntax@22: ')' expected.
-WignerD({1/2, 1/2, -1/2}, b)	!syntax@25: ')' expected.
-WignerD({1/2, 1/2, -1/2}, b, c)	!syntax@25: ')' expected.
+WienerProcess(x)	Times(WienerProcess, x)
 WignerD({3/2,-3/2,-3/2}, ps,th,ph)	!syntax@24: ')' expected.
 WignerSemicircleDistribution(x)	Times(WignerSemicircleDistribution, x)
 WindowSize(x)	Times(WindowSize, x)
@@ -4606,7 +4703,6 @@ a /. f(x_:0, u_) -> {u}	!syntax@12: ')' expected.
 a /. n_. * x_ :> {n, x}	ReplaceAll(a, RuleDelayed(Times(n_., x_), List(n, x)))
 a /. n_. + x_ :> {n, x}	ReplaceAll(a, RuleDelayed(Plus(n_., x_), List(n, x)))
 a /. x_ ^ n_. :> {x, n}	ReplaceAll(a, RuleDelayed(Power(x_, n_.), List(x, n)))
-a //. <|a -> b, b -> c|>	ReplaceRepeated(a, Association(List(Rule(a, b), Rule(b, c))))
 a /= 2	DivideBy(a, 2)
 a = 1	Set(a, 1)
 a = 10	Set(a, 10)
@@ -4653,7 +4749,10 @@ ba1 = BaseEncode(StringToByteArray("Man is distinguished, not only by his reason
 ba1 = BaseEncode(StringToByteArray("Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure."))	Set(ba1, Times(BaseEncode, Times(StringToByteArray, Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.)))
 ba2 = BaseDecode(ba1)	Set(ba2, Times(BaseDecode, ba1))
 bar(a, Nothing, baz(Nothing), c)	!syntax@6: ')' expected.
+c = 0; ParallelTable(c++, {i, 8}); c	!syntax@25: ')' expected.
 cf = Compile({{x, _Real}}, x^2, RuntimeAttributes -> {Listable});	!syntax@26: ')' expected.
+cf = CompiledFunction({7, 7.0, 42}, {_Integer, _Real}, {{2, 0, 0}}, {{}}, {0, 1, 2, 0, 0}, {{1}}, Function({a, b}, N(a) + b), Evaluate);	!syntax@35: ')' expected.
+cf(3, 0.25)	!syntax@5: ')' expected.
 cf(3.)	Times(cf, 3.)
 cf({-5., 0., 5.})	Times(cf, List(-5., 0., 5.))
 cfDouble = Compile({{x, _Real}}, x*2.0);	!syntax@32: ')' expected.
@@ -4668,8 +4767,6 @@ collatz(x_) := 3*x + 1;	CompoundExpression(SetDelayed(Times(collatz, x_), Plus(T
 complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)	!syntax@28: ')' expected.
 conn=Jsoup`connect["https://jsoup.org/"]	Set(conn, connect(https://jsoup.org/))
 d	d
-d = DateObject({2024, 7, 4, 15, 30, 45}); d("DayName")	CompoundExpression(Set(d, Times(DateObject, List(2024, 7, 4, 15, 30, 45))), Times(d, DayName))
-d = DateObject({2024, 7, 4}); d("Quarter")	CompoundExpression(Set(d, Times(DateObject, List(2024, 7, 4))), Times(d, Quarter))
 data = SemanticImportString("a,b\\n1,2\\n3,4\\n5,6\\n");	CompoundExpression(Set(data, Times(SemanticImportString, a,b\n1,2\n3,4\n5,6\n)), Null)
 data = SemanticImportString("city,sales\\nBoston,100\\nBerlin,200\\nBoston,50\\n");	CompoundExpression(Set(data, Times(SemanticImportString, city,sales\nBoston,100\nBerlin,200\nBoston,50\n)), Null)
 data = {{0, 1}, {1, 3}, {2, 4}, {3, 7}}; basis = {1, x}; m = DesignMatrix(data, basis, x); v = data[[All, 2]]; LinearModelFit({m, v})	!syntax@79: ')' expected.
@@ -4691,6 +4788,7 @@ f = BezierFunction({{0, 0}, {0, 0.8}, {1, 1}}); FindRoot(0.5==Indexed(f(x), 2), 
 f = Compile({{n, _Integer}}, Module({p = Range(n),i,x,t}, Do(x = RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,{i,n,2,-1}); p));	!syntax@28: ')' expected.
 f = CompilePrint({{n, _Integer}}, Module({p = Range(n),i,x,t}, Do(x = RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,{i,n,2,-1}); p))	!syntax@33: ')' expected.
 f = FileNameJoin({$TemporaryDirectory, \\"test_open.txt\\"})	!syntax@41: unexpected (named unicode) character: '\\[RawDoubleQuote]'
+f = ListInterpolation(Table(Sin(x)*Cos(y), {x, 0, 2, 0.25}, {y, 0, 2, 0.25}), {{0, 2}, {0, 2}});	!syntax@42: ')' expected.
 f @@ (a + b + c)	Apply(f, Plus(a, b, c))
 f @@ {1, 2, 3}	Apply(f, List(1, 2, 3))
 f'(x) // FullForm	FullForm(Times(Derivative(1)[f], x))
@@ -4730,6 +4828,7 @@ f(a_?NumericQ) := a^2-2; g(a_?NumericQ,b_?NumericQ) := a+b-3;FindRoot({f(x)==0, 
 f(a_?NumericQ) := a^2-2;FindRoot(f(x)==0, {x, 1, 1.2})	!syntax@41: ')' expected.
 f(c, a, b, a + b, 3, 1.0)	!syntax@4: ')' expected.
 f(g(x))	Times(f, Times(g, x))
+f(n_) := Sum(k, {k, n}); ParallelTable(f(i), {i, 6})	!syntax@15: ')' expected.
 f(s_List) := Block({a = s[[-1]], len = Length@s}, Append(s, If(a > len && !MemberQ(s, a - len), a - len, a + len))); Nest(f, {0}, 70)	!syntax@49: ')' expected.
 f(x)	Times(f, x)
 f(x)/x+f(x)/x^2//Together	Together(Plus(Times(f, Times(x, Power(x, -1))), Times(f, Times(x, Power(Power(x, 2), -1)))))
@@ -4761,15 +4860,15 @@ f[a -> Print["value"]] /. f[OptionsPattern[{}]] :> (OptionValue[a]; Print["betwe
 f[a :> Print["value"]] /. f[OptionsPattern[{}]] :> (OptionValue[a]; Print["between"]; OptionValue[a]);	CompoundExpression(ReplaceAll(f(RuleDelayed(a, Print(value))), RuleDelayed(f(OptionsPattern(List())), CompoundExpression(OptionValue(a), Print(between), OptionValue(a)))), Null)
 f[x_) =.	!syntax@5: ']' expected.
 factors = FactorInteger(2010)	Set(factors, Times(FactorInteger, 2010))
-ff(##3) &[a, b]	Function(Times(ff, SlotSequence(3)))[a, b]
-ff(##4) &[a, b]	Function(Times(ff, SlotSequence(4)))[a, b]
-ff(x, ##3, y) &[a, b]	!syntax@5: ')' expected.
 frame= JavaNew["javax.swing.JFrame", "Simple JFrame Demo"];	CompoundExpression(Set(frame, JavaNew(javax.swing.JFrame, Simple JFrame Demo)), Null)
 g /: f(g(x)) = 3;	CompoundExpression(TagSet(g, Times(f, Times(g, x)), 3), Null)
 g = GreenFunction({y(n+2) - 2*y(n+1) + y(n), y(0) == 0, y(5) == 0}, y(n), {n, 0, 5}, m) /. m -> 2; Table((g /. n -> k+2) - 2*(g /. n -> k+1) + (g /. n -> k), {k, 0, 3})	!syntax@67: ')' expected.
+g = ListInterpolation({1, 4, 9, 16, 25, 36});	CompoundExpression(Set(g, Times(ListInterpolation, List(1, 4, 9, 16, 25, 36))), Null)
+g = PathGraph(Range(25));	CompoundExpression(Set(g, Times(PathGraph, Times(Range, 25))), Null)
 g(-1)	Times(g, -1)
 g(1)	Times(g, 1)
 g(1) + {1, 2}	Plus(Times(g, 1), List(1, 2))
+g(2.5)	Times(g, 2.5)
 g(a, Sequence(Unevaluated(b),Unevaluated(c)))	!syntax@4: ')' expected.
 g(f, 3)	!syntax@4: ')' expected.
 g(x_) := (Do(If(x < 0, Return(0)), {i, {2, 1, 0, -1}}); x)	!syntax@22: ')' expected.
@@ -4782,6 +4881,7 @@ g[Unevaluated[Sequence[a, b, c]]]	g(Unevaluated(Sequence(a, b, c)))
 h = NDSolve({w'(t) == w(t), w(1) == 1}, w, {t, 0, 2}); fw = w /. Part(h, 1); {fw(0.0), fw(2.0)}	!syntax@39: ')' expected.
 h @@@ {{a, b}, {c, d}}	Apply(h, List(List(a, b), List(c, d)), List(1))
 h(-1) // FullForm	FullForm(Times(h, -1))
+h(0) = 1; h(n_) := n*h(n-1); ParallelMap(h, Range(0, 8))	!syntax@43: ')' expected.
 h(1)	Times(h, 1)
 h(a, b, c, Splice({{1,1},{2,2}}, h), d, e)	!syntax@4: ')' expected.
 h(x_) := (If(x < 0, Return()); x)	!syntax@19: ')' expected.
@@ -4792,8 +4892,12 @@ i = 1; While(True, If(i^2 > 100, Return(i + 1), i++))	!syntax@18: ')' expected.
 ipf(19/4)	Times(ipf, 19/4)
 ipf=InterpolatingFunction({{0, 17}, {1, 3}, {2, 5}, {3, 4}, {4, 3}, {5, 0}, {6,23}})	Set(ipf, Times(InterpolatingFunction, List(List(0, 17), List(1, 3), List(2, 5), List(3, 4), List(4, 3), List(5, 0), List(6, 23))))
 ipf=Interpolation(Table({x, Exp(4/(1+x^2))}, {x, 0, 3, 0.5})); ipf(2.5)	!syntax@44: ')' expected.
+k = 0; ParallelMap((k++; #)&, {1, 2, 3}); k	!syntax@29: ')' expected.
 k = 2; PaneSelector({1 -> "first", 2 -> "second", 3 -> "third"}, Dynamic(k))	!syntax@64: ')' expected.
 left = SemanticImportString("id,city\\n1,Boston\\n2,Berlin\\n");	CompoundExpression(Set(left, Times(SemanticImportString, id,city\n1,Boston\n2,Berlin\n)), Null)
+len = Compile({{seg, _Real, 2}}, Length(seg), RuntimeAttributes -> {Listable});	!syntax@32: ')' expected.
+len({{1., 1.}, {2., 2.}})	Times(len, List(List(1., 1.), List(2., 2.)))
+len({{{1., 1.}, {2., 2.}}, {{3., 3.}, {4., 4.}}, {{5., 5.}, {6., 6.}}})	Times(len, List(List(List(1., 1.), List(2., 2.)), List(List(3., 3.), List(4., 4.)), List(List(5., 5.), List(6., 6.))))
 loc = JavaNew["java.util.Locale", "US"]	Set(loc, JavaNew(java.util.Locale, US))
 loc1= JavaNew["java.util.Locale","US"]	Set(loc1, JavaNew(java.util.Locale, US))
 loc2= JavaNew["java.util.Locale","US"]	Set(loc2, JavaNew(java.util.Locale, US))
@@ -4834,7 +4938,9 @@ primorial(0) = 1;	CompoundExpression(Set(Times(primorial, 0), 1), Null)
 primorial(12)	Times(primorial, 12)
 primorial(n_Integer) := Product(Prime(k), {k, 1, n});	!syntax@41: ')' expected.
 productInfo = <|"Name" -> "Widget X", "Price" -> 19.99,"InStock" -> True, "SupplierID" -> "SUP123"|>;	CompoundExpression(Set(productInfo, Association(List(Rule(Name, Widget X), Rule(Price, 19.99), Rule(InStock, True), Rule(SupplierID, SUP123)))), Null)
+pts = Table({Cos(2*Pi*k/40), Sin(2*Pi*k/40)}, {k, 0, 39})[[Mod(7*Range(40), 40) + 1]];	!syntax@45: ')' expected.
 pts = {{0.2, 0.2}, {0.8, 0.2}, {0.5, 0.9}}; LocatorPane(Dynamic(pts), Dynamic(Graphics({Polygon(pts)}, PlotRange -> {{0, 1}, {0, 1}})))	!syntax@69: ')' expected.
+r	r
 r = {beta -> 4, alpha -> 2, x -> 4, z -> 2, w -> 0.8};	CompoundExpression(Set(r, List(Rule(beta, 4), Rule(alpha, 2), Rule(x, 4), Rule(z, 2), Rule(w, 0.8))), Null)
 reg = BoundaryMeshRegion({{0,0},{2,0},{2,2},{0,2}}, {Line({{1,2},{2,3},{3,4},{4,1}})});	!syntax@51: ')' expected.
 right = SemanticImportString("id,owner\\n1,ann\\n2,bob\\n");	CompoundExpression(Set(right, Times(SemanticImportString, id,owner\n1,ann\n2,bob\n)), Null)
@@ -4851,7 +4957,6 @@ str = OpenWrite(f);	CompoundExpression(Set(str, Times(OpenWrite, f)), Null)
 str = StringToStream("4711 dummy 0815")	Set(str, Times(StringToStream, 4711 dummy 0815))
 str="The quick brown fox jumps over the lazy dog";	CompoundExpression(Set(str, The quick brown fox jumps over the lazy dog), Null)
 sysnames = Names("System`*");	CompoundExpression(Set(sysnames, Times(Names, System`*)), Null)
-t = TimeObject({13, 5, 7}); t("Second")	CompoundExpression(Set(t, Times(TimeObject, List(13, 5, 7))), Times(t, Second))
 t=Graph({1,2,3,4,5,6},{1<->2,2<->3,3<->1,4<->5,5<->6,6<->4,3<->4}); LambdaComponents(t)	!syntax@22: ')' expected.
 t=TemplateIf( TemplateSlot("summer"), "in summer ice cream is delicious", "ice cream is boring in winter"); TemplateApply(t, <|"summer" -> True|>)	!syntax@37: ')' expected.
 ta = {{1,4,-7}, {-2,3,3}}; tb = {{8,-9,-6,5},{1,-3,-4,7},{2,8,-8,-3},{1,2,-5,-1}};	CompoundExpression(Set(ta, List(List(1, 4, -7), List(-2, 3, 3))), Set(tb, List(List(8, -9, -6, 5), List(1, -3, -4, 7), List(2, 8, -8, -3), List(1, 2, -5, -1))), Null)
@@ -4867,13 +4972,13 @@ u(a)	Times(u, a)
 u(a, b)	!syntax@4: ')' expected.
 u(a, b, c)	!syntax@4: ')' expected.
 u(x_) := {x}	SetDelayed(Times(u, x_), List(x))
+u.{{1,2,3},{4,5,6},{7,8,9}}.v == r	Equal(Dot(u, List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9)), v), r)
 u=Graph({1,2,3,4,5,6,7,8},{1<->2,1<->3,1<->4,2<->3,2<->4,3<->4,5<->6,5<->7,5<->8,6<->7,6<->8,7<->8,4<->5}); LuccioSamiComponents(u)	!syntax@26: ')' expected.
 v()	!syntax@3: Too much closing ) in factor.
 v(a)	Times(v, a)
 v(a, b)	!syntax@4: ')' expected.
 v(a, b, c)	!syntax@4: ')' expected.
 v(x_) := x	SetDelayed(Times(v, x_), x)
-vars = {a, b}; Module(Evaluate(vars), a = 1; b = 2; a + b)	!syntax@37: ')' expected.
 w=Graph({1,2,3,4,5,6},{3<->4,2<->6,5<->6,2<->3,3<->6,1<->6,2<->5}); LambdaComponents(w)	!syntax@22: ')' expected.
 x	x
 x * Range(-1, 1, 1/5)	!syntax@13: ')' expected.
@@ -4891,6 +4996,7 @@ x = x + 1	Set(x, Plus(x, 1))
 x \\[PlusMinus] y	PlusMinus(x, y)
 x ^ 10 * x ^ -2	Times(Power(x, 10), Power(x, -2))
 x+Parenthesis(a+b+c)	Plus(x, Times(Parenthesis, Plus(a, b, c)))
+x.y + {1, 2}	Plus(Dot(x, y), List(1, 2))
 x=1;	CompoundExpression(Set(x, 1), Null)
 x>=x	GreaterEqual(x, x)
 x[[2]]	Part(x, 2)
@@ -4918,7 +5024,6 @@ z == ProductLog(z) * E ^ ProductLog(z)	Equal(z, Times(Times(Times(ProductLog, z)
 {1, 2, 3} /. {x__, y__} :> {{x}, {y}}	ReplaceAll(List(1, 2, 3), RuleDelayed(List(x__, y__), List(List(x), List(y))))
 {1, 2, 3} < {1, 2, 3}	Less(List(1, 2, 3), List(1, 2, 3))
 {1, 2} != {1, 2}	Unequal(List(1, 2), List(1, 2))
-{1, 2} /. <|4 -> a, 2 -> b|>	ReplaceAll(List(1, 2), Association(List(Rule(4, a), Rule(2, b))))
 {1, 2} == {1, 2, 3}	Equal(List(1, 2), List(1, 2, 3))
 {1,2,3,4,5}[[3;;1;;-1]]	Part(List(1, 2, 3, 4, 5), Span(3, 1, -1))
 {1==1., 1===1.}	List(Equal(1, 1.), SameQ(1, 1.))
@@ -4938,6 +5043,7 @@ z == ProductLog(z) * E ^ ProductLog(z)	Equal(z, Times(Times(Times(ProductLog, z)
 {Negative(0), NonPositive(0)}	List(Times(Negative, 0), Times(NonPositive, 0))
 {Positive(0), NonNegative(0)}	List(Times(Positive, 0), Times(NonNegative, 0))
 {Unequal(), Unequal(x), Unequal(1)}	!syntax@10: Too much closing ) in factor.
+{VertexCount(ButterflyGraph(3)), EdgeCount(ButterflyGraph(3))}	List(Times(VertexCount, Times(ButterflyGraph, 3)), Times(EdgeCount, Times(ButterflyGraph, 3)))
 {\\[Eta], \\[CapitalGamma]\\[Beta], Z\\[Infinity], \\[Angle]XYZ, \\[FilledSquare]r, i\\[Ellipsis]j}	!syntax@13: unexpected (named unicode) character: '\\[Angle]'
 {a*b == b*a, a ** b == b ** a}	List(Equal(Times(a, b), Times(b, a)), Equal(NonCommutativeMultiply(a, b), NonCommutativeMultiply(b, a)))
 {a, Nothing, Nothing, d}	List(a, Nothing, Nothing, d)
@@ -4950,10 +5056,12 @@ z == ProductLog(z) * E ^ ProductLog(z)	Equal(z, Times(Times(Times(ProductLog, z)
 {a, b} ** {c, d}	NonCommutativeMultiply(List(a, b), List(c, d))
 {a, b} = {27, 6};	CompoundExpression(Set(List(a, b), List(27, 6)), Null)
 {a, b} = {2^10000, 2^10000 + 1}; {a == b, a < b, a <= b}	CompoundExpression(Set(List(a, b), List(Power(2, 10000), Plus(Power(2, 10000), 1))), List(Equal(a, b), Less(a, b), LessEqual(a, b)))
+{a,b}=IsolatingInterval(Sqrt(2), 1/1000); {a<Sqrt(2)<b, b-a<=1/1000}	!syntax@32: ')' expected.
 {a} != {a}	Unequal(List(a), List(a))
 {f(2),g(7)}	List(Times(f, 2), Times(g, 7))
 {gcdVal, factors} = ExtendedGCD(Sequence @@ numbers)	Set(List(gcdVal, factors), Times(ExtendedGCD, Apply(Sequence, numbers)))
 {p, h} = HessenbergDecomposition({{2.0,5,8,7},{5,2,2,8},{7,5,6,6},{5,4,4,8}})", //	Set(List(p, h), Times(Times(HessenbergDecomposition, List(List(2.0, 5, 8, 7), List(5, 2, 2, 8), List(7, 5, 6, 6), List(5, 4, 4, 8))), , /))
+{u, r, v} = SmithDecomposition({{1,2,3},{4,5,6},{7,8,9}});	CompoundExpression(Set(List(u, r, v), Times(SmithDecomposition, List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9)))), Null)
 {u, v} = RandomReal(1, {2, 6})	!syntax@22: ')' expected.
 {x,x^2,y} /. x->3	ReplaceAll(List(x, Power(x, 2), y), Rule(x, 3))
 {{1, 1, 0}, {1, 0, 1}, {0, 1, 1}} . {0, 1, 2}	Dot(List(List(1, 1, 0), List(1, 0, 1), List(0, 1, 1)), List(0, 1, 2))

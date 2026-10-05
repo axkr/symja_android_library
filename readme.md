@@ -257,7 +257,7 @@ If you have any questions about using or developing for this project, send me an
 
 If you would like to use parts of the system here are some Maven module licenses:
 * the maven modules: `parser, external, core` are published under LGPL license.
-* the maven modules: `gpl, api, io` are published under GPL license.
+* the maven modules: `gpl, api, io, astro` are published under GPL license.
 
 Here are some of the associated **JavaScript** licenses:
 * the [Paul Masson's Math project](https://github.com/paulmasson/math) is published under the MIT license. 
@@ -282,7 +282,6 @@ The Maven modules below all build on `matheclipse-core`. A module inherits the d
 | [MFL](https://github.com/HebiRobotics/MFL) | MATLAB `.mat` file import and export | Apache License 2.0 |
 | [Paguro](https://github.com/GlenKPeterson/Paguro) | persistent (immutable) collections | Apache License 2.0 or EPL 1.0 |
 | [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) (vendored in `matheclipse-external`) | polynomial arithmetic, factorization, Groebner bases | LGPL; the Java bytecode is dual licensed under Apache 2.0 to allow usage in Android projects |
-| [Cream](https://bach.istc.kobe-u.ac.jp/cream/) (vendored in `matheclipse-external`) | finite domain constraint solving | LGPL |
 | [Diophantine](https://github.com/Mangara/Diophantine) (vendored in `matheclipse-external`) | solving Diophantine equations | MIT License |
 | [SnuggleTeX](https://www2.ph.ed.ac.uk/snuggletex/) (vendored in `matheclipse-external`) | LaTeX to MathML conversion | BSD License |
 | [fastutil](https://fastutil.di.unimi.it/) (slim fork vendored in `matheclipse-external`) | primitive type collections | Apache License 2.0 |
@@ -316,6 +315,12 @@ This module is the reason a distribution containing it has to be published under
 | --- | --- | --- |
 | [Orekit](https://www.orekit.org/) | astronomy and space flight dynamics | Apache License 2.0 |
 | [Hipparchus](https://www.hipparchus.org/) | linear algebra and geometry | Apache License 2.0 |
+| [Night Vision](https://sourceforge.net/projects/nightvision/) (ported as `org.matheclipse.astro.meeus`) | Meeus algorithms: planet and Moon positions, nutation, precession, delta T, planet magnitudes, star colours | GNU GPL v3 or later |
+| [ASCC-2.5](https://cdsarc.cds.unistra.fr/viz-bin/cat/I/280B) (via Night Vision's `star.db`) | star catalogue to magnitude 11, about 1.06 million stars | cited, redistributed as in Night Vision |
+| [d3-celestial](https://github.com/ofrohn/d3-celestial) (data files) | stars to magnitude 8.5, constellations, deep-sky objects, Milky Way | BSD 3-Clause License |
+| [Natural Earth](https://www.naturalearthdata.com/) (data file) | land outlines for `GeoGraphics` | public domain |
+
+The Night Vision port makes this module GPL. See `matheclipse-astro/NOTICE.md`.
 
 #### matheclipse-bio
 

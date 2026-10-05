@@ -6,6 +6,14 @@ FreeQ(expr, x)
 
 > returns `True` if `expr` does not contain the expression `x`.
 
+```
+FreeQ(expr, x, levelspec)
+```
+
+> tests only the parts of `expr` at the levels `levelspec`. The option `Heads -> False` leaves the heads out.
+
+Like in WMA, `FreeQ` sees the head `Complex` or `Rational` of a complex or rational number, but not its parts: `FreeQ(1+2*I, Complex)` and `FreeQ(1/2, Rational)` are `False`, `FreeQ(1/2, 2)` is `True`.
+
 ### Examples
 
 ```
@@ -25,6 +33,12 @@ True
 False
 
 >> FreeQ(x_+y_+z_)(a+b)
+True
+
+>> FreeQ(1+2*I, Complex)
+False
+
+>> FreeQ(f(g(x)), x, {1})
 True
 ```
 

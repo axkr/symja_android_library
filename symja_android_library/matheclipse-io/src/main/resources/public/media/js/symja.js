@@ -164,6 +164,60 @@ function createLine(value, format) {
 function afterProcessResult(ul, command) {
 }
 
+/**
+ * A TabView: a strip of tabs over the pane of the selected one. The server has rendered every
+ * pane, each as the result of a cell of its own, so a pane may be a graphic, a Manipulate or
+ * another TabView, and switching tabs asks nobody. A pane is built when it is first shown - a 3D
+ * graphic needs to be in the document to find its size - and kept from then on, so that a widget
+ * in it is still where the user left it.
+ */
+function createTabView(spec) {
+	var tabs = spec.tabs || [];
+	var dom = $E('div', {'class': 'symjatabview'});
+	var strip = $E('div', {'class': 'symjatabs'});
+	var body = $E('div', {'class': 'symjatabpanes'});
+	var buttons = [];
+	var panes = [];
+
+	function select(index) {
+		buttons.each(function(button, i) {
+			button.setClassName('selected', i == index);
+		});
+		panes.each(function(pane, i) {
+			if (pane)
+				pane.setStyle({display: i == index ? '' : 'none'});
+		});
+		if (!panes[index]) {
+			var pane = $E('ul', {'class': 'symjatabpane'});
+			panes[index] = pane;
+			body.appendChild(pane);
+			if (tabs[index].body && tabs[index].body.results)
+				setResult(pane, tabs[index].body.results);
+		}
+	}
+
+	tabs.each(function(tab, index) {
+		var button = $E('a', {'class': 'symjatab', 'href': 'javascript:;'}, $T(tab.label));
+		button.observe('click', function() {
+			select(index);
+		});
+		buttons.push(button);
+		panes.push(null);
+		strip.appendChild(button);
+	});
+	dom.appendChild(strip);
+	dom.appendChild(body);
+	if (tabs.length > 0) {
+		var first = spec.selected >= 0 && spec.selected < tabs.length ? spec.selected : 0;
+		// the pane is filled once the view is in the document; see above
+		window.setTimeout(function() {
+			select(first);
+		}, 0);
+		buttons[first].addClassName('selected');
+	}
+	return dom;
+}
+
 function setResult(ul, results) {
 	results.each(function(result) {
 		var resultUl = $E('ul', {'class': 'out'});
@@ -179,6 +233,9 @@ function setResult(ul, results) {
 			resultUl.appendChild(li);
 		} else if (result.format == 'dynamic' && result.dynamic) {
 			var li = $E('li', {'class': 'result'}, createDynamic(result.dynamic));
+			resultUl.appendChild(li);
+		} else if (result.format == 'tabview' && result.tabview) {
+			var li = $E('li', {'class': 'result'}, createTabView(result.tabview));
 			resultUl.appendChild(li);
 		} else if (result.format == 'steps' && result.steps) {
 			var li = $E('li', {'class': 'result'}, createSteps(result.steps));

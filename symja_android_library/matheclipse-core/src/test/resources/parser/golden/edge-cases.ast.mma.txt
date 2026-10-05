@@ -295,3 +295,23 @@ f(_?NumberQ?Positive)	Times(f, PatternTest(PatternTest(_, NumberQ), Positive))
 (_?NumberQ?Positive)	PatternTest(PatternTest(_, NumberQ), Positive)
 f(a, _?NumberQ?Positive, b)	!syntax@4: ')' expected.
 _?NumberQ?Positive&	Function(PatternTest(PatternTest(_, NumberQ), Positive))
+\\(x \\/ y + z\\)	ToExpression(x \\/ y + z)
+\\( x \\^ 2 \\_ 4 \\)	ToExpression( x \\^ 2 \\_ 4 )
+\\( a \\& b \\% c\\)	ToExpression( a \\& b \\% c)
+\\(\\@ x\\)	ToExpression(\\@ x)
+\\!\\(x \\^ 2\\)	ToExpression(x \\^ 2)
+\\!\\(2 + 2\\)	ToExpression(2 + 2)
+\\!\\(\\*SuperscriptBox[\\(x\\), \\(2\\)]\\)	ToExpression(\\*SuperscriptBox[\\(x\\), \\(2\\)])
+\\!\\(\\*FractionBox["a", "b"]\\)	ToExpression(\\*FractionBox["a", "b"])
+1 + \\!\\(\\*SubscriptBox[\\(x\\), \\(1\\)]\\)	Plus(1, ToExpression(\\*SubscriptBox[\\(x\\), \\(1\\)]))
+\\!\\(\\*RowBox[{"f", "[", "x", "]"}]\\)	ToExpression(\\*RowBox[{"f", "[", "x", "]"}])
+\\!\\(\\*RowBox[{"\\"a\\\\)b\\""}]\\)	ToExpression(\\*RowBox[{"\\"a\\\\)b\\""}])
+\\!\\(\\*\nSuperscriptBox[\\(x\\),\n\\(2\\)]\\)	ToExpression(\\*\nSuperscriptBox[\\(x\\),\n\\(2\\)])
+"a\\)b"	ab
+"\\!\\(\\*SubscriptBox[\\(p\\), \\(0\\)]\\)"	SubscriptBox[p, 0]
+\\!\\(\\*FormBox["x", OutputForm]\\)	ToExpression(\\*FormBox["x", OutputForm])
+\\!\\(x	!syntax@4: box escape - '\\)' expected.
+\\(	!syntax@2: box escape - '\\)' expected.
+\\)	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
+\\!	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
+\\*	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'

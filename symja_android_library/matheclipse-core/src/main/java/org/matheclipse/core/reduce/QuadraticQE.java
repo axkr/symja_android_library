@@ -2,6 +2,7 @@ package org.matheclipse.core.reduce;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -40,7 +41,12 @@ public final class QuadraticQE {
   private static final int MAX_ATOMS = 8000;
 
   /** The time one statement may take, so that a statement which is declined is declined soon. */
-  private static final long MAX_MILLIS = 1500L;
+  private static final long MAX_MILLIS = 4000L;
+
+  /** {@link #MAX_MILLIS} on this machine. */
+  private static long maxMillis() {
+    return MachineProfile.millis(MAX_MILLIS);
+  }
 
   /** The statement is not in the grammar, or too large. */
   private static final class Declined extends RuntimeException {
@@ -131,7 +137,7 @@ public final class QuadraticQE {
       // with a free variable the answer is a condition: see eliminate()
       return F.NIL;
     }
-    return decide(statement, System.currentTimeMillis() + MAX_MILLIS, engine);
+    return decide(statement, System.currentTimeMillis() + maxMillis(), engine);
   }
 
   private static IExpr decide(IExpr statement, long deadline, EvalEngine engine) {
@@ -161,9 +167,9 @@ public final class QuadraticQE {
       return F.NIL;
     }
     try {
-      QuadraticQE qe = new QuadraticQE(engine, System.currentTimeMillis() + MAX_MILLIS);
+      QuadraticQE qe = new QuadraticQE(engine, System.currentTimeMillis() + maxMillis());
       Node node = qe.node(statement);
-      final long deadline = System.currentTimeMillis() + MAX_MILLIS;
+      final long deadline = System.currentTimeMillis() + maxMillis();
       IASTAppendable variables = F.ListAlloc(free.size());
       variables.appendAll(free);
       node = qe.closed(qe.prune(qe.normalize(node), null, variables, deadline));
@@ -172,7 +178,7 @@ public final class QuadraticQE {
         // one variable: as intervals
         final IExpr variable = free.get(0);
         IExpr reduced = IntegrateTimeBudget.runWithin(
-            () -> engine.evalQuiet(F.Reduce(condition, variable, S.Reals)), MAX_MILLIS);
+            () -> engine.evalQuiet(F.Reduce(condition, variable, S.Reals)), maxMillis());
         if (reduced.isPresent() && reduced.isFree(S.Reduce)
             && reduced.isFree(S.ConditionalExpression)) {
           return reduced;
@@ -196,7 +202,7 @@ public final class QuadraticQE {
       return F.NIL;
     }
     try {
-      QuadraticQE qe = new QuadraticQE(engine, System.currentTimeMillis() + MAX_MILLIS);
+      QuadraticQE qe = new QuadraticQE(engine, System.currentTimeMillis() + maxMillis());
       return qe.expression(qe.normalize(qe.node(formula)));
     } catch (Declined declined) {
       return F.NIL;
@@ -357,7 +363,7 @@ public final class QuadraticQE {
       return false;
     }
     return decide(F.ForAll(variables, F.Implies(premise, conclusion)),
-        Math.min(deadline, now + PRUNE_MILLIS), engine).isTrue();
+        Math.min(deadline, now + MachineProfile.millis(PRUNE_MILLIS)), engine).isTrue();
   }
 
   /** The formula as an expression, an atom <code>p op 0</code> with its negative terms right. */
