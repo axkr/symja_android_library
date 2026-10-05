@@ -1707,6 +1707,27 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         function = expandGammaShifts(function, rule, direction, engine);
       }
 
+      // The incomplete Gamma(a,g) where g -> 0 or g -> Infinity, also along the imaginary axis:
+      // the antiderivatives of x^p*Sin(x^n) and x^p*E^(-a*x^n) are of this form, and their limits
+      // at both ends of the range are what a definite integral is made of.
+      if (INCOMPLETE_GAMMA_DEPTH.get() < 3
+          && hasIncompleteGamma(function, symbol)) {
+        int gammaDepth = INCOMPLETE_GAMMA_DEPTH.get();
+        INCOMPLETE_GAMMA_DEPTH.set(gammaDepth + 1);
+        try {
+          IExpr gammaResult = incompleteGammaLimit(function, rule, direction, engine);
+          if (gammaResult.isPresent() && gammaResult.isFree(S.Limit)
+              && gammaResult.isIndeterminateFree()) {
+            return gammaResult;
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // ignore - continue with the general machinery
+        } finally {
+          INCOMPLETE_GAMMA_DEPTH.set(gammaDepth);
+        }
+      }
+
       // ExpIntegralEi(g) with g -> 0 at a finite limit point: Ei has a logarithmic branch point at
       // 0 (Ei(g) ~ EulerGamma + Log(g) + g + g^2/4), which Symja's Series does not provide, so
       // e.g. E^(2*Ei(-x))/x^2 at x->0 never resolves. Substitute the near-0 series (an exact
@@ -3794,6 +3815,150 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     return expanded.isPresent() ? expanded : function;
   }
 
+  private static final ThreadLocal<Integer> INCOMPLETE_GAMMA_DEPTH =
+      ThreadLocal.withInitial(() -> 0);
+
+  /**
+   * The limit of a sum of terms <code>rest*Gamma(a,g)</code>, <code>a</code> free of the variable:
+   * <ul>
+   * <li><code>g -> 0</code>: <code>Gamma(a,g) == Gamma(a)-g^a/a+O(g^(a+1))</code>, for an
+   * <code>a</code> which is no integer <code>&lt;= 0</code>;
+   * <li><code>g -> Infinity</code>: <code>Gamma(a,g) ~ g^(a-1)*E^(-g)</code>;
+   * <li><code>g == c*m</code> with a number <code>c</code>, <code>Re(c) >= 0</code>, and a real
+   * <code>m -> Infinity</code>: <code>Abs(Gamma(a,g)) ~ Abs(c*m)^(Re(a)-1)*E^(-Re(c)*m)</code>, so
+   * the term vanishes if <code>rest*m^(a-1)</code> does. That is the case of
+   * <code>Gamma(1/3,I*x^3)</code>, which is bounded by <code>x^(-2)</code>, but oscillates.
+   * </ul>
+   *
+   * @return {@link F#NIL} if a term is of no such form
+   */
+  private static IExpr incompleteGammaLimit(IExpr function, IAST rule, Direction direction,
+      EvalEngine engine) {
+    final ISymbol x = (ISymbol) rule.arg1();
+    final LimitData data = new LimitData(x, rule.arg2(), rule, direction);
+    IAST terms = function.isPlus() ? (IAST) function : F.Plus(function);
+    IASTAppendable sum = F.PlusAlloc(terms.argSize());
+    // the terms -rest*g^a/a of the expansions at g == 0: they may be infinite one by one, and
+    // cancel in the sum - the two conjugate terms of the antiderivative of x^p*Sin(x^2)
+    IASTAppendable powerTerms = F.PlusAlloc(terms.argSize());
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      if (!hasIncompleteGamma(term, x)) {
+        IExpr value = evalLimitQuiet(term, data);
+        if (!isCleanLimit(value)) {
+          return F.NIL;
+        }
+        sum.append(value);
+        continue;
+      }
+      IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+      IAST gamma = F.NIL;
+      IASTAppendable rest = F.TimesAlloc(factors.argSize());
+      for (int j = 1; j <= factors.argSize(); j++) {
+        IExpr factor = factors.get(j);
+        if (gamma.isNIL() && factor.isAST(S.Gamma, 3) && factor.first().isFree(x)
+            && !factor.second().isFree(x)) {
+          gamma = (IAST) factor;
+        } else if (!hasIncompleteGamma(factor, x)) {
+          rest.append(factor);
+        } else {
+          return F.NIL;
+        }
+      }
+      if (gamma.isNIL()) {
+        return F.NIL;
+      }
+      IExpr value = incompleteGammaTermLimit(rest.oneIdentity1(), gamma.arg1(), gamma.arg2(), data,
+          powerTerms, engine);
+      if (!isCleanLimit(value)) {
+        return F.NIL;
+      }
+      sum.append(value);
+    }
+    if (powerTerms.argSize() > 0) {
+      IExpr powers = engine.evaluate(F.Simplify(powerTerms));
+      IExpr value = powers.isFree(x) ? powers : evalLimitQuiet(powers, data);
+      if (!isCleanLimit(value)) {
+        return F.NIL;
+      }
+      sum.append(value);
+    }
+    IExpr result = engine.evaluate(sum);
+    if (!result.isFree(t -> t.isPower() && t.base().isNumber() && !t.base().isReal(), true)) {
+      // I^(1/3) and (-I)^(1/3) in the limits at both ends: in real and imaginary part they cancel
+      result = engine.evaluate(F.ComplexExpand(result));
+      if (!result.isNumericFunction(true)) {
+        // Cos(-t)-Cos(t) of a symbolic exponent
+        final IExpr expanded = result;
+        IExpr simplified = org.matheclipse.core.integrate.IntegrateTimeBudget
+            .runWithin(() -> engine.evaluate(F.Simplify(expanded)), 2000L);
+        if (simplified.isPresent() && simplified.isFree(S.Simplify)) {
+          result = simplified;
+        }
+      }
+    }
+    return result;
+  }
+
+  /** Whether the expression has a <code>Gamma(a,g)</code> whose <code>g</code> depends on x. */
+  private static boolean hasIncompleteGamma(IExpr expr, IExpr x) {
+    return !expr.isFree(g -> g.isAST(S.Gamma, 3) && !g.second().isFree(x), true);
+  }
+
+  private static boolean isCleanLimit(IExpr value) {
+    return value.isPresent() && value.isFree(S.Limit) && value.isSpecialsFree();
+  }
+
+  private static IExpr incompleteGammaTermLimit(IExpr rest, IExpr a, IExpr g, LimitData data,
+      IASTAppendable powerTerms, EvalEngine engine) {
+    IExpr gLimit = evalLimitQuiet(g, data);
+    if (gLimit.isNIL()) {
+      return F.NIL;
+    }
+    if (gLimit.isZero()) {
+      if (a.isInteger() && !a.isPositive()) {
+        return F.NIL;
+      }
+      // rest*(Gamma(a)-g^a/a+g^(a+1)/(a+1)-...): the third term has to vanish
+      IExpr next = evalLimitQuiet(F.Times(rest, F.Power(g, F.Plus(a, F.C1))), data);
+      if (next.isNIL() || !next.isZero()) {
+        return F.NIL;
+      }
+      powerTerms.append(F.Times(F.CN1, rest, F.Power(g, a), F.Power(a, F.CN1)));
+      IExpr first = evalLimitQuiet(rest, data);
+      if (!isCleanLimit(first)) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Times(F.Gamma(a), first));
+    }
+    if (gLimit.isInfinity()) {
+      // g^(a-1)*E^(-g)
+      return evalLimitQuiet(F.Times(rest, F.Power(g, F.Subtract(a, F.C1)), F.Exp(F.Negate(g))),
+          data);
+    }
+    if (gLimit.isDirectedInfinity() && gLimit.argSize() == 1 && gLimit.first().isNumber()) {
+      IExpr c = gLimit.first();
+      IExpr reC = c.re();
+      if (reC.isNegative()) {
+        return F.NIL;
+      }
+      IExpr m = engine.evaluate(F.Divide(g, c));
+      if (!m.isFree(t -> t.isNumber() && !t.isReal(), true)
+          || !evalLimitQuiet(m, data).isInfinity()) {
+        return F.NIL;
+      }
+      IExpr bound = F.Times(rest, F.Power(m, F.Subtract(a, F.C1)));
+      if (!reC.isZero()) {
+        bound = F.Times(bound, F.Exp(F.Times(F.CN1, reC, m)));
+      }
+      IExpr boundLimit = evalLimitQuiet(bound, data);
+      if (boundLimit.isPresent() && boundLimit.isZero()) {
+        return F.C0;
+      }
+    }
+    return F.NIL;
+  }
+
   private static IExpr replaceStirling(IExpr expr, ISymbol x, EvalEngine engine) {
     if (expr.isFree(x)) {
       return expr;
@@ -3802,11 +3967,17 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       IAST ast = (IAST) expr;
       switch (ast.validHeadID()) {
         case ID.Factorial: {
+          if (!ast.isAST1()) {
+            break;
+          }
           // x! -> Gamma(x+1)
           IExpr arg = replaceStirling(ast.arg1(), x, engine);
           return replaceStirling(engine.evaluate(F.Gamma(F.Plus(arg, F.C1))), x, engine);
         }
         case ID.Pochhammer: {
+          if (!ast.isAST2()) {
+            break;
+          }
           // Pochhammer(a, b) -> Gamma(a+b)/Gamma(a)
           IExpr a = replaceStirling(ast.arg1(), x, engine);
           IExpr b = replaceStirling(ast.arg2(), x, engine);
@@ -3814,6 +3985,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
               engine);
         }
         case ID.Gamma: {
+          if (!ast.isAST1()) {
+            // The incomplete Gamma(a,z) is another function. Read as Gamma(a), its limit for
+            // z->Infinity was Gamma(a) instead of 0, and every integral over an infinite range
+            // with an incomplete Gamma function as antiderivative had the wrong sign:
+            // Integrate(Sin(x^3),{x,0,Infinity}) was -Gamma(1/3)/6.
+            break;
+          }
           // Stirling's Approximation maps Gamma growth strictly to Exp and Log
           // Gamma(z) ~ Sqrt(2*Pi/z) * Exp(z*Log(z) - z + 1/(12*z))
           IExpr arg = replaceStirling(ast.arg1(), x, engine);
@@ -3823,6 +4001,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           return LimitGruntz.stirlingGamma(arg, engine);
         }
         case ID.LogGamma: {
+          if (!ast.isAST1()) {
+            break;
+          }
           // LogGamma(z) ~ z*Log(z) - z + (1/2)*Log(2*Pi/z) + 1/(12*z)
           IExpr arg = replaceStirling(ast.arg1(), x, engine);
           if (!divergesAtInfinity(arg, x)) {
@@ -4288,6 +4469,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           // 0*Infinity is an expected outcome here - it is Indeterminate, and the reciprocal
           // strategy below takes over - so its Infinity::indet message is not the user's
           IExpr temp = engine.evalQuiet(F.Times(first, second));
+          if ((first.isZero() && !second.isSpecialsFree())
+              || (second.isZero() && !first.isSpecialsFree())) {
+            // 0*(c+DirectedInfinity(z)): a sum with a complex infinity in it stays a sum, and
+            // the product with 0 evaluates to 0 - but it is the same 0*Infinity as without the c
+            temp = S.Indeterminate;
+          }
           if (!temp.isIndeterminate()) {
             return temp;
           }

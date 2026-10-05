@@ -391,6 +391,11 @@ public final class ContextPath implements Iterable<Context> {
     return path.size();
   }
 
+  /** Test if the system context is the first one in which a symbol name is looked up. */
+  public boolean isSystemFirst() {
+    return !path.isEmpty() && path.get(0) == Context.SYSTEM;
+  }
+
   public ISymbol symbol(String symbolName, Context newContext, boolean relaxedSyntax) {
     String name = getName(symbolName, relaxedSyntax);
 

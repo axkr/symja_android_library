@@ -1164,9 +1164,9 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     // a parameter is the outermost variable
     check("Reduce(x + y < a && x > 0 && y > 0, {x, y}, Reals)", //
         "a>0&&x>0&&x<a&&y>0&&y<a-x");
-    // nonlinear couplings still need a cylindrical decomposition
+    // a nonlinear coupling, of degree 1 in the second variable
     check("Reduce(x*y > 0, {x, y}, Reals)", //
-        "Reduce(x*y>0,{x,y},Reals)");
+        "(x<0&&y<0)||(x>0&&y>0)");
     // `x ∈ Integers` doesn't make `y` an integer
     check("Reduce(Element(x, Integers) && x + y < 1 && y > 0, {x, y}, Reals)", //
         "Reduce(x∈Integers&&x+y<1&&y>0,{x,y},Reals)");
@@ -1585,5 +1585,26 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x>a&&x<b");
     check("Reduce(x>2&&x>3,x,Reals)", //
         "x>3");
+  }
+
+  @Test
+  public void testPointAtTheEndOfAnInterval() {
+    // the point closes the interval; it was kept beside the closed interval: x==0||x<=0
+    check("Reduce(x==0||x<0, x, Reals)", //
+        "x<=0");
+    check("Reduce(x==1||x<1, x, Reals)", //
+        "x<=1");
+    check("Reduce(x==0||x>0, x, Reals)", //
+        "x>=0");
+    check("Reduce(x==0||x<0||x==3, x, Reals)", //
+        "x==3||x<=0");
+    check("Reduce(x==1||x==2, x, Reals)", //
+        "x==1||x==2");
+    check("Reduce(x==1||x==2||x>5, x, Reals)", //
+        "x==1||x==2||x>5");
+    check("Reduce(x==5||x>5||x==7, x, Reals)", //
+        "x>=5");
+    check("Reduce(x==a||x<0, x, Reals)", //
+        "x==a||x<0");
   }
 }

@@ -35,6 +35,33 @@ public final class JSPageBuilder implements JSPageProvider {
 
   private static final String MATH_JS = "https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.11/build/math.js";
 
+  /** KaTeX, in the version the notebook page of matheclipse-io ships. */
+  private static final String KATEX = "https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/";
+
+  /**
+   * Sets the formulas a MathCell page writes into the labels of its controls, in the delimiters
+   * MathJax read them in before KaTeX took its place here.
+   *
+   * <p>
+   * KaTeX is asked for MathML alone. Its usual output needs its stylesheet and its fonts as well;
+   * for a few letters beside a slider what the browser draws itself is enough, and the page stays
+   * two scripts - which is also all that somebody who wants the page to work without a network
+   * has to bring along. MathJax 2 was a loader for dozens of files fetched as they were needed.
+   */
+  private static final String TYPESET_LABELS = "<script>\n" //
+      + "window.addEventListener('load', function () {\n" //
+      + "  if (typeof renderMathInElement !== 'function') return;\n" //
+      + "  renderMathInElement(document.body, {\n" //
+      + "    output: 'mathml', throwOnError: false,\n" //
+      + "    delimiters: [\n" //
+      + "      { left: '$$', right: '$$', display: true },\n" //
+      + "      { left: '\\\\[', right: '\\\\]', display: true },\n" //
+      + "      { left: '\\\\(', right: '\\\\)', display: false }\n" //
+      + "    ]\n" //
+      + "  });\n" //
+      + "});\n" //
+      + "</script>\n";
+
   /** A JavaScript library, the element it draws into and where it is loaded from. */
   enum Library {
     ECHARTS(OutputFormats.ECHARTS_STR, "ECharts", //
@@ -53,8 +80,9 @@ public final class JSPageBuilder implements JSPageProvider {
     MATHCELL(OutputFormats.MATHCELL_STR, "MathCell", //
         "<div class=\"mathcell\" style=\"width: 100%; height: 400px;\">", Body.SCRIPT_INSIDE, 440, //
         new String[0], //
+        // the formulas in the labels of a cell are set by KaTeX, see TYPESET_LABELS
         new String[] {MATH_JS, "https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.4/build/mathcell.js",
-            "https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML"}),
+            KATEX + "katex.min.js", KATEX + "contrib/auto-render.min.js"}),
 
     // a diagram is markup, not a script: the body is put on the page as it is
     MERMAID(OutputFormats.MERMAID_STR, "Mermaid", //
@@ -177,6 +205,9 @@ public final class JSPageBuilder implements JSPageProvider {
     buf.append(bodyHtml(library, js));
     if (Config.DISPLAY_JSFIDDLE_BUTTON && js.length() < MAX_JSFIDDLE_SOURCE_CODE) {
       buf.append(jsFiddleForm(library, js));
+    }
+    if (library == Library.MATHCELL) {
+      buf.append(TYPESET_LABELS);
     }
     if (embedded) {
       buf.append(REPORT_HEIGHT);

@@ -19,6 +19,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reduce.QuadraticQE;
 import org.matheclipse.core.reduce.Formula;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.Lowering;
@@ -115,6 +116,10 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
     }
+    if (result.isNIL() && domain == S.Reals) {
+      // a condition on the free variables, by virtual substitution
+      result = QuadraticQE.eliminate(ast.arg1(), engine);
+    }
     if (result.isNIL()) {
       return F.NIL;
     }
@@ -143,6 +148,13 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
       IExpr linear = resolveLinear(expr, engine);
       if (linear.isPresent()) {
         return linear;
+      }
+      // Not linear: x^2 > m, or the product m*x of two of the variables. A statement without free
+      // variables whose atoms are of degree 2 at most in each variable is decided by virtual
+      // substitution.
+      IExpr quadratic = QuadraticQE.decide(expr, engine);
+      if (quadratic.isPresent()) {
+        return quadratic;
       }
     }
     if (expr.isAST(S.Exists) || expr.isAST(S.ForAll)) {
@@ -769,7 +781,8 @@ public class Resolve extends AbstractFunctionOptionEvaluator {
       for (int i = 0; i < point.length; i++) {
         rules.append(F.Rule(vars.get(i + 1), point[i]));
       }
-      return engine.evaluate(F.subst(cond, rules)).isTrue();
+      // quiet: a sample point may be a pole of the condition
+      return engine.evalQuiet(F.subst(cond, rules)).isTrue();
     }
     for (int i = 0; i < samples.length; i++) {
       point[index] = samples[i];

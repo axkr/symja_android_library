@@ -157,11 +157,29 @@ public class Context implements Serializable {
    * @return <code>true</code> if the symbol was found
    */
   public boolean remove(ISymbol symbol) {
+    if (this == SYSTEM) {
+      systemChanges++;
+    }
     return symbolTable.values().remove(symbol);
   }
 
   public ISymbol put(String key, ISymbol value) {
+    if (this == SYSTEM) {
+      systemChanges++;
+    }
     return symbolTable.put(key, value);
+  }
+
+  /** Counts how often a name of the {@link #SYSTEM} context was removed or set again. */
+  private static volatile int systemChanges;
+
+  /**
+   * A number which changes whenever a name of the {@link #SYSTEM} context may stand for another
+   * symbol than before. A new name leaves it unchanged. Whoever remembers the symbol of a system
+   * name has to remember this number with it.
+   */
+  public static int systemChanges() {
+    return systemChanges;
   }
 
   public synchronized ISymbol computeIfAbsent(String key,
@@ -185,6 +203,9 @@ public class Context implements Serializable {
   }
 
   public ISymbol remove(String key) {
+    if (this == SYSTEM) {
+      systemChanges++;
+    }
     return symbolTable.remove(key);
   }
 

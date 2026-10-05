@@ -480,6 +480,15 @@ public class LeadTerm {
       return null;
     }
 
+    if (sign == 0 && (head.ordinal() == ID.ArcTanh || head.ordinal() == ID.ArcCoth)
+        && (argLead.coefficient().isOne() || argLead.coefficient().isMinusOne())) {
+      // a logarithmic branch point: the leading term is the one of the two logarithms
+      IExpr u = head.ordinal() == ID.ArcTanh ? arg : F.Power(arg, F.CN1);
+      IExpr logs = engine.evalQuiet(
+          F.Times(F.C1D2, F.Subtract(F.Log(F.Plus(F.C1, u)), F.Log(F.Subtract(F.C1, u)))));
+      return logs.isAST(head) ? null : dispatch(logs, t, logx, engine, depth + 1);
+    }
+
     switch (head.ordinal()) {
       case ID.Sin:
       case ID.Tan:

@@ -656,6 +656,35 @@ public final class Arithmetic {
       if (AbstractAssumptions.assumePositive(arg1)) {
         return F.C0;
       }
+      if (arg1.isAST()) {
+        // the sign of a product or a power under the assumptions: Arg(a^2), Arg(-a), Arg(1/a^2)
+        // for a>0, as Sign has it
+        if (arg1.isPositiveResult()) {
+          return F.C0;
+        }
+        if (arg1.isNegativeResult()) {
+          return S.Pi;
+        }
+        if (arg1.isTimes()) {
+          // a factor which is positive under the assumptions does not turn the direction:
+          // Arg(a*b) is Arg(b) for a>0
+          IAST times = (IAST) arg1;
+          IAST rest = times.select(factor -> factor.isNumber() || !factor.isPositiveResult());
+          if (rest.argSize() < times.argSize()) {
+            return F.Arg(rest.oneIdentity1());
+          }
+        }
+        if (arg1.isTimes() && arg1.first().isNumber() && arg1.first().re().isZero()) {
+          // Arg(I*c*y) for a real c: +-Pi/2 by the sign of c*y
+          IExpr imaginary = engine.evaluate(F.Times(F.CNI, arg1));
+          if (imaginary.isPositiveResult()) {
+            return F.CPiHalf;
+          }
+          if (imaginary.isNegativeResult()) {
+            return F.CNPiHalf;
+          }
+        }
+      }
       return F.NIL;
     }
 

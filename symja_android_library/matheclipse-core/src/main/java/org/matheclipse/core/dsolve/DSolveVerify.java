@@ -158,6 +158,14 @@ final class DSolveVerify {
         if (strict //
             ? !isNumericallyZero(residual, xVar, xSamples, engine)
             : isDecidablyNonzero(residual, xVar, xSamples, engine)) {
+          if (!strict && hasFractionalPower(residuals.get(i), yFunctions)
+              && !isNonzeroWhereReal(residual, pinned, xVar, engine)) {
+            // y^n with an n which is no integer: where the solution is not real, the principal
+            // value of the power is not the branch the solution was built on, and the residual
+            // says nothing. The solution of x*y'+y == x*y^Sqrt(3) is the power of a base which is
+            // negative at every sample point. The residual counts where the solution is real.
+            continue;
+          }
           return false;
         }
       }
@@ -169,6 +177,59 @@ final class DSolveVerify {
       engine.setQuietMode(quietMode);
     }
   }
+
+  /** Whether the equation has a power of an unknown function whose exponent is no integer. */
+  private static boolean hasFractionalPower(IExpr residual, IAST yFunctions) {
+    return !residual.isFree(t -> t.isPower() && !t.exponent().isInteger()
+        && yFunctions.exists(y -> y.equals(t.base())), true);
+  }
+
+  /**
+   * Whether the residual is clearly not zero at a point where all of the solutions are real.
+   * Several tables of values are tried for the variable and the constants; if the solutions are
+   * real at none of the points, nothing is proved.
+   */
+  private static boolean isNonzeroWhereReal(IExpr residual, IAST bodies, IExpr xVar,
+      EvalEngine engine) {
+    IASTAppendable symbols = F.ListAlloc();
+    collectFreeSymbols(F.List(residual, bodies), symbols);
+    for (int shift = 0; shift < REAL_POINT_SHIFTS.length; shift++) {
+      for (int sample = 0; sample < SAMPLES.length; sample++) {
+        IASTAppendable rules = F.ListAlloc(symbols.argSize());
+        for (int i = 1; i <= symbols.argSize(); i++) {
+          int[] fraction = SAMPLES[(sample + i) % SAMPLES.length];
+          // the variable keeps its value, the constants and parameters are moved
+          int numerator = (fraction[0] + i)
+              * (symbols.get(i).equals(xVar) ? 1 : REAL_POINT_SHIFTS[shift]);
+          rules.append(F.Rule(symbols.get(i), F.QQ(numerator, fraction[1])));
+        }
+        try {
+          boolean real = true;
+          for (int i = 1; i <= bodies.argSize() && real; i++) {
+            IExpr value = engine.evalN(F.subst(bodies.get(i), rules));
+            real = value instanceof INumber && value.isReal();
+          }
+          if (!real) {
+            continue;
+          }
+          IExpr value = engine.evalN(F.subst(residual, rules));
+          if (value instanceof INumber) {
+            double abs = ((INumber) value).abs().evalf();
+            if (Double.isFinite(abs) && abs > TOLERANCE
+                && abs / (1.0 + scaleOf(residual, rules, engine)) > TOLERANCE) {
+              return true;
+            }
+          }
+        } catch (RuntimeException rex) {
+          org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
+        }
+      }
+    }
+    return false;
+  }
+
+  /** Factors for the values of the constants, in the search for points with a real solution. */
+  private static final int[] REAL_POINT_SHIFTS = {1, -1, 7, -7, 40};
 
   /**
    * Whether the expression contains something a numeric back substitution cannot say anything

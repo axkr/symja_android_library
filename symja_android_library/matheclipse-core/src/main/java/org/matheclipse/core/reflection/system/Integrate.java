@@ -46,6 +46,7 @@ import org.matheclipse.core.integrate.ProductPowerIntegration;
 import org.matheclipse.core.integrate.RadicalCoefficients;
 import org.matheclipse.core.integrate.RadicalSubstitution;
 import org.matheclipse.core.integrate.RationalIntegration;
+import org.matheclipse.core.integrate.ResidueIntegration;
 import org.matheclipse.core.integrate.RischNorman;
 import org.matheclipse.core.integrate.SurdRationalization;
 import org.matheclipse.core.integrate.TranscendentalRisch;
@@ -643,6 +644,28 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               // place below, and nothing else is.
               return DiffUnderIntegral.general(arg1, xList.arg1(), xList.arg2(), xList.arg3(),
                   engine);
+            }
+          }
+          if (forcedMethod == null) {
+            // The residue theorem, for the forms whose antiderivative does not exist in closed
+            // form or has no limits which are found: a recognized form is answered at once, and
+            // not after the search for an antiderivative has used its time.
+            final boolean principalValue = option.length > 2 && option[2].isTrue();
+            IExpr byResidues = ResidueIntegration.integrate(arg1, xList.arg1(), xList.arg2(),
+                xList.arg3(), assumptionExpr.isAST() ? assumptionExpr : F.NIL, principalValue,
+                engine);
+            if (byResidues.isPresent()) {
+              return byResidues;
+            }
+            if (principalValue) {
+              // A principal value which was not found. Where the integral exists without the
+              // option it is the principal value; a "does not converge" of the integral itself is
+              // no answer to the question which was asked.
+              final IAST withoutOption =
+                  holdallAST.removeIf(arg -> arg.isRuleAST() && arg.first() == S.PrincipalValue);
+              IExpr ordinary =
+                  ResidueIntegration.withoutResidues(() -> engine.evalQuiet(withoutOption));
+              return ordinary.isFree(S.Integrate) ? ordinary : F.NIL;
             }
           }
           // Integrate(f(x), {x,a,b})
@@ -1821,6 +1844,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * @param engine the evaluation engine
    * @return
    */
+  /**
+   * Whether the limit is a value under a condition which never holds, as the product of
+   * <code>ConditionalExpression(0, a&gt;1)</code> and <code>ConditionalExpression(0, a&lt;1)</code>
+   * is: the limit is not known then.
+   */
+  private static boolean hasContradictoryCondition(IExpr limit, EvalEngine engine) {
+    return !limit.isFree(t -> t.isConditionalExpression()
+        && engine.evalQuiet(F.unaryAST1(S.Reduce, t.second())).isFalse(), true);
+  }
+
   private static IExpr definiteIntegral(IExpr function, IExpr integrand, IAST xValueList,
       IAST originalAST, EvalEngine engine) {
     IExpr x = xValueList.arg1();
@@ -1916,24 +1949,36 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       lowerDirection = F.Rule(F.Direction, F.CN1);
       upperDirection = F.Rule(F.Direction, F.C1);
     }
-    IExpr lowerLimit = engine.evaluate(F.Limit(function, F.Rule(x, lower), lowerDirection));
+    // quiet: an Infinity-Infinity inside of the limit is no message of the integral
+    IExpr lowerLimit = engine.evalQuiet(F.Limit(function, F.Rule(x, lower), lowerDirection));
+    if (lowerLimit.isIndeterminate()) {
+      // The limit of the antiderivative was not found, which says nothing about the integral:
+      // Log(x)/(x^2+a^2) converges on {x,0,Infinity}, and was said not to.
+      return F.NIL;
+    }
     if (!lowerLimit.isSpecialsFree() || lowerLimit.isInterval() || lowerLimit.isIntervalData()) {
       // Integral of `1` does not converge on `2`.
       return Errors.printMessage(S.Integrate, "idiv",
           F.List(originalAST.arg1(), originalAST.arg2()), engine);
     }
-    if (!lowerLimit.isFreeAST(S.Limit)) {
+    if (!lowerLimit.isFreeAST(S.Limit) || hasContradictoryCondition(lowerLimit, engine)) {
       // the limit stayed unevaluated - neither convergence nor divergence can be decided, so
       // don't assemble a result containing raw Limit() calls; leave the integral unevaluated
       return F.NIL;
     }
-    IExpr upperLimit = engine.evaluate(F.Limit(function, F.Rule(x, upper), upperDirection));
+    // quiet: an Infinity-Infinity inside of the limit is no message of the integral
+    IExpr upperLimit = engine.evalQuiet(F.Limit(function, F.Rule(x, upper), upperDirection));
+    if (upperLimit.isIndeterminate()) {
+      // The limit of the antiderivative was not found, which says nothing about the integral:
+      // Log(x)/(x^2+a^2) converges on {x,0,Infinity}, and was said not to.
+      return F.NIL;
+    }
     if (!upperLimit.isSpecialsFree() || upperLimit.isInterval() || upperLimit.isIntervalData()) {
       // Integral of `1` does not converge on `2`.
       return Errors.printMessage(S.Integrate, "idiv",
           F.List(originalAST.arg1(), originalAST.arg2()), engine);
     }
-    if (!upperLimit.isFreeAST(S.Limit)) {
+    if (!upperLimit.isFreeAST(S.Limit) || hasContradictoryCondition(upperLimit, engine)) {
       return F.NIL;
     }
 
@@ -2294,8 +2339,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(Attribute.HOLDALL);
-    setOptions(newSymbol, new IBuiltInSymbol[] {S.Assumptions, S.Method},
-        new IExpr[] {S.$Assumptions, S.Automatic});
+    setOptions(newSymbol, new IBuiltInSymbol[] {S.Assumptions, S.Method, S.PrincipalValue},
+        new IExpr[] {S.$Assumptions, S.Automatic, S.False});
     super.setUp(newSymbol);
 
     if (!Config.JAS_NO_THREADS) {

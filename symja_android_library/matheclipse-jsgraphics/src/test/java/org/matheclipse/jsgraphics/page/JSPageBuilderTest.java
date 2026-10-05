@@ -134,4 +134,26 @@ public class JSPageBuilderTest {
     start += open.length();
     return StringEscapeUtils.unescapeHtml4(page.substring(start, page.indexOf("</textarea>", start)));
   }
+
+  /**
+   * The formulas in the labels of a MathCell page are set by KaTeX - two scripts - and no longer
+   * by MathJax 2, which fetched its parts as it went. Only that page typesets anything.
+   */
+  @Test
+  public void aMathCellPageSetsItsLabelsWithKaTeX() {
+    String page = JSPageBuilder.INSTANCE.page(OutputFormats.MATHCELL_STR, "MathCell(id, []);");
+    assertFalse(page.contains("MathJax"), page);
+    assertTrue(page.contains("/katex@0.18.4/dist/katex.min.js"), page);
+    assertTrue(page.contains("/katex@0.18.4/dist/contrib/auto-render.min.js"), page);
+    assertTrue(page.contains("renderMathInElement(document.body"), page);
+    assertTrue(page.contains("output: 'mathml'"), "no stylesheet and no fonts to fetch");
+    assertTrue(page.contains("{ left: '\\\\(', right: '\\\\)', display: false }"), page);
+    // the libraries first, the typesetting once the cell has built its controls
+    assertTrue(page.indexOf("mathcell.js") < page.indexOf("katex.min.js"));
+    assertTrue(page.indexOf("katex.min.js") < page.indexOf("renderMathInElement"));
+
+    String other = JSPageBuilder.INSTANCE.page(OutputFormats.JSXGRAPH_STR, "var b = 1;");
+    assertFalse(other.contains("katex"), other);
+    assertFalse(other.contains("renderMathInElement"), other);
+  }
 }

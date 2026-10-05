@@ -92,7 +92,7 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
         // http://fungrim.org/entry/af7d3d/
         return F.Times(F.Plus(F.CN1, F.Power(F.C2, s)), F.Zeta(s));
       }
-      if (a.isNumEqualRational(F.C3D4)) {
+      if (a.isNumEqualRational(F.C3D4) && s.isNumEqualInteger(F.C2)) {
         // http://fungrim.org/entry/951f86/
         return F.Plus(F.Times(F.CN8, S.Catalan), F.Sqr(Pi));
       }

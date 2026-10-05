@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
+import org.matheclipse.core.reduce.BivariateReduce;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -205,6 +206,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return orAST.arg1();
       }
       IASTAppendable orResult = F.ast(S.Or, orAST.argSize());
+      // the equalities which are in the Or result and in the interval as well
+      List<IExpr> mergedEqualities = new ArrayList<IExpr>();
       boolean orEvaled = false;
       boolean cdEvaled = false;
       for (int i = 1; i < orAST.size(); i++) {
@@ -282,6 +285,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
             if (arg.isEqual()) {
               orEvaled = true;
               orResult.append(arg);
+              mergedEqualities.add(arg);
             }
           } else {
             // the term is no relation of the variable and cannot be merged into the interval;
@@ -296,6 +300,20 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           // don't lose the interval data accumulated from other Or terms, but avoid
           // duplicating equalities which were already appended to the Or result
           IExpr intervalExpr = engine.evaluate(cd.toExpr());
+          for (IExpr equality : mergedEqualities) {
+            // a point at the end of an interval of the other alternatives is a part of the
+            // closed interval: x==0||x<0 is x<=0
+            if (!intervalExpr.equals(equality)
+                && !(intervalExpr.isOr() && ((IAST) intervalExpr).contains(equality))) {
+              int position = orResult.indexOf(equality);
+              if (position > 0) {
+                orResult.remove(position);
+              }
+            }
+          }
+          if (orResult.isAST0()) {
+            return intervalExpr;
+          }
           if (intervalExpr.isOr()) {
             IAST intervalOr = (IAST) intervalExpr;
             for (int j = 1; j < intervalOr.size(); j++) {
@@ -2582,6 +2600,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     // evaluations then decide relations like `x^2+y^2>0` as always true and drop conditions like
     // `a>0` of `a*x^2==1`, which gave wrong answers.
     IExpr result = reduce(ast, solveOptions, engine);
+    if (result.isNIL() && ast.argSize() >= 2 && ast.arg2().isList2()
+        && (ast.argSize() == 2 || ast.arg3() == S.Reals)
+        && (ast.argSize() == 3 || !ast.arg1().isFree(t -> t.isAST(S.Less) || t.isAST(S.LessEqual)
+            || t.isAST(S.Greater) || t.isAST(S.GreaterEqual), true))) {
+      // two real variables: a cylindrical decomposition, if the second one is of degree 1
+      return BivariateReduce.reduce(ast.arg1(), ast.arg2().first(), ast.arg2().second(), engine);
+    }
     if (result.isNIL()) {
       return F.NIL;
     }

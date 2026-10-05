@@ -690,6 +690,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
     } else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
       result = new ASTSeriesData(x, x0, F.list(function), 0, n + 1, 1);
+    } else if (function.isAST1() && n >= 0 && !function.first().isFree(x)
+        && (result = logarithmicBranchSeries((IAST) function, x, x0, n, direction, engine)) != null) {
+      // expanded at a logarithmic branch point of the argument
     } else if (function.isAST1() && !function.first().isFree(x) && !function.first().equals(x)) {
       IExpr head = function.head();
       if (head.isBuiltInSymbol()) {
@@ -726,6 +729,107 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
     }
     return result;
+  }
+
+  /**
+   * The series of <code>Log(g)</code>, <code>ArcTanh(g)</code> and <code>ArcCoth(g)</code> at a
+   * point where the argument of a logarithm vanishes: <code>g -&gt; 0</code> for <code>Log</code>,
+   * <code>g -&gt; &plusmn;1</code> for the other two, which are rewritten to their logarithms.
+   *
+   * <p>
+   * With <code>g = c*w^r*(1+h)</code>, <code>w = x-x0</code> and <code>h -&gt; 0</code> the series
+   * is <code>Log(c)+r*Log(w)+Log(1+h)</code>; the logarithm of <code>w</code> stays in the constant
+   * coefficient. The form is the one valid on the side where <code>w</code> is positive.
+   *
+   * @return <code>null</code> if the argument has no such branch point at <code>x0</code>
+   */
+  private static ASTSeriesData logarithmicBranchSeries(final IAST function, IExpr x, IExpr x0,
+      final int n, final int direction, EvalEngine engine) {
+    final boolean isLog = function.isLog();
+    if (!isLog && !function.isAST(S.ArcTanh, 2) && !function.isAST(S.ArcCoth, 2)) {
+      return null;
+    }
+    final IExpr g = function.arg1();
+    IExpr g0 = engine.evalQuiet(F.subst(g, x, x0));
+    if (g0.isIndeterminate() || g0.isDirectedInfinity()) {
+      return null;
+    }
+    if (!isLog) {
+      if (!g0.isOne() && !g0.isMinusOne()) {
+        return null;
+      }
+      IExpr u = function.isAST(S.ArcTanh, 2) ? g : F.Power(g, F.CN1);
+      IExpr logs = engine.evaluate(
+          F.Times(F.C1D2, F.Subtract(F.Log(F.Plus(F.C1, u)), F.Log(F.Subtract(F.C1, u)))));
+      ASTSeriesData series = seriesDataRecursive(logs, x, x0, n, direction, engine);
+      if (series != null && series.minExponent() <= 0 && series.truncateOrder() > 0) {
+        series.setCoeff(0, engine.evaluate(F.Expand(series.coefficient(0))));
+      }
+      return series;
+    }
+    if (!g0.isZero() || g.equals(x)) {
+      return null;
+    }
+
+    // the leading term c*w^(lead/den) of the argument
+    int order = n + 1;
+    ASTSeriesData inner = seriesDataRecursive(g, x, x0, order, direction, engine);
+    final int probeLimit = n + 12;
+    while (inner != null && order < probeLimit && leadingIndex(inner) == Integer.MAX_VALUE) {
+      order += 3;
+      inner = seriesDataRecursive(g, x, x0, order, direction, engine);
+    }
+    if (inner == null) {
+      return null;
+    }
+    int lead = leadingIndex(inner);
+    if (lead == Integer.MAX_VALUE || lead <= 0) {
+      return null;
+    }
+    final int den = inner.puiseuxDenominator();
+    // the factor 1+h loses lead/den orders of the argument
+    order = n + (lead + den - 1) / den;
+    inner = seriesDataRecursive(g, x, x0, order, direction, engine);
+    if (inner == null || leadingIndex(inner) != lead || inner.puiseuxDenominator() != den) {
+      return null;
+    }
+    final IExpr c = inner.coefficient(lead);
+    if (!c.isFree(x)) {
+      return null;
+    }
+    final int truncate = inner.truncateOrder() - lead;
+    ASTSeriesData unit = new ASTSeriesData(x, x0, 0, truncate, den);
+    for (int i = 0; i < truncate; i++) {
+      IExpr coefficient = inner.coefficient(i + lead);
+      if (!coefficient.isZero()) {
+        unit.setCoeff(i, engine.evaluate(F.Divide(coefficient, c)));
+      }
+    }
+    ISymbol y = F.Dummy("y");
+    ASTSeriesData outer =
+        seriesDataRecursive(F.Log(y), y, F.C1, Math.max(truncate, 1), direction, engine);
+    if (outer == null) {
+      return null;
+    }
+    ASTSeriesData result = outer.compose(unit);
+    if (result == null) {
+      return null;
+    }
+    IExpr w = x0.isZero() ? x : F.Subtract(x, x0);
+    IExpr r = den == 1 ? F.ZZ(lead) : F.QQ(lead, den).normalize();
+    IExpr logOfLeadingTerm = engine.evaluate(F.Plus(F.Log(c), F.Times(r, F.Log(w))));
+    result.setCoeff(0, engine.evaluate(F.Plus(result.coefficient(0), logOfLeadingTerm)));
+    return result;
+  }
+
+  /** Index of the first non-vanishing coefficient, or {@link Integer#MAX_VALUE}. */
+  private static int leadingIndex(ASTSeriesData series) {
+    for (int i = series.minExponent(); i < series.truncateOrder(); i++) {
+      if (!series.coefficient(i).isZero()) {
+        return i;
+      }
+    }
+    return Integer.MAX_VALUE;
   }
 
   /**
