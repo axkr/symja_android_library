@@ -39,6 +39,7 @@ import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
+import org.matheclipse.external.apfloat.ApfloatInverseTrigMath;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MachineUnderflow;
@@ -584,22 +585,20 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      // I/arg1
-      Apcomplex ac = Apcomplex.I.divide(arg1);
-
-      // (I/2) (Log(1 - I/arg1) - Log(1 + I/arg1))
-      Apcomplex result = Apcomplex.I.divide(new Apfloat(2)).multiply(ApcomplexMath
-          .log(Apcomplex.ONE.subtract(ac)).subtract(ApcomplexMath.log(Apcomplex.ONE.add(ac))));
-      return F.complexNum(result);
+      return F.complexNum(ApfloatInverseTrigMath.acot(arg1, zeroPrecision(arg1)));
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.equals(Apcomplex.ZERO)) {
-        // Pi / 2
-        return F.num(ApfloatMath.pi(arg1.precision()).divide(new Apfloat(2)));
-      }
-      return F.num(ApfloatMath.atan(ApfloatMath.inverseRoot(arg1, 1)));
+      return F.num(ApfloatInverseTrigMath.acot(arg1, zeroPrecision(arg1)));
+    }
+
+    /**
+     * A zero has infinite precision, and Pi/2 can only be computed to the precision of the engine.
+     */
+    private static long zeroPrecision(Apcomplex arg1) {
+      long precision = arg1.precision();
+      return precision == Apfloat.INFINITE ? EvalEngine.getApfloat().precision() : precision;
     }
 
     @Override

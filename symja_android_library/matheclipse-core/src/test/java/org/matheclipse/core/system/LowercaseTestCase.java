@@ -646,6 +646,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcCot() {
+    // a zero of a higher precision has the value Pi/2 as well
+    check("0.25`30*ArcCot(0.0)", //
+        "0.392699081698724154807830422909");
+    check("ArcCot(0.5`30+0.25`30*I)", //
+        "1.08654183646493040045672219292+I*(-0.20058661813123432278244614769)");
+    check("ArcCot(-0.5`30)", //
+        "-1.10714871779409050301706546017");
     check("ArcCot(Cot(-1/2))", //
         "-1/2");
     check("ArcCot(Cot(-1))", //
@@ -11459,6 +11466,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ExportString(Graphics(Rotate(Rectangle({1, 0}, {3, 1}), {{1, 0}, {0, 1}})), \"SVG\") === "
         + "ExportString(Graphics(Rectangle({1, 0}, {3, 1})), \"SVG\")", //
         "False");
+  }
+
+  @Test
+  public void testFindRootHighPrecisionCoefficients() {
+    // the start value 0 is where ArcCot jumps
+    check("FindRoot(0.25`30*ArcCot(x)+0.324180413729543335629562466504`30*Cos(x)-0.5`30,{x,0})", //
+        "{x->0.667919}");
+    check("FindRoot(0.25*ArcCot(x)+0.324180413729543*Cos(x)-0.5,{x,0})", //
+        "{x->0.667919}");
+    check("FindRoot(0.25`30*ArcCot(x)-0.3`30,{x,0})", //
+        "{x->0.38878}");
+    check(
+        "FindRoot(0.25`30*ArcCot(x)+0.324180413729543335629562466504`30*Cos(x)-0.5`30,{x,0},WorkingPrecision->30)", //
+        "{x->0.667918509528636020515538113916}");
   }
 
   @Test

@@ -794,6 +794,26 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveIssue1537() {
+    // Factor pulls a number out of a sum with 30-digit coefficients again and again, which was an
+    // endless recursion in Eliminate
+    check("Solve(0.25`30*Sin(x)+0.324180413729543335629562466504`30*Cos(x)==0.3`30,x)", //
+        "{{x->ConditionalExpression(-0.0914325342128386278383742594186+6.28318530717958647692528676655*C(\n"
+            + "1),C(1)∈Integers)},{x->ConditionalExpression(1.405265084595260069682618664+6.28318530717958647692528676655*C(\n"
+            + "1),C(1)∈Integers)}}");
+    check("Solve(0.25`30*ArcCot(x)+0.324180413729543335629562466504`30*Cos(x)==0.5`30,x)", //
+        "{{x->0.667919}}");
+    check("Solve(0.25*ArcCot(x)+0.324180413729543*Cos(x)==0.5,x)", //
+        "{{x->0.667919}}");
+    // a polynomial division with 30-digit coefficients did not end
+    check(
+        "Solve(Tan(10`30)==2`30*ArcCot(x)*(-1`30+4`30*Sin(x)^2)/(4`30*(1.4`30+Cos(2`30*x))+2`30),x)", //
+        "{{x->1.84071}}");
+    check("Solve(Tan(10.0)==2.0*ArcCot(x)*(-1.0+4.0*Sin(x)^2)/(4.0*(1.4+Cos(2.0*x))+2.0),x)", //
+        "{{x->1.84071}}");
+  }
+
+  @Test
   public void testSolveIssue329() {
     check("Solve(a1+a2+5*x+4*Sqrt(a+b*x+25/16*x^2)+z1+z2==0, x)", //
         "{{x->(-16*a+a1^2+2*a1*a2+a2^2+2*a1*z1+2*a2*z1+z1^2+2*a1*z2+2*a2*z2+2*z1*z2+z2^2)/(\n"

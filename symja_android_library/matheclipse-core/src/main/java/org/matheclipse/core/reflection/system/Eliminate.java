@@ -723,10 +723,16 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
               if (timesWithoutVariable.isAST0()) {
                 return F.NIL;
               }
-              IExpr rhsWithoutVariable =
-                  engine.evaluate(F.Divide(exprWithoutVariable, timesWithoutVariable));
-              return extractVariableRecursive(timesWithVariable.oneIdentity1(), rhsWithoutVariable,
-                  predicate, variable, multipleValues, engine);
+              // an inexact content can be pulled out of the remaining sum again and again
+              // (rescaled by 2^24, 2^-24, ...), so dividing by it is no step forward
+              boolean inexactContent = timesWithVariable.oneIdentity1().isPlus()
+                  && timesWithoutVariable.forAll(IExpr::isInexactNumber);
+              if (!inexactContent) {
+                IExpr rhsWithoutVariable =
+                    engine.evaluate(F.Divide(exprWithoutVariable, timesWithoutVariable));
+                return extractVariableRecursive(timesWithVariable.oneIdentity1(),
+                    rhsWithoutVariable, predicate, variable, multipleValues, engine);
+              }
             }
           } else {
             IExpr rhsWithoutVariable =
