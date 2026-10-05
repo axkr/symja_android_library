@@ -1104,7 +1104,15 @@ public abstract class AbstractFractionSym implements IFraction {
    */
   public static IFraction valueOf(BigInteger numerator, BigInteger denominator) {
     IFraction f = fractionOf(numerator, denominator);
-    return f != null ? f : new BigFractionSym(numerator, denominator);
+    if (f != null) {
+      return f;
+    }
+    BigFractionSym fraction = new BigFractionSym(numerator, denominator);
+    // the BigFraction has cancelled the gcd: (791*10^20)/(20*10^20) is 791/20 now, and a value
+    // which fits into int must be the FractionSym valueOf(long, long) creates, because
+    // BigFractionSym#equals() never accepts a FractionSym
+    f = fractionOf(fraction.toBigNumerator(), fraction.toBigDenominator());
+    return f != null ? f : fraction;
   }
 
   public static IFraction valueOf(IInteger numerator) {
