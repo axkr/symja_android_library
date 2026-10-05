@@ -119,7 +119,60 @@ public class Derivative extends AbstractFunctionEvaluator {
         return F.NIL;
       }
     }
+    IExpr extremum = maxMinDerivative(derivativeHead, functions.arg1(), derivativeAST[2]);
+    if (extremum.isPresent()) {
+      return extremum;
+    }
     return evaluateDIfPossible(derivativeHead, functions, derivativeAST[2], engine);
+  }
+
+  /**
+   * A first partial derivative of <code>Max</code> or <code>Min</code> at real numbers:
+   * <code>1</code> for the argument which alone is the extremum and <code>0</code> for the others,
+   * as <code>Derivative(0,1)[Max][0.5, 2.25]</code> is <code>1</code>. At a tie the derivative does
+   * not exist and the expression stays.
+   */
+  private static IExpr maxMinDerivative(IAST orders, IExpr function, IAST arguments) {
+    if ((function != S.Max && function != S.Min) || arguments == null
+        || arguments.argSize() != orders.argSize() || arguments.argSize() < 1) {
+      return F.NIL;
+    }
+    int position = -1;
+    for (int i = 1; i <= orders.argSize(); i++) {
+      if (orders.get(i).isOne() && position < 0) {
+        position = i;
+      } else if (!orders.get(i).isZero()) {
+        return F.NIL;
+      }
+    }
+    if (position < 0) {
+      return F.NIL;
+    }
+    double own = Double.NaN;
+    double[] values = new double[arguments.argSize()];
+    for (int i = 1; i <= arguments.argSize(); i++) {
+      if (!arguments.get(i).isReal()) {
+        return F.NIL;
+      }
+      values[i - 1] = arguments.get(i).evalfNaN();
+      if (Double.isNaN(values[i - 1])) {
+        return F.NIL;
+      }
+    }
+    own = values[position - 1];
+    boolean tie = false;
+    for (int i = 0; i < values.length; i++) {
+      if (i == position - 1) {
+        continue;
+      }
+      if (function == S.Max ? values[i] > own : values[i] < own) {
+        // another argument alone decides the value
+        return F.C0;
+      }
+      tie |= values[i] == own;
+    }
+    // a tie only matters between the arguments which are the extremum
+    return tie ? F.NIL : F.C1;
   }
 
   /**

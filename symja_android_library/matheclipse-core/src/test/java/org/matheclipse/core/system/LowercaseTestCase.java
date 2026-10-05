@@ -11516,6 +11516,86 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMaximizeSinusoidWithScaledArgument() {
+    // the stationary points are a periodic family: one member decides the extremum
+    check("Maximize(Sin(2*t), t)", //
+        "{1,{t->Pi/4}}");
+    check("Maximize(5*Sin(4*Pi*t), t)", //
+        "{5,{t->1/8}}");
+    check("Minimize(5*Sin(2*t), t)", //
+        "{-5,{t->-Pi/4}}");
+    check("Minimize(Cos(3*t) + 1, t)", //
+        "{0,{t->Pi/3}}");
+    check("Maximize(Sin(t), t)", //
+        "{1,{t->Pi/2}}");
+    // a stationary family is only a local extremum, if the function has poles in the period
+    check("Maximize(Cos(2*t) + Tan(t)^2/10, t)", //
+        "Maximize(Cos(2*t)+Tan(t)^2/10,t)");
+  }
+
+  @Test
+  public void testMaxMinDerivativeAtNumbers() {
+    check("{Derivative(0, 1)[Max][0.5, 2.25], Derivative(1, 0)[Max][0.5, 2.25], "
+        + "Derivative(1, 0, 0)[Min][1, 2, 3], Derivative(0, 0, 1)[Min][1, 2, 3]}", //
+        "{1,0,1,0}");
+    // no derivative at a tie
+    check("Derivative(0, 1)[Max][2, 2]", //
+        "Derivative(0,1)[Max][2,2]");
+    check("Derivative(1, 0)[Max][x, 1]", //
+        "Derivative(1,0)[Max][x,1]");
+    // a tie only matters between the arguments which are the extremum
+    check("{Derivative(1, 0, 0)[Max][1, 1, 5], Derivative(0, 0, 1)[Max][1, 1, 5]}", //
+        "{0,1}");
+    check("Derivative(1, 0, 0)[Max][1, 1, 0.5]", //
+        "Derivative(1,0,0)[Max][1,1,0.5]");
+    check("gm(t_) := Max(0.5, Min(2, t^2)); gm'(1.2)", //
+        "2.4");
+  }
+
+  @Test
+  public void testDerivativeAndBoxLabelsInSVG() {
+    check("StringCount(ExportString(Graphics(Text(Row({Derivative(1)[Subscript(\"a\", 1)],"
+        + " \"(rpm)\"}), {0, 0})), \"SVG\"), {\"Derivative\", \"a₁′(rpm)\"})", //
+        "1");
+    check("StringCount(ExportString(Grid({{RawBoxes(RowBox({\"2\", SqrtBox(RowBox({\"p\", \"q\"}))})),"
+        + " 1}}), \"SVG\"), {\"RowBox\", \"2√(pq)\"})", //
+        "1");
+    // the same prime marks inside an expression; other boxes are read through to their content
+    check("StringCount(ExportString(Graphics(Text(Derivative(2)[f][x] + Derivative(4)[f][t], {0, 0})),"
+        + " \"SVG\"), {\"Derivative\", \"f″(x)+f⁽⁴⁾(t)\"})", //
+        "1");
+    check("StringCount(ExportString(Grid({{RawBoxes(RowBox({\"x\", RadicalBox(\"y\", \"3\"),"
+        + " UnderoverscriptBox(\"s\", \"i\", \"n\")})), 1}}), \"SVG\"), {\"RowBox\", \"RadicalBox\", \"x³√ys\"})", //
+        "1");
+  }
+
+  @Test
+  public void testStyleAndLayoutPicturesInSVG() {
+    // Style(picture, ...) is exported as the picture
+    check("Head(ExportString(Style(Column({Graphics(Disk()), \"x\"}), 10), \"SVG\"))", //
+        "String");
+    check("Head(ExportString(Style(Graphics(Disk()), 10), \"SVG\"))", //
+        "String");
+    // a layout with pictures in an Inset is laid out, its Graphics cells are not printed
+    check("StringCount(ExportString(Graphics({Line({{0, 0}, {1, 1}}), Inset(Framed(Style(Column({"
+        + "Grid({{Graphics({Red, Rectangle({0, 0}, {1, 1})}, ImageSize -> 6), \"Demand\"}})}), 10)),"
+        + " {0.5, 0.5})}), \"SVG\"), #) & /@ {\"Graphics(\", \"Graphics[\", \"Demand\"}", //
+        "{0,0,1}");
+    // the frame of Framed is drawn, a named point of the inset is put on the position, and an
+    // explicit size is kept
+    check("StringCount(ExportString(Graphics({Inset(Framed(Column({Graphics(Disk()), \"x\"})), {0, 0},"
+        + " {Right, Top})}), \"SVG\"), \"<rect x=\\\"0.5\\\"\")", //
+        "1");
+    check("StringCount(ExportString(Graphics({Inset(Column({Graphics(Disk()), \"x\"}), {0, 0}, Center,"
+        + " {100, 50})}), \"SVG\"), \"width=\\\"100\\\" height=\\\"50\\\"\")", //
+        "1");
+    // a layout of text alone stays text
+    check("StringCount(ExportString(Graphics({Inset(Column({\"a\", \"b\"}), {0, 0})}), \"SVG\"),"
+        + " \"<tspan\")", //
+        "2");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

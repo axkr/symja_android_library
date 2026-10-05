@@ -380,6 +380,103 @@ public class Maximize extends AbstractFunctionEvaluator {
   }
 
   /**
+   * Whether the objective takes the same value at the five members <code>-2, ..., 2</code> of a
+   * family of points.
+   *
+   * @param member the member of the family for an index
+   * @return <code>1</code> if it does, <code>0</code> if the values differ and <code>-1</code> if
+   *         one of them is no real number
+   */
+  private static int sameValueAlongFamily(IExpr objective, IExpr x,
+      java.util.function.IntFunction<IExpr> member, EvalEngine engine) {
+    boolean constant = true;
+    double reference = Double.NaN;
+    for (int m = -2; m <= 2; m++) {
+      double d = engine.evalQuiet(F.N(F.xreplace(objective, x, member.apply(m)))).evalfNaN();
+      if (Double.isNaN(d)) {
+        return -1;
+      }
+      if (m == -2) {
+        reference = d;
+      } else if (Math.abs(d - reference) > Config.SPECIAL_FUNCTIONS_TOLERANCE
+          * Math.max(1.0, Math.abs(reference))) {
+        constant = false;
+      }
+    }
+    return constant ? 1 : 0;
+  }
+
+  /**
+   * Whether a solution of <code>f'(x) == 0</code> is a periodic family
+   * <code>ConditionalExpression(offset + step*C(1), C(1) &isin; Integers)</code>. A solution with
+   * any other condition - one on a parameter, say - is none.
+   */
+  private static boolean isPeriodicFamily(IExpr solution) {
+    return solution.isConditionalExpression() && solution.second().isAST(S.Element, 3)
+        && solution.second().first().isAST(S.C, 2) && solution.second().second() == S.Integers
+        && !solution.first().isFree(solution.second().first());
+  }
+
+  private static IExpr familyMemberAt(IExpr solution, int index) {
+    final IExpr constant = solution.second().first();
+    final IExpr k = F.ZZ(index);
+    return F.subst(solution.first(), e -> e.equals(constant) ? k : F.NIL);
+  }
+
+  /**
+   * The stationary point which stands for a solution of <code>f'(x) == 0</code>: the solution
+   * itself, or for a periodic family its member with <code>C(1) = 0</code>, if the function takes
+   * the same value at every member - as <code>Sin(2*t)</code> does at <code>Pi/4 + Pi*C(1)</code>.
+   *
+   * @return {@link F#NIL} if the function changes along the family
+   */
+  static IExpr familyMember(IExpr function, IExpr x, IExpr solution, EvalEngine engine) {
+    if (!isPeriodicFamily(solution)) {
+      return solution;
+    }
+    if (sameValueAlongFamily(function, x, m -> familyMemberAt(solution, m), engine) != 1) {
+      return F.NIL;
+    }
+    return engine.evaluate(familyMemberAt(solution, 0));
+  }
+
+  /** How many points of one period are sampled to confirm an extremum of a periodic family. */
+  private static final int PERIOD_SAMPLES = 720;
+
+  /**
+   * Whether the extremum found at a member of a periodic family holds over the whole period: the
+   * function is sampled between two neighbouring members, and a sample which is no real number or
+   * lies beyond the value - near a pole, say - refutes it. A stationary point alone is only a
+   * local extremum.
+   *
+   * @param solution a solution of <code>f'(x) == 0</code>; anything but a periodic family is
+   *        confirmed without sampling
+   * @param maximum <code>true</code> for a maximum, <code>false</code> for a minimum
+   */
+  static boolean holdsOverPeriod(IExpr function, IExpr x, IExpr solution, IExpr value,
+      boolean maximum, EvalEngine engine) {
+    if (!isPeriodicFamily(solution)) {
+      return true;
+    }
+    double start = engine.evalQuiet(F.N(familyMemberAt(solution, 0))).evalfNaN();
+    double end = engine.evalQuiet(F.N(familyMemberAt(solution, 1))).evalfNaN();
+    double bound = engine.evalQuiet(F.N(value)).evalfNaN();
+    if (Double.isNaN(start) || Double.isNaN(end) || Double.isNaN(bound) || start == end) {
+      return false;
+    }
+    double tolerance = Config.SPECIAL_FUNCTIONS_TOLERANCE * Math.max(1.0, Math.abs(bound));
+    for (int i = 1; i < PERIOD_SAMPLES; i++) {
+      double point = start + (end - start) * i / PERIOD_SAMPLES;
+      double sample = engine.evalQuiet(F.N(F.xreplace(function, x, F.num(point)))).evalfNaN();
+      if (!Double.isFinite(sample)
+          || (maximum ? sample > bound + tolerance : sample < bound - tolerance)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Add the members <code>offset+step*k</code> of a periodic family of stationary points which lie
    * in the interval. On an unbounded interval this is only possible if the objective takes the
    * same value at every member.
@@ -391,21 +488,12 @@ public class Maximize extends AbstractFunctionEvaluator {
     if (Double.isNaN(a) || Double.isNaN(b)) {
       return false;
     }
-    boolean constant = true;
-    double reference = Double.NaN;
-    for (int m = -2; m <= 2; m++) {
-      IExpr value = engine.evalQuiet(F.N(F.xreplace(objective, x, F.Plus(offset, F.Times(F.ZZ(m), step)))));
-      double d = value.evalfNaN();
-      if (Double.isNaN(d)) {
-        return false;
-      }
-      if (m == -2) {
-        reference = d;
-      } else if (Math.abs(d - reference) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-          * Math.max(1.0, Math.abs(reference))) {
-        constant = false;
-      }
+    int sameValue = sameValueAlongFamily(objective, x,
+        m -> F.Plus(offset, F.Times(F.ZZ(m), step)), engine);
+    if (sameValue < 0) {
+      return false;
     }
+    boolean constant = sameValue == 1;
     double loD = lo.isNegativeInfinity() ? Double.NEGATIVE_INFINITY
         : engine.evalQuiet(F.N(lo)).evalfNaN();
     double hiD = hi.isInfinity() ? Double.POSITIVE_INFINITY
@@ -2381,19 +2469,30 @@ public class Maximize extends AbstractFunctionEvaluator {
       if (candidates.isFree(S.Solve)) {
         IExpr maxCandidate = F.NIL;
         IExpr maxValue = F.CNInfinity;
+        IExpr maxSolution = F.NIL;
         if (candidates.isListOfLists()) {
           for (int i = 1; i < candidates.size(); i++) {
-            IExpr candidate = ((IAST) candidates).get(i).first().second();
+            IExpr solution = ((IAST) candidates).get(i).first().second();
+            IExpr candidate = familyMember(function, x, solution, engine);
+            if (candidate.isNIL()) {
+              // a family of stationary points along which the function changes decides nothing
+              return F.NIL;
+            }
             IExpr value = engine.evaluate(F.xreplace(second_derivative, x, candidate));
             if (value.isNegative()) {
               IExpr functionValue = engine.evaluate(F.xreplace(function, x, candidate));
               if (functionValue.greater(maxValue).isTrue()) {
                 maxValue = functionValue;
                 maxCandidate = candidate;
+                maxSolution = solution;
               }
             }
           }
           if (maxCandidate.isPresent()) {
+            if (!holdsOverPeriod(function, x, maxSolution, maxValue, true, engine)) {
+              // only a local maximum: the function is larger elsewhere in the period
+              return F.NIL;
+            }
             return F.list(maxValue, F.list(F.Rule(x, maxCandidate)));
           }
         }

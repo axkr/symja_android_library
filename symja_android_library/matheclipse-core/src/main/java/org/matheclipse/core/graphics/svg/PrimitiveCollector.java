@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.IntervalMarkerType;
@@ -1455,20 +1456,49 @@ public final class PrimitiveCollector {
       return;
     }
     IExpr object = ast.arg1();
-    if (!(object.isAST(S.Graphics) || object.isAST(S.Graphics3D))) {
+    // a Column, Row or Grid with a picture in it - a legend of swatches, say - is laid out as a
+    // picture of its own; read as a label its Graphics cells would be printed as their source
+    IExpr content = object;
+    IAST framed = null;
+    List<IAST> styles = new ArrayList<>();
+    while ((content.isAST(S.Style) || content.isAST(S.Framed)) && content.argSize() >= 1) {
+      if (content.isAST(S.Framed)) {
+        framed = (IAST) content;
+      } else if (content.argSize() >= 2) {
+        styles.add((IAST) content);
+      }
+      content = content.first();
+    }
+    boolean layout = SvgLayout.isLayout(content)
+        && !content.isFree(x -> x.isAST(S.Graphics) || x.isAST(S.Graphics3D), true);
+    if (layout) {
+      // the style of a wrapper is the style of the texts in the layout which have none of
+      // their own
+      for (int i = styles.size() - 1; i >= 0; i--) {
+        final IAST wrapper = styles.get(i);
+        content = F.subst(content, x -> x.isString() ? wrapper.setAtCopy(1, x)
+            : x.isAST(S.Style) || x.isAST(S.Graphics) || x.isAST(S.Graphics3D) || x.isRuleAST()
+                ? x
+                : F.NIL);
+      }
+      object = content;
+    } else if (!(object.isAST(S.Graphics) || object.isAST(S.Graphics3D))) {
       collectText(ast, style);
       return;
     }
     double[] pos = ast.argSize() >= 2 ? pointOf(ast.arg2()) : new double[] {0, 0};
     double w = imageWidth / 3.0;
     double h = imageWidth / 3.0;
+    boolean sized = false;
     if (ast.argSize() >= 4 && ast.arg4().isList()) {
       double[] size = pointOf(ast.arg4());
       if (size[0] > 0) {
         w = size[0];
+        sized = true;
       }
       if (size[1] > 0) {
         h = size[1];
+        sized = true;
       }
     }
     // the inset is placed at the size worked out above, so it must not resize itself
@@ -1476,6 +1506,14 @@ public final class PrimitiveCollector {
     String svg = sub.toSVG((IAST) object, true);
     if (svg == null) {
       return;
+    }
+    if (layout) {
+      svg = layoutInset(svg, framed, sized ? new double[] {w, h} : null);
+      double[] size = svgSize(svg);
+      if (size != null) {
+        w = size[0];
+        h = size[1];
+      }
     }
     double alignX = w / 2.0;
     double alignY = h / 2.0;
@@ -1486,8 +1524,111 @@ public final class PrimitiveCollector {
         alignX = rel[0] * w;
         alignY = (1.0 - rel[1]) * h;
       }
+    } else if (ast.argSize() >= 3) {
+      // the point of the inset which is put on the position, by name: {Right, Top}, Left, ...
+      double[] rel = namedAnchor(ast.arg3());
+      if (rel != null) {
+        alignX = rel[0] * w;
+        alignY = (1.0 - rel[1]) * h;
+      }
     }
     primitives.add(new Prim2D.InsetPrim(svg, pos[0], pos[1], w, h, alignX, alignY, style.clone()));
+  }
+
+  private static final java.util.regex.Pattern SVG_ROOT =
+      java.util.regex.Pattern.compile("<svg\\b[^>]*>");
+  private static final java.util.regex.Pattern SVG_WIDTH =
+      java.util.regex.Pattern.compile("\\swidth=\"([0-9.]+)");
+  private static final java.util.regex.Pattern SVG_HEIGHT =
+      java.util.regex.Pattern.compile("\\sheight=\"([0-9.]+)");
+
+  /** The margin between a framed layout and its frame, in pixels. */
+  private static final double FRAME_MARGIN = 4.0;
+
+  /** The <code>{width, height}</code> the root element of an SVG states, or <code>null</code>. */
+  private static double[] svgSize(String svg) {
+    java.util.regex.Matcher root = SVG_ROOT.matcher(svg);
+    if (!root.find()) {
+      return null;
+    }
+    java.util.regex.Matcher width = SVG_WIDTH.matcher(root.group());
+    java.util.regex.Matcher height = SVG_HEIGHT.matcher(root.group());
+    if (!width.find() || !height.find()) {
+      return null;
+    }
+    try {
+      return new double[] {Double.parseDouble(width.group(1)),
+          Double.parseDouble(height.group(1))};
+    } catch (NumberFormatException nfe) {
+      return null;
+    }
+  }
+
+  /**
+   * The picture of a layout as it is inset: inside the frame of a <code>Framed</code> around it,
+   * and scaled to the size the <code>Inset</code> asks for.
+   *
+   * @param framed the <code>Framed(...)</code> wrapper, or <code>null</code>
+   * @param size the requested <code>{width, height}</code>, or <code>null</code> for the size of
+   *        the layout itself
+   */
+  private static String layoutInset(String svg, IAST framed, double[] size) {
+    double[] natural = svgSize(svg);
+    if (natural == null || (framed == null && size == null)) {
+      return svg;
+    }
+    double margin = framed == null ? 0.0 : FRAME_MARGIN;
+    double contentWidth = natural[0] + 2 * margin;
+    double contentHeight = natural[1] + 2 * margin;
+    double width = size == null ? contentWidth : size[0];
+    double height = size == null ? contentHeight : size[1];
+    StringBuilder buf = new StringBuilder(svg.length() + 256);
+    buf.append(String.format(Locale.US,
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%s\" height=\"%s\" viewBox=\"0 0 %s %s\">",
+        SvgRenderer2D.fmt(width), SvgRenderer2D.fmt(height), SvgRenderer2D.fmt(contentWidth),
+        SvgRenderer2D.fmt(contentHeight)));
+    if (framed != null) {
+      IExpr background = optionValue(framed, S.Background);
+      Color fill = background == null ? null : ColorUtil.parse(background);
+      buf.append(String.format(Locale.US,
+          "<rect x=\"0.5\" y=\"0.5\" width=\"%s\" height=\"%s\" fill=\"%s\" stroke=\"rgb(128,128,128)\" stroke-width=\"1\"/>",
+          SvgRenderer2D.fmt(contentWidth - 1), SvgRenderer2D.fmt(contentHeight - 1),
+          fill == null ? "none"
+              : "rgb(" + fill.getRed() + "," + fill.getGreen() + "," + fill.getBlue() + ")"));
+    }
+    java.util.regex.Matcher root = SVG_ROOT.matcher(svg);
+    root.find();
+    buf.append(svg, 0, root.start());
+    buf.append(String.format(Locale.US, "<svg x=\"%s\" y=\"%s\"", SvgRenderer2D.fmt(margin),
+        SvgRenderer2D.fmt(margin)));
+    buf.append(svg, root.start() + 4, svg.length());
+    buf.append("</svg>");
+    return buf.toString();
+  }
+
+  /**
+   * A point of an inset given by name, as fractions of its width and height from the lower left
+   * corner: <code>{Right, Top}</code> is <code>{1, 1}</code>, <code>Left</code> is
+   * <code>{0, 0.5}</code>.
+   *
+   * @return <code>null</code> if the specification names no point
+   */
+  private static double[] namedAnchor(IExpr spec) {
+    if (spec.isList2() && spec.first().isBuiltInSymbol() && spec.second().isBuiltInSymbol()) {
+      double x = coordinate(spec.first(), true);
+      double y = coordinate(spec.second(), false);
+      return Double.isNaN(x) || Double.isNaN(y) ? null : new double[] {x, y};
+    }
+    if (spec == S.Center) {
+      return new double[] {0.5, 0.5};
+    }
+    if (spec == S.Left || spec == S.Right) {
+      return new double[] {spec == S.Left ? 0.0 : 1.0, 0.5};
+    }
+    if (spec == S.Bottom || spec == S.Top) {
+      return new double[] {0.5, spec == S.Bottom ? 0.0 : 1.0};
+    }
+    return null;
   }
 
   private void collectBezier(IAST ast, Style2D style, boolean filled) {

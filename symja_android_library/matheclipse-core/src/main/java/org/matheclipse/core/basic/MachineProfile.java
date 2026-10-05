@@ -54,6 +54,8 @@ package org.matheclipse.core.basic;
  * <li>the bounded <code>Simplify</code> of <code>Wronskian</code>, the bounded
  * <code>Series</code> of <code>AsymptoticRSolveValue</code>, and the denesting check of
  * <code>RadicalCoefficients</code></li>
+ * <li>the budgets of the quantifier elimination in <code>QuadraticQE</code> and of
+ * <code>BivariateReduce</code></li>
  * </ul>
  *
  * <h2>What is not scaled</h2>

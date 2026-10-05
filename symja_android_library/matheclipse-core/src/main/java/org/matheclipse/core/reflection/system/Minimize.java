@@ -242,19 +242,30 @@ public class Minimize extends AbstractFunctionEvaluator {
       if (candidates.isFree(S.Solve)) {
         IExpr minCandidate = F.NIL;
         IExpr minValue = F.CInfinity;
+        IExpr minSolution = F.NIL;
         if (candidates.isListOfLists()) {
           for (int i = 1; i < candidates.size(); i++) {
-            IExpr candidate = ((IAST) candidates).get(i).first().second();
+            IExpr solution = ((IAST) candidates).get(i).first().second();
+            IExpr candidate = Maximize.familyMember(function, x, solution, engine);
+            if (candidate.isNIL()) {
+              // a family of stationary points along which the function changes decides nothing
+              return F.NIL;
+            }
             IExpr value = engine.evaluate(F.xreplace(second_derivative, x, candidate));
             if (value.isPositiveResult()) {
               IExpr functionValue = engine.evaluate(F.xreplace(function, x, candidate));
               if (S.Less.ofQ(functionValue, minValue)) {
                 minValue = functionValue;
                 minCandidate = candidate;
+                minSolution = solution;
               }
             }
           }
           if (minCandidate.isPresent()) {
+            if (!Maximize.holdsOverPeriod(function, x, minSolution, minValue, false, engine)) {
+              // only a local minimum: the function is smaller elsewhere in the period
+              return F.NIL;
+            }
             return F.list(minValue, F.list(F.Rule(x, minCandidate)));
           }
         }

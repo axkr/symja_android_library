@@ -95,6 +95,13 @@ public class SVGGraphics {
    */
   public static String svgDocument(IExpr graphics) {
     graphics = rotatedPicture(graphics);
+    // Style(picture, ...) is exported as the picture it wraps
+    while (graphics.isAST(S.Style) && graphics.argSize() >= 1
+        && (graphics.first().isGraphicsObject() || graphics.first().isAST(S.Graphics3D)
+            || graphics.first().isAST(S.Style)
+            || org.matheclipse.core.graphics.svg.SvgGraphics2D.isLayout(graphics.first()))) {
+      graphics = graphics.first();
+    }
     if (org.matheclipse.core.builtin.MeshFunctions.isBoundaryMeshRegion(graphics)) {
       // a mesh region is exported as the picture Show makes of it
       IExpr picture = org.matheclipse.core.builtin.MeshFunctions.meshToGraphics((IAST) graphics,
