@@ -4695,6 +4695,16 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
   }
 
+  /**
+   * Whether the result is a value under a condition which never holds, as the product of
+   * <code>ConditionalExpression(0, a&gt;1)</code> and <code>ConditionalExpression(0, a&lt;1)</code>
+   * is: the limit is not known then.
+   */
+  private static boolean hasContradictoryCondition(IExpr limit, EvalEngine engine) {
+    return !limit.isFree(t -> t.isConditionalExpression()
+        && engine.evalQuiet(F.unaryAST1(S.Reduce, t.second())).isFalse(), true);
+  }
+
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
@@ -4844,7 +4854,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             }
           }
         }
-        if (!leakedSymbol) {
+        if (!leakedSymbol && !hasContradictoryCondition(temp, engine)) {
           return IntervalSym.toAccumBoundsIndeterminate(temp);
         }
       }

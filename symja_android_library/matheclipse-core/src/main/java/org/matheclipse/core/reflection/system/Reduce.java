@@ -24,7 +24,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
-import org.matheclipse.core.reduce.BivariateReduce;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -35,6 +34,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
+import org.matheclipse.core.reduce.BivariateReduce;
 import org.matheclipse.core.reduce.Formula;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.Lowering;
@@ -1205,7 +1205,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
       branchList = attainableBranches;
     }
-    // WMA Reduce lists the principal inverse branch first (e.g. ArcSin before
+    // Reduce lists the principal inverse branch first (e.g. ArcSin before
     // Pi-ArcSin). Symja's shared expander lists the Pi-shifted branch first for these functions,
     // so reverse the two branches here (Solve keeps the expander's original order).
     if (branchList.argSize() == 2 && !term.isPower()
@@ -2599,13 +2599,22 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     // The engine's assumptions are deliberately not extended by `x∈Reals` over the reals: the sub
     // evaluations then decide relations like `x^2+y^2>0` as always true and drop conditions like
     // `a>0` of `a*x^2==1`, which gave wrong answers.
-    IExpr result = reduce(ast, solveOptions, engine);
-    if (result.isNIL() && ast.argSize() >= 2 && ast.arg2().isList2()
-        && (ast.argSize() == 2 || ast.arg3() == S.Reals)
-        && (ast.argSize() == 3 || !ast.arg1().isFree(t -> t.isAST(S.Less) || t.isAST(S.LessEqual)
-            || t.isAST(S.Greater) || t.isAST(S.GreaterEqual), true))) {
-      // two real variables: a cylindrical decomposition, if the second one is of degree 1
-      return BivariateReduce.reduce(ast.arg1(), ast.arg2().first(), ast.arg2().second(), engine);
+    final boolean twoRealVariables =
+        ast.argSize() >= 2 && ast.arg2().isList2() && (ast.argSize() == 2 || ast.arg3() == S.Reals)
+            && (ast.argSize() == 3 || !ast.arg1().isFree(t -> t.isAST(S.Less)
+                || t.isAST(S.LessEqual) || t.isAST(S.Greater) || t.isAST(S.GreaterEqual), true));
+    IExpr result = F.NIL;
+    if (twoRealVariables && hasDenominator(ast.arg1(), (IAST) ast.arg2())) {
+      // 1/x+1/y==1: the decomposition keeps the poles out, and solves for the second variable
+      result = BivariateReduce.reduce(ast.arg1(), ast.arg2().first(), ast.arg2().second(), engine);
+    }
+    if (result.isNIL()) {
+      result = reduce(ast, solveOptions, engine);
+      if (result.isNIL() && twoRealVariables) {
+        // two real variables: a cylindrical decomposition, if the second one is of degree 1
+        result =
+            BivariateReduce.reduce(ast.arg1(), ast.arg2().first(), ast.arg2().second(), engine);
+      }
     }
     if (result.isNIL()) {
       return F.NIL;
@@ -2617,6 +2626,12 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       result = engine.evaluate(F.N(result, F.ZZ(precision)));
     }
     return result;
+  }
+
+  /** Whether a denominator of the expression has one of the variables. */
+  private static boolean hasDenominator(IExpr expr, IAST variables) {
+    return !expr.isFree(t -> t.isPower() && t.exponent().isInteger() && t.exponent().isNegative()
+        && !t.base().isFree(v -> variables.contains(v), true), true);
   }
 
   /**
@@ -5269,8 +5284,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return false;
     }
     @SuppressWarnings("unchecked")
-    edu.jas.poly.GenPolynomial<edu.jas.arith.BigRational>[] jas =
-        new edu.jas.poly.GenPolynomial[1];
+    edu.jas.poly.GenPolynomial<edu.jas.arith.BigRational>[] jas = new edu.jas.poly.GenPolynomial[1];
     java.util.List<?> roots = CountRoots.realRoots(polynomial, variable, jas);
     return roots != null && roots.isEmpty();
   }
@@ -5400,7 +5414,7 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
     }
-    // Like WMA, common factors of numerator and denominator are cancelled first, e.g.
+    // Common factors of numerator and denominator are cancelled first, e.g.
     // `(x^2-1)/(x-1) < 3` is reduced as `x+1 < 3`. The sign is sampled on the cancelled form, so a
     // sample never hits a removable singularity of the uncancelled `f`. The cancellation of an
     // inexact `f` isn't reliable, so its sign is sampled on `f` itself.

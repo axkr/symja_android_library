@@ -26,9 +26,9 @@ public class HypergeometricPFQRules {
     // HypergeometricPFQ({a_,b_},{c_,b_},z_):=HypergeometricPFQ({a},{c},z)
     ISetDelayed(HypergeometricPFQ(list(a_,b_),list(c_,b_),z_),
       HypergeometricPFQ(list(a),list(c),z)),
-    // HypergeometricPFQ({1/2,b_},{3/2,c_},z_):=b/(-1+2*b)*(Sqrt(Pi/z)*Erfi(Sqrt(z))-(Gamma(b)-Gamma(b,-z))/(-z)^b)/;PossibleZeroQ(1+b-c)
+    // HypergeometricPFQ({1/2,b_},{3/2,c_},z_):=b/(-1+2*b)*(Sqrt(Pi/z)*Erfi(Sqrt(z))-(Gamma(b)-Gamma(b,-z))/(-z)^b)/;PossibleZeroQ(1+b-c)&&!PossibleZeroQ(-1+2*b)
     ISetDelayed(HypergeometricPFQ(list(C1D2,b_),list(QQ(3L,2L),c_),z_),
-      Condition(Times(b,Power(Plus(CN1,Times(C2,b)),CN1),Plus(Times(Sqrt(Times(Pi,Power(z,CN1))),Erfi(Sqrt(z))),Times(CN1,Power(Power(Negate(z),b),CN1),Subtract(Gamma(b),Gamma(b,Negate(z)))))),PossibleZeroQ(Plus(C1,b,Negate(c))))),
+      Condition(Times(b,Power(Plus(CN1,Times(C2,b)),CN1),Plus(Times(Sqrt(Times(Pi,Power(z,CN1))),Erfi(Sqrt(z))),Times(CN1,Power(Power(Negate(z),b),CN1),Subtract(Gamma(b),Gamma(b,Negate(z)))))),And(PossibleZeroQ(Plus(C1,b,Negate(c))),Not(PossibleZeroQ(Plus(CN1,Times(C2,b))))))),
     // HypergeometricPFQ({1,1},{2,2},z_):=-(EulerGamma+Gamma(0,-z)+Log(-z))/z/;!PossibleZeroQ(z)
     ISetDelayed(HypergeometricPFQ(list(C1,C1),list(C2,C2),z_),
       Condition(Times(CN1,Power(z,CN1),Plus(EulerGamma,Gamma(C0,Negate(z)),Log(Negate(z)))),Not(PossibleZeroQ(z)))),

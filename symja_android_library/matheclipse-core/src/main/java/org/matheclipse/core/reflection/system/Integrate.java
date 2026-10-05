@@ -1844,16 +1844,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * @param engine the evaluation engine
    * @return
    */
-  /**
-   * Whether the limit is a value under a condition which never holds, as the product of
-   * <code>ConditionalExpression(0, a&gt;1)</code> and <code>ConditionalExpression(0, a&lt;1)</code>
-   * is: the limit is not known then.
-   */
-  private static boolean hasContradictoryCondition(IExpr limit, EvalEngine engine) {
-    return !limit.isFree(t -> t.isConditionalExpression()
-        && engine.evalQuiet(F.unaryAST1(S.Reduce, t.second())).isFalse(), true);
-  }
-
   private static IExpr definiteIntegral(IExpr function, IExpr integrand, IAST xValueList,
       IAST originalAST, EvalEngine engine) {
     IExpr x = xValueList.arg1();
@@ -1961,7 +1951,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return Errors.printMessage(S.Integrate, "idiv",
           F.List(originalAST.arg1(), originalAST.arg2()), engine);
     }
-    if (!lowerLimit.isFreeAST(S.Limit) || hasContradictoryCondition(lowerLimit, engine)) {
+    if (!lowerLimit.isFreeAST(S.Limit)) {
       // the limit stayed unevaluated - neither convergence nor divergence can be decided, so
       // don't assemble a result containing raw Limit() calls; leave the integral unevaluated
       return F.NIL;
@@ -1978,7 +1968,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return Errors.printMessage(S.Integrate, "idiv",
           F.List(originalAST.arg1(), originalAST.arg2()), engine);
     }
-    if (!upperLimit.isFreeAST(S.Limit) || hasContradictoryCondition(upperLimit, engine)) {
+    if (!upperLimit.isFreeAST(S.Limit)) {
       return F.NIL;
     }
 

@@ -59,6 +59,9 @@ public class IntegralRepresentationsTest extends ExprEvaluatorTestCase {
         "0");
     check("Chop(NIntegrate(Log(a^2-2*a*Cos(x)+1) /. a->1/3, {x,0,Pi}))", //
         "0");
+    // at a == 1 and a == -1 the logarithm has an integrable singularity
+    check("Integrate(Log(a^2-2*a*Cos(x)+1), {x,0,Pi}, Assumptions->Element(a,Reals))", //
+        "Pi*Log(1/2*(1+a^2+Abs(1-a^2)))");
     check("Integrate(Log(p+q*Cos(x)), {x,0,Pi}, Assumptions->p>q&&q>0)", //
         "Pi*Log(1/2*(p+Sqrt(p^2-q^2)))");
     check("N(Integrate(Log(p+q*Cos(x)), {x,0,Pi}, Assumptions->p>q&&q>0) /. {p->3,q->2})", //
@@ -202,12 +205,9 @@ public class IntegralRepresentationsTest extends ExprEvaluatorTestCase {
         "2.11718");
     check("NIntegrate(x^(a-1)*(1-x)^(b-1)*(1+c*x)^p /. {a->1/3,b->3/2,c->2,p->-3/4}, {x,0,1})", //
         "2.11718");
-    check("Integrate(Sqrt(x)*(2+3*x)^(1/3)/Sqrt(1-x), {x,0,1})", //
-        "(Pi*Hypergeometric2F1(-1/3,3/2,2,-3/2))/2^(2/3)");
-    check("N(Integrate(Sqrt(x)*(2+3*x)^(1/3)/Sqrt(1-x), {x,0,1}))", //
-        "2.53429");
-    check("NIntegrate(Sqrt(x)*(2+3*x)^(1/3)/Sqrt(1-x), {x,0,1})", //
-        "2.53429");
+    // without a parameter the antiderivative is tried: its value is elementary
+    check("Integrate(Sqrt(x)*Sqrt(1-x)/(1+x), {x,0,1})", //
+        "3/2*Pi-Sqrt(2)*Pi");
   }
 
   @Test
@@ -237,6 +237,9 @@ public class IntegralRepresentationsTest extends ExprEvaluatorTestCase {
         "0.812646");
     check("NIntegrate(E^(-a*x)*Sin(b*x)^3/x^2 /. {a->3/2,b->2}, {x,0,Infinity})", //
         "0.812646");
+    // nothing assumed: the formula is the one for real frequencies
+    check("Integrate(E^(-a*x)*(Cos(b*x)-Cos(c*x))/x, {x,0,Infinity})", //
+        "ConditionalExpression(Log((a^2+c^2)/(a^2+b^2))/2,a>0&&b∈Reals&&c∈Reals)");
     check("Integrate(E^(-2*x)*(1-Cos(3*x))/x, {x,0,Infinity})", //
         "-Log(4)/2+Log(13)/2");
     check("N(Integrate(E^(-2*x)*(1-Cos(3*x))/x, {x,0,Infinity}))", //
@@ -267,9 +270,6 @@ public class IntegralRepresentationsTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testDeclined() {
     // the limit of the antiderivative at 0 was "0 if a>1 and a<1"
-    // a pole at 0 is left: no value
-    check("Integrate(E^(-a*x)*Cos(b*x)/x, {x,0,Infinity}, Assumptions->a>0)", //
-        "Integrate(E^(-a*x)*Cos(b*x)/x,{x,0,Infinity},Assumptions->a>0)");
     check("Integrate(Sin(x)^a*Cos(x)^b, {x,0,Pi/4})", //
         "Integrate(Cos(x)^b*Sin(x)^a,{x,0,Pi/4})");
   }

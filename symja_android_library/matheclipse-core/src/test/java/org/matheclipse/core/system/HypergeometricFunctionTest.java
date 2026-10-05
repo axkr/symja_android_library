@@ -675,4 +675,24 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "MeijerG({{},{}},{{},{}},z)");
   }
 
+
+  @Test
+  public void testHypergeometricPFQHalfHalf() {
+    // the closed form for {1/2,b},{3/2,1+b} has the factor b/(2*b-1): it is no value for b == 1/2
+    check("HypergeometricPFQ({1/2,1/2},{3/2,3/2},z)", //
+        "HypergeometricPFQ({1/2,1/2},{3/2,3/2},z)");
+    check("HypergeometricPFQ({1/2,1},{3/2,2},z)", //
+        "(1-E^z)/z+Sqrt(Pi)*Sqrt(1/z)*Erfi(Sqrt(z))");
+    check("N(HypergeometricPFQ({1/2,1/2},{3/2,3/2},-3/10))", //
+        "0.968379");
+    // the integral which defines it
+    check("NIntegrate(Sqrt(Pi)*Erf(Sqrt(3/10)*t)/(2*Sqrt(3/10)*t), {t,0,1})", //
+        "0.968379");
+    check("Integrate(Erf(b*x)/x, x)", //
+        "(2*b*x*HypergeometricPFQ({1/2,1/2},{3/2,3/2},-b^2*x^2))/Sqrt(Pi)");
+    check("N(D(Integrate(Erf(b*x)/x, x), x) /. {b->3/4, x->1/3})", //
+        "0.828979");
+    check("N(Erf(b*x)/x /. {b->3/4, x->1/3})", //
+        "0.828979");
+  }
 }

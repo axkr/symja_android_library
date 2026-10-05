@@ -249,7 +249,16 @@ public final class BivariateReduce {
         // the roots of a cubic or a quartic in radicals: the reduction at such a value is slow
         throw new Declined();
       }
-      roots.add(root);
+      if (!roots.contains(root)) {
+        roots.add(root);
+      }
+    }
+    // every real root has to be there: one which is missing is a cell which is not seen
+    IExpr squareFree = engine.evalQuiet(
+        F.Cancel(F.Divide(polynomial, F.PolynomialGCD(polynomial, F.D(polynomial, variable)))));
+    if (engine.evalQuiet(F.binaryAST2(S.CountRoots, squareFree, variable))
+        .toIntDefault() != roots.size()) {
+      throw new Declined();
     }
     return roots;
   }

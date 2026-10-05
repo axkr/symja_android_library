@@ -4,7 +4,7 @@
   HypergeometricPFQ({a_,b_},{c_,b_},z_) := HypergeometricPFQ({a},{c},z),
  
   HypergeometricPFQ({1/2, b_}, {3/2, c_}, z_) := (b/(2*b - 1))*(Sqrt(Pi/z)*Erfi(Sqrt(z)) - (Gamma(b) - Gamma(b,-z))/(-z)^b) 
-     /; PossibleZeroQ(b+1-c),
+     /; PossibleZeroQ(b+1-c) && !PossibleZeroQ(2*b-1),
   HypergeometricPFQ({1,1}, {2,2}, z_) := -(EulerGamma+Gamma(0,-z)+Log(-z))/z
     /;!PossibleZeroQ(z),
   HypergeometricPFQ({1, 1}, {1/2, 1}, z_) := 1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z)), 

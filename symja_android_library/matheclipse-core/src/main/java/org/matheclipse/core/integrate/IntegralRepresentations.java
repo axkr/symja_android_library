@@ -51,6 +51,8 @@ final class IntegralRepresentations {
      * reference of an oscillating integrand
      */
     IExpr reference = F.NIL;
+    /** the formula holds for complex values of the parameters without a condition on them */
+    boolean complexParameters = false;
     /** simplify the value with the search of <code>Simplify</code> */
     boolean simplify = false;
 
@@ -213,7 +215,8 @@ final class IntegralRepresentations {
       return null;
     }
     if (upper.isOne()) {
-      return euler(ctx, f);
+      // without a parameter the antiderivative may be found, and its value is elementary
+      return ctx.parameters.isEmpty() ? null : euler(ctx, f);
     }
     final boolean quarter = upper.equals(F.CPiHalf);
     if (quarter || upper.equals(S.Pi) || upper.equals(F.C2Pi)) {
@@ -239,6 +242,18 @@ final class IntegralRepresentations {
       }
       if (!value.isTrue() && !ctx.proves(gate)) {
         open.add(value);
+      }
+    }
+    if (!ctx.assumptions.isPresent() && !answer.complexParameters) {
+      // nothing is assumed: the formulas are the ones for real parameters
+      for (IExpr parameter : ctx.parameters) {
+        boolean stated = false;
+        for (IExpr gate : open) {
+          stated |= !gate.isFree(parameter);
+        }
+        if (!stated) {
+          open.add(F.Element(parameter, S.Reals));
+        }
       }
     }
     IExpr assumptions = ctx.assumptions;
@@ -279,15 +294,23 @@ final class IntegralRepresentations {
     }
     if (allParametersPositive(checked, value)) {
       // Sqrt(a*b) and Log(a^2) of positive parameters
+      // positive parameters do not make a difference of them positive: the expanded form is
+      // used only if it is confirmed
       IExpr expanded = ctx.eval(F.PowerExpand(value));
-      if (expanded.isFree(S.PowerExpand) && expanded.leafCount() <= value.leafCount()) {
-        value = expanded;
+      if (expanded.isFree(S.PowerExpand) && !expanded.equals(value)
+          && expanded.leafCount() <= value.leafCount() && expanded.isSpecialsFree()
+          && ResidueIntegration.check(checked, expanded, lower, upper)) {
+        return conditional(expanded, open);
       }
     }
     if (!value.isSpecialsFree() || !value.isFree(ctx.x)
         || !ResidueIntegration.check(checked, value, lower, upper)) {
       return F.NIL;
     }
+    return conditional(value, open);
+  }
+
+  private static IExpr conditional(IExpr value, List<IExpr> open) {
     if (open.isEmpty()) {
       return value;
     }
@@ -576,7 +599,10 @@ final class IntegralRepresentations {
     IExpr value = F.Times(shape.constant(), wholeLine ? F.C1 : F.C1D2,
         F.Sqrt(S.Pi), F.Power(sqrt(ctx, a), F.CN1),
         F.Exp(F.Times(F.CN1D4, F.Sqr(b), F.Power(a, F.CN1))));
-    return new Answer(value, positive(a));
+    Answer answer = new Answer(value, positive(a));
+    // an entire function of b
+    answer.complexParameters = true;
+    return answer;
   }
 
   /**
@@ -807,7 +833,7 @@ final class IntegralRepresentations {
 
   /**
    * <code>Integrate(Log(p+q*Cos(x)), {x,0,Pi}) == Pi*Log((p+Sqrt(p^2-q^2))/2)</code> for
-   * <code>p &gt; Abs(q)</code>; twice the value over <code>{x,0,2*Pi}</code>.
+   * <code>p &gt;= Abs(q)</code>, <code>p &gt; 0</code>; twice the value over <code>{x,0,2*Pi}</code>.
    */
   private static Answer logarithmOfCosine(Context ctx, IExpr f, boolean period) {
     final ISymbol x = ctx.x;
@@ -840,8 +866,10 @@ final class IntegralRepresentations {
     IExpr root = F.Sqrt(F.Expand(F.Subtract(F.Sqr(p), F.Sqr(q))));
     IExpr value = F.Times(constant.oneIdentity1(), period ? F.C2 : F.C1, S.Pi,
         F.Log(F.Times(F.C1D2, F.Plus(p, root))));
-    Answer answer = new Answer(value, positive(ctx.eval(F.Factor(F.Subtract(p, q)))),
-        positive(ctx.eval(F.Factor(F.Plus(p, q)))));
+    // at p == Abs(q) the logarithm has an integrable singularity, and the formula holds
+    Answer answer = new Answer(value, positive(p),
+        F.GreaterEqual(ctx.eval(F.Factor(F.Subtract(p, q))), F.C0),
+        F.GreaterEqual(ctx.eval(F.Factor(F.Plus(p, q))), F.C0));
     answer.simplify = true;
     return answer;
   }

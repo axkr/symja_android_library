@@ -14,8 +14,6 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.series.Lead;
-import org.matheclipse.core.series.LeadTerm;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -33,6 +31,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.reflection.system.BellY;
+import org.matheclipse.core.series.Lead;
+import org.matheclipse.core.series.LeadTerm;
 import jakarta.annotation.Nullable;
 
 public class ASTSeriesData extends AbstractAST implements Externalizable {
@@ -690,8 +690,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
     } else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
       result = new ASTSeriesData(x, x0, F.list(function), 0, n + 1, 1);
-    } else if (function.isAST1() && n >= 0 && !function.first().isFree(x)
-        && (result = logarithmicBranchSeries((IAST) function, x, x0, n, direction, engine)) != null) {
+    } else if (function.isAST1() && n >= 0 && !function.first().isFree(x) && (result =
+        logarithmicBranchSeries((IAST) function, x, x0, n, direction, engine)) != null) {
       // expanded at a logarithmic branch point of the argument
     } else if (function.isAST1() && !function.first().isFree(x) && !function.first().equals(x)) {
       IExpr head = function.head();
@@ -738,8 +738,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    *
    * <p>
    * With <code>g = c*w^r*(1+h)</code>, <code>w = x-x0</code> and <code>h -&gt; 0</code> the series
-   * is <code>Log(c)+r*Log(w)+Log(1+h)</code>; the logarithm of <code>w</code> stays in the constant
-   * coefficient. The form is the one valid on the side where <code>w</code> is positive.
+   * is <code>Log(c*w^r)+Log(1+h)</code>; the logarithm stays in the constant coefficient, and is
+   * written as <code>Log(c)+r*Log(w)</code> where that holds on both sides of the point.
    *
    * @return <code>null</code> if the argument has no such branch point at <code>x0</code>
    */
@@ -816,8 +816,13 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       return null;
     }
     IExpr w = x0.isZero() ? x : F.Subtract(x, x0);
-    IExpr r = den == 1 ? F.ZZ(lead) : F.QQ(lead, den).normalize();
-    IExpr logOfLeadingTerm = engine.evaluate(F.Plus(F.Log(c), F.Times(r, F.Log(w))));
+    IRational r = den == 1 ? F.ZZ(lead) : F.QQ(lead, den).normalize();
+    // Log(c*w^r) is Log(c)+r*Log(w) on both sides of the point only for a positive c and
+    // Abs(r) <= 1: Log(x^2) is not 2*Log(x) for a negative x
+    final boolean splits = c.isPositiveResult() && !((IRational) r).abs().isGT(F.C1);
+    IExpr logOfLeadingTerm = splits //
+        ? engine.evaluate(F.Plus(F.Log(c), F.Times(r, F.Log(w)))) //
+        : engine.evaluate(F.Log(F.Times(c, F.Power(w, r))));
     result.setCoeff(0, engine.evaluate(F.Plus(result.coefficient(0), logOfLeadingTerm)));
     return result;
   }
@@ -854,7 +859,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   /**
    * Expand the eight inverse (hyperbolic) trigonometric functions at their algebraic/logarithmic
-   * branch points, mirroring the output of WMA's <code>Series</code>.
+   * branch points.
    *
    * <p>
    * Family A (<code>ArcSin</code>/<code>ArcCos</code> at &plusmn;1, <code>ArcSinh</code> at
@@ -1048,8 +1053,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * <code>ArcTanh@-1</code> and <code>ArcCoth@1</code> are real on the basis side and give a clean
    * <code>Log[x-x0]</code> term plus a regular series. <code>ArcTanh@1</code> and
    * <code>ArcCoth@-1</code> need the logarithmic sheet resolved and are wrapped as
-   * <code>-I*(... Pi*Floor[...] ... + SeriesData[...])</code>; the precise <code>Floor</code>
-   * arguments follow WMA.
+   * <code>-I*(... Pi*Floor[...] ... + SeriesData[...])</code>; the precise <code>Floor</code>.
    */
   private static IExpr arcTanhCothBranch(boolean isTanh, IExpr arg, IExpr x, IExpr x0, int s, int n,
       EvalEngine engine) {
@@ -1113,7 +1117,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * points <code>&plusmn;I</code> using the reductions <code>ArcTan[x] = -I*ArcTanh[I*x]</code> and
    * <code>ArcCot[x] = -I*ArcCoth[I*x]</code>. The singular term is <code>Log[x-x0]</code> and the
    * logarithmic sheet is captured by an additive <code>Pi*Floor[...]</code> term (no outer
-   * <code>-I</code>), matching WMA.
+   * <code>-I</code>).
    *
    * <p>
    * Confidence: the <code>+I</code> branch points are derived from the WMA reference; the
@@ -1562,15 +1566,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
-   * Compose this (outer) series with the given inner {@code series2}, mirroring WMA
+   * Compose this (outer) series with the given inner {@code series2}, mirroring
    * {@code ComposeSeries} truncation semantics.
    *
    * <p>
    * This differs from {@link #compose(ASTSeriesData)} only in the truncation order: when the inner
    * series has a leading exponent {@code v > 1}, the substitution {@code y -> g} stretches the
    * outer remainder {@code O(y^outerTruncate)} to a lower effective order than straightforward
-   * arithmetic keeps. WMA truncates the composed series at order {@code outerTruncate + (v - 1)} in
-   * the inner series' (integer) exponent units. For {@code v == 1} the result is left unchanged.
+   * arithmetic keeps. Truncates the composed series at order {@code outerTruncate + (v - 1)} in the
+   * inner series' (integer) exponent units. For {@code v == 1} the result is left unchanged.
    *
    * <p>
    * This is intended for the user-facing {@code ComposeSeries} built-in only, where the outer
@@ -1711,10 +1715,10 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * <p>
    * A series answers a {@link #size()} of seven and serves every one of those positions from
    * {@link #get(int)}, so the generic parts of the engine treat it as an ordinary six argument
-   * expression - they apply a new head to it, replace an argument, sort it. It cannot actually
-   * hold the result of any of those: the coefficients are a map rather than a list, and the last
-   * three arguments are machine integers. Where a write does not fit, the series gives up being a
-   * series rather than refusing the write, and this is what it becomes.
+   * expression - they apply a new head to it, replace an argument, sort it. It cannot actually hold
+   * the result of any of those: the coefficients are a map rather than a list, and the last three
+   * arguments are machine integers. Where a write does not fit, the series gives up being a series
+   * rather than refusing the write, and this is what it becomes.
    */
   public IASTMutable toPlainAST() {
     return F.function(head(), arg1(), arg2(), arg3(), arg4(), arg5(), F.ZZ(puiseuxDenominator));
@@ -1727,8 +1731,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * The inherited version copies and writes into the copy, and a series copy is another series,
    * which throws for anything it cannot store - an {@code IndexOutOfBoundsException} escaping from
    * <code>Apply(0, SeriesData(...))</code> and <code>Total(SeriesData(...))</code> among others.
-   * Replacing the head, or an argument with something of the wrong kind, simply means the answer
-   * is no longer a series.
+   * Replacing the head, or an argument with something of the wrong kind, simply means the answer is
+   * no longer a series.
    */
   @Override
   public IASTMutable setAtCopy(int i, IExpr expr) {
@@ -2386,14 +2390,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     IExpr function =
         engine.evaluate(F.subst(b, expansionVariable, F.Power(expansionVariable, F.CN1)));
     // truncateOrder counts steps of 1/puiseuxDenominator, the expansion of b whole powers
-    int order = Math.max(0, Math.floorDiv(truncateOrder + puiseuxDenominator - 1, puiseuxDenominator));
+    int order =
+        Math.max(0, Math.floorDiv(truncateOrder + puiseuxDenominator - 1, puiseuxDenominator));
     ASTSeriesData series =
         seriesDataRecursive(function, expansionVariable, F.C0, order, direction, engine);
     if (series == null || !series.arg3().isFree(S.Limit)) {
       return null;
     }
-    return new ASTSeriesData(expansionVariable, expansionPoint, series.arg3(),
-        series.minExponent(), series.truncateOrder(), series.puiseuxDenominator());
+    return new ASTSeriesData(expansionVariable, expansionPoint, series.arg3(), series.minExponent(),
+        series.truncateOrder(), series.puiseuxDenominator());
   }
 
   /**
@@ -3071,9 +3076,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
-   * Multiply this series by the expression {@code b}. In contrast to {@link #times(IExpr)}, a factor
-   * which depends on the expansion variable in a way the Puiseux shift cannot express (for example
-   * <code>Sin(x)</code> or <code>1+x</code>) is expanded into a series and multiplied
+   * Multiply this series by the expression {@code b}. In contrast to {@link #times(IExpr)}, a
+   * factor which depends on the expansion variable in a way the Puiseux shift cannot express (for
+   * example <code>Sin(x)</code> or <code>1+x</code>) is expanded into a series and multiplied
    * coefficient-wise, instead of being kept as a symbolic product.
    *
    * @param b the multiplicative factor

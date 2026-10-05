@@ -5,6 +5,7 @@ import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.integrate.IntegrateTimeBudget;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -166,11 +167,14 @@ public final class QuadraticQE {
       IASTAppendable variables = F.ListAlloc(free.size());
       variables.appendAll(free);
       node = qe.closed(qe.prune(qe.normalize(node), null, variables, deadline));
-      IExpr condition = qe.expression(node);
+      final IExpr condition = qe.expression(node);
       if (free.size() == 1 && !(node instanceof Const)) {
         // one variable: as intervals
-        IExpr reduced = engine.evalQuiet(F.Reduce(condition, free.get(0), S.Reals));
-        if (reduced.isFree(S.Reduce) && reduced.isFree(S.ConditionalExpression)) {
+        final IExpr variable = free.get(0);
+        IExpr reduced = IntegrateTimeBudget.runWithin(
+            () -> engine.evalQuiet(F.Reduce(condition, variable, S.Reals)), MAX_MILLIS);
+        if (reduced.isPresent() && reduced.isFree(S.Reduce)
+            && reduced.isFree(S.ConditionalExpression)) {
           return reduced;
         }
       }

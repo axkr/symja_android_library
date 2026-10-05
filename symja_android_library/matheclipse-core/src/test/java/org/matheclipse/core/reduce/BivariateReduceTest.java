@@ -38,6 +38,25 @@ public class BivariateReduceTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testWorkingPrecision() {
+    check("Reduce(x*y>1 && x^2<2, {x,y}, Reals, WorkingPrecision->20)", //
+        "(x>-1.4142135623730950488&&x<0&&y<1/x)||(x>0&&x<1.4142135623730950488&&y>1/x)");
+  }
+
+  @Test
+  public void testDenominators() {
+    // the poles are no solutions, and the second variable is the one which is solved for
+    check("Reduce(1/x+1/y==1 && x>0, {x,y}, Reals)", //
+        "(x>0&&x<1&&y==-x/(1-x))||(x>1&&y==-x/(1-x))");
+    check("Reduce(1/x+1/y==1, {x,y}, Reals)", //
+        "(x<0&&y==-x/(1-x))||(x>0&&x<1&&y==-x/(1-x))||(x>1&&y==-x/(1-x))");
+    check("Reduce(x/y==2, {x,y}, Reals)", //
+        "(x<0&&y==x/2)||(x>0&&y==x/2)");
+    check("Reduce(1/(x-y)>0, {x,y}, Reals)", //
+        "y<x");
+  }
+
+  @Test
   public void testFactors() {
     // a factor without x has constant roots
     check("Reduce((x-1)/(y^2-1)>0, {x,y}, Reals)", //
