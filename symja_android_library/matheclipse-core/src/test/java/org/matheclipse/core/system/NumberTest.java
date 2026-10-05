@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.BigFractionSym;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -140,6 +141,90 @@ public class NumberTest extends ExprEvaluatorTestCase {
     IExpr result = exprEvaluator.eval(input);
     assertEquals(result.toString(), "1998.688");
     assertEquals(result.evalf(), 1998.6876036465665, 1E-8);
+  }
+
+  @Test
+  public void testFractionValueOfReducedBigIntegers() {
+    // 79100000000000000000000/2000000000000000000000 cancels down to 791/20: the FractionSym which
+    // valueOf(long, long) gives for 791/20, equal to it in both directions
+    IFraction reduced = AbstractFractionSym.valueOf(new BigInteger("79100000000000000000000"),
+        new BigInteger("2000000000000000000000"));
+    IFraction typed = AbstractFractionSym.valueOf(791, 20);
+    assertInstanceOf(FractionSym.class, reduced);
+    assertEquals(typed, reduced);
+    assertEquals(reduced, typed);
+
+    // the sign of a negative denominator moves to the numerator
+    reduced = AbstractFractionSym.valueOf(new BigInteger("79100000000000000000000"),
+        new BigInteger("-2000000000000000000000"));
+    assertInstanceOf(FractionSym.class, reduced);
+    assertEquals(AbstractFractionSym.valueOf(-791, 20), reduced);
+
+    // the int range decides: 2147483647/3 and 1/2147483647 are a FractionSym ...
+    reduced = AbstractFractionSym.valueOf(new BigInteger("214748364700000000000000000000"),
+        new BigInteger("300000000000000000000"));
+    assertInstanceOf(FractionSym.class, reduced);
+    assertEquals("2147483647/3", reduced.toString());
+    reduced = AbstractFractionSym.valueOf(new BigInteger("100000000000000000000"),
+        new BigInteger("214748364700000000000000000000"));
+    assertInstanceOf(FractionSym.class, reduced);
+    assertEquals("1/2147483647", reduced.toString());
+
+    // ... 2147483648/3 and 1/2147483648 stay a BigFractionSym, as valueOf(long, long) leaves them
+    reduced = AbstractFractionSym.valueOf(new BigInteger("214748364800000000000000000000"),
+        new BigInteger("300000000000000000000"));
+    assertInstanceOf(BigFractionSym.class, reduced);
+    assertEquals(AbstractFractionSym.valueOf(2147483648L, 3L), reduced);
+    reduced = AbstractFractionSym.valueOf(new BigInteger("100000000000000000000"),
+        new BigInteger("214748364800000000000000000000"));
+    assertInstanceOf(BigFractionSym.class, reduced);
+    assertEquals(AbstractFractionSym.valueOf(1L, 2147483648L), reduced);
+  }
+
+  @Test
+  public void testSameQReducedBigQuotient() {
+    // the quotient of the big integers is 791/20, the same number as 791/20 typed in, whichever
+    // side of the comparison it is on
+    check("(791*10^20)/(20*10^20) === 791/20", //
+        "True");
+    check("791/20 === (791*10^20)/(20*10^20)", //
+        "True");
+    check("(791*10^20)/(20*10^20) == 791/20", //
+        "True");
+    check("(791*10^20)/(20*10^20) != 791/20", //
+        "False");
+    check("(791*10^20)/(-20*10^20) === -791/20", //
+        "True");
+    check("395500000000000/10^13 === 791/20", //
+        "True");
+    check("Round(791/20, 10^-15) === 791/20", //
+        "True");
+
+    // one element for the list functions
+    check("DeleteDuplicates({(791*10^20)/(20*10^20), 791/20})", //
+        "{791/20}");
+    check("Tally({791/20, (791*10^20)/(20*10^20)})", //
+        "{{791/20,2}}");
+    check("DuplicateFreeQ({791/20, (791*10^20)/(20*10^20)})", //
+        "False");
+    check("Count({791/20}, (791*10^20)/(20*10^20))", //
+        "1");
+    check("MemberQ({(791*10^20)/(20*10^20)}, 791/20)", //
+        "True");
+
+    // up to the bounds of the int range; beyond them both sides are a BigFractionSym
+    check("(2147483647*10^20)/(3*10^20) === 2147483647/3", //
+        "True");
+    check("(-2147483647*10^20)/(3*10^20) === -2147483647/3", //
+        "True");
+    check("10^20/(2147483647*10^20) === 1/2147483647", //
+        "True");
+    check("(2147483648*10^20)/(3*10^20) === 2147483648/3", //
+        "True");
+    check("(-2147483648*10^20)/(3*10^20) === -2147483648/3", //
+        "True");
+    check("10^20/(2147483648*10^20) === 1/2147483648", //
+        "True");
   }
 
   @Test
