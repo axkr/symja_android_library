@@ -2935,6 +2935,32 @@ public class AlgebraUtil {
     return ps;
   }
 
+  /**
+   * The GCD of rationalized coefficients is found with the tolerance of a machine number. For
+   * coefficients of a higher precision it is only a common divisor, if every quotient is an integer
+   * at that precision. Otherwise the same extraction finds another number in the quotients again
+   * and again.
+   */
+  private static boolean isCommonDivisor(IExpr rationalGcd, IAST coefficients, EvalEngine engine) {
+    long precision = coefficients.determinePrecision(false);
+    if (precision <= Config.MACHINE_PRECISION || !rationalGcd.isNumber() || rationalGcd.isZero()) {
+      return true;
+    }
+    double tolerance = Math.pow(10.0, -Math.min(precision - 4, 300));
+    for (int i = 1; i < coefficients.size(); i++) {
+      IExpr quotient = engine.evaluate(F.Divide(coefficients.get(i), rationalGcd));
+      if (!quotient.isNumber() || quotient.isZero()) {
+        continue;
+      }
+      IExpr distance =
+          engine.evaluate(F.Abs(F.Divide(F.Subtract(quotient, F.Round(quotient)), quotient)));
+      if (!(distance.evalf() <= tolerance)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public static IExpr reduceFactorConstant(IExpr p, EvalEngine engine) {
 
     if (!engine.isNumericMode() && p.isPlus() && !engine.isTogetherMode()) {
@@ -2958,6 +2984,9 @@ public class AlgebraUtil {
         if (!c.isFree(IExpr::isInexactNumber, false)) {
           gcd = AbstractFractionSym.rationalize(c, false);
           // gcd = engine.evaluate(F.Rationalize(c));
+          if (!isCommonDivisor(engine.evaluate(gcd), (IAST) cTerms, engine)) {
+            return p;
+          }
           gcd = engine.evalN(gcd);
         } else {
           gcd = engine.evaluate(c);

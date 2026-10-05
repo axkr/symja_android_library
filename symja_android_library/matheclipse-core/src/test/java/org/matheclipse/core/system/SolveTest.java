@@ -795,11 +795,16 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveIssue1537() {
+    // no number is pulled out, if it is not a common divisor at the precision of the coefficients
+    check("Factor(0.25`30*x+0.324180413729543335629562466504`30*y)", //
+        "0.25*x+0.324180413729543335629562466504*y");
+    check("Factor(0.25`30*x+0.3`30*y)", //
+        "0.05*(5*x+6*y)");
     // Factor pulls a number out of a sum with 30-digit coefficients again and again, which was an
     // endless recursion in Eliminate
     check("Solve(0.25`30*Sin(x)+0.324180413729543335629562466504`30*Cos(x)==0.3`30,x)", //
-        "{{x->ConditionalExpression(-0.0914325342128386278383742594186+6.28318530717958647692528676655*C(\n"
-            + "1),C(1)∈Integers)},{x->ConditionalExpression(1.405265084595260069682618664+6.28318530717958647692528676655*C(\n"
+        "{{x->ConditionalExpression(1.405265084595260069682618664+6.28318530717958647692528676655*C(\n"
+            + "1),C(1)∈Integers)},{x->ConditionalExpression(-0.0914325342128386278383742594186+6.28318530717958647692528676655*C(\n"
             + "1),C(1)∈Integers)}}");
     check("Solve(0.25`30*ArcCot(x)+0.324180413729543335629562466504`30*Cos(x)==0.5`30,x)", //
         "{{x->0.667919}}");

@@ -39,7 +39,6 @@ import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
-import org.matheclipse.external.apfloat.ApfloatInverseTrigMath;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MachineUnderflow;
@@ -79,6 +78,8 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.external.apfloat.ApfloatInverseTrigMath;
+import org.matheclipse.parser.client.ParserConfig;
 
 public class ExpTrigsFunctions {
 
@@ -598,7 +599,11 @@ public class ExpTrigsFunctions {
      */
     private static long zeroPrecision(Apcomplex arg1) {
       long precision = arg1.precision();
-      return precision == Apfloat.INFINITE ? EvalEngine.getApfloat().precision() : precision;
+      if (precision == Apfloat.INFINITE) {
+        // without a precision of the engine the digits of the input are not known
+        return Math.max(EvalEngine.get().getNumericPrecision(), ParserConfig.MACHINE_PRECISION);
+      }
+      return precision;
     }
 
     @Override

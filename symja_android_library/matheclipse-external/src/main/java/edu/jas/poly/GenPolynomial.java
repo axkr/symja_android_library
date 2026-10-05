@@ -1966,6 +1966,8 @@ public class GenPolynomial<C extends RingElem<C>>
                     // inexact coefficients: a - (a/c)*c left a rounding residue in the leading
                     // term, which would be divided again and again
                     r.val.remove(f);
+                    r.hash = -1;
+                    r.blen = -1;
                 }
             } else {
                 break;
@@ -2035,7 +2037,13 @@ public class GenPolynomial<C extends RingElem<C>>
                 a = a.multiply(ci);
                 h = S.multiply(a, g);
                 r = r.subtract(h);
-                assert (!f.equals(r.leadingExpVector())) : "leadingExpVector not descending: " + f;
+                if (!r.isZERO() && f.equals(r.leadingExpVector())) {
+                    // inexact coefficients: a - (a/c)*c left a rounding residue in the leading
+                    // term, which would be divided again and again
+                    r.val.remove(f);
+                    r.hash = -1;
+                    r.blen = -1;
+                }
             } else {
                 break;
             }

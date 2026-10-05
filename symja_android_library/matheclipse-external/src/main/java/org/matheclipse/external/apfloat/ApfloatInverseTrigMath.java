@@ -99,11 +99,15 @@ public class ApfloatInverseTrigMath
             return acot(z.real(), precision);
         }
         int radix = z.radix();
+        long targetPrecision = z.precision();
+        // 1 - i / z and 1 + i / z cancel next to i and -i
+        z = ApfloatHelperShim.ensurePrecision(z, ApfloatHelperShim.extendPrecision(targetPrecision));
         Apint one = ApfloatHelperShim.ONES[radix];
         Apcomplex i = new Apcomplex(ApfloatHelperShim.ZEROS[radix], one),
                   w = i.divide(z);
         // (i / 2) (log(1 - i / z) - log(1 + i / z))
-        return i.divide(new Apint(2, radix)).multiply(ApcomplexMath.log(one.subtract(w)).subtract(ApcomplexMath.log(one.add(w))));
+        Apcomplex result = i.divide(new Apint(2, radix)).multiply(ApcomplexMath.log(one.subtract(w)).subtract(ApcomplexMath.log(one.add(w))));
+        return ApfloatHelperShim.limitPrecision(result, targetPrecision);
     }
 
     private static Apfloat halfPi(long precision, int radix)
