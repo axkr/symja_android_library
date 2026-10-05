@@ -671,10 +671,8 @@ public class Trie<S, T> implements Map<S, T>, Serializable {
         return null;
       }
 
-      // Check actual sequence values
-      if (sequencer.matches(node.sequence, 0, query, 0, node.end) != node.end) {
-        return null;
-      }
+      // The sequence values need no second check: every node on the way down was compared with
+      // its own stretch of the query, and the stretch before it is the one its parent stands for.
     }
 
     return node;

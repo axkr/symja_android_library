@@ -13,12 +13,13 @@
  */
 package org.matheclipse.core.parser;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NumStr;
@@ -31,6 +32,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
@@ -98,6 +100,15 @@ public class ExprParser extends Scanner {
   private final boolean fRelaxedSyntax;
 
   /**
+   * Set as soon as the expression being parsed contains something which
+   * {@link IExpr#determinePrecision(boolean)} reacts to: a number which is not a plain integer, the
+   * symbol <code>N</code>, a symbol with an assigned value, or a part which was not read by this
+   * parser. Without one of these the walk over the result at the end of {@link #parse(String)} has
+   * nothing to find.
+   */
+  private boolean fDeterminePrecision;
+
+  /**
    * The precedence of <code>?</code>, {@link S#PatternTest}.
    *
    * <p>
@@ -158,11 +169,13 @@ public class ExprParser extends Scanner {
       switch (headID) {
         case ID.Get:
           if (ast.isAST1() && ast.arg1().isString()) {
+            fDeterminePrecision = true;
             return S.Get.of(ast.arg1());
           }
           break;
         case ID.Import:
           if (ast.isAST1() && ast.arg1().isString()) {
+            fDeterminePrecision = true;
             return S.Import.of(ast.arg1());
           }
           break;
@@ -246,6 +259,33 @@ public class ExprParser extends Scanner {
     return ast;
   }
 
+  /**
+   * <code>name.toLowerCase(Locale.ENGLISH)</code>, with a short path for the names which are
+   * written in ASCII characters.
+   */
+  private static String toLowerCase(final String name) {
+    final int length = name.length();
+    int firstUpperCase = -1;
+    for (int i = 0; i < length; i++) {
+      final char ch = name.charAt(i);
+      if (ch >= 128) {
+        return name.toLowerCase(Locale.ENGLISH);
+      }
+      if (firstUpperCase < 0 && ch >= 'A' && ch <= 'Z') {
+        firstUpperCase = i;
+      }
+    }
+    if (firstUpperCase < 0) {
+      return name;
+    }
+    final byte[] lowerCase = new byte[length];
+    for (int i = 0; i < length; i++) {
+      final char ch = name.charAt(i);
+      lowerCase[i] = (byte) (ch >= 'A' && ch <= 'Z' ? ch + ('a' - 'A') : ch);
+    }
+    return new String(lowerCase, StandardCharsets.ISO_8859_1);
+  }
+
   protected IExpr convertSymbolOnInput(final String nodeStr, final String context,
       boolean convertOnSymbol) {
     if (fRelaxedSyntax) {
@@ -256,7 +296,7 @@ public class ExprParser extends Scanner {
         }
         return F.symbol(nodeStr, context, null, fEngine);
       }
-      String lowercaseStr = nodeStr.toLowerCase(Locale.ENGLISH);
+      String lowercaseStr = toLowerCase(nodeStr);
       if (convertOnSymbol) {
         if (lowercaseStr.equals("infinity")) {
           // special - convert on input
@@ -269,6 +309,10 @@ public class ExprParser extends Scanner {
       String temp = AST2Expr.PREDEFINED_ALIASES_MAP.get(lowercaseStr);
       if (temp != null) {
         return F.symbol(temp, context, null, fEngine);
+      }
+      if (context.length() == 0) {
+        // the name is in lower case already
+        return fEngine.getContextPath().symbol(lowercaseStr, fEngine.getContext(), false);
       }
       return F.symbol(lowercaseStr, context, null, fEngine);
     } else {
@@ -423,6 +467,45 @@ public class ExprParser extends Scanner {
     } while (true);
   }
 
+  /**
+   * Construct the function <code>head(arg1, arg2, ...)</code> from the arguments which follow. A
+   * function with up to three arguments, which is nearly every one, is built directly in its final
+   * form.
+   */
+  private IAST getArguments(final IExpr head) throws SyntaxError {
+    final IExpr arg1 = fToken == TT_COMMA ? S.Null : parseExpression();
+    if (fToken != TT_COMMA) {
+      return F.unaryAST1(head, arg1);
+    }
+    getNextToken();
+    final IExpr arg2 = getNextArgument();
+    if (fToken != TT_COMMA) {
+      return F.binaryAST2(head, arg1, arg2);
+    }
+    getNextToken();
+    final IExpr arg3 = getNextArgument();
+    if (fToken != TT_COMMA) {
+      return F.ternaryAST3(head, arg1, arg2, arg3);
+    }
+    final IASTAppendable function = F.ast(head, 8);
+    function.append(arg1);
+    function.append(arg2);
+    function.append(arg3);
+    do {
+      getNextToken();
+      function.append(getNextArgument());
+    } while (fToken == TT_COMMA);
+    return function;
+  }
+
+  /** The argument after a comma: nothing between the comma and the next one or the end is Null. */
+  private IExpr getNextArgument() throws SyntaxError {
+    if (fToken == TT_COMMA || fToken == TT_PRECEDENCE_CLOSE || fToken == TT_ARGUMENTS_CLOSE) {
+      return S.Null;
+    }
+    return parseExpression();
+  }
+
   private IExpr getFactor(final int min_precedence) throws SyntaxError {
     IExpr temp = null;
     switch (fToken) {
@@ -505,6 +588,7 @@ public class ExprParser extends Scanner {
         IStringX str = getString();
         return parseArguments(str);
       case TT_BOX_ESCAPE:
+        fDeterminePrecision = true;
         temp = getBoxEscape();
         getNextToken();
         return parseArguments(temp);
@@ -820,63 +904,33 @@ public class ExprParser extends Scanner {
       }
     }
 
-    int size = determineSize(head, 10);
-    final IASTAppendable function = F.ast(head, size);
+    final IAST function;
     fRecursionDepth++;
     try {
-      getArguments(function);
+      function = getArguments(head);
     } finally {
       fRecursionDepth--;
     }
     if (fRelaxedSyntax) {
       if (fToken == TT_PRECEDENCE_CLOSE) {
         getNextToken();
-        if (fToken == TT_PRECEDENCE_OPEN) {
-          reduceAST(function);
-        }
         if (fToken == TT_ARGUMENTS_OPEN) {
-          return getFunctionArguments(reduceAST(function));
+          return getFunctionArguments(function);
         }
-        return reduceAST(function);
+        return function;
       }
     } else {
       if (fToken == TT_ARGUMENTS_CLOSE) {
         getNextToken();
         if (fToken == TT_ARGUMENTS_OPEN) {
-          return getFunctionArguments(reduceAST(function));
+          return getFunctionArguments(function);
         }
-        return reduceAST(function);
+        return function;
       }
     }
 
     throwSyntaxError(fRelaxedSyntax ? "')' expected." : "']' expected.");
     return null;
-  }
-
-  private static int determineSize(final IExpr head, int defaultSize) {
-    if (head.isBuiltInSymbolID()) {
-      IFunctionEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
-      int[] args = eval.expectedArgSize(F.NIL);
-      if (args != null && args[1] < 10) {
-        defaultSize = args[1] + 1;
-      }
-    }
-    return defaultSize;
-  }
-
-  private static IAST reduceAST(IASTMutable function) {
-    int size = function.size();
-    switch (size) {
-      case 1:
-        return F.headAST0(function.head());
-      case 2:
-        return F.unaryAST1(function.head(), function.arg1());
-      case 3:
-        return F.binaryAST2(function.head(), function.arg1(), function.arg2());
-      case 4:
-        return F.ternaryAST3(function.head(), function.arg1(), function.arg2(), function.arg3());
-    }
-    return function;
   }
 
   /** Get a function f[...][...] */
@@ -895,16 +949,15 @@ public class ExprParser extends Scanner {
       return F.headAST0(head);
     }
 
-    final IASTAppendable function = F.ast(head);
-    getArguments(function);
+    final IAST function = getArguments(head);
 
     fRecursionDepth--;
     if (fToken == TT_ARGUMENTS_CLOSE) {
       getNextToken();
       if (fToken == TT_ARGUMENTS_OPEN) {
-        return getFunctionArguments(reduceAST(function));
+        return getFunctionArguments(function);
       }
-      return reduceAST(function);
+      return function;
     }
 
     throwSyntaxError("']' expected.");
@@ -921,7 +974,8 @@ public class ExprParser extends Scanner {
         getNextToken();
         return F.CEmptyList;
       }
-      function = F.ListAlloc(31);
+      // most lists are short
+      function = F.ListAlloc(4);
       getArguments(function);
     } finally {
       fRecursionDepth--;
@@ -937,12 +991,60 @@ public class ExprParser extends Scanner {
   }
 
   /**
+   * Read a decimal integer of at most 9 digits, which is what most numbers of an input are, without
+   * creating a string for it. The scanner is left at the character after the last digit.
+   *
+   * @return <code>null</code> if the number is something else; nothing has been read then
+   */
+  private IExpr scanShortInteger() {
+    final char[] input = fInputString;
+    final int length = input.length;
+    final int start = fCurrentPosition - 1;
+    int end = start;
+    int value = 0;
+    char ch = ' ';
+    while (end < length && (ch = input[end]) >= '0' && ch <= '9') {
+      if (end - start == 9) {
+        return null;
+      }
+      value = value * 10 + (ch - '0');
+      end++;
+    }
+    if (end == start) {
+      return null;
+    }
+    if (end < length) {
+      if (ch >= 128 || ch == '.' || ch == '`' || ch == '\\') {
+        // a digit of another script, a real number, a precision mark, a line continuation
+        return null;
+      }
+      if ((ch == '^' || ch == '*') && end + 1 < length && input[end + 1] == '^') {
+        // base^^digits or mantissa*^exponent
+        return null;
+      }
+    } else {
+      ch = ' ';
+    }
+    fCurrentPosition = end;
+    fCurrentChar = ch;
+    return F.ZZ(value);
+  }
+
+  /**
    * Method Declaration.
    *
    * @return
    * @see
    */
   private IExpr getNumber(final boolean negative) throws SyntaxError {
+    if (!negative && !fExplicitTimes) {
+      final IExpr integer = scanShortInteger();
+      if (integer != null) {
+        getNextToken();
+        return integer;
+      }
+    }
+    fDeterminePrecision = true;
     IExpr temp = null;
     scanNumber();
     String numberStr = fNumberString;
@@ -1308,14 +1410,143 @@ public class ExprParser extends Scanner {
    * @see
    */
   private IExpr getSymbol(boolean convertOnInput) throws SyntaxError {
-    scanIdentifier();
-    if (!fFactory.isValidIdentifier(fIdentifier)) {
-      throwSyntaxError("Invalid identifier: " + fIdentifier + " detected.");
-    }
+    fSystemNameSlot = -1;
+    IExpr symbol = convertOnInput ? null : scanSystemName();
+    if (symbol == null) {
+      final int systemNameSlot = fSystemNameSlot;
+      scanIdentifier();
+      if (!fFactory.isValidIdentifier(fIdentifier)) {
+        throwSyntaxError("Invalid identifier: " + fIdentifier + " detected.");
+      }
 
-    final IExpr symbol = convertSymbolOnInput(fIdentifier, fIdentifierContext, convertOnInput);
+      symbol = convertSymbolOnInput(fIdentifier, fIdentifierContext, convertOnInput);
+      if (systemNameSlot >= 0 && symbol.isBuiltInSymbol()) {
+        rememberSystemName(systemNameSlot, fIdentifier, (ISymbol) symbol);
+      }
+    }
+    if (symbol == S.N || (symbol.isSymbol() && ((ISymbol) symbol).assignedValue() != null)) {
+      fDeterminePrecision = true;
+    }
     getNextToken();
     return symbol;
+  }
+
+  /** A name as it was written in an input, and the built-in symbol it stands for. */
+  private static final class SystemName {
+    final String name;
+    final ISymbol symbol;
+    /** {@link Context#systemChanges()} at the time the symbol was looked up */
+    final int systemChanges;
+
+    SystemName(String name, ISymbol symbol, int systemChanges) {
+      this.name = name;
+      this.symbol = symbol;
+      this.systemChanges = systemChanges;
+    }
+  }
+
+  private static final int SYSTEM_NAMES_MASK = 0x1FFF;
+
+  /**
+   * The built-in names which were read before, one table for the strict and one for the relaxed
+   * syntax. A name has one possible place in its table and a new name replaces what is there, so
+   * the tables need no lock: an entry is immutable, and a reader gets a whole one or none.
+   *
+   * <p>
+   * Most identifiers of an input are the names of built-in functions. Reading one of them again is
+   * a comparison with the characters of the input: no string is created, and the name is neither
+   * converted to lower case nor looked up in the system context.
+   */
+  private static final SystemName[][] SYSTEM_NAMES =
+      new SystemName[2][SYSTEM_NAMES_MASK + 1];
+
+  /**
+   * The place in {@link #SYSTEM_NAMES} of the name which {@link #scanSystemName()} did not find,
+   * <code>-1</code> if the identifier is not a candidate.
+   */
+  private int fSystemNameSlot;
+
+  /**
+   * Read an identifier which is known as the name of a built-in symbol. The scanner is left at the
+   * character after the name.
+   *
+   * @return <code>null</code> if the identifier has to be read the general way; nothing has been
+   *         read then
+   */
+  private ISymbol scanSystemName() {
+    final char[] input = fInputString;
+    final int length = input.length;
+    final int start = fCurrentPosition - 1;
+    int end = start;
+    int hash = 0;
+    char ch = ' ';
+    while (end < length && isAsciiLetterOrDigit(ch = input[end])) {
+      hash = 31 * hash + ch;
+      end++;
+    }
+    final int nameLength = end - start;
+    if (nameLength < 2) {
+      return null;
+    }
+    if (end < length) {
+      if (ch >= 128 || ch == '\\' || Characters.isSymjaIdentifierPart(ch)) {
+        // the name goes on: another script, a line continuation, a context mark, a `$`
+        return null;
+      }
+    } else {
+      ch = ' ';
+    }
+    final int slot = (hash ^ (hash >>> 13)) & SYSTEM_NAMES_MASK;
+    final SystemName entry = SYSTEM_NAMES[fRelaxedSyntax ? 1 : 0][slot];
+    if (entry != null && entry.name.length() == nameLength) {
+      final String name = entry.name;
+      int i = 0;
+      while (i < nameLength && name.charAt(i) == input[start + i]) {
+        i++;
+      }
+      if (i == nameLength && entry.systemChanges == Context.systemChanges()
+          && isSystemNameLookup()) {
+        fCurrentPosition = end;
+        fCurrentChar = ch;
+        return entry.symbol;
+      }
+    }
+    fSystemNameSlot = slot;
+    return null;
+  }
+
+  /**
+   * Test if a name which the system context knows is answered by the system context: it is the
+   * first context on the path, and the engine reads names the way this parser does.
+   */
+  private boolean isSystemNameLookup() {
+    return fEngine.isRelaxedSyntax() == fRelaxedSyntax && !Config.RUBI_CONVERT_SYMBOLS
+        && fEngine.getContextPath().isSystemFirst();
+  }
+
+  private static boolean isAsciiLetterOrDigit(final char ch) {
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9');
+  }
+
+  /**
+   * Remember <code>name</code> for {@link #scanSystemName()}, if it is the system context which
+   * answered it under its own spelling. An alias is left to the general way.
+   */
+  private void rememberSystemName(final int slot, final String name, final ISymbol symbol) {
+    if (!isSystemNameLookup()) {
+      return;
+    }
+    final int systemChanges = Context.systemChanges();
+    if (fRelaxedSyntax) {
+      final String lowerCaseName = toLowerCase(name);
+      if (AST2Expr.PREDEFINED_ALIASES_MAP.get(lowerCaseName) != null
+          || Context.SYSTEM.get(lowerCaseName) != symbol) {
+        return;
+      }
+    } else if (Context.SYSTEM.get(name) != symbol) {
+      return;
+    }
+    SYSTEM_NAMES[fRelaxedSyntax ? 1 : 0][slot] = new SystemName(name, symbol, systemChanges);
   }
 
   /**
@@ -1350,6 +1581,7 @@ public class ExprParser extends Scanner {
    * @throws SyntaxError
    */
   public IExpr parse(final String expression) throws SyntaxError {
+    fDeterminePrecision = false;
     initialize(expression);
     if (fToken == TT_EOF) {
       // empty expression string or only a comment available in the string
@@ -1369,7 +1601,9 @@ public class ExprParser extends Scanner {
 
       throwSyntaxError("End-of-file not reached.");
     }
-    fEngine.setDeterminePrecision(temp, true);
+    if (fDeterminePrecision) {
+      fEngine.setDeterminePrecision(temp, true);
+    }
     return temp;
   }
 

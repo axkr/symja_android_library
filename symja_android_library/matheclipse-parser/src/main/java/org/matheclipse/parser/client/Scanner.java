@@ -947,7 +947,8 @@ public abstract class Scanner {
           fToken = TT_IDENTIFIER;
           return;
         }
-        if (Character.isDigit(fCurrentChar)) {
+        if (fCurrentChar < 128 ? (fCurrentChar >= '0' && fCurrentChar <= '9')
+            : Character.isDigit(fCurrentChar)) {
           fToken = TT_DIGIT;
           return;
         }

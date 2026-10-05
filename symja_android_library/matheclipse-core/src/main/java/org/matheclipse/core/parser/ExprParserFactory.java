@@ -43,8 +43,11 @@ public class ExprParserFactory implements IParserFactory {
   /** The set of characters, which could form an operator */
   @Override
   public boolean isOperatorChar(char ch) {
-    return OPERATOR_MATCHER.matches(ch);
+    return ch < 128 ? ASCII_OPERATOR_CHARS[ch] : OPERATOR_MATCHER.matches(ch);
   }
+
+  /** The answers of {@link #OPERATOR_MATCHER} for the ASCII characters. */
+  private static final boolean[] ASCII_OPERATOR_CHARS = new boolean[128];
 
   private static class InformationOperator extends PrefixExprOperator {
     public InformationOperator(final String oper, final String functionName, final int precedence) {
@@ -395,6 +398,9 @@ public class ExprParserFactory implements IParserFactory {
         }
       }
       OPERATOR_MATCHER = CharMatcher.anyOf(operatorCharacters.toString());
+      for (char ch = 0; ch < 128; ch++) {
+        ASCII_OPERATOR_CHARS[ch] = OPERATOR_MATCHER.matches(ch);
+      }
     }
   }
 

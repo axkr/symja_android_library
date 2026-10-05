@@ -57,7 +57,7 @@ class InfixExprOperator extends ExprOperator {
       function.append(lhs);
       return function;
     }
-    IASTAppendable function = F.ast(headSymbol(), 10);
+    IASTAppendable function = F.ast(headSymbol(), 4);
     function.append(lhs);
     function.append(rhs);
     return function;

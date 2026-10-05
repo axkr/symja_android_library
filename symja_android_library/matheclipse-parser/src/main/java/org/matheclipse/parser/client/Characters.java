@@ -580,8 +580,26 @@ public class Characters {
    * @return <code>true</code> if the character may start a Symja identifier; false otherwise.
    */
   public static boolean isSymjaIdentifierStart(char ch) {
+    if (ch < 128) {
+      return ASCII_IDENTIFIER_START[ch];
+    }
     return (Character.isJavaIdentifierStart(ch) && (ch != '_'))
         || isFormalLatinLetter(ch);
+  }
+
+  /**
+   * The answers of {@link #isSymjaIdentifierStart(char)} and {@link #isSymjaIdentifierPart(char)}
+   * for the ASCII characters. Nearly every character of an input is ASCII, and the general tests
+   * go through the Unicode character tables.
+   */
+  private static final boolean[] ASCII_IDENTIFIER_START = new boolean[128];
+  private static final boolean[] ASCII_IDENTIFIER_PART = new boolean[128];
+
+  static {
+    for (char ch = 0; ch < 128; ch++) {
+      ASCII_IDENTIFIER_START[ch] = Character.isJavaIdentifierStart(ch) && (ch != '_');
+      ASCII_IDENTIFIER_PART[ch] = (Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '`');
+    }
   }
 
   /**
@@ -610,6 +628,9 @@ public class Characters {
    * @return <code>true</code> if the character may be part of a Symja identifier; false otherwise.
    */
   public static boolean isSymjaIdentifierPart(char ch) {
+    if (ch < 128) {
+      return ASCII_IDENTIFIER_PART[ch];
+    }
     return (Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '`') // context name
                                                                               // separator character
         || isFormalLatinLetter(ch);
