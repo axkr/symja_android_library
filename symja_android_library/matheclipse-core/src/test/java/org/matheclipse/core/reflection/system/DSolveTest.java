@@ -1269,8 +1269,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testDSolveWeber() {
     check("DSolve(y''(x) + 3*x*y'(x) + (2*x^2 + 4)*y(x) == 0, y(x), x)", //
-        "{{y(x)->C(1)/E^x^2+(-x^2*C(1))/E^x^2+(x*C(2)*Hypergeometric1F1(2,3/2,-x^2/2))/E^(x^\n"
-            + "2/2)}}");
+        "{{y(x)->-C(1)/E^x^2+(x^2*C(1))/E^x^2+(-x*C(2))/(2*E^(x^2/2))+(-Sqrt(2*Pi)*C(2)*Erfi(x/Sqrt(\n2)))/(4*E^x^2)+(Sqrt(2*Pi)*x^2*C(2)*Erfi(x/Sqrt(2)))/(4*E^x^2)}}");
     checkResidual("y''(x) + 3*x*y'(x) + (2*x^2 + 4)*y(x) == 0", //
         "y''(x) + 3*x*y'(x) + (2*x^2 + 4)*y(x)", "{C(1)->7/5, C(2)->3/4, x->13/10}");
     // one whose Gaussian is complex, so that both solutions are written with the same one

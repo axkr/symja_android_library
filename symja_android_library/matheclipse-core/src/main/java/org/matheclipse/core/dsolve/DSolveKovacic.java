@@ -745,7 +745,56 @@ final class DSolveKovacic {
     if (integral.isNIL()) {
       return F.NIL;
     }
-    return foldConstantFactor(engine.evaluate(F.Times(z1, integral)), xVar, engine);
+    IExpr product = engine.evaluate(F.Times(z1, integral));
+    return foldConstantFactor(combineRationalCoefficients(product, xVar, engine), xVar, engine);
+  }
+
+  /**
+   * Adds the terms of a sum which differ by a rational function of the variable only.
+   *
+   * <p>
+   * An integral which was found through partial fractions comes back with one term for each pole,
+   * and multiplied by the first solution these terms are <code>p(x)/(x-a)*E^g</code> with poles
+   * the solution does not have. Together they are a polynomial times <code>E^g</code>.
+   */
+  private static IExpr combineRationalCoefficients(IExpr expr, IExpr xVar, EvalEngine engine) {
+    IExpr expanded = engine.evaluate(F.Expand(expr));
+    if (!expanded.isPlus()) {
+      return expr;
+    }
+    java.util.Map<IExpr, IASTAppendable> groups = new java.util.LinkedHashMap<>();
+    IAST terms = (IAST) expanded;
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+      IASTAppendable rational = F.TimesAlloc(factors.argSize());
+      IASTAppendable other = F.TimesAlloc(factors.argSize());
+      for (int j = 1; j <= factors.argSize(); j++) {
+        IExpr factor = factors.get(j);
+        (isRationalFactor(factor, xVar) ? rational : other).append(factor);
+      }
+      groups.computeIfAbsent(engine.evaluate(other.oneIdentity1()), k -> F.PlusAlloc(4))
+          .append(rational.oneIdentity1());
+    }
+    if (groups.size() == terms.argSize()) {
+      return expr;
+    }
+    IASTAppendable result = F.PlusAlloc(groups.size());
+    for (java.util.Map.Entry<IExpr, IASTAppendable> group : groups.entrySet()) {
+      IExpr coefficient = engine.evaluate(F.Together(group.getValue().oneIdentity0()));
+      result.append(F.Times(coefficient, group.getKey()));
+    }
+    return engine.evaluate(result);
+  }
+
+  private static boolean isRationalFactor(IExpr factor, IExpr xVar) {
+    if (factor.isFree(xVar)) {
+      return true;
+    }
+    if (factor.isPower() && factor.exponent().isInteger()) {
+      return factor.base().isPolynomial(xVar);
+    }
+    return factor.isPolynomial(xVar);
   }
 
   /**
