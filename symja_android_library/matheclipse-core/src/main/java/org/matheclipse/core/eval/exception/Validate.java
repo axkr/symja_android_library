@@ -874,6 +874,22 @@ public final class Validate {
    */
   public static IASTAppendable checkEquationsAndInequations(final IAST ast, int position,
       boolean bareExpressionsAreEquations) {
+    return checkEquationsAndInequations(ast, position, bareExpressionsAreEquations, false);
+  }
+
+  /**
+   * Like {@link #checkEquationsAndInequations(IAST, int, boolean)}, but a term with the head
+   * <code>Not</code>, <code>Xor</code> or <code>Implies</code> can be kept as a single boolean
+   * term, like a disjunction is.
+   *
+   * @param ast
+   * @param position the position of the equations argument in the <code>ast</code> expression
+   * @param bareExpressionsAreEquations if <code>true</code> read a term which isn't a relation as
+   *        the equation <code>expr == 0</code>
+   * @param booleanCombinations if <code>true</code> keep <code>Not, Xor, Implies</code> terms
+   */
+  public static IASTAppendable checkEquationsAndInequations(final IAST ast, int position,
+      boolean bareExpressionsAreEquations, boolean booleanCombinations) {
     IExpr expr = ast.get(position);
     IASTAppendable termsEqualZeroList;
     if (expr.isList() || expr.isAnd()) {
@@ -881,11 +897,13 @@ public final class Validate {
       IAST eqns = (IAST) expr;
       termsEqualZeroList = F.ListAlloc(eqns.size());
       for (int i = 1; i < eqns.size(); i++) {
-        addEquationOrInequation(eqns.get(i), termsEqualZeroList, bareExpressionsAreEquations);
+        addEquationOrInequation(eqns.get(i), termsEqualZeroList, bareExpressionsAreEquations,
+            booleanCombinations);
       }
     } else {
       termsEqualZeroList = F.ListAlloc();
-      addEquationOrInequation(expr, termsEqualZeroList, bareExpressionsAreEquations);
+      addEquationOrInequation(expr, termsEqualZeroList, bareExpressionsAreEquations,
+          booleanCombinations);
     }
     return termsEqualZeroList;
   }
@@ -901,19 +919,25 @@ public final class Validate {
    * @param termsEqualZeroList the collector for the resulting equations / inequations
    * @param bareExpressionsAreEquations if <code>true</code> read a term which isn't a relation as
    *        the equation <code>expr == 0</code>
+   * @param booleanCombinations if <code>true</code> keep <code>Not, Xor, Implies</code> terms
    */
   private static void addEquationOrInequation(IExpr arg, IASTAppendable termsEqualZeroList,
-      boolean bareExpressionsAreEquations) {
+      boolean bareExpressionsAreEquations, boolean booleanCombinations) {
     if (arg.isAnd()) {
       // flatten a conjunction of equations / inequations
       IAST and = (IAST) arg;
       for (int j = 1; j < and.size(); j++) {
-        addEquationOrInequation(and.get(j), termsEqualZeroList, bareExpressionsAreEquations);
+        addEquationOrInequation(and.get(j), termsEqualZeroList, bareExpressionsAreEquations,
+            booleanCombinations);
       }
       return;
     }
     if (arg.isOr()) {
       // keep a disjunction as a single boolean constraint
+      termsEqualZeroList.append(arg);
+      return;
+    }
+    if (booleanCombinations && (arg.isNot() || arg.isAST(S.Xor) || arg.isAST(S.Implies, 3))) {
       termsEqualZeroList.append(arg);
       return;
     }

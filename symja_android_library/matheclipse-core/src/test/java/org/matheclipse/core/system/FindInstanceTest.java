@@ -59,6 +59,14 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBooleanCombinationIntegers() {
+    check("FindInstance((x^2==4||x^3==27) && x*y==6, {x,y}, Integers)", //
+        "{{x->-2,y->-3}}");
+    check("FindInstance((x^2==4||x^3==27) && x*y==6, {x,y}, Integers, 3)", //
+        "{{x->-2,y->-3},{x->2,y->3},{x->3,y->2}}");
+  }
+
+  @Test
   public void testMod() {
     check("FindInstance(Mod(x^2+y^2,2) == 1 && Mod(x-2*y,3) == 2, {x, y}, Integers,5)", //
         "{{x->0,y->-13},{x->0,y->-7},{x->0,y->-1},{x->0,y->5},{x->0,y->11}}");

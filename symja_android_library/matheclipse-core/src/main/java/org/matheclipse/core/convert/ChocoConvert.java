@@ -12,17 +12,14 @@ import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
+import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.constraints.Propagator;
 import org.chocosolver.solver.constraints.PropagatorPriority;
-import org.chocosolver.solver.constraints.extension.hybrid.HybridTuples;
-import org.chocosolver.solver.constraints.extension.hybrid.ISupportable;
 import org.chocosolver.solver.exception.ContradictionException;
 import org.chocosolver.solver.expression.continuous.arithmetic.CArExpression;
 import org.chocosolver.solver.expression.continuous.relational.CReExpression;
 import org.chocosolver.solver.expression.discrete.arithmetic.ArExpression;
-import org.chocosolver.solver.expression.discrete.logical.LoExpression;
-import org.chocosolver.solver.expression.discrete.logical.NaLoExpression;
 import org.chocosolver.solver.expression.discrete.relational.ReExpression;
 import org.chocosolver.solver.search.limits.SolutionCounter;
 import org.chocosolver.solver.search.strategy.selectors.values.IntDomainClosest;
@@ -35,6 +32,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
@@ -276,12 +274,19 @@ public class ChocoConvert {
 
     @Override
     public ESat isEntailed() {
+      boolean accepted = false;
+      boolean rejected = false;
       for (int value = var.getLB(); value <= var.getUB(); value = var.nextValue(value)) {
         if (predicate.test(value)) {
-          return ESat.TRUE;
+          accepted = true;
+        } else {
+          rejected = true;
+        }
+        if (accepted && rejected) {
+          return ESat.UNDEFINED;
         }
       }
-      return ESat.FALSE;
+      return accepted ? ESat.TRUE : ESat.FALSE;
     }
 
     @Override
@@ -324,19 +329,17 @@ public class ChocoConvert {
    * @param list
    * @param variables
    * @param map
-   * @param hybridVars
-   * @param hybridTuples
    * @param domain {@link S#Integers} or {@link S#Primes}
    * @return
    * @throws ArgumentTypeException
    */
   private static Model expr2IntegerSolver(final IAST list, final IAST variables,
-      Map<ISymbol, IntVar> map, IExpr[] hybridVars, HybridTuples hybridTuples, ISymbol domain)
-      throws ArgumentTypeException {
+      Map<ISymbol, IntVar> map, ISymbol domain) throws ArgumentTypeException {
     final Predicate<IExpr> isPrime =
         (domain == S.Primes) ? Predicates.isTrue(EvalEngine.get(), S.PrimeQ) : null;
     // Create a constraint network
-    // Model model = new Model( SettingsBuilder.init().setLCG(true).build() );
+    // lazy clause generation (SettingsBuilder#setLCG) is not an option: it rejects pow() and
+    // products which leave the int range, and can't explain the propagators of this class
     Model model = new Model();
     for (int i = 1; i < variables.size(); i++) {
       IExpr expr = variables.get(i);
@@ -358,15 +361,6 @@ public class ChocoConvert {
         map.put((ISymbol) expr, intVar);
       }
     }
-    if (hybridTuples != null) {
-      IntVar[] vars = new IntVar[hybridVars.length];
-      for (int i = 0; i < hybridVars.length; i++) {
-        IntVar intVar = map.get(hybridVars[i]);
-        vars[i] = intVar;
-      }
-      model.table(vars, hybridTuples);
-    }
-
     IntVar[] vars = new IntVar[map.size()];
     int k = 0;
     for (Entry<ISymbol, IntVar> entry : map.entrySet()) {
@@ -377,9 +371,10 @@ public class ChocoConvert {
     List<ReExpression> constraints = new java.util.ArrayList<ReExpression>(list.argSize());
     // the constraints are a conjunction, so the bounds of single variables are translated first:
     // they narrow the domains from which the ranges of powers and products are computed
-    IASTAppendable ordered = F.ListAlloc(list.argSize());
-    ordered.appendArgs(list.select(ChocoConvert::isVariableBound));
-    ordered.appendArgs(list.select(x -> !isVariableBound(x)));
+    IAST integral = list.map(ChocoConvert::integralRelation);
+    IASTAppendable ordered = F.ListAlloc(integral.argSize());
+    ordered.appendArgs(integral.select(ChocoConvert::isVariableBound));
+    ordered.appendArgs(integral.select(x -> !isVariableBound(x)));
     for (int i = 1; i < ordered.size(); i++) {
       IExpr element = ordered.get(i);
       if (element.isTrue()) {
@@ -393,24 +388,136 @@ public class ChocoConvert {
       if (!(element instanceof IAST)) {
         return null;
       }
-      ReExpression reLHS = relationalIntegerExpression(model, (IAST) element, map);
-      if (reLHS == null) {
-        return null;
-      }
-      constraints.add(reLHS);
+      constraints.add(booleanExpression(model, (IAST) element, map, true));
     }
     if (constraints.isEmpty()) {
       // without a constraint every point of the search box is a solution, which is not an answer
       return null;
     }
-    NaLoExpression nlExpr = new NaLoExpression(LoExpression.Operator.AND,
-        constraints.toArray(new ReExpression[0]));
-    nlExpr.post();
+    // each constraint of the conjunction is posted on its own. Posting them as one n-ary AND
+    // would reify every single relation instead of propagating it directly.
+    for (int i = 0; i < constraints.size(); i++) {
+      constraints.get(i).post();
+    }
     return model;
   }
 
+  /**
+   * Translate a relation or a combination of relations with <code>And, Or, Not, Xor, Implies</code>.
+   *
+   * @param topLevel <code>true</code> if <code>expr</code> is one of the constraints which all
+   *        have to hold. Only such a constraint may narrow the domain of a variable.
+   */
+  private static ReExpression booleanExpression(Model net, IAST expr, Map<ISymbol, IntVar> map,
+      boolean topLevel) {
+    if (expr.isAnd() || expr.isOr() || expr.isAST(S.Xor)) {
+      if (expr.argSize() == 0) {
+        throw new ArgumentTypeException(
+            expr.toString() + " is no relational expression found for Solve(..., Integers)");
+      }
+      // a conjunction below the top level sits inside a disjunction or negation
+      boolean conjunct = topLevel && expr.isAnd();
+      ReExpression result = booleanOperand(net, expr.arg1(), map, conjunct);
+      for (int i = 2; i < expr.size(); i++) {
+        ReExpression operand = booleanOperand(net, expr.get(i), map, conjunct);
+        if (expr.isAnd()) {
+          result = result.and(operand);
+        } else if (expr.isOr()) {
+          result = result.or(operand);
+        } else {
+          // folding pairwise gives "an odd number of operands holds"
+          result = result.xor(operand);
+        }
+      }
+      return result;
+    }
+    if (expr.isNot()) {
+      return booleanOperand(net, expr.arg1(), map, false).not();
+    }
+    if (expr.isAST(S.Implies, 3)) {
+      return booleanOperand(net, expr.arg1(), map, false)
+          .imp(booleanOperand(net, expr.arg2(), map, false));
+    }
+    IExpr relation = topLevel ? expr : integralRelation(expr);
+    if (relation.isTrue() || relation.isFalse()) {
+      return net.boolVar(relation.isTrue());
+    }
+    return relationalIntegerExpression(net, (IAST) relation, map, topLevel);
+  }
+
+  private static ReExpression booleanOperand(Model net, IExpr expr, Map<ISymbol, IntVar> map,
+      boolean topLevel) {
+    if (expr.isTrue() || expr.isFalse()) {
+      return net.boolVar(expr.isTrue());
+    }
+    if (expr.isAST()) {
+      return booleanExpression(net, (IAST) expr, map, topLevel);
+    }
+    throw new ArgumentTypeException(
+        expr.toString() + " is no relational expression found for Solve(..., Integers)");
+  }
+
+  /**
+   * Rewrite a relation with rational numbers into one with integers only. The terms of a relation
+   * have integer values, so <code>x &gt;= 3/2</code> is <code>x &gt;= 2</code> and
+   * <code>x*y == 3/2</code> never holds. Other relations are multiplied by the common denominator.
+   *
+   * @return the rewritten relation, {@link S#True}, {@link S#False} or <code>expr</code> itself
+   */
+  private static IExpr integralRelation(IExpr expr) {
+    if (!expr.isAST2() || !isRelation(expr) || expr.isFree(x -> x.isFraction(), false)) {
+      return expr;
+    }
+    IAST relation = (IAST) expr;
+    IExpr lhs = relation.arg1();
+    IExpr rhs = relation.arg2();
+    ISymbol head = (ISymbol) relation.head();
+    if (lhs.isFraction() && rhs.isFree(x -> x.isFraction(), false)) {
+      // mirror the relation, so that the rational number is on the right-hand side
+      IExpr swap = lhs;
+      lhs = rhs;
+      rhs = swap;
+      if (head == S.Greater) {
+        head = S.Less;
+      } else if (head == S.GreaterEqual) {
+        head = S.LessEqual;
+      } else if (head == S.Less) {
+        head = S.Greater;
+      } else if (head == S.LessEqual) {
+        head = S.GreaterEqual;
+      }
+    }
+    if (rhs.isFraction() && lhs.isFree(x -> x.isFraction(), false)) {
+      IFraction fraction = (IFraction) rhs;
+      if (head == S.Equal) {
+        return S.False;
+      }
+      if (head == S.Unequal) {
+        return S.True;
+      }
+      boolean lower = head == S.Greater || head == S.GreaterEqual;
+      return F.binaryAST2(lower ? S.GreaterEqual : S.LessEqual, lhs,
+          lower ? fraction.ceilFraction() : fraction.floorFraction());
+    }
+    IInteger[] denominator = new IInteger[] {F.C1};
+    relation.forAllLeaves(x -> {
+      if (x.isFraction()) {
+        denominator[0] = denominator[0].lcm(((IFraction) x).denominator());
+      }
+      return true;
+    }, 1);
+    EvalEngine engine = EvalEngine.get();
+    return F.binaryAST2(head, engine.evaluate(F.Expand(F.Times(denominator[0], lhs))),
+        engine.evaluate(F.Expand(F.Times(denominator[0], rhs))));
+  }
+
+  private static boolean isRelation(IExpr expr) {
+    return expr.isEqual() || expr.isAST(S.Unequal) || expr.isAST(S.Greater)
+        || expr.isAST(S.GreaterEqual) || expr.isAST(S.Less) || expr.isAST(S.LessEqual);
+  }
+
   private static ReExpression relationalIntegerExpression(Model net, IAST temp,
-      Map<ISymbol, IntVar> map) {
+      Map<ISymbol, IntVar> map, boolean narrowDomains) {
     ArExpression lhs;
     ArExpression rhs;
     if (temp.isAST2()) {
@@ -421,7 +528,7 @@ public class ChocoConvert {
       } else if (temp.isAST(S.Unequal, 3)) {
         return lhs.ne(rhs);
       } else if (temp.isAST(S.Greater, 3)) {
-        if (lhs instanceof IntVar && temp.arg2().isInteger()) {
+        if (narrowDomains && lhs instanceof IntVar && temp.arg2().isInteger()) {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int lowerBound = temp.arg2().toIntDefault();
@@ -430,7 +537,7 @@ public class ChocoConvert {
             }
           } catch (ContradictionException e) {
           }
-        } else if (rhs instanceof IntVar && temp.arg1().isInteger()) {
+        } else if (narrowDomains && rhs instanceof IntVar && temp.arg1().isInteger()) {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int upperBound = temp.arg1().toIntDefault();
@@ -442,7 +549,7 @@ public class ChocoConvert {
         }
         return lhs.gt(rhs);
       } else if (temp.isAST(S.GreaterEqual, 3)) {
-        if (lhs instanceof IntVar && temp.arg2().isInteger()) {
+        if (narrowDomains && lhs instanceof IntVar && temp.arg2().isInteger()) {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int lowerBound = temp.arg2().toIntDefault();
@@ -451,7 +558,7 @@ public class ChocoConvert {
             }
           } catch (ContradictionException e) {
           }
-        } else if (rhs instanceof IntVar && temp.arg1().isInteger()) {
+        } else if (narrowDomains && rhs instanceof IntVar && temp.arg1().isInteger()) {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int upperBound = temp.arg1().toIntDefault();
@@ -463,7 +570,7 @@ public class ChocoConvert {
         }
         return lhs.ge(rhs);
       } else if (temp.isAST(S.LessEqual, 3)) {
-        if (lhs instanceof IntVar && temp.arg2().isInteger()) {
+        if (narrowDomains && lhs instanceof IntVar && temp.arg2().isInteger()) {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int upperBound = temp.arg2().toIntDefault();
@@ -472,7 +579,7 @@ public class ChocoConvert {
             }
           } catch (ContradictionException e) {
           }
-        } else if (rhs instanceof IntVar && temp.arg1().isInteger()) {
+        } else if (narrowDomains && rhs instanceof IntVar && temp.arg1().isInteger()) {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int lowerBound = temp.arg1().toIntDefault();
@@ -484,7 +591,7 @@ public class ChocoConvert {
         }
         return lhs.le(rhs);
       } else if (temp.isAST(S.Less, 3)) {
-        if (lhs instanceof IntVar && temp.arg2().isInteger()) {
+        if (narrowDomains && lhs instanceof IntVar && temp.arg2().isInteger()) {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int upperBound = temp.arg2().toIntDefault();
@@ -493,7 +600,7 @@ public class ChocoConvert {
             }
           } catch (ContradictionException e) {
           }
-        } else if (rhs instanceof IntVar && temp.arg1().isInteger()) {
+        } else if (narrowDomains && rhs instanceof IntVar && temp.arg1().isInteger()) {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int lowerBound = temp.arg1().toIntDefault();
@@ -608,15 +715,6 @@ public class ChocoConvert {
             expr.toString() + " does not fit into an int variable for Solve(..., Integers)");
       }
       return net.intVar(value);
-    }
-    if (expr instanceof IFraction) {
-      IFraction fraction = (IFraction) expr;
-      IExpr numerator = fraction.numerator();
-      IExpr denominator = fraction.denominator();
-      ArExpression result = integerExpression(net, numerator, map);
-      result = result.div(integerExpression(net, denominator, map));
-      return result;
-
     }
     if (expr.isAST()) {
       IAST ast = (IAST) expr;
@@ -749,23 +847,37 @@ public class ChocoConvert {
    * @param userDefinedVariables all variables which are defined by the user. May contain additional
    *        variables which aren't available in <code>equationVariables</code>
    * @param maximumNumberOfResults the maximum number of results to return; if < 0 return all
-   * @param hybridTuples TODO
    * @param domain {@link S#Integers} or {@link S#Primes}
    * @param engine
    * @return a list of rules with the integer solutions; or if no solution exists return
    *         {@link F#NIL}
    */
   public static IAST integerSolve(final IAST list, final IAST equationVariables,
-      final IAST userDefinedVariables, final int maximumNumberOfResults, IExpr[] hybridVars,
-      HybridTuples hybridTuples, ISymbol domain, final EvalEngine engine) {
+      final IAST userDefinedVariables, final int maximumNumberOfResults, ISymbol domain,
+      final EvalEngine engine) {
     TreeMap<ISymbol, IntVar> map = new TreeMap<ISymbol, IntVar>();
-    Model model =
-        expr2IntegerSolver(list, equationVariables, map, hybridVars, hybridTuples, domain);
+    Model model = expr2IntegerSolver(list, equationVariables, map, domain);
     if (model == null) {
       return F.NIL;
     }
-    List<Solution> res = model.getSolver().findAllSolutions(new SolutionCounter(model,
+    // the search doesn't notice an interrupt or an abort request on its own
+    final boolean[] stopped = new boolean[] {false};
+    Solver solver = model.getSolver();
+    solver.addStopCriterion(() -> {
+      if (Thread.currentThread().isInterrupted() || engine.isStopRequested()) {
+        stopped[0] = true;
+      }
+      return stopped[0];
+    });
+    List<Solution> res = solver.findAllSolutions(new SolutionCounter(model,
         maximumNumberOfResults < 0 ? Short.MAX_VALUE : maximumNumberOfResults));
+    if (stopped[0]) {
+      if (Thread.currentThread().isInterrupted()) {
+        throw TimeoutException.TIMED_OUT;
+      }
+      // an incomplete enumeration is no answer
+      return F.NIL;
+    }
     if (res.size() == 0) {
       // a solution may lie outside a restricted intermediate range
       return model.getHook(RESTRICTED_RANGE) != null ? F.NIL : F.CEmptyList;
@@ -1036,32 +1148,5 @@ public class ChocoConvert {
     }
 
     return result;
-  }
-
-  public static HybridTuples listOfRulesToTuples(IAST diophantineResult, ISymbol head,
-      IExpr[] hybridVars, EvalEngine engine) {
-    HybridTuples tuples = new HybridTuples();
-    for (int i = 1; i < diophantineResult.size(); i++) {
-      IAST subList = (IAST) diophantineResult.get(i);
-      ISupportable[] supp = new ISupportable[subList.argSize()];
-      for (int j = 1; j < subList.size(); j++) {
-        IExpr rule = subList.get(j);
-        if (rule.isRuleAST()) {
-          IExpr lhs = rule.first();
-          IExpr rhs = rule.second();
-          int value = rhs.toIntDefault();
-          if (F.isPresent(value)) {
-            hybridVars[j - 1] = lhs;
-            supp[j - 1] = HybridTuples.eq(value);
-          } else {
-            // Machine-sized integer expected at position `2` in `1`.
-            Errors.printMessage(head, "intm", F.List(rule, F.C2), engine);
-            return null;
-          }
-        }
-      }
-      tuples.add(supp);
-    }
-    return tuples;
   }
 }

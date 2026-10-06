@@ -3341,6 +3341,42 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveIntegersRationalBounds() {
+    // the relations are normalized to rational numbers: 2*x*Quotient(y,-3)==3 never holds
+    check("Solve({2*x*Quotient(y,-3)==3, -6<=x<=6, -6<=y<=6}, {x,y}, Integers)", //
+        "{}");
+    // 27*x*y>=2 is x*y>=2/27
+    check("Solve({27*x*y>=2, Abs(x)<=Mod(x,3)*x^3, -2<=x<=2, 0<=y<=1}, {x,y}, Integers)", //
+        "{{x->1,y->1},{x->2,y->1}}");
+    check("Solve({2*x^3>=-17, 3*x^3<20, x*y==x, y^2<=1}, {x,y}, Integers)", //
+        "{{x->-2,y->1},{x->-1,y->1},{x->0,y->-1},{x->0,y->0},{x->0,y->1},{x->1,y->1}}");
+  }
+
+  @Test
+  public void testSolveIntegersBooleanCombinations() {
+    check("Solve((x^2==4||x^3==27) && x*y==6, {x,y}, Integers)", //
+        "{{x->-2,y->-3},{x->2,y->3},{x->3,y->2}}");
+    check("Solve(Xor(x^2==4,x^3==8) && x*y==6, {x,y}, Integers)", //
+        "{{x->-2,y->-3}}");
+    check("Solve(!(x^2>4) && x*y==6, {x,y}, Integers)", //
+        "{{x->-2,y->-3},{x->-1,y->-6},{x->1,y->6},{x->2,y->3}}");
+    check("Solve(Implies(x>0,y^2==x) && x*y==8, {x,y}, Integers)", //
+        "{{x->-8,y->-1},{x->-4,y->-2},{x->-2,y->-4},{x->-1,y->-8},{x->4,y->2}}");
+    // a bound inside a disjunction doesn't narrow the search
+    check("Solve((x>3||y>3) && x*y==4 && x>0, {x,y}, Integers)", //
+        "{{x->1,y->4},{x->4,y->1}}");
+  }
+
+  @Test
+  public void testSolveIntegersConstantConditions() {
+    // a condition which is True is no unknown
+    check("Solve({x>=-2, x<=2, True, x^3>1}, {x}, Integers)", //
+        "{{x->2}}");
+    check("Solve({x>=-2, x<=2, x^3>1, 1>2}, {x}, Integers)", //
+        "{}");
+  }
+
+  @Test
   public void testSolveChocoPropagator() {
     // ---------------------------------------------------------
     // IntUnaryOperator Propagator Tests

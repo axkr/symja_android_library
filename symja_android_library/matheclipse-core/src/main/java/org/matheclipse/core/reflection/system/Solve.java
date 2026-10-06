@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-import org.chocosolver.solver.constraints.extension.hybrid.HybridTuples;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
@@ -3035,9 +3034,16 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       IAST userDefinedVariables, int maximumNumberOfResults, ISymbol domain,
       boolean allowParametricSolution, EvalEngine engine) {
     if (!userDefinedVariables.isEmpty()) {
-      IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
+      // a condition which evaluated to True or False is no unknown
+      equationVariables = equationVariables.select(x -> !x.isTrue() && !x.isFalse());
+      // the constraint solver at the end also takes Not, Xor and Implies terms
+      IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1, false, true);
       if (equationsAndInequations.isEmpty()) {
         return F.NIL;
+      }
+      if (equationsAndInequations.exists(x -> x.isFalse())) {
+        // a condition which never holds
+        return F.CEmptyList;
       }
       try {
         // Exact path first: a single univariate polynomial equation has a finite, exactly
@@ -3079,10 +3085,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             break;
         }
 
-        // for model#table() method
-        HybridTuples hybridTuples = null;
-        IExpr[] hybridVars = null;
-        // Create a constraint network
         if (ToggleFeature.SOLVE_DIOPHANTINE) {
           if (equationsAndInequations.argSize() == 1) {
             IExpr eq1 = equationsAndInequations.arg1();
@@ -3098,13 +3100,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               IAST diophantineResult = NumberTheory.diophantinePolynomial(eq1.first(),
                   equationVariables, maximumNumberOfResults);
               if (diophantineResult.isPresent()) {
-                if (equationsAndInequations.argSize() > 1) {
-                  hybridVars = new IExpr[] {F.NIL, F.NIL};
-                  hybridTuples = ChocoConvert.listOfRulesToTuples(diophantineResult, ast.topHead(),
-                      hybridVars, engine);
-                } else {
-                  return diophantineResult;
-                }
+                return diophantineResult;
               }
             }
           }
@@ -3112,8 +3108,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
         try {
           IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
-              userDefinedVariables, maximumNumberOfResults, hybridVars, hybridTuples, domain,
-              engine);
+              userDefinedVariables, maximumNumberOfResults, domain, engine);
           if (resultList.isPresent()) {
             EvalAttributes.sort((IASTMutable) resultList);
             return resultList;
