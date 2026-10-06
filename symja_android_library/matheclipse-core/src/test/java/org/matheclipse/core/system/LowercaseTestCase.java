@@ -29744,7 +29744,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together(-a*b^(-2)-c*d^(-3))", //
         "(-b^2*c-a*d^3)/(b^2*d^3)");
     check("Together((-8)*a^(-1)*(-a^(-1)*b-1)^(-1))", //
-        "-8/(-a-b)");
+        "8/(a+b)");
 
     check(
         "Together((2*(2*x^3-4*x+5)*x^3*(3*x^2+2)^(-1)-4*x*(2*x^3-4*x+5)*(3*x^2+2)^(-1)+5*(2*x^3-4*x+\n"
@@ -29761,7 +29761,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together(a + c/g)", //
         "(c+a*g)/g");
     check("Together(((7*b*a^(-1)-1)*(-b*a^(-1)-1)^(-1)+7)*a^(-1))", //
-        "-8/(-a-b)");
+        "8/(a+b)");
 
     check("ExpandAll((x^2-1)*x^2+x*(x^2-1))", //
         "-x-x^2+x^3+x^4");
@@ -29773,7 +29773,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Together((-a^2*r^2*x-a*b*r*x-a*c*x-a^2*r^3-2*a*b*r^2-a*c*r-b^2*r-b*c)*((a*r^2+b*r)^2+2*c*(a*r^2+b*r)+c^2)^(-1))", //
         "(-b-a*r-a*x)/(c+b*r+a*r^2)");
     check("Together((-8)*a^(-1)*(-a^(-1)*b-1)^(-1))", //
-        "-8/(-a-b)");
+        "8/(a+b)");
 
     check("Together(a/b + c/d)", //
         "(b*c+a*d)/(b*d)");
@@ -29782,7 +29782,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("((-b-a)*a^(-1))^(-1)", //
         "a/(-a-b)");
     check("Together(1/x + 1/(x + 1) + 1/(x + 2) + 1/(x + 3))", //
-        "(6+22*x+18*x^2+4*x^3)/(x*(1+x)*(2+x)*(3+x))");
+        "(2*(3+11*x+9*x^2+2*x^3))/(x*(1+x)*(2+x)*(3+x))");
   }
 
   @Test

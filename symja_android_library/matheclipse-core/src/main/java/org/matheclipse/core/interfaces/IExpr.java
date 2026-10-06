@@ -1321,8 +1321,8 @@ public interface IExpr
         return F.Times(this, inverse)//
             .eval(engine);
       }
-      return F.Together(F.Times(this, inverse))//
-          .eval(engine);
+      return engine
+          .evaluate(AlgebraUtil.togetherExpr(engine.evaluate(F.Times(this, inverse)), engine));
     }
     return F.Times(this, inverse)//
         .eval(engine);
@@ -7382,8 +7382,8 @@ public interface IExpr
         return F.Times(that, this)//
             .eval(engine);
       }
-      return F.Together(F.Times(this, that)) //
-          .eval(engine);
+      return engine
+          .evaluate(AlgebraUtil.togetherExpr(engine.evaluate(F.Times(this, that)), engine));
     }
     return F.Times(this, that).eval(engine);
   }

@@ -3418,17 +3418,6 @@ public class AlgebraUtil {
    * @return {@link F#NIL} if the product is no such fraction
    */
   public static IExpr reducedFraction(IExpr times, EvalEngine engine) {
-    return reducedFraction(times, false, engine);
-  }
-
-  /**
-   * See {@link #reducedFraction(IExpr, EvalEngine)}.
-   *
-   * @param cancelled the common factors of numerator and denominator are cancelled already, as in
-   *        a result of {@link #togetherExpr(IExpr, EvalEngine)}; the greatest common divisor is
-   *        not computed again then
-   */
-  public static IExpr reducedFraction(IExpr times, boolean cancelled, EvalEngine engine) {
     Optional<IExpr[]> fraction = fractionalParts(times, false);
     if (!fraction.isPresent()) {
       return F.NIL;
@@ -3437,16 +3426,6 @@ public class AlgebraUtil {
     final IExpr denominator = fraction.get()[1];
     if (denominator.isNumber() || !isFractionFree(numerator) || !isFractionFree(denominator)) {
       return F.NIL;
-    }
-    if (!cancelled) {
-      if (times.leafCount() > REDUCED_FRACTION_LEAF_LIMIT) {
-        // the greatest common divisor of large polynomials in many variables may not come back
-        return F.NIL;
-      }
-      IExpr gcd = engine.evalQuiet(F.PolynomialGCD(numerator, denominator));
-      if (!gcd.isNumber() || gcd.isZero()) {
-        return F.NIL;
-      }
     }
     IASTAppendable result = F.TimesAlloc(8);
     // the numeric contents of all factors, which cancel against each other
@@ -3507,8 +3486,24 @@ public class AlgebraUtil {
     return content.isOne() ? value : engine.evaluate(F.Times(content, value));
   }
 
-  /** Above this size a fraction is not tested for a common factor by itself. */
-  private static final int REDUCED_FRACTION_LEAF_LIMIT = 200;
+  /**
+   * Test if the multiplied out denominators of two fractions differ by a numeric factor only. For
+   * a fraction and its {@link #togetherExpr(IExpr, EvalEngine)} form this means that nothing was
+   * cancelled, without computing a greatest common divisor again.
+   */
+  public static boolean isSameDenominator(IExpr fraction1, IExpr fraction2, EvalEngine engine) {
+    IExpr d1 = engine.evaluate(F.Expand(F.Denominator(fraction1)));
+    IExpr d2 = engine.evaluate(F.Expand(F.Denominator(fraction2)));
+    if (d1.equals(d2)) {
+      return true;
+    }
+    if (!d1.isPlus() || !d2.isPlus() || d1.argSize() != d2.argSize()) {
+      return d1.equals(d2.negate());
+    }
+    IExpr[] p1 = primitiveWithPositiveLead((IAST) d1, engine);
+    IExpr[] p2 = primitiveWithPositiveLead((IAST) d2, engine);
+    return p1 != null && p2 != null && p1[1].equals(p2[1]);
+  }
 
   /**
    * <code>{c, q}</code> with <code>sum == c*q</code> for the numeric content <code>c</code>, with

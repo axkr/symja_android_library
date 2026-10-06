@@ -4546,28 +4546,19 @@ public class Algebra {
         }
       }
       if (arg1.isAST()) {
-        IExpr together = AlgebraUtil.togetherExpr(arg1, engine);
-        if (arg1.isTimes() || arg1.isPower()) {
-          // one fraction with nothing to cancel keeps the factors of its denominator
+        IExpr together = engine.evaluate(AlgebraUtil.togetherExpr(arg1, engine));
+        if ((arg1.isTimes() || arg1.isPower()) && !engine.evaluate(F.Denominator(arg1)).isPlus()
+            && AlgebraUtil.isSameDenominator(arg1, together, engine)) {
+          // one fraction with nothing to cancel keeps the factors of its denominator; a
+          // denominator which is one sum has no factors to keep
           IExpr reduced = AlgebraUtil.reducedFraction(arg1, engine);
           if (reduced.isPresent()) {
-            if (engine.evaluate(F.Denominator(arg1)).isPlus()) {
-              // a denominator which is one sum may have been factored or reduced: that result is
-              // brought into the same form, so that Together of a result gives it back
-              together = engine.evaluate(together);
-              if (!together.equals(arg1)) {
-                return together.isTimes() || together.isPower()
-                    ? AlgebraUtil.reducedFraction(together, true, engine).orElse(together)
-                    : together;
-              }
-            }
             return reduced;
           }
         }
         // every other fraction gets the same form as a reduced fraction which is given directly
-        together = engine.evaluate(together);
         if (together.isTimes() || together.isPower()) {
-          return AlgebraUtil.reducedFraction(together, true, engine).orElse(together);
+          return AlgebraUtil.reducedFraction(together, engine).orElse(together);
         }
         return together;
       }
