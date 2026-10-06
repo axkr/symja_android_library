@@ -58,6 +58,11 @@ public class PatternMapTest {
       assertTrue(map.setValue(patterns[i], F.ZZ(i + 1)));
     }
     IExpr substituted = map.substitutePatterns(lhs, F.CEmptySequence);
-    assertEquals("h(1,2,3,4,5,6,7)", substituted.toString());
+    // compared as expressions: the text form depends on the syntax mode other tests switch
+    IExpr[] values = new IExpr[patterns.length];
+    for (int i = 0; i < values.length; i++) {
+      values[i] = F.ZZ(i + 1);
+    }
+    assertEquals(F.ast(values, S.h), substituted);
   }
 }

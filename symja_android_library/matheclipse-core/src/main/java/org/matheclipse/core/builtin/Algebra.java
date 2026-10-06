@@ -54,7 +54,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.AlgebraicCoefficientGCD;
@@ -68,8 +67,8 @@ import org.matheclipse.core.reflection.system.TrigExpand;
 import org.matheclipse.core.visit.VisitorExpr;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.Modular;
-import edu.jas.structure.GcdRingElem;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.structure.GcdRingElem;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
 import edu.jas.ufd.GCDFactory;
@@ -1588,7 +1587,7 @@ public class Algebra {
       IExpr extension = options[1];
       IExpr gaussianIntegers = options[2];
       boolean trig = options[3].isTrue();
-      // WMA: a modulus which is no integer is ignored - Factor(x^2+1, Modulus->a) is 1+x^2
+      // a modulus which is no integer is ignored - Factor(x^2+1, Modulus->a) is 1+x^2
       if (!modulus.isInteger()) {
         modulus = F.C0;
       }
@@ -1679,8 +1678,8 @@ public class Algebra {
             return temp;
           }
         } else if (!options[MODULUS_OPTION].isZero()) {
-          return Factor.factorModulus(S.FactorSquareFree, arg1, eVar, true,
-              options[MODULUS_OPTION], engine);
+          return Factor.factorModulus(S.FactorSquareFree, arg1, eVar, true, options[MODULUS_OPTION],
+              engine);
         } else {
           IExpr expr = F.evalExpandAll(arg1, engine);
           IExpr temp = factorWithOption(ast, expr, eVar.getVarList(), true, options, engine);
@@ -1814,8 +1813,8 @@ public class Algebra {
         IASTAppendable result = F.ListAlloc(factored.argSize() + 1);
         if (factored.isAST() && factored.head() == S.Times) {
           for (IExpr factor : (IAST) factored) {
-            result.append(factor.isPower() ? F.list(factor.base(), factor.exponent())
-                : F.list(factor, F.C1));
+            result.append(
+                factor.isPower() ? F.list(factor.base(), factor.exponent()) : F.list(factor, F.C1));
           }
         } else {
           result.append(F.list(factored, F.C1));
@@ -2377,8 +2376,8 @@ public class Algebra {
       return F.NIL;
     }
 
-    private static <C extends GcdRingElem<C> & Modular> IExpr extendedGCDModulus(
-        JASModular<C> jas, IExpr expr1, IExpr expr2) throws JASConversionException {
+    private static <C extends GcdRingElem<C> & Modular> IExpr extendedGCDModulus(JASModular<C> jas,
+        IExpr expr1, IExpr expr2) throws JASConversionException {
       GenPolynomial<C> poly1 = jas.expr2JAS(expr1);
       GenPolynomial<C> poly2 = jas.expr2JAS(expr2);
       GenPolynomial<C>[] result = poly1.egcd(poly2);
@@ -2590,9 +2589,9 @@ public class Algebra {
     }
 
     /**
-     * The GCD of polynomials with inexact coefficients, as WMA computes it: the coefficients are
-     * rationalized, the exact GCD is taken, made monic in its leading monomial - lexicographic, the
-     * last variable highest - and given back with machine coefficients.
+     * The GCD of polynomials with inexact coefficients: the coefficients are rationalized, the
+     * exact GCD is taken, made monic in its leading monomial - lexicographic, the last variable
+     * highest - and given back with machine coefficients.
      * <code>PolynomialGCD(x+1.5*y, x^2+1.5*x*y)</code> is <code>0.666667*x+1.0*y</code>, and a
      * coefficient without a rational form leaves the constant <code>1.0</code>.
      *
@@ -4137,8 +4136,7 @@ public class Algebra {
         if (!JASModular.isPrimeModulus(option)) {
           return Optional.empty();
         }
-        return quotientRemainder(JASModular.of((IInteger) option, variable.makeList()), arg1,
-            arg2);
+        return quotientRemainder(JASModular.of((IInteger) option, variable.makeList()), arg1, arg2);
       } catch (JASConversionException e) {
         // LOGGER.debug("PolynomialQuotientRemainder.quotientRemainderModInteger() failed", e);
       }
@@ -4548,7 +4546,30 @@ public class Algebra {
         }
       }
       if (arg1.isAST()) {
-        return AlgebraUtil.togetherExpr(arg1, engine);
+        IExpr together = AlgebraUtil.togetherExpr(arg1, engine);
+        if (arg1.isTimes() || arg1.isPower()) {
+          // one fraction with nothing to cancel keeps the factors of its denominator
+          IExpr reduced = AlgebraUtil.reducedFraction(arg1, engine);
+          if (reduced.isPresent()) {
+            if (engine.evaluate(F.Denominator(arg1)).isPlus()) {
+              // a denominator which is one sum may have been factored or reduced: that result is
+              // brought into the same form, so that Together of a result gives it back
+              together = engine.evaluate(together);
+              if (!together.equals(arg1)) {
+                return together.isTimes() || together.isPower()
+                    ? AlgebraUtil.reducedFraction(together, true, engine).orElse(together)
+                    : together;
+              }
+            }
+            return reduced;
+          }
+        }
+        // every other fraction gets the same form as a reduced fraction which is given directly
+        together = engine.evaluate(together);
+        if (together.isTimes() || together.isPower()) {
+          return AlgebraUtil.reducedFraction(together, true, engine).orElse(together);
+        }
+        return together;
       }
       return arg1;
     }
@@ -4652,9 +4673,9 @@ public class Algebra {
    * Reduces integer coefficients of an already-expanded expression modulo {@code modulus}.
    *
    * <p>
-   * First tries a lossless round-trip through {@link JASModular} for pure polynomial
-   * expressions. Falls back to {@link #reduceCoefficients} when JAS conversion fails (e.g. the
-   * expression contains function calls like {@code Sin}, {@code Cos}).
+   * First tries a lossless round-trip through {@link JASModular} for pure polynomial expressions.
+   * Falls back to {@link #reduceCoefficients} when JAS conversion fails (e.g. the expression
+   * contains function calls like {@code Sin}, {@code Cos}).
    *
    * @param expr the expanded expression whose coefficients are to be reduced
    * @param modulus a positive integer modulus (&gt; 0)
@@ -4686,8 +4707,8 @@ public class Algebra {
   }
 
   /**
-   * Print message <code>The value of the option `1` should be a prime number or zero.</code>, if option is
-   * not zero or prime.
+   * Print message <code>The value of the option `1` should be a prime number or zero.</code>, if
+   * option is not zero or prime.
    * 
    * @param option
    * @return <code>true</code> if the &quot;modp&quot; message was printed

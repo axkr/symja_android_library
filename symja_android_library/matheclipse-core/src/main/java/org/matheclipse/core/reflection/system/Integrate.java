@@ -519,10 +519,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     IAST inProgressKey = null;
     try {
       IExpr assumptionOption = option[0];
-      IExpr assumptionExpr = OptionArgs.determineAssumptions(assumptionOption);
+      // The option adds to the assumptions which are in force, as in Solve and Limit: the ones
+      // of an enclosing Assuming() or of $Assumptions, and the ones of the engine.
+      IExpr assumptionExpr = assumptionsInForce(assumptionOption);
       if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
-        IAssumptions assumptions =
-            org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+        IAssumptions assumptions = oldAssumptions != null //
+            ? oldAssumptions.copy().addAssumption(assumptionExpr) //
+            : org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
         if (assumptions != null) {
           engine.setAssumptions(assumptions);
         }
@@ -762,6 +765,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           return result;
         }
         result = integrateSqrtOfLinearQuotient(fx, x, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+        result = integrateStruveH(fx, x, engine);
         if (result.isPresent()) {
           return result;
         }
@@ -1439,6 +1446,60 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    *
    * @return {@link F#NIL} if the integrand is not of this form
    */
+  /**
+   * The value of the <code>Assumptions</code> option together with <code>$Assumptions</code>, as
+   * one expression: the stages for definite integrals read the conditions of convergence from
+   * it.
+   *
+   * @return {@link F#NIL} or <code>True</code> if nothing is assumed
+   */
+  private static IExpr assumptionsInForce(IExpr assumptionOption) {
+    IExpr global = S.$Assumptions.assignedValue();
+    global = global == null ? F.NIL : conjunction(global);
+    if (assumptionOption == S.$Assumptions) {
+      return global;
+    }
+    IExpr option = conjunction(assumptionOption);
+    if (!global.isAST() || global.equals(option) || !option.isAST()) {
+      return option;
+    }
+    return F.And(option, global);
+  }
+
+  /** A list of assumptions, which is the form <code>Assuming</code> keeps them in, as one. */
+  private static IExpr conjunction(IExpr assumptions) {
+    if (assumptions.isList()) {
+      IAST list = (IAST) assumptions;
+      return list.argSize() == 0 ? S.True : list.argSize() == 1 ? list.arg1() : list.apply(S.And);
+    }
+    return assumptions;
+  }
+
+  /**
+   * <code>Integrate(StruveH(1, a*x), x) == 2*x/Pi - StruveH(0, a*x)/a</code> and
+   * <code>Integrate(StruveH(0, a*x), x) ==
+   * a*x^2*HypergeometricPFQ({1,1}, {3/2,3/2,2}, -a^2*x^2/4)/Pi</code>.
+   */
+  private static IExpr integrateStruveH(IAST fx, IExpr x, EvalEngine engine) {
+    if (!fx.isAST(S.StruveH, 3) || !fx.arg2().isPolynomialOfMaxDegree(x, 1)) {
+      return F.NIL;
+    }
+    IExpr a = engine.evaluate(F.Coefficient(fx.arg2(), x, F.C1));
+    if (a.isZero() || !a.isFree(x) || !engine.evaluate(F.Coefficient(fx.arg2(), x, F.C0)).isZero()) {
+      return F.NIL;
+    }
+    if (fx.arg1().isOne()) {
+      return engine.evaluate(F.Subtract(F.Times(F.C2, x, F.Power(S.Pi, F.CN1)),
+          F.Divide(F.StruveH(F.C0, fx.arg2()), a)));
+    }
+    if (fx.arg1().isZero()) {
+      return engine.evaluate(F.Times(a, F.Sqr(x), F.Power(S.Pi, F.CN1),
+          F.HypergeometricPFQ(F.List(F.C1, F.C1), F.List(F.QQ(3, 2), F.QQ(3, 2), F.C2),
+              F.Times(F.CN1D4, F.Sqr(a), F.Sqr(x)))));
+    }
+    return F.NIL;
+  }
+
   private static IExpr integrateSqrtOfLinearQuotient(IAST fx, IExpr x, EvalEngine engine) {
     if (!fx.isSqrt() || !fx.base().isTimes()) {
       return F.NIL;

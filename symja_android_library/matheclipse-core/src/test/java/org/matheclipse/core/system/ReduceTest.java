@@ -1356,7 +1356,7 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "(x==(-y-Sqrt(y^2-4*y^2*z^2))/(2*z)&&z!=0&&y^2-4*y^2*z^2>=0)||(x==(-y+Sqrt(y^2-4*y^\n"
             + "2*z^2))/(2*z)&&z!=0&&y^2-4*y^2*z^2>=0)||(x==0&&y!=0&&z==0)||(y==0&&z==0)");
     check("Reduce(a*x + y == 1 && x + y == 0, {x, y})", //
-        "a!=1&&x==-1/(1-a)&&y==1/(1-a)");
+        "a!=1&&x==1/(-1+a)&&y==1/(1-a)");
     check("Reduce(a*x == b && y == 1, {x, y})", //
         "(a!=0&&x==b/a&&y==1)||(b==0&&a==0&&y==1)");
     // the root `Sqrt(1-y^2)` is real only for `-1<=y<=1`

@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
@@ -225,11 +226,10 @@ public class WL {
           }
           return assoc;
         case WXF_CONSTANTS.String:
+          // the length counts bytes of UTF-8, not characters
           length = parseLength();
-          StringBuilder str = new StringBuilder();
-          for (int i = 0; i < length; i++) {
-            str.append((char) array[position++]);
-          }
+          String str = new String(array, position, length, StandardCharsets.UTF_8);
+          position += length;
           return F.stringx(str);
         case WXF_CONSTANTS.BinaryString:
           length = parseLength();
@@ -467,22 +467,16 @@ public class WL {
     }
 
     private IExpr readSymbol() {
+      // a name is UTF-8 and its length counts bytes: \[Theta] takes two
       int length = parseLength();
-      StringBuilder symbol = new StringBuilder();
-      int contextStart = position;
-      int contextEnd = contextStart;
-      for (int i = 0; i < length; i++) {
-        char ch = (char) array[position++];
-        if (ch == '`') {
-          contextEnd = position;
-        }
-        symbol.append(ch);
-      }
-      String lcSymbolName = symbol.toString();
+      String lcSymbolName = new String(array, position, length, StandardCharsets.UTF_8);
+      position += length;
+      int contextStart = 0;
+      int contextEnd = lcSymbolName.lastIndexOf('`') + 1;
       String contextName = "";
       if (contextEnd > contextStart) {
-        contextName = lcSymbolName.substring(0, contextEnd - contextStart);
-        lcSymbolName = lcSymbolName.substring(contextEnd - contextStart);
+        contextName = lcSymbolName.substring(0, contextEnd);
+        lcSymbolName = lcSymbolName.substring(contextEnd);
       }
       EvalEngine engine = EvalEngine.get();
       if (engine.isRelaxedSyntax()) {
@@ -990,36 +984,33 @@ public class WL {
 
     private void writeString(IExpr arg1) throws IOException {
       IStringX s = (IStringX) arg1;
-      char[] str = s.toString().toCharArray();
-      int size = str.length;
+      // UTF-8, with the length in bytes: one byte per char cut every character above U+00FF down
+      // to its low byte, and \[Theta] crossed a kernel link as U+FFB8
+      byte[] str = s.toString().getBytes(StandardCharsets.UTF_8);
       stream.write(WXF_CONSTANTS.String);
-      stream.write(varintBytes(size));
-      for (int i = 0; i < size; i++) {
-        stream.write(str[i]);
-      }
+      stream.write(varintBytes(str.length));
+      stream.write(str);
     }
 
     private void writeSymbol(IExpr arg1) throws IOException {
       ISymbol s = (ISymbol) arg1;
       Context context = s.getContext();
-      final char[] str;
+      final String str;
       if (s instanceof FormalSymbol) {
         // \[FormalK] and not k, which would read back as Global`k
-        str = ((FormalSymbol) s).wolframSymbolName().toCharArray();
+        str = ((FormalSymbol) s).wolframSymbolName();
       } else if (context == Context.SYSTEM) {
-        str = s.toString().toCharArray();
+        str = s.toString();
       } else {
         // completeContextName(), not getContextName(): a context begun with a relative name knows
         // itself as `Internal` and only its parent chain says which `Internal` it is. Writing the
         // short name puts every package's private context under one name on the wire.
-        str = (context.completeContextName() + s.getSymbolName()).toCharArray();
+        str = context.completeContextName() + s.getSymbolName();
       }
-      int size = str.length;
+      byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
       stream.write(WXF_CONSTANTS.Symbol);
-      stream.write(varintBytes(size));
-      for (int i = 0; i < size; i++) {
-        stream.write(str[i]);
-      }
+      stream.write(varintBytes(bytes.length));
+      stream.write(bytes);
     }
   }
 

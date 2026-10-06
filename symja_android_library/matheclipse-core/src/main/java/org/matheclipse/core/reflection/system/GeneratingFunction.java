@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -302,7 +303,7 @@ public class GeneratingFunction extends AbstractFunctionOptionEvaluator {
    * a factored denominator. Otherwise return <code>result</code> unchanged.
    */
   private static IExpr normalize(IExpr result, IExpr x, EvalEngine engine) {
-    IExpr together = engine.evaluate(F.Together(result));
+    IExpr together = engine.evaluate(AlgebraUtil.togetherExpr(result, engine));
     IExpr numerator = engine.evaluate(F.Numerator(together));
     IExpr denominator = engine.evaluate(F.Denominator(together));
     if (engine.evalTrue(F.PolynomialQ(numerator, x))

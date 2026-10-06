@@ -364,9 +364,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Apart(1/(a*b+a*c),x)", //
         "1/(a*(b+c))");
 
-    // TODO return 1/b - a/(b*(a + b*x))
     check("Apart((x/(a+(b*x))),x)", //
-        "x/(a+b*x)");
+        "1/b-a/(b*(a+b*x))");
+    // one factor with symbolic coefficients in the denominator: the numerator is divided by it
+    check("Apart(x^2/(a+b*x),x)", //
+        "-a/b^2+x/b+a^2/(b^2*(a+b*x))");
+    check("Apart(x^4/(a+b*x)^2,x)", //
+        "(3*a^2)/b^4+(-2*a*x)/b^3+x^2/b^2+a^4/(b^4*(a+b*x)^2)+(-4*a^3)/(b^4*(a+b*x))");
+    check("Together(Apart(x^4/(a+b*x)^2,x)-x^4/(a+b*x)^2)", //
+        "0");
+    check("Apart(x^3/(a+b*x)^3,x)", //
+        "1/b^3-a^3/(b^3*(a+b*x)^3)+(3*a^2)/(b^3*(a+b*x)^2)+(-3*a)/(b^3*(a+b*x))");
+    check("Apart(x/(a+b*x)^2,x)", //
+        "-a/(b*(a+b*x)^2)+1/(b*(a+b*x))");
+    check("Apart(x^3/(a+b*x^2),x)", //
+        "x/b+(-a*x)/(b*(a+b*x^2))");
+    // one term already
+    check("Apart(1/(a+b*x)^2,x)", //
+        "1/(a+b*x)^2");
+    // the size of the terms decides between the expansions of a Rubi rule: these came out in
+    // powers of a+b*x
+    check("Integrate(x^2/(a+b*x),x)", //
+        "(-a*x)/b^2+x^2/(2*b)+(a^2*Log(a+b*x))/b^3");
+    check("Integrate(x^4/(a+b*x)^3,x)", //
+        "(-3*a*x)/b^4+x^2/(2*b^3)-a^4/(2*b^5*(a+b*x)^2)+(4*a^3)/(b^5*(a+b*x))+(6*a^2*Log(a+b*x))/b^\n5");
 
     check("Apart((3*x-8)/((x+1)*(x-5)),x)", //
         "7/(6*(-5+x))+11/(6*(1+x))");
@@ -11596,6 +11617,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSelectCountZeroAndBeyondMachineRange() {
+    // no element is still the container of the argument
+    check("Select(f(1, 2, 4), EvenQ, 0)", //
+        "f()");
+    check("Select(<|a -> 2, b -> 4|>, EvenQ, 0)", //
+        "<||>");
+    check("Select({1, 2, 4}, EvenQ, 0)", //
+        "{}");
+    // a count beyond the machine range limits nothing
+    check("Select({1, 2, 4}, EvenQ, 10^30)", //
+        "{2,4}");
+    check("Discard({1, 2, 4, 6}, EvenQ, 10^30)", //
+        "{1}");
+    check("Select({1, 2, 4, 6}, EvenQ, 2)", //
+        "{2,4}");
+    check("Select({1, 2, 3}, EvenQ, -1)", //
+        "Select({1,2,3},EvenQ,-1)");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //
@@ -15227,7 +15268,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("LerchPhi(2, 3, -1.5)", //
     // "");
     checkNumeric("LerchPhi(z,-2,a)", //
-        "(a^2+z+2*a*z-2*a^2*z+z^2-2*a*z^2+a^2*z^2)/(1-3*z+3*z^2-z^3)");
+        "-(a^2+z+2*a*z-2*a^2*z+z^2-2*a*z^2+a^2*z^2)/(-1+3*z-3*z^2+z^3)");
     checkNumeric("LerchPhi(1/3,-1,2)", //
         "15/4");
     checkNumeric("LerchPhi(0.5,1,2)", //
@@ -29620,9 +29661,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together((x+2*Sqrt(x)+1)/(1+Sqrt(x)))", //
         "1+Sqrt(x)");
     check("Together(-a/(-(b-a*c)))", //
-        "a/(b-a*c)");
+        "-a/(-b+a*c)");
     check("Together(Simplify(Together(-a/(-(b-a*c)))))", //
-        "a/(b-a*c)");
+        "-a/(-b+a*c)");
     check("Together(1/2+I/3 + 3*a^(-1))", //
         "(18+(3+I*2)*a)/(6*a)");
     check("Together(1/2 + 3/a )", //
@@ -29697,7 +29738,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together(a/b + c/d)", //
         "(b*c+a*d)/(b*d)");
     check("Together((-7*a^(-1)*b+1)*(-a^(-1)*b-1)^(-1))", //
-        "(a-7*b)/(-a-b)");
+        "(-a+7*b)/(a+b)");
     check("Together(a*b^(-2)+c*d^(-3))", //
         "(b^2*c+a*d^3)/(b^2*d^3)");
     check("Together(-a*b^(-2)-c*d^(-3))", //

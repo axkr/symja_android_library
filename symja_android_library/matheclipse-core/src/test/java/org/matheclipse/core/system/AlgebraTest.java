@@ -547,6 +547,39 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTogetherKeepsFactoredDenominator() {
+    // a single reduced fraction keeps its factored denominator
+    check("Together((3*p)/(q^2*(p+q*t)))", //
+        "(3*p)/(q^2*(p+q*t))");
+    check("Together((p*t)/(p-t)^3)", //
+        "(p*t)/(p-t)^3");
+    check("Together((u*v+u*w)/(v*w))", //
+        "(u*v+u*w)/(v*w)");
+    // the numeric content is pulled out of a factor
+    check("Together(1/(6*p+9*q*t))", //
+        "1/(3*(2*p+3*q*t))");
+    check("Together((6*t+9)/(12*t))", //
+        "(3+2*t)/(4*t)");
+    // the leading term of every factor of the denominator is positive
+    check("Together(1/((-2-m)*m))", //
+        "-1/(m*(2+m))");
+    check("Together(p/(q-p*r))", //
+        "-p/(-q+p*r)");
+    check("Together(1/(3-t-t^2))", //
+        "-1/(-3+t+t^2)");
+    // of the terms of the same degree the lexicographically greatest one decides
+    check("Together(1/(-q*r+p*s))", //
+        "1/(-q*r+p*s)");
+    check("Together(1/(q*r-p*s))", //
+        "-1/(-q*r+p*s)");
+    // the result is a fixed point
+    check("Together(Together(1/t+1/(u-t)))", //
+        "-u/(t*(t-u))");
+    check("Together(1/t+1/(u-t))", //
+        "-u/(t*(t-u))");
+  }
+
+  @Test
   public void testTogether() {
     // regression: JAS' GenPolynomial.divide asserts its dividend is in descending leading-exponent
     // order and threw an AssertionError (an Error, so it escaped the RuntimeException guard and
@@ -577,7 +610,7 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
     check("Together(1/x + 1/y)", //
         "(x+y)/(x*y)");
     check("Together((3 - 5*x)/(2 - 2*x))", //
-        "(3-5*x)/(2-2*x)");
+        "(-3+5*x)/(2*(-1+x))");
     check("Together(1/3 + I/3)", //
         "1/3+I*1/3");
     check("Together((x^2 + x)/(x^2 - 1))", //

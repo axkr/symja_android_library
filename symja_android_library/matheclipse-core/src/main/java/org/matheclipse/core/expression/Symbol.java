@@ -454,7 +454,18 @@ public class Symbol implements ISymbol, Serializable {
     off.setIgnoreNewLine(true);
     IAST list = definition();
     for (int i = 1; i < list.size(); i++) {
-      if (!off.convert(buf, list.getRule(i))) {
+      IExpr rule = list.getRule(i);
+      if (rule.isAST3() && (rule.head() == S.TagSet || rule.head() == S.TagSetDelayed)) {
+        // an up-value with its tag: tag /: lhs := rhs
+        IAST tagRule = (IAST) rule;
+        if (!off.convert(buf, tagRule.arg1())) {
+          return "ERROR-IN-OUTPUTFORM";
+        }
+        buf.append(" /: ");
+        rule = F.binaryAST2(rule.head() == S.TagSet ? S.Set : S.SetDelayed, tagRule.arg2(),
+            tagRule.arg3());
+      }
+      if (!off.convert(buf, rule)) {
         return "ERROR-IN-OUTPUTFORM";
       }
       if (i < list.size() - 1) {

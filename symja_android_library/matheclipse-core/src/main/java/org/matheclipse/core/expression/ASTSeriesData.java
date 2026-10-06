@@ -690,6 +690,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
     } else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
       result = new ASTSeriesData(x, x0, F.list(function), 0, n + 1, 1);
+    } else if (function.isAST2() && n >= 0 && function.first().isInteger()
+        && (result = specialFunctionSeries((IAST) function, x, x0, n, direction, engine)) != null) {
+      // from the power series of the function: its derivatives at 0 are no closed forms
     } else if (function.isAST1() && n >= 0 && !function.first().isFree(x) && (result =
         logarithmicBranchSeries((IAST) function, x, x0, n, direction, engine)) != null) {
       // expanded at a logarithmic branch point of the argument
@@ -825,6 +828,95 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         : engine.evaluate(F.Log(F.Times(c, F.Power(w, r))));
     result.setCoeff(0, engine.evaluate(F.Plus(result.coefficient(0), logOfLeadingTerm)));
     return result;
+  }
+
+  /**
+   * The series at <code>0</code> of <code>StruveH(m, x)</code> for an integer
+   * <code>m &gt;= 0</code>, and of <code>ExpIntegralE(m, x)</code> for an integer
+   * <code>m &gt;= 1</code>:
+   *
+   * <pre>
+   * StruveH(m, x) == Sum((-1)^k*(x/2)^(2*k+m+1)/(Gamma(k+3/2)*Gamma(k+m+3/2)), {k,0,Infinity})
+   * ExpIntegralE(m, x) == (-x)^(m-1)/(m-1)!*(PolyGamma(0,m)-Log(x))
+   *                       - Sum((-x)^k/(k!*(1-m+k)), {k,0,Infinity}, k != m-1)
+   * </pre>
+   *
+   * @return <code>null</code> for another function
+   */
+  private static ASTSeriesData specialFunctionSeries(IAST function, IExpr x, IExpr x0, int n,
+      int direction, EvalEngine engine) {
+    final IExpr argument = function.second();
+    if (argument.equals(x)) {
+      return x0.isZero() ? specialFunctionSeriesAtZero(function, x, n, engine) : null;
+    }
+    if (argument.isFree(x) || !engine.evalQuiet(F.subst(argument, x, x0)).isZero()) {
+      return null;
+    }
+    ASTSeriesData inner = seriesDataRecursive(argument, x, x0, n, direction, engine);
+    if (inner == null || inner.minExponent() <= 0 && !inner.coefficient(0).isZero()) {
+      return null;
+    }
+    final int m = function.first().toIntDefault();
+    if (function.isAST(S.ExpIntegralE, 3) && m >= 1 && m < 1000) {
+      // ExpIntegralE(m, g(x)) with g -> 0: the terms of the power series in g, of which the one
+      // of the order m-1 has the logarithm of g. A term g^k is of the order k at least, if g
+      // vanishes of the order 1.
+      if (leadingIndex(inner) < inner.puiseuxDenominator()) {
+        return null;
+      }
+      IASTAppendable sum = F.PlusAlloc(n + 2);
+      for (int k = 0; k <= n; k++) {
+        IExpr power = F.Power(argument, F.ZZ(k));
+        if (k == m - 1) {
+          sum.append(F.Times(F.Power(F.CN1, F.ZZ(k)), F.Power(F.Factorial(F.ZZ(k)), F.CN1), power,
+              F.Subtract(F.PolyGamma(F.C0, F.ZZ(m)), F.Log(argument))));
+        } else {
+          sum.append(F.Times(F.Power(F.CN1, F.ZZ(k + 1)),
+              F.Power(F.Times(F.Factorial(F.ZZ(k)), F.ZZ(1 - m + k)), F.CN1), power));
+        }
+      }
+      return seriesDataRecursive(engine.evaluate(sum), x, x0, n, direction, engine);
+    }
+    if (!function.isAST(S.StruveH, 3)) {
+      return null;
+    }
+    // StruveH(m, g(x)) with g -> 0: the power series with the series of g in it
+    ISymbol y = F.Dummy("y");
+    ASTSeriesData outer = specialFunctionSeriesAtZero(function.setAtCopy(2, y), y,
+        Math.max(n, 1) * inner.puiseuxDenominator(), engine);
+    return outer == null ? null : outer.compose(inner);
+  }
+
+  private static ASTSeriesData specialFunctionSeriesAtZero(IAST function, IExpr x, int n,
+      EvalEngine engine) {
+    final int m = function.first().toIntDefault();
+    if (function.isAST(S.StruveH, 3) && m >= 0 && m < 1000) {
+      ASTSeriesData series = new ASTSeriesData(x, F.C0, 0, n + 1, 1);
+      for (int k = 0; 2 * k + m + 1 <= n; k++) {
+        final int power = 2 * k + m + 1;
+        IExpr coefficient = F.Times(F.Power(F.CN1, F.ZZ(k)), F.Power(F.C2, F.ZZ(-power)),
+            F.Power(F.Times(F.Gamma(F.QQ(2 * k + 3, 2)), F.Gamma(F.QQ(2 * (k + m) + 3, 2))),
+                F.CN1));
+        series.setCoeff(power, engine.evaluate(coefficient));
+      }
+      return series;
+    }
+    if (function.isAST(S.ExpIntegralE, 3) && m >= 1 && m < 1000) {
+      ASTSeriesData series = new ASTSeriesData(x, F.C0, 0, n + 1, 1);
+      for (int k = 0; k <= n; k++) {
+        IExpr coefficient;
+        if (k == m - 1) {
+          coefficient = F.Times(F.Power(F.CN1, F.ZZ(k)), F.Power(F.Factorial(F.ZZ(k)), F.CN1),
+              F.Subtract(F.PolyGamma(F.C0, F.ZZ(m)), F.Log(x)));
+        } else {
+          coefficient = F.Times(F.Power(F.CN1, F.ZZ(k + 1)),
+              F.Power(F.Times(F.Factorial(F.ZZ(k)), F.ZZ(1 - m + k)), F.CN1));
+        }
+        series.setCoeff(k, engine.evaluate(coefficient));
+      }
+      return series;
+    }
+    return null;
   }
 
   /** Index of the first non-vanishing coefficient, or {@link Integer#MAX_VALUE}. */

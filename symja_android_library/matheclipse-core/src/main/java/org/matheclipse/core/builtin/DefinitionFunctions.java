@@ -293,6 +293,17 @@ public class DefinitionFunctions {
     }
     IAST list = (IAST) rules;
     for (int i = 1; i < list.size(); i++) {
+      // all of the list is tested before a definition is changed
+      IExpr lhs = leftHandSideOf(list.get(i));
+      if (lhs.isNIL() || !(lhs.isSymbol() || lhs.isAST())) {
+        return false;
+      }
+    }
+    if (upRules && symbol.getRulesData() != null) {
+      // the new list replaces the up-values, and its order is the order of the rules
+      symbol.getRulesData().clearUpRules();
+    }
+    for (int i = 1; i < list.size(); i++) {
       IExpr rule = list.get(i);
       if (!rule.isRuleAST()) {
         return false;

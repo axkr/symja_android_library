@@ -181,8 +181,17 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     // Exclusions -> Automatic: where neighbouring samples jump the function is discontinuous - a
     // branch cut, a step - and the surface is left open there rather than stitched across it.
     boolean[][] cut = null;
+    // the samples as they were before a jump took any of them, and the grid lines a jump crosses:
+    // what the cells along the cut are redrawn from further down
+    double[][] full = null;
+    boolean[][] jumpU = new boolean[nx][ny];
+    boolean[][] jumpV = new boolean[nx][ny];
     if (options[Plot3DTools.X_EXCLUSIONS] == S.Automatic) {
-      cut = detectJumps(z, nx, ny);
+      full = new double[nx][];
+      for (int i = 0; i < nx; i++) {
+        full[i] = z[i].clone();
+      }
+      cut = detectJumps(z, nx, ny, jumpU, jumpV);
       for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++) {
           if (cut[i][j]) {
@@ -281,8 +290,33 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         meshFunctionSegments(builder, grid, options[Plot3DTools.X_MESH_FUNCTIONS],
             options[X_MESH], engine),
         options[Plot3DTools.X_MESH_STYLE]);
+    // A masked grid can only drop whole cells, which leaves the two lips of a cut as staircases a
+    // cell apart. The cells along the cut are drawn here instead, each sheet up to where the jump
+    // really is, so the lips are as smooth as the cut.
+    IAST smoothRim = F.NIL;
+    double[][][] outline = grid;
+    if (cut != null && region == null) {
+      double[][][] whole = new double[nx][ny][];
+      for (int i = 0; i < nx; i++) {
+        for (int j = 0; j < ny; j++) {
+          double value = full[i][j];
+          if (grid[i][j] != null) {
+            whole[i][j] = grid[i][j];
+          } else if (cut[i][j] && Double.isFinite(value)
+              && !(clipToNothing && (value < zMin || value > zMax))) {
+            whole[i][j] = new double[] {xMinD + i * xStep, yMinD + j * yStep,
+                Math.max(zMin, Math.min(zMax, value))};
+          }
+        }
+      }
+      smoothRim = new JumpPatcher(builder, whole, cut, jumpU, jumpV, hbn, colorMap, zMin, zMax)
+          .patch();
+      // the outline is the rim of the plot, not the lips of the cut
+      outline = whole;
+    }
     IExpr complex =
-        Plot3DTools.withBoundary(builder, grid, options[Plot3DTools.X_BOUNDARY_STYLE], true);
+        Plot3DTools.withBoundary(builder, outline, options[Plot3DTools.X_BOUNDARY_STYLE], true,
+            outline == grid ? null : jumpU, outline == grid ? null : jumpV);
 
     if (complex.isNIL()) {
       return complex;
@@ -298,7 +332,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     IExpr exclusionsStyle =
         options[Plot3DTools.indexOf(Plot3DTools.surfacePlot(), S.ExclusionsStyle)];
     if (cut != null && exclusionsStyle.isList2() && !exclusionsStyle.second().isNone()) {
-      IAST rim = exclusionRim(grid, cut, nx, ny);
+      IAST rim = smoothRim.isPresent() ? smoothRim : exclusionRim(grid, cut, nx, ny);
       if (rim.argSize() > 0) {
         decorated.append(exclusionsStyle.second());
         decorated.append(rim);
@@ -311,8 +345,12 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
    * The samples on the far side of a jump: neighbouring values that differ by more than 30% of the
    * spread of the data (from its 5th to its 95th percentile) and by more than four times the
    * differences next to them along the same line, which is what tells a jump from a steep slope.
+   *
+   * @param jumpU set where the jump lies between sample {@code (i, j)} and {@code (i + 1, j)}
+   * @param jumpV set where it lies between {@code (i, j)} and {@code (i, j + 1)}
    */
-  private static boolean[][] detectJumps(double[][] z, int nx, int ny) {
+  private static boolean[][] detectJumps(double[][] z, int nx, int ny, boolean[][] jumpU,
+      boolean[][] jumpV) {
     boolean[][] cut = new boolean[nx][ny];
     int count = 0;
     for (int i = 0; i < nx; i++) {
@@ -346,6 +384,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         if (d > threshold && d > 4.0 * Math.max(difference(z, i - 1, j, i, j, nx, ny),
             difference(z, i + 1, j, i + 2, j, nx, ny))) {
           cut[i + 1][j] = true;
+          jumpU[i][j] = true;
         }
       }
     }
@@ -355,6 +394,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
         if (d > threshold && d > 4.0 * Math.max(difference(z, i, j - 1, i, j, nx, ny),
             difference(z, i, j + 1, i, j + 2, nx, ny))) {
           cut[i][j + 1] = true;
+          jumpV[i][j] = true;
         }
       }
     }
@@ -401,6 +441,188 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
       return false;
     }
     return cut[i][j] || cut[i + 1][j] || cut[i][j + 1] || cut[i + 1][j + 1];
+  }
+
+  /**
+   * Draws the cells a jump runs through: every sheet of the surface up to the jump itself.
+   *
+   * <p>
+   * Where the jump crosses a grid line it is placed by halving the line - a trial point belongs to
+   * the end whose height it is nearer to - which also gives the height of the surface on either
+   * side of it. A cell is then the polygons its corners fall into once the crossed lines are
+   * taken away, each closed along the jump by the two crossings that bound it.
+   */
+  private static final class JumpPatcher {
+    private static final int ITERATIONS = 14;
+
+    private final GraphicsComplexBuilder builder;
+    private final double[][][] whole;
+    private final boolean[][] cut;
+    private final boolean[][] jumpU;
+    private final boolean[][] jumpV;
+    private final BinaryNumerical function;
+    private final PlotColorFunction colorMap;
+    private final double zMin;
+    private final double zMax;
+    private final java.util.Map<Long, double[][]> crossings = new java.util.HashMap<>();
+    private final IASTAppendable rim = F.ListAlloc();
+
+    JumpPatcher(GraphicsComplexBuilder builder, double[][][] whole, boolean[][] cut,
+        boolean[][] jumpU, boolean[][] jumpV, BinaryNumerical function, PlotColorFunction colorMap,
+        double zMin, double zMax) {
+      this.builder = builder;
+      this.whole = whole;
+      this.cut = cut;
+      this.jumpU = jumpU;
+      this.jumpV = jumpV;
+      this.function = function;
+      this.colorMap = colorMap;
+      this.zMin = zMin;
+      this.zMax = zMax;
+    }
+
+    /** @return the lines along the cut, one per polygon that ends on it */
+    IAST patch() {
+      int nx = whole.length;
+      int ny = whole[0].length;
+      for (int i = 0; i + 1 < nx; i++) {
+        for (int j = 0; j + 1 < ny; j++) {
+          int[] ci = {i, i + 1, i + 1, i};
+          int[] cj = {j, j, j + 1, j + 1};
+          // the lines of the cell in the order its corners are walked
+          boolean[] jump = {jumpU[i][j], jumpV[i + 1][j], jumpU[i][j + 1], jumpV[i][j]};
+          boolean complete = true;
+          boolean opened = jump[0] || jump[1] || jump[2] || jump[3];
+          for (int k = 0; k < 4; k++) {
+            complete &= whole[ci[k]][cj[k]] != null;
+            opened |= cut[ci[k]][cj[k]];
+          }
+          if (!complete || !opened) {
+            continue; // nothing to draw, or drawn already as a whole cell
+          }
+          int jumps = (jump[0] ? 1 : 0) + (jump[1] ? 1 : 0) + (jump[2] ? 1 : 0) + (jump[3] ? 1 : 0);
+          if (jumps == 0) {
+            polygon(false, whole[ci[0]][cj[0]], whole[ci[1]][cj[1]], whole[ci[2]][cj[2]],
+                whole[ci[3]][cj[3]]);
+          } else if (jumps == 1) {
+            // the cut ends inside the cell: it is opened along the crossed line only, and split
+            // at the middle of the line opposite so that neither half spans the jump
+            int s = jump[0] ? 0 : jump[1] ? 1 : jump[2] ? 2 : 3;
+            double[] a = whole[ci[(s + 2) % 4]][cj[(s + 2) % 4]];
+            double[] b = whole[ci[(s + 3) % 4]][cj[(s + 3) % 4]];
+            double[] middle = {(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2};
+            polygon(false, side(ci, cj, s, false), whole[ci[(s + 1) % 4]][cj[(s + 1) % 4]], a,
+                middle);
+            polygon(false, middle, b, whole[ci[s]][cj[s]], side(ci, cj, s, true));
+          } else {
+            for (int s = 0; s < 4; s++) {
+              if (!jump[s]) {
+                continue;
+              }
+              // the corners after line s, up to the next line the jump crosses
+              java.util.List<double[]> points = new java.util.ArrayList<>(5);
+              points.add(side(ci, cj, s, false));
+              int k = (s + 1) % 4;
+              points.add(whole[ci[k]][cj[k]]);
+              while (!jump[k]) {
+                k = (k + 1) % 4;
+                points.add(whole[ci[k]][cj[k]]);
+              }
+              points.add(side(ci, cj, k, true));
+              polygon(true, points.toArray(new double[0][]));
+            }
+          }
+        }
+      }
+      return rim;
+    }
+
+    /**
+     * The surface at the jump on line {@code s} of a cell, on the side of the corner the line
+     * starts at ({@code atStart}) or of the one it ends at.
+     */
+    private double[] side(int[] ci, int[] cj, int s, boolean atStart) {
+      int i1 = ci[s];
+      int j1 = cj[s];
+      int i2 = ci[(s + 1) % 4];
+      int j2 = cj[(s + 1) % 4];
+      // one crossing per grid line, whichever of its two cells asks, so the cells meet along it
+      boolean forward = i1 < i2 || j1 < j2;
+      int li = forward ? i1 : i2;
+      int lj = forward ? j1 : j2;
+      long key = (((long) li) << 32 | lj) * 2 + (i1 == i2 ? 1 : 0);
+      double[][] both = crossings.get(key);
+      if (both == null) {
+        both = locate(whole[li][lj], whole[forward ? i2 : i1][forward ? j2 : j1]);
+        crossings.put(key, both);
+      }
+      return both[atStart == forward ? 0 : 1];
+    }
+
+    /** The jump between two samples: the point of the surface next to it on either side. */
+    private double[][] locate(double[] a, double[] b) {
+      double lo = 0.0;
+      double hi = 1.0;
+      double za = a[2];
+      double zb = b[2];
+      for (int k = 0; k < ITERATIONS; k++) {
+        double mid = (lo + hi) / 2.0;
+        double value;
+        try {
+          value = function.value(a[0] + mid * (b[0] - a[0]), a[1] + mid * (b[1] - a[1]));
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          break;
+        }
+        if (!Double.isFinite(value)) {
+          break;
+        }
+        value = Math.max(zMin, Math.min(zMax, value));
+        if (Math.abs(value - za) <= Math.abs(value - zb)) {
+          lo = mid;
+          za = value;
+        } else {
+          hi = mid;
+          zb = value;
+        }
+      }
+      double t = (lo + hi) / 2.0;
+      double x = a[0] + t * (b[0] - a[0]);
+      double y = a[1] + t * (b[1] - a[1]);
+      return new double[][] {{x, y, za}, {x, y, zb}};
+    }
+
+    private void polygon(boolean endsOnCut, double[]... points) {
+      // Newell's normal of the polygon, for the vertices the surface does not have yet; the cell
+      // is walked counter-clockwise seen from above, as every cell of the surface is
+      double nx = 0.0;
+      double ny = 0.0;
+      double nz = 0.0;
+      for (int k = 0; k < points.length; k++) {
+        double[] p = points[k];
+        double[] q = points[(k + 1) % points.length];
+        nx += (p[1] - q[1]) * (p[2] + q[2]);
+        ny += (p[2] - q[2]) * (p[0] + q[0]);
+        nz += (p[0] - q[0]) * (p[1] + q[1]);
+      }
+      double length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+      double[] normal = length > 1e-12 ? new double[] {nx / length, ny / length, nz / length} : null;
+      int[] face = new int[points.length];
+      int count = 0;
+      for (double[] p : points) {
+        int vertex = builder.addVertex(p[0], p[1], p[2], normal,
+            colorMap == null ? null : colorMap.color(p[0], p[1], p[2]));
+        if (count == 0 || (face[count - 1] != vertex && face[0] != vertex)) {
+          face[count++] = vertex;
+        }
+      }
+      if (count >= 3) {
+        builder.addPolygon(count == face.length ? face : java.util.Arrays.copyOf(face, count));
+      }
+      if (endsOnCut) {
+        rim.append(segment(points[points.length - 1], points[0]));
+      }
+    }
   }
 
   private static IAST segment(double[] p, double[] q) {

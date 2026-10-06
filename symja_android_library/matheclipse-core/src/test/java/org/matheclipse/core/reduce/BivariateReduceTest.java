@@ -33,8 +33,8 @@ public class BivariateReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(x^2*y<1 && x*y>-1, {x,y}, Reals)", //
         "(x<=-1&&y<1/x^2)||(x>-1&&x<0&&y<-1/x)||x==0||(x>0&&y>-1/x&&y<1/x^2)");
     check("Reduce((x^2-2)*y>1, {x,y}, Reals)", //
-        "(x<-Sqrt(2)&&y>-1/(2-x^2))||(x>-Sqrt(2)&&x<Sqrt(2)&&y<-1/(2-x^2))||(x>Sqrt(2)&&y>-\n" //
-            + "1/(2-x^2))");
+        "(x<-Sqrt(2)&&y>1/(-2+x^2))||(x>-Sqrt(2)&&x<Sqrt(2)&&y<1/(-2+x^2))||(x>Sqrt(2)&&y>1/(-\n" //
+            + "2+x^2))");
   }
 
   @Test
@@ -47,9 +47,9 @@ public class BivariateReduceTest extends ExprEvaluatorTestCase {
   public void testDenominators() {
     // the poles are no solutions, and the second variable is the one which is solved for
     check("Reduce(1/x+1/y==1 && x>0, {x,y}, Reals)", //
-        "(x>0&&x<1&&y==-x/(1-x))||(x>1&&y==-x/(1-x))");
+        "(x>0&&x<1&&y==x/(-1+x))||(x>1&&y==x/(-1+x))");
     check("Reduce(1/x+1/y==1, {x,y}, Reals)", //
-        "(x<0&&y==-x/(1-x))||(x>0&&x<1&&y==-x/(1-x))||(x>1&&y==-x/(1-x))");
+        "(x<0&&y==x/(-1+x))||(x>0&&x<1&&y==x/(-1+x))||(x>1&&y==x/(-1+x))");
     check("Reduce(x/y==2, {x,y}, Reals)", //
         "(x<0&&y==x/2)||(x>0&&y==x/2)");
     check("Reduce(1/(x-y)>0, {x,y}, Reals)", //

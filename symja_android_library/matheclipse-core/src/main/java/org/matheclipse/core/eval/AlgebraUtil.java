@@ -2871,7 +2871,53 @@ public class AlgebraUtil {
       // The iterative method no longer requires a 'count' recursion tracker.
       return AlgebraUtil.partialFractionDecomposition(parts[0], temp, variable, engine);
     }
-    return F.NIL;
+    return singleFactorApart(parts[0], temp, variable, engine);
+  }
+
+  /**
+   * The partial fractions of <code>numerator/d^k</code> for a denominator which is one factor
+   * <code>d</code> or a power of it, with coefficients which are symbols:
+   * <code>x^2/(a+b*x)</code> is <code>-a/b^2+x/b+a^2/(b^2*(a+b*x))</code>. The numerator is
+   * divided by <code>d</code> again and again; the remainders are the numerators of
+   * <code>1/d^k, 1/d^(k-1), ...</code> and the last quotient is the polynomial part.
+   *
+   * @return {@link F#NIL} if the fraction is one such term already
+   */
+  private static IExpr singleFactorApart(IExpr numerator, IExpr denominator, IExpr variable,
+      EvalEngine engine) {
+    IExpr d = denominator;
+    int k = 1;
+    if (denominator.isPower() && denominator.exponent().isInteger()
+        && denominator.exponent().isPositive()) {
+      d = denominator.base();
+      k = denominator.exponent().toIntDefault();
+    }
+    IExpr quotient = F.evalExpandAll(numerator, engine);
+    if (k < 1 || k > 64 || d.isFree(variable) || !d.isPolynomial(variable)
+        || !quotient.isPolynomial(variable)) {
+      return F.NIL;
+    }
+    final IExpr divisor = F.evalExpandAll(d, engine);
+    IASTAppendable result = F.PlusAlloc(k + 1);
+    for (int j = k; j >= 1 && !quotient.isZero(); j--) {
+      IExpr division =
+          engine.evalQuiet(F.PolynomialQuotientRemainder(quotient, divisor, variable));
+      if (!division.isList2()) {
+        return F.NIL;
+      }
+      IExpr remainder = division.second();
+      quotient = division.first();
+      if (!remainder.isZero()) {
+        result.append(F.Times(remainder, F.Power(d, F.ZZ(-j))));
+      }
+    }
+    if (quotient.isZero() && result.argSize() <= 1) {
+      // one term: the fraction as it was given
+      return F.NIL;
+    }
+    result.append(quotient);
+    IExpr sum = engine.evaluate(result);
+    return sum.isIndeterminate() || !sum.isSpecialsFree() ? F.NIL : sum;
   }
 
   public static IExpr polynomialTaylorSeries(IExpr[] parts, IExpr x, IExpr x0, int n,
@@ -3354,6 +3400,229 @@ public class AlgebraUtil {
       }
     }
     return reduceFactorConstant(arg1, engine);
+  }
+
+  /**
+   * <code>Together</code> of a product which is one fraction of two polynomial expressions already
+   * - no fraction inside of its numerator or its denominator - and has nothing to cancel. The
+   * factors of the denominator stay as they are: multiplying <code>b^4*(a+b*x)</code> out would
+   * only make the expression larger. Each factor which is a sum gets its numeric content taken
+   * out and the sign of its leading term made positive, <code>1/((-1-n)*n)</code> is
+   * <code>-1/(n*(1+n))</code>; the sign goes to a factor of the numerator whose leading term is
+   * negative, if there is one.
+   *
+   * <p>
+   * This is the form of the function <code>Together</code>. {@link #togetherExpr(IExpr, EvalEngine)},
+   * which the simplifier works with, multiplies the denominator out as before.
+   *
+   * @return {@link F#NIL} if the product is no such fraction
+   */
+  public static IExpr reducedFraction(IExpr times, EvalEngine engine) {
+    return reducedFraction(times, false, engine);
+  }
+
+  /**
+   * See {@link #reducedFraction(IExpr, EvalEngine)}.
+   *
+   * @param cancelled the common factors of numerator and denominator are cancelled already, as in
+   *        a result of {@link #togetherExpr(IExpr, EvalEngine)}; the greatest common divisor is
+   *        not computed again then
+   */
+  public static IExpr reducedFraction(IExpr times, boolean cancelled, EvalEngine engine) {
+    Optional<IExpr[]> fraction = fractionalParts(times, false);
+    if (!fraction.isPresent()) {
+      return F.NIL;
+    }
+    final IExpr numerator = fraction.get()[0];
+    final IExpr denominator = fraction.get()[1];
+    if (denominator.isNumber() || !isFractionFree(numerator) || !isFractionFree(denominator)) {
+      return F.NIL;
+    }
+    if (!cancelled) {
+      if (times.leafCount() > REDUCED_FRACTION_LEAF_LIMIT) {
+        // the greatest common divisor of large polynomials in many variables may not come back
+        return F.NIL;
+      }
+      IExpr gcd = engine.evalQuiet(F.PolynomialGCD(numerator, denominator));
+      if (!gcd.isNumber() || gcd.isZero()) {
+        return F.NIL;
+      }
+    }
+    IASTAppendable result = F.TimesAlloc(8);
+    // the numeric contents of all factors, which cancel against each other
+    IExpr content = F.C1;
+    boolean negative = false;
+    IAST denominatorFactors = denominator.isTimes() ? (IAST) denominator : F.Times(denominator);
+    for (int i = 1; i <= denominatorFactors.argSize(); i++) {
+      IExpr factor = denominatorFactors.get(i);
+      IExpr base = factor.isPower() ? factor.base() : factor;
+      IExpr exponent = factor.isPower() ? factor.exponent() : F.C1;
+      if (!base.isPlus()) {
+        result.append(F.Power(factor, F.CN1));
+        continue;
+      }
+      IExpr[] normal = primitiveWithPositiveLead((IAST) base, engine);
+      if (normal == null) {
+        return F.NIL;
+      }
+      if (normal[0].isNegative()) {
+        if (exponent.isOdd()) {
+          negative = !negative;
+        } else if (!exponent.isEven()) {
+          return F.NIL;
+        }
+        normal[0] = normal[0].negate();
+      }
+      content = content.times(normal[0].power(exponent.negate()));
+      result.append(F.Power(normal[1], exponent.negate()));
+    }
+    IAST numeratorFactors = numerator.isTimes() ? (IAST) numerator : F.Times(numerator);
+    for (int i = 1; i <= numeratorFactors.argSize(); i++) {
+      IExpr factor = numeratorFactors.get(i);
+      if (factor.isPlus()) {
+        IExpr[] normal = primitiveWithPositiveLead((IAST) factor, engine);
+        if (normal != null) {
+          if (normal[0].isNegative() && negative) {
+            // the sign of the denominator goes into this factor
+            normal[0] = normal[0].negate();
+            negative = false;
+          } else if (normal[0].isNegative()) {
+            // a sum in the numerator keeps its own signs
+            normal[0] = normal[0].negate();
+            normal[1] = engine.evaluate(F.Distribute(F.Times(F.CN1, normal[1])));
+          }
+          content = content.times(normal[0]);
+          result.append(normal[1]);
+          continue;
+        }
+      }
+      result.append(factor);
+    }
+    if (negative) {
+      content = content.negate();
+    }
+    // a number times a sum is multiplied out by the evaluator: the content of the numerator
+    // which is left goes back into one of its sums
+    IExpr value = engine.evaluate(result);
+    return content.isOne() ? value : engine.evaluate(F.Times(content, value));
+  }
+
+  /** Above this size a fraction is not tested for a common factor by itself. */
+  private static final int REDUCED_FRACTION_LEAF_LIMIT = 200;
+
+  /**
+   * <code>{c, q}</code> with <code>sum == c*q</code> for the numeric content <code>c</code>, with
+   * the sign of the leading term of <code>sum</code>: the term of the highest total degree, and
+   * of several of them the lexicographically greatest one.
+   *
+   * @return <code>null</code> if the content is not found
+   */
+  private static IExpr[] primitiveWithPositiveLead(IAST sum, EvalEngine engine) {
+    IExpr list = engine.evalQuiet(F.unaryAST1(S.FactorTermsList, sum));
+    if (!list.isList2() || !list.first().isRational() || list.first().isZero()) {
+      return null;
+    }
+    IExpr content = list.first();
+    IExpr primitive = list.second();
+    if (!primitive.isPlus()) {
+      return null;
+    }
+    IAST terms = (IAST) primitive;
+    int best = -1;
+    java.util.TreeMap<IExpr, Integer> bestExponents = null;
+    boolean leadNegative = false;
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      int degree = totalDegree(term);
+      if (degree < best) {
+        continue;
+      }
+      java.util.TreeMap<IExpr, Integer> exponents = new java.util.TreeMap<>();
+      collectExponents(term, 1, exponents);
+      if (degree > best || isLexicographicallyGreater(exponents, bestExponents)) {
+        best = degree;
+        bestExponents = exponents;
+        leadNegative = term.isNegative() || (term.isTimes() && term.first().isNegative());
+      }
+    }
+    // the content with the sign of the leading term of the sum itself
+    boolean contentNegative = content.isNegative();
+    if (leadNegative) {
+      primitive = engine.evaluate(F.Distribute(F.Times(F.CN1, primitive)));
+      contentNegative = !contentNegative;
+    }
+    IExpr magnitude = content.isNegative() ? content.negate() : content;
+    return new IExpr[] {contentNegative ? magnitude.negate() : magnitude, primitive};
+  }
+
+  /** The exponent of every non-numeric factor of a product. */
+  private static void collectExponents(IExpr term, int power, java.util.Map<IExpr, Integer> map) {
+    if (term.isNumber()) {
+      return;
+    }
+    if (term.isTimes()) {
+      for (int i = 1; i <= ((IAST) term).argSize(); i++) {
+        collectExponents(((IAST) term).get(i), power, map);
+      }
+      return;
+    }
+    if (term.isPower() && term.exponent().isInteger() && term.exponent().isPositive()) {
+      int n = term.exponent().toIntDefault();
+      if (n > 0) {
+        collectExponents(term.base(), power * n, map);
+        return;
+      }
+    }
+    map.merge(term, power, Integer::sum);
+  }
+
+  /**
+   * Compare two terms of the same total degree: the higher exponent of the first factor, in
+   * canonical order, in which the terms differ.
+   */
+  private static boolean isLexicographicallyGreater(java.util.TreeMap<IExpr, Integer> a,
+      java.util.TreeMap<IExpr, Integer> b) {
+    java.util.TreeSet<IExpr> keys = new java.util.TreeSet<>(a.keySet());
+    keys.addAll(b.keySet());
+    for (IExpr key : keys) {
+      int x = a.getOrDefault(key, 0);
+      int y = b.getOrDefault(key, 0);
+      if (x != y) {
+        return x > y;
+      }
+    }
+    return false;
+  }
+
+  /** The sum of the exponents of the symbols of a product. */
+  private static int totalDegree(IExpr term) {
+    if (term.isNumber()) {
+      return 0;
+    }
+    if (term.isTimes()) {
+      int degree = 0;
+      for (int i = 1; i <= ((IAST) term).argSize(); i++) {
+        degree += totalDegree(((IAST) term).get(i));
+      }
+      return degree;
+    }
+    if (term.isPower() && term.exponent().isInteger() && term.exponent().isPositive()) {
+      int n = term.exponent().toIntDefault();
+      return n > 0 ? n * totalDegree(term.base()) : 1;
+    }
+    return 1;
+  }
+
+  /** No negative power and nothing but sums, products and positive integer powers of atoms. */
+  private static boolean isFractionFree(IExpr expr) {
+    if (expr.isAtom()) {
+      return expr.isSymbol() || expr.isInteger();
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      return ((IAST) expr).forAll(AlgebraUtil::isFractionFree);
+    }
+    return expr.isPower() && expr.exponent().isInteger() && expr.exponent().isPositive()
+        && isFractionFree(expr.base());
   }
 
   /**

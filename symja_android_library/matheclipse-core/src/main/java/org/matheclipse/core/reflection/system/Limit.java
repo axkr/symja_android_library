@@ -572,7 +572,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // is authoritative and the heuristic cascade below can be skipped. Piecewise, step and
     // oscillating shapes are excluded: they are not described by a single asymptotic expression
     // at the limit point, and the rewrites above own those cases.
-    if (!features.piecewise && !features.stepFunction && !features.oscillator) {
+    if (!features.piecewise && !features.stepFunction && (!features.oscillator
+        || (features.struve && !limitValue.isDirectedInfinity()))) {
       IExpr leadingTermResult = leadingTermLimit(evaledExpr, data, engine);
       if (leadingTermResult.isPresent()) {
         return hit(Strategy.LEADING_TERM, leadingTermResult);
@@ -734,6 +735,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
      * Airy/Bessel/Struve, Zeta, Factorial2).
      */
     boolean oscillator;
+    /** a Struve function: it oscillates at infinity, at a finite point it has a leading term */
+    boolean struve;
     /** A hyperbolic function whose argument depends on the limit variable is present. */
     boolean hyperbolicVar;
     /** Abs or Sign present (gates the Abs(x)/Sign(x) substitutions at +-Infinity). */
@@ -836,9 +839,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           case ID.AiryBi:
           case ID.BesselJ:
           case ID.BesselY:
+            oscillator = true;
+            break;
           case ID.StruveH:
           case ID.StruveL:
             oscillator = true;
+            struve = true;
             break;
           case ID.Sin:
           case ID.Cos:
@@ -939,6 +945,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             break;
           case ID.Erfc:
             if (!erfcVarArg && ast.argSize() == 1 && !ast.arg1().isFree(variable, true)) {
+              erfcVarArg = true;
+            }
+            break;
+          case ID.ExpIntegralE:
+            // expanded at infinity by the same strategy as Erfc
+            if (!erfcVarArg && ast.argSize() == 2 && !ast.arg2().isFree(variable, true)) {
               erfcVarArg = true;
             }
             break;
@@ -1671,6 +1683,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // point, which at a jump is not the value approached from either side. Only refuse where a
     // jump actually sits, so the many points at which these functions are continuous keep working.
     if (hasJumpAtLimitPoint(expression, data, engine)) {
+      return F.NIL;
+    }
+    if (hasUndecidedPole(expression, data.rule(), false, engine)) {
       return F.NIL;
     }
     IExpr result = expression.replaceAll(data.rule());
@@ -3527,6 +3542,26 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       EvalEngine engine) {
     final LimitData data = new LimitData((ISymbol) rule.arg1(), rule.arg2(), rule, direction);
     return F.subst(function, sub -> {
+      if (sub.isAST(S.ExpIntegralE, 3) && sub.first().isFree(data.variable(), true)
+          && !sub.second().isFree(data.variable(), true)) {
+        // ExpIntegralE(n, z) == E^(-z)/z*(1 - n/z + n*(n+1)/z^2 - n*(n+1)*(n+2)/z^3 + O(1/z^4))
+        // for z -> Infinity. As for Erfc below the series stops: a limit which probes the order
+        // 1/z^4 is not resolved by it.
+        IExpr z = sub.second();
+        IExpr n = sub.first();
+        try {
+          if (evalLimitQuiet(z, data).isInfinity()) {
+            IExpr n1 = F.Times(n, F.Plus(n, F.C1));
+            return F.Times(F.Exp(F.Negate(z)), F.Power(z, F.CN1),
+                F.Plus(F.C1, F.Negate(F.Divide(n, z)), F.Divide(n1, F.Sqr(z)),
+                    F.Negate(F.Divide(F.Times(n1, F.Plus(n, F.C2)), F.Power(z, F.C3)))));
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // leave it unexpanded
+        }
+        return F.NIL;
+      }
       if (sub.isAST(S.Erfc, 2) && !sub.first().isFree(data.variable(), true)) {
         IExpr z = sub.first();
         try {
@@ -4696,6 +4731,30 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Whether the expression has an <code>ExpIntegralE(n, z)</code> whose argument vanishes at the
+   * limit point while <code>n &gt; 1</code> is not known: the function is unbounded there for
+   * <code>Re(n) &lt;= 1</code>, and with a symbolic <code>n</code> its value at <code>0</code>
+   * stays unevaluated - a factor which tends to <code>0</code> beside it decides nothing.
+   *
+   * @param signUnknown only if neither <code>n &gt; 1</code> nor <code>n &lt;= 1</code> is known
+   */
+  private static boolean hasUndecidedPole(IExpr expression, IAST rule, boolean signUnknown,
+      EvalEngine engine) {
+    final IExpr variable = rule.arg1();
+    return expression.has(e -> {
+      if (!e.isAST(S.ExpIntegralE, 3) || e.second().isFree(variable, true)) {
+        return false;
+      }
+      IExpr shifted = engine.evalQuiet(F.Subtract(e.first(), F.C1));
+      if (shifted.isPositiveResult()
+          || (signUnknown && (shifted.isNegativeResult() || shifted.isZero()))) {
+        return false;
+      }
+      return engine.evalQuiet(e.second().replaceAll(rule).orElse(e.second())).isZero();
+    }, true);
+  }
+
+  /**
    * Whether the result is a value under a condition which never holds, as the product of
    * <code>ConditionalExpression(0, a&gt;1)</code> and <code>ConditionalExpression(0, a&lt;1)</code>
    * is: the limit is not known then.
@@ -4854,7 +4913,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             }
           }
         }
-        if (!leakedSymbol && !hasContradictoryCondition(temp, engine)) {
+        if (!leakedSymbol && !hasContradictoryCondition(temp, engine)
+            // 0*ExpIntegralE(n, 0) with an unknown order is the 0 which is refused here
+            && !(temp.isZero() && hasUndecidedPole(arg1, rule, true, engine))) {
           return IntervalSym.toAccumBoundsIndeterminate(temp);
         }
       }

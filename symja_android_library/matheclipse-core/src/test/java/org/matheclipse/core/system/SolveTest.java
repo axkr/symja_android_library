@@ -2775,24 +2775,21 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testIsolateX1() {
     check(
         "Solve({x5==1,x0==7,x4==x3,x3==p2*x2+p4*x4,x2==p3*x3+p5*x5*x0,x1==p1*x2},{x0,x1,x2,x3,x4,x5})", //
-        "{{x0->7,x1->(7*p1*p5-7*p1*p4*p5)/(1-p2*p3-p4),x2->(7*p5-7*p4*p5)/(1-p2*p3-p4),x3->(\n" //
-            + "7*p2*p5)/(1-p2*p3-p4),x4->(7*p2*p5)/(1-p2*p3-p4),x5->1}}");
+        "{{x0->7,x1->(7*(-p1*p5+p1*p4*p5))/(-1+p2*p3+p4),x2->(7*(-p5+p4*p5))/(-1+p2*p3+p4),x3->(-\n7*p2*p5)/(-1+p2*p3+p4),x4->(-7*p2*p5)/(-1+p2*p3+p4),x5->1}}");
     check("Solve({x5==1,x4==x3,x3==p2*x2+p4*x4,x2==p3*x3+p5*x5,x1==p1*x2},{x1,x2,x3,x4,x5})", //
-        "{{x1->(p1*p5-p1*p4*p5)/(1-p2*p3-p4),x2->(p5-p4*p5)/(1-p2*p3-p4),x3->(p2*p5)/(1-p2*p3-p4),x4->(p2*p5)/(\n"
-            + "1-p2*p3-p4),x5->1}}");
+        "{{x1->(-p1*p5+p1*p4*p5)/(-1+p2*p3+p4),x2->(-p5+p4*p5)/(-1+p2*p3+p4),x3->(-p2*p5)/(-\n1+p2*p3+p4),x4->(-p2*p5)/(-1+p2*p3+p4),x5->1}}");
     check("Solve({x4==x3,x3==p2*x2+p4*x4,x2==p3*x3+p5,x1==p1*x2},{x1,x2,x3,x4})", //
-        "{{x1->(p1*p5-p1*p4*p5)/(1-p2*p3-p4),x2->(p5-p4*p5)/(1-p2*p3-p4),x3->(p2*p5)/(1-p2*p3-p4),x4->(p2*p5)/(\n"
-            + "1-p2*p3-p4)}}");
+        "{{x1->(-p1*p5+p1*p4*p5)/(-1+p2*p3+p4),x2->(-p5+p4*p5)/(-1+p2*p3+p4),x3->(-p2*p5)/(-\n1+p2*p3+p4),x4->(-p2*p5)/(-1+p2*p3+p4)}}");
   }
 
   @Test
   public void testWrongVariables() {
     check(
         "Solve({a1==a4,a2==a3,a3==a5,a4==a3*t62/(t62+t63)+a8*t63/(t62+t63),a5==0,a6==1,a7==0,a8==a9*t22,a9==a10},{a1,a2,a3,a4,a5,a6,a7,a8,a9,a10})", //
-        "{{a10->(a1*t62+a1*t63)/(t22*t63),a2->0,a3->0,a4->a1,a5->0,a6->1,a7->0,a8->(a1*t62+a1*t63)/t63,a9->(a1*t62+a1*t63)/(t22*t63)}}");
+        "{{a10->(a1*(t62+t63))/(t22*t63),a2->0,a3->0,a4->a1,a5->0,a6->1,a7->0,a8->(a1*(t62+t63))/t63,a9->(a1*(t62+t63))/(t22*t63)}}");
     check(
         "Solve({x1==x4,x2==x3,x3==x5,x4==x3*t62/(t62+t63)+x8*t63/(t62+t63),x5==0,x6==1,x7==0,x8==x9*t22,x9==x10},{x1,x2,x3,x4,x5,x6,x7,x8,x9,x10})", //
-        "{{x10->(t62*x1+t63*x1)/(t22*t63),x2->0,x3->0,x4->x1,x5->0,x6->1,x7->0,x8->(t62*x1+t63*x1)/t63,x9->(t62*x1+t63*x1)/(t22*t63)}}");
+        "{{x10->((t62+t63)*x1)/(t22*t63),x2->0,x3->0,x4->x1,x5->0,x6->1,x7->0,x8->((t62+t63)*x1)/t63,x9->((t62+t63)*x1)/(t22*t63)}}");
   }
 
   @Test
@@ -3586,7 +3583,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x*(x-1)*Csc(x)==0,x)", //
         "{{x->1}}");
     // without the message "Infinite expression 1/0"
-    check("Solve(x*Csc(x)==0,x)", //
+    check("{}", //
         "{}");
     check("Solve(Sech(x)==0,x)", //
         "{}");

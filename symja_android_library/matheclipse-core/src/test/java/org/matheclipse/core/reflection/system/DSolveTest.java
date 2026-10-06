@@ -2344,10 +2344,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // Substituting the integration constant leaves the fractions it came with nested inside each
     // other, so the particular solution is put over a common denominator.
     check("DSolve({y'(x) == x * y(x)^2, y(0) == 2}, y(x), x)", //
-        "{{y(x)->2/(1-x^2)}}");
+        "{{y(x)->-2/(-1+x^2)}}");
 
     check("DSolve({y'(x) == y(x)^2, y(0) == 1}, y(x), x)", //
-        "{{y(x)->1/(1-x)}}");
+        "{{y(x)->-1/(-1+x)}}");
 
     check("DSolve({y'(x) == y(x)^3, y(0) == 1}, y(x), x)", //
         "{{y(x)->1/Sqrt(1-2*x)}}");
@@ -2472,7 +2472,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve({y'(x) == x^2*y(x)^2, y(1) == 0}, y(x), x)", //
         "{{y(x)->0}}");
     check("DSolve({y'(x) == x^2*y(x)^2, y(1) == 2}, y(x), x)", //
-        "{{y(x)->6/(5-2*x^3)}}");
+        "{{y(x)->-6/(-5+2*x^3)}}");
   }
 
   @Test

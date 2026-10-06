@@ -54,6 +54,18 @@ public class WXFTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNonAsciiStringsAndSymbols() {
+    // strings and symbol names are UTF-8 with a length in bytes; written one byte per character,
+    // a Greek letter came back from a kernel link as a character near U+FFxx
+    check("BinarySerialize(\"\\[Theta]\") // Normal", //
+        "{56,58,83,2,206,184}");
+    check("ToCharacterCode(BinaryDeserialize(BinarySerialize(\"f[\\[Theta],\\[Phi]] \\[Euro]\")))", //
+        "{102,91,952,44,981,93,32,8364}");
+    check("BinaryDeserialize(BinarySerialize(Hold(\\[Theta], Global`\\[Alpha]x))) === Hold(\\[Theta], Global`\\[Alpha]x)", //
+        "True");
+  }
+
+  @Test
   public void testBinarySerialize() {
     // decimal 4611686018427387893
     check("BinarySerialize(2^62 -11) // Normal", //

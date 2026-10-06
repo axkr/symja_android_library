@@ -556,8 +556,22 @@ public final class Plot3DTools {
    */
   public static IExpr withBoundary(GraphicsComplexBuilder builder, double[][][] grid,
       IExpr boundaryStyle, boolean outlinedByDefault) {
+    return withBoundary(builder, grid, boundaryStyle, outlinedByDefault, null, null);
+  }
+
+  /**
+   * As {@link #withBoundary(GraphicsComplexBuilder, double[][][], IExpr, boolean)}, leaving out the
+   * grid lines a jump of the surface crosses: the two samples there lie on different sheets, and a
+   * line between them would be a stroke up the wall the surface does not have.
+   *
+   * @param jumpU set where a jump lies between sample {@code (i, j)} and {@code (i + 1, j)};
+   *        {@code null} for none
+   * @param jumpV set where it lies between {@code (i, j)} and {@code (i, j + 1)}
+   */
+  public static IExpr withBoundary(GraphicsComplexBuilder builder, double[][][] grid,
+      IExpr boundaryStyle, boolean outlinedByDefault, boolean[][] jumpU, boolean[][] jumpV) {
     if (grid != null && drawsBoundary(boundaryStyle, outlinedByDefault)) {
-      IAST segments = boundarySegments(builder, grid);
+      IAST segments = boundarySegments(builder, grid, jumpU, jumpV);
       if (segments.argSize() > 0) {
         builder.addPrimitive(F.List(boundaryDirective(boundaryStyle),
             F.binaryAST2(S.Line, segments, F.Rule(S.VertexColors, S.None))));
@@ -572,7 +586,7 @@ public final class Plot3DTools {
    * builder for it answers the vertex it has and adds nothing.
    */
   private static IASTAppendable boundarySegments(GraphicsComplexBuilder builder,
-      double[][][] grid) {
+      double[][][] grid, boolean[][] jumpU, boolean[][] jumpV) {
     int nx = grid.length;
     int ny = nx > 0 ? grid[0].length : 0;
     IASTAppendable segments = F.ListAlloc(Math.max(4, nx + ny));
@@ -584,11 +598,11 @@ public final class Plot3DTools {
         if (grid[i][j] == null) {
           continue;
         }
-        if (i + 1 < nx && grid[i + 1][j] != null //
+        if (i + 1 < nx && grid[i + 1][j] != null && (jumpU == null || !jumpU[i][j]) //
             && (!cellComplete(grid, i, j - 1) || !cellComplete(grid, i, j))) {
           segments.append(F.List(vertex(builder, grid[i][j]), vertex(builder, grid[i + 1][j])));
         }
-        if (j + 1 < ny && grid[i][j + 1] != null //
+        if (j + 1 < ny && grid[i][j + 1] != null && (jumpV == null || !jumpV[i][j]) //
             && (!cellComplete(grid, i - 1, j) || !cellComplete(grid, i, j))) {
           segments.append(F.List(vertex(builder, grid[i][j]), vertex(builder, grid[i][j + 1])));
         }

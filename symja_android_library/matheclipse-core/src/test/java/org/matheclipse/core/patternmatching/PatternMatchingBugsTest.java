@@ -99,9 +99,11 @@ public class PatternMatchingBugsTest extends ExprEvaluatorTestCase {
     check("qtu(utu)", "9");
     check("utu/:qtu(utu)=.", "");
     check("qtu(utu)", "qtu(utu)");
-    // the tag as head - TagSet stores this as an up-rule of the tag
+    // the tag as head - TagSet stores this as a down-value of the tag
     check("utu/:utu(x_)=10", "10");
+    check("utu(3)", "10");
     check("utu/:utu(x_)=.", "");
+    check("utu(3)", "utu(3)");
     check("UpValues(utu)", "{}");
     // nothing to remove
     check("utu/:ptu(utu,y_)=.", "$Failed");

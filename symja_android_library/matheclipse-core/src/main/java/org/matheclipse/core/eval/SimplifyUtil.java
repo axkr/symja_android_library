@@ -753,7 +753,7 @@ public class SimplifyUtil extends VisitorExpr {
     }
     IASTAppendable result = F.PlusAlloc(groups.size());
     for (IASTAppendable group : groups.values()) {
-      result.append(group.isAST1() ? group.arg1() : eval(F.Together(group)));
+      result.append(group.isAST1() ? group.arg1() : eval(AlgebraUtil.togetherExpr(group, fEngine)));
     }
     return eval(result);
   }
@@ -2048,7 +2048,11 @@ public class SimplifyUtil extends VisitorExpr {
         ctx.together = ctx.expr;
         if (ctx.result.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT
             && isTogetherCandidate(ctx.expr)) {
-          ctx.together = ctx.util.eval(F.Together(ctx.expr));
+          // the form with the denominator multiplied out, which the steps after this one cancel
+          // in: not the form of the function Together, which keeps a factored denominator
+          ctx.together = ctx.expr.isAST() //
+              ? ctx.util.eval(AlgebraUtil.togetherExpr(ctx.expr, ctx.util.fEngine)) //
+              : ctx.expr;
           ctx.result.checkLessPlusTimesPower(ctx.together);
         }
         if (ctx.util.fFullSimplify) {

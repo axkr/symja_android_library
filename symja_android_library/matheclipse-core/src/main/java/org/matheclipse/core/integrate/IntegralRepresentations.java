@@ -53,6 +53,11 @@ final class IntegralRepresentations {
     IExpr reference = F.NIL;
     /** the formula holds for complex values of the parameters without a condition on them */
     boolean complexParameters = false;
+    /**
+     * no numerical integral confirms the value: the integrand oscillates without decay, or its
+     * quadrature takes too long. The formula is a table entry which the tests confirm.
+     */
+    boolean tabulated = false;
     /** simplify the value with the search of <code>Simplify</code> */
     boolean simplify = false;
 
@@ -206,7 +211,8 @@ final class IntegralRepresentations {
           || (answer = besselKCosh(ctx, shape)) != null
           || (answer = besselKReciprocal(ctx, shape)) != null
           || (answer = airy(ctx, shape)) != null
-          || (answer = laplaceTrigonometric(ctx, shape)) != null) {
+          || (answer = laplaceTrigonometric(ctx, shape)) != null
+          || (answer = mellin(ctx, shape)) != null) {
         return answer;
       }
       return null;
@@ -271,7 +277,8 @@ final class IntegralRepresentations {
       checked = new Context(integrand, ctx.x, assumptions, false, ctx.engine);
       checked.parameters.addAll(ctx.parameters);
     }
-    if (checked.samples.isEmpty() && !ResidueIntegration.samplePoints(checked)) {
+    if (!answer.tabulated && checked.samples.isEmpty()
+        && !ResidueIntegration.samplePoints(checked)) {
       return F.NIL;
     }
     IExpr value = ctx.eval(answer.value);
@@ -292,7 +299,7 @@ final class IntegralRepresentations {
         value = withoutAbs(checked, simplified);
       }
     }
-    if (allParametersPositive(checked, value)) {
+    if (!answer.tabulated && allParametersPositive(checked, value)) {
       // Sqrt(a*b) and Log(a^2) of positive parameters
       // positive parameters do not make a difference of them positive: the expanded form is
       // used only if it is confirmed
@@ -304,7 +311,7 @@ final class IntegralRepresentations {
       }
     }
     if (!value.isSpecialsFree() || !value.isFree(ctx.x)
-        || !ResidueIntegration.check(checked, value, lower, upper)) {
+        || !(answer.tabulated || ResidueIntegration.check(checked, value, lower, upper))) {
       return F.NIL;
     }
     return conditional(value, open);
@@ -718,6 +725,244 @@ final class IntegralRepresentations {
     }
     Answer answer = new Answer(F.Times(shape.constant(), sum), positive(a));
     answer.simplify = true;
+    return answer;
+  }
+
+  // --------------------------------------------------------------------------------------------
+  // Mellin transforms
+  // --------------------------------------------------------------------------------------------
+
+  /** The transform of <code>f(x)</code> at <code>s</code> with the strip in which it exists. */
+  private static Answer transform(IExpr value, boolean tabulated, IExpr... gates) {
+    Answer answer = new Answer(value, gates);
+    answer.tabulated = tabulated;
+    return answer;
+  }
+
+  private static IExpr gamma(IExpr... halves) {
+    // Gamma(Sum(halves)/2)
+    return F.Gamma(F.Times(F.C1D2, F.Plus(halves)));
+  }
+
+  /**
+   * <code>Integrate(c*x^(s-1)*f(k*x), {x,0,Infinity}) == c*k^(-s)*M(s)</code> for the functions
+   * <code>f</code> whose Mellin transform <code>M</code> is a quotient of Gamma functions: the
+   * Bessel, Struve and Airy functions, the sine and cosine integrals,
+   * <code>ExpIntegralE</code>, <code>EllipticK</code>, <code>Hypergeometric2F1</code>,
+   * <code>Csch</code> and <code>Sech</code>, and the products <code>BesselJ*BesselJ</code>,
+   * <code>BesselK*BesselK</code>. The strip of <code>s</code> in which the integral converges is
+   * the condition of the result.
+   */
+  private static Answer mellin(Context ctx, Shape shape) {
+    if (shape.others.isEmpty() || shape.others.size() > 2 || !shape.exponentRest.isEmpty()) {
+      return null;
+    }
+    final IExpr s = ctx.eval(F.Plus(shape.power, F.C1));
+    final IExpr f = shape.others.get(0);
+    if (!f.isAST()) {
+      return null;
+    }
+    if (ctx.parameters.isEmpty() && s.isInteger()
+        && (f.isSin() || f.isCos() || f.isPower() || f.isAST(S.Csch, 2) || f.isAST(S.Sech, 2))) {
+      // elementary, with an elementary value which is found without the table
+      return null;
+    }
+    if (!shape.exponent.isEmpty()) {
+      return shape.others.size() == 1 ? dampedBesselJ(ctx, shape, s) : null;
+    }
+    Answer transform;
+    IExpr k;
+    if (shape.others.size() == 2) {
+      IExpr g = shape.others.get(1);
+      if (!f.isAST2() || !g.isAST2() || !f.head().equals(g.head())) {
+        return null;
+      }
+      k = slope(ctx, f.second());
+      if (k.isNIL() || !slope(ctx, g.second()).equals(k)) {
+        return null;
+      }
+      transform = productTransform((IAST) f, f.first(), g.first(), s);
+    } else {
+      IExpr argument;
+      if (f.isPower()) {
+        if (!isReciprocal(f, S.Sinh) && !isReciprocal(f, S.Cosh)) {
+          return null;
+        }
+        argument = f.base().first();
+      } else {
+        argument = ((IAST) f).last();
+      }
+      if (f.isAST(S.EllipticK, 2) || f.isAST(S.Hypergeometric2F1, 5)) {
+        // these are transformed as functions of -x
+        argument = F.Negate(argument);
+      }
+      k = slope(ctx, ctx.eval(argument));
+      if (k.isNIL()) {
+        return null;
+      }
+      transform = singleTransform(f, s);
+    }
+    if (transform == null) {
+      return null;
+    }
+    Answer answer =
+        new Answer(F.Times(shape.constant(), F.Power(k, F.Negate(s)), transform.value));
+    answer.gates.add(positive(k));
+    answer.gates.addAll(transform.gates);
+    answer.tabulated = transform.tabulated;
+    return answer;
+  }
+
+  private static Answer singleTransform(IExpr f, IExpr s) {
+    final IExpr pi = S.Pi;
+    final IExpr half = F.Times(F.C1D2, pi, s);
+    if (f.isSin()) {
+      return transform(F.Times(F.Gamma(s), F.Sin(half)), true, F.Greater(s, F.CN1),
+          F.Less(s, F.C1));
+    }
+    if (f.isCos()) {
+      return transform(F.Times(F.Gamma(s), F.Cos(half)), true, positive(s), F.Less(s, F.C1));
+    }
+    if (f.isAST(S.SinIntegral, 2)) {
+      return transform(F.Times(F.CN1, F.Gamma(s), F.Sin(half), F.Power(s, F.CN1)), true,
+          F.Greater(s, F.CN1D2), F.Less(s, F.C0));
+    }
+    if (f.isAST(S.CosIntegral, 2)) {
+      return transform(F.Times(F.CN1, F.Gamma(s), F.Cos(half), F.Power(s, F.CN1)), true,
+          positive(s), F.Less(s, F.C1));
+    }
+    if (f.isAST(S.AiryAi, 2)) {
+      IExpr third = F.Times(F.C1D3, F.Plus(s, F.C2));
+      return transform(F.Times(F.Gamma(s), F.Power(F.C3, F.Negate(third)),
+          F.Power(F.Gamma(third), F.CN1)), true, positive(s));
+    }
+    if (f.isAST(S.Csch, 2) || isReciprocal(f, S.Sinh)) {
+      return transform(F.Times(F.C2, F.Gamma(s), F.Subtract(F.C1, F.Power(F.C2, F.Negate(s))),
+          F.Zeta(s)), false, F.Greater(s, F.C1));
+    }
+    if (f.isAST(S.Sech, 2) || isReciprocal(f, S.Cosh)) {
+      return transform(F.Times(F.Power(F.C2, F.Subtract(F.C1, F.Times(F.C2, s))), F.Gamma(s),
+          F.Subtract(F.HurwitzZeta(s, F.C1D4), F.HurwitzZeta(s, F.QQ(3, 4)))), false, positive(s));
+    }
+    if (f.isAST(S.EllipticK, 2)) {
+      return transform(F.Times(F.C1D2, F.Gamma(s), F.Sqr(F.Gamma(F.Subtract(F.C1D2, s))),
+          F.Power(F.Gamma(F.Subtract(F.C1, s)), F.CN1)), true, positive(s), F.Less(s, F.C1D2));
+    }
+    if (f.isAST(S.Hypergeometric2F1, 5)) {
+      // of the argument -x
+      IAST h = (IAST) f;
+      IExpr a = h.arg1();
+      IExpr b = h.arg2();
+      IExpr c = h.arg3();
+      Answer answer = transform(
+          F.Times(F.Gamma(c), F.Gamma(s), F.Gamma(F.Subtract(a, s)), F.Gamma(F.Subtract(b, s)),
+              F.Power(F.Times(F.Gamma(a), F.Gamma(b), F.Gamma(F.Subtract(c, s))), F.CN1)),
+          true, positive(s), F.Less(s, a), F.Less(s, b));
+      return answer;
+    }
+    if (!f.isAST2()) {
+      return null;
+    }
+    final IExpr nu = f.first();
+    if (f.isAST(S.BesselK, 3)) {
+      return transform(
+          F.Times(F.Power(F.C2, F.Subtract(s, F.C2)), gamma(s, F.Negate(nu)), gamma(s, nu)),
+          false, positive(F.Subtract(s, nu)), positive(F.Plus(s, nu)));
+    }
+    if (f.isAST(S.ExpIntegralE, 3)) {
+      IExpr shifted = F.Plus(s, nu, F.CN1);
+      return transform(F.Times(F.Gamma(s), F.Power(shifted, F.CN1)), true, positive(s),
+          positive(shifted));
+    }
+    if (f.isAST(S.BesselJ, 3)) {
+      return transform(
+          F.Times(F.Power(F.C2, F.Subtract(s, F.C1)), gamma(nu, s),
+              F.Power(gamma(F.C2, nu, F.Negate(s)), F.CN1)),
+          true, positive(F.Plus(s, nu)), F.Less(s, F.QQ(3, 2)));
+    }
+    if (f.isAST(S.BesselY, 3)) {
+      return transform(
+          F.Times(F.CN1, F.Power(F.C2, F.Subtract(s, F.C1)), F.Power(pi, F.CN1), gamma(s, nu),
+              gamma(s, F.Negate(nu)), F.Cos(F.Times(F.C1D2, pi, F.Subtract(s, nu)))),
+          true, positive(F.Subtract(s, nu)), positive(F.Plus(s, nu)), F.Less(s, F.QQ(3, 2)));
+    }
+    if (f.isAST(S.StruveH, 3)) {
+      return transform(
+          F.Times(F.Power(F.C2, F.Subtract(s, F.C1)), gamma(s, nu),
+              F.Tan(F.Times(F.C1D2, pi, F.Plus(s, nu))),
+              F.Power(gamma(F.C2, nu, F.Negate(s)), F.CN1)),
+          true, positive(F.Plus(s, nu)), F.Less(F.Plus(s, nu), F.C1), F.Less(s, F.QQ(3, 2)));
+    }
+    return null;
+  }
+
+  /** Whether <code>f</code> is <code>1/head(u)</code>. */
+  private static boolean isReciprocal(IExpr f, ISymbol head) {
+    return f.isPower() && f.exponent().isMinusOne() && f.base().isAST(head, 2);
+  }
+
+  /** The transform of <code>BesselJ(mu,x)*BesselJ(nu,x)</code> or of the product with K. */
+  private static Answer productTransform(IAST f, IExpr mu, IExpr nu, IExpr s) {
+    IExpr minusS = F.Negate(s);
+    if (f.isAST(S.BesselJ, 3)) {
+      return transform(
+          F.Times(F.Power(F.C2, F.Subtract(s, F.C1)), F.Gamma(F.Subtract(F.C1, s)),
+              gamma(mu, nu, s),
+              F.Power(F.Times(gamma(F.C2, mu, F.Negate(nu), minusS),
+                  gamma(F.C2, nu, F.Negate(mu), minusS), gamma(F.C2, mu, nu, minusS)), F.CN1)),
+          true, positive(F.Plus(s, mu, nu)), F.Less(s, F.C1),
+          F.Greater(F.Plus(mu, nu, F.Times(F.C2, s)), F.CN1));
+    }
+    if (f.isAST(S.BesselK, 3)) {
+      return transform(
+          F.Times(F.Power(F.C2, F.Subtract(s, F.C3)), gamma(s, mu, nu), gamma(s, mu, F.Negate(nu)),
+              gamma(s, F.Negate(mu), nu), gamma(s, F.Negate(mu), F.Negate(nu)),
+              F.Power(F.Gamma(s), F.CN1)),
+          false, positive(F.Plus(s, mu, nu)), positive(F.Plus(s, mu, F.Negate(nu))),
+          positive(F.Plus(s, F.Negate(mu), nu)), positive(F.Subtract(s, F.Plus(mu, nu))));
+    }
+    return null;
+  }
+
+  /**
+   * <code>Integrate(x^(s-1)*E^(-a*x)*BesselJ(nu,b*x), {x,0,Infinity})</code> and the same with
+   * <code>E^(-a*x^2)</code>: a <code>Hypergeometric2F1</code> of <code>-b^2/a^2</code> and a
+   * <code>Hypergeometric1F1</code> of <code>-b^2/(4*a)</code>, for <code>a &gt; 0</code>,
+   * <code>b &gt; 0</code> and <code>s+nu &gt; 0</code>.
+   */
+  private static Answer dampedBesselJ(Context ctx, Shape shape, IExpr s) {
+    IExpr f = shape.others.get(0);
+    if (!f.isAST(S.BesselJ, 3) || shape.exponent.size() != 1) {
+      return null;
+    }
+    IExpr nu = f.first();
+    IExpr b = slope(ctx, f.second());
+    if (b.isNIL()) {
+      return null;
+    }
+    IExpr sum = F.Plus(s, nu);
+    IExpr value;
+    IExpr a;
+    if (shape.hasExponents(F.C1)) {
+      a = shape.rate(ctx, F.C1);
+      value = F.Times(F.Power(F.Times(F.C1D2, b), nu), F.Gamma(sum),
+          F.Power(F.Times(F.Power(a, sum), F.Gamma(F.Plus(nu, F.C1))), F.CN1),
+          F.Hypergeometric2F1(F.Times(F.C1D2, sum), F.Times(F.C1D2, F.Plus(sum, F.C1)),
+              F.Plus(nu, F.C1), F.Negate(F.Divide(F.Sqr(b), F.Sqr(a)))));
+    } else if (shape.hasExponents(F.C2)) {
+      a = shape.rate(ctx, F.C2);
+      value = F.Times(F.Power(b, nu), gamma(s, nu),
+          F.Power(F.Times(F.Power(F.C2, F.Plus(nu, F.C1)), F.Power(a, F.Times(F.C1D2, sum)),
+              F.Gamma(F.Plus(nu, F.C1))), F.CN1),
+          F.Hypergeometric1F1(F.Times(F.C1D2, sum), F.Plus(nu, F.C1),
+              F.Negate(F.Divide(F.Sqr(b), F.Times(F.C4, a)))));
+    } else {
+      return null;
+    }
+    Answer answer =
+        new Answer(F.Times(shape.constant(), value), positive(a), positive(b), positive(sum));
+    // the quadrature of the Bessel function at the sample points takes seconds
+    answer.tabulated = true;
     return answer;
   }
 

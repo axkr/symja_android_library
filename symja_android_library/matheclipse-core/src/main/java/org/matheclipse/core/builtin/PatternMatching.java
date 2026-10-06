@@ -2778,6 +2778,11 @@ public final class PatternMatching {
         final ISymbol symbol = (ISymbol) arg1;
         final IExpr leftHandSide = ast.arg2();
         IExpr rightHandSide = ast.arg3();
+        if (isDefinitionOfTag(symbol, leftHandSide)) {
+          // f /: f(x_) = rhs and x /: x = rhs are the definitions without the tag; the
+          // right-hand-side is evaluated there, once
+          return engine.evaluate(F.Set(leftHandSide, rightHandSide));
+        }
         try {
           rightHandSide = engine.evaluate(rightHandSide);
         } catch (final ConditionException e) {
@@ -2883,7 +2888,9 @@ public final class PatternMatching {
       }
       if (found) {
         result[0] =
-            tagSetSymbol.putUpRule(flags[0] | IPatternMatcher.TAGSET, false, lhsAST, rightHandSide);
+            tagSetSymbol.putUpRule(flags[0] | (tagSymbol == S.TagSetDelayed //
+                ? IPatternMatcher.TAGSET_DELAYED
+                : IPatternMatcher.TAGSET), false, lhsAST, rightHandSide);
         return result;
       }
       if (!lhsAST.isFree(tagSetSymbol)) {
@@ -2893,8 +2900,24 @@ public final class PatternMatching {
       }
       // Tag `1` not found in `2`
       Errors.printMessage(tagSymbol, "tagnf", F.list(tagSetSymbol, lhsAST), engine);
+      if (tagSymbol == S.TagSet) {
+        // nothing is stored; the value of the assignment is its right-hand-side
+        return result;
+      }
       throw new FailedException();
 
+    }
+
+    /**
+     * Whether the left-hand-side is the tag itself or has the tag as its head, possibly under a
+     * condition: the rule is an own-value or a down-value of the tag then, no up-value.
+     */
+    protected static boolean isDefinitionOfTag(ISymbol tag, IExpr leftHandSide) {
+      IExpr lhs = leftHandSide;
+      while (lhs.isCondition() || lhs.isAST(S.HoldPattern, 2)) {
+        lhs = lhs.first();
+      }
+      return lhs.equals(tag) || (lhs.isAST() && lhs.head().equals(tag));
     }
 
     private static boolean isTagAvailable(ISymbol tagSetSymbol, IAST lhsAST) {
@@ -3021,7 +3044,8 @@ public final class PatternMatching {
         // the rule is searched where TagSet stored it
         boolean removed;
         if (lhsAST.head().equals(tagSymbol)) {
-          removed = tagSymbol.removeRule(IPatternMatcher.TAGSET, false, lhsAST, packageMode);
+          // the tag as head: a down-value
+          removed = tagSymbol.removeRule(IPatternMatcher.SET, false, lhsAST, packageMode);
         } else if (lhsAST.isCondition() && lhsAST.first().isAST()
             && lhsAST.first().head().equals(tagSymbol)) {
           removed = tagSymbol.removeRule(IPatternMatcher.SET, false, lhsAST, packageMode);
@@ -3074,6 +3098,9 @@ public final class PatternMatching {
           Errors.printMessage(ast.topHead(), "write", F.list(symbol, leftHandSide),
               EvalEngine.get());
           throw new FailedException();
+        }
+        if (isDefinitionOfTag(symbol, leftHandSide)) {
+          return engine.evaluate(F.SetDelayed(leftHandSide, rightHandSide));
         }
         try {
           createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSetDelayed, engine);
@@ -3572,6 +3599,16 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isString()) {
+        // the name of a symbol; other text is no name and gets the message of a wrong argument
+        String name = ast.arg1().toString();
+        if (name.matches("[a-zA-Z$][a-zA-Z0-9$`]*")) {
+          IExpr named = engine.parse(name);
+          if (named.isSymbol()) {
+            return engine.evaluate(F.unaryAST1(S.UpValues, named));
+          }
+        }
+      }
       IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
       if (arg1.isPresent()) {
         ISymbol symbol = (ISymbol) arg1;

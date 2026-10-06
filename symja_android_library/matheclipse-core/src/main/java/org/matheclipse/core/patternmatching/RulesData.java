@@ -286,6 +286,12 @@ public final class RulesData implements Serializable {
     return pmEvaluator;
   }
 
+  /** Remove the up-values, as an assignment to <code>UpValues(symbol)</code> replaces them. */
+  public void clearUpRules() {
+    fEqualUpRules = null;
+    fSimplePatternUpRules = null;
+  }
+
   public void clear() {
     invalidateRuleIndex();
     fEqualDownRules = null;
@@ -359,8 +365,26 @@ public final class RulesData implements Serializable {
   }
 
   public List<IAST> definition() {
+    return definition(null);
+  }
+
+  /**
+   * The rules as expressions which define them again when they are evaluated.
+   *
+   * @param tag the symbol which owns these rules: an up-value which was defined with a tag is
+   *        written with it, <code>tag /: lhs := rhs</code>, because <code>lhs ^:= rhs</code>
+   *        would attach the rule to every symbol of the left-hand-side. <code>null</code> leaves
+   *        the tag out.
+   */
+  public List<IAST> definition(ISymbol tag) {
     ArrayList<IAST> definitionList = new ArrayList<IAST>(numberOfRules());
-    forEachUpRule(matcher -> definitionList.add(matcher.getAsAST()));
+    forEachUpRule(matcher -> {
+      IAST rule = matcher.getAsAST();
+      if (tag != null && rule.isAST2() && (rule.head() == S.TagSet || rule.head() == S.TagSetDelayed)) {
+        rule = F.ternaryAST3(rule.head(), tag, rule.arg1(), rule.arg2());
+      }
+      definitionList.add(rule);
+    });
     forEachDownRule(matcher -> definitionList.add(matcher.getAsAST()));
     return definitionList;
   }

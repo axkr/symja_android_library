@@ -6703,6 +6703,14 @@ public final class ListFunctions {
    * Select(a,True)
    * </pre>
    */
+  /**
+   * A count which is a positive integer beyond the machine range, like <code>10^30</code>: it is
+   * a valid count, and one no expression reaches.
+   */
+  private static boolean isBeyondMachineCount(IExpr count) {
+    return count.isInteger() && count.isPositive() && F.isNotPresent(count.toIntDefault());
+  }
+
   private static final class Select extends AbstractEvaluator {
 
     @Override
@@ -6716,14 +6724,15 @@ public final class ListFunctions {
             return list.select(x -> engine.evalTrue(predicateHead, x));
           } else if (ast.isAST3()) {
             IExpr arg3 = engine.evaluate(ast.arg3());
-            if (!ast.arg3().isInfinity()) {
+            if (!ast.arg3().isInfinity() && !isBeyondMachineCount(arg3)) {
               maxNumberOfResults = arg3.toMachineInt();
               if (maxNumberOfResults < 0) {
                 // Non-negative integer or Infinity expected at position `1` in `2`.
                 return Errors.printMessage(S.Select, "innf", F.List(F.C3, ast), engine);
               }
               if (maxNumberOfResults == 0) {
-                return F.CEmptyList;
+                // no element, in the container of the argument: f() or an empty association
+                return list.select(x -> false);
               }
             }
             return list.select(x -> engine.evalTrue(predicateHead, x), maxNumberOfResults);
@@ -6759,7 +6768,7 @@ public final class ListFunctions {
       IAST list = (IAST) ast.arg1();
       IExpr crit = ast.arg2();
       int n = Integer.MAX_VALUE;
-      if (ast.isAST3() && !ast.arg3().isInfinity()) {
+      if (ast.isAST3() && !ast.arg3().isInfinity() && !isBeyondMachineCount(ast.arg3())) {
         n = ast.arg3().toIntDefault();
         if (n < 0) {
           // Non-negative integer or Infinity expected at position `1` in `2`.

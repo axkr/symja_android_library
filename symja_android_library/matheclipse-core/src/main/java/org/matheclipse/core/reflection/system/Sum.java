@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -380,7 +381,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
   /**
    * The summation rules know factorials of the iterator variable, but not the equivalent
    * <code>Gamma</code> - which is how <code>Product</code> writes a shifted linear factor, like
-   * WMA: <code>Product(k+1, {k,1,n}) == Gamma(2+n)</code>. Retry the sum with
+   * <code>Product(k+1, {k,1,n}) == Gamma(2+n)</code>. Retry the sum with
    * <code>Gamma(k+m) -&gt; (k+m-1)!</code> for integers <code>m &gt;= 0</code>.
    *
    * @return {@link F#NIL} if the summand contains no such <code>Gamma</code> or the rewritten sum
@@ -803,7 +804,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
           if (subSum2.isPresent()) {
             subSum2 = subSum2.plus(subSum);
             if (subSum2.isPlus()) {
-              return F.Together(subSum2);
+              return AlgebraUtil.togetherExpr(subSum2, engine);
             }
             return subSum2;
           }

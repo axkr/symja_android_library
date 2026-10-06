@@ -469,7 +469,7 @@ public interface ISymbol extends IExpr {
     List<IAST> rules = null;
     RulesData rulesData = symbol.getRulesData();
     if (rulesData != null) {
-      rules = rulesData.definition();
+      rules = rulesData.definition(symbol);
     }
     IASTAppendable result = F.ListAlloc(rules == null ? 1 : rules.size() + 1);
     result = F.ListAlloc(rules == null ? 1 : rules.size() + 1);

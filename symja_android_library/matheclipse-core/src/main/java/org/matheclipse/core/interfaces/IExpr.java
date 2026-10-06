@@ -27,6 +27,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.TimesOp;
@@ -6638,8 +6639,8 @@ public interface IExpr
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-      return F.Together(F.Plus(this, that))//
-          .eval(engine);
+      // the arithmetic of the together mode keeps the multiplied out form of a fraction
+      return engine.evaluate(AlgebraUtil.togetherExpr(engine.evaluate(F.Plus(this, that)), engine));
     }
     return F.Plus(this, that)//
         .eval(engine);
@@ -6725,7 +6726,7 @@ public interface IExpr
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
-      return S.Together.of(engine, F.Power(this, that));
+      return engine.evaluate(AlgebraUtil.togetherExpr(engine.evaluate(F.Power(this, that)), engine));
     }
     return S.Power.of(engine, this, that);
   }

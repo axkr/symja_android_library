@@ -113,6 +113,23 @@ public class Plot3DSamplingOptionsTest {
         "an expression that is zero on the curve works as well as an equation");
   }
 
+  /**
+   * A jump is cut where it is, not along the grid: the lips of the cut are placed on the jump
+   * between the samples, so a diagonal cut is a straight line rather than a staircase with a
+   * corner at every sample.
+   */
+  @Test
+  public void aJumpIsCutAlongItselfNotAlongTheGrid() {
+    String plot = "Plot3D(UnitStep(x-y),{x,-2,2},{y,-2,2.1},PlotPoints->21,"
+        + "ExclusionsStyle->{None,Red})";
+    IExpr lines = evaluator.eval("Length(Cases(" + plot + ", Line({{_,_,_},{_,_,_}}), Infinity))");
+    assertTrue(lines.toIntDefault(0) >= 20, "the cut is drawn: " + lines);
+    IExpr offTheJump = evaluator.eval("Max(Cases(" + plot
+        + ", Line({{a_,b_,_},{c_,d_,_}}) :> Max(Abs(a-b), Abs(c-d)), Infinity))");
+    assertTrue(offTheJump.evalf() < 1.0e-3,
+        "every end of the cut lies on x == y, but one is off by " + offTheJump);
+  }
+
   /** A pole is capped at the box by default, and left open when the call asks for that. */
   @Test
   public void clippingStyleDecidesWhatHappensAtTheBox() {

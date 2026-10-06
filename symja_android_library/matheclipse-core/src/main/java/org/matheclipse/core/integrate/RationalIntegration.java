@@ -10,6 +10,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.steps.StepLevel;
@@ -171,7 +172,11 @@ public class RationalIntegration {
       return F.NIL;
     }
     try {
-      IExpr together = engine.evaluate(F.Together(integrand));
+      // numerator and denominator multiplied out: not the form of the function Together, which
+      // keeps a factored denominator
+      IExpr together = integrand.isAST() //
+          ? engine.evaluate(AlgebraUtil.togetherExpr(integrand, engine)) //
+          : integrand;
       IExpr numerExpr = engine.evaluate(F.Numerator(together));
       IExpr denomExpr = engine.evaluate(F.Denominator(together));
       if (!together.equals(integrand)) {

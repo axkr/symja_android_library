@@ -389,7 +389,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   public IExpr replacePatternMatch(final IExpr leftHandSide, IPatternMap patternMap,
       EvalEngine engine, boolean evaluate) {
     if (fReturnResult.isPresent()) {
-      if (isFlagOn(IPatternMatcher.SET_DELAYED)) {
+      // a delayed up-value has its condition on the right-hand-side evaluated like a down-value
+      if ((getFlags() & (IPatternMatcher.SET_DELAYED | IPatternMatcher.UPSET_DELAYED
+          | IPatternMatcher.TAGSET_DELAYED)) != 0) {
         boolean oldEvalRHSMode = engine.isEvalRHSMode();
         try {
           engine.setEvalRHSMode(true);

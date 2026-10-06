@@ -1843,7 +1843,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("LinearSolve({{a, b,c,d,e}, {f,g,h,i,j}}, {x, y})", //
         "{(g*x-b*y)/(-b*f+a*g),(-f*x+a*y)/(-b*f+a*g),0,0,0}");
     check("LinearSolve({{a,b,c,d,e}, {f,g,h,i,j}, {k,l,m,n,o}}, {x,y,z})", //
-        "{(h*l*x-g*m*x-c*l*y+b*m*y+c*g*z-b*h*z)/(c*g*k-b*h*k-c*f*l+a*h*l+b*f*m-a*g*m),(-h*k*x+f*m*x+c*k*y-a*m*y-c*f*z+a*h*z)/(c*g*k-b*h*k-c*f*l+a*h*l+b*f*m-a*g*m),(g*k*x-f*l*x-b*k*y+a*l*y+b*f*z-a*g*z)/(c*g*k-b*h*k-c*f*l+a*h*l+b*f*m-a*g*m),\n" //
+        "{(-h*l*x+g*m*x+c*l*y-b*m*y-c*g*z+b*h*z)/(-c*g*k+b*h*k+c*f*l-a*h*l-b*f*m+a*g*m),(h*k*x-f*m*x-c*k*y+a*m*y+c*f*z-a*h*z)/(-c*g*k+b*h*k+c*f*l-a*h*l-b*f*m+a*g*m),(-g*k*x+f*l*x+b*k*y-a*l*y-b*f*z+a*g*z)/(-c*g*k+b*h*k+c*f*l-a*h*l-b*f*m+a*g*m),\n" //
             + "0,0}");
     // underdetermined system:
     check("LinearSolve({{1, 2, 3}, {4, 5, 6}}, {6, 15})", //
@@ -2735,7 +2735,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("PseudoInverse({{1, 2}, {3, 4}})", //
         "{{-2,1},\n" + " {3/2,-1/2}}");
     check("PseudoInverse({{a, b}, {c, d}})", //
-        "{{d/(-b*c+a*d),b/(b*c-a*d)},\n" + " {c/(b*c-a*d),a/(-b*c+a*d)}}");
+        "{{d/(-b*c+a*d),-b/(-b*c+a*d)},\n" + " {-c/(-b*c+a*d),a/(-b*c+a*d)}}");
     // a rank deficient matrix needs the full rank factorization
     check("PseudoInverse({{1,2}, {1,2}})", //
         "{{1/10,1/10},\n" + " {1/5,1/5}}");

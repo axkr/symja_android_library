@@ -2,6 +2,7 @@ package org.matheclipse.core.integrate;
 
 import java.util.List;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
@@ -261,7 +262,9 @@ public class PrimitiveTowerIntegration {
    */
   private static IExpr[] hermiteReduceLinear(IExpr term, ISymbol t, Monomial monomial,
       DifferentialTower tower, IExpr x, EvalEngine engine) {
-    IExpr together = engine.evaluate(F.Together(term));
+    // the multiplied out denominator: the reduction is only meant for a denominator which is
+    // recognized as the power of one linear factor in that form
+    IExpr together = engine.evaluate(AlgebraUtil.togetherExpr(term, engine));
     IExpr numerator = engine.evaluate(F.Numerator(together));
     IExpr denominator = engine.evaluate(F.Denominator(together));
     if (!engine.evaluate(F.PolynomialQ(denominator, t)).isTrue()) {

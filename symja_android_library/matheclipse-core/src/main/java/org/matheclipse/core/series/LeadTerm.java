@@ -599,6 +599,54 @@ public class LeadTerm {
       }
       return null;
     }
+    if (ast.argSize() == 2 && head.ordinal() == ID.ExpIntegralE
+        && (!ast.arg1().isInteger() || !ast.arg1().isPositive()) && ast.arg1().isFree(t)) {
+      final IExpr n = ast.arg1();
+      Lead zLead = dispatch(ast.arg2(), t, logx, engine, depth + 1);
+      if (zLead == null || zLead.coefficientHasLogx() || zLead.exponentSign(engine) <= 0) {
+        return null;
+      }
+      IExpr shifted = engine.evaluate(F.Subtract(n, F.C1));
+      if (shifted.isPositiveResult()) {
+        // ExpIntegralE(n, 0) == 1/(n-1) for n > 1
+        return new Lead(engine.evaluate(F.Power(shifted, F.CN1)), F.C0, logx);
+      }
+      if (shifted.isNegativeResult()) {
+        // ExpIntegralE(n, z) ~ Gamma(1-n)*z^(n-1) for z -> 0 and n < 1
+        IExpr c = engine.evaluate(
+            F.Times(F.Gamma(F.Negate(shifted)), F.Power(zLead.coefficient(), shifted)));
+        IExpr e = engine.evaluate(F.Times(zLead.exponent(), shifted));
+        return c.isZero() ? null : new Lead(c, e, logx);
+      }
+      return null;
+    }
+    if (ast.argSize() == 2 && ast.arg1().isInteger() && ast.arg1().isFree(t)
+        && (head.ordinal() == ID.StruveH || head.ordinal() == ID.ExpIntegralE)) {
+      final int m = ast.arg1().toIntDefault();
+      Lead zLead = dispatch(ast.arg2(), t, logx, engine, depth + 1);
+      if (zLead == null || zLead.coefficientHasLogx() || zLead.exponentSign(engine) <= 0) {
+        return null;
+      }
+      if (head.ordinal() == ID.StruveH && m >= 0) {
+        // StruveH(m, z) ~ (z/2)^(m+1)/(Gamma(3/2)*Gamma(m+3/2)) for z -> 0
+        IExpr power = F.ZZ(m + 1);
+        IExpr c = engine.evaluate(F.Times(F.Power(F.Times(F.C1D2, zLead.coefficient()), power),
+            F.Power(F.Times(F.Gamma(F.QQ(3, 2)), F.Gamma(F.QQ(2 * m + 3, 2))), F.CN1)));
+        IExpr e = engine.evaluate(F.Times(zLead.exponent(), power));
+        return c.isZero() ? null : new Lead(c, e, logx);
+      }
+      if (head.ordinal() == ID.ExpIntegralE && m >= 2) {
+        // ExpIntegralE(m, 0) == 1/(m-1)
+        return new Lead(F.QQ(1, m - 1), F.C0, logx);
+      }
+      if (head.ordinal() == ID.ExpIntegralE && m == 1) {
+        // ExpIntegralE(1, z) ~ -EulerGamma-Log(z) for z -> 0
+        IExpr c = engine.evalQuiet(F.Subtract(F.Negate(S.EulerGamma),
+            F.Plus(F.Log(zLead.coefficient()), F.Times(zLead.exponent(), logx))));
+        return c.isFree(t) ? new Lead(c, F.C0, logx) : null;
+      }
+      return null;
+    }
     // Any other multi-argument function: only the fully continuous case is safe, and only when a
     // single argument depends on t.
     return null;
