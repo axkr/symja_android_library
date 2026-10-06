@@ -431,6 +431,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "7/(-2+x)+(4+3*x)/(4+2*x+x^2)");
     check("Apart((10*x^2-63*x+29)/((x+2)*(x+3)^5))", //
         "195/(2+x)-308/(3+x)^5-185/(3+x)^4-195/(3+x)^3-195/(3+x)^2-195/(3+x)");
+    // a repeated factor with symbolic coefficients next to another factor: every power of it
+    // gets its own term
+    check("Apart(1/(t^2*(p+q*t)^2), t)", //
+        "1/(p^2*t^2)+(-2*q)/(p^3*t)+q^2/(p^2*(p+q*t)^2)+(2*q^2)/(p^3*(p+q*t))");
+    check("Together(Apart(1/(t^2*(p+q*t)^2), t) - 1/(t^2*(p+q*t)^2))", //
+        "0");
+    check("Apart(t^3/((t+p)^2*(t+q)), t)", //
+        "1-p^3/((-p+q)*(p+t)^2)+(-2*p^3+3*p^2*q)/((p^2-2*p*q+q^2)*(p+t))-q^3/((p^2-2*p*q+q^\n2)*(q+t))");
+    check("Simplify(Together(Apart(t^3/((t+p)^2*(t+q)), t) - t^3/((t+p)^2*(t+q))))", //
+        "0");
   }
 
   @Test

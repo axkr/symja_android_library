@@ -2869,9 +2869,67 @@ public class AlgebraUtil {
     temp = S.Factor.of(engine, parts[1]);
     if (temp.isTimes()) {
       // The iterative method no longer requires a 'count' recursion tracker.
-      return AlgebraUtil.partialFractionDecomposition(parts[0], temp, variable, engine);
+      return splitRepeatedFactors(
+          AlgebraUtil.partialFractionDecomposition(parts[0], temp, variable, engine), variable,
+          engine);
     }
     return singleFactorApart(parts[0], temp, variable, engine);
+  }
+
+  /**
+   * The iterative decomposition gives one term <code>p(x)/d^k</code> for a repeated factor of the
+   * denominator. Each such term is written in the powers of <code>d</code>:
+   * <code>(c0+c1*x)/x^2</code> is <code>c0/x^2+c1/x</code>.
+   */
+  private static IExpr splitRepeatedFactors(IExpr decomposition, IExpr variable,
+      EvalEngine engine) {
+    if (!decomposition.isPlus()) {
+      return decomposition;
+    }
+    IAST terms = (IAST) decomposition;
+    IASTAppendable result = F.PlusAlloc(terms.argSize() + 8);
+    boolean changed = false;
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      IExpr split = F.NIL;
+      Optional<IExpr[]> fraction = fractionalParts(term, false);
+      if (fraction.isPresent()) {
+        IExpr numerator = fraction.get()[0];
+        IExpr denominator = fraction.get()[1];
+        if (denominator.isTimes()) {
+          // the factors without the variable belong to the coefficients
+          IASTAppendable free = F.TimesAlloc(denominator.argSize());
+          IASTAppendable rest = F.TimesAlloc(denominator.argSize());
+          ((IAST) denominator).forEach(f -> (f.isFree(variable) ? free : rest).append(f));
+          numerator = engine.evaluate(F.Divide(numerator, free.oneIdentity1()));
+          denominator = rest.oneIdentity1();
+        }
+        if (denominator.isPower() && !denominator.isFree(variable)) {
+          split = singleFactorApart(numerator, denominator, variable, engine);
+        }
+      }
+      if (split.isPresent()) {
+        changed = true;
+        result.append(split);
+      } else {
+        result.append(term);
+      }
+    }
+    if (!changed) {
+      return decomposition;
+    }
+    IExpr sum = engine.evaluate(result);
+    if (sum.isPlus()) {
+      // the polynomial parts of the single terms: their constants are combined
+      IASTAppendable free = F.PlusAlloc(sum.argSize());
+      IASTAppendable rest = F.PlusAlloc(sum.argSize());
+      ((IAST) sum).forEach(t -> (t.isFree(variable) ? free : rest).append(t));
+      if (free.argSize() > 1) {
+        rest.append(engine.evaluate(togetherExpr(free, engine)));
+        return engine.evaluate(rest);
+      }
+    }
+    return sum;
   }
 
   /**
