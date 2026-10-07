@@ -228,7 +228,7 @@ public final class PrimitiveCollector {
         if (ast.argSize() >= 1) {
           Style2D scoped = style.clone();
           for (int i = 2; i <= ast.argSize(); i++) {
-            collectDirectiveOnly(ast.get(i), scoped);
+            applyTextStyle(ast.get(i), scoped);
           }
           collect(ast.arg1(), scoped);
         }
@@ -387,6 +387,33 @@ public final class PrimitiveCollector {
   }
 
   /** Apply {@code expr} as a directive only, never emitting a primitive. */
+  /**
+   * Apply one directive of a <code>Style(expr, directive, ...)</code> to a style.
+   *
+   * <p>
+   * A bare number is a font size. The general directive parser does not read it as one, because a
+   * number means nothing to a drawn primitive - so a size written on a caption would otherwise be
+   * silently dropped. A list or a <code>Directive(...)</code> is the directives in it: read as
+   * graphics content a list would scope them, and they would be lost with it.
+   */
+  public void applyTextStyle(IExpr directive, Style2D style) {
+    if (directive.isNumber()) {
+      double size = ColorUtil.dbl(directive, 0);
+      if (size > 0) {
+        style.fontSize = size;
+      }
+      return;
+    }
+    if (directive.isAST(S.Directive) || directive.isList()) {
+      IAST group = (IAST) directive;
+      for (int i = 1; i <= group.argSize(); i++) {
+        applyTextStyle(group.get(i), style);
+      }
+      return;
+    }
+    collectDirectiveOnly(directive, style);
+  }
+
   private void collectDirectiveOnly(IExpr expr, Style2D style) {
     int before = primitives.size();
     collect(expr, style);
@@ -1417,7 +1444,7 @@ public final class PrimitiveCollector {
         content = wrapper.arg1();
       } else if (head == S.Style) {
         for (int i = 2; i <= wrapper.argSize(); i++) {
-          collectDirectiveOnly(wrapper.get(i), textStyle);
+          applyTextStyle(wrapper.get(i), textStyle);
         }
         content = wrapper.arg1();
       } else {

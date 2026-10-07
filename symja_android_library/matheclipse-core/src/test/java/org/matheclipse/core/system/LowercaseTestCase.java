@@ -11647,6 +11647,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testStyleDirectivesOnTextAndLabelsInSVG() {
+    // a bare number is the font size, a list or Directive is the directives in it
+    check("StringCount(ExportString(Graphics(Text(Style(\"abc\", {16, Red}), {0, 0})), \"SVG\"),"
+        + " {\"fill=\\\"rgb(255,0,0)\\\"\", \"font-size=\\\"16\\\"\"})", //
+        "2");
+    check("StringCount(ExportString(Graphics(Text(Style(\"abc\", 16, Red), {0, 0})), \"SVG\"),"
+        + " {\"fill=\\\"rgb(255,0,0)\\\"\", \"font-size=\\\"16\\\"\"})", //
+        "2");
+    check("StringCount(ExportString(Graphics(Text(Style(5, {{Bold, 11}, Italic}), {0, 0})), \"SVG\"),"
+        + " {\"font-size=\\\"11\\\"\", \"font-weight=\\\"bold\\\"\", \"font-style=\\\"italic\\\"\"})", //
+        "3");
+    check("StringCount(ExportString(Graphics({Style(Text(\"abc\", {0, 0}), 20, Red)}), \"SVG\"),"
+        + " {\"fill=\\\"rgb(255,0,0)\\\"\", \"font-size=\\\"20\\\"\"})", //
+        "2");
+    // the style of a primitive given as a list, which ends with the Style
+    check("StringCount(ExportString(Graphics({Style(Disk(), {Red}), Disk({3, 0})}), \"SVG\"),"
+        + " {\"fill=\\\"rgb(255,0,0)\\\"\", \"fill=\\\"rgb(0,0,0)\\\"\"})", //
+        "2");
+    // the Style of a plot label and of an axes label
+    check("StringCount(ExportString(Plot(x, {x, 0, 1}, PlotLabel -> Style(\"abc\", 16, Red),"
+        + " AxesLabel -> {Style(\"xx\", {20, Blue}), \"yy\"}), \"SVG\"),"
+        + " {\"font-size=\\\"16\\\" font-weight=\\\"bold\\\" fill=\\\"rgb(255,0,0)\\\">abc\","
+        + " \"font-size=\\\"20\\\" fill=\\\"rgb(0,0,255)\\\">xx\", \"font-size=\\\"12\\\">yy\"})", //
+        "3");
+    // on top of the LabelStyle of the picture
+    check("StringCount(ExportString(Plot(x, {x, 0, 1}, PlotLabel -> Style(\"abc\", Italic),"
+        + " LabelStyle -> {Blue, 10}), \"SVG\"),"
+        + " \"font-size=\\\"10\\\" font-weight=\\\"bold\\\" fill=\\\"rgb(0,0,255)\\\" font-style=\\\"italic\\\">abc\")", //
+        "1");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

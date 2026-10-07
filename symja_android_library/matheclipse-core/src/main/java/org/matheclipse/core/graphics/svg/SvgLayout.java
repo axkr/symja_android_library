@@ -791,7 +791,7 @@ final class SvgLayout {
       IAST styled = (IAST) value;
       PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
       for (int i = 2; i <= styled.argSize(); i++) {
-        applyTextDirective(styled.get(i), style, collector);
+        collector.applyTextStyle(styled.get(i), style);
       }
       value = styled.arg1();
     }
@@ -812,32 +812,6 @@ final class SvgLayout {
         .attr("font-style", style.fontStyle).attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle").withText(text);
     return new Piece(element.render(), width, height, false);
-  }
-
-  /**
-   * One {@code Style} directive on a text cell.
-   *
-   * <p>
-   * A bare number is a font size. The general directive parser does not read it as one, because a
-   * number means nothing to a drawn primitive - so a size written on a caption would otherwise be
-   * silently dropped.
-   */
-  private void applyTextDirective(IExpr directive, Style2D style, PrimitiveCollector collector) {
-    if (directive.isNumber()) {
-      double size = ColorUtil.dbl(directive, 0);
-      if (size > 0) {
-        style.fontSize = size;
-      }
-      return;
-    }
-    if (directive.isAST(S.Directive) || directive.isList()) {
-      IAST group = (IAST) directive;
-      for (int i = 1; i <= group.argSize(); i++) {
-        applyTextDirective(group.get(i), style, collector);
-      }
-      return;
-    }
-    collector.applyStyleTo(directive, style);
   }
 
   // ------------------------------------------------------------------ overlay

@@ -508,8 +508,9 @@ public class SvgGraphics2D {
 
     if (options.plotLabel != null) {
       // one more line height for each further line of a multi-line label
-      top += PLOT_LABEL_HEIGHT
-          + (SvgRenderer2D.lineCount(labelText(options.plotLabel)) - 1) * 1.2 * 14;
+      double size = labelFontSize(options.plotLabel, 14);
+      top += PLOT_LABEL_HEIGHT + Math.max(0.0, size - 14)
+          + (SvgRenderer2D.lineCount(labelText(options.plotLabel)) - 1) * 1.2 * size;
     }
     // Only for a label that is actually written. Testing the option for null counted
     // `AxesLabel -> None`, which every plot emits by default, so each picture reserved a strip on
@@ -541,24 +542,26 @@ public class SvgGraphics2D {
       double cy = Math.max(14, viewport.plotY1 - 12);
       elements.add(SvgRenderer2D.withLines(
           labelled(tag("text").attr("x", SvgRenderer2D.fmt(cx)).attr("y", SvgRenderer2D.fmt(cy))
-              .attr("text-anchor", "middle"), 14, true),
-          labelText(options.plotLabel), cx, 14, 1.0));
+              .attr("text-anchor", "middle"), options.plotLabel, 14, true),
+          labelText(options.plotLabel), cx, labelFontSize(options.plotLabel, 14), 1.0));
     }
     if (options.axesLabel != null) {
       String[] labels = labelPair(options.axesLabel);
+      IExpr[] styled = labelParts(options.axesLabel);
       if (labels[0] != null) {
         elements.add(labelled(tag("text").attr("x", SvgRenderer2D.fmt(viewport.plotX2))
             .attr("y", SvgRenderer2D.fmt(viewport.plotY2 + TICK_LABEL_HEIGHT + 14))
-            .attr("text-anchor", "end"), 12, false).withText(labels[0]));
+            .attr("text-anchor", "end"), styled[0], 12, false).withText(labels[0]));
       }
       if (labels[1] != null) {
         elements.add(labelled(tag("text").attr("x", SvgRenderer2D.fmt(viewport.plotX1))
             .attr("y", SvgRenderer2D.fmt(Math.max(12, viewport.plotY1 - 6)))
-            .attr("text-anchor", "middle"), 12, false).withText(labels[1]));
+            .attr("text-anchor", "middle"), styled[1], 12, false).withText(labels[1]));
       }
     }
     if (options.frameLabel != null) {
       String[] labels = labelPair(options.frameLabel);
+      IExpr[] styled = labelParts(options.frameLabel);
       double cx = (viewport.plotX1 + viewport.plotX2) / 2.0;
       double cy = (viewport.plotY1 + viewport.plotY2) / 2.0;
       double[] bottomBox = frameLabelBox(0);
@@ -576,7 +579,7 @@ public class SvgGraphics2D {
       if (labels[0] != null) {
         elements.add(labelled(tag("text").attr("x", SvgRenderer2D.fmt(cx))
             .attr("y", SvgRenderer2D.fmt(viewport.plotY2 + TICK_LABEL_HEIGHT + 14))
-            .attr("text-anchor", "middle"), 12, false).withText(labels[0]));
+            .attr("text-anchor", "middle"), styled[0], 12, false).withText(labels[0]));
       }
       if (labels[1] != null) {
         double x = Math.max(12, viewport.plotX1 - AXIS_LABEL_HEIGHT - 14);
@@ -584,7 +587,7 @@ public class SvgGraphics2D {
             labelled(tag("text").attr("x", SvgRenderer2D.fmt(x)).attr("y", SvgRenderer2D.fmt(cy))
                 .attr("text-anchor", "middle").attr("transform", String.format(Locale.US,
                     "rotate(-90 %s %s)", SvgRenderer2D.fmt(x), SvgRenderer2D.fmt(cy))),
-                12, false).withText(labels[1]));
+                styled[1], 12, false).withText(labels[1]));
       }
     }
   }
@@ -697,6 +700,68 @@ public class SvgGraphics2D {
       }
     }
     return tag;
+  }
+
+  /**
+   * The text attributes of a label which may carry its own <code>Style(label, ...)</code>: the
+   * directives of the wrapper - a size, a colour, <code>Bold</code>, <code>Italic</code>, a font -
+   * are applied on top of the <code>LabelStyle</code> of the picture.
+   *
+   * @param label the label expression, or <code>null</code>
+   */
+  private ContainerTag<?> labelled(ContainerTag<?> tag, IExpr label, double defaultSize,
+      boolean bold) {
+    Style2D style = ownLabelStyle(label, defaultSize);
+    if (style == null) {
+      return labelled(tag, defaultSize, bold);
+    }
+    tag.attr("font-family", style.fontFamily).attr("font-size", SvgRenderer2D.fmt(style.fontSize));
+    if (bold || "bold".equals(style.fontWeight)) {
+      tag.attr("font-weight", "bold");
+    }
+    tag.attr("fill", ColorUtil.css(style.strokeColor));
+    if ("italic".equals(style.fontStyle)) {
+      tag.attr("font-style", "italic");
+    }
+    return tag;
+  }
+
+  /** The font size a label is written with, see {@link #labelled(ContainerTag, IExpr, double, boolean)}. */
+  private double labelFontSize(IExpr label, double defaultSize) {
+    Style2D style = ownLabelStyle(label, defaultSize);
+    if (style != null) {
+      return style.fontSize;
+    }
+    return options.labelFontSizeSet ? options.labelStyle.fontSize : defaultSize;
+  }
+
+  /**
+   * The style of a label wrapped in <code>Style(label, ...)</code>, or <code>null</code> for a
+   * label without a style of its own.
+   */
+  private Style2D ownLabelStyle(IExpr label, double defaultSize) {
+    if (label == null || !label.isAST(S.Style) || label.argSize() < 2) {
+      return null;
+    }
+    Style2D style = options.labelStyle != null ? options.labelStyle.clone() : new Style2D();
+    if (!options.labelFontSizeSet) {
+      style.fontSize = defaultSize;
+    }
+    PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);
+    // the directives of an outer wrapper first, so that an inner one overrides them
+    applyOwnStyles(label, style, collector);
+    return style;
+  }
+
+  private static void applyOwnStyles(IExpr label, Style2D style, PrimitiveCollector collector) {
+    if (!label.isAST(S.Style) || label.argSize() < 1) {
+      return;
+    }
+    IAST wrapper = (IAST) label;
+    for (int i = 2; i <= wrapper.argSize(); i++) {
+      collector.applyTextStyle(wrapper.get(i), style);
+    }
+    applyOwnStyles(wrapper.arg1(), style, collector);
   }
 
   private String labelText(IExpr expr) {
