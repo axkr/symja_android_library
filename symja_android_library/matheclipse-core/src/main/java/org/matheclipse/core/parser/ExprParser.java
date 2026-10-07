@@ -1906,6 +1906,9 @@ public class ExprParser extends Scanner {
    */
   private IExpr climbOperators(IExpr lhs, final int min_precedence,
       final boolean foldEqualPrecedence) {
+    // the product this loop is building: a b c and a*b c are one Times(a,b,c), a factor in
+    // parentheses, (a b) c, keeps its own node
+    IASTAppendable openProduct = null;
     while (true) {
       if (fToken == TT_NEWLINE) {
         return lhs;
@@ -1919,7 +1922,14 @@ public class ExprParser extends Scanner {
             || (foldEqualPrecedence ? Precedence.TIMES >= min_precedence
                 : Precedence.TIMES > min_precedence)) {
           if (foldEqualPrecedence) {
-            lhs = F.$(S.Times, lhs, parseLookaheadOperator(Precedence.TIMES));
+            if (openProduct != null && lhs == openProduct) {
+              openProduct.append(parseLookaheadOperator(Precedence.TIMES));
+            } else {
+              openProduct = F.ast(S.Times, 4);
+              openProduct.append(lhs);
+              openProduct.append(parseLookaheadOperator(Precedence.TIMES));
+              lhs = openProduct;
+            }
             ((IAST) lhs).addFlag(Flag.TIMES_PARSED_IMPLICIT);
           } else {
             lhs = climbOperators(lhs, Precedence.TIMES, true);
@@ -1982,7 +1992,18 @@ public class ExprParser extends Scanner {
         while (fToken == TT_NEWLINE) {
           getNextToken();
         }
+        final boolean star = infixOperator.getOperatorString().equals("*");
+        final IASTAppendable product = star && lhs == openProduct ? openProduct : null;
         lhs = parseInfixOperator(lhs, infixOperator);
+        openProduct = null;
+        if (star && lhs.isTimes() && lhs instanceof IASTAppendable) {
+          if (product != null && lhs.first() == product) {
+            // a b*c: the factors after the * belong to the product of the juxtaposition
+            product.appendAll((IAST) lhs, 2, lhs.size());
+            lhs = product;
+          }
+          openProduct = (IASTAppendable) lhs;
+        }
         continue;
       }
       final PostfixExprOperator postfixOperator = determinePostfixOperator();

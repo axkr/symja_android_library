@@ -1041,7 +1041,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("{}.{4,5.0,6}", //
         "{}.{4,5.0,6}");
     check("0.17583681.41125407852.0 // HoldForm // FullForm", //
-        "HoldForm(Times(Times(0.17583681`, 0.41125407852`), 0.0`))");
+        "HoldForm(Times(0.17583681`, 0.41125407852`, 0.0`))");
 
     check("{{1, 2}, {3.0, 4}, {5, 6}}.{1,1}", //
         "{3.0,7.0,11.0}");

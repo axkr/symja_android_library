@@ -80,6 +80,24 @@ public class PatternMatchingBugsTest extends ExprEvaluatorTestCase {
     check("mpa(3,7)+mpa(5,7)+r", "r+mpa(1,7)");
   }
 
+  /**
+   * A product written by juxtaposition was parsed as nested products,
+   * <code>Times(Times(a,b),c)</code>, so that an up value of one factor was applied to a part of
+   * the product before the whole product was seen.
+   */
+  @Test
+  public void testUpValueOfJuxtaposedProduct() {
+    check("upj /: Times(upj, r_) := lbj(r)", "");
+    check("upj*v*w", "lbj(v*w)");
+    check("upj v w", "lbj(v*w)");
+    check("3 upj v", "lbj(3*v)");
+    check("FullForm(Hold(p q r s))", "Hold(Times(p, q, r, s))");
+    check("FullForm(Hold(p*q r))", "Hold(Times(p, q, r))");
+    check("FullForm(Hold(p q*r))", "Hold(Times(p, q, r))");
+    // a factor in parentheses keeps its own node
+    check("FullForm(Hold((p q) r))", "Hold(Times(Times(p, q), r))");
+  }
+
   /** {@link PatternMatcherList}: the substituted <code>Condition()</code> was collected unevaluated */
   @Test
   public void testReplaceListCondition() {
