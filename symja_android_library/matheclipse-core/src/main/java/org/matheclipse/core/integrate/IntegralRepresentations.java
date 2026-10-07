@@ -768,49 +768,207 @@ final class IntegralRepresentations {
       return null;
     }
     if (!shape.exponent.isEmpty()) {
-      return shape.others.size() == 1 ? dampedBesselJ(ctx, shape, s) : null;
+      if (shape.others.size() != 1) {
+        return null;
+      }
+      return f.isSin() || f.isCos() ? dampedTrigonometric(ctx, shape, s)
+          : dampedBesselJ(ctx, shape, s);
     }
-    Answer transform;
-    IExpr k;
     if (shape.others.size() == 2) {
       IExpr g = shape.others.get(1);
       if (!f.isAST2() || !g.isAST2() || !f.head().equals(g.head())) {
         return null;
       }
-      k = slope(ctx, f.second());
+      IExpr k = slope(ctx, f.second());
       if (k.isNIL() || !slope(ctx, g.second()).equals(k)) {
         return null;
       }
-      transform = productTransform((IAST) f, f.first(), g.first(), s);
-    } else {
-      IExpr argument;
-      if (f.isPower()) {
-        if (!isReciprocal(f, S.Sinh) && !isReciprocal(f, S.Cosh)) {
-          return null;
-        }
+      return scaled(shape, productTransform((IAST) f, f.first(), g.first(), s), k, F.C1, s);
+    }
+    // f(k*x^m): the substitution u == k*x^m gives the transform of f at s/m, divided by Abs(m)
+    IExpr argument;
+    int kind = SINGLE;
+    if (f.isPower()) {
+      if (isReciprocal(f, S.Sinh) || isReciprocal(f, S.Cosh)) {
         argument = f.base().first();
+      } else if (f.exponent().equals(F.C2) && f.base().isAST(S.ArcTan, 2)) {
+        argument = f.base().first();
+        kind = ARCTAN_SQUARED;
+      } else if ((f.base().isSin() || f.base().isCos()) && f.exponent().isInteger()) {
+        argument = f.base().first();
+        kind = TRIGONOMETRIC_POWER;
       } else {
-        argument = ((IAST) f).last();
-      }
-      if (f.isAST(S.EllipticK, 2) || f.isAST(S.Hypergeometric2F1, 5)) {
-        // these are transformed as functions of -x
-        argument = F.Negate(argument);
-      }
-      k = slope(ctx, ctx.eval(argument));
-      if (k.isNIL()) {
         return null;
       }
-      transform = singleTransform(f, s);
+    } else if (f.isLog()) {
+      // Log(1+k*x^m)
+      argument = ctx.eval(F.Expand(F.Subtract(f.first(), F.C1)));
+      kind = LOG_ONE_PLUS;
+    } else if (f.isPlus()) {
+      // Coth(u)-1 and 1-Tanh(u)
+      IExpr coth = ctx.eval(F.Plus(f, F.C1));
+      IExpr tanh = ctx.eval(F.Subtract(F.C1, f));
+      if (coth.isAST(S.Coth, 2)) {
+        argument = coth.first();
+        kind = COTH_MINUS_ONE;
+      } else if (tanh.isAST(S.Tanh, 2)) {
+        argument = tanh.first();
+        kind = ONE_MINUS_TANH;
+      } else {
+        return null;
+      }
+    } else {
+      argument = ((IAST) f).last();
     }
+    if (f.isAST(S.EllipticK, 2) || f.isAST(S.Hypergeometric2F1, 5)) {
+      // these are transformed as functions of -x
+      argument = F.Negate(argument);
+    }
+    IExpr[] monomial = monomial(ctx.eval(argument), ctx.x);
+    if (monomial == null || monomial[1].isZero() || monomial[0].isZero()) {
+      return null;
+    }
+    final IExpr k = ctx.eval(monomial[0]);
+    final IExpr m = monomial[1];
+    final IExpr sm = ctx.eval(F.Divide(s, m));
+    Answer transform;
+    switch (kind) {
+      case ARCTAN_SQUARED:
+        transform = transform(
+            F.Times(S.Pi, F.Power(F.Times(F.C2, sm), F.CN1), F.Csc(F.Times(F.C1D2, S.Pi, sm)),
+                F.Subtract(F.PolyGamma(F.C0, F.Times(F.C1D2, F.Subtract(F.C1, sm))),
+                    F.PolyGamma(F.C0, F.C1D2))),
+            false, F.Greater(sm, F.CN2), F.Less(sm, F.C0));
+        break;
+      case TRIGONOMETRIC_POWER:
+        transform = trigonometricPower(ctx, f, sm);
+        break;
+      case LOG_ONE_PLUS:
+        transform = transform(F.Times(S.Pi, F.Power(sm, F.CN1), F.Csc(F.Times(S.Pi, sm))), false,
+            F.Greater(sm, F.CN1), F.Less(sm, F.C0));
+        break;
+      case COTH_MINUS_ONE:
+        transform = transform(
+            F.Times(F.Power(F.C2, F.Subtract(F.C1, sm)), F.Gamma(sm), F.Zeta(sm)), false,
+            F.Greater(sm, F.C1));
+        break;
+      case ONE_MINUS_TANH:
+        transform = transform(F.Times(F.Power(F.C2, F.Subtract(F.C1, sm)), F.Gamma(sm),
+            F.Subtract(F.C1, F.Power(F.C2, F.Subtract(F.C1, sm))), F.Zeta(sm)), false,
+            positive(sm), F.Unequal(sm, F.C1));
+        break;
+      default:
+        transform = singleTransform(f, sm);
+        break;
+    }
+    Answer answer = scaled(shape, transform, k, m, sm);
+    if (answer != null && kind == COTH_MINUS_ONE) {
+      // the same function without the difference of two numbers which are both 1 for large x
+      answer.reference = F.Times(shape.constant(), F.Power(ctx.x, shape.power), F.C2,
+          F.Power(F.Subtract(F.Exp(F.Times(F.C2, argument)), F.C1), F.CN1));
+    }
+    return answer;
+  }
+
+  private static final int SINGLE = 0;
+  private static final int ARCTAN_SQUARED = 1;
+  private static final int TRIGONOMETRIC_POWER = 2;
+  private static final int LOG_ONE_PLUS = 3;
+  private static final int COTH_MINUS_ONE = 4;
+  private static final int ONE_MINUS_TANH = 5;
+
+  /**
+   * <code>constant*k^(-s)*M(s)/Abs(m)</code> for the transform <code>M</code> at
+   * <code>s</code>, which is the exponent divided by <code>m</code> already.
+   */
+  private static Answer scaled(Shape shape, Answer transform, IExpr k, IExpr m, IExpr s) {
     if (transform == null) {
       return null;
     }
-    Answer answer =
-        new Answer(F.Times(shape.constant(), F.Power(k, F.Negate(s)), transform.value));
+    Answer answer = new Answer(F.Times(shape.constant(), F.Power(F.Abs(m), F.CN1),
+        F.Power(k, F.Negate(s)), transform.value));
     answer.gates.add(positive(k));
     answer.gates.addAll(transform.gates);
     answer.tabulated = transform.tabulated;
     return answer;
+  }
+
+  /**
+   * The transform of <code>Sin(x)^n</code> or <code>Cos(x)^n</code>, <code>n &gt;= 2</code>, at
+   * <code>s</code>: the power is a sum of sines or cosines of multiples of <code>x</code>, and
+   * its constant term has no transform. The strip comes from the function itself: it is
+   * <code>x^n</code> or <code>1</code> at the origin and oscillates around its mean.
+   */
+  private static Answer trigonometricPower(Context ctx, IExpr f, IExpr s) {
+    final int n = f.exponent().toIntDefault();
+    final boolean sine = f.base().isSin();
+    if (n < 2 || n > 12 || (!sine && (n & 1) == 0)) {
+      // an even power of the cosine is 1 at the origin and has a mean: no strip
+      return null;
+    }
+    final ISymbol x = ctx.x;
+    IExpr reduced =
+        ctx.eval(F.Expand(F.TrigReduce(F.Power(sine ? F.Sin(x) : F.Cos(x), F.ZZ(n)))));
+    IAST terms = reduced.isPlus() ? (IAST) reduced : F.Plus(reduced);
+    IASTAppendable sum = F.PlusAlloc(terms.argSize());
+    final IExpr half = F.Times(F.C1D2, S.Pi, s);
+    for (int i = 1; i <= terms.argSize(); i++) {
+      IExpr term = terms.get(i);
+      if (term.isFree(x)) {
+        continue;
+      }
+      IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+      IASTAppendable coefficient = F.TimesAlloc(factors.argSize());
+      IExpr wave = F.NIL;
+      for (int j = 1; j <= factors.argSize(); j++) {
+        IExpr factor = factors.get(j);
+        if (factor.isFree(x)) {
+          coefficient.append(factor);
+        } else if (wave.isNIL() && (factor.isSin() || factor.isCos())) {
+          wave = factor;
+        } else {
+          return null;
+        }
+      }
+      if (wave.isNIL()) {
+        return null;
+      }
+      IExpr frequency = slope(ctx, wave.first());
+      if (frequency.isNIL() || !frequency.isPositive()) {
+        return null;
+      }
+      sum.append(F.Times(coefficient.oneIdentity1(), F.Power(frequency, F.Negate(s)),
+          wave.isSin() ? F.Sin(half) : F.Cos(half)));
+    }
+    if (sum.argSize() == 0) {
+      return null;
+    }
+    IExpr lower = sine ? F.ZZ(-n) : F.C0;
+    IExpr upper = (n & 1) == 0 ? F.C0 : F.C1;
+    return transform(F.Times(F.Gamma(s), sum), true, F.Greater(s, lower), F.Less(s, upper));
+  }
+
+  /**
+   * <code>Integrate(x^(s-1)*E^(-a*x)*Sin(b*x), {x,0,Infinity})</code> and the same with the
+   * cosine: <code>Gamma(s)*(a^2+b^2)^(-s/2)</code> times the sine or cosine of
+   * <code>s*ArcTan(b/a)</code>, for <code>a &gt; 0</code> and <code>s &gt; -1</code> or
+   * <code>s &gt; 0</code>.
+   */
+  private static Answer dampedTrigonometric(Context ctx, Shape shape, IExpr s) {
+    IExpr f = shape.others.get(0);
+    if (!shape.hasExponents(F.C1)) {
+      return null;
+    }
+    IExpr b = slope(ctx, f.first());
+    if (b.isNIL()) {
+      return null;
+    }
+    IExpr a = shape.rate(ctx, F.C1);
+    IExpr angle = F.Times(s, F.ArcTan(F.Divide(b, a)));
+    IExpr value = F.Times(shape.constant(), F.Gamma(s),
+        F.Power(F.Plus(F.Sqr(a), F.Sqr(b)), F.Times(F.CN1D2, s)),
+        f.isSin() ? F.Sin(angle) : F.Cos(angle));
+    return new Answer(value, positive(a), f.isSin() ? F.Greater(s, F.CN1) : positive(s));
   }
 
   private static Answer singleTransform(IExpr f, IExpr s) {
@@ -822,6 +980,14 @@ final class IntegralRepresentations {
     }
     if (f.isCos()) {
       return transform(F.Times(F.Gamma(s), F.Cos(half)), true, positive(s), F.Less(s, F.C1));
+    }
+    if (f.isAST(S.ArcTan, 2)) {
+      return transform(F.Times(F.CN1D2, pi, F.Power(s, F.CN1), F.Sec(half)), false,
+          F.Greater(s, F.CN1), F.Less(s, F.C0));
+    }
+    if (f.isAST(S.ArcCot, 2)) {
+      return transform(F.Times(F.C1D2, pi, F.Power(s, F.CN1), F.Sec(half)), false, positive(s),
+          F.Less(s, F.C1));
     }
     if (f.isAST(S.SinIntegral, 2)) {
       return transform(F.Times(F.CN1, F.Gamma(s), F.Sin(half), F.Power(s, F.CN1)), true,

@@ -389,7 +389,7 @@ public class RootTest extends ExprEvaluatorTestCase {
     check("Attributes(Root)", //
         "{NHoldRest,Protected}");
     check("N(Root(1+2*#1+#1^5&,1,0)) // InputForm", //
-        "-0.4863890359345431`");
+        "-0.486389035934543`");
 
     // The quintic 1 + 2*x + x^5 is not solvable in radicals, so ToRadicals leaves it alone ...
     check("ToRadicals(Root(1+2*#1+#1^5&,1,0))", //

@@ -12,6 +12,7 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
@@ -578,6 +579,12 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         // over the complexes all roots of a polynomial equation are solutions
         IExpr difference = engine.evaluate(F.Subtract(lastArg.first(), lastArg.second()));
         if (difference.isPolynomial(cd.variable)) {
+          if (domainMap.get(cd.variable) == S.Reals) {
+            IExpr realRootsOnly = realRootsOfHighDegree(difference, cd.variable, engine);
+            if (realRootsOnly.isPresent()) {
+              return realRootsOnly;
+            }
+          }
           IExpr roots = rootsOf(F.Equal(difference, F.C0), cd.variable, options, engine);
           if (roots.isPresent() && roots.isFree(S.Roots)) {
             if (domainMap.get(cd.variable) != S.Reals) {
@@ -2644,6 +2651,28 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * @param options the options of this call
    * @param engine the evaluation engine
    */
+  /**
+   * The real solutions of <code>polynomial == 0</code> for a polynomial of a high degree, which is
+   * not factored for them: <code>x == r1 || x == r2 || ...</code>, or <code>False</code> if there
+   * is no real root.
+   *
+   * @return {@link F#NIL} if the polynomial is none of these, see
+   *         {@link RootsFunctions#realRootsOfHighDegree(IExpr, IExpr, EvalEngine)}
+   */
+  private static IExpr realRootsOfHighDegree(IExpr polynomial, IExpr variable,
+      EvalEngine engine) {
+    IAST realRoots = RootsFunctions.realRootsOfHighDegree(polynomial, variable, engine);
+    if (realRoots.isNIL()) {
+      return F.NIL;
+    }
+    if (realRoots.isEmpty()) {
+      return S.False;
+    }
+    // unevaluated equations: evaluating x == Root(...) would compare the two sides numerically
+    return F.mapRange(S.Or, 1, realRoots.size(),
+        i -> F.binaryAST2(S.Equal, variable, realRoots.get(i))).oneIdentity0();
+  }
+
   private static IExpr rootsOf(IExpr equation, IExpr variable, SolveOptions options,
       EvalEngine engine) {
     IExpr[] rootsOptions = options.rootsOptions();
@@ -3324,6 +3353,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           if (arg.isEqual() && arg.isAST2() && !arg.isFree(variable, true)) {
             IExpr difference = engine.evaluate(F.Subtract(arg.first(), arg.second()));
             if (difference.isPolynomial(variable)) {
+              if (domainMap.get(variable) == S.Reals) {
+                IExpr realRootsOnly = realRootsOfHighDegree(difference, variable, engine);
+                if (realRootsOnly.isPresent()) {
+                  andResult.set(i, realRootsOnly);
+                  continue;
+                }
+              }
               IExpr roots = rootsOf(arg, variable, solveOptions, engine);
               if (roots.isPresent()) {
                 if (domainMap.get(variable) == S.Reals) {
@@ -5517,6 +5553,19 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       SolveOptions options, List<IExpr> exacts, List<Double> values, List<Boolean> poles,
       EvalEngine engine) {
     if (polynomial.isFree(variable)) {
+      return true;
+    }
+    // a polynomial of a high degree: its real roots, without factoring it
+    IAST realRoots = RootsFunctions.realRootsOfHighDegree(polynomial, variable, engine);
+    if (realRoots.isPresent()) {
+      for (int i = 1; i < realRoots.size(); i++) {
+        IExpr rootValue = realRoots.get(i);
+        double d = engine.evalQuiet(F.N(rootValue)).evalfNaN();
+        if (Double.isNaN(d) || Double.isInfinite(d)) {
+          return false;
+        }
+        insertSortedDistinct(exacts, values, poles, rootValue, d, isPole);
+      }
       return true;
     }
     IExpr roots = rootsOf(F.Equal(polynomial, F.C0), variable, options, engine);

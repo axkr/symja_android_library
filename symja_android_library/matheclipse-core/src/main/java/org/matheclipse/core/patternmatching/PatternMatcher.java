@@ -1350,8 +1350,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         IExpr evalArg = lhsEvalAST.getRule(lhsEvalOffset + i);
         if (!oneIdentity && flat && patternArg instanceof IPatternObject) {
           // wrap each argument of the Flat expression with the head symbol because of missing
-          // OneIdentity attribute
-          evalArg = F.unaryAST1(head, evalArg);
+          // OneIdentity attribute; a pattern the wrapped argument does not fit, x_Integer, gets
+          // the argument itself
+          if (stackMatcher.push(patternArg, F.unaryAST1(head, evalArg))) {
+            continue;
+          }
         }
         if (!stackMatcher.push(patternArg, evalArg)) {
           matched = false;

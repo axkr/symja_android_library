@@ -155,4 +155,85 @@ public class MellinTransformIntegralTest extends ExprEvaluatorTestCase {
     check("Abs(((Cos(v*Pi)*jm(v) - jm(-v))/Sin(v*Pi) /. jm(w_) :> (Gamma((s+w)/2)/(2^(1-s)*a^s*Gamma((2+w-s)/2))) /. {s->3/4, v->1/3, a->2}) - (Integrate(x^(s-1)*BesselY(v,a*x), {x,0,Infinity}, Assumptions->v>0&&s>v&&s<3/2&&a>0) /. {s->3/4, v->1/3, a->2})) < 10^-9", //
         "True");
   }
+  /** A function of <code>k*x^m</code> by the substitution, and the rows which were added with it. */
+  @Test
+  public void testMonomialArgumentAndInverseTangent() {
+    check("Integrate(x^(s-1)*Sin(a*x^2), {x,0,Infinity}, Assumptions->-2<s&&s<2&&a>0)", //
+        "(Gamma(s/2)*Sin(1/4*Pi*s))/(2*a^(s/2))");
+    check("Integrate(x^(s-1)*Cos(a*x^3), {x,0,Infinity}, Assumptions->0<s&&s<3&&a>0)", //
+        "(Cos(1/6*Pi*s)*Gamma(s/3))/(3*a^(s/3))");
+    check("Integrate(x^(s-1)*BesselJ(0,a*Sqrt(x)), {x,0,Infinity}, Assumptions->0<s&&s<3/4&&a>0)", //
+        "(2^(2*s)*Gamma(s))/(a^(2*s)*Gamma(1/2*(2-2*s)))");
+    check("Integrate(x^(s-1)*ArcTan(a*x), {x,0,Infinity}, Assumptions->-1<s&&s<0&&a>0)", //
+        "(-Pi*Sec(1/2*Pi*s))/(2*a^s*s)");
+    // the reciprocal argument reverses the range: the integrand is positive and so is the value
+    check("Integrate(x^(s-1)*ArcTan(a/x), {x,0,Infinity}, Assumptions->0<s&&s<1&&a>0)", //
+        "(a^s*Pi*Sec(1/2*Pi*s))/(2*s)");
+    check("Integrate(x^(s-1)*ArcCot(a*x), {x,0,Infinity}, Assumptions->0<s&&s<1&&a>0)", //
+        "(Pi*Sec(1/2*Pi*s))/(2*a^s*s)");
+    check("Integrate(x^(s-1)*Log(1+a*x), {x,0,Infinity}, Assumptions->-1<s&&s<0&&a>0)", //
+        "(Pi*Csc(Pi*s))/(a^s*s)");
+    check("Integrate(x^(s-1)*(Coth(a*x)-1), {x,0,Infinity}, Assumptions->s>1&&a>0)", //
+        "(2^(1-s)*Gamma(s)*Zeta(s))/a^s");
+    check("Integrate(x^(s-1)*(1-Tanh(a*x)), {x,0,Infinity}, Assumptions->s>1&&a>0)", //
+        "(2^(1-s)*(1-2^(1-s))*Gamma(s)*Zeta(s))/a^s");
+    check("Integrate(x^(s-1)*E^(-a*x)*Sin(b*x), {x,0,Infinity}, Assumptions->s>-1&&a>0&&b>0)", //
+        "(Gamma(s)*Sin(s*ArcTan(b/a)))/(a^2+b^2)^(s/2)");
+    check("Integrate(x^(s-1)*E^(-a*x)*Cos(b*x), {x,0,Infinity}, Assumptions->s>0&&a>0&&b>0)", //
+        "(Cos(s*ArcTan(b/a))*Gamma(s))/(a^2+b^2)^(s/2)");
+    // values
+    check("Integrate(ArcTan(3/x)/x^(2/3), {x,0,Infinity})", //
+        "3^(5/6)*Pi");
+    check("Integrate(x^2*(Coth(2*x)-1), {x,0,Infinity})", //
+        "Zeta(3)/16");
+    check("Integrate(Sin(x)^2/x^(5/2), {x,0,Infinity})", //
+        "4/3*Sqrt(Pi)");
+  }
+
+  /** A power of the sine or the cosine: the sum of the transforms of its harmonics. */
+  @Test
+  public void testTrigonometricPower() {
+    check("Integrate(x^(s-1)*Sin(a*x)^2, {x,0,Infinity}, Assumptions->-2<s&&s<0&&a>0)", //
+        "(-Cos(1/2*Pi*s)*Gamma(s))/(2^(1+s)*a^s)");
+    check("Integrate(x^(s-1)*Sin(a*x)^3, {x,0,Infinity}, Assumptions->-3<s&&s<1&&a>0)", //
+        "(Gamma(s)*(3/4*Sin(1/2*Pi*s)-Sin(1/2*Pi*s)/(4*3^s)))/a^s");
+    check("Integrate(x^(s-1)*Cos(a*x)^3, {x,0,Infinity}, Assumptions->0<s&&s<1&&a>0)", //
+        "((3/4*Cos(1/2*Pi*s)+Cos(1/2*Pi*s)/(4*3^s))*Gamma(s))/a^s");
+    // the square of the cosine is 1 at the origin and 1/2 in the mean: it has no transform
+    check("FreeQ(Integrate(x^(s-1)*Cos(a*x)^2, {x,0,Infinity}, Assumptions->0<s&&s<1&&a>0), Gamma)", //
+        "True");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testNewRowsAgainstQuadrature() {
+    // a finite range and the part beyond it from the behaviour of the integrand at infinity
+    check("Abs((NIntegrate(x^(-7/5)*ArcTan(3*x), {x,0,1,10^5}) + Pi/2*(10^5)^(-2/5)/(2/5)) - (Integrate(x^(s-1)*ArcTan(a*x), {x,0,Infinity}, Assumptions->-1<s&&s<0&&a>0) /. {s->-2/5, a->3})) < 1/200", //
+        "True");
+    check("Abs((NIntegrate(x^(-3/5)*ArcTan(3/x), {x,0,1,10^5}) + 3*(10^5)^(-3/5)/(3/5)) - (Integrate(x^(s-1)*ArcTan(a/x), {x,0,Infinity}, Assumptions->0<s&&s<1&&a>0) /. {s->2/5, a->3})) < 1/200", //
+        "True");
+    check("Abs((NIntegrate(x^(-3/5)*ArcCot(3*x), {x,0,1,10^5}) + 1/3*(10^5)^(-3/5)/(3/5)) - (Integrate(x^(s-1)*ArcCot(a*x), {x,0,Infinity}, Assumptions->0<s&&s<1&&a>0) /. {s->2/5, a->3})) < 1/200", //
+        "True");
+    check("Abs((NIntegrate(x^(-7/4)*Log(1+9/4*x^2), {x,0,1,10^5}) + (10^5)^(-3/4)*(2*Log(3/2*10^5)/(3/4) + 2/(3/4)^2)) - (Integrate(x^(s-1)*Log(1+a^2*x^2), {x,0,Infinity}, Assumptions->-2<s&&s<0&&a>0) /. {s->-3/4, a->3/2})) < 1/200", //
+        "True");
+    check("Abs((NIntegrate(x^(-7/4)*ArcTan(3/2*x)^2, {x,0,1,10^5}) + Pi^2/4*(10^5)^(-3/4)/(3/4)) - (Integrate(x^(s-1)*ArcTan(a*x)^2, {x,0,Infinity}, Assumptions->-2<s&&s<0&&a>0) /. {s->-3/4, a->3/2})) < 1/200", //
+        "True");
+    check("Abs(NIntegrate(2*x^(5/4)/(E^(3*x)-1), {x,0,40}) - (Integrate(x^(s-1)*(Coth(a*x)-1), {x,0,Infinity}, Assumptions->s>1&&a>0) /. {s->9/4, a->3/2})) < 1/500", //
+        "True");
+    check("Abs(NIntegrate(x^(5/4)*(1-Tanh(3/2*x)), {x,0,40}) - (Integrate(x^(s-1)*(1-Tanh(a*x)), {x,0,Infinity}, Assumptions->s>1&&a>0) /. {s->9/4, a->3/2})) < 1/500", //
+        "True");
+    check("Abs(NIntegrate(x^(1/4)*E^(-2*x)*Sin(3*x), {x,0,40}) - (Integrate(x^(s-1)*E^(-a*x)*Sin(b*x), {x,0,Infinity}, Assumptions->s>-1&&a>0&&b>0) /. {s->5/4, a->2, b->3})) < 1/500", //
+        "True");
+    check("Abs(NIntegrate(x^(1/4)*E^(-2*x)*Cos(3*x), {x,0,40}) - (Integrate(x^(s-1)*E^(-a*x)*Cos(b*x), {x,0,Infinity}, Assumptions->s>0&&a>0&&b>0) /. {s->5/4, a->2, b->3})) < 1/500", //
+        "True");
+    // powers of the sine where the integral converges absolutely; the mean of the power beyond
+    // the range
+    check("Abs((NIntegrate(x^(-5/2)*Sin(2*x)^2, {x,0,60}) + 1/2*60^(-3/2)/(3/2)) - (Integrate(x^(s-1)*Sin(a*x)^2, {x,0,Infinity}, Assumptions->-2<s&&s<0&&a>0) /. {s->-3/2, a->2})) < 1/200", //
+        "True");
+    check("Abs(NIntegrate(x^(-5/2)*Sin(2*x)^3, {x,0,60}) - (Integrate(x^(s-1)*Sin(a*x)^3, {x,0,Infinity}, Assumptions->-3<s&&s<1&&a>0) /. {s->-3/2, a->2})) < 1/200", //
+        "True");
+    // Sin(a*x^2) by the substitution x^2 -> u, whose row is the one of Sin
+    check("Abs((Integrate(u^(s/2-1)*Sin(a*u), {u,0,Infinity}, Assumptions->-2<s&&s<2&&a>0)/2 - Integrate(x^(s-1)*Sin(a*x^2), {x,0,Infinity}, Assumptions->-2<s&&s<2&&a>0)) /. {s->3/4, a->2}) < 1/10^9", //
+        "True");
+  }
 }

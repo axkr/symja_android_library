@@ -1856,6 +1856,43 @@ public class SimplifyUtil extends VisitorExpr {
    * the factors: <code>(x^2+x)/x</code> cancels to <code>1+x</code>, but a product of atoms and
    * functions is already canonical.
    */
+  /** The largest sum which is tested for being identically 0 by one common denominator. */
+  private static final int MAX_ZERO_SUM_LEAFCOUNT = 1000;
+
+  /** The time the common denominator of such a sum may take. */
+  private static final long ZERO_SUM_MILLIS = 1500L;
+
+  /**
+   * Test if the expression is 0 at two sample points of its variables. This says nothing about
+   * the expression; it only decides whether an exact test is worth its time.
+   */
+  private static boolean isNumericallyZero(IExpr expr, EvalEngine engine) {
+    VariablesSet variables = new VariablesSet(expr);
+    List<IExpr> list = variables.getArrayList();
+    if (list.isEmpty() || list.size() > 8) {
+      return false;
+    }
+    final double[] start = {1.3, 0.37};
+    for (int sample = 0; sample < start.length; sample++) {
+      IASTAppendable rules = F.ListAlloc(list.size());
+      for (int i = 0; i < list.size(); i++) {
+        rules.append(F.Rule(list.get(i), F.num(start[sample] + 0.617 * i)));
+      }
+      IExpr value;
+      try {
+        value = engine.evalQuiet(F.N(F.ReplaceAll(expr, rules)));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return false;
+      }
+      if (!value.isNumber() || !value.isSpecialsFree()
+          || !(((INumber) value).abs().evalf() < 1.0e-8)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private static boolean isTogetherCandidate(IExpr expr) {
     if (!hasDenominator(expr)) {
       return false;
@@ -2054,6 +2091,19 @@ public class SimplifyUtil extends VisitorExpr {
               ? ctx.util.eval(AlgebraUtil.togetherExpr(ctx.expr, ctx.util.fEngine)) //
               : ctx.expr;
           ctx.result.checkLessPlusTimesPower(ctx.together);
+        } else if (ctx.expr.isPlus() && ctx.result.minCounter < MAX_ZERO_SUM_LEAFCOUNT
+            && isTogetherCandidate(ctx.expr)
+            && isNumericallyZero(ctx.expr, ctx.util.fEngine)) {
+          // a sum of fractions too large for the search, which is 0 at sample points: the one
+          // common denominator is tried for this result only, as in the difference of the
+          // derivative of an antiderivative and its integrand
+          final IExpr sum = ctx.expr;
+          final SimplifyUtil util = ctx.util;
+          IExpr zero = org.matheclipse.core.integrate.IntegrateTimeBudget.runWithin(
+              () -> util.eval(AlgebraUtil.togetherExpr(sum, util.fEngine)), ZERO_SUM_MILLIS);
+          if (zero.isPresent() && zero.isZero()) {
+            ctx.result.checkLess(F.C0);
+          }
         }
         if (ctx.util.fFullSimplify) {
           if (ctx.together.isTimes()) {

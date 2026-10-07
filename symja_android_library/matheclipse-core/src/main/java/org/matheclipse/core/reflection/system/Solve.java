@@ -2326,6 +2326,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             }
           }
 
+          if (!numericFlag && domain == S.Reals && termsEqualZeroList.argSize() == 1
+              && variables.argSize() == 1 && inequationsList.isEmpty()
+              && intervalDataMap.isEmpty()) {
+            // a polynomial of a high degree: its real roots, without factoring it
+            IAST realRoots = RootsFunctions.realRootsOfHighDegree(termsEqualZeroList.arg1(),
+                variables.arg1(), engine);
+            if (realRoots.isPresent()) {
+              final IExpr variable = variables.arg1();
+              return F.mapRange(1, (int) Math.min((long) realRoots.size(), (long) maxRoots + 1),
+                  i -> F.list(F.Rule(variable, realRoots.get(i))));
+            }
+          }
+
           IExpr result =
               solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
           if (result.isNIL()) {
@@ -2804,7 +2817,18 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // an equation like Sin(x)==0 or 3^x==2*x has to be solved symbolically
       return F.NIL;
     }
-    IAST roots = RootsFunctions.allNumericRoots(numerator, variable, engine);
+    IAST roots = F.NIL;
+    if (domain == S.Reals) {
+      // the real roots of a polynomial with rational coefficients are isolated exactly: a numeric
+      // root finder has to guess from a small imaginary part whether a root is real
+      double[] real = RootsFunctions.isolatedRealRoots(numerator, variable, engine);
+      if (real != null) {
+        roots = F.mapRange(0, real.length, i -> F.num(real[i]));
+      }
+    }
+    if (roots.isNIL()) {
+      roots = RootsFunctions.allNumericRoots(numerator, variable, engine);
+    }
     if (roots.isNIL()) {
       return F.NIL;
     }

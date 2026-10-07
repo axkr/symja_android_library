@@ -11679,6 +11679,71 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRealRootsOfHighDegreePolynomials() {
+    // the number of real roots is exact: this polynomial has two
+    check("Solve(x^40 - 3*x^7 + x - 5 == 0, x, Reals)", //
+        "{{x->Root(-5+#1-3*#1^7+#1^40&,1,0)},{x->Root(-5+#1-3*#1^7+#1^40&,2,0)}}");
+    check("NSolve(x^40 - 3*x^7 + x - 5 == 0, x, Reals)", //
+        "{{x->-1.02318},{x->1.0543}}");
+    check("CountRoots(x^40 - 3*x^7 + x - 5, x)", //
+        "2");
+    // degree 100: the real roots without factoring the polynomial
+    check("CountRoots(150 - 129*x^14 + 510*x^17 - 298*x^36 - 17*x^84 - 24*x^94 + 588*x^96"
+        + " + 650*x^98 - 841*x^99 - 6*x^100, x)", //
+        "4");
+    check("NSolve(150 - 129*x^14 + 510*x^17 - 298*x^36 - 17*x^84 - 24*x^94 + 588*x^96"
+        + " + 650*x^98 - 841*x^99 - 6*x^100 == 0, x, Reals)", //
+        "{{x->-140.9354},{x->-0.986701},{x->-0.911096},{x->1.21878}}");
+    check("Length(Solve(150 - 129*x^14 + 510*x^17 - 298*x^36 - 17*x^84 - 24*x^94 + 588*x^96"
+        + " + 650*x^98 - 841*x^99 - 6*x^100 == 0, x, Reals))", //
+        "4");
+    check("Length(Reduce(150 - 129*x^14 + 510*x^17 - 298*x^36 - 17*x^84 - 24*x^94 + 588*x^96"
+        + " + 650*x^98 - 841*x^99 - 6*x^100 == 0, x, Reals))", //
+        "4");
+    check("Reduce(x^60 + x + 1 == 0, x, Reals)", //
+        "False");
+    // a rational root is the number, a polynomial in x^30 is solved at the lower degree
+    check("Solve((x - 2)*(x - 1/2)*(x^58 + x + 1) == 0, x, Reals)", //
+        "{{x->1/2},{x->2}}");
+    check("Solve(x^60 - x^30 - 2 == 0, x, Reals)", //
+        "{{x->-2^(1/30)},{x->2^(1/30)}}");
+    // a multiple root keeps its multiplicity
+    check("NSolve((x - 1)^2*(x - 2) == 0, x, Reals)", //
+        "{{x->1.0},{x->1.0},{x->2.0}}");
+    check("N(Root(#^5 - # - 1 &, 1), 30)", //
+        "1.16730397826141868425604589985");
+  }
+
+  @Test
+  public void testFillingWithStyleAndFillingStyle() {
+    // i -> {{j}, style}: the fill between two curves in its own style
+    check("StringCount(ExportString(Plot({x^2 - 1, 1 - x^2}, {x, -1, 1}, Filling -> {1 -> {{2}, Blue}}),"
+        + " \"SVG\"), \"fill=\\\"rgb(0,0,255)\\\"\")", //
+        "1");
+    check("StringCount(ExportString(Plot({x^2 - 1}, {x, -1, 1}, Filling -> {1 -> {Axis, Red}}),"
+        + " \"SVG\"), \"fill=\\\"rgb(255,0,0)\\\"\")", //
+        "1");
+    check("StringCount(ExportString(Plot({x^2 - 1}, {x, -1, 1}, Filling -> Axis, FillingStyle -> Blue),"
+        + " \"SVG\"), \"fill=\\\"rgb(0,0,255)\\\"\")", //
+        "1");
+    // it is kept when Show merges the plot with other graphics
+    check("StringCount(ExportString(Show(Graphics({Red, Disk({0, 0}, 2)}), Plot({x^2 - 1, 1 - x^2},"
+        + " {x, -1, 1}, Filling -> {1 -> {{2}, Blue}})), \"SVG\"), \"fill=\\\"rgb(0,0,255)\\\"\")", //
+        "1");
+    // without a style the fill is the translucent colour of the curve
+    check("StringCount(ExportString(Plot({x^2 - 1, 1 - x^2}, {x, -1, 1}, Filling -> {1 -> {2}}),"
+        + " \"SVG\"), \"fill-opacity=\\\"0.200\\\"\")", //
+        "1");
+  }
+
+  @Test
+  public void testNullIsBlankInALabel() {
+    check("StringCount(ExportString(Graphics(Text(Column({\"hi\", Null, \"there\"}), {0, 0})), \"SVG\"),"
+        + " {\"Null\", \"<tspan\"})", //
+        "3");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

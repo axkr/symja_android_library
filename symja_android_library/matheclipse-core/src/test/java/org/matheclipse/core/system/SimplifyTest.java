@@ -587,4 +587,25 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Simplify(-2 - 2/x - 2*x)", //
         "-2*(1+1/x+x)");
   }
+  /**
+   * A sum of fractions which is too large for the search of Simplify but identically 0: it is
+   * found to be 0 at sample points first and then by its common denominator.
+   */
+  @Test
+  public void testSimplifyLargeZeroSum() {
+    // the derivative of an antiderivative minus the integrand, with a radical
+    check("Simplify(D(Integrate((t^2+2)/(t^3*Sqrt(3*t^4-2*t^2+1)), t), t) - (t^2+2)/(t^3*Sqrt(3*t^4-2*t^2+1)))", //
+        "0");
+    // and with partial fractions over symbolic coefficients
+    check("Simplify(D(Integrate(1/(t^2*(p+q*t)^5), t), t) - 1/(t^2*(p+q*t)^5))", //
+        "0");
+    // a sum which is small at the sample points but not 0 stays a sum
+    check("FreeQ(Simplify(D(Integrate(1/(t^2*(p+q*t)^5), t), t) - 1/(t^2*(p+q*t)^5) + 1/10^12), 1/10^12)", //
+        "False");
+    // constant radicals
+    check("Simplify(Sqrt(3)/Sqrt(2+t^2) - Sqrt(3)*Sqrt(2+t^2)/(2+t^2))", //
+        "0");
+    check("Simplify(Sqrt(10)*Sqrt(t^2+3) - Sqrt(2)*Sqrt(5)*Sqrt(t^2+3))", //
+        "0");
+  }
 }

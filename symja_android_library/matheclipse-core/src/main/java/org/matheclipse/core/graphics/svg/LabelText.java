@@ -25,6 +25,10 @@ public final class LabelText {
     if (expr.isString()) {
       return expr.toString();
     }
+    if (expr == S.Null) {
+      // nothing is drawn: a blank line as the entry of a Column
+      return "";
+    }
     if (expr.isAST(S.Style) && expr.argSize() >= 1) {
       return of(expr.first());
     }

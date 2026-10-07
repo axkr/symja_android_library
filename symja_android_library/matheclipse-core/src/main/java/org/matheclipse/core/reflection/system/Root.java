@@ -164,7 +164,10 @@ public class Root extends AbstractFunctionEvaluator {
           return F.ternaryAST3(S.Root, ast.arg1(), ast.arg2(), F.C0);
         }
       }
-      IExpr radical = ToRadicals.rootToRadicals(ast, engine, 2);
+      // a polynomial of a high degree is not searched for factors with roots in radicals: the
+      // factorization takes much longer than the root is worth
+      IExpr radical = isHighDegreePolynomial(ast) ? F.NIL
+          : ToRadicals.rootToRadicals(ast, engine, 2);
       if (radical.isPresent()) {
         return radical;
       }
@@ -284,37 +287,31 @@ public class Root extends AbstractFunctionEvaluator {
       return F.NIL;
     }
 
-    double[] doubleCoefficients = new double[degree + 1];
-    for (int i = 0; i <= degree; i++) {
-      IReal real = coefficients[i].evalReal();
-      if (real == null) {
-        // symbolic or non-real coefficient
-        return F.NIL;
+    // a real root is known from the exact isolation alone, without the numeric root finder
+    double[] real = exactRealRoots(coefficients);
+    if (real != null && k <= real.length) {
+      IExpr result = F.num(real[k - 1]);
+      if (engine.isArbitraryMode()) {
+        double separation = Double.MAX_VALUE;
+        if (k > 1) {
+          separation = Math.min(separation, real[k - 1] - real[k - 2]);
+        }
+        if (k < real.length) {
+          separation = Math.min(separation, real[k] - real[k - 1]);
+        }
+        IExpr refined = refineToPrecision(coefficients, result, separation,
+            engine.getNumericPrecision(), engine);
+        if (refined.isPresent()) {
+          return refined;
+        }
       }
-      doubleCoefficients[i] = real.doubleValue();
+      return result;
     }
 
-    org.hipparchus.complex.Complex[] complexRoots;
-    try {
-      complexRoots = RootsFunctions.allComplexRootsLaguerre(doubleCoefficients);
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
+    IExpr[] numericRoots = orderedNumericRoots(coefficients);
+    if (numericRoots == null) {
       return F.NIL;
     }
-    if (complexRoots == null || complexRoots.length != degree) {
-      return F.NIL;
-    }
-
-    IExpr[] numericRoots = new IExpr[degree];
-    for (int i = 0; i < degree; i++) {
-      // Chop with the same tolerance which sortRootsByMmaOrder() uses to tell real and complex
-      // roots
-      // apart, otherwise a root could be sorted as complex but printed as real (or vice versa).
-      numericRoots[i] =
-          F.chopExpr(F.complexNum(complexRoots[i].getReal(), complexRoots[i].getImaginary()),
-              Config.DEFAULT_CHOP_DELTA);
-    }
-    numericRoots = ToRadicals.sortRootsByMmaOrder(numericRoots);
 
     IExpr result = numericRoots[k - 1];
     if (engine.isArbitraryMode()) {
@@ -325,6 +322,212 @@ public class Root extends AbstractFunctionEvaluator {
       }
     }
     return result;
+  }
+
+  private static boolean isHighDegreePolynomial(IAST root) {
+    if (!root.arg1().isFunction()) {
+      return false;
+    }
+    IExpr[] coefficients = polynomialCoefficients(root.arg1().first());
+    return coefficients != null && RootsFunctions.isHighDegreeGeneric(coefficients);
+  }
+
+  /** The exactly isolated real roots of the polynomials which were evaluated last. */
+  private static final java.util.Map<java.util.List<IExpr>, double[]> REAL_ROOTS_CACHE =
+      java.util.Collections.synchronizedMap(
+          new java.util.LinkedHashMap<java.util.List<IExpr>, double[]>(32, 0.75f, true) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected boolean removeEldestEntry(
+                java.util.Map.Entry<java.util.List<IExpr>, double[]> eldest) {
+              return size() > 64;
+            }
+          });
+
+  private static final double[] NO_ISOLATION = new double[0];
+
+  /**
+   * The real roots of a polynomial in ascending order, from an exact isolation: how many roots
+   * are real is then no question of a tolerance on the imaginary part of a numeric root, which
+   * goes wrong at a high degree. A machine number coefficient counts as the rational number it is.
+   *
+   * @return {@code null} if a coefficient is no rational or machine number, or the polynomial has
+   *         a multiple root
+   */
+  private static double[] exactRealRoots(IExpr[] coefficients) {
+    java.util.List<IExpr> key = java.util.Arrays.asList(coefficients.clone());
+    double[] cached = REAL_ROOTS_CACHE.get(key);
+    if (cached != null) {
+      return cached == NO_ISOLATION ? null : cached;
+    }
+    double[] real = null;
+    final int degree = coefficients.length - 1;
+    java.math.BigInteger[] numerators = new java.math.BigInteger[degree + 1];
+    java.math.BigInteger[] denominators = new java.math.BigInteger[degree + 1];
+    boolean rational = true;
+    for (int i = 0; i <= degree && rational; i++) {
+      IExpr coefficient = coefficients[i];
+      if (coefficient.isRational()) {
+        org.matheclipse.core.interfaces.IRational r =
+            (org.matheclipse.core.interfaces.IRational) coefficient;
+        numerators[i] = r.toBigNumerator();
+        denominators[i] = r.toBigDenominator();
+      } else if (coefficient instanceof org.matheclipse.core.interfaces.INum
+          && !(coefficient instanceof org.matheclipse.core.expression.ApfloatNum)
+          && Double.isFinite(coefficient.evalfNaN())) {
+        java.math.BigDecimal exact = new java.math.BigDecimal(coefficient.evalfNaN());
+        if (exact.scale() > 0) {
+          numerators[i] = exact.unscaledValue();
+          denominators[i] = java.math.BigInteger.TEN.pow(exact.scale());
+        } else {
+          numerators[i] = exact.toBigIntegerExact();
+          denominators[i] = java.math.BigInteger.ONE;
+        }
+      } else {
+        rational = false;
+      }
+    }
+    if (rational) {
+      java.math.BigInteger denominator = java.math.BigInteger.ONE;
+      for (java.math.BigInteger d : denominators) {
+        denominator = denominator.multiply(d).divide(denominator.gcd(d));
+      }
+      java.math.BigInteger[] integers = new java.math.BigInteger[degree + 1];
+      for (int i = 0; i <= degree; i++) {
+        integers[i] = numerators[i].multiply(denominator.divide(denominators[i]));
+      }
+      real = org.matheclipse.core.polynomials.RealRootIsolation.realRoots(integers);
+    }
+    REAL_ROOTS_CACHE.put(key, real == null ? NO_ISOLATION : real);
+    return real;
+  }
+
+  /** The ordered machine precision roots of the polynomials which were evaluated last. */
+  private static final java.util.Map<java.util.List<IExpr>, IExpr[]> ROOTS_CACHE =
+      java.util.Collections.synchronizedMap(
+          new java.util.LinkedHashMap<java.util.List<IExpr>, IExpr[]>(32, 0.75f, true) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected boolean removeEldestEntry(
+                java.util.Map.Entry<java.util.List<IExpr>, IExpr[]> eldest) {
+              return size() > 64;
+            }
+          });
+
+  private static final IExpr[] NO_ROOTS = new IExpr[0];
+
+  /**
+   * All roots of the polynomial at machine precision in the order of the {@code Root} index: the
+   * real roots ascending, then the complex roots. The values of a polynomial are kept, because
+   * {@code Root[f, 1]}, ..., {@code Root[f, n]} are usually evaluated one after the other.
+   *
+   * @param coefficients the coefficient of {@code x^i} at index {@code i}
+   * @return {@code null} if a coefficient is no real number or the roots cannot be determined
+   */
+  private static IExpr[] orderedNumericRoots(IExpr[] coefficients) {
+    java.util.List<IExpr> key = java.util.Arrays.asList(coefficients.clone());
+    IExpr[] cached = ROOTS_CACHE.get(key);
+    if (cached != null) {
+      return cached == NO_ROOTS ? null : cached;
+    }
+    final int degree = coefficients.length - 1;
+    double[] doubleCoefficients = new double[degree + 1];
+    for (int i = 0; i <= degree; i++) {
+      IReal real = coefficients[i].evalReal();
+      if (real == null) {
+        // symbolic or non-real coefficient
+        return null;
+      }
+      doubleCoefficients[i] = real.doubleValue();
+    }
+
+    org.hipparchus.complex.Complex[] complexRoots;
+    try {
+      complexRoots = RootsFunctions.allComplexRootsLaguerre(doubleCoefficients);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      complexRoots = null;
+    }
+    if (complexRoots == null || complexRoots.length != degree) {
+      // remembered too: the next index of the same polynomial would only fail again
+      ROOTS_CACHE.put(key, NO_ROOTS);
+      return null;
+    }
+
+    IExpr[] numericRoots = exactlyClassifiedRoots(coefficients, complexRoots);
+    if (numericRoots == null) {
+      numericRoots = new IExpr[degree];
+      for (int i = 0; i < degree; i++) {
+        // Chop with the same tolerance which sortRootsByMmaOrder() uses to tell real and complex
+        // roots apart, otherwise a root could be sorted as complex but printed as real (or vice
+        // versa).
+        numericRoots[i] =
+            F.chopExpr(F.complexNum(complexRoots[i].getReal(), complexRoots[i].getImaginary()),
+                Config.DEFAULT_CHOP_DELTA);
+      }
+      numericRoots = ToRadicals.sortRootsByMmaOrder(numericRoots);
+    }
+    ROOTS_CACHE.put(key, numericRoots);
+    return numericRoots;
+  }
+
+  /**
+   * The roots of a polynomial with rational coefficients, with the real roots taken from an exact
+   * isolation: how many roots are real is then no question of a tolerance on the imaginary part of
+   * a numeric root, which goes wrong at a high degree. The numeric roots which lie nearest to the
+   * real roots are replaced by them; the others are the complex roots.
+   *
+   * @return {@code null} if a coefficient is not rational or the polynomial has a multiple root
+   */
+  private static IExpr[] exactlyClassifiedRoots(IExpr[] coefficients,
+      org.hipparchus.complex.Complex[] numeric) {
+    final int degree = coefficients.length - 1;
+    double[] real = exactRealRoots(coefficients);
+    if (real == null || real.length > degree) {
+      return null;
+    }
+    boolean[] used = new boolean[degree];
+    for (double value : real) {
+      int nearest = -1;
+      double distance = Double.MAX_VALUE;
+      for (int i = 0; i < degree; i++) {
+        if (!used[i]) {
+          double d = Math.hypot(numeric[i].getReal() - value, numeric[i].getImaginary());
+          if (d < distance) {
+            distance = d;
+            nearest = i;
+          }
+        }
+      }
+      if (nearest < 0) {
+        return null;
+      }
+      used[nearest] = true;
+    }
+    java.util.List<org.hipparchus.complex.Complex> complex =
+        new java.util.ArrayList<org.hipparchus.complex.Complex>(degree - real.length);
+    for (int i = 0; i < degree; i++) {
+      if (!used[i]) {
+        complex.add(numeric[i]);
+      }
+    }
+    // the complex roots by ascending real part, then ascending imaginary part
+    complex.sort((a, b) -> Math.abs(a.getReal() - b.getReal()) > 1e-10
+        ? Double.compare(a.getReal(), b.getReal())
+        : Double.compare(a.getImaginary(), b.getImaginary()));
+    IExpr[] roots = new IExpr[degree];
+    int index = 0;
+    for (double value : real) {
+      roots[index++] = F.num(value);
+    }
+    for (org.hipparchus.complex.Complex root : complex) {
+      // a real part which is only noise is dropped; the imaginary part of a complex root stays
+      double re = Math.abs(root.getReal()) < Config.DEFAULT_CHOP_DELTA ? 0.0 : root.getReal();
+      roots[index++] = F.complexNum(re, root.getImaginary());
+    }
+    return roots;
   }
 
   /**

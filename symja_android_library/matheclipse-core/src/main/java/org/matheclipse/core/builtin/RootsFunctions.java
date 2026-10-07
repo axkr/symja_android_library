@@ -22,6 +22,8 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.reflection.system.Root;
+import org.matheclipse.core.polynomials.RealRootIsolation;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -601,6 +603,189 @@ public class RootsFunctions {
     // the Root object identifies the polynomial by a pure function of Slot1
     IAST function = F.Function(F.subst(polynomial, variable, F.Slot1));
     return F.mapRange(1, degree + 1, k -> F.ternaryAST3(S.Root, function, F.ZZ(k), F.C0));
+  }
+
+  /**
+   * From this degree on the real roots of a polynomial equation over the reals are isolated
+   * directly, see {@link #realRootsOfHighDegree(IExpr, IExpr, EvalEngine)}.
+   */
+  private static final int REAL_ROOTS_ONLY_DEGREE = 50;
+
+  /**
+   * The integer coefficients of the square-free part of a polynomial with rational coefficients,
+   * the coefficient of <code>x^i</code> at index <code>i</code>.
+   *
+   * @param squareFree receives the square-free part itself at index 0, if it is not
+   *        <code>null</code>
+   * @return <code>null</code> if <code>polynomial</code> is no such polynomial in
+   *         <code>variable</code>
+   */
+  private static java.math.BigInteger[] squareFreeIntegerCoefficients(IExpr polynomial,
+      IExpr variable, IExpr[] squareFree, EvalEngine engine) {
+    if (!variable.isSymbol() || !polynomial.isPolynomial(F.list(variable))) {
+      return null;
+    }
+    IExpr[] coefficients = Root.polynomialCoefficients(F.subst(polynomial, variable, F.Slot1));
+    if (coefficients == null || !isRationalCoefficients(coefficients)) {
+      return null;
+    }
+    IExpr gcd = engine.evalQuiet(F.PolynomialGCD(polynomial, F.D(polynomial, variable)));
+    if (!gcd.isFree(variable)) {
+      polynomial = engine.evalQuiet(F.PolynomialQuotient(polynomial, gcd, variable));
+      coefficients = Root.polynomialCoefficients(F.subst(polynomial, variable, F.Slot1));
+      if (coefficients == null || !isRationalCoefficients(coefficients)) {
+        return null;
+      }
+    }
+    java.math.BigInteger denominator = java.math.BigInteger.ONE;
+    for (IExpr coefficient : coefficients) {
+      java.math.BigInteger d = ((IRational) coefficient).toBigDenominator();
+      denominator = denominator.multiply(d).divide(denominator.gcd(d));
+    }
+    java.math.BigInteger[] integers = new java.math.BigInteger[coefficients.length];
+    for (int i = 0; i < coefficients.length; i++) {
+      IRational r = (IRational) coefficients[i];
+      integers[i] = r.toBigNumerator().multiply(denominator.divide(r.toBigDenominator()));
+    }
+    if (squareFree != null) {
+      squareFree[0] = polynomial;
+    }
+    return integers;
+  }
+
+  /**
+   * A polynomial whose real roots are found without factoring it: the degree is at least
+   * {@link #REAL_ROOTS_ONLY_DEGREE}, it has three or more terms (a binomial has roots in radicals)
+   * and it is no polynomial in a power <code>x^m</code> (which is solved at the lower degree).
+   *
+   * @param coefficients the coefficient of <code>x^i</code> at index <code>i</code>
+   */
+  public static boolean isHighDegreeGeneric(IExpr[] coefficients) {
+    if (coefficients.length - 1 < REAL_ROOTS_ONLY_DEGREE) {
+      return false;
+    }
+    int terms = 0;
+    int gcd = 0;
+    for (int i = 0; i < coefficients.length; i++) {
+      if (!coefficients[i].isZero()) {
+        terms++;
+        gcd = java.math.BigInteger.valueOf(gcd).gcd(java.math.BigInteger.valueOf(i)).intValue();
+      }
+    }
+    return terms >= 3 && gcd == 1;
+  }
+
+  /** Whether <code>n/d</code> is a root of the polynomial with the integer coefficients. */
+  private static boolean isRationalRoot(java.math.BigInteger[] coefficients, IRational value) {
+    java.math.BigInteger n = value.toBigNumerator();
+    java.math.BigInteger d = value.toBigDenominator();
+    if (d.bitLength() > 64) {
+      return false;
+    }
+    // d^degree * p(n/d) by Horner's rule
+    final int degree = coefficients.length - 1;
+    java.math.BigInteger sum = coefficients[degree];
+    java.math.BigInteger power = java.math.BigInteger.ONE;
+    for (int i = degree - 1; i >= 0; i--) {
+      power = power.multiply(d);
+      sum = sum.multiply(n).add(coefficients[i].multiply(power));
+    }
+    return sum.signum() == 0;
+  }
+
+  private static boolean isRationalCoefficients(IExpr[] coefficients) {
+    for (IExpr coefficient : coefficients) {
+      if (!coefficient.isRational()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The real roots of a square-free polynomial with rational coefficients as machine numbers in
+   * ascending order. They come from an exact isolation of the roots, so their number does not
+   * depend on a tolerance.
+   *
+   * @return <code>null</code> if <code>polynomial</code> is no polynomial with rational
+   *         coefficients in <code>variable</code>, or it has a multiple root
+   */
+  public static double[] isolatedRealRoots(IExpr polynomial, IExpr variable, EvalEngine engine) {
+    try {
+      IExpr[] squareFree = new IExpr[1];
+      java.math.BigInteger[] integers =
+          squareFreeIntegerCoefficients(polynomial, variable, squareFree, engine);
+      if (integers == null || squareFree[0] != polynomial) {
+        // a multiple root is counted with its multiplicity by the numeric root finder
+        return null;
+      }
+      return RealRootIsolation.realRoots(integers);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return null;
+    }
+  }
+
+  /**
+   * The real roots of a polynomial of a high degree with rational coefficients, in ascending
+   * order: a root which is found exactly as a number, and <code>Root(f, k, 0)</code> of the
+   * square-free part otherwise. The polynomial is not factored into its irreducible factors, which
+   * at such a degree can take much longer than finding its real roots.
+   *
+   * @return {@link F#NIL} if the degree is below {@link #REAL_ROOTS_ONLY_DEGREE}, the polynomial
+   *         has fewer than three terms (a binomial has roots in radicals) or its coefficients are
+   *         not rational
+   */
+  public static IAST realRootsOfHighDegree(IExpr polynomial, IExpr variable, EvalEngine engine) {
+    try {
+      if (!variable.isSymbol() || ((ISymbol) variable).getContext() == Context.DUMMY
+          || !polynomial.isPolynomial(F.list(variable))) {
+        return F.NIL;
+      }
+      IExpr[] coefficients = Root.polynomialCoefficients(F.subst(polynomial, variable, F.Slot1));
+      if (coefficients == null || !isHighDegreeGeneric(coefficients)) {
+        return F.NIL;
+      }
+      IExpr[] squareFree = new IExpr[1];
+      java.math.BigInteger[] integers =
+          squareFreeIntegerCoefficients(polynomial, variable, squareFree, engine);
+      if (integers == null) {
+        return F.NIL;
+      }
+      List<RealRootIsolation.RootInterval> intervals = RealRootIsolation.isolate(integers);
+      if (intervals == null) {
+        return F.NIL;
+      }
+      // the Root object names the polynomial with integer coefficients
+      IASTAppendable plus = F.PlusAlloc(integers.length);
+      for (int i = 0; i < integers.length; i++) {
+        if (integers[i].signum() != 0) {
+          plus.append(i == 0 ? F.ZZ(integers[i])
+              : F.Times(F.ZZ(integers[i]), F.Power(F.Slot1, F.ZZ(i))));
+        }
+      }
+      IAST function = F.Function(engine.evaluate(plus));
+      IASTAppendable roots = F.ListAlloc(intervals.size());
+      for (int k = 1; k <= intervals.size(); k++) {
+        RealRootIsolation.RootInterval interval = intervals.get(k - 1);
+        if (interval.isExact()) {
+          roots.append(engine.evaluate(F.QQ(interval.lowerNumerator(), interval.denominator())));
+          continue;
+        }
+        // a root which is a rational number with a small denominator is that number
+        double value = RealRootIsolation.refine(integers, interval).doubleValue();
+        IExpr candidate = engine.evalQuiet(F.Rationalize(F.num(value), F.num(1.0e-12)));
+        if (candidate.isRational() && isRationalRoot(integers, (IRational) candidate)) {
+          roots.append(candidate);
+        } else {
+          roots.append(F.ternaryAST3(S.Root, function, F.ZZ(k), F.C0));
+        }
+      }
+      return roots;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
   }
 
   public static IAST findRoots(IExpr polynomialExpr, final IAST variables) {

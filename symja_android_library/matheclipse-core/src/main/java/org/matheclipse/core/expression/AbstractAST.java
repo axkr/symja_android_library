@@ -6324,10 +6324,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (ISymbol.hasOrderlessFlatAttribute(attr)) {
           return 17 * head().hashCode();
         } else if (ISymbol.hasFlatAttribute(attr)) {
-          if (arg1() instanceof IAST) {
-            return 31 * head().hashCode() + arg1().head().hashCode();
-          }
-          return 37 * head().hashCode() + arg1().hashCode();
+          // a rule of a Flat head matches a run of arguments anywhere in a longer argument list,
+          // so the first argument tells nothing about the rules which can apply
+          return 19 * head().hashCode();
         }
         return 17 * head().hashCode() + size();
       }

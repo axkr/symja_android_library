@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
@@ -84,6 +85,20 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
         } else {
           final ISymbol head = (lhsPatternExpr.isPatternSequence(false)) ? S.Sequence : fSymbol;
           final int row = j;
+          if (n == 1 && head == fSymbol) {
+            // one argument without OneIdentity: a pattern object gets the argument wrapped in
+            // the head, x_ is f(a); a structure like u(a_) or a pattern the wrapped argument
+            // does not fit, x_Integer, gets the argument itself
+            final IExpr single = array[result[row][0]];
+            if (!(lhsPatternExpr instanceof IPatternObject)
+                || !stackMatcher.push(lhsPatternExpr, F.unaryAST1(fSymbol, single))) {
+              if (!stackMatcher.push(lhsPatternExpr, single)) {
+                matched = false;
+                return false;
+              }
+            }
+            continue;
+          }
           final IAST partitionElement = F.mapRange(head, 0, n, i -> array[result[row][i]]);
           if (!stackMatcher.push(lhsPatternExpr, partitionElement)) {
             matched = false;

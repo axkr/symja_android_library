@@ -230,8 +230,13 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
     if (graphicsOptions.filling() != S.None) {
       try {
+        IExpr fillingStyle = graphicsOptions.fillingStyle();
+        if (fillingStyle == null || fillingStyle.isAutomatic()) {
+          // a plot whose option block has no slot for it still takes the rule of the call
+          fillingStyle = GraphicsOptions.optionValue(plotAST, S.FillingStyle, S.Automatic);
+        }
         IAST newPrimitives = processFilling(graphicsPrimitives, graphicsOptions.filling(),
-            graphicsOptions.fillingStyle(), 0.0, graphicsOptions.effectiveYScale());
+            fillingStyle, 0.0, graphicsOptions.effectiveYScale());
         graphicsPrimitives = newPrimitives;
       } catch (RuntimeException rex) {
       }
@@ -1139,6 +1144,19 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       IASTAppendable out, IExpr globalStyle, double baseline) {
     CurveData srcCurve = curves.get(srcIndex);
     IExpr styleToUse = globalStyle;
+    if (target.isList2() && !target.first().isInteger()
+        && (target.first().isList() || target.first() == S.Axis || target.first() == S.Bottom)) {
+      // i -> {target, style}: the fill to this target in its own style; a pair of styles is
+      // the one below and the one above the target, of which the first is used
+      IExpr style = target.second();
+      if (style.isList2()) {
+        style = style.first();
+      }
+      if (!style.isAutomatic() && !style.isNone()) {
+        styleToUse = F.Directive(style, F.EdgeForm(F.None));
+      }
+      target = target.first();
+    }
     if (styleToUse == null || styleToUse.isAutomatic()) {
       IExpr color = srcCurve.color != null ? srcCurve.color : S.Black;
       styleToUse = F.Directive(F.Opacity(0.2), color, F.EdgeForm(F.None));

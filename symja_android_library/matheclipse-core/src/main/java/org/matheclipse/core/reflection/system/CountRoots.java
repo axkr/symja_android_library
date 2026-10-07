@@ -8,7 +8,9 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.polynomials.RealRootIsolation;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
@@ -78,11 +80,53 @@ public class CountRoots extends AbstractFunctionEvaluator {
         return null;
       }
       jasPolynomial[0] = poly;
+      List<Interval<BigRational>> isolated = isolateRealRoots(poly);
+      if (isolated != null) {
+        return isolated;
+      }
       return new RealRootsSturm<BigRational>().realRoots(poly);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return null;
     }
+  }
+
+  /**
+   * The isolating intervals of the real roots by Descartes' rule of signs, which is much faster
+   * than a Sturm sequence for a polynomial of high degree.
+   *
+   * @return <code>null</code> if the bisection gives up, as it does for a polynomial with a
+   *         multiple root
+   */
+  private static List<Interval<BigRational>> isolateRealRoots(GenPolynomial<BigRational> poly) {
+    long degree = poly.degree(0);
+    if (degree < 1 || degree > Config.MAX_AST_SIZE || degree > 100_000) {
+      return null;
+    }
+    java.math.BigInteger denominator = java.math.BigInteger.ONE;
+    for (edu.jas.poly.Monomial<BigRational> monomial : poly) {
+      java.math.BigInteger d = monomial.c.denominator();
+      denominator = denominator.multiply(d).divide(denominator.gcd(d));
+    }
+    java.math.BigInteger[] coefficients = new java.math.BigInteger[(int) degree + 1];
+    java.util.Arrays.fill(coefficients, java.math.BigInteger.ZERO);
+    for (edu.jas.poly.Monomial<BigRational> monomial : poly) {
+      coefficients[(int) monomial.e.getVal(0)] =
+          monomial.c.numerator().multiply(denominator.divide(monomial.c.denominator()));
+    }
+    List<RealRootIsolation.RootInterval> intervals = RealRootIsolation.isolate(coefficients);
+    if (intervals == null) {
+      return null;
+    }
+    List<Interval<BigRational>> result = new java.util.ArrayList<Interval<BigRational>>();
+    for (RealRootIsolation.RootInterval interval : intervals) {
+      result.add(new Interval<BigRational>(
+          new BigRational(new edu.jas.arith.BigInteger(interval.lowerNumerator()),
+              new edu.jas.arith.BigInteger(interval.denominator())),
+          new BigRational(new edu.jas.arith.BigInteger(interval.upperNumerator()),
+              new edu.jas.arith.BigInteger(interval.denominator()))));
+    }
+    return result;
   }
 
   private static boolean isRoot(GenPolynomial<BigRational> poly, BigRational value) {

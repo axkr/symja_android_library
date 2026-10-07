@@ -47,6 +47,39 @@ public class PatternMatchingBugsTest extends ExprEvaluatorTestCase {
     check("fnc(a,b)", "fnc(a,b)");
   }
 
+  /**
+   * A rule of a head which is Flat only (no OneIdentity, not Orderless): it did not apply when the
+   * number of arguments was the one of the rule, a pattern with a head test never matched, and a
+   * run of arguments which does not start the argument list was not found by a down rule.
+   */
+  @Test
+  public void testFlatRuleOnPartOfTheArguments() {
+    check("SetAttributes(fpa,Flat)", "");
+    check("fpa(wa(x_),wa(y_)) := wa(x+y)", "");
+    check("fpa(wa(1),wa(2))", "wa(3)");
+    check("fpa(wa(1),wa(2),wa(4))", "wa(7)");
+    check("fpa(wa(1),wa(2),r)", "fpa(wa(3),r)");
+    check("fpa(r,wa(1),wa(2))", "fpa(r,wa(3))");
+    check("fpa(r,wa(1),wa(2),t)", "fpa(r,wa(3),t)");
+    // not adjacent
+    check("fpa(wa(1),r,wa(2))", "fpa(wa(1),r,wa(2))");
+    // a pattern with a head test takes the argument itself, x_ takes it wrapped in the head
+    check("SetAttributes(fpb,Flat)", "");
+    check("fpb(x_Integer,y_Integer) := x*y", "");
+    check("fpb(5,7)", "35");
+    check("fpb(5,7,2)", "70");
+    check("fpb(r,5,7,t,2,3)", "fpb(r,35,t,6)");
+    check("SetAttributes(fpc,Flat)", "");
+    check("fpc(r,s,t) /. fpc(x_,y_) -> {x,y}", "{fpc(r),fpc(s,t)}");
+    // the same through a replacement rule
+    check("fpc(r,wa(1),wa(2),t) /. fpc(wa(x_),wa(y_)) :> wa(x+y)", "fpc(r,wa(3),t)");
+    check("MatchQ(fpc(r,wa(1),wa(2)), fpc(wa(_),wa(_)))", "False");
+    // up values in a longer sum
+    check("mpa /: mpa(x_,p_) + mpa(y_,p_) := mpa(Mod(x+y,p),p)", "");
+    check("mpa(3,7)+mpa(5,7)+mpa(6,7)", "mpa(0,7)");
+    check("mpa(3,7)+mpa(5,7)+r", "r+mpa(1,7)");
+  }
+
   /** {@link PatternMatcherList}: the substituted <code>Condition()</code> was collected unevaluated */
   @Test
   public void testReplaceListCondition() {
