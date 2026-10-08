@@ -203,7 +203,7 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("nlm(2.5)", //
         "5.0");
     check("nlm(\"Properties\")", //
-        "{AdjustedRSquared,BestFit,BestFitParameters,FitResiduals,PredictedResponse,RSquared}");
+        "{AdjustedRSquared,BestFit,BestFitParameters,EstimatedVariance,FitResiduals,ParameterConfidenceIntervals,ParameterErrors,ParameterPValues,ParameterTStatistics,ParameterTable,ParameterTableEntries,PredictedResponse,RSquared}");
     // an exact fit
     check("nlm2=NonlinearModelFit({{1,2},{2,5},{3,10}}, a*x^2+b, {a,b}, x)", //
         "FittedModel[1.0+x^2]");

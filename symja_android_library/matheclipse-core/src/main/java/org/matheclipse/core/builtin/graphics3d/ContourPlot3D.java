@@ -278,6 +278,12 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
+  public boolean localIterators() {
+    // the plot variable is local to the plot
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     GraphicsOptions.OptionSet options =
         Plot3DTools.frameExtras(Plot3DTools.surfaceExtras(Plot3DTools.base3D()).add(S.Automatic,

@@ -433,6 +433,12 @@ public class Plot extends ListPlot {
   }
 
   @Override
+  public boolean localIterators() {
+    // the plot variable is local to the plot
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, true);
     // Explicitly default AspectRatio to 1/GoldenRatio for Plot (NOT Automatic)

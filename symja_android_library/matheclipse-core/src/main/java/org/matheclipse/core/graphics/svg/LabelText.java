@@ -34,7 +34,8 @@ public final class LabelText {
       // nothing is drawn: a blank line as the entry of a Column
       return "";
     }
-    if (expr.isAST(S.Style) && expr.argSize() >= 1) {
+    if ((expr.isAST(S.Style) || expr.isAST(S.Text)) && expr.argSize() >= 1) {
+      // Text(expr) as a label is the label expr
       return of(expr.first());
     }
     if (expr.isAST(S.HoldForm, 2) || expr.isAST(S.TraditionalForm, 2)

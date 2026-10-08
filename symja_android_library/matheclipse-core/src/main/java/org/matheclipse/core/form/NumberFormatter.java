@@ -277,6 +277,40 @@ public class NumberFormatter {
     return format(new BigDecimal(value), totalDigits > 0 ? totalDigits : -1, false);
   }
 
+  /**
+   * The digits of <code>BaseForm(n, b)</code>, which is <code>Subscript("digits", b)</code>.
+   *
+   * @return <code>null</code> if <code>expr</code> is not a number written in a base
+   */
+  public static String baseFormDigits(IExpr expr) {
+    if (!expr.isAST(S.Subscript, 3) || !expr.first().isString() || !expr.second().isInteger()) {
+      return null;
+    }
+    int base = expr.second().toIntDefault();
+    String digits = expr.first().toString();
+    if (base < 2 || base > 36 || digits.isEmpty()) {
+      return null;
+    }
+    for (int i = digits.charAt(0) == '-' ? 1 : 0; i < digits.length(); i++) {
+      if (Character.digit(digits.charAt(i), base) < 0) {
+        return null;
+      }
+    }
+    return digits;
+  }
+
+  /**
+   * Format the digits of an integer which is written in another base than 10: the digit block,
+   * padding and sign options apply to the digits, the base is not part of the number.
+   */
+  public FormattedNumber formatDigits(String value) {
+    boolean negative = value.startsWith("-");
+    String digits = negative ? value.substring(1) : value;
+    String grouped = group(digits, digitBlockLeft, separatorLeft, true);
+    String assembled = fillField(applySignsAndPadding(grouped, digits.length(), negative));
+    return new FormattedNumber(assembled, 0, false, applyNumberFormat(assembled, null));
+  }
+
   private FormattedNumber format(BigDecimal value, int significantFigures, boolean approximate) {
     boolean negative = value.signum() < 0;
     BigDecimal abs = value.abs();

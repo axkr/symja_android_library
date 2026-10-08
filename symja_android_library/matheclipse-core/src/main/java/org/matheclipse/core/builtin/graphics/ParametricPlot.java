@@ -95,6 +95,12 @@ public class ParametricPlot extends Plot {
         } else {
           color = GraphicsOptions.getPlotStyle(plotStyle, 0);
         }
+        // an Opacity in the style is the opacity of the region; a style which is nothing but an
+        // Opacity leaves the colour to the default
+        IExpr opacity = regionOpacity(plotStyle);
+        if (color.isAST(S.Opacity) || color.isNumber()) {
+          color = GraphicsOptions.plotStyleDirective(0, F.NIL, graphicsOptions.curveThickness());
+        }
 
         // 2. The region, translucent so that what lies under it - the axes, and the mesh drawn on
         // top - stays visible; EdgeForm(None) keeps the sampling grid itself from being outlined.
@@ -104,7 +110,7 @@ public class ParametricPlot extends Plot {
           // the texture is painted as it is, opaque, onto the grid its coordinates give
           graphicsPrimitives.append(F.List(plotStyle, F.EdgeForm(S.None), graphicsComplex));
         } else {
-          graphicsPrimitives.append(F.List(color, F.unaryAST1(S.Opacity, F.num(0.3)),
+          graphicsPrimitives.append(F.List(color, F.unaryAST1(S.Opacity, opacity),
               F.EdgeForm(S.None), graphicsComplex));
         }
         if (meshLines.argSize() > 0) {
@@ -476,6 +482,24 @@ public class ParametricPlot extends Plot {
   public int[] expectedArgSize(IAST ast) {
     return ARGS_2_INFINITY;
   }
+
+  /** The opacity a region is filled with: the one its style names, else 0.3. */
+  private static IExpr regionOpacity(IExpr plotStyle) {
+    if (plotStyle.isAST(S.Opacity) && plotStyle.argSize() >= 1 && plotStyle.first().isReal()) {
+      return plotStyle.first();
+    }
+    if (plotStyle.isList() || plotStyle.isAST(S.Directive)) {
+      for (IExpr part : (IAST) plotStyle) {
+        IExpr opacity = regionOpacity(part);
+        if (opacity != DEFAULT_REGION_OPACITY) {
+          return opacity;
+        }
+      }
+    }
+    return DEFAULT_REGION_OPACITY;
+  }
+
+  private static final IExpr DEFAULT_REGION_OPACITY = F.num(0.3);
 
   @Override
   public void setUp(final ISymbol newSymbol) {

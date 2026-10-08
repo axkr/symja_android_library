@@ -574,6 +574,20 @@ public class OutputFormFactory {
     NumberFormatter formatter = NumberFormatter.of(list, EvalEngine.get());
     NumberFormatter previous = fNumberFormatter;
     // a formatter of null simply leaves the default formatting in place
+    String baseDigits = formatter == null ? null : NumberFormatter.baseFormDigits(list.arg1());
+    if (baseDigits != null) {
+      // BaseForm(n, b): the options format the digits; the base stays as it is, and a
+      // NumberFormat function gives the whole output
+      NumberFormatter.FormattedNumber formatted = formatter.formatDigits(baseDigits);
+      fNumberFormatter = null;
+      try {
+        convert(buf, formatted.custom.isPresent() ? formatted.custom
+            : F.Subscript(F.stringx(formatted.mantissa), list.arg1().second()), precedence, false);
+      } finally {
+        fNumberFormatter = previous;
+      }
+      return;
+    }
     fNumberFormatter = formatter;
     try {
       convert(buf, list.arg1(), precedence, false);

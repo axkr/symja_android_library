@@ -298,6 +298,12 @@ public class DensityPlot extends ListPlot {
   }
 
   @Override
+  public boolean localIterators() {
+    // the plot variable is local to the plot
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, true);
     defaults[GraphicsOptions.X_FRAME] = S.True;

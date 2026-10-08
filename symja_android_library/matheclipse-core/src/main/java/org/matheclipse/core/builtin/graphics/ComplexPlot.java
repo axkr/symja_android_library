@@ -223,6 +223,12 @@ public class ComplexPlot extends ListPlot {
   }
 
   @Override
+  public boolean localIterators() {
+    // the plot variable is local to the plot
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     PlotEndpoints.cornerMessage(newSymbol);
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);

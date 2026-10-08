@@ -59,6 +59,7 @@ public final class FunctionDefinitions {
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       S.BellY.setEvaluator(new org.matheclipse.core.reflection.system.BellY());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
+      S.BSplineFunction.setEvaluator(new org.matheclipse.core.reflection.system.BSplineFunction());
       S.BinLists.setEvaluator(new org.matheclipse.core.reflection.system.BinLists());
       S.BoundingRegion.setEvaluator(new org.matheclipse.core.reflection.system.BoundingRegion());
       S.BoxMatrix.setEvaluator(new org.matheclipse.core.reflection.system.BoxMatrix());

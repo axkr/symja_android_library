@@ -188,6 +188,12 @@ public class DiscretePlot extends ListPlot {
   }
 
   @Override
+  public boolean localIterators() {
+    // the plot variable is local to the plot
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     super.setUp(newSymbol);
     newSymbol.setAttributes(Attribute.HOLDALL);

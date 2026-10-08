@@ -2062,17 +2062,25 @@ public class EvalEngine implements Serializable {
       // if (functionEvaluator != null) {
       // evaluate a built-in function.
 
-      OptionsResult options = checkBuiltinArguments(ast, functionEvaluator);
-      if (options == null) {
+      // a plot: the call is held, and its arguments are evaluated with the plot variables cleared
+      // before they are checked and the plot is made
+      final boolean localIterators = functionEvaluator instanceof AbstractFunctionOptionEvaluator
+          && ((AbstractFunctionOptionEvaluator) functionEvaluator).localIterators();
+      OptionsResult options = localIterators ? null : checkBuiltinArguments(ast, functionEvaluator);
+      if (options == null && !localIterators) {
         return F.NIL;
       }
-      IAST newAST = options.result;
+      IAST newAST = localIterators ? ast : options.result;
       try {
         if (functionEvaluator instanceof AbstractFunctionOptionEvaluator) {
           AbstractFunctionOptionEvaluator optionsEvaluator =
               (AbstractFunctionOptionEvaluator) functionEvaluator;
-          IExpr result =
-              optionsEvaluator.evaluate(newAST, options.argSize, options.options, this, ast);
+          IExpr result = localIterators ? optionsEvaluator.evaluateLocal(ast, this, call -> {
+            OptionsResult localOptions = checkBuiltinArguments(call, optionsEvaluator);
+            return localOptions == null ? F.NIL
+                : optionsEvaluator.evaluate(localOptions.result, localOptions.argSize,
+                    localOptions.options, this, call);
+          }) : optionsEvaluator.evaluate(newAST, options.argSize, options.options, this, ast);
           if (result.isPresent()) {
             return result;
           }

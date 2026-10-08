@@ -816,6 +816,12 @@ public class ContourPlot extends ListPlot {
   }
 
   @Override
+  public boolean localIterators() {
+    // the plot variable is local to the plot
+    return true;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] optionValues = GraphicsOptions.contourPlotDefaultOptionValues(false, false);
     optionValues[GraphicsOptions.X_AXES] = S.False;

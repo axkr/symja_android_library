@@ -11825,6 +11825,95 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPlotVariableIsLocal() {
+    // a value which the plot variable has outside does not reach the plot, and is kept
+    check("lv = 30; {Union(Head /@ {Plot(lv^2, {lv, -1, 1}), LogPlot(lv^2, {lv, 1, 2}), ParametricPlot({lv, lv^2}, {lv, -1, 1}),"
+        + " ParametricPlot({lv*Cos(t), lv*Sin(t)}, {lv, 0, 1}, {t, 0, 2*Pi}), PolarPlot(lv, {lv, 0, 1}),"
+        + " ContourPlot(lv + t, {lv, 0, 1}, {t, 0, 1}), DensityPlot(lv + t, {lv, 0, 1}, {t, 0, 1}),"
+        + " RegionPlot(lv + t < 1, {lv, 0, 1}, {t, 0, 1}), ComplexPlot(lv^2, {lv, -1 - I, 1 + I}),"
+        + " DiscretePlot(lv^2, {lv, 1, 5})}), lv}", //
+        "{{Graphics},30}");
+    check("lv = 30; Union(Head /@ {Plot3D(lv + t, {lv, 0, 1}, {t, 0, 1}), ParametricPlot3D({lv, lv^2, lv}, {lv, -1, 1}),"
+        + " SphericalPlot3D(1, {lv, 0, Pi}, {t, 0, 2*Pi}), RevolutionPlot3D(lv, {lv, 0, 1}),"
+        + " ContourPlot3D(lv + t + u, {lv, 0, 1}, {t, 0, 1}, {u, 0, 1}),"
+        + " RegionPlot3D(lv + t + u < 1, {lv, 0, 1}, {t, 0, 1}, {u, 0, 1})})", //
+        "{Graphics3D}");
+    check("lv = 30; Cases(Plot(lv^2, {lv, -1, 1}), Line(p_) :> {First(p), Last(p)}, Infinity)", //
+        "{{{-1.0,1.0},{1.0,1.0}}}");
+    check("lv = 30; Cases(DiscretePlot(lv^2, {lv, 1, 3}), Point(p_) :> p, Infinity)", //
+        "{{{1,1},{2,4},{3,9}}}");
+    // the function, the range and the options may be held in variables
+    check("lv=.; rv = {tv, 0, 1}; ov = Sequence(PlotStyle -> Red, Axes -> False); fv = tv^2; Head(Plot(fv, rv, ov))", //
+        "Graphics");
+    check("Head(Plot(Evaluate(Table(x^k, {k, 3})), {x, 0, 1}))", //
+        "Graphics");
+  }
+
+  @Test
+  public void testParametricRegionOpacity() {
+    check("Union(Cases(ParametricPlot({r*Cos(t), r*Sin(t)}, {r, 0, 1}, {t, 0, 2*Pi}), _Opacity, Infinity))", //
+        "{Opacity(0.3)}");
+    check("Union(Cases(ParametricPlot({r*Cos(t), r*Sin(t)}, {r, 0, 1}, {t, 0, 2*Pi}, PlotStyle -> {Red, Opacity(0.6)}),"
+        + " _Opacity | _RGBColor, Infinity))", //
+        "{Opacity(0.6),RGBColor(1,0,0)}");
+  }
+
+  @Test
+  public void testTextAsALabel() {
+    check("StringCount(ExportString(Plot(x, {x, 0, 1}, PlotLabel -> Text(Grid({{\"left\", 2.5}}))), \"SVG\"),"
+        + " {\">left 2.5<\", \"Grid\"})", //
+        "1");
+  }
+
+  @Test
+  public void testBSplineFunction() {
+    check("gs = BSplineFunction({{0, 0}, {1, 1}, {2, 0}}); {gs(0), gs(0.5), gs(1)}", //
+        "{{0.0,0.0},{1.0,0.5},{2.0,0.0}}");
+    check("gs = BSplineFunction({{0, 0}, {1, 2}, {2, 0}, {3, 2}, {4, 0}}); {gs(0.25), gs(0.5), gs(0.8)}", //
+        "{{1.1875,1.25},{2.0,1.0},{3.008,1.216}}");
+    check("gs = BSplineFunction({{0, 0}, {1, 2}, {2, 0}, {3, 2}, {4, 0}}, SplineDegree -> 2); {gs(0), gs(1)}", //
+        "{{0.0,0.0},{4.0,0.0}}");
+    check("ss = BSplineFunction(Table({u, v, u*v}, {u, 0, 1, 1/4}, {v, 0, 1, 1/4})); {ss(0.5, 0.5), ss(0.25, 1)}", //
+        "{{0.5,0.5,0.25},{0.296875,1.0,0.296875}}");
+    check("Chop(ss(0.3, 0.7) - {0.342, 0.658, 0.225036})", //
+        "{0,0,0}");
+    // outside 0..1 and for a symbol the call stays as it is
+    check("gs = BSplineFunction({{0, 0}, {1, 2}, {2, 0}}); Head /@ {gs(tv), gs(2), gs(-1)} === {gs, gs, gs}", //
+        "True");
+    check("Head(ParametricPlot3D(ss(a, b), {a, 0, 1}, {b, 0, 1}))", //
+        "Graphics3D");
+  }
+
+  @Test
+  public void testNonlinearModelFitParameterStatistics() {
+    // a model which is linear in its parameters has the statistics of the linear fit
+    check("dv = {{1, 2.1}, {2, 3.9}, {3, 6.2}, {4, 7.8}, {5, 10.4}}; nlf = NonlinearModelFit(dv, a*x + b, {a, b}, x);"
+        + " lmf = LinearModelFit(dv, x, x);"
+        + " Table(Max(Abs(nlf(prop) - Reverse(lmf(prop)))) < 10^-6,"
+        + " {prop, {\"ParameterErrors\", \"ParameterTStatistics\", \"ParameterPValues\"}})", //
+        "{True,True,True}");
+    check("Abs(nlf(\"EstimatedVariance\") - lmf(\"EstimatedVariance\")) < 10^-9", //
+        "True");
+    check("Dimensions(nlf(\"ParameterConfidenceIntervals\"))", //
+        "{2,2}");
+  }
+
+  @Test
+  public void testNumberFormOfBaseForm() {
+    check("ToString(NumberForm(BaseForm(5, 16), 1, NumberFormat -> (#1 &), NumberPadding -> {\"0\", \"\"}))", //
+        "05");
+    check("ToString(NumberForm(BaseForm(0, 8), 2, NumberFormat -> (#1 &), NumberPadding -> {\"0\", \"\"}))", //
+        "000");
+    check("ToString(NumberForm(BaseForm(200, 16), 1, NumberFormat -> (#1 &)))", //
+        "c8");
+    check("ToString(NumberForm(BaseForm(64, 2), 7, NumberFormat -> (#1 &), DigitBlock -> 4, NumberSeparator -> \" \", NumberPadding -> {\"0\", \"\"}))", //
+        "0100 0000");
+    // the base is not part of the number
+    check("ToString(NumberForm(BaseForm(5, 16), 3, NumberPadding -> {\"0\", \"\"}))", //
+        "Subscript(0005,16)");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //
