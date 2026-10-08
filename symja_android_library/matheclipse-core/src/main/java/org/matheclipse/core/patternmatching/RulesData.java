@@ -513,6 +513,11 @@ public final class RulesData implements Serializable {
     if (fEqualDownRules != null) {
       PatternMatcherEquals res = fEqualDownRules.get(expr);
       if (res != null) {
+        if (res.getRHS().equals(expr)) {
+          // f(1) = f(1): a rule without a pattern which gives back its own left-hand side is a
+          // fixed point, not an endless iteration
+          return F.NIL;
+        }
         if (res.rhsHasReturn()) {
           // A definition is where a Return stops - it gives its value for the whole definition -
           // so a right-hand side which contains one is evaluated here, at the definition's own
@@ -736,6 +741,10 @@ public final class RulesData implements Serializable {
     if (fEqualUpRules != null) {
       res = fEqualUpRules.get(expression);
       if (res != null) {
+        if (res.getRHS().equals(expression)) {
+          // a rule without a pattern which gives back its own left-hand side is a fixed point
+          return F.NIL;
+        }
         return res.getRHS();
       }
     }

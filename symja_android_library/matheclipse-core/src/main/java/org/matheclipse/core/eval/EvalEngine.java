@@ -4393,6 +4393,16 @@ public class EvalEngine implements Serializable {
     IExpr result = F.NIL;
     // if no UpSet/UpSetDelayed/TagSet was evaluated yet, no argument can carry an up-value, so the
     // probe over all arguments (and their topHead()) is skipped completely
+    if (ast.head().isAST() && RulesData.isUpRulesDefined()) {
+      // Subscript(f, a)[args]: the definitions of a notation belong to its variable
+      ISymbol tag = org.matheclipse.core.builtin.PatternMatching.notationTag(ast);
+      if (tag != null) {
+        result = tag.evalUpRules(ast, this);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
+    }
     if (ast.size() > 1 && RulesData.isUpRulesDefined()) {
       IExpr x = ast.arg1();
       if (!(x instanceof IPatternObject) && x.isPresent()) {

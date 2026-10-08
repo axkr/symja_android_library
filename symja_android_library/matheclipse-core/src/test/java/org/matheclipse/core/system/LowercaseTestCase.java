@@ -11744,6 +11744,57 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNotationHeadDefinitions() {
+    // the rule belongs to the variable, not to the shared built-in head
+    check("Subscript(xq, 1) = 5; Subscript(xq, 1) + 1", //
+        "6");
+    check("{UpValues(xq), DownValues(Subscript)}", //
+        "{{HoldPattern(Subscript(xq,1)):>5},{}}");
+    check("Subscript(xq, 1) =.; Subscript(xq, 1)", //
+        "Subscript(xq,1)");
+    check("Subscript(qq, i_) := i^2; Subscript(qq, 4)", //
+        "16");
+    check("Clear(qq); Subscript(qq, 4)", //
+        "Subscript(qq,4)");
+    check("Subscript(fq, aq)[x_] := x^2; {Subscript(fq, aq)[3], Subscript(fq, bq)[3]}", //
+        "{9,Subscript(fq,bq)[3]}");
+    check("Subscript(gq, aq)[x_] /; x > 2 := x^3; {Subscript(gq, aq)[3], Subscript(gq, aq)[1]}", //
+        "{27,Subscript(gq,aq)[1]}");
+    check("Superscript(xq, \"*\") = 9; Superscript(xq, \"*\")", //
+        "9");
+    check("CirclePlus(vq, w_) := w + 1; CirclePlus(vq, 2)", //
+        "3");
+    // no variable in the first argument: the head stays protected
+    check("Subscript(Sin, 1) = 2; Subscript(Sin, 1)", //
+        "Subscript(Sin,1)");
+  }
+
+  @Test
+  public void testRuleWithoutPatternGivingItself() {
+    check("xq := xq; xq", //
+        "xq");
+    check("yq = yq; yq", //
+        "yq");
+    check("fq(1) = fq(1); fq(1)", //
+        "fq(1)");
+    check("Subscript(lq, aq)[xq] = Subscript(lq, aq)[xq]; Subscript(lq, aq)[xq]", //
+        "Subscript(lq,aq)[xq]");
+  }
+
+  @Test
+  public void testBoxEscapeAndItemSizeInALabel() {
+    check("StringCount(ExportString(Graphics(Text(\"area \\!\\(\\*FractionBox[\\(\\*OverscriptBox[\\(AB\\), \\(_\\)] × \\*OverscriptBox[\\(AC\\), \\(_\\)]\\), \\(2\\)]\\) end\", {0, 0})), \"SVG\"),"
+        + " \">area (AB̄×AC̄)/2 end<\")", //
+        "1");
+    check("StringCount(ExportString(Graphics(Text(Grid({{\"aaa bbb ccc ddd eee fff ggg hhh iii jjj kkk lll\"}}, ItemSize -> {10, Automatic}), {0, 0})), \"SVG\"),"
+        + " {\">aaa bbb ccc ddd eee</tspan>\", \">fff ggg hhh iii jjj</tspan>\", \">kkk lll</tspan>\"})", //
+        "3");
+    check("StringCount(ExportString(Graphics(Text(Grid({{\"aaa bbb ccc ddd eee fff ggg hhh iii jjj kkk lll\"}}, ItemSize -> {Automatic, Automatic}), {0, 0})), \"SVG\"),"
+        + " \">aaa bbb ccc ddd eee fff ggg hhh iii jjj kkk lll</text>\")", //
+        "1");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

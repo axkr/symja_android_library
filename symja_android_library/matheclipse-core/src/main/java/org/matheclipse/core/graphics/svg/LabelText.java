@@ -1,8 +1,12 @@
 package org.matheclipse.core.graphics.svg;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.parser.BoxNotation;
+import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.parser.client.Scanner;
 
 /**
  * The plain text a label expression reads as in a picture: a string without its quotes, a
@@ -23,7 +27,8 @@ public final class LabelText {
   /** The text of a label expression. */
   public static String of(IExpr expr) {
     if (expr.isString()) {
-      return expr.toString();
+      String text = expr.toString();
+      return text.indexOf(Scanner.BOX_BANG) < 0 ? text : typeset(text);
     }
     if (expr == S.Null) {
       // nothing is drawn: a blank line as the entry of a Column
@@ -51,11 +56,18 @@ public final class LabelText {
       // one line per row
       StringBuilder text = new StringBuilder();
       IAST rows = (IAST) expr.first();
+      int width = itemWidth((IAST) expr);
       for (int i = 1; i < rows.size(); i++) {
         if (i > 1) {
           text.append('\n');
         }
-        text.append(rows.get(i).isList() ? joined((IAST) rows.get(i), " ") : of(rows.get(i)));
+        IExpr row = rows.get(i);
+        if (width > 0 && row.isList() && row.argSize() == 1) {
+          // a lone cell is broken into lines of the item width
+          text.append(wrapped(of(row.first()), width));
+        } else {
+          text.append(row.isList() ? joined((IAST) row, " ") : of(row));
+        }
       }
       return text.toString();
     }
@@ -150,6 +162,102 @@ public final class LabelText {
     return copy;
   }
 
+  /**
+   * The number of characters a line of a <code>Grid</code> cell holds with
+   * <code>ItemSize -> w</code> or <code>ItemSize -> {w, h}</code>: a width of <code>w</code> ems,
+   * with half an em for a character.
+   *
+   * @return <code>0</code> if the width is not set
+   */
+  private static int itemWidth(IAST grid) {
+    for (int i = 2; i < grid.size(); i++) {
+      if (grid.get(i).isRuleAST() && grid.get(i).first() == S.ItemSize) {
+        IExpr size = grid.get(i).second();
+        while (size.isList() && size.argSize() >= 1) {
+          size = size.first();
+        }
+        double ems = size.isReal() ? size.evalf() : 0.0;
+        return ems > 0.0 && ems < 10000.0 ? (int) Math.round(2.0 * ems) : 0;
+      }
+    }
+    return 0;
+  }
+
+  /** <code>text</code> broken at its spaces into lines of at most <code>width</code> characters. */
+  private static String wrapped(String text, int width) {
+    if (text.length() <= width || text.indexOf('\n') >= 0) {
+      return text;
+    }
+    StringBuilder result = new StringBuilder(text.length() + 8);
+    int lineLength = 0;
+    for (String word : text.split(" ")) {
+      if (lineLength > 0 && lineLength + 1 + word.length() > width) {
+        result.append('\n');
+        lineLength = 0;
+      } else if (lineLength > 0) {
+        result.append(' ');
+        lineLength++;
+      }
+      result.append(word);
+      lineLength += word.length();
+    }
+    return result.toString();
+  }
+
+  /**
+   * The text of a string with box escapes in it, <code>"area: \!\(\*FractionBox[...]\)"</code>:
+   * each escape is read as boxes, the text around it stays. An escape which has no reading stays
+   * as it is written.
+   */
+  private static String typeset(String text) {
+    StringBuilder result = new StringBuilder(text.length());
+    int i = 0;
+    while (i < text.length()) {
+      int start = text.indexOf(Scanner.BOX_BANG, i);
+      if (start < 0 || start + 1 >= text.length() || text.charAt(start + 1) != Scanner.BOX_OPEN) {
+        break;
+      }
+      int depth = 0;
+      int end = -1;
+      for (int j = start + 1; j < text.length(); j++) {
+        char ch = text.charAt(j);
+        if (ch == Scanner.BOX_OPEN) {
+          depth++;
+        } else if (ch == Scanner.BOX_CLOSE && --depth == 0) {
+          end = j;
+          break;
+        }
+      }
+      if (end < 0) {
+        break;
+      }
+      result.append(text, i, start);
+      String escape = text.substring(start, end + 1);
+      IExpr boxes = null;
+      try {
+        // \( ... \) without the leading \! is the box tree itself
+        boxes = new ExprParser(EvalEngine.get(), false).parse(escape.substring(1));
+      } catch (RuntimeException rex) {
+        // no reading
+      }
+      result.append(boxes == null || boxes.isAST(S.HoldComplete) ? BoxNotation.writeEscapes(escape)
+          : boxes(boxes));
+      i = end + 1;
+    }
+    return result.append(BoxNotation.writeEscapes(text.substring(i))).toString();
+  }
+
+  /** A numerator or denominator: in parentheses if it is more than one item. */
+  private static String fractionPart(IExpr box) {
+    IExpr items = box;
+    while ((items.isAST(S.RowBox, 2) || (items.isList() && items.argSize() == 1))) {
+      items = items.first();
+    }
+    String text = boxes(box);
+    return items.isList() && items.argSize() > 1 && !text.startsWith("(") ? "(" + text + ")"
+        : text;
+  }
+
   /** The text of a box tree: the content of <code>RawBoxes</code> or <code>DisplayForm</code>. */
   private static String boxes(IExpr box) {
     if (box.isString()) {
@@ -170,7 +278,13 @@ public final class LabelText {
       return radicand.length() > 1 ? "\u221A(" + radicand + ")" : "\u221A" + radicand;
     }
     if (box.isAST(S.FractionBox, 3)) {
-      return boxes(box.first()) + "/" + boxes(box.second());
+      return fractionPart(box.first()) + "/" + fractionPart(box.second());
+    }
+    if (box.isAST(S.OverscriptBox, 3)) {
+      String accent = combiningAccent(boxes(box.second()));
+      if (accent != null) {
+        return boxes(box.first()) + accent;
+      }
     }
     if (box.isAST(S.SuperscriptBox, 3) || box.isAST(S.SubscriptBox, 3)) {
       boolean sub = box.isAST(S.SubscriptBox);

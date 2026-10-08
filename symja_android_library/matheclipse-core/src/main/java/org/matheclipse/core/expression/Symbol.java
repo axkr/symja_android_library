@@ -614,6 +614,10 @@ public class Symbol implements ISymbol, Serializable {
     // and a Clear[] between hasAssignedSymbolValue() and assignedValue() used to reach
     // evalAssignedValue() as a null
     IExpr rightHandSide = hasAssignedSymbolValue() ? assignedValue() : null;
+    if (rightHandSide == this) {
+      // x := x: the symbol is its own value, a fixed point
+      return F.NIL;
+    }
     if (rightHandSide != null) {
       return ISymbol.evalAssignedValue(rightHandSide, engine);
     }

@@ -2641,8 +2641,55 @@ public final class PatternMatching {
 
   }
 
+  /**
+   * Heads which only stand for a notation. They are shared built-in symbols, so a definition for
+   * one of them is never stored on the head: it becomes an up-value of the variable in the first
+   * argument, which belongs to the context of the engine that makes the assignment.
+   */
+  private static final java.util.Set<ISymbol> NOTATION_HEADS =
+      java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
+  static {
+    java.util.Collections.addAll(NOTATION_HEADS, S.Subscript, S.Superscript, S.Subsuperscript,
+        S.Underscript, S.Overscript, S.Underoverscript, S.SuperDagger, S.CirclePlus, S.CircleTimes,
+        S.CircleDot, S.CenterDot, S.Wedge, S.Vee, S.Star, S.Diamond, S.PlusMinus, S.MinusPlus,
+        S.Tilde, S.Del, S.Square, S.SmallCircle, S.Cap, S.Cup, S.Colon, S.Backslash, S.VerticalBar,
+        S.DoubleVerticalBar, S.Therefore, S.Because, S.Congruent);
+  }
+
+  /**
+   * The symbol which carries the definitions of a notation: for <code>Subscript(x, 1)</code> and
+   * for <code>Subscript(x, 1)[args]</code> the variable <code>x</code>.
+   *
+   * @param expr a call or the left-hand-side of a definition
+   * @return <code>null</code> if <code>expr</code> is not built on a notation head, or if its
+   *         first argument names no symbol a rule can be attached to
+   */
+  public static ISymbol notationTag(IExpr expr) {
+    while (expr.isCondition() || expr.isAST(S.HoldPattern, 2)) {
+      expr = expr.first();
+    }
+    while (expr.isAST() && expr.head().isAST()) {
+      expr = expr.head();
+    }
+    if (!expr.isAST() || expr.argSize() < 1 || !NOTATION_HEADS.contains(expr.head())) {
+      return null;
+    }
+    IExpr base = expr.first();
+    if (base instanceof IPatternObject) {
+      return null;
+    }
+    ISymbol tag = base.isSymbol() ? (ISymbol) base : base.isAST() ? base.topHead() : null;
+    return tag == null || tag.hasProtectedAttribute() ? null : tag;
+  }
+
   private static IExpr setDownRule(IExpr evaledLHS, IExpr originalLHS, int flags,
       IExpr rightHandSide, boolean packageMode) {
+    ISymbol notationTag = notationTag(evaledLHS);
+    if (notationTag != null) {
+      notationTag.putUpRule(flags | IPatternMatcher.TAGSET, false, (IAST) evaledLHS, rightHandSide);
+      return rightHandSide;
+    }
     ISymbol lhsSymbol = getLookupReferenceName(evaledLHS);
     if (lhsSymbol == null) {
       // `1` does not contain a symbol to attach a rule to.
@@ -2712,6 +2759,12 @@ public final class PatternMatching {
 
   private static void setDelayedDownRule(IExpr evaledLHS, IExpr originalLHS, int flags,
       IExpr rightHandSide, boolean packageMode) {
+    ISymbol notationTag = notationTag(evaledLHS);
+    if (notationTag != null) {
+      notationTag.putUpRule(flags | IPatternMatcher.TAGSET_DELAYED, false, (IAST) evaledLHS,
+          rightHandSide);
+      return;
+    }
     ISymbol lhsSymbol = getLookupReferenceName(evaledLHS);
     if (lhsSymbol == null) {
       // `1` does not contain a symbol to attach a rule to.
@@ -3269,6 +3322,15 @@ public final class PatternMatching {
           return F.NIL;
         }
 
+        final ISymbol notationTag = notationTag(leftHandSide);
+        if (notationTag != null) {
+          // the rule was stored as an up-value of the variable the notation is written for
+          IExpr lhs = engine.evalHoldPattern((IAST) leftHandSide);
+          if (!notationTag.removeRule(IPatternMatcher.TAGSET, false, lhs, engine.isPackageMode())) {
+            printAssignmentNotFound(notationTag, leftHandSide);
+          }
+          return S.Null;
+        }
         if (leftHandSide.isAST()) {
           final ISymbol lhsSymbol = getLookupReferenceName(leftHandSide);
           if (lhsSymbol == null) {
