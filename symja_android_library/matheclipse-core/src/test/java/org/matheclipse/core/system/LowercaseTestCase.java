@@ -11795,6 +11795,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRegionFunctionInStreamAndVectorPlot() {
+    check("Max(Flatten(Cases(StreamPlot({x, y}, {x, 0, 1}, {y, 0, 1}, RegionFunction -> Function({x, y}, x + y < 0.5)),"
+        + " Arrow(p_, ___) :> (#[[1]] + #[[2]] & /@ p), Infinity))) < 0.5", //
+        "True");
+    check("0 < Count(StreamPlot({x, y}, {x, 0, 1}, {y, 0, 1}, RegionFunction -> Function({x, y}, x + y < 0.5)), _Arrow, Infinity)"
+        + " < Count(StreamPlot({x, y}, {x, 0, 1}, {y, 0, 1}), _Arrow, Infinity)", //
+        "True");
+    // an arrow is centred on its grid point
+    check("Max(Flatten(Cases(VectorPlot({x, y}, {x, 0, 1}, {y, 0, 1}, RegionFunction -> Function({x, y}, x + y < 0.5)),"
+        + " Arrow(p_, ___) :> Mean(p) . {1, 1}, Infinity))) < 0.5", //
+        "True");
+    // the vector and its norm are arguments 3 to 5
+    check("0 < Count(VectorPlot({x, y}, {x, 0, 1}, {y, 0, 1}, RegionFunction -> Function({x, y, vx, vy, n}, n < 0.5)), _Arrow, Infinity)"
+        + " < Count(VectorPlot({x, y}, {x, 0, 1}, {y, 0, 1}), _Arrow, Infinity)", //
+        "True");
+  }
+
+  @Test
+  public void testLongLabelOfTheUprightAxis() {
+    // horizontal beside the tick labels, and the picture grows sideways to hold it
+    check("With({svg = ExportString(Plot3D(x + y, {x, -1, 1}, {y, -1, 1}, AxesLabel -> {\"x\", \"y\", \"a rather long height label\"}), \"SVG\")},"
+        + " {StringCount(svg, \"rotate(\"), StringCount(svg, \"text-anchor=\\\"end\\\" dominant-baseline=\\\"middle\\\">a rather long height label<\"),"
+        + " StringCount(svg, \"viewBox=\\\"-\"), StringCount(svg, \"width=\\\"360.0\\\"\")})", //
+        "{0,1,1,0}");
+    check("StringCount(ExportString(Plot3D(x + y, {x, -1, 1}, {y, -1, 1}, AxesLabel -> {\"x\", \"y\", \"z\"}), \"SVG\"),"
+        + " \"viewBox=\\\"0 0 360.0 360.0\\\"\")", //
+        "1");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

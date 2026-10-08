@@ -328,6 +328,8 @@ public class SVGGraphics3D {
     final Color color;
     final double fontSize;
     final String anchor;
+    /** A shift on the screen, away from the point the label is placed at. */
+    double dx;
 
     Label(Vector3 point, String text, Color color, double fontSize, String anchor) {
       this.point = point;
@@ -348,7 +350,7 @@ public class SVGGraphics3D {
               + escape(org.matheclipse.core.graphics.svg.TickGenerator.powerExponent(text))
               + "</tspan>"
           : escape(text);
-      return tag("text").attr("x", format(point.x)).attr("y", format(point.y))
+      return tag("text").attr("x", format(point.x + dx)).attr("y", format(point.y))
           .attr("fill", hex(color)).attr("font-size", format(fontSize))
           .attr("font-family", "Arial, sans-serif").attr("text-anchor", anchor)
           .attr("dominant-baseline", "middle").with(new UnescapedText(body));
@@ -1085,6 +1087,9 @@ public class SVGGraphics3D {
    * The tick positions and their text come from the scene, so an axis reads the same here as it
    * does in the interactive output and as a 2D plot's axis does.
    */
+  /** The width of a character of a label, as a share of its font size. */
+  private static final double CHARACTER_WIDTH = 0.55;
+
   private static void addAxes(ObjectNode scene, double[][] ranges, Vector3 min, Vector3 max,
       Vector3 dataScale, View view, double maxDim, List<Renderable> out) {
     JsonNode axes = scene.get("axes");
@@ -1114,6 +1119,7 @@ public class SVGGraphics3D {
       }
       outward = outward.normalize();
 
+      int widestTick = 0;
       if (ticks != null && axis < ticks.size()) {
         double lo = ranges[axis][0];
         double span = ranges[axis][1] - lo;
@@ -1123,11 +1129,24 @@ public class SVGGraphics3D {
           Vector3 tip = at.add(outward.scale(tickLength));
           out.add(
               new Polyline(List.of(view.project(at), view.project(tip)), color, 1.0, 1.0, null));
-          out.add(new Label(view.project(at.add(outward.scale(tickLength * 2.6))),
-              tick.get("label").asText(), color, fontSize, "middle"));
+          String tickText = tick.get("label").asText();
+          widestTick = Math.max(widestTick, tickText.length());
+          out.add(new Label(view.project(at.add(outward.scale(tickLength * 2.6))), tickText, color,
+              fontSize, "middle"));
         }
       }
-      if (labels != null && axis < labels.size() && !labels.get(axis).isNull()) {
+      if (axis == 2 && labels != null && axis < labels.size() && !labels.get(axis).isNull()) {
+        // the label of the upright axis is written beside its tick labels, with the end that
+        // faces the axis next to them; the picture grows sideways for a long one
+        Vector3 middle = edge[0].add(edge[1]).scale(0.5);
+        Vector3 at = middle.add(outward.scale(tickLength * 2.6));
+        boolean left = view.project(at).x < view.project(middle).x;
+        Label label = new Label(view.project(at), labels.get(axis).asText(), color,
+            fontSize * 1.15, left ? "end" : "start");
+        double gap = CHARACTER_WIDTH * fontSize * widestTick / 2 + 0.6 * fontSize;
+        label.dx = left ? -gap : gap;
+        out.add(label);
+      } else if (labels != null && axis < labels.size() && !labels.get(axis).isNull()) {
         Vector3 at = edge[0].add(edge[1]).scale(0.5).add(outward.scale(tickLength * 6));
         out.add(new Label(view.project(at), labels.get(axis).asText(), color, fontSize * 1.15,
             "middle"));
@@ -1781,9 +1800,31 @@ public class SVGGraphics3D {
       }
     }
 
+    // a label which is written away from its point, the one of the upright axis, may be longer
+    // than the room beside the drawing: the canvas grows sideways by what sticks out
+    double[] canvasInsets = insets(scene, "imageMargins", 0);
+    double fullWidth = width + canvasInsets[0] + canvasInsets[1];
+    double growLeft = 0.0;
+    double growRight = 0.0;
+    for (Renderable r : renderables) {
+      if (r instanceof Label && !"middle".equals(((Label) r).anchor)) {
+        Label label = (Label) r;
+        double x = label.point.x + label.dx;
+        double textWidth = CHARACTER_WIDTH * label.fontSize * label.text.length();
+        if ("end".equals(label.anchor)) {
+          growLeft = Math.max(growLeft, textWidth - x + 2.0);
+        } else {
+          growRight = Math.max(growRight, x + textWidth + 2.0 - fullWidth);
+        }
+      }
+    }
+    growLeft = Math.ceil(growLeft);
+    growRight = Math.ceil(growRight);
+
     List<DomContent> content = new ArrayList<>();
     if (scene.has("background")) {
-      content.add(tag("rect").attr("x", "0").attr("y", "0").attr("width", format(width))
+      content.add(tag("rect").attr("x", format(-growLeft)).attr("y", "0")
+          .attr("width", format(width + growLeft + growRight))
           .attr("height", format(height))
           .attr("fill", hex(new Color(scene.get("background").asInt()))));
     }
@@ -1827,11 +1868,12 @@ public class SVGGraphics3D {
     addOverlay(scene, "epilog", width, height, content);
 
     double[] canvasMargins = insets(scene, "imageMargins", 0);
-    double canvasWidth = width + canvasMargins[0] + canvasMargins[1];
+    double canvasWidth = width + canvasMargins[0] + canvasMargins[1] + growLeft + growRight;
     double canvasTotalHeight = height + canvasMargins[2] + canvasMargins[3];
+    String left = growLeft > 0.0 ? "-" + growLeft : "0";
     return tag("svg").with(content).attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("width", canvasWidth).attr("height", canvasTotalHeight)
-        .attr("viewBox", "0 0 " + canvasWidth + " " + canvasTotalHeight).render();
+        .attr("viewBox", left + " 0 " + canvasWidth + " " + canvasTotalHeight).render();
   }
 
   /**

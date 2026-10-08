@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -75,6 +76,7 @@ public class VectorPlot extends AbstractFunctionEvaluator {
     boolean colored = true;
     boolean colorFunctionGiven = false;
     IExpr style = F.NIL;
+    RegionFunctionFilter region = null;
     IASTAppendable graphicsOptions = F.ListAlloc();
     for (int i = dimension + 2; i < ast.size(); i++) {
       IExpr option = ast.get(i);
@@ -96,6 +98,10 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       if (key == S.VectorColorFunction) {
         colored = !engine.evaluate(option.second()).isNone();
         colorFunctionGiven = true;
+        continue;
+      }
+      if (key == S.RegionFunction) {
+        region = RegionFunctionFilter.of(engine.evaluate(option.second()), engine);
         continue;
       }
       if (key == S.VectorStyle) {
@@ -125,6 +131,16 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       double length = norm(vector);
       if (length == 0.0 || Double.isNaN(length) || Double.isInfinite(length)) {
         continue;
+      }
+      if (region != null) {
+        // the point, the vector and its length: x, y, vx, vy, norm
+        double[] arguments = new double[2 * dimension + 1];
+        System.arraycopy(point, 0, arguments, 0, dimension);
+        System.arraycopy(vector, 0, arguments, dimension, dimension);
+        arguments[2 * dimension] = length;
+        if (!region.accepts(arguments)) {
+          continue;
+        }
       }
       tails[k] = point;
       vectors[k] = vector;

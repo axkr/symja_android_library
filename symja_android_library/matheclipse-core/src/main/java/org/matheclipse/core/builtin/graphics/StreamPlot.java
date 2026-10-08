@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.RegionFunctionFilter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -80,6 +81,7 @@ public class StreamPlot extends AbstractFunctionEvaluator {
     int seeds = DEFAULT_SEEDS;
     double length = DEFAULT_LENGTH;
     boolean colored = true;
+    RegionFunctionFilter region = null;
     IASTAppendable graphicsOptions = F.ListAlloc();
     for (int i = 4; i < ast.size(); i++) {
       IExpr option = ast.get(i);
@@ -102,6 +104,10 @@ public class StreamPlot extends AbstractFunctionEvaluator {
         length = streamLength(first, length);
         continue;
       }
+      if (key == S.RegionFunction) {
+        region = RegionFunctionFilter.of(engine.evaluate(option.second()), engine);
+        continue;
+      }
       if (key == S.StreamColorFunction) {
         colored = !engine.evaluate(option.second()).isNone();
         continue;
@@ -119,7 +125,9 @@ public class StreamPlot extends AbstractFunctionEvaluator {
         double px = x0 + (x1 - x0) * i / (SAMPLES - 1);
         double py = y0 + (y1 - y0) * j / (SAMPLES - 1);
         double[] vector = fieldAt(field, x, y, px, py, engine);
-        if (vector == null) {
+        if (vector == null || (region != null && !region.accepts(px, py, vector[0], vector[1],
+            Math.hypot(vector[0], vector[1])))) {
+          // no field here, or outside the region: no line starts at or runs through this sample
           du[i][j] = Double.NaN;
           dv[i][j] = Double.NaN;
           speed[i][j] = Double.NaN;
@@ -157,6 +165,14 @@ public class StreamPlot extends AbstractFunctionEvaluator {
         id++;
         List<double[]> backward = trace(du, dv, u, v, -1.0, limit, owner, cells, id);
         List<double[]> forward = trace(du, dv, u, v, 1.0, limit, owner, cells, id);
+        if (region != null) {
+          // the samples only say where a line may run; its own points are asked as well
+          if (!inRegion(region, du, dv, u, v, x0, x1, y0, y1)) {
+            continue;
+          }
+          backward = insideRegion(region, backward, du, dv, x0, x1, y0, y1);
+          forward = insideRegion(region, forward, du, dv, x0, x1, y0, y1);
+        }
         Collections.reverse(backward);
         List<double[]> line = new ArrayList<>(backward);
         line.add(new double[] {u, v});
@@ -220,6 +236,26 @@ public class StreamPlot extends AbstractFunctionEvaluator {
       v = nv;
       path.add(new double[] {u, v});
       travelled += STEP;
+    }
+    return path;
+  }
+
+  /** Whether the point <code>(u, v)</code> of the unit square lies in the region. */
+  private static boolean inRegion(RegionFunctionFilter region, double[][] du, double[][] dv,
+      double u, double v, double x0, double x1, double y0, double y1) {
+    double vx = interpolate(du, u, v) * (x1 - x0);
+    double vy = interpolate(dv, u, v) * (y1 - y0);
+    return region.accepts(x0 + (x1 - x0) * u, y0 + (y1 - y0) * v, vx, vy, Math.hypot(vx, vy));
+  }
+
+  /** The points of a path, which leads away from its seed, up to the first one outside. */
+  private static List<double[]> insideRegion(RegionFunctionFilter region, List<double[]> path,
+      double[][] du, double[][] dv, double x0, double x1, double y0, double y1) {
+    for (int i = 0; i < path.size(); i++) {
+      double[] p = path.get(i);
+      if (!inRegion(region, du, dv, p[0], p[1], x0, x1, y0, y1)) {
+        return new ArrayList<>(path.subList(0, i));
+      }
     }
     return path;
   }
