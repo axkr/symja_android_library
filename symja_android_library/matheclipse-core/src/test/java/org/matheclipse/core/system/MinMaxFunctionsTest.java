@@ -488,4 +488,87 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     check("Maximize({Sqrt(x)/(x+1),x<-1},x)", //
         "{-Infinity,{x->Indeterminate}}");
   }
+  /**
+   * The best stationary point is the extremum only if there is one: the region is closed and
+   * bounded, the objective grows in every direction, or the bound is proved. The candidates are
+   * compared exactly, and a point on an active constraint is recognized as feasible.
+   */
+  @Test
+  public void testConstrainedExtremumIsProved() {
+    // irrational optimum on a circle and on its disk: the nearer of the two stationary points
+    check("Minimize({u^2 + v^2, (u-3)^2 + (v-1)^2 == 4}, {u, v})", //
+        "{14-4*Sqrt(10),{u->3-3*Sqrt(2/5),v->1-Sqrt(2/5)}}");
+    check("Minimize({u^2 + v^2, (u-3)^2 + (v-1)^2 <= 4}, {u, v})", //
+        "{14-4*Sqrt(10),{u->3-3*Sqrt(2/5),v->1-Sqrt(2/5)}}");
+    check("Maximize({u^2 + v^2, (u-3)^2 + (v-1)^2 <= 4}, {u, v})", //
+        "{14+4*Sqrt(10),{u->3*(1+Sqrt(2/5)),v->1+Sqrt(2/5)}}");
+    check("Abs(N(First(Minimize({u^2 + v^2, (u-3)^2 + (v-1)^2 <= 4}, {u, v})) - (Sqrt(10)-2)^2)) < 10^-9", //
+        "True");
+    // an unbounded region with an objective which grows in every direction
+    check("Minimize({u^2 + 2*v^2, u + v >= 4}, {u, v})", //
+        "{32/3,{u->8/3,v->4/3}}");
+    // the minimum over the closure lies on the excluded boundary
+    check("Minimize({u^2 + 2*v^2, u + v > 4}, {u, v})", //
+        "Minimize({u^2+2*v^2,u+v>4},{u,v})");
+    // unbounded below: the one stationary point is no minimum
+    check("Minimize({u + v, u <= v^2}, {u, v})", //
+        "Minimize({u+v,u<=v^2},{u,v})");
+    // a region of the fourth degree
+    check("Minimize({u*v, u^4 + v^4 <= 2}, {u, v})", //
+        "{-1,{u->-1,v->1}}");
+    // no point at all
+    check("Minimize({u + v, u^2 < -3}, {u, v})", //
+        "{Infinity,{u->Indeterminate,v->Indeterminate}}");
+  }
+
+  /** Roots of expressions in the variables: the points where a root is 0 are candidates. */
+  @Test
+  public void testExtremumWithRoots() {
+    check("Minimize({Sqrt(u) + Sqrt(v), u + v == 8}, {u, v})", //
+        "{2*Sqrt(2),{u->0,v->8}}");
+    check("Maximize({Sqrt(u) + Sqrt(v), u + v == 8}, {u, v})", //
+        "{4,{u->4,v->4}}");
+    check("Minimize({Sqrt(u) + 2*Sqrt(v), u + v == 5}, {u, v})", //
+        "{Sqrt(5),{u->5,v->0}}");
+  }
+
+  /** A polynomial in the variable and in absolute values of polynomials. */
+  @Test
+  public void testExtremumWithAbs() {
+    check("Minimize(Abs(t-1) + Abs(t-4) + Abs(t-9), t)", //
+        "{8,{t->4}}");
+    check("Minimize(t^2 + Abs(t-3), t)", //
+        "{11/4,{t->1/2}}");
+    check("Minimize(Abs(t^2-4) + t, t)", //
+        "{-2,{t->-2}}");
+    check("Minimize(3*t + Abs(t), t)", //
+        "{-Infinity,{t->-Infinity}}");
+    check("Maximize(-Abs(t+2) - t^2, t)", //
+        "{-7/4,{t->-1/2}}");
+    check("Minimize(Abs(t) - t, t)", //
+        "{0,{t->0}}");
+    check("Minimize(7, t)", //
+        "{7,{t->0}}");
+  }
+
+  /** The integer points of a bounded region, one by one. */
+  @Test
+  public void testIntegerExtremumOnBoundedRegion() {
+    check("Minimize({u + v, u^2 + v^2 == 50}, {u, v}, Integers)", //
+        "{-10,{u->-5,v->-5}}");
+    check("Maximize({u*v, u^2 + v^2 == 50}, {u, v}, Integers)", //
+        "{25,{u->-5,v->-5}}");
+    check("Minimize({u^2 + v^2, u + v >= 5 && 0 <= u <= 6 && 0 <= v <= 6}, {u, v}, Integers)", //
+        "{13,{u->2,v->3}}");
+    check("Minimize({u - 3*v, u^2 + v^2 <= 16 && v <= 2}, {u, v}, Integers)", //
+        "{-9,{u->-3,v->2}}");
+    check("Minimize(t^2 - 5*t, t, Integers)", //
+        "{-6,{t->2}}");
+    // a strict inequality: the bounds of its closure give the box
+    check("Minimize({u + v, u^2 + v^2 < 25}, {u, v}, Integers)", //
+        "{-6,{u->-4,v->-2}}");
+    // not bounded: no answer
+    check("Minimize({u^2 + v^2 + w^2, u^3 + v^3 + w^3 == 42}, {u, v, w}, Integers)", //
+        "Minimize({u^2+v^2+w^2,u^3+v^3+w^3==42},{u,v,w},Integers)");
+  }
 }

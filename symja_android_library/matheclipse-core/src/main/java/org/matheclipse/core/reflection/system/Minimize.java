@@ -58,6 +58,16 @@ public class Minimize extends AbstractFunctionEvaluator {
     IExpr function = ast.arg1();
     IExpr x = ast.arg2();
     ISymbol head = ast.topHead();
+    if (ast.isAST3()) {
+      IExpr domain = ast.arg3();
+      if (domain == S.Integers) {
+        return Maximize.integerExtremum(head, function, x, false, engine);
+      }
+      if (domain != S.Reals) {
+        // only the Reals and Integers domains are supported
+        return F.NIL;
+      }
+    }
     if (x.isList()) {
       if (x.isList1()) {
         x = x.first();
@@ -204,12 +214,21 @@ public class Minimize extends AbstractFunctionEvaluator {
       // result = QuarticSolver.sortASTArguments(result);
       return result;
     } catch (ArithmeticException | JASConversionException e2) {
-      return Errors.printMessage(S.Minimize, e2);
+      // not a polynomial of this ring: the other methods are tried
+      return F.NIL;
     }
   }
 
   public static final IExpr minimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
     try {
+      if (function.isFree(x) && function.isRealResult()) {
+        // a constant: attained everywhere
+        return F.list(function, F.list(F.Rule(x, F.C0)));
+      }
+      IExpr piecewise = Maximize.absoluteValueExtremum(function, x, false, engine);
+      if (piecewise.isPresent()) {
+        return piecewise;
+      }
       // bounded linear-trigonometric objective (a*Sin(x) + b*Cos(x) + c)
       IExpr trig = Maximize.linearTrigExtremum(function, x, false, engine);
       if (trig.isPresent()) {
