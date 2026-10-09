@@ -1604,9 +1604,12 @@ public final class PrimitiveCollector {
     if (natural == null || (framed == null && size == null)) {
       return svg;
     }
-    double margin = framed == null ? 0.0 : FRAME_MARGIN;
-    double contentWidth = natural[0] + 2 * margin;
-    double contentHeight = natural[1] + 2 * margin;
+    // the frame is read as a layout reads the frame of a cell
+    SvgLayout.FrameBox box = framed == null ? null : SvgLayout.FrameBox.of(framed, FRAME_MARGIN);
+    double left = box == null ? 0.0 : box.left;
+    double top = box == null ? 0.0 : box.top;
+    double contentWidth = natural[0] + left + (box == null ? 0.0 : box.right);
+    double contentHeight = natural[1] + top + (box == null ? 0.0 : box.bottom);
     double width = size == null ? contentWidth : size[0];
     double height = size == null ? contentHeight : size[1];
     StringBuilder buf = new StringBuilder(svg.length() + 256);
@@ -1614,20 +1617,14 @@ public final class PrimitiveCollector {
         "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%s\" height=\"%s\" viewBox=\"0 0 %s %s\">",
         SvgRenderer2D.fmt(width), SvgRenderer2D.fmt(height), SvgRenderer2D.fmt(contentWidth),
         SvgRenderer2D.fmt(contentHeight)));
-    if (framed != null) {
-      IExpr background = optionValue(framed, S.Background);
-      Color fill = background == null ? null : ColorUtil.parse(background);
-      buf.append(String.format(Locale.US,
-          "<rect x=\"0.5\" y=\"0.5\" width=\"%s\" height=\"%s\" fill=\"%s\" stroke=\"rgb(128,128,128)\" stroke-width=\"1\"/>",
-          SvgRenderer2D.fmt(contentWidth - 1), SvgRenderer2D.fmt(contentHeight - 1),
-          fill == null ? "none"
-              : "rgb(" + fill.getRed() + "," + fill.getGreen() + "," + fill.getBlue() + ")"));
+    if (box != null) {
+      buf.append(box.rect(contentWidth, contentHeight));
     }
     java.util.regex.Matcher root = SVG_ROOT.matcher(svg);
     root.find();
     buf.append(svg, 0, root.start());
-    buf.append(String.format(Locale.US, "<svg x=\"%s\" y=\"%s\"", SvgRenderer2D.fmt(margin),
-        SvgRenderer2D.fmt(margin)));
+    buf.append(String.format(Locale.US, "<svg x=\"%s\" y=\"%s\"", SvgRenderer2D.fmt(left),
+        SvgRenderer2D.fmt(top)));
     buf.append(svg, root.start() + 4, svg.length());
     buf.append("</svg>");
     return buf.toString();

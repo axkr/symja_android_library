@@ -529,6 +529,11 @@ public final class LayoutSpec {
       }
       return;
     }
+    if (spec.isRuleAST()) {
+      // one position rule, i -> style, is the list of that rule
+      fillDividers(target, org.matheclipse.core.expression.F.list(spec), n);
+      return;
+    }
     if (!spec.isList() && !isDrawableDirective(spec)) {
       // a name that draws nothing - a typo, or a symbol the relaxed parser lower cased - must
       // leave the layout alone rather than ruling every position with an unpaintable style

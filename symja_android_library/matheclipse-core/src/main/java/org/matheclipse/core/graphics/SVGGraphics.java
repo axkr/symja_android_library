@@ -99,8 +99,13 @@ public class SVGGraphics {
     while (graphics.isAST(S.Style) && graphics.argSize() >= 1
         && (graphics.first().isGraphicsObject() || graphics.first().isAST(S.Graphics3D)
             || graphics.first().isAST(S.Style)
+            || graphics.first().isAST(S.Framed)
             || org.matheclipse.core.graphics.svg.SvgGraphics2D.isLayout(graphics.first()))) {
       graphics = graphics.first();
+    }
+    if (graphics.isAST(S.Framed) && graphics.argSize() >= 1) {
+      // a frame on its own is the one cell of a layout, which draws the frame of a cell
+      graphics = F.unaryAST1(S.Grid, F.list(F.list(graphics)));
     }
     if (org.matheclipse.core.builtin.MeshFunctions.isBoundaryMeshRegion(graphics)) {
       // a mesh region is exported as the picture Show makes of it

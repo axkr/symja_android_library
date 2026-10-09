@@ -11615,7 +11615,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // the frame of Framed is drawn, a named point of the inset is put on the position, and an
     // explicit size is kept
     check("StringCount(ExportString(Graphics({Inset(Framed(Column({Graphics(Disk()), \"x\"})), {0, 0},"
-        + " {Right, Top})}), \"SVG\"), \"<rect x=\\\"0.5\\\"\")", //
+        + " {Right, Top})}), \"SVG\"), \"<rect x=\\\"0.500\\\"\")", //
         "1");
     check("StringCount(ExportString(Graphics({Inset(Column({Graphics(Disk()), \"x\"}), {0, 0}, Center,"
         + " {100, 50})}), \"SVG\"), \"width=\\\"100\\\" height=\\\"50\\\"\")", //
@@ -11911,6 +11911,87 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // the base is not part of the number
     check("ToString(NumberForm(BaseForm(5, 16), 3, NumberPadding -> {\"0\", \"\"}))", //
         "Subscript(0005,16)");
+  }
+
+  @Test
+  public void testRootOfAProductUnderAssumptions() {
+    check("Simplify(Sqrt(k^4*x), {x > 0, k > 0})", //
+        "k^2*Sqrt(x)");
+    check("Simplify(Sqrt(k^4*x), x > 0 && k > 0)", //
+        "k^2*Sqrt(x)");
+    check("Simplify((k^4*x)^(1/4), {x > 0, k > 0})", //
+        "k*x^(1/4)");
+    check("Simplify(Sqrt(x/(1 + x)^4), x > 0)", //
+        "Sqrt(x)/(1+x)^2");
+    check("Simplify(Sqrt(8*k^4*x/(1 + x)^4*2), {x > 0, k > 0})", //
+        "(4*k^2*Sqrt(x))/(1+x)^2");
+    check("Simplify(Sqrt(x^2*y), x < 0)", //
+        "-x*Sqrt(y)");
+    check("Simplify(Sqrt((1 + x)^4), x > -5)", //
+        "(1+x)^2");
+    // a factor which would leave the root as a root again stays inside
+    check("Simplify((k^2*x)^(1/4), k > 0)", //
+        "(k^2*x)^(1/4)");
+    check("Simplify(1/(k^4*x)^(1/4), {x > 0, k > 0})", //
+        "1/(k^4*x)^(1/4)");
+    check("Simplify(Sqrt((1 + x)^4))", //
+        "Sqrt((1+x)^4)");
+    // what is held is not rewritten
+    check("Refine(Hold(Sqrt(k^4*x)), k > 0)", //
+        "Hold(Sqrt(k^4*x))");
+  }
+
+  @Test
+  public void testPolynomialOverRootOfQuadraticIsReal() {
+    check("FreeQ(Integrate((1 + z)^2/Sqrt(4 + z^2), z), _Complex)", //
+        "True");
+    check("Chop((D(Integrate((1 + z)^2/Sqrt(4 + z^2), z), z) - (1 + z)^2/Sqrt(4 + z^2)) /. z -> 0.3)", //
+        "0");
+    check("FreeQ(Integrate((1 + z)^3/Sqrt(4 + z^2), z), _Complex)", //
+        "True");
+    check("Chop((D(Integrate((1 + z)^3/Sqrt(4 + z^2), z), z) - (1 + z)^3/Sqrt(4 + z^2)) /. z -> 0.3)", //
+        "0");
+    // the answer of the rules stays where it is real
+    check("Integrate((1 + z)^2/Sqrt(1 - z^2), z)", //
+        "-3/2*Sqrt(1-z^2)+1/2*(-1-z)*Sqrt(1-z^2)+3/2*ArcSin(z)");
+  }
+
+  @Test
+  public void testFrameAndFrameTicksPerEdge() {
+    // {bottom, left, top, right}: the right edge alone, with its labels to the right of it
+    check("StringCount(ExportString(Graphics({Line({{0, 0}, {1, 1}})}, Frame -> {False, False, False, True},"
+        + " FrameTicks -> {None, None, None, All}), \"SVG\"), #) & /@ {\"<text\", \"text-anchor:start\", \"text-anchor:end\", \"text-anchor:middle\"}", //
+        "{6,6,0,0}");
+    check("StringCount(ExportString(Graphics({Line({{0, 0}, {1, 1}})}, Frame -> {True, True, False, False}), \"SVG\"), \"text-anchor:start\")", //
+        "0");
+    // four ticks {position, label} are ticks, not one entry per edge
+    check("StringCount(ExportString(Graphics({Line({{0, 0}, {3, 3}})}, Frame -> True,"
+        + " FrameTicks -> {{0, \"a\"}, {1, \"b\"}, {2, \"c\"}, {3, \"d\"}}), \"SVG\"), \">c<\") > 0", //
+        "True");
+  }
+
+  @Test
+  public void testDividersWithAPositionRule() {
+    check("StringCount(ExportString(Grid({{1, 2}, {3, 4}, {5, 6}}, Dividers -> {None, -2 -> True}), \"SVG\"), \"<line\")", //
+        "1");
+    check("StringCount(ExportString(Grid({{1, 2}, {3, 4}, {5, 6}}, Dividers -> {2 -> True, None}), \"SVG\"), \"<line\")", //
+        "1");
+  }
+
+  @Test
+  public void testFramedAsAPicture() {
+    check("StringCount(ExportString(Framed(\"note\", RoundingRadius -> 5, FrameMargins -> 25), \"SVG\"), #) & /@"
+        + " {\"rx=\\\"5\\\"\", \"<svg x=\\\"25\\\" y=\\\"25\\\"\", \">note<\"}", //
+        "{1,1,1}");
+    check("StringCount(ExportString(Grid({{Framed(\"a\"), Framed(Graphics(Circle()), Background -> Yellow)}}), \"SVG\"), #) & /@"
+        + " {\"Framed\", \"<rect x=\\\"0.500\\\"\"}", //
+        "{0,2}");
+    // an empty frame is still a box; the margins are per side, the line has its style
+    check("StringCount(ExportString(Framed(\"\", FrameStyle -> None, Background -> Yellow), \"SVG\"), \"stroke=\\\"none\\\"\")", //
+        "1");
+    check("StringCount(ExportString(Framed(\"note\", FrameMargins -> {{5, 40}, {7, 9}}, FrameStyle -> Directive(Red, AbsoluteThickness(3))), \"SVG\"), #) & /@"
+        + " {\"<svg x=\\\"5\\\" y=\\\"9\\\"\", \"stroke-width=\\\"3\\\"\", \"stroke=\\\"rgb(255,0,0)\\\"\"}", //
+        "{1,1,1}");
   }
 
   @Test

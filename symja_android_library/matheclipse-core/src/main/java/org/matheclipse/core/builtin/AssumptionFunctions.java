@@ -14,6 +14,9 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -458,12 +461,93 @@ public class AssumptionFunctions {
           }
         }
         result = org.matheclipse.core.sympy.assumptions.Refine.refine(result, engine);
+        IExpr rooted = rootsOfProducts(result);
+        if (rooted.isPresent()) {
+          result = engine.evalWithoutNumericReset(rooted);
+        }
         return decideRelation(result, assumptions, engine).orElse(result);
       } finally {
         engine.setAssumptions(oldAssumptions);
       }
     }
     return engine.evalWithoutNumericReset(expr);
+  }
+
+  /**
+   * Takes the factors out of a root which leave it as a whole power:
+   * <code>(k^4*x)^(1/2)</code> is <code>k^2*x^(1/2)</code> for a positive <code>k</code>,
+   * <code>(x^2*y)^(1/2)</code> is <code>-x*y^(1/2)</code> for a negative <code>x</code>, and an
+   * even power of a real base leaves a root as an even power. The factors of the denominator are
+   * taken out in the same way. A factor which would leave the root as a root again stays inside.
+   *
+   * @return {@link F#NIL} if <code>expr</code> is not such a root, or no factor leaves it
+   */
+  private static IExpr rootsOfProducts(IExpr expr) {
+    if (!expr.isAST()) {
+      return F.NIL;
+    }
+    IAST ast = (IAST) expr;
+    if ((ast.topHead().getAttributes() & (ISymbol.HOLDALL | ISymbol.HOLDALLCOMPLETE)) != 0) {
+      // what is held is not rewritten
+      return F.NIL;
+    }
+    IExpr root = rootOfProduct(ast);
+    if (root.isPresent()) {
+      return root;
+    }
+    IASTMutable copy = null;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr part = rootsOfProducts(ast.get(i));
+      if (part.isPresent()) {
+        if (copy == null) {
+          copy = ast.copy();
+        }
+        copy.set(i, part);
+      }
+    }
+    return copy == null ? F.NIL : copy;
+  }
+
+  private static IExpr rootOfProduct(IExpr expr) {
+    if (!expr.isPower() || !expr.exponent().isFraction() || !expr.exponent().isPositive()) {
+      return F.NIL;
+    }
+    IFraction root = (IFraction) expr.exponent();
+    IExpr base = expr.base();
+    IAST factors = base.isTimes() ? (IAST) base : F.list(base);
+    IASTAppendable outside = F.TimesAlloc(factors.argSize());
+    IASTAppendable inside = F.TimesAlloc(factors.argSize());
+    for (int i = 1; i <= factors.argSize(); i++) {
+      IExpr factor = factors.get(i);
+      IExpr whole = F.NIL;
+      if (factor.isPower() && factor.exponent().isInteger() && !factor.base().isNumber()) {
+        IExpr f = factor.base();
+        IInteger e = (IInteger) factor.exponent();
+        IExpr power = e.multiply(root);
+        if (power.isInteger()) {
+          if (f.isPositiveResult() || AbstractAssumptions.assumePositive(f)) {
+            whole = F.Power(f, power);
+          } else if (e.isEven()
+              && (f.isNegativeResult() || AbstractAssumptions.assumeNegative(f))) {
+            whole = F.Power(F.Negate(f), power);
+          } else if (e.isEven() && ((IInteger) power).isEven() && f.isRealResult()) {
+            whole = F.Power(f, power);
+          }
+        }
+      }
+      if (whole.isPresent()) {
+        outside.append(whole);
+      } else {
+        inside.append(factor);
+      }
+    }
+    if (outside.argSize() == 0) {
+      return F.NIL;
+    }
+    if (inside.argSize() > 0) {
+      outside.append(F.Power(inside.oneIdentity1(), root));
+    }
+    return outside.oneIdentity1();
   }
 
   /** At most this many relational assumptions are combined pairwise in {@link #keySum}. */

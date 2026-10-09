@@ -375,6 +375,11 @@ public final class GraphicsOptions2D {
     applyStyle(part, labelStyle, collector);
   }
 
+  /** One edge of a frame: drawn for <code>True</code>, <code>All</code> and <code>Automatic</code>. */
+  private static boolean isEdgeDrawn(IExpr edge) {
+    return edge.isTrue() || edge == S.All || edge == S.Automatic;
+  }
+
   private void applyFrame(IExpr value) {
     if (value.isTrue() || value == S.All) {
       java.util.Arrays.fill(frame, true);
@@ -390,14 +395,20 @@ public final class GraphicsOptions2D {
         // {{left, right}, {bottom, top}}
         IAST lr = (IAST) list.arg1();
         IAST bt = (IAST) list.arg2();
-        frame[0] = lr.argSize() >= 1 && lr.arg1().isTrue();
-        frame[1] = lr.argSize() >= 2 && lr.arg2().isTrue();
-        frame[2] = bt.argSize() >= 1 && bt.arg1().isTrue();
-        frame[3] = bt.argSize() >= 2 && bt.arg2().isTrue();
+        frame[0] = lr.argSize() >= 1 && isEdgeDrawn(lr.arg1());
+        frame[1] = lr.argSize() >= 2 && isEdgeDrawn(lr.arg2());
+        frame[2] = bt.argSize() >= 1 && isEdgeDrawn(bt.arg1());
+        frame[3] = bt.argSize() >= 2 && isEdgeDrawn(bt.arg2());
+      } else if (list.argSize() == 4) {
+        // {bottom, left, top, right}
+        frame[2] = isEdgeDrawn(list.arg1());
+        frame[0] = isEdgeDrawn(list.arg2());
+        frame[3] = isEdgeDrawn(list.arg3());
+        frame[1] = isEdgeDrawn(list.arg4());
       } else {
         // {horizontal, vertical}
-        boolean h = list.arg1().isTrue();
-        boolean v = list.arg2().isTrue();
+        boolean h = isEdgeDrawn(list.arg1());
+        boolean v = isEdgeDrawn(list.arg2());
         frame[0] = frame[1] = h;
         frame[2] = frame[3] = v;
       }

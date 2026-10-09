@@ -226,6 +226,28 @@ public final class AxesFrameRenderer {
         .attr("x2", SvgRenderer2D.fmt(x2)).attr("y2", SvgRenderer2D.fmt(y2)).attr("style", style);
   }
 
+  /**
+   * Whether a <code>FrameTicks</code> value names the four edges one by one, as
+   * <code>{None, None, None, All}</code> does: four entries, none of them a tick position.
+   */
+  private static boolean isEdgeList(IExpr spec) {
+    if (!spec.isList() || spec.argSize() != 4
+        || !((IAST) spec).forAll(x -> isEdgeWord(x) || x.isList())) {
+      return false;
+    }
+    // four ticks {position, label} are a list of ticks for every edge, not one entry per edge
+    return !((IAST) spec).forAll(AxesFrameRenderer::isLabelledTick);
+  }
+
+  private static boolean isEdgeWord(IExpr x) {
+    return x.isNone() || x == S.All || x == S.Automatic || x.isTrue() || x.isFalse();
+  }
+
+  /** <code>{position, label, ...}</code>: a number followed by something which is not one. */
+  private static boolean isLabelledTick(IExpr x) {
+    return x.isList() && x.argSize() >= 2 && x.first().isReal() && !x.second().isReal();
+  }
+
   /** The tick specification for one frame edge, indexed left, right, bottom, top. */
   private IExpr frameTickSpec(int edge) {
     IExpr spec = options.frameTicks;
@@ -249,6 +271,12 @@ public final class AxesFrameRenderer {
       }
       // {xspec, yspec}
       return edge <= 1 ? outer.arg2() : outer.arg1();
+    }
+    if (isEdgeList(spec)) {
+      // {bottom, left, top, right}
+      IAST edges = (IAST) spec;
+      return edge == 0 ? edges.arg2() : edge == 1 ? edges.arg4() : edge == 2 ? edges.arg1()
+          : edges.arg3();
     }
     return spec;
   }

@@ -657,6 +657,9 @@ final class SvgLayout {
       IExpr frame = firstFrame((IAST) content);
       return frame.isPresent() ? piece(frame, seedWidth) : null;
     }
+    if (content.isAST(S.Framed) && content.argSize() >= 1) {
+      return framed((IAST) content, seedWidth);
+    }
     if (isLayout(content)) {
       return nestedLayout((IAST) content, seedWidth);
     }
@@ -677,6 +680,145 @@ final class SvgLayout {
       }
     }
     return pieceText(content);
+  }
+
+  /** The margin between a frame and what it holds, where <code>FrameMargins</code> is not set. */
+  private static final double FRAME_MARGIN = 8.0;
+
+  /**
+   * The box of a <code>Framed(content, options)</code>: the margins of <code>FrameMargins</code>,
+   * the corners of <code>RoundingRadius</code>, the line of <code>FrameStyle</code> and the
+   * <code>Background</code>. One reading for a frame in a layout and for one in an inset.
+   */
+  static final class FrameBox {
+    double left;
+    double right;
+    double bottom;
+    double top;
+    double radius;
+    double thickness = 1.0;
+    /** <code>null</code> for <code>FrameStyle -> None</code>: no line. */
+    java.awt.Color stroke = new java.awt.Color(128, 128, 128);
+    java.awt.Color fill;
+
+    /**
+     * @param framed the <code>Framed(...)</code> expression
+     * @param margin the margin on every side where <code>FrameMargins</code> is not set
+     */
+    static FrameBox of(IAST framed, double margin) {
+      FrameBox box = new FrameBox();
+      box.left = box.right = box.bottom = box.top = margin;
+      for (int i = 2; i < framed.size(); i++) {
+        if (!framed.get(i).isRuleAST()) {
+          continue;
+        }
+        IExpr key = framed.get(i).first();
+        IExpr value = framed.get(i).second();
+        if (key == S.FrameMargins) {
+          box.margins(value);
+        } else if (key == S.RoundingRadius) {
+          double r = ColorUtil.dbl(
+              value.isList() && value.argSize() >= 1 ? value.first() : value, Double.NaN);
+          if (r >= 0.0) {
+            box.radius = r;
+          }
+        } else if (key == S.FrameStyle) {
+          box.style(value);
+        } else if (key == S.Background) {
+          box.fill = ColorUtil.parse(value);
+        }
+      }
+      return box;
+    }
+
+    /** <code>m</code>, <code>{horizontal, vertical}</code> or <code>{{l, r}, {b, t}}</code>. */
+    private void margins(IExpr value) {
+      if (value.isList() && value.argSize() == 2) {
+        double[] h = pair(value.first());
+        double[] v = pair(value.second());
+        if (h != null && v != null) {
+          left = h[0];
+          right = h[1];
+          bottom = v[0];
+          top = v[1];
+        }
+        return;
+      }
+      double m = ColorUtil.dbl(value, Double.NaN);
+      if (m >= 0.0) {
+        left = right = bottom = top = m;
+      }
+    }
+
+    private static double[] pair(IExpr value) {
+      double a = ColorUtil.dbl(value.isList() && value.argSize() == 2 ? value.first() : value,
+          Double.NaN);
+      double b = ColorUtil.dbl(value.isList() && value.argSize() == 2 ? value.second() : value,
+          Double.NaN);
+      return a >= 0.0 && b >= 0.0 ? new double[] {a, b} : null;
+    }
+
+    /** A colour, a thickness, a <code>Directive</code> or a list of them, or <code>None</code>. */
+    private void style(IExpr value) {
+      if (value.isNone() || value.isFalse()) {
+        stroke = null;
+        return;
+      }
+      if (value.isList() || value.isAST(S.Directive)) {
+        for (IExpr part : (IAST) value) {
+          style(part);
+        }
+        return;
+      }
+      if ((value.isAST(S.AbsoluteThickness, 2) || value.isAST(S.Thickness, 2))) {
+        IExpr width = value.first();
+        double w = width == S.Large ? 2.0
+            : width == S.Medium ? 1.0
+                : width == S.Small || width == S.Tiny ? 0.5
+                    : value.isAST(S.AbsoluteThickness) ? ColorUtil.dbl(width, Double.NaN)
+                        : Double.NaN;
+        if (w > 0.0) {
+          thickness = w;
+        }
+        return;
+      }
+      java.awt.Color colour = ColorUtil.parseDirective(value);
+      if (colour != null) {
+        stroke = colour;
+      }
+    }
+
+    /** The box around a content of the given size, as markup at the origin. */
+    String rect(double width, double height) {
+      ContainerTag<?> box = tag("rect").attr("x", SvgRenderer2D.fmt(thickness / 2))
+          .attr("y", SvgRenderer2D.fmt(thickness / 2))
+          .attr("width", SvgRenderer2D.fmt(width - thickness))
+          .attr("height", SvgRenderer2D.fmt(height - thickness))
+          .attr("fill", fill == null ? "none" : ColorUtil.css(fill))
+          .attr("stroke", stroke == null ? "none" : ColorUtil.css(stroke))
+          .attr("stroke-width", SvgRenderer2D.fmt(thickness));
+      if (radius > 0.0) {
+        box.attr("rx", SvgRenderer2D.fmt(radius));
+      }
+      return box.render();
+    }
+  }
+
+  /** The content of a <code>Framed</code> inside its {@link FrameBox}; an empty box if there is none. */
+  private Piece framed(IAST framed, double seedWidth) {
+    Piece inner = piece(framed.arg1(), seedWidth);
+    FrameBox box = FrameBox.of(framed, FRAME_MARGIN);
+    double innerW = inner == null ? 0.0 : inner.naturalW;
+    double innerH = inner == null ? 0.0 : inner.naturalH;
+    double width = innerW + box.left + box.right;
+    double height = innerH + box.top + box.bottom;
+    String content = inner == null ? ""
+        : "<svg x=\"" + SvgRenderer2D.fmt(box.left) + "\" y=\"" + SvgRenderer2D.fmt(box.top)
+            + "\" width=\"" + SvgRenderer2D.fmt(innerW) + "\" height=\""
+            + SvgRenderer2D.fmt(innerH) + "\" viewBox=\"0 0 " + SvgRenderer2D.fmt(innerW) + " "
+            + SvgRenderer2D.fmt(innerH) + "\">" + inner.contents + "</svg>";
+    return new Piece(box.rect(width, height) + content, width, height,
+        inner != null && inner.scalable);
   }
 
   /**

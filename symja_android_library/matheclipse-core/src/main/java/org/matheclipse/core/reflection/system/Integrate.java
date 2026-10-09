@@ -871,6 +871,14 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             ? integrateByRubiRulesWithBudget((IAST) normalized, x, ast.setAtCopy(1, normalized),
                 engine)
             : integrateByRubiRulesWithBudget(fx, x, ast, engine));
+        if (result.isPresent() && hasComplexNumber(result)) {
+          // a polynomial over the root of a quadratic, which the rules wrote with complex numbers:
+          // integrated monomial by monomial it is real. It goes on as the result of the rules.
+          IExpr termwise = polynomialOverRootTermwise(fx, x, engine);
+          if (termwise.isPresent()) {
+            result = termwise;
+          }
+        }
         if (result.isPresent()) {
           IExpr rubiResult = F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
@@ -1498,6 +1506,63 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               F.Times(F.CN1D4, F.Sqr(a), F.Sqr(x)))));
     }
     return F.NIL;
+  }
+
+  /** Whether a complex number is written somewhere in <code>expr</code>. */
+  private static boolean hasComplexNumber(IExpr expr) {
+    return !expr.isFree(e -> e.isComplex() || e.isComplexNumeric(), false);
+  }
+
+  /**
+   * <code>(1+x)^2/Sqrt(4+x^2)</code>: a polynomial, written as a power or a product of sums, over
+   * the root of a quadratic. The polynomial is expanded and its monomials are integrated one by
+   * one, which gives a real antiderivative where the rules factor the quadratic over the complex
+   * numbers for the unexpanded product. Only used where the rules gave such an answer: their
+   * antiderivative of the product is the shorter one wherever it is real.
+   *
+   * @return {@link F#NIL} if <code>fx</code> has not this form, or a monomial is not integrated
+   */
+  private static IExpr polynomialOverRootTermwise(IAST fx, IExpr x, EvalEngine engine) {
+    if (!fx.isTimes() || hasComplexNumber(fx)) {
+      return F.NIL;
+    }
+    IExpr root = F.NIL;
+    IASTAppendable polynomial = F.TimesAlloc(fx.argSize());
+    boolean powerOfSum = false;
+    int sums = 0;
+    for (int i = 1; i <= fx.argSize(); i++) {
+      IExpr factor = fx.get(i);
+      if (factor.isPower() && factor.exponent().isFraction() && factor.exponent().isNegative()
+          && ((org.matheclipse.core.interfaces.IFraction) factor.exponent()).denominator()
+              .equals(F.C2)
+          && factor.base().isPolynomialOfMaxDegree(x, 2) && !factor.base().isFree(x)) {
+        if (root.isPresent()) {
+          return F.NIL;
+        }
+        root = factor;
+      } else {
+        if (!factor.isFree(x)) {
+          if (factor.isPlus()) {
+            sums++;
+          } else if (factor.isPower() && factor.base().isPlus()) {
+            powerOfSum = true;
+          }
+        }
+        polynomial.append(factor);
+      }
+    }
+    if (root.isNIL() || (!powerOfSum && sums < 2)) {
+      // a monomial or one sum over the root is left to the rules, which spread a sum out
+      return F.NIL;
+    }
+    IExpr expanded = engine.evaluate(F.Expand(polynomial.oneIdentity1()));
+    if (!expanded.isPlus() || !expanded.isPolynomial(F.list(x))) {
+      return F.NIL;
+    }
+    final IExpr radical = root;
+    IExpr termwise = engine.evaluate(((IAST) expanded).map(S.Plus,
+        term -> F.Integrate(F.Times(term, radical), x)));
+    return termwise.isFree(S.Integrate, true) && !hasComplexNumber(termwise) ? termwise : F.NIL;
   }
 
   private static IExpr integrateSqrtOfLinearQuotient(IAST fx, IExpr x, EvalEngine engine) {
