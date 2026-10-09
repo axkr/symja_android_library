@@ -184,6 +184,10 @@ public class SymbolicArrayUtil {
       case ID.Adjugate:
       case ID.MatrixExp:
       case ID.MatrixPower: {
+        if (ast.isAST0()) {
+          // a call without arguments like Inverse() has no matrix to take the shape from
+          return F.NIL;
+        }
         IAST dimensions = tensorDimensions(ast.arg1(), engine, depth + 1);
         // these all map a square matrix onto a square matrix of the same shape
         return (dimensions.isPresent() && dimensions.argSize() == 2
@@ -204,6 +208,10 @@ public class SymbolicArrayUtil {
       case ID.Tr:
       case ID.Det:
       case ID.Norm: {
+        if (ast.isAST0()) {
+          // a call without arguments like Det() is not known to be a scalar
+          return F.NIL;
+        }
         // a scalar valued function of an array
         IAST dimensions = tensorDimensions(ast.arg1(), engine, depth + 1);
         return dimensions.isPresent() ? F.CEmptyList : F.NIL;
@@ -264,6 +272,10 @@ public class SymbolicArrayUtil {
    * slots.
    */
   private static IAST dotDimensions(IAST dot, EvalEngine engine, int depth) {
+    if (dot.isAST0()) {
+      // Dot() has no factor to take the shape from
+      return F.NIL;
+    }
     IAST dimensions = tensorDimensions(dot.arg1(), engine, depth + 1);
     if (dimensions.isNIL() || dimensions.argSize() == 0) {
       return F.NIL;
@@ -309,6 +321,11 @@ public class SymbolicArrayUtil {
 
   /** The dimensions of {@link S#Transpose} or {@link S#ConjugateTranspose}. */
   private static IAST transposeDimensions(IAST transpose, EvalEngine engine, int depth) {
+    if (!transpose.isAST1() && !transpose.isAST2()) {
+      // Transpose() or Transpose(a, p, x) is left unevaluated with an argument count message and
+      // has no shape
+      return F.NIL;
+    }
     IAST dimensions = tensorDimensions(transpose.arg1(), engine, depth + 1);
     if (dimensions.isNIL() || dimensions.argSize() < 2) {
       return F.NIL;

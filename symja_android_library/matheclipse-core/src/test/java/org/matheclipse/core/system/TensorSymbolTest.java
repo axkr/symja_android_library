@@ -335,6 +335,37 @@ public class TensorSymbolTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSymbolicArrayFunctionsWithoutArguments() {
+    // Transpose(), Inverse(), ... stay unevaluated with an argument count message. Their
+    // NonThreadable attribute still makes them array valued, so the symbolic array paths ask for
+    // their dimensions - which have to be unknown instead of an IndexOutOfBoundsException
+    check("Det(Transpose())", //
+        "Det(Transpose())", //
+        "Transpose: Transpose called with 0 arguments; 1 or 2 arguments are expected.");
+    check("Det(ConjugateTranspose())", //
+        "Det(ConjugateTranspose())");
+    check("Det(Inverse())", //
+        "Det(Inverse())", //
+        "Inverse: Inverse called with 0 arguments; 1 argument is expected.");
+    check("Tr(Transpose())", //
+        "Tr(Transpose())");
+    check("Inverse(Transpose())", //
+        "Inverse(Transpose())");
+    check("2*Transpose()", //
+        "2*Transpose()");
+    check("TensorRank(Transpose())", //
+        "TensorRank(Transpose())");
+    check("TensorDimensions(Inverse())", //
+        "TensorDimensions(Inverse())");
+    // the same for a call without arguments nested inside a valid Transpose, which is array valued
+    // as well (\uF3C7 is the \[Transpose] glyph of the unevaluated Transpose)
+    check("Det(Transpose(Dot()))", //
+        "Det(Dot()\uF3C7)");
+    check("Det(Transpose(Tr()))", //
+        "Det(Tr()\uF3C7)");
+  }
+
+  @Test
   public void testSymbolicTensorProductArrayDot() {
     check("a=MatrixSymbol(a,{m,n});", //
         "");
