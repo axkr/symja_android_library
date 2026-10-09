@@ -786,6 +786,11 @@ public class SimplifyUtil extends VisitorExpr {
     if (constants.argSize() == 0 || rest.argSize() < 2) {
       return F.NIL;
     }
+    if (fComplexityFunction.apply(rest) >= Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+      // Factor() puts the summands over a common denominator, which grows without bound for a long
+      // sum of fractions with different denominators
+      return F.NIL;
+    }
     IExpr factored = eval(F.Factor(rest.oneIdentity0()));
     if (!factored.isPower() || !factored.exponent().isInteger()) {
       return F.NIL;

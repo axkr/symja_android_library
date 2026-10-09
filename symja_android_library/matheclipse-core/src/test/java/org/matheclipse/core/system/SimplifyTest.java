@@ -608,4 +608,20 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Simplify(Sqrt(10)*Sqrt(t^2+3) - Sqrt(2)*Sqrt(5)*Sqrt(t^2+3))", //
         "0");
   }
+
+  /**
+   * A long sum of fractions with different denominators plus a number: the non-numeric summands are
+   * too large to be factored in the search for a hidden perfect power (issue #1543).
+   */
+  @Test
+  public void testSimplifyConstantPlusLongSum() {
+    // 49 fractions and a constant
+    check("With({v1 = 1/2 + Sum(4^(x/2020)/(4^(x/2020)+2), {x, 950, 998})}, " //
+        + "With({v2 = FullSimplify(v1)}, " //
+        + "{LeafCount(v1), LeafCount(v2) <= LeafCount(v1), Chop(N(v1 - v2))}))", //
+        "{739,True,0}");
+    // the small case is still found
+    check("Simplify(1+c^2+2*c*d+d^2)", //
+        "1+(c+d)^2");
+  }
 }
