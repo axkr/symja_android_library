@@ -1039,7 +1039,8 @@ public class Pods {
                     }
                   }
 
-                  if (outExpr.isPolynomial(variables) && !outExpr.isAtom()) {
+                  if (variables.argSize() >= 1 && outExpr.isPolynomial(variables)
+                      && !outExpr.isAtom()) {
                     inExpr = F.Factor(outExpr);
                     podOut = engine.evaluate(inExpr);
                     if (!outExpr.equals(podOut)) {
