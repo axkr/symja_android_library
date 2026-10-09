@@ -102,9 +102,9 @@ public class MinMaxFunctions {
       IExpr x = ast.arg2();
       if (x.isSymbol() || (x.isAST() && !x.isList())) {
         IExpr result = Maximize.maximize(ast.topHead(), ast.arg1(), x, engine);
-        if (result.isList() && result.last().isList()) {
+        if (result.isList() && result.argSize() >= 1 && result.last().isList()) {
           IAST subList = (IAST) result.last();
-          if (subList.last().isRule()) {
+          if (subList.argSize() >= 1 && subList.last().isRule()) {
             return subList.last().second();
           }
         }
@@ -160,9 +160,9 @@ public class MinMaxFunctions {
       IExpr x = ast.arg2();
       if (x.isSymbol() || (x.isAST() && !x.isList())) {
         IExpr result = Minimize.minimize(ast.topHead(), ast.arg1(), x, engine);
-        if (result.isList() && result.last().isList()) {
+        if (result.isList() && result.argSize() >= 1 && result.last().isList()) {
           IAST subList = (IAST) result.last();
-          if (subList.last().isRule()) {
+          if (subList.argSize() >= 1 && subList.last().isRule()) {
             return subList.last().second();
           }
         }
@@ -444,7 +444,7 @@ public class MinMaxFunctions {
               if (arg1.isList()) {
                 IAST list = (IAST) arg1;
                 for (IExpr pArg : list) {
-                  if (pArg.isList()) {
+                  if (pArg.isList2()) {
                     IExpr cond = ((IAST) pArg).second();
                     extractBoundaries(cond, variables, conditions);
                   }

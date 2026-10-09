@@ -1602,10 +1602,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
         return;
       }
       if (directive.isAST(S.FontSize, 2) || directive.isRule()) {
-        IExpr value = ((IAST) directive).arg2();
         if (directive.isRule() && ((IAST) directive).arg1() != S.FontSize) {
           return;
         }
+        // FontSize(12) or FontSize->12
+        IExpr value = directive.isRule() ? ((IAST) directive).arg2() : ((IAST) directive).arg1();
         if (value.isReal()) {
           attributes.append(" mathsize=\"").append(value.evalf()).append("pt\"");
         }

@@ -1825,8 +1825,9 @@ public interface IExpr
    * Get the first element of this <code>AST</code> list (i.e. get(1)). Return {@link F#NIL} if this
    * object isn't an <code>AST</code>.
    *
-   * @return the second argument of the function represented by this <code>AST</code> or
+   * @return the first argument of the function represented by this <code>AST</code> or
    *         {@link F#NIL}.
+   * @throws IndexOutOfBoundsException if this is an <code>AST</code> without arguments
    * @see #last()
    * @see #rest()
    */
@@ -5733,10 +5734,10 @@ public interface IExpr
 
   /**
    * Get the last element of the <code>AST</code> list (i.e. get(size()-1). Return {@link F#NIL} if
-   * this object isn't an <code>AST</code> or has <code>0</code> arguments (i.e. only a header
-   * element)
+   * this object isn't an <code>AST</code>.
    *
    * @return the last argument of the function represented by this <code>AST</code> or {@link F#NIL}
+   * @throws IndexOutOfBoundsException if this is an <code>AST</code> without arguments
    * @see #first()
    * @see #rest()
    */

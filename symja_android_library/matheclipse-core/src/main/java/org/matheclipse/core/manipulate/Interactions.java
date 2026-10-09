@@ -142,7 +142,7 @@ public class Interactions {
     // only a pane pointed at a Dynamic can be moved; one showing a fixed list of points is a
     // picture, and gets its markers without a control
     IAST dynamic = Dynamics.isDynamic(pane.arg1()) ? (IAST) pane.arg1() : null;
-    if (dynamic == null && pane.arg1().isAST(S.CompoundExpression)
+    if (dynamic == null && pane.arg1().isAST(S.CompoundExpression) && pane.arg1().argSize() >= 1
         && Dynamics.isDynamic(((IAST) pane.arg1()).last())) {
       dynamic = (IAST) ((IAST) pane.arg1()).last();
     }

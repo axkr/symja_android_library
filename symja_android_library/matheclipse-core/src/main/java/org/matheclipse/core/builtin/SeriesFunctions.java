@@ -1533,7 +1533,7 @@ public class SeriesFunctions {
         }
       }
 
-      if (function.isAST(S.InverseSeries)) {
+      if (function.isAST(S.InverseSeries) && function.argSize() >= 1) {
         IExpr f = function.first();
         IExpr innerX = x;
         if (function.argSize() >= 2) {

@@ -196,7 +196,9 @@ public final class PureFunctions {
     if (unfillableName.isPresent()) {
       // Named slot `1` in `2` cannot be filled from `3`.
       Errors.printMessage(S.Function, "slota",
-          F.List(F.stringx(unfillableName.toString()), function, application.arg1()), engine);
+          F.List(F.stringx(unfillableName.toString()), function,
+              application.argSize() >= 1 ? application.arg1() : application),
+          engine);
     }
     return result;
   }

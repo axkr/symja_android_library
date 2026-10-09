@@ -1008,9 +1008,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /** {@inheritDoc} */
   @Override
   default IExpr first() {
-    if (size() < 2) {
-      return F.NIL;
-    }
     return arg1();
   }
 

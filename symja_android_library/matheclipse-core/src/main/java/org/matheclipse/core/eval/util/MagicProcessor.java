@@ -106,7 +106,7 @@ public class MagicProcessor {
   }
 
   private IExpr getArg1(IExpr ques) {
-    if (ques.isAST()) {
+    if (ques.isAST() && ques.argSize() >= 1) {
       return ques.first();
     }
     return null;

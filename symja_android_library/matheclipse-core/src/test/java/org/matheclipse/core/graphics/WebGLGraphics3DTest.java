@@ -93,6 +93,18 @@ public class WebGLGraphics3DTest {
     assertEquals(5.0, scene.get("viewPoint").get(2).asDouble(), 1e-9);
   }
 
+  /** A directive or a transformation which was written without arguments is passed over. */
+  @Test
+  public void directivesWithoutArgumentsAreIgnored() {
+    for (String head : new String[] {"Thickness", "AbsoluteThickness", "PointSize",
+        "AbsolutePointSize", "Dashing", "AbsoluteDashing", "Opacity", "Arrowheads", "Translate",
+        "Rotate", "Scale", "GeometricTransformation"}) {
+      String input = "Graphics3D[{" + head + "[], Sphere[]}]";
+      assertEquals(1, count(scene(input), "Sphere"), input);
+    }
+    assertEquals(0, count(scene("Graphics3D[Tube[BSplineCurve[]]]"), "Tube"));
+  }
+
   /** {@code CapForm[None]} leaves a cylinder or a cone open; the default closes both ends. */
   @Test
   public void capFormNoneOpensCylindersAndCones() {

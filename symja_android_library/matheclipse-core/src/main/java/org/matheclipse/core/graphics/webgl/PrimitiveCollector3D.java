@@ -206,20 +206,32 @@ public final class PrimitiveCollector3D {
         return;
       }
       case ID.Translate: {
+        if (ast.argSize() == 0) {
+          return;
+        }
         double[] v = ast.argSize() >= 2 ? GraphicsOptions3D.vector(ast.arg2()) : null;
         Transform3D t = v == null ? transform : transform.times(Transform3D.translation(v));
         process(ast.arg1(), style.clone(), context, t);
         return;
       }
       case ID.Rotate: {
+        if (ast.argSize() == 0) {
+          return;
+        }
         process(ast.arg1(), style.clone(), context, rotateTransform(ast, transform));
         return;
       }
       case ID.Scale: {
+        if (ast.argSize() == 0) {
+          return;
+        }
         process(ast.arg1(), style.clone(), context, scaleTransform(ast, transform));
         return;
       }
       case ID.GeometricTransformation: {
+        if (ast.argSize() == 0) {
+          return;
+        }
         Transform3D t = transform;
         if (ast.argSize() >= 2) {
           Transform3D parsed = Transform3D.fromExpr(ast.arg2());
@@ -255,6 +267,21 @@ public final class PrimitiveCollector3D {
       return false;
     }
     int id = ((IBuiltInSymbol) ast.head()).ordinal();
+    if (ast.argSize() == 0) {
+      switch (id) {
+        case ID.Opacity:
+        case ID.Thickness:
+        case ID.AbsoluteThickness:
+        case ID.PointSize:
+        case ID.AbsolutePointSize:
+        case ID.Dashing:
+        case ID.AbsoluteDashing:
+        case ID.Arrowheads:
+          // a directive without its value changes nothing
+          return true;
+        default:
+      }
+    }
     switch (id) {
       case ID.RGBColor:
       case ID.Hue:
@@ -1005,6 +1032,10 @@ public final class PrimitiveCollector3D {
     }
     double radius = ast.argSize() >= 2 ? ColorUtil.dbl(ast.arg2(), 0.02) : 0.02;
     IExpr geometry = ast.arg1();
+    if (geometry.isAST(S.BSplineCurve) && geometry.argSize() == 0) {
+      // a curve without control points has no tube
+      return;
+    }
     ObjectNode node = newElement("Tube", style, transform);
     node.put("color", rgb(style.effectiveFace()));
     node.put("opacity", style.alphaOf(style.effectiveFace()));

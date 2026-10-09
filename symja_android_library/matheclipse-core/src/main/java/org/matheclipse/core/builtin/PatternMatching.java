@@ -91,6 +91,7 @@ public final class PatternMatching {
         S.DownValues.setEvaluator(new DownValues());
         S.Pattern.setEvaluator(Pattern.CONST);
         S.PatternTest.setEvaluator(new PatternTest());
+        S.Verbatim.setEvaluator(new Verbatim());
         S.Clear.setEvaluator(new Clear());
         S.ClearAll.setEvaluator(new ClearAll());
         S.Remove.setEvaluator(new Remove());
@@ -1183,6 +1184,23 @@ public final class PatternMatching {
   }
 
 
+  /**
+   * <code>Verbatim(expr)</code> is matched literally by the pattern matcher. Evaluating it changes
+   * nothing; the evaluator is there for the argument count.
+   */
+  private static final class Verbatim extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   /** @deprecated use {@link HoldPattern} */
   @Deprecated
   private static final class Literal extends HoldPattern {
@@ -1919,7 +1937,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head() == S.Repeated) {
+      if (ast.head() == S.Repeated && ast.argSize() >= 1) {
         // what is repeated is worked out first: `Repeated[newLine[1]]` is a repetition of
         // whatever newLine[1] came to, not of the call itself
         IExpr arg1 = engine.evaluate(ast.arg1());
@@ -2003,7 +2021,7 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head() == S.RepeatedNull) {
+      if (ast.head() == S.RepeatedNull && ast.argSize() >= 1) {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (ast.isAST1()) {
           return F.$Repeated(arg1, 0, Integer.MAX_VALUE, engine);
@@ -3740,7 +3758,8 @@ public final class PatternMatching {
       return getLookupName(temp);
     } else if (leftHandSide.isAST(S.Verbatim, 2)) {
       return getLookupName(leftHandSide.first());
-    } else if (leftHandSide.isFunctionID(ID.Condition, ID.HoldPattern, ID.PatternTest)) {
+    } else if (leftHandSide.isFunctionID(ID.Condition, ID.HoldPattern, ID.PatternTest)
+        && leftHandSide.argSize() >= 1) {
       return getReferenceExpression(leftHandSide.first());
     }
     return leftHandSide.topHead();

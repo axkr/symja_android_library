@@ -149,6 +149,10 @@ public class Asymptotic extends AbstractFunctionOptionEvaluator {
         case ID.RSolveValue:
           return engine.evaluate(F.AsymptoticRSolveValue(exprAST.arg1(), exprAST.arg2(), spec));
         case ID.Solve:
+          if (exprAST.argSize() < 2) {
+            // Solve(equations) without variables
+            break;
+          }
           return engine.evaluate(F.AsymptoticSolve(exprAST.arg1(), exprAST.arg2(), spec));
         case ID.Integrate:
           return engine.evaluate(F.AsymptoticIntegrate(exprAST.arg1(), exprAST.arg2(), spec));

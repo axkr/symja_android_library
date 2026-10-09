@@ -100,6 +100,10 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         for (int j = 1; j < listOfRules.size(); j++) {
           IAST rule = (IAST) listOfRules.get(j);
           evaled = false;
+          if (!rule.isRuleAST()) {
+            // an empty list inside of the list of rules
+            continue;
+          }
           for (int i = 0; i < optionSymbol.length; i++) {
             if (optionSymbol[i].equals(rule.first())) {
               options[i] = rule.second();

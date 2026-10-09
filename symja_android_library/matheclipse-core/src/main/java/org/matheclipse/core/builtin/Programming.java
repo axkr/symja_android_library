@@ -633,6 +633,10 @@ public final class Programming {
 
     @Override
     public final IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.isAST2()) {
+        // the engine doesn't check the number of arguments of an IFastFunctionEvaluator
+        return engine.checkBuiltinArgsSize(ast, this);
+      }
       if (engine.isEvalRHSMode()) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();

@@ -1544,7 +1544,7 @@ public final class PrimitiveCollector {
     }
     double alignX = w / 2.0;
     double alignY = h / 2.0;
-    if (ast.argSize() >= 3 && ast.arg3().isAST(S.ImageScaled)) {
+    if (ast.argSize() >= 3 && ast.arg3().isAST(S.ImageScaled, 2)) {
       IExpr inner = ((IAST) ast.arg3()).arg1();
       if (inner.isList()) {
         double[] rel = pointOf(inner);

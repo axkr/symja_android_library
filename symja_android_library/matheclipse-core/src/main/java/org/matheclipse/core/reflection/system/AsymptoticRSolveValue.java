@@ -116,7 +116,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         // Handle pure function format: a -> Function({n}, solution)
         else if (rule.isRule() && rule.first().equals(targetSymbol)) {
           IExpr rhs = rule.second();
-          if (rhs.isAST(S.Function, 2)) {
+          if (rhs.isAST(S.Function, 3) && rhs.first().isList1()) {
             exactSol = engine.evaluate(F.subst(rhs.second(), ((IAST) rhs.first()).arg1(), xVar));
           } else {
             exactSol = engine.evaluate(F.unaryAST1(rhs, xVar));

@@ -1299,6 +1299,10 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       return true;
     }
     for (IExpr solution : (IAST) poles) {
+      if (!solution.isList1() || !solution.first().isRuleAST()) {
+        // no value for x in this solution
+        continue;
+      }
       IExpr pole = solution.first().second();
       double p = pole.evalfNaN();
       if (Double.isNaN(p)) {

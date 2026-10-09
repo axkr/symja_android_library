@@ -218,6 +218,10 @@ public class IntervalSym {
       }
       return F.NIL;
     }
+    if (!interval.isAST1() || !interval.arg1().isList2()) {
+      // Interval() has no bounds
+      return F.NIL;
+    }
     IAST list = (IAST) interval.arg1();
     IExpr arg1 = list.arg1();
     IExpr arg2 = list.arg2();
@@ -1293,6 +1297,9 @@ public class IntervalSym {
   public static IExpr toAccumBounds(IExpr expr) {
     if (expr.isInterval()) {
       IExpr result = IntervalSym.boundingBox(expr);
+      if (result.isNIL()) {
+        return expr;
+      }
       IAST bounds = (IAST) ((IAST) result).arg1();
       IExpr lo = bounds.arg1();
       IExpr hi = bounds.arg2();
@@ -1321,6 +1328,9 @@ public class IntervalSym {
   public static IExpr toAccumBoundsIndeterminate(IExpr expr) {
     if (expr.isInterval()) {
       IExpr result = IntervalSym.boundingBox(expr);
+      if (result.isNIL()) {
+        return expr;
+      }
       IAST bounds = (IAST) ((IAST) result).arg1();
       IExpr lo = bounds.arg1();
       IExpr hi = bounds.arg2();

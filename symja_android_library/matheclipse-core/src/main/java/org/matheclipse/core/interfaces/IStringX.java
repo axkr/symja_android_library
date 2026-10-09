@@ -422,6 +422,9 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
           IExpr subPattern = pn.getPatternExpr();
           String subPatternRegex = toRegexString(subPattern, abbreviatedPatterns, stringFunction,
               shortestLongest, groups, engine);
+          if (subPatternRegex == null) {
+            return null;
+          }
           return "(?<" + groupName + ">" + subPatternRegex + ")";
         }
         return "(?<" + groupName + ">[\\s\\S])";
@@ -468,6 +471,10 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       // a list standing in a string pattern is a choice, the same as Alternatives:
       // `StartOfString ~~ {"GET", "PUT", …}` is how a request line is recognised
       IAST alternatives = (IAST) partOfRegex;
+      if (alternatives.argSize() == 0) {
+        // a choice between nothing matches nothing, not even the empty string
+        return "(?!)";
+      }
       StringBuilder pieces = new StringBuilder();
       // the group keeps the choice from reaching past what stands beside it, so that
       // `StartOfString ~~ {"a", "b"}` anchors both branches and not only the first
@@ -490,19 +497,36 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       return pieces.toString();
     } else if (partOfRegex.isExcept()) {
       IAST exceptions = (IAST) partOfRegex;
-      StringBuilder pieces = new StringBuilder();
-      for (int i = 1; i < exceptions.size(); i++) {
-        String str = toRegexString(exceptions.get(i), abbreviatedPatterns, stringFunction,
-            shortestLongest, groups, engine);
-        if (str == null) {
-          // `1` currently not supported in `2`.
-          Errors.printMessage(stringFunction.topHead(), "unsupported",
-              F.list(exceptions.get(i), stringFunction.topHead()), engine);
+      if (exceptions.isAST2()) {
+        // Except(c, p) is what matches p without matching c. This is exact for a c and a p which
+        // match single characters; a longer p is refused as soon as it starts with c. A name
+        // inside of c captures nothing and is kept out of the groups.
+        String c = toRegexString(exceptions.arg1(), abbreviatedPatterns, stringFunction,
+            shortestLongest, new java.util.HashMap<>(groups), engine);
+        if (c == null) {
           return null;
         }
-        pieces.append(str);
+        String p = toRegexString(exceptions.arg2(), abbreviatedPatterns, stringFunction,
+            shortestLongest, groups, engine);
+        if (p == null) {
+          return null;
+        }
+        return "(?:(?!" + c + ")" + p + ")";
       }
-      return "[^" + pieces.toString() + "]";
+      IExpr excluded = exceptions.arg1();
+      if (excluded.isString() && excluded.toString().length() == 1
+          && (!abbreviatedPatterns || "*@\\".indexOf(excluded.toString().charAt(0)) < 0)) {
+        // one literal character
+        return "[^" + Pattern.quote(excluded.toString()) + "]";
+      }
+      // Except(c) is one character which c doesn't match; written as a lookahead, because a
+      // choice like {"a", "b"} or a character class can't be pasted into a [^...] class
+      String c = toRegexString(exceptions.arg1(), abbreviatedPatterns, stringFunction,
+          shortestLongest, new java.util.HashMap<>(groups), engine);
+      if (c == null) {
+        return null;
+      }
+      return "(?:(?!" + c + ")[\\s\\S])";
     } else if (partOfRegex.isAST(S.Shortest, 2)) {
       String str = toRegexString(partOfRegex.first(), abbreviatedPatterns, stringFunction,
           IStringX.REGEX_SHORTEST, groups, engine);

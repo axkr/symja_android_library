@@ -2959,7 +2959,7 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IExpr first = arg1.first();
+      IExpr first = arg1.size() > 1 ? arg1.first() : F.NIL;
       if (first.isPresent()) {
         return first;
       }
@@ -4106,7 +4106,7 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IExpr last = arg1.last();
+      IExpr last = arg1.size() > 1 ? arg1.last() : F.NIL;
       if (last.isPresent()) {
         return last;
       }

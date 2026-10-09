@@ -421,7 +421,8 @@ public class RegionMember extends AbstractFunctionEvaluator {
     IExpr center = RegionPrimitives.constantVector(F.C0, dimension);
     IExpr radius = F.C1;
     if (reg.argSize() >= 1) {
-      if (!reg.arg1().isList() || ((IAST) reg.arg1()).arg1().isList()) {
+      if (!reg.arg1().isList() || reg.arg1().argSize() == 0
+          || ((IAST) reg.arg1()).arg1().isList()) {
         return F.NIL;
       }
       center = reg.arg1();

@@ -2867,7 +2867,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
     if (expr.isAST(S.ForAll) || expr.isAST(S.Exists)) {
       // the quantified condition is the last argument
-      return expr.isAST() && isQuantifiedSystem(((IAST) expr).last(), booleanArgument);
+      return expr.argSize() >= 1 && isQuantifiedSystem(((IAST) expr).last(), booleanArgument);
     }
     if (expr.isList()) {
       return ((IAST) expr).forAll(arg -> isQuantifiedSystem(arg, booleanArgument));

@@ -3889,7 +3889,8 @@ public class EvalEngine implements Serializable {
       if (headID == ID.Blank || headID == ID.BlankSequence || headID == ID.BlankNullSequence
           || headID == ID.Pattern || headID == ID.Optional || headID == ID.OptionsPattern
           || headID == ID.Repeated || headID == ID.RepeatedNull) {
-        return ((IBuiltInSymbol) ast.head()).getEvaluator().evaluate(ast, this);
+        // a pattern construct with a wrong number of arguments stays as it is
+        return ((IBuiltInSymbol) ast.head()).getEvaluator().evaluate(ast, this).orElse(ast);
       }
     }
 

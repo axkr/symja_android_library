@@ -19,8 +19,8 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
             + "1+a)*(1+a)*Pi)");
     check("FunctionExpand(AngerJ(a,b,c))", //
         "(Cos(1/2*a*Pi)*Gamma(1+b)*HypergeometricPFQ({1/2+b/2,1+b/2},{1/2,1-a/2+b/2,1+a/2+b/\n"
-            + "2},-b^2/4))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))+(b*Gamma(2+b)*HypergeometricPFQ({\n"
-            + "1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},-b^2/4)*Sin(1/2*a*Pi))/(2*Gamma(3/2-a/\n"
+            + "2},-c^2/4))/(Gamma(1-a/2+b/2)*Gamma(1+a/2+b/2))+(c*Gamma(2+b)*HypergeometricPFQ({\n"
+            + "1+b/2,3/2+b/2},{3/2,3/2-a/2+b/2,3/2+a/2+b/2},-c^2/4)*Sin(1/2*a*Pi))/(2*Gamma(3/2-a/\n"
             + "2+b/2)*Gamma(3/2+a/2+b/2))");
     check("FunctionExpand(GegenbauerC(n,z))", //
         "(2*Cos(n*ArcCos(z)))/n");

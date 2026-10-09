@@ -1581,32 +1581,50 @@ public class QuantityFunctions {
 
     @Override
     public IExpr mean(IAST qd) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       return withUnit(EvalEngine.get().evaluate(F.Mean(inner(qd))), qd, 1);
     }
 
     @Override
     public IExpr median(IAST qd) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       return withUnit(EvalEngine.get().evaluate(F.Median(inner(qd))), qd, 1);
     }
 
     @Override
     public IExpr variance(IAST qd) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       return withUnit(EvalEngine.get().evaluate(F.Variance(inner(qd))), qd, 2);
     }
 
     @Override
     public IExpr standardDeviation(IAST qd) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       return withUnit(EvalEngine.get().evaluate(F.StandardDeviation(inner(qd))), qd, 1);
     }
 
     @Override
     public IExpr skewness(IAST qd) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       // a shape statistic is dimensionless
       return EvalEngine.get().evaluate(F.Skewness(inner(qd)));
     }
 
     @Override
     public IExpr moment(IAST qd, IExpr n) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       IExpr magnitude = EvalEngine.get().evaluate(F.Moment(inner(qd), n));
       if (magnitude.isNIL() || !n.isInteger()) {
         return F.NIL;
@@ -1616,12 +1634,18 @@ public class QuantityFunctions {
 
     @Override
     public IExpr cdf(IAST qd, IExpr x, EvalEngine engine) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       IExpr magnitude = magnitudeIn(x, qd, engine);
       return magnitude.isNIL() ? F.NIL : engine.evaluate(F.CDF(inner(qd), magnitude));
     }
 
     @Override
     public IExpr survivalFunction(IAST qd, IExpr x, EvalEngine engine) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       IExpr magnitude = magnitudeIn(x, qd, engine);
       return magnitude.isNIL() ? F.NIL
           : engine.evaluate(F.SurvivalFunction(inner(qd), magnitude));
@@ -1629,11 +1653,17 @@ public class QuantityFunctions {
 
     @Override
     public IExpr inverseCDF(IAST qd, IExpr p, EvalEngine engine) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       return withUnit(engine.evaluate(F.InverseCDF(inner(qd), p)), qd, 1);
     }
 
     @Override
     public IExpr pdf(IAST qd, IExpr x, EvalEngine engine) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       IExpr magnitude = magnitudeIn(x, qd, engine);
       if (magnitude.isNIL()) {
         return F.NIL;
@@ -1648,6 +1678,9 @@ public class QuantityFunctions {
 
     @Override
     public IExpr randomVariate(java.util.Random random, IAST qd, int size) {
+      if (!qd.isAST2()) {
+        return F.NIL;
+      }
       IExpr distribution = inner(qd);
       if (!distribution.isAST() || !distribution.isBuiltInFunction()) {
         return F.NIL;

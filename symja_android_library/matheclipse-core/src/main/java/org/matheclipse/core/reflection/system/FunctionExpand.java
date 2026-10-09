@@ -611,6 +611,15 @@ public class FunctionExpand extends AbstractEvaluator {
     if (ast.head() instanceof IBuiltInSymbol) {
       IEvaluator evaluator = ((IBuiltInSymbol) ast.head()).getEvaluator();
       if (evaluator instanceof IFunctionExpand) {
+        if (evaluator instanceof IFunctionEvaluator) {
+          IFunctionEvaluator function = (IFunctionEvaluator) evaluator;
+          int[] expected = function.expectedArgSize(ast);
+          if (expected != null && (ast.argSize() < expected[0]
+              || (ast.argSize() > expected[1] && function.getOptionSymbols() == null))) {
+            // a call with a wrong number of arguments stays unevaluated and has no expansion
+            return F.NIL;
+          }
+        }
         IExpr temp = ((IFunctionExpand) evaluator).functionExpand(ast, engine);
         if (temp.isPresent()) {
           IExpr evalResult = engine.evaluate(temp);

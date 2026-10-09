@@ -109,7 +109,7 @@ public class NumberLinePlot extends ListPlot {
                 }
               }
             }
-          } else if (item.isIntervalData()) {
+          } else if (item.isIntervalData() && item.argSize() >= 1) {
             IExpr arg1 = ((IAST) item).arg1();
             if (arg1.isList() && arg1.size() >= 5) {
               double a = ((IAST) arg1).get(1).evalfNaN();
@@ -198,7 +198,7 @@ public class NumberLinePlot extends ListPlot {
                     S.LessEqual, S.LessEqual, y, drawMin, drawMax, color, lineThickness, true);
               }
             }
-          } else if (item.isIntervalData()) {
+          } else if (item.isIntervalData() && item.argSize() >= 1) {
             IExpr arg1 = ((IAST) item).arg1();
             if (arg1.isList() && arg1.size() >= 5) {
               IAST spec = (IAST) arg1;

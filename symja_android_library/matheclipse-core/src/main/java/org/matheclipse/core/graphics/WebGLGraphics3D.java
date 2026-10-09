@@ -218,7 +218,7 @@ public class WebGLGraphics3D {
     IAST target = graphics;
     String legendText = null;
     boolean showLegend = false;
-    if (target.isAST(S.Legended)) {
+    if (target.isAST(S.Legended) && target.argSize() >= 1) {
       showLegend = true;
       if (target.argSize() >= 2 && !target.arg2().isAutomatic()) {
         legendText = GraphicsOptions3D.text(target.arg2());

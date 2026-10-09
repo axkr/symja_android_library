@@ -260,7 +260,7 @@ public class ListContourPlot extends ContourPlot {
 
     if (dataRange.isList() && dataRange.size() >= 3) {
       IAST dr = (IAST) dataRange;
-      if (dr.arg1().isList() && dr.arg2().isList()) {
+      if (dr.arg1().isList2() && dr.arg2().isList2()) {
         // DataRange -> {{xmin, xmax}, {ymin, ymax}}
         IAST xR = (IAST) dr.arg1();
         IAST yR = (IAST) dr.arg2();

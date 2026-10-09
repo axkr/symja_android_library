@@ -332,7 +332,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   /** {@inheritDoc} */
   @Override
   public IExpr first() {
-    return F.NIL;
+    return arg1();
   }
 
   @Override
@@ -453,7 +453,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   /** {@inheritDoc} */
   @Override
   public IExpr last() {
-    return F.NIL;
+    return arg1();
   }
 
   /** {@inheritDoc} */

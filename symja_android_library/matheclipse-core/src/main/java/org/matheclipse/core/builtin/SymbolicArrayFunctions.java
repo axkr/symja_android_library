@@ -625,6 +625,10 @@ public class SymbolicArrayFunctions {
 
   /** The dimensions list of a {@link S#Vectors}, {@link S#Matrices} or {@link S#Arrays} domain. */
   private static IAST domainDimensions(IAST domain) {
+    if (domain.isAST0()) {
+      // Vectors(), Matrices() or Arrays() without arguments name no dimensions
+      return F.NIL;
+    }
     if (domain.isAST(S.Vectors)) {
       return domain.arg1().isList() ? (IAST) domain.arg1() : F.list(domain.arg1());
     }

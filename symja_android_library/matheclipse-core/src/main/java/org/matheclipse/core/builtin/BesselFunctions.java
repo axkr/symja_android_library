@@ -84,7 +84,7 @@ public class BesselFunctions {
         IExpr a = ast.arg1();
         IExpr b = ast.arg2();
         if (ast.isAST3()) {
-          IExpr c = ast.arg2();
+          IExpr c = ast.arg3();
           return functionExpand3(a, b, c);
         }
         if (ast.isAST2()) {
@@ -1936,7 +1936,7 @@ public class BesselFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       if (ast.isAST3()) {
-        IExpr c = ast.arg2();
+        IExpr c = ast.arg3();
         return functionExpand3(a, b, c);
       }
       return functionExpand2(a, b);

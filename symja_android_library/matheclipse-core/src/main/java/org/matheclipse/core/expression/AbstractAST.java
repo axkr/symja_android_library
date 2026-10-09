@@ -334,6 +334,16 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
+    public IExpr first() {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr last() {
+      return F.NIL;
+    }
+
+    @Override
     public IExpr arg2() {
       ArgumentTypeException.throwNIL();
       return F.NIL;
@@ -3691,7 +3701,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             || (head() == S.With) //
             || (head() == S.Module && size() == 3))) {
       IExpr last = last();
-      if (last.head() == S.CompoundExpression && size() > 1) {
+      if (last.head() == S.CompoundExpression && last.size() > 1) {
         return last.last().isBlockModuleOrWithCondition();
       }
       return (last.isCondition() || last().isBlockModuleOrWithCondition());
@@ -5670,7 +5680,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public IExpr last() {
     if (size() < 2) {
-      return F.NIL;
+      throw new IndexOutOfBoundsException("Index: 1, Size: " + size());
     }
     return get(argSize());
   }

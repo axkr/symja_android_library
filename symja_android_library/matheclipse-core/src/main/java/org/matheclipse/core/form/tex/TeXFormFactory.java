@@ -879,6 +879,9 @@ public class TeXFormFactory {
     /** {@inheritDoc} */
     @Override
     public boolean convert(final StringBuilder buffer, final IAST f, final int precedence) {
+      if (!f.isAST1()) {
+        return false;
+      }
       buffer.append("(");
       fFactory.convertInternal(buffer, f.arg1(), Precedence.NO_PRECEDENCE, NO_PLUS_CALL);
       buffer.append(")");

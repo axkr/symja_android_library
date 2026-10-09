@@ -559,7 +559,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     List<VariableSpec> specs = new ArrayList<VariableSpec>(entries.argSize());
     for (int i = 1; i < entries.size(); i++) {
       IExpr entry = entries.get(i);
-      IExpr variable = entry.isList() ? entry.first() : entry;
+      IExpr variable = entry.isList() && entry.argSize() >= 1 ? entry.first() : entry;
       if (entry.isList() && (entry.argSize() < 1 || entry.argSize() > 4)) {
         // Search specification `1` should be a list with 1 to 3 elements.
         Errors.printMessage(head, "fdss", F.List(entry), engine);

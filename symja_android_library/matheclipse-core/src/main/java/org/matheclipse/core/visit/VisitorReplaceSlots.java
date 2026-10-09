@@ -62,6 +62,13 @@ public class VisitorReplaceSlots extends VisitorExpr {
   }
 
   private IExpr getSlot(IStringX str) {
+    if (astSlots.argSize() < 1) {
+      // there is no first argument to look the name up in
+      if (unfillableNamedSlot.isNIL()) {
+        unfillableNamedSlot = str;
+      }
+      return F.NIL;
+    }
     IExpr arg1 = astSlots.arg1();
     if (arg1.isDataset()) {
       return ((IASTDataset) arg1).getValue(str);

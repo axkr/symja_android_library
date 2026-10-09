@@ -1162,7 +1162,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       styleToUse = F.Directive(F.Opacity(0.2), color, F.EdgeForm(F.None));
     }
 
-    if (target.isList() && target.first().isInteger()) {
+    if (target.isList() && target.argSize() >= 1 && target.first().isInteger()) {
       int targetIndex = ((IAST) target).first().toIntDefault(0) - 1;
       if (targetIndex >= 0 && targetIndex < curves.size()) {
         out.append(F.List(styleToUse,

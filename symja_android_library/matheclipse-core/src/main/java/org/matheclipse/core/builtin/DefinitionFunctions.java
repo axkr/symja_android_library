@@ -262,7 +262,7 @@ public class DefinitionFunctions {
    */
   static IExpr assignValues(final IExpr leftHandSide, IExpr rightHandSide,
       IBuiltInSymbol builtinSymbol, EvalEngine engine, boolean upRules) {
-    if (!leftHandSide.isAST() || !leftHandSide.first().isSymbol()) {
+    if (!leftHandSide.isAST() || leftHandSide.argSize() < 1 || !leftHandSide.first().isSymbol()) {
       return F.NIL;
     }
     ISymbol symbol = (ISymbol) leftHandSide.first();
