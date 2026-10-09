@@ -2318,6 +2318,24 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             return checkDomain(result, domain, maxRoots);
           }
 
+          if (!numericFlag && termsEqualZeroList.argSize() == 1 && variables.argSize() == 1
+              && inequationsList.isEmpty() && !intervalDataMap.isEmpty()) {
+            // one polynomial equation with inequalities for its variable
+            IExpr realRoots = realRootsInRegion(termsEqualZeroList.arg1(), variables.arg1(),
+                ast.arg1(), maxRoots, engine);
+            if (realRoots.isPresent()) {
+              return realRoots;
+            }
+          }
+          if (!numericFlag && termsEqualZeroList.argSize() > 1 && inequationsList.isEmpty()
+              && intervalDataMap.isEmpty()) {
+            IExpr split =
+                solveSharedFactor(ast, termsEqualZeroList, variables, oldAssumptions, engine);
+            if (split.isPresent()) {
+              return split;
+            }
+          }
+
           if (numericFlag && inequationsList.isEmpty() && intervalDataMap.isEmpty()) {
             IExpr numericResult =
                 solveNumericPolynomial(termsEqualZeroList, variables, domain, maxRoots, engine);
@@ -2349,8 +2367,15 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             // The system cannot be solved with the methods available to Solve.
             return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
           }
-          result = appendExtraConditionSolutions(checkDomain(result, domain, maxRoots), ast,
-              variables, options.maxExtraConditions(), engine);
+          IExpr inDomain = checkDomain(result, domain, maxRoots);
+          if (!numericFlag && domain == S.Reals && termsEqualZeroList.argSize() == 1
+              && variables.argSize() == 1 && inequationsList.isEmpty()
+              && intervalDataMap.isEmpty()) {
+            inDomain = withAllRealRoots(inDomain, termsEqualZeroList.arg1(), variables.arg1(),
+                maxRoots, engine);
+          }
+          result = appendExtraConditionSolutions(inDomain, ast, variables,
+              options.maxExtraConditions(), engine);
           if (!numeric && ast.argSize() > 1 && !ast.arg2().isNIL() && !ast.arg2().isEmptyList()
               && leavesVariablesFree(result, variables)) {
             // Equations may not give solutions for all "solve" variables.
@@ -2374,6 +2399,162 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+  }
+
+  /**
+   * A system of polynomial equations which all have a common factor <code>g</code>: its
+   * solutions are the solutions of <code>g == 0</code>, a curve or a surface, and the solutions
+   * of the system without that factor. The search for single points does not find the first
+   * part.
+   *
+   * @return {@link F#NIL} if the equations have no common factor or a part is not solved
+   */
+  private static IExpr solveSharedFactor(IAST ast, IAST termsEqualZeroList, IAST variables,
+      IAssumptions outerAssumptions, EvalEngine engine) {
+    for (IExpr variable : variables) {
+      if (!variable.isSymbol()) {
+        return F.NIL;
+      }
+    }
+    IExpr gcd = F.NIL;
+    for (IExpr term : termsEqualZeroList) {
+      if (!term.isPolynomial(variables)) {
+        return F.NIL;
+      }
+      gcd = gcd.isNIL() ? term : engine.evalQuiet(F.PolynomialGCD(gcd, term));
+      if (gcd.isNumber() || !gcd.isPolynomial(variables)) {
+        return F.NIL;
+      }
+    }
+    if (gcd.isNIL() || gcd.isNumber() || gcd.isFree(x -> variables.contains(x), true)) {
+      return F.NIL;
+    }
+    final IExpr factor = gcd;
+    IASTAppendable rest = F.ListAlloc(termsEqualZeroList.argSize());
+    for (IExpr term : termsEqualZeroList) {
+      IExpr quotient = engine.evalQuiet(F.Cancel(F.Divide(term, factor)));
+      if (!quotient.isPolynomial(variables)) {
+        return F.NIL;
+      }
+      if (!quotient.isZero()) {
+        rest.append(F.Equal(quotient, F.C0));
+      }
+    }
+    // the two parts are solved as statements of their own: with the assumptions of this call
+    // in force a solution like v->5/u of the first part is not accepted as a real one
+    final IAssumptions inner = engine.getAssumptions();
+    IExpr onFactor;
+    IExpr others = F.CEmptyList;
+    engine.setAssumptions(outerAssumptions);
+    try {
+      onFactor = engine.evaluate(ast.setAtCopy(1, F.Equal(factor, F.C0)));
+      if (onFactor.isList() && rest.argSize() > 0) {
+        others = engine.evalQuiet(ast.setAtCopy(1, rest));
+      }
+    } finally {
+      engine.setAssumptions(inner);
+    }
+    if (!onFactor.isList() || !others.isList()) {
+      return F.NIL;
+    }
+    if (rest.argSize() == 0) {
+      return onFactor;
+    }
+    IASTAppendable result = ((IAST) onFactor).copyAppendable();
+    for (IExpr solution : (IAST) others) {
+      // a point of the first part is not listed again
+      if (!engine.evalQuiet(F.ReplaceAll(factor, solution)).isZero()
+          && !result.contains(solution)) {
+        result.append(solution);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The solutions of one polynomial equation with rational coefficients which satisfy the
+   * inequalities of the statement, for a polynomial with real roots whose radical form is not
+   * recognized as real (the three real roots of a cubic). The roots are isolated and returned as numbers or <code>Root</code> objects; comparing their radical
+   * forms with a number does not come back.
+   *
+   * @return {@link F#NIL} if the polynomial is not of this kind or an inequality is not decided
+   */
+  private static IExpr realRootsInRegion(IExpr polynomial, IExpr variable, IExpr statement,
+      int maxRoots, EvalEngine engine) {
+    if (!variable.isSymbol() || !polynomial.isPolynomial(F.list(variable))) {
+      return F.NIL;
+    }
+    double[] real = RootsFunctions.isolatedRealRoots(polynomial, (ISymbol) variable, engine);
+    if (real == null) {
+      return F.NIL;
+    }
+    // the solutions in radicals which are recognized as real
+    IExpr radicals = engine.evalQuiet(F.Solve(F.Equal(polynomial, F.C0), variable));
+    if (radicals.isListOfLists()) {
+      int recognized = 0;
+      for (IExpr rules : (IAST) radicals) {
+        if (rules.isList1() && rules.first().isRule() && rules.first().second().isRealResult()) {
+          recognized++;
+        }
+      }
+      if (recognized >= real.length) {
+        // nothing is hidden: the usual way keeps the radicals
+        return F.NIL;
+      }
+    }
+    IAST roots = RootsFunctions.realRootsExact(polynomial, variable, engine);
+    if (roots.isNIL()) {
+      return F.NIL;
+    }
+    IAST conditions = statement.isAnd() ? (IAST) statement
+        : statement.isList() ? (IAST) statement : F.List(statement);
+    IASTAppendable result = F.ListAlloc(roots.argSize());
+    for (IExpr root : roots) {
+      IExpr value = engine.evalQuiet(F.N(root, F.ZZ(30)));
+      boolean inside = true;
+      for (IExpr condition : conditions) {
+        if (condition.isEqual()) {
+          continue;
+        }
+        IExpr holds = engine.evalQuiet(F.xreplace(condition, variable, value));
+        if (holds.isFalse()) {
+          inside = false;
+          break;
+        }
+        if (!holds.isTrue()) {
+          return F.NIL;
+        }
+      }
+      if (inside && result.argSize() < maxRoots) {
+        result.append(F.list(F.Rule(variable, root)));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The real solutions of one polynomial equation with rational coefficients, if the solutions
+   * in radicals do not show all of them: a root which is real but written with roots of complex
+   * numbers is not recognized as real and was dropped. The number of real roots is known from
+   * their isolation; if fewer solutions are left, the real roots are returned as
+   * <code>Root</code> objects.
+   */
+  private static IExpr withAllRealRoots(IExpr solutions, IExpr polynomial, IExpr variable,
+      int maxRoots, EvalEngine engine) {
+    if (!solutions.isList() || !variable.isSymbol()
+        || !polynomial.isPolynomial(F.list(variable))) {
+      return solutions;
+    }
+    double[] real = RootsFunctions.isolatedRealRoots(polynomial, (ISymbol) variable, engine);
+    if (real == null || real.length <= solutions.argSize()) {
+      return solutions;
+    }
+    IAST roots = RootsFunctions.realRootsExact(polynomial, variable, engine);
+    if (roots.isNIL() || roots.argSize() != real.length) {
+      return solutions;
+    }
+    return F.mapRange(1, (int) Math.min((long) roots.size(), (long) maxRoots + 1),
+        i -> F.list(F.Rule(variable, roots.get(i))));
   }
 
   /**

@@ -70,6 +70,10 @@ public class Maximize extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IExpr plain = plainForm(ast);
+    if (plain.isPresent()) {
+      return plain;
+    }
     IExpr function = ast.arg1();
     IExpr x = ast.arg2();
     ISymbol head = ast.topHead();
@@ -236,6 +240,8 @@ public class Maximize extends AbstractFunctionEvaluator {
     try {
       final int n = varList.argSize();
       final long deadline = deadline();
+      IExpr boundConstraint = constraint;
+      boolean levelAdded = false;
       IInteger[] from = new IInteger[n];
       IInteger[] to = new IInteger[n];
       long points = 1;
@@ -244,8 +250,26 @@ public class Maximize extends AbstractFunctionEvaluator {
         if (!v.isSymbol()) {
           return F.NIL;
         }
-        IExpr min = realBound(v, constraint, varList, false, deadline, engine);
-        IExpr max = realBound(v, constraint, varList, true, deadline, engine);
+        IExpr min = realBound(v, boundConstraint, varList, false, deadline, engine);
+        IExpr max = min.isNIL() ? F.NIL
+            : realBound(v, boundConstraint, varList, true, deadline, engine);
+        if ((min.isNIL() || max.isNIL()) && !levelAdded) {
+          // an objective which grows in every direction: the points which are not worse than
+          // one integer point of the region are a bounded set
+          IExpr level = integerLevel(objective, constraint, varList, isMax, engine);
+          if (level.isNIL()) {
+            return F.NIL;
+          }
+          List<IExpr> conjuncts = new ArrayList<>();
+          flattenConstraints(constraint, conjuncts);
+          IASTAppendable bounded = F.ast(S.And, conjuncts.size() + 1);
+          bounded.appendAll(conjuncts);
+          bounded.append(isMax ? F.GreaterEqual(objective, level) : F.LessEqual(objective, level));
+          boundConstraint = bounded;
+          levelAdded = true;
+          min = realBound(v, boundConstraint, varList, false, deadline, engine);
+          max = realBound(v, boundConstraint, varList, true, deadline, engine);
+        }
         if (min.isNIL() || max.isNIL()) {
           return F.NIL;
         }
@@ -312,6 +336,48 @@ public class Maximize extends AbstractFunctionEvaluator {
     }
   }
 
+  /**
+   * The value of the objective at an integer point of the region, for a polynomial objective
+   * which grows in every direction. The point is looked for in the cubes around the origin.
+   */
+  private static IExpr integerLevel(IExpr objective, IExpr constraint, IAST varList,
+      boolean isMax, EvalEngine engine) {
+    final int n = varList.argSize();
+    IExpr[] vars = new IExpr[n];
+    for (int i = 0; i < n; i++) {
+      vars[i] = varList.get(i + 1);
+    }
+    if (!objective.isPolynomial(varList) || !isCoercive(objective, vars, isMax, engine)) {
+      return F.NIL;
+    }
+    for (int reach = 1; reach <= 6; reach++) {
+      final int width = 2 * reach + 1;
+      long count = 1;
+      for (int i = 0; i < n; i++) {
+        count *= width;
+      }
+      if (count > 20_000) {
+        return F.NIL;
+      }
+      for (long code = 0; code < count; code++) {
+        long rest = code;
+        IASTAppendable rules = F.ListAlloc(n);
+        for (int i = 0; i < n; i++) {
+          rules.append(F.Rule(vars[i], F.ZZ(rest % width - reach)));
+          rest /= width;
+        }
+        IExpr feasible = engine.evalQuiet(F.ReplaceAll(constraint, rules));
+        if (feasible.isList()) {
+          feasible = engine.evalQuiet(((IAST) feasible).apply(S.And));
+        }
+        if (feasible.isTrue()) {
+          return engine.evaluate(F.ReplaceAll(objective, rules));
+        }
+      }
+    }
+    return F.NIL;
+  }
+
   /** The real minimum or maximum of one variable on the region, or {@link F#NIL}. */
   private static IExpr realBound(IExpr v, IExpr constraint, IAST varList, boolean isMax,
       long deadline, EvalEngine engine) {
@@ -347,7 +413,15 @@ public class Maximize extends AbstractFunctionEvaluator {
         return F.NIL;
       }
     }
+    final boolean report = head == S.Minimize || head == S.Maximize;
     if (function.isList2()) {
+      if (report) {
+        IExpr eliminated = eliminatedExtremum(head, function.first(), function.second(), varList,
+            engine);
+        if (eliminated.isPresent()) {
+          return eliminated;
+        }
+      }
       // linear objective with a single ellipsoid/sphere constraint
       IExpr result = linearEllipsoidExtremum(head, function.first(), function.second(), varList,
           isMax, engine);
@@ -366,13 +440,620 @@ public class Maximize extends AbstractFunctionEvaluator {
         // the stationary points of the form with the roots miss the points where a root is 0
         return radicalExtremum(head, function.first(), function.second(), varList, isMax, engine);
       }
-      return lagrangeExtremum(head, function.first(), function.second(), varList, isMax, engine);
+      result = lagrangeExtremum(head, function.first(), function.second(), varList, isMax, engine);
+      if (result.isPresent() || !report) {
+        return result;
+      }
+      return unprovedRegionExtremum(head, function.first(), function.second(), varList, isMax,
+          engine);
     }
     if (!function.isList()) {
       // unconstrained multivariate quadratic
-      return quadraticExtremum(head, function, varList, isMax, engine);
+      IExpr result = quadraticExtremum(head, function, varList, isMax, engine);
+      if (result.isPresent()) {
+        return result;
+      }
+      return unconstrainedExtremum(head, function, varList, isMax, engine);
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>{f, c1, c2, ...}</code> is <code>{f, c1 &amp;&amp; c2 &amp;&amp; ...}</code>, and a
+   * constraint <code>Element(vars, Integers)</code> which names every variable is the domain
+   * argument; <code>Element(vars, Reals)</code> says nothing new.
+   *
+   * @return the call in its plain form, or {@link F#NIL} if it has this form already or the
+   *         integer variables are only a part of the variables
+   */
+  static IExpr plainForm(IAST ast) {
+    IExpr function = ast.arg1();
+    if (!function.isList() || function.argSize() < 2) {
+      return F.NIL;
+    }
+    IAST variables = ast.arg2().isList() ? (IAST) ast.arg2() : F.List(ast.arg2());
+    List<IExpr> conjuncts = new ArrayList<>();
+    for (int i = 2; i <= function.argSize(); i++) {
+      flattenConstraints(((IAST) function).get(i), conjuncts);
+    }
+    IASTAppendable constraints = F.ast(S.And, conjuncts.size());
+    List<IExpr> integers = new ArrayList<>();
+    boolean changed = function.argSize() > 2;
+    for (IExpr c : conjuncts) {
+      if (c.isAST(S.Element, 3) && (c.second() == S.Integers || c.second() == S.Reals)) {
+        IAST named = c.first().isList() ? (IAST) c.first() : F.List(c.first());
+        for (IExpr v : named) {
+          if (!variables.contains(v)) {
+            return F.NIL;
+          }
+          if (c.second() == S.Integers && !integers.contains(v)) {
+            integers.add(v);
+          }
+        }
+        changed = true;
+      } else {
+        constraints.append(c);
+      }
+    }
+    if (!changed || (!integers.isEmpty() && integers.size() != variables.argSize())) {
+      return F.NIL;
+    }
+    IExpr plain = constraints.argSize() == 0 ? function.first()
+        : F.List(function.first(), constraints.oneIdentity1());
+    if (integers.isEmpty()) {
+      return ast.setAtCopy(1, plain);
+    }
+    if (ast.isAST3() && ast.arg3() != S.Integers) {
+      return F.NIL;
+    }
+    return F.ternaryAST3(ast.head(), plain, ast.arg2(), S.Integers);
+  }
+
+  /** The result of a problem without a bound, with its message for the two functions. */
+  private static IExpr unboundedResult(ISymbol head, IAST varList, boolean isMax,
+      EvalEngine engine) {
+    if (head == S.Minimize || head == S.Maximize) {
+      // The `1` is not attained at any point satisfying the constraints.
+      Errors.printMessage(head, "natt", F.List(isMax ? "maximum" : "minimum"), engine);
+    }
+    return F.list(isMax ? F.CInfinity : F.CNInfinity,
+        varList.map(v -> F.Rule(v, S.Indeterminate), 1));
+  }
+
+  /**
+   * An equation <code>v == e</code> for a variable which is not in <code>e</code>: the problem
+   * without <code>v</code> is solved and the value of <code>v</code> put back.
+   */
+  private static IExpr eliminatedExtremum(ISymbol head, IExpr objective, IExpr constraint,
+      IAST varList, EvalEngine engine) {
+    List<IExpr> conjuncts = new ArrayList<>();
+    flattenConstraints(constraint, conjuncts);
+    for (int k = 0; k < conjuncts.size(); k++) {
+      IExpr c = conjuncts.get(k);
+      if (!c.isAST(S.Equal, 3)) {
+        continue;
+      }
+      for (int side = 1; side <= 2; side++) {
+        final IExpr v = ((IAST) c).get(side);
+        final IExpr e = ((IAST) c).get(3 - side);
+        if (!v.isSymbol() || !varList.contains(v) || !e.isFree(v) || !e.isPolynomial(varList)) {
+          continue;
+        }
+        IASTAppendable rest = F.ast(S.And, conjuncts.size());
+        for (int j = 0; j < conjuncts.size(); j++) {
+          if (j != k) {
+            IExpr other = engine.evaluate(F.xreplace(conjuncts.get(j), v, e));
+            if (other.isFalse()) {
+              return F.NIL;
+            }
+            if (!other.isTrue()) {
+              rest.append(other);
+            }
+          }
+        }
+        IAST otherVars = varList.removeIf(x -> x.equals(v));
+        if (otherVars.argSize() == 0) {
+          return F.NIL;
+        }
+        IExpr reduced = engine.evaluate(F.xreplace(objective, v, e));
+        IExpr problem = rest.argSize() == 0 ? reduced : F.List(reduced, rest.oneIdentity1());
+        IExpr result = engine.evalQuiet(F.binaryAST2(head, problem,
+            otherVars.argSize() == 1 && rest.argSize() == 0 ? otherVars.arg1() : otherVars));
+        if (!result.isList2() || !result.second().isList()) {
+          return F.NIL;
+        }
+        IAST rules = (IAST) result.second();
+        IExpr value = engine.evaluate(F.ReplaceAll(e, rules));
+        IASTAppendable all = F.ListAlloc(varList.argSize());
+        for (IExpr variable : varList) {
+          if (variable.equals(v)) {
+            all.append(F.Rule(v, result.first().isDirectedInfinity() ? S.Indeterminate : value));
+          } else {
+            IExpr rule = F.NIL;
+            for (IExpr r : rules) {
+              if (r.isRule() && r.first().equals(variable)) {
+                rule = r;
+              }
+            }
+            if (rule.isNIL()) {
+              return F.NIL;
+            }
+            all.append(rule);
+          }
+        }
+        return F.list(result.first(), all);
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * A value is visibly not negative: a number which is not negative, an even power, an absolute
+   * value, or a sum or product of such terms. Nothing else is tried.
+   */
+  private static boolean isVisiblyNonNegative(IExpr expr) {
+    if (expr.isReal()) {
+      return !expr.isNegative();
+    }
+    if (expr.isAbs()) {
+      return true;
+    }
+    if (expr.isPower() && expr.exponent().isInteger()) {
+      return ((IInteger) expr.exponent()).isEven() ? expr.base().isRealResult()
+          || expr.base().isPolynomialStruct() || !expr.base().isNumber()
+          : isVisiblyNonNegative(expr.base());
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      for (IExpr arg : (IAST) expr) {
+        if (!isVisiblyNonNegative(arg)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /** A value is visibly positive: a sum of terms which are not negative with a positive one. */
+  private static boolean isVisiblyPositive(IExpr expr) {
+    if (expr.isReal()) {
+      return expr.isPositive();
+    }
+    if (expr.isPower() && expr.exponent().isInteger()) {
+      return isVisiblyPositive(expr.base());
+    }
+    if (expr.isTimes()) {
+      for (IExpr arg : (IAST) expr) {
+        if (!isVisiblyPositive(arg)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    if (expr.isPlus()) {
+      boolean positive = false;
+      for (IExpr arg : (IAST) expr) {
+        if (!isVisiblyNonNegative(arg)) {
+          return false;
+        }
+        positive |= isVisiblyPositive(arg);
+      }
+      return positive;
+    }
+    return false;
+  }
+
+  /**
+   * The bound <code>f &gt;= bound</code> (or <code>&lt;=</code>) for all real values of the
+   * variables is visible from the form of the difference: its numerator factors into terms
+   * which are not negative and its denominator is positive.
+   */
+  private static boolean isBoundVisible(IExpr objective, IExpr bound, IAST varList, boolean isMax,
+      EvalEngine engine) {
+    for (IExpr variable : varList) {
+      if (!variable.isSymbol()) {
+        return false;
+      }
+    }
+    IExpr difference = isMax ? F.Subtract(bound, objective) : F.Subtract(objective, bound);
+    IExpr together = engine.evalQuiet(F.Together(difference));
+    IExpr numerator = engine.evalQuiet(F.Factor(F.Numerator(together)));
+    IExpr denominator = engine.evalQuiet(F.Denominator(together));
+    return isRationalIn(numerator, varList) && isRationalIn(denominator, varList)
+        && isVisiblyNonNegative(numerator) && isVisiblyPositive(denominator);
+  }
+
+  /** Numbers, the variables, sums, products and integer powers: real for real variables. */
+  private static boolean isRationalIn(IExpr expr, IAST varList) {
+    if (expr.isReal() || varList.contains(expr)) {
+      return true;
+    }
+    if (expr.isPower() && expr.exponent().isInteger()) {
+      return isRationalIn(expr.base(), varList);
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      for (IExpr arg : (IAST) expr) {
+        if (!isRationalIn(arg, varList)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * A straight ray on which the objective runs to <code>-Infinity</code> (for a minimum) and
+   * every constraint holds: the problem has no bound. The rays start at a few points with small
+   * integer coordinates and have small integer directions; on a ray the objective and the
+   * constraints are polynomials in one variable whose coefficients decide.
+   */
+  private static boolean isUnboundedOnRay(IExpr objective, List<IExpr> equalities,
+      List<IExpr> inequalities, List<Integer> inequalitySigns, List<Boolean> strict, IExpr[] vars,
+      boolean isMax, EvalEngine engine) {
+    final int n = vars.length;
+    if (n > 5) {
+      return false;
+    }
+    final int reach = n <= 3 ? 2 : 1;
+    final int width = 2 * reach + 1;
+    int directions = 1;
+    for (int i = 0; i < n; i++) {
+      directions *= width;
+    }
+    final ISymbol t = F.Dummy("t");
+    final int[] bases = {0, 1, -1, 2, -2};
+    for (int base : bases) {
+      for (int code = 0; code < directions; code++) {
+        int rest = code;
+        boolean zero = true;
+        IASTAppendable rules = F.ListAlloc(n);
+        for (int i = 0; i < n; i++) {
+          int d = rest % width - reach;
+          rest /= width;
+          zero &= d == 0;
+          rules.append(F.Rule(vars[i], F.Plus(F.ZZ(base), F.Times(F.ZZ(d), t))));
+        }
+        if (zero) {
+          continue;
+        }
+        IExpr onRay = engine.evaluate(F.Expand(F.ReplaceAll(objective, rules)));
+        IExpr degree = engine.evaluate(F.Exponent(onRay, t));
+        if (!onRay.isPolynomial(t) || !degree.isInteger() || !degree.isPositive()) {
+          continue;
+        }
+        IExpr lead = engine.evaluate(F.Coefficient(onRay, t, degree));
+        if (!(isMax ? lead.isPositive() : lead.isNegative())) {
+          continue;
+        }
+        boolean feasible = true;
+        for (int j = 0; feasible && j < equalities.size(); j++) {
+          feasible = engine.evaluate(F.Expand(F.ReplaceAll(equalities.get(j), rules))).isZero();
+        }
+        for (int j = 0; feasible && j < inequalities.size(); j++) {
+          IExpr g = inequalities.get(j);
+          if (inequalitySigns.get(j) > 0) {
+            g = F.Negate(g);
+          }
+          // g <= 0 for all t >= 0 if no coefficient is positive
+          IExpr coefficients =
+              engine.evaluate(F.CoefficientList(F.Expand(F.ReplaceAll(g, rules)), t));
+          feasible = coefficients.isList();
+          if (feasible) {
+            for (IExpr c : (IAST) coefficients) {
+              feasible &= c.isReal() && !c.isPositive();
+            }
+            if (feasible && strict.get(j)) {
+              feasible = coefficients.argSize() > 0 && coefficients.first().isNegative();
+            }
+          }
+        }
+        if (feasible) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The extremum of a function of several variables without constraints, which is not a
+   * quadratic form: a sum of functions of one variable each, a polynomial which grows in every
+   * direction, a function whose bound is visible from its form (a valley along a curve), or a
+   * polynomial without a bound.
+   */
+  private static IExpr unconstrainedExtremum(ISymbol head, IExpr function, IAST varList,
+      boolean isMax, EvalEngine engine) {
+    try {
+      final boolean report = head == S.Minimize || head == S.Maximize;
+      final int n = varList.argSize();
+      final IExpr[] vars = new IExpr[n];
+      for (int i = 0; i < n; i++) {
+        vars[i] = varList.get(i + 1);
+      }
+      final boolean polynomial = function.isPolynomial(varList);
+      if (polynomial) {
+        if (report) {
+          IExpr separable = separableExtremum(head, function, varList, isMax, engine);
+          if (separable.isPresent()) {
+            return separable;
+          }
+        }
+        if (isUnboundedOnRay(function, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+            new ArrayList<>(), vars, isMax, engine)) {
+          return unboundedResult(head, varList, isMax, engine);
+        }
+      }
+      IASTAppendable equations = F.ListAlloc(n);
+      List<IExpr> gradient = new ArrayList<>();
+      for (IExpr v : vars) {
+        IExpr derivative = engine.evaluate(F.D(function, v));
+        gradient.add(engine.evalQuiet(F.Numerator(F.Together(derivative))));
+        equations.append(F.Equal(derivative, F.C0));
+      }
+      IExpr solution = engine.evalQuiet(F.Solve(equations, varList, S.Reals));
+      if (!solution.isListOfLists() || !solution.isFree(S.ConditionalExpression, true)) {
+        return F.NIL;
+      }
+      boolean complete = true;
+      IExpr bestValue = F.NIL;
+      IAST bestRules = F.NIL;
+      List<IExpr> openValues = new ArrayList<>();
+      // A factor which all derivatives share vanishes on a curve or surface of stationary
+      // points, which the solutions above need not show. Points of it are candidates; the set
+      // of candidates is then not known to be complete.
+      IExpr shared = commonFactor(gradient, varList, engine);
+      if (shared.isPresent()) {
+        complete = false;
+        for (IAST point : pointsOnZeroSet(shared, vars, engine)) {
+          IExpr value = engine.evaluate(applyRules(function, point));
+          if (!isRealValue(value, engine)) {
+            continue;
+          }
+          int order =
+              bestValue.isNIL() ? (isMax ? 1 : -1) : compareValues(value, bestValue, engine);
+          if (order != Integer.MIN_VALUE && (isMax ? order > 0 : order < 0)) {
+            bestValue = value;
+            bestRules = point;
+          }
+        }
+      }
+      for (IExpr rules : (IAST) solution) {
+        IAST solutionRules = (IAST) rules;
+        IAST point = orderedVarRules(solutionRules, vars);
+        boolean determined = point.isPresent();
+        for (int i = 1; determined && i < point.size(); i++) {
+          determined = isFreeOfAll(((IAST) point.get(i)).second(), vars);
+        }
+        IExpr value;
+        if (determined) {
+          value = engine.evaluate(applyRules(function, point));
+        } else {
+          // a family of stationary points: its value counts if it is the same for all of them
+          value = engine.evalQuiet(F.Simplify(F.ReplaceAll(function, solutionRules)));
+          if (isFreeOfAll(value, vars)) {
+            point = familyMember(function, solutionRules, vars, value, engine);
+            if (point.isNIL() && isRealValue(value, engine)) {
+              openValues.add(value);
+              continue;
+            }
+          }
+        }
+        if (point.isNIL() || !isFreeOfAll(value, vars) || !isRealValue(value, engine)) {
+          complete = false;
+          continue;
+        }
+        int order = bestValue.isNIL() ? (isMax ? 1 : -1) : compareValues(value, bestValue, engine);
+        if (order == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        if ((isMax ? order > 0 : order < 0)
+            || (order == 0 && bestRules.isPresent() && isLexSmaller(point, bestRules))) {
+          bestValue = value;
+          bestRules = point;
+        }
+      }
+      if (bestValue.isNIL()) {
+        return F.NIL;
+      }
+      boolean proved = isBoundVisible(function, bestValue, varList, isMax, engine);
+      if (!proved && polynomial && complete && isCoercive(function, vars, isMax, engine)) {
+        proved = true;
+        for (IExpr open : openValues) {
+          int order = compareValues(open, bestValue, engine);
+          proved &= order != Integer.MIN_VALUE && !(isMax ? order > 0 : order < 0);
+        }
+      }
+      if (!proved) {
+        return F.NIL;
+      }
+      IASTAppendable simplified = F.ListAlloc(bestRules.argSize());
+      for (IExpr rule : bestRules) {
+        simplified.append(F.Rule(rule.first(), simplifyCriticalValue(rule.second(), engine)));
+      }
+      return F.list(simplifyCriticalValue(bestValue, engine), simplified);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * The greatest common divisor of polynomials, if it is not a number.
+   *
+   * @return {@link F#NIL} if the polynomials have no common factor with a variable
+   */
+  private static IExpr commonFactor(List<IExpr> polynomials, IAST varList, EvalEngine engine) {
+    IExpr gcd = F.NIL;
+    for (IExpr p : polynomials) {
+      if (!p.isPolynomial(varList)) {
+        return F.NIL;
+      }
+      if (p.isZero()) {
+        continue;
+      }
+      gcd = gcd.isNIL() ? p : engine.evalQuiet(F.PolynomialGCD(gcd, p));
+      if (gcd.isNumber() || !gcd.isPolynomial(varList)) {
+        return F.NIL;
+      }
+    }
+    return gcd.isPresent() && !gcd.isNumber() ? gcd : F.NIL;
+  }
+
+  /**
+   * A few real points of <code>g == 0</code>: all variables but one get a small number and the
+   * equation is solved for the last one.
+   */
+  private static List<IAST> pointsOnZeroSet(IExpr g, IExpr[] vars, EvalEngine engine) {
+    List<IAST> points = new ArrayList<>();
+    final IExpr[] trials = {F.C1, F.CN1, F.C2, F.C0, F.C1D2, F.C3};
+    for (IExpr trial : trials) {
+      for (int last = vars.length - 1; last >= 0 && points.size() < 12; last--) {
+        if (g.isFree(vars[last])) {
+          continue;
+        }
+        IExpr restricted = g;
+        for (int i = 0; i < vars.length; i++) {
+          if (i != last) {
+            restricted = F.xreplace(restricted, vars[i], trial);
+          }
+        }
+        List<IExpr> roots = realSolutions(engine.evaluate(restricted), vars[last], engine);
+        if (roots == null) {
+          continue;
+        }
+        for (IExpr root : roots) {
+          IASTAppendable point = F.ListAlloc(vars.length);
+          for (int i = 0; i < vars.length; i++) {
+            point.append(F.Rule(vars[i], i == last ? root : trial));
+          }
+          points.add(point);
+        }
+      }
+    }
+    return points;
+  }
+
+  /**
+   * One point of a family of stationary points which is given by rules for a part of the
+   * variables: the other variables get a small number. The point is returned only if the
+   * objective has exactly the value of the family there.
+   */
+  private static IAST familyMember(IExpr function, IAST solutionRules, IExpr[] vars, IExpr value,
+      EvalEngine engine) {
+    final IExpr[] trials = {F.C1, F.C2, F.CN1, F.C3, F.C1D2, F.C0};
+    for (IExpr trial : trials) {
+      IASTAppendable free = F.ListAlloc(vars.length);
+      for (IExpr v : vars) {
+        boolean ruled = false;
+        for (IExpr rule : solutionRules) {
+          ruled |= rule.isRule() && rule.first().equals(v);
+        }
+        if (!ruled) {
+          free.append(F.Rule(v, trial));
+        }
+      }
+      IASTAppendable point = F.ListAlloc(vars.length);
+      boolean real = true;
+      for (IExpr v : vars) {
+        IExpr coordinate = engine.evalQuiet(F.ReplaceAll(F.ReplaceAll(v, solutionRules), free));
+        real &= isFreeOfAll(coordinate, vars) && isRealValue(coordinate, engine);
+        point.append(F.Rule(v, coordinate));
+      }
+      if (real) {
+        IExpr attained = engine.evalQuiet(F.Subtract(applyRules(function, point), value));
+        if (attained.isZero() || signAtPoint(attained, engine) == 0) {
+          return point;
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /** A polynomial which is a sum of polynomials in one variable each: one problem for each. */
+  private static IExpr separableExtremum(ISymbol head, IExpr function, IAST varList,
+      boolean isMax, EvalEngine engine) {
+    IExpr expanded = engine.evaluate(F.Expand(function));
+    IAST terms = expanded.isPlus() ? (IAST) expanded : F.Plus(expanded);
+    final int n = varList.argSize();
+    IASTAppendable[] parts = new IASTAppendable[n];
+    for (int i = 0; i < n; i++) {
+      parts[i] = F.PlusAlloc(4);
+    }
+    IASTAppendable constant = F.PlusAlloc(2);
+    for (IExpr term : terms) {
+      int owner = -1;
+      for (int i = 0; i < n; i++) {
+        if (!term.isFree(varList.get(i + 1))) {
+          if (owner >= 0) {
+            return F.NIL;
+          }
+          owner = i;
+        }
+      }
+      (owner < 0 ? constant : parts[owner]).append(term);
+    }
+    IASTAppendable value = F.PlusAlloc(n + 1);
+    value.append(constant.oneIdentity0());
+    IASTAppendable rules = F.ListAlloc(n);
+    for (int i = 0; i < n; i++) {
+      IExpr v = varList.get(i + 1);
+      if (parts[i].argSize() == 0) {
+        rules.append(F.Rule(v, F.C0));
+        continue;
+      }
+      IExpr result = engine.evalQuiet(F.binaryAST2(head, parts[i].oneIdentity0(), v));
+      if (!result.isList2() || !result.second().isList1()) {
+        return F.NIL;
+      }
+      if (result.first().isDirectedInfinity()) {
+        return unboundedResult(head, varList, isMax, engine);
+      }
+      value.append(result.first());
+      rules.append(result.second().first());
+    }
+    return F.list(engine.evaluate(value), rules);
+  }
+
+  /**
+   * A constrained problem for which the stationary points prove nothing: it may have no bound,
+   * which a ray shows, or a bound which is visible from the form of the objective and attained
+   * at a stationary point in the region.
+   */
+  private static IExpr unprovedRegionExtremum(ISymbol head, IExpr objective, IExpr constraint,
+      IAST varList, boolean isMax, EvalEngine engine) {
+    try {
+      final int n = varList.argSize();
+      final IExpr[] vars = new IExpr[n];
+      for (int i = 0; i < n; i++) {
+        vars[i] = varList.get(i + 1);
+      }
+      List<IExpr> conjuncts = new ArrayList<>();
+      flattenConstraints(constraint, conjuncts);
+      List<IExpr> equalities = new ArrayList<>();
+      List<IExpr> inequalities = new ArrayList<>();
+      List<Integer> signs = new ArrayList<>();
+      List<Boolean> strict = new ArrayList<>();
+      for (IExpr c : conjuncts) {
+        if (!parseComparator(c, engine, equalities, inequalities, signs, strict)) {
+          return F.NIL;
+        }
+      }
+      if (isPolynomialProblem(objective, equalities, inequalities, varList) && isUnboundedOnRay(
+          objective, equalities, inequalities, signs, strict, vars, isMax, engine)) {
+        return unboundedResult(head, varList, isMax, engine);
+      }
+      IExpr candidate = lagrangeExtremum(head, objective, constraint, varList, isMax,
+          MODE_ANY_POINT, deadline(), engine);
+      if (candidate.isList2() && candidate.second().isList()
+          && isBoundVisible(objective, candidate.first(), varList, isMax, engine)) {
+        return candidate;
+      }
+      return F.NIL;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
   }
 
   /**
@@ -1310,6 +1991,7 @@ public class Maximize extends AbstractFunctionEvaluator {
             }
             matrixRows[r + 1] = dg;
           }
+          List<IExpr> minors = new ArrayList<>();
           for (int[] cols : combinations(n, k + 1)) {
             IASTAppendable matrix = F.ListAlloc(k + 1);
             for (int r = 0; r <= k; r++) {
@@ -1320,7 +2002,14 @@ public class Maximize extends AbstractFunctionEvaluator {
               matrix.append(row);
             }
             IExpr det = S.Det.of(engine, matrix);
+            minors.add(det);
             equations.append(F.Equal(det, F.C0));
+          }
+          if (mode != MODE_ANY_POINT && k < n - 1
+              && commonFactor(minors, varList, engine).isPresent()) {
+            // the stationary points of this active set include a curve or a surface, which the
+            // solutions of the system need not show: the candidates would not be complete
+            return F.NIL;
           }
         }
         // active constraint boundary equations
@@ -3198,6 +3887,36 @@ public class Maximize extends AbstractFunctionEvaluator {
     }
   }
 
+  /**
+   * The extremum of a polynomial which is bounded on the side in question: the best value at
+   * a real root of the derivative, of several such points the smallest. The roots may be
+   * <code>Root</code> objects, for which a second derivative test decides nothing.
+   */
+  static IExpr polynomialExtremum(IExpr function, IExpr x, boolean isMax, EvalEngine engine) {
+    List<IExpr> stationary = realSolutions(engine.evaluate(F.D(function, x)), x, engine);
+    if (stationary == null || stationary.isEmpty()) {
+      return F.NIL;
+    }
+    IExpr bestValue = F.NIL;
+    IExpr bestPoint = F.NIL;
+    for (IExpr point : stationary) {
+      IExpr value = engine.evaluate(F.xreplace(function, x, point));
+      if (!isRealValue(value, engine)) {
+        return F.NIL;
+      }
+      int order = bestValue.isNIL() ? (isMax ? 1 : -1) : compareValues(value, bestValue, engine);
+      if (order == Integer.MIN_VALUE) {
+        return F.NIL;
+      }
+      // the points come in ascending order: the first best one stays
+      if (isMax ? order > 0 : order < 0) {
+        bestValue = value;
+        bestPoint = point;
+      }
+    }
+    return F.list(simplifyCriticalValue(bestValue, engine), F.list(F.Rule(x, bestPoint)));
+  }
+
   public static IExpr maximize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
     try {
       if (function.isFree(x) && function.isRealResult()) {
@@ -3234,6 +3953,13 @@ public class Maximize extends AbstractFunctionEvaluator {
         return F.list(F.CInfinity, F.list(F.Rule(x, F.CInfinity)));
       }
 
+      if (function.isPolynomial(x)) {
+        // bounded above, as the limits show: the largest value at a stationary point
+        IExpr polynomial = polynomialExtremum(function, x, true, engine);
+        if (polynomial.isPresent()) {
+          return polynomial;
+        }
+      }
       IExpr first_derivative = S.D.of(engine, function, x);
       IExpr second_derivative = S.D.of(engine, first_derivative, x);
       IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
@@ -3267,7 +3993,8 @@ public class Maximize extends AbstractFunctionEvaluator {
             return F.list(maxValue, F.list(F.Rule(x, maxCandidate)));
           }
         }
-        return F.CEmptyList;
+        // no stationary point is recognized as a maximum: nothing is decided
+        return F.NIL;
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);

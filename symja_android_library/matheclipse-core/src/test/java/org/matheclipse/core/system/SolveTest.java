@@ -3751,4 +3751,46 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(z + Log(1 + z) + Log(2 + z) == t, z)", //
         "Solve(z+Log(1+z)+Log(2+z)==t,z)");
   }
+  /**
+   * The three real roots of a cubic are sums of cube roots of complex numbers, which are not
+   * recognized as real: over the reals all of them were dropped, and with an inequality the
+   * comparison of such a root with a number did not come back.
+   */
+  @Test
+  public void testRealRootsWithoutRealRadicalForm() {
+    check("Solve(t^3 - 4*t + 1 == 0, t, Reals)", //
+        "{{t->Root(1-4*#1+#1^3&,1,0)},{t->Root(1-4*#1+#1^3&,2,0)},{t->Root(1-4*#1+#1^3&,3,\n0)}}");
+    check("N(Solve(t^3 - 4*t + 1 == 0, t, Reals))", //
+        "{{t->-2.11491},{t->0.254102},{t->1.86081}}");
+    check("Solve(t^3 - 4*t + 1 == 0 && t > 0, t, Reals)", //
+        "{{t->Root(1-4*#1+#1^3&,2,0)},{t->Root(1-4*#1+#1^3&,3,0)}}");
+    check("Solve(t^3 - 4*t + 1 == 0 && 0 < t < 1, t)", //
+        "{{t->Root(1-4*#1+#1^3&,2,0)}}");
+    check("Solve(t^3 - 4*t + 1 == 0 && t > 7, t, Reals)", //
+        "{}");
+    // roots with a real form in radicals keep it
+    check("Solve(t^3 - 5 == 0, t, Reals)", //
+        "{{t->5^(1/3)}}");
+    check("Solve(t^4 - 6*t^2 + 7 == 0 && t > 0, t, Reals)", //
+        "{{t->Sqrt(3-Sqrt(2))},{t->Sqrt(3+Sqrt(2))}}");
+  }
+
+  /**
+   * Equations with a common factor: its zero set, a curve, is a part of the solutions. Only the
+   * single points were returned, and of a factor which is not linear not even those.
+   */
+  @Test
+  public void testSystemWithCommonFactor() {
+    check("Solve({v*(u*v - 5) == 0, u*(u*v - 5) == 0}, {u, v})", //
+        "{{v->5/u},{u->0,v->0}}");
+    check("Solve({v*(u*v - 5) == 0, u*(u*v - 5) == 0}, {u, v}, Reals)", //
+        "{{v->5/u},{u->0,v->0}}");
+    check("Solve({(u - 2)*(u*v - 5) == 0, (v - 3)*(u*v - 5) == 0}, {u, v})", //
+        "{{v->5/u},{u->2,v->3}}");
+    check("Solve({u*(u + v - 4) == 0, v*(u + v - 4) == 0}, {u, v})", //
+        "{{v->4-u},{u->0,v->0}}");
+    // no common factor: as before
+    check("Solve({(u - 1)*(u - 2) == 0, (v - 1)*(u + v) == 0}, {u, v})", //
+        "{{u->1,v->-1},{u->1,v->1},{u->2,v->-2},{u->2,v->1}}");
+  }
 }

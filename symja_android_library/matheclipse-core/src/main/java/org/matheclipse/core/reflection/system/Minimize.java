@@ -55,6 +55,10 @@ public class Minimize extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IExpr plain = Maximize.plainForm(ast);
+    if (plain.isPresent()) {
+      return plain;
+    }
     IExpr function = ast.arg1();
     IExpr x = ast.arg2();
     ISymbol head = ast.topHead();
@@ -255,6 +259,13 @@ public class Minimize extends AbstractFunctionEvaluator {
         return F.list(F.CNInfinity, F.list(F.Rule(x, F.CInfinity)));
       }
 
+      if (function.isPolynomial(x)) {
+        // bounded below, as the limits show: the least value at a stationary point
+        IExpr polynomial = Maximize.polynomialExtremum(function, x, false, engine);
+        if (polynomial.isPresent()) {
+          return polynomial;
+        }
+      }
       IExpr first_derivative = S.D.of(engine, function, x);
       IExpr second_derivative = S.D.of(engine, first_derivative, x);
       IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
@@ -288,7 +299,8 @@ public class Minimize extends AbstractFunctionEvaluator {
             return F.list(minValue, F.list(F.Rule(x, minCandidate)));
           }
         }
-        return F.CEmptyList;
+        // no stationary point is recognized as a minimum: nothing is decided
+        return F.NIL;
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);

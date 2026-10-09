@@ -217,8 +217,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "{Infinity,{x->0}}");
 
     check("Maximize(-x^4-7*x^3+2*x^2 - 42,x)", //
-        "{-42-7/512*(-21-Sqrt(505))^3+(21+Sqrt(505))^2/32-(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
-            + "21-Sqrt(505))}}");
+        "{1/512*(57947+3535*Sqrt(505)),{x->1/8*(-21-Sqrt(505))}}");
     check("Maximize(x^4+7*Tan(x)-2*x^2 + 42, x)", //
         "Maximize(42-2*x^2+x^4+7*Tan(x),x)");
     check("Maximize(x^4+7*x^3-2*x^2 + 42, x)", //
@@ -247,8 +246,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "{0,{x->-2}}");
 
     check("Minimize(x^4+7*x^3-2*x^2 + 42, x)", //
-        "{42+7/512*(-21-Sqrt(505))^3-(21+Sqrt(505))^2/32+(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
-            + "21-Sqrt(505))}}");
+        "{1/512*(-57947-3535*Sqrt(505)),{x->1/8*(-21-Sqrt(505))}}");
     check("Minimize(2*x^2 - 3*x + 5, x)", //
         "{31/8,{x->3/4}}");
   }
@@ -512,7 +510,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "Minimize({u^2+2*v^2,u+v>4},{u,v})");
     // unbounded below: the one stationary point is no minimum
     check("Minimize({u + v, u <= v^2}, {u, v})", //
-        "Minimize({u+v,u<=v^2},{u,v})");
+        "{-Infinity,{u->Indeterminate,v->Indeterminate}}");
     // a region of the fourth degree
     check("Minimize({u*v, u^4 + v^4 <= 2}, {u, v})", //
         "{-1,{u->-1,v->1}}");
@@ -570,5 +568,78 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     // not bounded: no answer
     check("Minimize({u^2 + v^2 + w^2, u^3 + v^3 + w^3 == 42}, {u, v, w}, Integers)", //
         "Minimize({u^2+v^2+w^2,u^3+v^3+w^3==42},{u,v,w},Integers)");
+  }
+  /**
+   * A polynomial of one variable whose stationary points are <code>Root</code> objects: the
+   * least value among them, without a second derivative test. Before, the result was
+   * <code>{}</code>.
+   */
+  @Test
+  public void testPolynomialWithRootStationaryPoints() {
+    check("Solve(t^3 - 4*t + 1 == 0, t, Reals)", //
+        "{{t->Root(1-4*#1+#1^3&,1,0)},{t->Root(1-4*#1+#1^3&,2,0)},{t->Root(1-4*#1+#1^3&,3,\n0)}}");
+    check("Minimize(t^4 - 8*t^2 + 4*t, t)", //
+        "{4*Root(4-16*#1+4*#1^3&,1,0)-8*Root(4-16*#1+4*#1^3&,1,0)^2+Root(4-16*#1+4*#1^3&,\n1,0)^4,{t->Root(4-16*#1+4*#1^3&,1,0)}}");
+    check("N(Minimize(t^4 - 8*t^2 + 4*t, t))", //
+        "{-24.23606,{t->-2.11491}}");
+    check("Abs(First(N(Minimize(t^4 - 8*t^2 + 4*t, t))) - First(NMinimize(t^4 - 8*t^2 + 4*t, t))) < 10^-6", //
+        "True");
+    check("Minimize(t^5 - 7*t, t)", //
+        "{-Infinity,{t->-Infinity}}");
+  }
+
+  /** Several variables without constraints, beyond a quadratic form. */
+  @Test
+  public void testUnconstrainedInSeveralVariables() {
+    // grows in every direction: the best stationary point
+    check("Minimize(u^4 + v^4 - 8*u*v, {u, v})", //
+        "{-8,{u->Sqrt(2),v->Sqrt(2)}}");
+    // a sum of functions of one variable each
+    check("Minimize((u^4 - 2*u^2) + (v^2 - 6*v), {u, v})", //
+        "{-10,{u->-1,v->3}}");
+    // no bound: a line on which the polynomial runs to -Infinity
+    check("Minimize(u^2 - 3*v^2, {u, v})", //
+        "{-Infinity,{u->Indeterminate,v->Indeterminate}}");
+    check("Maximize((u*v - 2)^2 + 5, {u, v})", //
+        "{Infinity,{u->Indeterminate,v->Indeterminate}}");
+    // a valley along a curve: the bound is visible from the form of f - v
+    check("Minimize((u*v - 5)^2 + 2, {u, v})", //
+        "{2,{u->1,v->5}}");
+    check("Minimize((u + 2*v - 3)^4, {u, v})", //
+        "{0,{u->1,v->1}}");
+    check("Maximize(7 - (u*v - 5)^2, {u, v})", //
+        "{7,{u->1,v->5}}");
+    check("Minimize(u^2*v^2/(2 + u^2), {u, v})", //
+        "{0,{u->0,v->1}}");
+  }
+
+  /** Constrained problems without a bound, with an equation for a variable, with a quotient. */
+  @Test
+  public void testConstrainedUnboundedEliminatedRational() {
+    check("Minimize({u + 2*v, u <= v^2}, {u, v})", //
+        "{-Infinity,{u->Indeterminate,v->Indeterminate}}");
+    check("Minimize({u - v, u >= 0 && v <= u^2}, {u, v})", //
+        "{-Infinity,{u->Indeterminate,v->Indeterminate}}");
+    check("Minimize({u^2 + v^2, v == 3*u + 2}, {u, v})", //
+        "{2/5,{u->-3/5,v->1/5}}");
+    check("Minimize({(u-2)^2 + (v-1)^2, u == w && v == w^2}, {u, v, w})", //
+        "{(2-(6*(18+Sqrt(318)))^(1/3)/6-2^(1/3)/(216+12*Sqrt(318))^(1/3))^2+(1-((6*(18+Sqrt(\n318)))^(1/3)/6+2^(1/3)/(216+12*Sqrt(318))^(1/3))^2)^2,{u->(108+6*Sqrt(318))^(1/3)/\n6+2^(1/3)/(216+12*Sqrt(318))^(1/3),v->((108+6*Sqrt(318))^(1/3)/6+2^(1/3)/(216+12*Sqrt(\n318))^(1/3))^2,w->(108+6*Sqrt(318))^(1/3)/6+2^(1/3)/(216+12*Sqrt(318))^(1/3)}}");
+    check("Minimize({u^2*v^2/(u^2 + v^2 + 3), u^2 + v^2 >= 4}, {u, v})", //
+        "{0,{u->-2,v->0}}");
+    // the constraints as further elements of the list
+    check("Minimize({u^2 + v^2, u + v >= 4, u <= 7}, {u, v})", //
+        "{8,{u->2,v->2}}");
+  }
+
+  /** Integer points of an unbounded region with an objective which grows in every direction. */
+  @Test
+  public void testIntegerExtremumWithGrowingObjective() {
+    check("Minimize({u^2 + v^2 + w^2, 3*u + 5*v + 7*w == 11}, {u, v, w}, Integers)", //
+        "{5,{u->-1,v->0,w->2}}");
+    check("Minimize({u^2 + v^2 + w^2, 3*u + 5*v + 7*w == 11, Element({u, v, w}, Integers)}, {u, v, w})", //
+        "{5,{u->-1,v->0,w->2}}");
+    // a part of the variables only: not solved
+    check("Minimize({u^2 + v^2, 3*u + 4*v == 7, Element(u, Integers)}, {u, v})", //
+        "Minimize({u^2+v^2,3*u+4*v==7,u∈Integers},{u,v})");
   }
 }

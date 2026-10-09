@@ -737,13 +737,30 @@ public class RootsFunctions {
    *         not rational
    */
   public static IAST realRootsOfHighDegree(IExpr polynomial, IExpr variable, EvalEngine engine) {
+    return realRoots(polynomial, variable, true, engine);
+  }
+
+  /**
+   * The real roots of a polynomial with rational coefficients, in ascending order, as numbers
+   * where a root is rational and as <code>Root(f, k, 0)</code> of the square-free part otherwise.
+   * This is the answer for a polynomial whose roots in radicals are not recognized as real: the
+   * three real roots of a cubic are sums of cube roots of complex numbers.
+   *
+   * @return {@link F#NIL} if the coefficients are not rational
+   */
+  public static IAST realRootsExact(IExpr polynomial, IExpr variable, EvalEngine engine) {
+    return realRoots(polynomial, variable, false, engine);
+  }
+
+  private static IAST realRoots(IExpr polynomial, IExpr variable, boolean highDegreeOnly,
+      EvalEngine engine) {
     try {
       if (!variable.isSymbol() || ((ISymbol) variable).getContext() == Context.DUMMY
           || !polynomial.isPolynomial(F.list(variable))) {
         return F.NIL;
       }
       IExpr[] coefficients = Root.polynomialCoefficients(F.subst(polynomial, variable, F.Slot1));
-      if (coefficients == null || !isHighDegreeGeneric(coefficients)) {
+      if (coefficients == null || (highDegreeOnly && !isHighDegreeGeneric(coefficients))) {
         return F.NIL;
       }
       IExpr[] squareFree = new IExpr[1];
