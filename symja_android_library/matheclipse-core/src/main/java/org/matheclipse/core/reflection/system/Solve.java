@@ -2589,7 +2589,43 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
       return true;
     }
+    if (value.isConditionalExpression() && value.isFree(x -> x.isAST(S.C, 2), true)) {
+      return isRealUnderCondition(value.first(), value.second());
+    }
     return false;
+  }
+
+  /** Values tried for a parameter of a condition. */
+  private static final IExpr[] PARAMETER_SAMPLES = {F.ZZ(-1000), F.CN3, F.CN1, F.CN1D2, F.C1D3,
+      F.C1, F.C2, F.C5, F.C10, F.ZZ(1000)};
+
+  /**
+   * Test if a value is real under a condition on one or two parameters: it is real for all the
+   * sample values of the parameters which satisfy the condition, and at least one of them does.
+   */
+  private static boolean isRealUnderCondition(IExpr value, IExpr condition) {
+    IAST parameters = VariablesSet.getVariables(condition);
+    int size = parameters.argSize();
+    if (size < 1 || size > 2) {
+      return false;
+    }
+    EvalEngine engine = EvalEngine.get();
+    boolean satisfied = false;
+    for (IExpr first : PARAMETER_SAMPLES) {
+      for (IExpr second : size == 2 ? PARAMETER_SAMPLES : new IExpr[] {F.NIL}) {
+        IExpr p1 = parameters.arg1();
+        IExpr p2 = size == 2 ? parameters.arg2() : F.NIL;
+        java.util.function.Function<IExpr, IExpr> sample =
+            x -> x.equals(p1) ? first : (p2.isPresent() && x.equals(p2) ? second : F.NIL);
+        if (engine.evalQuiet(F.subst(condition, sample)).isTrue()) {
+          if (!engine.evalQuiet(F.subst(value, sample)).isRealResult()) {
+            return false;
+          }
+          satisfied = true;
+        }
+      }
+    }
+    return satisfied;
   }
 
   /**

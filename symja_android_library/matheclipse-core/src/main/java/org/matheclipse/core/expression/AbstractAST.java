@@ -5236,7 +5236,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     INumber e = evalNumber();
     if (e != null) {
-      return e.isReal();
+      if (e.isReal()) {
+        return true;
+      }
+      if (!(e instanceof IComplexNum) || !((IComplexNum) e).im().isZero()) {
+        return false;
+      }
+      // a complex number with a zero imaginary part is decided by the structure
     }
     if (isPlus() || isTimes()) {
       // check if all arguments are &quot;real values&quot;

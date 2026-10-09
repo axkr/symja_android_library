@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -30,6 +31,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
@@ -681,6 +683,11 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
             return lambertWEquationResult;
           }
           if (exprWithoutVariable.isZero() && ast.isPlus()) {
+            IExpr powerExponential =
+                solvePowerExponential(ast, exprWithoutVariable, variable, multipleValues, engine);
+            if (powerExponential.isPresent()) {
+              return powerExponential;
+            }
             IExpr zeroPlus = applyMatcher(zeroPlusMatcher(), elimzeroplus, ast, exprWithoutVariable,
                 variable, multipleValues, engine);
             if (zeroPlus.isPresent()) {
@@ -1208,6 +1215,144 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
       return expr.first();
     }
     return expr;
+  }
+
+  /**
+   * Solve <code>a*x^n + b*m^x == 0</code> as <code>x == -n*ProductLog(k, z)/Log(m)</code>. From
+   * <code>x^n == c*m^x</code> with <code>c = -b/a</code> follows <code>x == r*m^(x/n)</code> for
+   * an <code>n</code>-th root <code>r</code> of <code>c</code>, and <code>z = -r*Log(m)/n</code>.
+   * The principal root is used, for an even <code>n</code> its negative too, and for an odd
+   * <code>n</code> the real root of a negative <code>c</code>. The branch
+   * <code>ProductLog(-1, z)</code> is real too for a number <code>-1/E &lt; z &lt; 0</code>.
+   *
+   * @return {@link F#NIL} if the sum is not of this form
+   */
+  private static IExpr solvePowerExponential(IAST plus, IExpr exprWithoutVariable, IExpr variable,
+      boolean multipleValues, EvalEngine engine) {
+    if (plus.argSize() != 2) {
+      return F.NIL;
+    }
+    IExpr[] t1 = coefficientAndPower(plus.arg1(), variable);
+    IExpr[] t2 = coefficientAndPower(plus.arg2(), variable);
+    if (t1 == null || t2 == null) {
+      return F.NIL;
+    }
+    if (!t1[1].base().equals(variable)) {
+      IExpr[] swap = t1;
+      t1 = t2;
+      t2 = swap;
+    }
+    // a*x^n
+    IExpr a = t1[0];
+    IExpr n = t1[1].exponent();
+    // b*m^x
+    IExpr b = t2[0];
+    IExpr m = t2[1].base();
+    if (!t1[1].base().equals(variable) || !n.isFree(variable) //
+        || !t2[1].exponent().equals(variable) || !m.isFree(variable)) {
+      return F.NIL;
+    }
+    IExpr c = engine.evaluate(F.Times(F.CN1, b, F.Power(a, F.CN1)));
+    IExpr logM = F.Log(m);
+    boolean evenExponent = n.isInteger() && ((IInteger) n).isEven();
+    IExpr z = F.Times(F.Power(c, F.Power(n, F.CN1)), logM, F.Power(n, F.CN1));
+    IASTAppendable arguments = F.ListAlloc(2);
+    arguments.append(engine.evaluate(F.Negate(z)));
+    if (evenExponent) {
+      arguments.append(engine.evaluate(z));
+    } else if (n.isInteger() && c.isNegativeResult()) {
+      // the real root -(-c)^(1/n) for an odd n
+      arguments.append(engine
+          .evaluate(F.Times(F.Power(F.Negate(c), F.Power(n, F.CN1)), logM, F.Power(n, F.CN1))));
+    }
+    if (evenExponent && variable.isRealResult() && !c.isNumericFunction(true)) {
+      IExpr conditional = realPowerExponential(c, n, logM, arguments, engine);
+      if (conditional.isPresent()) {
+        return resultWithIfunMessage(conditional, variable, exprWithoutVariable, multipleValues,
+            engine);
+      }
+    }
+    IASTAppendable result = F.ListAlloc(2 * arguments.argSize());
+    for (IExpr argument : arguments) {
+      result.append(
+          engine.evaluate(F.Times(F.CN1, n, F.Power(logM, F.CN1), F.ProductLog(argument))));
+    }
+    for (IExpr argument : arguments) {
+      if (argument.isNumericFunction(true)) {
+        IReal real = argument.evalReal();
+        if (real != null && real.isNegative() && real.isGT(F.CND1DE)) {
+          result.append(engine.evaluate(
+              F.Times(F.CN1, n, F.Power(logM, F.CN1), F.ProductLog(F.CN1, argument))));
+        }
+      }
+    }
+    return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues, engine);
+  }
+
+  /**
+   * The real solutions of <code>x^n == c*m^x</code> for an even <code>n</code> and a symbolic
+   * <code>c</code>, each under the condition on <code>c</code> which makes it real: the
+   * <code>ProductLog</code> of the positive argument for <code>c &gt; 0</code>, and both real
+   * branches of the negative argument for <code>0 &lt; c &lt;= (n/(E*Log(m)))^n</code>.
+   *
+   * @param arguments the two <code>ProductLog</code> arguments <code>-z</code> and <code>z</code>
+   * @return {@link F#NIL} if <code>Log(m)/n</code> is not a real number
+   */
+  private static IExpr realPowerExponential(IExpr c, IExpr n, IExpr logM, IAST arguments,
+      EvalEngine engine) {
+    IExpr q = F.Times(logM, F.Power(n, F.CN1));
+    IReal qReal = q.isNumericFunction(true) ? q.evalReal() : null;
+    if (qReal == null || qReal.isZero()) {
+      return F.NIL;
+    }
+    int negative = qReal.isNegative() ? 2 : 1;
+    // 0 < c <= (1/(E*Abs(q)))^n
+    IExpr bound = F.Power(F.Times(S.E, F.Abs(q)), F.Negate(n));
+    IExpr positiveCondition = parameterCondition(F.Greater(c, F.C0), c, engine);
+    IExpr negativeCondition = parameterCondition(F.And(F.Greater(c, F.C0), F.LessEqual(c, bound)),
+        c, engine);
+    IASTAppendable result = F.ListAlloc(3);
+    for (int i = 1; i <= 2; i++) {
+      IExpr value = F.Times(F.CN1, n, F.Power(logM, F.CN1), F.ProductLog(arguments.get(i)));
+      result.append(engine.evaluate(F.ConditionalExpression(value,
+          i == negative ? negativeCondition : positiveCondition)));
+    }
+    IExpr value =
+        F.Times(F.CN1, n, F.Power(logM, F.CN1), F.ProductLog(F.CN1, arguments.get(negative)));
+    result.append(engine.evaluate(F.ConditionalExpression(value, negativeCondition)));
+    return result;
+  }
+
+  /**
+   * A condition on <code>c</code> written for its parameter, if it has a single one.
+   */
+  private static IExpr parameterCondition(IExpr condition, IExpr c, EvalEngine engine) {
+    IAST parameters = VariablesSet.getVariables(c);
+    if (parameters.argSize() == 1) {
+      IExpr reduced = engine.evalQuiet(F.Reduce(condition, parameters.arg1(), S.Reals));
+      if (reduced.isPresent() && !reduced.isAST(S.Reduce) && !reduced.isFalse()) {
+        return reduced;
+      }
+    }
+    return engine.evaluate(condition);
+  }
+
+  /**
+   * Split <code>coefficient*base^exponent</code>, where the coefficient is free of the variable.
+   *
+   * @return <code>null</code> if the term is not of this form
+   */
+  private static IExpr[] coefficientAndPower(IExpr term, IExpr variable) {
+    IExpr coefficient = F.C1;
+    if (term.isTimes()) {
+      IASTAppendable[] filter = ((IAST) term).filter(x -> x.isFree(variable));
+      if (filter[1].argSize() != 1) {
+        return null;
+      }
+      coefficient = filter[0].oneIdentity1();
+      term = filter[1].arg1();
+    }
+    return term.isPower() ? new IExpr[] {coefficient, term} : null;
   }
 
   /**

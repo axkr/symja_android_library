@@ -779,7 +779,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
 
     check("Solve(x^2==2^x,x)", //
-        "{{x->2},{x->(-2*ProductLog(Log(2)/2))/Log(2)}}");
+        "{{x->2},{x->(-2*ProductLog(Log(2)/2))/Log(2)},{x->(-2*ProductLog(-1,-Log(2)/2))/Log(\n" //
+            + "2)}}");
   }
 
   @Test
@@ -924,6 +925,57 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "6))/Log(3)}}");
     check("Solve(3^x==2*x, x)", //
         "{{x->-ProductLog(-Log(3)/2)/Log(3)}}");
+
+    // github #1544: the branch ProductLog(-1,z) for -1/E < z < 0
+    check("Solve(2^x==x^4,x)", //
+        "{{x->(-4*ProductLog(-Log(2)/4))/Log(2)},{x->(-4*ProductLog(Log(2)/4))/Log(2)},{x->(-\n" //
+            + "4*ProductLog(-1,-Log(2)/4))/Log(2)}}");
+    check("N(Solve(2^x==x^4,x,Reals))", //
+        "{{x->1.23963},{x->-0.861345},{x->16.0}}");
+    check("Solve(2^x==x^2,x,Reals)", //
+        "{{x->2},{x->(-2*ProductLog(Log(2)/2))/Log(2)},{x->(-2*ProductLog(-1,-Log(2)/2))/Log(\n" //
+            + "2)}}");
+    check("Solve(2^x==x^3,x,Reals)", //
+        "{{x->(-3*ProductLog(-Log(2)/3))/Log(2)},{x->(-3*ProductLog(-1,-Log(2)/3))/Log(2)}}");
+    check("N(Solve(2^x==x^3,x))", //
+        "{{x->1.37347},{x->9.93954}}");
+    check("Solve(2^x==4*x,x,Reals)", //
+        "{{x->-ProductLog(-Log(2)/4)/Log(2)},{x->-ProductLog(-1,-Log(2)/4)/Log(2)}}");
+    check("N(ProductLog(-1,-Log(2)/4))", //
+        "-2.77259");
+    check("N(ProductLog(-1,1/2))", //
+        "-2.25916+I*(-4.22096)");
+    check("N(ProductLog(-1,-Log(2)/4),30)", //
+        "-2.77258872223978123766892848583");
+    check("N(ProductLog(-1/2),30)", //
+        "-0.7940236323446893679630153219+I*0.770111750510379109681313077405");
+    // odd exponent: the real root of a negative ratio
+    check("Solve(x^3+2^x==0,x)", //
+        "{{x->(-3*ProductLog(-1/3*(-1)^(1/3)*Log(2)))/Log(2)},{x->(-3*ProductLog(Log(2)/3))/Log(\n" //
+            + "2)}}");
+    check("Solve(x^3+2^x==0,x,Reals)", //
+        "{{x->(-3*ProductLog(Log(2)/3))/Log(2)}}");
+    check("N(Solve(x^3+2^x==0,x,Reals))", //
+        "{{x->-0.826218}}");
+    // the principal branch below -1/E is not real
+    check("Solve(x^2==E^x,x,Reals)", //
+        "{{x->-2*ProductLog(1/2)}}");
+    check("Solve(3*x^4==5*E^x,x,Reals)", //
+        "{{x->-4*ProductLog(-(5/3)^(1/4)/4)},{x->-4*ProductLog((5/3)^(1/4)/4)},{x->-4*ProductLog(-\n" //
+            + "1,-(5/3)^(1/4)/4)}}");
+    // symbolic coefficients: the principal branch, and the real branches under their conditions
+    check("Solve(c*x^2==2^x,x)", //
+        "{{x->(-2*ProductLog(-1/2*Sqrt(1/c)*Log(2)))/Log(2)},{x->(-2*ProductLog(1/2*Sqrt(1/c)*Log(\n" //
+            + "2)))/Log(2)}}");
+    check("Solve(c*x^2==2^x,x,Reals)", //
+        "{{x->ConditionalExpression((-2*ProductLog(-Log(2)/(2*Sqrt(c))))/Log(2),c>=1/4*E^\n" //
+            + "2*Log(2)^2)},{x->ConditionalExpression((-2*ProductLog(Log(2)/(2*Sqrt(c))))/Log(2),c>\n" //
+            + "0)},{x->ConditionalExpression((-2*ProductLog(-1,-Log(2)/(2*Sqrt(c))))/Log(2),c>=\n" //
+            + "1/4*E^2*Log(2)^2)}}");
+    check("Solve(a*x^n+b*m^x==0,x)", //
+        "{{x->(-n*ProductLog((-(-b/a)^(1/n)*Log(m))/n))/Log(m)}}");
+    check("Solve(c*x^3==2^x,x)", //
+        "{{x->(-3*ProductLog(-1/3*((1/c))^(1/3)*Log(2)))/Log(2)}}");
     check("Solve(3^x==-4*x, x)", //
         "{{x->-ProductLog(Log(3)/4)/Log(3)}}");
     check("Solve(x^y==a*y, y)", //

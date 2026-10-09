@@ -2587,6 +2587,28 @@ public class SpecialFunctions {
     }
 
 
+    /**
+     * The machine number of a value: a real number on the real branches, where the imaginary part
+     * is zero.
+     */
+    private static IExpr realOrComplexNum(Apcomplex productLog) {
+      if (productLog.imag().signum() == 0) {
+        return F.num(productLog.real().doubleValue());
+      }
+      return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
+    }
+
+    /**
+     * The arbitrary precision number of a value: a real number on the real branches, where the
+     * imaginary part is zero.
+     */
+    private static IExpr realOrComplexApfloat(Apcomplex productLog) {
+      if (productLog.imag().signum() == 0) {
+        return F.num(productLog.real());
+      }
+      return F.complexNum(productLog);
+    }
+
     @Override
     public IExpr e1DblArg(final INum d) {
       if (d.isZero()) {
@@ -2595,14 +2617,12 @@ public class SpecialFunctions {
       try {
         FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
         Apcomplex ac = d.apcomplexValue();
-        Apcomplex productLog = h.w(ac);
-        return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
+        return realOrComplexNum(h.w(ac));
       } catch (Exception ce) {
         Errors.rethrowsInterruptException(ce);
 
       }
-      Apcomplex c = ApcomplexMath.w(new Apfloat(d.doubleValue()));
-      return F.complexNum(c.real().doubleValue(), c.imag().doubleValue());
+      return realOrComplexNum(ApcomplexMath.w(new Apfloat(d.doubleValue())));
     }
 
     @Override
@@ -2612,8 +2632,7 @@ public class SpecialFunctions {
       }
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
       Apcomplex ac = arg1.apcomplexValue();
-      Apcomplex productLog = h.w(ac);
-      return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
+      return realOrComplexNum(h.w(ac));
     }
 
     @Override
@@ -2628,7 +2647,7 @@ public class SpecialFunctions {
         Errors.rethrowsInterruptException(ce);
 
       }
-      return F.complexNum(h.w(arg1, 0));
+      return realOrComplexApfloat(h.w(arg1, 0));
     }
 
     @Override
@@ -2637,7 +2656,7 @@ public class SpecialFunctions {
         return F.C0;
       }
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      return F.complexNum(h.w(arg1, 0));
+      return realOrComplexApfloat(h.w(arg1, 0));
     }
 
     @Override
@@ -2740,26 +2759,22 @@ public class SpecialFunctions {
             if (z instanceof ApcomplexNum) {
               FixedPrecisionApfloatHelper h = EvalEngine.getApfloat(engine);
               Apcomplex ac = ((ApcomplexNum) z).apcomplexValue();
-              Apcomplex productLog = h.w(ac, ki);
-              return F.complexNum(productLog);
+              return realOrComplexApfloat(h.w(ac, ki));
             } else if (z instanceof ApfloatNum) {
               FixedPrecisionApfloatHelper h = EvalEngine.getApfloat(engine);
               Apcomplex ac = ((ApfloatNum) z).apcomplexValue();
-              Apcomplex productLog = h.w(ac, ki);
-              return F.complexNum(productLog);
+              return realOrComplexApfloat(h.w(ac, ki));
             }
           }
 
           if (z instanceof ComplexNum) {
             FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
             Apcomplex ac = ((ComplexNum) z).apcomplexValue();
-            Apcomplex productLog = h.w(ac, ki);
-            return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
+            return realOrComplexNum(h.w(ac, ki));
           } else if (z instanceof Num) {
             FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
             Apcomplex ac = ((Num) z).apcomplexValue();
-            Apcomplex productLog = h.w(ac, ki);
-            return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
+            return realOrComplexNum(h.w(ac, ki));
           }
         }
       }
