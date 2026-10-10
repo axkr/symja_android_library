@@ -373,7 +373,7 @@ public abstract class AbstractRubiTestCase {
         assertEquals(expectedResult, evaledResult);
       }
     } catch (AssertionError e) {
-      // System.out.println(getName() + " - " + evalString);
+      System.out.println(getName() + " - " + evalString);
       throw e;
     } catch (Exception e) {
       e.printStackTrace();

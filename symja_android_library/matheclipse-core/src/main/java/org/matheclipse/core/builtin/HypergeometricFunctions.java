@@ -38,7 +38,9 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
+import org.matheclipse.external.apfloat.ApcomplexAppellMath;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class HypergeometricFunctions {
@@ -133,9 +135,54 @@ public class HypergeometricFunctions {
         return F.Times( //
             F.Hypergeometric2F1(a, //
                 b1, F.Plus(b1, b2), F.Divide(F.Subtract(z1, z2), F.Subtract(F.C1, z2))),
-            F.Power(F.Subtract(F.C1, z2), a));
+            F.Power(F.Subtract(F.C1, z2), F.Negate(a)));
       }
       return F.NIL;
+    }
+
+    /** Additional digits for the evaluation, which are rounded away in the result. */
+    private static final int GUARD_DIGITS = 10;
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() != 6 || !ast.forAll(x -> x.isInexactNumber())) {
+        return F.NIL;
+      }
+      IExpr result =
+          appellF1(ast.arg1(), ast.arg2(), ast.arg3(), ast.arg4(), ast.arg5(), ast.get(6));
+      if (result.isPresent()) {
+        return engine.evaluate(result);
+      }
+      final boolean arbitraryMode = engine.isArbitraryMode();
+      final long precision =
+          arbitraryMode ? engine.getNumericPrecision() : ParserConfig.MACHINE_PRECISION;
+      final long digits = precision + GUARD_DIGITS;
+      try {
+        // the series, its transformations and the arguments which are covered:
+        // org.matheclipse.external.apfloat.ApcomplexAppellMath
+        Apcomplex value = ApcomplexAppellMath.appellF1(apcomplex(ast.arg1(), digits),
+            apcomplex(ast.arg2(), digits), apcomplex(ast.arg3(), digits),
+            apcomplex(ast.arg4(), digits), apcomplex(ast.arg5(), digits),
+            apcomplex(ast.get(6), digits));
+        if (arbitraryMode) {
+          return CarlsonArbitraryPrecision.round(value, precision);
+        }
+        double re = value.real().doubleValue();
+        double im = value.imag().doubleValue();
+        return im == 0.0 ? F.num(re) : F.complexNum(re, im);
+      } catch (ArithmeticException | NumericComputationException ex) {
+        // a branch cut, a pole or arguments for which there is no series
+        return F.NIL;
+      }
+    }
+
+    /** The number as apfloat takes it: a nonzero part with <code>digits</code> digits. */
+    private static Apcomplex apcomplex(IExpr z, long digits) {
+      Apcomplex value = ((INumber) z).apcomplexValue();
+      Apfloat re = value.real();
+      Apfloat im = value.imag();
+      return new Apcomplex(re.signum() == 0 ? re : re.precision(digits),
+          im.signum() == 0 ? im : im.precision(digits));
     }
 
     @Override
@@ -146,6 +193,12 @@ public class HypergeometricFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_6_6;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
     }
   }
 

@@ -2,6 +2,7 @@ package org.matheclipse.core.rubi.step02;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.matheclipse.core.rubi.AbstractRubiTestCase;
 
 public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
 
@@ -16,6 +17,7 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   protected void setUp() {
     try {
       super.setUp();
+      fSeconds = 30;
       if (init) {
         System.out.println("InverseHyperbolicFunctions");
         init = false;

@@ -514,7 +514,52 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("AppellF1(a, b1, b1, c, z1, -z1) ", //
         "HypergeometricPFQ({1/2+a/2,a/2,b1},{1/2+c/2,c/2},z1^2)");
     check("AppellF1(a, b1, b2, b1+b2, z1, z2) ", //
-        "(1-z2)^a*Hypergeometric2F1(a,b1,b1+b2,(z1-z2)/(1-z2))");
+        "Hypergeometric2F1(a,b1,b1+b2,(z1-z2)/(1-z2))/(1-z2)^a");
+    // every term of the series is positive, so the value is greater than 1
+    check("AppellF1(1, 2, 3, 5, 1/3, 1/4)", //
+        "4/3*Hypergeometric2F1(1,2,5,1/9)");
+    check("N(AppellF1(1, 2, 3, 5, 1/3, 1/4))", //
+        "1.39611");
+  }
+
+  @Test
+  public void testAppelF1Numeric() {
+    check("N(AppellF1(1/2, -3/2, -3/2, 3/2, 3/10, 1/5))", //
+        "0.784652");
+    check("N(AppellF1(1, 2, 3, 4, 1/10, 1/5), 30)", //
+        "1.24826732560011266612992493939");
+    check("N(AppellF1(1/3, 1/2, 1/2, 4/3, -2, 1/7), 30)", //
+        "0.867437951174926371870080714149");
+    // an argument outside of the unit circle
+    check("N(AppellF1(7/10, 13/10, 2/5, 29/10, -7/2, -1/2))", //
+        "0.543901");
+    // both arguments near 1
+    check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 19/20, 97/100))", //
+        "2.30566");
+    // a polynomial
+    check("N(AppellF1(-2, 13/10, 2/5, 29/10, 1/2, 1/4))", //
+        "0.563439");
+    check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 1/5+3/10*I, -2/5*I))", //
+        "1.05285+I*0.0706497");
+    check("AppellF1(0.7, 1.3, 0.4, 2.9, -3.5, -0.5)", //
+        "0.543901");
+    // equal in both orders of the arguments
+    check("N(AppellF1(1/3, 1/2, 1/2, 4/3, 1/5, -3)-AppellF1(1/3, 1/2, 1/2, 4/3, -3, 1/5))", //
+        "0.0");
+    // no value on the branch cut
+    check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 3/2, 3))", //
+        "AppellF1(0.7,1.3,0.4,2.9,1.5,3.0)");
+    check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 3/2, 1/5))", //
+        "AppellF1(0.7,1.3,0.4,2.9,1.5,0.2)");
+  }
+
+  @Tag(TestTags.SLOW)
+  @Test
+  public void testAppelF1NumericOutsideOfTheUnitCircle() {
+    // no transformation brings both arguments into the unit circle: the series of hypergeometric
+    // functions is summed, which is slow
+    check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 3/2+I/2, 1/5))", //
+        "1.19653+I*0.918893");
   }
 
   @Test
