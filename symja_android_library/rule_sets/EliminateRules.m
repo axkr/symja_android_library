@@ -12,10 +12,6 @@ elimzeroplus,
 elimzeroplus(x_^n_.*a_.+x_^m_*b_., x_) := E^((-I*Pi+Log(a)-Log(b))/(m-n))
   /;FreeQ(a,x)&&FreeQ(b,x)&&FreeQ(n,x)&&FreeQ(m,x),
 
-elimzeroplus(x_^n_*a_.+m_^x_*b_., x_) := {-((n*ProductLog(-(((-(b/a))^(1/n)*Log(m))/n)))/Log(m)), 
-                                          -((n*ProductLog((((-(b/a))^(1/n)*Log(m))/n)))/Log(m))}
-  /;FreeQ(a,x)&&FreeQ(b,x)&&FreeQ(n,x)&&FreeQ(m,x), 
-  
 elimzeroplus(w_.*Sqrt(a_.+b_.*x_)+z_., x_) := Expand((-a)*w^2 + z^2)/(b*w^2)
   /; FreeQ({a,b,w,z},x),
   
