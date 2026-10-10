@@ -63,6 +63,9 @@ final class SvgLayout {
   }
 
   /** One laid out cell: the SVG children, the size they were drawn at, and how they may be sized. */
+  /** The style the cell which is being drawn inherits from its layout, or <code>null</code>. */
+  private IExpr inheritedStyle;
+
   private static final class Piece {
     final String contents;
     final double naturalW;
@@ -320,7 +323,13 @@ final class SvgLayout {
         if (cell.covered || cell.isEmpty()) {
           continue;
         }
-        pieces[r][c] = piece(cell.content, seed * cell.colSpan);
+        // BaseStyle, or the ItemStyle of the row or column: what the text of the cell starts from
+        inheritedStyle = spec.styleAt(r, c);
+        try {
+          pieces[r][c] = piece(cell.content, seed * cell.colSpan);
+        } finally {
+          inheritedStyle = null;
+        }
       }
     }
     applyModeScaling(pieces, mode);
@@ -929,6 +938,10 @@ final class SvgLayout {
     IExpr value = content;
     Style2D style = new Style2D();
     style.setColor(java.awt.Color.BLACK);
+    if (inheritedStyle != null) {
+      // the style of the cell itself, below, is applied on top of it
+      new PrimitiveCollector(options.imageSize[0]).applyTextStyle(inheritedStyle, style);
+    }
     if (value.isAST(S.Style) && ((IAST) value).argSize() >= 1) {
       IAST styled = (IAST) value;
       PrimitiveCollector collector = new PrimitiveCollector(options.imageSize[0]);

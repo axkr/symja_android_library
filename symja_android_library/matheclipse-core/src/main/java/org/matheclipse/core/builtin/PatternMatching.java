@@ -3842,6 +3842,10 @@ public final class PatternMatching {
     if (leftHandSide.isSymbol()) {
       return (ISymbol) leftHandSide;
     }
+    if (leftHandSide instanceof PatternNested) {
+      // a : f(x_) under a condition: the rule belongs to f
+      return getReferenceExpression(((PatternNested) leftHandSide).getPatternExpr());
+    }
     if (leftHandSide.isAST() && leftHandSide.argSize() > 0) {
       IExpr lhsHead = leftHandSide.head();
       while (leftHandSide.isFunctionID(ID.Condition, ID.HoldPattern, ID.PatternTest)) {

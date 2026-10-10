@@ -72,7 +72,10 @@ public class StreamPlot extends AbstractFunctionEvaluator {
       y0 = engine.evalDouble(((IAST) yIterator).arg2());
       y1 = engine.evalDouble(((IAST) yIterator).arg3());
     } catch (RuntimeException rex) {
-      return F.NIL;
+      IAST xRange = (IAST) xIterator;
+      boolean xNumeric =
+          xRange.arg2().isNumericFunction(true) && xRange.arg3().isNumericFunction(true);
+      return VectorPlot.limitingValue(S.StreamPlot, xNumeric ? (IAST) yIterator : xRange, engine);
     }
     if (!(x1 > x0) || !(y1 > y0)) {
       return F.NIL;

@@ -278,6 +278,11 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
+  protected int dependentRangeOffset() {
+    return 0;
+  }
+
+  @Override
   public boolean localIterators() {
     // the plot variable is local to the plot
     return true;

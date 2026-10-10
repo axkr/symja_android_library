@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics;
 
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -63,7 +64,7 @@ public class VectorPlot extends AbstractFunctionEvaluator {
         min[d] = engine.evalDouble(((IAST) iterator).arg2());
         max[d] = engine.evalDouble(((IAST) iterator).arg3());
       } catch (RuntimeException rex) {
-        return F.NIL;
+        return limitingValue((ISymbol) ast.topHead(), (IAST) iterator, engine);
       }
       if (!(max[d] > min[d])) {
         return F.NIL;
@@ -224,6 +225,18 @@ public class VectorPlot extends AbstractFunctionEvaluator {
       }
     }
     return result;
+  }
+
+  /**
+   * The message for a range with a bound which is no number, as the bound <code>x</code> of
+   * <code>{y, 0, x}</code>: a field plot takes no range that depends on another variable.
+   *
+   * @return {@link F#NIL}
+   */
+  static IExpr limitingValue(ISymbol head, IAST iterator, EvalEngine engine) {
+    IExpr limit = iterator.arg2().isNumericFunction(true) ? iterator.arg3() : iterator.arg2();
+    // Limiting value `1` in `2` is not a machine-size real number.
+    return Errors.printMessage(head, "plln", F.list(limit, iterator), engine);
   }
 
   /** The size of a three dimensional arrow's head. */

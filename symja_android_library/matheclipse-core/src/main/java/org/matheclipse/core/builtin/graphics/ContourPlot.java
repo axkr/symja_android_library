@@ -816,6 +816,11 @@ public class ContourPlot extends ListPlot {
   }
 
   @Override
+  protected int dependentRangeOffset() {
+    return 0;
+  }
+
+  @Override
   public boolean localIterators() {
     // the plot variable is local to the plot
     return true;

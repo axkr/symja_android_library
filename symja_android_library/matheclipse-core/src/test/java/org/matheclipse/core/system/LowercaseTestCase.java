@@ -12049,6 +12049,77 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testConditionOnComplexAndRationalPattern() {
+    check("MatchQ(1 + 2*I, Complex(a_, b_) /; b > 1)", //
+        "True");
+    check("MatchQ(1 + 2*I, Complex(a_, b_) /; b > 5)", //
+        "False");
+    check("(1 + 2*I) /. {Complex(a_, b_) /; b > 1 :> a}", //
+        "1");
+    check("{x -> 5.28 + 2.1*^-7*I} /. {Complex(a_, b_) /; Abs(b) < 10^(-4) :> a}", //
+        "{x->5.28}");
+    check("Cases({1 + 2*I, 3 - I, 2.5}, Complex(a_, b_) /; b > 0 :> a)", //
+        "{1}");
+    check("(1/2) /. {Rational(a_, b_) /; b > 1 :> a}", //
+        "1");
+    check("{MatchQ(1 + 2*I, c : Complex(a_, b_)), MatchQ(1 + 2*I, Complex(a_, b_)?(Im(#) > 1 &)),"
+        + " MatchQ(1 + 2*I, Complex(a_, b_)?(Im(#) > 5 &))}", //
+        "{True,True,False}");
+    // the same name in both parts, and a part which is bound again outside
+    check("{MatchQ(1 + 2*I, Complex(a_, a_)), MatchQ(2 + 2*I, Complex(a_, a_)),"
+        + " MatchQ(f(1 + 2*I, 2), f(Complex(a_, b_), b_)), MatchQ(f(1 + 2*I, 3), f(Complex(a_, b_), b_))}", //
+        "{False,True,True,False}");
+  }
+
+  @Test
+  public void testNamedLeftSideUnderACondition() {
+    check("(nl : nlg(n_)) /; n > 0 := Hold(nl); {nlg(2), nlg(-1)}", //
+        "{Hold(nlg(2)),nlg(-1)}");
+    check("nm : nlf(n_Integer) := {Hold(nm), n}; nlf(4)", //
+        "{Hold(nlf(4)),4}");
+  }
+
+  @Test
+  public void testRangeWhichDependsOnAnEarlierVariable() {
+    // the picture lies between the bounds: no point with y above x
+    check("Max(Cases(ContourPlot(x*y, {x, 0, 2}, {y, 0, x}), {a_Real, b_Real} :> b - a, Infinity)) < 0.001", //
+        "True");
+    check("Max(Cases(DensityPlot(x*y, {x, 0, 2}, {y, 0, x}), {a_Real, b_Real} :> b - a, Infinity)) < 0.001", //
+        "True");
+    check("Max(Cases(RegionPlot(x*y < 1, {x, 0, 2}, {y, 0, x}), {a_Real, b_Real} :> b - a, Infinity)) < 0.001", //
+        "True");
+    check("Max(Cases(Plot3D(x*y, {x, 0, 2}, {y, 0, x}), {a_Real, b_Real, c_Real} :> b - a, Infinity)) < 0.001", //
+        "True");
+    check("Max(Cases(ParametricPlot({u, v}, {u, 0, 1}, {v, 0, u}), {a_Real, b_Real} :> b - a, Infinity)) < 0.001", //
+        "True");
+    check("Max(Cases(ParametricPlot3D({u, v, u*v}, {u, 0, 1}, {v, 0, u}), {a_Real, b_Real, c_Real} :> b - a, Infinity)) < 0.001", //
+        "True");
+    check("With({g = RegionPlot3D(x + y + z < 1, {x, 0, 1}, {y, 0, x}, {z, 0, 1})},"
+        + " Max(Cases(g, GraphicsComplex(pts_, ___) :> Max((#[[2]] - #[[1]]) & /@ pts), Infinity))) < 0.001", //
+        "True");
+    check("Head /@ {SphericalPlot3D(1, {t, 0, Pi}, {p, 0, t}), RevolutionPlot3D(t, {t, 0, 1}, {p, 0, t}),"
+        + " ContourPlot3D(x + y + z == 1, {x, 0, 1}, {y, 0, x}, {z, 0, 1})}", //
+        "{Graphics3D,Graphics3D,Graphics3D}");
+    // a region function of the call is kept beside the bounds
+    check("Min(Cases(ContourPlot(x*y, {x, 0, 2}, {y, 0, x}, RegionFunction -> Function({x, y}, x > 1)),"
+        + " {a_Real, b_Real} :> a, Infinity)) >= 1", //
+        "True");
+    // a field plot takes no dependent range, and a first range cannot depend on a later variable
+    check("Head /@ {StreamPlot({x, y}, {x, 0, 1}, {y, 0, x}), VectorPlot({x, y}, {x, 0, 1}, {y, 0, x}),"
+        + " Plot3D(x*y, {x, 0, y}, {y, 0, 2})}", //
+        "{StreamPlot,VectorPlot,Plot3D}");
+  }
+
+  @Test
+  public void testGridBaseStyle() {
+    check("StringCount(ExportString(Grid({{\"a\", Style(\"b\", 20)}}, BaseStyle -> {16, FontFamily -> \"Times\"}), \"SVG\"), #) & /@"
+        + " {\"font-family=\\\"Times\\\"\", \"font-size=\\\"16\\\"\", \"font-size=\\\"20\\\"\"}", //
+        "{2,1,1}");
+    check("StringCount(ExportString(Grid({{\"a\"}}, BaseStyle -> Bold), \"SVG\"), \"font-weight=\\\"bold\\\"\")", //
+        "1");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

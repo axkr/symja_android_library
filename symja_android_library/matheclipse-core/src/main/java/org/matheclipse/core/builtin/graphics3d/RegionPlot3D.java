@@ -242,6 +242,11 @@ public class RegionPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
+  protected int dependentRangeOffset() {
+    return org.matheclipse.core.builtin.graphics.DependentRange.PREDICATE;
+  }
+
+  @Override
   public boolean localIterators() {
     // the plot variable is local to the plot
     return true;

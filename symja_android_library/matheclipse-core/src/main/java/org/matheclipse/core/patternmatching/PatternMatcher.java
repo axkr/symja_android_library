@@ -1621,8 +1621,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     try {
       if (lhsEvalExpr.isNumber()) {
         INumber number = (INumber) lhsEvalExpr;
-        matched = matchExpr(lhsPatternAST.arg1(), number.re(), engine, stackMatcher) //
-            && matchExpr(lhsPatternAST.arg2(), number.im(), engine, stackMatcher);
+        // both parts are bound before the rest of the stack is matched: a condition which
+        // stands on it, Complex(a_, b_) /; b > 1, needs the two of them
+        matched = matchSubExpr(lhsPatternAST.arg1(), number.re(), engine) //
+            && matchSubExpr(lhsPatternAST.arg2(), number.im(), engine) //
+            && stackMatcher.matchRest();
         return matched;
       }
       matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
@@ -1762,8 +1765,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       // check for fractions (and no integers) here to be compatible with MMA
       if (lhsEvalExpr.isFraction()) {
         IFraction rational = (IFraction) lhsEvalExpr;
-        matched = matchExpr(lhsPatternAST.arg1(), rational.numerator(), engine, stackMatcher) //
-            && matchExpr(lhsPatternAST.arg2(), rational.denominator(), engine, stackMatcher);
+        // both parts are bound before the rest of the stack is matched, see matchComplex
+        matched = matchSubExpr(lhsPatternAST.arg1(), rational.numerator(), engine) //
+            && matchSubExpr(lhsPatternAST.arg2(), rational.denominator(), engine) //
+            && stackMatcher.matchRest();
         return matched;
       }
       matched = matchASTExpr(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
@@ -1800,6 +1805,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             matched = stackMatcher.matchRest();
           }
         }
+      } else if (lhsEvalExpr.isNumber()
+          && (lhsPatternExpr.isAST(S.Complex, 3) || lhsPatternExpr.isAST(S.Rational, 3))) {
+        // Complex(a_, b_)?test: the number is taken apart by the pattern, and tested as it is
+        matched = matchSubExpr(lhsPatternExpr, lhsEvalExpr, engine)
+            && engine.evalTrue(F.unaryAST1(patternTest, lhsEvalExpr)) && stackMatcher.matchRest();
       } else if (matchExpr(lhsPatternExpr, lhsEvalExpr, engine, stackMatcher)) {
         matched = fPatternMap.isPatternTest(lhsPatternExpr, patternTest, engine);
       }

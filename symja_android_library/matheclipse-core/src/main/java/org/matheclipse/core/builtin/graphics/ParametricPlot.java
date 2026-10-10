@@ -502,6 +502,11 @@ public class ParametricPlot extends Plot {
   private static final IExpr DEFAULT_REGION_OPACITY = F.num(0.3);
 
   @Override
+  protected int dependentRangeOffset() {
+    return 2;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, true);
     defaults[GraphicsOptions.X_ASPECTRATIO] = S.Automatic;

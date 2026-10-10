@@ -309,4 +309,10 @@ public class RegionPlot extends ContourPlot {
       }
     }
   }
+
+  @Override
+  protected int dependentRangeOffset() {
+    return DependentRange.PREDICATE;
+  }
+
 }

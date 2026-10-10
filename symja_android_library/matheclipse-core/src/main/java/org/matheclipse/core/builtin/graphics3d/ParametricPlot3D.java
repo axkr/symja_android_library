@@ -383,6 +383,11 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
+  protected int dependentRangeOffset() {
+    return 3;
+  }
+
+  @Override
   public boolean localIterators() {
     // the plot variable is local to the plot
     return true;

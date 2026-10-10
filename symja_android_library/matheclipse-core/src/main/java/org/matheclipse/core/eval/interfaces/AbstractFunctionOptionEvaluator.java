@@ -25,6 +25,18 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
   }
 
   /**
+   * Whether a range of the call may have bounds which depend on the variable of an earlier range,
+   * and how the call is told the region between them: the number of arguments which its
+   * <code>RegionFunction</code> gets before the variables of the ranges, or
+   * <code>DependentRange.PREDICATE</code> for a plot of a predicate.
+   *
+   * @return <code>DependentRange.UNSUPPORTED</code> if the call takes no such range
+   */
+  protected int dependentRangeOffset() {
+    return org.matheclipse.core.builtin.graphics.DependentRange.UNSUPPORTED;
+  }
+
+  /**
    * Evaluates the arguments of a held call with the variables of its iterators cleared, and runs
    * <code>body</code> on the evaluated call while they still are.
    *
@@ -52,6 +64,12 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
       }
       IASTAppendable call = F.ast(held.head(), arguments.argSize());
       call.appendArgs((IAST) arguments);
+      int regionOffset = dependentRangeOffset();
+      if (regionOffset != org.matheclipse.core.builtin.graphics.DependentRange.UNSUPPORTED) {
+        // {y, ymin(x), ymax(x)}: plotted over the numbers the bounds reach, as a region
+        return body.apply(org.matheclipse.core.builtin.graphics.DependentRange.rewrite(call,
+            regionOffset, engine));
+      }
       return body.apply(call);
     }, variables);
   }
