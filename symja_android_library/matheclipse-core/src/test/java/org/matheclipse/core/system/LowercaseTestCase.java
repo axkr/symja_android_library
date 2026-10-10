@@ -509,6 +509,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hypergeometric2F1(a,b2,c,z2)");
     check("AppellF1(a, b1, b2, c, z1, 1) ", //
         "Hypergeometric2F1(a,b1,-b2+c,z1)*Hypergeometric2F1(a,b2,c,1)");
+    check("AppellF1(a, b1, b2, c, 1, z2) ", //
+        "Hypergeometric2F1(a,b1,c,1)*Hypergeometric2F1(a,b2,-b1+c,z2)");
     check("AppellF1(a, b1, b2, c, z1, z1) ", //
         "Hypergeometric2F1(a,b1+b2,c,z1)");
     check("AppellF1(a, b1, b1, c, z1, -z1) ", //
@@ -546,6 +548,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // equal in both orders of the arguments
     check("N(AppellF1(1/3, 1/2, 1/2, 4/3, 1/5, -3)-AppellF1(1/3, 1/2, 1/2, 4/3, -3, 1/5))", //
         "0.0");
+    // a polynomial has no branch cut
+    check("N(AppellF1(-2, 13/10, 2/5, 29/10, 5, 7))", //
+        "6.83996");
+    check("N(AppellF1(7/10, -3, 2/5, 29/10, 6, 1/4))", //
+        "-4.8776");
+    check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 1, 1/5))", //
+        "2.06022");
     // no value on the branch cut
     check("N(AppellF1(7/10, 13/10, 2/5, 29/10, 3/2, 3))", //
         "AppellF1(0.7,1.3,0.4,2.9,1.5,3.0)");

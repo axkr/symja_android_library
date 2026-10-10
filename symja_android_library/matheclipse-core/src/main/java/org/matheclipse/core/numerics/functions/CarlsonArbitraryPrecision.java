@@ -55,7 +55,7 @@ public final class CarlsonArbitraryPrecision {
   }
 
   /** The number as apfloat takes it: a nonzero part with <code>digits</code> digits. */
-  private static Apcomplex apcomplex(IExpr z, int digits) {
+  public static Apcomplex apcomplex(IExpr z, int digits) {
     Apcomplex value = ((INumber) z).apcomplexValue();
     return new Apcomplex(precision(value.real(), digits), precision(value.imag(), digits));
   }

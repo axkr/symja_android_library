@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.Aprational;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -78,10 +79,60 @@ public class ApcomplexAppellMathTest
     }
 
     @Test
+    public void testTerminating()
+    {
+        // a polynomial in both arguments has no branch cut
+        assertClose("F1(-2; 13/10, 2/5; 29/10; 5, 7)", new Apfloat("6.83996463306808134394341290893015030946065429"),
+                    f1(q(-2, 1), q(13, 10), q(2, 5), q(29, 10), q(5, 1), q(7, 1)), 37);
+        // a polynomial in the first argument
+        assertClose("F1(7/10; -3, 2/5; 29/10; 6, 1/4)", new Apfloat("-4.87760499075771127189555387261565236353612779"),
+                    f1(q(7, 10), q(-3, 1), q(2, 5), q(29, 10), q(6, 1), q(1, 4)), 36);
+        // the same with the arguments exchanged
+        assertClose("F1(7/10; 2/5, -3; 29/10; 1/4, 6)", new Apfloat("-4.87760499075771127189555387261565236353612779"),
+                    f1(q(7, 10), q(2, 5), q(-3, 1), q(29, 10), q(1, 4), q(6, 1)), 36);
+        // a polynomial in each argument
+        assertClose("F1(7/10; -3, -2; 29/10; 6, 9)", new Apfloat("-137.351569326158302856394488544515226089693093"),
+                    f1(q(7, 10), q(-3, 1), q(-2, 1), q(29, 10), q(6, 1), q(9, 1)), 36);
+    }
+
+    @Test
+    public void testEqualArguments()
+    {
+        // F1(a; b1, b2; c; x, x) = 2F1(a, b1 + b2; c; x), also where the terms of the series are large
+        Apfloat a = q(30, 1),
+                b = q(41, 2),
+                c = q(3, 2);
+        for (Apfloat x : new Apfloat[] { q(-9, 10), q(-1, 3), q(2, 5), q(-4, 1) })
+        {
+            assertClose("F1(30; 41/2, 41/2; 3/2; x, x) at " + x,
+                        org.apfloat.ApcomplexMath.hypergeometric2F1(a, b.add(b), c, x.precision(60)).precision(PRECISION),
+                        f1(a, b, b, c, x, x), 34);
+        }
+    }
+
+    @Tag("slow")
+    @Test
+    public void testSeriesOfHypergeometricFunctions()
+    {
+        // no transformation brings both arguments into the unit circle
+        Apcomplex expected = new Apcomplex(new Apfloat("1.19652904329832053515824128370666851865368663"),
+                                           new Apfloat("0.918892640333220114619031034699321368593495456"));
+        assertClose("F1(7/10; 13/10, 2/5; 29/10; 3/2 + i/2, 1/5)", expected,
+                    f1(q(7, 10), q(13, 10), q(2, 5), q(29, 10), new Apcomplex(q(3, 2), q(1, 2)), q(1, 5)), 36);
+    }
+
+    @Test
     public void testNotCovered()
     {
         // on the branch cut
         assertThrows(ArithmeticException.class, () -> f1(q(7, 10), q(13, 10), q(2, 5), q(29, 10), q(3, 2), q(1, 5)));
         assertThrows(ArithmeticException.class, () -> f1(q(7, 10), q(13, 10), q(2, 5), q(29, 10), q(1, 5), q(3, 1)));
+        // a polynomial in the first argument only, with the second one on the branch cut
+        assertThrows(ArithmeticException.class, () -> f1(q(7, 10), q(-3, 1), q(2, 5), q(29, 10), q(6, 1), q(3, 1)));
+        // a pole before the series terminates
+        assertThrows(ArithmeticException.class, () -> f1(q(-5, 1), q(13, 10), q(2, 5), q(-2, 1), q(1, 5), q(1, 4)));
+        // both arguments outside of the unit circle in every transformation
+        assertThrows(ArithmeticException.class, () -> f1(q(7, 10), q(13, 10), q(2, 5), q(29, 10),
+                                                         new Apcomplex(q(3, 2), q(2, 1)), new Apcomplex(q(3, 2), q(-2, 1))));
     }
 }

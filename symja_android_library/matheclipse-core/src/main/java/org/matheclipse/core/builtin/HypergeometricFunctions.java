@@ -11,6 +11,7 @@ import static org.matheclipse.core.expression.F.Times;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
@@ -116,6 +117,11 @@ public class HypergeometricFunctions {
         return F.Times(F.Hypergeometric2F1(a, b1, F.Subtract(c, b2), z1),
             F.Hypergeometric2F1(a, b2, c, F.C1));
       }
+      if (z1.isOne()) {
+        // the same with the arguments exchanged
+        return F.Times(F.Hypergeometric2F1(a, b2, F.Subtract(c, b1), z2),
+            F.Hypergeometric2F1(a, b1, c, F.C1));
+      }
 
       // avoid isPossibleZero for Rubi evaluation
       if (z1.subtract(z2).isZero()) {
@@ -140,9 +146,6 @@ public class HypergeometricFunctions {
       return F.NIL;
     }
 
-    /** Additional digits for the evaluation, which are rounded away in the result. */
-    private static final int GUARD_DIGITS = 10;
-
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() != 6 || !ast.forAll(x -> x.isInexactNumber())) {
@@ -156,33 +159,29 @@ public class HypergeometricFunctions {
       final boolean arbitraryMode = engine.isArbitraryMode();
       final long precision =
           arbitraryMode ? engine.getNumericPrecision() : ParserConfig.MACHINE_PRECISION;
-      final long digits = precision + GUARD_DIGITS;
+      // additional digits for the evaluation, which are rounded away in the result
+      final int digits = (int) precision + CarlsonArbitraryPrecision.GUARD_DIGITS;
       try {
         // the series, its transformations and the arguments which are covered:
         // org.matheclipse.external.apfloat.ApcomplexAppellMath
-        Apcomplex value = ApcomplexAppellMath.appellF1(apcomplex(ast.arg1(), digits),
-            apcomplex(ast.arg2(), digits), apcomplex(ast.arg3(), digits),
-            apcomplex(ast.arg4(), digits), apcomplex(ast.arg5(), digits),
-            apcomplex(ast.get(6), digits));
+        Apcomplex value = ApcomplexAppellMath.appellF1(
+            CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits),
+            CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits),
+            CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits),
+            CarlsonArbitraryPrecision.apcomplex(ast.arg4(), digits),
+            CarlsonArbitraryPrecision.apcomplex(ast.arg5(), digits),
+            CarlsonArbitraryPrecision.apcomplex(ast.get(6), digits));
         if (arbitraryMode) {
           return CarlsonArbitraryPrecision.round(value, precision);
         }
         double re = value.real().doubleValue();
         double im = value.imag().doubleValue();
         return im == 0.0 ? F.num(re) : F.complexNum(re, im);
-      } catch (ArithmeticException | NumericComputationException ex) {
-        // a branch cut, a pole or arguments for which there is no series
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        // a branch cut, a pole, arguments for which there is no series, or a failure of apfloat
+        Errors.rethrowsInterruptException(ex);
         return F.NIL;
       }
-    }
-
-    /** The number as apfloat takes it: a nonzero part with <code>digits</code> digits. */
-    private static Apcomplex apcomplex(IExpr z, long digits) {
-      Apcomplex value = ((INumber) z).apcomplexValue();
-      Apfloat re = value.real();
-      Apfloat im = value.imag();
-      return new Apcomplex(re.signum() == 0 ? re : re.precision(digits),
-          im.signum() == 0 ? im : im.precision(digits));
     }
 
     @Override
