@@ -2528,7 +2528,7 @@ public class Maximize extends AbstractFunctionEvaluator {
     }
     // with 60 digits a value which is not 0 shows its sign; the machine value of a constraint
     // which holds with equality is rounding noise
-    IExpr precise = engine.evalQuiet(F.N(value, F.ZZ(60)));
+    IExpr precise = org.matheclipse.core.eval.CompareUtil.evalPrecise(value, 60, engine);
     double d = precise.evalfNaN();
     if (Double.isNaN(d) || Double.isInfinite(d)) {
       return Integer.MIN_VALUE;

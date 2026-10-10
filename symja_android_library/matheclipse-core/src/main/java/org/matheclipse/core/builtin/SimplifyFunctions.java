@@ -184,6 +184,13 @@ public class SimplifyFunctions {
           }
         }
 
+        if (arg1.isPlus() && org.matheclipse.core.eval.ZeroIdentity.isZero((IAST) arg1,
+            assumptionExpr.isPresent() && assumptionExpr.isAST() ? assumptionExpr : F.NIL,
+            isFullSimplifyMode(), engine)) {
+          engine.putCache(ast, F.C0);
+          return F.C0;
+        }
+
         // Apply initial standard substitutions
         IExpr temp = F.subst(arg1, F.list( //
             F.Rule(S.GoldenAngle, F.Times(F.Subtract(F.C3, F.CSqrt5), S.Pi)), //
@@ -209,6 +216,13 @@ public class SimplifyFunctions {
             isFullSimplifyMode() || isVariableFreeNumber(arg1), false, engine);
 
         IExpr currentResult = temp.isPresent() ? temp : defaultResult;
+        if (currentResult.isPlus() && assumptionExpr.isPresent() && assumptionExpr.isAST()
+            && !currentResult.equals(arg1) && org.matheclipse.core.eval.ZeroIdentity
+                .isZero((IAST) currentResult, assumptionExpr, isFullSimplifyMode(), engine)) {
+          // the simplified form is a sum which the assumptions show to be 0
+          engine.putCache(ast, F.C0);
+          return F.C0;
+        }
 
         // The Fu trigonometric search factors and expands the whole expression several times over,
         // which is prohibitive for a large one: 800ms for a third derivative of

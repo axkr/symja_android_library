@@ -2862,8 +2862,11 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIssue898() {
+    // the second real solution is x == 27: 3^27 == 27^9
     check("Solve(3^x-x^9==0, x)", //
-        "{{x->(-9*ProductLog(-Log(3)/9))/Log(3)}}");
+        "{{x->(-9*ProductLog(-Log(3)/9))/Log(3)},{x->(-9*ProductLog(-1,-Log(3)/9))/Log(3)}}");
+    check("N(Solve(3^x-x^9==0, x))", //
+        "{{x->1.15082},{x->27.0}}");
   }
 
   @Test

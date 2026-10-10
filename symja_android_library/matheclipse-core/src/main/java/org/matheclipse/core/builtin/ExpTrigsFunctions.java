@@ -548,6 +548,10 @@ public class ExpTrigsFunctions {
       if (arg1.isIntervalData()) {
         return IntervalDataSym.arccosh((IAST) arg1);
       }
+      if (arg1.isCosh() && arg1.first().isNonNegativeResult()) {
+        // Cosh is one-to-one on the non-negative numbers
+        return arg1.first();
+      }
       return F.NIL;
     }
 
@@ -1184,6 +1188,10 @@ public class ExpTrigsFunctions {
       // if (imPart.isPresent()) {
       // return F.Times(F.CI, F.ArcSin(imPart));
       // }
+      if (arg1.isSinh() && arg1.first().isRealResult()) {
+        // Sinh is one-to-one on the real numbers
+        return arg1.first();
+      }
       return F.NIL;
     }
 

@@ -624,4 +624,119 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Simplify(1+c^2+2*c*d+d^2)", //
         "1+(c+d)^2");
   }
+  /**
+   * Sums which are identically 0 and which the search does not reduce; each is proved exactly.
+   * The twin of each case, with one number changed or the region moved, must stay as it is.
+   */
+  @Test
+  public void testZeroIdentities() {
+    // inverse tangents of rational numbers: a product of Gaussian rational numbers
+    check("FullSimplify(2*ArcTan(1/3) - ArcTan(3/4))", //
+        "0");
+    check("FullSimplify(2*ArcTan(1/3) - ArcTan(4/3)) === 0", //
+        "False");
+    check("FullSimplify(ArcTan(1/2) + ArcTan(1/3) - Pi/4)", //
+        "0");
+    check("FullSimplify(ArcTan(1/2) + ArcTan(1/3) + Pi/4) === 0", //
+        "False");
+    check("FullSimplify(ArcSin(4/5) + ArcSin(5/13) - ArcSin(63/65))", //
+        "0");
+    check("FullSimplify(ArcSin(4/5) + ArcSin(5/13) - ArcSin(62/65)) === 0", //
+        "False");
+    // plain Simplify leaves them
+    check("Simplify(2*ArcTan(1/3) - ArcTan(3/4))", //
+        "2*ArcTan(1/3)-ArcTan(3/4)");
+    // rational multiples of Pi: a root of unity and its cyclotomic polynomial
+    check("FullSimplify(Sin(Pi/18)*Sin(5*Pi/18)*Sin(7*Pi/18) - 1/8)", //
+        "0");
+    check("FullSimplify(Sin(Pi/18)*Sin(5*Pi/18)*Sin(7*Pi/18) - 1/7) === 0", //
+        "False");
+    check("FullSimplify(Tan(Pi/9)*Tan(2*Pi/9)*Tan(4*Pi/9) - Sqrt(3))", //
+        "0");
+    check("FullSimplify(Tan(Pi/9)*Tan(2*Pi/9)*Tan(4*Pi/9) + Sqrt(3)) === 0", //
+        "False");
+    // two terms with square roots under an assumption
+    check("Simplify(Sqrt(t-2)*Sqrt(t+2) - Sqrt(t^2-4), t > 2)", //
+        "0");
+    check("Simplify(Sqrt(t-2)*Sqrt(t+2) - Sqrt(t^2-4), t < -2) === 0", //
+        "False");
+    check("Simplify(Sqrt(t-2)*Sqrt(t+2) - Sqrt(t^2-5), t > 3) === 0", //
+        "False");
+    check("Simplify(Sinh(ArcCosh(t)) - Sqrt(t^2-1), t > 1)", //
+        "0");
+    check("Simplify(Sinh(ArcCosh(t)) - Sqrt(t^2-1)) === 0", //
+        "False");
+    // ArcTanh of arguments in (-1,1)
+    check("FullSimplify(ArcTanh(u) - ArcTanh(v) - ArcTanh((u-v)/(1-u*v)), -1<u<1 && -1<v<1)", //
+        "0");
+    check("FullSimplify(ArcTanh(u) - ArcTanh(v) - ArcTanh((u-v)/(1-u*v)), u>3 && v>3) === 0", //
+        "False");
+    check("FullSimplify(ArcTanh(u) - ArcTanh(v) - ArcTanh((u-v)/(1+u*v)), -1<u<1 && -1<v<1) === 0", //
+        "False");
+    // a constant phase in a hyperbolic function
+    check("Simplify(Tanh(t) + Tanh(t + I*Pi/3) + Tanh(t + 2*I*Pi/3) - 3*Tanh(3*t))", //
+        "0");
+    check("Simplify(Tanh(t) + Tanh(t + I*Pi/3) + Tanh(t + 2*I*Pi/3) - 4*Tanh(3*t)) === 0", //
+        "False");
+    // the inverse of a function on the part where it is one-to-one
+    check("Simplify(ArcCosh(Cosh(t)) - t, t >= 0)", //
+        "0");
+    check("Simplify(ArcCosh(Cosh(t)) - t)", //
+        "-t+ArcCosh(Cosh(t))");
+    check("Simplify(ArcSinh(Sinh(t)) - t, Element(t, Reals))", //
+        "0");
+  }
+  /**
+   * PossibleZeroQ: terms too large for the machine precision to cancel, and identities with a
+   * constant phase, which were reported as not zero.
+   */
+  @Test
+  public void testPossibleZeroQHugeTermsAndPhases() {
+    check("PossibleZeroQ(Cosh(12)^24 - (1 - Tanh(12)^2)^(-12))", //
+        "True");
+    check("PossibleZeroQ(Cosh(12)^24 - (1 - Tanh(12)^2)^(-12) + 1)", //
+        "False");
+    check("PossibleZeroQ(Cosh(12)^24 + (1 - Tanh(12)^2)^(-12))", //
+        "False");
+    check("PossibleZeroQ(Sin(t + Pi/6) - Sqrt(3)*Sin(t)/2 - Cos(t)/2)", //
+        "True");
+    check("PossibleZeroQ(Sin(t + Pi/6) - Sqrt(3)*Sin(t)/2 - Cos(t)/3)", //
+        "False");
+    check("PossibleZeroQ(Tan(t) + Tan(t + Pi/3) + Tan(t + 2*Pi/3) - 3*Tan(3*t))", //
+        "True");
+    check("PossibleZeroQ(Tan(t + Pi/3) - Tan(t))", //
+        "False");
+    check("PossibleZeroQ(Sin(2*t) - 2*Sin(t)*Cos(t) + 10^-12)", //
+        "False");
+  }
+  /**
+   * PossibleZeroQ with AppellF1 of symbolic arguments: the numeric test was switched off for it,
+   * so every identity was reported as not zero. The sample points are chosen where the series
+   * arguments are inside the unit circle.
+   */
+  @Test
+  public void testPossibleZeroQAppellF1() {
+    // the symmetry in the two pairs of arguments
+    check("PossibleZeroQ(AppellF1(2/3, 1/5, 1/2, 7/4, u, v) - AppellF1(2/3, 1/2, 1/5, 7/4, v, u))", //
+        "True");
+    check("PossibleZeroQ(AppellF1(2/3, 1/5, 1/2, 7/4, u, v) - AppellF1(2/3, 1/5, 1/2, 7/4, v, u))", //
+        "False");
+    check("PossibleZeroQ(AppellF1(2/3, 1/5, 1/2, 7/4, u, v) - AppellF1(2/3, 1/2, 1/5, 7/4, v, u) + 1/10^6)", //
+        "False");
+    check("PossibleZeroQ(AppellF1(p, q1, q2, r, u, v) - AppellF1(p, q2, q1, r, v, u))", //
+        "True");
+    // one parameter 0: a Hypergeometric2F1
+    check("PossibleZeroQ(AppellF1(p, q, 0, r, u, v) - Hypergeometric2F1(p, q, r, u))", //
+        "True");
+    check("PossibleZeroQ(AppellF1(p, q, 0, r, u, v) - Hypergeometric2F1(p, q, r, v))", //
+        "False");
+    // arguments which are expressions in the variables
+    check("PossibleZeroQ(AppellF1(2/3, 1/5, 1/2, 7/4, u^2, 1-u) - AppellF1(2/3, 1/2, 1/5, 7/4, 1-u, u^2))", //
+        "True");
+    check("PossibleZeroQ(AppellF1(2/3, 1/5, 1/2, 7/4, u^2, 1-u) - AppellF1(2/3, 1/2, 1/5, 7/4, 1-u, u^3))", //
+        "False");
+    // numbers, as before
+    check("PossibleZeroQ(AppellF1(2/3, 1/5, 1/2, 7/4, 1/3, 1/6) - AppellF1(2/3, 1/2, 1/5, 7/4, 1/6, 1/3))", //
+        "True");
+  }
 }

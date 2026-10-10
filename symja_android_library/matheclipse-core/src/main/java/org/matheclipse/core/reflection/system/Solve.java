@@ -22,6 +22,7 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -2510,7 +2511,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         : statement.isList() ? (IAST) statement : F.List(statement);
     IASTAppendable result = F.ListAlloc(roots.argSize());
     for (IExpr root : roots) {
-      IExpr value = engine.evalQuiet(F.N(root, F.ZZ(30)));
+      IExpr value = CompareUtil.evalPrecise(root, 30, engine);
       boolean inside = true;
       for (IExpr condition : conditions) {
         if (condition.isEqual()) {

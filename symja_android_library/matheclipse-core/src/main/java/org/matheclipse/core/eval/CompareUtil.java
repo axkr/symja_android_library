@@ -340,11 +340,105 @@ public class CompareUtil {
     return CompareUtil.isPossibleZeroApproximate(temp, engine);
   }
 
+  /**
+   * Functions which the test near the origin evaluates: <code>AppellF1</code> and
+   * <code>Hypergeometric2F1</code>, whose series converge there, and integer powers.
+   */
+  private static boolean isSeriesNearOrigin(IExpr h) {
+    return h.isAST(S.AppellF1) || h.isAST(S.Hypergeometric2F1)
+        || (h.isPower() && h.exponent().isInteger());
+  }
+
+  /** The number of sample points near the origin. */
+  private static final int NEAR_ORIGIN_SAMPLES = 12;
+
+  /** The time the numeric value at one sample point may take. */
+  private static final long SAMPLE_MILLIS = 1000L;
+
+  /**
+   * The zero test for an expression with <code>AppellF1</code>, whose numeric value is computed
+   * from its series: at the points which the other tests use (0, 1, -1, the imaginary unit and
+   * random numbers up to 100) the series does not converge or takes very long. Here the
+   * variables get random complex numbers for which every argument of a series is well inside
+   * the unit circle. A sample which has no numeric value in time decides nothing.
+   *
+   * @return <code>FALSE</code> if one sample is not zero, <code>TRUE</code> if two thirds of the
+   *         samples are zero, <code>UNDECIDABLE</code> otherwise
+   */
+  private static IExpr.COMPARE_TERNARY isPossibleZeroNearOrigin(IAST function, IAST variables,
+      EvalEngine engine) {
+    final ThreadLocalRandom tlr = ThreadLocalRandom.current();
+    final long millis =
+        (long) (SAMPLE_MILLIS * org.matheclipse.core.basic.MachineProfile.getScale());
+    int zeros = 0;
+    int undecided = 0;
+    // the arguments in which the series are expanded
+    final java.util.List<IExpr> seriesArguments = new java.util.ArrayList<IExpr>();
+    function.isFreeAST(h -> {
+      if (h.isAST(S.AppellF1, 7)) {
+        seriesArguments.add(((IAST) h).get(5));
+        seriesArguments.add(((IAST) h).get(6));
+      } else if (h.isAST(S.Hypergeometric2F1, 5)) {
+        seriesArguments.add(((IAST) h).get(4));
+      }
+      return false;
+    });
+    for (int i = 0; i < NEAR_ORIGIN_SAMPLES; i++) {
+      // a point at which every series argument is well inside the unit circle
+      IASTAppendable rules = F.NIL;
+      for (int draw = 0; draw < 200 && rules.isNIL(); draw++) {
+        IASTAppendable candidate = F.mapList(variables, t -> F.Rule(t,
+            F.complexNum(tlr.nextDouble(-1.2, 1.2), tlr.nextDouble(-1.2, 1.2))));
+        boolean inside = true;
+        for (int k = 0; inside && k < seriesArguments.size(); k++) {
+          double radius = engine
+              .evalQuiet(F.N(F.Abs(seriesArguments.get(k).replaceAll(candidate)
+                  .orElse(seriesArguments.get(k)))))
+              .evalfNaN();
+          inside = radius < 0.6;
+        }
+        if (inside) {
+          rules = candidate;
+        }
+      }
+      if (rules.isNIL()) {
+        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      }
+      final IExpr sample = function.replaceAll(rules);
+      IExpr verdict = org.matheclipse.core.integrate.IntegrateTimeBudget.runWithin(() -> {
+        switch (isPossibleZeroApproximate(sample, engine)) {
+          case TRUE:
+            return S.True;
+          case FALSE:
+            return S.False;
+          default:
+            return S.Undefined;
+        }
+      }, millis);
+      if (verdict.isFalse()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      if (verdict.isTrue()) {
+        zeros++;
+      } else if (++undecided > NEAR_ORIGIN_SAMPLES / 3) {
+        // the numeric value is not to be had: no more time is spent on it
+        break;
+      }
+    }
+    return 3 * zeros >= 2 * NEAR_ORIGIN_SAMPLES ? IExpr.COMPARE_TERNARY.TRUE
+        : IExpr.COMPARE_TERNARY.UNDECIDABLE;
+  }
+
   public static IExpr.COMPARE_TERNARY isPossibeZeroFixedValues(INumber number, IAST function,
       IAST variables, EvalEngine engine) {
     IASTAppendable listOfRules = F.mapList(variables, t -> F.Rule(t, number));
     IExpr temp = function.replaceAll(listOfRules);
-    return isPossibleZeroExact(temp, engine);
+    IExpr.COMPARE_TERNARY exact = isPossibleZeroExact(temp, engine);
+    if (exact != IExpr.COMPARE_TERNARY.UNDECIDABLE) {
+      return exact;
+    }
+    // an exact value which does not evaluate to a number, as Sin(1+Pi/3): its numeric value
+    return isPossibleZeroApproximate(temp, engine);
   }
 
   public static IExpr.COMPARE_TERNARY isPossibleZeroApproximate(IExpr temp, EvalEngine engine) {
@@ -363,6 +457,26 @@ public class CompareUtil {
                 || Double.isInfinite(imaginaryPart)) {
               return IExpr.COMPARE_TERNARY.UNDECIDABLE;
             }
+            if (temp.isPlus()) {
+              // the value of a sum is measured against its terms: at a sample point where
+              // E^(I*x) is 10^40 a residual of 10^25 is rounding noise
+              double scale = 0.0;
+              for (IExpr term : (IAST) temp) {
+                double magnitude = engine.evalQuiet(F.N(F.Abs(term))).evalfNaN();
+                if (Double.isNaN(magnitude) || Double.isInfinite(magnitude)) {
+                  return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+                }
+                scale = Math.max(scale, magnitude);
+              }
+              double residual = Math.hypot(realPart, imaginaryPart);
+              if (scale > 1.0 && residual <= scale * 1.0e-10) {
+                return IExpr.COMPARE_TERNARY.TRUE;
+              }
+              if (scale > 1.0e12 && residual <= scale * 1.0e-3) {
+                // too large for the machine precision to say
+                return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+              }
+            }
             return IExpr.COMPARE_TERNARY.FALSE;
           }
           return IExpr.COMPARE_TERNARY.TRUE;
@@ -375,6 +489,76 @@ public class CompareUtil {
       Errors.rethrowsInterruptException(rex);
     }
     return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+  }
+
+  /**
+   * The machine value of a sum is small compared with its largest term, and that term is too
+   * large for 53 bits: <code>Cosh(14)^30-(1-Tanh(14)^2)^(-15)</code> has terms of size
+   * <code>10^180</code> and a machine value of <code>10^169</code>, which is rounding noise.
+   */
+  private static boolean isCancellationOfHugeTerms(IAST function, INumber value,
+      EvalEngine engine) {
+    if (!function.isPlus()) {
+      return false;
+    }
+    double residual = Math.hypot(value.reDoubleValue(), value.imDoubleValue());
+    double scale = 0.0;
+    for (int i = 1; i < function.size(); i++) {
+      IExpr term = engine.evalQuiet(F.N(F.Abs(function.get(i))));
+      double magnitude = term.evalfNaN();
+      if (Double.isNaN(magnitude)) {
+        return false;
+      }
+      scale = Math.max(scale, magnitude);
+    }
+    if (Double.isNaN(residual) || Double.isInfinite(residual) || Double.isInfinite(scale)) {
+      return true;
+    }
+    // a subtraction inside a term, 1-Tanh(14)^2, loses digits as well: any cancellation counts
+    return scale > 1.0e12 && residual < scale;
+  }
+
+  /**
+   * The value of a numeric expression with 60, 120 and 240 digits: it is 0 if what is left
+   * shrinks by as many decimals as digits were added, and not 0 as soon as it shrinks less.
+   */
+  /**
+   * The numeric value with the given number of digits, for a test inside of an evaluation: the
+   * number of digits which the engine prints is the one from before the call. <code>N</code>
+   * with a precision sets it for the output of its own result and leaves it set.
+   */
+  public static IExpr evalPrecise(IExpr expr, int digits, EvalEngine engine) {
+    final int figures = engine.getSignificantFigures();
+    try {
+      return engine.evalQuiet(F.N(expr, F.ZZ(digits)));
+    } finally {
+      engine.setSignificantFigures(figures);
+    }
+  }
+
+  private static boolean isZeroWithRisingPrecision(IAST function, EvalEngine engine) {
+    double previous = Double.NaN;
+    int previousDigits = 0;
+    for (int digits = 60; digits <= 240; digits *= 2) {
+      IExpr value = evalPrecise(function, digits, engine);
+      if (!value.isNumber()) {
+        return false;
+      }
+      if (value.isZero()) {
+        return true;
+      }
+      double magnitude = engine.evalQuiet(F.N(F.Log10(F.Abs(value)))).evalfNaN();
+      if (Double.isNaN(magnitude)) {
+        return false;
+      }
+      if (!Double.isNaN(previous) && magnitude > previous - (digits - previousDigits) + 12.0) {
+        // rounding noise loses one decimal for each digit more; this does not: it is a value
+        return false;
+      }
+      previous = magnitude;
+      previousDigits = digits;
+    }
+    return true;
   }
 
   public static IExpr.COMPARE_TERNARY isPossibleZeroExact(IExpr temp, EvalEngine engine) {
@@ -430,6 +614,10 @@ public class CompareUtil {
         }
         if (num == null || !(F.isZero(num.reDoubleValue(), tolerance)
             && F.isZero(num.imDoubleValue(), tolerance))) {
+          if (num != null && isCancellationOfHugeTerms(function, num, engine)) {
+            // terms too large for the machine precision to cancel: more digits decide
+            return isZeroWithRisingPrecision(function, engine);
+          }
           return false;
         }
         return true;
@@ -485,6 +673,14 @@ public class CompareUtil {
                 return false;
               }
             }
+          }
+        }
+
+        if (!function.isFree(S.AppellF1, true)
+            && function.isFreeAST(h -> !isSeriesNearOrigin(h) && isSpecialNumericFunction(h))) {
+          COMPARE_TERNARY sampled = isPossibleZeroNearOrigin(function, variables, engine);
+          if (sampled != IExpr.COMPARE_TERNARY.UNDECIDABLE) {
+            return sampled == IExpr.COMPARE_TERNARY.TRUE;
           }
         }
 
@@ -640,7 +836,9 @@ public class CompareUtil {
       if (!head.exponent().isNumber()) {
         return false;
       }
-      return true;
+      // a power of a number, Sqrt(3), is a constant: only a root of a variable expression has
+      // branches which the sample points may sit on
+      return !head.base().isNumericFunction(true);
     }
     int h = head.headID();
 

@@ -1607,4 +1607,18 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(x==a||x<0, x, Reals)", //
         "x==a||x<0");
   }
+  /** One argument, or a domain in the place of the variables: the symbols of the statement. */
+  @Test
+  public void testReduceInfersVariables() {
+    check("Reduce(t^2 < 4, Reals)", //
+        "t>-2&&t<2");
+    check("Reduce(t^2 < 4, Integers)", //
+        "t==-1||t==0||t==1");
+    check("Reduce(t^2 == 9, Complexes)", //
+        "t==-3||t==3");
+    check("Reduce(t + u == 5 && t - u == 1)", //
+        "t==3&&u==2");
+    check("Reduce(3 > 2, Reals)", //
+        "True");
+  }
 }

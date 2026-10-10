@@ -2595,6 +2595,19 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
+    // Reduce(statement) and Reduce(statement, domain): the variables are the symbols of the
+    // statement
+    final boolean domainOnly = ast.argSize() == 2 && (ast.arg2() == S.Reals
+        || ast.arg2() == S.Integers || ast.arg2() == S.Complexes || ast.arg2() == S.Rationals);
+    if (domainOnly || (ast.argSize() == 1 && !ast.arg1().isList())) {
+      // a domain in Element(x, Integers) is no variable
+      IAST symbols = new VariablesSet(ast.arg1()).getVarList()
+          .removeIf(v -> v.isBuiltInSymbol());
+      if (symbols.argSize() > (domainOnly ? 0 : 1) && ast.arg1().isFree(S.Element, true)) {
+        ast = domainOnly ? F.ternaryAST3(S.Reduce, ast.arg1(), symbols, ast.arg2())
+            : F.binaryAST2(S.Reduce, ast.arg1(), symbols);
+      }
+    }
     // `Infinity` is the default of `Reduce`: the exact result is kept
     long precision =
         solveOptions.workingPrecision().isInfinity() ? SolveUtils.MACHINE_PRECISION_REQUESTED
