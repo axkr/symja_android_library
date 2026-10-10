@@ -152,6 +152,9 @@ public abstract class AbstractRubiTestCase {
         // the expressions are structurally equal
         return Boolean.TRUE;
       }
+      if (isEqualUpToAppellF1Symmetry(result, expected)) {
+        return Boolean.TRUE;
+      }
       // Form-independent correctness check: the antiderivative must differentiate back to the
       // integrand, i.e. D(result, var) - integrand == 0. This is what lets a native algorithm stage
       // produce a different-looking (but correct) antiderivative than Rubi/Mathematica.
@@ -166,6 +169,43 @@ public abstract class AbstractRubiTestCase {
       }
       System.out.println("D(result) - integrand not provably zero:\n" + difference + "\n");
       return Boolean.FALSE;
+    });
+  }
+
+  /**
+   * <code>AppellF1(a, b, b, c, x, y)</code> and <code>AppellF1(a, b, b, c, y, x)</code> are the same
+   * function. Neither is rewritten into the other by the evaluation, and the numeric check doesn't
+   * reach most of the arguments which occur in the corpus, so an answer which differs from the
+   * expected one only in that order is recognised here: both are compared with the two arguments in
+   * the canonical order.
+   */
+  private boolean isEqualUpToAppellF1Symmetry(IExpr result, IExpr expected) {
+    if (result.isFree(S.AppellF1) || expected.isFree(S.AppellF1)) {
+      return false;
+    }
+    IExpr orderedResult = fEvaluator.eval(orderAppellF1Arguments(result));
+    IExpr orderedExpected = fEvaluator.eval(orderAppellF1Arguments(expected));
+    if (orderedResult.equals(orderedExpected)) {
+      return true;
+    }
+    IExpr difference = fEvaluator.eval(F.Subtract(orderedResult, orderedExpected));
+    if (difference.isZero() || fEvaluator.eval(F.PossibleZeroQ(difference)).isTrue()) {
+      return true;
+    }
+    return fEvaluator.eval(F.Simplify(difference)).isZero();
+  }
+
+  private static IExpr orderAppellF1Arguments(IExpr expr) {
+    return F.subst(expr, x -> {
+      if (x.isAST(S.AppellF1, 7)) {
+        IAST appellF1 = (IAST) x;
+        if (appellF1.arg2().equals(appellF1.arg3())
+            && appellF1.arg5().compareTo(appellF1.get(6)) > 0) {
+          return F.function(S.AppellF1, appellF1.arg1(), appellF1.arg2(), appellF1.arg3(),
+              appellF1.arg4(), appellF1.get(6), appellF1.arg5());
+        }
+      }
+      return F.NIL;
     });
   }
 
