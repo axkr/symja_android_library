@@ -434,6 +434,77 @@ public class GammaJS extends JS {
     return expIntegralEi(x.log());
   }
 
+  /** B(2k)/(2k) for k = 1..7, the coefficients of the asymptotic series of the digamma function. */
+  private static final double[] DIGAMMA_SERIES = {1.0 / 12.0, -1.0 / 120.0, 1.0 / 252.0,
+      -1.0 / 240.0, 1.0 / 132.0, -691.0 / 32760.0, 1.0 / 12.0};
+
+  /**
+   * The digamma function <code>PolyGamma(0, x)</code> to machine precision: reflected to the right
+   * of 1/2, shifted up to 12 with the recurrence and summed there with its asymptotic series.
+   *
+   * @return <code>NaN</code> at a pole
+   */
+  public static double digamma(double x) {
+    if (Double.isNaN(x) || x == Double.NEGATIVE_INFINITY) {
+      return Double.NaN;
+    }
+    if (x == Double.POSITIVE_INFINITY) {
+      return x;
+    }
+    double result = 0.0;
+    if (x < 0.5) {
+      if (x <= 0.0 && x == Math.rint(x)) {
+        return Double.NaN;
+      }
+      // PolyGamma(0, x) == PolyGamma(0, 1-x) - Pi*Cot(Pi*x), with the argument of the cotangent
+      // reduced to (-1/2, 1/2]
+      double reduced = x - Math.rint(x);
+      result = -Math.PI / Math.tan(Math.PI * reduced);
+      x = 1.0 - x;
+    }
+    while (x < 12.0) {
+      result -= 1.0 / x;
+      x += 1.0;
+    }
+    double inverseSquare = 1.0 / (x * x);
+    double series = 0.0;
+    for (int k = DIGAMMA_SERIES.length - 1; k >= 0; k--) {
+      series = (series + DIGAMMA_SERIES[k]) * inverseSquare;
+    }
+    return result + Math.log(x) - 0.5 / x - series;
+  }
+
+  /**
+   * The digamma function <code>PolyGamma(0, z)</code> for a complex argument.
+   *
+   * @return <code>NaN</code> at a pole
+   */
+  public static Complex digamma(Complex z) {
+    double re = z.getReal();
+    double im = z.getImaginary();
+    if (im == 0.0) {
+      double value = digamma(re);
+      return Double.isNaN(value) ? Complex.NaN : new Complex(value);
+    }
+    Complex result = Complex.ZERO;
+    if (re < 0.5) {
+      // Pi*Cot(Pi*z) with the real part of the argument reduced to (-1/2, 1/2]
+      Complex reduced = new Complex(Math.PI * (re - Math.rint(re)), Math.PI * im);
+      result = reduced.tan().reciprocal().multiply(-Math.PI);
+      z = Complex.ONE.subtract(z);
+    }
+    while (z.getReal() < 12.0) {
+      result = result.subtract(z.reciprocal());
+      z = z.add(1.0);
+    }
+    Complex inverseSquare = z.multiply(z).reciprocal();
+    Complex series = Complex.ZERO;
+    for (int k = DIGAMMA_SERIES.length - 1; k >= 0; k--) {
+      series = series.add(DIGAMMA_SERIES[k]).multiply(inverseSquare);
+    }
+    return result.add(z.log()).subtract(z.reciprocal().multiply(0.5)).subtract(series);
+  }
+
   /**
    * The digamma function.
    *

@@ -36,6 +36,65 @@ public class MathieuFunctionTest extends ExprEvaluatorTestCase {
         "{1.15872,0.0359219}");
   }
 
+  /**
+   * The quotient <code>MathieuC(a,q,z)/MathieuC(a,q,0)</code> is the even basic solution of the
+   * equation, whatever the normalization is. The values are an integration of the equation with
+   * mpmath.
+   */
+  @Test
+  public void testLargeParameterAndComplexArgument() {
+    // the largest coefficient of the series is far from the index of the reduced exponent
+    checkNumeric("MathieuC(1000., 1., 0.7)/MathieuC(1000., 1., 0.)", //
+        "-0.9912539571050478");
+    checkNumeric("MathieuS(1000., 1., 0.7)/MathieuSPrime(1000., 1., 0.)", //
+        "-0.004076440108078435");
+    check("N(MathieuC(10000, 3, 3/2)/MathieuC(10000, 3, 0), 30)", //
+        "0.69752527046258148124398319549");
+    checkNumeric("MathieuC(1.*^6, 5., 0.25)/MathieuC(1.*^6, 5., 0.)", //
+        "0.2398248153164624");
+    // off the real axis the terms of the series grow with their index, and cancel
+    checkNumeric("MathieuC(2., 1., 3.*I)/MathieuC(2., 1., 0.)", //
+        "0.10006908583408171");
+    checkNumeric("MathieuC(2., 1., 1.+4.*I)/MathieuC(2., 1., 0.)", //
+        "-5.323621711943459E18+I*4.786426655531498E18");
+    // out of reach of the series
+    check("MathieuC(2., 1., 40.*I)", //
+        "MathieuC(2.0,1.0,I*40.0)");
+  }
+
+  @Test
+  public void testCharacteristicOfLargeOrder() {
+    // r^2 + q^2/(2*(r^2-1)) + ...
+    check("N(MathieuCharacteristicA(5000, 3), 40) - 5000^2", //
+        "0.00000018000000720000109800028368");
+    checkNumeric("MathieuCharacteristicExponent(1.*^10, 1.)", //
+        "100000.0");
+    check("N(MathieuCharacteristicExponent(10001, 3), 30)", //
+        "100.004997625118551306667413671");
+  }
+
+  /**
+   * Inside an instability gap Mathematica returns the Floquet solution with another complex phase:
+   * <code>MathieuC[1, 1, 0]</code> is <code>0.6996817573520356-0.6912936476795109*I</code> there and
+   * real here. The phase follows no rule that could be found, at machine and at 30 digits alike;
+   * the absolute values, and the exponent, are the same.
+   */
+  @Test
+  public void testAbsoluteValueInsideGap() {
+    checkNumeric("MathieuCharacteristicExponent(1, 1.)", //
+        "1.0+I*0.45345353434748303");
+    check("Abs(N(Abs(MathieuC(1, 1, 0)), 30)" //
+        + " - Abs(0.699681757352035596773672784116`30-0.691293647679510875705256828838`30*I)) < 10^-27", //
+        "True");
+    check("Abs(N(Abs(MathieuS(1, 1, 1)), 30)" //
+        + " - Abs(0.786209298246173613264693440297`30+0.795749107907935480559946880978`30*I)) < 10^-27", //
+        "True");
+    check("Abs(Abs(MathieuC(5, 3, 0.)) - Abs(1.0434574462979649-0.4078274953689056*I)) < 10^-11", //
+        "True");
+    check("Abs(Abs(MathieuC(4, 1/100000, 0.)) - Abs(0.2357026532393785+0.5270471551016456*I)) < 10^-11", //
+        "True");
+  }
+
   @Test
   public void testMathieuS() {
     checkNumeric("MathieuS(2, 1, 3.2)", //

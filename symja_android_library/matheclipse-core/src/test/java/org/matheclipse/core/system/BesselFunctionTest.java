@@ -46,13 +46,15 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   /**
    * An order far above the argument, where the library routine's cost grows with the order and
-   * {@link org.matheclipse.core.numerics.functions.AngerWeber} takes over. The first of these never
+   * {@link org.matheclipse.external.apfloat.ApcomplexAsymptoticMath} takes over. The first of these never
    * returned; the value is Mathematica's.
    */
   @Test
   public void testAngerJLargeOrder() {
+    // the order arrives with 30 digits, 18 of them in front of the decimal point: what is left of
+    // it modulo 2 gives 12 digits of the result (2.86900296375775...*10^-19 for the exact order)
     checkNumeric("AngerJ(-9223372036854775808/11,-8`30*^-1)", //
-        "2.86900296375775379300212979386`30*10^-19");
+        "2.86900296376*10^-19", 1.0e-11);
     checkNumeric("AngerJ(1000000.25, 0.5)", //
         "2.2507891023009384E-7");
     checkNumeric("AngerJ(1000.3,-0.8)", //
@@ -66,6 +68,11 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     // can hold
     checkNumeric("AngerJ(1.0*^12, 3.0)", //
         "0.0");
+    // near the order the Bessel function is not small
+    checkNumeric("AngerJ(1000., 990.)", //
+        "0.01236194245623018");
+    checkNumeric("AngerJ(1001., 990.)", //
+        "0.01049250269363896");
 
     // the argument is too near the order for the expansion, so the library routine answers
     checkNumeric("AngerJ(1000.5, 500.0)", //
@@ -74,12 +81,26 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   /**
    * A large argument, where the library routine's series in <code>z^2</code> needs a working
-   * precision that grows with it and {@link org.matheclipse.core.numerics.functions.StruveFunctions}
+   * precision that grows with it and {@link org.matheclipse.external.apfloat.ApcomplexAsymptoticMath}
    * takes over. The first of these took 396 seconds at 25 digits; its value is Mathematica's.
    */
   @Test
   @Tag(TestTags.SLOW)
   public void testStruveLargeArgument() {
+    // an order far above a term's double range, next to the imaginary axis, and an order above the
+    // argument: values of mpmath
+    // above the range of a double: a number of machine precision
+    checkNumeric("StruveH(200.5, 10000.)", //
+        "6.295844977322068*10^362");
+    checkNumeric("StruveH(0.3, 20+3.*I)", //
+        "0.03092537235925204+I*1.7672721818137485");
+    checkNumeric("StruveL(0.3, 0.5+50.*I)", //
+        "0.0372976711661535+I*(-0.06649075487374914)");
+    checkNumeric("StruveH(200.5, 100.)", //
+        "6.586486477575615E-37");
+    checkNumeric("StruveL(200.5, 100.)", //
+        "6.769271750930072E-31");
+
     checkNumeric("StruveH(-8`30*^-1+I*1.2`30,10007)", //
         "-0.026802958742107957516070512296+I*0.0018515622588921706369258653718");
     checkNumeric("StruveH(-0.8+I*1.2,10007)", //
@@ -231,6 +252,18 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBesselJ() {
+    // a large half-integer order stays a Bessel function, and has all digits; mpmath
+    check("BesselJ(201/2, x)", //
+        "BesselJ(201/2,x)");
+    check("N(BesselJ(201/2, 100), 30)", //
+        "0.0868136462159715016481161751876");
+    check("N(BesselI(201/2, 100), 30)", //
+        "2980887736253533000171.24924938");
+    check("LeafCount(BesselK(21/2, x))", //
+        "5");
+    // complex order
+    check("N(BesselJ(2+I, 12), 30)", //
+        "-0.166242296231681360011136923587+I*0.41728391381755299494916565147");
     // at 0 an order which is not an integer is 0 for a positive real part and infinite for a
     // negative one; the negative orders used to stay unevaluated, and Limit read
     // t^(1/4)*BesselJ(-1/4, t) at t == 0 as 0 instead of 2^(1/4)/Gamma(3/4)
@@ -324,6 +357,11 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBesselJZero() {
+    // arbitrary precision: the machine precision zero refined with Newton's method; mpmath
+    check("N(BesselJZero(0, 1), 30)", //
+        "2.40482555769577276862163187932");
+    check("N(BesselJZero(1/3, 3), 30)", //
+        "9.17050666946388776809000306821");
     checkNumeric("BesselJZero(1.5, 1.0)", //
         "4.493409457909063");
 
@@ -348,6 +386,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBesselK() {
+    // integer order with a large argument
+    check("N(BesselK(2, 60), 30)", //
+        "0.00000000000000000000000000146141890810967795320279258525");
     check("BesselK(3/2, x)", //
         "Sqrt(Pi/2)*(1/(E^x*x^2)+1/(E^x*x))*Sqrt(x)");
     check("BesselK(-3/2, x)", //
@@ -385,6 +426,11 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBesselY() {
+    // integer order with a large argument
+    check("N(BesselY(3, 100), 30)", //
+        "0.0234457866877609115602292983749");
+    check("N(BesselY(-5/2, 1/100), 40)", //
+        "0.0000005319192410955080457236305904510154023129");
     check("BesselY(-5/2, z)", //
         "(Sqrt(2/Pi)*((-3*Cos(z))/z-Sin(z)+(3*Sin(z))/z^2))/Sqrt(z)");
 
@@ -430,6 +476,8 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBesselYZero() {
+    check("N(BesselYZero(1, 20), 30)", //
+        "62.040411147670693473712823944");
     // https://github.com/paulmasson/math/issues/11
     checkNumeric("BesselYZero(0.0,1)", //
         "0.8935769662791667");
@@ -529,22 +577,21 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     check("SphericalBesselJ(2.5,-5)", //
         "I*0.204488");
     checkNumeric("SphericalBesselJ(1,5.2)", //
-        "-0.12277149950214108");
+        "-0.12277149950007817");
     checkNumeric("SphericalBesselJ(2.5,-5)", // I*0.20448758430717914
-        "I*0.20448758430717917");
+        "I*0.20448758430572503");
     checkNumeric("SphericalBesselJ(2.0,-5)", //
-        "0.13473121008883018");
+        "0.1347312100851252");
     checkNumeric("SphericalBesselJ(-0.5,1)", //
         "0.9590330784042026");
     checkNumeric("SphericalBesselJ(2.0+I,5.0+I)", //
-        "0.14163924534491812+I*0.005070099110737425");
+        "0.1416392453448203+I*0.005070099110620285");
   }
 
   @Test
   public void testSphericalBesselY() {
-    // TODO improve this value
     check("SphericalBesselY(2.5,-5)", //
-        "-0.613462+I*0.122973");
+        "-0.408975+I*0.0819826");
 
     checkNumeric("SphericalBesselY(1,5.5)", //
         "0.10485295921809935");
@@ -555,6 +602,49 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "0.15456969798535916+I*(-0.05055787979478312)");
     checkNumeric("SphericalBesselY(2.0,-5)", //
         "-0.16499545760108916");
+  }
+
+  /** The expansion for a large argument; the values were calculated with mpmath. */
+  @Test
+  public void testAngerWeberLargeArgument() {
+    checkNumeric("WeberE(0.5, 1500.)", //
+        "-0.002483928077608207");
+    checkNumeric("WeberE(0.5, -1500.)", //
+        "-0.02026352743100665");
+    check("N(WeberE(1/2, 1500), 30)", //
+        "-0.0024839280776082072151195633224");
+    checkNumeric("AngerJ(0.5, 5000.)", //
+        "-0.01108435186380962");
+    checkNumeric("AngerJ(0.5, -5000.)", //
+        "0.0016815777318985503");
+    check("N(AngerJ(1/3, 20000), 30)", //
+        "0.00437284415899558236281306697278");
+    // an exact integer order: not through the difference to StruveH, which cancels 7 digits
+    check("N(WeberE(7, 300), 30)", //
+        "0.0305453742504866305011167633672");
+    check("WeberE(3, 2)", //
+        "WeberE(3,2)");
+  }
+
+  /** Machine precision through the arbitrary precision routines; calculated with mpmath. */
+  @Test
+  public void testStruveAndSphericalBesselMachinePrecision() {
+    // a negative half-integer order
+    checkNumeric("StruveH(-2.5, 0.5)", //
+        "0.009236407819379724");
+    checkNumeric("StruveL(-2.5, 2.5)", //
+        "0.8051594715915758");
+    checkNumeric("StruveH(1, -2.0)", //
+        "0.6467637282835621");
+    checkNumeric("SphericalBesselY(0, 60.0)", //
+        "0.015873549673585937");
+    // Sqrt(Pi/2)*BesselJ(5/2, z)/Sqrt(z), even in z
+    checkNumeric("SphericalBesselJ(2, -3.0)", //
+        "0.2986374970757335");
+    check("N(SphericalBesselJ(3, 1/2), 30)", //
+        "0.00117403544386755730896725931152");
+    check("N(SphericalBesselY(0, 12), 30)", //
+        "-0.0703211632277076753878296077644");
   }
 
   @Test
@@ -580,17 +670,26 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "2/Pi-StruveH(1,z)");
 
     checkNumeric("Table(WeberE(n,Sqrt(3)),{n,-1.0,-10.0,-1})", //
-        "{-0.1169147394592414,0.1765050158610133,-0.29070613422346014,0.09542537933720352,-0.15004481335939523,0.0357535606026218,-0.09766312070144068,0.018542851878464717,-0.07362840767018497,0.011520811240188777}");
+        "{-0.11691473945924136,0.17650501586101344,-0.2907061342234598,0.0954253793372038,-0.15004481335939443,0.03575356060260887,-0.09766312070145154,0.01854285187801589,-0.07362840767160177,0.01152081203191165}");
     checkNumeric("WeberE(1.0, 2.0)", //
         "-0.010143955915980829");
 
     checkNumeric("WeberE(0.5, -4.0)", //
-        "0.6366197723675813*HypergeometricPFQ({1},{0.75,1.25},-4.0)+1.6976527263135508*HypergeometricPFQ({\n"
-            + "1},{1.25,1.75},-4.0)");
+        "-0.23360328508316692");
+    checkNumeric("WeberE(1.5, 3.5)", //
+        "-0.3972562592100308");
+    // the two hypergeometric series of the function cancel
+    checkNumeric("WeberE(3.5, 250.0)", //
+        "0.04738051551450474");
+    checkNumeric("WeberE(1/3, 2.0+I)", //
+        "-0.796058029521489+I*(-0.2888672902984895)");
+    check("N(WeberE(1/2, 3), 30)", //
+        "-0.570621336461999334625833563463");
+    check("N(WeberE(-5/2, 80), 30)", //
+        "-0.0928464996233765580501613827003");
+    check("N(WeberE(1/3, 2+I), 30)", //
+        "-0.796058029521489025606148219799+I*(-0.28886729029848945228554292277)");
 
-    check("WeberE(1.5, 3.5)", //
-        "0.212207*HypergeometricPFQ({1},{0.25,1.75},-3.0625)+0.891268*HypergeometricPFQ({\n"
-            + "1},{0.75,2.25},-3.0625)");
     checkNumeric("Table(WeberE(n,b),{n,1,10})", //
         "{2/Pi-StruveH(1,b)," //
             + "2/3*b/Pi-StruveH(2,b)," //

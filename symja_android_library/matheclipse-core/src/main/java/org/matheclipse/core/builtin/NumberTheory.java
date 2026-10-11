@@ -3530,6 +3530,11 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isInexactNumber()) {
+        // E^(z*LogGamma(z+1))/BarnesG(z+1)
+        IExpr z1 = F.Plus(F.C1, arg1);
+        return F.Divide(F.Exp(F.Times(arg1, F.LogGamma(z1))), F.BarnesG(z1));
+      }
       if (arg1.isInteger()) {
         int n = arg1.toIntDefault(0);
         if (-8 <= n && n <= 7) {
@@ -7194,6 +7199,10 @@ public final class NumberTheory {
 
   public static IExpr factorialPower2(IExpr v, IExpr n, EvalEngine engine) {
     IExpr result = F.C1;
+    if (n.isNumber() && !n.isInteger() && !(n.isReal() && ((IReal) n).isNumIntValue())) {
+      // not a product of n factors: Gamma(1+x)/Gamma(1-n+x)
+      return F.Divide(F.Gamma(F.Plus(F.C1, v)), F.Gamma(F.Plus(F.C1, F.Negate(n), v)));
+    }
     // x*(x-1)*(x-(n-1))
     if (engine.evalLess(n, F.C0)) {
       return F.NIL;

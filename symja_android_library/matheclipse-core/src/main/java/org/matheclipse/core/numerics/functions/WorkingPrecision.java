@@ -3,6 +3,7 @@ package org.matheclipse.core.numerics.functions;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -12,7 +13,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
 
 /**
- * Runs one of the asymptotic routines in this package at the precision its arguments arrived with,
+ * Runs one of the asymptotic routines of
+ * {@link org.matheclipse.external.apfloat.ApcomplexAsymptoticMath} at the precision its arguments
+ * arrived with,
  * and hands the answer back as the kind of number they arrived as.
  *
  * <p>
@@ -23,10 +26,18 @@ import org.matheclipse.core.interfaces.IInexactNumber;
  */
 public final class WorkingPrecision {
 
-  /** A routine that answers at the precision of <code>h</code>, or declines with null. */
+  /**
+   * A routine that answers at the precision of its arguments, or declines with an
+   * <code>ArithmeticException</code>.
+   */
   @FunctionalInterface
   public interface Routine {
-    Apcomplex apply(Apcomplex a, Apcomplex b, FixedPrecisionApcomplexHelper h);
+    /**
+     * @param a the first argument, with <code>precision</code> digits
+     * @param b the second argument, with <code>precision</code> digits
+     * @param precision the working precision
+     */
+    Apcomplex apply(Apcomplex a, Apcomplex b, int precision);
   }
 
   private WorkingPrecision() {}
@@ -44,13 +55,14 @@ public final class WorkingPrecision {
         && !(b instanceof ApfloatNum) && !(b instanceof ApcomplexNum);
     FixedPrecisionApcomplexHelper h =
         machinePrecision ? EvalEngine.getApfloatDouble() : EvalEngine.getApfloat();
+    final int precision = (int) h.precision();
     Apcomplex value;
     try {
-      value = routine.apply(a.apcomplexValue(), b.apcomplexValue(), h);
-    } catch (ArgumentTypeException | ApfloatRuntimeException ex) {
-      return F.NIL;
-    }
-    if (value == null) {
+      value = routine.apply(CarlsonArbitraryPrecision.apcomplex(a, precision),
+          CarlsonArbitraryPrecision.apcomplex(b, precision), precision);
+    } catch (ArithmeticException | ArgumentTypeException | ApfloatRuntimeException ex) {
+      // the routine declines: its expansion doesn't reach the precision here
+      Errors.rethrowsInterruptException(ex);
       return F.NIL;
     }
     if (realResult && a.isReal() && b.isReal()) {

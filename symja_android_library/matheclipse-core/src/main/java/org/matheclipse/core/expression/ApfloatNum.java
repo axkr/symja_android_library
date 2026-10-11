@@ -14,6 +14,7 @@ import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
+import org.matheclipse.external.apfloat.ApcomplexBesselMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -451,6 +452,14 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr besselI(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      if (!arg2.isZero()) {
+        try {
+          return guardedBesselFirstKind(apfloatValue(), ((INumber) arg2).apcomplexValue(),
+              h().precision(), true);
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
+          // the library routines below
+        }
+      }
       if (arg2 instanceof IReal) {
         try {
           Apfloat besselI = h().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
@@ -472,6 +481,14 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr besselJ(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      if (!arg2.isZero()) {
+        try {
+          return guardedBesselFirstKind(apfloatValue(), ((INumber) arg2).apcomplexValue(),
+              h().precision(), false);
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
+          // the library routines below
+        }
+      }
       if (arg2 instanceof IReal) {
         try {
           Apfloat besselJ = h().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
@@ -497,17 +514,9 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr besselK(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      if (arg2 instanceof IReal) {
-        try {
-          Apfloat besselK = h().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
-          return F.num(besselK);
-        } catch (ArithmeticException | ApfloatRuntimeException are) {
-          // result would be complex exception
-        }
-      }
       try {
-        Apcomplex besselK = h().besselK(apfloatValue(), ((INumber) arg2).apcomplexValue());
-        return F.complexNum(besselK);
+        return guardedBessel(apfloatValue(), ((INumber) arg2).apcomplexValue(), h().precision(),
+            false);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselK, are);
       }
@@ -515,20 +524,47 @@ public class ApfloatNum implements INum {
     return INum.super.besselK(arg2);
   }
 
+  /**
+   * <code>BesselY(nu, z)</code> or <code>BesselK(nu, z)</code> with the digits which the difference
+   * of the two Bessel functions behind them cancels, and at an integer order - see
+   * {@link ApcomplexBesselMath}.
+   *
+   * @param precision the precision of the arguments, which are padded to it
+   * @return a real number if the imaginary part of the value is zero
+   */
+  /**
+   * <code>BesselJ(nu, z)</code> or <code>BesselI(nu, z)</code> with the digits which the series
+   * cancels where the order and the argument are large - see {@link ApcomplexBesselMath}.
+   *
+   * @return a real number if the imaginary part of the value is zero
+   */
+  static IExpr guardedBesselFirstKind(Apcomplex nu, Apcomplex z, long precision,
+      boolean modified) {
+    nu = new Apcomplex(nu.real().signum() == 0 ? nu.real() : nu.real().precision(precision),
+        nu.imag().signum() == 0 ? nu.imag() : nu.imag().precision(precision));
+    z = new Apcomplex(z.real().signum() == 0 ? z.real() : z.real().precision(precision),
+        z.imag().signum() == 0 ? z.imag() : z.imag().precision(precision));
+    Apcomplex value =
+        modified ? ApcomplexBesselMath.besselI(nu, z) : ApcomplexBesselMath.besselJ(nu, z);
+    return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
+  }
+
+  static IExpr guardedBessel(Apcomplex nu, Apcomplex z, long precision, boolean besselY) {
+    nu = new Apcomplex(nu.real().signum() == 0 ? nu.real() : nu.real().precision(precision),
+        nu.imag().signum() == 0 ? nu.imag() : nu.imag().precision(precision));
+    z = new Apcomplex(z.real().signum() == 0 ? z.real() : z.real().precision(precision),
+        z.imag().signum() == 0 ? z.imag() : z.imag().precision(precision));
+    Apcomplex value =
+        besselY ? ApcomplexBesselMath.besselY(nu, z) : ApcomplexBesselMath.besselK(nu, z);
+    return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
+  }
+
   @Override
   public IExpr besselY(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      if (arg2 instanceof IReal) {
-        try {
-          Apfloat besselY = h().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
-          return F.num(besselY);
-        } catch (ArithmeticException | ApfloatRuntimeException are) {
-          // result would be complex exception
-        }
-      }
       try {
-        Apcomplex besselY = h().besselY(apfloatValue(), ((INumber) arg2).apcomplexValue());
-        return F.complexNum(besselY);
+        return guardedBessel(apfloatValue(), ((INumber) arg2).apcomplexValue(), h().precision(),
+            true);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselY, are);
       }
@@ -1949,6 +1985,9 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr pochhammer(IExpr arg2) {
     if (arg2 instanceof INumber) {
+      if (ApcomplexNum.isPochhammerPole(apfloatValue(), ((INumber) arg2).apcomplexValue())) {
+        return F.CComplexInfinity;
+      }
       if (arg2 instanceof IReal) {
         Apfloat pochhammer = h().pochhammer(apfloatValue(), ((IReal) arg2).apfloatValue());
         return F.num(pochhammer);

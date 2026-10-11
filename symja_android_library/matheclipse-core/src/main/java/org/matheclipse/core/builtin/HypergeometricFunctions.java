@@ -15,6 +15,7 @@ import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.external.apfloat.ApcomplexHypergeometricMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -838,7 +839,7 @@ public class HypergeometricFunctions {
             case 2:
               // ((-2 - n)*ChebyshevU(n, z) + z*(1 + n)*ChebyshevU(1 + n, z))/(2*(-1 + z^2))
               return F.Times(F.C1D2, F.Power(F.Plus(F.CN1, F.Sqr(z)), -1),
-                  F.Plus(F.Times(F.Plus(F.CN2, F.Negate(S.n)), F.ChebyshevU(n, z)),
+                  F.Plus(F.Times(F.Plus(F.CN2, F.Negate(n)), F.ChebyshevU(n, z)),
                       F.Times(F.Plus(F.C1, n), z, F.ChebyshevU(F.Plus(F.C1, n), z))));
           }
         }
@@ -1869,13 +1870,20 @@ public class HypergeometricFunctions {
         bVector = F.CEmptyList;
       }
 
-      if (aVector.argSize() > 0 && bVector.argSize() > 0) {
-        if (aVector.arg1().isMathematicalIntegerNegative()) {
-          int n = aVector.arg1().toIntDefault();
-          if (F.isPresent(n) && n < 0) {
-            return hypergeometricPFQNegativeN(aVector, bVector, z, n, engine);
+      if (aVector.argSize() > 0 && aVector.arg1().isMathematicalIntegerNegative()) {
+        int n = aVector.arg1().toIntDefault();
+        if (F.isPresent(n) && n < 0) {
+          if (z.isInexactNumber() || a.isInexactVector() > 0 || b.isInexactVector() > 0) {
+            // the terms of the polynomial alternate: summed with the digits which they cancel
+            IExpr series = seriesHypergeometricPFQ(aVector, bVector, z, engine);
+            if (series.isPresent()) {
+              return series;
+            }
           }
+          return hypergeometricPFQNegativeN(aVector, bVector, z, n, engine);
         }
+      }
+      if (aVector.argSize() > 0 && bVector.argSize() > 0) {
         if (b.isList1()) {
           if (a.isList1()) {
             // there are rules in Hypergeometric1F1Rules.m - don't use direct call
@@ -1910,6 +1918,10 @@ public class HypergeometricFunctions {
       if (z.isInexactNumber() || a.isInexactVector() > 0 || b.isInexactVector() > 0) {
         return numericHypergeometricPFQ(a, b, z, engine);
       }
+      if (engine.isNumericMode() && z.isNumber()) {
+        // N() of exact arguments
+        return seriesHypergeometricPFQ(a, b, z, engine);
+      }
       return F.NIL;
     }
 
@@ -1931,18 +1943,33 @@ public class HypergeometricFunctions {
     private static IExpr hypergeometricPFQNegativeN(IAST aVector, IAST bVector, IExpr z, int n,
         EvalEngine engine) {
       n = -n;
-      // Sum(Product(Pochhammer(Subscript(a,j),k)*z^k,{j,1,p})/Product(Pochhammer(Subscript(b,j),k)*k!,{j,
-      // 1,q}),{k,0,n})
-      int p = aVector.argSize();
-      int q = bVector.argSize();
-      ISymbol j1 = F.Dummy("j1");
-      ISymbol j2 = F.Dummy("j2");
-      ISymbol k = F.Dummy("k");
-      IAST p1 = F.Times(F.Power(z, k), //
-          F.Product(F.Pochhammer(F.Part(aVector, j1), k), F.list(j1, F.C1, F.ZZ(p))));
-      IAST p2 = F.Times(F.Factorial(k), //
-          F.Product(F.Pochhammer(F.Part(bVector, j2), k), F.list(j2, F.C1, F.ZZ(q))));
-      IAST sum = F.Sum(F.Times(p1, F.Power(p2, F.CN1)), F.list(k, F.C0, F.ZZ(n)));
+      // Sum(Product(Pochhammer(Subscript(a,j),k),{j,1,p})*z^k/(Product(Pochhammer(Subscript(b,j),k),{j,
+      // 1,q})*k!),{k,0,n}), every term from the one before
+      IASTAppendable sum = F.PlusAlloc(n + 1);
+      IExpr term = F.C1;
+      sum.append(term);
+      for (int k = 0; k < n; k++) {
+        IASTAppendable factor = F.TimesAlloc(aVector.argSize() + bVector.argSize() + 2);
+        factor.append(term);
+        factor.append(z);
+        factor.append(F.QQ(1, k + 1L));
+        for (int i = 1; i <= aVector.argSize(); i++) {
+          factor.append(F.Plus(aVector.get(i), F.ZZ(k)));
+        }
+        for (int i = 1; i <= bVector.argSize(); i++) {
+          IExpr denominator = engine.evaluate(F.Plus(bVector.get(i), F.ZZ(k)));
+          if (denominator.isZero()) {
+            // a non-positive integer of the lower parameters before the series ends
+            return F.CComplexInfinity;
+          }
+          factor.append(F.Power(denominator, F.CN1));
+        }
+        term = engine.evaluate(factor);
+        if (term.isZero()) {
+          break;
+        }
+        sum.append(term);
+      }
       return engine.evaluate(sum);
     }
 
@@ -1976,37 +2003,14 @@ public class HypergeometricFunctions {
       }
       final long targetPrecision =
           engine.isArbitraryMode() ? engine.getNumericPrecision() : ParserConfig.MACHINE_PRECISION;
-      final long guardDigits = (long) (absZ / Math.log(10.0)) + 10L;
-      final long workPrecision = targetPrecision + guardDigits;
-      // The summands grow until k is about Abs(z) and decrease at least geometrically from k ==
-      // 2*Abs(z) on, so this is an upper bound for the number of summands that can contribute.
-      final long maxIterations = 2L * (long) absZ + 4L * workPrecision + 100L;
-
-      zc = zc.precision(workPrecision);
-      // summand of index 0 is 1
-      Apcomplex term = new Apcomplex(new Apfloat(1, workPrecision));
-      Apcomplex sum = term;
-      Apfloat maxAbs = Apfloat.ONE;
-      // relative to the largest summand, not to the result: the guard digits above are chosen so
-      // that maxAbs*10^(-workPrecision) is already below the last requested digit of the result
-      Apfloat epsilon = ApfloatMath.pow(new Apfloat(10, workPrecision), -workPrecision);
-      for (int k = 1;; k++) {
-        if (k > maxIterations) {
-          // cannot happen for a converging summand sequence - don't return a truncated sum
-          return F.NIL;
-        }
-        // term == z^k/k!
-        term = term.multiply(zc).divide(new Apfloat(k, workPrecision));
-        Apcomplex summand = term.divide(ApfloatMath.pow(new Apfloat(k + 1, workPrecision), p));
-        sum = sum.add(summand);
-        Apfloat absSummand = ApcomplexMath.abs(summand);
-        if (absSummand.compareTo(maxAbs) > 0) {
-          maxAbs = absSummand;
-        } else if (k > absZ && absSummand.compareTo(maxAbs.multiply(epsilon)) < 0) {
-          // past the largest summand and below the requested precision - the remaining tail
-          // decreases factorially and cannot reach the returned digits anymore
-          break;
-        }
+      Apcomplex sum;
+      try {
+        sum = ApcomplexHypergeometricMath.hypergeometricOnesTwos(p,
+            new Apcomplex(zc.real().signum() == 0 ? zc.real() : zc.real().precision(targetPrecision),
+                zc.imag().signum() == 0 ? zc.imag() : zc.imag().precision(targetPrecision)));
+      } catch (ArithmeticException ae) {
+        // cannot happen for a converging summand sequence - don't return a truncated sum
+        return F.NIL;
       }
 
       boolean realResult = zc.imag().signum() == 0;
@@ -2018,6 +2022,49 @@ public class HypergeometricFunctions {
           : F.complexNum(sum.real().doubleValue(), sum.imag().doubleValue());
     }
 
+    /**
+     * The function from its series - in <code>z</code>, or in <code>1/z</code> for
+     * <code>p == q+1</code> - summed with the digits which its terms cancel, at machine precision or
+     * the precision of the engine; {@link F#NIL} where that gives no result, as next to the unit
+     * circle for <code>p == q+1</code>.
+     */
+    private static IExpr seriesHypergeometricPFQ(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
+      if (!c.isNumber() || !a.isList() || !b.isList() || !((IAST) a).forAll(x -> x.isNumber())
+          || !((IAST) b).forAll(x -> x.isNumber())) {
+        return F.NIL;
+      }
+      final boolean arbitrary = engine.isArbitraryMode();
+      final int digits =
+          arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+      try {
+        IAST aList = (IAST) a;
+        IAST bList = (IAST) b;
+        Apcomplex[] upper = new Apcomplex[aList.argSize()];
+        Apcomplex[] lower = new Apcomplex[bList.argSize()];
+        boolean real = c.isReal();
+        for (int i = 0; i < upper.length; i++) {
+          upper[i] = CarlsonArbitraryPrecision.apcomplex(aList.get(i + 1), digits);
+          real &= aList.get(i + 1).isReal();
+        }
+        for (int i = 0; i < lower.length; i++) {
+          lower[i] = CarlsonArbitraryPrecision.apcomplex(bList.get(i + 1), digits);
+          real &= bList.get(i + 1).isReal();
+        }
+        Apcomplex z = CarlsonArbitraryPrecision.apcomplex(c, digits);
+        Apcomplex value = ApcomplexHypergeometricMath.hypergeometricPFQ(upper, lower, z);
+        // real off the cut from 1 along the real axis
+        if (real && (upper.length <= lower.length || z.real().compareTo(Apfloat.ONE) < 0
+            || value.imag().signum() == 0)) {
+          return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
+        }
+        return arbitrary ? F.complexNum(value)
+            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        return F.NIL;
+      }
+    }
+
     private static IExpr numericHypergeometricPFQ(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
       try {
         if (c.isNumber() && a.isList() && b.isList() && a.argSize() > 0
@@ -2027,6 +2074,10 @@ public class HypergeometricFunctions {
           if (result.isPresent()) {
             return result;
           }
+        }
+        IExpr series = seriesHypergeometricPFQ(a, b, c, engine);
+        if (series.isPresent()) {
+          return series;
         }
         double A[] = a.toDoubleVector();
         double B[] = b.toDoubleVector();

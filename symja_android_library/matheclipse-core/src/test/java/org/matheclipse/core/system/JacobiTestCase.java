@@ -295,6 +295,17 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testJacobiSN() {
+    // arbitrary precision, as quotients of theta functions; calculated with mpmath
+    check("N(JacobiSN(2, 9/10), 30)", //
+        "0.981615869518493799254732625891");
+    check("N(JacobiSN(1/3, 1/3), 30)", //
+        "0.325295628806181414920755892497");
+    check("N(JacobiCN(2, 3), 30)", //
+        "0.999997678514382486454155884972");
+    check("N(JacobiDN(1/2+I, 1/4+I/3), 30)", //
+        "1.33688744189423415466982447672+I*(-0.134651050603600509221323570754)");
+    check("N(JacobiCD(2, -7/10), 30)", //
+        "-0.61123526450623631533622539088");
     check("JacobiSN(2.5,0.5)", //
         "0.890615");
     check("JacobiSN(10.0,1/3)", //

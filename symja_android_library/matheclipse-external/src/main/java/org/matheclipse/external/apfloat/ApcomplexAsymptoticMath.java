@@ -39,6 +39,9 @@ public class ApcomplexAsymptoticMath
      * @return <b>H</b><sub>&nu;</sub>(<i>z</i>)
      *
      * @throws ArithmeticException If the expansion doesn't reach the precision for these arguments.
+     *
+     * @see <a href="https://dlmf.nist.gov/11.6#E1">DLMF 11.6.1</a>, the expansion of <b>H</b> - <i>Y</i> which is summed here
+     * @see <a href="https://functions.wolfram.com/Bessel-TypeFunctions/StruveH/26/01/02/">The hypergeometric representation</a>, which mpmath and apfloat sum for any argument
      */
 
     public static Apcomplex struveH(Apcomplex ν, Apcomplex z)
@@ -74,6 +77,9 @@ public class ApcomplexAsymptoticMath
      * @return <b>L</b><sub>&nu;</sub>(<i>z</i>)
      *
      * @throws ArithmeticException If the expansion doesn't reach the precision for these arguments.
+     *
+     * @see <a href="https://dlmf.nist.gov/11.6#E2">DLMF 11.6.2</a>, the expansion of <b>L</b> - <i>I</i> which is summed here
+     * @see <a href="https://functions.wolfram.com/Bessel-TypeFunctions/StruveL/26/01/02/">The hypergeometric representation</a>, which mpmath and apfloat sum for any argument
      */
 
     public static Apcomplex struveL(Apcomplex ν, Apcomplex z)
@@ -160,6 +166,9 @@ public class ApcomplexAsymptoticMath
      * @return <b>J</b><sub>&nu;</sub>(<i>z</i>)
      *
      * @throws ArithmeticException If the expansion doesn't reach the precision for these arguments.
+     *
+     * @see <a href="https://dlmf.nist.gov/11.10#E1">DLMF 11.10.1</a>, the integral which is expanded here
+     * @see <a href="https://dlmf.nist.gov/11.11#ii">DLMF 11.11(ii)</a>, the expansion for a large order
      */
 
     public static Apcomplex angerJ(Apfloat ν, Apcomplex z)
@@ -278,6 +287,8 @@ public class ApcomplexAsymptoticMath
      * @return <i>H</i><sub>&nu;</sub>(<i>z</i>)
      *
      * @throws ArithmeticException If the expansion doesn't reach the precision for these arguments.
+     *
+     * @see <a href="https://functions.wolfram.com/HypergeometricFunctions/HermiteHGeneral/06/02/">The expansions of the Hermite function at infinity</a>
      */
 
     public static Apcomplex hermiteH(Apcomplex ν, Apcomplex z)
@@ -322,10 +333,130 @@ public class ApcomplexAsymptoticMath
         return accept(h.multiply(power, sum), h.multiply(ApcomplexMath.abs(power), smallest), precision, "Hermite");
     }
 
-    // The expansions in 1/z are not uniform in the order: below it the smallest term of the series says nothing about the error
-    private static void requireLargeArgument(Apcomplex ν, Apcomplex z, String name)
+    // The expansions in 1/z are not uniform in the order: up to it, and a little above it, the smallest term of the
+    // series says nothing about the error
+/**
+     * Anger function <b>J</b><sub>&nu;</sub>(<i>z</i>) for an argument with a positive real part
+     * which is large against the order, from its difference to the Bessel function
+     * <i>J</i><sub>&nu;</sub>(<i>z</i>).
+     *
+     * @param ν The order.
+     * @param z The argument.
+     *
+     * @return <b>J</b><sub>&nu;</sub>(<i>z</i>)
+     *
+     * @throws ArithmeticException If the expansion doesn't reach the precision of the arguments.
+     *
+     * @see <a href="https://dlmf.nist.gov/11.11#E2">DLMF 11.11.2</a>, the expansion which is summed here
+     */
+
+    public static Apcomplex angerJLargeArgument(Apcomplex ν, Apcomplex z)
+        throws ArithmeticException, ApfloatRuntimeException
     {
-        if (ApcomplexMath.abs(z).compareTo(ApcomplexMath.abs(ν)) <= 0)
+        return angerWeberLargeArgument(ν, z, false);
+    }
+
+    /**
+     * Weber function <b>E</b><sub>&nu;</sub>(<i>z</i>) for an argument with a positive real part
+     * which is large against the order, from its difference to the Bessel function
+     * -<i>Y</i><sub>&nu;</sub>(<i>z</i>).
+     *
+     * @param ν The order.
+     * @param z The argument.
+     *
+     * @return <b>E</b><sub>&nu;</sub>(<i>z</i>)
+     *
+     * @throws ArithmeticException If the expansion doesn't reach the precision of the arguments.
+     *
+     * @see <a href="https://dlmf.nist.gov/11.11#E3">DLMF 11.11.3</a>, the expansion which is summed here
+     */
+
+    public static Apcomplex weberELargeArgument(Apcomplex ν, Apcomplex z)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        return angerWeberLargeArgument(ν, z, true);
+    }
+
+    private static Apcomplex angerWeberLargeArgument(Apcomplex ν, Apcomplex z, boolean weber)
+    {
+        String name = (weber ? "Weber E" : "Anger J");
+        long precision = finitePrecision(ν, z);
+        if (z.real().signum() <= 0)
+        {
+            throw new ArithmeticException(name + " expansion needs a positive real part of the argument");
+        }
+        requireLargeArgument(ν, z, name);
+        FixedPrecisionApfloatHelper h = helper(precision);
+        long workingPrecision = h.precision();
+        ν = h.valueOf(ν);
+        z = h.valueOf(z);
+        Apfloat one = new Apfloat(1, workingPrecision, z.radix()),
+                pi = h.pi();
+        // The sums of F(k) / z^(2k) and G(k) / z^(2k) with F(k) = (nu^2 - 1^2)(nu^2 - 3^2)...(nu^2 - (2k-1)^2)
+        // and G(k) = (nu^2 - 2^2)(nu^2 - 4^2)...(nu^2 - (2k)^2)
+        Apcomplex ν2 = h.multiply(ν, ν),
+                  z2 = h.multiply(z, z),
+                  f = one,
+                  g = one,
+                  sumF = Apcomplex.ZERO,
+                  sumG = Apcomplex.ZERO;
+        Apfloat smallest = null,
+                epsilon = ApfloatMath.scale(one, -workingPrecision);
+        boolean converged = false;
+        for (int k = 0; k < MAX_TERMS; k++)
+        {
+            Apfloat size = h.add(h.abs(f), h.abs(g));
+            if (smallest != null && size.compareTo(smallest) > 0)
+            {
+                // The terms of the asymptotic series grow again
+                break;
+            }
+            smallest = size;
+            sumF = h.add(sumF, f);
+            sumG = h.add(sumG, g);
+            if (size.compareTo(epsilon) < 0)
+            {
+                converged = true;
+                break;
+            }
+            long odd = 2L * k + 1,
+                 even = 2L * k + 2;
+            f = h.divide(h.multiply(f, h.subtract(ν2, new Apfloat(odd * odd, workingPrecision, z.radix()))), z2);
+            g = h.divide(h.multiply(g, h.subtract(ν2, new Apfloat(even * even, workingPrecision, z.radix()))), z2);
+        }
+        if (!converged && smallest.scale() > -precision)
+        {
+            // Before the Bessel function is paid for
+            throw new ArithmeticException(name + " expansion doesn't reach the precision");
+        }
+        Apcomplex πν = h.multiply(ν, pi),
+                  πz = h.multiply(z, pi),
+                  bessel,
+                  correction;
+        if (weber)
+        {
+            // -Y - (1 + cos(pi nu)) / (pi z) sumF - nu (1 - cos(pi nu)) / (pi z^2) sumG
+            Apcomplex cos = h.cos(πν);
+            bessel = ApcomplexBesselMath.besselY(ν, z).negate();
+            correction = h.add(h.divide(h.multiply(h.add(one, cos), sumF), πz),
+                               h.divide(h.multiply(h.multiply(ν, h.subtract(one, cos)), sumG), h.multiply(πz, z))).negate();
+        }
+        else
+        {
+            // J + sin(pi nu) / (pi z) (sumF - nu / z sumG)
+            bessel = h.besselJ(ν, z);
+            correction = h.divide(h.multiply(h.sin(πν), h.subtract(sumF, h.divide(h.multiply(ν, sumG), z))), πz);
+        }
+        Apcomplex result = h.add(bessel, correction);
+        requireNoCancellation(result, bessel, correction, name);
+        Apfloat error = (converged ? Apfloat.ZERO : h.divide(smallest, h.abs(πz)));
+        return accept(result, error, precision, name);
+    }
+
+        private static void requireLargeArgument(Apcomplex ν, Apcomplex z, String name)
+    {
+        int radix = z.radix();
+        if (ApcomplexMath.abs(z).multiply(new Apint(4, radix)).compareTo(ApcomplexMath.abs(ν).multiply(new Apint(5, radix))) <= 0)
         {
             throw new ArithmeticException(name + " expansion needs an argument larger than the order");
         }

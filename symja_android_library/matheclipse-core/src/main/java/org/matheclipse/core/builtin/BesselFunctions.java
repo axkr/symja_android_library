@@ -1,5 +1,11 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.external.apfloat.ApcomplexBesselMath;
+import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
+import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.Apcomplex;
 import static org.matheclipse.core.expression.F.BesselY;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -34,8 +40,9 @@ import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.numerics.functions.AiryZeros;
-import org.matheclipse.core.numerics.functions.AngerWeber;
+import org.matheclipse.external.apfloat.ApcomplexAsymptoticMath;
+import org.matheclipse.external.apfloat.ApfloatAiryMath;
+import org.matheclipse.external.apfloat.ApcomplexWeberMath;
 import org.matheclipse.core.numerics.functions.BesselJS;
 import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import com.google.common.math.IntMath;
@@ -140,6 +147,10 @@ public class BesselFunctions {
         if (largeOrder.isPresent()) {
           return largeOrder;
         }
+        IExpr largeArgument = angerWeberLargeArgument(n, z, false);
+        if (largeArgument.isPresent()) {
+          return largeArgument;
+        }
         if (z.isReal() && Math.abs(z.evalf()) > MAX_ANGERJ_ARGUMENT) {
           // The cost is driven by the second argument, not the order: AngerJ(0.0, -1000) takes
           // under a second, AngerJ(0.0, -5000) does not return, and AngerJ(0.0, -2147483648) -
@@ -154,10 +165,39 @@ public class BesselFunctions {
     /** Largest second argument handed to the arbitrary precision routine. */
     private static final int MAX_ANGERJ_ARGUMENT = 1000;
 
+    /** Smallest size of an argument for which the large argument expansion is asked. */
+    private static final double MIN_ASYMPTOTIC_ARGUMENT = 30.0;
+
+    /**
+     * <code>AngerJ(nu, z)</code> or <code>WeberE(nu, z)</code> from the expansion for a large
+     * argument, or {@link F#NIL} where it doesn't reach the precision. The expansion is for the
+     * right half plane; the left one is its reflection <code>AngerJ(nu,-z) == AngerJ(-nu,z)</code>
+     * and <code>WeberE(nu,-z) == -WeberE(-nu,z)</code>.
+     */
+    static IExpr angerWeberLargeArgument(IInexactNumber n, IInexactNumber z, boolean weber) {
+      double size = z.isReal() ? Math.abs(z.evalf()) : z.evalfc().norm();
+      if (!(size >= MIN_ASYMPTOTIC_ARGUMENT) || Double.isInfinite(size)) {
+        return F.NIL;
+      }
+      return WorkingPrecision.evaluate(n, z, true, (nu, argument, precision) -> {
+        int side = argument.real().signum();
+        if (side == 0) {
+          throw new ArithmeticException("on the imaginary axis");
+        }
+        if (side > 0) {
+          return weber ? ApcomplexAsymptoticMath.weberELargeArgument(nu, argument)
+              : ApcomplexAsymptoticMath.angerJLargeArgument(nu, argument);
+        }
+        return weber
+            ? ApcomplexAsymptoticMath.weberELargeArgument(nu.negate(), argument.negate()).negate()
+            : ApcomplexAsymptoticMath.angerJLargeArgument(nu.negate(), argument.negate());
+      });
+    }
+
     /**
      * Smallest order answered by the endpoint expansion. The arbitrary precision routine is still
      * quick here - 11 ms at 1000, against 156 ms at 100000 and 1.4 s at 1000000 - so the two
-     * overlap rather than meet, and {@link AngerWeber#angerJ} is asked only where its series is far
+     * overlap rather than meet, and {@link ApcomplexAsymptoticMath#angerJ} is asked only where its series is far
      * into its asymptotic regime.
      */
     private static final double MIN_ASYMPTOTIC_ANGERJ_ORDER = 1000.0;
@@ -175,27 +215,31 @@ public class BesselFunctions {
       if (!Double.isFinite(order) || Math.abs(order) < MIN_ASYMPTOTIC_ANGERJ_ORDER) {
         return F.NIL;
       }
-      return WorkingPrecision.evaluate(n, z, true, (nu, argument, h) -> AngerWeber.angerJ(nu.real(),
-          orderModTwo((IReal) n, h), argument, h));
+      if (n instanceof ApfloatNum ? ((ApfloatNum) n).apfloatValue().isInteger()
+          : order == Math.rint(order)) {
+        // at an integer order the function is the Bessel function, which the expansion in 1/nu
+        // doesn't see: all of its terms vanish there
+        IExpr besselJ = EvalEngine.get().evaluate(F.BesselJ(n, z));
+        return besselJ.isNumber() ? besselJ : F.NIL;
+      }
+      return WorkingPrecision.evaluate(n, z, true, (nu, argument,
+          precision) -> ApcomplexAsymptoticMath.angerJ(orderWithGuardDigits((IReal) n, precision),
+              argument));
     }
 
     /**
-     * The order modulo 2, which is all <code>E^(I*Pi*nu)</code> needs and all that survives: an
-     * order of 1.0E18 has no fractional part left once it is a <code>double</code>, so the
-     * reduction is done in the precision the order arrived with.
+     * The order with the digits which its reduction modulo 2 takes away: 1000.3 mod 2 is 0.3 with
+     * three digits fewer than it started with, and <code>E^(I*Pi*nu)</code> needs the working
+     * precision after that. A double is an exact binary value and can supply them; an order that
+     * arrived as an Apfloat cannot say more than it was given.
      */
-    private static Apfloat orderModTwo(IReal nu, FixedPrecisionApcomplexHelper h) {
+    private static Apfloat orderWithGuardDigits(IReal nu, int precision) {
+      if (nu instanceof ApfloatNum) {
+        return ((ApfloatNum) nu).apfloatValue();
+      }
       double order = nu.doubleValue();
       long magnitude = (long) Math.max(0.0, Math.log10(Math.abs(order))) + 1;
-      // 1000.3 mod 2 is 0.3 with three digits fewer than it started with: the reduction cancels
-      // the integer part away, and the working precision has to be paid for in guard digits
-      // beforehand. A double is an exact binary value and can supply them; an order that arrived
-      // as an Apfloat cannot say more than it was given.
-      long precision = h.precision() + magnitude + 5;
-      Apfloat value = (nu instanceof ApfloatNum) //
-          ? ((ApfloatNum) nu).apfloatValue()
-          : new Apfloat(new java.math.BigDecimal(order), precision);
-      return value.mod(new Apfloat(2, precision)).precision(h.precision());
+      return new Apfloat(new java.math.BigDecimal(order), precision + magnitude + 5);
     }
 
     @Override
@@ -714,6 +758,10 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      IExpr arbitrary = besselZeroArbitrary(n, z, false, engine);
+      if (arbitrary.isPresent()) {
+        return arbitrary;
+      }
       return besselJZero(n, z, engine.isDoubleMode()).eval(engine);
     }
 
@@ -1099,6 +1147,10 @@ public class BesselFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       IExpr z = ast.arg2();
+      IExpr arbitrary = besselZeroArbitrary(n, z, true, engine);
+      if (arbitrary.isPresent()) {
+        return arbitrary;
+      }
       return besselYZero(n, z, engine.isDoubleMode()).eval(engine);
     }
 
@@ -1394,6 +1446,10 @@ public class BesselFunctions {
         }
         return F.NIL;
       }
+      IExpr spherical = sphericalBessel(n, z, false, engine);
+      if (spherical.isPresent()) {
+        return spherical;
+      }
       if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = n.evalfNaN();
@@ -1641,6 +1697,10 @@ public class BesselFunctions {
       if (z.isZero()) {
         return F.CComplexInfinity;
       }
+      IExpr spherical = sphericalBessel(n, z, true, engine);
+      if (spherical.isPresent()) {
+        return spherical;
+      }
       if (engine.isDoubleMode() && n.isNumber() && z.isNumber()) {
         try {
           double nDouble = n.evalfNaN();
@@ -1708,10 +1768,11 @@ public class BesselFunctions {
       try {
         if (engine.isArbitraryMode()) {
           long precision = engine.getNumericPrecision();
-          return F
-              .num(bi ? AiryZeros.airyBiZero(k, precision) : AiryZeros.airyAiZero(k, precision));
+          return F.num(bi ? ApfloatAiryMath.airyBiZero(k, precision)
+              : ApfloatAiryMath.airyAiZero(k, precision));
         }
-        return F.num(bi ? AiryZeros.airyBiZero(k) : AiryZeros.airyAiZero(k));
+        return F.num((bi ? ApfloatAiryMath.airyBiZero(k, 20) : ApfloatAiryMath.airyAiZero(k, 20))
+            .doubleValue());
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(bi ? S.AiryBiZero : S.AiryAiZero, rex);
@@ -1794,10 +1855,19 @@ public class BesselFunctions {
      */
     private static IExpr kerTerm(IExpr n, IExpr z, int sign) {
       IExpr phase = F.Power(S.E, F.Times(F.QQ(-sign, 2), F.CI, S.Pi, n));
-      if (n.isMathematicalIntegerNonNegative() || n.isMathematicalIntegerNegative()) {
+      final boolean integer =
+          n.isMathematicalIntegerNonNegative() || n.isMathematicalIntegerNegative();
+      // for a non-integer order too where the rotated argument stays on the principal sheet: the
+      // difference of the two BesselI below cancels the digits of their size against BesselK
+      boolean principalSheet = false;
+      if (!integer && n.isNumber() && z.isInexactNumber()) {
+        final double theta = z.evalfc().getArgument() + sign * Math.PI / 4.0;
+        principalSheet = theta > -Math.PI && theta <= Math.PI;
+      }
+      if (integer || principalSheet) {
         IExpr w = F.Times(z, F.Power(S.E, F.Times(F.QQ(sign, 4), F.CI, S.Pi)));
         IExpr besselK = F.BesselK(n, w);
-        if (z.isNumber()) {
+        if (integer && z.isNumber()) {
           // BesselK(n, w*E^(2*m*Pi*I)) == BesselK(n,w) - 2*m*Pi*I*(-1)^n*BesselI(n,w)
           final double theta = z.evalfc().getArgument() + sign * Math.PI / 4.0;
           int m = 0;
@@ -1911,11 +1981,28 @@ public class BesselFunctions {
   }
 
   private static final class WeberE extends AbstractFunctionEvaluator implements IFunctionExpand {
+    /**
+     * Largest size of an argument handed to the arbitrary precision routine, whose cost grows with
+     * the argument: half a second at 1000.
+     */
+    private static final double MAX_WEBERE_ARGUMENT = 1000.0;
+
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        IExpr largeArgument = AngerJ.angerWeberLargeArgument(n, z, true);
+        if (largeArgument.isPresent()) {
+          return largeArgument;
+        }
+        if (!z.isZero() && z.abs().evalf() <= MAX_WEBERE_ARGUMENT) {
+          IExpr value = WorkingPrecision.evaluate(n, z, true,
+              (nu, argument, precision) -> ApcomplexWeberMath.weberE(nu, argument));
+          if (value.isPresent()) {
+            return value;
+          }
+        }
         IExpr result = weber2(n, z, true);
         if (result.isPresent()) {
           return engine.evaluate(result);
@@ -2054,7 +2141,9 @@ public class BesselFunctions {
       }
 
       int ni = n.toIntDefault();
-      if (F.isPresent(ni)) {
+      // not for an exact number z: N() of the difference below would lose the digits which the
+      // two terms cancel, and the function itself is evaluated to the precision asked for
+      if (F.isPresent(ni) && !z.isExactNumber()) {
         // https://dlmf.nist.gov/11.10#vi
         if (ni > 0) {
           // -StruveH(n,z)+Sum(Gamma(k+1/2)/((z/2)^(1+2*k-n)*Gamma(-k+n+1/2)),{k,0,Floor(1/2*(-1+n))})/Pi
@@ -2112,6 +2201,67 @@ public class BesselFunctions {
       newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
     }
 
+  }
+
+  /**
+   * <code>SphericalBesselJ(n, z)</code> or <code>SphericalBesselY(n, z)</code> for numbers in
+   * numeric mode, from the Bessel function of the order <code>n+1/2</code> at machine precision or
+   * the precision of the engine; {@link F#NIL} otherwise, or where that fails.
+   */
+  private static IExpr sphericalBessel(IExpr n, IExpr z, boolean secondKind, EvalEngine engine) {
+    if (!n.isNumber() || !z.isNumber() || z.isZero()
+        || !(n.isInexactNumber() || z.isInexactNumber() || engine.isNumericMode())) {
+      return F.NIL;
+    }
+    final boolean arbitrary = n instanceof ApfloatNum || n instanceof ApcomplexNum
+        || z instanceof ApfloatNum || z instanceof ApcomplexNum
+        || (engine.isArbitraryMode() && !n.isInexactNumber() && !z.isInexactNumber());
+    final int digits =
+        arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+    try {
+      Apcomplex order = CarlsonArbitraryPrecision.apcomplex(n, digits);
+      Apcomplex argument = CarlsonArbitraryPrecision.apcomplex(z, digits);
+      Apcomplex value = secondKind ? ApcomplexBesselMath.sphericalBesselY(order, argument)
+          : ApcomplexBesselMath.sphericalBesselJ(order, argument);
+      boolean real = value.imag().signum() == 0 || (n.isReal() && z.isReal()
+          && (z.isPositive() || ((IReal) n).isNumIntValue())
+          && value.imag().scale() < value.real().scale() - digits + 4);
+      if (real) {
+        return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
+      }
+      return arbitrary ? F.complexNum(value)
+          : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+    } catch (ArithmeticException | ApfloatRuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * The <code>k</code>-th zero of <code>BesselJ(n, x)</code> or <code>BesselY(n, x)</code> at the
+   * precision of the engine: the machine precision zero, refined with Newton's method; or
+   * {@link F#NIL}.
+   */
+  private static IExpr besselZeroArbitrary(IExpr n, IExpr z, boolean secondKind,
+      EvalEngine engine) {
+    final int k = z.toIntDefault();
+    if (k <= 0 || !engine.isArbitraryMode() || !n.isReal()) {
+      return F.NIL;
+    }
+    try {
+      double order = n.evalfNaN();
+      double seed =
+          secondKind ? BesselJS.besselYZero(order, k) : BesselJS.besselJZero(order, k);
+      if (!Double.isFinite(seed)) {
+        return F.NIL;
+      }
+      final int digits = (int) engine.getNumericPrecision();
+      Apfloat nu = CarlsonArbitraryPrecision.apcomplex(n, digits + 20).real();
+      return F.num(ApcomplexBesselMath.besselZero(nu, new Apfloat(seed), secondKind, digits));
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
   }
 
   public static void initialize() {

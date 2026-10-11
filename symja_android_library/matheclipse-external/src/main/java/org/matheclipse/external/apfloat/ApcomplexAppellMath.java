@@ -96,7 +96,7 @@ public class ApcomplexAppellMath
                                         workingPrecision, tracked);
             // The series of hypergeometric functions is slow, and apfloat keeps track of the digits it loses
             if ((tracked[0] && result.precision() >= precision) ||
-                (previous != null && agree(previous, result, precision)))
+                (previous != null && GuardDigitsHelper.agree(previous, result, precision)))
             {
                 return ApfloatHelperShim.limitPrecision(result, precision);
             }
@@ -104,17 +104,6 @@ public class ApcomplexAppellMath
             extraPrecision *= 2;
         }
         throw new LossOfPrecisionException("Complete loss of accurate digits");
-    }
-
-    // Are the two values the same to the precision, with a digit to spare?
-    private static boolean agree(Apcomplex z, Apcomplex w, long precision)
-    {
-        if (z.precision() < precision || w.precision() < precision)
-        {
-            return isZero(z) && isZero(w);
-        }
-        Apcomplex difference = z.subtract(w);
-        return isZero(difference) || difference.scale() < Math.max(z.scale(), w.scale()) - precision;
     }
 
     // The value at the working precision; tracked[0] is set if the precision of the value is the one which apfloat kept track of

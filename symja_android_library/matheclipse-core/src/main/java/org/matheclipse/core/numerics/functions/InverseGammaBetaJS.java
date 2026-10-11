@@ -1,13 +1,11 @@
 package org.matheclipse.core.numerics.functions;
 
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatRuntimeException;
-import org.apfloat.FixedPrecisionApfloatHelper;
-import org.apfloat.LossOfPrecisionException;
 import org.hipparchus.special.Beta;
 import org.hipparchus.special.Gamma;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.external.apfloat.ApfloatInverseGammaBetaMath;
 
 /**
  * Inverses of the regularized incomplete gamma and beta functions in <code>double</code>
@@ -368,39 +366,12 @@ public final class InverseGammaBetaJS {
   }
 
   // ---------------------------------------------------------------------------------------
-  // arbitrary precision
+  // arbitrary precision: org.matheclipse.external.apfloat.ApfloatInverseGammaBetaMath, which is
+  // given the machine precision result as its starting value where there is one
   // ---------------------------------------------------------------------------------------
-
-  /** Number of correct decimal digits the <code>double</code> seed contributes. */
-  private static final long SEED_PRECISION = 15;
-
-  /** Extra digits carried through the refinement and dropped from the result. */
-  private static final long GUARD_DIGITS = 10;
-
-  /**
-   * Working precision to try, as digits added on top of the requested precision.
-   *
-   * <p>
-   * The incomplete beta and gamma functions are evaluated by series which cancel heavily for large
-   * shape parameters - <code>B_(1/2)(1000,1000)</code> loses roughly 435 digits, enough that
-   * apfloat reports a complete loss of accuracy. There is no cheap way to predict how much is
-   * lost, so widen the working precision and try again.
-   * </p>
-   */
-  private static final long[] EXTRA_PRECISION = {GUARD_DIGITS, 100, 700, 3000};
-
-  /** Maximum number of Newton steps of an arbitrary precision refinement. */
-  private static final int MAX_NEWTON_STEPS = 64;
 
   /**
    * Arbitrary precision version of {@link #invRegularizedBeta(double, double, double)}.
-   *
-   * <p>
-   * The <code>double</code> result seeds a Newton iteration on
-   * <code>g(x) = B_x(a,b) - p * B(a,b)</code>, whose derivative <code>x^(a-1) * (1-x)^(b-1)</code>
-   * is available in closed form. The working precision doubles on every step, which is what makes
-   * the cost of the refinement comparable to a single evaluation at the target precision.
-   * </p>
    *
    * @param p a probability in the range <code>[0, 1]</code>
    * @param a the first shape parameter; must be positive
@@ -409,111 +380,13 @@ public final class InverseGammaBetaJS {
    * @return the <code>x</code> with <code>I_x(a,b) == p</code>
    */
   public static Apfloat invRegularizedBeta(Apfloat p, Apfloat a, Apfloat b, long precision) {
-    ApfloatRuntimeException failure = null;
-    for (int attempt = 0; attempt < EXTRA_PRECISION.length; attempt++) {
-      long working = precision + EXTRA_PRECISION[attempt];
-      try {
-        Apfloat x = refineBeta(p, a, b, working, attempt == 0);
-        if (betaVerified(x, p, a, b, working, precision)) {
-          return new FixedPrecisionApfloatHelper(precision).valueOf(x);
-        }
-      } catch (ApfloatRuntimeException are) {
-        failure = are;
-      }
-    }
-    throw failure != null ? failure
-        : new LossOfPrecisionException("Complete loss of accurate digits");
-  }
-
-  /**
-   * Newton refinement of <code>g(x) = B_x(a,b) - p * B(a,b)</code>, whose derivative
-   * <code>x^(a-1) * (1-x)^(b-1)</code> is available in closed form.
-   *
-   * @param doubling refine with a doubling working precision, which is the cheap path; the
-   *        retries run every step at the full working precision instead, because a low precision
-   *        evaluation of the incomplete beta is worthless for large shape parameters and would
-   *        push the iteration somewhere it cannot recover from
-   */
-  private static Apfloat refineBeta(Apfloat p, Apfloat a, Apfloat b, long working,
-      boolean doubling) {
-    Apfloat x = seed(invRegularizedBeta(p.doubleValue(), a.doubleValue(), b.doubleValue()));
-    long prec = doubling ? SEED_PRECISION : working;
-    for (int step = 0; step < MAX_NEWTON_STEPS; step++) {
-      if (doubling) {
-        if (prec >= working && step > 0) {
-          break;
-        }
-        prec = Math.min(2 * prec, working);
-      }
-      final FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(prec);
-      final Apfloat ah = h.valueOf(a);
-      final Apfloat bh = h.valueOf(b);
-      final Apfloat one = h.valueOf(Apfloat.ONE);
-      x = h.valueOf(x);
-      try {
-        final Apfloat scaled = h.multiply(h.valueOf(p), h.beta(ah, bh));
-        final Apfloat g = h.subtract(h.beta(x, ah, bh), scaled);
-        final Apfloat dg = h.multiply(h.pow(x, h.subtract(ah, one)), //
-            h.pow(h.subtract(one, x), h.subtract(bh, one)));
-        x = clampToUnitInterval(h, h.subtract(x, h.divide(g, dg)), x);
-      } catch (LossOfPrecisionException lope) {
-        // the residual cancelled completely, so x already agrees with the target to the full
-        // working precision
-        break;
-      }
-      if (!doubling && step >= 2) {
-        break;
-      }
-    }
-    return x;
-  }
-
-  /** Keep a Newton step inside <code>(0, 1)</code> by halving it towards the previous iterate. */
-  private static Apfloat clampToUnitInterval(FixedPrecisionApfloatHelper h, Apfloat x,
-      Apfloat previous) {
-    final Apfloat one = h.valueOf(Apfloat.ONE);
-    if (x.signum() <= 0 || x.compareTo(one) >= 0) {
-      return h.divide(h.add(previous, h.valueOf(new Apfloat(x.signum() <= 0 ? 0 : 1))), //
-          h.valueOf(new Apfloat(2)));
-    }
-    return x;
-  }
-
-  /** Check that <code>I_x(a,b)</code> reproduces <code>p</code> at the working precision. */
-  private static boolean betaVerified(Apfloat x, Apfloat p, Apfloat a, Apfloat b, long working,
-      long precision) {
-    final FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(working);
-    if (x.signum() <= 0 || x.compareTo(h.valueOf(Apfloat.ONE)) >= 0) {
-      return false;
-    }
-    final Apfloat actual;
+    double seed = Double.NaN;
     try {
-      actual = h.divide(h.beta(x, a, b), h.beta(a, b));
-    } catch (ApfloatRuntimeException are) {
-      // the forward function is not computable at this working precision, so nothing is verified
-      return false;
+      seed = invRegularizedBeta(p.doubleValue(), a.doubleValue(), b.doubleValue());
+    } catch (RuntimeException rex) {
+      // no machine number to start from
     }
-    try {
-      return h.abs(h.subtract(actual, h.valueOf(p))).compareTo(tolerance(h, p, precision)) <= 0;
-    } catch (LossOfPrecisionException lope) {
-      // the two values agree in every digit the working precision carries
-      return true;
-    }
-  }
-
-  /**
-   * Relative tolerance <code>p * 10^-precision</code> of the verification.
-   *
-   * <p>
-   * This is the <em>requested</em> precision, not the working precision. The working precision is
-   * widened exactly because the forward function cancels, so the forward value carries fewer
-   * accurate digits than the working precision suggests and demanding all of them back would
-   * reject a perfectly good result.
-   * </p>
-   */
-  private static Apfloat tolerance(FixedPrecisionApfloatHelper h, Apfloat p, long precision) {
-    return h.abs(
-        h.multiply(h.valueOf(p), h.pow(h.valueOf(new Apfloat(10)), new Apfloat(-precision))));
+    return ApfloatInverseGammaBetaMath.inverseBetaRegularized(p, a, b, precision, seed);
   }
 
   /**
@@ -525,7 +398,13 @@ public final class InverseGammaBetaJS {
    * @return the <code>x</code> with <code>P(a,x) == p</code>
    */
   public static Apfloat invRegularizedGammaP(Apfloat a, Apfloat p, long precision) {
-    return inverseGamma(a, p, precision, false);
+    double seed = Double.NaN;
+    try {
+      seed = invRegularizedGammaP(a.doubleValue(), p.doubleValue());
+    } catch (RuntimeException rex) {
+      // no machine number to start from
+    }
+    return ApfloatInverseGammaBetaMath.inverseGammaRegularized(a, p, false, precision, seed);
   }
 
   /**
@@ -537,160 +416,32 @@ public final class InverseGammaBetaJS {
    * @return the <code>x</code> with <code>Q(a,x) == q</code>
    */
   public static Apfloat invRegularizedGammaQ(Apfloat a, Apfloat q, long precision) {
-    return inverseGamma(a, q, precision, true);
-  }
-
-  private static Apfloat inverseGamma(Apfloat a, Apfloat target, long precision, boolean upper) {
-    // Both residuals subtract a multiple of Gamma(a) from an incomplete gamma value, so they
-    // cancel when the requested tail probability is the large one. Inverting the other tail
-    // instead is exact here, because the complement is formed at arbitrary precision.
-    final FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(precision + GUARD_DIGITS);
-    final Apfloat complement = h.subtract(Apfloat.ONE, target);
-    if (complement.signum() > 0 && complement.compareTo(h.valueOf(target)) < 0) {
-      return inverseGamma(a, complement, precision, !upper);
-    }
-    ApfloatRuntimeException failure = null;
-    for (int attempt = 0; attempt < EXTRA_PRECISION.length; attempt++) {
-      long working = precision + EXTRA_PRECISION[attempt];
-      try {
-        Apfloat x = refineGamma(a, target, working, upper, attempt == 0);
-        if (gammaVerified(x, a, target, working, precision, upper)) {
-          return new FixedPrecisionApfloatHelper(precision).valueOf(x);
-        }
-      } catch (ApfloatRuntimeException are) {
-        failure = are;
-      }
-    }
-    throw failure != null ? failure
-        : new LossOfPrecisionException("Complete loss of accurate digits");
-  }
-
-  private static Apfloat refineGamma(Apfloat a, Apfloat target, long working, boolean upper,
-      boolean doubling) {
-    final double ad = a.doubleValue();
-    final double td = target.doubleValue();
-    Apfloat x = seed(upper ? invRegularizedGammaQ(ad, td) : invRegularizedGammaP(ad, td));
-    long prec = doubling ? SEED_PRECISION : working;
-    for (int step = 0; step < MAX_NEWTON_STEPS; step++) {
-      if (doubling) {
-        if (prec >= working && step > 0) {
-          break;
-        }
-        prec = Math.min(2 * prec, working);
-      }
-      final FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(prec);
-      final Apfloat ah = h.valueOf(a);
-      final Apfloat one = h.valueOf(Apfloat.ONE);
-      final Apfloat zero = h.valueOf(Apfloat.ZERO);
-      x = h.valueOf(x);
-      try {
-        final Apfloat scaled = h.multiply(h.valueOf(target), h.gamma(ah));
-        // upper: g(x) = Gamma(a,x) - q*Gamma(a), g'(x) = -x^(a-1)*E^(-x)
-        // lower: g(x) = gamma(a,x) - p*Gamma(a), g'(x) = x^(a-1)*E^(-x)
-        final Apfloat g = upper //
-            ? h.subtract(h.gamma(ah, x), scaled) //
-            : h.subtract(h.gamma(ah, zero, x), scaled);
-        Apfloat dg = h.multiply(h.pow(x, h.subtract(ah, one)), h.exp(h.negate(x)));
-        if (upper) {
-          dg = h.negate(dg);
-        }
-        Apfloat next = h.subtract(x, h.divide(g, dg));
-        x = next.signum() > 0 ? next : h.divide(x, h.valueOf(new Apfloat(2)));
-      } catch (LossOfPrecisionException lope) {
-        break;
-      }
-      if (!doubling && step >= 2) {
-        break;
-      }
-    }
-    return x;
-  }
-
-  /** Check that the regularized gamma function reproduces the target at the working precision. */
-  private static boolean gammaVerified(Apfloat x, Apfloat a, Apfloat target, long working,
-      long precision, boolean upper) {
-    if (x.signum() <= 0) {
-      return false;
-    }
-    final FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(working);
-    final Apfloat actual;
+    double seed = Double.NaN;
     try {
-      actual = upper //
-          ? h.divide(h.gamma(a, x), h.gamma(a)) //
-          : h.divide(h.gamma(a, h.valueOf(Apfloat.ZERO), x), h.gamma(a));
-    } catch (ApfloatRuntimeException are) {
-      // the forward function is not computable at this working precision, so nothing is verified
-      return false;
+      seed = invRegularizedGammaQ(a.doubleValue(), q.doubleValue());
+    } catch (RuntimeException rex) {
+      // no machine number to start from
     }
-    try {
-      return h.abs(h.subtract(actual, h.valueOf(target)))
-          .compareTo(tolerance(h, target, precision)) <= 0;
-    } catch (LossOfPrecisionException lope) {
-      // the two values agree in every digit the working precision carries
-      return true;
-    }
+    return ApfloatInverseGammaBetaMath.inverseGammaRegularized(a, q, true, precision, seed);
   }
 
   /**
    * Arbitrary precision version of {@link #invRegularizedBeta(double, double, double, double)}.
    *
-   * @param z1 the lower integration limit
-   * @param z2 the value of the generalized regularized beta function
-   * @param a the first shape parameter; must be positive
-   * @param b the second shape parameter; must be positive
-   * @param precision the requested number of decimal digits
    * @return the <code>x</code> with <code>I_x(a,b) == I_z1(a,b) + z2</code>
    */
   public static Apfloat invRegularizedBeta(Apfloat z1, Apfloat z2, Apfloat a, Apfloat b,
       long precision) {
-    if (z2.signum() == 0) {
-      return z1;
-    }
-    if (z1.signum() == 0) {
-      return invRegularizedBeta(z2, a, b, precision);
-    }
-    final FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(precision + GUARD_DIGITS);
-    if (h.valueOf(z1).compareTo(h.valueOf(Apfloat.ONE)) == 0) {
-      // I_z1(a,b) is exactly 1 here, so the target is 1 + z2 with z2 <= 0. Reflecting through
-      // I_x(a,b) == 1 - I_(1-x)(b,a) keeps the small quantity -z2 intact.
-      Apfloat reflected = invRegularizedBeta(h.negate(z2), b, a, precision + GUARD_DIGITS);
-      return new FixedPrecisionApfloatHelper(precision).subtract(Apfloat.ONE, reflected);
-    }
-    Apfloat lower = h.divide(h.beta(z1, a, b), h.beta(a, b));
-    return invRegularizedBeta(h.add(lower, z2), a, b, precision);
+    return ApfloatInverseGammaBetaMath.inverseBetaRegularized(z1, z2, a, b, precision);
   }
 
   /**
    * Arbitrary precision version of {@link #invRegularizedGamma(double, double, double)}.
    *
-   * @param a the shape parameter; must be positive
-   * @param z1 the lower integration limit
-   * @param z2 the value of the generalized regularized gamma function
-   * @param precision the requested number of decimal digits
    * @return the <code>x</code> with <code>Q(a,x) == Q(a,z1) - z2</code>
    */
   public static Apfloat invRegularizedGamma(Apfloat a, Apfloat z1, Apfloat z2, long precision) {
-    if (z1.signum() == 0) {
-      // Q(a,0) is exactly 1, so this is the lower inverse; going through the upper inverse with
-      // 1 - z2 would throw away the leading digits of a small z2.
-      return invRegularizedGammaP(a, z2, precision);
-    }
-    final FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(precision + GUARD_DIGITS);
-    Apfloat q = h.subtract(h.divide(h.gamma(a, z1), h.gamma(a)), z2);
-    return invRegularizedGammaQ(a, q, precision);
-  }
-
-  /**
-   * Turn the <code>double</code> result into a starting value for the refinement. A result which
-   * saturated the <code>double</code> range carries no digits to refine, so the caller has to fall
-   * back instead.
-   */
-  private static Apfloat seed(double seed) {
-    if (!Double.isFinite(seed) || seed == 0.0) {
-      throw new ArgumentTypeException(
-          "The result is not representable as a machine number: " + seed);
-    }
-    return new Apfloat(seed, SEED_PRECISION);
+    return ApfloatInverseGammaBetaMath.inverseGammaRegularized(a, z1, z2, precision);
   }
 
   private static double cube(double x) {

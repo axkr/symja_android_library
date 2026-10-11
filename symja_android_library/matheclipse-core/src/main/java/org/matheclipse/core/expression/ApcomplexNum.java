@@ -13,6 +13,7 @@ import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -345,6 +346,10 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr besselI(IExpr arg2) {
     if (arg2 instanceof INumber) {
       try {
+        if (!arg2.isZero()) {
+          return ApfloatNum.guardedBesselFirstKind(apcomplexValue(),
+              ((INumber) arg2).apcomplexValue(), h().precision(), true);
+        }
         Apcomplex besselI =
             h().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(besselI);
@@ -359,8 +364,12 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr besselJ(IExpr arg2) {
     if (arg2 instanceof INumber) {
       try {
+        if (!arg2.isZero()) {
+          return ApfloatNum.guardedBesselFirstKind(apcomplexValue(),
+              ((INumber) arg2).apcomplexValue(), h().precision(), false);
+        }
         Apcomplex besselJ =
-            h().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+            h().besselJ(apcomplexValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(besselJ);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselJ, are);
@@ -373,9 +382,8 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr besselK(IExpr arg2) {
     if (arg2 instanceof INumber) {
       try {
-        Apcomplex besselK =
-            h().besselK(apcomplexValue(), ((INumber) arg2).apcomplexValue());
-        return F.complexNum(besselK);
+        return ApfloatNum.guardedBessel(apcomplexValue(), ((INumber) arg2).apcomplexValue(),
+            h().precision(), false);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselK, are);
       }
@@ -387,9 +395,8 @@ public class ApcomplexNum implements IComplexNum {
   public IExpr besselY(IExpr arg2) {
     if (arg2 instanceof INumber) {
       try {
-        Apcomplex besselY =
-            h().besselY(apcomplexValue(), ((INumber) arg2).apcomplexValue());
-        return F.complexNum(besselY);
+        return ApfloatNum.guardedBessel(apcomplexValue(), ((INumber) arg2).apcomplexValue(),
+            h().precision(), true);
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselY, are);
       }
@@ -1216,7 +1223,7 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
-      return valueOf(h().hypergeometric1F1(fApcomplex,
+      return valueOf(h().hypergeometricU(fApcomplex,
           ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
     }
     return IComplexNum.super.hypergeometricU(arg2, arg3);
@@ -1561,11 +1568,44 @@ public class ApcomplexNum implements IComplexNum {
     return ApcomplexNum.valueOf(h().add(fApcomplex, that.apcomplexValue()));
   }
 
+  /**
+   * <code>PolyLog(nu, z)</code> for a complex order with an integer real part, or {@link F#NIL}.
+   *
+   * @param precision the precision of the arguments, which are padded to it
+   */
+  static IExpr polyLogImaginaryOrder(Apcomplex nu, Apcomplex z, long precision) {
+    if (!nu.real().isInteger() || nu.imag().signum() == 0) {
+      return F.NIL;
+    }
+    try {
+      Apcomplex polylog = ApcomplexZetaMath.polylog(
+          new Apcomplex(nu.real().truncate(), nu.imag().precision(precision)),
+          new Apcomplex(z.real().signum() == 0 ? z.real() : z.real().precision(precision),
+              z.imag().signum() == 0 ? z.imag() : z.imag().precision(precision)));
+      return F.complexNum(polylog);
+    } catch (ArithmeticException | ApfloatRuntimeException ex) {
+      return F.NIL;
+    }
+  }
+
+  /**
+   * Whether <code>Pochhammer(a, n) == Gamma(a+n)/Gamma(a)</code> has a pole: <code>a+n</code> is a
+   * non-positive integer and <code>a</code> is not.
+   */
+  static boolean isPochhammerPole(Apcomplex a, Apcomplex n) {
+    Apcomplex sum = a.add(n);
+    return sum.imag().signum() == 0 && sum.real().signum() <= 0 && sum.real().isInteger()
+        && !(a.imag().signum() == 0 && a.real().signum() <= 0 && a.real().isInteger());
+  }
+
   @Override
   public IExpr pochhammer(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex pochhammer =
-          h().pochhammer(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+      Apcomplex n = ((INumber) arg2).apcomplexValue();
+      if (isPochhammerPole(apcomplexValue(), n)) {
+        return F.CComplexInfinity;
+      }
+      Apcomplex pochhammer = h().pochhammer(apcomplexValue(), n);
       return F.complexNum(pochhammer);
     }
     return IComplexNum.super.pochhammer(arg2);
@@ -1595,7 +1635,12 @@ public class ApcomplexNum implements IComplexNum {
       } catch (LossOfPrecisionException lope) {
         // Complete loss of precision
       } catch (InfiniteExpansionException iee) {
-        // Cannot calculate power to infinite precision
+        // a complex order with an integer real part
+        IExpr polylog =
+            polyLogImaginaryOrder(fApcomplex, ((INumber) arg2).apcomplexValue(), h().precision());
+        if (polylog.isPresent()) {
+          return polylog;
+        }
       } catch (ArithmeticException | NumericComputationException ex) {
       }
     }

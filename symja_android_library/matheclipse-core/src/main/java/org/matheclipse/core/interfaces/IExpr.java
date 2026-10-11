@@ -7313,7 +7313,9 @@ public interface IExpr
    */
   @Override
   default IExpr subtract(IExpr that) {
-    if (that.isZero()) {
+    // not for an inexact number: a machine number counts as zero below 10^-15, which is not
+    // nothing next to a difference of the size of 10^-12
+    if (that.isZero() && !that.isInexactNumber()) {
       return this;
     }
     return plus(that.negate());

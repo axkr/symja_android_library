@@ -8,6 +8,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBeta() {
+    // large parameters, where the series cancels at machine precision; calculated with mpmath
+    checkNumeric("Beta(0.5, N(40), N(60))*10^30", //
+        "2.9646372685070017");
     check("Beta(1/4, 3/4, 2, 3)", //
         "11/192");
     check("Beta(0,1,2,3)", //
@@ -346,6 +349,11 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testErf() {
+    // both arguments on one side of the origin: the difference of the complements
+    checkNumeric("Erf(5.0, 6.0)*10^12", //
+        "1.5374382746913224");
+    checkNumeric("Erf(-6.0, -5.0)*10^12", //
+        "1.5374382746913224");
     // assertEquals(org.hipparchus.special.Erf.erf(new Complex(1.0, 1.5)).toString(), //
     // "");
 
@@ -496,12 +504,17 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testExpIntegralE() {
+    // machine precision for larger arguments; calculated with mpmath
+    check("Abs(ExpIntegralE(1., 30.)/3.0215520106888125448*^-15 - 1) < 10^-13", //
+        "True");
+    check("Abs(ExpIntegralE(10., 60.)/1.2534274470396790262*^-28 - 1) < 10^-13", //
+        "True");
     // check("N(Table(ExpIntegralE(x, 2/3), {x,-4, 4, 1/4}),50)", //
     // "");
     checkNumeric("N(ExpIntegralE(3, 22/10), 50)", //
         "0.023520656648276500007831719911764625915312610516518");
     checkNumeric("ExpIntegralE(1.0+I,2.0+3.0*I)", //
-        "-0.01894383050841671+I*0.020443770103244958");
+        "-0.01894383050837364+I*0.02044377010282997");
     check("ExpIntegralE(0,z)", //
         "1/(E^z*z)");
     check("ExpIntegralE(n,0)", //
@@ -958,6 +971,11 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHarmonicNumber() {
+    // the exact sum is over the iteration limit of the tests
+    check("N(HarmonicNumber(1000), 30)", //
+        "7.48547086055034491265651820433");
+    check("N(HarmonicNumber(10007))", //
+        "9.78831");
     // check("Table(Print(r1,i1);HarmonicNumber(r1+I*i1), {r1,-1.0,1.0},{i1,-1.0,1.0} )", //
     // "");
     check("HarmonicNumber(10)", //
@@ -1021,9 +1039,14 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
     // Iteration limit
     check("HarmonicNumber(2147483647,2)", //
-        "Hold(HarmonicNumber(2147483647,2))");
+        "HarmonicNumber(2147483647,2)");
     check("HarmonicNumber(10007, 3)", //
-        "Hold(HarmonicNumber(10007,3))");
+        "HarmonicNumber(10007,3)");
+    // the exact sum is over the iteration limit of the tests; calculated with mpmath
+    check("N(HarmonicNumber(1000, 2), 30)", //
+        "1.64393456668155980313905802382");
+    checkNumeric("N(HarmonicNumber(10007, 3))", //
+        "1.2020568981670859");
 
     check(" HarmonicNumber(m,-2) ", //
         "m/6+m^2/2+m^3/3");
@@ -1053,7 +1076,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
           "BigInteger bit length 201800 exceeded");
     }
     check("HarmonicNumber(10007)", //
-        "Hold(HarmonicNumber(10007))");
+        "HarmonicNumber(10007)");
     check("HarmonicNumber(-Infinity)", //
         "ComplexInfinity");
     check("HarmonicNumber(Infinity)", //
@@ -1146,10 +1169,14 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "8.8692806555502133423*10^-118");
     check("N(InverseBetaRegularized(3/10, 1/1000, 1/1000), 20)", //
         "1.4142853421408959618*10^-222");
+    // rounded, not cut off: 0.999369940215583086357...
     check("N(InverseBetaRegularized(1-10^-9, 2, 3), 20)", //
-        "0.99936994021558308635");
+        "0.99936994021558308636");
+    // a value next to 1, where a machine number cannot start the iteration
+    check("N(InverseBetaRegularized(1-10^-40, 2, 2), 60)", //
+        "0.999999999999999999994226497308103742354897401083869314332413");
     check("N(InverseBetaRegularized(1/2, 2, 3), 20)", //
-        "0.38572756813238954827");
+        "0.38572756813238954828");
     check("N(InverseBetaRegularized(1/2, 1000, 1000), 20)", //
         "0.5");
     // generalized four argument form
@@ -1271,16 +1298,21 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "15.645562889940677986");
     // the upper tail must not be inverted through 1 - q
     check("N(InverseGammaRegularized(2, 1-10^-12), 20)", //
-        "0.0000014142142290401938365");
+        "0.0000014142142290401938366");
+    // a result which the machine precision routine cannot start from
+    check("InverseGammaRegularized(2, 1.0`30*^-400)", //
+        "927.868003842206103591316736158");
+    check("N(InverseGammaRegularized(1/2, 1-10^-30), 50)", //
+        "7.8539816339744830961566084581987572104929234984378*10^-61");
     check("GammaRegularized(2, InverseGammaRegularized(2, 0.001))", //
         "0.001");
     // three argument form; (a, 0, z) is the lower tail inverse
     check("InverseGammaRegularized(2, 0, 0.5)", //
         "1.67835");
     check("N(InverseGammaRegularized(3/2, 0, 1/2), 20)", //
-        "1.182986942187669133");
+        "1.1829869421876691331");
     check("N(InverseGammaRegularized(5, 3, 1/10), 20)", //
-        "3.5537267447504255425");
+        "3.5537267447504255426");
     check("InverseGammaRegularized(2, 0, {0.2,0.5,0.8})", //
         "{0.824388,1.67835,2.99431}");
   }
@@ -1426,6 +1458,13 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPochhammer() {
+    // Gamma(a+n)/Gamma(a) with a+n a non-positive integer
+    check("N(Pochhammer(-5/2, 5/2), 30)", //
+        "ComplexInfinity");
+    check("N(Pochhammer(1/2, -3/2), 30)", //
+        "ComplexInfinity");
+    check("N(Pochhammer(-3, 3), 30)", //
+        "-6");
     check("Pochhammer(2,3)", //
         "24");
 
@@ -1510,6 +1549,15 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyGamma() {
+    // machine precision of the digamma function; calculated with mpmath
+    checkNumeric("PolyGamma(0, 1/3.)", //
+        "-3.1320337800208065");
+    checkNumeric("PolyGamma(0, 10.)", //
+        "2.251752589066721");
+    checkNumeric("PolyGamma(0, -1.75)", //
+        "-2.3226916286143606");
+    checkNumeric("PolyGamma(0, 0.5+I)", //
+        "-0.05176165099441254+I*1.5649405178158793");
     // https://github.com/mtommila/apfloat/issues/681
     checkNumeric("PolyGamma(1,-5003.5)", //
         "9.869404560962126");
@@ -1561,9 +1609,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "1.2812739190662303+I*0.9798053153445595");
 
     checkNumeric("PolyGamma(0, 0.166667)", //
-        "-6.33211506874618");
+        "-6.332115065894636");
     checkNumeric("PolyGamma(0, 0.166667+1/2)", //
-        "-1.3182333972336449");
+        "-1.318233394495195");
     check("PolyGamma(-0.8)", //
         "-4.03904");
     // http://fungrim.org/entry/ea2482/

@@ -283,6 +283,11 @@ public class SympyPortBuiltinsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testKelvinKerKei() {
+    // a non-integer order through BesselK: the difference of two BesselI cancels 8 digits here
+    checkNumeric("KelvinKer(1/3, 12.0)*10^5", //
+        "-7.4375091797442838");
+    checkNumeric("KelvinKei(-2.5, 12.0)*10^5", //
+        "8.1933198972215816");
     check("KelvinKer(1.0)", //
         "0.286706");
     check("KelvinKei(1.0)", //

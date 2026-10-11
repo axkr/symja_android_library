@@ -1,5 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
+import org.matheclipse.core.interfaces.INumber;
+import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.external.apfloat.ZetaWorkaround;
 import org.matheclipse.core.interfaces.Attribute;
@@ -322,6 +325,17 @@ public class Zeta extends AbstractArg12 {
         }
         if (s instanceof ApcomplexNum && a instanceof ApcomplexNum) {
           return e2ApcomplexArg((ApcomplexNum) s, (ApcomplexNum) a);
+        }
+      }
+      if (s instanceof INumber && a instanceof INumber) {
+        // a real and a complex argument, or a second argument without a positive real part, where
+        // the terms with a + k == 0 are left out and the other ones are ((a + k)^2)^(-s/2)
+        try {
+          Apcomplex value = ApcomplexZetaMath.generalizedZeta(((INumber) s).apcomplexValue(),
+              ((INumber) a).apcomplexValue());
+          return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
+        } catch (ArithmeticException | ApfloatRuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
         }
       }
     }

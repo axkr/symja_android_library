@@ -870,7 +870,7 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr digamma() {
     try {
-      Complex complexDigamma = org.hipparchus.special.Gamma.digamma(fComplex);
+      Complex complexDigamma = GammaJS.digamma(fComplex);
       if (complexDigamma.isFinite()) {
         return F.complexNum(complexDigamma);
       }
@@ -1018,6 +1018,14 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr expIntegralE(IExpr z) {
     if (z instanceof INumber) {
+      // the double routine has from no to ten correct digits for an argument beyond a few units
+      try {
+        Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apcomplexValue(),
+            ((INumber) z).apcomplexValue());
+        return F.complexNum(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        Errors.rethrowsInterruptException(e);
+      }
       return F.complexNum(GammaJS.expIntegralE(fComplex, ((INumber) z).complexValue()));
       // Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apcomplexValue(),
       // ((INumber) z).apcomplexValue());
@@ -1328,12 +1336,28 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
-    try {
-      return F
-          .complexNum(HypergeometricJS.hypergeometric0F1(fComplex, ((ComplexNum) arg2).evalfc()));
-    } catch (RuntimeException e) {
-      Errors.rethrowsInterruptException(e);
-      // try as computation with complex numbers
+    if (arg2 instanceof INumber) {
+      Complex guarded = HypergeometricJS.guardedSeries(new Complex[0], new Complex[] {fComplex},
+          arg2.evalfc());
+      if (guarded != null) {
+        return F.complexNum(guarded);
+      }
+      try {
+        // the argument may be a real machine number
+        Complex value = HypergeometricJS.hypergeometric0F1(fComplex, arg2.evalfc());
+        if (value.isFinite()) {
+          return F.complexNum(value);
+        }
+      } catch (RuntimeException e) {
+        Errors.rethrowsInterruptException(e);
+      }
+      try {
+        Apcomplex value = EvalEngine.getApfloatDouble().hypergeometric0F1(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        Errors.rethrowsInterruptException(e);
+      }
     }
     return IComplexNum.super.hypergeometric0F1(arg2);
   }
@@ -1351,6 +1375,13 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      Complex guarded = HypergeometricJS.guardedSeries(new Complex[] {fComplex},
+          new Complex[] {arg2.evalfc()}, arg3.evalfc());
+      if (guarded != null) {
+        return F.complexNum(guarded);
+      }
+    }
     try {
       return F.complexNum(HypergeometricJS.hypergeometric1F1(fComplex, //
           arg2.evalfc(), //
@@ -1927,7 +1958,12 @@ public class ComplexNum implements IComplexNum {
       } catch (LossOfPrecisionException lope) {
         // Complete loss of precision
       } catch (InfiniteExpansionException iee) {
-        // Cannot calculate power to infinite precision
+        // a complex order with an integer real part
+        IExpr polylog = ApcomplexNum.polyLogImaginaryOrder(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue(), EvalEngine.getApfloatDouble().precision());
+        if (polylog.isPresent()) {
+          return F.complexNum(polylog.evalfc());
+        }
       } catch (ArithmeticException | NumericComputationException ex) {
       }
     }

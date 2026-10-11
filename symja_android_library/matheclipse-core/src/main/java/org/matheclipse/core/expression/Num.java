@@ -818,7 +818,7 @@ public class Num implements INum {
   @Override
   public IExpr digamma() {
     try {
-      double doubleDigamma = org.hipparchus.special.Gamma.digamma(value);
+      double doubleDigamma = GammaJS.digamma(value);
       if (Double.isFinite(doubleDigamma)) {
         return F.num(doubleDigamma);
       }
@@ -1000,6 +1000,15 @@ public class Num implements INum {
     // }
     // }
     if (z instanceof INumber) {
+      // the double routine has from no to ten correct digits for an argument beyond a few units
+      try {
+        Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apfloatValue(),
+            ((INumber) z).apcomplexValue());
+        return F.complexReduced(
+            new Complex(expIntegralE.real().doubleValue(), expIntegralE.imag().doubleValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        Errors.rethrowsInterruptException(e);
+      }
       return F.complexReduced(GammaJS.expIntegralE(complexValue(), ((INumber) z).complexValue()));
       // Apcomplex expIntegralE = EvalEngine.getApfloatDouble().expIntegralE(apfloatValue(),
       // ((INumber) z).apcomplexValue());
@@ -1365,6 +1374,13 @@ public class Num implements INum {
 
   @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      Complex guarded = HypergeometricJS.guardedSeries(new Complex[0],
+          new Complex[] {new Complex(value)}, arg2.evalfc());
+      if (guarded != null) {
+        return guarded.getImaginary() == 0.0 ? F.num(guarded.getReal()) : F.complexNum(guarded);
+      }
+    }
     if (!F.isNumIntValue(value) || value > 0) {
       double arg2Double = arg2.evalfNaN();
       if (!Double.isNaN(arg2Double)) {
@@ -1411,6 +1427,13 @@ public class Num implements INum {
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
     double arg2Double = arg2.evalfNaN();
     double arg3Double = arg3.evalfNaN();
+    if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      Complex guarded = HypergeometricJS.guardedSeries(new Complex[] {new Complex(value)},
+          new Complex[] {arg2.evalfc()}, arg3.evalfc());
+      if (guarded != null) {
+        return guarded.getImaginary() == 0.0 ? F.num(guarded.getReal()) : F.complexNum(guarded);
+      }
+    }
     if (!Double.isNaN(arg2Double) && !Double.isNaN(arg3Double)) {
       try {
         return F.num(HypergeometricJS.hypergeometric1F1(value, //

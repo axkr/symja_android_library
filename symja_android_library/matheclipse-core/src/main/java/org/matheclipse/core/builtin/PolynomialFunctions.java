@@ -40,7 +40,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
-import org.matheclipse.core.numerics.functions.HermiteFunction;
+import org.matheclipse.external.apfloat.ApcomplexAsymptoticMath;
 import org.matheclipse.core.numerics.functions.WorkingPrecision;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.GroebnerBasisJAS;
@@ -1952,7 +1952,7 @@ public class PolynomialFunctions {
      * Smallest argument answered by the large argument expansion. Below it the library routine is
      * quick, above it its confluent hypergeometric series has to carry <code>E^(z^2)</code> in its
      * working precision: 350 ms at 10, seconds at 100, and never at 1009. The two overlap, and
-     * {@link HermiteFunction#hermiteH} declines anything its own error estimate cannot answer for.
+     * {@link ApcomplexAsymptoticMath#hermiteH} declines anything its own error estimate cannot answer for.
      */
     private static final double MIN_ASYMPTOTIC_HERMITEH_ARGUMENT = 5.0;
 
@@ -1965,7 +1965,8 @@ public class PolynomialFunctions {
       if (!Double.isFinite(argument) || argument < MIN_ASYMPTOTIC_HERMITEH_ARGUMENT) {
         return F.NIL;
       }
-      return WorkingPrecision.evaluate(n, z, true, HermiteFunction::hermiteH);
+      return WorkingPrecision.evaluate(n, z, true,
+          (nu, x, precision) -> ApcomplexAsymptoticMath.hermiteH(nu, x));
     }
 
     @Override

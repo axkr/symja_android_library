@@ -679,6 +679,49 @@ public class HypergeometricJS extends JS {
   // return s;
   // }
 
+  /** From this size of the argument on the machine precision series are summed with guard digits. */
+  private static final double GUARDED_SERIES_ARGUMENT = 5.0;
+
+  /**
+   * The generalized hypergeometric function of machine numbers from its series summed in arbitrary
+   * precision with the digits which the terms cancel, for an argument large enough for the double
+   * summation to lose digits; <code>null</code> for a small argument - where the double routines
+   * are both right and much faster - or where the series gives no result.
+   */
+  public static Complex guardedSeries(Complex[] a, Complex[] b, Complex z) {
+    if (!(z.norm() >= GUARDED_SERIES_ARGUMENT) || !z.isFinite()) {
+      return null;
+    }
+    final int digits = (int) org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION + 1;
+    try {
+      Apcomplex[] upper = new Apcomplex[a.length];
+      Apcomplex[] lower = new Apcomplex[b.length];
+      for (int i = 0; i < a.length; i++) {
+        upper[i] = apcomplex(a[i], digits);
+      }
+      for (int i = 0; i < b.length; i++) {
+        lower[i] = apcomplex(b[i], digits);
+      }
+      Apcomplex value = org.matheclipse.external.apfloat.ApcomplexHypergeometricMath
+          .hypergeometricPFQ(upper, lower, apcomplex(z, digits));
+      Complex result = new Complex(value.real().doubleValue(), value.imag().doubleValue());
+      return result.isFinite() ? result : null;
+    } catch (ArithmeticException | org.apfloat.ApfloatRuntimeException ex) {
+      org.matheclipse.core.eval.Errors.rethrowsInterruptException(ex);
+      return null;
+    }
+  }
+
+  private static Apcomplex apcomplex(Complex c, int digits) {
+    if (!c.isFinite()) {
+      throw new ArithmeticException("not a finite number");
+    }
+    Apfloat re = c.getReal() == 0.0 ? Apfloat.ZERO : new Apfloat(c.getReal()).precision(digits);
+    Apfloat im =
+        c.getImaginary() == 0.0 ? Apfloat.ZERO : new Apfloat(c.getImaginary()).precision(digits);
+    return new Apcomplex(re, im);
+  }
+
   public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x) {
     return hypergeometricPFQ(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }

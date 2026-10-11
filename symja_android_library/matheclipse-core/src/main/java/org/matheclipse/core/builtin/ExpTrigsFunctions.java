@@ -454,6 +454,25 @@ public class ExpTrigsFunctions {
    * <code>Log(z + Sqrt(z - 1)*Sqrt(z + 1))</code>, the principal branch of <code>ArcCosh(z)</code>.
    * <code>Sqrt(z^2 - 1)</code> would pick the wrong branch for <code>Re(z) < 0</code>.
    */
+  /**
+   * <code>ArcSinh(z) == Log(z + Sqrt(z^2 + 1))</code>, the principal value. The function is odd,
+   * and is evaluated in the right half plane and on the upper imaginary axis, where the two terms
+   * of the sum don't cancel and no signed zero decides the side of the cuts.
+   */
+  private static Complex arcSinh(Complex z) {
+    double re = z.getReal();
+    double im = z.getImaginary();
+    boolean negate = re < 0.0 || (re == 0.0 && im < 0.0);
+    if (negate) {
+      re = -re;
+      im = -im;
+    }
+    // z^2 + 1
+    Complex square = new Complex(re * re - im * im + 1.0, re == 0.0 || im == 0.0 ? 0.0 : 2.0 * re * im);
+    Complex result = new Complex(re == 0.0 ? 0.0 : re, im == 0.0 ? 0.0 : im).add(square.sqrt()).log();
+    return negate ? result.negate() : result;
+  }
+
   private static Complex arcCosh(Complex z) {
     return z.add(z.subtract(Complex.ONE).sqrt().multiply(z.add(Complex.ONE).sqrt())).log();
   }
@@ -717,7 +736,12 @@ public class ExpTrigsFunctions {
         // I*Pi / 2
         return F.complexNum(h.divide(new Apcomplex(Apcomplex.ZERO, h.pi()), new Apfloat(2)));
       }
-      return F.num(h.atanh(h.inverseRoot(arg1, 1)));
+      Apfloat inverse = h.inverseRoot(arg1, 1);
+      if (h.abs(inverse).compareTo(Apfloat.ONE) > 0) {
+        // inside (-1, 1) the value is complex: ArcTanh(1/arg1)
+        return F.complexNum(h.atanh((Apcomplex) inverse));
+      }
+      return F.num(h.atanh(inverse));
     }
 
     @Override
@@ -811,9 +835,30 @@ public class ExpTrigsFunctions {
       }
       if (arg1 > -1.0 && arg1 < 1.0) {
         // the same branch as ArcSin(1/arg1)
-        return F.complexNum(Complex.valueOf(1 / arg1).asin());
+        return F.num(1 / arg1).asin();
       }
       return F.num(Math.asin(1 / arg1));
+    }
+
+    @Override
+    public IExpr e1ApfloatArg(Apfloat arg1) {
+      if (arg1.signum() == 0) {
+        return F.CComplexInfinity;
+      }
+      // ArcSin(1/arg1), which is complex inside (-1, 1)
+      Apfloat inverse = ApfloatMath.inverseRoot(arg1, 1);
+      if (ApfloatMath.abs(inverse).compareTo(Apfloat.ONE) <= 0) {
+        return F.num(ApfloatMath.asin(inverse));
+      }
+      return F.complexNum(ApcomplexMath.asin(inverse));
+    }
+
+    @Override
+    public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      if (arg1.isZero()) {
+        return F.CComplexInfinity;
+      }
+      return F.complexNum(ApcomplexMath.asin(ApcomplexMath.inverseRoot(arg1, 1)));
     }
 
     @Override
@@ -867,8 +912,37 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double d) {
-      // log(1+Sqrt(1+d^2) / d)
-      return F.num(Math.log((1 + Math.sqrt(1 + d * d)) / d));
+      if (F.isZero(d)) {
+        return F.CComplexInfinity;
+      }
+      // ArcSinh(1/d), odd: Log((1+Sqrt(1+d^2))/d) for a positive d
+      double a = Math.abs(d);
+      double value = Math.log((1 + Math.sqrt(1 + a * a)) / a);
+      return F.num(d < 0 ? -value : value);
+    }
+
+    @Override
+    public IExpr e1ComplexArg(final Complex arg1) {
+      if (arg1.equals(Complex.ZERO)) {
+        return F.CComplexInfinity;
+      }
+      return F.complexNum(arcSinh(Complex.ONE.divide(arg1)));
+    }
+
+    @Override
+    public IExpr e1ApfloatArg(Apfloat arg1) {
+      if (arg1.signum() == 0) {
+        return F.CComplexInfinity;
+      }
+      return F.num(ApfloatMath.asinh(ApfloatMath.inverseRoot(arg1, 1)));
+    }
+
+    @Override
+    public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      if (arg1.isZero()) {
+        return F.CComplexInfinity;
+      }
+      return F.complexNum(ApcomplexMath.asinh(ApcomplexMath.inverseRoot(arg1, 1)));
     }
 
     @Override
@@ -999,6 +1073,27 @@ public class ExpTrigsFunctions {
         return F.num(1 / arg1).acos();
       }
       return F.num(Math.acos(1 / arg1));
+    }
+
+    @Override
+    public IExpr e1ApfloatArg(Apfloat arg1) {
+      if (arg1.signum() == 0) {
+        return F.CComplexInfinity;
+      }
+      // ArcCos(1/arg1), which is complex inside (-1, 1)
+      Apfloat inverse = ApfloatMath.inverseRoot(arg1, 1);
+      if (ApfloatMath.abs(inverse).compareTo(Apfloat.ONE) <= 0) {
+        return F.num(ApfloatMath.acos(inverse));
+      }
+      return F.complexNum(ApcomplexMath.acos(inverse));
+    }
+
+    @Override
+    public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      if (arg1.isZero()) {
+        return F.CComplexInfinity;
+      }
+      return F.complexNum(ApcomplexMath.acos(ApcomplexMath.inverseRoot(arg1, 1)));
     }
 
     @Override
@@ -1158,6 +1253,11 @@ public class ExpTrigsFunctions {
     public IExpr e1DblArg(final double arg1) {
       double val = FastMath.asinh(arg1);
       return F.num(val);
+    }
+
+    @Override
+    public IExpr e1ComplexArg(final Complex arg1) {
+      return F.complexNum(arcSinh(arg1));
     }
 
     @Override
@@ -1362,9 +1462,15 @@ public class ExpTrigsFunctions {
         return S.Indeterminate;
       }
 
-      IComplexNum temp = ComplexNum.I.add(z).divide(ComplexNum.I.subtract(z));
-      IComplexNum logValue = log(temp.complexNumValue());
-      return ComplexNum.I.multiply(logValue).divide(ComplexNum.valueOf(2.0, 0.0)).complexNumValue();
+      // I/2*(Log(1-I*z)-Log(1+I*z)): the two logarithms, and not the logarithm of a quotient, are
+      // the principal value on the cuts along the imaginary axis
+      Complex c = z.complexValue();
+      double re = c.getReal();
+      double im = c.getImaginary();
+      // 1-I*z = (1+im) - I*re and 1+I*z = (1-im) + I*re, with a zero that has no sign
+      Complex difference = new Complex(1.0 + im, re == 0.0 ? 0.0 : -re).log()
+          .subtract(new Complex(1.0 - im, re == 0.0 ? 0.0 : re).log());
+      return F.complexNum(new Complex(-0.5 * difference.getImaginary(), 0.5 * difference.getReal()));
     }
 
     @Override

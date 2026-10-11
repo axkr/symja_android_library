@@ -69,6 +69,10 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testGegenbauerC() {
+    check("GegenbauerC(3, 2, 3)", //
+        "828");
+    check("GegenbauerC(4, 2, 1/3)", //
+        "-109/81");
     checkNumeric("GegenbauerC(2/7, 5 - I, 2) //N", //
         "2.5811662779830957+I*(-0.15456328352770213)");
     check("N(GegenbauerC(1/6, 1/8, 7), 50)", //
@@ -115,8 +119,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "0");
     check("GegenbauerC(n, 1, z)", //
         "ChebyshevU(n,z)");
-    check("GegenbauerC(n, 2, z)", //
-        "((-2-n)*ChebyshevU(n,z)+(1+n)*z*ChebyshevU(1+n,z))/(2*(-1+z^2))");
+    check("GegenbauerC(4, 2, 1/3)", //
+        "-109/81");
 
     check("GegenbauerC(5,z)", //
         "2*z-8*z^3+32/5*z^5");

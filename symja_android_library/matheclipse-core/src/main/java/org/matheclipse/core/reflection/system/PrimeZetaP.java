@@ -1,5 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
+import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.eval.Errors;
+import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.Apcomplex;
 import java.math.BigInteger;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
@@ -37,6 +44,32 @@ public class PrimeZetaP extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+    if (ast.argSize() == 1 && ast.arg1().isNumber()) {
+      // at arbitrary precision, and at machine precision where log(Zeta(k*s)) has lost its digits
+      IExpr arg = ast.arg1();
+      final boolean arbitrary = arg instanceof ApfloatNum || arg instanceof ApcomplexNum;
+      Complex c = arg.evalfc();
+      if (c.getReal() > 1.0 && (arbitrary || (c.getReal() >= 3.0 && Math.abs(c.getImaginary()) <= 5.0))) {
+        final int digits = arbitrary ? (int) engine.getNumericPrecision()
+            : (int) org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION + 1;
+        try {
+          Apcomplex value = ApcomplexZetaMath
+              .primeZeta(CarlsonArbitraryPrecision.apcomplex(arg, digits));
+          if (arg.isReal()) {
+            return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
+          }
+          return arbitrary ? F.complexNum(value)
+              : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+        } catch (ArithmeticException | ApfloatRuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
+        }
+        if (arbitrary) {
+          return F.NIL;
+        }
+      } else if (arbitrary) {
+        return F.NIL;
+      }
+    }
     if (ast.argSize() == 1) {
       double s = ast.arg1().evalfNaN();
       // Only evaluate numerically for Real (approximate) arguments greater than 1.0

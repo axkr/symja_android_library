@@ -772,6 +772,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcCoth() {
+    // inside the cut (-1, 1); calculated with mpmath
+    check("N(ArcCoth(1/3), 30)", //
+        "0.34657359027997265470861606072+I*(-1.57079632679489661923132169163)");
     check("Refine(ArcCoth(Coth(x)),Element(x,Reals))", //
         "x");
 
@@ -792,6 +795,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcCsc() {
+    // arbitrary precision, and the value inside the cut (-1, 1); calculated with mpmath
+    check("N(ArcCsc(1/3), 30)", //
+        "1.57079632679489661923132169163+I*(-1.76274717403908605046521864995)");
+    checkNumeric("ArcCsc(0.3)", //
+        "1.5707963267948966+I*(-1.8738202425274144)");
     check("ArcCsc(-1+I)", //
         "-I*ArcCsch(1+I)");
     check("ArcCsc(3.5)", //
@@ -812,6 +820,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcCsch() {
+    // odd; calculated with mpmath
+    checkNumeric("ArcCsch(-1.75)", //
+        "-0.5441712343655167");
+    checkNumeric("ArcCsch(2.0+I)", //
+        "0.39656823011232896+I*(-0.18631805410781552)");
+    check("N(ArcCsch(2+I), 30)", //
+        "0.396568230112328978916534334459+I*(-0.186318054107815525822170192208)");
     check("Refine(ArcCsch(Csch(x)),Element(x,Reals))", //
         "x");
 
@@ -832,6 +847,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcSec() {
+    // arbitrary precision, and the value inside the cut (-1, 1); calculated with mpmath
+    check("N(ArcSec(5/2), 30)", //
+        "1.15927948072740859984658379402");
+    check("N(ArcSec(1/3), 30)", //
+        "I*1.76274717403908605046521864995");
+    check("N(ArcSec(2+I), 30)", //
+        "1.16920993512709055094788524612+I*0.21561241855582964496691756493");
     check("ArcSec(3.5)", //
         "1.28104");
     check("ArcSec(1.0+3.5*I)", //
@@ -914,6 +936,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcSinh() {
+    // complex machine numbers, and the cut on the imaginary axis; calculated with mpmath
+    checkNumeric("ArcSinh(0.5+I)", //
+        "0.7328576759736452+I*0.8959074812088903");
+    checkNumeric("ArcSinh(-3.0*I)", //
+        "-1.762747174039086+I*(-1.5707963267948966)");
+    checkNumeric("ArcTan(2.0*I)", //
+        "1.5707963267948966+I*0.5493061443340549");
     check("ArcSinh(-1+I)", //
         "I*ArcSin(1+I)");
     check("ArcSinh(0)", //
@@ -7961,6 +7990,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEllipticPi() {
+    // a real characteristic above 1 with a complex parameter: the Cauchy principal value
+    // EllipticK(m)-EllipticPi(m/n,m); Mathematica gives -0.05373796611188977-0.10495270365530834*I
+    checkNumeric("EllipticPi(3, 0.25+0.3*I)", //
+        "-0.053737966111889746+I*(-0.10495270365530826)");
+    check("N(EllipticPi(5, -2+I/10), 30)", //
+        "0.158632591650323021857147904309+I*(-0.004066362429415145377763504642)");
     check("EllipticPi(0.4, 0.6)", //
         "2.59092");
     check("EllipticPi(0,-1,1.5708)", //
@@ -8004,6 +8039,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEllipticTheta() {
+    // a nome next to the unit circle, where the series cancels; calculated with mpmath
+    check("N(EllipticTheta(4, 0, 9/10), 30)", //
+        "0.000000000737352693847306804796913547546");
+    check("N(EllipticTheta(3, 1/3, 99/100), 30)", //
+        "0.000279356185247668690565118565456");
+    check("N(EllipticTheta(1, 1/2+I, 1/4+I/3), 30)", //
+        "2.44923162174696548747422228797+I*(-1.07027265277585464217984004212)");
+    checkNumeric("EllipticTheta(4, 0, 0.9)*10^10", //
+        "7.373526938473028");
+    checkNumeric("EllipticTheta(3, 2, 0.9)*10^5", //
+        "2.3191330484283697");
     check("EllipticTheta(3,0.4,E^(Pi*I*1/3))", //
         "EllipticTheta(3,0.4,0.5+I*0.866025)");
     check("EllipticTheta(1,0,x)", //
@@ -9217,6 +9263,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorialPower() {
+    // not an integer number of factors: Gamma(1+x)/Gamma(1+x-n)
+    check("FactorialPower(x, 1/2)", //
+        "Gamma(1+x)/Gamma(1/2+x)");
+    check("FactorialPower(10, 1/2)", //
+        "262144/(46189*Sqrt(Pi))");
+    check("N(FactorialPower(1/3, 1/2), 30)", //
+        "0.791096538061684182536018792995");
+    checkNumeric("FactorialPower(2.5, -1/3)", //
+        "0.6801525616633899");
     check("FactorialPower(a,10) // FunctionExpand", //
         "(-9+a)*(-8+a)*(-7+a)*(-6+a)*(-5+a)*(-4+a)*(-3+a)*(-2+a)*(-1+a)*a");
     check("FactorialPower(3,3)", //
@@ -13063,6 +13118,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testOwenT() {
+    // far below the smallest machine number, instead of an exception for the number of digits
+    check("OwenT(1.*^10, 0.5)", //
+        "0.0");
+    // the test output form prints a number this small as 0.0, so it is compared instead
+    check("Abs(OwenT(30., 0.5)/2.4533569635740932*^-198-1) < 10^-12", //
+        "True");
     check("OwenT(x, 1)", //
         "1/8*Erfc(x/Sqrt(2))*Erfc(-x/Sqrt(2))");
     check("OwenT(0, a)", //
@@ -13986,6 +14047,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHyperfactorial() {
+    // E^(z*LogGamma(z+1))/BarnesG(z+1) for an inexact argument; calculated with mpmath
+    checkNumeric("Hyperfactorial(2.5)", //
+        "15.984211992223717");
+    checkNumeric("Hyperfactorial(-0.5)", //
+        "1.245143249363274");
     check("Hyperfactorial(-1/2)", //
         "Glaisher^(3/2)/(2^(1/24)*E^(1/8))");
     check("Hyperfactorial(10)", //
@@ -15379,6 +15445,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testKleinInvariantJ() {
+    // arbitrary precision through the fundamental domain; calculated with mpmath
+    check("N(KleinInvariantJ(1/3+I), 30)", //
+        "0.150719494747791082095920221741+I*(-0.121554034224618819751954563385)");
+    checkNumeric("KleinInvariantJ(0.5+0.1*I)", //
+        "-3839.629646418634");
     //
     check("KleinInvariantJ(-1.5707963267948966)", //
         "KleinInvariantJ(-1.5707963267948966)");
@@ -15747,6 +15818,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLerchPhi() {
+    // the series for complex arguments and at arbitrary precision; calculated with mpmath
+    checkNumeric("LerchPhi(0.3, 2.0, 1.0+I)", //
+        "0.044969377036018115+I*(-0.5542936637691778)");
+    check("N(LerchPhi(1/3, 1+I, 1/3), 30)", //
+        "1.63985130245799577685177644935+I*2.55084859971497585588049916326");
+    check("N(LerchPhi(-7/10, 1/2, 5/2), 30)", //
+        "0.400127966812917911680030496822");
     // TODO numeric function
     // check("LerchPhi(2, 3, -1.5)", //
     // "");
@@ -21100,6 +21178,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testPolyLog() {
+    // an order on the imaginary axis with an argument between 0 and 1
+    checkNumeric("PolyLog(I, 0.99)", //
+        "-20.86728574125743+I*47.096525592037");
+    check("N(PolyLog(I, 9/10), 30)", //
+        "-1.82496188900691975277774580826+I*(-5.00716822828917998985213970371)");
     // check("PolyLog(10007,-1.5707963267948966)", //
     // "");
 
@@ -23237,6 +23320,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testPrimeZetaP() {
+    // large arguments at machine precision, and arbitrary precision; calculated with mpmath
+    checkNumeric("PrimeZetaP(30.0)*10^10", //
+        "9.313274315523019");
+    check("N(PrimeZetaP(2), 30)", //
+        "0.452247420041065498506543364832");
     check("Table(PrimeZetaP(s),{s,{2,3,4,5,6}})//N", //
         "{0.452247,0.174763,0.0769931,0.035755,0.0170701}");
     checkNumeric("PrimeZetaP(0.53)", //
@@ -28321,6 +28409,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testStieltjesGamma() {
+    // numeric values from the integral representation; calculated with mpmath
+    checkNumeric("N(StieltjesGamma(1))", //
+        "-0.07281584548367672");
+    checkNumeric("StieltjesGamma(2, 2.5)", //
+        "-0.10164285521155576");
     check("StieltjesGamma(8,Indeterminate)", //
         "Indeterminate");
     check("StieltjesGamma(0)", //
@@ -28443,7 +28536,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // TODO values > 30
     check("Table(StruveH(0,x), {x, 0., 30})", //
         "{0.0,0.568657,0.790859,0.574306,0.135015,-0.185217,-0.184555,0.063383,0.301988,0.319876,0.118744,-0.111421,-0.172534,"
-            + "-0.0295133,0.172443,0.247724,0.135449,-0.0553148,-0.152291,-0.076104,0.0943937,0.20045,0.148766,-0.00835413,-0.126354,"
+            + "-0.0295133,0.172443,0.247724,0.135449,-0.0553148,-0.152291,-0.076104,0.0943937,0.20045,0.148766,-0.00835414,-0.126354,"
             + "-0.101825,0.0364942,0.158762,0.154544,0.0314077,-0.0960984}"); //
   }
 
@@ -28457,7 +28550,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("StruveL(-5/2, z)", //
         "(-3*Sqrt(2/Pi)*z*Cosh(z)+3*Sqrt(2/Pi)*Sinh(z)+Sqrt(2/Pi)*z^2*Sinh(z))/z^(5/2)");
     check("N(StruveL(7/3 + I, 9/2 - I), 50)", //
-        "-0.977294788497826125470437322617021508896817658657+I*(-10.825882606764095233380115074057577420814740810573)");
+        "-0.97729478849782612547043732261702150889681765865783+I*(-10.825882606764095233380115074057577420814740810573)");
     check("StruveL(7/3 + I, 4.5 - I)", //
         "-0.977295+I*(-10.82588)");
 
@@ -31871,10 +31964,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testZeta() {
     check("N(HurwitzZeta(3, -3/2),30)", //
         "0.118102025820863701501870834283");
+    // Zeta(s, a) is the sum of ((k+a)^2)^(-s/2) for a negative a, at any precision; the sum of
+    // (k+a)^(-s) is HurwitzZeta(s, a)
     check("N(Zeta(3, -3/2),30)", //
-        "0.118102025820863701501870834283");
+        "16.7106946184134562940944634268");
     check("Zeta(3, -1.5)", //
         "16.71069");
+    check("N(Zeta(1/2, -3/2),30)", //
+        "1.62581149987919071128685083487");
+    check("N(HurwitzZeta(1/2, -3/2),30)", //
+        "-0.604898643421630370247265914235+I*(-2.23071014330082108153411674911)");
+    check("N(Zeta(2+I, 1/3),30)", //
+        "4.68800876102362073551274716198+I*7.47873241550315090489310330988");
     check("Zeta(7,7)", //
         "Zeta(7,7)");
     check("Zeta(11,7)", //

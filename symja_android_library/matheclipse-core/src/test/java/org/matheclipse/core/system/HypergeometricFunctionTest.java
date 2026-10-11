@@ -482,11 +482,10 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     check("HypergeometricPFQ({0,a1,a2,a3,a4},{b1,b2,b3},z)", //
         "1");
 
-    // message HypergeometricPFQ: general hypergeometric argument currently restricted.
     check("HypergeometricPFQ({1, 1, 1}, {3/2, 3/2, 3/2}, 10.0)", //
-        "HypergeometricPFQ({1,1,1},{3/2,3/2,3/2},10.0)");
+        "530.1919");
     check("HypergeometricPFQ({1, 1}, {3, 3, 3}, 2.)", //
-        "HypergeometricPFQ({1,1},{3,3,3},2.0)");
+        "1.07893");
 
     check("HypergeometricPFQ({I, I, I}, {2, 2 , 2}, -1.0*I)", //
         "0.870032+I*(-0.00484538)");
@@ -499,6 +498,47 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "1");
     check("HypergeometricPFQ({a, b}, {c, b}, z)", //
         "HypergeometricPFQ({a},{c},z)");
+  }
+
+  /** The series with the digits which its terms cancel; the values were calculated with mpmath. */
+  @Test
+  public void testHypergeometricPFQSeries() {
+    checkNumeric("HypergeometricPFQ({1/3,5/2,1},{7/3,3/2},0.9)", //
+        "1.606708432655421");
+    checkNumeric("HypergeometricPFQ({1/3,5/2},{7/3,3/2},-7.)", //
+        "0.4807734924267669");
+    // upper parameters which differ by an integer, outside the unit circle
+    checkNumeric("HypergeometricPFQ({1,1,1},{2,2},-5.)", //
+        "0.5498558252121617");
+    check("N(HypergeometricPFQ({1/3,5/2,1},{7/3,3/2},9/10), 30)", //
+        "1.6067084326554210678161799904");
+    // on the cut from 1: the value from below
+    check("N(HypergeometricPFQ({1/3,5/2,1},{7/3,3/2},3), 30)", //
+        "0.656053184392183117384955234113+I*(-0.717122201081024239027669207599)");
+    // polynomials: exact, and with alternating terms which cancel
+    check("HypergeometricPFQ({-3,1/3},{},-7)", //
+        "11584/27");
+    check("HypergeometricPFQ({-2,a},{b},z)", //
+        "1+(-2*a*z)/b+(a*(1+a)*z^2)/(b*(1+b))");
+    checkNumeric("HypergeometricPFQ({-1000,1/2},{3},0.5)", //
+        "0.06715765478731136");
+    check("HypergeometricPFQ({-4,5/2,1},{-2,3/2},1/2)", //
+        "ComplexInfinity");
+  }
+
+  /** Machine precision for larger arguments, where the double summation loses digits; mpmath. */
+  @Test
+  public void testHypergeometric1F1And0F1MachinePrecision() {
+    checkNumeric("Hypergeometric1F1(1/3, 2.5, 40.0)/10^13", //
+        "4.1004504293783485");
+    // a polynomial with alternating terms
+    checkNumeric("Hypergeometric1F1(-40, 3, 30.0)", //
+        "-40.38252252278356");
+    checkNumeric("Hypergeometric0F1(2.5, -7.0)", //
+        "-0.07558399645143653");
+    // a complex parameter with a real argument
+    checkNumeric("Hypergeometric0F1(2.0+I, 0.5)", //
+        "1.2128735899139323+I*(-0.11312952894573762)");
   }
 
   @Test
@@ -529,6 +569,8 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testHypergeometricU() {
+    check("N(HypergeometricU(2+I, 5/2, 30), 30)", //
+        "-0.0010456817502248065366618251352+I*0.00036804083849996681048033138458");
     check("HypergeometricU({3,1},{2,4},{7,8})", //
         "{HypergeometricU(3,2,7),41/256}");
     check("HypergeometricU(0,b,z)", //

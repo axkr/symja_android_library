@@ -80,6 +80,54 @@ public class ZetaZeroTest {
         "Abs(Im(N(ZetaZero(10000), 20)) - 9877.7826540055011428`25) < 10^-15").toString());
   }
 
+  /**
+   * The first exception to Rosser's rule: the Gram intervals after the Gram points 13999525 and
+   * 13999526 hold no zero and the next one holds three, #13999527 to #13999529. The values were
+   * calculated with mpmath.
+   */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testRosserException() {
+    ExprEvaluator eval = new ExprEvaluator();
+    double[][] zeros = {{13999526, 6820050.483658157272}, {13999527, 6820051.890985500872},
+        {13999528, 6820052.004122027062}, {13999529, 6820052.091773983609},
+        {13999530, 6820052.586535650429}, {30930928, 14253736.37358533314}};
+    for (double[] zero : zeros) {
+      IExpr result = eval.eval("N(ZetaZero(" + (int) zero[0] + "))");
+      assertEquals(zero[1], result.im().evalf(), 1e-15 * zero[1], "ZetaZero(" + (int) zero[0] + ")");
+    }
+    assertEquals("True", eval.eval(
+        "Abs(Im(N(ZetaZero(13999528), 30)) - 6820052.0041220270615442510559061`35) < 10^-22")
+        .toString());
+  }
+
+  /**
+   * Above the index 400,000,000 the exceptions to Rosser's rule are not listed and the zeros are
+   * counted with Turing's method. #542964976 is the sixth zero of a block of nine Gram intervals.
+   * The values were calculated with mpmath.
+   */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testTuringMethod() {
+    ExprEvaluator eval = new ExprEvaluator();
+    double[][] zeros = {{542964975, 209039046.20143255594}, {542964976, 209039046.578535272},
+        {1000000000, 371870203.83702805273}};
+    for (double[] zero : zeros) {
+      IExpr result = eval.eval("N(ZetaZero(" + (int) zero[0] + "))");
+      assertEquals(zero[1], result.im().evalf(), 1e-15 * zero[1], "ZetaZero(" + (int) zero[0] + ")");
+    }
+  }
+
+  /** The Riemann-Siegel formula at a height where it reaches 30 digits. */
+  @Test
+  public void testLargeIndex() {
+    ExprEvaluator eval = new ExprEvaluator();
+    assertEquals(727690.9069482075392, eval.eval("N(ZetaZero(1234567))").im().evalf(), 1e-9);
+    assertEquals("True", eval.eval(
+        "Abs(Im(N(ZetaZero(1234567), 30)) - 727690.90694820753923894200411471`35) < 10^-23")
+        .toString());
+  }
+
   /** Consecutive zeros increase, and none of them is skipped or found twice. */
   @Test
   @Tag(TestTags.SLOW)

@@ -1,5 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
+import org.matheclipse.core.interfaces.INumber;
+import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.Apcomplex;
 import org.matheclipse.core.interfaces.Attribute;
 import static org.matheclipse.core.expression.F.NIL;
 import static org.matheclipse.core.expression.S.Pi;
@@ -143,12 +147,23 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
       }
     }
     if (engine.isArbitraryMode()) {
+      IExpr result = NIL;
       if (s instanceof ApfloatNum && a instanceof ApfloatNum) {
-        return e2ApfloatArg(((ApfloatNum) s), ((ApfloatNum) a));
+        result = e2ApfloatArg(((ApfloatNum) s), ((ApfloatNum) a));
+      } else if (s instanceof ApcomplexNum && a instanceof ApcomplexNum) {
+        result = e2ApcomplexArg((ApcomplexNum) s, (ApcomplexNum) a);
       }
-      if (s instanceof ApcomplexNum && a instanceof ApcomplexNum) {
-        return e2ApcomplexArg((ApcomplexNum) s, (ApcomplexNum) a);
+      if (result.isNIL() && s instanceof INumber && a instanceof INumber) {
+        // a real and a complex argument, or a second argument without a positive real part
+        try {
+          Apcomplex value = ApcomplexZetaMath.hurwitzZeta(((INumber) s).apcomplexValue(),
+              ((INumber) a).apcomplexValue());
+          return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
+        } catch (ArithmeticException | ApfloatRuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
+        }
       }
+      return result;
     }
     return NIL;
   }

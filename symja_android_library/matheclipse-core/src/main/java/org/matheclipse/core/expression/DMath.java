@@ -1,6 +1,8 @@
 package org.matheclipse.core.expression;
 
+import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.matheclipse.external.apfloat.ApcomplexBetaMath;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.apfloat.LossOfPrecisionException;
 import org.matheclipse.core.eval.EvalEngine;
@@ -259,8 +261,14 @@ public class DMath {
   }
 
   public static double beta(double x, double a, double b) {
-    return EvalEngine.getApfloatDouble().beta(apfloatOf(x), apfloatOf(a), apfloatOf(b))
-        .doubleValue();
+    // with guard digits: at machine precision the series cancels for large parameters
+    long precision = EvalEngine.getApfloatDouble().precision();
+    Apcomplex beta = ApcomplexBetaMath.beta(apfloatOf(x).precision(precision),
+        apfloatOf(a).precision(precision), apfloatOf(b).precision(precision));
+    if (beta.imag().signum() != 0) {
+      throw new ArithmeticException("Result would be complex");
+    }
+    return beta.real().doubleValue();
   }
 
   public static double beta(double x1, double x2, double a, double b) {

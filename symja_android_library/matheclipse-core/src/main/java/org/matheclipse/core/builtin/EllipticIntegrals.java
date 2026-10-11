@@ -1,5 +1,11 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.external.apfloat.ApcomplexThetaMath;
+import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.Apfloat;
 import java.util.function.Supplier;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApfloatArithmeticException;
@@ -571,6 +577,19 @@ public class EllipticIntegrals {
             Complex mc = m.evalfc();
             return F.complexNum(EllipticIntegralsJS.ellipticE(zc, mc));
           } else {
+            if (mDouble > 1.0) {
+              // beyond m == 1 the integrand has a branch point inside the interval: the
+              // arbitrary precision routine follows it, at machine precision
+              try {
+                final int digits = (int) ParserConfig.MACHINE_PRECISION + 1;
+                Apcomplex value =
+                    ApcomplexEllipticMath.ellipticE(CarlsonArbitraryPrecision.apcomplex(z, digits),
+                        CarlsonArbitraryPrecision.apcomplex(m, digits));
+                return F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+              } catch (ArithmeticException | ApfloatRuntimeException ex) {
+                Errors.rethrowsInterruptException(ex);
+              }
+            }
             return F.complexNum(EllipticIntegralsJS.ellipticE(zDouble, mDouble));
           }
         } catch (ValidateException ve) {
@@ -1272,6 +1291,12 @@ public class EllipticIntegrals {
         return F.Times(F.Power(F.Plus(F.C1, F.Negate(n)), -1), F.EllipticE(n));
       }
 
+      if ((doubleMode || engine.isArbitraryMode()) && n.isReal() && ((IReal) n).isGT(F.C1)
+          && m.isNumber() && !m.isReal()) {
+        // a real characteristic above 1 puts a pole on the path of integration: the Cauchy
+        // principal value, EllipticK(m) - EllipticPi(m/n, m), also for a complex parameter
+        return F.Subtract(F.EllipticK(m), F.EllipticPi(F.Divide(m, n), m));
+      }
       if (doubleMode) {
         try {
           double nDouble = n.evalfNaN();
@@ -1396,11 +1421,49 @@ public class EllipticIntegrals {
       if (ast.isAST3()) {
         IExpr x = ast.arg2();
         IExpr m = ast.arg3();
+        IExpr series = thetaSeries(a, x, m, engine);
+        if (series.isPresent()) {
+          return series;
+        }
         return ellipticTheta3(a, x, m, engine).eval(engine);
       }
 
       IExpr m = ast.arg2();
+      IExpr series = thetaSeries(a, F.C0, m, engine);
+      if (series.isPresent()) {
+        return series;
+      }
       return ellipticTheta2(a, m, engine.isDoubleMode()).eval(engine);
+    }
+
+    /**
+     * The theta function of numbers in numeric mode from its series, summed with the digits which
+     * it cancels for a nome next to the unit circle, at machine precision or the precision of the
+     * engine; {@link F#NIL} otherwise, or where that fails.
+     */
+    private static IExpr thetaSeries(int a, IExpr z, IExpr q, EvalEngine engine) {
+      if (a < 1 || a > 4 || !z.isNumber() || !q.isNumber() || q.isZero()
+          || !(z.isInexactNumber() || q.isInexactNumber() || engine.isNumericMode())) {
+        return F.NIL;
+      }
+      final boolean arbitrary = z instanceof ApfloatNum || z instanceof ApcomplexNum
+          || q instanceof ApfloatNum || q instanceof ApcomplexNum
+          || (engine.isArbitraryMode() && !z.isInexactNumber() && !q.isInexactNumber());
+      final int digits =
+          arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+      try {
+        Apcomplex argument = CarlsonArbitraryPrecision.apcomplex(z, digits);
+        Apcomplex value = ApcomplexThetaMath.ellipticTheta(a, argument,
+            CarlsonArbitraryPrecision.apcomplex(q, digits));
+        if (value.imag().signum() == 0) {
+          return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
+        }
+        return arbitrary ? F.complexNum(value)
+            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        return F.NIL;
+      }
     }
 
     private static IExpr ellipticTheta2(int a, IExpr m, boolean doubleMode) {
@@ -1994,12 +2057,64 @@ public class EllipticIntegrals {
    * </code>
    * </pre>
    */
+  /**
+   * A Jacobi elliptic function of arbitrary precision numbers, as a quotient of theta functions;
+   * {@link F#NIL} for machine numbers, which have their own routines, or where the series fails.
+   *
+   * @param kind the two letters of the function: the numerator and the denominator among
+   *        <code>S, C, D, N</code>
+   */
+  private static IExpr jacobiArbitrary(String kind, IExpr z, IExpr m, EvalEngine engine) {
+    if (!z.isNumber() || !m.isNumber() || z.isZero() || m.isZero() || m.isOne()) {
+      return F.NIL;
+    }
+    boolean arbitrary = z instanceof ApfloatNum || z instanceof ApcomplexNum
+        || m instanceof ApfloatNum || m instanceof ApcomplexNum
+        || (engine.isArbitraryMode() && !z.isInexactNumber() && !m.isInexactNumber());
+    if (!arbitrary) {
+      return F.NIL;
+    }
+    final int digits = (int) engine.getNumericPrecision();
+    try {
+      Apcomplex[] functions =
+          ApcomplexThetaMath.jacobi(CarlsonArbitraryPrecision.apcomplex(z, digits),
+              CarlsonArbitraryPrecision.apcomplex(m, digits));
+      Apcomplex value = jacobiPart(kind.charAt(0), functions)
+          .divide(jacobiPart(kind.charAt(1), functions));
+      // real for a real argument and a real parameter
+      if (value.imag().signum() == 0 || (z.isReal() && m.isReal())) {
+        return F.num(value.real());
+      }
+      return F.complexNum(value);
+    } catch (ArithmeticException | ApfloatRuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
+      return F.NIL;
+    }
+  }
+
+  private static Apcomplex jacobiPart(char letter, Apcomplex[] functions) {
+    switch (letter) {
+      case 'S':
+        return functions[0];
+      case 'C':
+        return functions[1];
+      case 'D':
+        return functions[2];
+      default:
+        return new Apfloat(1, functions[0].precision());
+    }
+  }
+
   private static class JacobiCD extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      IExpr arbitrary = jacobiArbitrary("CD", z, m, engine);
+      if (arbitrary.isPresent()) {
+        return arbitrary;
+      }
       return jacobiCD(z, m, engine.isDoubleMode()).eval(engine);
     }
 
@@ -2075,6 +2190,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      IExpr arbitrary = jacobiArbitrary("CN", z, m, engine);
+      if (arbitrary.isPresent()) {
+        return arbitrary;
+      }
       return jacobiCN(z, m, engine.isDoubleMode()).eval(engine);
     }
 
@@ -2153,6 +2272,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      IExpr arbitrary = jacobiArbitrary("DN", z, m, engine);
+      if (arbitrary.isPresent()) {
+        return arbitrary;
+      }
       return jacobiDN(z, m, engine.isDoubleMode()).eval(engine);
     }
 
@@ -2231,6 +2354,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      IExpr arbitrary = jacobiArbitrary("SC", z, m, engine);
+      if (arbitrary.isPresent()) {
+        return arbitrary;
+      }
       return jacobiSC(z, m, engine.isDoubleMode()).eval(engine);
     }
 
@@ -2309,6 +2436,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      IExpr arbitrary = jacobiArbitrary("SD", z, m, engine);
+      if (arbitrary.isPresent()) {
+        return arbitrary;
+      }
       return jacobiSD(z, m, engine.isDoubleMode()).eval(engine);
     }
 
@@ -2387,6 +2518,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      IExpr arbitrary = jacobiArbitrary("SN", z, m, engine);
+      if (arbitrary.isPresent()) {
+        return arbitrary;
+      }
       return jacobiSN(z, m, engine.isDoubleMode()).eval(engine);
     }
 
@@ -2501,6 +2636,28 @@ public class EllipticIntegrals {
         }
       }
       if (numericMode && t.isNumber()) {
+        // through the fundamental domain, at machine precision or the precision of the engine
+        EvalEngine engine = EvalEngine.get();
+        final boolean arbitrary = t instanceof ApfloatNum || t instanceof ApcomplexNum
+            || (engine.isArbitraryMode() && !t.isInexactNumber());
+        final int digits = arbitrary ? (int) engine.getNumericPrecision()
+            : (int) ParserConfig.MACHINE_PRECISION + 1;
+        try {
+          Apcomplex value =
+              ApcomplexThetaMath.kleinInvariantJ(CarlsonArbitraryPrecision.apcomplex(t, digits));
+          // real on the imaginary axis and on the lines Re(t) == k/2
+          if (value.imag().signum() == 0
+              || value.imag().scale() < value.real().scale() - digits + 3) {
+            return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
+          }
+          return arbitrary ? F.complexNum(value)
+              : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+        } catch (ArithmeticException | ApfloatRuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
+          if (arbitrary) {
+            return F.NIL;
+          }
+        }
         try {
           double tDouble = t.evalfNaN();
           if (Double.isNaN(tDouble)) {

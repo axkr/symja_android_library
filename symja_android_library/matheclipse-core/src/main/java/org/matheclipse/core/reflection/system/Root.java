@@ -5,6 +5,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.matheclipse.external.apfloat.ApcomplexPolynomialMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.convert.VariablesSet;
@@ -621,40 +622,12 @@ public class Root extends AbstractFunctionEvaluator {
         apcomplexCoefficients[i] = coefficient;
       }
 
-      final Apcomplex seed = ((INumber) approximation).apcomplexValue().precision(workingPrecision);
-      Apcomplex x = seed;
-      // relative tolerance 10^-(precision+1)
-      final Apfloat tolerance =
-          ApfloatMath.scale(new Apfloat(1L, workingPrecision), -(precision + 1));
-      for (int iteration = 0; iteration < MAX_NEWTON_ITERATIONS; iteration++) {
-        // Horner's scheme, evaluating the polynomial and its derivative in one sweep
-        Apcomplex p = apcomplexCoefficients[degree];
-        Apcomplex dp = Apcomplex.ZERO;
-        for (int i = degree - 1; i >= 0; i--) {
-          dp = dp.multiply(x).add(p);
-          p = p.multiply(x).add(apcomplexCoefficients[i]);
-        }
-        if (dp.real().signum() == 0 && dp.imag().signum() == 0) {
-          // the derivative vanishes: multiple root, Newton's method is not applicable
-          return F.NIL;
-        }
-        Apcomplex delta = p.divide(dp);
-        x = x.subtract(delta);
-        Apfloat absoluteDelta = ApcomplexMath.abs(delta);
-        Apfloat absoluteX = ApcomplexMath.abs(x);
-        if (absoluteDelta.signum() == 0 //
-            || (absoluteX.signum() != 0
-                && absoluteDelta.compareTo(absoluteX.multiply(tolerance)) < 0)) {
-          if (ApcomplexMath.abs(x.subtract(seed)).doubleValue() > separation / 2.0) {
-            // Newton left the neighbourhood of the selected root and converged somewhere else
-            return F.NIL;
-          }
-          x = x.precision(precision);
-          return x.imag().signum() == 0 ? F.num(x.real()) : F.complexNum(x);
-        }
-      }
+      Apcomplex x = ApcomplexPolynomialMath.root(apcomplexCoefficients,
+          ((INumber) approximation).apcomplexValue(), separation, precision);
+      return x.imag().signum() == 0 ? F.num(x.real()) : F.complexNum(x);
     } catch (ArithmeticException | org.apfloat.ApfloatRuntimeException ex) {
-      // fall through and keep the machine-precision approximation
+      // no convergence, a multiple root, or the iteration left the neighbourhood of the selected
+      // root: keep the machine-precision approximation
     }
     return F.NIL;
   }

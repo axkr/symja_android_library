@@ -2152,7 +2152,9 @@ public final class Arithmetic {
           return F.CComplexInfinity;
         }
         if (engine.isNumericMode()) {
-          return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, arg1)));
+          // with an exact argument PolyGamma(0, n) comes back as HarmonicNumber(n-1)
+          IExpr x = arg1.isInexactNumber() ? arg1 : engine.evalN(arg1);
+          return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, x)));
         }
         if (arg1.isInteger()) {
           if (arg1.isNegativeResult()) {
@@ -2170,6 +2172,11 @@ public final class Arithmetic {
               return C1;
             }
             return F.QQ(HARMONIC_NUMERATOR[n - 1], HARMONIC_DENOMINATOR[n - 1]);
+          }
+          int iterationLimit = engine.getIterationLimit();
+          if (iterationLimit >= 0 && iterationLimit <= n) {
+            // too many terms for the exact sum; unevaluated, so that N() can still get the value
+            return F.NIL;
           }
           return QQ(harmonicNumber(n));
         }
@@ -2238,7 +2245,8 @@ public final class Arithmetic {
 
           int iterationLimit = EvalEngine.get().getIterationLimit();
           if (iterationLimit >= 0 && iterationLimit <= nInt) {
-            IterationLimitExceeded.throwIt(nInt, ast);
+            // too many terms for the exact sum; unevaluated, so that N() can still get the value
+            return F.NIL;
           }
           int intArg2 = r.toIntDefault();
           if (F.isPresent(intArg2)) {

@@ -1,5 +1,8 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
@@ -59,9 +62,10 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.InverseGammaBetaJS;
-import org.matheclipse.core.numerics.functions.MathieuCharacteristic;
-import org.matheclipse.core.numerics.functions.MathieuFunctions;
-import org.matheclipse.core.numerics.functions.StruveFunctions;
+import org.matheclipse.external.apfloat.ApcomplexMathieuMath;
+import org.matheclipse.external.apfloat.ApcomplexAsymptoticMath;
+import org.matheclipse.external.apfloat.ApcomplexStruveMath;
+import org.matheclipse.external.apfloat.ApfloatOwenMath;
 import org.matheclipse.core.numerics.functions.WorkingPrecision;
 
 public class SpecialFunctions {
@@ -91,13 +95,13 @@ public class SpecialFunctions {
       S.LerchPhi.setEvaluator(new LerchPhi());
       S.LogGamma.setEvaluator(new LogGamma());
       S.OwenT.setEvaluator(new OwenT());
-      S.MathieuC.setEvaluator(new Mathieu(MathieuFunctions.Kind.C));
+      S.MathieuC.setEvaluator(new Mathieu(MathieuKind.C));
       S.MathieuCharacteristicA.setEvaluator(new MathieuCharacteristicValue(false));
       S.MathieuCharacteristicB.setEvaluator(new MathieuCharacteristicValue(true));
       S.MathieuCharacteristicExponent.setEvaluator(new MathieuCharacteristicExponent());
-      S.MathieuCPrime.setEvaluator(new Mathieu(MathieuFunctions.Kind.C_PRIME));
-      S.MathieuS.setEvaluator(new Mathieu(MathieuFunctions.Kind.S));
-      S.MathieuSPrime.setEvaluator(new Mathieu(MathieuFunctions.Kind.S_PRIME));
+      S.MathieuCPrime.setEvaluator(new Mathieu(MathieuKind.C_PRIME));
+      S.MathieuS.setEvaluator(new Mathieu(MathieuKind.S));
+      S.MathieuSPrime.setEvaluator(new Mathieu(MathieuKind.S_PRIME));
       S.PolyGamma.setEvaluator(new PolyGamma());
       S.PolyLog.setEvaluator(new PolyLog());
       S.ProductLog.setEvaluator(new ProductLog());
@@ -810,6 +814,22 @@ public class SpecialFunctions {
       } else if (ast.argSize() == 2) {
         IInexactNumber z1 = (IInexactNumber) ast.arg1();
         IInexactNumber z2 = (IInexactNumber) ast.arg2();
+        if (z1.isReal() && z2.isReal()) {
+          // on one side of the origin the difference of the two Erf() cancels: Erfc() doesn't
+          if (z1.isPositive() && z2.isPositive()) {
+            IExpr erfc1 = z1.erfc();
+            IExpr erfc2 = z2.erfc();
+            if (erfc1 instanceof INum && erfc2 instanceof INum) {
+              return ((INum) erfc1).subtract((INum) erfc2);
+            }
+          } else if (z1.isNegative() && z2.isNegative()) {
+            IExpr erfc1 = z1.negate().erfc();
+            IExpr erfc2 = z2.negate().erfc();
+            if (erfc1 instanceof INum && erfc2 instanceof INum) {
+              return ((INum) erfc2).subtract((INum) erfc1);
+            }
+          }
+        }
         IExpr erf1 = z1.erf();
         IExpr erf2 = z2.erf();
         if (erf1.isPresent() && erf2.isPresent()) {
@@ -890,94 +910,24 @@ public class SpecialFunctions {
       }
       INum h = (INum) ast.arg1();
       INum a = (INum) ast.arg2();
-      if (h instanceof ApfloatNum || a instanceof ApfloatNum) {
-        long precision = Math.min(h.apfloatValue().precision(), a.apfloatValue().precision());
-        if (precision == Apfloat.INFINITE) {
-          precision = engine.getNumericPrecision();
+      try {
+        if (h instanceof ApfloatNum || a instanceof ApfloatNum) {
+          long precision = Math.min(h.apfloatValue().precision(), a.apfloatValue().precision());
+          if (precision == Apfloat.INFINITE) {
+            precision = engine.getNumericPrecision();
+          }
+          return F.num(ApfloatOwenMath.owenT(h.apfloatValue(), a.apfloatValue(), precision));
         }
-        return F.num(owenT(h.apfloatValue(), a.apfloatValue(), precision));
-      }
-      return F.num(owenT(new Apfloat(h.getRealPart()), new Apfloat(a.getRealPart()), 20)
-          .doubleValue());
-    }
-
-    /**
-     * Owen's T function to <code>precision</code> digits: the series of Owen's method T1 for
-     * <code>0 &lt; a &lt;= 1</code>, and the identity
-     * <code>T(h,a) = (Phi(h)+Phi(a*h))/2 - Phi(h)*Phi(a*h) - T(a*h,1/a)</code> for <code>a &gt; 1</code>
-     * (<code>h &gt;= 0</code>).
-     */
-    static Apfloat owenT(Apfloat h, Apfloat a, long precision) {
-      if (a.signum() == 0) {
-        return Apfloat.ZERO;
-      }
-      if (a.signum() < 0) {
-        return owenT(h, a.negate(), precision).negate();
-      }
-      h = ApfloatMath.abs(h);
-      // the series cancels to a result of the size E^(-h^2/2): carry that many extra digits
-      double hd = h.doubleValue();
-      long guard = 10 + (long) (hd * hd / 2.0 / Math.log(10.0));
-      long working = precision + guard;
-      FixedPrecisionApfloatHelper helper = new FixedPrecisionApfloatHelper(working);
-      Apfloat one = new Apfloat(1, working);
-      if (a.compareTo(one) <= 0) {
-        return ApfloatMath.round(owenTSeries(h, a, working, helper), precision,
-            java.math.RoundingMode.HALF_EVEN);
-      }
-      Apfloat ah = helper.multiply(a, h);
-      Apfloat sqrt2 = helper.sqrt(new Apfloat(2, working));
-      Apfloat phiH = helper.divide(helper.erfc(helper.divide(h.negate(), sqrt2)), new Apfloat(2));
-      Apfloat phiAH =
-          helper.divide(helper.erfc(helper.divide(ah.negate(), sqrt2)), new Apfloat(2));
-      Apfloat value = helper.subtract(helper.divide(helper.add(phiH, phiAH), new Apfloat(2)),
-          helper.multiply(phiH, phiAH));
-      double ahd = ah.doubleValue();
-      if (ahd * ahd / 2.0 < working * Math.log(10.0) + 10.0) {
-        // T(a*h, 1/a) is smaller than E^(-(a*h)^2/2); below the working precision it is dropped
-        value = helper.subtract(value,
-            owenT(ah, helper.divide(one, a), working));
-      }
-      return ApfloatMath.round(value, precision, java.math.RoundingMode.HALF_EVEN);
-    }
-
-    /**
-     * <code>(ArcTan(a) - Sum(c_j*a^(2*j+1), j>=0))/(2*Pi)</code> with
-     * <code>c_j = (-1)^j/(2*j+1)*(1-E^(-x)*Sum(x^i/i!, {i,0,j}))</code>, <code>x = h^2/2</code>,
-     * for <code>0 &lt; a &lt;= 1</code>.
-     */
-    private static Apfloat owenTSeries(Apfloat h, Apfloat a, long working,
-        FixedPrecisionApfloatHelper helper) {
-      Apfloat x = helper.divide(helper.multiply(h, h), new Apfloat(2));
-      if (x.doubleValue() > 1.0e5) {
-        // smaller than E^(-100000)
-        return Apfloat.ZERO;
-      }
-      Apfloat expMinusX = helper.exp(x.negate());
-      Apfloat a2 = helper.multiply(a, a);
-      Apfloat poissonTerm = expMinusX; // E^(-x)*x^j/j!
-      Apfloat poissonSum = expMinusX; // E^(-x)*Sum(x^i/i!, {i,0,j})
-      Apfloat aPower = a; // a^(2*j+1)
-      Apfloat sum = Apfloat.ZERO;
-      Apfloat epsilon = ApfloatMath.scale(new Apfloat(1, working), -working);
-      double xd = x.doubleValue();
-      for (long j = 0;; j++) {
-        Apfloat c = helper.divide(helper.subtract(new Apfloat(1, working), poissonSum),
-            new Apfloat(2 * j + 1));
-        Apfloat term = helper.multiply(c, aPower);
-        sum = (j & 1) == 0 ? helper.add(sum, term) : helper.subtract(sum, term);
-        if (j > xd && ApfloatMath.abs(term).compareTo(epsilon) < 0) {
-          break;
+        return F.num(ApfloatOwenMath
+            .owenT(new Apfloat(h.getRealPart()), new Apfloat(a.getRealPart()), 20).doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        if (!(h instanceof ApfloatNum) && !(a instanceof ApfloatNum)) {
+          // the value is below E^(-100000), far below the smallest machine number
+          return F.CD0;
         }
-        if (j > 100_000_000L) {
-          break;
-        }
-        poissonTerm = helper.divide(helper.multiply(poissonTerm, x), new Apfloat(j + 1));
-        poissonSum = helper.add(poissonSum, poissonTerm);
-        aPower = helper.multiply(aPower, a2);
+        return F.NIL;
       }
-      Apfloat twoPi = helper.multiply(new Apfloat(2), helper.pi());
-      return helper.divide(helper.subtract(helper.atan(a), sum), twoPi);
     }
 
     @Override
@@ -1944,6 +1894,36 @@ public class SpecialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 3 && ast.arg1().isNumber() && ast.arg2().isNumber()
+          && ast.arg3().isNumber()) {
+        // the series inside the unit circle, for complex arguments and any precision
+        boolean arbitrary = false;
+        boolean real = true;
+        for (int i = 1; i <= 3; i++) {
+          arbitrary |= ast.get(i) instanceof ApfloatNum || ast.get(i) instanceof ApcomplexNum;
+          real &= ast.get(i).isReal();
+        }
+        final int digits = arbitrary ? (int) engine.getNumericPrecision()
+            : (int) ParserConfig.MACHINE_PRECISION + 1;
+        try {
+          Apcomplex shift = CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits);
+          if (shift.real().signum() > 0) {
+            Apcomplex value = ApcomplexZetaMath.lerchPhi(
+                CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits),
+                CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits), shift);
+            if (real || value.imag().signum() == 0) {
+              return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
+            }
+            return arbitrary ? F.complexNum(value)
+                : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+          }
+        } catch (ArithmeticException | ApfloatRuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
+        }
+        if (arbitrary) {
+          return F.NIL;
+        }
+      }
       if (ast.argSize() == 3) {
         double z = ast.arg1().evalfNaN();
         double s = ast.arg2().evalfNaN();
@@ -2793,6 +2773,23 @@ public class SpecialFunctions {
         // Non-negative machine-sized integer expected at position `2` in `1`.
         return Errors.printMessage(S.StieltjesGamma, "intnm", F.List(ast, F.C1), engine);
       }
+      int index = n.toIntDefault();
+      IExpr a = ast.isAST2() ? ast.arg2() : F.C1;
+      if (index >= 0 && a.isReal() && a.isPositive()
+          && (a.isInexactNumber() || engine.isNumericMode())) {
+        // the integral representation, at machine precision or the precision of the engine
+        final boolean arbitrary =
+            a instanceof ApfloatNum || (engine.isArbitraryMode() && !a.isInexactNumber());
+        final int digits = arbitrary ? (int) engine.getNumericPrecision()
+            : (int) ParserConfig.MACHINE_PRECISION + 1;
+        try {
+          Apfloat value = ApcomplexZetaMath.stieltjesGamma(index,
+              CarlsonArbitraryPrecision.apcomplex(a, digits).real());
+          return arbitrary ? F.num(value) : F.num(value.doubleValue());
+        } catch (ArithmeticException | ApfloatRuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
+        }
+      }
       return F.NIL;
     }
 
@@ -2808,27 +2805,34 @@ public class SpecialFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDFIRST, Attribute.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
 
 
-  /**
-   * Smallest argument answered by the large argument expansions in {@link StruveFunctions}. The
-   * library routine's series in <code>z^2</code> is quick below it and needs a working precision
-   * that grows with <code>|z|</code> above: <code>StruveH(-0.8+1.2*I, 10007)</code> took 396 s at
-   * 25 digits. The expansion declines, by its own error estimate, anything it cannot answer for -
-   * at 25 digits that was every order at 15 and several at 30.
-   */
-  private static final double MIN_ASYMPTOTIC_STRUVE_ARGUMENT = 15.0;
+  /** Which of the four Mathieu functions an evaluator stands for. */
+  private enum MathieuKind {
+    C, C_PRIME, S, S_PRIME;
 
-  private static boolean isLargeStruveArgument(IInexactNumber z) {
-    double argument = z.isReal() ? z.evalf() : z.evalfc().norm();
-    return Double.isFinite(argument) && argument >= MIN_ASYMPTOTIC_STRUVE_ARGUMENT;
+    Apcomplex apply(Apcomplex a, Apcomplex q, Apcomplex z, long precision) {
+      switch (this) {
+        case C:
+          return ApcomplexMathieuMath.mathieuC(a, q, z, precision);
+        case C_PRIME:
+          return ApcomplexMathieuMath.mathieuCPrime(a, q, z, precision);
+        case S:
+          return ApcomplexMathieuMath.mathieuS(a, q, z, precision);
+        default:
+          return ApcomplexMathieuMath.mathieuSPrime(a, q, z, precision);
+      }
+    }
   }
 
-  /** A numeric routine that answers at the precision of <code>h</code>, or declines with null. */
+  /**
+   * A numeric routine that answers at the precision of <code>h</code>, or declines with null or an
+   * <code>ArithmeticException</code>.
+   */
   @FunctionalInterface
   private interface WorkingPrecisionRoutine {
     Apcomplex apply(Apcomplex[] args, FixedPrecisionApcomplexHelper h);
@@ -2855,7 +2859,8 @@ public class SpecialFunctions {
         args[i - 1] = ((IInexactNumber) ast.get(i)).apcomplexValue();
       }
       value = routine.apply(args, h);
-    } catch (ArgumentTypeException | ApfloatRuntimeException ex) {
+    } catch (ArithmeticException | ArgumentTypeException | ApfloatRuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
       return F.NIL;
     }
     if (value == null) {
@@ -2885,8 +2890,8 @@ public class SpecialFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         return atWorkingPrecision(ast,
-            (x, h) -> odd ? MathieuCharacteristic.characteristicB(x[0], x[1], h)
-                : MathieuCharacteristic.characteristicA(x[0], x[1], h));
+            (x, h) -> odd ? ApcomplexMathieuMath.mathieuCharacteristicB(x[0], x[1], h.precision())
+                : ApcomplexMathieuMath.mathieuCharacteristicA(x[0], x[1], h.precision()));
       }
       return F.NIL;
     }
@@ -2934,7 +2939,8 @@ public class SpecialFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 2) {
         return atWorkingPrecision(ast,
-            (x, h) -> MathieuCharacteristic.characteristicExponent(x[0], x[1], h));
+            (x, h) -> ApcomplexMathieuMath.mathieuCharacteristicExponent(x[0], x[1],
+                h.precision()));
       }
       return F.NIL;
     }
@@ -2969,21 +2975,21 @@ public class SpecialFunctions {
    * <code>z</code>: the even and the odd solution of <code>y''+(a-2*q*Cos(2*z))*y==0</code>.
    */
   private static final class Mathieu extends AbstractFunctionEvaluator {
-    private final MathieuFunctions.Kind kind;
+    private final MathieuKind kind;
 
-    Mathieu(MathieuFunctions.Kind kind) {
+    Mathieu(MathieuKind kind) {
       this.kind = kind;
     }
 
     private boolean isEven() {
-      return kind == MathieuFunctions.Kind.C || kind == MathieuFunctions.Kind.S_PRIME;
+      return kind == MathieuKind.C || kind == MathieuKind.S_PRIME;
     }
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
         return atWorkingPrecision(ast,
-            (x, h) -> MathieuFunctions.mathieu(kind, x[0], x[1], x[2], h));
+            (x, h) -> kind.apply(x[0], x[1], x[2], h.precision()));
       }
       return F.NIL;
     }
@@ -3058,11 +3064,12 @@ public class SpecialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        if (isLargeStruveArgument(z)) {
-          IExpr largeArgument = WorkingPrecision.evaluate(n, z, true, StruveFunctions::struveH);
-          if (largeArgument.isPresent()) {
-            return largeArgument;
-          }
+        // the expansion for a large argument, or the series with the digits which it cancels
+        IExpr value = WorkingPrecision.evaluate(n, z, z.isReal() && !z.isNegative(),
+            (nu, argument, precision) -> ApcomplexStruveMath.struveH(nu, argument));
+        if (value.isPresent()) {
+          // on the negative real axis the value is real for some orders only
+          return value.isNumber() && !value.isReal() && value.im().isZero() ? value.re() : value;
         }
         return n.struveH(z);
       }
@@ -3171,11 +3178,12 @@ public class SpecialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        if (isLargeStruveArgument(z)) {
-          IExpr largeArgument = WorkingPrecision.evaluate(n, z, true, StruveFunctions::struveL);
-          if (largeArgument.isPresent()) {
-            return largeArgument;
-          }
+        // the expansion for a large argument, or the series with the digits which it cancels
+        IExpr value = WorkingPrecision.evaluate(n, z, z.isReal() && !z.isNegative(),
+            (nu, argument, precision) -> ApcomplexStruveMath.struveL(nu, argument));
+        if (value.isPresent()) {
+          // on the negative real axis the value is real for some orders only
+          return value.isNumber() && !value.isReal() && value.im().isZero() ? value.re() : value;
         }
         return n.struveL(z);
       }
