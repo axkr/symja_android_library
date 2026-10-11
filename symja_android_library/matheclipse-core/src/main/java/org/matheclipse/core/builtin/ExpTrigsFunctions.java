@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.util.function.UnaryOperator;
 import static org.matheclipse.core.expression.F.ArcCot;
 import static org.matheclipse.core.expression.F.ArcCoth;
 import static org.matheclipse.core.expression.F.ArcCsc;
@@ -78,7 +79,8 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.external.apfloat.ApfloatInverseTrigMath;
+import org.matheclipse.external.apfloat.ApcomplexTrigMath;
+import org.matheclipse.external.apfloat.ApfloatTrigMath;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class ExpTrigsFunctions {
@@ -473,6 +475,43 @@ public class ExpTrigsFunctions {
     return negate ? result.negate() : result;
   }
 
+  /**
+   * A reciprocal function, or the inverse of one, of a real arbitrary precision number: the real
+   * value, the complex one where the function of a real argument is not real, and
+   * <code>ComplexInfinity</code> at a pole.
+   */
+  private static IExpr reciprocal(UnaryOperator<Apfloat> real, UnaryOperator<Apcomplex> complex,
+      Apfloat x) {
+    try {
+      return F.num(real.apply(x));
+    } catch (ArithmeticException ae) {
+      // the result would be complex, or a pole
+      return reciprocal(complex, x);
+    }
+  }
+
+  /**
+   * A zero has infinite precision, and a result like Pi/2 can only be computed to the precision
+   * of the engine.
+   */
+  private static long zeroPrecision(Apcomplex arg1) {
+    long precision = arg1.precision();
+    if (precision == Apfloat.INFINITE) {
+      // without a precision of the engine the digits of the input are not known
+      return Math.max(EvalEngine.get().getNumericPrecision(), ParserConfig.MACHINE_PRECISION);
+    }
+    return precision;
+  }
+
+  /** A reciprocal function, or the inverse of one, of a complex arbitrary precision number. */
+  private static IExpr reciprocal(UnaryOperator<Apcomplex> complex, Apcomplex z) {
+    try {
+      return F.complexNum(complex.apply(z));
+    } catch (ArithmeticException ae) {
+      return F.CComplexInfinity;
+    }
+  }
+
   private static Complex arcCosh(Complex z) {
     return z.add(z.subtract(Complex.ONE).sqrt().multiply(z.add(Complex.ONE).sqrt())).log();
   }
@@ -609,24 +648,15 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return F.complexNum(ApfloatInverseTrigMath.acot(arg1, zeroPrecision(arg1)));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(z -> ApcomplexTrigMath.acot(z, precision), arg1);
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatInverseTrigMath.acot(arg1, zeroPrecision(arg1)));
-    }
-
-    /**
-     * A zero has infinite precision, and Pi/2 can only be computed to the precision of the engine.
-     */
-    private static long zeroPrecision(Apcomplex arg1) {
-      long precision = arg1.precision();
-      if (precision == Apfloat.INFINITE) {
-        // without a precision of the engine the digits of the input are not known
-        return Math.max(EvalEngine.get().getNumericPrecision(), ParserConfig.MACHINE_PRECISION);
-      }
-      return precision;
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(x -> ApfloatTrigMath.acot(x, precision),
+          z -> ApcomplexTrigMath.acot(z, precision), arg1);
     }
 
     @Override
@@ -718,30 +748,15 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      // 1/arg1
-      Apcomplex c = h.inverseRoot(arg1, 1);
-
-      // (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
-      Apcomplex result =
-          h.divide(h.subtract(h.log(Apcomplex.ONE.add(c)), h.log(Apcomplex.ONE.subtract(c))),
-              new Apfloat(2));
-      return F.complexNum(result);
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(z -> ApcomplexTrigMath.acoth(z, precision), arg1);
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-      if (arg1.equals(Apcomplex.ZERO)) {
-        // I*Pi / 2
-        return F.complexNum(h.divide(new Apcomplex(Apcomplex.ZERO, h.pi()), new Apfloat(2)));
-      }
-      Apfloat inverse = h.inverseRoot(arg1, 1);
-      if (h.abs(inverse).compareTo(Apfloat.ONE) > 0) {
-        // inside (-1, 1) the value is complex: ArcTanh(1/arg1)
-        return F.complexNum(h.atanh((Apcomplex) inverse));
-      }
-      return F.num(h.atanh(inverse));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(x -> ApfloatTrigMath.acoth(x, precision),
+          z -> ApcomplexTrigMath.acoth(z, precision), arg1);
     }
 
     @Override
@@ -842,23 +857,15 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.signum() == 0) {
-        return F.CComplexInfinity;
-      }
-      // ArcSin(1/arg1), which is complex inside (-1, 1)
-      Apfloat inverse = ApfloatMath.inverseRoot(arg1, 1);
-      if (ApfloatMath.abs(inverse).compareTo(Apfloat.ONE) <= 0) {
-        return F.num(ApfloatMath.asin(inverse));
-      }
-      return F.complexNum(ApcomplexMath.asin(inverse));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(x -> ApfloatTrigMath.acsc(x, precision),
+          z -> ApcomplexTrigMath.acsc(z, precision), arg1);
     }
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      if (arg1.isZero()) {
-        return F.CComplexInfinity;
-      }
-      return F.complexNum(ApcomplexMath.asin(ApcomplexMath.inverseRoot(arg1, 1)));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(z -> ApcomplexTrigMath.acsc(z, precision), arg1);
     }
 
     @Override
@@ -931,18 +938,15 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.signum() == 0) {
-        return F.CComplexInfinity;
-      }
-      return F.num(ApfloatMath.asinh(ApfloatMath.inverseRoot(arg1, 1)));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(x -> ApfloatTrigMath.acsch(x, precision),
+          z -> ApcomplexTrigMath.acsch(z, precision), arg1);
     }
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      if (arg1.isZero()) {
-        return F.CComplexInfinity;
-      }
-      return F.complexNum(ApcomplexMath.asinh(ApcomplexMath.inverseRoot(arg1, 1)));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(z -> ApcomplexTrigMath.acsch(z, precision), arg1);
     }
 
     @Override
@@ -1014,15 +1018,18 @@ public class ExpTrigsFunctions {
       if (arg1.signum() == 0) {
         return F.NIL;
       }
-      return arcCoshReal(ApfloatMath.inverseRoot(arg1, 1));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(x -> ApfloatTrigMath.asech(x, precision),
+          z -> ApcomplexTrigMath.asech(z, precision), arg1);
     }
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      if (arg1.equals(Apcomplex.ZERO)) {
+      if (arg1.isZero()) {
         return F.NIL;
       }
-      return F.complexNum(arcCosh(ApcomplexMath.inverseRoot(arg1, 1)));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(z -> ApcomplexTrigMath.asech(z, precision), arg1);
     }
 
     @Override
@@ -1077,23 +1084,15 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.signum() == 0) {
-        return F.CComplexInfinity;
-      }
-      // ArcCos(1/arg1), which is complex inside (-1, 1)
-      Apfloat inverse = ApfloatMath.inverseRoot(arg1, 1);
-      if (ApfloatMath.abs(inverse).compareTo(Apfloat.ONE) <= 0) {
-        return F.num(ApfloatMath.acos(inverse));
-      }
-      return F.complexNum(ApcomplexMath.acos(inverse));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(x -> ApfloatTrigMath.asec(x, precision),
+          z -> ApcomplexTrigMath.asec(z, precision), arg1);
     }
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      if (arg1.isZero()) {
-        return F.CComplexInfinity;
-      }
-      return F.complexNum(ApcomplexMath.acos(ApcomplexMath.inverseRoot(arg1, 1)));
+      final long precision = zeroPrecision(arg1);
+      return reciprocal(z -> ApcomplexTrigMath.asec(z, precision), arg1);
     }
 
     @Override
@@ -1858,15 +1857,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      if (arg1.isZero()) {
-        return F.CComplexInfinity;
-      }
-      return F.complexNum(ApcomplexMath.cosh(arg1).divide(ApcomplexMath.sinh(arg1)));
+      return reciprocal(ApcomplexTrigMath::coth, arg1);
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatMath.cosh(arg1).divide(ApfloatMath.sinh(arg1)));
+      return reciprocal(ApfloatTrigMath::coth, ApcomplexTrigMath::coth, arg1);
     }
 
     @Override
@@ -2016,12 +2012,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return F.complexNum(ApcomplexMath.inverseRoot(ApcomplexMath.sin(arg1), 1));
+      return reciprocal(ApcomplexTrigMath::csc, arg1);
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatMath.inverseRoot(ApfloatMath.sin(arg1), 1));
+      return reciprocal(ApfloatTrigMath::csc, ApcomplexTrigMath::csc, arg1);
     }
 
     @Override
@@ -2380,20 +2376,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      Apcomplex denominator = ApcomplexMath.sin(arg1);
-      if (denominator.equals(Apcomplex.ZERO)) {
-        return F.CComplexInfinity;
-      }
-      return F.complexNum(ApcomplexMath.cos(arg1).divide(denominator));
+      return reciprocal(ApcomplexTrigMath::cot, arg1);
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      Apfloat denominator = ApfloatMath.sin(arg1);
-      if (denominator.equals(Apcomplex.ZERO)) {
-        return F.CComplexInfinity;
-      }
-      return F.num(ApfloatMath.cos(arg1).divide(denominator));
+      return reciprocal(ApfloatTrigMath::cot, ApcomplexTrigMath::cot, arg1);
     }
 
     @Override
@@ -2558,12 +2546,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return F.complexNum(ApcomplexMath.inverseRoot(ApcomplexMath.sinh(arg1), 1));
+      return reciprocal(ApcomplexTrigMath::csch, arg1);
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatMath.inverseRoot(ApfloatMath.sinh(arg1), 1));
+      return reciprocal(ApfloatTrigMath::csch, ApcomplexTrigMath::csch, arg1);
     }
 
     @Override
@@ -3276,12 +3264,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return F.complexNum(ApcomplexMath.inverseRoot(ApcomplexMath.cos(arg1), 1));
+      return reciprocal(ApcomplexTrigMath::sec, arg1);
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatMath.inverseRoot(ApfloatMath.cos(arg1), 1));
+      return reciprocal(ApfloatTrigMath::sec, ApcomplexTrigMath::sec, arg1);
     }
 
     @Override
@@ -3465,12 +3453,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return F.complexNum(ApcomplexMath.inverseRoot(ApcomplexMath.cosh(arg1), 1));
+      return reciprocal(ApcomplexTrigMath::sech, arg1);
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return F.num(ApfloatMath.inverseRoot(ApfloatMath.cosh(arg1), 1));
+      return reciprocal(ApfloatTrigMath::sech, ApcomplexTrigMath::sech, arg1);
     }
 
     @Override

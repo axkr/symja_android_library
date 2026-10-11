@@ -774,7 +774,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testArcCoth() {
     // inside the cut (-1, 1); calculated with mpmath
     check("N(ArcCoth(1/3), 30)", //
-        "0.34657359027997265470861606072+I*(-1.57079632679489661923132169163)");
+        "0.346573590279972654708616060729+I*(-1.57079632679489661923132169163)");
     check("Refine(ArcCoth(Coth(x)),Element(x,Reals))", //
         "x");
 
@@ -853,7 +853,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N(ArcSec(1/3), 30)", //
         "I*1.76274717403908605046521864995");
     check("N(ArcSec(2+I), 30)", //
-        "1.16920993512709055094788524612+I*0.21561241855582964496691756493");
+        "1.16920993512709055094788524612+I*0.215612418555829644966917564937");
     check("ArcSec(3.5)", //
         "1.28104");
     check("ArcSec(1.0+3.5*I)", //
@@ -4958,6 +4958,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCot() {
+    check("N(Cot(5/2),30)", //
+        "-1.33864812830415136021088702399");
+    check("N(Cot(1/2+I),30)", //
+        "0.261172821133439187473697849087+I*(-1.12569224807059883019500857231)");
     // check("Cot(4/15*Pi)", //
     // "Tan((7*Pi)/30)");
     check("Cot(0.0)", //
@@ -5024,6 +5028,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCoth() {
+    check("N(Coth(5/2),30)", //
+        "1.0135673098126084621920398018");
+    check("N(Coth(1/2+I),30)", //
+        "0.59982886664334229006837035851+I*(-0.464110186344714939232521099036)");
     check("Coth((2+3*I)*Pi)", //
         "Coth(2*Pi)");
     check("Coth(0.)", //
@@ -5155,6 +5163,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCsc() {
+    check("N(Csc(5/2),30)", //
+        "1.67092154555867992794667687039");
+    check("N(Csc(1/2+I),30)", //
+        "0.459228271084788721662816074692+I*(-0.640204967046463482670160919984)");
 
     // check("Csc(8/15*Pi)", //
     // "Sec(Pi/30)");
@@ -5218,6 +5230,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCsch() {
+    check("N(Csch(5/2),30)", //
+        "0.165283669855095564578652155098");
+    check("N(Csch(1/2+I),30)", //
+        "0.287408174140753481448070428383+I*(-0.968610889043278923649599803102)");
     // gitbub #173
     check("Csch(Log(5/3))", //
         "15/8");
@@ -26820,6 +26836,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSec() {
+    check("N(Sec(5/2),30)", //
+        "-1.24821565146881783090643327407");
+    check("N(Sec(1/2+I),30)", //
+        "0.629485781359569554328159123381+I*0.261904347488437633859126026134");
     // check("Sec(8/15*Pi)", //
     // "-Csc(Pi/30)");
     // check("Sec(4/15*Pi)", //
@@ -26881,6 +26901,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSech() {
+    check("N(Sech(5/2),30)", //
+        "0.16307123192997782604319513932");
+    check("N(Sech(1/2+I),30)", //
+        "1.08126832311555084753651176025+I*(-0.778194035118073232807267948161)");
+    // Cosh(1000) overflows a machine number
+    check("N(Sech(1000),30)", //
+        "1.01519177950989135305836189591*10^-434");
     // gitbub #173
     check("Sech(Log(5/3))", //
         "15/17");
