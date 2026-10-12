@@ -634,4 +634,47 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "0.008507312038070331+I*0.8156212465816385");
   }
 
+  /**
+   * Values at <code>-1</code> and <code>0</code> and negative orders.
+   */
+  @Test
+  public void testSpecialArguments() {
+    // (-1)^k holds for an integer k only
+    check("LegendreP(k,-1)", //
+        "LegendreP(k,-1)");
+    check("LegendreP(4,-1)", //
+        "1");
+    check("LegendreP(7,-1)", //
+        "-1");
+    check("Simplify(LegendreP(k,-1), Element(k,Integers))", //
+        "(-1)^k");
+    check("LegendreP(k,1)", //
+        "1");
+    // the constant term of the polynomial
+    check("ChebyshevT(0,0)", //
+        "1");
+    check("ChebyshevT(8,0)", //
+        "1");
+    check("ChebyshevT(6,0)", //
+        "-1");
+    check("ChebyshevT(5,0)", //
+        "0");
+    check("ChebyshevU(6,0)", //
+        "-1");
+    check("ChebyshevU(5,0)", //
+        "0");
+    // ChebyshevU(-n, x) == -ChebyshevU(n-2, x)
+    check("ChebyshevU(-3,t)", //
+        "-2*t");
+    check("ChebyshevU(-6,t)", //
+        "-1+12*t^2-16*t^4");
+    check("ChebyshevU(-7,3)", //
+        "-6930");
+    check("LegendreP(6,0)", //
+        "-5/16");
+    check("HermiteH(6,0)", //
+        "-120");
+    check("LaguerreL(5,0)", //
+        "1");
+  }
 }

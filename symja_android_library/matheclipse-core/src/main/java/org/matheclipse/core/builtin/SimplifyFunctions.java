@@ -15,6 +15,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.TrigSimplifyFu;
 
@@ -177,6 +178,16 @@ public class SimplifyFunctions {
             engine.setAssumptions(assumptions);
             arg1 = AssumptionFunctions.refineAssumptions(arg1, assumptions, engine);
             count = complexityFunction.apply(arg1);
+            IExpr halved = halfAngleRadicands(arg1);
+            if (halved.isPresent()) {
+              // the root of a square can be taken with the assumptions
+              IExpr candidate = AssumptionFunctions.refineAssumptions(halved, assumptions, engine);
+              long candidateCount = complexityFunction.apply(candidate);
+              if (candidateCount < count) {
+                arg1 = candidate;
+                count = candidateCount;
+              }
+            }
             if (count <= minCounter) {
               minCounter = count;
               defaultResult = arg1;
@@ -301,6 +312,41 @@ public class SimplifyFunctions {
       return complexityFunction.apply(rewritten) < complexityFunction.apply(relation) //
           ? rewritten
           : F.NIL;
+    }
+
+    /**
+     * Write the radicands <code>a + a*Cos(u)</code> and <code>a - a*Cos(u)</code> of even roots as
+     * <code>2*a*Cos(u/2)^2</code> and <code>2*a*Sin(u/2)^2</code>.
+     *
+     * @return {@link F#NIL} if there is no such radicand
+     */
+    private static IExpr halfAngleRadicands(IExpr expr) {
+      return expr.replaceAll(x -> {
+        if (x.isPower() && x.exponent().isFraction()
+            && ((IFraction) x.exponent()).denominator().isEven() && x.base().isPlus()
+            && x.base().argSize() == 2) {
+          IExpr a = x.base().first();
+          IExpr rest = x.base().second();
+          if (a.isRational() && a.isPositive()) {
+            IExpr cos = rest;
+            IExpr factor = F.C1;
+            if (rest.isTimes() && rest.argSize() == 2 && rest.first().isRational()) {
+              factor = rest.first();
+              cos = rest.second();
+            }
+            if (cos.isCos()) {
+              IExpr half = F.Times(F.C1D2, cos.first());
+              if (factor.equals(a)) {
+                return F.Power(F.Times(F.C2, a, F.Sqr(F.Cos(half))), x.exponent());
+              }
+              if (factor.equals(a.negate())) {
+                return F.Power(F.Times(F.C2, a, F.Sqr(F.Sin(half))), x.exponent());
+              }
+            }
+          }
+        }
+        return F.NIL;
+      });
     }
 
     /**

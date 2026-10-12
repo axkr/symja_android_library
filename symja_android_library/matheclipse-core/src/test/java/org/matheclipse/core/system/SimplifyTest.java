@@ -739,4 +739,97 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("PossibleZeroQ(AppellF1(2/3, 1/5, 1/2, 7/4, 1/3, 1/6) - AppellF1(2/3, 1/2, 1/5, 7/4, 1/6, 1/3))", //
         "True");
   }
+
+  /**
+   * A root of an exponential is merged only if the imaginary part of the exponent is in
+   * <code>(-Pi, Pi]</code>; inverse functions of their direct functions, conjugates, half angles
+   * and roots of squares under assumptions.
+   */
+  @Test
+  public void testAssumedRootsAndInverseFunctions() {
+    // (E^a)^b is not E^(a*b) in general
+    check("ExpToTrig(Sqrt(Exp(4*I*t)))", //
+        "Sqrt(Cos(4*t)+I*Sin(4*t))");
+    check("ExpToTrig((E^t)^s)", //
+        "(Cosh(t)+Sinh(t))^s");
+    check("ExpToTrig(E^(3*t)^2)", //
+        "Cosh(9*t^2)+Sinh(9*t^2)");
+    // at t = 2 the difference is not 0
+    check("Simplify(Sqrt(Exp(4*I*t))-Exp(2*I*t))", //
+        "-E^(I*2*t)+Sqrt(E^(I*4*t))");
+    check("Simplify(Sqrt(Exp(4*I*t))-Exp(2*I*t), -Pi/4<t<Pi/4)", //
+        "0");
+    check("Simplify(Sqrt(Exp(4*I*t))-Exp(2*I*t), Pi/2<t<Pi)", //
+        "-E^(I*2*t)+Sqrt(E^(I*4*t))");
+    check("N(Sqrt(Exp(4*I*t))-Exp(2*I*t) /. t->2)", //
+        "1.30729+I*1.5136");
+    check("Simplify(Sqrt(Exp(6*t))-Exp(3*t))", //
+        "-E^(3*t)+Sqrt(E^(6*t))");
+    check("Simplify(Sqrt(Exp(6*t))-Exp(3*t), Element(t,Reals))", //
+        "0");
+    check("Simplify((Exp(5*I*t))^(1/5)-Exp(I*t))", //
+        "-E^(I*t)+(E^(I*5*t))^(1/5)");
+    // no message for the pole of Tan inside the interval
+    check("Simplify(Abs(Tan(t))+Tan(t), Pi/2<t<Pi)", //
+        "0");
+    // the principal range only
+    check("Simplify(ArcSin(Sin(t)), -Pi/2<=t<=Pi/2)", //
+        "t");
+    check("Simplify(ArcSin(Sin(t)), -1<t<1/3)", //
+        "t");
+    check("Simplify(ArcCos(Cos(t)), 0<=t<=Pi)", //
+        "t");
+    check("Simplify(ArcCos(Cos(t)), 1/2<t<3)", //
+        "t");
+    check("Simplify(ArcSin(Sin(t)), 0<t<Pi)", //
+        "ArcSin(Sin(t))");
+    check("Simplify(ArcCos(Cos(t)), -1<t<1)", //
+        "ArcCos(Cos(t))");
+    check("Simplify(ArcCos(Cos(t)), Pi<t<3*Pi/2)", //
+        "ArcCos(Cos(t))");
+    check("Simplify(ArcSin(Sin(t)))", //
+        "ArcSin(Sin(t))");
+    // functions which are real on the real axis and have no branch cut
+    check("Simplify(Conjugate(Cot(u+I*v))-Cot(u-I*v), Element(u,Reals)&&Element(v,Reals))", //
+        "0");
+    check("Simplify(Conjugate(Sech(2*u+3*I*v)), Element(u,Reals)&&Element(v,Reals))", //
+        "Sech(2*u-I*3*v)");
+    check("Simplify(Conjugate(Cos(u)), Element(u,Reals))", //
+        "Cos(u)");
+    check("Simplify(Conjugate(Cot(u+I*v))-Cot(u-I*v))", //
+        "Conjugate(Cot(u+I*v))-Cot(u-I*v)");
+    check("Simplify(Conjugate(Log(u+I*v)), Element(u,Reals)&&Element(v,Reals))", //
+        "Conjugate(Log(u+I*v))");
+    check("Conjugate(Cos(3-5*I))", //
+        "Cos(3+I*5)");
+    // both are E^(Log(s)*Log(t))
+    check("Simplify(s^Log(t)-t^Log(s))", //
+        "0");
+    check("Simplify(s^(2*Log(t))-t^(2*Log(s)))", //
+        "0");
+    check("Simplify(s^Log(t)-3*t^Log(s))", //
+        "s^Log(t)-3*t^Log(s)");
+    check("Simplify(s^Log(t)-t^Log(r))", //
+        "s^Log(t)-t^Log(r)");
+    // half angles under a root
+    check("Simplify(Sqrt((1-Cos(t))/2)-Sin(t/2), 0<t<Pi)", //
+        "0");
+    check("Simplify(Sqrt((1+Cos(t))/2)-Cos(t/2), 0<t<Pi/2)", //
+        "0");
+    check("Simplify(Sqrt((1-Cos(t))/2)-Sin(t/2), 2*Pi<t<3*Pi)", //
+        "-2*Sin(t/2)");
+    check("Simplify(Sqrt(3+3*Cos(4*t)), Element(t,Reals))", //
+        "Sqrt(6)*Abs(Cos(2*t))");
+    check("Simplify(Sqrt(5*Sin(t)^2), Element(t,Reals))", //
+        "Sqrt(5)*Abs(Sin(t))");
+    check("Simplify(Sqrt(7*t^2), Element(t,Reals))", //
+        "Sqrt(7)*Abs(t)");
+    // not shorter, stays
+    check("Simplify(Sqrt(1-Cos(t)), 0<t<Pi/2)", //
+        "Sqrt(1-Cos(t))");
+    check("Simplify(Sqrt(3+3*Cos(4*t)))", //
+        "Sqrt(3+3*Cos(4*t))");
+    check("Refine((t^2)^(3/2), Element(t,Reals))", //
+        "Abs(t)^3");
+  }
 }

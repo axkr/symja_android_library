@@ -242,10 +242,15 @@ public class PolynomialFunctions {
           if (degree == (-2)) {
             return F.CN1;
           }
-          return F.NIL;
+          // ChebyshevU(-n, z) = -ChebyshevU(n-2, z)
+          return F.Negate(F.ChebyshevU(F.ZZ(-degree - 2), z));
         }
         if (degree == 0) {
           return F.C1;
+        }
+        if (z.isZero() && z.isExactNumber()) {
+          // the constant term; the sum below would contain 0^0
+          return (degree & 1) == 1 ? F.C0 : ((degree & 2) == 2 ? F.CN1 : F.C1);
         }
         final IExpr zDoubled = F.C2.times(z);
         if (degree == 1) {
@@ -2497,9 +2502,9 @@ public class PolynomialFunctions {
           // LegendreP(x_, 1) = 1
           return F.C1;
         }
-        if (z.isMinusOne()) {
-          // LegendreP(x_?IntegerQ, -1) := (-1)^x
-          return F.Power(-1, z);
+        if (z.isMinusOne() && n.isIntegerResult()) {
+          // LegendreP(n_Integer, -1) := (-1)^n
+          return F.Power(F.CN1, n);
         }
 
         if (n.isRationalValue(F.CN1D2)) {

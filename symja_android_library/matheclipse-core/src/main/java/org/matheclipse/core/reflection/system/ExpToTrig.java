@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -34,11 +36,12 @@ public class ExpToTrig extends AbstractEvaluator {
 
     IExpr arg1 = ast.arg1();
 
-    // Flatten nested exponentials before applying TrigToExp definitions: (E^A)^B -> E^(A*B)
+    // (E^A)^B -> E^(A*B) holds only while -Pi < Im(A) <= Pi (or for an integer B, which is
+    // merged by the evaluator already); otherwise the outer power is kept.
     IExpr flattened = arg1.replaceAll(x -> {
       if (x.isPower()) {
         IExpr base = x.base();
-        if (base.isPower() && base.base() == S.E) {
+        if (base.isPower() && base.base() == S.E && isInPrincipalStrip(base.exponent(), engine)) {
           return F.Power(S.E, engine.evaluate(F.Times(base.exponent(), x.exponent())));
         }
       }
@@ -133,6 +136,51 @@ public class ExpToTrig extends AbstractEvaluator {
       return engine.evaluate(temp);
     }
     return arg1;
+  }
+
+  /**
+   * Whether the imaginary part of <code>exponent</code> is known to lie in <code>(-Pi, Pi]</code>,
+   * so that <code>Log(E^exponent) == exponent</code>.
+   */
+  private static boolean isInPrincipalStrip(IExpr exponent, EvalEngine engine) {
+    if (exponent.isRealResult()) {
+      return true;
+    }
+    IExpr im = engine.evaluate(F.Times(F.CNI, exponent));
+    if (!im.isRealResult()) {
+      return false;
+    }
+    IExpr range = im;
+    if (!im.isNumericFunction(true)) {
+      IAssumptions assumptions = engine.getAssumptions();
+      if (assumptions == null) {
+        return false;
+      }
+      range = im.isAST() ? AbstractAssumptions.assumeFunctionValue((IAST) im, false)
+          : assumptions.intervalData(im);
+    }
+    if (range.isIntervalData()) {
+      IAST intervals = (IAST) range;
+      if (intervals.argSize() == 0) {
+        return false;
+      }
+      for (int i = 1; i <= intervals.argSize(); i++) {
+        if (!intervals.get(i).isList4()) {
+          return false;
+        }
+        IAST interval = (IAST) intervals.get(i);
+        IExpr lower = interval.arg1();
+        IExpr upper = interval.arg4();
+        boolean lowerOk = engine.evalTrue(F.Greater(lower, F.CNPi))
+            || (interval.arg2() == S.Less && engine.evalTrue(F.Equal(lower, F.CNPi)));
+        if (!lowerOk || !engine.evalTrue(F.LessEqual(upper, S.Pi))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return range.isPresent() && range.isNumericFunction(true)
+        && engine.evalTrue(F.Greater(range, F.CNPi)) && engine.evalTrue(F.LessEqual(range, S.Pi));
   }
 
   /**

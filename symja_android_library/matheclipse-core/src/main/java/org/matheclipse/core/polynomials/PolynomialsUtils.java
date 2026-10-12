@@ -223,7 +223,9 @@ public class PolynomialsUtils {
       ASTElementLimitExceeded.throwIt(start + degree + 1);
     }
     return result.appendArgs(0, degree + 1,
-        i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.ZZ(i))));
+        // the constant term is written without x^0, which is not defined for x == 0
+        i -> i == 0 ? F.fraction(coefficients.get(start))
+            : F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.ZZ(i))));
   }
 
   /**
