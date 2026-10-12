@@ -69,11 +69,25 @@ public final class ZeroIdentity {
           return true;
         }
       }
-      return constantPhases(sum, engine);
+      return constantPhases(sum, engine) || logarithmicPowers(sum, engine);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return false;
     }
+  }
+
+  /**
+   * Powers with a logarithm in the exponent written as <code>E^(exponent*Log(base))</code>, which
+   * is their definition: <code>x^Log(y)</code> and <code>y^Log(x)</code> are the same function.
+   */
+  private static boolean logarithmicPowers(IAST sum, EvalEngine engine) {
+    IExpr rewritten = sum.replaceAll(x -> {
+      if (x.isPower() && !x.base().isE() && !x.exponent().isFree(S.Log, true)) {
+        return F.Exp(F.Expand(F.Times(x.exponent(), F.Log(x.base()))));
+      }
+      return F.NIL;
+    });
+    return rewritten.isPresent() && engine.evaluate(rewritten).isZero();
   }
 
   private static boolean isNumericallyZero(IExpr expr, EvalEngine engine) {

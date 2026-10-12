@@ -1046,6 +1046,12 @@ public final class Arithmetic {
       return stack[top];
     }
 
+    private static boolean isReflectionSymmetric(IExpr head) {
+      return head == S.Sin || head == S.Cos || head == S.Tan || head == S.Cot || head == S.Sec
+          || head == S.Csc || head == S.Sinh || head == S.Cosh || head == S.Tanh || head == S.Coth
+          || head == S.Sech || head == S.Csch;
+    }
+
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       IExpr temp = conjugate(arg1);
@@ -1060,6 +1066,14 @@ public final class Arithmetic {
       }
       if (arg1.isPlus()) {
         return arg1.mapThread(F.Conjugate(F.Slot1), 1);
+      }
+      if (arg1.isAST1() && isReflectionSymmetric(arg1.head())) {
+        // f(Conjugate(z)) for a function which is real on the real axis and has no branch cut;
+        // used only if the conjugate of the argument is known
+        IExpr conjugatedArg = engine.evaluate(F.Conjugate(arg1.first()));
+        if (conjugatedArg.isFree(S.Conjugate, true)) {
+          return F.unaryAST1(arg1.head(), conjugatedArg);
+        }
       }
       if (arg1.isTimes()) {
         IASTAppendable result = F.NIL;

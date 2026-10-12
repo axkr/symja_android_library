@@ -876,6 +876,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Infinity");
     check("ArcSech(0.0)", //
         "Indeterminate");
+    check("ArcSech(0``30)", //
+        "Indeterminate");
+    check("N(ArcSech(0), 30)", //
+        "Infinity");
     check("ArcSech(1)", //
         "0");
     checkNumeric("ArcSech(0.5)", //

@@ -7337,6 +7337,114 @@ public interface IExpr
   }
 
   /**
+   * The cotangent of this expression.
+   *
+   * @return <code>Cot(this)</code>
+   */
+  default IExpr cot() {
+    return S.Cot.of(this);
+  }
+
+  /**
+   * The secant of this expression.
+   *
+   * @return <code>Sec(this)</code>
+   */
+  default IExpr sec() {
+    return S.Sec.of(this);
+  }
+
+  /**
+   * The cosecant of this expression.
+   *
+   * @return <code>Csc(this)</code>
+   */
+  default IExpr csc() {
+    return S.Csc.of(this);
+  }
+
+  /**
+   * The hyperbolic cotangent of this expression.
+   *
+   * @return <code>Coth(this)</code>
+   */
+  default IExpr coth() {
+    return S.Coth.of(this);
+  }
+
+  /**
+   * The hyperbolic secant of this expression.
+   *
+   * @return <code>Sech(this)</code>
+   */
+  default IExpr sech() {
+    return S.Sech.of(this);
+  }
+
+  /**
+   * The hyperbolic cosecant of this expression.
+   *
+   * @return <code>Csch(this)</code>
+   */
+  default IExpr csch() {
+    return S.Csch.of(this);
+  }
+
+  /**
+   * The inverse cotangent of this expression.
+   *
+   * @return <code>ArcCot(this)</code>
+   */
+  default IExpr acot() {
+    return S.ArcCot.of(this);
+  }
+
+  /**
+   * The inverse secant of this expression.
+   *
+   * @return <code>ArcSec(this)</code>
+   */
+  default IExpr asec() {
+    return S.ArcSec.of(this);
+  }
+
+  /**
+   * The inverse cosecant of this expression.
+   *
+   * @return <code>ArcCsc(this)</code>
+   */
+  default IExpr acsc() {
+    return S.ArcCsc.of(this);
+  }
+
+  /**
+   * The inverse hyperbolic cotangent of this expression.
+   *
+   * @return <code>ArcCoth(this)</code>
+   */
+  default IExpr acoth() {
+    return S.ArcCoth.of(this);
+  }
+
+  /**
+   * The inverse hyperbolic secant of this expression.
+   *
+   * @return <code>ArcSech(this)</code>
+   */
+  default IExpr asech() {
+    return S.ArcSech.of(this);
+  }
+
+  /**
+   * The inverse hyperbolic cosecant of this expression.
+   *
+   * @return <code>ArcCsch(this)</code>
+   */
+  default IExpr acsch() {
+    return S.ArcCsch.of(this);
+  }
+
+  /**
    * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>. Calculates <code>
    * F.eval(F.Times(this, that))</code> in the common case and uses a specialized implementation for
    * derived number classes.

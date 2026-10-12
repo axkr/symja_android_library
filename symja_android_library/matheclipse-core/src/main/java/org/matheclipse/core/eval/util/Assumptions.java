@@ -1037,7 +1037,9 @@ public class Assumptions extends AbstractAssumptions {
       return F.NIL;
     });
     if (substituted.isNumericFunction(true)) {
-      return EvalEngine.get().evaluate(substituted);
+      // a function with a pole inside of the interval has no enclosure; that is not worth a
+      // message to the user
+      return EvalEngine.get().evalQuiet(substituted);
     }
     return F.NIL;
   }

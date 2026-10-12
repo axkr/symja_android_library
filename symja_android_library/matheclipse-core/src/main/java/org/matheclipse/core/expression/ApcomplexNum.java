@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.UnaryOperator;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
@@ -14,6 +15,7 @@ import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.external.apfloat.ApcomplexZetaMath;
+import org.matheclipse.external.apfloat.ApcomplexTrigMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1832,6 +1834,101 @@ public class ApcomplexNum implements IComplexNum {
       return valueOf(h().subtract(fApcomplex, ((INum) that).apcomplexValue()));
     }
     return IComplexNum.super.subtract(that);
+  }
+
+  /**
+   * A reciprocal trigonometric or hyperbolic function, or the inverse of one, with <code>
+   * ComplexInfinity</code> at a pole.
+   */
+  static IExpr reciprocalTrig(UnaryOperator<Apcomplex> complex, Apcomplex z) {
+    try {
+      return F.complexNum(complex.apply(z));
+    } catch (ArithmeticException ae) {
+      return F.CComplexInfinity;
+    }
+  }
+
+  /**
+   * A zero has infinite precision, and a result like Pi/2 can only be computed to the precision
+   * of the engine.
+   */
+  static long zeroPrecision(Apcomplex z) {
+    long precision = z.precision();
+    if (precision == Apfloat.INFINITE) {
+      // without a precision of the engine the digits of the input are not known
+      return Math.max(EvalEngine.get().getNumericPrecision(), ParserConfig.MACHINE_PRECISION);
+    }
+    return precision;
+  }
+
+  @Override
+  public IExpr cot() {
+    return reciprocalTrig(ApcomplexTrigMath::cot, fApcomplex);
+  }
+
+  @Override
+  public IExpr sec() {
+    return reciprocalTrig(ApcomplexTrigMath::sec, fApcomplex);
+  }
+
+  @Override
+  public IExpr csc() {
+    return reciprocalTrig(ApcomplexTrigMath::csc, fApcomplex);
+  }
+
+  @Override
+  public IExpr coth() {
+    return reciprocalTrig(ApcomplexTrigMath::coth, fApcomplex);
+  }
+
+  @Override
+  public IExpr sech() {
+    return reciprocalTrig(ApcomplexTrigMath::sech, fApcomplex);
+  }
+
+  @Override
+  public IExpr csch() {
+    return reciprocalTrig(ApcomplexTrigMath::csch, fApcomplex);
+  }
+
+  @Override
+  public IExpr acot() {
+    final long precision = zeroPrecision(fApcomplex);
+    return reciprocalTrig(z -> ApcomplexTrigMath.acot(z, precision), fApcomplex);
+  }
+
+  @Override
+  public IExpr asec() {
+    final long precision = zeroPrecision(fApcomplex);
+    return reciprocalTrig(z -> ApcomplexTrigMath.asec(z, precision), fApcomplex);
+  }
+
+  @Override
+  public IExpr acsc() {
+    final long precision = zeroPrecision(fApcomplex);
+    return reciprocalTrig(z -> ApcomplexTrigMath.acsc(z, precision), fApcomplex);
+  }
+
+  @Override
+  public IExpr acoth() {
+    final long precision = zeroPrecision(fApcomplex);
+    return reciprocalTrig(z -> ApcomplexTrigMath.acoth(z, precision), fApcomplex);
+  }
+
+  @Override
+  public IExpr asech() {
+    if (fApcomplex.isZero()) {
+      // an inexact zero has no direction
+      return S.Indeterminate;
+    }
+    final long precision = zeroPrecision(fApcomplex);
+    return reciprocalTrig(z -> ApcomplexTrigMath.asech(z, precision), fApcomplex);
+  }
+
+  @Override
+  public IExpr acsch() {
+    final long precision = zeroPrecision(fApcomplex);
+    return reciprocalTrig(z -> ApcomplexTrigMath.acsch(z, precision), fApcomplex);
   }
 
   @Override

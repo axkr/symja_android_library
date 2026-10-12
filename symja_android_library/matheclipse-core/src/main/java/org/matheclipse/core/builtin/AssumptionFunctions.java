@@ -532,6 +532,9 @@ public class AssumptionFunctions {
             whole = F.Power(F.Negate(f), power);
           } else if (e.isEven() && ((IInteger) power).isEven() && f.isRealResult()) {
             whole = F.Power(f, power);
+          } else if (e.isEven() && f.isRealResult()) {
+            // the root of an even power of a real base, which has no sign: (f^2)^(1/2) == Abs(f)
+            whole = F.Power(F.Abs(f), power);
           }
         }
       }

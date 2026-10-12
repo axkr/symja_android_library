@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.function.UnaryOperator;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -15,6 +16,8 @@ import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.matheclipse.external.apfloat.ApcomplexBesselMath;
+import org.matheclipse.external.apfloat.ApcomplexTrigMath;
+import org.matheclipse.external.apfloat.ApfloatTrigMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -2258,6 +2261,97 @@ public class ApfloatNum implements INum {
   @Override
   public IReal subtractFrom(IReal that) {
     return valueOf(h().subtract(fApfloat, that.apfloatValue()));
+  }
+
+  /**
+   * A reciprocal trigonometric or hyperbolic function, or the inverse of one: the real value, the
+   * complex one where the function of a real argument is not real, and <code>ComplexInfinity
+   * </code> at a pole.
+   */
+  private static IExpr reciprocalTrig(UnaryOperator<Apfloat> real,
+      UnaryOperator<Apcomplex> complex, Apfloat x) {
+    try {
+      return F.num(real.apply(x));
+    } catch (ArithmeticException ae) {
+      // the result would be complex, or a pole
+      return ApcomplexNum.reciprocalTrig(complex, x);
+    }
+  }
+
+  @Override
+  public IExpr cot() {
+    return reciprocalTrig(ApfloatTrigMath::cot, ApcomplexTrigMath::cot, fApfloat);
+  }
+
+  @Override
+  public IExpr sec() {
+    return reciprocalTrig(ApfloatTrigMath::sec, ApcomplexTrigMath::sec, fApfloat);
+  }
+
+  @Override
+  public IExpr csc() {
+    return reciprocalTrig(ApfloatTrigMath::csc, ApcomplexTrigMath::csc, fApfloat);
+  }
+
+  @Override
+  public IExpr coth() {
+    return reciprocalTrig(ApfloatTrigMath::coth, ApcomplexTrigMath::coth, fApfloat);
+  }
+
+  @Override
+  public IExpr sech() {
+    return reciprocalTrig(ApfloatTrigMath::sech, ApcomplexTrigMath::sech, fApfloat);
+  }
+
+  @Override
+  public IExpr csch() {
+    return reciprocalTrig(ApfloatTrigMath::csch, ApcomplexTrigMath::csch, fApfloat);
+  }
+
+  @Override
+  public IExpr acot() {
+    final long precision = ApcomplexNum.zeroPrecision(fApfloat);
+    return reciprocalTrig(x -> ApfloatTrigMath.acot(x, precision),
+        z -> ApcomplexTrigMath.acot(z, precision), fApfloat);
+  }
+
+  @Override
+  public IExpr asec() {
+    final long precision = ApcomplexNum.zeroPrecision(fApfloat);
+    return reciprocalTrig(x -> ApfloatTrigMath.asec(x, precision),
+        z -> ApcomplexTrigMath.asec(z, precision), fApfloat);
+  }
+
+  @Override
+  public IExpr acsc() {
+    final long precision = ApcomplexNum.zeroPrecision(fApfloat);
+    return reciprocalTrig(x -> ApfloatTrigMath.acsc(x, precision),
+        z -> ApcomplexTrigMath.acsc(z, precision), fApfloat);
+  }
+
+  @Override
+  public IExpr acoth() {
+    final long precision = ApcomplexNum.zeroPrecision(fApfloat);
+    return reciprocalTrig(x -> ApfloatTrigMath.acoth(x, precision),
+        z -> ApcomplexTrigMath.acoth(z, precision), fApfloat);
+  }
+
+  @Override
+  public IExpr asech() {
+    if (fApfloat.signum() == 0) {
+      // an inexact zero has no direction
+      return S.Indeterminate;
+    }
+    final long precision = ApcomplexNum.zeroPrecision(fApfloat);
+    return reciprocalTrig(x -> ApfloatTrigMath.asech(x, precision),
+        z -> ApcomplexTrigMath.asech(z, precision), fApfloat);
+  }
+
+  @Override
+  public IExpr acsch() {
+    final long precision = ApcomplexNum.zeroPrecision(fApfloat);
+    return reciprocalTrig(x -> ApfloatTrigMath.acsch(x, precision),
+        z -> ApcomplexTrigMath.acsch(z, precision), fApfloat);
   }
 
   @Override

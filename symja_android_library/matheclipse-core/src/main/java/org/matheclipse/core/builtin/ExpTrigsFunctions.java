@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import java.util.function.UnaryOperator;
 import static org.matheclipse.core.expression.F.ArcCot;
 import static org.matheclipse.core.expression.F.ArcCoth;
 import static org.matheclipse.core.expression.F.ArcCsc;
@@ -79,9 +78,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.external.apfloat.ApcomplexTrigMath;
-import org.matheclipse.external.apfloat.ApfloatTrigMath;
-import org.matheclipse.parser.client.ParserConfig;
 
 public class ExpTrigsFunctions {
 
@@ -423,6 +419,15 @@ public class ExpTrigsFunctions {
         // ArcCos(Cos(z))
         return arcCosCos(arg1);
       }
+      if (arg1.isCos()) {
+        // ArcCos(Cos(z)) == z /; 0 <= z <= Pi, with the interval taken from the assumptions
+        final IExpr z = arg1.first();
+        if (!z.isNumericFunction(true) && z.isRealResult()
+            && AbstractAssumptions.assumeGreaterEqual(z, F.C0)
+            && AbstractAssumptions.assumeLessEqual(z, S.Pi)) {
+          return z;
+        }
+      }
       if (arg1.isInterval()) {
         return IntervalSym.arccos((IAST) arg1);
       }
@@ -473,43 +478,6 @@ public class ExpTrigsFunctions {
     Complex square = new Complex(re * re - im * im + 1.0, re == 0.0 || im == 0.0 ? 0.0 : 2.0 * re * im);
     Complex result = new Complex(re == 0.0 ? 0.0 : re, im == 0.0 ? 0.0 : im).add(square.sqrt()).log();
     return negate ? result.negate() : result;
-  }
-
-  /**
-   * A reciprocal function, or the inverse of one, of a real arbitrary precision number: the real
-   * value, the complex one where the function of a real argument is not real, and
-   * <code>ComplexInfinity</code> at a pole.
-   */
-  private static IExpr reciprocal(UnaryOperator<Apfloat> real, UnaryOperator<Apcomplex> complex,
-      Apfloat x) {
-    try {
-      return F.num(real.apply(x));
-    } catch (ArithmeticException ae) {
-      // the result would be complex, or a pole
-      return reciprocal(complex, x);
-    }
-  }
-
-  /**
-   * A zero has infinite precision, and a result like Pi/2 can only be computed to the precision
-   * of the engine.
-   */
-  private static long zeroPrecision(Apcomplex arg1) {
-    long precision = arg1.precision();
-    if (precision == Apfloat.INFINITE) {
-      // without a precision of the engine the digits of the input are not known
-      return Math.max(EvalEngine.get().getNumericPrecision(), ParserConfig.MACHINE_PRECISION);
-    }
-    return precision;
-  }
-
-  /** A reciprocal function, or the inverse of one, of a complex arbitrary precision number. */
-  private static IExpr reciprocal(UnaryOperator<Apcomplex> complex, Apcomplex z) {
-    try {
-      return F.complexNum(complex.apply(z));
-    } catch (ArithmeticException ae) {
-      return F.CComplexInfinity;
-    }
   }
 
   private static Complex arcCosh(Complex z) {
@@ -648,15 +616,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(z -> ApcomplexTrigMath.acot(z, precision), arg1);
+      return ApcomplexNum.valueOf(arg1).acot();
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(x -> ApfloatTrigMath.acot(x, precision),
-          z -> ApcomplexTrigMath.acot(z, precision), arg1);
+      return ApfloatNum.valueOf(arg1).acot();
     }
 
     @Override
@@ -748,15 +713,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(z -> ApcomplexTrigMath.acoth(z, precision), arg1);
+      return ApcomplexNum.valueOf(arg1).acoth();
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(x -> ApfloatTrigMath.acoth(x, precision),
-          z -> ApcomplexTrigMath.acoth(z, precision), arg1);
+      return ApfloatNum.valueOf(arg1).acoth();
     }
 
     @Override
@@ -857,15 +819,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(x -> ApfloatTrigMath.acsc(x, precision),
-          z -> ApcomplexTrigMath.acsc(z, precision), arg1);
+      return ApfloatNum.valueOf(arg1).acsc();
     }
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(z -> ApcomplexTrigMath.acsc(z, precision), arg1);
+      return ApcomplexNum.valueOf(arg1).acsc();
     }
 
     @Override
@@ -938,15 +897,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(x -> ApfloatTrigMath.acsch(x, precision),
-          z -> ApcomplexTrigMath.acsch(z, precision), arg1);
+      return ApfloatNum.valueOf(arg1).acsch();
     }
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(z -> ApcomplexTrigMath.acsch(z, precision), arg1);
+      return ApcomplexNum.valueOf(arg1).acsch();
     }
 
     @Override
@@ -1015,21 +971,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      if (arg1.signum() == 0) {
-        return F.NIL;
-      }
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(x -> ApfloatTrigMath.asech(x, precision),
-          z -> ApcomplexTrigMath.asech(z, precision), arg1);
+      return ApfloatNum.valueOf(arg1).asech();
     }
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      if (arg1.isZero()) {
-        return F.NIL;
-      }
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(z -> ApcomplexTrigMath.asech(z, precision), arg1);
+      return ApcomplexNum.valueOf(arg1).asech();
     }
 
     @Override
@@ -1084,15 +1031,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(x -> ApfloatTrigMath.asec(x, precision),
-          z -> ApcomplexTrigMath.asec(z, precision), arg1);
+      return ApfloatNum.valueOf(arg1).asec();
     }
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      final long precision = zeroPrecision(arg1);
-      return reciprocal(z -> ApcomplexTrigMath.asec(z, precision), arg1);
+      return ApcomplexNum.valueOf(arg1).asec();
     }
 
     @Override
@@ -1193,6 +1137,15 @@ public class ExpTrigsFunctions {
       if (arg1.isSin() && arg1.first().isPositive()) {
         // ArcSin(Sin(z))
         return arcSinSin(arg1);
+      }
+      if (arg1.isSin()) {
+        // ArcSin(Sin(z)) == z /; -Pi/2 <= z <= Pi/2, with the interval taken from the assumptions
+        final IExpr z = arg1.first();
+        if (!z.isNumericFunction(true) && z.isRealResult()
+            && AbstractAssumptions.assumeGreaterEqual(z, F.CNPiHalf)
+            && AbstractAssumptions.assumeLessEqual(z, F.CPiHalf)) {
+          return z;
+        }
       }
 
       if (arg1.isInterval()) {
@@ -1857,12 +1810,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return reciprocal(ApcomplexTrigMath::coth, arg1);
+      return ApcomplexNum.valueOf(arg1).coth();
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return reciprocal(ApfloatTrigMath::coth, ApcomplexTrigMath::coth, arg1);
+      return ApfloatNum.valueOf(arg1).coth();
     }
 
     @Override
@@ -2012,12 +1965,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return reciprocal(ApcomplexTrigMath::csc, arg1);
+      return ApcomplexNum.valueOf(arg1).csc();
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return reciprocal(ApfloatTrigMath::csc, ApcomplexTrigMath::csc, arg1);
+      return ApfloatNum.valueOf(arg1).csc();
     }
 
     @Override
@@ -2376,12 +2329,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return reciprocal(ApcomplexTrigMath::cot, arg1);
+      return ApcomplexNum.valueOf(arg1).cot();
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return reciprocal(ApfloatTrigMath::cot, ApcomplexTrigMath::cot, arg1);
+      return ApfloatNum.valueOf(arg1).cot();
     }
 
     @Override
@@ -2546,12 +2499,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return reciprocal(ApcomplexTrigMath::csch, arg1);
+      return ApcomplexNum.valueOf(arg1).csch();
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return reciprocal(ApfloatTrigMath::csch, ApcomplexTrigMath::csch, arg1);
+      return ApfloatNum.valueOf(arg1).csch();
     }
 
     @Override
@@ -3264,12 +3217,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return reciprocal(ApcomplexTrigMath::sec, arg1);
+      return ApcomplexNum.valueOf(arg1).sec();
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return reciprocal(ApfloatTrigMath::sec, ApcomplexTrigMath::sec, arg1);
+      return ApfloatNum.valueOf(arg1).sec();
     }
 
     @Override
@@ -3453,12 +3406,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
-      return reciprocal(ApcomplexTrigMath::sech, arg1);
+      return ApcomplexNum.valueOf(arg1).sech();
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
-      return reciprocal(ApfloatTrigMath::sech, ApcomplexTrigMath::sech, arg1);
+      return ApfloatNum.valueOf(arg1).sech();
     }
 
     @Override

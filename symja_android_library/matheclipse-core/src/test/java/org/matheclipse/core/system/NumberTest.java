@@ -9,20 +9,25 @@ import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.AbstractFractionSym;
+import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.BigFractionSym;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FractionSym;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 
 public class NumberTest extends ExprEvaluatorTestCase {
 
@@ -454,5 +459,91 @@ public class NumberTest extends ExprEvaluatorTestCase {
         "N(Pi,10^20)");
     assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut(),
         "the int-overflowing precision reports N::precsm with the flag off too");
+  }
+
+  /** The expected values were calculated with mpmath. */
+  private static void assertClose(String expectedReal, String expectedImaginary, IExpr actual) {
+    Apcomplex expected =
+        new Apcomplex(new Apfloat(expectedReal, 40), new Apfloat(expectedImaginary, 40));
+    Apcomplex difference = ((INumber) actual).apcomplexValue().subtract(expected);
+    assertTrue(ApcomplexMath.abs(difference).compareTo(new Apfloat("1e-28")) < 0,
+        "expected " + expected + " but was " + actual);
+  }
+
+  @Test
+  public void testReciprocalTrigApfloatNum() {
+    ApfloatNum x = ApfloatNum.valueOf(new Apfloat("2.5", 30));
+    assertClose("-1.33864812830415136021088702399024513004059", "0", x.cot());
+    assertClose("-1.24821565146881783090643327407488299157829", "0", x.sec());
+    assertClose("1.67092154555867992794667687039599880135105", "0", x.csc());
+    assertClose("1.01356730981260846219203980180602556844858", "0", x.coth());
+    assertClose("0.163071231929977826043195139320894767452351", "0", x.sech());
+    assertClose("0.165283669855095564578652155098521114710007", "0", x.csch());
+    assertClose("0.380506377112364886303587916810433104497406", "0", x.acot());
+    assertClose("1.15927948072740859984658379402241583724288", "0", x.asec());
+    assertClose("0.411516846067488019384737897617335604855701", "0", x.acsc());
+    assertClose("0.423648930193601806855053753260327012494797", "0", x.acoth());
+    assertClose("0.390035319770715276080163379883629644959705", "0", x.acsch());
+    assertInstanceOf(ApfloatNum.class, x.cot());
+    ApfloatNum third = ApfloatNum.valueOf(new Apfloat(1, 30).divide(new Apfloat(3, 30)));
+    assertClose("1.76274717403908605046521864995958461805632", "0", third.asech());
+    // complex where the function of a real argument is not real
+    assertClose("0", "1.76274717403908605046521864995958461805632", third.asec());
+    assertClose("0.34657359027997265470861606072908828403775",
+        "-1.57079632679489661923132169163975144209858", third.acoth());
+    assertClose("0", "1.15927948072740859984658379402241583724288", x.asech());
+    // poles
+    ApfloatNum zero = ApfloatNum.valueOf(new Apfloat(0));
+    assertEquals(F.CComplexInfinity, zero.cot());
+    assertEquals(F.CComplexInfinity, zero.csc());
+    assertEquals(F.CComplexInfinity, zero.coth());
+    assertEquals(F.CComplexInfinity, zero.csch());
+    assertEquals(F.CComplexInfinity, zero.asec());
+    assertEquals(F.CComplexInfinity, zero.acsc());
+    assertEquals(F.CComplexInfinity, zero.acsch());
+    assertEquals(S.Indeterminate, zero.asech());
+  }
+
+  @Test
+  public void testReciprocalTrigApcomplexNum() {
+    ApcomplexNum z = ApcomplexNum.valueOf(new Apcomplex(new Apfloat("0.5", 30), new Apfloat(1, 30)));
+    assertClose("0.261172821133439187473697849087165974549693",
+        "-1.12569224807059883019500857231964015543907", z.cot());
+    assertClose("0.629485781359569554328159123381701857571619",
+        "0.261904347488437633859126026134836275548645", z.sec());
+    assertClose("0.459228271084788721662816074692450589835397",
+        "-0.64020496704646348267016091998451863347132", z.csc());
+    assertClose("0.599828866643342290068370358510918284512372",
+        "-0.464110186344714939232521099036726273823637", z.coth());
+    assertClose("1.08126832311555084753651176025030253627021",
+        "-0.778194035118073232807267948161101312912095", z.sech());
+    assertClose("0.287408174140753481448070428383036416612304",
+        "-0.968610889043278923649599803102960088829516", z.csch());
+    assertClose("0.66290883183401623252961960521423781559222",
+        "-0.708303336014054020062383654468281633897051", z.acot());
+    assertClose("1.25957052955013552390485015766575599054792",
+        "0.763884345953711045406919441806476410345603", z.asec());
+    assertClose("0.311225797244761095326471533973995451550666",
+        "-0.763884345953711045406919441806476410345603", z.acsc());
+    assertClose("0.238877861256859090363182027084782741319917",
+        "-0.723220666124067592099983421237940208262707", z.acoth());
+    assertClose("0.763884345953711045406919441806476410345603",
+        "-1.25957052955013552390485015766575599054792", z.asech());
+    assertClose("0.53321829058411214108324400278040499274759",
+        "-0.77308635671950473342021856983828475662614", z.acsch());
+    ApcomplexNum zero = ApcomplexNum.valueOf(Apcomplex.ZERO);
+    assertEquals(F.CComplexInfinity, zero.cot());
+    assertEquals(F.CComplexInfinity, zero.csch());
+    assertEquals(F.CComplexInfinity, zero.asec());
+    assertEquals(S.Indeterminate, zero.asech());
+  }
+
+  @Test
+  public void testReciprocalTrigDefault() {
+    // other expressions evaluate the built-in function
+    assertEquals("1", F.CPiQuarter.cot().toString());
+    assertEquals("Sec(x)", F.x.sec().toString());
+    assertEquals("Pi/2", F.C0.acot().toString());
+    assertEquals("ArcCsch(x)", F.x.acsch().toString());
   }
 }
