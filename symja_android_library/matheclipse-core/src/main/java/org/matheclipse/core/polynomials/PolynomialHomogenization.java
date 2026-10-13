@@ -55,6 +55,23 @@ public class PolynomialHomogenization {
   private static final int MAX_KERNEL_MULTIPLIER = 64;
 
   /**
+   * Largest power of <code>t = u^(1/k)</code> a constant base <code>u</code> is written with, if
+   * the exponents of <code>u</code> have a common factor: <code>E^2 -> t^2</code> with
+   * <code>t = E</code> and <code>E^(2/3) -> t^2</code> with <code>t = E^(1/3)</code>, but
+   * <code>E^(31/33)</code> is the kernel itself. As <code>t^31</code> of
+   * <code>t = E^(1/33)</code> it gave Factor a polynomial of degree 62 to prove irreducible, and
+   * with a numerator of eight digits one which doesn't fit into the memory.
+   */
+  private static final int MAX_CONSTANT_ROOT_POWER = 8;
+
+  /**
+   * Largest power of <code>t = u^(1/k)</code> for a base <code>u</code> with fractional exponents,
+   * which is no constant: <code>x^(2/3) -> t^2</code>, but <code>x^(70754517/78739762)</code> is
+   * the kernel itself.
+   */
+  private static final int MAX_ROOT_POWER = 1024;
+
+  /**
    * Rewrite <code>Sech(u)^(2*n) -> (1 - Tanh(u)^2)^n</code> and
    * <code>Csch(u)^(2*n) -> (Coth(u)^2 - 1)^n</code>, but only for an argument <code>u</code> whose
    * <code>Tanh(u)</code> (respectively <code>Coth(u)</code>) occurs as well. A <code>Sech(u)</code>
@@ -216,6 +233,27 @@ public class PolynomialHomogenization {
   private final Map<IExpr, IInteger> baseDenominatorLCM = new HashMap<IExpr, IInteger>();
 
   /**
+   * For every base expression the greatest common divisor of the rational exponents it occurs
+   * with at index 0, and the largest absolute value of them at index 1. An occurrence without an
+   * exponent counts as the exponent <code>1</code>. Filled by the first pass of
+   * {@link #collect(IExpr, boolean)}.
+   */
+  private final Map<IExpr, IRational[]> baseExponents = new HashMap<IExpr, IRational[]>();
+
+  /**
+   * The bases <code>u</code> with the exponent <code>g</code> of their kernel <code>u^g</code>,
+   * where <code>g</code> is the greatest common divisor of the exponents of <code>u</code>. See
+   * {@link #selectKernels()}.
+   */
+  private final Map<IExpr, IRational> reducedKernels = new HashMap<IExpr, IRational>();
+
+  /**
+   * The bases with powers which are kernels of their own, because they have no common kernel of
+   * a reasonable degree. See {@link #selectKernels()}.
+   */
+  private final Set<IExpr> separatedBases = new HashSet<IExpr>();
+
+  /**
    * Maps a dummy symbol <code>t</code> to the integer <code>k > 1</code> of its substitution
    * <code>t = u^(1/k)</code>, which eliminates all fractional exponents of the original base
    * <code>u</code>. Symbols without an entry have <code>k = 1</code>.
@@ -279,6 +317,7 @@ public class PolynomialHomogenization {
   public IExpr replaceForward(final IExpr expression) {
     IExpr expr = preTransform(expression);
     collect(expr, true);
+    selectKernels();
     collect(expr, false);
     return replaceForwardRecursive(expr);
   }
@@ -316,6 +355,7 @@ public class PolynomialHomogenization {
     for (int i = 0; i < expressions.length; i++) {
       collect(expressions[i], true);
     }
+    selectKernels();
     for (int i = 0; i < expressions.length; i++) {
       collect(expressions[i], false);
     }
@@ -622,7 +662,8 @@ public class PolynomialHomogenization {
    * <li><b>Power with a rational exponent</b> - the base is a kernel. A sum under an integer
    * exponent is no kernel, unless it also occurs under a fractional exponent:
    * <code>(1+x)^2</code> is walked, but <code>(1+x)^2+Sqrt(1+x)</code> gives
-   * <code>t = Sqrt(1+x)</code>.</li>
+   * <code>t = Sqrt(1+x)</code>. A base with large exponents gets another kernel between the two
+   * passes - see {@link #selectKernels()}.</li>
    * <li><b>Power with a Times exponent</b> - see {@link #splitTimesExponent(IExpr, IAST)}.</li>
    * <li><b>Power with a Plus exponent <code>r + g(x)</code></b> (rational <code>r</code>) - see
    * {@link #splitPlusExponent(IExpr, IAST)}.</li>
@@ -648,16 +689,27 @@ public class PolynomialHomogenization {
           IRational rat = ((IReal) exp).rationalFactor();
           if (rat == null) {
             register(ast, fractionalOnly);
-          } else if (!rat.isInteger()) {
-            if (fractionalOnly && (base.isAST() || base.isSymbol())) {
-              baseDenominatorLCM.merge(base, rat.denominator(), IInteger::lcm);
+            return;
+          }
+          if (fractionalOnly) {
+            if (base.isAST() || base.isSymbol()) {
+              noteExponent(base, rat);
+              if (!rat.isInteger()) {
+                baseDenominatorLCM.merge(base, rat.denominator(), IInteger::lcm);
+              }
             }
-            register(base, fractionalOnly);
-          } else if (isWalkedSum(base, rat) && !baseDenominatorLCM.containsKey(base)
+          } else {
+            PowerKernel kernel = splitRationalPower(base, rat);
+            if (kernel != null) {
+              register(kernel.kernel, false);
+              return;
+            }
+          }
+          if (isWalkedSum(base, rat) && !baseDenominatorLCM.containsKey(base)
               && !substitutedExpr.containsKey(base)) {
             collect(base, fractionalOnly);
-          } else {
-            register(base, fractionalOnly);
+          } else if (!fractionalOnly) {
+            register(base, false);
           }
           return;
         }
@@ -692,11 +744,122 @@ public class PolynomialHomogenization {
   }
 
   /**
-   * Create the substitution symbol for the kernel in the second pass of
+   * Note that <code>base ^ exponent</code> occurs, in the first pass of
    * {@link #collect(IExpr, boolean)}.
    */
+  private void noteExponent(final IExpr base, final IRational exponent) {
+    final IRational abs = exponent.abs();
+    final IRational[] noted = baseExponents.get(base);
+    if (noted == null) {
+      baseExponents.put(base, new IRational[] {abs, abs});
+    } else {
+      noted[0] = noted[0].gcd(abs).normalize();
+      if (abs.isGT(noted[1])) {
+        noted[1] = abs;
+      }
+    }
+  }
+
+  /**
+   * Choose the kernel for every base with rational exponents, between the two passes of
+   * {@link #collect(IExpr, boolean)}. With <code>k</code> the least common multiple of the
+   * denominators and <code>g</code> the greatest common divisor of the exponents of a base
+   * <code>u</code>:
+   * <ul>
+   * <li>the kernel is <code>u^(1/k)</code>, if the powers of it stay small. A base with integer
+   * exponents, which is no constant, is a variable of the polynomial and always is its own
+   * kernel.</li>
+   * <li>otherwise the kernel is <code>u^g</code>, the largest one all occurring powers are integer
+   * powers of: <code>E^(31/33) - E^(-31/33)</code> is <code>t - 1/t</code> and
+   * <code>2*E^(31/33) + E^(62/33)</code> is <code>2*t + t^2</code>.</li>
+   * <li>if the powers of <code>u^g</code> are large as well, the powers of <code>u</code> are
+   * kernels of their own - see {@link #splitRationalPower(IExpr, IRational)}.</li>
+   * </ul>
+   */
+  private void selectKernels() {
+    for (Map.Entry<IExpr, IRational[]> entry : baseExponents.entrySet()) {
+      final IExpr base = entry.getKey();
+      if (reducedKernels.containsKey(base) || separatedBases.contains(base)
+          || substitutedExpr.containsKey(base)) {
+        // chosen by an earlier forward substitution
+        continue;
+      }
+      final IInteger lcm = baseDenominatorLCM.get(base);
+      final boolean constant = base.isNumericFunction();
+      final IRational gcd = entry.getValue()[0];
+      final IRational max = entry.getValue()[1];
+      if (lcm == null
+          && (!constant || (base.isPlus() && max.compareInt(MAX_WALKED_EXPONENT) <= 0))) {
+        // a variable of the polynomial, or a sum which is walked
+        continue;
+      }
+      final IRational rootPower = lcm == null ? max : max.multiply(lcm);
+      if (rootPower.compareInt(constant ? MAX_CONSTANT_ROOT_POWER : MAX_ROOT_POWER) <= 0) {
+        continue;
+      }
+      if (max.divideBy(gcd).compareInt(kernelPowerLimit(base)) > 0) {
+        separatedBases.add(base);
+      } else if (gcd.numerator().isOne()) {
+        // u^g is u^(1/k)
+        continue;
+      } else {
+        reducedKernels.put(base, gcd);
+      }
+      baseDenominatorLCM.remove(base);
+    }
+  }
+
+  /** Largest integer power of the kernel of <code>base</code>. */
+  private static int kernelPowerLimit(final IExpr base) {
+    return base.isNumericFunction() ? MAX_KERNEL_MULTIPLIER : MAX_ROOT_POWER;
+  }
+
+  /**
+   * Decompose <code>base ^ exponent</code> for a base, whose kernel isn't
+   * <code>base^(1/k)</code>, into the kernel and an integer power of the kernel:
+   * <ul>
+   * <li>the kernel <code>base^g</code> and the power <code>exponent/g</code>, if
+   * {@link #selectKernels()} chose this kernel</li>
+   * <li>the kernel <code>base^Abs(exponent)</code> and the power <code>1</code> or
+   * <code>-1</code>, if the powers of the base are kernels of their own. A small integer power
+   * stays a power of the base.</li>
+   * </ul>
+   * Both phases of the forward substitution use this method, so that they always agree on the
+   * kernel.
+   *
+   * @return <code>null</code> if the kernel is <code>base^(1/k)</code>
+   */
+  private PowerKernel splitRationalPower(final IExpr base, final IRational exponent) {
+    final IRational gcd = reducedKernels.get(base);
+    if (gcd != null) {
+      // the quotient of two fractions can be a fraction with the denominator 1
+      final IRational quotient = exponent.divideBy(gcd).normalize();
+      final int power = quotient.isInteger() ? quotient.toIntDefault() : Integer.MIN_VALUE;
+      if (F.isPresent(power) && Math.abs(power) <= kernelPowerLimit(base)) {
+        return new PowerKernel(F.Power(base, gcd), power);
+      }
+    } else if (!separatedBases.contains(base)) {
+      return null;
+    } else if (exponent.isInteger() && (!base.isNumericFunction()
+        || exponent.abs().compareInt(MAX_KERNEL_MULTIPLIER) <= 0)) {
+      return null;
+    }
+    final IRational abs = exponent.abs();
+    final IExpr kernel = abs.isOne() ? base : F.Power(base, abs);
+    return new PowerKernel(kernel, exponent.isNegative() ? -1 : 1);
+  }
+
+  /**
+   * Create the substitution symbol for the kernel in the second pass of
+   * {@link #collect(IExpr, boolean)}. The first pass notes the kernel with the exponent
+   * <code>1</code>.
+   */
   private void register(final IExpr kernel, final boolean fractionalOnly) {
-    if (fractionalOnly || !(kernel.isAST() || kernel.isSymbol())) {
+    if (!(kernel.isAST() || kernel.isSymbol())) {
+      return;
+    }
+    if (fractionalOnly) {
+      noteExponent(kernel, F.C1);
       return;
     }
     ISymbol symbol = substitutedExpr.get(kernel);
@@ -736,6 +899,17 @@ public class PolynomialHomogenization {
         final IExpr base = ast.base();
         final IExpr exp = ast.exponent();
         if (exp.isReal()) {
+          IRational rat = ((IReal) exp).rationalFactor();
+          if (rat != null) {
+            PowerKernel kernel = splitRationalPower(base, rat);
+            if (kernel != null) {
+              IExpr temp = replaceExpression(kernel.kernel);
+              if (temp.isPresent()) {
+                return kernel.power == 1 ? temp : F.Power(temp, F.ZZ(kernel.power));
+              }
+              return ast;
+            }
+          }
           IExpr temp = replacePower(base, (IReal) exp);
           if (temp.isPresent()) {
             return temp;

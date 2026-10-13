@@ -178,4 +178,75 @@ public class PolynomialHomogenizationTest extends ExprEvaluatorTestCase {
         "{2-jas$1+3*jas$2,{jas$1->Tan(x),jas$2->Tan(3*x)}}");
   }
 
+  @Test
+  public void testLargeExponents() {
+    // the kernel is the largest power all exponents are multiples of, not E^(1/78739762)
+    checkHomogenization("Homogenization(E^(70754517/78739762)-E^(-70754517/78739762))", //
+        "{-1/jas$1+jas$1,{jas$1->E^(70754517/78739762)}}");
+    checkHomogenization("Homogenization(1+2*E^(70754517/78739762)+E^(70754517/39369881))", //
+        "{1+2*jas$1+jas$1^2,{jas$1->E^(70754517/78739762)}}");
+    checkHomogenization("Homogenization({E^(40/3)-1, E^(20/3)-1})", //
+        "{{-1+jas$1^2,-1+jas$1},{jas$1->E^(20/3)}}");
+    checkHomogenization("Homogenization(1+E^70754517)", //
+        "{1+jas$1,{jas$1->E^70754517}}");
+    checkHomogenization("Homogenization(1+x^(70754517/78739762))", //
+        "{1+jas$1,{jas$1->x^(70754517/78739762)}}");
+    // no common kernel of a reasonable degree: the powers are kernels of their own
+    checkHomogenization("Homogenization(E^(70754517/78739762)+E^(1/3))", //
+        "{jas$1+jas$2,{jas$1->E^(1/3),jas$2->E^(70754517/78739762)}}");
+    checkHomogenization("Homogenization(1+E^70754517+E^2+E)", //
+        "{1+jas$1+jas$1^2+jas$2,{jas$1->E,jas$2->E^70754517}}");
+    checkHomogenization("Homogenization(Sqrt(x)+x^(70754517/78739762)+x^2)", //
+        "{jas$1+jas$2+jas$3^2,{jas$1->Sqrt(x),jas$2->x^(70754517/78739762),jas$3->x}}");
+    checkHomogenization("Homogenization((1+E)^70754517+(1+E)^2)", //
+        "{(1+jas$1)^2+jas$2,{jas$1->E,jas$2->(1+E)^70754517}}");
+
+    // small powers of a constant keep the kernel E^(1/k)
+    checkHomogenization("Homogenization(E^2-1)", //
+        "{-1+jas$1^2,{jas$1->E}}");
+    checkHomogenization("Homogenization(E^(2/3)-1)", //
+        "{-1+jas$1^2,{jas$1->E^(1/3)}}");
+    checkHomogenization("Homogenization(E^9+E^8)", //
+        "{jas$1^8+jas$1^9,{jas$1->E}}");
+    // a variable of the polynomial
+    checkHomogenization("Homogenization(x^3000-1)", //
+        "{-1+jas$1^3000,{jas$1->x}}");
+    checkHomogenization("Homogenization(x^(100/3)-1)", //
+        "{-1+jas$1^100,{jas$1->x^(1/3)}}");
+  }
+
+  @Test
+  public void testIssue1551() {
+    // these ran out of memory or didn't end: E^(p/q) was the power p of E^(1/q)
+    check("Simplify(78739762/70754517-Coth(70754517/78739762))", //
+        "78739762/70754517-Coth(70754517/78739762)");
+    check(
+        "Simplify(-5/9+(2*(78739762/70754517-Coth(70754517/78739762)))/(39369881/70754517-Coth(70754517/39369881)))", //
+        "-5/9+(2*(78739762/70754517-Coth(70754517/78739762)))/(39369881/70754517-Coth(\n"
+            + "70754517/39369881))");
+    check("Simplify(1+E^(70754517/78739762))", //
+        "1+E^(70754517/78739762)");
+    check("Simplify(1+Sinh(70754517/78739762))", //
+        "1+Sinh(70754517/78739762)");
+    check("Factor(E^(70754517/78739762)-E^(-70754517/78739762))", //
+        "(-1+E^(70754517/39369881))/E^(70754517/78739762)");
+    check("Simplify(1+Tanh(70754517/78739762))", //
+        "1+Tanh(70754517/78739762)");
+    check("Simplify(1+Sinh(70754517))", //
+        "1+Sinh(70754517)");
+    // a numerator of three digits was enough
+    check("Simplify(513/511-Coth(511/513))", //
+        "513/511-Coth(511/513)");
+
+    check("Factor(1+2*E^(70754517/78739762)+E^(70754517/39369881))", //
+        "(1+E^(70754517/78739762))^2");
+    check("Cancel((E^(70754517/39369881)-1)/(E^(70754517/78739762)-1))", //
+        "1+E^(70754517/78739762)");
+    check("Together(1/(1+E^(70754517/78739762))+1/(1-E^(70754517/78739762)))", //
+        "2/((1-E^(70754517/78739762))*(1+E^(70754517/78739762)))");
+    // the two coefficients of a sparse numerator are read without its list of coefficients
+    check("Together(1/x^70754517+x^70754517)", //
+        "(1+x^141509034)/x^70754517");
+  }
+
 }
