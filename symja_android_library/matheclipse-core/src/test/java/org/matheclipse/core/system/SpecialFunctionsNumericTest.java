@@ -1387,6 +1387,19 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
         + "StruveL(-1.2,0.5)/0.56816520732123649544, "
         + "StruveL(10.0,300.0)/(3.7877259258668686766*10^128)}-1)) < 10^-13", //
         "True");
+    // orders below -1/2 by the recurrence in the order; a half-integer order is
+    // (-1)^n*BesselJ(n+1/2,x). mpmath: -0.12499292073056974632, 0.0018347151945681310826,
+    // -0.0076139960074709105531, 619639.28349723197988, 0.4298944397974863326,
+    // BesselJ(5/2,1/2) = 0.0092364078193797244999
+    check("Max(Abs({StruveH(-0.75,30.0)+0.12499292073056974632, "
+        + "StruveH(-3.7,10.0)-0.0018347151945681310826, "
+        + "StruveH(-10.3,30.0)+0.0076139960074709105531, "
+        + "StruveH(-1.2,0.5)-0.4298944397974863326, "
+        + "StruveH(-2.5,0.5)-0.0092364078193797244999})) < 10^-14", //
+        "True");
+    // 21 steps of the recurrence
+    check("Abs(StruveH(-20.6,7.0)/619639.28349723197988-1) < 10^-13", //
+        "True");
     // 1.4243375227689502 by mpmath; with the arbitrary precision series for each value of the
     // integrand this took 110 seconds
     check("NIntegrate(x^(-3/4)*StruveH(0, 2*x), {x,0,200})", //

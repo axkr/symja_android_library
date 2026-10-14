@@ -534,8 +534,11 @@ public class DMath {
    * 100. The arbitrary precision series, which the arguments below 100 needed before, takes
    * milliseconds for one value.
    *
-   * @return {@link Double#NaN} where none of these reaches the precision of a double - an order
-   *         of at most <code>-1/2</code> beyond the series, a value of a size the factors leave
+   * An order of at most <code>-1/2</code>, where the series cancels, comes from the two orders
+   * above <code>-1/2</code> by the recurrence in the order.
+   *
+   * @return {@link Double#NaN} where none of these reaches the precision of a double - a value
+   *         of a size the factors leave, an order below <code>-60</code>
    * @see <a href="https://dlmf.nist.gov/11.5#E2">DLMF 11.5.2</a>
    */
   public static double struveH(double v, double x) {
@@ -546,8 +549,11 @@ public class DMath {
       return struveHLargeArgument(v, x);
     }
     final double series = struveSeries(v, x, true);
-    if (!Double.isNaN(series) || !(v > -0.5)) {
+    if (!Double.isNaN(series)) {
       return series;
+    }
+    if (!(v > -0.5)) {
+      return struveHDownward(v, x);
     }
     // H(v,x) - Y(v,x) = 2*(x/2)^v/(Sqrt(Pi)*Gamma(v+1/2))*Integrate(E^(-x*t)*(1+t^2)^(v-1/2),
     // {t,0,Infinity}), with u = x*t
@@ -563,6 +569,76 @@ public class DMath {
     final double size = Math.max(Math.abs(value), Math.sqrt(2.0 / (Math.PI * x)));
     if (!Double.isFinite(value) || Math.max(Math.abs(bessel), Math.abs(correction)) > 100.0 * size) {
       return Double.NaN;
+    }
+    return value;
+  }
+
+  /** The lowest order which {@link #struveHDownward(double, double)} reaches. */
+  private static final double MIN_STRUVE_ORDER = -60.0;
+
+  /**
+   * <code>StruveH(v, x)</code> for <code>v &lt;= -1/2</code> by the recurrence
+   * <code>H(m-1,x) = 2*m/x*H(m,x) - H(m+1,x) + (x/2)^m/(Sqrt(Pi)*Gamma(m+3/2))</code> from the two
+   * orders above <code>-1/2</code> which differ from <code>v</code> by an integer. Towards lower
+   * orders the functions of negative order grow like <code>BesselY</code>, which is the direction
+   * in which the recurrence is stable.
+   *
+   * @see <a href="https://dlmf.nist.gov/11.4#E23">DLMF 11.4.23</a>
+   */
+  private static double struveHDownward(double v, double x) {
+    if (!(v >= MIN_STRUVE_ORDER)) {
+      return Double.NaN;
+    }
+    if (v + 0.5 == Math.rint(v + 0.5)) {
+      // H(-n-1/2,x) = (-1)^n*BesselJ(n+1/2,x): the solution of the recurrence which decreases
+      // towards lower orders, which the recurrence cannot follow
+      final int n = (int) Math.rint(-0.5 - v);
+      final double bessel = besselJ(-v, x);
+      return (n & 1) == 0 ? bessel : -bessel;
+    }
+    // the smallest order v+steps above -1/2
+    final int steps = (int) Math.floor(-0.5 - v) + 1;
+    final double upper = struveH(v + steps + 1, x);
+    final double start = struveH(v + steps, x);
+    if (Double.isNaN(upper) || Double.isNaN(start)) {
+      return Double.NaN;
+    }
+    final double value = struveHRecurrence(v, x, steps, start, upper);
+    if (!Double.isFinite(value)) {
+      return Double.NaN;
+    }
+    // The condition of the recurrence: the starting values have rounding errors, and the change
+    // of each by the relative amount delta changes the result by at most 100*delta of its size -
+    // next to a half-integer order the function is mostly the solution which decreases towards
+    // lower orders, whose digits the recurrence loses.
+    final double delta = 1.0e-8;
+    final double scale = Math.max(Math.abs(value), Math.sqrt(2.0 / (Math.PI * x)));
+    final double changed1 = struveHRecurrence(v, x, steps, start * (1.0 + delta), upper);
+    final double changed2 = struveHRecurrence(v, x, steps, start, upper * (1.0 + delta));
+    if (!(Math.abs(changed1 - value) <= 100.0 * delta * scale)
+        || !(Math.abs(changed2 - value) <= 100.0 * delta * scale)) {
+      return Double.NaN;
+    }
+    return value;
+  }
+
+  /**
+   * The recurrence of {@link #struveHDownward(double, double)} from <code>H(v+steps, x)</code> and
+   * <code>H(v+steps+1, x)</code> down to <code>H(v, x)</code>.
+   */
+  private static double struveHRecurrence(double v, double x, int steps, double start,
+      double above) {
+    final double half = 0.5 * x;
+    double upper = above;
+    double value = start;
+    for (double m = v + steps; m > v + 0.5; m -= 1.0) {
+      // (x/2)^m/(Sqrt(Pi)*Gamma(m+3/2)), which is 0 at a pole of the gamma function
+      final double argument = m + 1.5;
+      final double inhomogeneous = argument <= 0.0 && argument == Math.rint(argument) ? 0.0
+          : Math.pow(half, m) / (Math.sqrt(Math.PI) * gamma(argument));
+      final double lower = 2.0 * m / x * value - upper + inhomogeneous;
+      upper = value;
+      value = lower;
     }
     return value;
   }
