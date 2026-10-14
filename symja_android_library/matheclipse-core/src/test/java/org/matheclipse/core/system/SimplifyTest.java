@@ -832,4 +832,60 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Refine((t^2)^(3/2), Element(t,Reals))", //
         "Abs(t)^3");
   }
+
+  /**
+   * Hyperbolic half angles under a root, parities and <code>Mod</code> of integer expressions;
+   * <code>Element({a, b}, dom)</code> is a statement about each element of the list.
+   */
+  @Test
+  public void testIntegerAndHyperbolicAssumptions() {
+    check("Simplify(Sqrt(Cosh(4*t)+1)-Sqrt(2)*Cosh(2*t), t>0)", //
+        "0");
+    check("Simplify(Sqrt(Cosh(4*t)+1)-Sqrt(2)*Cosh(2*t))", //
+        "-Sqrt(2)*Cosh(2*t)+Sqrt(1+Cosh(4*t))");
+    check("Simplify(Sqrt((Cosh(t)-1)/2)-Sinh(t/2), t>0)", //
+        "0");
+    check("Simplify(Sqrt((Cosh(t)-1)/2)-Sinh(t/2), t<0)", //
+        "-2*Sinh(t/2)");
+    check("Simplify(Sqrt((Cosh(t)+1)/2)-Cosh(t/2), t>0)", //
+        "0");
+    // only for a non-negative argument
+    check("Simplify(ArcSech(Sech(t))-t, t>0)", //
+        "0");
+    check("Simplify(ArcSech(Sech(t))+t, t<0)", //
+        "t+ArcSech(Sech(t))");
+    // one of two integers which differ by an odd number is even
+    check("Simplify((-1)^(k*(k+1)), Element(k,Integers))", //
+        "1");
+    check("Simplify((-1)^((k+2)*(k+5)), Element(k,Integers))", //
+        "1");
+    check("Simplify((-1)^(k*(k+2)), Element(k,Integers))", //
+        "(-1)^(k*(2+k))");
+    check("Simplify((-1)^(k*(k+1)))", //
+        "(-1)^(k*(1+k))");
+    // the list form of Element
+    check("Simplify(Sin((j+k)*Pi), Element({j,k},Integers))", //
+        "0");
+    check("Simplify(Cos((j+k)*Pi)-(-1)^(j+k), Element({j,k},Integers))", //
+        "0");
+    check("Simplify(Exp(I*Pi*(j-k))-Exp(I*Pi*(j+k)), Element({j,k},Integers))", //
+        "0");
+    check("Simplify(Sin((j+k)*Pi), Element({j,k},Reals))", //
+        "Sin((j+k)*Pi)");
+    check("Simplify(Arg(Exp(I*Pi*(2*k+1/3)))-Pi/3, Element(k,Integers))", //
+        "0");
+    // a power has the parity of its base
+    check("Simplify(Mod(k^3,2)-Mod(k,2), Element(k,Integers))", //
+        "0");
+    check("Simplify(Mod(j+k,1), Element({j,k},Integers))", //
+        "0");
+    check("Simplify(Mod(j*k,k), Element({j,k},Integers))", //
+        "0");
+    check("Simplify(Mod(j*k,k))", //
+        "Mod(j*k,k)");
+    check("Simplify(Mod(k^3,2)-Mod(k,2))", //
+        "-Mod(k,2)+Mod(k^3,2)");
+    check("FullSimplify(Binomial(j+1,k)-Binomial(j,k)-Binomial(j,k-1))", //
+        "0");
+  }
 }

@@ -227,6 +227,18 @@ public class SimplifyFunctions {
             isFullSimplifyMode() || isVariableFreeNumber(arg1), false, engine);
 
         IExpr currentResult = temp.isPresent() ? temp : defaultResult;
+        if (currentResult.isAST() && assumptionExpr.isPresent() && assumptionExpr.isAST()
+            && engine.getAssumptions() != null) {
+          // the transformations can leave a form which the assumptions reduce further
+          IExpr refined = AssumptionFunctions.refineAssumptions(currentResult,
+              engine.getAssumptions(), engine);
+          long refinedCount = complexityFunction.apply(refined);
+          if (refinedCount < complexityFunction.apply(currentResult)) {
+            currentResult = refined;
+            temp = refined;
+            minCounter = Math.min(minCounter, refinedCount);
+          }
+        }
         if (currentResult.isPlus() && assumptionExpr.isPresent() && assumptionExpr.isAST()
             && !currentResult.equals(arg1) && org.matheclipse.core.eval.ZeroIdentity
                 .isZero((IAST) currentResult, assumptionExpr, isFullSimplifyMode(), engine)) {
@@ -316,7 +328,9 @@ public class SimplifyFunctions {
 
     /**
      * Write the radicands <code>a + a*Cos(u)</code> and <code>a - a*Cos(u)</code> of even roots as
-     * <code>2*a*Cos(u/2)^2</code> and <code>2*a*Sin(u/2)^2</code>.
+     * <code>2*a*Cos(u/2)^2</code> and <code>2*a*Sin(u/2)^2</code>, and likewise
+     * <code>a*Cosh(u) + a</code> and <code>a*Cosh(u) - a</code> as <code>2*a*Cosh(u/2)^2</code> and
+     * <code>2*a*Sinh(u/2)^2</code>.
      *
      * @return {@link F#NIL} if there is no such radicand
      */
@@ -341,6 +355,24 @@ public class SimplifyFunctions {
               }
               if (factor.equals(a.negate())) {
                 return F.Power(F.Times(F.C2, a, F.Sqr(F.Sin(half))), x.exponent());
+              }
+            }
+          }
+          if (a.isRational() && !a.isZero()) {
+            // a + a*Cosh(u) and -a + a*Cosh(u) for a positive a
+            IExpr cosh = rest;
+            IExpr factor = F.C1;
+            if (rest.isTimes() && rest.argSize() == 2 && rest.first().isRational()) {
+              factor = rest.first();
+              cosh = rest.second();
+            }
+            if (cosh.isCosh() && factor.isPositive()) {
+              IExpr half = F.Times(F.C1D2, cosh.first());
+              if (factor.equals(a)) {
+                return F.Power(F.Times(F.C2, factor, F.Sqr(F.Cosh(half))), x.exponent());
+              }
+              if (factor.equals(a.negate())) {
+                return F.Power(F.Times(F.C2, factor, F.Sqr(F.Sinh(half))), x.exponent());
               }
             }
           }
