@@ -2418,6 +2418,10 @@ public class PolynomialFunctions {
         // the leading term (-z)^n/n! decides
         return z.isNegativeInfinity() || (n & 1) == 0 ? F.CInfinity : F.CNInfinity;
       }
+      if (n > 64) {
+        // the polynomial in two symbols, or with huge coefficients, is not useful any more
+        return F.NIL;
+      }
       IASTAppendable sum = F.PlusAlloc(n + 1);
       IInteger nFactorial = F.ZZ(n).factorial();
       for (int k = 0; k <= n; k++) {

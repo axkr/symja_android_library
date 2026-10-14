@@ -65,13 +65,13 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testKeyholePower() {
     check("Integrate(x^p*Log(x)/(1+x^2), {x,0,Infinity}, Assumptions->-1<p<1)", //
-        "1/4*Pi^2*Csc(p*Pi)^2*(3*Sin(1/2*p*Pi)-Sin(3/2*p*Pi))");
+        "1/4*Pi^2*Sec(1/2*p*Pi)*Tan(1/2*p*Pi)");
     check("N(Integrate(x^p*Log(x)/(1+x^2), {x,0,Infinity}, Assumptions->-1<p<1) /. p->2/5)", //
         "2.21586");
     check("NIntegrate(x^(2/5)*Log(x)/(1+x^2), {x,0,Infinity})", //
         "2.21586");
     check("Integrate(x^p/(1+x^2), {x,0,Infinity}, Assumptions->-1<p<1)", //
-        "Pi*Csc(p*Pi)*Sin(1/2*p*Pi)");
+        "1/2*Pi*Sec(1/2*p*Pi)");
     // no assumptions: the convergence is not proved
     check("Integrate(x^p/(1+x^2), {x,0,Infinity})", //
         "Integrate(x^p/(1+x^2),{x,0,Infinity})");

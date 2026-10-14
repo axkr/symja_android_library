@@ -318,9 +318,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "Infinity");
     check("LaguerreL(3,l,Infinity)", //
         "-Infinity");
-    // mesage Polynomial degree 101 exceeded
     check("LaguerreL(101,l,-Infinity)", //
-        "LaguerreL(101,l,-Infinity)");
+        "Infinity");
     // message Polynomial degree 101 exceeded
     check("LaguerreL(101,l,-I)", //
         "LaguerreL(101,l,-I)");
@@ -337,10 +336,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("LaguerreL(2, l, z)", // 1/2*(-1-l)+1/2*(1+l-z)*(3+l-z)
         "1/2*(2+3*l+l^2-4*z-2*l*z+z^2)");
     check("LaguerreL(3, l, z)", //
-        "1/3*(-(2+l)*(1+l-z)+1/2*(5+l-z)*(2+3*l+l^2-4*z-2*l*z+z^2))");
+        "1/6*(6+11*l+6*l^2+l^3-18*z-15*l*z-3*l^2*z+9*z^2+3*l*z^2-z^3)");
     check("LaguerreL(4, l, z)", //
-        "1/4*(1/2*(-3-l)*(2+3*l+l^2-4*z-2*l*z+z^2)+1/3*(7+l-z)*(-(2+l)*(1+l-z)+1/2*(5+l-z)*(\n"
-            + "2+3*l+l^2-4*z-2*l*z+z^2)))");
+        "1/24*(24+50*l+35*l^2+10*l^3+l^4-96*z-104*l*z-36*l^2*z-4*l^3*z+72*z^2+42*l*z^2+6*l^\n2*z^2-16*z^3-4*l*z^3+z^4)");
     check("LaguerreL(n, 0)", //
         "1");
     check("LaguerreL(8, x)", //

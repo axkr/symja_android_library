@@ -213,7 +213,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("LaguerreL(3,x)", //
         "1-3*x+3/2*x^2-x^3/6");
     check("LaguerreL(3,l,z)", //
-        "1/3*(-(2+l)*(1+l-z)+1/2*(5+l-z)*(2+3*l+l^2-4*z-2*l*z+z^2))");
+        "1/6*(6+11*l+6*l^2+l^3-18*z-15*l*z-3*l^2*z+9*z^2+3*l*z^2-z^3)");
   }
 
   @Test
