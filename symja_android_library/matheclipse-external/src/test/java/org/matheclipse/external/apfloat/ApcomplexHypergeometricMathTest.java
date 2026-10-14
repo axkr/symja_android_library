@@ -79,4 +79,16 @@ public class ApcomplexHypergeometricMathTest
         assertThrows(ArithmeticException.class, () -> ApcomplexHypergeometricMath.hypergeometricPFQ(a2, new Apcomplex[0], r(-1, 100)));
         assertThrows(ArithmeticException.class, () -> ApcomplexHypergeometricMath.hypergeometricPFQ(new Apcomplex[] { r(-4, 1), r(5, 2) }, new Apcomplex[] { r(-2, 1) }, r(1, 2)));
     }
+
+    @Test
+    public void testHypergeometricPFQOnTheUnitCircle()
+    {
+        Apcomplex[] a = { r(1, 3), r(5, 2), r(1, 1) },
+                    b = { r(7, 3), r(5, 2) };
+        // the series converges like k^(-2) at 1, and not at all at -1 and i: its Levin transform
+        assertClose("3F2(1)", new Apfloat("1.33333333333333333333333333333333333333333333"), ApcomplexHypergeometricMath.hypergeometricPFQ(a, b, r(1, 1)), 28);
+        assertClose("3F2(-1)", new Apfloat("0.895063595372589475565609225866962044764059007"), ApcomplexHypergeometricMath.hypergeometricPFQ(a, b, r(-1, 1)), 28);
+        assertClose("3F2(i)", new Apcomplex(new Apfloat("0.955995213070746608862017780385942487242996995"), new Apfloat("0.12072951692597884938506050757882211578013749")),
+                    ApcomplexHypergeometricMath.hypergeometricPFQ(a, b, new Apcomplex(Apfloat.ZERO, r(1, 1))), 28);
+    }
 }

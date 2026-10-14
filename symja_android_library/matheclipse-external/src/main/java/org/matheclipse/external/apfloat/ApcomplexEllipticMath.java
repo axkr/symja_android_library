@@ -1,6 +1,8 @@
 package org.matheclipse.external.apfloat;
 
 import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.ApfloatRuntimeException;
 
 /**
@@ -18,6 +20,40 @@ public class ApcomplexEllipticMath
 {
     private ApcomplexEllipticMath()
     {
+    }
+
+    /**
+     * Complete elliptic integral of the first kind <i>K(m)</i>, also for a parameter of a size
+     * which <code>ApcomplexMath.ellipticK()</code> gets wrong: its arithmetic-geometric mean of 1 and
+     * &radic;(1 - <i>m</i>) takes another branch where the two differ by some more orders of magnitude than
+     * the precision has digits, and <i>K</i>(10<sup>200</sup>) has the real part -3 &pi; / 2 instead of
+     * &pi; / 2 at 25 digits.<p>
+     *
+     * For a parameter beyond 10<sup>precision</sup> the integral is
+     * log(4 &radic;(1 - <i>m</i>)) / &radic;(1 - <i>m</i>), with a relative error of 1 / (4 |<i>m</i>|).
+     *
+     * @param m The parameter.
+     *
+     * @return <i>K(m)</i>
+     *
+     * @throws InfiniteExpansionException If the argument has infinite precision.
+     * @throws ArithmeticException If <i>m</i> is 1.
+     *
+     * @see <a href="https://dlmf.nist.gov/19.12#E1">DLMF 19.12.1</a>
+     */
+
+    public static Apcomplex ellipticK(Apcomplex m)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        long precision = m.precision();
+        if (precision == Apfloat.INFINITE || m.scale() <= precision + 3)
+        {
+            return ApcomplexMath.ellipticK(m);
+        }
+        int radix = m.radix();
+        long workingPrecision = ApfloatHelperShim.extendPrecision(precision);
+        Apcomplex root = ApcomplexMath.sqrt(new Apcomplex(new Apfloat(1, workingPrecision, radix)).subtract(ApfloatHelperShim.ensurePrecision(m, workingPrecision)));
+        return ApfloatHelperShim.limitPrecision(ApcomplexMath.log(root.multiply(new Apfloat(4, workingPrecision, radix))).divide(root), precision);
     }
 
     /**

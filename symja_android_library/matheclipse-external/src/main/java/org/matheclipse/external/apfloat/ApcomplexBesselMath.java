@@ -3,6 +3,7 @@ package org.matheclipse.external.apfloat;
 import java.util.function.BinaryOperator;
 
 import org.apfloat.Apcomplex;
+import org.apfloat.LossOfPrecisionException;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
@@ -27,6 +28,11 @@ public class ApcomplexBesselMath
     // Largest size of an argument, for which that many digits are added
     private static final long MAX_ARGUMENT = 10000;
 
+    // Largest number of digits which are added for an order that is large against the argument: the functions of the
+    // first kind take seconds with them, and those of the second kind ten times as long
+    private static final double MAX_CANCELLED_DIGITS = 1000.0,
+                                MAX_CANCELLED_DIGITS_SECOND_KIND = 300.0;
+
     private ApcomplexBesselMath()
     {
     }
@@ -48,7 +54,12 @@ public class ApcomplexBesselMath
     public static Apcomplex besselJ(Apcomplex ν, Apcomplex z)
         throws ArithmeticException, ApfloatRuntimeException
     {
-        return evaluate(ApcomplexMath::besselJ, ν, z);
+        Apcomplex[] expansion = largeArgument(ν, z);
+        if (expansion != null)
+        {
+            return expansion[0];
+        }
+        return evaluate(ApcomplexMath::besselJ, ν, z, MAX_CANCELLED_DIGITS);
     }
 
     /**
@@ -68,7 +79,7 @@ public class ApcomplexBesselMath
     public static Apcomplex besselI(Apcomplex ν, Apcomplex z)
         throws ArithmeticException, ApfloatRuntimeException
     {
-        return evaluate(ApcomplexMath::besselI, ν, z);
+        return evaluate(ApcomplexMath::besselI, ν, z, MAX_CANCELLED_DIGITS);
     }
 
     /**
@@ -87,7 +98,12 @@ public class ApcomplexBesselMath
     public static Apcomplex besselY(Apcomplex ν, Apcomplex z)
         throws ArithmeticException, ApfloatRuntimeException
     {
-        return evaluate(ApcomplexMath::besselY, ν, z);
+        Apcomplex[] expansion = largeArgument(ν, z);
+        if (expansion != null)
+        {
+            return expansion[1];
+        }
+        return evaluate(ApcomplexMath::besselY, ν, z, MAX_CANCELLED_DIGITS_SECOND_KIND);
     }
 
     /**
@@ -106,7 +122,7 @@ public class ApcomplexBesselMath
     public static Apcomplex besselK(Apcomplex ν, Apcomplex z)
         throws ArithmeticException, ApfloatRuntimeException
     {
-        return evaluate(ApcomplexMath::besselK, ν, z);
+        return evaluate(ApcomplexMath::besselK, ν, z, MAX_CANCELLED_DIGITS_SECOND_KIND);
     }
 
     /**
@@ -158,7 +174,7 @@ public class ApcomplexBesselMath
         z = ApfloatHelperShim.ensurePrecision(z, workingPrecision);
         Apfloat two = new Apfloat(2, workingPrecision, radix);
         Apcomplex order = n.add(new Apfloat(1, workingPrecision, radix).divide(two)),
-                  bessel = (secondKind ? evaluate(ApcomplexMath::besselY, order, z) : evaluate(ApcomplexMath::besselJ, order, z)),
+                  bessel = (secondKind ? besselY(order, z) : besselJ(order, z)),
                   // Sqrt(Pi/2) / Sqrt(z), which is not Sqrt(Pi / (2 z)) on the negative real axis
                   factor = ApfloatMath.sqrt(ApfloatMath.pi(workingPrecision, radix).divide(two)).divide(ApcomplexMath.sqrt(z));
         return ApfloatHelperShim.limitPrecision(factor.multiply(bessel), precision);
@@ -210,10 +226,47 @@ public class ApcomplexBesselMath
         throw new ArithmeticException("Newton's method does not converge to the zero of the Bessel function");
     }
 
-    private static Apcomplex evaluate(BinaryOperator<Apcomplex> function, Apcomplex ν, Apcomplex z)
+    // J and Y of an argument from this number of digits in front of the decimal point on by the expansion for a large argument
+    private static final long LARGE_ARGUMENT_SCALE = 16;
+
+    // The two functions by Hankel's expansion, or null where it doesn't apply or doesn't reach the precision
+    private static Apcomplex[] largeArgument(Apcomplex ν, Apcomplex z)
+    {
+        if (z.scale() < LARGE_ARGUMENT_SCALE || z.real().signum() <= 0)
+        {
+            return null;
+        }
+        try
+        {
+            return ApcomplexAsymptoticMath.besselJY(ν, z);
+        }
+        catch (ArithmeticException ae)
+        {
+            return null;
+        }
+    }
+
+    private static Apcomplex evaluate(BinaryOperator<Apcomplex> function, Apcomplex ν, Apcomplex z, double maxCancelledDigits)
     {
         long precision = precision(ν, z),
              extraPrecision = ApfloatHelperShim.EXTRA_PRECISION;
+        if (z.scale() > 0)
+        {
+            // The library takes twice the digits in front of the decimal point from the phase of a large argument
+            extraPrecision += 2 * z.scale();
+            // and its expansion for a large argument cancels about nu^2 / (2 z) nepers twice, where the order is large as well
+            double order = ApcomplexMath.abs(ν).doubleValue(),
+                   argument = ApcomplexMath.abs(z).doubleValue(),
+                   cancelled = order * order / (argument * Math.log(z.radix()));
+            if (argument > 10.0 && cancelled > 1.0)
+            {
+                if (!(cancelled <= maxCancelledDigits))
+                {
+                    throw new LossOfPrecisionException("Complete loss of accurate digits", "lossOfPrecision");
+                }
+                extraPrecision += (long) cancelled;
+            }
+        }
         try
         {
             return GuardDigitsHelper.evaluate(function, ν, z, precision, extraPrecision, 16 * extraPrecision);

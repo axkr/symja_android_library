@@ -92,6 +92,57 @@ public class ZetaWorkaround
         return (precision == Apfloat.INFINITE || precision <= extraPrecision ? result : ApfloatHelperShim.limitPrecision(result, precision - extraPrecision));
     }
 
+    // The alternating sum of zeta(s) and the one of its derivative, which has the terms -log(k) k^(-s): { zeta(s), zeta'(s) } for a real part of at least 1/2
+    static Apcomplex[] alternatingSums(Apcomplex s)
+    {
+        if (s.imag().signum() < 0)
+        {
+            Apcomplex[] result = alternatingSums(s.conj());
+            return new Apcomplex[] { result[0].conj(), result[1].conj() };
+        }
+        int radix = s.radix();
+        long doublePrecision = getDoublePrecision(radix),
+             extraPrecision = ApfloatHelperShim.getSmallExtraPrecision(radix),
+             precision = s.precision();
+        Apint one = ApfloatHelperShim.ONES[radix],
+              two = new Apint(2, radix),
+              four = new Apint(4, radix);
+        // 1 - 2^(1 - s) is (s - 1) log(2) to the first order: the digits which the difference loses, twice for its square
+        double logS12 = ApfloatMath.log(ApcomplexMath.abs(s.subtract(one)).precision(doublePrecision)).doubleValue() + Math.log(Math.log(2));
+        long workingPrecision = ApfloatHelperShim.extendPrecision(precision, extraPrecision + (long) Math.ceil(Math.max(0.0, -2.0 * logS12 / Math.log(radix))));
+        s = ApfloatHelperShim.ensurePrecision(s, workingPrecision);
+        double t = Math.abs(s.imag().doubleValue());
+        // some terms more than for the function: the terms of the derivative have the logarithm as a factor
+        long n = (long) ((workingPrecision * Math.log(radix) + t * Math.PI / 2 + Math.log(1 + 2 * t) - 2 * logS12) / Math.log(3 + Math.sqrt(8))) + 4,
+             n2 = Util.multiplyExact(n, 2);
+        Apfloat denominator = ApfloatMath.gamma(new Apint(n2 + 1, radix).precision(workingPrecision)),
+                numerator = new Apint(n, radix).multiply(denominator).multiply(ApfloatMath.pow(four.precision(workingPrecision), n)),
+                d = Apfloat.ZERO;
+        Apcomplex sum = Apcomplex.ZERO,
+                  derivativeSum = Apcomplex.ZERO;
+        for (long k = n; k > 0; k--)
+        {
+            numerator = numerator.divide(new Apint(n + k, radix));
+            d = d.add(numerator.divide(denominator));
+            numerator = numerator.divide(four);
+            denominator = denominator.multiply(new Apint(n - k + 1, radix)).divide(new Apint(2 * k, radix)).divide(new Apint(2 * k - 1, radix));
+            Apcomplex term = ((k & 1) == 0 ? d.negate() : d).multiply(ApcomplexMath.pow(new Apint(k, radix), s.negate()));
+            sum = sum.add(term);
+            if (k > 1)
+            {
+                derivativeSum = derivativeSum.subtract(term.multiply(ApfloatMath.log(new Apfloat(k, workingPrecision, radix))));
+            }
+        }
+        d = d.add(numerator.divide(denominator));
+        // zeta = sum / (d g) with g = 1 - 2^(1 - s) and g' = log(2) 2^(1 - s)
+        Apcomplex power = ApcomplexMath.pow(two.precision(workingPrecision), one.subtract(s)),
+                  g = one.subtract(power),
+                  dg = power.multiply(ApfloatMath.log(two.precision(workingPrecision))),
+                  zeta = sum.divide(d.multiply(g)),
+                  derivative = derivativeSum.multiply(g).subtract(sum.multiply(dg)).divide(d.multiply(g).multiply(g));
+        return new Apcomplex[] { ApfloatHelperShim.limitPrecision(zeta, precision), ApfloatHelperShim.limitPrecision(derivative, precision) };
+    }
+
     // The package-private ApfloatHelper.getDoublePrecision()
     private static long getDoublePrecision(int radix)
     {

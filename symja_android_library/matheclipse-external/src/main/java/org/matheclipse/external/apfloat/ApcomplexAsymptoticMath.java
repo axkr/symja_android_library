@@ -30,10 +30,101 @@ public class ApcomplexAsymptoticMath
     private static final int MAX_TERMS = 200;
 
     /**
+     * Bessel functions <i>J</i><sub>&nu;</sub>(<i>z</i>) and <i>Y</i><sub>&nu;</sub>(<i>z</i>) for a large argument,
+     * by Hankel's expansion
+     * <i>J</i> = &radic;(2 / (&pi; <i>z</i>)) (<i>P</i> cos &chi; - <i>Q</i> sin &chi;),
+     * <i>Y</i> = &radic;(2 / (&pi; <i>z</i>)) (<i>P</i> sin &chi; + <i>Q</i> cos &chi;)
+     * with &chi; = <i>z</i> - (&nu; / 2 + 1/4) &pi;.<p>
+     *
+     * The digits of the argument in front of its decimal point are no digits of the phase: the
+     * argument is taken with as many more, where the series of the library needs twice as many
+     * and <i>Y</i> of 10<sup>300</sup> takes a minute.
+     *
+     * @param ν The order.
+     * @param z The argument, with a positive real part.
+     *
+     * @return <i>J</i><sub>&nu;</sub>(<i>z</i>) and <i>Y</i><sub>&nu;</sub>(<i>z</i>)
+     *
+     * @throws ArithmeticException If the expansion doesn't reach the precision for these arguments.
+     *
+     * @see <a href="https://dlmf.nist.gov/10.17">DLMF 10.17</a>
+     */
+
+    public static Apcomplex[] besselJY(Apcomplex ν, Apcomplex z)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        long precision = finitePrecision(ν, z);
+        if (z.real().signum() <= 0)
+        {
+            throw new ArithmeticException("Bessel expansion needs a positive real part of the argument");
+        }
+        requireLargeArgument(ν, z, "Bessel");
+        int radix = z.radix();
+        long workingPrecision = ApfloatHelperShim.extendPrecision(precision) + Math.max(0, z.scale());
+        FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(workingPrecision);
+        Apint one = ApfloatHelperShim.ONES[radix],
+              two = new Apint(2, radix),
+              four = new Apint(4, radix),
+              eight = new Apint(8, radix);
+        Apcomplex μ = h.multiply(h.multiply(ν, ν), four),
+                  p = one,
+                  q = ApfloatHelperShim.ZEROS[radix],
+                  term = one;
+        Apfloat previous = null,
+                error = null;
+        for (int k = 1; ; k++)
+        {
+            Apint odd = new Apint(2L * k - 1, radix);
+            term = h.divide(h.multiply(term, h.subtract(μ, odd.multiply(odd))), h.multiply(z, eight.multiply(new Apint(k, radix))));
+            Apfloat size = ApcomplexMath.abs(term);
+            if (size.signum() == 0)
+            {
+                // The series terminates at a half-integer order
+                error = size;
+                break;
+            }
+            if ((previous != null && size.compareTo(previous) > 0) || k > MAX_TERMS)
+            {
+                // An asymptotic series says nothing past its smallest term
+                error = previous;
+                break;
+            }
+            // P has the terms with an even k, Q those with an odd one; the sign changes every two terms
+            Apcomplex signed = ((k >> 1 & 1) == 0 ? term : term.negate());
+            if ((k & 1) == 0)
+            {
+                p = h.add(p, signed);
+            }
+            else
+            {
+                q = h.add(q, signed);
+            }
+            previous = size;
+            if (size.scale() < -workingPrecision)
+            {
+                error = size;
+                break;
+            }
+        }
+        if (error.signum() != 0 && error.scale() > -precision - 2)
+        {
+            throw new ArithmeticException("Bessel expansion doesn't reach the precision");
+        }
+        Apfloat π = h.pi(),
+                quarter = h.divide(one, four);
+        Apcomplex χ = h.subtract(z, h.multiply(h.add(h.divide(ν, two), quarter), π)),
+                  cos = h.cos(χ),
+                  sin = h.sin(χ),
+                  factor = h.sqrt(h.divide(two, h.multiply(π, z)));
+        return new Apcomplex[] { ApfloatHelperShim.limitPrecision(h.multiply(factor, h.subtract(h.multiply(p, cos), h.multiply(q, sin))), precision),
+                                 ApfloatHelperShim.limitPrecision(h.multiply(factor, h.add(h.multiply(p, sin), h.multiply(q, cos))), precision) };
+    }
+
+    /**
      * Struve function <b>H</b><sub>&nu;</sub>(<i>z</i>) for a large argument, by
      * <b>H</b><sub>&nu;</sub>(<i>z</i>) = <i>Y</i><sub>&nu;</sub>(<i>z</i>) + 1/&pi; &sum; &Gamma;(<i>k</i> + 1/2) / &Gamma;(&nu; + 1/2 - <i>k</i>) (<i>z</i>/2)<sup>&nu;-2k-1</sup>.
      *
-     * @param ν The order, which is not an integer.
+     * @param ν The order.
      * @param z The argument, with a positive real part.
      *
      * @return <b>H</b><sub>&nu;</sub>(<i>z</i>)
@@ -48,16 +139,21 @@ public class ApcomplexAsymptoticMath
         throws ArithmeticException, ApfloatRuntimeException
     {
         long precision = finitePrecision(ν, z);
-        if (z.real().signum() <= 0 || isInteger(ν))
+        if (z.real().signum() <= 0)
         {
-            // The Bessel function Y of an integer order is a limit, which loses digits next to it
-            throw new ArithmeticException("Struve H expansion needs a positive real part of the argument and a non-integer order");
+            throw new ArithmeticException("Struve H expansion needs a positive real part of the argument");
         }
         requireLargeArgument(ν, z, "Struve H");
         FixedPrecisionApfloatHelper h = helper(precision);
         Apfloat[] error = new Apfloat[1];
-        Apcomplex correction = struveCorrection(ν, z, false, h, error),
-                  bessel = h.besselY(ν, z),
+        Apcomplex correction = struveCorrection(ν, z, false, h, error);
+        if (ν.imag().signum() == 0 && z.imag().signum() == 0 && correction.scale() > precision + 3)
+        {
+            // |Y| < 1 for a real order and a larger real argument, which is below the last digit of the sum
+            return accept(correction, error[0], precision, "Struve H");
+        }
+        // The digits which the size of the argument takes from the phase are added there
+        Apcomplex bessel = ApcomplexBesselMath.besselY(ν, z),
                   result = h.add(bessel, correction);
         requireNoCancellation(result, bessel, correction, "Struve H");
         return accept(result, error[0], precision, "Struve H");
@@ -112,8 +208,9 @@ public class ApcomplexAsymptoticMath
         Apcomplex νPlusHalf = h.add(ν, half);
         if (isInteger(νPlusHalf) && νPlusHalf.real().signum() <= 0)
         {
-            // Gamma(nu + 1/2) has a pole and the leading terms vanish
-            throw new ArithmeticException("Struve expansion at a pole of the gamma function");
+            // Gamma(nu + 1/2 - k) has a pole for every k and all the terms vanish
+            error[0] = ApfloatHelperShim.ZEROS[radix];
+            return ApfloatHelperShim.ZEROS[radix];
         }
         Apcomplex halfZ = h.multiply(z, half),
                   step = h.divide(one, h.multiply(halfZ, halfZ));
@@ -444,7 +541,8 @@ public class ApcomplexAsymptoticMath
         else
         {
             // J + sin(pi nu) / (pi z) (sumF - nu / z sumG)
-            bessel = h.besselJ(ν, z);
+            // with the digits which the size of the argument takes from the phase
+            bessel = ApcomplexBesselMath.besselJ(ν, z);
             correction = h.divide(h.multiply(h.sin(πν), h.subtract(sumF, h.divide(h.multiply(ν, sumG), z))), πz);
         }
         Apcomplex result = h.add(bessel, correction);

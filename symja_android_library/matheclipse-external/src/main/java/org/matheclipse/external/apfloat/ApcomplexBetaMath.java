@@ -69,4 +69,46 @@ public class ApcomplexBetaMath
         }
         throw new LossOfPrecisionException("Complete loss of accurate digits");
     }
+
+    /**
+     * Pochhammer symbol (<i>z</i>)<sub><i>n</i></sub> = &Gamma;(<i>z</i> + <i>n</i>) / &Gamma;(<i>z</i>),
+     * also for a <i>z</i> of a large size.<p>
+     *
+     * <code>ApcomplexMath.pochhammer()</code> divides the two gamma functions. Their precision is
+     * lower than the one of <i>z</i> by the digits of <i>z</i> in front of the decimal point -
+     * (10<sup>15</sup>)<sub>-3</sub> has 4 digits with 17 - and beyond 10<sup>17</sup> they leave the
+     * range of the exponent. For a large <i>z</i> with a positive real part this method takes the
+     * difference of the logarithms of the gamma functions with that many more digits.
+     *
+     * @param z The first argument.
+     * @param n The second argument.
+     *
+     * @return (<i>z</i>)<sub><i>n</i></sub>, to the smaller precision of the arguments.
+     *
+     * @throws ArithmeticException If the result is infinite.
+     */
+
+    public static Apcomplex pochhammer(Apcomplex z, Apcomplex n)
+        throws ArithmeticException, ApfloatRuntimeException
+    {
+        long precision = Math.min(z.precision(), n.precision());
+        if (precision == Apfloat.INFINITE || z.scale() <= 1 || z.real().signum() <= 0)
+        {
+            return ApcomplexMath.pochhammer(z, n);
+        }
+        if (n.isZero())
+        {
+            return new Apfloat(1, precision, z.radix());
+        }
+        // The logarithm of the gamma function has as many digits in front of the decimal point as its argument, and some more
+        long workingPrecision = ApfloatHelperShim.extendPrecision(precision, ApfloatHelperShim.EXTRA_PRECISION + z.scale() + 5);
+        Apcomplex zw = ApfloatHelperShim.ensurePrecision(z, workingPrecision),
+                  sum = zw.add(ApfloatHelperShim.ensurePrecision(n, workingPrecision));
+        if (sum.real().signum() <= 0)
+        {
+            return ApcomplexMath.pochhammer(z, n);
+        }
+        Apcomplex result = ApcomplexMath.exp(ApcomplexMath.logGamma(sum).subtract(ApcomplexMath.logGamma(zw)));
+        return ApfloatHelperShim.limitPrecision(result, precision);
+    }
 }

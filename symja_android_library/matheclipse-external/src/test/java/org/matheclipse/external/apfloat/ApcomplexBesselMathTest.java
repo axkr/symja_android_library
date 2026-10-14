@@ -47,6 +47,38 @@ public class ApcomplexBesselMathTest
     }
 
     @Test
+    public void testLargeArgument()
+    {
+        // the phase takes twice the digits in front of the decimal point
+        assertClose("J(0, 10^100)", new Apfloat("-7.33704873653861571243692861417547889358875997e-51"),
+                    ApcomplexBesselMath.besselJ(q(0, 1), new Apfloat("1e100", PRECISION)), PRECISION - 1);
+        assertClose("Y(1/3, 10^100)", new Apfloat("6.38371677504482546122359215350099660259871349e-51"),
+                    ApcomplexBesselMath.besselY(q(1, 3), new Apfloat("1e100", PRECISION)), PRECISION - 1);
+        assertClose("J(5/2, 10^30)", new Apfloat("7.1902884703081171615311395126562876309600011e-17"),
+                    ApcomplexBesselMath.besselJ(q(5, 2), new Apfloat("1e30", PRECISION)), PRECISION - 1);
+        // Hankel's expansion
+        assertClose("J(0, 10^300)", new Apfloat("-6.51054959171479341636564806480688593600489043e-151"),
+                    ApcomplexBesselMath.besselJ(q(0, 1), new Apfloat("1e300", PRECISION)), PRECISION - 1);
+        assertClose("Y(7, 10^300)", new Apfloat("-6.51054959171479341636564806480688593600489043e-151"),
+                    ApcomplexBesselMath.besselY(q(7, 1), new Apfloat("1e300", PRECISION)), PRECISION - 1);
+        // which has no digit for an argument of the size of the order
+        assertThrows(ArithmeticException.class, () -> ApcomplexAsymptoticMath.besselJY(q(1, 3), q(7, 2)));
+        // at a half-integer order the series ends, and the expansion is the function
+        assertClose("J(5/2, 7/2)", ApcomplexBesselMath.besselJ(q(5, 2), q(7, 2)), ApcomplexAsymptoticMath.besselJY(q(5, 2), q(7, 2))[0], PRECISION - 2);
+        assertThrows(ArithmeticException.class, () -> ApcomplexAsymptoticMath.besselJY(q(10000000000L, 1), new Apfloat("1e16", PRECISION)));
+    }
+
+    @Test
+    public void testLargeOrder()
+    {
+        // the expansion of the library for a large argument cancels about nu^2 / z digits
+        assertClose("I(3001/2, 1200)", new Apfloat("3.45349350008928163081519183936231397071671943e149"),
+                    ApcomplexBesselMath.besselI(q(3001, 2), q(1200, 1)), PRECISION - 1);
+        // too many for the functions of the second kind
+        assertThrows(org.apfloat.LossOfPrecisionException.class, () -> ApcomplexBesselMath.besselK(q(3001, 2), q(1200, 1)));
+    }
+
+    @Test
     public void testBesselK()
     {
         // an integer order with a large argument

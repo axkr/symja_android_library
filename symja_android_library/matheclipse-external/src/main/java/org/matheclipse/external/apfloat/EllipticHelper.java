@@ -203,7 +203,14 @@ class EllipticHelper
         {
             throw new ApfloatArithmeticException("Elliptic Pi is infinite", "ellipticPi.infinite");
         }
-        if (n.imag().signum() == 0 && n.real().compareTo(new Apint(-1, radix)) < 0)
+        // A real characteristic whose pole 1 / sin^2 = n is on the path of integration. The change of parameter has
+        // the pole in the logarithm RC alone. For a real parameter that is its principal value. For a complex one it
+        // is one of the two integrals which pass the pole on a side - conjugate parameters have conjugate values
+        boolean pole = n.imag().signum() == 0 && reduction.sin2.imag().signum() == 0 && p.imag().signum() == 0 && p.real().signum() < 0
+                       && !(Δ2.imag().signum() == 0 && Δ2.real().signum() < 0)
+                       && !ensure(reduction.one.subtract(m.divide(n).multiply(reduction.sin2)), workingPrecision).isZero();
+        // With ω = m / n next to 1 the integral Π(ω; φ|m) of the change of parameter is itself next to its pole: infinite for the complete integral
+        if (pole || n.imag().signum() == 0 && n.real().compareTo(new Apint(-1, radix)) < 0 && !nearOne(m.divide(n)))
         {
             // For a large negative characteristic the terms sin RF and n/3 sin^3 RJ cancel,
             // down to the order of 1 / sqrt(-n). The change of parameter ω = m / n,
@@ -211,7 +218,18 @@ class EllipticHelper
             // leaves Π(ω; φ|m) - F(φ|m) = ω/3 sin^3 RJ, which is small and is computed without cancellation
             Apcomplex ω = m.divide(n),
                       q = ensure(reduction.one.subtract(ω.multiply(reduction.sin2)), workingPrecision),
-                      result = reduction.sin.multiply(CarlsonHelper.rc(reduction.cos2.multiply(Δ2), p.multiply(q), workingPrecision));
+                      // the complete integral with the pole is the principal value for every parameter: no logarithm
+                      result = (pole && reduction.cos2.isZero() ? ApfloatHelperShim.ZEROS[radix] : reduction.sin.multiply(CarlsonHelper.rc(reduction.cos2.multiply(Δ2), p.multiply(q), workingPrecision)));
+            if (pole && !reduction.cos2.isZero() && m.imag().signum() != 0 && Δ2.real().compareTo(reduction.one) > 0)
+            {
+                // The side of the pole is the one which the transformation of RJ(cos^2, Δ^2, 1, p) to a positive
+                // fourth argument takes, when it singles out the argument with the largest real part. That is
+                // the principal branch of RC above, unless Δ^2 is larger than 1: then it is the other side, which
+                // differs by 2 pi i times the residue, pi i / sqrt((n - 1) (1 - ω))
+                Apcomplex root = ApcomplexMath.sqrt(ensure(n.subtract(reduction.one).multiply(reduction.one.subtract(ω)), workingPrecision)),
+                          jump = new Apcomplex(Apfloat.ZERO, ApfloatMath.pi(workingPrecision, radix)).divide(root);
+                result = (m.imag().signum() * reduction.sin.real().signum() > 0 ? result.add(jump) : result.subtract(jump));
+            }
             if (!ω.isZero())
             {
                 result = result.subtract(ω.multiply(sin3).multiply(CarlsonHelper.rj(reduction.cos2, Δ2, reduction.one, q, workingPrecision)).divide(reduction.three));
@@ -221,6 +239,11 @@ class EllipticHelper
         // sin RF + n/3 sin^3 RJ
         return reduction.sin.multiply(CarlsonHelper.rf(reduction.cos2, Δ2, reduction.one, workingPrecision))
                             .add(n.multiply(sin3).multiply(CarlsonHelper.rj(reduction.cos2, Δ2, reduction.one, p, workingPrecision)).divide(reduction.three));
+    }
+
+    private static boolean nearOne(Apcomplex ω)
+    {
+        return Math.hypot(ω.real().doubleValue() - 1.0, ω.imag().doubleValue()) < 0.5;
     }
 
     // The complete integral of the first kind, also for an exact zero or a real argument

@@ -179,7 +179,7 @@ public class ApcomplexHypergeometricMath
             {
                 if (size < 1.0 / SERIES_RADIUS)
                 {
-                    throw new ArithmeticException("Hypergeometric series next to the unit circle");
+                    return unitCircle(a, b, z, precision);
                 }
                 return inverseArgument(a, b, z, precision);
             }
@@ -209,6 +209,87 @@ public class ApcomplexHypergeometricMath
                 throw new ArithmeticException("Hypergeometric series loses " + loss[0] + " digits");
             }
         }
+    }
+
+    // Next to the unit circle the series converges slowly, or diverges: its Levin u transform converges there, and it gives
+    // the continuation of the function beyond the circle. At 1 the series has a sum for a positive real part of sum(b) - sum(a)
+    private static Apcomplex unitCircle(Apcomplex[] a, Apcomplex[] b, Apcomplex z, long precision)
+    {
+        int radix = z.radix();
+        if (z.imag().signum() == 0 && z.real().equals(new Apfloat(1, z.precision(), radix)))
+        {
+            Apfloat excess = Apfloat.ZERO;
+            for (Apcomplex x : b)
+            {
+                excess = excess.add(x.real());
+            }
+            for (Apcomplex x : a)
+            {
+                excess = excess.subtract(x.real());
+            }
+            if (excess.signum() <= 0)
+            {
+                throw new ArithmeticException("Hypergeometric function is infinite");
+            }
+        }
+        Apcomplex previous = null;
+        for (int terms = (int) (1.2 * precision) + 20; terms <= 12 * precision + 200; terms = terms * 3 / 2)
+        {
+            // the differences of the transform cancel about two digits with every term
+            Apcomplex result = levin(a, b, z, terms, precision + 2L * terms + ApfloatHelperShim.EXTRA_PRECISION);
+            if (previous != null && GuardDigitsHelper.agree(previous, result, precision))
+            {
+                return ApfloatHelperShim.limitPrecision(result, precision);
+            }
+            previous = result;
+        }
+        throw new ArithmeticException("Hypergeometric series next to the unit circle");
+    }
+
+    // The Levin u transform of the first n+1 partial sums S(j) with the terms t(j): the quotient of the n-th differences of
+    // (j+1)^(n-2) S(j) / t(j) and of (j+1)^(n-2) / t(j)
+    private static Apcomplex levin(Apcomplex[] a, Apcomplex[] b, Apcomplex z, int n, long workingPrecision)
+    {
+        int radix = z.radix();
+        FixedPrecisionApfloatHelper h = new FixedPrecisionApfloatHelper(workingPrecision);
+        Apfloat one = new Apfloat(1, workingPrecision, radix);
+        Apcomplex term = one,
+                  sum = Apcomplex.ZERO,
+                  zw = ApfloatHelperShim.ensurePrecision(z, workingPrecision);
+        Apcomplex[] numerator = new Apcomplex[n + 1],
+                    denominator = new Apcomplex[n + 1];
+        for (int j = 0; j <= n; j++)
+        {
+            sum = h.add(sum, term);
+            Apfloat index = new Apfloat(j, workingPrecision, radix),
+                    next = new Apfloat(j + 1, workingPrecision, radix);
+            Apcomplex weight = h.divide(h.pow(next, n - 2), term);
+            numerator[j] = h.multiply(sum, weight);
+            denominator[j] = weight;
+            Apcomplex ratio = zw;
+            for (Apcomplex x : a)
+            {
+                ratio = h.multiply(ratio, h.add(ApfloatHelperShim.ensurePrecision(x, workingPrecision), index));
+            }
+            for (Apcomplex x : b)
+            {
+                ratio = h.divide(ratio, h.add(ApfloatHelperShim.ensurePrecision(x, workingPrecision), index));
+            }
+            term = h.divide(h.multiply(term, ratio), next);
+            if (term.isZero())
+            {
+                throw new ArithmeticException("Hypergeometric series next to the unit circle");
+            }
+        }
+        for (int k = 1; k <= n; k++)
+        {
+            for (int j = 0; j <= n - k; j++)
+            {
+                numerator[j] = h.subtract(numerator[j + 1], numerator[j]);
+                denominator[j] = h.subtract(denominator[j + 1], denominator[j]);
+            }
+        }
+        return h.divide(numerator[0], denominator[0]);
     }
 
     private static boolean isNonPositiveInteger(Apcomplex x)

@@ -43,6 +43,22 @@ public class ApfloatEllipticMathTest
     }
 
     @Test
+    public void testEllipticKOfAHugeParameter()
+    {
+        // calculated with mpmath: the library has the real part -3 pi / 2 10^-150
+        Apcomplex expected = new Apcomplex(new Apfloat("1.5707963267948966192313216916397514420985847e-150"),
+                                           new Apfloat("-3.46774058310226743221533182445570984276316224e-148"));
+        assertClose("K(10^300)", expected, ApcomplexEllipticMath.ellipticK(number("1e300")));
+        // above the branch cut
+        assertClose("K(10^300 + i)", expected.conj(), ApcomplexEllipticMath.ellipticK(new Apcomplex(number("1e300"), number("1"))));
+        // where the library is right
+        assertClose("K(10^50)", ApcomplexMath.ellipticK(number("1e50")), ApcomplexEllipticMath.ellipticK(number("1e50")));
+        assertClose("K(-10^60 + 10^59 i)", ApcomplexMath.ellipticK(new Apcomplex(number("-1e60"), number("1e59"))),
+                    ApcomplexEllipticMath.ellipticK(new Apcomplex(number("-1e60"), number("1e59"))));
+        assertClose("K(1/3)", ApcomplexMath.ellipticK(number("1").divide(number("3"))), ApcomplexEllipticMath.ellipticK(number("1").divide(number("3"))));
+    }
+
+    @Test
     public void testCarlsonEqualArguments()
     {
         Apfloat x = number("2.75"),
@@ -206,5 +222,82 @@ public class ApfloatEllipticMathTest
         assertClose("F'", derivative, difference, 20);
         // conjugate symmetry
         assertClose("conj", ApcomplexEllipticMath.ellipticE(φ, m).conj(), ApcomplexEllipticMath.ellipticE(φ.conj(), m.conj()));
+    }
+
+    @Test
+    public void testEllipticPiOfEqualParameters()
+    {
+        // the change of parameter for a negative characteristic has a pole at m = n
+        assertClose("Pi(-2; 4|-2)", number("2.02027300343685046388543278550236568868490993"),
+                    ApcomplexEllipticMath.ellipticPi(number("-2"), number("4"), number("-2")));
+        assertClose("Pi(-1000; 1|-900)", number("0.0322076064355402371136671991373581688235802624"),
+                    ApcomplexEllipticMath.ellipticPi(number("-1000"), number("1"), number("-900")));
+    }
+
+    @Test
+    public void testCarlsonWithVanishingMean()
+    {
+        // the mean of the arguments, with which the duplication starts, is zero
+        assertClose("RF(-2, 1, 1)", new Apcomplex(number("0.906899682117108925297039128821077866142033124"), number("-0.661768020759984578967052612674340579492407128")),
+                    ApcomplexEllipticMath.carlsonRF(number("-2"), number("1"), number("1")));
+        assertClose("RF(-1, 0, 1)", new Apcomplex(number("1.31102877714605990523241979494555970684137748"), number("-1.31102877714605990523241979494555970684137748")),
+                    ApcomplexEllipticMath.carlsonRF(number("-1"), Apfloat.ZERO, number("1")));
+        // x + y + z + 2 p = 0: the integral of Pi(3|-2), a principal value
+        assertClose("RJ(0, 3, 1, -2)", number("-0.939368854404368605502028952651954418194245218"),
+                    ApcomplexEllipticMath.carlsonRJ(Apfloat.ZERO, number("3"), number("1"), number("-2")));
+    }
+
+    @Test
+    public void testCarlsonRJOnAnotherSheet()
+    {
+        // Arguments for which the duplication alone gives the integral over another path. With a negative p the
+        // integral is a principal value: the mean of the integrals which pass the pole above and below
+        assertClose("RJ(0.005, -0.99 - 0.995i, 1, -1.985)", new Apcomplex(number("-0.869384828740849312629683594619002822"), number("-1.70921944564865982461167781278545149")),
+                    ApcomplexEllipticMath.carlsonRJ(number("0.005"), new Apcomplex(number("-0.99"), number("-0.995")), number("1"), number("-1.985")), 28);
+        assertClose("RJ(0.005, -0.99 + 0.995i, 1, -1.985)", new Apcomplex(number("-0.869384828740849312629683594619002822"), number("1.70921944564865982461167781278545149")),
+                    ApcomplexEllipticMath.carlsonRJ(number("0.005"), new Apcomplex(number("-0.99"), number("0.995")), number("1"), number("-1.985")), 28);
+        assertClose("RJ(-1 + i, 2, 3 - i, -2)", new Apcomplex(number("-0.156478627227726450375451145091530418"), number("0.435645445937758305221789403955233761")),
+                    ApcomplexEllipticMath.carlsonRJ(new Apcomplex(number("-1"), number("1")), number("2"), new Apcomplex(number("3"), number("-1")), number("-2")), 28);
+        assertClose("RJ(0, -1.5 + i, 1, 2)", new Apcomplex(number("0.710659633501863614465957127288"), number("-1.09386443196423374126578599458")),
+                    ApcomplexEllipticMath.carlsonRJ(Apfloat.ZERO, new Apcomplex(number("-1.5"), number("1")), number("1"), number("2")), 28);
+    }
+
+    @Test
+    public void testEllipticPiWithThePoleOnThePath()
+    {
+        // a real characteristic beyond 1 / sin^2 and a complex parameter: conjugate parameters have conjugate values
+        assertClose("Pi(3; 1.5|2 + i)", new Apcomplex(number("1.01637245493419995386572782499680884"), number("-2.33667275118775614297180707886001823")),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), number("1.5"), new Apcomplex(number("2"), number("1"))), 28);
+        assertClose("Pi(3; 1.5|2 - i)", new Apcomplex(number("1.01637245493419995386572782499680884"), number("2.33667275118775614297180707886001823")),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), number("1.5"), new Apcomplex(number("2"), number("-1"))), 28);
+        // beyond pi / 2: the complete integral, a principal value, is added
+        assertClose("Pi(3; 4.5|2 + i)", new Apcomplex(number("1.81233689533327853203354314822943617"), number("-4.01835849395230749868977709397643147")),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), number("4.5"), new Apcomplex(number("2"), number("1"))), 28);
+        assertClose("Pi(3; 1.57|0.25 + 0.3i)", new Apcomplex(number("0.00950947754134728377094067233636630866"), number("-1.25984603850308180147034554225892843")),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), number("1.57"), new Apcomplex(number("0.25"), number("0.3"))), 28);
+        // a parameter with a negative real part: the other side of the pole
+        assertClose("Pi(3; 1.2|-1 + 0.5i)", new Apcomplex(number("0.251132126969989078148088282351404"), number("0.925259573290436819534397299473527")),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), number("1.2"), new Apcomplex(number("-1"), number("0.5"))), 28);
+        assertClose("Pi(3; 1.2|-1 - 0.5i)", new Apcomplex(number("0.251132126969989078148088282351404"), number("-0.925259573290436819534397299473527")),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), number("1.2"), new Apcomplex(number("-1"), number("-0.5"))), 28);
+        assertClose("Pi(3; 4.2|-1 + 0.5i)", new Apcomplex(number("0.664530041577176209908942994834242"), number("0.837447663140029302877706961084052")),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), number("4.2"), new Apcomplex(number("-1"), number("0.5"))), 28);
+        assertClose("Pi(3; 1.2|0.1 + 0.5i)", new Apcomplex(number("0.303453471486855264109971200218863"), number("-1.20358250920955767431030964074493")),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), number("1.2"), new Apcomplex(number("0.1"), number("0.5"))), 28);
+        // a real parameter: the principal value
+        assertClose("Pi(3; 1|1/3)", number("0.301857154549530900091542856737083434"),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), number("1"), number("1").divide(number("3"))), 28);
+        assertClose("Pi(3|0.25 + 0.3i)", new Apcomplex(number("-0.0537379661118897838017591073549902458"), number("-0.10495270365530835361816826543934956")),
+                    ApcomplexEllipticMath.ellipticPi(number("3"), new Apcomplex(number("0.25"), number("0.3"))), 28);
+    }
+
+    @Test
+    public void testCarlsonRGOfComplexArguments()
+    {
+        // the roots of the three arguments apart: the root of x y / z is another branch here
+        assertClose("RG(-1, 3i, 40)", new Apcomplex(number("3.16399601857860712141358091197772909510048101"), number("0.304621338233297772179140046275408667749066056")),
+                    ApcomplexEllipticMath.carlsonRG(number("-1"), new Apcomplex(Apfloat.ZERO, number("3")), number("40")));
+        assertClose("RG(-i, 1/2, -5/2)", new Apcomplex(number("-0.0104552077172780222150434518594841162367611177"), number("0.336119806491841304807102601881517659483074134")),
+                    ApcomplexEllipticMath.carlsonRG(new Apcomplex(Apfloat.ZERO, number("-1")), number("0.5"), number("-2.5")));
     }
 }

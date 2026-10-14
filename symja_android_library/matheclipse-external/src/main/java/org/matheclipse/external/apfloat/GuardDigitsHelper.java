@@ -75,6 +75,6 @@ class GuardDigitsHelper
             }
             previous = result;
         }
-        throw new LossOfPrecisionException("Complete loss of accurate digits");
+        throw new LossOfPrecisionException("Complete loss of accurate digits", "lossOfPrecision");
     }
 }

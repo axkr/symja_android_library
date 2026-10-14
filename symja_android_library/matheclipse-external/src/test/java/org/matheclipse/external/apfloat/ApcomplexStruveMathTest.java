@@ -55,6 +55,25 @@ public class ApcomplexStruveMathTest
     }
 
     @Test
+    public void testStruveHExpansionForAnyOrder()
+    {
+        // an integer order
+        assertClose("H(2, 100)", new Apfloat("21.3038640526744657134126690286733688269635385"),
+                    ApcomplexAsymptoticMath.struveH(q(2, 1), q(100, 1)), 37);
+        // beyond the argument, for which the series is summed
+        assertClose("H(0, 10^5)", new Apfloat("0.00185313235658810329799970175130098472700471597"),
+                    ApcomplexStruveMath.struveH(q(0, 1), q(100000, 1)), 37);
+        // the Bessel function is below the last digit of the sum
+        assertClose("H(50, 10^10)", new Apfloat("2.33588320404346664194489282812294913524860165e411"),
+                    ApcomplexStruveMath.struveH(q(50, 1), q(10000000000L, 1)), 37);
+        // every term of the sum vanishes at a pole of the gamma function
+        assertClose("H(-7/2, 10^8)", new Apfloat("0.0000289939397023298463585730015568301602338971784"),
+                    ApcomplexStruveMath.struveH(q(-7, 2), q(100000000, 1)), 37);
+        assertClose("L(-7/2, 200)", new Apfloat("1.97801786008757151884137060034412435194982379e85"),
+                    ApcomplexStruveMath.struveL(q(-7, 2), q(200, 1)), 37);
+    }
+
+    @Test
     public void testStruveL()
     {
         assertClose("L(3/10, 40)", new Apfloat("14877812549676171.9093606133939844387685336574"),
@@ -73,8 +92,6 @@ public class ApcomplexStruveMathTest
     {
         // an order above the argument
         assertThrows(ArithmeticException.class, () -> ApcomplexAsymptoticMath.struveH(q(401, 2), q(100, 1)));
-        // an integer order
-        assertThrows(ArithmeticException.class, () -> ApcomplexAsymptoticMath.struveH(q(2, 1), q(100, 1)));
         // too close to the imaginary axis
         assertThrows(ArithmeticException.class, () -> ApcomplexAsymptoticMath.struveL(q(3, 10), new Apcomplex(q(1, 2), q(50, 1))));
     }
