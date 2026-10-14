@@ -4816,6 +4816,24 @@ public class S {
   public final static IBuiltInSymbol Coth = S.initFinalSymbol("Coth", ID.Coth);
 
   /**
+   * CoulombF(x) - TODO describe `CoulombF`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CoulombF.md">CoulombF
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CoulombF = S.initFinalSymbol("CoulombF", ID.CoulombF);
+
+  /**
+   * CoulombG(x) - TODO describe `CoulombG`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CoulombG.md">CoulombG
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CoulombG = S.initFinalSymbol("CoulombG", ID.CoulombG);
+
+  /**
    * Count(list, pattern) - returns the number of times `pattern` appears in `list`.
    * 
    * @see <a href=
@@ -5509,6 +5527,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Decrement = S.initFinalSymbol("Decrement", ID.Decrement);
+
+  /**
+   * DedekindEta(x) - TODO describe `DedekindEta`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DedekindEta.md">DedekindEta
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DedekindEta = S.initFinalSymbol("DedekindEta", ID.DedekindEta);
 
   /**
    * DedekindNumber(n) - returns the `n`th Dedekind number. Currently `0 <= n <= 9` can be computed,
@@ -7172,6 +7199,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol EllipticLog = S.initFinalSymbol("EllipticLog", ID.EllipticLog);
+
+  /**
+   * EllipticNomeQ(x) - TODO describe `EllipticNomeQ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EllipticNomeQ.md">EllipticNomeQ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EllipticNomeQ =
+      S.initFinalSymbol("EllipticNomeQ", ID.EllipticNomeQ);
 
   /**
    * EllipticPi(n,m) - returns the complete elliptic integral of the third kind.
@@ -12203,17 +12240,47 @@ public class S {
   public final static IBuiltInSymbol InverseJacobiCN =
       S.initFinalSymbol("InverseJacobiCN", ID.InverseJacobiCN);
 
+  /**
+   * InverseJacobiCS(x) - TODO describe `InverseJacobiCS`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseJacobiCS.md">InverseJacobiCS
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol InverseJacobiCS =
+      S.initFinalSymbol("InverseJacobiCS", ID.InverseJacobiCS);
+
   public final static IBuiltInSymbol InverseJacobiDC =
       S.initFinalSymbol("InverseJacobiDC", ID.InverseJacobiDC);
 
   public final static IBuiltInSymbol InverseJacobiDN =
       S.initFinalSymbol("InverseJacobiDN", ID.InverseJacobiDN);
 
+  /**
+   * InverseJacobiDS(x) - TODO describe `InverseJacobiDS`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseJacobiDS.md">InverseJacobiDS
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol InverseJacobiDS =
+      S.initFinalSymbol("InverseJacobiDS", ID.InverseJacobiDS);
+
   public final static IBuiltInSymbol InverseJacobiNC =
       S.initFinalSymbol("InverseJacobiNC", ID.InverseJacobiNC);
 
   public final static IBuiltInSymbol InverseJacobiND =
       S.initFinalSymbol("InverseJacobiND", ID.InverseJacobiND);
+
+  /**
+   * InverseJacobiNS(x) - TODO describe `InverseJacobiNS`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/InverseJacobiNS.md">InverseJacobiNS
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol InverseJacobiNS =
+      S.initFinalSymbol("InverseJacobiNS", ID.InverseJacobiNS);
 
   public final static IBuiltInSymbol InverseJacobiSC =
       S.initFinalSymbol("InverseJacobiSC", ID.InverseJacobiSC);
@@ -12276,6 +12343,15 @@ public class S {
    */
   public final static IBuiltInSymbol InverseZTransform =
       S.initFinalSymbol("InverseZTransform", ID.InverseZTransform);
+
+  /**
+   * Invisible(x) - TODO describe `Invisible`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Invisible.md">Invisible
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Invisible = S.initFinalSymbol("Invisible", ID.Invisible);
 
   /**
    * InvisiblePostfixScriptBase(x) - TODO describe `InvisiblePostfixScriptBase`.
@@ -12426,6 +12502,15 @@ public class S {
    */
   public final static IBuiltInSymbol JacobiCN = S.initFinalSymbol("JacobiCN", ID.JacobiCN);
 
+  /**
+   * JacobiCS(x) - TODO describe `JacobiCS`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiCS.md">JacobiCS
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol JacobiCS = S.initFinalSymbol("JacobiCS", ID.JacobiCS);
+
   public final static IBuiltInSymbol JacobiDC = S.initFinalSymbol("JacobiDC", ID.JacobiDC);
 
   /**
@@ -12436,6 +12521,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol JacobiDN = S.initFinalSymbol("JacobiDN", ID.JacobiDN);
+
+  /**
+   * JacobiDS(x) - TODO describe `JacobiDS`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiDS.md">JacobiDS
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol JacobiDS = S.initFinalSymbol("JacobiDS", ID.JacobiDS);
 
   public final static IBuiltInSymbol JacobiEpsilon =
       S.initFinalSymbol("JacobiEpsilon", ID.JacobiEpsilon);
@@ -12453,6 +12547,15 @@ public class S {
   public final static IBuiltInSymbol JacobiNC = S.initFinalSymbol("JacobiNC", ID.JacobiNC);
 
   public final static IBuiltInSymbol JacobiND = S.initFinalSymbol("JacobiND", ID.JacobiND);
+
+  /**
+   * JacobiNS(x) - TODO describe `JacobiNS`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JacobiNS.md">JacobiNS
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol JacobiNS = S.initFinalSymbol("JacobiNS", ID.JacobiNS);
 
   /**
    * JacobiP(n, a, b, z) - returns the Jacobi polynomial.
@@ -15560,6 +15663,16 @@ public class S {
       S.initFinalSymbol("ModularInverse", ID.ModularInverse);
 
   /**
+   * ModularLambda(x) - TODO describe `ModularLambda`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ModularLambda.md">ModularLambda
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ModularLambda =
+      S.initFinalSymbol("ModularLambda", ID.ModularLambda);
+
+  /**
    * Module({list_of_local_variables}, expr ) - evaluates `expr` for the `list_of_local_variables`
    * by renaming local variables.
    * 
@@ -17847,6 +17960,16 @@ public class S {
    */
   public final static IBuiltInSymbol PaneSelector =
       S.initFinalSymbol("PaneSelector", ID.PaneSelector);
+
+  /**
+   * ParabolicCylinderD(x) - TODO describe `ParabolicCylinderD`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ParabolicCylinderD.md">ParabolicCylinderD
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ParabolicCylinderD =
+      S.initFinalSymbol("ParabolicCylinderD", ID.ParabolicCylinderD);
 
   public final static IBuiltInSymbol Parallelepiped =
       S.initFinalSymbol("Parallelepiped", ID.Parallelepiped);
@@ -20614,6 +20737,16 @@ public class S {
       S.initFinalSymbol("RiemannSiegelTheta", ID.RiemannSiegelTheta);
 
   /**
+   * RiemannSiegelZ(x) - TODO describe `RiemannSiegelZ`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RiemannSiegelZ.md">RiemannSiegelZ
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RiemannSiegelZ =
+      S.initFinalSymbol("RiemannSiegelZ", ID.RiemannSiegelZ);
+
+  /**
    * Riffle(list1, list2) - insert elements of `list2` between the elements of `list1`.
    * 
    * @see <a href=
@@ -21094,6 +21227,24 @@ public class S {
    */
   public final static IBuiltInSymbol ScientificNotationThreshold =
       S.initFinalSymbol("ScientificNotationThreshold", ID.ScientificNotationThreshold);
+
+  /**
+   * ScorerGi(x) - TODO describe `ScorerGi`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ScorerGi.md">ScorerGi
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ScorerGi = S.initFinalSymbol("ScorerGi", ID.ScorerGi);
+
+  /**
+   * ScorerHi(x) - TODO describe `ScorerHi`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ScorerHi.md">ScorerHi
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ScorerHi = S.initFinalSymbol("ScorerHi", ID.ScorerHi);
 
   /**
    * Sec(z) - returns the secant of `z`.
@@ -25762,6 +25913,26 @@ public class S {
 
   public final static IBuiltInSymbol WeierstrassPPrime =
       S.initFinalSymbol("WeierstrassPPrime", ID.WeierstrassPPrime);
+
+  /**
+   * WeierstrassSigma(x) - TODO describe `WeierstrassSigma`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeierstrassSigma.md">WeierstrassSigma
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WeierstrassSigma =
+      S.initFinalSymbol("WeierstrassSigma", ID.WeierstrassSigma);
+
+  /**
+   * WeierstrassZeta(x) - TODO describe `WeierstrassZeta`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WeierstrassZeta.md">WeierstrassZeta
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WeierstrassZeta =
+      S.initFinalSymbol("WeierstrassZeta", ID.WeierstrassZeta);
 
   /**
    * WeightedAdjacencyMatrix(graph) - convert the `graph` into a weighted adjacency matrix in sparse

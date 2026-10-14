@@ -6337,6 +6337,10 @@ public class F extends S {
     return new AST2(InverseJacobiCN, a0, a1);
   }
 
+  public static IAST InverseJacobiCS(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiCS, a0, a1);
+  }
+
   public static IAST InverseJacobiDC(final IExpr a0, final IExpr a1) {
     return new AST2(InverseJacobiDC, a0, a1);
   }
@@ -6347,12 +6351,20 @@ public class F extends S {
   }
 
 
+  public static IAST InverseJacobiDS(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiDS, a0, a1);
+  }
+
   public static IAST InverseJacobiNC(final IExpr a0, final IExpr a1) {
     return new AST2(InverseJacobiNC, a0, a1);
   }
 
   public static IAST InverseJacobiND(final IExpr a0, final IExpr a1) {
     return new AST2(InverseJacobiND, a0, a1);
+  }
+
+  public static IAST InverseJacobiNS(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiNS, a0, a1);
   }
 
   public static IAST InverseJacobiSC(final IExpr a0, final IExpr a1) {
@@ -6867,12 +6879,20 @@ public class F extends S {
     return new AST2(JacobiCN, a0, a1);
   }
 
+  public static IAST JacobiCS(final IExpr a0, final IExpr a1) {
+    return new AST2(JacobiCS, a0, a1);
+  }
+
   public static IAST JacobiDC(final IExpr a0, final IExpr a1) {
     return new AST2(JacobiDC, a0, a1);
   }
 
   public static IAST JacobiDN(final IExpr a0, final IExpr a1) {
     return new AST2(JacobiDN, a0, a1);
+  }
+
+  public static IAST JacobiDS(final IExpr a0, final IExpr a1) {
+    return new AST2(JacobiDS, a0, a1);
   }
 
   public static IAST JacobiEpsilon(final IExpr a0, final IExpr a1) {
@@ -6885,6 +6905,10 @@ public class F extends S {
 
   public static IAST JacobiND(final IExpr a0, final IExpr a1) {
     return new AST2(JacobiND, a0, a1);
+  }
+
+  public static IAST JacobiNS(final IExpr a0, final IExpr a1) {
+    return new AST2(JacobiNS, a0, a1);
   }
 
   public static IAST JacobiP(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
