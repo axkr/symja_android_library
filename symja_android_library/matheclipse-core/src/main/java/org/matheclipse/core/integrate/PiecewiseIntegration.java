@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Definite integrals of piecewise defined integrands: <code>Piecewise, UnitStep, HeavisideTheta,
@@ -78,7 +79,10 @@ public final class PiecewiseIntegration {
     try {
       final double low = limitValue(lower);
       final double up = limitValue(upper);
-      if (Double.isNaN(low) || Double.isNaN(up) || low == up) {
+      if (Double.isNaN(low) || Double.isNaN(up)) {
+        return withNumericLimits(f, x, lower, upper, engine);
+      }
+      if (low == up) {
         return F.NIL;
       }
       if (low > up) {
@@ -102,6 +106,52 @@ public final class PiecewiseIntegration {
       Errors.rethrowsInterruptException(rex);
     }
     return F.NIL;
+  }
+
+  /**
+   * Symbolic limits are mapped onto numeric ones by a linear change of the variable:
+   * <code>x = lower + (upper-lower)*t</code> with <code>0 &lt;= t &lt;= 1</code>, or
+   * <code>x = lower + t</code> resp. <code>x = upper - t</code> with <code>t &gt;= 0</code> for an
+   * infinite limit. A break point <code>a</code> of <code>Integrate(f, {x, 0, 2*a})</code> becomes
+   * the number <code>1/2</code>. The length of the interval has to be positive under the
+   * assumptions.
+   *
+   * @return {@link F#NIL} if the order of the limits can't be decided
+   */
+  private static IExpr withNumericLimits(IExpr f, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (lower.isDirectedInfinity() && upper.isDirectedInfinity()) {
+      return F.NIL;
+    }
+    ISymbol t = F.Dummy("t");
+    IExpr transformed;
+    IExpr newUpper;
+    if (upper.isInfinity()) {
+      transformed = F.subst(f, x, F.Plus(lower, t));
+      newUpper = F.CInfinity;
+    } else if (lower.isNegativeInfinity()) {
+      transformed = F.subst(f, x, F.Subtract(upper, t));
+      newUpper = F.CInfinity;
+    } else if (lower.isDirectedInfinity() || upper.isDirectedInfinity()) {
+      return F.NIL;
+    } else {
+      IExpr length = engine.evaluate(F.Subtract(upper, lower));
+      if (length.isNegativeResult()) {
+        IExpr reversed = withNumericLimits(f, x, upper, lower, engine);
+        return reversed.isPresent() ? engine.evaluate(F.Negate(reversed)) : F.NIL;
+      }
+      if (!length.isPositiveResult()) {
+        return F.NIL;
+      }
+      transformed = F.Times(length, F.subst(f, x, F.Plus(lower, F.Times(length, t))));
+      newUpper = F.C1;
+    }
+    transformed = engine.evaluate(transformed);
+    if (!isPiecewiseIn(transformed, t)) {
+      return F.NIL;
+    }
+    IExpr result = integrate(transformed, t, F.C0, newUpper, engine);
+    return result.isPresent() && result.isFree(t, true) ? result : F.NIL;
   }
 
   /**
@@ -587,6 +637,23 @@ public final class PiecewiseIntegration {
       return true;
     }
     if (hasVariables(F.subst(u, x, F.C0))) {
+      if (u.isPolynomial(F.list(x)) && engine.evaluate(F.Exponent(u, x)).isOne()) {
+        // c1*x + c0 with symbolic coefficients can still have a numeric zero
+        IExpr c1 = engine.evaluate(F.Coefficient(u, x, F.C1));
+        IExpr c0 = engine.evaluate(F.Coefficient(u, x, F.C0));
+        IExpr zero = engine.evaluate(F.Together(F.Divide(F.Negate(c0), c1)));
+        if (zero.isNumericFunction(true) && zero.isRealResult()
+            && !engine.evaluate(F.PossibleZeroQ(c1)).isTrue()) {
+          double value = zero.evalf();
+          if (low < value && value < up && !containsPoint(points, value)) {
+            if (points.size() >= MAX_BREAK_POINTS) {
+              return false;
+            }
+            points.put(value, zero);
+          }
+          return true;
+        }
+      }
       return addSymbolicZero(u, x, symbolic, engine);
     }
     IAST constraints = F.list(F.Equal(u, F.C0));
@@ -761,14 +828,29 @@ public final class PiecewiseIntegration {
       }
       IExpr extremum = F.NIL;
       double extremumValue = 0.0;
+      boolean symbolicValues = false;
       for (IExpr arg : args) {
         double value = numericValue(arg, rules, engine);
         if (Double.isNaN(value)) {
-          return F.NIL;
+          symbolicValues = true;
+          break;
         }
         if (extremum.isNIL() || (head == S.Max ? value > extremumValue : value < extremumValue)) {
           extremum = arg;
           extremumValue = value;
+        }
+      }
+      if (symbolicValues) {
+        // values with a parameter: compare them by the sign of their differences
+        extremum = args.arg1();
+        for (int i = 2; i < args.size(); i++) {
+          int sign = sign(F.Subtract(args.get(i), extremum), rules, engine);
+          if (sign == 0) {
+            return F.NIL;
+          }
+          if (head == S.Max ? sign > 0 : sign < 0) {
+            extremum = args.get(i);
+          }
         }
       }
       return extremum;
@@ -787,7 +869,18 @@ public final class PiecewiseIntegration {
    */
   private static int sign(IExpr u, IAST rules, EvalEngine engine) {
     double value = numericValue(u, rules, engine);
-    if (Double.isNaN(value) || Math.abs(value) < EPSILON) {
+    if (Double.isNaN(value)) {
+      // a value with a parameter in it takes its sign from the assumptions
+      IExpr symbolicValue = engine.evaluate(substitute(u, rules));
+      if (symbolicValue.isPositiveResult()) {
+        return 1;
+      }
+      if (symbolicValue.isNegativeResult()) {
+        return -1;
+      }
+      return 0;
+    }
+    if (Math.abs(value) < EPSILON) {
       return 0;
     }
     return value > 0.0 ? 1 : -1;

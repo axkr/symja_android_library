@@ -2336,9 +2336,10 @@ public class PolynomialFunctions {
           IExpr l = ast.arg2();
           IExpr z = ast.arg3();
           if (l.isNumber() && z.isNumber()) {
-            return laguerreLRecurrence(degree, (INumber) l, (INumber) z);
+            return inexactIfAny(ast, laguerreLRecurrence(degree, (INumber) l, (INumber) z),
+                engine);
           }
-          return laguerreLRecursive(n, degree, l, z, engine);
+          return generalizedLaguerreL(degree, l, z, engine);
         }
         if (degree == 0) {
           return F.C1;
@@ -2347,7 +2348,7 @@ public class PolynomialFunctions {
           IExpr z = ast.arg2();
           if (z.isNumber()) {
             // the expanded polynomial cancels for an inexact argument
-            return laguerreLRecurrence(degree, F.C0, (INumber) z);
+            return inexactIfAny(ast, laguerreLRecurrence(degree, F.C0, (INumber) z), engine);
           }
           return laguerreL(degree, z);
         }
@@ -2393,6 +2394,48 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
+    /** An inexact argument makes the value inexact, also where the arithmetic came out exact. */
+    private static IExpr inexactIfAny(IAST ast, IExpr value, EvalEngine engine) {
+      if (ast.exists(x -> x.isInexactNumber())) {
+        // 3 - 3.0 is an exact 0 in a product, which can leave the whole value exact
+        IExpr evaluated = engine.evaluate(value);
+        if (evaluated.isExactNumber()) {
+          return engine.evalN(evaluated);
+        }
+        return evaluated;
+      }
+      return value;
+    }
+
+    /**
+     * <code>LaguerreL(n, l, z)</code> for an integer <code>n &gt;= 0</code> as
+     * <code>1/n!</code> times the expanded polynomial
+     * <code>Sum((-1)^k*n!/(k!*(n-k)!)*(l+k+1)*...*(l+n)*z^k, {k,0,n})</code>, which has integer
+     * coefficients.
+     */
+    private static IExpr generalizedLaguerreL(int n, IExpr l, IExpr z, EvalEngine engine) {
+      if (n >= 1 && (z.isInfinity() || z.isNegativeInfinity())) {
+        // the leading term (-z)^n/n! decides
+        return z.isNegativeInfinity() || (n & 1) == 0 ? F.CInfinity : F.CNInfinity;
+      }
+      IASTAppendable sum = F.PlusAlloc(n + 1);
+      IInteger nFactorial = F.ZZ(n).factorial();
+      for (int k = 0; k <= n; k++) {
+        IASTAppendable term = F.TimesAlloc(n - k + 2);
+        // n!/(k!*(n-k)!) * (-1)^k
+        IInteger coefficient = nFactorial
+            .div(F.ZZ(k).factorial().multiply(F.ZZ(n - k).factorial()));
+        term.append((k & 1) == 1 ? coefficient.negate() : coefficient);
+        for (int j = 1; j <= n - k; j++) {
+          term.append(F.Plus(l, F.ZZ(k + j)));
+        }
+        term.append(F.Power(z, F.ZZ(k)));
+        sum.append(term);
+      }
+      IExpr polynomial = engine.evaluate(F.Expand(sum));
+      return n < 2 ? polynomial : F.Times(F.QQ(F.C1, nFactorial), polynomial);
+    }
+
     /**
      * <code>LaguerreL(degree, l, z)</code> for numbers, with the recurrence relation in the degree:
      * <code>k*L(k) == (2*k-1+l-z)*L(k-1) - (k-1+l)*L(k-2)</code>
@@ -2413,62 +2456,6 @@ public class PolynomialFunctions {
       return current;
     }
 
-    private IExpr laguerreLRecursive(IExpr n, int degree, IExpr l, IExpr z, EvalEngine engine) {
-      if (degree == 0) {
-        return F.C1;
-      }
-      if (degree == 1) {
-        // -z + l + 1
-        return F.Plus(F.C1, l, F.Negate(z));
-      }
-      if (degree == 2) {
-        IExpr result =
-            // [$ (2 + 3*l + l^2 - 4*z - 2*l*z + z^2) $]
-            F.Times(F.Plus(F.C2, F.Times(F.C3, l), F.Sqr(l), F.Times(F.CN4, z),
-                F.Times(F.CN2, l, z), F.Sqr(z))); // $$;
-        return F.Times(F.C1D2, F.evalExpandAll(result, engine));
-      }
-      if (degree < 0) {
-        return F.NIL;
-      }
-      try {
-        int recursionCounter = engine.incRecursionCounter();
-        int recursionLimit = engine.getRecursionLimit();
-        if (recursionCounter > recursionLimit) {
-          RecursionLimitExceeded.throwIt(recursionCounter, S.LaguerreL);
-        }
-
-        // Recurrence relation for LaguerreL polynomials
-        // (1/n) * (((2*n + l - z - 1) )*LaguerreL(n - 1, l, z) - ((n + l - 1) )*LaguerreL(n - 2, l,
-        // z))
-        IExpr laguerre1 = laguerreLRecursive(F.ZZ(degree - 2), degree - 2, l, z, engine); // F.LaguerreL.of(engine,
-        // F.Plus(F.CN2, n),
-        // l,
-        // z);
-        if (laguerre1.isIndeterminate()) {
-          throw new ArgumentTypeException("Indeterminate expression detected");
-        }
-        long leafCount1 = laguerre1.leafCount();
-        if (leafCount1 > Config.MAX_AST_SIZE) {
-          ASTElementLimitExceeded.throwIt(leafCount1);
-        }
-        IExpr laguerre2 = laguerreLRecursive(F.ZZ(degree - 1), degree - 1, l, z, engine); // F.LaguerreL.of(engine,
-        // F.Plus(F.CN1, n),
-        // l, z);
-        if (laguerre2.isIndeterminate()) {
-          throw new ArgumentTypeException("Indeterminate expression detected");
-        }
-        long leafCount2 = leafCount1 + laguerre2.leafCount();
-        if (leafCount2 > Config.MAX_AST_SIZE) {
-          ASTElementLimitExceeded.throwIt(leafCount2);
-        }
-        return F.Times(F.Power(n, F.CN1), F.Plus(F.Times(F.CN1, F.Plus(F.CN1, l, n), laguerre1),
-            F.Times(F.Plus(F.CN1, l, F.Times(F.C2, n), F.Negate(z)), laguerre2)));
-      } finally {
-        engine.decRecursionCounter();
-      }
-    }
-
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST2() || ast.isAST3()) {
@@ -2481,7 +2468,7 @@ public class PolynomialFunctions {
           z = (IInexactNumber) ast.arg2();
           int degree = n.isNumIntValue() ? n.toIntDefault() : -1;
           if (degree >= 0 && degree <= Config.MAX_POLYNOMIAL_DEGREE) {
-            return laguerreLRecurrence(degree, F.C0, z);
+            return inexactIfAny(ast, laguerreLRecurrence(degree, F.C0, z), engine);
           }
           temp = n.laguerreL(z);
         } else {
@@ -2490,7 +2477,7 @@ public class PolynomialFunctions {
           int degree = n.isNumIntValue() ? n.toIntDefault() : -1;
           if (degree >= 0 && degree <= Config.MAX_POLYNOMIAL_DEGREE) {
             // the hypergeometric series of a polynomial of high degree cancels
-            return laguerreLRecurrence(degree, l, z);
+            return inexactIfAny(ast, laguerreLRecurrence(degree, l, z), engine);
           }
           temp = n.laguerreL(l, z);
         }

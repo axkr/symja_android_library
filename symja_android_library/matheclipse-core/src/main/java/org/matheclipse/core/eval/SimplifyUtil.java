@@ -1940,6 +1940,88 @@ public class SimplifyUtil extends VisitorExpr {
     return expr.has(x -> x.isPlus(), true);
   }
 
+  private static boolean isCircularHead(IExpr head) {
+    return head == S.Sin || head == S.Cos || head == S.Tan || head == S.Cot || head == S.Sec
+        || head == S.Csc;
+  }
+
+  /** Collect the rational multiples <code>c</code> of the arguments <code>c*w</code>. */
+  private static void collectAngles(IExpr expr, IExpr[] angle, java.util.Set<IExpr> multiples,
+      boolean[] failed) {
+    if (failed[0] || !expr.isAST()) {
+      return;
+    }
+    if (expr.isAST1() && isCircularHead(expr.head())) {
+      IExpr arg = expr.first();
+      IExpr c = F.C1;
+      IExpr w = arg;
+      if (arg.isTimes() && arg.first().isRational()) {
+        c = arg.first();
+        w = ((IAST) arg).rest().oneIdentity1();
+      }
+      if (w.isNumber() || (angle[0].isPresent() && !angle[0].equals(w))) {
+        failed[0] = true;
+        return;
+      }
+      angle[0] = w;
+      multiples.add(c);
+      return;
+    }
+    for (IExpr arg : (IAST) expr) {
+      collectAngles(arg, angle, multiples, failed);
+    }
+  }
+
+  /**
+   * Trigonometric functions of rational multiples <code>c*w</code> of one angle <code>w</code>
+   * written in the largest common part <code>g*w</code> of these angles and expanded:
+   * <code>Csc(a*Pi)*Sin(a*Pi/2)</code> becomes <code>Csc(2*v)*Sin(v)</code> with
+   * <code>v == a*Pi/2</code>, whose expansion is <code>Sec(a*Pi/2)/2</code>.
+   *
+   * @return {@link F#NIL} if the arguments are not rational multiples of one angle
+   */
+  private static IExpr commonAngleTrigExpand(IExpr expr, SimplifyUtil util) {
+    final IExpr[] angle = new IExpr[] {F.NIL};
+    final java.util.Set<IExpr> multiples = new java.util.HashSet<IExpr>();
+    final boolean[] failed = new boolean[] {false};
+    collectAngles(expr, angle, multiples, failed);
+    if (failed[0] || angle[0].isNIL() || multiples.size() < 2) {
+      return F.NIL;
+    }
+    // the largest rational g with all c/g integers: gcd of the numerators / lcm of the denominators
+    java.math.BigInteger numeratorGcd = java.math.BigInteger.ZERO;
+    java.math.BigInteger denominatorLcm = java.math.BigInteger.ONE;
+    for (IExpr c : multiples) {
+      IRational r = (IRational) c;
+      java.math.BigInteger num = r.numerator().toBigNumerator().abs();
+      java.math.BigInteger den = r.denominator().toBigNumerator();
+      numeratorGcd = numeratorGcd.gcd(num);
+      denominatorLcm = denominatorLcm.divide(denominatorLcm.gcd(den)).multiply(den);
+    }
+    IRational g = F.QQ(F.ZZ(numeratorGcd), F.ZZ(denominatorLcm));
+    for (IExpr c : multiples) {
+      IExpr k = c.divide(g);
+      if (!k.isInteger() || ((IInteger) k).abs().isGT(F.C6)) {
+        return F.NIL;
+      }
+    }
+    final IExpr w = angle[0];
+    ISymbol v = F.Dummy("v");
+    IExpr inCommonAngle = expr.replaceAll(y -> {
+      if (y.isAST1() && isCircularHead(y.head())) {
+        IExpr arg = y.first();
+        IExpr c = arg.isTimes() && arg.first().isRational() ? arg.first() : F.C1;
+        return F.unaryAST1(y.head(), F.Times(c.divide(g), v));
+      }
+      return F.NIL;
+    });
+    if (inCommonAngle.isNIL()) {
+      return F.NIL;
+    }
+    IExpr expanded = util.eval(F.TrigExpand(inCommonAngle));
+    return util.eval(F.subst(expanded, v, F.Times(g, w)));
+  }
+
   /**
    * {@link S#TrigExpand} only rewrites a trigonometric or hyperbolic function of a sum or of a
    * multiple angle.
@@ -2052,6 +2134,14 @@ public class SimplifyUtil extends VisitorExpr {
       new Step("TrigExpand", CatchPolicy.VALIDATE, ctx -> {
         if (ctx.ast().hasTrigonometricFunction() && isTrigExpandable(ctx.expr)) {
           ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.TrigExpand(ctx.expr)));
+        }
+      }), //
+      new Step("TrigCommonAngle", CatchPolicy.VALIDATE, ctx -> {
+        if (ctx.ast().hasTrigonometricFunction()) {
+          IExpr temp = commonAngleTrigExpand(ctx.expr, ctx.util);
+          if (temp.isPresent()) {
+            ctx.result.checkLessPlusTimesPower(temp);
+          }
         }
       }), //
       new Step("TrigToExp", CatchPolicy.VALIDATE, ctx -> {

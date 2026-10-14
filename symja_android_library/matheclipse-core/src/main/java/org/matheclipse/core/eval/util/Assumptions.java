@@ -574,6 +574,17 @@ public class Assumptions extends AbstractAssumptions {
           return true;
         }
       }
+      if (intersection && !(arg1.isNumericFunction(false) && arg3.isNumericFunction(false))) {
+        // a > b > c is a > b and b > c, and with them a > c
+        IExpr head = relationalAST.head();
+        boolean first = addRelationalAssumption(F.binaryAST2(head, arg1, arg2), true,
+            assumptions, operator);
+        boolean second = addRelationalAssumption(F.binaryAST2(head, arg2, arg3), true,
+            assumptions, operator);
+        boolean third = addRelationalAssumption(F.binaryAST2(head, arg1, arg3), true,
+            assumptions, operator);
+        return first || second || third;
+      }
       return false;
     }
 

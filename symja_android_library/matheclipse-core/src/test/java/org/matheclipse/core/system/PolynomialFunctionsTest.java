@@ -311,11 +311,13 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("LaguerreL(3, .51, .87)", //
         "-0.396576");
 
-    // TODO improve error messages
+    // the leading term (-z)^n/n! of the polynomial decides
     check("LaguerreL(10,l,Infinity)", //
-        "Indeterminate");
+        "Infinity");
     check("LaguerreL(3,l,-Infinity)", //
-        "1/3*(-(2+l)*(Infinity+l)+1/2*(Infinity+l)*(Infinity+3*l+Infinity*l+l^2))");
+        "Infinity");
+    check("LaguerreL(3,l,Infinity)", //
+        "-Infinity");
     // mesage Polynomial degree 101 exceeded
     check("LaguerreL(101,l,-Infinity)", //
         "LaguerreL(101,l,-Infinity)");
@@ -681,5 +683,25 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "-120");
     check("LaguerreL(5,0)", //
         "1");
+  }
+
+  /**
+   * Inexact arguments give an inexact value; the generalized polynomial of an integer order is
+   * 1/n! times a polynomial with integer coefficients.
+   */
+  @Test
+  public void testLaguerreLForms() {
+    check("LaguerreL(3., 2.)", //
+        "-0.333333");
+    check("LaguerreL(3, 2.)", //
+        "-0.333333");
+    check("LaguerreL(4, 2, x)", //
+        "1/24*(360-480*x+180*x^2-24*x^3+x^4)");
+    check("LaguerreL(3, b, x)", //
+        "1/6*(6+11*b+6*b^2+b^3-18*x-15*b*x-3*b^2*x+9*x^2+3*b*x^2-x^3)");
+    check("LaguerreL(1, b, x)", //
+        "1+b-x");
+    check("Expand(LaguerreL(5, 0, x)-LaguerreL(5, x))", //
+        "0");
   }
 }

@@ -2256,4 +2256,35 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("$Assumptions=True; Series(Sqrt(t^2), {t,0,2})", //
         "(Sqrt(t^2)*t)/t+O(t)^3");
   }
+
+  /**
+   * Expansions at Infinity with a logarithm in the leading term or an exponential factor.
+   */
+  @Test
+  public void testSeriesAsymptoticAtInfinity() {
+    check("Series(ArcSinh(x), {x,Infinity,4})", //
+        "Log(2*x)+1/(4*x^2)-3/(32*x^4)+O(1/x)^5");
+    check("Series(ArcCosh(x), {x,Infinity,2})", //
+        "Log(2*x)-1/(4*x^2)+O(1/x)^3");
+    check("Series(ArcSinh(b*x), {x,Infinity,1}, Assumptions->b<0)", //
+        "-Log(-2*b*x)+O(1/x)^2");
+    check("Series(ArcCosh(b*x), {x,Infinity,1}, Assumptions->b<0)", //
+        "I*Pi+Log(-2*b*x)+O(1/x)^2");
+    check("Series(ArcCosh(-3*x), {x,Infinity,2})", //
+        "I*Pi+Log(6*x)-1/(36*x^2)+O(1/x)^3");
+    // the sign of b is not known
+    check("Series(ArcSinh(b*x), {x,Infinity,1})", //
+        "ArcSinh(b*x+O(1/x)^2)");
+    // the exponential factor is kept in front of the series
+    check("Series(ExpIntegralE(1,x), {x,Infinity,2})", //
+        "(1/x-1/x^2+O(1/x)^3)*E^(-x+O(1/x)^3)");
+    check("Series(ExpIntegralEi(2*x), {x,Infinity,1})", //
+        "(1/(2*x)+O(1/x)^2)*E^(2*x+O(1/x)^2)");
+    check("Series(Gamma(0,b*x), {x,Infinity,1}, Assumptions->b>0)", //
+        "(1/(b*x)+O(1/x)^2)*E^(-b*x+O(1/x)^2)");
+    check("Series(x^3*Exp(-2*x), {x,Infinity,2})", //
+        "(x^3+O(1/x)^3)*E^(-2*x+O(1/x)^3)");
+    check("Limit(ExpIntegralE(1,x)*x*Exp(x), x->Infinity)", //
+        "1");
+  }
 }

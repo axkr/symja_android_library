@@ -1605,4 +1605,40 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(UnitStep(t^2-b),t)", //
         "Integrate(UnitStep(-b+t^2),t)");
   }
+
+  /**
+   * Piecewise defined integrands between limits with a parameter: a linear change of the variable
+   * maps the limits onto numbers, the assumptions decide the signs.
+   */
+  @Test
+  public void testPiecewiseWithSymbolicLimits() {
+    // the break point b lies inside the interval for b > 0
+    check("Integrate(Piecewise({{x^2, x<b}}, b^2), {x,0,3*b}, Assumptions->b>0)", //
+        "7/3*b^3");
+    // without the assumption the position is not known
+    check("Integrate(Piecewise({{x^2, x<b}}, b^2), {x,0,3*b})", //
+        "Integrate(Piecewise({{x^2,x<b}},b^2),{x,0,3*b})");
+    check("Integrate(Abs(x-b), {x,0,3*b}, Assumptions->b>0)", //
+        "5/2*b^2");
+    // the limits in reverse order
+    check("Integrate(Abs(x-b), {x,0,3*b}, Assumptions->b<0)", //
+        "-5/2*b^2");
+    check("Integrate(Abs(x-b), {x,0,3*b})", //
+        "Integrate(Abs(-b+x),{x,0,3*b})");
+    check("Integrate(Sign(x-2*b), {x,0,3*b}, Assumptions->b>0)", //
+        "-b");
+    check("Integrate(Min(x,b), {x,0,4*b}, Assumptions->b>0)", //
+        "7/2*b^2");
+    check("Integrate(Max(x,b), {x,0,4*b}, Assumptions->b>0)", //
+        "17/2*b^2");
+    check("Integrate(x^2*UnitStep(x-b), {x,0,2*b}, Assumptions->b>0)", //
+        "7/3*b^3");
+    // the break point outside of the interval
+    check("Integrate(Abs(x-b), {x,0,2}, Assumptions->b>3)", //
+        "1/2*(-(2-b)^2+b^2)");
+    check("Integrate(Abs(x-b)*Exp(-2*x), {x,0,Infinity}, Assumptions->b>0)", //
+        "-1/4+b/2+1/(2*E^(2*b))");
+    check("Integrate(Abs(x), {x,-c,2*c}, Assumptions->c>0)", //
+        "5/2*c^2");
+  }
 }

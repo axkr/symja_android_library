@@ -926,6 +926,121 @@ public class SeriesFunctions {
       return series;
     }
 
+    /**
+     * The coefficient <code>c</code> of an argument <code>c*x</code>, if its sign is known.
+     *
+     * @return {@link F#NIL} otherwise
+     */
+    private static IExpr scaleOf(IExpr arg, IExpr x, EvalEngine engine) {
+      IExpr c = engine.evaluate(F.Divide(arg, x));
+      if (!c.isFree(x) || !(c.isPositiveResult() || c.isNegativeResult())) {
+        return F.NIL;
+      }
+      return c;
+    }
+
+    /**
+     * Expansions at <code>Infinity</code> which the substitution <code>x -&gt; 1/x</code> can't
+     * do: <code>ArcSinh(c*x)</code> and <code>ArcCosh(c*x)</code> have a logarithm in their
+     * leading term, <code>ExpIntegralE(1, c*x)</code>, <code>Gamma(0, c*x)</code>,
+     * <code>ExpIntegralEi(c*x)</code> and a product with a factor <code>E^u</code> (<code>u</code>
+     * a polynomial in <code>x</code>) have an exponential factor, which is kept in front of the
+     * series as for <code>Gamma</code>. The sign of <code>c</code> has to be known.
+     *
+     * @return {@link F#NIL} if <code>function</code> is not of one of these forms
+     */
+    private static IExpr asymptoticAtInfinity(IExpr function, IExpr x, int n, EvalEngine engine) {
+      final IAST iterator = F.List(x, F.CInfinity, F.ZZ(n));
+      if (function.isAST(S.ArcSinh, 2) || function.isAST(S.ArcCosh, 2)) {
+        IExpr c = scaleOf(function.first(), x, engine);
+        if (c.isNIL()) {
+          return F.NIL;
+        }
+        final boolean isSinh = function.isAST(S.ArcSinh, 2);
+        final boolean negative = c.isNegativeResult();
+        // ArcSinh(z) == Log(2*z) + Log((1 + Sqrt(1 + 1/z^2))/2) and the same with 1 - 1/z^2 for
+        // ArcCosh, the second part analytic in 1/z, for z > 1; a negative scale by
+        // ArcSinh(-z) == -ArcSinh(z) and ArcCosh(-z) == I*Pi + ArcCosh(z)
+        IExpr z = engine.evaluate(F.Times(negative ? F.Negate(c) : c, x));
+        IExpr analytic = F.Log(F.Times(F.C1D2,
+            F.Plus(F.C1, F.Sqrt(F.Plus(F.C1, F.Times(isSinh ? F.C1 : F.CN1, F.Power(z, F.CN2)))))));
+        // one order more: the expansion engine reports a vanishing order as unknown
+        IExpr series = engine.evaluate(F.Series(analytic, F.List(x, F.CInfinity, F.ZZ(n + 1))));
+        if (!(series instanceof ASTSeriesData)) {
+          return F.NIL;
+        }
+        IExpr result = withConstantTerm((ASTSeriesData) series,
+            engine.evaluate(F.Log(F.Times(F.C2, z))), n + 1);
+        if (result.isNIL() || !negative) {
+          return result;
+        }
+        return isSinh ? engine.evaluate(F.Negate(result))
+            : engine.evaluate(F.Plus(F.Times(F.CI, S.Pi), result));
+      }
+      if (function.isAST(S.ExpIntegralE, 3) && function.first().isOne()
+          || function.isAST(S.Gamma, 3) && function.first().isZero()
+          || function.isAST(S.ExpIntegralEi, 2)) {
+        IExpr arg = function.isAST(S.ExpIntegralEi, 2) ? function.first() : function.second();
+        IExpr c = scaleOf(arg, x, engine);
+        if (c.isNIL() || !c.isPositiveResult()) {
+          return F.NIL;
+        }
+        // E1(z) ~ E^(-z)*Sum((-1)^k*k!/z^(k+1)), Ei(z) ~ E^z*Sum(k!/z^(k+1)) for z -> Infinity
+        boolean isEi = function.isAST(S.ExpIntegralEi, 2);
+        IExpr z = F.Times(c, x);
+        IASTAppendable sum = F.PlusAlloc(n + 1);
+        for (int k = 0; k <= n; k++) {
+          IExpr term = F.Times(F.ZZ(k).factorial(), F.Power(z, F.ZZ(-k - 1)));
+          sum.append(isEi || (k & 1) == 0 ? term : F.Negate(term));
+        }
+        IExpr series = engine.evaluate(F.Series(sum, iterator));
+        IExpr exponent = engine.evaluate(F.Series(isEi ? z : F.Negate(z), iterator));
+        if (!(series instanceof ASTSeriesData) || !(exponent instanceof ASTSeriesData)) {
+          return F.NIL;
+        }
+        return F.Times(series, F.Power(S.E, exponent));
+      }
+      if (function.isTimes()) {
+        IAST times = (IAST) function;
+        for (int i = 1; i < times.size(); i++) {
+          IExpr factor = times.get(i);
+          if (factor.isPower() && factor.base().isE() && factor.exponent().isPolynomial(F.list(x))
+              && !factor.exponent().isFree(x)) {
+            IExpr rest = times.removeAtCopy(i).oneIdentity1();
+            if (rest.has(y -> y.isPower() && y.base().isE() && !y.isFree(x), true)) {
+              return F.NIL;
+            }
+            IExpr series = engine.evaluate(F.Series(rest, iterator));
+            IExpr exponent = engine.evaluate(F.Series(factor.exponent(), iterator));
+            if (!(series instanceof ASTSeriesData) || !(exponent instanceof ASTSeriesData)) {
+              return F.NIL;
+            }
+            return F.Times(series, F.Power(S.E, exponent));
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The series with <code>constant</code> added to its coefficient of <code>x^0</code>, truncated
+     * at <code>x^truncate</code>.
+     */
+    private static IExpr withConstantTerm(ASTSeriesData series, IExpr constant, int truncate) {
+      int min = Math.min(series.minExponent(), 0);
+      if (truncate <= 0 || series.truncateOrder() < truncate || series.puiseuxDenominator() != 1) {
+        return F.NIL;
+      }
+      IASTAppendable coefficients = F.ListAlloc(truncate - min);
+      for (int j = min; j < truncate; j++) {
+        IExpr coefficient = series.coefficient(j);
+        coefficients.append(
+            j == 0 ? EvalEngine.get().evaluate(F.Plus(constant, coefficient)) : coefficient);
+      }
+      return new ASTSeriesData(series.expansionVariable(), series.expansionPoint(), coefficients,
+          min, truncate, 1);
+    }
+
     private static final ThreadLocal<Boolean> BRANCH_SIDES =
         ThreadLocal.withInitial(() -> Boolean.FALSE);
 
@@ -1099,6 +1214,11 @@ public class SeriesFunctions {
             IExpr stirling = stirlingSeries(currentExpr, x, n, engine);
             if (stirling.isPresent()) {
               currentExpr = stirling;
+              continue;
+            }
+            IExpr asymptotic = asymptoticAtInfinity(currentExpr, x, n, engine);
+            if (asymptotic.isPresent()) {
+              currentExpr = asymptotic;
               continue;
             }
           }

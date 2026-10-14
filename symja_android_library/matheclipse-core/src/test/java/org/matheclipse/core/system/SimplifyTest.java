@@ -891,4 +891,30 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("FullSimplify(Binomial(j+1,k)-Binomial(j,k)-Binomial(j,k-1))", //
         "0");
   }
+
+  /**
+   * A chained comparison like b > c > 0 in the assumptions, and trigonometric functions of
+   * rational multiples of one angle.
+   */
+  @Test
+  public void testChainedAssumptionsAndCommonAngle() {
+    check("Refine(Sqrt((b+c)^2*(b-c)^2), b>c>0)", //
+        "(b-c)*(b+c)");
+    check("Refine(Sqrt((b-c)^2), b>c>0)", //
+        "b-c");
+    check("Refine(c>0, b>c>0)", //
+        "True");
+    check("Refine(Sqrt(x^2), 5>x>2)", //
+        "x");
+    // Csc(2*u)*Sin(u) with u == b*Pi/2
+    check("Simplify(Pi*Csc(b*Pi)*Sin(b*Pi/2))", //
+        "1/2*Pi*Sec(1/2*b*Pi)");
+    check("Simplify(Csc(2*b*Pi/3)*Sin(b*Pi/3))", //
+        "Sec(1/3*b*Pi)/2");
+    // multiples 1 and 3 do not contract here
+    check("Simplify(Cos(x/3)+Cos(x))", //
+        "Cos(x/3)+Cos(x)");
+    check("Integrate(x^b/(1+x^2), {x,0,Infinity}, Assumptions->-1<b<1)", //
+        "1/2*Pi*Sec(1/2*b*Pi)");
+  }
 }
