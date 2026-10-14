@@ -1,5 +1,6 @@
 package org.matheclipse.external.apfloat;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apfloat.Apcomplex;
@@ -55,6 +56,7 @@ public class ApcomplexStruveMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testStruveHExpansionForAnyOrder()
     {
         // an integer order

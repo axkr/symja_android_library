@@ -172,6 +172,7 @@ public class NumericOptimizationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNMinimizeOptionsAndManyVariables() {
     // a Method option is accepted
     check(

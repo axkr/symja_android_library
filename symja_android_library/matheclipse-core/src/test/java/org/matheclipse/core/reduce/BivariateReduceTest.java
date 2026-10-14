@@ -1,5 +1,7 @@
 package org.matheclipse.core.reduce;
 
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Random;
@@ -123,6 +125,7 @@ public class BivariateReduceTest extends ExprEvaluatorTestCase {
    * critical values of the generated formulas among its points.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testAgainstGrid() {
     Random random = new Random(7102026L);
     int compared = 0;

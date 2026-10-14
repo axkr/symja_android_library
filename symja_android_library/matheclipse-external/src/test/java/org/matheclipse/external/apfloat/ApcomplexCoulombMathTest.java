@@ -1,5 +1,6 @@
 package org.matheclipse.external.apfloat;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apfloat.Apcomplex;
@@ -41,6 +42,7 @@ public class ApcomplexCoulombMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testCoulombG()
     {
         assertClose("G(0, 1/3, 7)", new Apfloat("0.968058102171807368337512934044627833299697106"), ApcomplexCoulombMath.coulombG(Apcomplex.ZERO, q(1, 3), q(7, 1)), PRECISION - 2);

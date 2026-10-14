@@ -510,6 +510,140 @@ public class DMath {
     return value;
   }
 
+  /** The nodes of the 20 point Gauss-Legendre rule on <code>[-1, 1]</code>. */
+  private static final double[] LEGENDRE_NODES;
+
+  /** The weights of the 20 point Gauss-Legendre rule. */
+  private static final double[] LEGENDRE_WEIGHTS;
+
+  static {
+    org.hipparchus.analysis.integration.gauss.GaussIntegrator rule =
+        new org.hipparchus.analysis.integration.gauss.GaussIntegratorFactory().legendre(20);
+    LEGENDRE_NODES = new double[rule.getNumberOfPoints()];
+    LEGENDRE_WEIGHTS = new double[rule.getNumberOfPoints()];
+    for (int i = 0; i < LEGENDRE_NODES.length; i++) {
+      LEGENDRE_NODES[i] = rule.getPoint(i);
+      LEGENDRE_WEIGHTS[i] = rule.getWeight(i);
+    }
+  }
+
+  /**
+   * <code>StruveH(v, x)</code> as a machine double for a real order and <code>x &gt; 0</code>:
+   * the power series where its terms do not cancel, <code>BesselY(v, x)</code> plus the integral
+   * of DLMF 11.5.2 above, the expansion of {@link #struveHLargeArgument(double, double)} beyond
+   * 100. The arbitrary precision series, which the arguments below 100 needed before, takes
+   * milliseconds for one value.
+   *
+   * @return {@link Double#NaN} where none of these reaches the precision of a double - an order
+   *         of at most <code>-1/2</code> beyond the series, a value of a size the factors leave
+   * @see <a href="https://dlmf.nist.gov/11.5#E2">DLMF 11.5.2</a>
+   */
+  public static double struveH(double v, double x) {
+    if (!(x > 0.0) || !Double.isFinite(v) || Double.isInfinite(x)) {
+      return Double.NaN;
+    }
+    if (x > 100.0) {
+      return struveHLargeArgument(v, x);
+    }
+    final double series = struveSeries(v, x, true);
+    if (!Double.isNaN(series) || !(v > -0.5)) {
+      return series;
+    }
+    // H(v,x) - Y(v,x) = 2*(x/2)^v/(Sqrt(Pi)*Gamma(v+1/2))*Integrate(E^(-x*t)*(1+t^2)^(v-1/2),
+    // {t,0,Infinity}), with u = x*t
+    final double exponent = v - 0.5;
+    final double integral = laplaceIntegral(u -> Math.pow(1.0 + (u / x) * (u / x), exponent),
+        Math.max(0.0, 2.0 * exponent)) / x;
+    final double factor = 2.0 * Math.pow(0.5 * x, v) / (Math.sqrt(Math.PI) * gamma(v + 0.5));
+    final double correction = factor * integral;
+    final double bessel = besselY(v, x);
+    final double value = bessel + correction;
+    // the two terms cancel where BesselY is large, for an order above the argument; next to a
+    // zero of the function the absolute error stays that of the size sqrt(2/(Pi*x)) of the waves
+    final double size = Math.max(Math.abs(value), Math.sqrt(2.0 / (Math.PI * x)));
+    if (!Double.isFinite(value) || Math.max(Math.abs(bessel), Math.abs(correction)) > 100.0 * size) {
+      return Double.NaN;
+    }
+    return value;
+  }
+
+  /**
+   * <code>StruveL(v, x)</code> as a machine double for a real order above <code>-3/2</code> and
+   * <code>x &gt; 0</code>: the power series, whose terms are all positive and do not cancel.
+   *
+   * @return {@link Double#NaN} for another order, or a value beyond the range of a double
+   * @see <a href="https://dlmf.nist.gov/11.2#E2">DLMF 11.2.2</a>
+   */
+  public static double struveL(double v, double x) {
+    if (!(x > 0.0) || !Double.isFinite(v) || Double.isInfinite(x)) {
+      return Double.NaN;
+    }
+    return struveSeries(v, x, false);
+  }
+
+  /**
+   * The power series <code>(x/2)^(v+1)*Sum((-+1)^k*(x/2)^(2*k)/(Gamma(k+3/2)*Gamma(k+v+3/2)))</code>
+   * of <code>StruveH</code> (alternating) or <code>StruveL</code>.
+   *
+   * @return {@link Double#NaN} if an argument of a gamma function is not positive, the first term
+   *         is no normal double, the sum is not finite, or the alternating terms cancel more than
+   *         two digits
+   */
+  private static double struveSeries(double v, double x, boolean alternating) {
+    final double order = v + 1.5;
+    if (!(order > 0.0)) {
+      return Double.NaN;
+    }
+    final double half = 0.5 * x;
+    // Gamma(3/2) = Sqrt(Pi)/2
+    double term = Math.pow(half, v + 1.0) / (0.5 * Math.sqrt(Math.PI) * gamma(order));
+    if (!Double.isFinite(term) || !(term >= Double.MIN_NORMAL)) {
+      return Double.NaN;
+    }
+    final double square = (alternating ? -half : half) * half;
+    double sum = term;
+    double largest = term;
+    for (int k = 0; k < 5000; k++) {
+      term *= square / ((k + 1.5) * (k + order));
+      sum += term;
+      largest = Math.max(largest, Math.abs(term));
+      if (Math.abs(term) <= 1.0e-17 * Math.abs(sum)) {
+        if (!Double.isFinite(sum) || largest > 100.0 * Math.abs(sum)) {
+          return Double.NaN;
+        }
+        return sum;
+      }
+    }
+    return Double.NaN;
+  }
+
+  /**
+   * <code>Integrate(E^(-u)*f(u), {u,0,Infinity})</code> for a smooth <code>f</code> which grows at
+   * most like a power, by the 20 point Gauss-Legendre rule on intervals of length 4, until an
+   * interval beyond <code>peak</code> adds nothing.
+   *
+   * @param peak a point behind which <code>E^(-u)*f(u)</code> decreases
+   */
+  private static double laplaceIntegral(java.util.function.DoubleUnaryOperator f, double peak) {
+    final double width = 4.0;
+    double sum = 0.0;
+    for (int panel = 0; panel < 2000; panel++) {
+      final double lower = panel * width;
+      final double middle = lower + 0.5 * width;
+      double part = 0.0;
+      for (int i = 0; i < LEGENDRE_NODES.length; i++) {
+        final double u = middle + 0.5 * width * LEGENDRE_NODES[i];
+        part += LEGENDRE_WEIGHTS[i] * Math.exp(-u) * f.applyAsDouble(u);
+      }
+      part *= 0.5 * width;
+      sum += part;
+      if (lower > peak && Math.abs(part) <= 1.0e-17 * Math.abs(sum)) {
+        break;
+      }
+    }
+    return sum;
+  }
+
   /**
    * <code>Beta(a, b)</code> as a machine double.
    *

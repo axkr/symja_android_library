@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 public class SimplifyTest extends ExprEvaluatorTestCase {
@@ -592,6 +593,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
    * found to be 0 at sample points first and then by its common denominator.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testSimplifyLargeZeroSum() {
     // the derivative of an antiderivative minus the integrand, with a radical
     check("Simplify(D(Integrate((t^2+2)/(t^3*Sqrt(3*t^4-2*t^2+1)), t), t) - (t^2+2)/(t^3*Sqrt(3*t^4-2*t^2+1)))", //
@@ -715,6 +717,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
    * arguments are inside the unit circle.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testPossibleZeroQAppellF1() {
     // the symmetry in the two pairs of arguments
     check("PossibleZeroQ(AppellF1(2/3, 1/5, 1/2, 7/4, u, v) - AppellF1(2/3, 1/2, 1/5, 7/4, v, u))", //

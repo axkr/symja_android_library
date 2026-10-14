@@ -452,6 +452,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   @Tag("#1523")
   public void testMinMaxRestrictedRealDomain() {
     // Sqrt(x) is only real for x>=0: the closed end x==0 of the domain is attained
@@ -615,6 +616,7 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
 
   /** Constrained problems without a bound, with an equation for a variable, with a quotient. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testConstrainedUnboundedEliminatedRational() {
     check("Minimize({u + 2*v, u <= v^2}, {u, v})", //
         "{-Infinity,{u->Indeterminate,v->Indeterminate}}");

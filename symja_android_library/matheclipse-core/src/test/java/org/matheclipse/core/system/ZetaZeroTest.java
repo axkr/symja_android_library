@@ -120,6 +120,7 @@ public class ZetaZeroTest {
 
   /** The Riemann-Siegel formula at a height where it reaches 30 digits. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testLargeIndex() {
     ExprEvaluator eval = new ExprEvaluator();
     assertEquals(727690.9069482075392, eval.eval("N(ZetaZero(1234567))").im().evalf(), 1e-9);
@@ -146,6 +147,7 @@ public class ZetaZeroTest {
    * the intnz message and stays unevaluated.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testNegativeIndexIsTheConjugateZero() {
     ExprEvaluator eval = new ExprEvaluator();
     IExpr result = eval.eval("N(ZetaZero(-1))");

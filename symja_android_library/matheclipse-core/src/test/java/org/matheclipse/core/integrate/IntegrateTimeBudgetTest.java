@@ -1,5 +1,7 @@
 package org.matheclipse.core.integrate;
 
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,6 +31,7 @@ public class IntegrateTimeBudgetTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBudgetWhichRunsOut() {
     IExpr result = IntegrateTimeBudget.runWithin(() -> {
       busy(300);
@@ -46,6 +49,7 @@ public class IntegrateTimeBudgetTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testNestedBudgetsWhichRunOutTogether() {
     // Both watchdogs have fired before the work looks at the flag. The inner call must leave the
     // interrupt to the outer one: answering "did not finish" itself and clearing the flag would
@@ -65,6 +69,7 @@ public class IntegrateTimeBudgetTest {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testInnerBudgetAloneRunsOut() {
     boolean[] wentOn = new boolean[1];
     IExpr result = IntegrateTimeBudget.runWithin(() -> {

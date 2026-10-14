@@ -504,6 +504,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testExpIntegralE() {
     // machine precision for larger arguments; calculated with mpmath
     check("Abs(ExpIntegralE(1., 30.)/3.0215520106888125448*^-15 - 1) < 10^-13", //
@@ -927,6 +928,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testGammaRegularized() {
     check("GammaRegularized(3,7)", //
         "65/(2*E^7)");
@@ -972,6 +974,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testHarmonicNumber() {
     // the exact sum is over the iteration limit of the tests
     check("N(HarmonicNumber(1000), 30)", //
@@ -1149,6 +1152,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testInverseBetaRegularized() {
     check("InverseBetaRegularized(10, 12.0, 0.5)", //
         "InverseBetaRegularized(10.0,12.0,0.5)");

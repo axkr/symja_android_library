@@ -50,6 +50,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
    * returned; the value is Mathematica's.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testAngerJLargeOrder() {
     // the order arrives with 30 digits, 18 of them in front of the decimal point: what is left of
     // it modulo 2 gives 12 digits of the result (2.86900296375775...*10^-19 for the exact order)
@@ -385,6 +386,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBesselK() {
     // integer order with a large argument
     check("N(BesselK(2, 60), 30)", //
@@ -425,6 +427,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBesselY() {
     // integer order with a large argument
     check("N(BesselY(3, 100), 30)", //
@@ -476,6 +479,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBesselYZero() {
     check("N(BesselYZero(1, 20), 30)", //
         "62.040411147670693473712823944");
@@ -495,6 +499,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testHankelH1() {
     // https://github.com/mtommila/apfloat/issues/64
     check("BesselJ(-1.0,-1009.0)", // HankelH1 calls BesselJ
@@ -607,6 +612,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   /** The expansion for a large argument; the values were calculated with mpmath. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testAngerWeberLargeArgument() {
     checkNumeric("WeberE(0.5, 1500.)", //
         "-0.002483928077608207");
@@ -649,6 +655,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testWeberE() {
     // check("WeberE(101,IntervalData({0,LessEqual,LessEqual,2},{3,LessEqual,LessEqual,3}))", //
     // "a");

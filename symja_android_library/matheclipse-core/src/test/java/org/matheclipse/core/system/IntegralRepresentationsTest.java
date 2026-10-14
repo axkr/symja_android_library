@@ -83,6 +83,7 @@ public class IntegralRepresentationsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDerivativesOfGamma() {
     check("Integrate(E^(-x)*x^(a-1)*Log(x), {x,0,Infinity}, Assumptions->a>0)", //
         "Gamma(a)*PolyGamma(0,a)");
@@ -192,6 +193,7 @@ public class IntegralRepresentationsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testEuler() {
     check("Integrate(x^(a-1)*(1-x)^(b-1)*(1+c*x)^(-a-b), {x,0,1}, Assumptions->a>0&&b>0&&c>0)", //
         "Beta(a,b)/(1+c)^a");

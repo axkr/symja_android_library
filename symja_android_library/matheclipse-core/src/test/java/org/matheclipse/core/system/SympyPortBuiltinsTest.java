@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /** Tests for the builtin functions, which are based on the org.matheclipse.core.sympy package */
@@ -240,6 +241,7 @@ public class SympyPortBuiltinsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFourier() {
     check("FourierCoefficient(t, t, 3)", //
         "-I*1/3");
@@ -282,6 +284,7 @@ public class SympyPortBuiltinsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testKelvinKerKei() {
     // a non-integer order through BesselK: the difference of two BesselI cancels 8 digits here
     checkNumeric("KelvinKer(1/3, 12.0)*10^5", //
@@ -322,6 +325,7 @@ public class SympyPortBuiltinsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAiryZeros() {
     check("AiryAiZero(1)", //
         "AiryAiZero(1)");

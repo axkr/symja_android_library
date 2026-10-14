@@ -12,6 +12,7 @@ import org.matheclipse.core.system.TestTags;
 public class DSolveTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveUnevaluated() {
     // DSolve: For some branches of the general solution, unable to solve for the conditions
     check("DSolve({a *(f'(x))^2+f'''(x)==0,f'(0)==0},f(x),x)", //
@@ -2536,6 +2537,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveHigherDegreeInTheDerivative() {
     // Solved for y'(x), every root is an equation of its own and every one of them is answered.
     check("DSolve(y'(x)^2+4*y(x)^2==9, y(x), x)", //
@@ -2561,6 +2563,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveTotalDerivative() {
     // (y^2)''' + (y^2)'' == Cos(x): the left side is integrated and the cascade asked again
     // two branches +-Sqrt(...) with three constants; put back into the equation at a point
@@ -2585,6 +2588,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveBesselOfImaginaryOrder() {
     // printed "General: Invalid comparison with I*2*Sqrt(5) attempted." from the rule for the
     // half-integer orders, which asked whether the order is positive
@@ -2597,6 +2601,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDSolveSymbolicConjugateRoots() {
     // The roots +-I*w are a conjugate pair when w is read as real, which is how a coefficient is
     // meant: these came back as C(1)/E^(I*w*x)+E^(I*w*x)*C(2), and with a number for w as Cos/Sin.
@@ -2734,6 +2739,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
    * form which has to come back unevaluated in bounded time.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testSymbolicBreakPoint() {
     check("DSolve({y'(t)-2*y(t)==UnitStep(t-b), y(0)==3}, y(t), t)", //
         "{{y(t)->(6*E^(2*b)-UnitStep(-b)+E^(2*b)*UnitStep(-b))/(2*E^(2*b-2*t))-UnitStep(-b+t)/\n2+UnitStep(-b+t)/(2*E^(2*b-2*t))}}");

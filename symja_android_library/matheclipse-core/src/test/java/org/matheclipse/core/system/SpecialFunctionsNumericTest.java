@@ -146,6 +146,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testZetaDerivative() {
     check("N(Zeta'(2),30)", //
         "-0.937548254315843753702574094568");
@@ -216,6 +217,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPolynomialsOfHighDegree() {
     check("LegendreP(150,0.5)", //
         "0.06749829804674269");
@@ -827,6 +829,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRiemannSiegelZ() {
     check("RiemannSiegelZ(2.5)", //
         "-0.526283");
@@ -885,6 +888,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testCoulomb() {
     check("CoulombF(0,1/3,7.0)", //
         "-0.336986");
@@ -901,6 +905,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLerchPhiOutsideOfTheUnitCircle() {
     check("LerchPhi(3.0,2,1/3)", //
         "9.70953+I*(-2.39306)");
@@ -943,6 +948,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBesselOfLargeMachineArguments() {
     // the phase of a large argument, with the double as the number it is: 6.6980090407034243*10^-12
     // and -7.9506819824254502*10^-11
@@ -993,6 +999,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testStruveHOfLargeArguments() {
     // BesselY and the expansion of the difference: -7.9506819817888303927*10^-11
     check("StruveH(0,1.0*^20)*10^11", //
@@ -1048,6 +1055,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLerchPhiWithANegativeShift() {
     // the sum of z^k/((k+a)^2)^(s/2), which is real: 2.5798050063195912038
     check("LerchPhi(0.3,2.5,-1.5)", //
@@ -1075,6 +1083,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAiryOfLargeNegativeArguments() {
     // the phase 2/3*x^(3/2) with all its digits: -5.5541288000569947*10^-3 and
     // -9.91282951914596*10^-4
@@ -1133,6 +1142,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testHankelWhereItDecays() {
     // BesselJ and BesselY grow there and their sum cancels: from BesselK
     check("HankelH1(7.0,9.75+23.0*I)*10^11", //
@@ -1152,6 +1162,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBesselOfComplexMachineArguments() {
     // with guard digits: the series of the library gave -97+23*I for the first
     check("BesselI(100.5,60.0+20.0*I)*10^5", //
@@ -1359,6 +1370,30 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
+  public void testStruveOfMachineNumbers() {
+    // the machine path: the power series, BesselY plus the Laplace integral of DLMF 11.5.2, and
+    // the expansion beyond 100. mpmath: -0.096098421554162110012, 0.34060073858721248729,
+    // 1.3734323178701339789, 0.046497175488662673604, -0.015080633438955709018
+    check("Max(Abs({StruveH(0.0,30.0)+0.096098421554162110012, "
+        + "StruveH(1/3,10.0)-0.34060073858721248729, StruveH(2.5,4.5)-1.3734323178701339789, "
+        + "StruveH(10.0,7.0)-0.046497175488662673604, "
+        + "StruveH(-0.4,60.0)+0.015080633438955709018})) < 10^-14", //
+        "True");
+    // the series of positive terms. mpmath: 27.105917126558146553, 5.5925226694181572371*10^24,
+    // 0.56816520732123649544, 3.7877259258668686766*10^128
+    check("Max(Abs({StruveL(0.0,5.0)/27.105917126558146553, "
+        + "StruveL(2.5,60.0)/(5.5925226694181572371*10^24), "
+        + "StruveL(-1.2,0.5)/0.56816520732123649544, "
+        + "StruveL(10.0,300.0)/(3.7877259258668686766*10^128)}-1)) < 10^-13", //
+        "True");
+    // 1.4243375227689502 by mpmath; with the arbitrary precision series for each value of the
+    // integrand this took 110 seconds
+    check("NIntegrate(x^(-3/4)*StruveH(0, 2*x), {x,0,200})", //
+        "1.42434");
+  }
+
+  @Test
   public void testZetaNextToZeroAndBinomialOfANegativeIndex() {
     // -1/2-Log(2*Pi)/2*s, where the series do not reach
     check("{Zeta(-1.0*^-300),Zeta(-1.0*^-20),Zeta(1.0*^-20),Zeta(-1.0*^-12)}", //
@@ -1385,6 +1420,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testZetaAndBernoulliOfLargeArguments() {
     // the Dirichlet series: the routine of the library is 0 from 10^20 on
     check("Zeta(1.0*^20)", //

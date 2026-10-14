@@ -1,5 +1,7 @@
 package org.matheclipse.core.sympy.series;
 
+import org.junit.jupiter.api.Tag;
+import org.matheclipse.core.system.TestTags;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,6 +29,7 @@ public class TestFourier extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFourierSeries() {
     // https://github.com/sympy/sympy/blob/master/sympy/series/tests/test_fourier.py
     // Deviation: sympy's truncate(n) returns the first n nonzero terms, the Java API returns the
@@ -104,6 +107,7 @@ public class TestFourier extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSawtoothWave() {
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = parse("x");
@@ -118,6 +122,7 @@ public class TestFourier extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFourierSeriesFinite() {
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = parse("x");
@@ -154,6 +159,7 @@ public class TestFourier extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testExponentialSeries() {
     EvalEngine engine = evaluator.getEvalEngine();
     IExpr x = parse("x");

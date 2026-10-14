@@ -3271,8 +3271,7 @@ public class SpecialFunctions {
         IInexactNumber z = (IInexactNumber) ast.arg2();
         if (n instanceof Num && z instanceof Num) {
           try {
-            double machine = DMath.struveHLargeArgument(((Num) n).doubleValue(),
-                ((Num) z).doubleValue());
+            double machine = DMath.struveH(((Num) n).doubleValue(), ((Num) z).doubleValue());
             if (!Double.isNaN(machine)) {
               return F.num(machine);
             }
@@ -3399,6 +3398,12 @@ public class SpecialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        if (n instanceof Num && z instanceof Num) {
+          double machine = DMath.struveL(((Num) n).doubleValue(), ((Num) z).doubleValue());
+          if (!Double.isNaN(machine)) {
+            return F.num(machine);
+          }
+        }
         // the expansion for a large argument, or the series with the digits which it cancels
         IExpr value = WorkingPrecision.evaluate(n, z, z.isReal() && !z.isNegative(),
             (nu, argument, precision) -> ApcomplexStruveMath.struveL(nu, argument));

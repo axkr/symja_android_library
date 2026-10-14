@@ -1,5 +1,6 @@
 package org.matheclipse.external.apfloat;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -32,6 +33,7 @@ public class ApcomplexWeberMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testWeberE()
     {
         assertClose("E(1/2, 3)", new Apfloat("-0.570621336461999334625833563463396920837137519"),

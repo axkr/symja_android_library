@@ -8059,6 +8059,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testEllipticTheta() {
     // a nome next to the unit circle, where the series cancels; calculated with mpmath
     check("N(EllipticTheta(4, 0, 9/10), 30)", //
@@ -11798,6 +11799,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testMaximizeSinusoidWithScaledArgument() {
     // the stationary points are a periodic family: one member decides the extremum
     check("Maximize(Sin(2*t), t)", //
@@ -11942,6 +11944,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRealRootsOfHighDegreePolynomials() {
     // the number of real roots is exact: this polynomial has two
     check("Solve(x^40 - 3*x^7 + x - 5 == 0, x, Reals)", //
@@ -12237,6 +12240,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testPolynomialOverRootOfQuadraticIsReal() {
     check("FreeQ(Integrate((1 + z)^2/Sqrt(4 + z^2), z), _Complex)", //
         "True");
@@ -12332,6 +12336,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testRangeWhichDependsOnAnEarlierVariable() {
     // the picture lies between the bounds: no point with y above x
     check(
@@ -13481,6 +13486,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFunctionRangeCompositionSympy() {
     // sympy #30499, #30505
     check("FunctionRange(Sin(Exp(x)), x, y)", //
@@ -16252,6 +16258,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLerchPhi() {
     // the series for complex arguments and at arbitrary precision; calculated with mpmath
     checkNumeric("LerchPhi(0.3, 2.0, 1.0+I)", //
@@ -28867,6 +28874,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testStieltjesGamma() {
     // numeric values from the integral representation; calculated with mpmath
     checkNumeric("N(StieltjesGamma(1))", //
@@ -32420,6 +32428,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testZeta() {
     check("N(HurwitzZeta(3, -3/2),30)", //
         "0.118102025820863701501870834283");

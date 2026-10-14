@@ -3156,6 +3156,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSolveInverseErfc() {
     check("Solve(1/49*InverseErfc(x)^2 +1/21*InverseErfc(x) == 1/7, x)", //
         "{{x->Erfc(-7/6-Sqrt(301)/6)},{x->Erfc(-7/6+Sqrt(301)/6)}}");

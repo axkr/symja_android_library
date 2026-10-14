@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 public class ZetaNearPoleTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testZetaNextToThePole() {
     // 1/(s-1)+EulerGamma-StieltjesGamma(1)*(s-1): only 18 of the 30 digits of the argument are
     // digits of s-1, and the missing ones were shown as noise

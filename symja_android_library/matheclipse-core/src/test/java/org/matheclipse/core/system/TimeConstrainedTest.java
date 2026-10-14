@@ -1,11 +1,13 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /** TimeConstrained honours fractions of a second. */
 public class TimeConstrainedTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFractionalSecondsWMA() {
     // WMA: {0.300372, "x"} - it used to be rounded up to a whole second
     check("t = AbsoluteTiming(TimeConstrained(While(True, 1), 0.3, \"x\")); "

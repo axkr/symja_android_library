@@ -1,5 +1,6 @@
 package org.matheclipse.io.system;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.AtomQ;
@@ -649,6 +650,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
   }
 
   @Test
+  @Tag("slow")
   public void testTrig002() {
 
     check("Integrate(x^2*Sin(a + b*x)^2,x)", //

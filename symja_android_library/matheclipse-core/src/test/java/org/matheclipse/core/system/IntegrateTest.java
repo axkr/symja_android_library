@@ -1528,6 +1528,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * original integral once more, until the recursion limit ended it with a {@code Hold(...)}.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testIntegrateReentersItself() {
     check("Integrate(Tan(Sqrt(x^2+1)),x)", //
         "Integrate(Tan(Sqrt(1+x^2)),x)");

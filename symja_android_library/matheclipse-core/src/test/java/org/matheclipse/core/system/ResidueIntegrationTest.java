@@ -62,6 +62,7 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testKeyholePower() {
     check("Integrate(x^p*Log(x)/(1+x^2), {x,0,Infinity}, Assumptions->-1<p<1)", //
         "1/4*Pi^2*Csc(p*Pi)^2*(3*Sin(1/2*p*Pi)-Sin(3/2*p*Pi))");
@@ -77,6 +78,7 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testStrip() {
     check("Integrate(x/Sinh(3*x), {x,-Infinity,Infinity})", //
         "Pi^2/18");
@@ -106,6 +108,7 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testStripPowersOfCosh() {
     // a pole of order n in the strip: Gamma(n/2+v)*Gamma(n/2-v) with v == u/(2*b)
     check("Integrate(Cos(a*x)/Cosh(b*x)^2, {x,0,Infinity}, Assumptions->a>0&&b>0)", //
@@ -153,6 +156,7 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testFourier() {
     // a pole of order 2 at a symbolic place
     check("Integrate(Cos(x)/(x^2+c^2)^2, {x,-Infinity,Infinity}, Assumptions->c>0)", //
@@ -184,6 +188,7 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testUnitCircleThreeParameters() {
     check("Integrate(1/(c + d*Cos(t) + h*Sin(t))^2, {t,0,2*Pi}, Assumptions->c>Sqrt(d^2+h^2))", //
         "(2*c*Pi)/(c^2-d^2-h^2)^(3/2)");
@@ -211,6 +216,7 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBeta() {
     check("Integrate(x^(2*j)/(1+x^(2*k)), {x,0,Infinity}, Assumptions->j>=0&&k>=j+1)", //
         "(Pi*Csc(((1+2*j)*Pi)/(2*k)))/(2*k)");
@@ -232,6 +238,7 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
    * parameters: one for every combination of signs which the assumptions allow.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testSignOfTheParameters() {
     check("Integrate(Cos(k*x)/(x^2+1), {x,-Infinity,Infinity}, Assumptions->k>0)", //
         "Pi/E^k");
@@ -284,6 +291,7 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDeclined() {
     // divergent at 0
     check("Integrate(Cos(c*x)/x^2, {x,0,Infinity}, Assumptions->c>0)", //

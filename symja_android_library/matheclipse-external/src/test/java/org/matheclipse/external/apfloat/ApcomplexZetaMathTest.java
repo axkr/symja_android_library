@@ -1,5 +1,6 @@
 package org.matheclipse.external.apfloat;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -188,6 +189,7 @@ public class ApcomplexZetaMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testLerchPhiContinuation()
     {
         // beyond the unit circle, on the cut from 1

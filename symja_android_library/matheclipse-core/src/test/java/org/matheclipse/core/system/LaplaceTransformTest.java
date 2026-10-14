@@ -288,6 +288,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLaplaceTransformNumerical() {
     // numerical calculation only supported for unary functions
     check("LaplaceTransform(1/(x + y + 1), {x, y}, {5.4, 4.5})", //

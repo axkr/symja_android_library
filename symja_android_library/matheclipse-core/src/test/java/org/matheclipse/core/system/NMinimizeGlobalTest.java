@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +28,7 @@ public class NMinimizeGlobalTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testSeveralVariables() {
     // Styblinski-Tang: 4 minima for 2 variables, the lowest at -2.9035 in every variable
     check("NMinimize(1/2*((a^4-16*a^2+5*a)+(b^4-16*b^2+5*b)), {a,b})", //
@@ -62,6 +64,7 @@ public class NMinimizeGlobalTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testBox() {
     // Schwefel: the minimum 0 is at 420.9687 in every variable. The scan of the box left one
     // variable in the basin at -302.52, with the value 118.44

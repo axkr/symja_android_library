@@ -273,6 +273,7 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
    * seven. One evaluation therefore proves nothing here.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFactorKeepsTheUnitOfAGaussianContent() {
     for (int i = 0; i < 120; i++) {
       check("Factor(I*a-b+a*z+I*b*z)", //

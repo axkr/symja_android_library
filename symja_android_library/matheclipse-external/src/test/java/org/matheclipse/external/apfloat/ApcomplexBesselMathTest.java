@@ -1,5 +1,6 @@
 package org.matheclipse.external.apfloat;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apfloat.Apcomplex;
@@ -33,6 +34,7 @@ public class ApcomplexBesselMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testBesselY()
     {
         assertClose("Y(0, 5)", new Apfloat("-0.308517625249033780073648984212046611386347062"),
@@ -69,6 +71,7 @@ public class ApcomplexBesselMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testLargeOrder()
     {
         // the expansion of the library for a large argument cancels about nu^2 / z digits
@@ -79,6 +82,7 @@ public class ApcomplexBesselMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testBesselK()
     {
         // an integer order with a large argument

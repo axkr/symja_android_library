@@ -1,5 +1,6 @@
 package org.matheclipse.external.apfloat;
 
+import org.junit.jupiter.api.Tag;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apfloat.Apfloat;
@@ -29,6 +30,7 @@ public class ApfloatZetaZeroMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testZero()
     {
         // the general zeta function
@@ -46,6 +48,7 @@ public class ApfloatZetaZeroMathTest
     }
 
     @Test
+    @Tag("slow")
     public void testBisect()
     {
         Apfloat tolerance = new Apfloat("1e-15", 20);

@@ -15,6 +15,7 @@ import org.matheclipse.core.system.TestTags;
 public class QuadraticQETest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testLimitStatements() {
     // x^2 -> Infinity for x -> Infinity: a quadratic atom, where the linear elimination gives up
     check("Resolve(ForAll(m, m>0, Exists(n, n>0, ForAll(x, x>n, x^2>m))), Reals)", //
@@ -111,6 +112,7 @@ public class QuadraticQETest extends ExprEvaluatorTestCase {
    * <code>Exists(y, phi)</code> has the verdict of the statement without a free variable.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testFreeVariableAgainstClosedStatements() {
     Random random = new Random(6102026L);
     int compared = 0;
@@ -202,6 +204,7 @@ public class QuadraticQETest extends ExprEvaluatorTestCase {
    * of an alternating statement, which is eliminated on another way, has the other verdict.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testAgainstGrid() {
     Random random = new Random(5102026L);
     int decided = 0;

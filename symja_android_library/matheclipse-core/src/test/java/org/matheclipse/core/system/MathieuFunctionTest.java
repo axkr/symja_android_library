@@ -42,6 +42,7 @@ public class MathieuFunctionTest extends ExprEvaluatorTestCase {
    * mpmath.
    */
   @Test
+  @Tag(TestTags.SLOW)
   public void testLargeParameterAndComplexArgument() {
     // the largest coefficient of the series is far from the index of the reduced exponent
     checkNumeric("MathieuC(1000., 1., 0.7)/MathieuC(1000., 1., 0.)", //

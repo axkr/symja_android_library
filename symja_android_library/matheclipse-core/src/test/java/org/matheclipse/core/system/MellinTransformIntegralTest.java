@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 public class MellinTransformIntegralTest extends ExprEvaluatorTestCase {
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testDecaying() {
     // the integrand decays: the value is compared with the numerical integral over a finite
     // range - over {x,0,Infinity} NIntegrate would get the value of the table itself
@@ -118,6 +119,7 @@ public class MellinTransformIntegralTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Tag(TestTags.SLOW)
   public void testAssumptionsInForce() {
     // the option adds to the assumptions which are in force
     check("Assuming(a>0, Integrate(x^(s-1)*BesselK(0,a*x), {x,0,Infinity}, Assumptions->s>0))", //
@@ -157,6 +159,7 @@ public class MellinTransformIntegralTest extends ExprEvaluatorTestCase {
   }
   /** A function of <code>k*x^m</code> by the substitution, and the rows which were added with it. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testMonomialArgumentAndInverseTangent() {
     check("Integrate(x^(s-1)*Sin(a*x^2), {x,0,Infinity}, Assumptions->-2<s&&s<2&&a>0)", //
         "(Gamma(s/2)*Sin(1/4*Pi*s))/(2*a^(s/2))");
@@ -192,6 +195,7 @@ public class MellinTransformIntegralTest extends ExprEvaluatorTestCase {
 
   /** A power of the sine or the cosine: the sum of the transforms of its harmonics. */
   @Test
+  @Tag(TestTags.SLOW)
   public void testTrigonometricPower() {
     check("Integrate(x^(s-1)*Sin(a*x)^2, {x,0,Infinity}, Assumptions->-2<s&&s<0&&a>0)", //
         "(-Cos(1/2*Pi*s)*Gamma(s))/(2^(1+s)*a^s)");
