@@ -1,16 +1,24 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.external.apfloat.ZetaWorkaround;
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
+import org.matheclipse.external.apfloat.ApfloatRiemannSiegelMath;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.ApfloatMath;
+import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.external.apfloat.ApcomplexPolynomialMath;
 import org.matheclipse.external.apfloat.ApcomplexThetaMath;
+import org.matheclipse.external.apfloat.ApcomplexWeierstrassMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apfloat;
 import java.util.function.Supplier;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApfloatArithmeticException;
 import org.hipparchus.complex.Complex;
-import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -66,6 +74,12 @@ public class EllipticIntegrals {
       S.InverseJacobiSC.setEvaluator(new InverseJacobiSC());
       S.InverseJacobiSD.setEvaluator(new InverseJacobiSD());
       S.InverseJacobiSN.setEvaluator(new InverseJacobiSN());
+      S.InverseJacobiCS.setEvaluator(new InverseJacobiReciprocal("CS"));
+      S.InverseJacobiDC.setEvaluator(new InverseJacobiReciprocal("DC"));
+      S.InverseJacobiDS.setEvaluator(new InverseJacobiReciprocal("DS"));
+      S.InverseJacobiNC.setEvaluator(new InverseJacobiReciprocal("NC"));
+      S.InverseJacobiND.setEvaluator(new InverseJacobiReciprocal("ND"));
+      S.InverseJacobiNS.setEvaluator(new InverseJacobiReciprocal("NS"));
       S.JacobiAmplitude.setEvaluator(new JacobiAmplitude());
       S.JacobiCD.setEvaluator(new JacobiCD());
       S.JacobiCN.setEvaluator(new JacobiCN());
@@ -73,14 +87,26 @@ public class EllipticIntegrals {
       S.JacobiSC.setEvaluator(new JacobiSC());
       S.JacobiSD.setEvaluator(new JacobiSD());
       S.JacobiSN.setEvaluator(new JacobiSN());
+      S.JacobiCS.setEvaluator(new JacobiReciprocal("CS"));
+      S.JacobiDC.setEvaluator(new JacobiReciprocal("DC"));
+      S.JacobiDS.setEvaluator(new JacobiReciprocal("DS"));
+      S.JacobiNC.setEvaluator(new JacobiReciprocal("NC"));
+      S.JacobiND.setEvaluator(new JacobiReciprocal("ND"));
+      S.JacobiNS.setEvaluator(new JacobiReciprocal("NS"));
       S.JacobiZeta.setEvaluator(new JacobiZeta());
 
       S.KleinInvariantJ.setEvaluator(new KleinInvariantJ());
+      S.DedekindEta.setEvaluator(new NumericFunction1(ApcomplexThetaMath::dedekindEta, false));
+      S.EllipticNomeQ.setEvaluator(new NumericFunction1(ApcomplexThetaMath::ellipticNomeQ, true));
+      S.ModularLambda.setEvaluator(new NumericFunction1(ApcomplexThetaMath::modularLambda, false));
+      S.RiemannSiegelZ.setEvaluator(new NumericFunction1(EllipticIntegrals::riemannSiegelZ, true));
 
       S.WeierstrassHalfPeriods.setEvaluator(new WeierstrassHalfPeriods());
       S.WeierstrassInvariants.setEvaluator(new WeierstrassInvariants());
       S.WeierstrassP.setEvaluator(new WeierstrassP());
       S.WeierstrassPPrime.setEvaluator(new WeierstrassPPrime());
+      S.WeierstrassSigma.setEvaluator(new WeierstrassQuasiPeriodic(true));
+      S.WeierstrassZeta.setEvaluator(new WeierstrassQuasiPeriodic(false));
     }
   }
 
@@ -119,6 +145,25 @@ public class EllipticIntegrals {
       }
     }
     return result;
+  }
+
+  /**
+   * The number of arguments which are zero. A machine number counts only if it is 0.0:
+   * <code>isZero()</code> of a machine number has a tolerance.
+   */
+  private static int zeros(IExpr... args) {
+    int count = 0;
+    for (IExpr x : args) {
+      if (x instanceof Num || x instanceof ComplexNum) {
+        INumber number = (INumber) x;
+        if (number.reDoubleValue() == 0.0 && number.imDoubleValue() == 0.0) {
+          count++;
+        }
+      } else if (x.isZero()) {
+        count++;
+      }
+    }
+    return count;
   }
 
   private static class CarlsonRC extends AbstractFunctionEvaluator implements IFunctionExpand {
@@ -177,12 +222,10 @@ public class EllipticIntegrals {
 
       if (engine.isNumericMode()) {
         if (engine.isArbitraryMode()) {
-          x = engine.evalN(x);
-          y = engine.evalN(y);
-          if (x.isNumber() && y.isNumber()) {
-            return CarlsonEllipticIntegral.rC(x, y);
-          }
-          return F.NIL;
+          IExpr[] args = arbitraryArguments(engine, x, y);
+          return args == null ? F.NIL
+              : carlson(S.CarlsonRC, engine, () -> CarlsonArbitraryPrecision.rC(args[0], args[1],
+                  ArbitraryPrecision.digits(engine)));
         }
         double xd = x.evalfNaN();
         double yd = y.evalfNaN();
@@ -191,7 +234,12 @@ public class EllipticIntegrals {
           Complex yc = y.evalfc();
           return F.complexNum(EllipticIntegralsJS.carlsonRC(xc, yc));
         } else {
-          return F.num(EllipticIntegralsJS.carlsonRC(xd, yd));
+          double value = EllipticIntegralsJS.carlsonRC(xd, yd);
+          if (Double.isNaN(value)) {
+            // a negative argument is on the branch cut: the complex value of the integral
+            return F.complexNum(EllipticIntegralsJS.carlsonRC(new Complex(xd), new Complex(yd)));
+          }
+          return F.num(value);
         }
       }
       return F.NIL;
@@ -239,6 +287,10 @@ public class EllipticIntegrals {
     }
 
     private static IExpr carlsonRD(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
+      if (zeros(z) == 1 || zeros(x, y) == 2) {
+        // the integral diverges at its lower limit
+        return F.CComplexInfinity;
+      }
       if (engine.isArbitraryMode()) {
         IExpr[] args = arbitraryArguments(engine, x, y, z);
         return args == null ? F.NIL
@@ -256,7 +308,12 @@ public class EllipticIntegrals {
           Complex zc = z.evalfc();
           return F.complexNum(EllipticIntegralsJS.carlsonRD(xc, yc, zc));
         } else {
-          return F.num(EllipticIntegralsJS.carlsonRD(xd, yd, zd));
+          double value = EllipticIntegralsJS.carlsonRD(xd, yd, zd);
+          if (Double.isNaN(value)) {
+            // a negative argument is on the branch cut: the complex value of the integral
+            return F.complexNum(EllipticIntegralsJS.carlsonRD(new Complex(xd), new Complex(yd), new Complex(zd)));
+          }
+          return F.num(value);
         }
       }
       return F.NIL;
@@ -308,6 +365,10 @@ public class EllipticIntegrals {
         // 1 / Sqrt(x)
         return F.Power(x, F.CN1D2);
       }
+      if (zeros(x, y, z) >= 2) {
+        // the integral diverges at its lower limit
+        return F.CComplexInfinity;
+      }
       if (engine.isArbitraryMode()) {
         IExpr[] args = arbitraryArguments(engine, x, y, z);
         return args == null ? F.NIL
@@ -325,7 +386,12 @@ public class EllipticIntegrals {
           Complex zc = z.evalfc();
           return F.complexNum(EllipticIntegralsJS.carlsonRF(xc, yc, zc));
         } else {
-          return F.num(EllipticIntegralsJS.carlsonRF(xd, yd, zd));
+          double value = EllipticIntegralsJS.carlsonRF(xd, yd, zd);
+          if (Double.isNaN(value)) {
+            // a negative argument is on the branch cut: the complex value of the integral
+            return F.complexNum(EllipticIntegralsJS.carlsonRF(new Complex(xd), new Complex(yd), new Complex(zd)));
+          }
+          return F.num(value);
         }
       }
       return F.NIL;
@@ -375,8 +441,8 @@ public class EllipticIntegrals {
     private static IExpr carlsonRG(IExpr x, IExpr y, IExpr z, EvalEngine engine) {
       if (x.equals(y)) {
         if (x.equals(z)) {
-          // 1 / Sqrt(x)
-          return F.Power(x, F.CN1D2);
+          // Sqrt(x)
+          return F.Sqrt(x);
         }
         if (x.isZero()) {
           // CarlsonRG(0,0,z) == Sqrt(z)/2, where the form below would be 0*ComplexInfinity
@@ -384,6 +450,10 @@ public class EllipticIntegrals {
         }
         // (1/2) * (Sqrt(z) + x*CarlsonRF(x,x,z))
         return F.Times(F.C1D2, F.Plus(F.Sqrt(z), F.Times(x, F.CarlsonRF(x, x, z))));
+      }
+      if (zeros(x, y, z) == 2) {
+        // CarlsonRG(0,0,z) == Sqrt(z)/2 in every order of the arguments
+        return F.Times(F.C1D2, F.Sqrt(zeros(x) == 0 ? x : zeros(y) == 0 ? y : z));
       }
       if (engine.isArbitraryMode()) {
         IExpr[] args = arbitraryArguments(engine, x, y, z);
@@ -403,7 +473,12 @@ public class EllipticIntegrals {
             Complex zc = z.evalfc();
             return F.complexNum(EllipticIntegralsJS.carlsonRG(xc, yc, zc));
           } else {
-            return F.num(EllipticIntegralsJS.carlsonRG(xd, yd, zd));
+            double value = EllipticIntegralsJS.carlsonRG(xd, yd, zd);
+            if (Double.isNaN(value)) {
+              // a negative argument is on the branch cut: the complex value of the integral
+              return F.complexNum(EllipticIntegralsJS.carlsonRG(new Complex(xd), new Complex(yd), new Complex(zd)));
+            }
+            return F.num(value);
           }
         } catch (ValidateException ve) {
           throw ve;
@@ -454,10 +529,21 @@ public class EllipticIntegrals {
       IExpr y = ast.arg2();
       IExpr z = ast.arg3();
       IExpr p = ast.arg4();
-      return carlsonRJ(x, y, z, p, engine).eval(engine);
+      IExpr value = carlsonRJ(x, y, z, p, engine).eval(engine);
+      if (value.isNumber() && !value.isReal() && p.isReal() && p.isNegative() && x.isReal()
+          && y.isReal() && z.isReal() && !x.isNegative() && !y.isNegative() && !z.isNegative()) {
+        // a pole on the path of integration: the Cauchy principal value is the real part of the
+        // value which the integral is continued to
+        return ((INumber) value).re();
+      }
+      return value;
     }
 
     private static IExpr carlsonRJ(IExpr x, IExpr y, IExpr z, IExpr p, EvalEngine engine) {
+      if (zeros(p) == 1 || zeros(x, y, z) >= 2) {
+        // the integral diverges at its lower limit
+        return F.CComplexInfinity;
+      }
       if (engine.isArbitraryMode()) {
         IExpr[] args = arbitraryArguments(engine, x, y, z, p);
         return args == null ? F.NIL
@@ -478,7 +564,12 @@ public class EllipticIntegrals {
             Complex pc = p.evalfc();
             return F.complexNum(EllipticIntegralsJS.carlsonRJ(xc, yc, zc, pc));
           } else {
-            return F.num(EllipticIntegralsJS.carlsonRJ(xd, yd, zd, pd));
+            double value = EllipticIntegralsJS.carlsonRJ(xd, yd, zd, pd);
+            if (Double.isNaN(value)) {
+              // a negative argument is on the branch cut: the complex value of the integral
+              return F.complexNum(EllipticIntegralsJS.carlsonRJ(new Complex(xd), new Complex(yd), new Complex(zd), new Complex(pd)));
+            }
+            return F.num(value);
           }
         } catch (ValidateException ve) {
           throw ve; // NOPMD
@@ -1594,10 +1685,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
-      return inverseJacobiCD(z, m, engine.isDoubleMode()).eval(engine);
+      return inverseJacobiCD(z, m, engine).eval(engine);
     }
 
-    private static IExpr inverseJacobiCD(IExpr z, IExpr m, boolean doubleMode) {
+    private static IExpr inverseJacobiCD(IExpr z, IExpr m, EvalEngine engine) {
       if (m.isZero()) {
         return F.ArcCos(z);
       }
@@ -1610,28 +1701,7 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
-      if (doubleMode && z.isNumber() && m.isNumber()) {
-        try {
-          // double zDouble = Double.NaN;
-          // double mDouble = Double.NaN;
-          // try {
-          // zDouble = z.evalDouble();
-          // mDouble = m.evalDouble();
-          // } catch (ValidateException ve) {
-          // }
-          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F.complexNum(EllipticFunctionsJS.inverseJacobiCD(z.evalfc(), m.evalfc()));
-          // } else {
-          // return F.num(EllipticFunctionsJS.inverseJacobiCD(zDouble, mDouble));
-          // }
-        } catch (ValidateException ve) {
-          throw ve;
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Errors.printMessage(S.InverseJacobiCD, rex);
-        }
-      }
-      return F.NIL;
+      return inverseJacobiNumeric("CD", z, m, engine);
     }
 
     @Override
@@ -1652,10 +1722,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
-      return inverseJacobiCN(z, m, engine.isDoubleMode()).eval(engine);
+      return inverseJacobiCN(z, m, engine).eval(engine);
     }
 
-    private static IExpr inverseJacobiCN(IExpr z, IExpr m, boolean doubleMode) {
+    private static IExpr inverseJacobiCN(IExpr z, IExpr m, EvalEngine engine) {
       if (m.isZero()) {
         return F.ArcCos(z);
       }
@@ -1674,28 +1744,7 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
-      if (doubleMode && z.isNumber() && m.isNumber()) {
-        try {
-          // double zDouble = Double.NaN;
-          // double mDouble = Double.NaN;
-          // try {
-          // zDouble = z.evalDouble();
-          // mDouble = m.evalDouble();
-          // } catch (ValidateException ve) {
-          // }
-          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F.complexNum(EllipticFunctionsJS.inverseJacobiCN(z.evalfc(), m.evalfc()));
-          // } else {
-          // return F.num(EllipticFunctionsJS.inverseJacobiCN(zDouble, mDouble));
-          // }
-        } catch (ValidateException ve) {
-          throw ve;
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Errors.printMessage(S.InverseJacobiCN, rex);
-        }
-      }
-      return F.NIL;
+      return inverseJacobiNumeric("CN", z, m, engine);
     }
 
     @Override
@@ -1716,10 +1765,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
-      return inverseJacobiDN(z, m, engine.isDoubleMode()).eval(engine);
+      return inverseJacobiDN(z, m, engine).eval(engine);
     }
 
-    private static IExpr inverseJacobiDN(IExpr z, IExpr m, boolean doubleMode) {
+    private static IExpr inverseJacobiDN(IExpr z, IExpr m, EvalEngine engine) {
       if (m.isOne()) {
         return F.ArcSech(z);
       }
@@ -1729,28 +1778,7 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.C0;
       }
-      if (doubleMode && z.isNumber() && m.isNumber()) {
-        try {
-          // double zDouble = Double.NaN;
-          // double mDouble = Double.NaN;
-          // try {
-          // zDouble = z.evalDouble();
-          // mDouble = m.evalDouble();
-          // } catch (ValidateException ve) {
-          // }
-          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F.complexNum(EllipticFunctionsJS.inverseJacobiDN(z.evalfc(), m.evalfc()));
-          // } else {
-          // return F.num(EllipticFunctionsJS.inverseJacobiDN(zDouble, mDouble));
-          // }
-        } catch (ValidateException ve) {
-          throw ve;
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Errors.printMessage(S.InverseJacobiDN, rex);
-        }
-      }
-      return F.NIL;
+      return inverseJacobiNumeric("DN", z, m, engine);
     }
 
     @Override
@@ -1771,10 +1799,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
-      return inverseJacobiSC(z, m, engine.isDoubleMode()).eval(engine);
+      return inverseJacobiSC(z, m, engine).eval(engine);
     }
 
-    private static IExpr inverseJacobiSC(IExpr z, IExpr m, boolean doubleMode) {
+    private static IExpr inverseJacobiSC(IExpr z, IExpr m, EvalEngine engine) {
       if (m.isZero()) {
         return F.ArcTan(z);
       }
@@ -1794,28 +1822,7 @@ public class EllipticIntegrals {
       if (negExpr.isPresent()) {
         return F.Negate(F.InverseJacobiSC(negExpr, m));
       }
-      if (doubleMode && z.isNumber() && m.isNumber()) {
-        try {
-          // double zDouble = Double.NaN;
-          // double mDouble = Double.NaN;
-          // try {
-          // zDouble = z.evalDouble();
-          // mDouble = m.evalDouble();
-          // } catch (ValidateException ve) {
-          // }
-          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F.complexNum(EllipticFunctionsJS.inverseJacobiSC(z.evalfc(), m.evalfc()));
-          // } else {
-          // return F.num(EllipticFunctionsJS.inverseJacobiSC(zDouble, mDouble));
-          // }
-        } catch (ValidateException ve) {
-          throw ve;
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Errors.printMessage(S.InverseJacobiSC, rex);
-        }
-      }
-      return F.NIL;
+      return inverseJacobiNumeric("SC", z, m, engine);
     }
 
     @Override
@@ -1836,10 +1843,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
-      return inverseJacobiSD(z, m, engine.isDoubleMode()).eval(engine);
+      return inverseJacobiSD(z, m, engine).eval(engine);
     }
 
-    private static IExpr inverseJacobiSD(IExpr z, IExpr m, boolean doubleMode) {
+    private static IExpr inverseJacobiSD(IExpr z, IExpr m, EvalEngine engine) {
       if (m.isZero()) {
         return F.ArcSin(z);
       }
@@ -1853,28 +1860,7 @@ public class EllipticIntegrals {
       if (negExpr.isPresent()) {
         return F.Negate(F.InverseJacobiSD(negExpr, m));
       }
-      if (doubleMode && z.isNumber() && m.isNumber()) {
-        try {
-          // double zDouble = Double.NaN;
-          // double mDouble = Double.NaN;
-          // try {
-          // zDouble = z.evalDouble();
-          // mDouble = m.evalDouble();
-          // } catch (ValidateException ve) {
-          // }
-          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F.complexNum(EllipticFunctionsJS.inverseJacobiSD(z.evalfc(), m.evalfc()));
-          // } else {
-          // return F.num(EllipticFunctionsJS.inverseJacobiSD(zDouble, mDouble));
-          // }
-        } catch (ValidateException ve) {
-          throw ve;
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Errors.printMessage(S.InverseJacobiSD, rex);
-        }
-      }
-      return F.NIL;
+      return inverseJacobiNumeric("SD", z, m, engine);
     }
 
     @Override
@@ -1895,10 +1881,10 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
-      return inverseJacobiSN(z, m, engine.isDoubleMode()).eval(engine);
+      return inverseJacobiSN(z, m, engine).eval(engine);
     }
 
-    private static IExpr inverseJacobiSN(IExpr z, IExpr m, boolean doubleMode) {
+    private static IExpr inverseJacobiSN(IExpr z, IExpr m, EvalEngine engine) {
       if (m.isZero()) {
         return F.ArcSin(z);
       }
@@ -1918,28 +1904,7 @@ public class EllipticIntegrals {
       if (negExpr.isPresent()) {
         return F.Negate(F.InverseJacobiSN(negExpr, m));
       }
-      if (doubleMode && z.isNumber() && m.isNumber()) {
-        try {
-          // double zDouble = Double.NaN;
-          // double mDouble = Double.NaN;
-          // try {
-          // zDouble = z.evalDouble();
-          // mDouble = m.evalDouble();
-          // } catch (ValidateException ve) {
-          // }
-          // if (Double.isNaN(zDouble) || Double.isNaN(mDouble)) {
-          return F.complexNum(EllipticFunctionsJS.inverseJacobiSN(z.evalfc(), m.evalfc()));
-          // } else {
-          // return F.num(EllipticFunctionsJS.inverseJacobiSN(zDouble, mDouble));
-          // }
-        } catch (ValidateException ve) {
-          throw ve;
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Errors.printMessage(S.InverseJacobiSN, rex);
-        }
-      }
-      return F.NIL;
+      return inverseJacobiNumeric("SN", z, m, engine);
     }
 
     @Override
@@ -1982,6 +1947,17 @@ public class EllipticIntegrals {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr m = ast.arg2();
+      if (isArbitrary(z, m, engine) && z.isReal() && m.isReal()) {
+        final int digits = (int) engine.getNumericPrecision();
+        try {
+          return F.num(ApcomplexThetaMath.jacobiAmplitude(
+              CarlsonArbitraryPrecision.apcomplex(z, digits).real(),
+              CarlsonArbitraryPrecision.apcomplex(m, digits).real()));
+        } catch (ArithmeticException | ApfloatRuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
+          return F.NIL;
+        }
+      }
       return jacobiAmplitude(z, m, engine.isDoubleMode()).eval(engine);
     }
 
@@ -2058,6 +2034,299 @@ public class EllipticIntegrals {
    * </pre>
    */
   /**
+   * The Riemann-Siegel function <code>Z(t) == E^(I*RiemannSiegelTheta(t))*Zeta(1/2+I*t)</code>,
+   * with the Riemann-Siegel formula for a large real <code>t</code>.
+   */
+  private static Apcomplex riemannSiegelZ(Apcomplex t) {
+    if (t.imag().signum() == 0 && ApfloatMath.abs(t.real()).compareTo(new Apfloat(500)) > 0) {
+      try {
+        return ApfloatRiemannSiegelMath.riemannSiegelZ(t.real());
+      } catch (ArithmeticException ae) {
+        // the asymptotic formula does not reach the precision at this argument
+      }
+    }
+    final long precision = t.precision();
+    Apcomplex tw = t.precision(precision + 20);
+    Apcomplex i = new Apcomplex(Apfloat.ZERO, new Apfloat(1, precision + 20));
+    Apcomplex s = new Apfloat("0.5", precision + 20).add(i.multiply(tw));
+    Apcomplex value = ApcomplexMath.exp(i.multiply(ApcomplexZetaMath.riemannSiegelTheta(tw)))
+        .multiply(ZetaWorkaround.zeta(s));
+    return (t.imag().signum() == 0 ? new Apcomplex(value.real()) : value).precision(precision);
+  }
+
+  /**
+   * A function of one number which has no symbolic evaluation: its value at machine precision or
+   * at the precision of the engine by one routine.
+   */
+  private static class NumericFunction1 extends AbstractFunctionEvaluator {
+    private final java.util.function.UnaryOperator<Apcomplex> function;
+    private final boolean realResult;
+
+    /** @param realResult whether a real argument gives a real result */
+    NumericFunction1(java.util.function.UnaryOperator<Apcomplex> function, boolean realResult) {
+      this.function = function;
+      this.realResult = realResult;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      if (!z.isNumber()) {
+        return F.NIL;
+      }
+      final boolean arbitrary = z instanceof ApfloatNum || z instanceof ApcomplexNum
+          || (engine.isArbitraryMode() && !z.isInexactNumber());
+      if (!arbitrary && !z.isInexactNumber() && !engine.isDoubleMode()) {
+        return F.NIL;
+      }
+      final int digits =
+          arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+      try {
+        Apcomplex value = function.apply(CarlsonArbitraryPrecision.apcomplex(z, digits));
+        final boolean real = value.imag().signum() == 0 || (realResult && z.isReal());
+        if (arbitrary) {
+          return real ? F.num(value.real()) : F.complexNum(value);
+        }
+        return real ? F.num(value.real().doubleValue())
+            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        return F.NIL;
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /** Whether two numbers are evaluated with the precision of the engine. */
+  private static boolean isArbitrary(IExpr z, IExpr m, EvalEngine engine) {
+    if (!z.isNumber() || !m.isNumber()) {
+      return false;
+    }
+    return z instanceof ApfloatNum || z instanceof ApcomplexNum || m instanceof ApfloatNum
+        || m instanceof ApcomplexNum
+        || (engine.isArbitraryMode() && !z.isInexactNumber() && !m.isInexactNumber());
+  }
+
+  /**
+   * An inverse Jacobi elliptic function of numbers, from the symmetric integral of the first kind:
+   * at machine precision and at the precision of the engine by the same routine, so that both
+   * take the same value on the branch cuts - the limit from the side which the inverse
+   * trigonometric and hyperbolic functions take, which these functions are for <code>m == 0</code>
+   * and <code>m == 1</code>.
+   *
+   * @param kind the two letters of the function: the numerator and the denominator among
+   *        <code>S, C, D, N</code>
+   * @return {@link F#NIL} if the arguments are not inexact numbers, or the integral diverges
+   */
+  private static IExpr inverseJacobiNumeric(String kind, IExpr z, IExpr m, EvalEngine engine) {
+    if (!z.isNumber() || !m.isNumber() || z.isZero() || m.isZero() || m.isOne()) {
+      return F.NIL;
+    }
+    final boolean arbitrary = isArbitrary(z, m, engine);
+    if (!arbitrary && !engine.isDoubleMode()) {
+      return F.NIL;
+    }
+    final int digits =
+        arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+    try {
+      Apcomplex value = ApcomplexThetaMath.inverseJacobi(Character.toLowerCase(kind.charAt(0)),
+          Character.toLowerCase(kind.charAt(1)), CarlsonArbitraryPrecision.apcomplex(z, digits),
+          CarlsonArbitraryPrecision.apcomplex(m, digits));
+      if (arbitrary) {
+        return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
+      }
+      return value.imag().signum() == 0 ? F.num(value.real().doubleValue())
+          : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+    } catch (ArithmeticException | ApfloatRuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * <code>JacobiCS, JacobiDC, JacobiDS, JacobiNC, JacobiND, JacobiNS</code>: the reciprocals of
+   * <code>JacobiSC, JacobiCD, JacobiSD, JacobiCN, JacobiDN, JacobiSN</code>.
+   */
+  private static class JacobiReciprocal extends AbstractFunctionEvaluator {
+    /** The two letters of the function: the numerator and the denominator. */
+    private final String kind;
+
+    JacobiReciprocal(String kind) {
+      this.kind = kind;
+    }
+
+    /** The function with the two letters exchanged. */
+    private IAST reciprocal(IExpr z, IExpr m) {
+      switch (kind) {
+        case "CS":
+          return F.JacobiSC(z, m);
+        case "DC":
+          return F.JacobiCD(z, m);
+        case "DS":
+          return F.JacobiSD(z, m);
+        case "NC":
+          return F.JacobiCN(z, m);
+        case "ND":
+          return F.JacobiDN(z, m);
+        default:
+          return F.JacobiSN(z, m);
+      }
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      IExpr arbitrary = jacobiArbitrary(kind, z, m, engine);
+      if (arbitrary.isPresent()) {
+        return arbitrary;
+      }
+      if (z.isZero()) {
+        // sn(0) == 0, cn(0) == dn(0) == 1
+        return kind.charAt(1) == 'S' ? F.CComplexInfinity : F.C1;
+      }
+      if (m.isZero()) {
+        // sn == Sin, cn == Cos, dn == 1
+        switch (kind) {
+          case "CS":
+            return F.Cot(z);
+          case "DS":
+          case "NS":
+            return F.Csc(z);
+          case "ND":
+            return F.C1;
+          default:
+            return F.Sec(z);
+        }
+      }
+      if (m.isOne()) {
+        // sn == Tanh, cn == dn == Sech
+        switch (kind) {
+          case "CS":
+          case "DS":
+            return F.Csch(z);
+          case "NS":
+            return F.Coth(z);
+          case "DC":
+            return F.C1;
+          default:
+            return F.Cosh(z);
+        }
+      }
+      if (engine.isDoubleMode() && z.isNumber() && m.isNumber()) {
+        IExpr value = engine.evaluate(reciprocal(z, m));
+        if (value.isNumber()) {
+          return value.isZero() ? F.CComplexInfinity : value.inverse();
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
+   * <code>InverseJacobiCS, InverseJacobiDC, InverseJacobiDS, InverseJacobiNC, InverseJacobiND,
+   * InverseJacobiNS</code>: the inverse of a reciprocal function at <code>z</code> is the inverse of
+   * the function itself at <code>1/z</code>, as <code>ArcCsc(z)</code> is
+   * <code>ArcSin(1/z)</code>.
+   */
+  private static class InverseJacobiReciprocal extends AbstractFunctionEvaluator {
+    /** The two letters of the function: the numerator and the denominator. */
+    private final String kind;
+
+    InverseJacobiReciprocal(String kind) {
+      this.kind = kind;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr z = ast.arg1();
+      IExpr m = ast.arg2();
+      if (m.isZero()) {
+        // sn == Sin, cn == Cos; nd == 1 has no inverse
+        switch (kind) {
+          case "CS":
+            return F.ArcCot(z);
+          case "DS":
+          case "NS":
+            return F.ArcCsc(z);
+          case "DC":
+          case "NC":
+            return F.ArcSec(z);
+          default:
+            return F.NIL;
+        }
+      }
+      if (m.isOne()) {
+        // sn == Tanh, cn == dn == Sech; dc == 1 has no inverse
+        switch (kind) {
+          case "CS":
+          case "DS":
+            return F.ArcCsch(z);
+          case "NS":
+            return F.ArcCoth(z);
+          case "NC":
+          case "ND":
+            return F.ArcCosh(z);
+          default:
+            return F.NIL;
+        }
+      }
+      if (kind.charAt(1) == 'S') {
+        if (kind.equals("NS")) {
+          // sn(K) == 1
+          if (z.isOne()) {
+            return F.EllipticK(m);
+          }
+          if (z.isMinusOne()) {
+            return F.Negate(F.EllipticK(m));
+          }
+        }
+        // an odd function, as the function which it inverts is
+        IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+        if (negExpr.isPresent()) {
+          return F.Negate(F.binaryAST2(ast.head(), negExpr, m));
+        }
+      } else if (z.isOne()) {
+        // cn(0) == dn(0) == 1
+        return F.C0;
+      }
+      return inverseJacobiNumeric(kind, z, m, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
    * A Jacobi elliptic function of arbitrary precision numbers, as a quotient of theta functions;
    * {@link F#NIL} for machine numbers, which have their own routines, or where the series fails.
    *
@@ -2068,10 +2337,7 @@ public class EllipticIntegrals {
     if (!z.isNumber() || !m.isNumber() || z.isZero() || m.isZero() || m.isOne()) {
       return F.NIL;
     }
-    boolean arbitrary = z instanceof ApfloatNum || z instanceof ApcomplexNum
-        || m instanceof ApfloatNum || m instanceof ApcomplexNum
-        || (engine.isArbitraryMode() && !z.isInexactNumber() && !m.isInexactNumber());
-    if (!arbitrary) {
+    if (!isArbitrary(z, m, engine)) {
       return F.NIL;
     }
     final int digits = (int) engine.getNumericPrecision();
@@ -2594,6 +2860,15 @@ public class EllipticIntegrals {
       if (m.isInfinity() || m.isNegativeInfinity()) {
         return F.CComplexInfinity;
       }
+      if (z.isNumber() && m.isNumber() && (engine.isNumericMode() || z.isInexactNumber()
+          || m.isInexactNumber())) {
+        // EllipticE(z,m)-EllipticE(m)/EllipticK(m)*EllipticF(z,m)
+        IExpr value = engine.evaluate(F.Subtract(F.EllipticE(z, m),
+            F.Times(F.EllipticE(m), F.Power(F.EllipticK(m), F.CN1), F.EllipticF(z, m))));
+        if (value.isNumber()) {
+          return value;
+        }
+      }
       return F.NIL;
     }
 
@@ -2696,16 +2971,26 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
-        return weierstrassHalfPeriods(g2, g3).eval(engine);
+        return weierstrassHalfPeriods(g2, g3, engine).eval(engine);
       }
       return F.NIL;
     }
 
-    private static IExpr weierstrassHalfPeriods(IExpr g2, IExpr g3) {
-      // numeric mode isn't set here
-      if (g2.isInexactNumber() || g3.isInexactNumber()) {
+    private static IExpr weierstrassHalfPeriods(IExpr g2, IExpr g3, EvalEngine engine) {
+      if (g2.isInexactNumber() || g3.isInexactNumber() || engine.isNumericMode()) {
         if (g2.isNumber() && g3.isNumber()) {
           try {
+            if (isArbitrary(g2) || isArbitrary(g3) || (engine.isArbitraryMode()
+                && !g2.isInexactNumber() && !g3.isInexactNumber())) {
+              final int digits = (int) engine.getNumericPrecision();
+              Apcomplex[] e = weierstrassRoots(g2, g3, digits);
+              if (e == null) {
+                return F.NIL;
+              }
+              Apcomplex[] w = ApcomplexWeierstrassMath.weierstrassHalfPeriods(e[0], e[1], e[2]);
+              return F.list(CarlsonArbitraryPrecision.round(w[0], digits),
+                  CarlsonArbitraryPrecision.round(w[1], digits));
+            }
             org.hipparchus.complex.Complex[] invariants =
                 EllipticFunctionsJS.weierstrassHalfPeriods(g2.evalfc(), g3.evalfc());
             return Object2Expr.convertComplex(false, invariants);
@@ -2738,16 +3023,25 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg1();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
-        return weierstrassInvariants(g2, g3).eval(engine);
+        return weierstrassInvariants(g2, g3, engine).eval(engine);
       }
       return F.NIL;
     }
 
-    private static IExpr weierstrassInvariants(IExpr g2, IExpr g3) {
-      // numeric mode isn't set here
-      if (g2.isInexactNumber() || g3.isInexactNumber()) {
+    private static IExpr weierstrassInvariants(IExpr g2, IExpr g3, EvalEngine engine) {
+      if (g2.isInexactNumber() || g3.isInexactNumber() || engine.isNumericMode()) {
         if (g2.isNumber() && g3.isNumber()) {
           try {
+            if (isArbitrary(g2) || isArbitrary(g3) || (engine.isArbitraryMode()
+                && !g2.isInexactNumber() && !g3.isInexactNumber())) {
+              final int digits = (int) engine.getNumericPrecision();
+              final int working = digits + CarlsonArbitraryPrecision.GUARD_DIGITS;
+              Apcomplex[] g = ApcomplexWeierstrassMath.weierstrassInvariants(
+                  CarlsonArbitraryPrecision.apcomplex(g2, working),
+                  CarlsonArbitraryPrecision.apcomplex(g3, working));
+              return F.list(CarlsonArbitraryPrecision.round(g[0], digits),
+                  CarlsonArbitraryPrecision.round(g[1], digits));
+            }
             org.hipparchus.complex.Complex[] invariants =
                 EllipticFunctionsJS.weierstrassInvariants(g2.evalfc(), g3.evalfc());
             return Object2Expr.convertComplex(false, invariants);
@@ -2798,6 +3092,63 @@ public class EllipticIntegrals {
    * @return <code>F.NIL</code> if the roots of <code>4*t^3-g2*t-g3</code> aren't available in
    *         closed form
    */
+  /**
+   * The three roots of <code>4*t^3-g2*t-g3</code> with the precision of the engine, in the order
+   * of the machine precision routine; <code>null</code> if two of them are too near to each other.
+   */
+  private static Apcomplex[] weierstrassRoots(IExpr g2, IExpr g3, int digits) {
+    Complex[] roots = EllipticFunctionsJS.weierstrassRoots(g2.evalfc(), g3.evalfc());
+    final long precision = digits + CarlsonArbitraryPrecision.GUARD_DIGITS;
+    Apcomplex[] coefficients =
+        {CarlsonArbitraryPrecision.apcomplex(g3, (int) precision + 20).negate(),
+            CarlsonArbitraryPrecision.apcomplex(g2, (int) precision + 20).negate(), Apcomplex.ZERO,
+            new Apfloat(4)};
+    Apcomplex[] result = new Apcomplex[3];
+    for (int i = 0; i < 3; i++) {
+      double separation = Math.min(roots[i].subtract(roots[(i + 1) % 3]).norm(),
+          roots[i].subtract(roots[(i + 2) % 3]).norm());
+      if (!(separation > 1.0e-6 * (1.0 + roots[i].norm()))) {
+        return null;
+      }
+      result[i] = ApcomplexPolynomialMath.root(coefficients,
+          new Apcomplex(new Apfloat(roots[i].getReal(), precision),
+              new Apfloat(roots[i].getImaginary(), precision)),
+          separation, precision);
+    }
+    return result;
+  }
+
+  /**
+   * <code>WeierstrassP</code> or its derivative for arbitrary precision numbers; {@link F#NIL}
+   * if the roots of the cubic are not separated.
+   */
+  private static IExpr weierstrassArbitrary(IExpr u, IExpr g2, IExpr g3, boolean derivative,
+      EvalEngine engine) {
+    final int digits = (int) engine.getNumericPrecision();
+    try {
+      Apcomplex[] e = weierstrassRoots(g2, g3, digits);
+      if (e == null) {
+        return F.NIL;
+      }
+      Apcomplex z = CarlsonArbitraryPrecision.apcomplex(u,
+          digits + CarlsonArbitraryPrecision.GUARD_DIGITS);
+      Apcomplex value = derivative ? ApcomplexWeierstrassMath.weierstrassPPrime(z, e[0], e[1], e[2])
+          : ApcomplexWeierstrassMath.weierstrassP(z, e[0], e[1], e[2]);
+      if (u.isReal() && g2.isReal() && g3.isReal()) {
+        // real on the real axis for real invariants
+        return CarlsonArbitraryPrecision.round(new Apcomplex(value.real()), digits);
+      }
+      return CarlsonArbitraryPrecision.round(value, digits);
+    } catch (ArithmeticException | ApfloatRuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
+      return F.NIL;
+    }
+  }
+
+  private static boolean isArbitrary(IExpr x) {
+    return x instanceof ApfloatNum || x instanceof ApcomplexNum;
+  }
+
   private static IAST weierstrassJacobiParameters(IExpr g2, IExpr g3) {
     if (g2.isZero() && g3.isZero()) {
       // all three roots are 0 - WeierstrassP() and WeierstrassPPrime() are rational functions of z
@@ -2878,6 +3229,10 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg2();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
+        if (u.isNumber() && g2.isNumber() && g3.isNumber() && (isArbitrary(u) || isArbitrary(g2)
+            || isArbitrary(g3) || (engine.isArbitraryMode() && !u.isInexactNumber()))) {
+          return weierstrassArbitrary(u, g2, g3, false, engine);
+        }
         return weierstrassP(u, g2, g3).eval(engine);
       }
       return F.NIL;
@@ -2941,6 +3296,10 @@ public class EllipticIntegrals {
         IAST list = (IAST) ast.arg2();
         IExpr g2 = list.arg1();
         IExpr g3 = list.arg2();
+        if (u.isNumber() && g2.isNumber() && g3.isNumber() && (isArbitrary(u) || isArbitrary(g2)
+            || isArbitrary(g3) || (engine.isArbitraryMode() && !u.isInexactNumber()))) {
+          return weierstrassArbitrary(u, g2, g3, true, engine);
+        }
         return weierstrassPPrime(u, g2, g3).eval(engine);
       }
       return F.NIL;
@@ -2966,6 +3325,99 @@ public class EllipticIntegrals {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
+  /**
+   * <code>WeierstrassZeta(u, {g2, g3})</code> and <code>WeierstrassSigma(u, {g2, g3})</code>: the
+   * functions with the derivative <code>-WeierstrassP</code> and with the logarithmic derivative
+   * <code>WeierstrassZeta</code>. One arbitrary precision routine gives the values at machine
+   * precision too.
+   */
+  private static class WeierstrassQuasiPeriodic extends AbstractFunctionEvaluator {
+    private final boolean sigma;
+
+    WeierstrassQuasiPeriodic(boolean sigma) {
+      this.sigma = sigma;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr u = ast.arg1();
+      if (!ast.arg2().isList2()) {
+        return F.NIL;
+      }
+      IAST list = (IAST) ast.arg2();
+      IExpr g2 = list.arg1();
+      IExpr g3 = list.arg2();
+      if (u.isZero()) {
+        return sigma ? F.C0 : F.CComplexInfinity;
+      }
+      if (g2.isExactNumber() && g3.isExactNumber()) {
+        if (g2.isZero() && g3.isZero()) {
+          // WeierstrassP is 1/u^2
+          return sigma ? u : F.Power(u, F.CN1);
+        }
+        if (!g2.isZero() && engine.evaluate(F.Subtract(F.Power(g2, F.C3), F.Times(F.ZZ(27), F.Sqr(g3))))
+            .isZero()) {
+          // Two equal roots, g2 = 12*a^2 and g3 = 8*a^3: WeierstrassP is -a+3*a*Csc(s*u)^2 with
+          // s = Sqrt(3*a)
+          IExpr a0 = engine.evaluate(F.Times(F.C3D2, g3, F.Power(g2, F.CN1)));
+          IExpr s0 = engine.evaluate(F.Sqrt(F.Times(F.C3, a0)));
+          if (sigma) {
+            // E^(a*u^2/2)*Sin(s*u)/s
+            return F.Times(F.Exp(F.Times(F.C1D2, a0, F.Sqr(u))), F.Sin(F.Times(s0, u)),
+                F.Power(s0, F.CN1));
+          }
+          // a*u+s*Cot(s*u)
+          return F.Plus(F.Times(a0, u), F.Times(s0, F.Cot(F.Times(s0, u))));
+        }
+      }
+      if (!u.isNumber() || !g2.isNumber() || !g3.isNumber()) {
+        return F.NIL;
+      }
+      final boolean arbitrary = isArbitrary(u) || isArbitrary(g2) || isArbitrary(g3)
+          || (engine.isArbitraryMode() && !u.isInexactNumber() && !g2.isInexactNumber()
+              && !g3.isInexactNumber());
+      if (!arbitrary && !engine.isDoubleMode() && !u.isInexactNumber() && !g2.isInexactNumber()
+          && !g3.isInexactNumber()) {
+        return F.NIL;
+      }
+      final int digits =
+          arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+      try {
+        Apcomplex[] e = weierstrassRoots(g2, g3, digits);
+        if (e == null) {
+          return F.NIL;
+        }
+        Apcomplex z =
+            CarlsonArbitraryPrecision.apcomplex(u, digits + CarlsonArbitraryPrecision.GUARD_DIGITS);
+        Apcomplex value = sigma ? ApcomplexWeierstrassMath.weierstrassSigma(z, e[0], e[1], e[2])
+            : ApcomplexWeierstrassMath.weierstrassZeta(z, e[0], e[1], e[2]);
+        if (u.isReal() && g2.isReal() && g3.isReal()) {
+          // real on the real axis for real invariants
+          value = new Apcomplex(value.real());
+        }
+        if (arbitrary) {
+          return CarlsonArbitraryPrecision.round(value, digits);
+        }
+        return value.imag().signum() == 0 ? F.num(value.real().doubleValue())
+            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        return F.NIL;
+      }
     }
 
     @Override

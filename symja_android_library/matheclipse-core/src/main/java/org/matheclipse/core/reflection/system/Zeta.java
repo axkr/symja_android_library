@@ -46,6 +46,18 @@ import org.matheclipse.core.numerics.functions.ZetaJS;
 public class Zeta extends AbstractArg12 {
 
   /**
+   * From this real part on a machine argument is summed with the Dirichlet series, which has its
+   * terms above the precision of a double then.
+   */
+  private static final double LARGE_MACHINE_ARGUMENT = 16.0;
+
+  /**
+   * Below this even integer the value is written with <code>Pi</code> and a Bernoulli number,
+   * whose numerator has thousands of digits from here on.
+   */
+  private static final int MAX_EVEN_CLOSED_FORM = 1000;
+
+  /**
    * <code>Zeta(s)</code> for an <code>s</code> next to the pole at <code>1</code>. The value is
    * <code>1/(s-1)+EulerGamma+...</code>, so it has only as many digits as <code>s-1</code> has,
    * which are fewer than those of <code>s</code> by the number of zeros after the <code>1</code>.
@@ -81,6 +93,11 @@ public class Zeta extends AbstractArg12 {
       if (nearPole != null) {
         return F.num(h.valueOf(nearPole.real()));
       }
+      // the Dirichlet series for a large argument
+      Apcomplex large = ApcomplexZetaMath.zetaOfLargeRealPart(arg1.precision(h.precision()));
+      if (large != null) {
+        return F.num(large.real());
+      }
       return F.num(h.zeta(arg1));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);
@@ -98,6 +115,13 @@ public class Zeta extends AbstractArg12 {
       if (nearPole != null) {
         return F.complexNum(h.valueOf(nearPole));
       }
+      final long precision = h.precision();
+      Apcomplex large = ApcomplexZetaMath.zetaOfLargeRealPart(new Apcomplex(
+          arg1.real().signum() == 0 ? arg1.real() : arg1.real().precision(precision),
+          arg1.imag().signum() == 0 ? arg1.imag() : arg1.imag().precision(precision)));
+      if (large != null) {
+        return F.complexNum(large);
+      }
       return F.complexNum(h.zeta(arg1));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);
@@ -109,6 +133,14 @@ public class Zeta extends AbstractArg12 {
   public IExpr e1DblArg(INum num) {
     FixedPrecisionApcomplexHelper h = EvalEngine.getApfloatDouble();
     try {
+      if (num.doubleValue() >= LARGE_MACHINE_ARGUMENT) {
+        // 1 + 2^-s + ...: the routine of the library doesn't return for 10^10, and is 0 from 10^20
+        Apcomplex large = ApcomplexZetaMath
+            .zetaOfLargeRealPart(ApfloatNum.apfloatOf(num.doubleValue(), h.precision()));
+        if (large != null) {
+          return F.num(large.real().doubleValue());
+        }
+      }
       Apcomplex zeta = h.zeta(num.apfloatValue());
       return F.num(zeta.doubleValue());
     } catch (Exception ce) {
@@ -121,6 +153,14 @@ public class Zeta extends AbstractArg12 {
   public IExpr e1DblComArg(IComplexNum cNum) {
     FixedPrecisionApcomplexHelper h = EvalEngine.getApfloatDouble();
     try {
+      if (cNum.reDoubleValue() >= LARGE_MACHINE_ARGUMENT) {
+        Apcomplex large = ApcomplexZetaMath.zetaOfLargeRealPart(
+            new Apcomplex(ApfloatNum.apfloatOf(cNum.reDoubleValue(), h.precision()),
+                ApfloatNum.apfloatOf(cNum.imDoubleValue(), h.precision())));
+        if (large != null) {
+          return F.complexNum(large.real().doubleValue(), large.imag().doubleValue());
+        }
+      }
       Apcomplex zeta = h.zeta(cNum.apcomplexValue());
       return F.complexNum(zeta.real().doubleValue(), zeta.imag().doubleValue());
     } catch (Exception ce) {
@@ -157,8 +197,13 @@ public class Zeta extends AbstractArg12 {
 
   @Override
   public IExpr e1ObjArg(final IExpr arg1) {
+    // a regular point with the value -1/2
     if (arg1.isZero()) {
-      return CN1D2;
+      return arg1.isInexactNumber() ? F.num(-0.5) : CN1D2;
+    }
+    if (arg1.isInexactNumber() && ((INumber) arg1).isFuzzyZero()) {
+      // a number next to 0, which the series do not reach: -1/2-Log(2*Pi)/2*s
+      return F.Plus(CN1D2, F.Times(CN1D2, F.Log(F.Times(F.C2, S.Pi)), arg1));
     }
     if (arg1.isOne()) {
       return CComplexInfinity;
@@ -180,7 +225,7 @@ public class Zeta extends AbstractArg12 {
         IExpr n1 = n.add(C1);
         return Times(Power(CN1, n), Power(n1, -1), BernoulliB(n1));
       }
-      if (n.isEven()) {
+      if (n.isEven() && n.isLT(F.ZZ(MAX_EVEN_CLOSED_FORM))) {
         // http://fungrim.org/entry/72ccda/
         // Zeta(2*n) := ((((-1)^(n-1)*2^(-1+2*n)*Pi^(2*n))/(2*n)!)*BernoulliB(2*n)
         n = n.shiftRight(1);
@@ -204,6 +249,14 @@ public class Zeta extends AbstractArg12 {
     }
     if (a.isMinusOne()) {
       return Plus(C1, Zeta(s));
+    }
+
+    if (s.isInteger() && !s.isPositive() && a.isFraction()
+        && (a.isPositive() || ((IInteger) s).isEven())) {
+      // -BernoulliB(n+1, a)/(n+1) for s == -n. Below zero this function sums the absolute values
+      // of k+a, which is the same for an even n only.
+      IExpr n1 = F.C1.subtract(s);
+      return F.Times(F.CN1, F.Power(n1, F.CN1), F.BernoulliB(n1, a));
     }
 
     int aInt = a.toIntDefault();

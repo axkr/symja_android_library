@@ -255,6 +255,7 @@ public class WebGLGraphics3D {
 
     ArrayNode elements = root.putArray("elements");
     PrimitiveCollector3D collector = new PrimitiveCollector3D(elements, options.scaling);
+    collector.setClipBox(options.plotRange);
     collector.setIntervalMarkers(options.intervalMarkers, options.intervalMarkersStyle);
     if (target.argSize() >= 1) {
       Style3D initial = new Style3D();

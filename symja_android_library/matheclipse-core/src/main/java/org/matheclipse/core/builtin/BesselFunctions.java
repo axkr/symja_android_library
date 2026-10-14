@@ -29,6 +29,8 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.numerics.functions.BesselJY;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -38,6 +40,7 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.external.apfloat.ApcomplexAsymptoticMath;
@@ -312,7 +315,7 @@ public class BesselFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         // 1/(3^(2/3)*Gamma(2/3))
         return F.Divide(F.Power(F.C3, F.CN2D3), F.Gamma(F.C2D3));
       }
@@ -625,7 +628,7 @@ public class BesselFunctions {
     }
 
     private static IExpr besselJ(IExpr n, IExpr z, boolean numericMode) {
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         if (n.isZero()) {
           // (0, 0)
           return F.C1;
@@ -844,7 +847,7 @@ public class BesselFunctions {
 
     private static IExpr besselI(IExpr n, IExpr z, boolean numericMode) {
       // final int order = n.toIntDefault();
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         if (n.isZero()) {
           return F.C1;
         }
@@ -959,7 +962,7 @@ public class BesselFunctions {
 
     private static IExpr besselK(EvalEngine engine, IExpr n, IExpr z) {
       // final int order = n.toIntDefault();
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         if (n.isZero()) {
           return F.CInfinity;
         }
@@ -1074,7 +1077,7 @@ public class BesselFunctions {
     private static IExpr besselY(IExpr n, IExpr z, boolean numericMode) {
       // final int order = n.toIntDefault();
 
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         if (n.isZero()) {
           return F.CNInfinity;
         }
@@ -1184,6 +1187,36 @@ public class BesselFunctions {
     }
   }
 
+  /**
+   * <code>HankelH1(n, z)</code> in the upper half plane, or <code>HankelH2(n, z)</code> in the lower
+   * one, from <code>BesselK</code> of the argument turned into the right half plane. The function
+   * decays there with the imaginary part of <code>z</code>, while <code>BesselJ</code> and
+   * <code>BesselY</code> grow with it and their sum cancels: it was <code>0</code> for
+   * <code>HankelH1(7.0, 9.8+23.0*I)</code>, which is <code>10^-11</code>.
+   *
+   * @return {@link F#NIL} if the numbers are not inexact, the argument is not in that half plane,
+   *         or <code>BesselK</code> gives no number
+   * @see <a href="https://dlmf.nist.gov/10.27#E8">DLMF 10.27.8</a>
+   */
+  private static IExpr hankelOfBesselK(IExpr n, IExpr z, boolean second, EvalEngine engine) {
+    if (!n.isInexactNumber() || !z.isInexactNumber() || z.isReal()) {
+      return F.NIL;
+    }
+    final double im = ((INumber) z).imDoubleValue();
+    if (second ? !(im < 0.0) : !(im > 0.0)) {
+      return F.NIL;
+    }
+    final IExpr unit = second ? F.CI : F.CNI;
+    IExpr besselK = n.besselK(engine.evaluate(F.Times(unit, z)));
+    if (!besselK.isNumber()) {
+      return F.NIL;
+    }
+    // HankelH1(n,z) = -2*I/Pi*E^(-I*Pi*n/2)*BesselK(n,-I*z)
+    // HankelH2(n,z) = 2*I/Pi*E^(I*Pi*n/2)*BesselK(n,I*z)
+    return engine.evaluate(F.Times(F.C2, unit, F.Power(S.Pi, F.CN1),
+        F.Exp(F.Times(unit, F.C1D2, S.Pi, n)), besselK));
+  }
+
   private static final class HankelH1 extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
@@ -1231,6 +1264,10 @@ public class BesselFunctions {
 
         // if (n.isNumber() && z.isNumber()) {
         try {
+          IExpr decaying = hankelOfBesselK(n, z, false, engine);
+          if (decaying.isPresent()) {
+            return decaying;
+          }
           IExpr besselJ = n.besselJ(z);
           IExpr besselY = n.besselY(z);
           if (besselJ.isNumber() && besselY.isNumber()) {
@@ -1328,6 +1365,10 @@ public class BesselFunctions {
         // return F.Plus(F.BesselJ(n, z), F.Times(F.CNI, F.BesselY(n, z)));
         // }
         try {
+          IExpr decaying = hankelOfBesselK(n, z, true, engine);
+          if (decaying.isPresent()) {
+            return decaying;
+          }
           IExpr besselJ = n.besselJ(z);
           IExpr besselY = n.besselY(z);
           if (besselJ.isNumber() && besselY.isNumber()) {
@@ -2216,6 +2257,14 @@ public class BesselFunctions {
     final boolean arbitrary = n instanceof ApfloatNum || n instanceof ApcomplexNum
         || z instanceof ApfloatNum || z instanceof ApcomplexNum
         || (engine.isArbitraryMode() && !n.isInexactNumber() && !z.isInexactNumber());
+    if (n instanceof Num && z instanceof Num) {
+      // a large machine argument: the expansion which keeps the phase
+      final double x = ((Num) z).doubleValue();
+      double[] hankel = BesselJY.hankel(((Num) n).doubleValue() + 0.5, x);
+      if (hankel != null) {
+        return F.num(Math.sqrt(Math.PI / 2.0 / x) * hankel[secondKind ? 1 : 0]);
+      }
+    }
     final int digits =
         arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
     try {

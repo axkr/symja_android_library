@@ -214,7 +214,9 @@ public class Assumptions extends AbstractAssumptions {
   private static boolean addElement(IAST element, Assumptions assumptions) {
     if (element.size() >= 3) {
       IExpr arg1 = element.arg1();
-      if (arg1.isAlternatives()) {
+      if (arg1.isAlternatives()
+          || (arg1.isList() && element.arg2().isSymbol() && S.isDomain((ISymbol) element.arg2()))) {
+        // a list of expressions in a number domain is a statement about each of them
         IAST list = ((IAST) arg1).apply(S.List);
         list = list.mapThread(element, 1);
         for (int i = 1; i < list.size(); i++) {

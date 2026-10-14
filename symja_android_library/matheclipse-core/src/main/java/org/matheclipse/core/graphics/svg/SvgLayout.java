@@ -669,6 +669,13 @@ final class SvgLayout {
     if (content.isAST(S.Framed) && content.argSize() >= 1) {
       return framed((IAST) content, seedWidth);
     }
+    if (content.head() == S.Graph && !content.isAST()) {
+      // a graph is drawn as the picture GraphPlot makes of it
+      IExpr picture = EvalEngine.get().evaluate(F.unaryAST1(S.GraphPlot, content));
+      if (picture.isGraphicsObject()) {
+        return piece(picture, seedWidth);
+      }
+    }
     if (isLayout(content)) {
       return nestedLayout((IAST) content, seedWidth);
     }

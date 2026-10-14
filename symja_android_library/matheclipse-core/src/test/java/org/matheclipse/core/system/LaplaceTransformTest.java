@@ -109,10 +109,9 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseLaplaceTransformImproperInexact() {
-    // Apart leaves an improper fraction whole when a coefficient is inexact; its polynomial part
-    // used to be dropped: E^(-1.5*t)
+    // the polynomial part of the improper fraction used to be dropped: E^(-1.5*t)
     check("InverseLaplaceTransform(s/(s+1.5), s, t)", //
-        "2.0*(-0.75/E^(1.5*t)+0.5*DiracDelta(t))");
+        "-1.5/E^(1.5*t)+DiracDelta(t)");
     check("InverseLaplaceTransform(s/(s+3/2), s, t)", //
         "-3/(2*E^(3/2*t))+DiracDelta(t)");
   }

@@ -236,6 +236,23 @@ public class MatrixExp extends AbstractFunctionEvaluator {
       IExpr d = matrix.getIndex(2, 2);
       return computeMatrix2x2(a, b, c, d, engine);
     }
+    IExpr normal = matrix.normal(false);
+    IAST rows = normal.isAST() ? (IAST) normal : F.CEmptyList;
+    if (!rows.isFree(x -> x.isInexactNumber(), false)) {
+      // a matrix of machine numbers: scaling and squaring with a Pade approximant. The
+      // eigenvector route loses digits where the eigenvalues are complex or close together.
+      double[][] values = rows.toDoubleMatrix(false);
+      if (values != null) {
+        try {
+          return new org.matheclipse.core.expression.ASTRealMatrix(
+              org.hipparchus.linear.MatrixUtils.matrixExponential(
+                  new org.hipparchus.linear.Array2DRowRealMatrix(values, false)),
+              false);
+        } catch (RuntimeException rex) {
+          org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
+        }
+      }
+    }
     if (!engine.isNumericMode() && !matrix.isNumericArgument()) {
       return applyScalarFunctionViaEigensystem(matrix.normal(false), n,
           lambda -> engine.evaluate(F.Exp(lambda)), engine);

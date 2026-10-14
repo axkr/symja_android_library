@@ -29,14 +29,27 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
     ITensorAccess matrix = null;
     IAST vertices = null;
 
-    int[] dimension = ast.isAST2() ? ast.arg2().isMatrix() : arg1.isMatrix();
+    // the matrix, or the vertices and the matrix; options follow
+    int positional = 0;
+    while (positional < ast.argSize() && !ast.get(positional + 1).isRuleAST()) {
+      positional++;
+    }
+    if (positional < 1 || positional > 2) {
+      return F.NIL;
+    }
+    for (int i = positional + 1; i <= ast.argSize(); i++) {
+      if (!ast.get(i).isRuleAST()) {
+        return F.NIL;
+      }
+    }
+    int[] dimension = positional == 2 ? ast.arg2().isMatrix() : arg1.isMatrix();
     if (dimension == null || dimension[0] != dimension[1]) {
       return F.NIL;
     }
-    if (ast.isAST1()) {
+    if (positional == 1) {
       // Case: AdjacencyGraph(matrix)
       matrix = (ITensorAccess) arg1;
-    } else if (ast.isAST2()) {
+    } else if (positional == 2) {
       // Case: AdjacencyGraph[{v1, ...}, matrix]
       if (!arg1.isList()) {
         return F.NIL;
@@ -160,7 +173,7 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_2;
+    return ARGS_1_INFINITY;
   }
 
 }

@@ -12,6 +12,8 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
+import org.matheclipse.external.apfloat.ApcomplexBesselMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -388,6 +390,10 @@ public class Num implements INum {
 
   @Override
   public IExpr besselI(IExpr arg2) {
+    IExpr reflected = besselReflected(arg2, true);
+    if (reflected.isPresent()) {
+      return reflected;
+    }
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
@@ -398,13 +404,16 @@ public class Num implements INum {
                 ((IReal) arg2).apfloatValue());
             return F.num(besselI.doubleValue());
           }
+        } catch (LossOfPrecisionException lopex) {
+          // no digit of the value is left
+          return F.NIL;
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
       try {
-        Apcomplex besselI = EvalEngine.getApfloatDouble().besselI(apfloatValue(),
-            ((INumber) arg2).apcomplexValue());
+        Apcomplex besselI = DMath.besselComplex(ApcomplexBesselMath::besselI,
+            (nu, z) -> EvalEngine.getApfloatDouble().besselI(nu, z), this, (INumber) arg2);
         return F.complexNum(besselI.real().doubleValue(), besselI.imag().doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselI, are);
@@ -413,8 +422,38 @@ public class Num implements INum {
     return INum.super.besselI(arg2);
   }
 
+  /**
+   * <code>BesselJ</code> or <code>BesselI</code> of this order, which is no integer, and a negative
+   * machine number: <code>E^(I*Pi*v)</code> times the function of the positive number. The series
+   * for a complex argument cancels for a large order - <code>BesselI(100.5, -30.0)</code> was
+   * <code>10^37</code> instead of <code>10^-40</code>.
+   *
+   * @return {@link F#NIL} if the argument is no negative machine number, or the order an integer
+   */
+  private IExpr besselReflected(IExpr arg2, boolean modified) {
+    if (!(arg2 instanceof Num) || !(((Num) arg2).value < 0.0) || value == Math.rint(value)
+        || !Double.isFinite(value)) {
+      return F.NIL;
+    }
+    IExpr positive = modified ? besselI(F.num(-((Num) arg2).value))
+        : besselJ(F.num(-((Num) arg2).value));
+    if (!(positive instanceof Num) || !Double.isFinite(((Num) positive).value)) {
+      return F.NIL;
+    }
+    final double magnitude = ((Num) positive).value;
+    // Cos(Pi*v) and Sin(Pi*v) from v modulo 2, exact where one of them is zero
+    final double r = value - 2.0 * Math.floor(value / 2.0);
+    final double cos = r == 0.5 || r == 1.5 ? 0.0 : Math.cos(Math.PI * r);
+    final double sin = r == 0.5 ? 1.0 : r == 1.5 ? -1.0 : Math.sin(Math.PI * r);
+    return F.complexNum(magnitude * cos, magnitude * sin);
+  }
+
   @Override
   public IExpr besselJ(IExpr arg2) {
+    IExpr reflected = besselReflected(arg2, false);
+    if (reflected.isPresent()) {
+      return reflected;
+    }
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
@@ -426,7 +465,7 @@ public class Num implements INum {
             return F.num(besselJ.doubleValue());
           }
         } catch (LossOfPrecisionException lopex) {
-          if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
+          if ("lossOfPrecision".equals(lopex.getLocalizationKey())) {
             return F.NIL;
           }
         } catch (ArithmeticException | ApfloatRuntimeException are) {
@@ -434,11 +473,11 @@ public class Num implements INum {
         }
       }
       try {
-        Apcomplex besselJ = EvalEngine.getApfloatDouble().besselJ(apfloatValue(),
-            ((INumber) arg2).apcomplexValue());
+        Apcomplex besselJ = DMath.besselComplex(ApcomplexBesselMath::besselJ,
+            (nu, z) -> EvalEngine.getApfloatDouble().besselJ(nu, z), this, (INumber) arg2);
         return F.complexNum(besselJ.real().doubleValue(), besselJ.imag().doubleValue());
       } catch (LossOfPrecisionException lopex) {
-        if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
+        if ("lossOfPrecision".equals(lopex.getLocalizationKey())) {
           return F.NIL;
         }
       } catch (ArithmeticException | ApfloatRuntimeException are) {
@@ -460,13 +499,16 @@ public class Num implements INum {
                 ((IReal) arg2).apfloatValue());
             return F.num(besselK.doubleValue());
           }
+        } catch (LossOfPrecisionException lopex) {
+          // no digit of the value is left
+          return F.NIL;
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
       try {
-        Apcomplex besselK = EvalEngine.getApfloatDouble().besselK(apfloatValue(),
-            ((INumber) arg2).apcomplexValue());
+        Apcomplex besselK = DMath.besselComplex(ApcomplexBesselMath::besselK,
+            (nu, z) -> EvalEngine.getApfloatDouble().besselK(nu, z), this, (INumber) arg2);
         return F.complexNum(besselK.real().doubleValue(), besselK.imag().doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselK, are);
@@ -487,19 +529,22 @@ public class Num implements INum {
                 ((IReal) arg2).apfloatValue());
             return F.num(besselY.doubleValue());
           }
+        } catch (LossOfPrecisionException lopex) {
+          // no digit of the value is left
+          return F.NIL;
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
       try {
-        Apcomplex besselY = EvalEngine.getApfloatDouble().besselY(apfloatValue(),
-            ((INumber) arg2).apcomplexValue());
+        Apcomplex besselY = DMath.besselComplex(ApcomplexBesselMath::besselY,
+            (nu, z) -> EvalEngine.getApfloatDouble().besselY(nu, z), this, (INumber) arg2);
         return F.complexNum(besselY.real().doubleValue(), besselY.imag().doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselY, are);
       }
     }
-    return INum.super.besselI(arg2);
+    return INum.super.besselY(arg2);
   }
 
   @Override
@@ -625,7 +670,8 @@ public class Num implements INum {
   @Override
   public IInteger ceilFraction() {
     try {
-      return F.ZZ(NumberUtil.toLong(Math.ceil(value)));
+      // the integer which the double is, also beyond the range of a long
+      return F.ZZ(DoubleMath.roundToBigInteger(value, java.math.RoundingMode.CEILING));
     } catch (ArithmeticException ae) {
       ArgumentTypeException.throwArg(this, F.Ceiling(this));
     }
@@ -779,6 +825,11 @@ public class Num implements INum {
         return valueOf(ci);
       }
     }
+    if (Double.isFinite(value) && !ExponentialIntegrals.isSupported(value)) {
+      // a large argument: the expansion which keeps the phase; Ci(-x) is Ci(x)+I*Pi
+      final double ci = ExponentialIntegrals.sinCosIntegralOfLarge(Math.abs(value))[1];
+      return value > 0.0 ? valueOf(ci) : F.complexNum(ci, Math.PI);
+    }
     return F.complexReduced(GammaJS.cosIntegral(new Complex(value)));
     // try {
     // if (isNonNegativeResult()) {
@@ -795,8 +846,12 @@ public class Num implements INum {
   @Override
   public IInexactNumber dawsonF() {
     try {
-      return valueOf(EvalEngine.getApfloatDouble().dawsonF(apfloatValue()).doubleValue());
-    } catch (ApfloatArithmeticException aae) {
+      // with the asymptotic series for a large argument, where the product of the two
+      // exponentials loses every digit
+      return valueOf(org.matheclipse.external.apfloat.ApfloatDawsonMath
+          .dawsonF(new Apfloat(new java.math.BigDecimal(value), ParserConfig.MACHINE_PRECISION + 4))
+          .doubleValue());
+    } catch (ArithmeticException | ApfloatRuntimeException aae) {
       //
     }
     Apcomplex dawsonF = EvalEngine.getApfloatDouble().dawsonF(apcomplexValue());
@@ -876,7 +931,8 @@ public class Num implements INum {
         //
       }
     }
-    Apcomplex ellipticK = EvalEngine.getApfloatDouble().ellipticK(apcomplexValue());
+    Apcomplex ellipticK = ApcomplexEllipticMath.ellipticK(
+        ApfloatNum.apfloatOf(value, EvalEngine.getApfloatDouble().precision()));
     return F.complexNum(ellipticK.real().doubleValue(), ellipticK.imag().doubleValue());
   }
 
@@ -1066,7 +1122,7 @@ public class Num implements INum {
   @Override
   public IInteger floorFraction() {
     try {
-      return F.ZZ(NumberUtil.toLong(Math.floor(value)));
+      return F.ZZ(DoubleMath.roundToBigInteger(value, java.math.RoundingMode.FLOOR));
     } catch (ArithmeticException ae) {
       ArgumentTypeException.throwArg(this, F.Floor(this));
     }
@@ -1090,6 +1146,10 @@ public class Num implements INum {
       if (!Double.isNaN(fresnelC)) {
         return valueOf(fresnelC);
       }
+    }
+    if (Double.isFinite(value) && !FresnelIntegrals.isSupported(value)) {
+      // a large argument: the expansion with the exact phase Pi*x^2/2
+      return valueOf(FresnelIntegrals.fresnelCSOfLarge(value)[0]);
     }
     try {
       Apfloat fresnelC = EvalEngine.getApfloatDouble().fresnelC(apfloatValue());
@@ -1128,6 +1188,9 @@ public class Num implements INum {
         return valueOf(fresnelS);
       }
     }
+    if (Double.isFinite(value) && !FresnelIntegrals.isSupported(value)) {
+      return valueOf(FresnelIntegrals.fresnelCSOfLarge(value)[1]);
+    }
     try {
       Apfloat fresnelS = EvalEngine.getApfloatDouble().fresnelS(apfloatValue());
       return F.num(fresnelS.doubleValue());
@@ -1144,7 +1207,8 @@ public class Num implements INum {
 
   @Override
   public IExpr gamma() {
-    if (isZero() || isMathematicalIntegerNegative()) {
+    // the pole at zero itself: Gamma(1.0*^-20) is 1.0*^20
+    if (value == 0.0 || isMathematicalIntegerNegative()) {
       return F.CComplexInfinity;
     }
     try {
@@ -1153,7 +1217,7 @@ public class Num implements INum {
         return F.num(doubleGamma);
       }
       Apfloat gamma = EvalEngine.getApfloatDouble().gamma(apfloatValue());
-      return F.num(gamma.doubleValue());
+      return ApfloatNum.machineOrPromoted(gamma);
     } catch (OverflowException of) {
       return F.Overflow();
     } catch (ArithmeticException | NumericComputationException are) {
@@ -1300,8 +1364,7 @@ public class Num implements INum {
         return F.num(HARMONIC_NUMBERS[intValue - 1]);
       }
     }
-    Apfloat harmonicNumber = EvalEngine.getApfloatDouble().harmonicNumber(apfloatValue());
-    return F.num(harmonicNumber.doubleValue());
+    return F.num(DMath.harmonicNumber(value));
   }
 
   @Override
@@ -1374,6 +1437,13 @@ public class Num implements INum {
 
   @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
+    if (arg2 instanceof Num) {
+      // a large negative argument: the Bessel function with the phase of 2*Sqrt(-x)
+      double oscillating = DMath.hypergeometric0F1OfLargeNegative(value, ((Num) arg2).value);
+      if (!Double.isNaN(oscillating)) {
+        return F.num(oscillating);
+      }
+    }
     if (arg2 instanceof INumber) {
       Complex guarded = HypergeometricJS.guardedSeries(new Complex[0],
           new Complex[] {new Complex(value)}, arg2.evalfc());
@@ -1807,6 +1877,11 @@ public class Num implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isZero() {
+    return value == 0.0;
+  }
+
+  @Override
+  public boolean isFuzzyZero() {
     return F.isZero(value, Config.DOUBLE_TOLERANCE);
   }
 
@@ -2070,6 +2145,17 @@ public class Num implements INum {
 
   @Override
   public IExpr logIntegral() {
+    if (value > 0.0 && value != 1.0) {
+      // ExpIntegralEi(Log(x)), where that function has the precision of a double: the complex
+      // routine below has 10 digits
+      final double log = Math.log(value);
+      if (ExponentialIntegrals.isSupported(log)) {
+        final double li = ExponentialIntegrals.expIntegralEi(log);
+        if (Double.isFinite(li)) {
+          return valueOf(li);
+        }
+      }
+    }
     return F.complexReduced(GammaJS.logIntegral(new Complex(value)));
     // try {
     // if (isNonNegativeResult()) {
@@ -2085,6 +2171,10 @@ public class Num implements INum {
 
   @Override
   public IExpr logisticSigmoid() {
+    if (Math.abs(value) > 746.0) {
+      // E^(-x) is beyond the range of a double, and the limit is reached in all digits
+      return F.num(value > 0.0 ? 1.0 : 0.0);
+    }
     try {
       Apfloat logisticSigmoid = EvalEngine.getApfloatDouble().logisticSigmoid(apfloatValue());
       return F.num(logisticSigmoid.doubleValue());
@@ -2201,6 +2291,16 @@ public class Num implements INum {
   public IExpr pochhammer(IExpr arg2) {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof INum) {
+        if (arg2 instanceof Num) {
+          if (DMath.isPochhammerPole(value, ((Num) arg2).value)) {
+            return F.CComplexInfinity;
+          }
+          // large arguments, where a gamma function leaves the range of a double or the two cancel
+          double machine = DMath.pochhammerOfLarge(value, ((Num) arg2).value);
+          if (!Double.isNaN(machine)) {
+            return F.num(machine);
+          }
+        }
         if (arg2 instanceof ComplexNum || arg2 instanceof Num) {
           return plus(arg2).gamma().divide(gamma());
         }
@@ -2421,6 +2521,11 @@ public class Num implements INum {
       if (!Double.isNaN(si)) {
         return valueOf(si);
       }
+    }
+    if (Double.isFinite(value)) {
+      // a large argument: the expansion which keeps the phase
+      final double si = ExponentialIntegrals.sinCosIntegralOfLarge(Math.abs(value))[0];
+      return valueOf(value > 0.0 ? si : -si);
     }
     return F.complexReduced(GammaJS.sinIntegral(new Complex(value)));
     // Apfloat sinIntegral = EvalEngine.getApfloatDouble().sinIntegral(apfloatValue());

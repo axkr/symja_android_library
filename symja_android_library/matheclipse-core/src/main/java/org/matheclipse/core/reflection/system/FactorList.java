@@ -144,7 +144,37 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
       appendFactor(result, factored);
     }
 
-    return result;
+    return leadingTermsPositive(result);
+  }
+
+  /**
+   * Every factor which is a sum is written with a positive leading term; the signs which are
+   * taken out of the factors go into the numeric factor in front: <code>-x+y</code> is
+   * <code>{{-1, 1}, {x-y, 1}}</code>.
+   */
+  private static IAST leadingTermsPositive(IASTAppendable factors) {
+    if (factors.argSize() < 2 || !factors.arg1().first().isRational()
+        || !factors.arg1().second().isOne()) {
+      return factors;
+    }
+    EvalEngine engine = EvalEngine.get();
+    boolean negative = false;
+    for (int i = 2; i <= factors.argSize(); i++) {
+      IExpr factor = factors.get(i).first();
+      IExpr exponent = factors.get(i).second();
+      if (factor.isPlus() && exponent.isInteger()
+          && org.matheclipse.core.eval.AlgebraUtil.hasNegativeLeadingTerm((IAST) factor, engine)) {
+        IExpr negated = engine.evaluate(F.Distribute(F.Times(F.CN1, factor)));
+        if (negated.isPlus()) {
+          factors.set(i, F.List(negated, exponent));
+          negative ^= ((org.matheclipse.core.interfaces.IInteger) exponent).isOdd();
+        }
+      }
+    }
+    if (negative) {
+      factors.set(1, F.List(factors.arg1().first().negate(), F.C1));
+    }
+    return factors;
   }
 
   /**

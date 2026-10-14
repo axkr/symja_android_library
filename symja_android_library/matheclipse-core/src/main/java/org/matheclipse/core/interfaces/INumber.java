@@ -306,6 +306,21 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
     return isZero();
   }
 
+  /**
+   * Test if this number is <code>0</code> or, for an inexact number, of the size of the rounding
+   * error of its precision: up to {@link org.matheclipse.core.basic.Config#DOUBLE_TOLERANCE} for a
+   * machine number, up to <code>10^(-p)</code> for a number with <code>p</code> digits.
+   *
+   * <p>
+   * This is the test for what a calculation with inexact numbers leaves of a zero - the pivot of a
+   * numeric matrix, the value of an expression at a sample point. {@link #isZero()} is the test
+   * for the number zero, which <code>1.0*^-20</code> is not: a term or a coefficient is only
+   * dropped if it is zero.
+   */
+  default boolean isFuzzyZero() {
+    return isZero();
+  }
+
   @Override
   public default IExpr[] linear(IExpr variable) {
     return new IExpr[] {this, F.C0};

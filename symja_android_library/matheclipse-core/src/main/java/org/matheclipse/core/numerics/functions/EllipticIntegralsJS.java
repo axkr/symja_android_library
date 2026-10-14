@@ -1,5 +1,7 @@
 package org.matheclipse.core.numerics.functions;
 
+import org.apfloat.Apfloat;
+import org.apfloat.Apcomplex;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
 import org.hipparchus.special.elliptic.legendre.LegendreEllipticIntegral;
@@ -135,7 +137,29 @@ public class EllipticIntegralsJS extends JS {
     // return t1.add(t2).add(t3).multiply(0.5);
   }
 
+  private static Apcomplex apcomplex(Complex z, long precision) {
+    return new Apcomplex(new Apfloat(z.getReal(), precision),
+        new Apfloat(z.getImaginary(), precision));
+  }
+
   public static Complex carlsonRJ(Complex x, Complex y, Complex z, Complex p) {
+    boolean rightHalfPlane =
+        x.getReal() >= 0 && y.getReal() >= 0 && z.getReal() >= 0 && p.getReal() > 0;
+    boolean real = x.getImaginary() == 0 && y.getImaginary() == 0 && z.getImaginary() == 0
+        && p.getImaginary() == 0;
+    if (!rightHalfPlane && !real && x.isFinite() && y.isFinite() && z.isFinite() && p.isFinite()) {
+      // the duplication can end on another sheet of the integral: the arbitrary precision routine
+      // tests for that
+      try {
+        final long precision = 20;
+        Apcomplex result = org.matheclipse.external.apfloat.ApcomplexEllipticMath
+            .carlsonRJ(apcomplex(x, precision), apcomplex(y, precision), apcomplex(z, precision),
+                apcomplex(p, precision));
+        return new Complex(result.real().doubleValue(), result.imag().doubleValue());
+      } catch (ArithmeticException | org.apfloat.ApfloatRuntimeException e) {
+        // the integral is infinite
+      }
+    }
     return CarlsonEllipticIntegral.rJ(x, y, z, p);
     // return carlsonRJ(x, y, z, p, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }
@@ -321,7 +345,19 @@ public class EllipticIntegralsJS extends JS {
   }
 
   public static Complex ellipticPi(Complex n, Complex x, Complex m) {
-    // return LegendreEllipticIntegral.bigPi(n, x, m);
+    if (n.getImaginary() == 0 && n.getReal() > 1 && x.getImaginary() == 0 && m.getImaginary() != 0
+        && x.isFinite() && m.isFinite()) {
+      // the pole of a real characteristic can be on the path of integration: the arbitrary
+      // precision routine has the rule for that
+      try {
+        final long precision = 20;
+        Apcomplex result = org.matheclipse.external.apfloat.ApcomplexEllipticMath
+            .ellipticPi(apcomplex(n, precision), apcomplex(x, precision), apcomplex(m, precision));
+        return new Complex(result.real().doubleValue(), result.imag().doubleValue());
+      } catch (ArithmeticException | org.apfloat.ApfloatRuntimeException e) {
+        // the integral is infinite
+      }
+    }
     Complex period = Complex.ZERO;
     if (Math.abs(x.getReal()) > Math.PI / 2.0) {
       long p = Math.round(x.getReal() / Math.PI);
@@ -373,7 +409,8 @@ public class EllipticIntegralsJS extends JS {
     double p3SqrSinX = sqrSinX * sinX;
     double mSqrSinX = 1.0 - m * sqrSinX;
     double nSqrSinX = 1.0 - n * sqrSinX;
-    if (n < -1.0 && mSqrSinX >= 0.0) {
+    // with m/n next to 1 the integral of the changed parameter is next to its own pole
+    if (n < -1.0 && mSqrSinX >= 0.0 && Math.abs(m / n - 1.0) >= 0.5) {
       // For a large negative n the terms Sin*RF and n/3*Sin^3*RJ cancel, down to the order of
       // 1/Sqrt(-n): EllipticPi(-1.0*10^30, 0.5) came back as EllipticK(0.5). With w == m/n,
       // Pi(n) + Pi(w) == F + Sin*RC(Cos^2*(1-m*Sin^2), (1-n*Sin^2)*(1-w*Sin^2)), and

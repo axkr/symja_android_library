@@ -738,16 +738,16 @@ public class QuarticSolver {
     if (solution2 != null) {
       result.append(solution2);
     }
-    if (!a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-      if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    if (!isZeroCoefficient(a)) {
+      if (isZeroCoefficient(c)) {
         result.append(F.C0);
-        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (isZeroCoefficient(b)) {
           result.append(F.C0);
         } else {
           result.append(F.Times(F.CN1, b, Power(a, -1L)));
         }
       } else {
-        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (isZeroCoefficient(b)) {
           // a*x^2 + c == 0
           IExpr rhs = S.Divide.of(F.Negate(c), a);
           IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(rhs);
@@ -764,6 +764,14 @@ public class QuarticSolver {
             result.append(F.CN1.times(numeratorDenominator));
             result.append(numeratorDenominator);
           }
+        } else if (isInexactCoefficients(a, b, c)) {
+          // -b+Sqrt(b^2-4*a*c) cancels where b^2 is much larger than 4*a*c: the root of the
+          // larger size is q/a with q = -(b+Sign(b)*Sqrt(b^2-4*a*c))/2, the other one c/q
+          final IExpr root = F.eval(F.Sqrt(quadraticDiscriminant(a, b, c)));
+          final boolean plus = !F.eval(F.Re(F.Times(F.Conjugate(b), root))).isNegative();
+          final IExpr q = F.eval(F.Times(F.CN1D2, F.Plus(b, plus ? root : F.Negate(root))));
+          result.append(F.eval(F.Divide(q, a)));
+          result.append(F.eval(F.Divide(c, q)));
         } else {
           IExpr discriminant = quadraticDiscriminant(a, b, c);
           discriminant = discriminant.sqrt();
@@ -798,7 +806,7 @@ public class QuarticSolver {
         return evalAndSort(result, sort);
       }
     } else {
-      if (!b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (!isZeroCoefficient(b)) {
         result.append(Times(CN1, c, Power(b, -1L)));
       }
     }
@@ -806,6 +814,21 @@ public class QuarticSolver {
       return createSet(result);
     }
     return evalAndSort(result, sort);
+  }
+
+  /**
+   * Whether a coefficient of the polynomial is zero: a number only if it is - the term
+   * <code>1.0*^-20*x^2</code> is a term of the polynomial -, an expression if it may be zero.
+   */
+  private static boolean isZeroCoefficient(IExpr coefficient) {
+    return coefficient.isNumber() ? coefficient.isZero()
+        : coefficient.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+  }
+
+  /** Whether the coefficients are numbers, one of them inexact. */
+  private static boolean isInexactCoefficients(IExpr a, IExpr b, IExpr c) {
+    return a.isNumber() && b.isNumber() && c.isNumber()
+        && (a.isInexactNumber() || b.isInexactNumber() || c.isInexactNumber());
   }
 
   /**

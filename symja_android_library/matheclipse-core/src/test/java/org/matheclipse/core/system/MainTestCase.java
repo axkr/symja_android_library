@@ -358,7 +358,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Factor(1.0-0.1*i)", //
         "0.1*(10.0-i)");
     check("Apart((1-0.1*i)/(1.0-0.1*i))", //
-        "(10.0*(1-0.1*i))/(10.0-i)");
+        "1.0");
     check("Together(1.0-0.1*i)", //
         "0.1*(10.0-i)");
     // github issue #42
@@ -414,7 +414,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("N(Sqrt(2)+I*3/10,50)", //
         "1.4142135623730950488016887242096980785696718753769+I*0.3");
     check("N(Sqrt(2)+I*1/3,50)", //
-        "1.4142135623730950488016887242096980785696718753769+I*0.3333333333333333333333333333333333333333333333333");
+        "1.4142135623730950488016887242096980785696718753769+I*0.33333333333333333333333333333333333333333333333333");
     check("N(I*Sqrt(2)+I*Sqrt(3))", "I*3.14626");
     check("N(I*Sqrt(2)+I*Sqrt(3),50)", "I*3.1462643699419723423291350657155704455124771291873");
 
@@ -974,10 +974,11 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem040() {
+    // the square root itself: no real part from Exp(Log(x)/2)
     checkNumeric("(-15.0)^.5", //
-        "2.3715183290419594E-16+I*3.872983346207417");
+        "I*3.872983346207417");
     checkNumeric("(-15.0)^0.5", //
-        "2.3715183290419594E-16+I*3.872983346207417");
+        "I*3.872983346207417");
     checkNumeric(".5^.5", //
         "0.7071067811865476");
     checkNumeric("N((-15)^(1/2))", //

@@ -9,6 +9,8 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -868,6 +870,139 @@ public class SeriesFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // Series(f, {x, x0, n}, Assumptions -> assum); without the option the value of $Assumptions
+      // is used, as in Refine, Simplify and Limit
+      IAST seriesAST = ast;
+      IExpr assumptionOption = S.$Assumptions;
+      if (ast.argSize() >= 3 && ast.last().isRuleAST() && ast.last().first() == S.Assumptions) {
+        assumptionOption = ast.last().second();
+        seriesAST = ast.removeAtCopy(ast.argSize());
+      }
+      IExpr assumptionExpr = OptionArgs.determineAssumptions(assumptionOption);
+      if (!assumptionExpr.isPresent() || !assumptionExpr.isAST()) {
+        return withoutAbsDerivatives(evaluateSeries(seriesAST, engine), seriesAST);
+      }
+      IAssumptions oldAssumptions = engine.getAssumptions();
+      try {
+        IAssumptions assumptions = oldAssumptions != null
+            ? oldAssumptions.copy().addAssumption(assumptionExpr)
+            : org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+        if (assumptions != null) {
+          engine.setAssumptions(assumptions);
+        }
+        IExpr series = withoutAbsDerivatives(evaluateSeries(seriesAST, engine), seriesAST);
+        if (series instanceof ASTSeriesData && assumptions != null) {
+          // the assumptions also decide the coefficients: Sqrt(a^2) is a for a > 0
+          ASTSeriesData data = (ASTSeriesData) series;
+          IAST coefficients = data.arg3();
+          IASTAppendable refined = F.ListAlloc(coefficients.argSize());
+          for (int j = 1; j <= coefficients.argSize(); j++) {
+            refined.append(
+                AssumptionFunctions.refineAssumptions(coefficients.get(j), assumptions, engine));
+          }
+          return new ASTSeriesData(data.expansionVariable(), data.expansionPoint(), refined,
+              data.minExponent(), data.truncateOrder(), data.puiseuxDenominator());
+        }
+        return series;
+      } finally {
+        engine.setAssumptions(oldAssumptions);
+      }
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions)));
+    }
+
+    /**
+     * <code>Abs</code> has no expansion in powers at a point where its argument can change sign:
+     * a result which contains derivatives of <code>Abs</code> is replaced by the function itself.
+     */
+    private static IExpr withoutAbsDerivatives(IExpr series, IAST seriesAST) {
+      if (series.isPresent() && series.has(y -> y.isAST() && y.head().isAST1()
+          && y.head().first() == S.Abs && y.head().head().isAST(S.Derivative), true)) {
+        return seriesAST.arg1();
+      }
+      return series;
+    }
+
+    private static final ThreadLocal<Boolean> BRANCH_SIDES =
+        ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    /** An even root of something which depends on <code>x</code>. */
+    private static boolean hasEvenRoot(IExpr expr, IExpr x) {
+      return expr.has(y -> y.isPower() && y.exponent().isFraction()
+          && ((IFraction) y.exponent()).denominator().isEven() && !y.base().isFree(x), true);
+    }
+
+    /**
+     * The expansion at <code>0</code> of a function with even roots, which can differ on the two
+     * sides: <code>Sqrt(x^2)</code> is <code>x</code> on the right and <code>-x</code> on the
+     * left. The sign of <code>x</code> selects the side if the assumptions give it; otherwise the
+     * coefficients are written with <code>Sqrt(x^2)/x</code>, which is 1 on the right and -1 on the
+     * left.
+     *
+     * @return {@link F#NIL} if the two sides cannot be compared term by term
+     */
+    private static IExpr twoSidedSeries(IExpr function, IExpr x, int n, EvalEngine engine) {
+      if (BRANCH_SIDES.get() == Boolean.TRUE) {
+        return F.NIL;
+      }
+      BRANCH_SIDES.set(Boolean.TRUE);
+      try {
+        IAST iterator = F.List(x, F.C0, F.ZZ(n));
+        IExpr right = engine.evaluate(F.Series(function, iterator));
+        if (!(right instanceof ASTSeriesData) || x.isPositiveResult()) {
+          return right instanceof ASTSeriesData ? right : F.NIL;
+        }
+        // in a variable of its own: an assumption about the sign of x is not one about -x
+        ISymbol t = F.Dummy("t");
+        IExpr mirrored = engine.evaluate(F.Series(
+            engine.evaluate(F.subst(function, x, F.Negate(t))), F.List(t, F.C0, F.ZZ(n))));
+        if (!(mirrored instanceof ASTSeriesData)) {
+          return F.NIL;
+        }
+        ASTSeriesData p = (ASTSeriesData) right;
+        ASTSeriesData m = (ASTSeriesData) mirrored;
+        if (p.puiseuxDenominator() != 1 || m.puiseuxDenominator() != 1
+            || p.minExponent() != m.minExponent() || p.truncateOrder() != m.truncateOrder()) {
+          return F.NIL;
+        }
+        IAST pList = p.arg3();
+        IAST mList = m.arg3();
+        if (pList.argSize() != mList.argSize() || !pList.isFree(x, true) || !mList.isFree(t, true)) {
+          // coefficients with logarithms of the variable are not compared term by term
+          return F.NIL;
+        }
+        final boolean left = x.isNegativeResult();
+        IExpr side = F.Times(F.Power(x, F.CN1), F.Sqrt(F.Sqr(x)));
+        boolean same = true;
+        IASTAppendable result = F.ListAlloc(pList.argSize());
+        for (int j = 1; j <= pList.argSize(); j++) {
+          int exponent = p.minExponent() + j - 1;
+          IExpr onRight = pList.get(j);
+          IExpr onLeft =
+              (exponent & 1) == 1 ? engine.evaluate(F.Negate(mList.get(j))) : mList.get(j);
+          if (left) {
+            result.append(onLeft);
+          } else if (onRight.equals(onLeft)) {
+            result.append(onRight);
+          } else {
+            same = false;
+            result.append(engine.evaluate(F.Plus(F.Times(F.C1D2, F.Plus(onRight, onLeft)),
+                F.Times(F.C1D2, F.Subtract(onRight, onLeft), side))));
+          }
+        }
+        if (!left && same) {
+          return right;
+        }
+        return new ASTSeriesData(x, F.C0, result, p.minExponent(), p.truncateOrder(), 1);
+      } finally {
+        BRANCH_SIDES.set(Boolean.FALSE);
+      }
+    }
+
+    private static IExpr evaluateSeries(final IAST ast, EvalEngine engine) {
       if (ast.argSize() < 2) {
         return F.NIL;
       }
@@ -966,6 +1101,36 @@ public class SeriesFunctions {
               currentExpr = stirling;
               continue;
             }
+          }
+        }
+
+        if (!leadingTermMode && x0.isZero() && hasEvenRoot(currentExpr, x)) {
+          IExpr twoSided = twoSidedSeries(currentExpr, x, n, engine);
+          if (twoSided.isPresent()) {
+            currentExpr = twoSided;
+            continue;
+          }
+        }
+        if (!leadingTermMode && x0.isNegativeInfinity() && hasEvenRoot(currentExpr, x)) {
+          // An even root takes its branch from the sign of x: expand f(-x) at +Infinity, where
+          // the positive branch is the right one, and put -x back into the powers.
+          ISymbol t = F.Dummy("t");
+          IExpr reflected = engine.evaluate(F.subst(currentExpr, x, F.Negate(t)));
+          IExpr atInfinity = engine.evaluate(F.Series(reflected, F.List(t, F.CInfinity, F.ZZ(n))));
+          if (atInfinity instanceof ASTSeriesData
+              && ((ASTSeriesData) atInfinity).puiseuxDenominator() == 1
+              && ((ASTSeriesData) atInfinity).arg3().isFree(t, true)) {
+            ASTSeriesData data = (ASTSeriesData) atInfinity;
+            IAST coefficients = data.arg3();
+            IASTAppendable flipped = F.ListAlloc(coefficients.argSize());
+            for (int j = 1; j <= coefficients.argSize(); j++) {
+              int exponent = data.minExponent() + j - 1;
+              flipped.append((exponent & 1) == 1 ? engine.evaluate(F.Negate(coefficients.get(j)))
+                  : coefficients.get(j));
+            }
+            currentExpr = new ASTSeriesData(x, x0, flipped, data.minExponent(),
+                data.truncateOrder(), 1);
+            continue;
           }
         }
 

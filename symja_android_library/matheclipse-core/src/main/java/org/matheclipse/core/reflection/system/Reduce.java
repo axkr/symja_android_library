@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.InverseFunctionExpander;
 import org.matheclipse.core.eval.util.SolveUtils;
+import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -5412,6 +5413,24 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    *         the relation isn't a rational one in <code>variable</code> or its roots couldn't be
    *         determined numerically
    */
+  /** The intervals with machine numbers as end points, for a relation of inexact numbers. */
+  private static IAST numericEndPoints(IAST intervalData, EvalEngine engine) {
+    IASTMutable result = intervalData.copy();
+    for (int i = 1; i < result.size(); i++) {
+      if (result.get(i).isList() && result.get(i).size() == 5) {
+        IASTMutable interval = ((IAST) result.get(i)).copy();
+        for (int j : new int[] {1, 4}) {
+          IExpr endPoint = interval.get(j);
+          if (!endPoint.isInfinity() && !endPoint.isNegativeInfinity()) {
+            interval.set(j, engine.evalN(endPoint));
+          }
+        }
+        result.set(i, interval);
+      }
+    }
+    return result;
+  }
+
   private static IAST realAtomToIntervals(IExpr relation, IExpr variable, SolveOptions options,
       EvalEngine engine) {
     final int headID = relation.headID();
@@ -5449,6 +5468,19 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    if (!f.isPolynomial(variable) && !f.isFree(t -> t.isInexactNumber(), true)) {
+      // An inexact quotient does not cancel: its expanded denominators differ by rounding
+      // errors, and the sign is sampled where a common factor of numerator and denominator is
+      // zero. The rational form is reduced, and its end points are given back as numbers.
+      IExpr rationalized = AbstractFractionSym.rationalize(f, false);
+      if (rationalized.isNIL() || !rationalized.isFree(t -> t.isInexactNumber(), true)) {
+        return F.NIL;
+      }
+      IAST exact = realAtomToIntervals(F.binaryAST2(relation.head(), rationalized, F.C0),
+          variable, options, engine);
+      return exact.isPresent() ? numericEndPoints(exact, engine) : F.NIL;
+    }
+
     IExpr numerator = f;
     IExpr denominator = F.C1;
     if (!f.isPolynomial(variable)) {
@@ -5465,14 +5497,8 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
     // Common factors of numerator and denominator are cancelled first, e.g.
     // `(x^2-1)/(x-1) < 3` is reduced as `x+1 < 3`. The sign is sampled on the cancelled form, so a
-    // sample never hits a removable singularity of the uncancelled `f`. The cancellation of an
-    // inexact `f` isn't reliable, so its sign is sampled on `f` itself.
-    final IExpr cancelled;
-    if (!f.isFree(t -> t.isInexactNumber(), true)) {
-      cancelled = f;
-    } else {
-      cancelled = denominator.isOne() ? numerator : F.Divide(numerator, denominator);
-    }
+    // sample never hits a removable singularity of the uncancelled `f`.
+    final IExpr cancelled = denominator.isOne() ? numerator : F.Divide(numerator, denominator);
 
     // the breakpoints of the sign: the real roots of the numerator and the poles
     List<IExpr> breakExacts = new ArrayList<IExpr>();

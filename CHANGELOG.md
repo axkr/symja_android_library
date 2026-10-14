@@ -4,6 +4,15 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
 
+- `Simplify`, `Factor`, `Together` and `Cancel` with a power like `E^(70754517/78739762)`, as
+  `Rationalize` makes them from a decimal: `Simplify(78739762/70754517-Coth(70754517/78739762))`
+  ran out of memory within 50 ms, `Simplify(1+Sinh(70754517/78739762))` and even
+  `Simplify(513/511-Coth(511/513))` did not return. The polynomial these functions work on was
+  written in `E^(1/q)`, which made `E^(p/q)` its power `p`. It is now written in the largest power
+  all the exponents are multiples of, here `E^(p/q)` itself, so the inputs above take milliseconds.
+  Small powers of a constant keep their form: `Factor(E^2-1)` is `(-1+E)*(1+E)`. `Together` reads
+  the coefficients of a sparse numerator without the list of all of them (issue #1551).
+
 - A backslash before a space in a string literal only marks the space: `"a\ b"` is `"a b"`. 
   The scanner dropped the space along with the backslash, so the
   string came out as `"ab"`. 

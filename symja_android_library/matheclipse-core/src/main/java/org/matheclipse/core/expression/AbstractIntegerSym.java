@@ -679,7 +679,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public Apcomplex apcomplexValue() {
-    return new Apcomplex(new Apfloat(toBigNumerator(), EvalEngine.getApfloat().precision()));
+    return new Apcomplex(
+        ApfloatNum.apfloatOf(toBigNumerator(), EvalEngine.getApfloat().precision()));
   }
 
   @Override

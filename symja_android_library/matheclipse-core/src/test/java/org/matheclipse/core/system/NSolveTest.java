@@ -139,7 +139,7 @@ public class NSolveTest extends ExprEvaluatorTestCase {
         "{{x->-1.41421},{x->1.41421}}");
     // the solutions are ordered by real, then imaginary part at every working precision
     check("NSolve(x^3-2==0,x,Complexes,20)", //
-        "{{x->-0.6299605249474365823+I*(-1.0911236359717214035)},{x->-0.6299605249474365823+I*1.0911236359717214035},{x->1.2599210498948731647}}");
+        "{{x->-0.62996052494743658238+I*(-1.0911236359717214035)},{x->-0.62996052494743658238+I*1.0911236359717214035},{x->1.2599210498948731647}}");
     // Requested precision `1` is smaller than `2`.
     check("NSolve(x^2==2,x,Reals,-5)", //
         "NSolve(x^2==2,x,Reals,-5)");

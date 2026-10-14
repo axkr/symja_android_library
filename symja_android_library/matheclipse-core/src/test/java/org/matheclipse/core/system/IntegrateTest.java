@@ -1584,4 +1584,24 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "Integrate(Log(1+x)/(x*Sqrt(1-x^3)),{x,0,1})");
   }
 
+  /**
+   * A factor <code>UnitStep(p*x+q)</code> or <code>HeavisideTheta(p*x+q)</code>: the antiderivative
+   * of the other factors, taken from the break point.
+   */
+  @Test
+  public void testStepFunctionFactor() {
+    check("Integrate(UnitStep(t-b),t)", //
+        "(-b+t)*UnitStep(-b+t)");
+    check("Integrate(t^2*UnitStep(t-2),t)", //
+        "(-8/3+t^3/3)*UnitStep(-2+t)");
+    check("Integrate(E^(-2*t)*HeavisideTheta(3*t-b),t)", //
+        "(1/(2*E^(2/3*b))-1/(2*E^(2*t)))*HeavisideTheta(-b+3*t)");
+    check("Integrate(Cos(t)*UnitStep(2-t),t)", //
+        "(-Sin(2)+Sin(t))*UnitStep(2-t)");
+    // not of this form
+    check("Integrate(UnitStep(t-b)*UnitStep(t-c),t)", //
+        "Integrate(UnitStep(-b+t)*UnitStep(-c+t),t)");
+    check("Integrate(UnitStep(t^2-b),t)", //
+        "Integrate(UnitStep(-b+t^2),t)");
+  }
 }

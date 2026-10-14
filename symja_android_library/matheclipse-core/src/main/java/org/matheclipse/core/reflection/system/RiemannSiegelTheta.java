@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.Errors;
@@ -83,17 +82,5 @@ public class RiemannSiegelTheta extends AbstractArg1 {
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
-  }
-
-  /**
-   * Riemann-Siegel theta function at {@code t}, at the precision of the helper. Used by
-   * {@link ZetaZero}, which brings its own guard digits.
-   */
-  public static Apfloat zzTheta(FixedPrecisionApfloatHelper h, Apfloat t, Apfloat quarter,
-      Apfloat two, Apfloat logPi) {
-    Apcomplex s = new Apcomplex(quarter, t.divide(two));
-    Apcomplex logGamma = h.logGamma(s);
-    Apfloat term = h.divide(t, two).multiply(logPi);
-    return h.subtract(logGamma.imag(), term);
   }
 }

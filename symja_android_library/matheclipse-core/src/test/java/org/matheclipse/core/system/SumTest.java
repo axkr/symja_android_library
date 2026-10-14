@@ -329,7 +329,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})", //
         "3/2*c*n*(-i+n)+1/2*c*n^2*(-i+n)+1/2*c*(i-n)*n*(1+i+n)");
     check("Simplify(c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*n*(-i+n)+1/2*(-i+n)*n^2))", //
-        "1/2*c*(2-i)*n*(-i+n)");
+        "1/2*c*(-2+i)*(i-n)*n");
 
     check("Sum(c*(n-1), {j,i,n-1})", //
         "c*(i-n)+c*n*(-i+n)");
@@ -835,7 +835,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(1/(i+3), {i,1,n})", //
         "-11/6+HarmonicNumber(3+n)");
     check("Sum(1/(2*i+1)^2, {i,1,n})", //
-        "1/4*(PolyGamma(1,3/2)-PolyGamma(1,3/2+n))");
+        "1/4*(-4+Pi^2/2-PolyGamma(1,3/2+n))");
     check("Sum((i^2+1)/(i+1), {i,1,n})", //
         "-n/2+n^2/2+2*(-1+HarmonicNumber(1+n))");
     // a telescoping sum keeps its elementary closed form, Gosper runs before the partial fractions

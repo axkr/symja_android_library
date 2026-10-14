@@ -27,6 +27,34 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
     }
   }
 
+  /** The test of a numeric matrix: the absolute value up to a tolerance. */
+  public static final class ToleranceTest implements Predicate<IExpr> {
+    private final double tolerance;
+
+    /** The tolerance is the one of the option <code>Tolerance</code>. */
+    private final boolean given;
+
+    public ToleranceTest(double tolerance, boolean given) {
+      this.tolerance = tolerance;
+      this.given = given;
+    }
+
+    /** Whether the tolerance is the one of the option <code>Tolerance</code>. */
+    public boolean isGiven() {
+      return given;
+    }
+
+    @Override
+    public boolean test(IExpr x) {
+      try {
+        return F.isZero(x.evalfc(), tolerance);
+      } catch (ArgumentTypeException ignored) {
+        // fall through to symbolic check
+      }
+      return x.isZero();
+    }
+  }
+
   public AbstractMatrix1Expr() {}
 
   /**
@@ -149,23 +177,17 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
     }
     // Determine effective numeric tolerance
     double tolerance = Config.SPECIAL_FUNCTIONS_TOLERANCE;
+    boolean given = false;
     if (toleranceOption.isPresent() && toleranceOption != S.Automatic) {
       double t = toleranceOption.toDoubleDefault(Double.NaN);
       if (!Double.isNaN(t) && t > 0.0) {
         tolerance = t;
+        given = true;
       }
     }
     // For floating-point matrices use tolerance-based zero check
     if (ast.arg1().isNumericArgument(true)) {
-      final double tol = tolerance;
-      return x -> {
-        try {
-          return F.isZero(x.evalfc(), tol);
-        } catch (ArgumentTypeException ignored) {
-          // fall through to symbolic check
-        }
-        return x.isZero();
-      };
+      return new ToleranceTest(tolerance, given);
     }
     return POSSIBLE_ZEROQ_TEST;
   }

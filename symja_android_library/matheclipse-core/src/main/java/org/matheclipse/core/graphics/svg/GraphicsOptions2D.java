@@ -437,6 +437,10 @@ public final class GraphicsOptions2D {
       }
       return;
     }
+    if (value.isList() && ((IAST) value).argSize() == 1) {
+      // {w} is the width alone
+      value = value.first();
+    }
     // A single value, named or numeric, gives the width; the height then follows from the aspect
     // ratio rather than making the image square.
     double s = namedImageSize(value, Double.NaN);

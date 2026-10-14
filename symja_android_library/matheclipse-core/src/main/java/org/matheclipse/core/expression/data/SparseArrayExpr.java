@@ -1373,10 +1373,44 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @param engine the evaluation engine
    * @return <code>true</code> if the rule was processed successfully, false otherwise
    */
+  /**
+   * A position with negative entries, which count from the end of their dimension: in an array
+   * of the dimensions <code>{3, 3}</code> the position <code>{-1, 1}</code> is <code>{3, 1}</code>.
+   *
+   * @return <code>position</code> itself if it has no negative entry, or one which does not fit
+   */
+  private static IExpr positionFromEnd(IExpr position, int[] dimension) {
+    if (dimension == null) {
+      return position;
+    }
+    if (position.isInteger() && position.isNegative() && dimension.length >= 1) {
+      int n = position.toIntDefault();
+      return F.isPresent(n) && dimension[0] + 1 + n >= 1 ? F.ZZ(dimension[0] + 1 + n) : position;
+    }
+    if (!position.isList() || position.argSize() != dimension.length
+        || !((IAST) position).exists(x -> x.isInteger() && x.isNegative())) {
+      return position;
+    }
+    IAST list = (IAST) position;
+    IASTAppendable result = F.ListAlloc(list.argSize());
+    for (int i = 1; i <= list.argSize(); i++) {
+      IExpr entry = list.get(i);
+      if (entry.isInteger() && entry.isNegative()) {
+        int n = entry.toIntDefault();
+        if (!F.isPresent(n) || dimension[i - 1] + 1 + n < 1) {
+          return position;
+        }
+        entry = F.ZZ(dimension[i - 1] + 1 + n);
+      }
+      result.append(entry);
+    }
+    return result;
+  }
+
   private static boolean processSingleRule(IAST rule, Trie<int[], IExpr> trie, int[] dimension,
       int depth, boolean determineDimension, boolean fixedDimension, int defaultDimension,
       IExpr[] defaultValue, IAST arrayRulesList, boolean isFirstRule, EvalEngine engine) {
-    IExpr lhs = rule.arg1();
+    IExpr lhs = fixedDimension ? positionFromEnd(rule.arg1(), dimension) : rule.arg1();
     IExpr rhs = rule.arg2();
 
     if (lhs.isList()) {

@@ -3302,6 +3302,22 @@ public interface IExpr
         if (timesAST.exists(x -> x.isInteger() && ((IInteger) x).isEven())) {
           return true;
         }
+        // two integer factors which differ by an odd number: one of them is even
+        for (int i = 1; i < timesAST.size(); i++) {
+          IExpr f = timesAST.get(i);
+          if (!f.isPlus() && !f.isSymbol()) {
+            continue;
+          }
+          for (int j = i + 1; j < timesAST.size(); j++) {
+            IExpr g = timesAST.get(j);
+            if (g.isPlus() || g.isSymbol()) {
+              IExpr difference = g.subtract(f);
+              if (difference.isInteger() && ((IInteger) difference).isOdd()) {
+                return true;
+              }
+            }
+          }
+        }
       }
     }
     IExpr value = AbstractAssumptions.assumeFunctionValue(F.Mod(this, F.C2));
@@ -4979,6 +4995,10 @@ public interface IExpr
    *        {@link Config#SPECIAL_FUNCTIONS_TOLERANCE}
    */
   default boolean isPossibleZero(boolean fastTest, double tolerance) {
+    if (isInexactNumber()) {
+      // what a calculation leaves of a zero is a possible zero
+      return ((INumber) this).isFuzzyZero();
+    }
     return isZero();
   }
 

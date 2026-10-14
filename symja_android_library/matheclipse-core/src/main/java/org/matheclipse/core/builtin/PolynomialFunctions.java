@@ -1,5 +1,14 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.parser.client.ParserConfig;
+import org.apfloat.ApfloatRuntimeException;
+import org.apfloat.Apfloat;
+import org.apfloat.Apcomplex;
+import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.Num;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,6 +133,9 @@ public class PolynomialFunctions {
         if (degree < 0) {
           degree *= -1;
         }
+        if (degree == 0) {
+          return F.C1;
+        }
         if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
           PolynomialDegreeLimitExceeded.throwIt(degree);
         }
@@ -134,7 +146,7 @@ public class PolynomialFunctions {
         // (-1/2, z) => Cos(ArcCos(z)/2)
         return F.Cos(F.Times(F.C1D2, F.ArcCos(z)));
       }
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         // Cos(Pi*n*(1/2))
         return F.Cos(F.Times(F.C1D2, S.Pi, n));
       }
@@ -2053,6 +2065,10 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       // }
       IExpr n = ast.arg1();
       IExpr a = ast.arg2();
@@ -2131,6 +2147,10 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       if (ast.argSize() == 4) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber a = (IInexactNumber) ast.arg2();
@@ -2197,6 +2217,93 @@ public class PolynomialFunctions {
    * 1-8*x+14*x^2-28/3*x^3+35/12*x^4-7/15*x^5+7/180*x^6-x^7/630+x^8/40320
    * </pre>
    */
+  /** From this degree on a polynomial is not evaluated in the precision of its arguments. */
+  private static final int EXACT_ARGUMENTS_DEGREE = 16;
+
+  /**
+   * A function which is a polynomial of the integer degree <code>ast.arg1()</code>, at inexact
+   * numbers. The terms of such a polynomial are larger than its value - by a factor which grows
+   * exponentially with the degree - so that the sum of them in the precision of the arguments has
+   * no correct digit left. It is evaluated for the rational numbers which the arguments are, and
+   * that result is rounded.
+   *
+   * @return {@link F#NIL} for a small degree, for exact arguments and where the exact evaluation
+   *         gives no number
+   */
+  static IExpr exactArguments(IAST ast, EvalEngine engine) {
+    IExpr n = ast.arg1();
+    if (!n.isNumIntValue()) {
+      return F.NIL;
+    }
+    final int degree = Math.abs(n.toIntDefault());
+    if (degree < EXACT_ARGUMENTS_DEGREE || degree > Config.MAX_POLYNOMIAL_DEGREE) {
+      return F.NIL;
+    }
+    boolean inexact = false;
+    long precision = -1;
+    IASTMutable exact = ast.copy();
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (!arg.isNumber()) {
+        return F.NIL;
+      }
+      if (arg.isInexactNumber()) {
+        inexact = true;
+        if (arg instanceof ApfloatNum || arg instanceof ApcomplexNum) {
+          precision = Math.max(precision, ((INumber) arg).determinePrecision(true));
+        }
+        exact.set(i, exactNumber((INumber) arg));
+      }
+    }
+    if (!inexact) {
+      return F.NIL;
+    }
+    final long digits = precision < 0 ? ParserConfig.MACHINE_PRECISION + 1 : precision;
+    try {
+      IExpr value = engine.evaluateNonNumeric(exact);
+      if (value.isAST(ast.head())) {
+        return F.NIL;
+      }
+      // a result with radicals or logarithms is a polynomial in them again
+      // outside of the numeric mode of the caller, which fixes the precision of a nested N()
+      value = engine.evaluateNonNumeric(F.N(value, F.ZZ(digits + degree + 20)));
+      if (!value.isNumber()) {
+        return F.NIL;
+      }
+      Apcomplex z = ((INumber) value).apcomplexValue();
+      if (precision < 0) {
+        return z.imag().signum() == 0 ? F.num(z.real().doubleValue())
+            : F.complexNum(z.real().doubleValue(), z.imag().doubleValue());
+      }
+      return CarlsonArbitraryPrecision.round(z, digits);
+    } catch (ArithmeticException | ApfloatRuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
+      return F.NIL;
+    }
+  }
+
+  /** The rational number, or the Gaussian rational one, which an inexact number is. */
+  private static IExpr exactNumber(INumber x) {
+    if (x instanceof Num) {
+      return F.fractionExact(((Num) x).doubleValue(), false);
+    }
+    if (x instanceof ComplexNum) {
+      return F.CC((IRational) F.fractionExact(x.reDoubleValue(), false),
+          (IRational) F.fractionExact(x.imDoubleValue(), false));
+    }
+    Apcomplex z = x.apcomplexValue();
+    IRational re = exactNumber(z.real());
+    return z.imag().signum() == 0 ? re : F.CC(re, exactNumber(z.imag()));
+  }
+
+  private static IRational exactNumber(Apfloat x) {
+    java.math.BigDecimal decimal = new java.math.BigDecimal(x.toString());
+    java.math.BigInteger unscaled = decimal.unscaledValue();
+    return decimal.scale() >= 0
+        ? F.QQ(F.ZZ(unscaled), F.ZZ(java.math.BigInteger.TEN.pow(decimal.scale())))
+        : F.ZZ(unscaled.multiply(java.math.BigInteger.TEN.pow(-decimal.scale())));
+  }
+
   private static final class LaguerreL extends AbstractFunctionEvaluator
       implements IFunctionExpand {
 
@@ -2228,6 +2335,9 @@ public class PolynomialFunctions {
         if (ast.isAST3()) {
           IExpr l = ast.arg2();
           IExpr z = ast.arg3();
+          if (l.isNumber() && z.isNumber()) {
+            return laguerreLRecurrence(degree, (INumber) l, (INumber) z);
+          }
           return laguerreLRecursive(n, degree, l, z, engine);
         }
         if (degree == 0) {
@@ -2235,6 +2345,10 @@ public class PolynomialFunctions {
         }
         if (degree > 0) {
           IExpr z = ast.arg2();
+          if (z.isNumber()) {
+            // the expanded polynomial cancels for an inexact argument
+            return laguerreLRecurrence(degree, F.C0, (INumber) z);
+          }
           return laguerreL(degree, z);
         }
       } else if (F.isPresent(degree)) {
@@ -2277,6 +2391,26 @@ public class PolynomialFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>LaguerreL(degree, l, z)</code> for numbers, with the recurrence relation in the degree:
+     * <code>k*L(k) == (2*k-1+l-z)*L(k-1) - (k-1+l)*L(k-2)</code>
+     */
+    private static IExpr laguerreLRecurrence(int degree, INumber l, INumber z) {
+      IExpr previous = F.C1;
+      if (degree == 0) {
+        return previous;
+      }
+      IExpr current = F.C1.plus(l).subtract(z);
+      IExpr lMinusZ = l.subtract(z);
+      for (int k = 2; k <= degree; k++) {
+        IExpr next = lMinusZ.plus(F.ZZ(2 * k - 1)).times(current)
+            .subtract(l.plus(F.ZZ(k - 1)).times(previous)).divide(F.ZZ(k));
+        previous = current;
+        current = next;
+      }
+      return current;
     }
 
     private IExpr laguerreLRecursive(IExpr n, int degree, IExpr l, IExpr z, EvalEngine engine) {
@@ -2345,10 +2479,19 @@ public class PolynomialFunctions {
         if (ast.isAST2()) {
           l = F.CD0;
           z = (IInexactNumber) ast.arg2();
+          int degree = n.isNumIntValue() ? n.toIntDefault() : -1;
+          if (degree >= 0 && degree <= Config.MAX_POLYNOMIAL_DEGREE) {
+            return laguerreLRecurrence(degree, F.C0, z);
+          }
           temp = n.laguerreL(z);
         } else {
           l = (IInexactNumber) ast.arg2();
           z = (IInexactNumber) ast.arg3();
+          int degree = n.isNumIntValue() ? n.toIntDefault() : -1;
+          if (degree >= 0 && degree <= Config.MAX_POLYNOMIAL_DEGREE) {
+            // the hypergeometric series of a polynomial of high degree cancels
+            return laguerreLRecurrence(degree, l, z);
+          }
           temp = n.laguerreL(l, z);
         }
         if (temp.isPresent()) {
@@ -2493,6 +2636,10 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       IExpr arg1 = ast.arg1();
       int argSize = ast.argSize();
       if (argSize == 2) {
@@ -2501,10 +2648,6 @@ public class PolynomialFunctions {
         if (z.isOne()) {
           // LegendreP(x_, 1) = 1
           return F.C1;
-        }
-        if (z.isMinusOne() && n.isIntegerResult()) {
-          // LegendreP(n_Integer, -1) := (-1)^n
-          return F.Power(F.CN1, n);
         }
 
         if (n.isRationalValue(F.CN1D2)) {
@@ -2589,6 +2732,10 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       int argSize = ast.argSize();
       if (argSize == 4) {
         if (ast.arg3().isNumEqualInteger(F.C2)) {
@@ -2764,6 +2911,10 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       int argSize = ast.argSize();
       IExpr n = ast.arg1();
 
@@ -2902,6 +3053,10 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       if (ast.isAST2() || ast.isAST3()) {
         final IInexactNumber n = (IInexactNumber) ast.arg1();
         final IInexactNumber z;
@@ -3543,6 +3698,10 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
 
       IExpr l = ast.arg1();
       IExpr m = ast.arg2();
@@ -3629,6 +3788,10 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       if (ast.argSize() == 4) {
         IInexactNumber l = (IInexactNumber) ast.arg1();
         IInexactNumber m = (IInexactNumber) ast.arg2();

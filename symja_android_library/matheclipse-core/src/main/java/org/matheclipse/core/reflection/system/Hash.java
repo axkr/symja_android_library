@@ -184,20 +184,30 @@ public class Hash extends AbstractFunctionEvaluator {
     return null;
   }
 
+  /** Distribute the 32 bits of a hash code over 64 bits (the finalizer of SplitMix64). */
+  private static long spread(int hashCode) {
+    long z = (hashCode & 0xFFFFFFFFL) + 0x9E3779B97F4A7C15L;
+    z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+    z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+    return z ^ (z >>> 31);
+  }
+
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
-    if (!Config.FILESYSTEM_ENABLED) {
+    IExpr arg1 = ast.arg1();
+    if (!Config.FILESYSTEM_ENABLED && (arg1 instanceof FileExpr || arg1 instanceof InputStreamExpr)) {
+      // Only what is read from the system is refused; an expression is hashed in memory.
       // The operation `1` is not allowed in sandbox mode.
       return Errors.printMessage(S.Hash, "sandbox", F.List(S.Hash));
     }
-    IExpr arg1 = ast.arg1();
     String algorithm = "Expression";
     if (ast.size() >= 3) {
       IExpr arg2 = ast.arg2();
       if (arg2 instanceof IStringX) {
         algorithm = arg2.toString();
       } else {
-        return F.NIL;
+        // `1` is not a valid Hash specification.
+        return Errors.printMessage(S.Hash, "invhash", F.List(arg2), engine);
       }
     }
     String format = "Integer";
@@ -206,15 +216,24 @@ public class Hash extends AbstractFunctionEvaluator {
       if (arg3 instanceof IStringX) {
         format = arg3.toString();
       } else {
-        return F.NIL;
+        // `1` is not a valid Hash specification.
+        return Errors.printMessage(S.Hash, "invhash", F.List(arg3), engine);
       }
     }
     if (algorithm.equals("Expression")) {
-      int hashCode = arg1.hashCode();
-      if (format.equals("Integer")) {
-        return F.ZZ(hashCode);
+      // a non-negative 64-bit value, so that the string formats have a fixed width
+      long h = spread(arg1.hashCode());
+      byte[] bytes = new byte[8];
+      for (int i = 7; i >= 0; i--) {
+        bytes[i] = (byte) h;
+        h >>>= 8;
       }
-      return formatHash(BigInteger.valueOf(hashCode & 0xFFFFFFFFL).toByteArray(), format);
+      IExpr formatted = formatHash(bytes, format);
+      if (formatted.isNIL()) {
+        // Invalid hash format `1`.
+        return Errors.printMessage(S.Hash, "uform", F.List(F.$str(format)), engine);
+      }
+      return formatted;
     }
     try {
       InputStream inputStream = openStream(arg1);
@@ -225,7 +244,12 @@ public class Hash extends AbstractFunctionEvaluator {
       if (digest == null) {
         return F.NIL;
       }
-      return formatHash(digest, format);
+      IExpr formatted = formatHash(digest, format);
+      if (formatted.isNIL()) {
+        // Invalid hash format `1`.
+        return Errors.printMessage(S.Hash, "uform", F.List(F.$str(format)), engine);
+      }
+      return formatted;
     } catch (NoSuchAlgorithmException nsae) {
       // `1` is not a known hash code.
       return Errors.printMessage(S.Hash, "hshtype", F.List(F.$str(algorithm)), engine);

@@ -40,6 +40,7 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
@@ -1086,7 +1087,26 @@ public class StructureFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.ZZ(engine.evaluate(ast.arg1()).leafCount());
+      return F.ZZ(leafCount(engine.evaluate(ast.arg1())));
+    }
+
+    /**
+     * The leaves of an expression, with a pattern counted as the expression it is written as:
+     * <code>x_</code> is <code>Pattern(x, Blank())</code> and has 3.
+     */
+    private static long leafCount(IExpr expr) {
+      if (expr instanceof IPatternObject) {
+        return leafCount(((IPatternObject) expr).toFullFormAST());
+      }
+      if (expr.isAST() && !expr.isFree(x -> x instanceof IPatternObject, true)) {
+        IAST list = (IAST) expr;
+        long count = 0L;
+        for (int i = 0; i < list.size(); i++) {
+          count += leafCount(list.get(i));
+        }
+        return count;
+      }
+      return expr.leafCount();
     }
 
     @Override

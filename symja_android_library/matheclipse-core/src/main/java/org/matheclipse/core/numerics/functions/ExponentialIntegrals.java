@@ -70,6 +70,42 @@ public final class ExponentialIntegrals {
   }
 
   /**
+   * <code>{Si(x), Ci(x)}</code> for an argument beyond the validated domain, from the auxiliary
+   * functions <code>f(x) = 1/x - 2!/x^3 + 4!/x^5 - ...</code> and
+   * <code>g(x) = 1/x^2 - 3!/x^4 + 5!/x^6 - ...</code>:
+   * <code>Si(x) = Pi/2 - f(x)*Cos(x) - g(x)*Sin(x)</code> and
+   * <code>Ci(x) = f(x)*Sin(x) - g(x)*Cos(x)</code>. The sine and the cosine are taken of the
+   * argument itself, which {@link Math} reduces with as many digits of <code>Pi</code> as its size
+   * needs: <code>Ci(x)</code> is of the size <code>1/x</code> and has no digit without them.
+   *
+   * @param x the argument, above the largest one of {@link #isSupported(double)}
+   * @return <code>{Si(x), Ci(x)}</code>
+   * @see <a href="https://dlmf.nist.gov/6.12#ii">DLMF 6.12(ii)</a>
+   */
+  public static double[] sinCosIntegralOfLarge(final double x) {
+    final double w = 1.0 / x / x;
+    double f = 1.0;
+    double g = 1.0;
+    double termF = 1.0;
+    double termG = 1.0;
+    for (int k = 1; k < 20; k++) {
+      // (2k)!/x^(2k) and (2k+1)!/x^(2k)
+      termF *= -(2.0 * k - 1.0) * (2.0 * k) * w;
+      termG *= -(2.0 * k) * (2.0 * k + 1.0) * w;
+      f += termF;
+      g += termG;
+      if (Math.abs(termG) < 1.0e-17) {
+        break;
+      }
+    }
+    f /= x;
+    g *= w;
+    final double sin = Math.sin(x);
+    final double cos = Math.cos(x);
+    return new double[] {Math.PI / 2.0 - f * cos - g * sin, f * sin - g * cos};
+  }
+
+  /**
    * <code>SinIntegral(x)</code>, the odd entire function
    * <code>Si(x) = integral from 0 to x of sin(t)/t dt</code>.
    */
@@ -474,6 +510,67 @@ public final class ExponentialIntegrals {
    * standard and both correct for their own domain; they must simply not be mixed.
    */
   public static Complex expIntegralEi(final Complex z) {
+    Complex series = expIntegralEiSeries(z);
+    return series != null ? series : expIntegralEiFraction(z);
+  }
+
+  /**
+   * <code>Ei(z)</code> away from the origin and from the positive real axis, where the power
+   * series loses its digits to cancellation, or null where this does not converge.
+   *
+   * <p>
+   * <code>Ei(z) = -E1(-z) + (Log(z) - Log(1/z))/2 - Log(-z)</code>, with the continued fraction
+   * <code>E1(w) = Exp(-w)/(w + 1/(1 + 1/(w + 2/(1 + 2/(w + ...)))))</code> evaluated by the
+   * modified Lentz method in its even form <code>1/(w + 1 - 1/(w + 3 - 4/(w + 5 - ...)))</code>.
+   */
+  private static Complex expIntegralEiFraction(final Complex z) {
+    final double re = z.getReal();
+    final double im = z.getImaginary();
+    if (!Double.isFinite(re) || !Double.isFinite(im) || z.norm() < 2.0
+        || (re > 0.0 && Math.abs(im) < 1.0)) {
+      // near the origin the series is the method; near the positive real axis, which is the cut of
+      // E1(-z), the fraction converges too slowly to be trusted
+      return null;
+    }
+    final Complex w = z.negate();
+    final double tiny = 1.0e-300;
+    Complex b = w.add(1.0);
+    Complex c = new Complex(1.0 / tiny, 0.0);
+    Complex d = Complex.ONE.divide(b);
+    Complex h = d;
+    boolean converged = false;
+    for (int i = 1; i <= 5000; i++) {
+      final double a = -(double) i * i;
+      b = b.add(2.0);
+      d = b.add(d.multiply(a));
+      if (d.norm() < tiny) {
+        d = new Complex(tiny, 0.0);
+      }
+      c = b.add(new Complex(a, 0.0).divide(c));
+      if (c.norm() < tiny) {
+        c = new Complex(tiny, 0.0);
+      }
+      d = Complex.ONE.divide(d);
+      final Complex delta = c.multiply(d);
+      h = h.multiply(delta);
+      if (delta.subtract(1.0).norm() < EPS) {
+        converged = true;
+        break;
+      }
+    }
+    if (!converged) {
+      return null;
+    }
+    final Complex e1 = h.multiply(w.negate().exp());
+    // the logarithms of the formula add up to +-Pi*I, by the side of the real axis z lies on, and
+    // to nothing on the axis itself; taken as that, they cost the real part no digits
+    final Complex result =
+        e1.negate().add(new Complex(0.0, im > 0.0 ? Math.PI : im < 0.0 ? -Math.PI : 0.0));
+    return Double.isFinite(result.getReal()) && Double.isFinite(result.getImaginary()) ? result
+        : null;
+  }
+
+  private static Complex expIntegralEiSeries(final Complex z) {
     if (!isSupported(z)) {
       return null;
     }

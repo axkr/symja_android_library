@@ -14,11 +14,13 @@ import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
 import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import org.matheclipse.external.apfloat.ApcomplexTrigMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -85,8 +87,10 @@ public class ApcomplexNum implements IComplexNum {
       final BigInteger imagDenominator) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     long prec = h.precision();
-    Apfloat real = h.divide(new Apfloat(realNumerator, prec), new Apfloat(realDenominator, prec));
-    Apfloat imag = h.divide(new Apfloat(imagNumerator, prec), new Apfloat(imagDenominator, prec));
+    Apfloat real = h.divide(ApfloatNum.apfloatOf(realNumerator, prec),
+        ApfloatNum.apfloatOf(realDenominator, prec));
+    Apfloat imag = h.divide(ApfloatNum.apfloatOf(imagNumerator, prec),
+        ApfloatNum.apfloatOf(imagDenominator, prec));
     return new ApcomplexNum(real, imag);
   }
 
@@ -206,20 +210,88 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(h().acosh(fApcomplex));
   }
 
+  /**
+   * The sum with a number; the digits which cancel are reported to {@link PrecisionLoss}.
+   *
+   * <p>
+   * The four operations are done with the real and the imaginary parts, each with the digits of
+   * the precision. The complex operations of the helper give both parts of a number one accuracy
+   * and cut the smaller part off at it: <code>Exp(1000)+I</code> had no imaginary part.
+   */
+  private Apcomplex sum(Apcomplex that) {
+    final FixedPrecisionApfloatHelper h = h();
+    return PrecisionLoss.sum(fApcomplex, that, new Apcomplex(
+        h.add(fApcomplex.real(), that.real()), h.add(fApcomplex.imag(), that.imag())));
+  }
+
+  /** The difference to a number; the digits which cancel are reported. */
+  private Apcomplex difference(Apcomplex that) {
+    final FixedPrecisionApfloatHelper h = h();
+    return PrecisionLoss.sum(fApcomplex, that, new Apcomplex(
+        h.subtract(fApcomplex.real(), that.real()), h.subtract(fApcomplex.imag(), that.imag())));
+  }
+
+  /**
+   * A number with the precision for each of its parts. <code>Apcomplex.precision()</code> gives
+   * the two parts one accuracy, see {@link #sum(Apcomplex)}.
+   */
+  public static Apcomplex precisionOfParts(Apcomplex z, long precision) {
+    final Apfloat re = z.real();
+    final Apfloat im = z.imag();
+    return new Apcomplex(re.signum() == 0 ? re : re.precision(precision),
+        im.signum() == 0 ? im : im.precision(precision));
+  }
+
+  /** The product with a number, by parts - see {@link #sum(Apcomplex)}. */
+  private Apcomplex product(Apcomplex that) {
+    final FixedPrecisionApfloatHelper h = h();
+    final Apfloat a = fApcomplex.real();
+    final Apfloat b = fApcomplex.imag();
+    final Apfloat c = that.real();
+    final Apfloat d = that.imag();
+    if (d.signum() == 0) {
+      return new Apcomplex(h.multiply(a, c), h.multiply(b, c));
+    }
+    if (b.signum() == 0) {
+      return new Apcomplex(h.multiply(a, c), h.multiply(a, d));
+    }
+    return new Apcomplex(h.subtract(h.multiply(a, c), h.multiply(b, d)),
+        h.add(h.multiply(a, d), h.multiply(b, c)));
+  }
+
+  /** The quotient by a number, by parts - see {@link #sum(Apcomplex)}. */
+  private Apcomplex quotient(Apcomplex that) {
+    final FixedPrecisionApfloatHelper h = h();
+    final Apfloat a = fApcomplex.real();
+    final Apfloat b = fApcomplex.imag();
+    final Apfloat c = that.real();
+    final Apfloat d = that.imag();
+    if (d.signum() == 0) {
+      return new Apcomplex(h.divide(a, c), h.divide(b, c));
+    }
+    if (c.signum() == 0) {
+      // (a+b*I)/(d*I) = b/d - a/d*I
+      return new Apcomplex(h.divide(b, d), h.divide(a, d).negate());
+    }
+    final Apfloat norm = h.add(h.multiply(c, c), h.multiply(d, d));
+    return new Apcomplex(h.divide(h.add(h.multiply(a, c), h.multiply(b, d)), norm),
+        h.divide(h.subtract(h.multiply(b, c), h.multiply(a, d)), norm));
+  }
+
   public ApcomplexNum add(final ApcomplexNum that) {
-    return valueOf(h().add(fApcomplex, that.fApcomplex));
+    return valueOf(sum(that.fApcomplex));
   }
 
   @Override
   public ApcomplexNum add(double value) {
     // add, not divide: this was a copy of divide(double) below, so (6+8i).add(2.0) answered 3+4i
     // instead of 8+8i. IExpr#add(double) is defined as plus(F.num(that)).
-    return valueOf(h().add(fApcomplex, new Apcomplex(apfloatOf(value))));
+    return valueOf(sum(new Apcomplex(apfloatOf(value))));
   }
 
   @Override
   public IComplexNum add(final IComplexNum val) {
-    return valueOf(h().add(fApcomplex, val.apcomplexValue()));
+    return valueOf(sum(val.apcomplexValue()));
   }
 
   @Override
@@ -232,22 +304,42 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr airyAi() {
-    return valueOf(h().airyAi(fApcomplex));
+    try {
+      return valueOf(h().airyAi(fApcomplex));
+    } catch (LossOfPrecisionException lope) {
+      // no digit of the phase of a large argument is left
+      return F.NIL;
+    }
   }
 
   @Override
   public IExpr airyAiPrime() {
-    return valueOf(h().airyAiPrime(fApcomplex));
+    try {
+      return valueOf(h().airyAiPrime(fApcomplex));
+    } catch (LossOfPrecisionException lope) {
+      // no digit of the phase of a large argument is left
+      return F.NIL;
+    }
   }
 
   @Override
   public IExpr airyBi() {
-    return valueOf(h().airyBi(fApcomplex));
+    try {
+      return valueOf(h().airyBi(fApcomplex));
+    } catch (LossOfPrecisionException lope) {
+      // no digit of the phase of a large argument is left
+      return F.NIL;
+    }
   }
 
   @Override
   public IExpr airyBiPrime() {
-    return valueOf(h().airyBiPrime(fApcomplex));
+    try {
+      return valueOf(h().airyBiPrime(fApcomplex));
+    } catch (LossOfPrecisionException lope) {
+      // no digit of the phase of a large argument is left
+      return F.NIL;
+    }
   }
 
   @Override
@@ -636,11 +728,13 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum cos() {
+    PrecisionLoss.periodic(fApcomplex.real());
     return valueOf(h().cos(fApcomplex));
   }
 
   @Override
   public ApcomplexNum cosh() {
+    PrecisionLoss.periodic(fApcomplex.imag());
     return valueOf(h().cosh(fApcomplex));
   }
 
@@ -723,17 +817,17 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   public ApcomplexNum divide(final ApcomplexNum that) throws ArithmeticException {
-    return valueOf(h().divide(fApcomplex, that.fApcomplex));
+    return valueOf(quotient(that.fApcomplex));
   }
 
   @Override
   public ApcomplexNum divide(double value) {
-    return valueOf(h().divide(fApcomplex, apfloatOf(value)));
+    return valueOf(quotient(apfloatOf(value)));
   }
 
   @Override
   public IComplexNum divide(final IComplexNum val) {
-    return valueOf(h().divide(fApcomplex, val.apcomplexValue()));
+    return valueOf(quotient(val.apcomplexValue()));
   }
 
   @Override
@@ -745,10 +839,10 @@ public class ApcomplexNum implements IComplexNum {
     }
     if (that instanceof IComplexNum) {
       return valueOf(
-          h().divide(fApcomplex, ((IComplexNum) that).apcomplexValue()));
+          quotient(((IComplexNum) that).apcomplexValue()));
     }
     if (that instanceof INum) {
-      return valueOf(h().divide(fApcomplex, ((INum) that).apcomplexValue()));
+      return valueOf(quotient(((INum) that).apcomplexValue()));
     }
     return IComplexNum.super.divide(that);
   }
@@ -760,7 +854,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr ellipticK() {
-    return valueOf(h().ellipticK(fApcomplex));
+    return valueOf(ApcomplexEllipticMath.ellipticK(fApcomplex));
   }
 
   @Override
@@ -838,6 +932,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum exp() {
+    PrecisionLoss.periodic(fApcomplex.imag());
     return valueOf(h().exp(fApcomplex));
   }
 
@@ -968,7 +1063,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr gamma() {
-    if (isZero() || isMathematicalIntegerNegative()) {
+    if (fApcomplex.isZero() || isMathematicalIntegerNegative()) {
       return F.CComplexInfinity;
     }
     try {
@@ -1313,6 +1408,11 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public boolean isZero() {
+    return fApcomplex.isZero();
+  }
+
+  @Override
+  public boolean isFuzzyZero() {
     return F.isZero(fApcomplex);
   }
 
@@ -1496,34 +1596,34 @@ public class ApcomplexNum implements IComplexNum {
    * @return
    */
   public ApcomplexNum multiply(final ApcomplexNum that) {
-    return valueOf(h().multiply(fApcomplex, that.fApcomplex));
+    return valueOf(product(that.fApcomplex));
   }
 
   @Override
   public ApcomplexNum multiply(double value) {
-    return valueOf(h().multiply(fApcomplex, apfloatOf(value)));
+    return valueOf(product(apfloatOf(value)));
   }
 
   @Override
   public IComplexNum multiply(final IComplexNum val) {
-    return valueOf(h().multiply(fApcomplex, val.apcomplexValue()));
+    return valueOf(product(val.apcomplexValue()));
   }
 
   @Override
   public IExpr multiply(final IExpr that) {
     if (that instanceof IComplexNum) {
       return valueOf(
-          h().multiply(fApcomplex, ((IComplexNum) that).apcomplexValue()));
+          product(((IComplexNum) that).apcomplexValue()));
     }
     if (that instanceof INum) {
-      return valueOf(h().multiply(fApcomplex, ((INum) that).apcomplexValue()));
+      return valueOf(product(((INum) that).apcomplexValue()));
     }
     return IComplexNum.super.multiply(that);
   }
 
   @Override
   public ApcomplexNum multiply(int value) {
-    return valueOf(h().multiply(fApcomplex, apfloatOf(value)));
+    return valueOf(product(apfloatOf(value)));
   }
 
   /** @return */
@@ -1562,12 +1662,12 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IInexactNumber plus(final IInexactNumber that) {
-    return ApcomplexNum.valueOf(h().add(fApcomplex, that.apcomplexValue()));
+    return ApcomplexNum.valueOf(sum(that.apcomplexValue()));
   }
 
   @Override
   public INumber plus(final INumber that) {
-    return ApcomplexNum.valueOf(h().add(fApcomplex, that.apcomplexValue()));
+    return ApcomplexNum.valueOf(sum(that.apcomplexValue()));
   }
 
   /**
@@ -1607,7 +1707,7 @@ public class ApcomplexNum implements IComplexNum {
       if (isPochhammerPole(apcomplexValue(), n)) {
         return F.CComplexInfinity;
       }
-      Apcomplex pochhammer = h().pochhammer(apcomplexValue(), n);
+      Apcomplex pochhammer = ApfloatNum.pochhammer(apcomplexValue(), n, h().precision());
       return F.complexNum(pochhammer);
     }
     return IComplexNum.super.pochhammer(arg2);
@@ -1654,8 +1754,21 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(h().pow(fApcomplex, apfloatOf(value)));
   }
 
+  /**
+   * A power with a complex exponent is <code>Exp(exponent*Log(base))</code>, and periodic in the
+   * imaginary part of that product: its size is reported to {@link PrecisionLoss} as the size of
+   * the exponent, <code>E^(I*10^30)</code>.
+   */
+  static void periodicPower(Apcomplex base, Apcomplex exponent) {
+    if (exponent.imag().signum() != 0 || base.imag().signum() != 0
+        || base.real().signum() < 0) {
+      PrecisionLoss.periodic(exponent.imag().signum() != 0 ? exponent.imag() : exponent.real());
+    }
+  }
+
   @Override
   public IComplexNum pow(final IComplexNum val) {
+    periodicPower(fApcomplex, val.apcomplexValue());
     return valueOf(h().pow(fApcomplex, val.apcomplexValue()));
   }
 
@@ -1670,6 +1783,7 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr power(final IExpr that) {
     if (that instanceof IComplexNum) {
+      periodicPower(fApcomplex, ((IComplexNum) that).apcomplexValue());
       return valueOf(
           h().pow(fApcomplex, ((IComplexNum) that).apcomplexValue()));
     }
@@ -1743,6 +1857,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum sin() {
+    PrecisionLoss.periodic(fApcomplex.real());
     return valueOf(h().sin(fApcomplex));
   }
 
@@ -1753,6 +1868,7 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum sinh() {
+    PrecisionLoss.periodic(fApcomplex.imag());
     return valueOf(h().sinh(fApcomplex));
   }
 
@@ -1807,31 +1923,31 @@ public class ApcomplexNum implements IComplexNum {
    * @return
    */
   public Apcomplex subtract(final Apcomplex that) {
-    return h().subtract(fApcomplex, that);
+    return difference(that);
   }
 
   public ApcomplexNum subtract(final ApcomplexNum that) {
-    return valueOf(h().subtract(fApcomplex, that.fApcomplex));
+    return valueOf(difference(that.fApcomplex));
   }
 
   @Override
   public IExpr subtract(double value) {
-    return valueOf(h().subtract(fApcomplex, apfloatOf(value)));
+    return valueOf(difference(apfloatOf(value)));
   }
 
   @Override
   public IComplexNum subtract(final IComplexNum val) {
-    return valueOf(h().subtract(fApcomplex, ((ApcomplexNum) val).fApcomplex));
+    return valueOf(difference(((ApcomplexNum) val).fApcomplex));
   }
 
   @Override
   public IExpr subtract(final IExpr that) {
     if (that instanceof IComplexNum) {
       return valueOf(
-          h().subtract(fApcomplex, ((IComplexNum) that).apcomplexValue()));
+          difference(((IComplexNum) that).apcomplexValue()));
     }
     if (that instanceof INum) {
-      return valueOf(h().subtract(fApcomplex, ((INum) that).apcomplexValue()));
+      return valueOf(difference(((INum) that).apcomplexValue()));
     }
     return IComplexNum.super.subtract(that);
   }
@@ -1863,31 +1979,37 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public IExpr cot() {
+    PrecisionLoss.periodic(fApcomplex.real());
     return reciprocalTrig(ApcomplexTrigMath::cot, fApcomplex);
   }
 
   @Override
   public IExpr sec() {
+    PrecisionLoss.periodic(fApcomplex.real());
     return reciprocalTrig(ApcomplexTrigMath::sec, fApcomplex);
   }
 
   @Override
   public IExpr csc() {
+    PrecisionLoss.periodic(fApcomplex.real());
     return reciprocalTrig(ApcomplexTrigMath::csc, fApcomplex);
   }
 
   @Override
   public IExpr coth() {
+    PrecisionLoss.periodic(fApcomplex.imag());
     return reciprocalTrig(ApcomplexTrigMath::coth, fApcomplex);
   }
 
   @Override
   public IExpr sech() {
+    PrecisionLoss.periodic(fApcomplex.imag());
     return reciprocalTrig(ApcomplexTrigMath::sech, fApcomplex);
   }
 
   @Override
   public IExpr csch() {
+    PrecisionLoss.periodic(fApcomplex.imag());
     return reciprocalTrig(ApcomplexTrigMath::csch, fApcomplex);
   }
 
@@ -1933,11 +2055,13 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public ApcomplexNum tan() {
+    PrecisionLoss.periodic(fApcomplex.real());
     return valueOf(h().tan(fApcomplex));
   }
 
   @Override
   public ApcomplexNum tanh() {
+    PrecisionLoss.periodic(fApcomplex.imag());
     return valueOf(h().tanh(fApcomplex));
   }
 
@@ -1956,13 +2080,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IInexactNumber times(final IInexactNumber that) {
     return ApcomplexNum
-        .valueOf(h().multiply(fApcomplex, that.apcomplexValue()));
+        .valueOf(product(that.apcomplexValue()));
   }
 
   @Override
   public IInexactNumber times(final INumber that) {
     return ApcomplexNum
-        .valueOf(h().multiply(fApcomplex, that.apcomplexValue()));
+        .valueOf(product(that.apcomplexValue()));
   }
 
   @Override

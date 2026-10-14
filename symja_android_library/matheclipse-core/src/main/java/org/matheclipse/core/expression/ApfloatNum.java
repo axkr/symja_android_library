@@ -1,6 +1,9 @@
 package org.matheclipse.core.expression;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.function.UnaryOperator;
 import org.apfloat.Apcomplex;
@@ -15,12 +18,15 @@ import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
+import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
 import org.matheclipse.external.apfloat.ApcomplexBesselMath;
+import org.matheclipse.external.apfloat.ApcomplexBetaMath;
 import org.matheclipse.external.apfloat.ApcomplexTrigMath;
 import org.matheclipse.external.apfloat.ApfloatTrigMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBigNumber;
@@ -185,9 +191,9 @@ public class ApfloatNum implements INum {
    */
   public static ApfloatNum promoted(final BigInteger numerator, final BigInteger denominator) {
     final long precision = ParserConfig.MACHINE_PRECISION;
-    Apfloat n = new Apfloat(numerator, precision);
+    Apfloat n = apfloatOf(numerator, precision);
     return valueOf(denominator.equals(BigInteger.ONE) ? n
-        : n.divide(new Apfloat(denominator, precision)));
+        : n.divide(apfloatOf(denominator, precision)));
   }
 
   /**
@@ -206,10 +212,37 @@ public class ApfloatNum implements INum {
     return new ApfloatNum(numerator);
   }
 
+  /** From this many bits beyond the precision on, an integer is cut before it is converted. */
+  private static final int LONG_INTEGER_BITS = 4096;
+
+  /**
+   * An integer as an arbitrary precision number of the given precision. A very long integer is cut
+   * to that precision first: apfloat would build all its digits, and beyond its memory limit ask
+   * for file storage, which is disabled - <code>N(3^(10^6), 20)</code>.
+   *
+   * @param value the integer
+   * @param precision the precision of the result
+   */
+  public static Apfloat apfloatOf(final BigInteger value, final long precision) {
+    if (precision == Apfloat.INFINITE || precision > Integer.MAX_VALUE / 8) {
+      return new Apfloat(value, precision);
+    }
+    final long bits = value.bitLength();
+    if (bits <= Math.ceil(precision * 3.3219280948873626) + LONG_INTEGER_BITS) {
+      return new Apfloat(value, precision);
+    }
+    // The leading decimal digits, some more than the precision, are the quotient by a power of
+    // ten: cutting bits instead would turn 10^(10^6)+1 into 9.99...
+    final long digits = (long) (bits * 0.30102999566398120);
+    final int drop = (int) (digits - precision - 20);
+    Apfloat leading = new Apfloat(value.divide(BigInteger.TEN.pow(drop)), precision);
+    return ApfloatMath.scale(leading, drop);
+  }
+
   public static ApfloatNum valueOf(final BigInteger numerator, final BigInteger denominator) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    Apfloat n = new Apfloat(numerator, h.precision());
-    Apfloat d = new Apfloat(denominator, h.precision());
+    Apfloat n = apfloatOf(numerator, h.precision());
+    Apfloat d = apfloatOf(denominator, h.precision());
     return new ApfloatNum(h.divide(n, d));
   }
 
@@ -239,6 +272,36 @@ public class ApfloatNum implements INum {
           "cannot convert " + value + " into an arbitrary precision number");
     }
     return new Apfloat(value);
+  }
+
+  /**
+   * A machine double as the binary number it is, rounded to <code>digits</code> digits behind the
+   * decimal point, and to <code>digits</code> digits for a number below 1.
+   *
+   * <p>
+   * <code>new Apfloat(double)</code> has 16 digits and what it holds behind them isn't the number:
+   * <code>7.7*10^17</code> is <code>770000000000000016</code> with more digits. A routine which
+   * adds digits to its arguments - the guard digits of an oscillating function of a large argument
+   * - takes that for the argument, and with it another phase.
+   *
+   * @param value the machine double to convert
+   * @param digits the number of digits, at least 1
+   * @return the value with at least <code>digits</code> digits; zero has no precision
+   */
+  public static Apfloat apfloatOf(final double value, final long digits) {
+    if (!Double.isFinite(value)) {
+      throw new SymjaMathException(
+          "cannot convert " + value + " into an arbitrary precision number");
+    }
+    if (value == 0.0) {
+      return Apfloat.ZERO;
+    }
+    BigDecimal exact = new BigDecimal(value);
+    final long precision = digits + Math.max(0, exact.precision() - exact.scale());
+    if (exact.precision() > precision) {
+      exact = exact.round(new MathContext((int) precision, RoundingMode.HALF_EVEN));
+    }
+    return new Apfloat(exact).precision(precision);
   }
 
   public static ApfloatNum valueOf(final double value) {
@@ -277,7 +340,7 @@ public class ApfloatNum implements INum {
   }
 
   private ApfloatNum(final BigInteger value) {
-    fApfloat = new Apfloat(value, h().precision());
+    fApfloat = apfloatOf(value, h().precision());
   }
 
   private ApfloatNum(final String value, long precision) {
@@ -319,7 +382,30 @@ public class ApfloatNum implements INum {
         || fApfloat.compareTo(new Apint(-1)) == -1) {
       return F.complexNum(ApcomplexMath.acos(new Apcomplex(fApfloat)));
     }
-    return valueOf(h().acos(fApfloat));
+    return valueOf(inverseCircular(fApfloat, true, h()));
+  }
+
+  /**
+   * ArcSin or ArcCos of a number between -1 and 1. Next to 1 and -1 the functions behave like the
+   * square root of the distance to them, and apfloat calculates them from that distance with the
+   * digits which the number has left of it: <code>1-10^-30</code> at 48 digits gave 20. The
+   * digits which the distance starts later than the number are added to the working precision,
+   * with the argument as the exact number it reads.
+   *
+   * @param arcCos <code>true</code> for ArcCos, <code>false</code> for ArcSin
+   */
+  public static Apfloat inverseCircular(Apfloat x, boolean arcCos, FixedPrecisionApfloatHelper h) {
+    final long precision = x.precision();
+    if (x.signum() != 0 && precision != Apfloat.INFINITE) {
+      final Apfloat distance = Apfloat.ONE.subtract(ApfloatMath.abs(x));
+      if (distance.signum() > 0 && distance.scale() < 0) {
+        final long working = precision - distance.scale() + 3;
+        final Apfloat extended = x.precision(working);
+        return (arcCos ? ApfloatMath.acos(extended) : ApfloatMath.asin(extended))
+            .precision(precision);
+      }
+    }
+    return arcCos ? h.acos(x) : h.asin(x);
   }
 
   @Override
@@ -327,14 +413,29 @@ public class ApfloatNum implements INum {
     return valueOf(h().acosh(fApfloat));
   }
 
+  /** The sum with a real number; the digits which cancel are reported to {@link PrecisionLoss}. */
+  private Apfloat sum(Apfloat that) {
+    return PrecisionLoss.sum(fApfloat, that, h().add(fApfloat, that));
+  }
+
+  /** The difference to a real number; the digits which cancel are reported. */
+  private Apfloat difference(Apfloat that) {
+    return PrecisionLoss.sum(fApfloat, that, h().subtract(fApfloat, that));
+  }
+
+  /** The difference to a complex number; the digits which cancel are reported. */
+  private Apcomplex difference(Apcomplex that) {
+    return PrecisionLoss.sum(fApfloat, that, h().subtract(fApfloat, that));
+  }
+
   @Override
   public IExpr add(double value) {
-    return valueOf(h().add(fApfloat, apfloatOf(value)));
+    return valueOf(sum(apfloatOf(value)));
   }
 
   @Override
   public INum add(final INum value) {
-    return valueOf(h().add(fApfloat, value.apfloatValue()));
+    return valueOf(sum(value.apfloatValue()));
   }
 
   @Override
@@ -358,24 +459,46 @@ public class ApfloatNum implements INum {
     return INum.super.agm(arg2);
   }
 
+  /**
+   * An Airy function of this number. The functions of a negative argument oscillate with the phase
+   * <code>2/3*Abs(x)^(3/2)</code>, whose digits in front of the decimal point are no digits of the
+   * result: the argument is taken with as many more.
+   *
+   * @return {@link F#NIL} if no digit of the value is left
+   */
+  private IExpr airy(UnaryOperator<Apfloat> function, UnaryOperator<Apfloat> helperFunction) {
+    try {
+      if (fApfloat.signum() >= 0 || fApfloat.scale() <= 0) {
+        return valueOf(helperFunction.apply(fApfloat));
+      }
+      final long precision = fApfloat.precision();
+      // the library takes twice the digits of the phase, which has 3/2 of those of the argument
+      final long phaseDigits = 3 * fApfloat.scale() + 10;
+      Apfloat value = function.apply(fApfloat.precision(precision + phaseDigits));
+      return valueOf(value.precision() > precision ? value.precision(precision) : value);
+    } catch (LossOfPrecisionException lope) {
+      return F.NIL;
+    }
+  }
+
   @Override
   public IExpr airyAi() {
-    return valueOf(h().airyAi(fApfloat));
+    return airy(ApfloatMath::airyAi, x -> h().airyAi(x));
   }
 
   @Override
   public IExpr airyAiPrime() {
-    return valueOf(h().airyAiPrime(fApfloat));
+    return airy(ApfloatMath::airyAiPrime, x -> h().airyAiPrime(x));
   }
 
   @Override
   public IExpr airyBi() {
-    return valueOf(h().airyBi(fApfloat));
+    return airy(ApfloatMath::airyBi, x -> h().airyBi(x));
   }
 
   @Override
   public IExpr airyBiPrime() {
-    return valueOf(h().airyBiPrime(fApfloat));
+    return airy(ApfloatMath::airyBiPrime, x -> h().airyBiPrime(x));
   }
 
   @Override
@@ -434,7 +557,7 @@ public class ApfloatNum implements INum {
         || fApfloat.compareTo(new Apint(-1)) == -1) {
       return F.complexNum(ApcomplexMath.asin(new Apcomplex(fApfloat)));
     }
-    return valueOf(h().asin(fApfloat));
+    return valueOf(inverseCircular(fApfloat, false, h()));
   }
 
   @Override
@@ -459,6 +582,10 @@ public class ApfloatNum implements INum {
         try {
           return guardedBesselFirstKind(apfloatValue(), ((INumber) arg2).apcomplexValue(),
               h().precision(), true);
+        } catch (LossOfPrecisionException lope) {
+          // no digit is left with the guard digits: the library alone gives a wrong number then,
+          // -1.5*10^849 for BesselI(3001/2, 1200) with 30 digits
+          return F.NIL;
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // the library routines below
         }
@@ -488,6 +615,10 @@ public class ApfloatNum implements INum {
         try {
           return guardedBesselFirstKind(apfloatValue(), ((INumber) arg2).apcomplexValue(),
               h().precision(), false);
+        } catch (LossOfPrecisionException lope) {
+          // no digit is left with the guard digits: the library alone gives a wrong number then,
+          // -1.5*10^849 for BesselI(3001/2, 1200) with 30 digits
+          return F.NIL;
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // the library routines below
         }
@@ -497,7 +628,7 @@ public class ApfloatNum implements INum {
           Apfloat besselJ = h().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselJ);
         } catch (LossOfPrecisionException lopex) {
-          if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
+          if ("lossOfPrecision".equals(lopex.getLocalizationKey())) {
             return F.NIL;
           }
         } catch (ArithmeticException | ApfloatRuntimeException are) {
@@ -550,6 +681,15 @@ public class ApfloatNum implements INum {
     Apcomplex value =
         modified ? ApcomplexBesselMath.besselI(nu, z) : ApcomplexBesselMath.besselJ(nu, z);
     return value.imag().signum() == 0 ? F.num(value.real()) : F.complexNum(value);
+  }
+
+  /** <code>Pochhammer(a, n)</code> of numbers which are padded to the precision. */
+  static Apcomplex pochhammer(Apcomplex a, Apcomplex n, long precision) {
+    a = new Apcomplex(a.real().signum() == 0 ? a.real() : a.real().precision(precision),
+        a.imag().signum() == 0 ? a.imag() : a.imag().precision(precision));
+    n = new Apcomplex(n.real().signum() == 0 ? n.real() : n.real().precision(precision),
+        n.imag().signum() == 0 ? n.imag() : n.imag().precision(precision));
+    return ApcomplexBetaMath.pochhammer(a, n);
   }
 
   static IExpr guardedBessel(Apcomplex nu, Apcomplex z, long precision, boolean besselY) {
@@ -804,6 +944,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum cos() {
+    PrecisionLoss.periodic(fApfloat);
     return valueOf(h().cos(fApfloat));
   }
 
@@ -845,7 +986,8 @@ public class ApfloatNum implements INum {
   @Override
   public IInexactNumber dawsonF() {
     try {
-      return valueOf(h().dawsonF(fApfloat));
+      return valueOf(
+          org.matheclipse.external.apfloat.ApfloatDawsonMath.dawsonF(fApfloat));
     } catch (ApfloatArithmeticException aae) {
       //
     }
@@ -888,10 +1030,11 @@ public class ApfloatNum implements INum {
       return divide(((Num) that).getRealPart());
     }
     if (that instanceof ApcomplexNum) {
-      return F.complexNum(h().divide(fApfloat, ((ApcomplexNum) that).apcomplexValue()));
+      return ApcomplexNum.valueOf(fApfloat).divide((ApcomplexNum) that);
     }
     if (that instanceof ComplexNum) {
-      return F.complexNum(h().divide(fApfloat, ((ComplexNum) that).apcomplexValue()));
+      return ApcomplexNum.valueOf(fApfloat)
+          .divide(ApcomplexNum.valueOf(((ComplexNum) that).apcomplexValue()));
     }
     return INum.super.divide(that);
   }
@@ -929,7 +1072,7 @@ public class ApfloatNum implements INum {
     } catch (ArithmeticException aex) {
       // java.lang.ArithmeticException: Result would be complex
     }
-    return F.complexNum(h().ellipticK(apcomplexValue()));
+    return F.complexNum(ApcomplexEllipticMath.ellipticK(apcomplexValue()));
   }
 
   @Override
@@ -1062,7 +1205,7 @@ public class ApfloatNum implements INum {
   public IExpr factorial() {
     try {
       FixedPrecisionApfloatHelper h = h();
-      return valueOf(h.gamma(h.add(fApfloat, Apfloat.ONE)));
+      return valueOf(gammaOfLarge(h.add(fApfloat, Apfloat.ONE), h));
     } catch (ArithmeticException | NumericComputationException e) {
       // try as computation with complex numbers
     }
@@ -1131,13 +1274,29 @@ public class ApfloatNum implements INum {
     return fullFormString(fApfloat);
   }
 
+  /**
+   * Gamma of a real number. The relative error of a large argument is multiplied by about
+   * <code>x*Log(x)</code>: the digits which the argument has before its radix point are added to
+   * the working precision, with the argument as the exact number it reads -
+   * <code>N(Gamma(10^6), 30)</code> had 24 digits.
+   */
+  private static Apfloat gammaOfLarge(Apfloat x, FixedPrecisionApfloatHelper h) {
+    final long scale = x.scale();
+    final long precision = h.precision();
+    if (scale <= 1 || precision >= Apfloat.INFINITE - scale - 5) {
+      return h.gamma(x);
+    }
+    return ApfloatMath.gamma(x.precision(precision + scale + 5)).precision(precision);
+  }
+
   @Override
   public IExpr gamma() {
-    if (isZero() || isMathematicalIntegerNegative()) {
+    // the pole at zero itself, not a number below the tolerance of isZero()
+    if (fApfloat.signum() == 0 || isMathematicalIntegerNegative()) {
       return F.CComplexInfinity;
     }
     try {
-      return valueOf(h().gamma(fApfloat));
+      return valueOf(gammaOfLarge(fApfloat, h()));
     } catch (OverflowException of) {
       return F.Overflow();
     } catch (ArithmeticException | NumericComputationException are) {
@@ -1612,6 +1771,11 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isZero() {
+    return fApfloat.signum() == 0;
+  }
+
+  @Override
+  public boolean isFuzzyZero() {
     return F.isZero(fApfloat);
   }
 
@@ -1977,10 +2141,11 @@ public class ApfloatNum implements INum {
       return plus((IInexactNumber) that);
     }
     if (that instanceof IReal) {
-      return ApfloatNum.valueOf(h().add(fApfloat, ((IReal) that).apfloatValue()));
+      return ApfloatNum.valueOf(sum(((IReal) that).apfloatValue()));
     }
     if (that instanceof ComplexSym) {
-      return F.complexNum(fApfloat.add(that.apcomplexValue()));
+      final Apcomplex complex = that.apcomplexValue();
+      return F.complexNum(PrecisionLoss.sum(fApfloat, complex, fApfloat.add(complex)));
     }
     throw new java.lang.ArithmeticException();
   }
@@ -1991,12 +2156,10 @@ public class ApfloatNum implements INum {
       if (ApcomplexNum.isPochhammerPole(apfloatValue(), ((INumber) arg2).apcomplexValue())) {
         return F.CComplexInfinity;
       }
-      if (arg2 instanceof IReal) {
-        Apfloat pochhammer = h().pochhammer(apfloatValue(), ((IReal) arg2).apfloatValue());
-        return F.num(pochhammer);
-      }
-      Apcomplex pochhammer = h().pochhammer(apfloatValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(pochhammer);
+      // with the digits which a large first argument takes from the gamma functions
+      Apcomplex pochhammer = pochhammer(apfloatValue(), ((INumber) arg2).apcomplexValue(),
+          h().precision());
+      return pochhammer.imag().signum() == 0 ? F.num(pochhammer.real()) : F.complexNum(pochhammer);
     }
     return INum.super.pochhammer(arg2);
   }
@@ -2064,19 +2227,41 @@ public class ApfloatNum implements INum {
 
   @Override
   public INum pow(final INum value) {
-    return valueOf(h().pow(fApfloat, value.apfloatValue()));
+    return valueOf(pow(fApfloat, value.apfloatValue(), h()));
+  }
+
+  /**
+   * A power with a real exponent. An integer exponent - which arrives as an inexact number from
+   * <code>N(10^6, 30)</code> - is a product, not <code>Exp(n*Log(x))</code>, whose last digit is
+   * cut: <code>N(10, 30)^6</code> was <code>999999.999...</code>.
+   */
+  private static Apfloat pow(Apfloat base, Apfloat exponent, FixedPrecisionApfloatHelper h) {
+    if (exponent.scale() <= 18 && exponent.isInteger()) {
+      final long n = exponent.longValue();
+      final long precision = h.precision();
+      if (Math.abs(n) < 1000 || base.precision() == Apfloat.INFINITE) {
+        return h.pow(base, n);
+      }
+      // the relative error of the base is multiplied by n: digits for that, with the base as the
+      // exact number it reads
+      return ApfloatMath.pow(base.precision(precision + exponent.scale() + 3), n)
+          .precision(precision);
+    }
+    return h.pow(base, exponent);
   }
 
   @Override
   public IExpr power(final IExpr that) {
     if (that instanceof IComplexNum) {
+      ApcomplexNum.periodicPower(fApfloat, ((IComplexNum) that).apcomplexValue());
       return F.complexNum(h().pow(fApfloat, ((IComplexNum) that).apcomplexValue()));
     }
     if (that instanceof INum) {
-      if (fApfloat.compareTo(Apfloat.ZERO) < 0) {
+      final Apfloat exponent = ((INum) that).apfloatValue();
+      if (fApfloat.compareTo(Apfloat.ZERO) < 0 && !(exponent.scale() <= 18 && exponent.isInteger())) {
         return F.complexNum(h().pow(fApfloat, ((INum) that).apcomplexValue()));
       }
-      return valueOf(h().pow(fApfloat, ((INum) that).apfloatValue()));
+      return valueOf(pow(fApfloat, exponent, h()));
     }
     return INum.super.power(that);
   }
@@ -2156,6 +2341,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum sin() {
+    PrecisionLoss.periodic(fApfloat);
     return valueOf(h().sin(fApfloat));
   }
 
@@ -2233,7 +2419,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum subtract(double value) {
-    return valueOf(h().subtract(fApfloat, apfloatOf(value)));
+    return valueOf(difference(apfloatOf(value)));
   }
 
   @Override
@@ -2245,22 +2431,22 @@ public class ApfloatNum implements INum {
       return subtract(((Num) that).getRealPart());
     }
     if (that instanceof ApcomplexNum) {
-      return F.complexNum(h().subtract(fApfloat, ((ApcomplexNum) that).apcomplexValue()));
+      return F.complexNum(difference(((ApcomplexNum) that).apcomplexValue()));
     }
     if (that instanceof ComplexNum) {
-      return F.complexNum(h().subtract(fApfloat, ((ComplexNum) that).apcomplexValue()));
+      return F.complexNum(difference(((ComplexNum) that).apcomplexValue()));
     }
     return INum.super.subtract(that);
   }
 
   @Override
   public INum subtract(final INum value) {
-    return valueOf(h().subtract(fApfloat, value.apfloatValue()));
+    return valueOf(difference(value.apfloatValue()));
   }
 
   @Override
   public IReal subtractFrom(IReal that) {
-    return valueOf(h().subtract(fApfloat, that.apfloatValue()));
+    return valueOf(difference(that.apfloatValue()));
   }
 
   /**
@@ -2280,16 +2466,19 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr cot() {
+    PrecisionLoss.periodic(fApfloat);
     return reciprocalTrig(ApfloatTrigMath::cot, ApcomplexTrigMath::cot, fApfloat);
   }
 
   @Override
   public IExpr sec() {
+    PrecisionLoss.periodic(fApfloat);
     return reciprocalTrig(ApfloatTrigMath::sec, ApcomplexTrigMath::sec, fApfloat);
   }
 
   @Override
   public IExpr csc() {
+    PrecisionLoss.periodic(fApfloat);
     return reciprocalTrig(ApfloatTrigMath::csc, ApcomplexTrigMath::csc, fApfloat);
   }
 
@@ -2356,6 +2545,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum tan() {
+    PrecisionLoss.periodic(fApfloat);
     return valueOf(h().tan(fApfloat));
   }
 

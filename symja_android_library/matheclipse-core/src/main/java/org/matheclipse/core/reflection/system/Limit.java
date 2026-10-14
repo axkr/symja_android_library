@@ -5,6 +5,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -159,7 +160,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (isIndeterminate && limitValue.isZero() && ast.isTimes()) {
         return squeezeTheorem(ast).orElse(result);
       }
-      IExpr evaledResult = EvalEngine.get().evaluate(result);
+      // combining the limits of the arguments is a trial: Infinity-Infinity is not a message for
+      // the user
+      IExpr evaledResult = EvalEngine.get().evalQuiet(result);
       // Convert unresolved oscillating Intervals to Indeterminate
       return IntervalSym.toAccumBoundsIndeterminate(evaledResult);
     }
@@ -463,6 +466,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (stepRewritten.isPresent()) {
         evaledExpr = stepRewritten;
         features = LimitFeatures.refresh(features, evaledExpr, symbol);
+      }
+    }
+
+    if (features.stepFunction) {
+      IExpr squeezed = stepSqueeze(evaledExpr, data, engine);
+      if (squeezed.isPresent()) {
+        return squeezed;
       }
     }
 
@@ -1264,6 +1274,148 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       return limitAbove;
     }
     return S.Indeterminate;
+  }
+
+  private static final ThreadLocal<Boolean> STEP_SQUEEZE = ThreadLocal.withInitial(() -> false);
+
+  /** The conditions under which sub-limits of the running user level call were found. */
+  private static final ThreadLocal<java.util.List<IExpr>> SUB_CONDITIONS =
+      ThreadLocal.withInitial(java.util.ArrayList::new);
+
+  /**
+   * Remember the condition of a sub-limit. A product with another factor which is 0 loses the
+   * condition, although the 0 was only reached under it.
+   */
+  private static IExpr recordCondition(IAST conditionalExpression) {
+    IExpr condition = conditionalExpression.arg2();
+    java.util.List<IExpr> conditions = SUB_CONDITIONS.get();
+    if (!conditions.contains(condition) && conditions.size() < 8) {
+      conditions.add(condition);
+    }
+    return conditionalExpression;
+  }
+
+  private static final ThreadLocal<Boolean> BESSEL_EXPANSION =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  private static final ThreadLocal<Boolean> CONDITION_RETRY =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  /**
+   * A single <code>Floor(u)</code>, <code>Ceiling(u)</code> or <code>Round(u)</code> whose argument
+   * runs to <code>&plusmn;Infinity</code>: the step function lies between <code>u-1</code> and
+   * <code>u+1</code>. If it is reached from the top of the expression through sums, products,
+   * reciprocals and powers of a base which runs to infinity, the expression is monotone in it, so that the limit exists and has this
+   * value when both bounds give the same limit - <code>Floor(x)/x</code> at Infinity is
+   * <code>1</code>.
+   *
+   * @return {@link F#NIL} if the bounds give different limits or the form does not apply
+   */
+  private static IExpr stepSqueeze(IExpr expr, LimitData data, EvalEngine engine) {
+    if (STEP_SQUEEZE.get() || !expr.isAST()) {
+      return F.NIL;
+    }
+    final ISymbol x = data.variable();
+    IASTAppendable signedBases = F.ListAlloc();
+    IExpr step = monotonePathToStep(expr, x, signedBases);
+    if (step.isNIL()) {
+      return F.NIL;
+    }
+    IExpr u = step.first();
+    IExpr lower;
+    IExpr upper;
+    if (step.isAST(S.Floor, 2)) {
+      lower = F.Subtract(u, F.C1);
+      upper = u;
+    } else if (step.isAST(S.Ceiling, 2)) {
+      lower = u;
+      upper = F.Plus(u, F.C1);
+    } else {
+      lower = F.Subtract(u, F.C1D2);
+      upper = F.Plus(u, F.C1D2);
+    }
+    STEP_SQUEEZE.set(Boolean.TRUE);
+    try {
+      IAST parameters = new VariablesSet(u).getVarList();
+      for (int i = 1; i < parameters.size(); i++) {
+        if (!parameters.get(i).equals(x) && !parameters.get(i).isRealResult()) {
+          return F.NIL;
+        }
+      }
+      for (int i = 1; i < signedBases.size(); i++) {
+        // the base of a power on the path runs to the same infinity for both bounds
+        IExpr low = evalLimitQuiet(engine.evalQuiet(F.subst(signedBases.get(i), step, lower)), data);
+        IExpr high = evalLimitQuiet(engine.evalQuiet(F.subst(signedBases.get(i), step, upper)), data);
+        if (low.isNIL() || !(low.isInfinity() || low.isNegativeInfinity()) || !low.equals(high)) {
+          return F.NIL;
+        }
+      }
+      IExpr first = evalLimitQuiet(engine.evalQuiet(F.subst(expr, step, lower)), data);
+      if (first.isNIL() || !first.isFree(S.Limit, true) || !first.isFree(x, true)
+          || !first.isIndeterminateFree() || first.isComplexInfinity()) {
+        return F.NIL;
+      }
+      IExpr second = evalLimitQuiet(engine.evalQuiet(F.subst(expr, step, upper)), data);
+      if (first.equals(second)) {
+        return first;
+      }
+      if (second.isPresent() && first.isNumber() && second.isNumber()) {
+        IExpr uLimit = evalLimitQuiet(u, data);
+        if (uLimit.isInfinity() || uLimit.isNegativeInfinity()) {
+          // the expression keeps running through the whole range between the two bounds
+          return S.Indeterminate;
+        }
+      }
+      return F.NIL;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    } finally {
+      STEP_SQUEEZE.set(Boolean.FALSE);
+    }
+  }
+
+  /**
+   * The one step function of <code>x</code> in <code>expr</code>, if it is reached through
+   * <code>Plus</code>, <code>Times</code> and reciprocals only and nothing else in
+   * <code>expr</code> is a step function.
+   */
+  private static IExpr monotonePathToStep(IExpr expr, ISymbol x, IASTAppendable signedBases) {
+    if ((expr.isAST(S.Floor, 2) || expr.isAST(S.Ceiling, 2) || expr.isAST(S.Round, 2))
+        && !expr.isFree(x, true)) {
+      return hasStepFunction(expr.first(), x) ? F.NIL : expr;
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      IExpr found = F.NIL;
+      IAST ast = (IAST) expr;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (hasStepFunction(arg, x)) {
+          if (found.isPresent()) {
+            return F.NIL;
+          }
+          found = monotonePathToStep(arg, x, signedBases);
+          if (found.isNIL()) {
+            return F.NIL;
+          }
+        }
+      }
+      return found;
+    }
+    if (expr.isPower() && expr.exponent().isMinusOne()) {
+      return monotonePathToStep(expr.base(), x, signedBases);
+    }
+    if (expr.isPower() && expr.exponent().isInteger() && expr.exponent().isPositive()) {
+      // monotone only where the base keeps its sign, which the caller has to verify
+      signedBases.append(expr.base());
+      return monotonePathToStep(expr.base(), x, signedBases);
+    }
+    return F.NIL;
+  }
+
+  private static boolean hasStepFunction(IExpr expr, ISymbol x) {
+    return expr.has(y -> y.isFunctionID(ID.Floor, ID.Ceiling, ID.Round, ID.Sign, ID.UnitStep,
+        ID.IntegerPart, ID.FractionalPart, ID.Mod, ID.Quotient) && !y.isFree(x, true), true);
   }
 
   /**
@@ -3181,6 +3333,41 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * The direction <code>d</code> of an infinite value <code>d*Infinity</code> which is neither
+   * <code>Infinity</code> nor <code>-Infinity</code>, e.g. <code>-w</code> for
+   * <code>(-Infinity)*w</code>.
+   *
+   * @return {@link F#NIL} if <code>value</code> is not of this form
+   */
+  private static IExpr symbolicDirection(IExpr value) {
+    if (value.isInfinity() || value.isNegativeInfinity()) {
+      return F.NIL;
+    }
+    if (value.isDirectedInfinity() && value.isAST1()) {
+      return value.first();
+    }
+    if (value.isTimes()) {
+      IAST times = (IAST) value;
+      int index = -1;
+      for (int i = 1; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        if (factor.isDirectedInfinity() && factor.isAST1()) {
+          if (index > 0) {
+            return F.NIL;
+          }
+          index = i;
+        } else if (!factor.isFree(S.DirectedInfinity, true)) {
+          return F.NIL;
+        }
+      }
+      if (index > 0) {
+        return F.Times(times.get(index).first(), times.removeAtCopy(index).oneIdentity1());
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    * Resolves limits of vanishing magnitude-bounded expressions (e.g. envelope squeeze theorem).
    */
   private static IExpr envelopeBounded(final IExpr expr, LimitData data, EvalEngine engine) {
@@ -3260,6 +3447,30 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             return result;
           }
 
+          IExpr infiniteDirection = symbolicDirection(limitExp);
+          if (infiniteDirection.isPresent()) {
+            // the exponent runs to infinity in a symbolic direction: for a base greater than 1
+            // the real part of the direction decides
+            IExpr logBase = engine.evaluate(F.Log(base));
+            if (logBase.isPositiveResult()) {
+              IExpr realPart = engine.evaluate(F.Re(infiniteDirection));
+              if (realPart.isNegativeResult() || AbstractAssumptions.assumeNegative(realPart)) {
+                return F.C0;
+              }
+              if (realPart.isPositiveResult() || AbstractAssumptions.assumePositive(realPart)) {
+                return infiniteDirection.isRealResult() ? F.CInfinity : F.CComplexInfinity;
+              }
+            }
+          }
+          if (limitExp.isInfinity() || limitExp.isNegativeInfinity()) {
+            // a symbolic base which the assumptions place below or above 1
+            boolean below = base.isPositiveResult() && AbstractAssumptions.assumeLessThan(base, F.C1);
+            boolean above = AbstractAssumptions.assumeGreaterThan(base, F.C1);
+            if (below || above) {
+              return (above == limitExp.isInfinity()) ? F.CInfinity : F.C0;
+            }
+          }
+
           // Fallback for unresolved symbolic bases (e.g., a^Infinity -> ConditionalExpression)
           if (limitExp.isInfinity() || limitExp.isNegativeInfinity()) {
             IExpr evalLogBase = engine.evaluate(F.Log(base));
@@ -3293,7 +3504,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         if (temp.isZero()) {
           if (!exponent.isNumericFunction(true)) {
             // ConditionalExpression(0, exponent > 0)
-            return F.ConditionalExpression(F.C0, F.Greater(exponent, F.C0));
+            return recordCondition(F.ConditionalExpression(F.C0, F.Greater(exponent, F.C0)));
           }
         } else {
           if (temp.isFree(data.variable())) {
@@ -4755,10 +4966,99 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * A Bessel function of the variable which is a factor of the whole expression is replaced by
+   * its leading term, which has the same limit behaviour in a product or quotient:
+   * <code>BesselI(a,x) ~ E^x/Sqrt(2*Pi*x)</code> and <code>BesselK(a,x) ~ Sqrt(Pi/(2*x))/E^x</code>
+   * at <code>Infinity</code>; <code>BesselJ(a,x), BesselI(a,x) ~ (x/2)^a/Gamma(a+1)</code> at
+   * <code>0</code>, and <code>BesselY(a,x) ~ -Gamma(a)/Pi*(2/x)^a</code>,
+   * <code>BesselK(a,x) ~ Gamma(a)/2*(2/x)^a</code> at <code>0</code> from above for a positive
+   * order. A Bessel function inside of a sum is not touched, the next term can matter there.
+   *
+   * @return {@link F#NIL} if there is no such factor
+   */
+  private static IExpr besselFactorAsymptotics(IExpr expr, IExpr x, IExpr point,
+      Direction direction) {
+    final boolean atInfinity = point.isInfinity();
+    final boolean atZero = point.isZero();
+    final boolean fromAbove = direction == Direction.FROM_ABOVE;
+    if (!atInfinity && !atZero) {
+      return F.NIL;
+    }
+    IAST factors = expr.isTimes() ? (IAST) expr : F.Times(expr);
+    IASTAppendable result = F.NIL;
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      IExpr function = factor.isPower() && factor.exponent().isInteger() ? factor.base() : factor;
+      IExpr leading = F.NIL;
+      if (function.isAST2() && function.second().equals(x) && function.first().isFree(x, true)) {
+        IExpr order = function.first();
+        int id = function.headID();
+        if (atInfinity) {
+          if (id == ID.BesselI) {
+            leading = F.Times(F.Exp(x), F.Power(F.Times(F.C2, S.Pi, x), F.CN1D2));
+          } else if (id == ID.BesselK) {
+            leading = F.Times(F.Sqrt(F.Times(F.C1D2, S.Pi, F.Power(x, F.CN1))), F.Exp(F.Negate(x)));
+          }
+        } else if ((id == ID.BesselJ || id == ID.BesselI)
+            && (order.isPositiveResult() || !order.isNumber())) {
+          // the generic order; a negative integer order is a different function
+          leading = F.Times(F.Power(F.Times(F.C1D2, x), order),
+              F.Power(F.Gamma(F.Plus(order, F.C1)), F.CN1));
+        } else if (fromAbove && order.isPositiveResult()) {
+          if (id == ID.BesselY) {
+            leading = F.Times(F.CN1, F.Gamma(order), F.Power(S.Pi, F.CN1),
+                F.Power(F.Times(F.C2, F.Power(x, F.CN1)), order));
+          } else if (id == ID.BesselK) {
+            leading = F.Times(F.C1D2, F.Gamma(order),
+                F.Power(F.Times(F.C2, F.Power(x, F.CN1)), order));
+          }
+        }
+      }
+      if (leading.isPresent()) {
+        if (result.isNIL()) {
+          result = factors.copyAppendable();
+        }
+        result.set(i, factor.isPower() ? F.Power(leading, factor.exponent()) : leading);
+      }
+    }
+    return result.isPresent() ? result : F.NIL;
+  }
+
+  /**
    * Whether the result is a value under a condition which never holds, as the product of
    * <code>ConditionalExpression(0, a&gt;1)</code> and <code>ConditionalExpression(0, a&lt;1)</code>
    * is: the limit is not known then.
    */
+  /**
+   * <code>BesselI(a,x)</code> and <code>BesselK(a,x)</code> replaced by the first
+   * <code>terms</code> terms of their expansions at <code>Infinity</code>:
+   * <code>E^x/Sqrt(2*Pi*x)*Sum((-1)^j*c(j)/x^j)</code> and
+   * <code>Sqrt(Pi/(2*x))/E^x*Sum(c(j)/x^j)</code> with
+   * <code>c(j) = Product(4*a^2-(2*i-1)^2, {i,1,j})/(j!*8^j)</code>.
+   */
+  private static IExpr besselExpansion(IExpr expr, IExpr x, int terms) {
+    return F.subst(expr, y -> {
+      if ((y.isAST(S.BesselI, 3) || y.isAST(S.BesselK, 3)) && y.second().equals(x)
+          && y.first().isFree(x, true)) {
+        final boolean isI = y.isAST(S.BesselI, 3);
+        IExpr mu = F.Times(F.C4, F.Sqr(y.first()));
+        IASTAppendable sum = F.PlusAlloc(terms);
+        IExpr coefficient = F.C1;
+        sum.append(F.C1);
+        for (int j = 1; j < terms; j++) {
+          coefficient = F.Times(coefficient, F.Subtract(mu, F.ZZ((2L * j - 1) * (2L * j - 1))),
+              F.QQ(1, 8L * j));
+          IExpr term = F.Times(coefficient, F.Power(x, F.ZZ(-j)));
+          sum.append(isI && (j & 1) == 1 ? F.Negate(term) : term);
+        }
+        IExpr prefactor = isI ? F.Times(F.Exp(x), F.Power(F.Times(F.C2, S.Pi, x), F.CN1D2))
+            : F.Times(F.Sqrt(F.Times(F.C1D2, S.Pi, F.Power(x, F.CN1))), F.Exp(F.Negate(x)));
+        return F.Times(prefactor, sum);
+      }
+      return F.NIL;
+    });
+  }
+
   private static boolean hasContradictoryCondition(IExpr limit, EvalEngine engine) {
     return !limit.isFree(t -> t.isConditionalExpression()
         && engine.evalQuiet(F.unaryAST1(S.Reduce, t.second())).isFalse(), true);
@@ -4792,6 +5092,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         // sign cache is also fed outside Gruntz runs - start clean (see clearSessionCaches)
         LimitGruntz.clearSessionCaches();
         LIMIT_STEPS.get()[0] = 0;
+        SUB_CONDITIONS.get().clear();
       }
       engine.setNumericMode(false);
       Direction direction = Direction.TWO_SIDED; // no direction as default
@@ -4838,6 +5139,148 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       IExpr normalized = normalizeSqrtOfSquare(arg1, rule.arg1());
       if (normalized.isPresent()) {
         arg1 = normalized;
+      }
+      // The two sides of a point can take different branches of an even root. If both one-sided
+      // limits are found, they decide the two-sided one.
+      if (direction == Direction.TWO_SIDED && builtinDepth == 0
+          && !rule.arg2().isDirectedInfinity()
+          && rule.arg2().isFree(z -> z.isDirectedInfinity(), true)
+          && arg1.has(y -> y.isPower() && y.exponent().isFraction()
+              && ((IFraction) y.exponent()).denominator().isEven()
+              && !y.base().isFree(rule.arg1(), true), true)) {
+        IExpr fromBelow = engine.evalQuiet(F.Limit(arg1, rule, F.Rule(S.Direction, F.C1)));
+        if (fromBelow.isFree(S.Limit, true) && !fromBelow.isConditionalExpression()) {
+          IExpr fromAbove = engine.evalQuiet(F.Limit(arg1, rule, F.Rule(S.Direction, F.CN1)));
+          if (fromAbove.isFree(S.Limit, true) && !fromAbove.isConditionalExpression()) {
+            if (fromBelow.equals(fromAbove)) {
+              return fromAbove;
+            }
+            if (fromBelow.isIndeterminateFree() && fromAbove.isIndeterminateFree()
+                && (fromBelow.isNumber() || fromBelow.isDirectedInfinity()
+                    || fromBelow.isNumericFunction(true))
+                && (fromAbove.isNumber() || fromAbove.isDirectedInfinity()
+                    || fromAbove.isNumericFunction(true))
+                && !engine.evalQuiet(F.PossibleZeroQ(F.Subtract(fromBelow, fromAbove))).isTrue()) {
+              return S.Indeterminate;
+            }
+          }
+        }
+      }
+
+      // An even root takes its branch from the side of the approach, and the expansions take the
+      // one of the right side: a limit from below is taken as the limit from above of the
+      // function mirrored at the point.
+      if (direction == Direction.FROM_BELOW && !rule.arg2().isDirectedInfinity()
+          && rule.arg2().isFree(z -> z.isDirectedInfinity(), true)
+          && arg1.has(y -> y.isPower() && y.exponent().isFraction()
+              && ((IFraction) y.exponent()).denominator().isEven()
+              && !y.base().isFree(rule.arg1(), true), true)) {
+        IExpr mirrored = engine.evalQuiet(F.subst(arg1, rule.arg1(),
+            F.Subtract(F.Times(F.C2, rule.arg2()), rule.arg1())));
+        if (mirrored.isPresent() && mirrored.isIndeterminateFree()) {
+          arg1 = mirrored;
+          direction = Direction.FROM_ABOVE;
+        }
+      }
+
+      // A step function of the variable at a symbolic point which is assumed to be an integer:
+      // the point is a jump, and the direction decides the value.
+      if (direction != Direction.TWO_SIDED && !rule.arg2().isNumber()
+          && rule.arg2().isFree(z -> z.isDirectedInfinity(), true) && rule.arg2().isIntegerResult()
+          && arg1.has(
+              y -> y.isFunctionID(ID.Floor, ID.Ceiling, ID.FractionalPart, ID.IntegerPart), true)) {
+        final IExpr limitVariable = rule.arg1();
+        final IExpr point = rule.arg2();
+        final boolean above = direction == Direction.FROM_ABOVE;
+        final IExpr floor = above ? point : F.Subtract(point, F.C1);
+        final IExpr ceiling = above ? F.Plus(point, F.C1) : point;
+        IExpr stepped = F.subst(arg1, y -> {
+          if (y.isAST1() && y.first().equals(limitVariable)) {
+            if (y.isAST(S.Floor, 2)) {
+              return floor;
+            }
+            if (y.isAST(S.Ceiling, 2)) {
+              return ceiling;
+            }
+            if (y.isAST(S.IntegerPart, 2) || y.isAST(S.FractionalPart, 2)) {
+              // truncation is towards zero
+              IExpr integerPart = point.isPositiveResult() ? floor
+                  : point.isNegativeResult() ? ceiling
+                      // the two cases differ on one side of zero only
+                      : above ? F.Piecewise(F.List(F.List(ceiling, F.Less(point, F.C0))), floor)
+                          : F.Piecewise(F.List(F.List(floor, F.Greater(point, F.C0))), ceiling);
+              if (y.isAST(S.IntegerPart, 2)) {
+                return integerPart;
+              }
+              if (integerPart.isAST(S.Piecewise)) {
+                return above ? F.Piecewise(F.List(F.List(F.CN1, F.Less(point, F.C0))), F.C0)
+                    : F.Piecewise(F.List(F.List(F.C1, F.Greater(point, F.C0))), F.C0);
+              }
+              return F.Subtract(point, integerPart);
+            }
+          }
+          return F.NIL;
+        });
+        if (stepped.isPresent()) {
+          arg1 = engine.evaluate(stepped);
+        }
+      }
+
+      IExpr besselFactors = besselFactorAsymptotics(arg1, rule.arg1(), rule.arg2(), direction);
+      if (besselFactors.isPresent()) {
+        arg1 = engine.evaluate(besselFactors);
+      }
+      if (rule.arg2().isInfinity() && BESSEL_EXPANSION.get() == Boolean.FALSE
+          && arg1.has(y -> (y.isAST(S.BesselI, 3) || y.isAST(S.BesselK, 3))
+              && y.second().equals(rule.arg1()) && y.first().isFree(rule.arg1(), true), true)) {
+        // inside of a sum the leading term is not enough: the limit is taken with two truncations
+        // of the expansion at Infinity, and used if they agree
+        BESSEL_EXPANSION.set(Boolean.TRUE);
+        try {
+          IExpr shorter = engine.evalQuiet(F.Limit(besselExpansion(arg1, rule.arg1(), 3), rule));
+          if (shorter.isFree(S.Limit, true) && shorter.isIndeterminateFree()
+              && shorter.isFree(rule.arg1(), true) && !shorter.isConditionalExpression()) {
+            IExpr longer = engine.evalQuiet(F.Limit(besselExpansion(arg1, rule.arg1(), 4), rule));
+            if (shorter.equals(longer)) {
+              return shorter;
+            }
+          }
+        } finally {
+          BESSEL_EXPANSION.set(Boolean.FALSE);
+        }
+      }
+
+      // Abs of a complex valued argument has no sign to decide; it is the root of the sum of the
+      // squares of the real and the imaginary part
+      if (arg1.has(S.Abs, true)) {
+        final IExpr limitVariable = rule.arg1();
+        final boolean[] undecided = new boolean[] {false};
+        IExpr expanded = F.subst(arg1, y -> {
+          if (y.isAST(S.Abs, 2) && !y.first().isFree(limitVariable, true)
+              && !y.first().isFree(z -> z == S.I || z.isComplex() || z.isComplexNumeric(), true)) {
+            IAST parameters = new VariablesSet(y.first()).getVarList();
+            IASTAppendable complexParameters = F.ListAlloc();
+            for (int i = 1; i < parameters.size(); i++) {
+              if (!parameters.get(i).equals(limitVariable) && !parameters.get(i).isRealResult()) {
+                // not known to be real: its real and imaginary part stay in the result
+                complexParameters.append(parameters.get(i));
+              }
+            }
+            IExpr modulus =
+                engine.evaluate(F.binaryAST2(S.ComplexExpand, y, complexParameters));
+            if (modulus.isFree(S.Abs, true)) {
+              return modulus;
+            }
+            undecided[0] = true;
+          }
+          return F.NIL;
+        });
+        if (undecided[0]) {
+          return F.NIL;
+        }
+        if (expanded.isPresent()) {
+          arg1 = expanded;
+        }
       }
       // RealAbs is the real valued twin of Abs which substAbs() and the derivative of Abs
       // produce, so it has to reach the same rewrite - rewriteAbsForDirection handles both heads
@@ -4913,7 +5356,51 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             }
           }
         }
+        if (temp.isConditionalExpression() && temp.first().isIndeterminate()
+            && CONDITION_RETRY.get() == Boolean.FALSE) {
+          // a factor has its limit under a condition only: take the whole limit under it
+          CONDITION_RETRY.set(Boolean.TRUE);
+          try {
+            IExpr condition = temp.second();
+            IExpr assumed = assumptionExpr.isPresent() && assumptionExpr.isAST()
+                ? F.And(assumptionExpr, condition)
+                : condition;
+            // what was found without the condition must not be reused
+            LimitGruntz.clearSessionCaches();
+            IExpr conditional = engine.evalQuiet(F.ast(new IExpr[] {ast.arg1(), rule,
+                F.Rule(S.Direction, directionOption), F.Rule(S.Assumptions, assumed)}, S.Limit));
+            if (conditional.isFree(S.Limit, true) && conditional.isIndeterminateFree()
+                && !conditional.isConditionalExpression()
+                && conditional.isFree(S.DirectedInfinity, true)) {
+              return F.ConditionalExpression(conditional, condition);
+            }
+          } finally {
+            CONDITION_RETRY.set(Boolean.FALSE);
+          }
+        }
+        if (builtinDepth == 0 && temp.isZero() && !SUB_CONDITIONS.get().isEmpty()) {
+          // a 0 which swallowed a factor that is 0 under a condition only
+          IASTAppendable and = F.ast(S.And);
+          for (IExpr condition : SUB_CONDITIONS.get()) {
+            IExpr decided = engine.evalQuiet(condition);
+            if (decided.isFalse()) {
+              and = F.NIL;
+              break;
+            }
+            if (!decided.isTrue()) {
+              and.append(condition);
+            }
+          }
+          if (and.isPresent() && and.argSize() > 0) {
+            IExpr condition = and.oneIdentity1();
+            if (!engine.evalQuiet(F.unaryAST1(S.Reduce, condition)).isFalse()) {
+              return F.ConditionalExpression(F.C0, condition);
+            }
+          }
+        }
         if (!leakedSymbol && !hasContradictoryCondition(temp, engine)
+            // "Indeterminate under a condition" is the failure of a strategy, not a limit
+            && temp.isFree(t -> t.isConditionalExpression() && t.first().isIndeterminate(), true)
             // 0*ExpIntegralE(n, 0) with an unknown order is the 0 which is refused here
             && !(temp.isZero() && hasUndecidedPole(arg1, rule, true, engine))) {
           return IntervalSym.toAccumBoundsIndeterminate(temp);

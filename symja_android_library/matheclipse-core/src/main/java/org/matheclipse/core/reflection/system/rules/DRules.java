@@ -13,7 +13,7 @@ public class DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 87 };
+  final public static int[] SIZES = { 0, 90 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -29,18 +29,27 @@ public class DRules {
     // D(JacobiCN(f_,g_),x_?NotListQ):=-JacobiDN(f,g)*JacobiSN(f,g)*D(f,x)+(D(g,x)*JacobiDN(f,g)*JacobiSN(f,g)*(f*(-1+g)+JacobiEpsilon(f,g)-g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
     ISetDelayed(D(JacobiCN(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(CN1,JacobiDN(f,g),JacobiSN(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiDN(f,g),JacobiSN(f,g),Plus(Times(f,Plus(CN1,g)),JacobiEpsilon(f,g),Times(CN1,g,JacobiCD(f,g),JacobiSN(f,g)))))),
+    // D(JacobiCS(f_,g_),x_?NotListQ):=-JacobiDS(f,g)*JacobiNS(f,g)*D(f,x)+(-D(g,x)*JacobiDS(f,g)*JacobiNS(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
+    ISetDelayed(D(JacobiCS(f_,g_),PatternTest(x_,NotListQ)),
+      Plus(Times(CN1,JacobiDS(f,g),JacobiNS(f,g),D(f,x)),Times(CN1,Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiDS(f,g),JacobiNS(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiCD(f,g),JacobiSN(f,g)))))),
     // D(JacobiDC(f_,g_),x_?NotListQ):=(1-g)*JacobiNC(f,g)*JacobiSC(f,g)*D(f,x)+(D(g,x)*(f*(1-g)-JacobiEpsilon(f,g))*JacobiNC(f,g)*JacobiSC(f,g))/(2*g)
     ISetDelayed(D(JacobiDC(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(Subtract(C1,g),JacobiNC(f,g),JacobiSC(f,g),D(f,x)),Times(Power(Times(C2,g),CN1),D(g,x),Subtract(Times(f,Subtract(C1,g)),JacobiEpsilon(f,g)),JacobiNC(f,g),JacobiSC(f,g)))),
     // D(JacobiDN(f_,g_),x_?NotListQ):=-g*JacobiCN(f,g)*JacobiSN(f,g)*D(f,x)+(D(g,x)*JacobiCN(f,g)*(f*(-1+g)+JacobiEpsilon(f,g)-JacobiDN(f,g)*JacobiSC(f,g))*JacobiSN(f,g))/(2*(1-g))
     ISetDelayed(D(JacobiDN(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(CN1,g,JacobiCN(f,g),JacobiSN(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g)),CN1),D(g,x),JacobiCN(f,g),Plus(Times(f,Plus(CN1,g)),JacobiEpsilon(f,g),Times(CN1,JacobiDN(f,g),JacobiSC(f,g))),JacobiSN(f,g)))),
+    // D(JacobiDS(f_,g_),x_?NotListQ):=-JacobiCS(f,g)*JacobiNS(f,g)*D(f,x)+(-D(g,x)*JacobiCS(f,g)*JacobiNS(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiDN(f,g)*JacobiSC(f,g)))/(2*(1-g)*g)
+    ISetDelayed(D(JacobiDS(f_,g_),PatternTest(x_,NotListQ)),
+      Plus(Times(CN1,JacobiCS(f,g),JacobiNS(f,g),D(f,x)),Times(CN1,Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiCS(f,g),JacobiNS(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiDN(f,g),JacobiSC(f,g)))))),
     // D(JacobiNC(f_,g_),x_?NotListQ):=JacobiDC(f,g)*JacobiSC(f,g)*D(f,x)+(D(g,x)*JacobiDC(f,g)*JacobiSC(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
     ISetDelayed(D(JacobiNC(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(JacobiDC(f,g),JacobiSC(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiDC(f,g),JacobiSC(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiCD(f,g),JacobiSN(f,g)))))),
     // D(JacobiND(f_,g_),x_?NotListQ):=g*JacobiCD(f,g)*JacobiSD(f,g)*D(f,x)+(D(g,x)*JacobiCD(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+JacobiDN(f,g)*JacobiSC(f,g))*JacobiSD(f,g))/(2*(1-g))
     ISetDelayed(D(JacobiND(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(g,JacobiCD(f,g),JacobiSD(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g)),CN1),D(g,x),JacobiCD(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(JacobiDN(f,g),JacobiSC(f,g))),JacobiSD(f,g)))),
+    // D(JacobiNS(f_,g_),x_?NotListQ):=-JacobiCS(f,g)*JacobiDS(f,g)*D(f,x)+(-D(g,x)*JacobiCS(f,g)*JacobiDS(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
+    ISetDelayed(D(JacobiNS(f_,g_),PatternTest(x_,NotListQ)),
+      Plus(Times(CN1,JacobiCS(f,g),JacobiDS(f,g),D(f,x)),Times(CN1,Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiCS(f,g),JacobiDS(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiCD(f,g),JacobiSN(f,g)))))),
     // D(JacobiSC(f_,g_),x_?NotListQ):=JacobiDC(f,g)*JacobiNC(f,g)*D(f,x)+(D(g,x)*JacobiDC(f,g)*JacobiNC(f,g)*(f*(1-g)-JacobiEpsilon(f,g)+g*JacobiCD(f,g)*JacobiSN(f,g)))/(2*(1-g)*g)
     ISetDelayed(D(JacobiSC(f_,g_),PatternTest(x_,NotListQ)),
       Plus(Times(JacobiDC(f,g),JacobiNC(f,g),D(f,x)),Times(Power(Times(C2,Subtract(C1,g),g),CN1),D(g,x),JacobiDC(f,g),JacobiNC(f,g),Plus(Times(f,Subtract(C1,g)),Negate(JacobiEpsilon(f,g)),Times(g,JacobiCD(f,g),JacobiSN(f,g)))))),

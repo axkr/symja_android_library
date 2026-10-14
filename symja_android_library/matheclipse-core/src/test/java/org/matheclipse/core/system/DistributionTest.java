@@ -647,9 +647,10 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check(
         "{Variance(InverseGammaDistribution(2.5, 1, 0.8, 0)), Kurtosis(InverseGammaDistribution(4.5, 1, 0.8, 0))}", //
         "{Indeterminate,Indeterminate}");
-    // an exact large shape evaluates; N needs the digits the central moments cancel
+    // an exact large shape evaluates; N adds the digits which the central moments cancel: 60
+    // digits give 3.17701661259482712864361153349405687903351...
     check("N(Kurtosis(InverseGammaDistribution(300, 3/2, 7/10, 2)), 40)", //
-        "3.177016612594827128643611533494056882297");
+        "3.177016612594827128643611533494056879034");
   }
 
   @Test
@@ -1000,8 +1001,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("FreeQ(Skewness(GompertzMakehamDistribution(m,n)), m)", //
         "True");
     // quadrature of the density gives 1.17643568158 for m=2, n=3
+    // 45 digits give 1.17643568157490182729191058717879...
     check("N(Skewness(GompertzMakehamDistribution(2,3)),25)", //
-        "1.176435681574901827291913");
+        "1.176435681574901827291911");
     check("N(Skewness(GompertzMakehamDistribution(2,3)))", //
         "1.17644");
     // the skewness is negative for a small shape parameter (-0.351639884786 from quadrature)

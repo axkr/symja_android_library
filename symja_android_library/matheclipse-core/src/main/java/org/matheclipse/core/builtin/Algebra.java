@@ -39,6 +39,11 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.AbstractFractionSym;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -146,6 +151,23 @@ public class Algebra {
    * </code>
    * </pre>
    */
+  /**
+   * The expression with machine numbers for its numbers, but not for the exponents of its powers:
+   * <code>N</code> would give <code>x^2.0</code>, which is no polynomial.
+   */
+  private static IExpr machineCoefficients(IExpr expr, EvalEngine engine) {
+    if (expr.isNumber()) {
+      return engine.evalN(expr);
+    }
+    if (expr.isPower()) {
+      return F.Power(machineCoefficients(expr.base(), engine), expr.exponent());
+    }
+    if (expr.isAST()) {
+      return ((IAST) expr).map(x -> machineCoefficients(x, engine), 1);
+    }
+    return expr;
+  }
+
   private static class Apart extends AbstractFunctionEvaluator {
 
     @Override
@@ -183,6 +205,34 @@ public class Algebra {
         variableList = eVar.getVarList();
       }
 
+      if (variableList.size() == 2 && (arg1.isTimes() || arg1.isPower())
+          && !arg1.isFree(x -> x instanceof INum || x instanceof IComplexNum, true)
+          && arg1.isFree(x -> x instanceof ApfloatNum || x instanceof ApcomplexNum, true)) {
+        // Machine numbers: the denominator is not factored, and common factors do not cancel.
+        // The rational form is decomposed, and its numbers are given back as machine numbers.
+        IExpr rationalized = AbstractFractionSym.rationalize(arg1, false);
+        if (rationalized.isPresent() && rationalized.isFree(x -> x.isInexactNumber(), true)) {
+          final IExpr variable = variableList.arg1();
+          IExpr exact = engine.evaluate(F.Apart(rationalized, variable));
+          // a linear factor of a denominator with the coefficient 1 for the variable:
+          // 1.33333/(-0.5+x) and not 2.66667/(-1.0+2.0*x)
+          exact = exact.replaceAll(x -> {
+            if (x.isPower() && x.exponent().isNegativeResult() && x.exponent().isInteger()
+                && x.base().isPolynomial(variable)) {
+              IExpr coefficients = engine.evaluate(F.CoefficientList(x.base(), variable));
+              if (coefficients.isList() && coefficients.argSize() == 2
+                  && !coefficients.second().isOne()) {
+                IExpr leading = coefficients.second();
+                return F.Times(F.Power(leading, x.exponent()),
+                    F.Power(F.Plus(F.Divide(coefficients.first(), leading), variable),
+                        x.exponent()));
+              }
+            }
+            return F.NIL;
+          }).orElse(exact);
+          return engine.evaluate(machineCoefficients(engine.evaluate(exact), engine));
+        }
+      }
       if (variableList.size() == 2 && (arg1.isTimes() || arg1.isPower())) {
         Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
         if (parts.isPresent()) {
@@ -1592,7 +1642,9 @@ public class Algebra {
         modulus = F.C0;
       }
       if (modulus.isZero() && extension == S.None && gaussianIntegers.isFalse()) {
-        return AlgebraUtil.factor(ast, arg1, eVar, false, true, true, trig, engine);
+        IExpr factorization = AlgebraUtil.factor(ast, arg1, eVar, false, true, true, trig, engine);
+        return factorization.isPresent() ? AlgebraUtil.factorSigns(factorization, engine)
+            : factorization;
       }
       if (!modulus.isZero()) {
         return factorModulus(S.Factor, arg1, eVar, false, modulus, engine);
@@ -1825,6 +1877,11 @@ public class Algebra {
         return result;
       }
       try {
+        // the factors of a product which is written out are kept apart
+        IAST structured = AlgebraUtil.factorSquareFreeList(ast.arg1(), eVar, engine);
+        if (structured.isPresent()) {
+          return structured;
+        }
         IExpr expr = F.evalExpandAll(ast.arg1(), engine);
         return factorList(expr, eVar.getVarList(), true);
 
@@ -2190,6 +2247,15 @@ public class Algebra {
    * </code>
    * </pre>
    */
+  /**
+   * Whether <code>expr</code> has the structure of a polynomial, whose coefficients may be inexact
+   * numbers: <code>0.5*x^2+x</code> is divided like <code>1/2*x^2+x</code>.
+   */
+  private static boolean isPolynomialStructure(IExpr expr) {
+    return expr.replaceAll(x -> x.isInexactNumber() ? F.C1 : F.NIL).orElse(expr)
+        .isPolynomialStruct();
+  }
+
   private static class PolynomialExtendedGCD extends AbstractFunctionOptionEvaluator {
 
     /**
@@ -2395,11 +2461,11 @@ public class Algebra {
       }
       IExpr expr1 = F.evalExpandAll(ast.arg1(), engine);
       IExpr expr2 = F.evalExpandAll(ast.arg2(), engine);
-      if (!expr1.isPolynomialStruct()) {
+      if (!isPolynomialStructure(expr1)) {
         // `1` is not a polynomial.
         return Errors.printMessage(ast.topHead(), "poly", F.list(expr1), engine);
       }
-      if (!expr2.isPolynomialStruct()) {
+      if (!isPolynomialStructure(expr2)) {
         // `1` is not a polynomial.
         return Errors.printMessage(ast.topHead(), "poly", F.list(expr2), engine);
       }
@@ -2641,7 +2707,18 @@ public class Algebra {
         return F.NIL;
       }
       IExpr leadingCoefficient = rules.first().second();
-      return engine.evaluate(F.N(F.Expand(F.Divide(gcd, leadingCoefficient))));
+      // machine numbers for the coefficients and not for the exponents: x^2.0 is no polynomial
+      IASTAppendable sum = F.PlusAlloc(rules.argSize());
+      for (IExpr rule : (IAST) rules) {
+        IAST exponents = (IAST) rule.first();
+        IASTAppendable term = F.TimesAlloc(exponents.size());
+        term.append(engine.evalN(F.Divide(rule.second(), leadingCoefficient)));
+        for (int i = 1; i < exponents.size(); i++) {
+          term.append(F.Power(reversed.get(i), exponents.get(i)));
+        }
+        sum.append(term);
+      }
+      return engine.evaluate(sum);
     }
 
     /**
@@ -3871,11 +3948,11 @@ public class Algebra {
         if (arg1.isZero() || arg2.isZero()) {
           return F.NIL;
         }
-        if (!arg1.isPolynomialStruct()) {
+        if (!isPolynomialStructure(arg1)) {
           // `1` is not a polynomial.
           return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
         }
-        if (!arg2.isPolynomialStruct()) {
+        if (!isPolynomialStructure(arg2)) {
           // `1` is not a polynomial.
           return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
         }
@@ -4077,11 +4154,11 @@ public class Algebra {
       // IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
-      if (!arg1.isPolynomialStruct()) {
+      if (!isPolynomialStructure(arg1)) {
         // `1` is not a polynomial.
         return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
       }
-      if (!arg2.isPolynomialStruct()) {
+      if (!isPolynomialStructure(arg2)) {
         // `1` is not a polynomial.
         return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
       }
@@ -4213,11 +4290,11 @@ public class Algebra {
       if (arg2.isZero()) {
         return F.NIL;
       }
-      if (!arg1.isPolynomialStruct()) {
+      if (!isPolynomialStructure(arg1)) {
         // `1` is not a polynomial.
         return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
       }
-      if (!arg2.isPolynomialStruct()) {
+      if (!isPolynomialStructure(arg2)) {
         // `1` is not a polynomial.
         return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
       }

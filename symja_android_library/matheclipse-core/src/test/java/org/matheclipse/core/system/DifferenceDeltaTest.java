@@ -97,8 +97,7 @@ public class DifferenceDeltaTest extends ExprEvaluatorTestCase {
     check("DifferenceDelta(2^x, x)", "2^x");
     // rational summands combine over a common denominator
     check("DifferenceDelta(1/(2*n + 1), n)", "-2/((1+2*n)*(3+2*n))");
-    // 1/((-1-n)*n) == -1/(n*(1+n))
-    check("DifferenceDelta(1/n, n)", "1/((-1-n)*n)");
+    check("DifferenceDelta(1/n, n)", "-1/(n*(1+n))");
     // a numeric step factors the polynomial result
     check("DifferenceDelta(x^2 + x, x)", "2*(1+x)");
     check("DifferenceDelta(a*x^2, x)", "a*(1+2*x)");

@@ -723,6 +723,93 @@ public final class PrimitiveCollector3D {
     writeSurfaceStyle(node, style);
   }
 
+  /**
+   * The box of an explicit <code>PlotRange</code>, one <code>{min, max}</code> per axis or
+   * <code>null</code> for an axis which is not limited; <code>null</code> if there is none.
+   */
+  private double[][] clipBox;
+
+  /** Lines are clipped to the explicit ranges of <code>plotRange</code> from now on. */
+  public void setClipBox(double[][] plotRange) {
+    clipBox = null;
+    if (plotRange == null) {
+      return;
+    }
+    double[][] box = new double[3][];
+    boolean limited = false;
+    for (int i = 0; i < 3 && i < plotRange.length; i++) {
+      if (plotRange[i] != null && plotRange[i].length == 2 && plotRange[i][0] < plotRange[i][1]) {
+        box[i] = new double[] {scale(plotRange[i][0], scaling[i]), scale(plotRange[i][1], scaling[i])};
+        limited |= Double.isFinite(box[i][0]) && Double.isFinite(box[i][1]);
+      }
+    }
+    if (limited) {
+      clipBox = box;
+    }
+  }
+
+  /** The parts of the polylines inside {@link #clipBox}; a part which leaves the box ends there. */
+  private List<List<double[]>> clipped(List<List<double[]>> polylines) {
+    List<List<double[]>> result = new ArrayList<>();
+    for (List<double[]> line : polylines) {
+      List<double[]> current = new ArrayList<>();
+      for (int i = 0; i + 1 < line.size(); i++) {
+        double[] p = line.get(i);
+        double[] q = line.get(i + 1);
+        double t0 = 0.0;
+        double t1 = 1.0;
+        boolean visible = true;
+        for (int axis = 0; axis < 3 && visible; axis++) {
+          if (clipBox[axis] == null) {
+            continue;
+          }
+          double d = q[axis] - p[axis];
+          double lo = clipBox[axis][0] - p[axis];
+          double hi = clipBox[axis][1] - p[axis];
+          if (d == 0.0) {
+            visible = lo <= 0.0 && hi >= 0.0;
+          } else {
+            double a = lo / d;
+            double b = hi / d;
+            t0 = Math.max(t0, Math.min(a, b));
+            t1 = Math.min(t1, Math.max(a, b));
+            visible = t0 <= t1;
+          }
+        }
+        if (!visible || t0 == t1) {
+          if (current.size() >= 2) {
+            result.add(current);
+          }
+          current = new ArrayList<>();
+          continue;
+        }
+        double[] from = t0 == 0.0 ? p : along(p, q, t0);
+        double[] to = t1 == 1.0 ? q : along(p, q, t1);
+        if (current.isEmpty() || t0 > 0.0) {
+          if (current.size() >= 2) {
+            result.add(current);
+          }
+          current = new ArrayList<>();
+          current.add(from);
+        }
+        current.add(to);
+        if (t1 < 1.0) {
+          result.add(current);
+          current = new ArrayList<>();
+        }
+      }
+      if (current.size() >= 2) {
+        result.add(current);
+      }
+    }
+    return result;
+  }
+
+  private static double[] along(double[] p, double[] q, double t) {
+    return new double[] {p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1]),
+        p[2] + t * (q[2] - p[2])};
+  }
+
   private void emitLine(IAST ast, Style3D style, ComplexContext context, Transform3D transform,
       boolean asArrow) {
     if (ast.argSize() < 1) {
@@ -734,6 +821,11 @@ public final class PrimitiveCollector3D {
       polylines = polylines(ast.arg1(), context);
     } finally {
       endMarkers(style, transform, true);
+    }
+    if (!asArrow && clipBox != null && transform.isIdentity()
+        && optionList(ast, S.VertexColors) == null) {
+      // an explicit PlotRange is a box: a line ends where it leaves it
+      polylines = clipped(polylines);
     }
     if (polylines.isEmpty()) {
       return;

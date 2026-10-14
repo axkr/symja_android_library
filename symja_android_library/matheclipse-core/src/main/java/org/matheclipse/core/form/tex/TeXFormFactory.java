@@ -2261,7 +2261,9 @@ public class TeXFormFactory {
       final int precedence, boolean caller) {
     double re = dc.getRealPart();
     double im = dc.getImaginaryPart();
-    if (F.isZero(re)) {
+    // a part is left out if it is zero - as for a real number, not below the machine epsilon
+    final boolean realZero = F.isZero(re, Config.ZERO_IN_OUTPUT_FORMAT);
+    if (realZero) {
       if (F.isNumIntValue(im, 1)) {
         buf.append("i ");
         return;
@@ -2280,7 +2282,7 @@ public class TeXFormFactory {
     if (precedence > Precedence.PLUS) {
       buf.append("\\left( ");
     }
-    if (!F.isZero(re)) {
+    if (!realZero) {
       buf.append(convertDoubleToFormattedString(re));
       if (im >= 0.0) {
         buf.append(" + ");

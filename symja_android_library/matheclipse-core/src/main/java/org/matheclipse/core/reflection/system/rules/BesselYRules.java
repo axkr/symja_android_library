@@ -44,8 +44,8 @@ public class BesselYRules {
     // BesselY(x_/;NumberQ(x)&&x>0&&x<21&&FractionalPart(x)==0.5&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)&&!InexactNumberQ(z)):=Module({u,f,k=-1/2+x},f=Cos(u)/u;While(k>0,k=-1+k;f=Together(D(f,u)/u));-Sqrt(2/Pi*z)*f/(-u)^(1/2-x)/.u->z)
     ISetDelayed(BesselY(Condition(x_,And(NumberQ(x),Greater(x,C0),Less(x,ZZ(21)),Equal(FractionalPart(x),num(0.5)),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity),Not(InexactNumberQ(z))))),
       Module(list(u,f,Set(k,Plus(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Cos(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Together(Times(Power(u,CN1),D(f,u)))))),ReplaceAll(Times(CN1,Sqrt(Times(C2,Power(Pi,CN1),z)),Power(Negate(u),Plus(CN1D2,x)),f),Rule(u,z))))),
-    // BesselY(x_/;NumberQ(x)&&x<0&&x>-21&&FractionalPart(x)==-0.5&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)&&!InexactNumberQ(z)):=Module({u,f,k=-1/2-x},f=Sin(u)/u;While(k>0,k=-1+k;f=Together(D(f,u)/u));Sqrt(2/Pi*z)*f/(-u)^(1/2+x)/.u->z)
+    // BesselY(x_/;NumberQ(x)&&x<0&&x>-21&&FractionalPart(x)==-0.5&&!IntegerQ(x),z_/;!PossibleZeroQ(z)&&FreeQ(z,DirectedInfinity)&&!InexactNumberQ(z)):=Module({u,f,k=-1/2-x},f=Sin(u)/u;While(k>0,k=-1+k;f=Together(D(f,u)/u));Sqrt(2/Pi*z)*f/u^(1/2+x)/.u->z)
     ISetDelayed(BesselY(Condition(x_,And(NumberQ(x),Less(x,C0),Greater(x,ZZ(-21)),Equal(FractionalPart(x),num(-0.5)),Not(IntegerQ(x)))),Condition(z_,And(Not(PossibleZeroQ(z)),FreeQ(z,DirectedInfinity),Not(InexactNumberQ(z))))),
-      Module(list(u,f,Set(k,Subtract(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Sin(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Together(Times(Power(u,CN1),D(f,u)))))),ReplaceAll(Times(Sqrt(Times(C2,Power(Pi,CN1),z)),Power(Negate(u),Subtract(CN1D2,x)),f),Rule(u,z)))))
+      Module(list(u,f,Set(k,Subtract(CN1D2,x))),CompoundExpression(Set(f,Times(Power(u,CN1),Sin(u))),While(Greater(k,C0),CompoundExpression(Set(k,Plus(CN1,k)),Set(f,Together(Times(Power(u,CN1),D(f,u)))))),ReplaceAll(Times(Sqrt(Times(C2,Power(Pi,CN1),z)),Power(u,Subtract(CN1D2,x)),f),Rule(u,z)))))
   );
 }

@@ -2,6 +2,7 @@ package org.matheclipse.core.sympy.calculus;
 
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -295,6 +296,12 @@ public class Singularities {
    */
   private static IExpr monotonicityHelper(IExpr function, IExpr domain, ISymbol x, int sign,
       boolean strict, EvalEngine engine) {
+    if (!function.isFree(IExpr::isInexactNumber, false)) {
+      // The questions below - singularities, the sign of the derivative - are answered for exact
+      // expressions: 0.1 is 1/10. With inexact coefficients the derivative of a quotient does
+      // not cancel, and the inequality for it is not reduced.
+      function = AbstractFractionSym.rationalize(function, false).orElse(function);
+    }
     // sings = singularities(expression, variable, interval)
     // interior_sings = interval.interior.intersection(sings)
     // if interior_sings != S.EmptySet: return False

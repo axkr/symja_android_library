@@ -1,5 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.ApfloatRuntimeException;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
+import org.matheclipse.parser.client.ParserConfig;
 import java.util.ArrayList;
 import java.util.List;
 import org.matheclipse.core.eval.Errors;
@@ -113,6 +120,13 @@ public class Derivative extends AbstractFunctionEvaluator {
     if (functions.arg1().isNumber()) {
       return F.Function(F.C0);
     }
+    if (derivativeAST[2] != null && functions.arg1() == S.Zeta && derivativeHead.isAST1()
+        && derivativeHead.arg1().isOne() && derivativeAST[2].isAST1()) {
+      IExpr value = zetaDerivative(derivativeAST[2].arg1(), engine);
+      if (value.isPresent()) {
+        return value;
+      }
+    }
     for (int i = 1; i < derivativeHead.size(); i++) {
       if (isInvalidDerivativeOrder(derivativeHead.get(i))) {
         // like in Mathematica an explicit negative or non-integer order stays unevaluated
@@ -124,6 +138,34 @@ public class Derivative extends AbstractFunctionEvaluator {
       return extremum;
     }
     return evaluateDIfPossible(derivativeHead, functions, derivativeAST[2], engine);
+  }
+
+  /**
+   * <code>Zeta'(s)</code> for a number: there is no other function which it could be written in.
+   */
+  private static IExpr zetaDerivative(IExpr s, EvalEngine engine) {
+    if (!s.isNumber() && engine.isNumericMode() && s.isNumericFunction()) {
+      s = engine.evalN(s);
+    }
+    if (!s.isNumber() || s.isOne() || (!s.isInexactNumber() && !engine.isNumericMode())) {
+      return F.NIL;
+    }
+    final boolean arbitrary = s instanceof ApfloatNum || s instanceof ApcomplexNum
+        || (!s.isInexactNumber() && engine.isArbitraryMode());
+    final int digits =
+        arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+    try {
+      Apcomplex value = ApcomplexZetaMath.zetaDerivative(CarlsonArbitraryPrecision.apcomplex(s,
+          digits + CarlsonArbitraryPrecision.GUARD_DIGITS));
+      if (!arbitrary) {
+        return s.isReal() ? F.num(value.real().doubleValue())
+            : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+      }
+      return CarlsonArbitraryPrecision.round(value, digits);
+    } catch (ArithmeticException | ApfloatRuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
+      return F.NIL;
+    }
   }
 
   /**

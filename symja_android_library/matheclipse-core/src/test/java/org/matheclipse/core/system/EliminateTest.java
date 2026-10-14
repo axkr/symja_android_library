@@ -12,7 +12,7 @@ public class EliminateTest extends ExprEvaluatorTestCase {
   @Test
   public void testEliminate() {
     check("Eliminate({f == x^5 + y^5, a == x + y, b == x*y}, {x, y})", //
-        "-a^5+5*a^3*b-5*a*b^2+f==0");
+        "a^5-5*a^3*b+5*a*b^2-f==0");
     // check("Eliminate({a0*x^p+a1*x^q==0},x)", //
     // "(-a1)*x^q == a0*x^p");
 
@@ -145,7 +145,7 @@ public class EliminateTest extends ExprEvaluatorTestCase {
     check("Eliminate({x==2+y, y==z}, y)", //
         "x-z==2");
     check("Eliminate({f==x^5+y^5, a==x+y, b==x*y}, {x,y})", //
-        "-a^5+5*a^3*b-5*a*b^2+f==0");
+        "a^5-5*a^3*b+5*a*b^2-f==0");
     check("Eliminate(2*x+3*y+4*z==1 && 9*x+8*y+7*z==2, z)", //
         "11/2*x+11/4*y==1/4");
     // Mathematica gives the equivalent pair -3-2*x+2*x^2+2*x^3+2*y-2*x*y==0 &&

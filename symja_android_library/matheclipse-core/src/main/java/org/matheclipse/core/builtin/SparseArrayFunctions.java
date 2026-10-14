@@ -237,6 +237,12 @@ public class SparseArrayFunctions {
 
       ISparseArray result = null;
 
+      if (dimension == null && defaultDimension > 0 && arg1.isListOfRules()
+          && ((IAST) arg1).forAll(rule -> rule.first().isInteger())) {
+        // SparseArray({-1 -> a}, n): a vector of the length n, so that a negative position can be
+        // counted from its end
+        dimension = new int[] {defaultDimension};
+      }
       if (arg1.isListOfRules()) {
         if (arg1.argSize() < 1) { //
           // The dimensions cannot be determined from the position `1`.

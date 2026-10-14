@@ -1893,11 +1893,9 @@ public class AlgebraUtil {
    * @return the factored expression or {@link F#NIL} if nothing polynomial could be factored
    */
   public static IExpr factorSquareFree(IExpr arg1, VariablesSet eVar, EvalEngine engine) {
-    LinkedHashMap<IExpr, Long> factorMap = new LinkedHashMap<IExpr, Long>();
     IRational[] content = new IRational[] {F.C1};
-    boolean[] anyPolynomial = new boolean[] {false};
-    if (!collectSquareFreeFactors(arg1, 1L, eVar, factorMap, content, anyPolynomial, engine)
-        || !anyPolynomial[0]) {
+    Map<IExpr, Long> factorMap = squareFreeFactorMap(arg1, eVar, content, engine);
+    if (factorMap == null) {
       return F.NIL;
     }
 
@@ -1910,6 +1908,109 @@ public class AlgebraUtil {
       times.append(exponent == 1L ? entry.getKey() : F.Power(entry.getKey(), F.ZZ(exponent)));
     }
     return engine.evaluate(times);
+  }
+
+  /**
+   * The square-free factors of an expression with their exponents, as
+   * <code>{{content, 1}, {f1, e1}, ...}</code> with the factors in the canonical order. The
+   * numeric content is always the first entry, also where it is <code>1</code>.
+   *
+   * @return {@link F#NIL} if nothing polynomial could be factored
+   */
+  public static IAST factorSquareFreeList(IExpr arg1, VariablesSet eVar, EvalEngine engine) {
+    IRational[] content = new IRational[] {F.C1};
+    Map<IExpr, Long> factorMap = squareFreeFactorMap(arg1, eVar, content, engine);
+    if (factorMap == null) {
+      return F.NIL;
+    }
+    // in the order Sort gives the factors
+    IASTAppendable unsorted = F.ListAlloc(factorMap.size());
+    for (Map.Entry<IExpr, Long> entry : factorMap.entrySet()) {
+      unsorted.append(F.list(entry.getKey(), F.ZZ(entry.getValue())));
+    }
+    IExpr sorted = S.Sort.of(engine, unsorted);
+    IAST factors = sorted.isList() ? (IAST) sorted : unsorted;
+    IASTAppendable result = F.ListAlloc(factors.argSize() + 1);
+    result.append(F.list(content[0], F.C1));
+    result.appendArgs(factors);
+    return result;
+  }
+
+  /**
+   * The square-free factors of an expression and their exponents. The factors of a product which
+   * is written out are kept apart, but a factor which two of them share is taken out of both:
+   * <code>(x^2-1)*(x+1)</code> is <code>(x-1)*(x+1)^2</code>.
+   *
+   * @param content receives the numeric content and the sign at index 0
+   * @return <code>null</code> if nothing polynomial could be factored
+   */
+  private static Map<IExpr, Long> squareFreeFactorMap(IExpr arg1, VariablesSet eVar,
+      IRational[] content, EvalEngine engine) {
+    LinkedHashMap<IExpr, Long> factorMap = new LinkedHashMap<IExpr, Long>();
+    boolean[] anyPolynomial = new boolean[] {false};
+    if (!collectSquareFreeFactors(arg1, 1L, eVar, factorMap, content, anyPolynomial, engine)
+        || !anyPolynomial[0]) {
+      return null;
+    }
+    // every step replaces two factors by three of lower degree, so this ends
+    boolean refined = true;
+    for (int guard = 0; refined && guard < 64; guard++) {
+      refined = false;
+      List<IExpr> sums = new ArrayList<IExpr>();
+      for (IExpr factor : factorMap.keySet()) {
+        if (factor.isPlus()) {
+          sums.add(factor);
+        }
+      }
+      search: for (int i = 0; i < sums.size(); i++) {
+        for (int j = i + 1; j < sums.size(); j++) {
+          IExpr f = sums.get(i);
+          IExpr g = sums.get(j);
+          IExpr common = S.PolynomialGCD.of(engine, f, g);
+          if (!common.isPlus()) {
+            continue;
+          }
+          IExpr fRest = engine.evaluate(F.Expand(F.Cancel(F.Divide(f, common))));
+          IExpr gRest = engine.evaluate(F.Expand(F.Cancel(F.Divide(g, common))));
+          if (!fRest.isFree(x -> x.isPower() && x.exponent().isNegative(), false)
+              || !gRest.isFree(x -> x.isPower() && x.exponent().isNegative(), false)) {
+            continue;
+          }
+          long fPower = factorMap.remove(f);
+          long gPower = factorMap.remove(g);
+          addSignedFactor(factorMap, common, fPower + gPower, content, engine);
+          addSignedFactor(factorMap, fRest, fPower, content, engine);
+          addSignedFactor(factorMap, gRest, gPower, content, engine);
+          refined = true;
+          break search;
+        }
+      }
+    }
+    // every sum with the sign of its lexicographically leading term positive
+    LinkedHashMap<IExpr, Long> signed = new LinkedHashMap<IExpr, Long>();
+    for (Map.Entry<IExpr, Long> entry : factorMap.entrySet()) {
+      addSignedFactor(signed, entry.getKey(), entry.getValue(), content, engine);
+    }
+    return signed;
+  }
+
+  /**
+   * Add <code>factor^exponent</code> to the factors: a number goes into the content, and a sum
+   * whose leading term is negative is negated, with its sign in the content.
+   */
+  private static void addSignedFactor(Map<IExpr, Long> factorMap, IExpr factor, long exponent,
+      IRational[] content, EvalEngine engine) {
+    if (factor.isRational()) {
+      content[0] = content[0].multiply(((IRational) factor).powerRational(exponent));
+      return;
+    }
+    if (factor.isPlus() && hasNegativeLeadingTerm((IAST) factor, engine)) {
+      factor = engine.evaluate(F.Distribute(F.Times(F.CN1, factor)));
+      if ((exponent & 1L) == 1L) {
+        content[0] = content[0].negate();
+      }
+    }
+    addSquareFreeFactor(factorMap, factor, exponent);
   }
 
   public static Optional<IRational> factorTermsGCD(IAST plusAST, EvalEngine engine) {
@@ -1967,13 +2068,117 @@ public class AlgebraUtil {
     return F.NIL;
   }
 
+  /**
+   * The factors of a factorization with the sign they are written with: in every factor which is
+   * a sum, the term which comes first in the lexicographic order of the generators - the first
+   * generator in its highest power - has a positive coefficient. The signs which are taken out of
+   * the factors are one factor <code>-1</code> in front: <code>(-a+b)^3</code> is
+   * <code>-(a-b)^3</code>, <code>(-x+y)*(x+2*y)</code> is <code>-(x-y)*(x+2*y)</code>.
+   *
+   * @param factorization the result of a factorization
+   * @return <code>factorization</code> itself if it is no product or power of sums
+   */
+  public static IExpr factorSigns(IExpr factorization, EvalEngine engine) {
+    IAST factors;
+    if (factorization.isTimes()) {
+      factors = (IAST) factorization;
+    } else if (factorization.isPower() && factorization.base().isPlus()
+        && factorization.exponent().isInteger()) {
+      factors = F.Times(factorization);
+    } else {
+      return factorization;
+    }
+    boolean negative = false;
+    boolean changed = false;
+    IASTAppendable result = F.TimesAlloc(factors.argSize() + 1);
+    for (int i = 1; i <= factors.argSize(); i++) {
+      IExpr factor = factors.get(i);
+      IExpr sum = factor.isPower() && factor.exponent().isInteger() ? factor.base() : factor;
+      if (!sum.isPlus() || !hasNegativeLeadingTerm((IAST) sum, engine)) {
+        result.append(factor);
+        continue;
+      }
+      IExpr negated = engine.evaluate(F.Distribute(F.Times(F.CN1, sum)));
+      if (!negated.isPlus()) {
+        result.append(factor);
+        continue;
+      }
+      changed = true;
+      if (factor.isPower()) {
+        negative ^= ((IInteger) factor.exponent()).isOdd();
+        result.append(F.Power(negated, factor.exponent()));
+      } else {
+        negative = !negative;
+        result.append(negated);
+      }
+    }
+    if (!changed) {
+      return factorization;
+    }
+    if (negative) {
+      if (result.exists(x -> x.isPlus())) {
+        // a factor -1 in front of a sum is multiplied into the sum when the product is evaluated,
+        // -(x-y)*(x+2*y) is (-x+y)*(x+2*y): such a product keeps the signs it had
+        return factorization;
+      }
+      result.append(1, F.CN1);
+    }
+    return engine.evaluate(result);
+  }
+
+  /** Whether the lexicographically first term of the sum has a negative coefficient. */
+  public static boolean hasNegativeLeadingTerm(IAST sum, EvalEngine engine) {
+    IExpr generators = S.Variables.of(engine, sum);
+    if (!generators.isList() || generators.argSize() == 0) {
+      return false;
+    }
+    IAST variables = (IAST) generators;
+    IExpr leading = F.NIL;
+    int[] best = null;
+    for (int i = 1; i <= sum.argSize(); i++) {
+      IExpr term = sum.get(i);
+      int[] exponents = new int[variables.argSize()];
+      for (int k = 1; k <= variables.argSize(); k++) {
+        IExpr variable = variables.get(k);
+        int e = term.isFree(variable) ? 0
+            : S.Exponent.of(engine, term, variable).toIntDefault(Integer.MIN_VALUE);
+        if (e == Integer.MIN_VALUE) {
+          return false;
+        }
+        exponents[k - 1] = e;
+      }
+      if (best == null || java.util.Arrays.compare(exponents, best) > 0) {
+        best = exponents;
+        leading = term;
+      }
+    }
+    return leading.isPresent()
+        && (leading.isNegative() || (leading.isTimes() && leading.first().isNegative()));
+  }
+
   public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar, boolean trig,
       EvalEngine engine) {
-    boolean originalHasComplex = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
+    if (!expr.isFree(x -> x.isCos(), false) && !expr.isFree(x -> x.isSin(), false)) {
+      // Sin(x)^2-Cos(x)^2 factors with Sin(x) and Cos(x) as two unknowns. The rewriting below
+      // would turn it into -1+2*Sin(x)^2 first, which does not factor - so the factorization
+      // over the functions as they stand is taken where there is one.
+      IExpr plain =
+          factorHomogenized(expr, new VariablesSet(expr), false, engine);
+      if ((plain.isTimes() && ((IAST) plain).count(x -> !x.isNumber()) >= 2)
+          || (plain.isPower() && plain.base().isPlus() && plain.exponent().isInteger())) {
+        return plain;
+      }
+    }
     // The trigonometric rewriting (TrigExpand, Cos(x)^2 -> 1-Sin(x)^2, ...) doesn't depend on the
     // Trig option: Simplify() and TrigFactor() call Factor() without it and rely on the rewriting
     // to cancel trigonometric expressions.
-    PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, true);
+    return factorHomogenized(expr, eVar, true, engine);
+  }
+
+  private static IExpr factorHomogenized(IAST expr, VariablesSet eVar, boolean trigRewriting,
+      EvalEngine engine) {
+    boolean originalHasComplex = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
+    PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, trigRewriting);
     IExpr subsPolynomial = substitutions.replaceForward(expr);
 
     // Update gaussianIntegers based on the homogenized polynomial to support TrigToExp complex
@@ -3096,9 +3301,9 @@ public class AlgebraUtil {
           gcd = engine.evaluate(c);
         }
         if (gcd.isFree(S.GCD)) {
-          if (!gcd.isNumber() || gcd.isZero()) {
-            // the GCD of rationalized inexact coefficients can collapse: dividing by it gave
-            // Indeterminate for Together(q^2-0.9978377499999949)
+          if (!gcd.isNumber() || ((INumber) gcd).isFuzzyZero()) {
+            // the GCD of rationalized inexact coefficients can collapse, to zero or to a rounding
+            // error: dividing by it gave Indeterminate for Together(q^2-0.9978377499999949)
             return p;
           }
           return F.Times(gcd, S.Distribute.of(engine, F.Divide(plusAST, gcd)));

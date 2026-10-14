@@ -113,6 +113,9 @@ class FractionTestCase {
     assertThrows(NoSuchElementException.class, () -> valueOfConvergent(7.03791863104313E29));
     assertThrows(NoSuchElementException.class, () -> valueOfConvergent(4.144353439643559E85));
     assertThrows(NoSuchElementException.class, () -> valueOfConvergent(8.365327199922554E240));
+    // from 2^53 on a double does not have every digit of an integer
+    assertThrows(NoSuchElementException.class, () -> valueOfConvergent(0x1.0p53));
+    assertEquals("9007199254740991", valueOfConvergent(0x1.0p53 - 1.0));
   }
 
   @Test

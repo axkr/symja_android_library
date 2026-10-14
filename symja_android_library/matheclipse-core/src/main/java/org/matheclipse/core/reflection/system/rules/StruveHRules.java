@@ -17,12 +17,12 @@ public class StruveHRules {
 
   final public static IAST RULES = List(
     IInit(StruveH, SIZES),
-    // StruveH(-1/2,z_):=Sqrt(2/(Pi*z))*Sin(z)
+    // StruveH(-1/2,z_):=(Sqrt(2/Pi)*Sin(z))/Sqrt(z)
     ISetDelayed(StruveH(CN1D2,z_),
-      Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Sin(z))),
-    // StruveH(1/2,z_):=Sqrt(2/(Pi*z))*(1-Cos(z))
+      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Sin(z))),
+    // StruveH(1/2,z_):=(Sqrt(2/Pi)*(1-Cos(z)))/Sqrt(z)
     ISetDelayed(StruveH(C1D2,z_),
-      Times(Sqrt(Times(C2,Power(Times(Pi,z),CN1))),Subtract(C1,Cos(z)))),
+      Times(Sqrt(Times(C2,Power(Pi,CN1))),Power(z,CN1D2),Subtract(C1,Cos(z)))),
     // StruveH(Undefined,y_):=Undefined
     ISetDelayed(StruveH(Undefined,y_),
       Undefined),

@@ -542,6 +542,110 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
    */
   private static DenseOutputModel propagate(ISymbol head, FirstOrderSystem system, double target,
       MethodSettings method, EvalEngine engine) {
+    java.util.List<IExpr> jumps = new java.util.ArrayList<>();
+    double[] breaks = breakPoints(system, system.t0, target, jumps, engine);
+    if (breaks.length == 0) {
+      return propagateSmooth(head, system, target, method, engine, null);
+    }
+    // The right hand side jumps at the break points - HeavisideTheta(t-1) at t == 1 - where a step
+    // size control would shrink its step for ever. Between two of them it is smooth: every
+    // stretch is integrated on its own, with the jumping terms held at the value they have inside
+    // it, and started from the state the stretch before ended in.
+    DenseOutputModel whole = null;
+    double from = system.t0;
+    double[] state = system.initialState.clone();
+    for (int k = 0; k <= breaks.length; k++) {
+      double to = k < breaks.length ? breaks[k] : target;
+      double middle = 0.5 * (from + to);
+      IASTAppendable frozen = F.ListAlloc(jumps.size());
+      for (IExpr jump : jumps) {
+        frozen.append(F.Rule(jump,
+            engine.evalN(F.subst(jump, F.Rule(system.timeVar, F.num(middle))))));
+      }
+      IExpr[] derivatives = new IExpr[system.derivatives.length];
+      for (int i = 0; i < derivatives.length; i++) {
+        derivatives[i] = F.subst(system.derivatives[i], frozen);
+      }
+      FirstOrderSystem stretch = new FirstOrderSystem(system.timeVar, system.functions,
+          system.appliedForm, system.offset, system.stateExpressions, derivatives, from, state);
+      double[][] end = new double[1][];
+      DenseOutputModel model = propagateSmooth(head, stretch, to, method, engine, end);
+      if (whole == null) {
+        whole = model;
+      } else {
+        whole.append(model);
+      }
+      if (end[0] == null) {
+        // the stepping gave up inside this stretch: the solution ends there
+        break;
+      }
+      from = to;
+      state = end[0];
+    }
+    return whole;
+  }
+
+  /**
+   * The times strictly between <code>from</code> and <code>to</code> at which the right hand side
+   * jumps: the zeros of the arguments of <code>HeavisideTheta</code>, <code>UnitStep</code> and
+   * <code>Sign</code> which are linear in the independent variable and free of the unknown
+   * functions. They are sorted in the direction of the integration.
+   *
+   * @param jumps receives the jumping terms
+   */
+  private static double[] breakPoints(FirstOrderSystem system, double from, double to,
+      java.util.List<IExpr> jumps, EvalEngine engine) {
+    java.util.TreeSet<Double> times = new java.util.TreeSet<>();
+    for (IExpr derivative : system.derivatives) {
+      collectJumps(derivative, system, from, to, jumps, times, engine);
+    }
+    double[] result = new double[times.size()];
+    int i = 0;
+    for (double t : (to >= from ? times : times.descendingSet())) {
+      result[i++] = t;
+    }
+    return result;
+  }
+
+  private static void collectJumps(IExpr expr, FirstOrderSystem system, double from, double to,
+      java.util.List<IExpr> jumps, java.util.Set<Double> times, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return;
+    }
+    IAST ast = (IAST) expr;
+    if ((ast.isAST(S.HeavisideTheta, 2) || ast.isAST(S.UnitStep, 2) || ast.isAST(S.Sign, 2))
+        && !ast.arg1().isFree(system.timeVar)) {
+      IExpr argument = ast.arg1();
+      boolean stateFree = true;
+      for (ISymbol function : system.functions) {
+        stateFree &= argument.isFree(function);
+      }
+      if (stateFree && argument.isPolynomialOfMaxDegree(system.timeVar, 1)) {
+        double a = engine.evalN(F.subst(argument, F.Rule(system.timeVar, F.C0))).evalfNaN();
+        double b = engine.evalN(F.subst(argument, F.Rule(system.timeVar, F.C1))).evalfNaN() - a;
+        double zero = -a / b;
+        if (Double.isFinite(zero)) {
+          if (!jumps.contains(ast)) {
+            jumps.add(ast);
+          }
+          if (zero > Math.min(from, to) && zero < Math.max(from, to)) {
+            times.add(zero);
+          }
+        }
+        return;
+      }
+    }
+    for (int i = 0; i < ast.size(); i++) {
+      collectJumps(ast.get(i), system, from, to, jumps, times, engine);
+    }
+  }
+
+  /**
+   * @param end receives the state the integration ended in at index 0, or <code>null</code> there
+   *        if the stepping gave up before <code>target</code>; may be <code>null</code>
+   */
+  private static DenseOutputModel propagateSmooth(ISymbol head, FirstOrderSystem system,
+      double target, MethodSettings method, EvalEngine engine, double[][] end) {
     AbstractIntegrator integrator = method.createIntegrator();
     integrator.setMaxEvaluations(MAX_EVALUATIONS);
     DenseOutputModel model = new DenseOutputModel();
@@ -572,6 +676,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       // At `1` == `2`, step size is effectively zero; singularity or stiff system suspected.
       Errors.printMessage(head, "ndsz",
           F.list(system.timeVar, F.num(recorder.lastState.getTime())), engine);
+      return model;
+    }
+    if (end != null && recorder.lastState != null) {
+      end[0] = recorder.lastState.getPrimaryState().clone();
     }
     return model;
   }

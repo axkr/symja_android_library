@@ -133,7 +133,8 @@ public class ParametricPlot extends Plot {
             engine,
             GraphicsOptions.optionValue(originalAST, S.PlotPoints, S.Automatic).toIntDefault(-1),
             GraphicsOptions.optionValue(originalAST, S.MaxRecursion, S.Automatic).toIntDefault(-1),
-            GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic));
+            GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic),
+            GraphicsOptions.optionValue(originalAST, S.Exclusions, S.Automatic));
 
         if (listOfLines.isNIL()) {
           return F.NIL;
@@ -359,7 +360,7 @@ public class ParametricPlot extends Plot {
 
   private static IAST parametricPlotToListPoints(IExpr functionOrListOfFunctions,
       final IAST rangeList, final IAST ast, GraphicsOptions graphicsOptions, EvalEngine engine,
-      int plotPoints, int maxRecursion, IExpr regionFunction) {
+      int plotPoints, int maxRecursion, IExpr regionFunction, IExpr exclusions) {
     if (!rangeList.arg1().isSymbol()) {
       return Errors.printMessage(ast.topHead(), "ivar", F.list(rangeList.arg1()), engine);
     }
@@ -408,6 +409,9 @@ public class ParametricPlot extends Plot {
 
     final IASTAppendable listOfLines = F.ListAlloc(curveList.size());
     final RegionFunctionFilter region = RegionFunctionFilter.of(regionFunction, engine);
+    // the parameter values at which Exclusions breaks every curve
+    final double[] cuts = exclusionParameters(exclusions, tSym, Math.min(tMinD, tMaxD),
+        Math.max(tMinD, tMaxD), engine);
 
     for (IExpr wrappedCurve : curveList) {
       PlotWrapper each = PlotWrapper.of(wrappedCurve);
@@ -434,6 +438,14 @@ public class ParametricPlot extends Plot {
 
         for (int i = 0; i <= steps; i++) {
           double t = tMinD + i * step;
+          // the sample before, as it was computed: t - step may round to the other side of a cut
+          if (i > 0 && isCut(cuts, tMinD + (i - 1) * step, t)) {
+            // an exclusion lies between the last sample and this one: the curve ends there
+            if (linePoints.argSize() > 1) {
+              segments.append(linePoints);
+            }
+            linePoints = F.ListAlloc(steps);
+          }
           IExpr tVal = F.num(t);
           IExpr xExpr = F.subst(fx, F.Rule(tSym, tVal));
           IExpr yExpr = F.subst(fy, F.Rule(tSym, tVal));
@@ -471,6 +483,83 @@ public class ParametricPlot extends Plot {
     }
 
     return listOfLines;
+  }
+
+  /** Whether a cut lies behind <code>from</code> and not behind <code>to</code>. */
+  private static boolean isCut(double[] cuts, double from, double to) {
+    double lo = Math.min(from, to);
+    double hi = Math.max(from, to);
+    for (double cut : cuts) {
+      if (cut > lo && cut <= hi) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The values of the parameter inside the range at which <code>Exclusions</code> breaks a curve:
+   * a number, the roots of an equation in the parameter, or a list of them. The roots are found
+   * where the difference of the two sides changes its sign over a fine sweep of the range.
+   */
+  private static double[] exclusionParameters(IExpr exclusions, ISymbol tSym, double tMin,
+      double tMax, EvalEngine engine) {
+    if (exclusions == null || exclusions.isAutomatic() || exclusions.isNone()
+        || exclusions.isFalse()) {
+      return new double[0];
+    }
+    List<Double> cuts = new ArrayList<>();
+    IAST specs = exclusions.isList() ? (IAST) exclusions : F.list(exclusions);
+    double margin = (tMax - tMin) * 1.0e-9;
+    for (int k = 1; k <= specs.argSize(); k++) {
+      IExpr spec = specs.get(k);
+      double value = spec.evalfNaN();
+      if (Double.isFinite(value)) {
+        cuts.add(value);
+        continue;
+      }
+      if (!spec.isAST(S.Equal, 3)) {
+        continue;
+      }
+      final IExpr difference = F.Subtract(spec.first(), spec.second());
+      java.util.function.DoubleUnaryOperator g = t -> {
+        try {
+          return engine.evalDouble(F.subst(difference, F.Rule(tSym, F.num(t))));
+        } catch (RuntimeException rex) {
+          return Double.NaN;
+        }
+      };
+      final int sweep = 720;
+      double previousT = tMin;
+      double previous = g.applyAsDouble(tMin);
+      for (int i = 1; i <= sweep; i++) {
+        double t = tMin + (tMax - tMin) * i / sweep;
+        double current = g.applyAsDouble(t);
+        if (current == 0.0) {
+          cuts.add(t);
+        } else if (previous * current < 0.0) {
+          double a = previousT;
+          double b = t;
+          double fa = previous;
+          for (int n = 0; n < 60; n++) {
+            double mid = 0.5 * (a + b);
+            double fm = g.applyAsDouble(mid);
+            if (fa * fm <= 0.0) {
+              b = mid;
+            } else {
+              a = mid;
+              fa = fm;
+            }
+          }
+          cuts.add(0.5 * (a + b));
+        }
+        previousT = t;
+        previous = current;
+      }
+    }
+    // a cut at an end of the range breaks nothing
+    return cuts.stream().mapToDouble(Double::doubleValue)
+        .filter(c -> c > tMin + margin && c < tMax - margin).sorted().toArray();
   }
 
   @Override

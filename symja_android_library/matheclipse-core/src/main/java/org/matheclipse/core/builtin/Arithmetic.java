@@ -1734,8 +1734,8 @@ public final class Arithmetic {
     }
 
     private static IExpr basicRewrite2(final IExpr o0, final IExpr z) {
-      if (z.isZero()) {
-        if (o0.isZero()) {
+      if (F.isExactZero(z)) {
+        if (F.isExactZero(o0)) {
           return F.CInfinity;
         }
         if (o0.isMathematicalIntegerNegative()) {
@@ -1756,7 +1756,7 @@ public final class Arithmetic {
     }
 
     private IExpr basicRewrite1(final IExpr arg1) {
-      if (arg1.isZero()) {
+      if (F.isExactZero(arg1)) {
         return F.CComplexInfinity;
       }
       if (arg1.isMathematicalIntegerNegative()) {
@@ -1987,7 +1987,7 @@ public final class Arithmetic {
                 F.Times(F.C1D2, F.Subtract(F.Log(F.Negate(F.Power(z, F.CN1))), F.Log(F.Negate(z)))),
                 F.Log(z));
           }
-          if (a.isZero()) {
+          if (F.isExactZero(a)) {
             // Gamma(0, z_) := -ExpIntegralEi(-z)+(1/2)*(-Log(-(1/z))+Log(-z))-Log(z)
             return F.Plus(F.Negate(F.ExpIntegralEi(F.Negate(z))),
                 F.Times(F.C1D2,
@@ -3457,6 +3457,19 @@ public final class Arithmetic {
       EvalEngine engine = EvalEngine.get();
       if (engine.isDoubleMode() || engine.isArbitraryMode()) {
         if (a.isNumber() && n.isNumber()) {
+          if (a.isExactNumber() && n.isInexactNumber()) {
+            // an exact first argument of any size, as the kind of inexact number the second one is
+            final boolean arbitrary = n instanceof ApfloatNum || n instanceof ApcomplexNum;
+            final IExpr inexact;
+            if (a.isReal()) {
+              inexact = arbitrary ? ((IReal) a).apfloatNumValue()
+                  : F.num(((IReal) a).doubleValue());
+            } else {
+              inexact = arbitrary ? ((INumber) a).apcomplexNumValue()
+                  : F.complexNum(((INumber) a).evalfc());
+            }
+            return inexact.pochhammer(n);
+          }
           return a.pochhammer(n);
         }
       }
@@ -4000,8 +4013,8 @@ public final class Arithmetic {
             // Sqrt(im.negate()) + I * Sqrt(im);
             return F.Plus(temp, F.Times(F.CI, temp));
           }
-        } else if (exponent.isNumEqualRational(F.CN1D2)) {
-          // -(-1)^(3/4)
+        } else if (exponent.isNumEqualRational(F.CN1D2) && base.isImaginaryUnit()) {
+          // I^(-1/2) == -(-1)^(3/4); another imaginary number has another modulus or argument
           return F.Times(F.CN1, F.Power(-1, F.C3D4));
         }
       }
@@ -4224,9 +4237,35 @@ public final class Arithmetic {
       return F.NIL;
     }
 
+    /** 1 for the exponent 1/2, -1 for -1/2 - exact or as an inexact number - and 0 otherwise. */
+    private static int halfExponent(IReal exponent) {
+      if (exponent instanceof Num) {
+        final double d = ((Num) exponent).doubleValue();
+        return d == 0.5 ? 1 : d == -0.5 ? -1 : 0;
+      }
+      if (exponent instanceof ApfloatNum) {
+        final Apfloat a = ((ApfloatNum) exponent).apfloatValue();
+        final Apfloat half = new Apfloat("0.5");
+        return a.compareTo(half) == 0 ? 1 : a.compareTo(half.negate()) == 0 ? -1 : 0;
+      }
+      return exponent.equals(F.C1D2) ? 1 : exponent.equals(F.CN1D2) ? -1 : 0;
+    }
+
     private static IExpr e2NumericArg(IAST ast, final IExpr o0, final IExpr o1) {
       // try {
       IExpr result = F.NIL;
+      if (o0.isInexactNumber() && !F.isExactZero(o0) && o1.isReal()) {
+        // The square root of an inexact number, not Exp(Log(x)/2): Sqrt(-2.0) has no real part,
+        // and N(4,30)^(1/2) is 2, not 1.999... The exponent 1/2 of Sqrt arrives as the inexact
+        // number 0.5 here, so that (-15.0)^0.5 is the same root.
+        final int half = halfExponent((IReal) o1);
+        if (half > 0) {
+          return o0.sqrt();
+        }
+        if (half < 0) {
+          return o0.sqrt().inverse();
+        }
+      }
       if (o0 instanceof ApcomplexNum) {
         if (o1.isNumber()) {
           result = e2ApcomplexArg((ApcomplexNum) o0, ((INumber) o1).apcomplexNumValue());
@@ -4648,12 +4687,14 @@ public final class Arithmetic {
           return F.Power(u, exponent);
         }
       }
-      if (exponent.isMinusOne()) {
-        if (base.equals(F.Overflow())) {
-          return F.Underflow();
+      if (base.isOverflow() || base.isUnderflow()) {
+        // a power of a number beyond the range is beyond it as well: at the same end for a
+        // positive exponent, at the other one for a negative exponent
+        if (exponent.isPositiveResult()) {
+          return base;
         }
-        if (base.equals(F.Underflow())) {
-          return F.Overflow();
+        if (exponent.isNegativeResult()) {
+          return base.isOverflow() ? F.Underflow() : F.Overflow();
         }
       }
       return F.NIL;
@@ -6255,6 +6296,10 @@ public final class Arithmetic {
 
     @Override
     public IExpr e1ObjArg(final IExpr o) {
+      if (o.isInexactNumber() && !o.isZero()) {
+        // the square root itself, not Exp(Log(x)/2): Sqrt(-2.0) has no real part
+        return o.sqrt();
+      }
       return Power(o, F.C1D2);
     }
 

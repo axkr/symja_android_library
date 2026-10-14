@@ -70,9 +70,12 @@
  JacobiP(n_, a_, b_, 1):= Gamma(1+a+n)/(Gamma(1+a)*Gamma(1+n)),
    
  JacobiCD(f_, g_) := JacobiCN(f,g) / JacobiDN(f,g),
+ JacobiCS(f_, g_) := JacobiCN(f,g) / JacobiSN(f,g),
  JacobiDC(f_, g_) := JacobiDN(f,g) / JacobiCN(f,g),
+ JacobiDS(f_, g_) := JacobiDN(f,g) / JacobiSN(f,g),
  JacobiNC(f_, g_) := 1 / JacobiCN(f,g), 
  JacobiND(f_, g_) := 1 / JacobiDN(f,g), 
+ JacobiNS(f_, g_) := 1 / JacobiSN(f,g),
  JacobiSC(f_, g_) := JacobiSN(f,g) / JacobiCN(f,g),
  JacobiSD(f_, g_) := JacobiSN(f,g) / JacobiDN(f,g),
  

@@ -370,6 +370,8 @@ public class GraphicsFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.Lighter.setEvaluator(new LighterDarker(true));
+      S.Darker.setEvaluator(new LighterDarker(false));
       S.Dashed.setEvaluator(new Dashed());
       S.Show.setEvaluator(new Show());
       S.DotDashed.setEvaluator(new DotDashed());
@@ -692,6 +694,79 @@ public class GraphicsFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   * <code>Lighter(colour, f)</code> - the colour blended with white by the fraction
+   * <code>f</code>; <code>Darker(colour, f)</code> - blended with black. <code>f</code> is 1/3 if
+   * it is not given. A list of colours gives the list of the results, and a colour which is not
+   * an <code>RGBColor</code> is converted to one.
+   */
+  private static class LighterDarker extends AbstractEvaluator {
+    private final boolean lighter;
+
+    LighterDarker(boolean lighter) {
+      this.lighter = lighter;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr fraction = ast.isAST2() ? ast.arg2() : F.C1D3;
+      if (!fraction.isReal()) {
+        return F.NIL;
+      }
+      return blend(ast.arg1(), fraction, engine);
+    }
+
+    private IExpr blend(IExpr colour, IExpr fraction, EvalEngine engine) {
+      if (colour.isList()) {
+        IAST list = (IAST) colour;
+        IASTAppendable result = F.ListAlloc(list.argSize());
+        for (int i = 1; i <= list.argSize(); i++) {
+          IExpr each = blend(list.get(i), fraction, engine);
+          if (each.isNIL()) {
+            return F.NIL;
+          }
+          result.append(each);
+        }
+        return result;
+      }
+      IAST rgb = F.NIL;
+      if (colour.isAST(S.RGBColor) && colour.argSize() >= 3 && colour.argSize() <= 4
+          && ((IAST) colour).forAll(x -> x.isReal())) {
+        rgb = (IAST) colour;
+      } else if (colour.isAST(S.GrayLevel) && colour.argSize() >= 1 && colour.first().isReal()) {
+        IExpr gray = colour.first();
+        rgb = colour.argSize() == 2 ? F.RGBColor(gray, gray, gray, colour.second())
+            : F.RGBColor(gray, gray, gray);
+      } else {
+        java.awt.Color parsed = org.matheclipse.core.graphics.svg.ColorUtil.parse(colour);
+        if (parsed == null || !colour.isAST()) {
+          return F.NIL;
+        }
+        rgb = F.RGBColor(F.num(parsed.getRed() / 255.0), F.num(parsed.getGreen() / 255.0),
+            F.num(parsed.getBlue() / 255.0));
+      }
+      IASTAppendable result = F.ast(S.RGBColor, rgb.argSize());
+      for (int i = 1; i <= 3; i++) {
+        IExpr c = rgb.get(i);
+        // towards 1 for the lighter colour, towards 0 for the darker one
+        result.append(engine.evaluate(lighter ? F.Plus(c, F.Times(fraction, F.Subtract(F.C1, c)))
+            : F.Times(c, F.Subtract(F.C1, fraction))));
+      }
+      if (rgb.argSize() == 4) {
+        result.append(rgb.arg4());
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override

@@ -1463,7 +1463,16 @@ public final class PatternMatching {
         return Errors.printMessage(S.MessageName, "sym", F.List(ast.arg1(), F.C1), engine);
       }
       if (ast.arg2().isString()) {
-        return F.NIL;
+        // a message which has been given a text evaluates to it: after f::tag = "text" the
+        // expression f::tag is that string, so StringTemplate[f::tag][x] fills the text in
+        return ((ISymbol) ast.arg1()).evalMessage(ast.arg2().toString());
+      }
+      if (ast.arg2().isSymbol()) {
+        // the tag as the expression parser reads it: f::tag with the name still a symbol
+        IExpr text = ((ISymbol) ast.arg1()).evalMessage(((ISymbol) ast.arg2()).getSymbolName());
+        if (text.isPresent()) {
+          return text;
+        }
       }
       IExpr arg2 = engine.evaluateNIL(ast.arg2());
       if (arg2.isString()) {

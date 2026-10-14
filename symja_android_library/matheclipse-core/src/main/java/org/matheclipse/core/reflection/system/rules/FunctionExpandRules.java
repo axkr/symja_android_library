@@ -141,15 +141,24 @@ public class FunctionExpandRules {
     // JacobiCD(f_,g_):=JacobiCN(f,g)/JacobiDN(f,g)
     SetDelayed(JacobiCD(f_,g_),
       Times(JacobiCN(f,g),Power(JacobiDN(f,g),CN1))),
+    // JacobiCS(f_,g_):=JacobiCN(f,g)/JacobiSN(f,g)
+    SetDelayed(JacobiCS(f_,g_),
+      Times(JacobiCN(f,g),Power(JacobiSN(f,g),CN1))),
     // JacobiDC(f_,g_):=JacobiDN(f,g)/JacobiCN(f,g)
     SetDelayed(JacobiDC(f_,g_),
       Times(Power(JacobiCN(f,g),CN1),JacobiDN(f,g))),
+    // JacobiDS(f_,g_):=JacobiDN(f,g)/JacobiSN(f,g)
+    SetDelayed(JacobiDS(f_,g_),
+      Times(JacobiDN(f,g),Power(JacobiSN(f,g),CN1))),
     // JacobiNC(f_,g_):=1/JacobiCN(f,g)
     SetDelayed(JacobiNC(f_,g_),
       Power(JacobiCN(f,g),CN1)),
     // JacobiND(f_,g_):=1/JacobiDN(f,g)
     SetDelayed(JacobiND(f_,g_),
       Power(JacobiDN(f,g),CN1)),
+    // JacobiNS(f_,g_):=1/JacobiSN(f,g)
+    SetDelayed(JacobiNS(f_,g_),
+      Power(JacobiSN(f,g),CN1)),
     // JacobiSC(f_,g_):=JacobiSN(f,g)/JacobiCN(f,g)
     SetDelayed(JacobiSC(f_,g_),
       Times(Power(JacobiCN(f,g),CN1),JacobiSN(f,g))),

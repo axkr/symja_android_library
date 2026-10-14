@@ -141,6 +141,24 @@ public class ExprParserFactory implements IParserFactory {
     }
   }
 
+  /**
+   * Whether the reciprocal of a power with a number as exponent is read as the power with the
+   * negated exponent: <code>1/x^2</code> as <code>x^(-2)</code>. Not if the power is an inexact
+   * number itself: <code>1/E^999.0</code> is the reciprocal of a number beyond the machine range,
+   * whereas <code>E^(-999.0)</code> is a machine underflow.
+   */
+  public static boolean isReciprocalRewritable(IAST power) {
+    final IExpr base = power.base();
+    final IExpr exponent = power.exponent();
+    if (!exponent.isNumber()) {
+      return false;
+    }
+    if (base.isInexactNumber()) {
+      return false;
+    }
+    return !(exponent.isInexactNumber() && base.isNumericFunction(true));
+  }
+
   private static class DivideExprOperator extends InfixExprOperator {
     public DivideExprOperator(final String oper, final String functionName, final int precedence,
         final int grouping) {
@@ -174,7 +192,7 @@ public class ExprParserFactory implements IParserFactory {
           // don't use F.Power() here; an IASTMutable has to be returned
           return F.binaryAST2(S.Power, rhs, F.CN1);
         }
-        if (rhs.isPower() && rhs.exponent().isNumber()) {
+        if (rhs.isPower() && isReciprocalRewritable((IAST) rhs)) {
           return F.Times(lhs, F.Power(rhs.base(), rhs.exponent().negate()));
         }
       }

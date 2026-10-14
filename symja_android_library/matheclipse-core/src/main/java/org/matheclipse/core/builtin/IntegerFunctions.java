@@ -630,7 +630,7 @@ public class IntegerFunctions {
       if (arg1.isNumber()) {
         return ((INumber) arg1).ceilFraction();
       }
-      INumber number = arg1.evalNumber();
+      INumber number = roundingValue(arg1, engine);
       if (number != null) {
         IExpr ceiling = number.ceilFraction();
         if (ceiling.equals(number.floorFraction())
@@ -1075,7 +1075,7 @@ public class IntegerFunctions {
       if (arg1.isNumber()) {
         return ((INumber) arg1).floorFraction();
       }
-      INumber number = arg1.evalNumber();
+      INumber number = roundingValue(arg1, engine);
       if (number != null) {
         IExpr floor = number.floorFraction();
         if (floor.equals(number.ceilFraction())
@@ -1234,7 +1234,9 @@ public class IntegerFunctions {
       // if (arg1.isPlus() && arg1.first().isInteger()) {
       // }
       try {
-        IReal realNumber = arg1.evalReal();
+        INumber rounding = roundingValue(arg1, engine);
+        IReal realNumber =
+            rounding != null && rounding.isReal() ? (IReal) rounding : arg1.evalReal();
         if (realNumber != null) {
           if (realNumber.isRangeExclExcl(F.CN1, F.C1)) {
             // arg1 is in the interval ]-1, 1[
@@ -1516,7 +1518,9 @@ public class IntegerFunctions {
           // a symbolic argument like `x` stays unevaluated
           return F.NIL;
         }
-        final IReal realNumber = arg1.evalReal();
+        final INumber rounding = roundingValue(arg1, engine);
+        final IReal realNumber =
+            rounding != null && rounding.isReal() ? (IReal) rounding : arg1.evalReal();
         if (realNumber != null) {
           return realNumber.integerPart();
         } else {
@@ -1670,6 +1674,21 @@ public class IntegerFunctions {
       if (value.isPresent()) {
         return value;
       }
+      if (!m.isNumber() && m.isIntegerResult()) {
+        if (n.isOne()) {
+          return F.C0;
+        }
+        if (m.isTimes() && !n.isNumber() && n.isIntegerResult()
+            && ((IAST) m).exists(x -> x.equals(n))) {
+          // an integer multiple of the modulus
+          return F.C0;
+        }
+        if (n.isNumEqualInteger(F.C2) && m.isPower() && m.exponent().isInteger()
+            && m.exponent().isPositive() && m.base().isIntegerResult()) {
+          // a power has the parity of its base
+          return F.Mod(m.base(), F.C2);
+        }
+      }
       return modFromAssumptions(m, n, engine);
     }
 
@@ -1717,6 +1736,10 @@ public class IntegerFunctions {
         if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
             || n.isComplexNumeric() || d.isComplexNumeric()) {
           return modComplex(m, n, engine.evaluate(F.Divide(F.Subtract(m, d), n)), engine);
+        }
+        if (m.isReal() && n.isReal() && d.isReal()) {
+          // rational or inexact numbers: m-n*Floor((m-d)/n)
+          return F.Subtract(m, F.Times(n, F.Floor(F.Divide(F.Subtract(m, d), n))));
         }
       }
       return F.NIL;
@@ -2541,7 +2564,7 @@ public class IntegerFunctions {
           if (expr.isIntegerResult()) {
             return expr;
           }
-          INumber number = expr.evalNumber();
+          INumber number = roundingValue(expr, engine);
           if (number != null) {
             if (number.isReal() && !expr.isNumber()) {
               IExpr floor = number.floorFraction();
@@ -2618,6 +2641,37 @@ public class IntegerFunctions {
   }
 
 
+  /**
+   * The number an expression is rounded as. An exact number is itself - a fraction is not rounded
+   * through a machine number, <code>Round(10^30/7)</code> - and an exact numeric expression which
+   * is too large for a machine number to hold its integer part, <code>Round(Pi*10^20)</code>, is
+   * evaluated with as many digits as that part has, and some more.
+   *
+   * @return <code>null</code> if the expression has no numeric value
+   */
+  private static INumber roundingValue(IExpr expr, EvalEngine engine) {
+    if (expr.isNumber()) {
+      return (INumber) expr;
+    }
+    INumber number = expr.evalNumber();
+    if (number != null && number.isReal() && expr.isFree(x -> x.isInexactNumber(), false)) {
+      double magnitude = Math.abs(number.reDoubleValue());
+      // from 2^52 on the machine numbers are further apart than 1/2
+      if (magnitude >= 4.503599627370496E15 && Double.isFinite(magnitude)) {
+        long digits = (long) Math.log10(magnitude) + 25L;
+        try {
+          IExpr precise = engine.evalN(expr, digits);
+          if (precise.isReal()) {
+            return (IReal) precise;
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+        }
+      }
+    }
+    return number;
+  }
+
   public static IExpr realDigits(IExpr arg1, int radix, long length, long startDigit) {
     INumber number = null;
     if (arg1.isReal()) {
@@ -2651,6 +2705,17 @@ public class IntegerFunctions {
         Aprational aprational = new Aprational(numer, denom);
         RealDigitsResult rd = RealDigitsResult.create(aprational, radix);
         return F.list(rd.getDigitsList(), F.ZZ(rd.getNumberOfLeftDigits()));
+      } else if (realNumber instanceof Num && F.isNotPresent(length)
+          && Double.isFinite(realNumber.doubleValue())) {
+        // a machine number has 53 binary digits, which are 16 decimal digits
+        java.math.BigDecimal exact = new java.math.BigDecimal(realNumber.doubleValue());
+        if (radix == 10) {
+          length = 16;
+          apfloat = new Apfloat(exact.round(new java.math.MathContext(16)), 16);
+        } else {
+          length = Math.round(53.0 * Math.log(2.0) / Math.log(radix));
+          apfloat = new Apfloat(exact, 60);
+        }
       } else {
         apfloat = realNumber.apfloatValue();
       }

@@ -2032,4 +2032,15 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "WljsAliasTest`Tools`");
   }
 
+
+  /**
+   * A message that has been given a text evaluates to it. The WLJS watchdog builds what it reports
+   * with <code>StringTemplate[Internal`Kernel`Watchdog::assert][key]</code>.
+   */
+  @Test
+  public void testMessageNameEvaluatesToItsText() {
+    check("wd::assert = \"Assertion failed ``. Actions were applied\"; "
+        + "{wd::assert, StringTemplate[wd::assert][\"GridBox\"], Head[wd::other]}", //
+        "{Assertion failed ``. Actions were applied,Assertion failed GridBox. Actions were applied,MessageName}");
+  }
 }

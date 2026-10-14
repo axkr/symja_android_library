@@ -7,12 +7,13 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFit() {
+    // Sin(2*x) is zero at every point of the data: no coefficient for it
     check("Fit({{-Pi,4}, {-Pi/2,0}, {0,1}, {Pi/2,-1}, {Pi,-4}}, {Sin(x/2), Sin(x), Sin(2*x)}, x)", //
-        "-4.0*Sin(x/2)+2.32843*Sin(x)+Sin(2*x)");
-    // TODO needs improvement
+        "-4.0*Sin(x/2)+2.32843*Sin(x)");
+    // Sin(3*x) is -Sin(x) at every point of the data: the smallest coefficients for the two
     check(
         "Fit({{-Pi,4}, {-Pi/2,0}, {0,1}, {Pi/2,-1}, {Pi,-4}}, {Sin(x/2), Sin(x), Sin(2*x), Sin(3*x)}, x)//Chop", //
-        "83.5143*Sin(x/2)-186.4314*Sin(x)+3.57304*10^17*Sin(2*x)-83.12067*Sin(3*x)");
+        "-4.0*Sin(x/2)+1.16421*Sin(x)-1.16421*Sin(3*x)");
 
     check("Fit({1.2214,1.49182,1.82212,2.22554,2.71828,3.32012,4.0552},{2},x)", //
         "2.40778");
@@ -28,7 +29,7 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("Fit({1,4,9,16},2,x)", //
         "7.5");
     check("Fit({1,4,9,16},{x^2},x)", //
-        "x^2");
+        "1.0*x^2");
 
     check("Fit({x,-3,-1/2},2147483647,ComplexInfinity)", //
         "Fit({x,-3,-1/2},2147483647,ComplexInfinity)");
@@ -40,11 +41,12 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
         "1.75");
     check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, {1,x,x^2}, x)", //
         "0.678392-0.266332*x+0.190955*x^2");
+    // five functions for four points: the fit through the points with the smallest coefficients
     check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, {1,x,x^2,x^4,x^5}, x)", //
-        "1.0-1.96768*x+x^2-0.035533*x^4+0.00321489*x^5");
+        "1.0-0.632261*x-0.525089*x^2+0.188973*x^4-0.0316222*x^5");
 
     check("Fit({{1,1},{2,4},{3,9},{4,16}},{1,x,x^2},x) // Chop", //
-        "x^2");
+        "1.0*x^2");
 
   }
 
@@ -54,6 +56,39 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     // Returns the best fit (coefficient) vector a minimizing Norm(m.a - v) -> {-6, 6.5}
     check("Fit({{{1, 2}, {3, 4}, {5, 6}}, {7, 8, 9}})", //
         "{-6.0,6.5}");
+  }
+
+  @Test
+  public void testFitWithoutAConstant() {
+    // the functions of the basis and no constant: 8/5*x is the best line through the origin
+    check("Fit({{0,1},{1,2},{2,3}},{x},x)", //
+        "1.6*x");
+    check("Fit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}},{x},x)", //
+        "1.99*x");
+    check("Fit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}},{1,x},x)", //
+        "0.15+1.94*x");
+    check("Fit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}},{Log(x),1/x},x)", //
+        "1.88752/x+5.07817*Log(x)");
+    check("Fit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}},{1,x,Exp(x)},x)", //
+        "-0.0586909-0.00999178*E^x+2.1082*x");
+  }
+
+  @Test
+  public void testFitWithDependentFunctions() {
+    // x twice: 1.095 for each
+    check("Fit({{1,2.1},{2,3.9},{3,6.2},{4,7.8}},{1,x,x,x^2},x)", //
+        "-0.1+2.19*x-0.05*x^2");
+    // three functions for two points
+    check("Fit({{1,2.1},{2,3.9}},{1,x,x^2},x)", //
+        "0.985714+0.771429*x+0.342857*x^2");
+    // two points at the same place
+    check("Fit({{1,2},{1,3}},{1,x},x)", //
+        "1.25+1.25*x");
+    // functions of very different size
+    check("Fit({{1,3},{10,100002},{100,10000000002},{1000,1000000000000002}},{1,x^5},x)", //
+        "2.03125+x^5");
+    check("Fit({{0,0},{1,0},{2,0}},{1,x},x)", //
+        "0");
   }
 
   @Test

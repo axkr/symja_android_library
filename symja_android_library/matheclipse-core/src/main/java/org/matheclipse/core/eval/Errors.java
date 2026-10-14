@@ -269,6 +269,7 @@ public class Errors {
       "invprp",
       "The argument `1` is not a valid property. Specify \"Properties\" to obtain a list of valid properties.", //
       "hshtype", "`1` is not a known type of hash.", //
+      "invhash", "`1` is not a valid Hash specification.", //
       "ibase", "Base `1` is not an integer greater than `2`.", //
       "idim", "`1` and `2` must have the same length.", //
       "idir", "Direction vector `1` has zero magnitude.", //
@@ -633,6 +634,7 @@ public class Errors {
       "unitsys", "Cannot set `1` to `2`; value must be \"Metric\" or \"Imperial\".", //
       "unkds",
       "Warning: the set of discontinuities may be incomplete due to missing domain and discontinuity information for some of the functions involved.", //
+      "uform", "Invalid hash format `1`.", //
       "unkunit", "Unable to interpret unit specification `1`.", //
       "unsdst", "The first argument `1` is not a valid distribution.", //
       "unsupported", "`1` currently not supported in `2`.", //

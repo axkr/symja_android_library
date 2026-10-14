@@ -6,10 +6,13 @@
 
   D(JacobiCD(f_, g_),x_?NotListQ):= (-1 + g)*JacobiND(f,g)*JacobiSD(f,g)*D(f,x) + ((f*(-1 + g) + JacobiEpsilon(f,g))*JacobiND(f,g)*JacobiSD(f,g)*D(g,x))/(2*g), 
   D(JacobiCN(f_, g_),x_?NotListQ):= (-JacobiDN(f,g))*JacobiSN(f,g)*D(f,x) + (JacobiDN(f,g)*JacobiSN(f,g)*(f*(-1 + g) + JacobiEpsilon(f,g) - g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
+  D(JacobiCS(f_, g_),x_?NotListQ):= (-JacobiDS(f,g))*JacobiNS(f,g)*D(f,x) - (JacobiDS(f,g)*JacobiNS(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
   D(JacobiDC(f_, g_),x_?NotListQ):= (1 - g)*JacobiNC(f,g)*JacobiSC(f,g)*D(f,x) + ((f*(1 - g) - JacobiEpsilon(f,g))*JacobiNC(f,g)*JacobiSC(f,g)*D(g,x))/(2*g),
   D(JacobiDN(f_, g_),x_?NotListQ):= (-g)*JacobiCN(f,g)*JacobiSN(f,g)*D(f,x) + (JacobiCN(f,g)*(f*(-1 + g) + JacobiEpsilon(f,g) - JacobiDN(f,g)*JacobiSC(f,g))*JacobiSN(f,g)*D(g,x))/(2*(1 - g)),
+  D(JacobiDS(f_, g_),x_?NotListQ):= (-JacobiCS(f,g))*JacobiNS(f,g)*D(f,x) - (JacobiCS(f,g)*JacobiNS(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiDN(f,g)*JacobiSC(f,g))*D(g,x))/(2*(1 - g)*g),
   D(JacobiNC(f_, g_),x_?NotListQ):= JacobiDC(f,g)*JacobiSC(f,g)*D(f,x) + (JacobiDC(f,g)*JacobiSC(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
   D(JacobiND(f_, g_),x_?NotListQ):= g*JacobiCD(f,g)*JacobiSD(f,g)*D(f,x) + (JacobiCD(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + JacobiDN(f,g)*JacobiSC(f,g))*JacobiSD(f,g)*D(g,x))/(2*(1 - g)),
+  D(JacobiNS(f_, g_),x_?NotListQ):= (-JacobiCS(f,g))*JacobiDS(f,g)*D(f,x) - (JacobiCS(f,g)*JacobiDS(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
   D(JacobiSC(f_, g_),x_?NotListQ):= JacobiDC(f,g)*JacobiNC(f,g)*D(f,x) + (JacobiDC(f,g)*JacobiNC(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),
   D(JacobiSD(f_, g_),x_?NotListQ):= JacobiCD(f,g)*JacobiND(f,g)*D(f,x) + (JacobiCD(f,g)*JacobiND(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiDN(f,g)*JacobiSC(f,g))*D(g,x))/(2*(1 - g)*g),
   D(JacobiSN(f_, g_),x_?NotListQ):= JacobiCN(f,g)*JacobiDN(f,g)*D(f,x) + (JacobiCN(f,g)*JacobiDN(f,g)*(f*(1 - g) - JacobiEpsilon(f,g) + g*JacobiCD(f,g)*JacobiSN(f,g))*D(g,x))/(2*(1 - g)*g),

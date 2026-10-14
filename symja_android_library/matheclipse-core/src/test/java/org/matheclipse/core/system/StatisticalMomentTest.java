@@ -13,7 +13,7 @@ public class StatisticalMomentTest extends ExprEvaluatorTestCase {
     check("CentralMoment({a,b,c}, z)", //
         "1/3*((a+1/3*(-a-b-c))^z+(b+1/3*(-a-b-c))^z+(1/3*(-a-b-c)+c)^z)");
     check("CentralMoment({{a,b},{c,d}}, 4) // Simplify", //
-        "{(-a+c)^4/16,(-b+d)^4/16}");
+        "{(a-c)^4/16,(b-d)^4/16}");
     check("CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)", //
         "0.100845");
     check("CentralMoment(BernoulliDistribution(n),m)", //
@@ -96,7 +96,7 @@ public class StatisticalMomentTest extends ExprEvaluatorTestCase {
   @Test
   public void testCumulant() {
     check("Cumulant({{a,b},{c,d}}, 4) //Simplify", //
-        "{-(-a+c)^4/8,-(-b+d)^4/8}");
+        "{-(a-c)^4/8,-(b-d)^4/8}");
     check("Cumulant({a,b,c},4)", //
         "-((a+1/3*(-a-b-c))^2+(b+1/3*(-a-b-c))^2+(1/3*(-a-b-c)+c)^2)^2/3+1/3*((a+1/3*(-a-b-c))^\n"
             + "4+(b+1/3*(-a-b-c))^4+(1/3*(-a-b-c)+c)^4)");
@@ -159,7 +159,7 @@ public class StatisticalMomentTest extends ExprEvaluatorTestCase {
 
     // Order 2 symbolic, simplified to match exact algebraic result
     check("Simplify(Cumulant({a, b}, 2))", //
-        "(-a+b)^2/4");
+        "(a-b)^2/4");
 
     // Fallback to CentralMoment for symbolic distributions
     check("Cumulant(NormalDistribution(mu, sigma), 2)", //

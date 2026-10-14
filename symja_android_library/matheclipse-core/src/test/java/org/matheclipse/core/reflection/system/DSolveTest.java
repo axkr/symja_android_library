@@ -2728,4 +2728,18 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y''(x) == (x^4 + 3/(4*x^2))*y(x), y(x), x)", //
         "{{y(x)->Sqrt(x)*BesselI(1/3,x^3/3)*C(1)+Sqrt(x)*BesselK(1/3,x^3/3)*C(2)}}");
   }
+
+  /**
+   * A forcing term which is switched on at a symbolic point, and an equation without a closed
+   * form which has to come back unevaluated in bounded time.
+   */
+  @Test
+  public void testSymbolicBreakPoint() {
+    check("DSolve({y'(t)-2*y(t)==UnitStep(t-b), y(0)==3}, y(t), t)", //
+        "{{y(t)->(6*E^(2*b)-UnitStep(-b)+E^(2*b)*UnitStep(-b))/(2*E^(2*b-2*t))-UnitStep(-b+t)/\n2+UnitStep(-b+t)/(2*E^(2*b-2*t))}}");
+    check("DSolve(y'(t)+y(t)==E^(-t)*UnitStep(t-b), y(t), t)", //
+        "{{y(t)->C(1)/E^t+(-b*UnitStep(-b+t))/E^t+(t*UnitStep(-b+t))/E^t}}");
+    check("DSolve((x^3+2)*y''(x)+x*y'(x)+y(x)==0, y(x), x)", //
+        "DSolve(y(x)+x*y'(x)+(2+x^3)*y''(x)==0,y(x),x)");
+  }
 }

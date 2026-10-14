@@ -197,6 +197,36 @@ public class BesselJYTest {
     }
   }
 
+  /**
+   * Beyond the validated domain: Hankel's expansion, which keeps the phase of an argument of any
+   * size. The reference values were calculated with mpmath, with the double as the argument.
+   */
+  @Test
+  public void testHankelExpansion() {
+    final double[][] values = {
+        // {order, argument, BesselJ, BesselY}
+        {0.0, 1e+20, 6.6980090407034243e-12, -7.9506819824254502e-11},
+        {2.5, 3000000000000.0, 4.2392123571297517e-7, -1.8027028790340889e-7},
+        {-7.25, 4500000000.0, -9.5771759029775027e-6, -7.0532802474845875e-6},
+        {1.0, 1e+300, -1.368136045034248e-151, 7.8606730627240933e-151},
+        {20.25, 317.3, -0.038619462208758345, 0.022781538866021855},
+        {31.5, 1006.75, -0.0089140559503754409, 0.023520218714333382},
+        {-4.0, 123456.789, -0.0015204878395170771, -0.001686634796168886}};
+    for (double[] point : values) {
+      final double v = point[0];
+      final double x = point[1];
+      double[] jy = BesselJY.hankel(v, x);
+      assertTrue(jy != null, "no expansion for v=" + v + ", x=" + x);
+      final double envelope = Math.sqrt(2.0 / Math.PI / x);
+      assertTrue(Math.abs(jy[0] - point[2]) <= 4.0e-15 * envelope, "BesselJ(" + v + ", " + x + ")");
+      assertTrue(Math.abs(jy[1] - point[3]) <= 4.0e-15 * envelope, "BesselY(" + v + ", " + x + ")");
+    }
+    assertTrue(BesselJY.hankel(1.3, 100.0) == null, "inside the validated domain");
+    assertTrue(BesselJY.hankel(100.0, 150.0) == null, "an order too large against the argument");
+    assertTrue(BesselJY.hankel(0.0, Double.POSITIVE_INFINITY) == null);
+    assertTrue(BesselJY.hankel(Double.NaN, 200.0) == null);
+  }
+
   /** Outside the validated domain the caller must be told to fall back, not handed a number. */
   @Test
   public void testDomainBoundaries() {

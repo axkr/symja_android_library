@@ -218,10 +218,10 @@ public class ComplexSym implements IComplex {
   public Apcomplex apcomplexValue() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     long precision = h.precision();
-    Apfloat real = h.divide(new Apfloat(fReal.toBigNumerator(), precision),
-        new Apfloat(fReal.toBigDenominator(), precision));
-    Apfloat imag = h.divide(new Apfloat(fImaginary.toBigNumerator(), precision),
-        new Apfloat(fImaginary.toBigDenominator(), precision));
+    Apfloat real = h.divide(ApfloatNum.apfloatOf(fReal.toBigNumerator(), precision),
+        ApfloatNum.apfloatOf(fReal.toBigDenominator(), precision));
+    Apfloat imag = h.divide(ApfloatNum.apfloatOf(fImaginary.toBigNumerator(), precision),
+        ApfloatNum.apfloatOf(fImaginary.toBigDenominator(), precision));
     return new Apcomplex(real, imag);
   }
 

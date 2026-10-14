@@ -1,10 +1,13 @@
 package org.matheclipse.core.dsolve;
 
+import org.matheclipse.core.basic.MachineProfile;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.integrate.IntegrateTimeBudget;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -665,11 +668,32 @@ final class DSolveKovacic {
     return DSolveODE.isVanishing(residual, engine) ? fitted : F.NIL;
   }
 
+  /** The time for bringing the equation of one guess over a common denominator. */
+  private static final long FIT_SECONDS = 2L;
+
   /** The guess fitted so that every coefficient of the equation vanishes. */
   private static IExpr fitCoefficientList(IExpr equation, IExpr guess, IAST unknowns, IExpr xVar,
       DSolveContext ctx) {
     EvalEngine engine = ctx.engine;
-    IExpr numerator = engine.evaluate(F.Numerator(F.Together(equation)));
+    // With several poles the guess has many unknowns, and bringing the equation over one
+    // denominator is a polynomial GCD in all of them, which need not come back in any useful time.
+    // One guess which does not come back is followed by larger ones, which are not tried.
+    if (ctx.isFitTimedOut()) {
+      return F.NIL;
+    }
+    IExpr numerator;
+    try {
+      numerator = IntegrateTimeBudget.runWithin(
+          () -> engine.evaluate(F.Numerator(F.Together(equation))),
+          MachineProfile.seconds(FIT_SECONDS) * 1000L);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+    if (numerator.isNIL() || numerator.equals(S.$Aborted)) {
+      ctx.setFitTimedOut();
+      return F.NIL;
+    }
     IExpr coefficients = engine.evaluate(F.CoefficientList(numerator, xVar));
     if (!coefficients.isList()) {
       return F.NIL;

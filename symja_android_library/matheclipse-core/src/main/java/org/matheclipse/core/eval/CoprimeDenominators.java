@@ -5,12 +5,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 
 /**
  * <code>Together</code> of a sum of univariate rational functions with rational coefficients, in
@@ -139,9 +143,9 @@ final class CoprimeDenominators {
 
     // the denominators of the numerator's (Gaussian) rational coefficients go to the denominator
     BigInteger scale = BigInteger.ONE;
-    final IExpr coefficients = engine.evaluate(F.CoefficientList(numerator, x));
-    if (coefficients.isList()) {
-      for (IExpr c : (IAST) coefficients) {
+    final List<IExpr> coefficients = coefficients(numerator, new long[1]);
+    if (coefficients != null) {
+      for (IExpr c : coefficients) {
         if (c.isRational()) {
           scale = lcm(scale, ((IRational) c).toBigDenominator());
         } else if (c instanceof IComplex) {
@@ -297,13 +301,14 @@ final class CoprimeDenominators {
    * <code>null</code> if a coefficient isn't rational.
    */
   private IExpr[] primitive(IExpr p) {
-    final IExpr coefficients = engine.evaluate(F.CoefficientList(p, x));
-    if (!coefficients.isList() || coefficients.argSize() < 2) {
+    final long[] degree = new long[1];
+    final List<IExpr> coefficients = coefficients(p, degree);
+    if (coefficients == null || degree[0] < 1) {
       return null;
     }
     BigInteger lcm = BigInteger.ONE;
     BigInteger gcd = BigInteger.ZERO;
-    for (IExpr c : (IAST) coefficients) {
+    for (IExpr c : coefficients) {
       if (!c.isRational()) {
         return null;
       }
@@ -311,13 +316,55 @@ final class CoprimeDenominators {
       gcd = gcd.gcd(((IRational) c).toBigNumerator());
     }
     IRational content = F.QQ(gcd, lcm).normalize();
-    if (((IAST) coefficients).last().isNegative()) {
+    if (coefficients.get(coefficients.size() - 1).isNegative()) {
       content = content.negate();
     }
     if (content.isOne()) {
       return new IExpr[] {content, p};
     }
     return new IExpr[] {content, engine.evaluate(F.Expand(F.Times(content.inverse(), p)))};
+  }
+
+  /**
+   * The coefficients of the terms of the polynomial <code>p</code>, the one of the highest power
+   * of <code>x</code> in the last place. These are the entries of <code>CoefficientList</code>
+   * without its zeros: the list of <code>1+x^100000000</code> has a hundred million entries for
+   * two terms.
+   *
+   * @param degree receives the degree of <code>p</code> at index 0
+   * @return <code>null</code> if <code>p</code> is no polynomial in <code>x</code>
+   */
+  private List<IExpr> coefficients(IExpr p, long[] degree) {
+    try {
+      final IExpr expanded = p.isAST() && !p.isFree(x, true) ? F.evalExpandAll(p, engine) : p;
+      final ExprPolynomial polynomial =
+          new ExprPolynomialRing(F.list(x)).create(expanded, true, false, true);
+      final List<IExpr> result = new ArrayList<>(polynomial.length());
+      long highest = -1L;
+      IExpr leading = null;
+      for (ExprMonomial monomial : polynomial) {
+        final long exponent = monomial.exponent().getVal(0);
+        if (exponent > highest) {
+          if (leading != null) {
+            result.add(leading);
+          }
+          highest = exponent;
+          leading = monomial.coefficient();
+        } else {
+          result.add(monomial.coefficient());
+        }
+      }
+      if (leading != null) {
+        result.add(leading);
+      }
+      degree[0] = Math.max(highest, 0L);
+      return result;
+    } catch (LimitException le) {
+      throw le;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return null;
+    }
   }
 
   private static BigInteger lcm(BigInteger a, BigInteger b) {

@@ -2186,4 +2186,74 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,Infinity,{Sqrt(2*Pi),0,-Sqrt(2*Pi)/24,0,Sqrt(2*Pi)/1152},0,5,2)*E^SeriesData(x,"
             + "Infinity,{-1+Log(x)},-1,3,1)");
   }
+
+  /**
+   * Functions with roots, whose expansion depends on the side of the point, and the option
+   * <code>Assumptions</code> with its default <code>$Assumptions</code>.
+   */
+  @Test
+  public void testSeriesBranchAndAssumptions() {
+    // an even root takes its branch from the sign of the variable
+    check("Series(Sqrt(t^2+5*t), {t,-Infinity,1})", //
+        "-t-5/2+25/(8*t)+O(1/t)^2");
+    check("Series(Sqrt(t^2+5*t), {t,Infinity,1})", //
+        "t+5/2-25/(8*t)+O(1/t)^2");
+    check("Series(Sqrt(t^2+b*t), {t,-Infinity,1})", //
+        "-t-b/2+b^2/(8*t)+O(1/t)^2");
+    check("Series(1/Sqrt(t^2+4), {t,-Infinity,3})", //
+        "-1/t+2/t^3+O(1/t)^4");
+    // an odd root does not
+    check("Series((t^3+2*t^2)^(1/3), {t,-Infinity,1})", //
+        "t+2/3-4/(9*t)+O(1/t)^2");
+    // no root: unchanged
+    check("Series(Exp(2/t), {t,-Infinity,2})", //
+        "1+2/t+2/t^2+O(1/t)^3");
+    // the assumptions decide the coefficients
+    check("Series(Sqrt(b^2*t^2+c*t), {t,-Infinity,1}, Assumptions->b>0)", //
+        "-b*t-c/(2*b)+c^2/(8*b^3*t)+O(1/t)^2");
+    check("Series(Sqrt(b^2*t^2+c*t), {t,Infinity,1}, Assumptions->b>0)", //
+        "b*t+c/(2*b)-c^2/(8*b^3*t)+O(1/t)^2");
+    // without them Sqrt(b^2) stays
+    check("Series(Sqrt(b^2*t^2+c*t), {t,Infinity,1})", //
+        "Sqrt(b^2)*t+(Sqrt(b^2)*c)/(2*b^2)+(-Sqrt(b^2)*c^2)/(8*b^4*t)+O(1/t)^2");
+    check("Series(Sqrt(b-t), {t,0,1}, Assumptions->b<0)", //
+        "I*Sqrt(-b)+(-I*1/2*Sqrt(-b)*t)/b+O(t)^2");
+    check("Limit(Sqrt(t^2+5*t)+t, t->-Infinity)", //
+        "-5/2");
+    // at 0 the two sides differ by the factor Sqrt(t^2)/t
+    check("Series(Sqrt(t^2), {t,0,2})", //
+        "(Sqrt(t^2)*t)/t+O(t)^3");
+    // the sign of the variable selects the side
+    check("Series(Sqrt(t^2), {t,0,2}, Assumptions->t<0)", //
+        "-t+O(t)^3");
+    check("Series(Sqrt(1-Cos(t)), {t,0,2}, Assumptions->t<0)", //
+        "-t/Sqrt(2)+O(t)^3");
+    check("Series(Sqrt(1-Cos(t)), {t,0,2}, Assumptions->t>0)", //
+        "t/Sqrt(2)+O(t)^3");
+    check("Series(Sqrt(t^4+b*t^2), {t,0,3}, Assumptions->b>0&&t<0)", //
+        "-Sqrt(b)*t-t^3/(2*Sqrt(b))+O(t)^4");
+    // assumptions from the enclosing Assuming, as for Refine
+    check("Assuming(t<0, Series(Sqrt(t^2+t^3), {t,0,2}))", //
+        "-t-t^2/2+O(t)^3");
+    // Abs has no expansion in powers
+    check("Series(Abs(t-b), {t,0,2})", //
+        "Abs(-b+t)");
+    check("Series(Sqrt(1+t), {t,0,2})", //
+        "1+t/2-t^2/8+O(t)^3");
+    // the option and its default $Assumptions
+    check("Options(Series)", //
+        "{Assumptions->True}");
+    // limits take the branch of their side
+    check("Limit(Sqrt(1-Cos(t))/t, t->0, Direction->\"FromBelow\")", //
+        "-1/Sqrt(2)");
+    check("Limit(Sqrt(1-Cos(t))/t, t->0)", //
+        "Indeterminate");
+    check("Limit((Sqrt(1+t)-1)/t, t->0)", //
+        "1/2");
+    // the global assumptions are used when the option is not given
+    check("$Assumptions=t<0; Series(Sqrt(t^2), {t,0,2})", //
+        "-t+O(t)^3");
+    check("$Assumptions=True; Series(Sqrt(t^2), {t,0,2})", //
+        "(Sqrt(t^2)*t)/t+O(t)^3");
+  }
 }

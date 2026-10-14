@@ -1003,7 +1003,9 @@ public final class GraphicsOptions3D {
     if (expr.isString()) {
       return expr.toString();
     }
-    return unquote(expr.toString());
+    // set as a label of a 2D picture is: a Column or a Grid as its lines, a power with a
+    // superscript - on one line here
+    return org.matheclipse.core.graphics.svg.LabelText.of(expr).replace('\n', ' ');
   }
 
   public static String unquote(String s) {

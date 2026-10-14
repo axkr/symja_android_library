@@ -128,7 +128,7 @@ public final class TickGenerator {
           continue;
         }
         String label =
-            pair.argSize() >= 2 ? PrimitiveCollector.unquote(pair.arg2().toString()) : trim(value);
+            pair.argSize() >= 2 ? LabelText.of(pair.arg2()) : trim(value);
         ticks.add(new Tick(value, label, true));
       } else {
         double value = ColorUtil.dbl(entry, Double.NaN);

@@ -1,8 +1,19 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.LongFunction;
+import org.matheclipse.core.interfaces.INumber;
+import org.apfloat.ApfloatMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apcomplex;
+import java.math.RoundingMode;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PrecisionLoss;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -133,7 +144,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
       // }
       // return temp;
       // }
-      expr = engine.evaluate(expr);
+      expr = evaluateExact(expr, engine);
       if (expr.isInexactNumber()) {
         return expr;
       }
@@ -160,8 +171,8 @@ public final class N extends AbstractCoreFunctionEvaluator {
       if (result instanceof ApcomplexNum) {
         org.hipparchus.complex.Complex c = result.evalfc();
         if (Double.isInfinite(c.getReal()) || Double.isInfinite(c.getImaginary())) {
-          return F.complexNum(
-              ((ApcomplexNum) result).apcomplexValue().precision(ParserConfig.MACHINE_PRECISION));
+          return F.complexNum(ApcomplexNum.precisionOfParts(
+              ((ApcomplexNum) result).apcomplexValue(), ParserConfig.MACHINE_PRECISION));
         }
         return F.complexNum(c);
       }
@@ -169,6 +180,23 @@ public final class N extends AbstractCoreFunctionEvaluator {
     } finally {
       engine.setNumericMode(oldNumericMode);
       engine.setNumericPrecision(oldDigitPrecision);
+    }
+  }
+
+  /**
+   * The exact evaluation which comes before the numeric one. An exact value beyond a limit of the
+   * engine - the integer <code>(10^6)!</code> - is not needed for the numeric one: the expression
+   * stays as it is then, and its arguments become numbers first.
+   */
+  private static IExpr evaluateExact(IExpr expr, EvalEngine engine) {
+    try {
+      return engine.evaluate(expr);
+    } catch (IterationLimitExceeded | BigIntegerLimitExceeded | ASTElementLimitExceeded le) {
+      if (expr.isAST() && expr.topHead().isNumericFunctionAttribute()) {
+        // the arguments are still evaluated exactly, where that is possible
+        return ((IAST) expr).map(x -> evaluateExact(x, engine), 1);
+      }
+      return expr;
     }
   }
 
@@ -186,7 +214,16 @@ public final class N extends AbstractCoreFunctionEvaluator {
    */
   public static IExpr evalN2(IExpr expr, final long nDigitPrecision, EvalEngine engine) {
     // first try symbolic evaluation
-    expr = engine.evaluate(expr);
+    final IExpr original = expr;
+    // the digits which numbers lose in it, see below
+    final long lostExactly;
+    final long tracked = PrecisionLoss.start(engine);
+    try {
+      expr = evaluateExact(expr, engine);
+      lostExactly = PrecisionLoss.lost(engine);
+    } finally {
+      PrecisionLoss.stop(engine, tracked);
+    }
     if (expr.isListOrAssociation() || expr.isRuleAST()) {
       return ((IAST) expr).mapThread(x -> evalN2(x, nDigitPrecision, engine));
     }
@@ -200,10 +237,208 @@ public final class N extends AbstractCoreFunctionEvaluator {
       nPrecision = ParserConfig.MACHINE_PRECISION;
     }
     engine.setNumericMode(true, nPrecision, significantFigures);
-    if (expr.isNumber()) {
+    final boolean adaptive = Config.MAX_EXTRA_PRECISION > 0 && original.isAST()
+        && !original.has(x -> x.isInexactNumber(), true);
+    if (expr.isNumber() && !(adaptive && expr.isInexactNumber()
+        && lostExactly >= PrecisionLoss.THRESHOLD)) {
       return expr.evaluate(engine).orElse(expr);
     }
-    return engine.evalWithoutNumericReset(expr);
+    if (!adaptive || !(expr.isAST() || expr.isNumber())) {
+      // an inexact number in the input has the digits it has: more working digits add none
+      return engine.evalWithoutNumericReset(expr);
+    }
+    if (expr.isNumber() || expr.has(x -> x.isInexactNumber(), true)) {
+      // The exact evaluation has left numbers of the precision: the engine has the precision of
+      // the input from its start, and some functions are numeric with that alone - BernoulliB
+      // in Zeta(60), the elliptic integrals of exact numbers. More digits of the result need
+      // more digits of these, which is the exact evaluation once more.
+      final IExpr first = expr;
+      final long firstPrecision = nPrecision;
+      return evalExact(original, working -> {
+        if (working == firstPrecision) {
+          return first;
+        }
+        engine.setNumericMode(false);
+        engine.setNumericPrecision(working);
+        try {
+          return evaluateExact(original, engine);
+        } finally {
+          engine.setNumericMode(true, working, significantFigures);
+        }
+      }, lostExactly, nPrecision, significantFigures, engine);
+    }
+    final IExpr exact = expr;
+    return evalExact(expr, working -> exact, 0L, nPrecision, significantFigures, engine);
+  }
+
+  /** Working digits beyond the ones a reported loss asks for. */
+  private static final long GUARD_DIGITS = 3;
+
+  /**
+   * The numeric value of an exact expression. Every operation is calculated with the digits of the
+   * working precision and no more, so that a difference of nearly equal numbers, or a periodic
+   * function of a large argument, has fewer right digits than was asked for. The operations
+   * report that to {@link PrecisionLoss}; the expression is evaluated again then, with as many
+   * digits more as were lost, up to {@link Config#MAX_EXTRA_PRECISION} of them.
+   *
+   * <p>
+   * A reported loss need not reach the result: a function may subtract equal numbers on its way
+   * and bring its own working digits. So the result of the second evaluation is compared with the
+   * first one, which is returned as it is if both agree.
+   *
+   * @param expr an expression without inexact numbers
+   * @param exactAt the expression which is evaluated with a working precision: <code>expr</code>,
+   *        or the exact evaluation of the input with that precision of the engine
+   * @param lostExactly the digits which the exact evaluation of the input has lost already
+   * @param precision the precision of the result
+   * @param significantFigures the digits which output forms display
+   */
+  private static IExpr evalExact(IExpr expr, LongFunction<IExpr> exactAt, final long lostExactly,
+      final long precision, int significantFigures, EvalEngine engine) {
+    final long maxPrecision = precision + Config.MAX_EXTRA_PRECISION;
+    long working = precision;
+    // the result of the evaluation before, in the digits of the precision
+    IExpr previous = null;
+    // a result which was zero, because every digit was lost
+    IExpr zero = null;
+    final long before = PrecisionLoss.start(engine);
+    try {
+      while (true) {
+        PrecisionLoss.reset(engine);
+        // Quiet: an evaluation which loses digits reports what the next one does not, the 1/0 of
+        // a difference which is zero. The messages of the last evaluation are printed below.
+        final boolean quiet = engine.isQuietMode();
+        final String shortcut = engine.getMessageShortcut();
+        boolean messages;
+        IExpr result;
+        engine.setMessageShortcut(null);
+        engine.setQuietMode(true);
+        try {
+          result = engine.evalWithoutNumericReset(exactAt.apply(working));
+          messages = engine.getMessageShortcut() != null;
+        } finally {
+          engine.setQuietMode(quiet);
+          if (engine.getMessageShortcut() == null) {
+            engine.setMessageShortcut(shortcut);
+          }
+        }
+        final long lost = working == precision ? Math.max(PrecisionLoss.lost(engine), lostExactly)
+            : PrecisionLoss.lost(engine);
+        long needed = working;
+        if (lost >= PrecisionLoss.THRESHOLD) {
+          // every digit lost: twice the digits; else the digits which were lost in addition
+          needed =
+              lost >= working ? 2 * working + GUARD_DIGITS : precision + lost + GUARD_DIGITS;
+        }
+        final IExpr rounded = working > precision ? toPrecision(result, precision) : result;
+        if (zero == null && lost >= working && rounded.isZero()) {
+          zero = rounded;
+        }
+        boolean limit = false;
+        if (needed > working) {
+          if (previous != null && !rounded.isZero() && agree(previous, rounded, precision)) {
+            // the loss did not reach the result: the one of the evaluation before is as good
+            result = previous;
+          } else if (working < maxPrecision) {
+            previous = rounded;
+            working = Math.min(needed, maxPrecision);
+            engine.setNumericMode(true, working, significantFigures);
+            continue;
+          } else {
+            limit = true;
+            // Still no digit which is right: what is left of a difference that was zero is the
+            // noise of its operands, and the difference is zero as far as can be seen
+            result = zero != null && lost >= working - GUARD_DIGITS ? zero : rounded;
+          }
+        } else {
+          result = rounded;
+        }
+        if (working > precision) {
+          engine.setNumericMode(true, precision, significantFigures);
+        }
+        if (messages && !quiet) {
+          // the messages of the last evaluation are wanted: once more, aloud
+          engine.evalWithoutNumericReset(exactAt.apply(precision));
+        }
+        if (limit && !PrecisionLoss.isLimitQuiet(engine)) {
+          // Internal precision limit `1` reached while evaluating `2`.
+          Errors.printMessage(S.N, "meprec",
+              F.list(F.stringx("of " + Config.MAX_EXTRA_PRECISION + " extra digits"), expr),
+              engine);
+        }
+        return result;
+      }
+    } finally {
+      PrecisionLoss.stop(engine, before);
+    }
+  }
+
+  /**
+   * The numbers of a result which was calculated with more digits, rounded to the precision.
+   */
+  private static IExpr toPrecision(IExpr result, final long precision) {
+    if (result instanceof ApfloatNum) {
+      return ApfloatNum.valueOf(round(((ApfloatNum) result).apfloatValue(), precision));
+    }
+    if (result instanceof ApcomplexNum) {
+      final Apcomplex z = ((ApcomplexNum) result).apcomplexValue();
+      // each part has the digits of the precision
+      return ApcomplexNum
+          .valueOf(new Apcomplex(round(z.real(), precision), round(z.imag(), precision)));
+    }
+    if (result.isAST()) {
+      return result.replaceAll(x -> x instanceof ApfloatNum || x instanceof ApcomplexNum
+          ? toPrecision(x, precision)
+          : F.NIL).orElse(result);
+    }
+    return result;
+  }
+
+  private static Apfloat round(Apfloat x, long precision) {
+    if (x.signum() == 0 || precision <= 0) {
+      return precision <= 0 ? Apfloat.ZERO : x;
+    }
+    if (x.precision() <= precision) {
+      return x;
+    }
+    return ApfloatMath.round(x, precision, RoundingMode.HALF_EVEN);
+  }
+
+  /**
+   * Whether two results are the same in the digits of the precision: numbers which differ by no
+   * more than the last digit, in expressions which are equal otherwise.
+   */
+  private static boolean agree(IExpr a, IExpr b, final long precision) {
+    if (a instanceof INumber && b instanceof INumber) {
+      if (!a.isInexactNumber() || !b.isInexactNumber()) {
+        return a.equals(b);
+      }
+      final Apcomplex x = ((INumber) a).apcomplexValue();
+      final Apcomplex y = ((INumber) b).apcomplexValue();
+      final Apcomplex difference = x.subtract(y);
+      if (difference.isZero()) {
+        return true;
+      }
+      // less than two units of the last digit of the larger number
+      final long last = Math.max(x.scale(), y.scale()) - precision;
+      final Apfloat size = ApcomplexMath.abs(difference.precision(10));
+      return size.scale() < last + 1
+          || (size.scale() == last + 1 && ApfloatMath.scale(size, -last).doubleValue() <= 2.0);
+    }
+    if (a.isAST() && b.isAST()) {
+      final IAST x = (IAST) a;
+      final IAST y = (IAST) b;
+      if (x.size() != y.size()) {
+        return false;
+      }
+      for (int i = 0; i < x.size(); i++) {
+        if (!agree(x.get(i), y.get(i), precision)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return a.equals(b);
   }
 
 }

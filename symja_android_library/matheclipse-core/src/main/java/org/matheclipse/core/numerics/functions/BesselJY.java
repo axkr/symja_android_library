@@ -121,6 +121,98 @@ public final class BesselJY {
   }
 
   /**
+   * Both functions for an argument beyond the validated domain of {@link #besselJY(double, double)},
+   * from Hankel's expansion <code>J = sqrt(2/(pi*x))*(P*cos(chi) - Q*sin(chi))</code> and
+   * <code>Y = sqrt(2/(pi*x))*(P*sin(chi) + Q*cos(chi))</code>, where
+   * <code>chi = x - (v/2 + 1/4)*pi</code>.
+   *
+   * <p>
+   * The phase is what a large argument loses, so <code>chi</code> is never formed. The sine and the
+   * cosine are taken of the argument itself, which {@link Math} reduces with as many digits of
+   * <code>pi</code> as its size needs, and the shift by the order comes from the addition theorems
+   * with the order reduced modulo 4, which is exact. Against a 40 digit reference the error stays
+   * below <code>1e-15</code> of the envelope <code>sqrt(2/(pi*x))</code> for every argument from
+   * 100 to the largest double and <code>v^2 &lt;= 3*x</code>.
+   *
+   * @return <code>{J_v(x), Y_v(x)}</code>, or <code>null</code> where the series doesn't reach the
+   *         precision of a double: an argument in the validated domain, or an order which is too
+   *         large against the argument
+   * @see <a href="https://dlmf.nist.gov/10.17">DLMF 10.17</a>
+   */
+  public static double[] hankel(final double v, final double x) {
+    return hankel(v, x, Math.sin(x), Math.cos(x));
+  }
+
+  /**
+   * {@link #hankel(double, double)} with the sine and the cosine of the argument from the caller,
+   * who knows the argument with more digits than a double has: it is <code>2*Sqrt(z)</code> for
+   * <code>Hypergeometric0F1</code>, and the rounded square root has no digit of the phase left
+   * from <code>z = 10^30</code> on.
+   *
+   * @param sinX the sine of the argument
+   * @param cosX the cosine of the argument
+   */
+  public static double[] hankel(final double v, final double x, final double sinX,
+      final double cosX) {
+    final double mu = 4.0 * v * v;
+    if (!(x > X_MAX) || Double.isInfinite(x) || !(mu <= 12.0 * x)) {
+      return null;
+    }
+    double p = 1.0;
+    double q = 0.0;
+    double term = 1.0;
+    for (int k = 1;; k++) {
+      final double odd = 2.0 * k - 1.0;
+      final double factor = (mu - odd * odd) / (8.0 * k * x);
+      if (k > 1 && !(Math.abs(factor) < 1.0)) {
+        // the terms grow again before the series has reached the precision
+        return null;
+      }
+      term *= factor;
+      // P has the terms with an even k, Q those with an odd one; the sign changes every two terms
+      final double signed = ((k >> 1) & 1) == 0 ? term : -term;
+      if ((k & 1) == 0) {
+        p += signed;
+      } else {
+        q += signed;
+      }
+      if (Math.abs(term) <= 0.1 * EPS * Math.max(Math.abs(p), Math.abs(q))) {
+        break;
+      }
+    }
+    // (v/2 + 1/4)*pi = (n/2 + t)*pi with an integer n and |t| <= 1/4
+    final double shift = (v / 2.0) % 2.0 + 0.25;
+    final double n = Math.rint(2.0 * shift);
+    final double t = Math.PI * (shift - n / 2.0);
+    final double sinT = Math.sin(t);
+    final double cosT = Math.cos(t);
+    final double sinPhi;
+    final double cosPhi;
+    switch (((int) n) & 3) {
+      case 0:
+        sinPhi = sinT;
+        cosPhi = cosT;
+        break;
+      case 1:
+        sinPhi = cosT;
+        cosPhi = -sinT;
+        break;
+      case 2:
+        sinPhi = -sinT;
+        cosPhi = -cosT;
+        break;
+      default:
+        sinPhi = -cosT;
+        cosPhi = sinT;
+        break;
+    }
+    final double cosChi = cosX * cosPhi + sinX * sinPhi;
+    final double sinChi = sinX * cosPhi - cosX * sinPhi;
+    final double envelope = Math.sqrt(2.0 / Math.PI / x);
+    return new double[] {envelope * (p * cosChi - q * sinChi), envelope * (p * sinChi + q * cosChi)};
+  }
+
+  /**
    * Both functions at once, which is what the algorithm computes anyway - the continued fractions
    * and the series all deliver <code>J</code> and <code>Y</code> from the same intermediate
    * quantities.

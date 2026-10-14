@@ -195,8 +195,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     checkNumeric("HermiteH(7.0,8.0)", //
         "2.26102144E8");
     // out of the double range: an arbitrary precision number of machine precision (WMA)
+    // -1.310346008560093727*10^442134 for the double 2.987
     checkNumeric("HermiteH({-1,2.987,0,1},-1009)", //
-        "{HermiteH(-1,-1009),-1.310346008560087*10^442134,1,-2018}");
+        "{HermiteH(-1,-1009),-1.310346008560093*10^442134,1,-2018}");
     checkNumeric("HermiteH( 1 ,-1009)", //
         "-2018");
     checkNumeric("HermiteH(3.1, 5)", //
@@ -301,8 +302,10 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "-1.8746624910048282");
     checkNumeric("LaguerreL(2.5,8+I)", //
         "3.290735694157826+I*(-5.88415063864657)");
+    // mpmath: laguerre(100, 0, 5) = 1.455527162532881260683...; the series of the polynomial
+    // loses the digits after the eighth one in the precision of the argument
     check("LaguerreL(100, 0, N(5, 20))", //
-        "1.455527163410546");
+        "1.4555271625328812606");
 
 
     check("LaguerreL(3, .51, .87)", //
@@ -639,7 +642,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testSpecialArguments() {
-    // (-1)^k holds for an integer k only
+    // a symbolic order stays; it was -1 for every order
     check("LegendreP(k,-1)", //
         "LegendreP(k,-1)");
     check("LegendreP(4,-1)", //
@@ -647,7 +650,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("LegendreP(7,-1)", //
         "-1");
     check("Simplify(LegendreP(k,-1), Element(k,Integers))", //
-        "(-1)^k");
+        "LegendreP(k,-1)");
+    check("ChebyshevT(0,Infinity)", //
+        "1");
     check("LegendreP(k,1)", //
         "1");
     // the constant term of the polynomial

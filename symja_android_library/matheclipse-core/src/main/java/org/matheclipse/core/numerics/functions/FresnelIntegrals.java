@@ -1,5 +1,6 @@
 package org.matheclipse.core.numerics.functions;
 
+import java.math.BigDecimal;
 import org.hipparchus.complex.Complex;
 
 /**
@@ -60,6 +61,60 @@ public final class FresnelIntegrals {
   /** Whether the results here are trusted for this argument. */
   public static boolean isSupported(double x) {
     return !Double.isNaN(x) && Math.abs(x) <= X_MAX;
+  }
+
+  /**
+   * <code>{FresnelC(x), FresnelS(x)}</code> for an argument beyond the validated domain, from the
+   * auxiliary functions <code>f</code> and <code>g</code>:
+   * <code>C(x) = 1/2 + f(x)*Sin(Pi*x^2/2) - g(x)*Cos(Pi*x^2/2)</code> and
+   * <code>S(x) = 1/2 - f(x)*Cos(Pi*x^2/2) - g(x)*Sin(Pi*x^2/2)</code>.
+   *
+   * <p>
+   * The phase is <code>Pi</code> times <code>x^2/2</code> modulo 2. The square of a double has 106
+   * bits, so it is formed exactly: the product of two doubles has no digit of the phase left from
+   * <code>10^8</code> on, where the oscillating part is still <code>3*10^-9</code> of the value.
+   *
+   * @param x the argument, of a size above the largest one of {@link #isSupported(double)}
+   * @return <code>{C(x), S(x)}</code>
+   * @see <a href="https://dlmf.nist.gov/7.12#ii">DLMF 7.12(ii)</a>
+   */
+  public static double[] fresnelCSOfLarge(final double x) {
+    final double t = Math.abs(x);
+    final double r = new BigDecimal(t).pow(2).divide(BigDecimal.valueOf(2L))
+        .remainder(BigDecimal.valueOf(2L)).doubleValue();
+    // Sin(Pi*r) and Cos(Pi*r), exact at the multiples of 1/2
+    final double n = Math.rint(2.0 * r);
+    final double angle = Math.PI * (r - n / 2.0);
+    double sin = Math.sin(angle);
+    double cos = Math.cos(angle);
+    switch (((int) n) & 3) {
+      case 1: {
+        final double s = sin;
+        sin = cos;
+        cos = -s;
+        break;
+      }
+      case 2:
+        sin = -sin;
+        cos = -cos;
+        break;
+      case 3: {
+        final double s = sin;
+        sin = -cos;
+        cos = s;
+        break;
+      }
+      default:
+        break;
+    }
+    // u = 1/(Pi*t^2/2): f = (1 - 3/4*u^2 + 105/16*u^4)/(Pi*t), g = (u/2 - 15/8*u^3)/(Pi*t)
+    final double u = 2.0 / Math.PI / t / t;
+    final double u2 = u * u;
+    final double f = (1.0 - 0.75 * u2 + 6.5625 * u2 * u2) / Math.PI / t;
+    final double g = (0.5 * u - 1.875 * u * u2) / Math.PI / t;
+    final double c = 0.5 + f * sin - g * cos;
+    final double s = 0.5 - f * cos - g * sin;
+    return x < 0.0 ? new double[] {-c, -s} : new double[] {c, s};
   }
 
   /** <code>FresnelC(x)</code>, an odd function. */

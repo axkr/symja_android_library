@@ -209,7 +209,7 @@ public class ExprParser extends Scanner {
           if (!Config.USER_STEPS_PARSER) {
             if (ast.isPower() && ast.base().isPower() && ast.exponent().isMinusOne()) {
               IAST arg1Power = (IAST) ast.base();
-              if (arg1Power.exponent().isNumber()) {
+              if (ExprParserFactory.isReciprocalRewritable(arg1Power)) {
                 // Division operator
                 // rewrite from input: Power(Power(x, <number>),-1) => Power(x,
                 // - <number>)

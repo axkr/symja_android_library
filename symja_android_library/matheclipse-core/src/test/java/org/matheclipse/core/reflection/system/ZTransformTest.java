@@ -162,7 +162,7 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
     check("ZTransform(n/3^n, n, z)", //
         "(3*z)/(1-3*z)^2");
     check("ZTransform(n^2*a^n, n, z)", //
-        "(a*z*(a+z))/(-a+z)^3");
+        "(-a*z*(a+z))/(a-z)^3");
     check("ZTransform(n^2*2^n, n, z)", //
         "(2*z*(2+z))/(-2+z)^3");
     // The documentation example: (z*(2+4*z))/(-1+2*z)^3 == (2*z*(1+2*z))/(-1+2*z)^3

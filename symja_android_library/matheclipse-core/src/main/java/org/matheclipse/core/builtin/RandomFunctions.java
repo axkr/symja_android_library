@@ -1134,11 +1134,11 @@ public final class RandomFunctions {
           return Errors.printMessage(ast.topHead(), "optx", F.List(option, ast), engine);
         }
         Random generator = generatorFor(option.second());
-        if (generator == null) {
-          // The method `1` is not one of "Congruential", "Legacy" or "MersenneTwister".
-          return Errors.printMessage(ast.topHead(), "seedm", F.List(option.second()), engine);
+        if (generator != null) {
+          engine.setRandom(generator);
         }
-        engine.setRandom(generator);
+        // a method which names a generator there is none of here - "MKL", "ExtendedCA", a list
+        // with the settings of one - seeds the generator in use: the call is made for its seed
       }
       Random random = engine.getRandom();
       random.setSeed(seedValue);
@@ -1152,8 +1152,8 @@ public final class RandomFunctions {
      * <code>"Legacy"</code> and <code>"Congruential"</code> are the linear congruential generator
      * of {@link Random}, which is what every random built-in draws from unless this says otherwise.
      * The reference lists further methods - <code>"ExtendedCA"</code>, <code>"MKL"</code>,
-     * <code>"Rule30CA"</code> - which have no counterpart here and are declined rather than
-     * quietly answered with a generator that is not the one asked for.
+     * <code>"Rule30CA"</code> - which have no counterpart here; the caller seeds the generator
+     * in use for them.
      */
     private static Random generatorFor(IExpr method) {
       if (!method.isString()) {

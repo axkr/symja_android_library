@@ -675,6 +675,10 @@ public class ClusteringFunctions {
 
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
+      if (arg1.isEmptyList() && arg2.isEmptyList()) {
+        // no position differs
+        return F.C0;
+      }
       if (arg1.isString() && arg2.isString()) {
         boolean ignoreCase = option[0].isTrue();
 

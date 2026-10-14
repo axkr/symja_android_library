@@ -210,8 +210,26 @@ public class StreamTest extends ExprEvaluatorTestCase {
   @Test
   public void testHash() {
     // Symja expression hash value
+    // a non-negative 64-bit value
     check("Hash(\"abcdef\")", //
-        "-1424385912");
+        "13602181451802230653");
+    check("Hash(7)>=0", //
+        "True");
+    check("StringLength(Hash(7,\"Expression\",\"HexString\"))", //
+        "16");
+    check("StringLength(Hash(7,\"Expression\",\"DecimalString\"))", //
+        "20");
+    check("FromDigits(Hash(7,\"Expression\",\"HexString\"),16)==Hash(7)", //
+        "True");
+    check("Hash(3+4)==Hash(7)", //
+        "True");
+    check("Hash({3,4})==Hash({4,3})", //
+        "False");
+    // messages invhash and uform
+    check("Hash(7,11)", //
+        "Hash(7,11)");
+    check("Hash(7,\"Expression\",\"NoFormat\")", //
+        "Hash(7,Expression,NoFormat)");
     check("Hash(ByteArray({123, 45, 67, 89, 98, 76, 54, 32, 1}), \"SHA\")", //
         "205163851794085253373860936160163003382114085276");
 

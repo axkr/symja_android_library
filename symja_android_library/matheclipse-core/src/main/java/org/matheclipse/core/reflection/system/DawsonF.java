@@ -26,7 +26,7 @@ public class DawsonF extends AbstractFunctionEvaluator implements IFunctionExpan
   public IExpr evaluate(IAST ast, EvalEngine engine) {
 
     IExpr arg = ast.arg1();
-    if (arg.isZero()) {
+    if (F.isExactZero(arg)) {
       return F.C0;
     }
     IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg);

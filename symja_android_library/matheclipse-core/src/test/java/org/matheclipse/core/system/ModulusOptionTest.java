@@ -192,7 +192,7 @@ public class ModulusOptionTest extends ExprEvaluatorTestCase {
     check("Factor(x^4 - 1)", //
         "(-1+x)*(1+x)*(1+x^2)");
     check("FactorSquareFreeList(x^2 + 2*x + 1)", //
-        "{{1+x,2}}");
+        "{{1,1},{1+x,2}}");
     check("PolynomialGCD(x^2 - 1, x - 1)", //
         "-1+x");
     check("Cancel((x^2 - 1)/(x - 1))", //

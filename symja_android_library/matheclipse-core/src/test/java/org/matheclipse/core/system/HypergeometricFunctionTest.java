@@ -209,8 +209,9 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     checkNumeric("Hypergeometric2F1(-3.0, -1, -2, 1.0)", //
         "-0.5");
     // https://github.com/paulmasson/math/issues/10 - uses ThrowException
+    // the series at 1 diverges for c-a-b <= 0
     check("Hypergeometric2F1(0.5,0.333,0.666,1)", //
-        "Hypergeometric2F1(0.333,0.5,0.666,1.0)");
+        "ComplexInfinity");
     checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 3.0, 4.0 / 3.0, -1)", //
         "1.1114479705325755");
     checkNumeric("Hypergeometric2F1(-0.5, 1.0 / 3.0, -4.0 / 3.0, 0)", //

@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.util;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.ExprAnalyzer;
@@ -184,6 +185,37 @@ public class SolveUtils {
    * @param isNumeric set isNumeric[0] = true, if an expression must be rationalized
    * @return
    */
+  /**
+   * The rational form of a quotient of polynomials with inexact coefficients. Its denominators,
+   * expanded with rounding errors, do not cancel: the numerator of the sum gets the roots of the
+   * denominators and a degree which the equation does not have. In the rational form they cancel,
+   * and the solutions are numbers again in the end.
+   *
+   * @return {@link F#NIL} if <code>expr</code> has no inexact number or is no quotient of
+   *         polynomials with a denominator which depends on a variable
+   */
+  private static IExpr rationalQuotient(IExpr expr) {
+    if (expr.isFree(x -> x.isInexactNumber(), true) || !expr.isAST()) {
+      return F.NIL;
+    }
+    final IAST variables = new VariablesSet(expr).getVarList();
+    if (variables.isEmpty()) {
+      return F.NIL;
+    }
+    final IExpr rationalized = AbstractFractionSym.rationalize(expr, false);
+    if (rationalized.isNIL() || !rationalized.isAST()
+        || !rationalized.isFree(x -> x.isInexactNumber(), true)) {
+      return F.NIL;
+    }
+    final IExpr[] parts =
+        AlgebraUtil.numeratorDenominator((IAST) rationalized, true, EvalEngine.get());
+    if (parts[1].isFree(x -> variables.contains(x), true) || !parts[0].isPolynomial(variables)
+        || !parts[1].isPolynomial(variables)) {
+      return F.NIL;
+    }
+    return rationalized;
+  }
+
   public static IASTMutable[] filterSolveLists(IAST list, IAST solution, boolean[] isNumeric) {
     // if numeric is true we use NSolve instead of SOlve
     boolean numeric = isNumeric[0];
@@ -206,7 +238,7 @@ public class SolveUtils {
         IExpr arg1 = arg.first();
         if (numeric) {
           // NSolve
-          termsEqualZero.append(arg1);
+          termsEqualZero.append(rationalQuotient(arg1).orElse(arg1));
         } else {
           // Solve
           IExpr temp = AbstractFractionSym.rationalize(arg1, false);

@@ -1,5 +1,8 @@
 package org.matheclipse.core.numerics.functions;
 
+import org.matheclipse.parser.client.ParserConfig;
+import org.matheclipse.core.interfaces.IAST;
+import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApcomplexHelper;
@@ -71,5 +74,54 @@ public final class WorkingPrecision {
     return machinePrecision
         ? F.complexNum(value.real().doubleValue(), value.imag().doubleValue())
         : F.complexNum(value);
+  }
+
+  /**
+   * <code>routine(arguments)</code> for a function of numbers which has no other evaluation: at
+   * machine precision, or at the precision of the engine for arbitrary precision arguments and for
+   * exact ones under <code>N(expr, precision)</code>.
+   *
+   * @param realResult whether real arguments give a real result
+   * @return {@link F#NIL} if an argument is not a number, all are exact outside of a numeric
+   *         evaluation, or the routine declines
+   */
+  public static IExpr evaluate(IAST ast, EvalEngine engine, boolean realResult,
+      Function<Apcomplex[], Apcomplex> routine) {
+    boolean arbitrary = false;
+    boolean inexact = false;
+    boolean real = true;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (!arg.isNumber()) {
+        return F.NIL;
+      }
+      arbitrary |= arg instanceof ApfloatNum || arg instanceof ApcomplexNum;
+      inexact |= arg.isInexactNumber();
+      real &= arg.isReal();
+    }
+    if (!inexact) {
+      if (!engine.isNumericMode()) {
+        return F.NIL;
+      }
+      arbitrary = engine.isArbitraryMode();
+    }
+    final int precision =
+        arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
+    Apcomplex[] arguments = new Apcomplex[ast.argSize()];
+    for (int i = 0; i < arguments.length; i++) {
+      arguments[i] = CarlsonArbitraryPrecision.apcomplex(ast.get(i + 1), precision);
+    }
+    Apcomplex value;
+    try {
+      value = routine.apply(arguments);
+    } catch (ArithmeticException | ArgumentTypeException | ApfloatRuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
+      return F.NIL;
+    }
+    if (value.imag().signum() == 0 || (realResult && real)) {
+      return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
+    }
+    return arbitrary ? F.complexNum(value)
+        : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
   }
 }

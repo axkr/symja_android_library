@@ -4089,7 +4089,30 @@ public class StatisticsContinousDistribution {
 
 
   private static final class ParetoDistribution extends AbstractEvaluator
-      implements IContinuousDistribution, IStatistics, IPDF, ICDF {
+      implements IContinuousDistribution, IStatistics, IPDF, ICDF, IRandomVariate {
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      // by inversion of the distribution function: k*(1-u)^(-1/a), and for the forms with a
+      // location m and a shape g: m + k*((1-u)^(-1/a) - 1)^g
+      int n = dist.argSize();
+      if (n < 2 || n > 4) {
+        return F.NIL;
+      }
+      double k = dist.arg1().evalfNaN();
+      double a = dist.arg2().evalfNaN();
+      double g = n == 4 ? dist.arg3().evalfNaN() : 1.0;
+      double m = n >= 3 ? dist.get(n).evalfNaN() : 0.0;
+      if (!(k > 0.0) || !(a > 0.0) || !(g > 0.0) || Double.isNaN(m)) {
+        return F.NIL;
+      }
+      double[] vector = new double[size];
+      for (int i = 0; i < size; i++) {
+        double tail = Math.pow(1.0 - random.nextDouble(), -1.0 / a);
+        vector[i] = n == 2 ? k * tail : m + k * Math.pow(tail - 1.0, g);
+      }
+      return new ASTRealVector(vector, false);
+    }
 
     @Override
     public IExpr survivalFunction(IAST dist, IExpr k, EvalEngine engine) {

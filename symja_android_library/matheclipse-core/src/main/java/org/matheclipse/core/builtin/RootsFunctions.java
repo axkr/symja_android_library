@@ -118,8 +118,7 @@ public class RootsFunctions {
           if (numeric) {
             for (Rectangle<BigRational> root : roots) {
               Rectangle<BigRational> refine = cr.complexRootRefinement(root, poly, len);
-              resultList.append(
-                  JASConvert.jas2Numeric(refine.getCenter(), Config.DEFAULT_ROOTS_CHOP_DELTA));
+              resultList.append(chopRoot(JASConvert.jas2Numeric(refine.getCenter(), 0.0)));
             }
           } else {
             IASTAppendable rectangleList;
@@ -348,7 +347,8 @@ public class RootsFunctions {
         if (coefficients.length <= 4) {
           IASTAppendable p = F.PlusAlloc(coefficients.length);
           for (int i = 0; i < coefficients.length; i++) {
-            if (F.isZero(coefficients[i])) {
+            if (coefficients[i] == 0.0) {
+              // a small coefficient is a coefficient: 1.0*^-20*x^2 has two roots
               continue;
             }
             if (i == 0) {
@@ -361,8 +361,12 @@ public class RootsFunctions {
           list = QuarticSolver.solve(p, variables.arg1());
           for (int i = 1; i < list.size(); i++) {
             expr = engine.evaluate(list.get(i));
+            if (!expr.isNumber() && expr.isNumericFunction(true)) {
+              // a formula of the roots, Sqrt(-10.0): its residue is set to 0 as a number
+              expr = engine.evalN(expr);
+            }
             if (expr.isInexactNumber()) {
-              list.set(i, F.chopNumber((INumber) expr, Config.DEFAULT_ROOTS_CHOP_DELTA));
+              list.set(i, chopRoot(expr));
             }
           }
           if (list.isEmptyList()) {
@@ -372,6 +376,9 @@ public class RootsFunctions {
           org.hipparchus.complex.Complex[] roots = allComplexRootsLaguerre(coefficients);
           if (roots == null) {
             return F.NIL;
+          }
+          for (int i = 0; i < roots.length; i++) {
+            roots[i] = chopRoot(roots[i]);
           }
           list = Object2Expr.convertComplex(true, roots);
         }
@@ -465,8 +472,7 @@ public class RootsFunctions {
         return F.NIL;
       }
       return F.mapRange(0, complexRoots.length,
-          i -> F.chopExpr(F.complexNum(complexRoots[i].getReal(), complexRoots[i].getImaginary()),
-              Config.DEFAULT_ROOTS_CHOP_DELTA));
+          i -> chopRoot(F.complexNum(complexRoots[i].getReal(), complexRoots[i].getImaginary())));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       // solveAllComplex may throw MathIllegalArgumentException, NullArgumentException,
@@ -838,7 +844,7 @@ public class RootsFunctions {
       if (result.isPresent()) {
         if (expr.isNumericMode()) {
           for (int i = 1; i < result.size(); i++) {
-            result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
+            result.set(i, chopRoot(result.get(i)));
           }
         }
         result = QuarticSolver.sortASTArguments(result);
@@ -867,7 +873,7 @@ public class RootsFunctions {
       result = rootsOfQuadraticPolynomial(ePoly);
       if (result.isPresent() && expr.isNumericMode()) {
         for (int i = 1; i < result.size(); i++) {
-          result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
+          result.set(i, chopRoot(result.get(i)));
         }
       }
       result = QuarticSolver.sortASTArguments(result);
@@ -1232,8 +1238,7 @@ public class RootsFunctions {
         if (quarticResultList.isPresent()) {
           for (int j = 1; j < quarticResultList.size(); j++) {
             if (numericSolutions) {
-              newResult.append(F.chopExpr(engine.evalN(quarticResultList.get(j)),
-                  Config.DEFAULT_ROOTS_CHOP_DELTA));
+              newResult.append(chopRoot(engine.evalN(quarticResultList.get(j))));
             } else {
               newResult.append(quarticResultList.get(j));
             }
@@ -1258,8 +1263,7 @@ public class RootsFunctions {
             if (quarticResultList.isPresent()) {
               for (int j = 1; j < quarticResultList.size(); j++) {
                 if (numericSolutions) {
-                  newResult.append(F.chopExpr(engine.evalN(quarticResultList.get(j)),
-                      Config.DEFAULT_ROOTS_CHOP_DELTA));
+                  newResult.append(chopRoot(engine.evalN(quarticResultList.get(j))));
                 } else {
                   newResult.append(quarticResultList.get(j));
                 }
@@ -1437,6 +1441,24 @@ public class RootsFunctions {
   }
 
   /**
+   * A numerically determined root with a part which is below
+   * {@link Config#DEFAULT_ROOTS_CHOP_DELTA} replaced by <code>0</code>: the imaginary part which a
+   * formula leaves on a real root. For a root smaller than 1 the delta is relative to it:
+   * <code>1.0*^-10</code> is a root and not what is left of <code>0</code>.
+   */
+  private static IExpr chopRoot(IExpr root) {
+    if (!root.isInexactNumber()) {
+      return root;
+    }
+    final INumber number = (INumber) root;
+    final double size = Math.hypot(number.reDoubleValue(), number.imDoubleValue());
+    if (!Double.isFinite(size)) {
+      return root;
+    }
+    return F.chopNumber(number, Config.DEFAULT_ROOTS_CHOP_DELTA * Math.min(1.0, size));
+  }
+
+  /**
    * Set the real or the imaginary part of a numerically determined root to <code>0</code> if it is
    * negligible against the root's modulus, so that a root which is real or purely imaginary is
    * recognized as such. The rounding residue of a real root of <code>x^4-1</code> for example is
@@ -1448,7 +1470,8 @@ public class RootsFunctions {
   private static org.hipparchus.complex.Complex chopRoot(org.hipparchus.complex.Complex root) {
     double real = root.getReal();
     double imaginary = root.getImaginary();
-    double delta = Config.DEFAULT_ROOTS_CHOP_DELTA * Math.max(1.0, root.norm());
+    // relative to the root: 1.0*^-10 is a root and not what is left of 0
+    double delta = Config.DEFAULT_ROOTS_CHOP_DELTA * root.norm();
     if (Math.abs(real) <= delta) {
       real = 0.0;
     }

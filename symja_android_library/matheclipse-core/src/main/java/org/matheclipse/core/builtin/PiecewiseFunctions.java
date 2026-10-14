@@ -450,6 +450,8 @@ public class PiecewiseFunctions {
       S.RealAbs.setEvaluator(new RealAbs());
       S.RealSign.setEvaluator(new RealSign());
       S.SawtoothWave.setEvaluator(new SawtoothWave());
+      S.SquareWave.setEvaluator(new Wave(true));
+      S.TriangleWave.setEvaluator(new Wave(false));
       S.UnitBox.setEvaluator(new UnitBox());
       S.Unitize.setEvaluator(new Unitize());
       S.UnitStep.setEvaluator(new UnitStep());
@@ -963,6 +965,66 @@ public class PiecewiseFunctions {
       return ARGS_1_2;
     }
 
+  }
+
+  /**
+   * <code>SquareWave(x)</code> and <code>TriangleWave(x)</code>: waves of period 1 between
+   * <code>-1</code> and <code>1</code>, or between the two numbers of a first argument
+   * <code>{min, max}</code>. The square wave is <code>1</code> on the first half of a period, the
+   * triangle wave rises from <code>0</code> at the start of one.
+   */
+  private static class Wave extends AbstractEvaluator {
+    private final boolean square;
+
+    Wave(boolean square) {
+      this.square = square;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr x = ast.last();
+      if (ast.isAST2() && !ast.arg1().isList2()) {
+        return F.NIL;
+      }
+      if (x.isList()) {
+        return x.mapThread(ast.setAtCopy(ast.argSize(), F.Slot1), ast.argSize());
+      }
+      if (!x.isNumericFunction() || !x.isRealResult()) {
+        return F.NIL;
+      }
+      IExpr wave;
+      if (square) {
+        // 1 where Floor(2*x) is even, -1 where it is odd
+        IExpr halves = engine.evaluate(F.Floor(F.Times(F.C2, x)));
+        if (!halves.isInteger()) {
+          return F.NIL;
+        }
+        wave = ((IInteger) halves).isEven() ? F.C1 : F.CN1;
+      } else {
+        // 1 - 4*Abs(x - 1/4 - Floor(x + 1/4))
+        IExpr floor = engine.evaluate(F.Floor(F.Plus(x, F.C1D4)));
+        if (!floor.isInteger()) {
+          return F.NIL;
+        }
+        wave = F.Subtract(F.C1, F.Times(F.C4, F.Abs(F.Plus(x, F.CN1D4, floor.negate()))));
+      }
+      if (ast.isAST1()) {
+        return engine.evaluate(wave);
+      }
+      IExpr min = ast.arg1().first();
+      IExpr max = ast.arg1().second();
+      // min + (max - min)*(wave + 1)/2
+      return engine.evaluate(
+          F.Plus(min, F.Times(F.C1D2, F.Subtract(max, min), F.Plus(F.C1, wave))));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
 

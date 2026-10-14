@@ -41,6 +41,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PrecisionLoss;
 import org.matheclipse.core.eval.MachineUnderflow;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
@@ -80,6 +81,13 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class ExpTrigsFunctions {
+  /**
+   * Beyond this argument <code>Sinh</code> and <code>Cosh</code> have more digits before the radix
+   * point than the exponent of an arbitrary precision number of machine precision can count: the
+   * result is <code>Overflow()</code>, as it is for <code>Exp</code>.
+   */
+  private static final double HYPERBOLIC_OVERFLOW = 4.0e9;
+
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -386,7 +394,8 @@ public class ExpTrigsFunctions {
       if (arg1.compareTo(Apfloat.ONE) == 1 || arg1.compareTo(new Apint(-1)) == -1) {
         return F.complexNum(ApcomplexMath.acos(new Apcomplex(arg1)));
       }
-      return F.num(ApfloatMath.acos(arg1));
+      return F.num(
+          ApfloatNum.inverseCircular(arg1, true, EvalEngine.getApfloat(arg1.precision())));
     }
 
     @Override
@@ -607,7 +616,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public double applyAsDouble(double operand) {
-      if (F.isZero(operand)) {
+      if (operand == 0.0) {
         // Pi / 2
         return Math.PI / 2.0;
       }
@@ -637,7 +646,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      if (F.isZero(arg1)) {
+      if (arg1 == 0.0) {
         // Pi / 2
         return F.num(Math.PI / 2.0);
       }
@@ -704,7 +713,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public double applyAsDouble(double operand) {
-      if (F.isZero(operand)) {
+      if (operand == 0.0) {
         return Double.NaN;
       }
       double c = 1.0 / operand;
@@ -734,11 +743,11 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      if (F.isZero(arg1)) {
+      if (arg1 == 0.0) {
         // I*Pi / 2
         return F.complexNum(new Complex(0.0, Math.PI).divide(new Complex(2.0)));
       }
-      if (F.isZero(arg1)) {
+      if (arg1 == 0.0) {
         return e1ComplexArg(new Complex(arg1));
       }
       double c = 1.0 / arg1;
@@ -807,7 +816,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      if (F.isZero(arg1)) {
+      if (arg1 == 0.0) {
         return F.CComplexInfinity;
       }
       if (arg1 > -1.0 && arg1 < 1.0) {
@@ -878,12 +887,20 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double d) {
-      if (F.isZero(d)) {
+      if (d == 0.0) {
         return F.CComplexInfinity;
       }
-      // ArcSinh(1/d), odd: Log((1+Sqrt(1+d^2))/d) for a positive d
+      // ArcSinh(1/d), odd
       double a = Math.abs(d);
-      double value = Math.log((1 + Math.sqrt(1 + a * a)) / a);
+      double value;
+      if (a < 1.0) {
+        // Log((1+Sqrt(1+d^2))/d), with the logarithm of a small d apart: 1/d may overflow
+        value = Math.log1p(Math.sqrt(1 + a * a)) - Math.log(a);
+      } else {
+        // ArcSinh(y) = Log1p(y+y^2/(1+Sqrt(1+y^2))) for the small y = 1/d
+        double y = 1.0 / a;
+        value = Math.log1p(y + y * y / (1.0 + Math.sqrt(1.0 + y * y)));
+      }
       return F.num(d < 0 ? -value : value);
     }
 
@@ -955,7 +972,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double d) {
-      if (F.isZero(d)) {
+      if (d == 0.0) {
         return S.Indeterminate;
       }
       return arcCoshReal(1.0 / d);
@@ -981,6 +998,10 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
+      if (arg1.isAST(S.Sech, 2) && arg1.first().isNonNegativeResult()) {
+        // ArcSech(Sech(x)) == x /; x >= 0
+        return arg1.first();
+      }
       return F.NIL;
     }
 
@@ -1019,7 +1040,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      if (F.isZero(arg1)) {
+      if (arg1 == 0.0) {
         return F.CComplexInfinity;
       }
       if (arg1 > -1.0 && arg1 < 1.0) {
@@ -1093,7 +1114,8 @@ public class ExpTrigsFunctions {
       if (arg1.compareTo(Apfloat.ONE) == 1 || arg1.compareTo(new Apint(-1)) == -1) {
         return F.complexNum(ApcomplexMath.asin(new Apcomplex(arg1)));
       }
-      return F.num(ApfloatMath.asin(arg1));
+      return F.num(
+          ApfloatNum.inverseCircular(arg1, false, EvalEngine.getApfloat(arg1.precision())));
     }
 
     @Override
@@ -1605,11 +1627,13 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      PrecisionLoss.periodic(arg1.real());
       return F.complexNum(ApcomplexMath.cos(arg1));
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
+      PrecisionLoss.periodic(arg1);
       return F.num(ApfloatMath.cos(arg1));
     }
 
@@ -1828,10 +1852,11 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
-      if (F.isZero(arg1)) {
+      if (arg1 == 0.0) {
         return F.CComplexInfinity;
       }
-      return F.num(Math.cosh(arg1) / Math.sinh(arg1));
+      // not Cosh/Sinh, which both leave the range of a double beyond 710
+      return F.num(1.0 / Math.tanh(arg1));
     }
 
     @Override
@@ -1852,7 +1877,7 @@ public class ExpTrigsFunctions {
       if (imPart.isPresent()) {
         return F.Times(F.CNI, F.Cot(imPart));
       }
-      if (arg1.isZero()) {
+      if (F.isExactZero(arg1)) {
         return F.CComplexInfinity;
       }
 
@@ -2121,7 +2146,7 @@ public class ExpTrigsFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IExpr z = ast.arg1().sin();
-        if (z.isZero()) {
+        if (F.isExactZero(z)) {
           return F.CComplexInfinity;
         }
         return z.reciprocal();
@@ -2160,6 +2185,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      PrecisionLoss.periodic(arg1.imag());
       return F.complexNum(ApcomplexMath.cosh(arg1));
     }
 
@@ -2175,6 +2201,10 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      if (Math.abs(arg1) > HYPERBOLIC_OVERFLOW) {
+        Errors.printMessage(S.Cosh, "ovfl", F.List());
+        return F.Overflow();
+      }
       return F.num(Math.cosh(arg1));
     }
 
@@ -2268,6 +2298,10 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
+        if (ast.arg1() instanceof Num) {
+          // Overflow() beyond the exponent of an arbitrary precision number, for either sign
+          return e1DblArg(((Num) ast.arg1()).doubleValue());
+        }
         return ((IInexactNumber) ast.arg1()).cosh();
       }
       return F.NIL;
@@ -2535,7 +2569,7 @@ public class ExpTrigsFunctions {
       if (imPart.isPresent()) {
         return F.Times(F.CNI, F.Csc(imPart));
       }
-      if (arg1.isZero()) {
+      if (F.isExactZero(arg1)) {
         return F.CComplexInfinity;
       }
       if (arg1.isPlus()) {
@@ -2755,8 +2789,12 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      // 1/2 * (1-Cos(x))
-      return ast.argSize() == 1 ? F.C1.subtract(ast.arg1().cos()).multiply(F.C1D2) : F.NIL;
+      if (ast.argSize() == 1) {
+        // Sin(x/2)^2, which has the digits that 1/2*(1-Cos(x)) cancels for a small x
+        IExpr sin = ast.arg1().multiply(F.C1D2).sin();
+        return sin.multiply(sin);
+      }
+      return F.NIL;
     }
 
     @Override
@@ -2969,7 +3007,7 @@ public class ExpTrigsFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
         IInexactNumber num = (IInexactNumber) ast.arg1();
-        if (num.isZero()) {
+        if (F.isExactZero(num)) {
           return F.Indeterminate;
         }
         if (num.isNegative()) {
@@ -2980,7 +3018,7 @@ public class ExpTrigsFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber base = (IInexactNumber) ast.arg1();
         IInexactNumber num = (IInexactNumber) ast.arg2();
-        if (num.isZero()) {
+        if (F.isExactZero(num)) {
           return F.Indeterminate;
         }
         return num.log(base);
@@ -3074,8 +3112,8 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e2ObjArg(IExpr o0, IExpr o1) {
-      if (o0.isZero()) {
-        if (o1.isZero()) {
+      if (F.isExactZero(o0)) {
+        if (F.isExactZero(o1)) {
           return S.Indeterminate;
         }
         return F.C0;
@@ -3542,11 +3580,13 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      PrecisionLoss.periodic(arg1.real());
       return F.complexNum(ApcomplexMath.sin(arg1));
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
+      PrecisionLoss.periodic(arg1);
       return F.num(ApfloatMath.sin(arg1));
     }
 
@@ -3762,6 +3802,7 @@ public class ExpTrigsFunctions {
       if (arg1.equals(Apcomplex.ZERO)) {
         return F.num(Apcomplex.ONE);
       }
+      PrecisionLoss.periodic(arg1.real());
       return F.complexNum(ApcomplexMath.sin(arg1).divide(arg1));
     }
 
@@ -3770,6 +3811,7 @@ public class ExpTrigsFunctions {
       if (arg1.equals(Apcomplex.ZERO)) {
         return F.num(Apcomplex.ONE);
       }
+      PrecisionLoss.periodic(arg1);
       return F.num(ApfloatMath.sin(arg1).divide(arg1));
     }
 
@@ -3869,6 +3911,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      PrecisionLoss.periodic(arg1.imag());
       return F.complexNum(ApcomplexMath.sinh(arg1));
     }
 
@@ -3884,6 +3927,10 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      if (Math.abs(arg1) > HYPERBOLIC_OVERFLOW) {
+        Errors.printMessage(S.Sinh, "ovfl", F.List());
+        return F.Overflow();
+      }
       return F.num(Math.sinh(arg1));
     }
 
@@ -3991,6 +4038,10 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
+        if (ast.arg1() instanceof Num) {
+          // Overflow() beyond the exponent of an arbitrary precision number, for either sign
+          return e1DblArg(((Num) ast.arg1()).doubleValue());
+        }
         return ((IInexactNumber) ast.arg1()).sinh();
       }
       return F.NIL;
@@ -4045,11 +4096,13 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      PrecisionLoss.periodic(arg1.real());
       return F.complexNum(ApcomplexMath.tan(arg1));
     }
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
+      PrecisionLoss.periodic(arg1);
       return F.num(ApfloatMath.tan(arg1));
     }
 
@@ -4212,6 +4265,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApcomplexArg(Apcomplex arg1) {
+      PrecisionLoss.periodic(arg1.imag());
       return F.complexNum(ApcomplexMath.tanh(arg1));
     }
 

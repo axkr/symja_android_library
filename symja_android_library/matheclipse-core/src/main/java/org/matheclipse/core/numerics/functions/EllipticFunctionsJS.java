@@ -266,16 +266,6 @@ public class EllipticFunctionsJS extends JS {
     return valuesC.sc();
   }
 
-  public static Complex inverseJacobiSC(Complex x, Complex m) {
-    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
-    return je.arcsc(x);
-  }
-
-  public static double inverseJacobiSC(double x, double m) {
-    final JacobiElliptic je = JacobiEllipticBuilder.build(m);
-    return je.arcsc(x);
-  }
-
   public static Complex jacobiSD(Complex x, Complex m) {
     final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
     final FieldCopolarD<Complex> valuesD = je.valuesD(x);
@@ -286,16 +276,6 @@ public class EllipticFunctionsJS extends JS {
     final JacobiElliptic je = JacobiEllipticBuilder.build(m);
     final CopolarD valuesD = je.valuesD(x);
     return valuesD.sd();
-  }
-
-  public static Complex inverseJacobiSD(Complex x, Complex m) {
-    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
-    return je.arcsd(x);
-  }
-
-  public static double inverseJacobiSD(double x, double m) {
-    final JacobiElliptic je = JacobiEllipticBuilder.build(m);
-    return je.arcsd(x);
   }
 
   /**
@@ -360,16 +340,6 @@ public class EllipticFunctionsJS extends JS {
     // .multiply(jacobiTheta(1, t, q).divide(jacobiTheta(4, t, q)));
   }
 
-  public static Complex inverseJacobiSN(Complex x, Complex m) {
-    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
-    return je.arcsn(x);
-  }
-
-  public static double inverseJacobiSN(double x, double m) {
-    final JacobiElliptic je = JacobiEllipticBuilder.build(m);
-    return je.arcsn(x);
-  }
-
   /**
    * JacobiCN function for real values.
    *
@@ -431,16 +401,6 @@ public class EllipticFunctionsJS extends JS {
     // .multiply(jacobiTheta(2, t, q).divide(jacobiTheta(4, t, q)));
   }
 
-  public static Complex inverseJacobiCN(Complex x, Complex m) {
-    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
-    return je.arccn(x);
-  }
-
-  public static double inverseJacobiCN(double x, double m) {
-    final JacobiElliptic je = JacobiEllipticBuilder.build(m);
-    return je.arccn(x);
-  }
-
   public static Complex jacobiCD(Complex x, Complex m) {
     final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
     final FieldCopolarD<Complex> valuesD = je.valuesD(x);
@@ -451,16 +411,6 @@ public class EllipticFunctionsJS extends JS {
     final JacobiElliptic je = JacobiEllipticBuilder.build(m);
     final CopolarD valuesD = je.valuesD(x);
     return valuesD.cd();
-  }
-
-  public static Complex inverseJacobiCD(Complex x, Complex m) {
-    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
-    return je.arccd(x);
-  }
-
-  public static double inverseJacobiCD(double x, double m) {
-    final JacobiElliptic je = JacobiEllipticBuilder.build(m);
-    return je.arccd(x);
   }
 
   /**
@@ -519,16 +469,6 @@ public class EllipticFunctionsJS extends JS {
     // return jacobiTheta(4, Complex.ZERO, q)
     // .divide(jacobiTheta(3, Complex.ZERO, q))
     // .multiply(jacobiTheta(3, t, q).divide(jacobiTheta(4, t, q)));
-  }
-
-  public static Complex inverseJacobiDN(Complex x, Complex m) {
-    final FieldJacobiElliptic<Complex> je = JacobiEllipticBuilder.build(m);
-    return je.arcdn(x);
-  }
-
-  public static double inverseJacobiDN(double x, double m) {
-    final JacobiElliptic je = JacobiEllipticBuilder.build(m);
-    return je.arcdn(x);
   }
 
   public static Complex jacobiAmplitude(Complex x, Complex m) {
@@ -643,22 +583,13 @@ public class EllipticFunctionsJS extends JS {
 
   public static Complex[] weierstrassInvariants(Complex w1, Complex w3) {
 
-    // if ( !isComplex(w1) ) w1 = complex(w1);
-    // if ( !isComplex(w3) ) w3 = complex(w3);
-
-    // order half periods by complex slope
-    if (w3.getImaginary() / w3.getReal() < w1.getImaginary() / w1.getReal()) {
+    Complex ratio = w3.divide(w1);
+    if (ratio.getImaginary() < 0) {
+      // the same lattice with the upper half plane as the place of the quotient
       Complex temp = w1;
       w1 = w3;
       w3 = temp;
-    }
-
-    Complex ratio = w3.divide(w1);
-    boolean conjugate = false;
-
-    if (ratio.getImaginary() < 0) {
-      ratio = ratio.conjugate();
-      conjugate = true;
+      ratio = w3.divide(w1);
     }
 
     Complex q = Complex.I.multiply(Math.PI).multiply(ratio).exp();
@@ -685,10 +616,6 @@ public class EllipticFunctionsJS extends JS {
         .multiply(a.pow(12).add(aPow8.multiply(bPow4).multiply(-1.5))
             .add(aPow4.multiply(bPow8).multiply(-1.5)).add(b.pow(12)));
 
-    if (conjugate) {
-      g2 = g2.conjugate();
-      g3 = g3.conjugate();
-    }
 
     return new Complex[] {g2, g3};
   }

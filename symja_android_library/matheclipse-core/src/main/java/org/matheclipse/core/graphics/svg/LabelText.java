@@ -30,6 +30,10 @@ public final class LabelText {
       String text = expr.toString();
       return text.indexOf(Scanner.BOX_BANG) < 0 ? text : typeset(text);
     }
+    if (expr.isAST(S.Invisible, 2)) {
+      // takes its room in a notebook, but shows nothing
+      return "";
+    }
     if (expr == S.Null) {
       // nothing is drawn: a blank line as the entry of a Column
       return "";
@@ -107,6 +111,10 @@ public final class LabelText {
       }
       return text.toString();
     }
+    if (expr.isPower() && expr.exponent().isNumber() && expr.exponent().isNegative()) {
+      // 1/x
+      return product(org.matheclipse.core.expression.F.Times(expr));
+    }
     if ((expr.isPower() || expr.isAST(S.Superscript, 3) || expr.isAST(S.Subscript, 3))) {
       boolean sub = expr.isAST(S.Subscript);
       String script = script(of(expr.second()), sub ? SUB_FROM : SUPER_FROM,
@@ -119,9 +127,92 @@ public final class LabelText {
         return base + script;
       }
     }
+    if (expr == S.Pi) {
+      return "\u03C0";
+    }
+    if (expr.isInfinity()) {
+      return "\u221E";
+    }
+    if (expr.isPlus()) {
+      return sum((IAST) expr);
+    }
+    if (expr.isTimes()) {
+      return product((IAST) expr);
+    }
     // a derivative anywhere inside is written with the same prime marks as one which stands alone
     return PrimitiveCollector
         .unquote((expr.isFree(S.Derivative, true) ? expr : primed(expr)).toString());
+  }
+
+  /** A sum as it is written by hand: <code>2 a - b</code>. */
+  private static String sum(IAST plus) {
+    StringBuilder text = new StringBuilder();
+    for (int i = 1; i <= plus.argSize(); i++) {
+      String term = of(plus.get(i));
+      if (i == 1) {
+        text.append(term);
+      } else if (term.startsWith("-")) {
+        text.append(" - ").append(term, 1, term.length());
+      } else {
+        text.append(" + ").append(term);
+      }
+    }
+    return text.toString();
+  }
+
+  /**
+   * A product as it is written by hand: the factors side by side, <code>2 a</code>, the factors
+   * with a negative power behind a slash, <code>a/c²</code>, and a sum among them in parentheses.
+   */
+  private static String product(IAST times) {
+    StringBuilder numerator = new StringBuilder();
+    StringBuilder denominator = new StringBuilder();
+    int denominators = 0;
+    boolean negative = false;
+    for (int i = 1; i <= times.argSize(); i++) {
+      IExpr factor = times.get(i);
+      if (i == 1 && factor.isMinusOne()) {
+        negative = true;
+        continue;
+      }
+      if (factor.isFraction() && ((org.matheclipse.core.interfaces.IFraction) factor).numerator()
+          .abs().isOne()) {
+        // a/2 instead of 1/2 a
+        negative ^= factor.isNegative();
+        append(denominator, of(((org.matheclipse.core.interfaces.IFraction) factor).denominator()));
+        denominators++;
+        continue;
+      }
+      if (factor.isPower() && factor.exponent().isNumber() && factor.exponent().isNegative()) {
+        IExpr power = factor.exponent().negate();
+        IExpr below = power.isOne() ? factor.base()
+            : org.matheclipse.core.expression.F.Power(factor.base(), power);
+        append(denominator, factorText(below));
+        denominators++;
+        continue;
+      }
+      append(numerator, factorText(factor));
+    }
+    if (numerator.length() == 0) {
+      numerator.append('1');
+    }
+    String text = (negative ? "-" : "") + numerator;
+    if (denominators == 0) {
+      return text;
+    }
+    return text + "/" + (denominators > 1 ? "(" + denominator + ")" : denominator.toString());
+  }
+
+  private static String factorText(IExpr factor) {
+    String text = of(factor);
+    return factor.isPlus() ? "(" + text + ")" : text;
+  }
+
+  private static void append(StringBuilder text, String factor) {
+    if (text.length() > 0) {
+      text.append(' ');
+    }
+    text.append(factor);
   }
 
   /** Whether <code>expr</code> is <code>Derivative(n)[f]</code> with an order from 1 on. */

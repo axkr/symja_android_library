@@ -150,8 +150,9 @@ public abstract class DoubleFormFactory {
     }
     double realPart = dc.getRealPart();
     double imaginaryPart = dc.getImaginaryPart();
-    boolean realZero = F.isZero(realPart);
-    boolean imaginaryZero = F.isZero(imaginaryPart);
+    // a part is left out if it is zero - as for a real number, not below the machine epsilon
+    boolean realZero = F.isZero(realPart, Config.ZERO_IN_OUTPUT_FORMAT);
+    boolean imaginaryZero = F.isZero(imaginaryPart, Config.ZERO_IN_OUTPUT_FORMAT);
     if (realZero && imaginaryZero) {
       convertDoubleString(buf, convertDoubleToFormattedString(0.0), Precedence.PLUS, false);
     } else {

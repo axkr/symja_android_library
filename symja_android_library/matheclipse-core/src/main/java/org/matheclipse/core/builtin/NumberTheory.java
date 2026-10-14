@@ -69,6 +69,8 @@ import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.BigIntegerSym;
+import org.matheclipse.core.expression.DMath;
+import org.matheclipse.external.apfloat.ApcomplexZetaMath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.Num;
@@ -198,6 +200,10 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       try {
         IExpr arg1 = ast.arg1();
         if (arg1.isNegative()) {
@@ -305,17 +311,18 @@ public final class NumberTheory {
           long ln = n.toLongDefault();
           if (ln >= 0) {
             FixedPrecisionApfloatHelper h;
+            // from Zeta(n): the rational number of the library takes seconds for n = 1000
             if (engine.isArbitraryMode()) {
               h = EvalEngine.getApfloat(engine);
               try {
-                return F.num(h.bernoulli(ln));
+                return F.num(ApcomplexZetaMath.bernoulli(ln, h.precision()));
               } catch (Exception ce) {
                 Errors.rethrowsInterruptException(ce);
               }
             } else {
               h = EvalEngine.getApfloatDouble();
               try {
-                return F.num(h.bernoulli(ln).doubleValue());
+                return ApfloatNum.machineOrPromoted(ApcomplexZetaMath.bernoulli(ln, h.precision()));
               } catch (Exception ce) {
                 Errors.rethrowsInterruptException(ce);
               }
@@ -551,15 +558,30 @@ public final class NumberTheory {
           return F.NIL;
         }
         IInteger ki = (IInteger) k;
-        if (ki.compareInt(1) > 0 //
-            && (n.isNumber() || ki.compareInt(6) < 0)) {
-          return binomialPolynomial(n, ki.intValue());
+        final int kInt = ki.toIntDefault();
+        if (n instanceof Num && ki.isPositive() && (!F.isPresent(kInt) || kInt > 64)) {
+          // no product of that many factors: Binomial(0.5, 10^20) was 0
+          double machine = DMath.binomial(((Num) n).doubleValue(), ki.doubleValue());
+          if (!Double.isNaN(machine)) {
+            return F.num(machine);
+          }
+        }
+        if (F.isPresent(kInt) && kInt > 1 //
+            && (n.isNumber() || kInt < 6)) {
+          return binomialPolynomial(n, kInt);
         }
       }
       if (n.equals(k)) {
         return F.C1;
       }
 
+      if (n instanceof Num && k instanceof Num) {
+        // large arguments, for which a gamma function of the quotient leaves the range of a double
+        double machine = DMath.binomial(((Num) n).doubleValue(), ((Num) k).doubleValue());
+        if (!Double.isNaN(machine)) {
+          return F.num(machine);
+        }
+      }
       if (n.isNumber() && k.isNumber()) {
         return INumber.binomialNumeric((INumber) n, (INumber) k);
       }
@@ -2653,6 +2675,13 @@ public final class NumberTheory {
         } else if (n.isOne()) {
           return v;
         } else {
+          if (!engine.isDoubleMode() && v.isNumber() && n.isNumber() && h.isNumber()
+              && (v.isInexactNumber() || n.isInexactNumber() || h.isInexactNumber())) {
+            // arbitrary precision numbers: h^n*Gamma(x/h+1)/Gamma(x/h+1-n)
+            IExpr ratio = F.Divide(v, h);
+            return F.Times(F.Power(h, n), F.Gamma(F.Plus(F.C1, ratio)),
+                F.Power(F.Gamma(F.Plus(F.C1, ratio, F.Negate(n))), F.CN1));
+          }
           if (engine.isDoubleMode()) {
             if (!v.isMathematicalIntegerNegative()) {
               Complex cx = v.evalfc();
@@ -2665,6 +2694,13 @@ public final class NumberTheory {
               Complex factor = cx.pow(cn).divide(cxDch.pow(cn));
               if (!(cxDchPlus1.isMathematicalInteger() && cxDchPlus1.getReal() < 0.0)) {
                 // (x^n*Gamma(1+x/h))/((x/h)^n*Gamma(1-n+x/h))
+                if (factor.getImaginary() == 0.0 && cxDchPlus1.getImaginary() == 0.0
+                    && cxDchPlus1SubtractN.getImaginary() == 0.0) {
+                  // real numbers have a real value
+                  return F.Divide(
+                      F.Times(F.num(factor.getReal()), F.Gamma(F.num(cxDchPlus1.getReal()))),
+                      F.Gamma(F.num(cxDchPlus1SubtractN.getReal())));
+                }
                 return F.Divide(F.Times(F.complexNum(factor), F.Gamma(F.complexNum(cxDchPlus1))),
                     F.Gamma(F.complexNum(cxDchPlus1SubtractN)));
               }
@@ -5900,7 +5936,8 @@ public final class NumberTheory {
           }
         }
         // try to convert into a fractional number
-        return AbstractFractionSym.rationalize(arg1, epsilon, useConvergenceMethod).orElse(arg1);
+        return AbstractFractionSym.rationalize(arg1, epsilon, useConvergenceMethod, true)
+            .orElse(arg1);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         // ex.printStackTrace();
@@ -7219,6 +7256,10 @@ public final class NumberTheory {
           cn = cx.subtract(cn);
           if (!(cn.isMathematicalInteger() && cn.getReal() < 0.0)) {
             // Gamma(1+x)/Gamma(1-n+x)
+            if (cx.getImaginary() == 0.0 && cn.getImaginary() == 0.0) {
+              // real numbers have a real value
+              return F.Divide(F.Gamma(F.num(cx.getReal())), F.Gamma(F.num(cn.getReal())));
+            }
             return F.Divide(F.Gamma(F.complexNum(cx)), F.Gamma(F.complexNum(cn)));
           }
         }
@@ -7249,6 +7290,17 @@ public final class NumberTheory {
           }
         }
         return result;
+      } else if (v.isInexactNumber()) {
+        // an arbitrary precision number: the product of the n factors
+        final int factors = n.toIntDefault();
+        final long iterationLimit = engine.getIterationLimit();
+        if (factors > 0 && (iterationLimit <= 0 || factors <= iterationLimit)) {
+          for (int i = 0; i < factors; i++) {
+            result = result.multiply(v);
+            v = v.dec();
+          }
+          return result;
+        }
       } else if (v.isExactNumber() && n.isRational()) {
         IRational real = (IRational) ((INumber) v).re();
         IRational dN = (IRational) n;

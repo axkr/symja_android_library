@@ -1508,4 +1508,104 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "100");
   }
 
+  /**
+   * Limits which depend on assumptions about the parameters, and limits which came out wrong or
+   * with an "Indeterminate expression" message without them.
+   */
+  @Test
+  public void testLimitWithAssumptions() {
+    // Abs of a complex valued argument is not the argument
+    check("Limit(Abs(t+3*I)-t, t->Infinity)", //
+        "0");
+    check("Limit(t*(Abs(t+I*b)-t), t->Infinity, Assumptions->Element(b,Reals))", //
+        "b^2/2");
+    check("Limit(Abs(t+I*b)-t, t->Infinity)", //
+        "-Im(b)");
+    check("Limit(Abs(3*t+I)/t, t->-Infinity)", //
+        "-3");
+    // a symbolic point which is assumed to be an integer is a jump
+    check("Limit(Floor(t), t->k, Direction->\"FromBelow\", Assumptions->Element(k,Integers))", //
+        "-1+k");
+    check("Limit(Ceiling(t), t->k, Direction->\"FromAbove\", Assumptions->Element(k,Integers))", //
+        "1+k");
+    check("Limit(Floor(t)+Ceiling(t), t->k, Direction->\"FromBelow\", Assumptions->Element(k,Integers))", //
+        "-1+2*k");
+    check("Limit(FractionalPart(t), t->k, Direction->\"FromBelow\", Assumptions->Element(k,Integers)&&k>0)", //
+        "1");
+    check("Limit(Floor(t), t->4, Direction->\"FromBelow\")", //
+        "3");
+    // a step function of an argument which runs to infinity lies between two bounds
+    check("Limit(Floor(t)/t, t->Infinity)", //
+        "1");
+    check("Limit(Floor(t/b)*b/t, t->Infinity, Assumptions->b>0)", //
+        "1");
+    check("Limit(t/Ceiling(3*t+2), t->-Infinity)", //
+        "1/3");
+    check("Limit(t*Floor(5/t), t->0)", //
+        "5");
+    // the bounds give different limits
+    check("Limit(Floor(t)-t, t->Infinity)", //
+        "Indeterminate");
+    // an exponent which runs to infinity in a symbolic direction
+    check("Limit(Exp(-s*t), t->Infinity, Assumptions->Re(s)>0)", //
+        "0");
+    check("Limit(Exp(I*s*t), t->Infinity, Assumptions->Im(s)>0)", //
+        "0");
+    // a symbolic base below 1
+    check("Limit(b^t, t->Infinity, Assumptions->0<b<1)", //
+        "0");
+    check("Limit(b^t, t->-Infinity, Assumptions->0<b<1)", //
+        "Infinity");
+    check("Limit(t*b^t, t->Infinity, Assumptions->0<b<1)", //
+        "0");
+    // a Bessel function as a factor: its leading term
+    check("Limit(BesselJ(b,t)/t^b, t->0, Direction->\"FromAbove\", Assumptions->b>0)", //
+        "(1/2)^b/Gamma(1+b)");
+    check("Limit(BesselY(b,t)*t^b, t->0, Direction->\"FromAbove\", Assumptions->b>0)", //
+        "(-2^b*Gamma(b))/Pi");
+    check("Limit(BesselY(3,t)*t^3, t->0, Direction->\"FromAbove\")", //
+        "-16/Pi");
+    check("Limit(BesselK(2,t)*t^2, t->0, Direction->\"FromAbove\")", //
+        "2");
+    check("Limit(Sqrt(t)*BesselI(3,t)/Exp(t), t->Infinity)", //
+        "1/Sqrt(2*Pi)");
+    check("Limit(Sqrt(t)*BesselK(b,t)*Exp(t), t->Infinity, Assumptions->Element(b,Reals))", //
+        "Sqrt(Pi/2)");
+    check("Limit(BesselI(2,t)/BesselI(1,t), t->Infinity)", //
+        "1");
+    // a limit which holds under a condition
+    check("Limit(t^b*Log(t), t->0, Direction->\"FromAbove\")", //
+        "ConditionalExpression(0,b>0)");
+    // a factor which is 0 does not remove the condition of the other factor
+    check("Limit(t^b*Sin(t), t->0, Direction->\"FromAbove\")", //
+        "ConditionalExpression(0,b>0)");
+    check("Limit(t^b*Sin(t), t->0, Direction->\"FromAbove\", Assumptions->b>0)", //
+        "0");
+    // a Bessel function inside of a sum: more than the leading term
+    check("Limit(BesselI(0,t)-Exp(t)/Sqrt(2*Pi*t), t->Infinity)", //
+        "Infinity");
+    check("Limit(t*(Sqrt(2*Pi*t)*BesselI(0,t)/Exp(t)-1), t->Infinity)", //
+        "1/8");
+    check("Limit(BesselI(1,t)-BesselI(0,t), t->Infinity)", //
+        "-Infinity");
+    // a power on the way to the step function, with a base which runs to infinity
+    check("Limit(Round(t)^2/t^2, t->Infinity)", //
+        "1");
+    check("Limit(Floor(t)^3/t^3, t->Infinity)", //
+        "1");
+    check("Limit((Floor(t)-t+1/2)^2, t->Infinity)", //
+        "Indeterminate");
+    // an integer point of unknown sign
+    check("Limit(FractionalPart(t), t->k, Direction->\"FromBelow\", Assumptions->Element(k,Integers))", //
+        "Piecewise({{1,k>0}},0)");
+    check("Limit(FractionalPart(t), t->k, Direction->\"FromAbove\", Assumptions->Element(k,Integers))", //
+        "Piecewise({{-1,k<0}},0)");
+    // the generic order
+    check("Limit(BesselJ(b,t)/t^b, t->0)", //
+        "(1/2)^b/Gamma(1+b)");
+    check("Limit(t*Floor(b/t), t->0, Assumptions->Element(b,Reals))", //
+        "b");
+    check("Limit(t^b*Log(t), t->0, Direction->\"FromAbove\", Assumptions->b>0)", //
+        "0");
+  }
 }

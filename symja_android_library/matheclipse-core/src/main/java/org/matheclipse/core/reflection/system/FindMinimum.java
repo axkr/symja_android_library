@@ -1299,23 +1299,36 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         // after the first sweep of every maximization, so the negated function is minimized.
         final boolean maximize = goalType == GoalType.MAXIMIZE;
         final PowellOptimizer optim = new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d));
-        optimum = optim.optimize( //
-            maxEval, //
-            maxIter, //
-            new ObjectiveFunction(
-                maximize ? point -> -multiVariateNumerical.value(point) : multiVariateNumerical), //
-            GoalType.MINIMIZE, //
-            initialGuess);
-        if (maximize) {
-          optimum = new PointValuePair(optimum.getPointRef(), -optimum.getValue(), false);
+        MathIllegalStateException unbounded = null;
+        try {
+          optimum = optim.optimize( //
+              maxEval, //
+              maxIter, //
+              new ObjectiveFunction(
+                  maximize ? point -> -multiVariateNumerical.value(point) : multiVariateNumerical), //
+              GoalType.MINIMIZE, //
+              initialGuess);
+          if (maximize) {
+            optimum = new PointValuePair(optimum.getPointRef(), -optimum.getValue(), false);
+          }
+        } catch (MathIllegalStateException mise) {
+          if (initialValues.length != 1) {
+            throw mise;
+          }
+          unbounded = mise;
         }
         if (initialValues.length == 1) {
           // The line search of the Powell method brackets with large steps, which can carry it
-          // across a pole: FindMinimum(Gamma(x), {x, 1.5}) ended at the pole x == 0. The local
-          // minimum next to the start value lies in the downhill bracket.
+          // across a pole: FindMinimum(Gamma(x), {x, 1.5}) crosses the pole x == 0 and follows the
+          // unbounded branch on the other side without an end. The local minimum next to the
+          // start value lies in the downhill bracket.
           double[] bracket = downhillBracket(multiVariateNumerical, maximize);
-          double x = optimum.getPointRef()[0];
-          if (bracket != null && !(x >= bracket[0] && x <= bracket[1])) {
+          if (bracket == null) {
+            if (unbounded != null) {
+              throw unbounded;
+            }
+          } else if (optimum == null || !(optimum.getPointRef()[0] >= bracket[0]
+              && optimum.getPointRef()[0] <= bracket[1])) {
             optimum = brent(multiVariateNumerical, maximize, bracket, maxEval, maxIter);
           }
         }

@@ -768,6 +768,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         if (result.isPresent()) {
           return result;
         }
+        result = integrateStep(fx, x, engine);
+        if (result.isPresent()) {
+          return result;
+        }
         result = integrateStruveH(fx, x, engine);
         if (result.isPresent()) {
           return result;
@@ -1481,6 +1485,68 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return list.argSize() == 0 ? S.True : list.argSize() == 1 ? list.arg1() : list.apply(S.And);
     }
     return assumptions;
+  }
+
+  /**
+   * <code>Integrate(g(x)*UnitStep(p*x+q), x)</code> for a number <code>p</code>: with an
+   * antiderivative <code>G</code> of <code>g</code> and the break point <code>x0 = -q/p</code> this
+   * is <code>UnitStep(p*x+q)*(G(x)-G(x0))</code>, which is continuous at the break point. The same
+   * holds for <code>HeavisideTheta</code>.
+   *
+   * @return {@link F#NIL} if the integrand is not of this form or <code>g</code> has no
+   *         antiderivative
+   */
+  private static IExpr integrateStep(IAST fx, IExpr x, EvalEngine engine) {
+    IExpr step = F.NIL;
+    IExpr g = F.C1;
+    if (isLinearStep(fx, x)) {
+      step = fx;
+    } else if (fx.isTimes()) {
+      int index = -1;
+      for (int i = 1; i < fx.size(); i++) {
+        IExpr factor = fx.get(i);
+        if (isLinearStep(factor, x)) {
+          if (index > 0) {
+            return F.NIL;
+          }
+          index = i;
+        } else if (factor.has(e -> e.isAST(S.UnitStep) || e.isAST(S.HeavisideTheta), true)) {
+          return F.NIL;
+        }
+      }
+      if (index < 0) {
+        return F.NIL;
+      }
+      step = fx.get(index);
+      g = fx.removeAtCopy(index).oneIdentity1();
+    }
+    if (step.isNIL()) {
+      return F.NIL;
+    }
+    IExpr u = step.first();
+    IExpr slope = engine.evaluate(F.D(u, x));
+    IExpr breakPoint = engine.evaluate(F.Divide(F.Negate(F.subst(u, x, F.C0)), slope));
+    IExpr antiderivative = g.isOne() ? x : engine.evaluate(F.Integrate(g, x));
+    if (!antiderivative.isFree(S.Integrate, true)) {
+      return F.NIL;
+    }
+    IExpr atBreakPoint = engine.evaluate(F.subst(antiderivative, x, breakPoint));
+    if (!atBreakPoint.isFree(e -> e.isIndeterminate() || e.isDirectedInfinity(), true)) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Times(step, F.Subtract(antiderivative, atBreakPoint)));
+  }
+
+  /** <code>UnitStep(p*x+q)</code> or <code>HeavisideTheta(p*x+q)</code> with a number p != 0. */
+  private static boolean isLinearStep(IExpr expr, IExpr x) {
+    if ((expr.isAST(S.UnitStep, 2) || expr.isAST(S.HeavisideTheta, 2)) && !expr.isFree(x)) {
+      IExpr u = expr.first();
+      if (u.isPolynomial(x)) {
+        IExpr slope = EvalEngine.get().evaluate(F.D(u, x));
+        return slope.isNumber() && !slope.isZero() && slope.isReal();
+      }
+    }
+    return false;
   }
 
   /**

@@ -1363,7 +1363,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("NSolve(2*x^(x-3)==3^(x-2),x)", //
         "{{x->2.0}}");
 
-    check("NSolve({0==(x-3)^2+(y-3)^2-4,0==-x^2+10*x-26+y},{y,x})", //
+    check("Chop(NSolve({0==(x-3)^2+(y-3)^2-4,0==-x^2+10*x-26+y},{y,x}))", //
         "{{x->3.0,y->5.0},{x->6.34781+I*(-1.02885),y->1.75806+I*(-2.7734)},{x->6.34781+I*1.02885,y->1.75806+I*2.7734},{x->4.30438,y->1.48389}}");
 
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
@@ -1517,9 +1517,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     check("NSolve(30*x/0.0002==30,{x})", //
         "{{x->0.0002}}");
-    // see Config.DEFAULT_CHOP_DELTA
+    // a small root is a root: the chop of the roots is relative to them
     check("NSolve(30*x/0.000000002==30,x)", //
-        "{{x->0.0}}");
+        "{{x->2.*10^-9}}");
 
     check("NSolve((-3+E^(2*x))==0,x)", //
         "{{x->ConditionalExpression(0.549306+(I*3.14159)*C(1),C(1)∈Integers)}}");
@@ -2000,7 +2000,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveIssue413() {
     // eval quiet without message
     check("Solve({8.0*E - 9 == x0/x1, x0==x1^4.0},{x0, x1}) ", //
-        "{{x1->-1.16797+I*2.02298,x0->-14.88721+I*25.78541},{x1->-1.16797+I*(-2.02298),x0->-14.88721+I*(-25.78541)},{x1->2.33594,x0->29.77443}}");
+        "{{x0->-14.88721+I*(-25.78541),x1->-1.16797+I*(-2.02298)},{x0->29.77443,x1->2.33594},{x0->-14.88721+I*25.78541,x1->-1.16797+I*2.02298}}");
     // eval quiet without message
     check("Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1}) ", //
         "Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1})");
@@ -2598,10 +2598,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testIssue822() {
     check("Solve(60000*(1+(x/100))^15==82000, x)", //
-        "{{x->-182.6041+I*60.01542},{x->-182.6041+I*(-60.01542)},{x->-151.0522+I*(-88.42495)},{x->-151.0522+I*88.42495}," //
-            + "{x->-110.6728+I*101.545},{x->-110.6728+I*(-101.545)},{x->-100.0006+I*(-0.000623464)},{x->-100.0004+I*0.000472974}," //
-            + "{x->-100.0002+I*0.000824716},{x->-100.0002+I*(-0.000595451)},{x->-99.99938+I*0.000122477}," //
-            + "{x->-99.99916+I*(-0.000201253)},{x->-6.72305+I*(-41.52957)},{x->-6.72305+I*41.52957},{x->2.10433}}");
+        "{{x->-199.8731+I*21.22868},{x->-199.8731+I*(-21.22868)},{x->-182.6041+I*60.01542},{x->-182.6041+I*(-60.01542)}," //
+            + "{x->-151.0522+I*(-88.42495)},{x->-151.0522+I*88.42495},{x->-110.6728+I*101.545},{x->-110.6728+I*(-101.545)}," //
+            + "{x->-68.44803+I*97.10699},{x->-68.44803+I*(-97.10699)},{x->-31.67887+I*75.87831},{x->-31.67887+I*(-75.87831)}," //
+            + "{x->-6.72305+I*(-41.52957)},{x->-6.72305+I*41.52957},{x->2.10433}}");
   }
 
   // @Test
@@ -2683,8 +2683,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check(
         "Solve(2sin(x)^(2)+3*sin(x) * cos(x)-5cos(x)^(2) == 0, x, GenerateConditions -> True)// ExpToTrig // FullSimplify",
         "{{x->ConditionalExpression(Pi*(-3/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
-            + "1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(5/2)+2*Pi*C(1),C(\n" //
-            + "1)∈Integers)},{x->ConditionalExpression(1/2*(-Pi+ArcTan(20/21)+4*Pi*C(1)),C(1)∈Integers)}}");
+            + "1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-ArcTan(5/2)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(\n" //
+            + "5/2)+2*Pi*C(1),C(1)∈Integers)}}");
 
     // \begin{aligned}
     // &\Leftrightarrow\left(3 \sin 3 x-4 \sin ^3 3 x\right)-\sqrt{3} \cos 9 x=1\\
@@ -2980,7 +2980,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         + "{th->2400.000000000453,tw->2399.9993912855166,t1->2385.212934513328,t2->708.4971515532554,t3->680.6456294208236,tb->320.04024139792955,tk->319.99999999963455,qw->461594.8472077818,qs->31317.919159643687}";
     System.out.println(evalString);
     check(evalString, //
-        "{33659487.499802814,-1.544947365106681,22487008.039337061,-6.468845089540355,0.0000000002545837,20731337.636887173,0.00000000004876339}");
+        "{33659487.500522066,-1.5449473651915868,22487008.04073214,-6.468845089549611,0.0000000002545837,20731337.63689149,0.00000000004876339}");
 
 
     check("th=2400;tk=320;" //

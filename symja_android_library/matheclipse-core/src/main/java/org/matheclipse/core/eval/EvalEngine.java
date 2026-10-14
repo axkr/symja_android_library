@@ -2108,6 +2108,13 @@ public class EvalEngine implements Serializable {
             IExpr result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
                 : functionEvaluator.evaluate(newAST, this);
             if (result.isPresent()) {
+              if (MachineFallback.isSuspect(result)) {
+                // the machine arithmetic may have failed, where the function has a value
+                IExpr precise = MachineFallback.evaluate(symbol, newAST, this);
+                if (precise.isPresent()) {
+                  return precise;
+                }
+              }
               return result;
             }
           }
@@ -2120,6 +2127,10 @@ public class EvalEngine implements Serializable {
       } catch (FlowControlException e) {
         throw e;
       } catch (SymjaMathException ve) {
+        IExpr precise = MachineFallback.evaluate(symbol, newAST, this);
+        if (precise.isPresent()) {
+          return precise;
+        }
         return Errors.printMessage(ast.topHead(), ve, this);
       } catch (LinkageError le) {
         return awtUnavailable(ast, le);
@@ -3458,10 +3469,31 @@ public class EvalEngine implements Serializable {
   }
 
   public final IExpr evalN(final IExpr expr, long precision) {
-    return evaluate(F.N(expr, F.ZZ(precision)));
+    // A numeric value which an evaluation asks for on its way - a comparison, a test for zero -
+    // does not warn that its extra precision is used up: an expression which is exactly zero
+    // always uses it up. The warning belongs to the N of the input.
+    final boolean quietLimit = fPrecisionLimitQuiet;
+    fPrecisionLimitQuiet = true;
+    try {
+      return evaluate(F.N(expr, F.ZZ(precision)));
+    } finally {
+      fPrecisionLimitQuiet = quietLimit;
+    }
   }
 
   private transient MachineUnderflow fMachineUnderflow;
+
+  /**
+   * The digits which the numeric evaluation in progress has lost, or <code>-1</code> while none is
+   * tracked - see {@link PrecisionLoss}.
+   */
+  transient long fPrecisionLoss = -1L;
+
+  /** No <code>N::meprec</code> message, while a numeric value is calculated for internal use. */
+  transient boolean fPrecisionLimitQuiet = false;
+
+  /** A numeric function is evaluated once more with arbitrary precision - see {@link MachineFallback}. */
+  transient boolean fMachineFallback = false;
 
   /** The machine underflows of this engine: their count, message and quiet scope. */
   public final MachineUnderflow machineUnderflow() {
@@ -5225,6 +5257,14 @@ public class EvalEngine implements Serializable {
           return promoted;
         }
       }
+      if (result.isPresent() && MachineFallback.isSuspect(result)) {
+        // Indeterminate or an infinity, where the machine arithmetic may have failed and the
+        // function has a value: Factorial(1000.0), ExpIntegralEi(1000.0)
+        IExpr precise = MachineFallback.evaluate(symbol, ast, this);
+        if (precise.isPresent()) {
+          return precise;
+        }
+      }
       return result;
     } catch (ValidateException ve) {
       ve.printStackTrace();
@@ -5234,9 +5274,22 @@ public class EvalEngine implements Serializable {
     } catch (NumberFormatException nfe) {
       // this happens if org.apfloat.internal.LongApfloatImpl throws
       // java.lang.NumberFormatException "Infinity is not a valid number"
+      IExpr precise = MachineFallback.evaluate(symbol, ast, this);
+      if (precise.isPresent()) {
+        return precise;
+      }
       return Errors.printMessage(ast.topHead(), nfe, this);
     } catch (BackingStorageException | SymjaMathException ve) {
+      IExpr precise = MachineFallback.evaluate(symbol, ast, this);
+      if (precise.isPresent()) {
+        return precise;
+      }
       return Errors.printMessage(ast.topHead(), ve, this);
+    } catch (org.apfloat.OverflowException oe) {
+      // beyond the range of the exponent of an arbitrary precision number: Factorial(10^20)
+      // Overflow occurred in computation.
+      Errors.printMessage(ast.topHead(), "ovfl", F.CEmptyList, this);
+      return F.Overflow();
     }
   }
 
@@ -5295,13 +5348,14 @@ public class EvalEngine implements Serializable {
         IExpr arg = promoted.get(i);
         if (arg instanceof Num) {
           promoted.set(i,
-              ApfloatNum.valueOf(new Apfloat(((Num) arg).doubleValue(), precision + 1)));
+              ApfloatNum.valueOf(ApfloatNum.apfloatOf(((Num) arg).doubleValue(), precision + 1)));
         } else if (arg instanceof ComplexNum) {
           ComplexNum c = (ComplexNum) arg;
           promoted.set(i,
               ApcomplexNum
-                  .valueOf(new org.apfloat.Apcomplex(new Apfloat(c.reDoubleValue(), precision + 1),
-                      new Apfloat(c.imDoubleValue(), precision + 1))));
+                  .valueOf(new org.apfloat.Apcomplex(
+                      ApfloatNum.apfloatOf(c.reDoubleValue(), precision + 1),
+                      ApfloatNum.apfloatOf(c.imDoubleValue(), precision + 1))));
         }
       }
       IExpr result = functionEvaluator.numericFunction(promoted, this);
@@ -5313,7 +5367,7 @@ public class EvalEngine implements Serializable {
       } else if (result instanceof ApcomplexNum) {
         org.apfloat.Apcomplex value = ((ApcomplexNum) result).apcomplexValue();
         if (Math.abs(value.scale()) <= Integer.MAX_VALUE) {
-          return ApcomplexNum.valueOf(value.precision(precision));
+          return ApcomplexNum.valueOf(ApcomplexNum.precisionOfParts(value, precision));
         }
       }
     } catch (RuntimeException rex) {

@@ -100,8 +100,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     // 3 args
     check("N(BetaRegularized(15/17, 5, 1), 50)", //
         "0.53482498589646703858205438998434349374620120195202");
+    // x^5 = 0.000419329539873664243845...
     check("BetaRegularized(0.211111111111111111, 5, 1)", //
-        "0.000419329539873664265");
+        "0.000419329539873664243");
     checkNumeric("N(BetaRegularized(23/47, 5 - I, 2))", //
         "0.08470978294168378+I*0.05452582633879841");
 
@@ -304,7 +305,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   @Test
   public void testCatalanNumber() {
     check("N(CatalanNumber(I),20)", //
-        "0.39764993382373624266+I*(-0.0208843416208425557)");
+        "0.39764993382373624266+I*(-0.020884341620842555704)");
     check("N(CatalanNumber(1/4),20)", //
         "0.86296416190140697066");
     check("CatalanNumber(-10)", //
@@ -735,9 +736,10 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
    *
    * <p>
    * Both Fresnel integrals approach <code>&plusmn;1/2</code> there, and <code>AiryAi</code> has
-   * either underflowed, for a positive argument, or oscillates with a phase that has outrun the
-   * resolution of a double, for a negative one, so the centre of the oscillation is the best
-   * available answer. Mathematica agrees on all six of these.
+   * underflowed for a positive argument. Mathematica agrees on these five. For a negative argument
+   * <code>AiryAi</code> oscillates with the amplitude <code>|x|^(-1/4)/Sqrt(Pi)</code>; its phase
+   * is reduced with as many digits as the size of the argument takes, and the value is the one of
+   * the double (mpmath: -3.0304211757527744*10^-78), where Mathematica answers <code>0.</code>
    */
   @Test
   public void testAsymptoticFresnelAiry() {
@@ -746,7 +748,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("FresnelC(1.79*^308)", "0.5");
     check("FresnelC(-1.79*^308)", "-0.5");
     check("AiryAi(1.79*^308)", "0.0");
-    check("AiryAi(-1.79*^308)", "0.0");
+    check("AiryAi(-1.79*^308)", "-3.03042*10^-78");
     // continuous with what is computed below the failure point rather than a step at it
     check("FresnelS(1.0*^6)", "0.5");
     check("FresnelS(-1.0*^6)", "-0.5");

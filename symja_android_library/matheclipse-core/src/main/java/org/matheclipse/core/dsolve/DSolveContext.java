@@ -40,6 +40,16 @@ final class DSolveContext {
     int rewritingBase;
     boolean linearizableActive;
     long deadlineNanos;
+    boolean fitTimedOut;
+  }
+
+  /** A fit of an undetermined-coefficients guess ran out of time in this call. */
+  boolean isFitTimedOut() {
+    return state.fitTimedOut;
+  }
+
+  void setFitTimedOut() {
+    state.fitTimedOut = true;
   }
 
   final EvalEngine engine;

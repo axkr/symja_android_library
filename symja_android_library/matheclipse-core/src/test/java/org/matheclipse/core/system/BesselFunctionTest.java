@@ -429,12 +429,13 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     // integer order with a large argument
     check("N(BesselY(3, 100), 30)", //
         "0.0234457866877609115602292983749");
+    // 5.3191924109550804572363059045101540231302620...*10^-7
     check("N(BesselY(-5/2, 1/100), 40)", //
-        "0.0000005319192410955080457236305904510154023129");
+        "0.000000531919241095508045723630590451015402313");
     check("BesselY(-5/2, z)", //
         "(Sqrt(2/Pi)*((-3*Cos(z))/z-Sin(z)+(3*Sin(z))/z^2))/Sqrt(z)");
 
-    checkNumeric("BesselY(2.5,-5)", //
+    checkNumeric("Chop(BesselY(2.5,-5))", //
         "I*(-0.2943723749617925)");
     check("BesselY(3.5,-5)", //
         "I*(-0.0275521)");

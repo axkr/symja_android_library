@@ -1,13 +1,21 @@
 package org.matheclipse.core.builtin;
 
+import java.util.List;
 import org.hipparchus.analysis.ParametricUnivariateFunction;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.fitting.AbstractCurveFitter;
 import org.hipparchus.fitting.SimpleCurveFitter;
+import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.fitting.WeightedObservedPoints;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
+import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.FieldVector;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.linear.SingularValueDecomposition;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -18,7 +26,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FittedModelExpr;
 import org.matheclipse.core.expression.data.NonlinearFittedModelExpr;
-import org.matheclipse.core.generic.SumCurveFitter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -394,53 +401,113 @@ public class CurveFitterFunctions {
           return symbolicFit(data, termList, ast.arg3(), precision, engine);
         }
 
-        IASTAppendable vars = F.ListAlloc(termList.size());
-        IASTAppendable plusExpr = F.PlusAlloc(termList.size());
-        ISymbol dummy = F.Dummy();
-        vars.append(dummy);
-        plusExpr.append(dummy);
-        for (int i = 1; i < termList.size(); i++) {
-          dummy = F.Dummy();
-          vars.append(dummy);
-          plusExpr.append(F.Times(dummy, termList.get(i)));
-        }
-        IExpr function = F.substAbs(plusExpr);
-        IExpr gradientList = S.Grad.of(engine, function, vars);
-        if (gradientList.isList()) {
-          double[] initialGuess = new double[vars.argSize()];
-          for (int i = 0; i < initialGuess.length; i++) {
-            initialGuess[i] = 1.0;
-          }
-          AbstractCurveFitter fitter =
-              SumCurveFitter.create(new FindFit.FindFitParametricFunction(function,
-                  (IAST) gradientList, vars, ast.arg3(), engine), initialGuess, Integer.MAX_VALUE);
-          WeightedObservedPoints obs = new WeightedObservedPoints();
-          if (addWeightedObservedPoints(data, obs)) {
-            try {
-              double[] coefficients = fitter.fit(obs.toList());
-              if (coefficients[0] == 0.0) {
-                if (coefficients.length == 1) {
-                  return F.C0;
-                }
+        WeightedObservedPoints obs = new WeightedObservedPoints();
+        IAST dataMatrix = buildDataMatrix(data);
+        if (dataMatrix.isPresent() && addWeightedObservedPoints(data, obs)) {
+          try {
+            double[] coefficients =
+                linearLeastSquares(dataMatrix, obs.toList(), termList, ast.arg3(), engine);
+            return F.mapRange(S.Plus, 0, coefficients.length, i -> {
+              if (coefficients[i] != 0.0) {
+                return F.Times(F.num(coefficients[i]), termList.get(i + 1));
               }
-              return F.mapRange(S.Plus, 0, coefficients.length, i -> {
-                if (i == 0) {
-                  return F.num(coefficients[0]);
-                } else if (coefficients[i] != 0) {
-                  return F.Times(F.num(coefficients[i]), termList.get(i));
-                }
-                return F.NIL;
-              });
-            } catch (RuntimeException rex) {
-              rex.printStackTrace();
-              Errors.rethrowsInterruptException(rex);
-              return Errors.printMessage(S.Fit, rex, engine);
-            }
+              return F.NIL;
+            });
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            return Errors.printMessage(S.Fit, rex, engine);
           }
         }
 
       }
       return F.NIL;
+    }
+
+    /**
+     * A column of the design matrix depends on the columns before it, if what is left of its
+     * unit length after the reduction by them is not larger than this.
+     */
+    private static final double DEPENDENT_COLUMN = 1.0e-11;
+
+    /**
+     * The coefficients of the basis functions which minimize the sum of the squared residuals.
+     * There is one coefficient for each function, and no constant which is not in the basis.
+     *
+     * <p>
+     * The problem is linear. The columns of the design matrix are scaled to unit length, so that
+     * <code>1</code> and <code>x^5</code> count alike, and the matrix is solved by its QR
+     * decomposition. If the functions depend on each other at the points of the data, or if
+     * there are more functions than points, the singular values of the matrix as it is give the
+     * solution with the smallest coefficients. A function which is zero at every point gets the
+     * coefficient 0. An iteration from a first guess ran away with such functions.
+     *
+     * @param dataMatrix the data as <code>{x, y}</code> rows; the basis functions are evaluated
+     *        at these <code>x</code>, so that <code>Sin(2*x)</code> is zero at <code>Pi</code>
+     * @param points the same data as machine numbers
+     * @param termList the basis functions in the given <code>variable</code>
+     * @param variable the model variable
+     * @param engine the evaluation engine
+     */
+    private static double[] linearLeastSquares(IAST dataMatrix, List<WeightedObservedPoint> points,
+        IAST termList, IExpr variable, EvalEngine engine) {
+      final int rows = points.size();
+      final int columns = termList.argSize();
+      final double[][] design = new double[rows][columns];
+      final double[] response = new double[rows];
+      for (int i = 0; i < rows; i++) {
+        response[i] = points.get(i).getY();
+        final IAST rule = F.Rule(variable, dataMatrix.get(i + 1).first());
+        for (int j = 0; j < columns; j++) {
+          // the exact value first: Sin(2*x) is 0 at Pi, and not the sine of 6.283185307179586
+          design[i][j] = engine.evalDouble(engine.evaluate(F.subst(termList.get(j + 1), rule)));
+        }
+      }
+      // the columns which are not zero, and their lengths
+      final double[] length = new double[columns];
+      final int[] column = new int[columns];
+      int size = 0;
+      for (int j = 0; j < columns; j++) {
+        double sum = 0.0;
+        for (int i = 0; i < rows; i++) {
+          sum = Math.hypot(sum, design[i][j]);
+        }
+        length[j] = sum;
+        if (sum > 0.0) {
+          column[size++] = j;
+        }
+      }
+      final double[] coefficients = new double[columns];
+      if (size == 0) {
+        return coefficients;
+      }
+      final double[][] plain = new double[rows][size];
+      final double[][] scaled = new double[rows][size];
+      for (int i = 0; i < rows; i++) {
+        for (int k = 0; k < size; k++) {
+          plain[i][k] = design[i][column[k]];
+          scaled[i][k] = plain[i][k] / length[column[k]];
+        }
+      }
+      final RealVector vector = new ArrayRealVector(response, false);
+      if (rows >= size) {
+        final DecompositionSolver solver =
+            new QRDecomposition(MatrixUtils.createRealMatrix(scaled), DEPENDENT_COLUMN)
+                .getSolver();
+        if (solver.isNonSingular()) {
+          final double[] solution = solver.solve(vector).toArray();
+          for (int k = 0; k < size; k++) {
+            coefficients[column[k]] = solution[k] / length[column[k]];
+          }
+          return coefficients;
+        }
+      }
+      final double[] solution =
+          new SingularValueDecomposition(MatrixUtils.createRealMatrix(plain)).getSolver()
+              .solve(vector).toArray();
+      for (int k = 0; k < size; k++) {
+        coefficients[column[k]] = solution[k];
+      }
+      return coefficients;
     }
 
     /**

@@ -725,6 +725,13 @@ public class Config {
   public static long MAX_PRECISION_APFLOAT = 256;
 
   /**
+   * The digits which <code>N(expr, precision)</code> may add to its working precision, when the
+   * evaluation of an exact expression loses digits: <code>N(Cos(10^-20)-1, 30)</code> needs 41
+   * more. <code>0</code> switches the second evaluation off.
+   */
+  public static long MAX_EXTRA_PRECISION = 50;
+
+  /**
    * If <code>true</code> the {@link S#N} function truncates a requested precision which is greater
    * than {@link #MAX_PRECISION_APFLOAT} down to {@link #MAX_PRECISION_APFLOAT}, instead of printing
    * the <code>N::precgt</code> message and leaving the expression unevaluated.

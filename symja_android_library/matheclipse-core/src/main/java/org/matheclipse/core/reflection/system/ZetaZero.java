@@ -6,7 +6,6 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.FixedPrecisionApfloatHelper;
-import org.apfloat.LossOfPrecisionException;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -20,6 +19,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.ZetaJS;
 import org.matheclipse.external.apfloat.ApfloatRiemannSiegelMath;
+import org.matheclipse.external.apfloat.ApfloatZetaZeroMath;
 
 public class ZetaZero extends AbstractFunctionEvaluator {
 
@@ -92,55 +92,22 @@ public class ZetaZero extends AbstractFunctionEvaluator {
     newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDFIRST, Attribute.NUMERICFUNCTION);
   }
 
-  /** Riemann-Siegel Z function at {@code t} (real-valued). */
-  public static Apfloat zzZ(FixedPrecisionApfloatHelper h, Apfloat t, Apfloat half, Apfloat quarter,
-      Apfloat two, Apfloat logPi) {
-    Apfloat theta = RiemannSiegelTheta.zzTheta(h, t, quarter, two, logPi);
-    Apcomplex s = new Apcomplex(half, t);
-    Apcomplex zeta = h.zeta(s);
-    Apcomplex factor = h.exp(new Apcomplex(Apfloat.ZERO, theta));
-    return h.multiply(factor, zeta).real();
-  }
-
-  /** Refine a sign-change bracket {@code [a,b]} of Z(t) by bisection. */
-  private static Apfloat zzBisect(FixedPrecisionApfloatHelper h, Apfloat a, Apfloat b, Apfloat half,
-      Apfloat quarter, Apfloat two, Apfloat logPi, Apfloat tol, long precision) {
-    Apfloat fa = ZetaZero.zzZ(h, a, half, quarter, two, logPi);
-    long maxIter = Math.min(100000L, precision * 4 + 80);
-    Apfloat m = a.add(b).divide(two);
-    for (long i = 0; i < maxIter; i++) {
-      m = a.add(b).divide(two);
-      Apfloat fm = ZetaZero.zzZ(h, m, half, quarter, two, logPi);
-      if (fm.signum() == 0 || ApfloatMath.abs(b.subtract(a)).compareTo(tol) < 0) {
-        return m;
-      }
-      if (fm.signum() == fa.signum()) {
-        a = m;
-        fa = fm;
-      } else {
-        b = m;
-      }
-    }
-    return m;
-  }
-
   /**
    * Find the imaginary part of the {@code index}-th nontrivial zeta zero. A cheap machine-precision
    * Riemann-Siegel locate phase brackets the zero and seeds a high-precision root polish; if that
    * fast path fails to produce a valid bracket the method falls back to the arbitrary-precision
    * scan-and-bisect in {@link #zzFindZeroApfloat}.
    */
-  private static Apfloat zzFindZero(FixedPrecisionApfloatHelper h, int index, Apfloat half,
-      Apfloat quarter, Apfloat two, Apfloat logPi, Apfloat tol, long precision) {
+  private static Apfloat zzFindZero(int index, Apfloat tol, long precision) {
     double[] bracket = ZetaZero.locateBracketDouble(index);
     if (bracket != null) {
-      Apfloat root =
-          ZetaZero.zzPolish(h, bracket[0], bracket[1], half, quarter, two, logPi, tol, precision);
-      if (root != null) {
-        return root;
+      try {
+        return ApfloatZetaZeroMath.zero(bracket[0], bracket[1], precision);
+      } catch (ArithmeticException ae) {
+        // no change of sign at full precision
       }
     }
-    return ZetaZero.zzFindZeroApfloat(h, index, half, quarter, two, logPi, tol, precision);
+    return ZetaZero.zzFindZeroApfloat(index, tol, precision);
   }
 
   /** Above this height the O(t) double-precision Z gives way to the O(sqrt(t)) Riemann-Siegel Z. */
@@ -625,132 +592,13 @@ public class ZetaZero extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Polish a zero to full precision from a double-precision bracket using the secant method with a
-   * bisection safeguard on the arbitrary-precision Riemann-Siegel {@code Z(t)}. The secant iterates
-   * converge superlinearly (order ~1.6), so only a handful of arbitrary-precision zeta evaluations
-   * are needed instead of the ~{@code 3.3 * precision} of a bisection. The bracket {@code [a, b]}
-   * is kept straddling the root and a bisection step is taken whenever a secant step would leave
-   * it. Returns {@code null} if the bracket does not straddle a sign change at full precision, so
-   * the caller can fall back to the arbitrary-precision search.
-   */
-  private static Apfloat zzPolish(FixedPrecisionApfloatHelper h, double aDouble, double bDouble,
-      Apfloat half, Apfloat quarter, Apfloat two, Apfloat logPi, Apfloat tol, long precision) {
-    Apfloat a = new Apfloat(aDouble, precision);
-    Apfloat b = new Apfloat(bDouble, precision);
-    java.util.function.UnaryOperator<Apfloat> z;
-    if (riemannSiegelReaches(a)) {
-      // a sum of Sqrt(t/(2*Pi)) terms
-      z = ApfloatRiemannSiegelMath::riemannSiegelZ;
-    } else if (bDouble >= CRITICAL_LINE_LIMIT) {
-      // the zeta values come from the summation of CriticalLineZ, which is much faster at large t
-      // than the general arbitrary precision zeta
-      z = new CriticalLineZ(precision, bDouble)::z;
-    } else {
-      z = x -> ZetaZero.zzZ(h, x, half, quarter, two, logPi);
-    }
-    // converged at a couple of units in the last place of t: a secant step that small cannot be
-    // resolved at this precision, and a looser test leaves the last digits unfinished
-    tol = ApfloatMath.pow(new Apfloat(10, precision), -precision)
-        .multiply(new Apfloat(2.0 * Math.max(1.0, bDouble), precision));
-    Apfloat fa;
-    Apfloat fb;
-    try {
-      fa = z.apply(a);
-      if (fa.signum() == 0) {
-        return a;
-      }
-      fb = z.apply(b);
-      if (fb.signum() == 0) {
-        return b;
-      }
-    } catch (LossOfPrecisionException lop) {
-      // an endpoint sits on the zero: zeta(1/2 + I*t) underflowed to zero at working precision
-      return b;
-    }
-    if (fa.signum() == fb.signum()) {
-      // the double-precision bracket did not straddle a sign change at full precision
-      return null;
-    }
-    // secant memory: the two most recent iterates (x0, x1); the bracket [a, b] is the safeguard
-    Apfloat x0 = a;
-    Apfloat fx0 = fa;
-    Apfloat x1 = b;
-    Apfloat fx1 = fb;
-    long maxIter = Math.min(100000L, precision * 4 + 80);
-    for (long i = 0; i < maxIter; i++) {
-      Apfloat denom = fx1.subtract(fx0);
-      Apfloat x2;
-      if (denom.signum() != 0) {
-        x2 = x1.subtract(fx1.multiply(x1.subtract(x0)).divide(denom));
-        if (ApfloatMath.abs(x2.subtract(x1)).compareTo(tol) < 0) {
-          // converged - possibly onto the endpoint the last step became, which the bracket test
-          // below would take for leaving the bracket and answer with a slow bisection
-          return x2;
-        }
-        if (x2.compareTo(a) <= 0 || x2.compareTo(b) >= 0) {
-          x2 = a.add(b).divide(two); // secant would leave the bracket: bisect instead
-        }
-      } else {
-        x2 = a.add(b).divide(two);
-      }
-      Apfloat fx2;
-      try {
-        fx2 = z.apply(x2);
-      } catch (LossOfPrecisionException lop) {
-        // zeta(1/2 + I*x2) underflowed to zero at working precision: x2 is the zero
-        return x2;
-      }
-      if (fx2.signum() == 0 || ApfloatMath.abs(x2.subtract(x1)).compareTo(tol) < 0) {
-        return x2;
-      }
-      if (ApfloatMath.abs(fx2).compareTo(ApfloatMath.abs(fx1)) >= 0
-          && ApfloatMath.abs(x2.subtract(x1)).compareTo(tol.multiply(new Apfloat(1000))) < 0) {
-        // Z no longer shrinks: the iterates are at the noise floor of the working precision
-        return x1;
-      }
-      // keep [a, b] straddling the root by replacing the like-signed endpoint
-      if (fx2.signum() == fa.signum()) {
-        a = x2;
-        fa = fx2;
-      } else {
-        b = x2;
-        fb = fx2;
-      }
-      x0 = x1;
-      fx0 = fx1;
-      x1 = x2;
-      fx1 = fx2;
-    }
-    return x1;
-  }
-
-  /**
-   * Whether the Riemann-Siegel formula reaches the precision of <code>t</code> at <code>t</code>:
-   * the precision it can reach grows with the height.
-   */
-  private static boolean riemannSiegelReaches(Apfloat t) {
-    if (t.doubleValue() < RIEMANN_SIEGEL_LIMIT) {
-      return false;
-    }
-    try {
-      ApfloatRiemannSiegelMath.riemannSiegelZ(t);
-      return true;
-    } catch (ArithmeticException ae) {
-      return false;
-    }
-  }
-
-  /** Below this height the Riemann-Siegel formula is not asked. */
-  private static final double RIEMANN_SIEGEL_LIMIT = 5000.0;
-
-  /**
    * Arbitrary-precision fallback: find the imaginary part of the {@code index}-th nontrivial zeta
    * zero by scanning a bracket around the asymptotic estimate for a sign change of Z(t) and
    * refining it by bisection. The bracket is widened if no sign change is found. Used only when the
    * machine-precision locate phase fails to bracket the zero.
    */
-  private static Apfloat zzFindZeroApfloat(FixedPrecisionApfloatHelper h, int index, Apfloat half,
-      Apfloat quarter, Apfloat two, Apfloat logPi, Apfloat tol, long precision) {
+  private static Apfloat zzFindZeroApfloat(int index, Apfloat tol, long precision) {
+    Apfloat two = new Apfloat(2, precision);
     double t0d = ZetaJS.zetaZeroEstimate(index);
     double lnArg = Math.log(t0d / (2.0 * Math.PI));
     double gapd = 2.0 * Math.PI / Math.max(lnArg, 0.3);
@@ -767,13 +615,13 @@ public class ZetaZero extends AbstractFunctionEvaluator {
       Apfloat step = hi.subtract(lo).divide(segments);
 
       Apfloat prev = lo;
-      Apfloat fprev = ZetaZero.zzZ(h, prev, half, quarter, two, logPi);
+      Apfloat fprev = ApfloatZetaZeroMath.z(prev, precision);
       Apfloat bestA = null;
       Apfloat bestB = null;
       double bestDist = Double.MAX_VALUE;
       for (int i = 1; i <= ZetaJS.ZZ_SCAN_SEGMENTS; i++) {
         Apfloat cur = lo.add(step.multiply(new Apfloat(i, precision)));
-        Apfloat fcur = ZetaZero.zzZ(h, cur, half, quarter, two, logPi);
+        Apfloat fcur = ApfloatZetaZeroMath.z(cur, precision);
         if (fprev.signum() != 0 && fcur.signum() != 0 && fprev.signum() != fcur.signum()) {
           double mid = prev.add(cur).divide(two).doubleValue();
           double dist = Math.abs(mid - t0d);
@@ -787,7 +635,7 @@ public class ZetaZero extends AbstractFunctionEvaluator {
         fprev = fcur;
       }
       if (bestA != null) {
-        return ZetaZero.zzBisect(h, bestA, bestB, half, quarter, two, logPi, tol, precision);
+        return ApfloatZetaZeroMath.bisect(bestA, bestB, tol, precision);
       }
       gap = gap.multiply(two);
     }
@@ -814,15 +662,10 @@ public class ZetaZero extends AbstractFunctionEvaluator {
   private static Apfloat zetaZeroImaginaryPartAt(FixedPrecisionApfloatHelper h, int k,
       Apfloat tMin) {
     long precision = h.precision();
-    Apfloat two = new Apfloat(2, precision);
-    Apfloat half = new Apfloat("0.5", precision);
-    Apfloat quarter = new Apfloat("0.25", precision);
-    Apfloat pi = ApfloatMath.pi(precision);
-    Apfloat logPi = ApfloatMath.log(pi);
     Apfloat tol = ApfloatMath.pow(new Apfloat(10, precision), -(precision - 2));
 
     if (tMin == null) {
-      return ZetaZero.zzFindZero(h, k, half, quarter, two, logPi, tol, precision);
+      return ZetaZero.zzFindZero(k, tol, precision);
     }
 
     // estimate the number of zeros with imaginary part <= tMin via N(t) ~ theta(t)/Pi + 1, then
@@ -839,132 +682,6 @@ public class ZetaZero extends AbstractFunctionEvaluator {
     while (ZetaZero.zeroImagDouble((int) m) <= tMinDouble) {
       m++;
     }
-    return ZetaZero.zzFindZero(h, (int) (m + k - 1), half, quarter, two, logPi, tol, precision);
+    return ZetaZero.zzFindZero((int) (m + k - 1), tol, precision);
   }
-
-  /** From this height on the zero is polished with {@link CriticalLineZ}. */
-  private static final double CRITICAL_LINE_LIMIT = 200.0;
-
-  /**
-   * The Riemann-Siegel {@code Z(t)} at arbitrary precision for large {@code t}, from zeta(1/2 +
-   * I*t) by Euler-Maclaurin summation.
-   *
-   * <p>
-   * The direct sum runs to {@code N ~ t/2}, so that {@code t/(2 Pi N) = 1/Pi} and every Bernoulli
-   * term of the tail is about {@code 1/Pi^2} of the one before. Its terms {@code k^(-1/2 - I*t)}
-   * are completely multiplicative, so only the primes need a complex exponential; every other term
-   * is the product of two earlier ones. The logarithms and square roots of the primes do not depend
-   * on {@code t} and are kept for the few evaluations a root polish makes. The work precision has
-   * guard digits for the phase {@code t*log(k)} of every term.
-   */
-  static final class CriticalLineZ {
-    private final long precision;
-    private final int n;
-    private final FixedPrecisionApfloatHelper hw;
-    private final int[] smallestFactor;
-    private final Apfloat[] logPrime;
-    private final Apfloat[] invSqrtPrime;
-    private final Apfloat half;
-    private final Apfloat quarter;
-    private final Apfloat two;
-    private final Apfloat logPi;
-    private final Apfloat epsilon;
-    private final List<Apfloat> bernoulliOverFactorial = new ArrayList<Apfloat>();
-
-    CriticalLineZ(long precision, double tMax) {
-      this.precision = precision;
-      this.n = (int) Math.ceil(0.5 * tMax) + 30;
-      long work =
-          precision + (long) Math.ceil(Math.log10(tMax * Math.log(n) + 10.0)) + 6;
-      this.hw = new FixedPrecisionApfloatHelper(work);
-      this.half = new Apfloat("0.5", work);
-      this.quarter = new Apfloat("0.25", work);
-      this.two = new Apfloat(2, work);
-      this.logPi = ApfloatMath.log(ApfloatMath.pi(work));
-      this.epsilon = ApfloatMath.pow(new Apfloat(10, work), -work);
-      smallestFactor = new int[n + 1];
-      logPrime = new Apfloat[n + 1];
-      invSqrtPrime = new Apfloat[n + 1];
-      for (int k = 2; k <= n; k++) {
-        if (smallestFactor[k] == 0) {
-          for (long m = k; m <= n; m += k) {
-            if (smallestFactor[(int) m] == 0) {
-              smallestFactor[(int) m] = k;
-            }
-          }
-          Apfloat pk = new Apfloat(k, work);
-          logPrime[k] = hw.log(pk);
-          invSqrtPrime[k] = hw.inverseRoot(pk, 2);
-        }
-      }
-    }
-
-    /** The coefficient B_2j / (2j)! of the Euler-Maclaurin tail. */
-    private Apfloat bernoulliOverFactorial(int j) {
-      while (bernoulliOverFactorial.size() < j) {
-        int m = 2 * (bernoulliOverFactorial.size() + 1);
-        org.matheclipse.core.interfaces.IRational b =
-            org.matheclipse.core.expression.AbstractFractionSym.bernoulliNumber(m);
-        java.math.BigInteger factorial = java.math.BigInteger.ONE;
-        for (int i = 2; i <= m; i++) {
-          factorial = factorial.multiply(java.math.BigInteger.valueOf(i));
-        }
-        Apfloat numerator = new Apfloat(b.toBigNumerator(), hw.precision());
-        Apfloat denominator =
-            new Apfloat(b.toBigDenominator().multiply(factorial), hw.precision());
-        bernoulliOverFactorial.add(hw.divide(numerator, denominator));
-      }
-      return bernoulliOverFactorial.get(j - 1);
-    }
-
-    /** Z(t) at the precision this object was made for. */
-    Apfloat z(Apfloat tIn) {
-      Apfloat t = tIn.precision(hw.precision());
-      Apcomplex[] power = new Apcomplex[n + 1];
-      power[1] = Apcomplex.ONE;
-      Apcomplex sum = Apcomplex.ONE;
-      for (int k = 2; k <= n; k++) {
-        int p = smallestFactor[k];
-        if (p == k) {
-          Apfloat phase = hw.multiply(t, logPrime[k]);
-          power[k] = new Apcomplex(hw.multiply(invSqrtPrime[k], hw.cos(phase)),
-              hw.multiply(invSqrtPrime[k], hw.sin(phase)).negate());
-        } else {
-          power[k] = hw.multiply(power[p], power[k / p]);
-        }
-        if (k < n) {
-          sum = hw.add(sum, power[k]);
-        }
-      }
-      Apcomplex s = new Apcomplex(half, t);
-      Apfloat bigN = new Apfloat(n, hw.precision());
-      Apcomplex powerN = power[n];
-      // N^(1-s)/(s-1) + N^(-s)/2
-      sum = hw.add(sum,
-          hw.divide(hw.multiply(powerN, bigN), hw.subtract(s, Apcomplex.ONE)));
-      sum = hw.add(sum, hw.divide(powerN, two));
-      // Bernoulli tail: B_2j/(2j)! * s(s+1)...(s+2j-2) * N^(-s-2j+1)
-      Apcomplex rising = s;
-      Apcomplex tailPower = hw.divide(powerN, bigN);
-      Apfloat nSquared = hw.multiply(bigN, bigN);
-      Apfloat previous = null;
-      for (int j = 1; j <= 400; j++) {
-        Apcomplex term = hw.multiply(hw.multiply(rising, tailPower), bernoulliOverFactorial(j));
-        Apfloat size = hw.abs(term);
-        sum = hw.add(sum, term);
-        if (size.compareTo(epsilon) < 0 || (previous != null && size.compareTo(previous) > 0)) {
-          break;
-        }
-        previous = size;
-        rising = hw.multiply(hw.multiply(rising, hw.add(s, new Apfloat(2 * j - 1))),
-            hw.add(s, new Apfloat(2 * j)));
-        tailPower = hw.divide(tailPower, nSquared);
-      }
-      Apfloat theta = RiemannSiegelTheta.zzTheta(hw, t, quarter, two, logPi);
-      Apfloat value = hw.subtract(hw.multiply(hw.cos(theta), sum.real()),
-          hw.multiply(hw.sin(theta), sum.imag()));
-      return value.precision(precision);
-    }
-  }
-
 }

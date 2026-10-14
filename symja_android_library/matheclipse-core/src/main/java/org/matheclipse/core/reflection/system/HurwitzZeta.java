@@ -28,6 +28,9 @@ import org.matheclipse.core.numerics.functions.ZetaJS;
 
 public final class HurwitzZeta extends AbstractFunctionEvaluator {
 
+  /** Largest number of terms with a negative <code>k+a</code> which are summed one by one. */
+  private static final double MAX_SHIFTED_TERMS = 1.0e6;
+
   public IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     try {
@@ -79,8 +82,13 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
       }
     }
 
+    if (s.isInteger() && s.isNegative() && a.isRational()) {
+      // -BernoulliB(n+1, a)/(n+1) for s == -n
+      IExpr n1 = F.C1.subtract(s);
+      return F.Times(F.CN1, F.Power(n1, F.CN1), F.BernoulliB(n1, a));
+    }
     if (a.isNumber()) {
-      if (a.isZero() && s.isInteger() && s.isNegative()) {
+      if (F.isExactZero(a) && s.isInteger() && s.isNegative()) {
         // http://fungrim.org/entry/7dab87/
         return F.Times(F.CN1, F.Divide(F.BernoulliB(F.Plus(1, s.negate())), F.Plus(1, s.negate())));
       }
@@ -122,7 +130,18 @@ public final class HurwitzZeta extends AbstractFunctionEvaluator {
         if (aDouble < 0.0 || Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
           Complex sc = s.evalfc();
           Complex ac = a.evalfc();
-          Complex result = ZetaJS.hurwitzZeta(sc, ac);
+          Complex shifted = Complex.ZERO;
+          if (aDouble < 0.0 && aDouble >= -MAX_SHIFTED_TERMS && aDouble != Math.rint(aDouble)) {
+            // The terms with a negative k+a one by one, and the function of the argument in (0,1):
+            // the Euler-Maclaurin sum takes Abs(a) Bernoulli numbers, seconds for a = -700.5
+            final int terms = (int) Math.ceil(-aDouble);
+            final Complex exponent = sc.negate();
+            for (int k = 0; k < terms; k++) {
+              shifted = shifted.add(new Complex(k + aDouble).pow(exponent));
+            }
+            ac = new Complex(aDouble + terms);
+          }
+          Complex result = shifted.add(ZetaJS.hurwitzZeta(sc, ac));
 
           // Determine optimal numeric return format
           if (Double.isNaN(sDouble) || Double.isNaN(aDouble)) {

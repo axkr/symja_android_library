@@ -1,5 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.interfaces.IInexactNumber;
+import org.matheclipse.core.numerics.functions.WorkingPrecision;
+import org.matheclipse.external.apfloat.ApcomplexThetaMath;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
@@ -9,6 +12,7 @@ import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class QPochhammer extends AbstractFunctionEvaluator implements IFunctionExpand {
@@ -80,6 +84,11 @@ public class QPochhammer extends AbstractFunctionEvaluator implements IFunctionE
       if (a.isOne() && q.isOne()) {
         return F.C0;
       }
+      if (a.isInexactNumber() && q.isInexactNumber()) {
+        // the infinite product inside of the unit disk
+        return WorkingPrecision.evaluate((IInexactNumber) a, (IInexactNumber) q, true,
+            (x, y, precision) -> ApcomplexThetaMath.qPochhammer(x, y));
+      }
       return F.NIL;
     }
 
@@ -89,7 +98,9 @@ public class QPochhammer extends AbstractFunctionEvaluator implements IFunctionE
       return F.C1;
     }
 
-    if (n.isInteger()) {
+    if (n.isInteger() || (n.isInexactNumber() && n.isReal() && ((IReal) n).isNumIntValue()
+        && a.isNumber() && q.isNumber())) {
+      // also the integer which a numeric evaluation has turned into an inexact number
       int nVal = n.toIntDefault();
 
       // Expansion for positive integers

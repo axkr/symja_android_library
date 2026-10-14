@@ -12,6 +12,8 @@ import org.apfloat.NumericComputationException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
+import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
+import org.matheclipse.external.apfloat.ApcomplexBesselMath;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -382,8 +384,13 @@ public class ComplexNum implements IComplexNum {
     if (airyAiValue != null) {
       return F.complexNum(airyAiValue);
     }
-    Apcomplex airyAi = EvalEngine.getApfloatDouble().airyAi(apcomplexValue());
-    return F.complexNum(airyAi.real().doubleValue(), airyAi.imag().doubleValue());
+    try {
+      Apcomplex airyAi = EvalEngine.getApfloatDouble().airyAi(apcomplexValue());
+      return F.complexNum(airyAi.real().doubleValue(), airyAi.imag().doubleValue());
+    } catch (LossOfPrecisionException lope) {
+      // no digit of the phase of a large argument is left
+      return F.NIL;
+    }
   }
 
   @Override
@@ -395,8 +402,13 @@ public class ComplexNum implements IComplexNum {
     if (airyAiPrimeValue != null) {
       return F.complexNum(airyAiPrimeValue);
     }
-    Apcomplex airyAiPrime = EvalEngine.getApfloatDouble().airyAiPrime(apcomplexValue());
-    return F.complexNum(airyAiPrime.real().doubleValue(), airyAiPrime.imag().doubleValue());
+    try {
+      Apcomplex airyAiPrime = EvalEngine.getApfloatDouble().airyAiPrime(apcomplexValue());
+      return F.complexNum(airyAiPrime.real().doubleValue(), airyAiPrime.imag().doubleValue());
+    } catch (LossOfPrecisionException lope) {
+      // no digit of the phase of a large argument is left
+      return F.NIL;
+    }
   }
 
   @Override
@@ -407,8 +419,13 @@ public class ComplexNum implements IComplexNum {
     if (airyBiValue != null) {
       return F.complexNum(airyBiValue);
     }
-    Apcomplex airyBi = EvalEngine.getApfloatDouble().airyBi(apcomplexValue());
-    return F.complexNum(airyBi.real().doubleValue(), airyBi.imag().doubleValue());
+    try {
+      Apcomplex airyBi = EvalEngine.getApfloatDouble().airyBi(apcomplexValue());
+      return F.complexNum(airyBi.real().doubleValue(), airyBi.imag().doubleValue());
+    } catch (LossOfPrecisionException lope) {
+      // no digit of the phase of a large argument is left
+      return F.NIL;
+    }
   }
 
   @Override
@@ -420,8 +437,13 @@ public class ComplexNum implements IComplexNum {
     if (airyBiPrimeValue != null) {
       return F.complexNum(airyBiPrimeValue);
     }
-    Apcomplex airyBiPrime = EvalEngine.getApfloatDouble().airyBiPrime(apcomplexValue());
-    return F.complexNum(airyBiPrime.real().doubleValue(), airyBiPrime.imag().doubleValue());
+    try {
+      Apcomplex airyBiPrime = EvalEngine.getApfloatDouble().airyBiPrime(apcomplexValue());
+      return F.complexNum(airyBiPrime.real().doubleValue(), airyBiPrime.imag().doubleValue());
+    } catch (LossOfPrecisionException lope) {
+      // no digit of the phase of a large argument is left
+      return F.NIL;
+    }
   }
 
   @Override
@@ -496,8 +518,8 @@ public class ComplexNum implements IComplexNum {
         }
       }
       try {
-        Apcomplex besselI = EvalEngine.getApfloatDouble().besselI(apcomplexValue(),
-            ((INumber) arg2).apcomplexValue());
+        Apcomplex besselI = DMath.besselComplex(ApcomplexBesselMath::besselI,
+            (nu, z) -> EvalEngine.getApfloatDouble().besselI(nu, z), this, (INumber) arg2);
         return F.complexNum(besselI.real().doubleValue(), besselI.imag().doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselI, are);
@@ -522,8 +544,8 @@ public class ComplexNum implements IComplexNum {
         }
       }
       try {
-        Apcomplex besselJ = EvalEngine.getApfloatDouble().besselJ(apcomplexValue(),
-            ((INumber) arg2).apcomplexValue());
+        Apcomplex besselJ = DMath.besselComplex(ApcomplexBesselMath::besselJ,
+            (nu, z) -> EvalEngine.getApfloatDouble().besselJ(nu, z), this, (INumber) arg2);
         return F.complexNum(besselJ.real().doubleValue(), besselJ.imag().doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselJ, are);
@@ -548,8 +570,8 @@ public class ComplexNum implements IComplexNum {
         }
       }
       try {
-        Apcomplex besselK = EvalEngine.getApfloatDouble().besselK(apcomplexValue(),
-            ((INumber) arg2).apcomplexValue());
+        Apcomplex besselK = DMath.besselComplex(ApcomplexBesselMath::besselK,
+            (nu, z) -> EvalEngine.getApfloatDouble().besselK(nu, z), this, (INumber) arg2);
         return F.complexNum(besselK.real().doubleValue(), besselK.imag().doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselK, are);
@@ -574,8 +596,8 @@ public class ComplexNum implements IComplexNum {
         }
       }
       try {
-        Apcomplex besselY = EvalEngine.getApfloatDouble().besselY(apcomplexValue(),
-            ((INumber) arg2).apcomplexValue());
+        Apcomplex besselY = DMath.besselComplex(ApcomplexBesselMath::besselY,
+            (nu, z) -> EvalEngine.getApfloatDouble().besselY(nu, z), this, (INumber) arg2);
         return F.complexNum(besselY.real().doubleValue(), besselY.imag().doubleValue());
       } catch (ArithmeticException | ApfloatRuntimeException are) {
         return Errors.printMessage(S.BesselY, are);
@@ -897,7 +919,10 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr ellipticK() {
-    Apcomplex ellipticK = EvalEngine.getApfloatDouble().ellipticK(apcomplexValue());
+    final long digits = EvalEngine.getApfloatDouble().precision();
+    Apcomplex ellipticK = ApcomplexEllipticMath.ellipticK(new Apcomplex(
+        ApfloatNum.apfloatOf(fComplex.getReal(), digits),
+        ApfloatNum.apfloatOf(fComplex.getImaginary(), digits)));
     return F.complexNum(ellipticK.real().doubleValue(), ellipticK.imag().doubleValue());
   }
 
@@ -917,12 +942,21 @@ public class ComplexNum implements IComplexNum {
     return false;
   }
 
+  /**
+   * Whether the real and the imaginary part have the same size: the square of the number is
+   * purely imaginary then, and the error functions of the Hipparchus library answer
+   * <code>0</code> for <code>Erf(1.0+I)</code>.
+   */
+  private static boolean onDiagonal(Complex z) {
+    return Math.abs(z.getReal()) == Math.abs(z.getImaginary());
+  }
+
   @Override
   public IExpr erf() {
     try {
       // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
       Complex complexErf = org.hipparchus.special.Erf.erf(fComplex);
-      if (complexErf.isFinite()) {
+      if (complexErf.isFinite() && !onDiagonal(fComplex)) {
         return F.complexNum(complexErf);
       }
       Apcomplex erf = EvalEngine.getApfloatDouble().erf(apcomplexValue());
@@ -942,7 +976,7 @@ public class ComplexNum implements IComplexNum {
       try {
         // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
         Complex complexErfc = org.hipparchus.special.Erf.erfc(fComplex);
-        if (complexErfc.isFinite()) {
+        if (complexErfc.isFinite() && !onDiagonal(fComplex)) {
           return F.complexNum(complexErfc);
         }
       } catch (RuntimeException rex) {
@@ -1625,6 +1659,11 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public boolean isZero() {
+    return fComplex.getReal() == 0.0 && fComplex.getImaginary() == 0.0;
+  }
+
+  @Override
+  public boolean isFuzzyZero() {
     return isZero(Config.DOUBLE_TOLERANCE);
   }
 

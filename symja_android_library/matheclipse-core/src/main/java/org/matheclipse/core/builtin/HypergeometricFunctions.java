@@ -25,6 +25,8 @@ import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
+import org.matheclipse.core.expression.DMath;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -224,7 +226,7 @@ public class HypergeometricFunctions {
     }
 
     private static IExpr basicRewrite(IExpr z) {
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.CNInfinity;
       }
       if (z.isDirectedInfinity()) {
@@ -317,7 +319,7 @@ public class HypergeometricFunctions {
     }
 
     private static IExpr basicRewrite(IExpr z) {
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.CNInfinity;
       }
       if (z.isDirectedInfinity()) {
@@ -467,7 +469,7 @@ public class HypergeometricFunctions {
         // 1/(E^z*z)
         return F.Power(F.Times(z, F.Power(S.E, z)), -1);
       }
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         IExpr nRe = n.re();
         if (nRe.greaterThan(F.C1).isTrue()) {
           // 1/(n-1)
@@ -545,7 +547,7 @@ public class HypergeometricFunctions {
     }
 
     private static IExpr basicRewrite(IExpr z) {
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.CNInfinity;
       }
       if (z.isDirectedInfinity()) {
@@ -603,7 +605,7 @@ public class HypergeometricFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isNumber()) {
-        if (arg1.isZero()) {
+        if (F.isExactZero(arg1)) {
           return F.C0;
         }
         if (engine.isNumericMode()) {
@@ -661,7 +663,7 @@ public class HypergeometricFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isNumber()) {
-        if (arg1.isZero()) {
+        if (F.isExactZero(arg1)) {
           return F.C0;
         }
         if (engine.isNumericMode()) {
@@ -788,6 +790,10 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       IExpr n = ast.arg1();
 
       if (ast.size() == 4) {
@@ -918,6 +924,10 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      IExpr exactArguments = PolynomialFunctions.exactArguments(ast, engine);
+      if (exactArguments.isPresent()) {
+        return exactArguments;
+      }
       if (ast.isAST2() || ast.isAST3()) {
         final IInexactNumber n = (IInexactNumber) ast.arg1();
         final IInexactNumber z;
@@ -1016,6 +1026,15 @@ public class HypergeometricFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber b = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        if (b instanceof Num && z instanceof Num) {
+          // a large negative argument: the closed forms below take the sine of the rounded
+          // square root, which has no digit of the phase from -10^30 on
+          double oscillating = DMath.hypergeometric0F1OfLargeNegative(((Num) b).doubleValue(),
+              ((Num) z).doubleValue());
+          if (!Double.isNaN(oscillating)) {
+            return F.num(oscillating);
+          }
+        }
         IExpr result = hyperGeometric0F1Symbolic(b, z, engine).eval(engine);
         if (result.isPresent()) {
           return result;
@@ -1213,12 +1232,19 @@ public class HypergeometricFunctions {
 
     private static IExpr hypergeometric1F1Symbolic(IExpr a, IExpr b, IExpr z, EvalEngine engine,
         boolean functionExpand) {
+      int ai = a.toIntDefault();
+      int bi = b.toIntDefault();
+      if (ai > 0 && bi > ai && bi <= 40 && !z.isZero() && (z.isRational() || z.isVariable())) {
+        // integers 1 <= a < b: a polynomial in z and E^z over a power of z
+        IExpr closedForm = engine.evaluate(F.Together(elementary1F1(ai, bi, z)));
+        IExpr factored = engine.evaluate(F.Factor(closedForm));
+        return factored.leafCount() <= closedForm.leafCount() ? factored : closedForm;
+      }
       IExpr result = Hypergeometric1F1.basicRewrite(a, b, z, functionExpand);
       if (result.isPresent()) {
         return result;
       }
 
-      int ai = a.toIntDefault();
       if (ai > 0) {
         if (z.isVariable() && !b.isOne() && mayNameBranch(a, b, z, functionExpand)) {
           IInteger n = F.ZZ(ai);
@@ -1280,6 +1306,29 @@ public class HypergeometricFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>Hypergeometric1F1(a, b, z)</code> for integers <code>0 &lt;= a &lt; b</code>:
+     * <code>1F1(1, b, z) == (b-1)!/z^(b-1)*(E^z - Sum(z^k/k!, {k, 0, b-2}))</code>, and upwards in
+     * <code>a</code> with
+     * <code>a*1F1(a+1) == (b-a)*1F1(a-1) + (2*a-b+z)*1F1(a)</code>.
+     */
+    private static IExpr elementary1F1(int a, int b, IExpr z) {
+      IExpr previous = F.C1;
+      IASTAppendable partial = F.PlusAlloc(b);
+      for (int k = 0; k <= b - 2; k++) {
+        partial.append(F.Times(F.Power(z, F.ZZ(k)), F.Power(F.Factorial(F.ZZ(k)), F.CN1)));
+      }
+      IExpr current = F.Times(F.Factorial(F.ZZ(b - 1)), F.Power(z, F.ZZ(1 - b)),
+          F.Subtract(F.Exp(z), partial));
+      for (int k = 1; k < a; k++) {
+        IExpr next = F.Times(F.QQ(1, k), F.Plus(F.Times(F.ZZ(b - k), previous),
+            F.Times(F.Plus(F.ZZ(2 * k - b), z), current)));
+        previous = current;
+        current = next;
+      }
+      return current;
     }
 
     private static IExpr hypergeometric1F1Recursive(int a, IExpr b, IExpr z) {
@@ -1592,6 +1641,15 @@ public class HypergeometricFunctions {
         }
       }
 
+      if (z.isOne() && a.isNumber() && b.isNumber() && c.isNumber()
+          && !(a.isInteger() && !a.isPositive()) && !(b.isInteger() && !b.isPositive())) {
+        IExpr excess = engine.evaluate(F.Re(F.Subtract(c, F.Plus(a, b))));
+        if (excess.isReal() && (!excess.isPositive() || excess.isZero())) {
+          // the series at 1 has a sum only for Re(c-a-b) > 0; what machine numbers leave of
+          // c-a-b = 0 is zero within the tolerance
+          return F.CComplexInfinity;
+        }
+      }
       if (a.isInteger()) {
         if (a.isNegative() && z.isOne()) {
           IInteger n = (IInteger) a.negate();
@@ -2390,7 +2448,7 @@ public class HypergeometricFunctions {
     }
 
     private static IExpr basicRewrite(IExpr arg1) {
-      if (arg1.isZero()) {
+      if (F.isExactZero(arg1)) {
         return F.C0;
       }
       if (arg1.isOne()) {
@@ -2464,7 +2522,7 @@ public class HypergeometricFunctions {
     }
 
     private static IExpr basicRewrite(IExpr z) {
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.C0;
       }
       if (z.isDirectedInfinity()) {
@@ -2568,7 +2626,7 @@ public class HypergeometricFunctions {
     }
 
     private static IExpr basicRewrite(IExpr z) {
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.C0;
       }
       if (z.isDirectedInfinity()) {

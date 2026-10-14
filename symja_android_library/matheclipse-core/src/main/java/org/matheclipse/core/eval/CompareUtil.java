@@ -519,10 +519,6 @@ public class CompareUtil {
   }
 
   /**
-   * The value of a numeric expression with 60, 120 and 240 digits: it is 0 if what is left
-   * shrinks by as many decimals as digits were added, and not 0 as soon as it shrinks less.
-   */
-  /**
    * The numeric value with the given number of digits, for a test inside of an evaluation: the
    * number of digits which the engine prints is the one from before the call. <code>N</code>
    * with a precision sets it for the output of its own result and leaves it set.
@@ -536,15 +532,26 @@ public class CompareUtil {
     }
   }
 
-  private static boolean isZeroWithRisingPrecision(IAST function, EvalEngine engine) {
+  /**
+   * The value of a numeric expression with 120 and 240 digits, each with the extra precision of
+   * <code>N</code>: it is 0 if every digit is lost, or if what is left shrinks by as many decimals
+   * as digits were added, and not 0 if it shrinks less. A difference which loses up to 170
+   * digits is seen that way, <code>Tanh(150)-1</code>.
+   *
+   * @param machineZero the answer if the expression has no value with more digits
+   */
+  private static boolean isZeroWithRisingPrecision(IAST function, boolean machineZero,
+      EvalEngine engine) {
     double previous = Double.NaN;
     int previousDigits = 0;
-    for (int digits = 60; digits <= 240; digits *= 2) {
+    for (int digits = 120; digits <= 240; digits *= 2) {
       IExpr value = evalPrecise(function, digits, engine);
       if (!value.isNumber()) {
-        return false;
+        // no value with more digits: what the machine numbers say
+        return machineZero && previousDigits == 0;
       }
-      if (value.isZero()) {
+      if (F.isExactZero(value)) {
+        // not the zero of a tolerance: 10^(-130) with 120 digits is a number
         return true;
       }
       double magnitude = engine.evalQuiet(F.N(F.Log10(F.Abs(value)))).evalfNaN();
@@ -616,11 +623,15 @@ public class CompareUtil {
             && F.isZero(num.imDoubleValue(), tolerance))) {
           if (num != null && isCancellationOfHugeTerms(function, num, engine)) {
             // terms too large for the machine precision to cancel: more digits decide
-            return isZeroWithRisingPrecision(function, engine);
+            return isZeroWithRisingPrecision(function, false, engine);
           }
           return false;
         }
-        return true;
+        // A machine value next to 0 is what a difference of equal numbers leaves, or a small
+        // number: E^(-30), Sin(10^(-12)), Tanh(100)-1. More digits decide - of exact numbers:
+        // an inexact one has the digits it has, and the tolerance is the test.
+        return function.has(x -> x.isInexactNumber(), true)
+            || isZeroWithRisingPrecision(function, true, engine);
       }
 
       if (function.leafCount() < Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5) {
@@ -656,11 +667,16 @@ public class CompareUtil {
         if (variables.argSize() == 1) {
           IExpr derived = engine.evaluate(F.D(function, variables.get(1)));
           if (derived.isNumericFunction()) {
-            if (!derived.isNumber()) {
-              derived = engine.evalN(derived);
-            }
+            // The derivative is a constant. A number is a coefficient of the function, and
+            // 1.0*^-20 is not 0; an expression may be 0, E^(I*Pi/4)-(-1)^(1/4).
+            Boolean zeroDerivative = null;
             if (derived.isNumber()) {
-              if (derived.isZero()) {
+              zeroDerivative = derived.isZero();
+            } else if (engine.evalN(derived).isNumber()) {
+              zeroDerivative = derived.isPossibleZero(fastTest, tolerance);
+            }
+            if (zeroDerivative != null) {
+              if (zeroDerivative) {
                 COMPARE_TERNARY possibeZero =
                     isPossibeZeroFixedValues(F.C0, function, variables, engine);
                 if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
@@ -849,8 +865,9 @@ public class CompareUtil {
         || h == ID.Hypergeometric2F1 || h == ID.Hypergeometric1F1Regularized
         || h == ID.HypergeometricPFQ || h == ID.HypergeometricPFQRegularized
         || h == ID.HypergeometricU || h == ID.JacobiAmplitude || h == ID.JacobiCD
-        || h == ID.JacobiCN || h == ID.JacobiDC || h == ID.JacobiDN || h == ID.JacobiNC
-        || h == ID.JacobiND || h == ID.JacobiSC || h == ID.JacobiSD || h == ID.JacobiSN
+        || h == ID.JacobiCN || h == ID.JacobiCS || h == ID.JacobiDC || h == ID.JacobiDN
+        || h == ID.JacobiDS || h == ID.JacobiNC || h == ID.JacobiND || h == ID.JacobiNS
+        || h == ID.JacobiSC || h == ID.JacobiSD || h == ID.JacobiSN
         || h == ID.JacobiZeta || h == ID.KleinInvariantJ || h == ID.Log || h == ID.Piecewise
         // || h == ID.Power
         || h == ID.ProductLog

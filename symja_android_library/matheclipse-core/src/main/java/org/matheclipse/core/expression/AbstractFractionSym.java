@@ -1045,7 +1045,17 @@ public abstract class AbstractFractionSym implements IFraction {
     System.out.println("};");
   }
 
+  /**
+   * From <code>2^53</code> on a <code>double</code> is an integer, and there is no continued
+   * fraction of it: the long numbers of that calculation gave one which was 16 away from
+   * <code>123456789012345680.0</code>.
+   */
+  public static final double MIN_INTEGER_DOUBLE = 0x1.0p53;
+
   private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
+    if (Math.abs(value) >= MIN_INTEGER_DOUBLE) {
+      return null;
+    }
     try {
       BigFraction fraction = f.apply(value < 0 ? -value : value);
       if (fraction != null) {// && fraction.getNumerator().signum()!=0) {
@@ -1079,8 +1089,20 @@ public abstract class AbstractFractionSym implements IFraction {
    * @return {@link F#NIL} if no expression was transformed
    */
   public static IExpr rationalize(IExpr expr, double epsilon, boolean useConvergenceMethod) {
+    return rationalize(expr, epsilon, useConvergenceMethod, false);
+  }
+
+  /**
+   * Rationalize only pure numeric numbers in <code>expr</code>.
+   *
+   * @param keepLargeNumbers a number without a fraction which its digits determine is left as it
+   *        is - see {@link RationalizeNumericsVisitor}; otherwise it is the integer which it is
+   * @return {@link F#NIL} if no expression was transformed
+   */
+  public static IExpr rationalize(IExpr expr, double epsilon, boolean useConvergenceMethod,
+      boolean keepLargeNumbers) {
     RationalizeNumericsVisitor rationalizeVisitor =
-        new RationalizeNumericsVisitor(epsilon, useConvergenceMethod);
+        new RationalizeNumericsVisitor(epsilon, useConvergenceMethod, keepLargeNumbers);
     return expr.accept(rationalizeVisitor);
   }
 
@@ -1414,8 +1436,8 @@ public abstract class AbstractFractionSym implements IFraction {
   @Override
   public Apcomplex apcomplexValue() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    Apfloat real = h.divide(new Apfloat(toBigNumerator(), h.precision()),
-        new Apfloat(toBigDenominator(), h.precision()));
+    Apfloat real = h.divide(ApfloatNum.apfloatOf(toBigNumerator(), h.precision()),
+        ApfloatNum.apfloatOf(toBigDenominator(), h.precision()));
     return new Apcomplex(real);
   }
 
@@ -1427,8 +1449,8 @@ public abstract class AbstractFractionSym implements IFraction {
   @Override
   public Apfloat apfloatValue() {
     long precision = EvalEngine.getApfloat().precision();
-    Apfloat n = new Apfloat(toBigNumerator(), precision);
-    Apfloat d = new Apfloat(toBigDenominator(), precision);
+    Apfloat n = ApfloatNum.apfloatOf(toBigNumerator(), precision);
+    Apfloat d = ApfloatNum.apfloatOf(toBigDenominator(), precision);
     return n.divide(d);
   }
 

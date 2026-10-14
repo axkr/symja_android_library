@@ -149,6 +149,9 @@ public class TestSingularities extends ExprEvaluatorTestCase {
     // expr = (x + 1)/(-1.0e-3*x**2 + 0.1*x + 0.1)
     // assert is_increasing(expr, Interval(1,2), x)
     assertEquals("True", increasing("(x + 1)/(-1.0*10^-3*x^2 + 0.1*x + 0.1)", "1<=x<=2"));
+    // the derivative is 1000*x*(2+x)/(100+100*x-x^2)^2: negative between -2 and 0
+    assertEquals("False", increasing("(x + 1)/(-1.0*10^-3*x^2 + 0.1*x + 0.1)", "-3/2<=x<=-1"));
+    assertEquals("True", decreasing("(x + 1)/(-1.0*10^-3*x^2 + 0.1*x + 0.1)", "-3/2<=x<=-1"));
   }
 
   @Test

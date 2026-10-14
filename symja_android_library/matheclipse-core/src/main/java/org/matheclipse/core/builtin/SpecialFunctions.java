@@ -1,5 +1,8 @@
 package org.matheclipse.core.builtin;
 
+import org.matheclipse.external.apfloat.ApcomplexParabolicCylinderMath;
+import org.matheclipse.external.apfloat.ApcomplexCoulombMath;
+import java.util.function.Function;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.external.apfloat.ApcomplexZetaMath;
@@ -42,6 +45,7 @@ import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.DMath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.Num;
@@ -88,6 +92,14 @@ public class SpecialFunctions {
       S.GammaRegularized.setEvaluator(new GammaRegularized());
       S.HurwitzLerchPhi.setEvaluator(new HurwitzLerchPhi());
       S.HypergeometricPFQRegularized.setEvaluator(new HypergeometricPFQRegularized());
+      S.CoulombF.setEvaluator(new Numeric(3,
+          a -> ApcomplexCoulombMath.coulombF(a[0], a[1], a[2])));
+      S.CoulombG.setEvaluator(new Numeric(3,
+          a -> ApcomplexCoulombMath.coulombG(a[0], a[1], a[2])));
+      S.ParabolicCylinderD.setEvaluator(new Numeric(2,
+          a -> ApcomplexParabolicCylinderMath.parabolicCylinderD(a[0], a[1])));
+      S.ScorerGi.setEvaluator(new Numeric(1, a -> ApcomplexParabolicCylinderMath.scorerGi(a[0])));
+      S.ScorerHi.setEvaluator(new Numeric(1, a -> ApcomplexParabolicCylinderMath.scorerHi(a[0])));
       S.InverseErf.setEvaluator(new InverseErf());
       S.InverseErfc.setEvaluator(new InverseErfc());
       S.InverseBetaRegularized.setEvaluator(new InverseBetaRegularized());
@@ -249,7 +261,7 @@ public class SpecialFunctions {
      * @return
      */
     private static IExpr beta(IExpr a, IExpr b) {
-      if (a.isZero() || b.isZero()) {
+      if (F.isExactZero(a) || F.isExactZero(b)) {
         return F.CComplexInfinity;
       }
       // EvalEngine engine = EvalEngine.get();
@@ -306,7 +318,7 @@ public class SpecialFunctions {
     private IExpr incompleteBeta(IExpr z, IExpr a, IExpr b) {
       EvalEngine engine = EvalEngine.get();
       try {
-        if (z.isZero()) {
+        if (F.isExactZero(z)) {
           IExpr re = a.re();
           if (re.isPositiveResult()) {
             return F.C0;
@@ -356,7 +368,7 @@ public class SpecialFunctions {
      * @return
      */
     private IExpr generalizedIncompleteBeta(IExpr z1, IExpr z2, IExpr a, IExpr b) {
-      if (z2.isZero()) {
+      if (F.isExactZero(z2)) {
         IExpr aRe = a.re();
         if (aRe.isPositive()) {
           // https://functions.wolfram.com/GammaBetaErf/Beta4/03/01/03/0001/
@@ -383,6 +395,14 @@ public class SpecialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.isAST2() && ast.arg1() instanceof Num && ast.arg2() instanceof Num) {
+        final double a = ((Num) ast.arg1()).doubleValue();
+        final double b = ((Num) ast.arg2()).doubleValue();
+        if (a > 0.0 && b > 0.0 && Math.max(a, b) >= 20.0) {
+          // machine numbers of any size: the Stirling series, no arbitrary precision routine
+          return F.num(DMath.beta(a, b));
+        }
+      }
       for (int i = 1; i < ast.size(); i++) {
         IExpr argument = ast.get(i);
         if (argument.isReal() && Math.abs(argument.evalf()) > MAX_BETA_ARGUMENT) {
@@ -764,10 +784,10 @@ public class SpecialFunctions {
       if (ast.isAST2()) {
         IExpr z0 = ast.arg1();
         IExpr z1 = ast.arg2();
-        if (z0.isZero()) {
+        if (F.isExactZero(z0)) {
           return F.Erf(z1);
         }
-        if (z1.isZero()) {
+        if (F.isExactZero(z1)) {
           return F.Negate(F.Erf(z0));
         }
         if (z0.isNegativeInfinity() && z1.isInfinity()) {
@@ -777,7 +797,7 @@ public class SpecialFunctions {
       }
 
       IExpr z = ast.arg1();
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.C0;
       }
       if (z.isInfinity()) {
@@ -961,7 +981,7 @@ public class SpecialFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.C1;
       }
       // the DirectedInfinity cases must be tested OUTSIDE an isReal() guard: Infinity is the AST
@@ -1044,7 +1064,7 @@ public class SpecialFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.C0;
       }
       if (z.isInfinity()) {
@@ -1242,11 +1262,115 @@ public class SpecialFunctions {
 
   }
 
+  /**
+   * <code>CoulombF, CoulombG, ParabolicCylinderD, ScorerGi, ScorerHi</code>: functions which are
+   * evaluated for numbers only.
+   */
+  private static class Numeric extends AbstractFunctionEvaluator {
+    private final int arguments;
+    private final Function<Apcomplex[], Apcomplex> routine;
+
+    Numeric(int arguments, Function<Apcomplex[], Apcomplex> routine) {
+      this.arguments = arguments;
+      this.routine = routine;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr z = ast.last();
+      if (z.isZero() && ast.head() != S.CoulombF && ast.head() != S.CoulombG) {
+        IExpr value;
+        if (ast.head() == S.ParabolicCylinderD) {
+          // 2^(v/2)*Sqrt(Pi)/Gamma((1-v)/2)
+          IExpr v = ast.arg1();
+          value = F.Times(F.Power(F.C2, F.Times(F.C1D2, v)), F.Sqrt(S.Pi),
+              F.Power(F.Gamma(F.Times(F.C1D2, F.Subtract(F.C1, v))), F.CN1));
+        } else {
+          // ScorerGi(0) == 1/(3^(7/6)*Gamma(2/3)) and ScorerHi(0) == 2*ScorerGi(0)
+          value = F.Times(ast.head() == S.ScorerHi ? F.C2 : F.C1,
+              F.Power(F.Times(F.Power(F.C3, F.QQ(7, 6)), F.Gamma(F.QQ(2, 3))), F.CN1));
+        }
+        return z.isInexactNumber() ? engine.evalN(value) : value;
+      }
+      // a positive argument of a Coulomb function, and any real one of the others
+      boolean realResult = arguments < 3 || z.isPositive();
+      return WorkingPrecision.evaluate(ast, engine, realResult, routine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return new int[] {arguments, arguments};
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
+
   private static class HypergeometricPFQRegularized extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return F.NIL;
+      if (!ast.arg1().isList() || !ast.arg2().isList() || !ast.arg3().isNumber()) {
+        return F.NIL;
+      }
+      IAST a = (IAST) ast.arg1();
+      IAST b = (IAST) ast.arg2();
+      IExpr z = ast.arg3();
+      if (!a.forAll(x -> x.isNumber()) || !b.forAll(x -> x.isNumber())) {
+        return F.NIL;
+      }
+      if (!engine.isNumericMode() && !z.isInexactNumber() && !a.exists(x -> x.isInexactNumber())
+          && !b.exists(x -> x.isInexactNumber())) {
+        return F.NIL;
+      }
+      // the lower parameter -m with the largest m: the first m+1 terms of the series vanish
+      int position = -1;
+      int m = -1;
+      for (int j = 1; j <= b.argSize(); j++) {
+        if (b.get(j).isNumIntValue()) {
+          int value = b.get(j).toIntDefault();
+          if (value != Integer.MIN_VALUE && value <= 0 && -value > m) {
+            m = -value;
+            position = j;
+          }
+        }
+      }
+      IExpr expr;
+      if (position < 0) {
+        // HypergeometricPFQ(a,b,z)/(Gamma(b1)*...*Gamma(bq))
+        IASTAppendable times = F.TimesAlloc(b.argSize() + 1);
+        times.append(F.HypergeometricPFQ(a, b, z));
+        b.forEach(x -> times.append(F.Power(F.Gamma(x), F.CN1)));
+        expr = times;
+      } else {
+        // z^(m+1)*Pochhammer(a,m+1)/((m+1)!*Gamma(b+m+1))*HypergeometricPFQ(a+m+1,{m+2,b+m+1},z)
+        final IExpr shift = F.ZZ(m + 1);
+        final int skip = position;
+        IASTAppendable upper = F.ListAlloc(a.argSize());
+        IASTAppendable lower = F.ListAlloc(b.argSize());
+        IASTAppendable times = F.TimesAlloc(a.argSize() + b.argSize() + 3);
+        times.append(F.Power(z, shift));
+        times.append(F.Power(F.Factorial(shift), F.CN1));
+        a.forEach(x -> {
+          times.append(F.Pochhammer(x, shift));
+          upper.append(F.Plus(x, shift));
+        });
+        lower.append(F.ZZ(m + 2));
+        for (int j = 1; j <= b.argSize(); j++) {
+          if (j != skip) {
+            IExpr shifted = F.Plus(b.get(j), shift);
+            times.append(F.Power(F.Gamma(shifted), F.CN1));
+            lower.append(shifted);
+          }
+        }
+        times.append(F.HypergeometricPFQ(upper, lower, z));
+        expr = times;
+      }
+      IExpr value = engine.evaluate(expr);
+      return value.isNumber() ? value : F.NIL;
     }
 
     @Override
@@ -1278,9 +1402,19 @@ public class SpecialFunctions {
         // special for numeric values
         return F.C1;
       }
+      return numericFunction(ast, engine);
+    }
 
-      // if (engine.isDoubleMode()) {
-      // }
+    /**
+     * The sum of <code>z^k/(k+a)^s</code> with the principal value of the powers, which is complex
+     * for a negative <code>k+a</code> where {@link LerchPhi} is real.
+     */
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 3) {
+        return WorkingPrecision.evaluate(ast, engine, false, arguments -> ApcomplexZetaMath
+            .lerchPhi(arguments[0], arguments[1], arguments[2]));
+      }
       return F.NIL;
     }
 
@@ -1753,6 +1887,9 @@ public class SpecialFunctions {
     /** Highest {@code n} expanded when {@code a} is symbolic, where the growth is far steeper. */
     private static final int MAX_SYMBOLIC_LERCH_ORDER = 10;
 
+    /** Largest integer {@code a} for which the sum of {@code Abs(a)} terms is written down. */
+    private static final int MAX_INTEGER_LERCH_SHIFT = 1000;
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
@@ -1871,7 +2008,7 @@ public class SpecialFunctions {
       }
 
       int n = a.toIntDefault();
-      if (F.isPresent(n)) {
+      if (F.isPresent(n) && Math.abs(n) <= MAX_INTEGER_LERCH_SHIFT) {
         IExpr polyLog = engine.evaluate(F.PolyLog(s, z));
         if (n <= 0) {
           n = -n;
@@ -1896,27 +2033,30 @@ public class SpecialFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3 && ast.arg1().isNumber() && ast.arg2().isNumber()
           && ast.arg3().isNumber()) {
-        // the series inside the unit circle, for complex arguments and any precision
+        // for complex arguments and any precision
         boolean arbitrary = false;
         boolean real = true;
         for (int i = 1; i <= 3; i++) {
           arbitrary |= ast.get(i) instanceof ApfloatNum || ast.get(i) instanceof ApcomplexNum;
           real &= ast.get(i).isReal();
         }
+        if (real && !((IReal) ast.arg1()).isLT(F.C1)) {
+          // on the branch cut from 1 to infinity
+          real = false;
+        }
         final int digits = arbitrary ? (int) engine.getNumericPrecision()
             : (int) ParserConfig.MACHINE_PRECISION + 1;
         try {
-          Apcomplex shift = CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits);
-          if (shift.real().signum() > 0) {
-            Apcomplex value = ApcomplexZetaMath.lerchPhi(
-                CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits),
-                CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits), shift);
-            if (real || value.imag().signum() == 0) {
-              return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
-            }
-            return arbitrary ? F.complexNum(value)
-                : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
+          // the sum of z^k/((k+a)^2)^(s/2): the terms with a negative k+a have the base -(k+a)
+          Apcomplex value = ApcomplexZetaMath.lerchPhiOfSquares(
+              CarlsonArbitraryPrecision.apcomplex(ast.arg1(), digits),
+              CarlsonArbitraryPrecision.apcomplex(ast.arg2(), digits),
+              CarlsonArbitraryPrecision.apcomplex(ast.arg3(), digits));
+          if (real || value.imag().signum() == 0) {
+            return arbitrary ? F.num(value.real()) : F.num(value.real().doubleValue());
           }
+          return arbitrary ? F.complexNum(value)
+              : F.complexNum(value.real().doubleValue(), value.imag().doubleValue());
         } catch (ArithmeticException | ApfloatRuntimeException ex) {
           Errors.rethrowsInterruptException(ex);
         }
@@ -1929,7 +2069,7 @@ public class SpecialFunctions {
         double s = ast.arg2().evalfNaN();
         double a = ast.arg3().evalfNaN();
         // Fallback if inputs cannot be evaluated to machine-precision doubles
-        if (!Double.isNaN(z) && !Double.isNaN(s) && !Double.isNaN(a)) {
+        if (!Double.isNaN(z) && !Double.isNaN(s) && a > 0.0) {
           // The series expansion only converges for |z| < 1 or (z == 1 and s > 1)
           if (Math.abs(z) < 1.0 || (Math.abs(z - 1.0) < 1e-14 && s > 1.0)) {
             return F.num(lerchPhiNumeric(z, s, a));
@@ -2002,6 +2142,10 @@ public class SpecialFunctions {
 
 
   private static class LogGamma extends AbstractTrigArg1 implements INumeric {
+
+    /** The largest exact argument whose gamma function is written out: 10000! has 35660 digits. */
+    private static final int MAX_EXACT_LOG_GAMMA = 10000;
+
     @Override
     public boolean evalIsReal(IAST ast) {
       return (ast.argSize() == 1 && ast.arg1().isNonNegativeResult());
@@ -2015,7 +2159,7 @@ public class SpecialFunctions {
     @Override
     public IExpr e1DblArg(final double arg1) {
       try {
-        if (F.isZero(arg1)) {
+        if (arg1 == 0.0) {
           return F.CInfinity;
         }
         if (arg1 > 0.0) {
@@ -2032,7 +2176,7 @@ public class SpecialFunctions {
         throw new UnsupportedOperationException();
       }
       try {
-        if (F.isZero(stack[top])) {
+        if (stack[top] == 0.0) {
           return Double.POSITIVE_INFINITY;
         }
         return GammaJS.logGamma(stack[top]);
@@ -2043,14 +2187,15 @@ public class SpecialFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-      if (arg1.isInfinity() || arg1.isZero()) {
+      if (arg1.isInfinity() || F.isExactZero(arg1)) {
         return F.CInfinity;
       }
       if (arg1.isNegativeInfinity() || arg1.isDirectedInfinity(F.CI)
           || arg1.isDirectedInfinity(F.CNI) || arg1.isComplexInfinity()) {
         return F.CComplexInfinity;
       }
-      if (arg1.isPositive()) {
+      if (arg1.isPositive() && ((IReal) arg1).isLT(F.ZZ(MAX_EXACT_LOG_GAMMA))) {
+        // the logarithm of an integer or of a closed form, as long as that can be written down
         if (arg1.isInteger()) {
           return F.Log(F.Factorial(arg1.dec()));
         }
@@ -2094,6 +2239,45 @@ public class SpecialFunctions {
 
 
   private static class PolyGamma extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    /**
+     * <code>PolyGamma(n, x)</code> for <code>n &gt;= 1</code> at a fraction: a half-integer is
+     * brought to <code>1/2</code> by the recurrence
+     * <code>PolyGamma(n, x+1) == PolyGamma(n, x) + (-1)^n*n!/x^(n+1)</code>, and another negative
+     * fraction is reflected to <code>1-x</code>:
+     * <code>PolyGamma(n, x) == (-1)^n*PolyGamma(n, 1-x) - Pi*D(Cot(Pi*x), {x, n})</code>.
+     *
+     * @return {@link F#NIL} for a positive fraction which is no half-integer, and for 1/2
+     */
+    private static IExpr polyGammaAtFraction(int n, IFraction x, EvalEngine engine) {
+      IExpr sign = (n & 1) == 0 ? F.C1 : F.CN1;
+      if (x.denominator().equals(F.C2)) {
+        // x == 1/2 + m
+        int m = x.subtract(F.C1D2).toIntDefault();
+        if (m == 0 || !F.isPresent(m) || Math.abs(m) > 1000) {
+          return F.NIL;
+        }
+        IASTAppendable sum = F.PlusAlloc(Math.abs(m));
+        for (int k = 0; k < Math.abs(m); k++) {
+          // the steps between 1/2 and x
+          IRational step = m > 0 ? F.C1D2.add(F.ZZ(k)) : F.C1D2.subtract(F.ZZ(k + 1));
+          sum.append(F.Power(step, F.ZZ(-(n + 1))));
+        }
+        IExpr steps = F.Times(sign, F.Factorial(F.ZZ(n)), sum);
+        return engine.evaluate(F.Plus(F.PolyGamma(F.ZZ(n), F.C1D2),
+            m > 0 ? steps : F.Times(F.CN1, steps)));
+      }
+      if (!x.isNegative()) {
+        return F.NIL;
+      }
+      ISymbol t = F.Dummy("t");
+      IExpr derivative = engine.evaluate(F.D(F.Cot(F.Times(S.Pi, t)), F.list(t, F.ZZ(n))));
+      if (!derivative.isFree(S.D, true) || !derivative.isFree(S.Derivative, true)) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.Plus(F.Times(sign, F.PolyGamma(F.ZZ(n), F.C1.subtract(x))),
+          F.Times(F.CN1, S.Pi, F.subst(derivative, F.Rule(t, x)))));
+    }
 
     public IExpr e1ApfloatArg(Apfloat arg1) {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
@@ -2237,7 +2421,7 @@ public class SpecialFunctions {
             return S.Indeterminate;
           }
         }
-        if (arg2.isZero() && arg1.isNumber()) {
+        if (F.isExactZero(arg2) && arg1.isNumber()) {
           IReal realPart = ((INumber) arg1).re();
           if (realPart.isLT(F.CN1)) {
             // https://github.com/mtommila/apfloat/issues/54
@@ -2262,6 +2446,13 @@ public class SpecialFunctions {
           long n = arg1.toLongDefault();
           if (F.isPresent(n) && arg2.isNumber()) {
             return arg2.polyGamma(n);
+          }
+        }
+        int order = arg1.toIntDefault();
+        if (order >= 1 && order <= 20 && arg2.isFraction()) {
+          IExpr closedForm = polyGammaAtFraction(order, (IFraction) arg2, engine);
+          if (closedForm.isPresent()) {
+            return closedForm;
           }
         }
         // if (engine.isDoubleMode()) {
@@ -2404,7 +2595,7 @@ public class SpecialFunctions {
     }
 
     private IExpr polyLogSymbolic(IExpr n, IExpr z) {
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.C0;
       }
       if (z.isOne()) {
@@ -2487,7 +2678,7 @@ public class SpecialFunctions {
     }
 
     private IExpr polyLogSymbolic(IExpr n, IExpr p, IExpr z) {
-      if (z.isZero()) {
+      if (F.isExactZero(z)) {
         return F.C0;
       }
       if (n.isOne()) {
@@ -3042,6 +3233,20 @@ public class SpecialFunctions {
     }
   }
 
+  /**
+   * Whether a Struve function of arbitrary precision numbers, which the routines of
+   * {@link ApcomplexStruveMath} have declined, is out of reach of the series of the library too:
+   * its terms grow to <code>E^Abs(z)</code>, and the sum of them doesn't end in a reasonable time
+   * for an argument beyond the limit of those routines.
+   */
+  private static boolean isBeyondStruveSeries(IInexactNumber n, IInexactNumber z) {
+    if (n instanceof ApfloatNum || n instanceof ApcomplexNum || z instanceof ApfloatNum
+        || z instanceof ApcomplexNum) {
+      return !(z.abs().evalf() <= 3000.0);
+    }
+    return false;
+  }
+
   private static final class StruveH extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
@@ -3064,12 +3269,26 @@ public class SpecialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        if (n instanceof Num && z instanceof Num) {
+          try {
+            double machine = DMath.struveHLargeArgument(((Num) n).doubleValue(),
+                ((Num) z).doubleValue());
+            if (!Double.isNaN(machine)) {
+              return F.num(machine);
+            }
+          } catch (ArithmeticException | ApfloatRuntimeException ex) {
+            // the arbitrary precision routines below
+          }
+        }
         // the expansion for a large argument, or the series with the digits which it cancels
         IExpr value = WorkingPrecision.evaluate(n, z, z.isReal() && !z.isNegative(),
             (nu, argument, precision) -> ApcomplexStruveMath.struveH(nu, argument));
         if (value.isPresent()) {
           // on the negative real axis the value is real for some orders only
           return value.isNumber() && !value.isReal() && value.im().isZero() ? value.re() : value;
+        }
+        if (isBeyondStruveSeries(n, z)) {
+          return F.NIL;
         }
         return n.struveH(z);
       }
@@ -3090,7 +3309,9 @@ public class SpecialFunctions {
           IFraction frac = (IFraction) arg1;
           if (frac.denominator().equals(F.C2)) {
             int num = frac.numerator().toIntDefault();
-            if (num != Integer.MIN_VALUE) {
+            // as the half-integer orders of the Bessel functions: the sum of an order beyond has
+            // hundreds of terms, which cancel when they are evaluated
+            if (num != Integer.MIN_VALUE && Math.abs(num) < 42) {
               if (num < 0) {
                 // H_{-n-1/2}(z) = (-1)^n * J_{n+1/2}(z)
                 int n = (-num - 1) / 2;
@@ -3112,7 +3333,7 @@ public class SpecialFunctions {
             }
           }
         }
-        if (arg2.isZero()) {
+        if (F.isExactZero(arg2)) {
           IExpr re = arg1.re();
           if (re.isMinusOne()) {
             return S.Indeterminate;
@@ -3185,6 +3406,9 @@ public class SpecialFunctions {
           // on the negative real axis the value is real for some orders only
           return value.isNumber() && !value.isReal() && value.im().isZero() ? value.re() : value;
         }
+        if (isBeyondStruveSeries(n, z)) {
+          return F.NIL;
+        }
         return n.struveL(z);
       }
       return F.NIL;
@@ -3204,7 +3428,7 @@ public class SpecialFunctions {
           IFraction frac = (IFraction) arg1;
           if (frac.denominator().equals(F.C2)) {
             int num = frac.numerator().toIntDefault();
-            if (num != Integer.MIN_VALUE) {
+            if (num != Integer.MIN_VALUE && Math.abs(num) < 42) {
               if (num < 0) {
                 // L_{-n-1/2}(z) = I_{n+1/2}(z)
                 int n = (-num - 1) / 2;

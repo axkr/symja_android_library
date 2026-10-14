@@ -6,7 +6,10 @@ import java.util.function.Supplier;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.external.apfloat.ApcomplexEllipticMath;
@@ -54,8 +57,19 @@ public final class CarlsonArbitraryPrecision {
         : ApfloatMath.roundToPrecision(x, precision, RoundingMode.HALF_EVEN);
   }
 
-  /** The number as apfloat takes it: a nonzero part with <code>digits</code> digits. */
+  /**
+   * The number as apfloat takes it: a nonzero part with <code>digits</code> digits. A machine number
+   * is the binary number it is, see {@link ApfloatNum#apfloatOf(double, long)}.
+   */
   public static Apcomplex apcomplex(IExpr z, int digits) {
+    if (z instanceof Num) {
+      return ApfloatNum.apfloatOf(((Num) z).doubleValue(), digits);
+    }
+    if (z instanceof ComplexNum) {
+      ComplexNum c = (ComplexNum) z;
+      return new Apcomplex(ApfloatNum.apfloatOf(c.getRealPart(), digits),
+          ApfloatNum.apfloatOf(c.getImaginaryPart(), digits));
+    }
     Apcomplex value = ((INumber) z).apcomplexValue();
     return new Apcomplex(precision(value.real(), digits), precision(value.imag(), digits));
   }
@@ -83,6 +97,15 @@ public final class CarlsonArbitraryPrecision {
   public static IExpr rF(IExpr x, IExpr y, IExpr z, int digits) {
     return evaluate(() -> ApcomplexEllipticMath.carlsonRF(apcomplex(x, digits),
         apcomplex(y, digits), apcomplex(z, digits)), digits);
+  }
+
+  /**
+   * <code>CarlsonRC(x,y) == CarlsonRF(x,y,y)</code>, the Cauchy principal value for a negative real
+   * <code>y</code>
+   */
+  public static IExpr rC(IExpr x, IExpr y, int digits) {
+    return evaluate(
+        () -> ApcomplexEllipticMath.carlsonRC(apcomplex(x, digits), apcomplex(y, digits)), digits);
   }
 
   /** <code>CarlsonRD(x,y,z) == CarlsonRJ(x,y,z,z)</code> */

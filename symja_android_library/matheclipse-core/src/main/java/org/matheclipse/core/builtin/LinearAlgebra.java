@@ -67,9 +67,13 @@ import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.eval.util.SymbolicDeterminant;
 import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FittedModelExpr;
 import org.matheclipse.core.expression.data.LinearSolveFunctionExpr;
@@ -85,6 +89,7 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
@@ -916,9 +921,15 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
+      // the threshold of the decomposition is absolute; for the scaled columns it is relative
+      final int[] exponents = columnExponents(matrix);
       final org.hipparchus.linear.LUDecomposition lu =
-          new org.hipparchus.linear.LUDecomposition(matrix);
-      return F.num(lu.getDeterminant());
+          new org.hipparchus.linear.LUDecomposition(scaleColumns(matrix, exponents));
+      int exponent = 0;
+      for (int e : exponents) {
+        exponent += e;
+      }
+      return F.num(Math.scalb(lu.getDeterminant(), exponent));
     }
   }
 
@@ -2112,6 +2123,220 @@ public final class LinearAlgebra {
    * <a href="http://rosettacode.org/wiki/Reduced_row_echelon_form#Java">Rosetta Code - Reduced row
    * echelon form</a>
    */
+  /**
+   * The exponents of the powers of two which bring the largest absolute entry of each column of a
+   * matrix of machine numbers between <code>1/2</code> and <code>1</code> - see
+   * {@link ColumnScaling}.
+   */
+  private static int[] columnExponents(RealMatrix matrix) {
+    final int[] exponents = new int[matrix.getColumnDimension()];
+    for (int j = 0; j < exponents.length; j++) {
+      double max = 0.0;
+      for (int i = 0; i < matrix.getRowDimension(); i++) {
+        max = Math.max(max, Math.abs(matrix.getEntry(i, j)));
+      }
+      if (max > 0.0 && Double.isFinite(max)) {
+        exponents[j] = Math.getExponent(max) + 1;
+      }
+    }
+    return exponents;
+  }
+
+  /** The matrix with column <code>j</code> divided by <code>2^exponents[j]</code>. */
+  private static RealMatrix scaleColumns(RealMatrix matrix, int[] exponents) {
+    final RealMatrix scaled = matrix.copy();
+    for (int j = 0; j < exponents.length; j++) {
+      if (exponents[j] != 0) {
+        for (int i = 0; i < scaled.getRowDimension(); i++) {
+          scaled.setEntry(i, j, Math.scalb(scaled.getEntry(i, j), -exponents[j]));
+        }
+      }
+    }
+    return scaled;
+  }
+
+  /**
+   * The columns of a matrix of inexact numbers, each multiplied by a power of the radix of the
+   * numbers - 2 for machine numbers, 10 for numbers with more digits - so that its largest
+   * absolute entry is between <code>1/radix</code> and <code>1</code>. The tests for zero of the
+   * matrix functions have an absolute tolerance; for the scaled matrix it is a tolerance relative
+   * to each column. So <code>10^-20</code> times a matrix has the rank of the matrix, and the
+   * determinant, the inverse and the null space follow from the ones of the scaled matrix with the
+   * factors. A power of the radix changes no digit of a number.
+   */
+  private static final class ColumnScaling {
+    /** The factor of each column, <code>null</code> for a column which is not scaled. */
+    private final IExpr[] factor;
+
+    private final FieldMatrix<IExpr> scaled;
+
+    private ColumnScaling(IExpr[] factor, FieldMatrix<IExpr> scaled) {
+      this.factor = factor;
+      this.scaled = scaled;
+    }
+
+    /**
+     * @return <code>null</code> if a test for zero or a tolerance of the user is given - it is
+     *         applied to the entries as they are -, an entry is no number, there is no inexact
+     *         number, machine numbers are mixed with numbers of more digits, or no column needs a
+     *         factor
+     */
+    static ColumnScaling of(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+      if (!(zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest
+          || (zeroChecker instanceof AbstractMatrix1Expr.ToleranceTest
+              && !((AbstractMatrix1Expr.ToleranceTest) zeroChecker).isGiven()))) {
+        return null;
+      }
+      final int rows = matrix.getRowDimension();
+      final int cols = matrix.getColumnDimension();
+      boolean machine = false;
+      boolean arbitrary = false;
+      for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+          final IExpr entry = matrix.getEntry(i, j);
+          if (!entry.isNumber()) {
+            return null;
+          }
+          if (entry instanceof Num || entry instanceof ComplexNum) {
+            machine = true;
+          } else if (entry instanceof ApfloatNum || entry instanceof ApcomplexNum) {
+            arbitrary = true;
+          }
+        }
+      }
+      if (machine == arbitrary) {
+        return null;
+      }
+      final IExpr[] factor = new IExpr[cols];
+      boolean scale = false;
+      for (int j = 0; j < cols; j++) {
+        if (machine) {
+          double max = 0.0;
+          for (int i = 0; i < rows; i++) {
+            final INumber entry = (INumber) matrix.getEntry(i, j);
+            max = Math.max(max, Math.hypot(entry.reDoubleValue(), entry.imDoubleValue()));
+          }
+          if (max > 0.0 && Double.isFinite(max)) {
+            final int exponent = Math.getExponent(max) + 1;
+            if (exponent != 0) {
+              factor[j] = F.num(Math.scalb(1.0, -exponent));
+              scale = true;
+            }
+          }
+        } else {
+          long max = Long.MIN_VALUE;
+          for (int i = 0; i < rows; i++) {
+            final IExpr entry = matrix.getEntry(i, j);
+            if (!entry.isZero()) {
+              max = Math.max(max, ((INumber) entry).apcomplexValue().scale());
+            }
+          }
+          if (max != Long.MIN_VALUE && max != 0L) {
+            factor[j] = F.Power(F.C10, F.ZZ(-max)).eval();
+            scale = true;
+          }
+        }
+      }
+      if (!scale) {
+        return null;
+      }
+      final FieldMatrix<IExpr> scaled = matrix.copy();
+      for (int j = 0; j < cols; j++) {
+        if (factor[j] != null) {
+          for (int i = 0; i < rows; i++) {
+            scaled.setEntry(i, j, scaled.getEntry(i, j).times(factor[j]));
+          }
+        }
+      }
+      return new ColumnScaling(factor, scaled);
+    }
+
+    FieldMatrix<IExpr> scaled() {
+      return scaled;
+    }
+
+    /** The determinant of the matrix: the one of the scaled matrix divided by the factors. */
+    IExpr determinant(IExpr scaledDeterminant) {
+      IExpr result = scaledDeterminant;
+      for (IExpr f : factor) {
+        if (f != null) {
+          result = result.divide(f);
+        }
+      }
+      return result;
+    }
+
+    /**
+     * The inverse of the matrix: row <code>j</code> of the inverse of the scaled matrix times the
+     * factor of column <code>j</code>.
+     */
+    FieldMatrix<IExpr> inverse(FieldMatrix<IExpr> scaledInverse) {
+      final FieldMatrix<IExpr> result = scaledInverse.copy();
+      for (int j = 0; j < factor.length; j++) {
+        if (factor[j] != null) {
+          for (int k = 0; k < result.getColumnDimension(); k++) {
+            result.setEntry(j, k, result.getEntry(j, k).times(factor[j]));
+          }
+        }
+      }
+      return result;
+    }
+
+    /**
+     * The row reduced matrix of the matrix: a row of the scaled one, whose pivot is in column
+     * <code>p</code>, with the entry in column <code>k</code> times the factor of <code>p</code>
+     * divided by the one of <code>k</code>.
+     */
+    FieldMatrix<IExpr> rowReduced(FieldMatrix<IExpr> scaledReduced) {
+      final FieldMatrix<IExpr> result = scaledReduced.copy();
+      for (int i = 0; i < result.getRowDimension(); i++) {
+        int pivot = -1;
+        for (int k = 0; k < result.getColumnDimension(); k++) {
+          if (!result.getEntry(i, k).isZero()) {
+            pivot = k;
+            break;
+          }
+        }
+        if (pivot < 0) {
+          continue;
+        }
+        for (int k = pivot + 1; k < result.getColumnDimension(); k++) {
+          result.setEntry(i, k, ratio(result.getEntry(i, k), pivot, k));
+        }
+      }
+      return result;
+    }
+
+    /**
+     * A vector of the null space of the scaled matrix, whose free variable is column
+     * <code>free</code>, as a vector of the null space of the matrix: entry <code>j</code> times
+     * the factor of <code>j</code> divided by the one of <code>free</code>, so that the free
+     * variable is 1 again.
+     */
+    void nullVector(FieldMatrix<IExpr> vectors, int row, int free) {
+      for (int j = 0; j < vectors.getColumnDimension(); j++) {
+        if (j != free) {
+          vectors.setEntry(row, j, ratio(vectors.getEntry(row, j), j, free));
+        }
+      }
+    }
+
+    /** <code>entry</code> times the factor of column <code>p</code> divided by the one of <code>k</code>. */
+    private IExpr ratio(IExpr entry, int p, int k) {
+      if (entry.isZero()) {
+        return entry;
+      }
+      IExpr result = entry;
+      if (factor[p] != null) {
+        result = result.times(factor[p]);
+      }
+      if (factor[k] != null) {
+        result = result.divide(factor[k]);
+      }
+      return result;
+    }
+  }
+
   private static final class FieldReducedRowEchelonForm {
     /** Wrapper for a row and column index. */
     private static class RowColIndex {
@@ -2142,6 +2367,12 @@ public final class LinearAlgebra {
 
     private final Predicate<IExpr> zeroChecker;
 
+    /** The columns of an inexact matrix, which is reduced scaled - or <code>null</code>. */
+    private final ColumnScaling scaling;
+
+    /** The row reduced matrix of the matrix itself, if it was reduced scaled. */
+    private FieldMatrix<IExpr> unscaledCache;
+
     /**
      * Constructor which creates row reduced echelon matrix from the given <code>
      * FieldMatrix&lt;T&gt;</code> matrix.
@@ -2161,19 +2392,48 @@ public final class LinearAlgebra {
       this.numCols = matrix.getColumnDimension();
       this.matrixRankCache = -1;
       this.nullSpaceCache = null;
+      // the tests for zero have an absolute tolerance: an inexact matrix is reduced with columns
+      // of the size 1, where the tolerance is relative to each column
+      this.scaling = ColumnScaling.of(matrix, zeroChecker);
+      final FieldMatrix<IExpr> reduced = scaling == null ? matrix : scaling.scaled();
       if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
-        FieldMatrix<IExpr> exact = FractionFreeElimination.rowReduce(matrix);
+        FieldMatrix<IExpr> exact = FractionFreeElimination.rowReduce(reduced);
         if (exact != null) {
           this.rowReducedMatrix = exact;
+          chopScaled();
           return;
         }
       }
-      this.rowReducedMatrix = matrix.copy();
+      this.rowReducedMatrix = reduced.copy();
       if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
         rowReduce();
       } else {
         rowReduceAdvancedZeroTest();
       }
+      chopScaled();
+    }
+
+    /**
+     * What the floating point arithmetic leaves of a zero is zero: the test is relative to the
+     * column only while the columns are scaled.
+     */
+    private void chopScaled() {
+      if (scaling == null) {
+        return;
+      }
+      for (int i = 0; i < numRows; i++) {
+        for (int j = 0; j < numCols; j++) {
+          final IExpr entry = rowReducedMatrix.getEntry(i, j);
+          if (!entry.isZero() && isZero(entry)) {
+            rowReducedMatrix.setEntry(i, j, F.CD0);
+          }
+        }
+      }
+    }
+
+    /** Whether the matrix was reduced with scaled columns, and its zeros are set already. */
+    public boolean isScaled() {
+      return scaling != null;
     }
 
     private RowColIndex findPivot(RowColIndex a) {
@@ -2305,6 +2565,9 @@ public final class LinearAlgebra {
       for (int freeCol = numCols - 1; freeCol >= 0; freeCol--) {
         if (!isPivotCol[freeCol]) {
           nullSpaceCache.setEntry(row, freeCol, F.C1);
+          if (scaling != null) {
+            scaling.nullVector(nullSpaceCache, row, freeCol);
+          }
           row++;
         }
       }
@@ -2319,7 +2582,13 @@ public final class LinearAlgebra {
      *
      */
     public FieldMatrix<IExpr> getRowReducedMatrix() {
-      return rowReducedMatrix;
+      if (scaling == null) {
+        return rowReducedMatrix;
+      }
+      if (unscaledCache == null) {
+        unscaledCache = scaling.rowReduced(rowReducedMatrix);
+      }
+      return unscaledCache;
     }
 
     /**
@@ -3588,8 +3857,10 @@ public final class LinearAlgebra {
 
     @Override
     public RealMatrix realMatrixEval(RealMatrix matrix) {
+      // the threshold of the decomposition is absolute; for the scaled columns it is relative
+      final int[] exponents = columnExponents(matrix);
       final org.hipparchus.linear.LUDecomposition lu =
-          new org.hipparchus.linear.LUDecomposition(matrix);
+          new org.hipparchus.linear.LUDecomposition(scaleColumns(matrix, exponents));
       DecompositionSolver solver = lu.getSolver();
       if (!solver.isNonSingular()) {
         // Matrix `1` is singular.
@@ -3597,7 +3868,16 @@ public final class LinearAlgebra {
             EvalEngine.get());
         return null;
       }
-      return solver.getInverse();
+      // the inverse of A.C is C^-1.A^-1: row j of A^-1 is row j of it times the factor of column j
+      final RealMatrix inverse = solver.getInverse();
+      for (int j = 0; j < exponents.length; j++) {
+        if (exponents[j] != 0) {
+          for (int k = 0; k < inverse.getColumnDimension(); k++) {
+            inverse.setEntry(j, k, Math.scalb(inverse.getEntry(j, k), -exponents[j]));
+          }
+        }
+      }
+      return inverse;
     }
 
     @Override
@@ -5896,7 +6176,7 @@ public final class LinearAlgebra {
             // FieldReducedRowEchelonForm only uses the zero-checker for pivot detection.
             // Floating-point arithmetic leaves residuals (e.g. 5.40786e-16) in entries
             // that should be exactly 0. Apply the checker to every output entry.
-            if (ast.arg1().isNumericMode()) {
+            if (ast.arg1().isNumericMode() && !fmw.isScaled()) {
               final int rows = result.getRowDimension();
               final int cols = result.getColumnDimension();
               for (int i = 0; i < rows; i++) {
@@ -7276,6 +7556,11 @@ public final class LinearAlgebra {
     if (matrix.getRowDimension() == 3 && matrix.getColumnDimension() == 3) {
       return determinant3x3(matrix);
     }
+    final ColumnScaling scaling = ColumnScaling.of(matrix, zeroChecker);
+    if (scaling != null) {
+      // the pivots are tested relative to their columns
+      return scaling.determinant(determinant(scaling.scaled(), zeroChecker));
+    }
     if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
       IExpr exact = FractionFreeElimination.determinant(matrix);
       if (exact != null) {
@@ -7662,6 +7947,20 @@ public final class LinearAlgebra {
       }
       return adjugate;
     }
+    final ColumnScaling scaling = ColumnScaling.of(matrix, zeroChecker);
+    if (scaling != null) {
+      // the pivots are tested relative to their columns
+      final FieldMatrix<IExpr> inverse = numericInverse(scaling.scaled(), zeroChecker, matrix);
+      return inverse == null ? null : scaling.inverse(inverse);
+    }
+    return numericInverse(matrix, zeroChecker, matrix);
+  }
+
+  /**
+   * @param shown the matrix of the message, if it is singular
+   */
+  private static FieldMatrix<IExpr> numericInverse(FieldMatrix<IExpr> matrix,
+      Predicate<IExpr> zeroChecker, FieldMatrix<IExpr> shown) {
     if (zeroChecker instanceof AbstractMatrix1Expr.PossibleZeroQTest) {
       FieldMatrix<IExpr> exact = FractionFreeElimination.inverse(matrix);
       if (exact != null) {
@@ -7676,7 +7975,7 @@ public final class LinearAlgebra {
     FieldDecompositionSolver<IExpr> solver = lu.getSolver();
     if (!solver.isNonSingular()) {
       // Matrix `1` is singular.
-      Errors.printMessage(S.Inverse, "sing", F.list(Convert.matrix2List(matrix, false)),
+      Errors.printMessage(S.Inverse, "sing", F.list(Convert.matrix2List(shown, false)),
           EvalEngine.get());
       return null;
     }
