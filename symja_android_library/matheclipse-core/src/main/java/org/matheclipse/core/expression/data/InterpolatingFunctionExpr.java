@@ -34,6 +34,9 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
    */
   double max;
 
+  /** The degree of the interpolating polynomials. */
+  int order = 3;
+
   /**
    * Wrapper for an interpolating function represented as an {@link IAST}. This variant returns the
    * original stored AST via {@link #normal(boolean)}.
@@ -61,6 +64,13 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
      */
     public ASTFunctionExpr(final IAST interpolator, double min, double max) {
       super(interpolator, min, max);
+    }
+
+    @Override
+    public IExpr copy() {
+      ASTFunctionExpr function = new ASTFunctionExpr(toData(), min, max);
+      function.order = order;
+      return function;
     }
   }
 
@@ -103,6 +113,9 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     /** The point the initial conditions were given at, separating the two directions. */
     private final double t0;
 
+    /** The state at <code>t0</code>: the value on a domain of the single point <code>t0</code>. */
+    private double[] initialState = null;
+
     /**
      * @param forward the model covering <code>[t0, max]</code>, or <code>null</code>
      * @param backward the model covering <code>[min, t0]</code>, or <code>null</code>
@@ -131,13 +144,20 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
         // the requested range lies entirely on the other side of t0
         model = models[1];
       }
+      if (model == null) {
+        // nothing was integrated: the domain is t0 alone
+        return F.num(initialState[component]);
+      }
       return F.num(model.getInterpolatedState(t).getPrimaryState()[component]);
     }
 
     @Override
     public IExpr copy() {
       DenseOutputModel[] models = toData();
-      return new ODEFunctionExpr(models[0], models[1], t0, component, min, max);
+      ODEFunctionExpr function =
+          new ODEFunctionExpr(models[0], models[1], t0, component, min, max);
+      function.initialState = initialState;
+      return function;
     }
 
     /**
@@ -265,6 +285,23 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   }
 
   /**
+   * Create a new instance wrapping an {@link IAST} interpolator of polynomials of degree
+   * <code>order</code>.
+   *
+   * @param interpolator the AST representing the interpolator
+   * @param min the minimum domain value
+   * @param max the maximum domain value
+   * @param order the degree of the interpolating polynomials
+   * @return a new {@link InterpolatingFunctionExpr} instance
+   */
+  public static InterpolatingFunctionExpr newInstance(final IAST interpolator, double min,
+      double max, int order) {
+    ASTFunctionExpr function = new ASTFunctionExpr(interpolator, min, max);
+    function.order = order;
+    return function;
+  }
+
+  /**
    * Create a new instance wrapping an {@link UpdatingMultipleLinearRegression} model.
    *
    * @param value the regression model instance
@@ -293,6 +330,22 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   public static InterpolatingFunctionExpr newInstance(final DenseOutputModel forward,
       final DenseOutputModel backward, double t0, int component, double min, double max) {
     return new ODEFunctionExpr(forward, backward, t0, component, min, max);
+  }
+
+  /**
+   * Create a new instance for the solution of an ODE on the single point <code>t0</code>, where
+   * nothing is integrated and the function is the initial value.
+   *
+   * @param initialState the state vector at <code>t0</code>
+   * @param t0 the point the initial conditions were given at
+   * @param component the component of the state vector this function reads
+   * @return a new {@link InterpolatingFunctionExpr} instance
+   */
+  public static InterpolatingFunctionExpr newInstance(final double[] initialState, double t0,
+      int component) {
+    ODEFunctionExpr function = new ODEFunctionExpr(null, null, t0, component, t0, t0);
+    function.initialState = initialState;
+    return function;
   }
 
   /**
@@ -375,6 +428,17 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     }
     if (ast.head() instanceof InterpolatingFunctionExpr && ast.isAST1()) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isString()) {
+        InterpolatingFunctionExpr<?> function = (InterpolatingFunctionExpr<?>) ast.head();
+        String property = arg1.toString();
+        if (property.equals("Domain")) {
+          return F.list(F.list(F.num(function.min), F.num(function.max)));
+        }
+        if (property.equals("InterpolationOrder") && function instanceof ASTFunctionExpr) {
+          return F.list(F.ZZ(function.order));
+        }
+        return F.NIL;
+      }
       if (arg1.isComplex() || arg1.isComplexNumeric()) {
         return F.NIL;
       }

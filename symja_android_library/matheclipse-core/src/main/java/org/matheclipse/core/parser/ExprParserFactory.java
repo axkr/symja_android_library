@@ -332,6 +332,12 @@ public class ExprParserFactory implements IParserFactory {
         if (rhs.isTimes() && rhs.first().isNumber()) {
           return F.Plus(lhs, ((IAST) rhs).setAtCopy(1, rhs.first().negate()));
         }
+        if (rhs.isTimes()) {
+          // -1 in front of the factors as they were written; F.Times() would sort them
+          IASTAppendable negated = ((IAST) rhs).copyAppendable(1);
+          negated.append(1, F.CN1);
+          return F.Plus(lhs, negated);
+        }
         return F.Plus(lhs, F.Times(F.CN1, rhs));
       }
     }

@@ -560,6 +560,8 @@ public class Errors {
       "rect", "Nonrectangular tensor encountered", //
       "rectn", "Rectangular array of real numbers is expected at position `1` in `2`.", //
       "rectt", "Rectangular array expected at position `1` in `2`.", //
+      "reged",
+      "The point `1` is at the edge of the search region `2` in coordinate `3` and the computed search direction points outside the region.", //
       "reppoint", "`1` contains repeated integers.", //
       "reps",
       "(`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be used for replacing.", //

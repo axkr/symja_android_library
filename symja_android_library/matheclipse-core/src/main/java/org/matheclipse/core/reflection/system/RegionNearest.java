@@ -28,9 +28,10 @@ public class RegionNearest extends AbstractFunctionEvaluator {
     if (arg1.isAST(S.Region, 1)) {
       arg1 = arg1.first();
     }
-    arg1 = MeshFunctions.normalizeRegion(arg1);
-    {
+    if (arg1.isAST(S.ImplicitRegion, 3)) {
+      return implicitNearest((IAST) arg1, p, engine);
     }
+    arg1 = MeshFunctions.normalizeRegion(arg1);
 
     if (arg1.isAST() && p.isList()) {
       IAST reg = (IAST) arg1;
@@ -58,6 +59,92 @@ public class RegionNearest extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The point of <code>ImplicitRegion(cond, {x1, x2, ...})</code> nearest to a point of machine
+   * numbers: the point itself if it meets the condition, otherwise the numeric minimum of the
+   * squared distance under the condition.
+   *
+   * @return <code>F.NIL</code> if the point is not one of machine numbers or the minimum isn't found
+   */
+  static IExpr implicitNearest(IAST region, IExpr p, EvalEngine engine) {
+    IExpr variables = region.arg2();
+    if (!variables.isList() || !p.isList() || p.argSize() != variables.argSize()
+        || !((IAST) p).forAll(x -> x.isReal()) || !((IAST) p).exists(x -> x.isInexactNumber())
+        || !((IAST) variables).forAll(x -> x.isVariable())) {
+      return F.NIL;
+    }
+    IExpr condition = region.arg1();
+    IASTAppendable rules = F.ListAlloc(p.argSize());
+    for (int i = 1; i <= p.argSize(); i++) {
+      rules.append(F.Rule(variables.getAt(i), p.getAt(i)));
+    }
+    if (engine.evalTrue(F.subst(condition, rules))) {
+      return p;
+    }
+    IExpr distance = F.Total(F.Sqr(F.Subtract(variables, p)));
+    IExpr minimum = engine.evalQuiet(F.NMinimize(F.list(distance, condition), variables));
+    if (!minimum.isList2() || !minimum.second().isListOfRules()) {
+      return F.NIL;
+    }
+    IExpr nearest = engine.evaluate(F.subst(variables, (IAST) minimum.second()));
+    if (!nearest.isList() || !((IAST) nearest).forAll(x -> x.isReal())) {
+      return F.NIL;
+    }
+    return polishOnBoundary(condition, (IAST) variables, p, (IAST) nearest, engine);
+  }
+
+  /**
+   * The nearest point found by the numeric search, refined by Newton's method on the conditions of
+   * a minimum on the boundary <code>g == 0</code> of a single comparison <code>lhs op rhs</code>:
+   * <code>x - p == lambda grad(g)</code>. The search point is kept if the refinement fails or moves
+   * away from it.
+   */
+  private static IExpr polishOnBoundary(IExpr condition, IAST variables, IExpr p, IAST nearest,
+      EvalEngine engine) {
+    if (!condition.isAST(S.Equal, 3) && !condition.isAST(S.LessEqual, 3)
+        && !condition.isAST(S.Less, 3) && !condition.isAST(S.GreaterEqual, 3)
+        && !condition.isAST(S.Greater, 3)) {
+      return nearest;
+    }
+    IExpr g = F.Subtract(condition.first(), condition.second());
+    IExpr lambda = F.Dummy("lambda");
+    IASTAppendable rules = F.ListAlloc(variables.argSize());
+    for (int i = 1; i <= variables.argSize(); i++) {
+      rules.append(F.Rule(variables.get(i), nearest.get(i)));
+    }
+    IExpr gradient = engine.evaluate(F.D(g, F.List(variables)));
+    IExpr gradientAt = engine.evaluate(F.subst(gradient, rules));
+    IExpr norm2 = engine.evaluate(F.Dot(gradientAt, gradientAt));
+    if (!norm2.isReal() || norm2.isZero()) {
+      return nearest;
+    }
+    IExpr lambda0 =
+        engine.evaluate(F.Divide(F.Dot(F.Subtract(nearest, p), gradientAt), norm2));
+    IASTAppendable equations = F.ListAlloc(variables.argSize() + 1);
+    IASTAppendable specs = F.ListAlloc(variables.argSize() + 1);
+    for (int i = 1; i <= variables.argSize(); i++) {
+      equations.append(F.Equal(
+          F.Subtract(F.Subtract(variables.get(i), p.getAt(i)), F.Times(lambda, gradient.getAt(i))),
+          F.C0));
+      specs.append(F.List(variables.get(i), nearest.get(i)));
+    }
+    equations.append(F.Equal(g, F.C0));
+    specs.append(F.List(lambda, lambda0));
+    IASTAppendable findRoot = F.ast(S.FindRoot, 2);
+    findRoot.append(equations);
+    findRoot.append(specs);
+    IExpr root = engine.evalQuiet(findRoot);
+    if (!root.isListOfRules()) {
+      return nearest;
+    }
+    IExpr polished = engine.evaluate(F.subst(variables, (IAST) root));
+    if (!polished.isList() || !((IAST) polished).forAll(x -> x.isReal())) {
+      return nearest;
+    }
+    double moved = engine.evaluate(F.Norm(F.Subtract(polished, nearest))).evalfNaN();
+    return moved < 1.0e-4 ? polished : nearest;
   }
 
   private IExpr pointNearest(IAST reg, IExpr p, EvalEngine engine) {

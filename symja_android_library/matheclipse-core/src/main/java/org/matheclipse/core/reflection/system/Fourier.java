@@ -69,6 +69,18 @@ public class Fourier extends AbstractFunctionOptionEvaluator {
       }
 
       // Handle standard Fourier[list]
+      if (((IAST) listExpr).exists(x -> x.isList())) {
+        // a rectangular array of numbers, transformed along every dimension without a factor, and
+        // the factor of all the dimensions applied once: rounding then leaves 5. as 5.
+        if (!S.ArrayQ.ofQ(engine, listExpr, F.$b(), S.NumericQ)) {
+          // Argument `1` is not a non-empty list or rectangular array of numeric quantities.
+          return Errors.printMessage(ast.topHead(), "fftl", F.list(arg1), engine);
+        }
+        IExpr transformed = computeFourierRecursive(listExpr, 1.0, paramB);
+        long elements = countElements(listExpr);
+        double scale = 1.0 / Math.pow(elements, (1.0 - paramA) / 2.0);
+        return scale == 1.0 ? transformed : engine.evaluate(F.Times(F.num(scale), transformed));
+      }
       return computeFourierRecursive(listExpr, paramA, paramB);
 
     } catch (RuntimeException rex) {
@@ -152,6 +164,18 @@ public class Fourier extends AbstractFunctionOptionEvaluator {
     }
 
     return result;
+  }
+
+  /** The number of elements of a rectangular array. */
+  private static long countElements(IExpr expr) {
+    if (!expr.isList()) {
+      return 1L;
+    }
+    long count = 0L;
+    for (IExpr part : (IAST) expr) {
+      count += countElements(part);
+    }
+    return count;
   }
 
   /**

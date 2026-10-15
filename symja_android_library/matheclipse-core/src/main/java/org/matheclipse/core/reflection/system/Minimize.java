@@ -55,6 +55,10 @@ public class Minimize extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    return Maximize.withNumericFallback(ast, S.NMinimize, engine, () -> evaluateExact(ast, engine));
+  }
+
+  private IExpr evaluateExact(final IAST ast, EvalEngine engine) {
     IExpr plain = Maximize.plainForm(ast);
     if (plain.isPresent()) {
       return plain;

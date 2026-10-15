@@ -36,13 +36,16 @@ public class DiscretePlot extends ListPlot {
       if (variable.isVariable()) {
         // f(n) with a value of {n, n^2} is two sequences, which only its value can say; the
         // probes are the iterator's own values, where a function of an integer is defined
-        List<IExpr> written =
-            function.isList() ? ((IAST) function).asArgsList() : List.of(function);
-        List<IExpr> split = PlotShapeProbe.split(written,
-            PlotShapeProbe.iteratorProbes(new IAST[] {iteratorList}, engine),
-            PlotShapeProbe.SCALAR, false, engine);
-        if (split.size() != written.size()) {
-          function = F.List(split.toArray(new IExpr[0]));
+        // the probes evaluate a written list only: a single body is evaluated once per sample, and
+        // its values say whether it stands for several sequences
+        if (function.isList()) {
+          List<IExpr> written = ((IAST) function).asArgsList();
+          List<IExpr> split = PlotShapeProbe.split(written,
+              PlotShapeProbe.iteratorProbes(new IAST[] {iteratorList}, engine),
+              PlotShapeProbe.SCALAR, false, engine);
+          if (split.size() != written.size()) {
+            function = F.List(split.toArray(new IExpr[0]));
+          }
         }
         IExpr tableValues;
         if (function.isList()) {
@@ -60,7 +63,10 @@ public class DiscretePlot extends ListPlot {
           tableValues = listPlotPoints;
         } else {
           tableValues = S.Table.ofNIL(engine, F.List(variable, function), iteratorList);
-          if (tableValues.isList() && outerWrapper.hasTooltip()) {
+          IAST sequences = tableValues.isList() ? splitListValues((IAST) tableValues) : F.NIL;
+          if (sequences.isPresent()) {
+            tableValues = sequences;
+          } else if (tableValues.isList() && outerWrapper.hasTooltip()) {
             tableValues = labelStems((IAST) tableValues, outerWrapper.tooltip,
                 outerWrapper.tooltipLabelsItself);
           }
@@ -164,6 +170,32 @@ public class DiscretePlot extends ListPlot {
    *
    * @param labelsItself whether each stem names itself instead of sharing {@code label}
    */
+  /**
+   * The pairs <code>{n, {y1, y2, ...}}</code> of a body whose values are lists of the same length,
+   * as that many sequences of pairs <code>{n, yk}</code>.
+   *
+   * @return <code>F.NIL</code> if a value is not such a list
+   */
+  private static IAST splitListValues(IAST pairs) {
+    int length = -1;
+    for (IExpr pair : pairs) {
+      if (!pair.isList2() || !pair.second().isList() || pair.second().argSize() == 0
+          || (length >= 0 && pair.second().argSize() != length)) {
+        return F.NIL;
+      }
+      length = pair.second().argSize();
+    }
+    if (length < 0) {
+      return F.NIL;
+    }
+    IASTAppendable sequences = F.ListAlloc(length);
+    for (int k = 1; k <= length; k++) {
+      final int part = k;
+      sequences.append(F.mapList(pairs, pair -> F.List(pair.first(), pair.second().getAt(part))));
+    }
+    return sequences;
+  }
+
   private static IExpr labelStems(IAST pairs, IExpr label, boolean labelsItself) {
     if (!label.isPresent()) {
       return pairs;
@@ -185,6 +217,11 @@ public class DiscretePlot extends ListPlot {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_INFINITY;
+  }
+
+  @Override
+  protected boolean samplesFirstArgument() {
+    return true;
   }
 
   @Override

@@ -12613,6 +12613,164 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAngleBracketInput() {
+    check("Head(\u2329x\u232A) === AngleBracket", //
+        "True");
+    check("Length(\u3008a, b, c\u3009)", //
+        "3");
+    check("{List @@ (2*\u2329a, b\u232A)[[2]], Length(\u2329\u232A)}", //
+        "{{a,b},0}");
+  }
+
+  @Test
+  public void testInterpolationOrderOption() {
+    check("pts = {{0, 0}, {1, 1}, {2, 0}, {3, 2}, {4, 1}}; f = Interpolation(pts, InterpolationOrder -> 4); "
+        + "{f(\"InterpolationOrder\"), Chop(f(0.5) - InterpolatingPolynomial(pts, x) /. x -> 0.5), "
+        + "Round(Derivative(2)[f][0.5], 0.001)}", //
+        "{{4},0,-7.708}");
+    check("f = Interpolation({{0, 1}, {1, 2}, {2, 0}, {3, 3}, {4, 1}}, InterpolationOrder -> 1); {f(0.5), f(3.5)}", //
+        "{1.5,2.0}");
+    check("f = Interpolation({{0, 0}, {1, 1}, {2, 0}, {3, 2}, {4, 1}}); {f(\"InterpolationOrder\"), f(\"Domain\")}", //
+        "{{3},{{0.0,4.0}}}");
+  }
+
+  @Test
+  public void testFourierOfAnArray() {
+    check("Fourier({{1, 2}, {3, 4}}) // InputForm", //
+        "{{5.0`,-1.0`},{-2.0`,0.0}}");
+    check("InverseFourier(Fourier({{1, 2}, {3, 4}})) // InputForm", //
+        "{{1.0`,2.0`},{3.0`,4.0`}}");
+    check("Fourier({{1, 2}, {3}})", //
+        "Fourier({{1,2},{3}})");
+    check("Fourier({{1, 2}, {3, 4}}, FourierParameters -> {1, -1})", //
+        "{{10.0,-2.0},{-4.0,0.0}}");
+    check("Chop(InverseFourier(Fourier({{1, 2, 5}, {3, 4, 6}})) - {{1, 2, 5}, {3, 4, 6}}, 10^-12)", //
+        "{{0,0,0},{0,0,0}}");
+  }
+
+  @Test
+  public void testEvaluateSequenceInFastEvaluator() {
+    check("Switch(\"y\", Evaluate({{\"x\", 1}, {\"y\", 2}} /. List -> Sequence))", //
+        "2");
+    check("Which(Evaluate(Sequence(False, a, True, b)))", //
+        "b");
+  }
+
+  @Test
+  public void testDiscretePlotSamplesItsBody() {
+    check("c = 0; DiscretePlot((c++; n), {n, 1, 3}); c", //
+        "3");
+    // a body whose values are lists is several sequences
+    check("f(n_) := {n, n^2}; Count(DiscretePlot(f(n), {n, 1, 4}), _Point|_Line, Infinity) == "
+        + "Count(DiscretePlot({n, n^2}, {n, 1, 4}), _Point|_Line, Infinity)", //
+        "True");
+  }
+
+  @Test
+  public void testNearestOperatorForm() {
+    check("Nearest({1, 5, 9, 12})[6, 2]", //
+        "{5,9}");
+    check("Nearest({1, 5, 9, 12})[6]", //
+        "{5}");
+    check("nf = Nearest({{1, 2}, {4, 5}, {7, 8}} -> Automatic, DistanceFunction -> (Abs(#1[[1]] - #2[[1]]) &)); "
+        + "{nf({6, 6}), nf({1, 2}, 2)}", //
+        "{{3},{1,2}}");
+  }
+
+  @Test
+  public void testFindRootBoundedSearch() {
+    check("Abs((t /. FindRoot(Cos(t) - 1/2, {t, 1.2, 0.95, 2.2})) - Pi/3) < 10^-10", //
+        "True");
+    check("Abs((t /. FindRoot(Cos(t) - 1/2, {t, 4.9, 4., 5.35})) - 5*Pi/3) < 10^-10", //
+        "True");
+    // the search from the start leaves the region: the region is searched as a bracket
+    check("Abs((t /. FindRoot(Cos(t) - 1/2, {t, 0.2, 0.95, 2.2})) - Pi/3) < 10^-8", //
+        "True");
+    check("FindRoot(x^2 + 1, {x, 1, 0, 2})", //
+        "FindRoot(1+x^2,{x,1,0,2})");
+  }
+
+  @Test
+  public void testNDSolveOverASinglePoint() {
+    check("s = NDSolve({y'(t) + y(t) == 0, y(0) == 1}, y, {t, 0, 0}); y(0) /. First(s)", //
+        "1.0");
+    check("NDSolveValue({y''(t) + y(t) == 0, y(1) == 2, y'(1) == 0}, y(t), {t, 1, 1}) /. t -> 1", //
+        "2.0");
+  }
+
+  @Test
+  public void testInverseLaplaceTransformOfLog() {
+    check("InverseLaplaceTransform(Log(s)/s, s, t)", //
+        "-EulerGamma-Log(t)");
+    check("InverseLaplaceTransform(a*Log(b*s)/s, s, t)", //
+        "a*(-EulerGamma+Log(b)-Log(t))");
+    check("InverseLaplaceTransform(Log(s)/s^2, s, t)", //
+        "t*(1-EulerGamma-Log(t))");
+  }
+
+  @Test
+  public void testMaximizeWithMachineNumbers() {
+    // the exact methods give up on the machine number: the numeric search
+    check("{v, r} = Maximize({Exp(-1./x)/(1 + y), 250 < x < 750, 250 < y < 750}, {x, y}); "
+        + "{Abs(v - 0.003978755101692835) < 10^-9, Abs((x /. r) - 750) < 0.1, Abs((y /. r) - 250) < 0.1}", //
+        "{True,True,True}");
+    check("{v, r} = Minimize({Exp(-1./x)*(1 + y), 250 < x < 750, 250 < y < 750}, {x, y}); "
+        + "{Abs((x /. r) - 250) < 0.1, Abs((y /. r) - 250) < 0.1}", //
+        "{True,True}");
+    check("Minimize({x^2 - 0.5*x, 0 <= x <= 1}, x)", //
+        "{-0.0625,{x->0.25}}");
+  }
+
+  @Test
+  public void testMaxMinHigherDerivatives() {
+    check("Derivative(0, 2)[Max][0.5, 2.25]", //
+        "0");
+    check("Derivative(0, 3)[Min][0.5, 2.25]", //
+        "0");
+    check("Derivative(1, 1)[Max][1, 2]", //
+        "0");
+    // at a tie the derivative does not exist
+    check("Derivative(1, 1)[Max][1, 1]", //
+        "Derivative(1,1)[Max][1,1]");
+    check("g(t_) := Min(2.25, Max(1.25, t^3)); {Derivative(2)[g][0.5], Derivative(2)[g][1.2]}", //
+        "{0.0,7.2}");
+  }
+
+  @Test
+  public void testRegionIntersectionOfSegments() {
+    check("RegionIntersection(Line({{0, 0}, {2, 2}}), Line({{0, 2}, {2, 0}}))", //
+        "Point({1,1})");
+    check("First(RegionIntersection(Line({{0, 0, 0}, {3, 1, 0}}), Line({{0, 1, 0}, {1, 0, 0}})))", //
+        "{3/4,1/4,0}");
+    check("RegionIntersection(Line({{0, 0}, {1, 1}}), Line({{3, 0}, {3, 5}}))", //
+        "EmptyRegion(2)");
+    check("RegionIntersection(Line({{0, 0, 0}, {1, 0, 0}}), Line({{0, 1, 1}, {0, -1, 1}}))", //
+        "EmptyRegion(3)");
+  }
+
+  @Test
+  public void testRegionNearestOfImplicitRegion() {
+    check("RegionNearest(ImplicitRegion(x^2 + y^2 == 1, {x, y}), {3., 4.})", //
+        "{0.6,0.8}");
+    check("RegionNearest(ImplicitRegion(y - 1 + x^2 <= 0, {x, y}), {0.5, 0.1})", //
+        "{0.5,0.1}");
+    check("Round(RegionNearest(ImplicitRegion(y - 1 + x^2 == 0, {x, y}), {0.5, 0.5}), 0.000001)", //
+        "{0.629961,0.60315}");
+    check("RegionDistance(ImplicitRegion(x^2 + y^2 == 1, {x, y}), {3., 4.})", //
+        "4.0");
+  }
+
+  @Test
+  public void testHeldProductKeepsItsOrder() {
+    check("Hold(a - (h = b)*c) // FullForm", //
+        "Hold(Plus(a, Times(-1, Set(h, b), c)))");
+    check("Hold(z - y*x) // FullForm", //
+        "Hold(Plus(Times(-1, y, x), z))");
+    check("c - a - 2*x*y", //
+        "-a+c-2*x*y");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

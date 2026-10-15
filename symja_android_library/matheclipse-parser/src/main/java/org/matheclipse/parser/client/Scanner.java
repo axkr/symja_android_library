@@ -66,6 +66,15 @@ public abstract class Scanner {
   /** <code>\u2309</code> - the closing bracket of <code>Ceiling</code> */
   protected static final int TT_CEILING_CLOSE = 23;
 
+  /**
+   * <code>\u2329</code> or <code>\u3008</code> - the opening bracket of <code>AngleBracket</code>,
+   * as in <code>\u2329a, b\u232A</code>
+   */
+  protected static final int TT_ANGLE_OPEN = 24;
+
+  /** <code>\u232A</code> or <code>\u3009</code> - the closing bracket of <code>AngleBracket</code> */
+  protected static final int TT_ANGLE_CLOSE = 25;
+
   protected static final int TT_SPAN = 30;
 
   /** Token type: operator found in input string */
@@ -1112,6 +1121,14 @@ public abstract class Scanner {
               fToken = fCurrentChar == '\u2308' ? TT_CEILING_OPEN
                   : fCurrentChar == '\u2309' ? TT_CEILING_CLOSE
                       : fCurrentChar == '\u230A' ? TT_FLOOR_OPEN : TT_FLOOR_CLOSE;
+              return;
+            }
+            if (fCurrentChar == '\u2329' || fCurrentChar == '\u3008') {
+              fToken = TT_ANGLE_OPEN;
+              return;
+            }
+            if (fCurrentChar == '\u232A' || fCurrentChar == '\u3009') {
+              fToken = TT_ANGLE_CLOSE;
               return;
             }
             if (isOperatorCharacters()) {

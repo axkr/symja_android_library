@@ -472,8 +472,7 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         (tMax > system.t0) ? propagate(head, system, tMax, method, engine) : null;
     DenseOutputModel backward =
         (tMin < system.t0) ? propagate(head, system, tMin, method, engine) : null;
-    if (forward == null && backward == null) {
-      // the range is the single point t0, which is not something to integrate over
+    if (forward == null && backward == null && (tMin != system.t0 || tMax != system.t0)) {
       return F.NIL;
     }
     // Read the domain back from the models rather than from the requested range: an event which
@@ -487,8 +486,11 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     for (int j = 0; j < numberOfFunctions; j++) {
       // the solution of function j is state component offset[j], the one holding y rather than one
       // of the derivatives the reduction introduced
-      IExpr interpolation = InterpolatingFunctionExpr.newInstance(forward, backward, system.t0,
-          system.offset[j], domainMin, domainMax);
+      // the range of the single point t0 has the initial value only
+      IExpr interpolation = forward == null && backward == null
+          ? InterpolatingFunctionExpr.newInstance(system.initialState, system.t0, system.offset[j])
+          : InterpolatingFunctionExpr.newInstance(forward, backward, system.t0, system.offset[j],
+              domainMin, domainMax);
       // y(x) as the second argument asks for the solution in the same applied form
       IExpr solution = system.appliedForm[j] //
           ? F.unaryAST1(interpolation, system.timeVar)

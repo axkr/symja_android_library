@@ -4531,6 +4531,23 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
+      if (ast.headID() != ID.Nearest) {
+        // operator form Nearest(data, options)(x) or Nearest(data, options)(x, n)
+        IAST operator = (IAST) ast.head();
+        if (ast.argSize() < 1 || ast.argSize() > 2 || operator.argSize() < 1) {
+          return F.NIL;
+        }
+        IASTAppendable call = F.ast(S.Nearest, operator.argSize() + ast.argSize());
+        call.append(operator.arg1());
+        call.appendArgs(ast);
+        for (int i = 2; i < operator.size(); i++) {
+          if (!operator.get(i).isRuleAST()) {
+            return F.NIL;
+          }
+          call.append(operator.get(i));
+        }
+        return call;
+      }
       if (ast.arg1().isASTOrAssociation()) {
         IAST listArg1 = (IAST) ast.arg1();
         if (listArg1.argSize() > 0) {
@@ -4612,7 +4629,7 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_3_0;
     }
 
     @Override

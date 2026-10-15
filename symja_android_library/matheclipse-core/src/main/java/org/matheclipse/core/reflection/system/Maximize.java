@@ -70,6 +70,10 @@ public class Maximize extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    return Maximize.withNumericFallback(ast, S.NMaximize, engine, () -> evaluateExact(ast, engine));
+  }
+
+  private IExpr evaluateExact(final IAST ast, EvalEngine engine) {
     IExpr plain = plainForm(ast);
     if (plain.isPresent()) {
       return plain;
@@ -466,6 +470,31 @@ public class Maximize extends AbstractFunctionEvaluator {
    * @return the call in its plain form, or {@link F#NIL} if it has this form already or the
    *         integer variables are only a part of the variables
    */
+  /**
+   * The exact extremum, or for a problem with machine numbers which the exact methods leave open,
+   * the numeric one of <code>numericHead</code>.
+   */
+  static IExpr withNumericFallback(IAST ast, ISymbol numericHead, EvalEngine engine,
+      java.util.function.Supplier<IExpr> exact) {
+    if (ast.argSize() < 2 || !ast.arg1().has(x -> x.isInexactNumber(), false)
+        || (ast.isAST3() && ast.arg3() != S.Reals)) {
+      return exact.get();
+    }
+    IExpr result;
+    boolean quiet = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      result = exact.get();
+    } finally {
+      engine.setQuietMode(quiet);
+    }
+    if (result.isPresent()) {
+      return result;
+    }
+    IExpr numeric = engine.evaluate(F.binaryAST2(numericHead, ast.arg1(), ast.arg2()));
+    return numeric.isAST(numericHead) ? F.NIL : numeric;
+  }
+
   static IExpr plainForm(IAST ast) {
     IExpr function = ast.arg1();
     if (!function.isList() || function.argSize() < 2) {

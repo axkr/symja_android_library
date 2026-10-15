@@ -169,10 +169,11 @@ public class Derivative extends AbstractFunctionEvaluator {
   }
 
   /**
-   * A first partial derivative of <code>Max</code> or <code>Min</code> at real numbers:
-   * <code>1</code> for the argument which alone is the extremum and <code>0</code> for the others,
-   * as <code>Derivative(0,1)[Max][0.5, 2.25]</code> is <code>1</code>. At a tie the derivative does
-   * not exist and the expression stays.
+   * A partial derivative of <code>Max</code> or <code>Min</code> at real numbers. Of the first
+   * order: <code>1</code> for the argument which alone is the extremum and <code>0</code> for the
+   * others, as <code>Derivative(0,1)[Max][0.5, 2.25]</code> is <code>1</code>. Of a higher order
+   * <code>0</code>, since the function is one of its arguments near the point. At a tie the
+   * derivative does not exist and the expression stays.
    */
   private static IExpr maxMinDerivative(IAST orders, IExpr function, IAST arguments) {
     if ((function != S.Max && function != S.Min) || arguments == null
@@ -180,14 +181,22 @@ public class Derivative extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     int position = -1;
+    boolean higherOrder = false;
     for (int i = 1; i <= orders.argSize(); i++) {
-      if (orders.get(i).isOne() && position < 0) {
-        position = i;
-      } else if (!orders.get(i).isZero()) {
+      IExpr order = orders.get(i);
+      if (!order.isInteger() || order.isNegative()) {
         return F.NIL;
       }
+      if (order.isZero()) {
+        continue;
+      }
+      if (order.isOne() && position < 0) {
+        position = i;
+      } else {
+        higherOrder = true;
+      }
     }
-    if (position < 0) {
+    if (position < 0 && !higherOrder) {
       return F.NIL;
     }
     double own = Double.NaN;
@@ -200,6 +209,20 @@ public class Derivative extends AbstractFunctionEvaluator {
       if (Double.isNaN(values[i - 1])) {
         return F.NIL;
       }
+    }
+    if (higherOrder) {
+      // zero unless the extremum is reached by two arguments
+      double extremum = values[0];
+      for (double value : values) {
+        extremum = function == S.Max ? Math.max(extremum, value) : Math.min(extremum, value);
+      }
+      int reached = 0;
+      for (double value : values) {
+        if (value == extremum) {
+          reached++;
+        }
+      }
+      return reached == 1 ? F.C0 : F.NIL;
     }
     own = values[position - 1];
     boolean tie = false;

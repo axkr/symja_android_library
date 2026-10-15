@@ -283,6 +283,26 @@ public class Parser extends Scanner {
 
       case TT_LIST_OPEN:
         return parseArguments(getList());
+
+      case TT_ANGLE_OPEN: {
+        // \u2329a, b, ...\u232A is AngleBracket(a, b, ...)
+        final FunctionNode angleBracket =
+            fFactory.createFunction(fFactory.createSymbol("AngleBracket"));
+        fRecursionDepth++;
+        try {
+          getNextToken();
+          if (fToken != TT_ANGLE_CLOSE) {
+            getArguments(angleBracket);
+          }
+          if (fToken != TT_ANGLE_CLOSE) {
+            throwSyntaxError("'\u232A' expected.");
+          }
+        } finally {
+          fRecursionDepth--;
+        }
+        getNextToken();
+        return parseArguments(angleBracket);
+      }
       case TT_BLANK:
       case TT_BLANK_BLANK:
       case TT_BLANK_BLANK_BLANK:
@@ -1297,7 +1317,8 @@ public class Parser extends Scanner {
   private boolean isOperandStart() {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_IDENTIFIER
         || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
-        || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN;
+        || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN
+        || fToken == TT_ANGLE_OPEN;
   }
 
   private ASTNode parseExpression(ASTNode lhs, final int min_precedence) {

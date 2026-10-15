@@ -594,7 +594,50 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     } else if (arg2.isList1() && (arg2.first().isList2() || arg2.first().isList3())) {
       return univariateFindRoot(ast.arg1(), (IAST) arg2.first(), method, maxIterations,
           accuracyGoal, engine);
+    } else if (arg2.isList1() && arg2.first().isAST(S.List, 5)) {
+      return boundedFindRoot(ast.arg1(), (IAST) arg2.first(), method, maxIterations, accuracyGoal,
+          engine);
     }
+    return F.NIL;
+  }
+
+  /**
+   * <code>FindRoot(f, {x, x0, xmin, xmax})</code>: the search starts at <code>x0</code> and stays
+   * in <code>[xmin, xmax]</code>. A root the search from <code>x0</code> finds outside the region is
+   * not taken; the region is then searched as a bracket if <code>f</code> changes its sign on it.
+   */
+  private static IExpr boundedFindRoot(IExpr equations, IAST spec, String method,
+      int maxIterations, int accuracyGoal, EvalEngine engine) {
+    IExpr variable = spec.arg1();
+    double xmin = spec.arg3().evalfNaN();
+    double xmax = spec.get(4).evalfNaN();
+    if (!variable.isSymbol() || Double.isNaN(xmin) || Double.isNaN(xmax) || xmin > xmax) {
+      return F.NIL;
+    }
+    boolean quiet = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      IExpr fromStart = univariateFindRoot(equations, F.list(variable, spec.arg2()), method,
+          maxIterations, accuracyGoal, engine);
+      if (fromStart.isList1() && fromStart.first().isRuleAST()) {
+        double root = fromStart.first().second().evalfNaN();
+        if (root >= xmin && root <= xmax) {
+          return fromStart;
+        }
+      }
+      IExpr bracketed = univariateFindRoot(equations, F.list(variable, spec.arg3(), spec.get(4)),
+          "Brent", maxIterations, accuracyGoal, engine);
+      if (bracketed.isList1() && bracketed.first().isRuleAST()
+          && bracketed.first().second().isNumber()) {
+        return bracketed;
+      }
+    } finally {
+      engine.setQuietMode(quiet);
+    }
+    // The point `1` is at the edge of the search region `2` in coordinate `3` and the computed
+    // search direction points outside the region.
+    Errors.printMessage(S.FindRoot, "reged",
+        F.list(F.List(spec.arg2()), F.List(F.List(spec.arg3(), spec.get(4))), F.C1), engine);
     return F.NIL;
   }
 

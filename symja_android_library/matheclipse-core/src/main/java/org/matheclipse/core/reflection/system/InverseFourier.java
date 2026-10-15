@@ -68,11 +68,34 @@ public class InverseFourier extends AbstractFunctionOptionEvaluator {
       }
 
       // 3. Handle standard InverseFourier[list]
+      if (((IAST) listExpr).exists(x -> x.isList())) {
+        // a rectangular array: transformed along every dimension without a factor, and the factor
+        // of all the dimensions applied once
+        if (!S.ArrayQ.ofQ(engine, listExpr, F.$b(), S.NumericQ)) {
+          // Argument `1` is not a non-empty list or rectangular array of numeric quantities.
+          return Errors.printMessage(ast.topHead(), "fftl", F.list(arg1), engine);
+        }
+        IExpr transformed = computeInverseFourierRecursive(listExpr, -1.0, paramB);
+        double scale = 1.0 / Math.pow(countElements(listExpr), (1.0 + paramA) / 2.0);
+        return scale == 1.0 ? transformed : engine.evaluate(F.Times(F.num(scale), transformed));
+      }
       return computeInverseFourierRecursive(listExpr, paramA, paramB);
 
     } catch (RuntimeException rex) {
       return F.NIL;
     }
+  }
+
+  /** The number of elements of a rectangular array. */
+  private static long countElements(IExpr expr) {
+    if (!expr.isList()) {
+      return 1L;
+    }
+    long count = 0L;
+    for (IExpr part : (IAST) expr) {
+      count += countElements(part);
+    }
+    return count;
   }
 
   /**

@@ -574,6 +574,25 @@ public class ExprParser extends Scanner {
           fRecursionDepth--;
         }
 
+      case TT_ANGLE_OPEN: {
+        // \u2329a, b, ...\u232A is AngleBracket(a, b, ...)
+        IASTAppendable angleBracket = F.ast(convertSymbolOnInput("AngleBracket", "", false), 4);
+        fRecursionDepth++;
+        try {
+          getNextToken();
+          if (fToken != TT_ANGLE_CLOSE) {
+            getArguments(angleBracket);
+          }
+          if (fToken != TT_ANGLE_CLOSE) {
+            throwSyntaxError("'\u232A' expected.");
+          }
+        } finally {
+          fRecursionDepth--;
+        }
+        getNextToken();
+        return parseArguments(angleBracket);
+      }
+
       case TT_BLANK:
       case TT_BLANK_BLANK:
       case TT_BLANK_BLANK_BLANK:
@@ -1457,8 +1476,7 @@ public class ExprParser extends Scanner {
    * a comparison with the characters of the input: no string is created, and the name is neither
    * converted to lower case nor looked up in the system context.
    */
-  private static final SystemName[][] SYSTEM_NAMES =
-      new SystemName[2][SYSTEM_NAMES_MASK + 1];
+  private static final SystemName[][] SYSTEM_NAMES = new SystemName[2][SYSTEM_NAMES_MASK + 1];
 
   /**
    * The place in {@link #SYSTEM_NAMES} of the name which {@link #scanSystemName()} did not find,
@@ -1806,7 +1824,8 @@ public class ExprParser extends Scanner {
   private boolean isOperandStart() {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_ASSOCIATION_OPEN
         || fToken == TT_IDENTIFIER || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
-        || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN;
+        || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN
+        || fToken == TT_ANGLE_OPEN;
   }
 
   /**

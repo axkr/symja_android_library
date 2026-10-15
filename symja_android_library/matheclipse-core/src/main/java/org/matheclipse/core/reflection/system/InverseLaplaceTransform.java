@@ -702,6 +702,10 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
   // s (the variable itself) => DiracDelta'(t)
   // =====================================================================
   private static IExpr trySimpleRules(IExpr f, IExpr s, IExpr t, EvalEngine engine) {
+    IExpr logResult = inverseOfLogOverPower(f, s, t, engine);
+    if (logResult.isPresent()) {
+      return logResult;
+    }
     // Rule: f == s => DiracDelta'(t)
     if (f.equals(s)) {
       return F.unaryAST1(F.unaryAST1(F.Derivative(F.C1), S.DiracDelta), t);
@@ -764,6 +768,33 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator {
    * written with <code>BesselI(0, Sqrt(-c)*t)</code> when <code>c</code> is negative, or
    * {@link F#NIL}.
    */
+  /**
+   * <code>Log(k*s)/s^v</code> with <code>v &gt; 0</code> and <code>k</code> free of <code>s</code>:
+   * <code>t^(v-1)/Gamma(v) * (Log(k) + PolyGamma(v) - Log(t))</code>.
+   */
+  private static IExpr inverseOfLogOverPower(IExpr f, IExpr s, IExpr t, EvalEngine engine) {
+    if (!f.isTimes() || f.argSize() != 2) {
+      return F.NIL;
+    }
+    IExpr log = f.first().isLog() ? f.first() : f.second();
+    IExpr power = log == f.first() ? f.second() : f.first();
+    if (!log.isLog() || !power.isPower() || !power.base().equals(s)
+        || !power.exponent().isFree(s)) {
+      return F.NIL;
+    }
+    IExpr v = engine.evaluate(F.Negate(power.exponent()));
+    if (!engine.evaluate(F.Greater(v, F.C0)).isTrue()) {
+      return F.NIL;
+    }
+    IExpr k = engine.evaluate(F.Divide(log.first(), s));
+    if (!k.isFree(s) || k.isZero()) {
+      return F.NIL;
+    }
+    IExpr logK = engine.evaluate(F.Log(k));
+    return engine.evaluate(F.Times(F.Divide(F.Power(t, F.Subtract(v, F.C1)), F.Gamma(v)),
+        F.Plus(logK, F.PolyGamma(v), F.Negate(F.Log(t)))));
+  }
+
   private static IExpr inverseOfSqrtQuadratic(IExpr f, IExpr s, IExpr t, EvalEngine engine) {
     if (!f.isPower() || !f.exponent().equals(F.CN1D2)) {
       return F.NIL;

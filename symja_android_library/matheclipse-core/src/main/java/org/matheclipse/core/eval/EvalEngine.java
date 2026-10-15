@@ -3155,7 +3155,15 @@ public class EvalEngine implements Serializable {
               return evalWithoutNumericReset(flattened);
             }
           }
-          final IExpr released = ast.evalEvaluate(this);
+          // on the stack while the argument evaluates, so that a released `Sequence(...)` is
+          // spliced into the call and not taken for a top-level result
+          final IExpr released;
+          stackPush(ast);
+          try {
+            released = ast.evalEvaluate(this);
+          } finally {
+            stackPop();
+          }
           if (released.isPresent()) {
             return evalWithoutNumericReset(released);
           }

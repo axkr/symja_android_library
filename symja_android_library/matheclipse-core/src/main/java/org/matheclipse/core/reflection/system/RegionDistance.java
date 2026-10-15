@@ -32,6 +32,10 @@ public class RegionDistance extends AbstractFunctionEvaluator {
     if (arg1.isAST(S.Region, 1)) {
       arg1 = arg1.first();
     }
+    if (arg1.isAST(S.ImplicitRegion, 3)) {
+      IExpr nearest = RegionNearest.implicitNearest((IAST) arg1, p, engine);
+      return nearest.isPresent() ? engine.evaluate(F.Norm(F.Subtract(p, nearest))) : F.NIL;
+    }
 
     if (arg1.isAST()) {
       IAST reg = (IAST) arg1;

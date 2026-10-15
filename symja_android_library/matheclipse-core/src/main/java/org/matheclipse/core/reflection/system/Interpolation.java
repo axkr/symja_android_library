@@ -29,9 +29,17 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       if (!option.isAutomatic()) {
         method = option.toString();
       }
-      IExpr temp = interpolation(ast, dims, method, engine);
+      int order = options.length > 1 && !options[1].isAutomatic() ? options[1].toIntDefault() : 3;
+      if (order < 1) {
+        return F.NIL;
+      }
+      // the call without its options: Interpolation(data) or Interpolation(data, x)
+      IAST call = argSize < ast.argSize() ? ast.copyUntil(argSize + 1) : ast;
+      IExpr temp = order == 3 ? interpolation(call, dims, method, engine)
+          : method.isEmpty() ? polynomialPieces((IAST) ast.arg1(), dims[0], order, engine)
+              : F.NIL;
       if (temp instanceof InterpolatingFunctionExpr) {
-        if (ast.isAST2()) {
+        if (argSize == 2) {
           InterpolatingFunctionExpr ipf = (InterpolatingFunctionExpr) temp;
           return F.unaryAST1(ipf, ast.arg2());
         }
@@ -102,6 +110,39 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * Interpolation with polynomials of the degree <code>order</code>: one through all points where
+   * there are no more than <code>order+1</code>, otherwise between two neighbouring points the
+   * polynomial through the <code>order+1</code> points around them.
+   */
+  private static IExpr polynomialPieces(IAST matrix, int rows, int order, EvalEngine engine) {
+    IASTAppendable abscissas = F.ListAlloc(rows);
+    for (int j = 1; j < matrix.size(); j++) {
+      abscissas.append(matrix.get(j).first());
+    }
+    double min = engine.evaluate(abscissas.apply(S.Min, 1)).evalfNaN();
+    double max = engine.evaluate(abscissas.apply(S.Max, 1)).evalfNaN();
+    if (Double.isNaN(min) || Double.isNaN(max)) {
+      return F.NIL;
+    }
+    if (rows <= order + 1) {
+      return InterpolatingFunctionExpr
+          .newInstance(F.Function(F.InterpolatingPolynomial(matrix, F.Slot1)), min, max, order);
+    }
+    IASTAppendable pieces = F.ListAlloc(rows);
+    for (int j = 1; j < rows; j++) {
+      // the interval from point j to point j+1, with the order+1 points around it
+      int first = Math.max(1, Math.min(rows - order, j - (order - 1) / 2));
+      IASTAppendable data = F.ListAlloc(order + 1);
+      for (int k = first; k <= first + order; k++) {
+        data.append(matrix.get(k));
+      }
+      IExpr condition = j < rows - 1 ? F.Less(F.Slot1, matrix.getPart(j + 1, 1)) : S.True;
+      pieces.append(F.list(F.InterpolatingPolynomial(data, F.Slot1), condition));
+    }
+    return InterpolatingFunctionExpr.newInstance(F.Function(F.Piecewise(pieces)), min, max, order);
+  }
+
   private IAST createComparator(IAST matrix, int i, int j, int size) {
     if (i == 1) {
       // # < matrix[i+2, 1]
@@ -157,8 +198,8 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
-            S.Method}, //
+            S.Method, S.InterpolationOrder}, //
         new IExpr[] {//
-            S.Automatic});
+            S.Automatic, S.Automatic});
   }
 }

@@ -25,6 +25,15 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
   }
 
   /**
+   * Whether the first argument of a call with {@link #localIterators()} is evaluated at every
+   * sample only, as the body of <code>Table</code> is, so that its side effects happen once per
+   * sample. A symbol or <code>Evaluate(...)</code> there is still evaluated first.
+   */
+  protected boolean samplesFirstArgument() {
+    return false;
+  }
+
+  /**
    * Whether a range of the call may have bounds which depend on the variable of an earlier range,
    * and how the call is told the region between them: the number of arguments which its
    * <code>RegionFunction</code> gets before the variables of the ranges, or
@@ -56,13 +65,22 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
     return engine.evalBlock(() -> {
       // as one list, so that a Sequence of options is spliced in and Evaluate is released; a new
       // list, because a copy of the held call would also copy the mark that it is evaluated
+      IExpr first = held.argSize() > 0 ? held.arg1() : F.NIL;
+      boolean holdFirst = samplesFirstArgument() && first.isPresent() && !first.isSymbol()
+          && !first.isAST(S.Evaluate);
       IASTAppendable list = F.ListAlloc(held.argSize());
       list.appendArgs(held);
+      if (holdFirst) {
+        list.remove(1);
+      }
       IExpr arguments = engine.evaluate(list);
       if (!arguments.isList()) {
         return F.NIL;
       }
-      IASTAppendable call = F.ast(held.head(), arguments.argSize());
+      IASTAppendable call = F.ast(held.head(), arguments.argSize() + 1);
+      if (holdFirst) {
+        call.append(first);
+      }
       call.appendArgs((IAST) arguments);
       int regionOffset = dependentRangeOffset();
       if (regionOffset != org.matheclipse.core.builtin.graphics.DependentRange.UNSUPPORTED) {

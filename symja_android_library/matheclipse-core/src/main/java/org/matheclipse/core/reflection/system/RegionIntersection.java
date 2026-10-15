@@ -77,6 +77,9 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
 
     IExpr combined = boxes(regions, embeddingDimension, empty);
     if (combined.isNIL()) {
+      combined = segments(regions, empty, engine);
+    }
+    if (combined.isNIL()) {
       combined = concentricBalls(regions);
     }
     if (combined.isNIL()) {
@@ -109,6 +112,69 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
       }
     }
     return engine.evaluate(F.ast(regions.toArray(new IExpr[0]), S.IntervalIntersection));
+  }
+
+  /**
+   * Two line segments <code>Line({p1, q1})</code> and <code>Line({p2, q2})</code> of real points
+   * which are not parallel: the point where they cross, or the empty region if they miss each
+   * other. Parallel segments are left to the other methods.
+   */
+  private static IExpr segments(List<IExpr> regions, IExpr empty, EvalEngine engine) {
+    if (regions.size() != 2) {
+      return F.NIL;
+    }
+    IAST[] ends = new IAST[4];
+    for (int i = 0; i < 2; i++) {
+      IExpr line = regions.get(i);
+      if (!line.isAST(S.Line, 2) || !line.first().isList2()) {
+        return F.NIL;
+      }
+      for (int j = 0; j < 2; j++) {
+        IExpr point = line.first().getAt(j + 1);
+        if (!point.isList() || !((IAST) point).forAll(x -> x.isReal())) {
+          return F.NIL;
+        }
+        ends[2 * i + j] = (IAST) point;
+      }
+    }
+    int dimension = ends[0].argSize();
+    for (IAST point : ends) {
+      if (point.argSize() != dimension) {
+        return F.NIL;
+      }
+    }
+    IAST p1 = ends[0];
+    IAST p2 = ends[2];
+    IExpr d1 = engine.evaluate(F.Subtract(ends[1], p1));
+    IExpr d2 = engine.evaluate(F.Subtract(ends[3], p2));
+    IExpr w = engine.evaluate(F.Subtract(p2, p1));
+    // p1 + s d1 == p2 + t d2 in the least squares sense: the normal equations of s and t
+    IExpr a11 = engine.evaluate(F.Dot(d1, d1));
+    IExpr a12 = engine.evaluate(F.Dot(d1, d2));
+    IExpr a22 = engine.evaluate(F.Dot(d2, d2));
+    IExpr b1 = engine.evaluate(F.Dot(w, d1));
+    IExpr b2 = engine.evaluate(F.Dot(w, d2));
+    IExpr det = engine.evaluate(F.Subtract(F.Sqr(a12), F.Times(a11, a22)));
+    if (!det.isReal() || det.isZero() || a11.isZero() || a22.isZero()) {
+      return F.NIL;
+    }
+    // a11 s - a12 t == b1, a12 s - a22 t == b2
+    IExpr s = engine.evaluate(F.Divide(F.Subtract(F.Times(a12, b2), F.Times(a22, b1)), det));
+    IExpr t = engine.evaluate(F.Divide(F.Subtract(F.Times(a11, b2), F.Times(a12, b1)), det));
+    if (!s.isReal() || !t.isReal()) {
+      return F.NIL;
+    }
+    IExpr point = engine.evaluate(F.Plus(p1, F.Times(s, d1)));
+    IExpr other = engine.evaluate(F.Plus(p2, F.Times(t, d2)));
+    boolean inside = S.LessEqual.ofQ(engine, F.C0, s, F.C1) && S.LessEqual.ofQ(engine, F.C0, t, F.C1);
+    if (!inside) {
+      return empty;
+    }
+    if (!S.Equal.ofQ(engine, point, other)) {
+      // skew lines in space
+      return empty;
+    }
+    return F.unaryAST1(S.Point, point);
   }
 
   /**
