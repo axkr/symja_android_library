@@ -351,7 +351,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     check("Median(InverseGammaDistribution(n, m))", //
         "m/InverseGammaRegularized(n,1/2)");
     check("Median(InverseGammaDistribution(a,b,g,d))", //
-        "d+b*((1/InverseGammaRegularized(a,1/2)))^(1/g)");
+        "d+b*(1/InverseGammaRegularized(a,1/2))^(1/g)");
     check("Median(GeometricDistribution(n))", //
         "Median(GeometricDistribution(n))");
     check("Median(GumbelDistribution( ))", //

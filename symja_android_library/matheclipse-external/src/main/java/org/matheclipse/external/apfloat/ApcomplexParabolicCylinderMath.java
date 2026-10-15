@@ -79,8 +79,8 @@ public class ApcomplexParabolicCylinderMath
                   argument = h.multiply(z2, half),
                   a = h.multiply(ν, half).negate(),               // -ν/2
                   b = h.multiply(h.subtract(one, ν), half),        // (1-ν)/2
-                  first = reciprocalGamma(h, b),
-                  second = reciprocalGamma(h, a),
+                  first = ApcomplexHypercombMath.reciprocalGamma(h, b),
+                  second = ApcomplexHypercombMath.reciprocalGamma(h, a),
                   sum = Apcomplex.ZERO;
         if (!first.isZero())
         {
@@ -98,16 +98,6 @@ public class ApcomplexParabolicCylinderMath
         // 2^(ν/2) exp(-z^2/4) sqrt(pi)
         Apcomplex factor = h.multiply(h.multiply(h.exp(h.multiply(h.multiply(ν, half), h.log(two))), h.exp(h.multiply(z2, new Apfloat("-0.25", workingPrecision, radix)))), h.sqrt(h.pi()));
         return h.multiply(factor, sum);
-    }
-
-    // 1/gamma(x), which is zero at the poles of the gamma function
-    private static Apcomplex reciprocalGamma(FixedPrecisionApfloatHelper h, Apcomplex x)
-    {
-        if (x.imag().signum() == 0 && x.real().signum() <= 0 && x.real().isInteger())
-        {
-            return Apcomplex.ZERO;
-        }
-        return h.divide(new Apfloat(1, h.precision(), x.radix()), h.gamma(x));
     }
 
     // The confluent hypergeometric series 1F1(a; b; x)

@@ -4848,7 +4848,10 @@ public final class Arithmetic {
         return true;
       }
       if (exponent.isRational() && exponentArg1.isFraction()) {
-        return true;
+        // (x^a)^c == x^(a*c) for every x only for an integer c, or for -1 < a < 1, where the
+        // argument of x^a is a times the argument of x: (z^(3/2))^(1/3) isn't Sqrt(z) for z < 0
+        final IFraction a = (IFraction) exponentArg1;
+        return exponent.isInteger() || (a.isGT(F.CN1) && a.isLT(F.C1));
       }
       if (exponent.isNumIntValue() && exponent.isPositive()) {
         if (exponentArg1.isNumIntValue() && exponentArg1.isPositive()) {
@@ -8090,6 +8093,56 @@ public final class Arithmetic {
   }
 
   /**
+   * <code>a^c*b^d == (a/b^m)^c</code> for every <code>a</code> if <code>b</code> is a positive
+   * rational and <code>d == -m*c</code> for a positive integer <code>m</code>, as
+   * <code>b^d == (b^m)^(-c)</code> and <code>Log(a/b^m) == Log(a)-Log(b^m)</code>:
+   * <code>Sqrt(2/Pi)/Sqrt(2)</code> is <code>1/Sqrt(Pi)</code> and
+   * <code>(Pi/2)^(1/3)/2^(2/3)</code> is <code>Pi^(1/3)/2</code>.
+   *
+   * @return {@link F#NIL} unless the coefficient of <code>a</code> cancels against
+   *         <code>b^m</code>
+   */
+  private static IExpr timesPowerQuotient(IExpr a, IFraction c, IExpr b, IFraction d) {
+    if (!isPositiveRationalBase(b)) {
+      return F.NIL;
+    }
+    IExpr m = d.divide(c).negate();
+    if (!m.isInteger() || !m.isPositive() || ((IInteger) m).isGT(F.C100)) {
+      return F.NIL;
+    }
+    IRational divisor = ((IRational) b).powerRational(((IInteger) m).toLong());
+    if (cancelsCoefficient(a, divisor, c)) {
+      return F.Power(a.divide(divisor), c);
+    }
+    return F.NIL;
+  }
+
+  private static boolean isPositiveRationalBase(IExpr base) {
+    return base.isRational() && base.isPositive() && !base.isOne();
+  }
+
+  /**
+   * Whether the expression is a product with a rational factor which shares a prime factor with
+   * the rational <code>divisor</code>, so that the division cancels (<code>2/Pi</code> and
+   * <code>2</code>, but not <code>2*Pi</code> and <code>62093031</code>), or whose quotient by the
+   * divisor is a perfect power for the root of the <code>exponent</code> (<code>Pi/2</code> and
+   * <code>2</code> for a square root).
+   */
+  private static boolean cancelsCoefficient(IExpr expr, IRational divisor, IFraction exponent) {
+    if (expr.isTimes() && expr.first().isRational() && !expr.first().isMinusOne()) {
+      IRational coefficient = (IRational) expr.first();
+      if (!coefficient.numerator().gcd(divisor.numerator()).isOne()
+          || !coefficient.denominator().gcd(divisor.denominator()).isOne()) {
+        return true;
+      }
+      IRational quotient = coefficient.divideBy(divisor).abs();
+      return EvalEngine.get().evaluate(F.Power(quotient, F.QQ(F.C1, exponent.denominator())))
+          .isRational();
+    }
+    return false;
+  }
+
+  /**
    * Try simplifying <code>(base1 ^ exponent1) * (base2 ^ exponent2)</code>
    *
    * @param base1
@@ -8135,6 +8188,17 @@ public final class Arithmetic {
             } else {
               return F.Power(base1.divide(base2), exponent1);
             }
+          }
+        }
+        if (exponent1.isFraction() && exponent2.isFraction()) {
+          IExpr quotient = timesPowerQuotient(base1, (IFraction) exponent1, base2,
+              (IFraction) exponent2);
+          if (quotient.isPresent()) {
+            return quotient;
+          }
+          quotient = timesPowerQuotient(base2, (IFraction) exponent2, base1, (IFraction) exponent1);
+          if (quotient.isPresent()) {
+            return quotient;
           }
         }
       }

@@ -760,6 +760,12 @@ public class D extends AbstractFunctionOptionEvaluator {
             }
             break;
 
+          case ID.MeijerG:
+            if (function.argSize() == 3 || function.argSize() == 4) {
+              return meijerG(function, x);
+            }
+            break;
+
           case ID.Integrate:
             if (function.argSize() >= 2) {
               IExpr integrateResult = integrate(function, x, engine);
@@ -1048,6 +1054,56 @@ public class D extends AbstractFunctionOptionEvaluator {
       return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g), g.dec().negate()));
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>D(MeijerG({{an},{ap}}, {{bm},{bq}}, z), z)</code> is a G-function with all parameters
+   * smaller by <code>1</code> and one more pair: <code>-1</code> in front of <code>an</code> and
+   * <code>0</code> in front of <code>bq</code>. For the generalized function
+   * <code>MeijerG(..., z, r)</code> all parameters are smaller by <code>r</code>, with
+   * <code>-r</code> in front of <code>ap</code>, <code>1-r</code> in front of <code>bm</code> and
+   * the factor <code>-1/r</code>.
+   */
+  private static IExpr meijerG(final IAST function, IExpr x) {
+    IExpr a = function.arg1();
+    IExpr b = function.arg2();
+    if (!a.isList2() || !b.isList2() || !a.first().isList() || !a.second().isList()
+        || !b.first().isList() || !b.second().isList()) {
+      return F.NIL;
+    }
+    IExpr r = function.argSize() == 4 ? function.arg4() : F.C1;
+    if (!a.isFree(x) || !b.isFree(x) || !r.isFree(x)) {
+      return F.NIL;
+    }
+    IAST an = (IAST) a.first();
+    IAST ap = (IAST) a.second();
+    IAST bm = (IAST) b.first();
+    IAST bq = (IAST) b.second();
+    IExpr z = function.arg3();
+    IExpr minusR = F.Negate(r);
+    IASTAppendable newAn = F.ListAlloc(an.argSize() + 1);
+    IASTAppendable newAp = F.ListAlloc(ap.argSize() + 1);
+    IASTAppendable newBm = F.ListAlloc(bm.argSize() + 1);
+    IASTAppendable newBq = F.ListAlloc(bq.argSize() + 1);
+    IExpr factor;
+    if (function.argSize() == 3) {
+      newAn.append(minusR);
+      newBq.append(F.Subtract(F.C1, r));
+      factor = F.Power(r, F.CN1);
+    } else {
+      newAp.append(minusR);
+      newBm.append(F.Subtract(F.C1, r));
+      factor = F.Negate(F.Power(r, F.CN1));
+    }
+    newAn.appendArgs(an.map(e -> F.Subtract(e, r)));
+    newAp.appendArgs(ap.map(e -> F.Subtract(e, r)));
+    newBm.appendArgs(bm.map(e -> F.Subtract(e, r)));
+    newBq.appendArgs(bq.map(e -> F.Subtract(e, r)));
+    IAST lists1 = F.list(newAn, newAp);
+    IAST lists2 = F.list(newBm, newBq);
+    IAST derivative = function.argSize() == 4 ? F.MeijerG(lists1, lists2, z, r)
+        : F.MeijerG(lists1, lists2, z);
+    return F.Times(factor, derivative, F.D(z, x));
   }
 
   private static IExpr hypergeometricPFQ(final IAST function, IExpr x) {

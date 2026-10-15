@@ -77,6 +77,19 @@ public final class WorkingPrecision {
   }
 
   /**
+   * A routine of a list of numbers that answers at the given precision, or declines with an
+   * <code>ArithmeticException</code>.
+   */
+  @FunctionalInterface
+  public interface ArrayRoutine {
+    /**
+     * @param arguments the arguments, with <code>precision</code> digits (exact zeros stay exact)
+     * @param precision the working precision
+     */
+    Apcomplex apply(Apcomplex[] arguments, int precision);
+  }
+
+  /**
    * <code>routine(arguments)</code> for a function of numbers which has no other evaluation: at
    * machine precision, or at the precision of the engine for arbitrary precision arguments and for
    * exact ones under <code>N(expr, precision)</code>.
@@ -87,11 +100,29 @@ public final class WorkingPrecision {
    */
   public static IExpr evaluate(IAST ast, EvalEngine engine, boolean realResult,
       Function<Apcomplex[], Apcomplex> routine) {
+    IExpr[] numbers = new IExpr[ast.argSize()];
+    for (int i = 0; i < numbers.length; i++) {
+      numbers[i] = ast.get(i + 1);
+    }
+    return evaluate(numbers, engine, realResult, (arguments, precision) -> routine.apply(arguments));
+  }
+
+  /**
+   * <code>routine(numbers)</code> for a function of a list of numbers: at machine precision, or at
+   * the precision of the engine for arbitrary precision numbers and for exact ones under
+   * <code>N(expr, precision)</code>.
+   *
+   * @param numbers the arguments of the routine
+   * @param realResult whether real arguments give a real result
+   * @return {@link F#NIL} if an argument is not a number, all are exact outside of a numeric
+   *         evaluation, or the routine declines
+   */
+  public static IExpr evaluate(IExpr[] numbers, EvalEngine engine, boolean realResult,
+      ArrayRoutine routine) {
     boolean arbitrary = false;
     boolean inexact = false;
     boolean real = true;
-    for (int i = 1; i < ast.size(); i++) {
-      IExpr arg = ast.get(i);
+    for (IExpr arg : numbers) {
       if (!arg.isNumber()) {
         return F.NIL;
       }
@@ -107,13 +138,13 @@ public final class WorkingPrecision {
     }
     final int precision =
         arbitrary ? (int) engine.getNumericPrecision() : (int) ParserConfig.MACHINE_PRECISION + 1;
-    Apcomplex[] arguments = new Apcomplex[ast.argSize()];
+    Apcomplex[] arguments = new Apcomplex[numbers.length];
     for (int i = 0; i < arguments.length; i++) {
-      arguments[i] = CarlsonArbitraryPrecision.apcomplex(ast.get(i + 1), precision);
+      arguments[i] = CarlsonArbitraryPrecision.apcomplex(numbers[i], precision);
     }
     Apcomplex value;
     try {
-      value = routine.apply(arguments);
+      value = routine.apply(arguments, precision);
     } catch (ArithmeticException | ArgumentTypeException | ApfloatRuntimeException ex) {
       Errors.rethrowsInterruptException(ex);
       return F.NIL;

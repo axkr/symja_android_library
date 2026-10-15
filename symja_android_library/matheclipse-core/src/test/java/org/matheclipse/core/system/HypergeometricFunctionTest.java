@@ -644,13 +644,13 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "z^b1*Gamma(1-a1+b1)*Gamma(1-a1+b2)*HypergeometricU(1-a1+b1,1+b1-b2,z)");
     // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/04/0002/
     checkNumeric("N(MeijerG({{}, {2}}, {{1/2, 3/2}, {}}, 3), 50)", //
-        "MeijerG({{},{2}},{{1/2,3/2},{}},3)");
+        "0.041591159875396983670330390749778758626529715159039");
     checkNumeric("MeijerG[{{}, {a}}, {{b, c}, {}}, z]", //
-        "Pi*((z^b*Csc((-b+c)*Pi)*Hypergeometric1F1Regularized(-1+a+b,1+b-c,-z))/Gamma(a-b)+(z^c*Csc((b-c)*Pi)*Hypergeometric1F1Regularized(-\n" //
-            + "1+a+c,1-b+c,-z))/Gamma(a-c))");
+        "Pi*((z^b*Csc((-b+c)*Pi)*Hypergeometric1F1Regularized(1-a+b,1+b-c,-z))/Gamma(a-b)+(z^c*Csc((b-c)*Pi)*Hypergeometric1F1Regularized(\n" //
+            + "1-a+c,1-b+c,-z))/Gamma(a-c))");
     // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/01/0004/
     checkNumeric("MeijerG({{}, {}}, {{b, b + 1/2}, {}}, z)", //
-        "(Sqrt(2*Pi)*z^b)/(Sqrt(2)*E^(2*Sqrt(z)))");
+        "(Sqrt(Pi)*z^b)/E^(2*Sqrt(z))");
     // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/01/0002/
     checkNumeric("MeijerG({{}, {}}, {{b1, b2}, {}}, z)", //
         "2*z^(b1/2+b2/2)*BesselK(-b1+b2,2*Sqrt(z))");

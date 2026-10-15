@@ -140,10 +140,10 @@ public class MeijerGReduce extends AbstractFunctionEvaluator {
                   F.quaternary(F.Inactive(S.MeijerG), aLists, bListsK, zK, F.C1D2));
 
             case ID.BesselY:
-              // BesselY(v, z) = MeijerG({{-(v+1)/2}, {}}, {{v/2, -v/2}, {-(v+1)/2}}, z/2, 1/2)
+              // BesselY(v, z) = MeijerG({{}, {-(v+1)/2}}, {{v/2, -v/2}, {-(v+1)/2}}, z/2, 1/2)
               IExpr vHalfY = F.Times(F.C1D2, v);
               IExpr topY = F.Times(F.CN1D2, F.Plus(v, F.C1));
-              IAST aListsY = F.List(F.List(topY), emptyList);
+              IAST aListsY = F.List(emptyList, F.List(topY));
               IAST bListsY = F.List(F.List(vHalfY, F.Negate(vHalfY)), F.List(topY));
               IExpr zY = F.Times(F.C1D2, aTimesX);
               return F.quaternary(F.Inactive(S.MeijerG), aListsY, bListsY, zY, F.C1D2);

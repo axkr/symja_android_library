@@ -8172,6 +8172,14 @@ public class F extends S {
   }
 
   /**
+   * The generalized Meijer G-function <code>MeijerG({{a1,...,an},{a(n+1),...,ap}},
+   * {{b1,...,bm},{b(m+1),...,bq}}, z, r)</code>.
+   */
+  public static IAST MeijerG(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+    return quaternary(MeijerG, a0, a1, a2, a3);
+  }
+
+  /**
    * Returns {@link S#True} if <code>form</code> matches any element of <code>list</code>, or
    * {@link S#False} otherwise.
    *

@@ -975,7 +975,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(a*x^n+b*m^x==0,x)", //
         "{{x->(-n*ProductLog((-(-b/a)^(1/n)*Log(m))/n))/Log(m)}}");
     check("Solve(c*x^3==2^x,x)", //
-        "{{x->(-3*ProductLog(-1/3*((1/c))^(1/3)*Log(2)))/Log(2)}}");
+        "{{x->(-3*ProductLog(-1/3*(1/c)^(1/3)*Log(2)))/Log(2)}}");
     check("Solve(3^x==-4*x, x)", //
         "{{x->-ProductLog(Log(3)/4)/Log(3)}}");
     check("Solve(x^y==a*y, y)", //
@@ -3079,7 +3079,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(a*x^n+b*Log(c*x)+d==0, x)", //
         "{{x->((b*ProductLog((a*(1/(c*E^(d/b)))^n*n)/b))/(a*n))^(1/n)}}");
     check("Solve(x^a*Log(b*x)+c==0, x)", //
-        "{{x->((-a*c)/ProductLog((-a*c)/((1/b))^a))^(1/a)}}");
+        "{{x->((-a*c)/ProductLog((-a*c)/(1/b)^a))^(1/a)}}");
     check("Solve(x^c*Log(x)==0, x)", //
         "{{x->1},{x->0^(1/c)}}");
     check("Solve(x^c*Log(x)==a, x)", //

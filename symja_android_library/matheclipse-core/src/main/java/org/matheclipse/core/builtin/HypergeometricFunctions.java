@@ -1006,7 +1006,13 @@ public class HypergeometricFunctions {
       if (ast.isAST2()) {
         IExpr a = ast.arg1();
         IExpr z = ast.arg2();
-        // z^(1/2*(1-a))*BesselI(-1+a,2*Sqrt(z))*Gamma(a)
+        // z^(1/2*(1-a))*BesselI(-1+a,2*Sqrt(z))*Gamma(a), with s^(1-a) for z^(1/2*(1-a)) and any
+        // square root s of z
+        IExpr root = squaresTakenOut(z);
+        if (root.isPresent()) {
+          return F.Times(F.Power(root, F.Subtract(F.C1, a)),
+              F.BesselI(F.Plus(F.CN1, a), F.Times(F.C2, root)), F.Gamma(a));
+        }
         return F.Times(F.Power(z, F.Times(F.C1D2, F.Subtract(F.C1, a))),
             F.BesselI(F.Plus(F.CN1, a), F.Times(F.C2, F.Sqrt(z))), F.Gamma(a));
       }
@@ -1078,7 +1084,13 @@ public class HypergeometricFunctions {
       if (ast.isAST2()) {
         IExpr b = ast.arg1();
         IExpr z = ast.arg2();
-        // z^(1/2*(1-b))*BesselI(-1+b,2*Sqrt(z))
+        // z^(1/2*(1-b))*BesselI(-1+b,2*Sqrt(z)), with s^(1-b) for z^(1/2*(1-b)) and any square
+        // root s of z
+        IExpr root = squaresTakenOut(z);
+        if (root.isPresent()) {
+          return F.Times(F.Power(root, F.Subtract(F.C1, b)),
+              F.BesselI(F.Plus(F.CN1, b), F.Times(F.C2, root)));
+        }
         return F.Times(F.Power(z, F.Times(F.C1D2, F.Subtract(F.C1, b))),
             F.BesselI(F.Plus(F.CN1, b), F.Times(F.C2, F.Sqrt(z))));
       }
@@ -1098,12 +1110,22 @@ public class HypergeometricFunctions {
         return F.Power(F.Gamma(b), F.CN1);
       }
       if (b.equals(F.C1D2)) {
+        if (z.isNegativeSigned()) {
+          // Cos(2*Sqrt(-z))/Sqrt(Pi)
+          return F.Divide(F.Cos(F.Times(F.C2, squareRoot(z.negate()))), F.Sqrt(F.Pi));
+        }
         // Cosh(2*Sqrt(z))/Sqrt(Pi)
-        return F.Divide(F.Cosh(F.Times(F.C2, F.Sqrt(z))), F.Sqrt(F.Pi));
+        return F.Divide(F.Cosh(F.Times(F.C2, squareRoot(z))), F.Sqrt(F.Pi));
       }
       if (b.equals(F.C3D2)) {
+        if (z.isNegativeSigned()) {
+          // Sin(2*Sqrt(-z))/(Sqrt(Pi)*Sqrt(-z))
+          IExpr root = squareRoot(z.negate());
+          return F.Divide(F.Sin(F.Times(F.C2, root)), F.Times(F.Sqrt(F.Pi), root));
+        }
         // Sinh(2*Sqrt(z))/(Sqrt(Pi)*Sqrt(z))
-        return F.Divide(F.Sinh(F.Times(F.C2, F.Sqrt(z))), F.Times(F.Sqrt(F.Pi), F.Sqrt(z)));
+        IExpr root = squareRoot(z);
+        return F.Divide(F.Sinh(F.Times(F.C2, root)), F.Times(F.Sqrt(F.Pi), root));
       }
       return F.NIL;
     }
@@ -1186,6 +1208,16 @@ public class HypergeometricFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr z = ast.arg3();
+      if (a.equals(F.C1D2) && b.equals(F.C3D2) && !z.isZero()) {
+        if (z.isNegativeSigned()) {
+          // Sqrt(Pi)*Erf(Sqrt(w))/(2*Sqrt(w)) for z == -w: Erfi(x)/x and Erf(y)/y are the same
+          // even function, with x^2 == -y^2
+          IExpr w = z.negate();
+          return F.Times(F.CSqrtPi, F.Power(F.Times(F.C2, F.Sqrt(w)), F.CN1), F.Erf(F.Sqrt(w)));
+        }
+        // Sqrt(Pi)*Erfi(Sqrt(z))/(2*Sqrt(z))
+        return F.Times(F.CSqrtPi, F.Power(F.Times(F.C2, F.Sqrt(z)), F.CN1), F.Erfi(F.Sqrt(z)));
+      }
       return hypergeometric1F1Symbolic(a, b, z, engine, false);
     }
 
@@ -1472,11 +1504,23 @@ public class HypergeometricFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr z = ast.arg3();
-      return basicRewrite(a, b, z);
+      IExpr result = basicRewrite(a, b, z);
+      if (result.isPresent()) {
+        return result;
+      }
+      if (b.isRational() && !(b.isInteger() && !b.isPositive()) && !engine.isNumericMode()) {
+        // Hypergeometric1F1(a,b,z)/Gamma(b), where Hypergeometric1F1 has a closed form
+        IExpr hypergeometric1F1 = engine.evaluate(F.Hypergeometric1F1(a, b, z));
+        if (hypergeometric1F1.isFree(x -> x.isAST(S.Hypergeometric1F1)
+            || x.isAST(S.Hypergeometric1F1Regularized) || x.isAST(S.HypergeometricPFQ), true)) {
+          return F.Times(F.Power(F.Gamma(b), F.CN1), hypergeometric1F1);
+        }
+      }
+      return F.NIL;
     }
 
     private static IExpr basicRewrite(IExpr a, IExpr b, IExpr z) {
-      if (z.isZero()) {
+      if (z.isZero() || a.isZero()) {
         // 1/Gamma(b)
         return F.Power(F.Gamma(b), F.CN1);
       }
@@ -1796,7 +1840,19 @@ public class HypergeometricFunctions {
       IExpr b = ast.arg2();
       IExpr c = ast.arg3();
       IExpr z = ast.arg4();
-      return basicRewrite(a, b, c, z);
+      IExpr result = basicRewrite(a, b, c, z);
+      if (result.isPresent()) {
+        return result;
+      }
+      if (c.isRational() && !(c.isInteger() && !c.isPositive()) && !engine.isNumericMode()) {
+        // Hypergeometric2F1(a,b,c,z)/Gamma(c), where Hypergeometric2F1 has a closed form
+        IExpr hypergeometric2F1 = engine.evaluate(F.Hypergeometric2F1(a, b, c, z));
+        if (hypergeometric2F1.isFree(x -> x.isAST(S.Hypergeometric2F1)
+            || x.isAST(S.Hypergeometric2F1Regularized) || x.isAST(S.HypergeometricPFQ), true)) {
+          return F.Times(F.Power(F.Gamma(c), F.CN1), hypergeometric2F1);
+        }
+      }
+      return F.NIL;
     }
 
     private static IExpr basicRewrite(IExpr a, IExpr b, IExpr c, IExpr z) {
@@ -2789,6 +2845,50 @@ public class HypergeometricFunctions {
 
   }
 
+  /**
+   * A square root <code>s</code> of <code>z</code>, <code>s^2 == z</code>, with the squares in
+   * <code>z</code> taken out: <code>x</code> for <code>x^2</code>, <code>x/2</code> for
+   * <code>x^2/4</code>. The closed forms of <code>0F1</code> are even functions of the square root
+   * of their argument, so every square root serves them.
+   */
+  private static IExpr squareRoot(IExpr z) {
+    return squaresTakenOut(z).orElseGet(() -> F.Sqrt(z));
+  }
+
+  /** {@link #squareRoot(IExpr)}, or {@link F#NIL} if there is no square in <code>z</code>. */
+  private static IExpr squaresTakenOut(IExpr z) {
+    if (isEvenPower(z)) {
+      return F.Power(z.base(), ((IInteger) z.exponent()).shiftRight(1));
+    }
+    if (z.isTimes()) {
+      IASTAppendable roots = F.TimesAlloc(z.argSize() + 1);
+      IASTAppendable rest = F.TimesAlloc(z.argSize());
+      boolean square = false;
+      for (int i = 1; i < z.size(); i++) {
+        IExpr factor = z.get(i);
+        if (isEvenPower(factor)) {
+          roots.append(F.Power(factor.base(), ((IInteger) factor.exponent()).shiftRight(1)));
+          square = true;
+        } else if (factor.isRational() && factor.isPositive()) {
+          roots.append(F.Sqrt(factor));
+        } else {
+          rest.append(factor);
+        }
+      }
+      if (square) {
+        if (rest.argSize() > 0) {
+          roots.append(F.Sqrt(rest.oneIdentity1()));
+        }
+        return roots.oneIdentity1();
+      }
+    }
+    return F.NIL;
+  }
+
+  private static boolean isEvenPower(IExpr expr) {
+    return expr.isPower() && expr.exponent().isInteger() && ((IInteger) expr.exponent()).isEven();
+  }
+
   public static IExpr hyperGeometric0F1Symbolic(IExpr b, IExpr z, EvalEngine engine) {
     if (z.isZero()) {
       return F.C1;
@@ -2798,21 +2898,21 @@ public class HypergeometricFunctions {
     }
     if (b.isRationalValue(F.C1D2)) {
       if (z.isNegativeSigned()) {
-        // Hypergeometric0F1(1/2,z_) := Cos(2*Sqrt(z))
+        // Hypergeometric0F1(1/2,z_) := Cos(2*Sqrt(-z))
         IExpr zNegate = z.negate();
-        return F.Cos(F.Times(F.C2, F.Sqrt(zNegate)));
+        return F.Cos(F.Times(F.C2, squareRoot(zNegate)));
       }
       // Hypergeometric0F1(1/2,z_) := Cosh(2*Sqrt(z))
-      return F.Cosh(F.Times(F.C2, F.Sqrt(z)));
+      return F.Cosh(F.Times(F.C2, squareRoot(z)));
     }
     if (b.isRationalValue(F.C3D2)) {
       if (z.isNegativeSigned()) {
-        // Hypergeometric0F1(3/2,z_) := Sin(2*Sqrt(z))/(2*Sqrt(z))
-        IExpr v1 = F.Times(F.C2, F.Sqrt(z.negate()));
+        // Hypergeometric0F1(3/2,z_) := Sin(2*Sqrt(-z))/(2*Sqrt(-z))
+        IExpr v1 = engine.evaluate(F.Times(F.C2, squareRoot(z.negate())));
         return F.Times(F.Power(v1, F.CN1), F.Sin(v1));
       }
       // Hypergeometric0F1(3/2,z_):= Sinh(2*Sqrt(z))/(2*Sqrt(z))
-      IExpr v1 = engine.evaluate(F.C2.times(F.Sqrt(z)));
+      IExpr v1 = engine.evaluate(F.Times(F.C2, squareRoot(z)));
       return F.Times(F.Power(v1, F.CN1), F.Sinh(v1));
     }
     return F.NIL;

@@ -1469,6 +1469,19 @@ public class OutputFormFactory {
     convertInfixOperator(buf, list, oper, precedence);
   }
 
+  /**
+   * Whether {@link #convertPowerOperator(Appendable, IAST, InfixOperator, int)} delimits the power
+   * itself as the base of another power: as <code>Sqrt(x)</code>, or in parentheses as
+   * <code>(1/x)</code>.
+   */
+  private static boolean isDelimitedPower(IExpr expr) {
+    if (expr.isPower() && expr.exponent().isNumber()) {
+      INumber exponent = (INumber) expr.exponent();
+      return exponent.isNumEqualRational(F.C1D2) || exponent.complexSign() < 0;
+    }
+    return false;
+  }
+
   public void convertInfixOperator(final Appendable buf, final IAST list, final InfixOperator oper,
       final int precedence) throws IOException {
     final boolean isOr = list.isOr();
@@ -1479,8 +1492,9 @@ public class OutputFormFactory {
       if (oper.getPrecedence() < precedence) {
         append(buf, "(");
       }
-      if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
-          && arg1.head().equals(list.head())) {
+      final boolean groupArg1 = oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
+          && arg1.head().equals(list.head()) && !isDelimitedPower(arg1);
+      if (groupArg1) {
         append(buf, "(");
       } else {
         if (operatorString.equals("^")) {
@@ -1497,8 +1511,7 @@ public class OutputFormFactory {
       if (isOr && arg1.isAnd()) {
         append(buf, ")");
       }
-      if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
-          && arg1.head().equals(list.head())) {
+      if (groupArg1) {
         append(buf, ")");
       } else {
         if (operatorString.equals("^")) {

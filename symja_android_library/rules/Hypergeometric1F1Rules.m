@@ -1,5 +1,4 @@
 {  
-  Hypergeometric1F1(1/2, 3/2, z_) := (Sqrt(Pi)*Erfi(Sqrt(z)))/(2*Sqrt(z)),
   Hypergeometric1F1(1, 1/2, z_) := 1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z)),
     
   (* fungrim "dec042" *)

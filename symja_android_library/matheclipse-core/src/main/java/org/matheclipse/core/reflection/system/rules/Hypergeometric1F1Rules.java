@@ -13,13 +13,10 @@ public class Hypergeometric1F1Rules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 2 };
+  final public static int[] SIZES = { 0, 1 };
 
   final public static IAST RULES = List(
     IInit(Hypergeometric1F1, SIZES),
-    // Hypergeometric1F1(1/2,3/2,z_):=(Sqrt(Pi)*Erfi(Sqrt(z)))/(2*Sqrt(z))
-    ISetDelayed(Hypergeometric1F1(C1D2,QQ(3L,2L),z_),
-      Times(CSqrtPi,Power(Times(C2,Sqrt(z)),CN1),Erfi(Sqrt(z)))),
     // Hypergeometric1F1(1,1/2,z_):=1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z))
     ISetDelayed(Hypergeometric1F1(C1,C1D2,z_),
       Plus(C1,Times(Exp(z),CSqrtPi,Sqrt(z),Erf(Sqrt(z))))),

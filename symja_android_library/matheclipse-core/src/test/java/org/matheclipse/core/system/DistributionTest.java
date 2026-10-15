@@ -1379,7 +1379,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("PDF(WeibullDistribution(n, m),k)", //
         "Piecewise({{n/(E^(k/m)^n*(k/m)^(1-n)*m),k>0}},0)");
     check("PDF(StudentTDistribution(4),k)", //
-        "12*((1/(4+k^2)))^(5/2)");
+        "12*(1/(4+k^2))^(5/2)");
 
     check("PDF(DiscreteUniformDistribution({1, 5}), 3)", //
         "1/5");
