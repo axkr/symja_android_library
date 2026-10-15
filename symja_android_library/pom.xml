@@ -131,6 +131,12 @@
 		     Run the other tiers with -Pslow-tests, -Pall-tests or -Prubi-corpus. -->
 		<symja.test.excludedGroups>slow,corpus</symja.test.excludedGroups>
 		<symja.test.groups></symja.test.groups>
+		<!-- The wall-clock budgets of a test JVM are scaled for the machine it runs on, see
+		     org.matheclipse.core.basic.MachineProfile: "auto" measures the machine once per JVM.
+		     The budgets were tuned on a fast machine; with the unscaled budgets a slower one gets
+		     weaker answers and failing tests. Override with -Dsymja.machineProfile=slow|normal|fast
+		     or -Dsymja.timeScale=<factor>. -->
+		<symja.machineProfile>auto</symja.machineProfile>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -682,6 +688,10 @@
 						<!-- Test tiers, see the symja.test.* properties. -->
 						<groups>${symja.test.groups}</groups>
 						<excludedGroups>${symja.test.excludedGroups}</excludedGroups>
+						<!-- a property of the pom reaches the test JVM only through this -->
+						<systemPropertyVariables>
+							<symja.machineProfile>${symja.machineProfile}</symja.machineProfile>
+						</systemPropertyVariables>
 						<!-- Spawns 1 separate JVM process per available CPU
 						core 
 						<forkCount>1C</forkCount>

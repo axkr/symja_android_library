@@ -38,7 +38,9 @@ package org.matheclipse.core.basic;
  * <p>
  * The <code>auto</code> profile measures the machine with {@link Config#calibrateTimeScale()}
  * instead of being told the factor. It is never the default, because a measurement taken on a
- * shared or thermally throttled host describes that moment rather than the machine.
+ * shared or thermally throttled host describes that moment rather than the machine. The test runs
+ * of the Maven build ask for it (the <code>symja.machineProfile</code> property of the parent
+ * pom), so that a slower machine gets the answers the tests expect.
  *
  * <h2>What is scaled</h2>
  *
