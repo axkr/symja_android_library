@@ -11137,7 +11137,7 @@ a-b⧦c	Equivalent(Plus(a, Times(-1, b)), c)
 a-b||c	Or(Plus(a, Times(-1, b)), c)
 a-b⊻c	Xor(Plus(a, Times(-1, b)), c)
 a-b&&c	And(Plus(a, Times(-1, b)), c)
-a-b!c	Plus(a, Times(-1, c, Factorial(b)))
+a-b!c	Plus(a, Times(-1, Factorial(b), c))
 a-b∀c	!syntax@4: End-of-file not reached.
 a-b∈c	Element(Plus(a, Times(-1, b)), c)
 a-b←c	LeftArrow(Plus(a, Times(-1, b)), c)
@@ -11182,7 +11182,7 @@ a-b@c	Plus(a, Times(-1, b(c)))
 a-b/*c	Plus(a, Times(-1, RightComposition(b, c)))
 a-b@*c	Plus(a, Times(-1, Composition(b, c)))
 a-b~c	!syntax@6: Operator ~ requires even number of arguments
-a-b++c	Plus(a, Times(-1, c, Increment(b)))
+a-b++c	Plus(a, Times(-1, Increment(b), c))
 a-b?c	Plus(a, Times(-1, PatternTest(b, c)))
 a-b<<c	!syntax@5: End-of-file not reached.
 a-b::c	Plus(a, Times(-1, MessageName(b, c)))
