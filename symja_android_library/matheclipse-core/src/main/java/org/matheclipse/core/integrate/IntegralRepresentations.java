@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.integrate.ResidueIntegration.Context;
@@ -290,7 +291,8 @@ final class IntegralRepresentations {
     }
     value = withoutAbs(checked, value);
     if (answer.simplify) {
-      checked.simplifyDeadline = System.currentTimeMillis() + SIMPLIFY_MILLIS;
+      checked.simplifyDeadline =
+          System.currentTimeMillis() + MachineProfile.millis(SIMPLIFY_MILLIS);
       IExpr simplified = ResidueIntegration.bounded(checked, assumptions.isPresent() //
           ? F.Simplify(value, F.Rule(S.Assumptions, assumptions)) //
           : F.Simplify(value));

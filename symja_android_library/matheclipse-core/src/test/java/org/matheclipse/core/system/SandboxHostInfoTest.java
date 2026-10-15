@@ -1,5 +1,6 @@
 package org.matheclipse.core.system;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,6 +34,14 @@ public class SandboxHostInfoTest extends ExprEvaluatorTestCase {
       "{True,True,True,True,True,True,True,True,True,True,True,True,True,True}";
 
   private final boolean fileSystemEnabled = Config.FILESYSTEM_ENABLED;
+
+  /**
+   * The separator as it has to be written inside a Symja string literal: a backslash is doubled,
+   * because the parser reads it as an escape.
+   */
+  private static String sepIn() {
+    return File.separatorChar == '\\' ? "\\\\" : "/";
+  }
 
   @AfterEach
   public void restoreFileSystemFlag() {
@@ -111,18 +120,20 @@ public class SandboxHostInfoTest extends ExprEvaluatorTestCase {
     engine.setFileSandboxRoot(root);
     Files.createDirectories(root.resolve("sub"));
 
+    // the names come back with the platform's separator, sub\note.txt on Windows
     check("{ExpandFileName(\"sub/note.txt\"), ExpandFileName(\"sub/..\"), "
         + "ParentDirectory(\"sub/deeper\")}", //
-        "{sub/note.txt,.,sub}");
+        "{sub" + File.separator + "note.txt,.,sub}");
     // above the directory there is nothing the session may name
     check("{Head(ExpandFileName(\"../x\")), Head(ParentDirectory()), "
         + "Head(ParentDirectory(\"sub\", 2))}", //
         "{ExpandFileName,ParentDirectory,ParentDirectory}");
 
-    check("tmpdir = CreateDirectory(); {StringQ(tmpdir), StringFreeQ(tmpdir, \"/\"), "
-        + "DirectoryQ(tmpdir)}", //
+    check("tmpdir = CreateDirectory(); {StringQ(tmpdir), StringFreeQ(tmpdir, \"" + sepIn()
+        + "\"), DirectoryQ(tmpdir)}", //
         "{True,True,True}");
-    check("tmpfile = CreateFile(); {StringFreeQ(tmpfile, \"/\"), FileExistsQ(tmpfile)}", //
+    check("tmpfile = CreateFile(); {StringFreeQ(tmpfile, \"" + sepIn()
+        + "\"), FileExistsQ(tmpfile)}", //
         "{True,True}");
     long before;
     try (java.util.stream.Stream<Path> entries = Files.list(root)) {

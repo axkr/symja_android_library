@@ -260,7 +260,7 @@ public class EvalEngine implements Serializable {
       EvalEngine.set(fEngine);
       Errors.inheritCheckScopes(fCheckScopes);
       try {
-        long timeConstrainedMillis = System.currentTimeMillis() + fMillis;
+        long timeConstrainedMillis = deadlineClockMillis() + fMillis;
         // System.out.println("TimeConstrainedMillis: " + timeConstrainedMillis);
         fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
         return fEngine.evaluate(fExpr);
@@ -728,13 +728,28 @@ public class EvalEngine implements Serializable {
   private transient volatile boolean fAbortRequested = false;
 
   /**
-   * The time in milliseconds the current {@link S#TimeConstrained} operation should stop. <code>
+   * The time in milliseconds of {@link #deadlineClockMillis()} the current
+   * {@link S#TimeConstrained} operation should stop. <code>
    * -1</code> is set for Infinity. For nested {@link S#TimeConstrained} calls the earliest time
    * constraint is used in {@link S#TimeRemaining}.
-   * 
+   *
    * @see #setTimeConstrainedMillis(long)
    */
   transient long fTimeConstrainedMillis = -1;
+
+  /** The origin of {@link #deadlineClockMillis()}. */
+  private static final long DEADLINE_CLOCK_ORIGIN_NANOS = System.nanoTime();
+
+  /**
+   * The clock of the {@link S#TimeConstrained} deadlines in milliseconds. It is monotonic like the
+   * timeout of <code>TimeConstrained</code> and the wait of <code>Pause</code>, which the wall
+   * clock is not: that can be set back, and may advance in coarse steps, so that
+   * <code>TimeRemaining()</code> after <code>Pause(2)</code> in a limit of 5 seconds could be more
+   * than 3 seconds. Always positive, because <code>-1</code> stands for no deadline.
+   */
+  public static long deadlineClockMillis() {
+    return (System.nanoTime() - DEADLINE_CLOCK_ORIGIN_NANOS) / 1_000_000L + 1L;
+  }
 
   transient long fSeconds;
 
@@ -4788,7 +4803,7 @@ public class EvalEngine implements Serializable {
     if (timeConstrained < 0) {
       return -1.0;
     }
-    long timeRemaining = (timeConstrained - System.currentTimeMillis());
+    long timeRemaining = (timeConstrained - deadlineClockMillis());
     if (timeRemaining < 0) {
       timeRemaining = 0;
     }
@@ -6010,7 +6025,8 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Set the time in milliseconds then the current TimeConstrained operation should stop. <code>-1
+   * Set the time in milliseconds of {@link #deadlineClockMillis()} then the current
+   * TimeConstrained operation should stop. <code>-1
    * </code> is set for Infinity. For nested {@link S#TimeConstrained} calls the earliest time
    * constraint is used in {@link S#TimeRemaining}
    *

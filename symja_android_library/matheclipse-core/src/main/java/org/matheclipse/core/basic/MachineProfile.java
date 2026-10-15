@@ -56,6 +56,8 @@ package org.matheclipse.core.basic;
  * <code>RadicalCoefficients</code></li>
  * <li>the budgets of the quantifier elimination in <code>QuadraticQE</code> and of
  * <code>BivariateReduce</code></li>
+ * <li>the simplification of the results of <code>ResidueIntegration</code> and
+ * <code>IntegralRepresentations</code></li>
  * </ul>
  *
  * <h2>What is not scaled</h2>

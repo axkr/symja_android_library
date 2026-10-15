@@ -215,7 +215,7 @@ public final class EventLoop {
     long deadline = System.nanoTime() + (long) (seconds * 1_000_000_000L);
     pump(engine);
     while (true) {
-      long remainingMillis = (deadline - System.nanoTime()) / 1_000_000L;
+      long remainingMillis = remainingMillis(deadline);
       if (remainingMillis <= 0 || stopped(engine)) {
         break;
       }
@@ -226,6 +226,15 @@ public final class EventLoop {
   }
 
   /**
+   * The milliseconds until <code>deadline</code>, rounded up: a pause lasts at least as long as it
+   * was asked to. Rounded down, the last fraction of a millisecond was not waited for.
+   */
+  private static long remainingMillis(long deadlineNanos) {
+    long remainingNanos = deadlineNanos - System.nanoTime();
+    return remainingNanos <= 0 ? 0 : (remainingNanos + 999_999L) / 1_000_000L;
+  }
+
+  /**
    * <code>Pause[seconds]</code> in a kernel that has no tasks: wait, and nothing else.
    *
    * @see org.matheclipse.core.builtin.TaskFunctions
@@ -233,7 +242,7 @@ public final class EventLoop {
   public static void pause(double seconds, EvalEngine engine) {
     long deadline = System.nanoTime() + (long) (seconds * 1_000_000_000L);
     while (!stopped(engine)) {
-      long remainingMillis = (deadline - System.nanoTime()) / 1_000_000L;
+      long remainingMillis = remainingMillis(deadline);
       if (remainingMillis <= 0) {
         break;
       }

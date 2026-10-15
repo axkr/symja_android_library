@@ -98,9 +98,10 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
     check("InverseLaplaceTransform(E^(-Pi*s)/(1+s^2)^2, s, t)", //
         "HeavisideTheta(-Pi+t)*(1/2*(-Pi+t)*Cos(t)-Sin(t)/2)");
     // shifted, with a constant factor and a higher power
+    // relative: the two machine numbers may differ in the last bit, depending on the platform
     check("f=InverseLaplaceTransform((7*s-2)/(4*s^2+4*s+17)^4, s, t);"
-        + "N(LaplaceTransform(f,t,s)-(7*s-2)/(4*s^2+4*s+17)^4 /. s->13/10)", //
-        "0.0");
+        + "Chop(N(LaplaceTransform(f,t,s)/((7*s-2)/(4*s^2+4*s+17)^4)-1 /. s->13/10))", //
+        "0");
     // two real roots: hyperbolic functions
     check("f=InverseLaplaceTransform((2*s+1)/(s^2-2*s-1)^2, s, t);"
         + "Chop(NIntegrate(f*E^(-7*t), {t,0,Infinity}) - 15/1156)", //
