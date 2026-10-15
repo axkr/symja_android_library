@@ -559,8 +559,10 @@ public class Area extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     switch (headID) {
-      case ID.BooleanRegion:
-        return booleanRegion(geoForm, engine);
+      case ID.BooleanRegion: {
+        IExpr withHole = BooleanRegions.holeMeasure(geoForm, engine);
+        return withHole.isPresent() ? withHole : booleanRegion(geoForm, engine);
+      }
       case ID.Disk:
       case ID.Ball:
         // in the plane a ball is a disk

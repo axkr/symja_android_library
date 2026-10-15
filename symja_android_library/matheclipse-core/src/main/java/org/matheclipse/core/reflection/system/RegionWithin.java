@@ -66,6 +66,13 @@ public class RegionWithin extends AbstractFunctionEvaluator {
           return boxWithin(r1, r2, engine);
       }
 
+      if ((h1 == S.Rectangle && h2 == S.Disk) || (h1 == S.Cuboid && h2 == S.Ball)) {
+        // a ball lies in a box exactly when the box around the ball does
+        IAST bounds = ballBounds(r2, h1 == S.Rectangle ? 2 : 3, engine);
+        if (bounds != null)
+          return boxWithin(r1, bounds, engine);
+      }
+
       if (isConvex(h1) && hasVertices(h2)) {
         IAST vertices = getVertices(r2);
         if (vertices != null) {
@@ -130,6 +137,18 @@ public class RegionWithin extends AbstractFunctionEvaluator {
       return engine.evaluate(F.LessEqual(F.Plus(dist, rad2), rad1));
     }
     return F.NIL;
+  }
+
+  /** The box <code>Rectangle(c - r, c + r)</code> or <code>Cuboid(...)</code> around a ball. */
+  private static IAST ballBounds(IAST ball, int dimension, EvalEngine engine) {
+    IExpr center = ball.argSize() >= 1 ? ball.arg1() : F.constantArray(F.C0, dimension);
+    IExpr radius = ball.argSize() >= 2 ? ball.arg2() : F.C1;
+    if (!center.isList() || center.argSize() != dimension || radius.isList()
+        || ball.argSize() > 2) {
+      return null;
+    }
+    return F.binaryAST2(dimension == 2 ? S.Rectangle : S.Cuboid,
+        engine.evaluate(F.Subtract(center, radius)), engine.evaluate(F.Plus(center, radius)));
   }
 
   private IExpr boxWithin(IAST r1, IAST r2, EvalEngine engine) {

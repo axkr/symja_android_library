@@ -73,6 +73,8 @@ public class RegionMeasure extends AbstractFunctionEvaluator {
       IExpr head = reg.head();
       if (head.isBuiltInSymbol()) {
         switch (((IBuiltInSymbol) head).ordinal()) {
+          case ID.BooleanRegion:
+            return BooleanRegions.holeMeasure(reg, engine);
           case ID.Point:
             return pointMeasure(reg, engine);
           case ID.Line:

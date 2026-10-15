@@ -95,6 +95,67 @@ final class BooleanRegions {
     return result;
   }
 
+  /**
+   * The parts <code>{outer, hole}</code> of <code>RegionDifference(outer, hole)</code>, the form
+   * <code>BooleanRegion(#1 && !#2 &, {outer, hole})</code>, where both are regions of the same full
+   * dimension and the hole lies inside <code>outer</code>.
+   *
+   * @return <code>null</code> if the region is not of that form or the hole isn't known to lie inside
+   */
+  static IAST[] withHole(IExpr region, EvalEngine engine) {
+    if (!isBooleanRegion(region) || region.second().argSize() != 2
+        || !region.first().first().equals(F.And(F.Slot1, F.Not(F.Slot2)))) {
+      return null;
+    }
+    IExpr outer = region.second().first();
+    IExpr hole = region.second().second();
+    if (!outer.isAST() || !hole.isAST()) {
+      return null;
+    }
+    int dimension = RegionDimension.getRegionDimension(outer);
+    if (dimension < 1 || dimension != RegionDimension.getRegionDimension(hole)
+        || !S.RegionWithin.ofQ(engine, outer, hole)) {
+      return null;
+    }
+    return new IAST[] {(IAST) outer, (IAST) hole};
+  }
+
+  /** The measure of a region with a hole: the measure of the outer region less that of the hole. */
+  static IExpr holeMeasure(IExpr region, EvalEngine engine) {
+    IAST[] parts = withHole(region, engine);
+    if (parts == null) {
+      return F.NIL;
+    }
+    IExpr outer = engine.evaluate(F.unaryAST1(S.RegionMeasure, parts[0]));
+    IExpr hole = engine.evaluate(F.unaryAST1(S.RegionMeasure, parts[1]));
+    if (outer.has(S.RegionMeasure) || hole.has(S.RegionMeasure)) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Subtract(outer, hole));
+  }
+
+  /**
+   * The centroid of a region with a hole, <code>(m1*c1 - m2*c2)/(m1 - m2)</code> with the measures
+   * <code>m</code> and centroids <code>c</code> of the outer region and the hole.
+   */
+  static IExpr holeCentroid(IExpr region, EvalEngine engine) {
+    IAST[] parts = withHole(region, engine);
+    if (parts == null) {
+      return F.NIL;
+    }
+    IExpr m1 = engine.evaluate(F.unaryAST1(S.RegionMeasure, parts[0]));
+    IExpr m2 = engine.evaluate(F.unaryAST1(S.RegionMeasure, parts[1]));
+    IExpr c1 = engine.evaluate(F.unaryAST1(S.RegionCentroid, parts[0]));
+    IExpr c2 = engine.evaluate(F.unaryAST1(S.RegionCentroid, parts[1]));
+    if (m1.has(S.RegionMeasure) || m2.has(S.RegionMeasure) || !c1.isList() || !c2.isList()
+        || c1.argSize() != c2.argSize()) {
+      return F.NIL;
+    }
+    IExpr centroid = engine.evaluate(F.Divide(F.Subtract(F.Times(m1, c1), F.Times(m2, c2)), //
+        F.Subtract(m1, m2)));
+    return centroid.isList() ? engine.evaluate(F.Map(S.Together, centroid)) : F.NIL;
+  }
+
   /** Whether the region is a <code>BooleanRegion</code> with a pure function over its parts. */
   static boolean isBooleanRegion(IExpr region) {
     return region.isAST(S.BooleanRegion, 3) && region.second().isList()

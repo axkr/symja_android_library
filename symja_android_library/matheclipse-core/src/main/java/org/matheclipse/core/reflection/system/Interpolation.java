@@ -22,6 +22,15 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
+    if (ast.arg1().isVector() > 0 && ast.arg1().isMatrix() == null) {
+      // the values {v1, v2, ...} at the points 1, 2, ...
+      IAST values = (IAST) ast.arg1();
+      IASTAppendable points = F.ListAlloc(values.argSize());
+      for (int i = 1; i <= values.argSize(); i++) {
+        points.append(F.List(F.ZZ(i), values.get(i)));
+      }
+      return evaluate(ast.setAtCopy(1, points), argSize, options, engine, originalAST);
+    }
     int[] dims = ast.arg1().isMatrix();
     if (dims != null && dims[0] > 2 && dims[1] >= 2) {
       String method = "";

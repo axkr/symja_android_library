@@ -31,6 +31,8 @@ public class Volume extends AbstractFunctionEvaluator {
       IExpr head = reg.head();
       if (head.isBuiltInSymbol()) {
         switch (((IBuiltInSymbol) head).ordinal()) {
+          case ID.BooleanRegion:
+            return BooleanRegions.holeMeasure(reg, engine);
           case ID.Cuboid:
             return cuboid(reg, engine);
           case ID.Cylinder:

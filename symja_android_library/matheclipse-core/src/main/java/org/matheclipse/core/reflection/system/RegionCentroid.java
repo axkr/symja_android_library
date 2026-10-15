@@ -56,6 +56,8 @@ public class RegionCentroid extends AbstractFunctionOptionEvaluator {
       IExpr head = reg.head();
       if (head.isBuiltInSymbol()) {
         switch (((IBuiltInSymbol) head).ordinal()) {
+          case ID.BooleanRegion:
+            return BooleanRegions.holeCentroid(reg, engine);
           case ID.Point:
           case ID.Disk:
           case ID.Circle:

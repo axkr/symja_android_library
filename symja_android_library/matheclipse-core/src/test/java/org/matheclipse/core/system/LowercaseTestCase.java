@@ -12771,6 +12771,37 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testInterpolationOfValues() {
+    // the values at the points 1, 2, ...; the function is atomic for replacements
+    check("f = Interpolation({1, 4, 9, 16}); {(f /. 4 -> 5) === f, (h(f, t) /. t -> 2) === h(f, 2), "
+        + "f(2), (g(t) /. g -> f /. t -> 2)}", //
+        "{True,True,4,4}");
+    check("f = Interpolation({1, 4, 9, 16, 25, 36}); {f(2.5), f(\"Domain\")}", //
+        "{6.25,{{1.0,6.0}}}");
+  }
+
+  @Test
+  public void testRegionWithHole() {
+    check("RegionCentroid(RegionDifference(Rectangle({-1, -1}, {1, 1}), Disk({1/2, 0}, 1/4)))", //
+        "{Pi/(2*(-64+Pi)),0}");
+    check("RegionCentroid(RegionDifference(Rectangle({-1, -1}, {1, 1}), Disk({0.38, 0.38}, 0.55)))", //
+        "{-0.118415,-0.118415}");
+    check("RegionCentroid(RegionDifference(Rectangle({0, 0}, {4, 4}), Triangle({{0, 0}, {2, 0}, {0, 2}})))", //
+        "{46/21,46/21}");
+    check("RegionCentroid(RegionDifference(Disk({0, 0}, 2), Disk({1, 0}, 1/2)))", //
+        "{-1/15,0}");
+    check("{Area(RegionDifference(Rectangle({-1, -1}, {1, 1}), Disk({1/2, 0}, 1/4))), "
+        + "Volume(RegionDifference(Cuboid({0, 0, 0}, {2, 2, 2}), Ball({1, 1, 1}, 1/2)))}", //
+        "{4-Pi/16,8-Pi/6}");
+    // a hole sticking out of the region isn't taken apart
+    check("RegionCentroid(RegionDifference(Rectangle({0, 0}, {2, 2}), Disk({2, 2}, 1)))", //
+        "RegionCentroid(BooleanRegion(#1&&!#2&,{Rectangle({0,0},{2,2}),Disk({2,2},1)}))");
+    check("{RegionWithin(Rectangle({-1, -1}, {1, 1}), Disk({1/2, 0}, 1/4)), "
+        + "RegionWithin(Rectangle({0, 0}, {2, 2}), Disk({2, 2}, 1))}", //
+        "{True,False}");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //
