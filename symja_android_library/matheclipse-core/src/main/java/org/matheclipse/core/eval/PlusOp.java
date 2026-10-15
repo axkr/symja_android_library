@@ -280,6 +280,13 @@ public final class PlusOp {
     return (evaled || folded) ? getSum() : F.NIL;
   }
 
+  /** A constant like <code>I*Pi</code>: a finite number, possibly complex. */
+  private static boolean isFiniteConstant(IExpr arg) {
+    return !arg.isNumber() && arg.isNumericFunction(true)
+        && arg.isFree(y -> y.isDirectedInfinity() || y.isIndeterminate(), true)
+        && arg.evalNumber() != null;
+  }
+
   private IExpr negativeInfinityPlus(final IExpr o1) {
     if (o1.isInfinity()) {
       // Indeterminate expression `1` encountered.
@@ -306,6 +313,29 @@ public final class PlusOp {
     seriesFolded = false;
 
     try {
+      if (numberValue.isPresent() && numberValue.isDirectedInfinity() && numberValue.isAST1()
+          && !numberValue.isInfinity() && !numberValue.isNegativeInfinity()
+          && numberValue.first().isNumericFunction(true)
+          && (!arg.isDirectedInfinity() || arg.isComplexInfinity()
+              || (arg.isAST1() && arg.first().isNumericFunction(true)))) {
+        // only for directions which are numbers: two symbolic directions may be the same
+        // an infinity in a complex direction: a finite summand doesn't change it, an infinity in
+        // the same direction neither, one in another direction makes the sum indeterminate
+        if (arg.isDirectedInfinity()) {
+          if (arg.equals(numberValue)) {
+            evaled = true;
+            return F.NIL;
+          }
+          // Indeterminate expression `1` encountered.
+          Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)),
+              EvalEngine.get());
+          return S.Indeterminate;
+        }
+        if (arg.isNumber()) {
+          evaled = true;
+          return F.NIL;
+        }
+      }
       if (numberValue.isPresent() && numberValue.isDirectedInfinity()) {
         if (numberValue.isComplexInfinity()) {
           if (arg.isDirectedInfinity()) {
@@ -322,7 +352,7 @@ public final class PlusOp {
           if (arg.isDirectedInfinity()) {
             return S.Indeterminate;
           }
-          if (arg.isRealResult()) {
+          if (arg.isRealResult() || isFiniteConstant(arg)) {
             evaled = true;
             return F.NIL;
           }
@@ -337,7 +367,7 @@ public final class PlusOp {
                 EvalEngine.get());
             return S.Indeterminate;
           }
-          if (arg.isRealResult()) {
+          if (arg.isRealResult() || isFiniteConstant(arg)) {
             evaled = true;
             return F.NIL;
           }
@@ -461,6 +491,12 @@ public final class PlusOp {
                     return S.Indeterminate;
                   }
                   numberValue = F.CComplexInfinity;
+                  evaled = true;
+                  return F.NIL;
+                } else if (arg.isAST1() && numberValue.isNumber()
+                    && arg.first().isNumericFunction(true)) {
+                  // a finite number plus an infinity in a complex direction
+                  numberValue = arg;
                   evaled = true;
                   return F.NIL;
                 }

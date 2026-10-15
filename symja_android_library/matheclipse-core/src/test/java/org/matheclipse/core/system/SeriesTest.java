@@ -2287,4 +2287,29 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Limit(ExpIntegralE(1,x)*x*Exp(x), x->Infinity)", //
         "1");
   }
+
+  /**
+   * WhittakerM through Hypergeometric1F1, HermiteH at Infinity.
+   */
+  @Test
+  public void testWhittakerMHermiteHSeries() {
+    check("Series(WhittakerM(3,1/2,x), {x,0,4})", //
+        "x-3/2*x^2+19/24*x^3-11/48*x^4+O(x)^5");
+    check("Series(WhittakerM(2,1,x), {x,0,3})", //
+        "x^(3/2)-2/3*x^(5/2)+O(x)^(7/2)");
+    check("SeriesCoefficient(WhittakerM(3,1/2,x), {x,0,2})", //
+        "-3/2");
+    check("Series(WhittakerM(3,1/2,x), {x,Infinity,4})", //
+        "(x^3/6-x^2+x+O(1/x)^5)*E^(-x/2+O(1/x)^5)");
+    // no expansion at Infinity is known
+    check("Series(WhittakerM(1/5,1/2,x), {x,Infinity,3})", //
+        "Series(WhittakerM(1/5,1/2,x),{x,Infinity,3})");
+    // the exponent m+1/2 has to be known
+    check("Series(WhittakerM(k,m,x), {x,0,2})", //
+        "Series(WhittakerM(k,m,x),{x,0,2})");
+    check("Series(HermiteH(v,x), {x,Infinity,2})", //
+        "(2^v+((1-v)*v)/(2^(2-v)*x^2)+O(1/x)^3)*x^v");
+    check("Series(HermiteH(4,x), {x,Infinity,2})", //
+        "16*x^4-48*x^2+12+O(1/x)^3");
+  }
 }

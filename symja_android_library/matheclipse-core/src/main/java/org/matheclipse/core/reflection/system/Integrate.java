@@ -661,14 +661,26 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               return byResidues;
             }
             if (principalValue) {
+              IExpr byAntiderivative = principalValueByAntiderivative(arg1, xList, engine);
+              if (byAntiderivative.isPresent()) {
+                return byAntiderivative;
+              }
               // A principal value which was not found. Where the integral exists without the
               // option it is the principal value; a "does not converge" of the integral itself is
-              // no answer to the question which was asked.
+              // no answer to the question which was asked. The ordinary integral of a function
+              // with a pole on the path can search for a long time, so it gets a time budget.
               final IAST withoutOption =
                   holdallAST.removeIf(arg -> arg.isRuleAST() && arg.first() == S.PrincipalValue);
-              IExpr ordinary =
-                  ResidueIntegration.withoutResidues(() -> engine.evalQuiet(withoutOption));
-              return ordinary.isFree(S.Integrate) ? ordinary : F.NIL;
+              IExpr ordinary;
+              try {
+                ordinary = IntegrateTimeBudget.runWithin(
+                    () -> ResidueIntegration.withoutResidues(() -> engine.evalQuiet(withoutOption)),
+                    MachineProfile.seconds(PRINCIPAL_VALUE_FALLBACK_SECONDS) * 1000L);
+              } catch (RuntimeException rex) {
+                Errors.rethrowsInterruptException(rex);
+                return F.NIL;
+              }
+              return ordinary.isPresent() && ordinary.isFree(S.Integrate) ? ordinary : F.NIL;
             }
           }
           // Integrate(f(x), {x,a,b})
@@ -1485,6 +1497,206 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return list.argSize() == 0 ? S.True : list.argSize() == 1 ? list.arg1() : list.apply(S.And);
     }
     return assumptions;
+  }
+
+  /** The time for the ordinary integral when a principal value was asked for. */
+  private static final long PRINCIPAL_VALUE_FALLBACK_SECONDS = 4L;
+
+  /**
+   * The Cauchy principal value of <code>Integrate(f, {x, a, b})</code> from an antiderivative
+   * <code>F</code> and the real poles <code>p</code> of <code>f</code> inside of
+   * <code>(a, b)</code>:
+   *
+   * <pre>
+   * F(b) - F(a) + Sum(Limit(F(p - e) - F(p + e), e -&gt; 0, Direction -&gt; "FromAbove"))
+   * </pre>
+   *
+   * The values at the limits of integration are limits too, so that infinite limits are allowed.
+   * The position of a symbolic pole is decided with the assumptions.
+   *
+   * @return {@link F#NIL} if there is no pole inside, a pole is at a limit of integration, its
+   *         position isn't known, or one of the limits does not exist
+   */
+  private static IExpr principalValueByAntiderivative(IExpr f, IAST xList, EvalEngine engine) {
+    final IExpr x = xList.arg1();
+    final IExpr lower = xList.arg2();
+    final IExpr upper = xList.arg3();
+    if (!x.isSymbol()) {
+      return F.NIL;
+    }
+    try {
+      IAST poles = realPolesInside(f, x, lower, upper, engine);
+      if (poles.isNIL() || poles.argSize() == 0) {
+        return F.NIL;
+      }
+      IExpr antiderivative = IntegrateTimeBudget.runWithin(
+          () -> engine.evalQuiet(F.Integrate(f, x)),
+          MachineProfile.seconds(PRINCIPAL_VALUE_FALLBACK_SECONDS) * 1000L);
+      if (antiderivative.isNIL() || !antiderivative.isFree(S.Integrate, true)) {
+        return F.NIL;
+      }
+      IASTAppendable sum = F.PlusAlloc(poles.argSize() + 2);
+      IExpr atUpper = engine.evalQuiet(F.Limit(antiderivative, F.Rule(x, upper),
+          F.Rule(S.Direction, F.stringx("FromBelow"))));
+      IExpr atLower = engine.evalQuiet(F.Limit(antiderivative, F.Rule(x, lower),
+          F.Rule(S.Direction, F.stringx("FromAbove"))));
+      if (!isFiniteLimit(atUpper) || !isFiniteLimit(atLower)) {
+        return F.NIL;
+      }
+      sum.append(atUpper);
+      sum.append(F.Negate(atLower));
+      ISymbol e = F.Dummy("e");
+      for (IExpr p : poles) {
+        IExpr jump = engine.evalQuiet(F.Subtract(F.subst(antiderivative, x, F.Subtract(p, e)),
+            F.subst(antiderivative, x, F.Plus(p, e))));
+        IExpr limit = engine.evalQuiet(
+            F.Limit(jump, F.Rule(e, F.C0), F.Rule(S.Direction, F.stringx("FromAbove"))));
+        if (!isFiniteLimit(limit)) {
+          return F.NIL;
+        }
+        sum.append(limit);
+      }
+      IExpr value = engine.evaluate(F.Simplify(engine.evaluate(sum)));
+      if (!isFiniteLimit(value)) {
+        return F.NIL;
+      }
+      if (f.isFree(y -> y.isComplex() || y.isComplexNumeric() || y == S.I, true)
+          && !value.isFree(y -> y.isComplex() || y.isComplexNumeric() || y == S.I, true)
+          && !engine.evaluate(F.Im(value)).isZero()) {
+        // a real integrand has a real principal value: a branch of the antiderivative was missed
+        return F.NIL;
+      }
+      return value;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /** <code>Cos(u)</code> for <code>Tan(u), Sec(u)</code>, <code>Sin(u)</code> for <code>Cot(u), Csc(u)</code>. */
+  private static void collectTrigPoleFactors(IExpr expr, IExpr x, IASTAppendable factors) {
+    if (!expr.isAST() || expr.isFree(x)) {
+      return;
+    }
+    if (expr.isAST1()) {
+      IExpr u = expr.first();
+      IExpr factor = F.NIL;
+      switch (expr.headID()) {
+        case ID.Tan:
+        case ID.Sec:
+          factor = F.Cos(u);
+          break;
+        case ID.Cot:
+        case ID.Csc:
+          factor = F.Sin(u);
+          break;
+        default:
+          break;
+      }
+      if (factor.isPresent() && !factors.contains(factor)) {
+        factors.append(factor);
+      }
+    }
+    for (IExpr arg : (IAST) expr) {
+      collectTrigPoleFactors(arg, x, factors);
+    }
+  }
+
+  private static boolean isFiniteLimit(IExpr value) {
+    return value.isPresent() && value.isFree(S.Limit, true) && value.isIndeterminateFree()
+        && value.isFree(y -> y.isDirectedInfinity() || y.isConditionalExpression(), true);
+  }
+
+  /**
+   * The real poles of <code>f</code> strictly inside of <code>(lower, upper)</code>: the zeros of
+   * the denominator, with <code>Tan, Cot, Sec, Csc</code> written by <code>Sin</code> and
+   * <code>Cos</code>.
+   *
+   * @return {@link F#NIL} if the poles can't be determined, a pole is at a limit of integration
+   *         or the position of a pole isn't decided
+   */
+  private static IAST realPolesInside(IExpr f, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    IExpr sinCos = F.subst(f, y -> {
+      if (y.isAST1() && !y.isFree(x)) {
+        IExpr u = y.first();
+        switch (y.headID()) {
+          case ID.Tan:
+            return F.Divide(F.Sin(u), F.Cos(u));
+          case ID.Cot:
+            return F.Divide(F.Cos(u), F.Sin(u));
+          case ID.Sec:
+            return F.Power(F.Cos(u), F.CN1);
+          case ID.Csc:
+            return F.Power(F.Sin(u), F.CN1);
+          default:
+            break;
+        }
+      }
+      return F.NIL;
+    });
+    // the zeros of Cos(u) and Sin(u) of the reciprocal trigonometric functions are collected
+    // separately: Sin(u)/Cos(u) evaluates back to Tan(u), which has no denominator
+    IASTAppendable zeroFactors = F.TimesAlloc(4);
+    collectTrigPoleFactors(f, x, zeroFactors);
+    IExpr denominator = engine.evaluate(F.Times(
+        engine.evaluate(F.Denominator(engine.evaluate(F.Together(sinCos)))), zeroFactors));
+    if (denominator.isFree(x)) {
+      return F.CEmptyList;
+    }
+    final boolean numericLimits = lower.isNumericFunction(true) && upper.isNumericFunction(true);
+    IASTAppendable constraints = F.ListAlloc();
+    constraints.append(F.Equal(denominator, F.C0));
+    if (numericLimits) {
+      // the solutions of trigonometric equations come in families, which are cut off here
+      if (!lower.isNegativeInfinity()) {
+        constraints.append(F.Less(lower, x));
+      }
+      if (!upper.isInfinity()) {
+        constraints.append(F.Less(x, upper));
+      }
+    }
+    // without the domain Reals: a symbolic zero like x == a is real by the assumptions, which
+    // the real solver does not see
+    IExpr solved = numericLimits ? engine.evalQuiet(F.Solve(constraints, x, S.Reals))
+        : engine.evalQuiet(F.Solve(constraints, x));
+    if (!solved.isList()) {
+      return F.NIL;
+    }
+    IASTAppendable poles = F.ListAlloc();
+    for (IExpr solution : (IAST) solved) {
+      if (!solution.isList() || ((IAST) solution).argSize() != 1
+          || !solution.first().isRuleAST()) {
+        return F.NIL;
+      }
+      IExpr p = solution.first().second();
+      if (!p.isFree(x) || p.has(y -> y.isAST(S.C, 2), true) || !p.isFree(S.ConditionalExpression)) {
+        return F.NIL;
+      }
+      if (!p.isRealResult()) {
+        if (p.isNumericFunction(true) && !engine.evaluate(F.Im(p)).isZero()) {
+          // a complex pole is not on the path
+          continue;
+        }
+        return F.NIL;
+      }
+      // a pole at a limit of integration has no principal value
+      if (engine.evalTrue(F.Equal(p, lower)) || engine.evalTrue(F.Equal(p, upper))) {
+        return F.NIL;
+      }
+      IExpr below = engine.evaluate(F.Less(lower, p));
+      IExpr above = engine.evaluate(F.Less(p, upper));
+      if (below.isFalse() || above.isFalse()) {
+        continue;
+      }
+      if (!below.isTrue() || !above.isTrue()) {
+        return F.NIL;
+      }
+      if (!poles.contains(p)) {
+        poles.append(p);
+      }
+    }
+    return poles;
   }
 
   /**

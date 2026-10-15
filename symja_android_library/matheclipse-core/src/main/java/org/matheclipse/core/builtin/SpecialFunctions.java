@@ -2626,6 +2626,11 @@ public class SpecialFunctions {
           if (n.isMathematicalIntegerNonNegative()) {
             return F.CNInfinity;
           }
+        } else if (z.isDirectedInfinity() && z.isAST1() && n.isMathematicalIntegerNonNegative()
+            && !n.isZero()) {
+          // PolyLog(n, z) ~ -Log(-z)^n/n! for |z| -> Infinity: the power of Log(|z|) outgrows
+          // the part which depends on the direction
+          return F.CNInfinity;
         }
         if (n.isZero()) {
           // arg2/(1 - arg2)

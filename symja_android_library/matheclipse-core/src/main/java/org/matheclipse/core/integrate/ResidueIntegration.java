@@ -3,6 +3,7 @@ package org.matheclipse.core.integrate;
 import java.util.ArrayList;
 import java.util.List;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -63,7 +64,7 @@ public final class ResidueIntegration {
 
   private static final double EPS = 1e-9;
 
-  /** The time the simplification of a result may take, all of its steps together. */
+  /** The time the simplification of a result may take, all of its steps together, on the baseline machine. */
   private static final long SIMPLIFY_MILLIS = 6000L;
 
   /** The state of one call. */
@@ -338,7 +339,7 @@ public final class ResidueIntegration {
       IExpr upper) {
     IExpr piecewise = F.Piecewise(F.List(F.List(positive, F.Greater(p, F.C0)),
         F.List(negative, F.Less(p, F.C0))), S.Undefined);
-    ctx.simplifyDeadline = System.currentTimeMillis() + SIMPLIFY_MILLIS;
+    ctx.simplifyDeadline = System.currentTimeMillis() + MachineProfile.millis(SIMPLIFY_MILLIS);
     IExpr mirrored = F.subst(positive, p, F.Negate(p));
     IExpr combined;
     if (isZero(ctx, F.Subtract(negative, mirrored))) {
@@ -504,7 +505,7 @@ public final class ResidueIntegration {
 
   /** The result under the assumptions, in a readable form. */
   private static IExpr simplify(Context ctx, IExpr result) {
-    ctx.simplifyDeadline = System.currentTimeMillis() + SIMPLIFY_MILLIS;
+    ctx.simplifyDeadline = System.currentTimeMillis() + MachineProfile.millis(SIMPLIFY_MILLIS);
     IExpr evaluated = ctx.eval(result);
     IExpr reduced = reduceSingleRadical(ctx, evaluated);
     if (reduced.isPresent()) {

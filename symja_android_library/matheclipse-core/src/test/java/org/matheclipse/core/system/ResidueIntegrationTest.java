@@ -279,10 +279,9 @@ public class ResidueIntegrationTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrincipalValueOutOfScope() {
-    // the principal value Log(2) is not found: no answer, and no message that the integral
-    // does not converge
+    // not by residues, the antiderivative gives the principal value
     check("Integrate(1/x, {x,-1,2}, PrincipalValue->True)", //
-        "Integrate(1/x,{x,-1,2},PrincipalValue->True)");
+        "Log(2)");
     // where the integral exists it is its own principal value
     check("Integrate(x^2, {x,0,2}, PrincipalValue->True)", //
         "8/3");

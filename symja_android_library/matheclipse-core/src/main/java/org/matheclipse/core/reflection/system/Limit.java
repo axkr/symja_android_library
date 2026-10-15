@@ -953,6 +953,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
               }
             }
             break;
+          case ID.CosIntegral:
+          case ID.CoshIntegral:
+            // the same logarithmic branch point at 0 as Ei
+            if (!eiVarArg && ast.argSize() == 1 && !ast.arg1().isFree(variable, true)) {
+              eiVarArg = true;
+            }
+            break;
           case ID.Erfc:
             if (!erfcVarArg && ast.argSize() == 1 && !ast.arg1().isFree(variable, true)) {
               erfcVarArg = true;
@@ -1841,6 +1848,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     IExpr result = expression.replaceAll(data.rule());
+    if (result.isPresent() && data.limitValue().isDirectedInfinity()
+        && (hasUnresolvedInfiniteCall(result, engine) || hasInfiniteSummands(result, engine))) {
+      // f(Infinity) - f(Infinity) cancels to 0 although nothing about f at infinity is known
+      return F.NIL;
+    }
     if (result.isPresent()) {
       result = engine.evalQuiet(result);
       if (result.isComplexInfinity()) {
@@ -1856,6 +1868,81 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>PolyLog(2, c*x^k)</code> with a number <code>c</code> and <code>k &gt; 0</code> written
+   * with the inversion formula
+   * <code>PolyLog(2, u) == -Pi^2/6 - Log(-u)^2/2 - PolyLog(2, 1/u)</code>, where
+   * <code>Log(-c*x^k) == Log(-c) + k*Log(x)</code> for <code>x &gt; 0</code>: the argument of
+   * the new PolyLog goes to 0 when <code>x</code> goes to Infinity.
+   *
+   * @return {@link F#NIL} if there is no such PolyLog
+   */
+  private static IExpr invertedPolyLog(IExpr expr, IExpr x, EvalEngine engine) {
+    IExpr result = F.subst(expr, y -> {
+      if (y.isAST(S.PolyLog, 3) && y.first().isNumEqualInteger(F.C2) && !y.second().isFree(x)) {
+        IExpr u = y.second();
+        IExpr k = engine.evaluate(F.Exponent(u, x));
+        if (!k.isRational() || !k.isPositive()) {
+          return F.NIL;
+        }
+        IExpr c = engine.evaluate(F.Divide(u, F.Power(x, k)));
+        if (!c.isFree(x) || c.isZero()) {
+          return F.NIL;
+        }
+        // Log(-c) as Log(Abs(c)) + I*Arg(-c), which evaluates for a complex c
+        IExpr logMinusC = engine.evaluate(F.Plus(F.Log(F.Abs(c)), F.Times(F.CI, F.Arg(F.Negate(c)))));
+        {
+          IExpr log = F.Plus(logMinusC, F.Times(k, F.Log(x)));
+          return F.Plus(F.Times(F.CN1D6, F.Sqr(S.Pi)), F.Times(F.CN1D2, F.Sqr(log)),
+              F.Negate(F.PolyLog(F.C2, F.Power(u, F.CN1))));
+        }
+      }
+      return F.NIL;
+    });
+    return result.equals(expr) ? F.NIL : engine.evaluate(result);
+  }
+
+  /** A sum with more than one summand which is infinite at the limit point. */
+  private static boolean hasInfiniteSummands(IExpr expr, EvalEngine engine) {
+    if (!expr.isPlus()) {
+      return false;
+    }
+    int infinite = 0;
+    for (IExpr summand : (IAST) expr) {
+      if (summand.has(y -> y.isDirectedInfinity(), true)) {
+        IExpr value = engine.evalQuiet(summand);
+        if (!value.isNumber() && !value.isFree(y -> y.isDirectedInfinity(), true)) {
+          infinite++;
+        }
+      }
+    }
+    return infinite > 1;
+  }
+
+  /**
+   * A function call with an infinite argument which stays unevaluated, like
+   * <code>PolyLog(3, I*Infinity)</code>: its value at infinity is not known.
+   */
+  private static boolean hasUnresolvedInfiniteCall(IExpr expr, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return false;
+    }
+    IAST ast = (IAST) expr;
+    if (ast.isPlus() || ast.isTimes() || ast.isPower() || ast.isList()) {
+      for (IExpr arg : ast) {
+        if (hasUnresolvedInfiniteCall(arg, engine)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (ast.isDirectedInfinity() || !ast.has(y -> y.isDirectedInfinity(), true)) {
+      return false;
+    }
+    IExpr value = engine.evalQuiet(ast);
+    return value.isAST(ast.head()) && value.has(y -> y.isDirectedInfinity(), true);
   }
 
   private static IExpr evaluateLimit(IExpr function, IAST rule, Direction direction,
@@ -3702,7 +3789,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Substitute the near-0 series <code>ExpIntegralEi(g) ~ EulerGamma + Log(g) + g + g^2/4</code>
+   * Substitute the near-0 series
+   * <code>ExpIntegralEi(g) ~ EulerGamma + (Log(g) - Log(1/g))/2 + g + g^2/4</code>
    * for every <code>ExpIntegralEi(g)</code> whose argument <code>g -> 0</code> at the limit point.
    * Ei has a logarithmic branch point at 0, so this is not a plain Taylor series and Symja's
    * <code>Series</code>/<code>FunctionExpand</code> leave it unexpanded - yet the closed form is an
@@ -3710,15 +3798,52 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * the limit (thesis #59: <code>E^(2*Ei(-x))/x^2 -> E^(2*EulerGamma)</code> at <code>x->0</code>).
    * Only arguments with limit exactly 0 are touched; any other Ei is left intact.
    */
+  /**
+   * The limit variable runs along the real axis, so <code>g</code> is real there if it has no
+   * imaginary unit and all its other symbols are real.
+   */
+  private static boolean isRealAlongTheLimit(IExpr g, ISymbol variable) {
+    if (!g.isFree(y -> y == S.I || y.isComplex() || y.isComplexNumeric(), true)) {
+      return false;
+    }
+    IAST symbols = new VariablesSet(g).getVarList();
+    for (int i = 1; i < symbols.size(); i++) {
+      if (!symbols.get(i).equals(variable) && !symbols.get(i).isRealResult()) {
+        return false;
+      }
+    }
+    return g.isPolynomial(F.list(variable)) || g.isRealResult()
+        || g.isFree(y -> y.isPower() && !y.exponent().isInteger(), true);
+  }
+
   private static IExpr expandEiNearZero(IExpr function, IAST rule, Direction direction,
       EvalEngine engine) {
     final LimitData data = new LimitData((ISymbol) rule.arg1(), rule.arg2(), rule, direction);
     return F.subst(function, sub -> {
+      if ((sub.isAST(S.CosIntegral, 2) || sub.isAST(S.CoshIntegral, 2))
+          && !sub.first().isFree(data.variable(), true)) {
+        // CosIntegral(g) ~ EulerGamma + Log(g) - g^2/4, CoshIntegral(g) ~ EulerGamma + Log(g) + g^2/4;
+        // their branch cut is the negative real axis, as for Log
+        IExpr g = sub.first();
+        try {
+          if (evalLimitQuiet(g, data).isZero()) {
+            return F.Plus(S.EulerGamma, F.Log(g),
+                F.Times(sub.isAST(S.CosIntegral, 2) ? F.CN1D4 : F.C1D4, F.Sqr(g)));
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+        }
+        return F.NIL;
+      }
       if (sub.isAST(S.ExpIntegralEi, 2) && !sub.first().isFree(data.variable(), true)) {
         IExpr g = sub.first();
         try {
           if (evalLimitQuiet(g, data).isZero()) {
-            return F.Plus(S.EulerGamma, F.Log(g), g, F.Times(F.C1D4, F.Sqr(g)));
+            // Log(Abs(g)) for a real g and (Log(g) - Log(1/g))/2 otherwise instead of Log(g):
+            // Ei is real for a negative real g
+            IExpr log = isRealAlongTheLimit(g, data.variable()) ? F.Log(F.Abs(g))
+                : F.Times(F.C1D2, F.Subtract(F.Log(g), F.Log(F.Power(g, F.CN1))));
+            return F.Plus(S.EulerGamma, log, g, F.Times(F.C1D4, F.Sqr(g)));
           }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
@@ -4499,7 +4624,27 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           && direction.isFree(S.DirectedInfinity)) {
         IExpr saturation = saturationValue(ast.head());
         if (saturation.isPresent()) {
-          return F.ConditionalExpression(saturation, F.Greater(direction, F.C0));
+          // direction == c*r with a number c and a symbolic rest r
+          IExpr c = F.C1;
+          IExpr r = direction;
+          if (direction.isTimes()) {
+            IAST[] parts = ((IAST) direction).filter(y -> y.isNumericFunction(true));
+            c = F.eval(parts[0].oneIdentity1());
+            r = parts[1].oneIdentity1();
+          }
+          if (r.isPositiveResult() && c.isNumericFunction(true)) {
+            // the direction is a number up to a positive factor
+            IExpr value = directedInfinityLimit(F.unaryAST1(ast.head(), F.DirectedInfinity(c)));
+            if (value.isPresent()) {
+              return value;
+            }
+          }
+          if (c.isRealResult()) {
+            // an odd function: the sign of the direction decides, under the condition r > 0
+            IExpr signed = c.isNegativeResult() ? F.Negate(saturation) : saturation;
+            return F.ConditionalExpression(signed, F.Greater(r, F.C0));
+          }
+          return F.NIL;
         }
       }
     }
@@ -5180,6 +5325,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         if (mirrored.isPresent() && mirrored.isIndeterminateFree()) {
           arg1 = mirrored;
           direction = Direction.FROM_ABOVE;
+        }
+      }
+
+      if (rule.arg2().isInfinity() && arg1.has(y -> y.isAST(S.PolyLog, 3), true)) {
+        IExpr inverted = invertedPolyLog(arg1, rule.arg1(), engine);
+        if (inverted.isPresent()) {
+          arg1 = inverted;
         }
       }
 

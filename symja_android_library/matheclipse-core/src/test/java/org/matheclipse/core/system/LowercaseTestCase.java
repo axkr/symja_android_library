@@ -6644,8 +6644,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
     check("DirectedInfinity(1 + I)", //
         "DirectedInfinity((1+I)/Sqrt(2))");
+    // infinities in different directions
     check("DirectedInfinity(1+I)+DirectedInfinity(2+I)", //
-        "DirectedInfinity((1+I)/Sqrt(2))+DirectedInfinity((2+I)/Sqrt(5))");
+        "Indeterminate");
 
     check("DirectedInfinity(Sqrt(3))", //
         "Infinity");
@@ -22622,9 +22623,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("1/(-7) // FullForm", //
         "Rational(-1,7)");
-    // TODO improve output - if base is Sqrt avoid parnethesis
     check("x^Sqrt(y)^a", //
-        "x^(Sqrt(y))^a");
+        "x^Sqrt(y)^a");
 
     check("a^(1/Log(a)^4)", //
         "E^(1/Log(a)^3)");

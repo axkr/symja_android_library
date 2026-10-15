@@ -949,8 +949,61 @@ public class SeriesFunctions {
      *
      * @return {@link F#NIL} if <code>function</code> is not of one of these forms
      */
+    /**
+     * <code>WhittakerM(k, m, u)</code> written as
+     * <code>E^(-u/2)*u^(m+1/2)*Hypergeometric1F1(1/2+m-k, 1+2*m, u)</code>; at <code>Infinity</code>
+     * only if the hypergeometric function is a polynomial.
+     *
+     * @return {@link F#NIL} if a WhittakerM can't be rewritten
+     */
+    private static IExpr whittakerMAsHypergeometric(IExpr expr, IExpr x, boolean atInfinity,
+        EvalEngine engine) {
+      final boolean[] failed = new boolean[] {false};
+      IExpr rewritten = F.subst(expr, y -> {
+        if (y.isAST(S.WhittakerM, 4) && !y.isFree(x)) {
+          IExpr k = y.first();
+          IExpr m = y.second();
+          IExpr u = ((IAST) y).arg3();
+          if (!k.isFree(x) || !m.isFree(x)) {
+            failed[0] = true;
+            return F.NIL;
+          }
+          IExpr a = engine.evaluate(F.Plus(F.C1D2, m, F.Negate(k)));
+          if (!m.isRational() || (atInfinity && !(a.isInteger() && !a.isPositive()))) {
+            // a symbolic m gives the power x^(m+1/2), whose exponent the expansion needs to know
+            failed[0] = true;
+            return F.NIL;
+          }
+          return F.Times(F.Exp(F.Times(F.CN1D2, u)), F.Power(u, F.Plus(m, F.C1D2)),
+              F.Hypergeometric1F1(a, F.Plus(F.C1, F.Times(F.C2, m)), u));
+        }
+        return F.NIL;
+      });
+      return failed[0] || rewritten.equals(expr) ? F.NIL : engine.evaluate(rewritten);
+    }
+
     private static IExpr asymptoticAtInfinity(IExpr function, IExpr x, int n, EvalEngine engine) {
       final IAST iterator = F.List(x, F.CInfinity, F.ZZ(n));
+      if (function.isAST(S.HermiteH, 3) && function.second().equals(x)
+          && !function.first().isInteger() && function.first().isFree(x)) {
+        // HermiteH(v, x) ~ (2*x)^v*Sum((-1)^k*v*(v-1)*...*(v-2*k+1)/k!*(2*x)^(-2*k))
+        IExpr v = function.first();
+        IASTAppendable sum = F.PlusAlloc(n / 2 + 2);
+        for (int k = 0; 2 * k <= n + 1; k++) {
+          IASTAppendable term = F.TimesAlloc(2 * k + 3);
+          term.append(F.QQ((k & 1) == 1 ? -1 : 1, 1).divide(F.ZZ(k).factorial()));
+          for (int j = 0; j < 2 * k; j++) {
+            term.append(F.Subtract(v, F.ZZ(j)));
+          }
+          term.append(F.Power(F.Times(F.C2, x), F.ZZ(-2 * k)));
+          sum.append(term);
+        }
+        IExpr series = engine.evaluate(F.Series(sum, iterator));
+        if (!(series instanceof ASTSeriesData)) {
+          return F.NIL;
+        }
+        return F.Times(series, F.Power(F.Times(F.C2, x), v));
+      }
       if (function.isAST(S.ArcSinh, 2) || function.isAST(S.ArcCosh, 2)) {
         IExpr c = scaleOf(function.first(), x, engine);
         if (c.isNIL()) {
@@ -1202,6 +1255,18 @@ public class SeriesFunctions {
           if (arcSeries.isPresent()) {
             currentExpr = arcSeries;
             continue;
+          }
+        }
+
+        if (!leadingTermMode && (x0.isZero() || x0.isInfinity())
+            && currentExpr.has(y -> y.isAST(S.WhittakerM, 4) && !y.isFree(x), true)) {
+          IExpr hypergeometric = whittakerMAsHypergeometric(currentExpr, x, x0.isInfinity(), engine);
+          if (hypergeometric.isPresent()) {
+            // expanded below like any other function
+            currentExpr = hypergeometric;
+          } else {
+            // no expansion is known; the derivatives at the point are of no use either
+            return F.NIL;
           }
         }
 
@@ -1646,6 +1711,17 @@ public class SeriesFunctions {
             }
           } else if (kExpr.isRational()) {
             return F.C0;
+          }
+          return F.NIL;
+        }
+        if (ast.arg2().isList3() && ((IAST) ast.arg2()).arg3().isInteger()
+            && ast.arg1().has(y -> y.isAST(S.WhittakerM, 4)
+                && !y.isFree(((IAST) ast.arg2()).arg1()), true)) {
+          // the coefficient is read off the expansion, which goes through Hypergeometric1F1
+          IAST spec = (IAST) ast.arg2();
+          IExpr series = engine.evaluate(F.Series(ast.arg1(), spec));
+          if (series instanceof ASTSeriesData) {
+            return engine.evaluate(F.SeriesCoefficient(series, spec.arg3()));
           }
           return F.NIL;
         }

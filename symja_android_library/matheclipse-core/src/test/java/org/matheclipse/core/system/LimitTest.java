@@ -1608,4 +1608,46 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(t^b*Log(t), t->0, Direction->\"FromAbove\", Assumptions->b>0)", //
         "0");
   }
+
+  /**
+   * Sums of infinities in complex directions, PolyLog at infinity, the logarithmic branch points
+   * of ExpIntegralEi and CosIntegral at 0.
+   */
+  @Test
+  public void testInfinitiesAndBranchPoints() {
+    // each PolyLog grows like Log(x)^2, the difference like Log(x)
+    check("Limit(PolyLog(2,-4*I*x)-PolyLog(2,-5*I*x), x->Infinity)", //
+        "Infinity");
+    check("Limit(PolyLog(2,4*x)-PolyLog(2,5*x), x->Infinity)", //
+        "Infinity");
+    check("PolyLog(2,-3*I*Infinity)", //
+        "-Infinity");
+    check("PolyLog(3,I*Infinity)", //
+        "-Infinity");
+    // infinities in different directions
+    check("-I*Infinity+I*Infinity", //
+        "Indeterminate");
+    check("Infinity+I*Infinity", //
+        "Indeterminate");
+    check("5+I*Infinity", //
+        "I*Infinity");
+    check("I*Infinity+2*I*Infinity", //
+        "I*Infinity");
+    check("Infinity+I*Pi", //
+        "Infinity");
+    check("Limit((I*Pi+Log(5)+Log(x))^2-(I*Pi+Log(4)+Log(x))^2, x->Infinity)", //
+        "Infinity");
+    // the direction (-1)^(1/4)*Sqrt(c) times -Infinity
+    check("Limit(Erf((-1)^(1/4)*Sqrt(c)*x), x->-Infinity, Assumptions->c>0)", //
+        "-1");
+    check("Limit(ArcTan(c*x), x->-Infinity)", //
+        "ConditionalExpression(-Pi/2,c>0)");
+    // ExpIntegralEi is real on the real axis, CosIntegral has a branch cut there
+    check("Limit(ExpIntegralEi(-e)-ExpIntegralEi(e), e->0, Direction->\"FromAbove\")", //
+        "0");
+    check("Limit(CosIntegral(-e)-CosIntegral(e), e->0, Direction->\"FromAbove\")", //
+        "I*Pi");
+    check("Limit(CosIntegral(x)-Log(x), x->0)", //
+        "EulerGamma");
+  }
 }

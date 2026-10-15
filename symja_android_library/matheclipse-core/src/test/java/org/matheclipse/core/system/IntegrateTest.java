@@ -1641,4 +1641,43 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(Abs(x), {x,-c,2*c}, Assumptions->c>0)", //
         "5/2*c^2");
   }
+
+  /**
+   * A Frullani integral with ArcTan, the Gaussian with an imaginary coefficient, and Cauchy
+   * principal values from an antiderivative.
+   */
+  @Test
+  public void testFrullaniGaussianPrincipalValue() {
+    // was 0
+    check("Integrate((ArcTan(4*x)-ArcTan(5*x))/x, {x,0,Infinity})", //
+        "1/2*Pi*Log(4)-1/2*Pi*Log(5)");
+    check("Integrate((ArcTan(c*x)-ArcTan(d*x))/x, {x,0,Infinity}, Assumptions->c>0&&d>0)", //
+        "1/2*Pi*Log(c)-1/2*Pi*Log(d)");
+    // was 0
+    check("Integrate(Exp(-I*c*x^2), {x,-Infinity,Infinity}, Assumptions->c>0)", //
+        "(-(-1)^(3/4)*Sqrt(Pi))/Sqrt(c)");
+    // the principal value at the interior poles
+    check("Integrate(1/x, {x,-2,3}, PrincipalValue->True)", //
+        "Log(3/2)");
+    check("Integrate(1/x, {x,-c,d}, PrincipalValue->True, Assumptions->c>0&&d>0)", //
+        "Log(d/c)");
+    check("Integrate(1/(x-c), {x,0,3*c}, PrincipalValue->True, Assumptions->c>0)", //
+        "Log(2)");
+    check("Integrate(Tan(x), {x,0,2*Pi/3}, PrincipalValue->True)", //
+        "Log(2)");
+    check("Integrate(Cot(x), {x,-Pi/3,Pi/2}, PrincipalValue->True)", //
+        "Log(2)-Log(3)/2");
+    check("Integrate(x/(x^2-c^2), {x,0,3*c}, PrincipalValue->True, Assumptions->c>0)", //
+        "Log(8)/2");
+    check("Integrate(Exp(x)/x, {x,-c,c}, PrincipalValue->True, Assumptions->c>0)", //
+        "-ExpIntegralEi(-c)+ExpIntegralEi(c)");
+    check("Integrate(1/(x^2-9), {x,0,5}, PrincipalValue->True)", //
+        "-ArcTanh(3/5)/3");
+    // a double pole has no principal value
+    check("Integrate(1/x^2, {x,-1,2}, PrincipalValue->True)", //
+        "Integrate(1/x^2,{x,-1,2},PrincipalValue->True)");
+    // a pole at a limit of integration has none
+    check("Integrate(1/x, {x,0,2}, PrincipalValue->True)", //
+        "Integrate(1/x,{x,0,2},PrincipalValue->True)");
+  }
 }
