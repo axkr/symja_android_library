@@ -722,6 +722,14 @@ public class JASConvert<C extends RingElem<C>> {
           } catch (IllegalArgumentException iae) {
             // fall through
           }
+        } else if (ast.isPower() && (ast.base().isPlus() || ast.base().isTimes())) {
+          // a factored polynomial like (b*c-a*d)^2
+          int exponent = ast.exponent().toIntDefault();
+          if (exponent < 0) {
+            return null;
+          }
+          GenPolynomial<C> base = expr2Poly(ast.base(), numeric2Rational);
+          return base == null ? null : base.power(exponent);
         } else if (ast.isPower() && ast.arg1().isSlot()) {
           final IAST base = (IAST) ast.arg1();
           int exponent = ast.exponent().toIntDefault();

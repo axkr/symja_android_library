@@ -3118,11 +3118,130 @@ public class AlgebraUtil {
     temp = S.Factor.of(engine, parts[1]);
     if (temp.isTimes()) {
       // The iterative method no longer requires a 'count' recursion tracker.
-      return splitRepeatedFactors(
+      return collectPartialFractions(splitRepeatedFactors(
           AlgebraUtil.partialFractionDecomposition(parts[0], temp, variable, engine), variable,
-          engine);
+          engine), variable, engine);
     }
-    return singleFactorApart(parts[0], temp, variable, engine);
+    return collectPartialFractions(singleFactorApart(parts[0], temp, variable, engine), variable,
+        engine);
+  }
+
+  /**
+   * Combine the terms of a partial fraction decomposition with the same part in the variable and
+   * factor their coefficients: <code>(-b/(a^2*c^2)-2*d/(a*c^3))/x</code> is
+   * <code>(-b*c-2*a*d)/(a^2*c^3*x)</code> and <code>b^4/((a^2*b^2*c^2-2*a^3*b*c*d+a^4*d^2)*(a+b*x))</code>
+   * is <code>b^4/(a^2*(b*c-a*d)^2*(a+b*x))</code>. The quotients of the iterative decomposition,
+   * which cancel each other for a proper fraction, are dropped.
+   */
+  private static IExpr collectPartialFractions(IExpr decomposition, IExpr variable,
+      EvalEngine engine) {
+    if (!decomposition.isPlus()) {
+      return decomposition;
+    }
+    Map<IExpr, IASTAppendable> coefficients = new LinkedHashMap<IExpr, IASTAppendable>();
+    for (IExpr term : (IAST) decomposition) {
+      IExpr[] split = splitFreeFactors(term, variable);
+      coefficients.computeIfAbsent(split[1], k -> F.PlusAlloc(4)).append(split[0]);
+    }
+    IASTAppendable result = F.PlusAlloc(coefficients.size());
+    for (Map.Entry<IExpr, IASTAppendable> entry : coefficients.entrySet()) {
+      IExpr coefficient = partialFractionCoefficient(entry.getValue(), engine);
+      if (!coefficient.isZero()) {
+        result.append(F.Times(coefficient, entry.getKey()));
+      }
+    }
+    return engine.evaluate(result.oneIdentity0());
+  }
+
+  /**
+   * <code>{coefficient, part}</code> of a term: the product of its factors which are free of the
+   * variable and the product of the others.
+   */
+  private static IExpr[] splitFreeFactors(IExpr term, IExpr variable) {
+    if (term.isTimes()) {
+      IASTAppendable free = F.TimesAlloc(term.argSize());
+      IASTAppendable rest = F.TimesAlloc(term.argSize());
+      ((IAST) term).filter(free, rest, f -> f.isFree(variable));
+      return new IExpr[] {free.oneIdentity1(), rest.oneIdentity1()};
+    }
+    return term.isFree(variable) ? new IExpr[] {term, F.C1} : new IExpr[] {F.C1, term};
+  }
+
+  /**
+   * The sum of the coefficients of one partial fraction. A rational function of its symbols is
+   * factored. A sum of numbers like <code>Sqrt(2)</code> is reduced to one algebraic number. Any
+   * other sum, or one which is too large to factor, is only brought over a common denominator,
+   * which recognizes coefficients cancelling to <code>0</code>.
+   */
+  private static IExpr partialFractionCoefficient(IAST coefficients, EvalEngine engine) {
+    IExpr sum = engine.evaluate(coefficients.oneIdentity0());
+    if (sum.isNumber() || sum.isSymbol()) {
+      return sum;
+    }
+    if (sum.leafCount() <= Config.MAX_FACTOR_LEAFCOUNT && isRationalFunctionOfSymbols(sum)) {
+      IExpr factored = S.Factor.of(engine, sum);
+      return evenPowerSigns(reducedFraction(factored, engine).orElse(factored), engine);
+    }
+    if (coefficients.argSize() == 1) {
+      return sum;
+    }
+    IExpr together = engine.evaluate(togetherExpr(sum, engine));
+    if (together.isNumericFunction() && together.leafCount() <= Config.MAX_FACTOR_LEAFCOUNT) {
+      IExpr reduced = engine.evalQuiet(F.RootReduce(together));
+      if (reduced.isNumericFunction() && reduced.leafCount() < together.leafCount()) {
+        return reduced;
+      }
+    }
+    return together;
+  }
+
+  /**
+   * The evaluator writes an even power of a sum with one sign, <code>(-b*c+a*d)^2</code> is
+   * <code>(b*c-a*d)^2</code>. An odd power of a sum in the denominator gets the same sign, so that
+   * one result does not show <code>(-b*c+a*d)^9</code> next to <code>(b*c-a*d)^10</code>.
+   */
+  private static IExpr evenPowerSigns(IExpr coefficient, EvalEngine engine) {
+    if (!coefficient.isTimes() && !coefficient.isPower()) {
+      return coefficient;
+    }
+    IAST factors = coefficient.isTimes() ? (IAST) coefficient : F.Times(coefficient);
+    IASTAppendable result = F.TimesAlloc(factors.argSize() + 1);
+    boolean changed = false;
+    for (IExpr factor : factors) {
+      if (factor.isPower() && factor.base().isPlus() && factor.exponent().isInteger()
+          && factor.exponent().isNegative() && factor.exponent().isOdd()) {
+        IExpr square = engine.evaluate(F.Power(factor.base(), F.C2));
+        if (square.isPower() && square.base().isPlus() && !square.base().equals(factor.base())
+            && engine.evaluate(F.Expand(F.Plus(square.base(), factor.base()))).isZero()) {
+          result.append(F.CN1);
+          result.append(F.Power(square.base(), factor.exponent()));
+          changed = true;
+          continue;
+        }
+      }
+      result.append(factor);
+    }
+    return changed ? engine.evaluate(result) : coefficient;
+  }
+
+  /**
+   * Test if <code>expr</code> is built from variables and rational numbers with
+   * <code>Plus, Times</code> and integer powers only, so that <code>Factor</code> can normalize it.
+   */
+  private static boolean isRationalFunctionOfSymbols(IExpr expr) {
+    if (expr.isNumber()) {
+      return expr.isRational();
+    }
+    if (expr.isSymbol()) {
+      return expr.isVariable();
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      return ((IAST) expr).forAll(x -> isRationalFunctionOfSymbols(x));
+    }
+    if (expr.isPower()) {
+      return expr.exponent().isInteger() && isRationalFunctionOfSymbols(expr.base());
+    }
+    return false;
   }
 
   /**
@@ -3147,11 +3266,9 @@ public class AlgebraUtil {
         IExpr denominator = fraction.get()[1];
         if (denominator.isTimes()) {
           // the factors without the variable belong to the coefficients
-          IASTAppendable free = F.TimesAlloc(denominator.argSize());
-          IASTAppendable rest = F.TimesAlloc(denominator.argSize());
-          ((IAST) denominator).forEach(f -> (f.isFree(variable) ? free : rest).append(f));
-          numerator = engine.evaluate(F.Divide(numerator, free.oneIdentity1()));
-          denominator = rest.oneIdentity1();
+          IExpr[] factors = splitFreeFactors(denominator, variable);
+          numerator = engine.evaluate(F.Divide(numerator, factors[0]));
+          denominator = factors[1];
         }
         if (denominator.isPower() && !denominator.isFree(variable)) {
           split = singleFactorApart(numerator, denominator, variable, engine);

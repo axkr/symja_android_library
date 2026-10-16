@@ -203,13 +203,11 @@ public class RationalIntegration {
       return F.NIL;
     }
     try {
-      // numerator and denominator multiplied out: the common denominator keeps a power of a
-      // polynomial as a power, which the polynomial conversion below does not read
       IExpr together = integrand.isAST() //
           ? engine.evaluate(AlgebraUtil.togetherExpr(integrand, engine)) //
           : integrand;
-      IExpr numerExpr = engine.evaluate(F.Expand(F.Numerator(together)));
-      IExpr denomExpr = engine.evaluate(F.Expand(F.Denominator(together)));
+      IExpr numerExpr = engine.evaluate(F.Numerator(together));
+      IExpr denomExpr = engine.evaluate(F.Denominator(together));
       if (!together.equals(integrand)) {
         final IExpr in = integrand;
         step(engine, "SingleFraction", () -> F.Integrate(in, x),

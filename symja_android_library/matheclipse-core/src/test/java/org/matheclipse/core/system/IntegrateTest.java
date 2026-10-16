@@ -1693,5 +1693,10 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // the same integral inside another function: the rules get the same depth as at the top level
     check("Simplify(D(Identity(Integrate(1/((p+q*x)^3*(r+s*x)^8),x)),x)-1/((p+q*x)^3*(r+s*x)^8))", //
         "0");
+    // Apart divides over Q(p,q,r,s); a coefficient denominator (q*r-p*s)^2 has to be expanded for
+    // the conversion to JAS, otherwise ExpandIntegrand stays unevaluated
+    check("Integrate(1/(x^2*(p+q*x)*(r+s*x)^2),x)", //
+        "-1/(p*r^2*x)+s^2/(r^2*(q*r-p*s)*(r+s*x))+(-(q*r+2*p*s)*Log(x))/(p^2*r^3)+(q^3*Log(p+q*x))/(p^\n"
+            + "2*(q*r-p*s)^2)+(s^2*(-3*q*r+2*p*s)*Log(r+s*x))/(r^3*(q*r-p*s)^2)");
   }
 }

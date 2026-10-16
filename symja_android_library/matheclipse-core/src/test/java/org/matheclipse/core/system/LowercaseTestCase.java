@@ -438,7 +438,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together(Apart(1/(t^2*(p+q*t)^2), t) - 1/(t^2*(p+q*t)^2))", //
         "0");
     check("Apart(t^3/((t+p)^2*(t+q)), t)", //
-        "1-p^3/((-p+q)*(p+t)^2)+(-2*p^3+3*p^2*q)/((p^2-2*p*q+q^2)*(p+t))-q^3/((p^2-2*p*q+q^\n2)*(q+t))");
+        "1+p^3/((p-q)*(p+t)^2)+(p^2*(-2*p+3*q))/((p-q)^2*(p+t))-q^3/((p-q)^2*(q+t))");
+    // the coefficients of the partial fractions are factored
+    check("Apart(1/(x^2*(a+b*x)*(c+d*x)^2),x)", //
+        "1/(a*c^2*x^2)+(-b*c-2*a*d)/(a^2*c^3*x)+b^4/(a^2*(b*c-a*d)^2*(a+b*x))-d^3/(c^2*(b*c-a*d)*(c+d*x)^\n"
+            + "2)+(d^3*(-3*b*c+2*a*d))/(c^3*(b*c-a*d)^2*(c+d*x))");
+    // the polynomial part of an improper fraction is collected
+    check("Apart(x^3/((a+b*x)*(c+d*x)),x)", //
+        "(-b*c-a*d)/(b^2*d^2)+x/(b*d)-a^3/(b^2*(b*c-a*d)*(a+b*x))+c^3/(d^2*(b*c-a*d)*(c+d*x))");
+    // an odd power of b*c-a*d has the sign of the even powers
+    check("Apart(1/((a+b*x)^2*(c+d*x)^3),x)", //
+        "b^3/((b*c-a*d)^3*(a+b*x)^2)+(-3*b^3*d)/((b*c-a*d)^4*(a+b*x))+d^2/((b*c-a*d)^2*(c+d*x)^\n"
+            + "3)+(2*b*d^2)/((b*c-a*d)^3*(c+d*x)^2)+(3*b^2*d^2)/((b*c-a*d)^4*(c+d*x))");
+    // a coefficient with an algebraic number
+    check("Apart(x^3/((1-Sqrt(2)*x)*(2+x)),x)", //
+        "7/(2*(1+2*Sqrt(2)))-x/Sqrt(2)-8/((1+2*Sqrt(2))*(2+x))+1/(2*(1+2*Sqrt(2))*(1-Sqrt(\n"
+            + "2)*x))");
     check("Simplify(Together(Apart(t^3/((t+p)^2*(t+q)), t) - t^3/((t+p)^2*(t+q))))", //
         "0");
   }
