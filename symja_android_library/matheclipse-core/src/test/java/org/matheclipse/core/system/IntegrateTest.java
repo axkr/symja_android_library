@@ -1680,4 +1680,18 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(1/x, {x,0,2}, PrincipalValue->True)", //
         "Integrate(1/x,{x,0,2},PrincipalValue->True)");
   }
+
+  @Test
+  public void testIntegratePowersOfTwoLinearFactors() {
+    // the partial fractions have coefficients over powers of q*r-p*s, which the common
+    // denominator of their sums keeps as a power (a sum of such fractions with the expanded
+    // power as denominator used to run for minutes)
+    check("Integrate(1/((p+q*x)^3*(r+s*x)^5),x)", //
+        "-q^4/(2*(q*r-p*s)^5*(p+q*x)^2)+(5*q^4*s)/((q*r-p*s)^6*(p+q*x))+s^2/(4*(q*r-p*s)^\n3*(r+s*x)^4)+(q*s^2)/((q*r-p*s)^4*(r+s*x)^3)+(3*q^2*s^2)/((q*r-p*s)^5*(r+s*x)^2)+(\n10*q^3*s^2)/((q*r-p*s)^6*(r+s*x))+(15*q^4*s^2*Log(p+q*x))/(q*r-p*s)^7+(-15*q^4*s^\n2*Log(r+s*x))/(q*r-p*s)^7");
+    check("Simplify(D(Integrate(1/((p+q*x)^3*(r+s*x)^5),x),x)-1/((p+q*x)^3*(r+s*x)^5))", //
+        "0");
+    // the same integral inside another function: the rules get the same depth as at the top level
+    check("Simplify(D(Identity(Integrate(1/((p+q*x)^3*(r+s*x)^8),x)),x)-1/((p+q*x)^3*(r+s*x)^8))", //
+        "0");
+  }
 }

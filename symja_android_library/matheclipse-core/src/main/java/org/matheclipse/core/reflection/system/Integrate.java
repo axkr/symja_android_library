@@ -2657,8 +2657,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         try {
           try {
             engine.setQuietMode(true);
-            if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
-              engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
+            // the depth the rules may use is counted from the depth of this call: an integral
+            // inside another function gets the same rules depth as one at the top level
+            int rulesLimit =
+                engine.getRecursionCounter() + Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT;
+            if (limit <= 0 || limit > rulesLimit) {
+              engine.setRecursionLimit(rulesLimit);
             }
 
             engine.rubiASTCache.put(ast, F.NIL);

@@ -16461,7 +16461,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("LerchPhi(2, 3, -1.5)", //
     // "");
     checkNumeric("LerchPhi(z,-2,a)", //
-        "-(a^2+z+2*a*z-2*a^2*z+z^2-2*a*z^2+a^2*z^2)/(-1+3*z-3*z^2+z^3)");
+        "(-a^2-z-2*a*z+2*a^2*z-z^2+2*a*z^2-a^2*z^2)/(-1+z)^3");
     checkNumeric("LerchPhi(1/3,-1,2)", //
         "15/4");
     checkNumeric("LerchPhi(0.5,1,2)", //
@@ -30944,7 +30944,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(b*c+a*d)/(b*d)");
     // TODO return {x (2 + y) / (1 + y) ^ 2}
     check("Together({x / (y+1) + x / (y+1)^2})", //
-        "{(2*x+x*y)/(1+2*y+y^2)}");
+        "{(2*x+x*y)/(1+y)^2}");
 
     check("Together(a / c + b / c)", //
         "(a+b)/c");
@@ -31026,6 +31026,42 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-2*Sqrt(7)");
     check("tg=Together(1/(Sqrt(7) - 2 *Sqrt(2)) + 1/(Sqrt(7) + 2 *Sqrt(2))) ", //
         "-2*Sqrt(7)");
+  }
+
+  @Test
+  public void testTogetherCommonDenominator() {
+    // the common denominator is the product of the distinct polynomial factors with their largest
+    // exponents; it stays a product of powers
+    check("Together(1/(p*q-r*s)^7+p/(p*q-r*s)^5)", //
+        "(1+p^3*q^2-2*p^2*q*r*s+p*r^2*s^2)/(p*q-r*s)^7");
+    check("Together(1/(r*s-p*q)^3+1/(p*q-r*s))", //
+        "(-1+p^2*q^2-2*p*q*r*s+r^2*s^2)/(p*q-r*s)^3");
+    check("Together(1/(3*(u+v))+1/(5*(u-v)^2))", //
+        "(3*u+5*u^2+3*v-10*u*v+5*v^2)/(15*(u-v)^2*(u+v))");
+    check("Together(u/(u+v)^3+1/(u+v)+v)", //
+        "(u+u^2+2*u*v+u^3*v+v^2+3*u^2*v^2+3*u*v^3+v^4)/(u+v)^3");
+    check("Together(1/(2*u+6)+1/(u+3)^2)", //
+        "(5+u)/(2*(3+u)^2)");
+    check("Together(Sin(u)/(1+v)+Cos(u)/(1+v)^2)", //
+        "(Cos(u)+Sin(u)+v*Sin(u))/(1+v)^2");
+    check("Together(1/(x-y)^2+1/(x-y)^3+1/(y-x))", //
+        "(1+x-x^2-y+2*x*y-y^2)/(x-y)^3");
+    // the same factor twice in one denominator
+    check("(Together(a/((x+y)*(2*x+2*y))+b/(x+y))-(a/((x+y)*(2*x+2*y))+b/(x+y)))/.{x->2,y->3,a->5,b->7}", //
+        "0");
+    check("Together(a/((x+y)*(2*x+2*y))+b/(x+y))", //
+        "(a+2*b*x+2*b*y)/(2*(x+y)^2)");
+    // a common factor of numerator and denominator is cancelled out of the powers
+    check("Together(1/(u-v)+(u+v)/(u^2-v^2))", //
+        "2/(u-v)");
+    // fractions over expanded powers of the same polynomial: the power is recovered
+    check("Together(Expand(Sum(Binomial(6,k)*(-1)^k*5*p^k*q^(12-k)*r^(6-k)*s^(1+k),{k,0,6})/Expand((q*r-p*s)^12)))", //
+        "(5*q^6*s)/(q*r-p*s)^6");
+    // a denominator which is not a polynomial in its variables takes the general path as before
+    check("Together(1/(a-b^(1/3))+1/(a+b^(1/3)))", //
+        "(2*a)/((a-b^(1/3))*(a+b^(1/3)))");
+    check("Together(1/(1+Sqrt(x))^2+1/(1+Sqrt(x)))", //
+        "(2+Sqrt(x))/(1+2*Sqrt(x)+x)");
   }
 
   @Test

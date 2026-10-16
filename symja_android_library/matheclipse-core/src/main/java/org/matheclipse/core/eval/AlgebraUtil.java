@@ -198,23 +198,34 @@ public class AlgebraUtil {
     final boolean distributePlus;
     final boolean evalParts;
     final boolean factorTerms;
+    /**
+     * With <code>expandNegativePowers</code>: a denominator which is a product of powers of
+     * polynomials is kept as it is, only the other denominators are multiplied out
+     */
+    final boolean keepPolynomialDenominators;
 
     /** Pattern matcher which may be F.NIL if undefined */
     final Predicate<IExpr> matcher;
 
     public Expander(Predicate<IExpr> matcher, boolean expandNegativePowers, boolean distributePlus,
         boolean evalParts, boolean factorTerms) {
+      this(matcher, expandNegativePowers, distributePlus, evalParts, factorTerms, false);
+    }
+
+    public Expander(Predicate<IExpr> matcher, boolean expandNegativePowers, boolean distributePlus,
+        boolean evalParts, boolean factorTerms, boolean keepPolynomialDenominators) {
       this.matcher = matcher;
       this.expandNegativePowers = expandNegativePowers;
       this.distributePlus = distributePlus;
       this.evalParts = evalParts;
       this.factorTerms = factorTerms;
+      this.keepPolynomialDenominators = keepPolynomialDenominators;
     }
 
     private IExpr addExpanded(IExpr expr) {
       if (expr.isAST()) {
         if (expandNegativePowers && evalParts && !distributePlus && !factorTerms
-            && matcher == null) {
+            && matcher == null && !keepPolynomialDenominators) {
           ((IAST) expr).addFlag(Flag.IS_EXPANDED);
         } else {
           // Lazy initialization to save memory for nodes that don't require map caching
@@ -371,7 +382,8 @@ public class AlgebraUtil {
             evaled = true;
           }
         }
-        if (expandNegativePowers) {
+        if (expandNegativePowers
+            && !(keepPolynomialDenominators && isProductOfPolynomialPowers(parts[1]))) {
           if (parts[1].isTimes()) {
             tempExpr = expandTimes((IAST) parts[1], engine);
             if (tempExpr.isPresent()) {
@@ -576,7 +588,8 @@ public class AlgebraUtil {
         }
         IAST plusAST = (IAST) base;
         if (exp < 0) {
-          if (expandNegativePowers) {
+          if (expandNegativePowers
+              && !(keepPolynomialDenominators && isPolynomialInItsVariables(plusAST))) {
             exp *= (-1);
             return F.Power(expandPower(plusAST, exp), F.CN1);
           }
@@ -1433,8 +1446,21 @@ public class AlgebraUtil {
    */
   public static IExpr expand(final IAST ast, Predicate<IExpr> patt, boolean expandNegativePowers,
       boolean distributePlus, boolean evalParts, boolean factorTerms) {
-    Expander expander =
-        new Expander(patt, expandNegativePowers, distributePlus, evalParts, factorTerms);
+    return expand(ast, patt, expandNegativePowers, distributePlus, evalParts, factorTerms, false);
+  }
+
+  /**
+   * Expand the given <code>ast</code> expression.
+   *
+   * @param keepPolynomialDenominators with <code>expandNegativePowers</code>: a denominator which
+   *        is a product of powers of polynomials stays as it is
+   * @return {@link F#NIL} if the expression couldn't be expanded.
+   */
+  private static IExpr expand(final IAST ast, Predicate<IExpr> patt,
+      boolean expandNegativePowers, boolean distributePlus, boolean evalParts,
+      boolean factorTerms, boolean keepPolynomialDenominators) {
+    Expander expander = new Expander(patt, expandNegativePowers, distributePlus, evalParts,
+        factorTerms, keepPolynomialDenominators);
     return expander.expandAST(ast);
   }
 
@@ -1447,6 +1473,22 @@ public class AlgebraUtil {
    */
   public static IExpr expandAll(final IAST ast, Predicate<IExpr> patt, boolean expandNegativePowers,
       boolean distributePlus, boolean factorTerms, EvalEngine engine) {
+    return expandAll(ast, patt, expandNegativePowers, distributePlus, factorTerms, false, engine);
+  }
+
+  /**
+   * Expand the given <code>ast</code> expression.
+   *
+   * @param keepPolynomialDenominators with <code>expandNegativePowers</code>: a denominator which
+   *        is a product of powers of polynomials stays as it is; the result is then not marked as
+   *        expanded in all its parts
+   * @return {@link F#NIL} if the expression couldn't be expanded.
+   */
+  private static IExpr expandAll(final IAST ast, Predicate<IExpr> patt,
+      boolean expandNegativePowers, boolean distributePlus, boolean factorTerms,
+      boolean keepPolynomialDenominators, EvalEngine engine) {
+    // the flag for an expression expanded in all its parts means that its denominators are too
+    final boolean markAllExpanded = expandNegativePowers && !keepPolynomialDenominators;
     if (patt != null && ast.isFree(patt, true)) {
       return F.NIL;
     }
@@ -1471,15 +1513,15 @@ public class AlgebraUtil {
     int localASTSize = localAST.size();
     IExpr head = localAST.head();
     if (head.isAST()) {
-      temp =
-          expandAll((IAST) head, patt, expandNegativePowers, distributePlus, factorTerms, engine);
+      temp = expandAll((IAST) head, patt, expandNegativePowers, distributePlus, factorTerms,
+          keepPolynomialDenominators, engine);
       temp.ifPresent(x -> result[0] = F.ast(x, localASTSize));
     }
     final IAST localASTFinal = localAST;
     localAST.forEach((x, i) -> {
       if (x.isAST()) {
-        IExpr t =
-            expandAll((IAST) x, patt, expandNegativePowers, distributePlus, factorTerms, engine);
+        IExpr t = expandAll((IAST) x, patt, expandNegativePowers, distributePlus, factorTerms,
+            keepPolynomialDenominators, engine);
         if (t.isPresent()) {
           if (result[0].isNIL()) {
             int size = localASTFinal.size() + 4; // 4 -> empirically determined value in JUnit tests
@@ -1497,24 +1539,26 @@ public class AlgebraUtil {
     });
 
     if (result[0].isNIL()) {
-      temp = expand(localAST, patt, expandNegativePowers, distributePlus, true, factorTerms);
+      temp = expand(localAST, patt, expandNegativePowers, distributePlus, true, factorTerms,
+          keepPolynomialDenominators);
       if (temp.isPresent()) {
-        setAllExpanded(temp, expandNegativePowers, distributePlus);
+        setAllExpanded(temp, markAllExpanded, distributePlus);
         return temp;
       } else {
         if (localAST != ast) {
-          setAllExpanded(localAST, expandNegativePowers, distributePlus);
+          setAllExpanded(localAST, markAllExpanded, distributePlus);
           return localAST;
         }
       }
-      setAllExpanded(ast, expandNegativePowers, distributePlus);
+      setAllExpanded(ast, markAllExpanded, distributePlus);
       return F.NIL;
     }
-    temp = expand(result[0], patt, expandNegativePowers, distributePlus, true, factorTerms);
+    temp = expand(result[0], patt, expandNegativePowers, distributePlus, true, factorTerms,
+        keepPolynomialDenominators);
     if (temp.isPresent()) {
-      return setAllExpanded(temp, expandNegativePowers, distributePlus);
+      return setAllExpanded(temp, markAllExpanded, distributePlus);
     }
-    return setAllExpanded(result[0], expandNegativePowers, distributePlus);
+    return setAllExpanded(result[0], markAllExpanded, distributePlus);
   }
 
   /**
@@ -3923,9 +3967,11 @@ public class AlgebraUtil {
       }
     }
 
-    // Skip expensive deep expansions if the expression is already marked as expanded
+    // Skip expensive deep expansions if the expression is already marked as expanded. A
+    // denominator which is a product of powers of polynomials is not multiplied out: its powers
+    // are factors of the common denominator, which stays a product of such factors.
     if (!ast.isAllExpanded()) {
-      temp = expandAll(ast, null, true, false, true, engine);
+      temp = expandAll(ast, null, true, false, true, true, engine);
     }
 
     if (temp.isNIL()) {
@@ -4090,6 +4136,15 @@ public class AlgebraUtil {
       return F.NIL;
     }
 
+    // The common denominator of polynomial denominators is the product of their distinct factors
+    // with the largest exponents, not the product of all denominators: 1/(b*c-a*d)^10+b/(b*c-a*d)^9
+    // is (1+b^2*c-a*b*d)/(b*c-a*d)^10, and a sum of eleven fractions with the same expanded
+    // denominator of degree 20 does not get a numerator of degree 200 (it ran for minutes).
+    IExpr overCommonDenominator = togetherOverCommonDenominator(numerator, denominatorList, engine);
+    if (overCommonDenominator.isPresent()) {
+      return overCommonDenominator;
+    }
+
     numerator.forEach(
         (IExpr x, int i) -> togetherPlusNumeratorArg(x, i, numerator, denominatorList, plusAST));
 
@@ -4144,6 +4199,359 @@ public class AlgebraUtil {
       return F.Times(exprNumerator, F.Power(denom, -1));
     }
     return exprNumerator;
+  }
+
+
+  /** A factor <code>base^exponent</code> of a common denominator. */
+  private static final class DenominatorFactor {
+    /** the key the factor is recognized by: a primitive polynomial with a positive leading term */
+    final IExpr key;
+    /** the factor as it was written in the first fraction which has it */
+    IExpr base;
+    /** <code>true</code> if every fraction writes the factor as <code>base</code> */
+    boolean sameForm = true;
+    int exponent;
+
+    DenominatorFactor(IExpr key, IExpr base, int exponent) {
+      this.key = key;
+      this.base = base;
+      this.exponent = exponent;
+    }
+  }
+
+  /**
+   * Test if <code>expr</code> is a polynomial in its variables and has at least one: a sum of
+   * algebraic numbers like <code>2*Sqrt(2)+Sqrt(7)</code> is not one, nor is
+   * <code>a-b^(1/3)</code>. Polynomial division and factorization are reliable for these only.
+   */
+  private static boolean isPolynomialInItsVariables(IExpr expr) {
+    if (expr.isNumber() || !expr.isPolynomialStruct()) {
+      return false;
+    }
+    IAST variables = new VariablesSet(expr).getVarList();
+    return variables.argSize() > 0 && expr.isPolynomial(variables);
+  }
+
+  /**
+   * Test if a denominator is a product of positive integer powers of polynomials in their
+   * variables (and numbers): the common denominator of such fractions is built from these factors,
+   * so the denominator is not multiplied out.
+   */
+  private static boolean isProductOfPolynomialPowers(IExpr denominator) {
+    IAST factors = denominator.isTimes() ? (IAST) denominator : F.Times(denominator);
+    for (int i = 1; i <= factors.argSize(); i++) {
+      IExpr factor = factors.get(i);
+      if (factor.isNumber() || factor.isSymbol()) {
+        continue;
+      }
+      IExpr base = factor;
+      if (factor.isPower()) {
+        if (!factor.exponent().isInteger() || !factor.exponent().isPositive()) {
+          return false;
+        }
+        base = factor.base();
+      }
+      if (!base.isSymbol() && !isPolynomialInItsVariables(base)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The content <code>c</code> and the primitive polynomial <code>q</code> with
+   * <code>base == c*q</code>; for anything but a sum <code>c == 1</code> and <code>q == base</code>.
+   *
+   * @return <code>null</code> if the content of a sum is not found
+   */
+  private static IExpr[] contentAndPrimitive(IExpr base, EvalEngine engine) {
+    if (base.isPlus()) {
+      return primitiveWithPositiveLead((IAST) base, engine);
+    }
+    return new IExpr[] {F.C1, base};
+  }
+
+  /**
+   * Bring the fractions <code>numerators(i)/denominators(i)</code> over their common denominator,
+   * which is the product of the distinct factors of the denominators with their largest
+   * exponents. The factors are recognized up to a numeric content, which goes into the numeric
+   * part of the denominator. The common denominator stays a product of powers; what the numerator
+   * and the denominator have in common is cancelled and taken out of these powers.
+   *
+   * @param numerators the numerators of the fractions, in the positions <code>1..n</code>
+   * @param denominators the denominators of the fractions, <code>1</code> for a term which is no
+   *        fraction
+   * @return {@link F#NIL} if a denominator has a factor which is not a polynomial or a positive
+   *         integer power of one, or no denominator has a non-numeric factor
+   */
+  private static IExpr togetherOverCommonDenominator(IAST numerators, IAST denominators,
+      EvalEngine engine) {
+    final int n = denominators.argSize();
+    java.util.List<DenominatorFactor> factors = new java.util.ArrayList<DenominatorFactor>();
+    // for every fraction: the exponents of the factors of its denominator and its numeric part
+    int[][] exponents = new int[n + 1][];
+    IRational[] numericParts = new IRational[n + 1];
+    boolean nonNumeric = false;
+    for (int i = 1; i <= n; i++) {
+      IExpr denominator = denominators.get(i);
+      IRational numericPart = F.C1;
+      int[] exps = new int[64];
+      IAST denominatorFactors = denominator.isTimes() ? (IAST) denominator : F.Times(denominator);
+      for (int j = 1; j <= denominatorFactors.argSize(); j++) {
+        IExpr factor = denominatorFactors.get(j);
+        if (factor.isRational()) {
+          numericPart = numericPart.multiply((IRational) factor);
+          continue;
+        }
+        if (factor.isNumber() || factor.isInexactNumber()) {
+          return F.NIL;
+        }
+        IExpr base = factor;
+        int exponent = 1;
+        if (factor.isPower()) {
+          if (!factor.exponent().isInteger()) {
+            return F.NIL;
+          }
+          exponent = factor.exponent().toIntDefault();
+          if (exponent <= 0) {
+            return F.NIL;
+          }
+          base = factor.base();
+        }
+        if (!isPolynomialInItsVariables(base)) {
+          return F.NIL;
+        }
+        IExpr[] contentPrimitive = contentAndPrimitive(base, engine);
+        if (contentPrimitive == null) {
+          return F.NIL;
+        }
+        nonNumeric = true;
+        IRational content = (IRational) contentPrimitive[0];
+        if (!content.isOne()) {
+          numericPart = numericPart.multiply(content.powerRational(exponent));
+        }
+        IExpr key = contentPrimitive[1];
+        int k = 0;
+        while (k < factors.size() && !factors.get(k).key.equals(key)) {
+          k++;
+        }
+        if (k == factors.size()) {
+          if (k >= exps.length) {
+            return F.NIL;
+          }
+          factors.add(new DenominatorFactor(key, base, exponent));
+        } else {
+          DenominatorFactor known = factors.get(k);
+          if (!known.base.equals(base)) {
+            known.sameForm = false;
+          }
+        }
+        // a factor may occur more than once in one denominator: (x+y)*(2*x+2*y) has (x+y)^2
+        exps[k] += exponent;
+        if (exps[k] > factors.get(k).exponent) {
+          factors.get(k).exponent = exps[k];
+        }
+      }
+      exponents[i] = exps;
+      numericParts[i] = numericPart;
+    }
+    if (!nonNumeric) {
+      return F.NIL;
+    }
+    // every factor of a fraction's denominator which was written with a content: the content was
+    // counted in the numeric part, so the factor has to be written by its primitive key
+    for (DenominatorFactor factor : factors) {
+      if (factor.sameForm) {
+        IExpr[] contentPrimitive = contentAndPrimitive(factor.base, engine);
+        if (contentPrimitive == null || !contentPrimitive[0].isOne()) {
+          factor.sameForm = false;
+        }
+      }
+    }
+    // the numeric part of the common denominator: the smallest positive rational which every
+    // numeric part divides
+    IInteger lcmOfNumerators = F.C1;
+    IInteger gcdOfDenominators = F.C0;
+    for (int i = 1; i <= n; i++) {
+      IRational part = numericParts[i];
+      lcmOfNumerators = lcmOfNumerators.lcm(part.numerator().abs());
+      gcdOfDenominators = gcdOfDenominators.gcd(part.denominator());
+    }
+    IRational numericDenominator = F.QQ(lcmOfNumerators, gcdOfDenominators);
+
+    IASTAppendable sum = F.PlusAlloc(n);
+    for (int i = 1; i <= n; i++) {
+      IASTAppendable term = F.TimesAlloc(factors.size() + 2);
+      term.append(numerators.get(i));
+      term.append(numericDenominator.divideBy(numericParts[i]));
+      for (int k = 0; k < factors.size(); k++) {
+        DenominatorFactor factor = factors.get(k);
+        int missing = factor.exponent - exponents[i][k];
+        if (missing > 0) {
+          IExpr base = factor.sameForm ? factor.base : factor.key;
+          term.append(F.Power(base, F.ZZ(missing)));
+        }
+      }
+      sum.append(term.oneIdentity1());
+    }
+    IExpr expandedNumerator = F.evalExpand(sum.oneIdentity0());
+    if (expandedNumerator.isZero()) {
+      return F.C0;
+    }
+    IExpr denominator = commonDenominator(factors, numericDenominator);
+    IExpr expandedDenominator = F.evalExpand(denominator);
+    try {
+      Optional<IExpr[]> cancelled = cancelGCD(expandedNumerator, expandedDenominator);
+      if (cancelled.isPresent()) {
+        IExpr[] parts = cancelled.get();
+        IExpr content = parts[0];
+        IExpr reducedDenominator =
+            attributeToFactors(parts[2], expandedDenominator, factors, numericDenominator, engine);
+        if (reducedDenominator.isNIL()) {
+          // what is left in the denominator is not a product of the known factors; a sum gets a
+          // positive leading term, its sign goes into the content: 1/(Sqrt(a)+Sqrt(b)) and not
+          // -1/(-Sqrt(a)-Sqrt(b))
+          reducedDenominator = parts[2];
+          if (reducedDenominator.isPlus()) {
+            IExpr[] normal = primitiveWithPositiveLead((IAST) reducedDenominator, engine);
+            if (normal != null && normal[0].isNegative()) {
+              reducedDenominator = engine.evaluate(F.Times(normal[0].negate(), normal[1]));
+              content = content.negate();
+            }
+          }
+        }
+        if (content.isOne()) {
+          return F.Times(parts[1], F.Power(reducedDenominator, F.CN1));
+        }
+        return F.Times(content, parts[1], F.Power(reducedDenominator, F.CN1));
+      }
+    } catch (JASConversionException jce) {
+      // nothing to cancel in a form the polynomial arithmetic does not know
+    }
+    return F.Times(expandedNumerator, F.Power(denominator, F.CN1));
+  }
+
+  /** The product of the factors with their exponents, times the numeric part. */
+  private static IExpr commonDenominator(java.util.List<DenominatorFactor> factors,
+      IRational numericPart) {
+    IASTAppendable denominator = F.TimesAlloc(factors.size() + 1);
+    if (!numericPart.isOne()) {
+      denominator.append(numericPart);
+    }
+    for (DenominatorFactor factor : factors) {
+      if (factor.exponent > 0) {
+        IExpr base = factor.sameForm ? factor.base : factor.key;
+        denominator.append(factor.exponent == 1 ? base : F.Power(base, F.ZZ(factor.exponent)));
+      }
+    }
+    return denominator.oneIdentity1();
+  }
+
+  /**
+   * Write the reduced denominator <code>reduced == denominator/g</code> as a product of the known
+   * factors: the cancelled polynomial <code>g</code> is divided by the factors as often as it
+   * goes, which lowers their exponents. A factor which does not divide what is left of
+   * <code>g</code> is factored once (it may be a power or a product itself).
+   *
+   * @return {@link F#NIL} if something of <code>g</code> is left which is not a number
+   */
+  private static IExpr attributeToFactors(IExpr reduced, IExpr denominator,
+      java.util.List<DenominatorFactor> factors, IRational numericPart, EvalEngine engine) {
+    if (reduced.isNumber()) {
+      IRational numeric = reduced.isRational() ? (IRational) reduced : null;
+      if (numeric == null) {
+        return F.NIL;
+      }
+      for (DenominatorFactor factor : factors) {
+        factor.exponent = 0;
+      }
+      return commonDenominator(factors, numeric);
+    }
+    IExpr g = exactQuotient(denominator, reduced, engine);
+    if (g.isNIL()) {
+      return F.NIL;
+    }
+    java.util.List<DenominatorFactor> remaining = new java.util.ArrayList<DenominatorFactor>(factors);
+    boolean factoredOnce = false;
+    while (!g.isNumber()) {
+      boolean divided = false;
+      for (DenominatorFactor factor : remaining) {
+        IExpr base = factor.sameForm ? factor.base : factor.key;
+        while (factor.exponent > 0) {
+          IExpr quotient = exactQuotient(g, base, engine);
+          if (quotient.isNIL()) {
+            break;
+          }
+          g = quotient;
+          factor.exponent--;
+          divided = true;
+        }
+      }
+      if (!divided) {
+        if (factoredOnce) {
+          return F.NIL;
+        }
+        factoredOnce = true;
+        // a factor may be a product or a power, which the cancelled polynomial shares only in part
+        java.util.List<DenominatorFactor> split = new java.util.ArrayList<DenominatorFactor>();
+        for (DenominatorFactor factor : remaining) {
+          IExpr base = factor.sameForm ? factor.base : factor.key;
+          if (factor.exponent == 0 || !base.isPlus() || base.leafCount() > 400) {
+            split.add(factor);
+            continue;
+          }
+          IExpr factored = engine.evalQuiet(F.Factor(base));
+          if (factored.equals(base) || !(factored.isTimes() || factored.isPower())) {
+            split.add(factor);
+            continue;
+          }
+          IAST product = factored.isTimes() ? (IAST) factored : F.Times(factored);
+          for (int j = 1; j <= product.argSize(); j++) {
+            IExpr part = product.get(j);
+            if (part.isRational()) {
+              numericPart = numericPart.multiply(((IRational) part).powerRational(factor.exponent));
+              continue;
+            }
+            IExpr partBase = part.isPower() ? part.base() : part;
+            int partExponent = part.isPower() ? part.exponent().toIntDefault() : 1;
+            if (partExponent <= 0 || !isPolynomialInItsVariables(partBase)) {
+              return F.NIL;
+            }
+            split.add(new DenominatorFactor(partBase, partBase, partExponent * factor.exponent));
+          }
+        }
+        remaining = split;
+        if (remaining.size() == factors.size() && remaining.containsAll(factors)) {
+          return F.NIL;
+        }
+      }
+    }
+    if (!g.isRational()) {
+      return F.NIL;
+    }
+    return commonDenominator(remaining, numericPart.divideBy((IRational) g));
+  }
+
+  /**
+   * The quotient of the polynomials <code>p</code> and <code>q</code> if <code>q</code> divides
+   * <code>p</code>, else {@link F#NIL}.
+   */
+  private static IExpr exactQuotient(IExpr p, IExpr q, EvalEngine engine) {
+    if (q.isNumber()) {
+      return q.isZero() ? F.NIL : engine.evaluate(F.Divide(p, q));
+    }
+    IAST variables = new VariablesSet(q).getVarList();
+    if (variables.argSize() == 0) {
+      return F.NIL;
+    }
+    IExpr quotientRemainder =
+        engine.evalQuiet(F.PolynomialQuotientRemainder(p, q, variables.arg1()));
+    if (quotientRemainder.isList2() && quotientRemainder.second().isZero()) {
+      IExpr quotient = quotientRemainder.first();
+      // a quotient like x+1/y is no polynomial although its structure is one
+      return quotient.isNumber() || isPolynomialInItsVariables(quotient) ? quotient : F.NIL;
+    }
+    return F.NIL;
   }
 
   public static void togetherPlusArg(IExpr x, int i, IASTAppendable numerator,

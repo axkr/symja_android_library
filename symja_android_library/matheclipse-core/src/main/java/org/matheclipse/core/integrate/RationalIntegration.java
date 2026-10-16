@@ -158,6 +158,32 @@ public class RationalIntegration {
   private static final Supplier<IExpr[]> NO_HINTS = () -> new IExpr[0];
 
   /**
+   * Test for <code>c*p^n</code> with a sum <code>p</code>, an integer <code>n</code> with
+   * <code>|n| >= 2</code> and a number <code>c</code> or none.
+   */
+  private static boolean isSinglePolynomialPower(IExpr integrand) {
+    IExpr power = integrand;
+    if (integrand.isTimes() && integrand.argSize() == 2 && integrand.first().isNumber()) {
+      power = integrand.second();
+    }
+    if (!power.isPower() || !power.base().isPlus()) {
+      return false;
+    }
+    int n = power.exponent().toIntDefault();
+    return n != Integer.MIN_VALUE && Math.abs(n) >= 2;
+  }
+
+  /**
+   * The polynomial as a product of its irreducible factors: the repeated part of a denominator is
+   * read more easily as <code>(2-x)^2</code> than as <code>4-4*x+x^2</code>.
+   */
+  private static IExpr factoredPolyToExpr(GenPolynomial<BigRational> polynomial, IExpr x,
+      EvalEngine engine) {
+    IExpr expr = polyToExpr(polynomial, x);
+    return engine.evalQuiet(F.Factor(expr));
+  }
+
+  /**
    * Compute the antiderivative of a rational function. Irreducible denominator factors of degree
    * &gt;= 5 always yield a {@link F#RootSum}; factors of degree 3 or 4 do so only in
    * {@link RootSumMode#EMIT} (in {@link RootSumMode#DEFER} the whole integral is left to the Rubi
@@ -171,14 +197,19 @@ public class RationalIntegration {
     if (!isRationalFunction(integrand, x)) {
       return F.NIL;
     }
+    if (isSinglePolynomialPower(integrand)) {
+      // a single power of a polynomial is left to the rules, which write the antiderivative in
+      // powers of the same polynomial: (1+x)^4/4 for (1+x)^3, 1/(2*(2-x)^2) for (2-x)^(-3)
+      return F.NIL;
+    }
     try {
-      // numerator and denominator multiplied out: not the form of the function Together, which
-      // keeps a factored denominator
+      // numerator and denominator multiplied out: the common denominator keeps a power of a
+      // polynomial as a power, which the polynomial conversion below does not read
       IExpr together = integrand.isAST() //
           ? engine.evaluate(AlgebraUtil.togetherExpr(integrand, engine)) //
           : integrand;
-      IExpr numerExpr = engine.evaluate(F.Numerator(together));
-      IExpr denomExpr = engine.evaluate(F.Denominator(together));
+      IExpr numerExpr = engine.evaluate(F.Expand(F.Numerator(together)));
+      IExpr denomExpr = engine.evaluate(F.Expand(F.Denominator(together)));
       if (!together.equals(integrand)) {
         final IExpr in = integrand;
         step(engine, "SingleFraction", () -> F.Integrate(in, x),
@@ -273,7 +304,7 @@ public class RationalIntegration {
               () -> F.Plus(F.Divide(polyToExpr(am, x), polyToExpr(dm, x)),
                   F.Integrate(F.Divide(polyToExpr(a, x), polyToExpr(ds, x)), x)),
               () -> new IExpr[] {F.Divide(polyToExpr(am, x), polyToExpr(dm, x))});
-          result.append(F.Divide(polyToExpr(aMinus, x), polyToExpr(dMinus, x)));
+          result.append(F.Divide(polyToExpr(aMinus, x), factoredPolyToExpr(dMinus, x, engine)));
         }
       } else {
         a2 = remainder;
