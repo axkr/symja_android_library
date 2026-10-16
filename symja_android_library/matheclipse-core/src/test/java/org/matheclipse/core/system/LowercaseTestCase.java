@@ -10757,6 +10757,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFlatBlankTakesSeveralArguments() {
+    // a single blank takes several arguments of a Flat head
+    check("ClearAll(fb); SetAttributes(fb, Flat);"
+        + "{MatchQ(fb(1,2,0), fb(a_,0)), MatchQ(fb(1,2), fb(_)), fb(1,2,0) /. fb(a_,0) :> zero(a),"
+        + " fb(a,b,c) /. fb(x_) -> {x}}", //
+        "{True,True,zero(fb(1,2)),{fb(a,b,c)}}");
+    check("fb(a_,0) := zero(a); fb(x,y,0)", //
+        "zero(fb(x,y))");
+    check("Cases({fb(1, 2, 0)}, fb(a_, 0) :> a)", //
+        "{fb(1,2)}");
+    check("MatchQ(fb(1,2), fb(x_fb))", //
+        "True");
+    check("MatchQ(fb(1,2), fb(x_Integer))", //
+        "False");
+    check("fb(1) /. fb(x_) -> {x}", //
+        "{1}");
+    check("MatchQ(fb(1, 2, 0), fb(a__, 0))", //
+        "True");
+
+    check("ClearAll(fc); SetAttributes(fc, Flat); fc(x, y, z) /. fc(a__, z) :> {a}", //
+        "{x,y}");
+    check("fc(x, y, z) /. fc(a___, y, b___) :> {{a}, {b}}", //
+        "{{x},{z}}");
+    check("fc(u1, u2, u3, u4, u5) /. fc(u2, u3, u4) -> fc(x, y)", //
+        "fc(u1,x,y,u5)");
+    check("fc(u1, u2, u3, u4, u5) /. fc(u4, u2) -> x", //
+        "fc(u1,u2,u3,u4,u5)");
+
+    check("ClearAll(fd); SetAttributes(fd, {Flat, OneIdentity});"
+        + "{fd(a,b,c) /. fd(x_) -> {x}, MatchQ(fd(1,2), fd(_))}", //
+        "{{fd(a,b,c)},True}");
+  }
+
+  @Test
   public void testFlatOrderlessOneIdentity() {
     check("pm(y_,x_+y_+z_):={x,y,z}", //
         "");

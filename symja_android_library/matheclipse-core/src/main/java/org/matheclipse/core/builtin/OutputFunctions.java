@@ -99,10 +99,12 @@ public final class OutputFunctions {
           }
           return F.stringx(buf.toString());
         }
+        // the head is the operator: x ~h~ y
+        String infixOperator = " ~" + function.head().toString() + "~ ";
         StringBuilder buf = new StringBuilder();
         buf.append(function.arg1().toString());
         for (int i = 2; i < function.size(); i++) {
-          buf.append(" ~ ");
+          buf.append(infixOperator);
           buf.append(function.get(i).toString());
         }
         return F.stringx(buf.toString());

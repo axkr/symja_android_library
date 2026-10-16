@@ -2268,7 +2268,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       if (lhsPattern.size() == lhsEval.size()) {
         return matchASTSequence(lhsPattern, lhsEval, 0, engine, stackMatcher);
       }
-      return false;
+      if (lhsPattern.arg1().isPatternSequence(false)) {
+        return false;
+      }
+      // a single pattern takes all the arguments, as in f(x_) matching f(a,b) with x -> f(a,b):
+      // the one partition of the partition iterator below
     }
 
     IAST lhsPatternAST = lhsPattern;
@@ -2277,6 +2281,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     // removeFlat already called a level up
     FlatStepVisitor visitor =
         new FlatStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
+    if (lhsPatternAST.argSize() == 1) {
+      // the partition iterator needs at least two parts; one part holds all the arguments
+      int[][] partition = new int[1][lhsEvalAST.argSize()];
+      for (int i = 0; i < partition[0].length; i++) {
+        partition[0][i] = i;
+      }
+      return !visitor.visit(partition);
+    }
     NumberPartitionsIterator iter =
         new NumberPartitionsIterator(visitor, lhsEvalAST.argSize(), lhsPatternAST.argSize());
     return !iter.execute();

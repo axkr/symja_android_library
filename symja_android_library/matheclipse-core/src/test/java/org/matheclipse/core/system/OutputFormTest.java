@@ -117,8 +117,9 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInfix() {
+    // the head is the operator
     check("Infix(f(x,y,z))", //
-        "x ~ y ~ z");
+        "x ~f~ y ~f~ z");
     check("Infix(f(x,y,z), \"$~$\")", //
         "x $~$ y $~$ z");
   }
