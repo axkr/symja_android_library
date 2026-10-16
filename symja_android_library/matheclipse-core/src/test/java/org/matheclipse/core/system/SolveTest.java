@@ -804,8 +804,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // Factor pulls a number out of a sum with 30-digit coefficients again and again, which was an
     // endless recursion in Eliminate
     check("Solve(0.25`30*Sin(x)+0.324180413729543335629562466504`30*Cos(x)==0.3`30,x)", //
-        "{{x->ConditionalExpression(1.405265084595260069682618664+6.28318530717958647692528676655*C(\n"
-            + "1),C(1)∈Integers)},{x->ConditionalExpression(-0.0914325342128386278383742594186+6.28318530717958647692528676655*C(\n"
+        "{{x->ConditionalExpression(1.405265084595260069682618664+6.28318530717958647692528676656*C(\n"
+            + "1),C(1)∈Integers)},{x->ConditionalExpression(-0.0914325342128386278383742594186+6.28318530717958647692528676656*C(\n"
             + "1),C(1)∈Integers)}}");
     check("Solve(0.25`30*ArcCot(x)+0.324180413729543335629562466504`30*Cos(x)==0.5`30,x)", //
         "{{x->0.667919}}");
@@ -948,7 +948,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("N(ProductLog(-1,-Log(2)/4),30)", //
         "-2.77258872223978123766892848583");
     check("N(ProductLog(-1/2),30)", //
-        "-0.7940236323446893679630153219+I*0.770111750510379109681313077405");
+        "-0.794023632344689367963015321901+I*0.770111750510379109681313077405");
     // odd exponent: the real root of a negative ratio
     check("Solve(x^3+2^x==0,x)", //
         "{{x->(-3*ProductLog(-1/3*(-1)^(1/3)*Log(2)))/Log(2)},{x->(-3*ProductLog(Log(2)/3))/Log(\n" //
@@ -2980,7 +2980,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         + "{th->2400.000000000453,tw->2399.9993912855166,t1->2385.212934513328,t2->708.4971515532554,t3->680.6456294208236,tb->320.04024139792955,tk->319.99999999963455,qw->461594.8472077818,qs->31317.919159643687}";
     System.out.println(evalString);
     check(evalString, //
-        "{33659487.500522066,-1.5449473651915868,22487008.04073214,-6.468845089549611,0.0000000002545837,20731337.63689149,0.00000000004876339}");
+        "{33659487.500522067,-1.5449473651915869,22487008.04073214,-6.4688450895496111,0.0000000002545837,20731337.636891491,0.00000000004876339}");
 
 
     check("th=2400;tk=320;" //
@@ -3131,7 +3131,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolveEquationWithConstraints() {
     check("NSolve({13+x^3==-7.853981633974483, x>=-10, x<=10}, x)", //
-        "{{x->-2.7525147964038584}}");
+        "{{x->-2.7525147964038585}}");
     check("NSolve({13+x^3==-785/100, x>=-10, x<=10}, x)", //
         "{{x->-2.75234}}");
     check("Solve({13+x^3==-785/100, x>=-10, x<=10}, x)", //

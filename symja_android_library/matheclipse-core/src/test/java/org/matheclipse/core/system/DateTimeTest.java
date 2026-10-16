@@ -163,7 +163,7 @@ public class DateTimeTest extends ExprEvaluatorTestCase {
     check("DayMatchQ(1.0*^30, Monday)", "DayMatchQ(1.*10^30,Monday)");
     // a number out of the long range reaches the same reader and used to be narrowed to a long on
     // the way in; Sinh(1000.0) is a machine precision number out of the double range (WMA)
-    check("DayMatchQ(Sinh(1000.0), Monday)", "DayMatchQ(9.850355570085234*10^433,Monday)");
+    check("DayMatchQ(Sinh(1000.0), Monday)", "DayMatchQ(9.850355570085235*10^433,Monday)");
     check("DateObject(9223372036854775807)", "DateObject(9223372036854775807)");
     check("DayName(9223372036854775807)", "DayName(9223372036854775807)");
     check("DateDifference(9223372036854775807, 0)", "DateDifference(9223372036854775807,0)");

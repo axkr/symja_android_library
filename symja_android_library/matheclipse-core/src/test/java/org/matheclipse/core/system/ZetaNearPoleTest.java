@@ -14,18 +14,18 @@ public class ZetaNearPoleTest extends ExprEvaluatorTestCase {
     // 1/(s-1)+EulerGamma-StieltjesGamma(1)*(s-1): only 18 of the 30 digits of the argument are
     // digits of s-1, and the missing ones were shown as noise
     check("N(Zeta(1 + 10^(-12)), 30)", //
-        "1000000000000.57721566490160567");
+        "1000000000000.57721566490160568");
     check("N(Zeta(1 - 10^(-12)), 30)", //
         "-999999999999.422784335098539955");
     // closer than the precision of a machine number: this stayed unevaluated
     check("N(Zeta(1 + 10^(-24)), 40)", //
-        "1000000000000000000000000.577215664901532");
+        "1000000000000000000000000.577215664901533");
     check("N(Zeta(1 - 10^(-24)), 40)", //
         "-999999999999999999999999.4227843350984671");
     check("N(Zeta(1 + 10^(-24)), 60)", //
         "1000000000000000000000000.57721566490153286060651216289824791");
     check("N(Zeta(1 + I*10^(-24)), 40)", //
-        "0.5772156649015328+I*(-999999999999999999999999.9999999999999999)");
+        "0.5772156649015328606+I*(-1000000000000000000000000)");
     // 20 digits cannot tell the argument from 1
     check("N(Zeta(1 + 10^(-24)), 20)", //
         "ComplexInfinity");

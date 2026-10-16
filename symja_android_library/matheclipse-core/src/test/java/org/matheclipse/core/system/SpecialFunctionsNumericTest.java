@@ -21,9 +21,9 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(JacobiDC(5/2,1/3),30)", //
         "-1.47659400217380615696763527737");
     check("N(JacobiNC(1/2+I,9/10),30)", //
-        "0.611100835427232125480142009723+I*0.418959938932342919139315755516");
+        "0.611100835427232125480142009723+I*0.418959938932342919139315755517");
     check("N(JacobiND(-7/4,-2),30)", //
-        "0.755880200415203859596286035995");
+        "0.755880200415203859596286035996");
     check("JacobiDC(0,m)", //
         "1");
     check("JacobiNC(x,0)", //
@@ -41,19 +41,19 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(InverseJacobiCN(-1/2,1/3),30)", //
         "2.36206180970438163423301112904");
     check("N(InverseJacobiDN(97/100,1/3),30)", //
-        "0.439139078841977456184593033345");
+        "0.439139078841977456184593033346");
     check("N(InverseJacobiSC(5/2,1/100),30)", //
         "1.19241275821756794174126454149");
     check("N(InverseJacobiSD(9/10,1/3),30)", //
-        "0.966357784001052657198626228475");
+        "0.966357784001052657198626228476");
     check("N(InverseJacobiCD(1/3,9/10),30)", //
-        "2.23222524182437379400789584916");
+        "2.23222524182437379400789584917");
     check("N(InverseJacobiNC(3,1/3),30)", //
-        "1.32152217575275998801306070169");
+        "1.3215221757527599880130607017");
     check("N(InverseJacobiND(101/100,1/3),30)", //
         "0.246411026611444418617128714414");
     check("N(InverseJacobiDC(3,1/3),30)", //
-        "1.39191281182950228476880955195");
+        "1.39191281182950228476880955196");
     check("InverseJacobiDC(3.0,0.25)", //
         "1.3443");
     check("InverseJacobiNC(3.0,0.25)", //
@@ -67,7 +67,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   @Test
   public void testJacobiAmplitudeZeta() {
     check("N(JacobiAmplitude(5/2,1/3),30)", //
-        "2.21528294350988621609769659813");
+        "2.21528294350988621609769659814");
     check("N(JacobiAmplitude(40,9/10),30)", //
         "24.0967706752357467381611460164");
     check("N(JacobiAmplitude(-7/4,1/100),30)", //
@@ -114,15 +114,15 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   @Test
   public void testHypergeometricPFQRegularized() {
     check("N(HypergeometricPFQRegularized({1/3,5/2},{7/3,3/2},1/2),30)", //
-        "1.07833787326788651697687492183");
+        "1.07833787326788651697687492184");
     check("HypergeometricPFQRegularized({1/3,5/2},{7/3,3/2},-7.0)", //
         "0.455633");
     check("N(HypergeometricPFQRegularized({1/3,5/2},{-2,3/2},1/2),30)", //
-        "0.121780282928057408668341402431");
+        "0.121780282928057408668341402432");
     check("HypergeometricPFQRegularized({1/3,5/2},{0,3/2},0.5)", //
         "0.503369");
     check("N(HypergeometricPFQRegularized({1/3},{7/3},1+2*I),30)", //
-        "0.840831459254398084938910210566+I*0.308546166067114330013468641223");
+        "0.840831459254398084938910210567+I*0.308546166067114330013468641224");
     check("HypergeometricPFQRegularized({1/3,5/2},{-2,3/2},1/2)", //
         "HypergeometricPFQRegularized({1/3,5/2},{-2,3/2},1/2)");
     check("HypergeometricPFQRegularized({a,5/2},{-2,3/2},0.5)", //
@@ -138,7 +138,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(QPochhammer(5/2,1/4+I/3),30)", //
         "-0.175111929248196943555815195513+I*2.01116459517160317036600272186");
     check("N(QPochhammer(9/10),30)", //
-        "0.00000128606743427661762745959391399");
+        "0.00000128606743427661762745959391398");
     check("QPochhammer(0.5,1.5)", //
         "QPochhammer(0.5,1.5)");
     check("QPochhammer(a,0.5)", //
@@ -203,7 +203,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("LaguerreL(200,0.5,150.0)", //
         "3.97426*10^30");
     check("N(LaguerreL(100,-3,2+I),30)", //
-        "0.521459037377424589555222837504+I*(-0.294612550854968953367171000262)");
+        "0.521459037377424589555222837506+I*(-0.294612550854968953367171000262)");
     check("LaguerreL(5,1/3,3)", //
         "37351/29160");
     check("LaguerreL(4,-2,3)", //
@@ -266,9 +266,9 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(JacobiCS(5/2,1/3),30)", //
         "-0.751540995624095502758676657487");
     check("N(JacobiDS(1/2+I,9/10),30)", //
-        "0.301926284358379539438128527334+I*(-0.936437066692907622161660648003)");
+        "0.301926284358379539438128527334+I*(-0.936437066692907622161660648004)");
     check("N(JacobiNS(-7/4,-2),30)", //
-        "-1.6327474876159504322163148313");
+        "-1.63274748761595043221631483131");
     check("{JacobiCS(0,m),JacobiDS(0,m),JacobiNS(0,m)}", //
         "{ComplexInfinity,ComplexInfinity,ComplexInfinity}");
     check("{JacobiCS(x,0),JacobiDS(x,0),JacobiNS(x,0)}", //
@@ -310,7 +310,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(InverseJacobiDS(3,1/100),30)", //
         "0.339704502452996170162455725741");
     check("N(InverseJacobiNS(10/9,99/100),30)", //
-        "1.46419794999349431375656844886");
+        "1.46419794999349431375656844887");
     check("InverseJacobiCS(-2.0,1/3)", //
         "-0.469119");
     check("Chop(JacobiCS(InverseJacobiCS(0.5+I,0.3),0.3))", //
@@ -343,14 +343,14 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("InverseJacobiSN(2.5,0.3)", //
         "0.844748+I*2.07536");
     check("N(InverseJacobiSN(5/2,3/10),30)", //
-        "0.844748029872526773169338777605+I*2.07536313529246914385344055588");
+        "0.844748029872526773169338777606+I*2.07536313529246914385344055588");
     check("InverseJacobiSN(-2.5,0.3)", //
         "-0.844748+I*(-2.07536)");
     // InverseJacobiCN[2.5, 0.3] = -1.365204510707016*I
     check("InverseJacobiCN(2.5,0.3)", //
         "I*(-1.3652)");
     check("N(InverseJacobiCN(5/2,3/10),30)", //
-        "I*(-1.3652045107070157795266517685)");
+        "I*(-1.36520451070701577952665176851)");
     // InverseJacobiCD[Pi, 0.3] = 1.0821567013903146 - 2.075363135292469*I
     check("InverseJacobiCD(Pi,0.3)", //
         "1.08216+I*(-2.07536)");
@@ -358,7 +358,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("InverseJacobiDN(-0.4,0.3)", //
         "1.71389+I*2.58871");
     check("N(InverseJacobiDN(-2/5,3/10),30)", //
-        "1.71388944817879106203893484504+I*2.58870618389321006913103238476");
+        "1.71388944817879106203893484504+I*2.58870618389321006913103238477");
     // InverseJacobiCS[-2., 1/3] = -0.46911948732715847
     check("InverseJacobiCS(-2.0,1/3)", //
         "-0.469119");
@@ -464,11 +464,11 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(10,30)^6", //
         "1000000");
     check("N(2,30)^(10^12)", //
-        "9.57624423149274328480505949569*10^301029995663");
+        "9.57624423149274328480505949570*10^301029995663");
     check("N(11/10,30)^(10^6)", //
         "4.84348796603303484786492117176*10^41392");
     check("N(-3,30)^1001", //
-        "-3.96621245844241991067136577925*10^477");
+        "-3.96621245844241991067136577926*10^477");
   }
 
   @Test
@@ -478,7 +478,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(10^(10^6)+1,20)", //
         "1.0000000000000000000*10^1000000");
     check("N(1/3^(10^6),20)", //
-        "5.5626320991571288658*10^-477122");
+        "5.5626320991571288659*10^-477122");
   }
 
   @Test
@@ -487,7 +487,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(Gamma(10^6),30)", //
         "8.26393168833124006237664610317*10^5565702");
     check("N(Gamma(3^13),30)", //
-        "4.88629604479844876483676166311*10^9196501");
+        "4.88629604479844876483676166312*10^9196501");
   }
 
   @Test
@@ -495,7 +495,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(DawsonF(10^10),30)", //
         "0.00000000005000000000000000000025");
     check("N(DawsonF(10^7),30)", //
-        "0.0000000500000000000002500000000000037");
+        "0.0000000500000000000002500000000000038");
   }
 
   @Test
@@ -567,7 +567,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(WeierstrassZeta(1/2,{3,1}),30)", //
         "1.99351808559941166282358181837");
     check("N(WeierstrassSigma(1/2,{3,-1}),30)", //
-        "0.499618567264718888689075819631");
+        "0.499618567264718888689075819632");
   }
 
   @Test
@@ -589,7 +589,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(1/(Cos(10^-20)-1),30)", //
         "-2.0000000000000000000000000000*10^40");
     check("N({Cos(10^-20)-1, x+Pi-3},30)", //
-        "{-5.0000000000000000000000000000*10^-41,0.141592653589793238462643383279+x}");
+        "{-5.0000000000000000000000000000*10^-41,0.14159265358979323846264338328+x}");
   }
 
   @Test
@@ -618,9 +618,9 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(ArcSin(1-10^-30)-Pi/2,30)", //
         "-0.00000000000000141421356237309504880168872421");
     check("N(ArcCos(1-10^-30),30)", //
-        "0.0000000000000014142135623730950488016887242");
+        "0.00000000000000141421356237309504880168872421");
     check("N(ArcSin(-1+10^-20),30)", //
-        "-1.57079632665347526299401218675");
+        "-1.57079632665347526299401218676");
   }
 
   @Test
@@ -646,7 +646,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("ArcCot(-1.0*^-300)", //
         "-1.5708");
     check("Log(N(10^-40,30))", //
-        "-92.1034037197618273607196581873");
+        "-92.1034037197618273607196581874");
     check("N(Gamma(10^-40),30)", //
         "1.00000000000000000000000000000*10^40");
     check("Log(0.0)", //
@@ -661,7 +661,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("Coth(1000.0)", //
         "1.0");
     check("Factorial(1000.0)", //
-        "4.023872600770937*10^2567");
+        "4.023872600770938*10^2567");
     check("BesselI(0,1000.0)", //
         "2.485686096075864*10^432");
     check("ExpIntegralEi(1000.0)", //
@@ -671,7 +671,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("Exp(1000.0)/Exp(999.0)", //
         "2.718281828459045");
     check("1/Exp(999.0)", //
-        "1.379788683321369*10^-434");
+        "1.379788683321370*10^-434");
     check("Floor(1.0*^19)", //
         "10000000000000000000");
     check("Quotient(1.0*^25,7)", //
@@ -730,7 +730,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("CarlsonRG(2.0,2.0,2.0)", //
         "1.41421");
     check("N(CarlsonRG(2,2,2),30)", //
-        "1.4142135623730950488016887242");
+        "1.41421356237309504880168872421");
     check("CarlsonRG(2.0,2.0,2.0000001)", //
         "1.41421");
     check("{CarlsonRF(0.0,0.0,1.0),CarlsonRF(0,0,1),N(CarlsonRF(0,0,1),30)}", //
@@ -766,9 +766,9 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(CarlsonRC(2,-2+I/2),30)", //
         "0.477448140955910509734061295363+I*(-0.711229921980316103874572689302)");
     check("N(CarlsonRC(3*I,3*I),30)", //
-        "0.40824829046386301636621401245+I*(-0.40824829046386301636621401245)");
+        "0.408248290463863016366214012451+I*(-0.408248290463863016366214012451)");
     check("N(CarlsonRC(-I,-I),30)", //
-        "0.707106781186547524400844362104+I*0.707106781186547524400844362104");
+        "0.707106781186547524400844362105+I*0.707106781186547524400844362105");
     check("N(CarlsonRC(1,-2),30)", //
         "0.38017299815047317376554712744");
     check("CarlsonRC(1.0,-2.0)", //
@@ -776,7 +776,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("{CarlsonRG(0.0,2.0,0.0),CarlsonRG(2.0,0.0,0.0),CarlsonRG(0,2,0),CarlsonRG(0,0,2)}", //
         "{0.707107,0.707107,1/Sqrt(2),1/Sqrt(2)}");
     check("N(CarlsonRG(0,2,0),30)", //
-        "0.707106781186547524400844362104");
+        "0.707106781186547524400844362105");
   }
 
   /** Only <code>I^(-1/2)</code> is <code>-(-1)^(3/4)</code>: every imaginary number was. */
@@ -785,9 +785,9 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("{I^(-1/2),(3*I)^(-1/2),(-I)^(-1/2),1/Sqrt(2*I)}", //
         "{-(-1)^(3/4),1/Sqrt(I*3),1/Sqrt(-I),1/Sqrt(I*2)}");
     check("N((3*I)^(-1/2),30)", //
-        "0.40824829046386301636621401245+I*(-0.40824829046386301636621401245)");
+        "0.408248290463863016366214012451+I*(-0.408248290463863016366214012451)");
     check("N((-I)^(-1/2),30)", //
-        "0.707106781186547524400844362104+I*0.707106781186547524400844362104");
+        "0.707106781186547524400844362105+I*0.707106781186547524400844362105");
     check("N(1/Sqrt(2*I))", //
         "0.5+I*(-0.5)");
     check("N((I/3)^(-1/2))", //
@@ -807,23 +807,23 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(ModularLambda(1/3+I),30)", //
         "0.414405480384997491318429003209+I*0.399584938884196014642324960988");
     check("N(ModularLambda(-2+I/5),30)", //
-        "0.999997588775266382854576892571");
+        "0.999997588775266382854576892572");
     check("DedekindEta(0.3+I)", //
         "0.767845+I*0.0590611");
     check("N(DedekindEta(1/3+I),30)", //
-        "0.767562142473995134656213562591+I*0.0659058210877420180182611147164");
+        "0.767562142473995134656213562591+I*0.0659058210877420180182611147165");
     check("N(DedekindEta(I),30)", //
         "0.768225422326056659002594179576");
     check("N(DedekindEta(-2+I/5),30)", //
-        "0.523028659047484041798495271563+I*(-0.301970737094953904637642566457)");
+        "0.523028659047484041798495271563+I*(-0.301970737094953904637642566458)");
     check("EllipticNomeQ(0.3)", //
         "0.0222774");
     check("N(EllipticNomeQ(1/3),30)", //
-        "0.0253199133662851868666269711106");
+        "0.0253199133662851868666269711107");
     check("N(EllipticNomeQ(-2),30)", //
         "-0.0682378277453383330883815168277");
     check("N(EllipticNomeQ(1/4+I/3),30)", //
-        "0.0123782491507937213458378924896+I*0.0261468440903113192113428526234");
+        "0.0123782491507937213458378924897+I*0.0261468440903113192113428526234");
     check("{ModularLambda(x),DedekindEta(1/2),EllipticNomeQ(m),DedekindEta(0.5)}", //
         "{ModularLambda(x),DedekindEta(1/2),EllipticNomeQ(m),DedekindEta(0.5)}");
   }
@@ -842,7 +842,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("RiemannSiegelZ(100000.5)", //
         "4.63404");
     check("N(RiemannSiegelZ(200001/2),30)", //
-        "4.63404259499813240205870441042");
+        "4.63404259499813240205870441043");
     check("RiemannSiegelZ(t)", //
         "RiemannSiegelZ(t)");
   }
@@ -852,7 +852,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("ParabolicCylinderD(1/3,2.5)", //
         "0.288894");
     check("N(ParabolicCylinderD(1/3,5/2),30)", //
-        "0.28889404193022947310845253351");
+        "0.288894041930229473108452533511");
     check("ParabolicCylinderD(2,0.5+I)", //
         "-1.74685+I*1.69098");
     check("ParabolicCylinderD(-2.5,-10.0)", //
@@ -862,7 +862,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("ParabolicCylinderD(1/3,0.0)", //
         "0.742649");
     check("N(ParabolicCylinderD(2+I,-7/4),30)", //
-        "2.88490870181488711282150877558+I*2.83379558438984271791541814864");
+        "2.88490870181488711282150877559+I*2.83379558438984271791541814865");
     check("{ParabolicCylinderD(v,0),ParabolicCylinderD(v,z)}", //
         "{(2^(v/2)*Sqrt(Pi))/Gamma(1/2*(1-v)),ParabolicCylinderD(v,z)}");
   }
@@ -878,11 +878,11 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("ScorerHi(0.5+I)", //
         "0.349305+I*0.3971");
     check("N(ScorerHi(-30),30)", //
-        "0.0106095441701062579222454430167");
+        "0.0106095441701062579222454430168");
     check("ScorerHi(0.0)", //
         "0.409951");
     check("N(ScorerGi(0),30)", //
-        "0.204975542482000245050307456364");
+        "0.204975542482000245050307456365");
     check("{ScorerGi(0),ScorerHi(0),ScorerGi(x)}", //
         "{1/(3*3^(1/6)*Gamma(2/3)),2/(3*3^(1/6)*Gamma(2/3)),ScorerGi(x)}");
   }
@@ -914,15 +914,15 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("LerchPhi(0.99,2,2.5)", //
         "0.458211");
     check("N(LerchPhi(-1,2,5/2),30)", //
-        "0.108306821153320504662858504173");
+        "0.108306821153320504662858504174");
     check("N(LerchPhi(I,1/2,1/3),30)", //
-        "1.34384652177394509003106470814+I*0.554354269100931235476166782293");
+        "1.34384652177394509003106470814+I*0.554354269100931235476166782294");
     check("N(LerchPhi(2+3*I,3/2,1/4+I/2),30)", //
         "0.00281339032938935784495729812967+I*(-1.16663943708747741266579760602)");
     check("LerchPhi(-5.0,2,1/3)", //
         "7.69879");
     check("N(LerchPhi(101/100+I/100,2,5/2),30)", //
-        "0.495662339953753939123780113003+I*0.0490440870425871068109818134858");
+        "0.495662339953753939123780113004+I*0.0490440870425871068109818134859");
   }
 
   @Test
@@ -930,15 +930,15 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("HypergeometricPFQ({1/3,5/2,1},{7/3,5/2},1.0)", //
         "1.33333");
     check("N(HypergeometricPFQ({1/3,5/2,1},{1/2+I,4},1),30)", //
-        "0.841936943209098418743683938157+I*(-0.262646309904234199439104167074)");
+        "0.841936943209098418743683938158+I*(-0.262646309904234199439104167075)");
     check("N(HypergeometricPFQ({1/3,5/2,1,1/2},{7/3,3/2,2},1),30)", //
         "1.09711564923078738603669973702");
     check("N(HypergeometricPFQ({1/3,5/2,1},{7/3,5/2},-1),30)", //
-        "0.895063595372589475565609225866");
+        "0.895063595372589475565609225867");
     check("N(HypergeometricPFQ({1/3,5/2,1},{7/3,5/2},I),30)", //
-        "0.955995213070746608862017780385+I*0.120729516925978849385060507578");
+        "0.955995213070746608862017780386+I*0.120729516925978849385060507579");
     check("N(HypergeometricPFQ({1/3,5/2,1},{7/3,5/2},3/5+4/5*I),30)", //
-        "1.03504203291249498485693278176+I*0.15781536229600760320232137272");
+        "1.03504203291249498485693278177+I*0.15781536229600760320232137272");
     check("N(HypergeometricPFQ({1/3,5/2,1},{7/3,5/2},-201/200),30)", //
         "0.894667942269289989823739840327");
     check("{Hypergeometric2F1(1/3,2/3,1,1),Hypergeometric2F1(1/3,2/3,1,1.0),Hypergeometric2F1(1/3,2/3,2,1)}", //
@@ -979,7 +979,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   public void testBesselOfLargeExactArguments() {
     // -7.33704873653861571243692861417547889*10^-51 and 6.38371677504482546122359215350099660*10^-51
     check("N(BesselJ(0,10^100),30)*10^51", //
-        "-7.33704873653861571243692861417");
+        "-7.33704873653861571243692861418");
     check("N(BesselY(1/3,10^100),30)*10^51", //
         "6.3837167750448254612235921535");
   }
@@ -1030,7 +1030,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("StruveH(1/2,x)", //
         "(Sqrt(2/Pi)*(1-Cos(x)))/Sqrt(x)");
     check("N(StruveH(1/2,-5/4),20)", //
-        "I*(-0.48861995401644344618)");
+        "I*(-0.48861995401644344619)");
     check("N(StruveL(-1/2,-5/4),20)", //
         "I*1.1432089853159882074");
   }
@@ -1061,14 +1061,14 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("LerchPhi(0.3,2.5,-1.5)", //
         "2.57981");
     check("N(LerchPhi(3/10,5/2,-3/2),20)", //
-        "2.5798050063195912037");
+        "2.5798050063195912038");
     check("LerchPhi(-0.7,1.5,-3.25)", //
         "-2.11493");
     // the sum of z^k/(k+a)^s: 0.51986136217066557510-2.0599436441489256287*I
     check("HurwitzLerchPhi(0.3,2.5,-1.5)", //
         "0.519861+I*(-2.05994)");
     check("N(HurwitzLerchPhi(3/10,5/2,-3/2),20)", //
-        "0.51986136217066557509+I*(-2.0599436441489256286)");
+        "0.5198613621706655751+I*(-2.0599436441489256287)");
     // the same for a positive shift
     check("{LerchPhi(0.3,2.5,1.5),HurwitzLerchPhi(0.3,2.5,1.5)}", //
         "{0.397944,0.397944}");
@@ -1101,7 +1101,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
         "{-0.0665552,-0.29572}");
     // -1.31097721453938527842317268*10^-8 and -1.2101394980730367433729338339*10^7
     check("N(AiryBi(-10^30),25)*10^8", //
-        "-1.310977214539385278423172");
+        "-1.310977214539385278423173");
     check("N(AiryBiPrime(-10^30),25)/10^7", //
         "-1.210139498073036743372933");
     // no digit of the phase is left
@@ -1193,7 +1193,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     // Hankel's expansion with the digits of the phase: -6.510549591714793416365648064807*10^-151,
     // -4.6124528453503425552941463605705*10^-151
     check("N(BesselJ(0,10^300),30)*10^150", //
-        "-0.65105495917147934163656480648");
+        "-0.651054959171479341636564806481");
     check("N(BesselY(0,10^300),30)*10^150", //
         "-0.461245284535034255529414636057");
     check("N(HankelH1(1/2,10^300),30)*10^150", //
@@ -1255,14 +1255,14 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
         "13.125");
     // h^n*Gamma(x/h+1)/Gamma(x/h+1-n): 18.93225066337866769184155
     check("FactorialPower(N(7/2,20),5/2,1/3)", //
-        "18.932250663378667691");
+        "18.932250663378667692");
     check("FactorialPower(3.5,2,0.5)", //
         "10.5");
     // the count of the factors may be an inexact integer: 0.5944879869374718685699588
     check("QPochhammer(N(1/3,20),N(1/4,20),5)", //
-        "0.59448798693747186856");
+        "0.59448798693747186857");
     check("N(QPochhammer(1/3,1/4,5),20)", //
-        "0.59448798693747186856");
+        "0.59448798693747186857");
     check("QPochhammer(0.5,0.25,-2)", //
         "0.142857");
   }
@@ -1290,7 +1290,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("N(Pochhammer(10^20,5/2),30)/10^50", //
         "1.00000000000000000001875");
     check("N(Pochhammer(10^100,-7/3),30)*10^234", //
-        "4.64158883361277889241007635091");
+        "4.64158883361277889241007635092");
   }
 
   @Test
@@ -1451,7 +1451,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     // 2*n!*Zeta(n)/(2*Pi)^n: -5.3187044694155220364829137437671*10^1769, and the logarithm of
     // -5.82...*10^376755 is 867512.20840536787671852157815711
     check("N(BernoulliB(1000),30)/10^1769", //
-        "-5.31870446941552203648291374376");
+        "-5.31870446941552203648291374377");
     check("N(Log(-BernoulliB(100000)),30)", //
         "867512.208405367876718521578157");
     check("BernoulliB(100.0)/10^78", //

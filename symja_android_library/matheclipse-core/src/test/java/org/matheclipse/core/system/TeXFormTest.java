@@ -478,7 +478,7 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check("TeXForm(N(Pi,2))", //
         "3.1");
     check("TeXForm(N(Pi,30))", //
-        "3.14159265358979323846264338327");
+        "3.14159265358979323846264338328");
     check("TeXForm(Infinity)", //
         "\\infty");
     check("TeXForm(-Infinity)", //

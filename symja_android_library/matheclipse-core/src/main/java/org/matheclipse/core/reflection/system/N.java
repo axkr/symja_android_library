@@ -6,7 +6,6 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apcomplex;
-import java.math.RoundingMode;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -241,9 +240,28 @@ public final class N extends AbstractCoreFunctionEvaluator {
         && !original.has(x -> x.isInexactNumber(), true);
     if (expr.isNumber() && !(adaptive && expr.isInexactNumber()
         && lostExactly >= PrecisionLoss.THRESHOLD)) {
+      if (nPrecision > ParserConfig.MACHINE_PRECISION && !expr.isInexactNumber()) {
+        // an exact number like -3/7*I: converted with guard digits, which the result keeps
+        engine.setNumericMode(true, nPrecision + GUARD_DIGITS, significantFigures);
+        try {
+          return toPrecision(expr.evaluate(engine).orElse(expr), nPrecision);
+        } finally {
+          engine.setNumericMode(true, nPrecision, significantFigures);
+        }
+      }
       return expr.evaluate(engine).orElse(expr);
     }
     if (!adaptive || !(expr.isAST() || expr.isNumber())) {
+      if (nPrecision > ParserConfig.MACHINE_PRECISION && expr.isSymbol()
+          && !original.has(x -> x.isInexactNumber(), true)) {
+        // a constant like Pi: with guard digits, as in evalExact()
+        engine.setNumericMode(true, nPrecision + GUARD_DIGITS, significantFigures);
+        try {
+          return toPrecision(engine.evalWithoutNumericReset(expr), nPrecision);
+        } finally {
+          engine.setNumericMode(true, nPrecision, significantFigures);
+        }
+      }
       // an inexact number in the input has the digits it has: more working digits add none
       return engine.evalWithoutNumericReset(expr);
     }
@@ -296,7 +314,15 @@ public final class N extends AbstractCoreFunctionEvaluator {
   private static IExpr evalExact(IExpr expr, LongFunction<IExpr> exactAt, final long lostExactly,
       final long precision, int significantFigures, EvalEngine engine) {
     final long maxPrecision = precision + Config.MAX_EXTRA_PRECISION;
-    long working = precision;
+    // A function calculated with the digits of the precision has no digits beyond them to round
+    // its last digit with: the first evaluation has guard digits, which the result keeps beyond
+    // its precision. At machine precision the evaluation stays one with doubles.
+    long working =
+        precision > ParserConfig.MACHINE_PRECISION ? precision + GUARD_DIGITS : precision;
+    boolean first = true;
+    if (working > precision) {
+      engine.setNumericMode(true, working, significantFigures);
+    }
     // the result of the evaluation before, in the digits of the precision
     IExpr previous = null;
     // a result which was zero, because every digit was lost
@@ -322,8 +348,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
             engine.setMessageShortcut(shortcut);
           }
         }
-        final long lost = working == precision ? Math.max(PrecisionLoss.lost(engine), lostExactly)
-            : PrecisionLoss.lost(engine);
+        final long lost =
+            first ? Math.max(PrecisionLoss.lost(engine), lostExactly) : PrecisionLoss.lost(engine);
+        first = false;
         long needed = working;
         if (lost >= PrecisionLoss.THRESHOLD) {
           // every digit lost: twice the digits; else the digits which were lost in addition
@@ -374,7 +401,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
   }
 
   /**
-   * The numbers of a result which was calculated with more digits, rounded to the precision.
+   * The numbers of a result which was calculated with more digits, with the precision. The digits
+   * beyond the precision stay stored: the next operation uses them, and the printed number is
+   * rounded with them.
    */
   private static IExpr toPrecision(IExpr result, final long precision) {
     if (result instanceof ApfloatNum) {
@@ -401,7 +430,7 @@ public final class N extends AbstractCoreFunctionEvaluator {
     if (x.precision() <= precision) {
       return x;
     }
-    return ApfloatMath.round(x, precision, RoundingMode.HALF_EVEN);
+    return x.precision(precision);
   }
 
   /**

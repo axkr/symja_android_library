@@ -117,7 +117,7 @@ public class NumericOptimizationTest extends ExprEvaluatorTestCase {
             + "0.8856031944108887002788159005825887332080`40) < 10^-38", //
         "True");
     check("FindRoot({x^2 + y^2 == 4, x == y}, {{x, 1}, {y, 1}}, WorkingPrecision -> 30)", //
-        "{x->1.4142135623730950488016887242,y->1.4142135623730950488016887242}");
+        "{x->1.41421356237309504880168872421,y->1.41421356237309504880168872421}");
     // without a derivative the machine precision result is the answer
     check("FindRoot(Cos(x) == x, {x, 1})", //
         "{x->0.739085}");

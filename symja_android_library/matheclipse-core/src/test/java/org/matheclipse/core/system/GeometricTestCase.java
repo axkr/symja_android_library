@@ -182,7 +182,7 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
     check("Area(Disk({0,0},r), Assumptions->r>0)", //
         "Pi*r^2");
     check("Area(Disk(), WorkingPrecision->20)", //
-        "3.1415926535897932384");
+        "3.1415926535897932385");
     // the options which only steer a numerical integration have no effect on a closed form
     check("Area(Disk(), AccuracyGoal->10, PrecisionGoal->10, GenerateConditions->True)", //
         "Pi");

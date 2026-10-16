@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Writer;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apfloat.Apfloat;
+import org.matheclipse.external.apfloat.ApfloatRounding;
 
 /** Convert a <code>Apfloat</code> value into a string similar to the Mathematica output format. */
 public class ApfloatToMMA {
@@ -125,6 +126,8 @@ public class ApfloatToMMA {
   public static void apfloatToMMA(Appendable buf, Apfloat value, int exponent,
       long significantFigures, boolean useSignificantFiguresInApfloat, OutputStyle style)
       throws IOException {
+    // the last digit rounded with the digits stored beyond the precision, not cut off
+    value = ApfloatRounding.roundToPrecision(value);
     final long scale = value.scale();
     if (exponent > 0 && -exponent <= scale && scale <= exponent) {
       if (style == OutputStyle.MATHML) {

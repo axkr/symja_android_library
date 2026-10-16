@@ -124,7 +124,7 @@ public class EliminateTest extends ExprEvaluatorTestCase {
     check("Eliminate(x^2+y^2+z^2==1 && x-y+z==2 && x^3-y^2==z+1, z, InverseFunctions->False)", //
         "x+x^3-y-y^2==3&&-4*x+2*x^2+4*y-2*x*y+2*y^2==-3");
     check("Eliminate(x^2+y^2+z^2==E && x-y+z==2 && x^3-y^2==z+Pi, z, WorkingPrecision->20)", //
-        "x+x^3-y-y^2==5.1415926535897932384&&-4*x+2*x^2+4*y-2*x*y+2*y^2==-1.2817181715409547646");
+        "x+x^3-y-y^2==5.1415926535897932385&&-4*x+2*x^2+4*y-2*x*y+2*y^2==-1.2817181715409547646");
     // TODO `Mode->Modular` eliminates over a residue class ring
     check("Eliminate(y==5*x+1 && 2*x+3*y==5 && x*y==7, y, Mode->Modular)", //
         "Eliminate(y==1+5*x&&2*x+3*y==5&&x*y==7,y,mode->modular)");

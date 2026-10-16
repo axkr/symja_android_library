@@ -113,7 +113,7 @@ public class NResidueTest extends ExprEvaluatorTestCase {
         "30");
     // the residue of Gamma at the pole -n is (-1)^n/n!, here -1/6
     check("NResidue(Gamma(x), {x, -3}, WorkingPrecision -> 30)", //
-        "-0.166666666666666666666666666666");
+        "-0.166666666666666666666666666667");
     // a working precision at or below machine precision computes in machine precision
     check("Chop(NResidue(1/x, {x, 0}, WorkingPrecision -> 5))", //
         "1.0");

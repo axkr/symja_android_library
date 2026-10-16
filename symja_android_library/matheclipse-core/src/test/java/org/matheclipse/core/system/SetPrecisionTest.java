@@ -30,11 +30,11 @@ public class SetPrecisionTest extends ExprEvaluatorTestCase {
         "0.299999999999999988897769753748");
     // a higher precision is cut
     check("SetPrecision(N(E, 50), 12)", //
-        "2.71828182845");
+        "2.71828182846");
     check("Precision(SetPrecision(N(E, 50), 12))", //
         "12");
     check("SetPrecision(2/7 + 3*I/11, 20)", //
-        "0.28571428571428571428+I*0.27272727272727272727");
+        "0.28571428571428571429+I*0.27272727272727272727");
     // the exact zero has no digits
     check("SetPrecision(0, 20)", //
         "0");
@@ -43,13 +43,13 @@ public class SetPrecisionTest extends ExprEvaluatorTestCase {
   @Test
   public void testSetPrecisionExpressions() {
     check("SetPrecision({2/7, 1.25, y}, 20)", //
-        "{0.28571428571428571428,1.25,y}");
+        "{0.28571428571428571429,1.25,y}");
     check("SetPrecision(E, 25)", //
         "2.718281828459045235360287");
     check("SetPrecision(Sqrt(3) + y, 25)", //
         "1.732050807568877293527446+y");
     check("SetPrecision(g(2/7, 0), 20)", //
-        "g(0.28571428571428571428,0)");
+        "g(0.28571428571428571429,0)");
     check("Precision(SetPrecision(2/7, 30) + SetPrecision(3/7, 30))", //
         "30");
   }
@@ -85,7 +85,7 @@ public class SetPrecisionTest extends ExprEvaluatorTestCase {
     check("SetAccuracy({2/7, 654321, y}, 10)", //
         "{0.2857142857,654321,y}");
     check("SetAccuracy(E*1000, 20)", //
-        "2718.28182845904523536028");
+        "2718.28182845904523536029");
     check("SetAccuracy(1.25, Infinity)", //
         "5/4");
   }

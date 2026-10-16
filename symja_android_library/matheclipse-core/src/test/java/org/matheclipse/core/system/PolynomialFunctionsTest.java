@@ -17,7 +17,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
     // https://github.com/mtommila/apfloat/issues/65
     check("N(ChebyshevT(Pi/2,-9223372036854775808/11),30)", //
-        "4672660418534308965963828022.7+I*(-20661346583240968698114847518.9)");
+        "4672660418534308965963828022.73+I*(-20661346583240968698114847518.9)");
     check("ChebyshevT(-1/2, z)", //
         "Cos(ArcCos(z)/2)");
     check("ChebyshevT(1/2, z)", //
@@ -76,7 +76,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     checkNumeric("GegenbauerC(2/7, 5 - I, 2) //N", //
         "2.5811662779830957+I*(-0.15456328352770213)");
     check("N(GegenbauerC(1/6, 1/8, 7), 50)", //
-        "0.74986248230619982209196563118394711854677907245854");
+        "0.74986248230619982209196563118394711854677907245855");
     check("GegenbauerC(0.333333333333333333, 7, 1)", //
         "2.67757341042435161");
 
@@ -197,7 +197,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     // out of the double range: an arbitrary precision number of machine precision (WMA)
     // -1.310346008560093727*10^442134 for the double 2.987
     checkNumeric("HermiteH({-1,2.987,0,1},-1009)", //
-        "{HermiteH(-1,-1009),-1.310346008560093*10^442134,1,-2018}");
+        "{HermiteH(-1,-1009),-1.310346008560094*10^442134,1,-2018}");
     checkNumeric("HermiteH( 1 ,-1009)", //
         "-2018");
     checkNumeric("HermiteH(3.1, 5)", //
@@ -241,7 +241,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("N(JacobiP(2/3, 1/2, 9, 7), 50)", //
         "11.670621287206595077877422103270342556210833297972");
     check("JacobiP(2, 2, 9, .33333333333333333333333333333)", //
-        "-0.999999999999999999999999999976");
+        "-0.999999999999999999999999999977");
     checkNumeric("JacobiP(2 + 3*I, 1.2, .8, 7)", //
         "32.01331219559314+I*179.3594719971409");
 
@@ -294,7 +294,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
     // TODO
     check("LaguerreL(2.3000000000000000000000000, 3, 3) ", //
-        "-1.1129298068672651031450569");
+        "-1.112929806867265103145057");
     check("N(LaguerreL(2/5, 1/3, 8/7),50)", //
         "0.68821856392835285644553764124515707164455717484011");
 
@@ -407,9 +407,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("{LegendreP(2, 2), LegendreP(2, 2, 2), LegendreP(1.5, 2)}//N", //
         "{5.5,-9.0,3.24394}");
     check("N(LegendreP(3/2, 2), 50)", //
-        "3.2439396660408049154502287929704557672075154110176");
+        "3.2439396660408049154502287929704557672075154110177");
     check("LegendreP(3/2, 2.000000000000000000000000000)", //
-        "3.243939666040804915450228792");
+        "3.243939666040804915450228793");
     checkNumeric("LegendreP(3/2 + I, 1.5 - I)", //
         "5.204659495086081+I*0.2994794549763052");
 
@@ -524,9 +524,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("SphericalHarmonicY(27, 5, Pi/4, 0)", //
         "-44580915/549755813888*Sqrt(62093031)/Sqrt(2*Pi)");
     check("N(SphericalHarmonicY(27, 5, Pi/4, 0),50)", //
-        "-0.25492395213084562609690191673291502381506002910716");
+        "-0.25492395213084562609690191673291502381506002910717");
     check("N(-44580915/549755813888*Sqrt(62093031)/Sqrt(2*Pi),50)", //
-        "-0.25492395213084562609690191673291502381506002910716");
+        "-0.25492395213084562609690191673291502381506002910717");
 
     // TODO
     // check("SphericalHarmonicY(1317624576693539401,{x,-3,-1/2},10007,0.5)", //
@@ -544,7 +544,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "-0.0975801+I*(-0.0563379)");
 
     check("N(SphericalHarmonicY(2, 1, Pi/3, Pi),20 )", //
-        "0.33452327177864458397");
+        "0.33452327177864458398");
     checkNumeric("N(SphericalHarmonicY(2, 2, Pi/6, Pi/4.211111111111111111) )", //
         "0.00759663110648051733+I*0.09626928971703694314");
     check("N(SphericalHarmonicY(23, 5 - I, Pi/3, I + Pi) )", //
@@ -631,7 +631,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("ZernikeR(n, m, x)", //
         "ZernikeR(n,m,x)");
     check("N(ZernikeR(1/5, 2/3, 1/7), 50)", //
-        "0.16624107895274857519231711412376921850667019765573");
+        "0.16624107895274857519231711412376921850667019765574");
 
     checkNumeric("N(ZernikeR(2/5, 2-I, 2))", //
         "0.008507312038070331+I*0.8156212465816385");

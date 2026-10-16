@@ -12,9 +12,9 @@ public class EllipticArbitraryPrecisionTest extends ExprEvaluatorTestCase {
   public void testEllipticKBeyondOne() {
     // WMA: N[EllipticK[3], 20] - the complex value of EllipticK, not the one of EllipticE
     check("N(EllipticK(3), 20)", //
-        "1.001077380456106236+I*(-1.1714200841467698589)");
+        "1.0010773804561062361+I*(-1.1714200841467698589)");
     check("N(EllipticE(3), 20)", //
-        "0.475223935351017111+I*1.0130180585994313264");
+        "0.47522393535101711103+I*1.0130180585994313265");
   }
 
   @Test

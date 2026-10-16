@@ -215,7 +215,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   @Test
   public void testBesselI() {
     check("N(BesselI(0, 1), 50)", //
-        "1.2660658777520083355982446252147175376076703113549");
+        "1.266065877752008335598244625214717537607670311355");
 
     check("BesselI(3/2, z)", //
         "Sqrt(2/Pi)*Sqrt(z)*(Cosh(z)/z-Sinh(z)/z^2)");
@@ -259,12 +259,12 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     check("N(BesselJ(201/2, 100), 30)", //
         "0.0868136462159715016481161751876");
     check("N(BesselI(201/2, 100), 30)", //
-        "2980887736253533000171.24924938");
+        "2980887736253533000171.24924939");
     check("LeafCount(BesselK(21/2, x))", //
         "5");
     // complex order
     check("N(BesselJ(2+I, 12), 30)", //
-        "-0.166242296231681360011136923587+I*0.41728391381755299494916565147");
+        "-0.166242296231681360011136923587+I*0.417283913817552994949165651471");
     // at 0 an order which is not an integer is 0 for a positive real part and infinite for a
     // negative one; the negative orders used to stay unevaluated, and Limit read
     // t^(1/4)*BesselJ(-1/4, t) at t == 0 as 0 instead of 2^(1/4)/Gamma(3/4)
@@ -360,9 +360,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   public void testBesselJZero() {
     // arbitrary precision: the machine precision zero refined with Newton's method; mpmath
     check("N(BesselJZero(0, 1), 30)", //
-        "2.40482555769577276862163187932");
+        "2.40482555769577276862163187933");
     check("N(BesselJZero(1/3, 3), 30)", //
-        "9.17050666946388776809000306821");
+        "9.17050666946388776809000306822");
     checkNumeric("BesselJZero(1.5, 1.0)", //
         "4.493409457909063");
 
@@ -390,7 +390,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   public void testBesselK() {
     // integer order with a large argument
     check("N(BesselK(2, 60), 30)", //
-        "0.00000000000000000000000000146141890810967795320279258525");
+        "0.00000000000000000000000000146141890810967795320279258526");
     check("BesselK(3/2, x)", //
         "Sqrt(Pi/2)*(1/(E^x*x^2)+1/(E^x*x))*Sqrt(x)");
     check("BesselK(-3/2, x)", //
@@ -431,7 +431,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   public void testBesselY() {
     // integer order with a large argument
     check("N(BesselY(3, 100), 30)", //
-        "0.0234457866877609115602292983749");
+        "0.023445786687760911560229298375");
     // 5.3191924109550804572363059045101540231302620...*10^-7
     check("N(BesselY(-5/2, 1/100), 40)", //
         "0.000000531919241095508045723630590451015402313");
@@ -482,7 +482,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testBesselYZero() {
     check("N(BesselYZero(1, 20), 30)", //
-        "62.040411147670693473712823944");
+        "62.0404111476706934737128239441");
     // https://github.com/paulmasson/math/issues/11
     checkNumeric("BesselYZero(0.0,1)", //
         "0.8935769662791667");
@@ -651,7 +651,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     check("N(SphericalBesselJ(3, 1/2), 30)", //
         "0.00117403544386755730896725931152");
     check("N(SphericalBesselY(0, 12), 30)", //
-        "-0.0703211632277076753878296077644");
+        "-0.0703211632277076753878296077645");
   }
 
   @Test
@@ -694,7 +694,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
     check("N(WeberE(1/2, 3), 30)", //
         "-0.570621336461999334625833563463");
     check("N(WeberE(-5/2, 80), 30)", //
-        "-0.0928464996233765580501613827003");
+        "-0.0928464996233765580501613827004");
     check("N(WeberE(1/3, 2+I), 30)", //
         "-0.796058029521489025606148219799+I*(-0.28886729029848945228554292277)");
 

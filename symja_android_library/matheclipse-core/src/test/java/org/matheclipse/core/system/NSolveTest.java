@@ -129,17 +129,17 @@ public class NSolveTest extends ExprEvaluatorTestCase {
   public void testNSolveWorkingPrecision() {
     // the fourth argument is the working precision of the numerical solution
     check("NSolve(x^2==2,x,Reals,30)", //
-        "{{x->-1.4142135623730950488016887242},{x->1.4142135623730950488016887242}}");
+        "{{x->-1.41421356237309504880168872421},{x->1.41421356237309504880168872421}}");
     check("NSolve(x^2==2,x,Reals,WorkingPrecision->30)", //
-        "{{x->-1.4142135623730950488016887242},{x->1.4142135623730950488016887242}}");
+        "{{x->-1.41421356237309504880168872421},{x->1.41421356237309504880168872421}}");
     check("NSolveValues(x^2==2,x,Reals,30)", //
-        "{-1.4142135623730950488016887242,1.4142135623730950488016887242}");
+        "{-1.41421356237309504880168872421,1.41421356237309504880168872421}");
     // MachinePrecision and Automatic are the machine precision solution
     check("NSolve(x^2==2,x,Reals,MachinePrecision)", //
         "{{x->-1.41421},{x->1.41421}}");
     // the solutions are ordered by real, then imaginary part at every working precision
     check("NSolve(x^3-2==0,x,Complexes,20)", //
-        "{{x->-0.62996052494743658238+I*(-1.0911236359717214035)},{x->-0.62996052494743658238+I*1.0911236359717214035},{x->1.2599210498948731647}}");
+        "{{x->-0.62996052494743658238+I*(-1.0911236359717214036)},{x->-0.62996052494743658238+I*1.0911236359717214036},{x->1.2599210498948731648}}");
     // Requested precision `1` is smaller than `2`.
     check("NSolve(x^2==2,x,Reals,-5)", //
         "NSolve(x^2==2,x,Reals,-5)");

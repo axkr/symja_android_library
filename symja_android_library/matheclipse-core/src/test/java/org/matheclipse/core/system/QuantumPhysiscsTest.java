@@ -54,7 +54,7 @@ public class QuantumPhysiscsTest extends ExprEvaluatorTestCase {
 
     // an inexact argument evaluates numerically at its own precision
     check("ClebschGordan({3/2`40, -3/2}, {3/2, 3/2}, {1, 0})", //
-        "0.6708203932499369089227521006193828706321");
+        "0.6708203932499369089227521006193828706322");
   }
 
   @Test
@@ -106,7 +106,7 @@ public class QuantumPhysiscsTest extends ExprEvaluatorTestCase {
 
     // an inexact argument evaluates numerically at its own precision
     check("SixJSymbol({1`30, 2, 3}, {1, 2, 3})", //
-        "0.0095238095238095238095238095238");
+        "0.00952380952380952380952380952381");
   }
 
   @Test

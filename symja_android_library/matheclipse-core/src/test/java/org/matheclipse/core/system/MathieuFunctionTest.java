@@ -71,7 +71,7 @@ public class MathieuFunctionTest extends ExprEvaluatorTestCase {
     checkNumeric("MathieuCharacteristicExponent(1.*^10, 1.)", //
         "100000.0");
     check("N(MathieuCharacteristicExponent(10001, 3), 30)", //
-        "100.004997625118551306667413671");
+        "100.004997625118551306667413672");
   }
 
   /**

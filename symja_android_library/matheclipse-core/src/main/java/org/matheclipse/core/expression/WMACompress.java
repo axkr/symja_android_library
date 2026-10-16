@@ -8,6 +8,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import org.apfloat.Apfloat;
+import org.matheclipse.external.apfloat.ApfloatRounding;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -180,7 +181,8 @@ public class WMACompress {
       // a number carrying more digits than a machine real is written out as text: its digits, a
       // backtick and how many of them are precise.
       out.write('R');
-      Apfloat value = number.apfloatValue();
+      // the last digit rounded with the digits stored beyond the precision, as it is printed
+      Apfloat value = ApfloatRounding.roundToPrecision(number.apfloatValue());
       writeText(value.toString(true) + "`" + value.precision(), out);
       return true;
     }

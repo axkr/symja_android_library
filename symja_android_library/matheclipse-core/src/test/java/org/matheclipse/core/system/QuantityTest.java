@@ -1041,7 +1041,7 @@ public class QuantityTest extends ExprEvaluatorTestCase {
 
     // a transcendental function moves too, and by the same rule
     check("N(AroundReplace(Sin(s), s -> Around(1.56,0.01), 2), 20)", //
-        "Around(0.9998917231439548,0.0001290543744817026)");
+        "Around(0.9998917231439549,0.0001290543744817026)");
     check("AroundReplace(Sin(s), s -> Around(1.56,0.01))", //
         "Around(0.999942,0.000107961)");
 

@@ -26,7 +26,7 @@ public class KelvinFunctionsTest extends ExprEvaluatorTestCase {
     check("KelvinBer(1,2.5)", //
         "-1.3731");
     check("N(KelvinBer(2), 30)", //
-        "0.75173418271380822855099890123");
+        "0.751734182713808228550998901231");
     check("KelvinBer({1.0,2.0})", //
         "{0.984382,0.751734}");
   }

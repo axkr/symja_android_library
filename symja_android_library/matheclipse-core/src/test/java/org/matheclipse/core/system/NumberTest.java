@@ -311,7 +311,7 @@ public class NumberTest extends ExprEvaluatorTestCase {
       check("Precision(N(N(Pi,50),1001))", //
           "50");
       check("N(N(Pi,1001),20)", //
-          "3.1415926535897932384");
+          "3.1415926535897932385");
       // the argument shape doesn't matter: exact rational, inexact double, complex, AST
       check("Precision(N(2/3,1001))", //
           "512");

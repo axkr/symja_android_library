@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.external.apfloat.ApfloatRounding;
 import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -81,6 +82,8 @@ public class ApfloatNum implements INum {
   }
 
   public static String fullFormString(Apfloat apfloat) {
+    // the last digit rounded with the digits stored beyond the precision, not cut off
+    apfloat = ApfloatRounding.roundToPrecision(apfloat);
     String str = apfloat.toString();
     long precision = apfloat.precision();
     if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
@@ -2651,11 +2654,12 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public String toString() {
-    String str = fApfloat.toString();
+    Apfloat rounded = ApfloatRounding.roundToPrecision(fApfloat);
+    String str = rounded.toString();
     if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       return str.replace("e", "E");
     }
-    long precision = fApfloat.precision();
+    long precision = rounded.precision();
     int index = str.indexOf('e');
     if (index > 0) {
       String exponentStr = str.substring(index + 1);

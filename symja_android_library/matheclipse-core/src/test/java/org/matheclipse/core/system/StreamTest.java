@@ -32,9 +32,9 @@ public class StreamTest extends ExprEvaluatorTestCase {
     check("Uncompress(str)", //
         "a^3+3*a^2*b+3*a*b^2+b^3");
     check("str = Compress(N(Pi, 100))", //
-        "1:eJwNy7ERA0EIA8BrxQ14AAmQ2vgKPJ85cv+ZP9poX/fvur7nHLyT2a5ptLxGQZwaAkKtO0pienMMG9sZrQovTT4RscphTGkqZD8oQFWDlbkx+8mIP1hYF7Y=");
+        "1:eJwNy7ERA0EIA8BrxQ14AAmQ2vgKPJ85cv+ZP9poX/fvur7nHLyT2a5ptLxGQZwaAkKtO0pienMMG9sZrQovTT4RscphTGkqZD8oQFWDlbkx+mTEH1hdF7c=");
     check("Uncompress(str)", //
-        "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067");
+        "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117068");
 
   }
 

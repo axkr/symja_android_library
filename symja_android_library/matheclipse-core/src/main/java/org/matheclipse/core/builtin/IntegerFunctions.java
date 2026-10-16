@@ -2682,7 +2682,9 @@ public class IntegerFunctions {
         if (precision <= 0) {
           precision = 1;
         }
-        IExpr expr = EvalEngine.get().evaluate(F.N(arg1, precision));
+        // digits beyond the last one asked for: N rounds its last digit, and a digit of the number
+        // is not rounded
+        IExpr expr = EvalEngine.get().evaluate(F.N(arg1, precision + 10));
         if (expr.isReal()) {
           number = (IReal) expr;
         }

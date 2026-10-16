@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import org.apfloat.Apfloat;
+import org.matheclipse.external.apfloat.ApfloatRounding;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -261,7 +262,7 @@ public class NumberFormatter {
   public FormattedNumber format(Apfloat value, int significantFigures) {
     BigDecimal decimal;
     try {
-      decimal = new BigDecimal(value.toString(true));
+      decimal = new BigDecimal(ApfloatRounding.roundToPrecision(value).toString(true));
     } catch (NumberFormatException nfe) {
       return null;
     }

@@ -43,7 +43,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     check("Hypergeometric0F1Regularized(b, 0)", //
         "1/Gamma(b)");
     check("N(Hypergeometric0F1Regularized(0, -48), 50)", //
-        "-0.75356407978144308380327864211537660841009027837077");
+        "-0.75356407978144308380327864211537660841009027837078");
   }
 
   @Test
@@ -134,7 +134,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     // "");
 
     check("N(Hypergeometric1F1Regularized(2,-4,2), 50)", //
-        "1891.5983613262464581709894299072020001741607860612");
+        "1891.5983613262464581709894299072020001741607860613");
     check("N(Hypergeometric1F1Regularized(1, 0, 1), 30)", //
         "2.71828182845904523536028747135");
 
@@ -247,9 +247,9 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "D(Hypergeometric2F1(a,b,c,x),{x,-4})");
 
     check("N(Hypergeometric2F1(1/2, 1/3, 2, 1), 50)", //
-        "1.1595952669639283657699920515700208819451652634397");
+        "1.1595952669639283657699920515700208819451652634398");
     check("Hypergeometric2F1(1/2, 1/3, 2, 1.000000000000000000000000000000000)", //
-        "1.15959526696392836576999205157002");
+        "1.159595266963928365769992051570021");
 
     // iteration limit of exceeded.
     // https://github.com/paulmasson/math/issues/29#issuecomment-1120230707
@@ -515,7 +515,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "1.6067084326554210678161799904");
     // on the cut from 1: the value from below
     check("N(HypergeometricPFQ({1/3,5/2,1},{7/3,3/2},3), 30)", //
-        "0.656053184392183117384955234113+I*(-0.717122201081024239027669207599)");
+        "0.656053184392183117384955234113+I*(-0.7171222010810242390276692076)");
     // polynomials: exact, and with alternating terms which cancel
     check("HypergeometricPFQ({-3,1/3},{},-7)", //
         "11584/27");
@@ -549,7 +549,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     check("HypergeometricPFQ({1,1,1},{2,2,2},-3.0)", //
         "0.741263");
     check("N(HypergeometricPFQ({1,1,1},{2,2,2},-3),30)", //
-        "0.741262601218041034045588563878");
+        "0.741262601218041034045588563879");
     check("N(HypergeometricPFQ({1,1,1,1},{2,2,2,2},-3),30)", //
         "0.854650998256107980666813679965");
     // Abs(z) large enough that the summands grow to about E^Abs(z) before they cancel
@@ -687,7 +687,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     check("HypergeometricU(3, 2, 1.0)", //
         "0.105479");
     check("N(HypergeometricU(3, 2, 1),50)", //
-        "0.10547895651520888848838225094608093588873320977117");
+        "0.10547895651520888848838225094608093588873320977118");
 
 
     check("D(HypergeometricU(a,b,x), x)", //

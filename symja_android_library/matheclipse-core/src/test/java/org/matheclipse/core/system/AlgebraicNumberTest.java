@@ -59,7 +59,7 @@ public class AlgebraicNumberTest extends ExprEvaluatorTestCase {
     check("N(AlgebraicNumber(Sqrt(2)*I,{1,-1}))", //
         "1.0+I*(-1.41421)");
     check("N(AlgebraicNumber(Sqrt(2)*I,{1,-1}),30)", //
-        "1+I*(-1.4142135623730950488016887242)");
+        "1+I*(-1.41421356237309504880168872421)");
     check("Abs(AlgebraicNumber(Sqrt(2),{0,-1}))", //
         "AlgebraicNumber(Sqrt(2),{0,1})");
     check("NumericQ(AlgebraicNumber(Sqrt(2),{1,2}))", //

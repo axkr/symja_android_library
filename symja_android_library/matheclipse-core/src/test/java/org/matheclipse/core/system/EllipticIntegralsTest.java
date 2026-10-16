@@ -100,7 +100,7 @@ public class EllipticIntegralsTest extends ExprEvaluatorTestCase {
         "4.88706721591214727559938");
     // an inexact amplitude is reduced like an exact one
     check("N(EllipticPi(2/7, 3.7415926535897932384626434`25, 2/5), 25)", //
-        "4.887067215912147275599379");
+        "4.88706721591214727559938");
     // the principal value for n > 1
     check("N(EllipticPi(7/4, 2/5), 20)", //
         "-0.26306693863820197492");
@@ -117,7 +117,7 @@ public class EllipticIntegralsTest extends ExprEvaluatorTestCase {
         "ComplexInfinity");
     // with digits enough for the argument: Log(4)+15*Log(10) to the first order
     check("N(EllipticK(1 - 10^(-30)), 40)", //
-        "35.92507075603057587910433606319054751785");
+        "35.92507075603057587910433606319054751786");
   }
 
   @Test

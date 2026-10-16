@@ -109,7 +109,7 @@ public class SolveOptionsTest extends ExprEvaluatorTestCase {
     check("NSolve(x^2 == 2, x)", //
         "{{x->-1.41421},{x->1.41421}}");
     check("NSolve(x^2 == 2, x, WorkingPrecision -> 30)", //
-        "{{x->-1.4142135623730950488016887242},{x->1.4142135623730950488016887242}}");
+        "{{x->-1.41421356237309504880168872421},{x->1.41421356237309504880168872421}}");
     // MaxRoots applies to Solve and SolveValues alike
     check("Solve(x^5 == 1, x, MaxRoots -> 2)", //
         "{{x->1},{x->-(-1)^(1/5)}}");
@@ -333,7 +333,7 @@ public class SolveOptionsTest extends ExprEvaluatorTestCase {
         "K(1)∈Integers&&x==2+3*K(1)&&y==-1-2*K(1)");
     // WorkingPrecision applies the requested precision to the exact result
     check("Reduce(x^2 == 2, x, WorkingPrecision -> 30)", //
-        "x==-1.4142135623730950488016887242||x==1.4142135623730950488016887242");
+        "x==-1.41421356237309504880168872421||x==1.41421356237309504880168872421");
     // Method -> Automatic is the only implemented method
     check("Reduce(x^2 == 4, x, Method -> Automatic)", //
         "x==-2||x==2");

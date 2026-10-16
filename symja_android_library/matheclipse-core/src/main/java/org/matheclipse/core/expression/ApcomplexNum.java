@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.UnaryOperator;
 import org.apfloat.Apcomplex;
+import org.matheclipse.external.apfloat.ApfloatRounding;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
@@ -1033,7 +1034,9 @@ public class ApcomplexNum implements IComplexNum {
   public String fullFormString() {
     StringBuilder buf = new StringBuilder();
     long precision = fApcomplex.precision();
-    String str = fApcomplex.real().toString();
+    // the last digits rounded with the digits stored beyond the precision, not cut off
+    Apcomplex rounded = ApfloatRounding.roundToPrecision(fApcomplex);
+    String str = rounded.real().toString();
     if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("e");
       if (indx > 0) {
@@ -1044,7 +1047,7 @@ public class ApcomplexNum implements IComplexNum {
     }
     buf.append(str);
     buf.append(',');
-    str = fApcomplex.imag().toString();
+    str = rounded.imag().toString();
     if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("e");
       if (indx > 0) {

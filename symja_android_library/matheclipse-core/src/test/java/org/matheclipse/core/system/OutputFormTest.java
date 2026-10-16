@@ -97,22 +97,22 @@ public class OutputFormTest extends ExprEvaluatorTestCase {
     assertEquals(str, "4+4*I");
 
     input = evaluator.eval("N(3/7*I,20)");
-    assertEquals(input.toString(), "I*0.42857142857142857142");
+    assertEquals(input.toString(), "I*0.42857142857142857143");
 
     str = outputFormFactory.toString(input);
-    assertEquals(str, "0.42857142857142857142*I");
+    assertEquals(str, "0.42857142857142857143*I");
 
     input = evaluator.eval("N(-3/7*I,20)");
-    assertEquals(input.toString(), "I*(-0.42857142857142857142)");
+    assertEquals(input.toString(), "I*(-0.42857142857142857143)");
 
     str = outputFormFactory.toString(input);
-    assertEquals(str, "-0.42857142857142857142*I");
+    assertEquals(str, "-0.42857142857142857143*I");
 
     input = evaluator.eval("N(a+(-2/3-3/7*I),20)");
-    assertEquals(input.toString(), "-0.66666666666666666666+I*(-0.42857142857142857142)+a");
+    assertEquals(input.toString(), "-0.66666666666666666667+I*(-0.42857142857142857143)+a");
 
     str = outputFormFactory.toString(input);
-    assertEquals(str, "a-0.66666666666666666666-0.42857142857142857142*I");
+    assertEquals(str, "a-0.66666666666666666667-0.42857142857142857143*I");
   }
 
   @Test

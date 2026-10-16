@@ -226,7 +226,7 @@ public class EvalEpochTest extends ExprEvaluatorTestCase {
     check("epe = Hold(Sin(1) + Sqrt(3)); N(ReleaseHold(epe))", //
         "2.57352");
     check("N(ReleaseHold(epe), 30)", //
-        "2.57352179237677380017994866313");
+        "2.57352179237677380017994866314");
     check("N(ReleaseHold(epe))", //
         "2.57352");
     check("ReleaseHold(epe)", //
