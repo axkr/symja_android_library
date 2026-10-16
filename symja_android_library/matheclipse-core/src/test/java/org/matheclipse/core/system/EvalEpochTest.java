@@ -122,6 +122,77 @@ public class EvalEpochTest extends ExprEvaluatorTestCase {
         "{{4,9},2,{4,9},2}");
   }
 
+  /**
+   * A variable which a condition reads decides whether a rule applies to an expression which does
+   * not mention it. Its new value has to reach that expression, as every change did before own
+   * values were tracked per symbol.
+   */
+  @Test
+  public void testValueReadByAConditionReachesExpressionsWithoutIt() {
+    // condition on the right-hand side
+    check("epcf(x_) := x /; epflag; epflag = False; epcr = {epcf(1)}; epcr", //
+        "{epcf(1)}");
+    check("epflag = True; epcr", //
+        "{1}");
+    // pattern test
+    check("ept(x_?(# > eplim &)) := big; eplim = 10; epq2 = {ept(5)}; epq2", //
+        "{ept(5)}");
+    check("eplim = 1; epq2", //
+        "{big}");
+    // a Module before the condition
+    check("epm(x_) := Module({v = epg0}, x /; v > 0); epg0 = -1; epw2 = {epm(2)}; epw2", //
+        "{epm(2)}");
+    check("epg0 = 1; epw2", //
+        "{2}");
+    // a condition inside the pattern
+    check("epc2(x_ /; x > epb) := bigger; epb = 10; epv2 = {epc2(5)}; epv2", //
+        "{epc2(5)}");
+    check("epb = 1; epv2", //
+        "{bigger}");
+    // a variable which a condition reads and assigns (with the same value, so that evaluating the
+    // condition once more, as -Dsymja.evalEpoch.validate does, gives the same answer)
+    check("epcnt = 0; epk2(x_) := x /; ((epcnt += 0) > 2); epv3 = {epk2(7)}; epv3", //
+        "{epk2(7)}");
+    check("epcnt = 5; epv3", //
+        "{7}");
+    // the rules of a symbol which only the condition calls, removed by ClearAll and by Clear
+    check("epsrc(1) := False; epo2(x_) := yes /; epsrc(x) =!= False; epv4 = {epo2(1)}; epv4", //
+        "{epo2(1)}");
+    check("ClearAll(epsrc); epv4", //
+        "{yes}");
+    check("epsrc2(1) := False; epo3(x_) := yes /; epsrc2(x) =!= False; epv5 = {epo3(1)}; epv5", //
+        "{epo3(1)}");
+    check("Clear(epsrc2); epv5", //
+        "{yes}");
+  }
+
+  /**
+   * A new value of a variable which no condition reads leaves the stamps of the expressions without
+   * it in place: a loop over a list of rules held in a variable used to evaluate every rule again
+   * for each value of the loop counter.
+   */
+  @Test
+  public void testUnrelatedValueKeepsTheStamp() throws InterruptedException {
+    S.Integrate.getEvaluator().await();
+    check("SetAttributes(epo, {Flat, OneIdentity}); epo(a_, b_Plus) := Map(epo(a, #) &, b); "
+        + "eprels = Table(k_Integer*epo(a__, epn(i)) :> k*epo(a), {i, 3}); Length(eprels)", //
+        "3");
+    ISymbol rels = (ISymbol) evaluator.parse("eprels");
+    EvalEngine engine = EvalEngine.get();
+    IAST value = (IAST) engine.evaluate(rels);
+    final long stamp = value.getEvalEpoch();
+    assertNotEquals(0L, stamp);
+    // a Module local and a loop counter get new values
+    engine.evaluate(evaluator.parse("Module({t}, Do(t = j, {j, 3}); t)"));
+    assertSame(value, engine.evaluate(rels));
+    // a variable which occurs in the stamped expression still counts
+    check("eprels2 = {epf3(epz3)}; epz3 = 5; eprels2", //
+        "{epf3(5)}");
+    // and a definition still changes everything
+    check("epn(2) = two; eprels[[2]]", //
+        "epo(a__,two)*k_Integer:>k*epo(a)");
+  }
+
   @Test
   public void testValueChangedInPlace() {
     check("epl = {p, q, r}; epl[[2]] = 7; epl", //

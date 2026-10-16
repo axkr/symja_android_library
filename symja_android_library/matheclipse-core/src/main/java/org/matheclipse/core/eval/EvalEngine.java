@@ -86,6 +86,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
@@ -228,12 +229,25 @@ public class EvalEngine implements Serializable {
   private static final AtomicLong SYSTEM_EPOCH = new AtomicLong(1L);
 
   /**
+   * The value of {@link #SYSTEM_EPOCH} after the last change which can make any expression evaluate
+   * differently: a rule, an attribute, a system setting, the value of a built-in symbol, or the own
+   * value of a symbol which a condition has read. The epoch also moves for the own value of an
+   * ordinary variable (see {@link #incValueEpoch()}), but such a change only matters to an
+   * expression in which the variable occurs, so a fixed point stamped since the last hard change
+   * stays one if none of its symbols has a newer value, see {@link #isFixedPoint(IAST, boolean)}.
+   */
+  private static final AtomicLong HARD_EPOCH = new AtomicLong(1L);
+
+  /**
    * A fixed point stamp is the epoch shifted left by this, with the numeric modes in which the
    * expression is a fixed point in the low bits. The numeric mode belongs to one engine, the epoch
    * to all of them, so the mode is recorded in the stamp instead of moving the epoch whenever an
    * engine switches it.
    */
   private static final int STAMP_EPOCH_SHIFT = 2;
+
+  /** Nesting depth of the scopes of {@link #isConditionScope()}. */
+  private transient int fConditionDepth = 0;
 
   private static final long STAMP_SYMBOLIC_MODE = 1L;
 
@@ -1166,7 +1180,45 @@ public class EvalEngine implements Serializable {
    * and can respond accordingly.
    */
   public final static void incEpoch() {
-    SYSTEM_EPOCH.incrementAndGet();
+    final long epoch = SYSTEM_EPOCH.incrementAndGet();
+    HARD_EPOCH.accumulateAndGet(epoch, Math::max);
+  }
+
+  /**
+   * Move the global epoch for a new own value of a variable, and answer the new epoch, which the
+   * variable keeps as the time of its change. Unlike {@link #incEpoch()} this leaves the fixed
+   * points in which the variable does not occur valid.
+   * <p>
+   * Only for a variable whose value no condition and no pattern test has read: the value of such a
+   * variable can decide whether a rule applies to an expression which does not contain it, as
+   * <code>f[x_] := x /; flag</code> decides for <code>f[1]</code>.
+   *
+   * @return the epoch of the change
+   * @see org.matheclipse.core.expression.Symbol#assignValue(IExpr, boolean)
+   */
+  public final static long incValueEpoch() {
+    return SYSTEM_EPOCH.incrementAndGet();
+  }
+
+  /**
+   * <code>true</code> while a condition, a pattern test or a right-hand side with a condition is
+   * evaluated, i.e. code whose result decides whether an expression evaluates at all. A variable
+   * read in there gives up the cheap invalidation of {@link #incValueEpoch()} for good.
+   */
+  public final boolean isConditionScope() {
+    return fConditionDepth > 0;
+  }
+
+  /**
+   * Enter a scope in the sense of {@link #isConditionScope()}; pair with
+   * {@link #exitConditionScope()}.
+   */
+  public final void enterConditionScope() {
+    fConditionDepth++;
+  }
+
+  public final void exitConditionScope() {
+    fConditionDepth--;
   }
 
   /**
@@ -3317,12 +3369,50 @@ public class EvalEngine implements Serializable {
       return false;
     }
     if ((stamp & (fNumericMode ? STAMP_NUMERIC_MODE : STAMP_SYMBOLIC_MODE)) == 0L
-        || (stamp >>> STAMP_EPOCH_SHIFT) < SYSTEM_EPOCH.get() || fEvalLHSMode
-        || !Config.EVAL_EPOCH_CACHE) {
+        || fEvalLHSMode || !Config.EVAL_EPOCH_CACHE) {
       return false;
+    }
+    final long stampEpoch = stamp >>> STAMP_EPOCH_SHIFT;
+    final long epoch = SYSTEM_EPOCH.get();
+    if (stampEpoch < epoch) {
+      // Only new values of variables since the stamp? Then only an expression which contains one
+      // of them can evaluate differently. Reading a list of rules held in a variable after a loop
+      // counter or a Module local changed used to evaluate every rule again.
+      if (stampEpoch < HARD_EPOCH.get() || !valuesUnchangedSince(ast, stampEpoch)) {
+        return false;
+      }
+      ast.setEvalEpoch((epoch << STAMP_EPOCH_SHIFT)
+          | (stamp & (STAMP_NUMERIC_MODE | STAMP_SYMBOLIC_MODE)));
     }
     if (Config.EVAL_EPOCH_VALIDATE) {
       validateFixedPoint(ast, entry);
+    }
+    return true;
+  }
+
+  /**
+   * Does no variable in <code>ast</code> have a value newer than <code>epoch</code>? Held parts and
+   * pattern names are included, which can only make the answer <code>false</code> more often. An
+   * atom which is not a number, a string, a symbol or a pattern may hold expressions of its own and
+   * answers <code>false</code>.
+   *
+   * @see #incValueEpoch()
+   */
+  private static boolean valuesUnchangedSince(final IAST ast, final long epoch) {
+    final int size = ast.size();
+    for (int i = 0; i < size; i++) {
+      final IExpr x = i == 0 ? ast.head() : ast.getRule(i);
+      if (x instanceof IAST) {
+        if (!valuesUnchangedSince((IAST) x, epoch)) {
+          return false;
+        }
+      } else if (x instanceof ISymbol) {
+        if (((ISymbol) x).getValueEpoch() > epoch) {
+          return false;
+        }
+      } else if (!(x.isNumber() || x instanceof IStringX || x instanceof IPatternObject)) {
+        return false;
+      }
     }
     return true;
   }
@@ -4342,10 +4432,13 @@ public class EvalEngine implements Serializable {
     if (expr == S.False) {
       return false;
     }
+    fConditionDepth++;
     try {
       return evaluate(expr).isTrue();
     } catch (MathException rex) {
       return false;
+    } finally {
+      fConditionDepth--;
     }
   }
 
@@ -5392,7 +5485,7 @@ public class EvalEngine implements Serializable {
     FixedPrecisionApfloatHelper oldHelper = fApfloatHelper;
     try {
       fApfloatHelper = new FixedPrecisionApfloatHelper(precision + 1);
-      SYSTEM_EPOCH.incrementAndGet();
+      incEpoch();
       IASTMutable promoted = ast.copy();
       for (int i = 1; i < promoted.size(); i++) {
         IExpr arg = promoted.get(i);
@@ -5424,7 +5517,7 @@ public class EvalEngine implements Serializable {
       Errors.rethrowsInterruptException(rex);
     } finally {
       fApfloatHelper = oldHelper;
-      SYSTEM_EPOCH.incrementAndGet();
+      incEpoch();
     }
     return F.NIL;
   }
@@ -5655,7 +5748,7 @@ public class EvalEngine implements Serializable {
    */
   public void setAssumptions(IAssumptions assumptions) {
     this.fAssumptions = assumptions;
-    EvalEngine.SYSTEM_EPOCH.incrementAndGet();
+    EvalEngine.incEpoch();
   }
 
   public void setConstantCounter(int counter) {
@@ -5866,7 +5959,7 @@ public class EvalEngine implements Serializable {
     if (oldPrecision != getNumericPrecision()) {
       // setting the precision it already has changes no result; numeric evaluation does that on
       // every call
-      EvalEngine.SYSTEM_EPOCH.incrementAndGet();
+      EvalEngine.incEpoch();
     }
     return fApfloatHelper;
   }
@@ -6086,7 +6179,7 @@ public class EvalEngine implements Serializable {
    */
   public void setTogetherMode(boolean togetherMode) {
     fTogetherMode = togetherMode;
-    EvalEngine.SYSTEM_EPOCH.incrementAndGet();
+    EvalEngine.incEpoch();
 
   }
 

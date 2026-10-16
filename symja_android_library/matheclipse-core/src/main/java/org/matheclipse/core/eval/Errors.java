@@ -444,6 +444,7 @@ public class Errors {
       "norep", "Assignment on `2` for `1` not found.", //
       "norest", "Cannot take Rest of expression `1` with length zero.", //
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
+      "nosol", "Linear equation encountered that has no solution.", //
       "nostr", "`1` is not a string.", //
       "nosym", "`1` does not contain a symbol to attach a rule to.", //
       "notdata",

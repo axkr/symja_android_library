@@ -294,6 +294,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     // which separates the recursive evaluation from the local substitution.
     IExpr rhs = substituteRightHandSide(patternMap, F.CEmptySequence);
     engine.pushOptionsStack();
+    // whatever this reads decides whether the rule applies, see EvalEngine#isConditionScope()
+    engine.enterConditionScope();
     try {
       engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
       if (isTraceMode) {
@@ -318,6 +320,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       fReturnResult = e.getValue();
       matched = true;
     } finally {
+      engine.exitConditionScope();
       engine.popOptionsStack();
     }
     patternMap.setRHSEvaluated(matched);

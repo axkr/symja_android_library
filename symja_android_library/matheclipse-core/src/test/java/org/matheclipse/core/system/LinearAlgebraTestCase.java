@@ -96,6 +96,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "LinearSolve(\n" //
             + "{{1,2},\n" //
             + " {2,4}},{1,3},Modulus->5)");
+    // the message is LinearSolve::nosol, so a package can switch it off by that name
+    check("Off(LinearSolve::nosol); u=LinearSolve({{1,2},{2,4}},{1,3}, Modulus->5); "
+        + "On(LinearSolve::nosol); Head(u)", //
+        "LinearSolve");
+    check("Check(LinearSolve({{1,2},{2,4}},{1,3}, Modulus->5), failed, LinearSolve::nosol)", //
+        "failed");
 
     // a composite modulus is only supported as long as every pivot is invertible; a Howell form
     // would be needed otherwise

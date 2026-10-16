@@ -4136,8 +4136,8 @@ public final class LinearAlgebra {
       for (int i = 0; i < pivotColumns.length; i++) {
         if (pivotColumns[i] == cols) {
           // the pivot is in the right hand side column, so the system is inconsistent
-          return Errors.printMessage(S.LinearSolve,
-              "Linear equation encountered that has no solution.");
+          // Linear equation encountered that has no solution.
+          return Errors.printMessage(S.LinearSolve, "nosol", F.CEmptyList, engine);
         }
         solution[pivotColumns[i]] = augmented[i][cols];
       }

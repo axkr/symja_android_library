@@ -128,6 +128,19 @@ public class Symbol implements ISymbol, Serializable {
   /** The value associate with this symbol. */
   private transient IExpr fValue;
 
+  /**
+   * The epoch of the last change of {@link #fValue} which did not invalidate every fixed point, see
+   * {@link EvalEngine#incValueEpoch()}.
+   */
+  private transient long fValueEpoch = 0L;
+
+  /**
+   * Has a condition or a pattern test read (or changed) the value of this symbol? Then a new value
+   * may change whether a rule applies to an expression which does not contain the symbol, and every
+   * change of the value has to invalidate all fixed points.
+   */
+  private transient boolean fValueReadInCondition = false;
+
   /** The pattern matching &quot;down value&quot; rules associated with this symbol. */
   protected transient RulesData fRulesData;
 
@@ -286,6 +299,7 @@ public class Symbol implements ISymbol, Serializable {
     // changes no definition, and moving the epoch here made every read of a variable evaluate its
     // whole value again
     fEvalFlags |= DIRTY_FLAG_ASSIGNED_VALUE;
+    markReadInCondition();
     return fValue;
   }
 
@@ -298,15 +312,17 @@ public class Symbol implements ISymbol, Serializable {
     // }
     // }
     fValue = value;
-    EvalEngine.incEpoch();
     // whoever assigns a value may keep it or have it from another variable, so it is not this
     // symbol's alone, see #reassignSymbolValue(Function, ISymbol, EvalEngine)
     fEvalFlags |= DIRTY_FLAG_ASSIGNED_VALUE;
+    // the flag goes with the value, so valueChanged() covers it; addEvalFlags() would invalidate
+    // every fixed point a second time
     if (setDelayed) {
-      addEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
+      fEvalFlags |= SETDELAYED_FLAG_ASSIGNED_VALUE;
     } else {
       clearEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
     }
+    valueChanged();
   }
 
   /** {@inheritDoc} */
@@ -320,6 +336,9 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData != null) {
       fRulesData.clear();
     }
+    // the rules are gone: that is a change for every expression, not only for those with this
+    // symbol, which is all clearValue() records
+    EvalEngine.incEpoch();
   }
 
   /** {@inheritDoc} */
@@ -332,6 +351,8 @@ public class Symbol implements ISymbol, Serializable {
     fAttributes = NOATTRIBUTE;
     clearValue(null);
     fRulesData = null;
+    // attributes and rules are gone, see clear(EvalEngine)
+    EvalEngine.incEpoch();
   }
 
   /** {@inheritDoc} */
@@ -355,13 +376,45 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public void clearValue(IExpr resetValue) {
     fValue = resetValue;
-    EvalEngine.incEpoch();
+    valueChanged();
     if (resetValue == null) {
       clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
     } else {
       // a value which is put back, as Block does at its end, was kept somewhere in the meantime
       fEvalFlags |= DIRTY_FLAG_ASSIGNED_VALUE;
     }
+  }
+
+  /**
+   * Record a new value: invalidate every fixed point if a condition may depend on this symbol or if
+   * it is not an ordinary variable, otherwise only the fixed points in which it occurs.
+   *
+   * @see EvalEngine#incValueEpoch()
+   */
+  private void valueChanged() {
+    markReadInCondition();
+    if (fValueReadInCondition || getClass() != Symbol.class) {
+      EvalEngine.incEpoch();
+    } else {
+      fValueEpoch = EvalEngine.incValueEpoch();
+    }
+  }
+
+  /**
+   * A value read or written while a condition is evaluated makes this symbol one whose changes
+   * invalidate every fixed point, see {@link #fValueReadInCondition}.
+   */
+  private void markReadInCondition() {
+    if (!fValueReadInCondition && getClass() == Symbol.class
+        && EvalEngine.get().isConditionScope()) {
+      fValueReadInCondition = true;
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public long getValueEpoch() {
+    return fValueEpoch;
   }
 
   /**
@@ -610,6 +663,9 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
+    if (engine.isConditionScope()) {
+      fValueReadInCondition = true;
+    }
     // one read of the value, not two: symbols are shared between the threads that evaluate them,
     // and a Clear[] between hasAssignedSymbolValue() and assignedValue() used to reach
     // evalAssignedValue() as a null
@@ -716,6 +772,7 @@ public class Symbol implements ISymbol, Serializable {
   public final boolean hasAssignedSymbolValue() {
     // some generated rule classes assign own values, e.g. RGBColorRules defines `Black`, `Red`, ...
     ensureRulesLoaded();
+    markReadInCondition();
     return fValue != null;
   }
 

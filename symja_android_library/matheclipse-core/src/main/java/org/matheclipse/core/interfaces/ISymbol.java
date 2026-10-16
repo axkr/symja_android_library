@@ -811,6 +811,16 @@ public interface ISymbol extends IExpr {
   public boolean hasAssignedSymbolValue();
 
   /**
+   * The epoch at which the own value of this symbol last changed without invalidating every fixed
+   * point of the evaluation loop, or <code>0</code>.
+   *
+   * @see org.matheclipse.core.eval.EvalEngine#incValueEpoch()
+   */
+  default long getValueEpoch() {
+    return 0L;
+  }
+
+  /**
    * Does this symbols attribute set contains the <code>Flat</code> attribute?
    *
    * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code>

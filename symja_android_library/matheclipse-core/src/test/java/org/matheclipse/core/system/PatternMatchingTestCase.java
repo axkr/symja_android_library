@@ -365,6 +365,26 @@ public class PatternMatchingTestCase {
   }
 
 
+  /**
+   * A sequence pattern nested in another head does not make a rule as general as a blank: it still
+   * matches one argument with that head, whichever of the two definitions came first.
+   */
+  @Test
+  public void testNestedSequencePatternPriority() {
+    check("f[g[n_,i___]] := {n,i}; f[a_] := fb; {f[g[1,2,3]], f[g[1]], f[h[1]]}", //
+        "{{1,2,3},{1},fb}");
+    check("k[a_] := fb; k[g[n_,i___]] := {n,i}; {k[g[1,2,3]], k[h[1]]}", //
+        "{{1,2,3},fb}");
+    check("r[0] := True; r[x_Plus] := And @@ (r /@ List @@ x); r[g[i___]] := EvenQ[i]; "
+        + "r[_] := False; {r[g[2]], r[g[2]+g[4]], r[g[3]], r[1]}", //
+        "{True,True,False,False}");
+    // a sequence standing for arguments of the defined function still goes last
+    check("q[x___] := many; q[x_] := one; {q[1], q[1,2]}", //
+        "{one,many}");
+    check("q2[x_][y___] := many; q2[x_][y_] := one; {q2[1][2], q2[1][2,3]}", //
+        "{one,many}");
+  }
+
   @Test
   public void testPatternFlatOneIdentity() {
     check("SetAttributes[r, Flat]", //

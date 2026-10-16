@@ -627,7 +627,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       fPatternMap = determinePatterns(priority);
       this.fLHSPriority = priority[0];
       if (this.fLhsPatternExpr.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)
-          && containsPatternSequence(this.fLhsPatternExpr)) {
+          && matchesArgumentRun(this.fLhsPatternExpr)) {
         this.fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
       }
       if (patternExpr.isCondition()) {
@@ -641,29 +641,63 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    *
    * <p>
    * A rule that does gives up its computed priority and is tried after every rule with a fixed
-   * shape, because it can swallow anything. {@link OptionsPattern} carries the same
-   * "pattern sequence" flag - it stands for a trailing run of options - but it says nothing about
-   * how specific the rest of the rule is: <code>f[x_, OptionsPattern[]]</code> has to keep its
-   * priority, or it would be tried after <code>f[x__, opts:OptionsPattern[]]</code> and a
-   * definition written as a pair of those two would never reach its narrower half.
+   * shape, because it can swallow anything. Only a sequence pattern standing for arguments of the
+   * defined function (or of a curried head like <code>f[x___][y_]</code>) counts. One nested inside
+   * another head, as in <code>f[g[n_, i___]]</code>, still matches exactly one argument, with head
+   * <code>g</code>: that rule is narrower than <code>f[a_]</code> and has to be tried first.
+   *
+   * <p>
+   * {@link OptionsPattern} carries the same "pattern sequence" flag - it stands for a trailing run
+   * of options - but it says nothing about how specific the rest of the rule is:
+   * <code>f[x_, OptionsPattern[]]</code> has to keep its priority, or it would be tried after
+   * <code>f[x__, opts:OptionsPattern[]]</code> and a definition written as a pair of those two
+   * would never reach its narrower half.
    *
    * @param lhsPatternExpr the left-hand side of the rule
-   * @return <code>true</code> if a <code>__</code> or <code>___</code> style pattern occurs in it
+   * @return <code>true</code> if a <code>__</code> or <code>___</code> style pattern stands for
+   *         arguments of the left-hand side
    */
-  private static boolean containsPatternSequence(IExpr lhsPatternExpr) {
-    if (lhsPatternExpr instanceof IPatternSequence) {
-      return !(lhsPatternExpr instanceof OptionsPattern);
+  private static boolean matchesArgumentRun(IExpr lhsPatternExpr) {
+    if (lhsPatternExpr.isCondition() || lhsPatternExpr.isAST(S.HoldPattern, 2)) {
+      return matchesArgumentRun(((IAST) lhsPatternExpr).arg1());
     }
     if (lhsPatternExpr instanceof PatternNested) {
-      return containsPatternSequence(((PatternNested) lhsPatternExpr).getPatternExpr());
+      return matchesArgumentRun(((PatternNested) lhsPatternExpr).getPatternExpr());
+    }
+    if (isArgumentRun(lhsPatternExpr)) {
+      return true;
     }
     if (lhsPatternExpr.isASTOrAssociation()) {
       IAST ast = (IAST) lhsPatternExpr;
-      for (int i = 0; i < ast.size(); i++) {
-        if (containsPatternSequence(ast.get(i))) {
+      if (matchesArgumentRun(ast.head())) {
+        return true;
+      }
+      for (int i = 1; i < ast.size(); i++) {
+        if (isArgumentRun(ast.get(i))) {
           return true;
         }
       }
+    }
+    return false;
+  }
+
+  /**
+   * Is <code>argument</code> a sequence pattern, possibly named, tested, conditioned, optional or
+   * one of several alternatives?
+   */
+  private static boolean isArgumentRun(IExpr argument) {
+    if (argument instanceof IPatternSequence) {
+      return !(argument instanceof OptionsPattern);
+    }
+    if (argument instanceof PatternNested) {
+      return isArgumentRun(((PatternNested) argument).getPatternExpr());
+    }
+    if (argument.isAST(S.PatternTest, 3) || argument.isCondition()
+        || argument.isAST(S.Optional, 2) || argument.isAST(S.Optional, 3)) {
+      return isArgumentRun(((IAST) argument).arg1());
+    }
+    if (argument.isAST(S.Alternatives)) {
+      return ((IAST) argument).exists(PatternMatcher::isArgumentRun);
     }
     return false;
   }
@@ -2641,7 +2675,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
     this.fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority, null);
     fLHSPriority = priority[0];
-    if (fLhsPatternExpr.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)) {
+    if (fLhsPatternExpr.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)
+        && matchesArgumentRun(fLhsPatternExpr)) {
       fLHSPriority = IPatternMap.DEFAULT_RULE_PRIORITY;
     }
     if (fLhsPatternExpr.isCondition()) {
