@@ -26,7 +26,7 @@ public class EllipticFunctionsJS extends JS {
   private EllipticFunctionsJS() {}
 
   public static Complex jacobiTheta(int n, double x, double q) {
-    return jacobiTheta(n, x, q, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+    return jacobiTheta(n, x, q, SERIES_EPSILON);
   }
 
   public static Complex jacobiTheta(int n, double x, double q, double tolerance) {
@@ -72,11 +72,15 @@ public class EllipticFunctionsJS extends JS {
           return jacobiTheta(n, new Complex(x), new Complex(q));
         }
 
+        if (x == 0.0) {
+          return Complex.ZERO;
+        }
         double s = 0;
         double p = 1;
         int i = 0;
 
-        while (Math.abs(p) > tolerance) {
+        // the size of a term is bounded by q^(i^2+i): a sine near 0 does not end the sum
+        while (Math.pow(Math.abs(q), (i * i + i)) > tolerance * Math.abs(s) || i == 0) {
           p = Math.pow(-1, i) * Math.pow(q, (i * i + i)) * Math.sin((2 * i + 1) * x);
           s += p;
           if (i++ > iterationLimit && iterationLimit > 0) {
@@ -93,7 +97,8 @@ public class EllipticFunctionsJS extends JS {
         p = 1;
         i = 0;
 
-        while (Math.abs(p) > tolerance) {
+        // the size of a term is bounded by q^(i^2+i): a cosine near 0 does not end the sum
+        while (Math.pow(Math.abs(q), (i * i + i)) > tolerance * Math.abs(s) || i == 0) {
           p = Math.pow(q, (i * i + i)) * Math.cos((2 * i + 1) * x);
           s += p;
           if (i++ > iterationLimit && iterationLimit > 0) {
@@ -105,7 +110,8 @@ public class EllipticFunctionsJS extends JS {
         s = 0;
         p = 1;
         i = 1;
-        while (Math.abs(p) > tolerance) {
+        // the size of a term is bounded by q^(i^2), the value is 1 + 2*s
+        while (Math.pow(Math.abs(q), (i * i)) > tolerance * Math.abs(1 + 2 * s)) {
           p = Math.pow(q, (i * i)) * Math.cos(2 * i * x);
           s += p;
           if (i++ > iterationLimit && iterationLimit > 0) {
@@ -118,7 +124,8 @@ public class EllipticFunctionsJS extends JS {
         p = 1;
         i = 1;
 
-        while (Math.abs(p) > tolerance) {
+        // the size of a term is bounded by q^(i^2), the value is 1 + 2*s
+        while (Math.pow(Math.abs(q), (i * i)) > tolerance * Math.abs(1 + 2 * s)) {
           p = Math.pow(-q, (i * i)) * Math.cos(2 * i * x);
           s += p;
           if (i++ > iterationLimit && iterationLimit > 0) {
@@ -132,7 +139,7 @@ public class EllipticFunctionsJS extends JS {
   }
 
   public static Complex jacobiTheta(int n, Complex x, Complex q) {
-    return jacobiTheta(n, x, q, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+    return jacobiTheta(n, x, q, SERIES_EPSILON);
   }
 
   public static Complex jacobiTheta(int n, Complex x, Complex q, double tolerance) {
@@ -174,17 +181,17 @@ public class EllipticFunctionsJS extends JS {
       // factors can become huge, so chop spurious parts first
       switch (n) {
         case 1:
-          return qFactor.multiply(eFactor).multiply(F.chopComplex(jacobiTheta(n, x, q), tolerance))
+          return qFactor.multiply(eFactor).multiply(F.chopComplex(jacobiTheta(n, x, q), Config.SPECIAL_FUNCTIONS_TOLERANCE))
               .multiply(Math.pow((-1), (p + pt)));
 
         case 2:
-          return qFactor.multiply(eFactor).multiply(F.chopComplex(jacobiTheta(n, x, q), tolerance))
+          return qFactor.multiply(eFactor).multiply(F.chopComplex(jacobiTheta(n, x, q), Config.SPECIAL_FUNCTIONS_TOLERANCE))
               .multiply(Math.pow((-1), p));
 
         case 3:
-          return qFactor.multiply(eFactor).multiply(F.chopComplex(jacobiTheta(n, x, q), tolerance));
+          return qFactor.multiply(eFactor).multiply(F.chopComplex(jacobiTheta(n, x, q), Config.SPECIAL_FUNCTIONS_TOLERANCE));
         case 4:
-          return qFactor.multiply(eFactor).multiply(F.chopComplex(jacobiTheta(n, x, q), tolerance))
+          return qFactor.multiply(eFactor).multiply(F.chopComplex(jacobiTheta(n, x, q), Config.SPECIAL_FUNCTIONS_TOLERANCE))
               .multiply(Math.pow((-1), pt));
       }
     }
@@ -194,7 +201,10 @@ public class EllipticFunctionsJS extends JS {
     int i = 0;
     switch (n) {
       case 1:
-        while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
+        if (x.isZero()) {
+          return Complex.ZERO;
+        }
+        while (p.norm() > tolerance * s.norm() || (s.isZero() && !p.isZero())) {
           p = q.pow(i * i + i).multiply(x.multiply(2 * i + 1).sin()).multiply(Math.pow(-1, i));
           s = s.add(p);
           if (i++ > iterationLimit && iterationLimit > 0) {
@@ -204,7 +214,7 @@ public class EllipticFunctionsJS extends JS {
 
         return q.pow(0.25).multiply(s).multiply(2);
       case 2:
-        while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
+        while (p.norm() > tolerance * s.norm() || (s.isZero() && !p.isZero())) {
           p = q.pow(i * i + i).multiply(x.multiply(2 * i + 1).cos());
           s = s.add(p);
           if (i++ > iterationLimit && iterationLimit > 0) {
@@ -214,7 +224,7 @@ public class EllipticFunctionsJS extends JS {
         return q.pow(0.25).multiply(s).multiply(2);
       case 3:
         i = 1;
-        while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
+        while (p.norm() > tolerance * s.multiply(2.0).add(1.0).norm()) {
           p = q.pow(i * i).multiply(x.multiply(2 * i).cos());
           s = s.add(p);
           if (i++ > iterationLimit && iterationLimit > 0) {
@@ -224,7 +234,7 @@ public class EllipticFunctionsJS extends JS {
         return s.multiply(2.0).add(1.0);
       case 4:
         i = 1;
-        while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
+        while (p.norm() > tolerance * s.multiply(2.0).add(1.0).norm()) {
           p = q.negate().pow(i * i).multiply(x.multiply(2 * i).cos());
           s = s.add(p);
           if (i++ > iterationLimit && iterationLimit > 0) {

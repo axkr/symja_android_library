@@ -509,6 +509,13 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     // machine precision for larger arguments; calculated with mpmath
     check("Abs(ExpIntegralE(1., 30.)/3.0215520106888125448*^-15 - 1) < 10^-13", //
         "True");
+    // E1 of a real machine argument from the real kernel, at both sides of its switch at 1
+    check("Abs(ExpIntegralE(1., 0.37)/N(ExpIntegralE(1, 37/100), 30) - 1) < 10^-14", //
+        "True");
+    check("Abs(ExpIntegralE(1., 7.25)/N(ExpIntegralE(1, 29/4), 30) - 1) < 10^-14", //
+        "True");
+    check("Head(ExpIntegralE(1., 7.25))", //
+        "Real");
     check("Abs(ExpIntegralE(10., 60.)/1.2534274470396790262*^-28 - 1) < 10^-13", //
         "True");
     // check("N(Table(ExpIntegralE(x, 2/3), {x,-4, 4, 1/4}),50)", //

@@ -952,15 +952,17 @@ public class SeriesFunctions {
     /**
      * <code>WhittakerM(k, m, u)</code> written as
      * <code>E^(-u/2)*u^(m+1/2)*Hypergeometric1F1(1/2+m-k, 1+2*m, u)</code>; at <code>Infinity</code>
-     * only if the hypergeometric function is a polynomial.
+     * only if the hypergeometric function is a polynomial. <code>WhittakerW(k, m, u)</code> written
+     * as <code>E^(-u/2)*u^(m+1/2)*HypergeometricU(1/2+m-k, 1+2*m, u)</code>, at <code>0</code> and
+     * at <code>Infinity</code> only if <code>HypergeometricU</code> is a polynomial.
      *
-     * @return {@link F#NIL} if a WhittakerM can't be rewritten
+     * @return {@link F#NIL} if a WhittakerM or WhittakerW can't be rewritten
      */
     private static IExpr whittakerMAsHypergeometric(IExpr expr, IExpr x, boolean atInfinity,
         EvalEngine engine) {
       final boolean[] failed = new boolean[] {false};
       IExpr rewritten = F.subst(expr, y -> {
-        if (y.isAST(S.WhittakerM, 4) && !y.isFree(x)) {
+        if (isWhittaker(y, x)) {
           IExpr k = y.first();
           IExpr m = y.second();
           IExpr u = ((IAST) y).arg3();
@@ -968,18 +970,68 @@ public class SeriesFunctions {
             failed[0] = true;
             return F.NIL;
           }
+          final boolean whittakerW = y.isAST(S.WhittakerW, 4);
           IExpr a = engine.evaluate(F.Plus(F.C1D2, m, F.Negate(k)));
-          if (!m.isRational() || (atInfinity && !(a.isInteger() && !a.isPositive()))) {
-            // a symbolic m gives the power x^(m+1/2), whose exponent the expansion needs to know
+          boolean polynomial = a.isInteger() && !a.isPositive();
+          if (!m.isRational() || ((atInfinity || whittakerW) && !polynomial)) {
+            // a symbolic m gives the power x^(m+1/2), whose exponent the expansion needs to know;
+            // HypergeometricU which is no polynomial has a logarithm or a power x^(-2*m) at 0
             failed[0] = true;
             return F.NIL;
           }
+          IExpr b = F.Plus(F.C1, F.Times(F.C2, m));
           return F.Times(F.Exp(F.Times(F.CN1D2, u)), F.Power(u, F.Plus(m, F.C1D2)),
-              F.Hypergeometric1F1(a, F.Plus(F.C1, F.Times(F.C2, m)), u));
+              whittakerW ? F.HypergeometricU(a, b, u) : F.Hypergeometric1F1(a, b, u));
         }
         return F.NIL;
       });
       return failed[0] || rewritten.equals(expr) ? F.NIL : engine.evaluate(rewritten);
+    }
+
+    /**
+     * The asymptotic expansion
+     * <code>WhittakerW(k, m, x) ~ E^(-x/2)*x^k*Sum(Pochhammer(1/2+m-k, j)*Pochhammer(1/2-m-k, j)/j!*(-x)^(-j))</code>
+     * at <code>Infinity</code>, with enough terms for the order <code>n</code>.
+     *
+     * @return {@link F#NIL} if <code>function</code> is not <code>WhittakerW(k, m, x)</code> with a
+     *         rational <code>k</code> and an <code>m</code> free of <code>x</code>
+     */
+    private static IExpr whittakerWAsymptotic(IExpr function, IExpr x, int n, EvalEngine engine) {
+      if (!function.isAST(S.WhittakerW, 4) || !((IAST) function).arg3().equals(x)) {
+        return F.NIL;
+      }
+      IExpr k = function.first();
+      IExpr m = function.second();
+      if (!k.isRational() || !m.isFree(x)) {
+        return F.NIL;
+      }
+      // the terms x^(k-j) down to the order n: a positive k needs about k more terms
+      double kValue = ((IRational) k).doubleValue();
+      int terms = n + 2 + (kValue > 0 ? (int) Math.ceil(kValue) : 0);
+      if (terms > MAX_ASYMPTOTIC_TERMS) {
+        return F.NIL;
+      }
+      IExpr a1 = engine.evaluate(F.Plus(F.C1D2, m, F.Negate(k)));
+      IExpr a2 = engine.evaluate(F.Plus(F.C1D2, F.Negate(m), F.Negate(k)));
+      IASTAppendable sum = F.PlusAlloc(terms + 1);
+      // c(j) = c(j-1)*(a1+j-1)*(a2+j-1)/(-j), c(0) = 1
+      IExpr coefficient = F.C1;
+      sum.append(F.C1);
+      for (int j = 1; j <= terms; j++) {
+        IInteger jMinus1 = F.ZZ(j - 1);
+        coefficient = engine.evaluate(F.Times(coefficient, F.Plus(a1, jMinus1), F.Plus(a2, jMinus1),
+            F.QQ(-1, j)));
+        sum.append(F.Times(coefficient, F.Power(x, F.ZZ(-j))));
+      }
+      return engine.evaluate(F.Times(F.Exp(F.Times(F.CN1D2, x)), F.Power(x, k), sum));
+    }
+
+    /** The largest number of terms {@link #whittakerWAsymptotic} writes out. */
+    private static final int MAX_ASYMPTOTIC_TERMS = 100;
+
+    /** Test for <code>WhittakerM(k, m, u)</code> or <code>WhittakerW(k, m, u)</code> with x in u. */
+    private static boolean isWhittaker(IExpr y, IExpr x) {
+      return (y.isAST(S.WhittakerM, 4) || y.isAST(S.WhittakerW, 4)) && !y.isFree(x);
     }
 
     private static IExpr asymptoticAtInfinity(IExpr function, IExpr x, int n, EvalEngine engine) {
@@ -1259,8 +1311,11 @@ public class SeriesFunctions {
         }
 
         if (!leadingTermMode && (x0.isZero() || x0.isInfinity())
-            && currentExpr.has(y -> y.isAST(S.WhittakerM, 4) && !y.isFree(x), true)) {
+            && currentExpr.has(y -> isWhittaker(y, x), true)) {
           IExpr hypergeometric = whittakerMAsHypergeometric(currentExpr, x, x0.isInfinity(), engine);
+          if (hypergeometric.isNIL() && x0.isInfinity()) {
+            hypergeometric = whittakerWAsymptotic(currentExpr, x, n, engine);
+          }
           if (hypergeometric.isPresent()) {
             // expanded below like any other function
             currentExpr = hypergeometric;
@@ -1715,9 +1770,9 @@ public class SeriesFunctions {
           return F.NIL;
         }
         if (ast.arg2().isList3() && ((IAST) ast.arg2()).arg3().isInteger()
-            && ast.arg1().has(y -> y.isAST(S.WhittakerM, 4)
-                && !y.isFree(((IAST) ast.arg2()).arg1()), true)) {
-          // the coefficient is read off the expansion, which goes through Hypergeometric1F1
+            && ast.arg1().has(y -> Series.isWhittaker(y, ((IAST) ast.arg2()).arg1()), true)) {
+          // the coefficient is read off the expansion, which goes through Hypergeometric1F1 for
+          // WhittakerM and HypergeometricU (or the asymptotic sum at Infinity) for WhittakerW
           IAST spec = (IAST) ast.arg2();
           IExpr series = engine.evaluate(F.Series(ast.arg1(), spec));
           if (series instanceof ASTSeriesData) {

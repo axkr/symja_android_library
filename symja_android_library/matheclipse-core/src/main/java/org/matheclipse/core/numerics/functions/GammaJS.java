@@ -306,7 +306,8 @@ public class GammaJS extends JS {
   }
 
   public static Complex gamma(Complex x, double y, Complex z) {
-    if (!F.isZero(y, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    // a small y is not 0: Gamma(a, 0, y) is about y^a/a, which is not small for a small a
+    if (y != 0.0) {
       return gamma(x, 0.0, z).subtract(gamma(x, 0.0, new Complex(y)));
     }
 
@@ -332,7 +333,7 @@ public class GammaJS extends JS {
       double pLast = p;
       int i = 1;
 
-      while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+      while (!isNegligible(p, s)) {
         p *= i / x;
         if (Math.abs(p) > Math.abs(pLast)) {
           break;
@@ -349,7 +350,9 @@ public class GammaJS extends JS {
     double p = 1;
     int i = 1;
 
-    while (Math.abs(p / i) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    // the sum is relative to the final value, which includes EulerGamma + Log(x)
+    final double offset = INum.EULER_GAMMA + Math.log(Math.abs(x));
+    while (!isNegligible(p / i, Math.abs(s) + Math.abs(offset)) || Math.abs(x / i) >= 0.5) {
       p *= x / i;
       s += p / i;
       i++;
@@ -378,8 +381,7 @@ public class GammaJS extends JS {
       int i = 1;
 
       Complex xInverse = x.reciprocal();
-      while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-          || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+      while (!isNegligible(p, s)) {
         p = p.multiply(i).multiply(xInverse);
         if (cabs(p) > cabs(pLast)) {
           break;
@@ -401,8 +403,10 @@ public class GammaJS extends JS {
     Complex s = Complex.ZERO;
     Complex p = Complex.ONE;
     int i = 1;
-    while (Math.abs(p.getReal() / i) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || Math.abs(p.getImaginary() / i) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    // the sum is relative to the final value, which includes EulerGamma + Log(x)
+    final double offset = new Complex(INum.EULER_GAMMA).add(x.log()).norm();
+    while (!isNegligible(p.divide(i), new Complex(s.norm() + offset))
+        || x.norm() / i >= 0.5) {
       p = p.multiply(x).divide(i);
       s = s.add(p.divide(i));
       i++;
@@ -652,14 +656,16 @@ public class GammaJS extends JS {
     }
 
     final Complex nSubtract1 = n.subtract(1.0);
-    if (Complex.equals(x, Complex.ZERO, Config.SPECIAL_FUNCTIONS_TOLERANCE) && n.getReal() > 1.0) {
+    // E_n(0) == 1/(n-1); next to 0 the value differs by about x/(n-2)
+    if (x.isZero() && n.getReal() > 1.0) {
       return nSubtract1.reciprocal();
     }
 
     Complex p = pow(x, nSubtract1);
     // real on negative real axis for integer powers
-    if (n.isMathematicalInteger() && x.getReal() < 0) {
-      p = new Complex(p.getReal(), chop(p.getImaginary()));
+    if (n.isMathematicalInteger() && x.getReal() < 0 && x.getImaginary() == 0.0) {
+      // an integer power of a real number: the imaginary part is rounding noise of any size
+      p = new Complex(p.getReal(), 0.0);
     }
     return p.multiply(gamma(Complex.ONE.subtract(n), x));
   }

@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.UnaryOperator;
@@ -1320,7 +1321,7 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
-      return valueOf(h().hypergeometricU(fApcomplex,
+      return valueOf(HypergeometricUWorkaround.hypergeometricU(h(), fApcomplex,
           ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
     }
     return IComplexNum.super.hypergeometricU(arg2, arg3);

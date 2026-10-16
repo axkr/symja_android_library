@@ -381,9 +381,14 @@ public class BesselJS extends JS {
       Complex p = Complex.ONE;
       int i = 1;
 
-      while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE //
-          || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-        p = mul(1.0 / (i * 8.0), p, plusI, sub(mul(4.0, n, n), Math.pow(2 * i - 1, 2)), inv(x));
+      // an asymptotic series: up to the term below the rounding level of the sum, or the smallest
+      while (!isNegligible(p, s) && !p.isZero()) {
+        Complex next =
+            mul(1.0 / (i * 8.0), p, plusI, sub(mul(4.0, n, n), Math.pow(2 * i - 1, 2)), inv(x));
+        if (next.norm() > p.norm()) {
+          break;
+        }
+        p = next;
         s = add(s, p);
         i++;
       }
@@ -427,9 +432,14 @@ public class BesselJS extends JS {
       Complex p = Complex.ONE;
       int i = 1;
 
-      while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE //
-          || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-        p = mul(1.0 / (i * 8.0), p, minusI, sub(mul(4.0, n, n), Math.pow(2 * i - 1, 2)), inv(x));
+      // an asymptotic series: up to the term below the rounding level of the sum, or the smallest
+      while (!isNegligible(p, s) && !p.isZero()) {
+        Complex next =
+            mul(1.0 / (i * 8.0), p, minusI, sub(mul(4.0, n, n), Math.pow(2 * i - 1, 2)), inv(x));
+        if (next.norm() > p.norm()) {
+          break;
+        }
+        p = next;
         s = add(s, p);
         i++;
       }

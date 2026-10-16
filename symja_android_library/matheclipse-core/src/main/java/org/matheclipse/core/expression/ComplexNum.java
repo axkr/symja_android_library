@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -1407,9 +1408,39 @@ public class ComplexNum implements IComplexNum {
     return IComplexNum.super.hypergeometric0F1Regularized(arg2);
   }
 
+  /** The complex double as an arbitrary precision number with all its binary digits. */
+  private static Apcomplex exactApcomplex(Complex c, long digits) {
+    return new Apcomplex(Num.exactApfloat(c.getReal(), digits),
+        Num.exactApfloat(c.getImaginary(), digits));
+  }
+
   @Override
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
+      Complex b = arg2.evalfc();
+      Complex z = arg3.evalfc();
+      // the double kernel returns null where it can't reach its accuracy
+      Complex series = org.matheclipse.core.numerics.functions.KummerM.hypergeometric1F1(fComplex,
+          b, z);
+      if (series != null) {
+        return F.complexNum(series);
+      }
+      if (z.norm() <= Num.MAX_ARBITRARY_PRECISION_1F1 && b.isFinite()) {
+        // the series cancels about E^|z|: as many more digits
+        long digits = 20 + (long) (z.norm() / Math.log(10.0));
+        try {
+          final Complex a = fComplex;
+          Apcomplex exact = Num.agreeingEvaluation(d -> new FixedPrecisionApfloatHelper(d)
+              .hypergeometric1F1(exactApcomplex(a, d), exactApcomplex(b, d), exactApcomplex(z, d)),
+              digits);
+          if (exact != null) {
+            return F.complexNum(exact.real().doubleValue(), exact.imag().doubleValue());
+          }
+        } catch (ArithmeticException | ApfloatRuntimeException e) {
+          Errors.rethrowsInterruptException(e);
+          // the routines below
+        }
+      }
       Complex guarded = HypergeometricJS.guardedSeries(new Complex[] {fComplex},
           new Complex[] {arg2.evalfc()}, arg3.evalfc());
       if (guarded != null) {
@@ -1483,8 +1514,9 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
-      Apcomplex hypergeometricU = EvalEngine.getApfloatDouble().hypergeometricU(apcomplexValue(),
-          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
+      Apcomplex hypergeometricU = HypergeometricUWorkaround.hypergeometricU(
+          EvalEngine.getApfloatDouble(), apcomplexValue(), ((INumber) arg2).apcomplexValue(),
+          ((INumber) arg3).apcomplexValue());
       return F.complexNum(hypergeometricU.real().doubleValue(),
           hypergeometricU.imag().doubleValue());
     }

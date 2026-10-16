@@ -31,8 +31,13 @@ public class HypergeometricJS extends JS {
     Complex s = Complex.ONE;
     Complex p = Complex.ONE;
     int i = 0;
-    while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    // a convergent series is summed until its terms no longer change the sum and decrease; a
+    // divergent (asymptotic) one, more upper than lower parameters plus one, up to its smallest term
+    final boolean divergent = A.length > B.length + 1;
+    double previous = Double.POSITIVE_INFINITY;
+    while (!p.isZero() && (!isNegligible(p, s) || p.norm() >= previous)) {
+      previous = p.norm();
+      Complex last = p;
       for (int j = 0; j < A.length; j++) {
         p = p.multiply(A[j]);
         A[j] = A[j].add(1.0);
@@ -44,6 +49,9 @@ public class HypergeometricJS extends JS {
       }
 
       p = p.multiply(x).divide(++i);
+      if (divergent && p.norm() > last.norm()) {
+        break;
+      }
       s = s.add(p);
 
       if (i > 500) {
@@ -127,8 +135,10 @@ public class HypergeometricJS extends JS {
     double p = 1.0;
     long i = 1;
     long iterationLimit = EvalEngine.get().getIterationLimit();
-    while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-      p *= x / a / i;
+    double ratio = Double.POSITIVE_INFINITY;
+    while (p != 0.0 && (!isNegligible(p, s) || Math.abs(ratio) >= 0.5)) {
+      ratio = x / a / i;
+      p *= ratio;
       s += p;
       a++;
       if (i++ > iterationLimit && iterationLimit > 0) {
@@ -174,8 +184,9 @@ public class HypergeometricJS extends JS {
     Complex p = Complex.ONE;
     long i = 1;
     long iterationLimit = EvalEngine.get().getIterationLimit();
-    while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    double previous = Double.POSITIVE_INFINITY;
+    while (!p.isZero() && (!isNegligible(p, s) || p.norm() >= previous)) {
+      previous = p.norm();
       p = p.multiply(x).multiply(a.reciprocal()).divide(i);
       s = s.add(p);
       a = a.add(1);
@@ -192,7 +203,8 @@ public class HypergeometricJS extends JS {
   // }
 
   public static Complex hypergeometric1F1(final Complex a, final Complex b, final Complex x) {
-    if (F.isFuzzyEquals(a, b, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    // only for equal parameters: a b which differs by less than a tolerance is no special case
+    if (a.equals(b)) {
       return exp(x);
     }
     final double useAsymptotic = 30;
@@ -243,8 +255,9 @@ public class HypergeometricJS extends JS {
     long iterationLimit = EvalEngine.get().getIterationLimit();
     Complex a1 = a;
     Complex b1 = b;
-    while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-        || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+    double previous = Double.POSITIVE_INFINITY;
+    while (!p.isZero() && (!isNegligible(p, s) || p.norm() >= previous)) {
+      previous = p.norm();
       p = p.multiply(x).multiply(a1).multiply(b1.reciprocal()).divide(i);
       s = s.add(p);
       a1 = a1.add(1.0);
@@ -262,7 +275,8 @@ public class HypergeometricJS extends JS {
   // }
 
   public static double hypergeometric1F1(double a, double b, double x) {
-    if (F.isFuzzyEquals(a, b, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    // only for equal parameters: a b which differs by less than a tolerance is no special case
+    if (a == b) {
       return Math.exp(x);
     }
     final double useAsymptotic = 30;
@@ -294,8 +308,12 @@ public class HypergeometricJS extends JS {
     long i = 1;
 
     long iterationLimit = EvalEngine.get().getIterationLimit();
-    while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
-      p *= x * a / b / i;
+    // the terms are summed until they are below the rounding level of the sum and decrease: an
+    // absolute bound left a truncation error of its size in a small sum
+    double ratio = Double.POSITIVE_INFINITY;
+    while (p != 0.0 && (Math.abs(p) > 0x1.0p-54 * Math.abs(s) || Math.abs(ratio) >= 0.5)) {
+      ratio = x * a / b / i;
+      p *= ratio;
       s += p;
       a++;
       b++;
@@ -308,7 +326,7 @@ public class HypergeometricJS extends JS {
   }
 
   public static Complex hypergeometric2F0(Complex a, Complex b, Complex x) {
-    return hypergeometric2F0(a, b, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+    return hypergeometric2F0(a, b, x, SERIES_EPSILON);
   }
 
   public static Complex hypergeometric2F0(Complex a, Complex b, Complex x, double tolerance) {
@@ -320,7 +338,8 @@ public class HypergeometricJS extends JS {
     boolean converging = false; // first few terms can be larger than unity
     int i = 1;
 
-    while (Math.abs(p.getReal()) > tolerance || Math.abs(p.getImaginary()) > tolerance) {
+    // tolerance is relative to the sum; an asymptotic series also ends at its smallest term
+    while (p.norm() > tolerance * s.norm()) {
 
       p = mul(1.0 / i, p, x, a, b);
 
@@ -345,7 +364,7 @@ public class HypergeometricJS extends JS {
   }
 
   public static double hypergeometric2F0(double a, double b, double x) {
-    return hypergeometric2F0(a, b, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+    return hypergeometric2F0(a, b, x, SERIES_EPSILON);
   }
 
   public static double hypergeometric2F0(double a, double b, double x, double tolerance) {
@@ -356,7 +375,8 @@ public class HypergeometricJS extends JS {
     boolean converging = false;
     double i = 1.0;
 
-    while (Math.abs(p) > tolerance) {
+    // tolerance is relative to the sum; an asymptotic series also ends at its smallest term
+    while (Math.abs(p) > tolerance * Math.abs(s)) {
 
       p *= (x * a * b) / i;
 
@@ -723,7 +743,7 @@ public class HypergeometricJS extends JS {
   }
 
   public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x) {
-    return hypergeometricPFQ(A, B, x, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+    return hypergeometricPFQ(A, B, x, SERIES_EPSILON);
   }
 
   public static Complex hypergeometricPFQ(Complex[] A, Complex[] B, Complex x, double tolerance) {
@@ -777,7 +797,10 @@ public class HypergeometricJS extends JS {
       Complex powPlusI = Complex.MINUS_ONE;
       Complex powMinusI = Complex.MINUS_ONE;
 
-      while (wk.isReal() && Math.abs(wk.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
+      // an asymptotic series: up to the term below the rounding level of the sums, or the smallest
+      while (wk.isReal()
+          && Math.abs(wk.getReal()) > SERIES_EPSILON * Math.max(s1.norm(), s2.norm())) {
+        Complex wPrevious = wk;
         k++;
         powPlusI = mul(powPlusI, plusI);
         powMinusI = mul(powMinusI, minusI);
@@ -793,6 +816,9 @@ public class HypergeometricJS extends JS {
         ck.add(div(sub(t1, t2), 2.0 * k));
 
         wk = w(k, x, ck.get(k));
+        if (wk.norm() > wPrevious.norm()) {
+          break;
+        }
 
         s1 = add(s1, mul(powMinusI, wk));
         s2 = add(s2, mul(powPlusI, wk));
@@ -841,7 +867,7 @@ public class HypergeometricJS extends JS {
   }
 
   public static Complex hypergeometricU(Complex a, Complex b, Complex x) {
-    if (F.isFuzzyEquals(add(a, 1.0), b, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    if (add(a, 1.0).equals(b)) {
       return pow(x, neg(a));
     }
     if (a.isZero()) {

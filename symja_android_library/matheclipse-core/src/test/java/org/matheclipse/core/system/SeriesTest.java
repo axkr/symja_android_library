@@ -2312,4 +2312,34 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Series(HermiteH(4,x), {x,Infinity,2})", //
         "16*x^4-48*x^2+12+O(1/x)^3");
   }
+
+  /** WhittakerW through HypergeometricU, which has to be a polynomial. */
+  @Test
+  public void testWhittakerWSeries() {
+    check("Series(WhittakerW(3,3/2,x), {x,0,5})", //
+        "-4*x^2+3*x^3-x^4+5/24*x^5+O(x)^6");
+    check("Series(WhittakerW(5/2,0,x), {x,0,3})", //
+        "2*Sqrt(x)-5*x^(3/2)+13/4*x^(5/2)+O(x)^(7/2)");
+    check("Series(WhittakerW(2,1/2,3*x), {x,0,3})", //
+        "-6*x+18*x^2-81/4*x^3+O(x)^4");
+    check("SeriesCoefficient(WhittakerW(3,3/2,x), {x,0,4})", //
+        "-1");
+    check("Series(WhittakerW(3,1/2,x), {x,Infinity,3})", //
+        "(x^3-6*x^2+6*x+O(1/x)^4)*E^(-x/2+O(1/x)^4)");
+    // at 0 HypergeometricU which is no polynomial has a logarithm: no expansion is known
+    check("Series(WhittakerW(1/5,1/2,x), {x,0,3})", //
+        "Series(WhittakerW(1/5,1/2,x),{x,0,3})");
+    // the asymptotic expansion E^(-x/2)*x^k*Sum(Pochhammer(1/2+m-k,j)*Pochhammer(1/2-m-k,j)/j!*(-x)^(-j))
+    check("Series(WhittakerW(1/2,1/3,x), {x,Infinity,2})", //
+        "(1/Sqrt(1/x)+Sqrt(1/x)/9-4/81*(1/x)^(3/2)+O(1/x)^(5/2))*E^(-x/2+O(1/x)^3)");
+    // the exponent k has to be known
+    check("Series(WhittakerW(k,1/3,x), {x,Infinity,2})", //
+        "Series(WhittakerW(k,1/3,x),{x,Infinity,2})");
+    // a large positive k needs more than 100 terms: no expansion
+    check("Series(WhittakerW(301/2,1/3,x), {x,Infinity,2})", //
+        "Series(WhittakerW(301/2,1/3,x),{x,Infinity,2})");
+    // a negative k needs no extra terms
+    check("Series(WhittakerW(-7/2,1/3,x), {x,Infinity,2})", //
+        "((1/x)^(7/2)+O(1/x)^4)*E^(-x/2+O(1/x)^3)");
+  }
 }

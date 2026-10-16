@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -1619,8 +1620,10 @@ public class ApfloatNum implements INum {
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
-      return F.complexNum(h().hypergeometricU(fApfloat, ((INumber) arg2).apcomplexValue(),
-          ((INumber) arg3).apcomplexValue()));
+      Apcomplex u = HypergeometricUWorkaround.hypergeometricU(h(), fApfloat,
+          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
+      return u.imag().signum() == 0 && arg2.isReal() && arg3.isReal() ? valueOf(u.real())
+          : F.complexNum(u);
     }
     return INum.super.hypergeometricU(arg2, arg3);
   }

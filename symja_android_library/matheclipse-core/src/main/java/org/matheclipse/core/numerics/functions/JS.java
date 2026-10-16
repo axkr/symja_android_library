@@ -27,6 +27,22 @@ public abstract class JS {
    * @param x
    * @return
    */
+  /**
+   * The relative size, half a unit in the last place of a double, below which a term of a
+   * convergent series no longer changes its sum.
+   */
+  protected static final double SERIES_EPSILON = 0x1.0p-54;
+
+  /** Test if <code>term</code> no longer changes <code>sum</code>. */
+  protected static boolean isNegligible(double term, double sum) {
+    return Math.abs(term) <= SERIES_EPSILON * Math.abs(sum);
+  }
+
+  /** Test if <code>term</code> no longer changes <code>sum</code>. */
+  protected static boolean isNegligible(Complex term, Complex sum) {
+    return term.norm() <= SERIES_EPSILON * sum.norm();
+  }
+
   protected static double chop(double x) {
     return (Math.abs(x) < Config.SPECIAL_FUNCTIONS_TOLERANCE) ? 0.0 : x;
   }

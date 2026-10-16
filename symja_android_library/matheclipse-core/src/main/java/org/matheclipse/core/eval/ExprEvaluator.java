@@ -509,6 +509,7 @@ public class ExprEvaluator {
         if (fExpr != null) {
           EvalControlledCallable work = call == null ? new EvalControlledCallable(fEngine) : call;
           work.setExpr(fExpr);
+          work.setNumericPrecision(fEngine.getNumericPrecision());
           try {
             F.await();
             TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor.service());

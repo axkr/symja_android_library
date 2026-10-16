@@ -41,6 +41,7 @@ import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.CarlsonArbitraryPrecision;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
@@ -1040,6 +1041,20 @@ public class HypergeometricFunctions {
           if (!Double.isNaN(oscillating)) {
             return F.num(oscillating);
           }
+          // the series with its error bound (or arbitrary precision where it cancels) before the
+          // Bessel closed form, whose value next to a zero is only accurate relative to the
+          // amplitude; for a large argument the closed form, which is fast
+          if (Math.abs(((Num) z).doubleValue()) <= 64.0) {
+            try {
+              IExpr res = b.hypergeometric0F1(z);
+              if (res.isReal()) {
+                return res;
+              }
+            } catch (RuntimeException rex) {
+              Errors.rethrowsInterruptException(rex);
+              // the closed form
+            }
+          }
         }
         IExpr result = hyperGeometric0F1Symbolic(b, z, engine).eval(engine);
         if (result.isPresent()) {
@@ -1386,6 +1401,18 @@ public class HypergeometricFunctions {
               hypergeometric1F1Recursive(a - 1, b, z)));
     }
 
+    /** Test for an exact or inexact real number which is a non-positive integer. */
+    private static boolean isNonPositiveIntegerValued(IExpr x) {
+      if (x.isInteger()) {
+        return !x.isPositive();
+      }
+      if (x.isReal() && x.isInexactNumber()) {
+        double d = x.evalf();
+        return d <= 0.0 && d == Math.rint(d);
+      }
+      return false;
+    }
+
     private static IExpr basicRewrite(IExpr a, IExpr b, IExpr z, boolean functionExpand) {
       if (a.isZero()) {
         return F.C1;
@@ -1412,8 +1439,9 @@ public class HypergeometricFunctions {
         IExpr v1 = z.negate();
         return F.Times(a, F.Power(v1, F.Negate(a)), F.Subtract(F.Gamma(a, F.C0), F.Gamma(a, v1)));
       }
-      if (a.equals(b.inc()) && !a.isOne()) {
-        // Hypergeometric1F1(a,a-1,z)
+      if (a.equals(b.inc()) && !a.isOne() && !isNonPositiveIntegerValued(b)) {
+        // Hypergeometric1F1(a,a-1,z); for a non-positive integer b the series is a polynomial
+        // which ends before its pole
         // (E^z * (-1 + a + z)) / (-1 + a)
         return F.Times(F.Power(S.E, z), F.Divide(F.Plus(F.CN1, a, z), F.Plus(a, F.CN1)));
       }
@@ -2736,14 +2764,24 @@ public class HypergeometricFunctions {
         IInexactNumber k = (IInexactNumber) ast.arg1();
         IInexactNumber m = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
-        if (m.isNumEqualRational(F.CN1D2)) {
-          // https://functions.wolfram.com/HypergeometricFunctions/WhittakerM/03/01/02/0001/
+        if (isPole(k, m, engine)) {
           return F.CComplexInfinity;
+        }
+        if (z.isZero()) {
+          // the rules for the exact 0: z^(1/2+m) decides
+          IExpr re = m.re();
+          if (re.isReal() && ((IReal) re).isGT(F.CN1D2)) {
+            return F.CD0;
+          }
+          if (re.isReal() && ((IReal) re).isLT(F.CN1D2)) {
+            return F.CComplexInfinity;
+          }
+          return F.NIL;
         }
         // (z^(1/2+m)*Hypergeometric1F1(1/2-k+m,1+2*m,z))/E^(z/2)
         IExpr hypergeometric1f1 = engine.evaluateNIL(
             F.Hypergeometric1F1(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)), z));
-        if (hypergeometric1f1.isPresent()) {
+        if (hypergeometric1f1.isNumber()) {
           IInexactNumber exp = z.times(F.CN1D2).exp();
           return F.Times(exp, F.Power(z, F.Plus(F.C1D2, m)), hypergeometric1f1).eval(engine);
         }
@@ -2755,9 +2793,7 @@ public class HypergeometricFunctions {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr k = ast.arg1();
       IExpr m = ast.arg2();
-      IExpr z = ast.arg3();
-      if (m.equals(F.CN1D2)) {
-        // https://functions.wolfram.com/HypergeometricFunctions/WhittakerM/03/01/02/0001/
+      if (isPole(k, m, engine)) {
         return F.CComplexInfinity;
       }
 
@@ -2771,6 +2807,31 @@ public class HypergeometricFunctions {
       // }
       // }
       return F.NIL;
+    }
+
+    /**
+     * <code>WhittakerM(k, m, z) = E^(-z/2)*z^(m+1/2)*Hypergeometric1F1(1/2+m-k, 1+2*m, z)</code>
+     * is undefined where <code>1+2*m</code> is a non-positive integer, unless the series ends
+     * before its pole: <code>1/2+m-k</code> a non-positive integer <code>&gt;= 1+2*m</code>
+     * (https://functions.wolfram.com/HypergeometricFunctions/WhittakerM/03/01/02/0001/ for
+     * <code>m == -1/2</code>).
+     */
+    private static boolean isPole(IExpr k, IExpr m, EvalEngine engine) {
+      if (!m.isNumber()) {
+        return false;
+      }
+      IExpr b = engine.evaluate(F.Plus(F.C1, F.Times(F.C2, m)));
+      if (b.isZero()) {
+        // m == -1/2
+        return true;
+      }
+      if (!b.isMathematicalIntegerNegative()) {
+        return false;
+      }
+      IExpr a = engine.evaluate(F.Plus(F.C1D2, m, F.Negate(k)));
+      boolean ends = a.isMathematicalIntegerNegative() && a.isReal() && b.isReal()
+          && !((IReal) a).isLT((IReal) b);
+      return !ends;
     }
 
     @Override
@@ -2814,6 +2875,9 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.arg3().isZero()) {
+        return atZero(ast.arg1(), ast.arg2(), engine);
+      }
       // IExpr k = ast.arg1();
       // IExpr m = ast.arg2();
       // IExpr z = ast.arg3();
@@ -2825,6 +2889,36 @@ public class HypergeometricFunctions {
       // }
       // }
       return F.NIL;
+    }
+
+    /**
+     * <code>WhittakerW(k, m, 0)</code> for a real <code>m</code> with <code>|m| &gt;= 1/2</code>
+     * (the rules give <code>0</code> for <code>|Re(m)| &lt; 1/2</code>). Near <code>0</code>,
+     * <code>WhittakerW(k, m, z) ~ Gamma(2*m)/Gamma(1/2+m-k)*z^(1/2-m)</code> for
+     * <code>m &gt; 0</code>, and the function is even in <code>m</code>: <code>1/Gamma(1-k)</code>
+     * for <code>|m| == 1/2</code>, <code>0</code> if <code>1/2+|m|-k</code> is a non-positive
+     * integer (a polynomial times <code>z^(1/2+|m|)</code>), else <code>ComplexInfinity</code> for a
+     * numeric <code>k</code>.
+     */
+    private static IExpr atZero(IExpr k, IExpr m, EvalEngine engine) {
+      if (!m.isReal()) {
+        return F.NIL;
+      }
+      IReal absM = ((IReal) m).abs();
+      if (absM.isLT(F.C1D2)) {
+        return F.NIL;
+      }
+      if (absM.isNumEqualRational(F.C1D2)) {
+        return F.Power(F.Gamma(F.Subtract(F.C1, k)), F.CN1);
+      }
+      if (!k.isNumber()) {
+        return F.NIL;
+      }
+      IExpr a = engine.evaluate(F.Plus(F.C1D2, absM, F.Negate(k)));
+      if (a.isZero() || a.isMathematicalIntegerNegative()) {
+        return F.C0;
+      }
+      return F.CComplexInfinity;
     }
 
     @Override

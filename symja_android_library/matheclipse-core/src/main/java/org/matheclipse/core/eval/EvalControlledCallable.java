@@ -16,6 +16,8 @@ public class EvalControlledCallable implements Callable<IExpr> {
 
   protected final EvalEngine fEngine;
   private IExpr fExpr;
+  /** the precision of the input, see {@link #setNumericPrecision(long)} */
+  private long fNumericPrecision = -1;
 
   public EvalControlledCallable(EvalEngine engine) {
     fEngine = engine;
@@ -25,10 +27,23 @@ public class EvalControlledCallable implements Callable<IExpr> {
     this.fExpr = fExpr;
   }
 
+  /**
+   * The numeric precision the parser determined for the expression, which the engine reset in
+   * {@link #call()} would otherwise forget.
+   */
+  public void setNumericPrecision(long numericPrecision) {
+    this.fNumericPrecision = numericPrecision;
+  }
+
   @Override
   public IExpr call() {
     EvalEngine.remove();
     EvalEngine.setReset(fEngine);
+    if (fNumericPrecision > fEngine.getNumericPrecision()) {
+      // the reset forgot the precision the parser took from the input: 4.5`30 in BesselJ(1/3,
+      // 4.5`30) gives a 30-digit result
+      fEngine.setNumericPrecision(fNumericPrecision);
+    }
     final StringBuilder buf = new StringBuilder();
     try {
       // fEngine.reset();<>

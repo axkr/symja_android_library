@@ -568,8 +568,101 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHypergeometricUMachineKernel() {
+    // machine numbers go through the double kernel TricomiU: the asymptotic series, the series
+    // for a small argument, the integral and the recurrence for a < 1
+    check("Abs(HypergeometricU(2.25, 0.75, 31.5)/N(HypergeometricU(9/4, 3/4, 63/2), 30) - 1) < 10^-13", //
+        "True");
+    check("Abs(HypergeometricU(1.75, 3.0, 0.35)/N(HypergeometricU(7/4, 3, 7/20), 30) - 1) < 10^-13", //
+        "True");
+    check("Abs(HypergeometricU(3.5, 1.25, 6.5)/N(HypergeometricU(7/2, 5/4, 13/2), 30) - 1) < 10^-13", //
+        "True");
+    check("Abs(HypergeometricU(-1.25, 2.5, 7.5)/N(HypergeometricU(-5/4, 5/2, 15/2), 30) - 1) < 10^-13", //
+        "True");
+    // an integer b and a large argument, where the arbitrary precision routine divides by zero:
+    // the value from the integral representation
+    check("Abs(NIntegrate(E^(-u)*u^13*(1+u/80)^(-9), {u,0,Infinity})*80^(-14)/Gamma(14)" //
+        + "/HypergeometricU(14.0, 6.0, 80.0) - 1) < 10^-12", //
+        "True");
+  }
+
+  @Test
+  public void testWhittakerMPolesAndAccuracy() {
+    // 1+2*m a non-positive integer is a pole, unless the series 1F1(1/2+m-k; 1+2*m; z) ends
+    // before it
+    check("WhittakerM(3, -1, 2)", //
+        "ComplexInfinity");
+    check("WhittakerM(3., -1., 2.)", //
+        "ComplexInfinity");
+    check("WhittakerM(7/2, -3/2, 2)", //
+        "ComplexInfinity");
+    check("WhittakerM(k, -1/2, z)", //
+        "ComplexInfinity");
+    // m == -3/2, k == 0: 1F1(-1; -2; z) == 1 + z/2
+    check("Abs(WhittakerM(0., -1.5, 2.5)/(E^(-1.25)*2.5^(-1)*(1+2.5/2)) - 1) < 10^-14", //
+        "True");
+    check("Hypergeometric1F1(-1., -2., 4.)", //
+        "3.0");
+    // an inexact zero argument
+    check("WhittakerM(3., -0.75, 0.)", //
+        "ComplexInfinity");
+    check("WhittakerM(3., 1.25, 0.)", //
+        "0.0");
+    // the alternating series of a negative first parameter of 1F1 (k much larger than m)
+    check("Abs(WhittakerM(7.5, 2.25, 3.75)/N(WhittakerM(15/2, 9/4, 15/4), 30) - 1) < 10^-13", //
+        "True");
+    check("Abs(Hypergeometric1F1(-4.75, 5.5, 3.25)/N(Hypergeometric1F1(-19/4, 11/2, 13/4), 30) - 1) < 10^-13", //
+        "True");
+  }
+
+  @Test
+  public void testSeriesToRelativeAccuracy() {
+    // machine values next to a zero of 0F1 (here of Cos: 0F1(; 1/2; -z^2/4) == Cos(z)) and of an
+    // alternating complex 1F1, which an absolute series tolerance of 10^-10 left inexact
+    check("Abs(Hypergeometric0F1(0.5, -(N(Pi/2)-0.00001)^2/4)/Sin(0.00001) - 1) < 10^-10", //
+        "True");
+    check("Abs(Hypergeometric0F1(2.75, -9.5)/N(Hypergeometric0F1(11/4, -19/2), 30) - 1) < 10^-13", //
+        "True");
+    check("Abs(Hypergeometric1F1(-6.5+0.25*I, 1.75+0.5*I, 5.25+1.5*I)" //
+        + "/N(Hypergeometric1F1(-13/2+I/4, 7/4+I/2, 21/4+3/2*I), 30) - 1) < 10^-13", //
+        "True");
+    // equal parameters only for an exact equality
+    check("Abs(Hypergeometric1F1(1.0, 1.0+5*10^-11, 30.0)/N(Hypergeometric1F1(1, 1+5*10^-11, 30), 30) - 1) < 10^-13", //
+        "True");
+  }
+
+  @Test
+  public void testHypergeometricUPrecisionWithTimeout() {
+    // the evaluation with a time limit runs on another thread and resets the engine there: the
+    // precision of 4.5`30 has to survive the reset
+    org.matheclipse.core.eval.ExprEvaluator timed = new org.matheclipse.core.eval.ExprEvaluator(
+        new org.matheclipse.core.eval.EvalEngine(true), true, (short) 20);
+    org.matheclipse.core.interfaces.IExpr result =
+        timed.evaluateWithTimeout("Precision(HypergeometricU(5/2, 6, 4.5`30))", 30,
+            java.util.concurrent.TimeUnit.SECONDS, true, null);
+    org.junit.jupiter.api.Assertions.assertEquals("30", result.toString());
+    result = timed.evaluateWithTimeout("Precision(BesselJ(1/3, 4.5`30))", 30,
+        java.util.concurrent.TimeUnit.SECONDS, true, null);
+    org.junit.jupiter.api.Assertions.assertEquals("30", result.toString());
+    org.matheclipse.core.eval.EvalEngine.set(evaluator.getEvalEngine());
+  }
+
+  @Test
   @Tag(TestTags.SLOW)
   public void testHypergeometricU() {
+    // real parameters and a positive argument give a real number, a negative argument a complex one
+    check("Head(HypergeometricU(2.5, 6.0, 3.5))", //
+        "Real");
+    check("Head(WhittakerW(1.5, 2.5, 3.5))", //
+        "Real");
+    check("Head(HypergeometricU(2.5, 6.0, -3.5))", //
+        "Complex");
+    // HypergeometricU(a, a, z) == E^z*Gamma(1-a, z): the incomplete Gamma of a real order and a
+    // positive argument is real, also for an order <= 0
+    check("Head(HypergeometricU(2.0, 2.0, 1.5))", //
+        "Real");
+    check("Head(Gamma(-2.5, 3.5))", //
+        "Real");
     check("N(HypergeometricU(2+I, 5/2, 30), 30)", //
         "-0.0010456817502248065366618251352+I*0.00036804083849996681048033138458");
     check("HypergeometricU({3,1},{2,4},{7,8})", //

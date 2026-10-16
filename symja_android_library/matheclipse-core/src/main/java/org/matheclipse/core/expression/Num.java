@@ -1,8 +1,11 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.util.function.Function;
 import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.InfiniteExpansionException;
@@ -35,7 +38,9 @@ import org.matheclipse.core.numerics.functions.BesselJS;
 import org.matheclipse.core.numerics.functions.ExponentialIntegrals;
 import org.matheclipse.core.numerics.functions.FresnelIntegrals;
 import org.matheclipse.core.numerics.functions.GammaJS;
+import org.matheclipse.core.numerics.functions.KummerM;
 import org.matheclipse.core.numerics.functions.PolyLog;
+import org.matheclipse.core.numerics.functions.TricomiU;
 import org.matheclipse.core.numerics.functions.ZetaJS;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
 import org.matheclipse.core.visit.IVisitor;
@@ -1055,6 +1060,14 @@ public class Num implements INum {
     // // try as computation with complex numbers
     // }
     // }
+    if (value == 1.0 && z instanceof Num) {
+      double x = ((Num) z).value;
+      if (x > 0.0 && x <= 700.0) {
+        // E1 of a real argument: the real kernel is within 4e-15 relative error, the apfloat
+        // route below costs some ten thousand times as much
+        return F.num(ExponentialIntegrals.expIntegralE1(x));
+      }
+    }
     if (z instanceof INumber) {
       // the double routine has from no to ten correct digits for an argument beyond a few units
       try {
@@ -1251,6 +1264,10 @@ public class Num implements INum {
       if (x instanceof INumber) {
         Apcomplex gamma =
             EvalEngine.getApfloatDouble().gamma(apcomplexValue(), ((INumber) x).apcomplexValue());
+        if (x.isReal() && x.isPositive() && gamma.imag().signum() == 0) {
+          // a real order and a positive argument: Gamma(0.0, 1.0) is a real number
+          return F.num(gamma.real().doubleValue());
+        }
         return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
       }
     } catch (ArithmeticException | NumericComputationException are) {
@@ -1435,6 +1452,42 @@ public class Num implements INum {
     return DOUBLEID;
   }
 
+  /** Largest argument of <code>Hypergeometric0F1</code> given to the arbitrary precision routine. */
+  static final double MAX_ARBITRARY_PRECISION_0F1 = 64.0;
+
+  /** Largest argument of <code>Hypergeometric1F1</code> given to the arbitrary precision routine. */
+  static final double MAX_ARBITRARY_PRECISION_1F1 = 40.0;
+
+  /** The double as an arbitrary precision number with all its binary digits. */
+  static Apfloat exactApfloat(double d, long digits) {
+    return new Apfloat(new java.math.BigDecimal(d), digits);
+  }
+
+  /**
+   * An arbitrary precision evaluation for a machine result whose series cancels: the working
+   * precision is raised by 20 digits until two evaluations agree to the digits of a double (the
+   * cancellation of a value next to a zero isn't known in advance).
+   *
+   * @param evaluation the value at the given number of digits
+   * @param digits the first working precision
+   * @return <code>null</code> if no two evaluations up to 300 digits agree
+   */
+  static Apcomplex agreeingEvaluation(java.util.function.LongFunction<Apcomplex> evaluation,
+      long digits) {
+    Apcomplex previous = evaluation.apply(digits);
+    for (long d = digits + 20; d <= 300; d += 20) {
+      Apcomplex next = evaluation.apply(d);
+      Apfloat size = ApcomplexMath.abs(next);
+      if (size.signum() == 0 ? ApcomplexMath.abs(previous).signum() == 0
+          : ApcomplexMath.abs(next.subtract(previous)).doubleValue() <= 1.0e-17
+              * size.doubleValue()) {
+        return next;
+      }
+      previous = next;
+    }
+    return null;
+  }
+
   @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
     if (arg2 instanceof Num) {
@@ -1442,6 +1495,28 @@ public class Num implements INum {
       double oscillating = DMath.hypergeometric0F1OfLargeNegative(value, ((Num) arg2).value);
       if (!Double.isNaN(oscillating)) {
         return F.num(oscillating);
+      }
+      double z = ((Num) arg2).value;
+      double series = KummerM.hypergeometric0F1(value, z);
+      if (!Double.isNaN(series)) {
+        return F.num(series);
+      }
+      if (Math.abs(z) <= MAX_ARBITRARY_PRECISION_0F1 && (!F.isNumIntValue(value) || value > 0)) {
+        // the series cancels about E^(2*Sqrt(-z)) for a negative z: as many more digits; beyond
+        // the limit the arbitrary precision routine costs tens of milliseconds and the routines
+        // below, accurate relative to the amplitude of the oscillation, are taken
+        long digits = 20 + (z < 0.0 ? (long) (2.0 * Math.sqrt(-z) / Math.log(10.0)) : 0);
+        try {
+          final double a = value;
+          Apcomplex exact = agreeingEvaluation(d -> new FixedPrecisionApfloatHelper(d)
+              .hypergeometric0F1(exactApfloat(a, d), exactApfloat(z, d)), digits);
+          if (exact != null) {
+            return F.num(exact.real().doubleValue());
+          }
+        } catch (ArithmeticException | ApfloatRuntimeException e) {
+          Errors.rethrowsInterruptException(e);
+          // the routines below
+        }
       }
     }
     if (arg2 instanceof INumber) {
@@ -1497,11 +1572,36 @@ public class Num implements INum {
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
     double arg2Double = arg2.evalfNaN();
     double arg3Double = arg3.evalfNaN();
+    if (arg2 instanceof Num && arg3 instanceof Num) {
+      // the double kernel returns NaN where it can't reach its accuracy
+      double m = KummerM.hypergeometric1F1(value, arg2Double, arg3Double);
+      if (!Double.isNaN(m)) {
+        return F.num(m);
+      }
+    }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
       Complex guarded = HypergeometricJS.guardedSeries(new Complex[] {new Complex(value)},
           new Complex[] {arg2.evalfc()}, arg3.evalfc());
       if (guarded != null) {
         return guarded.getImaginary() == 0.0 ? F.num(guarded.getReal()) : F.complexNum(guarded);
+      }
+      if (arg2 instanceof Num && arg3 instanceof Num
+          && Math.abs(arg3Double) <= MAX_ARBITRARY_PRECISION_1F1) {
+        // the series cancels about E^|z|: as many more digits
+        long digits = 20 + (long) (Math.abs(arg3Double) / Math.log(10.0));
+        try {
+          final double a = value;
+          Apcomplex m = agreeingEvaluation(d -> new FixedPrecisionApfloatHelper(d)
+              .hypergeometric1F1(exactApfloat(a, d), exactApfloat(arg2Double, d),
+                  exactApfloat(arg3Double, d)), digits);
+          if (m != null) {
+            return m.imag().signum() == 0 ? F.num(m.real().doubleValue())
+                : F.complexNum(m.real().doubleValue(), m.imag().doubleValue());
+          }
+        } catch (ArithmeticException | ApfloatRuntimeException e) {
+          Errors.rethrowsInterruptException(e);
+          // a pole, or no convergence: the double routines below
+        }
       }
     }
     if (!Double.isNaN(arg2Double) && !Double.isNaN(arg3Double)) {
@@ -1640,9 +1740,21 @@ public class Num implements INum {
 
   @Override
   public IExpr hypergeometricU(IExpr arg2, IExpr arg3) {
+    if (arg2 instanceof Num && arg3 instanceof Num) {
+      // the double kernel returns NaN where it can't reach its accuracy; then apfloat takes over
+      double u = TricomiU.hypergeometricU(value, ((Num) arg2).value, ((Num) arg3).value);
+      if (!Double.isNaN(u)) {
+        return F.num(u);
+      }
+    }
     try {
-      Apcomplex hypergeometricU = EvalEngine.getApfloatDouble().hypergeometricU(apcomplexValue(),
-          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue());
+      Apcomplex hypergeometricU = HypergeometricUWorkaround.hypergeometricU(
+          EvalEngine.getApfloatDouble(), apcomplexValue(), ((INumber) arg2).apcomplexValue(),
+          ((INumber) arg3).apcomplexValue());
+      if (arg2.isReal() && arg3.isReal() && hypergeometricU.imag().signum() == 0) {
+        // real parameters and a real argument: a real value (z > 0) stays real
+        return F.num(hypergeometricU.real().doubleValue());
+      }
       return F.complexNum(hypergeometricU.real().doubleValue(),
           hypergeometricU.imag().doubleValue());
     } catch (ApfloatArithmeticException aaex) {

@@ -246,6 +246,13 @@ public class CMath {
   }
 
   public static Complex hypergeometric0F1(Complex a, Complex z) {
+    if (a.getImaginary() == 0.0 && z.getImaginary() == 0.0) {
+      double m = org.matheclipse.core.numerics.functions.KummerM.hypergeometric0F1(a.getReal(),
+          z.getReal());
+      if (!Double.isNaN(m)) {
+        return new Complex(m);
+      }
+    }
     return HypergeometricJS.hypergeometric0F1(a, z);
   }
 
@@ -255,6 +262,13 @@ public class CMath {
   }
 
   public static Complex hypergeometric1F1(Complex a, Complex b, Complex z) {
+    if (a.getImaginary() == 0.0 && b.getImaginary() == 0.0 && z.getImaginary() == 0.0) {
+      double m = org.matheclipse.core.numerics.functions.KummerM.hypergeometric1F1(a.getReal(),
+          b.getReal(), z.getReal());
+      if (!Double.isNaN(m)) {
+        return new Complex(m);
+      }
+    }
     return HypergeometricJS.hypergeometric1F1(a, b, z);
   }
 
@@ -274,6 +288,13 @@ public class CMath {
   }
 
   public static Complex hypergeometricU(Complex a, Complex b, Complex z) {
+    if (a.getImaginary() == 0.0 && b.getImaginary() == 0.0 && z.getImaginary() == 0.0) {
+      double u = org.matheclipse.core.numerics.functions.TricomiU.hypergeometricU(a.getReal(),
+          b.getReal(), z.getReal());
+      if (!Double.isNaN(u)) {
+        return new Complex(u);
+      }
+    }
     return toComplex(
         EvalEngine.getApfloatDouble().hypergeometricU(apcomplex(a), apcomplex(b), apcomplex(z)));
   }
