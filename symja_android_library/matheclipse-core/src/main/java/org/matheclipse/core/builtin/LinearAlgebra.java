@@ -6161,7 +6161,7 @@ public final class LinearAlgebra {
 
             // Path 1: Modular Arithmetic
             if (modulus.isPresent() && !modulus.isZero()) {
-              return rowReduceModulus(matrix, modulus, zeroChecker, engine);
+              return rowReduceModulus(ast.arg1(), modulus, engine);
             }
 
             // Path 2: Division-Free (Fraction-Free) algorithm
@@ -6200,65 +6200,29 @@ public final class LinearAlgebra {
     }
 
     /**
-     * Solves the Row Reduction exclusively under a given Modulus.
+     * Row reduce over the integers modulo <code>modulus</code>, with the same conversion and
+     * elimination as <code>MatrixRank</code>, <code>NullSpace</code> and <code>Inverse</code>.
+     * Rational entries are converted with the modular inverse of their denominator.
+     *
+     * @return {@link F#NIL} if the modulus isn't an integer greater than 1, or an entry isn't a
+     *         rational number with a denominator invertible modulo <code>modulus</code>
      */
-    private IASTAppendable rowReduceModulus(FieldMatrix<IExpr> matrix, IExpr modulus,
-        Predicate<IExpr> zeroChecker, EvalEngine engine) {
-      int rows = matrix.getRowDimension();
-      int cols = matrix.getColumnDimension();
-      IExpr[][] m = new IExpr[rows][cols];
-
-      for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-          m[i][j] = engine.evaluate(F.Mod(matrix.getEntry(i, j), modulus));
-        }
+    private static IExpr rowReduceModulus(IExpr arg1, IExpr modulusValue, EvalEngine engine) {
+      IInteger modulus = modulusOption(modulusValue);
+      if (modulus == null) {
+        return F.NIL;
       }
-
-      int pivotRow = 0;
-      for (int j = 0; j < cols && pivotRow < rows; j++) {
-        int swapRow = -1;
-        for (int i = pivotRow; i < rows; i++) {
-          if (!zeroChecker.test(m[i][j])) {
-            swapRow = i;
-            break;
-          }
-        }
-        if (swapRow != -1) {
-          if (swapRow != pivotRow) {
-            IExpr[] temp = m[pivotRow];
-            m[pivotRow] = m[swapRow];
-            m[swapRow] = temp;
-          }
-
-          IExpr pivot = m[pivotRow][j];
-          IExpr pivotInv = engine.evaluate(F.PowerMod(pivot, F.CN1, modulus));
-
-          for (int k = j; k < cols; k++) {
-            m[pivotRow][k] = engine.evaluate(F.Mod(F.Times(m[pivotRow][k], pivotInv), modulus));
-          }
-
-          for (int i = 0; i < rows; i++) {
-            if (i != pivotRow) {
-              IExpr factor = m[i][j];
-              if (!zeroChecker.test(factor)) {
-                for (int k = j; k < cols; k++) {
-                  IExpr sub = F.Subtract(m[i][k], F.Times(factor, m[pivotRow][k]));
-                  m[i][k] = engine.evaluate(F.Mod(sub, modulus));
-                }
-              }
-            }
-          }
-          pivotRow++;
-        }
+      IAST normal = (IAST) arg1.normal(false);
+      IInteger[][] m = modularMatrix(normal, modulus);
+      if (m == null) {
+        return F.NIL;
       }
-
-      IASTAppendable result = F.ListAlloc(rows);
-      for (int i = 0; i < rows; i++) {
-        IASTAppendable rowList = F.ListAlloc(cols);
-        for (int j = 0; j < cols; j++) {
-          rowList.append(m[i][j]);
-        }
-        result.append(rowList);
+      if (modularRowReduce(m, modulus) == null) {
+        return modularFailed(S.RowReduce, normal, modulus, engine);
+      }
+      IASTAppendable result = F.ListAlloc(m.length);
+      for (IInteger[] row : m) {
+        result.append(F.List(row));
       }
       return result;
     }

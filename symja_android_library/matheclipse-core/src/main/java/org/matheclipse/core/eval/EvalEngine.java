@@ -48,6 +48,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.steps.StepLevel;
 import org.matheclipse.core.eval.util.AwtSupport;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -208,7 +209,8 @@ import jakarta.annotation.Nonnull;
  * </p>
  * <ul>
  * <li>{@link #setRecursionLimit(int)}: Max depth of the evaluation stack.</li>
- * <li>{@link #setIterationLimit(int)}: Max iterations in a loop.</li>
+ * <li>{@link #setIterationLimit(int)}: Max length of one evaluation chain (rewrites of the same
+ * expression); loops are not counted.</li>
  * <li>{@link #evalTimeConstrained(IExpr, long)}: Aborts evaluation if it exceeds a specified time
  * duration.</li>
  * </ul>
@@ -513,6 +515,15 @@ public class EvalEngine implements Serializable {
     symbol.clearValue(oldValue);
   }
 
+  /**
+   * Test if <code>symbol</code> is <code>$IterationLimit</code> or <code>$RecursionLimit</code>,
+   * whose values are only effective once they are copied into the engine.
+   */
+  private static boolean isEngineLimitSymbol(ISymbol symbol) {
+    return (symbol == S.$IterationLimit || symbol == S.$RecursionLimit)
+        && ((IBuiltInSymbol) symbol).getEvaluator() instanceof ISetValueEvaluator;
+  }
+
   private static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
       final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules,
       final EvalEngine engine) {
@@ -557,7 +568,14 @@ public class EvalEngine implements Serializable {
           if (setFun.arg1().isSymbol()) {
             variableSymbol = symbolList[i];
             IExpr temp = engine.evaluate(setFun.arg2());
-            variableSymbol.assignValue(temp);
+            if (isEngineLimitSymbol(variableSymbol)) {
+              // the setter also applies the value to the engine; evalBlock() restores the
+              // engine's limits afterwards
+              ((ISetValueEvaluator) ((IBuiltInSymbol) variableSymbol).getEvaluator())
+                  .evaluateSet(temp, false, engine);
+            } else {
+              variableSymbol.assignValue(temp);
+            }
             variableSymbol.setRulesData(null);
           }
         }
@@ -2346,11 +2364,20 @@ public class EvalEngine implements Serializable {
     ISymbol[] symbolList = new ISymbol[localVariablesList.size()];
     IExpr[] oldAssignedValues = new IExpr[localVariablesList.size()];
     RulesData[] oldAssignedRulesData = new RulesData[localVariablesList.size()];
+    final int oldIterationLimit = fIterationLimit;
+    final int oldRecursionLimit = fRecursionLimit;
     try {
       rememberBlockVariables(localVariablesList, symbolList, oldAssignedValues,
           oldAssignedRulesData, this);
       return supplier.get();
     } finally {
+      for (int i = 1; i < localVariablesList.size(); i++) {
+        if (symbolList[i] != null && isEngineLimitSymbol(symbolList[i])) {
+          fIterationLimit = oldIterationLimit;
+          fRecursionLimit = oldRecursionLimit;
+          break;
+        }
+      }
       if (localVariablesList.size() > 0) {
         // reset local variables to global ones
         ISymbol variableSymbol;

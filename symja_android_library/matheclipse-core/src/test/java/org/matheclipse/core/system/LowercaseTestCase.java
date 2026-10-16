@@ -2368,6 +2368,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBlock() {
+    // a localized $IterationLimit / $RecursionLimit applies inside the block only
+    check("Do(Evaluate(Symbol(\"blk\" <> ToString(k))) = Symbol(\"blk\" <> ToString(k + 1)), {k, 0, 29});"
+        + "Block({$IterationLimit = 40}, blk0)", //
+        "blk30");
+    check("Block({$IterationLimit = 20}, blk0)", //
+        "Hold(Block({$IterationLimit=20},blk0))");
+    check("blk0", //
+        "blk30");
+    check("Block({$IterationLimit = 20}, $IterationLimit)", //
+        "20");
+    check("brf(n_) := If(n == 0, 0, 1 + brf(n - 1)); Block({$RecursionLimit = 30}, brf(100))", //
+        "Hold(brf(n_):=If(n==0,0,1+brf(-1+n));Block({$RecursionLimit=30},brf(100)))");
+    check("brf(100)", //
+        "100");
     check("vars={a,b}; Block(Evaluate(vars), a=1; b=2; a+b)", //
         "3");
     check("vars={a}; {Block(Evaluate(vars), a=1;a)}", //
@@ -7105,6 +7119,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDo() {
+    // $IterationLimit bounds an evaluation chain, not the number of loop passes
+    check("dox = {a}; Do(dox, {5000}); dox", //
+        "{a}");
     // a bare count is a valid specification, as it is for Table
     check("Reap(Do(Sow(i), 3))[[2,1]]", //
         "{i,i,i}");
@@ -10549,6 +10566,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFixedPoint() {
+    // no implicit limit on the number of steps
+    check("FixedPoint(Function(u, If(u < 5000, u + 1, u)), 0)", //
+        "5000");
     check("FixedPoint((# + 2/# )/2 &, 1`20, SameTest -> (Abs(#1 - #2) < 1*^-10 &))", //
         "1.4142135623730950488");
     check("FixedPoint((# + 2/# )/2 &, 1, SameTest -> (Abs(#1 - #2) < 1*^-10 &))", //
@@ -13001,6 +13021,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFor() {
+    check("k = 0; For(i = 0, i < 5000, i++, k++); k", //
+        "5000");
     // Return leaves the loop and everything it was written in: the statement after the For is
     // never reached, so the value here is the Return itself - but the loop did run, and n is 11
     check("For(n = 1, n < 1000, n++, If(PrimeQ(n) && (n > 7), Return())); n ", //
@@ -19649,9 +19671,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNest() {
-    // iteration limit exceeded
-    check("Nest(-I,Null,2147483647)", //
-        "Hold(Nest(-I,Null,2147483647))");
+    // the number of steps isn't limited, only the time
+    check("TimeConstrained(Nest(-I,Null,2147483647), 1)", //
+        "$Aborted");
+    check("Nest(f, x, 5000) // LeafCount", //
+        "5001");
 
     check("Nest(f, x, 3)", //
         "f(f(f(x)))");
@@ -19670,6 +19694,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNestList() {
+    check("Length(NestList(f, x, 5000))", //
+        "5001");
     check("NestList(4*#*(1 - #) &, 1/3, 5)", //
         "{1/3,8/9,32/81,6272/6561,7250432/43046721,1038154236987392/1853020188851841}");
     check("Length(NestList(#2,{},50))", //

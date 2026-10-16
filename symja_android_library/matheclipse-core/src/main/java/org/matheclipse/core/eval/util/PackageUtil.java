@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 
@@ -122,9 +123,7 @@ public class PackageUtil {
       builder.append('\n');
     }
 
-    final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    final List<ASTNode> node = parser.parseScript(builder.toString());
-    return node;
+    return parseScript(builder.toString(), engine);
   }
 
   /**
@@ -143,9 +142,28 @@ public class PackageUtil {
    * @return
    */
   public static List<ASTNode> parseReader(final String reader, final EvalEngine engine) {
+    return parseScript(withoutShebang(reader), engine);
+  }
+
+  /**
+   * Parse a script and go on after a syntax error, as <code>Get</code> does: each error is printed
+   * and the statements before and after it are kept.
+   */
+  private static List<ASTNode> parseScript(final String source, final EvalEngine engine) {
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    final List<ASTNode> node = parser.parseScript(withoutShebang(reader));
-    return node;
+    return parser.parseScript(source,
+        syntaxError -> Errors.printMessage(S.Get, syntaxError, engine));
+  }
+
+  /**
+   * Parse a script which must be free of syntax errors: the first one is thrown. The
+   * <code>#!</code> line of a Unix script executable is ignored.
+   *
+   * @throws SyntaxError at the first syntax error
+   */
+  public static List<ASTNode> parseReaderStrict(final String source, final EvalEngine engine) {
+    final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
+    return parser.parseScript(withoutShebang(source));
   }
 
   /**

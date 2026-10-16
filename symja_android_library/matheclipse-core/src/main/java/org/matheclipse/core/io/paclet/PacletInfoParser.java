@@ -187,7 +187,7 @@ public final class PacletInfoParser {
   private static IExpr parseFile(Path file, EvalEngine engine) {
     try {
       String source = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
-      List<ASTNode> nodes = PackageUtil.parseReader(source, engine);
+      List<ASTNode> nodes = PackageUtil.parseReaderStrict(source, engine);
       AST2Expr converter = new AST2Expr(engine.isRelaxedSyntax(), engine);
       for (int i = nodes.size() - 1; i >= 0; i--) {
         IExpr expression = converter.convert(nodes.get(i));

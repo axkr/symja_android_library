@@ -105,6 +105,26 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + "{{2,4},\n" //
             + " {1,3}},{2,1},Modulus->6)");
 
+    // RowReduce converts rational entries like the other functions
+    check("RowReduce({{1,1/2},{3,1}}, Modulus->5)", //
+        "{{1,0},{0,1}}");
+    check("RowReduce({{1,0,4},{2,0,3},{2,1,2}}, Modulus->5)", //
+        "{{1,0,4},{0,1,4},{0,0,0}}");
+    // the denominator 5 isn't invertible modulo 5
+    check("RowReduce({{1,1/5},{3,1}}, Modulus->5)", //
+        "RowReduce(\n" //
+            + "{{1,1/5},\n" //
+            + " {3,1}},Modulus->5)");
+    check("RowReduce({{1,x},{3,1}}, Modulus->5)", //
+        "RowReduce(\n" //
+            + "{{1,x},\n" //
+            + " {3,1}},Modulus->5)");
+    // RowReduce: {{1,2},{3,4}} is not invertible modulo 6.
+    check("RowReduce({{1,2},{3,4}}, Modulus->6)", //
+        "RowReduce(\n" //
+            + "{{1,2},\n" //
+            + " {3,4}},Modulus->6)");
+
     // without the option nothing changes
     check("Inverse({{1,2},{3,4}})", //
         "{{-2,1},\n" //

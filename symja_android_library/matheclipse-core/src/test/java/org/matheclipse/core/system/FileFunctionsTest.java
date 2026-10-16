@@ -1,5 +1,8 @@
 package org.matheclipse.core.system;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
@@ -50,6 +53,40 @@ public class FileFunctionsTest extends ExprEvaluatorTestCase {
         "{64,343}");
     check("Attributes(f)", //
         "{Listable}");
+  }
+
+  @Test
+  public void testGetAfterSyntaxError() throws IOException {
+    Config.FILESYSTEM_ENABLED = true;
+    // Get reports a syntax error and goes on reading the rest of the file
+    Path file = Files.createTempFile("get-syntax-error", ".m");
+    try {
+      Files.writeString(file, "sxa = 1;\n" //
+          + "sxb = 2 +* ;\n" //
+          + "sxc = 3;\n" //
+          + "{sxa, sxb, sxc}\n");
+      check("Get(\"" + file.toString().replace("\\", "\\\\") + "\")", //
+          "{1,sxb,3}");
+
+      // the error is in the second line of a definition; reading resumes after that line
+      Files.writeString(file, "sxd = 4;\n" //
+          + "sxf(x_) := x +\n" //
+          + "   * 2;\n" //
+          + "sxe = 5;\n" //
+          + "{sxd, sxe, sxf(1)}\n");
+      check("Get(\"" + file.toString().replace("\\", "\\\\") + "\")", //
+          "{4,5,sxf(1)}");
+
+      // an error in the last line
+      Files.writeString(file, "sxg = 6;\n" //
+          + "sxh = 2 +* ;\n");
+      check("Get(\"" + file.toString().replace("\\", "\\\\") + "\")", //
+          "");
+      check("sxg", //
+          "6");
+    } finally {
+      Files.deleteIfExists(file);
+    }
   }
 
   @Test

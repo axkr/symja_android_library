@@ -15,6 +15,7 @@ package org.matheclipse.parser.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.IConstantOperators;
@@ -1586,6 +1587,96 @@ public class Parser extends Scanner {
     }
 
     return fNodeList;
+  }
+
+  /**
+   * Parse the input as a script and go on reading after a syntax error, as <code>Get</code> does:
+   * the error is handed to <code>errorHandler</code> and parsing resumes at the start of the line
+   * after the error, outside of any bracket.
+   *
+   * @param expression the script
+   * @param errorHandler receives each syntax error
+   * @return the statements which could be parsed, in their order
+   */
+  public List<ASTNode> parseScript(final String expression,
+      final Consumer<SyntaxError> errorHandler) {
+    final List<ASTNode> nodes = fNodeList != null ? fNodeList : new ArrayList<ASTNode>();
+    int resumePosition = -1;
+    boolean readToken = false;
+    try {
+      initialize(expression.trim());
+    } catch (final SyntaxError se) {
+      errorHandler.accept(se);
+      if (!skipToNextLine(resumePosition)) {
+        return nodes;
+      }
+      resumePosition = fCurrentPosition;
+      readToken = true;
+    }
+    while (true) {
+      try {
+        if (readToken) {
+          readToken = false;
+          getNextToken();
+        }
+        while (fToken == TT_NEWLINE) {
+          getNextToken();
+        }
+        if (fToken == TT_EOF) {
+          return nodes;
+        }
+        nodes.add(parseExpression());
+        if (fToken == TT_PRECEDENCE_CLOSE) {
+          throwSyntaxError("Too many closing ')'; End-of-file not reached.");
+        }
+        if (fToken == TT_LIST_CLOSE) {
+          throwSyntaxError("Too many closing '}'; End-of-file not reached.");
+        }
+        if (fToken == TT_ARGUMENTS_CLOSE) {
+          throwSyntaxError("Too many closing ']'; End-of-file not reached.");
+        }
+      } catch (final SyntaxError se) {
+        errorHandler.accept(se);
+        if (!skipToNextLine(resumePosition)) {
+          return nodes;
+        }
+        resumePosition = fCurrentPosition;
+        readToken = true;
+      }
+    }
+  }
+
+  /**
+   * Move the scanner to the start of the line after the current position, outside of any bracket.
+   *
+   * @param lastResumePosition the position parsing resumed at after the previous error
+   * @return <code>false</code> if there is no further line, or if it would not get past
+   *         <code>lastResumePosition</code>
+   */
+  private boolean skipToNextLine(int lastResumePosition) {
+    if (fInputString == null) {
+      return false;
+    }
+    int position = Math.max(fCurrentPosition - 1, 0);
+    while (position < fInputString.length && fInputString[position] != '\n') {
+      position++;
+    }
+    position++;
+    if (position >= fInputString.length || position <= lastResumePosition) {
+      return false;
+    }
+    int rows = 0;
+    for (int i = 0; i < position; i++) {
+      if (fInputString[i] == '\n') {
+        rows++;
+      }
+    }
+    fRowCounter = rows;
+    fCurrentPosition = position;
+    fCurrentColumnStartPosition = position;
+    fRecursionDepth = 0;
+    fToken = TT_EOF;
+    return true;
   }
 
   private ASTNode parsePrimary(final int min_precedence) {

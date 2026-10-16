@@ -540,8 +540,8 @@ public class ConstantDefinitions {
         iterationLimit = value.toIntDefault();
         engine.setIterationLimit(iterationLimit);
       }
-
-      return F.ZZ(iterationLimit);
+      // -1 is how the engine stores an infinite limit
+      return iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit);
     }
 
     @Override
@@ -747,8 +747,8 @@ public class ConstantDefinitions {
         recursionLimit = value.toIntDefault();
         engine.setRecursionLimit(recursionLimit);
       }
-
-      return F.ZZ(recursionLimit);
+      // -1 is how the engine stores an infinite limit
+      return recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit);
     }
 
     @Override

@@ -1,9 +1,13 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.io.PrintStream;
+import java.io.StringWriter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /** Tests for SparseArray functions */
@@ -55,6 +59,49 @@ public class ConstantTest extends ExprEvaluatorTestCase {
         "");
     check("f(x)", //
         "Hold(f(x))");
+  }
+
+  @Test
+  public void testLimitInBlock() {
+    // the message names the limit of the Block, not the global one restored after it
+    check("Do(Evaluate(Symbol(\"lib\" <> ToString(k))) = "
+        + "Symbol(\"lib\" <> ToString(k + 1)), {k, 0, 29})", //
+        "");
+    assertTrue(messages("Block({$IterationLimit = 20}, lib0)") //
+        .contains("Iteration limit of 20 exceeded"));
+    check("lib0", //
+        "lib30");
+    check("lir(n_) := If(n == 0, 0, 1 + lir(n - 1))", //
+        "");
+    assertTrue(messages("Block({$RecursionLimit = 30}, lir(100))") //
+        .contains("Recursion depth of 30 exceeded"));
+    check("lir(100)", //
+        "100");
+  }
+
+  @Test
+  public void testInfiniteLimits() {
+    check("Block({$IterationLimit = Infinity}, $IterationLimit)", //
+        "Infinity");
+    check("Block({$RecursionLimit = Infinity}, $RecursionLimit)", //
+        "Infinity");
+    check("$IterationLimit == Infinity", //
+        "False");
+  }
+
+  private String messages(String input) {
+    EvalEngine engine = evaluator.getEvalEngine();
+    PrintStream previous = engine.getErrorPrintStream();
+    StringWriter errorWriter = new StringWriter();
+    PrintStream errors = new PrintStream(new WriterOutputStream(errorWriter));
+    engine.setErrorPrintStream(errors);
+    try {
+      evaluator.eval(input);
+    } finally {
+      errors.flush();
+      engine.setErrorPrintStream(previous);
+    }
+    return errorWriter.toString();
   }
 
   @Test

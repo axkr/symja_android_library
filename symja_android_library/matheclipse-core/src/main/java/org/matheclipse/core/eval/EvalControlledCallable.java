@@ -57,13 +57,13 @@ public class EvalControlledCallable implements Callable<IExpr> {
         }
       } catch (final IterationLimitExceeded e) {
         // Iteration limit of `1` exceeded.
-        int iterationLimit = fEngine.getIterationLimit();
+        int iterationLimit = e.getIterationLimit();
         Errors.printMessage(S.$IterationLimit, "itlim",
             F.list(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), fExpr), fEngine);
         temp = F.Hold(fExpr);
       } catch (final RecursionLimitExceeded e) {
         // Recursion depth of `1` exceeded during evaluation of `2`.
-        int recursionLimit = fEngine.getRecursionLimit();
+        int recursionLimit = e.getRecursionLimit();
         Errors.printMessage(S.$RecursionLimit, "reclim2",
             F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), fExpr), fEngine);
         temp = F.Hold(fExpr);

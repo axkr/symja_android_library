@@ -16,6 +16,7 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SymbolicArrayUtil;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
@@ -920,14 +921,14 @@ public final class Programming {
         final IIterator<IExpr> iter = fIterList.get(fIndex);
         if (iter.setUp()) {
           try {
-            final int iterationLimit = fEngine.getIterationLimit();
-            int iterationCounter = 1;
+            // $IterationLimit bounds one evaluation chain, not the number of loop passes
+            long iterationCounter = 0;
             fIndex++;
             while (iter.hasNext()) {
               try {
                 iter.next();
                 doIt(input);
-                if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+                if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
                   IterationLimitExceeded.throwIt(iterationCounter, input);
                 }
               } catch (final ReturnException e) {
@@ -1032,13 +1033,12 @@ public final class Programming {
           return ast.arg2();
         } else {
           IExpr current = ast.arg2();
-          final int iterationLimit = engine.getIterationLimit();
-          int iterationCounter = 1;
+          long iterationCounter = 0;
           IExpr last;
           do {
             last = current;
             current = engine.evaluate(F.Apply(f, F.list(current)));
-            if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+            if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
               IterationLimitExceeded.throwIt(iterationCounter, ast);
             }
           } while ((!sameTest.test(current, last)) && (--maxIterations > 0));
@@ -1166,15 +1166,14 @@ public final class Programming {
         IASTAppendable list = F.ListAlloc(iterations < 100 ? iterations : 32);
         list.append(current);
 
-        final int iterationLimit = engine.getIterationLimit();
-        int iterationCounter = 1;
+        long iterationCounter = 0;
         IExpr last;
         do {
           last = current;
           current = engine.evaluate(F.Apply(f, F.list(current)));
           list.append(current);
 
-          if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+          if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
         } while ((!sameTest.test(current, last)) && (--iterations > 0));
@@ -1264,9 +1263,8 @@ public final class Programming {
         // declared `expectedArgSize` has to be enforced here before the arguments are read
         return engine.checkBuiltinArgsSize(ast, this);
       }
-      // use EvalEngine's iterationLimit only for evaluation control
-      final int iterationLimit = engine.getIterationLimit();
-      int iterationCounter = 1;
+      // $IterationLimit bounds one evaluation chain, not the number of loop passes
+      long iterationCounter = 0;
 
       // For(start, test, incr, body)
       engine.evaluateNIL(ast.arg1()); // start
@@ -1287,12 +1285,12 @@ public final class Programming {
         } catch (final BreakException e) {
           return S.Null;
         } catch (final ContinueException e) {
-          if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
+          if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
           // as in While: a Return leaves the loop and the function around it
         }
-        if (iterationLimit > 0 && iterationLimit <= ++iterationCounter) {
+        if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
           IterationLimitExceeded.throwIt(iterationCounter, ast);
         }
         engine.evaluateNIL(incr);
@@ -1836,8 +1834,7 @@ public final class Programming {
           // Positive integer (less equal 2147483647) expected at position `2` in `1`.
           return Errors.printMessage(S.Nest, "intpm", F.list(ast, F.C3), engine);
         }
-        int iterationLimit = engine.getIterationLimit();
-        if (iterationLimit >= 0 && iterationLimit <= n) {
+        if (Config.MAX_LOOP_COUNT < n) {
           IterationLimitExceeded.throwIt(n, ast);
         }
         return nest(ast.arg2(), ast.arg1(), n, engine);
@@ -1890,9 +1887,11 @@ public final class Programming {
         // Positive integer (less equal 2147483647) expected at position `2` in `1`.
         return Errors.printMessage(S.Nest, "intpm", F.list(ast, F.C3), engine);
       }
-      int iterationLimit = engine.getIterationLimit();
-      if (iterationLimit >= 0 && iterationLimit <= n) {
+      if (Config.MAX_LOOP_COUNT < n) {
         IterationLimitExceeded.throwIt(n, ast);
+      }
+      if (Config.MAX_AST_SIZE <= n) {
+        ASTElementLimitExceeded.throwIt(n + 1L);
       }
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
