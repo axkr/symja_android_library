@@ -3252,6 +3252,38 @@ public class SpecialFunctions {
     return false;
   }
 
+  /**
+   * <code>StruveH(nu, 0)</code> and <code>StruveL(nu, 0)</code>, from their series
+   * <code>Sum((z/2)^(2*k+nu+1)/(Gamma(k+3/2)*Gamma(k+nu+3/2)), k)</code> (with <code>(-1)^k</code>
+   * for <code>StruveH</code>).
+   *
+   * @return {@link F#NIL} if the real part of <code>nu</code> can't be compared with
+   *         <code>-1</code>, and for <code>nu == -1</code>
+   */
+  private static IExpr struveAtZero(IExpr nu) {
+    if (nu.isFraction() && ((IFraction) nu).denominator().equals(F.C2) && nu.isNegative()) {
+      // nu = -n-1/2: the terms with a pole of Gamma(k+nu+3/2) are zero, the first other one has
+      // the power (z/2)^(n+1/2)
+      return F.C0;
+    }
+    if (nu.isMinusOne()) {
+      return F.NIL;
+    }
+    IExpr re = nu.re();
+    if (re.isMinusOne()) {
+      // the factor (z/2)^(I*Im(nu)) has no value at 0
+      return S.Indeterminate;
+    }
+    IExpr greater = re.greaterThan(F.CN1);
+    if (greater.isTrue()) {
+      return F.C0;
+    }
+    if (greater.isFalse()) {
+      return F.CComplexInfinity;
+    }
+    return F.NIL;
+  }
+
   private static final class StruveH extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
@@ -3309,6 +3341,9 @@ public class SpecialFunctions {
 
     private IExpr struveH(IExpr arg1, IExpr arg2, EvalEngine engine) {
       try {
+        if (F.isExactZero(arg2)) {
+          return struveAtZero(arg1);
+        }
         if (arg1.isFraction()) {
           IFraction frac = (IFraction) arg1;
           if (frac.denominator().equals(F.C2)) {
@@ -3337,24 +3372,10 @@ public class SpecialFunctions {
             }
           }
         }
-        if (F.isExactZero(arg2)) {
-          IExpr re = arg1.re();
-          if (re.isMinusOne()) {
-            return S.Indeterminate;
-          }
-          IExpr temp = re.greaterThan(F.CN1);
-          if (temp.isTrue()) {
-            return F.C0;
-          }
-          if (temp.isFalse()) {
-            return F.CComplexInfinity;
-          }
-        } else {
-          IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
-          if (negArg2.isPresent()) {
-            return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
-                F.StruveH(arg1, negArg2));
-          }
+        IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
+        if (negArg2.isPresent()) {
+          return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),
+              F.StruveH(arg1, negArg2));
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
@@ -3434,6 +3455,9 @@ public class SpecialFunctions {
 
     private static IExpr struveL(IExpr arg1, IExpr arg2, EvalEngine engine) {
       try {
+        if (F.isExactZero(arg2)) {
+          return struveAtZero(arg1);
+        }
         if (arg1.isFraction()) {
           IFraction frac = (IFraction) arg1;
           if (frac.denominator().equals(F.C2)) {
@@ -3458,19 +3482,7 @@ public class SpecialFunctions {
             }
           }
         }
-        if (arg2.isZero()) {
-          IExpr re = arg1.re();
-          if (re.isMinusOne()) {
-            return S.Indeterminate;
-          }
-          IExpr temp = re.greaterThan(F.CN1);
-          if (temp.isTrue()) {
-            return F.C0;
-          }
-          if (temp.isFalse()) {
-            return F.CComplexInfinity;
-          }
-        } else {
+        if (!arg2.isZero()) {
           IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
           if (negArg2.isPresent()) {
             return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)),

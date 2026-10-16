@@ -29219,6 +29219,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testStruveAtZero() {
+    // the series Sum((-1)^k*(z/2)^(2*k+nu+1)/(Gamma(k+3/2)*Gamma(k+nu+3/2)), k) at z = 0
+    check("{StruveH(-1/2, 0), StruveL(-1/2, 0)}", //
+        "{0,0}");
+    // nu = -7/2: the terms with a pole of Gamma are zero, the first other one is (z/2)^(7/2)
+    check("{StruveH(-7/2, 0), StruveL(-7/2, 0)}", //
+        "{0,0}");
+    check("{StruveH(3/4+2*I, 0), StruveL(-4/5, 0)}", //
+        "{0,0}");
+    check("{StruveH(-5/3, 0), StruveL(-3, 0)}", //
+        "{ComplexInfinity,ComplexInfinity}");
+    // (z/2)^(I*Im(nu)) has no value at 0
+    check("StruveH(-1+3*I, 0)", //
+        "Indeterminate");
+    // the real part of nu unknown
+    check("{StruveH(m, 0), StruveL(m, 0)}", //
+        "{StruveH(m,0),StruveL(m,0)}");
+    check("StruveH(-1, 0)", //
+        "StruveH(-1,0)");
+    // the closed forms of the half-integer orders stay for a symbolic argument
+    check("StruveL(-1/2, y)", //
+        "(Sqrt(2/Pi)*Sinh(y))/Sqrt(y)");
+  }
+
+  @Test
   public void testStruveH() {
     check("StruveH(5/2, z)", //
         "(24*Sqrt(2)*Pi+4*Sqrt(2*Pi^2)*z^2+Sqrt(2*Pi^2)*z^4-24*Sqrt(2/Pi)*Pi^(3/2)*Cos(z)+\n" //
