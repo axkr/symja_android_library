@@ -114,13 +114,13 @@ public class Table extends Relation implements Iterable<Row> {
 
   /** TODO: Add documentation */
   private static void autoRegisterReadersAndWriters() {
-    // ClassGraph 6 scans no class source unless one is enabled: without enableClasspath() no
-    // reader or writer was found, and a write to HTML had no DataWriter
-    try (ScanResult scanResult = new ClassGraph().enableClassInfo().enableClasspath()
-        .acceptPackages("tech.tablesaw.io").scan()) {
+    // ClassGraph 4.8: version 6 needs Java 25, and it renames getClassesImplementing and scans no
+    // class source unless enableClasspath() is called
+    try (ScanResult scanResult =
+        new ClassGraph().enableClassInfo().acceptPackages("tech.tablesaw.io").scan()) {
       List<String> classes = new ArrayList<>();
-      classes.addAll(scanResult.getAllClassesImplementing(DataWriter.class.getName()).getNames());
-      classes.addAll(scanResult.getAllClassesImplementing(DataReader.class.getName()).getNames());
+      classes.addAll(scanResult.getClassesImplementing(DataWriter.class.getName()).getNames());
+      classes.addAll(scanResult.getClassesImplementing(DataReader.class.getName()).getNames());
       for (String clazz : classes) {
         try {
           Class.forName(clazz);
