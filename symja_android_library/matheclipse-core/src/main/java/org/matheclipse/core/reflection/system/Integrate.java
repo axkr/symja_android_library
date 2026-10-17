@@ -754,7 +754,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // under assumptions the same integral may be asked for with different ones
           IAST key = F.list(fx, x);
           if (!IN_PROGRESS.get().add(key)) {
-            return F.NIL;
+            // The same integral further up: unevaluated, but with its evaluated integrand. NIL
+            // keeps the integrand as it was held, and a rule's
+            // Integrate(Rubi`ExpandToSum(u,x)^p*Rubi`ExpandToSum(v,x)^1,x) came back as the answer.
+            return evaled ? ast : F.NIL;
           }
           inProgressKey = key;
         }

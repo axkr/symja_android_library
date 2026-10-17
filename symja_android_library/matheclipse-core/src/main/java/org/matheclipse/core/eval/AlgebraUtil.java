@@ -3128,6 +3128,10 @@ public class AlgebraUtil {
     }
     temp = S.Factor.of(engine, parts[1]);
     if (temp.isTimes()) {
+      IExpr linear = linearFactorsApart(parts[0], (IAST) temp, variable, engine);
+      if (linear.isPresent()) {
+        return linear;
+      }
       // The iterative method no longer requires a 'count' recursion tracker.
       return collectPartialFractions(splitRepeatedFactors(
           AlgebraUtil.partialFractionDecomposition(parts[0], temp, variable, engine), variable,
@@ -3135,6 +3139,98 @@ public class AlgebraUtil {
     }
     return collectPartialFractions(singleFactorApart(parts[0], temp, variable, engine), variable,
         engine);
+  }
+
+  /** The highest multiplicity of a linear factor which {@link #linearFactorsApart} takes. */
+  private static final int MAX_LINEAR_FACTOR_MULTIPLICITY = 8;
+
+  /**
+   * The partial fractions of <code>numerator/denominator</code> when the denominator is a product
+   * of powers of factors linear in the variable, from the Laurent expansions at their roots.
+   *
+   * <p>
+   * For a factor <code>L == a + b*x</code> of multiplicity <code>k</code> with the root
+   * <code>r == -a/b</code>, <code>g == numerator*L^k/denominator</code> has no pole at
+   * <code>r</code>, and the coefficient of <code>1/L^j</code> is
+   * <code>D(g, {x, k-j})(r)/((k-j)!*b^(k-j))</code>. With symbolic coefficients this is a few
+   * derivatives where the iteration over the factors divides polynomials again and again:
+   * <code>1/((a+b*x)^3*(c+d*x)^3*(e+f*x)^3)</code> took more than a minute.
+   *
+   * @return {@link F#NIL} if a factor is not linear or a power of one, or the fraction is not
+   *         proper
+   */
+  private static IExpr linearFactorsApart(IExpr numerator, IAST denominator, IExpr variable,
+      EvalEngine engine) {
+    if (!numerator.isPolynomial(variable)) {
+      return F.NIL;
+    }
+    IASTAppendable constants = F.TimesAlloc(2);
+    java.util.List<IExpr> bases = new java.util.ArrayList<IExpr>();
+    java.util.List<Integer> multiplicities = new java.util.ArrayList<Integer>();
+    int degree = 0;
+    for (IExpr factor : denominator) {
+      if (factor.isFree(variable)) {
+        constants.append(factor);
+        continue;
+      }
+      IExpr base = factor;
+      int k = 1;
+      if (factor.isPower()) {
+        base = factor.base();
+        k = factor.exponent().toIntDefault();
+        if (k < 1 || k > MAX_LINEAR_FACTOR_MULTIPLICITY) {
+          return F.NIL;
+        }
+      }
+      if (!base.isPolynomial(variable)
+          || engine.evaluate(F.Exponent(base, variable)).toIntDefault() != 1) {
+        return F.NIL;
+      }
+      bases.add(base);
+      multiplicities.add(k);
+      degree += k;
+    }
+    if (bases.size() < 2) {
+      return F.NIL;
+    }
+    int numeratorDegree = numerator.isFree(variable) ? 0
+        : engine.evaluate(F.Exponent(numerator, variable)).toIntDefault(-1);
+    if (numeratorDegree < 0 || numeratorDegree >= degree) {
+      return F.NIL;
+    }
+    IExpr constant = engine.evaluate(constants.oneIdentity1());
+    IASTAppendable result = F.PlusAlloc(degree);
+    for (int i = 0; i < bases.size(); i++) {
+      IExpr base = bases.get(i);
+      int k = multiplicities.get(i);
+      IExpr b = engine.evaluate(F.Coefficient(base, variable, F.C1));
+      IExpr root = engine.evaluate(F.Negate(F.Divide(F.Coefficient(base, variable, F.C0), b)));
+      // g = numerator / (constant * the other factors)
+      IASTAppendable others = F.TimesAlloc(bases.size());
+      others.append(constant);
+      for (int j = 0; j < bases.size(); j++) {
+        if (j != i) {
+          others.append(F.Power(bases.get(j), F.ZZ(multiplicities.get(j))));
+        }
+      }
+      IExpr g = engine.evaluate(F.Divide(numerator, others));
+      IExpr derivative = g;
+      IExpr factorial = F.C1;
+      for (int m = 0; m < k; m++) {
+        if (m > 0) {
+          derivative = engine.evaluate(F.D(derivative, variable));
+          factorial = engine.evaluate(F.Times(factorial, F.ZZ(m)));
+        }
+        IExpr atRoot = engine.evaluate(F.subst(derivative, variable, root));
+        IExpr coefficient = engine.evaluate(F.Divide(atRoot, F.Times(factorial, F.Power(b, m))));
+        if (!coefficient.isZero()) {
+          // the coefficient of 1/base^(k-m)
+          IExpr fraction = F.Times(coefficient, F.Power(base, F.ZZ(m - k)));
+          appendPartialFraction(result, engine.evaluate(fraction));
+        }
+      }
+    }
+    return collectPartialFractions(engine.evaluate(result.oneIdentity0()), variable, engine);
   }
 
   /**

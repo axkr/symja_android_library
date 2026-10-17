@@ -644,6 +644,14 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testApartPowersOfLinearFactors() {
+    // the coefficients from the Laurent expansions at the roots
+    check("Apart(1/((p+q*x)^2*(r+s*x)^2), x)", //
+        "q^2/((q*r-p*s)^2*(p+q*x)^2)+(-2*q^2*s)/((q*r-p*s)^3*(p+q*x))+s^2/((q*r-p*s)^2*(r+s*x)^\n"
+            + "2)+(2*q*s^2)/((q*r-p*s)^3*(r+s*x))");
+  }
+
+  @Test
   public void testApart() {
     check("Apart(1/(x^2 - 1))", //
         "1/(2*(-1+x))-1/(2*(1+x))");

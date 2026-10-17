@@ -23017,6 +23017,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPossibleZeroQRootsOfVariables() {
+    // u*(v/u)^(5/3) == v*(v/u)^(2/3) on every branch; the sample u == v == 0 is 0/0
+    check("PossibleZeroQ(u*(v/u)^(5/3)-v*(v/u)^(2/3))", //
+        "True");
+    // zero on a part of the plane only
+    check("PossibleZeroQ(Sqrt(y^2)-y)", //
+        "False");
+    check("PossibleZeroQ(Sqrt(u)*Sqrt(v)-Sqrt(u*v))", //
+        "False");
+  }
+
+  @Test
   public void testPossibleZeroQ() {
     // same as in WMA but should be True
     check("PossibleZeroQ(Gamma(x+1)-x*Gamma(x))", //

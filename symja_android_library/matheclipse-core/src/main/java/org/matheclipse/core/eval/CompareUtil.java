@@ -740,7 +740,9 @@ public class CompareUtil {
             trueCounter++;
           }
 
-          if (trueCounter == 5) {
+          // None of the fixed values refuted the zero. One where the function is undefined decides
+          // nothing: (x^2-1)/(x-1) - (x+1) is 0/0 at x == 1.
+          if (trueCounter >= 3) {
             // 2. step test some random complex numeric values
             for (int i = 0; i < 36; i++) {
               possibeZero = isPossibeZero(function, variables, engine);
@@ -757,6 +759,14 @@ public class CompareUtil {
           }
           if (fastTest) {
             return false;
+          }
+        } else if (function.isFreeAST(h -> isSpecialNumericFunction(h) && !h.isPower())) {
+          // Powers of variable expressions: a sample can sit on another branch of a root, so a
+          // sample which is not zero decides nothing, but zero at every sample is a zero.
+          // a*(b/a)^(4/3) - b*(b/a)^(1/3) is one, and the symbolic tests below do not see it: Rubi's
+          // NeQ was true for it and chose a rule which gave an antiderivative with a wrong factor.
+          if (isZeroAtEverySample(function, variables, engine)) {
+            return true;
           }
         }
       }
@@ -845,6 +855,36 @@ public class CompareUtil {
       return Attribute.NHOLDREST.isAnySetIn(attributes);
     }
     return false;
+  }
+
+  /**
+   * Whether <code>function</code> is zero at the fixed sample points and at random complex points,
+   * and at no point clearly not zero. Points where it has no value are left out, but at most a few.
+   */
+  private static boolean isZeroAtEverySample(IAST function, IAST variables, EvalEngine engine) {
+    int zeros = 0;
+    int samples = 0;
+    for (INumber number : new INumber[] {F.C0, F.C1, F.CN1, F.CI, F.CNI}) {
+      COMPARE_TERNARY zero = isPossibeZeroFixedValues(number, function, variables, engine);
+      if (zero == IExpr.COMPARE_TERNARY.FALSE) {
+        return false;
+      }
+      samples++;
+      if (zero == IExpr.COMPARE_TERNARY.TRUE) {
+        zeros++;
+      }
+    }
+    for (int i = 0; i < 36; i++) {
+      COMPARE_TERNARY zero = isPossibeZero(function, variables, engine);
+      if (zero == IExpr.COMPARE_TERNARY.FALSE) {
+        return false;
+      }
+      samples++;
+      if (zero == IExpr.COMPARE_TERNARY.TRUE) {
+        zeros++;
+      }
+    }
+    return zeros >= samples - 3;
   }
 
   public static boolean isSpecialNumericFunction(IExpr head) {

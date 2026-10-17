@@ -418,6 +418,19 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntegrateRuleCycleAndZeroCondition() {
+    // a rule's Integrate(Rubi`ExpandToSum(u,x)^w*Rubi`ExpandToSum(v,x)^1,x) asked for the integral
+    // it came from and was returned with its unevaluated integrand
+    check("Integrate((g+h*x+k*x^2)^w*(-2*n*h^2+2*n*g*k+3*m*h*k-n*h^2*w+2*m*h*k*w+2*m*k^2*(3+2*w)*x"
+        + "+2*n*k^2*(3+2*w)*x^2), x)", //
+        "((3*k*m-2*h*n+2*k*m*w-h*n*w)*(g+h*x+k*x^2)^(1+w))/(1+w)+2*k*n*x*(g+h*x+k*x^2)^(1+w)");
+    // NeQ was true for a zero with cube roots, and the rule it chose lost the factor -2
+    check("Integrate((1+Sqrt(3)+(v/u)^(1/3)*x)/((1-Sqrt(3)+(v/u)^(1/3)*x)*Sqrt(u+v*x^3)), x)", //
+        "(-2*ArcTanh((Sqrt(-3+2*Sqrt(3))*Sqrt(u)*(1+(v/u)^(1/3)*x))/Sqrt(u+v*x^3)))/(Sqrt(-\n"
+            + "3+2*Sqrt(3))*Sqrt(u)*(v/u)^(1/3))");
+  }
+
+  @Test
   public void testIntegrateWithInertIntegralOfTheVariable() {
     // Inactive(f)[...] holds its arguments: TrigSimplifyRecur was left in the inert integral,
     // E^(2*Inactive(Integrate)[Rubi`trigsimplifyrecur(w(s)),{s,0,x}])/2
