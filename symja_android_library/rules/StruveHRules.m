@@ -1,5 +1,6 @@
 {
 StruveH(-1/2,0)=0,
+StruveH(1/2,0)=0,
 StruveH(-1/2,z_):=(Sqrt(2/Pi)*Sin(z))/Sqrt(z), 
 StruveH(1/2,z_):=(Sqrt(2/Pi)*(1-Cos(z)))/Sqrt(z),
 
