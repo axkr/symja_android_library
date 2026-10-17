@@ -17,7 +17,6 @@ import org.matheclipse.core.combinatoric.KSubsets;
 import org.matheclipse.core.combinatoric.KSubsets.KSubsetsList;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ReturnException;
-import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
@@ -100,14 +99,8 @@ public class Primality implements IPrimality {
   private static final int PRIME_CERTAINTY = 32;
 
   /**
-   * The number of times {@link #rho(BigInteger)} is restarted with new random start values, before
-   * a composite number is considered as &quot;not factorizable&quot;.
-   */
-  private static final int MAX_RHO_RESTARTS = 5;
-
-  /**
-   * The number of times a composite divisor determined by {@link #rho(BigInteger)} is split up
-   * recursively.
+   * The number of times a composite divisor determined by {@link IntegerSplitter#split(BigInteger)}
+   * is split up recursively.
    */
   private static final int MAX_RHO_RECURSION_DEPTH = 64;
 
@@ -724,17 +717,13 @@ public class Primality implements IPrimality {
   }
 
   /**
-   * Determine the prime factors of <code>val</code> with Pollards rho algorithm. The prime factors
-   * and their exponents are stored in the <code>map</code>.
+   * Determine the prime factors of <code>val</code>. The prime factors and their exponents are
+   * stored in the <code>map</code>.
    *
    * <p>
-   * Pollards rho algorithm only splits a composite number into two factors, which aren't
-   * necessarily prime. Every determined divisor is therefore tested for primality and split again,
-   * if it's composite.
-   *
-   * <p>
-   * See <a href="https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm">Wikipedia: Pollards rho
-   * algorithm</a>
+   * {@link IntegerSplitter#split(BigInteger)} (Pollards rho, <code>p-1</code> and elliptic curve
+   * methods) only splits a composite number into two factors, which aren't necessarily prime. Every
+   * determined divisor is therefore tested for primality and split again, if it's composite.
    *
    * @param val the integer which should be factored; small prime factors should already be divided
    *        out with {@link #countPrimes32749(BigInteger, Map)}
@@ -761,7 +750,7 @@ public class Primality implements IPrimality {
         addToMap(rest, 1, map);
         return;
       }
-      BigInteger divisor = recursionDepth > 0 ? pollardRhoDivisor(rest) : BigInteger.ONE;
+      BigInteger divisor = recursionDepth > 0 ? IntegerSplitter.split(rest) : BigInteger.ONE;
       if (divisor.equals(BigInteger.ONE)) {
         // No divisor could be determined. The composite rest is no prime factor: recording it as
         // one would make MoebiusMu, PrimeNu, PrimeOmega, EulerPhi, ... answer for another number,
@@ -784,36 +773,6 @@ public class Primality implements IPrimality {
         rest = rest.divide(divisor);
       }
     }
-  }
-
-  /**
-   * Determine a nontrivial divisor of the composite number <code>val</code> with Pollards rho
-   * algorithm. The determined divisor isn't necessarily a prime number.
-   *
-   * @param val a composite number
-   * @return {@link BigInteger#ONE} if no nontrivial divisor could be determined
-   */
-  private static BigInteger pollardRhoDivisor(BigInteger val) {
-    for (int i = 0; i < MAX_RHO_RESTARTS; i++) {
-      BigInteger divisor = rho(val);
-      if (divisor.compareTo(BigInteger.ONE) > 0 && !divisor.equals(val)) {
-        return divisor;
-      }
-    }
-    // Pollards rho algorithm doesn't work reliably for small numbers, which contain only a few
-    // prime factors; fall back to trial division by the primes less equal 32749
-    for (int i = 0; i < BIprimes.length; i++) {
-      if (val.compareTo(BIprimes[i]) > 0 && val.mod(BIprimes[i]).signum() == 0) {
-        return BIprimes[i];
-      }
-    }
-    for (int i = 0; i < PRIMES_1031_32749.length; i++) {
-      BigInteger prime = BigInteger.valueOf(PRIMES_1031_32749[i]);
-      if (val.compareTo(prime) > 0 && val.mod(prime).signum() == 0) {
-        return prime;
-      }
-    }
-    return BigInteger.ONE;
   }
 
   public static List<BigInteger> factorize(final BigInteger val) {
@@ -889,6 +848,13 @@ public class Primality implements IPrimality {
     return map;
   }
 
+  /**
+   * Determine a divisor of <code>val</code> with Brent's variant of Pollards rho algorithm and a
+   * random polynomial <code>x^2+c</code>.
+   *
+   * @param val an odd composite number
+   * @return a divisor greater than <code>1</code>, which can be <code>val</code> itself
+   */
   public static BigInteger rho(final BigInteger val) {
     if (val.compareTo(FOUR) < 0) {
       // 0, 1, 2, 3 cannot be split up; especially for 1 the loop below wouldn't terminate
@@ -897,25 +863,8 @@ public class Primality implements IPrimality {
     if (!val.testBit(0)) {
       return TWO;
     }
-    BigInteger divisor;
-    BigInteger c = new BigInteger(val.bitLength(), random);
-    BigInteger x = new BigInteger(val.bitLength(), random);
-    BigInteger xx = x;
-    int steps = 0;
-
-    do {
-      if ((++steps & 0xFFF) == 0 && Thread.currentThread().isInterrupted()) {
-        // the number of steps grows with the square root of the smallest prime factor, and no
-        // evaluation in between would notice a time limit
-        throw TimeoutException.TIMED_OUT;
-      }
-      x = x.multiply(x).mod(val).add(c).mod(val);
-      xx = xx.multiply(xx).mod(val).add(c).mod(val);
-      xx = xx.multiply(xx).mod(val).add(c).mod(val);
-      divisor = x.subtract(xx).gcd(val);
-    } while (divisor.equals(BigInteger.ONE));
-
-    return divisor;
+    return IntegerSplitter.brentRho(val, new BigInteger(val.bitLength(), random).mod(val),
+        Long.MAX_VALUE);
   }
 
   /**

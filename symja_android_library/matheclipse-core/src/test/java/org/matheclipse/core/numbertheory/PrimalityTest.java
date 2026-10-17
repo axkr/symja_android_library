@@ -1,8 +1,10 @@
 package org.matheclipse.core.numbertheory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -19,6 +21,10 @@ public class PrimalityTest {
   private static final BigInteger P2 = BigInteger.valueOf(15485863);
   /** <code>Prime(2*10^6)</code> */
   private static final BigInteger P3 = BigInteger.valueOf(32452843);
+  /** <code>2^61-1</code> */
+  private static final BigInteger MERSENNE_61 = BigInteger.ONE.shiftLeft(61).subtract(BigInteger.ONE);
+  /** <code>10^20+39</code> */
+  private static final BigInteger Q20 = new BigInteger("100000000000000000039");
 
   /**
    * Assert that the factorization is complete and that every factor really is a prime number.
@@ -102,5 +108,64 @@ public class PrimalityTest {
         factors(BigInteger.valueOf(2), 3, BigInteger.valueOf(3), 2, BigInteger.valueOf(5), 1), 1);
     assertFactorization(BigInteger.valueOf(12).multiply(P1.pow(5)),
         factors(BigInteger.valueOf(2), 2, BigInteger.valueOf(3), 1, P1, 5), 20);
+  }
+
+  /**
+   * <code>2^61-2</code> has only prime factors up to 1321, so the <code>p-1</code> method finds the
+   * 19 digit factor at once. Pollards rho algorithm alone needs about 10^9 steps for it.
+   */
+  @Test
+  public void testFactorIntegerSmoothPMinus1() {
+    assertTimeoutPreemptively(Duration.ofSeconds(10), () -> assertFactorization(
+        MERSENNE_61.multiply(Q20), factors(MERSENNE_61, 1, Q20, 1), 10));
+  }
+
+  /** Neither factor has a smooth <code>p-1</code>; the elliptic curve method has to find it. */
+  @Test
+  public void testFactorIntegerBalancedSemiprime() {
+    BigInteger p = new BigInteger("1000000000000000003");
+    assertTimeoutPreemptively(Duration.ofSeconds(30),
+        () -> assertFactorization(p.multiply(Q20), factors(p, 1, Q20, 1), 1));
+  }
+
+  @Test
+  public void testFactorIntegerThreeLargePrimes() {
+    BigInteger p = new BigInteger("1000000000039");
+    BigInteger q = new BigInteger("3000000000013");
+    BigInteger r = new BigInteger("7000000000009");
+    assertTimeoutPreemptively(Duration.ofSeconds(10), () -> assertFactorization(
+        p.multiply(q).multiply(r), factors(p, 1, q, 1, r, 1), 3));
+  }
+
+  /** A square of a 16 digit prime is recognized as a perfect power. */
+  @Test
+  public void testFactorIntegerSquareOfLargePrime() {
+    BigInteger p = new BigInteger("1000000000000037");
+    assertTimeoutPreemptively(Duration.ofSeconds(10), () -> assertFactorization(
+        P1.pow(4).multiply(p.pow(2)), factors(P1, 4, p, 2), 3));
+  }
+
+  /** The elliptic curve method stops when the thread is interrupted. */
+  @Test
+  public void testFactorIntegerInterrupted() throws InterruptedException {
+    BigInteger n = BigInteger.TEN.pow(30).nextProbablePrime()
+        .multiply(BigInteger.TEN.pow(31).nextProbablePrime());
+    Throwable[] thrown = new Throwable[1];
+    Thread thread = new Thread(() -> {
+      try {
+        new Primality().factorInteger(n);
+      } catch (Throwable t) {
+        thrown[0] = t;
+      }
+    });
+    // a daemon, so that a factorization which ignores the interrupt can't keep the JVM alive
+    thread.setDaemon(true);
+    thread.start();
+    Thread.sleep(200);
+    thread.interrupt();
+    thread.join(5000);
+    assertTrue(!thread.isAlive(), "the factorization doesn't stop on interrupt");
+    assertTrue(thrown[0] instanceof org.matheclipse.core.eval.exception.TimeoutException,
+        String.valueOf(thrown[0]));
   }
 }
