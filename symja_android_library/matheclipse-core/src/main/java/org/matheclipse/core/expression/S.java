@@ -6170,6 +6170,16 @@ public class S {
       S.initFinalSymbol("DirichletBeta", ID.DirichletBeta);
 
   /**
+   * DirichletCharacter(x) - TODO describe `DirichletCharacter`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirichletCharacter.md">DirichletCharacter
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DirichletCharacter =
+      S.initFinalSymbol("DirichletCharacter", ID.DirichletCharacter);
+
+  /**
    * DirichletEta(x) - `DirichletEta` function returns the Dirichlet eta function.
    * 
    * @see <a href=
@@ -6178,6 +6188,15 @@ public class S {
    */
   public final static IBuiltInSymbol DirichletEta =
       S.initFinalSymbol("DirichletEta", ID.DirichletEta);
+
+  /**
+   * DirichletL(x) - TODO describe `DirichletL`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirichletL.md">DirichletL
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DirichletL = S.initFinalSymbol("DirichletL", ID.DirichletL);
 
   /**
    * DirichletLambda(z) - returns the Dirichlet lambda function.
