@@ -2779,6 +2779,16 @@ public class S {
       S.initFinalSymbol("BoxWhiskerChart", ID.BoxWhiskerChart);
 
   /**
+   * BracketingBar(x) - TODO describe `BracketingBar`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BracketingBar.md">BracketingBar
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BracketingBar =
+      S.initFinalSymbol("BracketingBar", ID.BracketingBar);
+
+  /**
    * BrayCurtisDistance(u, v) - returns the Bray Curtis distance between `u` and `v`.
    * 
    * @see <a href=
@@ -6353,6 +6363,16 @@ public class S {
       S.initFinalSymbol("DistributionFitTest", ID.DistributionFitTest);
 
   /**
+   * DistributionParameterAssumptions(x) - TODO describe `DistributionParameterAssumptions`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DistributionParameterAssumptions.md">DistributionParameterAssumptions
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DistributionParameterAssumptions =
+      S.initFinalSymbol("DistributionParameterAssumptions", ID.DistributionParameterAssumptions);
+
+  /**
    * DistributionParameterQ(x) - TODO describe `DistributionParameterQ`.
    * 
    * @see <a href=
@@ -6516,6 +6536,16 @@ public class S {
   public final static IBuiltInSymbol DotEqual = S.initFinalSymbol("DotEqual", ID.DotEqual);
 
   public final static IBuiltInSymbol Dotted = S.initFinalSymbol("Dotted", ID.Dotted);
+
+  /**
+   * DoubleBracketingBar(x) - TODO describe `DoubleBracketingBar`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DoubleBracketingBar.md">DoubleBracketingBar
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DoubleBracketingBar =
+      S.initFinalSymbol("DoubleBracketingBar", ID.DoubleBracketingBar);
 
   /**
    * DoubleDownArrow(x) - TODO describe `DoubleDownArrow`.
@@ -22671,6 +22701,15 @@ public class S {
       S.initFinalSymbol("StaticsVisible", ID.StaticsVisible);
 
   public final static IBuiltInSymbol StatusArea = S.initFinalSymbol("StatusArea", ID.StatusArea);
+
+  /**
+   * StepMonitor(x) - TODO describe `StepMonitor`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StepMonitor.md">StepMonitor
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StepMonitor = S.initFinalSymbol("StepMonitor", ID.StepMonitor);
 
   public final static IBuiltInSymbol StereochemistryElements =
       S.initFinalSymbol("StereochemistryElements", ID.StereochemistryElements);
