@@ -17445,6 +17445,15 @@ public class S {
   public final static IBuiltInSymbol NuttallWindow =
       S.initFinalSymbol("NuttallWindow", ID.NuttallWindow);
 
+  /**
+   * NValues(x) - TODO describe `NValues`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NValues.md">NValues
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NValues = S.initFinalSymbol("NValues", ID.NValues);
+
   public final static IBuiltInSymbol O = S.initFinalSymbol("O", ID.O);
 
   public final static IBuiltInSymbol Octahedron = S.initFinalSymbol("Octahedron", ID.Octahedron);

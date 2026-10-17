@@ -476,7 +476,7 @@ public class AST2Expr {
       "NumberFieldRootsOfUnity", "NumberFieldSignature", "NumberForm", "NumberFormat",
       "NumberLinePlot", "NumberMultiplier", "NumberPadding", "NumberPoint", "NumberQ",
       "NumberSeparator", "NumberSigns", "Numerator", "NumericalOrder", "NumericalSort",
-      "NumericArray", "NumericArrayQ", "NumericArrayType", "NumericQ", "NuttallWindow",
+      "NumericArray", "NumericArrayQ", "NumericArrayType", "NumericQ", "NuttallWindow", "NValues",
       "Octahedron", "OddQ", "Off", "Offset", "On", "Once", "Opacity", "OpenAppend", "Opener",
       "Opening", "OpenRead", "OpenWrite", "Operate", "OptimizeExpression", "Optional", "Options",
       "OptionsPattern", "OptionValue", "Or", "OrbitalElements", "Order", "OrderedQ", "Ordering",
