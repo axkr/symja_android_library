@@ -8692,6 +8692,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testExtract() {
+    // an invalid position leaves Extract unevaluated, with the message of Extract
+    check("Extract({1, 2}, {3})", //
+        "Extract({1,2},{3})");
+    check("Extract({1, 2}, {{1}, {3}})", //
+        "Extract({1,2},{{1},{3}})");
+    check("Extract({1, 2}, {1, 1})", //
+        "Extract({1,2},{1,1})");
+    check("Extract({1, 2}, 3)", //
+        "Extract({1,2},3)");
+    check("Extract({1, 2}, {3}, Hold)", //
+        "Extract({1,2},{3},Hold)");
+    check("Extract(Hold(1 + 1, 2 + 2), {2}, Hold)", //
+        "Hold(2+2)");
+    check("Extract({{1, 2}, {3, 4}}, {{1, 1}, {2, 2}}, Hold)", //
+        "{Hold(1),Hold(4)}");
+    check("Extract({a, b}, {{}})", //
+        "{{a,b}}");
 
     // Basic list-of-lists: each sub-list is an integer position path
     check("Extract({{a, b}, {c, d}}, {{1}, {2, 2}})", //
@@ -19119,6 +19136,50 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.285714285714285714285714+I*0.714285714285714285714286");
     check("InputForm(N(2, 24)/7 + I*N(5, 24)/7)", //
         "2.85714285714285714285714`24*^-1+I*7.14285714285714285714286`24*^-1");
+  }
+
+  @Test
+  public void testNValues() {
+    // N(x) = value gives x a numerical value, used wherever x is evaluated numerically
+    check("N(nva) = 1.0; {NValues(nva), N(nva), N(nva + 1), N(2*nva), UpValues(nva)}", //
+        "{{HoldPattern(N(nva,{MachinePrecision,MachinePrecision})):>1.0},1.0,2.0,2.0,{}}");
+    check("nva", //
+        "nva");
+    check("Definition(nva)", //
+        "N(nva,{MachinePrecision,MachinePrecision})=1.0`");
+    check("N(nva) =.; {NValues(nva), N(nva + 1)}", //
+        "{{},1.0+nva}");
+
+    check("NValues(nvb) = {HoldPattern(N(nvb, {MachinePrecision, MachinePrecision})) :> 2.0};"
+        + "{N(nvb), N(nvb + 1)}", //
+        "{2.0,3.0}");
+    // a rule for a precision
+    check("N(nvc, 20) = 5; NValues(nvc)", //
+        "{HoldPattern(N(nvc,20)):>5}");
+    check("{N(nvc + 1, 20), Precision(N(nvc + 1, 20))}", //
+        "{6,20}");
+    // separate inputs: a precision written in the input is the precision of all of it
+    check("N(nvc)", //
+        "nvc");
+    // a rule for a call
+    check("N(nvf(x_)) := x + 1; {N(nvf(2) + 1), nvf(2)}", //
+        "{4.0,nvf(2)}");
+
+    // N-values and up values are kept apart
+    check("nvg /: nvh(nvg) = 3; N(nvg) = 2.0; {UpValues(nvg), NValues(nvg)}", //
+        "{{HoldPattern(nvh(nvg)):>3},{HoldPattern(N(nvg,{MachinePrecision,MachinePrecision})):>2.0}}");
+    check("UpValues(nvg) = {}; {UpValues(nvg), N(nvg)}", //
+        "{{},2.0}");
+    check("NValues(nvg) = {}; {NValues(nvg), N(nvg)}", //
+        "{{},nvg}");
+    check("nvk /: N(nvk) = 1.5; {N(nvk + 1), UpValues(nvk)}", //
+        "{2.5,{}}");
+
+    // a built-in constant is Protected
+    check("N(Pi) = 3", //
+        "3");
+    check("N(Pi)", //
+        "3.14159");
   }
 
   @Test

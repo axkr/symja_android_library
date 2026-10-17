@@ -661,14 +661,14 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    * @param engine
    * @return
    */
-  private static IExpr getIndex(IAST ast, final int pos, EvalEngine engine) {
+  private static IExpr getIndex(IAST ast, final int pos, ISymbol head, EvalEngine engine) {
     int position = pos;
     if (position < 0) {
       position = ast.size() + position;
     }
     if ((position < 0) || (position >= ast.size())) {
       // Part `1` of `2` does not exist.
-      return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(pos), ast), engine);
+      return Errors.printMessage(head, "partw", F.list(F.ZZ(pos), ast), engine);
     }
     return ast.get(position);
   }
@@ -682,14 +682,15 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    * @param engine
    * @return
    */
-  private static IExpr getIndexRule(IAST ast, final int pos, EvalEngine engine) {
+  private static IExpr getIndexRule(IAST ast, final int pos, ISymbol head,
+      EvalEngine engine) {
     int position = pos;
     if (position < 0) {
       position = ast.size() + position;
     }
     if ((position < 0) || (position >= ast.size())) {
       // Part `1` of `2` does not exist.
-      return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(pos), ast), engine);
+      return Errors.printMessage(head, "partw", F.list(F.ZZ(pos), ast), engine);
     }
     return ast.getRule(position);
   }
@@ -724,6 +725,23 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
   }
 
   public static IExpr part(final IAST arg1, final IAST ast, int pos, EvalEngine engine) {
+    return part(arg1, ast, pos, S.Part, engine);
+  }
+
+  /**
+   * Get the <code>Part[...]</code> of an expression, reporting an invalid part under
+   * <code>head</code>.
+   *
+   * @param arg1 the expression from which parts should be extracted
+   * @param ast the <code>Part[...]</code> expression
+   * @param pos the index position from which the sub-expressions should be extracted
+   * @param head the symbol a message is reported for, <code>Part</code> or the caller such as
+   *        <code>Extract</code>
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if a part doesn't exist
+   */
+  public static IExpr part(final IAST arg1, final IAST ast, int pos, ISymbol head,
+      EvalEngine engine) {
     final IExpr arg2 = engine.evaluate(ast.get(pos));
     int p1 = pos + 1;
     int[] span = arg2.isSpan(arg1.size());
@@ -731,30 +749,31 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       int start = span[0];
       int last = span[1];
       int step = span[2];
-      return spanPart(ast, pos, arg1, arg2, start, last, step, p1, engine);
+      return spanPart(ast, pos, arg1, arg2, start, last, step, p1, head, engine);
     } else if (arg2 == S.All) {
-      return spanPart(ast, pos, arg1, arg2, 1, arg1.argSize(), 1, p1, engine);
+      return spanPart(ast, pos, arg1, arg2, 1, arg1.argSize(), 1, p1, head,
+          engine);
     } else if (arg2.isReal()) {
       final int indx = ast.get(pos).toIntDefault();
       if (F.isNotPresent(indx)) {
         // Part `1` of `2` does not exist.
-        return Errors.printMessage(S.Part, "partw", F.list(ast.get(pos), arg1), engine);
+        return Errors.printMessage(head, "partw", F.list(ast.get(pos), arg1), engine);
       }
-      IExpr result = getIndex(arg1, indx, engine);
+      IExpr result = getIndex(arg1, indx, head, engine);
       if (result.isPresent()) {
         if (p1 < ast.size()) {
           IAST target = partTarget(result);
           if (target.isPresent()) {
-            return part(target, ast, p1, engine);
+            return part(target, ast, p1, head, engine);
           } else if (result.isSparseArray()) {
-            return sparsePart((ISparseArray) result, ast, p1, engine);
+            return sparsePart((ISparseArray) result, ast, p1, head, engine);
           } else {
             IExpr headOfAtom = atomPart(result, ast, p1, engine);
             if (headOfAtom.isPresent()) {
               return headOfAtom;
             }
             // Part specification `1` is longer than depth of object.
-            return Errors.printMessage(S.Part, "partd", F.list(result), engine);
+            return Errors.printMessage(head, "partd", F.list(result), engine);
           }
         }
         return result;
@@ -773,20 +792,20 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             final int indx = listArg.toIntDefault();
             if (F.isNotPresent(indx)) {
               // Part `1` of `2` does not exist.
-              return Errors.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
+              return Errors.printMessage(head, "partw", F.list(listArg, arg1), engine);
             }
-            IExpr ires = getIndexRule(arg1, indx, engine);
+            IExpr ires = getIndexRule(arg1, indx, head, engine);
             if (ires.isPresent()) {
               if (p1 < ast.size()) {
                 IAST iresTarget = partTarget(ires);
                 if (iresTarget.isPresent()) {
 
-                  temp = part(iresTarget, ast, p1, engine);
+                  temp = part(iresTarget, ast, p1, head, engine);
                   if (temp.isPresent()) {
                     try {
                       result.appendRule(temp);
                     } catch (IndexOutOfBoundsException ioobex) {
-                      return Errors.printMessage(S.Part, "pkspec1", F.list(temp), engine);
+                      return Errors.printMessage(head, "pkspec1", F.list(temp), engine);
                     }
                   } else {
                     // an error occurred
@@ -795,13 +814,13 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
 
                 } else {
                   // Part specification `1` is longer than depth of object.
-                  return Errors.printMessage(S.Part, "partd", F.list(ires), engine);
+                  return Errors.printMessage(head, "partd", F.list(ires), engine);
                 }
               } else {
                 try {
                   result.appendRule(ires);
                 } catch (IndexOutOfBoundsException ioobex) {
-                  return Errors.printMessage(S.Part, "pkspec1", F.list(ires), engine);
+                  return Errors.printMessage(head, "pkspec1", F.list(ires), engine);
                 }
               }
             } else {
@@ -815,7 +834,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           } else {
             // a number which is no position, a symbol, a list: nothing of it can be a part
             // The expression `1` cannot be used as a part specification.
-            return Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);
+            return Errors.printMessage(head, "pkspec1", F.list(list), engine);
           }
         }
         return result;
@@ -831,10 +850,10 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       if (result.isPresent()) {
         if (p1 < ast.size()) {
           if (result.isASTOrAssociation()) {
-            return part((IAST) result, ast, p1, engine);
+            return part((IAST) result, ast, p1, head, engine);
           } else {
             // Part specification `1` is longer than depth of object.
-            return Errors.printMessage(S.Part, "partd", F.list(result), engine);
+            return Errors.printMessage(head, "partd", F.list(result), engine);
           }
         }
         return result;
@@ -843,7 +862,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       IExpr temp = null;
       final IAST list = (IAST) arg2;
       if (arg1.isDataset() && p1 >= ast.size()) {
-        IExpr dataset = datasetPart(arg1, list, engine);
+        IExpr dataset = datasetPart(arg1, list, head, engine);
         if (dataset.isPresent()) {
           return dataset;
         }
@@ -857,17 +876,17 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           if (F.isNotPresent(indx)) {
             if (!listArg.isInteger()) {
               // The expression `1` cannot be used as a part specification.
-              return Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);
+              return Errors.printMessage(head, "pkspec1", F.list(list), engine);
             }
             // Part `1` of `2` does not exist.
-            return Errors.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
+            return Errors.printMessage(head, "partw", F.list(listArg, arg1), engine);
           }
-          IExpr ires = getIndex(arg1, indx, engine);
+          IExpr ires = getIndex(arg1, indx, head, engine);
           if (ires.isPresent()) {
             if (p1 < ast.size()) {
               IAST iresTarget = partTarget(ires);
               if (iresTarget.isPresent()) {
-                temp = part(iresTarget, ast, p1, engine);
+                temp = part(iresTarget, ast, p1, head, engine);
                 if (temp.isPresent()) {
                   result.append(temp);
                 } else {
@@ -876,7 +895,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
                 }
               } else {
                 // Part specification `1` is longer than depth of object.
-                return Errors.printMessage(S.Part, "partd", F.list(ires), engine);
+                return Errors.printMessage(head, "partd", F.list(ires), engine);
               }
             } else {
               result.append(ires);
@@ -888,14 +907,14 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           // a symbol or a list is no position either: {1, 2, 3}[[{1, x}]] has no part x, and is
           // not the part 1 alone
           // The expression `1` cannot be used as a part specification.
-          return Errors.printMessage(S.Part, "pkspec1", F.list(list), engine);
+          return Errors.printMessage(head, "pkspec1", F.list(list), engine);
         }
       }
       return result;
     }
 
     // The expression `1` cannot be used as a part specification.
-    return Errors.printMessage(S.Part, "pkspec1", F.list(arg2), engine);
+    return Errors.printMessage(head, "pkspec1", F.list(arg2), engine);
   }
 
   /**
@@ -916,7 +935,8 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    * @return the selection, or {@link F#NIL} when this is not a plain list of positions and the
    *         generic path should have it after all
    */
-  private static IExpr datasetPart(final IAST arg1, final IAST list, EvalEngine engine) {
+  private static IExpr datasetPart(final IAST arg1, final IAST list, ISymbol head,
+      EvalEngine engine) {
     final int argSize = arg1.argSize();
     int[] positions = new int[list.argSize()];
     for (int i = 1; i < list.size(); i++) {
@@ -934,7 +954,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       }
       if (index < 1 || index > argSize) {
         // Part `1` of `2` does not exist.
-        return Errors.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
+        return Errors.printMessage(head, "partw", F.list(listArg, arg1), engine);
       }
       positions[i - 1] = index;
     }
@@ -942,14 +962,14 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
   }
 
   private static IExpr spanPart(final IAST ast, int pos, final IAST arg1, final IExpr arg2,
-      int start, int last, int step, int p1, EvalEngine engine) {
+      int start, int last, int step, int p1, ISymbol head, EvalEngine engine) {
 
     final int size = arg1.size();
     if (step < 0 && start >= last) {
       IASTAppendable result = arg1.copyHead((last - start) / step + 2);
       for (int i = start; i >= last; i += step) {
         if (p1 >= ast.size()) {
-          IExpr temp = getIndexRule(arg1, i, engine);
+          IExpr temp = getIndexRule(arg1, i, head, engine);
           if (temp.isPresent()) {
             result.appendRule(temp);
             continue;
@@ -960,26 +980,26 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           // tested before the element is read: a span which runs past the end is an error message
           // and not an IndexOutOfBoundsException
           // Cannot take positions `1` through `2` in `3`.
-          return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
+          return Errors.printMessage(head, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
               engine);
         }
         IAST target = partTarget(arg1.get(i));
         if (target.isPresent()) {
-          IExpr temp = part(target, ast, p1, engine);
+          IExpr temp = part(target, ast, p1, head, engine);
           if (temp.isPresent()) {
             result.append(temp);
             continue;
           }
         }
         // Part specification `1` is longer than depth of object.
-        return Errors.printMessage(S.Part, "partd", F.list(arg1.get(i)), engine);
+        return Errors.printMessage(head, "partd", F.list(arg1.get(i)), engine);
       }
       return result;
     } else if (step > 0 && (last != 1 || start <= last)) {
       IASTAppendable result = arg1.copyHead((last - start) / step + 2);
       for (int i = start; i <= last; i += step) {
         if (p1 >= ast.size()) {
-          IExpr temp = getIndexRule(arg1, i, engine);
+          IExpr temp = getIndexRule(arg1, i, head, engine);
           if (temp.isPresent()) {
             result.appendRule(temp);
             continue;
@@ -990,7 +1010,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           // tested before the element is read: a span which runs past the end is an error message
           // and not an IndexOutOfBoundsException
           // Cannot take positions `1` through `2` in `3`.
-          return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
+          return Errors.printMessage(head, "take", F.list(F.ZZ(start), F.ZZ(last), arg1),
               engine);
         }
         IAST target = partTarget(arg1.get(i));
@@ -1000,14 +1020,14 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             IAST rule = (IAST) arg1.getRule(i);
             IAST argAST = partTarget(rule.second());
             if (argAST.isPresent()) {
-              IExpr temp = part(argAST, ast, p1, engine);
+              IExpr temp = part(argAST, ast, p1, head, engine);
               if (temp.isPresent()) {
                 result.appendRule(rule.setAtCopy(2, temp));
                 continue;
               }
             }
           } else {
-            IExpr temp = part(target, ast, p1, engine);
+            IExpr temp = part(target, ast, p1, head, engine);
             if (temp.isPresent()) {
               result.append(temp);
               continue;
@@ -1015,15 +1035,20 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
           }
         }
         // Part specification `1` is longer than depth of object.
-        return Errors.printMessage(S.Part, "partd", F.list(arg1.get(i)), engine);
+        return Errors.printMessage(head, "partd", F.list(arg1.get(i)), engine);
       }
       return result;
     }
     // The expression `1` cannot be used as a part specification.
-    return Errors.printMessage(S.Part, "pkspec1", F.list(arg2), engine);
+    return Errors.printMessage(head, "pkspec1", F.list(arg2), engine);
   }
 
   public static IExpr sparsePart(final ISparseArray arg1, final IAST ast, int pos,
+      EvalEngine engine) {
+    return sparsePart(arg1, ast, pos, S.Part, engine);
+  }
+
+  private static IExpr sparsePart(final ISparseArray arg1, final IAST ast, int pos, ISymbol head,
       EvalEngine engine) {
     if (ast.forAll(x -> (x.isInteger() && x.isPositive()) || x == S.All, 2)) {
       return arg1.getPart(ast, pos);
@@ -1032,7 +1057,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
 
     IExpr temp = arg1.normal(false);
     if (temp.isList()) {
-      IExpr res = part((IAST) temp, ast, pos, engine);
+      IExpr res = part((IAST) temp, ast, pos, head, engine);
       if (res.isList()) {
         ISparseArray sparseArray = SparseArrayExpr.newDenseList((IAST) res, arg1.getDefaultValue());
         if (sparseArray != null) {
@@ -1043,7 +1068,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     }
 
     // The expression `1` cannot be used as a part specification.
-    return Errors.printMessage(S.Part, "pkspec1", F.list(ast), engine);
+    return Errors.printMessage(head, "pkspec1", F.list(ast), engine);
   }
 
   @Override

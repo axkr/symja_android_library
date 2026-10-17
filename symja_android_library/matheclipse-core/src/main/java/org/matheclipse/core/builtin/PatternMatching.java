@@ -2710,8 +2710,50 @@ public final class PatternMatching {
     return tag == null || tag.hasProtectedAttribute() ? null : tag;
   }
 
+  /**
+   * The symbol which carries an N-value: for <code>N(x)</code> and <code>N(x, precision)</code> the
+   * symbol <code>x</code>, for <code>N(f(...))</code> the head <code>f</code>.
+   *
+   * @param expr the left-hand-side of a definition
+   * @return <code>null</code> if <code>expr</code> is no N-value, or if its argument names no
+   *         symbol a rule can be attached to
+   */
+  private static ISymbol nValueTag(IExpr expr) {
+    if (!expr.isAST(S.N, 2) && !expr.isAST(S.N, 3)) {
+      return null;
+    }
+    IExpr base = expr.first();
+    if (base instanceof IPatternObject) {
+      return null;
+    }
+    return base.isSymbol() ? (ISymbol) base : base.isAST() ? base.topHead() : null;
+  }
+
+  /**
+   * Store <code>N(x) = value</code> as an N-value of <code>tag</code>, which is kept with its
+   * up-values.
+   *
+   * @return <code>false</code> if the tag is Protected
+   */
+  private static boolean putNValue(ISymbol tag, int flags, IExpr evaledLHS, IExpr originalLHS,
+      IExpr rightHandSide, ISymbol setSymbol) {
+    if (tag.hasProtectedAttribute()) {
+      // Tag `1` in `2` is Protected.
+      Errors.printMessage(setSymbol, "write", F.list(tag, originalLHS), EvalEngine.get());
+      return false;
+    }
+    tag.putUpRule(flags, false, RulesData.storedNValue((IAST) evaledLHS), rightHandSide);
+    return true;
+  }
+
   private static IExpr setDownRule(IExpr evaledLHS, IExpr originalLHS, int flags,
       IExpr rightHandSide, boolean packageMode) {
+    ISymbol nValueTag = nValueTag(evaledLHS);
+    if (nValueTag != null) {
+      putNValue(nValueTag, flags | IPatternMatcher.TAGSET, evaledLHS, originalLHS, rightHandSide,
+          S.Set);
+      return rightHandSide;
+    }
     ISymbol notationTag = notationTag(evaledLHS);
     if (notationTag != null) {
       notationTag.putUpRule(flags | IPatternMatcher.TAGSET, false, (IAST) evaledLHS, rightHandSide);
@@ -2786,6 +2828,14 @@ public final class PatternMatching {
 
   private static void setDelayedDownRule(IExpr evaledLHS, IExpr originalLHS, int flags,
       IExpr rightHandSide, boolean packageMode) {
+    ISymbol nValueTag = nValueTag(evaledLHS);
+    if (nValueTag != null) {
+      if (!putNValue(nValueTag, flags | IPatternMatcher.TAGSET_DELAYED, evaledLHS, originalLHS,
+          rightHandSide, S.SetDelayed)) {
+        throw new FailedException();
+      }
+      return;
+    }
     ISymbol notationTag = notationTag(evaledLHS);
     if (notationTag != null) {
       notationTag.putUpRule(flags | IPatternMatcher.TAGSET_DELAYED, false, (IAST) evaledLHS,
@@ -3349,6 +3399,16 @@ public final class PatternMatching {
           return F.NIL;
         }
 
+        final ISymbol nValueTag = nValueTag(leftHandSide);
+        if (nValueTag != null) {
+          // an N-value is stored with the up-values of its tag
+          IExpr lhs = engine.evalHoldPattern((IAST) leftHandSide);
+          lhs = lhs.isAST() ? RulesData.storedNValue((IAST) lhs) : lhs;
+          if (!nValueTag.removeRule(IPatternMatcher.TAGSET, false, lhs, engine.isPackageMode())) {
+            printAssignmentNotFound(nValueTag, leftHandSide);
+          }
+          return S.Null;
+        }
         final ISymbol notationTag = notationTag(leftHandSide);
         if (notationTag != null) {
           // the rule was stored as an up-value of the variable the notation is written for

@@ -3926,10 +3926,34 @@ public class EvalEngine implements Serializable {
     if (temp.isPresent()) {
       return temp;
     }
+    if (fNumericMode && RulesData.isUpRulesDefined()) {
+      // N(f(x_)) := value: the numerical value of a call which has no other value
+      RulesData rulesData = symbol.getRulesData();
+      if (rulesData != null && rulesData.hasNValues()) {
+        temp = rulesData.evalUpRule(nValueLHS(ast), this);
+        if (temp.isPresent()) {
+          return temp;
+        }
+      }
+    }
     if (unevaluatedFunction[0]) {
       return ast;
     }
     return F.NIL;
+  }
+
+  /**
+   * The left-hand-side an N-value of <code>expr</code> is stored with at the current precision:
+   * <code>N(expr)</code> for machine precision, otherwise <code>N(expr, digits)</code> with the
+   * digits <code>N</code> was asked for, not the working precision with its guard digits.
+   *
+   * @param expr a symbol or a call
+   */
+  public IAST nValueLHS(IExpr expr) {
+    if (isArbitraryMode()) {
+      return F.binaryAST2(S.N, expr, F.ZZ(getSignificantFigures()));
+    }
+    return F.unaryAST1(S.N, expr);
   }
 
   /**

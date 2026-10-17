@@ -227,6 +227,12 @@ public final class RulesData implements Serializable {
    */
   private List<IPatternMatcher> fSimplePatternUpRules;
 
+  /**
+   * Is one of the up-values an N-value, a rule for <code>N(x)</code> or <code>N(x, precision)</code>?
+   * Removing a rule doesn't reset it: a stale <code>true</code> only costs a lookup.
+   */
+  private boolean fNValues;
+
   public RulesData() {
     clear();
   }
@@ -286,13 +292,71 @@ public final class RulesData implements Serializable {
     return pmEvaluator;
   }
 
-  /** Remove the up-values, as an assignment to <code>UpValues(symbol)</code> replaces them. */
-  public void clearUpRules() {
-    fEqualUpRules = null;
-    fSimplePatternUpRules = null;
+  /**
+   * Remove the up-values (<code>nValues == false</code>), as an assignment to
+   * <code>UpValues(symbol)</code> replaces them, or the N-values (<code>nValues == true</code>), as
+   * an assignment to <code>NValues(symbol)</code> does. The other kind is kept.
+   */
+  public void clearUpRules(boolean nValues) {
+    if (fEqualUpRules != null) {
+      fEqualUpRules.values().removeIf(matcher -> isNValue(matcher.getLHS()) == nValues);
+    }
+    if (fSimplePatternUpRules != null) {
+      fSimplePatternUpRules.removeIf(matcher -> isNValue(matcher.getLHS()) == nValues);
+    }
+  }
+
+  /**
+   * Test if <code>leftHandSide</code> is the left-hand-side of an N-value:
+   * <code>N(x)</code> or <code>N(x, precision)</code>, possibly in <code>HoldPattern</code> or
+   * <code>Condition</code>.
+   */
+  public static boolean isNValue(IExpr leftHandSide) {
+    while (leftHandSide.isCondition() || leftHandSide.isAST(S.HoldPattern, 2)) {
+      leftHandSide = leftHandSide.first();
+    }
+    return leftHandSide.isAST(S.N, 2) || leftHandSide.isAST(S.N, 3);
+  }
+
+  /**
+   * The form an N-value is stored in: <code>N(x)</code> for machine precision, which is also
+   * written <code>N(x, MachinePrecision)</code> and <code>N(x, {MachinePrecision,
+   * MachinePrecision})</code>, otherwise <code>N(x, precision)</code>.
+   *
+   * @param leftHandSide <code>N(x)</code> or <code>N(x, precision)</code>
+   */
+  public static IAST storedNValue(IAST leftHandSide) {
+    if (leftHandSide.isAST(S.N, 3)) {
+      IExpr precision = leftHandSide.arg2();
+      if (precision == S.MachinePrecision || (precision.isAST(S.List, 3)
+          && precision.first() == S.MachinePrecision && precision.second() == S.MachinePrecision)) {
+        return F.unaryAST1(S.N, leftHandSide.arg1());
+      }
+    }
+    return leftHandSide;
+  }
+
+  /**
+   * The form an N-value is shown in: <code>N(x, {MachinePrecision, MachinePrecision})</code> for
+   * machine precision.
+   *
+   * @param leftHandSide the stored left-hand-side, see {@link #storedNValue(IAST)}
+   */
+  public static IExpr shownNValue(IExpr leftHandSide) {
+    if (leftHandSide.isAST(S.N, 2)) {
+      return F.binaryAST2(S.N, leftHandSide.first(),
+          F.list(S.MachinePrecision, S.MachinePrecision));
+    }
+    return leftHandSide;
+  }
+
+  /** Test if one of the up-values may be an N-value. */
+  public boolean hasNValues() {
+    return fNValues;
   }
 
   public void clear() {
+    fNValues = false;
     invalidateRuleIndex();
     fEqualDownRules = null;
     fPatternDownRules = null;
@@ -380,6 +444,13 @@ public final class RulesData implements Serializable {
     ArrayList<IAST> definitionList = new ArrayList<IAST>(numberOfRules());
     forEachUpRule(matcher -> {
       IAST rule = matcher.getAsAST();
+      if (rule.isAST2() && (rule.head() == S.TagSet || rule.head() == S.TagSetDelayed)
+          && isNValue(rule.arg1())) {
+        // an N-value is defined without a tag: N(x, {MachinePrecision, MachinePrecision}) = value
+        definitionList.add(F.binaryAST2(rule.head() == S.TagSet ? S.Set : S.SetDelayed,
+            shownNValue(rule.arg1()), rule.arg2()));
+        return;
+      }
       if (tag != null && rule.isAST2() && (rule.head() == S.TagSet || rule.head() == S.TagSetDelayed)) {
         rule = F.ternaryAST3(rule.head(), tag, rule.arg1(), rule.arg2());
       }
@@ -440,8 +511,29 @@ public final class RulesData implements Serializable {
    */
   public IAST upValues() {
     IASTAppendable result = F.ListAlloc(numberOfRules() + 1);
-    forEachUpRule(
-        matcher -> result.append(F.RuleDelayed(F.HoldPattern(matcher.getLHS()), matcher.getRHS())));
+    forEachUpRule(matcher -> {
+      if (!isNValue(matcher.getLHS())) {
+        result.append(F.RuleDelayed(F.HoldPattern(matcher.getLHS()), matcher.getRHS()));
+      }
+    });
+    return result;
+  }
+
+  /**
+   * Give the <code>NValues()</code> of a symbol as a list of <code>RuleDelayed</code> (delayed
+   * rules) with the left-hand-side wrapped in a <code>HoldPattern()</code> expression. Machine
+   * precision is shown as <code>{MachinePrecision, MachinePrecision}</code>.
+   *
+   * @return a list of <code>RuleDelayed(HoldPattern(N(x, precision)), rhs)</code> rules
+   */
+  public IAST nValues() {
+    IASTAppendable result = F.ListAlloc(numberOfRules() + 1);
+    forEachUpRule(matcher -> {
+      if (isNValue(matcher.getLHS())) {
+        result.append(
+            F.RuleDelayed(F.HoldPattern(shownNValue(matcher.getLHS())), matcher.getRHS()));
+      }
+    });
     return result;
   }
 
@@ -888,6 +980,11 @@ public final class RulesData implements Serializable {
    * This method is idempotent.
    */
   public void initTransientState() {
+    forEachUpRule(matcher -> {
+      if (isNValue(matcher.getLHS())) {
+        fNValues = true;
+      }
+    });
     if (fPatternDownRules != null) {
       final int prioritySize = fPriorityDownRules == null ? 0 : fPriorityDownRules.size();
       for (int i = 0; i < fPatternDownRules.size(); i++) {
@@ -1044,6 +1141,9 @@ public final class RulesData implements Serializable {
       final IAST leftHandSide, final IExpr rightHandSide) {
     // the only place where fEqualUpRules / fSimplePatternUpRules become non-null
     UP_RULES_DEFINED = true;
+    if (isNValue(leftHandSide)) {
+      fNValues = true;
+    }
     if (equalRule) {
       fEqualUpRules = getEqualUpRules();
       PatternMatcherEquals pmEquals =

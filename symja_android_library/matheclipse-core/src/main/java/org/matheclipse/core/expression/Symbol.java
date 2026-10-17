@@ -677,7 +677,13 @@ public class Symbol implements ISymbol, Serializable {
     if (rightHandSide != null) {
       return ISymbol.evalAssignedValue(rightHandSide, engine);
     }
-    return evalDownRule(engine, this);
+    IExpr result = evalDownRule(engine, this);
+    if (result.isNIL() && engine.isNumericMode() && fRulesData != null
+        && fRulesData.hasNValues()) {
+      // N(x) = value: the numerical value of x, used wherever x is evaluated numerically
+      return fRulesData.evalUpRule(engine.nValueLHS(this), engine);
+    }
+    return result;
   }
 
   /** {@inheritDoc} */

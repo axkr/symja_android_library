@@ -69,7 +69,8 @@ public final class Extract extends AbstractFunctionEvaluator {
           indx = list.size() + indx;
           if (indx <= 0) {
             // == 0 - for MMA behaviour
-            return F.NIL;
+            // Part `1` of `2` does not exist.
+            return Errors.printMessage(S.Extract, "partw", F.list(ast.arg2(), list), engine);
           }
         }
         if (indx < list.size()) {
@@ -78,6 +79,8 @@ public final class Extract extends AbstractFunctionEvaluator {
           }
           return list.get(indx);
         }
+        // Part `1` of `2` does not exist.
+        return Errors.printMessage(S.Extract, "partw", F.list(ast.arg2(), list), engine);
       } else if (ast.arg2().isList()) {
         IAST arg2 = (IAST) ast.arg2();
         if (arg2.isListOfLists()) {
@@ -88,30 +91,12 @@ public final class Extract extends AbstractFunctionEvaluator {
             if (!checkPositions(ast, positions, engine)) {
               return F.NIL;
             }
-            if (arg3.isPresent()) {
-              IExpr rawResult;
-              if (positions.argSize() == 0) {
-                // The empty position names the whole expression, as Part() with no index does.
-                // Building Part(list) and asking for its second argument instead runs off the end
-                // of it, which is what Extract({}, {{}}, h) used to do.
-                rawResult = list;
-              } else {
-                // Direct structural extraction — no evaluation of result elements
-                IASTAppendable partAST = F.Part(positions.argSize(), list);
-                partAST.appendAll(positions, 1, positions.size());
-                rawResult = Part.part(list, partAST, 2, engine);
-              }
-              if (rawResult.isNIL()) {
-                return F.NIL;
-              }
-              result.append(F.unaryAST1(arg3, rawResult));
-            } else {
-              IExpr temp = extract(list, positions, engine);
-              if (temp.isNIL()) {
-                return F.NIL;
-              }
-              result.append(temp);
+            IExpr part = extract(list, positions, engine);
+            if (part.isNIL()) {
+              // an invalid position leaves the whole Extract unevaluated
+              return F.NIL;
             }
+            result.append(arg3.isPresent() ? F.unaryAST1(arg3, part) : part);
           }
           return result;
         }
@@ -121,18 +106,11 @@ public final class Extract extends AbstractFunctionEvaluator {
         if (!checkPositions(ast, arg2, engine)) {
           return F.NIL;
         }
-
-        if (arg3.isPresent()) {
-          IASTAppendable partAST = F.Part(arg2.argSize(), list);
-          partAST.appendAll(arg2, 1, arg2.size());
-          // Direct structural extraction via Part.part() — no evaluation of result elements
-          IExpr rawResult = Part.part(list, partAST, 2, engine);
-          if (rawResult.isNIL()) {
-            return F.NIL;
-          }
-          return F.unaryAST1(arg3, rawResult);
+        IExpr part = extract(list, arg2, engine);
+        if (part.isNIL()) {
+          return F.NIL;
         }
-        return extract(list, arg2, engine);
+        return arg3.isPresent() ? F.unaryAST1(arg3, part) : part;
       }
     }
     return F.NIL;
@@ -163,10 +141,20 @@ public final class Extract extends AbstractFunctionEvaluator {
     return ARGS_2_3_1;
   }
 
+  /**
+   * The part of <code>list</code> at <code>position</code>, without evaluating it. An invalid
+   * position is reported under <code>Extract</code>.
+   *
+   * @return {@link F#NIL} if the position doesn't exist
+   */
   private static IExpr extract(final IAST list, final IAST position, EvalEngine engine) {
+    if (position.argSize() == 0) {
+      // the empty position names the whole expression, as Part() with no index does
+      return list;
+    }
     IASTAppendable part = F.Part(position.argSize(), list);
     part.appendAll(position, 1, position.size());
-    return engine.evaluate(part);
+    return Part.part(list, part, 2, S.Extract, engine);
   }
 
   @Override

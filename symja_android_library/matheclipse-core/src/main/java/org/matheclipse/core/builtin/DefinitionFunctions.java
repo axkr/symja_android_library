@@ -44,6 +44,7 @@ public class DefinitionFunctions {
     private static void init() {
       if (!Config.FUZZY_PARSER) {
         S.SubValues.setEvaluator(new SubValues());
+        S.NValues.setEvaluator(new NValues());
         S.ExtendedFullDefinition.setEvaluator(new ExtendedFullDefinition());
       }
     }
@@ -83,6 +84,53 @@ public class DefinitionFunctions {
     public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
       return assignValues(leftHandSide, rightHandSide, builtinSymbol, engine, false);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
+    }
+  }
+
+  /**
+   * <code>NValues[symbol]</code>: the rules <code>N[x] = value</code> which tell <code>N</code> the
+   * numerical value of an expression.
+   *
+   * <p>
+   * Symja keeps them with the symbol's up values; <code>UpValues</code> leaves them out. Machine
+   * precision is shown, and accepted, as <code>{MachinePrecision, MachinePrecision}</code>.
+   */
+  private static final class NValues extends AbstractCoreFunctionEvaluator
+      implements ISetEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isString()) {
+        // the name of a symbol
+        String name = ast.arg1().toString();
+        if (name.matches("[a-zA-Z$][a-zA-Z0-9$`]*")) {
+          IExpr named = engine.parse(name);
+          if (named.isSymbol()) {
+            return engine.evaluate(F.unaryAST1(S.NValues, named));
+          }
+        }
+      }
+      IExpr arg1 = Validate.checkSymbolType(ast, 1, engine);
+      if (arg1.isNIL()) {
+        return F.NIL;
+      }
+      return nValues((ISymbol) arg1);
+    }
+
+    @Override
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      return assignValues(leftHandSide, rightHandSide, builtinSymbol, engine, true, true);
     }
 
     @Override
@@ -138,6 +186,7 @@ public class DefinitionFunctions {
       parts.append(F.Rule(F.stringx("DownValues"), downValues(symbol, false)));
       parts.append(F.Rule(F.stringx("SubValues"), downValues(symbol, true)));
       parts.append(F.Rule(F.stringx("UpValues"), upValues(symbol)));
+      parts.append(F.Rule(F.stringx("NValues"), nValues(symbol)));
       parts.append(F.Rule(F.stringx("Attributes"), listOrEmpty(engine.evaluate(F.Attributes(symbol)))));
       parts.append(F.Rule(F.stringx("Options"), listOrEmpty(engine.evaluate(F.Options(symbol)))));
       parts.append(F.Rule(F.stringx("Messages"),
@@ -191,7 +240,8 @@ public class DefinitionFunctions {
       assignRuleList(symbol, values.getValue(F.stringx("OwnValues")), false, engine);
       assignRuleList(symbol, values.getValue(F.stringx("DownValues")), false, engine);
       assignRuleList(symbol, values.getValue(F.stringx("SubValues")), false, engine);
-      assignRuleList(symbol, values.getValue(F.stringx("UpValues")), true, engine);
+      assignRuleList(symbol, values.getValue(F.stringx("UpValues")), true, false, engine);
+      assignRuleList(symbol, values.getValue(F.stringx("NValues")), true, true, engine);
       assignRuleList(symbol, values.getValue(F.stringx("DefaultValues")), false, engine);
       IExpr options = values.getValue(F.stringx("Options"));
       if (options != null && options.isList() && !options.isEmptyList()) {
@@ -245,6 +295,11 @@ public class DefinitionFunctions {
     return rulesData == null ? F.CEmptyList : rulesData.upValues();
   }
 
+  private static IAST nValues(ISymbol symbol) {
+    RulesData rulesData = symbol.getRulesData();
+    return rulesData == null ? F.CEmptyList : rulesData.nValues();
+  }
+
   private static IAST defaultValues(ISymbol symbol) {
     RulesData rulesData = symbol.getRulesData();
     if (rulesData == null) {
@@ -262,6 +317,17 @@ public class DefinitionFunctions {
    */
   static IExpr assignValues(final IExpr leftHandSide, IExpr rightHandSide,
       IBuiltInSymbol builtinSymbol, EvalEngine engine, boolean upRules) {
+    return assignValues(leftHandSide, rightHandSide, builtinSymbol, engine, upRules, false);
+  }
+
+  /**
+   * <code>DownValues[f] = rules</code> and the rest of them.
+   *
+   * @param upRules whether the rules are attached to the symbol as up values
+   * @param nValues whether the rules are N-values, <code>NValues[f] = rules</code>
+   */
+  private static IExpr assignValues(final IExpr leftHandSide, IExpr rightHandSide,
+      IBuiltInSymbol builtinSymbol, EvalEngine engine, boolean upRules, boolean nValues) {
     if (!leftHandSide.isAST() || leftHandSide.argSize() < 1 || !leftHandSide.first().isSymbol()) {
       return F.NIL;
     }
@@ -272,7 +338,7 @@ public class DefinitionFunctions {
       return F.NIL;
     }
     IExpr rules = builtinSymbol == S.SetDelayed ? rightHandSide : engine.evaluate(rightHandSide);
-    if (!assignRuleList(symbol, rules, upRules, engine)) {
+    if (!assignRuleList(symbol, rules, upRules, nValues, engine)) {
       return F.NIL;
     }
     return builtinSymbol == S.Set ? rules : S.Null;
@@ -285,6 +351,18 @@ public class DefinitionFunctions {
    */
   private static boolean assignRuleList(ISymbol symbol, IExpr rules, boolean upRules,
       EvalEngine engine) {
+    return assignRuleList(symbol, rules, upRules, false, engine);
+  }
+
+  /**
+   * Attach a list of <code>RuleDelayed(HoldPattern(lhs), rhs)</code> to a symbol.
+   *
+   * @param nValues whether the rules are N-values; they replace the N-values and keep the other up
+   *        values, and the other way round for up values
+   * @return <code>false</code> if the argument is not a list of rules
+   */
+  private static boolean assignRuleList(ISymbol symbol, IExpr rules, boolean upRules,
+      boolean nValues, EvalEngine engine) {
     if (rules == null || rules.isNIL()) {
       return true;
     }
@@ -298,10 +376,14 @@ public class DefinitionFunctions {
       if (lhs.isNIL() || !(lhs.isSymbol() || lhs.isAST())) {
         return false;
       }
+      if (nValues && !RulesData.isNValue(lhs)) {
+        return false;
+      }
     }
     if (upRules && symbol.getRulesData() != null) {
-      // the new list replaces the up-values, and its order is the order of the rules
-      symbol.getRulesData().clearUpRules();
+      // the new list replaces the up-values (or the N-values), and its order is the order of the
+      // rules
+      symbol.getRulesData().clearUpRules(nValues);
     }
     for (int i = 1; i < list.size(); i++) {
       IExpr rule = list.get(i);
@@ -315,6 +397,9 @@ public class DefinitionFunctions {
         ((ISymbol) lhs).assignValue(rhs, false);
       } else if (lhs.isAST()) {
         if (upRules) {
+          if (nValues) {
+            lhs = RulesData.storedNValue((IAST) lhs);
+          }
           symbol.putUpRule(IPatternMatcher.TAGSET | IPatternMatcher.SET_DELAYED, false, (IAST) lhs,
               rhs);
         } else {
