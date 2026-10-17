@@ -196,7 +196,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
         return result;
       }
       IExpr p = poly;
-      IExpr solutions = engine.evaluate(F.Solve(F.Equal(poly, F.C0), var));
+      // a polynomial Solve can't split only means the method doesn't apply: no message
+      IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(poly, F.C0), var));
       if (!solutions.isList()) {
         return null;
       }
@@ -1734,7 +1735,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
     // 1) SolveAlways(equation == 0, var): values of the parameters making the identity hold for all
     // values of var.
-    IExpr solveAlways = engine.evaluate(solveAlways(F.Equal(expanded, F.C0), var));
+    // an ansatz which has no solution only means the method doesn't apply: no message
+    IExpr solveAlways = engine.evalQuiet(solveAlways(F.Equal(expanded, F.C0), var));
     if (solveAlways.isList() && solveAlways.size() >= 2 && solveAlways.first().isList()
         && rulesCover(solveAlways.first(), unknowns)) {
       return solveAlways.first();
@@ -1751,7 +1753,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     for (IExpr cf : coeffList) {
       equations.append(F.Equal(cf, F.C0));
     }
-    IExpr solutions = engine.evaluate(F.Solve(equations, unknowns));
+    IExpr solutions = engine.evalQuiet(F.Solve(equations, unknowns));
     if (solutions.isList() && solutions.size() >= 2 && solutions.first().isList()) {
       return solutions.first();
     }
@@ -1817,7 +1819,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
     java.util.TreeSet<Integer> roots = new java.util.TreeSet<>();
     roots.add(0);
     if (!poly.isZero() && !poly.isFree(h, true)) {
-      IExpr solutions = engine.evaluate(F.Solve(F.Equal(poly, F.C0), h));
+      IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(poly, F.C0), h));
       if (solutions.isList()) {
         for (IExpr s : (IAST) solutions) {
           if (s.isList() && s.size() >= 2 && s.first().isRuleAST()) {

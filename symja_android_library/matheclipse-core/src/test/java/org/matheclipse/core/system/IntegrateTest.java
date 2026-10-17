@@ -418,6 +418,26 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntegrateWithInertIntegralOfTheVariable() {
+    // Inactive(f)[...] holds its arguments: TrigSimplifyRecur was left in the inert integral,
+    // E^(2*Inactive(Integrate)[Rubi`trigsimplifyrecur(w(s)),{s,0,x}])/2
+    String[] integrals = {"Integrate(w(x)*E^(2*Inactive(Integrate)[w(s),{s,0,x}]), x)",
+        "Integrate(x^2*Inactive(Integrate)[Cos(s^3),{s,0,x}], x)"};
+    for (String integral : integrals) {
+      String result = evaluator.eval(integral).toString();
+      assertFalse(result.contains("Rubi`"), integral + " => " + result);
+    }
+    // the derivative of the inert integral is a factor of the integrand
+    check("Integrate(w(x)*E^(2*Inactive(Integrate)[w(s),{s,0,x}]), x)", //
+        "E^(2*Inactive(Integrate)[w(s),{s,0,x}])/2");
+    check("Integrate(Inactive(Integrate)[w(s),{s,0,x}]^2*w(x), x)", //
+        "Inactive(Integrate)[w(s),{s,0,x}]^3/3");
+    // a limit which is not the variable: a constant factor
+    check("Integrate(Inactive(Integrate)[Cos(s^3),{s,0,b}]*x, x)", //
+        "1/2*x^2*Inactive(Integrate)[Cos(s^3),{s,0,b}]");
+  }
+
+  @Test
   public void testIntegratePiecewiseFactorDeclines() {
     // used to leak Rubi's utility function into the unevaluated integral:
     // Integrate(E^t*Piecewise({{2,0<=t<=1}},Rubi`trigsimplifyrecur(0)),t).

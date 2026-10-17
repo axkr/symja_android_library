@@ -29272,6 +29272,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // the series Sum((-1)^k*(z/2)^(2*k+nu+1)/(Gamma(k+3/2)*Gamma(k+nu+3/2)), k) at z = 0
     check("{StruveH(-1/2, 0), StruveL(-1/2, 0)}", //
         "{0,0}");
+    check("{StruveH(1/2, 0), StruveL(1/2, 0)}", //
+        "{0,0}");
     // nu = -7/2: the terms with a pole of Gamma are zero, the first other one is (z/2)^(7/2)
     check("{StruveH(-7/2, 0), StruveL(-7/2, 0)}", //
         "{0,0}");

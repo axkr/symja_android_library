@@ -5,6 +5,7 @@ import java.util.List;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.integrate.IntegrateTimeBudget;
@@ -41,6 +42,22 @@ final class DSolveContext {
     boolean linearizableActive;
     long deadlineNanos;
     boolean fitTimedOut;
+    boolean inertIntegrals;
+  }
+
+  /**
+   * Whether an integral which has no closed form may stay in the answer, inert: the last methods
+   * of the cascade allow it once every method which answers explicitly has declined.
+   */
+  boolean allowsInertIntegrals() {
+    return state.inertIntegrals;
+  }
+
+  /** Switches {@link #allowsInertIntegrals()} and returns what it was. */
+  boolean setInertIntegrals(boolean allowed) {
+    boolean before = state.inertIntegrals;
+    state.inertIntegrals = allowed;
+    return before;
   }
 
   /** A fit of an undetermined-coefficients guess ran out of time in this call. */
@@ -281,6 +298,11 @@ final class DSolveContext {
       return F.NIL;
     }
     if (result.isNIL() || result.equals(S.$Aborted) || result.isIndeterminate()) {
+      return F.NIL;
+    }
+    if (!result.isFree(x -> x.isSymbol()
+        && ((org.matheclipse.core.interfaces.ISymbol) x).getContext() == Context.RUBI, true)) {
+      // an integrand with an inert integral in it can come back with a function of the rules in it
       return F.NIL;
     }
     return isUsable(result) ? result : F.NIL;

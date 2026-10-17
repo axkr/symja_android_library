@@ -899,4 +899,14 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum((-1)^(j-1)*Gamma(j),{j,1,n-1})", //
         "DifferenceRoot[Function({y,n},{-n*y(n)-y(1+n)+n*y(1+n)+y(2+n)==0,y(1)==0,y(2)==1})][n]");
   }
+
+  @Test
+  public void testSpeculativeSolveIsQuiet() {
+    // the methods tried before the PolyGamma form solve systems with no solution: their messages
+    // must not reach the caller
+    check("Check(Sum(1/(j+b), {j, 1, m}), failed)", //
+        "-PolyGamma(0,1+b)+PolyGamma(0,1+b+m)");
+    check("Check(Sum(1/(2*j+b), {j, 0, m}), failed)", //
+        "1/2*(-PolyGamma(0,b/2)+PolyGamma(0,1+b/2+m))");
+  }
 }

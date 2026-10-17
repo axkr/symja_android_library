@@ -13,12 +13,15 @@ public class StruveHRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 1, 3 };
+  final public static int[] SIZES = { 2, 3 };
 
   final public static IAST RULES = List(
     IInit(StruveH, SIZES),
     // StruveH(-1/2,0)=0
     ISet(StruveH(CN1D2,C0),
+      C0, true),
+    // StruveH(1/2,0)=0
+    ISet(StruveH(C1D2,C0),
       C0, true),
     // StruveH(-1/2,z_):=(Sqrt(2/Pi)*Sin(z))/Sqrt(z)
     ISetDelayed(StruveH(CN1D2,z_),

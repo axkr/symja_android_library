@@ -304,7 +304,8 @@ final class DSolveODE {
         F.Times(q, x, m)), F.C0);
     IExpr solutions;
     try {
-      solutions = engine.evaluate(F.binaryAST2(S.SolveAlways, equation, F.list(x, yDummy)));
+      // exponents which don't exist only mean that the factor has another form: no message
+      solutions = engine.evalQuiet(F.binaryAST2(S.SolveAlways, equation, F.list(x, yDummy)));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return F.NIL;
@@ -1844,18 +1845,98 @@ final class DSolveODE {
 
   static IExpr linearODE(IExpr coefficient1, IExpr coefficient0, IExpr xVar, IExpr C_1,
       EvalEngine engine) {
+    return linearODE(coefficient1, coefficient0, xVar, C_1, false, engine);
+  }
+
+  /**
+   * The dummy variable <code>K(k)</code> of an inert integral, the name the inert quadratures of
+   * {@link #autonomousRelation} use as well.
+   */
+  private static IExpr inertVariable(int k) {
+    return F.unaryAST1(S.initFinalHiddenSymbol("K"), F.ZZ(k));
+  }
+
+  /**
+   * The integral of <code>integrand</code> from <code>1</code> to <code>upper</code>, inert:
+   * <code>Inactive(Integrate)[f(K(k)), {K(k), 1, upper}]</code>. The variable is renamed
+   * everywhere in the integrand, so an inert integral inside it gets <code>K(k)</code> as its upper
+   * limit.
+   */
+  static IExpr inertIntegral(IExpr integrand, IExpr variable, IExpr upper, int k) {
+    return inertIntegral(integrand, variable, F.C1, upper, k);
+  }
+
+  /**
+   * {@link #inertIntegral(IExpr, IExpr, IExpr, int)} from <code>lower</code>: the point of an
+   * initial condition, where the integral is zero.
+   */
+  static IExpr inertIntegral(IExpr integrand, IExpr variable, IExpr lower, IExpr upper, int k) {
+    IExpr dummy = inertVariable(k);
+    EvalEngine engine = EvalEngine.get();
+    // the factors free of the variable are taken out: -Inactive(Integrate)[g(K(1)), ...], not
+    // Inactive(Integrate)[-g(K(1)), ...]
+    IExpr together = engine.evaluate(F.Together(integrand));
+    if (together.isPlus()) {
+      // E^J*g - k*E^J*g has the common factor (1-k)*E^J*g
+      IExpr factored = engine.evaluate(F.Factor(together));
+      if (factored.isTimes()) {
+        together = factored;
+      }
+    }
+    IASTAppendable outside = F.TimesAlloc(2);
+    IASTAppendable inside = F.TimesAlloc(2);
+    IAST factors = together.isTimes() ? (IAST) together : F.Times(together);
+    for (IExpr factor : factors) {
+      (factor.isFree(variable) ? outside : inside).append(factor);
+    }
+    if (inside.argSize() == 0) {
+      inside.append(F.C1);
+    }
+    IExpr body = engine.evaluate(F.subst(inside.oneIdentity1(), variable, dummy));
+    IExpr integral =
+        F.binaryAST2(F.Inactive(S.Integrate), body, F.list(dummy, lower, upper));
+    return outside.argSize() == 0 ? integral
+        : engine.evaluate(F.Times(outside.oneIdentity1(), integral));
+  }
+
+  /**
+   * The solution of <code>y' + coefficient1*y + coefficient0 == 0</code>.
+   *
+   * @param inert whether an integral without a closed form stays in the solution, inert, in place
+   *        of declining: <code>y' == E^(-Sin(x)) + Cos(x)*y</code> is
+   *        <code>E^Sin(x)*(C(1) + Inactive(Integrate)[E^(-2*Sin(K(1))), {K(1), 1, x}])</code>
+   */
+  static IExpr linearODE(IExpr coefficient1, IExpr coefficient0, IExpr xVar, IExpr C_1,
+      boolean inert, EvalEngine engine) {
+    return linearODE(coefficient1, coefficient0, xVar, C_1, inert, F.C1, engine);
+  }
+
+  /**
+   * {@link #linearODE(IExpr, IExpr, IExpr, IExpr, boolean, EvalEngine)} with the inert integrals
+   * starting at <code>lower</code>.
+   */
+  private static IExpr linearODE(IExpr coefficient1, IExpr coefficient0, IExpr xVar, IExpr C_1,
+      boolean inert, IExpr lower, EvalEngine engine) {
+    int dummy = 1;
     IExpr pExponent = DSolveContext.integrate(coefficient1, xVar, engine);
     if (pExponent.isNIL()) {
-      return F.NIL;
+      if (!inert) {
+        return F.NIL;
+      }
+      pExponent = inertIntegral(coefficient1, xVar, lower, xVar, dummy++);
     }
     IExpr pInt = engine.evaluate(F.Exp(pExponent));
 
     if (coefficient0.isZero()) {
       return F.Divide(C_1, pInt).eval(engine);
     } else {
-      IExpr qIntegral = DSolveContext.integrate(F.Times(F.CN1, coefficient0, pInt), xVar, engine);
+      IExpr integrand = F.Times(F.CN1, coefficient0, pInt);
+      IExpr qIntegral = DSolveContext.integrate(integrand, xVar, engine);
       if (qIntegral.isNIL()) {
-        return F.NIL;
+        if (!inert) {
+          return F.NIL;
+        }
+        qIntegral = inertIntegral(engine.evaluate(integrand), xVar, lower, xVar, dummy);
       }
       IExpr qInt = engine.evaluate(F.Plus(C_1, F.Expand(qIntegral)));
       return F.Expand(F.Divide(qInt, pInt)).eval(engine);
@@ -2466,6 +2547,393 @@ final class DSolveODE {
    */
   static IExpr solveRiccatiThroughParticular(IExpr equation, IExpr xVar, IExpr yFunction, IExpr C_1,
       EvalEngine engine) {
+    return solveRiccatiThroughParticular(equation, xVar, yFunction, C_1, false, engine);
+  }
+
+  /**
+   * {@link #solveRiccatiThroughParticular(IExpr, IExpr, IExpr, IExpr, EvalEngine)}, where the
+   * linear equation for <code>v</code> may keep an integral inert if <code>inert</code> is set.
+   */
+  private static IExpr solveRiccatiThroughParticular(IExpr equation, IExpr xVar, IExpr yFunction,
+      IExpr C_1, boolean inert, EvalEngine engine) {
+    return solveRiccatiThroughParticular(equation, xVar, yFunction, C_1, inert, F.C1, engine);
+  }
+
+  private static IExpr solveRiccatiThroughParticular(IExpr equation, IExpr xVar, IExpr yFunction,
+      IExpr C_1, boolean inert, IExpr lower, EvalEngine engine) {
+    IExpr[] abc = riccatiCoefficients(equation, xVar, yFunction, engine);
+    if (abc == null) {
+      return F.NIL;
+    }
+    IExpr a = abc[0];
+    IExpr b = abc[1];
+    IExpr c = abc[2];
+    IExpr particular = riccatiParticular(a, b, c, xVar, engine);
+    if (particular.isNIL()) {
+      return F.NIL;
+    }
+    IExpr coefficient = engine.evaluate(F.Plus(F.Times(F.C2, a, particular), b));
+    IExpr v = linearODE(coefficient, a, xVar, C_1, inert, lower, engine);
+    if (v.isNIL() || v.isZero() || !DSolveContext.isUsable(v)) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Plus(particular, F.Power(v, F.CN1)));
+  }
+
+  /**
+   * The last methods for an equation nothing has answered explicitly: the ones whose answer may
+   * keep an integral without a closed form, inert, as <code>Inactive(Integrate)[f(K(1)), {K(1), 1,
+   * x}]</code>. A linear equation of the first order, a Bernoulli equation, a Riccati equation with
+   * a particular solution of the kinds that are guessed, and a linear equation of a higher order
+   * through variation of parameters are answered explicitly with such integrals. The separable
+   * equations are {@link #separableRelationWithInertIntegrals}'s.
+   *
+   * <p>
+   * This runs after every method which answers without them, so it never replaces a closed form.
+   *
+   * @return {@link F#NIL} if the equation is of none of these kinds
+   */
+  static IExpr solveWithInertIntegrals(IExpr equation, IExpr xVar, IAST yFunction, IExpr C_1,
+      DSolveContext ctx) {
+    return solveWithInertIntegrals(equation, xVar, yFunction, C_1, F.C1, ctx);
+  }
+
+  /**
+   * {@link #solveWithInertIntegrals(IExpr, IExpr, IAST, IExpr, DSolveContext)} with the inert
+   * integrals of a first order equation starting at <code>lower</code>.
+   */
+  private static IExpr solveWithInertIntegrals(IExpr equation, IExpr xVar, IAST yFunction,
+      IExpr C_1, IExpr lower, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    IExpr lhs = equation.isEqual() ? F.Subtract(equation.first(), equation.second()) : equation;
+    lhs = engine.evaluate(F.ExpandAll(lhs));
+    int order = LinearODEForm.highestDerivativeOrder(lhs, yFunction.head(), xVar);
+    if (order < 1) {
+      return F.NIL;
+    }
+    if (order == 1 && !isPowerSumIn(lhs, yFunction, xVar)) {
+      // y in another function, as in Sin(y): none of the equations below
+      return F.NIL;
+    }
+    LinearODEForm lf = LinearODEForm.extract(lhs, yFunction, xVar, engine);
+    if (order >= 2) {
+      // Constant coefficients only: with variable ones the basis can be of Bessel functions, and
+      // the integrals over their Wronskian are slow to fail and large when they stay.
+      if (lf == null || lf.g.isZero() || !lf.constantCoefficients) {
+        return F.NIL;
+      }
+      boolean before = ctx.setInertIntegrals(true);
+      try {
+        IExpr solution = solveLinearConstantCoefficients(lf, xVar, C_1, ctx);
+        if (solution.isNIL() || solution.isFree(x -> isInertIntegral(x), true)) {
+          return F.NIL;
+        }
+        return consecutiveConstants(solution, C_1, engine);
+      } finally {
+        ctx.setInertIntegrals(before);
+      }
+    }
+    if (lf != null) {
+      // a1*y' + a0*y == g
+      IExpr p = engine.evaluate(F.Together(F.Divide(lf.a[0], lf.a[1])));
+      IExpr q = engine.evaluate(F.Together(F.Divide(F.Negate(lf.g), lf.a[1])));
+      return linearODE(p, q, xVar, C_1, true, lower, engine);
+    }
+    IExpr bernoulli = bernoulliWithInertIntegrals(lhs, xVar, yFunction, C_1, lower, engine);
+    if (bernoulli.isPresent()) {
+      return bernoulli;
+    }
+    return solveRiccatiThroughParticular(equation, xVar, yFunction, C_1, true, lower, engine);
+  }
+
+  /**
+   * A separable equation of the first order whose integrals have no closed form: the inverse
+   * function of the inert integral in <code>y</code> applied to the one in <code>x</code>, or, if
+   * the one in <code>y</code> has a closed form, the relation of the two for <code>Solve</code>.
+   *
+   * @return {@link F#NIL} if the equation is not separable or both integrals have closed forms
+   */
+  static IExpr separableRelationWithInertIntegrals(IExpr equation, IExpr xVar, IAST yFunction,
+      IExpr C_1, EvalEngine engine) {
+    IExpr lhs = equation.isEqual() ? F.Subtract(equation.first(), equation.second()) : equation;
+    lhs = engine.evaluate(F.ExpandAll(lhs));
+    if (LinearODEForm.highestDerivativeOrder(lhs, yFunction.head(), xVar) != 1) {
+      return F.NIL;
+    }
+    return separableWithInertIntegrals(lhs, xVar, yFunction, C_1, engine);
+  }
+
+  /**
+   * The constants of <code>solution</code> renamed to <code>C_1</code> and the ones after it, in
+   * the order of their numbers: the methods which declined before used numbers up.
+   */
+  private static IExpr consecutiveConstants(IExpr solution, IExpr C_1, EvalEngine engine) {
+    IASTAppendable constants = F.ListAlloc();
+    DSolveUtil.extractCVars(solution, constants);
+    int first = C_1.first().toIntDefault();
+    if (first == Integer.MIN_VALUE || constants.argSize() == 0) {
+      return solution;
+    }
+    java.util.List<IExpr> sorted = new java.util.ArrayList<>();
+    for (IExpr c : constants) {
+      sorted.add(c);
+    }
+    sorted.sort((u, v) -> Integer.compare(u.first().toIntDefault(), v.first().toIntDefault()));
+    IASTAppendable rules = F.ListAlloc(sorted.size());
+    for (int i = 0; i < sorted.size(); i++) {
+      rules.append(F.Rule(sorted.get(i), F.C(first + i)));
+    }
+    return engine.evaluate(F.subst(solution, rules));
+  }
+
+  /**
+   * Whether <code>y</code>, its derivative <code>y'</code> and their powers are all the equation
+   * has of them, in sums and products: <code>x*y' + y^k*f(x)</code> but not <code>Sin(y)</code>
+   * or <code>1/(2 - Sin(y))</code>.
+   */
+  private static boolean isPowerSumIn(IExpr expr, IAST yFunction, IExpr xVar) {
+    if (expr.isFree(yFunction.head(), true)) {
+      return true;
+    }
+    if (expr.equals(yFunction)) {
+      return true;
+    }
+    if (expr.isAST1() && expr.head().isAST()
+        && ((IAST) expr.head()).arg1().equals(yFunction.head())
+        && ((IAST) expr).arg1().equals(xVar)) {
+      // a derivative y'(x)
+      return true;
+    }
+    if (expr.isPower()) {
+      return isPowerSumIn(expr.base(), yFunction, xVar)
+          && expr.exponent().isFree(yFunction.head(), true);
+    }
+    if (expr.isPlus() || expr.isTimes()) {
+      for (IExpr arg : (IAST) expr) {
+        if (!isPowerSumIn(arg, yFunction, xVar)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /** Whether <code>expr</code> is an inert integral <code>Inactive(Integrate)[...]</code>. */
+  private static boolean isInertIntegral(IExpr expr) {
+    return expr.isAST() && expr.head().isAST(S.Inactive, 2)
+        && expr.head().first() == S.Integrate;
+  }
+
+  /**
+   * The coefficient of <code>y'</code>, the rest of the equation, and whether the equation is
+   * linear in <code>y'</code>; <code>null</code> if it is not.
+   */
+  private static IExpr[] firstOrderParts(IExpr lhs, IExpr xVar, IAST yFunction,
+      EvalEngine engine) {
+    IExpr yPrime = engine.evaluate(F.D(yFunction, xVar));
+    IExpr coeffDyx = engine.evaluate(F.Coefficient(lhs, yPrime, F.C1));
+    IExpr rest = engine.evaluate(F.Coefficient(lhs, yPrime, F.C0));
+    if (coeffDyx.isZero() || !coeffDyx.isFree(yFunction.head(), true)
+        || !rest.isFree(yPrime) || !engine
+            .evaluate(F.ExpandAll(F.Subtract(lhs, F.Plus(F.Times(coeffDyx, yPrime), rest))))
+            .isZero()) {
+      return null;
+    }
+    return new IExpr[] {coeffDyx, rest};
+  }
+
+  /**
+   * <code>c*y' + P*y + Q*y^n == 0</code> through <code>v == y^(1-n)</code>, with inert integrals in
+   * the linear equation for <code>v</code>.
+   */
+  private static IExpr bernoulliWithInertIntegrals(IExpr lhs, IExpr xVar, IAST yFunction,
+      IExpr C_1, IExpr lower, EvalEngine engine) {
+    IExpr[] parts = firstOrderParts(lhs, xVar, yFunction, engine);
+    if (parts == null) {
+      return F.NIL;
+    }
+    IExpr coeffDyx = parts[0];
+    IExpr rest = engine.evaluate(F.ExpandAll(parts[1]));
+    IExpr coeffY = engine.evaluate(F.Coefficient(rest, yFunction, F.C1));
+    IExpr nonLinear = engine.evaluate(F.Expand(F.Subtract(rest, F.Times(coeffY, yFunction))));
+    if (nonLinear.isZero() || !coeffY.isFree(yFunction.head(), true)) {
+      return F.NIL;
+    }
+    IExpr first = nonLinear.isPlus() ? nonLinear.first() : nonLinear;
+    IExpr n = F.NIL;
+    IAST factors = first.isTimes() ? (IAST) first : F.Times(first);
+    for (IExpr factor : factors) {
+      if (factor.isPower() && factor.base().equals(yFunction)) {
+        n = factor.exponent();
+      }
+    }
+    if (n.isNIL() || !n.isFree(xVar) || n.isOne() || n.isZero()) {
+      return F.NIL;
+    }
+    IExpr coeffYn =
+        engine.evaluate(F.Together(F.Divide(nonLinear, F.Power(yFunction, n))));
+    if (!coeffYn.isFree(yFunction.head(), true)) {
+      return F.NIL;
+    }
+    IExpr oneMinusN = engine.evaluate(F.Subtract(F.C1, n));
+    IExpr p = engine.evaluate(F.Times(oneMinusN, F.Divide(coeffY, coeffDyx)));
+    IExpr q = engine.evaluate(F.Times(oneMinusN, F.Divide(coeffYn, coeffDyx)));
+    IExpr v = linearODE(p, q, xVar, C_1, true, lower, engine);
+    if (v.isNIL()) {
+      return F.NIL;
+    }
+    return DSolveUtil.bernoulliRoots(v, oneMinusN, engine);
+  }
+
+  /**
+   * <code>y' == X(x)*Y(y)</code> answered by the relation
+   * <code>Integrate(1/Y(y), y) == Integrate(X(x), x) + C(1)</code> for <code>Solve</code>, with
+   * the integrals which have no closed form inert.
+   */
+  private static IExpr separableWithInertIntegrals(IExpr lhs, IExpr xVar, IAST yFunction,
+      IExpr C_1, EvalEngine engine) {
+    IExpr[] parts = firstOrderParts(lhs, xVar, yFunction, engine);
+    if (parts == null) {
+      return F.NIL;
+    }
+    IExpr yDummy = F.Dummy("Y");
+    IExpr slope = engine.evaluate(F.Factor(F.Together(
+        F.subst(F.Divide(F.Negate(parts[1]), parts[0]), yFunction, yDummy))));
+    if (!slope.isFree(yFunction.head(), true)) {
+      return F.NIL;
+    }
+    IASTAppendable xPart = F.TimesAlloc(4);
+    IASTAppendable yPart = F.TimesAlloc(4);
+    IAST factors = slope.isTimes() ? (IAST) slope : F.Times(slope);
+    for (IExpr factor : factors) {
+      boolean hasX = !factor.isFree(xVar);
+      boolean hasY = !factor.isFree(yDummy);
+      if (hasX && hasY) {
+        return F.NIL;
+      }
+      (hasY ? yPart : xPart).append(factor);
+    }
+    IExpr xFactor = engine.evaluate(xPart.oneIdentity1());
+    IExpr yFactor = engine.evaluate(yPart.oneIdentity1());
+    if (yFactor.isFree(yDummy) || xFactor.isFree(xVar)) {
+      return F.NIL;
+    }
+    IExpr yIntegrand = engine.evaluate(F.Power(yFactor, F.CN1));
+    IExpr yIntegral = DSolveContext.integrate(yIntegrand, yDummy, engine);
+    IExpr xIntegral = DSolveContext.integrate(xFactor, xVar, engine);
+    if (yIntegral.isPresent() && xIntegral.isPresent()) {
+      // both have a closed form: this is the separable method's equation, not this one's
+      return F.NIL;
+    }
+    if (xIntegral.isNIL()) {
+      xIntegral = inertIntegral(xFactor, xVar, xVar, 2);
+    }
+    if (yIntegral.isNIL()) {
+      // y == G^(-1)(C(1) + F(x)) for the inert integral G(y) of 1/Y(y)
+      IExpr g = F.Function(inertIntegral(yIntegrand, yDummy, F.Slot1, 1));
+      return F.unaryAST1(F.unaryAST1(S.InverseFunction, g), F.Plus(C_1, xIntegral));
+    }
+    return F.Solve(F.Equal(F.subst(yIntegral, yDummy, yFunction), F.Plus(xIntegral, C_1)),
+        yFunction);
+  }
+
+  /** The inert integrals over an empty interval, <code>{K(k), a, a}</code>, replaced by 0. */
+  private static IExpr emptyIntegralsToZero(IExpr expr, EvalEngine engine) {
+    IExpr replaced = expr.replaceAll(x -> isInertIntegral(x) && x.second().isList3()
+        && engine.evaluate(F.Subtract(((IAST) x.second()).arg2(), ((IAST) x.second()).arg3()))
+            .isZero() ? F.C0 : F.NIL);
+    return replaced.isPresent() ? engine.evaluate(replaced) : expr;
+  }
+
+  /**
+   * A first order equation with one condition <code>y(x0) == y0</code>, answered with inert
+   * integrals from <code>x0</code> to <code>x</code>: they are zero at the point, so the constant
+   * is fitted to the condition directly.
+   *
+   * @return the branches of the solution as rules, or {@link F#NIL}
+   */
+  private static IExpr initialValueWithInertIntegrals(IASTAppendable listOfEquations, IExpr arg2,
+      IExpr xVar, IAST uFunction1Arg, IExpr c_n, IAST boundaryConditions, DSolveContext ctx) {
+    EvalEngine engine = ctx.engine;
+    IExpr equation = listOfEquations.arg1();
+    if (LinearODEForm.highestDerivativeOrder(equation, uFunction1Arg.head(), xVar) != 1) {
+      return F.NIL;
+    }
+    IExpr[] point = valuePoint(boundaryConditions, uFunction1Arg.head(), xVar, engine);
+    if (point == null) {
+      return F.NIL;
+    }
+    IExpr general =
+        solveWithInertIntegrals(equation, xVar, uFunction1Arg, c_n, point[0], ctx);
+    if (general.isNIL() || general.isFree(x -> isInertIntegral(x), true)) {
+      return F.NIL;
+    }
+    IAST branches = general.makeList();
+    for (IExpr branch : branches) {
+      IExpr atPoint = emptyIntegralsToZero(engine.evaluate(F.subst(branch, xVar, point[0])), engine);
+      IExpr solutions = engine.evalQuiet(F.Solve(F.Equal(atPoint, point[1]), F.list(c_n)));
+      if (!solutions.isList()) {
+        continue;
+      }
+      for (IExpr rules : (IAST) solutions) {
+        if (!rules.isListOfRules()) {
+          continue;
+        }
+        IExpr fitted = engine.evaluate(F.ReplaceAll(branch, rules));
+        IExpr check = emptyIntegralsToZero(engine.evaluate(F.subst(fitted, xVar, point[0])), engine);
+        if (!isVanishing(engine.evaluate(F.Subtract(check, point[1])), engine)
+            || !DSolveVerify.acceptODE(listOfEquations, uFunction1Arg, xVar, fitted, engine)) {
+          continue;
+        }
+        // (1 + J)/E^(2*x) rather than 1/E^(2*x) + J/E^(2*x)
+        IExpr together = engine.evaluate(F.Together(fitted));
+        if (together.leafCount() < fitted.leafCount()) {
+          fitted = together;
+        } else {
+          IExpr factored = engine.evaluate(F.Factor(fitted));
+          if (factored.leafCount() < fitted.leafCount()) {
+            fitted = factored;
+          }
+        }
+        IExpr body = arg2.isSymbol() && xVar.isSymbol() ? F.Function(F.list(xVar), fitted) : fitted;
+        return F.list(F.list(F.Rule(arg2, body)));
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * A first order Riccati equation <code>y' == a*y^2 + b*y + c</code> whose coefficients are
+   * rational functions of <code>x</code>, solved through <code>y == -u'/(a*u)</code> and the
+   * linear equation of the second order this leaves for <code>u</code>, when nothing else in the
+   * cascade has answered it: <code>x*y' + x^2 + y^2 == 0</code> leaves the Bessel equation
+   * <code>u'' + u'/x + u == 0</code>.
+   *
+   * <p>
+   * It runs last, and not with the other Riccati strategies, because the linear equation can take
+   * long to solve, and a separable or homogeneous equation is answered faster and in a simpler
+   * form by its own method.
+   *
+   * @return {@link F#NIL} if the equation is not a Riccati equation with rational coefficients, or
+   *         the linear equation is not solved
+   */
+  static IExpr solveRiccatiByLinearization(IExpr equation, IExpr xVar, IExpr yFunction,
+      IExpr C_1, DSolveContext ctx) {
+    IExpr[] abc = riccatiCoefficients(equation, xVar, yFunction, ctx.engine);
+    if (abc == null) {
+      return F.NIL;
+    }
+    return solveRiccati(abc[0], abc[1], abc[2], xVar, yFunction, C_1, ctx, true);
+  }
+
+  /**
+   * The coefficients <code>{a, b, c}</code> of <code>y' == a*y^2 + b*y + c</code>, or
+   * <code>null</code> if the equation is not of that form with <code>a</code> and <code>c</code>
+   * different from zero.
+   */
+  private static IExpr[] riccatiCoefficients(IExpr equation, IExpr xVar, IExpr yFunction,
+      EvalEngine engine) {
     IExpr lhs = equation.isEqual() ? F.Subtract(equation.first(), equation.second()) : equation;
     lhs = engine.evaluate(F.ExpandAll(lhs));
     IExpr yPrime = engine.evaluate(F.D(yFunction, xVar));
@@ -2475,7 +2943,7 @@ final class DSolveODE {
         || !coeffDyx.isFree(yFunction)
         || !engine.evaluate(F.ExpandAll(F.Subtract(lhs, F.Plus(F.Times(coeffDyx, yPrime), rest))))
             .isZero()) {
-      return F.NIL;
+      return null;
     }
     IExpr expandedRest = engine.evaluate(F.ExpandAll(rest));
     IExpr q0 = engine.evaluate(F.Coefficient(expandedRest, yFunction, F.C0));
@@ -2485,32 +2953,29 @@ final class DSolveODE {
         F.Plus(q0, F.Times(q1, yFunction), F.Times(q2, F.Sqr(yFunction))))));
     if (!remainder.isZero() || q2.isZero() || q0.isZero() || !q0.isFree(yFunction)
         || !q1.isFree(yFunction) || !q2.isFree(yFunction)) {
-      return F.NIL;
+      return null;
     }
-    IExpr a = engine.evaluate(F.Divide(F.Negate(q2), coeffDyx));
-    IExpr b = engine.evaluate(F.Divide(F.Negate(q1), coeffDyx));
-    IExpr c = engine.evaluate(F.Divide(F.Negate(q0), coeffDyx));
-    IExpr particular = riccatiParticular(a, b, c, xVar, engine);
-    if (particular.isNIL()) {
-      return F.NIL;
-    }
-    IExpr coefficient = engine.evaluate(F.Plus(F.Times(F.C2, a, particular), b));
-    IExpr v = linearODE(coefficient, a, xVar, C_1, engine);
-    if (v.isNIL() || v.isZero() || !DSolveContext.isUsable(v)) {
-      return F.NIL;
-    }
-    return engine.evaluate(F.Plus(particular, F.Power(v, F.CN1)));
+    return new IExpr[] {engine.evaluate(F.Divide(F.Negate(q2), coeffDyx)),
+        engine.evaluate(F.Divide(F.Negate(q1), coeffDyx)),
+        engine.evaluate(F.Divide(F.Negate(q0), coeffDyx))};
   }
 
-  /** Whether <code>expr</code> is numerically zero at <code>xVar == point</code>. */
-  private static boolean vanishesAt(IExpr expr, IExpr xVar, IExpr point, EvalEngine engine) {
+  /**
+   * Whether <code>expr</code> is numerically zero at <code>xVar == point</code>: {@link Boolean#TRUE}
+   * or {@link Boolean#FALSE}, and <code>null</code> where the value is no number because a parameter
+   * or an unknown function of the equation is left in it.
+   */
+  private static Boolean vanishesAt(IExpr expr, IExpr xVar, IExpr point, EvalEngine engine) {
     try {
       IExpr value = engine.evalN(F.subst(expr, xVar, point));
-      return value.isNumber() && ((org.matheclipse.core.interfaces.INumber) value).abs()
+      if (!value.isNumber()) {
+        return null;
+      }
+      return ((org.matheclipse.core.interfaces.INumber) value).abs()
           .evalf() < RICCATI_NUMERIC_TOLERANCE;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      return false;
+      return Boolean.FALSE;
     }
   }
 
@@ -2543,6 +3008,16 @@ final class DSolveODE {
         candidates.append(root);
       }
     }
+    // A particular solution is often a function the equation is written in: y == Sin(x) for
+    // y' == Cos(x) - (Sin(x) - y)*y, and y == x^2 + 1 for y' == 2*x - (x^2 + 1)*y + y^2, the
+    // coefficient of y.
+    IExpr ratio = engine.evaluate(F.Together(F.Divide(b, a)));
+    if (!ratio.isFree(xVar) && ratio.leafCount() <= MAX_RICCATI_LEAF_COUNT) {
+      appendCandidate(candidates, ratio);
+    }
+    for (IExpr coefficient : new IExpr[] {a, b, c}) {
+      collectKernels(coefficient, xVar, candidates);
+    }
     IExpr k = F.Dummy("k");
     IExpr point = F.QQ(7, 10);
     for (int i = 1; i <= candidates.argSize(); i++) {
@@ -2553,6 +3028,10 @@ final class DSolveODE {
       IExpr atPoint = engine.evaluate(F.subst(residual, xVar, point));
       if (!atPoint.isFree(xVar) || atPoint.isFree(k)) {
         continue;
+      }
+      if (!atPoint.isFree(x -> x.isSymbol() && !x.equals(k) && !x.isBuiltInSymbol(), true)) {
+        // Solve writes the root k == 1 of (1-k)*((1+k)*f^2 - f') as a square root of a square
+        atPoint = engine.evaluate(F.Factor(atPoint));
       }
       IAST roots = DSolveUtil
           .extractSolveResults(engine.evaluate(F.Solve(F.Equal(atPoint, F.C0), F.List(k))));
@@ -2566,12 +3045,123 @@ final class DSolveODE {
         // wrong one does not vanish is where the time goes: Simplify on a rational function with
         // an irrational k in it can run for minutes. A candidate which is not zero at two points
         // is not zero, and only one which is gets the symbolic check.
-        if (!vanishesAt(fitted, xVar, F.QQ(13, 10), engine)
-            || !vanishesAt(fitted, xVar, F.QQ(23, 10), engine)) {
+        if (Boolean.FALSE.equals(vanishesAt(fitted, xVar, F.QQ(13, 10), engine))
+            || Boolean.FALSE.equals(vanishesAt(fitted, xVar, F.QQ(23, 10), engine))) {
           continue;
         }
         if (isVanishing(fitted, engine)) {
           return engine.evaluate(F.Times(value, m));
+        }
+      }
+    }
+    return riccatiPolynomialParticular(a, b, c, xVar, engine);
+  }
+
+  /** Whether <code>expr</code> is a quotient of two polynomials in <code>xVar</code>. */
+  private static boolean isRationalIn(IExpr expr, IExpr xVar, EvalEngine engine) {
+    IExpr together = engine.evaluate(F.Together(expr));
+    return engine.evaluate(F.Numerator(together)).isPolynomial(xVar)
+        && engine.evaluate(F.Denominator(together)).isPolynomial(xVar);
+  }
+
+  /** The most functions of the coefficients which are tried as a particular solution. */
+  private static final int MAX_RICCATI_KERNELS = 8;
+
+  /** The highest degree of the polynomial particular solutions which are tried. */
+  private static final int MAX_RICCATI_POLYNOMIAL_DEGREE = 4;
+
+  private static void appendCandidate(IASTAppendable candidates, IExpr candidate) {
+    if (!candidates.contains(candidate) && candidates.argSize() < 16 + MAX_RICCATI_KERNELS) {
+      candidates.append(candidate);
+    }
+  }
+
+  /**
+   * The trigonometric and hyperbolic functions of <code>x</code> in a coefficient, appended to
+   * <code>candidates</code>. An unknown function <code>f(x)</code> is not one: the particular
+   * solution <code>f(x)</code> of <code>y' + f(x)^2 == f'(x) + y^2</code> is not looked for.
+   */
+  private static void collectKernels(IExpr coefficient, IExpr xVar, IASTAppendable candidates) {
+    if (!coefficient.isAST() || coefficient.isFree(xVar)) {
+      return;
+    }
+    IAST ast = (IAST) coefficient;
+    IExpr head = ast.head();
+    if (ast.isFree(y -> y.isAST(S.C, 2), true)) {
+      boolean elementary = ast.isAST1() && (head == S.Sin || head == S.Cos || head == S.Tan
+          || head == S.Cot || head == S.Sec || head == S.Csc || head == S.Sinh || head == S.Cosh
+          || head == S.Tanh || head == S.Coth);
+      if (elementary) {
+        appendCandidate(candidates, ast);
+        return;
+      }
+    }
+    for (int i = 1; i < ast.size(); i++) {
+      collectKernels(ast.get(i), xVar, candidates);
+    }
+  }
+
+  /**
+   * A polynomial particular solution <code>p0 + p1*x + ... + pd*x^d</code> of
+   * <code>y' == a*y^2 + b*y + c</code> for polynomial coefficients, or {@link F#NIL}.
+   *
+   * <p>
+   * The degree balances the highest terms: <code>a*y^2</code> against <code>c</code>, or against
+   * <code>b*y</code>. For <code>y' == 1 + 2*x - x^4 + 2*x^2*y - y^2</code> that is the degree 2,
+   * and the coefficients of the powers of <code>x</code> give <code>y == x^2 + 1</code>.
+   */
+  private static IExpr riccatiPolynomialParticular(IExpr a, IExpr b, IExpr c, IExpr xVar,
+      EvalEngine engine) {
+    if (!xVar.isSymbol() || !a.isPolynomial(xVar) || !b.isPolynomial(xVar)
+        || !c.isPolynomial(xVar)) {
+      return F.NIL;
+    }
+    int degA = engine.evaluate(F.Exponent(a, xVar)).toIntDefault(-1);
+    int degB = b.isZero() ? -1 : engine.evaluate(F.Exponent(b, xVar)).toIntDefault(-1);
+    int degC = engine.evaluate(F.Exponent(c, xVar)).toIntDefault(-1);
+    if (degA < 0 || degC < 0) {
+      return F.NIL;
+    }
+    java.util.TreeSet<Integer> degrees = new java.util.TreeSet<>();
+    if ((degC - degA) % 2 == 0 && degC >= degA) {
+      degrees.add((degC - degA) / 2);
+    }
+    if (degB >= degA) {
+      degrees.add(degB - degA);
+    }
+    for (int d : degrees) {
+      if (d < 1 || d > MAX_RICCATI_POLYNOMIAL_DEGREE) {
+        continue;
+      }
+      IASTAppendable unknowns = F.ListAlloc(d + 1);
+      IASTAppendable terms = F.PlusAlloc(d + 1);
+      for (int i = 0; i <= d; i++) {
+        IExpr p = F.Dummy("p" + i);
+        unknowns.append(p);
+        terms.append(F.Times(p, F.Power(xVar, F.ZZ(i))));
+      }
+      IExpr residual = engine.evaluate(F.Expand(F.Subtract(F.D(terms, xVar),
+          F.Plus(F.Times(a, F.Sqr(terms)), F.Times(b, terms), c))));
+      IExpr coefficients = engine.evaluate(F.CoefficientList(residual, xVar));
+      if (!coefficients.isList()) {
+        continue;
+      }
+      IASTAppendable equations = F.ListAlloc(((IAST) coefficients).argSize());
+      for (IExpr cf : (IAST) coefficients) {
+        equations.append(F.Equal(cf, F.C0));
+      }
+      // a polynomial which does not solve the equation is no reason for a message
+      IExpr solutions = engine.evalQuiet(F.Solve(equations, unknowns));
+      if (!solutions.isList()) {
+        continue;
+      }
+      for (IExpr solution : (IAST) solutions) {
+        if (!solution.isListOfRules()) {
+          continue;
+        }
+        IExpr particular = engine.evaluate(F.ReplaceAll(terms, solution));
+        if (!particular.isFree(xVar) && particular.isFree(y -> unknowns.contains(y), true)) {
+          return particular;
         }
       }
     }
@@ -2583,6 +3173,18 @@ final class DSolveODE {
    */
   static IExpr solveRiccati(IExpr a, IExpr b, IExpr c, IExpr xVar, IExpr yFunction, IExpr C_1,
       DSolveContext ctx) {
+    return solveRiccati(a, b, c, xVar, yFunction, C_1, ctx, false);
+  }
+
+  /**
+   * Solves a Riccati equation of the form: y' = a*y^2 + b*y + c
+   *
+   * @param rationalReduction whether the reduction to a linear equation of the second order is
+   *        also made when the coefficient of <code>u'</code> in it is a rational function of
+   *        <code>x</code>, not only a constant
+   */
+  private static IExpr solveRiccati(IExpr a, IExpr b, IExpr c, IExpr xVar, IExpr yFunction,
+      IExpr C_1, DSolveContext ctx, boolean rationalReduction) {
     EvalEngine engine = ctx.engine;
     // Strategy 1: Constants Coefficients (Separation of Variables)
     if (a.isFree(xVar) && b.isFree(xVar) && c.isFree(xVar)) {
@@ -2628,7 +3230,12 @@ final class DSolveODE {
     // The depth is bounded because the reduction of order of a second order equation can produce
     // a first order one which arrives back here.
     IExpr product = engine.evaluate(F.Times(a, c));
-    if (coeffUPrime.isFree(xVar) && ctx.depth() <= MAX_RICCATI_DEPTH
+    // A coefficient of u' which is a rational function of x leaves an equation of the Bessel or
+    // Cauchy-Euler kind: x*y' + x^2 + y^2 == 0 is u'' + u'/x + u == 0.
+    boolean rationalCoefficient = coeffUPrime.isFree(xVar)
+        || (rationalReduction && coeffUPrime.leafCount() <= MAX_RICCATI_LEAF_COUNT
+            && isRationalIn(coeffUPrime, xVar, engine) && isRationalIn(product, xVar, engine));
+    if (rationalCoefficient && ctx.depth() <= MAX_RICCATI_DEPTH
         && product.leafCount() <= MAX_RICCATI_LEAF_COUNT) {
       IExpr uSols = engine.evaluate(F.DSolve(F.List(uEq), F.List(u), xVar));
       IAST extracted = DSolveUtil.extractSolveResults(uSols);
@@ -2694,6 +3301,9 @@ final class DSolveODE {
     if (solution.isNIL()
         && LinearODEForm.highestDerivativeOrder(equation, yFunction.head(), xVar) == 1) {
       solution = solveRiccatiThroughParticular(equation, xVar, yFunction, constant, ctx.engine);
+      if (solution.isNIL()) {
+        solution = solveRiccatiByLinearization(equation, xVar, yFunction, constant, ctx);
+      }
     }
     if (solution.isNIL()) {
       return F.CEmptyList;
@@ -2996,6 +3606,28 @@ final class DSolveODE {
             if (nExpr.isPresent()) {
               coeffYn = remainingCoeff.argSize() == 1 ? remainingCoeff.arg1() : remainingCoeff;
             }
+          } else if (nonLinearPart.isPlus()) {
+            // Expanded, a*(1+x^2)*y^3 is a sum of two terms: the power is read off the first one,
+            // and the coefficient is what is left when the sum is divided by it.
+            IExpr first = nonLinearPart.first();
+            IExpr power = F.NIL;
+            if (first.isPower() && first.first().equals(yFunction)) {
+              power = first.second();
+            } else if (first.isTimes()) {
+              for (IExpr factor : (IAST) first) {
+                if (factor.isPower() && factor.first().equals(yFunction)) {
+                  power = factor.second();
+                }
+              }
+            }
+            if (power.isPresent()) {
+              IExpr quotient = engine
+                  .evaluate(F.Together(F.Divide(nonLinearPart, F.Power(yFunction, power))));
+              if (quotient.isFree(head)) {
+                nExpr = power;
+                coeffYn = quotient;
+              }
+            }
           }
 
           if (nExpr.isPresent() && coeffYn.isFree(head) && nExpr.isFree(head)
@@ -3271,6 +3903,20 @@ final class DSolveODE {
           if (temp.isNIL()) {
             temp = solveRiccatiThroughParticular(equation, xVar, uFunction1Arg, c_n, engine);
           }
+          if (temp.isNIL()) {
+            temp = solveRiccatiByLinearization(equation, xVar, uFunction1Arg, c_n, ctx);
+          }
+          if (temp.isNIL() && boundaryConditions.argSize() == 0) {
+            // Nothing answers the equation with closed forms: an answer with an integral which has
+            // none, inert.
+            temp = solveWithInertIntegrals(equation, xVar, uFunction1Arg, c_n, ctx);
+          } else if (temp.isNIL()) {
+            IExpr answer = initialValueWithInertIntegrals(listOfEquations, arg2, xVar,
+                uFunction1Arg, c_n, boundaryConditions, ctx);
+            if (answer.isPresent()) {
+              return answer;
+            }
+          }
           if (temp.isNIL() && boundaryConditions.argSize() == 0) {
             // An equation of a higher degree in y' is several equations, and each may have a
             // first integral where none has an explicit solution.
@@ -3289,6 +3935,23 @@ final class DSolveODE {
               return answer;
             }
           }
+          if (temp.isNIL() && boundaryConditions.argSize() == 0) {
+            // A separable equation whose integrals have no closed form: the inverse of the one in
+            // y, or the relation of the two for Solve.
+            IExpr separable =
+                separableRelationWithInertIntegrals(equation, xVar, uFunction1Arg, c_n, engine);
+            if (separable.isAST(S.Solve)) {
+              return separable;
+            }
+            if (separable.isPresent()) {
+              IASTAppendable answer = acceptBranches(F.list(separable), listOfEquations,
+                  uFunction1Arg, arg2, xVar, boundaryConditions, c_n, false, new boolean[2],
+                  engine);
+              if (answer.argSize() > 0) {
+                return answer;
+              }
+            }
+          }
         }
 
         if (temp.isNIL() && boundaryConditions.argSize() == 0) {
@@ -3297,6 +3960,10 @@ final class DSolveODE {
           IExpr relation = autonomousRelation(equation, uFunction1Arg, xVar, c_n, ctx);
           if (relation.isPresent()) {
             return relation;
+          }
+          if (LinearODEForm.highestDerivativeOrder(equation, uFunction1Arg.head(), xVar) >= 2) {
+            // a linear equation whose variation of parameters has integrals without a closed form
+            temp = solveWithInertIntegrals(equation, xVar, uFunction1Arg, c_n, ctx);
           }
         }
         if (temp.isPresent()) {
@@ -4233,6 +4900,23 @@ final class DSolveODE {
       IExpr integrand = engine.evaluate(F.Simplify(F.Divide(replaced, wronskian)));
       IExpr integral = ctx.integrate(integrand, xVar);
       if (integral.isNIL()) {
+        // Simplify expands a square in the denominator: x*E^x/(1+E^x)^2 integrates, and
+        // x*E^x/(1+2*E^x+E^(2*x)) does not
+        IExpr factored = engine.evaluate(F.Factor(F.Together(integrand)));
+        if (factored.isPresent() && !factored.equals(integrand)
+            && hasRepeatedFactor(engine.evaluate(F.Denominator(factored)), xVar)) {
+          integral = ctx.integrate(factored, xVar);
+        }
+      }
+      if (integral.isNIL() && ctx.allowsInertIntegrals()) {
+        // Cos(x)*Sin(x) as Sin(2*x)/2
+        IExpr reduced = engine.evaluate(F.TrigReduce(integrand));
+        // a few leaves more for the factor 1/2 and the double angle
+        integral = inertIntegral(
+            reduced.leafCount() <= integrand.leafCount() + 4 ? reduced : integrand, xVar, xVar,
+            i + 1);
+      }
+      if (integral.isNIL()) {
         return F.NIL;
       }
       particular.append(F.Times(basis[i], integral));
@@ -4244,6 +4928,22 @@ final class DSolveODE {
     IExpr result = engine.evaluate(F.Expand(particular));
     IExpr reduced = engine.evaluate(F.Expand(F.TrigReduce(result)));
     return reduced.isPresent() && reduced.leafCount() <= result.leafCount() ? reduced : result;
+  }
+
+  /**
+   * Whether a factored denominator has a factor depending on <code>xVar</code> to an integer power
+   * above 1. Only then is the factored integrand worth a second integration: a failed integral is
+   * often slow to fail, and failing twice doubled the time of some equations.
+   */
+  private static boolean hasRepeatedFactor(IExpr denominator, IExpr xVar) {
+    IAST factors = denominator.isTimes() ? (IAST) denominator : F.Times(denominator);
+    for (IExpr factor : factors) {
+      if (factor.isPower() && !factor.base().isFree(xVar) && factor.exponent().isInteger()
+          && factor.exponent().toIntDefault() > 1) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

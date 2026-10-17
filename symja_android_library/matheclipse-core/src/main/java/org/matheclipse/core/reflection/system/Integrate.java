@@ -2610,13 +2610,19 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * under a held head, for example the {@code HoldAll} {@code Piecewise}, those calls are never
    * evaluated. So {@code E^t*Piecewise({{2,0<=t<=1}},0)} came back as the unevaluated integral of
    * {@code E^t*Piecewise({{2,0<=t<=1}},Rubi`trigsimplifyrecur(0))}. The rewritten integral carries
-   * a Rubi symbol, so it bypasses the rules too and is returned as it stands.
+   * a Rubi symbol, so it bypasses the rules too and is returned as it stands. An inert operation
+   * {@code Inactive(f)[...]} holds its arguments the same way: the integral of
+   * {@code f(x)*E^(3*Inactive(Integrate)[f(K(1)),{K(1),1,x}])} came back with
+   * {@code Rubi`trigsimplifyrecur(f(K(1)))} inside the inert integral.
    */
   private static boolean holdsTheVariable(IAST integrand, IExpr x) {
-    return !integrand.isFree(
-        part -> part.isAST() && part.head().isSymbol()
-            && (((ISymbol) part.head()).getAttributes() & ISymbol.HOLDALL) != 0 && !part.isFree(x),
-        true);
+    return !integrand.isFree(part -> part.isAST() && !part.isFree(x) && (isHoldAllHead(part.head())
+        // an inert operation Inactive(f)[...], such as an integral whose limit is the variable
+        || part.head().isAST(S.Inactive, 2)), true);
+  }
+
+  private static boolean isHoldAllHead(IExpr head) {
+    return head.isSymbol() && (((ISymbol) head).getAttributes() & ISymbol.HOLDALL) != 0;
   }
 
   private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast, EvalEngine engine) {

@@ -1233,9 +1233,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y'(x) == -x^2*y(x), y(x), x)", //
         "{{y(x)->C(1)/E^(x^3/3)}}");
 
-    // no elementary antiderivative for the forcing term, so this one still declines
+    // no elementary antiderivative for the forcing term: it stays as an inert integral
     check("DSolve(y'(x) == (2-x^2)*y(x) + x, y(x), x)", //
-        "DSolve(y'(x)==x+(2-x^2)*y(x),y(x),x)");
+        "{{y(x)->E^(2*x-x^3/3)*C(1)+E^(2*x-x^3/3)*Inactive(Integrate)[K(1)/E^(2*K(1)-K(1)^\n" //
+            + "3/3),{K(1),1,x}]}}");
   }
 
   /**
@@ -2126,7 +2127,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // The second integration is elliptic, so this has no solution in elementary terms; the answer
     // is the relation with that integral inert.
     check("DSolve(y''(x) == y(x)^2 + 1, y(x), x)", //
-        "Solve(Inactive(Integrate)[1/(Sqrt(2)*Sqrt(C(1)+K(1)+K(1)^3/3)),{K(1),1,y(x)}]^2==(x+C(\n"
+        "Solve(Inactive(Integrate)[1/Sqrt(-C(1)+2*K(1)+2/3*K(1)^3),{K(1),1,y(x)}]^2==(x+C(\n" //
             + "2))^2,y(x))");
 
     // A system which is not linear in its unknowns has no coefficient matrix. Treating E^z(x) as
@@ -2407,8 +2408,8 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y(x)^2*y'''(x) == y'(x)^3, y(x), x)", //
         "{{y(x)->(Sqrt(C(2))*Sinh(3/2*E^C(1)*x+3/2*C(3)))^(2/3)}}");
     check("DSolve(2*y(x)*y'''(x) == y'(x), y(x), x)", //
-        "Solve(Inactive(Integrate)[1/(Sqrt(2)*Sqrt(C(1)+1/2*(-K(1)+2*C(2)*K(1)+K(1)*Log(K(\n"
-            + "1))))),{K(1),1,y(x)}]^2==(x+C(3))^2,y(x))");
+        "Solve(Inactive(Integrate)[1/Sqrt(-C(2)-K(1)+2*C(1)*K(1)+K(1)*Log(K(1))),{K(1),1,y(x)}]^\n" //
+            + "2==(x+C(3))^2,y(x))");
     // the second order case is what it was
     check("DSolve(y(x)*y''(x) == y'(x)^2, y(x), x)", //
         "{{y(x)->E^(x*C(1))*C(2)}}");
@@ -2747,5 +2748,67 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(t)->C(1)/E^t+(-b*UnitStep(-b+t))/E^t+(t*UnitStep(-b+t))/E^t}}");
     check("DSolve((x^3+2)*y''(x)+x*y'(x)+y(x)==0, y(x), x)", //
         "DSolve(y(x)+x*y'(x)+(2+x^3)*y''(x)==0,y(x),x)");
+  }
+
+  @Test
+  public void testBernoulliWithASumAsCoefficient() {
+    // q*(x^2+2)*y^3 is a sum of two terms once expanded
+    check("DSolve(x*y'(x)+y(x)==q*(x^2+2)*y(x)^3, y(x), x)", //
+        "{{y(x)->-1/Sqrt(2*q+x^2*C(1)-2*q*x^2*Log(x))},{y(x)->1/Sqrt(2*q+x^2*C(1)-2*q*x^2*Log(x))}}");
+  }
+
+  @Test
+  public void testRiccatiParticularSolutions() {
+    // a polynomial particular solution: x^2-2 (and x^2+2)
+    check("DSolve(y'(x)==4+2*x-x^4+2*x^2*y(x)-y(x)^2, y(x), x)", //
+        "{{y(x)->-2+x^2+1/(1/4+C(1)/E^(4*x))}}");
+    // a function of the coefficients: Sin(x)
+    check("DSolve(y'(x)==y(x)^2-2*Sin(x)*y(x)+Cos(x)+Sin(x)^2, y(x), x)", //
+        "{{y(x)->1/(-x+C(1))+Sin(x)}}");
+  }
+
+  @Test
+  public void testRiccatiThroughABesselEquation() {
+    // y == -u'/(a*u) leaves u'' + u'/x + 4*u == 0
+    check("DSolve(x*y'(x)+4*x^2+y(x)^2==0, y(x), x)", //
+        "{{y(x)->(x*BesselY(-1,2*x)-x*BesselY(1,2*x)-2*x*BesselJ(1,2*x)*C(1))/(BesselY(0,\n"
+            + "2*x)+BesselJ(0,2*x)*C(1))}}");
+  }
+
+  @Test
+  public void testVariationOfParametersWithASquaredDenominator() {
+    // the integrand x*E^x/(2+E^x)^2 integrates factored, not expanded
+    check("DSolve(y''(x)-2*y'(x)+y(x)==E^(2*x)/(2+E^x)^2, y(x), x)", //
+        "{{y(x)->-1/2*E^x*x+E^x*C(1)+E^x*x*C(2)+1/2*E^x*Log(2+E^x)}}");
+  }
+
+  @Test
+  public void testDSolveInertIntegrals() {
+    // the integrating factor and the forcing are free functions: both integrals stay inert
+    check("DSolve(y'(x)==u(x)*y(x)+v(x), y(x), x)", //
+        "{{y(x)->E^Inactive(Integrate)[u(K(1)),{K(1),1,x}]*C(1)+E^Inactive(Integrate)[u(K(\n" //
+            + "1)),{K(1),1,x}]*Inactive(Integrate)[v(K(2))/E^Inactive(Integrate)[u(K(1)),{K(1),\n" //
+            + "1,K(2)}],{K(2),1,x}]}}");
+    // the integrating factor is elementary, the integral of E^(2*x+x^3) is not
+    check("DSolve(y'(x)==E^(x^3)-2*y(x), y(x), x)", //
+        "{{y(x)->C(1)/E^(2*x)+Inactive(Integrate)[E^(2*K(1)+K(1)^3),{K(1),1,x}]/E^(2*x)}}");
+    // separable: the inverse of the inert integral in y, applied to the one in x
+    check("DSolve(y'(x)==r(x)*s(y(x)), y(x), x)", //
+        "{{y(x)->InverseFunction(Inactive(Integrate)[1/s(K(1)),{K(1),1,#1}]&)[C(1)+Inactive(Integrate)[r(K(\n" //
+            + "2)),{K(2),1,x}]]}}");
+    // no particular solution is looked for among free functions such as h(x)
+    check("DSolve(y'(x)==y(x)^2-h(x)^2+h'(x), y(x), x)", //
+        "DSolve(y'(x)==-h(x)^2+y(x)^2+h'(x),y(x),x)");
+    // variation of parameters with integrals which have no closed form
+    check("DSolve(y''(x)+4*y(x)==E^(x^3), y(x), x)", //
+        "{{y(x)->C(1)*Cos(2*x)+C(2)*Sin(2*x)+1/2*Sin(2*x)*Inactive(Integrate)[E^K(2)^3*Cos(\n" //
+            + "2*K(2)),{K(2),1,x}]-1/2*Cos(2*x)*Inactive(Integrate)[E^K(1)^3*Sin(2*K(1)),{K(1),\n" //
+            + "1,x}]}}");
+    // with a condition the integrals start at its point, where they are zero
+    check("DSolve({y'(x)==u(x)*y(x)+v(x),y(0)==1}, y(x), x)", //
+        "{{y(x)->E^Inactive(Integrate)[u(K(1)),{K(1),0,x}]*(1+Inactive(Integrate)[v(K(2))/E^Inactive(Integrate)[u(K(\n" //
+            + "1)),{K(1),0,K(2)}],{K(2),0,x}])}}");
+    check("DSolve({y'(x)==E^(x^3)-2*y(x),y(0)==1}, y(x), x)", //
+        "{{y(x)->(1+Inactive(Integrate)[E^(2*K(1)+K(1)^3),{K(1),0,x}])/E^(2*x)}}");
   }
 }

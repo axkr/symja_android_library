@@ -13,7 +13,7 @@ public class StruveLRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 2, 3 };
+  final public static int[] SIZES = { 3, 3 };
 
   final public static IAST RULES = List(
     IInit(StruveL, SIZES),
@@ -22,6 +22,9 @@ public class StruveLRules {
       Times(C2,Power(Pi,CN1)), true),
     // StruveL(-1/2,0)=0
     ISet(StruveL(CN1D2,C0),
+      C0, true),
+    // StruveL(1/2,0)=0
+    ISet(StruveL(C1D2,C0),
       C0, true),
     // StruveL(-1/2,z_):=(Sqrt(2/Pi)*Sinh(z))/Sqrt(z)
     ISetDelayed(StruveL(CN1D2,z_),
