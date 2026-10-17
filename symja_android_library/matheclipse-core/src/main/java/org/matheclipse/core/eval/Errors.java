@@ -146,6 +146,7 @@ public class Errors {
       "elmntavs", "\"`1`\" is not an available property. Did you mean \"`2`\" instead?", //
       "elemdrepl", "The ElementData property `1` was replaced by `2`.", //
       "bdpt", "Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.", //
+      "bdrad", "`1` is not a valid neighborhood range specification.", //
       "bset",
       "The second argument `1` of Element should be one of: Primes, Integers, Rationals, Algebraics, Reals, Complexes or Booleans.", //
       "bfun", "`1` is not a boolean-valued pure function.", //
@@ -211,6 +212,7 @@ public class Errors {
       "dvar",
       "Multiple derivative specifier `1` does not have the form {variable, n} where n is a symbolic expression or a non-negative integer.", //
       "dvnoarg", "The function `1` appears with no arguments.", //
+      "effect", "`1` is not a known image effect.", //
       "empt", "Argument `1` should be a non-empty list.", //
       "eqf", "`1` is not a well-formed equation.", //
       "eqin", "`1` should be an equation or inequality.", //
@@ -292,6 +294,7 @@ public class Errors {
       "infeas",
       "There are no values of `1` for which the constraints `2` are satisfied and the objective function `3` is real valued.", //
       "infy", "Infinite expression `1` encountered.", //
+      "inhr", "Requested order is too high; order has been reduced to `1`.", //
       "innf", "Non-negative integer or Infinity expected at position `1` in `2`.", //
       "ins", "Cannot insert at position `1` in `2`.", //
       "insuff", "Cannot take `1` elements from a list of length `2`.", //

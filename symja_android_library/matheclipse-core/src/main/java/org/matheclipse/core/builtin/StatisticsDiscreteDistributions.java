@@ -855,7 +855,8 @@ public class StatisticsDiscreteDistributions {
     @Override
     public IExpr parameterAssumptions(IAST dist) {
       if (dist.isAST2()) {
-        return F.And(F.GreaterEqual(dist.arg1(), F.C0), F.LessEqual(F.C0, dist.arg2(), F.C1));
+        return F.And(F.Element(dist.arg1(), S.Integers), F.GreaterEqual(dist.arg1(), F.C0),
+            F.LessEqual(F.C0, dist.arg2(), F.C1));
       }
       return F.NIL;
     }

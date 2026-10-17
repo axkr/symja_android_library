@@ -1824,6 +1824,14 @@ public class StatisticsContinousDistribution {
       IContinuousDistribution, IRandomVariate, IStatistics, IPDF, ICDF, IGeneratingFunction {
 
     @Override
+    public IExpr parameterAssumptions(IAST dist) {
+      if (dist.isAST2()) {
+        return F.And(F.Greater(dist.arg1(), F.C0), F.Greater(dist.arg2(), F.C0));
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr mgf(IAST dist, IExpr t, EvalEngine engine) {
       if (dist.isAST2()) {
         IExpr a = dist.arg1();
@@ -3800,7 +3808,7 @@ public class StatisticsContinousDistribution {
         return S.True;
       }
       if (dist.isAST2()) {
-        return F.Greater(dist.arg2(), F.C0);
+        return F.And(F.Element(dist.arg1(), S.Reals), F.Greater(dist.arg2(), F.C0));
       }
       return F.NIL;
     }
@@ -4913,7 +4921,8 @@ public class StatisticsContinousDistribution {
     public IExpr parameterAssumptions(IAST dist) {
       IExpr[] minMax = minmax(dist);
       if (minMax != null) {
-        return F.LessEqual(minMax[0], minMax[1]);
+        return F.And(F.Element(minMax[0], S.Reals), F.Element(minMax[1], S.Reals),
+            F.Less(minMax[0], minMax[1]));
       }
       return F.NIL;
     }

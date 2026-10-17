@@ -637,6 +637,13 @@ public class GraphFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() > 1) {
+        IAST labelled = labelledEdges(ast.arg1());
+        if (labelled.isPresent()) {
+          // {{edge1, label1}, ...}: the edges, with their labels drawn on them
+          IExpr labelledGraph = engine.evaluate(F.binaryAST2(S.Graph, labelled.first(),
+              F.Rule(S.EdgeLabels, labelled.second())));
+          return labelledGraph.head() == S.Graph ? ast.setAtCopy(1, labelledGraph) : F.NIL;
+        }
         GraphExpr<?> graph = GraphExpr.newInstance(ast.arg1());
         if (graph == null) {
           return F.NIL;
@@ -674,6 +681,33 @@ public class GraphFunctions {
       }
       return F.NIL;
     }
+  }
+
+  /**
+   * The edges and the rules <code>edge -> label</code> of a list <code>{{edge1, label1}, ...}</code>
+   * of labelled edges.
+   *
+   * @return <code>F.NIL</code> if <code>list</code> is not such a list
+   */
+  private static IAST labelledEdges(IExpr list) {
+    if (!list.isList() || list.argSize() == 0) {
+      return F.NIL;
+    }
+    IASTAppendable edges = F.ListAlloc(list.argSize());
+    IASTAppendable labels = F.ListAlloc(list.argSize());
+    for (IExpr item : (IAST) list) {
+      if (!item.isList2()) {
+        return F.NIL;
+      }
+      IExpr edge = item.first();
+      if (!(edge.isRuleAST() || edge.isAST(S.DirectedEdge, 3) || edge.isAST(S.UndirectedEdge, 3)
+          || edge.isAST(S.TwoWayRule, 3))) {
+        return F.NIL;
+      }
+      edges.append(edge);
+      labels.append(F.Rule(edge, item.second()));
+    }
+    return F.list(edges, labels);
   }
 
   /**

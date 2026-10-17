@@ -24,6 +24,7 @@ public class FilterFunctions {
     private static void init() {
       S.GaussianFilter.setEvaluator(new GaussianFilter());
       S.GaussianMatrix.setEvaluator(new GaussianMatrix());
+      S.LaplacianFilter.setEvaluator(new LaplacianFilter());
       S.MaxFilter.setEvaluator(new MaxFilter());
       S.MeanFilter.setEvaluator(new MeanFilter());
       S.MedianFilter.setEvaluator(new MedianFilter());
@@ -274,6 +275,124 @@ public class FilterFunctions {
         return F.mapRange(0, n, j -> F.num(filteredRow[j]));
       }
       final double[][] filtered = separableFilter(data, kernel);
+      return F.matrix((i, j) -> F.num(filtered[i][j]), filtered.length, filtered[0].length);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * The radius of a <code>LaplacianFilter</code> range <code>r</code> or <code>{r, sigma}</code>,
+   * where the standard deviation must be at least <code>r/2</code> and doesn't change the kernel.
+   *
+   * @return <code>-1</code> if the range isn't valid
+   */
+  public static int laplacianRadius(IExpr spec) {
+    int radius = spec.isList2() ? spec.first().toIntDefault() : spec.toIntDefault();
+    if (radius < 1) {
+      return -1;
+    }
+    if (spec.isList2()) {
+      double sigma = spec.second().evalfNaN();
+      if (!(sigma >= radius / 2.0)) {
+        return -1;
+      }
+    }
+    return radius;
+  }
+
+  /**
+   * The Laplacian of <code>data</code> (one row for a list) with the kernel of radius
+   * <code>r</code>: along each axis the second derivative of the band limited interpolation, the
+   * taps <code>2*(-1)^(k+1)/k^2</code> beside a centre of <code>-2*Pi^2/3</code>, and the whole
+   * <code>(2r+1)</code> window (block for a matrix) shifted by one constant so that the kernel sums
+   * to zero. The values beyond the border are those of the border ("Fixed" padding).
+   */
+  public static double[][] laplacianFilter(double[][] data, int radius, boolean vector) {
+    final int rows = data.length;
+    final int columns = data[0].length;
+    final int width = 2 * radius + 1;
+    double[] axis = new double[radius + 1];
+    for (int k = 1; k <= radius; k++) {
+      axis[k] = (k % 2 == 1 ? 2.0 : -2.0) / (k * k);
+    }
+    final double centre = -2.0 * Math.PI * Math.PI / 3.0;
+    double coreSum = centre;
+    for (int k = 1; k <= radius; k++) {
+      coreSum += (vector ? 2.0 : 4.0) * axis[k];
+    }
+    final double shift = -coreSum / (vector ? width : (double) width * width);
+    double[][] result = new double[rows][columns];
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < columns; j++) {
+        double sum = centre * data[i][j];
+        double window = 0.0;
+        for (int k = -radius; k <= radius; k++) {
+          int column = Math.min(columns - 1, Math.max(0, j + k));
+          if (k != 0) {
+            sum += axis[Math.abs(k)] * data[i][column];
+            if (!vector) {
+              sum += axis[Math.abs(k)] * data[Math.min(rows - 1, Math.max(0, i + k))][j];
+            }
+          }
+          if (vector) {
+            window += data[i][column];
+          } else {
+            for (int l = -radius; l <= radius; l++) {
+              window += data[Math.min(rows - 1, Math.max(0, i + l))][column];
+            }
+          }
+        }
+        result[i][j] = sum + shift * window;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * <pre>
+   * <code>LaplacianFilter(data, r)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * the Laplacian of the list or matrix <code>data</code> with a kernel of radius <code>r</code>.
+   * </p>
+   */
+  private static class LaplacianFilter extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList()) {
+        return F.NIL;
+      }
+      int radius = laplacianRadius(ast.arg2());
+      if (radius < 0) {
+        // `1` is not a valid neighborhood range specification.
+        return Errors.printMessage(S.LaplacianFilter, "bdrad", F.list(ast.arg2()), engine);
+      }
+      IAST list = (IAST) ast.arg1();
+      IntList dims = LinearAlgebraUtil.dimensions(list);
+      if (dims.size() != 1 && dims.size() != 2) {
+        return F.NIL;
+      }
+      final boolean vector = dims.size() == 1;
+      double[][] data = vector ? new double[][] {list.toDoubleVector()} : list.toDoubleMatrix();
+      if (data == null || data[0] == null || data[0].length == 0) {
+        return F.NIL;
+      }
+      final double[][] filtered = laplacianFilter(data, radius, vector);
+      if (vector) {
+        return F.mapRange(0, filtered[0].length, j -> F.num(filtered[0][j]));
+      }
       return F.matrix((i, j) -> F.num(filtered[i][j]), filtered.length, filtered[0].length);
     }
 

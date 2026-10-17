@@ -280,6 +280,30 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       this.engine = engine;
     }
 
+    /**
+     * A few more Newton steps from the root the solver stopped at, taken while they make the
+     * residual smaller and only change the last digits: the solver stops once its step is below
+     * the accuracy, which leaves the last digits of a simple root off by a few units. At a multiple
+     * root the steps stay large and the root is left as the requested accuracy found it.
+     */
+    private static double polish(UnaryNumerical f, double x) {
+      double fx = Math.abs(f.value(x));
+      for (int i = 0; i < 3 && fx > 0.0; i++) {
+        double slope = f.derivative().value(x);
+        if (!Double.isFinite(slope) || slope == 0.0) {
+          break;
+        }
+        double next = x - f.value(x) / slope;
+        double fNext = Math.abs(f.value(next));
+        if (!(fNext <= fx) || next == x || Math.abs(next - x) > 1.0e-10 * Math.max(1.0, Math.abs(x))) {
+          break;
+        }
+        x = next;
+        fx = fNext;
+      }
+      return x;
+    }
+
     @Override
     public IExpr get() {
       ISymbol xVar = (ISymbol) variableList.arg1();
@@ -337,9 +361,10 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           // try {
           NewtonRaphsonSolver nrs = new NewtonRaphsonSolver(accuracy);
           if (maxMaybeNull == null) {
-            return F.num(nrs.solve(maxIterations, f, min.doubleValue()));
+            return F.num(polish(f, nrs.solve(maxIterations, f, min.doubleValue())));
           }
-          return F.num(nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue()));
+          return F.num(polish(f,
+              nrs.solve(maxIterations, f, min.doubleValue(), maxMaybeNull.doubleValue())));
           // } catch (MathRuntimeException mex) {
           // // switch to BracketingNthOrderBrentSolver
           // solver = new BracketingNthOrderBrentSolver(accuracy, 5);

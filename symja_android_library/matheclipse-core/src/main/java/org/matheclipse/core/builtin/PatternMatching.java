@@ -1624,12 +1624,30 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1() && ast.arg1().isSymbol()) {
-        IAST result =
-            org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) ast.arg1(), false);
-        return EvalAttributes.copySort(result);
+      // a symbol with a value stands for an expression, like the graphics of a plot
+      IExpr arg1 = engine.evaluate(ast.arg1());
+      IAST options;
+      if (arg1.isSymbol()) {
+        options = EvalAttributes.copySort(
+            org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) arg1, false));
+      } else if (arg1.isAST() && !arg1.isList()) {
+        // the rules at the end of an expression, as the options of Graphics(prims, opts)
+        IAST expr = (IAST) arg1;
+        int start = expr.size();
+        while (start > 1 && expr.get(start - 1).isRuleAST()) {
+          start--;
+        }
+        options = expr.copyFrom(start).setAtCopy(0, S.List);
+      } else {
+        return F.NIL;
       }
-      return F.NIL;
+      if (ast.isAST2()) {
+        // Options(expr, name) or Options(expr, {name1, name2, ...})
+        IExpr names = engine.evaluate(ast.arg2());
+        IAST nameList = names.isList() ? (IAST) names : F.list(names);
+        return options.select(rule -> nameList.contains(rule.first()));
+      }
+      return options;
     }
 
     @Override

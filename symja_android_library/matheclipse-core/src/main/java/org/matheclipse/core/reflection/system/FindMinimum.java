@@ -16,6 +16,7 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.optim.ConvergenceChecker;
 import org.hipparchus.optim.InitialGuess;
 import org.hipparchus.optim.MaxEval;
 import org.hipparchus.optim.MaxIter;
@@ -364,7 +365,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       // variables localized. Substituting the start values into the symbol itself found no
       // variable.
       return findExtremum(head, engine.evaluate(function), relationList, specs, goalType,
-          maxIterations, method, automaticMethod, options.length > 2 ? options[2] : S.None, engine);
+          maxIterations, method, automaticMethod, options.length > 2 ? options[2] : S.None,
+          options.length > 4 ? options[4] : S.None, engine);
     } finally {
       for (int i = 0; i < n; i++) {
         if (blockedSymbols[i] != null) {
@@ -376,7 +378,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
 
   private static IExpr findExtremum(ISymbol head, IExpr function, IAST relationList,
       List<VariableSpec> specs, GoalType goalType, int maxIterations, String method,
-      boolean automaticMethod, IExpr evaluationMonitor, EvalEngine engine) {
+      boolean automaticMethod, IExpr evaluationMonitor, IExpr stepMonitor, EvalEngine engine) {
     final int n = specs.size();
     // the one and only order of the variables: the order of the search specifications
     IASTAppendable varsList = F.ListAlloc(n);
@@ -459,6 +461,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     OptimizeSupplier optimizeSupplier = new OptimizeSupplier(head, goalType, function, varsList,
         initialValues, maxIterations, method, simpleBounds, optimizationData, constrained, engine);
     optimizeSupplier.evaluationMonitor = evaluationMonitor;
+    optimizeSupplier.stepMonitor = stepMonitor;
     return optimizeSupplier.get();
   }
 
@@ -1090,6 +1093,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     /** the expression of the option <code>EvaluationMonitor :> expr</code>, or <code>None</code> */
     IExpr evaluationMonitor = S.None;
 
+    /** the expression of the option <code>StepMonitor :> expr</code>, or <code>None</code> */
+    IExpr stepMonitor = S.None;
+
     public OptimizeSupplier(ISymbol head, GoalType goalType, IExpr function, IAST variableList,
         double[] initialValues, int maxIterations, String method, SimpleBounds simpleBounds,
         OptimizationData[] optimizationData, boolean constrained, EvalEngine engine) {
@@ -1114,7 +1120,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     /** Record an evaluated point, <code>value</code> being the value of the original function. */
     private void record(double[] point, double value) {
       if (evaluationMonitor != S.None) {
-        monitor(point);
+        monitor(point, evaluationMonitor);
       }
       if (Double.isNaN(value) || constrained) {
         // the methods also evaluate points which violate the constraints, and the best of those
@@ -1129,18 +1135,19 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     }
 
     /**
-     * Evaluate the <code>EvaluationMonitor</code> expression with the variables set to the point
-     * the function was just evaluated at. The variables are localized by <code>FindMinimum</code>,
-     * so their values are free to be set and cleared here.
+     * Evaluate the <code>EvaluationMonitor</code> or <code>StepMonitor</code> expression with the
+     * variables set to the point the function was just evaluated at or the step reached. The
+     * variables are localized by <code>FindMinimum</code>, so their values are free to be set and
+     * cleared here.
      */
-    private void monitor(double[] point) {
+    private void monitor(double[] point, IExpr monitorExpr) {
       for (int i = 1; i < variableList.size(); i++) {
         if (variableList.get(i).isSymbol()) {
           ((ISymbol) variableList.get(i)).assignValue(F.num(point[i - 1]), false);
         }
       }
       try {
-        engine.evaluate(evaluationMonitor);
+        engine.evaluate(monitorExpr);
       } finally {
         for (int i = 1; i < variableList.size(); i++) {
           if (variableList.get(i).isSymbol()) {
@@ -1298,7 +1305,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         // The default convergence check of the PowellOptimizer, 2*(fX-fVal) <= threshold, is true
         // after the first sweep of every maximization, so the negated function is minimized.
         final boolean maximize = goalType == GoalType.MAXIMIZE;
-        final PowellOptimizer optim = new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d));
+        final PowellOptimizer optim = stepMonitor == S.None
+            ? new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d))
+            : new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d), stepChecker(null));
         MathIllegalStateException unbounded = null;
         try {
           optimum = optim.optimize( //
@@ -1430,13 +1439,29 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       return true;
     }
 
+    /**
+     * A convergence checker which evaluates the <code>StepMonitor</code> at every iteration that
+     * moved the point, and leaves the decision to <code>checker</code>, or to the optimizer's own
+     * criterion if it is <code>null</code>.
+     */
+    private ConvergenceChecker<PointValuePair> stepChecker(
+        ConvergenceChecker<PointValuePair> checker) {
+      return (iteration, previous, current) -> {
+        if (!Arrays.equals(previous.getPointRef(), current.getPointRef())) {
+          monitor(current.getPointRef(), stepMonitor);
+        }
+        return checker != null && checker.converged(iteration, previous, current);
+      };
+    }
+
     private PointValuePair conjugateGradient(MultiVariateVectorGradient multiVariateVectorGradient,
         MultivariateFunction multiVariateNumerical, Formula formula, InitialGuess initialGuess,
         MaxEval maxEval, MaxIter maxIter) {
       // a local search from the start value: no MultiStartMultivariateOptimizer, which returns the
       // best of some random starts and with it a minimum far away from the start value
-      NonLinearConjugateGradientOptimizer optimizer =
-          new NonLinearConjugateGradientOptimizer(formula, new SimpleValueChecker(1e-10, 1e-10));
+      final SimpleValueChecker valueChecker = new SimpleValueChecker(1e-10, 1e-10);
+      NonLinearConjugateGradientOptimizer optimizer = new NonLinearConjugateGradientOptimizer(
+          formula, stepMonitor == S.None ? valueChecker : stepChecker(valueChecker));
       return optimizer.optimize(//
           maxEval, //
           maxIter, //
@@ -1562,9 +1587,9 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     newSymbol.setAttributes(Attribute.HOLDALL);
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {//
-            S.MaxIterations, S.Method, S.EvaluationMonitor, S.WorkingPrecision}, //
+            S.MaxIterations, S.Method, S.EvaluationMonitor, S.WorkingPrecision, S.StepMonitor}, //
         new IExpr[] {//
-            S.Automatic, S.Automatic, S.None, S.MachinePrecision});
+            S.Automatic, S.Automatic, S.None, S.MachinePrecision, S.None});
   }
 
 }

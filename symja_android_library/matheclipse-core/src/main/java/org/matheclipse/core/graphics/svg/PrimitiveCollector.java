@@ -1119,6 +1119,15 @@ public final class PrimitiveCollector {
         && ((IBuiltInSymbol) spec.head()).ordinal() == ID.Line) {
       spec = ((IAST) spec).argSize() >= 1 ? ((IAST) spec).arg1() : spec;
     }
+    if (spec.isAST(S.BezierCurve) || spec.isAST(S.BSplineCurve)) {
+      // the arrow follows the curve, sampled as for a filled curve, with its head at the end
+      List<double[]> curve = new ArrayList<>();
+      collectCurveComponents(spec, curve);
+      if (curve.size() >= 2) {
+        primitives.add(new Prim2D.ArrowPrim(curve, setbackStart, setbackEnd, style.clone()));
+      }
+      return;
+    }
     for (List<double[]> seg : segmentsOf(spec)) {
       if (seg.size() >= 2) {
         primitives.add(new Prim2D.ArrowPrim(seg, setbackStart, setbackEnd, style.clone()));

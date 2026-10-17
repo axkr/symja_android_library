@@ -31,6 +31,45 @@ public class ImageFilterTest extends AbstractTestCase {
   }
 
   @Test
+  public void testLaplacianFilter() {
+    // the impulse response is the kernel: the axis taps 2*(-1)^(k+1)/k^2 and -2*Pi^2/3 in the
+    // centre, shifted by one constant so that the 3x3 block sums to zero
+    check("k = ImageData(LaplacianFilter(Image(ReplacePart(Table(0., {7}, {7}), {4, 4} -> 1.)), 1)); "
+        + "c = -(8 - 2*Pi^2/3)/9; "
+        + "Max(Abs(k[[3 ;; 5, 3 ;; 5]] - ({{0, 2, 0}, {2, -2*Pi^2/3, 2}, {0, 2, 0}} + c))) < 10^-6", //
+        "True");
+    // a constant image has no curvature
+    check("Max(Abs(ImageData(LaplacianFilter(Image(Table(0.3, {6}, {4})), 2))))  < 10^-6", //
+        "True");
+  }
+
+  @Test
+  public void testImageEffect() {
+    // Solarization inverts the pixels above the threshold, a colour pixel by the mean of its
+    // channels
+    check("Chop(ImageData(ImageEffect(Image({{0.2, 0.45, 0.55, 0.8}}), \"Solarization\")) - "
+        + "{{0.2, 0.45, 0.45, 0.2}}, 10^-6)", //
+        "{{0,0,0,0}}");
+    check("Chop(ImageData(ImageEffect(Image({{0.2, 0.45, 0.55, 0.8}}), {\"Solarization\", 0.25})) - "
+        + "{{0.2, 0.55, 0.45, 0.2}}, 10^-6)", //
+        "{{0,0,0,0}}");
+    check("Chop(ImageData(ImageEffect(Image({{{0.3, 0.7, 0.8}, {0.6, 0.2, 0.4}}}), {\"Solarization\", 0.5})) - "
+        + "{{{0.7, 0.3, 0.2}, {0.6, 0.2, 0.4}}}, 10^-6)", //
+        "{{{0,0,0},{0,0,0}}}");
+    // OilPainting: the most frequent value of the block inside the image, the pixel's own on a tie
+    check("Round(5*ImageData(ImageEffect(Image(Table(Mod(i + 2*j, 5)/5., {i, 4}, {j, 4})), "
+        + "{\"OilPainting\", 1})))", //
+        "{{3,3,0,4},{0,0,0,4},{1,0,0,0},{1,0,2,2}}");
+    check("Max(#) - Min(#) &(ImageData(ImageEffect(Image({{0.3, 0.3, 0.3}, {0.3, 0.8, 0.3}, {0.3, 0.3, 0.3}}), "
+        + "{\"OilPainting\", 1})))", //
+        "0.0");
+    check("{ImageType(#), ImageColorSpace(#)}&(ImageEffect(Image({{0.1, 0.9}}), \"Solarization\"))", //
+        "{Real32,Grayscale}");
+    check("Head(ImageEffect(Image({{0.5}}), \"NoSuchEffect\"))", //
+        "ImageEffect");
+  }
+
+  @Test
   public void testConvolveAndCorrelate1() {
     // the convolution reflects the kernel, the correlation doesn't
     check("delta = Image({{0., 1., 0.}}); {ImageData(ImageConvolve(delta, {{1, 2, 3}})), "

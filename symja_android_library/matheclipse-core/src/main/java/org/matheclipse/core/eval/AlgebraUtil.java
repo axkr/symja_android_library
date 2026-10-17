@@ -1622,7 +1622,7 @@ public class AlgebraUtil {
 
   public static IExpr factor(IAST expr, VariablesSet eVar, boolean squareFree,
       boolean withHomogenization, boolean trig, EvalEngine engine) throws JASConversionException {
-    if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
+    if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT && !isLargeRationalPolynomial(expr, eVar)) {
       return expr;
     }
 
@@ -1705,6 +1705,17 @@ public class AlgebraUtil {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Whether a sum above {@link Config#MAX_FACTOR_LEAFCOUNT} is still a polynomial in the variables
+   * with rational coefficients and at most {@link Config#MAX_FACTOR_POLYNOMIAL_TERMS} terms, which
+   * the polynomial factorization handles quickly.
+   */
+  private static boolean isLargeRationalPolynomial(IAST expr, VariablesSet eVar) {
+    return expr.isPlus() && expr.argSize() <= Config.MAX_FACTOR_POLYNOMIAL_TERMS
+        && expr.isFree(x -> x.isInexactNumber() || x.isComplex(), false)
+        && expr.isPolynomial(eVar.getVarList());
   }
 
   public static IExpr factor(IExpr arg1, EvalEngine engine) {

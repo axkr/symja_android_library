@@ -347,6 +347,32 @@ public class GraphGraphics {
     }
   }
 
+  /**
+   * The labels of <code>EdgeLabels -> {edge1 -> label1, ...}</code>, each drawn at the middle of its
+   * edge.
+   */
+  private <E> IASTAppendable edgeLabels(Graph<IExpr, E> g) {
+    IASTAppendable labels = F.ListAlloc();
+    IExpr labelRules = getOption(S.EdgeLabels);
+    if (!GraphExpr.isPropertyRuleList(labelRules)) {
+      return labels;
+    }
+    for (E e : g.edgeSet()) {
+      IExpr source = g.getEdgeSource(e);
+      IExpr target = g.getEdgeTarget(e);
+      IExpr label = GraphExpr.edgeProperty(labelRules, source, target, directed);
+      double[] p1 = vertexCoords.get(source);
+      double[] p2 = vertexCoords.get(target);
+      if (label.isPresent() && !label.isNone() && p1 != null && p2 != null) {
+        labels.append(F.Text(label, point((p1[0] + p2[0]) / 2.0, (p1[1] + p2[1]) / 2.0)));
+      }
+    }
+    if (labels.argSize() > 0) {
+      labels.append(1, F.Black);
+    }
+    return labels;
+  }
+
   private void drawSelfLoop(double[] p, IASTAppendable primitives) {
     double x = p[0];
     double y = p[1];
@@ -1151,6 +1177,7 @@ public class GraphGraphics {
       edgePrimitives.append(edgeStyle);
     }
     drawEdges(this.graph, edgePrimitives, distance);
+    IASTAppendable edgeLabels = edgeLabels(this.graph);
 
     IASTAppendable vertexPrimitives = F.ListAlloc(2 * vertexCount + 1);
     if (!vertexStyle.isNone()) {
@@ -1179,7 +1206,8 @@ public class GraphGraphics {
     // the options stand as rules of their own: Graphics(prims, {opts}) keeps them from the
     // renderer, which reads a PlotLabel only as a rule
     IASTAppendable graphics = F.ast(S.Graphics, graphicsOptions.argSize() + 1);
-    graphics.append(F.List(edgePrimitives, vertexPrimitives));
+    graphics.append(edgeLabels.isEmpty() ? F.List(edgePrimitives, vertexPrimitives)
+        : F.List(edgePrimitives, vertexPrimitives, edgeLabels));
     graphics.appendArgs(graphicsOptions);
     return graphics;
   }

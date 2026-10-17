@@ -1402,6 +1402,8 @@ public abstract class Scanner {
    */
   protected StringBuilder getStringBuilder() throws SyntaxError {
     final StringBuilder ident = new StringBuilder();
+    // the nesting depth of the box escapes \( ... \) in the string
+    int boxDepth = 0;
 
     if (isValidPosition()) {
       fCurrentChar = fInputString[fCurrentPosition++];
@@ -1440,6 +1442,11 @@ public abstract class Scanner {
               ident.append('\t');
               break;
             case ' ':
+              if (boxDepth > 0) {
+                // in a box escape \(my\ height\) the escaped space is a space of the text, which
+                // the box reader keeps apart from the spaces between the tokens
+                ident.append('\\');
+              }
               // "a\ b" is "a b", as in WMA: the backslash only marks the space
               ident.append(' ');
               break;
@@ -1452,9 +1459,11 @@ public abstract class Scanner {
               break;
             case '(':
               ident.append(BOX_OPEN);
+              boxDepth++;
               break;
             case ')':
               ident.append(BOX_CLOSE);
+              boxDepth--;
               break;
             case '*':
               ident.append(BOX_SEPARATOR);

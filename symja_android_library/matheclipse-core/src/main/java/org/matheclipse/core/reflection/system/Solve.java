@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.InverseFunctionExpander;
 import org.matheclipse.core.eval.util.SolveUtils;
+import org.matheclipse.core.eval.util.TrigEqualFamilies;
 import org.matheclipse.core.expression.ExprAnalyzer;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -2364,6 +2365,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             result =
                 solveUnderdetermined(termsEqualZeroList, lists[1], numericFlag, variables, engine);
           }
+          if (result.isNIL() && !numericFlag && termsEqualZeroList.argSize() == 1
+              && variables.argSize() == 1 && inequationsList.isEmpty()
+              && intervalDataMap.isEmpty()) {
+            // Sin(A) == Sin(B), Cos(A) == Cos(B): the families A - B and A + B are linear
+            result = equalSinCosFamilies(termsEqualZeroList.arg1(), variables.arg1(), engine);
+          }
           if (result.isNIL()) {
             // The system cannot be solved with the methods available to Solve.
             return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
@@ -2480,6 +2487,29 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    *
    * @return {@link F#NIL} if the polynomial is not of this kind or an inequality is not decided
    */
+  /**
+   * The solutions <code>{{x -> ConditionalExpression(root, C(k) \u2208 Integers)}, ...}</code> of
+   * <code>Sin(A) == Sin(B)</code> or <code>Cos(A) == Cos(B)</code> with <code>A</code>,
+   * <code>B</code> linear in <code>x</code>.
+   *
+   * @return <code>F.NIL</code> if the equation isn't of that form
+   */
+  private static IExpr equalSinCosFamilies(IExpr f, IExpr variable, EvalEngine engine) {
+    TrigEqualFamilies families = TrigEqualFamilies.of(engine.evaluate(f), variable, engine);
+    if (families == null) {
+      return F.NIL;
+    }
+    if (families.everyValue) {
+      return F.list(F.CEmptyList);
+    }
+    IASTAppendable result = F.ListAlloc(families.roots.size());
+    for (IExpr root : families.roots) {
+      result.append(F.list(F.Rule(variable,
+          F.ConditionalExpression(root, F.Element(families.parameter, S.Integers)))));
+    }
+    return result;
+  }
+
   private static IExpr realRootsInRegion(IExpr polynomial, IExpr variable, IExpr statement,
       int maxRoots, EvalEngine engine) {
     if (!variable.isSymbol() || !polynomial.isPolynomial(F.list(variable))) {

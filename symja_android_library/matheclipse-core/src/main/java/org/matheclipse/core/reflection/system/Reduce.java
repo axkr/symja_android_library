@@ -20,6 +20,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.InverseFunctionExpander;
+import org.matheclipse.core.eval.util.TrigEqualFamilies;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
@@ -1176,11 +1177,40 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    * @return the reduced expression or {@link F#NIL} if the equation isn't a supported single
    *         periodic-function equation
    */
+  /**
+   * <code>Sin(A) == Sin(B)</code> or <code>Cos(A) == Cos(B)</code> with <code>A</code>,
+   * <code>B</code> linear in the variable, as a family of solutions in <code>C(k)</code>.
+   *
+   * @return <code>F.NIL</code> if <code>f</code> isn't such a difference
+   */
+  private static IExpr reduceEqualSinCos(IExpr f, IExpr variable, EvalEngine engine) {
+    TrigEqualFamilies families = TrigEqualFamilies.of(f, variable, engine);
+    if (families == null) {
+      return F.NIL;
+    }
+    if (families.everyValue) {
+      return S.True;
+    }
+    if (families.roots.isEmpty()) {
+      return S.False;
+    }
+    IASTAppendable roots = F.OrAlloc(families.roots.size());
+    for (IExpr root : families.roots) {
+      roots.append(F.Equal(variable, root));
+    }
+    return engine.evaluate(
+        F.And(F.Element(families.parameter, S.Integers), roots.oneIdentity0()));
+  }
+
   private static IExpr reducePeriodicEquation(IAST equation, IExpr variable, ISymbol domain,
       EvalEngine engine) {
     IExpr f = engine.evaluate(F.Subtract(equation.arg1(), equation.arg2()));
     // a*Sin(u)+b*Cos(u) is one Sin(), so that the equation has a single periodic term
     f = combineLinearSinCos(f, variable, engine).orElse(f);
+    IExpr equalSinCos = reduceEqualSinCos(f, variable, engine);
+    if (equalSinCos.isPresent()) {
+      return equalSinCos;
+    }
     PeriodicTerm term = parsePeriodicTerm(f, variable, Reduce::isForwardPeriodicFunction);
     if (term == null) {
       return F.NIL;
@@ -3191,6 +3221,10 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         if (multivariate.isPresent()) {
           return multivariate;
         }
+        IExpr defined = reduceDefinedVariable(arg1, vars, domain, engine);
+        if (defined.isPresent()) {
+          return defined;
+        }
         IExpr branches = reduceOrBranches(arg1, vars, domain, engine);
         if (branches.isPresent()) {
           return branches;
@@ -4289,6 +4323,94 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return S.False;
     }
     return orResult.isAST1() ? orResult.arg1() : orResult;
+  }
+
+  /**
+   * A system with an equation <code>v == expr</code> which defines one of the variables by the
+   * others: <code>expr</code> is put in for <code>v</code> in the other conditions, which are
+   * reduced in the remaining variables, and <code>v</code> is given its value at each solution, as
+   * <code>z == Sin(t) &amp;&amp; Sin(t) == 1/2 &amp;&amp; 0 &lt;= t &lt; 2*Pi &amp;&amp; z &gt; 0</code>.
+   *
+   * @return <code>F.NIL</code> if there is no such equation or the rest isn't reduced
+   */
+  private static IExpr reduceDefinedVariable(IExpr arg1, IAST vars, ISymbol domain,
+      EvalEngine engine) {
+    if (!arg1.isAnd()) {
+      return F.NIL;
+    }
+    IAST conditions = (IAST) arg1;
+    for (int i = 1; i < conditions.size(); i++) {
+      IExpr condition = conditions.get(i);
+      if (!condition.isEqual()) {
+        continue;
+      }
+      for (int side = 1; side <= 2; side++) {
+        IExpr variable = condition.getAt(side);
+        IExpr definition = condition.getAt(3 - side);
+        if (!vars.contains(variable) || !definition.isFree(variable)
+            || definition.isFree(x -> vars.contains(x), false)) {
+          continue;
+        }
+        IAST rest = conditions.removeAtCopy(i);
+        IAST remaining = vars.removeAtCopy(vars.indexOf(variable));
+        // a condition on the defined variable alone (z > 0) is checked at each solution; the
+        // others are reduced with the definition put in
+        IASTAppendable others = F.ast(S.And, rest.argSize());
+        IASTAppendable checks = F.ListAlloc(rest.argSize());
+        for (IExpr part : rest) {
+          if (!part.isFree(variable) && part.isFree(x -> remaining.contains(x), false)) {
+            checks.append(part);
+          } else {
+            others.append(F.subst(part, variable, definition));
+          }
+        }
+        if (others.isAST0()) {
+          return F.NIL;
+        }
+        IExpr reduced = engine.evaluate(F.Reduce(others.oneIdentity1(), remaining, domain));
+        if (reduced.isFalse()) {
+          return S.False;
+        }
+        if (!isSolvedRelation(reduced, remaining)) {
+          return F.NIL;
+        }
+        IAST alternatives = reduced.isOr() ? (IAST) reduced : F.Or(reduced);
+        IASTAppendable result = F.OrAlloc(alternatives.argSize());
+        for (IExpr alternative : alternatives) {
+          IAST parts = alternative.isAnd() ? (IAST) alternative : F.And(alternative);
+          IASTAppendable values = F.ListAlloc(parts.argSize());
+          for (IExpr part : parts) {
+            if (part.isEqual() && remaining.contains(part.first())) {
+              values.append(F.Rule(part.first(), part.second()));
+            }
+          }
+          IExpr value = engine.evaluate(F.subst(definition, values));
+          IASTAppendable solution = F.ast(S.And, parts.argSize() + checks.argSize() + 1);
+          solution.append(F.Equal(variable, value));
+          boolean dropped = false;
+          for (IExpr check : checks) {
+            IExpr checked = engine.evaluate(F.subst(check, variable, value));
+            if (checked.isFalse()) {
+              dropped = true;
+              break;
+            }
+            if (!checked.isTrue()) {
+              solution.append(check);
+            }
+          }
+          if (dropped) {
+            continue;
+          }
+          solution.appendArgs(parts);
+          result.append(solution);
+        }
+        if (result.isAST0()) {
+          return S.False;
+        }
+        return engine.evaluate(result.oneIdentity0());
+      }
+    }
+    return F.NIL;
   }
 
   /**

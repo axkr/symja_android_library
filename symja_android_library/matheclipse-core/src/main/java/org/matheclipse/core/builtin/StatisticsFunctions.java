@@ -86,6 +86,7 @@ public class StatisticsFunctions {
       S.BrownianBridgeProcess.setEvaluator(new BrownianBridgeProcess());
       S.Correlation.setEvaluator(new Correlation());
       S.Covariance.setEvaluator(new Covariance());
+      S.DistributionParameterAssumptions.setEvaluator(new DistributionParameterAssumptions());
       S.DistributionParameterQ.setEvaluator(new DistributionParameterQ());
       S.FindDistributionParameters.setEvaluator(new FindDistributionParameters());
       S.DistributionFitTest
@@ -2667,6 +2668,38 @@ public class StatisticsFunctions {
    * makes the result {@link S#False}. For an argument which is not a distribution the expression
    * stays unevaluated.
    */
+  /**
+   * <code>DistributionParameterAssumptions(dist)</code> - the conditions the parameters of
+   * <code>dist</code> have to fulfill, as <code>m \u2208 Reals &amp;&amp; s &gt; 0</code> for
+   * <code>NormalDistribution(m, s)</code>.
+   */
+  private static final class DistributionParameterAssumptions extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isAST() || !arg1.head().isBuiltInSymbol()) {
+        return F.NIL;
+      }
+      IEvaluator evaluator = ((IBuiltInSymbol) arg1.head()).getEvaluator();
+      if (!(evaluator instanceof IDistribution)) {
+        return F.NIL;
+      }
+      IExpr assumptions = ((IDistribution) evaluator).parameterAssumptions((IAST) arg1);
+      return assumptions.isPresent() ? engine.evaluate(assumptions) : F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+    }
+  }
+
   private static final class DistributionParameterQ extends AbstractFunctionEvaluator {
 
     @Override

@@ -3,6 +3,7 @@ package org.matheclipse.image.builtin;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import org.matheclipse.core.builtin.FilterFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -49,6 +50,7 @@ public class ImageFilterFunctions {
 
     private static void init() {
       install(S.GaussianFilter, new GaussianFilter());
+      install(S.LaplacianFilter, new LaplacianFilter());
       install(S.MeanFilter, new MeanFilter());
       install(S.MedianFilter, new RankFilter(RankFilter.MEDIAN));
       install(S.MinFilter, new RankFilter(RankFilter.MIN));
@@ -63,6 +65,7 @@ public class ImageFilterFunctions {
       S.Closing.setEvaluator(new Morphology(true, true));
       S.MorphologicalComponents.setEvaluator(new MorphologicalComponents());
       S.DistanceTransform.setEvaluator(new DistanceTransform());
+      S.ImageEffect.setEvaluator(new ImageEffect());
     }
 
     private static void install(IBuiltInSymbol symbol, ImageFilter filter) {
@@ -272,6 +275,158 @@ public class ImageFilterFunctions {
         return null;
       }
       return Volumes.separable(volume, FilterFunctions.gaussianKernel(radius, sigma, engine));
+    }
+  }
+
+  /**
+   * <code>LaplacianFilter(image, r)</code>: the Laplacian kernel of
+   * {@link FilterFunctions#laplacianFilter}, applied to each channel.
+   */
+  private static class LaplacianFilter extends ImageFilter {
+
+    @Override
+    double[][] filter(double[][] channel, IAST ast, EvalEngine engine) {
+      int radius = FilterFunctions.laplacianRadius(ast.arg2());
+      if (radius < 0) {
+        return null;
+      }
+      return FilterFunctions.laplacianFilter(channel, radius, false);
+    }
+  }
+
+  /**
+   * <code>ImageEffect(image, effect)</code> and <code>ImageEffect(image, {effect, params...})</code>
+   * - a <code>"Real32"</code> image of the effect:
+   * <ul>
+   * <li><code>{"Solarization", t}</code>: the pixels whose mean over the channels is above
+   * <code>t</code> (<code>0.5</code> if none is given) are inverted, every channel <code>v</code>
+   * becomes <code>1 - v</code>,
+   * <li><code>{"OilPainting", r}</code>: each pixel takes the most frequent intensity of the
+   * <code>(2r+1) x (2r+1)</code> block around it (on 256 levels, of the part of the block inside
+   * the image), as the mean of the pixels of that intensity; a tie keeps the pixel's own intensity
+   * when it is one of the most frequent. Without a radius it is <code>Floor(Min(width,
+   * height)/64)</code>.
+   * </ul>
+   */
+  private static class ImageEffect extends AbstractEvaluator {
+
+    /** The other effects of the reference implementation, which stay unevaluated without a message. */
+    private static final java.util.Set<String> OTHER_EFFECTS = new java.util.HashSet<String>(
+        Arrays.asList("Charcoal", "Comics", "Embossing", "Noise", "Posterization"));
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      IExpr spec = ast.arg2();
+      IExpr name = spec.isList() && spec.argSize() >= 1 ? spec.first() : spec;
+      if (!name.isString()) {
+        return F.NIL;
+      }
+      ImageExpr image = (ImageExpr) ast.arg1();
+      double[][][] channels = channels(image, engine);
+      if (channels == null) {
+        return F.NIL;
+      }
+      double parameter = spec.isList() && spec.argSize() >= 2 ? spec.second().evalfNaN() : Double.NaN;
+      switch (name.toString()) {
+        case "Solarization":
+          solarize(channels, Double.isNaN(parameter) ? 0.5 : parameter);
+          break;
+        case "OilPainting": {
+          int radius = Double.isNaN(parameter)
+              ? Math.min(channels[0].length, channels[0][0].length) / 64
+              : (int) parameter;
+          if (radius < 0) {
+            return F.NIL;
+          }
+          channels = oilPainting(channels, radius);
+          break;
+        }
+        default:
+          if (OTHER_EFFECTS.contains(name.toString())) {
+            // an effect of the reference implementation which is not drawn here
+            return F.NIL;
+          }
+          // `1` is not a known image effect.
+          return Errors.printMessage(S.ImageEffect, "effect", F.list(name), engine);
+      }
+      return toImage(channels, image.getOptions());
+    }
+
+    private static void solarize(double[][][] channels, double threshold) {
+      final int height = channels[0].length;
+      final int width = channels[0][0].length;
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          double mean = 0.0;
+          for (double[][] channel : channels) {
+            mean += channel[y][x];
+          }
+          if (mean / channels.length > threshold) {
+            for (double[][] channel : channels) {
+              channel[y][x] = 1.0 - channel[y][x];
+            }
+          }
+        }
+      }
+    }
+
+    private static double[][][] oilPainting(double[][][] channels, int radius) {
+      final int count = channels.length;
+      final int height = channels[0].length;
+      final int width = channels[0][0].length;
+      int[][] level = new int[height][width];
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          double mean = 0.0;
+          for (double[][] channel : channels) {
+            mean += channel[y][x];
+          }
+          level[y][x] = (int) Math.round(Math.max(0.0, Math.min(1.0, mean / count)) * 255.0);
+        }
+      }
+      double[][][] result = new double[count][height][width];
+      int[] frequency = new int[256];
+      double[][] sums = new double[256][count];
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          Arrays.fill(frequency, 0);
+          for (double[] sum : sums) {
+            Arrays.fill(sum, 0.0);
+          }
+          for (int yy = Math.max(0, y - radius); yy <= Math.min(height - 1, y + radius); yy++) {
+            for (int xx = Math.max(0, x - radius); xx <= Math.min(width - 1, x + radius); xx++) {
+              int l = level[yy][xx];
+              frequency[l]++;
+              for (int c = 0; c < count; c++) {
+                sums[l][c] += channels[c][yy][xx];
+              }
+            }
+          }
+          int best = level[y][x];
+          for (int l = 0; l < 256; l++) {
+            if (frequency[l] > frequency[best]) {
+              best = l;
+            }
+          }
+          for (int c = 0; c < count; c++) {
+            result[c][y][x] = sums[best][c] / frequency[best];
+          }
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 

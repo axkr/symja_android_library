@@ -48,6 +48,16 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
   /** The graph combinators take trailing options, which go onto the result. */
   @Test
+  public void testGraphPlotEdgeLabels() {
+    check("Cases(GraphPlot({{1 -> 2, a}, {2 -> 3, b}, {3 -> 4, c}}), Text(l_, ___) :> l, Infinity)", //
+        "{a,b,c}");
+    check("Count(GraphPlot(Graph({1 -> 2, 2 -> 3}, EdgeLabels -> {(1 -> 2) -> \"e\"})), _Text, Infinity)", //
+        "1");
+    check("{VertexCount(#), EdgeCount(#)}&(HypercubeGraph(3, VertexSize -> 0.1, ImageSize -> {250, 300}))", //
+        "{8,12}");
+  }
+
+  @Test
   public void testCombinatorsTakeOptions() {
     check(
         "EdgeList(GraphIntersection(CompleteGraph(3), PathGraph({1,2,3}), "

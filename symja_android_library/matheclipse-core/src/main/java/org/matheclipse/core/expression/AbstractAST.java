@@ -5798,6 +5798,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           }
         }
       }
+      if (counter == 0) {
+        // a product free of the variable is the constant part, not the coefficient
+        return new IExpr[] {this, F.C0};
+      }
       return new IExpr[] {F.C0, timesClone.oneIdentity1()};
     } else if (this.equals(variable)) {
       return new IExpr[] {F.C0, F.C1};

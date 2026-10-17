@@ -436,6 +436,12 @@ public final class BoxNotation {
         i += 2;
         continue;
       }
+      if (ch == '\\' && i + 1 < s.length() && s.charAt(i + 1) == ' ') {
+        // an escaped space is a space of the text, \(my\ height\) is RowBox({"my", " ", "height"})
+        tokens.add(new Token('\0', F.stringx(" "), false));
+        i += 2;
+        continue;
+      }
       if (delimiter(s, i, ')', Scanner.BOX_CLOSE) > 0) {
         throw new Unreadable();
       }
@@ -454,7 +460,7 @@ public final class BoxNotation {
       while (i < s.length()) {
         ch = s.charAt(i);
         if (Character.isWhitespace(ch) || PUNCTUATION.indexOf(ch) >= 0 || ch == '"'
-            || startsEscape(s, i)) {
+            || startsEscape(s, i) || (ch == '\\' && i + 1 < s.length() && s.charAt(i + 1) == ' ')) {
           break;
         }
         i++;

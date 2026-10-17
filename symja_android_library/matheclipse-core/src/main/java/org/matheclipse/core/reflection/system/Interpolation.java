@@ -32,7 +32,7 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       return evaluate(ast.setAtCopy(1, points), argSize, options, engine, originalAST);
     }
     int[] dims = ast.arg1().isMatrix();
-    if (dims != null && dims[0] > 2 && dims[1] >= 2) {
+    if (dims != null && dims[0] >= 2 && dims[1] >= 2) {
       String method = "";
       IExpr option = options[0];
       if (!option.isAutomatic()) {
@@ -41,6 +41,13 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       int order = options.length > 1 && !options[1].isAutomatic() ? options[1].toIntDefault() : 3;
       if (order < 1) {
         return F.NIL;
+      }
+      if (order > dims[0] - 1 && method.isEmpty()) {
+        // Requested order is too high; order has been reduced to `1`.
+        order = dims[0] - 1;
+        Errors.printMessage(S.Interpolation, "inhr", F.list(F.list(F.ZZ(order))), engine);
+        IExpr reduced = polynomialPieces((IAST) ast.arg1(), dims[0], order, engine);
+        return argSize == 2 && reduced.isPresent() ? F.unaryAST1(reduced, ast.arg2()) : reduced;
       }
       // the call without its options: Interpolation(data) or Interpolation(data, x)
       IAST call = argSize < ast.argSize() ? ast.copyUntil(argSize + 1) : ast;

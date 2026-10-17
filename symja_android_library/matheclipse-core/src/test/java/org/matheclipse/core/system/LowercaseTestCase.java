@@ -10135,7 +10135,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // univariate cases
     check("FindRoot(sin(x)==x^2, {x, -6.6, 3.99999999})", //
-        "{x->-1.84448*10^-19}");
+        "{x->0.0}");
     check("v1:= E^x - 3*x ;v2:={x, 2};", //
         "");
     check("FindRoot(v1,v2)", //
@@ -12885,6 +12885,150 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("{RegionWithin(Rectangle({-1, -1}, {1, 1}), Disk({1/2, 0}, 1/4)), "
         + "RegionWithin(Rectangle({0, 0}, {2, 2}), Disk({2, 2}, 1))}", //
         "{True,False}");
+  }
+
+  @Test
+  public void testFactorLargePolynomial() {
+    // above the leaf count limit a polynomial with rational coefficients is still factored
+    check("Factor(Expand((a + b + c + d - e - f)^6*(a - b)))", //
+        "(a-b)*(a+b+c+d-e-f)^6");
+    check("Factor(Expand((x + y + z + 1)^9))", //
+        "(1+x+y+z)^9");
+  }
+
+  @Test
+  public void testReduceEqualSines() {
+    check("Reduce(Sin(t) == Sin(t + 2*Pi/5) && 0 <= t < 2*Pi, t, Reals)", //
+        "t==3/10*Pi||t==13/10*Pi");
+    check("Reduce(Sin(t) == Sin(2*t), t)", //
+        "C(1)∈Integers&&(t==2*Pi*C(1)||t==Pi/3+2/3*Pi*C(1))");
+    check("Reduce(Sin(t) == Sin(t + 1), t)", //
+        "C(1)∈Integers&&t==-1/2+Pi/2+Pi*C(1)");
+    check("Reduce(Cos(t) == Cos(t + 1) && 0 <= t < 2*Pi, t)", //
+        "t==-1/2+Pi||t==-1/2+2*Pi");
+    check("Reduce(Cos(t) == Cos(t + 2*Pi), t)", //
+        "True");
+    // Solve takes the same families where its other methods find none
+    check("Solve(Cos(t) == Cos(3*t + 1), t)[[All, 1, 2, 1]]", //
+        "{-1/2+Pi*C(1),-1/4+1/2*Pi*C(1)}");
+    check("Solve(Cos(t) == Cos(t + 2*Pi), t)", //
+        "{{}}");
+    // a variable defined by the others is given its value at each solution
+    check("Reduce(z == Sin(t) && Sin(t) == 1/2 && 0 <= t < 2*Pi && z > 0, {z, t}, Reals)", //
+        "(z==1/2&&t==Pi/6)||(z==1/2&&t==5/6*Pi)");
+    check("Reduce(z == Cos(t) && Sin(t) == 0 && 0 <= t < 2*Pi && z > 0, {z, t}, Reals)", //
+        "z==1&&t==0");
+    check("Reduce(z == Sin(t) && Sin(t) == 1/2 && 0 <= t < 2*Pi && z < 0, {z, t}, Reals)", //
+        "False");
+  }
+
+  @Test
+  public void testInterpolationOrderReduced() {
+    check("f = Interpolation({{0, 0}, {1, 1}, {2, 4}}); {f(\"InterpolationOrder\"), f(1.5)}", //
+        "{{2},2.25}");
+    check("f = Interpolation({{0, 0}, {1, 1}, {2, 4}}); MapThread(f, {{1, 1.5}})", //
+        "{1,2.25}");
+    check("f = Interpolation({{0, 1}, {2, 5}}); f(1.5)", //
+        "4.0");
+  }
+
+  @Test
+  public void testFindRootPolishedRoot() {
+    check("FindRoot(x^2/4 - 4, {x, 1.}) // InputForm", //
+        "{x->4.0`}");
+  }
+
+  @Test
+  public void testOptionsOfAnExpression() {
+    check("Options(Graphics({}, Frame -> True))", //
+        "{Frame->True}");
+    check("d = DensityPlot(x*y, {x, -3, 3}, {y, -2, 2}); Options(d, {AspectRatio, Frame})", //
+        "{AspectRatio->1,Frame->True}");
+    check("Options(g(1, a -> 2, b :> 3))", //
+        "{a->2,b:>3}");
+    check("Options(Plot, PlotPoints)", //
+        "{PlotPoints->Automatic}");
+  }
+
+  @Test
+  public void testLaplacianFilter() {
+    // the response to an impulse: 2*(-1)^(k+1)/k^2 beside -2*Pi^2/3, shifted to the sum 0
+    check("k = LaplacianFilter(UnitVector(11, 6), 3); c = -(2*(2 - 1/2 + 2/9) - 2*Pi^2/3)/7; "
+        + "Max(Abs(k[[3 ;; 9]] - (N({2/9, -1/2, 2, -2*Pi^2/3, 2, -1/2, 2/9}) + c))) < 10^-14", //
+        "True");
+    check("Chop(Total(LaplacianFilter(UnitVector(11, 6), 4)))", //
+        "0");
+    // a quadratic: Sum(k(j)*j^2) inside, the border continued with its own values
+    check("Chop(LaplacianFilter(N(Range(8)^2 + 3), 1) - "
+        + "{8.579736267392905,5.719824178261937,5.719824178261937,5.719824178261937,"
+        + "5.719824178261937,5.719824178261937,5.719824178261937,-42.89868133696453}, 10^-10)", //
+        "{0,0,0,0,0,0,0,0}");
+    check("Chop(LaplacianFilter({{2, 2, 2}, {2, 2, 2}}, 1))", //
+        "{{0,0,0},{0,0,0}}");
+    // the standard deviation of a range {r, sigma} is checked, and doesn't change the kernel
+    check("LaplacianFilter({1, 2, 3, 4}, {2, 1/2})", //
+        "LaplacianFilter({1,2,3,4},{2,1/2})");
+    check("LaplacianFilter(UnitVector(7, 4), {1, 5}) == LaplacianFilter(UnitVector(7, 4), 1)", //
+        "True");
+  }
+
+  @Test
+  public void testDistributionParameterAssumptions() {
+    check("DistributionParameterAssumptions /@ {NormalDistribution(m, s), GammaDistribution(a, b), "
+        + "ExponentialDistribution(l), PoissonDistribution(m), BinomialDistribution(n, p), "
+        + "UniformDistribution({a, b})}", //
+        "{m\u2208Reals&&s>0,a>0&&b>0,l>0,m>0,n\u2208Integers&&n>=0&&0<=p<=1,a\u2208Reals&&b\u2208Reals&&a<b}");
+    check("DistributionParameterAssumptions(NormalDistribution(0, -1))", //
+        "False");
+    check("{DistributionParameterQ(NormalDistribution(I, 1)), "
+        + "DistributionParameterQ(UniformDistribution({1, 1})), "
+        + "DistributionParameterQ(GammaDistribution(-1, 2)), "
+        + "DistributionParameterQ(BinomialDistribution(5, 1/2))}", //
+        "{False,False,False,True}");
+  }
+
+  @Test
+  public void testFindMinimumStepMonitor() {
+    // the point of every step, with the variables set to it
+    check("Round(Reap(FindMinimum((x - 3)^2 + 1, {x, -1}, StepMonitor :> Sow(x)))[[2]], 10^-8)", //
+        "{{3}}");
+    check("Round(Reap(FindMinimum((x + 1)^2 + (y - 4)^2, {{x, 2.}, {y, 0.}}, "
+        + "StepMonitor :> Sow({x, y})))[[2]], 10^-8)", //
+        "{{{-1,4}}}");
+    check("Round(Reap(FindMaximum(-(x - 3)^2, {x, -1}, Method -> \"ConjugateGradient\", "
+        + "StepMonitor :> Sow(x)))[[2]], 10^-8)", //
+        "{{3}}");
+    check("Reap(FindMinimum((x - 3)^2, {x, -1}))[[2]]", //
+        "{}");
+  }
+
+  @Test
+  public void testDensityPlotValueRange() {
+    // PlotRange -> {zmin, zmax} is the colour scale; the values outside are left out by default
+    check("d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {0.25, 0.75}); "
+        + "{PlotRange /. Options(d), Count(Flatten(d[[1, 1, 1]], 1), {_, _, _, 0.})}", //
+        "{{{0.0,1.0},{0.0,1.0}},1200}");
+    check("d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {0.25, 0.75}, ClippingStyle -> Blue); "
+        + "Count(Flatten(d[[1, 1, 1]], 1), {0.0, 0.0, 1.0})", //
+        "1200");
+    // PlotLegends -> Automatic is a bar of the colour scale; Show keeps it
+    check("d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {-1, 2}, ColorFunction -> \"Rainbow\", "
+        + "PlotLegends -> Automatic); {Head(d), d[[2]]}", //
+        "{Legended,BarLegend({Rainbow,{-1.0,2.0}})}");
+    check("d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotLegends -> Automatic); "
+        + "s = Show(d, Graphics(Circle({0.5, 0.5}, 0.2))); {Head(s), s[[2]] === d[[2]], Head(First(s))}", //
+        "{Legended,True,Graphics}");
+  }
+
+  @Test
+  public void testTypesetLabelText() {
+    // an escaped space in a box escape is a space of the text
+    check("StringContainsQ(ExportString(Graphics(Text(\"\\!\\(\\*FractionBox[\\(top\\ part\\), \\(b\\)]\\)\", {0, 0})), \"SVG\"), \"(top part)/b\")", //
+        "True");
+    check("StringContainsQ(ExportString(Graphics(Text(BracketingBar(x), {0, 0})), \"SVG\"), \">|x|<\")", //
+        "True");
+    check("StringCount(ExportString(Graphics(Arrow(BSplineCurve({{0, 0}, {1, 1}, {2, 0}}))), \"SVG\"), RegularExpression(\"<path|<polyline|<polygon|<line\")) > 0", //
+        "True");
   }
 
   @Test

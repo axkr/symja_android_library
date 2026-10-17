@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.BoxNotation;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.Scanner;
@@ -75,6 +76,12 @@ public final class LabelText {
         }
       }
       return text.toString();
+    }
+    if ((expr.isAST(S.BracketingBar) || expr.isAST(S.DoubleBracketingBar))
+        && expr.argSize() >= 1) {
+      // |x| and ||x||, the arguments between the bars
+      String bar = expr.isAST(S.BracketingBar) ? "|" : "\u2016";
+      return bar + joined((IAST) expr, ",") + bar;
     }
     if (expr.isAST(S.Overscript, 3)) {
       String accent = combiningAccent(of(expr.second()));

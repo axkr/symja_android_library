@@ -285,13 +285,26 @@ public class GraphicsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IASTAppendable graphics = F.ListAlloc(ast.argSize());
       IASTAppendable options = F.ListAlloc();
+      IASTAppendable legends = F.ListAlloc();
       for (int i = 1; i < ast.size(); i++) {
         IExpr arg = ast.get(i);
         if (arg.isRuleAST()) {
           options.append(arg);
-        } else if (!collect(arg, graphics, engine)) {
+        } else if (!collect(arg, graphics, legends, engine)) {
           return F.NIL;
         }
+      }
+      if (legends.argSize() > 0) {
+        // the legends of legended graphics stay beside the combined picture
+        IASTAppendable show = F.ast(S.Show, graphics.argSize() + options.argSize());
+        show.appendArgs(graphics);
+        show.appendArgs(options);
+        IExpr combined = engine.evaluate(show);
+        if (!combined.isAST(S.Graphics) && !combined.isAST(S.Graphics3D)) {
+          return F.NIL;
+        }
+        return F.binaryAST2(S.Legended, combined,
+            legends.argSize() == 1 ? legends.arg1() : legends);
       }
       if (graphics.argSize() == 0) {
         return F.NIL;
@@ -325,8 +338,18 @@ public class GraphicsFunctions {
       return result;
     }
 
-    /** A graphic, a mesh region as its picture, or a list of either. */
-    private static boolean collect(IExpr arg, IASTAppendable graphics, EvalEngine engine) {
+    /**
+     * A graphic, a mesh region as its picture, a legended graphic whose legend goes to
+     * <code>legends</code>, or a list of these.
+     */
+    private static boolean collect(IExpr arg, IASTAppendable graphics, IASTAppendable legends,
+        EvalEngine engine) {
+      if (arg.isAST(S.Legended, 3)
+          && (arg.first().isAST(S.Graphics) || arg.first().isAST(S.Graphics3D))) {
+        graphics.append(arg.first());
+        legends.append(arg.second());
+        return true;
+      }
       if (arg.isAST(S.Graphics) || arg.isAST(S.Graphics3D)) {
         graphics.append(arg);
         return true;
@@ -341,7 +364,7 @@ public class GraphicsFunctions {
       }
       if (arg.isList()) {
         for (IExpr element : (IAST) arg) {
-          if (!collect(element, graphics, engine)) {
+          if (!collect(element, graphics, legends, engine)) {
             return false;
           }
         }

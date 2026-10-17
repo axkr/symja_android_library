@@ -564,15 +564,18 @@ public class GraphDataFunctions {
     }
   }
 
-  private static class HypercubeGraph extends AbstractEvaluator {
+  private static class HypercubeGraph extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
 
       int order = ast.arg1().toMachineInt();
       if (order == 0) {
         // the 0-dimensional hypercube is a single vertex
-        return GraphExpr.newInstance(F.List(F.C1), F.List());
+        return GraphExpr.newInstance(GraphExpr.newInstance(F.List(F.C1), F.List()).toData(),
+            optionsList);
       }
       if (order < 0) {
         // Positive machine-sized integer expected at position `2` in `1`
@@ -582,10 +585,10 @@ public class GraphDataFunctions {
         ASTElementLimitExceeded.throwIt(order);
       }
 
-      return hypercubeGraph(order, engine);
+      return hypercubeGraph(order, optionsList);
     }
 
-    private static IExpr hypercubeGraph(int order, EvalEngine engine) {
+    private static IExpr hypercubeGraph(int order, IASTAppendable optionsList) {
       HyperCubeGraphGenerator<IExpr, ExprEdge> gen =
           new HyperCubeGraphGenerator<IExpr, ExprEdge>(order);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
@@ -593,7 +596,7 @@ public class GraphDataFunctions {
           .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
           .buildGraph();
       gen.generateGraph(target);
-      return GraphExpr.newInstance(target);
+      return GraphExpr.newInstance(target, optionsList);
     }
 
     @Override
@@ -604,6 +607,12 @@ public class GraphDataFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, GraphGraphics.defaultGraphOptionKeys(),
+          GraphGraphics.defaultGraphOptionValues());
     }
   }
 

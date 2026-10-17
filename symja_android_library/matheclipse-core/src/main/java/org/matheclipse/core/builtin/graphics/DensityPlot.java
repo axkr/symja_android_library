@@ -175,6 +175,17 @@ public class DensityPlot extends ListPlot {
     if (minZ == Double.MAX_VALUE)
       return F.NIL;
 
+    // PlotRange -> {zmin, zmax} sets the colour scale; the values outside it are clipped
+    double[] valueRange = valueRange(GraphicsOptions.optionValue(originalAST, S.PlotRange, S.Automatic));
+    final boolean clipping = valueRange != null;
+    if (clipping) {
+      minZ = valueRange[0];
+      maxZ = valueRange[1];
+    }
+    // the clipped cells are left out (None, the default) or drawn in the clipping style
+    IExpr clippingStyle = GraphicsOptions.optionValue(originalAST, S.ClippingStyle, S.None);
+    IExpr clipColor = clippingStyle.isNone() || clippingStyle == S.Automatic ? F.NIL : clippingStyle;
+
     // 4. Generate the cell grid as a single raster rather than one rectangle per cell
     IASTAppendable primitives = F.ListAlloc();
     PlotColorFunction colorMap = PlotColorFunction
@@ -214,8 +225,16 @@ public class DensityPlot extends ListPlot {
 
         double cellZ = (v00 + v10 + v01 + v11) / 4.0;
 
-        IExpr color = colorMap != null ? colorMap.color(cellZ)
-            : getDensityColor(scaledValue(cellZ, minZ, maxZ, colorFunctionScaling));
+        IExpr color;
+        if (clipping && (cellZ < minZ || cellZ > maxZ)) {
+          if (clipColor.isNIL()) {
+            continue;
+          }
+          color = clipColor;
+        } else {
+          color = colorMap != null ? colorMap.color(cellZ)
+              : getDensityColor(scaledValue(cellZ, minZ, maxZ, colorFunctionScaling));
+        }
 
         if (whole) {
           // j counts upwards from the bottom, while the raster rows are given top first
@@ -247,7 +266,70 @@ public class DensityPlot extends ListPlot {
     ContourPlot.appendBoundary(primitives, defined, xRange[0], yRange[0], stepX, stepY,
         boundaryStyle);
 
-    return createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
+    IExpr legends = GraphicsOptions.optionValue(originalAST, S.PlotLegends, S.None);
+    if (legends == S.Automatic || legends.isTrue()) {
+      // a bar of the colour scale over the range of the values, beside the plot
+      graphicsOptions.setPlotLegends(F.BarLegend(
+          F.List(legendColorFunction(colorFunctionOpt), F.List(F.num(minZ), F.num(maxZ)))));
+    }
+    IExpr result = createGraphicsFunction(primitives, graphicsOptions, wrappedAST);
+    if (clipping) {
+      // the range of the values isn't the range of the picture, which is the box of x and y
+      result = withPlotRange(result, F.List(F.List(F.num(xRange[0]), F.num(xRange[1])),
+          F.List(F.num(yRange[0]), F.num(yRange[1]))));
+    }
+    return result;
+  }
+
+  /**
+   * The value range <code>{zmin, zmax}</code> of a <code>PlotRange</code> which states one, as
+   * <code>{zmin, zmax}</code> or as the third range of <code>{{xmin, xmax}, {ymin, ymax}, {zmin,
+   * zmax}}</code>.
+   *
+   * @return <code>null</code> for <code>Automatic</code>, <code>All</code> and the other forms
+   */
+  private static double[] valueRange(IExpr plotRange) {
+    IExpr range = plotRange;
+    if (range.isList() && range.argSize() == 3 && range.first().isList()) {
+      range = range.getAt(3);
+    }
+    if (range.isList2() && !range.first().isList()) {
+      double min = range.first().evalfNaN();
+      double max = range.second().evalfNaN();
+      if (!Double.isNaN(min) && !Double.isNaN(max) && min < max) {
+        return new double[] {min, max};
+      }
+    }
+    return null;
+  }
+
+  /** The graphics, or the graphics of a <code>Legended</code>, with <code>PlotRange -> box</code>. */
+  private static IExpr withPlotRange(IExpr result, IExpr box) {
+    if (result.isAST(S.Legended, 3)) {
+      return ((IAST) result).setAtCopy(1, withPlotRange(result.first(), box));
+    }
+    if (!result.isAST(S.Graphics)) {
+      return result;
+    }
+    IASTAppendable graphics = ((IAST) result).copyAppendable();
+    for (int i = 2; i < graphics.size(); i++) {
+      if (graphics.get(i).isRuleAST() && graphics.get(i).first() == S.PlotRange) {
+        graphics.set(i, F.Rule(S.PlotRange, box));
+      }
+    }
+    return graphics;
+  }
+
+  /** The colour function of the legend: a named scheme, or the default gradient of the plot. */
+  private static IExpr legendColorFunction(IExpr colorFunction) {
+    if (colorFunction.isString() || (colorFunction != S.Automatic && colorFunction.isPresent())) {
+      return colorFunction;
+    }
+    IASTAppendable colors = F.ListAlloc(9);
+    for (int i = 0; i <= 8; i++) {
+      colors.append(GraphicsOptions.getFieldColor(i / 8.0));
+    }
+    return F.Function(F.binaryAST2(S.Blend, colors, F.Slot1));
   }
 
   /**

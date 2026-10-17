@@ -98,6 +98,12 @@ public class Config {
    */
   public static final int MAX_FACTOR_LEAFCOUNT = 1000;
 
+  /**
+   * Maximum number of terms of a polynomial with rational coefficients which <code>Factor()</code>
+   * still tries when its leaf count is above {@link #MAX_FACTOR_LEAFCOUNT}.
+   */
+  public static final int MAX_FACTOR_POLYNOMIAL_TERMS = 5000;
+
   public static int MAX_GRAPH_VERTICES_SIZE = 100;
 
   /**
