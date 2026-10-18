@@ -703,4 +703,18 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "0");
   }
 
+  /**
+   * A factor which is a sum of fractions whose common denominator cancels completely is factored
+   * as the polynomial it is.
+   */
+  @Test
+  public void testFactorIssue1557() {
+    check("Factor((x*(2/(3*x)+(-2*(-1-x+(1+x)/(3*x)))/(1+x)))/(-1+x))", //
+        "(2*x)/(-1+x)");
+    check("Factor(y*(1/(1+x)+x/(1+x)))", //
+        "y");
+    check("Factor(z*(x^2/(x-1)-1/(x-1)))", //
+        "(1+x)*z");
+  }
+
 }

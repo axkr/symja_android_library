@@ -2259,6 +2259,11 @@ public class AlgebraUtil {
       // Support Laurent polynomials (negative exponents) by converting them to a rational
       // expression first
       IExpr[] fractionParts = numeratorDenominator((IAST) subsPolynomial, true, engine);
+      if (fractionParts[1].isOne()) {
+        // Together cancelled every denominator: its result, not the sum of fractions, is the
+        // polynomial - 1/(1+x)+x/(1+x) is 1
+        fractionParts[0] = fractionParts[2];
+      }
 
       IExpr numeratorFact =
           factorComplex(fractionParts[0], eVar.getVarList(), S.Times, gaussianIntegers, engine);
