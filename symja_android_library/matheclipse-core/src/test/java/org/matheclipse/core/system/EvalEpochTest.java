@@ -193,6 +193,117 @@ public class EvalEpochTest extends ExprEvaluatorTestCase {
         "epo(a__,two)*k_Integer:>k*epo(a)");
   }
 
+  /**
+   * A Block over variables without rules, in the body of a rule with a condition, changes no
+   * definition: a stored expression keeps its stamp.
+   */
+  @Test
+  public void testBlockInAConditionalRuleKeepsTheStamp() throws InterruptedException {
+    S.Integrate.getEvaluator().await();
+    EvalEngine engine = EvalEngine.get();
+    // epbc(1) counts its evaluations: its condition fails and increments epbcnt
+    engine.evaluate(evaluator.parse("epbf(x_) := Block({epbt, epbu}, epbt = x; epbu = epbt + 1; "
+        + "epbu) /; x > 0; epbcnt = 0; epbc(x_) := x /; (epbcnt = epbcnt + 1; False); "
+        + "epbl = {epbc(1)}"));
+    ISymbol stored = (ISymbol) evaluator.parse("epbl");
+    ISymbol counter = (ISymbol) evaluator.parse("epbcnt");
+    engine.evaluate(stored);
+    IExpr before = engine.evaluate(counter);
+    assertEquals("2", engine.evaluate(evaluator.parse("epbf(1)")).toString());
+    engine.evaluate(stored);
+    if (!Config.EVAL_EPOCH_VALIDATE) {
+      // a validation run evaluates every stamped expression once more
+      assertEquals(before, engine.evaluate(counter));
+    }
+    // the test of the condition still decides: a value read there is a hard change
+    check("epbflag = False; epbh(x_) := x /; epbflag; epbk = epbh(1)", //
+        "epbh(1)");
+    check("epbflag = True; epbk", //
+        "1");
+  }
+
+  /**
+   * A function defined in a Block changes only the expressions which contain it: a stored
+   * expression keeps its stamp.
+   */
+  @Test
+  public void testLocalFunctionKeepsTheStamp() throws InterruptedException {
+    S.Integrate.getEvaluator().await();
+    EvalEngine engine = EvalEngine.get();
+    // eplc(1) counts its evaluations: its condition fails and increments eplcnt
+    engine.evaluate(evaluator.parse("eplf(x_) := Block({eploc}, eploc(y_) := y + 1; eploc(x)); "
+        + "eplcnt = 0; eplc(x_) := x /; (eplcnt = eplcnt + 1; False); epll = {eplc(1)}"));
+    ISymbol stored = (ISymbol) evaluator.parse("epll");
+    ISymbol counter = (ISymbol) evaluator.parse("eplcnt");
+    engine.evaluate(stored);
+    IExpr before = engine.evaluate(counter);
+    assertEquals("6", engine.evaluate(evaluator.parse("eplf(5)")).toString());
+    engine.evaluate(stored);
+    if (!Config.EVAL_EPOCH_VALIDATE) {
+      // a validation run evaluates every stamped expression once more
+      assertEquals(before, engine.evaluate(counter));
+    }
+  }
+
+  /**
+   * A new rule reaches every expression whose evaluation depended on it: the expressions which
+   * contain the symbol, and the ones whose conditions, pattern tests or options used its rules.
+   */
+  @Test
+  public void testNewRuleReachesDependentExpressions() {
+    check("eprf(x_) := 0 /; eprs(x) === 1; epre = {eprf(2)}; "
+        + "{ToString(epre), eprs(2) = 1; ToString(epre)}", //
+        "{{eprf(2)},{0}}");
+    check("Options(eprk) = {epra -> 2}; eprg(x_, OptionsPattern(eprk)) := 0 /; "
+        + "OptionValue(epra) === 1; epre2 = {eprg(1)}; "
+        + "{ToString(epre2), SetOptions(eprk, epra -> 1); ToString(epre2)}", //
+        "{{eprg(1)},{0}}");
+    check("epre3 = {eprh(1)}; {ToString(epre3), eprh(1) = 5; ToString(epre3)}", //
+        "{{eprh(1)},{5}}");
+    check("epru(x_) := 0 /; eprg2(eprt) === 1; epre4 = {epru(2)}; "
+        + "{ToString(epre4), eprt /: eprg2(eprt) = 1; ToString(epre4)}", //
+        "{{epru(2)},{0}}");
+    check("eprp(x_?(eprq(#) &)) := 0; epre5 = {eprp(3)}; "
+        + "{ToString(epre5), eprq(3) = True; ToString(epre5)}", //
+        "{{eprp(3)},{0}}");
+    check("eprm(x_) := Module({t = eprr(x)}, 0 /; t === 1); epre6 = {eprm(1)}; "
+        + "{ToString(epre6), eprr(1) = 1; ToString(epre6)}", //
+        "{{eprm(1)},{0}}");
+  }
+
+  /**
+   * An iterator over a variable which a condition read before: the fixed points which depend on
+   * the outer value are invalidated once, not at every step.
+   */
+  @Test
+  public void testIteratorOverAConditionVariable() throws InterruptedException {
+    S.Integrate.getEvaluator().await();
+    EvalEngine engine = EvalEngine.get();
+    engine.evaluate(evaluator.parse("epif(y_) := 0 /; epii === 3; epif(1); epicnt = 0; "
+        + "epic(x_) := x /; (epicnt = epicnt + 1; False); epil = {epic(1)}"));
+    ISymbol counter = (ISymbol) evaluator.parse("epicnt");
+    engine.evaluate(evaluator.parse("epil"));
+    long before = engine.evaluate(counter).toLongDefault();
+    engine.evaluate(evaluator.parse("Table(epil; epii, {epii, 1, 20})"));
+    if (!Config.EVAL_EPOCH_VALIDATE) {
+      assertTrue(engine.evaluate(counter).toLongDefault() - before <= 2);
+    }
+  }
+
+  /** The value of an iterator or a Block reaches the conditions which read it. */
+  @Test
+  public void testLocalValueReachesConditions() {
+    check("epsh(y_) := 0 /; epsi === 3; epsi = 1; epsx = {epsh(2)}; "
+        + "{ToString(epsx), Table(ToString(epsx), {epsi, 1, 4}), "
+        + "Block({epsi = 3}, ToString(epsx)), ToString(epsx)}", //
+        "{{epsh(2)},{{epsh(2)},{epsh(2)},{0},{epsh(2)}},{0},{epsh(2)}}");
+    check("epsh4(y_) := 0 /; epsj === 3; epsx4 = {epsh4(2)}; Table(ToString(epsx4), {epsj, 1, 4})", //
+        "{{epsh4(2)},{epsh4(2)},{0},{epsh4(2)}}");
+    check("epsh6(y_) := 0 /; epsk(y) === 1; epsx6 = {epsh6(2)}; "
+        + "{Block({epsk}, epsk(2) = 1; ToString(epsx6)), ToString(epsx6)}", //
+        "{{0},{epsh6(2)}}");
+  }
+
   @Test
   public void testValueChangedInPlace() {
     check("epl = {p, q, r}; epl[[2]] = 7; epl", //

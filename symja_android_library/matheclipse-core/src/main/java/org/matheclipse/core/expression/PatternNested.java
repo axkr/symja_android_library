@@ -100,6 +100,21 @@ public class PatternNested extends Pattern {
   }
 
   /**
+   * Only the name of <code>x:p</code> is held: with <code>heads = a | b</code> the pattern
+   * <code>h:heads</code> is <code>h:a|b</code> once it is evaluated.
+   */
+  @Override
+  public IExpr evaluate(org.matheclipse.core.eval.EvalEngine engine) {
+    if (fPatternExpr.isSymbol() && !fPatternExpr.isBuiltInSymbol()) {
+      IExpr value = ((ISymbol) fPatternExpr).assignedValue();
+      if (value != null && value != fPatternExpr) {
+        return F.binaryAST2(S.Pattern, fSymbol, value);
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    * Compares this expression with the specified expression for order. Returns a negative integer,
    * zero, or a positive integer as this expression is canonical less than, equal to, or greater
    * than the specified expression.

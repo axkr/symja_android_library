@@ -178,6 +178,7 @@ public class Errors {
       "corrupt", "Compressed data `1` is corrupt and does not represent an expression.", //
       "crs",
       "Warning: the column element `1` and row element `2` at positions `3` and `4` are not the same. Using column element.", //
+      "cxlist", "`1` is not a list of valid context names.", //
       "cxt", "`1` is not a valid context name.", //
       "ctnc", "The constraint `1` is not convex.", //
       "cvmit", "Failed to converge to the requested accuracy or precision within `1` iterations.", //

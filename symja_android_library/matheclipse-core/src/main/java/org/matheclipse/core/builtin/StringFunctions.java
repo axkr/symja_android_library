@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -24,6 +25,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.eval.util.PackageUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -47,8 +49,10 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.BoxNotation;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.client.ast.ASTNode;
 import com.google.common.base.CharMatcher;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
@@ -543,6 +547,151 @@ public final class StringFunctions {
     }
   }
 
+  /**
+   * <code>ToFileName[{dir1, dir2, ...}, name]</code>, <code>ToFileName[dir, name]</code> and
+   * <code>ToFileName[{dir1, dir2, ...}]</code>: the older form of <code>FileNameJoin</code>. A
+   * directory alone is written with a trailing separator.
+   */
+  private static class ToFileName extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr dirs = ast.arg1();
+      IASTAppendable parts = F.ListAlloc();
+      if (dirs.isString()) {
+        parts.append(dirs);
+      } else if (dirs.isListOfStrings()) {
+        parts.appendArgs((IAST) dirs);
+      } else {
+        return F.NIL;
+      }
+      if (ast.isAST2()) {
+        if (!ast.arg2().isString()) {
+          return F.NIL;
+        }
+        parts.append(ast.arg2());
+      }
+      IASTAppendable nonEmpty = F.ListAlloc(parts.size());
+      for (int i = 1; i < parts.size(); i++) {
+        if (!parts.get(i).toString().isEmpty()) {
+          nonEmpty.append(parts.get(i));
+        }
+      }
+      if (nonEmpty.isEmpty()) {
+        return F.CEmptyString;
+      }
+      IExpr joined = engine.evaluate(F.FileNameJoin(nonEmpty));
+      if (!joined.isString()) {
+        return F.NIL;
+      }
+      String path = joined.toString();
+      if (ast.isAST1() && !path.endsWith(File.separator)) {
+        path = path + File.separator;
+      }
+      return F.stringx(path);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <code>LongestCommonSequence[a, b]</code>: the longest sequence, not necessarily contiguous, of
+   * the characters of two strings or the elements of two lists which occurs in both.
+   * <code>LongestCommonSubsequence[a, b]</code>: the longest contiguous one.
+   */
+  private static class LongestCommonSequence extends AbstractFunctionEvaluator {
+    private final boolean contiguous;
+
+    LongestCommonSequence(boolean contiguous) {
+      this.contiguous = contiguous;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      if (a.isString() && b.isString()) {
+        List<IExpr> x = characters(a.toString());
+        List<IExpr> y = characters(b.toString());
+        StringBuilder buf = new StringBuilder();
+        for (IExpr c : common(x, y)) {
+          buf.append(c.toString());
+        }
+        return F.stringx(buf.toString());
+      }
+      if (a.isList() && b.isList()) {
+        List<IExpr> x = new java.util.ArrayList<>();
+        for (int i = 1; i < a.size(); i++) {
+          x.add(((IAST) a).get(i));
+        }
+        List<IExpr> y = new java.util.ArrayList<>();
+        for (int i = 1; i < b.size(); i++) {
+          y.add(((IAST) b).get(i));
+        }
+        IASTAppendable result = F.ListAlloc();
+        common(x, y).forEach(result::append);
+        return result;
+      }
+      return F.NIL;
+    }
+
+    private static List<IExpr> characters(String s) {
+      List<IExpr> list = new java.util.ArrayList<>(s.length());
+      s.codePoints().forEach(c -> list.add(F.stringx(new String(Character.toChars(c)))));
+      return list;
+    }
+
+    private List<IExpr> common(List<IExpr> x, List<IExpr> y) {
+      int n = x.size();
+      int m = y.size();
+      int[][] len = new int[n + 1][m + 1];
+      int bestLength = 0;
+      int bestEnd = 0;
+      for (int i = n - 1; i >= 0; i--) {
+        for (int j = m - 1; j >= 0; j--) {
+          if (x.get(i).equals(y.get(j))) {
+            len[i][j] = len[i + 1][j + 1] + 1;
+          } else if (!contiguous) {
+            len[i][j] = Math.max(len[i + 1][j], len[i][j + 1]);
+          }
+          if (contiguous && len[i][j] > bestLength) {
+            bestLength = len[i][j];
+            bestEnd = i;
+          }
+        }
+      }
+      List<IExpr> result = new java.util.ArrayList<>();
+      if (contiguous) {
+        for (int i = bestEnd; i < bestEnd + bestLength; i++) {
+          result.add(x.get(i));
+        }
+        return result;
+      }
+      int i = 0;
+      int j = 0;
+      while (i < n && j < m) {
+        if (x.get(i).equals(y.get(j))) {
+          result.add(x.get(i));
+          i++;
+          j++;
+        } else if (len[i + 1][j] >= len[i][j + 1]) {
+          i++;
+        } else {
+          j++;
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
   private static class FileNameJoin extends AbstractFunctionEvaluator {
 
     @Override
@@ -818,6 +967,9 @@ public final class StringFunctions {
 
       S.FileNameDrop.setEvaluator(new FileNameDrop());
       S.FileNameJoin.setEvaluator(new FileNameJoin());
+      S.ToFileName.setEvaluator(new ToFileName());
+      S.LongestCommonSequence.setEvaluator(new LongestCommonSequence(false));
+      S.LongestCommonSubsequence.setEvaluator(new LongestCommonSequence(true));
       S.FileNameTake.setEvaluator(new FileNameTake());
       S.FromCharacterCode.setEvaluator(new FromCharacterCode());
       S.FromLetterNumber.setEvaluator(new FromLetterNumber());
@@ -2530,6 +2682,11 @@ public final class StringFunctions {
         }
         String str = arg1.toString();
         IExpr arg2 = ast.arg2();
+        if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
+          // rules written out stay as they are, so that their right-hand sides are evaluated only
+          // for each match; rules held in a variable or made by a function have to be fetched
+          arg2 = engine.evaluate(arg2);
+        }
         if (!arg2.isListOfRules(false)) {
           if (arg2.isRuleAST()) {
             arg2 = F.list(arg2);
@@ -3635,8 +3792,20 @@ public final class StringFunctions {
         }
         try {
           if (form == S.InputForm) {
+            String source = arg1.toString();
+            if (head.isNIL() && source.indexOf('\n') >= 0) {
+              // Statements on separate lines are evaluated one after the other, as Get does: a
+              // Begin["ctx`"] among them decides the context of the symbols in the statements
+              // after it, so each one is converted only when the one before has been evaluated.
+              // Reading the whole string as one expression made the line breaks products.
+              List<ASTNode> statements =
+                  new Parser(engine.isRelaxedSyntax(), true).parseScript(source);
+              if (statements.size() > 1) {
+                return PackageUtil.evaluatePackage(statements, engine);
+              }
+            }
             ExprParser parser = new ExprParser(engine);
-            IExpr temp = parser.parse(arg1.toString());
+            IExpr temp = parser.parse(source);
             if (head.isPresent()) {
               return F.unaryAST1(head, temp);
             }
@@ -3655,6 +3824,9 @@ public final class StringFunctions {
           Errors.printMessage(S.ToExpression, rex, engine);
           return S.$Failed;
         }
+      } else if (arg1 == S.Null) {
+        // the empty box
+        return S.Null;
       } else if (BoxNotation.isBox(arg1)) {
         // ToExpression[boxes]: the expression which the boxes are the typeset form of
         try {

@@ -1319,7 +1319,13 @@ public class Parser extends Scanner {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_IDENTIFIER
         || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
         || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN
-        || fToken == TT_ANGLE_OPEN;
+        || fToken == TT_ANGLE_OPEN || isBlankToken();
+  }
+
+  /** A blank starts an operand: <code>_. _f</code> and <code>_Integer _</code> are products. */
+  private boolean isBlankToken() {
+    return fToken == TT_BLANK || fToken == TT_BLANK_BLANK || fToken == TT_BLANK_BLANK_BLANK
+        || fToken == TT_BLANK_OPTIONAL || fToken == TT_BLANK_COLON;
   }
 
   private ASTNode parseExpression(ASTNode lhs, final int min_precedence) {
@@ -1382,7 +1388,10 @@ public class Parser extends Scanner {
                 || (fOperatorString.equals(":") && (lhs instanceof SymbolNode)
                     && min_precedence < PATTERN_TEST_PRECEDENCE)
                 || (precedence == min_precedence
-                    && infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE);
+                    && (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
+                        // f[x_] := x /: g[x] := 1 is SetDelayed[f[x_], TagSetDelayed[x, g[x], 1]]:
+                        // the /: of an upvalue belongs to the right-hand side of := and =
+                        || "TagSet".equals(infixOperator.getFunctionName())));
         if (!accept) {
           break;
         }

@@ -229,19 +229,28 @@ public class ExprParser extends Scanner {
           expr = S.BlankNullSequence.getEvaluator().evaluate(ast, fEngine);
           break;
         case ID.Pattern:
-          expr = S.Pattern.getEvaluator().evaluate(ast, fEngine);
+          // Pattern[#, _] in the body of a function becomes a pattern only when the slot has been
+          // filled in, see AST2Expr
+          if (ast.isAST2() && ast.arg1().isSymbol()
+              && !(ast.arg2().isAST() && ast.arg2().isFreeOfPatterns())) {
+            // x:(Alternatives @@ heads) is computed when evaluated, see AST2Expr
+            expr = S.Pattern.getEvaluator().evaluate(ast, fEngine);
+          }
           break;
         case ID.Optional:
           expr = S.Optional.getEvaluator().evaluate(ast, fEngine);
           break;
-        // case ID.OptionsPattern:
-        // expr = PatternMatching.OptionsPattern.CONST.evaluate(ast, fEngine);
-        // break;
+        case ID.OptionsPattern:
+          // a pattern from the start, see AST2Expr
+          expr = S.OptionsPattern.getEvaluator().evaluate(ast, fEngine);
+          break;
         case ID.Repeated:
           expr = S.Repeated.getEvaluator().evaluate(ast, fEngine);
           break;
         case ID.Complex:
-          if (!Config.USER_STEPS_PARSER) {
+          // only two numbers make a complex number; HoldPattern[Complex[b__]] is a pattern
+          if (!Config.USER_STEPS_PARSER && ast.isAST2() && ast.arg1().isNumber()
+              && ast.arg2().isNumber()) {
             expr = S.Complex.getEvaluator().evaluate(ast, fEngine);
           }
           break;
@@ -1825,7 +1834,13 @@ public class ExprParser extends Scanner {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_ASSOCIATION_OPEN
         || fToken == TT_IDENTIFIER || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
         || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN
-        || fToken == TT_ANGLE_OPEN;
+        || fToken == TT_ANGLE_OPEN || isBlankToken();
+  }
+
+  /** A blank starts an operand: <code>_. _f</code> and <code>_Integer _</code> are products. */
+  private boolean isBlankToken() {
+    return fToken == TT_BLANK || fToken == TT_BLANK_BLANK || fToken == TT_BLANK_BLANK_BLANK
+        || fToken == TT_BLANK_OPTIONAL || fToken == TT_BLANK_COLON;
   }
 
   /**
@@ -1988,7 +2003,10 @@ public class ExprParser extends Scanner {
                 || (fOperatorString.equals(":") && lhs.isSymbol()
                     && min_precedence < PATTERN_TEST_PRECEDENCE)
                 || (precedence == min_precedence
-                    && infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE);
+                    && (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE
+                        // f[x_] := x /: g[x] := 1 is SetDelayed[f[x_], TagSetDelayed[x, g[x], 1]]:
+                        // the /: of an upvalue belongs to the right-hand side of := and =
+                        || "TagSet".equals(infixOperator.getFunctionName())));
         if (!accept) {
           break;
         }

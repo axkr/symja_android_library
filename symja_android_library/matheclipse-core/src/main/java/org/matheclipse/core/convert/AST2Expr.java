@@ -413,7 +413,7 @@ public class AST2Expr {
       "LocatorAutoCreate", "LocatorPane", "Log", "Log10", "Log2", "LogBarnesG", "LogGamma",
       "LogicalExpand", "LogIntegral", "LogisticDistribution", "LogisticSigmoid", "LogLikelihood",
       "LogLinearPlot", "LogLogisticDistribution", "LogLogPlot", "LogNormalDistribution", "LogPlot",
-      "LogSeriesDistribution", "Longest", "LongLeftArrow", "LongLeftRightArrow", "LongRightArrow",
+      "LogSeriesDistribution", "Longest", "LongestCommonSequence", "LongestCommonSubsequence", "LongLeftArrow", "LongLeftRightArrow", "LongRightArrow",
       "Lookup", "LoopFreeGraphQ", "LowerCaseQ", "LowerLeftArrow", "LowerRightArrow",
       "LowerTriangularize", "LowerTriangularMatrixQ", "LucasL", "LuccioSamiComponents",
       "LUDecomposition", "LunarEclipse", "LunationNumber", "LUVColor", "MachineNumberQ",
@@ -478,7 +478,7 @@ public class AST2Expr {
       "NumberSeparator", "NumberSigns", "Numerator", "NumericalOrder", "NumericalSort",
       "NumericArray", "NumericArrayQ", "NumericArrayType", "NumericQ", "NuttallWindow", "NValues",
       "Octahedron", "OddQ", "Off", "Offset", "On", "Once", "Opacity", "OpenAppend", "Opener",
-      "Opening", "OpenRead", "OpenWrite", "Operate", "OptimizeExpression", "Optional", "Options",
+      "Opening", "OpenRead", "OpenWrite", "Operate", "OptimizeExpression", "Optional", "OptionQ", "Options",
       "OptionsPattern", "OptionValue", "Or", "OrbitalElements", "Order", "OrderedQ", "Ordering",
       "OrderlessPatternSequence", "OrnsteinUhlenbeckProcess", "Orthogonalize", "OrthogonalMatrixQ",
       "Out", "Outer", "OutputForm", "OutputNamePacket", "OutputStream", "Overflow", "Overlay",
@@ -625,7 +625,7 @@ public class AST2Expr {
       "TimeDirection", "TimelinePlot", "TimeObject", "TimeRemaining", "Times", "TimesBy",
       "TimeSystem", "TimeSystemConvert", "TimeUsed", "TimeValue", "TimeZone", "TimeZoneConvert",
       "TimeZoneOffset", "Timing", "ToBoxes", "ToCharacterCode", "ToDataset", "ToeplitzMatrix",
-      "ToExpression", "Together", "Toggler", "TogglerBar", "ToIntervalData", "ToLowerCase",
+      "ToExpression", "ToFileName", "Together", "Toggler", "TogglerBar", "ToIntervalData", "ToLowerCase",
       "ToNumberField", "Tooltip", "TopHatTransform", "ToPolarCoordinates", "TopologicalSort",
       "ToRadicals", "TortoiseShellBracket", "Torus", "TorusGraph", "ToSphericalCoordinates",
       "ToString", "Total", "TotalVariationFilter", "TouchscreenAutoZoom", "ToUnicode",
@@ -1043,6 +1043,13 @@ public class AST2Expr {
             }
           }
           break;
+        case ID.Times:
+          if (ast.isAST2() && ast.arg1().isMinusOne() && ast.arg2().isNumber()) {
+            // a - 4 is read as a + (-4), also where it is never evaluated, as in the pattern of
+            // f(d_Symbol - 4) /; test :> rhs
+            return ((INumber) ast.arg2()).negate();
+          }
+          break;
         case ID.Sqrt:
           if (ast.isAST1()) {
             // rewrite from input: Sqrt(x) => Power(x, 1/2)
@@ -1086,6 +1093,16 @@ public class AST2Expr {
           }
           break;
         case ID.Pattern:
+          if (!ast.isAST2() || !ast.arg1().isSymbol()) {
+            // Pattern[#, _] in the body of a function becomes a pattern only when the slot has
+            // been filled in; read as it stands, it is just an expression
+            break;
+          }
+          if (ast.arg2().isAST() && ast.arg2().isFreeOfPatterns()) {
+            // x:(Alternatives @@ heads) - the pattern is computed when the expression is evaluated,
+            // not while it is read
+            break;
+          }
           expr = S.Pattern.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;
@@ -1097,12 +1114,14 @@ public class AST2Expr {
             return expr;
           }
           break;
-        // case ID.OptionsPattern:
-        // expr = S.OptionsPattern.getEvaluator().evaluate(ast, fEngine);
-        // if (expr.isPresent()) {
-        // return expr;
-        // }
-        // break;
+        case ID.OptionsPattern:
+          // a pattern from the start, like x_: HoldPattern[f[x_, OptionsPattern[]]] has to match
+          // f[a] although nothing inside HoldPattern is evaluated
+          expr = S.OptionsPattern.getEvaluator().evaluate(ast, fEngine);
+          if (expr.isPresent()) {
+            return expr;
+          }
+          break;
         case ID.Repeated:
           expr = S.Repeated.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
@@ -1110,6 +1129,10 @@ public class AST2Expr {
           }
           break;
         case ID.Complex:
+          if (!ast.isAST2() || !ast.arg1().isNumber() || !ast.arg2().isNumber()) {
+            // HoldPattern[Complex[b__]] matches the complex numbers; only two numbers make one
+            break;
+          }
           expr = S.Complex.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;

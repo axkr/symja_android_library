@@ -2569,12 +2569,67 @@ public final class Programming {
         IExpr evalQuiet = engine.evalQuietNIL(arg1);
         return evalQuiet.orElse(arg1);
       }
+      if (ast.argSize() == 2 || ast.argSize() == 3) {
+        // Quiet[expr, moff] and Quiet[expr, moff, mon]: only the messages named in moff are
+        // suppressed. mon only matters inside a Quiet that suppresses everything, and this
+        // evaluation already prints every message moff does not name.
+        // held: an evaluated s::tag would be the text of the message
+        IExpr off = ast.arg2();
+        if (off.isSymbol() && off != S.All && off != S.None) {
+          off = engine.evaluate(off);
+        }
+        if (off == S.All) {
+          IExpr evalQuiet = engine.evalQuietNIL(ast.arg1());
+          return evalQuiet.orElse(ast.arg1());
+        }
+        java.util.List<IAST> names = messageNames(off);
+        if (names == null) {
+          // `1` is not a list of message names.
+          return engine.checkBuiltinArgsSize(ast, this);
+        }
+        java.util.List<IAST> switchedOff = new ArrayList<>();
+        try {
+          for (IAST name : names) {
+            String symbol = name.first().toString();
+            String tag = name.second().toString();
+            if (!engine.isMessageDisabled(symbol, tag)) {
+              engine.setMessageDisabled(symbol, tag, true);
+              switchedOff.add(name);
+            }
+          }
+          return engine.evaluate(ast.arg1());
+        } finally {
+          for (IAST name : switchedOff) {
+            engine.setMessageDisabled(name.first().toString(), name.second().toString(), false);
+          }
+        }
+      }
       return engine.checkBuiltinArgsSize(ast, this);
+    }
+
+    /**
+     * The message names in <code>spec</code>: <code>None</code>, <code>s::tag</code> or a list of
+     * those, or <code>null</code> for anything else.
+     */
+    private static java.util.List<IAST> messageNames(IExpr spec) {
+      java.util.List<IAST> names = new ArrayList<>();
+      if (spec == S.None) {
+        return names;
+      }
+      IAST list = spec.isList() ? (IAST) spec : F.list(spec);
+      for (int i = 1; i < list.size(); i++) {
+        IExpr name = list.get(i);
+        if (!name.isAST(S.MessageName, 3) || !name.first().isSymbol()) {
+          return null;
+        }
+        names.add((IAST) name);
+      }
+      return names;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_1_3;
     }
 
     @Override
@@ -3072,7 +3127,10 @@ public final class Programming {
         }
 
         IExpr arg2 = engine.evaluate(ast.arg2());
-        // System.out.println(ast.setAtCopy(2, arg2));
+        if (arg2.isInfinity()) {
+          // no time limit
+          return engine.evaluate(ast.arg1());
+        }
         long millis = 0L;
         try {
           if (arg2.isReal()) {

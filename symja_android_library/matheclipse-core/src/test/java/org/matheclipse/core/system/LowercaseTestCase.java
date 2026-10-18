@@ -7282,8 +7282,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Default(xx1)=1;Default(xx2)=3;Default(xx3)=5;", //
         "");
     check("DefaultValues /@ Names(\"xx*\")", //
-        "{{HoldPattern(Default(xx1)):>1},{HoldPattern(Default(xx3)):>5},{HoldPattern(Default(xx2)):>\n" //
-            + "3}}");
+        "{{HoldPattern(Default(xx1)):>1},{HoldPattern(Default(xx2)):>3},{HoldPattern(Default(xx3)):>\n" //
+            + "5}}");
   }
 
   @Test
@@ -13492,6 +13492,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFreeQ() {
+    // a pattern is Pattern(x, Blank()) in full form, so it contains Pattern, Blank and its name
+    check("{FreeQ({x_}, Blank), FreeQ({x_}, Pattern), FreeQ({x_}, x), FreeQ({a___}, BlankNullSequence)}", //
+        "{False,False,False,False}");
+    check("{FreeQ(f(y_Integer), Integer), FreeQ({1, 2}, Blank), FreeQ({x_}, z)}", //
+        "{False,True,True}");
+    check("FreeQ({b, mu_, c}, Pattern | Blank | BlankSequence | BlankNullSequence | Alternatives)", //
+        "False");
     // see notes for MemberQ
     check("FreeQ(a*x*Log(x), x*Log(x))", //
         "False");
@@ -25197,6 +25204,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ComplexInfinity");
     check("1/0", //
         "ComplexInfinity");
+    // only the named messages are suppressed, and switched on again afterwards
+    check("Quiet(1/0, Power::infy)", //
+        "ComplexInfinity");
+    check("Quiet(1/0, {Power::infy, Sin::argx})", //
+        "ComplexInfinity");
+    check("Quiet(1/0, None)", //
+        "ComplexInfinity");
+    check("Quiet(1/0, All)", //
+        "ComplexInfinity");
+    check("Quiet(Message(Power::infy, 1/0); 3, Sin::argx)", //
+        "3");
   }
 
   @Test
@@ -31665,6 +31683,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3");
     check("ToExpression(\"2 3\", InputForm)", //
         "6");
+    // statements on separate lines are evaluated one after the other, the last one is the result
+    check("ToExpression(\"tx1 = 1\\ntx2 = tx1 + 1\\ntx2 + 1\")", //
+        "3");
+    check("{tx1, tx2}", //
+        "{1,2}");
+    // a Begin() among them decides the context of the symbols after it
+    check("ToExpression(\"Begin(\\\"TxCtx`\\\")\\ntxs = 5\\nEnd()\")", //
+        "TxCtx`");
+    check("TxCtx`txs", //
+        "5");
 
     check("ToExpression(\"\\\\begin{matrix}\n" //
         + "1 & 2 \\\\\\\\\n" //
@@ -32466,8 +32494,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(a,Unevaluated(b),Unevaluated(c))");
     check("g(a, Sequence(Unevaluated(b),Unevaluated(c)))", //
         "g(a,Unevaluated(b),Unevaluated(c))");
+    // the wrapper goes when the argument is passed, and the sequence is spliced in
     check("g(Unevaluated( Sequence(a,b,c)))", //
-        "g(Unevaluated(Sequence(a,b,c)))");
+        "g(a,b,c)");
 
     check("Length(Unevaluated(5 + 6 + 7 + 8))", //
         "4");

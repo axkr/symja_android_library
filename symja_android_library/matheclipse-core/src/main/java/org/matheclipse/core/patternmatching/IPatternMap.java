@@ -348,7 +348,7 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1()) {
+        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
@@ -396,7 +396,7 @@ public interface IPatternMap {
           return F.NIL;
         }
         if (input.isAST(S.OptionValue, 2, 4)) {
-          return IPatternMap.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueSubstituted((IAST) input, this, nilOrEmptySequence, engine);
         }
         return F.NIL;
       });
@@ -606,14 +606,14 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1()) {
+        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1()) {
+        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
@@ -669,7 +669,7 @@ public interface IPatternMap {
             return fValue2 != null ? fValue2 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return IPatternMap.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueSubstituted((IAST) input, this, nilOrEmptySequence, engine);
         }
         return F.NIL;
       });
@@ -928,21 +928,21 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1()) {
+        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1()) {
+        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
       }
       if (temp == fSymbol3) {
         fValue3 = expr;
-        if (fValue3.isOneIdentityAST1()) {
+        if (fValue3.isOneIdentityAST1() && fValue3.head().isBuiltInSymbol()) {
           fValue3 = fValue3.first();
         }
         return true;
@@ -1008,7 +1008,7 @@ public interface IPatternMap {
             return fValue3 != null ? fValue3 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return IPatternMap.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueSubstituted((IAST) input, this, nilOrEmptySequence, engine);
         }
         return F.NIL;
       });
@@ -1308,28 +1308,28 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1()) {
+        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1()) {
+        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
       }
       if (temp == fSymbol3) {
         fValue3 = expr;
-        if (fValue3.isOneIdentityAST1()) {
+        if (fValue3.isOneIdentityAST1() && fValue3.head().isBuiltInSymbol()) {
           fValue3 = fValue3.first();
         }
         return true;
       }
       if (temp == fSymbol4) {
         fValue4 = expr;
-        if (fValue4.isOneIdentityAST1()) {
+        if (fValue4.isOneIdentityAST1() && fValue4.head().isBuiltInSymbol()) {
           fValue4 = fValue4.first();
         }
         return true;
@@ -1405,7 +1405,7 @@ public interface IPatternMap {
             return fValue4 != null ? fValue4 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return IPatternMap.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueSubstituted((IAST) input, this, nilOrEmptySequence, engine);
         }
         return F.NIL;
       });
@@ -1749,35 +1749,35 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1()) {
+        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1()) {
+        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
       }
       if (temp == fSymbol3) {
         fValue3 = expr;
-        if (fValue3.isOneIdentityAST1()) {
+        if (fValue3.isOneIdentityAST1() && fValue3.head().isBuiltInSymbol()) {
           fValue3 = fValue3.first();
         }
         return true;
       }
       if (temp == fSymbol4) {
         fValue4 = expr;
-        if (fValue4.isOneIdentityAST1()) {
+        if (fValue4.isOneIdentityAST1() && fValue4.head().isBuiltInSymbol()) {
           fValue4 = fValue4.first();
         }
         return true;
       }
       if (temp == fSymbol5) {
         fValue5 = expr;
-        if (fValue5.isOneIdentityAST1()) {
+        if (fValue5.isOneIdentityAST1() && fValue5.head().isBuiltInSymbol()) {
           fValue5 = fValue5.first();
         }
         return true;
@@ -1863,7 +1863,7 @@ public interface IPatternMap {
             return fValue5 != null ? fValue5 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return IPatternMap.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueSubstituted((IAST) input, this, nilOrEmptySequence, engine);
         }
         return F.NIL;
       });
@@ -2253,42 +2253,42 @@ public interface IPatternMap {
       }
       if (temp == fSymbol1) {
         fValue1 = expr;
-        if (fValue1.isOneIdentityAST1()) {
+        if (fValue1.isOneIdentityAST1() && fValue1.head().isBuiltInSymbol()) {
           fValue1 = fValue1.first();
         }
         return true;
       }
       if (temp == fSymbol2) {
         fValue2 = expr;
-        if (fValue2.isOneIdentityAST1()) {
+        if (fValue2.isOneIdentityAST1() && fValue2.head().isBuiltInSymbol()) {
           fValue2 = fValue2.first();
         }
         return true;
       }
       if (temp == fSymbol3) {
         fValue3 = expr;
-        if (fValue3.isOneIdentityAST1()) {
+        if (fValue3.isOneIdentityAST1() && fValue3.head().isBuiltInSymbol()) {
           fValue3 = fValue3.first();
         }
         return true;
       }
       if (temp == fSymbol4) {
         fValue4 = expr;
-        if (fValue4.isOneIdentityAST1()) {
+        if (fValue4.isOneIdentityAST1() && fValue4.head().isBuiltInSymbol()) {
           fValue4 = fValue4.first();
         }
         return true;
       }
       if (temp == fSymbol5) {
         fValue5 = expr;
-        if (fValue5.isOneIdentityAST1()) {
+        if (fValue5.isOneIdentityAST1() && fValue5.head().isBuiltInSymbol()) {
           fValue5 = fValue5.first();
         }
         return true;
       }
       if (temp == fSymbol6) {
         fValue6 = expr;
-        if (fValue6.isOneIdentityAST1()) {
+        if (fValue6.isOneIdentityAST1() && fValue6.head().isBuiltInSymbol()) {
           fValue6 = fValue6.first();
         }
         return true;
@@ -2384,7 +2384,7 @@ public interface IPatternMap {
             return fValue6 != null ? fValue6 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return IPatternMap.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueSubstituted((IAST) input, this, nilOrEmptySequence, engine);
         }
         return F.NIL;
       });
@@ -2730,7 +2730,8 @@ public interface IPatternMap {
       }
       int indx = indexOf(temp);
       if (indx >= 0) {
-        fSymbolsOrPatternValues[indx] = expr.isOneIdentityAST1() ? expr.first() : expr;
+        fSymbolsOrPatternValues[indx] =
+            expr.isOneIdentityAST1() && expr.head().isBuiltInSymbol() ? expr.first() : expr;
         return true;
       }
       return false;
@@ -2797,7 +2798,7 @@ public interface IPatternMap {
             return F.NIL;
           }
           if (input.isAST(S.OptionValue, 2, 4)) {
-            return IPatternMap.optionValueReplace((IAST) input, true, engine);
+            return IPatternMap.optionValueSubstituted((IAST) input, this, nilOrEmptySequence, engine);
           }
           return F.NIL;
         });
@@ -3351,10 +3352,21 @@ public interface IPatternMap {
    * @return the right-hand-side expression or {@link F#NIL} if no matching rule was found
    */
   private static IExpr optionsRHSRuleValue(IExpr lhsOptionValue, IASTAppendable optionsPattern) {
+    return optionsRHSRuleValue(lhsOptionValue, F.NIL, optionsPattern);
+  }
+
+  /**
+   * The value of the first option named <code>lhsOptionValue</code> or <code>otherName</code>: the
+   * name written in <code>OptionValue(name)</code> and the value of that name, when it is a symbol
+   * with a value. A given option comes before a default, whichever of the two names it uses.
+   */
+  private static IExpr optionsRHSRuleValue(IExpr lhsOptionValue, IExpr otherName,
+      IASTAppendable optionsPattern) {
     if (optionsPattern != null) {
       for (int i = 1; i < optionsPattern.size(); i++) {
         IAST rule = (IAST) optionsPattern.get(i);
-        if (rule.arg1().equals(lhsOptionValue)) {
+        if (rule.arg1().equals(lhsOptionValue)
+            || (otherName.isPresent() && rule.arg1().equals(otherName))) {
           return rule.arg2();
         }
       }
@@ -3370,6 +3382,36 @@ public interface IPatternMap {
    * @param engine
    * @return {@link F#NIL} if an option value cannot be found; otherwise get the optional value
    */
+  /**
+   * Resolve an <code>OptionValue(...)</code> of a right-hand side which is being substituted. Its
+   * arguments are substituted first: in <code>OptionValue(f, {opts}, name)</code> the options
+   * <code>opts</code> are a pattern variable of the rule.
+   */
+  static IExpr optionValueSubstituted(final IAST ast, IPatternMap patternMap,
+      final IExpr nilOrEmptySequence, EvalEngine engine) {
+    IAST substituted = ast;
+    if (ast.argSize() > 1) {
+      IASTMutable copy = F.NIL;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = patternMap.substituteSymbols(ast.get(i), nilOrEmptySequence);
+        if (arg != ast.get(i)) {
+          if (copy.isNIL()) {
+            copy = ast.copy();
+          }
+          copy.set(i, arg);
+        }
+      }
+      if (copy.isPresent()) {
+        substituted = copy;
+      }
+    }
+    IExpr result = optionValueReplace(substituted, true, engine);
+    if (result.isNIL() && substituted != ast) {
+      return substituted;
+    }
+    return result;
+  }
+
   static IExpr optionValueReplace(final IAST ast, boolean quiet, EvalEngine engine) {
     IASTAppendable optionsPattern = null;
     IExpr arg1 = engine.evaluate(ast.arg1());
@@ -3450,6 +3492,13 @@ public interface IPatternMap {
       }
       return F.NIL;
     } else { // ast.isAST1()
+      // the name is held: with fci = FeynCalcInternal an option stored as fci -> value is found
+      // by OptionValue[fci], and one stored after the assignment by its value
+      IExpr evaluatedName = F.NIL;
+      if (ast.arg1().isSymbol() && arg1 != ast.arg1()) {
+        evaluatedName = arg1.isSymbol() ? F.$str(((ISymbol) arg1).getSymbolName()) : arg1;
+        arg1 = ast.arg1();
+      }
       optionValue = arg1;
       if (arg1.isSymbol()) {
         optionValue = F.$str(((ISymbol) arg1).getSymbolName());
@@ -3466,7 +3515,7 @@ public interface IPatternMap {
 
             ISymbol lhsHead = lhsHeadEntry.topHead();
             optionsPattern = map.get(lhsHead);
-            rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
+            rhsRuleValue = optionsRHSRuleValue(optionValue, evaluatedName, optionsPattern);
             if (rhsRuleValue.isPresent()) {
               return rhsRuleValue;
             }

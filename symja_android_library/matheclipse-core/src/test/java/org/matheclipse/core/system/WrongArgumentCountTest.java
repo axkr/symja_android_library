@@ -213,9 +213,9 @@ public class WrongArgumentCountTest extends ExprEvaluatorTestCase {
         "StringMatchQ(a,CharacterRange(a))");
     // a named pattern around something which is no string pattern
     check("StringMatchQ(\"null\", x:f())", //
-        "StringMatchQ(null,(x:f()))");
+        "StringMatchQ(null,x:f())");
     check("StringCases(\"anullb\", x:f(1))", //
-        "StringCases(anullb,(x:f(1)))");
+        "StringCases(anullb,x:f(1))");
 
     // a choice between nothing matches nothing
     check("StringMatchQ(\"\", Alternatives())", //

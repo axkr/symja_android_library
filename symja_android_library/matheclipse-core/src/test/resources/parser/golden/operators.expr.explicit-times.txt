@@ -338,7 +338,7 @@ a.+b	Dot(a, b)
 (a+b).	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a..b	!syntax@4: End-of-file not reached.
 a .. b	!syntax@6: End-of-file not reached.
-2..3	!syntax@3: End-of-file not reached.
+2..3	Dot(2, 0.3)
 a..b..c	!syntax@4: End-of-file not reached.
 a+b..c	!syntax@6: End-of-file not reached.
 a..b+c	!syntax@4: End-of-file not reached.
@@ -360,7 +360,7 @@ a..+b	Plus(Repeated(a), b)
 (a+b)..	Repeated(Plus(a, b))
 a...b	!syntax@5: End-of-file not reached.
 a ... b	!syntax@7: End-of-file not reached.
-2...3	Dot(2.0, 0.3)
+2...3	!syntax@4: End-of-file not reached.
 a...b...c	!syntax@5: End-of-file not reached.
 a+b...c	!syntax@7: End-of-file not reached.
 a...b+c	!syntax@5: End-of-file not reached.
@@ -537,7 +537,7 @@ a//@+b	MapAll(a, b)
 a/:b	TagSet(a, b)
 a /: b	TagSet(a, b)
 2/:3	TagSet(2, 3)
-a/:b/:c	!syntax@6: Operator: '/:' not created properly (no grouping defined)
+a/:b/:c	TagSet(a, TagSet(b, c))
 a+b/:c	TagSet(Plus(a, b), c)
 a/:b+c	TagSet(a, Plus(b, c))
 a*b/:c	TagSet(Times(a, b), c)

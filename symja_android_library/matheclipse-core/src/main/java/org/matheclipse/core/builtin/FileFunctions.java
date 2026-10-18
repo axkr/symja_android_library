@@ -137,10 +137,12 @@ public class FileFunctions {
       // context and no other. Hanging the second kind under the current one made a file which
       // begins Begin["CoffeeLiqueur`Notebook`Views`"] land in a different context depending on
       // where it was read from - and its own symbols, written out in full, then meant nothing.
-      org.matheclipse.core.expression.Context parent = contextName.startsWith("`") //
-          ? EvalEngine.get().getContextPath().currentContext()
-          : null;
-      org.matheclipse.core.expression.Context context = engine.begin(contextName, parent);
+      // The relative name is resolved against the complete name of the current context, so
+      // Begin["`A`"] and then Begin["`B`"] inside Pkg` is Pkg`A`B`, and under Global` it is
+      // Global`A` - keeping only the relative name and one parent lost every level but the last.
+      String completeName =
+          org.matheclipse.core.expression.ContextPath.resolveContextName(contextName, engine);
+      org.matheclipse.core.expression.Context context = engine.begin(completeName, null);
       return F.stringx(context.completeContextName());
     }
 
@@ -1436,6 +1438,108 @@ public class FileFunctions {
       return F.NIL;
     }
 
+    /**
+     * Read one expression: everything up to a line break which ends a complete expression. A line
+     * break inside a comment, a string or a bracket does not end it, and comments are skipped -
+     * a package file starts with a comment over several lines, and reading it a line at a time
+     * took the lines of the comment for code. When the input ends with nothing but comments and
+     * white space left, the result is <code>EndOfFile</code>.
+     */
+    private static IExpr readExpression(Reader reader, EvalEngine engine) throws IOException {
+      StringBuilder buf = new StringBuilder();
+      int commentDepth = 0;
+      int bracketDepth = 0;
+      boolean inString = false;
+      boolean content = false;
+      boolean pendingParen = false;
+      boolean pendingStar = false;
+      while (true) {
+        int c = reader.read();
+        if (c < 0) {
+          break;
+        }
+        buf.append((char) c);
+        if (inString) {
+          if (c == '\\') {
+            int escaped = reader.read();
+            if (escaped >= 0) {
+              buf.append((char) escaped);
+            }
+          } else if (c == '"') {
+            inString = false;
+          }
+          continue;
+        }
+        if (commentDepth > 0) {
+          if (pendingStar && c == ')') {
+            commentDepth--;
+            pendingStar = false;
+          } else if (pendingParen && c == '*') {
+            commentDepth++;
+            pendingParen = false;
+          } else {
+            pendingStar = c == '*';
+            pendingParen = c == '(';
+          }
+          continue;
+        }
+        if (pendingParen) {
+          pendingParen = false;
+          if (c == '*') {
+            commentDepth = 1;
+            continue;
+          }
+          // the '(' was an opening bracket after all
+          bracketDepth++;
+          content = true;
+        }
+        switch (c) {
+          case '(':
+            pendingParen = true;
+            continue;
+          case '"':
+            inString = true;
+            content = true;
+            continue;
+          case '[':
+          case '{':
+            bracketDepth++;
+            content = true;
+            continue;
+          case ')':
+          case ']':
+          case '}':
+            bracketDepth--;
+            content = true;
+            continue;
+          case '\n':
+            if (content && bracketDepth <= 0) {
+              try {
+                return new ExprParser(engine).parse(buf.toString());
+              } catch (SyntaxError se) {
+                // not complete yet, e.g. a line which ends with an operator
+              }
+            }
+            continue;
+          default:
+            if (!Character.isWhitespace(c)) {
+              content = true;
+            }
+        }
+      }
+      if (pendingParen) {
+        content = true;
+      }
+      if (!content) {
+        return S.EndOfFile;
+      }
+      try {
+        return new ExprParser(engine).parse(buf.toString());
+      } catch (SyntaxError se) {
+        return S.$Failed;
+      }
+    }
+
     private IExpr readTypeOrHold(IExpr arg, Reader reader, EvalEngine engine) throws IOException {
       if (arg.isAST(S.Hold, 2)) {
         IExpr holdArg = arg.first();
@@ -1443,6 +1547,11 @@ public class FileFunctions {
           return F.$Failed;
         }
         IExpr temp = readType((IBuiltInSymbol) holdArg, reader, engine);
+        if (temp == S.EndOfFile || temp == S.$Failed) {
+          // the end of the input is EndOfFile, not Hold[EndOfFile]: a loop which reads until
+          // EndOfFile never saw it
+          return temp;
+        }
         if (temp.isPresent()) {
           return F.Hold(temp);
         }
@@ -1470,38 +1579,7 @@ public class FileFunctions {
             }
             return F.$str(temp[0]);
           case ID.Expression:
-            StringBuilder buf = new StringBuilder();
-            char[] tempExpr = new char[1];
-            numberOfChar = reader.read(tempExpr);
-            if (numberOfChar < 0) {
-              return S.EndOfFile;
-            }
-            buf.append(tempExpr[0]);
-            while (true) {
-              numberOfChar = reader.read(tempExpr);
-              if (numberOfChar < 0) {
-                break;
-              }
-              buf.append(tempExpr[0]);
-              if (tempExpr[0] == '\n') {
-                try {
-                  String str = buf.toString();
-                  ExprParser parser = new ExprParser(engine);
-                  return parser.parse(str);
-                } catch (SyntaxError se) {
-                  // the string is probably not a complete expression
-                  continue;
-                }
-              }
-            }
-            try {
-              String str = buf.toString();
-              ExprParser parser = new ExprParser(engine);
-              return parser.parse(str);
-            } catch (SyntaxError se) {
-
-            }
-            return F.$Failed;
+            return readExpression(reader, engine);
           case ID.Number:
             IAST numberSeparators = F.List(F.stringx("0"), //
                 F.stringx("1"), F.stringx("2"), F.stringx("3"), F.stringx("4"), F.stringx("5"),

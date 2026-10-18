@@ -197,7 +197,40 @@ public final class ContextPath implements Iterable<Context> {
     aliases.put("Developer`RawUncompress", S.RawUncompress);
     // the WLJS notebook shows an image only when Image`ValidImageQHold holds for it
     aliases.put("Image`ValidImageQHold", S.ImageQ);
+    // does the expression print with a leading minus sign? FeynCalc tests it on sums of terms
+    aliases.put("Internal`SyntacticNegativeQ",
+        F.localFunction("SyntacticNegativeQ", //
+            x -> F.booleSymbol(EvalEngine.get().evaluate(x).isNegativeSigned())));
+    // {{{exponents, coefficient}, ...}, variables} - FeynCalc reads the Newton polytope of a
+    // polynomial from it
+    aliases.put("GroebnerBasis`DistributedTermsList",
+        F.localFunction("DistributedTermsList",
+            new org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator() {
+              @Override
+              public org.matheclipse.core.interfaces.IExpr evaluate(IAST ast, EvalEngine engine) {
+                return distributedTermsList(ast, engine);
+              }
+            }));
     return aliases;
+  }
+
+  private static org.matheclipse.core.interfaces.IExpr distributedTermsList(IAST ast,
+      EvalEngine engine) {
+    if (ast.argSize() < 2) {
+      return F.NIL;
+    }
+    org.matheclipse.core.interfaces.IExpr variables = engine.evaluate(ast.arg2());
+    if (!variables.isList()) {
+      variables = F.list(variables);
+    }
+    org.matheclipse.core.interfaces.IExpr rules = engine
+        .evaluate(F.binaryAST2(S.CoefficientRules, engine.evaluate(ast.arg1()), variables));
+    if (!rules.isList() || !((IAST) rules).forAll(x -> x.isRuleAST())) {
+      return F.NIL;
+    }
+    IASTAppendable terms = F.ListAlloc(rules.argSize());
+    ((IAST) rules).forEach(rule -> terms.append(F.list(rule.first(), rule.second())));
+    return F.list(terms, variables);
   }
 
   /**
@@ -304,13 +337,18 @@ public final class ContextPath implements Iterable<Context> {
   public IAST pathAsStrings() {
     IASTAppendable result = F.ListAlloc(path.size());
     for (Context element : path) {
-      result.append(element.getContextName());
+      result.append(element.completeContextName());
     }
     return result;
   }
 
   public Context remove(int index) {
     return path.remove(index);
+  }
+
+  /** Remove the first occurrence of <code>context</code> from the path. */
+  public boolean remove(Context context) {
+    return path.remove(context);
   }
 
   public ISymbol removeSymbol(String symbolName) {
@@ -335,6 +373,16 @@ public final class ContextPath implements Iterable<Context> {
 
   public void setCurrentContext(Context context) {
     fContext = context;
+  }
+
+  /**
+   * Replace the contexts searched for a name, as an assignment to <code>$ContextPath</code> does.
+   * The current context stays what it is.
+   *
+   * @param contexts the new path, in search order
+   */
+  public void setPath(List<Context> contexts) {
+    path = new ArrayList<>(contexts);
   }
 
   /**
@@ -398,7 +446,14 @@ public final class ContextPath implements Iterable<Context> {
 
   public ISymbol symbol(String symbolName, Context newContext, boolean relaxedSyntax) {
     String name = getName(symbolName, relaxedSyntax);
-
+    // $Context is searched before $ContextPath: inside Begin["Pkg`Private`"] a private symbol
+    // hides a public one of the same name
+    if (fContext != null) {
+      ISymbol symbol = fContext.get(name);
+      if (symbol != null) {
+        return symbol;
+      }
+    }
     for (Context context : path) {
       ISymbol symbol = context.get(name);
       if (symbol != null) {

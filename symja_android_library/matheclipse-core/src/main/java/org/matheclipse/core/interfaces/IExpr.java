@@ -380,7 +380,30 @@ public interface IExpr
         && (arg2.isSymbol() || arg2.isAtomicConstant())) {
       return F.booleSymbol(!arg1.equals(arg2));
     }
+    if (!arg1.isFreeOfPatterns() && occursInPatternParts(arg1, arg2)) {
+      return S.False;
+    }
     return F.booleSymbol(arg1.isFree(arg2, true));
+  }
+
+  /**
+   * Does <code>form</code> occur in the full form of a pattern in <code>expr</code>? A pattern is
+   * an atom here, but its full form is an expression: <code>x_</code> is
+   * <code>Pattern[x, Blank[]]</code>, so <code>FreeQ[{x_}, Blank]</code> and
+   * <code>FreeQ[{x_}, x]</code> are <code>False</code>. Packages test with exactly that whether
+   * the arguments of a call are patterns, before they treat it as a real call.
+   */
+  static boolean occursInPatternParts(IExpr expr, IExpr form) {
+    return !expr.isFree(x -> x instanceof IPatternObject
+        && occursInPatternFullForm(((IPatternObject) x).toFullFormAST(), form), true);
+  }
+
+  private static boolean occursInPatternFullForm(IAST fullForm, IExpr form) {
+    if (!fullForm.isFree(form, true)) {
+      return true;
+    }
+    // the parts of the full form may be patterns again: Pattern[x, Blank[]] holds the atom _
+    return occursInPatternParts(fullForm, form);
   }
 
   /**
@@ -6990,7 +7013,15 @@ public interface IExpr
       }
       int iterationCounter = 0;
       while (temp.isPresent()) {
+        IExpr previous = result;
         result = engine.evaluate(temp);
+        if (result.equals(previous)) {
+          // a rule matched, but the expression is what it was: ReplaceRepeated ends when the
+          // expression no longer changes, not when no rule matches any more. Rules such as
+          // SUNF :> tosunf, whose function evaluates back to SUNF, used to go round until the
+          // iteration limit.
+          return result;
+        }
         if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
           // Exiting after `1` scanned `2` times.
           Errors.printMessage(S.ReplaceRepeated, "rrlim", F.List(this, F.ZZ(iterationLimit)),

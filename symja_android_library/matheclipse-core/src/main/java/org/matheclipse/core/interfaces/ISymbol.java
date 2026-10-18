@@ -645,6 +645,23 @@ public interface ISymbol extends IExpr {
   public RulesData createRulesData(int[] sizes);
 
   /**
+   * Enter a scope which gives this symbol a local value and local rules, like <code>Block</code>
+   * or the variable of an iterator. Pair with {@link #endLocalScope(int)}.
+   *
+   * @return the marks of the reads in conditions outside the scope
+   */
+  default int beginLocalScope() {
+    return 0;
+  }
+
+  /**
+   * Leave the scope of {@link #beginLocalScope()}, after the outer value and rules are restored.
+   *
+   * @param outerMarks what {@link #beginLocalScope()} returned
+   */
+  default void endLocalScope(int outerMarks) {}
+
+  /**
    * Return a list of the rules associated to this symbol
    */
   public IAST definition();

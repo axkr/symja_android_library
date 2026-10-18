@@ -1162,6 +1162,29 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
    * <code>i, j</code>: the left-hand side is held, so the evaluator does not splice the sequence.
    * An index which may give one is evaluated here, once - its value replaces it.
    */
+  /**
+   * <code>m[[i]][[j]] = value</code> with integer indices <code>i</code> is the assignment
+   * <code>m[[i, j]] = value</code>.
+   */
+  private static IAST flattenNestedPart(IAST part, EvalEngine engine) {
+    while (part.arg1().isAST(S.Part) && part.arg1().size() >= 3) {
+      IAST inner = (IAST) part.arg1();
+      IASTAppendable flat = F.ast(S.Part, inner.size() + part.size());
+      flat.append(inner.arg1());
+      for (int i = 2; i < inner.size(); i++) {
+        IExpr index = engine.evaluate(inner.get(i));
+        if (!index.isInteger()) {
+          return part;
+        }
+        flat.append(index);
+      }
+      final IAST outer = part;
+      flat.appendArgs(2, outer.size(), outer::get);
+      part = flat;
+    }
+    return part;
+  }
+
   private static IAST spliceSequences(IAST part, EvalEngine engine) {
     if (!part.exists(x -> x.isAST() && !x.isList() && !x.isAST(S.Span) && !x.isKey(), 2)) {
       return part;
@@ -1191,6 +1214,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
       if (part.size() < 3) {
         return F.NIL;
       }
+      part = flattenNestedPart(part, engine);
       if (part.arg1().isSymbol()) {
         ISymbol symbol = (ISymbol) part.arg1();
         IExpr temp = symbol.assignedValue();

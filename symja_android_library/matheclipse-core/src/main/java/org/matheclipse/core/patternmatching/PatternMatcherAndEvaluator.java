@@ -97,6 +97,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    */
   protected transient IExpr fReturnResult = F.NIL;
 
+
   /**
    * The substituted match after applying the pattern-matching rule.
    */
@@ -279,6 +280,17 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       return true;
     }
 
+    final boolean flatOrOrderless = fLhsPatternExpr.isFlatAST() || fLhsPatternExpr.isOrderlessAST();
+    IAST bindings = null;
+    if (flatOrOrderless) {
+      bindings = F.List(patternMap.copyPattern());
+      if (engine.isFailedCondition(fRightHandSide, bindings)) {
+        // a flat and orderless match reaches the same bindings on several ways, and the condition
+        // decides the same for all of them
+        return false;
+      }
+    }
+
     // from here on the guard is really evaluated: the right-hand-side is substituted and run
     org.matheclipse.core.patternmatching.ruleindex.RuleDispatchStats.rhsConditionEvaluation();
     boolean matched = false;
@@ -292,12 +304,28 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     // *successful* conditions, whose body evaluation recursively integrates again; the substitution
     // of a body which is then thrown away is a small slice. Do not re-add it without a measurement
     // which separates the recursive evaluation from the local substitution.
-    IExpr rhs = substituteRightHandSide(patternMap, F.CEmptySequence);
     engine.pushOptionsStack();
-    // whatever this reads decides whether the rule applies, see EvalEngine#isConditionScope()
-    engine.enterConditionScope();
+    // whatever this reads decides whether the rule applies, see EvalEngine#isConditionScope().
+    // In body /; test only the test decides, and EvalEngine#evalTrue() gives it its scope: the
+    // body runs once the rule applies, like the body of a rule without a condition. In
+    // Module({x = init}, body /; test) the initializers decide as well.
+    final boolean conditionScope = !fRightHandSide.isCondition();
+    if (conditionScope) {
+      engine.enterConditionScope();
+    }
+    final boolean evalLHSMode = engine.suspendEvalLHSMode();
+    // the condition of a delayed `rhs /; test` decides, also for a rule of ReplaceAll: a failing
+    // test lets the matcher try the next way to match. With lhs -> rhs /; test it is just data.
+    final boolean evalRHSMode = engine.isEvalRHSMode();
+    if ((getFlags() & (IPatternMatcher.SET_DELAYED | IPatternMatcher.UPSET_DELAYED
+        | IPatternMatcher.TAGSET_DELAYED)) != 0) {
+      engine.setEvalRHSMode(true);
+    }
     try {
       engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+      // substituted once the options of this rule are on the stack: the OptionValue(name) calls
+      // in the right-hand side are resolved while substituting, and read the innermost frame
+      IExpr rhs = substituteRightHandSide(patternMap, F.CEmptySequence);
       if (isTraceMode) {
         IExpr lhs = getLHSExprToMatch();
         if (lhs.isPresent()) {
@@ -320,10 +348,17 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       fReturnResult = e.getValue();
       matched = true;
     } finally {
-      engine.exitConditionScope();
+      engine.setEvalRHSMode(evalRHSMode);
+      engine.restoreEvalLHSMode(evalLHSMode);
+      if (conditionScope) {
+        engine.exitConditionScope();
+      }
       engine.popOptionsStack();
     }
     patternMap.setRHSEvaluated(matched);
+    if (!matched && bindings != null) {
+      engine.addFailedCondition(fRightHandSide, bindings);
+    }
     if (matched) {
       org.matheclipse.core.patternmatching.ruleindex.RuleDispatchStats.rhsConditionHeld();
     }
@@ -344,6 +379,20 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   }
 
   private IExpr replaceInternal(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
+    // the conditions which failed are remembered for the whole replacement, the matches of its
+    // sub-expressions on copies of this rule included
+    final boolean outermost = engine.beginFailedConditions();
+    try {
+      return replaceInternalMatch(leftHandSide, engine, evaluate);
+    } finally {
+      if (outermost) {
+        engine.endFailedConditions();
+      }
+    }
+  }
+
+  private IExpr replaceInternalMatch(final IExpr leftHandSide, EvalEngine engine,
+      boolean evaluate) {
     IPatternMap patternMap = null;
 
     // reset per-match state; this matcher instance may be reused for several expressions (for

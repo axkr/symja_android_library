@@ -6,6 +6,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -23,12 +24,14 @@ import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
 import org.matheclipse.core.eval.util.SymjaDirectories;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateGranularity;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.interfaces.Attribute;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
@@ -378,19 +381,69 @@ public class ConstantDefinitions {
     }
   }
 
-  private static class $Context extends AbstractSymbolEvaluator {
+  private static class $Context extends AbstractSymbolEvaluator implements ISetValueEvaluator {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return EvalEngine.get().getContextPath().currentCompleteContextName();
     }
+
+    /** <code>$Context = "ctx`"</code> makes <code>ctx`</code> the context new symbols go to. */
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      if (!isContextName(rightHandSide)) {
+        // `1` is not a valid context name.
+        return Errors.printMessage(S.$Context, "cxt", F.list(rightHandSide), engine);
+      }
+      ContextPath contextPath = engine.getContextPath();
+      String name = ContextPath.resolveContextName(rightHandSide.toString(), engine);
+      contextPath.setCurrentContext(contextPath.getContext(name));
+      EvalEngine.incEpoch();
+      return rightHandSide;
+    }
   }
 
-  private static class $ContextPath extends AbstractSymbolEvaluator {
+  /** A string which names a context: not empty and ending in a backtick. */
+  private static boolean isContextName(IExpr expr) {
+    if (!expr.isString()) {
+      return false;
+    }
+    String name = expr.toString();
+    return name.length() > 1 && name.endsWith("`");
+  }
+
+  private static class $ContextPath extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
       return EvalEngine.get().getContextPath().pathAsStrings();
+    }
+
+    /**
+     * <code>$ContextPath = {"A`", "B`", ...}</code> replaces the contexts a name is searched in, as
+     * <code>AppendTo[$ContextPath, "Pkg`Package`"]</code> does for packages.
+     */
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      if (!rightHandSide.isList()
+          || !((IAST) rightHandSide).forAll(ConstantDefinitions::isContextName)) {
+        // `1` is not a list of valid context names.
+        return Errors.printMessage(S.$ContextPath, "cxlist", F.list(rightHandSide), engine);
+      }
+      ContextPath contextPath = engine.getContextPath();
+      IAST names = (IAST) rightHandSide;
+      List<Context> contexts = new ArrayList<>(names.argSize());
+      for (int i = 1; i < names.size(); i++) {
+        String name = ContextPath.resolveContextName(names.get(i).toString(), engine);
+        Context context = contextPath.getContext(name);
+        if (!contexts.contains(context)) {
+          contexts.add(context);
+        }
+      }
+      contextPath.setPath(contexts);
+      EvalEngine.incEpoch();
+      return rightHandSide;
     }
   }
 

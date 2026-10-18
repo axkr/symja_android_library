@@ -14501,6 +14501,10 @@ public class S {
       S.initFinalSymbol("LogSeriesDistribution", ID.LogSeriesDistribution);
 
   public final static IBuiltInSymbol Longest = S.initFinalSymbol("Longest", ID.Longest);
+  public final static IBuiltInSymbol LongestCommonSubsequence = S.initFinalSymbol("LongestCommonSubsequence", ID.LongestCommonSubsequence);
+
+  public final static IBuiltInSymbol LongestCommonSequence = S.initFinalSymbol("LongestCommonSequence", ID.LongestCommonSequence);
+
 
   public final static IBuiltInSymbol LongForm = S.initFinalSymbol("LongForm", ID.LongForm);
 
@@ -17596,6 +17600,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Optional = S.initFinalSymbol("Optional", ID.Optional);
+  public final static IBuiltInSymbol OptionQ = S.initFinalSymbol("OptionQ", ID.OptionQ);
+
 
   /**
    * Options(symbol) - gives a list of optional arguments to `symbol` and their default values.
@@ -24307,6 +24313,8 @@ public class S {
    */
   public final static IBuiltInSymbol ToExpression =
       S.initFinalSymbol("ToExpression", ID.ToExpression);
+  public final static IBuiltInSymbol ToFileName = S.initFinalSymbol("ToFileName", ID.ToFileName);
+
 
   /**
    * Together(expr) - writes sums of fractions in `expr` together.

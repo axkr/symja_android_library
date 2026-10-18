@@ -246,6 +246,46 @@ public class EvalEngine implements Serializable {
    */
   private static final int STAMP_EPOCH_SHIFT = 2;
 
+  /**
+   * The bindings for which the condition of a rule (keyed by its right-hand side) failed during the
+   * outermost replacement in progress, see {@link #beginFailedConditions()}.
+   */
+  private transient java.util.IdentityHashMap<IExpr, java.util.Set<IAST>> fFailedConditions =
+      null;
+
+  /**
+   * Start remembering failed rule conditions, if no replacement does already.
+   *
+   * @return <code>true</code> if this call started it and has to call
+   *         {@link #endFailedConditions()}
+   */
+  public final boolean beginFailedConditions() {
+    if (fFailedConditions != null) {
+      return false;
+    }
+    fFailedConditions = new java.util.IdentityHashMap<IExpr, java.util.Set<IAST>>();
+    return true;
+  }
+
+  public final void endFailedConditions() {
+    fFailedConditions = null;
+  }
+
+  /** Did the condition of the rule with right-hand side <code>rhs</code> fail for these bindings? */
+  public final boolean isFailedCondition(IExpr rhs, IAST bindings) {
+    if (fFailedConditions == null) {
+      return false;
+    }
+    java.util.Set<IAST> failed = fFailedConditions.get(rhs);
+    return failed != null && failed.contains(bindings);
+  }
+
+  public final void addFailedCondition(IExpr rhs, IAST bindings) {
+    if (fFailedConditions != null) {
+      fFailedConditions.computeIfAbsent(rhs, k -> new java.util.HashSet<IAST>()).add(bindings);
+    }
+  }
+
   /** Nesting depth of the scopes of {@link #isConditionScope()}. */
   private transient int fConditionDepth = 0;
 
@@ -544,7 +584,7 @@ public class EvalEngine implements Serializable {
   }
 
   private static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
-      final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules,
+      final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules, final int[] outerMarks,
       final EvalEngine engine) {
     ISymbol variableSymbol;
     for (int i = 1; i < variablesList.size(); i++) {
@@ -573,6 +613,12 @@ public class EvalEngine implements Serializable {
           oldAssignedValues[i] = variableSymbol.assignedValue();
           oldAssignedRules[i] = variableSymbol.getRulesData();
         }
+      }
+    }
+
+    for (int i = 1; i < variablesList.size(); i++) {
+      if (symbolList[i] != null) {
+        outerMarks[i] = symbolList[i].beginLocalScope();
       }
     }
 
@@ -1739,6 +1785,11 @@ public class EvalEngine implements Serializable {
       Context c = fContextPath.currentContext();
       fContextPath = fContextPathStack.pop();
       fContextPath.synchronize(p);
+      // first on the path, and only once: a package which is begun a second time, as FeynCalc.m
+      // does for its add-ons, was put in front of itself
+      while (fContextPath.contains(c)) {
+        fContextPath.remove(c);
+      }
       fContextPath.add(0, c);
     }
   }
@@ -1768,6 +1819,16 @@ public class EvalEngine implements Serializable {
    */
   public IASTMutable evalArg(IASTMutable result0, final IAST ast, final IExpr arg, final int i,
       final boolean isNumericFunction) {
+    if (fEvalRHSMode && arg.isAST()) {
+      // a condition decides about the rule only at the top of its right-hand side; in an argument
+      // like the rule list of lhs /. {a_ /; test[a] :> b} it is just an expression
+      fEvalRHSMode = false;
+      try {
+        return evalArg(result0, ast, arg, i, isNumericFunction);
+      } finally {
+        fEvalRHSMode = true;
+      }
+    }
     final IExpr evaledArg;
     if (isNumericFunction) {
       evaledArg = evalLoop(arg);
@@ -2042,6 +2103,10 @@ public class EvalEngine implements Serializable {
       if ((result = F.flattenSequence(ast)).isPresent()) {
         return result;
       }
+      if ((attributes & (ISymbol.HOLDALL | ISymbol.HOLDALLCOMPLETE)) == ISymbol.NOATTRIBUTE
+          && (result = spliceUnevaluatedSequences(ast)).isPresent()) {
+        return result;
+      }
     }
 
     // don't test for OneIdentity here! OneIdentity will only be used in "structural
@@ -2259,6 +2324,34 @@ public class EvalEngine implements Serializable {
     return Errors.printMessage(ast.topHead(), "noawt", F.List(ast.topHead()), this);
   }
 
+  /**
+   * An argument <code>Unevaluated(Sequence(...))</code> of a function which does not hold its
+   * arguments is spliced in like <code>Sequence(...)</code>: <code>{1, 2} /. 1 :&gt;
+   * Unevaluated(Sequence())</code> deletes the 1.
+   *
+   * @return {@link F#NIL} if no argument is such a sequence
+   */
+  private static IAST spliceUnevaluatedSequences(IAST ast) {
+    if (!ast.hasSpecialArg()) {
+      return F.NIL;
+    }
+    int index = ast.indexOf(x -> x.isAST(S.Unevaluated, 2) && x.first().isSequence());
+    if (index <= 0) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ast(ast.head(), ast.size() + 4);
+    result.appendArgs(ast, index);
+    for (int i = index; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isAST(S.Unevaluated, 2) && arg.first().isSequence()) {
+        result.appendArgs((IAST) arg.first());
+      } else {
+        result.append(arg);
+      }
+    }
+    return result;
+  }
+
   public IExpr evalAttributes(IASTMutable mutableAST, final int astSize, ISymbol symbol,
       final int attributes) {
     IExpr returnResult = F.NIL;
@@ -2269,6 +2362,10 @@ public class EvalEngine implements Serializable {
 
     if (!Attribute.SEQUENCEHOLD.isSetIn(attributes)) {
       if ((result = F.flattenSequence(mutableAST)).isPresent()) {
+        return result;
+      }
+      if ((attributes & (ISymbol.HOLDALL | ISymbol.HOLDALLCOMPLETE)) == ISymbol.NOATTRIBUTE
+          && (result = spliceUnevaluatedSequences(mutableAST)).isPresent()) {
         return result;
       }
     }
@@ -2401,6 +2498,23 @@ public class EvalEngine implements Serializable {
    *         otherwise
    */
   private static int attributesOfHead(final IAST ast, final ISymbol symbol) {
+    if (ast.head() instanceof IPatternObject) {
+      // h_[x] or (h:a|b)[x]: the head is no symbol, so nothing holds the arguments - only the
+      // topHead() of the pattern object is the built-in Pattern or Blank
+      return ISymbol.NOATTRIBUTE;
+    }
+    if (ast.head().isAST()) {
+      switch (ast.head().headID()) {
+        case ID.Hold:
+        case ID.HoldForm:
+        case ID.HoldComplete:
+        case ID.HoldPattern:
+        case ID.Defer:
+          // Hold(f)[x]: the hold is about f, x is evaluated
+          return ISymbol.NOATTRIBUTE;
+        default:
+      }
+    }
     if (ast.head() == symbol || symbol.isBuiltInSymbol()) {
       // built-in heads keep the established behaviour: Function[vars, body, HoldAll][arg] and the
       // other curried built-ins reach their evaluator with the arguments still held.
@@ -2433,11 +2547,12 @@ public class EvalEngine implements Serializable {
     ISymbol[] symbolList = new ISymbol[localVariablesList.size()];
     IExpr[] oldAssignedValues = new IExpr[localVariablesList.size()];
     RulesData[] oldAssignedRulesData = new RulesData[localVariablesList.size()];
+    int[] outerMarks = new int[localVariablesList.size()];
     final int oldIterationLimit = fIterationLimit;
     final int oldRecursionLimit = fRecursionLimit;
     try {
       rememberBlockVariables(localVariablesList, symbolList, oldAssignedValues,
-          oldAssignedRulesData, this);
+          oldAssignedRulesData, outerMarks, this);
       return supplier.get();
     } finally {
       for (int i = 1; i < localVariablesList.size(); i++) {
@@ -2456,6 +2571,7 @@ public class EvalEngine implements Serializable {
             if (variableSymbol != null) {
               restoreBlockVariable(variableSymbol, oldAssignedValues[i], this);
               variableSymbol.setRulesData(oldAssignedRulesData[i]);
+              variableSymbol.endLocalScope(outerMarks[i]);
             }
           } else if (localVariablesList.get(i).isAST(S.Set, 3)) {
             final IAST setFun = (IAST) localVariablesList.get(i);
@@ -2464,6 +2580,7 @@ public class EvalEngine implements Serializable {
               if (variableSymbol != null) {
                 restoreBlockVariable(variableSymbol, oldAssignedValues[i], this);
                 variableSymbol.setRulesData(oldAssignedRulesData[i]);
+                variableSymbol.endLocalScope(outerMarks[i]);
               }
             }
           }
@@ -3688,6 +3805,10 @@ public class EvalEngine implements Serializable {
       if (result.isPresent()) {
         return result;
       }
+      result = spliceUnevaluatedSequences(ast);
+      if (result.isPresent()) {
+        return result;
+      }
     }
     final boolean localNumericMode = fNumericMode;
     IASTMutable rlist = F.NIL;
@@ -3823,7 +3944,9 @@ public class EvalEngine implements Serializable {
         return evalWithoutNumericReset(expr);
       }
       if (expr.isAST()) {
-        if (expr.isOneIdentityAST()) {
+        if (expr.isOneIdentityAST() && expr.head().isBuiltInSymbol()) {
+          // Times(x_) or Plus(x_) is x_ as an expression too; for a symbol of a package, f(y_)
+          // with OneIdentity still matches f(...) only
           if (expr.first().isAST()) {
             return evalHoldPattern((IAST) expr.first()).orElse(expr.first());
           }
@@ -4084,7 +4207,9 @@ public class EvalEngine implements Serializable {
       boolean evalNumericFunction, int level) {
     // final ISymbol symbol = ast.topHead();
     IExpr head = ast.head();
-    if (!(head instanceof IPatternObject) && !noEvaluation) {
+    if ((!(head instanceof IPatternObject)
+        || head instanceof org.matheclipse.core.expression.PatternNested) && !noEvaluation) {
+      // a PatternNested head h:heads gets the value of heads, see PatternNested#evaluate()
       IExpr headResult = head.evaluate(this);
       if (headResult.isPresent()) {
         ast = ast.apply(headResult);
@@ -4168,6 +4293,18 @@ public class EvalEngine implements Serializable {
         }
       }
     }
+    if (headID == ID.Apply && ast.isAST2() && !noEvaluation) {
+      // Alternatives @@ {a_, b__} builds the pattern a_ | b__
+      IAST apply = resultList.orElse(ast);
+      IExpr temp = ((IBuiltInSymbol) S.Apply).getEvaluator().evaluate(apply, this);
+      if (temp.isPresent()) {
+        if (temp.isAST()) {
+          return evalSetAttributesRecursive((IAST) temp, noEvaluation, evalNumericFunction,
+              level + 1).orElse(temp);
+        }
+        return temp;
+      }
+    }
     if (!Attribute.HOLDALL.isSetIn(attributes)) {
       final int astSize = ast.size();
       if (evalNumericFunction && (!Attribute.HOLDALL.isAnySetIn(attributes))) {
@@ -4233,6 +4370,15 @@ public class EvalEngine implements Serializable {
       }
     }
     if (level > 0 && !noEvaluation) {
+      if (!ast.head().isBuiltInSymbol()) {
+        // the rules of a package function are ordinary code: Options[f] in their body evaluates
+        final boolean evalLHSMode = suspendEvalLHSMode();
+        try {
+          return evaluate(ast);
+        } finally {
+          restoreEvalLHSMode(evalLHSMode);
+        }
+      }
       return evaluate(ast);
     }
 
@@ -4303,9 +4449,11 @@ public class EvalEngine implements Serializable {
    */
   public IExpr evalTimeConstrainedMillis(final IExpr expr, IExpr defaultValue, long millis) {
     TimeConstrainedExecutor executor = TimeConstrainedExecutor.create();
+    // the deadline belongs to this call: left in the engine, every later TimeConstrained of the
+    // session took it for an enclosing one and evaluated without any time limit
+    final long callerSeconds = fSeconds;
     try {
       TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor.service());
-      EvalControlledCallable work = new EvalControlledCallable(this);
       // the engine keeps whole seconds for TimeRemaining and nesting; an enclosing, shorter
       // constraint wins
       long seconds = Math.max(1L, (millis + 999L) / 1000L);
@@ -4313,6 +4461,10 @@ public class EvalEngine implements Serializable {
       if (allowedSeconds < seconds) {
         millis = allowedSeconds * 1000L;
       }
+      // copied after the deadline is set: a TimeConstrained inside the worker has to see that it
+      // is nested and evaluate in the worker. A thread of its own would wait for the locks of the
+      // symbols whose rules the worker is in the middle of, and the worker waits for it.
+      EvalControlledCallable work = new EvalControlledCallable(this);
       work.setExpr(expr, millis);
       IExpr result = timeLimiter.callWithTimeout(work, millis, TimeUnit.MILLISECONDS);
       // the constants the worker created are taken - read only after it returned, which orders the
@@ -4359,6 +4511,7 @@ public class EvalEngine implements Serializable {
       }
       return S.Null;
     } finally {
+      fSeconds = callerSeconds;
       executor.dispose();
     }
   }
@@ -4478,13 +4631,35 @@ public class EvalEngine implements Serializable {
       return false;
     }
     fConditionDepth++;
+    // a condition is ordinary code, also when the rule it belongs to is tried on the left-hand
+    // side of a definition: in that mode Options[f] and every other HoldAll built-in stay
+    // unevaluated
+    final boolean evalLHSMode = fEvalLHSMode;
+    fEvalLHSMode = false;
     try {
       return evaluate(expr).isTrue();
     } catch (MathException rex) {
       return false;
     } finally {
+      fEvalLHSMode = evalLHSMode;
       fConditionDepth--;
     }
+  }
+
+  /**
+   * Leave the mode in which a left-hand side is evaluated, for a condition. Pair with
+   * {@link #restoreEvalLHSMode(boolean)}.
+   *
+   * @return the mode before
+   */
+  public final boolean suspendEvalLHSMode() {
+    final boolean evalLHSMode = fEvalLHSMode;
+    fEvalLHSMode = false;
+    return evalLHSMode;
+  }
+
+  public final void restoreEvalLHSMode(boolean evalLHSMode) {
+    fEvalLHSMode = evalLHSMode;
   }
 
   /**
@@ -4618,6 +4793,23 @@ public class EvalEngine implements Serializable {
    * @return the result of the first successfully applied "up rule" as an {@link IExpr}, or
    *         {@link F#NIL} if no rules were applied
    */
+  /**
+   * Has an argument before position <code>i</code> the same symbol for its up-values? The previous
+   * argument is always compared (an orderless expression keeps equal heads together), all earlier
+   * ones only in a short expression.
+   */
+  private static boolean upRulesTriedBefore(IAST ast, int i, ISymbol symbol) {
+    final int from = i <= 8 ? 1 : i - 1;
+    for (int j = from; j < i; j++) {
+      IExpr y = ast.get(j);
+      if (y == symbol || (!y.isSymbol() && !(y instanceof IPatternObject) && y.isPresent()
+          && y.topHead() == symbol)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public IExpr evalUpRules(IAST ast) {
     IExpr result = F.NIL;
     // if no UpSet/UpSetDelayed/TagSet was evaluated yet, no argument can carry an up-value, so the
@@ -4650,11 +4842,17 @@ public class EvalEngine implements Serializable {
       }
       for (int i = 2; i < ast.size(); i++) {
         x = ast.get(i);
+        ISymbol symbol = null;
         if (x.isSymbol()) {
-          result = ((ISymbol) x).evalUpRules(ast, this);
+          symbol = (ISymbol) x;
         } else if (!(x instanceof IPatternObject) && x.isPresent()) {
-          result = x.topHead().evalUpRules(ast, this);
+          symbol = x.topHead();
         }
+        if (symbol == null || upRulesTriedBefore(ast, i, symbol)) {
+          // the up-values of a symbol are tried once per expression, not once per argument with it
+          continue;
+        }
+        result = symbol.evalUpRules(ast, this);
         if (result.isPresent()) {
           return result;
         }
@@ -6223,9 +6421,10 @@ public class EvalEngine implements Serializable {
    * @see #isTogetherMode()
    */
   public void setTogetherMode(boolean togetherMode) {
-    fTogetherMode = togetherMode;
-    EvalEngine.incEpoch();
-
+    if (fTogetherMode != togetherMode) {
+      fTogetherMode = togetherMode;
+      EvalEngine.incEpoch();
+    }
   }
 
   /** @param b */

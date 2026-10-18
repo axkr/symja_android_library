@@ -692,13 +692,15 @@ public class AlgebraUtil {
     }
 
     /**
-     * Check if the given expression doesn't contain the pattern.
+     * Check if the given expression doesn't contain the pattern. Heads count, as in
+     * <code>FreeQ</code>: <code>Expand(expr, h)</code> expands the parts that contain an
+     * <code>h(...)</code>.
      *
      * @param expression
      * @return
      */
     private boolean isPatternFree(IExpr expression) {
-      return (matcher != null && expression.isFree(matcher, false));
+      return (matcher != null && expression.isFree(matcher, true));
     }
 
   }
@@ -1623,6 +1625,12 @@ public class AlgebraUtil {
   public static IExpr factor(IAST expr, VariablesSet eVar, boolean squareFree,
       boolean withHomogenization, boolean trig, EvalEngine engine) throws JASConversionException {
     if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT && !isLargeRationalPolynomial(expr, eVar)) {
+      if (!squareFree && withHomogenization
+          && new PolynomialHomogenization(engine, true).replaceForward(expr)
+              .leafCount() <= Config.MAX_FACTOR_LEAFCOUNT) {
+        // large unknowns such as f(g(a), g(b)): the polynomial in them is small
+        return factorWithPolynomialHomogenization(expr, eVar, trig, engine);
+      }
       return expr;
     }
 

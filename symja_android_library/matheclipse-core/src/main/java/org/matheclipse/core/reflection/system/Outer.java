@@ -88,25 +88,31 @@ public class Outer extends AbstractFunctionEvaluator {
     final IAST ast;
     final IExpr f;
     final IExpr head;
+    /** the position after the last list argument */
+    final int end;
+    /** the deepest level of each list whose parts are combined */
+    final int[] levels;
 
-    public OuterAlgorithm(final IAST ast, final IExpr head) {
+    public OuterAlgorithm(final IAST ast, final IExpr head, int end, int[] levels) {
       this.ast = ast;
       this.f = ast.arg1();
       this.head = head;
+      this.end = end;
+      this.levels = levels;
     }
 
-    private IAST outer(int astPosition, IExpr expr, IASTAppendable current) {
-      if (expr.isAST() && head.equals(expr.head())) {
+    private IAST outer(int astPosition, IExpr expr, IASTAppendable current, int level) {
+      if (expr.isAST() && head.equals(expr.head()) && level < levels[astPosition - 3]) {
         IAST list = (IAST) expr;
         int size = list.size();
         return F.mapRange(head, 1, size,
-            i -> outer(astPosition, list.get(i).normal(false), current));
+            i -> outer(astPosition, list.get(i).normal(false), current, level + 1));
       }
 
-      if (ast.size() > astPosition) {
+      if (end > astPosition) {
         try {
           current.append(expr);
-          return outer(astPosition + 1, ast.get(astPosition).normal(false), current);
+          return outer(astPosition + 1, ast.get(astPosition).normal(false), current, 0);
         } finally {
           current.remove(current.argSize());
         }
@@ -139,9 +145,32 @@ public class Outer extends AbstractFunctionEvaluator {
         head = S.SparseArray;
       }
     }
-    if (head != S.SparseArray || f != S.Times) {
-      OuterAlgorithm algorithm = new OuterAlgorithm(ast, head == S.SparseArray ? S.List : head);
-      return algorithm.outer(3, arg2.normal(false), F.ListAlloc(ast.argSize()));
+    // Outer(f, list1, list2, ..., n) or Outer(f, list1, list2, ..., n1, n2, ...): the parts at
+    // level n of each list are the elements which are combined
+    int end = ast.size();
+    while (end > 3 && ast.get(end - 1).isInteger()) {
+      end--;
+    }
+    int listCount = end - 2;
+    int levelCount = ast.size() - end;
+    int[] levels = new int[listCount];
+    java.util.Arrays.fill(levels, Integer.MAX_VALUE);
+    if (levelCount > 0) {
+      if (levelCount != 1 && levelCount != listCount) {
+        return F.NIL;
+      }
+      for (int i = 0; i < listCount; i++) {
+        int n = ast.get(levelCount == 1 ? end : end + i).toIntDefault();
+        if (n <= 0) {
+          return F.NIL;
+        }
+        levels[i] = n;
+      }
+    }
+    if (head != S.SparseArray || f != S.Times || levelCount > 0) {
+      OuterAlgorithm algorithm =
+          new OuterAlgorithm(ast, head == S.SparseArray ? S.List : head, end, levels);
+      return algorithm.outer(3, arg2.normal(false), F.ListAlloc(ast.argSize()), 0);
     } else {
       // At least one argument is a SparseArray — handle sparse outer product
       // Only support f=Times with default value 0 for now

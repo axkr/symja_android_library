@@ -385,6 +385,45 @@ public class PatternMatchingTestCase {
         "{one,many}");
   }
 
+  /** <code>/:</code> is right-associative like <code>:=</code>: a definition may make an upvalue. */
+  @Test
+  public void testTagSetOnTheRightOfSetDelayed() {
+    check("FullForm[Hold[a := b /: c := d]]", //
+        "Hold(SetDelayed(a, TagSetDelayed(b, c, d)))");
+    check("FullForm[Hold[a = b /: c = d]]", //
+        "Hold(Set(a, TagSet(b, c, d)))");
+    check("tsAttach[e_] := e /: tsShow[e] := shown; tsAttach[tsq]; tsShow[tsq]", //
+        "shown");
+  }
+
+  /** The pattern of x:p is evaluated when it contains no patterns itself. */
+  @Test
+  public void testComputedPatternOfANamedPattern() {
+    check("cpObj = {cpP, cpE}; "
+        + "cpX[e_] := e /. (h:(Alternatives @@ cpObj))[a__] /; h =!= cpE :> h[a, 1]; "
+        + "{cpX[cpP[2]], cpX[cpE[2]], cpX[cpQ[2]]}", //
+        "{cpp[2,1],cpe[2],cpq[2]}");
+  }
+
+  /** In Hold[f][x] the hold is about f; x is evaluated. */
+  @Test
+  public void testArgumentsOfAHoldHead() {
+    check("{Hold[f][1 + 1], HoldForm[g][2 + 3, x]}", //
+        "{Hold[f][2],g[5,x]}");
+  }
+
+  /** Only the name of x:p is held, and the arguments of a pattern head are evaluated. */
+  @Test
+  public void testArgumentsOfAPatternHead() {
+    check("phSel = phM | phC; {(h:phSel)[x_] -> h[x], z_[Part[{p}, 1]] -> 1, "
+        + "Map[Rule[(h:phSel)[#[[1]], di___], h[#[[2]], di]] &, {p -> a}]}", //
+        "{(h:phm|phc)[x_]->h[x],z_[p]->1,{(h:phm|phc)[p,di___]->h[a,di]}}");
+    check("phM[p, 4] /. (h:phSel)[p, di___] -> h[a, di]", //
+        "phm[a,4]");
+    check("{phM[p, 4], phM[p, 3]} /. (h:phSel)[p, di_] /; MemberQ[{4}, di] :> h[a, di]", //
+        "{phm[a,4],phm[p,3]}");
+  }
+
   @Test
   public void testPatternFlatOneIdentity() {
     check("SetAttributes[r, Flat]", //

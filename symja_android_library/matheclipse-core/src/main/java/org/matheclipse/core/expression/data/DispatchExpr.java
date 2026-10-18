@@ -182,6 +182,12 @@ public class DispatchExpr extends DataExpr<VisitorReplaceAll>
     this.listOfRules = listOfRules;
   }
 
+  @Override
+  public String fullFormString() {
+    // the rules, not the visitor built from them
+    return F.unaryAST1(S.Dispatch, listOfRules).fullFormString();
+  }
+
   /**
    * Return a debug-friendly string representation.
    *

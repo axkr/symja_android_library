@@ -463,6 +463,8 @@ public class Derivative extends AbstractFunctionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(Attribute.NHOLDALL);
+    // not protected: f'[x_] := ... and Derivative[1, 0][f][x_, y_] := ... define derivatives
+    newSymbol.clearAttributes(ISymbol.PROTECTED);
     super.setUp(newSymbol);
   }
 

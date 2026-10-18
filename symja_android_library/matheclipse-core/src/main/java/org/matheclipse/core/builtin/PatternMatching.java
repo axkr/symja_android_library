@@ -41,6 +41,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
@@ -70,6 +71,7 @@ public final class PatternMatching {
       S.Nothing.setEvaluator(new Nothing());
       S.Optional.setEvaluator(Optional.CONST);
       S.Options.setEvaluator(new Options());
+      S.SetOptions.setEvaluator(new SetOptions());
       S.OptionValue.setEvaluator(new OptionValue());
       S.ReleaseHold.setEvaluator(new ReleaseHold());
       S.Rule.setEvaluator(new Rule());
@@ -150,8 +152,9 @@ public final class PatternMatching {
         if (ast.isAST0()) {
           return F.$ps((ISymbol) null);
         }
-        if (ast.isAST1() && ast.arg1().isSymbol()) {
-          return F.$ps((ISymbol) ast.arg1());
+        if (ast.isAST1()) {
+          // BlankSequence(h): the head the arguments must have, not a name
+          return F.$ps(null, ast.arg1(), false, false);
         }
       }
       return F.NIL;
@@ -177,8 +180,9 @@ public final class PatternMatching {
         if (ast.isAST0()) {
           return F.$ps((ISymbol) null, true);
         }
-        if (ast.isAST1() && ast.arg1().isSymbol()) {
-          return F.$ps((ISymbol) ast.arg1(), true);
+        if (ast.isAST1()) {
+          // BlankNullSequence(h): the head the arguments must have, not a name
+          return F.$ps(null, ast.arg1(), false, true);
         }
       }
       return F.NIL;
@@ -762,6 +766,20 @@ public final class PatternMatching {
     @Override
     public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
         IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      if (builtinSymbol == S.Set && leftHandSide.isAST1() && leftHandSide.first().isSymbol()
+          && !((ISymbol) leftHandSide.first()).hasProtectedAttribute()) {
+        IExpr rules = engine.evaluate(rightHandSide);
+        if (rules.isListOfRules(false)) {
+          // the list replaces all the down-values; its order is the order of the rules
+          RulesData rulesData = ((ISymbol) leftHandSide.first()).getRulesData();
+          if (rulesData != null) {
+            rulesData.clearDownRules();
+            EvalEngine.incEpoch();
+          }
+        }
+        return DefinitionFunctions.assignValues(leftHandSide, rules, S.SetDelayed, engine, false)
+            .isPresent() ? rules : F.NIL;
+      }
       return DefinitionFunctions.assignValues(leftHandSide, rightHandSide, builtinSymbol, engine,
           false);
     }
@@ -890,29 +908,39 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isListOfRules() && ast.arg2().isList()) {
-        final IAST listOfRules = (IAST) ast.arg1();
-        IAST list2 = (IAST) ast.arg2();
-        return F.mapList(listOfRules, rule -> filterRuleKeyFromList(rule, list2));
+      IExpr rules = ast.arg1();
+      if (rules.isRuleAST()) {
+        rules = F.list(rules);
       }
-      return F.NIL;
+      if (rules.isList() && ((IAST) rules).exists(x -> x.isList())) {
+        // a nested list of options, like {{}} or {a -> 1, {b -> 2}}
+        rules = engine.evaluate(F.Flatten(rules));
+      }
+      if (!rules.isList() || !((IAST) rules).forAll(x -> x.isRuleAST())) {
+        return F.NIL;
+      }
+      // FilterRules[opts, Options[f]], FilterRules[opts, {a, b}] and
+      // FilterRules[opts, Except[{a -> 1}]] - a list names the options to keep (or, under Except,
+      // to drop); anything else is a pattern for the left-hand side
+      final IPatternMatcher matcher = engine.evalPatternMatcher(filterPattern(ast.arg2()));
+      return F.mapList((IAST) rules, rule -> matcher.test(rule.first()) ? rule : F.NIL);
     }
 
-    private static IExpr filterRuleKeyFromList(IExpr possibleRule, IAST list) {
-      if (possibleRule.isRuleAST()) {
-        final IAST rule = (IAST) possibleRule;
-        final IExpr key = rule.first();
-        for (int j = 1; j < list.size(); j++) {
-          IExpr element = list.get(j);
-          if (element.isRuleAST()) {
-            element = element.first();
-          }
-          if (key.equals(element)) {
-            return rule;
-          }
+    /** A list of names or rules becomes the alternatives of the names, also inside Except. */
+    private static IExpr filterPattern(IExpr spec) {
+      if (spec.isList()) {
+        org.matheclipse.core.interfaces.IASTAppendable alternatives =
+            F.ast(S.Alternatives, spec.argSize());
+        for (int i = 1; i < spec.size(); i++) {
+          IExpr element = ((IAST) spec).get(i);
+          alternatives.append(element.isRuleAST() ? element.first() : element);
         }
+        return alternatives;
       }
-      return F.NIL;
+      if (spec.isAST(S.Except, 2)) {
+        return F.unaryAST1(S.Except, filterPattern(spec.first()));
+      }
+      return spec;
     }
 
     @Override
@@ -1620,6 +1648,61 @@ public final class PatternMatching {
   }
 
 
+  /**
+   * <code>SetOptions(f, name -&gt; value, ...)</code> changes the default values of options of
+   * <code>f</code> (or of each symbol of a list) and gives the new list of options.
+   */
+  private static final class SetOptions extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return ((IAST) arg1).mapThread(ast, 1);
+      }
+      if (!arg1.isSymbol()) {
+        return F.NIL;
+      }
+      ISymbol symbol = (ISymbol) arg1;
+      org.matheclipse.core.interfaces.IASTAppendable newRules = F.ListAlloc(ast.argSize());
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        IExpr rules = arg.isList() ? engine.evaluate(F.Flatten(arg)) : F.list(arg);
+        for (IExpr rule : (IAST) rules) {
+          if (!rule.isRuleAST()) {
+            return F.NIL;
+          }
+          newRules.append(rule);
+        }
+      }
+      IAST options =
+          org.matheclipse.core.expression.OptionsPattern.optionsList(symbol, false);
+      org.matheclipse.core.interfaces.IASTAppendable result = F.ListAlloc(options.argSize());
+      result.appendArgs(options);
+      for (IExpr rule : newRules) {
+        IExpr name = rule.first();
+        int position = result.indexOf(x -> x.isRuleAST() && x.first().equals(name));
+        if (position < 0) {
+          // Option name `2` not found in defaults for `1`.
+          Errors.printMessage(S.SetOptions, "optnf", F.list(symbol, name), engine);
+          continue;
+        }
+        result.set(position, F.binaryAST2(result.get(position).head(), name, rule.second()));
+      }
+      try {
+        symbol.putDownRule(IPatternMatcher.SET, true, F.Options(symbol), result, true);
+      } catch (RuntimeException rex) {
+        return Errors.printMessage(S.SetOptions, rex, engine);
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+  }
+
   private static final class Options extends AbstractFunctionEvaluator implements ISetEvaluator {
 
     @Override
@@ -1833,6 +1916,28 @@ public final class PatternMatching {
             if (arg2.isBlank()) {
               return F.$p(symbol, ((IPattern) arg2).getHeadTest());
             }
+            if (arg2 instanceof org.matheclipse.core.expression.PatternSequence
+                && ((IPatternObject) arg2).getSymbol() == null) {
+              // Pattern(r, BlankNullSequence()) whose blank was already read as a pattern object
+              org.matheclipse.core.expression.PatternSequence blank =
+                  (org.matheclipse.core.expression.PatternSequence) arg2;
+              IPatternSequence named = F.$ps(symbol, blank.getHeadTest(),
+                  blank.isPatternDefault(), blank.isNullSequence());
+              return blank.isLongest() ? named.withLongest(true) : named;
+            }
+            if (arg2 instanceof org.matheclipse.core.expression.RepeatedPattern
+                && ((IPatternObject) arg2).getSymbol() == null) {
+              // b:p.. names the whole repeated sequence
+              return ((org.matheclipse.core.expression.RepeatedPattern) arg2).named(symbol);
+            }
+            if (arg2 instanceof org.matheclipse.core.expression.OptionsPattern
+                && ((IPatternObject) arg2).getSymbol() == null) {
+              // OptionsPattern[] was already read as a pattern object
+              IExpr defaultOptions =
+                  ((org.matheclipse.core.expression.OptionsPattern) arg2).getDefaultOptions();
+              return defaultOptions.isPresent() ? F.$OptionsPattern(symbol, defaultOptions)
+                  : F.$OptionsPattern(symbol);
+            }
             if (arg2.isAST()) {
 
               if (arg2.size() == 1) {
@@ -1867,10 +1972,30 @@ public final class PatternMatching {
                 }
               }
 
-              arg2 = engine.evalHoldPattern((IAST) arg2);
+              // only the name is held: a pattern-free second argument like Alternatives @@ heads in
+              // (h:Alternatives @@ heads)[x__] is evaluated
+              if (arg2.isFreeOfPatterns()) {
+                final boolean evalLHSMode = engine.suspendEvalLHSMode();
+                try {
+                  arg2 = engine.evaluate(arg2);
+                } finally {
+                  engine.restoreEvalLHSMode(evalLHSMode);
+                }
+              } else {
+                arg2 = engine.evalHoldPattern((IAST) arg2);
+              }
+            }
+            if (arg2 instanceof org.matheclipse.core.expression.RepeatedPattern
+                && ((IPatternObject) arg2).getSymbol() == null) {
+              // y:p... read as RepeatedNull(p) - a sequence, which may also be empty
+              return ((org.matheclipse.core.expression.RepeatedPattern) arg2).named(symbol);
             }
             return PatternNested.valueOf(symbol, null, arg2);
           } else {
+            if (ast.arg1().isSlot()) {
+              // Pattern[#, _] in the body of a pure function: the name is there once it is applied
+              return F.NIL;
+            }
             // First element in `1` is not a valid pattern name.
             return Errors.printMessage(ast.topHead(), "patvar", F.list(ast), engine);
           }
@@ -2801,12 +2926,59 @@ public final class PatternMatching {
     return true;
   }
 
+  /**
+   * The symbol which carries a <code>Format[f[...]] := ...</code> or
+   * <code>MakeBoxes[f[...], form] := ...</code> definition: <code>f</code>, or for an argument whose
+   * own head is protected, such as <code>pref_. * f[...]</code>, the first head inside it which is
+   * not. Both heads are protected, and a package that defines how its objects look - FeynCalc does
+   * it for hundreds of them - lost every one of those statements, each with an exception.
+   *
+   * @return <code>null</code> if <code>lhs</code> is not such a definition
+   */
+  private static ISymbol formatTag(IExpr lhs) {
+    while (lhs.isCondition() || lhs.isAST(S.HoldPattern, 2)) {
+      lhs = lhs.first();
+    }
+    if (!lhs.isAST() || lhs.argSize() < 1 || (!lhs.isAST(S.Format) && !lhs.isAST(S.MakeBoxes))) {
+      return null;
+    }
+    return firstUnprotectedHead(lhs.first());
+  }
+
+  private static ISymbol firstUnprotectedHead(IExpr expr) {
+    while (expr.isCondition() || expr.isAST(S.HoldPattern, 2) || expr.isAST(S.Verbatim, 2)) {
+      expr = expr.first();
+    }
+    if (expr.isSymbol()) {
+      return ((ISymbol) expr).hasProtectedAttribute() ? null : (ISymbol) expr;
+    }
+    if (!expr.isAST()) {
+      return null;
+    }
+    ISymbol head = expr.topHead();
+    if (head != null && !head.hasProtectedAttribute()) {
+      return head;
+    }
+    for (IExpr arg : (IAST) expr) {
+      ISymbol tag = firstUnprotectedHead(arg);
+      if (tag != null) {
+        return tag;
+      }
+    }
+    return null;
+  }
+
   private static IExpr setDownRule(IExpr evaledLHS, IExpr originalLHS, int flags,
       IExpr rightHandSide, boolean packageMode) {
     ISymbol nValueTag = nValueTag(evaledLHS);
     if (nValueTag != null) {
       putNValue(nValueTag, flags | IPatternMatcher.TAGSET, evaledLHS, originalLHS, rightHandSide,
           S.Set);
+      return rightHandSide;
+    }
+    ISymbol formatTag = formatTag(evaledLHS);
+    if (formatTag != null) {
+      formatTag.putUpRule(flags | IPatternMatcher.TAGSET, false, (IAST) evaledLHS, rightHandSide);
       return rightHandSide;
     }
     ISymbol notationTag = notationTag(evaledLHS);
@@ -2889,6 +3061,12 @@ public final class PatternMatching {
           rightHandSide, S.SetDelayed)) {
         throw new FailedException();
       }
+      return;
+    }
+    ISymbol formatTag = formatTag(evaledLHS);
+    if (formatTag != null) {
+      formatTag.putUpRule(flags | IPatternMatcher.TAGSET_DELAYED, false, (IAST) evaledLHS,
+          rightHandSide);
       return;
     }
     ISymbol notationTag = notationTag(evaledLHS);

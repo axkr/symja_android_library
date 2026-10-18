@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -19,6 +20,7 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -432,7 +434,14 @@ public class IOFunctions {
           ignoreCase = true;
         }
       }
-      return Documentation.getContextNamesByPattern(arg1, ignoreCase, ast, engine);
+      IAST names = Documentation.getContextNamesByPattern(arg1, ignoreCase, ast, engine);
+      if (names.isList() && names.argSize() > 1) {
+        // the contexts are hash tables; give the names in a fixed order
+        IASTMutable sorted = names.copy();
+        EvalAttributes.sort(sorted);
+        return sorted;
+      }
+      return names;
     }
 
     @Override

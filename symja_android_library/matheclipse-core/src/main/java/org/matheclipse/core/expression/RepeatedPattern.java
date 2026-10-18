@@ -95,6 +95,22 @@ public class RepeatedPattern extends AbstractPatternSequence {
     return p;
   }
 
+  /**
+   * The same repetition with a name, as <code>b:p..</code>, which stands for the whole matched
+   * sequence.
+   */
+  public RepeatedPattern named(ISymbol symbol) {
+    RepeatedPattern p = new RepeatedPattern();
+    p.fSymbol = symbol;
+    p.fDefault = fDefault;
+    p.fZeroArgsAllowed = fZeroArgsAllowed;
+    p.fRepeatedExpr = fRepeatedExpr;
+    p.fMatcher = fMatcher;
+    p.fMin = fMin;
+    p.fMax = fMax;
+    return p;
+  }
+
   protected IExpr fRepeatedExpr;
 
   /** How few times the pattern may repeat, and how many. */
@@ -162,6 +178,10 @@ public class RepeatedPattern extends AbstractPatternSequence {
 
   @Override
   public String fullFormString() {
+    if (fSymbol != null) {
+      // "b:p.." is Pattern(b, Repeated(p))
+      return toFullFormAST().fullFormString();
+    }
     StringBuilder buf = new StringBuilder();
     if (fZeroArgsAllowed) {
       buf.append("RepeatedNull");
@@ -195,17 +215,29 @@ public class RepeatedPattern extends AbstractPatternSequence {
     if (size < fMin || size > fMax) {
       return false;
     }
+    if (fSymbol != null) {
+      IExpr value = patternMap.getValue(this);
+      if (value != null) {
+        return sequence.equals(value);
+      }
+    }
     EvalEngine engine = EvalEngine.get();
     for (int i = 1; i < sequence.size(); i++) {
       if (!fMatcher.testBlank(sequence.get(i), engine)) {
         return false;
       }
     }
+    if (fSymbol != null) {
+      return patternMap.setValue(this, sequence);
+    }
     return true;
   }
 
   @Override
   public ISymbol head() {
+    if (fSymbol != null) {
+      return S.Pattern;
+    }
     return fZeroArgsAllowed ? S.RepeatedNull : S.Repeated;
   }
 
@@ -213,12 +245,19 @@ public class RepeatedPattern extends AbstractPatternSequence {
   @Override
   public IAST toFullFormAST() {
     // "p.." is Repeated(p), "p..." is RepeatedNull(p)
-    return F.unaryAST1(fZeroArgsAllowed ? S.RepeatedNull : S.Repeated, fRepeatedExpr);
+    IAST repeated =
+        F.unaryAST1(fZeroArgsAllowed ? S.RepeatedNull : S.Repeated, fRepeatedExpr);
+    // "b:p.." is Pattern(b, Repeated(p))
+    return fSymbol != null ? F.binaryAST2(S.Pattern, fSymbol, repeated) : repeated;
   }
 
   @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
+    if (fSymbol != null) {
+      buffer.append(fSymbol.toString());
+      buffer.append(':');
+    }
     buffer.append(fRepeatedExpr.toString());
     if (fZeroArgsAllowed) {
       buffer.append("...");
@@ -231,6 +270,10 @@ public class RepeatedPattern extends AbstractPatternSequence {
   @Override
   public String toWolframString() {
     final StringBuilder buffer = new StringBuilder();
+    if (fSymbol != null) {
+      buffer.append(WolframFormFactory.get().toString(fSymbol));
+      buffer.append(':');
+    }
     buffer.append(WolframFormFactory.get().toString(fRepeatedExpr));
     if (fZeroArgsAllowed) {
       buffer.append("...");

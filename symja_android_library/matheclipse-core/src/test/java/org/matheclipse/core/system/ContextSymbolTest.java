@@ -47,6 +47,65 @@ public class ContextSymbolTest extends ExprEvaluatorTestCase {
         "41");
   }
 
+  /** A relative name is resolved against the complete name of the context open now. */
+  @Test
+  public void testNestedRelativeContexts() {
+    check("Begin(\"`rel`\")", //
+        "Global`rel`");
+    check("End()", //
+        "Global`rel`");
+    check("BeginPackage(\"Pk`\")", //
+        "");
+    check("Begin(\"`A`\")", //
+        "Pk`A`");
+    check("Begin(\"`B`\")", //
+        "Pk`A`B`");
+    check("`bx = 7; Context(`bx)", //
+        "Pk`A`B`");
+    check("End(); End(); EndPackage()", //
+        "");
+    check("Pk`A`B`bx", //
+        "7");
+  }
+
+  /** <code>$ContextPath</code> and <code>$Context</code> can be assigned, as packages do. */
+  @Test
+  public void testContextPathAndContextAssignment() {
+    check("Ctx1`zz = 3", //
+        "3");
+    check("AppendTo($ContextPath, \"Ctx1`\"); Last($ContextPath)", //
+        "Ctx1`");
+    // the symbol of the appended context is found by its short name
+    check("zz", //
+        "3");
+    check("$ContextPath = DeleteCases($ContextPath, \"Ctx1`\"); MemberQ($ContextPath, \"Ctx1`\")", //
+        "False");
+    check("$ContextPath = {1, 2}", //
+        "$ContextPath={1,2}");
+    check("$Context = \"Ctx2`\"; ww = 1; $Context = \"Global`\"; Context(Ctx2`ww)", //
+        "Ctx2`");
+  }
+
+  /** <code>$Context</code> is searched before <code>$ContextPath</code>. */
+  @Test
+  public void testCurrentContextHidesThePath() {
+    // separate inputs: the names of one input are all read before any of it is evaluated
+    check("BeginPackage(\"Sh`\")", //
+        "");
+    check("shv = 1", //
+        "1");
+    check("Begin(\"`Private`\")", //
+        "Sh`Private`");
+    check("Sh`Private`shv = 2", //
+        "2");
+    check("{shv, Context(shv)}", //
+        "{2,Sh`Private`}");
+    check("End(); EndPackage()", //
+        "");
+    check("{shv, Context(shv)}", //
+        "{1,Sh`}");
+  }
+
   @Test
   public void testContextIsPartOfTheName() {
     check("Context(Foo`Bar`Baz)", //

@@ -141,6 +141,13 @@ public class Symbol implements ISymbol, Serializable {
    */
   private transient boolean fValueReadInCondition = false;
 
+  /**
+   * Has a condition or a pattern test used (or changed) the rules of this symbol? Then a new rule
+   * may change whether a rule of another symbol applies to an expression which does not contain
+   * this symbol, and every change of the rules has to invalidate all fixed points.
+   */
+  private transient boolean fRulesReadInCondition = false;
+
   /** The pattern matching &quot;down value&quot; rules associated with this symbol. */
   protected transient volatile RulesData fRulesData;
 
@@ -337,11 +344,15 @@ public class Symbol implements ISymbol, Serializable {
     ensureRulesLoaded();
     clearValue(null);
     if (fRulesData != null) {
+      final boolean upRules = usedByOtherExpressions(fRulesData);
       fRulesData.clear();
+      // the rules are gone, see rulesChanged()
+      if (upRules) {
+        EvalEngine.incEpoch();
+      } else {
+        rulesChanged();
+      }
     }
-    // the rules are gone: that is a change for every expression, not only for those with this
-    // symbol, which is all clearValue() records
-    EvalEngine.incEpoch();
   }
 
   /** {@inheritDoc} */
@@ -411,6 +422,72 @@ public class Symbol implements ISymbol, Serializable {
     if (!fValueReadInCondition && getClass() == Symbol.class
         && EvalEngine.get().isConditionScope()) {
       fValueReadInCondition = true;
+    }
+  }
+
+  /**
+   * Record a change of the rules: invalidate every fixed point if a condition may depend on the
+   * rules of this symbol or if it is not an ordinary symbol, otherwise only the fixed points in
+   * which the symbol occurs. A definition of a local function in a <code>Block</code> changes no
+   * expression which does not contain the function.
+   *
+   * @see #valueChanged()
+   */
+  private void rulesChanged() {
+    markRulesReadInCondition(EvalEngine.get());
+    if (fRulesReadInCondition || getClass() != Symbol.class) {
+      EvalEngine.incEpoch();
+    } else {
+      fValueEpoch = EvalEngine.incValueEpoch();
+    }
+  }
+
+  /**
+   * Up-values and <code>Options(f)</code> are used by expressions with other heads, held ones and
+   * the rules of other symbols among them: changing them invalidates every fixed point.
+   */
+  private boolean usedByOtherExpressions(RulesData rd) {
+    if (rd == null) {
+      return false;
+    }
+    if (rd.hasUpRules()) {
+      return true;
+    }
+    java.util.Map<IExpr, ?> equalRules = rd.getEqualDownRules();
+    return equalRules != null && equalRules.containsKey(F.Options(this));
+  }
+
+  /**
+   * A condition which read the value or the rules outside the scope made every change of them
+   * invalidate all fixed points. The fixed points which may depend on the outer value are
+   * invalidated once here; inside the scope only the reads in it count, so the local values of a
+   * <code>Block</code> or an iterator change only the fixed points they occur in.
+   */
+  @Override
+  public int beginLocalScope() {
+    final int outerMarks = (fValueReadInCondition ? 1 : 0) | (fRulesReadInCondition ? 2 : 0);
+    if (outerMarks != 0) {
+      EvalEngine.incEpoch();
+      fValueReadInCondition = false;
+      fRulesReadInCondition = false;
+    }
+    return outerMarks;
+  }
+
+  @Override
+  public void endLocalScope(int outerMarks) {
+    if ((outerMarks & 1) != 0) {
+      fValueReadInCondition = true;
+    }
+    if ((outerMarks & 2) != 0) {
+      fRulesReadInCondition = true;
+    }
+  }
+
+  /** Rules used or changed while a condition is evaluated, see {@link #fRulesReadInCondition}. */
+  private void markRulesReadInCondition(EvalEngine engine) {
+    if (!fRulesReadInCondition && engine.isConditionScope() && getClass() == Symbol.class) {
+      fRulesReadInCondition = true;
     }
   }
 
@@ -609,6 +686,8 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final IExpr evalDownRule(EvalEngine engine, IExpr expression) {
+    // also without rules: a rule defined later would change what the condition decided
+    markRulesReadInCondition(engine);
     ensureRulesLoaded();
     if (fRulesData == null) {
       return F.NIL;
@@ -702,6 +781,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final IExpr evalUpRules(IExpr expression, EvalEngine engine) {
+    markRulesReadInCondition(engine);
     ensureRulesLoaded();
     if (fRulesData == null) {
       return F.NIL;
@@ -777,6 +857,10 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final RulesData getRulesData() {
     ensureRulesLoaded();
+    if (fRulesData != null && !fRulesReadInCondition) {
+      // Options[f], DownValues[f], Default[f] read in a condition
+      markRulesReadInCondition(EvalEngine.get());
+    }
     return fRulesData;
   }
 
@@ -1176,7 +1260,12 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       newRulesData(NO_SIZES);
     }
-    EvalEngine.incEpoch();
+    if (leftHandSide.isAST(S.Options, 2)) {
+      // the options are read for the rules of other symbols too, OptionsPattern(f)
+      EvalEngine.incEpoch();
+    } else {
+      rulesChanged();
+    }
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
   }
 
@@ -1194,7 +1283,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       newRulesData(NO_SIZES);
     }
-    EvalEngine.incEpoch();
+    rulesChanged();
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
   }
 
@@ -1204,7 +1293,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       newRulesData(NO_SIZES);
     }
-    EvalEngine.incEpoch();
+    rulesChanged();
     fRulesData.getMessages().put(messageName, message);
   }
 
@@ -1232,6 +1321,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       newRulesData(NO_SIZES);
     }
+    // an up-value is used by expressions with other heads, held ones among them
     EvalEngine.incEpoch();
     return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
   }
@@ -1375,10 +1465,13 @@ public class Symbol implements ISymbol, Serializable {
     }
     if (leftHandSide.isSymbol()) {
       clearValue(null);
-      EvalEngine.incEpoch();
       return true;
     } else if (fRulesData != null) {
-      EvalEngine.incEpoch();
+      if (usedByOtherExpressions(fRulesData) || leftHandSide.isAST(S.Options, 2)) {
+        EvalEngine.incEpoch();
+      } else {
+        rulesChanged();
+      }
       return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
     }
     return false;
@@ -1418,8 +1511,20 @@ public class Symbol implements ISymbol, Serializable {
   public void setRulesData(RulesData rd) {
     // load first, so that deferred built-in rules cannot overwrite `rd` later on
     ensureRulesLoaded();
+    // a Block variable without rules is saved and restored as null, or as rules data which holds
+    // only messages: no definition changed, the fixed points stay valid
+    final boolean definitionsChanged = fRulesData != rd
+        && ((fRulesData != null && fRulesData.isDefinitionsPresent())
+            || (rd != null && rd.isDefinitionsPresent()));
+    final boolean upRules = usedByOtherExpressions(fRulesData) || usedByOtherExpressions(rd);
     fRulesData = rd;
-    EvalEngine.incEpoch();
+    if (definitionsChanged) {
+      if (upRules) {
+        EvalEngine.incEpoch();
+      } else {
+        rulesChanged();
+      }
+    }
   }
 
   @Override

@@ -43,6 +43,17 @@ public class PredicateQ {
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
    */
+  /**
+   * <code>OptionQ[e]</code>: is <code>e</code> a rule, a delayed rule, or a list - possibly
+   * nested, possibly empty - of them, i.e. something which can be given as options.
+   */
+  private static boolean isOptionQ(IExpr expr) {
+    if (expr.isRuleAST()) {
+      return true;
+    }
+    return expr.isList() && ((IAST) expr).forAll(PredicateQ::isOptionQ);
+  }
+
   private static class Initializer {
 
     private static void init() {
@@ -68,6 +79,7 @@ public class PredicateQ {
       S.ListQ.setPredicateQ(x -> x.isList());
       S.LowerTriangularMatrixQ.setEvaluator(new LowerTriangularMatrixQ());
       S.MachineNumberQ.setPredicateQ(x -> x.isMachineNumber());
+      S.OptionQ.setPredicateQ(PredicateQ::isOptionQ);
       S.MatchQ.setEvaluator(new MatchQ());
       S.MatrixQ.setEvaluator(new MatrixQ());
       S.MemberQ.setEvaluator(new MemberQ());

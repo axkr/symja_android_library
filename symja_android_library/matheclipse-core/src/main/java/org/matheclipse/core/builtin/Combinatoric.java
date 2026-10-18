@@ -1175,6 +1175,14 @@ public final class Combinatoric {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (arg1.isAST()) {
+        if (arg2.isAST(S.PermutationGroup, 2)) {
+          // the expression permuted by every element of the group
+          IExpr elements = engine.evaluate(F.unaryAST1(S.GroupElements, arg2));
+          if (elements.isList()) {
+            return ((IAST) elements).map(x -> engine.evaluate(F.binaryAST2(S.Permute, arg1, x)));
+          }
+          return F.NIL;
+        }
         if (arg2.isList()) {
           return permuteCycles((IAST) arg1, (IAST) arg2, ast);
         } else if (arg2.isAST(S.Cycles, 2)) {

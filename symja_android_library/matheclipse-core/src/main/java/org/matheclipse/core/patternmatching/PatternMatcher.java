@@ -975,16 +975,106 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         if (lhsPatternAST.size() == 1 && lhsEvalAST.size() == 1) {
           return stackMatcher.matchRest();
         }
+        if (!lhsPatternAST.isOrderlessAST()
+            && lhsPatternAST.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)) {
+          // the partitions of a Flat match give every pattern at least one argument; a ___ may
+          // also stand for none, as in Dot(a___, b_ + c_, d___) matching (x + y) . z . w
+          final IExpr[] patternValues = fPatternMap.copyPattern();
+          if (matchPatternSequenceAST(lhsPatternAST, lhsEvalAST, engine, stackMatcher)) {
+            return true;
+          }
+          fPatternMap.resetPattern(patternValues);
+        }
         return matchFlatAndFlatOrderless(sym, lhsPatternAST, lhsEvalAST, engine, stackMatcher);
       }
     }
 
     final int lhsEvalSize = lhsEvalAST.size();
 
-    // handle pattern sequences (contains Sequence objects)
-    if (lhsPatternAST.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)) {
+    // handle pattern sequences (contains Sequence objects); in an Orderless head only a sequence
+    // which is an argument itself, not one nested in an argument as in x_*h(p_, d___)
+    if (lhsPatternAST.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)
+        && (!lhsPatternAST.isOrderlessAST() || hasSequenceArgument(lhsPatternAST))) {
+      return matchPatternSequenceAST(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
+    }
+
+    // size and head must match for the remaining cases
+    if (lhsPatternAST.size() != lhsEvalSize || !matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
+      return false;
+    }
+    return matchASTSameSize(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
+  }
+
+  /**
+   * Test if an argument of <code>lhsPatternAST</code> may stand for several arguments: a pattern
+   * sequence, or a pattern construct like <code>x__?test</code> or <code>x___ /; test</code>
+   * around one.
+   */
+  private static boolean hasSequenceArgument(IAST lhsPatternAST) {
+    for (int i = 1; i < lhsPatternAST.size(); i++) {
+      IExpr arg = lhsPatternAST.get(i);
+      if (arg instanceof IPatternSequence) {
+        return true;
+      }
+      if (arg.isAST() && ((IAST) arg).hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)) {
+        switch (arg.headID()) {
+          case ID.PatternTest:
+          case ID.Condition:
+          case ID.Alternatives:
+          case ID.Longest:
+          case ID.Shortest:
+          case ID.Optional:
+          case ID.Repeated:
+          case ID.RepeatedNull:
+          case ID.PatternSequence:
+          case ID.OrderlessPatternSequence:
+          case ID.HoldPattern:
+          case ID.Except:
+          case ID.Pattern:
+          case ID.Verbatim:
+            return true;
+          default:
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Match a pattern which contains pattern sequences like <code>x__</code> or <code>x___</code>
+   * argument by argument, the head included.
+   */
+  private boolean matchPatternSequenceAST(IAST lhsPatternAST, IAST lhsEvalAST,
+      final EvalEngine engine, StackMatcher stackMatcher) {
+    final int lastStackSize = stackMatcher.size();
+    boolean matched = false;
+    try {
+      matched = matchPatternSequenceArgs(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
+      return matched;
+    } finally {
+      if (!matched) {
+        // the leading arguments pushed for a delayed match
+        stackMatcher.removeFrom(lastStackSize);
+      }
+    }
+  }
+
+  private boolean matchPatternSequenceArgs(IAST lhsPatternAST, IAST lhsEvalAST,
+      final EvalEngine engine, StackMatcher stackMatcher) {
+    {
       if (!matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
         return false;
+      }
+      int conditionIndex = lhsPatternAST
+          .indexOf(x -> x.isAST(S.Condition, 3) && x.first().isPatternSequence(false));
+      if (conditionIndex > 0) {
+        // f(x__ /; test): the sequence is matched like x__, and the test is checked on the stack
+        // once x is bound, so another length of the sequence is tried when it fails
+        IExpr condition = lhsPatternAST.get(conditionIndex);
+        stackMatcher.push(new Entry(condition.second()));
+        IASTMutable withoutCondition = lhsPatternAST.setAtCopy(conditionIndex, condition.first());
+        withoutCondition.addFlag(Flag.CONTAINS_PATTERN_SEQUENCE);
+        return matchPatternSequenceArgs(withoutCondition, lhsEvalAST, engine, stackMatcher);
       }
 
       // consume the leading arguments which are neither a pattern sequence nor the trailing
@@ -997,10 +1087,15 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         if (firstPattern.isPatternSequence(false)) {
           break;
         }
-        if (lhsPatternAST.size() - pOffset == 1 && firstPattern.isAST(S.PatternTest, 3)) {
+        if (lhsPatternAST.size() - pOffset == 1 && firstPattern.isAST(S.PatternTest, 3)
+            && firstPattern.first().isPatternSequence(false)) {
+          // the trailing x___?test case below; a test of a single blank, as in
+          // g(a__)^n_Integer?Positive, is matched like any other argument
           break;
         }
-        if (!matchSubExpr(firstPattern, lhsEvalAST.get(eOffset), engine)) {
+        // through the stack, so that a later failure can still try the other matches of this
+        // argument, as for f(h(a___, b_, c___), h(a___, d_, c___))
+        if (!stackMatcher.push(firstPattern, lhsEvalAST.get(eOffset))) {
           return false;
         }
         pOffset++;
@@ -1048,11 +1143,15 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
       return false;
     }
+  }
 
-    // size and head must match for the remaining cases
-    if (lhsPatternAST.size() != lhsEvalSize || !matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
-      return false;
-    }
+  /**
+   * Match two AST's of the same size whose heads already matched, argument by argument.
+   */
+  private boolean matchASTSameSize(IAST lhsPatternAST, IAST lhsEvalAST, final EvalEngine engine,
+      StackMatcher stackMatcher) {
+    final ISymbol sym = lhsPatternAST.topHead();
+    final int lhsEvalSize = lhsEvalAST.size();
 
     // Orderless with more than 2 elements: use partition iterator
     if (lhsPatternAST.isOrderlessAST() && lhsPatternAST.size() > 2) {
@@ -2787,7 +2886,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           IASTAppendable lhsResultAST = foMatcher.removeUsedIndexPositions();
           IExpr result = fPatternMap.substituteSymbols(rhsExpr, F.NIL);
           try {
-            result = result.eval(engine);
+            result = evalReplacement(result, engine);
             lhsResultAST.append(result);
             return lhsResultAST;
           } catch (final ConditionException e) {
@@ -2850,7 +2949,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         }
         try {
           IExpr result = fPatternMap.substituteSymbols(rhsExpr, F.CEmptySequence);
-          result = result.eval(engine);
+          result = evalReplacement(result, engine);
           lhsResultAST.append(i + 1, result);
           return lhsResultAST;
         } catch (final ConditionException e) {
@@ -2863,6 +2962,25 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Evaluate the substituted right-hand side of a rule which replaced a part of an Orderless or
+   * Flat expression. For a delayed rule a condition <code>rhs /; test</code> decides, as for a whole
+   * expression; with <code>lhs -&gt; rhs /; test</code> it is just data.
+   */
+  private IExpr evalReplacement(IExpr result, EvalEngine engine) {
+    if ((fSetFlags & (IPatternMatcher.SET_DELAYED | IPatternMatcher.UPSET_DELAYED
+        | IPatternMatcher.TAGSET_DELAYED)) == 0) {
+      return result.eval(engine);
+    }
+    final boolean evalRHSMode = engine.isEvalRHSMode();
+    try {
+      engine.setEvalRHSMode(true);
+      return result.eval(engine);
+    } finally {
+      engine.setEvalRHSMode(evalRHSMode);
+    }
   }
 
   public void setLHSPriority(final int priority) {

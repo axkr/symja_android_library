@@ -292,12 +292,24 @@ public final class RulesData implements Serializable {
     final List<IPatternMatcher> upRules = fSimplePatternUpRules == null
         ? new ArrayList<IPatternMatcher>()
         : new ArrayList<IPatternMatcher>(fSimplePatternUpRules);
+    IPatternMap pmSlotValuesMap = null;
+    IExpr pmRHS = null;
     int i = 0;
-    while (i < upRules.size() && upRules.get(i).equivalentLHS(pmEvaluator) != 0) {
-      i++;
+    for (; i < upRules.size(); i++) {
+      if (upRules.get(i).equivalentLHS(pmEvaluator) == 0) {
+        if (pmSlotValuesMap == null) {
+          pmSlotValuesMap = pmEvaluator.getPatternMap().copy();
+          pmSlotValuesMap.initSlotValues();
+          pmRHS = pmSlotValuesMap.substituteSymbols(pmEvaluator.getRHS(), F.NIL);
+        }
+        if (equivalentSlots(upRules.get(i), pmSlotValuesMap.size(), pmRHS)) {
+          break;
+        }
+      }
     }
     if (i < upRules.size()) {
-      // same left-hand-side: the new definition replaces the old one
+      // same left-hand-side and the same condition, as for the down-rules: the new definition
+      // replaces the old one
       upRules.set(i, pmEvaluator);
     } else {
       upRules.add(pmEvaluator);
@@ -369,6 +381,14 @@ public final class RulesData implements Serializable {
   /** Test if one of the up-values may be an N-value. */
   public boolean hasNValues() {
     return fNValues;
+  }
+
+  /** Remove the down-values, as an assignment to <code>DownValues(symbol)</code> replaces them. */
+  public synchronized void clearDownRules() {
+    invalidateRuleIndex();
+    fEqualDownRules = null;
+    fPatternDownRules = null;
+    fPriorityDownRules = null;
   }
 
   public synchronized void clear() {
@@ -1044,6 +1064,12 @@ public final class RulesData implements Serializable {
       return ((IAST) leftHandSide).patternHashCode();
     }
     return 0;
+  }
+
+  /** Are there up-values? */
+  public final boolean hasUpRules() {
+    return (fEqualUpRules != null && fEqualUpRules.size() > 0)
+        || (fSimplePatternUpRules != null && fSimplePatternUpRules.size() > 0);
   }
 
   public final boolean isDefinitionsPresent() {

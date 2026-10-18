@@ -234,13 +234,19 @@ public class OptionsPattern extends AbstractPatternSequence {
       buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
 
       buf.append(fSymbol.fullFormString());
-      buf.append(
-          ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ",OptionsPattern())" : ",OptionsPattern[]]");
+      buf.append(',');
+      buf.append(optionsPatternAST().fullFormString());
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
     } else {
-      buf.append(
-          ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? "OptionsPattern()" : "OptionsPattern[]");
+      buf.append(optionsPatternAST().fullFormString());
     }
     return buf.toString();
+  }
+
+  /** <code>OptionsPattern()</code>, or <code>OptionsPattern(defaults)</code> with its defaults. */
+  private IAST optionsPatternAST() {
+    return fDefaultOptions.isPresent() ? F.unaryAST1(S.OptionsPattern, fDefaultOptions)
+        : F.headAST0(S.OptionsPattern);
   }
 
   public IExpr getDefaultOptions() {
@@ -317,12 +323,12 @@ public class OptionsPattern extends AbstractPatternSequence {
   }
 
   /**
-   * Extract the rule from the argument. If the argument is a {@link S#Rule} or
-   * {@link S#RuleDelayed} AST return the argument. If the argument is a list with exactly one
-   * argument, call this method recursively with the first argument of the list.
-   * 
+   * Return the argument if it can stand for options: a {@link S#Rule} or {@link S#RuleDelayed},
+   * or a possibly empty or nested list of them, like the <code>{}</code> which
+   * <code>FilterRules(...)</code> gives when no option is left.
+   *
    * @param arg
-   * @return the rule or {@link F#NIL} if no rule was found
+   * @return the argument or {@link F#NIL} if it is not an option
    */
   private static IExpr ruleASTRecursive(IExpr arg) {
     if (arg.isRuleAST()) {
@@ -331,11 +337,11 @@ public class OptionsPattern extends AbstractPatternSequence {
     if (arg.isList()) {
       IAST list = (IAST) arg;
       for (int i = 1; i < list.size(); i++) {
-        IExpr element = ruleASTRecursive(list.get(i));
-        if (element.isPresent()) {
-          return element;
+        if (ruleASTRecursive(list.get(i)).isNIL()) {
+          return F.NIL;
         }
       }
+      return arg;
     }
     return F.NIL;
   }
@@ -382,33 +388,39 @@ public class OptionsPattern extends AbstractPatternSequence {
   @Override
   public IAST toFullFormAST() {
     if (fSymbol == null) {
-      return F.headAST0(S.OptionsPattern);
+      return optionsPatternAST();
     }
     // "opts:OptionsPattern()" is Pattern(opts, OptionsPattern())
-    return F.binaryAST2(S.Pattern, fSymbol, F.headAST0(S.OptionsPattern));
+    return F.binaryAST2(S.Pattern, fSymbol, optionsPatternAST());
   }
 
   @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
-    if (fSymbol == null) {
-      buffer.append("OptionsPattern()");
-    } else {
+    if (fSymbol != null) {
       buffer.append(fSymbol.toString());
-      buffer.append(":OptionsPattern()");
+      buffer.append(':');
     }
+    buffer.append("OptionsPattern(");
+    if (fDefaultOptions.isPresent()) {
+      buffer.append(fDefaultOptions.toString());
+    }
+    buffer.append(')');
     return buffer.toString();
   }
 
   @Override
   public String toWolframString() {
     final StringBuilder buffer = new StringBuilder();
-    if (fSymbol == null) {
-      buffer.append("OptionsPattern[]");
-    } else {
+    if (fSymbol != null) {
       buffer.append(WolframFormFactory.get().toString(fSymbol));
-      buffer.append(":OptionsPattern[]");
+      buffer.append(':');
     }
+    buffer.append("OptionsPattern[");
+    if (fDefaultOptions.isPresent()) {
+      buffer.append(WolframFormFactory.get().toString(fDefaultOptions));
+    }
+    buffer.append(']');
     return buffer.toString();
   }
 }

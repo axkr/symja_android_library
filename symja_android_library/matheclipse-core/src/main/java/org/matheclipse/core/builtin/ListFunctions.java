@@ -744,6 +744,35 @@ public final class ListFunctions {
    * </pre>
    */
   /**
+   * <code>PrependTo[DownValues[f], rule]</code> and its relatives: a list of definitions which an
+   * assignment can replace - the rules of a symbol, or its options - is changed by assigning the
+   * changed list to it. Packages add a rule in front of all others that way.
+   *
+   * @return {@link F#NIL} if <code>target</code> is no such list
+   */
+  private static IExpr assignDefinitionListTo(IExpr target, Function<IExpr, IExpr> update,
+      EvalEngine engine) {
+    if (!target.isAST1() || !target.first().isSymbol()) {
+      return F.NIL;
+    }
+    IExpr head = target.head();
+    if (head != S.DownValues && head != S.UpValues && head != S.OwnValues && head != S.SubValues
+        && head != S.DefaultValues && head != S.FormatValues && head != S.Options) {
+      return F.NIL;
+    }
+    IExpr value = engine.evaluate(target);
+    if (!value.isList()) {
+      return F.NIL;
+    }
+    IExpr changed = update.apply(((IAST) value).copy());
+    if (changed.isNIL()) {
+      return F.NIL;
+    }
+    engine.evaluate(F.Set(target, changed));
+    return changed;
+  }
+
+  /**
    * Apply an in-place update to an indexed target such as {@code AppendTo(bucket["a"], 3)}.
    *
    * <p>
@@ -814,6 +843,11 @@ public final class ListFunctions {
           ast.arg2(), engine);
       if (indexed.isPresent()) {
         return indexed;
+      }
+      IExpr definitions = assignDefinitionListTo(arg1,
+          new AppendToFunction(engine.evaluate(ast.arg2()), ast), engine);
+      if (definitions.isPresent()) {
+        return definitions;
       }
 
       IExpr sym = Validate.checkIsVariable(ast, 1, engine);
@@ -1407,12 +1441,30 @@ public final class ListFunctions {
                 engine.evaluate(ast.setAtCopy(1, IASTDataset.normalizeDataset(arg1))));
           }
           if (arg1.isASTOrAssociation()) {
-            final IExpr arg2 = engine.evalPattern(ast.arg2());
+            // the pattern may be computed, as in Alternatives @@ (HoldPattern[#[___]] & /@ heads);
+            // a condition must not be evaluated outside of the pattern matcher
+            IExpr pattern = ast.arg2();
+            if (pattern.isFree(S.Condition, true)) {
+              pattern = engine.evaluate(pattern);
+            }
+            final IExpr arg2 = engine.evalPattern(pattern);
             if (argSize >= 3) {
               final IExpr arg3 = engine.evaluate(ast.arg3());
               int maximumResults = -1;
               if (argSize == 4) {
-                maximumResults = Validate.checkIntType(ast, 4);
+                final IExpr arg4 = engine.evaluate(ast.arg4());
+                if (arg4.isEmptyList() || arg4.isListOfRules(true) || arg4.isRuleAST()) {
+                  // an expression like FilterRules[...] which gives the options
+                  IExpr rules = arg4.isList() ? F.Flatten(arg4) : F.list(arg4);
+                  for (IExpr rule : (IAST) engine.evaluate(rules)) {
+                    if (rule.isRuleAST() && rule.first() == S.Heads) {
+                      includeHeads = rule.second().isTrue();
+                      break;
+                    }
+                  }
+                } else {
+                  maximumResults = Validate.checkIntType(ast.setAtCopy(4, arg4), 4);
+                }
               }
               IASTAppendable result = F.ListAlloc(8);
               if (arg2.isRuleAST()) {
@@ -2529,6 +2581,10 @@ public final class ListFunctions {
         try {
           IExpr evaledArg1 = engine.evaluate(ast.arg1());
 
+          if (evaledArg1 instanceof DispatchExpr) {
+            // Dispatch of a dispatch table is the table
+            return evaledArg1;
+          }
           if (evaledArg1.isListOfRules(false)) {
             return DispatchExpr.newInstance((IAST) evaledArg1);
           } else if (evaledArg1.isRuleAST()) {
@@ -5457,6 +5513,11 @@ public final class ListFunctions {
           ast.arg2(), engine);
       if (indexed.isPresent()) {
         return indexed;
+      }
+      IExpr definitions = assignDefinitionListTo(arg1,
+          new PrependToFunction(engine.evaluate(ast.arg2()), ast), engine);
+      if (definitions.isPresent()) {
+        return definitions;
       }
 
       IExpr sym = Validate.checkIsVariable(ast, 1, engine);

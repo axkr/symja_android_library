@@ -261,13 +261,13 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
     check("\"test\"(x)", //
         "test[x]");
+    // a backslash at the end of a line continues the string: the line break is dropped, so that
+    // long strings which Put wrote over several lines read back unchanged
     check("\"Hello world!\\\n" //
         + "next line\"", //
-        "Hello world!\n" + "next line");
-    check("\"Hello world!\\\n" //
-        + "next line\"", //
-        "Hello world!\n" + //
-            "next line");
+        "Hello world!next line");
+    check("StringLength(\"ab\\\r\ncd\")", //
+        "4");
   }
 
   @Test
@@ -732,6 +732,11 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStringReplace() {
+    // rules held in a variable
+    check("srl = {\"a\" -> \"b\"}; StringReplace(\"abc\", srl)", //
+        "bbc");
+    check("srl2 = {}; StringReplace(\"abc\", srl2)", //
+        "abc");
     // TODO use MMA logic for lists of rules
     // check("StringReplace(\"ABBA\", {\"A\" -> \"AB\", \"B\" -> \"BA\"})", //
     // "ABBABAAB ");

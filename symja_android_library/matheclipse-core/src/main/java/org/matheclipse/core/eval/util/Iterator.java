@@ -65,6 +65,22 @@ public class Iterator {
      */
     IExpr variableValueBeforeIteration;
 
+    /** The marks of the variable outside the iteration, -1 before it got its first value. */
+    private int outerMarks = -1;
+
+    private void beginLocalScope() {
+      if (outerMarks < 0) {
+        outerMarks = variable.beginLocalScope();
+      }
+    }
+
+    private void endLocalScope() {
+      if (outerMarks >= 0) {
+        variable.endLocalScope(outerMarks);
+        outerMarks = -1;
+      }
+    }
+
     public ExprIterator(final ISymbol symbol, final IExpr originalStart,
         final IExpr originalMaxCount, final IExpr originalStep, boolean numericMode,
         final EvalEngine engine) {
@@ -247,6 +263,7 @@ public class Iterator {
         count = lowerLimit;
       }
       if (variable != null && variable != count) {
+        beginLocalScope();
         variable.assignValue(count, false);
       }
       return true;
@@ -257,6 +274,7 @@ public class Iterator {
     public void tearDown() {
       if (variable != null) {
         variable.clearValue(variableValueBeforeIteration);
+        endLocalScope();
       }
       EvalEngine.get().setNumericMode(fNumericMode);
     }
@@ -286,6 +304,22 @@ public class Iterator {
      * old value, and used in {@link #tearDown()} to reset the variable to the old value.
      */
     IExpr variableValueBeforeIteration;
+
+    /** The marks of the variable outside the iteration, -1 before it got its first value. */
+    private int outerMarks = -1;
+
+    private void beginLocalScope() {
+      if (outerMarks < 0) {
+        outerMarks = variable.beginLocalScope();
+      }
+    }
+
+    private void endLocalScope() {
+      if (outerMarks >= 0) {
+        variable.endLocalScope(outerMarks);
+        outerMarks = -1;
+      }
+    }
 
     /**
      * Iterate over a list of values.
@@ -392,6 +426,7 @@ public class Iterator {
       }
 
       if (variable != null && variable != count) {
+        beginLocalScope();
         variable.assignValue(count, false);
       }
       return true;
@@ -402,6 +437,7 @@ public class Iterator {
     public void tearDown() {
       if (variable != null) {
         variable.clearValue(variableValueBeforeIteration);
+        endLocalScope();
       }
     }
   }
@@ -419,6 +455,22 @@ public class Iterator {
      * old value, and used in {@link #tearDown()} to reset the variable to the old value.
      */
     IExpr variableValueBeforeIteration;
+
+    /** The marks of the variable outside the iteration, -1 before it got its first value. */
+    private int outerMarks = -1;
+
+    private void beginLocalScope() {
+      if (outerMarks < 0) {
+        outerMarks = variable.beginLocalScope();
+      }
+    }
+
+    private void endLocalScope() {
+      if (outerMarks >= 0) {
+        variable.endLocalScope(outerMarks);
+        outerMarks = -1;
+      }
+    }
 
     RangeIterator(final ISymbol variable) {
       this.variable = variable;
@@ -489,6 +541,7 @@ public class Iterator {
         return false;
       }
       if (variable != null) {
+        beginLocalScope();
         variable.assignValue(getLowerLimit(), false);
       }
       return true;
@@ -498,6 +551,7 @@ public class Iterator {
     public void tearDown() {
       if (variable != null) {
         variable.clearValue(variableValueBeforeIteration);
+        endLocalScope();
       }
     }
   }

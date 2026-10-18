@@ -208,16 +208,17 @@ public abstract class AbstractPatternSequence implements IPatternSequence {
   @Override
   public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap,
       ISymbol optionsPatternHead) {
-    if (!isConditionMatchedSequence(sequence, patternMap)) {
-      return false;
-    }
     if (sequence.size() == 1 && !isNullSequence()) {
       return false;
     }
-
-    IExpr value = patternMap.getValue(this);
+    // a name which occurs a second time, as c in f(h(c___), h(c___)), has to stand for the same
+    // sequence; read the value before isConditionMatchedSequence() overwrites it
+    IExpr value = getSymbol() != null ? patternMap.getValue(this) : null;
     if (value != null) {
       return sequence.equals(value);
+    }
+    if (!isConditionMatchedSequence(sequence, patternMap)) {
+      return false;
     }
     return patternMap.setValue(this, sequence);
   }

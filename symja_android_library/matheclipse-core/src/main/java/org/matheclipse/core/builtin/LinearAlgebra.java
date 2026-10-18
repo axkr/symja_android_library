@@ -1328,6 +1328,12 @@ public final class LinearAlgebra {
         }
         return F.NIL;
       }
+      if (!((arg1.isList() || arg1.isSparseArray()) && (arg2.isList() || arg2.isSparseArray()))
+          && !(arg1.isAST(S.TransformationFunction, 2)
+              && arg2.isAST(S.TransformationFunction, 2))) {
+        // a noncommutative product such as a.b of non-lists stays as it is
+        return F.NIL;
+      }
 
       EvalEngine engine = EvalEngine.get();
       boolean togetherMode = engine.isTogetherMode();
@@ -1396,6 +1402,8 @@ public final class LinearAlgebra {
                 } else if (dims2Size == 1) {
                   FieldVector<IExpr> vector1 = Convert.list2Vector(arg2);
                   if (vector1 != null) {
+                    // a sum of products: {(a+b)*c}.{d} stays (a+b)*c*d
+                    engine.setTogetherMode(togetherMode);
                     return vector0.dotProduct(vector1);
                   }
                 }

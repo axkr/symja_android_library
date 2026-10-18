@@ -226,7 +226,7 @@ a[[	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
 a[[1]	!syntax@5: ']]' expected.
 <|	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
 |>	!syntax@2: Too much closing |> in factor.
-1..	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
+1..	Repeated(1)
 &&a	!syntax@2: Operator: && is no prefix operator.
 a&&	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
 =	!syntax@1: Operator: = is no prefix operator.

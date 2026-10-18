@@ -919,6 +919,10 @@ public abstract class Scanner {
       final int tokenStart = fCurrentPosition;
       getNextChar();
       fToken = TT_EOF;
+      if (fCurrentChar == '') {
+        // \[IndentingNewLine] between tokens is a line break
+        fCurrentChar = '\n';
+      }
 
       if ((fCurrentChar != '\t') //
           && (fCurrentChar != '\r') //
@@ -1249,6 +1253,11 @@ public abstract class Scanner {
           if (isFloatPointNumber) {
             break;
           }
+          if (fCurrentPosition < fInputString.length && fInputString[fCurrentPosition] == '.') {
+            // 0.. and 0... are Repeated[0] and RepeatedNull[0], not the real number 0. followed
+            // by a dot
+            break;
+          }
           isFloatPointNumber = true;
         }
 
@@ -1475,13 +1484,16 @@ public abstract class Scanner {
               fRowCounter++;
               fCurrentColumnStartPosition = fCurrentPosition;
               // a backslash at the end of the line means the scanner should continue on the next
-              // line
-              continue;
+              // line; the line break is not part of the string
+              break;
             case '\r':
               if (isValidPosition() && fInputString[fCurrentPosition] == '\n') {
                 // a backslash at the end of the line means the scanner should continue on the next
                 // line
-                continue;
+                fCurrentPosition++;
+                fRowCounter++;
+                fCurrentColumnStartPosition = fCurrentPosition;
+                break;
               }
               throwSyntaxError("string - unknown character after back-slash.");
             default:

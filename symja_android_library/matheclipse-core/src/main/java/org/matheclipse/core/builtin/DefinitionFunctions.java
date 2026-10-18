@@ -393,8 +393,10 @@ public class DefinitionFunctions {
       IExpr lhs = freshOptionsPatterns(leftHandSideOf(rule));
       IExpr rhs = rule.second();
       if (lhs.isSymbol()) {
-        // an own value
-        ((ISymbol) lhs).assignValue(rhs, false);
+        // an own value, which only the symbol itself can have
+        if (lhs == symbol) {
+          ((ISymbol) lhs).assignValue(rhs, false);
+        }
       } else if (lhs.isAST()) {
         if (upRules) {
           if (nValues) {

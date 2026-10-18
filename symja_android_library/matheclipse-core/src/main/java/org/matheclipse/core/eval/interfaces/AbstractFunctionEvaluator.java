@@ -97,6 +97,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         }
       } else if (arg.isListOfRules(true) && !arg.isEmptyList()) {
         IAST listOfRules = (IAST) arg;
+        boolean listUsed = false;
         for (int j = 1; j < listOfRules.size(); j++) {
           IAST rule = (IAST) listOfRules.get(j);
           evaled = false;
@@ -107,12 +108,16 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           for (int i = 0; i < optionSymbol.length; i++) {
             if (optionSymbol[i].equals(rule.first())) {
               options[i] = rule.second();
-              argSize--;
               counter++;
               evaled = true;
+              listUsed = true;
               break;
             }
           }
+        }
+        if (listUsed) {
+          // the list is one argument, however many options it sets
+          argSize--;
         }
       } else {
         evaled = false;

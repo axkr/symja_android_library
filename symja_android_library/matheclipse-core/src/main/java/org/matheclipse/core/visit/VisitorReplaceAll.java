@@ -201,7 +201,7 @@ public class VisitorReplaceAll extends VisitorExpr {
     ISymbol name = replacedName(element);
     IExpr headTest = replacedHeadTest(element);
     if (name == null && headTest.isNIL()) {
-      return F.NIL;
+      return replacedFullForm(element);
     }
     ISymbol symbol = name != null ? name : element.getSymbol();
     IExpr check = headTest.isPresent() ? headTest : element.getHeadTest();
@@ -220,11 +220,24 @@ public class VisitorReplaceAll extends VisitorExpr {
     ISymbol name = replacedName(element);
     IExpr headTest = replacedHeadTest(element);
     if (name == null && headTest.isNIL()) {
-      return F.NIL;
+      return replacedFullForm(element);
     }
     ISymbol symbol = name != null ? name : element.getSymbol();
     IExpr check = headTest.isPresent() ? headTest : element.getHeadTest();
     return F.$ps(symbol, check, element.isDefault(), element.isNullSequence());
+  }
+
+  /**
+   * The replacement applied to the parts a pattern is written with, as in
+   * <code>x_ /. Pattern -> h</code> giving <code>h(x, Blank())</code>, or {@link F#NIL} where it
+   * does not change.
+   */
+  private IExpr replacedFullForm(IPatternObject element) {
+    IAST fullForm = element.toFullFormAST();
+    if (fullForm == null) {
+      return F.NIL;
+    }
+    return fullForm.accept(this);
   }
 
   /**

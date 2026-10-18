@@ -597,7 +597,8 @@ public class PolynomialFunctions {
       IASTAppendable expandedPolys = F.ListAlloc(numPolys);
       int maxDegree = 0;
       for (int i = 1; i <= numPolys; i++) {
-        IExpr expanded = F.evalExpandAll(polyList.get(i), engine);
+        // Expand, not ExpandAll: a variable like h(x/(1 + y)) has to stay as it is written
+        IExpr expanded = F.evalExpand(polyList.get(i));
         expandedPolys.append(expanded);
         // Determine max total degree across all polys
         if (numVars > 0) {

@@ -1003,6 +1003,11 @@ public class Functors {
 
     if (lhs.isAST(S.HoldPattern, 2)) {
       lhs = lhs.first();
+    } else if (lhs.isCondition() && lhs.first().isAST() && (lhs.first().head().isAST()
+        || lhs.first().head() instanceof org.matheclipse.core.expression.PatternNested)) {
+      // the head of p /; test is computed like that of p alone, as in
+      // (h:Alternatives @@ heads)[x__] /; test :> ...; the test stays as it is
+      lhs = EvalEngine.get().evalPattern(lhs);
     }
 
     if (lhs.isFree(PATTERNQ_PREDICATE, true)) {
@@ -1077,7 +1082,8 @@ public class Functors {
   private static IExpr evalOneIdentity(IExpr expr) {
     if (expr.isAST()) {
       IAST arg2AST = (IAST) expr;
-      if (arg2AST.isAST1() && arg2AST.head().isSymbol()) {
+      // only built-ins like Times(x) are x as values; f(x) of a package stays f(x)
+      if (arg2AST.isAST1() && arg2AST.head().isBuiltInSymbol()) {
         if (((ISymbol) arg2AST.head()).hasOneIdentityAttribute()) {
           expr = arg2AST.arg1();
         }

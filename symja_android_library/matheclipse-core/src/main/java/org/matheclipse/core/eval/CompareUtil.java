@@ -815,6 +815,11 @@ public class CompareUtil {
     if (Attribute.NHOLDALL.isSetIn(attributes)) {
       return F.NIL;
     }
+    if (ast.head().isSymbol() && !Attribute.NUMERICFUNCTION.isSetIn(attributes)) {
+      // the arguments of a function like f(5) are not numbers to approximate: f(5.0) may be an
+      // error for f, and a polynomial asks about each of its coefficients
+      return F.NIL;
+    }
     IASTMutable result = F.NIL;
     // start at the head, because it can be a `Derivative(1)[y]` like expression itself
     for (int i = 0; i < ast.size(); i++) {

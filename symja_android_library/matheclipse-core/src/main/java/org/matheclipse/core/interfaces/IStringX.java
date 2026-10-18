@@ -369,6 +369,12 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       return "[" + str + "]";
     } else if (partOfRegex.isAST(S.RegularExpression, 2) && partOfRegex.first().isString()) {
       return partOfRegex.first().toString();
+    } else if (partOfRegex instanceof RepeatedPattern
+        && ((RepeatedPattern) partOfRegex).getSymbol() != null) {
+      // x:p.. is the group x around p..
+      RepeatedPattern repeated = (RepeatedPattern) partOfRegex;
+      return toRegexString(F.binaryAST2(S.Pattern, repeated.getSymbol(), repeated.named(null)),
+          abbreviatedPatterns, stringFunction, shortestLongest, groups, engine);
     } else if (partOfRegex instanceof RepeatedPattern) {
       RepeatedPattern repeated = (RepeatedPattern) partOfRegex;
       IExpr expr = repeated.getRepeatedExpr();
