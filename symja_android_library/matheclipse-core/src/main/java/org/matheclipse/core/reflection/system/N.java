@@ -21,6 +21,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
 
 
@@ -75,7 +76,59 @@ public final class N extends AbstractCoreFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IExpr arg1 = ast.arg1();
+    if (RulesData.isUpRulesDefined() && !arg1.isListOrAssociation() && !arg1.isRuleAST()) {
+      // an N-value of the argument; a rule sees the precision as a machine real
+      IAST call = nValueCall(ast);
+      if (call.isPresent()) {
+        IExpr nValue = engine.evalUpRules(call);
+        if (nValue.isPresent()) {
+          return nValue;
+        }
+      }
+    }
     return numericEval(ast, engine);
+  }
+
+  /**
+   * The call an N-value of <code>N(x, precision)</code> is looked up with: <code>N(x)</code> for
+   * machine precision, <code>N(x, p.)</code> for a precision <code>p</code>, <code>N(x, {p.,
+   * a.})</code> for a precision and an accuracy.
+   *
+   * @return {@link F#NIL} if the precision has none of these forms
+   */
+  private static IAST nValueCall(IAST ast) {
+    if (ast.isAST1()) {
+      return ast;
+    }
+    IExpr precision = ast.arg2();
+    IExpr accuracy = F.CInfinity;
+    if (precision.isList() && precision.argSize() == 2) {
+      accuracy = precision.second();
+      precision = precision.first();
+    }
+    if (precision == S.MachinePrecision && (accuracy.isInfinity() || accuracy == S.Infinity
+        || accuracy == S.MachinePrecision)) {
+      return F.unaryAST1(S.N, ast.arg1());
+    }
+    IExpr p = precisionValue(precision);
+    IExpr a = precisionValue(accuracy);
+    if (p.isNIL() || a.isNIL()) {
+      return F.NIL;
+    }
+    return F.binaryAST2(S.N, ast.arg1(), a.isInfinity() ? p : F.list(p, a));
+  }
+
+  /** A real number as a machine real, <code>Infinity</code> as itself, otherwise {@link F#NIL}. */
+  private static IExpr precisionValue(IExpr value) {
+    if (value.isInfinity() || value == S.Infinity) {
+      return F.CInfinity;
+    }
+    if (value.isReal()) {
+      double d = value.evalf();
+      return Double.isFinite(d) ? F.num(d) : F.NIL;
+    }
+    return F.NIL;
   }
 
   @Override
@@ -91,9 +144,14 @@ public final class N extends AbstractCoreFunctionEvaluator {
     final boolean oldNumericMode = engine.isNumericMode();
     final long oldDigitPrecision = engine.getNumericPrecision();
     try {
+      if (arg2.isList() && arg2.argSize() == 2) {
+        return evalPrecisionAccuracy(arg1, (IAST) arg2, engine);
+      }
       long nDigitPrecision = oldDigitPrecision;
       // arg2 = engine.evaluateNonNumeric(arg2);
-      arg2 = engine.evalN(F.Ceiling(arg2));
+      // a copy: an Orderless argument such as 1+I would be sorted in place, which changes the call
+      // that is given back when the precision is refused
+      arg2 = engine.evalN(F.Ceiling(arg2.isAST() ? ((IAST) arg2).copy() : arg2));
       nDigitPrecision = arg2.toIntDefault();
       if (nDigitPrecision <= 0) {
         // Requested precision `1` is smaller than `2`.
@@ -119,6 +177,97 @@ public final class N extends AbstractCoreFunctionEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_1_2;
+  }
+
+  /**
+   * <code>N(expr, {precision, accuracy})</code>: every number of the result gets the precision
+   * <code>Min(precision, accuracy + Log10(Abs(x)))</code>, rounded down, and a number below the
+   * accuracy becomes a zero. Either bound can be <code>Infinity</code>, and the precision can be
+   * <code>MachinePrecision</code>.
+   *
+   * @param spec the list <code>{precision, accuracy}</code>
+   */
+  private static IExpr evalPrecisionAccuracy(IExpr expr, IAST spec, EvalEngine engine) {
+    final boolean machine = spec.arg1() == S.MachinePrecision;
+    final double precision = machine ? Double.NaN : bound(spec.arg1());
+    // {MachinePrecision, MachinePrecision} is machine precision
+    final double accuracy = machine && spec.arg2() == S.MachinePrecision ? Double.POSITIVE_INFINITY
+        : bound(spec.arg2());
+    if ((!machine && !(precision > 0.0)) || Double.isNaN(accuracy)) {
+      // Requested precision `1` is not a machine-sized real number.
+      return Errors.printMessage(S.N, "precbd", F.list(spec), engine);
+    }
+    if (Double.isInfinite(accuracy)) {
+      if (machine) {
+        return evalN1(expr, engine);
+      }
+      if (Double.isInfinite(precision)) {
+        return engine.evaluate(expr);
+      }
+      return evalN2(expr, digits(precision), engine);
+    }
+    if (machine) {
+      // machine numbers; those below the accuracy become zeros
+      final double smallest = Math.pow(10.0, -accuracy);
+      IExpr result = evalN1(expr, engine);
+      if (result.isNumber()) {
+        return belowAccuracy(result, smallest) ? F.CD0 : result;
+      }
+      return result.replaceAll(x -> x.isNumber() && belowAccuracy(x, smallest) ? F.CD0 : F.NIL)
+          .orElse(result);
+    }
+    final long workingPrecision;
+    if (Double.isInfinite(precision)) {
+      // enough digits for the largest number of the result
+      double largest = largestMagnitude(evalN1(expr, engine));
+      double scale = largest > 0.0 ? Math.floor(Math.log10(largest)) + 1.0 : 0.0;
+      workingPrecision = Math.max(1L, digits(accuracy + scale));
+    } else {
+      workingPrecision = digits(precision);
+    }
+    IExpr result = evalN2(expr, workingPrecision, engine);
+    // a value <= 0 leaves no digit; SetPrecision.convert() reserves negative values
+    return SetPrecision.convert(result, workingPrecision,
+        scale -> Math.max(0L, (long) Math.floor(Math.min(precision, accuracy + scale - 1))),
+        engine);
+  }
+
+  /** A bound of <code>{precision, accuracy}</code>: a real number or Infinity, else NaN. */
+  private static double bound(IExpr value) {
+    if (value.isInfinity()) {
+      return Double.POSITIVE_INFINITY;
+    }
+    if (value.isReal()) {
+      double d = value.evalf();
+      return Double.isFinite(d) ? d : Double.NaN;
+    }
+    return Double.NaN;
+  }
+
+  /** A precision in whole digits, at most the precision Symja supports. */
+  private static long digits(double precision) {
+    return (long) Math.min(Math.ceil(precision), Config.MAX_PRECISION_APFLOAT);
+  }
+
+  private static boolean belowAccuracy(IExpr number, double smallest) {
+    double magnitude = number.isReal() ? Math.abs(number.evalf()) : number.evalfc().norm();
+    return magnitude < smallest;
+  }
+
+  /** The largest absolute value of the numbers in <code>expr</code>. */
+  private static double largestMagnitude(IExpr expr) {
+    if (expr.isNumber()) {
+      double magnitude = expr.isReal() ? Math.abs(expr.evalf()) : expr.evalfc().norm();
+      return Double.isFinite(magnitude) ? magnitude : 0.0;
+    }
+    double largest = 0.0;
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      for (int i = 0; i < ast.size(); i++) {
+        largest = Math.max(largest, largestMagnitude(ast.get(i)));
+      }
+    }
+    return largest;
   }
 
   @Override

@@ -141,6 +141,11 @@ public class InsertPositions {
     if (p < 0) {
       p = subResult.size() - getInsertPositionSize(insertedPositions) + p + 1;
     }
+    if (level == positions.argSize() && (p < 1 || p > ast.size())) {
+      // an element is inserted between the arguments, not in place of the head
+      // Cannot insert at position `1` in `2`.
+      throw new ArgumentTypeException("ins", F.list(positions, originalAST));
+    }
 
     if (p >= 0 && p < ast.size() + 1) {
       if (level == positions.argSize()) {

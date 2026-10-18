@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.apfloat.Apint;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
@@ -977,6 +978,13 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{1,1}");
     check("Dimensions({{{1,0},{0,1}},{0,0}})", //
         "{2,2}");
+    // the dimensions all elements share, without a message
+    check("Dimensions({{a, b}, {{c, d}, {e, f}}})", //
+        "{2,2}");
+    assertNull(evaluator.getEvalEngine().getMessageShortcut());
+    check("Dimensions({{a, b}, {c}})", //
+        "{2}");
+    assertNull(evaluator.getEvalEngine().getMessageShortcut());
     check("Options(Dimensions)", //
         "{AllowedHeads->Automatic}");
     check("s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4});", //

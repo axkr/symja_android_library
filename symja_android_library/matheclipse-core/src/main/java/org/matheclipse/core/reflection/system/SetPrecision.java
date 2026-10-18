@@ -237,8 +237,9 @@ public class SetPrecision extends AbstractFunctionEvaluator {
       return F.num(rational != null ? rational.doubleValue() : inexact.doubleValue());
     }
     if (precision <= 0) {
-      // no digit is left of the number
-      return F.num(new Apfloat(0L, 1L));
+      // no digit is left of the number; an arbitrary-precision zero would have infinite precision,
+      // so it is the machine zero
+      return F.CD0;
     }
     if (rational != null) {
       return F.num(new Apfloat(rational.toBigNumerator(), precision)

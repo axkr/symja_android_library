@@ -349,24 +349,50 @@ public final class RulesData implements Serializable {
   /**
    * The form an N-value is stored in: <code>N(x)</code> for machine precision, which is also
    * written <code>N(x, MachinePrecision)</code> and <code>N(x, {MachinePrecision,
-   * MachinePrecision})</code>, otherwise <code>N(x, precision)</code>.
+   * MachinePrecision})</code>; <code>N(x, p.)</code> with a machine real for a numeric precision,
+   * which is also written <code>N(x, {p, Infinity})</code>; <code>N(x, {p., a.})</code> for a
+   * precision and an accuracy. A precision given as a pattern is kept as it is.
    *
    * @param leftHandSide <code>N(x)</code> or <code>N(x, precision)</code>
    */
   public static IAST storedNValue(IAST leftHandSide) {
-    if (leftHandSide.isAST(S.N, 3)) {
-      IExpr precision = leftHandSide.arg2();
-      if (precision == S.MachinePrecision || (precision.isAST(S.List, 3)
-          && precision.first() == S.MachinePrecision && precision.second() == S.MachinePrecision)) {
-        return F.unaryAST1(S.N, leftHandSide.arg1());
-      }
+    if (!leftHandSide.isAST(S.N, 3)) {
+      return leftHandSide;
     }
-    return leftHandSide;
+    IExpr precision = leftHandSide.arg2();
+    IExpr accuracy = F.CInfinity;
+    if (precision.isList() && precision.argSize() == 2) {
+      accuracy = precision.second();
+      precision = precision.first();
+    }
+    if (precision == S.MachinePrecision && (accuracy == S.MachinePrecision
+        || accuracy.isInfinity() || accuracy == S.Infinity)) {
+      return F.unaryAST1(S.N, leftHandSide.arg1());
+    }
+    IExpr p = machineReal(precision);
+    IExpr a = machineReal(accuracy);
+    if (p.isNIL() || a.isNIL()) {
+      return leftHandSide;
+    }
+    return F.binaryAST2(S.N, leftHandSide.arg1(), a.isInfinity() ? p : F.list(p, a));
+  }
+
+  /** A real number as a machine real, <code>Infinity</code> as itself, otherwise {@link F#NIL}. */
+  private static IExpr machineReal(IExpr value) {
+    if (value.isInfinity() || value == S.Infinity) {
+      // the symbol Infinity stays unevaluated inside HoldPattern
+      return F.CInfinity;
+    }
+    if (value.isReal()) {
+      double d = value.evalf();
+      return Double.isFinite(d) ? F.num(d) : F.NIL;
+    }
+    return F.NIL;
   }
 
   /**
    * The form an N-value is shown in: <code>N(x, {MachinePrecision, MachinePrecision})</code> for
-   * machine precision.
+   * machine precision, <code>N(x, {p., Infinity})</code> for a precision alone.
    *
    * @param leftHandSide the stored left-hand-side, see {@link #storedNValue(IAST)}
    */
@@ -374,6 +400,9 @@ public final class RulesData implements Serializable {
     if (leftHandSide.isAST(S.N, 2)) {
       return F.binaryAST2(S.N, leftHandSide.first(),
           F.list(S.MachinePrecision, S.MachinePrecision));
+    }
+    if (leftHandSide.isAST(S.N, 3) && leftHandSide.second().isReal()) {
+      return F.binaryAST2(S.N, leftHandSide.first(), F.list(leftHandSide.second(), S.Infinity));
     }
     return leftHandSide;
   }

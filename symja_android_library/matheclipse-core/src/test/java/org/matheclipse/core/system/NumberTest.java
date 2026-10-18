@@ -355,7 +355,7 @@ public class NumberTest extends ExprEvaluatorTestCase {
       assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
       // a second argument which isn't a real number is refused, the flag doesn't turn it into one
       check("N(Pi,1+I)", //
-          "N(Pi,I+1)");
+          "N(Pi,1+I)");
       assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
       // known limitation: the bound is tested on arg2.toIntDefault(), so a request which doesn't
       // fit an int collapses to Config.INVALID_INT and reports N::precsm instead of truncating.

@@ -925,6 +925,9 @@ public class IntegerFunctions {
         IExpr arg2 = ast.arg2();
         if (arg2.isInteger() && ((IInteger) arg2).compareInt(1) > 0) {
           base = (IInteger) arg2;
+        } else if (arg2.isNumber()) {
+          // Base `1` is not an integer greater than `2`.
+          return Errors.printMessage(ast.topHead(), "ibase", F.list(arg2, F.C1), engine);
         } else {
           return F.NIL;
         }

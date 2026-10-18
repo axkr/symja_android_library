@@ -2340,7 +2340,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           // costs nothing until something in the session defines an up-value at all, and
           // HoldAllComplete is exactly the attribute which says not to look - that is what
           // distinguishes it from HoldAll.
-          if (size() > 1 && RulesData.isUpRulesDefined()
+          // N looks up the N-values itself, with the precision as a machine real
+          if (size() > 1 && RulesData.isUpRulesDefined() && symbol != S.N
               && !Attribute.HOLDALLCOMPLETE.isSetIn(symbol.getAttributes())) {
             IExpr upValue = engine.evalUpRules(this);
             if (upValue.isPresent()) {

@@ -15528,6 +15528,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInsert() {
+    // an element goes between the arguments, never in place of the head
+    // Insert: Cannot insert at position {0} in {a,b,c}.
+    check("Insert({a, b, c}, x, 0)", //
+        "Insert({a,b,c},x,0)");
+    check("Insert({a, b, c}, x, -5)", //
+        "Insert({a,b,c},x,-5)");
+    check("Insert({a, b, c}, x, 5)", //
+        "Insert({a,b,c},x,5)");
+    check("Insert({{a, b}, {c}}, x, {2, 0})", //
+        "Insert({{a,b},{c}},x,{2,0})");
+    check("{Insert({a, b, c}, x, -1), Insert({a, b, c}, x, -4), Insert({a, b, c}, x, 4)}", //
+        "{{a,b,c,x},{x,a,b,c},{a,b,c,x}}");
     check("Insert(<|\"z\"->t|>, {x->y,a->b}, 1)", //
         "<|x->y,a->b,z->t|>");
     check("Insert(<|\"z\"->t|>, {x->y,a->b},\"z\")", //
@@ -15666,6 +15678,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntegerExponent() {
+    // IntegerExponent: Base 1 is not an integer greater than 1.
+    check("IntegerExponent(10, 1)", //
+        "IntegerExponent(10,1)");
+    check("IntegerExponent(10, -2)", //
+        "IntegerExponent(10,-2)");
+    check("{IntegerExponent(0, 2), IntegerExponent(0)}", //
+        "{Infinity,Infinity}");
     check("IntegerExponent(1230000)", //
         "4");
     check("IntegerExponent(2^10+2^7, 2)", //
@@ -19474,13 +19493,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "{N(nvb), N(nvb + 1)}", //
         "{2.0,3.0}");
     // a rule for a precision
+    // the precision is a machine real, shown with the accuracy Infinity
     check("N(nvc, 20) = 5; NValues(nvc)", //
-        "{HoldPattern(N(nvc,20)):>5}");
+        "{HoldPattern(N(nvc,{20.0,Infinity})):>5}");
     check("{N(nvc + 1, 20), Precision(N(nvc + 1, 20))}", //
         "{6,20}");
     // separate inputs: a precision written in the input is the precision of all of it
     check("N(nvc)", //
         "nvc");
+    // a rule written in the form NValues shows
+    check("NValues(nvq) = {HoldPattern(N(nvq, {20., Infinity})) :> 5}; N(nvq, 20)", //
+        "5");
+    // a precision and an accuracy
+    check("N(nvp, {10, 5}) = 7; {NValues(nvp), N(nvp, {10, 5})}", //
+        "{{HoldPattern(N(nvp,{10.0,5.0})):>7},7}");
+    // a rule sees the precision as a machine real
+    check("N(nvd, p_) := Hold(p); N(nvd, 20)", //
+        "Hold(20.0)");
+    check("N(nve, p_?(# > 10 &)) := p; {N(nve, 11), N(nve, 5)}", //
+        "{11.0,nve}");
     // a rule for a call
     check("N(nvf(x_)) := x + 1; {N(nvf(2) + 1), nvf(2)}", //
         "{4.0,nvf(2)}");
@@ -19500,6 +19531,35 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3");
     check("N(Pi)", //
         "3.14159");
+  }
+
+  @Test
+  public void testNPrecisionAccuracy() {
+    // every number gets Min(precision, accuracy + Log10(Abs(x))) digits, rounded down
+    check("N({Pi, 1000*Pi}, {20, 3})", //
+        "{3.14,3141.59}");
+    check("N({Pi, 1000*Pi}, {Infinity, 3})", //
+        "{3.14,3141.59}");
+    check("Precision(N(Pi*10^10, {20, 5}))", //
+        "15");
+    check("N(x + Pi, {20, 3})", //
+        "3.14+x");
+    // below the accuracy: a zero
+    check("N(Pi/10^10, {20, 5})", //
+        "0.0");
+    check("N({Pi, Pi/10^10}, {MachinePrecision, 5})", //
+        "{3.14159,0.0}");
+    check("N(Pi, {MachinePrecision, MachinePrecision})", //
+        "3.14159");
+    check("N(Pi, {Infinity, Infinity})", //
+        "Pi");
+    check("Precision(N(Pi, {20, Infinity}))", //
+        "20");
+    // N: Requested precision {a,b} is not a machine-sized real number.
+    check("N(Pi, {a, b})", //
+        "N(Pi,{a,b})");
+    check("SetAccuracy(N(Pi/10^10, 20), 5)", //
+        "0.0");
   }
 
   @Test
@@ -26343,6 +26403,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRealDigits() {
+    // the shortest pre-period
+    check("RealDigits(20/3)", //
+        "{{{6}},1}");
+    check("RealDigits(10/3)", //
+        "{{{3}},1}");
+    check("RealDigits(100/7)", //
+        "{{{1,4,2,8,5,7}},2}");
+    check("RealDigits(20/3, 2)", //
+        "{{1,{1,0}},3}");
+    check("{RealDigits(22/7), RealDigits(1/12), RealDigits(703/7)}", //
+        "{{{3,{1,4,2,8,5,7}},1},{{8,{3}},-1},{{1,0,0,{4,2,8,5,7,1}},3}}");
     // a machine number has 16 decimal or 53 binary digits
     check("RealDigits(2500.0)", //
         "{{2,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0},4}");

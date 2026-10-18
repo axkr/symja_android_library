@@ -4013,14 +4013,15 @@ public class EvalEngine implements Serializable {
 
   /**
    * The left-hand-side an N-value of <code>expr</code> is stored with at the current precision:
-   * <code>N(expr)</code> for machine precision, otherwise <code>N(expr, digits)</code> with the
-   * digits <code>N</code> was asked for, not the working precision with its guard digits.
+   * <code>N(expr)</code> for machine precision, otherwise <code>N(expr, digits.)</code> with the
+   * digits <code>N</code> was asked for as a machine real, not the working precision with its guard
+   * digits.
    *
    * @param expr a symbol or a call
    */
   public IAST nValueLHS(IExpr expr) {
     if (isArbitraryMode()) {
-      return F.binaryAST2(S.N, expr, F.ZZ(getSignificantFigures()));
+      return F.binaryAST2(S.N, expr, F.num(getSignificantFigures()));
     }
     return F.unaryAST1(S.N, expr);
   }

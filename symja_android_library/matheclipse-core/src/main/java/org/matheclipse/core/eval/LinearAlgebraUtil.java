@@ -16,7 +16,6 @@ public class LinearAlgebraUtil {
 
   public final static class DimensionsData {
     boolean isNonRectangular = false;
-    final EvalEngine engine;
     final IntArrayList dimensions;
 
     /**
@@ -31,7 +30,6 @@ public class LinearAlgebraUtil {
      */
     public DimensionsData(IAST ast, IExpr header, int maxLevel,
         boolean throwIllegalArgumentException) {
-      this.engine = EvalEngine.get();
       this.dimensions = dimensionsRecursive(ast, header, maxLevel, throwIllegalArgumentException);
     }
 
@@ -78,10 +76,8 @@ public class LinearAlgebraUtil {
                   isNonRectangular = true;
                   if (throwIllegalArgumentException) {
                     throw new IllegalArgumentException();
-                  } else {
-                    // print message: Nonrectangular tensor encountered
-                    Errors.printMessage(ast.topHead(), "rect", F.CEmptyList, engine);
                   }
+                  // otherwise the dimensions are the ones all elements share, with no message
                 }
                 int minSize = subDim.size() > sub.size() ? sub.size() : subDim.size();
                 int j = 0;
@@ -90,9 +86,6 @@ public class LinearAlgebraUtil {
                     isNonRectangular = true;
                     if (throwIllegalArgumentException) {
                       throw new IllegalArgumentException();
-                    } else {
-                      // print message: Nonrectangular tensor encountered
-                      Errors.printMessage(ast.topHead(), "rect", F.list(ast), engine);
                     }
                     break;
                   }

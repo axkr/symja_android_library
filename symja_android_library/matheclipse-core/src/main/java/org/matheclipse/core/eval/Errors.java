@@ -536,6 +536,7 @@ public class Errors {
       "post", "The threshold `1` should be positive.", //
       "ppnt", "The value `1` of argument `2`  must be a positive integer.", //
       "preal", "The parameter `1` should be real-valued.", //
+      "precbd", "Requested precision `1` is not a machine-sized real number.", //
       "precsm", "Requested precision `1` is smaller than `2`.", //
       "precgt", "Requested precision `1` is greater than `2`.", //
       "prng",

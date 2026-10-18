@@ -223,6 +223,13 @@ public class RealDigitsResult {
         repetend.append(F.C0);
       }
     }
+    // the shortest pre-period: 6.666... is {{{6}}, 1} and not {{6, {6}}, 1}
+    while (initial.argSize() > 0 && initial.last().equals(repetend.last())) {
+      initial.remove(initial.argSize());
+      IExpr last = repetend.last();
+      repetend.remove(repetend.argSize());
+      repetend.append(1, last);
+    }
     digitsList = F.ListAlloc(initial.argSize() + 2);
     digitsList.appendArgs(initial);
     digitsList.append(repetend);
