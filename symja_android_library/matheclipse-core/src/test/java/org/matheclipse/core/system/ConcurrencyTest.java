@@ -105,6 +105,60 @@ public class ConcurrencyTest {
   }
 
   /**
+   * Rules of one symbol defined by several threads while they evaluate it, as a memoizing
+   * right-hand side does. The evaluation of rules takes no lock, so a scan must never see a rule
+   * list which another thread is changing, and no definition may get lost.
+   */
+  @Test
+  public void testDefinitionsWhileEvaluating() throws Exception {
+    ExprEvaluator main = new ExprEvaluator();
+    main.eval("concurrencyMemo(0)=1;"
+        + "concurrencyMemo(n_Integer):=concurrencyMemo(n)=2*concurrencyMemo(n-1)+n");
+    // the symbols are shared: a name parsed by another engine is a symbol of its own context
+    final IExpr memo = main.eval("concurrencyMemo");
+    final IExpr rule = main.eval("concurrencyRule");
+    final int threads = 4;
+    final int definitions = 40;
+    ExecutorService threadPool = Executors.newFixedThreadPool(threads);
+    try {
+      List<Callable<String>> tasks = new ArrayList<>();
+      for (int t = 0; t < threads; t++) {
+        final int offset = t;
+        tasks.add(() -> {
+          ExprEvaluator exprEvaluator = new ExprEvaluator();
+          for (int i = 0; i < definitions; i++) {
+            int id = offset * definitions + i;
+            exprEvaluator.eval(
+                F.SetDelayed(F.binaryAST2(rule, F.ZZ(id), F.x_), F.Plus(F.x, F.ZZ(id))));
+            String value = exprEvaluator.eval(F.binaryAST2(rule, F.ZZ(id), F.C7)).toString();
+            if (!value.equals(Integer.toString(id + 7))) {
+              return "concurrencyRule(" + id + ",7) gave " + value;
+            }
+            int n = 1 + (i * 7 + offset * 13) % 60;
+            String a = exprEvaluator.eval(F.unaryAST1(memo, F.ZZ(n))).toString();
+            // a(n) = 3*2^n-n-2
+            String expected =
+                java.math.BigInteger.valueOf(3).shiftLeft(n).subtract(java.math.BigInteger
+                    .valueOf(n + 2)).toString();
+            if (!a.equals(expected)) {
+              return "concurrencyMemo(" + n + ") gave " + a;
+            }
+          }
+          return null;
+        });
+      }
+      for (Future<String> future : threadPool.invokeAll(tasks, 120, TimeUnit.SECONDS)) {
+        assertFalse(future.isCancelled(), "timed out");
+        assertNull(future.get());
+      }
+    } finally {
+      threadPool.shutdownNow();
+    }
+    assertEquals(Integer.toString(threads * definitions),
+        main.eval(F.Length(F.DownValues(rule))).toString());
+  }
+
+  /**
    * Built-in rules use the formal symbols <code>k</code>, <code>j</code>, ... as the iterator
    * variables of <code>Sum</code> and <code>Product</code>. There is one of each in the JVM, and the
    * iterators used to assign their values to it, so concurrent evaluations read each other's

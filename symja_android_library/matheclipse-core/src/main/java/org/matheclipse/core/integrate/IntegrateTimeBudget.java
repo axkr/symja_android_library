@@ -65,7 +65,7 @@ public final class IntegrateTimeBudget {
       IExpr result = work.get();
       return result == null ? F.NIL : result;
     } catch (RuntimeException rex) {
-      if (!budget.isExceeded() || budget.isEnclosingExceeded()) {
+      if (!budget.isExceeded() || budget.isEnclosingExceeded() || isEngineDeadlinePassed()) {
         // not our interrupt - the caller's deadline or a genuine failure - or not only ours
         throw rex;
       }
@@ -80,11 +80,23 @@ public final class IntegrateTimeBudget {
       } else {
         ACTIVE.set(budget.parent);
       }
-      if (budget.isExceeded() && !budget.isEnclosingExceeded()) {
+      if (budget.isExceeded() && !budget.isEnclosingExceeded() && !isEngineDeadlinePassed()) {
         // clear the flag we raised, or the caller aborts on the next interruption check
         Thread.interrupted();
       }
     }
+  }
+
+  /**
+   * Whether the deadline of the <code>TimeConstrained</code> evaluation around this one has
+   * passed. Its time limiter interrupts the thread as a watchdog does, and when both fire before
+   * the thread looks at the flag, the interrupt is the limiter's as well: clearing it would let the
+   * abandoned evaluation run on without any limit, holding the lock of <code>Integrate</code>
+   * which every later integration waits for.
+   */
+  private static boolean isEngineDeadlinePassed() {
+    long deadline = EvalEngine.get().getTimeConstrainedMillis();
+    return deadline > 0 && EvalEngine.deadlineClockMillis() >= deadline;
   }
 
   /** The innermost budget running on this thread. */

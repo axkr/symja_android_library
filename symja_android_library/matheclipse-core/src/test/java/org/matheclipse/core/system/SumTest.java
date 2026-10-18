@@ -909,4 +909,14 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Check(Sum(1/(2*j+b), {j, 0, m}), failed)", //
         "1/2*(-PolyGamma(0,b/2)+PolyGamma(0,1+b/2+m))");
   }
+
+  @Test
+  public void testTrigFactorsInGosper() {
+    // a shift by the half period gives a rational term ratio
+    check("Sum(Cos(Pi*j)/3^j,{j,0,m})", //
+        "3/4-Cos((1+m)*Pi)/(4*3^m)");
+    // any other angle doesn't, and the term ratio isn't simplified (took 14s)
+    check("Sum(Sin(2*(k-j)*y),{j,0,k-1})", //
+        "Sum(Sin(2*(-j+k)*y),{j,0,-1+k})");
+  }
 }

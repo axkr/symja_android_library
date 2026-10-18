@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.AbstractFractionSym;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -68,7 +69,8 @@ public final class DirichletFunctions {
         IInteger integer = (IInteger) arg;
         if (integer.isPositive()) {
           BigInteger big = integer.toBigNumerator();
-          if (big.bitLength() < 63) {
+          // positive, so below 2^63 with at most 63 bits
+          if (big.bitLength() <= 63) {
             kj[i - 1] = big.longValue();
             continue;
           }
@@ -84,12 +86,15 @@ public final class DirichletFunctions {
       }
       return null;
     }
-    long phi = DirichletCharacterTable.eulerPhi(kj[0]);
-    if (kj[1] > phi) {
-      Errors.printMessage(ast.topHead(), "invl", F.list(ast.arg2(), ast, F.ZZ(phi)), engine);
-      return null;
+    DirichletCharacterTable table = DirichletCharacterTable.of(kj[0], kj[1]);
+    if (table == null) {
+      // the factorization for the message only, when there is one to give
+      long phi = DirichletCharacterTable.eulerPhi(kj[0]);
+      if (kj[1] > phi) {
+        Errors.printMessage(ast.topHead(), "invl", F.list(ast.arg2(), ast, F.ZZ(phi)), engine);
+      }
     }
-    return DirichletCharacterTable.of(kj[0], kj[1]);
+    return table;
   }
 
   /**
@@ -121,6 +126,11 @@ public final class DirichletFunctions {
           result.append(call);
         }
         return result;
+      }
+      if (!ast.arg3().isNumber() && !ast.arg3().isList()) {
+        // a symbolic argument: nothing to evaluate, and no message about labels which N may
+        // have made inexact - N(DirichletCharacter(7, 2, x))
+        return F.NIL;
       }
       DirichletCharacterTable table = labels(ast, false, engine);
       if (table == null) {
@@ -247,11 +257,13 @@ public final class DirichletFunctions {
    * is used.
    */
   private static IExpr numericValue(DirichletCharacterTable table, IExpr s, EvalEngine engine) {
-    if (s.isReal() && !s.isMachineNumber()) {
+    if (s instanceof ApfloatNum) {
       // an integer s <= 0 at a precision above machine: the exact value, which may be a trivial
-      // zero the Hurwitz sum could only approach through cancellation
-      double d = s.evalf();
-      if (d <= 0.0 && d == Math.rint(d) && d > -EXACT_MMAX) {
+      // zero the Hurwitz sum could only approach through cancellation. Integer means the exact
+      // value of s, not its rounding to a double
+      org.apfloat.Apfloat apfloat = ((ApfloatNum) s).apfloatValue();
+      double d = apfloat.doubleValue();
+      if (apfloat.frac().signum() == 0 && d <= 0.0 && d > -EXACT_MMAX) {
         IExpr exact = exactNonPositive(table, 1 - (int) d, engine);
         if (exact != null) {
           IExpr value = exactN(table, s, exact, precisionDigits(s, engine), engine);
@@ -549,12 +561,18 @@ public final class DirichletFunctions {
       }
     }
 
-    /** Reduce modulo the cyclotomic polynomial <code>Phi_n</code>: a canonical vector. */
-    void reduce() {
+    /**
+     * Reduce modulo the cyclotomic polynomial <code>Phi_n</code>: a canonical vector. Left as it is
+     * (still the same number) if <code>Phi_n</code> is not available.
+     */
+    void reduce(EvalEngine engine) {
       if (n <= 1) {
         return;
       }
-      BigInteger[] phi = cyclotomicPolynomial(n);
+      BigInteger[] phi = cyclotomicPolynomial(n, engine);
+      if (phi == null) {
+        return;
+      }
       int degree = phi.length - 1;
       for (int i = n - 1; i >= degree; i--) {
         if (c[i].isZero()) {
@@ -572,7 +590,7 @@ public final class DirichletFunctions {
 
     /** The evaluated sum of the rational multiples of the roots of unity. */
     IExpr render(EvalEngine engine) {
-      reduce();
+      reduce(engine);
       IASTAppendable sum = F.PlusAlloc(n);
       for (int m = 0; m < n; m++) {
         if (!c[m].isZero()) {
@@ -586,66 +604,23 @@ public final class DirichletFunctions {
     }
   }
 
-  /** The coefficients of <code>Phi_n</code>, lowest first, from <code>Product((x^d-1)^Moebius(n/d))</code>. */
-  private static BigInteger[] cyclotomicPolynomial(int n) {
-    int capacity = 1;
-    for (int d = 1; d <= n; d++) {
-      if (n % d == 0) {
-        capacity += d;
-      }
+  /**
+   * The coefficients of the cyclotomic polynomial <code>Phi_n</code>, lowest first, from the
+   * <code>Cyclotomic</code> builtin, or <code>null</code>.
+   */
+  private static BigInteger[] cyclotomicPolynomial(int n, EvalEngine engine) {
+    IExpr x = F.Dummy("x");
+    IExpr coefficients =
+        engine.evaluate(F.CoefficientList(F.binaryAST2(S.Cyclotomic, F.ZZ(n), x), x));
+    if (!coefficients.isList() || !((IAST) coefficients).forAll(IExpr::isInteger)) {
+      return null;
     }
-    BigInteger[] p = new BigInteger[capacity + 1];
-    java.util.Arrays.fill(p, BigInteger.ZERO);
-    p[0] = BigInteger.ONE;
-    int degree = 0;
-    for (int d = 1; d <= n; d++) {
-      if (n % d == 0 && moebius(n / d) == 1) {
-        // p * (x^d - 1)
-        for (int i = degree + d; i >= 0; i--) {
-          BigInteger shifted = i >= d ? p[i - d] : BigInteger.ZERO;
-          BigInteger own = i <= degree ? p[i] : BigInteger.ZERO;
-          p[i] = shifted.subtract(own);
-        }
-        degree += d;
-      }
+    IAST list = (IAST) coefficients;
+    BigInteger[] result = new BigInteger[list.argSize()];
+    for (int i = 1; i <= list.argSize(); i++) {
+      result[i - 1] = ((IInteger) list.get(i)).toBigNumerator();
     }
-    for (int d = 1; d <= n; d++) {
-      if (n % d == 0 && moebius(n / d) == -1) {
-        // exact division by (x^d - 1): q_i = q_(i+d) - p_(i+d), from the top
-        int qd = degree - d;
-        BigInteger[] q = new BigInteger[qd + 1];
-        for (int i = qd; i >= 0; i--) {
-          q[i] = p[i + d];
-          if (i + d <= qd) {
-            q[i] = q[i].add(q[i + d]);
-          }
-        }
-        java.util.Arrays.fill(p, BigInteger.ZERO);
-        System.arraycopy(q, 0, p, 0, qd + 1);
-        degree = qd;
-      }
-    }
-    BigInteger[] result = new BigInteger[degree + 1];
-    System.arraycopy(p, 0, result, 0, degree + 1);
     return result;
-  }
-
-  private static int moebius(int n) {
-    int mu = 1;
-    for (int p = 2; p * p <= n; p++) {
-      if (n % p != 0) {
-        continue;
-      }
-      n /= p;
-      if (n % p == 0) {
-        return 0;
-      }
-      mu = -mu;
-    }
-    if (n > 1) {
-      mu = -mu;
-    }
-    return mu;
   }
 
   /**

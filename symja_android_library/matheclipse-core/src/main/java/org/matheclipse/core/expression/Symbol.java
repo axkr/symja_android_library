@@ -142,7 +142,10 @@ public class Symbol implements ISymbol, Serializable {
   private transient boolean fValueReadInCondition = false;
 
   /** The pattern matching &quot;down value&quot; rules associated with this symbol. */
-  protected transient RulesData fRulesData;
+  protected transient volatile RulesData fRulesData;
+
+  /** The sizes of a {@link RulesData} created for a first definition: no space reserved. */
+  private static final int[] NO_SIZES = {};
 
   /**
    * Hook which allows sub-classes to install rules into {@link #fRulesData} on demand. It is called
@@ -475,6 +478,15 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public RulesData createRulesData(int[] sizes) {
     ensureRulesLoaded();
+    RulesData rulesData = fRulesData;
+    return rulesData != null ? rulesData : newRulesData(sizes);
+  }
+
+  /**
+   * Create {@link #fRulesData} once: two threads which define the first rules of a symbol at the
+   * same time must not install two containers, of which one loses its rules.
+   */
+  protected final synchronized RulesData newRulesData(int[] sizes) {
     if (fRulesData == null) {
       fRulesData = new RulesData(sizes);
     }
@@ -596,7 +608,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final synchronized IExpr evalDownRule(EvalEngine engine, IExpr expression) {
+  public final IExpr evalDownRule(EvalEngine engine, IExpr expression) {
     ensureRulesLoaded();
     if (fRulesData == null) {
       return F.NIL;
@@ -1162,7 +1174,7 @@ public class Symbol implements ISymbol, Serializable {
       EvalEngine.get().addModifiedVariable(this);
     }
     if (fRulesData == null) {
-      fRulesData = new RulesData();
+      newRulesData(NO_SIZES);
     }
     EvalEngine.incEpoch();
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
@@ -1180,7 +1192,7 @@ public class Symbol implements ISymbol, Serializable {
       EvalEngine.get().addModifiedVariable(this);
     }
     if (fRulesData == null) {
-      fRulesData = new RulesData();
+      newRulesData(NO_SIZES);
     }
     EvalEngine.incEpoch();
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
@@ -1190,7 +1202,7 @@ public class Symbol implements ISymbol, Serializable {
   public void putMessage(int setSymbol, String messageName, IStringX message) {
     ensureRulesLoaded();
     if (fRulesData == null) {
-      fRulesData = new RulesData();
+      newRulesData(NO_SIZES);
     }
     EvalEngine.incEpoch();
     fRulesData.getMessages().put(messageName, message);
@@ -1218,7 +1230,7 @@ public class Symbol implements ISymbol, Serializable {
       engine.addModifiedVariable(this);
     }
     if (fRulesData == null) {
-      fRulesData = new RulesData();
+      newRulesData(NO_SIZES);
     }
     EvalEngine.incEpoch();
     return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
@@ -1397,7 +1409,7 @@ public class Symbol implements ISymbol, Serializable {
     ensureRulesLoaded();
     // default value at this position
     if (fRulesData == null) {
-      fRulesData = new RulesData();
+      newRulesData(NO_SIZES);
     }
     fRulesData.putDefaultValues(pos, expr);
   }

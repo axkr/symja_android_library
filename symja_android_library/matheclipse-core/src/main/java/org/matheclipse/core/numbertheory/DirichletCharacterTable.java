@@ -1,7 +1,6 @@
 package org.matheclipse.core.numbertheory;
 
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,7 +53,28 @@ public final class DirichletCharacterTable {
 
   private static final int CACHE_SLOTS = 256;
 
-  private static final Map<Long, DirichletCharacterTable> CACHE = new ConcurrentHashMap<>();
+  private static final Map<Labels, DirichletCharacterTable> CACHE = new ConcurrentHashMap<>();
+
+  /** The cache key: modulus and index. */
+  private static final class Labels {
+    final long k;
+    final long j;
+
+    Labels(long k, long j) {
+      this.k = k;
+      this.j = j;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof Labels && ((Labels) obj).k == k && ((Labels) obj).j == j;
+    }
+
+    @Override
+    public int hashCode() {
+      return Long.hashCode(k) * 31 + Long.hashCode(j);
+    }
+  }
 
   private static final int CYCLIC = 0;
 
@@ -213,23 +233,39 @@ public final class DirichletCharacterTable {
     if (l > (1L << 44)) {
       return -1; // more than 2^22 baby steps
     }
-    final long m = (long) Math.ceil(Math.sqrt((double) l));
-    Map<Long, Long> baby = new HashMap<>((int) Math.min(m * 2, Integer.MAX_VALUE / 2));
+    final int m = (int) Math.ceil(Math.sqrt((double) l));
+    // the baby steps gamma^i, i < m, in an open addressing table of primitives: they are distinct
+    // (gamma has order l > m) and never 0, which marks a free slot
+    final int mask = Integer.highestOneBit(2 * m) * 2 - 1;
+    final long[] keys = new long[mask + 1];
+    final int[] exponents = new int[mask + 1];
     long current = 1;
-    for (long i = 0; i < m; i++) {
-      baby.putIfAbsent(current, i);
+    for (int i = 0; i < m; i++) {
+      int slot = slotOf(current, mask);
+      while (keys[slot] != 0) {
+        slot = (slot + 1) & mask;
+      }
+      keys[slot] = current;
+      exponents[slot] = i;
       current = mulMod(current, gamma, q);
     }
     final long step = powMod(gamma, l - (m % l), q); // gamma^(-m)
     long y = h;
     for (long giant = 0; giant <= m; giant++) {
-      Long hit = baby.get(y);
-      if (hit != null) {
-        return (giant * m + hit) % l;
+      for (int slot = slotOf(y, mask); keys[slot] != 0; slot = (slot + 1) & mask) {
+        if (keys[slot] == y) {
+          return (giant * m + exponents[slot]) % l;
+        }
       }
       y = mulMod(y, step, q);
     }
     return -1;
+  }
+
+  /** The home slot of a baby step in the table of {@link #logPrime}. */
+  private static int slotOf(long value, int mask) {
+    long h = value * 0x9E3779B97F4A7C15L;
+    return (int) (h ^ (h >>> 32)) & mask;
   }
 
   /**
@@ -376,9 +412,9 @@ public final class DirichletCharacterTable {
     if (k < 1 || j < 1) {
       return null;
     }
-    final Long key = k * 1000003L + j;
+    final Labels key = new Labels(k, j);
     DirichletCharacterTable cached = CACHE.get(key);
-    if (cached != null && cached.k == k && cached.j == j) {
+    if (cached != null) {
       return cached;
     }
     DirichletCharacterTable table = build(k, j);

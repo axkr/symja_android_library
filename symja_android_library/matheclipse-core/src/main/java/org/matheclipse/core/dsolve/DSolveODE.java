@@ -1190,28 +1190,7 @@ final class DSolveODE {
       // free of x or of y: a separable equation, answered before
       return F.NIL;
     }
-    if (!slope.isFree(DSolveODE::isNonElementary, true)) {
-      // the slope of a reduced equation of the second order, with Bessel functions in it:
-      // Simplify and the zero tests of the integrals evaluate those at arbitrary precision, and
-      // that does not stop when the time of the equation is up
-      return F.NIL;
-    }
     return slope;
-  }
-
-  /** Whether <code>expr</code> is a function application other than an elementary function. */
-  private static boolean isNonElementary(IExpr expr) {
-    if (!expr.isAST() || !expr.head().isBuiltInSymbol()) {
-      return false;
-    }
-    IExpr head = expr.head();
-    return !(head == S.Plus || head == S.Times || head == S.Power || head == S.Sqrt
-        || head == S.Exp || head == S.Log || head == S.Sin || head == S.Cos || head == S.Tan
-        || head == S.Cot || head == S.Sec || head == S.Csc || head == S.Sinh || head == S.Cosh
-        || head == S.Tanh || head == S.Coth || head == S.Sech || head == S.Csch
-        || head == S.ArcSin || head == S.ArcCos || head == S.ArcTan || head == S.ArcCot
-        || head == S.ArcSinh || head == S.ArcCosh || head == S.ArcTanh || head == S.ArcCoth
-        || head == S.Abs || head == S.Complex || head == S.Rational);
   }
 
   /** <code>expr</code>, or its simplification, if either is free of <code>x</code> and <code>y</code>. */

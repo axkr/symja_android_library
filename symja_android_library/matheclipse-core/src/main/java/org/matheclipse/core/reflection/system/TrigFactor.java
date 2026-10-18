@@ -28,6 +28,13 @@ public class TrigFactor extends AbstractFunctionEvaluator {
    * <code>Cos(6*x)*Sin(6*x)</code>, of degree 11, in 1.8s.
    */
   private static final int TRIG_FACTOR_FINAL_DEGREE_THRESHOLD = 10;
+  /**
+   * Largest leaf count of the <code>TrigExpand()</code> form which PATH B still runs the pipeline
+   * on. Angle sums of several variables multiply out: <code>Sin(2*(k-j-1)*x)/Sin(2*(k-j)*x)</code>
+   * expands to 1126 leaves, <code>Together()</code> makes 18350 of them and <code>TrigReduce()</code>
+   * then needs 20s.
+   */
+  private static final int TRIG_FACTOR_EXPANSION_LEAF_LIMIT = 400;
 
   // Dummies used to shield polynomials from Symja's auto-evaluator during Factor/Together
   private static final ISymbol DSIN = F.Dummy("DSIN");
@@ -72,6 +79,9 @@ public class TrigFactor extends AbstractFunctionEvaluator {
     }
 
     IExpr expanded = engine.evaluate(F.TrigExpand(arg));
+    if (expanded.leafCount() > TRIG_FACTOR_EXPANSION_LEAF_LIMIT) {
+      return resultA;
+    }
     IExpr resultB = trigFactorRunPipeline(expanded, engine);
 
     if (resultB.leafCount() < resultA.leafCount()) {

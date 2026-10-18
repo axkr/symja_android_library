@@ -330,8 +330,15 @@ public final class ErrorFunctionKernel {
   /** Switch between the hyperbolic recurrence and the scaled Gaussian weights. */
   private static final double SALZER_YS = 0.5;
 
-  /** Beyond this <code>Exp(Y^2)</code> overflows. */
+  /**
+   * Beyond this <code>Exp(Y^2)</code> overflows; Salzer's series is still used beyond it for
+   * <code>X &lt; Y</code>, where the asymptotic expansion does not hold: its scaled weights only
+   * form <code>Exp(Y^2 - X^2)</code>.
+   */
   private static final double SALZER_YMAX = 26.0;
+
+  /** Largest <code>Y</code> of Salzer's series: about <code>2*Y</code> terms are summed. */
+  private static final double SALZER_YCAP = 1000.0;
 
   /**
    * <code>Erf(X + I*Y) - Erf(X)</code> for <code>X, Y &gt;= 0</code>,
@@ -409,7 +416,7 @@ public final class ErrorFunctionKernel {
     final double scale = expDD(sch, scl + (eyl - dsl)); // e^(Y^2-X^2) P_n0
     final double ed = Math.exp(-d0);
     // e^(-2Y) = e^(-n0) e^(2 d0); the mirror terms Q_n are negligible once 2Y > 38
-    final double eY2 = SALZER_EXPN[n0] / (ed * ed);
+    final double eY2 = y < 19.0 ? SALZER_EXPN[n0] / (ed * ed) : 0.0;
     double mn0 = 0.0; // e^(-2 n0 Y)
     if (y < 19.0) {
       double b2 = eY2;
@@ -681,13 +688,16 @@ public final class ErrorFunctionKernel {
       out[1] = -out[1];
       return true;
     }
-    if (y > SALZER_YMAX) {
+    if (y > SALZER_YMAX && x >= y) {
       if (!erfcAsymptotic(x, y, out)) {
         return false;
       }
       out[0] = 1.0 - out[0];
       out[1] = -out[1];
       return true;
+    }
+    if (y > SALZER_YCAP) {
+      return false;
     }
     final double[] a = new double[3];
     salzer(x, y, a);
@@ -703,9 +713,17 @@ public final class ErrorFunctionKernel {
    * terms only for <code>|z| &gt; 26</code>. <code>Exp(-z^2)</code> is formed from the exact
    * exponent <code>Y^2-X^2</code> and phase <code>2*X*Y</code>.
    *
-   * @return false if the value overflows
+   * <p>
+   * Only for <code>X &gt;= Y</code>, <code>|Arg(z)| &lt;= Pi/4</code>: beyond that the series
+   * leaves out a subdominant term, the constant <code>1</code> of <code>Erfc(I*Y) == 1 -
+   * I*Erfi(Y)</code> on the imaginary axis, which is all of the real part there.
+   *
+   * @return false if the value overflows or <code>X &lt; Y</code>
    */
   private static boolean erfcAsymptotic(double x, double y, double[] out) {
+    if (x < y) {
+      return false;
+    }
     final double x2 = x * x;
     final double x2l = mulError(x, x, x2);
     final double y2 = y * y;
@@ -826,11 +844,14 @@ public final class ErrorFunctionKernel {
       // erfc(X) - (erf(X + I*Y) - erf(X)): no cancellation against 1 when erfc is small; from
       // X = 27.4 on erfc(X) is below the double range, while the difference carries
       // Exp(Y^2 - X^2) and may still be in it
-      if (ay > SALZER_YMAX) {
+      if (ay > SALZER_YMAX && ax >= ay) {
         if (!erfcAsymptotic(ax, ay, f) || (f[0] == 0.0 && f[1] == 0.0)) {
           return null;
         }
         return finite(f[0], negY ? -f[1] : f[1]);
+      }
+      if (ay > SALZER_YCAP) {
+        return null;
       }
       salzer(ax, ay, f);
       final double fr = erfcRealFast(ax, f[2]) - f[0];

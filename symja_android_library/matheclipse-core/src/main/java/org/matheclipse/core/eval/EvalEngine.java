@@ -259,6 +259,12 @@ public class EvalEngine implements Serializable {
     private final Object fCheckScopes;
     private IExpr fExpr;
     private long fMillis;
+    /**
+     * The deadline of {@link #deadlineClockMillis()}, taken when the work is handed over: the time
+     * limiter starts counting after that, so the deadline has passed when its cancellation
+     * interrupts the evaluation.
+     */
+    private long fDeadlineMillis;
 
     /**
      * Copy the current threads engine state into a new <code>EvalEngine</code> and do the
@@ -276,9 +282,7 @@ public class EvalEngine implements Serializable {
       EvalEngine.set(fEngine);
       Errors.inheritCheckScopes(fCheckScopes);
       try {
-        long timeConstrainedMillis = deadlineClockMillis() + fMillis;
-        // System.out.println("TimeConstrainedMillis: " + timeConstrainedMillis);
-        fEngine.setTimeConstrainedMillis(timeConstrainedMillis);
+        fEngine.setTimeConstrainedMillis(fDeadlineMillis);
         return fEngine.evaluate(fExpr);
       } catch (PreemptingException | ApfloatInterruptedException
           | org.matheclipse.core.eval.exception.TimeoutException
@@ -314,6 +318,7 @@ public class EvalEngine implements Serializable {
     public void setExpr(IExpr fExpr, long millis) {
       this.fExpr = fExpr;
       this.fMillis = millis;
+      this.fDeadlineMillis = deadlineClockMillis() + millis;
     }
   }
   public static class OptionsResult {
@@ -768,6 +773,18 @@ public class EvalEngine implements Serializable {
    * @see #setTimeConstrainedMillis(long)
    */
   transient long fTimeConstrainedMillis = -1;
+
+  /**
+   * The evaluation loop compares the clock with {@link #fTimeConstrainedMillis} once in this many
+   * calls, plus one. The time limiter's interrupt alone doesn't end an evaluation after its time
+   * is up: a blocking call which is interrupted clears the flag, and a watchdog of a stage which
+   * takes the interrupt for its own clears it as well. The abandoned evaluation would run on and
+   * keep the locks it holds, like the one of <code>Integrate</code>, from every later evaluation.
+   */
+  private static final int DEADLINE_CHECK_MASK = 255;
+
+  /** Counts the calls of the evaluation loop for {@link #DEADLINE_CHECK_MASK}. */
+  private transient int fDeadlineTicks;
 
   /** The origin of {@link #deadlineClockMillis()}. */
   private static final long DEADLINE_CLOCK_ORIGIN_NANOS = System.nanoTime();
@@ -3270,6 +3287,10 @@ public class EvalEngine implements Serializable {
     }
     if (Thread.currentThread().isInterrupted()) {
       // check before going one recursion deeper
+      throw TimeoutException.TIMED_OUT;
+    }
+    if (fTimeConstrainedMillis > 0 && (++fDeadlineTicks & DEADLINE_CHECK_MASK) == 0
+        && deadlineClockMillis() > fTimeConstrainedMillis) {
       throw TimeoutException.TIMED_OUT;
     }
 

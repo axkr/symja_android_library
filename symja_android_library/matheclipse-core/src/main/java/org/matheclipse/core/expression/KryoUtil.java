@@ -356,14 +356,24 @@ public class KryoUtil {
         // Write the raw underlying collections directly.
         // Kryo's default FieldSerializer will automatically traverse the PatternMatcher
         // objects inside these lists and preserve all of their internal state.
-        kryo.writeClassAndObject(output, equalDownRulesField.get(rulesData));
+        // the maps are concurrent ones in memory and written as hash maps, as before
+        kryo.writeClassAndObject(output, hashMap(equalDownRulesField.get(rulesData)));
         kryo.writeClassAndObject(output, patternDownRulesField.get(rulesData));
         kryo.writeClassAndObject(output, priorityDownRulesField.get(rulesData));
-        kryo.writeClassAndObject(output, equalUpRulesField.get(rulesData));
+        kryo.writeClassAndObject(output, hashMap(equalUpRulesField.get(rulesData)));
         kryo.writeClassAndObject(output, simplePatternUpRulesField.get(rulesData));
       } catch (Exception e) {
         throw new RuntimeException("Failed to serialize RulesData collections", e);
       }
+    }
+
+    private static Object hashMap(Object map) {
+      return map == null ? null : new java.util.HashMap<Object, Object>((java.util.Map<?, ?>) map);
+    }
+
+    private static Object concurrentMap(Object map) {
+      return map == null ? null
+          : new java.util.concurrent.ConcurrentHashMap<Object, Object>((java.util.Map<?, ?>) map);
     }
 
     @Override
@@ -371,10 +381,10 @@ public class KryoUtil {
       RulesData rulesData = new RulesData();
       try {
         // Restore the exact collections directly into the new RulesData instance
-        equalDownRulesField.set(rulesData, kryo.readClassAndObject(input));
+        equalDownRulesField.set(rulesData, concurrentMap(kryo.readClassAndObject(input)));
         patternDownRulesField.set(rulesData, kryo.readClassAndObject(input));
         priorityDownRulesField.set(rulesData, kryo.readClassAndObject(input));
-        equalUpRulesField.set(rulesData, kryo.readClassAndObject(input));
+        equalUpRulesField.set(rulesData, concurrentMap(kryo.readClassAndObject(input)));
         simplePatternUpRulesField.set(rulesData, kryo.readClassAndObject(input));
       } catch (Exception e) {
         throw new RuntimeException("Failed to deserialize RulesData collections", e);

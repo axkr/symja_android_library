@@ -1632,6 +1632,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
       IExpr fShift = F.xreplace(f, var, F.Plus(var, F.C1));
       return engine.evaluate(F.Divide(fShift, f));
     }
+    if (!isPeriodicShift(f, var, engine)) {
+      return F.NIL;
+    }
     // generic fallback for other hypergeometric factors
     IExpr fShift = F.xreplace(f, var, F.Plus(var, F.C1));
     IExpr r = engine.evaluate(F.Together(F.Simplify(F.Divide(fShift, f))));
@@ -1641,6 +1644,31 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return r;
     }
     return F.NIL;
+  }
+
+  /**
+   * A trigonometric or hyperbolic factor has a rational shift ratio only if the shift
+   * <code>var -&gt; var+1</code> moves its argument by a multiple of the half period, like in
+   * <code>Cos(Pi*var)</code>. For any other argument, like <code>Sin(2*(k-var)*x)</code>, the factor
+   * is no hypergeometric term and <code>Simplify()</code> of its ratio is only wasted time.
+   *
+   * @return <code>false</code> if <code>f</code> is a trigonometric or hyperbolic function whose
+   *         ratio can't be rational, <code>true</code> otherwise
+   */
+  private static boolean isPeriodicShift(IExpr f, ISymbol var, EvalEngine engine) {
+    final IExpr halfPeriod;
+    if (f.isAST1() && f.isTrigFunction()) {
+      halfPeriod = S.Pi;
+    } else if (f.isAST1() && f.isHyperbolicFunction()) {
+      halfPeriod = F.Times(F.CI, S.Pi);
+    } else {
+      return true;
+    }
+    IExpr[] lin = f.first().linear(var);
+    if (lin == null) {
+      return false;
+    }
+    return engine.evaluate(F.Divide(lin[1], halfPeriod)).isInteger();
   }
 
   /**

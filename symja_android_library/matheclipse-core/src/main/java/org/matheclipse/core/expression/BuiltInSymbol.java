@@ -309,7 +309,8 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final RulesData createRulesData(int[] sizes) {
     ensureRulesLoaded();
-    return (fRulesData == null) ? (fRulesData = new RulesData(sizes)) : fRulesData;
+    RulesData rulesData = fRulesData;
+    return rulesData != null ? rulesData : newRulesData(sizes);
   }
 
   /**
