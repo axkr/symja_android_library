@@ -243,10 +243,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolve7X519002() {
     check("Solve(7*x^5-19==0,x) ",
-        "{{x->(19/7)^(1/5)},{x->(-1)^(2/5)*(19/7)^(1/5)},{x->-(-1)^(3/5)*(19/7)^(1/5)},{x->(-\n"
-            + "1)^(4/5)*(19/7)^(1/5)},{x->-(-19)^(1/5)/7^(1/5)}}");
+        "{{x->-(-19/7)^(1/5)},{x->(19/7)^(1/5)},{x->(-1)^(2/5)*(19/7)^(1/5)},{x->-(-1)^(3/\n"
+            + "5)*(19/7)^(1/5)},{x->(-1)^(4/5)*(19/7)^(1/5)}}");
     check("Solve(7*x^5-19==0,x) // N",
-        "{{x->1.22104},{x->0.377323+I*1.16128},{x->0.377323+I*(-1.16128)},{x->-0.987845+I*0.717711},{x->-0.987845+I*(-0.717711)}}");
+        "{{x->-0.987845+I*(-0.717711)},{x->1.22104},{x->0.377323+I*1.16128},{x->0.377323+I*(-1.16128)},{x->-0.987845+I*0.717711}}");
   }
 
   @Test
@@ -3848,5 +3848,32 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // no common factor: as before
     check("Solve({(u - 1)*(u - 2) == 0, (v - 1)*(u + v) == 0}, {u, v})", //
         "{{u->1,v->-1},{u->1,v->1},{u->2,v->-2},{u->2,v->1}}");
+  }
+
+  /**
+   * The roots of a binomial <code>a*t^n+b</code> with numbers <code>a, b</code> are taken of the
+   * one number <code>-b/a</code>: the kernel polynomial <code>-2*I-2*I*t^6</code> of
+   * <code>Cot(x)==Tan(2*x)</code> gave roots like <code>(I*2)^(1/6)/(-I*2)^(1/6)</code>, which
+   * were never reduced to <code>(-1)^(1/6)</code>.
+   */
+  @Test
+  public void testSolveIssue1556() {
+    check("Solve(Cot(x)==Tan(2*x),x)", //
+        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-5/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n"
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+    check("Solve(Cot(x)==Tan(x),x)", //
+        "{{x->ConditionalExpression(-3/4*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "4+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/4+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n"
+            + "3/4*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+    check("Roots(Unevaluated(2*z^6+2==0),z)", //
+        "z==-I||z==I||z==-(-1)^(1/6)||z==(-1)^(1/6)||z==-(-1)^(5/6)||z==(-1)^(5/6)");
+    check("Roots(Unevaluated(-2*I*z^6-2*I==0),z)", //
+        "z==-I||z==I||z==-(-1)^(1/6)||z==(-1)^(1/6)||z==-(-1)^(5/6)||z==(-1)^(5/6)");
+    // the same form as Roots(4*x^6-6==0,x), where Equal divides by 4 first
+    check("Roots(Unevaluated(4*x^6-6==0),x)", //
+        "x==-(3/2)^(1/6)||x==(3/2)^(1/6)||x==(-1)^(1/3)*(3/2)^(1/6)||x==-(-1)^(1/3)*(3/2)^(\n"
+            + "1/6)||x==(-1)^(2/3)*(3/2)^(1/6)||x==-(-1)^(2/3)*(3/2)^(1/6)");
   }
 }

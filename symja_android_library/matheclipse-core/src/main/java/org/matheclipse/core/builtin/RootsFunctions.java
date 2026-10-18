@@ -980,6 +980,12 @@ public class RootsFunctions {
     final EvalEngine engine = EvalEngine.get();
     IExpr rhsNumerator = engine.evaluate(b.negate());
     IExpr rhsDenominator = a;
+    if (a.isNumber() && b.isNumber()) {
+      // one number -b/a: the roots of -2*I-2*I*t^6 are (-1)^(1/6) times roots of unity, not
+      // (I*2)^(1/6)/(-I*2)^(1/6)
+      rhsNumerator = engine.evaluate(F.Divide(rhsNumerator, a));
+      rhsDenominator = F.C1;
+    }
     IASTAppendable result;
     if ((reducedDegree & 0x0001) == 0x0001) {
       // odd
