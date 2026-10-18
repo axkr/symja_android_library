@@ -1035,13 +1035,14 @@ public final class Programming {
           IExpr current = ast.arg2();
           long iterationCounter = 0;
           IExpr last;
+          // the test is given the previous and the new value, in that order
           do {
             last = current;
             current = engine.evaluate(F.Apply(f, F.list(current)));
             if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
               IterationLimitExceeded.throwIt(iterationCounter, ast);
             }
-          } while ((!sameTest.test(current, last)) && (--maxIterations > 0));
+          } while ((!sameTest.test(last, current)) && (--maxIterations > 0));
           return current;
         }
       } finally {
@@ -1168,6 +1169,7 @@ public final class Programming {
 
         long iterationCounter = 0;
         IExpr last;
+        // the test is given the previous and the new value, in that order
         do {
           last = current;
           current = engine.evaluate(F.Apply(f, F.list(current)));
@@ -1176,7 +1178,7 @@ public final class Programming {
           if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
-        } while ((!sameTest.test(current, last)) && (--iterations > 0));
+        } while ((!sameTest.test(last, current)) && (--iterations > 0));
         return list;
       } finally {
         engine.setNumericMode(numericMode);

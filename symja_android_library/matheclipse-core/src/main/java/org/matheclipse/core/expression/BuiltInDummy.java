@@ -463,7 +463,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       if (rightHandSide == null || rightHandSide.isNIL()) {
         return F.NIL;
       }
-      return ISymbol.evalAssignedValue(rightHandSide, engine);
+      return ISymbol.evalAssignedValue(rightHandSide,
+          isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE), engine);
     }
     return F.NIL;
   }

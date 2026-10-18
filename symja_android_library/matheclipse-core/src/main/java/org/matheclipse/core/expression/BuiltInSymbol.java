@@ -413,7 +413,8 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     // one read of the value: see Symbol#evaluate(EvalEngine)
     IExpr rightHandSide = hasAssignedSymbolValue() ? assignedValue() : null;
     if (rightHandSide != null) {
-      return ISymbol.evalAssignedValue(rightHandSide, engine);
+      return ISymbol.evalAssignedValue(rightHandSide,
+          isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE), engine);
     }
     return F.NIL;
   }

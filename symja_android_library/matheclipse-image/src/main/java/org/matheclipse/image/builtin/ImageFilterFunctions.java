@@ -1094,6 +1094,11 @@ public class ImageFilterFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isAST(S.Graphics)) {
+        // the graphics as the image they are drawn to
+        IExpr image = engine.evaluate(F.unaryAST1(S.Rasterize, ast.arg1()));
+        return image instanceof ImageExpr ? engine.evaluate(ast.setAtCopy(1, image)) : F.NIL;
+      }
       if (!(ast.arg1() instanceof ImageExpr)) {
         return F.NIL;
       }

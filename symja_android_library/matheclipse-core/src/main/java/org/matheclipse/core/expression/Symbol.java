@@ -675,7 +675,8 @@ public class Symbol implements ISymbol, Serializable {
       return F.NIL;
     }
     if (rightHandSide != null) {
-      return ISymbol.evalAssignedValue(rightHandSide, engine);
+      return ISymbol.evalAssignedValue(rightHandSide,
+          isEvalFlagOn(SETDELAYED_FLAG_ASSIGNED_VALUE), engine);
     }
     IExpr result = evalDownRule(engine, this);
     if (result.isNIL() && engine.isNumericMode() && fRulesData != null

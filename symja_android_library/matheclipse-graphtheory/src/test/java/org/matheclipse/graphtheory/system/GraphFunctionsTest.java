@@ -58,6 +58,14 @@ public class GraphFunctionsTest extends AbstractTestCase {
   }
 
   @Test
+  public void testTreePlotEdgeLabels() {
+    check("Cases(TreePlot({{1 -> 2, \"left\"}, {1 -> 3, \"right\"}}, Top, 1), Text(l_, ___) :> l, Infinity)", //
+        "{left,right}");
+    check("Count(TreePlot({{1 -> 2, \"left\"}}, Top, 1, EdgeLabeling -> False), _Text, Infinity)", //
+        "0");
+  }
+
+  @Test
   public void testCombinatorsTakeOptions() {
     check(
         "EdgeList(GraphIntersection(CompleteGraph(3), PathGraph({1,2,3}), "

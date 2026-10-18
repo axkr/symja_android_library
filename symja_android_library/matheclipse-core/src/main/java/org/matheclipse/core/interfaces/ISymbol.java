@@ -305,7 +305,20 @@ public interface ISymbol extends IExpr {
   }
 
   public static IExpr evalAssignedValue(IExpr rightHandSide, EvalEngine engine) {
-    if (rightHandSide.isCondition() || rightHandSide.isBlockModuleOrWithCondition()) {
+    return evalAssignedValue(rightHandSide, true, engine);
+  }
+
+  /**
+   * The value of a symbol with the assigned value <code>rightHandSide</code>. A
+   * <code>Condition</code> makes a definition <code>x := v /; test</code> conditional; a value
+   * assigned with <code>x = v /; test</code> is the condition itself, as
+   * <code>Module({z = t /; t &lt;= 0}, z)</code> gives <code>t /; t &lt;= 0</code>.
+   *
+   * @param setDelayed whether the value was assigned with <code>SetDelayed</code>
+   */
+  public static IExpr evalAssignedValue(IExpr rightHandSide, boolean setDelayed,
+      EvalEngine engine) {
+    if ((setDelayed && rightHandSide.isCondition()) || rightHandSide.isBlockModuleOrWithCondition()) {
       boolean evalRHSMode = engine.isEvalRHSMode();
       try {
         engine.setEvalRHSMode(true);

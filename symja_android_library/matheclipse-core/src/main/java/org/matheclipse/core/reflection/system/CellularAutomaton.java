@@ -43,6 +43,10 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           // a sparse initial condition is the list of its cells
           init = ((ISparseArray) init).normal(false);
         }
+        if (init.isList2() && init.first().isSparseArray()) {
+          // {cells, background} with the cells given as a sparse array
+          init = ((IAST) init).setAtCopy(1, ((ISparseArray) init.first()).normal(false));
+        }
 
         // Resolve Named Rules (e.g., "Rule30" -> 30)
         if (rule instanceof IStringX) {

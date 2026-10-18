@@ -2314,6 +2314,13 @@ public final class PatternMatching {
       if (spliced.isPresent()) {
         return spliced;
       }
+      if (isConditionalSymbol(leftHandSide)) {
+        // h /; test = v: the value of h is v (evaluated now) where the test holds
+        IExpr value = engine.evaluate(ast.arg2());
+        engine.evaluate(F.SetDelayed(leftHandSide.first(),
+            conditionalValue((ISymbol) leftHandSide.first(), value, leftHandSide.second())));
+        return value;
+      }
 
       IExpr head = leftHandSide.head();
       // a built-in which takes the assignment itself keeps it, even where the symbol has a value
@@ -2388,6 +2395,31 @@ public final class PatternMatching {
   }
 
 
+  /** Whether <code>lhs</code> is <code>h /; test</code> with a symbol <code>h</code>. */
+  private static boolean isConditionalSymbol(IExpr lhs) {
+    return lhs.isCondition() && lhs.first().isSymbol() && !lhs.first().isBuiltInSymbol();
+  }
+
+  /**
+   * The value of <code>h</code> for a definition <code>h /; test := value</code>: the value where
+   * the test holds, and otherwise the value <code>h</code> had before, which a conditional
+   * definition does not take away. A previous definition with the same test is replaced.
+   */
+  private static IExpr conditionalValue(ISymbol symbol, IExpr value, IExpr test) {
+    IExpr previous = symbol.hasAssignedSymbolValue() ? symbol.assignedValue() : null;
+    if (previous == null || previous.isNIL()
+        || (previous.isCondition() && previous.second().equals(test))) {
+      return F.Condition(value, test);
+    }
+    if (previous.isCondition()) {
+      // two conditional values: the new one where its test holds, then the previous one
+      return F.Condition(F.If(F.TrueQ(test), value, previous.first()),
+          F.Or(test, previous.second()));
+    }
+    // a value without a condition is what remains where the test does not hold
+    return F.If(F.TrueQ(test), value, previous);
+  }
+
   /**
    *
    *
@@ -2457,6 +2489,11 @@ public final class PatternMatching {
       IExpr spliced = spliceSequences(S.SetDelayed, leftHandSide, ast.arg2(), engine);
       if (spliced.isPresent()) {
         return spliced;
+      }
+      if (isConditionalSymbol(leftHandSide)) {
+        // h /; test := v is h := v /; test, a value of h where the test holds
+        return engine.evaluate(F.SetDelayed(leftHandSide.first(),
+            conditionalValue((ISymbol) leftHandSide.first(), ast.arg2(), leftHandSide.second())));
       }
       IExpr head = engine.evaluate(leftHandSide.head());
       IExpr redispatched = assignToEvaluatedHead(S.SetDelayed, leftHandSide, leftHandSide.head(),

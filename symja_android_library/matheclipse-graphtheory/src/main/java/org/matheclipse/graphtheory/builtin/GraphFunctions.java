@@ -689,7 +689,12 @@ public class GraphFunctions {
    *
    * @return <code>F.NIL</code> if <code>list</code> is not such a list
    */
-  private static IAST labelledEdges(IExpr list) {
+  private static boolean isEdge(IExpr edge) {
+    return edge.isRuleAST() || edge.isAST(S.DirectedEdge, 3) || edge.isAST(S.UndirectedEdge, 3)
+        || edge.isAST(S.TwoWayRule, 3);
+  }
+
+  public static IAST labelledEdges(IExpr list) {
     if (!list.isList() || list.argSize() == 0) {
       return F.NIL;
     }
@@ -700,8 +705,8 @@ public class GraphFunctions {
         return F.NIL;
       }
       IExpr edge = item.first();
-      if (!(edge.isRuleAST() || edge.isAST(S.DirectedEdge, 3) || edge.isAST(S.UndirectedEdge, 3)
-          || edge.isAST(S.TwoWayRule, 3))) {
+      if (!isEdge(edge) || isEdge(item.second())) {
+        // {edge1, edge2} is a pair of edges, not an edge with a label
         return F.NIL;
       }
       edges.append(edge);

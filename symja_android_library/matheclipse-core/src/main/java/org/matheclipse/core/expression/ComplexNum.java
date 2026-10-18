@@ -2058,13 +2058,78 @@ public class ComplexNum implements IComplexNum {
       }
       return ZERO;
     }
-    return newInstance(fComplex.pow(((ComplexNum) val).fComplex));
+    Complex exponent = ((ComplexNum) val).fComplex;
+    if (exponent.getImaginary() == 0.0 && Math.rint(exponent.getReal()) == exponent.getReal()
+        && Math.abs(exponent.getReal()) <= MAX_MULTIPLIED_POWER) {
+      Complex power = integerPower(fComplex, (int) exponent.getReal());
+      if (power != null) {
+        return valueOf(power);
+      }
+    }
+    return newInstance(fComplex.pow(exponent));
+  }
+
+  /** The largest integer exponent which is computed by multiplication instead of logarithms. */
+  private static final int MAX_MULTIPLIED_POWER = 1024;
+
+  /**
+   * <code>z^n</code> by squaring and multiplying from the highest bit of <code>n</code> down, with
+   * the plain products of the parts and Smith's division for a negative <code>n</code>. That keeps
+   * the last digits of a small power, which the way through the logarithm loses:
+   * <code>(0.3+0.2*I)^3</code> has the imaginary part <code>0.046</code>, not
+   * <code>0.04599999999999999</code>.
+   *
+   * @return <code>null</code> if a product overflows, where the way through the logarithm is
+   *         taken: <code>(1.0*^200 + 1.0*^200*I)^-2</code> is tiny, not <code>NaN</code>
+   */
+  private static Complex integerPower(Complex z, int n) {
+    final int exponent = Math.abs(n);
+    if (exponent == 0) {
+      return Complex.ONE;
+    }
+    final double zRe = z.getReal();
+    final double zIm = z.getImaginary();
+    double re = zRe;
+    double im = zIm;
+    for (int bit = Integer.highestOneBit(exponent) >> 1; bit > 0; bit >>= 1) {
+      double squareRe = re * re - im * im;
+      double squareIm = re * im + im * re;
+      re = squareRe;
+      im = squareIm;
+      if ((exponent & bit) != 0) {
+        double productRe = re * zRe - im * zIm;
+        double productIm = re * zIm + im * zRe;
+        re = productRe;
+        im = productIm;
+      }
+    }
+    if (!Double.isFinite(re) || !Double.isFinite(im)) {
+      return null;
+    }
+    if (n > 0) {
+      return new Complex(re, im);
+    }
+    // 1/(re + im*I) by Smith's method
+    if (Math.abs(re) >= Math.abs(im)) {
+      double ratio = im / re;
+      double denominator = re + im * ratio;
+      return new Complex(1.0 / denominator, -ratio / denominator);
+    }
+    double ratio = re / im;
+    double denominator = re * ratio + im;
+    return new Complex(ratio / denominator, -1.0 / denominator);
   }
 
   @Override
   public IExpr pow(int n) {
     if (n == (-1)) {
       return inverse();
+    }
+    if (Math.abs(n) <= MAX_MULTIPLIED_POWER) {
+      Complex power = integerPower(fComplex, n);
+      if (power != null) {
+        return valueOf(power);
+      }
     }
     return valueOf(fComplex.pow(n));
   }

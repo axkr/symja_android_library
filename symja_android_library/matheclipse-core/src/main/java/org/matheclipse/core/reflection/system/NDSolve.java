@@ -258,6 +258,11 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
 
+      // y(t /; t <= t0) == h(t): a delay differential equation with its history
+      IExpr delayed = NDSolveDelay.solve(ast, timeVar, tMin, tMax, engine, ruleForm);
+      if (delayed.isPresent()) {
+        return delayed;
+      }
       FirstOrderSystem system = reduceToFirstOrder(ast, timeVar, engine);
       if (system == null) {
         return F.NIL;

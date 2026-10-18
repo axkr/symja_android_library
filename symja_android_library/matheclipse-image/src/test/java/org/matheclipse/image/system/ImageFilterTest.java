@@ -70,6 +70,19 @@ public class ImageFilterTest extends AbstractTestCase {
   }
 
   @Test
+  public void testBinarizeFunctionAndDistanceTransformGraphics() {
+    // the function gets the value of a gray pixel and the channels of a colour pixel
+    check("ImageData(Binarize(Image({{0.2, 0.5, 0.7}}), # >= 0.5 &))", //
+        "{{0.0,1.0,1.0}}");
+    check("ImageData(Binarize(Image({{{0.2, 0.9, 0}, {0.8, 0.1, 0}}}), #[[2]] > 0.5 &))", //
+        "{{1.0,0.0}}");
+    // graphics are rasterized first
+    check("g = Graphics({Black, Rectangle()}); "
+        + "ImageDimensions(DistanceTransform(g)) == ImageDimensions(Rasterize(g))", //
+        "True");
+  }
+
+  @Test
   public void testConvolveAndCorrelate1() {
     // the convolution reflects the kernel, the correlation doesn't
     check("delta = Image({{0., 1., 0.}}); {ImageData(ImageConvolve(delta, {{1, 2, 3}})), "

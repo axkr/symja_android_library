@@ -23,11 +23,30 @@ public class TreePlot extends AbstractFunctionOptionEvaluator {
 
   public TreePlot() {}
 
+  /** <code>EdgeLabeling -&gt; False</code> turns the labels of a labelled edge list off. */
+  private static boolean edgeLabeling(IAST ast) {
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr option = ast.get(i);
+      if (option.isRuleAST() && option.first().isSymbol()
+          && ((ISymbol) option.first()).getSymbolName().equalsIgnoreCase("EdgeLabeling")) {
+        return !option.second().isFalse();
+      }
+    }
+    return true;
+  }
+
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
 
     IExpr arg1 = ast.arg1();
+    IAST labelled = org.matheclipse.graphtheory.builtin.GraphFunctions.labelledEdges(arg1);
+    if (labelled.isPresent()) {
+      // {{edge1, label1}, ...}: the edges, with their labels unless EdgeLabeling -> False
+      arg1 = engine.evaluate(edgeLabeling(originalAST)
+          ? F.binaryAST2(S.Graph, labelled.first(), F.Rule(S.EdgeLabels, labelled.second()))
+          : F.unaryAST1(S.Graph, labelled.first()));
+    }
     GraphExpr<?> graphExpr = GraphExpr.newInstance(arg1);
     if (graphExpr == null) {
       return F.NIL;

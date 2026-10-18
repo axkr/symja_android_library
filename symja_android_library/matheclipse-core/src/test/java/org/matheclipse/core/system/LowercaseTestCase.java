@@ -13032,6 +13032,69 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFixedPointSameTestOrder() {
+    // the test is given the previous and the new value
+    check("FixedPointList(# + 2 &, 0, 10, SameTest -> (#1 > 4 &))", //
+        "{0,2,4,6,8}");
+    check("FixedPointList(# + 2 &, 0, 10, SameTest -> (#2 > 4 &))", //
+        "{0,2,4,6}");
+    check("FixedPoint(# + 2 &, 0, 10, SameTest -> (#1 > 4 &))", //
+        "8");
+  }
+
+  @Test
+  public void testMachineComplexIntegerPower() {
+    // multiplied, not taken through the logarithm
+    check("{(0.3 + 0.2*I)^3, (0.3 + 0.2*I)^-2, (1.1 + 0.7*I)^7} // InputForm", //
+        "{-0.009000000000000005`+I*0.046`,2.9585798816568047`+I*(-7.100591715976332`),-4.344269600000003`+I*(-4.7075672`)}");
+    // a product which overflows is left to the logarithm: the power is tiny, not NaN
+    check("(1.*^200 + 1.*^200*I)^-2", //
+        "0.0");
+  }
+
+  @Test
+  public void testConditionValues() {
+    // a value assigned with Set is the condition itself
+    check("Module({w = s /; s > 1}, w) // InputForm", //
+        "s/;s>1");
+    check("Block({w = s /; s > 1}, Head(w))", //
+        "Condition");
+    // a condition on the left side of a definition of a symbol
+    check("p /; 3 > 2 := 11; p", //
+        "11");
+    check("q /; 2 > 3 := 11; q", //
+        "q");
+    check("r /; 3 > 2 = 12; r", //
+        "12");
+    // a conditional definition keeps the value the symbol had where its test fails
+    check("u = 5; u /; 2 > 3 := 13; u", //
+        "5");
+    check("c1 = False; c2 = True; k /; c1 := 1; k /; c2 := 2; {k, c2 = False; k, c1 = True; k}", //
+        "{2,1,1}");
+  }
+
+  @Test
+  public void testNDSolveDelay() {
+    // y'(t) == -y(t - 1) with the history 1: 1-t on [0, 1], then the next piece
+    check("s = NDSolve({w'(t) == -w(t - 1), w(t /; t <= 0) == 1}, w, {t, 0, 2}); "
+        + "Round({w(0.5), w(1.5), w(2.)} /. s, 10^-9)", //
+        "{{1/2,-3/8,-1/2}}");
+    check("s = NDSolve({v'(t) == -v(t - 1/2) + Sin(t), v(t /; t <= 0) == Cos(t)}, v, {t, 0, 3}); "
+        + "Abs(First(v(3.) /. s) - 0.6074414486033842) < 10^-6", //
+        "True");
+    check("s = NDSolve({x'(t) == -y(t - 1), y'(t) == x(t - 1/2), x(t /; t <= 0) == 1, "
+        + "y(t /; t <= 0) == 0}, {x, y}, {t, 0, 2}); Chop(({x(2.), y(2.)} /. s) - {{1/2, 95/48}}, 10^-9)", //
+        "{{0,0}}");
+  }
+
+  @Test
+  public void testCellularAutomatonSparseCells() {
+    check("CellularAutomaton(30, {SparseArray({3 -> 1}, 5), 0}, 2) == "
+        + "CellularAutomaton(30, {{0, 0, 1, 0, 0}, 0}, 2)", //
+        "True");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Enhance;
@@ -69,6 +70,42 @@ public class ImageAdjustFunctions {
   }
 
   /**
+   * <code>Binarize(image, f)</code>: white where <code>f</code> gives <code>True</code> for the
+   * pixel, its value for a gray image and the list of its channels otherwise.
+   */
+  private static IExpr binarizeByFunction(ImageExpr image, IExpr f, EvalEngine engine) {
+    double[][][] channels = ImageFilterFunctions.channels(image, engine);
+    if (channels == null) {
+      return F.NIL;
+    }
+    final int height = channels[0].length;
+    final int width = channels[0][0].length;
+    final boolean[][] white = new boolean[height][width];
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        IExpr pixel;
+        if (channels.length == 1) {
+          pixel = F.num(channels[0][y][x]);
+        } else {
+          IASTAppendable values = F.ListAlloc(channels.length);
+          for (double[][] channel : channels) {
+            values.append(F.num(channel[y][x]));
+          }
+          pixel = values;
+        }
+        IExpr test = engine.evaluate(F.unaryAST1(f, pixel));
+        if (!test.isTrue() && !test.isFalse()) {
+          // no decision, as for a symbol without a definition: the call stays as it is
+          return F.NIL;
+        }
+        white[y][x] = test.isTrue();
+      }
+    }
+    return new ImageExpr(Pixels.fromPixels(width, height, 1,
+        (x, y) -> new float[] {white[y][x] ? 255.0f : 0.0f}), null);
+  }
+
+  /**
    * <code>Binarize(image)</code> - a black and white image, split at
    * <code>FindThreshold(image)</code>. <code>Binarize(image, t)</code> splits at <code>t</code> and
    * <code>Binarize(image, {t1, t2})</code> keeps the samples inside the range.
@@ -77,6 +114,10 @@ public class ImageAdjustFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 2 && ast.arg1() instanceof ImageExpr
+          && (ast.arg2().isFunction() || (ast.arg2().isSymbol() && !ast.arg2().isNumericFunction()))) {
+        return binarizeByFunction((ImageExpr) ast.arg1(), ast.arg2(), engine);
+      }
       BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
       if (image == null) {
         return F.NIL;
