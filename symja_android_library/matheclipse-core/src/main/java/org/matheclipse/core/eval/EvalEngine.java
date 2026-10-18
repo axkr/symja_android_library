@@ -4372,24 +4372,11 @@ public class EvalEngine implements Serializable {
 
   /**
    * The evaluation modes which built-in functions switch for a part of an evaluation and switch
-   * back when that part ends. When a time limit cuts the part short, the switching back isn't always
-   * reached; {@link TimeLimits} restores them.
+   * back when that part ends, as bits. When a time limit cuts the part short, the switching back
+   * isn't always reached; {@link TimeLimits} restores them with
+   * {@link #restoreModes(int, int, long, int)}.
    */
-  static final class EvalModes {
-    final int flags;
-    final int conditionDepth;
-    final long precision;
-    final int significantFigures;
-
-    EvalModes(int flags, int conditionDepth, long precision, int significantFigures) {
-      this.flags = flags;
-      this.conditionDepth = conditionDepth;
-      this.precision = precision;
-      this.significantFigures = significantFigures;
-    }
-  }
-
-  EvalModes saveModes() {
+  int modeFlags() {
     int flags = 0;
     flags |= fNumericMode ? 1 : 0;
     flags |= fTogetherMode ? 2 : 0;
@@ -4402,11 +4389,19 @@ public class EvalEngine implements Serializable {
     flags |= fEvalPatternMatcherMode ? 256 : 0;
     flags |= fPrecisionLimitQuiet ? 512 : 0;
     flags |= fMachineFallback ? 1024 : 0;
-    return new EvalModes(flags, fConditionDepth, getNumericPrecision(), fSignificantFigures);
+    return flags;
   }
 
-  void restoreModes(EvalModes modes) {
-    final int flags = modes.flags;
+  /** The nesting depth of rule conditions, which {@link TimeLimits} restores with the modes. */
+  int conditionDepth() {
+    return fConditionDepth;
+  }
+
+  /**
+   * Restore the modes {@link #modeFlags()}, the condition depth, and the numeric precision and
+   * significant figures.
+   */
+  void restoreModes(int flags, int conditionDepth, long precision, int significantFigures) {
     fNumericMode = (flags & 1) != 0;
     fTogetherMode = (flags & 2) != 0;
     fExpandCoefficientsMode = (flags & 4) != 0;
@@ -4418,12 +4413,13 @@ public class EvalEngine implements Serializable {
     fEvalPatternMatcherMode = (flags & 256) != 0;
     fPrecisionLimitQuiet = (flags & 512) != 0;
     fMachineFallback = (flags & 1024) != 0;
-    fConditionDepth = modes.conditionDepth;
-    if (getNumericPrecision() != modes.precision) {
-      setNumericPrecision(modes.precision);
+    fConditionDepth = conditionDepth;
+    if (getNumericPrecision() != precision) {
+      setNumericPrecision(precision);
     }
-    fSignificantFigures = modes.significantFigures;
+    fSignificantFigures = significantFigures;
   }
+
 
   /**
    * A checkpoint of the time limits for a loop in a built-in function, which may run without

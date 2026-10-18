@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.BuiltinFunctionCalls;
 import org.matheclipse.core.expression.F;
@@ -319,9 +320,16 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   public void testIntegrateIssue1528() {
     // did not return: the rules of a nested Integrate ran without their time budget, inside a
     // polynomial GCD which neither ended nor looked at the interrupt flag. The timeout interrupts
-    // this thread, so a relapse fails here instead of holding up the whole tier.
-    check("Integrate(Sin(Cos(Tan(x))),{x,1,3})", //
-        "Integrate(Sin(Cos(Tan(x))),{x,1,3})");
+    // this thread, so a relapse fails here instead of holding up the whole tier. What is tested is
+    // that the budgets end it, not how long they are: a tenth of them saves 20 seconds.
+    double scale = MachineProfile.getScale();
+    MachineProfile.setScale(scale / 10.0);
+    try {
+      check("Integrate(Sin(Cos(Tan(x))),{x,1,3})", //
+          "Integrate(Sin(Cos(Tan(x))),{x,1,3})");
+    } finally {
+      MachineProfile.setScale(scale);
+    }
   }
 
   @Test

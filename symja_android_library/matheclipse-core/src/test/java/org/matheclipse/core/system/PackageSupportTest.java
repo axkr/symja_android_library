@@ -388,7 +388,7 @@ public class PackageSupportTest extends ExprEvaluatorTestCase {
   public void testSecondTimeConstrainedStillStops() {
     check("TimeConstrained(1 + 1, 5)", //
         "2");
-    check("TimeConstrained(While(True), 1, stopped)", //
+    check("TimeConstrained(While(True), 0.05, stopped)", //
         "stopped");
   }
 

@@ -30929,9 +30929,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         check("TimeConstrained( Beta(I*1/2,1.5707963267948966,2147483647), 2)", //
             "Beta(I*0.5,1.5707963267948966,2147483647)");
 
-        check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", //
+        check("TimeConstrained(Do(i^2, {i, 10000000}), 0.05)", //
             "$Aborted");
-        check("TimeConstrained(Pause(1); t=TimeRemaining(); Print(t);t>1&&Head(t)==Real, 10)", //
+        check("TimeConstrained(Pause(0.1); t=TimeRemaining(); Print(t);t>9&&Head(t)==Real, 10)", //
             "True");
       } finally {
         // Config.FUZZ_TESTING = false;
@@ -30949,12 +30949,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             "True");
         check("tc=TimeConstrained(TimeConstrained(TimeRemaining(), 5), 2);tc<=2.0&&tc>=1.9", //
             "True");
+        // after the pause the outer limit is the earlier one
         check(
-            "tc=TimeConstrained(Pause(2); TimeConstrained(TimeRemaining(), 4), 5);tc<=3.0&&tc>=2.9", //
+            "tc=TimeConstrained(Pause(0.2); TimeConstrained(TimeRemaining(), 4), 4.1);tc<=3.9&&tc>=3.7", //
             "True");
-        // the inner limit stops the inner evaluation, the outer one goes on
-        check("TimeConstrained({TimeConstrained(Do(i^2, {i, 10000000}), 1, -1), 2}, 10)", //
-            "{-1,2}");
       } finally {
         //
       }

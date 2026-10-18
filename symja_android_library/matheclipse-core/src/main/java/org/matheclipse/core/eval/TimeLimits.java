@@ -83,8 +83,11 @@ public final class TimeLimits {
     /** The enclosing frame of the same thread, or <code>null</code>. */
     final Frame parent;
     final Thread thread;
-    /** The evaluation modes when the frame began. */
-    final EvalEngine.EvalModes modes;
+    /** The evaluation modes when the frame began, see {@link EvalEngine#modeFlags()}. */
+    final int modeFlags;
+    final int conditionDepth;
+    final long precision;
+    final int significantFigures;
     private ScheduledFuture<?> watchdog;
     /** Guarded by <code>this</code>: the frame has ended, its watchdog must not interrupt. */
     private boolean closed;
@@ -93,12 +96,19 @@ public final class TimeLimits {
     /** The interrupt of a watchdog of a frame inside this one, which was left to this one. */
     private boolean pending;
 
-    Frame(long deadline, long enclosing, Frame parent, EvalEngine.EvalModes modes) {
+    Frame(long deadline, long enclosing, Frame parent, EvalEngine engine) {
       this.deadline = deadline;
       this.enclosing = enclosing;
       this.parent = parent;
       this.thread = Thread.currentThread();
-      this.modes = modes;
+      this.modeFlags = engine.modeFlags();
+      this.conditionDepth = engine.conditionDepth();
+      this.precision = engine.getNumericPrecision();
+      this.significantFigures = engine.getSignificantFigures();
+    }
+
+    void restoreModes(EvalEngine engine) {
+      engine.restoreModes(modeFlags, conditionDepth, precision, significantFigures);
     }
 
     /** Whether an enclosing limit has passed - a timeout is then the enclosing one's. */
@@ -174,11 +184,14 @@ public final class TimeLimits {
    */
   public static IExpr evaluateOrNil(IExpr expr, long millis) {
     final EvalEngine engine = EvalEngine.get();
-    final EvalEngine.EvalModes modes = engine.saveModes();
+    final int modeFlags = engine.modeFlags();
+    final int conditionDepth = engine.conditionDepth();
+    final long precision = engine.getNumericPrecision();
+    final int significantFigures = engine.getSignificantFigures();
     try {
       return call(engine, () -> engine.evaluate(expr), millis, () -> F.NIL);
     } catch (LimitException le) {
-      engine.restoreModes(modes);
+      engine.restoreModes(modeFlags, conditionDepth, precision, significantFigures);
       return F.NIL;
     }
   }
@@ -222,7 +235,7 @@ public final class TimeLimits {
       parent = null;
       enclosing = -1L;
     }
-    final Frame frame = new Frame(deadline, enclosing, parent, engine.saveModes());
+    final Frame frame = new Frame(deadline, enclosing, parent, engine);
     engine.fTimeLimitFrame = frame;
     engine.fTimeConstrainedMillis = earliest(deadline, enclosing);
     if ((enclosing <= 0 || deadline < enclosing) && deadline < NO_DEADLINE
@@ -246,7 +259,7 @@ public final class TimeLimits {
 
   /** This frame's limit ran out: restore the modes, end the frame, answer the timeout value. */
   private static <T> T timeout(EvalEngine engine, Frame frame, Supplier<T> onTimeout) {
-    engine.restoreModes(frame.modes);
+    frame.restoreModes(engine);
     pop(engine, frame);
     return onTimeout.get();
   }

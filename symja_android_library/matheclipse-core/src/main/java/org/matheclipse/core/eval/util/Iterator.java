@@ -6,7 +6,6 @@ import static org.matheclipse.core.expression.F.Subtract;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -202,7 +201,7 @@ public class Iterator {
     @Override
     public IExpr next() {
       // a loop like Table(0, {10^10}) doesn't pass the evaluation loop
-      TimeLimits.check();
+      evalEngine.checkTimeLimit();
       if (variable != null && variable != count) {
         variable.assignValue(count, false);
       }
@@ -393,7 +392,7 @@ public class Iterator {
     @Override
     public IExpr next() {
       // a loop like Table(0, {10^10}) doesn't pass the evaluation loop
-      TimeLimits.check();
+      evalEngine.checkTimeLimit();
       if (variable != null && variable != count) {
         variable.assignValue(count, false);
       }
@@ -477,6 +476,9 @@ public class Iterator {
       }
     }
 
+    /** The engine of the evaluation the iterator runs in, for its time limit checkpoint. */
+    final EvalEngine engine = EvalEngine.get();
+
     RangeIterator(final ISymbol variable) {
       this.variable = variable;
     }
@@ -524,7 +526,7 @@ public class Iterator {
     @Override
     public IExpr next() {
       // a loop like Table(0, {10^10}) doesn't pass the evaluation loop
-      TimeLimits.check();
+      engine.checkTimeLimit();
       final IExpr temp = current();
       if (variable != null) {
         variable.assignValue(temp, false);
