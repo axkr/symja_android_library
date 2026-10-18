@@ -371,8 +371,10 @@ public class PackageSupportTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testToFileName() {
+    // joined with the separator of the platform: a\b\c.m on Windows
+    final String s = java.io.File.separator;
     check("{ToFileName({\"a\", \"b\"}, \"c.m\"), ToFileName(\"a\", \"c.m\")}", //
-        "{a/b/c.m,a/c.m}");
+        "{a" + s + "b" + s + "c.m,a" + s + "c.m}");
   }
 
   @Test
