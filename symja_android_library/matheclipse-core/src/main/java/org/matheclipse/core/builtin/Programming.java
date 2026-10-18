@@ -928,6 +928,7 @@ public final class Programming {
               try {
                 iter.next();
                 doIt(input);
+                fEngine.checkTimeLimit();
                 if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
                   IterationLimitExceeded.throwIt(iterationCounter, input);
                 }
@@ -1039,6 +1040,7 @@ public final class Programming {
           do {
             last = current;
             current = engine.evaluate(F.Apply(f, F.list(current)));
+            engine.checkTimeLimit();
             if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
               IterationLimitExceeded.throwIt(iterationCounter, ast);
             }
@@ -1175,6 +1177,7 @@ public final class Programming {
           current = engine.evaluate(F.Apply(f, F.list(current)));
           list.append(current);
 
+          engine.checkTimeLimit();
           if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
@@ -1287,11 +1290,13 @@ public final class Programming {
         } catch (final BreakException e) {
           return S.Null;
         } catch (final ContinueException e) {
+          engine.checkTimeLimit();
           if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }
           // as in While: a Return leaves the loop and the function around it
         }
+        engine.checkTimeLimit();
         if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
           IterationLimitExceeded.throwIt(iterationCounter, ast);
         }
@@ -3114,18 +3119,6 @@ public final class Programming {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final int argSize = ast.argSize();
       if (argSize >= 2 && argSize <= 3) {
-        long s = engine.getSeconds();
-        if (s > 0 || Config.TIMECONSTRAINED_NO_THREAD) {
-          // no new thread should be spawned
-          if (ast.isAST3()) {
-            // `1`.
-            // Errors.printMessage(S.TimeConstrained, "error",
-            // F.List("Single thread mode: default expression " + ast.arg3() + " will be ignored"),
-            // engine);
-          }
-          return engine.evaluate(ast.arg1());
-        }
-
         IExpr arg2 = engine.evaluate(ast.arg2());
         if (arg2.isInfinity()) {
           // no time limit
@@ -3787,6 +3780,7 @@ public final class Programming {
       while (engine.evalTrue(test)) {
         try {
           engine.evaluateNIL(body);
+          engine.checkTimeLimit();
           if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
             IterationLimitExceeded.throwIt(iterationCounter, ast);
           }

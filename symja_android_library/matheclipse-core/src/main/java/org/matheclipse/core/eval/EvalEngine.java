@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -102,8 +100,6 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.SimpleTimeLimiter;
-import com.google.common.util.concurrent.TimeLimiter;
 import edu.jas.kern.PreemptingException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.annotation.Nonnull;
@@ -293,74 +289,6 @@ public class EvalEngine implements Serializable {
 
   private static final long STAMP_NUMERIC_MODE = 2L;
 
-  private static class EvalControlledCallable implements Callable<IExpr> {
-    private final EvalEngine fEngine;
-    /** The enclosing <code>Check</code>s of the calling thread, which see the messages. */
-    private final Object fCheckScopes;
-    private IExpr fExpr;
-    private long fMillis;
-    /**
-     * The deadline of {@link #deadlineClockMillis()}, taken when the work is handed over: the time
-     * limiter starts counting after that, so the deadline has passed when its cancellation
-     * interrupts the evaluation.
-     */
-    private long fDeadlineMillis;
-
-    /**
-     * Copy the current threads engine state into a new <code>EvalEngine</code> and do the
-     * calculation in this <code>Callable</code> with the new <code>EvalEngine</code>.
-     *
-     * @param engine
-     */
-    public EvalControlledCallable(EvalEngine engine) {
-      fEngine = engine.copy();
-      fCheckScopes = Errors.checkScopes();
-    }
-
-    @Override
-    public IExpr call() {
-      EvalEngine.set(fEngine);
-      Errors.inheritCheckScopes(fCheckScopes);
-      try {
-        fEngine.setTimeConstrainedMillis(fDeadlineMillis);
-        return fEngine.evaluate(fExpr);
-      } catch (PreemptingException | ApfloatInterruptedException
-          | org.matheclipse.core.eval.exception.TimeoutException
-          | com.google.common.util.concurrent.UncheckedTimeoutException e) {
-        if (Config.DEBUG) {
-          System.out
-              .println("TimeConstrained evaluation failed: " + fExpr + "\nmillis: " + fMillis);
-        }
-        // Errors.printMessage(S.TimeConstrained, e, fEngine);
-        return S.$Aborted;
-      } catch (final RecursionLimitExceeded | ASTElementLimitExceeded re) {
-        throw re;
-      } catch (final ValidateException ve) {
-        //
-      } catch (Exception | OutOfMemoryError | StackOverflowError ex) {
-        Errors.printMessage(S.TimeConstrained, ex, fEngine);
-        if (Config.FUZZ_TESTING) {
-          throw ex;
-        }
-      } finally {
-        fEngine.setTimeConstrainedMillis(-1);
-        Errors.clearCheckScopes();
-        EvalEngine.remove();
-      }
-      return S.$Aborted;
-    }
-
-    // public void cancel() {
-    // fEngine.stopRequest();
-    // // thread.stop();
-    // }
-
-    public void setExpr(IExpr fExpr, long millis) {
-      this.fExpr = fExpr;
-      this.fMillis = millis;
-      this.fDeadlineMillis = deadlineClockMillis() + millis;
-    }
-  }
   public static class OptionsResult {
     public IAST result;
     public int argSize;
@@ -811,14 +739,14 @@ public class EvalEngine implements Serializable {
   private transient volatile boolean fAbortRequested = false;
 
   /**
-   * The time in milliseconds of {@link #deadlineClockMillis()} the current
-   * {@link S#TimeConstrained} operation should stop. <code>
-   * -1</code> is set for Infinity. For nested {@link S#TimeConstrained} calls the earliest time
-   * constraint is used in {@link S#TimeRemaining}.
-   *
-   * @see #setTimeConstrainedMillis(long)
+   * The earliest deadline of the time limits of this engine, in milliseconds of
+   * {@link #deadlineClockMillis()}; <code>-1</code> for none. {@link TimeLimits} maintains it,
+   * {@link #evalLoop(IExpr)}, {@link #checkTimeLimit()} and {@link S#TimeRemaining} read it.
    */
   transient long fTimeConstrainedMillis = -1;
+
+  /** The innermost time limit of this engine, see {@link TimeLimits}. */
+  transient TimeLimits.Frame fTimeLimitFrame;
 
   /**
    * The evaluation loop compares the clock with {@link #fTimeConstrainedMillis} once in this many
@@ -845,8 +773,6 @@ public class EvalEngine implements Serializable {
   public static long deadlineClockMillis() {
     return (System.nanoTime() - DEADLINE_CLOCK_ORIGIN_NANOS) / 1_000_000L + 1L;
   }
-
-  transient long fSeconds;
 
   /**
    * if <code>true</code> the engine evaluates in &quot;numeric&quot; mode, otherwise the engine
@@ -1685,7 +1611,6 @@ public class EvalEngine implements Serializable {
     engine.fRecursionCounter = 0;
     engine.fRecursionLimit = fRecursionLimit;
     engine.fRelaxedSyntax = fRelaxedSyntax;
-    engine.fSeconds = fSeconds;
     engine.fTimeConstrainedMillis = fTimeConstrainedMillis;
     // the constants C(k) go on counting in the copy: a Solve in a TimeConstrained worker named
     // its integer family C(1), the constant DSolve already had
@@ -4431,88 +4356,88 @@ public class EvalEngine implements Serializable {
    *         longer than <code>seconds</code>.
    */
   public IExpr evalTimeConstrained(final IExpr expr, IExpr defaultValue, long seconds) {
-    return evalTimeConstrainedMillis(expr, defaultValue, seconds * 1000L);
+    return evalTimeConstrainedMillis(expr, defaultValue, TimeLimits.millis(seconds));
   }
 
   /**
    * Like {@link #evalTimeConstrained(IExpr, IExpr, long)}, with the time limit in milliseconds -
-   * <code>TimeConstrained(expr, 0.3)</code> stops after 0.3 seconds .
-   *
-   * <p>
-   * The engine's time constraint stays set afterwards, so a later <code>TimeConstrained</code> of
-   * the same evaluation runs inline without a limit of its own. That is a known limitation, and
-   * deliberately kept: Rubi's rules call <code>TimeConstrained</code> while
-   * <code>Symbol.evalDownRule</code> holds the symbol's lock, and a worker thread started there
-   * which needs the same rules blocks - a timed out one kept blocking every later evaluation.
+   * <code>TimeConstrained(expr, 0.3)</code> stops after 0.3 seconds. The evaluation runs on this
+   * thread, under the earlier of this limit and the ones it is nested in, see {@link TimeLimits}.
    *
    * @param millis the time in milliseconds; a value greater than 0 is expected
    */
   public IExpr evalTimeConstrainedMillis(final IExpr expr, IExpr defaultValue, long millis) {
-    TimeConstrainedExecutor executor = TimeConstrainedExecutor.create();
-    // the deadline belongs to this call: left in the engine, every later TimeConstrained of the
-    // session took it for an enclosing one and evaluated without any time limit
-    final long callerSeconds = fSeconds;
-    try {
-      TimeLimiter timeLimiter = SimpleTimeLimiter.create(executor.service());
-      // the engine keeps whole seconds for TimeRemaining and nesting; an enclosing, shorter
-      // constraint wins
-      long seconds = Math.max(1L, (millis + 999L) / 1000L);
-      long allowedSeconds = setSeconds(seconds);
-      if (allowedSeconds < seconds) {
-        millis = allowedSeconds * 1000L;
-      }
-      // copied after the deadline is set: a TimeConstrained inside the worker has to see that it
-      // is nested and evaluate in the worker. A thread of its own would wait for the locks of the
-      // symbols whose rules the worker is in the middle of, and the worker waits for it.
-      EvalControlledCallable work = new EvalControlledCallable(this);
-      work.setExpr(expr, millis);
-      IExpr result = timeLimiter.callWithTimeout(work, millis, TimeUnit.MILLISECONDS);
-      // the constants the worker created are taken - read only after it returned, which orders the
-      // read after its writes; a timed out worker's result, and with it its constants, is dropped
-      fConstantCounter = Math.max(fConstantCounter, work.fEngine.fConstantCounter);
-      return result;
-    } catch (org.matheclipse.core.eval.exception.TimeoutException
-        | java.util.concurrent.TimeoutException
-        | com.google.common.util.concurrent.UncheckedTimeoutException e) {
-      if (Config.FUZZ_TESTING) {
-        System.err.println("TIMEOUT: " + expr);
-        // e.printStackTrace();
-        Throwable cause = e.getCause();
-        if (cause != null && !(cause instanceof FlowControlException)) {
-          cause.printStackTrace();
-          throw fuzzSignal(cause);
-        }
-      }
-      // e.printStackTrace();
-      Errors.printMessage(S.TimeConstrained, e, this);
-      if (defaultValue.isPresent()) {
-        return defaultValue;
-      }
-      return S.$Aborted;
-    } catch (InterruptedException e) {
-      // This can happen if the task itself was interrupted before the timeout,
-      // or if the main thread was interrupted while waiting for the result.
-      Errors.rethrowsInterruptException(e);
-      return S.$Aborted;
-    } catch (Exception e) {
-      if (Config.FUZZ_TESTING) {
-        System.err.println("TIMECONSTRAINED exception: " + expr);
-        Throwable cause = e.getCause();
-        e.printStackTrace();
-        if (cause != null && !(cause instanceof FlowControlException)) {
-          cause.printStackTrace();
-          throw fuzzSignal(cause);
-        }
-      }
-      // Appengine example: com.google.apphosting.api.DeadlineExceededException
-      Errors.printMessage(S.TimeConstrained, e, this);
-      if (defaultValue.isPresent()) {
-        return defaultValue;
-      }
-      return S.Null;
-    } finally {
-      fSeconds = callerSeconds;
-      executor.dispose();
+    return TimeLimits.evaluate(expr, millis, defaultValue, this);
+  }
+
+  /**
+   * The evaluation modes which built-in functions switch for a part of an evaluation and switch
+   * back when that part ends. When a time limit cuts the part short, the switching back isn't always
+   * reached; {@link TimeLimits} restores them.
+   */
+  static final class EvalModes {
+    final int flags;
+    final int conditionDepth;
+    final long precision;
+    final int significantFigures;
+
+    EvalModes(int flags, int conditionDepth, long precision, int significantFigures) {
+      this.flags = flags;
+      this.conditionDepth = conditionDepth;
+      this.precision = precision;
+      this.significantFigures = significantFigures;
+    }
+  }
+
+  EvalModes saveModes() {
+    int flags = 0;
+    flags |= fNumericMode ? 1 : 0;
+    flags |= fTogetherMode ? 2 : 0;
+    flags |= fExpandCoefficientsMode ? 4 : 0;
+    flags |= fNoSimplifyMode ? 8 : 0;
+    flags |= fEvalLHSMode ? 16 : 0;
+    flags |= fEvalRHSMode ? 32 : 0;
+    flags |= fDisabledTrigRules ? 64 : 0;
+    flags |= fQuietMode ? 128 : 0;
+    flags |= fEvalPatternMatcherMode ? 256 : 0;
+    flags |= fPrecisionLimitQuiet ? 512 : 0;
+    flags |= fMachineFallback ? 1024 : 0;
+    return new EvalModes(flags, fConditionDepth, getNumericPrecision(), fSignificantFigures);
+  }
+
+  void restoreModes(EvalModes modes) {
+    final int flags = modes.flags;
+    fNumericMode = (flags & 1) != 0;
+    fTogetherMode = (flags & 2) != 0;
+    fExpandCoefficientsMode = (flags & 4) != 0;
+    fNoSimplifyMode = (flags & 8) != 0;
+    fEvalLHSMode = (flags & 16) != 0;
+    fEvalRHSMode = (flags & 32) != 0;
+    fDisabledTrigRules = (flags & 64) != 0;
+    fQuietMode = (flags & 128) != 0;
+    fEvalPatternMatcherMode = (flags & 256) != 0;
+    fPrecisionLimitQuiet = (flags & 512) != 0;
+    fMachineFallback = (flags & 1024) != 0;
+    fConditionDepth = modes.conditionDepth;
+    if (getNumericPrecision() != modes.precision) {
+      setNumericPrecision(modes.precision);
+    }
+    fSignificantFigures = modes.significantFigures;
+  }
+
+  /**
+   * A checkpoint of the time limits for a loop in a built-in function, which may run without
+   * passing {@link #evalLoop(IExpr)} - <code>While(True)</code> evaluates nothing. Throws
+   * {@link TimeoutException} if the thread was interrupted, or if the earliest deadline of
+   * {@link TimeLimits} has passed.
+   */
+  public final void checkTimeLimit() {
+    if (Thread.currentThread().isInterrupted()) {
+      throw TimeoutException.TIMED_OUT;
+    }
+    if (fTimeConstrainedMillis > 0 && (++fDeadlineTicks & DEADLINE_CHECK_MASK) == 0
+        && deadlineClockMillis() > fTimeConstrainedMillis) {
+      throw TimeoutException.TIMED_OUT;
     }
   }
 
@@ -5185,9 +5110,7 @@ public class EvalEngine implements Serializable {
     return rememberMap.get(key);
   }
 
-  public long getSeconds() {
-    return fSeconds;
-  }
+
 
   public long getSeed() {
     return fRandomSeed;
@@ -5331,7 +5254,6 @@ public class EvalEngine implements Serializable {
     fTraceMode = false;
     fTraceStack = null;
     // fCopiedEngine = null;
-    fSeconds = 0;
     fModifiedVariablesList = null;
     fMessageShortcut = null;
     machineUnderflow().newCalculation();
@@ -6343,21 +6265,7 @@ public class EvalEngine implements Serializable {
     this.fRelaxedSyntax = fRelaxedSyntax;
   }
 
-  /**
-   * Set the time in seconds then the current {@link S#TimeConstrained} operation should stop. For
-   * nested {@link S#TimeConstrained} calls the earliest time constraint is used to calculate the
-   * {@link S#TimeRemaining}.
-   * 
-   * @param seconds
-   * @return the time constraint in seconds which is set for this evaluation engine
-   */
-  public long setSeconds(long seconds) {
-    if (fSeconds > 0 && seconds > fSeconds) {
-      return this.fSeconds;
-    }
-    this.fSeconds = seconds;
-    return this.fSeconds;
-  }
+
 
   public void setSeed(long seed) {
     fRandomSeed = seed;
@@ -6393,21 +6301,6 @@ public class EvalEngine implements Serializable {
   public void setStepListener(IEvalStepListener stepListener) {
     setTraceMode(stepListener != null);
     fTraceStack = stepListener;
-  }
-
-  /**
-   * Set the time in milliseconds of {@link #deadlineClockMillis()} then the current
-   * TimeConstrained operation should stop. <code>-1
-   * </code> is set for Infinity. For nested {@link S#TimeConstrained} calls the earliest time
-   * constraint is used in {@link S#TimeRemaining}
-   *
-   * @param timeConstrainedMillis
-   */
-  public void setTimeConstrainedMillis(final long timeConstrainedMillis) {
-    if (fTimeConstrainedMillis > 0 && timeConstrainedMillis > fTimeConstrainedMillis) {
-      return;
-    }
-    fTimeConstrainedMillis = timeConstrainedMillis;
   }
 
   /**

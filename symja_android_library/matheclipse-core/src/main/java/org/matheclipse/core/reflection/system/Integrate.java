@@ -309,6 +309,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         return F.NIL;
       }
       IExpr result = evaluateIntegrate(holdallAST, argSize, option, engine, originalAST);
+      if (result.isPresent() && !result.isFree(S.$Aborted, true)
+          && holdallAST.isFree(S.$Aborted, true)) {
+        // a step which ran out of time answered $Aborted: that is no integral, and a definite
+        // integral took $Aborted-$Aborted for 0
+        return F.NIL;
+      }
       if (depth > 0) {
         // A sub-integral a Rubi rule asked for must not come back as a bare RootSum: it is a
         // construct the rules have never seen. Handing one back corrupts the answer - SubstAux's
@@ -1606,7 +1612,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   private static boolean isFiniteLimit(IExpr value) {
-    return value.isPresent() && value.isFree(S.Limit, true) && value.isIndeterminateFree()
+    // a Limit which ran out of time answers $Aborted
+    return value.isPresent() && value.isFree(S.Limit, true) && value.isFree(S.$Aborted, true)
+        && value.isIndeterminateFree()
         && value.isFree(y -> y.isDirectedInfinity() || y.isConditionalExpression(), true);
   }
 

@@ -6,6 +6,7 @@ import static org.matheclipse.core.expression.F.Subtract;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -200,6 +201,8 @@ public class Iterator {
      */
     @Override
     public IExpr next() {
+      // a loop like Table(0, {10^10}) doesn't pass the evaluation loop
+      TimeLimits.check();
       if (variable != null && variable != count) {
         variable.assignValue(count, false);
       }
@@ -389,6 +392,8 @@ public class Iterator {
      */
     @Override
     public IExpr next() {
+      // a loop like Table(0, {10^10}) doesn't pass the evaluation loop
+      TimeLimits.check();
       if (variable != null && variable != count) {
         variable.assignValue(count, false);
       }
@@ -518,6 +523,8 @@ public class Iterator {
 
     @Override
     public IExpr next() {
+      // a loop like Table(0, {10^10}) doesn't pass the evaluation loop
+      TimeLimits.check();
       final IExpr temp = current();
       if (variable != null) {
         variable.assignValue(temp, false);

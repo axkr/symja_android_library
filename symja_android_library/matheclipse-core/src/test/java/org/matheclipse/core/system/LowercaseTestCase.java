@@ -30952,6 +30952,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         check(
             "tc=TimeConstrained(Pause(2); TimeConstrained(TimeRemaining(), 4), 5);tc<=3.0&&tc>=2.9", //
             "True");
+        // the inner limit stops the inner evaluation, the outer one goes on
+        check("TimeConstrained({TimeConstrained(Do(i^2, {i, 10000000}), 1, -1), 2}, 10)", //
+            "{-1,2}");
       } finally {
         //
       }

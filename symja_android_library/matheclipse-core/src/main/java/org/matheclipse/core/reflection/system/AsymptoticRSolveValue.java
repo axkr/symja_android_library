@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -133,15 +134,8 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         // Time-boxed: Series of special sequences (Fibonacci, LucasL) or exponential growth
         // at Infinity can grind through the series/limit machinery without terminating; a
         // bounded attempt that ends in $Aborted is treated like a failed Series below.
-        // evalTimeConstrained sets the engine's deadline without restoring it, so save it.
-        final long savedSeconds = engine.getSeconds();
-        IExpr seriesRes;
-        try {
-          seriesRes =
-              engine.evalTimeConstrained(F.Series(exactSol, seriesSpec), seriesBudget);
-        } finally {
-          engine.setSeconds(savedSeconds);
-        }
+        IExpr seriesRes =
+            TimeLimits.evaluateOrNil(F.Series(exactSol, seriesSpec), seriesBudget * 1000L);
 
         // Use a robust check: If Series evaluates successfully, it drops the S.Series head
         if (seriesRes.isPresent() && seriesRes != S.$Aborted && !seriesRes.isAST(S.Series)) {
@@ -220,27 +214,17 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         // asymptotic series does not exist, and the series/limit machinery grinds for
         // minutes exploring it instead of failing. A bounded attempt that ends in $Aborted
         // is treated exactly like an unevaluated Series: give up and return F.NIL.
-        // evalTimeConstrained sets the engine's deadline without restoring it, so save it.
-        final long oldSeconds = engine.getSeconds();
-        IExpr seriesN;
-        try {
-          seriesN = engine.evalTimeConstrained(
-              F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))), seriesBudget);
-
-          if (seriesN.isAST(S.Series)) {
-            // If Series initially fails, attempt a simplification first
-            IExpr simplified =
-                engine.evalTimeConstrained(F.Simplify(subbed), seriesBudget);
-            if (simplified == S.$Aborted || simplified.isNIL()) {
-              return F.NIL;
-            }
-            subbed = simplified;
-            seriesN = engine.evalTimeConstrained(
-                F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))),
-                seriesBudget);
+        IExpr seriesN = TimeLimits.evaluateOrNil(
+            F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))), seriesBudget * 1000L);
+        if (seriesN.isAST(S.Series)) {
+          // If Series initially fails, attempt a simplification first
+          IExpr simplified = TimeLimits.evaluateOrNil(F.Simplify(subbed), seriesBudget * 1000L);
+          if (simplified == S.$Aborted || simplified.isNIL()) {
+            return F.NIL;
           }
-        } finally {
-          engine.setSeconds(oldSeconds);
+          subbed = simplified;
+          seriesN = TimeLimits.evaluateOrNil(
+              F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))), seriesBudget * 1000L);
         }
 
         // Catch unevaluated/failed/aborted Series expansions involving non-polynomial

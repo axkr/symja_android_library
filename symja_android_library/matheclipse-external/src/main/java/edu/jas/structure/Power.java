@@ -10,6 +10,8 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import edu.jas.kern.PreemptingException;
+
 
 /**
  * Power class to compute powers of RingElem.
@@ -219,6 +221,7 @@ public class Power<C extends RingElem<C>> {
         C p = fac.getONE();
         long i = n;
         do {
+            checkInterrupted();
             if (i % 2 == 1) {
                 p = p.multiply(b);
             }
@@ -242,6 +245,20 @@ public class Power<C extends RingElem<C>> {
      * @param fac monoid factory.
      * @return a^n mod m, with a^{-n} = {1/a}^n.
      */
+    /**
+     * Symja: a modular power of a polynomial of high degree is a long chain of products and
+     * remainders - the equal degree factorization spent minutes in it after a time limit had run
+     * out - so its loops look at the interrupt flag. The flag is left set, as in
+     * <code>PolyUtil.checkInterrupted()</code>.
+     * @throws PreemptingException if the current thread has been interrupted.
+     */
+    static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new PreemptingException("power interrupted");
+        }
+    }
+
+
     public static <C extends MonoidElem<C>> C modPower(MonoidFactory<C> fac, C a, long n, C m) {
         if (n == 0) {
             if (fac == null) {
@@ -318,6 +335,7 @@ public class Power<C extends RingElem<C>> {
         C p = fac.getONE();
         java.math.BigInteger i = n;
         do {
+            checkInterrupted();
             if (i.testBit(0)) {
                 p = p.multiply(b).remainder(m);
             }

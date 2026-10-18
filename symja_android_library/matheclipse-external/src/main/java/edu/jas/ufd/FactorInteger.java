@@ -497,6 +497,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
             //System.out.println("j = " + j + ", dl = " + dl + ", lift = " + lift); 
             KsubSet<GenPolynomial<MOD>> ps = new KsubSet<GenPolynomial<MOD>>(lift, j);
             for (List<GenPolynomial<MOD>> flist : ps) {
+                PolyUtil.checkInterrupted(); // Symja: the recombination is exponential
                 //System.out.println("degreeSum = " + degreeSum(flist));
                 if (!D.get((int) FactorInteger.<MOD> degreeSum(flist))) {
                     logger.info("skipped by degree set {}, deg = {}", D, degreeSum(flist));
@@ -608,6 +609,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
             //System.out.println("j = " + j + ", dl = " + dl + ", ilist = " + ilist); 
             KsubSet<GenPolynomial<MOD>> ps = new KsubSet<GenPolynomial<MOD>>(mlist, j);
             for (List<GenPolynomial<MOD>> flist : ps) {
+                PolyUtil.checkInterrupted(); // Symja: the recombination is exponential
                 //System.out.println("degreeSum = " + degreeSum(flist));
                 if (!D.get((int) FactorInteger.<MOD> degreeSum(flist))) {
                     logger.info("skipped by degree set {}, deg = {}", D, degreeSum(flist));
@@ -1429,6 +1431,7 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
             //System.out.println("j = " + j + ", dl = " + dl + ", mlift = " + mlift); 
             KsubSet<GenPolynomial<MOD>> subs = new KsubSet<GenPolynomial<MOD>>(mlift, j);
             for (List<GenPolynomial<MOD>> flist : subs) {
+                PolyUtil.checkInterrupted(); // Symja: the recombination is exponential
                 //System.out.println("degreeSum = " + degreeSum(flist));
                 GenPolynomial<MOD> mtrial = Power.<GenPolynomial<MOD>> multiply(mfac, flist);
                 if (mtrial.degree() > deg) { // this test is sometimes wrong

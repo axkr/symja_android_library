@@ -509,6 +509,9 @@ public class ExprEvaluator {
         if (fExpr != null) {
           EvalControlledCallable work = call == null ? new EvalControlledCallable(fEngine) : call;
           work.setExpr(fExpr);
+          // the evaluation ends itself at the limit; the time limiter only gets the caller back
+          // from code which doesn't look at the clock or the interrupt flag
+          work.setTimeLimitMillis(timeUnit.toMillis(timeoutDuration));
           work.setNumericPrecision(fEngine.getNumericPrecision());
           try {
             F.await();

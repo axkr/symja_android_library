@@ -3,6 +3,7 @@ package org.matheclipse.core.integrate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -290,8 +291,8 @@ public final class DiffUnderIntegral {
   private static IExpr constantRatio(IExpr f, IExpr shape, IExpr x, EvalEngine engine) {
     IExpr ratio = engine.evaluate(F.Cancel(F.Together(F.Divide(f, shape))));
     if (!ratio.isFree(x, true)) {
-      ratio = engine.evalTimeConstrained(F.Simplify(F.PowerExpand(F.Divide(f, shape))),
-          MachineProfile.seconds(STEP_SECONDS));
+      ratio = TimeLimits.evaluateOrNil(F.Simplify(F.PowerExpand(F.Divide(f, shape))),
+          MachineProfile.seconds(STEP_SECONDS) * 1000L);
     }
     if (ratio.isNIL() || !ratio.isFree(x, true) || ratio.isZero() || ratio.isIndeterminate()
         || !ratio.isFree(S.Integrate, true)) {
@@ -473,8 +474,8 @@ public final class DiffUnderIntegral {
     // or the evaluation having gone wrong, not the rule being misapplied.
     IExpr residual = engine.evaluate(F.Together(F.Subtract(F.D(value, parameter), inner)));
     if (!residual.isZero()) {
-      residual = engine.evalTimeConstrained(F.Simplify(residual),
-          MachineProfile.seconds(STEP_SECONDS));
+      residual = TimeLimits.evaluateOrNil(F.Simplify(residual),
+          MachineProfile.seconds(STEP_SECONDS) * 1000L);
       if (residual.isNIL() || !residual.isZero()) {
         return F.NIL;
       }

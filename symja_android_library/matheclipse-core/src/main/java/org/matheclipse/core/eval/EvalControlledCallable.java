@@ -4,6 +4,7 @@ import java.util.concurrent.Callable;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.eval.exception.TimeoutException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -27,12 +28,36 @@ public class EvalControlledCallable implements Callable<IExpr> {
     this.fExpr = fExpr;
   }
 
+  /** The limit of the host for the whole input, <code>0</code> for none. */
+  private long fTimeLimitMillis;
+
+  /**
+   * Evaluate under a limit of the host for the whole input, as the innermost time limit of the
+   * engine: a <code>TimeConstrained</code> in the input nests in it, the evaluation loop and the
+   * watchdog of {@link TimeLimits} end the evaluation on this thread when it runs out, and
+   * <code>TimeRemaining()</code> sees it.
+   *
+   * @param millis the limit in milliseconds, <code>0</code> for none
+   */
+  public void setTimeLimitMillis(long millis) {
+    this.fTimeLimitMillis = millis;
+  }
+
   /**
    * The numeric precision the parser determined for the expression, which the engine reset in
    * {@link #call()} would otherwise forget.
    */
   public void setNumericPrecision(long numericPrecision) {
     this.fNumericPrecision = numericPrecision;
+  }
+
+  /** Evaluate the input, through <code>$PreRead</code> if it is set. */
+  private IExpr evaluateInput() {
+    IExpr preRead = S.$PreRead.assignedValue();
+    if (preRead != null && preRead.isPresent()) {
+      return fEngine.evaluate(F.unaryAST1(preRead, fExpr));
+    }
+    return fEngine.evaluate(fExpr);
   }
 
   @Override
@@ -47,14 +72,13 @@ public class EvalControlledCallable implements Callable<IExpr> {
     final StringBuilder buf = new StringBuilder();
     try {
       // fEngine.reset();<>
-      IExpr preRead = S.$PreRead.assignedValue();
       IExpr temp;
       try {
-        if (preRead != null && preRead.isPresent()) {
-          temp = fEngine.evaluate(F.unaryAST1(preRead, fExpr));
-        } else {
-          temp = fEngine.evaluate(fExpr);
-        }
+        temp = fTimeLimitMillis > 0 //
+            ? TimeLimits.call(fEngine, this::evaluateInput, fTimeLimitMillis, () -> {
+              throw TimeoutException.TIMED_OUT;
+            }) //
+            : evaluateInput();
       } catch (final IterationLimitExceeded e) {
         // Iteration limit of `1` exceeded.
         int iterationLimit = e.getIterationLimit();

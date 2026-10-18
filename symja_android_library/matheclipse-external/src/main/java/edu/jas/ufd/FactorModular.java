@@ -92,6 +92,7 @@ public class FactorModular<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         Power<GenPolynomial<MOD>> pow = new Power<GenPolynomial<MOD>>(pfac);
         long d = 0;
         while (d + 1 <= f.degree(0) / 2) {
+            PolyUtil.checkInterrupted(); // Symja: a time limit ends the factorization
             d++;
             h = pow.modPower(h, m, f);
             g = engine.gcd(h.subtract(x), f);
@@ -155,6 +156,7 @@ public class FactorModular<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         //System.out.println("d = " + d);
         d = d.shiftRight(1); // divide by 2
         do {
+            PolyUtil.checkInterrupted(); // Symja: a time limit ends the factorization
             if (p2) {
                 h = t;
                 for (int i = 1; i < degi; i++) {
