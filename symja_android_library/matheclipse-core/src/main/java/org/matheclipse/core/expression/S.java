@@ -3029,6 +3029,15 @@ public class S {
       S.initFinalSymbol("CapitalDifferentialD", ID.CapitalDifferentialD);
 
   /**
+   * Capitalize(x) - TODO describe `Capitalize`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Capitalize.md">Capitalize
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Capitalize = S.initFinalSymbol("Capitalize", ID.Capitalize);
+
+  /**
    * CapsuleShape(x) - TODO describe `CapsuleShape`.
    * 
    * @see <a href=
@@ -5517,6 +5526,16 @@ public class S {
    */
   public final static IBuiltInSymbol DeBruijnSequence =
       S.initFinalSymbol("DeBruijnSequence", ID.DeBruijnSequence);
+
+  /**
+   * Decapitalize(x) - TODO describe `Decapitalize`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Decapitalize.md">Decapitalize
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Decapitalize =
+      S.initFinalSymbol("Decapitalize", ID.Decapitalize);
 
   /**
    * DecimalForm(x) - TODO describe `DecimalForm`.
@@ -22887,6 +22906,16 @@ public class S {
    */
   public final static IBuiltInSymbol StringCount = S.initFinalSymbol("StringCount", ID.StringCount);
 
+  /**
+   * StringDelete(x) - TODO describe `StringDelete`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringDelete.md">StringDelete
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StringDelete =
+      S.initFinalSymbol("StringDelete", ID.StringDelete);
+
   public final static IBuiltInSymbol StringDrop = S.initFinalSymbol("StringDrop", ID.StringDrop);
 
   /**
@@ -23031,6 +23060,16 @@ public class S {
       S.initFinalSymbol("StringReplace", ID.StringReplace);
 
   /**
+   * StringReplaceList(x) - TODO describe `StringReplaceList`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringReplaceList.md">StringReplaceList
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StringReplaceList =
+      S.initFinalSymbol("StringReplaceList", ID.StringReplaceList);
+
+  /**
    * StringReplacePart(x) - TODO describe `StringReplacePart`.
    * 
    * @see <a href=
@@ -23062,6 +23101,26 @@ public class S {
       S.initFinalSymbol("StringRiffle", ID.StringRiffle);
 
   /**
+   * StringRotateLeft(x) - TODO describe `StringRotateLeft`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringRotateLeft.md">StringRotateLeft
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StringRotateLeft =
+      S.initFinalSymbol("StringRotateLeft", ID.StringRotateLeft);
+
+  /**
+   * StringRotateRight(x) - TODO describe `StringRotateRight`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringRotateRight.md">StringRotateRight
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StringRotateRight =
+      S.initFinalSymbol("StringRotateRight", ID.StringRotateRight);
+
+  /**
    * StringSplit(str) - split the string `str` by whitespaces into a list of strings.
    * 
    * @see <a href=
@@ -23081,6 +23140,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol StringTake = S.initFinalSymbol("StringTake", ID.StringTake);
+
+  /**
+   * StringTakeDrop(x) - TODO describe `StringTakeDrop`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/StringTakeDrop.md">StringTakeDrop
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol StringTakeDrop =
+      S.initFinalSymbol("StringTakeDrop", ID.StringTakeDrop);
 
   /**
    * StringTemplate(string) - gives a `StringTemplate` expression with name `string`.
