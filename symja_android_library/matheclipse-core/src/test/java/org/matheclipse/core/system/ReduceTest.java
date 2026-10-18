@@ -803,6 +803,85 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * An inequality with a root is reduced by raising it to the power of the root, under the
+   * conditions which make that an equivalence: the radicand is nonnegative, and so is the value
+   * the root is compared with.
+   */
+  @Test
+  public void testReduceRadicalInequality() {
+    // the other side is a number
+    check("Reduce(Sqrt(x) >= 3, x, Reals)", //
+        "x>=9");
+    check("Reduce(Sqrt(x) > 3, x, Reals)", //
+        "x>9");
+    check("Reduce(Sqrt(x) < 2, x, Reals)", //
+        "x>=0&&x<4");
+    check("Reduce(Sqrt(x) <= 2, x, Reals)", //
+        "x>=0&&x<=4");
+    check("Reduce(Sqrt(x) > -1, x, Reals)", //
+        "x>=0");
+    check("Reduce(Sqrt(x) < -1, x, Reals)", //
+        "False");
+    check("Reduce(Sqrt(x) <= 0, x, Reals)", //
+        "x==0");
+    check("Reduce(Sqrt(x) > 0, x, Reals)", //
+        "x>0");
+    check("Reduce(Sqrt(x - 1) <= 2, x, Reals)", //
+        "x>=1&&x<=5");
+    check("Reduce(Sqrt(x^2 - 4) > 1, x, Reals)", //
+        "x<-Sqrt(5)||x>Sqrt(5)");
+    check("Reduce(4 - 2*Sqrt(x) > 0, x, Reals)", //
+        "x>=0&&x<4");
+    check("Reduce(Sqrt(1/x) > 2, x, Reals)", //
+        "x>0&&x<1/4");
+    // nested roots, removed one at a time
+    check("Reduce(Sqrt(Sqrt(x) - 3) >= 0, x, Reals)", //
+        "x>=9");
+    check("Reduce(Sqrt((Sqrt(x) - 3)/4) >= 0, x, Reals)", //
+        "x>=9");
+    check("Reduce(Sqrt(Sqrt(x) - 1) < 1, x, Reals)", //
+        "x>=1&&x<4");
+    // other roots: the principal x^(1/3) is real only for x>=0, Surd(x,3) for every x
+    check("Reduce(x^(1/3) > 2, x, Reals)", //
+        "x>8");
+    check("Reduce(x^(1/3) > -1, x, Reals)", //
+        "x>=0");
+    check("Reduce(Surd(x, 3) > -2, x, Reals)", //
+        "x>-8");
+    check("Reduce(CubeRoot(x) <= -2, x, Reals)", //
+        "x<=-8");
+    check("Reduce(Surd(x, 3) == -2, x, Reals)", //
+        "x==-8");
+    check("Reduce(1/Sqrt(x) < 2, x, Reals)", //
+        "x>1/4");
+    check("Reduce(x^(3/2) > 8, x, Reals)", //
+        "x>4");
+    // the other side depends on x: its sign is part of the conditions
+    check("Reduce(Sqrt(x + 3) > x + 1, x, Reals)", //
+        "x>=-3&&x<1");
+    check("Reduce(Sqrt(x + 3) < x + 1, x, Reals)", //
+        "x>1");
+    check("Reduce(x - 3*Sqrt(x) + 2 > 0, x, Reals)", //
+        "(x>=0&&x<1)||x>4");
+    // two roots
+    check("Reduce(Sqrt(x) + Sqrt(x - 1) > 2, x, Reals)", //
+        "x>25/16");
+    check("Reduce(Sqrt(x + 1) - Sqrt(x) < 1/2, x, Reals)", //
+        "x>9/16");
+    // a conjunction of two radical inequalities
+    check("Reduce(Sqrt(x) > 1 && Sqrt(x) < 2, x, Reals)", //
+        "x>1&&x<4");
+    // a parameter: the case split, never an assumed sign
+    check("Reduce(Sqrt(x) > a, x, Reals)", //
+        "(a<0&&x>=0)||(a>=0&&x>a^2)");
+    // not reduced: no rewritten form is returned instead
+    check("Reduce(Sqrt(x) > Sin(x), x, Reals)", //
+        "Sqrt(x)>Sin(x)");
+    check("Reduce(Sqrt(x) > x^(3/2) - 1, x, Reals)", //
+        "Sqrt(x)>-1+x^(3/2)");
+  }
+
+  /**
    * A radical equation is inverted by raising it to the power of the root; a solution which the
    * principal root doesn't take is dropped again.
    */

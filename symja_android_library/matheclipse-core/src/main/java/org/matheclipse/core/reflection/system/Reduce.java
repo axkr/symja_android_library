@@ -2437,6 +2437,232 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Reduce a condition over the reals whose relations contain a root of the variable. Every order
+   * relation with a root <code>R</code> - and every equation with a real odd root
+   * <code>Surd(u,q)</code> - is rewritten into conditions without <code>R</code>, see
+   * {@link #rewriteRadicalRelation(IAST, IExpr, EvalEngine)}, and the result is reduced again,
+   * which removes the next root: <code>Sqrt(Sqrt(x)-3)&gt;=0</code> becomes
+   * <code>Sqrt(x)-3&gt;=0</code> and then <code>x&gt;=9</code>.
+   *
+   * @param expr the condition of the reduction
+   * @param variable the (single, real) variable
+   * @return the reduced condition, or {@link F#NIL} if no relation was rewritten or the rewritten
+   *         condition isn't reduced
+   */
+  private static IExpr reduceRadicalRelations(IExpr expr, IExpr variable, SolveOptions options,
+      EvalEngine engine) {
+    IExpr rewritten = rewriteRadicalRelations(expr, variable, engine);
+    if (rewritten.isNIL()) {
+      return F.NIL;
+    }
+    rewritten = engine.evaluate(rewritten);
+    if (rewritten.isTrue() || rewritten.isFalse()) {
+      return rewritten;
+    }
+    IExpr reduced = reduceRecursive(rewritten, variable, S.Reals, options, engine);
+    // a Reduce which doesn't get further returns its condition: the rewritten form is no answer
+    return isSolvedForParameters(reduced, variable) ? reduced : F.NIL;
+  }
+
+  /**
+   * Test if <code>expr</code> is <code>True</code>, <code>False</code>, or a boolean combination
+   * of relations <code>variable OP value</code> with a <code>value</code> free of the variable and
+   * of relations which don't contain the variable - the conditions on the parameters.
+   */
+  private static boolean isSolvedForParameters(IExpr expr, IExpr variable) {
+    if (expr.isTrue() || expr.isFalse()) {
+      return true;
+    }
+    if (expr.isAnd() || expr.isOr()) {
+      return ((IAST) expr).forAll(x -> isSolvedForParameters(x, variable));
+    }
+    if (expr.isAST2() && (expr.isComparatorFunction() || expr.isAST(S.Element))) {
+      return expr.isFree(variable, true)
+          || (expr.first().equals(variable) && expr.second().isFree(variable, true));
+    }
+    return false;
+  }
+
+  /** Apply {@link #rewriteRadicalRelation} to every relation of a boolean combination. */
+  private static IExpr rewriteRadicalRelations(IExpr expr, IExpr variable, EvalEngine engine) {
+    if (expr.isAnd() || expr.isOr() || expr.isNot() || expr.isList()) {
+      IAST booleanAST = (IAST) expr;
+      IASTMutable result = F.NIL;
+      for (int i = 1; i < booleanAST.size(); i++) {
+        IExpr rewritten = rewriteRadicalRelations(booleanAST.get(i), variable, engine);
+        if (rewritten.isPresent()) {
+          if (result.isNIL()) {
+            result = booleanAST.copy();
+          }
+          result.set(i, rewritten);
+        }
+      }
+      return result;
+    }
+    if (expr.isAST2() && !expr.isFree(variable, true)) {
+      return rewriteRadicalRelation((IAST) expr, variable, engine);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Rewrite a relation <code>amplitude*R + rest op 0</code> with a root <code>R</code> of the
+   * variable and a real number <code>amplitude</code> as <code>R op v</code>,
+   * <code>v = -rest/amplitude</code>, and that into conditions without <code>R</code>:
+   * <ul>
+   * <li>the principal root <code>R = u^e</code> with a positive fraction <code>e</code> is real
+   * exactly for <code>u&gt;=0</code>, and then it is <code>&gt;=0</code> and increasing:
+   * <code>R&gt;v</code> is <code>(u&gt;=0&amp;&amp;v&lt;0)||(v&gt;=0&amp;&amp;u&gt;v^(1/e))</code>,
+   * <code>R&lt;v</code> is <code>u&gt;=0&amp;&amp;v&gt;0&amp;&amp;u&lt;v^(1/e)</code>;</li>
+   * <li><code>u^e</code> with a negative fraction <code>e</code> is real exactly for
+   * <code>u&gt;0</code>, and then it is positive and decreasing;</li>
+   * <li><code>Surd(u,q)</code> with an odd <code>q</code> is real for every real <code>u</code>
+   * and increasing: <code>Surd(u,q) op v</code> is <code>u op v^q</code>, also for an
+   * equation.</li>
+   * </ul>
+   * The sign conditions on <code>v</code> stay, so that a parameter is never assumed to have a
+   * sign, and they carry the domain of the other roots in <code>v</code>. An equation with a
+   * principal root is left to {@link #reduceRadicalEquation}.
+   *
+   * @return the conditions, or {@link F#NIL} if the relation has no such root, or if the
+   *         conditions don't have fewer roots than the relation
+   */
+  private static IExpr rewriteRadicalRelation(IAST relation, IExpr variable, EvalEngine engine) {
+    final boolean isEqual = relation.isEqual();
+    if (!isEqual && !relation.isAST(S.Less) && !relation.isAST(S.LessEqual)
+        && !relation.isAST(S.Greater) && !relation.isAST(S.GreaterEqual)) {
+      return F.NIL;
+    }
+    final Set<IExpr> before = radicals(relation, variable);
+    if (before.isEmpty()) {
+      return F.NIL;
+    }
+    final IExpr f = engine.evaluate(F.Expand(F.Subtract(relation.arg1(), relation.arg2())));
+    if (f.has(x -> x.isComplex() || x.isComplexNumeric(), false)) {
+      return F.NIL;
+    }
+    final IAST terms = f.isPlus() ? (IAST) f : F.Plus(f);
+    for (int i = 1; i < terms.size(); i++) {
+      final IExpr term = terms.get(i);
+      if (term.isFree(variable)) {
+        continue;
+      }
+      IExpr amplitude = F.C1;
+      IExpr root = term;
+      if (term.isTimes()) {
+        IAST[] timesFilter = ((IAST) term).filter(x -> x.isFree(variable));
+        amplitude = timesFilter[0].oneIdentity1();
+        root = timesFilter[1].oneIdentity1();
+      }
+      final boolean isSurd = root.isAST(S.Surd, 3) && root.second().isInteger()
+          && root.second().toIntDefault() >= 3 && (root.second().toIntDefault() & 1) == 1;
+      final boolean isPower = root.isPower() && root.exponent().isFraction();
+      if (!(isSurd || isPower) || root.first().isFree(variable) || (isEqual && !isSurd)) {
+        continue;
+      }
+      final boolean negative = amplitude.isNegativeResult();
+      if (!amplitude.isNumericFunction() || !(negative || amplitude.isPositiveResult())) {
+        continue;
+      }
+      final IExpr u = root.first();
+      final IExpr v =
+          engine.evaluate(F.Divide(F.Negate(terms.removeAtCopy(i).oneIdentity0()), amplitude));
+      // R op v, with op reversed for a negative amplitude
+      final IBuiltInSymbol head = (IBuiltInSymbol) relation.head();
+      final IBuiltInSymbol op = negative ? reversedRelation(head) : head;
+      IExpr conditions;
+      if (isSurd) {
+        conditions = F.binaryAST2(op, u, F.Power(v, root.second()));
+      } else {
+        final IRational e = (IRational) root.exponent();
+        if (!e.numerator().abs().isOne() && !v.isFree(variable)) {
+          // u^(q/p) of a v with the variable would be a new root
+          return F.NIL;
+        }
+        conditions = radicalConditions(op, u, e, v);
+      }
+      conditions = engine.evaluate(conditions);
+      final Set<IExpr> after = radicals(conditions, variable);
+      if (after.contains(root) || after.size() >= before.size()) {
+        return F.NIL;
+      }
+      return conditions;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The conditions without <code>u^e</code> which are equivalent to <code>u^e op v</code> over the
+   * reals, for a fraction <code>e</code>.
+   */
+  private static IExpr radicalConditions(IBuiltInSymbol op, IExpr u, IRational e, IExpr v) {
+    final IExpr inverse = F.Power(v, e.inverse());
+    if (e.isPositive()) {
+      // real for u>=0, then >=0 and increasing
+      final IExpr real = F.GreaterEqual(u, F.C0);
+      switch (op.ordinal()) {
+        case ID.Greater:
+          return F.Or(F.And(real, F.Less(v, F.C0)),
+              F.And(F.GreaterEqual(v, F.C0), F.Greater(u, inverse)));
+        case ID.GreaterEqual:
+          return F.Or(F.And(real, F.Less(v, F.C0)),
+              F.And(F.GreaterEqual(v, F.C0), F.GreaterEqual(u, inverse)));
+        case ID.Less:
+          return F.And(real, F.Greater(v, F.C0), F.Less(u, inverse));
+        default:
+          return F.And(real, F.GreaterEqual(v, F.C0), F.LessEqual(u, inverse));
+      }
+    }
+    // real for u>0, then >0 and decreasing
+    final IExpr real = F.Greater(u, F.C0);
+    switch (op.ordinal()) {
+      case ID.Greater:
+        return F.Or(F.And(real, F.LessEqual(v, F.C0)),
+            F.And(F.Greater(v, F.C0), real, F.Less(u, inverse)));
+      case ID.GreaterEqual:
+        return F.Or(F.And(real, F.LessEqual(v, F.C0)),
+            F.And(F.Greater(v, F.C0), real, F.LessEqual(u, inverse)));
+      case ID.Less:
+        return F.And(F.Greater(v, F.C0), F.Greater(u, inverse));
+      default:
+        return F.And(F.Greater(v, F.C0), F.GreaterEqual(u, inverse));
+    }
+  }
+
+  /** <code>Less</code> for <code>Greater</code> and so on; <code>Equal</code> stays. */
+  private static IBuiltInSymbol reversedRelation(IBuiltInSymbol relation) {
+    switch (relation.ordinal()) {
+      case ID.Less:
+        return S.Greater;
+      case ID.LessEqual:
+        return S.GreaterEqual;
+      case ID.Greater:
+        return S.Less;
+      case ID.GreaterEqual:
+        return S.LessEqual;
+      default:
+        return relation;
+    }
+  }
+
+  /** The different roots <code>u^e</code> and <code>Surd(u,q)</code> of the variable. */
+  private static Set<IExpr> radicals(IExpr expr, IExpr variable) {
+    Set<IExpr> result = new LinkedHashSet<IExpr>();
+    collectRadicals(expr, variable, result);
+    return result;
+  }
+
+  private static void collectRadicals(IExpr expr, IExpr variable, Set<IExpr> result) {
+    if (expr.isAST()) {
+      if (((expr.isPower() && expr.exponent().isFraction()) || expr.isAST(S.Surd, 3))
+          && !expr.first().isFree(variable)) {
+        result.add(expr);
+      }
+      ((IAST) expr).forEach(x -> collectRadicals(x, variable, result));
+    }
+  }
+
+  /**
    * Reduce an equation which is a polynomial of degree {@literal >=} 2 in a single kernel
    * <code>g(variable)</code>: the roots of that polynomial are determined and every equation
    * <code>g(variable) == root</code> is reduced on its own, as in the <i>Homogenization</i> method
@@ -3294,6 +3520,15 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
           }
           arg1 = caseSplit;
           expr = caseSplit;
+        }
+      }
+
+      if (domain == S.Reals || elementDomains.get(variable) == S.Reals) {
+        // a root is removed by raising both sides of its relation to its power, under the
+        // conditions which make that an equivalence, e.g. `Sqrt(x)>=3` is `x>=9`
+        IExpr radical = reduceRadicalRelations(expr, variable, solveOptions, engine);
+        if (radical.isPresent()) {
+          return radical;
         }
       }
 
