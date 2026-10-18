@@ -198,6 +198,81 @@ public final class PolyLog {
   // Complex arguments
   // ----------------------------------------------------------------------------------------
 
+  /** <code>Pi^2/6</code> as a double and its rounding residual. */
+  private static final double PI2_6_HI = 1.6449340668482264;
+
+  private static final double PI2_6_LO = 3.040672350398476e-17;
+
+  /** <code>BernoulliB(2*k)/(2*k+1)!</code>, <code>k = 1..16</code>. */
+  private static final double[] DILOG_C = {2.77777777777777777778e-2, -2.77777777777777777778e-4,
+      4.72411186696900982615e-6, -9.18577307466196355085e-8, 1.8978869988970999072e-9,
+      -4.06476164514422552681e-11, 8.92169102045645255522e-13, -1.99392958607210756872e-14,
+      4.51898002961991819165e-16, -1.03565176121812470145e-17, 2.39521862102618674574e-19,
+      -5.58178587432500933628e-21, 1.30915075541832128581e-22, -3.08741980242674029324e-24,
+      7.31597565270220342036e-26, -1.74084565723400074099e-27};
+
+  /**
+   * <code>Li_2(u) = u - u^2/4 + Sum(BernoulliB(2*k)*u^(2*k+1)/(2*k+1)!, {k, 1, 16})</code> in the
+   * variable <code>u = -Log(1-z)</code>, <code>|u| &lt;= 1.3</code>.
+   */
+  private static Complex dilogSeries(Complex u) {
+    final Complex v = u.multiply(u);
+    Complex p = new Complex(DILOG_C[15]);
+    for (int k = 14; k >= 0; k--) {
+      p = p.multiply(v).add(DILOG_C[k]);
+    }
+    return u.subtract(v.multiply(0.25)).add(u.multiply(v).multiply(p));
+  }
+
+  /** <code>Li_2(z)</code> for <code>|z| &lt;= 1</code>, <code>z != 1</code>. */
+  private static Complex dilogUnit(double zr, double zi) {
+    if (zr <= 0.5) {
+      // u = -Log(1 - z), Log|1-z| = Log1p(|1-z|^2 - 1)/2
+      final double t = zr * (zr - 2.0) + zi * zi;
+      return dilogSeries(new Complex(-0.5 * Math.log1p(t), -Math.atan2(-zi, 1.0 - zr)));
+    }
+    // Li_2(z) = Pi^2/6 - Log(z)*Log(1-z) - Li_2(1-z), and Li_2(1-z) has u = -Log(z)
+    final Complex logZ = new Complex(Math.log(Math.hypot(zr, zi)), Math.atan2(zi, zr));
+    final double wr = 1.0 - zr;
+    final double wi = -zi;
+    final Complex log1MinusZ = new Complex(0.5 * Math.log(wr * wr + wi * wi), Math.atan2(wi, wr));
+    final Complex product = logZ.multiply(log1MinusZ);
+    final Complex series = dilogSeries(logZ.negate());
+    return new Complex(PI2_6_HI - product.getReal() - series.getReal() + PI2_6_LO,
+        -product.getImaginary() - series.getImaginary());
+  }
+
+  /**
+   * The dilogarithm <code>Li_2(z)</code> of a complex <code>z</code> off the real axis, by the
+   * Bernoulli series in <code>u = -Log(1-z)</code> ('t Hooft and Veltman 1979) after the maps
+   * <code>z -&gt; 1/z</code> (<code>|z| &gt; 1</code>) and <code>z -&gt; 1-z</code>
+   * (<code>Re(z) &gt; 1/2</code>), which land every <code>z</code> where <code>|u| &lt;= 1.25</code>.
+   *
+   * @return <code>null</code> for a real or not finite <code>z</code>
+   */
+  public static Complex dilog(Complex z) {
+    final double zr = z.getReal();
+    final double zi = z.getImaginary();
+    if (!Double.isFinite(zr) || !Double.isFinite(zi) || zi == 0.0) {
+      return null;
+    }
+    Complex value;
+    if (zr * zr + zi * zi <= 1.0) {
+      value = dilogUnit(zr, zi);
+    } else {
+      // Li_2(z) = -Li_2(1/z) - Pi^2/6 - Log(-z)^2/2
+      final Complex inverse = z.reciprocal();
+      final Complex w = dilogUnit(inverse.getReal(), inverse.getImaginary());
+      final double lr = Math.log(Math.hypot(zr, zi));
+      final double li = Math.atan2(-zi, -zr);
+      final double l2r = 0.5 * (lr - li) * (lr + li);
+      final double l2i = lr * li;
+      value = new Complex(-w.getReal() - l2r - PI2_6_HI - PI2_6_LO, -w.getImaginary() - l2i);
+    }
+    return Double.isFinite(value.getReal()) && Double.isFinite(value.getImaginary()) ? value
+        : null;
+  }
+
   /**
    * Largest <code>|z|</code> for the complex series. Kept below the real limit because the complex
    * series has no monotone-terms regime to lean on: the terms rotate as well as decay, so the

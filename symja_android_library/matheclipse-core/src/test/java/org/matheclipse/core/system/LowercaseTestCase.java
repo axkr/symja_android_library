@@ -6761,6 +6761,88 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDirichletCharacter() {
+    // 2 is the smallest primitive root of 9: chi(2) = Exp(2*Pi*I*(j-1)/6)
+    check("Table(DirichletCharacter(9,j,2),{j,6})", //
+        "{1,1/2+I*1/2*Sqrt(3),-1/2+I*1/2*Sqrt(3),-1,-1/2-I*1/2*Sqrt(3),1/2-I*1/2*Sqrt(3)}");
+    check("Table(DirichletCharacter(20,j,3),{j,8})", //
+        "{1,-I,-1,I,-1,I,1,-I}");
+    check("DirichletCharacter(24,{1,2,3,4,5},7)", //
+        "{1,1,1,1,-1}");
+    check("Table(DirichletCharacter(32,3,n),{n,1,15,2})", //
+        "{1,-I,I,-1,-1,I,-I,1}");
+    // orthogonality and multiplicativity
+    check("Table(Sum(DirichletCharacter(7,j,n),{n,0,6}),{j,6})", //
+        "{6,0,0,0,0,0}");
+    check("Sum(DirichletCharacter(9,j,4),{j,6})", //
+        "0");
+    check(
+        "And @@ Flatten(Table(DirichletCharacter(20,7,a*b)==DirichletCharacter(20,7,a)*DirichletCharacter(20,7,b),{a,1,20},{b,1,20}))", //
+        "True");
+    check("DirichletCharacter(9,2,-5)==DirichletCharacter(9,2,4)", //
+        "True");
+    check("DirichletCharacter(9,2,10^20+2)==DirichletCharacter(9,2,Mod(10^20+2,9))", //
+        "True");
+    check("DirichletCharacter({9,20},2,{2,3})", //
+        "{1/2+I*1/2*Sqrt(3),-I}");
+    check("DirichletCharacter(9,7,2)", //
+        "DirichletCharacter(9,7,2)");
+    check("DirichletCharacter(9,0,2)", //
+        "DirichletCharacter(9,0,2)");
+    check("DirichletCharacter(9,2,1/2)", //
+        "DirichletCharacter(9,2,1/2)");
+    check("DirichletCharacter(-9,2,2)", //
+        "DirichletCharacter(-9,2,2)");
+    check("DirichletCharacter(9,2,a)", //
+        "DirichletCharacter(9,2,a)");
+  }
+
+  @Test
+  public void testDirichletL() {
+    // the generalized Bernoulli numbers at s <= 0
+    check("Table(DirichletL(9,2,s),{s,-2,0})", //
+        "{-3+(-I*5)/Sqrt(3),0,1+I/Sqrt(3)}");
+    check("DirichletL(20,3,-1)", //
+        "-6/5");
+    check("DirichletL(24,5,-3)", //
+        "0");
+    check("DirichletL(32,3,-2)", //
+        "0");
+    // s = 1 for a primitive character; imprimitive and principal ones stay unevaluated
+    check("DirichletL(7,4,1)", //
+        "Pi/Sqrt(7)");
+    check("DirichletL(8,3,1)", //
+        "DirichletL(8,3,1)");
+    check("DirichletL(9,4,1)", //
+        "DirichletL(9,4,1)");
+    check("DirichletL(9,1,1)", //
+        "DirichletL(9,1,1)");
+    check("DirichletL(9,2,3)", //
+        "DirichletL(9,2,3)");
+    check("DirichletL(1,1,{0,1,2})", //
+        "{-1/2,ComplexInfinity,Pi^2/6}");
+    check("DirichletL(9,2,2.25)", //
+        "1.08725+I*0.189776");
+    check("DirichletL(32,3,0.25+3.0*I)", //
+        "-0.736234+I*0.217846");
+    check("DirichletL(24,5,-1.5)", //
+        "-1.78664");
+    // a trivial zero
+    check("DirichletL(24,5,-3.0)", //
+        "0.0");
+    check("N(DirichletL(20,3,1/3),25)", //
+        "0.2820651175339527174168553");
+    check("N(DirichletL(9,2,-2),20)", //
+        "-3+I*(-2.8867513459481288225)");
+    check("DirichletL(9,2,{0.75,1.5})", //
+        "{1.13214+I*0.468291,1.12282+I*0.309729}");
+    check("DirichletL(9,1,1.0)", //
+        "ComplexInfinity");
+    check("DirichletL(9,7,2)", //
+        "DirichletL(9,7,2)");
+  }
+
+  @Test
   public void testDirichletEta() {
     check("DirichletEta(1)", //
         "Log(2)");
@@ -14889,6 +14971,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHurwitzZetaMachine() {
+    check("HurwitzZeta(2.5, 0.375)", //
+        "12.31281");
+    check("HurwitzZeta(1.25+7.5*I, 2.25)", //
+        "0.218672+I*0.0450572");
+    check("Zeta(2.75+3.5*I)", //
+        "0.872226+I*(-0.0463483)");
+    check("Zeta(3.25)", //
+        "1.15915");
+    check("PolyLog(2, 0.75+0.625*I)", //
+        "0.66494+I*0.923474");
+    check("PolyLog(2, -1.5+2.25*I)", //
+        "-1.44321+I*1.25548");
+  }
+
+  @Test
   @Tag(TestTags.SLOW)
   public void testHurwitzZeta() {
     checkNumeric("N(HurwitzZeta(1/3, 8/7), 50)", //
@@ -16740,6 +16838,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
     check("LengthWhile(h(1, 1, 2, 3, a, 8, 13, b, c, d), IntegerQ)", //
         "4");
+  }
+
+  @Test
+  public void testLerchPhiMachine() {
+    check("LerchPhi(0.625, 2.5, 1.75)", //
+        "0.319388");
+    check("LerchPhi(0.25+0.5*I, 1.5, 0.75)", //
+        "1.58437+I*0.256178");
   }
 
   @Test
@@ -20680,6 +20786,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sort({1, Pi, E, Infinity, -Sqrt[2], -Infinity})", //
         "{1,-Infinity,Infinity,-Sqrt(2),E,Pi}");
 
+  }
+
+  @Test
+  public void testNumericQListArguments() {
+    check("NumericQ(HypergeometricPFQ({1/3,2},{5,6},1/4))", //
+        "True");
+    check("NumericQ(HypergeometricPFQ({1/3,b},{5,6},1/4))", //
+        "False");
+    check("NumericQ(MeijerG({{1/2},{}},{{1/3},{}},3))", //
+        "True");
   }
 
   @Test

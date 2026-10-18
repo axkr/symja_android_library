@@ -108,6 +108,40 @@ public class PolynomialFunctions {
    * 1-32*x^2+160*x^4-256*x^6+128*x^8
    * </pre>
    */
+  /**
+   * The value at an inexact number <code>z</code> of the polynomial of degree <code>n &gt;= 1</code>
+   * with <code>p(0) = 1</code>, <code>p(1) = first*z</code> and the three-term recurrence
+   * <code>p(k+1) = 2*z*p(k) - c(k)*p(k-1)</code>, with <code>c(k) = 1</code> (Chebyshev T and U) or
+   * <code>c(k) = 2*k</code> (Hermite H). Faster than building the polynomial and evaluating it, and
+   * free of the cancellation of its expanded form.
+   */
+  /**
+   * The degree of a polynomial function at inexact arguments: an inexact real with an integer
+   * value, as the numeric evaluation makes of an integer degree, or <code>Integer.MIN_VALUE</code>.
+   */
+  private static int inexactIntegerDegree(IExpr n) {
+    if (n.isReal()) {
+      double d = n.evalf();
+      if (d == Math.rint(d) && Math.abs(d) <= 100000.0) {
+        return (int) d;
+      }
+    }
+    return Integer.MIN_VALUE;
+  }
+
+  private static IExpr inexactRecurrence(int n, IExpr z, int first, boolean hermite) {
+    final IExpr twoZ = z.times(F.C2);
+    IExpr previous = F.C1;
+    IExpr current = first == 1 ? z : twoZ;
+    for (int k = 1; k < n; k++) {
+      IExpr next = twoZ.times(current)
+          .subtract(hermite ? previous.times(F.ZZ(2L * k)) : previous);
+      previous = current;
+      current = next;
+    }
+    return current;
+  }
+
   private static final class ChebyshevT extends AbstractFunctionEvaluator
       implements IFunctionExpand {
     @Override
@@ -135,6 +169,9 @@ public class PolynomialFunctions {
         }
         if (degree == 0) {
           return F.C1;
+        }
+        if (z.isInexactNumber()) {
+          return inexactRecurrence(degree, z, 1, false);
         }
         if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
           PolynomialDegreeLimitExceeded.throwIt(degree);
@@ -175,6 +212,10 @@ public class PolynomialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        int degree = inexactIntegerDegree(n);
+        if (degree != Integer.MIN_VALUE && degree != 0) {
+          return inexactRecurrence(Math.abs(degree), z, 1, false);
+        }
         return n.chebyshevT(z);
         // (n, z) => Cos(n*ArcCos(z))
         // return F.Cos.of(engine, F.Times(n, F.ArcCos(z)));
@@ -268,6 +309,9 @@ public class PolynomialFunctions {
         if (degree == 1) {
           return zDoubled;
         }
+        if (z.isInexactNumber()) {
+          return inexactRecurrence(degree, z, 2, false);
+        }
         if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
           PolynomialDegreeLimitExceeded.throwIt(degree);
         }
@@ -326,6 +370,10 @@ public class PolynomialFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
+        int degree = inexactIntegerDegree(n);
+        if (degree >= 1) {
+          return inexactRecurrence(degree, z, 2, false);
+        }
         return n.chebyshevU(z);
       }
 
@@ -1913,6 +1961,9 @@ public class PolynomialFunctions {
         return hermiteHZero(n);
       }
       int degree = n.toIntDefault();
+      if (degree >= 1 && z.isInexactNumber()) {
+        return inexactRecurrence(degree, z, 2, true);
+      }
       if (degree >= 0) {
         return PolynomialsUtils.createHermitePolynomial(degree, z);
       }
@@ -1994,6 +2045,10 @@ public class PolynomialFunctions {
         IExpr largeArgument = hermiteHLargeArgument(n, z);
         if (largeArgument.isPresent()) {
           return largeArgument;
+        }
+        int degree = inexactIntegerDegree(n);
+        if (degree >= 1) {
+          return inexactRecurrence(degree, z, 2, true);
         }
         return n.hermiteH(z);
         // if (z.isZero()) {

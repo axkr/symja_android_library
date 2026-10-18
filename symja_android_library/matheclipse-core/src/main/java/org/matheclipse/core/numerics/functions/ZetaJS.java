@@ -192,6 +192,10 @@ public class ZetaJS extends JS {
    * @return
    */
   public static Complex hurwitzZeta(final Complex x, final Complex a) {
+    Complex machine = HurwitzZetaKernel.hurwitzZeta(x, a);
+    if (machine != null) {
+      return machine;
+    }
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
 
     Apcomplex xApfloat = new Apcomplex(new Apfloat(x.getReal()), new Apfloat(x.getImaginary()));
@@ -261,6 +265,10 @@ public class ZetaJS extends JS {
   }
 
   public static double hurwitzZeta(final double x, final double a) {
+    double machine = HurwitzZetaKernel.hurwitzZeta(x, a);
+    if (!Double.isNaN(machine)) {
+      return machine;
+    }
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
 
     Apfloat xApfloat = new Apfloat(x);

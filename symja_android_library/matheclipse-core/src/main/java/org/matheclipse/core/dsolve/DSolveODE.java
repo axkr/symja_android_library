@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.MachineProfile;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -1164,7 +1165,181 @@ final class DSolveODE {
         }
       }
     }
+    IExpr linearArgument = linearArgumentLevel(engine, m, n, x, y);
+    if (linearArgument.isPresent() && isFirstIntegral(linearArgument, m, n, x, y, engine)) {
+      return linearArgument;
+    }
+    IExpr isobaric = isobaricLevel(engine, m, n, x, y);
+    if (isobaric.isPresent() && isFirstIntegral(isobaric, m, n, x, y, engine)) {
+      return isobaric;
+    }
     return F.NIL;
+  }
+
+  /** Largest slope <code>-M/N</code> the substitutions below are tried on. */
+  private static final int SUBSTITUTION_MAX_LEAVES = 250;
+
+  /** The slope <code>F = -M/N</code> of <code>y' == F(x, y)</code>, or {@link F#NIL}. */
+  private static IExpr slopeOf(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
+    if (n.isZero()) {
+      return F.NIL;
+    }
+    IExpr slope = engine.evaluate(F.Together(F.Divide(F.Negate(m), n)));
+    if (slope.isFree(x, true) || slope.isFree(y, true)
+        || slope.leafCount() > SUBSTITUTION_MAX_LEAVES) {
+      // free of x or of y: a separable equation, answered before
+      return F.NIL;
+    }
+    if (!slope.isFree(DSolveODE::isNonElementary, true)) {
+      // the slope of a reduced equation of the second order, with Bessel functions in it:
+      // Simplify and the zero tests of the integrals evaluate those at arbitrary precision, and
+      // that does not stop when the time of the equation is up
+      return F.NIL;
+    }
+    return slope;
+  }
+
+  /** Whether <code>expr</code> is a function application other than an elementary function. */
+  private static boolean isNonElementary(IExpr expr) {
+    if (!expr.isAST() || !expr.head().isBuiltInSymbol()) {
+      return false;
+    }
+    IExpr head = expr.head();
+    return !(head == S.Plus || head == S.Times || head == S.Power || head == S.Sqrt
+        || head == S.Exp || head == S.Log || head == S.Sin || head == S.Cos || head == S.Tan
+        || head == S.Cot || head == S.Sec || head == S.Csc || head == S.Sinh || head == S.Cosh
+        || head == S.Tanh || head == S.Coth || head == S.Sech || head == S.Csch
+        || head == S.ArcSin || head == S.ArcCos || head == S.ArcTan || head == S.ArcCot
+        || head == S.ArcSinh || head == S.ArcCosh || head == S.ArcTanh || head == S.ArcCoth
+        || head == S.Abs || head == S.Complex || head == S.Rational);
+  }
+
+  /** <code>expr</code>, or its simplification, if either is free of <code>x</code> and <code>y</code>. */
+  private static IExpr constantOrNIL(EvalEngine engine, IExpr expr, IExpr x, IExpr y) {
+    if (expr.isFree(x, true) && expr.isFree(y, true)) {
+      return expr;
+    }
+    IExpr simplified = engine.evaluate(F.Simplify(expr));
+    return simplified.isFree(x, true) && simplified.isFree(y, true) ? simplified : F.NIL;
+  }
+
+  /**
+   * A first integral of <code>y' == F(x, y)</code> where <code>F</code> depends on <code>x</code>
+   * and <code>y</code> only through <code>u == r*x + y</code> with a constant <code>r</code>, such
+   * as <code>y' == Sqrt(x - y)</code> or <code>(x + y)^2*y' == a^2</code>: then
+   * <code>F_x == r*F_y</code>, <code>u' == r + F(u)</code> separates, and
+   * <code>x - Integrate(1/(r + F(u)), u)</code> is constant. Or {@link F#NIL}.
+   */
+  private static IExpr linearArgumentLevel(EvalEngine engine, IExpr m, IExpr n, IExpr x,
+      IExpr y) {
+    IExpr slope = slopeOf(engine, m, n, x, y);
+    if (slope.isNIL()) {
+      return F.NIL;
+    }
+    IExpr slopeY = engine.evaluate(F.D(slope, y));
+    if (slopeY.isZero()) {
+      return F.NIL;
+    }
+    IExpr r = constantOrNIL(engine,
+        engine.evaluate(F.Together(F.Divide(F.D(slope, x), slopeY))), x, y);
+    if (r.isNIL() || r.isZero()) {
+      return F.NIL;
+    }
+    IExpr u = F.Dummy("u");
+    IExpr slopeU = engine.evaluate(F.subst(slope, y, F.Subtract(u, F.Times(r, x))));
+    if (!slopeU.isFree(x, true)) {
+      slopeU = engine.evaluate(F.Simplify(slopeU));
+      if (!slopeU.isFree(x, true)) {
+        return F.NIL;
+      }
+    }
+    IExpr integral =
+        DSolveContext.integrate(engine.evaluate(F.Power(F.Plus(r, slopeU), F.CN1)), u, engine);
+    if (integral.isNIL()) {
+      return F.NIL;
+    }
+    return engine.evaluate(
+        F.subst(F.Subtract(x, integral), u, F.Plus(F.Times(r, x), y)));
+  }
+
+  /**
+   * A first integral of the isobaric equation <code>y' == F(x, y)</code>,
+   * <code>F(t*x, t^k*y) == t^(k-1)*F(x, y)</code> (homogeneous of class G), such as
+   * <code>2*y'^2 - 2*x^2*y' + 3*x*y == 0</code> with <code>k == 3</code>. The weight is read off
+   * Euler's identity <code>x*F_x + k*y*F_y == (k-1)*F</code> at two points and has to agree; with
+   * <code>y == x^k*u</code> the equation is <code>x*u' == F(1, u) - k*u</code>, and
+   * <code>Log(x) - Integrate(1/(F(1, u) - k*u), u)</code> is constant. Or {@link F#NIL}.
+   */
+  private static IExpr isobaricLevel(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
+    IExpr slope = slopeOf(engine, m, n, x, y);
+    if (slope.isNIL()) {
+      return F.NIL;
+    }
+    // k == (F + x*F_x)/(F - y*F_y)
+    IExpr weight = engine.evaluate(F.Divide(F.Plus(slope, F.Times(x, F.D(slope, x))),
+        F.Subtract(slope, F.Times(y, F.D(slope, y)))));
+    IRational k = null;
+    int agreeing = 0;
+    int[][] samples = {{7, 5, 3, 7}, {11, 13, 5, 3}, {9, 4, 2, 11}, {5, 3, 1, 9}, {3, 2, 5, 2}};
+    IAST parameters = VariablesSet.getVariables(weight);
+    for (int s = 0; s < samples.length; s++) {
+      if (agreeing == 2) {
+        break;
+      }
+      int[] sample = samples[s];
+      IASTAppendable rules = F.ListAlloc(2 + parameters.argSize());
+      rules.append(F.Rule(x, F.QQ(sample[0], sample[1])));
+      rules.append(F.Rule(y, F.QQ(sample[2], sample[3])));
+      for (int p = 1; p <= parameters.argSize(); p++) {
+        IExpr parameter = parameters.get(p);
+        if (!parameter.equals(x) && !parameter.equals(y)) {
+          // other values at every point: a weight which depends on a parameter differs
+          rules.append(F.Rule(parameter, F.QQ(2L * p + 3 + s, 4L * p + 7)));
+        }
+      }
+      IExpr value;
+      try {
+        value = engine.evalN(F.subst(weight, rules));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return F.NIL;
+      }
+      if (!value.isReal()) {
+        // a radical of the slope may be imaginary at this point
+        continue;
+      }
+      double d = value.evalf();
+      // a rational weight with a small denominator
+      IRational candidate = null;
+      for (int q = 1; q <= 12 && candidate == null; q++) {
+        double p = Math.rint(d * q);
+        if (Math.abs(d * q - p) < 1.0e-9 * Math.max(1.0, Math.abs(d * q))) {
+          candidate = F.QQ((long) p, q);
+        }
+      }
+      if (candidate == null || (k != null && !k.equals(candidate))) {
+        return F.NIL;
+      }
+      k = candidate;
+      agreeing++;
+    }
+    if (agreeing < 2 || k == null || k.isZero()) {
+      // k == 0: x*y' == G(y), separable
+      return F.NIL;
+    }
+    IExpr u = F.Dummy("u");
+    IExpr atOne = engine.evaluate(F.subst(slope, F.list(F.Rule(x, F.C1), F.Rule(y, u))));
+    IExpr denominator = engine.evaluate(F.Together(F.Subtract(atOne, F.Times(k, u))));
+    if (denominator.isZero() || !denominator.isFree(x, true)) {
+      return F.NIL;
+    }
+    IExpr integral =
+        DSolveContext.integrate(engine.evaluate(F.Power(denominator, F.CN1)), u, engine);
+    if (integral.isNIL()) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.subst(F.Subtract(F.Log(x), integral), u,
+        F.Times(y, F.Power(x, k.negate()))));
   }
 
   /**
@@ -1272,11 +1447,22 @@ final class DSolveODE {
     IExpr defect = F.Subtract(F.Times(m, gy), F.Times(n, gx));
     IExpr scale = F.Plus(F.Abs(F.Times(m, gy)), F.Abs(F.Times(n, gx)));
     int[][] samples = {{3, 10, 5, 11}, {7, 10, 2, 9}, {13, 10, 3, 7}, {23, 10, 7, 13}};
+    // the parameters of the equation take values of their own, so that a level with a parameter
+    // in it can be checked at all, and other ones at every point, so that a level which holds for
+    // particular values of them only is not taken for one
+    IAST parameters = VariablesSet.getVariables(defect);
     int zeros = 0;
-    for (int[] sample : samples) {
-      IASTAppendable rules = F.ListAlloc(2);
+    for (int s = 0; s < samples.length; s++) {
+      int[] sample = samples[s];
+      IASTAppendable rules = F.ListAlloc(2 + parameters.argSize());
       rules.append(F.Rule(x, F.QQ(sample[0], sample[1])));
       rules.append(F.Rule(y, F.QQ(sample[2], sample[3])));
+      for (int p = 1; p <= parameters.argSize(); p++) {
+        IExpr parameter = parameters.get(p);
+        if (!parameter.equals(x) && !parameter.equals(y)) {
+          rules.append(F.Rule(parameter, F.QQ(2L * p + 3 + s, 4L * p + 7)));
+        }
+      }
       IExpr size;
       IExpr magnitude;
       try {

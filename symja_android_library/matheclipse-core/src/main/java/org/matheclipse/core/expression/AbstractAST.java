@@ -4758,8 +4758,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
     } else {
       if (isNumericFunctionAST()) {
-        // check if all arguments are &quot;numeric&quot;
-        boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
+        // check if all arguments are &quot;numeric&quot;; a list argument holds parameters, as in
+        // HypergeometricPFQ({1,2},{3,4},1/2), and is numeric if all its elements are
+        boolean forAll =
+            forAll(x -> x.isList() ? x.isNumericFunction(true) : x.isNumericFunction(false), 1);
         if (forAll) {
           forAll = hasExpectedArgSize(topHead());
         }

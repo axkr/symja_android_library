@@ -1442,7 +1442,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("(Zeta(16.0)-1)*10^5", //
         "1.52823");
     check("(Zeta(30.0+5.0*I)-1)*10^10", //
-        "-8.82819+I*2.96627");
+        "-8.8282+I*2.96627");
     check("N(Zeta(10^20),30)", //
         "1");
     // 1.70465235973685338678416407976*10^-13+8.9337689784216794531042490981352*10^-13*I

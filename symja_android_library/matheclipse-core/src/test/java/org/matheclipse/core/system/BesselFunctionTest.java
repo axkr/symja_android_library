@@ -123,6 +123,15 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAiryAiUnderflow() {
+    // below the double range: 0.0 with General::munfl
+    check("AiryAi(115.0)", //
+        "0.0");
+    check("AiryAiPrime(108.5)", //
+        "0.0");
+  }
+
+  @Test
   public void testAiryAi() {
     checkNumeric("N(AiryAi(2),50)", //
         "0.034924130423274379135322080791807609761060213897583");

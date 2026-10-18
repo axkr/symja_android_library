@@ -11,6 +11,18 @@ import org.junit.jupiter.api.Tag;
 public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testOrthogonalPolynomialRecurrence() {
+    check("ChebyshevT(7, 0.35)", //
+        "-0.596068");
+    check("ChebyshevU(6, 0.35+0.2*I)", //
+        "1.72897+I*1.51934");
+    check("HermiteH(5, 1.25)", //
+        "-64.84375");
+    check("HermiteH(6, 0.5-0.25*I)", //
+        "26.29688+I*(-135.6875)");
+  }
+
+  @Test
   public void testChebyshevT() {
     // check("ChebyshevT(1317624576693539401,3.14159)", //
     // "ChebyshevT(1.31762*10^18,3.14159)");

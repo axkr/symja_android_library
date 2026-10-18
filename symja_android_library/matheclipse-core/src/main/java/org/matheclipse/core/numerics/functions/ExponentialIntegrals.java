@@ -325,6 +325,62 @@ public final class ExponentialIntegrals {
   }
 
   /**
+   * <code>ExpIntegralE(n, x) = integral from 1 to Infinity of e^(-x*t)/t^n dt</code> for an integer
+   * <code>n &gt;= 1</code> and <code>x &gt; 0</code>: a continued fraction (Lentz) for
+   * <code>x &gt; 1</code>, the power series below, whose term <code>k = n-1</code> carries
+   * <code>-Log(x) + PolyGamma(n)</code>.
+   *
+   * @return <code>NaN</code> if the iteration does not converge
+   */
+  public static double expIntegralE(final int n, final double x) {
+    if (n < 1 || !(x > 0.0)) {
+      return Double.NaN;
+    }
+    if (n == 1) {
+      return expIntegralE1(x);
+    }
+    final int nm1 = n - 1;
+    if (x > 1.0) {
+      double b = x + n;
+      double c = 1.0 / FP_MIN;
+      double d = 1.0 / b;
+      double h = d;
+      for (int i = 1; i <= MAX_ITERATIONS; i++) {
+        final double a = -(double) i * (nm1 + i);
+        b += 2.0;
+        d = 1.0 / (a * d + b);
+        c = b + a / c;
+        final double del = c * d;
+        h *= del;
+        if (Math.abs(del - 1.0) < EPS) {
+          return h * Math.exp(-x);
+        }
+      }
+      return Double.NaN;
+    }
+    double sum = 1.0 / nm1;
+    double fact = 1.0;
+    for (int i = 1; i <= MAX_ITERATIONS; i++) {
+      fact *= -x / i;
+      double del;
+      if (i != nm1) {
+        del = -fact / (i - nm1);
+      } else {
+        double psi = -EULER_GAMMA;
+        for (int k = 1; k <= nm1; k++) {
+          psi += 1.0 / k;
+        }
+        del = fact * (-Math.log(x) + psi);
+      }
+      sum += del;
+      if (Math.abs(del) < Math.abs(sum) * EPS) {
+        return sum;
+      }
+    }
+    return Double.NaN;
+  }
+
+  /**
    * <code>SinhIntegral(x) = integral from 0 to x of sinh(t)/t dt</code>, an odd entire function.
    */
   public static double sinhIntegral(double x) {

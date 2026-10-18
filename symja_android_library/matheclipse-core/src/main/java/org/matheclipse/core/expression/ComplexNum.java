@@ -37,8 +37,10 @@ import org.matheclipse.core.numerics.functions.BesselJS;
 import org.matheclipse.core.numerics.functions.ComplexAiry;
 import org.matheclipse.core.numerics.functions.ComplexBessel;
 import org.matheclipse.core.numerics.functions.ComplexGamma;
+import org.matheclipse.core.numerics.functions.ErrorFunctionKernel;
 import org.matheclipse.core.numerics.functions.ExponentialIntegrals;
 import org.matheclipse.core.numerics.functions.FresnelIntegrals;
+import org.matheclipse.core.numerics.functions.HurwitzZetaKernel;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
 import org.matheclipse.core.numerics.functions.PolyLog;
@@ -943,23 +945,14 @@ public class ComplexNum implements IComplexNum {
     return false;
   }
 
-  /**
-   * Whether the real and the imaginary part have the same size: the square of the number is
-   * purely imaginary then, and the error functions of the Hipparchus library answer
-   * <code>0</code> for <code>Erf(1.0+I)</code>.
-   */
-  private static boolean onDiagonal(Complex z) {
-    return Math.abs(z.getReal()) == Math.abs(z.getImaginary());
-  }
-
   @Override
   public IExpr erf() {
+    // each component accurate relative to itself; null where the kernel declines
+    double[] value = ErrorFunctionKernel.erf(fComplex.getReal(), fComplex.getImaginary());
+    if (value != null) {
+      return F.complexNum(value[0], value[1]);
+    }
     try {
-      // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
-      Complex complexErf = org.hipparchus.special.Erf.erf(fComplex);
-      if (complexErf.isFinite() && !onDiagonal(fComplex)) {
-        return F.complexNum(complexErf);
-      }
       Apcomplex erf = EvalEngine.getApfloatDouble().erf(apcomplexValue());
       return F.complexNum(erf.real().doubleValue(), erf.imag().doubleValue());
     } catch (OverflowException of) {
@@ -973,16 +966,11 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr erfc() {
+    double[] value = ErrorFunctionKernel.erfc(fComplex.getReal(), fComplex.getImaginary());
+    if (value != null) {
+      return F.complexNum(value[0], value[1]);
+    }
     try {
-      try {
-        // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
-        Complex complexErfc = org.hipparchus.special.Erf.erfc(fComplex);
-        if (complexErfc.isFinite() && !onDiagonal(fComplex)) {
-          return F.complexNum(complexErfc);
-        }
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-      }
       Apcomplex erfc = EvalEngine.getApfloatDouble().erfc(apcomplexValue());
       return F.complexNum(erfc.real().doubleValue(), erfc.imag().doubleValue());
     } catch (OverflowException of) {
@@ -996,12 +984,11 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr erfi() {
+    double[] value = ErrorFunctionKernel.erfi(fComplex.getReal(), fComplex.getImaginary());
+    if (value != null) {
+      return F.complexNum(value[0], value[1]);
+    }
     try {
-      // TODO depends on // https://github.com/Hipparchus-Math/hipparchus/issues/278
-      // Complex complexErfi = org.hipparchus.special.Erf.erfInv(fComplex);
-      // if (complexErfi.isFinite()) {
-      // return F.complexNum(complexErfi);
-      // }
       Apcomplex erfi = EvalEngine.getApfloatDouble().erfi(apcomplexValue());
       return F.complexNum(erfi.real().doubleValue(), erfi.imag().doubleValue());
     } catch (OverflowException of) {
@@ -1992,6 +1979,12 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr polyGamma(long n) {
+    if (n >= 1 && n <= 170) {
+      Complex machine = HurwitzZetaKernel.polyGamma((int) n, fComplex);
+      if (machine != null) {
+        return F.complexNum(machine);
+      }
+    }
     try {
       Apcomplex polygamma = EvalEngine.getApfloatDouble().polygamma(n, apcomplexValue());
       return F.complexNum(polygamma.real().doubleValue(), polygamma.imag().doubleValue());

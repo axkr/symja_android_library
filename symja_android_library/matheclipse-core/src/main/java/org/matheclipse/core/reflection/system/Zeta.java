@@ -41,6 +41,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.HurwitzZetaKernel;
 import org.matheclipse.core.numerics.functions.ZetaJS;
 
 public class Zeta extends AbstractArg12 {
@@ -131,6 +132,10 @@ public class Zeta extends AbstractArg12 {
 
   @Override
   public IExpr e1DblArg(INum num) {
+    double machine = HurwitzZetaKernel.hurwitzZeta(num.doubleValue(), 1.0);
+    if (!Double.isNaN(machine)) {
+      return F.num(machine);
+    }
     FixedPrecisionApcomplexHelper h = EvalEngine.getApfloatDouble();
     try {
       if (num.doubleValue() >= LARGE_MACHINE_ARGUMENT) {
@@ -151,6 +156,11 @@ public class Zeta extends AbstractArg12 {
 
   @Override
   public IExpr e1DblComArg(IComplexNum cNum) {
+    Complex machine = HurwitzZetaKernel.hurwitzZeta(
+        new Complex(cNum.reDoubleValue(), cNum.imDoubleValue()), Complex.ONE);
+    if (machine != null) {
+      return F.complexNum(machine);
+    }
     FixedPrecisionApcomplexHelper h = EvalEngine.getApfloatDouble();
     try {
       if (cNum.reDoubleValue() >= LARGE_MACHINE_ARGUMENT) {

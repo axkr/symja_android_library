@@ -1900,10 +1900,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{x->17/13, C(1)->3/7}");
 
     // Not every such reduction ends in something which can be solved for y: this one leaves
-    // 2*Sqrt(v) - 2*Log(1+Sqrt(v)) == x + C, which is not invertible, so the equation is declined
-    // rather than answered in a shape DSolve does not otherwise return.
+    // 2*Sqrt(v) - 2*Log(1+Sqrt(v)) == x + C, which is not invertible, so the answer is that
+    // relation, left for Solve
     check("DSolve(y'(x) == Sqrt(x + y(x)), y(x), x)", //
-        "DSolve(y'(x)==Sqrt(x+y(x)),y(x),x)");
+        "Solve(x+2*Log(1+Sqrt(x+y(x)))-2*Sqrt(x+y(x))==C(1),y(x))");
   }
 
   @Test
@@ -2555,9 +2555,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve((4-y(x)^2)*y'(x)^2==1, y(x), x)", //
         "{Solve(x+2*ArcSin(y(x)/2)+1/2*y(x)*Sqrt(4-y(x)^2)==C(1),y(x)),Solve(-x+2*ArcSin(y(x)/\n"
             + "2)+1/2*y(x)*Sqrt(4-y(x)^2)==C(1),y(x))}");
-    // a Lagrange equation has a parametric solution only, and that is not returned
+    // a Lagrange equation which is isobaric (y of weight 2): with y == x^2*u the roots separate,
+    // and their first integrals are the answer
     check("DSolve(y(x)==3*x*y'(x)+y'(x)^2, y(x), x)", //
-        "DSolve(y(x)==3*x*y'(x)+y'(x)^2,y(x),x)");
+        "{Solve(Log(x)+2/5*Log(2-Sqrt(9+(4*y(x))/x^2))+3/5*Log(3+Sqrt(9+(4*y(x))/x^2))==C(\n"
+            + "1),y(x)),Solve(Log(x)+3/5*Log(3-Sqrt(9+(4*y(x))/x^2))+2/5*Log(2+Sqrt(9+(4*y(x))/x^\n"
+            + "2))==C(1),y(x))}");
     // roots free of y, and an equation which factors, as before
     check("DSolve(y'(x)^2 - 5*y'(x) + 6 == 0, y(x), x)", //
         "{{y(x)->3*x+C(1)},{y(x)->2*x+C(1)}}");

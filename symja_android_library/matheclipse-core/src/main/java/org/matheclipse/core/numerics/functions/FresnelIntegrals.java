@@ -251,35 +251,37 @@ public final class FresnelIntegrals {
   // ----------------------------------------------------------------------------------------
 
   /**
-   * Largest <code>|z|</code> for the complex series.
+   * Largest <code>|z|</code> for the complex series; above it the asymptotic expansion is used.
    *
    * <p>
-   * Only the series is offered for a complex argument, not the continued fraction: the CF is
-   * derived for the large-<b>real</b>-argument regime and its convergence off the real axis was not
-   * established here, so extending it would be guesswork. The series converges everywhere and the
-   * cancellation guard below decides where it is still trustworthy - which measurement puts at
-   * about 6, since the terms carry <code>(Pi z^2/2)^k</code> and grow before they decay.
+   * The continued fraction is not used for a complex argument: it is derived for the
+   * large-<b>real</b>-argument regime and its convergence off the real axis was not established
+   * here. The series converges everywhere and the cancellation guard below decides where it is
+   * still trustworthy - which measurement puts at about 6, since the terms carry
+   * <code>(Pi z^2/2)^k</code> and grow before they decay. From there on the smallest term of the
+   * asymptotic expansion is below <code>Exp(-Pi*36/2)</code>, far under the double rounding.
    */
   private static final double COMPLEX_Z_MAX = 6.0;
 
-  /** Whether {@link #fresnelCS(Complex)} is trusted here. */
-  public static boolean isSupported(Complex z) {
-    if (z == null || Double.isNaN(z.getReal()) || Double.isNaN(z.getImaginary())) {
-      return false;
-    }
-    return z.norm() <= COMPLEX_Z_MAX;
-  }
+  /**
+   * Largest <code>|Re z * Im z|</code> of the asymptotic expansion: beyond it the factor
+   * <code>Cosh(Pi*Re z*Im z)</code> of the result is near the double range.
+   */
+  private static final double COMPLEX_PHASE_MAX = 220.0;
 
   /**
-   * <code>{FresnelC(z), FresnelS(z)}</code> for complex <code>z</code>, or null outside the
-   * validated radius.
+   * <code>{FresnelC(z), FresnelS(z)}</code> for complex <code>z</code>, or null where neither the
+   * series nor the asymptotic expansion is trusted, or the result is beyond the double range.
    *
    * <p>
-   * Both are entire, so there is no branch to place - the series is the whole story.
+   * Both are entire, so there is no branch to place.
    */
   public static Complex[] fresnelCS(final Complex z) {
-    if (!isSupported(z)) {
+    if (z == null || !Double.isFinite(z.getReal()) || !Double.isFinite(z.getImaginary())) {
       return null;
+    }
+    if (z.norm() > COMPLEX_Z_MAX) {
+      return fresnelCSOfLarge(z);
     }
     if (z.getReal() == 0.0 && z.getImaginary() == 0.0) {
       return new Complex[] {Complex.ZERO, Complex.ZERO};
@@ -319,5 +321,140 @@ public final class FresnelIntegrals {
       return null; // the series cancelled away its significant digits
     }
     return new Complex[] {c, s};
+  }
+
+  /**
+   * <code>{FresnelC(z), FresnelS(z)}</code> for <code>|z| &gt; 6</code> from the auxiliary
+   * functions: <code>C(z) = 1/2 + f(z)*Sin(Pi*z^2/2) - g(z)*Cos(Pi*z^2/2)</code> and
+   * <code>S(z) = 1/2 - f(z)*Cos(Pi*z^2/2) - g(z)*Sin(Pi*z^2/2)</code>, with the asymptotic series of
+   * <code>f</code> and <code>g</code>.
+   *
+   * <p>
+   * The expansion is used in the sector <code>|Arg(z)| &lt;= Pi/4</code> only; the other sectors
+   * are reached by <code>C(-z) = -C(z)</code>, <code>C(I*z) = I*C(z)</code> and
+   * <code>S(I*z) = -I*S(z)</code>. The real part of the phase <code>z^2/2</code> is reduced modulo 2
+   * exactly, as in {@link #fresnelCSOfLarge(double)}.
+   *
+   * @return the pair, or null if the result leaves the double range
+   * @see <a href="https://dlmf.nist.gov/7.12#ii">DLMF 7.12(ii)</a>
+   */
+  private static Complex[] fresnelCSOfLarge(final Complex z) {
+    double x = z.getReal();
+    double y = z.getImaginary();
+    // C(z) = rotC*C(w), S(z) = rotS*S(w) with w in the right sector
+    boolean rotated = false;
+    if (Math.abs(y) > Math.abs(x)) {
+      // z = I*w
+      final double t = x;
+      x = y;
+      y = -t;
+      rotated = true;
+    }
+    boolean negated = false;
+    if (x < 0.0) {
+      x = -x;
+      y = -y;
+      negated = true;
+    }
+    final double b = x * y;
+    if (Math.abs(b) > COMPLEX_PHASE_MAX) {
+      return null;
+    }
+    // Re(w^2/2) modulo 2 in (-1, 1], from the exact squares: a phase just below a multiple of 2
+    // keeps its relative digits, which the imaginary parts of the results need
+    BigDecimal phase = new BigDecimal(x).pow(2).subtract(new BigDecimal(y).pow(2))
+        .divide(BigDecimal.valueOf(2L)).remainder(BigDecimal.valueOf(2L));
+    if (phase.compareTo(BigDecimal.ONE) > 0) {
+      phase = phase.subtract(BigDecimal.valueOf(2L));
+    } else if (phase.compareTo(BigDecimal.ONE.negate()) <= 0) {
+      phase = phase.add(BigDecimal.valueOf(2L));
+    }
+    final double a = phase.doubleValue();
+    final double sinA = sinPi(a);
+    final double cosA = cosPi(a);
+    final double coshB = Math.cosh(Math.PI * b);
+    final double sinhB = Math.sinh(Math.PI * b);
+    // Sin(Pi*(a+I*b)) and Cos(Pi*(a+I*b))
+    final Complex sin = new Complex(sinA * coshB, cosA * sinhB);
+    final Complex cos = new Complex(cosA * coshB, -sinA * sinhB);
+
+    final Complex w = new Complex(x, y);
+    final Complex inverseU = w.multiply(w).multiply(PI_BY_2).reciprocal();
+    // terms (1/2)_k / u^k: even k feed f, odd k feed g, with alternating signs in each
+    Complex term = Complex.ONE;
+    Complex f = Complex.ONE;
+    Complex g = Complex.ZERO;
+    double previous = Double.MAX_VALUE;
+    boolean converged = false;
+    for (int k = 1; k <= MAX_ITERATIONS; k++) {
+      term = term.multiply(inverseU).multiply(k - 0.5);
+      final double size = term.norm();
+      if (size > previous) {
+        break; // the asymptotic series started to diverge
+      }
+      previous = size;
+      final Complex signed = ((k >> 1) & 1) == 0 ? term : term.negate();
+      if ((k & 1) == 0) {
+        f = f.add(signed);
+      } else {
+        g = g.add(signed);
+      }
+      if (size < EPS) {
+        converged = true;
+        break;
+      }
+    }
+    if (!converged) {
+      return null;
+    }
+    final Complex scale = w.multiply(Math.PI).reciprocal();
+    f = f.multiply(scale);
+    g = g.multiply(scale);
+    Complex c = f.multiply(sin).subtract(g.multiply(cos)).add(0.5);
+    Complex s = f.multiply(cos).add(g.multiply(sin)).negate().add(0.5);
+    if (negated) {
+      c = c.negate();
+      s = s.negate();
+    }
+    if (rotated) {
+      c = c.multiply(Complex.I);
+      s = s.multiply(Complex.MINUS_I);
+    }
+    if (c.isNaN() || c.isInfinite() || s.isNaN() || s.isInfinite()) {
+      return null;
+    }
+    return new Complex[] {c, s};
+  }
+
+  /** <code>Sin(Pi*r)</code>, exact at the multiples of 1/2. */
+  private static double sinPi(double r) {
+    final double n = Math.rint(2.0 * r);
+    final double angle = Math.PI * (r - n / 2.0);
+    switch (((int) n) & 3) {
+      case 1:
+        return Math.cos(angle);
+      case 2:
+        return -Math.sin(angle);
+      case 3:
+        return -Math.cos(angle);
+      default:
+        return Math.sin(angle);
+    }
+  }
+
+  /** <code>Cos(Pi*r)</code>, exact at the multiples of 1/2. */
+  private static double cosPi(double r) {
+    final double n = Math.rint(2.0 * r);
+    final double angle = Math.PI * (r - n / 2.0);
+    switch (((int) n) & 3) {
+      case 1:
+        return -Math.sin(angle);
+      case 2:
+        return -Math.cos(angle);
+      case 3:
+        return Math.sin(angle);
+      default:
+        return Math.cos(angle);
+    }
   }
 }

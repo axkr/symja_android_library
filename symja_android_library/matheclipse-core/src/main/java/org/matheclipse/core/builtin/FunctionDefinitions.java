@@ -501,6 +501,7 @@ public final class FunctionDefinitions {
     PermutationGroupFunctions.initialize();
     IntegerFunctions.initialize();
     BesselFunctions.initialize();
+    DirichletFunctions.initialize();
     SpecialFunctions.initialize();
     StringFunctions.initialize();
     OutputFunctions.initialize();

@@ -65,6 +65,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.GammaJS;
+import org.matheclipse.core.numerics.functions.HurwitzZetaKernel;
 import org.matheclipse.core.numerics.functions.InverseGammaBetaJS;
 import org.matheclipse.external.apfloat.ApcomplexMathieuMath;
 import org.matheclipse.external.apfloat.ApcomplexAsymptoticMath;
@@ -2031,6 +2032,18 @@ public class SpecialFunctions {
 
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 3 && ast.arg1().isMachineNumber() && ast.arg2().isMachineNumber()
+          && ast.arg3().isMachineNumber()) {
+        // the series in machine arithmetic for |z| < 1 and Re(a) > 0
+        Complex machine = HurwitzZetaKernel.lerchPhi(ast.arg1().evalfc(), ast.arg2().evalfc(),
+            ast.arg3().evalfc());
+        if (machine != null) {
+          if (ast.arg1().isReal() && ast.arg2().isReal() && ast.arg3().isReal()) {
+            return F.num(machine.getReal());
+          }
+          return F.complexNum(machine);
+        }
+      }
       if (ast.argSize() == 3 && ast.arg1().isNumber() && ast.arg2().isNumber()
           && ast.arg3().isNumber()) {
         // for complex arguments and any precision

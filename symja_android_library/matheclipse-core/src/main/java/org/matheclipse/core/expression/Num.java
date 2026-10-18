@@ -37,6 +37,7 @@ import org.matheclipse.core.numerics.functions.BarnesG;
 import org.matheclipse.core.numerics.functions.BesselJS;
 import org.matheclipse.core.numerics.functions.ExponentialIntegrals;
 import org.matheclipse.core.numerics.functions.FresnelIntegrals;
+import org.matheclipse.core.numerics.functions.HurwitzZetaKernel;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.KummerM;
 import org.matheclipse.core.numerics.functions.PolyLog;
@@ -1060,12 +1061,15 @@ public class Num implements INum {
     // // try as computation with complex numbers
     // }
     // }
-    if (value == 1.0 && z instanceof Num) {
+    if (value >= 1.0 && value <= 1000.0 && value == Math.rint(value) && z instanceof Num) {
       double x = ((Num) z).value;
       if (x > 0.0 && x <= 700.0) {
-        // E1 of a real argument: the real kernel is within 4e-15 relative error, the apfloat
-        // route below costs some ten thousand times as much
-        return F.num(ExponentialIntegrals.expIntegralE1(x));
+        // E_n of a real argument for an integer n: the real kernel is within a few ulp, the
+        // apfloat route below costs some ten thousand times as much
+        double en = ExponentialIntegrals.expIntegralE((int) value, x);
+        if (!Double.isNaN(en)) {
+          return F.num(en);
+        }
       }
     }
     if (z instanceof INumber) {
@@ -2432,6 +2436,12 @@ public class Num implements INum {
 
   @Override
   public IExpr polyGamma(long n) {
+    if (n >= 1 && n <= 170 && value > 0.0) {
+      Complex machine = HurwitzZetaKernel.polyGamma((int) n, new Complex(value));
+      if (machine != null) {
+        return F.num(machine.getReal());
+      }
+    }
     try {
       Apfloat polygamma = EvalEngine.getApfloatDouble().polygamma(n, apfloatValue());
       return F.num(polygamma.doubleValue());
@@ -2476,6 +2486,13 @@ public class Num implements INum {
           return F.num(polylog.doubleValue());
         } catch (ArithmeticException | NumericComputationException e) {
           // java.lang.ArithmeticException: Result would be complex
+        }
+      }
+      if (value == 2.0 && arg2 instanceof IComplexNum) {
+        Complex dilog = PolyLog.dilog(new Complex(((IComplexNum) arg2).reDoubleValue(),
+            ((IComplexNum) arg2).imDoubleValue()));
+        if (dilog != null) {
+          return F.complexNum(dilog);
         }
       }
       try {

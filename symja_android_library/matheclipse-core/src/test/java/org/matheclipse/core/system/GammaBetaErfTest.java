@@ -349,6 +349,24 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testErfComplexComponents() {
+    // each component of a machine result accurate relative to itself
+    check("Re(Erf(1.5*10^-20+1.25*I))", //
+        "8.07479*10^-20");
+    check("Im(Erf(3.25+10^-20*I))", //
+        "2.9189*10^-25");
+    check("{Erfc(2.5+0.125*I), Erfi(0.375-4.5*I)}", //
+        "{0.000323957+I*(-0.000256163),-6.94515*10^-11+I*(-1.0)}");
+    check("Erfc(28.5+11.25*I)*10^300", //
+        "2.20153+I*(-2.01301)");
+    check("Erf(30.5+40.25*I)", //
+        "-3.6286*10^297+I*(-2.24122*10^297)");
+    // beyond the range of a double
+    check("Erf(41.0+50.0*I)", //
+        "1.905305021458144*10^353+I*(-3.794467342444578*10^353)");
+  }
+
+  @Test
   public void testErf() {
     // both arguments on one side of the origin: the difference of the complements
     checkNumeric("Erf(5.0, 6.0)*10^12", //
@@ -501,6 +519,14 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "-I");
     check("Erfi(-x)", //
         "-Erfi(x)");
+  }
+
+  @Test
+  public void testExpIntegralEInteger() {
+    check("ExpIntegralE(3, 2.5)", //
+        "0.0162954");
+    check("ExpIntegralE(4, 0.375)", //
+        "0.195691");
   }
 
   @Test
@@ -700,6 +726,18 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("3!", "6");
     check("3!!", "3");
 
+  }
+
+  @Test
+  public void testFresnelLargeComplex() {
+    check("FresnelC(2.0*10^9+3.0*10^-9*I)", //
+        "0.5+I*0.0122194");
+    check("FresnelS(2.0*10^9+3.0*10^-9*I)", //
+        "0.487781+I*(-1.5539*10^-19)");
+    check("{FresnelC(9.5-2.5*I), FresnelS(-30.25+0.5*I)}", //
+        "{1.0353*10^30+I*(-3.98091*10^30),-6.2545*10^17+I*(-2.1887*10^18)}");
+    check("FresnelC(8.0+0.375*I)", //
+        "-43.36291+I*242.4166");
   }
 
   @Test
@@ -1558,6 +1596,14 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "2/Sqrt(Pi)");
     check("Pochhammer(-5, -3)", //
         "-1/336");
+  }
+
+  @Test
+  public void testPolyGammaMachine() {
+    check("PolyGamma(2, 1.5+0.5*I)", //
+        "-0.488189+I*0.51677");
+    check("PolyGamma(3, 2.25)", //
+        "0.324544");
   }
 
   @Test

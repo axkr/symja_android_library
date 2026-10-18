@@ -311,6 +311,21 @@ public class BesselFunctions {
 
   }
 
+  /**
+   * Report <code>General::munfl</code> for a subnormal or zero machine value of
+   * <code>AiryAi</code> or <code>AiryAiPrime</code> at a positive argument, where both decay like
+   * <code>Exp(-2/3*x^(3/2))</code> and are never zero.
+   */
+  private static IExpr checkAiryUnderflow(IAST ast, IExpr result, EvalEngine engine) {
+    if (result instanceof Num && ast.arg1() instanceof Num) {
+      double x = ((Num) ast.arg1()).doubleValue();
+      if (x > 0.0 && Double.isFinite(x)) {
+        engine.machineUnderflow().check(((Num) result).doubleValue(), ast);
+      }
+    }
+    return result;
+  }
+
   private static final class AiryAi extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -344,7 +359,7 @@ public class BesselFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
-        return ast.arg1().airyAi();
+        return checkAiryUnderflow(ast, ast.arg1().airyAi(), engine);
       }
       return F.NIL;
     }
@@ -398,7 +413,7 @@ public class BesselFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
-        return ast.arg1().airyAiPrime();
+        return checkAiryUnderflow(ast, ast.arg1().airyAiPrime(), engine);
       }
       return F.NIL;
     }
