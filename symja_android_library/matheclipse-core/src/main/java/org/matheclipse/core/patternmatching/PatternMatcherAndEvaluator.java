@@ -421,8 +421,20 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
 
     if (fLhsPatternExpr.isASTOrAssociation() && leftHandSide.isASTOrAssociation()) {
-      return replaceSubExpressionOrderlessFlat((IAST) fLhsPatternExpr, (IAST) leftHandSide,
-          fRightHandSide, engine);
+      IExpr lhs = fLhsPatternExpr;
+      if (lhs.isAST(S.HoldPattern, 2)) {
+        lhs = lhs.first();
+      }
+      IExpr condition = F.NIL;
+      if (lhs.isCondition() && lhs.first().isFlatAST() && !lhs.first().isOrderlessAST()) {
+        // HoldPattern(f(x_, y_) /; test) on a run of a Flat f: the test decides for each run
+        condition = lhs.second();
+        lhs = lhs.first();
+      }
+      if (lhs.isAST()) {
+        return replaceSubExpressionOrderlessFlat((IAST) lhs, (IAST) leftHandSide,
+            fRightHandSide, condition, engine);
+      }
     }
     return F.NIL;
   }

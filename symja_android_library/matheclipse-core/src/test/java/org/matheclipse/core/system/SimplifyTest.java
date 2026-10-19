@@ -917,4 +917,29 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Integrate(x^b/(1+x^2), {x,0,Infinity}, Assumptions->-1<b<1)", //
         "1/2*Pi*Sec(1/2*b*Pi)");
   }
+
+  /**
+   * The logarithm of a trigonometric or hyperbolic quotient is an inverse hyperbolic function only
+   * where the assumptions make the quotient positive.
+   */
+  @Test
+  public void testFullSimplifyLogOfTrigQuotient() {
+    check("FullSimplify(Log(Sec(3*x)+Tan(3*x)), -Pi/6<x<Pi/6)", //
+        "ArcTanh(Sin(3*x))");
+    check("FullSimplify(Log(Csc(x)-Cot(x)), 0<x<Pi)", //
+        "-ArcTanh(Cos(x))");
+    check("FullSimplify(Log(5*Cot(x/2)), 0<x<Pi)", //
+        "ArcTanh(Cos(x))+Log(5)");
+    check("FullSimplify(Log(Coth(y)-Csch(y)), y>0)", //
+        "-ArcCoth(Cosh(y))");
+    check("FullSimplify(Log(2*Coth(x) - 2*Csch(x)), x > 0)", //
+        "-ArcCoth(Cosh(x))+Log(2)");
+    // the quotient isn't positive: no rewrite
+    check("FullSimplify(Log(Sec(3*x)+Tan(3*x)))", //
+        "Log(Sec(3*x)+Tan(3*x))");
+    check("FullSimplify(Log(Tanh(y/2)), y<0)", //
+        "Log(Tanh(y/2))");
+    check("FullSimplify(Log(Csc(x)+Cot(x)), Pi<x<2*Pi)", //
+        "Log(Cot(x)+Csc(x))");
+  }
 }

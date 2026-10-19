@@ -347,8 +347,7 @@ public abstract class AbstractRubiTestCase {
       if (fSeconds <= 0) {
         result = fEvaluator.eval(inputExpression);
       } else {
-        EvalEngine engine = fEvaluator.getEvalEngine();
-        engine.setSeconds(fSeconds);
+        // evaluateWithTimeout() sets the time limit of the engine
         result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true,
             new EvalControlledCallable(fEvaluator.getEvalEngine()));
       }

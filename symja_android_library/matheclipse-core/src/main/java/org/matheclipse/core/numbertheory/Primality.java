@@ -28,7 +28,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
-import edu.jas.arith.PrimeInteger;
 import org.matheclipse.external.fastutil.ints.Int2IntMap;
 import org.matheclipse.external.fastutil.ints.Int2IntRBTreeMap;
 import org.matheclipse.external.fastutil.objects.ObjectSet;
@@ -103,6 +102,13 @@ public class Primality implements IPrimality {
    * is split up recursively.
    */
   private static final int MAX_RHO_RECURSION_DEPTH = 64;
+
+  /**
+   * Below this bound {@link #factorIInteger(IInteger)} factors with
+   * {@link AbstractIntegerSym#factorizeLong(long)}, whose trial division up to a third of the
+   * square root is slow for the products of two large primes beyond it.
+   */
+  private static final long LONG_FACTORIZATION_LIMIT = 1L << 32;
 
   public Primality() {}
 
@@ -1470,7 +1476,7 @@ public class Primality implements IPrimality {
       if (NumberUtil.hasLongValue(big)) {
         // Android doesn't know method longValueExact
         long longValue = big.longValue();
-        if (longValue < PrimeInteger.BETA) {
+        if (longValue < LONG_FACTORIZATION_LIMIT) {
           return AbstractIntegerSym.factorizeLong(longValue);
         }
       }

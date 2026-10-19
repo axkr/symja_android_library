@@ -831,4 +831,13 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     check("N(Erf(b*x)/x /. {b->3/4, x->1/3})", //
         "0.828979");
   }
+
+  /** U(n, b, x) for integers 2 <= b <= n by the Kummer transformation. */
+  @Test
+  public void testHypergeometricUIntegerParameters() {
+    check("HypergeometricU(4, 3, x)", //
+        "(-1+E^x*x^2*(3+x)*Gamma(-2,x))/(3*x^2)");
+    check("N(HypergeometricU(4, 3, 2/3))", //
+        "0.182552");
+  }
 }

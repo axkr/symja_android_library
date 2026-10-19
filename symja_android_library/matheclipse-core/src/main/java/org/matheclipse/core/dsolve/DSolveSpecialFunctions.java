@@ -498,23 +498,123 @@ final class DSolveSpecialFunctions {
     return basis;
   }
 
-  /** Kummer's equation <code>x*y'' + (b - x)*y' - a*y == 0</code>. */
+  /**
+   * Kummer's equation <code>x*y'' + (b - c*x)*y' - a*y == 0</code>, which <code>t == c*x</code>
+   * takes to <code>t*y'' + (b - t)*y' - a/c*y == 0</code>.
+   */
   private static IExpr[] kummer(IExpr p, IExpr q, IExpr xVar, EvalEngine engine) {
-    IExpr b = cancel(F.Times(xVar, F.Plus(p, F.C1)), engine);
-    IExpr a = cancel(F.Times(F.CN1, xVar, q), engine);
-    if (!b.isFree(xVar) || !a.isFree(xVar)) {
+    IExpr[] linear = engine.evaluate(F.Expand(cancel(F.Times(xVar, p), engine))).linear(xVar);
+    if (linear == null) {
       return null;
     }
-    IExpr rest = engine.evaluate(F.Simplify(F.Subtract(p, F.Subtract(F.Divide(b, xVar), F.C1))));
+    IExpr b = linear[0];
+    IExpr c = engine.evaluate(F.Negate(linear[1]));
+    IExpr a = cancel(F.Times(F.CN1, xVar, q), engine);
+    if (!b.isFree(xVar) || !a.isFree(xVar) || !c.isFree(xVar) || c.isZero()) {
+      return null;
+    }
+    IExpr rest = engine.evaluate(F.Simplify(F.Subtract(p, F.Subtract(F.Divide(b, xVar), c))));
     if (!DSolveODE.isVanishing(rest, engine)) {
       return null;
     }
-    if (isProvableInteger(b, engine)) {
-      // The two solutions coincide, so this is not a basis.
+    if (c.isOne()) {
+      return kummerBasis(a, b, xVar, engine);
+    }
+    IExpr t = F.Dummy("t");
+    IExpr[] basis = kummerBasis(engine.evaluate(F.Divide(a, c)), b, t, engine);
+    if (basis == null) {
       return null;
+    }
+    IExpr scaled = engine.evaluate(F.Times(c, xVar));
+    return new IExpr[] {engine.evaluate(F.subst(basis[0], t, scaled)),
+        engine.evaluate(F.subst(basis[1], t, scaled))};
+  }
+
+  /** Kummer's equation <code>x*y'' + (b - x)*y' - a*y == 0</code>. */
+  private static IExpr[] kummerBasis(IExpr a, IExpr b, IExpr xVar, EvalEngine engine) {
+    if (isProvableInteger(b, engine)) {
+      // The two solutions of the series coincide, so they are no basis
+      if (!b.isInteger() || !b.isPositive()) {
+        return null;
+      }
+      if (a.isInteger() && !a.isPositive()) {
+        return kummerPolynomial((IInteger) a, (IInteger) b, xVar, engine);
+      }
+      if (!a.isNumber()) {
+        // a symbolic a may be a non positive integer, for which U is the polynomial again
+        return null;
+      }
+      // U is the second solution for every a which isn't a non positive integer
+      return new IExpr[] {F.Hypergeometric1F1(a, b, xVar), F.HypergeometricU(a, b, xVar)};
     }
     return new IExpr[] {F.Hypergeometric1F1(a, b, xVar), F.Times(F.Power(xVar, F.Subtract(F.C1, b)),
         F.Hypergeometric1F1(F.Plus(a, F.Subtract(F.C1, b)), F.Subtract(F.C2, b), xVar))};
+  }
+
+  /**
+   * Kummer's equation with a polynomial solution <code>y1 == Hypergeometric1F1(a, b, x)</code>,
+   * <code>a == -n</code> and <code>b</code> a positive integer, where <code>HypergeometricU</code>
+   * is that polynomial again. The second solution is
+   * <code>y1*ExpIntegralEi(x) + E^x*R(x)</code>: the operator takes <code>y1*ExpIntegralEi(x)</code>
+   * to <code>E^x*(2*y1' + (b-1)*y1/x)</code> and <code>E^x*R</code> to
+   * <code>E^x*(x*R'' + (x+b)*R' + (b-a)*R)</code>, so that <code>R</code> is the Laurent polynomial
+   * with powers <code>x^(1-b) ... x^n</code> which cancels the first.
+   *
+   * @return <code>null</code> if no such <code>R</code> is found
+   */
+  private static IExpr[] kummerPolynomial(IInteger a, IInteger b, IExpr xVar,
+      EvalEngine engine) {
+    int n = -a.toIntDefault();
+    int bInt = b.toIntDefault();
+    if (n < 0 || n > 20 || bInt < 1 || bInt > 20) {
+      return null;
+    }
+    IExpr y1 = engine.evaluate(F.Expand(F.Hypergeometric1F1(a, b, xVar)));
+    if (!y1.isPolynomial(xVar)) {
+      return null;
+    }
+    int low = 1 - bInt;
+    IASTAppendable unknowns = F.ListAlloc(n - low + 1);
+    IASTAppendable laurent = F.PlusAlloc(n - low + 1);
+    for (int k = low; k <= n; k++) {
+      IExpr c = F.Dummy("kummer" + (k - low));
+      unknowns.append(c);
+      laurent.append(F.Times(c, F.Power(xVar, F.ZZ(k))));
+    }
+    IExpr r = laurent;
+    IExpr residual = F.Plus(F.Times(xVar, F.D(r, F.list(xVar, F.C2))),
+        F.Times(F.Plus(xVar, b), F.D(r, xVar)), F.Times(F.Subtract(b, a), r),
+        F.Times(F.C2, F.D(y1, xVar)), F.Times(F.ZZ(bInt - 1), y1, F.Power(xVar, F.CN1)));
+    IExpr polynomial = engine.evaluate(F.Expand(F.Times(F.Power(xVar, F.ZZ(bInt)), residual)));
+    if (!polynomial.isPolynomial(xVar)) {
+      return null;
+    }
+    IExpr coefficients = engine.evaluate(F.CoefficientList(polynomial, xVar));
+    if (!coefficients.isList()) {
+      return null;
+    }
+    IASTAppendable equations = F.ListAlloc(((IAST) coefficients).argSize());
+    for (IExpr coefficient : (IAST) coefficients) {
+      equations.append(F.Equal(coefficient, F.C0));
+    }
+    IExpr solution = engine.evalQuiet(F.Solve(equations, unknowns));
+    if (!solution.isList() || ((IAST) solution).argSize() == 0 || !solution.first().isList()) {
+      return null;
+    }
+    IExpr rSolved = engine.evaluate(F.subst(r, (IAST) solution.first()));
+    // the free unknowns, which a multiple of y1 would absorb, are set to 0
+    for (IExpr c : unknowns) {
+      rSolved = F.subst(rSolved, c, F.C0);
+    }
+    rSolved = engine.evaluate(F.Together(rSolved));
+    IExpr y2 = engine.evaluate(
+        F.Plus(F.Times(y1, F.ExpIntegralEi(xVar)), F.Times(F.Power(S.E, xVar), rSolved)));
+    IExpr check = engine.evaluate(F.Plus(F.Times(xVar, F.D(y2, F.list(xVar, F.C2))),
+        F.Times(F.Subtract(b, xVar), F.D(y2, xVar)), F.Times(F.Negate(a), y2)));
+    if (!DSolveODE.isVanishing(check, engine)) {
+      return null;
+    }
+    return new IExpr[] {y1, y2};
   }
 
   /**

@@ -266,6 +266,121 @@ public final class HurwitzZetaKernel {
     return new Complex(sumR, sumI);
   }
 
+  /**
+   * <code>LerchPhi(z, s, a)</code> for <code>z</code> outside the unit disk and off the branch cut
+   * <code>[1, Infinity)</code>, real <code>s &gt; 0</code> and real <code>a</code>, by the integral
+   * <code>1/Gamma(s) * Integrate(t^(s-1)*E^(-a*t)/(1-z*E^(-t)), {t, 0, Infinity})</code>. A real
+   * <code>a &lt;= 0</code> is first shifted by <code>m</code>:
+   * <code>LerchPhi(z,s,a) = Sum(z^k*((k+a)^2)^(-s/2), {k,0,m-1}) + z^m*LerchPhi(z,s,a+m)</code>,
+   * where a term with <code>k+a == 0</code> is left out.
+   *
+   * <p>
+   * The integral is summed by the trapezoidal rule after <code>t = E^(Pi/2*Sinh(u))</code>, which
+   * makes the integrand decay double exponentially at both ends, and accepted if halving the step
+   * doesn't change it.
+   *
+   * @return <code>null</code> where the kernel declines
+   */
+  public static Complex lerchPhiOutside(Complex z, double s, double a) {
+    final double zr = z.getReal();
+    final double zi = z.getImaginary();
+    if (!Double.isFinite(zr) || !Double.isFinite(zi) || !Double.isFinite(s) || !Double.isFinite(a)
+        || !(s > 0.0) || zr * zr + zi * zi < 1.0 || (zi == 0.0 && zr >= 1.0)) {
+      return null;
+    }
+    if (Math.abs(zi) < 1.0e-6 && zr > 0.999) {
+      // too close to the branch cut, where the denominator nearly vanishes
+      return null;
+    }
+    Complex shiftSum = Complex.ZERO;
+    Complex zPower = Complex.ONE;
+    double shifted = a;
+    int shifts = 0;
+    while (shifted <= 0.0) {
+      if (++shifts > 1000) {
+        return null;
+      }
+      if (shifted != 0.0) {
+        shiftSum = shiftSum.add(zPower.multiply(Math.pow(Math.abs(shifted), -s)));
+      }
+      zPower = zPower.multiply(z);
+      shifted += 1.0;
+    }
+    Complex integral = lerchIntegral(zr, zi, s, shifted, 1.0 / 64.0);
+    Complex check = lerchIntegral(zr, zi, s, shifted, 1.0 / 128.0);
+    if (integral == null || check == null) {
+      return null;
+    }
+    double size = check.norm();
+    if (!(check.subtract(integral).norm() <= 1.0e-14 * size)) {
+      return null;
+    }
+    double gamma = org.hipparchus.special.Gamma.gamma(s);
+    if (!Double.isFinite(gamma) || gamma == 0.0) {
+      return null;
+    }
+    Complex value = shiftSum.add(zPower.multiply(check.divide(gamma)));
+    double cancelled = shiftSum.norm() + zPower.norm() * size / Math.abs(gamma);
+    if (!Double.isFinite(value.getReal()) || !Double.isFinite(value.getImaginary())
+        || cancelled > CANCEL_MAX * value.norm()) {
+      return null;
+    }
+    return value;
+  }
+
+  /**
+   * <code>Integrate(t^(s-1)*E^(-a*t)/(1-z*E^(-t)), {t, 0, Infinity})</code> for
+   * <code>a &gt; 0</code> by the trapezoidal rule with step <code>h</code> in <code>u</code>,
+   * <code>t = E^(Pi/2*Sinh(u))</code>.
+   */
+  private static Complex lerchIntegral(double zr, double zi, double s, double a, double h) {
+    double sumR = 0.0;
+    double sumI = 0.0;
+    double largest = 0.0;
+    for (int direction = 0; direction < 2; direction++) {
+      int small = 0;
+      for (int j = direction == 0 ? 0 : 1; j < 4000; j++) {
+        double u = direction == 0 ? j * h : -j * h;
+        double sinh = Math.sinh(u);
+        double logT = 0.5 * Math.PI * sinh;
+        if (logT > 700.0) {
+          break;
+        }
+        double t = Math.exp(logT);
+        // t^(s-1)*E^(-a*t) * dt/du, dt/du = t*Pi/2*Cosh(u)
+        double magnitude = Math.exp(s * logT - a * t) * 0.5 * Math.PI * Math.cosh(u);
+        double et = Math.exp(-t);
+        // 1 - z*E^(-t); for a small t written as -expm1(-t) - (z-1)*E^(-t)
+        double dr = t < 0.5 ? -Math.expm1(-t) - (zr - 1.0) * et : 1.0 - zr * et;
+        double di = -zi * et;
+        double d2 = dr * dr + di * di;
+        if (d2 < 1.0e-24) {
+          return null;
+        }
+        double fr = magnitude * dr / d2;
+        double fi = -magnitude * di / d2;
+        sumR += fr;
+        sumI += fi;
+        double size = Math.abs(fr) + Math.abs(fi);
+        largest = Math.max(largest, size);
+        if (size <= 1.0e-18 * (Math.abs(sumR) + Math.abs(sumI)) && j > 4) {
+          if (++small >= 3) {
+            break;
+          }
+        } else {
+          small = 0;
+        }
+        if (magnitude == 0.0 && j > 4) {
+          break;
+        }
+      }
+    }
+    if (!Double.isFinite(sumR) || !Double.isFinite(sumI)) {
+      return null;
+    }
+    return new Complex(sumR * h, sumI * h);
+  }
+
   /** <code>w^(-s)</code>, principal branch. */
   private static Complex powNeg(double wr, double wi, double sr, double si) {
     double lr;

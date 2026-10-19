@@ -275,4 +275,55 @@ public class IntegralRepresentationsTest extends ExprEvaluatorTestCase {
     check("Integrate(Sin(x)^a*Cos(x)^b, {x,0,Pi/4})", //
         "Integrate(Cos(x)^b*Sin(x)^a,{x,0,Pi/4})");
   }
+
+  /** Two kernels which are Meijer G-functions of x^2, convolved over the half line. */
+  @Test
+  public void testMeijerConvolution() {
+    // oscillating kernels of different frequencies
+    check("Integrate(BesselJ(0,3*x)*Cos(x), {x,0,Infinity})", //
+        "1/(2*Sqrt(2))");
+    check("Integrate(BesselJ(1,2*x)*Sin(x), {x,0,Infinity})", //
+        "1/(2*Sqrt(3))");
+    check("Integrate(BesselJ(1,x)*BesselY(1,2*x), {x,0,Infinity})", //
+        "0");
+    check("N(Integrate(BesselJ(1,x)*BesselJ(2,3*x)/x, {x,0,Infinity}))", //
+        "0.159553");
+    // the piece of the value which the assumptions select
+    check("Integrate(BesselJ(0,x)*Cos(b*x), {x,0,Infinity}, Assumptions->0<b<1)", //
+        "1/Sqrt(1-b^2)");
+    check("Integrate(BesselJ(0,x)*Sin(b*x), {x,0,Infinity}, Assumptions->0<b<1)", //
+        "0");
+    // an algebraic kernel
+    check("Integrate(x*BesselJ(0,2*x)/(4+x^2), {x,0,Infinity})", //
+        "BesselK(0,4)");
+    check("Integrate(x*BesselJ(0,x)/(a^2+x^2), {x,0,Infinity}, Assumptions->a>0)", //
+        "BesselK(0,a)");
+  }
+
+  /** Two exponentially decaying kernels: a G-function with double poles, evaluated numerically. */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testMeijerConvolutionBesselK() {
+    check("N(Integrate(x*BesselK(0,x)*BesselK(1,3*x), {x,0,Infinity}))", //
+        "0.277812");
+  }
+
+  /** The convergence conditions of the convolution decline the divergent integrals. */
+  @Test
+  public void testMeijerConvolutionDeclines() {
+    // equal frequencies: the product has a part which does not oscillate, and decays like 1/x
+    check("Integrate(BesselJ(0,2*x)^2, {x,0,Infinity}, Method->\"MeijerConvolution\")", //
+        "Integrate(BesselJ(0,2*x)^2,{x,0,Infinity},Method->MeijerConvolution)");
+    // an amplitude which grows
+    check("Integrate(x^2*BesselJ(1,x)*BesselY(1,2*x), {x,0,Infinity}, Method->\"MeijerConvolution\")", //
+        "Integrate(x^2*BesselJ(1,x)*BesselY(1,2*x),{x,0,Infinity},Method->MeijerConvolution)");
+    // not integrable at the origin
+    check("Integrate(BesselJ(0,x)*BesselJ(0,3*x)/x^3, {x,0,Infinity}, Method->\"MeijerConvolution\")", //
+        "Integrate(BesselJ(0,x)*BesselJ(0,3*x)/x^3,{x,0,Infinity},Method->MeijerConvolution)");
+    // real poles on the path: Re(-4) > 0 is refuted
+    check("Integrate(Cos(a*x)/(x^2-4), {x,0,Infinity}, Assumptions->a>0, Method->\"MeijerConvolution\")", //
+        "Integrate(Cos(a*x)/(-4+x^2),{x,0,Infinity},Assumptions->a>0,Method->MeijerConvolution)");
+    check("Integrate(BesselJ(0,x)*Cos(x), {x,0,Infinity}, Method->\"MeijerConvolution\")", //
+        "Integrate(BesselJ(0,x)*Cos(x),{x,0,Infinity},Method->MeijerConvolution)");
+  }
 }

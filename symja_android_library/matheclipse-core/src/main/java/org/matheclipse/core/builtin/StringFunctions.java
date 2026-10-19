@@ -13,7 +13,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -960,9 +959,11 @@ public final class StringFunctions {
       S.BaseDecode.setEvaluator(new BaseDecode());
       S.BaseEncode.setEvaluator(new BaseEncode());
       S.ByteArrayToString.setEvaluator(new ByteArrayToString());
+      S.Capitalize.setEvaluator(new Capitalize(true));
       S.Characters.setEvaluator(new Characters());
       S.CharacterRange.setEvaluator(new CharacterRange());
       S.CreateUUID.setEvaluator(new CreateUUID());
+      S.Decapitalize.setEvaluator(new Capitalize(false));
       S.EditDistance.setEvaluator(new EditDistance());
 
       S.FileNameDrop.setEvaluator(new FileNameDrop());
@@ -980,6 +981,7 @@ public final class StringFunctions {
       S.StringCases.setEvaluator(new StringCases());
       S.StringCount.setEvaluator(new StringCount());
       S.StringContainsQ.setEvaluator(new StringContainsQ());
+      S.StringDelete.setEvaluator(new StringDelete());
       S.StringDrop.setEvaluator(new StringDrop());
       S.StringExtract.setEvaluator(new StringExtract());
       S.StringExpression.setEvaluator(new StringExpression());
@@ -997,11 +999,15 @@ public final class StringFunctions {
       S.StringPosition.setEvaluator(new StringPosition());
       S.StringRepeat.setEvaluator(new StringRepeat());
       S.StringReplace.setEvaluator(new StringReplace());
+      S.StringReplaceList.setEvaluator(new StringReplaceList());
       S.StringReverse.setEvaluator(new StringReverse());
+      S.StringRotateLeft.setEvaluator(new StringRotate(true));
+      S.StringRotateRight.setEvaluator(new StringRotate(false));
       S.StringRiffle.setEvaluator(new StringRiffle());
       S.StringSplit.setEvaluator(new StringSplit());
       S.StringStartsQ.setEvaluator(new StringStartsQ());
       S.StringTake.setEvaluator(new StringTake());
+      S.StringTakeDrop.setEvaluator(new StringTakeDrop());
       S.StringReplacePart.setEvaluator(new StringReplacePart());
       S.StringTemplate.setEvaluator(new StringTemplate());
       S.StringToByteArray.setEvaluator(new StringToByteArray());
@@ -1165,15 +1171,8 @@ public final class StringFunctions {
 
     @Override
     public boolean test(final IExpr obj) {
-      final String str = obj.toString();
-      char ch;
-      for (int i = 0; i < str.length(); i++) {
-        ch = str.charAt(i);
-        if (!(Character.isLetter(ch))) {
-          return false;
-        }
-      }
-      return true;
+      // each character, one above U+FFFF included
+      return obj.toString().codePoints().allMatch(Character::isLetter);
     }
   }
 
@@ -1211,15 +1210,8 @@ public final class StringFunctions {
 
     @Override
     public boolean test(final IExpr obj) {
-      final String str = obj.toString();
-      char ch;
-      for (int i = 0; i < str.length(); i++) {
-        ch = str.charAt(i);
-        if (!(Character.isLowerCase(ch))) {
-          return false;
-        }
-      }
-      return true;
+      // each character, one above U+FFFF included
+      return obj.toString().codePoints().allMatch(Character::isLowerCase);
     }
   }
 
@@ -1315,90 +1307,6 @@ public final class StringFunctions {
    * </code>
    * </pre>
    */
-  /**
-   * Put what one match captured into the right hand side of a string rule.
-   *
-   * <p>
-   * Two ways of naming a group have to be served, because there are two ways of writing a string
-   * pattern. A pattern written in the language names its parts with symbols -
-   * <code>x__ ~~ "=" ~~ y__</code> - and those are substituted directly. A
-   * <code>RegularExpression</code> numbers them instead, and the right hand side refers to them as
-   * the strings <code>"$1"</code>, <code>"$2"</code> and so on, anywhere inside it: the replacement
-   * may be a string, or an expression built from several of them, as in
-   * <code>-&gt; ("$1" -&gt; {"$2", "$3"})</code>.
-   *
-   * @param namedRegexGroups maps a pattern symbol to the name of its group
-   */
-  private static IExpr substituteMatchedGroups(IExpr rhs, Matcher matcher,
-      Map<ISymbol, String> namedRegexGroups) {
-    IExpr result = rhs;
-    for (Map.Entry<ISymbol, String> group : namedRegexGroups.entrySet()) {
-      String groupValue = matcher.group(group.getValue());
-      if (groupValue != null) {
-        result = F.xreplace(result, group.getKey(), F.stringx(groupValue));
-      }
-    }
-    if (matcher.groupCount() > 0) {
-      final Matcher matched = matcher;
-      IExpr substituted = result.replaceAll(x -> {
-        if (x.isString()) {
-          String text = x.toString();
-          String replaced = substituteGroupReferences(text, matched);
-          return replaced.equals(text) ? F.NIL : F.stringx(replaced);
-        }
-        return F.NIL;
-      });
-      if (substituted.isPresent()) {
-        result = substituted;
-      } else if (result.isString()) {
-        // replaceAll does not visit the expression itself when it is an atom
-        String text = result.toString();
-        String replaced = substituteGroupReferences(text, matcher);
-        if (!replaced.equals(text)) {
-          result = F.stringx(replaced);
-        }
-      }
-    }
-    return result;
-  }
-
-  /**
-   * <code>$0</code> to <code>$9</code> in <code>text</code> replaced by what the match captured.
-   * <code>$0</code> is the whole match; a group that did not take part contributes nothing, and
-   * <code>$$</code> is a literal dollar.
-   */
-  private static String substituteGroupReferences(String text, Matcher matcher) {
-    int dollar = text.indexOf('$');
-    if (dollar < 0) {
-      return text;
-    }
-    StringBuilder buf = new StringBuilder(text.length() + 16);
-    for (int i = 0; i < text.length(); i++) {
-      char ch = text.charAt(i);
-      if (ch == '$' && i + 1 < text.length()) {
-        char next = text.charAt(i + 1);
-        if (next == '$') {
-          buf.append('$');
-          i++;
-          continue;
-        }
-        if (next >= '0' && next <= '9') {
-          int group = next - '0';
-          if (group <= matcher.groupCount()) {
-            String value = matcher.group(group);
-            if (value != null) {
-              buf.append(value);
-            }
-            i++;
-            continue;
-          }
-        }
-      }
-      buf.append(ch);
-    }
-    return buf.toString();
-  }
-
   private static class StringCases extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
@@ -1412,44 +1320,31 @@ public final class StringFunctions {
         }
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
+          int overlaps = StringPatternMatcher.overlaps(option[1]);
+          int limit = occurrenceLimit(ast, argSize, 3, engine);
+          if (limit < 0) {
+            return F.NIL;
+          }
 
-          String str = arg1.toString();
           // The pattern is evaluated: a pattern object evaluates to itself, while a regular
           // expression is usually built - RegularExpression["(\\w*)=\\{(" <> inner <> ")\\}"] -
           // and holding it leaves the StringJoin unevaluated. A RuleDelayed still holds its right
           // hand side, which is what makes the difference between -> and :> here.
           IExpr arg2 = engine.evaluate(ast.arg2());
-          if (!arg2.isList()) {
-            arg2 = F.list(arg2);
+          // A rule says what to make of each match rather than answering the matched text:
+          // StringCases[s, RegularExpression["(\\w+)=(\\w+)"] -> ("$1" -> "$2")]
+          StringPatternMatcher.Rules rules =
+              StringPatternMatcher.Rules.of(arg2, true, false, ignoreCase, ast, engine);
+          if (rules == null) {
+            return F.NIL;
           }
-          IAST list = (IAST) arg2;
+          rules.reset(arg1.toString());
           IASTAppendable result = F.ListAlloc();
-          for (int i = 1; i < list.size(); i++) {
-            IExpr arg = list.get(i);
-
-            // A rule says what to make of each match rather than answering the matched text:
-            // StringCases[s, RegularExpression["(\\w+)=(\\w+)"] -> ("$1" -> "$2")]
-            IExpr patternExpr = arg;
-            IExpr ruleRHS = F.NIL;
-            if (arg.isRuleAST()) {
-              patternExpr = arg.first();
-              ruleRHS = arg.second();
-            }
-
-            Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-            java.util.regex.Pattern pattern =
-                IStringX.toRegexPattern(patternExpr, true, ignoreCase, ast, groups, engine);
-            if (pattern == null) {
-              return F.NIL;
-            }
-            Matcher m = pattern.matcher(str);
-            while (m.find()) {
-              if (ruleRHS.isPresent()) {
-                result.append(engine.evaluate(substituteMatchedGroups(ruleRHS, m, groups)));
-              } else {
-                result.append(F.$str(m.group()));
-              }
-            }
+          if (limit > 0) {
+            rules.forEach(overlaps, () -> {
+              result.append(rules.value(engine));
+              return result.argSize() < limit;
+            }, engine);
           }
           return result;
         }
@@ -1459,13 +1354,13 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4_1;
+      return ARGS_1_5_1;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      // TODO S.Overlaps
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.Overlaps},
+          new IExpr[] {S.False, S.False});
     }
   }
 
@@ -1509,20 +1404,13 @@ public final class StringFunctions {
         // list of alternatives kept in a variable
         IExpr stringPattern = engine.evaluate(ast.arg2());
         if (arg1.isString() && !stringPattern.isRuleAST()) {
-          IExpr arg2 = stringPattern;
-
-          Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-          java.util.regex.Pattern pattern =
-              IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
-          if (pattern == null) {
+          StringPatternMatcher matcher =
+              StringPatternMatcher.compile(stringPattern, false, ignoreCase, ast, engine);
+          if (matcher == null) {
             return F.NIL;
           }
-          String s1 = arg1.toString();
-          java.util.regex.Matcher matcher = pattern.matcher(s1);
-          if (matcher.find()) {
-            return S.True;
-          }
-          return S.False;
+          matcher.reset(arg1.toString());
+          return F.booleSymbol(matcher.find(0));
         }
         return F.NIL;
       }
@@ -1579,26 +1467,20 @@ public final class StringFunctions {
         }
         if (arg1.isString()) {
           boolean ignoreCase = option[0].isTrue();
-
-          String str = arg1.toString();
-          IExpr arg2 = engine.evaluate(ast.arg2()).makeList();
-          IAST list = (IAST) arg2;
-          int counter = 0;
-          for (int i = 1; i < list.size(); i++) {
-            IExpr arg = list.get(i);
-
-            Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-            java.util.regex.Pattern pattern =
-                IStringX.toRegexPattern(arg, true, ignoreCase, ast, groups, engine);
-            if (pattern == null) {
-              return F.NIL;
-            }
-            Matcher m = pattern.matcher(str);
-            while (m.find()) {
-              counter++;
-            }
+          int overlaps = StringPatternMatcher.overlaps(option[1]);
+          IExpr arg2 = engine.evaluate(ast.arg2());
+          StringPatternMatcher.Rules rules =
+              StringPatternMatcher.Rules.of(arg2, false, false, ignoreCase, ast, engine);
+          if (rules == null) {
+            return F.NIL;
           }
-          return F.ZZ(counter);
+          rules.reset(arg1.toString());
+          int[] counter = new int[1];
+          rules.forEach(overlaps, () -> {
+            counter[0]++;
+            return true;
+          }, engine);
+          return F.ZZ(counter[0]);
         }
       }
       return F.NIL;
@@ -1606,12 +1488,14 @@ public final class StringFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4_1;
+      // there is no operator form StringCount[p]
+      return ARGS_2_4;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.Overlaps},
+          new IExpr[] {S.False, S.False});
     }
   }
 
@@ -1625,45 +1509,41 @@ public final class StringFunctions {
         return engine.evaluate(ast.setAtCopy(2,
             org.matheclipse.core.eval.util.Sequence.spanToListSpec((IAST) ast.arg2())));
       }
-      int from = 1;
-      int to = 1;
-      try {
-        if (ast.arg1().isString()) {
-          CodePointString s = new CodePointString(ast.arg1().toString());
-          if (ast.arg2().isList()) {
-            // `{m, n}` drops the characters m through n and keeps the rest; `{m}` drops one
-            int[] sequ = Validate.checkListOfInts(ast, ast.arg2(), Integer.MIN_VALUE,
-                Integer.MAX_VALUE, engine);
-            if (sequ == null || sequ.length < 1 || sequ.length > 2) {
-              return F.NIL;
-            }
-            from = sequ[0] < 0 ? s.length() + sequ[0] + 1 : sequ[0];
-            int last = sequ.length == 1 ? from : sequ[1];
-            to = last < 0 ? s.length() + last + 1 : last;
-            if (from < 1 || to > s.length() || from > to + 1) {
-              // Cannot drop positions `1` through `2` in `3`.
-              return Errors.printMessage(ast.topHead(), "drop",
-                  F.list(F.ZZ(from), F.ZZ(to), ast.arg1()), engine);
-            }
-            return F.$str(s.substring(0, from - 1) + s.substring(to));
-          }
-          from = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-          if (from >= 0) {
-            from++;
-            to = s.length();
-          } else {
-            to = s.length() + from;
-            from = 1;
-          }
-          return F.$str(s.substring(from - 1, to));
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isString()) {
+        if (arg1.isListOfStrings()) {
+          return arg1.mapThread(ast, 1);
         }
-      } catch (IndexOutOfBoundsException iob) {
-        // from substring
-        // Cannot drop positions `1` through `2` in `3`.
-        return Errors.printMessage(ast.topHead(), "drop",
-            F.list(F.ZZ(from - 1), F.ZZ(to), ast.arg1()), engine);
+        return F.NIL;
       }
-      return F.NIL;
+      IExpr arg2 = ast.arg2();
+      if (isListOfSpecs(arg2, false)) {
+        return F.NIL;
+      }
+      CodePointString s = new CodePointString(arg1.toString());
+      int length = s.length();
+      int[] positions = specPositions(arg2, length, engine);
+      if (positions == null) {
+        // Cannot drop positions `1` through `2` in `3`.
+        return Errors.printMessage(ast.topHead(), "drop", specBounds(arg2, arg1), engine);
+      }
+      boolean[] dropped = new boolean[length];
+      for (int p : positions) {
+        dropped[p] = true;
+      }
+      StringBuilder buf = new StringBuilder();
+      int start = -1;
+      for (int i = 0; i <= length; i++) {
+        if (i < length && !dropped[i]) {
+          if (start < 0) {
+            start = i;
+          }
+        } else if (start >= 0) {
+          buf.append(s.substring(start, i));
+          start = -1;
+        }
+      }
+      return F.$str(buf.toString());
     }
 
     @Override
@@ -1798,18 +1678,13 @@ public final class StringFunctions {
 
     private static IExpr stringFreeQ(IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase,
         EvalEngine engine) {
-      Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-      java.util.regex.Pattern pattern =
-          IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
-      if (pattern == null) {
+      StringPatternMatcher matcher =
+          StringPatternMatcher.compile(arg2, false, ignoreCase, ast, engine);
+      if (matcher == null) {
         return F.NIL;
       }
-      String s1 = arg1.toString();
-      java.util.regex.Matcher matcher = pattern.matcher(s1);
-      if (matcher.find()) {
-        return S.False;
-      }
-      return S.True;
+      matcher.reset(arg1.toString());
+      return F.booleSymbol(!matcher.find(0));
     }
 
     @Override
@@ -2022,35 +1897,37 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-      IAST list = ast;
-      if (ast.size() > 1) {
-        if (ast.isAST1()) {
-          IExpr arg1 = ast.arg1();
-          if (arg1.isList()) {
-            list = (IAST) arg1;
-          } else {
-            if (arg1.isString()) {
-              return arg1;
-            }
-            // String expected at position `1` in `2`.
-            return Errors.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
-          }
-        }
-        StringBuilder buf = new StringBuilder();
-        for (int i = 1; i < list.size(); i++) {
-          if (list.get(i).isString()) {
-            buf.append(list.get(i).toString());
-          } else {
-            // String expected at position `1` in `2`.
-            return Errors.printMessage(ast.topHead(), "string", F.list(F.ZZ(i), ast), engine);
-          }
-        }
-        return F.$str(buf.toString());
+      if (ast.isAST1() && ast.arg1().isString()) {
+        return ast.arg1();
       }
-      // nothing joined is the empty string; a notebook joins the
-      // strings of an empty row this way, and StringJoin() left unevaluated showed {StringJoin()}
-      return F.CEmptyString;
+      // the strings may stand in lists, nested ones too; nothing joined is the empty string -
+      // a notebook joins the strings of an empty row this way
+      StringBuilder buf = new StringBuilder();
+      for (int i = 1; i < ast.size(); i++) {
+        if (!appendStrings(buf, ast.get(i))) {
+          // String expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "string", F.list(F.ZZ(i), ast), engine);
+        }
+      }
+      return F.$str(buf.toString());
+    }
+
+    /** Append the strings of <code>expr</code>; <code>false</code> if something else is found. */
+    private static boolean appendStrings(StringBuilder buf, IExpr expr) {
+      if (expr.isString()) {
+        buf.append(expr.toString());
+        return true;
+      }
+      if (expr.isList()) {
+        IAST list = (IAST) expr;
+        for (int i = 1; i < list.size(); i++) {
+          if (!appendStrings(buf, list.get(i))) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
     }
 
     @Override
@@ -2169,6 +2046,10 @@ public final class StringFunctions {
       boolean longest = ast.argSize() == 1 || ast.arg2() == S.Automatic;
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
+        if (list.isEmpty()) {
+          // nothing to pad
+          return F.CEmptyString;
+        }
         int n = -1;
         if (!longest) {
           n = ast.arg2().toIntDefault();
@@ -2195,7 +2076,8 @@ public final class StringFunctions {
         return Errors.printMessage(ast.topHead(), "string", F.list(F.C1, ast), engine);
       }
       if (longest) {
-        return arg1;
+        // the length of the longest is only defined for a list of strings
+        return ast.argSize() == 1 ? F.NIL : arg1;
       }
       int n = ast.arg2().toIntDefault();
       if (n < 0) {
@@ -2314,19 +2196,15 @@ public final class StringFunctions {
         // list of alternatives kept in a variable
         IExpr arg2 = engine.evaluate(ast.arg2());
 
-        Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-        java.util.regex.Pattern pattern =
-            IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
-        if (pattern == null) {
+        // only here are * and @ in a literal string wildcards
+        StringPatternMatcher matcher =
+            StringPatternMatcher.compile(arg2, true, ignoreCase, ast, engine);
+        if (matcher == null) {
           return F.NIL;
         }
-        String s1 = arg1.toString();
         try {
-          java.util.regex.Matcher matcher = pattern.matcher(s1);
-          if (matcher.matches()) {
-            return S.True;
-          }
-          return S.False;
+          matcher.reset(arg1.toString());
+          return F.booleSymbol(matcher.matches());
         } catch (StackOverflowError soe) {
           // Regex expression `1` error message: `2`.
           Errors.printMessage(ast.topHead(), "zzregex",
@@ -2388,27 +2266,56 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-      if (!ast.arg1().isString()) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isString()) {
+        if (arg1.isListOfStrings()) {
+          return arg1.mapThread(ast, 1);
+        }
         return F.NIL;
       }
-
+      CodePointString str = new CodePointString(arg1.toString());
+      int length = str.length();
       IExpr arg2 = ast.arg2();
-      if (arg2.isList()) {
-        return arg2.mapThread(ast, 2);
-      }
-      CodePointString str = new CodePointString(ast.arg1().toString());
-      int part = arg2.toMachineInt();
-      if (part > 0) {
-        if (part > str.length()) {
-          // Part `1` of `2` does not exist.
-          return Errors.printMessage(ast.topHead(), "partw", F.list(F.ZZ(part), ast.arg1()),
+      int[] positions;
+      if (arg2 == S.All) {
+        positions = rangePositions(1, length, 1, length);
+      } else if (arg2.isAST(S.Span, 3) || arg2.isAST(S.Span, 4)) {
+        IAST spec = org.matheclipse.core.eval.util.Sequence.spanToListSpec((IAST) arg2);
+        if (!spec.forAll(x -> x.isInteger())) {
+          return F.NIL;
+        }
+        positions = rangePositions(spec.arg1().toLongDefault(), spec.arg2().toLongDefault(),
+            spec.isAST3() ? spec.arg3().toLongDefault() : 1, length);
+        if (positions == null) {
+          // Cannot take positions `1` through `2` in `3`.
+          return Errors.printMessage(ast.topHead(), "take", F.list(spec.arg1(), spec.arg2(), arg1),
               engine);
         }
-        return F.stringx(str.substring(part - 1, part));
+      } else if (arg2.isList() || arg2.isInteger()) {
+        IAST list = arg2.isList() ? (IAST) arg2 : F.list(arg2);
+        positions = new int[list.argSize()];
+        for (int i = 1; i < list.size(); i++) {
+          int part = list.get(i).toIntDefault();
+          if (part < 0 && part != Integer.MIN_VALUE) {
+            part = length + part + 1;
+          }
+          if (part < 1 || part > length) {
+            // Part `1` of `2` does not exist.
+            return Errors.printMessage(ast.topHead(), "partw", F.list(list.get(i), arg1), engine);
+          }
+          positions[i - 1] = part - 1;
+        }
+        if (arg2.isInteger()) {
+          return F.stringx(str.substring(positions[0], positions[0] + 1));
+        }
+      } else {
+        return F.NIL;
       }
-
-      return F.NIL;
+      IASTAppendable result = F.ListAlloc(positions.length);
+      for (int p : positions) {
+        result.append(F.stringx(str.substring(p, p + 1)));
+      }
+      return result;
     }
 
     @Override
@@ -2422,40 +2329,17 @@ public final class StringFunctions {
 
   private static class StringPosition extends AbstractCoreFunctionOptionEvaluator {
 
-    private static IExpr stringPosition(IAST ast, IExpr arg1, IExpr arg2, int maxOccurences,
-        boolean ignoreCase, IASTAppendable result, EvalEngine engine) {
-
-      Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-      java.util.regex.Pattern pattern =
-          IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
-      if (pattern == null) {
-        return F.NIL;
-      }
-      String s1 = arg1.toString();
-      CodePointString positions = new CodePointString(s1);
-      java.util.regex.Matcher matcher = pattern.matcher(s1);
-      while (matcher.find()) {
-        if (maxOccurences < result.size()) {
-          return result;
-        }
-        result.append(F.list(F.ZZ(positions.position(matcher.start()) + 1),
-            F.ZZ(positions.position(matcher.end()))));
-      }
-      return result;
-    }
-
     @Override
     protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
 
       if (argSize >= 2) {
-        int maxOccurences = Integer.MAX_VALUE;
         boolean ignoreCase = option[0].isTrue();
-        if (argSize > 2) {
-          maxOccurences = ast.arg3().toMachineInt();
-          if (maxOccurences < 0) {
-            maxOccurences = Integer.MAX_VALUE;
-          }
+        // the matches of StringPosition overlap unless Overlaps -> False says otherwise
+        int overlaps = StringPatternMatcher.overlaps(option[1]);
+        int limit = occurrenceLimit(ast, argSize, 3, engine);
+        if (limit < 0) {
+          return F.NIL;
         }
 
         IExpr arg1 = engine.evaluate(ast.arg1());
@@ -2467,39 +2351,41 @@ public final class StringFunctions {
           return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
         }
 
-        IExpr arg2 = ast.arg2();
-        IASTAppendable result = F.ListAlloc();
-        try {
-          if (arg2.isList()) {
-            IAST list = (IAST) arg2;
-            for (int i = 1; i < list.size(); i++) {
-              IExpr temp =
-                  stringPosition(ast, arg1, list.get(i), maxOccurences, ignoreCase, result, engine);
-              if (temp.isNIL()) {
-                return F.NIL;
-              }
-              if (maxOccurences < result.size()) {
-                return result;
-              }
-            }
-            return result;
-          }
-          return stringPosition(ast, arg1, arg2, maxOccurences, ignoreCase, result, engine);
-        } catch (StackOverflowError soe) {
+        IExpr arg2 = engine.evaluate(ast.arg2());
+        StringPatternMatcher.Rules rules =
+            StringPatternMatcher.Rules.of(arg2, false, false, ignoreCase, ast, engine);
+        if (rules == null) {
           return F.NIL;
         }
+        String str = arg1.toString();
+        CodePointString positions = new CodePointString(str);
+        rules.reset(str);
+        IASTAppendable result = F.ListAlloc();
+        if (limit > 0) {
+          try {
+            rules.forEach(overlaps, () -> {
+              result.append(F.list(F.ZZ(positions.position(rules.start()) + 1),
+                  F.ZZ(positions.position(rules.end()))));
+              return result.argSize() < limit;
+            }, engine);
+          } catch (StackOverflowError soe) {
+            return F.NIL;
+          }
+        }
+        return result;
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4_1;
+      return ARGS_1_5_1;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase, S.Overlaps},
+          new IExpr[] {S.False, S.True});
     }
   }
 
@@ -2583,90 +2469,6 @@ public final class StringFunctions {
    */
   private static class StringReplace extends AbstractCoreFunctionOptionEvaluator {
 
-    /**
-     * Replace all pattern symbols in <code>expr</code> with the value from the named regex group.
-     *
-     * @param expr
-     * @param matcher
-     * @param namedRegexGroups maps a pattern symbol to the regex name
-     * @return
-     */
-    private static IExpr replaceGroups(IExpr expr, Matcher matcher,
-        Map<ISymbol, String> namedRegexGroups) {
-
-      for (Map.Entry<ISymbol, String> group : namedRegexGroups.entrySet()) {
-        String groupValue = matcher.group(group.getValue());
-        if (groupValue != null) {
-          expr = F.xreplace(expr, group.getKey(), F.stringx(groupValue));
-        }
-      }
-      return expr;
-    }
-
-    /**
-     * @param str
-     * @param ruleRHS
-     * @param pattern
-     * @param namedRegexGroups maps a pattern symbol to the regex name
-     * @param engine
-     * @return
-     */
-    private static String stringReplace(String str, final IExpr ruleRHS,
-        java.util.regex.Pattern pattern, Map<ISymbol, String> namedRegexGroups,
-        final EvalEngine engine) {
-
-      Matcher matcher = pattern.matcher(str);
-      if (ruleRHS.isString()) {
-        // a string right-hand side: `$1` … `$9` in it are what the match captured, which is what
-        // the matcher itself does
-        return matcher.replaceAll(engine.evaluate(ruleRHS).toString());
-      }
-      if (matcher.find()) {
-        StringBuffer buf = new StringBuffer(str.length() + 16);
-        do {
-          // what the match captured goes into the right-hand side *before* it is evaluated, so
-          // that the expression can look at it - `If[StringLength["$2"] === 0, …]` asks whether a
-          // group took part, and reading `$2` afterwards would only ever see the two characters
-          IExpr temp = engine.evaluate(substituteMatchedGroups(ruleRHS, matcher, namedRegexGroups));
-          matcher.appendReplacement(buf, Matcher.quoteReplacement(temp.toString()));
-        } while (matcher.find());
-        matcher.appendTail(buf);
-        return buf.toString();
-      }
-      return str;
-    }
-
-    /**
-     * @param str
-     * @param conditionTest
-     * @param ruleRHS
-     * @param pattern
-     * @param namedRegexGroups maps a pattern symbol to the regex name
-     * @param engine
-     * @return
-     */
-    private static String stringReplaceCondition(String str, IExpr conditionTest,
-        final IExpr ruleRHS, java.util.regex.Pattern pattern, Map<ISymbol, String> namedRegexGroups,
-        final EvalEngine engine) {
-
-      Matcher matcher = pattern.matcher(str);
-      if (matcher.find()) {
-        StringBuffer buf = new StringBuffer(str.length() + 16);
-        do {
-          // the condition sees what the match captured, as the replacement does
-          if (engine.evalTrue(substituteMatchedGroups(conditionTest, matcher, namedRegexGroups))) {
-            IExpr temp =
-                engine.evaluate(substituteMatchedGroups(ruleRHS, matcher, namedRegexGroups));
-            matcher.appendReplacement(buf,
-                ruleRHS.isString() ? temp.toString() : Matcher.quoteReplacement(temp.toString()));
-          }
-        } while (matcher.find());
-        matcher.appendTail(buf);
-        return buf.toString();
-      }
-      return str;
-    }
-
     @Override
     protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
@@ -2687,42 +2489,141 @@ public final class StringFunctions {
           // for each match; rules held in a variable or made by a function have to be fetched
           arg2 = engine.evaluate(arg2);
         }
-        if (!arg2.isListOfRules(false)) {
-          if (arg2.isRuleAST()) {
-            arg2 = F.list(arg2);
-          } else {
-            return F.NIL;
-          }
+        if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
+          return F.NIL;
         }
-        IAST list = (IAST) arg2;
-        for (int i = 1; i < list.size(); i++) {
-          final IAST rule = (IAST) list.get(i);
-          final IExpr ruleLHS = rule.arg1();
-          final IExpr ruleRHS = rule.arg2();
+        int limit = occurrenceLimit(ast, argSize, 3, engine);
+        if (limit < 0) {
+          return F.NIL;
+        }
+        // the rules are tried together: at each position the first which matches replaces it,
+        // and what a replacement inserted is not looked at again
+        StringPatternMatcher.Rules rules =
+            StringPatternMatcher.Rules.of(arg2, true, false, ignoreCase, ast, engine);
+        if (rules == null) {
+          return F.NIL;
+        }
+        rules.reset(str);
+        return replaceMatches(rules, limit, F.NIL, engine);
+      }
+      return F.NIL;
+    }
 
-          // see github #221 - use Java regex - named capturing groups
-          Map<ISymbol, String> namedRegexGroups = new IdentityHashMap<ISymbol, String>();
-          if (ruleLHS.isCondition()) {
-            final IAST condition = (IAST) ruleLHS;
-            final IExpr conditionPattern = condition.arg1();
-            final IExpr conditionTest = condition.arg2();
-            java.util.regex.Pattern pattern = IStringX.toRegexPattern(conditionPattern, true,
-                ignoreCase, ast, namedRegexGroups, engine);
-            if (pattern == null) {
-              return F.NIL;
-            }
-            str = stringReplaceCondition(str, conditionTest, ruleRHS, pattern, namedRegexGroups,
-                engine);
-          } else {
-            java.util.regex.Pattern pattern =
-                IStringX.toRegexPattern(ruleLHS, true, ignoreCase, ast, namedRegexGroups, engine);
-            if (pattern == null) {
-              return F.NIL;
-            }
-            str = stringReplace(str, ruleRHS, pattern, namedRegexGroups, engine);
-          }
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
+  }
+
+  /**
+   * The occurrence limit <code>n</code> of <code>StringCases[s, p, n]</code> and similar
+   * functions at <code>position</code>: a non-negative integer, <code>Infinity</code> or nothing
+   * for no limit; <code>-1</code> for anything else.
+   */
+  private static int occurrenceLimit(IAST ast, int argSize, int position, EvalEngine engine) {
+    if (argSize < position) {
+      return Integer.MAX_VALUE;
+    }
+    IExpr n = engine.evaluate(ast.get(position));
+    if (n.isInfinity()) {
+      return Integer.MAX_VALUE;
+    }
+    int limit = n.toIntDefault();
+    if (limit < 0) {
+      return -1;
+    }
+    return limit;
+  }
+
+  /**
+   * Add the replacement <code>value</code> to the pieces of a string being built. A string joins
+   * the text; <code>Sequence[...]</code> adds its elements and <code>Sequence[]</code> or
+   * <code>Nothing</code> nothing; anything else makes the result a <code>StringExpression</code>.
+   */
+  private static void appendPiece(IASTAppendable pieces, StringBuilder text, IExpr value) {
+    if (value.isString()) {
+      text.append(value.toString());
+    } else if (value.isAST(S.Sequence)) {
+      IAST sequence = (IAST) value;
+      for (int i = 1; i < sequence.size(); i++) {
+        appendPiece(pieces, text, sequence.get(i));
+      }
+    } else if (value != S.Nothing) {
+      if (text.length() > 0) {
+        pieces.append(F.stringx(text.toString()));
+        text.setLength(0);
+      }
+      pieces.append(value);
+    }
+  }
+
+  /**
+   * The string or <code>StringExpression</code> the pieces make: a string if every replacement
+   * was one.
+   */
+  private static IExpr joinPieces(IASTAppendable pieces, StringBuilder text) {
+    if (pieces.argSize() == 0) {
+      return F.stringx(text.toString());
+    }
+    if (text.length() > 0) {
+      pieces.append(F.stringx(text.toString()));
+    }
+    return pieces;
+  }
+
+  /**
+   * The string searched by <code>rules</code> with its first <code>limit</code> matches replaced -
+   * by <code>fixedValue</code> if it is present, otherwise by what the matching rule gives.
+   */
+  private static IExpr replaceMatches(StringPatternMatcher.Rules rules, int limit,
+      IExpr fixedValue, EvalEngine engine) {
+    final String str = rules.input();
+    final IASTAppendable pieces = F.ast(S.StringExpression);
+    final StringBuilder text = new StringBuilder(str.length() + 16);
+    final int[] state = {0, 0}; // the position after the last match, the number of matches
+    if (limit > 0) {
+      rules.forEach(StringPatternMatcher.OVERLAPS_NONE, () -> {
+        text.append(str, state[0], rules.start());
+        appendPiece(pieces, text, fixedValue.isPresent() ? fixedValue : rules.value(engine));
+        state[0] = rules.end();
+        return ++state[1] < limit;
+      }, engine);
+    }
+    text.append(str, state[0], str.length());
+    return joinPieces(pieces, text);
+  }
+
+  /**
+   * <code>StringDelete[s, p]</code> - the string with the matches of <code>p</code> removed.
+   */
+  private static class StringDelete extends AbstractCoreFunctionOptionEvaluator {
+
+    @Override
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
+      if (argSize >= 2) {
+        boolean ignoreCase = option[0].isTrue();
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        if (arg1.isList()) {
+          return arg1.mapThread(ast, 1);
         }
-        return F.$str(str);
+        if (!arg1.isString()) {
+          // String or list of strings expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+        }
+        IExpr arg2 = engine.evaluate(ast.arg2());
+        StringPatternMatcher.Rules rules =
+            StringPatternMatcher.Rules.of(arg2, false, false, ignoreCase, ast, engine);
+        if (rules == null) {
+          return F.NIL;
+        }
+        rules.reset(arg1.toString());
+        return replaceMatches(rules, Integer.MAX_VALUE, F.CEmptyString, engine);
       }
       return F.NIL;
     }
@@ -2735,6 +2636,328 @@ public final class StringFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
+  }
+
+  /**
+   * <code>StringReplaceList[s, rules, n]</code> - the strings each of which has one match of the
+   * rules replaced, the matches taken at every position, overlapping ones included.
+   */
+  private static class StringReplaceList extends AbstractCoreFunctionOptionEvaluator {
+
+    @Override
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
+      if (argSize >= 2) {
+        boolean ignoreCase = option[0].isTrue();
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        if (arg1.isList()) {
+          return arg1.mapThread(ast, 1);
+        }
+        if (!arg1.isString()) {
+          // String or list of strings expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+        }
+        IExpr arg2 = ast.arg2();
+        if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
+          arg2 = engine.evaluate(arg2);
+        }
+        if (!arg2.isListOfRules(false) && !arg2.isRuleAST()) {
+          return F.NIL;
+        }
+        int limit = occurrenceLimit(ast, argSize, 3, engine);
+        if (limit < 0) {
+          return F.NIL;
+        }
+        StringPatternMatcher.Rules rules =
+            StringPatternMatcher.Rules.of(arg2, true, false, ignoreCase, ast, engine);
+        if (rules == null) {
+          return F.NIL;
+        }
+        final String str = arg1.toString();
+        rules.reset(str);
+        // each match is {start, end, rule}; its replacement is kept in values
+        List<int[]> matches = new java.util.ArrayList<int[]>();
+        List<IExpr> values = new java.util.ArrayList<IExpr>();
+        for (int i = 0; i < rules.size(); i++) {
+          int from = 0;
+          while (from <= str.length() && rules.find(i, from)) {
+            engine.checkTimeLimit();
+            matches.add(new int[] {rules.start(), rules.end(), i, values.size()});
+            values.add(rules.value(engine));
+            if (rules.start() >= str.length()) {
+              break;
+            }
+            from = str.offsetByCodePoints(rules.start(), 1);
+          }
+        }
+        // from left to right, and at one position in the order of the rules
+        matches.sort((a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0])
+            : Integer.compare(a[2], b[2]));
+        IASTAppendable result = F.ListAlloc(Math.min(limit, matches.size()));
+        for (int[] match : matches) {
+          if (result.argSize() >= limit) {
+            break;
+          }
+          IASTAppendable pieces = F.ast(S.StringExpression);
+          StringBuilder text = new StringBuilder(str.length() + 16);
+          text.append(str, 0, match[0]);
+          appendPiece(pieces, text, values.get(match[3]));
+          text.append(str, match[1], str.length());
+          result.append(joinPieces(pieces, text));
+        }
+        return result;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_4;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
+  }
+
+  /**
+   * The characters (0-based) of a string of <code>n</code> characters a position specification of
+   * <code>StringTake</code> or <code>StringDrop</code> names, in the order it names them - or
+   * <code>null</code> if they don't exist.
+   *
+   * <ul>
+   * <li><code>k</code> is the first <code>k</code> characters, <code>-k</code> the last ones,
+   * <code>UpTo[k]</code> at most <code>k</code> first ones;
+   * <li><code>{m}</code> is character <code>m</code>, <code>{m, k}</code> the characters
+   * <code>m</code> to <code>k</code>, <code>{m, k, s}</code> every <code>s</code>-th of them -
+   * from <code>m</code> down to <code>k</code> if <code>s</code> is negative;
+   * <li><code>All</code> is every character, <code>None</code> and <code>{}</code> none.
+   * </ul>
+   */
+  private static int[] specPositions(IExpr spec, int n, EvalEngine engine) {
+    if (spec == S.All) {
+      return rangePositions(1, n, 1, n);
+    }
+    if (spec == S.None || spec.isEmptyList()) {
+      return new int[0];
+    }
+    if (spec.isAST(S.UpTo, 2)) {
+      int upTo = Validate.checkUpTo((IAST) spec, engine);
+      if (F.isNotPresent(upTo)) {
+        return null;
+      }
+      return rangePositions(1, Math.min(upTo, n), 1, n);
+    }
+    if (spec.isReal()) {
+      long k = spec.toLongDefault();
+      if (k == Long.MIN_VALUE || Math.abs(k) > n) {
+        return null;
+      }
+      return k >= 0 ? rangePositions(1, k, 1, n) : rangePositions(n + k + 1, n, 1, n);
+    }
+    if (spec.isList() && spec.argSize() <= 3) {
+      long[] values = new long[spec.argSize()];
+      for (int i = 0; i < values.length; i++) {
+        IExpr value = spec.getAt(i + 1);
+        if (!value.isInteger()) {
+          return null;
+        }
+        values[i] = value.toLongDefault();
+        if (values[i] == Long.MIN_VALUE) {
+          return null;
+        }
+      }
+      if (values.length == 1) {
+        long m = values[0] < 0 ? n + values[0] + 1 : values[0];
+        if (m < 1 || m > n) {
+          return null;
+        }
+        return new int[] {(int) m - 1};
+      }
+      return rangePositions(values[0], values[1], values.length == 3 ? values[2] : 1, n);
+    }
+    return null;
+  }
+
+  /**
+   * The characters (0-based) <code>m</code>, <code>m + s</code>, … up to <code>k</code> (down to
+   * it if <code>s</code> is negative) of a string of <code>n</code> characters, or
+   * <code>null</code> if they don't exist. A negative position counts from the end, and so does a
+   * start of <code>0</code>: <code>{0, n}</code> is empty like <code>{n + 1, n}</code>.
+   */
+  private static int[] rangePositions(long m, long k, long s, int n) {
+    if (s == 0) {
+      return null;
+    }
+    long from = m <= 0 ? n + m + 1 : m;
+    long to = k < 0 ? n + k + 1 : k;
+    long count;
+    if (s > 0) {
+      if (from < 1 || from > n + 1 || to < 0 || to > n || from > to + 1) {
+        return null;
+      }
+      count = from > to ? 0 : (to - from) / s + 1;
+    } else {
+      if (from < 0 || from > n || to < 1 || to > n + 1 || from < to - 1) {
+        return null;
+      }
+      count = from < to ? 0 : (from - to) / -s + 1;
+    }
+    int[] positions = new int[(int) count];
+    long p = from;
+    for (int i = 0; i < count; i++) {
+      positions[i] = (int) p - 1;
+      p += s;
+    }
+    return positions;
+  }
+
+  /** Whether <code>spec</code> is a list of position specifications rather than one. */
+  private static boolean isListOfSpecs(IExpr spec, boolean zeroStepIsList) {
+    if (!spec.isList() || spec.argSize() == 0) {
+      return false;
+    }
+    if (spec.argSize() > 3) {
+      return true;
+    }
+    IAST list = (IAST) spec;
+    if (!list.forAll(x -> x.isInteger())) {
+      return true;
+    }
+    return zeroStepIsList && list.argSize() == 3 && list.arg3().isZero();
+  }
+
+  /** The message arguments <code>m</code> and <code>k</code> of a failed specification. */
+  private static IAST specBounds(IExpr spec, IExpr str) {
+    if (spec.isList() && spec.argSize() >= 2) {
+      return F.list(spec.first(), spec.second(), str);
+    }
+    if (spec.isList1()) {
+      return F.list(spec.first(), spec.first(), str);
+    }
+    if (spec.isNegative()) {
+      return F.list(spec, F.CN1, str);
+    }
+    return F.list(F.C1, spec, str);
+  }
+
+  /**
+   * <code>StringTakeDrop[s, spec]</code> - the pair of <code>StringTake[s, spec]</code> and
+   * <code>StringDrop[s, spec]</code>.
+   */
+  private static class StringTakeDrop extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isListOfStrings()) {
+        return arg1.mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
+        // String or list of strings expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+      }
+      IExpr taken = engine.evaluate(F.binaryAST2(S.StringTake, arg1, ast.arg2()));
+      if (!taken.isString()) {
+        return F.NIL;
+      }
+      IExpr dropped = engine.evaluate(F.binaryAST2(S.StringDrop, arg1, ast.arg2()));
+      if (!dropped.isString()) {
+        return F.NIL;
+      }
+      return F.list(taken, dropped);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+  }
+
+  /**
+   * <code>StringRotateLeft[s, n]</code> and <code>StringRotateRight[s, n]</code> - the characters
+   * of <code>s</code> cycled <code>n</code> places, one if <code>n</code> is left out.
+   */
+  private static class StringRotate extends AbstractFunctionEvaluator {
+    private final boolean left;
+
+    StringRotate(boolean left) {
+      this.left = left;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isListOfStrings()) {
+        return arg1.mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
+        return F.NIL;
+      }
+      long n = 1;
+      if (ast.isAST2()) {
+        if (!ast.arg2().isInteger()) {
+          return F.NIL;
+        }
+        n = ast.arg2().toLongDefault();
+        if (n == Long.MIN_VALUE) {
+          return F.NIL;
+        }
+      }
+      CodePointString s = new CodePointString(arg1.toString());
+      int length = s.length();
+      if (length == 0) {
+        return arg1;
+      }
+      long shift = (left ? n : -n) % length;
+      int k = (int) (shift < 0 ? shift + length : shift);
+      return F.stringx(s.substring(k) + s.substring(0, k));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <code>Capitalize[s]</code> and <code>Decapitalize[s]</code> - the string with its first
+   * character in upper (title) case or in lower case.
+   */
+  private static class Capitalize extends AbstractFunctionEvaluator {
+    private final boolean upper;
+
+    Capitalize(boolean upper) {
+      this.upper = upper;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isListOfStrings()) {
+        return arg1.mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
+        return F.NIL;
+      }
+      String str = arg1.toString();
+      if (str.isEmpty()) {
+        return arg1;
+      }
+      int cp = str.codePointAt(0);
+      int changed = upper ? Character.toTitleCase(cp) : Character.toLowerCase(cp);
+      if (changed == cp) {
+        return arg1;
+      }
+      return F.stringx(
+          new String(Character.toChars(changed)) + str.substring(Character.charCount(cp)));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
@@ -2971,6 +3194,13 @@ public final class StringFunctions {
         // and it is what makes the part after it the second and not the first
         parts.append(F.stringx(piece));
       }
+      if (position.isInteger()) {
+        int n = position.toIntDefault();
+        if (n == 0 || n == Integer.MIN_VALUE || Math.abs(n) > parts.argSize()) {
+          // a piece which isn't there
+          return F.binaryAST2(S.Missing, F.stringx("PartAbsent"), position);
+        }
+      }
       return engine.evaluate(F.Part(parts, position));
     }
 
@@ -2987,19 +3217,6 @@ public final class StringFunctions {
 
   private static class StringSplit extends AbstractCoreFunctionOptionEvaluator {
 
-    private static IExpr splitList(String str, String[] result) {
-      if (result == null || str.length() == 0) {
-        return F.CEmptyList;
-      }
-      return F.mapRange(0, result.length, i -> {
-        // TODO empty strings are not generally a problem
-        // if (result[i].length() == 0) {
-        // return F.NIL;
-        // }
-        return F.stringx(result[i]);
-      });
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
@@ -3011,48 +3228,71 @@ public final class StringFunctions {
         // String or list of strings expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
       }
-      String str1 = arg1.toString().trim();
-      if (ast.isAST1()) {
-        return splitList(str1, str1.split("\\s+"));
-      }
       boolean ignoreCase = option[0].isTrue();
-
-      if (argSize >= 2) {
-        IExpr arg2 = ast.arg2();
-        if (arg2.isList()) {
-          if (!arg2.isListOfRules()) {
-            // rewrite lists on first level to Alternatives
-            arg2 = ((IAST) arg2).setAtCopy(0, S.Alternatives);
-          }
-        }
-        Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-        java.util.regex.Pattern pattern =
-            IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
-        if (pattern == null) {
-          return F.NIL;
-        }
-        if (argSize >= 3) {
-          // StringSplit[s, patt, n] gives at most n pieces: the last one is the rest of the
-          // string, delimiters and all, and a piece which is empty is still a piece.
-          // `StringSplit["key:", ":", 2]` is {"key", ""}, which is how a line of a configuration
-          // file with nothing after its colon is read.
-          int pieces = ast.arg3().toIntDefault();
+      // without a delimiter the pieces are separated by whitespace
+      IExpr delimiter = argSize >= 2 ? engine.evaluate(ast.arg2()) : S.Whitespace;
+      // StringSplit[s, patt, n] gives at most n pieces: the last one is the rest of the string,
+      // delimiters and all, and a piece which is empty is still a piece. `StringSplit["key:",
+      // ":", 2]` is {"key", ""}, which is how a line of a configuration file with nothing after
+      // its colon is read. All keeps the empty pieces at the ends as well.
+      int pieces = Integer.MAX_VALUE;
+      boolean keepEmpty = false;
+      if (argSize >= 3) {
+        keepEmpty = true;
+        IExpr arg3 = engine.evaluate(ast.arg3());
+        if (arg3 != S.All && !arg3.isInfinity()) {
+          pieces = arg3.toIntDefault();
           if (pieces == Integer.MIN_VALUE) {
             return F.NIL;
           }
           if (pieces <= 0) {
-            return splitList(str1, pattern.split(str1, -1));
+            pieces = Integer.MAX_VALUE;
           }
-          return splitList(str1, pattern.split(str1, pieces));
         }
-        return splitList(str1, pattern.split(str1));
       }
-      return F.NIL;
+      StringPatternMatcher.Rules rules =
+          StringPatternMatcher.Rules.of(delimiter, true, false, ignoreCase, ast, engine);
+      if (rules == null) {
+        return F.NIL;
+      }
+      final String str = arg1.toString();
+      final int limit = pieces;
+      rules.reset(str);
+      // the pieces between the delimiters, with what a rule makes of a delimiter in between
+      final IASTAppendable result = F.ListAlloc();
+      final int[] state = {0, 1}; // where the next piece starts, the number of pieces
+      rules.forEach(StringPatternMatcher.OVERLAPS_NONE, () -> {
+        if (state[1] >= limit) {
+          return false;
+        }
+        if (rules.start() == rules.end() && (rules.end() == 0 || rules.end() == str.length())) {
+          // an empty delimiter at an end separates nothing
+          return true;
+        }
+        result.append(F.stringx(str.substring(state[0], rules.start())));
+        if (rules.isRule()) {
+          result.append(rules.value(engine));
+        }
+        state[0] = rules.end();
+        state[1]++;
+        return true;
+      }, engine);
+      result.append(F.stringx(str.substring(state[0])));
+      if (!keepEmpty) {
+        // an empty piece at either end is left out
+        if (result.argSize() > 0 && result.arg1().equals(F.CEmptyString)) {
+          result.remove(1);
+        }
+        if (result.argSize() > 0 && result.last().equals(F.CEmptyString)) {
+          result.remove(result.argSize());
+        }
+      }
+      return result;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_4;
     }
 
     @Override
@@ -3079,24 +3319,13 @@ public final class StringFunctions {
         // list of alternatives kept in a variable
         IExpr stringPattern = engine.evaluate(ast.arg2());
         if (arg1.isString() && !stringPattern.isRuleAST()) {
-          IExpr arg2 = stringPattern;
-
-          Map<ISymbol, String> groups = new HashMap<>();
-          java.util.regex.Pattern pattern =
-              IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
-
-          if (pattern == null) {
+          StringPatternMatcher matcher =
+              StringPatternMatcher.compile(stringPattern, false, ignoreCase, ast, engine);
+          if (matcher == null) {
             return F.NIL;
           }
-
-          String s1 = arg1.toString();
-          java.util.regex.Matcher matcher = pattern.matcher(s1);
-
-          // Matcher.lookingAt() tests if the beginning of the input sequence matches the pattern
-          if (matcher.lookingAt()) {
-            return S.True;
-          }
-          return S.False;
+          matcher.reset(arg1.toString());
+          return F.booleSymbol(matcher.lookingAt());
         }
       }
       return F.NIL;
@@ -3127,14 +3356,12 @@ public final class StringFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isListOfStrings()) {
-        return arg1.mapThread(ast, 1);
-      }
       if (!arg1.isString()) {
-        // String or list of strings expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+        // a list of strings is not threaded over
+        return F.NIL;
       }
-      String str = arg1.toString();
+      CodePointString str = new CodePointString(arg1.toString());
+      final int length = str.length();
       IExpr replacements = ast.arg2();
       IExpr positions = ast.arg3();
 
@@ -3156,56 +3383,86 @@ public final class StringFunctions {
           }
           replacementList = repeated;
         }
-      } else if (positions.isList2()) {
+      } else if (positions.isList2() || positions.isList1() || positions.isInteger()) {
         positionList = F.list(positions);
         replacementList = F.list(replacements);
       } else {
         return F.NIL;
       }
 
-      // Sorted and applied from the end, so that every position still refers to the original
-      // string when its turn comes.
       int count = positionList.argSize();
+      // the characters from - 1 to to - 1 (0-based, to exclusive) of each range
       int[][] spans = new int[count][2];
       for (int i = 0; i < count; i++) {
         IExpr span = positionList.get(i + 1);
-        if (!span.isList2()) {
+        if (!replacementList.get(i + 1).isString()) {
           return F.NIL;
         }
-        int from = span.first().toIntDefault();
-        int to = span.second().toIntDefault();
-        if (F.isNotPresent(from) || F.isNotPresent(to)) {
+        long from;
+        long to;
+        if (span.isInteger()) {
+          // n is the first n characters, -n the last n
+          long n = span.toLongDefault();
+          if (n == Long.MIN_VALUE) {
+            return F.NIL;
+          }
+          from = n >= 0 ? 1 : length + n + 1;
+          to = n >= 0 ? n : length;
+        } else if (span.isList1() || span.isList2()) {
+          from = span.first().toLongDefault();
+          to = span.isList1() ? from : span.second().toLongDefault();
+          if (from == Long.MIN_VALUE || to == Long.MIN_VALUE) {
+            return F.NIL;
+          }
+          if (from < 0) {
+            from = length + from + 1;
+          }
+          if (to < 0) {
+            to = length + to + 1;
+          }
+        } else {
           return F.NIL;
         }
-        if (from < 0) {
-          from = str.length() + from + 1;
-        }
-        if (to < 0) {
-          to = str.length() + to + 1;
-        }
-        if (from < 1 || to > str.length() || to < from - 1) {
+        if (from < 1 || to > length || to < from - 1) {
           // Cannot take positions `1` through `2` in `3`.
-          return Errors.printMessage(ast.topHead(), "take", F.list(F.ZZ(from), F.ZZ(to), arg1),
-              engine);
+          return Errors.printMessage(ast.topHead(), "take",
+              F.list(F.ZZ(from), F.ZZ(to), arg1), engine);
         }
-        spans[i][0] = from;
-        spans[i][1] = to;
+        spans[i][0] = (int) from - 1;
+        spans[i][1] = (int) to;
+      }
+      // A range which overlaps one listed before it is left out; the others are applied from the
+      // end, so that every position still refers to the original string when its turn comes.
+      // Of two insertions at one place the one listed first comes first.
+      boolean[] skipped = new boolean[count];
+      for (int i = 0; i < count; i++) {
+        for (int j = 0; j < i && !skipped[i]; j++) {
+          if (!skipped[j] && spans[i][0] < spans[i][1] && spans[j][0] < spans[j][1]
+              && spans[i][0] < spans[j][1] && spans[j][0] < spans[i][1]) {
+            skipped[i] = true;
+          }
+        }
       }
       Integer[] order = new Integer[count];
       for (int i = 0; i < count; i++) {
         order[i] = i;
       }
-      java.util.Arrays.sort(order, (a, b) -> Integer.compare(spans[b][0], spans[a][0]));
+      java.util.Arrays.sort(order,
+          (a, b) -> spans[a][0] != spans[b][0] ? Integer.compare(spans[b][0], spans[a][0])
+              : Integer.compare(b, a));
 
-      StringBuilder buf = new StringBuilder(str);
+      CodePointString current = str;
       for (int index : order) {
-        IExpr replacement = replacementList.get(index + 1);
-        if (!replacement.isString()) {
-          return F.NIL;
+        if (skipped[index]) {
+          continue;
         }
-        buf.replace(spans[index][0] - 1, spans[index][1], replacement.toString());
+        String replacement = replacementList.get(index + 1).toString();
+        int end = Math.min(spans[index][1], current.length());
+        int start = Math.min(spans[index][0], end);
+        current = new CodePointString(
+            current.substring(0, start) + replacement + current.substring(end));
       }
-      return F.stringx(buf.toString());
+      return F.stringx(current.toString());
     }
 
     @Override
@@ -3224,166 +3481,37 @@ public final class StringFunctions {
         return engine.evaluate(ast.setAtCopy(2,
             org.matheclipse.core.eval.util.Sequence.spanToListSpec((IAST) ast.arg2())));
       }
-      int from = 1;
-      int to = 1;
       IExpr arg1 = ast.arg1();
-      try {
-        if (!arg1.isString()) {
-          if (arg1.isListOfStrings()) {
-            return arg1.mapThread(ast, 1);
-          }
-          // String or list of strings expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
-        } else {
-          // final ISequence[] sequ = Sequence.createSequences(ast, 2, "take", engine);
-          // if (sequ == null) {
-          // return F.NIL;
-          // }
-          CodePointString s = new CodePointString(arg1.toString());
-          IExpr arg2 = ast.arg2();
-          if (arg2.isAST(S.UpTo, 2)) {
-            int upTo = Validate.checkUpTo((IAST) arg2, engine);
-            if (F.isNotPresent(upTo)) {
-              return F.NIL;
-            }
-            upTo = s.length() > upTo ? upTo : s.length();
-            return F.$str(s.substring(0, upTo));
-          } else if (arg2 == S.All) {
-            return arg1;
-          } else if (arg2.isListOfLists()) {
-            // StringTake[str, {{m1, n1}, {m2, n2}, …}] takes several pieces at once and answers a
-            // list of them. That is how a caller cuts a file into the pieces between the positions
-            // something else told it about.
-            IAST specifications = (IAST) arg2;
-            IASTAppendable pieces = F.ListAlloc(specifications.argSize());
-            for (int i = 1; i < specifications.size(); i++) {
-              IExpr piece =
-                  engine.evaluate(F.binaryAST2(S.StringTake, arg1, specifications.get(i)));
-              if (!piece.isString()) {
-                return F.NIL;
-              }
-              pieces.append(piece);
-            }
-            return pieces;
-          } else if (arg2.isList()) {
-            // int[][] sequ =
-            // Validate.checkListOfSequenceSpec(ast, arg2, 2,
-            // s.length(),Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
-            // if (sequ == null || sequ.length == 0) {
-            // return F.NIL;
-            // }
-            // if( sequ.length >1) {
-            // return ((IAST) arg2).mapThread(ast, 2);
-            // }
-            // switch (sequ.length) {
-            // case 1:
-            // from = sequ[0];
-            // if (from < 0) {
-            // from = s.length() + from + 1;
-            // }
-            // to = from;
-            // return F.$str(s.substring(from - 1, to));
-            // case 2:
-            // from = sequ[0];
-            // if (from < 0) {
-            // from = s.length() + from + 1;
-            // }
-            // to = sequ[1];
-            // if (to < 0) {
-            // to = s.length() + to + 1;
-            // }
-            // return F.$str(s.substring(from - 1, to));
-            // case 3:
-            // from = sequ[0];
-            // if (from < 0) {
-            // from = s.length() + from + 1;
-            // }
-            // to = sequ[1];
-            // if (to < 0) {
-            // to = s.length() + to + 1;
-            // }
-            // int step = sequ[2];
-            // if (step < 0) {
-            // return F.NIL;
-            // }
-            // if (step == 0) {
-            // return ((IAST) arg2).mapThread(ast, 2);
-            // }
-            // StringBuilder buf = new StringBuilder();
-            // while (from <= to) {
-            // buf.append(s.substring(from - 1, from));
-            // from += step;
-            // }
-            // return F.$str(buf.toString());
-            // default:
-            // return ((IAST) arg2).mapThread(ast, 2);
-            // }
-
-            int[] sequ =
-                Validate.checkListOfInts(ast, arg2, Integer.MIN_VALUE, Integer.MAX_VALUE, engine);
-            if (sequ == null || sequ.length == 0) {
-              return F.NIL;
-            }
-            switch (sequ.length) {
-              case 1:
-                from = sequ[0];
-                if (from < 0) {
-                  from = s.length() + from + 1;
-                }
-                to = from;
-                return F.$str(s.substring(from - 1, to));
-              case 2:
-                from = sequ[0];
-                if (from < 0) {
-                  from = s.length() + from + 1;
-                }
-                to = sequ[1];
-                if (to < 0) {
-                  to = s.length() + to + 1;
-                }
-                return F.$str(s.substring(from - 1, to));
-              case 3:
-                from = sequ[0];
-                if (from < 0) {
-                  from = s.length() + from + 1;
-                }
-                to = sequ[1];
-                if (to < 0) {
-                  to = s.length() + to + 1;
-                }
-                int step = sequ[2];
-                if (step < 0) {
-                  return F.NIL;
-                }
-                if (step == 0) {
-                  return ((IAST) arg2).mapThread(ast, 2);
-                }
-                StringBuilder buf = new StringBuilder();
-                while (from <= to) {
-                  buf.append(s.substring(from - 1, from));
-                  from += step;
-                }
-                return F.$str(buf.toString());
-              default:
-                return ((IAST) arg2).mapThread(ast, 2);
-            }
-          }
-          to = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-          if (to >= 0) {
-
-          } else {
-            from = s.length() + to + 1;
-            to = s.length();
-            // return F.$str(s.substring(s.length() + to, s.length()));
-          }
-          return F.$str(s.substring(from - 1, to));
+      if (!arg1.isString()) {
+        if (arg1.isListOfStrings()) {
+          return arg1.mapThread(ast, 1);
         }
-      } catch (IndexOutOfBoundsException iob) {
-        // from substring
-        // Cannot take positions `1` through `2` in `3`.
-        return Errors.printMessage(ast.topHead(), "take", F.list(F.ZZ(from), F.ZZ(to), arg1),
-            engine);
+        // String or list of strings expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
       }
+      IExpr arg2 = ast.arg2();
+      if (isListOfSpecs(arg2, true)) {
+        // StringTake[str, {{m1, n1}, {m2, n2}, …}] takes several pieces at once and answers a
+        // list of them. That is how a caller cuts a file into the pieces between the positions
+        // something else told it about.
+        return ((IAST) arg2).mapThread(ast, 2);
+      }
+      CodePointString s = new CodePointString(arg1.toString());
+      int[] positions = specPositions(arg2, s.length(), engine);
+      if (positions == null) {
+        // Cannot take positions `1` through `2` in `3`.
+        return Errors.printMessage(ast.topHead(), "take", specBounds(arg2, arg1), engine);
+      }
+      int last = positions.length - 1;
+      if (positions.length > 0 && positions[last] - positions[0] == last) {
+        // one run of characters
+        return F.$str(s.substring(positions[0], positions[positions.length - 1] + 1));
+      }
+      StringBuilder buf = new StringBuilder();
+      for (int p : positions) {
+        buf.append(s.substring(p, p + 1));
+      }
+      return F.$str(buf.toString());
     }
 
     @Override
@@ -3441,48 +3569,60 @@ public final class StringFunctions {
     }
   }
 
-  private static class StringTrim extends AbstractFunctionEvaluator {
+  private static class StringTrim extends AbstractCoreFunctionOptionEvaluator {
+
+    /** Whitespace at the ends, the no-break space and the other Unicode spaces included. */
+    private static final java.util.regex.Pattern WHITESPACE_ENDS = java.util.regex.Pattern
+        .compile("\\A\\s+|\\s+\\z", java.util.regex.Pattern.UNICODE_CHARACTER_CLASS);
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
+      IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isList()) {
+        if (!arg1.isListOfStrings()) {
+          // String or list of strings expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);
+        }
         return arg1.mapThread(ast, 1);
       }
-      if (arg1.isString()) {
-        if (ast.isAST1()) {
-          return F.$str(arg1.toString().trim());
+      if (!arg1.isString()) {
+        return F.NIL;
+      }
+      String str = arg1.toString();
+      if (argSize == 1) {
+        return F.$str(WHITESPACE_ENDS.matcher(str).replaceAll(""));
+      }
+      if (argSize == 2) {
+        boolean ignoreCase = option[0].isTrue();
+        IExpr arg2 = engine.evaluate(ast.arg2());
+        StringPatternMatcher matcher =
+            StringPatternMatcher.compile(arg2, false, ignoreCase, ast, engine);
+        if (matcher == null) {
+          return F.NIL;
         }
-        if (ast.isAST2()) {
-          if (!ast.arg1().isString()) {
-            return F.NIL;
-          }
-          String str = ast.arg1().toString();
-          try {
-            Map<ISymbol, String> groups = new IdentityHashMap<ISymbol, String>();
-            String regex = IStringX.toRegexString(ast.arg2(), true, ast, IStringX.REGEX_LONGEST,
-                groups, engine);
-            if (regex != null) {
-              // prepend StartOfString
-              java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\A" + regex);
-              str = pattern.matcher(str).replaceAll("");
-              // append EndOfString
-              pattern = java.util.regex.Pattern.compile(regex + "\\Z");
-              str = pattern.matcher(str).replaceAll("");
-              return F.$str(str);
-            }
-          } catch (IllegalArgumentException iae) {
-            // for example java.util.regex.PatternSyntaxException
-            return IStringX.regexErrorHandling(ast, iae, engine);
-          }
+        // one match at the start and one at the end are removed - p.. removes runs of them
+        matcher.reset(str);
+        if (matcher.lookingAt()) {
+          str = str.substring(matcher.end());
+          matcher.reset(str);
         }
+        if (matcher.findSuffix(0)) {
+          str = str.substring(0, matcher.start());
+        }
+        return F.$str(str);
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
     }
   }
 
@@ -4114,15 +4254,8 @@ public final class StringFunctions {
 
     @Override
     public boolean test(final IExpr obj) {
-      final String str = obj.toString();
-      char ch;
-      for (int i = 0; i < str.length(); i++) {
-        ch = str.charAt(i);
-        if (!(Character.isUpperCase(ch))) {
-          return false;
-        }
-      }
-      return true;
+      // each character, one above U+FFFF included
+      return obj.toString().codePoints().allMatch(Character::isUpperCase);
     }
   }
 

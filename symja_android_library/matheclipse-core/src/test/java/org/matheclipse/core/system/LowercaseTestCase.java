@@ -6799,6 +6799,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDirichletL() {
+    // N leaves the modulus, the index and s exact, and the value is taken at the numerical s
+    check("{Attributes(DirichletCharacter), Attributes(DirichletL)}", //
+        "{{Listable,NHoldAll,Protected},{Listable,NHoldAll,Protected}}");
+    check("{N(DirichletL(11,3,3)), DirichletL(11,3,3.)}", //
+        "{0.997642+I*0.0962654,0.997642+I*0.0962654}");
+    check("DirichletCharacter({11,13},3,{2,4})", //
+        "{E^(I*2/5*Pi),-1/2+I*1/2*Sqrt(3)}");
     // the generalized Bernoulli numbers at s <= 0
     check("Table(DirichletL(9,2,s),{s,-2,0})", //
         "{-3+(-I*5)/Sqrt(3),0,1+I/Sqrt(3)}");
@@ -15288,7 +15295,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ImportString(\"3,4,6\\na,b,c\", \"Table\")", //
         "{{3,4,6},{a,b,c}}");
     check("ImportString(\"3,4,6\\na,b,c\", \"Text\") // InputForm", //
-        "\"3,4,6\n" + "a,b,c\"");
+        "\"3,4,6\\na,b,c\"");
     check("ImportString(\"a+a+a\", \"String\")", //
         "3*a");
   }
@@ -21819,9 +21826,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPattern() {
-    // TODO parse this as Optional(Pattern(a,b),Pattern(c,d))
+    // Optional(Pattern(a,b),Pattern(c,d))
     check("a:b:c:d", //
-        "Optional(a:b,(c:d))");
+        "(a:b):(c:d)");
 
     // Pattern: First element in Pattern(3,3) is not a valid pattern name.
     check("Pattern(3,3)", //
@@ -33413,5 +33420,46 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Zeta(-5, -12)", //
         "158938415/252");
 
+  }
+
+  /** LerchPhi of machine numbers outside the unit disk, by its integral representation. */
+  @Test
+  public void testLerchPhiOutsideUnitDisk() {
+    check("LerchPhi(-4.5, 2.5, 1.5)", //
+        "0.188869");
+    // a negative a is shifted, a term with k+a == 0 left out
+    check("LerchPhi(-20.0, 0.75, -1.25)", //
+        "22.47409");
+    check("LerchPhi(-2.0+1.0*I, 1.5, 0.75)", //
+        "1.05734+I*0.125252");
+  }
+
+  /** A held reciprocal of a reciprocal keeps its form. */
+  @Test
+  public void testHoldFormNestedReciprocal() {
+    check("HoldForm(Power(Power(y,-1),-1))", //
+        "1/(1/y)");
+    check("HoldForm(Times(b, Power(Power(y,-1),-1)))", //
+        "b/(1/y)");
+  }
+
+  /** Rules of a Flat head on a run of its arguments. */
+  @Test
+  public void testFlatRunRules() {
+    check("SetAttributes(fq, Flat); fq(u, gg(1), gg(5), v) /. HoldPattern(fq(gg(i_), gg(j_)) /; i<j) :> gg(i*j)", //
+        "fq(u,gg(5),v)");
+    check("SetAttributes(fq, Flat); fq(u, gg(5), gg(1), v) /. HoldPattern(fq(gg(i_), gg(j_)) /; i<j) :> gg(i*j)", //
+        "fq(u,gg(5),gg(1),v)");
+    check("SetAttributes(fr, Flat); fr(q, r) := qr; fr(p, q, r, s)", //
+        "fr(p,qr,s)");
+    // the test fails on the first run, whose values don't stay bound for the next one
+    check("SetAttributes(fs, Flat); fs(gg(4), gg(9), gg(2), v) /. HoldPattern(fs(gg(i_), gg(j_)) /; i>j) :> gg(i-j)", //
+        "fs(gg(4),gg(7),v)");
+    // a rule which gives back its own left-hand side is no replacement of a run
+    check("SetAttributes(ft, Flat); ft(m, n) = ft(m, n); ft(k, m, n)", //
+        "ft(k,m,n)");
+    // of two rules the one of the leftmost run
+    check("SetAttributes(fu, Flat); fu(n, k) := nk; fu(m, n) := mn; fu(m, n, k)", //
+        "fu(mn,k)");
   }
 }

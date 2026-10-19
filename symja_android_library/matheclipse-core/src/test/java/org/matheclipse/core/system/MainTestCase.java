@@ -2859,8 +2859,9 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem360() {
+    // InputForm writes each backslash of the string escaped
     check("ToUnicode(\"123abcABC\") // InputForm", //
-        "\"\\u0031\\u0032\\u0033\\u0061\\u0062\\u0063\\u0041\\u0042\\u0043\"");
+        "\"\\\\u0031\\\\u0032\\\\u0033\\\\u0061\\\\u0062\\\\u0063\\\\u0041\\\\u0042\\\\u0043\"");
   }
 
   @Test

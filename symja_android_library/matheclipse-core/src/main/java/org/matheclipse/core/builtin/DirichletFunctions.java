@@ -51,20 +51,11 @@ public final class DirichletFunctions {
    * The modulus and index of <code>head(k, j, ...)</code>, or <code>null</code>. A number which
    * isn't a positive integer gets <code>intp</code>, an index above <code>EulerPhi(k)</code> gets
    * <code>invl</code>; a symbolic argument gets no message.
-   *
-   * @param inexactLabels accept inexact numbers with an integer value, as <code>N</code> makes them
    */
-  private static DirichletCharacterTable labels(IAST ast, boolean inexactLabels,
-      EvalEngine engine) {
+  private static DirichletCharacterTable labels(IAST ast, EvalEngine engine) {
     long[] kj = new long[2];
     for (int i = 1; i <= 2; i++) {
       IExpr arg = ast.get(i);
-      if (inexactLabels && arg.isInexactNumber() && arg.isReal()) {
-        double d = arg.evalf();
-        if (d == Math.rint(d) && d >= 1.0 && d < 9.0e15) {
-          arg = F.ZZ((long) d);
-        }
-      }
       if (arg.isInteger()) {
         IInteger integer = (IInteger) arg;
         if (integer.isPositive()) {
@@ -99,40 +90,18 @@ public final class DirichletFunctions {
 
   /**
    * <code>DirichletCharacter(k, j, n)</code>: the Dirichlet character <code>chi_(k,j)</code> at the
-   * integer <code>n</code>. It threads over lists in all arguments.
+   * integer <code>n</code>.
    */
   private static final class DirichletCharacter extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.exists(x -> x.isList())) {
-        int length = -1;
-        for (int i = 1; i <= 3; i++) {
-          if (ast.get(i).isList()) {
-            int argSize = ast.get(i).argSize();
-            if (length >= 0 && argSize != length) {
-              return F.NIL;
-            }
-            length = argSize;
-          }
-        }
-        IASTAppendable result = F.ListAlloc(length);
-        for (int t = 1; t <= length; t++) {
-          IASTAppendable call = F.ast(S.DirichletCharacter, 3);
-          for (int i = 1; i <= 3; i++) {
-            IExpr arg = ast.get(i);
-            call.append(arg.isList() ? ((IAST) arg).get(t) : arg);
-          }
-          result.append(call);
-        }
-        return result;
-      }
-      if (!ast.arg3().isNumber() && !ast.arg3().isList()) {
+      if (!ast.arg3().isNumber()) {
         // a symbolic argument: nothing to evaluate, and no message about labels which N may
         // have made inexact - N(DirichletCharacter(7, 2, x))
         return F.NIL;
       }
-      DirichletCharacterTable table = labels(ast, false, engine);
+      DirichletCharacterTable table = labels(ast, engine);
       if (table == null) {
         return F.NIL;
       }
@@ -161,6 +130,7 @@ public final class DirichletFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDALL);
       newSymbol.putMessage(IPatternMatcher.SET, "invl", F.stringx(INVL));
       super.setUp(newSymbol);
     }
@@ -181,7 +151,7 @@ public final class DirichletFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      DirichletCharacterTable table = labels(ast, false, engine);
+      DirichletCharacterTable table = labels(ast, engine);
       if (table == null) {
         return F.NIL;
       }
@@ -190,39 +160,48 @@ public final class DirichletFunctions {
         if (s.isInteger() || s.isInexactNumber()) {
           return F.Zeta(s);
         }
-        return F.NIL;
+        if (!engine.isNumericMode() || !s.isNumericFunction()) {
+          return F.NIL;
+        }
       }
       if (s.isInexactNumber()) {
         return numericValue(table, s, engine);
       }
       if (s.isInteger()) {
-        IInteger integer = (IInteger) s;
-        IExpr value = null;
-        if (!integer.isPositive()) {
-          int m = 1 - integer.toIntDefault(Integer.MIN_VALUE + 1);
-          if (m >= 1 && m <= EXACT_MMAX) {
-            value = exactNonPositive(table, m, engine);
-          }
-        } else if (integer.isOne() && !table.isPrincipal()
-            && table.conductor() == table.modulus()) {
-          value = exactAtOne(table, engine);
+        IExpr value = exactValue(table, (IInteger) s, engine);
+        if (value != null) {
+          // in numeric mode the exact value is evaluated numerically afterwards
+          return value;
         }
-        return value == null ? F.NIL : value;
+      }
+      if (engine.isNumericMode() && s.isNumericFunction()) {
+        // N leaves the arguments as they are: the value at the numerical s
+        IExpr numeric = engine.isArbitraryMode() ? engine.evalN(s, engine.getNumericPrecision())
+            : engine.evalN(s);
+        if (numeric.isInexactNumber()) {
+          return table.modulus() == 1 ? F.Zeta(numeric) : numericValue(table, numeric, engine);
+        }
       }
       return F.NIL;
     }
 
-    @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      DirichletCharacterTable table = labels(ast, true, engine);
-      if (table == null) {
-        return F.NIL;
+    /**
+     * The exact value at an integer <code>s</code>: at <code>s &lt;= 0</code> from the generalized
+     * Bernoulli numbers, at <code>s == 1</code> for a primitive character which isn't principal.
+     *
+     * @return <code>null</code> if there is none
+     */
+    private static IExpr exactValue(DirichletCharacterTable table, IInteger s,
+        EvalEngine engine) {
+      if (!s.isPositive()) {
+        int m = 1 - s.toIntDefault(Integer.MIN_VALUE + 1);
+        if (m >= 1 && m <= EXACT_MMAX) {
+          return exactNonPositive(table, m, engine);
+        }
+      } else if (s.isOne() && !table.isPrincipal() && table.conductor() == table.modulus()) {
+        return exactAtOne(table, engine);
       }
-      IExpr s = ast.arg3();
-      if (table.modulus() == 1) {
-        return F.Zeta(s);
-      }
-      return numericValue(table, s, engine);
+      return null;
     }
 
     @Override
@@ -237,7 +216,7 @@ public final class DirichletFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NUMERICFUNCTION);
+      newSymbol.setAttributes(Attribute.LISTABLE, Attribute.NHOLDALL);
       newSymbol.putMessage(IPatternMatcher.SET, "invl", F.stringx(INVL));
       super.setUp(newSymbol);
     }

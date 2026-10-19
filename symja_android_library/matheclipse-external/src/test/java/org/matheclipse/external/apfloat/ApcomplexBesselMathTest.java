@@ -77,8 +77,9 @@ public class ApcomplexBesselMathTest
         // the expansion of the library for a large argument cancels about nu^2 / z digits
         assertClose("I(3001/2, 1200)", new Apfloat("3.45349350008928163081519183936231397071671943e149"),
                     ApcomplexBesselMath.besselI(q(3001, 2), q(1200, 1)), PRECISION - 1);
-        // too many for the functions of the second kind
-        assertThrows(org.apfloat.LossOfPrecisionException.class, () -> ApcomplexBesselMath.besselK(q(3001, 2), q(1200, 1)));
+        // the functions of the second kind come from the forward recurrence in the order
+        assertClose("K(3001/2, 1200)", new Apfloat("7.535462250520532812124269887825364449936233892e-154"),
+                    ApcomplexBesselMath.besselK(q(3001, 2), q(1200, 1)), PRECISION - 1);
     }
 
     @Test

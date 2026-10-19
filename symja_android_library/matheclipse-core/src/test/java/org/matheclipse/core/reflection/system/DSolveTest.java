@@ -2814,4 +2814,19 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve({y'(x)==E^(x^3)-2*y(x),y(0)==1}, y(x), x)", //
         "{{y(x)->(1+Inactive(Integrate)[E^(2*K(1)+K(1)^3),{K(1),0,x}])/E^(2*x)}}");
   }
+
+  /**
+   * Kummer's equation with a polynomial solution, where the second solution needs
+   * ExpIntegralEi, also with the argument scaled.
+   */
+  @Test
+  public void testDSolveDegenerateKummer() {
+    check("DSolve(x*y''(x) + (2 - x)*y'(x) + 3*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)-3/2*x*C(1)+1/2*x^2*C(1)-1/24*x^3*C(1)+13/12*E^x*C(2)+(-E^x*C(2))/(4*x)-\n"
+            + "11/24*E^x*x*C(2)+1/24*E^x*x^2*C(2)+C(2)*ExpIntegralEi(x)-3/2*x*C(2)*ExpIntegralEi(x)+\n"
+            + "1/2*x^2*C(2)*ExpIntegralEi(x)-1/24*x^3*C(2)*ExpIntegralEi(x)}}");
+    check("DSolve(x*y''(x) + (1 - 3*x)*y'(x) + 6*y(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)-6*x*C(1)+9/2*x^2*C(1)+3/2*E^(3*x)*C(2)-3/2*E^(3*x)*x*C(2)+C(2)*ExpIntegralEi(\n"
+            + "3*x)-6*x*C(2)*ExpIntegralEi(3*x)+9/2*x^2*C(2)*ExpIntegralEi(3*x)}}");
+  }
 }

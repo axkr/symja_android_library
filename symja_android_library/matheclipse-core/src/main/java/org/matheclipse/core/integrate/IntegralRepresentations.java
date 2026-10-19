@@ -213,7 +213,8 @@ final class IntegralRepresentations {
           || (answer = besselKReciprocal(ctx, shape)) != null
           || (answer = airy(ctx, shape)) != null
           || (answer = laplaceTrigonometric(ctx, shape)) != null
-          || (answer = mellin(ctx, shape)) != null) {
+          || (answer = mellin(ctx, shape)) != null
+          || (answer = meijerConvolution(ctx)) != null) {
         return answer;
       }
       return null;
@@ -317,6 +318,32 @@ final class IntegralRepresentations {
       return F.NIL;
     }
     return conditional(value, open);
+  }
+
+  /**
+   * <code>Integrate(f, {x,0,Infinity})</code> by the convolution of two Meijer G-functions alone,
+   * for an explicitly requested method.
+   */
+  static IExpr integrateByMeijerConvolution(Context ctx) {
+    Answer answer = meijerConvolution(ctx);
+    if (answer == null) {
+      return F.NIL;
+    }
+    return finish(ctx, answer, F.C0, F.CInfinity);
+  }
+
+  /** Two kernels which are Meijer G-functions of <code>x^2</code>, see {@link MeijerConvolution}. */
+  private static Answer meijerConvolution(Context ctx) {
+    MeijerConvolution.Result result = MeijerConvolution.integrate(ctx);
+    if (result == null) {
+      return null;
+    }
+    Answer answer = new Answer(result.value);
+    answer.gates.addAll(result.gates);
+    // the formula is an identity, which needs no numerical confirmation; the quadrature of a
+    // product of Bessel functions over the half line is slow or, oscillating, unreliable
+    answer.tabulated = true;
+    return answer;
   }
 
   private static IExpr conditional(IExpr value, List<IExpr> open) {

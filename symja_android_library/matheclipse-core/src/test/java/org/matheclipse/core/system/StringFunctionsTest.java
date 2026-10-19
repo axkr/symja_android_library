@@ -672,9 +672,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{a,b,c,d,e,f,g}");
     check("StringSplit({\"a:b:c:d\", \"listable:element\"}, \":\" | \"-\" )", //
         "{{a,b,c,d},{listable,element}}");
-    // TODO fix the empty string at the beginning of the sequence
+    // an empty piece at either end is left out
     check("StringSplit(\"cat Cat hat CAT\", \"c\", IgnoreCase -> True) // InputForm", //
-        "{\"\",\"at \",\"at hat \",\"AT\"}");
+        "{\"at \",\"at hat \",\"AT\"}");
     check("StringSplit(\"This is a sentence, which goes on.\",  Except(WordCharacter) ..)", //
         "{This,is,a,sentence,which,goes,on}");
 
@@ -695,7 +695,7 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
     check("StringSplit(\"a, ,c,d,\", \",\") // InputForm", //
         "{\"a\",\" \",\"c\",\"d\"}");
     check("StringSplit(\"abc\\ndef\\nhij\",StartOfLine) // InputForm", //
-        "{\"abc\n\",\"def\n\",\"hij\"}");
+        "{\"abc\\n\",\"def\\n\",\"hij\"}");
     check("StringSplit(\"13  a22    bbb\", WhitespaceCharacter) // InputForm", //
         "{\"13\",\"\",\"a22\",\"\",\"\",\"\",\"bbb\"}");
     check("StringSplit(\"13 a22 bbb\", WhitespaceCharacter) // InputForm", //
@@ -1034,6 +1034,257 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "False");
   }
 
+  @Test
+  public void testStringDelete() {
+    check("StringDelete(\"banana\", \"an\") // InputForm", //
+        "\"ba\"");
+    check("StringDelete({\"x1y\", \"22z\"}, DigitCharacter) // InputForm", //
+        "{\"xy\",\"z\"}");
+    check("StringDelete(\"XxYy\", \"x\", IgnoreCase -> True) // InputForm", //
+        "\"Yy\"");
+    // operator form
+    check("StringDelete(\"o\")[\"foo\"] // InputForm", //
+        "\"f\"");
+  }
+
+  @Test
+  public void testStringTakeDrop() {
+    check("StringTakeDrop(\"hello\", 3) // InputForm", //
+        "{\"hel\",\"lo\"}");
+    check("StringTakeDrop(\"hello\", -1) // InputForm", //
+        "{\"o\",\"hell\"}");
+    check("StringTakeDrop(\"hello\", {2, 3}) // InputForm", //
+        "{\"el\",\"hlo\"}");
+    check("StringTakeDrop({\"ab\", \"xyz\"}, 1) // InputForm", //
+        "{{\"a\",\"b\"},{\"x\",\"yz\"}}");
+  }
+
+  @Test
+  public void testStringRotateLeftRight() {
+    check("StringRotateLeft(\"12345\", 3) // InputForm", //
+        "\"45123\"");
+    check("StringRotateLeft(\"12345\") // InputForm", //
+        "\"23451\"");
+    check("StringRotateRight(\"12345\", -2) // InputForm", //
+        "\"34512\"");
+    // the shift is taken modulo the length
+    check("StringRotateRight(\"xyz\", 5) // InputForm", //
+        "\"yzx\"");
+    check("StringRotateLeft(\"\", 4) // InputForm", //
+        "\"\"");
+    // a character above U+FFFF is one character
+    check("StringRotateLeft(\"a\\|01F600b\", 1) // ToCharacterCode", //
+        "{128512,98,97}");
+  }
+
+  @Test
+  public void testStringReplaceList() {
+    check("StringReplaceList(\"abab\", \"ab\" -> \"X\") // InputForm", //
+        "{\"Xab\",\"abX\"}");
+    check("StringReplaceList(\"xyz\", {\"x\" -> \"1\", \"z\" -> \"3\"}) // InputForm", //
+        "{\"1yz\",\"xy3\"}");
+    // overlapping matches, at most 2 results
+    check("StringReplaceList(\"bbbb\", \"bb\" -> \"c\", 2) // InputForm", //
+        "{\"cbb\",\"bcb\"}");
+    check("StringReplaceList({\"pq\", \"q\"}, \"q\" -> \"r\") // InputForm", //
+        "{{\"pr\"},{\"r\"}}");
+  }
+
+  @Test
+  public void testCapitalizeDecapitalize() {
+    check("Capitalize(\"\\:00fcber alles\") // ToCharacterCode // First", //
+        "220");
+    check("Capitalize({\"x\", \"yz\"}) // InputForm", //
+        "{\"X\",\"Yz\"}");
+    check("Decapitalize(\"ABC\") // InputForm", //
+        "\"aBC\"");
+    check("Capitalize(\"\") // InputForm", //
+        "\"\"");
+  }
+
+  @Test
+  public void testStringPatternTestAndCondition() {
+    // DigitQ in a pattern means the ASCII digits
+    check("StringCases(\"xy12z3\\:0663\", __?DigitQ) // InputForm", //
+        "{\"12\",\"3\"}");
+    check("StringCases(\"Hello World\", _?UpperCaseQ) // InputForm", //
+        "{\"H\",\"W\"}");
+    check("StringCases(\"aXbYc\", x_?(# == \"Y\" &) :> x <> \"!\") // InputForm", //
+        "{\"Y!\"}");
+    check("StringCases(\"pq7r88\", x:DigitCharacter.. /; StringLength(x) == 2) // InputForm", //
+        "{\"88\"}");
+    check("StringCases(\"xxyz\", (a_ ~~ b_) /; a != b :> b <> a) // InputForm", //
+        "{\"yx\"}");
+    check(
+        "StringCases(\"k1k22\", (l:LetterCharacter) ~~ (d:DigitCharacter..) /; StringLength(d) == 2 :> d) // InputForm", //
+        "{\"22\"}");
+    check("StringReplace(\"a1b22\", x:DigitCharacter.. /; StringLength(x) > 1 :> \"#\") // InputForm", //
+        "\"a1b#\"");
+    check("StringTrim(\"qrq\", x_ /; x == \"q\") // InputForm", //
+        "\"r\"");
+  }
+
+  @Test
+  public void testStringPatternRepeatedNames() {
+    check("StringMatchQ(\"xyzxyz\", s__ ~~ s__)", //
+        "True");
+    check("StringMatchQ(\"xyzxy\", s__ ~~ s__)", //
+        "False");
+    // a name inside of a repetition stands for one string
+    check("StringCases(\"ppqqqr\", (c:LetterCharacter)..) // InputForm", //
+        "{\"pp\",\"qqq\",\"r\"}");
+    check("StringCases(\"ppqqqr\", (c:LetterCharacter).. :> c) // InputForm", //
+        "{\"p\",\"q\",\"r\"}");
+    // a name of an alternative which didn't match is the empty string
+    check("StringCases(\"pq\", (u:\"p\") | (v:\"q\") :> {u, v}) // InputForm", //
+        "{{\"p\",\"\"},{\"\",\"q\"}}");
+  }
+
+  @Test
+  public void testStringReplaceValues() {
+    // a replacement which is not a string gives a StringExpression
+    check("StringReplace(\"x7\", \"7\" :> 7) // FullForm", //
+        "StringExpression(\"x\", 7)");
+    check("StringReplace(\"7\", \"7\" :> 7) // FullForm", //
+        "StringExpression(7)");
+    check("StringReplace(\"q\", \"q\" :> Sequence()) // InputForm", //
+        "\"\"");
+    check("StringReplace(\"xyxy\", \"x\" -> \"-\", 1) // InputForm", //
+        "\"-yxy\"");
+    // the rules are tried together, not one after another
+    check("StringReplace(\"xy\", {\"x\" -> \"y\", \"y\" -> \"x\"}) // InputForm", //
+        "\"yx\"");
+    // $0, $1 only refer to the groups of a regular expression
+    check("StringReplace(\"qrs\", \"r\" -> \"$0\") // InputForm", //
+        "\"q$0s\"");
+    check("StringReplace(\"qrs\", RegularExpression(\"(r)\") -> \"[$1$0]\") // InputForm", //
+        "\"q[rr]s\"");
+    check("StringReplace(\"aaa\", \"\" -> \"-\") // InputForm", //
+        "\"-a-a-a-\"");
+  }
+
+  @Test
+  public void testStringSplitRules() {
+    check("StringSplit(\"p:q:r\", \":\" -> \"|\") // InputForm", //
+        "{\"p\",\"|\",\"q\",\"|\",\"r\"}");
+    check("StringSplit(\"x1y\", d:DigitCharacter :> ToExpression(d) + 1) // InputForm", //
+        "{\"x\",2,\"y\"}");
+    check("StringSplit(\",p,,q,\", \",\") // InputForm", //
+        "{\"p\",\"\",\"q\"}");
+    check("StringSplit(\",p,,q,\", \",\", All) // InputForm", //
+        "{\"\",\"p\",\"\",\"q\",\"\"}");
+  }
+
+  @Test
+  public void testStringOverlapsAndLimits() {
+    check("StringCount(\"bbbb\", \"bb\", Overlaps -> True)", //
+        "3");
+    check("StringCount(\"bbbb\", \"bb\")", //
+        "2");
+    // StringPosition finds overlapping matches unless told otherwise
+    check("StringPosition(\"bbb\", \"bb\")", //
+        "{{1,2},{2,3}}");
+    check("StringPosition(\"bbbb\", \"bb\", Overlaps -> False)", //
+        "{{1,2},{3,4}}");
+    check("StringCases(\"xyz\", __, Overlaps -> All) // InputForm", //
+        "{\"xyz\",\"xy\",\"x\",\"yz\",\"y\",\"z\"}");
+    check("StringCases(\"pppp\", \"pp\", 1) // InputForm", //
+        "{\"pp\"}");
+    // a list of patterns is a choice between them
+    check("StringCases(\"wxyz\", {\"wx\", \"xy\", \"yz\"}) // InputForm", //
+        "{\"wx\",\"yz\"}");
+  }
+
+  @Test
+  public void testStringLiteralWildcards() {
+    check("StringMatchQ(\"hello\", \"h*o\")", //
+        "True");
+    check("StringMatchQ(\"line1\\nline2\", \"line*\")", //
+        "True");
+    // only StringMatchQ reads * as a wildcard
+    check("StringContainsQ(\"h*o\", \"h*o\")", //
+        "True");
+    check("StringContainsQ(\"hello\", \"h*o\")", //
+        "False");
+    check("StringFreeQ(\"hello\", \"h*\")", //
+        "True");
+  }
+
+  @Test
+  public void testStringTrimPattern() {
+    // one match is removed at each end
+    check("StringTrim(\"--x--\", \"-\") // InputForm", //
+        "\"-x-\"");
+    check("StringTrim(\"XYzxy\", \"xy\", IgnoreCase -> True) // InputForm", //
+        "\"z\"");
+    // the no-break space is whitespace
+    check("StringTrim(\" \\:00a0q\\t\") // InputForm", //
+        "\"q\"");
+    check("StringTrim({\"a\", 1}) // InputForm", //
+        "StringTrim({\"a\",1})");
+  }
+
+  @Test
+  public void testStringTakeDropPartSpecs() {
+    check("StringTake(\"abcdefg\", {1, -1, 3}) // InputForm", //
+        "\"adg\"");
+    check("StringTake(\"abcdefg\", {-1, 1, -3}) // InputForm", //
+        "\"gda\"");
+    check("StringTake(\"abc\", None) // InputForm", //
+        "\"\"");
+    check("StringTake(\"abcd\", {{1, 2}, All, UpTo(9)}) // InputForm", //
+        "{\"ab\",\"abcd\",\"abcd\"}");
+    check("StringDrop(\"abcdefg\", {2, -1, 2}) // InputForm", //
+        "\"aceg\"");
+    check("StringDrop(\"abc\", All) // InputForm", //
+        "\"\"");
+    check("StringDrop(\"abc\", None) // InputForm", //
+        "\"abc\"");
+    check("StringPart(\"wxyz\", All) // InputForm", //
+        "{\"w\",\"x\",\"y\",\"z\"}");
+    check("StringPart(\"wxyz\", -1 ;; 1 ;; -2) // InputForm", //
+        "{\"z\",\"x\"}");
+    check("StringPart(\"wxyz\", {1, -1}) // InputForm", //
+        "{\"w\",\"z\"}");
+    check("StringPart({\"ab\", \"c\"}, 1) // InputForm", //
+        "{\"a\",\"c\"}");
+    check("StringReplacePart(\"wxyz\", \"Q\", 2) // InputForm", //
+        "\"Qyz\"");
+    // a range overlapping one listed before it is left out
+    check("StringReplacePart(\"wxyz\", \"Q\", {{1, 2}, {2, 4}}) // InputForm", //
+        "\"Qyz\"");
+    check("StringReplacePart(\"wxy\", {\"1\", \"2\"}, {{3, 2}, {3, 2}}) // InputForm", //
+        "\"wx12y\"");
+  }
+
+  @Test
+  public void testStringJoinNestedLists() {
+    check("StringJoin(\"p\", {\"q\", {\"r\", {}}}, \"s\") // InputForm", //
+        "\"pqrs\"");
+    check("StringJoin({\"x\"}, {\"y\", \"z\"}) // InputForm", //
+        "\"xyz\"");
+  }
+
+  @Test
+  public void testInputFormStringEscapes() {
+    check("InputForm(\"x\\\"y\")", //
+        "\"x\\\"y\"");
+    check("InputForm(\"p\\tq\\\\r\")", //
+        "\"p\\tq\\\\r\"");
+    check("StringLength(ToString(\"a\\\"b\", InputForm))", //
+        "6");
+  }
+
+  @Test
+  public void testParseColonPatterns() {
+    check("FullForm(Hold(y__))", //
+        "Hold(Pattern(y, BlankSequence()))");
+    check("FullForm(Hold(p:q:r))", //
+        "Hold(Optional(Pattern(p, q), r))");
+    check("FullForm(Hold(u_:2 ~~ v))", //
+        "Hold(StringExpression(Optional(Pattern(u, Blank()), 2), v))");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
@@ -1041,6 +1292,22 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
     EvalEngine.get().setIterationLimit(50000);
+  }
+
+  @Test
+  public void testStringPatternTestRepeatedSymbol() {
+    // the second x_?DigitQ is the same digit as the first one
+    check("{StringMatchQ(\"77\", x_?DigitQ ~~ x_?DigitQ), StringMatchQ(\"78\", x_?DigitQ ~~ x_?DigitQ)}", //
+        "{True,False}");
+    check("StringCases(\"xxy pqq rrs\", c_?LetterQ ~~ c_?LetterQ)", //
+        "{xx,qq,rr}");
+    check("StringSplit(\"a11b22c34d\", x_?DigitQ ~~ x_?DigitQ)", //
+        "{a,b,c34d}");
+    // in the branches of an alternative the name is bound by the branch which matches
+    check("{StringMatchQ(\"q\", x_?DigitQ | x_?LetterQ), StringMatchQ(\"q\", x:DigitCharacter | x:LetterCharacter)}", //
+        "{True,True}");
+    check("StringReplace(\"q7\", x_?DigitQ | x_?LetterQ :> \"[\"<>x<>\"]\")", //
+        "[q][7]");
   }
 
   @AfterEach

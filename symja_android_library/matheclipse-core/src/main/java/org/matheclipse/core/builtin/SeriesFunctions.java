@@ -1336,6 +1336,11 @@ public class SeriesFunctions {
               currentExpr = stirling;
               continue;
             }
+            IExpr polyGamma = polyGammaSeries(currentExpr, x, n, engine);
+            if (polyGamma.isPresent()) {
+              currentExpr = polyGamma;
+              continue;
+            }
             IExpr asymptotic = asymptoticAtInfinity(currentExpr, x, n, engine);
             if (asymptotic.isPresent()) {
               currentExpr = asymptotic;
@@ -1571,6 +1576,87 @@ public class SeriesFunctions {
       ASTSeriesData exponent =
           new ASTSeriesData(x, F.CInfinity, F.list(xTimesLogPart), -1, n + 1, 1);
       return F.Times(F.Power(S.E, exponent), series);
+    }
+
+    /**
+     * The asymptotic series of <code>PolyGamma(m, x+a)</code>, <code>PolyGamma(x+a)</code> and
+     * <code>HarmonicNumber(x+a)</code> for a rational <code>a</code> at <code>x == Infinity</code>:
+     * the derivative of the Stirling series of <code>LogGamma(x+a)</code>,
+     * <code>PolyGamma(x+a) == Log(x) + (a-1/2)/x + Sum((-1)^k*BernoulliB(k+1,a)/((k+1)*x^(k+1)))</code>
+     * (DLMF 5.11.8), differentiated <code>m</code> times term by term.
+     * <code>HarmonicNumber(x+a) == PolyGamma(x+a+1) + EulerGamma</code>.
+     *
+     * @return {@link F#NIL} if <code>expr</code> isn't one of these functions
+     */
+    private static IExpr polyGammaSeries(IExpr expr, IExpr x, int n, EvalEngine engine) {
+      if (n < 0) {
+        return F.NIL;
+      }
+      int m;
+      IExpr argument;
+      boolean harmonic = false;
+      if (expr.isAST(S.PolyGamma, 2)) {
+        m = 0;
+        argument = expr.first();
+      } else if (expr.isAST(S.PolyGamma, 3) && expr.first().isInteger()) {
+        m = expr.first().toIntDefault();
+        if (m < 0 || m > 64) {
+          return F.NIL;
+        }
+        argument = expr.second();
+      } else if (expr.isAST(S.HarmonicNumber, 2)) {
+        m = 0;
+        harmonic = true;
+        argument = F.Plus(expr.first(), F.C1);
+      } else {
+        return F.NIL;
+      }
+      IExpr shift = engine.evaluate(F.Subtract(argument, x));
+      if (!shift.isRational()) {
+        return F.NIL;
+      }
+      IRational a = (IRational) shift;
+      // coefficients of (1/x)^j of PolyGamma(x+a) for j = 1..n+m, the Log(x) term aside
+      IExpr[] c = new IExpr[n + 2];
+      c[1] = engine.evaluate(F.Subtract(a, F.C1D2));
+      for (int j = 2; j <= n + 1; j++) {
+        int k = j - 1;
+        c[j] = engine.evaluate(F.Times(F.ZZ(k % 2 == 0 ? 1 : -1), F.BernoulliB(F.ZZ(k + 1), a),
+            F.QQ(1, k + 1)));
+      }
+      int low = 0;
+      if (m == 0) {
+        IASTAppendable coefficients = F.ListAlloc(n + 2);
+        coefficients.append(harmonic ? F.Plus(F.Log(x), S.EulerGamma) : F.Log(x));
+        for (int j = 1; j <= n; j++) {
+          coefficients.append(c[j]);
+        }
+        return new ASTSeriesData(x, F.CInfinity, (IAST) engine.evaluate(coefficients), low, n + 1,
+            1);
+      }
+      // the first derivative: d/dx Log(x) == (1/x)^1, d/dx (1/x)^j == -j*(1/x)^(j+1)
+      IExpr[] d = new IExpr[n + m + 2];
+      java.util.Arrays.fill(d, F.C0);
+      d[1] = F.C1;
+      for (int j = 1; j <= n && j + 1 < d.length; j++) {
+        d[j + 1] = engine.evaluate(F.Times(F.ZZ(-j), c[j]));
+      }
+      for (int derivative = 2; derivative <= m; derivative++) {
+        IExpr[] next = new IExpr[d.length];
+        java.util.Arrays.fill(next, F.C0);
+        for (int j = 1; j + 1 < d.length; j++) {
+          next[j + 1] = engine.evaluate(F.Times(F.ZZ(-j), d[j]));
+        }
+        d = next;
+      }
+      if (n < m) {
+        return F.NIL;
+      }
+      IASTAppendable coefficients = F.ListAlloc(n - m + 2);
+      for (int j = m; j <= n; j++) {
+        coefficients.append(d[j]);
+      }
+      return new ASTSeriesData(x, F.CInfinity, (IAST) engine.evaluate(coefficients), m, n + 1, 1);
     }
 
     /** <code>(-1)^(k+1)*BernoulliB(k+1,a)/(k*(k+1))</code> */

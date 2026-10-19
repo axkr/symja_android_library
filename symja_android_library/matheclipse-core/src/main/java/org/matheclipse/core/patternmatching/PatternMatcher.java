@@ -2874,6 +2874,22 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    */
   protected IExpr replaceSubExpressionOrderlessFlat(final IAST lhsPatternAST, final IAST lhsEvalAST,
       final IExpr rhsExpr, EvalEngine engine) {
+    return replaceSubExpressionOrderlessFlat(lhsPatternAST, lhsEvalAST, rhsExpr, F.NIL, engine);
+  }
+
+  /**
+   * Like {@link #replaceSubExpressionOrderlessFlat(IAST, IAST, IExpr, EvalEngine)}, where a run of
+   * a Flat (not Orderless) expression is only replaced if <code>condition</code> holds for its
+   * match.
+   *
+   * @param condition the test of <code>lhs /; test</code>, or {@link F#NIL}
+   */
+  protected IExpr replaceSubExpressionOrderlessFlat(final IAST lhsPatternAST, final IAST lhsEvalAST,
+      final IExpr rhsExpr, final IExpr condition, EvalEngine engine) {
+    if (condition.isPresent() && lhsPatternAST.isOrderlessAST()) {
+      // the test is only checked for the runs of a Flat expression which isn't Orderless
+      return F.NIL;
+    }
 
     if (lhsPatternAST.size() < lhsEvalAST.size()) {
       if (lhsPatternAST.isOrderlessAST() && lhsPatternAST.isFlatAST()) {
@@ -2902,7 +2918,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         if (!matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
           return F.NIL;
         }
-        return matchFlatSequenceFromIndex(lhsPatternAST, lhsEvalAST, rhsExpr, engine);
+        return matchFlatSequenceFromIndex(lhsPatternAST, lhsEvalAST, rhsExpr, condition, engine);
       }
     }
 
@@ -2938,11 +2954,18 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
    * @return
    */
   private IExpr matchFlatSequenceFromIndex(final IAST lhsPatternFlatAST, final IAST lhsEvalFlatAST,
-      final IExpr rhsExpr, EvalEngine engine) {
+      final IExpr rhsExpr, final IExpr condition, EvalEngine engine) {
     final int len = lhsEvalFlatAST.size() - lhsPatternFlatAST.size() + 1;
     for (int i = 0; i < len; i++) {
+      IExpr[] patternValues = condition.isPresent() ? fPatternMap.copyPattern() : null;
       if (matchASTSequence(lhsPatternFlatAST, lhsEvalFlatAST, i, engine,
           new StackMatcher(engine))) {
+        if (condition.isPresent()
+            && !engine.evalTrue(fPatternMap.substituteSymbols(condition, F.CEmptySequence))) {
+          // the test of this run fails - unbind its values and try the next run
+          fPatternMap.resetPattern(patternValues);
+          continue;
+        }
         IASTAppendable lhsResultAST = lhsEvalFlatAST.copyAppendable();
         for (int j = 1; j < lhsPatternFlatAST.size(); j++) {
           lhsResultAST.remove(i + 1);

@@ -1700,4 +1700,51 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(3 > 2, Reals)", //
         "True");
   }
+
+  /**
+   * A periodic or monotone function equal to an expression of a parameter: the solutions over the
+   * reals hold under the condition that the function takes the value.
+   */
+  @Test
+  public void testReduceParametricInverseFunctions() {
+    check("Reduce(Cos(x)==b, x, Reals)", //
+        "b>=-1&&b<=1&&C(1)∈Integers&&(x==-ArcCos(b)+2*Pi*C(1)||x==ArcCos(b)+2*Pi*C(1))");
+    check("Reduce(Sinh(2*x)==b, x, Reals)", //
+        "x==ArcSinh(b)/2");
+    check("Reduce(Cosh(x)==b, x, Reals)", //
+        "b>=1&&(x==-ArcCosh(b)||x==ArcCosh(b))");
+    check("Reduce(3^x==b, x, Reals)", //
+        "b>0&&x==Log(b)/Log(3)");
+    check("Reduce(Log(x)==b, x, Reals)", //
+        "x==E^b");
+    check("Reduce(ArcTan(x)==b, x, Reals)", //
+        "b>-Pi/2&&b<Pi/2&&x==Tan(b)");
+    // a window picks the members of the families and conditions the parameter
+    check("Reduce(Sin(x)==b && 0<x<Pi/2, x, Reals)", //
+        "b>0&&b<1&&x==ArcSin(b)");
+    check("Reduce(Cos(x)==b && 0<x<Pi, x, Reals)", //
+        "b>-1&&b<1&&x==ArcCos(b)");
+  }
+
+  /** An inequality of one monotone function of the variable. */
+  @Test
+  public void testReduceMonotoneInequality() {
+    check("Reduce(E^x > 5, x, Reals)", //
+        "x>Log(5)");
+    // over the complex numbers the case which holds for every argument still needs a real x
+    check("Reduce(E^x > a, x)", //
+        "(a<=0&&x∈Reals)||(a>0&&x>Log(a))");
+    check("Reduce(E^x < b, x, Reals)", //
+        "b>0&&x<Log(b)");
+    check("Reduce(Log(x) < 2, x, Reals)", //
+        "x>0&&x<E^2");
+    check("Reduce(ArcTan(x) > 3, x, Reals)", //
+        "False");
+    check("Reduce(ArcCos(x) <= 1/2, x, Reals)", //
+        "x>=Cos(1/2)&&x<=1");
+    check("Reduce(E^(2*x) > -1, x)", //
+        "x∈Reals");
+    check("Reduce(Tanh(x) > b, x, Reals)", //
+        "b<=-1||(b>-1&&b<1&&x>ArcTanh(b))");
+  }
 }

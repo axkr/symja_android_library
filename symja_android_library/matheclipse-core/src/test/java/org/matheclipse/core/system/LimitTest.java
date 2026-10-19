@@ -744,6 +744,17 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "Infinity");
   }
 
+  /** Logs of an argument which is negative on one side: -Log(u) is not Log(1/u) there. */
+  @Test
+  public void testLimitGruntzLogOfNegative() {
+    check("Limit(x*Log(-Log(x))-Log(-Log(x)), x->1, Direction->\"FromAbove\")", //
+        "0");
+    check("Limit(x*Log(-Log(x))-Log(-Log(x)), x->1, Direction->\"FromBelow\")", //
+        "0");
+    check("Limit(x*Log(-Log(x))-Log(-Log(x)), x->1)", //
+        "0");
+  }
+
   /** Root differences at Infinity, and 0/0 root quotients at a finite point. */
   @Test
   public void testLimitGruntzRoots() {

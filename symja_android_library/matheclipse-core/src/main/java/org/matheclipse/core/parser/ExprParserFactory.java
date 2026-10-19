@@ -156,6 +156,10 @@ public class ExprParserFactory implements IParserFactory {
     if (base.isInexactNumber()) {
       return false;
     }
+    if (exponent.isNegative()) {
+      // Power(Power(x, -1), -1) would become x^1: a held reciprocal of a reciprocal stays
+      return false;
+    }
     return !(exponent.isInexactNumber() && base.isNumericFunction(true));
   }
 

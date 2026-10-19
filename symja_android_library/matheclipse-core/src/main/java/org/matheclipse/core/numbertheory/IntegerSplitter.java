@@ -6,7 +6,12 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.IntFunction;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.TimeoutException;
 
 /**
@@ -18,13 +23,20 @@ import org.matheclipse.core.eval.exception.TimeoutException;
  * <ol>
  * <li>trial division for numbers below <code>2^40</code>,
  * <li>perfect powers,
+ * <li>a few steps of Fermat's method, which finds two factors close to the square root,
  * <li>Brent's variant of Pollard's rho method with a bounded number of steps, which finds factors
  * up to about <code>10^9</code>,
- * <li>Pollard's <code>p-1</code> method, which finds a prime factor <code>p</code> whose
- * <code>p-1</code> has only small prime factors, whatever the size of <code>p</code>,
- * <li>Lenstra's elliptic curve method on Montgomery curves with Suyama's parametrization, with a
- * new curve for every attempt and a rising smoothness bound. Stage 1 multiplies by the prime powers
- * with {@link LucasChains}. It runs until a factor is found or the thread is interrupted.
+ * <li>Pollard's <code>p-1</code> method with a small bound, which finds a prime factor
+ * <code>p</code> whose <code>p-1</code> has only small prime factors, whatever the size of
+ * <code>p</code>,
+ * <li>for numbers of {@link Siqs#MIN_DIGITS} to {@link Siqs#MAX_DIGITS} digits: Lenstra's elliptic
+ * curve method for the factors with up to <code>2/7</code> of the digits of the number, then the
+ * self-initializing quadratic sieve {@link Siqs}, whose running time depends only on the size of
+ * the number,
+ * <li>the <code>p-1</code> method with a large bound, then the elliptic curve method on Montgomery
+ * curves with Suyama's parametrization, with a new curve for every attempt and a rising smoothness
+ * bound. Stage 1 multiplies by the prime powers with {@link LucasChains}. It runs until a factor is
+ * found or the thread is interrupted.
  * </ol>
  *
  * <p>
@@ -54,10 +66,36 @@ final class IntegerSplitter {
   /** The number of rho steps whose differences are multiplied before one gcd is taken. */
   private static final int RHO_BATCH = 128;
 
+  /** The number of steps of Fermat's method. */
+  private static final int FERMAT_STEPS = 32;
+
   /** Smoothness bounds of the <code>p-1</code> method. */
   private static final int PM1_B1 = 100_000;
 
   private static final int PM1_B2 = 2_000_000;
+
+  /** The stage 1 bound of the <code>p+1</code> method; stage 2 goes to 100 times of it. */
+  private static final int PP1_B1 = 100_000;
+
+  /**
+   * The start values <code>V_1</code> of the <code>p+1</code> method as fractions: 3 and 5, with
+   * the discriminants <code>V_1^2-4 = 5</code> and <code>21</code>. Each one finds a factor with a
+   * smooth <code>p+1</code> for about half of the primes; the discriminants -3 and -1 of other
+   * common choices are residues of all the primes <code>p = 1 (mod 12)</code>, so they miss the
+   * primes whose <code>p+1</code> is twice a product of primes greater than 3.
+   */
+  private static final int[][] PP1_SEEDS = {{3, 1}, {5, 1}};
+
+  /** Smoothness bounds of the short <code>p-1</code> probe after the rho method. */
+  private static final int PM1_PROBE_B1 = 2_000;
+
+  private static final int PM1_PROBE_B2 = 50_000;
+
+  /**
+   * Numbers with at least this many digits get the <code>p-1</code> method with the large bounds
+   * before the quadratic sieve; for smaller ones it costs a noticeable part of the sieve's time.
+   */
+  private static final int PM1_SIQS_DIGITS = 70;
 
   /** The number of primes whose prime powers are combined into one exponent in stage 1. */
   private static final int PM1_BLOCK = 1024;
@@ -69,6 +107,15 @@ final class IntegerSplitter {
   private static final int[] ECM_B1 = {2_000, 11_000, 50_000, 250_000, 1_000_000};
 
   private static final int[] ECM_CURVES = {25, 90, 300, 700, 1800};
+
+  /** The number of digits of the prime factors each level of {@link #ECM_B1} is suited to. */
+  private static final int[] ECM_DIGITS = {15, 20, 25, 30, 35};
+
+  /** Numbers with at least this many digits get the elliptic curve method on several threads. */
+  private static final int ECM_PARALLEL_DIGITS = 45;
+
+  /** Numbers up to this many digits get the first level of the elliptic curve method. */
+  private static final int ECM_SMALL_DIGITS = 25;
 
   /** Stage 2 bound of the elliptic curve method as a multiple of the stage 1 bound. */
   private static final int ECM_B2_FACTOR = 100;
@@ -125,15 +172,106 @@ final class IntegerSplitter {
     if (power[1].compareTo(ONE) > 0) {
       return power[0];
     }
-    BigInteger divisor = brentRho(n, ONE, RHO_STEPS);
+    BigInteger divisor = fermat(n, FERMAT_STEPS);
     if (isProperDivisor(divisor, n)) {
       return divisor;
     }
-    divisor = pMinus1(n, PM1_B1, PM1_B2);
+    if (n.bitLength() <= 63) {
+      // the rho method in 64 bit arithmetic, without a bound on the steps
+      long factor = Siqs.rhoSplit(n.longValue());
+      if (factor > 1) {
+        return BigInteger.valueOf(factor);
+      }
+    }
+    divisor = brentRho(n, ONE, RHO_STEPS);
     if (isProperDivisor(divisor, n)) {
       return divisor;
     }
-    return ecm(n);
+    divisor = pMinus1(n, PM1_PROBE_B1, PM1_PROBE_B2);
+    if (isProperDivisor(divisor, n)) {
+      return divisor;
+    }
+    final int digits = decimalDigits(n);
+    // the elliptic curve method has run the levels for the factors up to this many digits
+    int ecmDigits = 0;
+    boolean pMinus1Done = false;
+    if (digits >= Siqs.MIN_DIGITS && digits <= Siqs.MAX_DIGITS) {
+      // the first level finds the factors of a small number faster than the sieve
+      int ecmBeforeSieve = Math.max(2 * digits / 7, digits <= ECM_SMALL_DIGITS ? ECM_DIGITS[0] : 0);
+      divisor = ecm(n, ecmDigits, ecmBeforeSieve);
+      if (isProperDivisor(divisor, n)) {
+        return divisor;
+      }
+      ecmDigits = ecmBeforeSieve;
+      if (digits >= PM1_SIQS_DIGITS) {
+        divisor = pMinus1(n, PM1_B1, PM1_B2);
+        if (isProperDivisor(divisor, n)) {
+          return divisor;
+        }
+        pMinus1Done = true;
+      }
+      divisor = Siqs.factor(n);
+      if (divisor != null && isProperDivisor(divisor, n) && n.mod(divisor).signum() == 0) {
+        return divisor;
+      }
+    }
+    if (!pMinus1Done) {
+      divisor = pMinus1(n, PM1_B1, PM1_B2);
+      if (isProperDivisor(divisor, n)) {
+        return divisor;
+      }
+    }
+    // the first levels of the elliptic curve method are cheaper than the p+1 method
+    divisor = ecm(n, ecmDigits, ECM_DIGITS[1]);
+    if (isProperDivisor(divisor, n)) {
+      return divisor;
+    }
+    ecmDigits = Math.max(ecmDigits, ECM_DIGITS[1]);
+    for (int[] seed : PP1_SEEDS) {
+      divisor = pPlus1(n, seed[0], seed[1], PP1_B1);
+      if (isProperDivisor(divisor, n)) {
+        return divisor;
+      }
+    }
+    return ecm(n, ecmDigits, Integer.MAX_VALUE);
+  }
+
+  /** The number of decimal digits of the positive <code>n</code>. */
+  static int decimalDigits(BigInteger n) {
+    int digits = (int) (n.bitLength() * 0.3010299956639812) + 1;
+    return n.compareTo(BigInteger.TEN.pow(digits - 1)) < 0 ? digits - 1 : digits;
+  }
+
+  /**
+   * Fermat's method: <code>a^2 - n</code> for <code>a = ceil(sqrt(n)), ...</code> is a square
+   * <code>b^2</code> for <code>n = (a-b)*(a+b)</code>. The first steps find two factors whose
+   * difference is at most about <code>n^(1/4)</code> times the square root of the number of steps.
+   *
+   * @return a divisor greater than <code>1</code>, which can be <code>n</code> itself, or
+   *         {@link BigInteger#ONE}
+   */
+  static BigInteger fermat(BigInteger n, int steps) {
+    BigInteger a = n.sqrt();
+    if (a.multiply(a).equals(n)) {
+      return a;
+    }
+    a = a.add(ONE);
+    BigInteger b2 = a.multiply(a).subtract(n);
+    // the increment 2*a+1 of a^2 to (a+1)^2
+    BigInteger increment = a.shiftLeft(1).add(ONE);
+    for (int i = 0; i < steps; i++) {
+      // squares are 0, 1, 4, 9, 16, 17, 25, 33, 36, 41, 49, 57 mod 64
+      if (((0x0202021202030213L >>> (b2.intValue() & 63)) & 1) != 0) {
+        BigInteger b = b2.sqrt();
+        if (b.multiply(b).equals(b2)) {
+          return a.subtract(b);
+        }
+      }
+      b2 = b2.add(increment);
+      a = a.add(ONE);
+      increment = increment.add(TWO);
+    }
+    return ONE;
   }
 
   private static boolean isProperDivisor(BigInteger divisor, BigInteger n) {
@@ -315,26 +453,338 @@ final class IntegerSplitter {
   }
 
   /**
+   * Williams' <code>p+1</code> method with the Lucas sequence <code>V_k = a^k + a^(-k)</code>,
+   * <code>V_1 = numerator/denominator</code>. It finds a prime factor <code>p</code> whose
+   * <code>p+1</code> has only small prime factors if <code>V_1^2-4</code> is a quadratic
+   * non-residue modulo <code>p</code>, and acts like the <code>p-1</code> method otherwise.
+   * Stage 1 runs the {@link LucasChains} program of the bound <code>b1</code>; stage 2 takes the
+   * pairs <code>(k, j)</code> of the elliptic curve method's {@link Stage2Plan} and multiplies the
+   * differences <code>V_(k*D) - V_j</code>, which vanish modulo <code>p</code> for every prime
+   * <code>k*D &plusmn; j</code> which completes the order.
+   *
+   * <p>
+   * See H. C. Williams, "A p+1 method of factoring", Math. Comp. 39 (1982).
+   *
+   * @return a divisor greater than <code>1</code>, which can be <code>n</code> itself, or
+   *         {@link BigInteger#ONE}
+   */
+  static BigInteger pPlus1(BigInteger n, int numerator, int denominator, int b1) {
+    BigInteger d = BigInteger.valueOf(denominator);
+    BigInteger g = d.gcd(n);
+    if (!g.equals(ONE)) {
+      return g;
+    }
+    MontgomeryLimbs m = new MontgomeryLimbs(n);
+    LucasLimbs lucas = new LucasLimbs(m);
+    long[] v = m.newElement();
+    m.toMontgomery(BigInteger.valueOf(numerator).multiply(d.modInverse(n)).mod(n), v);
+    LucasChains.run(lucas, v, stage1Program(b1));
+    long[] difference = m.newElement();
+    m.sub(v, lucas.two, difference);
+    g = m.gcd(difference);
+    if (!g.equals(ONE)) {
+      return g;
+    }
+    Stage2Plan plan = stage2Plan(b1);
+    final int babyCount = plan.babies.length;
+    // V_j for the odd j < D/2: V_(j+2) = V_j*V_2 - V_(j-2)
+    long[][] baby = new long[babyCount][];
+    long[] v2 = m.newElement();
+    lucas.dbl(v, v2);
+    long[] before = v.clone();
+    long[] current = v.clone();
+    long[] next = m.newElement();
+    int index = 0;
+    for (int j = 1; j < D / 2 && index < babyCount; j += 2) {
+      if (j > 1) {
+        lucas.add(current, v2, before, next);
+        long[] recycled = before;
+        before = current;
+        current = next;
+        next = recycled;
+      }
+      if (plan.babies[index] == j) {
+        baby[index++] = current.clone();
+      }
+    }
+    // V_(k*D) for k = kFirst, kFirst+1, ...: V_((k+1)*D) = V_(k*D)*V_D - V_((k-1)*D)
+    long[] giant = lucas.multiply(v, D);
+    long[] previous = lucas.multiply(v, (long) (plan.kFirst - 1) * D);
+    long[] gk = lucas.multiply(v, (long) plan.kFirst * D);
+    long[] accumulated = m.one.clone();
+    long[] factor = m.newElement();
+    for (int k = plan.kFirst; k <= plan.kLast; k++) {
+      final int g0 = k - plan.kFirst;
+      for (int p = plan.pairStart[g0]; p < plan.pairStart[g0 + 1]; p++) {
+        m.sub(gk, baby[plan.pairBabies[p] & 0xFF], factor);
+        m.mul(accumulated, factor, accumulated);
+      }
+      lucas.add(gk, giant, previous, next);
+      long[] recycled = previous;
+      previous = gk;
+      gk = next;
+      next = recycled;
+      if ((k & 0xFF) == 0) {
+        checkInterrupted();
+        g = m.gcd(accumulated);
+        if (!g.equals(ONE)) {
+          return g;
+        }
+      }
+    }
+    return m.gcd(accumulated);
+  }
+
+  /**
+   * The Lucas sequence <code>V_k</code> as a {@link LucasChains.DifferentialCurve}:
+   * <code>V_(2k) = V_k^2 - 2</code> and <code>V_(a+b) = V_a*V_b - V_(a-b)</code>, in
+   * {@link MontgomeryLimbs} arithmetic.
+   */
+  static final class LucasLimbs implements LucasChains.DifferentialCurve<long[]> {
+    final MontgomeryLimbs m;
+
+    /** the Montgomery form of <code>2</code> */
+    final long[] two;
+
+    private final long[] t;
+
+    LucasLimbs(MontgomeryLimbs m) {
+      this.m = m;
+      two = m.newElement();
+      m.add(m.one, m.one, two);
+      t = m.newElement();
+    }
+
+    @Override
+    public long[] newPoint() {
+      return m.newElement();
+    }
+
+    @Override
+    public void copy(long[] from, long[] to) {
+      System.arraycopy(from, 0, to, 0, m.k);
+    }
+
+    @Override
+    public void dbl(long[] p, long[] out) {
+      m.sqr(p, out);
+      m.sub(out, two, out);
+    }
+
+    @Override
+    public void add(long[] p, long[] q, long[] difference, long[] out) {
+      m.mul(p, q, t);
+      m.sub(t, difference, out);
+    }
+
+    /** <code>V_(k*j)</code> from <code>V_j = v</code> by the ladder of <code>V_i, V_(i+1)</code> */
+    long[] multiply(long[] v, long k) {
+      if (k == 0) {
+        return two.clone();
+      }
+      long[] r0 = v.clone();
+      long[] r1 = m.newElement();
+      dbl(v, r1);
+      for (int i = 62 - Long.numberOfLeadingZeros(k); i >= 0; i--) {
+        if ((k >>> i & 1L) != 0) {
+          add(r1, r0, v, r0);
+          dbl(r1, r1);
+        } else {
+          add(r0, r1, v, r1);
+          dbl(r0, r0);
+        }
+      }
+      return r0;
+    }
+  }
+
+  /**
    * Lenstra's elliptic curve method. Every attempt uses a new curve, with the smoothness bound
    * rising after a number of curves.
    *
-   * @return a divisor <code>d</code> with <code>1 &lt; d &lt; n</code>
+   * @param doneDigits the levels for prime factors of at most this many digits have already run
+   * @param maxDigits the levels of {@link #ECM_B1} for prime factors of at most this many digits
+   *        are run; the last level is repeated if it is reached
+   * @return a divisor <code>d</code> with <code>1 &lt; d &lt; n</code>, or {@link BigInteger#ONE}
+   *         if the levels up to <code>maxDigits</code> found none
    * @throws TimeoutException if the thread is interrupted
    */
-  static BigInteger ecm(BigInteger n) {
+  static BigInteger ecm(BigInteger n, int doneDigits, int maxDigits) {
+    if (ECM_DIGITS[0] > maxDigits) {
+      return ONE;
+    }
+    long firstCurve = 0;
+    for (int level = 0; level < ECM_DIGITS.length - 1 && ECM_DIGITS[level] <= doneDigits; level++) {
+      firstCurve += ECM_CURVES[level];
+    }
+    int threads = decimalDigits(n) >= ECM_PARALLEL_DIGITS ? workerThreads() : 1;
+    if (threads > 1) {
+      int granted = acquireWorkers(threads);
+      try {
+        if (granted > 1) {
+          return ecmParallel(n, firstCurve, maxDigits, granted);
+        }
+      } finally {
+        releaseWorkers(granted);
+      }
+    }
     MontgomeryLimbs m = new MontgomeryLimbs(n);
-    long sigma = FIRST_SIGMA;
-    for (int level = 0;; level = Math.min(level + 1, ECM_B1.length - 1)) {
+    for (long curve = firstCurve;; curve++) {
+      int level = ecmLevel(curve);
+      if (ECM_DIGITS[level] > maxDigits) {
+        return ONE;
+      }
+      checkInterrupted();
       int b1 = ECM_B1[level];
-      byte[] program = stage1Program(b1);
-      Stage2Plan plan = stage2Plan(b1);
-      for (int curve = 0; curve < ECM_CURVES[level]; curve++) {
-        checkInterrupted();
-        BigInteger divisor = ecmCurve(m, sigma++, program, plan);
-        if (isProperDivisor(divisor, n)) {
-          return divisor;
+      BigInteger divisor = ecmCurve(m, FIRST_SIGMA + curve, stage1Program(b1), stage2Plan(b1));
+      if (isProperDivisor(divisor, n)) {
+        return divisor;
+      }
+    }
+  }
+
+  /**
+   * The level of {@link #ECM_B1} of the curve number <code>curve</code>: the levels have
+   * {@link #ECM_CURVES} curves each, and the last level is repeated.
+   */
+  private static int ecmLevel(long curve) {
+    for (int level = 0; level < ECM_CURVES.length - 1; level++) {
+      if (curve < ECM_CURVES[level]) {
+        return level;
+      }
+      curve -= ECM_CURVES[level];
+    }
+    return ECM_CURVES.length - 1;
+  }
+
+  /**
+   * {@link #ecm(BigInteger, int, int)} with the curves on <code>threads</code> worker threads. The
+   * curves and their parameters are the same as on one thread; the calling thread waits for the
+   * first proper divisor, and when it is interrupted it stops the workers before it throws the
+   * timeout.
+   */
+  private static BigInteger ecmParallel(BigInteger n, long firstCurve, int maxDigits,
+      int threads) {
+    final AtomicLong nextCurve = new AtomicLong(firstCurve);
+    final AtomicReference<BigInteger> found = new AtomicReference<>();
+    final AtomicReference<Throwable> failure = new AtomicReference<>();
+    final AtomicInteger running = new AtomicInteger(threads);
+    final Object signal = new Object();
+    Thread[] workers = new Thread[threads];
+    for (int i = 0; i < threads; i++) {
+      workers[i] = Config.THREAD_FACTORY.newThread(() -> {
+        try {
+          MontgomeryLimbs m = new MontgomeryLimbs(n);
+          while (found.get() == null) {
+            long curve = nextCurve.getAndIncrement();
+            int level = ecmLevel(curve);
+            if (ECM_DIGITS[level] > maxDigits) {
+              break;
+            }
+            int b1 = ECM_B1[level];
+            BigInteger divisor =
+                ecmCurve(m, FIRST_SIGMA + curve, stage1Program(b1), stage2Plan(b1));
+            if (isProperDivisor(divisor, n)) {
+              found.compareAndSet(null, divisor);
+            }
+          }
+        } catch (TimeoutException e) {
+          // stopped
+        } catch (Throwable t) {
+          failure.compareAndSet(null, t);
+        } finally {
+          running.decrementAndGet();
+          synchronized (signal) {
+            signal.notifyAll();
+          }
+        }
+      });
+      workers[i].setDaemon(true);
+      workers[i].start();
+    }
+    try {
+      synchronized (signal) {
+        while (found.get() == null && running.get() > 0 && failure.get() == null) {
+          try {
+            signal.wait(20);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw TimeoutException.TIMED_OUT;
+          }
+          checkInterrupted();
         }
       }
+      if (found.get() == null && failure.get() != null) {
+        Throwable t = failure.get();
+        if (t instanceof Error) {
+          throw (Error) t;
+        }
+        throw t instanceof RuntimeException ? (RuntimeException) t : new IllegalStateException(t);
+      }
+      return found.get() == null ? ONE : found.get();
+    } finally {
+      found.compareAndSet(null, ONE);
+      stopWorkers(workers);
+    }
+  }
+
+  /**
+   * The number of worker threads of the parallel methods: {@link Config#FACTOR_INTEGER_THREADS},
+   * but one processor is left to the calling thread, and <code>1</code> if the platform has no
+   * threads.
+   */
+  static int workerThreads() {
+    if (Config.JAS_NO_THREADS || Config.TIMECONSTRAINED_NO_THREAD) {
+      return 1;
+    }
+    return Math.max(1,
+        Math.min(Config.FACTOR_INTEGER_THREADS, Runtime.getRuntime().availableProcessors() - 1));
+  }
+
+  /**
+   * The worker threads all factorizations together may run, so that concurrent evaluations, as on
+   * a server, don't start a set of threads each.
+   */
+  private static final Semaphore WORKER_PERMITS =
+      new Semaphore(Math.max(1, Runtime.getRuntime().availableProcessors() - 1));
+
+  /**
+   * Take up to <code>wanted</code> of the free worker threads, without waiting.
+   *
+   * @return the number taken, which {@link #releaseWorkers(int)} gives back
+   */
+  static int acquireWorkers(int wanted) {
+    int granted = 0;
+    while (granted < wanted && WORKER_PERMITS.tryAcquire()) {
+      granted++;
+    }
+    return granted;
+  }
+
+  /** Give back the worker threads of {@link #acquireWorkers(int)}. */
+  static void releaseWorkers(int granted) {
+    if (granted > 0) {
+      WORKER_PERMITS.release(granted);
+    }
+  }
+
+  /** Interrupt the <code>workers</code> and wait until all of them have ended. */
+  static void stopWorkers(Thread[] workers) {
+    for (Thread worker : workers) {
+      worker.interrupt();
+    }
+    boolean interrupted = false;
+    for (Thread worker : workers) {
+      while (worker.isAlive()) {
+        try {
+          worker.join();
+        } catch (InterruptedException e) {
+          interrupted = true;
+        }
+      }
+    }
+    if (interrupted) {
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -784,7 +1234,7 @@ final class IntegerSplitter {
    * The primes up to at least <code>limit</code> in ascending order. The returned array is shared
    * and must not be modified.
    */
-  private static int[] primesUpTo(int limit) {
+  static int[] primesUpTo(int limit) {
     PrimeTable table = primeTable.get();
     if (table != null && table.limit >= limit) {
       return table.primes;

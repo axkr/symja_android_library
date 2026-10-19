@@ -2037,6 +2037,11 @@ public class SpecialFunctions {
         // the series in machine arithmetic for |z| < 1 and Re(a) > 0
         Complex machine = HurwitzZetaKernel.lerchPhi(ast.arg1().evalfc(), ast.arg2().evalfc(),
             ast.arg3().evalfc());
+        if (machine == null && ast.arg2().isReal() && ast.arg3().isReal()) {
+          // outside the unit disk: the integral representation
+          machine = HurwitzZetaKernel.lerchPhiOutside(ast.arg1().evalfc(), ast.arg2().evalf(),
+              ast.arg3().evalf());
+        }
         if (machine != null) {
           if (ast.arg1().isReal() && ast.arg2().isReal() && ast.arg3().isReal()) {
             return F.num(machine.getReal());

@@ -725,4 +725,13 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
             + "675675*b^5+2/34459425*b^7+2/654729075*b^9)/Pi-StruveH(10,b)}"); //
 
   }
+
+  /** Y and K of a large order by their recurrence in the order. */
+  @Test
+  public void testBesselLargeOrderRecurrence() {
+    check("N(BesselK(1200, 800), 20)", //
+        "0.0000066838633622092157001");
+    check("N(BesselY(900, 3000), 20)", //
+        "-0.00080388585088536156903");
+  }
 }

@@ -120,6 +120,18 @@ public class ExprParser extends Scanner {
    */
   private static final int PATTERN_TEST_PRECEDENCE = 680;
 
+  /** The precedence of <code>:</code> naming a pattern, <code>x:p</code>. */
+  private static final int PATTERN_PRECEDENCE = 150;
+
+  /**
+   * The precedence of <code>:</code> giving a pattern a default, <code>p:v</code>. It binds less
+   * tightly than the naming <code>:</code> - <code>a:b:c</code> is
+   * <code>Optional[Pattern[a, b], c]</code> - and more tightly than <code>~~</code>,
+   * <code>/;</code> and <code>-&gt;</code>: <code>x_:1 ~~ y</code> is
+   * <code>StringExpression[Optional[x_, 1], y]</code>.
+   */
+  private static final int OPTIONAL_PRECEDENCE = 140;
+
   private final EvalEngine fEngine;
 
   /** The engine the parser converts pattern objects with. */
@@ -249,9 +261,14 @@ public class ExprParser extends Scanner {
           break;
         case ID.Complex:
           // only two numbers make a complex number; HoldPattern[Complex[b__]] is a pattern
-          if (!Config.USER_STEPS_PARSER && ast.isAST2() && ast.arg1().isNumber()
-              && ast.arg2().isNumber()) {
-            expr = S.Complex.getEvaluator().evaluate(ast, fEngine);
+          if (!Config.USER_STEPS_PARSER && ast.isAST2() && isConstantArithmetic(ast.arg1())
+              && isConstantArithmetic(ast.arg2())) {
+            // Complex(3/4, -(6/7)*I): the parts are numbers once their arithmetic is done
+            IExpr re = ast.arg1().isNumber() ? ast.arg1() : fEngine.evalQuiet(ast.arg1());
+            IExpr im = ast.arg2().isNumber() ? ast.arg2() : fEngine.evalQuiet(ast.arg2());
+            if (re.isNumber() && im.isNumber()) {
+              expr = S.Complex.getEvaluator().evaluate(F.Complex(re, im), fEngine);
+            }
           }
           break;
 
@@ -266,6 +283,25 @@ public class ExprParser extends Scanner {
       return expr.orElse(ast);
     }
     return ast;
+  }
+
+  /**
+   * Whether <code>expr</code> is a number, or numbers combined by <code>Plus</code>,
+   * <code>Times</code> and <code>Power</code> only, like <code>-(6/7)*I</code>.
+   */
+  private static boolean isConstantArithmetic(IExpr expr) {
+    if (expr.isNumber()) {
+      return true;
+    }
+    if (expr.isPlus() || expr.isTimes() || expr.isPower()) {
+      for (IExpr arg : (IAST) expr) {
+        if (!isConstantArithmetic(arg)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -800,7 +836,7 @@ public class ExprParser extends Scanner {
       case TT_BLANK_COLON:
         // read '_:'
         getNextToken();
-        IExpr defaultValue = parseExpression();
+        IExpr defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
         temp = F.Optional(F.$b(), defaultValue);
         break;
       default:
@@ -809,7 +845,7 @@ public class ExprParser extends Scanner {
 
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
       getNextToken();
-      IExpr defaultValue = parseExpression();
+      IExpr defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
       temp = F.Optional(temp, defaultValue);
     }
     return parseArguments(temp);
@@ -888,7 +924,7 @@ public class ExprParser extends Scanner {
       case TT_BLANK_COLON:
         // read '_:'
         getNextToken();
-        IExpr defaultValue = parseExpression();
+        IExpr defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
         temp = F.Optional(F.$p(symbol), defaultValue);
         break;
       default:
@@ -896,7 +932,7 @@ public class ExprParser extends Scanner {
     }
     if (fToken == TT_OPERATOR && fOperatorString.equals(":")) {
       getNextToken();
-      IExpr defaultValue = parseExpression();
+      IExpr defaultValue = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
       temp = F.Optional(temp, defaultValue);
     }
     return temp;
@@ -2001,7 +2037,9 @@ public class ExprParser extends Scanner {
             ? precedence >= min_precedence
             : precedence > min_precedence //
                 || (fOperatorString.equals(":") && lhs.isSymbol()
-                    && min_precedence < PATTERN_TEST_PRECEDENCE)
+                    && min_precedence < PATTERN_TEST_PRECEDENCE
+                    // in a:b:c the second : gives a:b a default and doesn't name b
+                    && min_precedence != PATTERN_PRECEDENCE)
                 || (precedence == min_precedence
                     && (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE
                         // f[x_] := x /: g[x] := 1 is SetDelayed[f[x_], TagSetDelayed[x, g[x], 1]]:
@@ -2055,7 +2093,12 @@ public class ExprParser extends Scanner {
 
   private final IExpr parseInfixOperator(IExpr lhs, InfixExprOperator infixOperator) {
     IExpr rhs;
-    rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+    if (infixOperator.headSymbol() == S.Pattern && !lhs.isSymbol()) {
+      // p:v after anything but a symbol is the default of p
+      rhs = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
+    } else {
+      rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+    }
     lhs = createInfixFunction(infixOperator, lhs, rhs);
     if (lhs instanceof IASTAppendable) {
       IASTAppendable ast = (IASTAppendable) lhs;
@@ -2098,7 +2141,8 @@ public class ExprParser extends Scanner {
         while (fToken == TT_NEWLINE) {
           getNextToken();
         }
-        rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+        rhs = parseLookaheadOperator(infixOperator.headSymbol() == S.Pattern ? OPTIONAL_PRECEDENCE
+            : infixOperator.getPrecedence());
         ast.append(rhs);
       }
 
@@ -2114,7 +2158,7 @@ public class ExprParser extends Scanner {
             getNextToken();
           }
           return F.binaryAST2(S.Optional, lhs,
-              parseLookaheadOperator(infixOperator.getPrecedence()));
+              parseLookaheadOperator(OPTIONAL_PRECEDENCE));
         }
         throwSyntaxError(
             "Operator: \'" + fOperatorString + "\' not created properly (no grouping defined)");

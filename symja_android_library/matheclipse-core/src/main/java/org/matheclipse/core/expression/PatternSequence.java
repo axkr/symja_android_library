@@ -285,7 +285,8 @@ public class PatternSequence extends AbstractPatternSequence {
       }
       buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
     } else {
-      buf.append("PatternSequence");
+      // x__ is the pattern x named around a blank sequence
+      buf.append("Pattern");
       buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
       buf.append(fSymbol.toString());
       buf.append(", ");

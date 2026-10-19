@@ -2466,6 +2466,13 @@ public class HypergeometricFunctions {
      */
     private static IExpr hypergeometzricUPositiveAFixedBZ(IInteger ni, IExpr b, IExpr z, int n,
         EvalEngine engine) {
+      if (b.isInteger() && engine.evaluate(F.Pochhammer(F.Subtract(F.C2, b), F.ZZ(n - 1)))
+          .isZero()) {
+        // an integer 2 <= b <= n, where the formula below divides by 0: the Kummer transformation
+        // U(a,b,z) == z^(1-b)*U(a-b+1,2-b,z) gives a second parameter 2-b <= 0, for which it holds
+        return F.Times(F.Power(z, F.Subtract(F.C1, b)),
+            F.HypergeometricU(F.Plus(ni, F.Negate(b), F.C1), F.Subtract(F.C2, b), z));
+      }
       // (Gamma(-1+b,z)*z^(1-b)*E^z*LaguerreL(-1+n,1-b,-z)-Sum(LaguerreL(-1-k+n,-b+k+1,-z)/k*LaguerreL(-
       // 1+k,-1+b-k,z),{k,1,-1+n}))/Pochhammer(2-b,-1+n)
       IExpr sum = engine.evaluate(F.sum(

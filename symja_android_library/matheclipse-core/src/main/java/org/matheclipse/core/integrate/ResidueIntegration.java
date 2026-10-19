@@ -229,6 +229,37 @@ public final class ResidueIntegration {
     }
   }
 
+  /**
+   * <code>Integrate(f, {x,0,Infinity})</code> by the convolution of two Meijer G-functions alone
+   * (<code>Method -&gt; "MeijerConvolution"</code>).
+   *
+   * @param assumptions the assumptions of the call as an expression, or {@link F#NIL}
+   * @return {@link F#NIL} if the integrand is not a product of two such kernels, or a condition
+   *         of convergence is refuted
+   */
+  public static IExpr integrateByMeijerConvolution(IExpr f, IExpr x, IExpr assumptions,
+      EvalEngine engine) {
+    if (!x.isSymbol() || f.isFree(x) || !f.isAST() || ACTIVE.get()) {
+      return F.NIL;
+    }
+    ACTIVE.set(Boolean.TRUE);
+    try {
+      Context ctx = new Context(f, (ISymbol) x, assumptions, false, engine);
+      VariablesSet variables = new VariablesSet(f);
+      for (IExpr variable : variables.getArrayList()) {
+        if (!variable.equals(x)) {
+          ctx.parameters.add(variable);
+        }
+      }
+      return IntegralRepresentations.integrateByMeijerConvolution(ctx);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    } finally {
+      ACTIVE.set(Boolean.FALSE);
+    }
+  }
+
   /** The integral under the assumptions of the context, which is filled on the way. */
   private static IExpr integrate(Context ctx, IExpr lower, IExpr upper) {
     final IExpr f = ctx.f;

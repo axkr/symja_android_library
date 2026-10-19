@@ -708,6 +708,14 @@ public class Config {
   public static int MAX_PARALLEL_KERNELS = Runtime.getRuntime().availableProcessors();
 
   /**
+   * The maximum number of threads the quadratic sieve of <code>FactorInteger</code> sieves on for
+   * numbers of 50 and more digits. With a value less than <code>2</code> - or if
+   * {@link #TIMECONSTRAINED_NO_THREAD} or {@link #JAS_NO_THREADS} says that the platform has no
+   * threads - it sieves on the calling thread.
+   */
+  public static int FACTOR_INTEGER_THREADS = Runtime.getRuntime().availableProcessors();
+
+  /**
    * An object that creates new threads on demand. Using thread factories removes hardwiring of
    * calls to new Thread, enabling applications to use special thread subclasses, priorities, etc.
    *

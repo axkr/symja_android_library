@@ -68,6 +68,14 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * hence the minimum over all occupied indices. For an ordinary Taylor series
    * (<code>d == 1</code>) every residue is <code>0</code> and this degenerates to the familiar
    * <code>n+1</code>.
+   *
+   * <p>
+   * The terms are grouped by the fractional part of their exponents. A group whose first exponent
+   * is above <code>1</code>, like that of <code>x^(5/3)*Exp(x)</code>, ends on the first multiple of
+   * <code>1/q</code> beyond <code>n</code> instead, where <code>q</code> is the denominator of its
+   * exponents: <code>O(x^(10/3))</code> to the order <code>3</code>, although its lattice continues
+   * with <code>11/3</code>. So <code>x^(5/3)+x^(7/4)</code> to the order <code>2</code> ends at
+   * <code>Min(2+1/3, 2+1/4)</code>.
    */
   public int truncationOffset() {
     final int denominator = puiseuxDenominator();
@@ -75,19 +83,25 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       return 1;
     }
     int offset = denominator;
+    // whether the first term of a class of residues was seen
+    final boolean[] seen = new boolean[denominator];
     for (int i = minExponent(); i < truncateOrder(); i++) {
       IExpr coefficient = coefficient(i);
-      if (coefficient != null && !coefficient.isZero()) {
-        // floorMod - not %, the indices of a Laurent series are negative
-        int residue = Math.floorMod(i, denominator);
-        if (residue == 0) {
-          residue = denominator;
-        }
-        if (residue < offset) {
-          offset = residue;
-          if (offset == 1) {
-            break;
-          }
+      if (coefficient == null || coefficient.isZero()) {
+        continue;
+      }
+      // floorMod - not %, the indices of a Laurent series are negative
+      int residue = Math.floorMod(i, denominator);
+      if (residue == 0 || seen[residue]) {
+        continue;
+      }
+      seen[residue] = true;
+      // above 1: the grid of the group's own denominator; below: its lattice
+      int candidate = i > denominator ? ArithmeticUtils.gcd(residue, denominator) : residue;
+      if (candidate < offset) {
+        offset = candidate;
+        if (offset == 1) {
+          break;
         }
       }
     }
@@ -631,6 +645,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       final int n, final int direction, EvalEngine engine) {
     final int denominator = 1;
     ASTSeriesData result = null;
+    // the end of a product's series and its denominator, from timesSeriesDataRecursive
+    final int[] productBound = {Config.INVALID_INT, 0};
 
     if (function.isFree(x) || function.equals(x)) {
       if (x0.isZero() || function.isFree(x)) {
@@ -656,7 +672,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         }
       }
       if (result == null) {
-        result = timesSeriesDataRecursive((IAST) function, x, x0, n, direction, engine);
+        result = timesSeriesDataRecursive((IAST) function, x, x0, n, direction, engine,
+            productBound);
       }
     } else if (function.isPower()) {
       result = powerSeriesDataRecursive(function, x, x0, n, direction, engine);
@@ -713,10 +730,26 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (result != null) {
       int pDen = result.puiseuxDenominator();
       int targetTruncate = n * pDen + result.truncationOffset();
+      if (pDen > 1 && x0.isZero()) {
+        if (F.isPresent(productBound[0]) && productBound[1] == pDen) {
+          // a product ends where its power of x or the rest of its factors ends
+          targetTruncate = productBound[0];
+        } else if (function.isPlus()) {
+          // the summands have their own ends already, and a sum ends at the first of them
+          targetTruncate = result.truncateOrder();
+        }
+      }
 
       int actualMinExp = actualMinExponent(result);
       if (F.isPresent(actualMinExp)) {
         targetTruncate = Math.max(targetTruncate, actualMinExp + 1);
+      }
+      // no term beyond the order n is kept but the leading one
+      for (int i = n * pDen + 1; i < targetTruncate && i < result.truncateOrder(); i++) {
+        if (i != actualMinExp && !result.coefficient(i).isZero()) {
+          targetTruncate = i;
+          break;
+        }
       }
 
       if (result.truncateOrder() > targetTruncate) {
@@ -1327,7 +1360,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   private static ASTSeriesData timesSeriesDataRecursive(IAST timesAST, IExpr x, IExpr x0,
-      final int n, final int direction, EvalEngine engine) {
+      final int n, final int direction, EvalEngine engine, int[] productBound) {
     IASTAppendable rest = F.TimesAlloc(4);
     Map<IExpr, IExpr> coefficientMap = new LinkedHashMap<IExpr, IExpr>();
 
@@ -1405,7 +1438,92 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       series = series.shift(indexShift, coefficient, series.truncateOrder() + indexShift);
     }
 
+    if (x0.isZero() && series.puiseuxDenominator() > 1) {
+      productBound[0] = productBound(timesAST, factors, shift, x, x0, n,
+          series.puiseuxDenominator());
+      productBound[1] = series.puiseuxDenominator();
+    }
     return series;
+  }
+
+  /**
+   * The end of the Puiseux series of a product at <code>0</code>, in units of
+   * <code>1/pDen</code>: the product is <code>x^q*g</code>, where <code>x^q</code> collects the
+   * powers of <code>x</code> and the leading powers of the other factors, and <code>g</code> is the
+   * product of the other factors divided by their leading powers. It ends where the first of the
+   * two ends: <code>x*(1+x^(2/3))</code> to the order <code>3</code> at <code>Min(4, 11/3+1)</code>,
+   * <code>x^(2/3)*Sin(x) == x^(5/3)*(Sin(x)/x)</code> at <code>Min(10/3, 4+5/3)</code>.
+   *
+   * @param factors the series of the factors of <code>timesAST</code>, to an order of at least
+   *        <code>n</code>
+   * @param shift the integer power of <code>x</code> taken out of the product
+   * @return {@link Config#INVALID_INT} if a factor has no leading term or the end isn't a multiple
+   *         of <code>1/pDen</code>
+   */
+  private static int productBound(IAST timesAST, java.util.List<ASTSeriesData> factors, int shift,
+      IExpr x, IExpr x0, int n, int pDen) {
+    IRational q = F.ZZ(shift);
+    IRational restOrder = null;
+    for (int i = 0; i < factors.size(); i++) {
+      IExpr factor = timesAST.get(i + 1);
+      if (factor.equals(x)) {
+        q = q.add(F.C1);
+        continue;
+      }
+      if (factor.isPower() && factor.base().equals(x) && factor.exponent().isRational()) {
+        q = q.add((IRational) factor.exponent());
+        continue;
+      }
+      if (factor.isFree(x)) {
+        continue;
+      }
+      ASTSeriesData series = factors.get(i);
+      int lead = actualMinExponent(series);
+      if (!F.isPresent(lead)) {
+        return Config.INVALID_INT;
+      }
+      q = q.add(F.QQ(lead, series.puiseuxDenominator()));
+      // the factor divided by its leading power, which starts with x^0
+      IRational order = truncation(series.shift(-lead), n);
+      if (restOrder == null || order.isLT(restOrder)) {
+        restOrder = order;
+      }
+    }
+    if (restOrder == null) {
+      return Config.INVALID_INT;
+    }
+    IRational target = restOrder.add(q);
+    IRational powerOrder = truncation(monomial(q, x, x0, n), n);
+    if (powerOrder.isLT(target)) {
+      target = powerOrder;
+    }
+    IRational scaled = target.multiply(F.ZZ(pDen));
+    return scaled.isInteger() ? scaled.toIntDefault() : Config.INVALID_INT;
+  }
+
+  /** The series <code>x^q</code>, computed beyond the order <code>n</code>. */
+  private static ASTSeriesData monomial(IRational q, IExpr x, IExpr x0, int n) {
+    int d = q.denominator().toIntDefault();
+    int index = q.numerator().toIntDefault();
+    ASTSeriesData series =
+        new ASTSeriesData(x, x0, index, Math.max(index + 1, (n + 2) * d), d);
+    series.setCoeff(index, F.C1);
+    return series;
+  }
+
+  /**
+   * Where the series ends when it is expanded to the order <code>n</code>, as an exponent of
+   * <code>x</code>: the rule of {@link #truncationOffset()}, but not before the leading term and
+   * not beyond the terms already computed.
+   */
+  private static IRational truncation(ASTSeriesData series, int n) {
+    int d = series.puiseuxDenominator();
+    int target = n * d + series.truncationOffset();
+    int lead = actualMinExponent(series);
+    if (F.isPresent(lead)) {
+      target = Math.max(target, lead + 1);
+    }
+    return F.QQ(Math.min(target, series.truncateOrder()), d);
   }
 
   /**
@@ -2694,7 +2812,12 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (puiseuxDenominator <= 1) {
       return this;
     }
-    int gcd = puiseuxDenominator;
+    // the O(...) term has to stay where it is: a coarser denominator which rounded it up would
+    // claim terms which weren't computed
+    int gcd = ArithmeticUtils.gcd(puiseuxDenominator, Math.abs(truncateOrder));
+    if (gcd <= 1) {
+      return this;
+    }
     int firstNonZero = Config.INVALID_INT;
     for (int i = minExponent; i < truncateOrder; i++) {
       IExpr coefficient = coefficient(i);
@@ -2722,8 +2845,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (gcd <= 1) {
       return this;
     }
-    // ceiling division, also correct for the negative indices of a Laurent series
-    final int newTruncate = -Math.floorDiv(-truncateOrder, gcd);
+    final int newTruncate = truncateOrder / gcd;
     ASTSeriesData result = new ASTSeriesData(expansionVariable, expansionPoint, firstNonZero / gcd,
         newTruncate, puiseuxDenominator / gcd);
     for (int i = firstNonZero; i < truncateOrder; i += gcd) {

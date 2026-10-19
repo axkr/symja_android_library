@@ -6,6 +6,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.InfiniteExpansionException;
@@ -103,6 +104,11 @@ public class ApcomplexBesselMath
         {
             return expansion[1];
         }
+        Apcomplex recurrence = upwardRecurrence(ν, z, false);
+        if (recurrence != null)
+        {
+            return recurrence;
+        }
         return evaluate(ApcomplexMath::besselY, ν, z, MAX_CANCELLED_DIGITS_SECOND_KIND);
     }
 
@@ -122,7 +128,89 @@ public class ApcomplexBesselMath
     public static Apcomplex besselK(Apcomplex ν, Apcomplex z)
         throws ArithmeticException, ApfloatRuntimeException
     {
+        Apcomplex recurrence = upwardRecurrence(ν, z, true);
+        if (recurrence != null)
+        {
+            return recurrence;
+        }
         return evaluate(ApcomplexMath::besselK, ν, z, MAX_CANCELLED_DIGITS_SECOND_KIND);
+    }
+
+    // Order from which the functions of the second kind come from their recurrence in the order
+    private static final long RECURRENCE_ORDER = 20;
+
+    // Largest order for the recurrence, which takes one step per unit of the order
+    private static final long MAX_RECURRENCE_ORDER = 100000;
+
+    /*
+     * Y or K of a large real order by the recurrence Y(ν+1) = 2ν/z Y(ν) - Y(ν-1), and
+     * K(ν+1) = K(ν-1) + 2ν/z K(ν), from the orders ν0-1 and ν0 in [0, 2). Both functions are the
+     * growing solution of their recurrence, so that it doesn't lose digits, while the series of
+     * the library cancels about ν^2/z digits: K(1500, 1000) has more than the library adds.
+     * Returns null where it doesn't apply.
+     */
+    private static Apcomplex upwardRecurrence(Apcomplex ν, Apcomplex z, boolean modified)
+    {
+        if (ν.imag().signum() != 0 || z.real().signum() <= 0)
+        {
+            return null;
+        }
+        Apfloat order = ν.real();
+        if (modified && order.signum() < 0)
+        {
+            // K(-ν) = K(ν)
+            order = order.negate();
+        }
+        if (order.compareTo(new Apfloat(RECURRENCE_ORDER)) < 0 || order.compareTo(new Apfloat(MAX_RECURRENCE_ORDER)) > 0)
+        {
+            return null;
+        }
+        final long steps = order.truncate().longValue() - 1;
+        long precision = precision(ν, z),
+             extraPrecision = ApfloatHelperShim.EXTRA_PRECISION + 10 + (long) Math.log10(steps);
+        final Apfloat startOrder = order.subtract(new Apfloat(steps));
+        BinaryOperator<Apcomplex> recurrence = (n, x) ->
+        {
+            long workingPrecision = x.precision();
+            Apfloat one = new Apfloat(1, workingPrecision),
+                    two = new Apfloat(2, workingPrecision);
+            Apcomplex μ = ApfloatHelperShim.ensurePrecision(startOrder, workingPrecision),
+                      previous = startValue(μ.subtract(one), x, modified),
+                      current = startValue(μ, x, modified);
+            for (long k = 0; k < steps; k++)
+            {
+                if ((k & 63) == 0 && Thread.currentThread().isInterrupted())
+                {
+                    throw new ApfloatInterruptedException("Interrupted");
+                }
+                Apcomplex ratio = two.multiply(μ).divide(x),
+                          next = modified ? previous.add(ratio.multiply(current)) : ratio.multiply(current).subtract(previous);
+                previous = current;
+                current = next;
+                μ = μ.add(one);
+            }
+            return current;
+        };
+        return GuardDigitsHelper.evaluate(recurrence, ν, z, precision, extraPrecision, 16 * extraPrecision);
+    }
+
+    // Y or K of an order below 2, for which Hankel's expansion is tried first: the series of the
+    // library takes seconds for Y(1, 5000), the expansion milliseconds
+    private static Apcomplex startValue(Apcomplex μ, Apcomplex z, boolean modified)
+    {
+        if (!modified)
+        {
+            try
+            {
+                return ApcomplexAsymptoticMath.besselJY(μ, z)[1];
+            }
+            catch (ArithmeticException ae)
+            {
+                // the argument isn't large enough for the precision
+            }
+            return besselY(μ, z);
+        }
+        return besselK(μ, z);
     }
 
     /**

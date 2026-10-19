@@ -13,11 +13,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import org.apfloat.ApfloatInterruptedException;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.TimeLimits;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -38,6 +40,8 @@ import org.matheclipse.core.generic.PowerTimesFunction;
 import org.matheclipse.core.integrate.ChebyshevIntegration;
 import org.matheclipse.core.integrate.DerivativeDivides;
 import org.matheclipse.core.integrate.DiffUnderIntegral;
+import org.matheclipse.core.integrate.ExponentialPolyLogIntegration;
+import org.matheclipse.core.integrate.HolonomicIntegration;
 import org.matheclipse.core.integrate.IntegralTable;
 import org.matheclipse.core.integrate.IntegrateTimeBudget;
 import org.matheclipse.core.integrate.PiecewiseIntegration;
@@ -60,6 +64,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -626,6 +631,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (fermiDirac.isPresent()) {
             return fermiDirac;
           }
+          if ("MeijerConvolution".equals(forcedMethod)) {
+            // the product of two Meijer G-functions over {x,0,Infinity} and nothing else
+            return xList.arg2().isZero() && xList.arg3().isInfinity()
+                ? ResidueIntegration.integrateByMeijerConvolution(arg1, xList.arg1(),
+                    assumptionExpr.isAST() ? assumptionExpr : F.NIL, engine)
+                : F.NIL;
+          }
           if (forcedMethod == null) {
             // Integrate(Abs(x)*Cos(3*x), {x,-Pi,Pi}) - split the interval at the numeric break
             // points of Piecewise, UnitStep, HeavisideTheta, Abs, Sign, Max, Min and integrate the
@@ -858,6 +870,20 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (result.isPresent()) {
             return result;
           }
+          // Stage: products and quotients of Bessel and Airy functions, by an ansatz in the
+          // differential module of the kernels or by the Wronskian of a pair of solutions. The
+          // rules have no answer for these and some of them search until the deadline. A single
+          // kernel times a power of x is left to the rules first, which are written for it.
+          if (HolonomicIntegration.hasKernel(fx, x)
+              && HolonomicIntegration.isProductOfKernels(fx, x)) {
+            result = quietStage(engine, fx, x, "a holonomic ansatz",
+                () -> IntegrateTimeBudget.runWithin(
+                    () -> HolonomicIntegration.integrate(fx, x, engine),
+                    MachineProfile.millis(HOLONOMIC_TIMELIMIT_MILLIS)));
+            if (result.isPresent()) {
+              return result;
+            }
+          }
         }
         if (Config.INTEGRATE_ALGORITHMS) {
           // Primitive (Log) monomial with x mixed into a denominator of degree >= 2 in it: the
@@ -1018,6 +1044,27 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
               () -> integrateExponentialTimesTrig(fx, x, engine));
           if (result.isPresent()) {
             return result;
+          }
+          // a polynomial times a rational function of exponentials of commensurable arguments,
+          // like x*Sin(x)/(Cos(x)+Sin(x)): partial fractions in E^(b*x) and the polylogarithm
+          // ladder of x^n/(E^(b*x)-r)
+          result = quietStage(engine, fx, x, "partial fractions in an exponential",
+              () -> IntegrateTimeBudget.runWithin(
+                  () -> ExponentialPolyLogIntegration.integrate(fx, x, engine),
+                  MachineProfile.millis(POLYLOG_LADDER_TIMELIMIT_MILLIS)));
+          if (result.isPresent()) {
+            return result;
+          }
+          // a single Bessel or Airy function times a power of x, which the rules did not answer
+          if (HolonomicIntegration.hasKernel(fx, x)
+              && !HolonomicIntegration.isProductOfKernels(fx, x)) {
+            result = quietStage(engine, fx, x, "a holonomic ansatz",
+                () -> IntegrateTimeBudget.runWithin(
+                    () -> HolonomicIntegration.integrate(fx, x, engine),
+                    MachineProfile.millis(HOLONOMIC_TIMELIMIT_MILLIS)));
+            if (result.isPresent()) {
+              return result;
+            }
           }
           // Weierstrass t=Tan(x/2) substitution for rational trigonometric integrands.
           // result = WeierstrassIntegration.integrate(fx, x, engine);
@@ -1208,6 +1255,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       case "ProductPower":
       case "ProductOfPowers":
         return ProductPowerIntegration.integrate(fx, x, engine);
+      case "Holonomic":
+        return HolonomicIntegration.integrate(fx, x, engine);
+      case "PolyLogLadder":
+        return ExponentialPolyLogIntegration.integrate(fx, x, engine);
       default:
         // Unknown or not-yet-ported method name: leave the integral unevaluated.
         return F.NIL;
@@ -1510,6 +1561,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
   /** The time for the ordinary integral when a principal value was asked for. */
   private static final long PRINCIPAL_VALUE_FALLBACK_SECONDS = 4L;
+
+  /** The time for the holonomic ansatz of a product of Bessel or Airy functions. */
+  private static final long HOLONOMIC_TIMELIMIT_MILLIS = 8000L;
+
+  /** The time for the partial fractions in an exponential and their polylogarithm ladder. */
+  private static final long POLYLOG_LADDER_TIMELIMIT_MILLIS = 8000L;
 
   /**
    * The Cauchy principal value of <code>Integrate(f, {x, a, b})</code> from an antiderivative
@@ -2355,7 +2412,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       upperDirection = F.Rule(F.Direction, F.C1);
     }
     // quiet: an Infinity-Infinity inside of the limit is no message of the integral
-    IExpr lowerLimit = engine.evalQuiet(F.Limit(function, F.Rule(x, lower), lowerDirection));
+    IExpr lowerLimit = limitTermwise(function, x, lower, lowerDirection, engine)
+        .orElseGet(() -> engine.evalQuiet(F.Limit(function, F.Rule(x, lower), lowerDirection)));
     if (lowerLimit.isIndeterminate()) {
       // The limit of the antiderivative was not found, which says nothing about the integral:
       // Log(x)/(x^2+a^2) converges on {x,0,Infinity}, and was said not to.
@@ -2372,7 +2430,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     // quiet: an Infinity-Infinity inside of the limit is no message of the integral
-    IExpr upperLimit = engine.evalQuiet(F.Limit(function, F.Rule(x, upper), upperDirection));
+    IExpr upperLimit = limitTermwise(function, x, upper, upperDirection, engine)
+        .orElseGet(() -> engine.evalQuiet(F.Limit(function, F.Rule(x, upper), upperDirection)));
     if (upperLimit.isIndeterminate()) {
       // The limit of the antiderivative was not found, which says nothing about the integral:
       // Log(x)/(x^2+a^2) converges on {x,0,Infinity}, and was said not to.
@@ -2392,7 +2451,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       IExpr bDenominator = engine.evaluate(F.Denominator(upperLimit));
       IExpr aDenominator = engine.evaluate(F.Denominator(lowerLimit));
       if (bDenominator.equals(aDenominator)) {
-        return F.Divide(F.Subtract(F.Numerator(upperLimit), F.Numerator(lowerLimit)), bDenominator);
+        IExpr quotient = engine.evaluate(F.Divide(
+            F.Subtract(F.Numerator(upperLimit), F.Numerator(lowerLimit)), bDenominator));
+        if (contradictsQuadrature(function, integrand, x, lower, upper, quotient, engine)) {
+          return F.NIL;
+        }
+        if (upperLimit.isNumericFunction() && lowerLimit.isNumericFunction()) {
+          return realForm(quotient, integrand, engine);
+        }
+        return quotient;
       }
     }
     IExpr difference = engine.evaluate(F.Subtract(upperLimit, lowerLimit));
@@ -2405,7 +2472,257 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       difference = engine.evaluate(expanded);
     }
-    return difference;
+    if (contradictsQuadrature(function, integrand, x, lower, upper, difference, engine)) {
+      return F.NIL;
+    }
+    return realForm(difference, integrand, engine);
+  }
+
+  /**
+   * A constant value of the integral of a real integrand in real form, like
+   * <code>-Pi^2*Log(2)/2</code> for <code>I*Pi^3/4-Pi^2*Log(2*I)/2</code>: the antiderivative
+   * with complex exponentials gives the imaginary parts which cancel.
+   */
+  private static IExpr realForm(IExpr value, IExpr integrand, EvalEngine engine) {
+    if (!value.isNumericFunction() || !hasComplexNumber(value) || hasComplexNumber(integrand)
+        || value.leafCount() > 400) {
+      return value;
+    }
+    IExpr expanded = engine.evalQuiet(F.ComplexExpand(value));
+    if (hasComplexNumber(expanded) || !expanded.isFree(S.Re) || !expanded.isFree(S.Im)
+        || !expanded.isFree(S.Arg) || !expanded.isFree(S.ComplexExpand)) {
+      return value;
+    }
+    IExpr a = engine.evalQuiet(F.N(value));
+    IExpr b = engine.evalQuiet(F.N(expanded));
+    if (!a.isNumber() || !b.isNumber()) {
+      return value;
+    }
+    double d = engine.evalQuiet(F.Abs(F.Subtract(a, b))).evalfNaN();
+    double scale = engine.evalQuiet(F.Abs(a)).evalfNaN();
+    return d <= 1e-10 * (1.0 + scale) ? expanded : value;
+  }
+
+  /**
+   * The limit of a sum with polylogarithms term by term: the terms with a finite limit apart,
+   * the others together. <code>x^2*Log(1-E^(2*I*x))/2 - x^2*Log(Sin(x))/2</code> has a limit at
+   * <code>Pi</code> which the limit of the whole antiderivative of <code>x*Log(Sin(x))</code>,
+   * with its <code>PolyLog(3,E^(2*I*x))</code>, does not find in the time of the integral.
+   *
+   * @return {@link F#NIL} if <code>function</code> is no such sum or no term has a finite limit
+   */
+  private static IExpr limitTermwise(IExpr function, IExpr x, IExpr point, IExpr direction,
+      EvalEngine engine) {
+    if (!function.isPlus() || function.isFree(S.PolyLog)) {
+      return F.NIL;
+    }
+    IASTAppendable finite = F.PlusAlloc(function.argSize());
+    IASTAppendable rest = F.PlusAlloc(function.argSize());
+    for (IExpr term : (IAST) function) {
+      IExpr value = engine.evalQuiet(F.Limit(term, F.Rule(x, point), direction));
+      if (value.isSpecialsFree() && value.isFreeAST(S.Limit) && value.isFree(x)
+          && !value.isInterval() && !value.isIntervalData()) {
+        finite.append(value);
+      } else {
+        rest.append(term);
+      }
+    }
+    if (finite.argSize() == 0) {
+      return F.NIL;
+    }
+    if (rest.argSize() > 0) {
+      finite.append(engine.evalQuiet(F.Limit(rest.oneIdentity0(), F.Rule(x, point), direction)));
+    }
+    return engine.evaluate(finite.oneIdentity0());
+  }
+
+
+  /**
+   * Set while {@link #contradictsQuadrature} evaluates <code>NIntegrate</code>, whose symbolic
+   * fallback integrates again and must not start another check.
+   */
+  private static final ThreadLocal<Boolean> IN_QUADRATURE_CHECK =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  /**
+   * Whether the value of Newton-Leibniz disagrees with the numerical integral. An antiderivative
+   * with branch cuts, like the <code>PolyLog</code> and <code>Log</code> terms of
+   * <code>ArcTan(z)^2/(25-6*z^2+z^4)</code>, may jump between the bounds while its derivative is
+   * right everywhere else: the difference of its limits is then off by a constant. Parameters are
+   * replaced by sample values inside the intervals the assumptions give them; an integral with any
+   * other parameter is not checked.
+   *
+   * @return <code>true</code> if the quadrature gives a clearly different number
+   */
+  private static boolean contradictsQuadrature(IExpr function, IExpr integrand, IExpr x,
+      IExpr lower, IExpr upper, IExpr value, EvalEngine engine) {
+    if (IN_QUADRATURE_CHECK.get() || !mayJump(function, x)) {
+      return false;
+    }
+    IAST parameters = parametersOf(F.List(integrand, lower, upper), x);
+    if (parameters.isNIL()) {
+      return false;
+    }
+    IAST[] samples = sampleRules(parameters, engine);
+    if (samples == null) {
+      return false;
+    }
+    for (IAST rules : samples) {
+      IExpr a = rules.isEmpty() ? lower : F.subst(lower, rules);
+      IExpr b = rules.isEmpty() ? upper : F.subst(upper, rules);
+      if (!isNumericBound(engine.evaluate(a)) || !isNumericBound(engine.evaluate(b))) {
+        return false;
+      }
+      IExpr numeric = engine.evalQuiet(F.N(rules.isEmpty() ? value : F.subst(value, rules)));
+      if (!numeric.isNumber()) {
+        return false;
+      }
+      IExpr f = rules.isEmpty() ? integrand : F.subst(integrand, rules);
+      // a quadrature which reports a problem, like the slow convergence of an oscillating
+      // integrand, is no reference
+      IExpr reference;
+      IN_QUADRATURE_CHECK.set(Boolean.TRUE);
+      try {
+        reference = TimeLimits.evaluateOrNil(
+            F.Quiet(F.binaryAST2(S.Check, F.NIntegrate(f, F.List(x, a, b)), S.$Failed)),
+            MachineProfile.millis(3000));
+      } finally {
+        IN_QUADRATURE_CHECK.remove();
+      }
+      if (!reference.isNumber()) {
+        return false;
+      }
+      Complex v = ((INumber) numeric).evalfc();
+      Complex r = ((INumber) reference).evalfc();
+      if (v.subtract(r).norm() > 1.0e-5 * (1.0 + r.norm())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The variables of <code>expr</code> other than <code>x</code>, or {@link F#NIL} if there is a
+   * symbol without a value which is not a variable either.
+   */
+  private static IAST parametersOf(IExpr expr, IExpr x) {
+    IASTAppendable parameters = F.ListAlloc();
+    boolean[] unknown = {false};
+    expr.has(v -> {
+      if (v.isSymbol() && !v.equals(x) && !v.isConstantAttribute()) {
+        if (!v.isVariable()) {
+          unknown[0] = true;
+        } else if (!parameters.contains(v)) {
+          parameters.append(v);
+        }
+      }
+      return false;
+    }, false);
+    return unknown[0] ? F.NIL : parameters;
+  }
+
+  /**
+   * Two sets of sample values for the parameters, which lie in the intervals the assumptions give
+   * them: <code>7/3+k</code> and <code>3/7+k</code> above a lower bound for the <code>k</code>-th
+   * one (or below an upper bound), and two inner points of a bounded interval. A sign alone is the
+   * interval above or below <code>0</code>. No parameters give one empty set.
+   *
+   * @return <code>null</code> if a parameter has no such interval, or it is an integer
+   */
+  private static IAST[] sampleRules(IAST parameters, EvalEngine engine) {
+    if (parameters.isEmpty()) {
+      return new IAST[] {F.CEmptyList};
+    }
+    IAssumptions assumptions = engine.getAssumptions();
+    if (assumptions == null) {
+      return null;
+    }
+    IASTAppendable first = F.ListAlloc(parameters.argSize());
+    IASTAppendable second = F.ListAlloc(parameters.argSize());
+    for (int k = 1; k <= parameters.argSize(); k++) {
+      IExpr p = parameters.get(k);
+      if (assumptions.isInteger(p)) {
+        return null;
+      }
+      IExpr lower;
+      IExpr upper;
+      IAST data = assumptions.intervalData(p);
+      if (data.isPresent() && data.argSize() == 1 && data.arg1().isAST(S.List, 5)) {
+        lower = data.arg1().first();
+        upper = ((IAST) data.arg1()).arg4();
+      } else if (assumptions.isPositive(p)) {
+        lower = F.C0;
+        upper = F.CInfinity;
+      } else if (assumptions.isNegative(p)) {
+        lower = F.CNInfinity;
+        upper = F.C0;
+      } else {
+        return null;
+      }
+      IExpr[] samples = intervalSamples(lower, upper, k - 1, engine);
+      if (samples == null) {
+        return null;
+      }
+      first.append(F.Rule(p, samples[0]));
+      second.append(F.Rule(p, samples[1]));
+    }
+    return new IAST[] {first, second};
+  }
+
+  /**
+   * Two points inside the interval from <code>lower</code> to <code>upper</code>, shifted by
+   * <code>k</code> so that different parameters get different values.
+   *
+   * @return <code>null</code> if a bound isn't numeric or the interval is the whole real line
+   */
+  private static IExpr[] intervalSamples(IExpr lower, IExpr upper, int k, EvalEngine engine) {
+    boolean below = lower.isNegativeInfinity();
+    boolean above = upper.isInfinity();
+    if ((below && above) || (!below && !isNumericBound(lower))
+        || (!above && !isNumericBound(upper))) {
+      return null;
+    }
+    if (above) {
+      return new IExpr[] {engine.evaluate(F.Plus(lower, F.QQ(7 + 3 * k, 3))),
+          engine.evaluate(F.Plus(lower, F.QQ(3 + 7 * k, 7)))};
+    }
+    if (below) {
+      return new IExpr[] {engine.evaluate(F.Subtract(upper, F.QQ(7 + 3 * k, 3))),
+          engine.evaluate(F.Subtract(upper, F.QQ(3 + 7 * k, 7)))};
+    }
+    IExpr width = F.Subtract(upper, lower);
+    return new IExpr[] {engine.evaluate(F.Plus(lower, F.Times(F.QQ(3 + k, 7 + 2 * k), width))),
+        engine.evaluate(F.Plus(lower, F.Times(F.QQ(7 + k, 10 + 2 * k), width)))};
+  }
+
+  /** A real number, or plus or minus Infinity. */
+  private static boolean isNumericBound(IExpr bound) {
+    return bound.isInfinity() || bound.isNegativeInfinity()
+        || (bound.isRealResult() && bound.isNumericFunction(true));
+  }
+
+  /**
+   * Whether the antiderivative <code>function</code> may jump between real bounds although it has
+   * no branch point there: it has complex constants, or a function with a branch cut of an
+   * argument which isn't a polynomial in <code>x</code>. The branch points of a polynomial argument
+   * are its roots, at which the interval is already split.
+   */
+  private static boolean mayJump(IExpr function, IExpr x) {
+    if (hasComplexNumber(function)) {
+      return true;
+    }
+    return function.has(e -> {
+      IExpr argument;
+      if (e.isPower() && !e.exponent().isInteger()) {
+        argument = e.base();
+      } else if (e.isFunctionID(ID.Log, ID.PolyLog, ID.ArcTan, ID.ArcCot, ID.ArcTanh, ID.ArcCoth,
+          ID.ArcSin, ID.ArcCos, ID.ExpIntegralEi, ID.LogIntegral, ID.ProductLog)) {
+        argument = e.last();
+      } else {
+        return false;
+      }
+      return !argument.isFree(x) && !argument.isPolynomial(x);
+    }, true);
   }
 
   private static IExpr callRestIntegrate(IAST arg1, final IExpr x, final EvalEngine engine) {

@@ -327,6 +327,42 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
     return quantifier + shortestLongest[IStringX.ASTERISK_Q].replace("*", "");
   }
 
+  /** State of {@link #toRegexString} while it converts the branches of an alternative. */
+  final class RegexContext {
+    /** The symbols which an earlier branch of an enclosing alternative named. */
+    static final ThreadLocal<java.util.Set<ISymbol>> SIBLING_SYMBOLS =
+        ThreadLocal.withInitial(java.util.Collections::emptySet);
+
+    private RegexContext() {}
+
+    static boolean isSiblingSymbol(ISymbol symbol) {
+      return SIBLING_SYMBOLS.get().contains(symbol);
+    }
+  }
+
+  /**
+   * The regular expression class of a character predicate in a test <code>_?DigitQ</code>, or
+   * <code>null</code> if <code>test</code> is none of <code>DigitQ</code> (the ASCII digits
+   * <code>0-9</code>), <code>LetterQ</code>, <code>UpperCaseQ</code> and <code>LowerCaseQ</code>.
+   */
+  static String knownTestRegex(IExpr test) {
+    if (test.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) test).ordinal()) {
+        case ID.DigitQ:
+          return "[0-9]";
+        case ID.LetterQ:
+          return "\\p{javaLetter}";
+        case ID.UpperCaseQ:
+          return "\\p{javaUpperCase}";
+        case ID.LowerCaseQ:
+          return "\\p{javaLowerCase}";
+        default:
+          break;
+      }
+    }
+    return null;
+  }
+
   static String toRegexString(IExpr partOfRegex, boolean abbreviatedPatterns, IAST stringFunction,
       String[] shortestLongest, Map<ISymbol, String> groups, EvalEngine engine) {
 
@@ -346,13 +382,14 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
             beginIndex = endIndex;
           } else if (c == '*') {
             pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
-            pieces.append("(.*)");
+            // any run of characters, newlines included
+            pieces.append("[\\s\\S]*");
             endIndex += 1;
             beginIndex = endIndex;
           } else if (c == '@') {
             pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
             // one or more characters, excluding upper case letters
-            pieces.append("([^A-Z]+)");
+            pieces.append("\\P{javaUpperCase}+");
             endIndex += 1;
             beginIndex = endIndex;
           } else {
@@ -363,6 +400,46 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         return pieces.toString();
       } else {
         return Pattern.quote(str);
+      }
+    } else if (partOfRegex.isAST(S.PatternTest, 3)
+        && knownTestRegex(partOfRegex.second()) != null) {
+      // _?DigitQ is one digit, __?LetterQ a run of letters: each character passes the test
+      String regex = knownTestRegex(partOfRegex.second());
+      IExpr p = partOfRegex.first();
+      ISymbol symbol = null;
+      String str = null;
+      if (p.isBlank() || p.isAST(S.Blank, 1)) {
+        str = regex;
+      } else if (p.isAST(S.BlankSequence, 1)) {
+        str = regex + shortestLongest[IStringX.PLUS_Q];
+      } else if (p.isAST(S.BlankNullSequence, 1)) {
+        str = regex + shortestLongest[IStringX.ASTERISK_Q];
+      } else if (p.isPatternSequence(false) && !(p instanceof RepeatedPattern)
+          && ((AbstractPatternSequence) p).getHeadTest() == null) {
+        AbstractPatternSequence ps = (AbstractPatternSequence) p;
+        symbol = ps.getSymbol();
+        str = regex + shortestLongest[ps.isNullSequence() ? IStringX.ASTERISK_Q : IStringX.PLUS_Q];
+      } else if (p.isPattern() && !(p instanceof PatternNested)
+          && ((IPattern) p).getHeadTest() == null) {
+        symbol = ((IPattern) p).getSymbol();
+        str = regex;
+      }
+      if (str != null) {
+        if (symbol == null) {
+          return str;
+        }
+        final String existing = groups.get(symbol);
+        if (existing != null) {
+          if (RegexContext.isSiblingSymbol(symbol)) {
+            // x_?DigitQ | x_?LetterQ: the branches bind x each on their own
+            return str;
+          }
+          // x_?DigitQ ~~ x_?DigitQ: the second x is the same text again
+          return "\\k<" + existing + ">";
+        }
+        final String groupName = regexGroupName(symbol, groups);
+        groups.put(symbol, groupName);
+        return "(?<" + groupName + ">" + str + ")";
       }
     } else if (partOfRegex.isAST(S.Characters, 2) && partOfRegex.first().isString()) {
       String str = partOfRegex.first().toString();
@@ -485,19 +562,33 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       // the group keeps the choice from reaching past what stands beside it, so that
       // `StartOfString ~~ {"a", "b"}` anchors both branches and not only the first
       pieces.append("(?:");
-      for (int i = 1; i < alternatives.size(); i++) {
-        String str = toRegexString(alternatives.get(i), abbreviatedPatterns, stringFunction,
-            shortestLongest, groups, engine);
-        if (str == null) {
-          // `1` currently not supported in `2`.
-          Errors.printMessage(stringFunction.topHead(), "unsupported",
-              F.list(alternatives.get(i), stringFunction.topHead()), engine);
-          return null;
+      final java.util.Set<ISymbol> outer = RegexContext.SIBLING_SYMBOLS.get();
+      final java.util.Set<ISymbol> siblings = new java.util.HashSet<>(outer);
+      try {
+        for (int i = 1; i < alternatives.size(); i++) {
+          java.util.Set<ISymbol> before = new java.util.HashSet<>(groups.keySet());
+          RegexContext.SIBLING_SYMBOLS.set(siblings);
+          String str = toRegexString(alternatives.get(i), abbreviatedPatterns, stringFunction,
+              shortestLongest, groups, engine);
+          if (str == null) {
+            // `1` currently not supported in `2`.
+            Errors.printMessage(stringFunction.topHead(), "unsupported",
+                F.list(alternatives.get(i), stringFunction.topHead()), engine);
+            return null;
+          }
+          // a symbol named in this branch is no back reference in the following ones
+          for (ISymbol symbol : groups.keySet()) {
+            if (!before.contains(symbol)) {
+              siblings.add(symbol);
+            }
+          }
+          pieces.append(str);
+          if (i < alternatives.argSize()) {
+            pieces.append('|');
+          }
         }
-        pieces.append(str);
-        if (i < alternatives.argSize()) {
-          pieces.append('|');
-        }
+      } finally {
+        RegexContext.SIBLING_SYMBOLS.set(outer);
       }
       pieces.append(')');
       return pieces.toString();
@@ -557,7 +648,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         case ID.StartOfLine:
           return "(?m:^)"; // enforce a multiline zero-width start-of-line anchor
         case ID.EndOfLine:
-          return "$";
+          return "(?m:$)"; // before a newline or at the end
         case ID.StartOfString:
           return "\\A";
         case ID.EndOfString:

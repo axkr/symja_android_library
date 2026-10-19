@@ -83,6 +83,12 @@ public final class PatternMatcherList extends PatternMatcherAndEvaluator {
     return F.NIL;
   }
 
+  @Override
+  protected IExpr replaceSubExpressionOrderlessFlat(final IAST lhsPatternAST, final IAST lhsEvalAST,
+      final IExpr rhsExpr, final IExpr condition, EvalEngine engine) {
+    return F.NIL;
+  }
+
   /**
    * Collect the substituted right-hand-side and return <code>false</code>, so that the caller
    * continues with the next possible match.

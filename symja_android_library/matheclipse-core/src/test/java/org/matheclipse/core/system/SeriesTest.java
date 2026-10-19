@@ -1066,6 +1066,37 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,0,{1,1,0,0,0,0,1},2,14,6)");
     check("Series(Sin(x^(1/3))+Sin(x^(1/2)), {x, 0, 2}) // InputForm", //
         "SeriesData(x,0,{1,1,0,0,-1/6,0,0,-1/6,1/120},2,14,6)");
+
+    // a leading exponent of 1 or more ends on the first multiple of 1/q beyond n, not on its
+    // lattice: x^(4/3)*Cos(x) to the order 2 is x^(4/3)+O(x^(7/3)), not O(x^(10/3))
+    check("Series(x^(4/3)*Cos(x), {x, 0, 2}) // InputForm", //
+        "SeriesData(x,0,{1},4,7,3)");
+    check("Series(x^(7/4)*Exp(x), {x, 0, 2}) // InputForm", //
+        "SeriesData(x,0,{1},7,9,4)");
+    check("Series(x^(8/5)*(1+x+x^2), {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1,0,0,0,0,1},8,16,5)");
+    // below 1 the lattice again
+    check("Series(x^(3/5)*Exp(x), {x, 0, 1}) // InputForm", //
+        "SeriesData(x,0,{1},3,8,5)");
+    // in a sum each group of exponents uses the grid of its own denominator: Min(2+1/3, 2+1/4)
+    check("Series(x^(5/3) + x^(7/4), {x, 0, 2}) // InputForm", //
+        "SeriesData(x,0,{1,1},20,27,12)");
+    check("Series(x^2 + x^(8/3), {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1,0,1},6,10,3)");
+    // a product x^q*g ends where the first of x^q and g ends: Min(4, 10/3+2)
+    check("Series(x^2*(1 + x^(1/3)), {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1,1},6,12,3)");
+    check("Series(x*(1 + x^(1/2)), {x, 0, 2}) // InputForm", //
+        "SeriesData(x,0,{1,1},2,6,2)");
+    // x^(1/2)*Sin(x)*Cos(x) is x^(3/2)*(Sin(x)/x)*Cos(x): Min(3+1/2, 4+3/2)
+    check("Series(x^(1/2)*Sin(x)*Cos(x), {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1},3,7,2)");
+    // no term beyond the order is kept but the leading one: x^(7/6) ends the series
+    check("Series(x^(1/3)*(1+x^(5/6)), {x, 0, 1}) // InputForm", //
+        "SeriesData(x,0,{1},2,7,6)");
+    // a sum ends with the first of its summands
+    check("Series(x*(1+x^(2/3)) + x^5, {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1,0,1},3,12,3)");
   }
 
   @Test
@@ -2341,5 +2372,16 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // a negative k needs no extra terms
     check("Series(WhittakerW(-7/2,1/3,x), {x,Infinity,2})", //
         "((1/x)^(7/2)+O(1/x)^4)*E^(-x/2+O(1/x)^3)");
+  }
+
+  /** The asymptotic series of PolyGamma and HarmonicNumber at infinity. */
+  @Test
+  public void testSeriesPolyGammaInfinity() {
+    check("Series(PolyGamma(0, x+2), {x, Infinity, 3})", //
+        "Log(x)+3/(2*x)-13/(12*x^2)+1/x^3+O(1/x)^4");
+    check("Series(PolyGamma(1, x), {x, Infinity, 5})", //
+        "1/x+1/(2*x^2)+1/(6*x^3)-1/(30*x^5)+O(1/x)^6");
+    check("Series(HarmonicNumber(x), {x, Infinity, 2})", //
+        "EulerGamma+Log(x)+1/(2*x)-1/(12*x^2)+O(1/x)^3");
   }
 }

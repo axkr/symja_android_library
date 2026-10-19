@@ -1740,4 +1740,127 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "-1/(p*r^2*x)+s^2/(r^2*(q*r-p*s)*(r+s*x))+(-(q*r+2*p*s)*Log(x))/(p^2*r^3)+(q^3*Log(p+q*x))/(p^\n"
             + "2*(q*r-p*s)^2)+(s^2*(-3*q*r+2*p*s)*Log(r+s*x))/(r^3*(q*r-p*s)^2)");
   }
+
+  @Test
+  public void testIntegrateBranchCutJump() {
+    // the antiderivative has a derivative which is right, but jumps between the limits: the
+    // difference of its limits is off by a constant and is not returned
+    check("Integrate(ArcTan(z)^2/(z^4-2*z^2+10),{z,0,3})", //
+        "Integrate(ArcTan(z)^2/(-2*z^2+z^4+10),{z,0,3})");
+    check("N(Integrate(ArcTan(z)^2/(z^4-2*z^2+10),{z,0,3}))", //
+        "0.150509");
+    // the antiderivative of an integrand without such a jump is kept
+    check("r=Integrate(ArcTan(z)^2/(z^2+9),{z,0,Infinity}); {FreeQ(r,Integrate), Chop(N(r))}", //
+        "{True,0.735503}");
+    // a parameter gets sample values of its sign
+    check("Integrate(Log(x)/(x^2+a^2),{x,0,Infinity},Assumptions->a>0)", //
+        "(Pi*Log(a))/(2*a)");
+    // the sample values lie in the interval of the assumptions: a==7/3 would put the branch
+    // point of Log(a-Sqrt(x)) into the interval
+    check("Integrate(Log(a-Sqrt(x)),{x,0,16},Assumptions->a>5)", //
+        "-8-4*a+16*Log(-4+a)-a^2*Log(-4+a)+a^2*Log(a)");
+  }
+
+  /** Products of Bessel and Airy functions by the ansatz in their differential module. */
+  @Test
+  public void testIntegrateHolonomicProducts() {
+    check("Integrate(x^3*BesselJ(1,x)^2,x)", //
+        "1/6*x^4*BesselJ(1,x)^2+1/6*x^4*BesselJ(2,x)^2");
+    check("Integrate(x*BesselJ(0,x)*BesselJ(0,2*x),x)", //
+        "-1/3*x*BesselJ(0,2*x)*BesselJ(1,x)+2/3*x*BesselJ(0,x)*BesselJ(1,2*x)");
+    check("Integrate(x*BesselJ(0,x)*BesselY(0,x),x)", //
+        "1/2*x^2*BesselJ(0,x)*BesselY(0,x)+1/2*x^2*BesselJ(1,x)*BesselY(1,x)");
+    check("Integrate(x^3*AiryBi(x)^2,x)", //
+        "1/7*x^4*AiryBi(x)^2+3/7*x^2*AiryBi(x)*AiryBiPrime(x)+1/7*(-3-x^3)*AiryBiPrime(x)^\n2");
+    // orders nu and nu+1 of one family, and a power of x which is not an integer
+    check("Chop(N(D(Integrate(BesselJ(2,x)^4/x^3,x),x)-BesselJ(2,x)^4/x^3 /. x->7/10))", //
+        "0");
+    check("Chop(N(D(Integrate(BesselJ(n,x)^2/x^2,x),x)-BesselJ(n,x)^2/x^2 /. {x->7/10,n->5/3}))", //
+        "0");
+  }
+
+  /** A Bessel function of a symbolic order times a trigonometric function. */
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testIntegrateHolonomicBesselTrig() {
+    check("Chop(N(D(Integrate(BesselJ(n,x)*Cos(x)/x^(3/2),x),x)-BesselJ(n,x)*Cos(x)/x^(3/2) /. {x->7/10,n->4/3}))", //
+        "0");
+  }
+
+  /** A single Bessel or Airy function times a power of x. */
+  @Test
+  public void testIntegrateHolonomicSingleKernel() {
+    check("Integrate(BesselJ(1,x),x)", //
+        "-BesselJ(0,x)");
+    check("Integrate(BesselK(1,x),x)", //
+        "-BesselK(0,x)");
+    check("Integrate(BesselI(1,3*x),x)", //
+        "BesselI(0,3*x)/3");
+    check("Integrate(x^(-n)*BesselJ(n+1,x),x)", //
+        "-BesselJ(n,x)/x^n");
+    check("Integrate(x^5*BesselJ(0,2*x),x)", //
+        "(-2*x^2+x^4)*BesselJ(0,2*x)+1/2*(4*x-4*x^3+x^5)*BesselJ(1,2*x)");
+    check("Integrate(x^2*AiryAi(x),x)", //
+        "-AiryAi(x)+x*AiryAiPrime(x)");
+  }
+
+  /** <code>W*g(y1,y2)</code> with <code>g</code> homogeneous of degree -2 in a pair of solutions. */
+  @Test
+  public void testIntegrateHolonomicWronskian() {
+    check("Integrate(1/(x*BesselY(2,x)^2),x)", //
+        "(-Pi*BesselJ(2,x))/(2*BesselY(2,x))");
+    check("Integrate(1/(x*BesselI(1,x)^2),x)", //
+        "-BesselK(1,x)/BesselI(1,x)");
+    check("Integrate(1/AiryBi(2*x)^2,x)", //
+        "(-Pi*AiryAi(2*x))/(2*AiryBi(2*x))");
+    check("Integrate(AiryAi(x)/AiryBi(x)^3,x)", //
+        "(-Pi*AiryAi(x)^2)/(2*AiryBi(x)^2)");
+  }
+
+  /** A polynomial times a rational function of E^(b*x): partial fractions and PolyLog ladders. */
+  @Test
+  public void testIntegratePolyLogLadder() {
+    check("Chop(N(D(Integrate(x*Cos(x)/(Cos(x)+Sin(x)),x),x)-x*Cos(x)/(Cos(x)+Sin(x)) /. x->7/10))", //
+        "0");
+    check("Chop(N(D(Integrate(x/(Cos(x)-Sin(x)),x),x)-x/(Cos(x)-Sin(x)) /. x->3/10))", //
+        "0");
+    check("Chop(N(D(Integrate(x*Sinh(x)/(Cosh(x)+2*Sinh(x)),x),x)-x*Sinh(x)/(Cosh(x)+2*Sinh(x)) /. x->3/10))", //
+        "0");
+    // without a polynomial weight it is a rational function of E^(I*x) only
+    check("Integrate(Sin(x)/(Cos(x)+Sin(x)),x,Method->\"PolyLogLadder\")", //
+        "Integrate(Sin(x)/(Cos(x)+Sin(x)),x,Method->PolyLogLadder)");
+  }
+
+  /**
+   * The limits of an antiderivative with polylogarithms, term by term, and the value of the
+   * integral of a real integrand in real form.
+   */
+  @Test
+  public void testIntegrateLogSineDefinite() {
+    check("Integrate(Log(Sin(x)),{x,0,Pi})", //
+        "-Pi*Log(2)");
+  }
+
+  @Test
+  @Tag(TestTags.SLOW)
+  public void testIntegrateLogSineDefiniteSlow() {
+    check("Integrate(x^2*Log(Sin(x)),{x,0,Pi})", //
+        "-1/3*Pi^3*Log(2)-1/2*Pi*Zeta(3)");
+    check("Integrate((x+1)*Log(Sin(x)),{x,0,Pi})", //
+        "-Pi*Log(2)-1/2*Pi^2*Log(2)");
+  }
+
+  /** Integrands whose antiderivative is not in the module of the kernels. */
+  @Test
+  public void testIntegrateHolonomicDeclines() {
+    // Struve functions
+    check("Integrate(x*BesselJ(1,x),x,Method->\"Holonomic\")", //
+        "Integrate(x*BesselJ(1,x),x,Method->Holonomic)");
+    // a pole away from 0
+    check("Integrate(BesselJ(0,x)/(2+x),x,Method->\"Holonomic\")", //
+        "Integrate(BesselJ(0,x)/(2+x),x,Method->Holonomic)");
+    // no Bessel or Airy function
+    check("Integrate(x*Sin(x)^2,x,Method->\"Holonomic\")", //
+        "Integrate(x*Sin(x)^2,x,Method->Holonomic)");
+  }
 }

@@ -14,8 +14,10 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.AssumptionFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.LimitException;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -1152,6 +1154,96 @@ public class SimplifyUtil extends VisitorExpr {
     return fEngine.evaluate(a);
   }
 
+  /**
+   * The logarithm of a trigonometric or hyperbolic quotient which is an inverse hyperbolic function
+   * where the quotient is positive, e.g. <code>Log(Sec(u)+Tan(u)) == ArcTanh(Sin(u))</code> for
+   * <code>Cos(u)&gt;0</code>. The condition must follow from the assumptions; a positive constant
+   * factor of the quotient becomes a <code>Log</code> of its own.
+   *
+   * @return {@link F#NIL} if no rule applies
+   */
+  private IExpr logOfTrigQuotient(IExpr log) {
+    if (fEngine.getAssumptions() == null) {
+      // every rule needs a sign which only assumptions can give
+      return F.NIL;
+    }
+    IExpr arg = log.first();
+    IExpr constant = F.C1;
+    if (arg.isPlus()) {
+      IExpr factored = eval(F.FactorTerms(arg));
+      if (factored.isTimes() && factored.first().isRational() && factored.first().isPositive()) {
+        constant = factored.first();
+        arg = ((IAST) factored).rest().oneIdentity1();
+      }
+    } else if (arg.isTimes() && arg.first().isRational() && arg.first().isPositive()) {
+      constant = arg.first();
+      arg = ((IAST) arg).rest().oneIdentity1();
+    }
+    IExpr inner = firstTrigArgument(arg);
+    if (inner.isNIL()) {
+      return F.NIL;
+    }
+    final boolean small = arg.leafCount() <= 30;
+    for (IExpr u : new IExpr[] {inner, eval(F.Times(F.C2, inner))}) {
+      // the three signs the rules need, each decided once
+      final boolean cosPositive = isAssumedTrue(F.Greater(F.Cos(u), F.C0));
+      final boolean sinPositive = isAssumedTrue(F.Greater(F.Sin(u), F.C0));
+      final boolean uPositive = isAssumedTrue(F.Greater(u, F.C0));
+      if (!cosPositive && !sinPositive && !uPositive) {
+        continue;
+      }
+      // {quotient, inverse hyperbolic function, sign it needs, whether it has a half angle}
+      Object[][] rules = { //
+          {F.Plus(F.Sec(u), F.Tan(u)), F.ArcTanh(F.Sin(u)), cosPositive, false},
+          {F.Subtract(F.Sec(u), F.Tan(u)), F.Negate(F.ArcTanh(F.Sin(u))), cosPositive, false},
+          {F.Plus(F.Csc(u), F.Cot(u)), F.ArcTanh(F.Cos(u)), sinPositive, false},
+          {F.Subtract(F.Csc(u), F.Cot(u)), F.Negate(F.ArcTanh(F.Cos(u))), sinPositive, false},
+          {F.Tan(F.Times(F.C1D2, u)), F.Negate(F.ArcTanh(F.Cos(u))), sinPositive, true},
+          {F.Cot(F.Times(F.C1D2, u)), F.ArcTanh(F.Cos(u)), sinPositive, true},
+          {F.Plus(F.Coth(u), F.Csch(u)), F.ArcCoth(F.Cosh(u)), uPositive, false},
+          {F.Subtract(F.Coth(u), F.Csch(u)), F.Negate(F.ArcCoth(F.Cosh(u))), uPositive, false},
+          {F.Tanh(F.Times(F.C1D2, u)), F.Negate(F.ArcCoth(F.Cosh(u))), uPositive, true},
+          {F.Coth(F.Times(F.C1D2, u)), F.ArcCoth(F.Cosh(u)), uPositive, true}};
+      for (Object[] rule : rules) {
+        if (!(Boolean) rule[2]) {
+          continue;
+        }
+        IExpr quotient = (IExpr) rule[0];
+        // the argument may already be simplified into another form of the same quotient, like
+        // 2*(-1+Cosh(x))*Csch(x) for 2*Coth(x)-2*Csch(x): then the exponential forms agree
+        if (eval(quotient).equals(arg) || (small && !(Boolean) rule[3]
+            && eval(F.Together(F.TrigToExp(F.Subtract(arg, quotient)))).isZero())) {
+          return F.Plus(F.Log(constant), (IExpr) rule[1]);
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /** The argument of the first trigonometric or hyperbolic function in <code>expr</code>. */
+  private static IExpr firstTrigArgument(IExpr expr) {
+    IExpr[] found = {F.NIL};
+    expr.isFree(x -> {
+      if (found[0].isNIL() && x.isAST1() && (x.isTrigFunction() || x.isHyperbolicFunction())) {
+        found[0] = x.first();
+        return true;
+      }
+      return false;
+    }, false);
+    return found[0];
+  }
+
+  /** Whether <code>condition</code> follows from the assumptions of this simplification. */
+  private boolean isAssumedTrue(IExpr condition) {
+    IAssumptions assumptions = fEngine.getAssumptions();
+    if (assumptions == null) {
+      return false;
+    }
+    IExpr refined =
+        AssumptionFunctions.refineAssumptions(condition, assumptions, fEngine);
+    return eval(refined).isTrue();
+  }
+
   private void functionExpand(IExpr expr, SimplifiedResult sResult) {
     if (expr.isBooleanFunction()) {
       try {
@@ -1163,6 +1255,16 @@ public class SimplifyUtil extends VisitorExpr {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         //
+      }
+    }
+    if (fFullSimplify && expr.isLog()) {
+      try {
+        IExpr temp = logOfTrigQuotient(expr);
+        if (temp.isPresent()) {
+          sResult.checkLessEqual(eval(temp));
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
       }
     }
     if (fFullSimplify) {

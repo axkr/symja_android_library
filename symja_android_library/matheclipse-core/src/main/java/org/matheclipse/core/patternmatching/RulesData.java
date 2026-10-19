@@ -690,6 +690,12 @@ public final class RulesData implements Serializable {
     if (!expr.isASTOrAssociation()) {
       return F.NIL;
     }
+    if (equalRules != null && expr.isFlatAST() && !expr.isOrderlessAST()) {
+      IExpr run = equalRuleOnRun(equalRules, (IAST) expr, engine);
+      if (run.isPresent()) {
+        return run;
+      }
+    }
     boolean evalRHSMode = engine.isEvalRHSMode();
     try {
       engine.setEvalRHSMode(true);
@@ -740,6 +746,68 @@ public final class RulesData implements Serializable {
       engine.setEvalRHSMode(evalRHSMode);
     }
     return F.NIL;
+  }
+
+  /**
+   * A rule without patterns of a Flat head, like <code>f(s, t) := st</code>, applied to a run of
+   * consecutive arguments: <code>f(w, s, t)</code> is <code>f(w, f(s, t))</code>, which becomes
+   * <code>f(w, st)</code>. Of several rules the one with the leftmost run is applied, and of the
+   * rules for the same run the first in the canonical order of their left-hand sides.
+   *
+   * @return {@link F#NIL} if no rule matches a run of <code>expr</code>
+   */
+  private static IExpr equalRuleOnRun(Map<IExpr, PatternMatcherEquals> equalRules, IAST expr,
+      EvalEngine engine) {
+    PatternMatcherEquals best = null;
+    int bestStart = Integer.MAX_VALUE;
+    for (PatternMatcherEquals rule : equalRules.values()) {
+      IExpr lhs = rule.getLHS();
+      if (!lhs.isAST() || lhs.head() != expr.head() || lhs.argSize() < 2
+          || lhs.argSize() >= expr.argSize() || rule.getRHS().equals(lhs)) {
+        // a rule which gives back its own left-hand side is a fixed point
+        continue;
+      }
+      IAST run = (IAST) lhs;
+      int last = Math.min(expr.argSize() - run.argSize(), bestStart);
+      for (int start = 0; start <= last; start++) {
+        boolean matches = true;
+        for (int j = 1; j <= run.argSize(); j++) {
+          if (!run.get(j).equals(expr.get(start + j))) {
+            matches = false;
+            break;
+          }
+        }
+        if (matches) {
+          if (start < bestStart || lhs.compareTo(best.getLHS()) < 0) {
+            best = rule;
+            bestStart = start;
+          }
+          break;
+        }
+      }
+    }
+    if (best == null) {
+      return F.NIL;
+    }
+    IExpr rhs = best.getRHS();
+    if (best.rhsHasReturn()) {
+      // a Return gives the value of the definition, as for a rule of the whole expression
+      try {
+        rhs = engine.evaluate(rhs);
+      } catch (ReturnException rex) {
+        rhs = rex.getValue();
+      }
+    }
+    int length = best.getLHS().argSize();
+    IASTAppendable result = F.ast(expr.head(), expr.argSize() - length + 1);
+    for (int j = 1; j <= bestStart; j++) {
+      result.append(expr.get(j));
+    }
+    result.append(rhs);
+    for (int j = bestStart + length + 1; j <= expr.argSize(); j++) {
+      result.append(expr.get(j));
+    }
+    return result;
   }
 
   /**

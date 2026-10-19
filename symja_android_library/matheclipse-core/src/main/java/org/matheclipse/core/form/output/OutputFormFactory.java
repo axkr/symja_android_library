@@ -29,6 +29,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FormalSymbol;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
@@ -1192,6 +1193,10 @@ public class OutputFormFactory {
   }
 
   public void convertString(final Appendable buf, String str) throws IOException {
+    if (fInputForm) {
+      // a string reads back as itself: quotes, backslashes and control characters are escaped
+      str = escapeStringLiteral(str);
+    }
     // a box escape in a string is written the way it is typed, not as the characters kept for it
     str = BoxNotation.writeEscapes(str);
     if (fInputForm) {
@@ -1201,6 +1206,66 @@ public class OutputFormFactory {
     } else {
       appendUnicodeMapped(buf, str);
     }
+  }
+
+  /**
+   * The text of a string literal for <code>str</code>, without the enclosing quotes:
+   * <code>"</code> and <code>\</code> are written <code>\"</code> and <code>\\</code>, a newline,
+   * tab and carriage return <code>\n</code>, <code>\t</code> and <code>\r</code>.
+   */
+  public static String escapeStringLiteral(String str) {
+    StringBuilder buf = null;
+    for (int i = 0; i < str.length(); i++) {
+      char ch = str.charAt(i);
+      String escape;
+      switch (ch) {
+        case '"':
+          escape = "\\\"";
+          break;
+        case '\\':
+          // a named character \[Name] stands for one character and is kept as it is
+          escape = isNamedCharacter(str, i) ? null : "\\\\";
+          break;
+        case '\n':
+          escape = "\\n";
+          break;
+        case '\t':
+          escape = "\\t";
+          break;
+        case '\r':
+          escape = "\\r";
+          break;
+        default:
+          escape = null;
+          break;
+      }
+      if (escape != null && buf == null) {
+        buf = new StringBuilder(str.length() + 16).append(str, 0, i);
+      }
+      if (buf != null) {
+        if (escape != null) {
+          buf.append(escape);
+        } else {
+          buf.append(ch);
+        }
+      }
+    }
+    return buf == null ? str : buf.toString();
+  }
+
+  /** Whether a named character <code>\[Name]</code> starts at <code>index</code>. */
+  private static boolean isNamedCharacter(String str, int index) {
+    if (index + 3 >= str.length() || str.charAt(index + 1) != '[') {
+      return false;
+    }
+    int i = index + 2;
+    if (!Character.isLetter(str.charAt(i))) {
+      return false;
+    }
+    while (i < str.length() && Character.isLetterOrDigit(str.charAt(i))) {
+      i++;
+    }
+    return i < str.length() && str.charAt(i) == ']';
   }
 
   public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
@@ -1231,8 +1296,18 @@ public class OutputFormFactory {
 
   public void convertPattern(final Appendable buf, final IPatternObject pattern)
       throws IOException {
-    String str = pattern.toString();
     ISymbol symbol = pattern.getSymbol();
+    if (fInputForm && pattern instanceof PatternNested && symbol != null
+        && !(symbol instanceof FormalSymbol)) {
+      // x:p with p printed as an expression, so that a string in it keeps its quotes
+      append(buf, "(");
+      convertSymbol(buf, symbol);
+      append(buf, ":");
+      convert(buf, ((PatternNested) pattern).getPatternExpr(), Integer.MIN_VALUE, false);
+      append(buf, ")");
+      return;
+    }
+    String str = pattern.toString();
     if (fInputForm && !fFormalSymbolsAsPlainLetters && symbol instanceof FormalSymbol) {
       // \[FormalZ]_ and not z_, which would read back as a pattern named Global`z
       String name = symbol.toString();
@@ -1344,6 +1419,11 @@ public class OutputFormFactory {
       // insert denominator in buffer:
       if (denominator.isTimes()) {
         convertTimesOperator(buf, (IAST) denominator, oper, Precedence.DIVIDE, NO_PLUS_CALL);
+      } else if (isQuotient(denominator)) {
+        // a/(1/x), not a/1/x
+        append(buf, "(");
+        convert(buf, denominator, Precedence.NO_PRECEDENCE, false);
+        append(buf, ")");
       } else {
         convert(buf, denominator, Precedence.DIVIDE, false);
       }
@@ -1451,7 +1531,16 @@ public class OutputFormFactory {
         }
         append(buf, "1/");
         if (exp.isMinusOne()) {
-          convert(buf, list.arg1(), Precedence.DIVIDE, false);
+          // the reciprocal of a reciprocal is 1/(1/x), not 1/1/x
+          final boolean quotient = isQuotient(list.arg1());
+          if (quotient) {
+            append(buf, "(");
+          }
+          convert(buf, list.arg1(), quotient ? Precedence.NO_PRECEDENCE : Precedence.DIVIDE,
+              false);
+          if (quotient) {
+            append(buf, ")");
+          }
           if (Precedence.DIVIDE < precedence) {
             append(buf, ")");
           }
@@ -1467,6 +1556,12 @@ public class OutputFormFactory {
       }
     }
     convertInfixOperator(buf, list, oper, precedence);
+  }
+
+  /** Whether <code>expr</code> prints as a quotient <code>1/...</code>. */
+  private static boolean isQuotient(IExpr expr) {
+    return expr.isPower() && expr.exponent().isNumber()
+        && ((INumber) expr.exponent()).complexSign() < 0;
   }
 
   /**

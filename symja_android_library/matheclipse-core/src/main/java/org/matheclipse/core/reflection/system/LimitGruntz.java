@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -14,6 +15,8 @@ import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -354,6 +357,9 @@ public class LimitGruntz {
 
   public static IExpr combinePlusLogs(IAST plusAST, boolean force) {
     Map<IExpr, IASTAppendable> groupMap = new HashMap<>();
+    // the first term of each group: a group of one is kept as it is, because -Log(u) and
+    // Log(1/u) differ by 2*Pi*I for a negative u
+    Map<IExpr, IExpr> firstTerm = new HashMap<>();
     IASTAppendable remainingTerms = F.PlusAlloc(plusAST.size());
 
     for (int i = 1; i < plusAST.size(); i++) {
@@ -367,6 +373,7 @@ public class LimitGruntz {
         IASTAppendable args = groupMap.getOrDefault(parts[0], F.TimesAlloc(4));
         args.append(parts[1]);
         groupMap.put(parts[0], args);
+        firstTerm.putIfAbsent(parts[0], term);
       } else {
         remainingTerms.append(term);
       }
@@ -379,6 +386,10 @@ public class LimitGruntz {
     for (Map.Entry<IExpr, IASTAppendable> entry : groupMap.entrySet()) {
       IExpr coeff = entry.getKey();
       IAST combinedArgs = entry.getValue();
+      if (combinedArgs.argSize() == 1) {
+        remainingTerms.append(firstTerm.get(coeff));
+        continue;
+      }
 
       IExpr mergedLog = F.Log(F.evalExpandAll(combinedArgs));
       remainingTerms.append(F.eval(F.Times(coeff, mergedLog)));
@@ -630,7 +641,7 @@ public class LimitGruntz {
       // collapse constant log-sums - series coefficients assemble them unsimplified,
       // e.g. Log(2)/2 + Log(1/(2*Pi))/2 + Log(Pi)/2 which is exactly 0
       if (expr.isPlus() && expr.has(t -> t.isLog(), true)) {
-        IExpr combined = engine.evalQuiet(logCombine(expr, true));
+        IExpr combined = combinedConstantLogs(expr, engine);
         if (combined.isPresent()) {
           return combined;
         }
@@ -1277,12 +1288,39 @@ public class LimitGruntz {
       IExpr den = engine.evaluate(F.Denominator(together));
 
       if (!den.isOne()) {
+        // Log(n/d) == Log(n) - Log(d) up to 2*Pi*I: for real n, d it is Log(|n|) - Log(|d|), and
+        // I*Pi if the quotient is negative
+        int numSign = realSignNearZero(num, w, engine);
+        int denSign = realSignNearZero(den, w, engine);
+        if (numSign != 0 && denSign != 0) {
+          return engine.evaluate(F.Plus(logOfAbs(num, numSign, w, engine),
+              F.Negate(logOfAbs(den, denSign, w, engine)),
+              numSign * denSign < 0 ? F.Times(F.CI, S.Pi) : F.C0));
+        }
         return engine.evaluate(F.Subtract(expandGruntzLogs(F.Log(num), w, engine),
             expandGruntzLogs(F.Log(den), w, engine)));
       }
       if (together.isTimes()) {
         IAST times = (IAST) together;
-        IASTAppendable plus = F.PlusAlloc(times.size());
+        IASTAppendable plus = F.PlusAlloc(times.size() + 1);
+        // Log(a*b) == Log(a) + Log(b) up to 2*Pi*I as well: Log(-1*Log(1-w)) is real, not
+        // I*Pi+Log(Log(1-w)). With the signs of real factors known, sum the Log of their
+        // absolute values and add I*Pi for a negative product
+        int sign = 1;
+        int[] factorSigns = new int[times.size()];
+        for (int i = 1; i < times.size() && sign != 0; i++) {
+          factorSigns[i] = realSignNearZero(times.get(i), w, engine);
+          sign = factorSigns[i] == 0 ? 0 : sign * factorSigns[i];
+        }
+        if (sign != 0) {
+          for (int i = 1; i < times.size(); i++) {
+            plus.append(logOfAbs(times.get(i), factorSigns[i], w, engine));
+          }
+          if (sign < 0) {
+            plus.append(F.Times(F.CI, S.Pi));
+          }
+          return engine.evaluate(plus);
+        }
         for (int i = 1; i < times.size(); i++) {
           plus.append(expandGruntzLogs(F.Log(times.get(i)), w, engine));
         }
@@ -1331,6 +1369,54 @@ public class LimitGruntz {
       return changed ? engine.evaluate(result) : expr;
     }
     return expr;
+  }
+
+  /**
+   * <code>Log(Abs(factor))</code> of a factor of known real sign: a positive one is expanded
+   * further, a negative one is kept as <code>Log(-factor)</code>, because splitting it again would
+   * meet the same sign.
+   */
+  private static IExpr logOfAbs(IExpr factor, int sign, ISymbol w, EvalEngine engine) {
+    if (factor.isNumber()) {
+      return F.Log(F.Abs(factor));
+    }
+    return sign > 0 ? expandGruntzLogs(F.Log(factor), w, engine) : F.Log(F.Negate(factor));
+  }
+
+  /**
+   * The sign of a real function of <code>w</code> as <code>w-&gt;0+</code>. The structural sign of
+   * <code>f(1/y)</code> for large <code>y</code> decides where it is known, with one machine value
+   * to show that <code>f</code> is real there; otherwise three small values of <code>w</code>,
+   * evaluated with 30 digits, have to agree.
+   *
+   * @return <code>1</code> or <code>-1</code>, or <code>0</code> if the function isn't real there
+   *         or the sign cannot be decided
+   */
+  private static int realSignNearZero(IExpr f, ISymbol w, EvalEngine engine) {
+    if (f.isNumber()) {
+      return f.isReal() ? ((IReal) f).complexSign() : 0;
+    }
+    ISymbol y = F.Dummy("y");
+    IExpr atInfinity = engine.evaluate(F.subst(f, w, F.Power(y, F.CN1)));
+    int structural = signStructural(atInfinity, y, engine, 0);
+    if (structural == 1 || structural == -1) {
+      IExpr value = engine.evalQuiet(F.N(F.subst(f, w, F.QQ(1, 1000000000))));
+      return value.isReal() ? structural : 0;
+    }
+    int sign = 0;
+    for (IExpr sample : new IExpr[] {F.QQ(1, 1000000), F.QQ(1, 1000000000),
+        F.Power(F.C10, F.ZZ(-15))}) {
+      IExpr value = engine.evalQuiet(F.N(F.subst(f, w, sample), F.ZZ(30)));
+      if (!value.isReal()) {
+        return 0;
+      }
+      int s = ((IReal) value).complexSign();
+      if (s == 0 || (sign != 0 && s != sign)) {
+        return 0;
+      }
+      sign = s;
+    }
+    return sign;
   }
 
   /**
@@ -1577,6 +1663,31 @@ public class LimitGruntz {
       return null; // Log diverges logarithmically - not a plain w-power
     }
     return null;
+  }
+
+  /**
+   * The constant sum of logarithms <code>expr</code> with the logarithms merged, or {@link F#NIL}.
+   * <code>Log(a)+Log(b) == Log(a*b)</code> holds only up to a multiple of <code>2*Pi*I</code>, so a
+   * merged sum which is numerically different is not used, and a sum without a numerical value
+   * merges only the logarithms of positive arguments.
+   */
+  private static IExpr combinedConstantLogs(IExpr expr, EvalEngine engine) {
+    IExpr combined = engine.evalQuiet(logCombine(expr, true));
+    if (combined.isNIL() || combined.equals(expr)) {
+      return combined;
+    }
+    IExpr before = engine.evalQuiet(F.N(expr));
+    IExpr after = engine.evalQuiet(F.N(combined));
+    if (!before.isNumber() || !after.isNumber()) {
+      // not to be checked, e.g. with parameters: only the logarithms of positive arguments merge
+      return engine.evalQuiet(logCombine(expr, false));
+    }
+    Complex b = ((INumber) before).evalfc();
+    Complex a = ((INumber) after).evalfc();
+    if (b.subtract(a).norm() > 1.0e-8 * (1.0 + b.norm())) {
+      return F.NIL;
+    }
+    return combined;
   }
 
   public static IExpr logCombine(IExpr expr) {
@@ -2081,7 +2192,7 @@ public class LimitGruntz {
       if (expr.isPlus() && expr.has(t -> t.isLog(), true)) {
         // constant log sums arrive unsimplified from the series coefficients, e.g.
         // Log(2)/2 + Log(1/(2*Pi))/2 + Log(Pi)/2, which is exactly 0
-        IExpr combined = engine.evalQuiet(logCombine(expr, true));
+        IExpr combined = combinedConstantLogs(expr, engine);
         if (combined.isPresent()) {
           value = combined;
         }

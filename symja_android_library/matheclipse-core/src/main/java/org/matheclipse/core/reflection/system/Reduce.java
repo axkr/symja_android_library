@@ -1220,38 +1220,38 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
 
     // periodicFunction(innerArg) == -rest/amplitude
     IExpr rhsValue = engine.evaluate(F.Divide(F.Negate(term.rest), term.amplitude));
-    IExpr branches;
-    if (term.isPower()) {
-      branches = expandExponentialInverse(term.base, rhsValue, engine);
-      if (branches.isFalse()) {
-        return S.False;
-      }
-    } else {
-      branches =
-          InverseFunctionExpander.expandPeriodicInverse((IBuiltInSymbol) term.head, rhsValue);
+    if (term.isPower() && rhsValue.isZero()) {
+      // a power of a non zero base is never zero
+      return S.False;
     }
-    if (branches.isNIL()) {
+    IAST branchList = periodicBranchList(term, rhsValue, engine);
+    if (branchList == null) {
       return F.NIL;
     }
-    IAST branchList = branches.isList() ? (IAST) branches : F.List(branches);
-    if (!term.isPower()) {
-      // the function never takes this value: Coth(x) == -1 gives ArcCoth(-1) == -Infinity
-      IAST attainableBranches = branchList.select(branch -> InverseFunctionExpander.isFiniteValue(
-          engine.evaluate(branch.isConditionalExpression() ? branch.first() : branch)));
-      if (attainableBranches.argSize() == 0) {
-        return S.False;
-      }
-      branchList = attainableBranches;
-    }
-    // Reduce lists the principal inverse branch first (e.g. ArcSin before
-    // Pi-ArcSin). Symja's shared expander lists the Pi-shifted branch first for these functions,
-    // so reverse the two branches here (Solve keeps the expander's original order).
-    if (branchList.argSize() == 2 && !term.isPower()
-        && isPiShiftedFirstFunction(((IBuiltInSymbol) term.head).ordinal())) {
-      branchList = F.List(branchList.arg2(), branchList.arg1());
+    if (branchList.isAST0()) {
+      return S.False;
     }
 
     final boolean realDomain = domain == S.Reals;
+    // a value with parameters: which families are real is decided at sample values of the range
+    // in which the function takes real values, and that range becomes a condition of the result
+    IExpr rangeCondition = S.True;
+    List<IAST> sampleLists = null;
+    if (realDomain && !rhsValue.isNumericFunction(true)) {
+      RealRange range = realRange(term, rhsValue, engine);
+      if (range == null) {
+        return F.NIL;
+      }
+      rangeCondition = range.condition;
+      sampleLists = new ArrayList<IAST>(range.samples.length);
+      for (IExpr sample : range.samples) {
+        IAST sampleList = periodicBranchList(term, sample, engine);
+        if (sampleList == null || sampleList.size() != branchList.size()) {
+          return F.NIL;
+        }
+        sampleLists.add(sampleList);
+      }
+    }
     Set<IExpr> integerConditions = new LinkedHashSet<IExpr>();
     IASTAppendable orEqualities = F.OrAlloc(branchList.size());
     for (int i = 1; i < branchList.size(); i++) {
@@ -1265,6 +1265,33 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       if (!collectIntegerConditions(condition, branchConditions)) {
         // not a periodic (C(k) integer) branch
         return F.NIL;
+      }
+      if (sampleLists != null) {
+        Long index = sampleMemberIndex(sampleLists, i, engine);
+        if (index == null) {
+          return F.NIL;
+        }
+        if (index == NO_REAL_MEMBER) {
+          continue;
+        }
+        if (index == WHOLE_FAMILY) {
+          integerConditions.addAll(branchConditions);
+        } else {
+          if (branchConditions.size() != 1) {
+            return F.NIL;
+          }
+          value = engine.evaluate(
+              F.subst(value, branchConditions.iterator().next().first(), F.ZZ(index)));
+        }
+        IExpr root = engine.evaluate(F.Divide(F.Subtract(value, c0), c1));
+        if (c1.isNumber() && !c1.isOne()) {
+          root = engine.evaluate(F.Expand(root));
+        }
+        IExpr equality = F.Equal(variable, root);
+        if (!orEqualities.exists(equality::equals)) {
+          orEqualities.append(equality);
+        }
+        continue;
       }
       // solve c1*variable + c0 == value => variable == (value - c0)/c1
       IExpr root = engine.evaluate(F.Divide(F.Subtract(value, c0), c1));
@@ -1313,7 +1340,10 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
 
     boolean c1MayBeZero = !engine.evalTrue(F.Unequal(c1, F.C0));
 
-    IASTAppendable genericAnd = F.ast(S.And, integerConditions.size() + 2);
+    IASTAppendable genericAnd = F.ast(S.And, integerConditions.size() + 3);
+    if (!rangeCondition.isTrue()) {
+      genericAnd.append(rangeCondition);
+    }
     for (IExpr condition : integerConditions) {
       genericAnd.append(condition);
     }
@@ -1330,6 +1360,188 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
     }
     return engine.evaluate(genericPart);
+  }
+
+  /**
+   * The inverse branches of <code>term == value</code> as a list of
+   * {@link S#ConditionalExpression}s, the principal branch first. A function which never takes
+   * <code>value</code> gives an empty list.
+   *
+   * @return <code>null</code> if the function isn't supported
+   */
+  private static IAST periodicBranchList(PeriodicTerm term, IExpr value, EvalEngine engine) {
+    IExpr branches = term.isPower() //
+        ? expandExponentialInverse(term.base, value, engine)
+        : InverseFunctionExpander.expandPeriodicInverse((IBuiltInSymbol) term.head, value);
+    if (branches.isNIL() || branches.isFalse()) {
+      return branches.isFalse() ? F.CEmptyList : null;
+    }
+    IAST branchList = branches.isList() ? (IAST) branches : F.List(branches);
+    if (!term.isPower()) {
+      // the function never takes this value: Coth(x) == -1 gives ArcCoth(-1) == -Infinity
+      branchList = branchList.select(branch -> InverseFunctionExpander.isFiniteValue(
+          engine.evaluate(branch.isConditionalExpression() ? branch.first() : branch)));
+    }
+    // Reduce lists the principal inverse branch first (e.g. ArcSin before
+    // Pi-ArcSin). Symja's shared expander lists the Pi-shifted branch first for these functions,
+    // so reverse the two branches here (Solve keeps the expander's original order).
+    if (branchList.argSize() == 2 && !term.isPower()
+        && isPiShiftedFirstFunction(((IBuiltInSymbol) term.head).ordinal())) {
+      branchList = F.List(branchList.arg2(), branchList.arg1());
+    }
+    return branchList;
+  }
+
+  /** The values a function takes for a real argument, and sample values inside them. */
+  private static final class RealRange {
+    final IExpr condition;
+    /** one sample on each side of a range which consists of two parts */
+    final IExpr[] samples;
+
+    RealRange(IExpr condition, IExpr... samples) {
+      this.condition = condition;
+      this.samples = samples;
+    }
+  }
+
+  /**
+   * The condition for <code>value</code> under which <code>term == value</code> has a real
+   * solution, e.g. <code>-1&lt;=value&lt;=1</code> for <code>Sin</code>.
+   *
+   * @return <code>null</code> if the range of the function isn't known
+   */
+  private static RealRange realRange(PeriodicTerm term, IExpr value, EvalEngine engine) {
+    final IExpr inside = F.QQ(3, 7);
+    final IExpr outside = F.QQ(7, 3);
+    if (term.isPower()) {
+      // a positive base to a real power takes every positive value
+      if (!engine.evalTrue(F.Greater(term.base, F.C0))) {
+        return null;
+      }
+      return new RealRange(rangeCondition(F.Greater(value, F.C0), engine), outside);
+    }
+    switch (((IBuiltInSymbol) term.head).ordinal()) {
+      case ID.Sin:
+      case ID.Cos:
+        return new RealRange(
+            rangeCondition(F.And(F.LessEqual(F.CN1, value), F.LessEqual(value, F.C1)), engine),
+            inside);
+      case ID.Tan:
+      case ID.Cot:
+      case ID.Sinh:
+        return new RealRange(S.True, inside);
+      case ID.Sec:
+      case ID.Csc:
+        return new RealRange(
+            rangeCondition(F.Or(F.LessEqual(value, F.CN1), F.GreaterEqual(value, F.C1)), engine),
+            outside, F.Negate(outside));
+      case ID.Cosh:
+        return new RealRange(rangeCondition(F.GreaterEqual(value, F.C1), engine), outside);
+      case ID.Tanh:
+        return new RealRange(
+            rangeCondition(F.And(F.Less(F.CN1, value), F.Less(value, F.C1)), engine), inside);
+      case ID.Coth:
+        return new RealRange(
+            rangeCondition(F.Or(F.Less(value, F.CN1), F.Greater(value, F.C1)), engine), outside,
+            F.Negate(outside));
+      case ID.Sech:
+        return new RealRange(
+            rangeCondition(F.And(F.Less(F.C0, value), F.LessEqual(value, F.C1)), engine), inside);
+      case ID.Csch:
+        return new RealRange(rangeCondition(F.Unequal(value, F.C0), engine), outside,
+            F.Negate(outside));
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * The range condition of {@link #realRange(PeriodicTerm, IExpr, EvalEngine)} in the reduced form
+   * of its single parameter, e.g. <code>a&gt;0</code> for <code>1/a&gt;0</code>.
+   */
+  private static IExpr rangeCondition(IExpr condition, EvalEngine engine) {
+    IExpr evaluated = engine.evaluate(condition);
+    IAST parameters = VariablesSet.getVariables(evaluated);
+    if (parameters.argSize() == 1) {
+      try {
+        IExpr reduced = engine.evalQuiet(F.Reduce(evaluated, parameters.arg1(), S.Reals));
+        if (reduced.isFree(S.Reduce)) {
+          return reduced;
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+      }
+    }
+    return evaluated;
+  }
+
+  /** {@link #sampleMemberIndex(List, int, EvalEngine)}: the whole family is real */
+  private static final long WHOLE_FAMILY = Long.MIN_VALUE;
+
+  /** {@link #sampleMemberIndex(List, int, EvalEngine)}: no member of the family is real */
+  private static final long NO_REAL_MEMBER = Long.MAX_VALUE;
+
+  /**
+   * Which members of the family number <code>i</code> are real, decided at every sample value.
+   *
+   * @return {@link #WHOLE_FAMILY}, {@link #NO_REAL_MEMBER}, the integer of the single real member,
+   *         or <code>null</code> if it cannot be decided or the samples disagree
+   */
+  private static Long sampleMemberIndex(List<IAST> sampleLists, int i, EvalEngine engine) {
+    Long result = null;
+    for (IAST sampleList : sampleLists) {
+      IExpr branch = sampleList.get(i);
+      if (!branch.isConditionalExpression()) {
+        return null;
+      }
+      Set<IExpr> conditions = new LinkedHashSet<IExpr>();
+      if (!collectIntegerConditions(branch.second(), conditions)) {
+        return null;
+      }
+      Long index = realMemberIndex(branch.first(), conditions, engine);
+      if (index == null || (result != null && !result.equals(index))) {
+        return null;
+      }
+      result = index;
+    }
+    return result;
+  }
+
+  /**
+   * Like {@link #realFamilyMember(IExpr, Set, EvalEngine)} for a numeric family, but answers the
+   * integer of the real member instead of the member.
+   *
+   * @return {@link #WHOLE_FAMILY}, {@link #NO_REAL_MEMBER}, the integer of the single real member,
+   *         or <code>null</code> if it cannot be decided
+   */
+  private static Long realMemberIndex(IExpr value, Set<IExpr> branchConditions,
+      EvalEngine engine) {
+    if (branchConditions.isEmpty()) {
+      return isComplexNonReal(value) ? NO_REAL_MEMBER : WHOLE_FAMILY;
+    }
+    if (branchConditions.size() != 1) {
+      return null;
+    }
+    IExpr parameter = branchConditions.iterator().next().first();
+    IExpr[] linear = engine.evaluate(F.Expand(value)).linear(parameter);
+    if (linear == null) {
+      return null;
+    }
+    double periodImaginary = imaginaryPart(linear[1]);
+    double offsetImaginary = imaginaryPart(linear[0]);
+    if (Double.isNaN(periodImaginary) || Double.isNaN(offsetImaginary)) {
+      return null;
+    }
+    if (periodImaginary == 0.0) {
+      return Math.abs(offsetImaginary) > 1.0e-12 ? NO_REAL_MEMBER : WHOLE_FAMILY;
+    }
+    double k = -offsetImaginary / periodImaginary;
+    long rounded = Math.round(k);
+    if (Math.abs(k - rounded) > 1.0e-8) {
+      return NO_REAL_MEMBER;
+    }
+    IExpr member = engine.evaluate(F.subst(value, parameter, F.ZZ(rounded)));
+    return isComplexNonReal(member) ? NO_REAL_MEMBER : rounded;
   }
 
   /**
@@ -1815,11 +2027,23 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    */
   private static boolean splitPeriodicFamily(IExpr family, IExpr variable,
       IASTAppendable conditions, IASTAppendable values) {
+    return splitPeriodicFamily(family, variable, conditions, values, null);
+  }
+
+  /**
+   * Like {@link #splitPeriodicFamily(IExpr, IExpr, IASTAppendable, IASTAppendable)}, and collect
+   * the conditions of the parameters into <code>parameterConditions</code>.
+   *
+   * @param parameterConditions <code>null</code> if a family with parameter conditions isn't
+   *        accepted
+   */
+  private static boolean splitPeriodicFamily(IExpr family, IExpr variable,
+      IASTAppendable conditions, IASTAppendable values, IASTAppendable parameterConditions) {
     if (family.isOr() && family.first().isAnd()) {
       // a disjunction of families, e.g. the two families of `Sin(x)^2==1/4`
       IAST or = (IAST) family;
       for (int i = 1; i < or.size(); i++) {
-        if (!splitPeriodicFamily(or.get(i), variable, conditions, values)) {
+        if (!splitPeriodicFamily(or.get(i), variable, conditions, values, parameterConditions)) {
           return false;
         }
       }
@@ -1833,6 +2057,9 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         IExpr arg = and.get(i);
         if (arg.isAST(S.Element, 3) && arg.second() == S.Integers) {
           conditions.append(arg);
+        } else if (arg.isFree(variable) && parameterConditions != null) {
+          // a condition of the parameters, like `a>=-1` in the family of `Sin(x)==a`
+          parameterConditions.append(arg);
         } else if (rest.isNIL()) {
           rest = arg;
         } else {
@@ -1876,6 +2103,15 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       // the enumeration reads the offset and the period of the family off the value, so a factored
       // form like `(Pi+2*Pi*C(1))/2` has to be expanded into `Pi/2+Pi*C(1)` first
       IExpr value = engine.evaluate(F.Expand(values.get(i)));
+      IExpr member = value;
+      for (IExpr condition : conditions) {
+        member = F.subst(member, condition.first(), F.C0);
+      }
+      if (!engine.evaluate(member).isNumericFunction(true)) {
+        // a family with parameters like `ArcCos(a)+2*Pi*C(1)` cannot be enumerated: finding no
+        // member is not the same as having none
+        return null;
+      }
       IASTAppendable collector = F.ListAlloc(8);
       if (conditions.isAST0()) {
         // a single solution instead of a family
@@ -1907,6 +2143,166 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       }
     }
     return exacts;
+  }
+
+  /** <code>expr</code> with every integer parameter <code>C(k)</code> of the family set to 0. */
+  private static IExpr withoutIntegerParameters(IExpr expr, IAST conditions) {
+    for (IExpr condition : conditions) {
+      expr = F.subst(expr, condition.first(), F.C0);
+    }
+    return expr;
+  }
+
+  /**
+   * The members of a periodic family with a parameter, like <code>-ArcCos(a)+2*Pi*C(1)</code>, in a
+   * bounded window, each with the condition on the parameter under which it lies in the window:
+   * <code>Cos(x)==a &amp;&amp; 0&lt;x&lt;Pi</code> gives <code>-1&lt;a&lt;1 &amp;&amp;
+   * x==ArcCos(a)</code>.
+   *
+   * <p>
+   * The offset of every branch must be a principal inverse of the parameter - its range bounds the
+   * integers which can put a member into the window.
+   *
+   * @return {@link F#NIL} if the family doesn't have this form
+   */
+  private static IExpr reduceParametricWindow(IAST values, IAST conditions,
+      IAST parameterConditions, IAST window, IExpr variable, SolveOptions options,
+      EvalEngine engine) {
+    IExpr lower = window.arg1();
+    IExpr upper = window.arg4();
+    IBuiltInSymbol lowerType = (IBuiltInSymbol) window.arg2();
+    IBuiltInSymbol upperType = (IBuiltInSymbol) window.arg3();
+    if (conditions.argSize() > 1) {
+      return F.NIL;
+    }
+    IAST parameters =
+        VariablesSet.getVariables(engine.evaluate(withoutIntegerParameters(values, conditions)));
+    if (parameters.argSize() != 1) {
+      return F.NIL;
+    }
+    final IExpr parameter = parameters.arg1();
+    IExpr parameterCondition = parameterConditions.isAST0() ? S.True
+        : parameterConditions.setAtCopy(0, S.And);
+    double lo, hi;
+    try {
+      lo = lower.evalDouble();
+      hi = upper.evalDouble();
+    } catch (RuntimeException rex) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ast(S.Or, 4);
+    for (int i = 1; i < values.size(); i++) {
+      IExpr value = engine.evaluate(F.Expand(values.get(i)));
+      IExpr offset = value;
+      double period = 0.0;
+      IExpr integer = F.NIL;
+      if (conditions.argSize() == 1) {
+        integer = conditions.arg1().first();
+        IExpr[] linear = value.linear(integer);
+        if (linear == null) {
+          return F.NIL;
+        }
+        offset = linear[0];
+        try {
+          period = Math.abs(linear[1].evalDouble());
+        } catch (RuntimeException rex) {
+          return F.NIL;
+        }
+        if (Double.isNaN(period) || period == 0.0) {
+          return F.NIL;
+        }
+      }
+      double[] range = principalRange(offset, parameter, engine);
+      if (range == null) {
+        return F.NIL;
+      }
+      long kMin = 0;
+      long kMax = 0;
+      if (integer.isPresent()) {
+        kMin = (long) Math.ceil((lo - range[1]) / period - 1.0e-12);
+        kMax = (long) Math.floor((hi - range[0]) / period + 1.0e-12);
+        if (kMax - kMin > 16) {
+          return F.NIL;
+        }
+      }
+      for (long k = kMin; k <= kMax; k++) {
+        IExpr member = integer.isPresent()
+            ? engine.evaluate(F.subst(value, integer, F.ZZ(k)))
+            : value;
+        IExpr lowerRelation = engine.evaluate(F.binaryAST2(lowerType, lower, member));
+        IExpr upperRelation = engine.evaluate(F.binaryAST2(upperType, member, upper));
+        IExpr lowerCondition = parameterRelation(lowerRelation, parameter, options, engine);
+        IExpr upperCondition = parameterRelation(upperRelation, parameter, options, engine);
+        if (lowerCondition.isNIL() || upperCondition.isNIL()) {
+          return F.NIL;
+        }
+        IExpr condition = reduceRecursive(F.And(parameterCondition, lowerCondition, upperCondition),
+            parameter, S.Reals, options, engine);
+        if (!condition.isFree(S.Reduce)) {
+          return F.NIL;
+        }
+        if (condition.isFalse()) {
+          continue;
+        }
+        result.append(F.And(condition, F.Equal(variable, member)));
+      }
+    }
+    return engine.evaluate(result);
+  }
+
+  /**
+   * A relation of the parameter as a condition free of inverse functions, e.g.
+   * <code>-1&lt;=a&lt;1</code> for <code>0&lt;ArcCos(a)</code>.
+   *
+   * @return {@link F#NIL} if the relation cannot be reduced
+   */
+  private static IExpr parameterRelation(IExpr relation, IExpr parameter, SolveOptions options,
+      EvalEngine engine) {
+    if (relation.isTrue() || relation.isFalse()) {
+      return relation;
+    }
+    IExpr reduced = reduceMonotoneInequality(relation, parameter, S.Reals, options, engine);
+    return reduced.isPresent() && reduced.isFree(S.Reduce) ? reduced : F.NIL;
+  }
+
+  /**
+   * The values <code>{min, max}</code> which the offset <code>c + s*h(arg)</code> of a periodic
+   * family takes, where <code>h</code> is the principal branch of {@link S#ArcSin},
+   * {@link S#ArcCos} or {@link S#ArcTan} of an expression of the parameter.
+   *
+   * @return <code>null</code> if the offset doesn't have this form
+   */
+  private static double[] principalRange(IExpr offset, IExpr parameter, EvalEngine engine) {
+    final IExpr[] inverse = new IExpr[1];
+    boolean unique = offset.isFree(x -> {
+      if (x.isAST1() && (x.isAST(S.ArcSin, 2) || x.isAST(S.ArcCos, 2) || x.isAST(S.ArcTan, 2))
+          && !x.isFree(parameter)) {
+        if (inverse[0] != null && !inverse[0].equals(x)) {
+          return true;
+        }
+        inverse[0] = x;
+      }
+      return false;
+    }, false);
+    if (!unique || inverse[0] == null) {
+      return null;
+    }
+    IExpr[] linear = offset.linear(inverse[0]);
+    if (linear == null || !linear[1].isFree(parameter) || !linear[0].isFree(parameter)) {
+      return null;
+    }
+    double c, s;
+    try {
+      c = linear[0].evalDouble();
+      s = linear[1].evalDouble();
+    } catch (RuntimeException rex) {
+      return null;
+    }
+    double low = inverse[0].isAST(S.ArcCos, 2) ? 0.0 : -Math.PI / 2;
+    double high = inverse[0].isAST(S.ArcCos, 2) ? Math.PI : Math.PI / 2;
+    double a = c + s * low;
+    double b = c + s * high;
+    return new double[] {Math.min(a, b), Math.max(a, b)};
   }
 
   /**
@@ -2006,8 +2402,17 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     }
     IASTAppendable conditions = F.ListAlloc(2);
     IASTAppendable values = F.ListAlloc(4);
-    if (!splitPeriodicFamily(family, variable, conditions, values)) {
+    IASTAppendable parameterConditions = F.ListAlloc(2);
+    if (!splitPeriodicFamily(family, variable, conditions, values, parameterConditions)) {
       return F.NIL;
+    }
+    if (parameterConditions.argSize() > 0
+        || !engine.evaluate(withoutIntegerParameters(values, conditions)).isNumericFunction(true)) {
+      if (!isBoundedWindow(window)) {
+        return engine.evaluate(F.And(family, IntervalDataSym.intervalToOr(window, variable)));
+      }
+      return reduceParametricWindow(values, conditions, parameterConditions,
+          (IAST) window.arg1(), variable, options, engine);
     }
     List<IExpr> members;
     if (conditions.isAST0()) {
@@ -2230,8 +2635,18 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       return S.False;
     }
     if (!condition.isTrue()) {
-      // the range condition depends on parameters and isn't decided here
-      return F.NIL;
+      if (domain != S.Reals) {
+        // the range condition depends on parameters and isn't decided here
+        return F.NIL;
+      }
+      // over the reals the parameters are real: `-Pi<Im(a)<=Pi` holds for every real `a`
+      condition = engine.evaluate(F.Refine(condition, realParameters(condition)));
+      if (condition.isFalse()) {
+        return S.False;
+      }
+      if (!condition.isTrue()) {
+        condition = rangeCondition(condition, engine);
+      }
     }
     if (!engine.evalTrue(F.Unequal(term.c1, F.C0))) {
       // a vanishing coefficient needs a parametric case analysis
@@ -2242,7 +2657,208 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     if (domain == S.Reals && isComplexNonReal(root)) {
       return S.False;
     }
-    return engine.evaluate(F.Equal(variable, root));
+    return engine.evaluate(F.And(condition, F.Equal(variable, root)));
+  }
+
+  /** <code>Element(a|b|..., Reals)</code> for the variables of <code>expr</code>. */
+  private static IExpr realParameters(IExpr expr) {
+    IAST parameters = VariablesSet.getVariables(expr);
+    if (parameters.argSize() == 0) {
+      return S.True;
+    }
+    return F.Element(parameters.argSize() == 1 ? parameters.arg1()
+        : parameters.setAtCopy(0, S.Alternatives), S.Reals);
+  }
+
+  /**
+   * A strictly monotone function of one real argument whose range is an interval, so that
+   * <code>g(u) &gt; v</code> is <code>u &gt; g<sup>-1</sup>(v)</code> inside the range, holds for
+   * every argument below it and for none above it.
+   */
+  private static final class MonotoneFunction {
+    final IExpr lower;
+    final IExpr upper;
+    /** the range includes its bounds, which the function takes at the ends of its domain */
+    boolean closed;
+    final boolean increasing;
+    final java.util.function.UnaryOperator<IExpr> inverse;
+    /** the condition on the argument <code>u</code> for which the function is real */
+    final java.util.function.UnaryOperator<IExpr> domain;
+
+    MonotoneFunction(IExpr lower, IExpr upper, boolean increasing,
+        java.util.function.UnaryOperator<IExpr> inverse,
+        java.util.function.UnaryOperator<IExpr> domain) {
+      this.lower = lower;
+      this.upper = upper;
+      this.increasing = increasing;
+      this.inverse = inverse;
+      this.domain = domain;
+    }
+  }
+
+  private static MonotoneFunction monotoneFunction(PeriodicTerm term, EvalEngine engine) {
+    java.util.function.UnaryOperator<IExpr> everywhere = u -> S.True;
+    if (term.isPower()) {
+      final IExpr base = term.base;
+      boolean growing = engine.evalTrue(F.Greater(base, F.C1));
+      if (!growing && !engine.evalTrue(F.And(F.Greater(base, F.C0), F.Less(base, F.C1)))) {
+        return null;
+      }
+      return new MonotoneFunction(F.C0, F.CInfinity, growing,
+          v -> base.isE() ? F.Log(v) : F.Divide(F.Log(v), F.Log(base)), everywhere);
+    }
+    switch (((IBuiltInSymbol) term.head).ordinal()) {
+      case ID.Log:
+        return new MonotoneFunction(F.CNInfinity, F.CInfinity, true, v -> F.Exp(v),
+            u -> F.Greater(u, F.C0));
+      case ID.ArcTan:
+        return new MonotoneFunction(F.Times(F.CN1D2, S.Pi), F.Times(F.C1D2, S.Pi), true,
+            v -> F.Tan(v), everywhere);
+      case ID.ArcSinh:
+        return new MonotoneFunction(F.CNInfinity, F.CInfinity, true, v -> F.Sinh(v), everywhere);
+      case ID.Sinh:
+        return new MonotoneFunction(F.CNInfinity, F.CInfinity, true, v -> F.ArcSinh(v),
+            everywhere);
+      case ID.Tanh:
+        return new MonotoneFunction(F.CN1, F.C1, true, v -> F.ArcTanh(v), everywhere);
+      case ID.ArcTanh:
+        return new MonotoneFunction(F.CNInfinity, F.CInfinity, true, v -> F.Tanh(v),
+            u -> F.And(F.Less(F.CN1, u), F.Less(u, F.C1)));
+      case ID.ArcSin: {
+        MonotoneFunction g = new MonotoneFunction(F.Times(F.CN1D2, S.Pi),
+            F.Times(F.C1D2, S.Pi), true, v -> F.Sin(v),
+            u -> F.And(F.LessEqual(F.CN1, u), F.LessEqual(u, F.C1)));
+        g.closed = true;
+        return g;
+      }
+      case ID.ArcCos: {
+        MonotoneFunction g = new MonotoneFunction(F.C0, S.Pi, false, v -> F.Cos(v),
+            u -> F.And(F.LessEqual(F.CN1, u), F.LessEqual(u, F.C1)));
+        g.closed = true;
+        return g;
+      }
+      default:
+        return null;
+    }
+  }
+
+  private static boolean isMonotoneFunction(int headID) {
+    switch (headID) {
+      case ID.Log:
+      case ID.ArcTan:
+      case ID.ArcSinh:
+      case ID.Sinh:
+      case ID.Tanh:
+      case ID.ArcTanh:
+      case ID.ArcSin:
+      case ID.ArcCos:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Reduce an inequality <code>amplitude*g(c1*variable+c0) + rest &gt; 0</code> over the reals,
+   * whose function <code>g</code> is strictly monotone with an open range, like
+   * <code>E^x&gt;2</code> or <code>Log(x)&lt;a</code>. A value with parameters is split into the
+   * cases below, inside and above the range.
+   *
+   * @param reduceDomain the domain of the reduction; outside the reals a case which holds for every
+   *        argument still restricts the variable to the reals
+   * @return the reduced inequality or {@link F#NIL} if it doesn't have this form
+   */
+  private static IExpr reduceMonotoneInequality(IExpr relation, IExpr variable,
+      IExpr reduceDomain, SolveOptions options, EvalEngine engine) {
+    final boolean greater;
+    final boolean strict;
+    if (relation.isAST(S.Greater, 3) || relation.isAST(S.GreaterEqual, 3)) {
+      greater = true;
+    } else if (relation.isAST(S.Less, 3) || relation.isAST(S.LessEqual, 3)) {
+      greater = false;
+    } else {
+      return F.NIL;
+    }
+    strict = relation.isAST(S.Greater, 3) || relation.isAST(S.Less, 3);
+    IExpr f = engine.evaluate(F.Subtract(relation.first(), relation.second()));
+    PeriodicTerm term = parsePeriodicTerm(f, variable, Reduce::isMonotoneFunction);
+    if (term == null || !term.c1.isNumber() || term.c1.isZero()) {
+      return F.NIL;
+    }
+    double amplitude;
+    try {
+      amplitude = term.amplitude.evalDouble();
+    } catch (RuntimeException rex) {
+      return F.NIL;
+    }
+    if (Double.isNaN(amplitude) || amplitude == 0.0) {
+      return F.NIL;
+    }
+    MonotoneFunction g = monotoneFunction(term, engine);
+    if (g == null) {
+      return F.NIL;
+    }
+    // g(u) > v, or g(u) < v for a negative amplitude
+    final boolean above = greater == (amplitude > 0.0);
+    final IExpr v = engine.evaluate(F.Divide(F.Negate(term.rest), term.amplitude));
+    if (!v.isFree(variable)) {
+      return F.NIL;
+    }
+    final IExpr u = F.Plus(F.Times(term.c1, variable), term.c0);
+    // the argument is on this side of the inverse value
+    final boolean argumentAbove = above == g.increasing;
+    IExpr inverse = g.inverse.apply(v);
+    IExpr uRelation = argumentAbove //
+        ? (strict ? F.Greater(u, inverse) : F.GreaterEqual(u, inverse))
+        : (strict ? F.Less(u, inverse) : F.LessEqual(u, inverse));
+    IExpr domain = g.domain.apply(u);
+    // every argument fulfills the relation if v is beyond the bound the function never reaches,
+    // none if v is beyond the other one
+    IExpr everyBound = above ? g.lower : g.upper;
+    IExpr everyCase;
+    IExpr inside;
+    if (g.closed) {
+      // the bounds are taken at the ends of the domain, where the inverse value is exact
+      everyCase = above ? F.Less(v, g.lower) : F.Greater(v, g.upper);
+      inside = F.And(F.LessEqual(g.lower, v), F.LessEqual(v, g.upper));
+    } else {
+      everyCase = everyBound.isInfinity() || everyBound.isNegativeInfinity() ? S.False
+          : (above ? F.LessEqual(v, everyBound) : F.GreaterEqual(v, everyBound));
+      inside = F.And(g.lower.isNegativeInfinity() ? S.True : F.Less(g.lower, v),
+          g.upper.isInfinity() ? S.True : F.Less(v, g.upper));
+    }
+    IExpr everyValue = engine.evaluate(everyCase);
+    IExpr insideValue = engine.evaluate(inside);
+    IExpr everySolution = reduceRecursive(domain, variable, S.Reals, options, engine);
+    if (everySolution.isTrue() && reduceDomain != S.Reals) {
+      // without the real domain the inequality still restricts the variable to the reals
+      everySolution = F.Element(variable, S.Reals);
+    }
+    IExpr insideSolution =
+        reduceRecursive(F.And(domain, uRelation), variable, S.Reals, options, engine);
+    if (!everySolution.isFree(S.Reduce) || !insideSolution.isFree(S.Reduce)) {
+      return F.NIL;
+    }
+    if (v.isNumericFunction(true)) {
+      if (everyValue.isTrue()) {
+        return everySolution;
+      }
+      if (insideValue.isTrue()) {
+        return insideSolution;
+      }
+      if (everyValue.isFalse() && insideValue.isFalse()) {
+        return S.False;
+      }
+      return F.NIL;
+    }
+    IASTAppendable cases = F.ast(S.Or, 2);
+    if (!everyValue.isFalse()) {
+      cases.append(F.And(rangeCondition(everyValue, engine), everySolution));
+    }
+    if (!insideValue.isFalse()) {
+      cases.append(F.And(rangeCondition(insideValue, engine), insideSolution));
+    }
+    return engine.evaluate(cases);
   }
 
   /**
@@ -3579,6 +4195,15 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
             reduceLambertWEquation((IAST) expr, variable, domain, solveOptions, engine);
         if (lambertW.isPresent()) {
           return lambertW;
+        }
+      }
+
+      if (expr.isComparatorFunction() && !expr.isEqual() && !expr.isAST(S.Unequal)
+          && (domain == S.Reals || domain == S.Complexes)) {
+        // an inequality is real anyway: one monotone function of the variable, e.g. `E^x>2`
+        IExpr monotone = reduceMonotoneInequality(expr, variable, domain, solveOptions, engine);
+        if (monotone.isPresent()) {
+          return monotone;
         }
       }
 
