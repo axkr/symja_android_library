@@ -21724,6 +21724,15 @@ public class S {
   public final static IBuiltInSymbol SetterBar = S.initFinalSymbol("SetterBar", ID.SetterBar);
 
   /**
+   * Setting(x) - TODO describe `Setting`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Setting.md">Setting
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Setting = S.initFinalSymbol("Setting", ID.Setting);
+
+  /**
    * Share(function) - replace internally equal common subexpressions in `function` by the same
    * reference to reduce memory consumption and return the number of times where `Share(function)`
    * could replace a common subexpression.

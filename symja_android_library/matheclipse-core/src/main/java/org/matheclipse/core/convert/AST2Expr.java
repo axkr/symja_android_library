@@ -568,7 +568,7 @@ public class AST2Expr {
       "SequencePosition", "SequenceReplace", "SequenceSplit", "Series", "SeriesCoefficient",
       "SeriesData", "SessionSubmit", "SessionTime", "Set", "SetAccuracy", "SetAlphaChannel",
       "SetAttributes", "SetDelayed", "SetDirectory", "SetOptions", "SetPrecision",
-      "SetSharedFunction", "Setter", "SetterBar", "Share", "Sharpen", "Sharpening",
+      "SetSharedFunction", "Setter", "SetterBar", "Setting", "Share", "Sharpen", "Sharpening",
       "ShearingTransform", "ShiftRegisterSequence", "Short", "ShortDownArrow", "Shortest",
       "ShortestCurveDistance", "ShortLeftArrow", "ShortRightArrow", "ShortUpArrow", "Show",
       "ShrinkingDelay", "SiderealTime", "Sign", "Signature", "SignCmp", "SignedRegionDistance",
