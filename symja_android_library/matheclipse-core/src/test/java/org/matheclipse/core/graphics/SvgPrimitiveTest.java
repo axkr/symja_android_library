@@ -816,6 +816,45 @@ public class SvgPrimitiveTest {
     assertEquals(1, occurrences(pane, "<ellipse"), pane);
   }
 
+  /** A tall picture of automatic size is 432 high and narrower than the default width. */
+  @Test
+  public void testTallPictureOfAutomaticSize() {
+    String tall = export("Graphics(Disk(), AspectRatio -> 3)");
+    assertTrue(tall.contains("height=\"432\""), tall);
+    assertFalse(tall.contains("width=\"360\""), tall);
+    // ImageSize -> Automatic as a plot hands it on is no size of its own
+    assertTrue(export("Graphics(Disk(), AspectRatio -> 3, ImageSize -> Automatic)")
+        .contains("height=\"432\""));
+    // a given width is kept
+    assertTrue(export("Graphics(Disk(), AspectRatio -> 3, ImageSize -> 100)")
+        .contains("width=\"100\""));
+    // up to 1.2 the width stays 360
+    assertTrue(export("Graphics(Disk(), AspectRatio -> 1.1)").contains("width=\"360\""));
+    // also where the shape comes from the coordinates
+    String line = export("Graphics(Line({{0, 0}, {1, 3}}))");
+    assertTrue(line.contains("height=\"432\""), line);
+    // a very tall picture keeps its shape at that height
+    assertTrue(export("Graphics(Disk(), AspectRatio -> 8)").contains("height=\"432\""));
+  }
+
+  /** {@code Pane(expr, {w, h})} is a box of that size; Alignment places the content in it. */
+  @Test
+  public void testPaneOfAFixedSize() {
+    String centred =
+        export("Pane(Graphics(Disk(), ImageSize -> {80, 40}), {300, 200}, Alignment -> {Center, Center})");
+    assertTrue(centred.contains("width=\"300\" height=\"200\""), centred);
+    assertTrue(centred.contains("<svg x=\"110\" y=\"80\" width=\"80\" height=\"40\""), centred);
+    // the content stands at the top left by default
+    String corner = export("Pane(Graphics(Disk(), ImageSize -> {80, 40}), {300, 200})");
+    assertTrue(corner.contains("<svg x=\"0\" y=\"0\" width=\"80\" height=\"40\""), corner);
+    // the ImageSize option sizes the box as well
+    assertTrue(export("Pane(Graphics(Disk(), ImageSize -> {80, 40}), ImageSize -> {300, 200})")
+        .contains("width=\"300\" height=\"200\""));
+    // a width alone leaves the height to the content
+    assertTrue(export("Pane(Graphics(Disk(), ImageSize -> {80, 40}), 150)")
+        .contains("width=\"150\" height=\"40\""));
+  }
+
   /**
    * A {@code TabView} is the pane its selector picks under the strip of tab labels. The selector may
    * be a {@code Dynamic}; an unset one shows the first pane, as a front end does.

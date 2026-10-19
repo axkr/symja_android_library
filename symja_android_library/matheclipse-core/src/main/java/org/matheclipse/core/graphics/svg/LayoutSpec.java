@@ -115,6 +115,13 @@ public final class LayoutSpec {
   /** The gap after each row, {@code rows - 1} entries. */
   public Spacing[] rowGaps;
 
+  /**
+   * The width and height of the box of a single cell, like the size of
+   * <code>Pane(expr, {w, h})</code>, in points; {@code NaN} where the content decides.
+   */
+  public double fixedWidth = Double.NaN;
+  public double fixedHeight = Double.NaN;
+
   /** Per column horizontal placement, {@code NaN} for automatic. */
   public double[] colAlignH;
   /** Per row vertical placement, {@code NaN} for automatic. */

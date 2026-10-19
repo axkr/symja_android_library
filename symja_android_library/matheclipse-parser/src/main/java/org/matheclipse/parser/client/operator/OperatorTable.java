@@ -139,7 +139,7 @@ public final class OperatorTable {
       row("**", "NonCommutativeMultiply", Affix.INFIX, 510, Grouping.FLAT),
       row("*=", "TimesBy", Affix.INFIX, 100, Grouping.RIGHT),
       row("+", "Plus", Affix.INFIX, 310, Grouping.FLAT),
-      row("+", "PrePlus", Affix.PREFIX, 670, Grouping.FLAT),
+      row("+", "PrePlus", Affix.PREFIX, 490, Grouping.FLAT),
       row("++", "Increment", Affix.POSTFIX, 660, Grouping.FLAT),
       row("++", "PreIncrement", Affix.PREFIX, 660, Grouping.FLAT),
       row("+=", "AddTo", Affix.INFIX, 100, Grouping.RIGHT),

@@ -215,7 +215,9 @@ public class VisitorReplaceAll extends VisitorExpr {
   public IExpr visit(IPatternSequence element) {
     IExpr temp = fFunction.apply(element);
     if (temp.isPresent()) {
-      return temp;
+      // the element itself: kept as it is, its parts are not visited and nothing around it is
+      // rebuilt
+      return temp == element ? F.NIL : temp;
     }
     ISymbol name = replacedName(element);
     IExpr headTest = replacedHeadTest(element);

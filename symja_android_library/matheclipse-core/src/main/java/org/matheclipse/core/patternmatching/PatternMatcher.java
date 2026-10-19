@@ -17,6 +17,7 @@ import org.matheclipse.core.expression.FixedPatternSequence;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.PatternNested;
+import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.EvalFlags.Flag;
 import org.matheclipse.core.interfaces.IAST;
@@ -561,6 +562,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       return patternExpr;
     }
     return patternExpr.replaceAll(x -> {
+      if (x instanceof RepeatedPattern) {
+        // the unit of p.. gets its own matcher, see RepeatedPattern; rebuilding the object as
+        // Repeated(...) would leave an AST which matches nothing
+        return x;
+      }
       IExpr fixed = fixedSequenceOf(x, null);
       if (fixed.isPresent()) {
         return fixed;

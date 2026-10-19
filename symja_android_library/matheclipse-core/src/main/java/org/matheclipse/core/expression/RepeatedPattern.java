@@ -7,8 +7,10 @@ import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.EvalFlags;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
+import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -89,7 +91,8 @@ public class RepeatedPattern extends AbstractPatternSequence {
     p.fDefault = false;
     p.fZeroArgsAllowed = zeroArgsAllowed;
     p.fRepeatedExpr = patternExpr;
-    p.fMatcher = engine.evalPatternMatcher(patternExpr);
+    // a unit of several arguments is matched as List(p) in matchUnits()
+    p.fMatcher = spansSequence(patternExpr) ? null : engine.evalPatternMatcher(patternExpr);
     p.fMin = min;
     p.fMax = max;
     return p;
@@ -212,7 +215,8 @@ public class RepeatedPattern extends AbstractPatternSequence {
   public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap,
       ISymbol optionsPatternHead) {
     final int size = sequence.argSize();
-    if (size < fMin || size > fMax) {
+    final boolean units = spansSequence(fRepeatedExpr);
+    if (units ? size == 0 && fMin > 0 : size < fMin || size > fMax) {
       return false;
     }
     if (fSymbol != null) {
@@ -222,15 +226,172 @@ public class RepeatedPattern extends AbstractPatternSequence {
       }
     }
     EvalEngine engine = EvalEngine.get();
-    for (int i = 1; i < sequence.size(); i++) {
-      if (!fMatcher.testBlank(sequence.get(i), engine)) {
+    if (units) {
+      if (!matchUnits(sequence, engine)) {
         return false;
+      }
+    } else {
+      for (int i = 1; i < sequence.size(); i++) {
+        if (!fMatcher.testBlank(sequence.get(i), engine)) {
+          return false;
+        }
       }
     }
     if (fSymbol != null) {
       return patternMap.setValue(this, sequence);
     }
     return true;
+  }
+
+  /**
+   * The evaluated patterns <code>List(p)</code> of a unit <code>p</code> of several arguments: one
+   * for each branch of an alternative <code>p1|p2</code>, which a run has to match one of. A
+   * matcher holds the values of its pattern variables, so every match builds its own from these.
+   */
+  private transient IExpr[] fUnitPatterns;
+
+  /**
+   * The number of arguments each branch of the unit stands for, or <code>null</code> if a branch
+   * can stand for a varying number.
+   */
+  private transient int[] fUnitWidths;
+
+  /** The matchers of the unit branches for one call of {@link #matchUnits}. */
+  private IPatternMatcher[] unitMatchers(EvalEngine engine) {
+    if (fUnitPatterns == null) {
+      java.util.List<IExpr> branches = new java.util.ArrayList<IExpr>();
+      addBranches(fRepeatedExpr, branches);
+      IExpr[] patterns = new IExpr[branches.size()];
+      int[] widths = new int[branches.size()];
+      boolean fixed = true;
+      for (int i = 0; i < patterns.length; i++) {
+        patterns[i] = engine.evalPattern(F.unaryAST1(S.List, branches.get(i)));
+        widths[i] = fixedWidth(branches.get(i));
+        fixed &= widths[i] > 0;
+      }
+      fUnitWidths = fixed ? widths : null;
+      fUnitPatterns = patterns;
+    }
+    IPatternMatcher[] matchers = new IPatternMatcher[fUnitPatterns.length];
+    for (int i = 0; i < matchers.length; i++) {
+      matchers[i] = new org.matheclipse.core.patternmatching.PatternMatcher(fUnitPatterns[i]);
+    }
+    return matchers;
+  }
+
+  /**
+   * The number of arguments <code>branch</code> stands for: <code>k</code> for a
+   * <code>PatternSequence</code> of <code>k</code> single arguments, <code>1</code> for a single
+   * argument, <code>-1</code> if it varies.
+   */
+  private static int fixedWidth(IExpr branch) {
+    if (!spansSequence(branch)) {
+      return 1;
+    }
+    if (branch.isAST(S.PatternSequence)) {
+      for (IExpr part : (IAST) branch) {
+        if (spansSequence(part)) {
+          return -1;
+        }
+      }
+      return branch.argSize();
+    }
+    return -1;
+  }
+
+  private static boolean matchesUnit(IPatternMatcher[] matchers, IAST run, EvalEngine engine) {
+    for (IPatternMatcher matcher : matchers) {
+      if (matcher.test(run, engine)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean hasWidth(int[] widths, int width) {
+    for (int w : widths) {
+      if (w == width) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** The branches of nested alternatives, or the unit itself. */
+  private static void addBranches(IExpr unit, java.util.List<IExpr> branches) {
+    if (unit.isAlternatives()) {
+      for (IExpr branch : (IAST) unit) {
+        addBranches(branch, branches);
+      }
+    } else {
+      branches.add(unit);
+    }
+  }
+
+  /**
+   * Whether the unit <code>p</code> of <code>p..</code> may stand for several arguments, like
+   * <code>PatternSequence(a, b)</code>, <code>x__</code> or an alternative of such units.
+   */
+  private static boolean spansSequence(IExpr unit) {
+    if (unit instanceof IPatternSequence) {
+      return true;
+    }
+    if (unit.isAST(S.PatternSequence)) {
+      return unit.argSize() != 1 || spansSequence(unit.first());
+    }
+    if (unit.isAlternatives()) {
+      return ((IAST) unit).exists(RepeatedPattern::spansSequence);
+    }
+    if (unit.isAST(S.Pattern, 3) || unit.isAST(S.PatternTest, 3) || unit.isAST(S.Condition, 3)) {
+      return spansSequence(unit.isAST(S.Pattern, 3) ? unit.second() : unit.first());
+    }
+    if (unit instanceof PatternNested) {
+      return spansSequence(((PatternNested) unit).getPatternExpr());
+    }
+    return false;
+  }
+
+  /**
+   * Whether <code>sequence</code> splits into consecutive runs which each match the unit, with a
+   * number of runs between the bounds. The runs are found from the left: <code>reach[i]</code> holds
+   * the numbers of units which can cover the first <code>i</code> arguments.
+   */
+  private boolean matchUnits(IAST sequence, EvalEngine engine) {
+    final int n = sequence.argSize();
+    if (n == 0) {
+      return fMin == 0;
+    }
+    final IPatternMatcher[] matchers = unitMatchers(engine);
+    // with fixed widths only the runs of those lengths are tried, not every run
+    final int[] widths = fUnitWidths;
+    final int maxUnits = Math.min(fMax, n);
+    final java.util.BitSet[] reach = new java.util.BitSet[n + 1];
+    reach[0] = new java.util.BitSet();
+    reach[0].set(0);
+    for (int i = 0; i < n; i++) {
+      if (reach[i] == null || reach[i].isEmpty()) {
+        continue;
+      }
+      engine.checkTimeLimit();
+      for (int j = i + 1; j <= n; j++) {
+        if (widths != null && !hasWidth(widths, j - i)) {
+          continue;
+        }
+        IASTAppendable run = F.ListAlloc(j - i);
+        for (int k = i + 1; k <= j; k++) {
+          run.append(sequence.get(k));
+        }
+        if (!matchesUnit(matchers, run, engine)) {
+          continue;
+        }
+        java.util.BitSet next = reach[j] == null ? (reach[j] = new java.util.BitSet()) : reach[j];
+        for (int c = reach[i].nextSetBit(0); c >= 0 && c < maxUnits; c = reach[i].nextSetBit(c + 1)) {
+          next.set(c + 1);
+        }
+      }
+    }
+    return reach[n] != null && reach[n].nextSetBit(Math.max(fMin, 0)) >= 0
+        && reach[n].nextSetBit(Math.max(fMin, 0)) <= maxUnits;
   }
 
   @Override
@@ -244,6 +405,7 @@ public class RepeatedPattern extends AbstractPatternSequence {
   /** {@inheritDoc} */
   @Override
   public IAST toFullFormAST() {
+
     // "p.." is Repeated(p), "p..." is RepeatedNull(p)
     IAST repeated =
         F.unaryAST1(fZeroArgsAllowed ? S.RepeatedNull : S.Repeated, fRepeatedExpr);

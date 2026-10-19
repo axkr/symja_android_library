@@ -314,7 +314,8 @@ public class ExprParserFactory implements IParserFactory {
 
     @Override
     public IExpr createFunction(final IParserFactory factory, final IExpr argument) {
-      return argument;
+      // +x is Plus(x), which is x once it is evaluated; +5 is the number itself
+      return argument.isNumber() ? argument : F.unaryAST1(S.Plus, argument);
     }
   }
 

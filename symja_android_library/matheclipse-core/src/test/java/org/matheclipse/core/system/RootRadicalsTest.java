@@ -69,4 +69,20 @@ public class RootRadicalsTest extends ExprEvaluatorTestCase {
         + "CountRoots(x^4-1, {x,-I,I}), CountRoots(x^4-1, {x,1,1+I}), CountRoots(x^3, {x,-I,I})}", //
         "{1,1,2,1,3}");
   }
+
+  @Test
+  public void testRootTranscendentalStartValue() {
+    // the start value is the root to about six digits; a closed form has to be the same root
+    check("Root({Exp(-#)-# &, 0.5671433})", //
+        "ProductLog(1)");
+    // 5.2e-7 off the root 0.56714329... is too far
+    check("Root({Exp(-#)-# &, 0.567143})", //
+        "Root({E^(-#1)-#1&,0.567143})");
+    check("Root({Exp(-#)-# &, 0.6})", //
+        "Root({E^(-#1)-#1&,0.6})");
+    check("N(Root({Sin(#)-#/2 &, 1.895494}), 25)", //
+        "1.895494267033980947144036");
+    check("Root({Sin(#)-#/2 &, 1.9})", //
+        "Root({Sin(#1)-#1/2&,1.9})");
+  }
 }

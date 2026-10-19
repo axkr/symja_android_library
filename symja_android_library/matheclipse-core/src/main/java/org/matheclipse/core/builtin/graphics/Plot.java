@@ -87,12 +87,9 @@ public class Plot extends ListPlot {
             IASTMutable listPlot = ast.setAtCopy(1, listOfLines);
             IAST graphicsPrimitives = plot(listPlot, options, listPlotOptions, engine);
             if (graphicsPrimitives.isPresent()) {
-              if (listPlotOptions.fillingStyle() == null
-                  || listPlotOptions.fillingStyle().isAutomatic()) {
-                // the options the curves are drawn with do not carry the FillingStyle of the call
-                listPlotOptions.setFillingStyle(
-                    GraphicsOptions.optionValue(originalAST, S.FillingStyle, S.Automatic));
-              }
+              // the options the curves are drawn with do not carry the FillingStyle and the
+              // PlotRange of the call
+              listPlotOptions.setCallAST(originalAST);
               return createGraphicsFunction(graphicsPrimitives, listPlotOptions, ast);
             }
 

@@ -240,8 +240,11 @@ public class SimplifyFunctions {
           }
         }
         if (currentResult.isPlus() && assumptionExpr.isPresent() && assumptionExpr.isAST()
-            && !currentResult.equals(arg1) && org.matheclipse.core.eval.ZeroIdentity
-                .isZero((IAST) currentResult, assumptionExpr, isFullSimplifyMode(), engine)) {
+            && (currentResult.equals(arg1)
+                ? org.matheclipse.core.eval.ZeroIdentity.isZeroOnInterval((IAST) currentResult,
+                    assumptionExpr, engine)
+                : org.matheclipse.core.eval.ZeroIdentity.isZero((IAST) currentResult,
+                    assumptionExpr, isFullSimplifyMode(), engine))) {
           // the simplified form is a sum which the assumptions show to be 0
           engine.putCache(ast, F.C0);
           return F.C0;

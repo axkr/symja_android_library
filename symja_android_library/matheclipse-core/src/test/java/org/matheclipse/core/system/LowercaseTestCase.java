@@ -2987,6 +2987,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testChineseRemainder() {
+    check("ChineseRemainder({2,3},{5,7.0})", //
+        "ChineseRemainder({2,3},{5,7.0})");
 
     check("mydata = {931074546, 117172357, 482333642, 199386034, 394354985};", //
         "");
@@ -7109,6 +7111,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDivisible() {
+    // each argument is divisible by the next one; a zero divisor is reported
+    check("{Divisible(30, 15, 5), Divisible(30, 15, 4)}", //
+        "{True,False}");
+    check("Divisible(8, 0, 2)", //
+        "Divisible(8,0,2)");
     check("Divisible[{1, 2, 3, 4, 5, 6}, 2]", //
         "{False,True,False,True,False,True}");
     check("Divisible({10, 15, 20}, {2, 5, 3})", //
@@ -7190,6 +7197,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDivisorSigma() {
+    // the products of powers of the Gaussian prime factors, each in the first quadrant
+    check("DivisorSigma(1, 13, GaussianIntegers -> True)", //
+        "6+I*18");
+    check("DivisorSigma(2, 3+2*I)", //
+        "6+I*12");
+    check("DivisorSigma(2, 3+2*I, GaussianIntegers->False)", //
+        "DivisorSigma(2,3+I*2,GaussianIntegers->False)");
     check("DivisorSigma(17,20)", //
         "13107300000780119453382");
     check("DivisorSigma(0,12)", //
@@ -8734,6 +8748,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testExtendedGCD() {
+    // Gaussian integers, by the rounded quotient of Mod; signs and zeros of integers
+    check("ExtendedGCD(11+7*I, 4-3*I)", //
+        "{1,{-2,2+I*5}}");
+    check("ExtendedGCD(-15, 25)", //
+        "{5,{-2,-1}}");
+    check("ExtendedGCD(0, -9, 6)", //
+        "{3,{0,-1,-1}}");
     check("ExtendedGCD(2,3)", //
         "{1,{-1,1}}");
     check("ExtendedGCD(550,420,3515)", //
@@ -13339,6 +13360,34 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // a range from max to min runs backwards
     check("ColorData({\"Rainbow\", {4, 0}})[1] === ColorData(\"Rainbow\")[0.75]", //
         "True");
+  }
+
+  @Test
+  public void testPlotFillingTopBottom() {
+    // Top and Bottom are the edges of the plot range, also where the curve leaves it
+    check("Cases(Plot(2*x, {x, -3, 3}, Filling -> Top, PlotRange -> 4), Polygon(p_) :> Last(p), "
+        + "Infinity)", //
+        "{{-3.0,4.0}}");
+    check("Cases(Plot(Cos(x), {x, 0, 3}, Filling -> Bottom, PlotRange -> {-2, 2}), "
+        + "Polygon(p_) :> Last(p), Infinity)", //
+        "{{0.0,-2.0}}");
+    // a number is the height to fill to
+    check("Cases(Plot(Cos(x), {x, 0, 3}, Filling -> 0.25), Polygon(p_) :> Last(p), Infinity)", //
+        "{{0.0,0.25}}");
+    check("Cases(ListPlot({2, 4, 3}, Filling -> Top, PlotRange -> {0, 6}), Line(p_) :> p, "
+        + "Infinity)", //
+        "{{{{1.0,2},{1.0,6.0}},{{2.0,4},{2.0,6.0}},{{3.0,3},{3.0,6.0}}}}");
+    // without a range, Bottom is the lowest point
+    check("Cases(ListPlot({2, 4, 3}, Filling -> Bottom), Line(p_) :> p, Infinity)", //
+        "{{{{1.0,2},{1.0,2.0}},{{2.0,4},{2.0,2.0}},{{3.0,3},{3.0,2.0}}}}");
+    // one end of the range given, the other from the data
+    check("Cases(ListPlot({2, 4, 3}, Filling -> Bottom, PlotRange -> {1, Automatic}), "
+        + "Line(p_) :> First(p), Infinity)", //
+        "{{{1.0,2},{1.0,1.0}}}");
+    // a height with its own style
+    check("Cases(Plot(Cos(x), {x, 0, 3}, Filling -> {1 -> {1, Red}}), {s_, Polygon(p_)} :> "
+        + "{s, Last(p)}, Infinity)", //
+        "{{Directive(RGBColor(1,0,0),EdgeForm(None)),{0.0,1.0}}}");
   }
 
   @Test
@@ -22395,6 +22444,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPlus() {
+    // a prefix + is Plus with one argument, between Times and Power
+    check("FullForm(Hold({+u*v + w, +y^2}))", //
+        "Hold(List(Plus(Times(Plus(u), v), w), Plus(Power(y, 2))))");
     check("(1*Plus+0)[10,20]", //
         "30");
 
@@ -24143,6 +24195,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPowerMod() {
+    // a negative modulus stays unevaluated
+    check("PowerMod(4,3,-7)", //
+        "PowerMod(4,3,-7)");
     check("PowerMod(100, 1/2, 17 * 19 * 23)", //
         "10");
     // gaussian integer tests
@@ -24587,6 +24642,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrimePowerQ() {
+    // a unit times a power of one Gaussian prime; a rational number by its reciprocal
+    check("{PrimePowerQ(3+2*I), PrimePowerQ((3+2*I)^2), PrimePowerQ((3+2*I)*(1+I)), PrimePowerQ(7, GaussianIntegers->True), PrimePowerQ(13, GaussianIntegers->True)}", //
+        "{True,True,False,True,False}");
+    check("{PrimePowerQ(-1/8), PrimePowerQ(3/8), PrimePowerQ(1/(3+2*I))}", //
+        "{True,False,True}");
+    check("PrimePowerQ(3 + 2*I, GaussianIntegers -> False)", //
+        "PrimePowerQ(3+I*2,GaussianIntegers->False)");
     check("PrimePowerQ(0)", //
         "False");
     check("PrimePowerQ(1)", //
@@ -24752,6 +24814,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrimitiveRootList() {
+    // the primitive roots of -n are those of n
+    check("PrimitiveRootList(-10)", //
+        "{3,7}");
     check("PrimitiveRootList(-2147483648)", //
         "{}");
     check("PrimitiveRootList(14)", //
@@ -26893,6 +26958,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRepeated() {
+    // a unit of several arguments repeats as a whole
+    check("MatchQ({p,q,p,q,p,q}, {PatternSequence(p,q)..})", //
+        "True");
+    check("MatchQ({p,q,p}, {PatternSequence(p,q)..})", //
+        "False");
+    check("MatchQ({p,q,r,r,p,q}, {(PatternSequence(p,q)|r)..})", //
+        "True");
+    check("MatchQ({p,q,p,q}, {Repeated(PatternSequence(p,q),{3})})", //
+        "False");
+    check("{p,q,p,q,s} /. {u:PatternSequence(p,q).., s} :> {u}", //
+        "{p,q,p,q}");
     // Longest/Shortest choose which of several possible sequence splits is taken. The default is
     // the shortest, so Shortest is the order the matcher already enumerates in.
     check("{1,2,3} /. {Longest(x__), y__} :> {{x},{y}}", //

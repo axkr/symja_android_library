@@ -3754,6 +3754,34 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
    *
    * @param options the options of the outer call, or <code>null</code> for the defaults
    */
+  /**
+   * Over the reals every variable is real, so the parts <code>Re</code>, <code>Im</code> and
+   * <code>Conjugate</code> in the sides of the relations are worked out exactly by
+   * <code>ComplexExpand</code>: <code>Im(2*I*x)&gt;1</code> is <code>2*x&gt;1</code>.
+   */
+  private static IExpr complexExpandRealParts(IExpr condition, EvalEngine engine) {
+    final java.util.function.Predicate<IExpr> part =
+        e -> e.isAST(S.Re, 2) || e.isAST(S.Im, 2) || e.isAST(S.Conjugate, 2);
+    if (!condition.has(part, true)) {
+      return condition;
+    }
+    return condition.replaceAll(x -> {
+      if ((x.isComparatorFunction() || x.isAST(S.Unequal)) && x.has(part, true)) {
+        IASTMutable relation = ((IAST) x).copy();
+        for (int i = 1; i < relation.size(); i++) {
+          if (relation.get(i).has(part, true)) {
+            IExpr expanded = engine.evalQuiet(F.ComplexExpand(relation.get(i)));
+            if (expanded.isFree(S.ComplexExpand)) {
+              relation.set(i, expanded);
+            }
+          }
+        }
+        return engine.evaluate(relation);
+      }
+      return F.NIL;
+    }).orElse(condition);
+  }
+
   private static IExpr reduceRecursive(IExpr condition, IExpr variables, ISymbol domain,
       SolveOptions options, EvalEngine engine) {
     IASTAppendable call = F.ast(S.Reduce, 6);
@@ -3973,6 +4001,10 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
         IExpr reduced = reduceRecursive(quantified, ast.arg2(), domain, solveOptions, engine);
         return reduced.isFree(S.Reduce) ? reduced : quantified;
       }
+    }
+
+    if (domain == S.Reals) {
+      arg1 = complexExpandRealParts(arg1, engine);
     }
 
     final IAST vars;

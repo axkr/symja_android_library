@@ -193,7 +193,7 @@ public class Errors {
       "dims",
       "The dimension `1` of the first argument is not the same as the number of binning specifications `2`.", //
       "div", "Sum does not converge.", //
-      "divz", "The argument `1` should be nonzero.", //
+      "divz", "The argument `1` in `2` should be nonzero.", //
       "digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
       "dlim", "The limit point `1` in `2` should be Infinity or -Infinity.", //
       "dmval",

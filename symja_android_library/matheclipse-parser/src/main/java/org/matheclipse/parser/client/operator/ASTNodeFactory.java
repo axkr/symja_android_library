@@ -23,6 +23,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
 import org.matheclipse.parser.client.ast.FractionNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
+import org.matheclipse.parser.client.ast.NumberNode;
 import org.matheclipse.parser.client.ast.IConstantOperators;
 import org.matheclipse.parser.client.ast.INodeParserFactory;
 import org.matheclipse.parser.client.ast.IntegerNode;
@@ -302,7 +303,11 @@ public class ASTNodeFactory implements INodeParserFactory {
 
     @Override
     public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
-      return argument;
+      // +x is Plus(x); +5 is the number itself
+      if (argument instanceof NumberNode) {
+        return argument;
+      }
+      return factory.createFunction(factory.createSymbol("Plus"), argument);
     }
   }
 

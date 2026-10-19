@@ -1944,6 +1944,10 @@ public class IntegerFunctions {
           if (arg3.isZero()) {
             return Errors.printMessage(ast.topHead(), "divz", F.List(arg3, ast), engine);
           }
+          if (arg3.isNegative()) {
+            // no residue system for a negative modulus
+            return F.NIL;
+          }
 
           if (arg2.isInteger()) {
             IInteger iArg2 = (IInteger) arg2;

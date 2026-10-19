@@ -450,6 +450,46 @@ public final class GaussianInteger {
     return new IInteger[] {divisionReal, divisionImaginary, remainderReal, remainderImaginary};
   }
 
+  /** Whether <code>expr</code> is a complex number with integer real and imaginary parts. */
+  public static boolean isGaussianInteger(IExpr expr) {
+    return expr.isComplex() && ((IComplex) expr).getRealPart().isInteger()
+        && ((IComplex) expr).getImaginaryPart().isInteger();
+  }
+
+  /**
+   * The extended Euclidean algorithm over the Gaussian integers, with the rounded quotient of
+   * {@link #quotientRemainder(IInteger[], IInteger[])}.
+   *
+   * @return <code>{g, s, t}</code> with <code>s*a + t*b == g</code> and <code>g</code> the gcd
+   *         normalized into the first quadrant, as {@link #gcd(GaussianInteger)} gives it
+   */
+  public static IInteger[][] extendedGcd(final IInteger[] a, final IInteger[] b) {
+    IInteger[] r0 = a;
+    IInteger[] r1 = b;
+    IInteger[] s0 = {F.C1, F.C0};
+    IInteger[] s1 = {F.C0, F.C0};
+    IInteger[] t0 = {F.C0, F.C0};
+    IInteger[] t1 = {F.C1, F.C0};
+    while (!(r1[0].isZero() && r1[1].isZero())) {
+      IInteger[] qr = quotientRemainder(r0, r1);
+      IInteger[] q = {qr[0], qr[1]};
+      IInteger[] r2 = {qr[2], qr[3]};
+      IInteger[] s2 = subtract(s0, multiply(q, s1));
+      IInteger[] t2 = subtract(t0, multiply(q, t1));
+      r0 = r1;
+      r1 = r2;
+      s0 = s1;
+      s1 = s2;
+      t0 = t1;
+      t1 = t2;
+    }
+    if (r0[0].isZero() && r0[1].isZero()) {
+      return new IInteger[][] {r0, {F.C0, F.C0}, {F.C0, F.C0}};
+    }
+    IInteger[] unit = canonicalUnit(r0);
+    return new IInteger[][] {multiply(r0, unit), multiply(s0, unit), multiply(t0, unit)};
+  }
+
   public static IInteger[] subtract(final IInteger[] c1, final IInteger[] c2) {
     return new IInteger[] {c1[0].subtract(c2[0]), c1[1].subtract(c2[1])};
   }

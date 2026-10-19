@@ -46,6 +46,52 @@ public class Root extends AbstractFunctionEvaluator {
    */
   private static final int MAX_NEWTON_ITERATIONS = 32;
 
+  /**
+   * How far, relative to <code>|c|</code>, the start value <code>c</code> of
+   * <code>Root({f, c})</code> may be from the root: <code>2*#-Tan(#)&amp;</code> has the root
+   * <code>4.6042167...</code>, which <code>4.604216</code> stands for and <code>4.60421</code>
+   * doesn't; <code>0.739085</code> stands for the root <code>0.73908513...</code> of
+   * <code>Cos(#)-#&amp;</code>, <code>0.619061</code> not for <code>0.61906128...</code> of
+   * <code>E^#-3*#&amp;</code>.
+   */
+  private static final double START_VALUE_TOLERANCE = 3.0e-7;
+
+  /**
+   * The values of the <code>Root({f, c})</code> which were accepted, so that an inert one isn't
+   * refined and searched for a closed form at every evaluation: the closed form, or
+   * {@link S#Null} for an inert one. The least recently used entries go first.
+   */
+  private static final java.util.Map<IAST, IExpr> ACCEPTED =
+      java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<IAST, IExpr>(64, 0.75f,
+          true) {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        protected boolean removeEldestEntry(java.util.Map.Entry<IAST, IExpr> eldest) {
+          return size() > 256;
+        }
+      });
+
+  /**
+   * The root of <code>f</code> near <code>c</code> at machine precision, if <code>c</code> is
+   * close enough to it: within a few units of its seventh digit, as a root printed with six digits
+   * is. Otherwise <code>Root::invrt</code> is printed.
+   *
+   * @return {@link F#NIL} if <code>c</code> is not equal to a root
+   */
+  private static IExpr certifiedRoot(IExpr f, IExpr c, EvalEngine engine) {
+    IExpr root = refineNumerically(f, c, 0, engine);
+    double cVal = c.evalfNaN();
+    double rVal = root.isNumber() ? root.evalfNaN() : Double.NaN;
+    if (Double.isNaN(cVal) || Double.isNaN(rVal) || Math.abs(rVal - cVal) > START_VALUE_TOLERANCE
+        * (cVal == 0.0 ? 1.0 : Math.abs(cVal))) {
+      // `1` is not equal to a root of `2`.
+      Errors.printMessage(S.Root, "invrt", F.List(c, f), engine);
+      return F.NIL;
+    }
+    return root;
+  }
+
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
     // Root[{f, c}] — near-float approximation form. Represents a root of f[x]==0 near x = c
@@ -60,71 +106,37 @@ public class Root extends AbstractFunctionEvaluator {
         return Errors.printMessage(S.Root, "rapp", F.List(c), engine);
       }
 
-      // No exact solution. Refine c via FindRoot when either
-      // (a) the evaluator is in numeric mode (e.g. inside N[...]), or
-      // (b) c itself is an inexact number (machine- or arbitrary-precision float).
-      //
-      // For case (b) — auto-evaluation of Root[{f, c}] with an inexact c — verify the
-      // input c is genuinely close to the refined root. Emits "Root::invrt"
-      // and leaves the expression unevaluated when the deviation exceeds a precision-
-      // dependent tolerance (e.g. Root[{2#-Tan[#]&, 4.60421}] is rejected because
-      // |4.60421 - 4.6042167...| ≈ 7e-6 while Root[{...&, 4.604216}] is accepted).
-      //
-      // For case (a) — explicit N[Root[{f, c}]] — the user is asking for numeric
-      // refinement, so skip the precision check and return whatever FindRoot converges
-      // to regardless of how rough the initial seed was.
+      // a Root({f, c}) which was accepted before: the same closed form or inert again
+      IExpr known = engine.isNumericMode() ? null : ACCEPTED.get(ast);
+      if (known != null) {
+        return known == S.Null ? F.NIL : known;
+      }
+
+      // N(Root({f, c}), p) asks for the numerical root: c is a start value for it, which isn't
+      // certified, at the working precision
       if (engine.isNumericMode()) {
-        IExpr refinedNumeric = refineNumerically(f, c, engine);
-        if (refinedNumeric.isPresent() && refinedNumeric.isNumber() && c.isNumber()) {
-          if (!engine.isNumericMode()) {
-            double cVal = c.evalfNaN();
-            double rVal = refinedNumeric.evalfNaN();
-            // if either isn't numeric: fall through – keep numeric refinement result
-            if (!Double.isNaN(cVal) && !Double.isNaN(rVal)) {
-              // Tolerance: ~1e-5 relative. Matches behavior on the
-              // 4.60421 vs 4.604216 boundary for machine-precision Num inputs.
-              double tol = Config.SPECIAL_FUNCTIONS_TOLERANCE * Math.max(1.0, Math.abs(cVal));
-              if (Math.abs(rVal - cVal) > tol) {
-                // c is not close enough to any root of f → emit Root::invrt, stay inert.
-                return Errors.printMessage(S.Root, "invrt", F.List(c, f), engine);
-              }
-            }
-          }
-          return refinedNumeric;
-        }
-        // refineNumerically failed (e.g. FindRoot did not converge from this seed) →
-        // treat as "not equal to a root" and stay inert (only emit message in the
-        // auto-evaluation path; under N[...] we just leave the expression unevaluated).
-        if (!engine.isNumericMode()) {
-          Errors.printMessage(S.Root, "invrt", F.List(c, f), engine);
-        }
+        return refineNumerically(f, c, engine.isArbitraryMode() ? engine.getNumericPrecision() : 0,
+            engine);
+      }
+
+      IExpr root = certifiedRoot(f, c, engine);
+      if (root.isNIL()) {
         return F.NIL;
       }
+      final double rVal = root.evalfNaN();
 
-      // Symbolic mode with an exact c: refine once via FindRoot so the inert
-      // Root[{f, c}] carries a precise numerical seed. Avoid looping by only returning
-      // a new expression when the refined value differs from c.
-      IExpr refined = refineNumerically(f, c, engine);
-      if (refined.isPresent() && refined.isNumber() && c.isNumber()) {
-        double cVal = c.evalfNaN();
-        double rVal = refined.evalfNaN();
-        // if either isn't numeric: ignore – keep inert
-        if (!Double.isNaN(cVal) && !Double.isNaN(rVal)) {
-          if (Math.abs(rVal - cVal) > Config.SPECIAL_FUNCTIONS_TOLERANCE
-              * Math.max(1.0, Math.abs(cVal))) {
-            return F.Root(F.list(f, refined));
-          }
+      // a closed form for an algebraic f, which has to be the root near c
+      IExpr exact = engine.withQuietMode(() -> ToRadicals.rootToRadicals(ast, engine));
+      if (exact.isPresent()) {
+        double eVal = engine.evalQuiet(F.N(exact)).evalfNaN();
+        if (Double.isNaN(eVal) || Math.abs(eVal - rVal) > 1.0e-8 * Math.max(1.0, Math.abs(rVal))) {
+          exact = F.NIL;
         }
       }
-
-      // Try exact algebraic resolution via Solve (should succeed for algebraic f).
-      IExpr exact = ToRadicals.rootToRadicals(ast, engine);
-      if (exact.isPresent()) {
-        return exact;
-      }
-
-      // Stay inert: Root[{f, c}] is a valid symbolic placeholder for a transcendental root.
-      return F.NIL;
+      ACCEPTED.put(ast, exact.isPresent() ? exact : S.Null);
+      // Stay inert without a closed form: Root[{f, c}] is a valid symbolic placeholder for a
+      // transcendental root.
+      return exact;
     }
     // Root[f, k] or Root[f, k, n] (n in {0,1}): auto-expand only for polynomials of
     // degree <= 2 . For higher degrees the user must call ToRadicals[Root[f, k]] explicitly.
@@ -656,39 +668,30 @@ public class Root extends AbstractFunctionEvaluator {
 
   /**
    * Refine the numerical approximation {@code c} of a root of {@code f[x] == 0} by calling
-   * {@code FindRoot[f[x] == 0, {x, c}]}.
+   * {@code FindRoot[f[x] == 0, {x, c}]}, quietly.
    *
    * @param f a pure {@code Function} (or any expression applicable to a single argument)
    * @param c a numeric starting value for the root
+   * @param precision the working precision in digits, or {@code 0} for machine precision
    * @param engine the evaluation engine
    * @return the refined numeric root value, or {@link F#NIL} if {@code FindRoot} fails
    */
-  private static IExpr refineNumerically(IExpr f, IExpr c, EvalEngine engine) {
+  private static IExpr refineNumerically(IExpr f, IExpr c, long precision, EvalEngine engine) {
     if (!c.isNumber() && !c.isNumericFunction(true)) {
       return F.NIL;
     }
     try {
-
       ISymbol x = F.Dummy("x");
-      IASTMutable unaryAST1 = F.unaryAST1(f, x);
-      if (!engine.isNumericMode()) {
-        IExpr result = engine.evaluate(F.subst(unaryAST1, x, c));
-        if (!result.isPossibleZero(true)) {
-          return Errors.printMessage(S.Root, "invrt", F.List(c, f), engine);
-        }
-        return F.NIL;
-      }
-      IExpr eq = F.Equal(unaryAST1, F.C0);
-
-      IExpr findRootResult = engine.evaluate(F.FindRoot(eq, F.list(x, c)));
+      IExpr eq = F.Equal(F.unaryAST1(f, x), F.C0);
+      IAST findRoot = precision > 0
+          ? F.FindRoot(eq, F.list(x, c), F.Rule(S.WorkingPrecision, F.ZZ(precision)))
+          : F.FindRoot(eq, F.list(x, c));
+      IExpr findRootResult = engine.evalQuiet(findRoot);
       // FindRoot returns {x -> value}
       if (findRootResult.isList() && findRootResult.size() == 2) {
         IExpr rule = findRootResult.first();
-        if (rule.isRuleAST()) {
-          IExpr value = rule.second();
-          if (value.isNumber()) {
-            return value;
-          }
+        if (rule.isRuleAST() && rule.second().isNumber()) {
+          return rule.second();
         }
       }
     } catch (RuntimeException rex) {

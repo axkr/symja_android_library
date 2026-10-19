@@ -68,6 +68,9 @@ public final class ZeroIdentity {
         if (full && arcTanhSum(sum, assumptions, engine)) {
           return true;
         }
+        if (constantOnInterval(sum, assumptions, engine)) {
+          return true;
+        }
       }
       return constantPhases(sum, engine) || logarithmicPowers(sum, engine);
     } catch (RuntimeException rex) {
@@ -88,6 +91,75 @@ public final class ZeroIdentity {
       return F.NIL;
     });
     return rewritten.isPresent() && engine.evaluate(rewritten).isZero();
+  }
+
+  /** Set while {@link #constantOnInterval} simplifies a derivative. */
+  private static final ThreadLocal<Boolean> IN_DERIVATIVE =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  /**
+   * {@link #isZero(IAST, IExpr, boolean, EvalEngine)} for a sum of one variable in an interval
+   * only, see {@link #constantOnInterval(IAST, IExpr, EvalEngine)}.
+   */
+  public static boolean isZeroOnInterval(IAST sum, IExpr assumptions, EvalEngine engine) {
+    if (sum.leafCount() > 400) {
+      return false;
+    }
+    try {
+      return constantOnInterval(sum, assumptions, engine);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
+  }
+
+  /**
+   * A sum of one variable which the assumptions keep in an interval, whose derivative simplifies
+   * to 0 there and which vanishes at points spread over the interval:
+   * <code>ArcCos(1-2*x^2)-2*ArcSin(x)</code> for <code>0&lt;x&lt;1/2</code>. The points have to be
+   * several - a jump which the derivative doesn't see, as of <code>ArcTan(1/x)+ArcTan(x)</code> at
+   * <code>0</code>, gives another constant on each side.
+   */
+  private static boolean constantOnInterval(IAST sum, IExpr assumptions, EvalEngine engine) {
+    if (IN_DERIVATIVE.get() || engine.getAssumptions() == null) {
+      return false;
+    }
+    IAST variables = new VariablesSet(sum).getVarList();
+    if (variables.argSize() != 1) {
+      return false;
+    }
+    IExpr x = variables.arg1();
+    if (sum.isPolynomial(x)
+        || !sum.has(e -> e.isAST1() && e.head().isBuiltInSymbol() && !e.first().isFree(x), true)) {
+      // no function of x which Simplify might miss
+      return false;
+    }
+    IAST data = engine.getAssumptions().intervalData(x);
+    if (data.isNIL() || data.argSize() != 1 || !data.arg1().isAST(S.List, 5)) {
+      return false;
+    }
+    IExpr lower = data.arg1().first();
+    IExpr upper = ((IAST) data.arg1()).arg4();
+    // finite bounds, exact numbers like 1/2 or Pi/2
+    double lo = lower.isNumericFunction(true) ? lower.evalfNaN() : Double.NaN;
+    double hi = upper.isNumericFunction(true) ? upper.evalfNaN() : Double.NaN;
+    if (!Double.isFinite(lo) || !Double.isFinite(hi) || !(lo < hi)) {
+      return false;
+    }
+    IExpr width = engine.evaluate(F.Subtract(upper, lower));
+    for (int k = 1; k <= 5; k++) {
+      IExpr point = engine.evaluate(F.Plus(lower, F.Times(F.QQ(k, 6), width)));
+      if (!isNumericallyZero(engine.evalQuiet(F.subst(sum, x, point)), engine)) {
+        return false;
+      }
+    }
+    IN_DERIVATIVE.set(Boolean.TRUE);
+    try {
+      IExpr derivative = engine.evalQuiet(F.D(sum, x));
+      return engine.evalQuiet(F.Simplify(derivative, assumptions)).isZero();
+    } finally {
+      IN_DERIVATIVE.remove();
+    }
   }
 
   private static boolean isNumericallyZero(IExpr expr, EvalEngine engine) {

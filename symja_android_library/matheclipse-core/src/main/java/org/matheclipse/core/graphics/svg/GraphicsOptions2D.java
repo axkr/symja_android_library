@@ -43,6 +43,8 @@ public final class GraphicsOptions2D {
    * every top level converter sets it from its constructor before any option is read.
    */
   public boolean imageSizeExplicit = false;
+  /** Whether that rule gives a size, which <code>ImageSize -&gt; Automatic</code> does not. */
+  public boolean imageSizeGiven = false;
 
   /**
    * The label a {@code Tooltip} around the whole picture asks for, or {@code null}.
@@ -418,6 +420,8 @@ public final class GraphicsOptions2D {
   private void applyImageSize(IExpr value) {
     imageSizeSet = true;
     imageSizeExplicit = true;
+    // ImageSize -> Automatic, as the plot functions hand it on, is no size of its own
+    imageSizeGiven = !value.isAutomatic();
     if (value == S.All) {
       // All asks for room, not for a size; namedImageSize would leave imageSize alone anyway,
       // but returning here keeps that independent of how named sizes are spelled

@@ -214,8 +214,26 @@ final class SvgLayout {
       IExpr pane = Dynamics.tabPane(expr, selected, keyed)[1];
       spec = LayoutSpec.forColumn(expr, F.list(F.unaryAST1(S.Row, labels), pane), expr.size(),
           LayoutSpec.Units.POINTS);
+    } else if (expr.isAST(S.Pane) && paneSize(expr) != null) {
+      // Pane(expr, w), Pane(expr, {w, h}) or Pane(expr, ImageSize -> {w, h}): a box of that
+      // size, the content placed in it by Alignment, at the top left by default
+      IExpr size = paneSize(expr);
+      int firstOption = positionalArg(expr, 2) != null ? 3 : 2;
+      spec = LayoutSpec.forRow(expr, F.list(expr.arg1()), firstOption, LayoutSpec.Units.POINTS);
+      if (size.isList2()) {
+        spec.fixedWidth = size.first().evalfNaN();
+        spec.fixedHeight = size.second().evalfNaN();
+      } else {
+        spec.fixedWidth = size.evalfNaN();
+      }
+      if (Double.isNaN(spec.colAlignH[0])) {
+        spec.colAlignH[0] = 0.0;
+      }
+      if (Double.isNaN(spec.rowAlignV[0])) {
+        spec.rowAlignV[0] = 0.0;
+      }
     } else {
-      // a Pane or a legend is one cell; the options of a Pane size a notebook's box, not a picture
+      // a legend, or a Pane without a size, is one cell of the size of its content
       IExpr only = isLegend(expr) ? legendPicture(expr) : expr.arg1();
       spec = LayoutSpec.forRow(expr, F.list(only), expr.size(),
           LayoutSpec.Units.POINTS);
@@ -287,6 +305,24 @@ final class SvgLayout {
         F.num(rgb.getBlue() / 255.0));
   }
 
+  /**
+   * The size of a <code>Pane</code>: its second argument, or else its <code>ImageSize</code>
+   * option; {@code null} if it has neither.
+   */
+  private static IExpr paneSize(IAST pane) {
+    IExpr size = positionalArg(pane, 2);
+    if (size != null) {
+      return size;
+    }
+    for (int i = 2; i < pane.size(); i++) {
+      IExpr arg = pane.get(i);
+      if (arg.isRuleAST() && arg.first() == S.ImageSize && !arg.second().isAutomatic()) {
+        return arg.second();
+      }
+    }
+    return null;
+  }
+
   /** The argument at {@code index} when it is a positional one rather than an option rule. */
   private static IExpr positionalArg(IAST expr, int index) {
     if (expr.argSize() < index) {
@@ -348,6 +384,14 @@ final class SvgLayout {
     }
     growForSpans(spec, pieces, colW, rowH, colGap, rowGap);
     applyItemAspectRatio(spec, colW, rowH);
+    final boolean fixedBox = rows == 1 && cols == 1
+        && (spec.fixedWidth > 0 || spec.fixedHeight > 0);
+    if (spec.fixedWidth > 0 && cols == 1) {
+      colW[0] = spec.fixedWidth;
+    }
+    if (spec.fixedHeight > 0 && rows == 1) {
+      rowH[0] = spec.fixedHeight;
+    }
 
     double contentW = sum(colW) + sum(colGap);
     double contentH = sum(rowH) + sum(rowGap);
@@ -356,7 +400,7 @@ final class SvgLayout {
 
     // one scale for the whole layout, so the cells keep their proportions relative to each other
     double scale = 1.0;
-    if (contentW > 0 && contentW + marginX > budget) {
+    if (!fixedBox && contentW > 0 && contentW + marginX > budget) {
       scale = (budget - marginX) / contentW;
     }
     if (options.imageSizeHeightSet && contentH > 0) {

@@ -62,7 +62,7 @@ a!=b^2	Unequal(a, Power(b, 2))
 !=a+b	!syntax@2: Operator: != is no prefix operator.
 !=(a+b)	!syntax@2: Operator: != is no prefix operator.
 a!=	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a!=+b	Unequal(a, b)
+a!=+b	Unequal(a, Plus(b))
 (a+b)!=	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a&b	!syntax@3: End-of-file not reached.
 a & b	!syntax@5: End-of-file not reached.
@@ -106,7 +106,7 @@ a&&b^2	And(a, Power(b, 2))
 &&a+b	!syntax@2: Operator: && is no prefix operator.
 &&(a+b)	!syntax@2: Operator: && is no prefix operator.
 a&&	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a&&+b	And(a, b)
+a&&+b	And(a, Plus(b))
 (a+b)&&	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a*b	Times(a, b)
 a * b	Times(a, b)
@@ -126,7 +126,7 @@ a*b^2	Times(a, Power(b, 2))
 *a+b	!syntax@1: Operator: * is no prefix operator.
 *(a+b)	!syntax@1: Operator: * is no prefix operator.
 a*	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a*+b	Times(a, b)
+a*+b	Times(a, Plus(b))
 (a+b)*	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a**b	NonCommutativeMultiply(a, b)
 a ** b	NonCommutativeMultiply(a, b)
@@ -148,7 +148,7 @@ a**b^2	NonCommutativeMultiply(a, Power(b, 2))
 **a+b	!syntax@2: Operator: ** is no prefix operator.
 **(a+b)	!syntax@2: Operator: ** is no prefix operator.
 a**	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a**+b	NonCommutativeMultiply(a, b)
+a**+b	NonCommutativeMultiply(a, Plus(b))
 (a+b)**	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a*=b	TimesBy(a, b)
 a *= b	TimesBy(a, b)
@@ -170,7 +170,7 @@ a*=b^2	TimesBy(a, Power(b, 2))
 *=a+b	!syntax@2: Operator: *= is no prefix operator.
 *=(a+b)	!syntax@2: Operator: *= is no prefix operator.
 a*=	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a*=+b	TimesBy(a, b)
+a*=+b	TimesBy(a, Plus(b))
 (a+b)*=	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a+b	Plus(a, b)
 a + b	Plus(a, b)
@@ -184,9 +184,9 @@ a+b==c	Equal(Plus(a, b), c)
 a+(b+c)	Plus(a, Plus(b, c))
 a+-b	Plus(a, Times(-1, b))
 a+b^2	Plus(a, Power(b, 2))
-+a	a
-+a+b	Plus(a, b)
-+(a+b)	Plus(a, b)
++a	Plus(a)
++a+b	Plus(Plus(a), b)
++(a+b)	Plus(Plus(a, b))
 a+	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
 a++b	!syntax@4: End-of-file not reached.
 (a+b)+	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
@@ -231,7 +231,7 @@ a+=b^2	AddTo(a, Power(b, 2))
 +=a+b	!syntax@2: Operator: += is no prefix operator.
 +=(a+b)	!syntax@2: Operator: += is no prefix operator.
 a+=	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a+=+b	AddTo(a, b)
+a+=+b	AddTo(a, Plus(b))
 (a+b)+=	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a-b	Plus(a, Times(-1, b))
 a - b	Plus(a, Times(-1, b))
@@ -253,7 +253,7 @@ a-b^2	Plus(a, Times(-1, Power(b, 2)))
 -a+b	Plus(Times(-1, a), b)
 -(a+b)	Times(-1, Plus(a, b))
 a-	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a-+b	Plus(a, Times(-1, b))
+a-+b	Plus(a, Times(-1, Plus(b)))
 (a+b)-	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a -- b	!syntax@6: End-of-file not reached.
 2--3	!syntax@4: End-of-file not reached.
@@ -296,7 +296,7 @@ a-=b^2	SubtractFrom(a, Power(b, 2))
 -=a+b	!syntax@2: Operator: -= is no prefix operator.
 -=(a+b)	!syntax@2: Operator: -= is no prefix operator.
 a-=	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a-=+b	SubtractFrom(a, b)
+a-=+b	SubtractFrom(a, Plus(b))
 (a+b)-=	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a->b	Rule(a, b)
 a -> b	Rule(a, b)
@@ -318,7 +318,7 @@ a->b^2	Rule(a, Power(b, 2))
 ->a+b	!syntax@2: Operator: -> is no prefix operator.
 ->(a+b)	!syntax@2: Operator: -> is no prefix operator.
 a->	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a->+b	Rule(a, b)
+a->+b	Rule(a, Plus(b))
 (a+b)->	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a.b	Dot(a, b)
 a . b	Dot(a, b)
@@ -334,7 +334,7 @@ a.b^2	Dot(a, Power(b, 2))
 .a+b	!syntax@2: End-of-file not reached.
 .(a+b)	!syntax@2: End-of-file not reached.
 a.	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a.+b	Dot(a, b)
+a.+b	Dot(a, Plus(b))
 (a+b).	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a..b	!syntax@4: End-of-file not reached.
 a .. b	!syntax@6: End-of-file not reached.
@@ -400,7 +400,7 @@ a/b^2	Times(a, Power(Power(b, 2), -1))
 /a+b	!syntax@1: Operator: / is no prefix operator.
 /(a+b)	!syntax@1: Operator: / is no prefix operator.
 a/	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a/+b	Times(a, Power(b, -1))
+a/+b	Times(a, Power(Plus(b), -1))
 (a+b)/	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a/*b	RightComposition(a, b)
 a /* b	RightComposition(a, b)
@@ -422,7 +422,7 @@ a/*b^2	Power(RightComposition(a, b), 2)
 /*a+b	!syntax@2: Operator: /* is no prefix operator.
 /*(a+b)	!syntax@2: Operator: /* is no prefix operator.
 a/*	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a/*+b	RightComposition(a, b)
+a/*+b	RightComposition(a, Plus(b))
 (a+b)/*	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a/.b	ReplaceAll(a, b)
 a /. b	ReplaceAll(a, b)
@@ -444,7 +444,7 @@ a/.b^2	ReplaceAll(a, Power(b, 2))
 /.a+b	!syntax@2: Operator: /. is no prefix operator.
 /.(a+b)	!syntax@2: Operator: /. is no prefix operator.
 a/.	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a/.+b	ReplaceAll(a, b)
+a/.+b	ReplaceAll(a, Plus(b))
 (a+b)/.	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a//b	b(a)
 a // b	b(a)
@@ -466,7 +466,7 @@ a//b^2	Power(b, 2)[a]
 //a+b	!syntax@2: Operator: // is no prefix operator.
 //(a+b)	!syntax@2: Operator: // is no prefix operator.
 a//	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a//+b	b(a)
+a//+b	Plus(b)[a]
 (a+b)//	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a//.b	ReplaceRepeated(a, b)
 a //. b	ReplaceRepeated(a, b)
@@ -488,7 +488,7 @@ a//.b^2	ReplaceRepeated(a, Power(b, 2))
 //.a+b	!syntax@3: Operator: //. is no prefix operator.
 //.(a+b)	!syntax@3: Operator: //. is no prefix operator.
 a//.	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a//.+b	ReplaceRepeated(a, b)
+a//.+b	ReplaceRepeated(a, Plus(b))
 (a+b)//.	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a//=b	ApplyTo(a, b)
 a //= b	ApplyTo(a, b)
@@ -510,7 +510,7 @@ a//=b^2	ApplyTo(a, Power(b, 2))
 //=a+b	!syntax@3: Operator: //= is no prefix operator.
 //=(a+b)	!syntax@3: Operator: //= is no prefix operator.
 a//=	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a//=+b	ApplyTo(a, b)
+a//=+b	ApplyTo(a, Plus(b))
 (a+b)//=	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a//@b	MapAll(a, b)
 a //@ b	MapAll(a, b)
@@ -532,7 +532,7 @@ a//@b^2	Power(MapAll(a, b), 2)
 //@a+b	!syntax@3: Operator: //@ is no prefix operator.
 //@(a+b)	!syntax@3: Operator: //@ is no prefix operator.
 a//@	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a//@+b	MapAll(a, b)
+a//@+b	MapAll(a, Plus(b))
 (a+b)//@	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a/:b	TagSet(a, b)
 a /: b	TagSet(a, b)
@@ -554,7 +554,7 @@ a/:b^2	TagSet(a, Power(b, 2))
 /:a+b	!syntax@2: Operator: /: is no prefix operator.
 /:(a+b)	!syntax@2: Operator: /: is no prefix operator.
 a/:	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a/:+b	TagSet(a, b)
+a/:+b	TagSet(a, Plus(b))
 (a+b)/:	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a/;b	Condition(a, b)
 a /; b	Condition(a, b)
@@ -576,7 +576,7 @@ a/;b^2	Condition(a, Power(b, 2))
 /;a+b	!syntax@2: Operator: /; is no prefix operator.
 /;(a+b)	!syntax@2: Operator: /; is no prefix operator.
 a/;	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a/;+b	Condition(a, b)
+a/;+b	Condition(a, Plus(b))
 (a+b)/;	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a/=b	DivideBy(a, b)
 a /= b	DivideBy(a, b)
@@ -598,7 +598,7 @@ a/=b^2	DivideBy(a, Power(b, 2))
 /=a+b	!syntax@2: Operator: /= is no prefix operator.
 /=(a+b)	!syntax@2: Operator: /= is no prefix operator.
 a/=	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a/=+b	DivideBy(a, b)
+a/=+b	DivideBy(a, Plus(b))
 (a+b)/=	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a/@b	Map(a, b)
 a /@ b	Map(a, b)
@@ -620,7 +620,7 @@ a/@b^2	Power(Map(a, b), 2)
 /@a+b	!syntax@2: Operator: /@ is no prefix operator.
 /@(a+b)	!syntax@2: Operator: /@ is no prefix operator.
 a/@	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a/@+b	Map(a, b)
+a/@+b	Map(a, Plus(b))
 (a+b)/@	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a:b	Pattern(a, b)
 a : b	Pattern(a, b)
@@ -642,7 +642,7 @@ a:b^2	Pattern(a, Power(b, 2))
 :a+b	!syntax@1: Operator: : is no prefix operator.
 :(a+b)	!syntax@1: Operator: : is no prefix operator.
 a:	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a:+b	Pattern(a, b)
+a:+b	Pattern(a, Plus(b))
 (a+b):	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a::b	MessageName(a, b)
 a :: b	MessageName(a, b)
@@ -664,7 +664,7 @@ a::b^2	Power(MessageName(a, b), 2)
 ::a+b	!syntax@2: Operator: :: is no prefix operator.
 ::(a+b)	!syntax@2: Operator: :: is no prefix operator.
 a::	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a::+b	MessageName(a, b)
+a::+b	MessageName(a, Plus(b))
 (a+b)::	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a:=b	SetDelayed(a, b)
 a := b	SetDelayed(a, b)
@@ -686,7 +686,7 @@ a:=b^2	SetDelayed(a, Power(b, 2))
 :=a+b	!syntax@2: Operator: := is no prefix operator.
 :=(a+b)	!syntax@2: Operator: := is no prefix operator.
 a:=	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a:=+b	SetDelayed(a, b)
+a:=+b	SetDelayed(a, Plus(b))
 (a+b):=	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a:>b	RuleDelayed(a, b)
 a :> b	RuleDelayed(a, b)
@@ -708,7 +708,7 @@ a:>b^2	RuleDelayed(a, Power(b, 2))
 :>a+b	!syntax@2: Operator: :> is no prefix operator.
 :>(a+b)	!syntax@2: Operator: :> is no prefix operator.
 a:>	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a:>+b	RuleDelayed(a, b)
+a:>+b	RuleDelayed(a, Plus(b))
 (a+b):>	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a;b	CompoundExpression(a, b)
 a ; b	CompoundExpression(a, b)
@@ -730,7 +730,7 @@ a;b^2	CompoundExpression(a, Power(b, 2))
 ;a+b	!syntax@1: Operator: ; is no prefix operator.
 ;(a+b)	!syntax@1: Operator: ; is no prefix operator.
 a;	CompoundExpression(a, Null)
-a;+b	CompoundExpression(a, b)
+a;+b	CompoundExpression(a, Plus(b))
 (a+b);	CompoundExpression(Plus(a, b), Null)
 a;;b	Span(a, b)
 a ;; b	Span(a, b)
@@ -752,7 +752,7 @@ a;;b^2	Span(a, Power(b, 2))
 ;;a+b	Span(1, Plus(a, b))
 ;;(a+b)	Span(1, Plus(a, b))
 a;;	Span(a, All)
-a;;+b	Span(a, b)
+a;;+b	Span(a, Plus(b))
 (a+b);;	Span(Plus(a, b), All)
 a<b	Less(a, b)
 a < b	Less(a, b)
@@ -774,7 +774,7 @@ a<b^2	Less(a, Power(b, 2))
 <a+b	!syntax@1: Operator: < is no prefix operator.
 <(a+b)	!syntax@1: Operator: < is no prefix operator.
 a<	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a<+b	Less(a, b)
+a<+b	Less(a, Plus(b))
 (a+b)<	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a<->b	TwoWayRule(a, b)
 a <-> b	TwoWayRule(a, b)
@@ -796,7 +796,7 @@ a<->b^2	TwoWayRule(a, Power(b, 2))
 <->a+b	!syntax@3: Operator: <-> is no prefix operator.
 <->(a+b)	!syntax@3: Operator: <-> is no prefix operator.
 a<->	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a<->+b	TwoWayRule(a, b)
+a<->+b	TwoWayRule(a, Plus(b))
 (a+b)<->	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a<<b	!syntax@3: End-of-file not reached.
 a << b	!syntax@4: End-of-file not reached.
@@ -840,7 +840,7 @@ a<=b^2	LessEqual(a, Power(b, 2))
 <=a+b	!syntax@2: Operator: <= is no prefix operator.
 <=(a+b)	!syntax@2: Operator: <= is no prefix operator.
 a<=	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a<=+b	LessEqual(a, b)
+a<=+b	LessEqual(a, Plus(b))
 (a+b)<=	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a<>b	StringJoin(a, b)
 a <> b	StringJoin(a, b)
@@ -862,7 +862,7 @@ a<>b^2	Power(StringJoin(a, b), 2)
 <>a+b	!syntax@2: Operator: <> is no prefix operator.
 <>(a+b)	!syntax@2: Operator: <> is no prefix operator.
 a<>	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a<>+b	StringJoin(a, b)
+a<>+b	StringJoin(a, Plus(b))
 (a+b)<>	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a=b	Set(a, b)
 a = b	Set(a, b)
@@ -884,7 +884,7 @@ a=b^2	Set(a, Power(b, 2))
 =a+b	!syntax@1: Operator: = is no prefix operator.
 =(a+b)	!syntax@1: Operator: = is no prefix operator.
 a=	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a=+b	Set(a, b)
+a=+b	Set(a, Plus(b))
 (a+b)=	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a=!=b	UnsameQ(a, b)
 a =!= b	UnsameQ(a, b)
@@ -906,7 +906,7 @@ a=!=b^2	UnsameQ(a, Power(b, 2))
 =!=a+b	!syntax@3: Operator: =!= is no prefix operator.
 =!=(a+b)	!syntax@3: Operator: =!= is no prefix operator.
 a=!=	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a=!=+b	UnsameQ(a, b)
+a=!=+b	UnsameQ(a, Plus(b))
 (a+b)=!=	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a=.b	!syntax@4: End-of-file not reached.
 a =. b	!syntax@6: End-of-file not reached.
@@ -942,7 +942,7 @@ a==b^2	Equal(a, Power(b, 2))
 ==a+b	!syntax@2: Operator: == is no prefix operator.
 ==(a+b)	!syntax@2: Operator: == is no prefix operator.
 a==	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a==+b	Equal(a, b)
+a==+b	Equal(a, Plus(b))
 (a+b)==	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a===b	SameQ(a, b)
 a === b	SameQ(a, b)
@@ -964,7 +964,7 @@ a===b^2	SameQ(a, Power(b, 2))
 ===a+b	!syntax@3: Operator: === is no prefix operator.
 ===(a+b)	!syntax@3: Operator: === is no prefix operator.
 a===	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a===+b	SameQ(a, b)
+a===+b	SameQ(a, Plus(b))
 (a+b)===	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a>b	Greater(a, b)
 a > b	Greater(a, b)
@@ -986,7 +986,7 @@ a>b^2	Greater(a, Power(b, 2))
 >a+b	!syntax@1: Operator: > is no prefix operator.
 >(a+b)	!syntax@1: Operator: > is no prefix operator.
 a>	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a>+b	Greater(a, b)
+a>+b	Greater(a, Plus(b))
 (a+b)>	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a>=b	GreaterEqual(a, b)
 a >= b	GreaterEqual(a, b)
@@ -1008,7 +1008,7 @@ a>=b^2	GreaterEqual(a, Power(b, 2))
 >=a+b	!syntax@2: Operator: >= is no prefix operator.
 >=(a+b)	!syntax@2: Operator: >= is no prefix operator.
 a>=	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a>=+b	GreaterEqual(a, b)
+a>=+b	GreaterEqual(a, Plus(b))
 (a+b)>=	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a>>b	Put(a, b)
 a >> b	Put(a, b)
@@ -1030,7 +1030,7 @@ a>>b^2	Put(a, Power(b, 2))
 >>a+b	!syntax@2: Operator: >> is no prefix operator.
 >>(a+b)	!syntax@2: Operator: >> is no prefix operator.
 a>>	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a>>+b	Put(a, b)
+a>>+b	Put(a, Plus(b))
 (a+b)>>	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a>>>b	PutAppend(a, b)
 a >>> b	PutAppend(a, b)
@@ -1052,7 +1052,7 @@ a>>>b^2	PutAppend(a, Power(b, 2))
 >>>a+b	!syntax@3: Operator: >>> is no prefix operator.
 >>>(a+b)	!syntax@3: Operator: >>> is no prefix operator.
 a>>>	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a>>>+b	PutAppend(a, b)
+a>>>+b	PutAppend(a, Plus(b))
 (a+b)>>>	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a?b	PatternTest(a, b)
 a ? b	PatternTest(a, b)
@@ -1074,7 +1074,7 @@ a?b^2	Power(PatternTest(a, b), 2)
 ?a+b	Plus(Information(a), b)
 ?(a+b)	Information(Plus(a, b))
 a?	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a?+b	PatternTest(a, b)
+a?+b	PatternTest(a, Plus(b))
 (a+b)?	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a??b	!syntax@3: End-of-file not reached.
 a ?? b	!syntax@4: End-of-file not reached.
@@ -1118,7 +1118,7 @@ a@b^2	Power(a(b), 2)
 @a+b	!syntax@1: Operator: @ is no prefix operator.
 @(a+b)	!syntax@1: Operator: @ is no prefix operator.
 a@	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a@+b	a(b)
+a@+b	a(Plus(b))
 (a+b)@	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a@*b	Composition(a, b)
 a @* b	Composition(a, b)
@@ -1140,7 +1140,7 @@ a@*b^2	Power(Composition(a, b), 2)
 @*a+b	!syntax@2: Operator: @* is no prefix operator.
 @*(a+b)	!syntax@2: Operator: @* is no prefix operator.
 a@*	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a@*+b	Composition(a, b)
+a@*+b	Composition(a, Plus(b))
 (a+b)@*	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a@@b	Apply(a, b)
 a @@ b	Apply(a, b)
@@ -1162,7 +1162,7 @@ a@@b^2	Power(Apply(a, b), 2)
 @@a+b	!syntax@2: Operator: @@ is no prefix operator.
 @@(a+b)	!syntax@2: Operator: @@ is no prefix operator.
 a@@	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a@@+b	Apply(a, b)
+a@@+b	Apply(a, Plus(b))
 (a+b)@@	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a@@@b	Apply(a, b, List(1))
 a @@@ b	Apply(a, b, List(1))
@@ -1184,7 +1184,7 @@ a@@@b^2	Power(Apply(a, b, List(1)), 2)
 @@@a+b	!syntax@3: Operator: @@@ is no prefix operator.
 @@@(a+b)	!syntax@3: Operator: @@@ is no prefix operator.
 a@@@	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a@@@+b	Apply(a, b, List(1))
+a@@@+b	Apply(a, Plus(b), List(1))
 (a+b)@@@	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a^b	Power(a, b)
 a ^ b	Power(a, b)
@@ -1206,7 +1206,7 @@ a^b^2	Power(a, Power(b, 2))
 ^a+b	!syntax@1: Operator: ^ is no prefix operator.
 ^(a+b)	!syntax@1: Operator: ^ is no prefix operator.
 a^	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a^+b	Power(a, b)
+a^+b	Power(a, Plus(b))
 (a+b)^	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a^:=b	UpSetDelayed(a, b)
 a ^:= b	UpSetDelayed(a, b)
@@ -1228,7 +1228,7 @@ a^:=b^2	UpSetDelayed(a, Power(b, 2))
 ^:=a+b	!syntax@3: Operator: ^:= is no prefix operator.
 ^:=(a+b)	!syntax@3: Operator: ^:= is no prefix operator.
 a^:=	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a^:=+b	UpSetDelayed(a, b)
+a^:=+b	UpSetDelayed(a, Plus(b))
 (a+b)^:=	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a^=b	UpSet(a, b)
 a ^= b	UpSet(a, b)
@@ -1250,7 +1250,7 @@ a^=b^2	UpSet(a, Power(b, 2))
 ^=a+b	!syntax@2: Operator: ^= is no prefix operator.
 ^=(a+b)	!syntax@2: Operator: ^= is no prefix operator.
 a^=	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a^=+b	UpSet(a, b)
+a^=+b	UpSet(a, Plus(b))
 (a+b)^=	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a|b	Alternatives(a, b)
 a | b	Alternatives(a, b)
@@ -1272,7 +1272,7 @@ a|b^2	Alternatives(a, Power(b, 2))
 |a+b	!syntax@1: Operator: | is no prefix operator.
 |(a+b)	!syntax@1: Operator: | is no prefix operator.
 a|	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a|+b	Alternatives(a, b)
+a|+b	Alternatives(a, Plus(b))
 (a+b)|	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a|->b	Function(a, b)
 a |-> b	Function(a, b)
@@ -1294,7 +1294,7 @@ a|->b^2	Function(a, Power(b, 2))
 |->a+b	!syntax@3: Operator: |-> is no prefix operator.
 |->(a+b)	!syntax@3: Operator: |-> is no prefix operator.
 a|->	!syntax@5: Error in factor at character: ' ' (Token:0 \\u0020)
-a|->+b	Function(a, b)
+a|->+b	Function(a, Plus(b))
 (a+b)|->	!syntax@9: Error in factor at character: ' ' (Token:0 \\u0020)
 a||b	Or(a, b)
 a || b	Or(a, b)
@@ -1316,7 +1316,7 @@ a||b^2	Or(a, Power(b, 2))
 ||a+b	!syntax@2: Operator: || is no prefix operator.
 ||(a+b)	!syntax@2: Operator: || is no prefix operator.
 a||	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a||+b	Or(a, b)
+a||+b	Or(a, Plus(b))
 (a+b)||	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a~b	!syntax@4: Operator ~ requires even number of arguments
 a ~ b	!syntax@6: Operator ~ requires even number of arguments
@@ -1360,7 +1360,7 @@ a~~b^2	StringExpression(a, Power(b, 2))
 ~~a+b	!syntax@2: Operator: ~~ is no prefix operator.
 ~~(a+b)	!syntax@2: Operator: ~~ is no prefix operator.
 a~~	!syntax@4: Error in factor at character: ' ' (Token:0 \\u0020)
-a~~+b	StringExpression(a, b)
+a~~+b	StringExpression(a, Plus(b))
 (a+b)~~	!syntax@8: Error in factor at character: ' ' (Token:0 \\u0020)
 a¬b	!syntax@2: End-of-file not reached.
 a ¬ b	!syntax@3: End-of-file not reached.
@@ -1404,7 +1404,7 @@ a±b^2	PlusMinus(a, Power(b, 2))
 ±a+b	Plus(PlusMinus(a), b)
 ±(a+b)	PlusMinus(Plus(a, b))
 a±	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a±+b	PlusMinus(a, b)
+a±+b	PlusMinus(a, Plus(b))
 (a+b)±	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a·b	CenterDot(a, b)
 a · b	CenterDot(a, b)
@@ -1426,7 +1426,7 @@ a·b^2	CenterDot(a, Power(b, 2))
 ·a+b	!syntax@1: Operator: · is no prefix operator.
 ·(a+b)	!syntax@1: Operator: · is no prefix operator.
 a·	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a·+b	CenterDot(a, b)
+a·+b	CenterDot(a, Plus(b))
 (a+b)·	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a×b	Times(a, b)
 a × b	Times(a, b)
@@ -1448,7 +1448,7 @@ a×b^2	Times(a, Power(b, 2))
 ×a+b	!syntax@1: Operator: × is no prefix operator.
 ×(a+b)	!syntax@1: Operator: × is no prefix operator.
 a×	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a×+b	Times(a, b)
+a×+b	Times(a, Plus(b))
 (a+b)×	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a÷b	Times(a, Power(b, -1))
 a ÷ b	Times(a, Power(b, -1))
@@ -1470,7 +1470,7 @@ a÷b^2	Times(a, Power(Power(b, 2), -1))
 ÷a+b	!syntax@1: Operator: ÷ is no prefix operator.
 ÷(a+b)	!syntax@1: Operator: ÷ is no prefix operator.
 a÷	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a÷+b	Times(a, Power(b, -1))
+a÷+b	Times(a, Power(Plus(b), -1))
 (a+b)÷	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a←b	LeftArrow(a, b)
 a ← b	LeftArrow(a, b)
@@ -1492,7 +1492,7 @@ a←b^2	LeftArrow(a, Power(b, 2))
 ←a+b	!syntax@1: Operator: ← is no prefix operator.
 ←(a+b)	!syntax@1: Operator: ← is no prefix operator.
 a←	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a←+b	LeftArrow(a, b)
+a←+b	LeftArrow(a, Plus(b))
 (a+b)←	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↑b	ShortUpArrow(a, b)
 a ↑ b	ShortUpArrow(a, b)
@@ -1514,7 +1514,7 @@ a↑b^2	ShortUpArrow(a, Power(b, 2))
 ↑a+b	!syntax@1: Operator: ↑ is no prefix operator.
 ↑(a+b)	!syntax@1: Operator: ↑ is no prefix operator.
 a↑	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↑+b	ShortUpArrow(a, b)
+a↑+b	ShortUpArrow(a, Plus(b))
 (a+b)↑	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a→b	RightArrow(a, b)
 a → b	RightArrow(a, b)
@@ -1536,7 +1536,7 @@ a→b^2	RightArrow(a, Power(b, 2))
 →a+b	!syntax@1: Operator: → is no prefix operator.
 →(a+b)	!syntax@1: Operator: → is no prefix operator.
 a→	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a→+b	RightArrow(a, b)
+a→+b	RightArrow(a, Plus(b))
 (a+b)→	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↓b	DownArrow(a, b)
 a ↓ b	DownArrow(a, b)
@@ -1558,7 +1558,7 @@ a↓b^2	DownArrow(a, Power(b, 2))
 ↓a+b	!syntax@1: Operator: ↓ is no prefix operator.
 ↓(a+b)	!syntax@1: Operator: ↓ is no prefix operator.
 a↓	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↓+b	DownArrow(a, b)
+a↓+b	DownArrow(a, Plus(b))
 (a+b)↓	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↔b	LeftRightArrow(a, b)
 a ↔ b	LeftRightArrow(a, b)
@@ -1580,7 +1580,7 @@ a↔b^2	LeftRightArrow(a, Power(b, 2))
 ↔a+b	!syntax@1: Operator: ↔ is no prefix operator.
 ↔(a+b)	!syntax@1: Operator: ↔ is no prefix operator.
 a↔	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↔+b	LeftRightArrow(a, b)
+a↔+b	LeftRightArrow(a, Plus(b))
 (a+b)↔	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↕b	UpDownArrow(a, b)
 a ↕ b	UpDownArrow(a, b)
@@ -1602,7 +1602,7 @@ a↕b^2	UpDownArrow(a, Power(b, 2))
 ↕a+b	!syntax@1: Operator: ↕ is no prefix operator.
 ↕(a+b)	!syntax@1: Operator: ↕ is no prefix operator.
 a↕	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↕+b	UpDownArrow(a, b)
+a↕+b	UpDownArrow(a, Plus(b))
 (a+b)↕	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↖b	UpperLeftArrow(a, b)
 a ↖ b	UpperLeftArrow(a, b)
@@ -1624,7 +1624,7 @@ a↖b^2	UpperLeftArrow(a, Power(b, 2))
 ↖a+b	!syntax@1: Operator: ↖ is no prefix operator.
 ↖(a+b)	!syntax@1: Operator: ↖ is no prefix operator.
 a↖	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↖+b	UpperLeftArrow(a, b)
+a↖+b	UpperLeftArrow(a, Plus(b))
 (a+b)↖	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↗b	UpperRightArrow(a, b)
 a ↗ b	UpperRightArrow(a, b)
@@ -1646,7 +1646,7 @@ a↗b^2	UpperRightArrow(a, Power(b, 2))
 ↗a+b	!syntax@1: Operator: ↗ is no prefix operator.
 ↗(a+b)	!syntax@1: Operator: ↗ is no prefix operator.
 a↗	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↗+b	UpperRightArrow(a, b)
+a↗+b	UpperRightArrow(a, Plus(b))
 (a+b)↗	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↘b	LowerRightArrow(a, b)
 a ↘ b	LowerRightArrow(a, b)
@@ -1668,7 +1668,7 @@ a↘b^2	LowerRightArrow(a, Power(b, 2))
 ↘a+b	!syntax@1: Operator: ↘ is no prefix operator.
 ↘(a+b)	!syntax@1: Operator: ↘ is no prefix operator.
 a↘	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↘+b	LowerRightArrow(a, b)
+a↘+b	LowerRightArrow(a, Plus(b))
 (a+b)↘	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↙b	LowerLeftArrow(a, b)
 a ↙ b	LowerLeftArrow(a, b)
@@ -1690,7 +1690,7 @@ a↙b^2	LowerLeftArrow(a, Power(b, 2))
 ↙a+b	!syntax@1: Operator: ↙ is no prefix operator.
 ↙(a+b)	!syntax@1: Operator: ↙ is no prefix operator.
 a↙	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↙+b	LowerLeftArrow(a, b)
+a↙+b	LowerLeftArrow(a, Plus(b))
 (a+b)↙	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↤b	LeftTeeArrow(a, b)
 a ↤ b	LeftTeeArrow(a, b)
@@ -1712,7 +1712,7 @@ a↤b^2	LeftTeeArrow(a, Power(b, 2))
 ↤a+b	!syntax@1: Operator: ↤ is no prefix operator.
 ↤(a+b)	!syntax@1: Operator: ↤ is no prefix operator.
 a↤	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↤+b	LeftTeeArrow(a, b)
+a↤+b	LeftTeeArrow(a, Plus(b))
 (a+b)↤	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↥b	UpTeeArrow(a, b)
 a ↥ b	UpTeeArrow(a, b)
@@ -1734,7 +1734,7 @@ a↥b^2	UpTeeArrow(a, Power(b, 2))
 ↥a+b	!syntax@1: Operator: ↥ is no prefix operator.
 ↥(a+b)	!syntax@1: Operator: ↥ is no prefix operator.
 a↥	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↥+b	UpTeeArrow(a, b)
+a↥+b	UpTeeArrow(a, Plus(b))
 (a+b)↥	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↦b	RightTeeArrow(a, b)
 a ↦ b	RightTeeArrow(a, b)
@@ -1756,7 +1756,7 @@ a↦b^2	RightTeeArrow(a, Power(b, 2))
 ↦a+b	!syntax@1: Operator: ↦ is no prefix operator.
 ↦(a+b)	!syntax@1: Operator: ↦ is no prefix operator.
 a↦	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↦+b	RightTeeArrow(a, b)
+a↦+b	RightTeeArrow(a, Plus(b))
 (a+b)↦	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↧b	DownTeeArrow(a, b)
 a ↧ b	DownTeeArrow(a, b)
@@ -1778,7 +1778,7 @@ a↧b^2	DownTeeArrow(a, Power(b, 2))
 ↧a+b	!syntax@1: Operator: ↧ is no prefix operator.
 ↧(a+b)	!syntax@1: Operator: ↧ is no prefix operator.
 a↧	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↧+b	DownTeeArrow(a, b)
+a↧+b	DownTeeArrow(a, Plus(b))
 (a+b)↧	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↼b	LeftVector(a, b)
 a ↼ b	LeftVector(a, b)
@@ -1800,7 +1800,7 @@ a↼b^2	LeftVector(a, Power(b, 2))
 ↼a+b	!syntax@1: Operator: ↼ is no prefix operator.
 ↼(a+b)	!syntax@1: Operator: ↼ is no prefix operator.
 a↼	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↼+b	LeftVector(a, b)
+a↼+b	LeftVector(a, Plus(b))
 (a+b)↼	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↽b	DownLeftVector(a, b)
 a ↽ b	DownLeftVector(a, b)
@@ -1822,7 +1822,7 @@ a↽b^2	DownLeftVector(a, Power(b, 2))
 ↽a+b	!syntax@1: Operator: ↽ is no prefix operator.
 ↽(a+b)	!syntax@1: Operator: ↽ is no prefix operator.
 a↽	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↽+b	DownLeftVector(a, b)
+a↽+b	DownLeftVector(a, Plus(b))
 (a+b)↽	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↾b	RightUpVector(a, b)
 a ↾ b	RightUpVector(a, b)
@@ -1844,7 +1844,7 @@ a↾b^2	RightUpVector(a, Power(b, 2))
 ↾a+b	!syntax@1: Operator: ↾ is no prefix operator.
 ↾(a+b)	!syntax@1: Operator: ↾ is no prefix operator.
 a↾	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↾+b	RightUpVector(a, b)
+a↾+b	RightUpVector(a, Plus(b))
 (a+b)↾	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a↿b	LeftUpVector(a, b)
 a ↿ b	LeftUpVector(a, b)
@@ -1866,7 +1866,7 @@ a↿b^2	LeftUpVector(a, Power(b, 2))
 ↿a+b	!syntax@1: Operator: ↿ is no prefix operator.
 ↿(a+b)	!syntax@1: Operator: ↿ is no prefix operator.
 a↿	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a↿+b	LeftUpVector(a, b)
+a↿+b	LeftUpVector(a, Plus(b))
 (a+b)↿	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇀b	RightVector(a, b)
 a ⇀ b	RightVector(a, b)
@@ -1888,7 +1888,7 @@ a⇀b^2	RightVector(a, Power(b, 2))
 ⇀a+b	!syntax@1: Operator: ⇀ is no prefix operator.
 ⇀(a+b)	!syntax@1: Operator: ⇀ is no prefix operator.
 a⇀	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇀+b	RightVector(a, b)
+a⇀+b	RightVector(a, Plus(b))
 (a+b)⇀	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇁b	DownRightVector(a, b)
 a ⇁ b	DownRightVector(a, b)
@@ -1910,7 +1910,7 @@ a⇁b^2	DownRightVector(a, Power(b, 2))
 ⇁a+b	!syntax@1: Operator: ⇁ is no prefix operator.
 ⇁(a+b)	!syntax@1: Operator: ⇁ is no prefix operator.
 a⇁	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇁+b	DownRightVector(a, b)
+a⇁+b	DownRightVector(a, Plus(b))
 (a+b)⇁	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇂b	RightDownVector(a, b)
 a ⇂ b	RightDownVector(a, b)
@@ -1932,7 +1932,7 @@ a⇂b^2	RightDownVector(a, Power(b, 2))
 ⇂a+b	!syntax@1: Operator: ⇂ is no prefix operator.
 ⇂(a+b)	!syntax@1: Operator: ⇂ is no prefix operator.
 a⇂	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇂+b	RightDownVector(a, b)
+a⇂+b	RightDownVector(a, Plus(b))
 (a+b)⇂	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇃b	LeftDownVector(a, b)
 a ⇃ b	LeftDownVector(a, b)
@@ -1954,7 +1954,7 @@ a⇃b^2	LeftDownVector(a, Power(b, 2))
 ⇃a+b	!syntax@1: Operator: ⇃ is no prefix operator.
 ⇃(a+b)	!syntax@1: Operator: ⇃ is no prefix operator.
 a⇃	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇃+b	LeftDownVector(a, b)
+a⇃+b	LeftDownVector(a, Plus(b))
 (a+b)⇃	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇄b	RightArrowLeftArrow(a, b)
 a ⇄ b	RightArrowLeftArrow(a, b)
@@ -1976,7 +1976,7 @@ a⇄b^2	RightArrowLeftArrow(a, Power(b, 2))
 ⇄a+b	!syntax@1: Operator: ⇄ is no prefix operator.
 ⇄(a+b)	!syntax@1: Operator: ⇄ is no prefix operator.
 a⇄	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇄+b	RightArrowLeftArrow(a, b)
+a⇄+b	RightArrowLeftArrow(a, Plus(b))
 (a+b)⇄	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇅b	UpArrowDownArrow(a, b)
 a ⇅ b	UpArrowDownArrow(a, b)
@@ -1998,7 +1998,7 @@ a⇅b^2	UpArrowDownArrow(a, Power(b, 2))
 ⇅a+b	!syntax@1: Operator: ⇅ is no prefix operator.
 ⇅(a+b)	!syntax@1: Operator: ⇅ is no prefix operator.
 a⇅	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇅+b	UpArrowDownArrow(a, b)
+a⇅+b	UpArrowDownArrow(a, Plus(b))
 (a+b)⇅	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇆b	LeftArrowRightArrow(a, b)
 a ⇆ b	LeftArrowRightArrow(a, b)
@@ -2020,7 +2020,7 @@ a⇆b^2	LeftArrowRightArrow(a, Power(b, 2))
 ⇆a+b	!syntax@1: Operator: ⇆ is no prefix operator.
 ⇆(a+b)	!syntax@1: Operator: ⇆ is no prefix operator.
 a⇆	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇆+b	LeftArrowRightArrow(a, b)
+a⇆+b	LeftArrowRightArrow(a, Plus(b))
 (a+b)⇆	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇋b	ReverseEquilibrium(a, b)
 a ⇋ b	ReverseEquilibrium(a, b)
@@ -2042,7 +2042,7 @@ a⇋b^2	ReverseEquilibrium(a, Power(b, 2))
 ⇋a+b	!syntax@1: Operator: ⇋ is no prefix operator.
 ⇋(a+b)	!syntax@1: Operator: ⇋ is no prefix operator.
 a⇋	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇋+b	ReverseEquilibrium(a, b)
+a⇋+b	ReverseEquilibrium(a, Plus(b))
 (a+b)⇋	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇌b	Equilibrium(a, b)
 a ⇌ b	Equilibrium(a, b)
@@ -2064,7 +2064,7 @@ a⇌b^2	Equilibrium(a, Power(b, 2))
 ⇌a+b	!syntax@1: Operator: ⇌ is no prefix operator.
 ⇌(a+b)	!syntax@1: Operator: ⇌ is no prefix operator.
 a⇌	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇌+b	Equilibrium(a, b)
+a⇌+b	Equilibrium(a, Plus(b))
 (a+b)⇌	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇐b	DoubleLeftArrow(a, b)
 a ⇐ b	DoubleLeftArrow(a, b)
@@ -2086,7 +2086,7 @@ a⇐b^2	DoubleLeftArrow(a, Power(b, 2))
 ⇐a+b	!syntax@1: Operator: ⇐ is no prefix operator.
 ⇐(a+b)	!syntax@1: Operator: ⇐ is no prefix operator.
 a⇐	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇐+b	DoubleLeftArrow(a, b)
+a⇐+b	DoubleLeftArrow(a, Plus(b))
 (a+b)⇐	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇑b	DoubleUpArrow(a, b)
 a ⇑ b	DoubleUpArrow(a, b)
@@ -2108,7 +2108,7 @@ a⇑b^2	DoubleUpArrow(a, Power(b, 2))
 ⇑a+b	!syntax@1: Operator: ⇑ is no prefix operator.
 ⇑(a+b)	!syntax@1: Operator: ⇑ is no prefix operator.
 a⇑	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇑+b	DoubleUpArrow(a, b)
+a⇑+b	DoubleUpArrow(a, Plus(b))
 (a+b)⇑	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇒b	DoubleRightArrow(a, b)
 a ⇒ b	DoubleRightArrow(a, b)
@@ -2130,7 +2130,7 @@ a⇒b^2	DoubleRightArrow(a, Power(b, 2))
 ⇒a+b	!syntax@1: Operator: ⇒ is no prefix operator.
 ⇒(a+b)	!syntax@1: Operator: ⇒ is no prefix operator.
 a⇒	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇒+b	DoubleRightArrow(a, b)
+a⇒+b	DoubleRightArrow(a, Plus(b))
 (a+b)⇒	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇓b	DoubleDownArrow(a, b)
 a ⇓ b	DoubleDownArrow(a, b)
@@ -2152,7 +2152,7 @@ a⇓b^2	DoubleDownArrow(a, Power(b, 2))
 ⇓a+b	!syntax@1: Operator: ⇓ is no prefix operator.
 ⇓(a+b)	!syntax@1: Operator: ⇓ is no prefix operator.
 a⇓	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇓+b	DoubleDownArrow(a, b)
+a⇓+b	DoubleDownArrow(a, Plus(b))
 (a+b)⇓	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇔b	DoubleLeftRightArrow(a, b)
 a ⇔ b	DoubleLeftRightArrow(a, b)
@@ -2174,7 +2174,7 @@ a⇔b^2	DoubleLeftRightArrow(a, Power(b, 2))
 ⇔a+b	!syntax@1: Operator: ⇔ is no prefix operator.
 ⇔(a+b)	!syntax@1: Operator: ⇔ is no prefix operator.
 a⇔	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇔+b	DoubleLeftRightArrow(a, b)
+a⇔+b	DoubleLeftRightArrow(a, Plus(b))
 (a+b)⇔	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇕b	DoubleUpDownArrow(a, b)
 a ⇕ b	DoubleUpDownArrow(a, b)
@@ -2196,7 +2196,7 @@ a⇕b^2	DoubleUpDownArrow(a, Power(b, 2))
 ⇕a+b	!syntax@1: Operator: ⇕ is no prefix operator.
 ⇕(a+b)	!syntax@1: Operator: ⇕ is no prefix operator.
 a⇕	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇕+b	DoubleUpDownArrow(a, b)
+a⇕+b	DoubleUpDownArrow(a, Plus(b))
 (a+b)⇕	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇤b	LeftArrowBar(a, b)
 a ⇤ b	LeftArrowBar(a, b)
@@ -2218,7 +2218,7 @@ a⇤b^2	LeftArrowBar(a, Power(b, 2))
 ⇤a+b	!syntax@1: Operator: ⇤ is no prefix operator.
 ⇤(a+b)	!syntax@1: Operator: ⇤ is no prefix operator.
 a⇤	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇤+b	LeftArrowBar(a, b)
+a⇤+b	LeftArrowBar(a, Plus(b))
 (a+b)⇤	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇥b	RightArrowBar(a, b)
 a ⇥ b	RightArrowBar(a, b)
@@ -2240,7 +2240,7 @@ a⇥b^2	RightArrowBar(a, Power(b, 2))
 ⇥a+b	!syntax@1: Operator: ⇥ is no prefix operator.
 ⇥(a+b)	!syntax@1: Operator: ⇥ is no prefix operator.
 a⇥	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇥+b	RightArrowBar(a, b)
+a⇥+b	RightArrowBar(a, Plus(b))
 (a+b)⇥	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⇵b	DownArrowUpArrow(a, b)
 a ⇵ b	DownArrowUpArrow(a, b)
@@ -2262,7 +2262,7 @@ a⇵b^2	DownArrowUpArrow(a, Power(b, 2))
 ⇵a+b	!syntax@1: Operator: ⇵ is no prefix operator.
 ⇵(a+b)	!syntax@1: Operator: ⇵ is no prefix operator.
 a⇵	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⇵+b	DownArrowUpArrow(a, b)
+a⇵+b	DownArrowUpArrow(a, Plus(b))
 (a+b)⇵	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∀b	!syntax@2: End-of-file not reached.
 a ∀ b	!syntax@3: End-of-file not reached.
@@ -2416,7 +2416,7 @@ a∈b^2	Element(a, Power(b, 2))
 ∈a+b	!syntax@1: Operator: ∈ is no prefix operator.
 ∈(a+b)	!syntax@1: Operator: ∈ is no prefix operator.
 a∈	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∈+b	Element(a, b)
+a∈+b	Element(a, Plus(b))
 (a+b)∈	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∉b	NotElement(a, b)
 a ∉ b	NotElement(a, b)
@@ -2438,7 +2438,7 @@ a∉b^2	NotElement(a, Power(b, 2))
 ∉a+b	!syntax@1: Operator: ∉ is no prefix operator.
 ∉(a+b)	!syntax@1: Operator: ∉ is no prefix operator.
 a∉	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∉+b	NotElement(a, b)
+a∉+b	NotElement(a, Plus(b))
 (a+b)∉	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∋b	ReverseElement(a, b)
 a ∋ b	ReverseElement(a, b)
@@ -2460,7 +2460,7 @@ a∋b^2	ReverseElement(a, Power(b, 2))
 ∋a+b	!syntax@1: Operator: ∋ is no prefix operator.
 ∋(a+b)	!syntax@1: Operator: ∋ is no prefix operator.
 a∋	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∋+b	ReverseElement(a, b)
+a∋+b	ReverseElement(a, Plus(b))
 (a+b)∋	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∌b	NotReverseElement(a, b)
 a ∌ b	NotReverseElement(a, b)
@@ -2482,7 +2482,7 @@ a∌b^2	NotReverseElement(a, Power(b, 2))
 ∌a+b	!syntax@1: Operator: ∌ is no prefix operator.
 ∌(a+b)	!syntax@1: Operator: ∌ is no prefix operator.
 a∌	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∌+b	NotReverseElement(a, b)
+a∌+b	NotReverseElement(a, Plus(b))
 (a+b)∌	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∍b	SuchThat(a, b)
 a ∍ b	SuchThat(a, b)
@@ -2504,7 +2504,7 @@ a∍b^2	SuchThat(a, Power(b, 2))
 ∍a+b	!syntax@1: Operator: ∍ is no prefix operator.
 ∍(a+b)	!syntax@1: Operator: ∍ is no prefix operator.
 a∍	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∍+b	SuchThat(a, b)
+a∍+b	SuchThat(a, Plus(b))
 (a+b)∍	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∏b	!syntax@2: End-of-file not reached.
 a ∏ b	!syntax@3: End-of-file not reached.
@@ -2548,7 +2548,7 @@ a∐b^2	Coproduct(a, Power(b, 2))
 ∐a+b	!syntax@1: Operator: ∐ is no prefix operator.
 ∐(a+b)	!syntax@1: Operator: ∐ is no prefix operator.
 a∐	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∐+b	Coproduct(a, b)
+a∐+b	Coproduct(a, Plus(b))
 (a+b)∐	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∑b	!syntax@2: End-of-file not reached.
 a ∑ b	!syntax@3: End-of-file not reached.
@@ -2614,7 +2614,7 @@ a∓b^2	MinusPlus(a, Power(b, 2))
 ∓a+b	!syntax@1: Operator: ∓ is no prefix operator.
 ∓(a+b)	!syntax@1: Operator: ∓ is no prefix operator.
 a∓	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∓+b	MinusPlus(a, b)
+a∓+b	MinusPlus(a, Plus(b))
 (a+b)∓	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∖b	Backslash(a, b)
 a ∖ b	Backslash(a, b)
@@ -2636,7 +2636,7 @@ a∖b^2	Backslash(a, Power(b, 2))
 ∖a+b	!syntax@1: Operator: ∖ is no prefix operator.
 ∖(a+b)	!syntax@1: Operator: ∖ is no prefix operator.
 a∖	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∖+b	Backslash(a, b)
+a∖+b	Backslash(a, Plus(b))
 (a+b)∖	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∘b	SmallCircle(a, b)
 a ∘ b	SmallCircle(a, b)
@@ -2658,7 +2658,7 @@ a∘b^2	SmallCircle(a, Power(b, 2))
 ∘a+b	!syntax@1: Operator: ∘ is no prefix operator.
 ∘(a+b)	!syntax@1: Operator: ∘ is no prefix operator.
 a∘	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∘+b	SmallCircle(a, b)
+a∘+b	SmallCircle(a, Plus(b))
 (a+b)∘	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a√b	!syntax@2: End-of-file not reached.
 a √ b	!syntax@3: End-of-file not reached.
@@ -2702,7 +2702,7 @@ a∝b^2	Proportional(a, Power(b, 2))
 ∝a+b	!syntax@1: Operator: ∝ is no prefix operator.
 ∝(a+b)	!syntax@1: Operator: ∝ is no prefix operator.
 a∝	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∝+b	Proportional(a, b)
+a∝+b	Proportional(a, Plus(b))
 (a+b)∝	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∣b	Divides(a, b)
 a ∣ b	Divides(a, b)
@@ -2724,7 +2724,7 @@ a∣b^2	Divides(a, Power(b, 2))
 ∣a+b	!syntax@1: Operator: ∣ is no prefix operator.
 ∣(a+b)	!syntax@1: Operator: ∣ is no prefix operator.
 a∣	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∣+b	Divides(a, b)
+a∣+b	Divides(a, Plus(b))
 (a+b)∣	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∥b	DoubleVerticalBar(a, b)
 a ∥ b	DoubleVerticalBar(a, b)
@@ -2746,7 +2746,7 @@ a∥b^2	DoubleVerticalBar(a, Power(b, 2))
 ∥a+b	!syntax@1: Operator: ∥ is no prefix operator.
 ∥(a+b)	!syntax@1: Operator: ∥ is no prefix operator.
 a∥	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∥+b	DoubleVerticalBar(a, b)
+a∥+b	DoubleVerticalBar(a, Plus(b))
 (a+b)∥	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∦b	NotDoubleVerticalBar(a, b)
 a ∦ b	NotDoubleVerticalBar(a, b)
@@ -2768,7 +2768,7 @@ a∦b^2	NotDoubleVerticalBar(a, Power(b, 2))
 ∦a+b	!syntax@1: Operator: ∦ is no prefix operator.
 ∦(a+b)	!syntax@1: Operator: ∦ is no prefix operator.
 a∦	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∦+b	NotDoubleVerticalBar(a, b)
+a∦+b	NotDoubleVerticalBar(a, Plus(b))
 (a+b)∦	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∧b	And(a, b)
 a ∧ b	And(a, b)
@@ -2790,7 +2790,7 @@ a∧b^2	And(a, Power(b, 2))
 ∧a+b	!syntax@1: Operator: ∧ is no prefix operator.
 ∧(a+b)	!syntax@1: Operator: ∧ is no prefix operator.
 a∧	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∧+b	And(a, b)
+a∧+b	And(a, Plus(b))
 (a+b)∧	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∨b	Or(a, b)
 a ∨ b	Or(a, b)
@@ -2812,7 +2812,7 @@ a∨b^2	Or(a, Power(b, 2))
 ∨a+b	!syntax@1: Operator: ∨ is no prefix operator.
 ∨(a+b)	!syntax@1: Operator: ∨ is no prefix operator.
 a∨	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∨+b	Or(a, b)
+a∨+b	Or(a, Plus(b))
 (a+b)∨	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∴b	Therefore(a, b)
 a ∴ b	Therefore(a, b)
@@ -2834,7 +2834,7 @@ a∴b^2	Therefore(a, Power(b, 2))
 ∴a+b	!syntax@1: Operator: ∴ is no prefix operator.
 ∴(a+b)	!syntax@1: Operator: ∴ is no prefix operator.
 a∴	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∴+b	Therefore(a, b)
+a∴+b	Therefore(a, Plus(b))
 (a+b)∴	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∵b	Because(a, b)
 a ∵ b	Because(a, b)
@@ -2856,7 +2856,7 @@ a∵b^2	Because(a, Power(b, 2))
 ∵a+b	!syntax@1: Operator: ∵ is no prefix operator.
 ∵(a+b)	!syntax@1: Operator: ∵ is no prefix operator.
 a∵	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∵+b	Because(a, b)
+a∵+b	Because(a, Plus(b))
 (a+b)∵	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∶b	Colon(a, b)
 a ∶ b	Colon(a, b)
@@ -2878,7 +2878,7 @@ a∶b^2	Colon(a, Power(b, 2))
 ∶a+b	!syntax@1: Operator: ∶ is no prefix operator.
 ∶(a+b)	!syntax@1: Operator: ∶ is no prefix operator.
 a∶	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∶+b	Colon(a, b)
+a∶+b	Colon(a, Plus(b))
 (a+b)∶	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∷b	Proportion(a, b)
 a ∷ b	Proportion(a, b)
@@ -2900,7 +2900,7 @@ a∷b^2	Proportion(a, Power(b, 2))
 ∷a+b	!syntax@1: Operator: ∷ is no prefix operator.
 ∷(a+b)	!syntax@1: Operator: ∷ is no prefix operator.
 a∷	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∷+b	Proportion(a, b)
+a∷+b	Proportion(a, Plus(b))
 (a+b)∷	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a∼b	Tilde(a, b)
 a ∼ b	Tilde(a, b)
@@ -2922,7 +2922,7 @@ a∼b^2	Tilde(a, Power(b, 2))
 ∼a+b	!syntax@1: Operator: ∼ is no prefix operator.
 ∼(a+b)	!syntax@1: Operator: ∼ is no prefix operator.
 a∼	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a∼+b	Tilde(a, b)
+a∼+b	Tilde(a, Plus(b))
 (a+b)∼	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≀b	VerticalTilde(a, b)
 a ≀ b	VerticalTilde(a, b)
@@ -2944,7 +2944,7 @@ a≀b^2	VerticalTilde(a, Power(b, 2))
 ≀a+b	!syntax@1: Operator: ≀ is no prefix operator.
 ≀(a+b)	!syntax@1: Operator: ≀ is no prefix operator.
 a≀	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≀+b	VerticalTilde(a, b)
+a≀+b	VerticalTilde(a, Plus(b))
 (a+b)≀	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≁b	NotTilde(a, b)
 a ≁ b	NotTilde(a, b)
@@ -2966,7 +2966,7 @@ a≁b^2	NotTilde(a, Power(b, 2))
 ≁a+b	!syntax@1: Operator: ≁ is no prefix operator.
 ≁(a+b)	!syntax@1: Operator: ≁ is no prefix operator.
 a≁	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≁+b	NotTilde(a, b)
+a≁+b	NotTilde(a, Plus(b))
 (a+b)≁	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≂b	EqualTilde(a, b)
 a ≂ b	EqualTilde(a, b)
@@ -2988,7 +2988,7 @@ a≂b^2	EqualTilde(a, Power(b, 2))
 ≂a+b	!syntax@1: Operator: ≂ is no prefix operator.
 ≂(a+b)	!syntax@1: Operator: ≂ is no prefix operator.
 a≂	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≂+b	EqualTilde(a, b)
+a≂+b	EqualTilde(a, Plus(b))
 (a+b)≂	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≃b	TildeEqual(a, b)
 a ≃ b	TildeEqual(a, b)
@@ -3010,7 +3010,7 @@ a≃b^2	TildeEqual(a, Power(b, 2))
 ≃a+b	!syntax@1: Operator: ≃ is no prefix operator.
 ≃(a+b)	!syntax@1: Operator: ≃ is no prefix operator.
 a≃	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≃+b	TildeEqual(a, b)
+a≃+b	TildeEqual(a, Plus(b))
 (a+b)≃	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≄b	NotTildeEqual(a, b)
 a ≄ b	NotTildeEqual(a, b)
@@ -3032,7 +3032,7 @@ a≄b^2	NotTildeEqual(a, Power(b, 2))
 ≄a+b	!syntax@1: Operator: ≄ is no prefix operator.
 ≄(a+b)	!syntax@1: Operator: ≄ is no prefix operator.
 a≄	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≄+b	NotTildeEqual(a, b)
+a≄+b	NotTildeEqual(a, Plus(b))
 (a+b)≄	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≅b	TildeFullEqual(a, b)
 a ≅ b	TildeFullEqual(a, b)
@@ -3054,7 +3054,7 @@ a≅b^2	TildeFullEqual(a, Power(b, 2))
 ≅a+b	!syntax@1: Operator: ≅ is no prefix operator.
 ≅(a+b)	!syntax@1: Operator: ≅ is no prefix operator.
 a≅	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≅+b	TildeFullEqual(a, b)
+a≅+b	TildeFullEqual(a, Plus(b))
 (a+b)≅	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≇b	NotTildeFullEqual(a, b)
 a ≇ b	NotTildeFullEqual(a, b)
@@ -3076,7 +3076,7 @@ a≇b^2	NotTildeFullEqual(a, Power(b, 2))
 ≇a+b	!syntax@1: Operator: ≇ is no prefix operator.
 ≇(a+b)	!syntax@1: Operator: ≇ is no prefix operator.
 a≇	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≇+b	NotTildeFullEqual(a, b)
+a≇+b	NotTildeFullEqual(a, Plus(b))
 (a+b)≇	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≈b	TildeTilde(a, b)
 a ≈ b	TildeTilde(a, b)
@@ -3098,7 +3098,7 @@ a≈b^2	TildeTilde(a, Power(b, 2))
 ≈a+b	!syntax@1: Operator: ≈ is no prefix operator.
 ≈(a+b)	!syntax@1: Operator: ≈ is no prefix operator.
 a≈	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≈+b	TildeTilde(a, b)
+a≈+b	TildeTilde(a, Plus(b))
 (a+b)≈	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≉b	NotTildeTilde(a, b)
 a ≉ b	NotTildeTilde(a, b)
@@ -3120,7 +3120,7 @@ a≉b^2	NotTildeTilde(a, Power(b, 2))
 ≉a+b	!syntax@1: Operator: ≉ is no prefix operator.
 ≉(a+b)	!syntax@1: Operator: ≉ is no prefix operator.
 a≉	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≉+b	NotTildeTilde(a, b)
+a≉+b	NotTildeTilde(a, Plus(b))
 (a+b)≉	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≍b	CupCap(a, b)
 a ≍ b	CupCap(a, b)
@@ -3142,7 +3142,7 @@ a≍b^2	CupCap(a, Power(b, 2))
 ≍a+b	!syntax@1: Operator: ≍ is no prefix operator.
 ≍(a+b)	!syntax@1: Operator: ≍ is no prefix operator.
 a≍	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≍+b	CupCap(a, b)
+a≍+b	CupCap(a, Plus(b))
 (a+b)≍	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≎b	HumpDownHump(a, b)
 a ≎ b	HumpDownHump(a, b)
@@ -3164,7 +3164,7 @@ a≎b^2	HumpDownHump(a, Power(b, 2))
 ≎a+b	!syntax@1: Operator: ≎ is no prefix operator.
 ≎(a+b)	!syntax@1: Operator: ≎ is no prefix operator.
 a≎	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≎+b	HumpDownHump(a, b)
+a≎+b	HumpDownHump(a, Plus(b))
 (a+b)≎	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≏b	HumpEqual(a, b)
 a ≏ b	HumpEqual(a, b)
@@ -3186,7 +3186,7 @@ a≏b^2	HumpEqual(a, Power(b, 2))
 ≏a+b	!syntax@1: Operator: ≏ is no prefix operator.
 ≏(a+b)	!syntax@1: Operator: ≏ is no prefix operator.
 a≏	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≏+b	HumpEqual(a, b)
+a≏+b	HumpEqual(a, Plus(b))
 (a+b)≏	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≐b	DotEqual(a, b)
 a ≐ b	DotEqual(a, b)
@@ -3208,7 +3208,7 @@ a≐b^2	DotEqual(a, Power(b, 2))
 ≐a+b	!syntax@1: Operator: ≐ is no prefix operator.
 ≐(a+b)	!syntax@1: Operator: ≐ is no prefix operator.
 a≐	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≐+b	DotEqual(a, b)
+a≐+b	DotEqual(a, Plus(b))
 (a+b)≐	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≠b	Unequal(a, b)
 a ≠ b	Unequal(a, b)
@@ -3230,7 +3230,7 @@ a≠b^2	Unequal(a, Power(b, 2))
 ≠a+b	!syntax@1: Operator: ≠ is no prefix operator.
 ≠(a+b)	!syntax@1: Operator: ≠ is no prefix operator.
 a≠	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≠+b	Unequal(a, b)
+a≠+b	Unequal(a, Plus(b))
 (a+b)≠	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≡b	Congruent(a, b)
 a ≡ b	Congruent(a, b)
@@ -3252,7 +3252,7 @@ a≡b^2	Congruent(a, Power(b, 2))
 ≡a+b	!syntax@1: Operator: ≡ is no prefix operator.
 ≡(a+b)	!syntax@1: Operator: ≡ is no prefix operator.
 a≡	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≡+b	Congruent(a, b)
+a≡+b	Congruent(a, Plus(b))
 (a+b)≡	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≢b	NotCongruent(a, b)
 a ≢ b	NotCongruent(a, b)
@@ -3274,7 +3274,7 @@ a≢b^2	NotCongruent(a, Power(b, 2))
 ≢a+b	!syntax@1: Operator: ≢ is no prefix operator.
 ≢(a+b)	!syntax@1: Operator: ≢ is no prefix operator.
 a≢	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≢+b	NotCongruent(a, b)
+a≢+b	NotCongruent(a, Plus(b))
 (a+b)≢	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≤b	LessEqual(a, b)
 a ≤ b	LessEqual(a, b)
@@ -3296,7 +3296,7 @@ a≤b^2	LessEqual(a, Power(b, 2))
 ≤a+b	!syntax@1: Operator: ≤ is no prefix operator.
 ≤(a+b)	!syntax@1: Operator: ≤ is no prefix operator.
 a≤	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≤+b	LessEqual(a, b)
+a≤+b	LessEqual(a, Plus(b))
 (a+b)≤	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≥b	GreaterEqual(a, b)
 a ≥ b	GreaterEqual(a, b)
@@ -3318,7 +3318,7 @@ a≥b^2	GreaterEqual(a, Power(b, 2))
 ≥a+b	!syntax@1: Operator: ≥ is no prefix operator.
 ≥(a+b)	!syntax@1: Operator: ≥ is no prefix operator.
 a≥	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≥+b	GreaterEqual(a, b)
+a≥+b	GreaterEqual(a, Plus(b))
 (a+b)≥	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≦b	LessFullEqual(a, b)
 a ≦ b	LessFullEqual(a, b)
@@ -3340,7 +3340,7 @@ a≦b^2	LessFullEqual(a, Power(b, 2))
 ≦a+b	!syntax@1: Operator: ≦ is no prefix operator.
 ≦(a+b)	!syntax@1: Operator: ≦ is no prefix operator.
 a≦	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≦+b	LessFullEqual(a, b)
+a≦+b	LessFullEqual(a, Plus(b))
 (a+b)≦	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≧b	GreaterFullEqual(a, b)
 a ≧ b	GreaterFullEqual(a, b)
@@ -3362,7 +3362,7 @@ a≧b^2	GreaterFullEqual(a, Power(b, 2))
 ≧a+b	!syntax@1: Operator: ≧ is no prefix operator.
 ≧(a+b)	!syntax@1: Operator: ≧ is no prefix operator.
 a≧	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≧+b	GreaterFullEqual(a, b)
+a≧+b	GreaterFullEqual(a, Plus(b))
 (a+b)≧	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≨b	NotLessFullEqual(a, b)
 a ≨ b	NotLessFullEqual(a, b)
@@ -3384,7 +3384,7 @@ a≨b^2	NotLessFullEqual(a, Power(b, 2))
 ≨a+b	!syntax@1: Operator: ≨ is no prefix operator.
 ≨(a+b)	!syntax@1: Operator: ≨ is no prefix operator.
 a≨	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≨+b	NotLessFullEqual(a, b)
+a≨+b	NotLessFullEqual(a, Plus(b))
 (a+b)≨	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≩b	NotGreaterFullEqual(a, b)
 a ≩ b	NotGreaterFullEqual(a, b)
@@ -3406,7 +3406,7 @@ a≩b^2	NotGreaterFullEqual(a, Power(b, 2))
 ≩a+b	!syntax@1: Operator: ≩ is no prefix operator.
 ≩(a+b)	!syntax@1: Operator: ≩ is no prefix operator.
 a≩	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≩+b	NotGreaterFullEqual(a, b)
+a≩+b	NotGreaterFullEqual(a, Plus(b))
 (a+b)≩	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≪b	LessLess(a, b)
 a ≪ b	LessLess(a, b)
@@ -3428,7 +3428,7 @@ a≪b^2	LessLess(a, Power(b, 2))
 ≪a+b	!syntax@1: Operator: ≪ is no prefix operator.
 ≪(a+b)	!syntax@1: Operator: ≪ is no prefix operator.
 a≪	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≪+b	LessLess(a, b)
+a≪+b	LessLess(a, Plus(b))
 (a+b)≪	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≫b	GreaterGreater(a, b)
 a ≫ b	GreaterGreater(a, b)
@@ -3450,7 +3450,7 @@ a≫b^2	GreaterGreater(a, Power(b, 2))
 ≫a+b	!syntax@1: Operator: ≫ is no prefix operator.
 ≫(a+b)	!syntax@1: Operator: ≫ is no prefix operator.
 a≫	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≫+b	GreaterGreater(a, b)
+a≫+b	GreaterGreater(a, Plus(b))
 (a+b)≫	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≭b	NotCupCap(a, b)
 a ≭ b	NotCupCap(a, b)
@@ -3472,7 +3472,7 @@ a≭b^2	NotCupCap(a, Power(b, 2))
 ≭a+b	!syntax@1: Operator: ≭ is no prefix operator.
 ≭(a+b)	!syntax@1: Operator: ≭ is no prefix operator.
 a≭	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≭+b	NotCupCap(a, b)
+a≭+b	NotCupCap(a, Plus(b))
 (a+b)≭	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≮b	NotLess(a, b)
 a ≮ b	NotLess(a, b)
@@ -3494,7 +3494,7 @@ a≮b^2	NotLess(a, Power(b, 2))
 ≮a+b	!syntax@1: Operator: ≮ is no prefix operator.
 ≮(a+b)	!syntax@1: Operator: ≮ is no prefix operator.
 a≮	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≮+b	NotLess(a, b)
+a≮+b	NotLess(a, Plus(b))
 (a+b)≮	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≯b	NotGreater(a, b)
 a ≯ b	NotGreater(a, b)
@@ -3516,7 +3516,7 @@ a≯b^2	NotGreater(a, Power(b, 2))
 ≯a+b	!syntax@1: Operator: ≯ is no prefix operator.
 ≯(a+b)	!syntax@1: Operator: ≯ is no prefix operator.
 a≯	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≯+b	NotGreater(a, b)
+a≯+b	NotGreater(a, Plus(b))
 (a+b)≯	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≰b	NotLessEqual(a, b)
 a ≰ b	NotLessEqual(a, b)
@@ -3538,7 +3538,7 @@ a≰b^2	NotLessEqual(a, Power(b, 2))
 ≰a+b	!syntax@1: Operator: ≰ is no prefix operator.
 ≰(a+b)	!syntax@1: Operator: ≰ is no prefix operator.
 a≰	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≰+b	NotLessEqual(a, b)
+a≰+b	NotLessEqual(a, Plus(b))
 (a+b)≰	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≱b	NotGreaterEqual(a, b)
 a ≱ b	NotGreaterEqual(a, b)
@@ -3560,7 +3560,7 @@ a≱b^2	NotGreaterEqual(a, Power(b, 2))
 ≱a+b	!syntax@1: Operator: ≱ is no prefix operator.
 ≱(a+b)	!syntax@1: Operator: ≱ is no prefix operator.
 a≱	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≱+b	NotGreaterEqual(a, b)
+a≱+b	NotGreaterEqual(a, Plus(b))
 (a+b)≱	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≲b	LessTilde(a, b)
 a ≲ b	LessTilde(a, b)
@@ -3582,7 +3582,7 @@ a≲b^2	LessTilde(a, Power(b, 2))
 ≲a+b	!syntax@1: Operator: ≲ is no prefix operator.
 ≲(a+b)	!syntax@1: Operator: ≲ is no prefix operator.
 a≲	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≲+b	LessTilde(a, b)
+a≲+b	LessTilde(a, Plus(b))
 (a+b)≲	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≳b	GreaterTilde(a, b)
 a ≳ b	GreaterTilde(a, b)
@@ -3604,7 +3604,7 @@ a≳b^2	GreaterTilde(a, Power(b, 2))
 ≳a+b	!syntax@1: Operator: ≳ is no prefix operator.
 ≳(a+b)	!syntax@1: Operator: ≳ is no prefix operator.
 a≳	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≳+b	GreaterTilde(a, b)
+a≳+b	GreaterTilde(a, Plus(b))
 (a+b)≳	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≴b	NotLessTilde(a, b)
 a ≴ b	NotLessTilde(a, b)
@@ -3626,7 +3626,7 @@ a≴b^2	NotLessTilde(a, Power(b, 2))
 ≴a+b	!syntax@1: Operator: ≴ is no prefix operator.
 ≴(a+b)	!syntax@1: Operator: ≴ is no prefix operator.
 a≴	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≴+b	NotLessTilde(a, b)
+a≴+b	NotLessTilde(a, Plus(b))
 (a+b)≴	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≵b	NotGreaterTilde(a, b)
 a ≵ b	NotGreaterTilde(a, b)
@@ -3648,7 +3648,7 @@ a≵b^2	NotGreaterTilde(a, Power(b, 2))
 ≵a+b	!syntax@1: Operator: ≵ is no prefix operator.
 ≵(a+b)	!syntax@1: Operator: ≵ is no prefix operator.
 a≵	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≵+b	NotGreaterTilde(a, b)
+a≵+b	NotGreaterTilde(a, Plus(b))
 (a+b)≵	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≶b	LessGreater(a, b)
 a ≶ b	LessGreater(a, b)
@@ -3670,7 +3670,7 @@ a≶b^2	LessGreater(a, Power(b, 2))
 ≶a+b	!syntax@1: Operator: ≶ is no prefix operator.
 ≶(a+b)	!syntax@1: Operator: ≶ is no prefix operator.
 a≶	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≶+b	LessGreater(a, b)
+a≶+b	LessGreater(a, Plus(b))
 (a+b)≶	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≷b	GreaterLess(a, b)
 a ≷ b	GreaterLess(a, b)
@@ -3692,7 +3692,7 @@ a≷b^2	GreaterLess(a, Power(b, 2))
 ≷a+b	!syntax@1: Operator: ≷ is no prefix operator.
 ≷(a+b)	!syntax@1: Operator: ≷ is no prefix operator.
 a≷	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≷+b	GreaterLess(a, b)
+a≷+b	GreaterLess(a, Plus(b))
 (a+b)≷	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≸b	NotLessGreater(a, b)
 a ≸ b	NotLessGreater(a, b)
@@ -3714,7 +3714,7 @@ a≸b^2	NotLessGreater(a, Power(b, 2))
 ≸a+b	!syntax@1: Operator: ≸ is no prefix operator.
 ≸(a+b)	!syntax@1: Operator: ≸ is no prefix operator.
 a≸	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≸+b	NotLessGreater(a, b)
+a≸+b	NotLessGreater(a, Plus(b))
 (a+b)≸	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≹b	NotGreaterLess(a, b)
 a ≹ b	NotGreaterLess(a, b)
@@ -3736,7 +3736,7 @@ a≹b^2	NotGreaterLess(a, Power(b, 2))
 ≹a+b	!syntax@1: Operator: ≹ is no prefix operator.
 ≹(a+b)	!syntax@1: Operator: ≹ is no prefix operator.
 a≹	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≹+b	NotGreaterLess(a, b)
+a≹+b	NotGreaterLess(a, Plus(b))
 (a+b)≹	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≺b	Precedes(a, b)
 a ≺ b	Precedes(a, b)
@@ -3758,7 +3758,7 @@ a≺b^2	Precedes(a, Power(b, 2))
 ≺a+b	!syntax@1: Operator: ≺ is no prefix operator.
 ≺(a+b)	!syntax@1: Operator: ≺ is no prefix operator.
 a≺	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≺+b	Precedes(a, b)
+a≺+b	Precedes(a, Plus(b))
 (a+b)≺	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≻b	Succeeds(a, b)
 a ≻ b	Succeeds(a, b)
@@ -3780,7 +3780,7 @@ a≻b^2	Succeeds(a, Power(b, 2))
 ≻a+b	!syntax@1: Operator: ≻ is no prefix operator.
 ≻(a+b)	!syntax@1: Operator: ≻ is no prefix operator.
 a≻	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≻+b	Succeeds(a, b)
+a≻+b	Succeeds(a, Plus(b))
 (a+b)≻	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≼b	PrecedesSlantEqual(a, b)
 a ≼ b	PrecedesSlantEqual(a, b)
@@ -3802,7 +3802,7 @@ a≼b^2	PrecedesSlantEqual(a, Power(b, 2))
 ≼a+b	!syntax@1: Operator: ≼ is no prefix operator.
 ≼(a+b)	!syntax@1: Operator: ≼ is no prefix operator.
 a≼	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≼+b	PrecedesSlantEqual(a, b)
+a≼+b	PrecedesSlantEqual(a, Plus(b))
 (a+b)≼	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≽b	SucceedsSlantEqual(a, b)
 a ≽ b	SucceedsSlantEqual(a, b)
@@ -3824,7 +3824,7 @@ a≽b^2	SucceedsSlantEqual(a, Power(b, 2))
 ≽a+b	!syntax@1: Operator: ≽ is no prefix operator.
 ≽(a+b)	!syntax@1: Operator: ≽ is no prefix operator.
 a≽	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≽+b	SucceedsSlantEqual(a, b)
+a≽+b	SucceedsSlantEqual(a, Plus(b))
 (a+b)≽	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≾b	PrecedesTilde(a, b)
 a ≾ b	PrecedesTilde(a, b)
@@ -3846,7 +3846,7 @@ a≾b^2	PrecedesTilde(a, Power(b, 2))
 ≾a+b	!syntax@1: Operator: ≾ is no prefix operator.
 ≾(a+b)	!syntax@1: Operator: ≾ is no prefix operator.
 a≾	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≾+b	PrecedesTilde(a, b)
+a≾+b	PrecedesTilde(a, Plus(b))
 (a+b)≾	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a≿b	SucceedsTilde(a, b)
 a ≿ b	SucceedsTilde(a, b)
@@ -3868,7 +3868,7 @@ a≿b^2	SucceedsTilde(a, Power(b, 2))
 ≿a+b	!syntax@1: Operator: ≿ is no prefix operator.
 ≿(a+b)	!syntax@1: Operator: ≿ is no prefix operator.
 a≿	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a≿+b	SucceedsTilde(a, b)
+a≿+b	SucceedsTilde(a, Plus(b))
 (a+b)≿	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊀b	NotPrecedes(a, b)
 a ⊀ b	NotPrecedes(a, b)
@@ -3890,7 +3890,7 @@ a⊀b^2	NotPrecedes(a, Power(b, 2))
 ⊀a+b	!syntax@1: Operator: ⊀ is no prefix operator.
 ⊀(a+b)	!syntax@1: Operator: ⊀ is no prefix operator.
 a⊀	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊀+b	NotPrecedes(a, b)
+a⊀+b	NotPrecedes(a, Plus(b))
 (a+b)⊀	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊁b	NotSucceeds(a, b)
 a ⊁ b	NotSucceeds(a, b)
@@ -3912,7 +3912,7 @@ a⊁b^2	NotSucceeds(a, Power(b, 2))
 ⊁a+b	!syntax@1: Operator: ⊁ is no prefix operator.
 ⊁(a+b)	!syntax@1: Operator: ⊁ is no prefix operator.
 a⊁	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊁+b	NotSucceeds(a, b)
+a⊁+b	NotSucceeds(a, Plus(b))
 (a+b)⊁	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊂b	Subset(a, b)
 a ⊂ b	Subset(a, b)
@@ -3934,7 +3934,7 @@ a⊂b^2	Subset(a, Power(b, 2))
 ⊂a+b	!syntax@1: Operator: ⊂ is no prefix operator.
 ⊂(a+b)	!syntax@1: Operator: ⊂ is no prefix operator.
 a⊂	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊂+b	Subset(a, b)
+a⊂+b	Subset(a, Plus(b))
 (a+b)⊂	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊃b	Superset(a, b)
 a ⊃ b	Superset(a, b)
@@ -3956,7 +3956,7 @@ a⊃b^2	Superset(a, Power(b, 2))
 ⊃a+b	!syntax@1: Operator: ⊃ is no prefix operator.
 ⊃(a+b)	!syntax@1: Operator: ⊃ is no prefix operator.
 a⊃	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊃+b	Superset(a, b)
+a⊃+b	Superset(a, Plus(b))
 (a+b)⊃	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊄b	NotSubset(a, b)
 a ⊄ b	NotSubset(a, b)
@@ -3978,7 +3978,7 @@ a⊄b^2	NotSubset(a, Power(b, 2))
 ⊄a+b	!syntax@1: Operator: ⊄ is no prefix operator.
 ⊄(a+b)	!syntax@1: Operator: ⊄ is no prefix operator.
 a⊄	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊄+b	NotSubset(a, b)
+a⊄+b	NotSubset(a, Plus(b))
 (a+b)⊄	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊅b	NotSuperset(a, b)
 a ⊅ b	NotSuperset(a, b)
@@ -4000,7 +4000,7 @@ a⊅b^2	NotSuperset(a, Power(b, 2))
 ⊅a+b	!syntax@1: Operator: ⊅ is no prefix operator.
 ⊅(a+b)	!syntax@1: Operator: ⊅ is no prefix operator.
 a⊅	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊅+b	NotSuperset(a, b)
+a⊅+b	NotSuperset(a, Plus(b))
 (a+b)⊅	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊆b	SubsetEqual(a, b)
 a ⊆ b	SubsetEqual(a, b)
@@ -4022,7 +4022,7 @@ a⊆b^2	SubsetEqual(a, Power(b, 2))
 ⊆a+b	!syntax@1: Operator: ⊆ is no prefix operator.
 ⊆(a+b)	!syntax@1: Operator: ⊆ is no prefix operator.
 a⊆	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊆+b	SubsetEqual(a, b)
+a⊆+b	SubsetEqual(a, Plus(b))
 (a+b)⊆	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊇b	SupersetEqual(a, b)
 a ⊇ b	SupersetEqual(a, b)
@@ -4044,7 +4044,7 @@ a⊇b^2	SupersetEqual(a, Power(b, 2))
 ⊇a+b	!syntax@1: Operator: ⊇ is no prefix operator.
 ⊇(a+b)	!syntax@1: Operator: ⊇ is no prefix operator.
 a⊇	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊇+b	SupersetEqual(a, b)
+a⊇+b	SupersetEqual(a, Plus(b))
 (a+b)⊇	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊈b	NotSubsetEqual(a, b)
 a ⊈ b	NotSubsetEqual(a, b)
@@ -4066,7 +4066,7 @@ a⊈b^2	NotSubsetEqual(a, Power(b, 2))
 ⊈a+b	!syntax@1: Operator: ⊈ is no prefix operator.
 ⊈(a+b)	!syntax@1: Operator: ⊈ is no prefix operator.
 a⊈	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊈+b	NotSubsetEqual(a, b)
+a⊈+b	NotSubsetEqual(a, Plus(b))
 (a+b)⊈	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊉b	NotSupersetEqual(a, b)
 a ⊉ b	NotSupersetEqual(a, b)
@@ -4088,7 +4088,7 @@ a⊉b^2	NotSupersetEqual(a, Power(b, 2))
 ⊉a+b	!syntax@1: Operator: ⊉ is no prefix operator.
 ⊉(a+b)	!syntax@1: Operator: ⊉ is no prefix operator.
 a⊉	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊉+b	NotSupersetEqual(a, b)
+a⊉+b	NotSupersetEqual(a, Plus(b))
 (a+b)⊉	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊎b	UnionPlus(a, b)
 a ⊎ b	UnionPlus(a, b)
@@ -4110,7 +4110,7 @@ a⊎b^2	UnionPlus(a, Power(b, 2))
 ⊎a+b	!syntax@1: Operator: ⊎ is no prefix operator.
 ⊎(a+b)	!syntax@1: Operator: ⊎ is no prefix operator.
 a⊎	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊎+b	UnionPlus(a, b)
+a⊎+b	UnionPlus(a, Plus(b))
 (a+b)⊎	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊏b	SquareSubset(a, b)
 a ⊏ b	SquareSubset(a, b)
@@ -4132,7 +4132,7 @@ a⊏b^2	SquareSubset(a, Power(b, 2))
 ⊏a+b	!syntax@1: Operator: ⊏ is no prefix operator.
 ⊏(a+b)	!syntax@1: Operator: ⊏ is no prefix operator.
 a⊏	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊏+b	SquareSubset(a, b)
+a⊏+b	SquareSubset(a, Plus(b))
 (a+b)⊏	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊐b	SquareSuperset(a, b)
 a ⊐ b	SquareSuperset(a, b)
@@ -4154,7 +4154,7 @@ a⊐b^2	SquareSuperset(a, Power(b, 2))
 ⊐a+b	!syntax@1: Operator: ⊐ is no prefix operator.
 ⊐(a+b)	!syntax@1: Operator: ⊐ is no prefix operator.
 a⊐	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊐+b	SquareSuperset(a, b)
+a⊐+b	SquareSuperset(a, Plus(b))
 (a+b)⊐	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊑b	SquareSubsetEqual(a, b)
 a ⊑ b	SquareSubsetEqual(a, b)
@@ -4176,7 +4176,7 @@ a⊑b^2	SquareSubsetEqual(a, Power(b, 2))
 ⊑a+b	!syntax@1: Operator: ⊑ is no prefix operator.
 ⊑(a+b)	!syntax@1: Operator: ⊑ is no prefix operator.
 a⊑	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊑+b	SquareSubsetEqual(a, b)
+a⊑+b	SquareSubsetEqual(a, Plus(b))
 (a+b)⊑	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊒b	SquareSupersetEqual(a, b)
 a ⊒ b	SquareSupersetEqual(a, b)
@@ -4198,7 +4198,7 @@ a⊒b^2	SquareSupersetEqual(a, Power(b, 2))
 ⊒a+b	!syntax@1: Operator: ⊒ is no prefix operator.
 ⊒(a+b)	!syntax@1: Operator: ⊒ is no prefix operator.
 a⊒	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊒+b	SquareSupersetEqual(a, b)
+a⊒+b	SquareSupersetEqual(a, Plus(b))
 (a+b)⊒	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊓b	SquareIntersection(a, b)
 a ⊓ b	SquareIntersection(a, b)
@@ -4220,7 +4220,7 @@ a⊓b^2	SquareIntersection(a, Power(b, 2))
 ⊓a+b	!syntax@1: Operator: ⊓ is no prefix operator.
 ⊓(a+b)	!syntax@1: Operator: ⊓ is no prefix operator.
 a⊓	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊓+b	SquareIntersection(a, b)
+a⊓+b	SquareIntersection(a, Plus(b))
 (a+b)⊓	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊔b	SquareUnion(a, b)
 a ⊔ b	SquareUnion(a, b)
@@ -4242,7 +4242,7 @@ a⊔b^2	SquareUnion(a, Power(b, 2))
 ⊔a+b	!syntax@1: Operator: ⊔ is no prefix operator.
 ⊔(a+b)	!syntax@1: Operator: ⊔ is no prefix operator.
 a⊔	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊔+b	SquareUnion(a, b)
+a⊔+b	SquareUnion(a, Plus(b))
 (a+b)⊔	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊕b	CirclePlus(a, b)
 a ⊕ b	CirclePlus(a, b)
@@ -4264,7 +4264,7 @@ a⊕b^2	CirclePlus(a, Power(b, 2))
 ⊕a+b	!syntax@1: Operator: ⊕ is no prefix operator.
 ⊕(a+b)	!syntax@1: Operator: ⊕ is no prefix operator.
 a⊕	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊕+b	CirclePlus(a, b)
+a⊕+b	CirclePlus(a, Plus(b))
 (a+b)⊕	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊖b	CircleMinus(a, b)
 a ⊖ b	CircleMinus(a, b)
@@ -4286,7 +4286,7 @@ a⊖b^2	CircleMinus(a, Power(b, 2))
 ⊖a+b	!syntax@1: Operator: ⊖ is no prefix operator.
 ⊖(a+b)	!syntax@1: Operator: ⊖ is no prefix operator.
 a⊖	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊖+b	CircleMinus(a, b)
+a⊖+b	CircleMinus(a, Plus(b))
 (a+b)⊖	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊗b	CircleTimes(a, b)
 a ⊗ b	CircleTimes(a, b)
@@ -4308,7 +4308,7 @@ a⊗b^2	CircleTimes(a, Power(b, 2))
 ⊗a+b	!syntax@1: Operator: ⊗ is no prefix operator.
 ⊗(a+b)	!syntax@1: Operator: ⊗ is no prefix operator.
 a⊗	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊗+b	CircleTimes(a, b)
+a⊗+b	CircleTimes(a, Plus(b))
 (a+b)⊗	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊙b	CircleDot(a, b)
 a ⊙ b	CircleDot(a, b)
@@ -4330,7 +4330,7 @@ a⊙b^2	CircleDot(a, Power(b, 2))
 ⊙a+b	!syntax@1: Operator: ⊙ is no prefix operator.
 ⊙(a+b)	!syntax@1: Operator: ⊙ is no prefix operator.
 a⊙	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊙+b	CircleDot(a, b)
+a⊙+b	CircleDot(a, Plus(b))
 (a+b)⊙	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊢b	RightTee(a, b)
 a ⊢ b	RightTee(a, b)
@@ -4352,7 +4352,7 @@ a⊢b^2	RightTee(a, Power(b, 2))
 ⊢a+b	!syntax@1: Operator: ⊢ is no prefix operator.
 ⊢(a+b)	!syntax@1: Operator: ⊢ is no prefix operator.
 a⊢	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊢+b	RightTee(a, b)
+a⊢+b	RightTee(a, Plus(b))
 (a+b)⊢	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊣b	LeftTee(a, b)
 a ⊣ b	LeftTee(a, b)
@@ -4374,7 +4374,7 @@ a⊣b^2	LeftTee(a, Power(b, 2))
 ⊣a+b	!syntax@1: Operator: ⊣ is no prefix operator.
 ⊣(a+b)	!syntax@1: Operator: ⊣ is no prefix operator.
 a⊣	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊣+b	LeftTee(a, b)
+a⊣+b	LeftTee(a, Plus(b))
 (a+b)⊣	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊤b	DownTee(a, b)
 a ⊤ b	DownTee(a, b)
@@ -4396,7 +4396,7 @@ a⊤b^2	DownTee(a, Power(b, 2))
 ⊤a+b	!syntax@1: Operator: ⊤ is no prefix operator.
 ⊤(a+b)	!syntax@1: Operator: ⊤ is no prefix operator.
 a⊤	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊤+b	DownTee(a, b)
+a⊤+b	DownTee(a, Plus(b))
 (a+b)⊤	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊥b	UpTee(a, b)
 a ⊥ b	UpTee(a, b)
@@ -4418,7 +4418,7 @@ a⊥b^2	UpTee(a, Power(b, 2))
 ⊥a+b	!syntax@1: Operator: ⊥ is no prefix operator.
 ⊥(a+b)	!syntax@1: Operator: ⊥ is no prefix operator.
 a⊥	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊥+b	UpTee(a, b)
+a⊥+b	UpTee(a, Plus(b))
 (a+b)⊥	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊨b	DoubleRightTee(a, b)
 a ⊨ b	DoubleRightTee(a, b)
@@ -4440,7 +4440,7 @@ a⊨b^2	DoubleRightTee(a, Power(b, 2))
 ⊨a+b	!syntax@1: Operator: ⊨ is no prefix operator.
 ⊨(a+b)	!syntax@1: Operator: ⊨ is no prefix operator.
 a⊨	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊨+b	DoubleRightTee(a, b)
+a⊨+b	DoubleRightTee(a, Plus(b))
 (a+b)⊨	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊲b	LeftTriangle(a, b)
 a ⊲ b	LeftTriangle(a, b)
@@ -4462,7 +4462,7 @@ a⊲b^2	LeftTriangle(a, Power(b, 2))
 ⊲a+b	!syntax@1: Operator: ⊲ is no prefix operator.
 ⊲(a+b)	!syntax@1: Operator: ⊲ is no prefix operator.
 a⊲	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊲+b	LeftTriangle(a, b)
+a⊲+b	LeftTriangle(a, Plus(b))
 (a+b)⊲	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊳b	RightTriangle(a, b)
 a ⊳ b	RightTriangle(a, b)
@@ -4484,7 +4484,7 @@ a⊳b^2	RightTriangle(a, Power(b, 2))
 ⊳a+b	!syntax@1: Operator: ⊳ is no prefix operator.
 ⊳(a+b)	!syntax@1: Operator: ⊳ is no prefix operator.
 a⊳	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊳+b	RightTriangle(a, b)
+a⊳+b	RightTriangle(a, Plus(b))
 (a+b)⊳	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊴b	LeftTriangleEqual(a, b)
 a ⊴ b	LeftTriangleEqual(a, b)
@@ -4506,7 +4506,7 @@ a⊴b^2	LeftTriangleEqual(a, Power(b, 2))
 ⊴a+b	!syntax@1: Operator: ⊴ is no prefix operator.
 ⊴(a+b)	!syntax@1: Operator: ⊴ is no prefix operator.
 a⊴	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊴+b	LeftTriangleEqual(a, b)
+a⊴+b	LeftTriangleEqual(a, Plus(b))
 (a+b)⊴	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊵b	RightTriangleEqual(a, b)
 a ⊵ b	RightTriangleEqual(a, b)
@@ -4528,7 +4528,7 @@ a⊵b^2	RightTriangleEqual(a, Power(b, 2))
 ⊵a+b	!syntax@1: Operator: ⊵ is no prefix operator.
 ⊵(a+b)	!syntax@1: Operator: ⊵ is no prefix operator.
 a⊵	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊵+b	RightTriangleEqual(a, b)
+a⊵+b	RightTriangleEqual(a, Plus(b))
 (a+b)⊵	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊻b	Xor(a, b)
 a ⊻ b	Xor(a, b)
@@ -4550,7 +4550,7 @@ a⊻b^2	Xor(a, Power(b, 2))
 ⊻a+b	!syntax@1: Operator: ⊻ is no prefix operator.
 ⊻(a+b)	!syntax@1: Operator: ⊻ is no prefix operator.
 a⊻	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊻+b	Xor(a, b)
+a⊻+b	Xor(a, Plus(b))
 (a+b)⊻	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊼b	Nand(a, b)
 a ⊼ b	Nand(a, b)
@@ -4572,7 +4572,7 @@ a⊼b^2	Nand(a, Power(b, 2))
 ⊼a+b	!syntax@1: Operator: ⊼ is no prefix operator.
 ⊼(a+b)	!syntax@1: Operator: ⊼ is no prefix operator.
 a⊼	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊼+b	Nand(a, b)
+a⊼+b	Nand(a, Plus(b))
 (a+b)⊼	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⊽b	Nor(a, b)
 a ⊽ b	Nor(a, b)
@@ -4594,7 +4594,7 @@ a⊽b^2	Nor(a, Power(b, 2))
 ⊽a+b	!syntax@1: Operator: ⊽ is no prefix operator.
 ⊽(a+b)	!syntax@1: Operator: ⊽ is no prefix operator.
 a⊽	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⊽+b	Nor(a, b)
+a⊽+b	Nor(a, Plus(b))
 (a+b)⊽	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋀b	Wedge(a, b)
 a ⋀ b	Wedge(a, b)
@@ -4616,7 +4616,7 @@ a⋀b^2	Wedge(a, Power(b, 2))
 ⋀a+b	!syntax@1: Operator: ⋀ is no prefix operator.
 ⋀(a+b)	!syntax@1: Operator: ⋀ is no prefix operator.
 a⋀	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋀+b	Wedge(a, b)
+a⋀+b	Wedge(a, Plus(b))
 (a+b)⋀	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋁b	Vee(a, b)
 a ⋁ b	Vee(a, b)
@@ -4638,7 +4638,7 @@ a⋁b^2	Vee(a, Power(b, 2))
 ⋁a+b	!syntax@1: Operator: ⋁ is no prefix operator.
 ⋁(a+b)	!syntax@1: Operator: ⋁ is no prefix operator.
 a⋁	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋁+b	Vee(a, b)
+a⋁+b	Vee(a, Plus(b))
 (a+b)⋁	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋂b	Intersection(a, b)
 a ⋂ b	Intersection(a, b)
@@ -4660,7 +4660,7 @@ a⋂b^2	Intersection(a, Power(b, 2))
 ⋂a+b	!syntax@1: Operator: ⋂ is no prefix operator.
 ⋂(a+b)	!syntax@1: Operator: ⋂ is no prefix operator.
 a⋂	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋂+b	Intersection(a, b)
+a⋂+b	Intersection(a, Plus(b))
 (a+b)⋂	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋃b	Union(a, b)
 a ⋃ b	Union(a, b)
@@ -4682,7 +4682,7 @@ a⋃b^2	Union(a, Power(b, 2))
 ⋃a+b	!syntax@1: Operator: ⋃ is no prefix operator.
 ⋃(a+b)	!syntax@1: Operator: ⋃ is no prefix operator.
 a⋃	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋃+b	Union(a, b)
+a⋃+b	Union(a, Plus(b))
 (a+b)⋃	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋄b	Diamond(a, b)
 a ⋄ b	Diamond(a, b)
@@ -4704,7 +4704,7 @@ a⋄b^2	Diamond(a, Power(b, 2))
 ⋄a+b	!syntax@1: Operator: ⋄ is no prefix operator.
 ⋄(a+b)	!syntax@1: Operator: ⋄ is no prefix operator.
 a⋄	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋄+b	Diamond(a, b)
+a⋄+b	Diamond(a, Plus(b))
 (a+b)⋄	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋆b	Star(a, b)
 a ⋆ b	Star(a, b)
@@ -4726,7 +4726,7 @@ a⋆b^2	Star(a, Power(b, 2))
 ⋆a+b	!syntax@1: Operator: ⋆ is no prefix operator.
 ⋆(a+b)	!syntax@1: Operator: ⋆ is no prefix operator.
 a⋆	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋆+b	Star(a, b)
+a⋆+b	Star(a, Plus(b))
 (a+b)⋆	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋚b	LessEqualGreater(a, b)
 a ⋚ b	LessEqualGreater(a, b)
@@ -4748,7 +4748,7 @@ a⋚b^2	LessEqualGreater(a, Power(b, 2))
 ⋚a+b	!syntax@1: Operator: ⋚ is no prefix operator.
 ⋚(a+b)	!syntax@1: Operator: ⋚ is no prefix operator.
 a⋚	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋚+b	LessEqualGreater(a, b)
+a⋚+b	LessEqualGreater(a, Plus(b))
 (a+b)⋚	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋛b	GreaterEqualLess(a, b)
 a ⋛ b	GreaterEqualLess(a, b)
@@ -4770,7 +4770,7 @@ a⋛b^2	GreaterEqualLess(a, Power(b, 2))
 ⋛a+b	!syntax@1: Operator: ⋛ is no prefix operator.
 ⋛(a+b)	!syntax@1: Operator: ⋛ is no prefix operator.
 a⋛	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋛+b	GreaterEqualLess(a, b)
+a⋛+b	GreaterEqualLess(a, Plus(b))
 (a+b)⋛	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋠b	NotPrecedesSlantEqual(a, b)
 a ⋠ b	NotPrecedesSlantEqual(a, b)
@@ -4792,7 +4792,7 @@ a⋠b^2	NotPrecedesSlantEqual(a, Power(b, 2))
 ⋠a+b	!syntax@1: Operator: ⋠ is no prefix operator.
 ⋠(a+b)	!syntax@1: Operator: ⋠ is no prefix operator.
 a⋠	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋠+b	NotPrecedesSlantEqual(a, b)
+a⋠+b	NotPrecedesSlantEqual(a, Plus(b))
 (a+b)⋠	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋡b	NotSucceedsSlantEqual(a, b)
 a ⋡ b	NotSucceedsSlantEqual(a, b)
@@ -4814,7 +4814,7 @@ a⋡b^2	NotSucceedsSlantEqual(a, Power(b, 2))
 ⋡a+b	!syntax@1: Operator: ⋡ is no prefix operator.
 ⋡(a+b)	!syntax@1: Operator: ⋡ is no prefix operator.
 a⋡	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋡+b	NotSucceedsSlantEqual(a, b)
+a⋡+b	NotSucceedsSlantEqual(a, Plus(b))
 (a+b)⋡	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋢b	NotSquareSubsetEqual(a, b)
 a ⋢ b	NotSquareSubsetEqual(a, b)
@@ -4836,7 +4836,7 @@ a⋢b^2	NotSquareSubsetEqual(a, Power(b, 2))
 ⋢a+b	!syntax@1: Operator: ⋢ is no prefix operator.
 ⋢(a+b)	!syntax@1: Operator: ⋢ is no prefix operator.
 a⋢	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋢+b	NotSquareSubsetEqual(a, b)
+a⋢+b	NotSquareSubsetEqual(a, Plus(b))
 (a+b)⋢	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋣b	NotSquareSupersetEqual(a, b)
 a ⋣ b	NotSquareSupersetEqual(a, b)
@@ -4858,7 +4858,7 @@ a⋣b^2	NotSquareSupersetEqual(a, Power(b, 2))
 ⋣a+b	!syntax@1: Operator: ⋣ is no prefix operator.
 ⋣(a+b)	!syntax@1: Operator: ⋣ is no prefix operator.
 a⋣	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋣+b	NotSquareSupersetEqual(a, b)
+a⋣+b	NotSquareSupersetEqual(a, Plus(b))
 (a+b)⋣	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋨b	NotPrecedesTilde(a, b)
 a ⋨ b	NotPrecedesTilde(a, b)
@@ -4880,7 +4880,7 @@ a⋨b^2	NotPrecedesTilde(a, Power(b, 2))
 ⋨a+b	!syntax@1: Operator: ⋨ is no prefix operator.
 ⋨(a+b)	!syntax@1: Operator: ⋨ is no prefix operator.
 a⋨	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋨+b	NotPrecedesTilde(a, b)
+a⋨+b	NotPrecedesTilde(a, Plus(b))
 (a+b)⋨	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋩b	NotSucceedsTilde(a, b)
 a ⋩ b	NotSucceedsTilde(a, b)
@@ -4902,7 +4902,7 @@ a⋩b^2	NotSucceedsTilde(a, Power(b, 2))
 ⋩a+b	!syntax@1: Operator: ⋩ is no prefix operator.
 ⋩(a+b)	!syntax@1: Operator: ⋩ is no prefix operator.
 a⋩	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋩+b	NotSucceedsTilde(a, b)
+a⋩+b	NotSucceedsTilde(a, Plus(b))
 (a+b)⋩	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋪b	NotLeftTriangle(a, b)
 a ⋪ b	NotLeftTriangle(a, b)
@@ -4924,7 +4924,7 @@ a⋪b^2	NotLeftTriangle(a, Power(b, 2))
 ⋪a+b	!syntax@1: Operator: ⋪ is no prefix operator.
 ⋪(a+b)	!syntax@1: Operator: ⋪ is no prefix operator.
 a⋪	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋪+b	NotLeftTriangle(a, b)
+a⋪+b	NotLeftTriangle(a, Plus(b))
 (a+b)⋪	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋫b	NotRightTriangle(a, b)
 a ⋫ b	NotRightTriangle(a, b)
@@ -4946,7 +4946,7 @@ a⋫b^2	NotRightTriangle(a, Power(b, 2))
 ⋫a+b	!syntax@1: Operator: ⋫ is no prefix operator.
 ⋫(a+b)	!syntax@1: Operator: ⋫ is no prefix operator.
 a⋫	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋫+b	NotRightTriangle(a, b)
+a⋫+b	NotRightTriangle(a, Plus(b))
 (a+b)⋫	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋬b	NotLeftTriangleEqual(a, b)
 a ⋬ b	NotLeftTriangleEqual(a, b)
@@ -4968,7 +4968,7 @@ a⋬b^2	NotLeftTriangleEqual(a, Power(b, 2))
 ⋬a+b	!syntax@1: Operator: ⋬ is no prefix operator.
 ⋬(a+b)	!syntax@1: Operator: ⋬ is no prefix operator.
 a⋬	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋬+b	NotLeftTriangleEqual(a, b)
+a⋬+b	NotLeftTriangleEqual(a, Plus(b))
 (a+b)⋬	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⋭b	NotRightTriangleEqual(a, b)
 a ⋭ b	NotRightTriangleEqual(a, b)
@@ -4990,7 +4990,7 @@ a⋭b^2	NotRightTriangleEqual(a, Power(b, 2))
 ⋭a+b	!syntax@1: Operator: ⋭ is no prefix operator.
 ⋭(a+b)	!syntax@1: Operator: ⋭ is no prefix operator.
 a⋭	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⋭+b	NotRightTriangleEqual(a, b)
+a⋭+b	NotRightTriangleEqual(a, Plus(b))
 (a+b)⋭	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⌢b	Cap(a, b)
 a ⌢ b	Cap(a, b)
@@ -5012,7 +5012,7 @@ a⌢b^2	Cap(a, Power(b, 2))
 ⌢a+b	!syntax@1: Operator: ⌢ is no prefix operator.
 ⌢(a+b)	!syntax@1: Operator: ⌢ is no prefix operator.
 a⌢	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⌢+b	Cap(a, b)
+a⌢+b	Cap(a, Plus(b))
 (a+b)⌢	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⌣b	Cup(a, b)
 a ⌣ b	Cup(a, b)
@@ -5034,7 +5034,7 @@ a⌣b^2	Cup(a, Power(b, 2))
 ⌣a+b	!syntax@1: Operator: ⌣ is no prefix operator.
 ⌣(a+b)	!syntax@1: Operator: ⌣ is no prefix operator.
 a⌣	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⌣+b	Cup(a, b)
+a⌣+b	Cup(a, Plus(b))
 (a+b)⌣	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a▫b	!syntax@2: End-of-file not reached.
 a ▫ b	!syntax@3: End-of-file not reached.
@@ -5078,7 +5078,7 @@ a❘b^2	VerticalBar(a, Power(b, 2))
 ❘a+b	!syntax@1: Operator: ❘ is no prefix operator.
 ❘(a+b)	!syntax@1: Operator: ❘ is no prefix operator.
 a❘	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a❘+b	VerticalBar(a, b)
+a❘+b	VerticalBar(a, Plus(b))
 (a+b)❘	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⟂b	Perpendicular(a, b)
 a ⟂ b	Perpendicular(a, b)
@@ -5100,7 +5100,7 @@ a⟂b^2	Perpendicular(a, Power(b, 2))
 ⟂a+b	!syntax@1: Operator: ⟂ is no prefix operator.
 ⟂(a+b)	!syntax@1: Operator: ⟂ is no prefix operator.
 a⟂	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⟂+b	Perpendicular(a, b)
+a⟂+b	Perpendicular(a, Plus(b))
 (a+b)⟂	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⟵b	LongLeftArrow(a, b)
 a ⟵ b	LongLeftArrow(a, b)
@@ -5122,7 +5122,7 @@ a⟵b^2	LongLeftArrow(a, Power(b, 2))
 ⟵a+b	!syntax@1: Operator: ⟵ is no prefix operator.
 ⟵(a+b)	!syntax@1: Operator: ⟵ is no prefix operator.
 a⟵	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⟵+b	LongLeftArrow(a, b)
+a⟵+b	LongLeftArrow(a, Plus(b))
 (a+b)⟵	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⟶b	LongRightArrow(a, b)
 a ⟶ b	LongRightArrow(a, b)
@@ -5144,7 +5144,7 @@ a⟶b^2	LongRightArrow(a, Power(b, 2))
 ⟶a+b	!syntax@1: Operator: ⟶ is no prefix operator.
 ⟶(a+b)	!syntax@1: Operator: ⟶ is no prefix operator.
 a⟶	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⟶+b	LongRightArrow(a, b)
+a⟶+b	LongRightArrow(a, Plus(b))
 (a+b)⟶	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⟷b	LongLeftRightArrow(a, b)
 a ⟷ b	LongLeftRightArrow(a, b)
@@ -5166,7 +5166,7 @@ a⟷b^2	LongLeftRightArrow(a, Power(b, 2))
 ⟷a+b	!syntax@1: Operator: ⟷ is no prefix operator.
 ⟷(a+b)	!syntax@1: Operator: ⟷ is no prefix operator.
 a⟷	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⟷+b	LongLeftRightArrow(a, b)
+a⟷+b	LongLeftRightArrow(a, Plus(b))
 (a+b)⟷	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⟸b	DoubleLongLeftArrow(a, b)
 a ⟸ b	DoubleLongLeftArrow(a, b)
@@ -5188,7 +5188,7 @@ a⟸b^2	DoubleLongLeftArrow(a, Power(b, 2))
 ⟸a+b	!syntax@1: Operator: ⟸ is no prefix operator.
 ⟸(a+b)	!syntax@1: Operator: ⟸ is no prefix operator.
 a⟸	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⟸+b	DoubleLongLeftArrow(a, b)
+a⟸+b	DoubleLongLeftArrow(a, Plus(b))
 (a+b)⟸	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⟹b	DoubleLongRightArrow(a, b)
 a ⟹ b	DoubleLongRightArrow(a, b)
@@ -5210,7 +5210,7 @@ a⟹b^2	DoubleLongRightArrow(a, Power(b, 2))
 ⟹a+b	!syntax@1: Operator: ⟹ is no prefix operator.
 ⟹(a+b)	!syntax@1: Operator: ⟹ is no prefix operator.
 a⟹	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⟹+b	DoubleLongRightArrow(a, b)
+a⟹+b	DoubleLongRightArrow(a, Plus(b))
 (a+b)⟹	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⟺b	DoubleLongLeftRightArrow(a, b)
 a ⟺ b	DoubleLongLeftRightArrow(a, b)
@@ -5232,7 +5232,7 @@ a⟺b^2	DoubleLongLeftRightArrow(a, Power(b, 2))
 ⟺a+b	!syntax@1: Operator: ⟺ is no prefix operator.
 ⟺(a+b)	!syntax@1: Operator: ⟺ is no prefix operator.
 a⟺	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⟺+b	DoubleLongLeftRightArrow(a, b)
+a⟺+b	DoubleLongLeftRightArrow(a, Plus(b))
 (a+b)⟺	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⤒b	UpArrowBar(a, b)
 a ⤒ b	UpArrowBar(a, b)
@@ -5254,7 +5254,7 @@ a⤒b^2	UpArrowBar(a, Power(b, 2))
 ⤒a+b	!syntax@1: Operator: ⤒ is no prefix operator.
 ⤒(a+b)	!syntax@1: Operator: ⤒ is no prefix operator.
 a⤒	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⤒+b	UpArrowBar(a, b)
+a⤒+b	UpArrowBar(a, Plus(b))
 (a+b)⤒	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⤓b	DownArrowBar(a, b)
 a ⤓ b	DownArrowBar(a, b)
@@ -5276,7 +5276,7 @@ a⤓b^2	DownArrowBar(a, Power(b, 2))
 ⤓a+b	!syntax@1: Operator: ⤓ is no prefix operator.
 ⤓(a+b)	!syntax@1: Operator: ⤓ is no prefix operator.
 a⤓	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⤓+b	DownArrowBar(a, b)
+a⤓+b	DownArrowBar(a, Plus(b))
 (a+b)⤓	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥎b	LeftRightVector(a, b)
 a ⥎ b	LeftRightVector(a, b)
@@ -5298,7 +5298,7 @@ a⥎b^2	LeftRightVector(a, Power(b, 2))
 ⥎a+b	!syntax@1: Operator: ⥎ is no prefix operator.
 ⥎(a+b)	!syntax@1: Operator: ⥎ is no prefix operator.
 a⥎	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥎+b	LeftRightVector(a, b)
+a⥎+b	LeftRightVector(a, Plus(b))
 (a+b)⥎	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥏b	RightUpDownVector(a, b)
 a ⥏ b	RightUpDownVector(a, b)
@@ -5320,7 +5320,7 @@ a⥏b^2	RightUpDownVector(a, Power(b, 2))
 ⥏a+b	!syntax@1: Operator: ⥏ is no prefix operator.
 ⥏(a+b)	!syntax@1: Operator: ⥏ is no prefix operator.
 a⥏	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥏+b	RightUpDownVector(a, b)
+a⥏+b	RightUpDownVector(a, Plus(b))
 (a+b)⥏	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥐b	DownLeftRightVector(a, b)
 a ⥐ b	DownLeftRightVector(a, b)
@@ -5342,7 +5342,7 @@ a⥐b^2	DownLeftRightVector(a, Power(b, 2))
 ⥐a+b	!syntax@1: Operator: ⥐ is no prefix operator.
 ⥐(a+b)	!syntax@1: Operator: ⥐ is no prefix operator.
 a⥐	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥐+b	DownLeftRightVector(a, b)
+a⥐+b	DownLeftRightVector(a, Plus(b))
 (a+b)⥐	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥑b	LeftUpDownVector(a, b)
 a ⥑ b	LeftUpDownVector(a, b)
@@ -5364,7 +5364,7 @@ a⥑b^2	LeftUpDownVector(a, Power(b, 2))
 ⥑a+b	!syntax@1: Operator: ⥑ is no prefix operator.
 ⥑(a+b)	!syntax@1: Operator: ⥑ is no prefix operator.
 a⥑	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥑+b	LeftUpDownVector(a, b)
+a⥑+b	LeftUpDownVector(a, Plus(b))
 (a+b)⥑	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥒b	LeftVectorBar(a, b)
 a ⥒ b	LeftVectorBar(a, b)
@@ -5386,7 +5386,7 @@ a⥒b^2	LeftVectorBar(a, Power(b, 2))
 ⥒a+b	!syntax@1: Operator: ⥒ is no prefix operator.
 ⥒(a+b)	!syntax@1: Operator: ⥒ is no prefix operator.
 a⥒	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥒+b	LeftVectorBar(a, b)
+a⥒+b	LeftVectorBar(a, Plus(b))
 (a+b)⥒	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥓b	RightVectorBar(a, b)
 a ⥓ b	RightVectorBar(a, b)
@@ -5408,7 +5408,7 @@ a⥓b^2	RightVectorBar(a, Power(b, 2))
 ⥓a+b	!syntax@1: Operator: ⥓ is no prefix operator.
 ⥓(a+b)	!syntax@1: Operator: ⥓ is no prefix operator.
 a⥓	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥓+b	RightVectorBar(a, b)
+a⥓+b	RightVectorBar(a, Plus(b))
 (a+b)⥓	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥔b	RightUpVectorBar(a, b)
 a ⥔ b	RightUpVectorBar(a, b)
@@ -5430,7 +5430,7 @@ a⥔b^2	RightUpVectorBar(a, Power(b, 2))
 ⥔a+b	!syntax@1: Operator: ⥔ is no prefix operator.
 ⥔(a+b)	!syntax@1: Operator: ⥔ is no prefix operator.
 a⥔	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥔+b	RightUpVectorBar(a, b)
+a⥔+b	RightUpVectorBar(a, Plus(b))
 (a+b)⥔	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥕b	RightDownVectorBar(a, b)
 a ⥕ b	RightDownVectorBar(a, b)
@@ -5452,7 +5452,7 @@ a⥕b^2	RightDownVectorBar(a, Power(b, 2))
 ⥕a+b	!syntax@1: Operator: ⥕ is no prefix operator.
 ⥕(a+b)	!syntax@1: Operator: ⥕ is no prefix operator.
 a⥕	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥕+b	RightDownVectorBar(a, b)
+a⥕+b	RightDownVectorBar(a, Plus(b))
 (a+b)⥕	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥖b	DownLeftVectorBar(a, b)
 a ⥖ b	DownLeftVectorBar(a, b)
@@ -5474,7 +5474,7 @@ a⥖b^2	DownLeftVectorBar(a, Power(b, 2))
 ⥖a+b	!syntax@1: Operator: ⥖ is no prefix operator.
 ⥖(a+b)	!syntax@1: Operator: ⥖ is no prefix operator.
 a⥖	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥖+b	DownLeftVectorBar(a, b)
+a⥖+b	DownLeftVectorBar(a, Plus(b))
 (a+b)⥖	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥗b	DownRightVectorBar(a, b)
 a ⥗ b	DownRightVectorBar(a, b)
@@ -5496,7 +5496,7 @@ a⥗b^2	DownRightVectorBar(a, Power(b, 2))
 ⥗a+b	!syntax@1: Operator: ⥗ is no prefix operator.
 ⥗(a+b)	!syntax@1: Operator: ⥗ is no prefix operator.
 a⥗	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥗+b	DownRightVectorBar(a, b)
+a⥗+b	DownRightVectorBar(a, Plus(b))
 (a+b)⥗	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥘b	LeftUpVectorBar(a, b)
 a ⥘ b	LeftUpVectorBar(a, b)
@@ -5518,7 +5518,7 @@ a⥘b^2	LeftUpVectorBar(a, Power(b, 2))
 ⥘a+b	!syntax@1: Operator: ⥘ is no prefix operator.
 ⥘(a+b)	!syntax@1: Operator: ⥘ is no prefix operator.
 a⥘	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥘+b	LeftUpVectorBar(a, b)
+a⥘+b	LeftUpVectorBar(a, Plus(b))
 (a+b)⥘	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥙b	LeftDownVectorBar(a, b)
 a ⥙ b	LeftDownVectorBar(a, b)
@@ -5540,7 +5540,7 @@ a⥙b^2	LeftDownVectorBar(a, Power(b, 2))
 ⥙a+b	!syntax@1: Operator: ⥙ is no prefix operator.
 ⥙(a+b)	!syntax@1: Operator: ⥙ is no prefix operator.
 a⥙	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥙+b	LeftDownVectorBar(a, b)
+a⥙+b	LeftDownVectorBar(a, Plus(b))
 (a+b)⥙	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥚b	LeftTeeVector(a, b)
 a ⥚ b	LeftTeeVector(a, b)
@@ -5562,7 +5562,7 @@ a⥚b^2	LeftTeeVector(a, Power(b, 2))
 ⥚a+b	!syntax@1: Operator: ⥚ is no prefix operator.
 ⥚(a+b)	!syntax@1: Operator: ⥚ is no prefix operator.
 a⥚	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥚+b	LeftTeeVector(a, b)
+a⥚+b	LeftTeeVector(a, Plus(b))
 (a+b)⥚	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥛b	RightTeeVector(a, b)
 a ⥛ b	RightTeeVector(a, b)
@@ -5584,7 +5584,7 @@ a⥛b^2	RightTeeVector(a, Power(b, 2))
 ⥛a+b	!syntax@1: Operator: ⥛ is no prefix operator.
 ⥛(a+b)	!syntax@1: Operator: ⥛ is no prefix operator.
 a⥛	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥛+b	RightTeeVector(a, b)
+a⥛+b	RightTeeVector(a, Plus(b))
 (a+b)⥛	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥜b	RightUpTeeVector(a, b)
 a ⥜ b	RightUpTeeVector(a, b)
@@ -5606,7 +5606,7 @@ a⥜b^2	RightUpTeeVector(a, Power(b, 2))
 ⥜a+b	!syntax@1: Operator: ⥜ is no prefix operator.
 ⥜(a+b)	!syntax@1: Operator: ⥜ is no prefix operator.
 a⥜	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥜+b	RightUpTeeVector(a, b)
+a⥜+b	RightUpTeeVector(a, Plus(b))
 (a+b)⥜	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥝b	RightDownTeeVector(a, b)
 a ⥝ b	RightDownTeeVector(a, b)
@@ -5628,7 +5628,7 @@ a⥝b^2	RightDownTeeVector(a, Power(b, 2))
 ⥝a+b	!syntax@1: Operator: ⥝ is no prefix operator.
 ⥝(a+b)	!syntax@1: Operator: ⥝ is no prefix operator.
 a⥝	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥝+b	RightDownTeeVector(a, b)
+a⥝+b	RightDownTeeVector(a, Plus(b))
 (a+b)⥝	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥞b	DownLeftTeeVector(a, b)
 a ⥞ b	DownLeftTeeVector(a, b)
@@ -5650,7 +5650,7 @@ a⥞b^2	DownLeftTeeVector(a, Power(b, 2))
 ⥞a+b	!syntax@1: Operator: ⥞ is no prefix operator.
 ⥞(a+b)	!syntax@1: Operator: ⥞ is no prefix operator.
 a⥞	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥞+b	DownLeftTeeVector(a, b)
+a⥞+b	DownLeftTeeVector(a, Plus(b))
 (a+b)⥞	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥟b	DownRightTeeVector(a, b)
 a ⥟ b	DownRightTeeVector(a, b)
@@ -5672,7 +5672,7 @@ a⥟b^2	DownRightTeeVector(a, Power(b, 2))
 ⥟a+b	!syntax@1: Operator: ⥟ is no prefix operator.
 ⥟(a+b)	!syntax@1: Operator: ⥟ is no prefix operator.
 a⥟	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥟+b	DownRightTeeVector(a, b)
+a⥟+b	DownRightTeeVector(a, Plus(b))
 (a+b)⥟	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥠b	LeftUpTeeVector(a, b)
 a ⥠ b	LeftUpTeeVector(a, b)
@@ -5694,7 +5694,7 @@ a⥠b^2	LeftUpTeeVector(a, Power(b, 2))
 ⥠a+b	!syntax@1: Operator: ⥠ is no prefix operator.
 ⥠(a+b)	!syntax@1: Operator: ⥠ is no prefix operator.
 a⥠	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥠+b	LeftUpTeeVector(a, b)
+a⥠+b	LeftUpTeeVector(a, Plus(b))
 (a+b)⥠	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥡b	LeftDownTeeVector(a, b)
 a ⥡ b	LeftDownTeeVector(a, b)
@@ -5716,7 +5716,7 @@ a⥡b^2	LeftDownTeeVector(a, Power(b, 2))
 ⥡a+b	!syntax@1: Operator: ⥡ is no prefix operator.
 ⥡(a+b)	!syntax@1: Operator: ⥡ is no prefix operator.
 a⥡	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥡+b	LeftDownTeeVector(a, b)
+a⥡+b	LeftDownTeeVector(a, Plus(b))
 (a+b)⥡	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥮b	UpEquilibrium(a, b)
 a ⥮ b	UpEquilibrium(a, b)
@@ -5738,7 +5738,7 @@ a⥮b^2	UpEquilibrium(a, Power(b, 2))
 ⥮a+b	!syntax@1: Operator: ⥮ is no prefix operator.
 ⥮(a+b)	!syntax@1: Operator: ⥮ is no prefix operator.
 a⥮	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥮+b	UpEquilibrium(a, b)
+a⥮+b	UpEquilibrium(a, Plus(b))
 (a+b)⥮	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥯b	ReverseUpEquilibrium(a, b)
 a ⥯ b	ReverseUpEquilibrium(a, b)
@@ -5760,7 +5760,7 @@ a⥯b^2	ReverseUpEquilibrium(a, Power(b, 2))
 ⥯a+b	!syntax@1: Operator: ⥯ is no prefix operator.
 ⥯(a+b)	!syntax@1: Operator: ⥯ is no prefix operator.
 a⥯	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥯+b	ReverseUpEquilibrium(a, b)
+a⥯+b	ReverseUpEquilibrium(a, Plus(b))
 (a+b)⥯	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⥰b	RoundImplies(a, b)
 a ⥰ b	RoundImplies(a, b)
@@ -5782,7 +5782,7 @@ a⥰b^2	RoundImplies(a, Power(b, 2))
 ⥰a+b	!syntax@1: Operator: ⥰ is no prefix operator.
 ⥰(a+b)	!syntax@1: Operator: ⥰ is no prefix operator.
 a⥰	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⥰+b	RoundImplies(a, b)
+a⥰+b	RoundImplies(a, Plus(b))
 (a+b)⥰	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⧏b	LeftTriangleBar(a, b)
 a ⧏ b	LeftTriangleBar(a, b)
@@ -5804,7 +5804,7 @@ a⧏b^2	LeftTriangleBar(a, Power(b, 2))
 ⧏a+b	!syntax@1: Operator: ⧏ is no prefix operator.
 ⧏(a+b)	!syntax@1: Operator: ⧏ is no prefix operator.
 a⧏	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⧏+b	LeftTriangleBar(a, b)
+a⧏+b	LeftTriangleBar(a, Plus(b))
 (a+b)⧏	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⧐b	RightTriangleBar(a, b)
 a ⧐ b	RightTriangleBar(a, b)
@@ -5826,7 +5826,7 @@ a⧐b^2	RightTriangleBar(a, Power(b, 2))
 ⧐a+b	!syntax@1: Operator: ⧐ is no prefix operator.
 ⧐(a+b)	!syntax@1: Operator: ⧐ is no prefix operator.
 a⧐	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⧐+b	RightTriangleBar(a, b)
+a⧐+b	RightTriangleBar(a, Plus(b))
 (a+b)⧐	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⧦b	Equivalent(a, b)
 a ⧦ b	Equivalent(a, b)
@@ -5848,7 +5848,7 @@ a⧦b^2	Equivalent(a, Power(b, 2))
 ⧦a+b	!syntax@1: Operator: ⧦ is no prefix operator.
 ⧦(a+b)	!syntax@1: Operator: ⧦ is no prefix operator.
 a⧦	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⧦+b	Equivalent(a, b)
+a⧦+b	Equivalent(a, Plus(b))
 (a+b)⧦	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⨯b	Cross(a, b)
 a ⨯ b	Cross(a, b)
@@ -5870,7 +5870,7 @@ a⨯b^2	Cross(a, Power(b, 2))
 ⨯a+b	!syntax@1: Operator: ⨯ is no prefix operator.
 ⨯(a+b)	!syntax@1: Operator: ⨯ is no prefix operator.
 a⨯	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⨯+b	Cross(a, b)
+a⨯+b	Cross(a, Plus(b))
 (a+b)⨯	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⩽b	LessSlantEqual(a, b)
 a ⩽ b	LessSlantEqual(a, b)
@@ -5892,7 +5892,7 @@ a⩽b^2	LessSlantEqual(a, Power(b, 2))
 ⩽a+b	!syntax@1: Operator: ⩽ is no prefix operator.
 ⩽(a+b)	!syntax@1: Operator: ⩽ is no prefix operator.
 a⩽	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⩽+b	LessSlantEqual(a, b)
+a⩽+b	LessSlantEqual(a, Plus(b))
 (a+b)⩽	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⩾b	GreaterSlantEqual(a, b)
 a ⩾ b	GreaterSlantEqual(a, b)
@@ -5914,7 +5914,7 @@ a⩾b^2	GreaterSlantEqual(a, Power(b, 2))
 ⩾a+b	!syntax@1: Operator: ⩾ is no prefix operator.
 ⩾(a+b)	!syntax@1: Operator: ⩾ is no prefix operator.
 a⩾	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⩾+b	GreaterSlantEqual(a, b)
+a⩾+b	GreaterSlantEqual(a, Plus(b))
 (a+b)⩾	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⪡b	NestedLessLess(a, b)
 a ⪡ b	NestedLessLess(a, b)
@@ -5936,7 +5936,7 @@ a⪡b^2	NestedLessLess(a, Power(b, 2))
 ⪡a+b	!syntax@1: Operator: ⪡ is no prefix operator.
 ⪡(a+b)	!syntax@1: Operator: ⪡ is no prefix operator.
 a⪡	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⪡+b	NestedLessLess(a, b)
+a⪡+b	NestedLessLess(a, Plus(b))
 (a+b)⪡	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⪢b	NestedGreaterGreater(a, b)
 a ⪢ b	NestedGreaterGreater(a, b)
@@ -5958,7 +5958,7 @@ a⪢b^2	NestedGreaterGreater(a, Power(b, 2))
 ⪢a+b	!syntax@1: Operator: ⪢ is no prefix operator.
 ⪢(a+b)	!syntax@1: Operator: ⪢ is no prefix operator.
 a⪢	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⪢+b	NestedGreaterGreater(a, b)
+a⪢+b	NestedGreaterGreater(a, Plus(b))
 (a+b)⪢	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⪯b	PrecedesEqual(a, b)
 a ⪯ b	PrecedesEqual(a, b)
@@ -5980,7 +5980,7 @@ a⪯b^2	PrecedesEqual(a, Power(b, 2))
 ⪯a+b	!syntax@1: Operator: ⪯ is no prefix operator.
 ⪯(a+b)	!syntax@1: Operator: ⪯ is no prefix operator.
 a⪯	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⪯+b	PrecedesEqual(a, b)
+a⪯+b	PrecedesEqual(a, Plus(b))
 (a+b)⪯	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⪰b	SucceedsEqual(a, b)
 a ⪰ b	SucceedsEqual(a, b)
@@ -6002,7 +6002,7 @@ a⪰b^2	SucceedsEqual(a, Power(b, 2))
 ⪰a+b	!syntax@1: Operator: ⪰ is no prefix operator.
 ⪰(a+b)	!syntax@1: Operator: ⪰ is no prefix operator.
 a⪰	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⪰+b	SucceedsEqual(a, b)
+a⪰+b	SucceedsEqual(a, Plus(b))
 (a+b)⪰	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a⫤b	DoubleLeftTee(a, b)
 a ⫤ b	DoubleLeftTee(a, b)
@@ -6024,7 +6024,7 @@ a⫤b^2	DoubleLeftTee(a, Power(b, 2))
 ⫤a+b	!syntax@1: Operator: ⫤ is no prefix operator.
 ⫤(a+b)	!syntax@1: Operator: ⫤ is no prefix operator.
 a⫤	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a⫤+b	DoubleLeftTee(a, b)
+a⫤+b	DoubleLeftTee(a, Plus(b))
 (a+b)⫤	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	TwoWayRule(a, b)
 a  b	TwoWayRule(a, b)
@@ -6046,7 +6046,7 @@ ab^2	TwoWayRule(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	TwoWayRule(a, b)
+a+b	TwoWayRule(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	!syntax@2: End-of-file not reached.
 a  b	!syntax@3: End-of-file not reached.
@@ -6156,7 +6156,7 @@ ab^2	VerticalBar(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	VerticalBar(a, b)
+a+b	VerticalBar(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotVerticalBar(a, b)
 a  b	NotVerticalBar(a, b)
@@ -6178,7 +6178,7 @@ ab^2	NotVerticalBar(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotVerticalBar(a, b)
+a+b	NotVerticalBar(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	Distributed(a, b)
 a  b	Distributed(a, b)
@@ -6200,7 +6200,7 @@ ab^2	Distributed(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	Distributed(a, b)
+a+b	Distributed(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	Conditioned(a, b)
 a  b	Conditioned(a, b)
@@ -6222,7 +6222,7 @@ ab^2	Conditioned(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	Conditioned(a, b)
+a+b	Conditioned(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	UndirectedEdge(a, b)
 a  b	UndirectedEdge(a, b)
@@ -6244,7 +6244,7 @@ ab^2	UndirectedEdge(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	UndirectedEdge(a, b)
+a+b	UndirectedEdge(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	DirectedEdge(a, b)
 a  b	DirectedEdge(a, b)
@@ -6266,7 +6266,7 @@ ab^2	DirectedEdge(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	DirectedEdge(a, b)
+a+b	DirectedEdge(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	TensorProduct(a, b)
 a  b	TensorProduct(a, b)
@@ -6288,7 +6288,7 @@ ab^2	TensorProduct(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	TensorProduct(a, b)
+a+b	TensorProduct(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	TensorWedge(a, b)
 a  b	TensorWedge(a, b)
@@ -6310,7 +6310,7 @@ ab^2	TensorWedge(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	TensorWedge(a, b)
+a+b	TensorWedge(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	PermutationProduct(a, b)
 a  b	PermutationProduct(a, b)
@@ -6332,7 +6332,7 @@ ab^2	PermutationProduct(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	PermutationProduct(a, b)
+a+b	PermutationProduct(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotEqualTilde(a, b)
 a  b	NotEqualTilde(a, b)
@@ -6354,7 +6354,7 @@ ab^2	NotEqualTilde(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotEqualTilde(a, b)
+a+b	NotEqualTilde(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotHumpEqual(a, b)
 a  b	NotHumpEqual(a, b)
@@ -6376,7 +6376,7 @@ ab^2	NotHumpEqual(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotHumpEqual(a, b)
+a+b	NotHumpEqual(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotHumpDownHump(a, b)
 a  b	NotHumpDownHump(a, b)
@@ -6398,7 +6398,7 @@ ab^2	NotHumpDownHump(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotHumpDownHump(a, b)
+a+b	NotHumpDownHump(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotLeftTriangleBar(a, b)
 a  b	NotLeftTriangleBar(a, b)
@@ -6420,7 +6420,7 @@ ab^2	NotLeftTriangleBar(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotLeftTriangleBar(a, b)
+a+b	NotLeftTriangleBar(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotRightTriangleBar(a, b)
 a  b	NotRightTriangleBar(a, b)
@@ -6442,7 +6442,7 @@ ab^2	NotRightTriangleBar(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotRightTriangleBar(a, b)
+a+b	NotRightTriangleBar(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotLessLess(a, b)
 a  b	NotLessLess(a, b)
@@ -6464,7 +6464,7 @@ ab^2	NotLessLess(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotLessLess(a, b)
+a+b	NotLessLess(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotNestedLessLess(a, b)
 a  b	NotNestedLessLess(a, b)
@@ -6486,7 +6486,7 @@ ab^2	NotNestedLessLess(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotNestedLessLess(a, b)
+a+b	NotNestedLessLess(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotLessSlantEqual(a, b)
 a  b	NotLessSlantEqual(a, b)
@@ -6508,7 +6508,7 @@ ab^2	NotLessSlantEqual(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotLessSlantEqual(a, b)
+a+b	NotLessSlantEqual(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotGreaterGreater(a, b)
 a  b	NotGreaterGreater(a, b)
@@ -6530,7 +6530,7 @@ ab^2	NotGreaterGreater(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotGreaterGreater(a, b)
+a+b	NotGreaterGreater(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotNestedGreaterGreater(a, b)
 a  b	NotNestedGreaterGreater(a, b)
@@ -6552,7 +6552,7 @@ ab^2	NotNestedGreaterGreater(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotNestedGreaterGreater(a, b)
+a+b	NotNestedGreaterGreater(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotGreaterSlantEqual(a, b)
 a  b	NotGreaterSlantEqual(a, b)
@@ -6574,7 +6574,7 @@ ab^2	NotGreaterSlantEqual(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotGreaterSlantEqual(a, b)
+a+b	NotGreaterSlantEqual(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotPrecedesEqual(a, b)
 a  b	NotPrecedesEqual(a, b)
@@ -6596,7 +6596,7 @@ ab^2	NotPrecedesEqual(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotPrecedesEqual(a, b)
+a+b	NotPrecedesEqual(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotSucceedsEqual(a, b)
 a  b	NotSucceedsEqual(a, b)
@@ -6618,7 +6618,7 @@ ab^2	NotSucceedsEqual(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotSucceedsEqual(a, b)
+a+b	NotSucceedsEqual(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotSquareSubset(a, b)
 a  b	NotSquareSubset(a, b)
@@ -6640,7 +6640,7 @@ ab^2	NotSquareSubset(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotSquareSubset(a, b)
+a+b	NotSquareSubset(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	NotSquareSuperset(a, b)
 a  b	NotSquareSuperset(a, b)
@@ -6662,7 +6662,7 @@ ab^2	NotSquareSuperset(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	NotSquareSuperset(a, b)
+a+b	NotSquareSuperset(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	Equal(a, b)
 a  b	Equal(a, b)
@@ -6684,7 +6684,7 @@ ab^2	Equal(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	Equal(a, b)
+a+b	Equal(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	VerticalSeparator(a, b)
 a  b	VerticalSeparator(a, b)
@@ -6706,7 +6706,7 @@ ab^2	VerticalSeparator(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	VerticalSeparator(a, b)
+a+b	VerticalSeparator(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	!syntax@2: End-of-file not reached.
 a  b	!syntax@3: End-of-file not reached.
@@ -6772,7 +6772,7 @@ ab^2	Cross(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	Cross(a, b)
+a+b	Cross(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	Function(a, b)
 a  b	Function(a, b)
@@ -6794,7 +6794,7 @@ ab^2	Function(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	Function(a, b)
+a+b	Function(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	Xnor(a, b)
 a  b	Xnor(a, b)
@@ -6816,7 +6816,7 @@ ab^2	Xnor(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	Xnor(a, b)
+a+b	Xnor(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	!syntax@2: End-of-file not reached.
 a  b	!syntax@3: End-of-file not reached.
@@ -6882,7 +6882,7 @@ ab^2	RuleDelayed(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	RuleDelayed(a, b)
+a+b	RuleDelayed(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	!syntax@2: End-of-file not reached.
 a  b	!syntax@3: End-of-file not reached.
@@ -6926,7 +6926,7 @@ ab^2	Rule(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	Rule(a, b)
+a+b	Rule(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	Implies(a, b)
 a  b	Implies(a, b)
@@ -6948,7 +6948,7 @@ ab^2	Implies(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	Implies(a, b)
+a+b	Implies(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	ShortRightArrow(a, b)
 a  b	ShortRightArrow(a, b)
@@ -6970,7 +6970,7 @@ ab^2	ShortRightArrow(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	ShortRightArrow(a, b)
+a+b	ShortRightArrow(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	ShortLeftArrow(a, b)
 a  b	ShortLeftArrow(a, b)
@@ -6992,7 +6992,7 @@ ab^2	ShortLeftArrow(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	ShortLeftArrow(a, b)
+a+b	ShortLeftArrow(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	ShortUpArrow(a, b)
 a  b	ShortUpArrow(a, b)
@@ -7014,7 +7014,7 @@ ab^2	ShortUpArrow(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	ShortUpArrow(a, b)
+a+b	ShortUpArrow(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	ShortDownArrow(a, b)
 a  b	ShortDownArrow(a, b)
@@ -7036,7 +7036,7 @@ ab^2	ShortDownArrow(a, Power(b, 2))
 a+b	!syntax@1: Operator:  is no prefix operator.
 (a+b)	!syntax@1: Operator:  is no prefix operator.
 a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
-a+b	ShortDownArrow(a, b)
+a+b	ShortDownArrow(a, Plus(b))
 (a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 ab	!syntax@2: End-of-file not reached.
 a  b	!syntax@3: End-of-file not reached.

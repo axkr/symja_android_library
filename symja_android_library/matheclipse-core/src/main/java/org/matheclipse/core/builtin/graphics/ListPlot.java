@@ -230,13 +230,19 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
     if (graphicsOptions.filling() != S.None) {
       try {
+        IAST callAST = graphicsOptions.callAST() != null ? graphicsOptions.callAST() : plotAST;
         IExpr fillingStyle = graphicsOptions.fillingStyle();
         if (fillingStyle == null || fillingStyle.isAutomatic()) {
           // a plot whose option block has no slot for it still takes the rule of the call
-          fillingStyle = GraphicsOptions.optionValue(plotAST, S.FillingStyle, S.Automatic);
+          fillingStyle = GraphicsOptions.optionValue(callAST, S.FillingStyle, S.Automatic);
+        }
+        // the PlotRange the plot was called with places Bottom and Top
+        IExpr plotRange = GraphicsOptions.optionValue(callAST, S.PlotRange, S.Automatic);
+        if (plotRange.isAutomatic()) {
+          plotRange = graphicsOptions.plotRange();
         }
         IAST newPrimitives = processFilling(graphicsPrimitives, graphicsOptions.filling(),
-            fillingStyle, 0.0, graphicsOptions.effectiveYScale());
+            fillingStyle, 0.0, graphicsOptions.effectiveYScale(), plotRange);
         graphicsPrimitives = newPrimitives;
       } catch (RuntimeException rex) {
       }
@@ -1125,27 +1131,48 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   /** The smallest strictly positive y value across all curves, or 0 when there is none. */
   private static double smallestPositiveY(List<CurveData> curves) {
-    double smallest = Double.MAX_VALUE;
+    return yStatistics(curves)[2];
+  }
+
+  /**
+   * The smallest and largest finite y value of the curves and the smallest positive one:
+   * <code>{min, max, smallestPositive}</code>, with {@code NaN} for min and max and 0 for the
+   * smallest positive value when there is none.
+   */
+  private static double[] yStatistics(List<CurveData> curves) {
+    double min = Double.POSITIVE_INFINITY;
+    double max = Double.NEGATIVE_INFINITY;
+    double smallestPositive = Double.MAX_VALUE;
     for (CurveData curve : curves) {
       for (int i = 1; i < curve.points.size(); i++) {
         IExpr point = curve.points.get(i);
         if (point.isList() && ((IAST) point).argSize() >= 2) {
           double y = ((IAST) point).arg2().evalfNaN();
-          if (Double.isFinite(y) && y > 0 && y < smallest) {
-            smallest = y;
+          if (Double.isFinite(y)) {
+            min = Math.min(min, y);
+            max = Math.max(max, y);
+            if (y > 0) {
+              smallestPositive = Math.min(smallestPositive, y);
+            }
           }
         }
       }
     }
-    return smallest == Double.MAX_VALUE ? 0 : smallest;
+    return new double[] {min <= max ? min : Double.NaN, min <= max ? max : Double.NaN,
+        smallestPositive == Double.MAX_VALUE ? 0 : smallestPositive};
   }
 
+  /**
+   * @param yRange the bottom and the top of the plot range, the targets of <code>Bottom</code>
+   *        and <code>Top</code>
+   */
   private static void processFillingAction(int srcIndex, IExpr target, List<CurveData> curves,
-      IASTAppendable out, IExpr globalStyle, double baseline) {
+      IASTAppendable out, IExpr globalStyle, double baseline, double[] yRange) {
     CurveData srcCurve = curves.get(srcIndex);
     IExpr styleToUse = globalStyle;
-    if (target.isList2() && !target.first().isInteger()
-        && (target.first().isList() || target.first() == S.Axis || target.first() == S.Bottom)) {
+    if (target.isList2() && !(target.first().isInteger() && target.second().isInteger())
+        && (target.first().isList() || target.first() == S.Axis || target.first() == S.Bottom
+            || target.first() == S.Top || target.first().isReal())) {
       // i -> {target, style}: the fill to this target in its own style; a pair of styles is
       // the one below and the one above the target, of which the first is used
       IExpr style = target.second();
@@ -1168,13 +1195,69 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         out.append(F.List(styleToUse,
             createPolygonBetween(srcCurve.points, curves.get(targetIndex).points)));
       }
-    } else if (target == S.Axis || target == S.Bottom) {
-      if (srcCurve.isPoint) {
-        out.append(F.List(styleToUse, createStemsToBottom(srcCurve.points, baseline)));
+    } else {
+      // the height the curve is filled to: the axis, the bottom or top of the plot range, or a
+      // given value
+      double level;
+      if (target == S.Axis) {
+        level = baseline;
+      } else if (target == S.Bottom) {
+        level = yRange[0];
+      } else if (target == S.Top) {
+        level = yRange[1];
+      } else if (target.isReal()) {
+        level = target.evalfNaN();
       } else {
-        out.append(F.List(styleToUse, createPolygonToBottom(srcCurve.points, baseline)));
+        return;
+      }
+      if (!Double.isFinite(level)) {
+        return;
+      }
+      if (srcCurve.isPoint) {
+        out.append(F.List(styleToUse, createStemsToBottom(srcCurve.points, level)));
+      } else {
+        // where the curve leaves the plot range the polygon still reaches the level, so the
+        // clipped picture stays filled across the whole domain
+        out.append(F.List(styleToUse, createPolygonToBottom(srcCurve.points, level)));
       }
     }
+  }
+
+  /**
+   * The bottom and top of the vertical plot range: each end of the y part of
+   * <code>plotRange</code> which is given as a number, otherwise the smallest or largest y value
+   * of the curves.
+   */
+  private static double[] verticalRange(IExpr plotRange, List<CurveData> curves) {
+    double[] data = yStatistics(curves);
+    double bottom = Double.NaN;
+    double top = Double.NaN;
+    if (plotRange != null) {
+      if (plotRange.isReal()) {
+        double r = Math.abs(plotRange.evalfNaN());
+        bottom = -r;
+        top = r;
+      } else if (plotRange.isList2()) {
+        // {ymin, ymax}, or {xrange, yrange}
+        IExpr yPart = plotRange.first().isList() || plotRange.second().isList()
+            ? plotRange.second()
+            : plotRange;
+        if (yPart.isList2()) {
+          bottom = yPart.first().evalfNaN();
+          top = yPart.second().evalfNaN();
+        } else if (yPart.isReal()) {
+          top = Math.abs(yPart.evalfNaN());
+          bottom = -top;
+        }
+      }
+    }
+    if (Double.isFinite(bottom) && Double.isFinite(top) && bottom > top) {
+      double t = bottom;
+      bottom = top;
+      top = t;
+    }
+    return new double[] {Double.isFinite(bottom) ? bottom : data[0],
+        Double.isFinite(top) ? top : data[1]};
   }
 
   private static IExpr createPolygonToBottom(IAST pts, double yBottom) {
@@ -1193,12 +1276,12 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   }
 
   private static void processSingleFillingRule(IExpr rule, List<CurveData> curves,
-      IASTAppendable out, IExpr globalStyle, double baseline) {
+      IASTAppendable out, IExpr globalStyle, double baseline, double[] yRange) {
     if (rule.isRule()) {
       int srcIndex = ((IAST) rule).arg1().toIntDefault(0) - 1;
       IExpr target = ((IAST) rule).arg2();
       if (srcIndex >= 0 && srcIndex < curves.size()) {
-        processFillingAction(srcIndex, target, curves, out, globalStyle, baseline);
+        processFillingAction(srcIndex, target, curves, out, globalStyle, baseline, yRange);
       }
     }
   }
@@ -1206,9 +1289,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   /**
    * @param yScale the y axis scaling, so that a logarithmic axis can be filled to the bottom of the
    *        data instead of to zero
+   * @param plotRange the <code>PlotRange</code> option, which places <code>Bottom</code> and
+   *        <code>Top</code>
    */
   protected static IAST processFilling(IExpr primitives, IExpr filling, IExpr fillingStyle,
-      double baseline, String yScale) {
+      double baseline, String yScale, IExpr plotRange) {
     List<CurveData> curves = new ArrayList<>();
     extractCurvesRecursive(primitives, curves, null);
     if (curves.isEmpty())
@@ -1224,13 +1309,15 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
     IASTAppendable fillingPrimitives = F.ListAlloc();
     IExpr defaultStyle = fillingStyle;
+    double[] yRange = verticalRange(plotRange, curves);
 
     if (filling.isList()) {
       for (IExpr rule : (IAST) filling)
-        processSingleFillingRule(rule, curves, fillingPrimitives, defaultStyle, baseline);
+        processSingleFillingRule(rule, curves, fillingPrimitives, defaultStyle, baseline, yRange);
     } else {
       for (int i = 0; i < curves.size(); i++)
-        processFillingAction(i, filling, curves, fillingPrimitives, defaultStyle, baseline);
+        processFillingAction(i, filling, curves, fillingPrimitives, defaultStyle, baseline,
+            yRange);
     }
 
     IASTAppendable result = F.ListAlloc();

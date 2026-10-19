@@ -419,6 +419,9 @@ public class SvgGraphics2D {
     }
   }
 
+  /** The height of a tall picture of automatic size, relative to the width it was given. */
+  private static final double TALL_HEIGHT_FACTOR = 1.2;
+
   /** The most of the width the left and right margins together may take. */
   private static final double MAX_PADDING_SHARE = 0.6;
 
@@ -445,6 +448,18 @@ public class SvgGraphics2D {
     double drawWidth = options.imageSize[0] - padding[0] - padding[1];
     if (drawWidth <= 0) {
       return;
+    }
+    if (!options.imageSizeGiven) {
+      // an automatic size keeps a tall picture at most 1.2 times the width it was given high,
+      // 432 for the default 360, and makes it narrower instead
+      double room =
+          TALL_HEIGHT_FACTOR * options.imageSize[0] - padding[2] - padding[3];
+      if (room > 0 && drawWidth * ratio > room) {
+        drawWidth = room / ratio;
+        options.imageSize[0] = drawWidth + padding[0] + padding[1];
+        options.imageSize[1] = Math.max(MIN_DRAWING_HEIGHT, room) + padding[2] + padding[3];
+        return;
+      }
     }
     // a ratio far from square would otherwise produce an unusable canvas
     double drawHeight = Math.max(MIN_DRAWING_HEIGHT, Math.min(drawWidth * ratio, drawWidth * 4.0));

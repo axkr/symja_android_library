@@ -1747,4 +1747,15 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(Tanh(x) > b, x, Reals)", //
         "b<=-1||(b>-1&&b<1&&x>ArcTanh(b))");
   }
+
+  @Test
+  public void testReduceRealParts() {
+    // over the reals every variable is real: Re, Im and Conjugate are worked out
+    check("Reduce(Im(3*I*y)<6, y, Reals)", //
+        "y<2");
+    check("Reduce(Re(y)-2*Im(y)>3, y, Reals)", //
+        "y>3");
+    check("Reduce(Conjugate(y)^2==4, y, Reals)", //
+        "y==-2||y==2");
+  }
 }

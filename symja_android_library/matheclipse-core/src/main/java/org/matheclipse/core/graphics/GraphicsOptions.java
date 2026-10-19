@@ -1218,6 +1218,11 @@ public class GraphicsOptions {
   IExpr plotRange = S.Automatic;
   IExpr filling = S.None;
   IExpr fillingStyle = S.Automatic;
+  /**
+   * The call a plot was made with, whose options a plot drawn through another one (like Plot
+   * through ListPlot) no longer carries; {@code null} for the call itself.
+   */
+  IAST callAST = null;
   IExpr aspectRatio = S.Automatic;
   IExpr dataRange = S.Automatic;
 
@@ -2106,6 +2111,7 @@ public class GraphicsOptions {
     System.arraycopy(this.boundingbox, 0, graphicsOptions.boundingbox, 0, boundingbox.length);
     graphicsOptions.colorIndex = this.colorIndex;
     graphicsOptions.filling = this.filling;
+    graphicsOptions.callAST = this.callAST;
     graphicsOptions.fontSize = this.fontSize;
     graphicsOptions.frame = this.frame;
     graphicsOptions.joined = this.joined;
@@ -2147,6 +2153,11 @@ public class GraphicsOptions {
 
   public IExpr fillingStyle() {
     return fillingStyle;
+  }
+
+  /** The call a plot was made with, or {@code null}. */
+  public IAST callAST() {
+    return callAST;
   }
 
   public int fontSize() {
@@ -3022,6 +3033,10 @@ public class GraphicsOptions {
 
   public void setFillingStyle(IExpr fillingStyle) {
     this.fillingStyle = fillingStyle;
+  }
+
+  public void setCallAST(IAST callAST) {
+    this.callAST = callAST;
   }
 
   public void setAspectRatio(IExpr aspectRatio) {

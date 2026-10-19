@@ -942,4 +942,19 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("FullSimplify(Log(Csc(x)+Cot(x)), Pi<x<2*Pi)", //
         "Log(Cot(x)+Csc(x))");
   }
+
+  @Test
+  public void testSimplifyConstantOnInterval() {
+    // the derivative is 0 in the interval and the sum vanishes at points all over it
+    check("Simplify(ArcCos(1-2*y^2)-2*ArcSin(y), 0<y<1/3)", //
+        "0");
+    check("Simplify(ArcTan(1/y)+ArcTan(y)-Pi/2, 1/3<y<2)", //
+        "0");
+    // a bound which is a multiple of Pi
+    check("Simplify(ArcSin(Cos(y)) + y - Pi/2, 0 < y < Pi/3)", //
+        "0");
+    // a jump at 0 which the derivative doesn't see
+    check("Simplify(ArcTan(1/y)+ArcTan(y)-Pi/2, -1/2<y<1/2)", //
+        "-Pi/2+ArcTan(1/y)+ArcTan(y)");
+  }
 }

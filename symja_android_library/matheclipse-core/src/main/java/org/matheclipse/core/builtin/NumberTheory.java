@@ -958,6 +958,15 @@ public final class NumberTheory {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isList() && ast.arg2().isList()) {
+        for (int position = 1; position <= 2; position++) {
+          IAST list = (IAST) ast.get(position);
+          if (list.exists(x -> x.isNumber() && !x.isInteger())) {
+            // The arguments to `1` must be two lists of integers of identical length, with the
+            // second list only containing positive integers.
+            return Errors.printMessage(S.ChineseRemainder, "pilist", F.list(S.ChineseRemainder),
+                engine);
+          }
+        }
         try {
           int[] a = Validate.checkListOfInts(ast, ast.arg1(), false, true, engine);
           if (a == null) {
@@ -1665,6 +1674,25 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      for (int i = 2; i < ast.size(); i++) {
+        if (ast.get(i).isZero()) {
+          // The argument `1` in `2` should be nonzero.
+          return Errors.printMessage(S.Divisible, "divz", F.list(ast.get(i), ast), engine);
+        }
+      }
+      if (ast.argSize() > 2) {
+        // Divisible(n1, n2, n3, ...): each argument is divisible by the next one
+        for (int i = 1; i < ast.argSize(); i++) {
+          IExpr divisible = engine.evaluate(F.Divisible(ast.get(i), ast.get(i + 1)));
+          if (divisible.isFalse()) {
+            return S.False;
+          }
+          if (!divisible.isTrue()) {
+            return F.NIL;
+          }
+        }
+        return S.True;
+      }
       IExpr result = engine.evaluate(F.Divide(ast.arg1(), ast.arg2()));
       if (result.isNumber()) {
         if (result.isComplex()) {
@@ -1695,7 +1723,7 @@ public final class NumberTheory {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_INFINITY;
     }
 
 
@@ -1824,7 +1852,8 @@ public final class NumberTheory {
    * 28
    * </pre>
    */
-  private static class DivisorSigma extends AbstractFunctionEvaluator implements IntBinaryOperator {
+  private static class DivisorSigma extends AbstractFunctionOptionEvaluator
+      implements IntBinaryOperator {
     @Override
     public int applyAsInt(int k, int n) {
       if (n <= 0)
@@ -1852,9 +1881,51 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
+      boolean gaussian = options[0].isTrue();
+      if (arg2.isComplex() && originalAST
+          .exists(x -> x.isRuleAST() && x.first() == S.GaussianIntegers && x.second().isFalse())) {
+        // a Gaussian integer with GaussianIntegers->False
+        // Inappropriate parameter: `1`.
+        return Errors.printMessage(S.DivisorSigma, "par",
+            F.list(F.Rule(S.GaussianIntegers, S.False)), engine);
+      }
+      if (gaussian || arg2.isComplex()) {
+        // over the Gaussian integers: the divisors are the products of powers of the prime
+        // factors, each prime in the first quadrant, so the sum is the product of the sums
+        // 1+p^k+p^(2*k)+...+p^(e*k)
+        IAST factors;
+        if (arg2.isInteger() && !arg2.isZero()) {
+          IInteger n = (IInteger) arg2;
+          factors = GaussianInteger.factorize(n, n.toBigNumerator(), BigInteger.ZERO);
+        } else if (GaussianInteger.isGaussianInteger(arg2)) {
+          IComplex c = (IComplex) arg2;
+          factors = GaussianInteger.factorize(c, ((IInteger) c.re()).toBigNumerator(),
+              ((IInteger) c.im()).toBigNumerator());
+        } else {
+          return F.NIL;
+        }
+        IASTAppendable product = F.TimesAlloc(factors.argSize());
+        for (IExpr factor : factors) {
+          IExpr p = factor.first();
+          if (p.isOne() || p.isMinusOne() || p.equals(F.CI) || p.equals(F.CNI)) {
+            continue;
+          }
+          int e = factor.second().toIntDefault();
+          if (e <= 0) {
+            return F.NIL;
+          }
+          IASTAppendable sum = F.PlusAlloc(e + 1);
+          for (int a = 0; a <= e; a++) {
+            sum.append(F.Power(p, F.Times(F.ZZ(a), arg1)));
+          }
+          product.append(sum);
+        }
+        return engine.evaluate(F.Expand(product.oneIdentity1()));
+      }
       if (arg1.isOne() && arg2.isOne()) {
         return F.C1;
       }
@@ -1912,6 +1983,7 @@ public final class NumberTheory {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
+      setOptions(newSymbol, S.GaussianIntegers, S.False);
     }
   }
 
@@ -2253,6 +2325,13 @@ public final class NumberTheory {
       if (ast.isAST1()) {
         return F.NIL;
       }
+      if (ast.exists(GaussianInteger::isGaussianInteger)
+          && ast.forAll(x -> x.isInteger() || GaussianInteger.isGaussianInteger(x))) {
+        return gaussianExtendedGCD(ast);
+      }
+      if (ast.forAll(x -> x.isInteger()) && !ast.forAll(x -> x.isPositive())) {
+        return signedExtendedGCD(ast, engine);
+      }
       IExpr arg;
       BigInteger[] gcdArgs = new BigInteger[ast.argSize()];
       for (int i = 1; i < ast.size(); i++) {
@@ -2277,6 +2356,86 @@ public final class NumberTheory {
         Errors.printMessage(S.ExtendedGCD, ae, engine);
       }
       return F.NIL;
+    }
+
+    private static IInteger[] gaussianParts(IExpr x) {
+      if (x.isInteger()) {
+        return new IInteger[] {(IInteger) x, F.C0};
+      }
+      IComplex c = (IComplex) x;
+      return new IInteger[] {(IInteger) c.re(), (IInteger) c.im()};
+    }
+
+    private static IExpr gaussianExpr(IInteger[] g) {
+      return g[1].isZero() ? g[0] : F.CC(g[0], g[1]);
+    }
+
+    /**
+     * The gcd of Gaussian integers and its Bezout coefficients, from the extended Euclidean
+     * algorithm with the rounded quotient of <code>Mod</code>, folded over the arguments.
+     */
+    private static IExpr gaussianExtendedGCD(IAST ast) {
+      IInteger[] g = gaussianParts(ast.arg1());
+      java.util.List<IInteger[]> coefficients = new java.util.ArrayList<IInteger[]>();
+      coefficients.add(new IInteger[] {F.C1, F.C0});
+      for (int i = 2; i < ast.size(); i++) {
+        IInteger[][] gst = GaussianInteger.extendedGcd(g, gaussianParts(ast.get(i)));
+        for (int j = 0; j < coefficients.size(); j++) {
+          IInteger[] c = coefficients.get(j);
+          IInteger[] s = gst[1];
+          coefficients.set(j, new IInteger[] {c[0].multiply(s[0]).subtract(c[1].multiply(s[1])),
+              c[0].multiply(s[1]).add(c[1].multiply(s[0]))});
+        }
+        coefficients.add(gst[2]);
+        g = gst[0];
+      }
+      IASTAppendable list = F.ListAlloc(coefficients.size());
+      for (IInteger[] c : coefficients) {
+        list.append(gaussianExpr(c));
+      }
+      return F.list(gaussianExpr(g), list);
+    }
+
+    /**
+     * The extended gcd of integers which may be negative or zero: the one of their absolute values,
+     * with the sign of an argument on its coefficient and <code>0</code> for a zero argument.
+     */
+    private static IExpr signedExtendedGCD(IAST ast, EvalEngine engine) {
+      final int n = ast.argSize();
+      java.util.List<Integer> nonZero = new java.util.ArrayList<Integer>();
+      for (int i = 1; i <= n; i++) {
+        if (!ast.get(i).isZero()) {
+          nonZero.add(i);
+        }
+      }
+      IInteger[] coefficients = new IInteger[n];
+      java.util.Arrays.fill(coefficients, F.C0);
+      if (nonZero.isEmpty()) {
+        return F.list(F.C0, F.List(coefficients));
+      }
+      BigInteger gcd;
+      if (nonZero.size() == 1) {
+        int i = nonZero.get(0);
+        IInteger a = (IInteger) ast.get(i);
+        coefficients[i - 1] = a.isNegative() ? F.CN1 : F.C1;
+        return F.list(a.abs(), F.List(coefficients));
+      }
+      BigInteger[] args = new BigInteger[nonZero.size()];
+      for (int k = 0; k < args.length; k++) {
+        args[k] = ((IInteger) ast.get(nonZero.get(k))).toBigNumerator().abs();
+      }
+      BigInteger[] bezout = new BigInteger[args.length];
+      try {
+        gcd = extendedGCD(args, bezout);
+      } catch (ArithmeticException ae) {
+        return F.NIL;
+      }
+      for (int k = 0; k < args.length; k++) {
+        int i = nonZero.get(k);
+        IInteger c = F.ZZ(bezout[k]);
+        coefficients[i - 1] = ((IInteger) ast.get(i)).isNegative() ? c.negate() : c;
+      }
+      return F.list(F.ZZ(gcd), F.List(coefficients));
     }
 
     @Override
@@ -5554,20 +5713,75 @@ public final class NumberTheory {
    * False
    * </pre>
    */
-  private static class PrimePowerQ extends AbstractFunctionEvaluator {
+  private static class PrimePowerQ extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IExpr arg1 = ast.arg1();
+      IExpr gaussian = options[0];
+      if (arg1.isFraction() || (arg1.isComplex() && !GaussianInteger.isGaussianInteger(arg1))) {
+        // a rational number is tested by its reciprocal, which has to be an integer
+        IExpr reciprocal = engine.evaluate(F.Divide(F.C1, arg1));
+        if (!reciprocal.isInteger() && !GaussianInteger.isGaussianInteger(reciprocal)) {
+          return S.False;
+        }
+        arg1 = reciprocal;
+      }
       if (arg1.isInteger()) {
+        if (gaussian.isTrue()) {
+          return F.booleSymbol(isGaussianPrimePower(arg1));
+        }
         return F.booleSymbol(Primality.isPrimePower(((IInteger) arg1).toBigNumerator()));
       }
+      if (GaussianInteger.isGaussianInteger(arg1)) {
+        if (gaussian.isFalse()) {
+          // Inappropriate parameter: `1`.
+          return Errors.printMessage(S.PrimePowerQ, "par",
+              F.list(F.Rule(S.GaussianIntegers, S.False)), engine);
+        }
+        return F.booleSymbol(isGaussianPrimePower(arg1));
+      }
       return S.False;
+    }
+
+    /** A unit times a power of one Gaussian prime. */
+    private static boolean isGaussianPrimePower(IExpr z) {
+      IAST factors;
+      if (z.isInteger()) {
+        IInteger n = (IInteger) z;
+        if (n.isZero()) {
+          return false;
+        }
+        factors = GaussianInteger.factorize(n, n.toBigNumerator(), BigInteger.ZERO);
+      } else {
+        IComplex c = (IComplex) z;
+        factors = GaussianInteger.factorize(c, ((IInteger) c.getRealPart()).toBigNumerator(),
+            ((IInteger) c.getImaginaryPart()).toBigNumerator());
+      }
+      if (factors == null || factors.isNIL()) {
+        return false;
+      }
+      int primes = 0;
+      for (IExpr factor : factors) {
+        IExpr p = factor.isList() ? factor.first() : factor;
+        // the units 1, -1, I, -I aren't primes
+        if (!(p.isOne() || p.isMinusOne() || p.equals(F.CI) || p.equals(F.CNI))) {
+          primes++;
+        }
+      }
+      return primes == 1;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE);
+      setOptions(newSymbol, S.GaussianIntegers, S.Automatic);
     }
 
 
@@ -5702,7 +5916,8 @@ public final class NumberTheory {
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger()) {
         try {
-          IInteger[] roots = ((IInteger) arg1).primitiveRootList();
+          // the primitive roots of -n are those of n
+          IInteger[] roots = ((IInteger) arg1).abs().primitiveRootList();
           if (roots != null) {
             return F.mapRange(0, roots.length, i -> roots[i]);
           }
