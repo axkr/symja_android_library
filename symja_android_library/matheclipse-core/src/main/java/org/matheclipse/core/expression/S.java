@@ -6208,6 +6208,16 @@ public class S {
       S.initFinalSymbol("DirichletCharacter", ID.DirichletCharacter);
 
   /**
+   * DirichletCondition(x) - TODO describe `DirichletCondition`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirichletCondition.md">DirichletCondition
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DirichletCondition =
+      S.initFinalSymbol("DirichletCondition", ID.DirichletCondition);
+
+  /**
    * DirichletEta(x) - `DirichletEta` function returns the Dirichlet eta function.
    * 
    * @see <a href=
@@ -16369,6 +16379,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol NetGraph = S.initFinalSymbol("NetGraph", ID.NetGraph);
+
+  /**
+   * NeumannValue(x) - TODO describe `NeumannValue`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NeumannValue.md">NeumannValue
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NeumannValue =
+      S.initFinalSymbol("NeumannValue", ID.NeumannValue);
 
   /**
    * NewMoon(x) - TODO describe `NewMoon`.
