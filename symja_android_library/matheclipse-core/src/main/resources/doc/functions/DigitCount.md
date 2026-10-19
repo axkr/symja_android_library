@@ -18,6 +18,8 @@ DigitCount(n, radix, k)
 
 > returns a the number of integer digit `k` in `n` for `radix`. 
 
+A list in the first argument is threaded over; a real number counts the digits of its `RealDigits`.
+
 See
 * [Wikipedia - Radix](https://en.wikipedia.org/wiki/Radix)
 

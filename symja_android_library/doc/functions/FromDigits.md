@@ -24,7 +24,27 @@ FromDigits(string, radix)
 
 > creates an expression from the characters in the `string` for radix `10`.
 
+```
+FromDigits({list, e}, radix)
+```
+
+> gives the number `0.d1 d2 ... * radix^e`; a trailing sublist of `list` is a block of recurring digits.
+
+```
+FromDigits(string, "Roman")
+```
+
+> gives the value of a Roman numeral.
+
 ### Examples
+
+```
+>> FromDigits({{4, {0, 9}}, 0})
+9/22
+
+>> FromDigits({u, v, w}, y)
+w+v*y+u*y^2
+```
 
 ```
 >> FromDigits("789abc")

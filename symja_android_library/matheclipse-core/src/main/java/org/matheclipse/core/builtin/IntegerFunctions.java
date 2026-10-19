@@ -45,8 +45,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numerics.utils.RealDigitsResult;
-import org.matheclipse.external.fastutil.objects.Object2IntMap;
-import org.matheclipse.external.fastutil.objects.Object2IntOpenHashMap;
 
 public class IntegerFunctions {
 
@@ -694,60 +692,84 @@ public class IntegerFunctions {
 
   private static class DigitCount extends AbstractFunctionEvaluator {
 
+    /** The largest base for which the list of all digit counts is built. */
+    private static final int MAX_DIGIT_COUNT_BASE = 1 << 24;
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr result = F.NIL;
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return arg1.mapThread(ast, 1);
+      }
+      IExpr base = F.C10;
       int radix = 10;
-      if (ast.isAST1()) {
-        result = S.IntegerDigits.of(engine, ast.arg1());
-      } else if (ast.size() >= 3) {
-        if (ast.isAST3() && ast.arg3().isList()) {
-          return ast.arg3().mapThread(ast, 3);
-        }
-
-        radix = ast.arg2().toMachineInt();
-        if (radix <= 0) {
-          return F.NIL;
-        }
-        result = S.IntegerDigits.of(engine, ast.arg1(), ast.arg2());
-      }
-      if (result.isList()) {
-        IAST list = (IAST) result;
-
-        Object2IntOpenHashMap<IExpr> map = new Object2IntOpenHashMap<IExpr>();
-        for (int i = 1; i < list.size(); i++) {
-          map.addTo(list.get(i), 1);
-        }
-        if (ast.isAST3()) {
-          int index = ast.arg3().toMachineInt();
-          if (index > 0 && index < radix) {
-            int count = map.getInt(F.ZZ(index));
-            return F.ZZ(count);
+      if (ast.size() >= 3) {
+        base = ast.arg2();
+        radix = base.toIntDefault();
+        if (radix < 2) {
+          if (base.isNumber() || base.isList()) {
+            // Requested base `1` in `2` should be between 2 and `3`.
+            return Errors.printMessage(S.DigitCount, "base",
+                F.list(base, ast, F.ZZ(Integer.MAX_VALUE)), engine);
           }
           return F.NIL;
         }
+      }
+      if (ast.isAST3() && ast.arg3().isList()) {
+        return ast.arg3().mapThread(ast, 3);
+      }
+      IAST digits;
+      if (arg1.isInteger()) {
+        IExpr result = S.IntegerDigits.of(engine, arg1, base);
+        if (!result.isList()) {
+          return F.NIL;
+        }
+        digits = (IAST) result;
+      } else if (arg1.isReal() && !arg1.isRational()) {
+        IExpr result = S.RealDigits.of(engine, arg1, base);
+        if (!result.isList() || !result.first().isList()) {
+          return F.NIL;
+        }
+        digits = (IAST) result.first();
+      } else {
+        if (arg1.isNumber()) {
+          // Integer expected at position `2` in `1`.
+          return Errors.printMessage(S.DigitCount, "int", F.list(ast, F.C1), engine);
+        }
+        return F.NIL;
+      }
 
-        if (Config.MAX_AST_SIZE < radix) {
-          ASTElementLimitExceeded.throwIt(radix);
+      if (ast.isAST3()) {
+        int d = ast.arg3().toIntDefault();
+        if (d < 0 || d >= radix) {
+          return F.NIL;
         }
-        IExpr[] arr = new IExpr[radix];
-        for (int i = 0; i < arr.length; i++) {
-          arr[i] = F.C0;
-        }
-        for (Object2IntMap.Entry<IExpr> element : map.object2IntEntrySet()) {
-          IExpr key = element.getKey();
-          int k = key.toIntDefault();
-          if (k == 0) {
-            arr[radix - 1] = F.ZZ(element.getIntValue());
-          } else if (k > 0 && k < radix) {
-            arr[k - 1] = F.ZZ(element.getIntValue());
-          } else {
-            return F.NIL;
+        int count = 0;
+        for (int i = 1; i < digits.size(); i++) {
+          if (digits.get(i).toIntDefault() == d) {
+            count++;
           }
         }
-        return F.ast(arr, S.List);
+        return F.ZZ(count);
       }
-      return F.NIL;
+      if (Config.MAX_AST_SIZE < radix || radix > MAX_DIGIT_COUNT_BASE) {
+        ASTElementLimitExceeded.throwIt(radix);
+      }
+      int[] counts = new int[radix];
+      for (int i = 1; i < digits.size(); i++) {
+        int k = digits.get(i).toIntDefault();
+        if (k < 0 || k >= radix) {
+          return F.NIL;
+        }
+        counts[k]++;
+      }
+      // the counts of the digits 1, 2, ..., radix-1, 0
+      IASTAppendable result = F.ListAlloc(radix);
+      for (int k = 1; k < radix; k++) {
+        result.append(counts[k]);
+      }
+      result.append(counts[0]);
+      return result;
     }
 
     @Override
@@ -1286,38 +1308,31 @@ public class IntegerFunctions {
         base = ast.arg2();
       }
       IExpr arg1 = ast.arg1();
-      if (arg1.isList()) {
-        IAST list = (IAST) arg1;
-        return fromDigits(list, base);
-      }
       if (arg1.isString()) {
-        StringX str = (StringX) arg1;
-        int radix = base.toIntDefault(-1);
-        if (radix > 0) {
-          try {
-            return F.ZZ(new BigInteger(str.toString(), radix));
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            //
-          }
+        String str = arg1.toString();
+        if (base.isString("Roman")) {
+          return S.FromRomanNumeral.of(engine, arg1);
+        }
+        if (base.isString()) {
+          return F.NIL;
         }
         IASTAppendable digitsList = F.ListAlloc(str.length());
         for (int i = 0; i < str.length(); i++) {
-          int digit = Config.INVALID_INT;
-          char ch = str.charAt(i);
-          if (ch >= '0' && ch <= '9') {
-            digit = Character.digit(ch, radix);
-          } else if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
-            digit = Character.digit(ch, 36);
-          } else {
-            return F.NIL;
-          }
-          if (digit == Config.INVALID_INT) {
+          int digit = Character.digit(str.charAt(i), 36);
+          if (digit < 0) {
             return F.NIL;
           }
           digitsList.append(digit);
         }
-        return fromDigits(digitsList, base);
+        return fromDigits(digitsList, base, engine);
+      }
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        if (list.isList2() && list.arg1().isList()) {
+          // {digits, exponent}
+          return fromMantissa((IAST) list.arg1(), list.arg2(), base, engine);
+        }
+        return fromDigits(list, base, engine);
       }
       return F.NIL;
     }
@@ -1327,13 +1342,77 @@ public class IntegerFunctions {
       return ARGS_1_2;
     }
 
-    private IExpr fromDigits(IAST list, IExpr radix) {
-      IASTAppendable result = F.PlusAlloc(list.size());
-      int exp = 0;
-      for (int i = list.argSize(); i >= 1; i--) {
-        result.append(list.get(i).abs().times(radix.power(exp++)));
+    /**
+     * The value of <code>0.d1 d2 ... dk (r1 ... rj)</code> times <code>base^exponent</code>, where
+     * the optional trailing sublist <code>{r1, ..., rj}</code> repeats forever.
+     */
+    private static IExpr fromMantissa(IAST digits, IExpr exponent, IExpr base,
+        EvalEngine engine) {
+      IAST recurring = F.CEmptyList;
+      int k = digits.argSize();
+      if (k > 0 && digits.last().isList()) {
+        recurring = (IAST) digits.last();
+        k--;
       }
-      return result;
+      IASTAppendable leading = F.ListAlloc(k);
+      for (int i = 1; i <= k; i++) {
+        if (digits.get(i).isList()) {
+          return F.NIL;
+        }
+        leading.append(digits.get(i));
+      }
+      IExpr value = F.Times(fromDigits(leading, base, engine), F.Power(base, F.ZZ(-k)));
+      if (recurring.argSize() > 0) {
+        int j = recurring.argSize();
+        // r1 ... rj / (base^k * (base^j - 1))
+        value = F.Plus(value, F.Times(fromDigits(recurring, base, engine), F.Power(base, F.ZZ(-k)),
+            F.Power(F.Plus(F.Power(base, F.ZZ(j)), F.CN1), F.CN1)));
+      }
+      return engine.evaluate(F.Times(value, F.Power(base, exponent)));
+    }
+
+    /** Horner's rule <code>(...((d1*base + d2)*base + d3)...)</code>. */
+    private static IExpr fromDigits(IAST list, IExpr base, EvalEngine engine) {
+      int n = list.argSize();
+      if (n == 0) {
+        return F.C0;
+      }
+      if (base.isInteger() && list.forAll(x -> x.isInteger())) {
+        BigInteger b = ((IInteger) base).toBigNumerator();
+        BigInteger[] d = new BigInteger[n];
+        for (int i = 0; i < n; i++) {
+          d[i] = ((IInteger) list.get(i + 1)).toBigNumerator();
+        }
+        return F.ZZ(horner(d, 0, n, b));
+      }
+      if (!base.isNumber()) {
+        // a symbolic base gives the polynomial d1*base^(n-1) + ... + dn
+        IASTAppendable sum = F.PlusAlloc(n);
+        for (int i = 1; i <= n; i++) {
+          sum.append(F.Times(list.get(i), F.Power(base, F.ZZ(n - i))));
+        }
+        return engine.evaluate(sum);
+      }
+      IExpr result = list.arg1();
+      for (int i = 2; i <= n; i++) {
+        result = engine.evaluate(F.Plus(F.Times(base, result), list.get(i)));
+      }
+      return engine.evaluate(result);
+    }
+
+    /** Horner's rule for <code>d[from..to)</code>, split in halves for long digit lists. */
+    private static BigInteger horner(BigInteger[] d, int from, int to, BigInteger base) {
+      if (to - from <= 64) {
+        BigInteger result = BigInteger.ZERO;
+        for (int i = from; i < to; i++) {
+          result = result.multiply(base).add(d[i]);
+        }
+        return result;
+      }
+      int mid = (from + to) >>> 1;
+      BigInteger high = horner(d, from, mid, base);
+      BigInteger low = horner(d, mid, to, base);
+      return high.multiply(base.pow(to - mid)).add(low);
     }
 
     @Override

@@ -10,7 +10,9 @@ PrimePi(x)
 PrimePi(x, Method -> "...")
 ```
 
-> uses the method to do the calculation. Methods are `Sieve`, `LucyHedgehog` and `Meissel`. The default `Method->Automatic` selects the algorithm according to the size of `x`.
+> uses the method to do the calculation. Methods are `Sieve`, `LucyHedgehog` and `LMO`. The default `Method->Automatic` sieves small `x` and uses the Lagarias-Miller-Odlyzko method above; `x` may be up to `10^14`.
+
+A real `x` is floored, `PrimePi(Infinity)` is `Infinity` and `PrimePi(-Infinity)` is `0`.
 
 See
 * [Wikipedia - Prime-counting function](https://en.wikipedia.org/wiki/Prime-counting_function)

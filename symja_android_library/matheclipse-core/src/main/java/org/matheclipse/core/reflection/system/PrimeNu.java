@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.SortedMap;
 import java.util.function.IntUnaryOperator;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -19,6 +20,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 public class PrimeNu extends AbstractFunctionOptionEvaluator implements IntUnaryOperator {
   @Override
@@ -37,6 +39,14 @@ public class PrimeNu extends AbstractFunctionOptionEvaluator implements IntUnary
 
     if (arg1.isList()) {
       return arg1.mapThread(ast, 1);
+    }
+
+    if (arg1.isInexactNumber()) {
+      // Argument `1` in `2` is not an exact number.
+      return Errors.printMessage(S.PrimeNu, "exact", F.list(arg1, ast), engine);
+    }
+    if (!options[0].isTrue() && !options[0].isFalse()) {
+      return F.NIL;
     }
 
     if (arg1.isZero()) {
@@ -124,6 +134,8 @@ public class PrimeNu extends AbstractFunctionOptionEvaluator implements IntUnary
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(Attribute.LISTABLE);
+    newSymbol.putMessage(IPatternMatcher.SET, "exact",
+        F.stringx(org.matheclipse.core.builtin.NumberTheory.EXACT_MESSAGE));
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {S.GaussianIntegers}, //
         new IExpr[] {S.False});

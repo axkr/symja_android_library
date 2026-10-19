@@ -178,6 +178,50 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "IntegerPartitions(0.5)");
     check("IntegerPartitions(1/2)", //
         "{}");
+
+    // a negative step: the lengths 5, 3, 1
+    check("IntegerPartitions(9, {5, 1, -2})", //
+        "{{9},{7,1,1},{6,2,1},{5,3,1},{5,2,2},{5,1,1,1,1},{4,4,1},{4,3,2},{4,2,1,1,1},{3,\n"
+            + "3,3},{3,3,1,1,1},{3,2,2,1,1},{2,2,2,2,1}}");
+    // a number s as the parts specification means the parts 1, 2, ..., Floor(s)
+    check("{IntegerPartitions(7, All, 3), IntegerPartitions(7, All, 7/3)}", //
+        "{{{3,3,1},{3,2,2},{3,2,1,1},{3,1,1,1,1},{2,2,2,1},{2,2,1,1,1},{2,1,1,1,1,1},{1,1,\n"
+            + "1,1,1,1,1}},{{2,2,2,1},{2,2,1,1,1},{2,1,1,1,1,1},{1,1,1,1,1,1,1}}}");
+    // an unsorted list of parts is used in reverse order
+    check("IntegerPartitions(7, All, {3, 1, 2})", //
+        "{{2,2,2,1},{2,2,1,1,1},{2,2,3},{2,1,1,1,1,1},{2,1,1,3},{1,1,1,1,1,1,1},{1,1,1,1,\n"
+            + "3},{1,3,3}}");
+    check("IntegerPartitions(7, All, {1/2, 3}, 3)", //
+        "{{3,3,1/2,1/2},{3,1/2,1/2,1/2,1/2,1/2,1/2,1/2,1/2},{1/2,1/2,1/2,1/2,1/2,1/2,1/2,\n"
+            + "1/2,1/2,1/2,1/2,1/2,1/2,1/2}}");
+    // the fourth argument selects rows like Take
+    check(
+        "{IntegerPartitions(7, All, All, {2, 5}), IntegerPartitions(7, All, All, -3), IntegerPartitions(7, All, All, {9})}", //
+        "{{{6,1},{5,2},{5,1,1},{4,3}},{{2,2,1,1,1},{2,1,1,1,1,1},{1,1,1,1,1,1,1}},{{3,2,2}}}");
+    check("{IntegerPartitions(7, All, All, {1, -1, 4}), IntegerPartitions(7, All, All, None)}", //
+        "{{{7},{4,3},{3,2,2},{2,2,1,1,1}},{}}");
+    // IntegerPartitions: Warning: not all elements were found when attempting to take the
+    // sequence {20,20,1} from IntegerPartitions(7,All,All), which has length 15.
+    check("IntegerPartitions(7, All, All, {20})", //
+        "{}");
+    check("Length(IntegerPartitions(7, All, All, {4, 30}))", //
+        "12");
+    // position 0 selects nothing without generating the partitions
+    check(
+        "{IntegerPartitions(300, All, All, 0), IntegerPartitions(300, All, All, {0}), IntegerPartitions(300, All, All, {0, 4})}", //
+        "{{},{},{}}");
+    // a long list of parts
+    check("Length(IntegerPartitions(10, All, Range(15000)))", //
+        "42");
+    // messages rat, nninfseq, rseq, seq and undef
+    check(
+        "{IntegerPartitions(y), IntegerPartitions(9, -2), IntegerPartitions(9, All, {2, 1.5}), IntegerPartitions(9, All, All, {2, 6, 0}), IntegerPartitions(9, All, {0, 2})}", //
+        "{IntegerPartitions(y),IntegerPartitions(9,-2),IntegerPartitions(9,All,{2,1.5}),IntegerPartitions(\n"
+            + "9,All,All,{2,6,0}),IntegerPartitions(9,All,{0,2})}");
+    // the number of rows is not bounded by $IterationLimit
+    check(
+        "{Length(IntegerPartitions(18)), Length(IntegerPartitions(10^4, {2})), Length(IntegerPartitions(45, All, {9, 6, 4, 3, 1}))}", //
+        "{385,5000,644}");
   }
 
   @Test

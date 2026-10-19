@@ -12,6 +12,8 @@ NextPrime(n, k)
 
 > gives the `k`th  prime after `n`.
 
+The negatives of the primes count: the primes are ordered `..., -5, -3, -2, 2, 3, 5, ...`. A negative `k` counts downwards; a real `n` starts from `Floor(n)` going up and from `Ceiling(n)` going down. `NextPrime(n, 0)` is `n` if `n` or `-n` is a prime.
+
 ### Examples
 
 ```
@@ -27,6 +29,9 @@ NextPrime(n, k)
 563
 >> NextPrime(5, 10.5)
 NextPrime(5, 10.5)
+
+>> NextPrime(-10)
+-7
 ```
 
 

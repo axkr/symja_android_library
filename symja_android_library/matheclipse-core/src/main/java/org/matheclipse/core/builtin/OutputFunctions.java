@@ -318,16 +318,63 @@ public final class OutputFunctions {
         return arg1.mapThread(ast, 1);
       }
       if (arg1.isString()) {
-        try {
-          String romanNumber = arg1.toString();
-          int result = RomanArabicConverter.romanToArabic(romanNumber);
-          return F.ZZ(result);
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.FromRomanNumeral, rex, engine);
+        IExpr value = fromRoman(arg1.toString());
+        if (value.isPresent()) {
+          return value;
         }
+        // String `1` does not represent a valid roman numeral.
+        Errors.printMessage(S.FromRomanNumeral, "nrom", F.list(arg1), engine);
+        return S.$Failed;
       }
       return F.NIL;
+    }
+
+    /**
+     * The value of a Roman numeral; subtractive and additive forms are both accepted.
+     *
+     * @return {@link F#NIL} for a character which is no Roman digit
+     */
+    private static IExpr fromRoman(String str) {
+      if (str.equals("N")) {
+        // zero
+        return F.C0;
+      }
+      long total = 0;
+      int previous = 0;
+      for (int i = 0; i < str.length(); i++) {
+        int v;
+        switch (Character.toUpperCase(str.charAt(i))) {
+          case 'I':
+            v = 1;
+            break;
+          case 'V':
+            v = 5;
+            break;
+          case 'X':
+            v = 10;
+            break;
+          case 'L':
+            v = 50;
+            break;
+          case 'C':
+            v = 100;
+            break;
+          case 'D':
+            v = 500;
+            break;
+          case 'M':
+            v = 1000;
+            break;
+          default:
+            return F.NIL;
+        }
+        total += v;
+        if (previous < v) {
+          total -= 2L * previous;
+        }
+        previous = v;
+      }
+      return F.ZZ(total);
     }
 
     @Override

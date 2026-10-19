@@ -6351,6 +6351,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("DigitCount(0, 2)", //
         "{0,1}");
+    // a list in the first argument threads; a real counts its RealDigits
+    check("{DigitCount({101, 7}, 2), DigitCount({15, 105}, 10, 5), DigitCount(0.75, 2), DigitCount(3.0)}", //
+        "{{{4,3},{3,0}},{1,1},{2,51},{0,0,1,0,0,0,0,0,0,15}}");
+    // DigitCount: Integer expected at position 1 in DigitCount(2/3).
+    check("DigitCount(2/3)", //
+        "DigitCount(2/3)");
     check("DigitCount(0)", //
         "{0,0,0,0,0,0,0,0,0,1}");
     check("DigitCount(0, 12)", //
@@ -14018,6 +14024,50 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "7903932");
     check("FromDigits(\"1A3C\")", //
         "2042");
+
+    // symbolic and negative digits keep their sign
+    // a symbolic base gives a sum of powers, a numeric base Horner's form
+    check("{FromDigits({u, v, w}, y), FromDigits({-2, 5}), FromDigits({1, 0, 1}, -2)}", //
+        "{w+v*y+u*y^2,-15,5}");
+    check("FromDigits({u, v}, 3)", //
+        "3*u+v");
+    // {digits, exponent} with a recurring block
+    check("{FromDigits({{4, {0, 9}}, 0}), FromDigits({{7, 5}, -2}), FromDigits({{2, 5}, {1, 2}})}", //
+        "{9/22,3/400,{5/2,25}}");
+    // FromRomanNumeral: String MZ does not represent a valid roman numeral.
+    check(
+        "{FromDigits(\"MMXXVI\", \"Roman\"), FromDigits(\"xlix\", \"Roman\"), FromDigits(\"MCM\", \"Roman\"), FromDigits(\"MZ\", \"Roman\")}", //
+        "{2026,49,1900,$Failed}");
+    check("FromDigits(\"1g\", 20)", //
+        "36");
+  }
+
+  @Test
+  public void testFactorIntegerMaxFactors() {
+    // 831600 = 2^4*3^3*5^2*7*11: the largest prime powers are kept, the smallest multiplied
+    check("{FactorInteger(831600, 2), FactorInteger(831600, 3), FactorInteger(831600, 6)}", //
+        "{{{11,1},{75600,1}},{{7,1},{11,1},{10800,1}},{{2,4},{3,3},{5,2},{7,1},{11,1}}}");
+    // the sign goes into the merged factor, else into the largest factor
+    check("{FactorInteger(-831600, 2), FactorInteger(-831600, 6), FactorInteger(98, 1)}", //
+        "{{{-75600,1},{11,1}},{{-11,1},{2,4},{3,3},{5,2},{7,1}},{{98,1}}}");
+    check("{FactorInteger(-20, 3), FactorInteger(-27, 2), FactorInteger(-831600, All)}", //
+        "{{{-5,1},{2,2}},{{-27,1}},{{-1,1},{2,4},{3,3},{5,2},{7,1},{11,1}}}");
+    // a merged denominator m is {m,-1}, or {-1/m,1} with the sign
+    check("{FactorInteger(35/396, 2), FactorInteger(-5/1386, 2)}", //
+        "{{{5,1},{7,1},{11,-1},{36,-1}},{{-1/126,1},{5,1},{11,-1}}}");
+    // the cofactor 65537*65539 without small factors
+    check(
+        "{FactorInteger(2*65537*65539, 2), FactorInteger(2*65537*65539, 3), FactorInteger(3*5*7*11*65537*65539, 3)}", //
+        "{{{2,1},{4295229443,1}},{{2,1},{65537,1},{65539,1}},{{11,1},{105,1},{4295229443,\n"
+            + "1}}}");
+    check("{FactorInteger(360, All), FactorInteger(360, 0), FactorInteger(x, 2)}", //
+        "{{{2,3},{3,2},{5,1}},FactorInteger(360,0),FactorInteger(x,2)}");
+    check("{FactorInteger(360, 10^20), FactorInteger(-360, 10^20)}", //
+        "{{{2,3},{3,2},{5,1}},{{-5,1},{2,3},{3,2}}}");
+    // the cofactor of two 41-digit primes is not factored when there is no room to split it
+    check("FactorInteger(6*NextPrime(10^40)*NextPrime(10^41), 3)", //
+        "{{2,1},{3,1},{1000000000000000000000000000000000000013190000000000000000000000000000000000013\\\n"
+            + "189,1}}");
   }
 
   @Test
@@ -14036,6 +14086,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1937");
     check("FromRomanNumeral(\"MMMDCCXLVIII\")", //
         "3748");
+    // subtractive pairs anywhere and additive forms are accepted
+    check("{FromRomanNumeral(\"MIM\"), FromRomanNumeral(\"XIIII\"), FromRomanNumeral(\"dcix\")}", //
+        "{1999,14,609}");
+    // FromRomanNumeral: String XVQ does not represent a valid roman numeral.
+    check("FromRomanNumeral(\"XVQ\")", //
+        "$Failed");
     check(
         "FromRomanNumeral({\"ci\", \"cii\", \"ciii\", \"civ\", \"cv\", \"cvi\", \"cvii\", \"cviii\"})", //
         "{101,102,103,104,105,106,107,108}");
@@ -20642,9 +20698,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("NextPrime(13,2147483647)", //
         "Hold(NextPrime(13,2147483647))");
 
-    // print NextPrime: Non-negative integer expected.
+    // the negatives of the primes count: ..., -5, -3, -2, 2, 3, 5, ...
     check("NextPrime(-10000)", //
-        "NextPrime(-10000)");
+        "-9973");
+    // two lists thread like an outer product
+    check("NextPrime({-12, 40}, {2, -2})", //
+        "{{-7,-17},{43,31}}");
+    check("{NextPrime(-8, 3), NextPrime(-4, -1), NextPrime(1, -1), NextPrime(-13, 0), NextPrime(9, 0)}", //
+        "{-3,-5,-2,-13,NextPrime(9,0)}");
+    // a real start: Floor going up, Ceiling going down
+    check("{NextPrime(-7/3, 2), NextPrime(4.5, -2), NextPrime({-20, 30}, 1)}", //
+        "{2,2,{-19,31}}");
     check("NextPrime(10000, -3)", //
         "9949");
 
@@ -20652,10 +20716,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "10007");
     check("NextPrime(10000, 3)", //
         "10037");
-    // TODO
-    // check("NextPrime(100, -5)", "73");
-    // check("NextPrime(10, -5)", "-2");
-    // check("NextPrime(5.5, 100)", "563");
+    check("NextPrime(100, -5)", //
+        "73");
+    check("NextPrime(10, -5)", //
+        "-2");
+    check("NextPrime(5.5, 100)", //
+        "563");
   }
 
   @Test
@@ -21966,9 +22032,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPartitionsP() {
-    // iteration limit
-    check("PartitionsP(10001)", //
-        "Hold(PartitionsP(10001))");
+    check("PartitionsP(250000)", //
+        "PartitionsP(250000)");
+    check("PartitionsP(1000)", //
+        "24061467864032622473692149727991");
 
     check("PartitionsP(101)", //
         "214481126");
@@ -21992,7 +22059,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3972999029388");
     check("PartitionsP(300)", //
         "9253082936723602");
-    // check("PartitionsP(1000)", "24061467864032622473692149727991");
   }
 
   @Test
@@ -22021,9 +22087,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "64");
     check("PartitionsQ(50)", //
         "3658");
-    // upper limit to avid stack overflow
     check("PartitionsQ(201)", //
-        "PartitionsQ(201)");
+        "517361670");
+    check(
+        "Table(PartitionsQ(n), {n, 0, 15}) == Table(Count(IntegerPartitions(n), _?DuplicateFreeQ), {n, 0, 15})", //
+        "True");
+    check("PartitionsQ(2.5)", //
+        "PartitionsQ(2.5)");
   }
 
   @Test
@@ -24457,9 +24527,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrimePi() {
-    // PrimePi: Function PrimePi not implemented for first argument exceeding 5*10^13.
-    check("PrimePi(10^14)", //
-        "PrimePi(100000000000000)");
+    // PrimePi: Function PrimePi not implemented for first argument exceeding 10^14.
+    check("PrimePi(2*10^14)", //
+        "PrimePi(200000000000000)");
+    check("{PrimePi(Infinity), PrimePi(-Infinity), PrimePi(Sqrt(1000))}", //
+        "{Infinity,0,11}");
+    check(
+        "PrimePi(7*10^10 + 12345) == PrimePi(7*10^10 + 12345, Method -> \"LucyHedgehog\")", //
+        "True");
     check("PrimePi(10^7, Method->\"Bogus\")", //
         "PrimePi(10000000,Method->Bogus)");
     check("PrimePi(10^7, Method->\"LucyHedgehog\")", //
@@ -24679,12 +24754,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
           "2102429869");
     }
 
-    // above the limit return Prime(...)
-    // Prime: Maximum Prime limit 103000000 exceeded.
     check("Prime(10^9)", //
-        "Prime(1000000000)");
-    // check("Prime(10^10)", "252097800623");
-    // check("Prime(10^11)", "2760727302517");
+        "22801763489");
+    check("p = Prime(234567891); {PrimePi(p), PrimeQ(p), PrimePi(p - 1)}", //
+        "{234567891,True,234567890}");
+    // Prime: Maximum Prime limit 3204941750802 exceeded.
+    check("Prime(10^13)", //
+        "Prime(10000000000000)");
+    // Prime: Positive integer argument expected in Prime(2.5).
+    check("Prime(2.5)", //
+        "Prime(2.5)");
 
   }
 
@@ -24708,6 +24787,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,1,1,2,1,2,3}");
     check("PrimeOmega({-1,-2,-3,-4,-5,-6,-20})", //
         "{0,1,1,2,1,2,3}");
+    // 60 = (-I)^2*(1+I)^4*3*(2+I)*(2-I)
+    check("{PrimeOmega(60, GaussianIntegers -> True), PrimeOmega(5 + 5*I), PrimeOmega(60)}", //
+        "{7,3,4}");
+    // PrimeOmega: Argument 4.0 in PrimeOmega(4.0) is not an exact number.
+    check("PrimeOmega(4.0)", //
+        "PrimeOmega(4.0)");
+    check("PrimeOmega(12, GaussianIntegers -> Automatic)", //
+        "PrimeOmega(12,GaussianIntegers->Automatic)");
   }
 
   @Test

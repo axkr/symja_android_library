@@ -18,6 +18,12 @@ IntegerPartitions(n, {lower, upper}, {listOfIntegers})
 
 > lists the possible ways to partition `n` with the numbers in `{listOfIntegers}`, using between `lower` and `upper` number of elements.
 
+```
+IntegerPartitions(n, kspec, sspec, m)
+```
+
+> `kspec` is `All`, `k`, `{k}`, `{kmin, kmax}` or `{k1, k2, dk}` with a positive or negative step; `sspec` is `All`, a number `s` (the parts `1, 2, ..., Floor(s)`) or a list of parts; `m` selects the partitions like `Take`, or is `None`.
+
 See
 * [Wikipedia - Partition (number theory)](https://en.wikipedia.org/wiki/Partition_(number_theory))
 * [Wikipedia - Coin problem](https://en.wikipedia.org/wiki/Coin_problem)

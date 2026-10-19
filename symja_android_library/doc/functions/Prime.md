@@ -5,6 +5,8 @@ Prime(n)
 ```
 
 > returns the `n`th prime number.
+
+A large `n` is estimated by the inverse of Riemann's `R` function; one exact `PrimePi` there and a sieve over the gap give the prime. `n` may be up to `PrimePi(10^14)`.
  
 See
 * [Wikipedia - Prime number](https://en.wikipedia.org/wiki/Prime_number)

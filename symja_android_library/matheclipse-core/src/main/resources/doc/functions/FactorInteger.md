@@ -12,6 +12,12 @@ FactorInteger(n, GaussianIntegers->True)
 
 > for gaussian integers you can set the option `GaussianIntegers->True`
 
+```
+FactorInteger(n, k)
+```
+
+> returns at most `k` factors: the largest prime powers are kept and the smallest are multiplied into one factor. `FactorInteger(n, All)` is the complete factorization.
+
 
 See 
 * [Wikipedia - Integer factorization](https://en.wikipedia.org/wiki/Integer_factorization)
@@ -42,6 +48,13 @@ To get back the original number:
 ```
 >> FactorInteger(2010 / 2011)
 {{2, 1}, {3, 1}, {5, 1}, {67, 1}, {2011, -1}}
+```
+
+At most two factors:
+
+```
+>> FactorInteger(831600, 2)
+{{11,1},{75600,1}}
 ```
 
 Gaussian integers:

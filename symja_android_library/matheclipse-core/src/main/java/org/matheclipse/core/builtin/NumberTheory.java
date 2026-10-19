@@ -92,6 +92,9 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISeqBase;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.GaussianInteger;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.numbertheory.PartitionNumbers;
+import org.matheclipse.core.numbertheory.PrimeCount;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.sympy.series.Sequences;
@@ -3156,13 +3159,42 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() >= 2 && ast.size() <= 3) {
+      if (ast.size() >= 2 && ast.size() <= 4) {
         IExpr arg1 = ast.arg1();
         if (ast.size() == 2) {
           if (arg1.isRational()) {
             return ((IRational) arg1).factorInteger();
           }
           return F.NIL;
+        }
+        if (!ast.arg2().isRuleAST()) {
+          // FactorInteger(n, k)
+          IExpr kSpec = ast.arg2();
+          if (ast.size() > 3) {
+            // FactorInteger(n, 1, options)
+            if (kSpec.isOne() && ast.arg3().isRuleAST() && arg1.isNumber()) {
+              return F.list(F.list(arg1, F.C1));
+            }
+            return F.NIL;
+          }
+          if (!arg1.isRational()) {
+            return F.NIL;
+          }
+          if (kSpec == S.All || kSpec.isInfinity()) {
+            return ((IRational) arg1).factorInteger();
+          }
+          int k = kSpec.toIntDefault();
+          if (F.isNotPresent(k) && kSpec.isInteger() && kSpec.isPositive()) {
+            // more factors than any number has
+            k = Integer.MAX_VALUE;
+          }
+          if (k <= 0) {
+            return F.NIL;
+          }
+          if (k == 1) {
+            return F.list(F.list(arg1, F.C1));
+          }
+          return partialFactorization((IRational) arg1, k);
         }
         if (ast.size() == 3) {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
@@ -3188,6 +3220,179 @@ public final class NumberTheory {
       return F.NIL;
     }
 
+
+    /** Primes below this bound are found by trial division; the rest form the cofactor. */
+    private static final BigInteger TRIAL_BOUND = BigInteger.valueOf(65536);
+
+    private static final int[] TRIAL_PRIMES = PrimeCount.primesUpTo(65535);
+
+    /**
+     * The factorization of <code>q</code> into at most <code>k</code> factors for the numerator and
+     * for the denominator. The largest prime powers are kept; the smallest are multiplied into
+     * one factor with exponent 1. A cofactor without prime factors below <code>2^16</code> stays
+     * one factor unless there is room to split it, smallest primes first.
+     */
+    private static IExpr partialFactorization(IRational q, int k) {
+      if (q.isZero() || q.isOne() || q.isMinusOne()) {
+        return q.factorInteger();
+      }
+      // an entry is {numerator of the base, exponent, denominator of the base}
+      List<BigInteger[]> entries = new ArrayList<BigInteger[]>();
+      BigInteger[] merged = new BigInteger[2];
+      int numeratorCount = partialFactors(q.toBigNumerator().abs(), k, false, entries, merged);
+      partialFactors(q.toBigDenominator(), k, true, entries, merged);
+      if (q.isNegative()) {
+        if (merged[0] != null) {
+          merged[0] = merged[0].negate();
+        } else if (merged[1] != null) {
+          merged[1] = merged[1].negate();
+        } else if (numeratorCount == 0) {
+          entries.add(new BigInteger[] {BigInteger.ONE.negate(), BigInteger.ONE, BigInteger.ONE});
+        } else {
+          // without a merged factor the sign goes into the largest numerator factor
+          BigInteger[] largest = null;
+          for (BigInteger[] e : entries) {
+            if (e[1].signum() > 0 && (largest == null || e[0].compareTo(largest[0]) > 0)) {
+              largest = e;
+            }
+          }
+          largest[0] = largest[0].pow(largest[1].intValueExact()).negate();
+          largest[1] = BigInteger.ONE;
+        }
+      }
+      if (merged[0] != null) {
+        entries.add(new BigInteger[] {merged[0], BigInteger.ONE, BigInteger.ONE});
+      }
+      if (merged[1] != null) {
+        if (merged[1].signum() > 0) {
+          entries.add(new BigInteger[] {merged[1], BigInteger.ONE.negate(), BigInteger.ONE});
+        } else {
+          // with the sign the merged denominator is the base -1/m with exponent 1
+          entries.add(
+              new BigInteger[] {BigInteger.ONE.negate(), BigInteger.ONE, merged[1].negate()});
+        }
+      }
+      // sort by the value of the base
+      entries.sort((x, y) -> x[0].multiply(y[2]).compareTo(y[0].multiply(x[2])));
+      IASTAppendable result = F.ListAlloc(entries.size());
+      for (BigInteger[] e : entries) {
+        result.append(F.list(F.QQ(F.ZZ(e[0]), F.ZZ(e[2])), F.ZZ(e[1])));
+      }
+      return result;
+    }
+
+    /**
+     * Appends the factors of <code>n &gt; 1</code> to <code>entries</code>; a product of merged
+     * small factors goes to <code>merged[0]</code> (<code>merged[1]</code> for the denominator).
+     * Only primes below <code>2^16</code> are divided out; the cofactor is factored only if there
+     * is room to split it.
+     *
+     * @return the number of factors including the merged one
+     */
+    private static int partialFactors(BigInteger n, int k, boolean denominator,
+        List<BigInteger[]> entries, BigInteger[] merged) {
+      if (n.equals(BigInteger.ONE)) {
+        return 0;
+      }
+      BigInteger sign = denominator ? BigInteger.ONE.negate() : BigInteger.ONE;
+      List<BigInteger[]> small = new ArrayList<BigInteger[]>();
+      BigInteger cofactor = trialDivision(n, sign, small);
+      boolean hasCofactor = !cofactor.equals(BigInteger.ONE);
+      int count = small.size() + (hasCofactor ? 1 : 0);
+      if (count <= k) {
+        entries.addAll(small);
+        if (!hasCofactor) {
+          return small.size();
+        }
+        int room = k - small.size();
+        if (room == 1) {
+          entries.add(new BigInteger[] {cofactor, sign, BigInteger.ONE});
+          return count;
+        }
+        List<BigInteger[]> large = new ArrayList<BigInteger[]>();
+        for (Map.Entry<BigInteger, Integer> entry : Config.PRIME_FACTORS.factorInteger(cofactor)
+            .entrySet()) {
+          large.add(new BigInteger[] {entry.getKey(),
+              BigInteger.valueOf(entry.getValue()).multiply(sign), BigInteger.ONE});
+        }
+        if (large.size() <= room) {
+          entries.addAll(large);
+          return small.size() + large.size();
+        }
+        // split the cofactor, smallest primes first
+        BigInteger rest = cofactor;
+        for (int i = 0; i < room - 1; i++) {
+          BigInteger[] e = large.get(i);
+          entries.add(e);
+          rest = rest.divide(e[0].pow(e[1].abs().intValueExact()));
+        }
+        entries.add(new BigInteger[] {rest, sign, BigInteger.ONE});
+        return k;
+      }
+      // k >= 2: keep the cofactor and the largest small prime powers; merge the smallest
+      int keep = k - 1 - (hasCofactor ? 1 : 0);
+      if (hasCofactor) {
+        entries.add(new BigInteger[] {cofactor, sign, BigInteger.ONE});
+      }
+      BigInteger product = BigInteger.ONE;
+      for (int i = 0; i < small.size(); i++) {
+        BigInteger[] e = small.get(i);
+        if (i >= small.size() - keep) {
+          entries.add(e);
+        } else {
+          product = product.multiply(e[0].pow(e[1].abs().intValueExact()));
+        }
+      }
+      merged[denominator ? 1 : 0] = product;
+      return k;
+    }
+
+    /**
+     * Divides the primes below <code>2^16</code> out of <code>n</code> and appends them as
+     * <code>{p, sign*e, 1}</code> to <code>small</code>.
+     *
+     * @return the cofactor without prime factors below <code>2^16</code>
+     */
+    private static BigInteger trialDivision(BigInteger n, BigInteger sign,
+        List<BigInteger[]> small) {
+      BigInteger rest = n;
+      for (int p : TRIAL_PRIMES) {
+        if (rest.bitLength() < 64) {
+          long r = rest.longValue();
+          if ((long) p * p > r) {
+            break;
+          }
+          int e = 0;
+          while (r % p == 0) {
+            r /= p;
+            e++;
+          }
+          if (e > 0) {
+            small.add(new BigInteger[] {BigInteger.valueOf(p),
+                BigInteger.valueOf(e).multiply(sign), BigInteger.ONE});
+            rest = BigInteger.valueOf(r);
+          }
+          continue;
+        }
+        BigInteger bp = BigInteger.valueOf(p);
+        int e = 0;
+        BigInteger[] qr = rest.divideAndRemainder(bp);
+        while (qr[1].signum() == 0) {
+          rest = qr[0];
+          e++;
+          qr = rest.divideAndRemainder(bp);
+        }
+        if (e > 0) {
+          small.add(new BigInteger[] {bp, BigInteger.valueOf(e).multiply(sign), BigInteger.ONE});
+        }
+      }
+      if (rest.compareTo(TRIAL_BOUND) < 0 && !rest.equals(BigInteger.ONE)) {
+        // a prime below 2^16 is left
+        small.add(new BigInteger[] {rest, sign, BigInteger.ONE});
+        return BigInteger.ONE;
+      }
+      return rest;
+    }
 
     @Override
     public int status() {
@@ -4973,45 +5178,59 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1() && ast.arg1().isInteger()) {
-        BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
-        if (primeBase.signum() < 0) {
-          // Non-negative integer expected.
-          return Errors.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
-        }
-        return F.ZZ(primeBase.nextProbablePrime());
-      } else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
-        BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
-        if (primeBase.signum() < 0) {
-          // Non-negative integer expected.
-          return Errors.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
-        }
-        final int n = ast.arg2().toMachineInt();
-
-        // Safely calculate the absolute value of n to check the iteration limit
-        int absN = Math.abs(n);
-        if (absN < 0) {
-          absN = Integer.MAX_VALUE; // Fallback for Integer.MIN_VALUE overflow
-        }
-
-        int iterationLimit = EvalEngine.get().getIterationLimit();
-        if (iterationLimit >= 0 && iterationLimit <= absN) {
-          IterationLimitExceeded.throwIt(absN, ast);
-        }
-
-        BigInteger temp = primeBase;
-        if (n > 0) {
-          for (int i = 0; i < n; i++) {
-            temp = temp.nextProbablePrime();
-          }
-        } else if (n < 0) {
-          for (int i = 0; i > n; i--) {
-            temp = previousProbablePrime(temp);
-          }
-        }
-        return F.ZZ(temp);
+      IExpr arg1 = ast.arg1();
+      // lists thread like an outer product: first over the start values, then over k
+      if (arg1.isList()) {
+        return arg1.mapThread(ast, 1);
       }
-      return F.NIL;
+      if (ast.isAST2() && ast.arg2().isList()) {
+        return ast.arg2().mapThread(ast, 2);
+      }
+      int k = 1;
+      if (ast.isAST2()) {
+        IExpr arg2 = ast.arg2();
+        if (!arg2.isInteger()) {
+          return F.NIL;
+        }
+        k = arg2.toIntDefault();
+        if (F.isNotPresent(k)) {
+          return F.NIL;
+        }
+      }
+      if (!arg1.isReal()) {
+        return F.NIL;
+      }
+      IReal x = (IReal) arg1;
+      if (k == 0) {
+        // x itself if x is a prime or the negative of a prime
+        if (x.isInteger()) {
+          BigInteger n = ((IInteger) x).toBigNumerator().abs();
+          if (n.compareTo(BigInteger.ONE) > 0 && MachinePrime.isProbablePrime(n, 100)) {
+            return x;
+          }
+        }
+        return F.NIL;
+      }
+      int iterationLimit = engine.getIterationLimit();
+      if (iterationLimit >= 0 && iterationLimit <= Math.abs((long) k)) {
+        IterationLimitExceeded.throwIt(Math.abs((long) k), ast);
+      }
+      // the primes and their negatives in ascending order: ..., -5, -3, -2, 2, 3, 5, ...
+      BigInteger temp;
+      if (k > 0) {
+        temp = x.floorFraction().toBigNumerator();
+        for (int i = 0; i < k; i++) {
+          temp = signedPrimeAbove(temp);
+          engine.checkTimeLimit();
+        }
+      } else {
+        temp = x.ceilFraction().toBigNumerator();
+        for (int i = 0; i > k; i--) {
+          temp = signedPrimeBelow(temp);
+          engine.checkTimeLimit();
+        }
+      }
+      return F.ZZ(temp);
     }
 
     @Override
@@ -5024,28 +5243,39 @@ public final class NumberTheory {
       return ImplementationStatus.FULL_SUPPORT;
     }
 
-    @Override
-    public void setUp(ISymbol newSymbol) {
-      newSymbol.setAttributes(Attribute.LISTABLE);
+    /** The smallest prime or negative prime greater than <code>n</code>. */
+    private static BigInteger signedPrimeAbove(BigInteger n) {
+      if (n.compareTo(BigInteger.valueOf(-2)) >= 0) {
+        // -2, -1, 0, 1, ... continue with the positive primes
+        return n.signum() <= 0 ? BigInteger.TWO : n.nextProbablePrime();
+      }
+      // n <= -3: the negative of the largest prime below |n|
+      return previousProbablePrime(n.negate()).negate();
+    }
+
+    /** The largest prime or negative prime less than <code>n</code>. */
+    private static BigInteger signedPrimeBelow(BigInteger n) {
+      if (n.compareTo(BigInteger.TWO) > 0) {
+        return previousProbablePrime(n);
+      }
+      if (n.compareTo(BigInteger.valueOf(-2)) > 0) {
+        // -1, 0, 1, 2
+        return BigInteger.valueOf(-2);
+      }
+      return n.negate().nextProbablePrime().negate();
     }
 
     /**
-     * Find the previous probable prime.
+     * The largest prime less than <code>n</code>.
      *
-     * @param n the starting BigInteger
-     * @return the previous probable prime
+     * @param n a number <code>&gt; 2</code>
      */
     private static BigInteger previousProbablePrime(BigInteger n) {
       BigInteger temp = n.subtract(BigInteger.ONE);
-      while (true) {
-        // Use the absolute value since negative prime numbers (like -2, -3) are mathematically
-        // valid
-        // and BigInteger.isProbablePrime() requires positive numbers for correct certainty checks.
-        if (MachinePrime.isProbablePrime(temp.abs(), 100)) {
-          return temp;
-        }
+      while (!MachinePrime.isProbablePrime(temp, 100)) {
         temp = temp.subtract(BigInteger.ONE);
       }
+      return temp;
     }
   }
 
@@ -5080,127 +5310,25 @@ public final class NumberTheory {
   private static class PartitionsP extends AbstractFunctionEvaluator implements IntUnaryOperator {
     @Override
     public int applyAsInt(int n) {
-      if (n < 0)
-        throw new IllegalArgumentException("PartitionsP out of domain");
-      if (n == 0 || n == 1)
-        return 1;
-      // Evaluate via existing Symja engine cache
-      IExpr result = sumPartitionsP(EvalEngine.get(), F.ZZ(n));
-      if (result.isInteger()) {
-        return ((IInteger) result).toInt();
+      if (n < 0) {
+        return 0;
       }
-      throw new ArithmeticException("PartitionsP out of 32-bit int bounds");
-    }
-
-    private static class BigIntegerPartitionsP {
-      /** The list of all partitions as a java.util.List. */
-      protected ArrayList<BigInteger> fList = new ArrayList<BigInteger>();
-
-      /** Default constructor initializing a list of partitions up to 7. */
-      public BigIntegerPartitionsP() {
-        fList.add(BigInteger.valueOf(1));
-        fList.add(BigInteger.valueOf(1));
-        fList.add(BigInteger.valueOf(2));
-        fList.add(BigInteger.valueOf(3));
-        fList.add(BigInteger.valueOf(5));
-        fList.add(BigInteger.valueOf(7));
+      // p(121) is the largest value in int range
+      if (n > 121) {
+        throw new ArithmeticException("PartitionsP out of 32-bit int bounds");
       }
-
-      /**
-       * Return the number of partitions of i
-       *
-       * @param n the zero-based index into the list of partitions
-       * @param capacity capacity of the list which should be ensured
-       * @return the ith partition number. This is 1 if i=0 or 1, 2 if i=2 and so forth.
-       */
-      private BigInteger sumPartitionsP(int n, int capacity) {
-        int iterationLimit = EvalEngine.get().getIterationLimit();
-        long maxIterations = capacity;
-        if (iterationLimit >= 0 && iterationLimit <= maxIterations) {
-          IterationLimitExceeded.throwIt(capacity, F.PartitionsP(F.ZZ(n)));
-        }
-
-        fList.ensureCapacity(capacity);
-        while (fList.size() <= capacity) {
-          BigInteger per = BigInteger.ZERO;
-          BigInteger cursiz = BigInteger.valueOf(fList.size());
-          for (int k = 0; k < fList.size(); k++) {
-            BigInteger tmp = fList.get(k).multiply(NumberTheory.divisorSigma(1, fList.size() - k));
-            per = per.add(tmp);
-          }
-          fList.add(per.divide(cursiz));
-        }
-        return fList.get(n);
-      }
+      return PartitionNumbers.partitionsP(n).intValueExact();
     }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isZero()) {
-        return F.C1;
-      }
-      if (arg1.isInteger()) {
-        if (arg1.isPositive()) {
-          if (arg1.isOne()) {
-            return F.C1;
-          }
-          if (arg1.equals(F.C2)) {
-            return F.C2;
-          }
-          if (arg1.equals(F.C3)) {
-            return F.C3;
-          }
-          try {
-            IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
-              @Override
-              public IExpr call() {
-                return sumPartitionsP(engine, (IInteger) arg1);
-              }
-            });
-            if (result != null) {
-              return result;
-            }
-          } catch (UncheckedExecutionException e) {
-            Throwable th = e.getCause();
-            if (th instanceof LimitException) {
-              throw (LimitException) th;
-            }
-          } catch (ExecutionException e) {
-            // LOGGER.error("PartitionsP.evaluate() failed", e);
-          }
-          return F.NIL;
-        }
-        // http://fungrim.org/entry/cd3013/
-        return F.C0;
-      }
-      if (arg1.isInfinity()) {
-        return F.CInfinity;
-      }
-      return F.NIL;
+      return partitionNumber(ast.arg1(), false);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
-
-    /**
-     * @param engine
-     * @param n positive integer number
-     * @return
-     */
-    private static IExpr sumPartitionsP(EvalEngine engine, IInteger n) {
-      int i = n.toIntDefault();
-      if (i >= 0) {
-        if (i < Integer.MAX_VALUE - 3) {
-          BigIntegerPartitionsP bipp = new BigIntegerPartitionsP();
-          return F.ZZ(bipp.sumPartitionsP(i, i + 3));
-        }
-      }
-      return F.NIL;
-    }
-
 
     @Override
     public int status() {
@@ -5211,6 +5339,34 @@ public final class NumberTheory {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(Attribute.LISTABLE);
     }
+  }
+
+  /** The <code>exact</code> message of <code>PrimeNu</code> and <code>PrimeOmega</code>. */
+  public static final String EXACT_MESSAGE = "Argument `1` in `2` is not an exact number.";
+
+  /** The largest argument of <code>PartitionsP</code> and <code>PartitionsQ</code>. */
+  private static final int MAX_PARTITIONS_ARGUMENT = 200_000;
+
+  /**
+   * <code>PartitionsP(n)</code> or (for <code>distinct</code>) <code>PartitionsQ(n)</code>.
+   */
+  private static IExpr partitionNumber(IExpr arg1, boolean distinct) {
+    if (arg1.isInteger()) {
+      if (arg1.isNegative()) {
+        // http://fungrim.org/entry/cd3013/
+        return F.C0;
+      }
+      int n = arg1.toIntDefault();
+      if (n >= 0 && n <= MAX_PARTITIONS_ARGUMENT) {
+        return F.ZZ(
+            distinct ? PartitionNumbers.partitionsQ(n) : PartitionNumbers.partitionsP(n));
+      }
+      return F.NIL;
+    }
+    if (arg1.isInfinity()) {
+      return F.CInfinity;
+    }
+    return F.NIL;
   }
 
 
@@ -5242,135 +5398,13 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isZero()) {
-        return F.C1;
-      }
-      if (arg1.isInteger()) {
-        if (arg1.isPositive()) {
-          if (arg1.isOne()) {
-            return F.C1;
-          }
-          if (arg1.equals(F.C2)) {
-            return F.C1;
-          }
-          if (arg1.equals(F.C3)) {
-            return F.C2;
-          }
-
-          try {
-            IInteger n = (IInteger) arg1;
-            if (n.isLT(F.ZZ(201))) {
-              IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
-                @Override
-                public IExpr call() {
-                  return partitionsQ(engine, (IInteger) arg1);
-                }
-              });
-              if (result != null) {
-                return result;
-              }
-            }
-          } catch (UncheckedExecutionException e) {
-            Throwable th = e.getCause();
-            if (th instanceof LimitException) {
-              throw (LimitException) th;
-            }
-          } catch (ExecutionException e) {
-            // LOGGER.error("PartitionsQ.evaluate() failed", e);
-          }
-          return F.NIL;
-        }
-        return F.C0;
-      }
-      if (arg1.isInfinity()) {
-        return F.CInfinity;
-      }
-      return F.NIL;
+      return partitionNumber(ast.arg1(), true);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
-
-    /**
-     * TODO because of recursion you can get stack-overflows
-     *
-     * @param engine
-     * @param n
-     * @return
-     */
-    private static IExpr partitionsQ(EvalEngine engine, IInteger n) {
-      // (1/n)*Sum(DivisorSigma(1, k)*PartitionsQ(n - k), {k, 1, n}) -
-      // (2/n)*Sum(DivisorSigma(1, k)*PartitionsQ(n
-      // - 2*k), {k, 1, Floor(n/2)})
-      IFraction nInverse = F.QQ(F.C1, n);
-      IExpr sum1 = sumPartitionsQ1(engine, n);
-      if (sum1.isNIL()) {
-        return F.NIL;
-      }
-      IExpr sum2 = sumPartitionsQ2(engine, n);
-      if (sum2.isNIL()) {
-        return F.NIL;
-      }
-      return Plus(F.Times(nInverse, sum1), F.Times(F.CN2, nInverse, sum2)).eval(engine);
-    }
-
-    private static IExpr sumPartitionsQ1(EvalEngine engine, IInteger n) {
-
-      int nInt = n.toIntDefault();
-      if (nInt >= 0) {
-        int iterationLimit = EvalEngine.get().getIterationLimit();
-        if (iterationLimit >= 0 && iterationLimit <= nInt) {
-          IterationLimitExceeded.throwIt(nInt, F.PartitionsQ(F.ZZ(nInt)));
-        }
-        IInteger sum = F.C0;
-        for (int k = 1; k <= nInt; k++) {
-          IExpr temp = termPartitionsQ1(engine, n, k);
-          if (!temp.isInteger()) {
-            return F.NIL;
-          }
-          sum = sum.add((IInteger) temp);
-        }
-        return sum;
-      }
-      return F.NIL;
-    }
-
-    private static IExpr termPartitionsQ1(EvalEngine engine, IInteger n, int k) {
-      // DivisorSigma(1, k)*PartitionsQ(n - k)
-      final IInteger k2 = F.ZZ(k);
-      return F.Times(F.DivisorSigma(F.C1, k2), F.PartitionsQ(F.Plus(Negate(k2), n))).eval(engine);
-    }
-
-    private static IExpr sumPartitionsQ2(EvalEngine engine, IInteger n) {
-      int floorND2 = n.div(F.C2).toIntDefault();
-      if (floorND2 >= 0) {
-        int iterationLimit = EvalEngine.get().getIterationLimit();
-        if (iterationLimit >= 0 && iterationLimit <= floorND2) {
-          IterationLimitExceeded.throwIt(floorND2, F.PartitionsQ(n));
-        }
-        IInteger sum = F.C0;
-        for (int k = 1; k <= floorND2; k++) {
-          IExpr temp = termPartitionsQ2(engine, n, k);
-          if (!temp.isInteger()) {
-            return F.NIL;
-          }
-          sum = sum.add((IInteger) temp);
-        }
-        return sum;
-      }
-      return F.NIL;
-    }
-
-    private static IExpr termPartitionsQ2(EvalEngine engine, IInteger n, int k) {
-      // DivisorSigma(1, k)*PartitionsQ(n - 2*k)
-      IInteger k2 = F.ZZ(k);
-      return engine
-          .evaluate(F.Times(F.DivisorSigma(C1, k2), F.PartitionsQ(F.Plus(F.Times(F.CN2, k2), n))));
-    }
-
 
     @Override
     public int status() {
@@ -5568,22 +5602,34 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.arg1().isInteger()) {
-        int nthPrime = ast.arg1().toIntDefault();
-        if (nthPrime <= 0) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isInteger()) {
+        IInteger n = (IInteger) arg1;
+        if (!n.isPositive()) {
           // Positive integer argument expected in `1`.
           return Errors.printMessage(ast.topHead(), "intpp", F.list(ast), engine);
         }
-        if (nthPrime > 103000000) {
+        long nthPrime = n.toLongDefault();
+        if (nthPrime == Config.INVALID_LONG || nthPrime > PrimeCount.MAX_INDEX) {
           // Maximum Prime limit `1` exceeded.
-          return Errors.printMessage(ast.topHead(), "zzprime", F.list(F.ZZ(103000000)), engine);
+          return Errors.printMessage(ast.topHead(), "zzprime",
+              F.list(F.ZZ(PrimeCount.MAX_INDEX)), engine);
         }
         try {
-          return F.ZZ(Primality.prime(nthPrime));
+          long p = PrimeCount.nthPrime(nthPrime);
+          if (p < 0) {
+            // Maximum Prime limit `1` exceeded.
+            return Errors.printMessage(ast.topHead(), "zzprime",
+                F.list(F.ZZ(PrimeCount.MAX_INDEX)), engine);
+          }
+          return F.ZZ(p);
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.Prime, rex, engine);
         }
+      } else if (arg1.isNumber()) {
+        // Positive integer argument expected in `1`.
+        return Errors.printMessage(ast.topHead(), "intpp", F.list(ast), engine);
       }
       return F.NIL;
     }
@@ -5605,7 +5651,7 @@ public final class NumberTheory {
     }
   }
 
-  private static class PrimeOmega extends AbstractFunctionEvaluator implements IntUnaryOperator {
+  private static class PrimeOmega extends AbstractFunctionOptionEvaluator implements IntUnaryOperator {
 
     @Override
     public int applyAsInt(int arg) {
@@ -5628,16 +5674,53 @@ public final class NumberTheory {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IExpr arg1 = ast.arg1();
-      if (ast.arg1().isList()) {
+      if (arg1.isList()) {
         return arg1.mapThread(ast, 1);
+      }
+      if (arg1.isInexactNumber()) {
+        // Argument `1` in `2` is not an exact number.
+        return Errors.printMessage(S.PrimeOmega, "exact", F.list(arg1, ast), engine);
+      }
+      if (!options[0].isTrue() && !options[0].isFalse()) {
+        return F.NIL;
       }
       if (arg1.isZero()) {
         return F.NIL;
       }
-      if (arg1.isOne()) {
+      if (arg1.isOne() || arg1.isMinusOne()) {
         return F.C0;
+      }
+      if (options[0].isTrue() || arg1.isComplex()) {
+        IAST factors = F.NIL;
+        if (arg1.isInteger()) {
+          factors = GaussianInteger.factorize((IInteger) arg1,
+              ((IInteger) arg1).toBigNumerator(), BigInteger.ZERO);
+        } else if (arg1.isComplex()) {
+          IComplex c = (IComplex) arg1;
+          if (c.getRealPart().isInteger() && c.getImaginaryPart().isInteger()) {
+            factors = GaussianInteger.factorize(c,
+                ((IInteger) c.getRealPart()).toBigNumerator(),
+                ((IInteger) c.getImaginaryPart()).toBigNumerator());
+          }
+        }
+        if (!factors.isPresent()) {
+          return F.NIL;
+        }
+        long sum = 0;
+        for (int i = 1; i < factors.size(); i++) {
+          IAST factor = (IAST) factors.get(i);
+          IExpr base = factor.arg1();
+          // skip the units 1, -1, I, -I
+          if (base.isOne() || base.isMinusOne() || base.isImaginaryUnit()
+              || base.isNegativeImaginaryUnit()) {
+            continue;
+          }
+          sum += factor.arg2().toIntDefault();
+        }
+        return F.ZZ(sum);
       }
       if (arg1.isInteger()) {
         try {
@@ -5676,6 +5759,14 @@ public final class NumberTheory {
     @Override
     public int status() {
       return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.putMessage(IPatternMatcher.SET, "exact", F.stringx(EXACT_MESSAGE));
+      setOptions(newSymbol, //
+          new IBuiltInSymbol[] {S.GaussianIntegers}, //
+          new IExpr[] {S.False});
     }
   }
 
