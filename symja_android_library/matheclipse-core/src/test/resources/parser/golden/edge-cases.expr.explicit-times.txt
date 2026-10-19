@@ -315,3 +315,13 @@ _?NumberQ?Positive&	Function(PatternTest(PatternTest(Blank(), NumberQ), Positive
 \\)	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
 \\!	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
 \\*	!syntax@2: unexpected (named unicode) character: '\\[RawBackslash]'
+\\[EmptySet]	∅
+f[x, \\[EmptySmallCircle]]	f(x, ◦)
+x\\[EmptySet]	x∅
+\\[DoubleStruckCapitalR]x = 3	Set(x, 3)
+\\[GothicCapitalA] \\[Mho]	!syntax@3: End-of-file not reached.
+\\[Degree]	Degree
+\\[DiscreteRatio] x	DiscreteRatio(x)
+\\[Fake]	!syntax@2: Unknown unicode longname Fake.
+"\\[Fake]"	!syntax@3: Unknown unicode longname Fake.
+\\[Theta	!syntax@2: Unknown unicode longname Theta.

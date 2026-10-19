@@ -15,61 +15,77 @@
 # Field definitions
 # =================
 #
-#   amslatex: If present, the AMSLaTeX name of the symbol. AMSLaTeX symbols
-#             are a superset of normal LaTeX symbols. If the replacement
-#             is surrounded in "$" then this symbol can only be used in
-#             Math mode.
+#   amslatex: If present, the AMSLaTeX control sequence producing the
+#             character. AMSLaTeX symbols are a superset of normal
+#             LaTeX symbols. AMSLaTeX is only available in a
+#             math-mode environment (inline math or display math).
+#             See also latex.
 #
-#   ascii: If present, the ASCII equivalent. In some cases this may be more
-#          than one character. For example "->" or "===".
+#   ascii: If present, the ASCII equivalent. In some cases, this may be
+#          more than one character. For example, "->" or "===".
 #
 #   esc-alias: The ESC sequence alias of the named character, if it exists.
 #
-#   has-unicode-inverse: Whether or not this named character has a unicode
-#                        equivalent that should replace other variants of it,
-#                        e.g. named character or ascii equivalent.
+#   has-unicode-inverse: Whether or not this named character has a
+#                        unicode equivalent that should replace other
+#                        variants of it, e.g., named character or ASCII
+#                        equivalent.
 #
-#   is-builtin-constant: If present, a boolean whether this is a Builtin Symbol as
-#                        defined by WMA that acts like a constant (or a nullary function).
-#                        Degree, I, Infinity, and PI are some examples such constants.
-#                        Usually, if this field is present it will be "true"; for "false"
- #                       values (the majority), the field is omitted.
+#   is-builtin-constant: If present, a boolean indicating whether this is a
+#                        Builtin Symbol as defined by WMA that acts
+#                        like a constant (or a nullary function).
+#                        Degree, I, Infinity, and PI are some examples
+#                        such constants.  Usually, if this field is
+#                        present, it will be "true"; for "false" values
+#                        (the majority), the field is omitted.
 #
 #
-#   is-letter-like: Whether or not this named-character is "letter-like", or
-#                   can be used as part of a symbol. For example \[alpha]
-#                   is letter-like. Therefore we can write: \[alpha]5 = "testing"
+#   is-letter-like: Whether or not this named-character is
+#                   "letter-like", or can be used as part of a
+#                   symbol. For example \[alpha] is
+#                   letter-like. Therefore we can write: \[alpha]5 =
+#                   "testing"
 #
-#   operator-name: If present, this symbol is a Mathics operator with
-#                  whose class name is the given name. For example, the
-#                  Divide operator, "/" is here.  But some symbols like
-#                  "`" or "." inside a number could be considered
-#                  either an operator or as part of a lexical symbol.
-#                  "operators.yml" may contain use these symbols, while here we
-#                  might not (or we might). Also, from an operator
-#                  prespective, an operator name like "Association"
+#   latex: If present, the LaTeX control sequence that can be used in
+#          a text-mode (as opposed to a math-mode) environment. When a
+#          control-sequence is both allowed in text-mode and math-mode,
+#          then the same control sequence also appears in amslatex.
+#
+#   operator-name: If present, this symbol is a is part of some
+#                  Mathics3 operator with whose class name is the
+#                  given name. For example, the Divide operator, "/"
+#                  is here.  But some symbols like "`" or "." inside a
+#                  number could be considered either an operator or as
+#                  part of a lexical symbol.  "operators.yml" may
+#                  contain use of these symbols, while here we might
+#                  not (or we might). Also, from an operator
+#                  perspective, an operator name like "Association"
 #                  might have *two* (bracketing) symbols associated
 #                  here: "LeftAssociation" and "RightAssociation".
-#                  More operator information can be found in
-#                  file "operators.yml".
+#                  More operator information can be found in file
+#                  "operators.yml". Note that some operators like
+#                  Integrate, have several symbols, e.g. Integral and
+#                  DifferentialD used in the operator.
 #
 #
+#   unicode-block: when given, the unicode block, or named ranges of code points.
+##
 #   unicode-equivalent: A unicode equivalent for the named-character, if it
 #                       exists. If it is the same as "ascii", please omit.
 #
-#   unicode-equivalent-name: The name of the unicode equivalent, if it exists.
+#   unicode-equivalent-name: The name of the Unicode equivalent, if it exists.
 #                            The Python module unicodedata contains a list of
 #                            unicode names that we check against. So if the character
 #                            or unicode symbol is not in that, don't use it here.
 #
-#   wl-reference: HTML link to the Wolfram Langauge & System document for character.
+#   wl-reference: HTML link to the Wolfram Language & System document for character.
 #
-#   wl-unicode: The unicode code point used by Mathics internally to represent
-#               the named character. If it is the same as unicode-equivalent
+#   wl-unicode: The Unicode code point used by Mathics3 internally to represent
+#               the named character. If it is the same as the Unicode equivalent,
 #               it should be omitted
 #
 #   wl-unicode-name: The name of the character corresponding to `wl-unicode`, if it exists.
-#                    It will mentioned in Wolfram Language docs if it exists.
+#                    It will be mentioned in Wolfram Language docs if it exists.
 #
 # Sources:
 #   https://www.compart.com/en/unicode
@@ -78,11 +94,18 @@
 #   https://github.com/rsmenon/pygments-mathematica
 #   https://reference.wolfram.com/language/tutorial/OperatorInputForms.html
 
+# Important coding note below for fields with strings containing a backslash.
+#
+#     amslatex: "\\={a}" is correct; *double* backslash inside *double* quotes
+#     amslatex: '\={a}'  is correct; *single* backlslash inside *single* quotes
+#     amslatex: "\={a}"  is incorrect; \= is an invalid escape sequence.
+
 AAcute:
-  amslatex: "\\'{a}"
+  ascii: "a'"
   esc-alias: a'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{a}"
   unicode-equivalent: "\xE1"
   unicode-equivalent-name: LATIN SMALL LETTER A WITH ACUTE
   unicode-reference: https://www.compart.com/en/unicode/U+00E1
@@ -92,6 +115,7 @@ AAcute:
 
 ABar:
   amslatex: '\={a}'
+  ascii: "a-"
   esc-alias: a-
   has-unicode-inverse: false
   is-letter-like: true
@@ -104,6 +128,7 @@ ABar:
 
 ACup:
   amslatex: '\u{a}'
+  ascii: "au"
   esc-alias: au
   has-unicode-inverse: false
   is-letter-like: true
@@ -121,6 +146,7 @@ AddTo:
   operator-name: AddTo
 
 ADoubleDot:
+  ascii: 'a"'
   esc-alias: a"
   has-unicode-inverse: false
   is-letter-like: true
@@ -132,6 +158,7 @@ ADoubleDot:
   wl-unicode-name: LATIN SMALL LETTER A WITH DIAERESIS
 
 AE:
+  ascii: "ae"
   esc-alias: ae
   has-unicode-inverse: false
   is-letter-like: true
@@ -143,10 +170,11 @@ AE:
   wl-unicode-name: LATIN SMALL LETTER AE
 
 AGrave:
-  amslatex: "\\`{a}"
+  ascii: 'a`'
   esc-alias: a`
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\`{a}"
   unicode-equivalent: "\xE0"
   unicode-equivalent-name: LATIN SMALL LETTER A WITH GRAVE
   unicode-reference: https://www.compart.com/en/unicode/U+00E0
@@ -155,6 +183,7 @@ AGrave:
   wl-unicode-name: LATIN SMALL LETTER A WITH GRAVE
 
 AHat:
+  ascii: 'a^'
   esc-alias: a^
   has-unicode-inverse: false
   is-letter-like: true
@@ -195,6 +224,7 @@ ApplyTo:
   operator-name: ApplyTo
 
 ARing:
+  ascii: 'ao'
   esc-alias: ao
   has-unicode-inverse: false
   is-letter-like: true
@@ -543,10 +573,11 @@ Bullet:
   wl-unicode-name: BULLET
 
 CAcute:
-  amslatex: "\\'{c}"
+  ascii: "c'"
   esc-alias: c'
   has-unicode-inverse: true
   is-letter-like: true
+  latex: "\\'{c}"
   unicode-equivalent: "\u0107"
   unicode-equivalent-name: LATIN SMALL LETTER C WITH ACUTE
   unicode-reference: https://www.compart.com/en/unicode/U+0107
@@ -555,10 +586,11 @@ CAcute:
   wl-unicode-name: LATIN SMALL LETTER C WITH ACUTE
 
 CCedilla:
-  amslatex: '\c{c}'
+  ascii: ","
   esc-alias: c
   has-unicode-inverse: false
   is-letter-like: true
+  latex: '\c{c}'
   unicode-equivalent: "\xE7"
   unicode-equivalent-name: LATIN SMALL LETTER C WITH CEDILLA
   unicode-reference: https://www.compart.com/en/unicode/U+00E7
@@ -567,10 +599,11 @@ CCedilla:
   wl-unicode-name: LATIN SMALL LETTER C WITH CEDILLA
 
 CHacek:
-  amslatex: '\v{c}'
+  ascii: 'cv'
   esc-alias: cv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: '\v{c}'
   unicode-equivalent: "\u010D"
   unicode-equivalent-name: LATIN SMALL LETTER C WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+010D
@@ -601,10 +634,11 @@ Cap:
   wl-unicode-name: FROWN
 
 CapitalAAcute:
-  amslatex: "\\'{A}"
+  ascii: "A'"
   esc-alias: A'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{A}"
   unicode-equivalent: "\xC1"
   unicode-equivalent-name: LATIN CAPITAL LETTER A WITH ACUTE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalAAcute.html
@@ -613,6 +647,7 @@ CapitalAAcute:
 
 CapitalABar:
   amslatex: '\={A}'
+  ascii: 'A-'
   esc-alias: A-
   has-unicode-inverse: false
   is-letter-like: true
@@ -625,6 +660,7 @@ CapitalABar:
 
 CapitalACup:
   amslatex: '\u{A}'
+  ascii: 'Au'
   esc-alias: Au
   has-unicode-inverse: true
   is-letter-like: true
@@ -636,6 +672,7 @@ CapitalACup:
   wl-unicode-name: LATIN CAPITAL LETTER A WITH BREVE
 
 CapitalADoubleDot:
+  ascii: 'A"'
   esc-alias: A"
   has-unicode-inverse: true
   is-letter-like: true
@@ -646,6 +683,7 @@ CapitalADoubleDot:
   wl-unicode-name: LATIN CAPITAL LETTER A WITH DIAERESIS
 
 CapitalAE:
+  ascii: "AE"
   esc-alias: AE
   has-unicode-inverse: true
   is-letter-like: true
@@ -656,10 +694,11 @@ CapitalAE:
   wl-unicode-name: LATIN CAPITAL LETTER AE
 
 CapitalAGrave:
-  amslatex: "\\`{A}"
+  ascii: "A`"
   esc-alias: A`
   has-unicode-inverse: true
   is-letter-like: true
+  latex: "\\`{A}"
   unicode-equivalent: "\xC0"
   unicode-equivalent-name: LATIN CAPITAL LETTER A WITH GRAVE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalAGrave.html
@@ -667,6 +706,7 @@ CapitalAGrave:
   wl-unicode-name: LATIN CAPITAL LETTER A WITH GRAVE
 
 CapitalAHat:
+  ascii: "A^"
   esc-alias: A^
   has-unicode-inverse: false
   is-letter-like: true
@@ -677,6 +717,7 @@ CapitalAHat:
   wl-unicode-name: LATIN CAPITAL LETTER A WITH CIRCUMFLEX
 
 CapitalARing:
+  ascii: "Ao"
   esc-alias: Ao
   has-unicode-inverse: true
   is-letter-like: true
@@ -687,6 +728,7 @@ CapitalARing:
   wl-unicode-name: LATIN CAPITAL LETTER A WITH RING ABOVE
 
 CapitalATilde:
+  ascii: "A~"
   esc-alias: A~
   has-unicode-inverse: true
   is-letter-like: true
@@ -719,10 +761,10 @@ CapitalBeta:
   wl-unicode-name: GREEK CAPITAL LETTER BETA
 
 CapitalCAcute:
-  amslatex: "\\'{C}"
   esc-alias: C'
   has-unicode-inverse: true
   is-letter-like: true
+  latex: "\\'{C}"
   unicode-equivalent: "\u0106"
   unicode-equivalent-name: LATIN CAPITAL LETTER C WITH ACUTE
   unicode-reference: https://www.compart.com/en/unicode/U+0106
@@ -731,8 +773,11 @@ CapitalCAcute:
   wl-unicode-name: LATIN CAPITAL LETTER C WITH ACUTE
 
 CapitalCCedilla:
+  amslatex: '\c{C}'
+  ascii: "C,"
   esc-alias: C
   has-unicode-inverse: false
+  latex: '\c{C}'
   is-letter-like: true
   unicode-equivalent: "\xC7"
   unicode-equivalent-name: LATIN CAPITAL LETTER C WITH CEDILLA
@@ -741,10 +786,11 @@ CapitalCCedilla:
   wl-unicode-name: LATIN CAPITAL LETTER C WITH CEDILLA
 
 CapitalCHacek:
-  amslatex: '\v{C}'
+  ascii: 'Cv'
   esc-alias: Cv
   has-unicode-inverse: true
   is-letter-like: true
+  latex: "\\v{C}"
   unicode-equivalent: "\u010C"
   unicode-equivalent-name: LATIN CAPITAL LETTER C WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+010C
@@ -764,10 +810,11 @@ CapitalChi:
   wl-unicode-name: GREEK CAPITAL LETTER CHI
 
 CapitalDHacek:
-  amslatex: '\v{D}'
+  ascii: 'Dv'
   esc-alias: Dv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{D}"
   unicode-equivalent: "\u010E"
   unicode-equivalent-name: LATIN CAPITAL LETTER D WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+010E
@@ -789,7 +836,7 @@ CapitalDelta:
 
 CapitalDifferentialD:
   amslatex: '\mathbb{D}'
-  ascii: "d"
+  ascii: "D"
   esc-alias: DD
   has-unicode-inverse: true
   is-letter-like: true
@@ -811,10 +858,11 @@ CapitalDigamma:
   wl-unicode-name: GREEK LETTER DIGAMMA
 
 CapitalEAcute:
-  amslatex: "\\'{E}"
+  ascii: "E'"
   esc-alias: E'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{E}"
   unicode-equivalent: "\xC9"
   unicode-equivalent-name: LATIN CAPITAL LETTER E WITH ACUTE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalEAcute.html
@@ -822,10 +870,11 @@ CapitalEAcute:
   wl-unicode-name: LATIN CAPITAL LETTER E WITH ACUTE
 
 CapitalEBar:
-  amslatex: "\\={E}"
+  ascii: 'E-'
   esc-alias: E-
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\={E}"
   unicode-equivalent: "\u0112"
   unicode-equivalent-name: LATIN CAPITAL LETTER E WITH MACRON
   unicode-reference: https://www.compart.com/en/unicode/U+0112
@@ -835,6 +884,7 @@ CapitalEBar:
 
 CapitalECup:
   amslatex: '\u{E}'
+  ascii: 'Eu'
   esc-alias: Eu
   has-unicode-inverse: false
   is-letter-like: true
@@ -846,6 +896,7 @@ CapitalECup:
   wl-unicode-name: LATIN CAPITAL LETTER E WITH BREVE
 
 CapitalEDoubleDot:
+  ascii: 'E"'
   esc-alias: E"
   has-unicode-inverse: false
   is-letter-like: true
@@ -856,10 +907,11 @@ CapitalEDoubleDot:
   wl-unicode-name: LATIN CAPITAL LETTER E WITH DIAERESIS
 
 CapitalEGrave:
-  amslatex: "\\`{E}"
+  ascii: "E`"
   esc-alias: E`
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\`{E}"
   unicode-equivalent: "\xC8"
   unicode-equivalent-name: LATIN CAPITAL LETTER E WITH GRAVE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalEGrave.html
@@ -867,10 +919,11 @@ CapitalEGrave:
   wl-unicode-name: LATIN CAPITAL LETTER E WITH GRAVE
 
 CapitalEHacek:
-  amslatex: '\v{E}'
+  ascii: 'Ev'
   esc-alias: Ev
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{E}"
   unicode-equivalent: "\u011A"
   unicode-equivalent-name: LATIN CAPITAL LETTER E WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+011A
@@ -879,6 +932,7 @@ CapitalEHacek:
   wl-unicode-name: LATIN CAPITAL LETTER E WITH CARON
 
 CapitalEHat:
+  ascii: "E^"
   esc-alias: E^
   has-unicode-inverse: false
   is-letter-like: true
@@ -911,6 +965,7 @@ CapitalEta:
   wl-unicode-name: GREEK CAPITAL LETTER ETA
 
 CapitalEth:
+  ascii: "Eth"
   esc-alias: D-
   has-unicode-inverse: false
   is-letter-like: true
@@ -933,10 +988,11 @@ CapitalGamma:
   wl-unicode-name: GREEK CAPITAL LETTER GAMMA
 
 CapitalIAcute:
-  amslatex: "\\'{I}"
+  ascii: "I'"
   esc-alias: I'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{I}"
   unicode-equivalent: "\xCD"
   unicode-equivalent-name: LATIN CAPITAL LETTER I WITH ACUTE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalIAcute.html
@@ -956,6 +1012,7 @@ CapitalICup:
   wl-unicode-name: LATIN CAPITAL LETTER I WITH BREVE
 
 CapitalIDoubleDot:
+  ascii: 'I"'
   esc-alias: I"
   has-unicode-inverse: false
   is-letter-like: true
@@ -966,10 +1023,11 @@ CapitalIDoubleDot:
   wl-unicode-name: LATIN CAPITAL LETTER I WITH DIAERESIS
 
 CapitalIGrave:
-  amslatex: "\\`{I}"
+  ascii: 'I`'
   esc-alias: I`
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\`{I}"
   unicode-equivalent: "\xCC"
   unicode-equivalent-name: LATIN CAPITAL LETTER I WITH GRAVE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalIGrave.html
@@ -977,6 +1035,7 @@ CapitalIGrave:
   wl-unicode-name: LATIN CAPITAL LETTER I WITH GRAVE
 
 CapitalIHat:
+  ascii: 'I^'
   esc-alias: I^
   has-unicode-inverse: false
   is-letter-like: true
@@ -1055,10 +1114,11 @@ CapitalMu:
   wl-unicode-name: GREEK CAPITAL LETTER MU
 
 CapitalNHacek:
-  amslatex: '\v{N}'
+  ascii: 'Nv'
   esc-alias: Nv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{N}"
   unicode-equivalent: "\u0147"
   unicode-equivalent-name: LATIN CAPITAL LETTER N WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+0147
@@ -1067,6 +1127,7 @@ CapitalNHacek:
   wl-unicode-name: LATIN CAPITAL LETTER N WITH CARON
 
 CapitalNTilde:
+  ascii: 'N~'
   esc-alias: N~
   has-unicode-inverse: false
   is-letter-like: true
@@ -1088,10 +1149,11 @@ CapitalNu:
   wl-unicode-name: GREEK CAPITAL LETTER NU
 
 CapitalOAcute:
-  amslatex: "\\'{O}"
+  ascii: "O'"
   esc-alias: O'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{O}"
   unicode-equivalent: "\xD3"
   unicode-equivalent-name: LATIN CAPITAL LETTER O WITH ACUTE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalOAcute.html
@@ -1099,6 +1161,7 @@ CapitalOAcute:
   wl-unicode-name: LATIN CAPITAL LETTER O WITH ACUTE
 
 CapitalODoubleAcute:
+  ascii: "O''"
   esc-alias: O''
   has-unicode-inverse: false
   is-letter-like: true
@@ -1110,6 +1173,7 @@ CapitalODoubleAcute:
   wl-unicode-name: LATIN CAPITAL LETTER O WITH DOUBLE ACUTE
 
 CapitalODoubleDot:
+  ascii: 'O"'
   esc-alias: O"
   has-unicode-inverse: false
   is-letter-like: true
@@ -1131,10 +1195,11 @@ CapitalOE:
   wl-unicode-name: LATIN CAPITAL LIGATURE OE
 
 CapitalOGrave:
-  amslatex: "\\`{O}"
+  ascii: 'O`'
   esc-alias: O`
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\`{O}"
   unicode-equivalent: "\xD2"
   unicode-equivalent-name: LATIN CAPITAL LETTER O WITH GRAVE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalOGrave.html
@@ -1142,10 +1207,11 @@ CapitalOGrave:
   wl-unicode-name: LATIN CAPITAL LETTER O WITH GRAVE
 
 CapitalOHat:
-  amslatex: "\\^{O}"
+  ascii: 'O^'
   esc-alias: O^
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\^{O}"
   unicode-equivalent: "\xD4"
   unicode-equivalent-name: LATIN CAPITAL LETTER O WITH CIRCUMFLEX
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalOHat.html
@@ -1154,6 +1220,7 @@ CapitalOHat:
 
 CapitalOSlash:
   amslatex: '\O{}'
+  ascii: 'O/'
   esc-alias: O/
   has-unicode-inverse: true
   is-letter-like: true
@@ -1164,6 +1231,7 @@ CapitalOSlash:
   wl-unicode-name: LATIN CAPITAL LETTER O WITH STROKE
 
 CapitalOTilde:
+  ascii: 'O~'
   esc-alias: O~
   has-unicode-inverse: false
   is-letter-like: true
@@ -1233,9 +1301,10 @@ CapitalPsi:
   wl-unicode-name: GREEK CAPITAL LETTER PSI
 
 CapitalRHacek:
-  amslatex: '\v{R}'
+  ascii: 'Rv'
   esc-alias: Rv
   has-unicode-inverse: false
+  latex: "\\v{R}"
   is-letter-like: true
   unicode-equivalent: "\u0158"
   unicode-equivalent-name: LATIN CAPITAL LETTER R WITH CARON
@@ -1256,10 +1325,11 @@ CapitalRho:
   wl-unicode-name: GREEK CAPITAL LETTER RHO
 
 CapitalSHacek:
-  amslatex: '\v{S}'
+  ascii: 'Sv'
   esc-alias: Sv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{S}"
   unicode-equivalent: "\u0160"
   unicode-equivalent-name: LATIN CAPITAL LETTER S WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+0160
@@ -1302,10 +1372,11 @@ CapitalStigma:
   wl-unicode-name: GREEK LETTER STIGMA
 
 CapitalTHacek:
-  amslatex: '\v{T}'
+  ascii: 'Tv'
   esc-alias: Tv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{T}"
   unicode-equivalent: "\u0164"
   unicode-equivalent-name: LATIN CAPITAL LETTER T WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+0164
@@ -1337,6 +1408,7 @@ CapitalTheta:
   wl-unicode-name: GREEK CAPITAL LETTER THETA
 
 CapitalThorn:
+  ascii: 'Th'
   esc-alias: Thn
   has-unicode-inverse: false
   is-letter-like: true
@@ -1347,10 +1419,11 @@ CapitalThorn:
   wl-unicode-name: LATIN CAPITAL LETTER THORN
 
 CapitalUAcute:
-  amslatex: "\\'{U}"
+  ascii: "U'"
   esc-alias: U'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{U}"
   unicode-equivalent: "\xDA"
   unicode-equivalent-name: LATIN CAPITAL LETTER U WITH ACUTE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalUAcute.html
@@ -1358,6 +1431,7 @@ CapitalUAcute:
   wl-unicode-name: LATIN CAPITAL LETTER U WITH ACUTE
 
 CapitalUDoubleAcute:
+  ascii: "U''"
   esc-alias: U''
   has-unicode-inverse: false
   is-letter-like: true
@@ -1369,6 +1443,7 @@ CapitalUDoubleAcute:
   wl-unicode-name: LATIN CAPITAL LETTER U WITH DOUBLE ACUTE
 
 CapitalUDoubleDot:
+  ascii: 'U"'
   esc-alias: U"
   has-unicode-inverse: false
   is-letter-like: true
@@ -1379,10 +1454,11 @@ CapitalUDoubleDot:
   wl-unicode-name: LATIN CAPITAL LETTER U WITH DIAERESIS
 
 CapitalUGrave:
-  amslatex: "\\`{U}"
+  ascii: 'U`'
   esc-alias: U`
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\`{U}"
   unicode-equivalent: "\xD9"
   unicode-equivalent-name: LATIN CAPITAL LETTER U WITH GRAVE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalUGrave.html
@@ -1390,6 +1466,7 @@ CapitalUGrave:
   wl-unicode-name: LATIN CAPITAL LETTER U WITH GRAVE
 
 CapitalUHat:
+  ascii: 'U^'
   esc-alias: U^
   has-unicode-inverse: false
   is-letter-like: true
@@ -1400,6 +1477,7 @@ CapitalUHat:
   wl-unicode-name: LATIN CAPITAL LETTER U WITH CIRCUMFLEX
 
 CapitalURing:
+  ascii: 'Uo'
   esc-alias: Uo
   has-unicode-inverse: false
   is-letter-like: true
@@ -1435,10 +1513,11 @@ CapitalXi:
   wl-unicode-name: GREEK CAPITAL LETTER XI
 
 CapitalYAcute:
-  amslatex: "\\'{Y}"
+  ascii: "Y'"
   esc-alias: Y'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{Y}"
   unicode-equivalent: "\xDD"
   unicode-equivalent-name: LATIN CAPITAL LETTER Y WITH ACUTE
   wl-reference: https://reference.wolfram.com/language/ref/character/CapitalYAcute.html
@@ -1446,10 +1525,11 @@ CapitalYAcute:
   wl-unicode-name: LATIN CAPITAL LETTER Y WITH ACUTE
 
 CapitalZHacek:
-  amslatex: '\v{Z}'
+  ascii: 'Zv'
   esc-alias: Zv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{Z}"
   unicode-equivalent: "\u017D"
   unicode-equivalent-name: LATIN CAPITAL LETTER Z WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+017D
@@ -1791,6 +1871,7 @@ Coproduct:
   wl-unicode-name: N-ARY COPRODUCT
 
 Copyright:
+  ascii: "(c)"
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent: "\xA9"
@@ -1932,10 +2013,11 @@ Currency:
   wl-unicode-name: CURRENCY SIGN
 
 DHacek:
-  amslatex: '\v{d}'
+  ascii: 'dv'
   esc-alias: dv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{d}"
   unicode-equivalent: "\u010F"
   unicode-equivalent-name: LATIN SMALL LETTER D WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+010F
@@ -1999,6 +2081,7 @@ Decrement:
 # right value is 176 which is the same as the Unicode value. These
 # are what are used here.
 Degree:
+  ascii: "Degree"
   esc-alias: deg
   has-unicode-inverse: false
   is-builtin-constant: true
@@ -2107,6 +2190,7 @@ DifferenceDelta:
 # \u2146
 DifferentialD:
   amslatex: '\,d'
+  ascii: "d"
   esc-alias: dd
   has-unicode-inverse: true
   # This can't be letter-like because it is used in derivatives as a function
@@ -2131,18 +2215,18 @@ Digamma:
   wl-unicode-name: GREEK SMALL LETTER DIGAMMA
 
 # The WL symbol displays with a round dot at the left endpoint.
-# The unicode equivalent shows omits this
 # When there is a tag over the edge, WL uses a bold variant
 # of the symbol.
+# Note: not the same as \[Rule] or \[RightArrow]
 DirectedEdge:
-  amslatex: '\rightarrow'
+  amslatex: '\mathrel{\cdot\rightarrow}'
   esc-alias: de
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: DirectedEdge
-  unicode-equivalent: "\u2192"
-  unicode-equivalent-name: RIGHTWARDS ARROW
-  unicode-reference: https://www.compart.com/en/unicode/U+2192
+  unicode-equivalent: "\u21F4"
+  unicode-equivalent-name: RIGHT ARROW WITH SMALL CIRCLE
+  unicode-reference: https://www.compart.com/en/unicode/U+21F4
   wl-reference: https://reference.wolfram.com/language/ref/character/DirectedEdge.html
   wl-unicode: "\uF3D5"
 
@@ -2309,6 +2393,7 @@ DoubleDagger:
   wl-unicode-name: DOUBLE DAGGER
 
 DoubleDot:
+  ascii: ".."
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent: "\xA8"
@@ -2369,6 +2454,7 @@ DoubleLeftTee:
 
 DoubleLongLeftArrow:
   amslatex: '\Longleftarrow'
+  ascii: '<=='
   esc-alias: <==
   has-unicode-inverse: false
   is-letter-like: false
@@ -2382,6 +2468,7 @@ DoubleLongLeftArrow:
 
 DoubleLongLeftRightArrow:
   amslatex: '\Longleftrightarrow'
+  ascii: '<==>'
   esc-alias: <==>
   has-unicode-inverse: false
   is-letter-like: false
@@ -2395,6 +2482,7 @@ DoubleLongLeftRightArrow:
 
 DoubleLongRightArrow:
   amslatex: '\Longrightarrow'
+  ascii: '==>'
   esc-alias: ==>
   has-unicode-inverse: false
   is-letter-like: false
@@ -2407,6 +2495,7 @@ DoubleLongRightArrow:
   wl-unicode-name: LONG RIGHTWARDS DOUBLE ARROW
 
 DoublePrime:
+  ascii: ',,'
   esc-alias: ''''''
   has-unicode-inverse: false
   is-letter-like: false
@@ -2419,6 +2508,7 @@ DoublePrime:
 
 DoubleRightArrow:
   amslatex: '\Rightarrow'
+  ascii: '=>'
   esc-alias: ' =>'
   has-unicode-inverse: false
   is-letter-like: false
@@ -2432,6 +2522,7 @@ DoubleRightArrow:
 
 DoubleRightTee:
   amslatex: '\vDash'
+  ascii: '=|'
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent: "\u22A8"
@@ -3086,6 +3177,8 @@ DoubleUpDownArrow:
   wl-unicode: "\u21D5"
   wl-unicode-name: UP DOWN DOUBLE ARROW
 
+# Note DoubleVerticalBar which sort of looks like DoubleBracketingBar
+# is an *infix* operator with no built-in meaning.
 DoubleVerticalBar:
   amslatex: '\parallel'
   esc-alias: ' ||'
@@ -3306,10 +3399,11 @@ DownTeeArrow:
   wl-unicode-name: DOWNWARDS ARROW FROM BAR
 
 EAcute:
-  amslatex: "\\'{e}"
+  ascii: "e'"
   esc-alias: e'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{e}"
   unicode-equivalent: "\xE9"
   unicode-equivalent-name: LATIN SMALL LETTER E WITH ACUTE
   unicode-reference: https://www.compart.com/en/unicode/U+00E9
@@ -3318,10 +3412,11 @@ EAcute:
   wl-unicode-name: LATIN SMALL LETTER E WITH ACUTE
 
 EBar:
-  amslatex: "\\={e}"
+  ascii: 'e-'
   esc-alias: e-
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\={e}"
   unicode-equivalent: "\u0113"
   unicode-equivalent-name: LATIN SMALL LETTER E WITH MACRON
   wl-reference: https://reference.wolfram.com/language/ref/character/EBar.html
@@ -3329,10 +3424,10 @@ EBar:
   wl-unicode-name: LATIN SMALL LETTER E WITH MACRON
 
 ECup:
-  amslatex: '\u{e}'
   esc-alias: eu
   has-unicode-inverse: false
   is-letter-like: true
+  latex: '\u{e}'
   unicode-equivalent: "\u0115"
   unicode-equivalent-name: LATIN SMALL LETTER E WITH BREVE
   wl-reference: https://reference.wolfram.com/language/ref/character/ECup.html
@@ -3340,6 +3435,7 @@ ECup:
   wl-unicode-name: LATIN SMALL LETTER E WITH BREVE
 
 EDoubleDot:
+  ascii: 'e"'
   esc-alias: e"
   has-unicode-inverse: false
   is-letter-like: true
@@ -3351,10 +3447,11 @@ EDoubleDot:
   wl-unicode-name: LATIN SMALL LETTER E WITH DIAERESIS
 
 EGrave:
-  amslatex: "\\`{e}"
+  ascii: 'e`'
   esc-alias: e`
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\`{e}"
   unicode-equivalent: "\xE8"
   unicode-equivalent-name: LATIN SMALL LETTER E WITH GRAVE
   unicode-reference: https://www.compart.com/en/unicode/U+00E8
@@ -3363,10 +3460,11 @@ EGrave:
   wl-unicode-name: LATIN SMALL LETTER E WITH GRAVE
 
 EHacek:
-  amslatex: '\v{e}'
+  ascii: 'ev'
   esc-alias: ev
   has-unicode-inverse: false
   is-letter-like: true
+  latex: '\v{e}'
   unicode-equivalent: "\u011B"
   unicode-equivalent-name: LATIN SMALL LETTER E WITH CARON
   wl-reference: https://reference.wolfram.com/language/ref/character/EHacek.html
@@ -3374,6 +3472,7 @@ EHacek:
   wl-unicode-name: LATIN SMALL LETTER E WITH CARON
 
 EHat:
+  ascii: 'e^'
   esc-alias: e^
   has-unicode-inverse: false
   is-letter-like: true
@@ -3419,6 +3518,7 @@ Element:
 
 Ellipsis:
   amslatex: '\dots'
+  ascii: '...'
   esc-alias: '...'
   has-unicode-inverse: false
   is-letter-like: true
@@ -3432,7 +3532,7 @@ Ellipsis:
 EmptyCircle:
   esc-alias: eci
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u25CB"
   unicode-equivalent-name: WHITE CIRCLE
   unicode-reference: https://www.compart.com/en/unicode/U+25CB
@@ -3442,7 +3542,7 @@ EmptyCircle:
 
 EmptyDiamond:
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u25C7"
   unicode-equivalent-name: WHITE DIAMOND
   unicode-reference: https://www.compart.com/en/unicode/U+25C7
@@ -3452,7 +3552,7 @@ EmptyDiamond:
 
 EmptyDownTriangle:
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u25BD"
   unicode-equivalent-name: WHITE DOWN-POINTING TRIANGLE
   unicode-reference: https://www.compart.com/en/unicode/U+25BD
@@ -3462,7 +3562,7 @@ EmptyDownTriangle:
 
 EmptyRectangle:
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u25AF"
   unicode-equivalent-name: WHITE VERTICAL RECTANGLE
   unicode-reference: https://www.compart.com/en/unicode/U+25AF
@@ -3474,7 +3574,7 @@ EmptySet:
   amslatex: '\varnothing'
   esc-alias: es
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u2205"
   unicode-equivalent-name: EMPTY SET
   unicode-reference: https://www.compart.com/en/unicode/U+2205
@@ -3485,7 +3585,7 @@ EmptySet:
 EmptySmallCircle:
   esc-alias: esci
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u25E6"
   unicode-equivalent-name: WHITE BULLET
   unicode-reference: https://www.compart.com/en/unicode/U+25E6
@@ -3496,7 +3596,7 @@ EmptySmallCircle:
 EmptySmallSquare:
   esc-alias: essq
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u25FB"
   unicode-equivalent-name: WHITE MEDIUM SQUARE
   unicode-reference: https://www.compart.com/en/unicode/U+25FB
@@ -3507,7 +3607,7 @@ EmptySmallSquare:
 EmptySquare:
   esc-alias: esq
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u25A1"
   unicode-equivalent-name: WHITE SQUARE
   unicode-reference: https://www.compart.com/en/unicode/U+25A1
@@ -3517,7 +3617,7 @@ EmptySquare:
 
 EmptyUpTriangle:
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u25B3"
   unicode-equivalent-name: WHITE UP-POINTING TRIANGLE
   unicode-reference: https://www.compart.com/en/unicode/U+25B3
@@ -3580,6 +3680,7 @@ Equal:
 
 EqualTilde:
   amslatex: '\eqsim'
+  ascii: '=~'
   esc-alias: =~
   has-unicode-inverse: false
   is-letter-like: false
@@ -3606,6 +3707,7 @@ Equilibrium:
 
 Equivalent:
 #  amslatex: '\unicode{29e6}'
+  ascii: '<=>'
   esc-alias: equiv
   has-unicode-inverse: true
   is-letter-like: false
@@ -3644,6 +3746,7 @@ Eta:
   wl-unicode-name: GREEK SMALL LETTER ETA
 
 Eth:
+  ascii: 'Eth'
   esc-alias: d-
   has-unicode-inverse: false
   is-letter-like: false
@@ -3689,6 +3792,7 @@ Exists:
 
 ExponentialE:
   amslatex: '\ExponentialE'
+  ascii: 'E'
   esc-alias: ee
   has-unicode-inverse: true
   is-builtin-constant: true
@@ -3737,7 +3841,7 @@ FilledCircle:
 
 FilledDiamond:
   has-unicode-inverse: false
-  is-letter-like: false
+  is-letter-like: true
   unicode-equivalent: "\u25C6"
   unicode-equivalent-name: BLACK DIAMOND
   unicode-reference: https://www.compart.com/en/unicode/U+25C6
@@ -4965,7 +5069,7 @@ FreakedSmiley:
 
 # IMPORTANT!
 # ----------
-# For the Mathics Parser to work circa 2021...
+# For the Mathics3 Parser to work circa 2021...
 # If there is a unicode operator, as we have here for "Function", then
 # the YAML key *has* to be the operator name. ("Function" here).
 #
@@ -5668,7 +5772,8 @@ GreaterEqual:
   wl-unicode-name: GREATER-THAN OR EQUAL TO
 
 GreaterEqualLess:
-  amslatex: 'a\gtreqless b'
+  amslatex: '\gtreqless'
+  ascii: '>=<'
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: GreaterEqualLess
@@ -5681,6 +5786,7 @@ GreaterEqualLess:
 
 GreaterFullEqual:
   amslatex: '\geqq'
+  ascii: '>=='
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: GreaterFullEqual
@@ -5693,6 +5799,7 @@ GreaterFullEqual:
 
 GreaterGreater:
   amslatex: '\gg'
+  ascii: '>>'
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: GreaterGreater
@@ -5705,6 +5812,7 @@ GreaterGreater:
 
 GreaterLess:
   amslatex: '\gtrless'
+  ascii: '><'
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: GreaterLess
@@ -5717,6 +5825,7 @@ GreaterLess:
 
 GreaterSlantEqual:
   amslatex: '\geq'
+  ascii: '>='
   esc-alias: '>/'
   has-unicode-inverse: false
   operator-name: GreaterSlantEqual
@@ -5730,6 +5839,7 @@ GreaterSlantEqual:
 
 GreaterTilde:
   amslatex: '\gtrsim' # In WMA, '\gtrsin' which seems a typo...
+  ascii: '>~'
   esc-alias: '>~'
   has-unicode-inverse: false
   operator-name: GreaterTilde
@@ -5754,6 +5864,7 @@ HBar:
   wl-unicode-name: PLANCK CONSTANT OVER TWO PI
 
 Hacek:
+  ascii: 'v'
   esc-alias: hck
   has-unicode-inverse: false
   is-letter-like: true
@@ -5764,6 +5875,7 @@ Hacek:
   wl-unicode-name: CARON
 
 HappySmiley:
+  ascii: ':-)'
   esc-alias: :)
   has-unicode-inverse: false
   is-letter-like: true
@@ -5842,10 +5954,11 @@ Hyphen:
   wl-unicode-name: HYPHEN
 
 IAcute:
-  amslatex: "\\'{i}"
+  ascii: "i'"
   esc-alias: i'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{i}"
   unicode-equivalent: "\xED"
   unicode-equivalent-name: LATIN SMALL LETTER I WITH ACUTE
   unicode-reference: https://www.compart.com/en/unicode/U+00ED
@@ -5854,9 +5967,10 @@ IAcute:
   wl-unicode-name: LATIN SMALL LETTER I WITH ACUTE
 
 ICup:
-  amslatex: '\u{i}'
+  ascii: 'iu'
   esc-alias: iu
   has-unicode-inverse: false
+  latex: '\u{i}'
   is-letter-like: true
   unicode-equivalent: "\u012D"
   unicode-equivalent-name: LATIN SMALL LETTER I WITH BREVE
@@ -5865,6 +5979,7 @@ ICup:
   wl-unicode-name: LATIN SMALL LETTER I WITH BREVE
 
 IDoubleDot:
+  ascii: 'i"'
   esc-alias: i"
   has-unicode-inverse: false
   is-letter-like: true
@@ -5876,10 +5991,11 @@ IDoubleDot:
   wl-unicode-name: LATIN SMALL LETTER I WITH DIAERESIS
 
 IGrave:
-  amslatex: "\\`{i}"
+  ascii: 'i`'
   esc-alias: i`
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\`{i}"
   unicode-equivalent: "\xEC"
   unicode-equivalent-name: LATIN SMALL LETTER I WITH GRAVE
   unicode-reference: https://www.compart.com/en/unicode/U+00EC
@@ -5888,6 +6004,7 @@ IGrave:
   wl-unicode-name: LATIN SMALL LETTER I WITH GRAVE
 
 IHat:
+  ascii: 'i^'
   esc-alias: i^
   has-unicode-inverse: false
   is-letter-like: true
@@ -5900,6 +6017,7 @@ IHat:
 
 ImaginaryI:
   amslatex: '\ComplexI'
+  ascii: 'I'
   esc-alias: ii
   has-unicode-inverse: true
   is-builtin-constant: true
@@ -5912,6 +6030,7 @@ ImaginaryI:
 
 ImaginaryJ:
   amslatex: '\ComplexJ'
+  ascii: 'I'
   esc-alias: jj
   has-unicode-inverse: true
   is-builtin-constant: true
@@ -5934,14 +6053,22 @@ ImplicitPlus:
 
 Implies:
   amslatex: '\Rightarrow'
+  ascii: '=>'
   esc-alias: =>
   has-unicode-inverse: true
   is-letter-like: false
+  operator-name: Implies
   unicode-equivalent: "\u21D2"
   unicode-equivalent-name: RIGHTWARDS DOUBLE ARROW
   unicode-reference: https://www.compart.com/en/unicode/U+21D2
   wl-reference: https://reference.wolfram.com/language/ref/character/Implies.html
   wl-unicode: "\uF523"
+
+Increment:
+  ascii: "++"
+  has-unicode-inverse: false
+  is-letter-like: false
+  operator-name: Increment
 
 IndentingNewLine:
   esc-alias: nl
@@ -5953,6 +6080,7 @@ IndentingNewLine:
 
 Infinity:
   amslatex: '\infty'
+  ascii: 'Infinity'
   esc-alias: inf
   has-unicode-inverse: false
   is-builtin-constant: true
@@ -5964,19 +6092,13 @@ Infinity:
   wl-unicode: "\u221E"
   wl-unicode-name: INFINITY
 
-# Infix isn't really an operator
+# This is the default infix symbol used in boxing/formatting Infix[] expressions.
 # See also RawTilde
 Infix:
-  ascii: "~"
   amslatex: '\textasciitilde'
+  ascii: "~"
   has-unicode-inverse: false
   is-letter-like: false
-
-Information:
-  ascii: "??"
-  has-unicode-inverse: false
-  is-letter-like: false
-  operator-name: Information
 
 Integral:
   amslatex: '\int'
@@ -6114,6 +6236,7 @@ Koppa:
 
 LSlash:
   amslatex: '\l{}'
+  ascii: 'l/'
   esc-alias: l/
   has-unicode-inverse: false
   is-letter-like: true
@@ -6140,10 +6263,13 @@ LastPage:
   wl-reference: https://reference.wolfram.com/language/ref/character/LastPage.html
   wl-unicode: "\uF7FB"
 
+# Opening part of AngleBracket[] - an operator without a builtin-meaning
 LeftAngleBracket:
+  ascii: '<'
   esc-alias: <
   has-unicode-inverse: false
   is-letter-like: false
+  operator-name: LeftAngleBracket
   unicode-equivalent: "\u2329"
   unicode-equivalent-name: LEFT-POINTING ANGLE BRACKET
   unicode-reference: https://www.compart.com/en/unicode/U+2329
@@ -6153,6 +6279,7 @@ LeftAngleBracket:
 
 LeftArrow:
   amslatex: '\leftarrow'
+  ascii: '<-'
   esc-alias: <-
   has-unicode-inverse: false
   is-letter-like: false
@@ -6166,6 +6293,7 @@ LeftArrow:
 
 LeftArrowBar:
   amslatex: '|\leftarrow'
+  ascii: '|<-'
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: LeftArrowBar
@@ -6188,8 +6316,10 @@ LeftArrowRightArrow:
   wl-unicode: "\u21C6"
   wl-unicode-name: LEFTWARDS ARROW OVER RIGHTWARDS ARROW
 
-# Left part of "Association[]" operator
+# Opening of "Association[]" operator
 LeftAssociation:
+  amslatex: '\langle\vert'
+  ascii: '<|'
   esc-alias: <|
   has-unicode-inverse: false
   is-letter-like: false
@@ -6197,7 +6327,9 @@ LeftAssociation:
   wl-reference: https://reference.wolfram.com/language/ref/character/LeftAssociation.html
   wl-unicode: "\uF113"
 
+# Opening of "BracketingBar[]" operator without builtin-meaning
 LeftBracketingBar:
+  ascii: '|'
   esc-alias: l|
   has-unicode-inverse: false
   is-letter-like: false
@@ -6206,7 +6338,7 @@ LeftBracketingBar:
   wl-reference: https://reference.wolfram.com/language/ref/character/LeftBracketingBar.html
   wl-unicode: "\uF603"
 
-# Left part of "Ceiling[]" operator
+# Opening of "Ceiling[]" operator
 LeftCeiling:
   esc-alias: lc
   has-unicode-inverse: false
@@ -6219,19 +6351,21 @@ LeftCeiling:
   wl-unicode: "\u2308"
   wl-unicode-name: LEFT CEILING
 
-# Left part of "Part[] operator
+# Opening of "Part[] operator
 LeftDoubleBracket:
   esc-alias: '[['
   has-unicode-inverse: false
   is-letter-like: false
-  operator-name: LeftPart
+  operator-name: LeftDoubleBracket
   unicode-equivalent: "\u301A"
   unicode-equivalent-name: LEFT WHITE SQUARE BRACKET
   wl-reference: https://reference.wolfram.com/language/ref/character/LeftDoubleBracket.html
   wl-unicode: "\u301A"
   wl-unicode-name: LEFT WHITE SQUARE BRACKET
 
+# Opening part of DoubleBracketingBar[] - an operator without a builtin-meaning
 LeftDoubleBracketingBar:
+  ascii: '||'
   esc-alias: l||
   has-unicode-inverse: false
   is-letter-like: false
@@ -6291,6 +6425,7 @@ LeftFloor:
   wl-unicode-name: LEFT FLOOR
 
 LeftGuillemet:
+  ascii: "<<"
   esc-alias: g<<
   has-unicode-inverse: false
   is-letter-like: true
@@ -6325,6 +6460,7 @@ LeftPointer:
 
 LeftRightArrow:
   amslatex: '\leftrightarrow'
+  ascii: '<->'
   esc-alias: <->
   has-unicode-inverse: false
   is-letter-like: false
@@ -6349,6 +6485,7 @@ LeftRightVector:
   wl-unicode-name: LEFT BARB UP RIGHT BARB UP HARPOON
 
 LeftSkeleton:
+  ascii: '<<'
   has-unicode-inverse: true
   is-letter-like: false
   unicode-equivalent: "\xAB"
@@ -6358,6 +6495,7 @@ LeftSkeleton:
 
 LeftTee:
   amslatex: '\dashv'
+  ascii: '-|'
   esc-alias: lT
   has-unicode-inverse: false
   is-letter-like: false
@@ -6545,6 +6683,7 @@ LessEqualGreater:
 
 LessFullEqual:
   amslatex: '\leqq'
+  ascii: '<=='
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: LessFullEqual
@@ -6557,6 +6696,7 @@ LessFullEqual:
 
 LessGreater:
   amslatex: '\lessgtr'
+  ascii: '<>'
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: LessGreater
@@ -6569,6 +6709,7 @@ LessGreater:
 
 LessLess:
   amslatex: '\ll'
+  ascii: '<<'
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: LessLess
@@ -6581,6 +6722,7 @@ LessLess:
 
 LessSlantEqual:
   amslatex: '\leq'
+  ascii: '<= '
   esc-alias: </
   has-unicode-inverse: false
   operator-name: LessSlantEqual
@@ -6594,6 +6736,7 @@ LessSlantEqual:
 
 LessTilde:
   amslatex: '\lesssim'
+  ascii: '<~'
   esc-alias: <~
   has-unicode-inverse: false
   is-letter-like: false
@@ -6629,6 +6772,7 @@ LightBulb:
   wl-unicode: "\uF723"
 
 LineSeparator:
+  ascii: "\n"
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent: "\u2028"
@@ -6639,6 +6783,7 @@ LineSeparator:
   wl-unicode-name: LINE SEPARATOR
 
 LongDash:
+  ascii: '--'
   esc-alias: --
   has-unicode-inverse: false
   is-letter-like: false
@@ -6650,6 +6795,7 @@ LongDash:
   wl-unicode-name: EM DASH
 
 LongEqual:
+  ascii: '=='
   esc-alias: l=
   has-unicode-inverse: true
   is-letter-like: false
@@ -6660,6 +6806,7 @@ LongEqual:
 
 LongLeftArrow:
   amslatex: '\longleftarrow'
+  ascii: '<--'
   esc-alias: <--
   has-unicode-inverse: false
   is-letter-like: false
@@ -6673,6 +6820,7 @@ LongLeftArrow:
 
 LongLeftRightArrow:
   amslatex: '\longleftrightarrow'
+  ascii: '<-->'
   esc-alias: <-->
   has-unicode-inverse: false
   is-letter-like: false
@@ -6686,6 +6834,7 @@ LongLeftRightArrow:
 
 LongRightArrow:
   amslatex: '\longrightarrow'
+  ascii: '-->'
   esc-alias: -->
   has-unicode-inverse: false
   is-letter-like: false
@@ -6775,6 +6924,7 @@ MeasuredAngle:
   wl-unicode-name: MEASURED ANGLE
 
 MediumSpace:
+  ascii: ' '
   has-unicode-inverse: false
   is-letter-like: false
   wl-reference: https://reference.wolfram.com/language/ref/character/MediumSpace.html
@@ -6825,6 +6975,7 @@ Minus:
   is-letter-like: false
   operator-name: Minus
   unicode-equivalent: "\u2212"
+  unicode-equivalent-name: MINUS SIGN
   unicode-reference: https://www.compart.com/en/unicode/U+2212
 
 MinLimit:
@@ -6838,6 +6989,7 @@ MinLimit:
 
 MinusPlus:
   amslatex: '\mp'
+  ascii: '-+'
   esc-alias: -+
   has-unicode-inverse: false
   is-letter-like: false
@@ -6861,10 +7013,11 @@ Mu:
   wl-unicode-name: GREEK SMALL LETTER MU
 
 NHacek:
-  amslatex: '\v{n}'
+  ascii: 'nv'
   esc-alias: nv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{n}"
   unicode-equivalent: "\u0148"
   unicode-equivalent-name: LATIN SMALL LETTER N WITH CARON
   wl-reference: https://reference.wolfram.com/language/ref/character/NHacek.html
@@ -6872,6 +7025,7 @@ NHacek:
   wl-unicode-name: LATIN SMALL LETTER N WITH CARON
 
 NTilde:
+  ascii: 'n~'
   esc-alias: n~
   has-unicode-inverse: false
   is-letter-like: true
@@ -6886,6 +7040,7 @@ Nand:
   esc-alias: nand
   has-unicode-inverse: false
   is-letter-like: false
+  operator-name: Nand
   unicode-equivalent: "\u22BC"
   unicode-equivalent-name: NAND
   unicode-reference: https://www.compart.com/en/unicode/U+22BC
@@ -6973,6 +7128,7 @@ NeutralSmiley:
   wl-unicode: "\uF722"
 
 NewLine:
+  ascii: "\n"
   has-unicode-inverse: true
   is-letter-like: false
   unicode-equivalent: "\u000A"
@@ -6988,6 +7144,7 @@ NoBreak:
   wl-unicode-name: WORD JOINER
 
 NonBreakingSpace:
+  ascii: " "
   esc-alias: nbs
   has-unicode-inverse: false
   is-letter-like: false
@@ -7053,6 +7210,8 @@ NotCupCap:
   wl-unicode: "\u226D"
   wl-unicode-name: NOT EQUIVALENT TO
 
+# Note NotDoubleVerticalBar, like DoubleVerticalBar is an *infix*
+# operator with no built-in meaning.
 NotDoubleVerticalBar:
   amslatex: '\nparallel'
   esc-alias: '!||'
@@ -7115,6 +7274,7 @@ NotExists:
 
 NotGreater:
   amslatex: '\ngtr'
+  ascii: '!>'
   esc-alias: '!>'
   has-unicode-inverse: false
   is-letter-like: false
@@ -7128,6 +7288,7 @@ NotGreater:
 
 NotGreaterEqual:
   amslatex: '\ngeq'
+  ascii: '!>='
   esc-alias: '!>='
   has-unicode-inverse: false
   is-letter-like: false
@@ -7141,6 +7302,7 @@ NotGreaterEqual:
 
 NotGreaterFullEqual:
   amslatex: '\ngeqq'
+  ascii: '!>=='
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: NotGreaterFullEqual
@@ -7153,6 +7315,7 @@ NotGreaterFullEqual:
 
 NotGreaterGreater:
   amslatex: '\not{\gg}'
+  ascii: '!>>'
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: NotGreaterGreater
@@ -7162,6 +7325,7 @@ NotGreaterGreater:
 
 NotGreaterLess:
   amslatex: '\not{\gtrless}'
+  ascii: '!><'
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: NotGreaterLess
@@ -7173,6 +7337,7 @@ NotGreaterLess:
   wl-unicode-name: NEITHER GREATER-THAN NOR LESS-THAN
 
 NotGreaterSlantEqual:
+  ascii: '!>='
   esc-alias: '!>/'
   has-unicode-inverse: false
   is-letter-like: false
@@ -7181,6 +7346,7 @@ NotGreaterSlantEqual:
 
 NotGreaterTilde:
   amslatex: '\not{\gtrsim}'
+  ascii: '!>~'
   esc-alias: '!>~'
   has-unicode-inverse: false
   is-letter-like: false
@@ -7237,6 +7403,7 @@ NotLeftTriangleEqual:
 
 NotLess:
   amslatex: '\nless'
+  ascii: '!<'
   esc-alias: '!<'
   has-unicode-inverse: false
   is-letter-like: false
@@ -7250,6 +7417,7 @@ NotLess:
 
 NotLessEqual:
   amslatex: '\nleq'
+  ascii: '!<='
   esc-alias: '!<='
   has-unicode-inverse: false
   is-letter-like: false
@@ -7263,6 +7431,7 @@ NotLessEqual:
 
 NotLessFullEqual:
   amslatex: '\nleqq'
+  ascii: '!<=='
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: NotLessFullEqual
@@ -7275,6 +7444,7 @@ NotLessFullEqual:
 
 NotLessGreater:
   amslatex: '\not{\lessgtr}'
+  ascii: '!<>'
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: NotLessGreater
@@ -7286,12 +7456,14 @@ NotLessGreater:
   wl-unicode-name: NEITHER LESS-THAN NOR GREATER-THAN
 
 NotLessLess:
+  ascii: '!<<'
   has-unicode-inverse: false
   is-letter-like: false
   wl-reference: https://reference.wolfram.com/language/ref/character/NotLessLess.html
   wl-unicode: "\uF422"
 
 NotLessSlantEqual:
+  ascii: '!<='
   esc-alias: '!</'
   has-unicode-inverse: false
   is-letter-like: false
@@ -7300,6 +7472,7 @@ NotLessSlantEqual:
 
 NotLessTilde:
   amslatex: '\not{\lesssim}'
+  ascii: '!<~'
   esc-alias: '!<~'
   has-unicode-inverse: false
   is-letter-like: false
@@ -7625,10 +7798,11 @@ NumberSign:
   wl-unicode: "\uF724"
 
 OAcute:
-  amslatex: "\\'{o}"
+  ascii: "o'"
   esc-alias: o'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{o}"
   unicode-equivalent: "\xF3"
   unicode-equivalent-name: LATIN SMALL LETTER O WITH ACUTE
   wl-reference: https://reference.wolfram.com/language/ref/character/OAcute.html
@@ -7636,6 +7810,7 @@ OAcute:
   wl-unicode-name: LATIN SMALL LETTER O WITH ACUTE
 
 ODoubleAcute:
+  ascii: "o''"
   esc-alias: o''
   has-unicode-inverse: false
   is-letter-like: true
@@ -7646,6 +7821,7 @@ ODoubleAcute:
   wl-unicode-name: LATIN SMALL LETTER O WITH DOUBLE ACUTE
 
 ODoubleDot:
+  ascii: 'o"'
   esc-alias: o"
   has-unicode-inverse: false
   is-letter-like: false
@@ -7666,10 +7842,11 @@ OE:
   wl-unicode-name: LATIN SMALL LIGATURE OE
 
 OGrave:
-  amslatex: "\\`{o}"
+  ascii: 'o`'
   esc-alias: o`
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\`{o}"
   unicode-equivalent: "\xF2"
   unicode-equivalent-name: LATIN SMALL LETTER O WITH GRAVE
   wl-reference: https://reference.wolfram.com/language/ref/character/OGrave.html
@@ -7677,10 +7854,11 @@ OGrave:
   wl-unicode-name: LATIN SMALL LETTER O WITH GRAVE
 
 OHat:
-  amslatex: "\\^{o}"
+  ascii: 'o^'
   esc-alias: o^
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\^{o}"
   unicode-equivalent: "\xF4"
   unicode-equivalent-name: LATIN SMALL LETTER O WITH CIRCUMFLEX
   wl-reference: https://reference.wolfram.com/language/ref/character/OHat.html
@@ -7688,10 +7866,11 @@ OHat:
   wl-unicode-name: LATIN SMALL LETTER O WITH CIRCUMFLEX
 
 OSlash:
-  amslatex: "\\o{}"
+  ascii: 'o/'
   esc-alias: o/
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\o{}"
   unicode-equivalent: "\xF8"
   unicode-equivalent-name: LATIN SMALL LETTER O WITH STROKE
   wl-reference: https://reference.wolfram.com/language/ref/character/OSlash.html
@@ -7699,6 +7878,7 @@ OSlash:
   wl-unicode-name: LATIN SMALL LETTER O WITH STROKE
 
 OTilde:
+  ascii: 'o~'
   esc-alias: o~
   has-unicode-inverse: false
   is-letter-like: false
@@ -7730,7 +7910,7 @@ Omicron:
   wl-unicode-name: GREEK SMALL LETTER OMICRON
 
 OpenCurlyDoubleQuote:
-  esc-alias: '["'
+  esc-alias: '{"'
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent: "\u201C"
@@ -7741,7 +7921,7 @@ OpenCurlyDoubleQuote:
   wl-unicode-name: LEFT DOUBLE QUOTATION MARK
 
 OpenCurlyQuote:
-  esc-alias: '['''
+  esc-alias: '{'''
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent: "\u2018"
@@ -7751,17 +7931,21 @@ OpenCurlyQuote:
   wl-unicode: "\u2018"
   wl-unicode-name: LEFT SINGLE QUOTATION MARK
 
-Option:
-  ascii: ":"
-  has-unicode-inverse: false
-  is-letter-like: false
-
 OptionKey:
   esc-alias: opt
   has-unicode-inverse: false
   is-letter-like: false
   wl-reference: https://reference.wolfram.com/language/ref/character/OptionKey.html
   wl-unicode: "\uF7D2"
+
+# Optional and Pattern are both operators.  When ":" represents one or
+# another depends on context, and determining which is what is
+# mysterious right now.
+Optional:
+  ascii: ":"
+  has-unicode-inverse: false
+  is-letter-like: false
+  operator-name: Optional
 
 Or:
   amslatex: '\vert'  # Also $\\lor$
@@ -7808,6 +7992,24 @@ OverParenthesis:
   wl-unicode: "\uFE35"
   wl-unicode-name: PRESENTATION FORM FOR VERTICAL LEFT PARENTHESIS
 
+# Note that while \[PageBreakAbove] is tolerated, it is not documented as Character,
+# but instead only as an option.
+PageBreakAbove:
+  # esc-alias: pba ? No escape exists here.
+  has-unicode-inverse: false
+  is-letter-like: false
+  wl-reference: https://reference.wolfram.com/language/ref/PageBreakAbove.html
+  wl-unicode: "\uF3BD"
+
+# Note that while \[PageBreakBelow] is tolerated, it is not documented as Character.
+# but instead only as an option.
+PageBreakBelow:
+  # esc-alias: pbb ? No escape exists here.
+  has-unicode-inverse: false
+  is-letter-like: false
+  wl-reference: https://reference.wolfram.com/language/ref/PageBreakBelow.html
+  wl-unicode: "\uF3BE"
+
 Paragraph:
   has-unicode-inverse: false
   is-letter-like: true
@@ -7830,6 +8032,15 @@ PartialD:
   wl-reference: https://reference.wolfram.com/language/ref/character/PartialD.html
   wl-unicode: "\u2202"
   wl-unicode-name: PARTIAL DIFFERENTIAL
+
+# Optional and Pattern are both operators.  When ":" represents one or
+# another depends on context, and determining which is what is
+# mysterious right now.
+Pattern:
+  ascii: ":"
+  has-unicode-inverse: false
+  is-letter-like: false
+  operator-name: Pattern
 
 # See also RawQuestion
 PatternTest:
@@ -7920,6 +8131,7 @@ Plus:
 
 PlusMinus:
   amslatex: '\pm'
+  ascii: "+-"
   esc-alias: +-
   has-unicode-inverse: false
   is-letter-like: false
@@ -7939,6 +8151,7 @@ Pluto:
   wl-unicode: "\u2647"
   wl-unicode-name: PLUTO
 
+# This is the default postfix operator character used when boxing/formatting Postfix[] expressions.
 Postfix:
   ascii: "//"
   has-unicode-inverse: false
@@ -8008,12 +8221,11 @@ PrecedesTilde:
   wl-unicode: "\u227E"
   wl-unicode-name: PRECEDES OR EQUIVALENT TO
 
-# Prefix isn't really an operator
-# Prefix:
-#  ascii: "@"
-#  has-unicode-inverse: false
-#  is-letter-like: false
-#  operator-name: Prefix
+# This is the default prefix operator character used when boxing/formatting Prefix[] expressions.
+Prefix:
+ ascii: "@"
+ has-unicode-inverse: false
+ is-letter-like: false
 
 Prime:
   esc-alias: ''''
@@ -8097,11 +8309,18 @@ QuarterNote:
   wl-unicode: "\u2669"
   wl-unicode-name: QUARTER NOTE
 
+QuestionQuestion:
+  ascii: "??"
+  has-unicode-inverse: false
+  is-letter-like: false
+  operator-name: QuestionQuestion
+
 RHacek:
-  amslatex: '\v{r}'
+  ascii: 'rv'
   esc-alias: rv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{r}"
   unicode-equivalent: "\u0159"
   unicode-equivalent-name: LATIN SMALL LETTER R WITH CARON
   wl-reference: https://reference.wolfram.com/language/ref/character/RHacek.html
@@ -8186,44 +8405,61 @@ RawGreater:
 RawLeftBrace:
   ascii: "{"
   has-unicode-inverse: false
+  is-letter-like: false
   operator-name: LeftList
   wl-reference: https://reference.wolfram.com/language/ref/character/RawLeftBrace.html
-  is-letter-like: false
+  wl-unicode: "\u007B"
+  wl-unicode-name: RawLeftBrace
 
 RawLeftBracket:
   ascii: '['
   has-unicode-inverse: false
   is-letter-like: false
+  wl-reference: https://reference.wolfram.com/language/ref/character/RawLeftBracket.html
+  wl-unicode: "\u005B"
+  wl-unicode-name: RawLeftBracket
 
 RawLeftParenthesis:
   ascii: '('
   has-unicode-inverse: false
   is-letter-like: false
+  wl-reference: https://reference.wolfram.com/language/ref/character/RawLeftParenthesis.html
+  wl-unicode: "\u0028"
+  wl-unicode-name: RawLeftParenthesis
 
 RawNumberSign:
   ascii: "#"
   has-unicode-inverse: false
   is-letter-like: false
+  wl-reference: https://reference.wolfram.com/language/ref/character/RawNumberSign.html
+  wl-unicode: "\u0023"
+  wl-unicode-name: RawNumberSign
 
 RawPercent:
   ascii: "%"
   has-unicode-inverse: false
   is-letter-like: false
+  wl-reference: https://reference.wolfram.com/language/ref/character/RawPercent.html
+  wl-unicode: "\u0025"
+  wl-unicode-name: RawPercent
 
 # See also PatternTest
 RawQuestion:
   ascii: "?"
   has-unicode-inverse: false
   is-letter-like: false
+  wl-reference: https://reference.wolfram.com/language/ref/character/RawQuestion.html
+  wl-unicode: "\u003F"
+  wl-unicode-name: RawQuestion
 
 RawQuote:
   ascii: "'"
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent-name: APOSTROPHE
-  wl-reference: https://reference.wolfram.com/language/ref/character/RawLeftBrace.html
-  wl-unicode: "'"
-  wl-unicode-name: APOSTROPHE
+  wl-reference: https://reference.wolfram.com/language/ref/character/RawQuote.html
+  wl-unicode: "\u0027"
+  wl-unicode-name: RawQuote
 
 RawReturn:
   has-unicode-inverse: true
@@ -8240,7 +8476,7 @@ RawRightBrace:
   unicode-reference: https://www.compart.com/en/unicode/U+007D
   wl-reference: https://reference.wolfram.com/language/ref/character/RawRightBrace.html
   wl-unicode: '}'
-  wl-unicode-name: RIGHT CURLY BRACKET
+  wl-unicode-name: RawRightBrace
 
 RawRightBracket:
   has-unicode-inverse: false
@@ -8275,6 +8511,7 @@ RawSemicolon:
 # RawSlash is not an operator. Divide which
 # looks the same, however is.
 RawSlash:
+  ascii: '/'
   has-unicode-inverse: true
   is-letter-like: false
   unicode-equivalent: /
@@ -8285,6 +8522,7 @@ RawSlash:
   wl-unicode-name: SOLIDUS
 
 RawSpace:
+  ascii: ' '
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent: ' '
@@ -8295,6 +8533,7 @@ RawSpace:
   wl-unicode-name: SPACE
 
 RawStar:
+  ascii: '*'
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent: '*'
@@ -8305,6 +8544,7 @@ RawStar:
   wl-unicode-name: ASTERISK
 
 RawTab:
+  ascii: '\t'
   has-unicode-inverse: false
   is-letter-like: false
   unicode-equivalent: "\t"
@@ -8342,6 +8582,7 @@ RawVerticalBar:
   wl-unicode-name: VERTICAL LINE
 
 RegisteredTrademark:
+  ascii: '(R)'
   esc-alias: rtm
   has-unicode-inverse: false
   is-letter-like: true
@@ -8475,7 +8716,9 @@ RightAngle:
   wl-unicode: "\u221F"
   wl-unicode-name: RIGHT ANGLE
 
+# Closing part of AngleBracket[] - an operator without a builtin-meaning
 RightAngleBracket:
+  ascii: "<"
   esc-alias: '>'
   has-unicode-inverse: false
   is-letter-like: false
@@ -8486,9 +8729,10 @@ RightAngleBracket:
   wl-unicode: "\u232A"
   wl-unicode-name: RIGHT-POINTING ANGLE BRACKET
 
-# Note: not the same as \[Rule]
+# Note: not the same as \[Rule] or \[DirectedEdge]
 RightArrow:
   amslatex: '\rightarrow'
+  ascii: "->"
   esc-alias: ' ->'
   has-unicode-inverse: false
   is-letter-like: false
@@ -8502,6 +8746,7 @@ RightArrow:
 
 RightArrowBar:
   amslatex: '\rightarrow |'
+  ascii: "->|"
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: RightArrowBar
@@ -8524,8 +8769,10 @@ RightArrowLeftArrow:
   wl-unicode: "\u21C4"
   wl-unicode-name: RIGHTWARDS ARROW OVER LEFTWARDS ARROW
 
-# Right part of "Association[]" operator
+# Closing of "Association[]" operator
 RightAssociation:
+  amslatex: '\vert\rangle'
+  ascii: '|>'
   esc-alias: '|>'
   has-unicode-inverse: false
   is-letter-like: false
@@ -8533,9 +8780,10 @@ RightAssociation:
   wl-reference: https://reference.wolfram.com/language/ref/character/RightAssociation.html
   wl-unicode: "\uF114"
 
+# Closing of "BracketingBar[]" operator without builtin-meaning
 # Note: not the same as \[VerticalBar]
-# Used in BracketingBar
 RightBracketingBar:
+  ascii: '|'
   esc-alias: r|
   has-unicode-inverse: false
   is-letter-like: false
@@ -8544,7 +8792,7 @@ RightBracketingBar:
   wl-reference: https://reference.wolfram.com/language/ref/character/RightBracketingBar.html
   wl-unicode: "\uF604"
 
-# Right part of "Ceiling[]" operator
+# Closing part of "Ceiling[]" operator
 RightCeiling:
   esc-alias: rc
   has-unicode-inverse: false
@@ -8563,18 +8811,19 @@ RightComposition:
   is-letter-like: false
   operator-name: RightComposition
 
-# Right part of "Part[] operator
+# Closing part of "Part[] operator
 RightDoubleBracket:
   esc-alias: ']]'
   has-unicode-inverse: false
   is-letter-like: false
-  operator-name: RightPart
+  operator-name: RightDoubleBracket
   unicode-equivalent: "\u301B"
   unicode-equivalent-name: RIGHT WHITE SQUARE BRACKET
   wl-reference: https://reference.wolfram.com/language/ref/character/RightDoubleBracket.html
   wl-unicode: "\u301B"
   wl-unicode-name: RIGHT WHITE SQUARE BRACKET
 
+# Closing part of DoubleBracketingBar[] - an operator without a builtin-meaning
 RightDoubleBracketingBar:
   ascii: "||"
   has-unicode-inverse: false
@@ -8634,6 +8883,7 @@ RightFloor:
   wl-unicode-name: RIGHT FLOOR
 
 RightGuillemet:
+  ascii: ">>"
   esc-alias: g>>
   has-unicode-inverse: false
   is-letter-like: true
@@ -8667,6 +8917,7 @@ RightPointer:
   wl-unicode-name: BLACK RIGHT-POINTING SMALL TRIANGLE
 
 RightSkeleton:
+  ascii: '>>'
   has-unicode-inverse: true
   is-letter-like: false
   unicode-equivalent: "\xBB"
@@ -8676,6 +8927,7 @@ RightSkeleton:
 
 RightTee:
   amslatex: '\vdash'
+  ascii: '|-'
   esc-alias: rT
   has-unicode-inverse: false
   operator-name: RightTee
@@ -8839,16 +9091,18 @@ RoundSpaceIndicator:
   wl-reference: https://reference.wolfram.com/language/ref/character/RoundSpaceIndicator.html
   wl-unicode: "\uF3B2"
 
-# Note: not the same as \[RightArrow]
+# Note: not the same as \[RightArrow] or \[DirectedEdge]
 Rule:
+  amslatex: '\to'
   ascii: "->"
   esc-alias: "->"
   has-unicode-inverse: false
   is-letter-like: false
   operator-name: Rule
-  unicode-equivalent: "\u2192"
-  unicode-equivalent-name: RIGHTWARDS ARROW
-  unicode-reference: https://www.compart.com/en/unicode/U+2192
+  unicode-equivalent: "\u21FE"
+  unicode-equivalent-name: RIGHTWARDS OPEN-HEADED ARROW
+  unicode-block: Arrows
+  unicode-reference: https://www.compart.com/en/unicode/U+21FE
   wl-reference: https://reference.wolfram.com/language/ref/character/Rule.html
   wl-unicode: "\uF522"
 
@@ -8866,10 +9120,11 @@ RuleDelayed:
   wl-unicode: "\uF51F"
 
 SHacek:
-  amslatex: "\v{s}"
+  ascii: 'sv'
   esc-alias: sv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{s}"
   unicode-equivalent: "\u0161"
   unicode-equivalent-name: LATIN SMALL LETTER S WITH CARON
   wl-reference: https://reference.wolfram.com/language/ref/character/SHacek.html
@@ -8877,6 +9132,7 @@ SHacek:
   wl-unicode-name: LATIN SMALL LETTER S WITH CARON
 
 SZ:
+  ascii: 'sz'
   esc-alias: sz
   has-unicode-inverse: false
   is-letter-like: false
@@ -9679,6 +9935,20 @@ SkeletonIndicator:
   wl-unicode: "\u2043"
   wl-unicode-name: HYPHEN BULLET
 
+# FIXME: These are commented out because
+# of bugs in ToString in Mathics3-core
+# Slot:
+#   ascii: "#"
+#   has-unicode-inverse: false
+#   is-letter-like: false
+#   operator-name: Slot
+
+# SlotSequence:
+#   ascii: "##"
+#   has-unicode-inverse: false
+#   is-letter-like: false
+#   operator-name: SlotSequence
+
 SmallCircle:
   amslatex: '\circ'
   esc-alias: sc
@@ -10053,9 +10323,10 @@ SystemsModelDelay:
   wl-unicode: "\uF3AF"
 
 THacek:
-  amslatex: '\v{t}'
+  ascii: 'tv'
   esc-alias: tv
   has-unicode-inverse: false
+  latex: "\\v{t}"
   is-letter-like: true
   unicode-equivalent: "\u0165"
   unicode-equivalent-name: LATIN SMALL LETTER T WITH CARON
@@ -10154,6 +10425,7 @@ ThinSpace:
   wl-unicode-name: THIN SPACE
 
 Thorn:
+  ascii: 'th'
   esc-alias: thn
   has-unicode-inverse: false
   is-letter-like: false
@@ -10163,10 +10435,8 @@ Thorn:
   wl-unicode: "\xFE"
   wl-unicode-name: LATIN SMALL LETTER THORN
 
-# See also operator Infix.
 # Tilde has no built-in meaning per the documentation,
 # so it is not the same as RawTilde.
-# Yes, it is confusing.
 Tilde:
   amslatex: '\sim'
   esc-alias: '~'
@@ -10269,10 +10539,11 @@ TripleDot:
   wl-unicode: "\uF758"
 
 UAcute:
-  amslatex: "\\'{u}"
+  ascii: "u'"
   esc-alias: u'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{u}"
   unicode-equivalent: "\xFA"
   unicode-equivalent-name: LATIN SMALL LETTER U WITH ACUTE
   wl-reference: https://reference.wolfram.com/language/ref/character/UAcute.html
@@ -10280,6 +10551,7 @@ UAcute:
   wl-unicode-name: LATIN SMALL LETTER U WITH ACUTE
 
 UDoubleAcute:
+  ascii: "u''"
   esc-alias: u''
   has-unicode-inverse: false
   is-letter-like: true
@@ -10290,6 +10562,7 @@ UDoubleAcute:
   wl-unicode-name: LATIN SMALL LETTER U WITH DOUBLE ACUTE
 
 UDoubleDot:
+  ascii: 'u"'
   esc-alias: u"
   has-unicode-inverse: false
   is-letter-like: true
@@ -10300,10 +10573,11 @@ UDoubleDot:
   wl-unicode-name: LATIN SMALL LETTER U WITH DIAERESIS
 
 UGrave:
-  amslatex: "\\`{u}"
+  ascii: 'u`'
   esc-alias: u`
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\`{u}"
   unicode-equivalent: "\xF9"
   unicode-equivalent-name: LATIN SMALL LETTER U WITH GRAVE
   wl-reference: https://reference.wolfram.com/language/ref/character/UGrave.html
@@ -10311,6 +10585,7 @@ UGrave:
   wl-unicode-name: LATIN SMALL LETTER U WITH GRAVE
 
 UHat:
+  ascii: 'u^'
   esc-alias: u^
   has-unicode-inverse: false
   is-letter-like: true
@@ -10321,6 +10596,7 @@ UHat:
   wl-unicode-name: LATIN SMALL LETTER U WITH CIRCUMFLEX
 
 URing:
+  ascii: 'uo'
   esc-alias: uo
   has-unicode-inverse: false
   is-letter-like: true
@@ -10805,12 +11081,14 @@ Xi:
 Xnor:
   esc-alias: xnor
   has-unicode-inverse: false
+  operator-name: Xnor
   is-letter-like: false
   wl-reference: https://reference.wolfram.com/language/ref/character/Xnor.html
   wl-unicode: "\uF4A2"
 
 Xor:
   amslatex: '\oplus' # The WL veebar-looking symbol isn't in AMSLaTeX
+  ascii: 'xor'
   esc-alias: xor
   has-unicode-inverse: false
   is-letter-like: false
@@ -10823,10 +11101,11 @@ Xor:
   wl-unicode-name: XOR
 
 YAcute:
-  amslatex: "\\'{y}"
+  ascii: "y'"
   esc-alias: y'
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\'{y}"
   unicode-equivalent: "\xFD"
   unicode-equivalent-name: LATIN SMALL LETTER Y WITH ACUTE
   unicode-reference: https://www.compart.com/en/unicode/U+00FD
@@ -10835,6 +11114,7 @@ YAcute:
   wl-unicode-name: LATIN SMALL LETTER Y WITH ACUTE
 
 YDoubleDot:
+  ascii: 'y"'
   esc-alias: y"
   has-unicode-inverse: false
   is-letter-like: true
@@ -10856,10 +11136,11 @@ Yen:
   wl-unicode-name: YEN SIGN
 
 ZHacek:
-  amslatex: '\v{z}'
+  ascii: 'zv'
   esc-alias: zv
   has-unicode-inverse: false
   is-letter-like: true
+  latex: "\\v{z}"
   unicode-equivalent: "\u017E"
   unicode-equivalent-name: LATIN SMALL LETTER Z WITH CARON
   unicode-reference: https://www.compart.com/en/unicode/U+017E

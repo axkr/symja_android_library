@@ -833,6 +833,22 @@ public abstract class Scanner {
   }
 
   /**
+   * Report a named character <code>\[Name]</code> whose name is unknown. The name is the text up
+   * to the <code>]</code>, or up to the end of the line or of a string if there is none.
+   *
+   * @param nameStart the position after <code>\[</code>
+   */
+  private void throwUnknownLongname(int nameStart) throws SyntaxError {
+    int end = nameStart;
+    while (end < fInputString.length && fInputString[end] != ']' && fInputString[end] != '\n'
+        && fInputString[end] != '"') {
+      end++;
+    }
+    throwSyntaxError(
+        "Unknown unicode longname " + new String(fInputString, nameStart, end - nameStart) + ".");
+  }
+
+  /**
    * The length of a box delimiter at <code>position</code>: <code>2</code> for a backslash followed
    * by <code>ascii</code>, <code>1</code> for the character WMA keeps for it in a string, and
    * <code>0</code> if there is none.
@@ -933,6 +949,11 @@ public abstract class Scanner {
             && scanBoxEscape(tokenStart)) {
           fToken = TT_BOX_ESCAPE;
           return;
+        }
+        if (fCurrentChar == '\\' && tokenStart + 1 < fInputString.length
+            && fInputString[tokenStart + 1] == '[') {
+          // the known names were replaced by their characters before scanning
+          throwUnknownLongname(tokenStart + 2);
         }
         if (fCurrentChar == '\n') {
           fRowCounter++;
@@ -1479,6 +1500,10 @@ public abstract class Scanner {
               break;
             case '`':
               ident.append(BOX_FORM);
+              break;
+            case '[':
+              // the known names were replaced by their characters before scanning
+              throwUnknownLongname(fCurrentPosition);
               break;
             case '\n':
               fRowCounter++;

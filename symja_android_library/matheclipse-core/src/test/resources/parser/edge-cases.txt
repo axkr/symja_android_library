@@ -371,3 +371,16 @@ _?NumberQ?Positive&
 \\)
 \\!
 \\*
+#| ============================================================ letter-like named characters
+#| used in symbol names like letters; Degree, Infinity and the prefix operators keep their meaning
+\\[EmptySet]
+f[x, \\[EmptySmallCircle]]
+x\\[EmptySet]
+\\[DoubleStruckCapitalR]x = 3
+\\[GothicCapitalA] \\[Mho]
+\\[Degree]
+\\[DiscreteRatio] x
+#| an unknown named character is a syntax error, also in a string
+\\[Fake]
+"\\[Fake]"
+\\[Theta

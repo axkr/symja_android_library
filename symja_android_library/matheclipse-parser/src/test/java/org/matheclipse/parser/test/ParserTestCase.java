@@ -792,4 +792,66 @@ class ParserTestCase {
         "Plus(Plus(Power(Derivative(1)[f][x], 2), Times(2, Derivative(1)[g][x])), Times(-1, Times(g(x), Derivative(1)[h][x])))",
         obj.toString());
   }
+
+  @Test
+  void testLetterLikeNamedCharacters() {
+    // letter-like named characters are used in symbol names like letters
+    assertEquals("\u2205", PARSE_UNRELAXED.parse("\\[EmptySet]").toString());
+    assertEquals("f(x, \u25E6)", PARSE_UNRELAXED.parse("f[x, \\[EmptySmallCircle]]").toString());
+    assertEquals("x\u2205", PARSE_UNRELAXED.parse("x\\[EmptySet]").toString());
+    assertEquals("Set(\uF7B5x, 3)",
+        PARSE_UNRELAXED.parse("\\[DoubleStruckCapitalR]x = 3").toString());
+    assertEquals("Times(\uF6E6, \u2127)",
+        PARSE_UNRELAXED.parse("\\[DoubleStruckA] \\[Mho]").toString());
+    // these keep their meaning
+    assertEquals("Degree", PARSE_UNRELAXED.parse("\\[Degree]").toString());
+    assertEquals("Infinity", PARSE_UNRELAXED.parse("\\[Infinity]").toString());
+    assertEquals("DiscreteRatio(x)", PARSE_UNRELAXED.parse("\\[DiscreteRatio] x").toString());
+  }
+
+  @Test
+  void testUnknownLongname() {
+    // the name is the text up to "]", or up to the end of the line or string
+    assertUnknownLongname("Fake", "\\[Fake]");
+    assertUnknownLongname("Fake", "f[\"\\[Fake]\"]");
+    assertUnknownLongname("Alpha\\", "f[\\[Alpha\\]]");
+    assertUnknownLongname("Theta", "\\[Theta");
+  }
+
+  private static void assertUnknownLongname(String name, String input) {
+    Exception e = assertThrows(Exception.class, () -> PARSE_UNRELAXED.parse(input));
+    assertTrue(e.getMessage().startsWith(
+        "Syntax error in line: 1 - Unknown unicode longname " + name + ".\n"), e.getMessage());
+  }
+
+  @Test
+  void testLetterLikeTableMatchesScannerData() throws java.io.IOException {
+    // Characters.isLetterLike() is the is-letter-like column of Mathics3-scanner's
+    // named-characters.yml, apart from the characters which have another meaning here
+    java.util.Set<String> otherMeaning = new java.util.HashSet<>(java.util.Arrays.asList(
+        "DiscreteRatio", "CapitalDifferentialD", "Section", "Infinity", "Degree", "ExponentialE",
+        "ImaginaryI", "ImaginaryJ"));
+    java.util.Map<String, java.util.Map<String, Object>> data;
+    try (java.io.InputStream in =
+        getClass().getClassLoader().getResourceAsStream("data/named-characters.yml")) {
+      data = new org.yaml.snakeyaml.Yaml().load(in);
+    }
+    java.util.TreeSet<Character> expected = new java.util.TreeSet<>();
+    for (java.util.Map.Entry<String, java.util.Map<String, Object>> entry : data.entrySet()) {
+      java.util.Map<String, Object> properties = entry.getValue();
+      Object unicode = properties.get("wl-unicode");
+      if (Boolean.TRUE.equals(properties.get("is-letter-like")) && unicode instanceof String
+          && ((String) unicode).length() == 1 && ((String) unicode).charAt(0) >= 128
+          && !otherMeaning.contains(entry.getKey())) {
+        expected.add(((String) unicode).charAt(0));
+      }
+    }
+    java.util.TreeSet<Character> actual = new java.util.TreeSet<>();
+    for (char ch = 128; ch < Character.MAX_VALUE; ch++) {
+      if (org.matheclipse.parser.client.Characters.isLetterLike(ch)) {
+        actual.add(ch);
+      }
+    }
+    assertEquals(expected, actual);
+  }
 }

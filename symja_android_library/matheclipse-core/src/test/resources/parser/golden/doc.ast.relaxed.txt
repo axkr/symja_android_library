@@ -5086,7 +5086,7 @@ z == ProductLog(z) * E ^ ProductLog(z)	Equal(z, Times(ProductLog(z), Power(E, Pr
 {Positive(0), NonNegative(0)}	List(Positive(0), NonNegative(0))
 {Unequal(), Unequal(x), Unequal(1)}	List(Unequal(), Unequal(x), Unequal(1))
 {VertexCount(ButterflyGraph(3)), EdgeCount(ButterflyGraph(3))}	List(VertexCount(ButterflyGraph(3)), EdgeCount(ButterflyGraph(3)))
-{\\[Eta], \\[CapitalGamma]\\[Beta], Z\\[Infinity], \\[Angle]XYZ, \\[FilledSquare]r, i\\[Ellipsis]j}	!syntax@13: unexpected (named unicode) character: '\\[Angle]'
+{\\[Eta], \\[CapitalGamma]\\[Beta], Z\\[Infinity], \\[Angle]XYZ, \\[FilledSquare]r, i\\[Ellipsis]j}	List(η, Γβ, Times(Z, Infinity), ∠XYZ, ■r, i…j)
 {a*b == b*a, a ** b == b ** a}	List(Equal(Times(a, b), Times(b, a)), Equal(NonCommutativeMultiply(a, b), NonCommutativeMultiply(b, a)))
 {a, Nothing, Nothing, d}	List(a, Nothing, Nothing, d)
 {a, b, c, d}[[{1, 3, 3}]]	Part(List(a, b, c, d), List(1, 3, 3))

@@ -5493,6 +5493,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // }
 
   @Test
+  public void testLetterLikeNamedCharacters() {
+    // a letter-like named character is used in a symbol name like a letter
+    check("x\\[EmptySet] = 3; x\\[EmptySet] + 1", //
+        "4");
+    check("Infix(t(a, b), \\[EmptySmallCircle])", //
+        "a \u25E6 b");
+    check("Head(\\[GothicCapitalA])", //
+        "Symbol");
+    // Syntax error in line: 1 - Unknown unicode longname Fake.
+    check("StringLength(\"\\[Fake]\")", //
+        "Syntax error in line: 1 - Unknown unicode longname Fake.\n" //
+            + "StringLength(\"\\[Fake]\")\n" //
+            + "               ^");
+  }
+
+  @Test
   public void testDegree() {
     check("\\[Pi]", //
         "Pi");

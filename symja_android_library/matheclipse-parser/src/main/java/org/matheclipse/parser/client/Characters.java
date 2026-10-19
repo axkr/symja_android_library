@@ -584,7 +584,7 @@ public class Characters {
       return ASCII_IDENTIFIER_START[ch];
     }
     return (Character.isJavaIdentifierStart(ch) && (ch != '_'))
-        || isFormalLatinLetter(ch);
+        || isFormalLatinLetter(ch) || isLetterLike(ch);
   }
 
   /**
@@ -615,6 +615,87 @@ public class Characters {
   }
 
   /**
+   * Test if <code>ch</code> is a letter-like named character, which may be used in a symbol name
+   * like a letter: <code>\[EmptySet]</code>, <code>\[DoubleStruckCapitalR]</code>,
+   * <code>\[GothicCapitalA]</code>, <code>\[Mho]</code>, ...
+   *
+   * @param ch the character to be tested
+   * @return <code>true</code> if <code>ch</code> is one of {@link #LETTER_LIKE}
+   */
+  public static boolean isLetterLike(char ch) {
+    return ch >= 128 && java.util.Arrays.binarySearch(LETTER_LIKE, ch) >= 0;
+  }
+
+  /**
+   * The letter-like named characters at or above 128, sorted: the <code>wl-unicode</code> values of
+   * the entries marked <code>is-letter-like</code> in Mathics3-scanner's
+   * <code>named-characters.yml</code> (a copy is in the test resources of this module). Left out are
+   * the characters which have another meaning here: <code>\[DiscreteRatio]</code> and
+   * <code>\[CapitalDifferentialD]</code> are prefix operators, <code>\[Section]</code> marks names
+   * which cannot be typed, and <code>\[Infinity]</code>, <code>\[Degree]</code>,
+   * <code>\[ExponentialE]</code>, <code>\[ImaginaryI]</code>, <code>\[ImaginaryJ]</code> stand
+   * for a symbol on their own (see {@link #CharacterNamesMap}).
+   */
+  private static final char[] LETTER_LIKE = {
+      '\u00A1', '\u00A3', '\u00A5', '\u00AB', '\u00AE', '\u00B5', '\u00B6', '\u00BB',
+      '\u00C0', '\u00C1', '\u00C2', '\u00C3', '\u00C4', '\u00C5', '\u00C6', '\u00C7',
+      '\u00C8', '\u00C9', '\u00CA', '\u00CB', '\u00CC', '\u00CD', '\u00CE', '\u00CF',
+      '\u00D0', '\u00D1', '\u00D2', '\u00D3', '\u00D4', '\u00D5', '\u00D6', '\u00D8',
+      '\u00D9', '\u00DA', '\u00DB', '\u00DC', '\u00DD', '\u00DE', '\u00E0', '\u00E1',
+      '\u00E2', '\u00E3', '\u00E4', '\u00E5', '\u00E6', '\u00E7', '\u00E8', '\u00E9',
+      '\u00EA', '\u00EB', '\u00EC', '\u00ED', '\u00EE', '\u00EF', '\u00F1', '\u00F2',
+      '\u00F3', '\u00F4', '\u00F8', '\u00F9', '\u00FA', '\u00FB', '\u00FC', '\u00FD',
+      '\u00FF', '\u0100', '\u0101', '\u0102', '\u0103', '\u0106', '\u0107', '\u010C',
+      '\u010D', '\u010E', '\u010F', '\u0112', '\u0113', '\u0114', '\u0115', '\u011A',
+      '\u011B', '\u012C', '\u012D', '\u0131', '\u0141', '\u0142', '\u0147', '\u0148',
+      '\u0150', '\u0151', '\u0152', '\u0158', '\u0159', '\u0160', '\u0161', '\u0164',
+      '\u0165', '\u016E', '\u016F', '\u0170', '\u0171', '\u017D', '\u017E', '\u02C7',
+      '\u0391', '\u0392', '\u0393', '\u0394', '\u0395', '\u0396', '\u0397', '\u0398',
+      '\u0399', '\u039A', '\u039B', '\u039C', '\u039D', '\u039E', '\u039F', '\u03A0',
+      '\u03A1', '\u03A3', '\u03A4', '\u03A5', '\u03A6', '\u03A7', '\u03A8', '\u03A9',
+      '\u03B1', '\u03B2', '\u03B8', '\u03BC', '\u03C6', '\u03C7', '\u03D1', '\u03D6',
+      '\u03DA', '\u03DC', '\u03DD', '\u03DE', '\u03E0', '\u03F0', '\u03F1', '\u2026',
+      '\u2032', '\u2035', '\u2036', '\u2060', '\u210A', '\u210B', '\u210C', '\u210F',
+      '\u2110', '\u2111', '\u2112', '\u2113', '\u2118', '\u211B', '\u211C', '\u2122',
+      '\u2127', '\u2128', '\u212B', '\u212C', '\u212D', '\u212F', '\u2130', '\u2131',
+      '\u2133', '\u2134', '\u2135', '\u2136', '\u21B5', '\u2205', '\u2220', '\u25A0',
+      '\u25A1', '\u25AA', '\u25AE', '\u25AF', '\u25B2', '\u25B3', '\u25BC', '\u25BD',
+      '\u25C0', '\u25C6', '\u25C7', '\u25CB', '\u25E6', '\u25FB', '\u25FC', '\u2605',
+      '\u2639', '\u263A', '\u2660', '\u2661', '\u266A', '\u266D', '\u266E', '\u266F',
+      '\u2736', '\uF3A0', '\uF3B8', '\uF3B9', '\uF527', '\uF528', '\uF6B2', '\uF6B3',
+      '\uF6B4', '\uF6B5', '\uF6B7', '\uF6B9', '\uF6BA', '\uF6BB', '\uF6BC', '\uF6BE',
+      '\uF6BF', '\uF6C1', '\uF6C2', '\uF6C3', '\uF6C4', '\uF6C5', '\uF6C6', '\uF6C7',
+      '\uF6C8', '\uF6C9', '\uF6CA', '\uF6CB', '\uF6CC', '\uF6CD', '\uF6CE', '\uF6CF',
+      '\uF6D0', '\uF6D1', '\uF6D2', '\uF6D3', '\uF6D4', '\uF6D5', '\uF6D6', '\uF6D7',
+      '\uF6D8', '\uF6D9', '\uF6DA', '\uF6DB', '\uF6DC', '\uF6DD', '\uF6DE', '\uF6DF',
+      '\uF6E0', '\uF6E1', '\uF6E2', '\uF6E3', '\uF6E4', '\uF6E5', '\uF6E6', '\uF6E7',
+      '\uF6E8', '\uF6E9', '\uF6EA', '\uF6EB', '\uF6EC', '\uF6ED', '\uF6EE', '\uF6EF',
+      '\uF6F0', '\uF6F1', '\uF6F2', '\uF6F3', '\uF6F4', '\uF6F5', '\uF6F6', '\uF6F7',
+      '\uF6F8', '\uF6F9', '\uF6FA', '\uF6FB', '\uF6FC', '\uF6FD', '\uF6FE', '\uF6FF',
+      '\uF700', '\uF720', '\uF721', '\uF722', '\uF723', '\uF725', '\uF730', '\uF731',
+      '\uF749', '\uF74A', '\uF750', '\uF752', '\uF753', '\uF754', '\uF756', '\uF757',
+      '\uF760', '\uF763', '\uF766', '\uF768', '\uF769', '\uF76B', '\uF76C', '\uF770',
+      '\uF772', '\uF773', '\uF776', '\uF779', '\uF77A', '\uF77D', '\uF77E', '\uF77F',
+      '\uF780', '\uF782', '\uF783', '\uF784', '\uF785', '\uF786', '\uF787', '\uF788',
+      '\uF789', '\uF78A', '\uF78B', '\uF78D', '\uF78E', '\uF78F', '\uF790', '\uF793',
+      '\uF794', '\uF795', '\uF796', '\uF797', '\uF798', '\uF799', '\uF79A', '\uF79C',
+      '\uF79D', '\uF79E', '\uF79F', '\uF7A0', '\uF7A1', '\uF7A2', '\uF7A4', '\uF7A5',
+      '\uF7A6', '\uF7A7', '\uF7A8', '\uF7A9', '\uF7AA', '\uF7AB', '\uF7AC', '\uF7AD',
+      '\uF7AE', '\uF7AF', '\uF7B0', '\uF7B1', '\uF7B2', '\uF7B3', '\uF7B4', '\uF7B5',
+      '\uF7B6', '\uF7B7', '\uF7B8', '\uF7B9', '\uF7BA', '\uF7BB', '\uF7BC', '\uF7BD',
+      '\uF7D4', '\uF7DA', '\uF7DC', '\uF7E3', '\uF800', '\uF801', '\uF802', '\uF803',
+      '\uF804', '\uF805', '\uF806', '\uF807', '\uF808', '\uF809', '\uF80A', '\uF80B',
+      '\uF80C', '\uF80D', '\uF80E', '\uF80F', '\uF810', '\uF811', '\uF812', '\uF813',
+      '\uF814', '\uF815', '\uF816', '\uF817', '\uF818', '\uF819', '\uF81A', '\uF81B',
+      '\uF81C', '\uF81D', '\uF81E', '\uF81F', '\uF820', '\uF821', '\uF822', '\uF823',
+      '\uF824', '\uF825', '\uF826', '\uF827', '\uF828', '\uF829', '\uF82A', '\uF82B',
+      '\uF82C', '\uF82D', '\uF82E', '\uF82F', '\uF830', '\uF831', '\uF832', '\uF833',
+      '\uF836', '\uF837', '\uF838', '\uF839', '\uF83A', '\uF83C', '\uF83D', '\uF83E',
+      '\uF83F', '\uF840', '\uF841', '\uF842', '\uF84A', '\uF84C', '\uF875', '\uF87F',
+      '\uF881', '\uFB02', '\uFE35', '\uFE36', '\uFE37', '\uFE38'
+  };
+
+  /**
    * Determines if the specified character may be part of a Symja identifier as other than the first
    * character.
    *
@@ -633,7 +714,7 @@ public class Characters {
     }
     return (Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '`') // context name
                                                                               // separator character
-        || isFormalLatinLetter(ch);
+        || isFormalLatinLetter(ch) || isLetterLike(ch);
   }
 
   /**
