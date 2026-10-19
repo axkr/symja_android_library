@@ -13184,6 +13184,148 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNSolveComplexCoefficients() {
+    // all roots of polynomials with complex coefficients above degree four
+    check("sol = NSolve(x^5 + (2 - I)*x^3 + 4 == 0, x); "
+        + "{Length(sol), Max(Abs(x^5 + (2 - I)*x^3 + 4 /. sol)) < 10^-12}", //
+        "{5,True}");
+    check("sol = NSolve(x^6 - 3*I*x + 2 == 0, x); "
+        + "{Length(sol), Max(Abs(x^6 - 3*I*x + 2 /. sol)) < 10^-12}", //
+        "{6,True}");
+    check("sol = NSolve(x^2*(x^3 + I) == 0, x); {Length(sol), Count(sol, {x -> 0})}", //
+        "{5,2}");
+    // a double and a triple root with inexact coefficients
+    check("p = Expand((x - (0.25 - 2*I))^2*(x^3 - 2.5)); sol = NSolve(p == 0, x); "
+        + "{Length(sol), Max(Abs(p /. sol)) < 10^-10}", //
+        "{5,True}");
+    check("Length(NSolve(Expand((x - (1 + I/2))^3*(x^2 + 0.5)) == 0, x))", //
+        "5");
+  }
+
+  @Test
+  public void testFullFormSequencePattern() {
+    check("FullForm(Hold(y___))", //
+        "Hold(Pattern(y, BlankNullSequence()))");
+    check("FullForm(Hold(y__Real))", //
+        "Hold(Pattern(y, BlankSequence(Real)))");
+    check("FullForm(Hold(y__ : 2))", //
+        "Hold(Optional(Pattern(y, BlankSequence()), 2))");
+  }
+
+  @Test
+  public void testNestedFlatOperatorOutput() {
+    // a nested argument with the same n-ary operator keeps its parentheses
+    check("Hold(p . (q . r))", //
+        "Hold(p.(q.r))");
+    check("Hold((p ** q) ** r)", //
+        "Hold((p**q)**r)");
+    check("Hold(u && (v && w))", //
+        "Hold(u&&(v&&w))");
+    check("Hold(p . q . r)", //
+        "Hold(p.q.r)");
+    check("ToExpression(ToString(Hold(p . (q . r)), InputForm)) === Hold(p . (q . r))", //
+        "True");
+  }
+
+  @Test
+  public void testNDSolveRanges() {
+    // a range from 0 down to -1
+    check("NDSolve({y'(s) == 2*y(s), y(0) == 1}, y, {s, 0, -1})", //
+        "{{y->InterpolatingFunction({{-1.0,0.0}},<>)}}");
+    check("Abs(y(-1) - Exp(-2)) < 10^-6 /. First(NDSolve({y'(s) == 2*y(s), y(0) == 1}, y, {s, 0, -1}))", //
+        "True");
+    // a call of the function to solve for is no independent variable
+    check("NDSolve({y'(s) == y(s), y(0) == 1}, y, {y(s), 0, 1})", //
+        "NDSolve({y'(s)==y(s),y(0)==1},y,{y(s),0,1})");
+    // an independent variable which isn't a symbol
+    check("f = NDSolveValue({w'(Subscript(b, 1)) == -2*w(Subscript(b, 1)), w(0) == 1}, w, "
+        + "{Subscript(b, 1), 0, 1}); Abs(f(1) - Exp(-2)) < 10^-6", //
+        "True");
+  }
+
+  @Test
+  public void testListCorrelateAlignment() {
+    check("ListConvolve({x, y}, {a, b, c}, 1)", //
+        "{a*x+c*y,b*x+a*y,c*x+b*y}");
+    check("ListCorrelate({x, y}, {a, b, c}, 1)", //
+        "{a*x+b*y,b*x+c*y,c*x+a*y}");
+    check("ListCorrelate({x, y}, {a, b, c}, {2, 1}, {u, v})", //
+        "{v*x+a*y,a*x+b*y,b*x+c*y,c*x+v*y}");
+    check("ListCorrelate({x, y}, {a, b, c}, {-1, 1}, 0)", //
+        "{a*y,a*x+b*y,b*x+c*y,c*x}");
+    check("ListConvolve({x, y}, {a, b, c}, {1, 2}, p)", //
+        "{a*x+p*y,b*x+a*y,c*x+b*y,p*x+c*y}");
+    check("ListConvolve({{1, 0}, {2, 1}}, {{1, 2}, {3, 4}}, 1, 0)", //
+        "{{1,2},{5,9}}");
+    check("ListCorrelate({{1, 1}, {1, 1}}, {{1, 2}, {3, 4}}, 1)", //
+        "{{10,10},{10,10}}");
+    check("ListCorrelate({{1, 0}, {0, 2}}, {{1, 2, 3}, {4, 5, 6}}, {{1, 1}, {2, 2}}, {{7, 8}, {9, 10}})", //
+        "{{11,14}}");
+    // the padding list is repeated cyclically from the first position of the list
+    check("ListConvolve({1, 2}, {1, 2, 3}, 1, {10, 20})", //
+        "{41,4,7}");
+    // the alignment is an index of the kernel
+    check("ListConvolve({x, y}, {a, b, c}, 3)", //
+        "ListConvolve({x,y},{a,b,c},3)");
+  }
+
+  @Test
+  public void testStringPatternMetacharacters() {
+    // * and @ are wildcards in StringMatchQ only; elsewhere a string is literal
+    check("StringCases(\"x*y\", \"x*\")", //
+        "{x*}");
+    check("StringReplace(\"p*q\", \"p*\" -> \"Z\")", //
+        "Zq");
+    check("StringFreeQ(\"pqr\", \"p*\")", //
+        "True");
+    check("StringSplit(\"p*q*r\", \"*\")", //
+        "{p,q,r}");
+    check("StringCount(\"a*b*\", \"*\")", //
+        "2");
+    check("StringTrim(\"**x**\", \"*\")", //
+        "*x*");
+    check("StringMatchQ(\"pqr\", \"p@\")", //
+        "True");
+    check("StringMatchQ(\"pQr\", \"p@\")", //
+        "False");
+    // a backslash escapes * and @ only
+    check("StringMatchQ(\"pq\", \"p\\\\*\")", //
+        "False");
+    check("StringMatchQ(\"p*\", \"p\\\\*\")", //
+        "True");
+    check("StringMatchQ(\"p\\\\q\", \"p\\\\q\")", //
+        "True");
+  }
+
+  @Test
+  public void testSequenceAlignment() {
+    check("SequenceAlignment(\"flaw\", \"lawn\")", //
+        "{{f,},law,{,n}}");
+    check("SequenceAlignment(\"pqrs\", \"pXYs\", MergeDifferences -> True)", //
+        "{p,{qr,XY},s}");
+    check("SequenceAlignment({a, b, c}, {a, c})", //
+        "{{a},{{b},{}},{c}}");
+    check("SequenceAlignment(\"same\", \"same\")", //
+        "{same}");
+    check("SequenceAlignment(\"pq\", \"pq\", Weight -> 2)", //
+        "SequenceAlignment(pq,pq,weight->2)");
+  }
+
+  @Test
+  public void testColorDataRange() {
+    // a gradient spread over {min, max}; outside of it the color of the nearer end
+    check("ColorData({\"Rainbow\", {0, 4}})[1] === ColorData(\"Rainbow\")[0.25]", //
+        "True");
+    check("ColorData({\"Rainbow\", {0, 4}})[-3] === ColorData(\"Rainbow\")[0]", //
+        "True");
+    check("ColorData({\"Rainbow\", {2, 6}})[\"Range\"]", //
+        "{2,6}");
+    // a range from max to min runs backwards
+    check("ColorData({\"Rainbow\", {4, 0}})[1] === ColorData(\"Rainbow\")[0.75]", //
+        "True");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

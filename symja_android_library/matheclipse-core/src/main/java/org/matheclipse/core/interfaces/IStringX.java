@@ -375,7 +375,9 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         final int len = str.length();
         while (endIndex < len) {
           char c = str.charAt(endIndex);
-          if (c == '\\' && endIndex + 1 < len) {
+          if (c == '\\' && endIndex + 1 < len
+              && (str.charAt(endIndex + 1) == '*' || str.charAt(endIndex + 1) == '@')) {
+            // a backslash makes the following * or @ literal; any other backslash is itself
             pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
             pieces.append(Pattern.quote(str.substring(endIndex + 1, endIndex + 2)));
             endIndex += 2;

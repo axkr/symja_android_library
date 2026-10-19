@@ -114,6 +114,20 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
     }
 
     if (type.equals("Gradients")) {
+      if (functionAst.size() >= 4 && functionAst.arg3().isList2()) {
+        // a value of the range {min, max} at its relative position; outside of it the color of
+        // the nearer end
+        double min = functionAst.arg3().first().evalfNaN();
+        double max = functionAst.arg3().second().evalfNaN();
+        if ((min != 0.0 || max != 1.0) && min != max && !Double.isNaN(min)
+            && !Double.isNaN(max)) {
+          double value = param.evalfNaN();
+          if (Double.isNaN(value)) {
+            return F.NIL;
+          }
+          param = F.num(Math.min(1.0, Math.max(0.0, (value - min) / (max - min))));
+        }
+      }
       return evaluateGradient(name, param);
     } else if (type.equals("Indexed")) {
       return evaluateIndexed(name, param);

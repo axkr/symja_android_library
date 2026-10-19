@@ -1214,6 +1214,11 @@ public class RootsFunctions {
       GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
       if (polyRat == null) {
         result = rootsOfExprPolynomial(expr, variables, createSet, true);
+        if (result.isNIL() && numericSolutions && variables.argSize() == 1
+            && variables.arg1().isSymbol()) {
+          // complex coefficients of a degree above four: the roots numerically
+          result = complexCoefficientRoots(expr, (ISymbol) variables.arg1());
+        }
         if (result.isPresent()) {
           return rootsOfVariableEndProcessing(result, variables, denominator, createSet, sort,
               engine);
@@ -1392,12 +1397,17 @@ public class RootsFunctions {
    */
   public static IAST allNumericRoots(IExpr polynomial, ISymbol variable, EvalEngine engine) {
     double[] coefficients;
+    IExpr expanded = evalExpandAll(polynomial, engine);
     try {
-      coefficients = coefficients(evalExpandAll(polynomial, engine), variable);
+      coefficients = coefficients(expanded, variable);
     } catch (JASConversionException jce) {
       return F.NIL;
     }
-    if (coefficients == null || coefficients.length < 2) {
+    if (coefficients == null) {
+      // complex coefficients
+      return complexCoefficientRoots(expanded, variable);
+    }
+    if (coefficients.length < 2) {
       return F.NIL;
     }
     for (int i = 0; i < coefficients.length; i++) {
@@ -1527,6 +1537,167 @@ public class RootsFunctions {
     }
     return new java.math.BigDecimal(value).round(new java.math.MathContext(ROOT_ORDER_PRECISION))
         .doubleValue();
+  }
+
+  /**
+   * The roots of a polynomial with complex machine coefficients, as a list of numbers.
+   *
+   * @return <code>F.NIL</code> if the expression is no such polynomial
+   */
+  private static IASTMutable complexCoefficientRoots(IExpr polynomial, ISymbol variable) {
+    org.hipparchus.complex.Complex[] coefficients;
+    try {
+      ExprPolynomialRing ring = new ExprPolynomialRing(F.list(variable));
+      IAST list = ring.create(polynomial).coefficientList();
+      coefficients = new org.hipparchus.complex.Complex[list.argSize()];
+      for (int i = 1; i < list.size(); i++) {
+        IExpr value = list.get(i).evalNumber();
+        if (value == null || !value.isNumber()) {
+          return F.NIL;
+        }
+        coefficients[i - 1] = new org.hipparchus.complex.Complex(((INumber) value).reDoubleValue(),
+            ((INumber) value).imDoubleValue());
+      }
+    } catch (RuntimeException ex) {
+      Errors.rethrowsInterruptException(ex);
+      return F.NIL;
+    }
+    org.hipparchus.complex.Complex[] roots = allComplexRootsAberth(coefficients);
+    if (roots == null) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ListAlloc(roots.length);
+    for (org.hipparchus.complex.Complex root : roots) {
+      result.append(chopRoot(F.complexNum(root.getReal(), root.getImaginary())));
+    }
+    return result;
+  }
+
+  /**
+   * All roots of the polynomial <code>c[0] + c[1]*x + ... + c[n]*x^n</code> with complex
+   * coefficients, by the simultaneous iteration of Aberth and Ehrlich followed by Newton steps on
+   * each root.
+   *
+   * @return <code>null</code> if a coefficient is not finite or the iteration does not settle
+   */
+  public static org.hipparchus.complex.Complex[] allComplexRootsAberth(
+      org.hipparchus.complex.Complex[] c) {
+    int n = c.length - 1;
+    while (n > 0 && c[n].isZero()) {
+      n--;
+    }
+    if (n < 1) {
+      return null;
+    }
+    for (int i = 0; i <= n; i++) {
+      if (c[i].isNaN() || c[i].isInfinite()) {
+        return null;
+      }
+    }
+    // roots at zero
+    int zeros = 0;
+    while (zeros < n && c[zeros].isZero()) {
+      zeros++;
+    }
+    final int degree = n - zeros;
+    org.hipparchus.complex.Complex[] a = new org.hipparchus.complex.Complex[degree + 1];
+    for (int i = 0; i <= degree; i++) {
+      a[i] = c[i + zeros].divide(c[n]);
+    }
+    org.hipparchus.complex.Complex[] z = new org.hipparchus.complex.Complex[degree];
+    // start on a circle of the Cauchy-like radius, at angles which avoid symmetric positions
+    double radius = 0.0;
+    for (int k = 0; k < degree; k++) {
+      radius = Math.max(radius, Math.pow(a[k].norm(), 1.0 / (degree - k)));
+    }
+    radius = Math.max(radius, 1.0e-3);
+    for (int k = 0; k < degree; k++) {
+      double angle = 2.0 * Math.PI * k / degree + 0.4;
+      z[k] = new org.hipparchus.complex.Complex(radius * Math.cos(angle), radius * Math.sin(angle));
+    }
+    boolean converged = false;
+    for (int iteration = 0; iteration < 1000 && !converged; iteration++) {
+      converged = true;
+      for (int i = 0; i < degree; i++) {
+        org.hipparchus.complex.Complex[] value = evaluateWithDerivative(a, z[i]);
+        if (value[0].isZero()) {
+          continue;
+        }
+        org.hipparchus.complex.Complex ratio = value[0].divide(value[1]);
+        org.hipparchus.complex.Complex sum = org.hipparchus.complex.Complex.ZERO;
+        for (int j = 0; j < degree; j++) {
+          if (j != i) {
+            sum = sum.add(z[i].subtract(z[j]).reciprocal());
+          }
+        }
+        org.hipparchus.complex.Complex step =
+            ratio.divide(org.hipparchus.complex.Complex.ONE.subtract(ratio.multiply(sum)));
+        if (step.isNaN() || step.isInfinite()) {
+          return null;
+        }
+        z[i] = z[i].subtract(step);
+        if (step.norm() > 1.0e-15 * Math.max(1.0, z[i].norm())) {
+          converged = false;
+        }
+      }
+    }
+    if (!converged && !hasSmallResiduals(a, z)) {
+      // near a multiple root the steps stay at the size of the rounding errors, so the iteration
+      // doesn't settle although the roots are as accurate as machine numbers allow
+      return null;
+    }
+    for (int i = 0; i < degree; i++) {
+      // polish each root with Newton steps while they make the residual smaller
+      for (int k = 0; k < 3; k++) {
+        org.hipparchus.complex.Complex[] value = evaluateWithDerivative(a, z[i]);
+        if (value[1].isZero()) {
+          break;
+        }
+        org.hipparchus.complex.Complex next = z[i].subtract(value[0].divide(value[1]));
+        if (!(evaluateWithDerivative(a, next)[0].norm() < value[0].norm())) {
+          break;
+        }
+        z[i] = next;
+      }
+    }
+    org.hipparchus.complex.Complex[] roots = new org.hipparchus.complex.Complex[n];
+    for (int i = 0; i < zeros; i++) {
+      roots[i] = org.hipparchus.complex.Complex.ZERO;
+    }
+    System.arraycopy(z, 0, roots, zeros, degree);
+    return roots;
+  }
+
+  /**
+   * Whether every <code>z[i]</code> is a root of the polynomial with the coefficients
+   * <code>a</code> up to a relative backward error of <code>1e-10</code>.
+   */
+  private static boolean hasSmallResiduals(org.hipparchus.complex.Complex[] a,
+      org.hipparchus.complex.Complex[] z) {
+    for (org.hipparchus.complex.Complex x : z) {
+      double modulus = x.norm();
+      double scale = 0.0;
+      for (int k = a.length - 1; k >= 0; k--) {
+        scale = scale * modulus + a[k].norm();
+      }
+      double residual = evaluateWithDerivative(a, x)[0].norm();
+      if (!(residual <= 1.0e-10 * scale)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** <code>{p(x), p'(x)}</code> by Horner's scheme. */
+  private static org.hipparchus.complex.Complex[] evaluateWithDerivative(
+      org.hipparchus.complex.Complex[] a, org.hipparchus.complex.Complex x) {
+    org.hipparchus.complex.Complex p = a[a.length - 1];
+    org.hipparchus.complex.Complex derivative = org.hipparchus.complex.Complex.ZERO;
+    for (int i = a.length - 2; i >= 0; i--) {
+      derivative = derivative.multiply(x).add(p);
+      p = p.multiply(x).add(a[i]);
+    }
+    return new org.hipparchus.complex.Complex[] {p, derivative};
   }
 
   /**

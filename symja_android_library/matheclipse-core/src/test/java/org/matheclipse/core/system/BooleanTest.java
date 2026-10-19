@@ -741,7 +741,7 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     check("Equivalent(a \\[Implies] b,c)", //
         "c⇔(a⇒b)");
     check("Equivalent(a \\[Equivalent] b,c)", //
-        "c⇔a⇔b");
+        "c⇔(a⇔b)");
     check("Equivalent(a,b,True,c)", //
         "a&&b&&c");
     check("Equivalent(a)", //

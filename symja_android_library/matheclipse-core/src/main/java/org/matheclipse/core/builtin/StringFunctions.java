@@ -691,6 +691,125 @@ public final class StringFunctions {
     }
   }
 
+  /**
+   * <code>SequenceAlignment[a, b]</code>: the global alignment of two strings or two lists, as a
+   * list of the common runs and of the pairs <code>{partOfA, partOfB}</code> where they differ.
+   * A match scores 1, a mismatch and a gap -1; adjacent mismatches and gaps form one pair.
+   */
+  private static class SequenceAlignment extends AbstractFunctionEvaluator {
+    /** The largest score table, about 100 MB. */
+    private static final long MAX_ALIGNMENT_CELLS = 25_000_000L;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST3()) {
+        // MergeDifferences gives the same alignment either way
+        if (!ast.arg3().isRuleAST() || ast.arg3().first() != S.MergeDifferences) {
+          // Unknown option `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "optx", F.list(ast.arg3(), ast), engine);
+        }
+      }
+      IExpr a = ast.arg1();
+      IExpr b = ast.arg2();
+      final boolean strings = a.isString() && b.isString();
+      if (!strings && !(a.isList() && b.isList())) {
+        return F.NIL;
+      }
+      List<IExpr> x = strings ? LongestCommonSequence.characters(a.toString()) : elements((IAST) a);
+      List<IExpr> y = strings ? LongestCommonSequence.characters(b.toString()) : elements((IAST) b);
+      final int n = x.size();
+      final int m = y.size();
+      final long cells = (long) (n + 1) * (m + 1);
+      if (cells > MAX_ALIGNMENT_CELLS || cells > Config.MAX_AST_SIZE) {
+        // the score table grows with the product of the lengths
+        ASTElementLimitExceeded.throwIt(cells);
+      }
+      // score[i][j] is the best score of aligning x[i..] with y[j..]
+      int[][] score = new int[n + 1][m + 1];
+      for (int i = n; i >= 0; i--) {
+        engine.checkTimeLimit();
+        for (int j = m; j >= 0; j--) {
+          if (i == n || j == m) {
+            score[i][j] = -(n - i) - (m - j);
+          } else {
+            int diagonal = score[i + 1][j + 1] + (x.get(i).equals(y.get(j)) ? 1 : -1);
+            score[i][j] =
+                Math.max(diagonal, Math.max(score[i + 1][j] - 1, score[i][j + 1] - 1));
+          }
+        }
+      }
+      IASTAppendable result = F.ListAlloc();
+      List<IExpr> common = new java.util.ArrayList<>();
+      List<IExpr> partOfA = new java.util.ArrayList<>();
+      List<IExpr> partOfB = new java.util.ArrayList<>();
+      int i = 0;
+      int j = 0;
+      while (i < n || j < m) {
+        if (i < n && j < m && x.get(i).equals(y.get(j))
+            && score[i][j] == score[i + 1][j + 1] + 1) {
+          appendDifference(result, partOfA, partOfB, strings);
+          common.add(x.get(i));
+          i++;
+          j++;
+          continue;
+        }
+        appendCommon(result, common, strings);
+        if (i < n && j < m && !x.get(i).equals(y.get(j))
+            && score[i][j] == score[i + 1][j + 1] - 1) {
+          partOfA.add(x.get(i++));
+          partOfB.add(y.get(j++));
+        } else if (i < n && (j == m || score[i][j] == score[i + 1][j] - 1)) {
+          partOfA.add(x.get(i++));
+        } else {
+          partOfB.add(y.get(j++));
+        }
+      }
+      appendCommon(result, common, strings);
+      appendDifference(result, partOfA, partOfB, strings);
+      return result;
+    }
+
+    private static List<IExpr> elements(IAST list) {
+      List<IExpr> result = new java.util.ArrayList<>(list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        result.add(list.get(i));
+      }
+      return result;
+    }
+
+    private static IExpr join(List<IExpr> parts, boolean strings) {
+      if (strings) {
+        StringBuilder buf = new StringBuilder();
+        parts.forEach(c -> buf.append(c.toString()));
+        return F.stringx(buf.toString());
+      }
+      IASTAppendable list = F.ListAlloc(parts.size());
+      parts.forEach(list::append);
+      return list;
+    }
+
+    private static void appendCommon(IASTAppendable result, List<IExpr> common, boolean strings) {
+      if (!common.isEmpty()) {
+        result.append(join(common, strings));
+        common.clear();
+      }
+    }
+
+    private static void appendDifference(IASTAppendable result, List<IExpr> partOfA,
+        List<IExpr> partOfB, boolean strings) {
+      if (!partOfA.isEmpty() || !partOfB.isEmpty()) {
+        result.append(F.list(join(partOfA, strings), join(partOfB, strings)));
+        partOfA.clear();
+        partOfB.clear();
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+  }
+
   private static class FileNameJoin extends AbstractFunctionEvaluator {
 
     @Override
@@ -971,6 +1090,7 @@ public final class StringFunctions {
       S.ToFileName.setEvaluator(new ToFileName());
       S.LongestCommonSequence.setEvaluator(new LongestCommonSequence(false));
       S.LongestCommonSubsequence.setEvaluator(new LongestCommonSequence(true));
+      S.SequenceAlignment.setEvaluator(new SequenceAlignment());
       S.FileNameTake.setEvaluator(new FileNameTake());
       S.FromCharacterCode.setEvaluator(new FromCharacterCode());
       S.FromLetterNumber.setEvaluator(new FromLetterNumber());

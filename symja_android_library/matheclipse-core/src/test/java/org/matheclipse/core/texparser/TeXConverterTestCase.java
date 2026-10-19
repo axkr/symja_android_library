@@ -176,6 +176,15 @@ public class TeXConverterTestCase  {
   }
 
   @Test
+  public void testTeXUnequalChain() {
+    // Unequal(a, b, c) would also say a != c
+    check("a \\neq b \\neq c", //
+        "(a!=b)!=c");
+    check("a = b = c", //
+        "a==b==c");
+  }
+
+  @Test
   public void testTeX021() {
     check("((a \\lor \\lnot b) \\land (c\\wedge a))", //
         "(a||!b)&&c&&a");

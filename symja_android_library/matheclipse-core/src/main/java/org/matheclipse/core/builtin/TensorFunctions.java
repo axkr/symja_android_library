@@ -911,6 +911,9 @@ public class TensorFunctions {
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 3) {
+        return ListCorrelate.aligned(ast, true);
+      }
       if (ast.isAST2()) {
         // normalize both arguments, as ListCorrelate does, so that a SparseArray kernel is
         // accepted rather than left unevaluated
@@ -974,7 +977,7 @@ public class TensorFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_4;
     }
   }
 
@@ -1009,6 +1012,9 @@ public class TensorFunctions {
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 3) {
+        return aligned(ast, false);
+      }
       if (ast.isAST2()) {
         IExpr k = ast.arg1().normal(false);
         IExpr t = ast.arg2().normal(false);
@@ -1024,6 +1030,171 @@ public class TensorFunctions {
 
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>ListCorrelate(ker, list, k)</code> or <code>ListCorrelate(ker, list, k, p)</code> and
+     * the same forms of <code>ListConvolve</code>. The alignment <code>k</code> is an index of the
+     * kernel, <code>{kL, kR}</code> or <code>{{kL1, kL2, ...}, {kR1, kR2, ...}}</code>: the first
+     * element of the result contains <code>ker[[kL]]*list[[1]]</code>, the last one
+     * <code>ker[[kR]]*list[[-1]]</code>. Positions outside of <code>list</code> are taken
+     * cyclically from <code>list</code> itself, from the cyclically repeated padding list
+     * <code>p</code>, or are the value <code>p</code>.
+     *
+     * @param convolve <code>true</code> for <code>ListConvolve</code>
+     * @return {@link F#NIL} if the arguments don't fit
+     */
+    static IExpr aligned(final IAST ast, boolean convolve) {
+      IExpr k = ast.arg1().normal(false);
+      IExpr t = ast.arg2().normal(false);
+      if (!k.isList() || !t.isList()) {
+        return F.NIL;
+      }
+      IAST kernel = (IAST) k;
+      IAST tensor = (IAST) t;
+      IntList kernelDims = LinearAlgebraUtil.dimensions(kernel);
+      IntList tensorDims = LinearAlgebraUtil.dimensions(tensor);
+      final int rank = kernelDims.size();
+      if (rank == 0 || tensorDims.size() < rank) {
+        return F.NIL;
+      }
+      int[] kernelDim = new int[rank];
+      int[] tensorDim = new int[rank];
+      for (int d = 0; d < rank; d++) {
+        kernelDim[d] = kernelDims.getInt(d);
+        tensorDim[d] = tensorDims.getInt(d);
+      }
+      int[] left = new int[rank];
+      int[] right = new int[rank];
+      IExpr alignment = ast.arg3();
+      if (alignment.isList2()) {
+        if (!alignmentIndices(alignment.first(), kernelDim, left)
+            || !alignmentIndices(alignment.second(), kernelDim, right)) {
+          return F.NIL;
+        }
+      } else if (!alignmentIndices(alignment, kernelDim, left)
+          || !alignmentIndices(alignment, kernelDim, right)) {
+        return F.NIL;
+      }
+      IExpr padding = null;
+      int[] paddingDim = null;
+      if (ast.argSize() >= 4) {
+        padding = ast.arg4().normal(false);
+        if (padding.isList()) {
+          IntList dims = LinearAlgebraUtil.dimensions((IAST) padding);
+          if (dims.size() < rank || dims.size() != tensorDims.size()) {
+            // the padding is a list of the same depth as the tensor
+            return F.NIL;
+          }
+          paddingDim = new int[rank];
+          for (int d = 0; d < rank; d++) {
+            paddingDim[d] = dims.getInt(d);
+          }
+        }
+      }
+      if (convolve) {
+        // a convolution is the correlation with the reversed kernel
+        kernel = ListConvolve.nestedReverseRecursive(kernel, kernelDims, 0);
+        for (int d = 0; d < rank; d++) {
+          left[d] = kernelDim[d] + 1 - left[d];
+          right[d] = kernelDim[d] + 1 - right[d];
+        }
+      }
+      int[] outputDim = new int[rank];
+      int windowSize = 1;
+      for (int d = 0; d < rank; d++) {
+        outputDim[d] = tensorDim[d] - right[d] + left[d];
+        if (outputDim[d] <= 0) {
+          return F.NIL;
+        }
+        windowSize *= kernelDim[d];
+      }
+      return alignedLevel(kernel, tensor, padding, kernelDim, tensorDim, paddingDim, left,
+          outputDim, new int[rank], 0, windowSize);
+    }
+
+    /**
+     * Stores the alignment index <code>spec</code> for every axis in <code>result</code>, a
+     * negative index counted from the end of the kernel.
+     */
+    private static boolean alignmentIndices(IExpr spec, int[] kernelDim, int[] result) {
+      for (int d = 0; d < kernelDim.length; d++) {
+        IExpr value = spec;
+        if (spec.isList()) {
+          if (spec.argSize() != kernelDim.length) {
+            return false;
+          }
+          value = ((IAST) spec).get(d + 1);
+        }
+        int index = value.toIntDefault();
+        if (index < 0) {
+          index += kernelDim[d] + 1;
+        }
+        if (index < 1 || index > kernelDim[d]) {
+          return false;
+        }
+        result[d] = index;
+      }
+      return true;
+    }
+
+    private static IExpr alignedLevel(IAST kernel, IAST tensor, IExpr padding, int[] kernelDim,
+        int[] tensorDim, int[] paddingDim, int[] left, int[] outputDim, int[] offset, int level,
+        int windowSize) {
+      final int rank = outputDim.length;
+      if (level == rank) {
+        IASTAppendable sum = F.PlusAlloc(windowSize);
+        int[] index = new int[rank];
+        int[] position = new int[rank];
+        for (int w = 0; w < windowSize; w++) {
+          // the kernel index of term w, the last axis varying fastest
+          int rest = w;
+          for (int d = rank - 1; d >= 0; d--) {
+            index[d] = rest % kernelDim[d];
+            rest /= kernelDim[d];
+          }
+          IExpr kernelElement = kernel;
+          for (int d = 0; d < rank; d++) {
+            kernelElement = ((IAST) kernelElement).get(index[d] + 1);
+            // the 0-based position in tensor aligned with this kernel element
+            position[d] = offset[d] + index[d] + 1 - left[d];
+          }
+          IExpr tensorElement = paddedElement(tensor, padding, tensorDim, paddingDim, position);
+          sum.append(F.Times(kernelElement, tensorElement));
+        }
+        return sum;
+      }
+      IASTAppendable result = F.ListAlloc(outputDim[level]);
+      for (int i = 0; i < outputDim[level]; i++) {
+        offset[level] = i;
+        result.append(alignedLevel(kernel, tensor, padding, kernelDim, tensorDim, paddingDim, left,
+            outputDim, offset, level + 1, windowSize));
+      }
+      return result;
+    }
+
+    /**
+     * The element of <code>tensor</code> at the 0-based <code>position</code>, or the padding
+     * there if the position is outside of <code>tensor</code>.
+     */
+    private static IExpr paddedElement(IAST tensor, IExpr padding, int[] tensorDim,
+        int[] paddingDim, int[] position) {
+      boolean inside = true;
+      for (int d = 0; d < position.length; d++) {
+        if (position[d] < 0 || position[d] >= tensorDim[d]) {
+          inside = false;
+          break;
+        }
+      }
+      if (padding != null && !inside && paddingDim == null) {
+        return padding;
+      }
+      IExpr element = inside || padding == null ? tensor : padding;
+      int[] dims = inside || padding == null ? tensorDim : paddingDim;
+      for (int d = 0; d < position.length; d++) {
+        element = ((IAST) element).get(Math.floorMod(position[d], dims[d]) + 1);
+      }
+      return element;
     }
 
     /**
@@ -1107,7 +1278,7 @@ public class TensorFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_4;
     }
 
   }

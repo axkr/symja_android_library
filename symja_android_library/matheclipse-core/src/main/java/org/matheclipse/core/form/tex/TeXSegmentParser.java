@@ -396,6 +396,8 @@ class TeXSegmentParser {
         }
       }
       IExpr result = lhs;
+      // the head of result if this loop built it as a chain like a<b<c
+      IExpr chainHead = null;
       int currPrec = 0;
       while (position[0] < end) {
         Node op = list.item(position[0]);
@@ -428,7 +430,28 @@ class TeXSegmentParser {
             }
             position[0]++;
             IExpr rhs = convert(list, position, end, null, currPrec);
-            result = binaryOperator.createFunction(result, rhs);
+            IExpr combined = binaryOperator.createFunction(result, rhs);
+            if (combined.isAST2() && isChainOperator(combined.head())) {
+              IExpr head = combined.head();
+              IASTAppendable chain = F.ast(head);
+              if (head.equals(chainHead) && result.isAST(head)) {
+                // a<b<c is Less(a, b, c)
+                chain.appendArgs((IAST) result);
+              } else {
+                chain.append(result);
+              }
+              if ((head == S.And || head == S.Or) && rhs.isAST(head)) {
+                // And and Or are associative
+                chain.appendArgs((IAST) rhs);
+              } else {
+                chain.append(rhs);
+              }
+              combined = chain;
+              chainHead = head;
+            } else {
+              chainHead = null;
+            }
+            result = combined;
             continue;
           } else {
             PostfixOperator postfixOperator = POSTFIX_OPERATOR_MAP.get(text);
@@ -438,6 +461,7 @@ class TeXSegmentParser {
                 return result;
               }
               result = postfixOperator.createFunction(result);
+              chainHead = null;
               position[0]++;
               continue;
             }
@@ -602,6 +626,15 @@ class TeXSegmentParser {
       return createSymbol(buf.toString());
     }
     throw new AbortException();
+  }
+
+  /**
+   * Operators which read <code>a op b op c</code> as one expression <code>op(a, b, c)</code>. Not
+   * <code>Unequal</code>: <code>Unequal(a, b, c)</code> also says <code>a != c</code>.
+   */
+  private static boolean isChainOperator(IExpr head) {
+    return head == S.Equal || head == S.Less || head == S.LessEqual
+        || head == S.Greater || head == S.GreaterEqual || head == S.And || head == S.Or;
   }
 
   protected static ISymbol createFunction(String str) {

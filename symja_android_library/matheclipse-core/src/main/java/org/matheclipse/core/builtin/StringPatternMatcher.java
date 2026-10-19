@@ -1007,7 +1007,9 @@ abstract class StringPatternMatcher {
       StringBuilder text = new StringBuilder();
       for (int i = 0; i < str.length(); i++) {
         char c = str.charAt(i);
-        if (c == '\\' && i + 1 < str.length()) {
+        if (c == '\\' && i + 1 < str.length()
+            && (str.charAt(i + 1) == '*' || str.charAt(i + 1) == '@')) {
+          // a backslash makes the following * or @ literal; any other backslash is itself
           text.append(str.charAt(++i));
         } else if (c == '*' || c == '@') {
           if (text.length() > 0) {

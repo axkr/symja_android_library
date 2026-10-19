@@ -44,6 +44,18 @@ public class ColorData extends AbstractFunctionEvaluator {
 
       // Try to find scheme
       colorDataFunction = findScheme(name);
+    } else if (arg1.isList2() && arg1.first().isString() && arg1.second().isList2()) {
+      // {"Rainbow", {min, max}}: the gradient spread over the range from min to max; it runs
+      // backwards if max < min
+      IExpr range = arg1.second();
+      double min = range.first().evalfNaN();
+      double max = range.second().evalfNaN();
+      if (min != max && !Double.isNaN(min) && !Double.isNaN(max)) {
+        IExpr gradient = findScheme(arg1.first().toString());
+        if (gradient.isPresent() && ((IAST) gradient).arg2().toString().equals("Gradients")) {
+          colorDataFunction = ((IAST) gradient).setAtCopy(3, range);
+        }
+      }
     } else if (arg1.isInteger()) {
       int n = arg1.toIntDefault(-1);
       if (n >= 0) {

@@ -1587,8 +1587,9 @@ public class OutputFormFactory {
       if (oper.getPrecedence() < precedence) {
         append(buf, "(");
       }
-      final boolean groupArg1 = oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
-          && arg1.head().equals(list.head()) && !isDelimitedPower(arg1);
+      final boolean groupArg1 = (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
+          && arg1.head().equals(list.head()) && !isDelimitedPower(arg1))
+          || isNestedSameOperator(list, arg1, oper);
       if (groupArg1) {
         append(buf, "(");
       } else {
@@ -1619,7 +1620,10 @@ public class OutputFormFactory {
 
       appendUnicodeMapped(buf, operatorString);
 
-      if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && arg2.head().equals(list.head())) {
+      final boolean groupArg2 =
+          (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && arg2.head().equals(list.head()))
+              || isNestedSameOperator(list, arg2, oper);
+      if (groupArg2) {
         append(buf, "(");
       }
       if (isOr && arg2.isAnd()) {
@@ -1629,7 +1633,7 @@ public class OutputFormFactory {
       if (isOr && arg2.isAnd()) {
         append(buf, ")");
       }
-      if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && arg2.head().equals(list.head())) {
+      if (groupArg2) {
         append(buf, ")");
       }
 
@@ -1642,29 +1646,33 @@ public class OutputFormFactory {
     if (oper.getPrecedence() < precedence) {
       append(buf, "(");
     }
-    if (list.size() > 1) {
-      if (isOr && list.arg1().isAnd()) {
+    for (int i = 1; i < list.size(); i++) {
+      if (i > 1) {
+        appendUnicodeMapped(buf, operatorString);
+      }
+      final IExpr arg = list.get(i);
+      final boolean group = (isOr && arg.isAnd()) || isNestedSameOperator(list, arg, oper);
+      if (group) {
         append(buf, "(");
       }
-      convert(buf, list.arg1(), oper.getPrecedence(), false);
-      if (isOr && list.arg1().isAnd()) {
-        append(buf, ")");
-      }
-    }
-
-    for (int i = 2; i < list.size(); i++) {
-      appendUnicodeMapped(buf, operatorString);
-      if (isOr && list.get(i).isAnd()) {
-        append(buf, "(");
-      }
-      convert(buf, list.get(i), oper.getPrecedence(), false);
-      if (isOr && list.get(i).isAnd()) {
+      convert(buf, arg, oper.getPrecedence(), false);
+      if (group) {
         append(buf, ")");
       }
     }
     if (oper.getPrecedence() < precedence) {
       append(buf, ")");
     }
+  }
+
+  /**
+   * Whether <code>arg</code> of the n-ary operator expression <code>list</code> has the same
+   * operator. Written without parentheses it would read back as one flat expression, for example
+   * <code>Dot(a, Dot(b, c))</code> as <code>a.b.c</code>.
+   */
+  private static boolean isNestedSameOperator(IAST list, IExpr arg, InfixOperator oper) {
+    return oper.getGrouping() == InfixOperator.NONE && arg.isAST() && arg.argSize() >= 2
+        && arg.head().equals(list.head());
   }
 
   private void appendUnicodeMapped(final Appendable buf, String operatorString) throws IOException {

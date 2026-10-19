@@ -225,6 +225,18 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
    *        <code>false</code> to return the interpolating function itself
    * @return the solution, or {@link F#NIL} if the equations could not be solved
    */
+  /**
+   * Whether <code>variable</code> is a call <code>x(...)</code> of one of the functions
+   * <code>x</code> to solve for, given like <code>x</code>, <code>x(t)</code> or a list of them.
+   */
+  private static boolean isDependentFunctionCall(IExpr variable, IExpr dependentVariables) {
+    IExpr head = variable.head();
+    if (dependentVariables.isList()) {
+      return ((IAST) dependentVariables).exists(v -> v.equals(head) || v.head().equals(head));
+    }
+    return dependentVariables.equals(head) || dependentVariables.head().equals(head);
+  }
+
   static IExpr solve(final IAST ast, final IExpr[] options, EvalEngine engine, boolean ruleForm) {
     if (!ast.arg3().isList()) {
       return F.NIL;
@@ -241,6 +253,15 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     try {
+      if (tRangeList.arg1().isAST() && !tRangeList.arg1().isNumericFunction(true)
+          && !isDependentFunctionCall(tRangeList.arg1(), ast.arg2())) {
+        // an independent variable like Subscript(a, m): solve for a symbol in its place
+        final IExpr variable = tRangeList.arg1();
+        final ISymbol dummy = F.Dummy();
+        IExpr solution =
+            solve((IAST) F.subst(ast, F.Rule(variable, dummy)), options, engine, ruleForm);
+        return solution.isPresent() ? F.subst(solution, F.Rule(dummy, variable)) : F.NIL;
+      }
       if (!tRangeList.arg1().isSymbol()) {
         // `1` is not a valid variable.
         return Errors.printMessage(ast.topHead(), "ivar", F.list(tRangeList.arg1()), engine);
@@ -252,11 +273,14 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
         tMinExpr = tRangeList.arg2();
         tMaxExpr = tRangeList.arg3();
       }
-      final double tMin = tMinExpr.evalfNaN();
-      final double tMax = tMaxExpr.evalfNaN();
-      if (Double.isNaN(tMin) || Double.isNaN(tMax)) {
+      final double tStart = tMinExpr.evalfNaN();
+      final double tEnd = tMaxExpr.evalfNaN();
+      if (Double.isNaN(tStart) || Double.isNaN(tEnd)) {
         return F.NIL;
       }
+      // a range like {t, 0, -2} is the interval from -2 to 0
+      final double tMin = Math.min(tStart, tEnd);
+      final double tMax = Math.max(tStart, tEnd);
 
       // y(t /; t <= t0) == h(t): a delay differential equation with its history
       IExpr delayed = NDSolveDelay.solve(ast, timeVar, tMin, tMax, engine, ruleForm);
