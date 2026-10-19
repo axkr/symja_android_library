@@ -115,38 +115,117 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Two line segments <code>Line({p1, q1})</code> and <code>Line({p2, q2})</code> of real points
-   * which are not parallel: the point where they cross, or the empty region if they miss each
-   * other. Parallel segments are left to the other methods.
+   * Two lines <code>Line({p1, p2, ...})</code> of real points: the points where their segments
+   * cross, or the empty region if they miss each other. Segments which overlap along a common line
+   * are left to the other methods.
    */
   private static IExpr segments(List<IExpr> regions, IExpr empty, EvalEngine engine) {
     if (regions.size() != 2) {
       return F.NIL;
     }
-    IAST[] ends = new IAST[4];
+    IAST[] lines = new IAST[2];
+    int dimension = -1;
     for (int i = 0; i < 2; i++) {
       IExpr line = regions.get(i);
-      if (!line.isAST(S.Line, 2) || !line.first().isList2()) {
+      if (!line.isAST(S.Line, 2) || !line.first().isList() || line.first().argSize() < 2) {
         return F.NIL;
       }
-      for (int j = 0; j < 2; j++) {
-        IExpr point = line.first().getAt(j + 1);
+      IAST points = (IAST) line.first();
+      for (IExpr point : points) {
         if (!point.isList() || !((IAST) point).forAll(x -> x.isReal())) {
           return F.NIL;
         }
-        ends[2 * i + j] = (IAST) point;
+        if (dimension < 0) {
+          dimension = point.argSize();
+        } else if (point.argSize() != dimension) {
+          return F.NIL;
+        }
+      }
+      lines[i] = points;
+    }
+    if (lines[0].argSize() == 2 && lines[1].argSize() == 2) {
+      IExpr point = segmentPair((IAST) lines[0].arg1(), (IAST) lines[0].arg2(),
+          (IAST) lines[1].arg1(), (IAST) lines[1].arg2(), engine);
+      if (point == null || point.isNIL()) {
+        return point == null ? empty : F.NIL;
+      }
+      return F.unaryAST1(S.Point, point);
+    }
+    List<IExpr> found = new java.util.ArrayList<IExpr>();
+    double[][] first = machinePoints(lines[0]);
+    double[][] second = machinePoints(lines[1]);
+    for (int i = 1; i < lines[0].argSize(); i++) {
+      engine.checkTimeLimit();
+      for (int j = 1; j < lines[1].argSize(); j++) {
+        if (apartSegments(first[i - 1], first[i], second[j - 1], second[j])) {
+          // their bounding boxes don't meet
+          continue;
+        }
+        IExpr point = segmentPair((IAST) lines[0].get(i), (IAST) lines[0].get(i + 1),
+            (IAST) lines[1].get(j), (IAST) lines[1].get(j + 1), engine);
+        if (point == null) {
+          continue;
+        }
+        if (point.isNIL()) {
+          return F.NIL;
+        }
+        // a crossing at a corner of a line is found in both of its segments
+        if (!found.stream().anyMatch(p -> S.Equal.ofQ(engine, p, point))) {
+          found.add(point);
+        }
       }
     }
-    int dimension = ends[0].argSize();
-    for (IAST point : ends) {
-      if (point.argSize() != dimension) {
-        return F.NIL;
+    if (found.isEmpty()) {
+      return empty;
+    }
+    if (found.size() == 1) {
+      return F.unaryAST1(S.Point, found.get(0));
+    }
+    IASTAppendable list = F.ListAlloc(found);
+    return F.unaryAST1(S.Point, engine.evaluate(F.Sort(list)));
+  }
+
+  /** The points of a line as machine numbers. */
+  private static double[][] machinePoints(IAST points) {
+    double[][] result = new double[points.argSize()][];
+    for (int i = 1; i < points.size(); i++) {
+      IAST point = (IAST) points.get(i);
+      result[i - 1] = new double[point.argSize()];
+      for (int d = 1; d < point.size(); d++) {
+        result[i - 1][d - 1] = point.get(d).evalfNaN();
       }
     }
-    IAST p1 = ends[0];
-    IAST p2 = ends[2];
-    IExpr d1 = engine.evaluate(F.Subtract(ends[1], p1));
-    IExpr d2 = engine.evaluate(F.Subtract(ends[3], p2));
+    return result;
+  }
+
+  /**
+   * Whether the bounding boxes of the segments <code>p1 q1</code> and <code>p2 q2</code> lie apart
+   * in some coordinate by more than the rounding of machine numbers.
+   */
+  private static boolean apartSegments(double[] p1, double[] q1, double[] p2, double[] q2) {
+    for (int d = 0; d < p1.length; d++) {
+      double lo1 = Math.min(p1[d], q1[d]);
+      double hi1 = Math.max(p1[d], q1[d]);
+      double lo2 = Math.min(p2[d], q2[d]);
+      double hi2 = Math.max(p2[d], q2[d]);
+      double slack = 1.0e-9 * (1.0 + Math.max(Math.abs(hi1), Math.abs(hi2)));
+      if (hi1 + slack < lo2 || hi2 + slack < lo1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The point where the segment from <code>p1</code> to <code>q1</code> meets the one from
+   * <code>p2</code> to <code>q2</code>.
+   *
+   * @return the point, {@code null} if they don't meet, or {@link F#NIL} if they overlap along a
+   *         common line
+   */
+  private static IExpr segmentPair(IAST p1, IAST q1, IAST p2, IAST q2, EvalEngine engine) {
+    IExpr d1 = engine.evaluate(F.Subtract(q1, p1));
+    IExpr d2 = engine.evaluate(F.Subtract(q2, p2));
     IExpr w = engine.evaluate(F.Subtract(p2, p1));
     // p1 + s d1 == p2 + t d2 in the least squares sense: the normal equations of s and t
     IExpr a11 = engine.evaluate(F.Dot(d1, d1));
@@ -155,8 +234,13 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
     IExpr b1 = engine.evaluate(F.Dot(w, d1));
     IExpr b2 = engine.evaluate(F.Dot(w, d2));
     IExpr det = engine.evaluate(F.Subtract(F.Sqr(a12), F.Times(a11, a22)));
-    if (!det.isReal() || det.isZero() || a11.isZero() || a22.isZero()) {
+    if (!det.isReal() || a11.isZero() || a22.isZero()) {
       return F.NIL;
+    }
+    if (det.isZero()) {
+      // parallel segments meet only if they lie on one line
+      IExpr offset = engine.evaluate(F.Subtract(F.Times(F.Dot(w, w), a11), F.Sqr(b1)));
+      return offset.isReal() && !offset.isZero() ? null : F.NIL;
     }
     // a11 s - a12 t == b1, a12 s - a22 t == b2
     IExpr s = engine.evaluate(F.Divide(F.Subtract(F.Times(a12, b2), F.Times(a22, b1)), det));
@@ -167,14 +251,11 @@ public class RegionIntersection extends AbstractFunctionEvaluator {
     IExpr point = engine.evaluate(F.Plus(p1, F.Times(s, d1)));
     IExpr other = engine.evaluate(F.Plus(p2, F.Times(t, d2)));
     boolean inside = S.LessEqual.ofQ(engine, F.C0, s, F.C1) && S.LessEqual.ofQ(engine, F.C0, t, F.C1);
-    if (!inside) {
-      return empty;
+    if (!inside || !S.Equal.ofQ(engine, point, other)) {
+      // they miss each other, or are skew lines in space
+      return null;
     }
-    if (!S.Equal.ofQ(engine, point, other)) {
-      // skew lines in space
-      return empty;
-    }
-    return F.unaryAST1(S.Point, point);
+    return point;
   }
 
   /**

@@ -174,9 +174,9 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   @Test
   public void testReduceMultivariate() {
     check("Reduce(x^2 - y^3 == 1, {x, y})", //
-        "x==-Sqrt(1+y^3)||x==Sqrt(1+y^3)");
+        "y==-(1-x^2)^(1/3)||y==(-1)^(1/3)*(1-x^2)^(1/3)||y==-(-1)^(2/3)*(1-x^2)^(1/3)");
     check("Reduce(x + y == 1, {x, y})", //
-        "x==1-y");
+        "y==1-x");
   }
 
   @Test
@@ -405,7 +405,7 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "False");
     // a variable which isn't determined by an equation stays free
     check("Reduce({x == y, y == z, z == x}, {x, y, z})", //
-        "x==z&&y==z");
+        "y==x&&z==x");
     // an inequation which isn't decided by the solution is kept
     check("Reduce(x == 1 && y > 0, {x, y})", //
         "x==1&&y>0");
@@ -1432,15 +1432,14 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(x^2 - y^2*z == 0, {x, y, z}, Reals)", //
         "(y!=0&&z==x^2/y^2)||(x==0&&y==0)");
     check("Reduce(x^2*z + y^2*z + x*y == 0, {x, y, z}, Reals)", //
-        "(x==(-y-Sqrt(y^2-4*y^2*z^2))/(2*z)&&z!=0&&y^2-4*y^2*z^2>=0)||(x==(-y+Sqrt(y^2-4*y^\n"
-            + "2*z^2))/(2*z)&&z!=0&&y^2-4*y^2*z^2>=0)||(x==0&&y!=0&&z==0)||(y==0&&z==0)");
+        "(z==(-x*y)/(x^2+y^2)&&x^2+y^2!=0)||(x==0&&y==0)");
     check("Reduce(a*x + y == 1 && x + y == 0, {x, y})", //
-        "a!=1&&x==1/(-1+a)&&y==1/(1-a)");
+        "a!=1&&x==1/(-1+a)&&y==-1/(-1+a)");
     check("Reduce(a*x == b && y == 1, {x, y})", //
         "(a!=0&&x==b/a&&y==1)||(b==0&&a==0&&y==1)");
     // the root `Sqrt(1-y^2)` is real only for `-1<=y<=1`
     check("Reduce(x^2 + y^2 == 1, {x, y}, Reals)", //
-        "(y>=-1&&y<=1&&x==-Sqrt(1-y^2))||(y>=-1&&y<=1&&x==Sqrt(1-y^2))");
+        "(x>=-1&&x<=1&&y==-Sqrt(1-x^2))||(x>=-1&&x<=1&&y==Sqrt(1-x^2))");
     // `-I*y` and `(-1)^(1/3)*(1-y^3)^(1/3)` are real only for some values of the other
     // variables, which the elimination can't describe
     check("Reduce(w*x + y*z == 0 && w*z - x*y == 0, {w, x, y, z}, Reals)", //
@@ -1538,13 +1537,13 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   @Test
   public void testReduceRationalDenominator() {
     check("Reduce((x-y)/(x-2)==0,{x,y})", //
-        "x==y&&y!=2");
+        "x!=2&&y==x");
     check("Reduce((x-y)/((x-2)*(y-3))==0,{x,y})", //
-        "x==y&&-5*y+y^2!=-6");
+        "y==x&&-5*x+x^2!=-6");
     check("Reduce((x-y)/(y-3)==0,{x,y})", //
-        "x==y&&y!=3");
+        "x!=3&&y==x");
     check("Reduce((x-y)*(x-2*y)/(x-1)==0,{x,y})", //
-        "(x==y&&y!=1)||(x==2*y&&y!=1/2)");
+        "(x!=1&&y==x/2)||(x!=1&&y==x)");
     check("Reduce(x/(x-2)==0,x)", //
         "x==0");
     check("Reduce(1/x==0,x)", //

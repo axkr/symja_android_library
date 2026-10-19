@@ -11598,12 +11598,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testReduceProductEquationSystems() {
-    // WMA: A == 0 && B != 0 && C == 1/B (the same set, solved for the other variable)
+    // WMA: A == 0 && B != 0 && C == 1/B, the last variable solved for
     check("Reduce({A*C==0, B*C==1}, {A,B,C})", //
-        "A==0&&B==1/C&&C!=0");
+        "A==0&&B!=0&&C==1/B");
     // a listed built-in symbol is a variable; X != 0 && C == 1/X
     check("Reduce({X*C==1}, {X, C})", //
-        "X==1/C&&C!=0");
+        "X!=0&&C==1/X");
     check("Solve(x + D == 3, D)", //
         "{{D->3-x}}");
     // message ::svars and {{a->0, c->1/b}}
@@ -12036,16 +12036,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Derivative(0, 1)[Max][0.5, 2.25], Derivative(1, 0)[Max][0.5, 2.25], "
             + "Derivative(1, 0, 0)[Min][1, 2, 3], Derivative(0, 0, 1)[Min][1, 2, 3]}", //
         "{1,0,1,0}");
-    // no derivative at a tie
+    // at a tie the first argument is the extremum
     check("Derivative(0, 1)[Max][2, 2]", //
-        "Derivative(0,1)[Max][2,2]");
+        "0");
     check("Derivative(1, 0)[Max][x, 1]", //
-        "Derivative(1,0)[Max][x,1]");
+        "Piecewise({{1,x>=1}},0)");
     // a tie only matters between the arguments which are the extremum
     check("{Derivative(1, 0, 0)[Max][1, 1, 5], Derivative(0, 0, 1)[Max][1, 1, 5]}", //
         "{0,1}");
     check("Derivative(1, 0, 0)[Max][1, 1, 0.5]", //
-        "Derivative(1,0,0)[Max][1,1,0.5]");
+        "1");
     check("gm(t_) := Max(0.5, Min(2, t^2)); gm'(1.2)", //
         "2.4");
   }
@@ -12943,7 +12943,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
     // at a tie the derivative does not exist
     check("Derivative(1, 1)[Max][1, 1]", //
-        "Derivative(1,1)[Max][1,1]");
+        "0");
     check("g(t_) := Min(2.25, Max(1.25, t^3)); {Derivative(2)[g][0.5], Derivative(2)[g][1.2]}", //
         "{0.0,7.2}");
   }
@@ -13388,6 +13388,76 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Cases(Plot(Cos(x), {x, 0, 3}, Filling -> {1 -> {1, Red}}), {s_, Polygon(p_)} :> "
         + "{s, Last(p)}, Infinity)", //
         "{{Directive(RGBColor(1,0,0),EdgeForm(None)),{0.0,1.0}}}");
+  }
+
+  @Test
+  public void testMaxMinDerivativePiecewise() {
+    // 1 where the argument is the extremum, the first one at a tie
+    check("Derivative(0, 1)[Min][u, v]", //
+        "Piecewise({{0,u-v<=0}},1)");
+    check("Derivative(1, 0, 0)[Min][u, v, w]", //
+        "Piecewise({{1,u-v<=0&&u-w<=0}},0)");
+    check("Derivative(1, 0)[Min][3, 3]", //
+        "1");
+    check("Derivative(2)[Max][u]", //
+        "0");
+    // complex numbers and a list aren't arguments of the maximum
+    check("Derivative(0, 1)[Max][1, I]", //
+        "Derivative(0,1)[Max][1,I]");
+    check("Derivative(1)[Max][{u, v}]", //
+        "Max'({u,v})");
+  }
+
+  @Test
+  public void testSparseArrayPatternRuleWithoutDimensions() {
+    // the dimensions are those of all the explicit positions
+    check("Normal(SparseArray({{1, 3} -> a, {i_, j_} /; i == j -> b, {2, 3} -> c}))", //
+        "{{b,0,a},{0,b,c}}");
+  }
+
+  @Test
+  public void testMarchenkoPasturDistribution() {
+    check("PDF(MarchenkoPasturDistribution(1/4, 1), 1)", //
+        "Sqrt(15)/(2*Pi)");
+    check("{Mean(MarchenkoPasturDistribution(1/2, 3)), Variance(MarchenkoPasturDistribution(1/2, 3))}", //
+        "{9,81/2}");
+    check("MarchenkoPasturDistribution(q)", //
+        "MarchenkoPasturDistribution(q,1)");
+    // for a ratio above 1 a part of the mass lies at 0
+    check("PDF(MarchenkoPasturDistribution(q, 1), 2)", //
+        "PDF(MarchenkoPasturDistribution(q,1),2)");
+  }
+
+  @Test
+  public void testElementDataPropertyDescriptions() {
+    check("ElementData(26, \"NeelPoint\", \"Description\")", //
+        "Néel point");
+    check("ElementData(26, \"FusionHeat\", \"Description\")", //
+        "molar heat of fusion");
+  }
+
+  @Test
+  public void testRegionIntersectionOfPolylines() {
+    check("RegionIntersection(Line({{0, 0}, {3, 3}, {6, 0}}), Line({{0, 2}, {6, 2}}))", //
+        "Point({{2,2},{4,2}})");
+    // parallel segments on different lines don't meet
+    check("RegionIntersection(Line({{0, 0}, {2, 0}}), Line({{0, 1}, {2, 1}}))", //
+        "EmptyRegion(2)");
+    // a crossing at a corner is one point
+    check("RegionIntersection(Line({{0, 0}, {1, 1}, {2, 0}}), Line({{1, 0}, {1, 2}}))", //
+        "Point({1,1})");
+  }
+
+  @Test
+  public void testTogetherModulusSingleFraction() {
+    // a fraction without a common factor over GF(p) stays as it is
+    check("Together(5/(3*y), Modulus -> 11)", //
+        "5/(3*y)");
+    check("Together(1/y + 1/(y + 2), Modulus -> 3)", //
+        "(2*(1+y))/(y*(2+y))");
+    // a fraction in the denominator is put over a common denominator first
+    check("Together(1/(2 + 1/y), Modulus -> 5)", //
+        "(3*y)/(3+y)");
   }
 
   @Test

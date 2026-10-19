@@ -4815,21 +4815,33 @@ public class Algebra {
     if (JASModular.isModpMessage(head, modulus)) {
       return F.NIL;
     }
-    IExpr together = engine.evaluate(F.Together(expr));
+    // a single fraction is taken as it is written, so that a constant which is a unit of GF(p)
+    // isn't cancelled; a sum is put over a common denominator first
+    IAST variables = new VariablesSet(expr).getVarList();
+    final boolean fraction = !expr.isPlus()
+        && engine.evaluate(F.Numerator(expr)).isPolynomial(variables)
+        && engine.evaluate(F.Denominator(expr)).isPolynomial(variables);
+    IExpr together = fraction ? expr : engine.evaluate(F.Together(expr));
     IExpr numerator = F.evalExpandAll(engine.evaluate(F.Numerator(together)), engine);
     IExpr denominator = F.evalExpandAll(engine.evaluate(F.Denominator(together)), engine);
     VariablesSet eVar = new VariablesSet(together);
     try {
       return togetherModulus(JASModular.of((IInteger) modulus, eVar.getVarList()), numerator,
-          denominator, engine);
+          denominator, fraction ? expr : F.NIL, engine);
     } catch (JASConversionException | ArithmeticException e) {
       // no polynomials over GF(p)
       return F.NIL;
     }
   }
 
+  /**
+   * @param fraction the expression if it is a single fraction, which has nothing to be combined;
+   *        it stays as it is unless its numerator and denominator have a common factor over
+   *        <code>GF(p)</code>
+   */
   private static <C extends GcdRingElem<C> & Modular> IExpr togetherModulus(JASModular<C> jas,
-      IExpr numerator, IExpr denominator, EvalEngine engine) throws JASConversionException {
+      IExpr numerator, IExpr denominator, IExpr fraction, EvalEngine engine)
+      throws JASConversionException {
     GenPolynomial<C> num = jas.expr2JAS(numerator);
     GenPolynomial<C> den = jas.expr2JAS(denominator);
     if (den.isZERO()) {
@@ -4837,6 +4849,10 @@ public class Algebra {
       return F.NIL;
     }
     GenPolynomial<C> gcd = jas.gcd().gcd(num, den);
+    if (fraction.isPresent() && gcd.isConstant() && !num.isZERO()) {
+      // Together(1/(2*x), Modulus -> 7) is 1/(2*x)
+      return fraction;
+    }
     if (!gcd.isONE()) {
       num = num.divide(gcd);
       den = den.divide(gcd);

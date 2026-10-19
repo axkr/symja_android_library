@@ -5537,8 +5537,10 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
     // has a single root, so it neither multiplies the solution branches nor pushes a radical into
     // the remaining relations - a radical which the back substitution of the other variables would
     // collapse, mapping different branches onto the same one.
+    // the last variables are solved for, in terms of the earlier ones: x*y == 2 for {x, y} is
+    // y == 2/x
     for (int pass = 1; pass <= 3; pass++) {
-      for (int v = 1; v < vars.size(); v++) {
+      for (int v = vars.size() - 1; v >= 1; v--) {
         IExpr variable = vars.get(v);
         for (int e = 1; e < equations.size(); e++) {
           IExpr equation = equations.get(e);

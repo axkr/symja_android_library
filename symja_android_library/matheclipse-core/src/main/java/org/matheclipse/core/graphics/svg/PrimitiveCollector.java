@@ -13,6 +13,7 @@ import org.matheclipse.core.graphics.IntervalMarkerType;
 import org.matheclipse.core.graphics.PlotWrapper;
 import org.matheclipse.core.graphics.UncertainValue;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -301,6 +302,9 @@ public final class PrimitiveCollector {
         break;
       case ID.Annulus:
         collectEllipse(ast, style, true, true);
+        break;
+      case ID.Ellipsoid:
+        collectEllipsoid(ast, style);
         break;
       case ID.Sphere:
         collectSphere(ast, style, false);
@@ -1153,6 +1157,85 @@ public final class PrimitiveCollector {
     }
     primitives
         .add(new Prim2D.RectPrim(p1[0], p1[1], p2[0], p2[1], roundingX, roundingY, style.clone()));
+  }
+
+  /**
+   * A planar <code>Ellipsoid(p, r)</code>, <code>Ellipsoid(p, {r1, r2})</code>,
+   * <code>Ellipsoid(p, {r1, r2}, {d1, d2})</code> with the directions of its axes, or
+   * <code>Ellipsoid(p, sigma)</code>, the points <code>x</code> with
+   * <code>(x-p).Inverse(sigma).(x-p) &lt;= 1</code>, drawn as a polygon of its outline.
+   */
+  private void collectEllipsoid(IAST ast, Style2D style) {
+    if (ast.argSize() < 2 || !ast.arg1().isList2()) {
+      return;
+    }
+    double px = ast.arg1().first().evalfNaN();
+    double py = ast.arg1().second().evalfNaN();
+    // the images of the unit vectors: x = p + cos(t)*a + sin(t)*b
+    double ax, ay, bx, by;
+    IExpr r = ast.arg2();
+    if (r.isList2() && r.first().isList2() && r.second().isList2()) {
+      // sigma = L.Transpose(L) with the lower triangular L of Cholesky
+      double s11 = r.first().first().evalfNaN();
+      double s12 = r.first().second().evalfNaN();
+      double s22 = r.second().second().evalfNaN();
+      if (!(s11 > 0)) {
+        return;
+      }
+      double l11 = Math.sqrt(s11);
+      double l21 = s12 / l11;
+      double rest = s22 - l21 * l21;
+      if (!(rest >= 0)) {
+        return;
+      }
+      ax = l11;
+      ay = l21;
+      bx = 0.0;
+      by = Math.sqrt(rest);
+    } else {
+      double r1;
+      double r2;
+      if (r.isList2()) {
+        r1 = r.first().evalfNaN();
+        r2 = r.second().evalfNaN();
+      } else {
+        r1 = r2 = r.evalfNaN();
+      }
+      double ux = 1.0, uy = 0.0, vx = 0.0, vy = 1.0;
+      if (ast.argSize() >= 3 && ast.arg3().isList2() && ast.arg3().first().isList2()
+          && ast.arg3().second().isList2()) {
+        IExpr d = ast.arg3();
+        ux = d.first().first().evalfNaN();
+        uy = d.first().second().evalfNaN();
+        vx = d.second().first().evalfNaN();
+        vy = d.second().second().evalfNaN();
+        double nu = Math.hypot(ux, uy);
+        double nv = Math.hypot(vx, vy);
+        if (!(nu > 0) || !(nv > 0)) {
+          return;
+        }
+        ux /= nu;
+        uy /= nu;
+        vx /= nv;
+        vy /= nv;
+      }
+      ax = r1 * ux;
+      ay = r1 * uy;
+      bx = r2 * vx;
+      by = r2 * vy;
+    }
+    if (!Double.isFinite(px + py + ax + ay + bx + by)) {
+      return;
+    }
+    final int n = 72;
+    IASTAppendable points = F.ListAlloc(n);
+    for (int k = 0; k < n; k++) {
+      double t = 2.0 * Math.PI * k / n;
+      double c = Math.cos(t);
+      double sn = Math.sin(t);
+      points.append(F.list(F.num(px + c * ax + sn * bx), F.num(py + c * ay + sn * by)));
+    }
+    collectPolygon(F.Polygon(points), style);
   }
 
   private void collectPolygon(IAST ast, Style2D style) {

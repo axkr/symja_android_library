@@ -181,4 +181,15 @@ public class ImageStructureTest extends AbstractTestCase {
         "False");
   }
 
+
+  @Test
+  public void testColorize() {
+    // label k of n gets the colour of f((2*k-1)/(2*n)); the label 0 is black
+    check("ImageData(Colorize({{0, 1, 2}}, ColorFunction -> GrayLevel), \"Byte\")", //
+        "{{{0,0,0},{63,63,63},{191,191,191}}}");
+    check("ImageData(Colorize({{2, 0}}, ColorFunction -> Hue), \"Byte\")", //
+        "{{{127,0,255},{0,0,0}}}");
+    check("ImageType(Colorize({{0, 1}, {1, 3}}))", //
+        "Byte");
+  }
 }

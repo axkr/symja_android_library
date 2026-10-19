@@ -45,6 +45,7 @@ public class ColorFunctions {
     private static void init() {
       S.AlphaChannel.setEvaluator(new AlphaChannel());
       S.ColorCombine.setEvaluator(new ColorCombine());
+      S.Colorize.setEvaluator(new Colorize());
       S.ColorConvert.setEvaluator(new ColorConvert());
       S.ColorDistance.setEvaluator(new ColorDistance());
       S.ColorNegate.setEvaluator(new ColorNegate());
@@ -53,6 +54,86 @@ public class ColorFunctions {
       S.ColorSeparate.setEvaluator(new ColorSeparate());
       S.RemoveAlphaChannel.setEvaluator(new RemoveAlphaChannel());
       S.SetAlphaChannel.setEvaluator(new SetAlphaChannel());
+    }
+  }
+
+  /**
+   * <code>Colorize(m)</code> or <code>Colorize(m, ColorFunction -&gt; f)</code> - an image of the
+   * matrix <code>m</code> of non-negative integer labels with one colour for each label. The label
+   * <code>0</code> is black; of the labels <code>1, ..., n</code> label <code>k</code> gets the
+   * colour of <code>f((2*k-1)/(2*n))</code>, or a colour of the plot palette if no function is
+   * given.
+   */
+  private static class Colorize extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr colorFunction = S.Automatic;
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (option.isRuleAST() && option.first() == S.ColorFunction) {
+          colorFunction = option.second();
+        } else {
+          return F.NIL;
+        }
+      }
+      int[] dimensions = ast.arg1().isMatrix(false);
+      if (dimensions == null || dimensions[0] == 0 || dimensions[1] == 0) {
+        return F.NIL;
+      }
+      final int height = dimensions[0];
+      final int width = dimensions[1];
+      int[][] labels = new int[height][width];
+      int n = 0;
+      for (int y = 0; y < height; y++) {
+        IAST row = (IAST) ast.arg1().getAt(y + 1);
+        for (int x = 0; x < width; x++) {
+          int label = row.get(x + 1).toIntDefault(-1);
+          if (label < 0) {
+            return F.NIL;
+          }
+          labels[y][x] = label;
+          n = Math.max(n, label);
+        }
+      }
+      // the byte values of the colour of each label which occurs
+      java.util.Map<Integer, int[]> palette = new java.util.HashMap<Integer, int[]>();
+      palette.put(0, new int[] {0, 0, 0});
+      for (int[] row : labels) {
+        for (int k : row) {
+          if (palette.containsKey(k)) {
+            continue;
+          }
+          if (colorFunction.isAutomatic()) {
+            org.matheclipse.core.convert.RGBColor rgb =
+                org.matheclipse.core.graphics.GraphicsOptions.plotStyleColor(k - 1, F.NIL);
+            palette.put(k, new int[] {rgb.getRed(), rgb.getGreen(), rgb.getBlue()});
+          } else {
+            IExpr value = F.QQ(2 * k - 1, 2 * n);
+            float[] rgba = Colors
+                .toRgba(engine.evaluate(F.unaryAST1(colorFunction, F.num(value.evalf()))));
+            if (rgba == null) {
+              return F.NIL;
+            }
+            palette.put(k, new int[] {toByte(rgba[0]), toByte(rgba[1]), toByte(rgba[2])});
+          }
+        }
+      }
+      BufferedImage image = Pixels.fromPixels(width, height, 3, (x, y) -> {
+        int[] rgb = palette.get(labels[y][x]);
+        return new float[] {rgb[0], rgb[1], rgb[2]};
+      });
+      return new ImageExpr(image, null, ImageOptions.DEFAULT);
+    }
+
+    /** A channel value of <code>0.0 ... 1.0</code> as a byte: 1/2 is 127 and 5/6 is 213. */
+    private static int toByte(float value) {
+      return Math.max(0, Math.min(255, (int) Math.floor(value * 255.999)));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
   }
 

@@ -98,9 +98,28 @@ public final class Colors {
 
   /** Hue, saturation, brightness to RGB. */
   public static float[] hsbToRgb(float[] hsb) {
-    int rgb = java.awt.Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]);
-    return new float[] {((rgb >> 16) & 0xFF) / 255.0f, ((rgb >> 8) & 0xFF) / 255.0f,
-        (rgb & 0xFF) / 255.0f};
+    // the channels as they are, not rounded to bytes first: Hue(0.75) is RGBColor(0.5, 0, 1)
+    double h6 = (hsb[0] - Math.floor(hsb[0])) * 6.0;
+    int sector = (int) Math.floor(h6);
+    double f = h6 - sector;
+    double bri = hsb[2];
+    double p = bri * (1.0 - hsb[1]);
+    double q = bri * (1.0 - hsb[1] * f);
+    double t = bri * (1.0 - hsb[1] * (1.0 - f));
+    switch (sector % 6) {
+      case 0:
+        return new float[] {(float) bri, (float) t, (float) p};
+      case 1:
+        return new float[] {(float) q, (float) bri, (float) p};
+      case 2:
+        return new float[] {(float) p, (float) bri, (float) t};
+      case 3:
+        return new float[] {(float) p, (float) q, (float) bri};
+      case 4:
+        return new float[] {(float) t, (float) p, (float) bri};
+      default:
+        return new float[] {(float) bri, (float) p, (float) q};
+    }
   }
 
   /** RGB to cyan, magenta, yellow, black. */

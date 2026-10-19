@@ -816,6 +816,14 @@ public class SvgPrimitiveTest {
     assertEquals(1, occurrences(pane, "<ellipse"), pane);
   }
 
+  /** A planar Ellipsoid is drawn as the outline of its ellipse. */
+  @Test
+  public void testPlanarEllipsoid() {
+    String svg = export("Graphics(Ellipsoid({1, 2}, {3, 1}, {{1, 1}, {-1, 1}}))");
+    assertTrue(svg.contains("<path d=\"M "), svg);
+    assertTrue(export("Graphics(Ellipsoid({0, 0}, {{4, 1}, {1, 2}}))").contains("<path d=\"M "));
+  }
+
   /** A tall picture of automatic size is 432 high and narrower than the default width. */
   @Test
   public void testTallPictureOfAutomaticSize() {

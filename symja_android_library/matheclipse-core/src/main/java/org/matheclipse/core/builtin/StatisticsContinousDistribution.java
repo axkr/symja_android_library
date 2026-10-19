@@ -2658,6 +2658,7 @@ public class StatisticsContinousDistribution {
       S.SechDistribution.setEvaluator(new SechDistribution());
       S.TriangularDistribution.setEvaluator(new TriangularDistribution());
       S.WignerSemicircleDistribution.setEvaluator(new WignerSemicircleDistribution());
+      S.MarchenkoPasturDistribution.setEvaluator(new MarchenkoPasturDistribution());
       S.BenktanderGibratDistribution.setEvaluator(new BenktanderGibratDistribution());
       S.BenktanderWeibullDistribution.setEvaluator(new BenktanderWeibullDistribution());
       S.BetaPrimeDistribution.setEvaluator(new BetaPrimeDistribution());
@@ -6153,6 +6154,90 @@ public class StatisticsContinousDistribution {
       IExpr[] p = parameters(dist);
       // r^2/4
       return p != null ? F.Divide(F.Sqr(p[1]), F.C4) : F.NIL;
+    }
+  }
+
+  /**
+   * <code>MarchenkoPasturDistribution(lambda)</code> or
+   * <code>MarchenkoPasturDistribution(lambda, sigma)</code> - the distribution of the eigenvalues
+   * of a large random covariance matrix with the ratio <code>lambda</code> and the variance
+   * <code>sigma^2</code> of its entries.
+   */
+  private static final class MarchenkoPasturDistribution extends AbstractEvaluator
+      implements IContinuousDistribution, IPDF, IStatistics {
+
+    /** <code>{lambda, sigma}</code> */
+    private static IExpr[] parameters(IAST dist) {
+      if (dist.isAST2()) {
+        return new IExpr[] {dist.arg1(), dist.arg2()};
+      }
+      return null;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        // the scale sigma is 1 by default
+        return F.binaryAST2(S.MarchenkoPasturDistribution, ast.arg1(), F.C1);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      IExpr[] p = parameters(dist);
+      return p != null ? F.Sqr(p[1]) : F.NIL;
+    }
+
+    @Override
+    public IExpr parameterAssumptions(IAST dist) {
+      IExpr[] p = parameters(dist);
+      return p != null ? F.And(F.Greater(p[0], F.C0), F.Greater(p[1], F.C0)) : F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      IExpr[] p = parameters(dist);
+      if (p == null || !p[0].isReal() || ((IReal) p[0]).isGT(F.C1)) {
+        // for lambda > 1 a part of the mass lies at 0, so the density is only that of a
+        // known lambda <= 1
+        return F.NIL;
+      }
+      IExpr lambda = p[0];
+      IExpr variance = F.Sqr(p[1]);
+      // the support from sigma^2*(1-Sqrt(lambda))^2 to sigma^2*(1+Sqrt(lambda))^2
+      IExpr lower = F.Times(variance, F.Sqr(F.Subtract(F.C1, F.Sqrt(lambda))));
+      IExpr upper = F.Times(variance, F.Sqr(F.Plus(F.C1, F.Sqrt(lambda))));
+      // Piecewise({{Sqrt((upper-#)*(#-lower))/(2*Pi*lambda*sigma^2*#), lower <= # <= upper}}, 0)&
+      return callFunction(F.Function(F.Piecewise(F.list(F.list(
+          F.Divide(F.Sqrt(F.Times(F.Subtract(upper, F.Slot1), F.Subtract(F.Slot1, lower))),
+              F.Times(F.C2, F.Pi, lambda, variance, F.Slot1)),
+          F.LessEqual(lower, F.Slot1, upper))), F.C0)), k);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public IExpr variance(IAST dist) {
+      IExpr[] p = parameters(dist);
+      // lambda*sigma^4
+      return p != null ? F.Times(p[0], F.Power(p[1], F.C4)) : F.NIL;
     }
   }
 

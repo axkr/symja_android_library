@@ -1338,6 +1338,26 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       }
     }
 
+    if (!fixedDimension && defaultDimension <= 0 && dimension != null) {
+      // the dimensions are those of all the explicit positions, also for a pattern rule before
+      // the position which widens them
+      for (int j = 1; j < arrayRulesList.size(); j++) {
+        IExpr rule = arrayRulesList.get(j);
+        if (!rule.isRuleAST()) {
+          continue;
+        }
+        IExpr lhs = rule.first();
+        if (lhs.isList() && lhs.argSize() == depth
+            && ((IAST) lhs).forAll(p -> p.isInteger() && p.toIntDefault() > 0)) {
+          for (int i = 0; i < depth; i++) {
+            dimension[i] = Math.max(dimension[i], lhs.getAt(i + 1).toIntDefault());
+          }
+        } else if (depth == 1 && lhs.isInteger() && lhs.toIntDefault() > 0) {
+          dimension[0] = Math.max(dimension[0], lhs.toIntDefault());
+        }
+      }
+    }
+
     // 2. Process the first rule
     if (!processSingleRule(rule1, trie, dimension, depth, determineDimension, fixedDimension,
         defaultDimension, defaultValue, arrayRulesList, true, engine)) {

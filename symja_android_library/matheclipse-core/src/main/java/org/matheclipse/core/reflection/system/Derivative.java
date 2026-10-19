@@ -169,75 +169,98 @@ public class Derivative extends AbstractFunctionEvaluator {
   }
 
   /**
-   * A partial derivative of <code>Max</code> or <code>Min</code> at real numbers. Of the first
-   * order: <code>1</code> for the argument which alone is the extremum and <code>0</code> for the
-   * others, as <code>Derivative(0,1)[Max][0.5, 2.25]</code> is <code>1</code>. Of a higher order
-   * <code>0</code>, since the function is one of its arguments near the point. At a tie the
-   * derivative does not exist and the expression stays.
+   * A partial derivative of <code>Max</code> or <code>Min</code>. Of the first order in argument
+   * <code>k</code>: a <code>Piecewise</code> over the cases that argument <code>i</code> is the
+   * extremum, the first one at a tie, which is <code>1</code> for <code>i == k</code> and
+   * <code>0</code> otherwise; <code>Derivative(0,1)[Max][x,y]</code> is
+   * <code>Piecewise({{0, x-y >= 0}}, 1)</code>. Adjacent cases of the same value are joined, the
+   * last case is the default. Of a higher order <code>0</code>, since the function is one of its
+   * arguments almost everywhere.
    */
   private static IExpr maxMinDerivative(IAST orders, IExpr function, IAST arguments) {
-    if ((function != S.Max && function != S.Min) || arguments == null
-        || arguments.argSize() != orders.argSize() || arguments.argSize() < 1) {
+    if (function != S.Max && function != S.Min) {
+      return F.NIL;
+    }
+    if (arguments == null) {
+      // Derivative(1,1)[Max] is applied to its arguments only after it is evaluated itself
+      int total = 0;
+      for (int i = 1; i <= orders.argSize(); i++) {
+        int n = orders.get(i).toIntDefault(-1);
+        if (n < 0) {
+          return F.NIL;
+        }
+        total += n;
+      }
+      return total > 1 ? F.Function(F.C0) : F.NIL;
+    }
+    if (arguments.argSize() != orders.argSize() || arguments.argSize() < 1
+        || arguments.exists(x -> x.isList() || (x.isNumber() && !x.isReal()))) {
+      // the maximum of a list, or of complex numbers, is not one of the arguments
       return F.NIL;
     }
     int position = -1;
-    boolean higherOrder = false;
+    int total = 0;
     for (int i = 1; i <= orders.argSize(); i++) {
       IExpr order = orders.get(i);
       if (!order.isInteger() || order.isNegative()) {
         return F.NIL;
       }
-      if (order.isZero()) {
-        continue;
-      }
-      if (order.isOne() && position < 0) {
+      int n = order.toIntDefault();
+      if (n > 0) {
         position = i;
-      } else {
-        higherOrder = true;
+        total += n;
       }
     }
-    if (position < 0 && !higherOrder) {
+    if (total == 0) {
       return F.NIL;
     }
-    double own = Double.NaN;
-    double[] values = new double[arguments.argSize()];
-    for (int i = 1; i <= arguments.argSize(); i++) {
-      if (!arguments.get(i).isReal()) {
-        return F.NIL;
-      }
-      values[i - 1] = arguments.get(i).evalfNaN();
-      if (Double.isNaN(values[i - 1])) {
-        return F.NIL;
-      }
+    if (total > 1) {
+      return F.C0;
     }
-    if (higherOrder) {
-      // zero unless the extremum is reached by two arguments
-      double extremum = values[0];
-      for (double value : values) {
-        extremum = function == S.Max ? Math.max(extremum, value) : Math.min(extremum, value);
-      }
-      int reached = 0;
-      for (double value : values) {
-        if (value == extremum) {
-          reached++;
+    final boolean max = function == S.Max;
+    final int n = arguments.argSize();
+    // the value and the condition of each case but the last, which is the default
+    IASTAppendable cases = F.ListAlloc(n);
+    IExpr previousValue = null;
+    IASTAppendable previousCondition = null;
+    for (int i = 1; i < n; i++) {
+      IExpr xi = arguments.get(i);
+      IASTAppendable condition = F.ast(S.And, n);
+      for (int j = 1; j <= n; j++) {
+        if (j < i) {
+          // an earlier argument which would win a tie is not the extremum
+          IExpr difference = F.Subtract(arguments.get(j), xi);
+          condition.append(max ? F.Less(difference, F.C0) : F.Greater(difference, F.C0));
+        } else if (j > i) {
+          IExpr difference = F.Subtract(xi, arguments.get(j));
+          condition.append(max ? F.GreaterEqual(difference, F.C0) : F.LessEqual(difference, F.C0));
         }
       }
-      return reached == 1 ? F.C0 : F.NIL;
-    }
-    own = values[position - 1];
-    boolean tie = false;
-    for (int i = 0; i < values.length; i++) {
-      if (i == position - 1) {
-        continue;
+      IExpr value = i == position ? F.C1 : F.C0;
+      IExpr conjunction = condition.isAST1() ? condition.arg1() : condition;
+      if (value.equals(previousValue)) {
+        previousCondition.append(conjunction);
+      } else {
+        if (previousCondition != null) {
+          cases.append(F.list(previousValue, orOf(previousCondition)));
+        }
+        previousValue = value;
+        previousCondition = F.ast(S.Or);
+        previousCondition.append(conjunction);
       }
-      if (function == S.Max ? values[i] > own : values[i] < own) {
-        // another argument alone decides the value
-        return F.C0;
-      }
-      tie |= values[i] == own;
     }
-    // a tie only matters between the arguments which are the extremum
-    return tie ? F.NIL : F.C1;
+    IExpr defaultValue = n == position ? F.C1 : F.C0;
+    if (previousCondition != null && !previousValue.equals(defaultValue)) {
+      cases.append(F.list(previousValue, orOf(previousCondition)));
+    }
+    if (cases.isEmpty()) {
+      return defaultValue;
+    }
+    return F.Piecewise(cases, defaultValue);
+  }
+
+  private static IExpr orOf(IASTAppendable or) {
+    return or.isAST1() ? or.arg1() : or;
   }
 
   /**

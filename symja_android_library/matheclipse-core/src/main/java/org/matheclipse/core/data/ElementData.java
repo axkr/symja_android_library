@@ -431,6 +431,12 @@ public class ElementData extends AbstractFunctionEvaluator {
     if (property.equals("CASNumber")) {
       return "CAS number";
     }
+    if (property.equals("NeelPoint")) {
+      return "N\u00e9el point";
+    }
+    if (property.equals("FusionHeat")) {
+      return "molar heat of fusion";
+    }
     StringBuilder text = new StringBuilder(property.length() + 4);
     int start = 0;
     for (int i = 1; i <= property.length(); i++) {
