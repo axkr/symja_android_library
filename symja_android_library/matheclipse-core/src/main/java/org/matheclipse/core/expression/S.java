@@ -3825,6 +3825,15 @@ public class S {
       S.initFinalSymbol("ColorFunctionScaling", ID.ColorFunctionScaling);
 
   /**
+   * Colorize(x) - TODO describe `Colorize`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Colorize.md">Colorize
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Colorize = S.initFinalSymbol("Colorize", ID.Colorize);
+
+  /**
    * ColorNegate(x) - TODO describe `ColorNegate`.
    * 
    * @see <a href=
@@ -14813,6 +14822,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol MapThread = S.initFinalSymbol("MapThread", ID.MapThread);
+
+  /**
+   * MarchenkoPasturDistribution(x) - TODO describe `MarchenkoPasturDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MarchenkoPasturDistribution.md">MarchenkoPasturDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MarchenkoPasturDistribution =
+      S.initFinalSymbol("MarchenkoPasturDistribution", ID.MarchenkoPasturDistribution);
 
   /**
    * MarcumQ(x) - TODO describe `MarcumQ`.
