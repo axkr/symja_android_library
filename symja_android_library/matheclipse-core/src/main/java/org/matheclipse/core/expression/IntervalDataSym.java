@@ -868,24 +868,19 @@ public class IntervalDataSym {
             IASTMutable copy = list1.copy();
             result.append(list1);
             copy.set(1, max.negate());
-            copy.set(2, maxLess == S.Less ? S.Less : S.LessEqual);
-            copy.set(3, minLess == S.Less ? S.Less : S.LessEqual);
+            copy.set(2, maxLess);
+            copy.set(3, minLess);
             copy.set(4, min.negate());
             result.append(copy);
             continue;
           } else if (min.isNegativeResult()) {
-            IExpr minNegate = min.negate();
-            if (engine.evalLess(minNegate, max)) {
-              result.append(list1);
-              continue;
-            }
-            if (engine.evalLess(max, minNegate)) {
-              IASTMutable copy = list1.copy();
-              copy.set(1, max.negate());
-              copy.set(2, maxLess == S.Less ? S.Less : S.LessEqual);
-              result.append(copy);
-              continue;
-            }
+            // a negative lower bound doesn't restrict Abs(x), only the upper one does:
+            // Abs(x) in (min, max] with min < 0 is x in [-max, max]
+            IASTMutable copy = list1.copy();
+            copy.set(1, max.negate());
+            copy.set(2, maxLess);
+            result.append(copy);
+            continue;
           }
           return F.NIL;
         } else if (max.isNegativeResult() && min.isNegativeResult()) {

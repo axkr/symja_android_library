@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class IntervalDataTest extends ExprEvaluatorTestCase {
@@ -447,6 +449,37 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         true);
     check("Equal(IntervalData({2,Less,Less, 5}), IntervalData({2,Less,Less, 5}))", //
         "True");
+  }
+
+  /** Check the values of x for which Abs(x) lies in the given interval. */
+  private void checkInverseAbs(String intervalData, String expected) {
+    IExpr result = IntervalDataSym.inverseAbs((IAST) evaluator.eval(intervalData));
+    assertEquals(expected, result.toString());
+  }
+
+  @Test
+  public void testInverseAbs() {
+    // a non-negative interval is mirrored, the open and closed ends swap sides
+    checkInverseAbs("IntervalData({2,LessEqual,Less,7})", //
+        "IntervalData({-7,Less,LessEqual,-2},{2,LessEqual,Less,7})");
+    checkInverseAbs("IntervalData({0,Less,LessEqual,4})", //
+        "IntervalData({-4,LessEqual,Less,0},{0,Less,LessEqual,4})");
+    // a negative lower bound doesn't restrict Abs(x), the upper bound decides both ends
+    checkInverseAbs("IntervalData({-2,Less,LessEqual,7})", //
+        "IntervalData({-7,LessEqual,LessEqual,7})");
+    checkInverseAbs("IntervalData({-9,LessEqual,Less,4})", //
+        "IntervalData({-4,Less,Less,4})");
+    checkInverseAbs("IntervalData({-6,Less,LessEqual,6})", //
+        "IntervalData({-6,LessEqual,LessEqual,6})");
+    checkInverseAbs("IntervalData({-2,Less,Less,Infinity})", //
+        "IntervalData({-Infinity,Less,Less,Infinity})");
+    checkInverseAbs("IntervalData({-2,Less,LessEqual,0})", //
+        "IntervalData({0,LessEqual,LessEqual,0})");
+    checkInverseAbs("IntervalData({-2,Less,Less,0})", //
+        "IntervalData()");
+    // Abs(x) is never negative
+    checkInverseAbs("IntervalData({-8,LessEqual,LessEqual,-5})", //
+        "IntervalData()");
   }
 
   @Test
