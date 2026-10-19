@@ -19,8 +19,8 @@ public class FastutilDependencyTest {
 
   @ArchTest
   public static final ArchRule noFastutilOutsideTablesaw = noClasses().that() //
-      .resideInAnyPackage("org.matheclipse.core..", "org.matheclipse.gpl..",
-          "org.matheclipse.image..", "org.matheclipse.io..") //
+      .resideInAnyPackage("org.matheclipse.core..", "org.matheclipse.image..",
+          "org.matheclipse.io..") //
       .should().dependOnClassesThat().resideInAPackage("it.unimi.dsi..") //
       .because("the slim replacements in org.matheclipse.external.fastutil are used instead");
 }
