@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.DMath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -3098,6 +3099,13 @@ public class StatisticsContinousDistribution {
           double kDouble = k.evalfNaN();
           if (!Double.isNaN(nDouble) && !Double.isNaN(mDouble) && !Double.isNaN(kDouble)) {
             try {
+              if (kDouble > 0.0 && kDouble < 1.0 && mDouble > 0.0) {
+                // the closed form, so that the median of LogNormalDistribution(0, 1) is 1.
+                // exactly rather than the result of a root search; InverseErfc keeps the digits
+                // of a small probability in the tails
+                return F.num(Math.exp(
+                    nDouble - mDouble * Math.sqrt(2.0) * DMath.inverseErfc(2.0 * kDouble)));
+              }
               return F.num(
                   new org.hipparchus.distribution.continuous.LogNormalDistribution(nDouble, mDouble) //
                       .inverseCumulativeProbability(kDouble));

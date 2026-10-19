@@ -192,4 +192,25 @@ public class ImageStructureTest extends AbstractTestCase {
     check("ImageType(Colorize({{0, 1}, {1, 3}}))", //
         "Byte");
   }
+
+  @Test
+  public void testImageCropPadding() {
+    // centred, the image keeps its channels; the padding fills the rest
+    check("ImageData(ImageCrop(Image({{0.5, 0.25}}), {3, 2}, Padding -> 1))", //
+        "{{1.0,1.0,1.0},\n {0.5,0.25,1.0}}");
+    // {-1, -1} puts it at the bottom left
+    check("ImageData(ImageCrop(Image({{0.5, 0.25}}), {3, 2}, {-1, -1}, Padding -> 0))", //
+        "{{0.0,0.0,0.0},\n {0.5,0.25,0.0}}");
+    // a direction in which the image is larger is cut as without padding
+    check("img = Image(Table(i/8.0 + j/64.0, {i, 3}, {j, 4})); "
+        + "ImageData(ImageCrop(img, {6, 2}, Padding -> 0))[[All, 2 ;; 5]] == "
+        + "ImageData(ImageCrop(img, {4, 2}))", //
+        "True");
+    check("ImageData(ImageCrop(Image({{0.5, 0.25}}), {2, 1}, Padding -> 0)) == "
+        + "ImageData(Image({{0.5, 0.25}}))", //
+        "True");
+    // the samples of a Byte image stay in its range
+    check("ImageData(ImageCrop(Image({{7, 9}}, \"Byte\"), {3, 1}, {-1, 0}, Padding -> 3), \"Byte\")", //
+        "{{7,9,255}}");
+  }
 }

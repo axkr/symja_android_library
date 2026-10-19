@@ -209,7 +209,9 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
     check("lm(\"BadProperty\")", //
         "FittedModel[0.15+1.94*x][BadProperty]");
     check("lm(\"Properties\")", //
-        "{AdjustedRSquared,BestFit,BestFitParameters,EstimatedVariance,FitResiduals,"
+        "{AdjustedRSquared,ANOVATable,ANOVATableDegreesOfFreedom,ANOVATableEntries,"
+            + "ANOVATableFStatistics,ANOVATableMeanSquares,ANOVATablePValues,ANOVATableSumsOfSquares,"
+            + "BestFit,BestFitParameters,EstimatedVariance,FitResiduals,"
             + "ParameterConfidenceIntervals,ParameterErrors,ParameterPValues,ParameterTStatistics,"
             + "ParameterTable,ParameterTableEntries,PredictedResponse,RSquared}");
   }

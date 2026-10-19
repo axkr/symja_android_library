@@ -336,6 +336,11 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
 
           // Fallback to General CA (Explicit rules, functions, or symbolic states)
           if (!result.isPresent()) {
+            if (!is2D && rule.isList() && rule.argSize() >= 3 && !rule.first().isInteger()
+                && offsetNeighbourhood2D(rule.getAt(3)) != null && isGrid2D((IAST) init)) {
+              // {f, {}, {{dy1, dx1}, ...}}: a neighbourhood of offsets in the plane
+              is2D = true;
+            }
             if (is2D) {
               result = evaluateGeneral2D(rule, (IAST) init, stepsToGenerate, tStart, tEnd, dt,
                   returnSingleStep, isOperatorForm, rY, rX, engine);
@@ -392,6 +397,42 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
         }
       }
       offsets[i - 1] = offset;
+    }
+    return offsets;
+  }
+
+  /**
+   * <code>true</code> if the initial condition is a two-dimensional array, by itself or as
+   * <code>{array, background}</code>.
+   */
+  private static boolean isGrid2D(IAST init) {
+    IExpr grid = init.argSize() == 2 && init.arg2().isInteger() && init.arg1().isList()
+        ? init.arg1()
+        : init;
+    return grid.isList() && grid.argSize() > 0 && grid.first().isList();
+  }
+
+  /**
+   * The offsets of an explicit two-dimensional neighbourhood <code>{{dy1, dx1}, {dy2, dx2},
+   * ...}</code>, or {@code null} if <code>rspec</code> isn't one.
+   */
+  private static int[][] offsetNeighbourhood2D(IExpr rspec) {
+    if (!rspec.isList() || rspec.argSize() == 0) {
+      return null;
+    }
+    int[][] offsets = new int[rspec.argSize()][];
+    for (int i = 1; i <= rspec.argSize(); i++) {
+      IExpr offset = ((IAST) rspec).get(i);
+      if (!offset.isList2() || !offset.first().isInteger() || !offset.second().isInteger()) {
+        return null;
+      }
+      int dy = offset.first().toIntDefault();
+      int dx = offset.second().toIntDefault();
+      if (F.isNotPresent(dy) || F.isNotPresent(dx) || Math.abs(dy) > 1000
+          || Math.abs(dx) > 1000) {
+        return null;
+      }
+      offsets[i - 1] = new int[] {dy, dx};
     }
     return offsets;
   }
@@ -1207,8 +1248,19 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     }
 
     IExpr fun = rule;
+    // {f, {}, {{dy1, dx1}, {dy2, dx2}, ...}}: f gets the values at these offsets, in this order
+    int[][] offsets = null;
     if (isGeneralFunList) {
       fun = rule.get(1);
+      offsets = offsetNeighbourhood2D(rule.get(3));
+      if (offsets != null) {
+        rY = 0;
+        rX = 0;
+        for (int[] offset : offsets) {
+          rY = Math.max(rY, Math.abs(offset[0]));
+          rX = Math.max(rX, Math.abs(offset[1]));
+        }
+      }
     }
 
     boolean isCyclic = true;
@@ -1293,6 +1345,24 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       for (int y = 0; y < gridY; y++) {
         for (int x = 0; x < gridX; x++) {
           IExpr[] state = history.get(history.size() - 1);
+          if (offsets != null) {
+            IASTAppendable values = F.ListAlloc(offsets.length);
+            for (int[] offset : offsets) {
+              int ny = y + offset[0];
+              int nx = x + offset[1];
+              if (isCyclic) {
+                ny = (ny % gridY + gridY) % gridY;
+                nx = (nx % gridX + gridX) % gridX;
+                values.append(state[ny * gridX + nx]);
+              } else if (ny < 0 || ny >= gridY || nx < 0 || nx >= gridX) {
+                values.append(bgHistory.get(bgHistory.size() - 1));
+              } else {
+                values.append(state[ny * gridX + nx]);
+              }
+            }
+            nextState[y * gridX + x] = engine.evaluate(F.binaryAST2(fun, values, F.ZZ(t + 1)));
+            continue;
+          }
           IASTAppendable neighborhood = F.ListAlloc(2 * rY + 1);
           for (int dy = -rY; dy <= rY; dy++) {
             IASTAppendable row = F.ListAlloc(2 * rX + 1);
@@ -1326,12 +1396,18 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       if (!isCyclic) {
         IExpr oldBg = bgHistory.get(bgHistory.size() - 1);
         IASTAppendable bgNeighborhood = F.ListAlloc(2 * rY + 1);
-        for (int dy = -rY; dy <= rY; dy++) {
-          IASTAppendable row = F.ListAlloc(2 * rX + 1);
-          for (int dx = -rX; dx <= rX; dx++) {
-            row.append(oldBg);
+        if (offsets != null) {
+          for (int i = 0; i < offsets.length; i++) {
+            bgNeighborhood.append(oldBg);
           }
-          bgNeighborhood.append(row);
+        } else {
+          for (int dy = -rY; dy <= rY; dy++) {
+            IASTAppendable row = F.ListAlloc(2 * rX + 1);
+            for (int dx = -rX; dx <= rX; dx++) {
+              row.append(oldBg);
+            }
+            bgNeighborhood.append(row);
+          }
         }
         if (isExplicitRule) {
           nextBg = engine.evaluate(F.Replace(bgNeighborhood, rule));

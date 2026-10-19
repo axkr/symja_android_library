@@ -13467,6 +13467,78 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testInterpolationOfTensorValues() {
+    // each component is interpolated on its own
+    check("Interpolation({{1, {2, 4}}, {3, {6, 8}}}, InterpolationOrder -> 1)[2]", //
+        "{4,6}");
+  }
+
+  @Test
+  public void testCellularAutomatonPlaneOffsets() {
+    // f gets the values at the offsets {dy, dx}, cyclically
+    check("CellularAutomaton({Total(#) &, {}, {{0, 1}, {1, 0}}}, {{1, 2}, {3, 4}}, 1)", //
+        "{{{1,2},{3,4}},{{5,5},{5,5}}}");
+  }
+
+  @Test
+  public void testLogNormalQuantileClosedForm() {
+    check("Quantile(LogNormalDistribution(2, 1), 0.5) == Exp(2.0)", //
+        "True");
+    // far tails, where 2*p-1 loses the digits of p
+    check("Abs(Log(Quantile(LogNormalDistribution(0, 1), 3.0*^-18)) + 8.6325) < 10^-3", //
+        "True");
+    check("Abs(Log(Quantile(LogNormalDistribution(1, 2), 1 - 4.0*^-13)) - 1 - 2*7.1612) < 10^-3", //
+        "True");
+    // the machine InverseErfc keeps the digits of a small argument and of one close to 2
+    check("{Abs(InverseErfc(2.0*^-16)/5.81389 - 1) < 10^-4, "
+        + "InverseErfc(2 - 2.0^-52) == -InverseErfc(2.0^-52)}", //
+        "{True,True}");
+  }
+
+  @Test
+  public void testLinearModelFitAnova() {
+    check("lm = LinearModelFit({{1, 2}, {2, 3}, {3, 5}, {4, 4}}, x, x); "
+        + "{lm(\"ANOVATableDegreesOfFreedom\"), "
+        + "Abs(lm(\"ANOVATableSumsOfSquares\")[[1]]/lm(\"ANOVATableSumsOfSquares\")[[3]] "
+        + "- lm(\"RSquared\")) < 10^-12, "
+        + "Abs(lm(\"ANOVATableFStatistics\")[[1]] - lm(\"ParameterTStatistics\")[[2]]^2) < 10^-10}", //
+        "{{1,2,3},True,True}");
+    check("lm = LinearModelFit({{1, 2}, {2, 3}, {3, 5}, {4, 4}}, x, x); "
+        + "Round(lm(\"ANOVATableEntries\"), 10^-6)", //
+        "{{1,16/5,16/5,888889/250000,1/5},{2,9/5,9/10},{3,5}}");
+    // a basis function which depends on another has no sum of squares of its own
+    check("lm = LinearModelFit({{1, 1}, {2, 3}, {3, 4}, {5, 6}}, {x, 3*x}, x); "
+        + "lm(\"ANOVATableEntries\")[[2]]", //
+        "{1,Indeterminate,Indeterminate,Indeterminate,Indeterminate}");
+    // a small p-value doesn't cancel to 0
+    check("lm = LinearModelFit(Table({k, 3*k + Sin(k)/50.0}, {k, 12}), x, x); "
+        + "0 < lm(\"ANOVATablePValues\")[[1]] < 10^-14", //
+        "True");
+  }
+
+  @Test
+  public void testFillingBareSeriesNumbers() {
+    check("Length(Cases(ListLinePlot({{1, 2, 3}, {3, 2, 1}}, Filling -> {2}), _Polygon, Infinity))", //
+        "1");
+  }
+
+  @Test
+  public void testQuantilePlot() {
+    check("Cases(QuantilePlot({1, 2, 4}, {1, 2, 3, 4, 5}), Point(p_) :> p, Infinity)", //
+        "{{{2.0,1.0},{3.0,2.0},{4.0,4.0}}}");
+    check("Head(QuantilePlot({{1, 3, 2}, {4, 6, 5, 7}}))", //
+        "Graphics");
+    check("QuantilePlot(q)", //
+        "QuantilePlot(q)");
+  }
+
+  @Test
+  public void testParametricPlotListOfRegions() {
+    check("Length(Cases(ParametricPlot({{u, v}, {u + 2, v}}, {u, 0, 1}, {v, 0, 1}), _Polygon, Infinity))", //
+        "2");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

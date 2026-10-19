@@ -414,6 +414,7 @@ public final class FunctionDefinitions {
       S.ListCurvePathPlot
           .setEvaluator(new org.matheclipse.core.builtin.graphics.ListCurvePathPlot());
       S.ListPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListPlot());
+      S.QuantilePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.QuantilePlot());
       S.ListLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLogPlot());
       S.ListLogLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLogLogPlot());
       S.ListLogLinearPlot

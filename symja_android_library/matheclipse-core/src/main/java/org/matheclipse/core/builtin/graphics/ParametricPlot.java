@@ -74,54 +74,16 @@ public class ParametricPlot extends Plot {
         // is on unless it is switched off: lines of constant u and of constant v, mapped through
         // the parametrisation, are what shows how the region is parametrised
         IExpr meshOption = GraphicsOptions.optionValue(originalAST, S.Mesh, S.Automatic);
-        IASTAppendable meshLines = F.ListAlloc();
-        // a texture is laid onto the parameter grid, which needs the region's texture coordinates
-        boolean textured = options[GraphicsOptions.X_PLOTSTYLE].isAST(S.Texture, 2);
-        IExpr graphicsComplex = parametricRegionToGraphicsComplex(function, rangeList1, rangeList2,
-            graphicsOptions, engine,
-            GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), meshOption,
-            meshLines, textured);
-
-        if (graphicsComplex.isNIL()) {
-          return F.NIL;
-        }
-
-        // Region Rendering Logic:
-        // 1. Get Color (Default to first plot style or 0)
-        IExpr plotStyle = options[GraphicsOptions.X_PLOTSTYLE];
-        IExpr color;
-        if (plotStyle.isNone()) {
-          color = GraphicsOptions.plotStyleDirective(0, F.NIL, graphicsOptions.curveThickness());
-        } else {
-          color = GraphicsOptions.getPlotStyle(plotStyle, 0);
-        }
-        // an Opacity in the style is the opacity of the region; a style which is nothing but an
-        // Opacity leaves the colour to the default
-        IExpr opacity = regionOpacity(plotStyle);
-        if (color.isAST(S.Opacity) || color.isNumber()) {
-          color = GraphicsOptions.plotStyleDirective(0, F.NIL, graphicsOptions.curveThickness());
-        }
-
-        // 2. The region, translucent so that what lies under it - the axes, and the mesh drawn on
-        // top - stays visible; EdgeForm(None) keeps the sampling grid itself from being outlined.
-        // Then the mesh, in a group of its own so the region's opacity does not reach it.
+        // a list of parametrisations {{fx1, fy1}, {fx2, fy2}, ...} is one region each
+        IAST functions = function.isList() && function.argSize() > 0 && function.first().isList()
+            ? (IAST) function
+            : F.list(function);
         IASTAppendable graphicsPrimitives = F.ListAlloc();
-        if (textured) {
-          // the texture is painted as it is, opaque, onto the grid its coordinates give
-          graphicsPrimitives.append(F.List(plotStyle, F.EdgeForm(S.None), graphicsComplex));
-        } else {
-          graphicsPrimitives.append(F.List(color, F.unaryAST1(S.Opacity, opacity),
-              F.EdgeForm(S.None), graphicsComplex));
-        }
-        if (meshLines.argSize() > 0) {
-          IExpr meshStyle = GraphicsOptions.optionValue(originalAST, S.MeshStyle, S.Automatic);
-          IASTAppendable mesh = F.ListAlloc(meshLines.argSize() + 1);
-          mesh.append(meshStyle.isAutomatic()
-              ? F.List(org.matheclipse.core.builtin.graphics3d.Plot3DTools.MESH_STYLE,
-                  F.unaryAST1(S.AbsoluteThickness, F.num(0.5)))
-              : meshStyle);
-          mesh.appendArgs(meshLines);
-          graphicsPrimitives.append(mesh);
+        for (int k = 1; k <= functions.argSize(); k++) {
+          if (!appendRegion(functions.get(k), k - 1, rangeList1, rangeList2, graphicsOptions,
+              options, originalAST, meshOption, graphicsPrimitives, engine)) {
+            return F.NIL;
+          }
         }
 
         // 3. Return Graphics object
@@ -163,6 +125,66 @@ public class ParametricPlot extends Plot {
     }
 
     return F.NIL;
+  }
+
+  /**
+   * Appends the region of one parametrisation <code>{fx, fy}</code> over the two parameter
+   * ranges, in the plot style of the <code>index</code>-th function, and its mesh.
+   *
+   * @return <code>false</code> if the region can't be sampled
+   */
+  private static boolean appendRegion(IExpr function, int index, IAST rangeList1, IAST rangeList2,
+      GraphicsOptions graphicsOptions, IExpr[] options, IAST originalAST, IExpr meshOption,
+      IASTAppendable graphicsPrimitives, EvalEngine engine) {
+    IASTAppendable meshLines = F.ListAlloc();
+    // a texture is laid onto the parameter grid, which needs the region's texture coordinates
+    boolean textured = options[GraphicsOptions.X_PLOTSTYLE].isAST(S.Texture, 2);
+    IExpr graphicsComplex = parametricRegionToGraphicsComplex(function, rangeList1, rangeList2,
+        graphicsOptions, engine,
+        GraphicsOptions.optionValue(originalAST, S.RegionFunction, S.Automatic), meshOption,
+        meshLines, textured);
+
+    if (graphicsComplex.isNIL()) {
+      return false;
+    }
+
+    // Region Rendering Logic:
+    // 1. Get Color (Default to first plot style or 0)
+    IExpr plotStyle = options[GraphicsOptions.X_PLOTSTYLE];
+    IExpr color;
+    if (plotStyle.isNone()) {
+      color = GraphicsOptions.plotStyleDirective(index, F.NIL, graphicsOptions.curveThickness());
+    } else {
+      color = GraphicsOptions.getPlotStyle(plotStyle, index);
+    }
+    // an Opacity in the style is the opacity of the region; a style which is nothing but an
+    // Opacity leaves the colour to the default
+    IExpr opacity = regionOpacity(plotStyle);
+    if (color.isAST(S.Opacity) || color.isNumber()) {
+      color = GraphicsOptions.plotStyleDirective(index, F.NIL, graphicsOptions.curveThickness());
+    }
+
+    // 2. The region, translucent so that what lies under it - the axes, and the mesh drawn on
+    // top - stays visible; EdgeForm(None) keeps the sampling grid itself from being outlined.
+    // Then the mesh, in a group of its own so the region's opacity does not reach it.
+    if (textured) {
+      // the texture is painted as it is, opaque, onto the grid its coordinates give
+      graphicsPrimitives.append(F.List(plotStyle, F.EdgeForm(S.None), graphicsComplex));
+    } else {
+      graphicsPrimitives.append(F.List(color, F.unaryAST1(S.Opacity, opacity),
+          F.EdgeForm(S.None), graphicsComplex));
+    }
+    if (meshLines.argSize() > 0) {
+      IExpr meshStyle = GraphicsOptions.optionValue(originalAST, S.MeshStyle, S.Automatic);
+      IASTAppendable mesh = F.ListAlloc(meshLines.argSize() + 1);
+      mesh.append(meshStyle.isAutomatic()
+          ? F.List(org.matheclipse.core.builtin.graphics3d.Plot3DTools.MESH_STYLE,
+              F.unaryAST1(S.AbsoluteThickness, F.num(0.5)))
+          : meshStyle);
+      mesh.appendArgs(meshLines);
+      graphicsPrimitives.append(mesh);
+    }
+    return true;
   }
 
   /**

@@ -1283,6 +1283,12 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       if (srcIndex >= 0 && srcIndex < curves.size()) {
         processFillingAction(srcIndex, target, curves, out, globalStyle, baseline, yRange);
       }
+    } else if (rule.isInteger()) {
+      // a bare series number fills that series to the axis
+      int srcIndex = rule.toIntDefault(0) - 1;
+      if (srcIndex >= 0 && srcIndex < curves.size()) {
+        processFillingAction(srcIndex, S.Axis, curves, out, globalStyle, baseline, yRange);
+      }
     }
   }
 

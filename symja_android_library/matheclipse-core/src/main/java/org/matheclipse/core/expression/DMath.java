@@ -1086,7 +1086,19 @@ public class DMath {
     return org.hipparchus.special.Erf.erfInv(value);
   }
 
+  /**
+   * The inverse of <code>Erfc</code> for <code>0 &lt; value &lt; 2</code>. Near the ends the
+   * argument is handed to an arbitrary precision evaluation, since <code>erfInv(1 - value)</code>
+   * would lose the digits of a small <code>value</code>.
+   */
   public static double inverseErfc(double value) {
+    if (value > 1.5 && value < 2.0) {
+      // 2 - value is exact here
+      return -inverseErfc(2.0 - value);
+    }
+    if (value > 0.0 && value < 0.5) {
+      return EvalEngine.getApfloatDouble().inverseErfc(new Apfloat(value)).doubleValue();
+    }
     return org.hipparchus.special.Erf.erfcInv(value);
   }
 

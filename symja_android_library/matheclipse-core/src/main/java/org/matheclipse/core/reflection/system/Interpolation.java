@@ -31,6 +31,10 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       }
       return evaluate(ast.setAtCopy(1, points), argSize, options, engine, originalAST);
     }
+    IExpr tensorValued = tensorValued(ast, argSize, originalAST, engine);
+    if (tensorValued.isPresent()) {
+      return tensorValued;
+    }
     int[] dims = ast.arg1().isMatrix();
     if (dims != null && dims[0] >= 2 && dims[1] >= 2) {
       String method = "";
@@ -63,6 +67,93 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       return temp;
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>Interpolation({{x1, v1}, {x2, v2}, ...})</code> with values which are vectors or
+   * matrices of one shape: each component is interpolated on its own, and the result gives the
+   * tensor of the component values.
+   *
+   * @return {@link F#NIL} if the values aren't lists of one shape
+   */
+  private static IExpr tensorValued(IAST ast, int argSize, IAST originalAST, EvalEngine engine) {
+    IExpr data = ast.arg1();
+    if (!data.isList() || data.argSize() < 2) {
+      return F.NIL;
+    }
+    IExpr shape = null;
+    for (IExpr point : (IAST) data) {
+      if (!point.isList2() || !point.second().isList()) {
+        return F.NIL;
+      }
+      IExpr pointShape = F.Dimensions(point.second());
+      pointShape = engine.evaluate(pointShape);
+      if (shape == null) {
+        shape = pointShape;
+      } else if (!shape.equals(pointShape)) {
+        return F.NIL;
+      }
+    }
+    double min = Double.POSITIVE_INFINITY;
+    double max = Double.NEGATIVE_INFINITY;
+    for (IExpr point : (IAST) data) {
+      double abscissa = point.first().evalfNaN();
+      if (Double.isNaN(abscissa)) {
+        return F.NIL;
+      }
+      min = Math.min(min, abscissa);
+      max = Math.max(max, abscissa);
+    }
+    IExpr components =
+        componentFunctions((IAST) data, F.CEmptyList, (IAST) shape, originalAST, engine);
+    if (components.isNIL()) {
+      return F.NIL;
+    }
+    IExpr function =
+        InterpolatingFunctionExpr.newInstance((IAST) F.Function(components), min, max);
+    return argSize == 2 ? engine.evaluate(F.unaryAST1(function, ast.arg2())) : function;
+  }
+
+  /**
+   * The tensor of the interpolations of the components at the positions below
+   * <code>position</code>, each applied to <code>#1</code>.
+   */
+  private static IExpr componentFunctions(IAST data, IAST position, IAST shape, IAST originalAST,
+      EvalEngine engine) {
+    int depth = position.argSize();
+    if (depth == shape.argSize()) {
+      int[] indices = new int[depth];
+      for (int i = 0; i < depth; i++) {
+        indices[i] = position.get(i + 1).toIntDefault();
+      }
+      IASTAppendable componentData = F.ListAlloc(data.argSize());
+      for (IExpr point : data) {
+        componentData.append(F.list(point.first(), ((IAST) point.second()).getPart(indices)));
+      }
+      IASTAppendable call = F.ast(S.Interpolation, originalAST.argSize());
+      call.append(componentData);
+      for (int i = 2; i < originalAST.size(); i++) {
+        if (originalAST.get(i).isRuleAST()) {
+          call.append(originalAST.get(i));
+        }
+      }
+      IExpr interpolation = engine.evaluate(call);
+      if (interpolation.isAST(S.Interpolation)) {
+        return F.NIL;
+      }
+      return F.unaryAST1(interpolation, F.Slot1);
+    }
+    int size = shape.get(depth + 1).toIntDefault();
+    IASTAppendable result = F.ListAlloc(size);
+    for (int i = 1; i <= size; i++) {
+      IExpr component =
+          componentFunctions(data, position.appendClone(F.ZZ(i)), shape, originalAST, engine);
+      if (component.isNIL()) {
+        return F.NIL;
+      }
+      result.append(component);
+    }
+    return result;
   }
 
   public IExpr interpolation(IAST ast, int[] dims, String method, EvalEngine engine) {

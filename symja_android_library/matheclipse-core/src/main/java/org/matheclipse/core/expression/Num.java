@@ -1861,7 +1861,7 @@ public class Num implements INum {
   @Override
   public IExpr inverseErfc() {
     if (0.0 < value && value < 2.0) {
-      double erfcInv = org.hipparchus.special.Erf.erfcInv(value);
+      double erfcInv = DMath.inverseErfc(value);
       if (Double.isFinite(erfcInv)) {
         return Num.valueOf(erfcInv);
       }

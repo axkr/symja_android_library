@@ -258,14 +258,18 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
     return false;
   }
 
-  private static final String[] PROPERTIES = {"AdjustedRSquared", "BestFit", "BestFitParameters",
-      "EstimatedVariance", "FitResiduals", "ParameterConfidenceIntervals", "ParameterErrors",
-      "ParameterPValues", "ParameterTStatistics", "ParameterTable", "ParameterTableEntries",
-      "PredictedResponse", "RSquared"};
+  private static final String[] PROPERTIES = {"AdjustedRSquared", "ANOVATable",
+      "ANOVATableDegreesOfFreedom", "ANOVATableEntries", "ANOVATableFStatistics",
+      "ANOVATableMeanSquares", "ANOVATablePValues", "ANOVATableSumsOfSquares", "BestFit",
+      "BestFitParameters", "EstimatedVariance", "FitResiduals", "ParameterConfidenceIntervals",
+      "ParameterErrors", "ParameterPValues", "ParameterTStatistics", "ParameterTable",
+      "ParameterTableEntries", "PredictedResponse", "RSquared"};
 
   private FieldMatrix<IExpr> designMatrix;
   private FieldVector<IExpr> responseVector;
   private FieldVector<IExpr> basisFunctions;
+  /** The rows of the analysis of variance once they are computed. */
+  private transient double[][] anovaRows;
   /** The variables a point is given in, or {@link F#NIL} for a model read from an older stream. */
   private IAST variables = F.NIL;
 
@@ -320,6 +324,20 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
   protected IExpr property(String name, EvalEngine engine) {
     ExprOLSLinearRegression regression = toData();
     switch (name) {
+      case "ANOVATable":
+        return anovaTable();
+      case "ANOVATableDegreesOfFreedom":
+        return anovaColumn(0);
+      case "ANOVATableEntries":
+        return anovaEntries();
+      case "ANOVATableFStatistics":
+        return anovaColumn(3);
+      case "ANOVATableMeanSquares":
+        return anovaColumn(2);
+      case "ANOVATablePValues":
+        return anovaColumn(4);
+      case "ANOVATableSumsOfSquares":
+        return anovaColumn(1);
       case "AdjustedRSquared":
         return F.num(regression.calculateAdjustedRSquared());
       case "BestFit":
@@ -349,6 +367,193 @@ public class FittedModelExpr extends AbstractFittedModelExpr<ExprOLSLinearRegres
       default:
         return F.NIL;
     }
+  }
+
+  /**
+   * The rows of the analysis of variance: one <code>{DF, SS, MS, F, p}</code> per basis function
+   * other than the constant, with the sums of squares added one basis function after the other,
+   * then <code>{DF, SS, MS}</code> of the error and <code>{DF, SS}</code> of the total, which is
+   * measured from the mean if the model has a constant term.
+   */
+  private double[][] anovaRows() {
+    if (anovaRows == null) {
+      anovaRows = computeAnovaRows();
+    }
+    return anovaRows;
+  }
+
+  private double[][] computeAnovaRows() {
+    final int n = designMatrix.getRowDimension();
+    final int p = designMatrix.getColumnDimension();
+    double[][] x = new double[n][p];
+    double[] y = new double[n];
+    for (int i = 0; i < n; i++) {
+      y[i] = responseVector.getEntry(i).evalfNaN();
+      for (int j = 0; j < p; j++) {
+        x[i][j] = designMatrix.getEntry(i, j).evalfNaN();
+      }
+    }
+    // the constant column, which isn't a row of the table
+    final int constant = constantColumn();
+    java.util.List<Integer> columns = new java.util.ArrayList<Integer>();
+    if (constant >= 0) {
+      columns.add(constant);
+    }
+    double previous = residualSumOfSquares(x, y, columns);
+    final double total = previous;
+    java.util.List<double[]> rows = new java.util.ArrayList<double[]>();
+    for (int j = 0; j < p; j++) {
+      if (j == constant) {
+        continue;
+      }
+      columns.add(j);
+      double rss = residualSumOfSquares(x, y, columns);
+      rows.add(new double[] {1.0, previous - rss});
+      previous = rss;
+    }
+    // more basis functions than points leave no degrees of freedom to the error
+    final int errorDF = Math.max(0, n - p);
+    // without residual degrees of freedom the mean square of the error is undetermined
+    final double errorMS = errorDF > 0 ? previous / errorDF : Double.NaN;
+    double[][] result = new double[rows.size() + 2][];
+    for (int k = 0; k < rows.size(); k++) {
+      double ss = rows.get(k)[1];
+      double f = ss / errorMS;
+      // the upper tail of the F-ratio distribution F(1, errorDF), taken directly so that a small
+      // probability doesn't cancel against 1
+      double pValue = errorDF > 0 && !Double.isNaN(f)
+          ? (f <= 0.0 ? 1.0
+              : org.hipparchus.special.Beta.regularizedBeta(errorDF / (errorDF + f), 0.5 * errorDF,
+                  0.5))
+          : Double.NaN;
+      result[k] = new double[] {1.0, ss, ss, f, pValue};
+    }
+    result[rows.size()] = new double[] {errorDF, previous, errorMS};
+    // a value which can't be determined, as after a dependent basis function, is Indeterminate
+    result[rows.size() + 1] = new double[] {constant >= 0 ? n - 1 : n, total};
+    return result;
+  }
+
+  /** The index of the first constant, non-zero column of the design matrix, or <code>-1</code>. */
+  private int constantColumn() {
+    final int n = designMatrix.getRowDimension();
+    for (int j = 0; j < designMatrix.getColumnDimension(); j++) {
+      double first = designMatrix.getEntry(0, j).evalfNaN();
+      boolean same = first != 0.0 && !Double.isNaN(first);
+      for (int i = 1; i < n && same; i++) {
+        same = designMatrix.getEntry(i, j).evalfNaN() == first;
+      }
+      if (same) {
+        return j;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * The sum of the squared residuals of the least squares fit with the given columns, or the sum
+   * of the squares of <code>y</code> without any.
+   */
+  private static double residualSumOfSquares(double[][] x, double[] y, java.util.List<Integer> columns) {
+    final int n = y.length;
+    if (columns.isEmpty()) {
+      double sum = 0.0;
+      for (double value : y) {
+        sum += value * value;
+      }
+      return sum;
+    }
+    double[][] sub = new double[n][columns.size()];
+    for (int i = 0; i < n; i++) {
+      for (int k = 0; k < columns.size(); k++) {
+        sub[i][k] = x[i][columns.get(k)];
+      }
+    }
+    org.hipparchus.linear.RealMatrix matrix = new org.hipparchus.linear.Array2DRowRealMatrix(sub);
+    org.hipparchus.linear.RealVector response = new org.hipparchus.linear.ArrayRealVector(y);
+    try {
+      // a column which is a combination of the others leaves a pivot of the size of the rounding
+      double scale = matrix.getFrobeniusNorm();
+      org.hipparchus.linear.DecompositionSolver solver =
+          new org.hipparchus.linear.QRDecomposition(matrix, 1.0e-10 * Math.max(1.0, scale))
+              .getSolver();
+      if (!solver.isNonSingular()) {
+        // dependent columns
+        return Double.NaN;
+      }
+      org.hipparchus.linear.RealVector beta = solver.solve(response);
+      org.hipparchus.linear.RealVector residuals = response.subtract(matrix.operate(beta));
+      return residuals.dotProduct(residuals);
+    } catch (org.hipparchus.exception.MathRuntimeException e) {
+      // a design matrix with dependent columns, or with fewer rows than columns
+      return Double.NaN;
+    }
+  }
+
+  /** The rows of the analysis of variance as lists. */
+  private IExpr anovaEntries() {
+    double[][] rows = anovaRows();
+    return F.mapRange(0, rows.length, i -> anovaRow(rows[i]));
+  }
+
+  private static IAST anovaRow(double[] row) {
+    IASTAppendable list = F.ListAlloc(row.length);
+    // the degrees of freedom are whole numbers
+    list.append(F.ZZ((int) row[0]));
+    for (int j = 1; j < row.length; j++) {
+      // an exact fit leaves no error, and its F-statistic is infinite
+      list.append(Double.isNaN(row[j]) ? S.Indeterminate
+          : Double.isInfinite(row[j]) ? F.CInfinity : F.num(row[j]));
+    }
+    return list;
+  }
+
+  /** One column of the analysis of variance, for each row that has it. */
+  private IExpr anovaColumn(int column) {
+    double[][] rows = anovaRows();
+    IASTAppendable list = F.ListAlloc(rows.length);
+    for (double[] row : rows) {
+      if (column < row.length) {
+        list.append(anovaRow(row).get(column + 1));
+      }
+    }
+    return list;
+  }
+
+  /** The analysis of variance as a table: a row per basis function, the error and the total. */
+  private IExpr anovaTable() {
+    double[][] rows = anovaRows();
+    IASTAppendable grid = F.ListAlloc(rows.length + 1);
+    grid.append(F.List(F.stringx(""), F.stringx("DF"), F.stringx("SS"), F.stringx("MS"),
+        F.stringx("F\u2010Statistic"), F.stringx("P\u2010Value")));
+    int k = 0;
+    final int constant = constantColumn();
+    for (int j = 0; j < basisFunctions.getDimension() && k < rows.length - 2; j++) {
+      IExpr basis = basisFunctions.getEntry(j);
+      if (j == constant) {
+        // the constant term has no row
+        continue;
+      }
+      IASTAppendable row = F.ListAlloc(6);
+      row.append(basis);
+      row.appendArgs(anovaRow(rows[k++]));
+      grid.append(row);
+    }
+    IASTAppendable error = F.ListAlloc(4);
+    error.append(F.stringx("Error"));
+    error.appendArgs(anovaRow(rows[rows.length - 2]));
+    grid.append(error);
+    IASTAppendable total = F.ListAlloc(3);
+    total.append(F.stringx("Total"));
+    total.appendArgs(anovaRow(rows[rows.length - 1]));
+    grid.append(total);
+    IExpr gray = F.GrayLevel(F.num(0.7));
+    return F.binaryAST2(S.Style,
+        F.function(S.Grid, grid, F.Rule(S.Alignment, F.List(S.Left, S.Automatic)),
+            F.Rule(S.Dividers, F.List(F.List(F.Rule(F.C2, gray)), F.List(F.Rule(F.C2, gray)))),
+            F.Rule(S.Spacings,
+                F.List(F.List(F.Rule(F.C2, F.C1)), F.List(F.Rule(F.C2, F.num(0.75)))))),
+        F.stringx("DialogStyle"));
   }
 
   /** The residual degrees of freedom: data points less parameters. */
