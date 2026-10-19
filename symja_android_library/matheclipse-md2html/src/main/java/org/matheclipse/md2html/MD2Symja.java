@@ -18,7 +18,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
-import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.graphtheory.GraphTheoryInit;
 import org.matheclipse.image.ImageInit;
 import com.google.common.io.CharSource;
@@ -28,11 +28,8 @@ import com.google.common.io.Resources;
 public class MD2Symja {
 
   public static void init() {
-    // set for only small prime factorization
-    // Config.PRIME_FACTORS = new Primality();
-
-    // set for BigInteger prime factorization
-    Config.PRIME_FACTORS = new BigIntegerPrimality();
+    // prime factorization of BigInteger numbers by matheclipse-core
+    Config.PRIME_FACTORS = new Primality();
 
     // initialize from module matheclipse-image:
     ImageInit.init();

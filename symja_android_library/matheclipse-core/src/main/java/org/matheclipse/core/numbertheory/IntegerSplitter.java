@@ -177,7 +177,7 @@ final class IntegerSplitter {
       return divisor;
     }
     if (n.bitLength() <= 63) {
-      // the rho method in 64 bit arithmetic, without a bound on the steps
+      // the rho method in 64 bit arithmetic with up to 19 polynomials and 2^23 steps each
       long factor = Siqs.rhoSplit(n.longValue());
       if (factor > 1) {
         return BigInteger.valueOf(factor);

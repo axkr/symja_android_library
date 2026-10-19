@@ -18,7 +18,7 @@ import org.matheclipse.core.eval.TimeConstrainedEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.io.IOInit;
 
 /** Tests system.reflection classes */
@@ -173,7 +173,7 @@ public abstract class AbstractTestCase {
         Config.MAX_BIT_LENGTH = 200000;
         Config.MAX_POLYNOMIAL_DEGREE = 100;
         Config.FILESYSTEM_ENABLED = false;
-        Config.PRIME_FACTORS = new BigIntegerPrimality();
+        Config.PRIME_FACTORS = new Primality();
         fScriptEngine = fScriptManager.getEngineByExtension("m");
         fScriptEngine.put("PRINT_STACKTRACE", Boolean.TRUE);
         fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);

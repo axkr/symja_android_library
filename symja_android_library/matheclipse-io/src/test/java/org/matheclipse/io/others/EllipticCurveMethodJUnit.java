@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.numbertheory.IPrimality;
 import org.matheclipse.core.numbertheory.SortedMultiset;
 import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
-import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
+import org.matheclipse.core.numbertheory.Primality;
 
 public class EllipticCurveMethodJUnit {
-  private static IPrimality PRIME_FACTORS = new BigIntegerPrimality();
+  private static IPrimality PRIME_FACTORS = new Primality();
 
   @Test
   public void testECM() {

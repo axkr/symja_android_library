@@ -292,7 +292,7 @@ The Maven modules below all build on `matheclipse-core`. A module inherits the d
 | --- | --- | --- |
 | [java-math-library](https://github.com/TilmanNeumann/java-math-library) (vendored as `de.tilman_neumann.jml`) | integer factorization, prime numbers, partitions, modular arithmetic, quadratic residues | GNU GPL v3 |
 
-This module is the reason a distribution containing it has to be published under the GPL.
+This module is the reason a distribution containing it has to be published under the GPL. No other module depends on it: `FactorInteger` and the other integer factorization functions use the factorization of `matheclipse-core`.
 
 #### matheclipse-graphtheory
 
@@ -364,8 +364,6 @@ The Night Vision port makes this module GPL. See `matheclipse-astro/NOTICE.md`.
 | Project | Purpose | License |
 | --- | --- | --- |
 | [apfloat](https://github.com/mtommila/apfloat) | arbitrary precision arithmetic | MIT License |
-
-This module also depends on `matheclipse-gpl` and therefore inherits the GPL.
 
 #### matheclipse-md2html
 

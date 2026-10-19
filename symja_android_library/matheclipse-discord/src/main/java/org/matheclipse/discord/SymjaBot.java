@@ -26,7 +26,7 @@ import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.image.expression.data.ImageExpr;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
@@ -73,7 +73,7 @@ public class SymjaBot {
       Config.MAX_POLYNOMIAL_DEGREE = 100;
       Config.MAX_INPUT_LEAVES = 100L;
       Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-      Config.PRIME_FACTORS = new BigIntegerPrimality();
+      Config.PRIME_FACTORS = new Primality();
       EvalEngine.get().setPackageMode(true);
       F.initSymbols();
       System.out.println("Symja Version: " + Config.VERSION + " initialized");

@@ -261,6 +261,43 @@ public class PrimalityTest {
     assertEquals(BigInteger.valueOf(1009), Siqs.factor(n));
   }
 
+  /**
+   * The Miller-Rabin test in 64 bit Montgomery arithmetic for numbers above <code>2^62</code>,
+   * where the sum of two residues no longer fits into a signed long.
+   */
+  @Test
+  public void testSiqsIsPrimeAbove2Pow62() {
+    Random random = new Random(4242L);
+    BigInteger low = BigInteger.ONE.shiftLeft(62);
+    for (int i = 0; i < 500; i++) {
+      long candidate = (random.nextLong() >>> 2) | (1L << 62);
+      BigInteger prime = BigInteger.valueOf(candidate).nextProbablePrime();
+      if (prime.bitLength() < 64) {
+        assertTrue(Siqs.isPrime(prime.longValue()), prime + " is a prime number");
+      }
+      assertEquals(BigInteger.valueOf(candidate).isProbablePrime(64), Siqs.isPrime(candidate),
+          "isPrime(" + candidate + ")");
+    }
+    // a product of two 31 bit primes above 2^62 and the largest prime below 2^63
+    BigInteger p = BigInteger.valueOf(2147483659L);
+    BigInteger q = low.divide(p).add(BigInteger.valueOf(1000)).nextProbablePrime();
+    assertTrue(!Siqs.isPrime(p.multiply(q).longValue()));
+    assertTrue(Siqs.isPrime(Long.MAX_VALUE - 24));
+  }
+
+  /** Several calls of factorInteger(n, map) add up the exponents of the product. */
+  @Test
+  public void testFactorIntegerAddsToMap() {
+    SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+    map.put(BigInteger.valueOf(5), 1);
+    Primality primality = new Primality();
+    // -2^2*3*P1 and 2*3^2*P1*P2
+    primality.factorInteger(BigInteger.valueOf(-12).multiply(P1), map);
+    primality.factorInteger(BigInteger.valueOf(18).multiply(P1).multiply(P2), map);
+    assertEquals(factors(BigInteger.valueOf(-1), 1, BigInteger.valueOf(2), 3,
+        BigInteger.valueOf(3), 3, BigInteger.valueOf(5), 1, P1, 2, P2, 1), map);
+  }
+
   /** Two factors close to the square root are found by the first steps of Fermat's method. */
   @Test
   public void testFactorIntegerCloseFactors() {

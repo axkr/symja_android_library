@@ -440,7 +440,6 @@ public abstract class AbstractRubiTestCase {
   protected void setUp() {
     try {
       Config.SHORTEN_STRING_LENGTH = 80;
-      // Config.PRIME_FACTORS = new BigIntegerPrimality();
       F.await();
       // start test with fresh instance
       EvalEngine engine = new EvalEngine(isRelaxedSyntax);

@@ -1333,8 +1333,9 @@ final class Siqs {
       // the Montgomery form base*2^64 mod m
       long b = 0;
       for (int i = 0; i < base; i++) {
+        // b + one < 2*m can exceed 2^63 for m > 2^62, so compare unsigned
         b += one;
-        if (b >= m) {
+        if (Long.compareUnsigned(b, m) >= 0) {
           b -= m;
         }
       }

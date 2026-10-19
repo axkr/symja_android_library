@@ -33,10 +33,9 @@ import org.matheclipse.external.fastutil.ints.Int2IntRBTreeMap;
 import org.matheclipse.external.fastutil.objects.ObjectSet;
 
 /**
- * Provides primality probabilistic methods for small prime factors.
- *
- * @see org.matheclipse.gpl.numbertheory.BigIntegerPrimality for elliptic curve method and faster
- *      prime factorization
+ * Primality tests and the prime factorization of integers. Composite numbers are split by
+ * {@link IntegerSplitter}: trial division, Pollard's rho and <code>p-1</code> methods, the elliptic
+ * curve method and the self-initializing quadratic sieve {@link Siqs}.
  */
 public class Primality implements IPrimality {
 
@@ -408,8 +407,8 @@ public class Primality implements IPrimality {
    *
    * @param val a BigInteger value which should be factored by all primes less equal than 1021
    * @param map a map which counts the prime integer factors less equal than 1021
-   * @return the rest factor or zero, if the number could be factored completely into primes less
-   *         equal then 1021
+   * @return the rest factor, which is <code>1</code> if the number could be factored completely
+   *         into primes less equal than 1021
    */
   public static BigInteger countPrimes1021(BigInteger val, Map<Integer, Integer> map) {
     try {
@@ -643,10 +642,10 @@ public class Primality implements IPrimality {
   /**
    * Factor the given value into primes less than <code>Short.MAX_VALUE</code> .
    *
-   * @param val a BigInteger value which should be factored by all primes less equal than 1021
+   * @param val a BigInteger value which should be factored by all primes less equal than 32749
    * @param map a map which counts the prime integer factors less equal than 32749
-   * @return the rest factor or zero, if the number could be factored completely into primes less
-   *         equal then 1021
+   * @return the rest factor, which is <code>1</code> if the number could be factored completely
+   *         into primes less equal than 32749
    */
   public static BigInteger countPrimes32749(final BigInteger val, Map<Integer, Integer> map) {
     BigInteger[] divRem;
@@ -807,13 +806,12 @@ public class Primality implements IPrimality {
   }
 
   /**
-   * Decomposes the argument <code>n</code> into small prime factors. The result is stored in the
-   * <code>
-   * map</code>.
+   * Decomposes the argument <code>b</code> into prime factors. The exponents are added to the ones
+   * already stored in <code>map3</code>, so that several calls collect the factors of the product.
+   * A negative <code>b</code> adds the factor <code>-1</code>.
    *
    * @param b
    * @param map3 of all BigInteger primes and their associated exponents
-   * @see org.matheclipse.gpl.numbertheory.BigIntegerPrimality
    */
   @Override
   public void factorInteger(BigInteger b, SortedMap<BigInteger, Integer> map3) {
@@ -826,12 +824,13 @@ public class Primality implements IPrimality {
       isNegative = true;
     }
     BigInteger rest = Primality.countPrimes32749(b, map);
+    // add to the exponents already in map3, like pollardRhoFactors() does
     if (isNegative) {
-      map3.put(BigInteger.valueOf(-1), 1);
+      addToMap(BigInteger.valueOf(-1), 1, map3);
     }
     ObjectSet<org.matheclipse.external.fastutil.ints.Int2IntMap.Entry> entrySet = map.int2IntEntrySet();
     for (Entry<Integer, Integer> entry : entrySet) {
-      map3.put(BigInteger.valueOf(entry.getKey()), entry.getValue());
+      addToMap(BigInteger.valueOf(entry.getKey()), entry.getValue(), map3);
     }
     if (!rest.equals(BigInteger.ONE)) {
       // map3.put(rest, 1);
@@ -845,7 +844,6 @@ public class Primality implements IPrimality {
    *
    * @param n
    * @return map of all BigInteger primes and their associated exponents
-   * @see org.matheclipse.gpl.numbertheory.BigIntegerPrimality
    */
   @Override
   public SortedMap<BigInteger, Integer> factorInteger(BigInteger n) {

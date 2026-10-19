@@ -32,12 +32,6 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>matheclipse-gpl</artifactId>
-			<version>${project.version}</version>
-		</dependency> 
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>matheclipse-graphtheory</artifactId>
 			<version>${project.version}</version>
 		</dependency>

@@ -8,7 +8,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.parser.client.ParserConfig;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,7 +34,7 @@ public class SymjaBotTest {
     Config.MAX_POLYNOMIAL_DEGREE = 100;
     Config.MAX_INPUT_LEAVES = 100L;
     Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-    Config.PRIME_FACTORS = new BigIntegerPrimality();
+    Config.PRIME_FACTORS = new Primality();
     EvalEngine.get().setPackageMode(true);
     F.initSymbols();
   }

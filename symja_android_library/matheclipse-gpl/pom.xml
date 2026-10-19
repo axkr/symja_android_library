@@ -11,7 +11,7 @@
 	<artifactId>matheclipse-gpl</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
-	<description>The Symja gpl module</description>
+	<description>DEPRECATED - The Symja gpl module. No other Symja module depends on it any more; matheclipse-core provides the integer factorization.</description>
 
 	<licenses>
 		<license>
