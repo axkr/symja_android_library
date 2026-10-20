@@ -1141,6 +1141,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       IExpr firstEquation = termsEqualZeroList.arg1();
 
       IASTMutable reducedEqualZeroList = termsEqualZeroList.copyAppendable();
+      // the first elimination with several branches, for the last resort below
+      IAST branchRules = null;
+      int branchIndex = -1;
       for (int i = 1; i < vars.size(); i++) {
         IExpr variable = vars.get(i);
 
@@ -1149,6 +1152,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (reduced != null) {
           // oneVariableRule = ( firstVariable -> reducedExpression )
           final IAST oneVariableRule = reduced[1];
+          if (branchRules == null && oneVariableRule != null
+              && oneVariableRule.isListOfRules(false)) {
+            branchRules = oneVariableRule;
+            branchIndex = i;
+          }
           // Eliminate.eliminateOneVariable() returns a *list* of rules when the variable has
           // several branches (e.g. x -> +/-Sqrt(y) from x^2 - y == 0). Substituting such a
           // multi-branch elimination as if it were a single ( variable -> value ) rule both drops
@@ -1198,7 +1206,60 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
         }
       }
+      if (branchRules != null) {
+        return solveBranches(termsEqualZeroList, inequationsList, numericFlag, vars, branchIndex,
+            branchRules, engine);
+      }
       return F.NIL;
+    }
+
+    /**
+     * Solve the system once for every branch of the elimination of the first equation, when no
+     * variable has an elimination with a single branch: in
+     * <code>{E^x==3*x, y==x+1}</code> the first equation has the two solutions
+     * <code>x -> -ProductLog(-1/3)</code> and <code>x -> -ProductLog(-1,-1/3)</code>, and each one
+     * gives its own <code>y</code>.
+     *
+     * @param branchIndex the index in <code>vars</code> of the variable which was eliminated
+     * @param branchRules the rules <code>variable -> value</code> of the branches
+     * @return {@link F#NIL} if the system isn't solved for every branch
+     */
+    private IExpr solveBranches(IASTMutable termsEqualZeroList, IAST inequationsList,
+        boolean numericFlag, final IAST vars, int branchIndex, IAST branchRules,
+        EvalEngine engine) {
+      final IExpr variable = vars.get(branchIndex);
+      final IAST variables = vars.splice(branchIndex);
+      final IAST rest = termsEqualZeroList.removeAtCopy(1);
+      IASTAppendable solutions = F.ListAlloc(branchRules.argSize());
+      for (IExpr branch : branchRules) {
+        IExpr replaced = rest.replaceAll((IAST) branch);
+        if (!replaced.isList()) {
+          return F.NIL;
+        }
+        IExpr subResult =
+            solveRecursive((IASTMutable) replaced, inequationsList, numericFlag, variables, engine);
+        if (subResult.isList() && subResult.argSize() == 0) {
+          // no solution in this branch
+          continue;
+        }
+        if (!subResult.isListOfLists()) {
+          return F.NIL;
+        }
+        IExpr value = branch.second();
+        for (IExpr solution : (IAST) subResult) {
+          IAST listOfRules = (IAST) solution;
+          IExpr branchValue = value.replaceAll(listOfRules);
+          if (branchValue.isPresent()) {
+            branchValue = S.Simplify.of(engine, branchValue);
+          } else if (value.isFree(f -> vars.contains(f), true)) {
+            branchValue = value;
+          } else {
+            return F.NIL;
+          }
+          solutions.append(listOfRules.appendClone(F.Rule(variable, branchValue)));
+        }
+      }
+      return crossChecking(termsEqualZeroList, solutions, engine);
     }
 
     /**

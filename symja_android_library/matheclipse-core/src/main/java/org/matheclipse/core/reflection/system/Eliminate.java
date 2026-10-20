@@ -691,7 +691,9 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
             IExpr zeroPlus = applyMatcher(zeroPlusMatcher(), elimzeroplus, ast, exprWithoutVariable,
                 variable, multipleValues, engine);
             if (zeroPlus.isPresent()) {
-              return zeroPlus;
+              return multipleValues && !zeroPlus.isEqual()
+                  ? withLowerProductLogBranch(zeroPlus, ast, exprWithoutVariable, variable, engine)
+                  : zeroPlus;
             }
           }
           IExpr inverse = applyMatcher(inverseMatcher(), eliminv, ast, exprWithoutVariable,
@@ -1215,6 +1217,86 @@ public class Eliminate extends AbstractFunctionOptionEvaluator implements Elimin
       return expr.first();
     }
     return expr;
+  }
+
+  /**
+   * The rules of {@link EliminateRules} which solve with <code>ProductLog(z)</code> give the
+   * principal branch only. For a number <code>-1/E &lt; z &lt; 0</code> the branch
+   * <code>ProductLog(-1, z)</code> is real as well, and gives a second solution, which is added if
+   * it solves the equation: <code>x - Log(x) == Log(3)</code> has the solutions
+   * <code>-ProductLog(-1/3)</code> and <code>-ProductLog(-1,-1/3)</code>.
+   *
+   * @param values the value or the list of values the rules found
+   * @param ast the left hand side of the equation, which contains the variable
+   * @param exprWithoutVariable the right hand side of the equation
+   * @return <code>values</code>, with the values of the other branch appended
+   */
+  private static IExpr withLowerProductLogBranch(IExpr values, IAST ast, IExpr exprWithoutVariable,
+      IExpr variable, EvalEngine engine) {
+    final IAST list = values.isList() ? (IAST) values : F.list(values);
+    IASTAppendable result = F.NIL;
+    for (IExpr value : list) {
+      IExpr lower = lowerProductLogBranch(value, engine);
+      if (lower.isPresent()
+          && isNumericSolution(ast, exprWithoutVariable, variable, lower, engine)) {
+        if (result.isNIL()) {
+          result = F.ListAlloc(list.argSize() + 1);
+          result.appendArgs(list);
+        }
+        result.append(lower);
+      }
+    }
+    return result.isNIL() ? values : result;
+  }
+
+  /**
+   * <code>value</code> with its one <code>ProductLog(z)</code> of a number
+   * <code>-1/E &lt; z &lt; 0</code> replaced by <code>ProductLog(-1, z)</code>.
+   *
+   * @return {@link F#NIL} if <code>value</code> has no such <code>ProductLog</code>, or more than
+   *         one
+   */
+  private static IExpr lowerProductLogBranch(IExpr value, EvalEngine engine) {
+    IASTAppendable principal = F.ListAlloc();
+    collectPrincipalProductLogs(value, principal);
+    if (principal.argSize() != 1) {
+      return F.NIL;
+    }
+    IExpr productLog = principal.arg1();
+    return engine.evaluate(F.subst(value, productLog, F.ProductLog(F.CN1, productLog.first())));
+  }
+
+  /**
+   * Collect the <code>ProductLog(z)</code> of a number <code>-1/E &lt; z &lt; 0</code> in
+   * <code>expr</code>.
+   */
+  private static void collectPrincipalProductLogs(IExpr expr, IASTAppendable result) {
+    if (expr.isAST(S.ProductLog, 2) && expr.first().isNumericFunction(true)) {
+      IReal z = expr.first().evalReal();
+      if (z != null && z.isNegative() && z.isGT(F.CND1DE)) {
+        result.append(expr);
+      }
+      return;
+    }
+    if (expr.isAST()) {
+      ((IAST) expr).forEach(x -> collectPrincipalProductLogs(x, result));
+    }
+  }
+
+  /** Whether <code>value</code> solves <code>ast == exprWithoutVariable</code> numerically. */
+  private static boolean isNumericSolution(IAST ast, IExpr exprWithoutVariable, IExpr variable,
+      IExpr value, EvalEngine engine) {
+    try {
+      IExpr residual = engine.evalN(F.subst(F.Subtract(ast, exprWithoutVariable), variable, value));
+      if (!residual.isNumber()) {
+        return false;
+      }
+      double scale = 1.0 + engine.evalN(F.Abs(value)).evalf();
+      return residual.abs().evalf() < Config.DEFAULT_CHOP_DELTA * scale;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    }
   }
 
   /**

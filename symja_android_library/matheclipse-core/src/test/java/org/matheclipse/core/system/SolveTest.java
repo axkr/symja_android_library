@@ -3877,4 +3877,31 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "x==-(3/2)^(1/6)||x==(3/2)^(1/6)||x==(-1)^(1/3)*(3/2)^(1/6)||x==-(-1)^(1/3)*(3/2)^(\n"
             + "1/6)||x==(-1)^(2/3)*(3/2)^(1/6)||x==-(-1)^(2/3)*(3/2)^(1/6)");
   }
+
+  /**
+   * The ProductLog rules of Eliminate give the principal branch only; for a number
+   * -1/E < z < 0 ProductLog(-1, z) is a second real solution. A system solves every branch of the
+   * eliminated variable on its own.
+   */
+  @Test
+  public void testSolveIssue1563() {
+    check("Solve(x-Log(x)==Log(3),x)", //
+        "{{x->-ProductLog(-1/3)},{x->-ProductLog(-1,-1/3)}}");
+    check("Solve({E^x==3*x,y==x+1},{x,y})", //
+        "{{y->1-ProductLog(-1/3),x->-ProductLog(-1/3)},{y->1-ProductLog(-1,-1/3),x->-ProductLog(-\n"
+            + "1,-1/3)}}");
+    check("Solve({E^x==3*x,y==x+1},{x,y},Reals)", //
+        "{{y->1-ProductLog(-1/3),x->-ProductLog(-1/3)},{y->1-ProductLog(-1,-1/3),x->-ProductLog(-\n"
+            + "1,-1/3)}}");
+    check("N(Solve({2^x==4*x,y==x+1},{x,y}))", //
+        "{{y->1.30991,x->0.309907},{y->5.0,x->4.0}}");
+    check("Solve({E^x==3*x,y^2==x},{x,y}) // N", //
+        "{{y->-0.786804,x->0.619061},{y->0.786804,x->0.619061},"
+            + "{y->-1.22969,x->1.51213},{y->1.22969,x->1.51213}}");
+    // the second root of x^2*Log(x) == -1/10 near 0.28
+    check("Solve(x^2*Log(x)==-1/10,x) // N", //
+        "{{x->0.878459},{x->0.280461}}");
+    check("Solve({2^x==x^2,y==x},{x,y}) // N", //
+        "{{y->2.0,x->2.0},{y->-0.766665,x->-0.766665},{y->4.0,x->4.0}}");
+  }
 }
