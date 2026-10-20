@@ -292,7 +292,7 @@ public class OutputFormFactory {
       if (!isNegative && caller == PLUS_CALL) {
         append(buf, fInputForm ? " + " : "+");
       }
-      String str = fInputForm ? ApfloatNum.fullFormString(apfloat)
+      String str = fInputForm ? ((ApfloatNum) d).fullFormString()
           : convertApfloatToFormattedString(apfloat);
       convertDoubleString(buf, str, precedence, isNegative);
       return;

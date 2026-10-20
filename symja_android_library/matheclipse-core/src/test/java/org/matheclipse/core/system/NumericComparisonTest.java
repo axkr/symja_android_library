@@ -433,8 +433,9 @@ public class NumericComparisonTest extends ExprEvaluatorTestCase {
     check("Block({z=N(7^-30,20)}, PossibleZeroQ(z))", //
         "False");
     // an arbitrary precision limit or step keeps its precision
+    // 1 known to 20 digits behind the decimal point, plus exact halves: 2 with the same accuracy
     check("{Precision(Last(Range(0,1,N(1/4,20)))), Precision(Last(Range(N(1,20),2,1/2)))}", //
-        "{20,20}");
+        "{20,20.30102999566398}");
     check("Table(x,{x,1.,2,0.5}) // InputForm", //
         "{1.0`,1.5`,2.0`}");
   }

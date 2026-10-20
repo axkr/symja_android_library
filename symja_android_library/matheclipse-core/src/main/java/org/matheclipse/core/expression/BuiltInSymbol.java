@@ -399,6 +399,10 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
       if (engine.isNumericMode()) {
         if (engine.isArbitraryMode()) {
           assignedValue = ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
+          if (assignedValue instanceof ApfloatNum && isConstantAttribute()) {
+            // the value of a constant like Pi adds no error to a calculation
+            assignedValue = ((ApfloatNum) assignedValue).asExact();
+          }
         } else {
           assignedValue = ((ISymbolEvaluator) fEvaluator).numericEval(this, engine);
         }

@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import org.matheclipse.external.apfloat.ApfloatRounding;
+import org.matheclipse.external.apfloat.ApfloatSignificance;
 import org.matheclipse.external.apfloat.HypergeometricUWorkaround;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -82,10 +83,19 @@ public class ApfloatNum implements INum {
   }
 
   public static String fullFormString(Apfloat apfloat) {
+    return fullFormString(apfloat, null);
+  }
+
+  /**
+   * The InputForm of a number with the precision mark <code>precisionMark</code>, or the precision
+   * of the value if it is <code>null</code>.
+   */
+  private static String fullFormString(Apfloat apfloat, String precisionMark) {
     // the last digit rounded with the digits stored beyond the precision, not cut off
     apfloat = ApfloatRounding.roundToPrecision(apfloat);
     String str = apfloat.toString();
-    long precision = apfloat.precision();
+    String precision =
+        precisionMark != null ? precisionMark : Long.toString(apfloat.precision());
     if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       int indx = str.indexOf("e");
       if (indx > 0) {
@@ -213,7 +223,10 @@ public class ApfloatNum implements INum {
   }
 
   public static ApfloatNum valueOf(final BigInteger numerator) {
-    return new ApfloatNum(numerator);
+    // the value of an exact integer
+    ApfloatNum result = new ApfloatNum(numerator);
+    result.fSignificance = EXACT;
+    return result;
   }
 
   /** From this many bits beyond the precision on, an integer is cut before it is converted. */
@@ -247,7 +260,8 @@ public class ApfloatNum implements INum {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     Apfloat n = apfloatOf(numerator, h.precision());
     Apfloat d = apfloatOf(denominator, h.precision());
-    return new ApfloatNum(h.divide(n, d));
+    // the value of an exact fraction
+    return exact(h.divide(n, d));
   }
 
   /**
@@ -318,7 +332,8 @@ public class ApfloatNum implements INum {
       throw new SymjaMathException(
           "cannot convert " + value + " into an arbitrary precision number");
     }
-    return valueOf(apfloatOf(value));
+    // a machine number is taken as the binary number it is
+    return machine(apfloatOf(value));
   }
 
   public static ApfloatNum valueOf(final String value, long precision) {
@@ -326,6 +341,307 @@ public class ApfloatNum implements INum {
   }
 
   Apfloat fApfloat;
+
+  /** The precision is the one of {@link #fApfloat}, as before significance arithmetic. */
+  private static final byte UNTRACKED = 0;
+
+  /** The decimal precision is {@link #fDigits}, a real number. */
+  private static final byte TRACKED = 1;
+
+  /**
+   * The value of an exact number (an integer, a fraction, a constant, a machine number taken as the
+   * binary number it is), converted for a numeric calculation: it adds no error.
+   */
+  private static final byte EXACT = 2;
+
+  /** A zero whose accuracy is {@link #fDigits}: a sum whose digits all cancelled. */
+  private static final byte ZERO_ACCURACY = 3;
+
+  /**
+   * A machine number, or a result of machine numbers and exact numbers: it adds no error, as the
+   * binary number it is, but <code>N</code> doesn't give it more digits.
+   */
+  private static final byte MACHINE = 4;
+
+  /**
+   * What {@link #fDigits} means, see {@link #UNTRACKED}, {@link #TRACKED}, {@link #EXACT} and
+   * {@link #ZERO_ACCURACY}. The default <code>0</code> keeps numbers serialized before significance
+   * arithmetic as they were.
+   */
+  private byte fSignificance = UNTRACKED;
+
+  /** The decimal precision of a {@link #TRACKED} number, the accuracy of a {@link #ZERO_ACCURACY}. */
+  private double fDigits;
+
+  /**
+   * An arbitrary-precision number of the decimal precision <code>precision10</code>, a real
+   * number: <code>1.5`20.3</code> has the precision <code>20.3</code>. The value keeps the digits it
+   * has; only its precision mark is set, to the nearest integer, which is the number of digits shown.
+   *
+   * @param value a number which is not zero
+   * @param precision10 the decimal precision, <code>Infinity</code> for the value of an exact number
+   */
+  public static ApfloatNum valueOf(final Apfloat value, final double precision10) {
+    if (Double.isInfinite(precision10) && precision10 > 0) {
+      return exact(value);
+    }
+    // the digits shown: 30.04 shows 30, 20.6 shows 21
+    final long digits = Math.max(1L, Math.round(precision10));
+    ApfloatNum result = new ApfloatNum(value.precision(digits));
+    result.fSignificance = TRACKED;
+    result.fDigits = precision10;
+    return result;
+  }
+
+  /**
+   * A zero of the given accuracy: <code>0``20</code>, the difference of two equal numbers which are
+   * known to 20 digits behind the decimal point.
+   *
+   * @param accuracy10 the decimal accuracy
+   */
+  public static ApfloatNum zero(final double accuracy10) {
+    if (Double.isInfinite(accuracy10) && accuracy10 > 0) {
+      return exact(Apfloat.ZERO);
+    }
+    ApfloatNum result = new ApfloatNum(Apfloat.ZERO);
+    result.fSignificance = ZERO_ACCURACY;
+    result.fDigits = accuracy10;
+    return result;
+  }
+
+  /** The value of a machine number, or of a result of machine and exact numbers. */
+  private static ApfloatNum machine(final Apfloat value) {
+    ApfloatNum result = new ApfloatNum(value.precision() > ParserConfig.MACHINE_PRECISION
+        ? value.precision(ParserConfig.MACHINE_PRECISION)
+        : value);
+    result.fSignificance = MACHINE;
+    return result;
+  }
+
+  /** Test if <code>operand</code> is a machine number or the value of one. */
+  private static boolean isMachine(final Object operand) {
+    return operand instanceof Num || operand instanceof Double
+        || (operand instanceof ApfloatNum && ((ApfloatNum) operand).fSignificance == MACHINE);
+  }
+
+  /**
+   * The value of an exact number for a numeric calculation; it adds no error to the results of the
+   * calculation.
+   */
+  public static ApfloatNum exact(final Apfloat value) {
+    ApfloatNum result = new ApfloatNum(value);
+    result.fSignificance = EXACT;
+    return result;
+  }
+
+  /**
+   * The decimal precision, a real number: the precision of a number of a given precision and of
+   * the results of significance arithmetic, <code>0</code> for a zero of a given accuracy, else the
+   * precision of the arbitrary-precision value.
+   *
+   * @return <code>Infinity</code> for a value without a precision limit
+   */
+  public double precision10() {
+    switch (fSignificance) {
+      case TRACKED:
+        return fDigits;
+      case ZERO_ACCURACY:
+        return 0.0;
+      default:
+        final long precision = fApfloat.precision();
+        return precision == Apfloat.INFINITE ? Double.POSITIVE_INFINITY : precision;
+    }
+  }
+
+  /**
+   * The decimal accuracy of a zero of a given accuracy.
+   *
+   * @return <code>NaN</code> if this is not such a zero
+   */
+  public double zeroAccuracy10() {
+    return fSignificance == ZERO_ACCURACY ? fDigits : Double.NaN;
+  }
+
+  /** Test if this number has a precision or accuracy of its own, see {@link #precision10()}. */
+  public boolean isSignificanceTracked() {
+    return fSignificance == TRACKED || fSignificance == ZERO_ACCURACY;
+  }
+
+  /**
+   * The precision of this number as the argument of a calculation: <code>Infinity</code> for the
+   * value of an exact number, see {@link #exact(Apfloat)}.
+   */
+  public double significancePrecision() {
+    return errorPrecision();
+  }
+
+  /** The precision for the error of a calculation: <code>Infinity</code> for an exact value. */
+  private double errorPrecision() {
+    switch (fSignificance) {
+      case TRACKED:
+        return fDigits;
+      case EXACT:
+      case MACHINE:
+        return Double.POSITIVE_INFINITY;
+      case ZERO_ACCURACY:
+        return 0.0;
+      default:
+        final long precision = fApfloat.precision();
+        return precision == Apfloat.INFINITE ? Double.POSITIVE_INFINITY : precision;
+    }
+  }
+
+  /** The accuracy for the error of a calculation: <code>Infinity</code> for an exact value. */
+  private double errorAccuracy() {
+    if (fSignificance == ZERO_ACCURACY) {
+      return fDigits;
+    }
+    if (fApfloat.signum() == 0) {
+      return Double.POSITIVE_INFINITY;
+    }
+    return errorPrecision() - ApfloatSignificance.log10Abs(fApfloat);
+  }
+
+  /**
+   * The accuracy of an operand for the error of a calculation: exact numbers and machine numbers,
+   * which are taken as the binary numbers they are, add no error.
+   */
+  private static double errorAccuracy(final Object operand) {
+    return operand instanceof ApfloatNum ? ((ApfloatNum) operand).errorAccuracy()
+        : Double.POSITIVE_INFINITY;
+  }
+
+  /** The precision of an operand for the error of a calculation, see {@link #errorAccuracy(Object)}. */
+  private static double errorPrecision(final Object operand) {
+    return operand instanceof ApfloatNum ? ((ApfloatNum) operand).errorPrecision()
+        : Double.POSITIVE_INFINITY;
+  }
+
+  /**
+   * The sum <code>value</code> of terms with the given accuracies: the absolute errors add.
+   */
+  private static ApfloatNum sumResult(final Apfloat value, final double accuracy1,
+      final double accuracy2, final boolean machine) {
+    if (EvalEngine.get().isSignificanceSuspended()) {
+      return valueOf(value);
+    }
+    final double accuracy = ApfloatSignificance.sumAccuracy(accuracy1, accuracy2);
+    if (Double.isInfinite(accuracy) || Double.isNaN(accuracy)) {
+      return machine ? machine(value) : exact(value);
+    }
+    if (value.signum() == 0) {
+      return zero(accuracy);
+    }
+    final double precision = accuracy + ApfloatSignificance.log10Abs(value);
+    if (precision <= 0.0) {
+      // not one digit of the sum is known
+      return zero(accuracy);
+    }
+    return valueOf(value, precision);
+  }
+
+  /**
+   * The product or quotient <code>value</code> of this number and <code>operand</code>: the
+   * relative errors add. A zero of a given accuracy keeps an accuracy.
+   */
+  private ApfloatNum productResult(final Apfloat value, final Object operand) {
+    if (EvalEngine.get().isSignificanceSuspended()) {
+      return valueOf(value);
+    }
+    final boolean thisZero = fSignificance == ZERO_ACCURACY;
+    final boolean thatZero =
+        operand instanceof ApfloatNum && ((ApfloatNum) operand).fSignificance == ZERO_ACCURACY;
+    if (thisZero || thatZero) {
+      if (thisZero && thatZero) {
+        return zero(fDigits + ((ApfloatNum) operand).fDigits);
+      }
+      final Apfloat factor = thisZero ? operandValue(operand) : fApfloat;
+      final double accuracy = thisZero ? fDigits : ((ApfloatNum) operand).fDigits;
+      if (factor == null || factor.signum() == 0) {
+        return exact(Apfloat.ZERO);
+      }
+      return zero(accuracy - ApfloatSignificance.log10Abs(factor));
+    }
+    final double precision =
+        ApfloatSignificance.productPrecision(errorPrecision(), errorPrecision(operand));
+    if (Double.isInfinite(precision) || Double.isNaN(precision)) {
+      return fSignificance == MACHINE || isMachine(operand) ? machine(value) : exact(value);
+    }
+    if (value.signum() == 0) {
+      return exact(value);
+    }
+    if (precision <= 0.0) {
+      return zero(precision - ApfloatSignificance.log10Abs(value));
+    }
+    return valueOf(value, precision);
+  }
+
+  /** The value of a real operand, or <code>null</code>. */
+  private static Apfloat operandValue(final Object operand) {
+    if (operand instanceof IReal) {
+      return ((IReal) operand).apfloatValue();
+    }
+    if (operand instanceof Apfloat) {
+      return (Apfloat) operand;
+    }
+    if (operand instanceof Double) {
+      return apfloatOf(((Double) operand).doubleValue());
+    }
+    return null;
+  }
+
+  /**
+   * This number as a result of <code>N(expr, precision)</code>: of the requested precision, or of
+   * its own if that is lower, see {@link #precision10()}.
+   *
+   * @param precision the requested decimal precision
+   */
+  public ApfloatNum withRequestedPrecision(final double precision) {
+    if (fSignificance == ZERO_ACCURACY || fSignificance == MACHINE || fApfloat.signum() == 0) {
+      return this;
+    }
+    if (fSignificance == TRACKED && fDigits <= precision) {
+      return this;
+    }
+    if (fSignificance == UNTRACKED && fApfloat.precision() < Math.round(precision)) {
+      // fewer digits than asked for: they are not made up
+      return this;
+    }
+    return valueOf(fApfloat, precision);
+  }
+
+  /**
+   * This number with a precision of at most <code>precision</code>: the value of a numeric function
+   * without condition numbers, whose arguments have that precision.
+   *
+   * @param precision the decimal precision
+   */
+  public ApfloatNum withMaximumPrecision(final double precision) {
+    if (fSignificance == ZERO_ACCURACY || fApfloat.signum() == 0) {
+      return this;
+    }
+    if (fSignificance == TRACKED && fDigits <= precision) {
+      return this;
+    }
+    final long digits = fApfloat.precision();
+    return valueOf(fApfloat, digits == Apfloat.INFINITE ? precision : Math.min(precision, digits));
+  }
+
+  /** This value as the value of an exact number, see {@link #EXACT}. */
+  public ApfloatNum asExact() {
+    if (fSignificance == EXACT) {
+      return this;
+    }
+    return exact(fApfloat);
+  }
+
+  /** <code>value</code> with the significance of this number: a sign flip, an absolute value. */
+  private ApfloatNum sameSignificance(final Apfloat value) {
+    ApfloatNum result = new ApfloatNum(value);
+    result.fSignificance = fSignificance;
+    result.fDigits = fDigits;
+    return result;
+  }
 
   /**
    * The helper for calculations with this number: the engine's while a precision is set, else one
@@ -354,7 +670,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public ApfloatNum abs() {
-    return valueOf(h().abs(fApfloat));
+    return sameSignificance(h().abs(fApfloat));
   }
 
   /** {@inheritDoc} */
@@ -434,12 +750,13 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr add(double value) {
-    return valueOf(sum(apfloatOf(value)));
+    return sumResult(sum(apfloatOf(value)), errorAccuracy(), Double.POSITIVE_INFINITY, true);
   }
 
   @Override
   public INum add(final INum value) {
-    return valueOf(sum(value.apfloatValue()));
+    return sumResult(sum(value.apfloatValue()), errorAccuracy(), errorAccuracy(value),
+        fSignificance == MACHINE || isMachine(value));
   }
 
   @Override
@@ -1022,7 +1339,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum divide(double value) {
-    return valueOf(h().divide(fApfloat, apfloatOf(value)));
+    return productResult(h().divide(fApfloat, apfloatOf(value)), Double.valueOf(value));
   }
 
   @Override
@@ -1045,12 +1362,12 @@ public class ApfloatNum implements INum {
 
   @Override
   public INum divide(final INum value) {
-    return valueOf(h().divide(fApfloat, value.apfloatValue()));
+    return productResult(h().divide(fApfloat, value.apfloatValue()), value);
   }
 
   @Override
   public IReal divideBy(IReal that) {
-    return valueOf(h().divide(fApfloat, that.apfloatValue()));
+    return productResult(h().divide(fApfloat, that.apfloatValue()), that);
   }
 
   /** @return */
@@ -1160,6 +1477,13 @@ public class ApfloatNum implements INum {
       // an endless loop rather than a wrong answer - UnitStep(-0.8`30 + 1.2`30*I) never returned.
       ApfloatNum reduced = valueOf(h().valueOf(fApfloat));
       if (reduced.fApfloat.precision() < precision) {
+        if (fSignificance == TRACKED) {
+          // a number is only lowered to the engine's precision, never raised
+          return valueOf(reduced.fApfloat,
+              Math.min(fDigits, reduced.fApfloat.precision()));
+        }
+        reduced.fSignificance =
+            fSignificance == EXACT || fSignificance == MACHINE ? fSignificance : UNTRACKED;
         return reduced;
       }
     }
@@ -1275,7 +1599,26 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
+    if (fSignificance == ZERO_ACCURACY) {
+      return "0``" + digitsString(fDigits);
+    }
+    if (fSignificance == TRACKED) {
+      return fullFormString(fApfloat, digitsString(fDigits));
+    }
     return fullFormString(fApfloat);
+  }
+
+  /**
+   * A precision or accuracy as it is written after a number: an integer as an integer,
+   * <code>20.3</code> and <code>5.19597</code> with up to 6 digits.
+   */
+  private static String digitsString(double digits) {
+    final double rounded = Math.rint(digits);
+    if (Math.abs(digits - rounded) < 1.0e-9) {
+      return Long.toString((long) rounded);
+    }
+    return new BigDecimal(digits).round(new MathContext(6, RoundingMode.HALF_EVEN))
+        .stripTrailingZeros().toPlainString();
   }
 
   /**
@@ -1665,7 +2008,8 @@ public class ApfloatNum implements INum {
     if (isOne()) {
       return this;
     }
-    return valueOf(h().inverseRoot(fApfloat, 1));
+    // the relative error of 1/x is the one of x
+    return sameSignificance(h().inverseRoot(fApfloat, 1));
   }
 
   @Override
@@ -2059,17 +2403,17 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum multiply(double value) {
-    return valueOf(h().multiply(fApfloat, apfloatOf(value)));
+    return productResult(h().multiply(fApfloat, apfloatOf(value)), Double.valueOf(value));
   }
 
   @Override
   public IExpr multiply(int value) {
-    return valueOf(h().multiply(fApfloat, apfloatOf(value)));
+    return productResult(h().multiply(fApfloat, apfloatOf(value)), new Apint(value));
   }
 
   @Override
   public INum multiply(final INum value) {
-    return valueOf(h().multiply(fApfloat, value.apfloatValue()));
+    return productResult(h().multiply(fApfloat, value.apfloatValue()), value);
   }
 
   @Override
@@ -2085,7 +2429,7 @@ public class ApfloatNum implements INum {
     // so it raised the precision of a sign flip from 30 to 255. Negation cannot gain or lose
     // significant digits, and Apfloat#negate() keeps the ones it has. Reparsing a printed number
     // depended on this: -3.1415`30 came back as -3.1415`255.
-    return valueOf(fApfloat.negate());
+    return sameSignificance(fApfloat.negate());
   }
 
   @Override
@@ -2111,7 +2455,7 @@ public class ApfloatNum implements INum {
   /** @return */
   @Override
   public ApfloatNum opposite() {
-    return valueOf(h().negate(fApfloat));
+    return sameSignificance(h().negate(fApfloat));
   }
 
   @Override
@@ -2147,7 +2491,9 @@ public class ApfloatNum implements INum {
       return plus((IInexactNumber) that);
     }
     if (that instanceof IReal) {
-      return ApfloatNum.valueOf(sum(((IReal) that).apfloatValue()));
+      // an exact number adds no error
+      return sumResult(sum(((IReal) that).apfloatValue()), errorAccuracy(),
+          Double.POSITIVE_INFINITY, fSignificance == MACHINE);
     }
     if (that instanceof ComplexSym) {
       final Apcomplex complex = that.apcomplexValue();
@@ -2282,6 +2628,10 @@ public class ApfloatNum implements INum {
 
   @Override
   public long precision() throws NumericComputationException {
+    if (fSignificance == ZERO_ACCURACY) {
+      // a zero has no digits, its accuracy is the precision to calculate with
+      return Math.max(1L, (long) Math.ceil(fDigits));
+    }
     return fApfloat.precision();
   }
 
@@ -2293,7 +2643,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum reciprocal() {
-    return valueOf(h().inverseRoot(fApfloat, 1));
+    return sameSignificance(h().inverseRoot(fApfloat, 1));
   }
 
   @Override
@@ -2425,7 +2775,8 @@ public class ApfloatNum implements INum {
 
   @Override
   public ApfloatNum subtract(double value) {
-    return valueOf(difference(apfloatOf(value)));
+    return sumResult(difference(apfloatOf(value)), errorAccuracy(), Double.POSITIVE_INFINITY,
+        true);
   }
 
   @Override
@@ -2447,12 +2798,14 @@ public class ApfloatNum implements INum {
 
   @Override
   public INum subtract(final INum value) {
-    return valueOf(difference(value.apfloatValue()));
+    return sumResult(difference(value.apfloatValue()), errorAccuracy(), errorAccuracy(value),
+        fSignificance == MACHINE || isMachine(value));
   }
 
   @Override
   public IReal subtractFrom(IReal that) {
-    return valueOf(difference(that.apfloatValue()));
+    return sumResult(difference(that.apfloatValue()), errorAccuracy(), errorAccuracy(that),
+        fSignificance == MACHINE || isMachine(that));
   }
 
   /**
@@ -2593,7 +2946,7 @@ public class ApfloatNum implements INum {
       return times((IInexactNumber) that);
     }
     if (that instanceof IReal) {
-      return ApfloatNum.valueOf(h().multiply(fApfloat, ((IReal) that).apfloatValue()));
+      return productResult(h().multiply(fApfloat, ((IReal) that).apfloatValue()), that);
     }
     if (that instanceof ComplexSym) {
       return F.complexNum(fApfloat.multiply(that.apcomplexValue()));
@@ -2654,12 +3007,16 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public String toString() {
+    if (fSignificance == ZERO_ACCURACY) {
+      return "0``" + digitsString(fDigits);
+    }
     Apfloat rounded = ApfloatRounding.roundToPrecision(fApfloat);
     String str = rounded.toString();
     if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       return str.replace("e", "E");
     }
-    long precision = rounded.precision();
+    String precision =
+        fSignificance == TRACKED ? digitsString(fDigits) : Long.toString(rounded.precision());
     int index = str.indexOf('e');
     if (index > 0) {
       String exponentStr = str.substring(index + 1);

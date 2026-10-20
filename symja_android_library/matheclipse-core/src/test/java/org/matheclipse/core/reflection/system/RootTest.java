@@ -11,7 +11,7 @@ public class RootTest extends ExprEvaluatorTestCase {
     // c via FindRoot and returns a numeric value (matches WMA's behavior on
     // 4.60421677720057651458449514482636628606`20.6008566975056).
     check("Root({2*#1-Tan(#1) & , 4.60421677720057651458449514482636628606`20.6008566975056})", //
-        "Root({2*#1-Tan(#1)&,4.6042167772005765145})");
+        "Root({2*#1-Tan(#1)&,4.60421677720057651458})");
 
     // Inexact c with no closed-form Solve result → numeric refinement via FindRoot.
     check("Root({Exp(#) - 2 &, 0.6931471805599453})", //

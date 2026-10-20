@@ -148,6 +148,10 @@ public final class N extends AbstractCoreFunctionEvaluator {
         return evalPrecisionAccuracy(arg1, (IAST) arg2, engine);
       }
       long nDigitPrecision = oldDigitPrecision;
+      // the precision asked for, a real number: N(Pi, 20.3) has the precision 20.3
+      final IExpr requested = engine.evalN(arg2.isAST() ? ((IAST) arg2).copy() : arg2);
+      double requestedPrecision =
+          requested.isReal() ? requested.evalf() : Double.NaN;
       // arg2 = engine.evaluateNonNumeric(arg2);
       // a copy: an Orderless argument such as 1+I would be sorted in place, which changes the call
       // that is given back when the precision is refused
@@ -165,8 +169,27 @@ public final class N extends AbstractCoreFunctionEvaluator {
         }
         // truncate the requested precision to the maximum precision Symja supports
         nDigitPrecision = Config.MAX_PRECISION_APFLOAT;
+        requestedPrecision = nDigitPrecision;
       }
-      return org.matheclipse.core.reflection.system.N.evalN2(arg1, nDigitPrecision, engine);
+      // an exact expression: lost working digits are calculated again, they are no errors of the
+      // input
+      final boolean exactInput = nDigitPrecision > ParserConfig.MACHINE_PRECISION
+          && arg1.isFree(IExpr::isInexactNumber, false);
+      IExpr result;
+      if (exactInput) {
+        engine.suspendSignificance();
+        try {
+          result = org.matheclipse.core.reflection.system.N.evalN2(arg1, nDigitPrecision, engine);
+        } finally {
+          engine.resumeSignificance();
+        }
+      } else {
+        result = org.matheclipse.core.reflection.system.N.evalN2(arg1, nDigitPrecision, engine);
+      }
+      if (nDigitPrecision > ParserConfig.MACHINE_PRECISION && !Double.isNaN(requestedPrecision)) {
+        result = withPrecision(result, requestedPrecision);
+      }
+      return result;
     } finally {
       engine.setNumericMode(oldNumericMode);
       engine.setNumericPrecision(oldDigitPrecision);
@@ -436,6 +459,26 @@ public final class N extends AbstractCoreFunctionEvaluator {
     }
     final IExpr exact = expr;
     return evalExact(expr, working -> exact, 0L, nPrecision, significantFigures, engine);
+  }
+
+  /**
+   * The result of <code>N(expr, p)</code>: every arbitrary-precision number gets the precision
+   * <code>p</code>, a real number. A number of lower precision keeps its own: more working digits
+   * add none to a number of the input.
+   *
+   * @param result the numeric value
+   * @param precision the requested precision <code>p</code>
+   */
+  private static IExpr withPrecision(IExpr result, double precision) {
+    if (result instanceof ApfloatNum) {
+      return ((ApfloatNum) result).withRequestedPrecision(precision);
+    }
+    if (result.isAST()) {
+      return result.replaceAll(x -> x instanceof ApfloatNum
+          ? ((ApfloatNum) x).withRequestedPrecision(precision)
+          : F.NIL).orElse(result);
+    }
+    return result;
   }
 
   /** Working digits beyond the ones a reported loss asks for. */

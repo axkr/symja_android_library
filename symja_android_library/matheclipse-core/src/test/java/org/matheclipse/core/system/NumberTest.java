@@ -330,7 +330,7 @@ public class NumberTest extends ExprEvaluatorTestCase {
       check("Precision(N(Pi,512.5))", //
           "512");
       check("Precision(N(Pi,511.5))", //
-          "512");
+          "511.5");
       check("Precision(N(Pi,Sqrt(2)*1000))", //
           "512");
       // the truncated result is a real number, not an unevaluated N(...)
@@ -379,11 +379,9 @@ public class NumberTest extends ExprEvaluatorTestCase {
           "N(Pi,Infinity)");
       assertEquals("precsm", evaluator.getEvalEngine().getMessageShortcut());
 
-      // second known limitation: the truncation doesn't survive into sibling subexpressions.
-      // AbstractAST#determinePrecision() special-cases N(expr,prec) and returns arg2 unclamped, so
-      // the engine numeric precision is still raised to the requested 1001 at parse time.
+      // the truncated precision is the precision of the value, also in sibling subexpressions
       check("Precision(N(Pi,1001)*1)", //
-          "1001");
+          "512");
     } finally {
       Config.TRUNCATE_PRECISION_IN_N = oldTruncate;
     }
@@ -416,7 +414,7 @@ public class NumberTest extends ExprEvaluatorTestCase {
     check("N(Pi,512.5)", //
         "N(Pi,512.5)");
     check("Precision(N(Pi,511.5))", //
-        "512");
+        "511.5");
     // Check() returns its second argument, so the N::precgt message really was emitted
     check("Check(N(Pi,1001),\"msg\")", //
         "msg");

@@ -5482,6 +5482,18 @@ public final class Arithmetic {
         // The two uncertainties add in quadrature.
         return -Math.log10(Math.sqrt(Math.pow(10.0, -2.0 * re) + Math.pow(10.0, -2.0 * im)));
       }
+      if (expr instanceof ApfloatNum) {
+        ApfloatNum number = (ApfloatNum) expr;
+        double zeroAccuracy = number.zeroAccuracy10();
+        if (!Double.isNaN(zeroAccuracy)) {
+          // a zero of a given accuracy
+          return zeroAccuracy;
+        }
+        if (number.isSignificanceTracked() && !number.isZero()) {
+          return number.precision10()
+              - org.matheclipse.external.apfloat.ApfloatSignificance.log10Abs(number.apfloatValue());
+        }
+      }
       if (expr instanceof INum) {
         INum number = (INum) expr;
         // Symja gives a machine double a nominal precision of 15, but WMA reports
@@ -5525,8 +5537,16 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      long precision = precision(engine.evaluate(ast.arg1()));
-      return precision == Long.MAX_VALUE ? F.CInfinity : F.ZZ(precision);
+      double precision = precision(engine.evaluate(ast.arg1()));
+      if (Double.isInfinite(precision)) {
+        return F.CInfinity;
+      }
+      double rounded = Math.rint(precision);
+      if (Math.abs(precision - rounded) < 1.0e-9) {
+        return F.ZZ((long) rounded);
+      }
+      // a precision of significance arithmetic, a real number
+      return F.num(precision);
     }
 
     /**
@@ -5537,23 +5557,27 @@ public final class Arithmetic {
      * whole tree. Returning {@code Infinity} for anything that was not itself a number made
      * {@code Precision({1, 1.0})} claim exactness for a list holding an inexact value.
      */
-    private static long precision(IExpr expr) {
+    private static double precision(IExpr expr) {
+      if (expr instanceof ApfloatNum) {
+        return ((ApfloatNum) expr).precision10();
+      }
       if (expr instanceof INum) {
         return ((INum) expr).precision();
       }
       if (expr instanceof IComplexNum) {
-        return ((IComplexNum) expr).precision();
+        long precision = ((IComplexNum) expr).precision();
+        return precision == Long.MAX_VALUE ? Double.POSITIVE_INFINITY : precision;
       }
       if (expr.isAST()) {
         IAST ast = (IAST) expr;
-        long minimum = Long.MAX_VALUE;
+        double minimum = Double.POSITIVE_INFINITY;
         for (int i = 0; i < ast.size(); i++) {
           minimum = Math.min(minimum, precision(ast.get(i)));
         }
         return minimum;
       }
       // Exact numbers, symbols and strings are known exactly.
-      return Long.MAX_VALUE;
+      return Double.POSITIVE_INFINITY;
     }
 
     @Override

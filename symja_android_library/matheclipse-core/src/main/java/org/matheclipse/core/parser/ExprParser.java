@@ -1142,11 +1142,8 @@ public class ExprParser extends Scanner {
               throwSyntaxError("Number format error (not a double type): " + precisionStr,
                   precisionStr.length());
             }
-            if (doublePrecision < ParserConfig.MACHINE_PRECISION) {
-              doublePrecision = ParserConfig.MACHINE_PRECISION_DOUBLE;
-              precisionStr = "" + ParserConfig.MACHINE_PRECISION;
-            }
-            return F.num(numberStr, doublePrecision);
+            // x``a: the accuracy, the number of digits behind the decimal point
+            return F.numAccuracy(numberStr, doublePrecision);
             // long precision = getJavaLong();
             // if (precision < ParserConfig.MACHINE_PRECISION) {
             // precision = ParserConfig.MACHINE_PRECISION;
@@ -1167,10 +1164,7 @@ public class ExprParser extends Scanner {
                 throwSyntaxError("Number format error (not a double type): " + precisionStr,
                     precisionStr.length());
               }
-              if (doublePrecision < ParserConfig.MACHINE_PRECISION) {
-                doublePrecision = ParserConfig.MACHINE_PRECISION_DOUBLE;
-                precisionStr = "" + ParserConfig.MACHINE_PRECISION;
-              }
+              // a precision below the machine precision is kept: 1.5`5.497 has the precision 5.497
               String mantissaStr = numberStr;
               if (isValidPosition() && fInputString[fCurrentPosition] == '*'
                   && fCurrentPosition + 1 < fInputString.length

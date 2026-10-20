@@ -946,14 +946,20 @@ public class AST2Expr {
       // exponent has been folded in. Neither Double#parseDouble nor Apfloat accepts the backtick,
       // so it has to come off here, and the number keeps the precision it was written with rather
       // than whatever the engine happens to be set to.
-      long numberPrecision = -1;
+      double numberPrecision = -1;
+      // x``a is written with the accuracy a, the number of digits behind the decimal point
+      boolean accuracyMark = false;
       int tickIndex = nStr.indexOf('`');
       if (tickIndex > 0) {
         String precisionPart = nStr.substring(tickIndex + 1);
+        if (precisionPart.startsWith("`")) {
+          accuracyMark = true;
+          precisionPart = precisionPart.substring(1);
+        }
         nStr = nStr.substring(0, tickIndex);
         if (precisionPart.length() > 0) {
           try {
-            numberPrecision = (long) Double.parseDouble(precisionPart);
+            numberPrecision = Double.parseDouble(precisionPart);
           } catch (NumberFormatException nfe) {
             numberPrecision = -1;
           }
@@ -966,9 +972,14 @@ public class AST2Expr {
         floatStr = nStr.substring(0, index);
         exponent = Integer.parseInt(nStr.substring(index + 2));
       }
-      if (numberPrecision > 0 || EvalEngine.isApfloat(fPrecision)) {
-        Apfloat apfloatValue =
-            new Apfloat(floatStr, numberPrecision > 0 ? numberPrecision : fPrecision);
+      if (numberPrecision > 0 || (accuracyMark && numberPrecision >= 0)) {
+        // the precision (or accuracy) is a real number: 1.5`20.3
+        String numberStr = exponent != 1 ? floatStr + "e" + exponent : floatStr;
+        return accuracyMark ? F.numAccuracy(numberStr, numberPrecision)
+            : F.num(numberStr, numberPrecision);
+      }
+      if (EvalEngine.isApfloat(fPrecision)) {
+        Apfloat apfloatValue = new Apfloat(floatStr, fPrecision);
         if (exponent != 1) {
           // value * 10 ^ exponent
           return F.num(apfloatValue.multiply(ApfloatMath.pow(new Apint(10), new Apint(exponent))));

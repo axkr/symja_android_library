@@ -242,7 +242,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("LegendreP(60,0.5+0.25*I)", //
         "549900.3041401437+I*1203438.0442906923");
     check("LegendreP(60,0.3``30)", //
-        "0.0961103249624579958148258041886");
+        "0.096110324962457995814825804189");
     check("GegenbauerC(120,1/3,-0.9``30)", //
         "-0.030216675930620444449491150071");
     check("LegendreP(5,0.3)", //
@@ -444,7 +444,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("Mod(27/10,1/3,1)", //
         "31/30");
     check("Mod(N(27/10,30),N(1/3,30),1)", //
-        "1.03333333333333333333333333333");
+        "1.0333333333333333333333333333");
   }
 
   @Test
@@ -646,7 +646,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
     check("ArcCot(-1.0*^-300)", //
         "-1.5708");
     check("Log(N(10^-40,30))", //
-        "-92.1034037197618273607196581874");
+        "-92.103403719761827360719658187375");
     check("N(Gamma(10^-40),30)", //
         "1.00000000000000000000000000000*10^40");
     check("Log(0.0)", //
@@ -1255,12 +1255,12 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
         "13.125");
     // h^n*Gamma(x/h+1)/Gamma(x/h+1-n): 18.93225066337866769184155
     check("FactorialPower(N(7/2,20),5/2,1/3)", //
-        "18.932250663378667692");
+        "18.93225066337866769");
     check("FactorialPower(3.5,2,0.5)", //
         "10.5");
     // the count of the factors may be an inexact integer: 0.5944879869374718685699588
     check("QPochhammer(N(1/3,20),N(1/4,20),5)", //
-        "0.59448798693747186857");
+        "0.5944879869374718686");
     check("N(QPochhammer(1/3,1/4,5),20)", //
         "0.59448798693747186857");
     check("QPochhammer(0.5,0.25,-2)", //

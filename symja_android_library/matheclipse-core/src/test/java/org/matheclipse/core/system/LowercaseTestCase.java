@@ -4952,7 +4952,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "2+Abs(b+1/3*(-a-b-c))^2+Abs(1/3*(-a-b-c)+c)^2)*(Abs(x+1/3*(-x-y-z))^2+Abs(y+1/3*(-x-y-z))^\n"//
             + "2+Abs(1/3*(-x-y-z)+z)^2))");//
     check("CorrelationDistance(N({1, 5, 2, 3, 10}, 50), N({4, 15, 20, 5, 5}, 50))", //
-        "1.2106635188398813533035274347761676650148587810028");
+        "1.210663518839881353303527434776167665014858781003");
     // check("CorrelationDistance(RandomReal(5, 100), RandomReal(5, 100))", //
     // "1.0697");
   }
@@ -19910,7 +19910,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("2.5`30/3", //
         "0.833333333333333333333333333333");
     check("Mod(N(27/10, 30), N(1/3, 30), 1)", //
-        "1.03333333333333333333333333333");
+        "1.0333333333333333333333333333");
     // the parts of a complex number: 2/7 = 0.285714285714285714285714|28..., 5/7 =
     // 0.714285714285714285714285|71...
     check("N(2, 24)/7 + I*N(5, 24)/7", //
@@ -20068,8 +20068,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // test precision 30
     check("2/3 + Pi + 5.5`30", //
         "9.30825932025645990512931004995");
+    // the accuracy 30 is the precision 30.74 of 5.5
     check("2/3 + Pi + 5.5``30", //
-        "9.30825932025645990512931004995");
+        "9.308259320256459905129310049946");
 
     // imaginary part is zero
     check("I^I //N", //
@@ -26682,10 +26683,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     assertEquals(result.toString(), "1.112650054704269802`21*10^-17");
 
     result = exprEvaluator.eval(F.Sqrt(result));
-    assertEquals(result.toString(), "3.33564094995889778245`21*10^-9");
+    assertEquals(result.toString(), "3.33564094995889778245`21.301*10^-9");
 
     result = exprEvaluator.eval(F.Divide(IntegerSym.valueOf(1), (result)));
-    assertEquals(result.toString(), "2.99792458181784263932`21*10^8"); // speed of light
+    assertEquals(result.toString(), "2.99792458181784263932`21.301*10^8"); // speed of light
   }
 
   /**
@@ -26696,7 +26697,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     ExprEvaluator exprEvaluator = new ExprEvaluator();
     IExpr result = exprEvaluator
         .eval("1/Sqrt((Rationalize(0.000000000008854187817))*(Rationalize(0.00000125663706)))");
-    assertEquals(result.toString(), "2.99792458181784263932`21*10^8");
+    assertEquals(result.toString(), "2.99792458181784263932`21.301*10^8");
   }
 
   /**
@@ -33629,7 +33630,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N(WhittakerM(2, 1/3, 1/7), 100)", //
         "0.1656497719066782903103648280719871043760680518713012567635165215951597907345740933330557755894455857");
     check("WhittakerM(2, 1.33333333333333333333, 1)", //
-        "0.576202738935656959012");
+        "0.57620273893565695901");
     checkNumeric("N(WhittakerM(4/5, 2 - I, 2))", //
         "3.2795757038532307+I*(-3.256018217264453)");
     checkNumeric("N(WhittakerM(I, 42, 0))", //

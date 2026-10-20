@@ -8649,7 +8649,34 @@ public class F extends S {
           S.N);
       return null;
     }
-    return num(new Apfloat(numberStr, (long) precision));
+    // the precision is a real number: 1.5`20.3 has 21 digits and the precision 20.3
+    Apfloat value = new Apfloat(numberStr, Math.max(1L, (long) Math.ceil(precision - 1.0e-9)) + 1L);
+    if (value.signum() == 0) {
+      // 0.`20 is a zero known to 20 digits behind the decimal point
+      return ApfloatNum.zero(precision);
+    }
+    return ApfloatNum.valueOf(value, precision);
+  }
+
+  /**
+   * The number <code>numberStr``accuracy</code>: known to <code>accuracy</code> digits behind the
+   * decimal point, which is the precision <code>accuracy+Log10(Abs(x))</code>.
+   *
+   * @param numberStr the digits of the number
+   * @param accuracy the decimal accuracy
+   */
+  public static INum numAccuracy(String numberStr, double accuracy) {
+    Apfloat value = new Apfloat(numberStr);
+    if (value.signum() == 0) {
+      return ApfloatNum.zero(accuracy);
+    }
+    double precision =
+        accuracy + org.matheclipse.external.apfloat.ApfloatSignificance.log10Abs(value);
+    if (precision <= 0.0) {
+      // not one digit of the number is known
+      return ApfloatNum.zero(accuracy);
+    }
+    return num(numberStr, precision);
   }
 
   /**

@@ -781,6 +781,12 @@ public class EvalEngine implements Serializable {
   private transient boolean fNumericMode;
 
   /**
+   * Greater than <code>0</code> while a numeric function without condition numbers is evaluated:
+   * its own arithmetic doesn't carry the errors of its arguments, see {@link SignificanceArithmetic}.
+   */
+  private transient int fSignificanceSuspended;
+
+  /**
    * if <code>true</code> the engine evaluates &quot;F.Together(expr)&quot; in IExpr#times() method.
    */
   transient boolean fTogetherMode;
@@ -2197,9 +2203,25 @@ public class EvalEngine implements Serializable {
               calls.incCalls(endTime - beginTime);
             }
           } else {
-            IExpr result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
-                : functionEvaluator.evaluate(newAST, this);
+            // a numeric function without condition numbers: the precision of its arguments
+            final double opaquePrecision = SignificanceArithmetic.opaquePrecision(symbol, newAST);
+            IExpr result;
+            if (Double.isNaN(opaquePrecision)) {
+              result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
+                  : functionEvaluator.evaluate(newAST, this);
+            } else {
+              fSignificanceSuspended++;
+              try {
+                result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
+                    : functionEvaluator.evaluate(newAST, this);
+              } finally {
+                fSignificanceSuspended--;
+              }
+              result = SignificanceArithmetic.withPrecision(result, opaquePrecision);
+            }
             if (result.isPresent()) {
+              // the precision of the value from the precision of the arguments
+              result = SignificanceArithmetic.conditioned(symbol, newAST, result);
               if (MachineFallback.isSuspect(result)) {
                 // the machine arithmetic may have failed, where the function has a value
                 IExpr precise = MachineFallback.evaluate(symbol, newAST, this);
@@ -4997,6 +5019,28 @@ public class EvalEngine implements Serializable {
     return fModifiedVariablesList;
   }
 
+  /**
+   * Test if arithmetic doesn't carry errors at the moment: inside a numeric function without
+   * condition numbers, see {@link SignificanceArithmetic#opaquePrecision(ISymbol, IAST)}, or while
+   * <code>N</code> evaluates an exact expression.
+   */
+  public boolean isSignificanceSuspended() {
+    return fSignificanceSuspended > 0;
+  }
+
+  /**
+   * Arithmetic doesn't carry errors until the matching {@link #resumeSignificance()}: the working
+   * digits of <code>N</code> for an exact expression are not errors of the input.
+   */
+  public void suspendSignificance() {
+    fSignificanceSuspended++;
+  }
+
+  /** Ends a {@link #suspendSignificance()}. */
+  public void resumeSignificance() {
+    fSignificanceSuspended--;
+  }
+
   public long getNumericPrecision() {
     if (fApfloatHelper != null) {
       return fApfloatHelper.precision();
@@ -5553,7 +5597,20 @@ public class EvalEngine implements Serializable {
   private IExpr numericFunction(final IBuiltInSymbol symbol, final IAST ast) {
     final IFunctionEvaluator functionEvaluator = symbol.getEvaluator();
     try {
-      IExpr result = functionEvaluator.numericFunction(ast, this);
+      // a numeric function without condition numbers: the precision of its arguments
+      final double opaquePrecision = SignificanceArithmetic.opaquePrecision(symbol, ast);
+      IExpr result;
+      if (Double.isNaN(opaquePrecision)) {
+        result = functionEvaluator.numericFunction(ast, this);
+      } else {
+        fSignificanceSuspended++;
+        try {
+          result = functionEvaluator.numericFunction(ast, this);
+        } finally {
+          fSignificanceSuspended--;
+        }
+        result = SignificanceArithmetic.withPrecision(result, opaquePrecision);
+      }
       if (result.isPresent() && isMachineOverflow(result) && hasFiniteMachineArguments(ast)) {
         // A machine precision result out of the double range is an arbitrary precision
         // number of machine precision, not Overflow() or Infinity
@@ -5570,7 +5627,8 @@ public class EvalEngine implements Serializable {
           return precise;
         }
       }
-      return result;
+      // the precision of the value from the precision of the arguments
+      return result.isPresent() ? SignificanceArithmetic.conditioned(symbol, ast, result) : result;
     } catch (ValidateException ve) {
       ve.printStackTrace();
       return Errors.printMessage(ast.topHead(), ve, this);
