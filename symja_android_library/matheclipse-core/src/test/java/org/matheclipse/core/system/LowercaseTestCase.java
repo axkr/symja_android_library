@@ -12849,7 +12849,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("f = Interpolation({{0, 1}, {1, 2}, {2, 0}, {3, 3}, {4, 1}}, InterpolationOrder -> 1); {f(0.5), f(3.5)}", //
         "{1.5,2.0}");
     check("f = Interpolation({{0, 0}, {1, 1}, {2, 0}, {3, 2}, {4, 1}}); {f(\"InterpolationOrder\"), f(\"Domain\")}", //
-        "{{3},{{0.0,4.0}}}");
+        "{{3},{{0,4}}}");
   }
 
   @Test
@@ -12995,7 +12995,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "f(2), (g(t) /. g -> f /. t -> 2)}", //
         "{True,True,4,4}");
     check("f = Interpolation({1, 4, 9, 16, 25, 36}); {f(2.5), f(\"Domain\")}", //
-        "{6.25,{{1.0,6.0}}}");
+        "{6.25,{{1,6}}}");
   }
 
   @Test
@@ -13536,6 +13536,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testParametricPlotListOfRegions() {
     check("Length(Cases(ParametricPlot({{u, v}, {u + 2, v}}, {u, 0, 1}, {v, 0, 1}), _Polygon, Infinity))", //
         "2");
+  }
+
+  @Test
+  public void testInterpolationOfOneElementRows() {
+    // rows {v} of one element are the values at 1, 2, ...
+    check("Interpolation({{2}, {3}, {5}, {7}, {11}})[4]", //
+        "7");
+    check("Interpolation({{2}, {3}, {5}, {7}, {11}})[\"Domain\"]", //
+        "{{1,5}}");
+  }
+
+  @Test
+  public void testInterpolationExactDomain() {
+    // exact abscissae give an exact domain, inexact ones a machine one
+    check("Interpolation({{3/4, 2}, {2, 1}, {5/2, 7}, {6, 3}})[\"Domain\"]", //
+        "{{3/4,6}}");
+    check("Interpolation({{0.25, 2}, {2, 1}, {5/2, 7}, {6, 3}})[\"Domain\"]", //
+        "{{0.25,6.0}}");
+    check("Interpolation({4, 8, 15, 16, 23, 42})[\"Domain\"]", //
+        "{{1,6}}");
+  }
+
+  @Test
+  public void testSettingOfControls() {
+    check("Setting(2*3 + y)", //
+        "6+y");
+    check("Setting({Checkbox(False), VerticalSlider(7, {0, 9}), g(InputField(\"text\"))})", //
+        "{False,7,g(text)}");
+    check("z = 4; Setting(Slider(Dynamic(z), {1, 8}) + 1)", //
+        "5");
   }
 
   @Test

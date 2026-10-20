@@ -172,4 +172,47 @@ public class NDSolveTest extends ExprEvaluatorTestCase {
     checkApprox("sol=NDSolve({y'(t)==y(t)^2, y(0)==-1}, y, {t,-2,0});f=y/.Part(sol,1);f(-0.5)", //
         -2.0, 1e-6);
   }
+
+  // the unknown written with the space variable first, its derivatives and its domain in that
+  // order
+  @Test
+  public void testNDSolvePDESpaceFirst() {
+    check("u=NDSolveValue({D(w(x,t),t)==D(w(x,t),x,x), w(x,0)==Sin(Pi*x), w(0,t)==0, w(1,t)==0}, "
+        + "w, {t,0,2}, {x,0,1});{Abs(u(0.25,0.05)-Sin(Pi/4)*Exp(-Pi^2*0.05))<10^-3, u(\"Domain\")}", //
+        "{True,{{0.0,1.0},{0.0,2.0}}}");
+  }
+
+  // a NeumannValue is the flux into the bar through its end: the total grows by it
+  @Test
+  public void testNDSolvePDENeumannValue() {
+    check("u=NDSolveValue({D(w(x,t),t)-3*D(w(x,t),x,x)==NeumannValue(2,x==0)+NeumannValue(0,x==1), "
+        + "w(x,0)==0}, w, {t,0,1/2}, {x,0,1});Round(100*NIntegrate(u(x,0.5),{x,0,1}))", //
+        "100");
+    // an end without a condition is insulated: w = t + (x-1)^2/2 - 1/6 once the start has died away
+    check("u=NDSolveValue({D(w(x,t),t)-D(w(x,t),x,x)==NeumannValue(1,x==0), w(x,0)==0}, "
+        + "w, {t,0,1}, {x,0,1});{Abs(u(0,1)-4/3)<10^-3, Abs(u(1,1)-5/6)<10^-3}", //
+        "{True,True}");
+    // a value at one end and a flux at the other; the steady state is w = x/2
+    check("u=NDSolveValue({D(w(x,t),t)==D(w(x,t),x,x)+NeumannValue(1/2,x==1), w(x,0)==0, "
+        + "DirichletCondition(w(x,t)==0,x==0)}, w, {t,0,6}, {x,0,1});Abs(u(0.6,6)-0.3)<10^-3", //
+        "True");
+    // before the steady state
+    check("u=NDSolveValue({D(w(x,t),t)==D(w(x,t),x,x)+NeumannValue(1,x==1), w(x,0)==0, "
+        + "DirichletCondition(w(x,t)==0,x==0)}, w, {t,0,5}, {x,0,1});Abs(u(1,1.0)-0.93128)<10^-4", //
+        "True");
+    // with a drift term the NeumannValue is still the diffusive flux
+    check("u=NDSolveValue({D(w(x,t),t)==D(w(x,t),x,x)-D(w(x,t),x)+NeumannValue(1,x==0), "
+        + "w(x,0)==0}, w, {t,0,1}, {x,0,1});Abs(u(0.5,1)-1.49114)<10^-4", //
+        "True");
+  }
+
+  // a field which diffuses, coupled through its end to a quantity without a space derivative: what
+  // the one gains the other loses
+  @Test
+  public void testNDSolvePDECoupledReservoir() {
+    check("s=NDSolveValue({D(p(x,t),t)-2*D(p(x,t),x,x)==NeumannValue(-(p(x,t)-q(x,t)),x==1), "
+        + "p(x,0)==1, 3*D(q(x,t),t)==-(q(x,t)-p(x,t)), q(x,0)==0}, {p,q}, {t,0,1}, {x,0,1});"
+        + "Round(1000*(NIntegrate(s[[1]](x,1),{x,0,1})+3*s[[2]](1,1)))", //
+        "1000");
+  }
 }

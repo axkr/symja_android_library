@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Interpolation extends AbstractFunctionOptionEvaluator {
@@ -22,6 +23,44 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
+    IExpr result = interpolate(ast, argSize, options, engine, originalAST);
+    if (result instanceof InterpolatingFunctionExpr) {
+      // points at exact abscissae keep them exact in the domain
+      IExpr[] domain = exactDomain(ast.arg1());
+      if (domain != null) {
+        ((InterpolatingFunctionExpr<?>) result).withExactDomain(domain[0], domain[1]);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * The smallest and the largest abscissa of the points <code>{{x1, ...}, {x2, ...}, ...}</code>,
+   * or <code>null</code> unless all of them are rational numbers.
+   */
+  private static IExpr[] exactDomain(IExpr data) {
+    if (!data.isList() || data.argSize() == 0) {
+      return null;
+    }
+    IRational min = null;
+    IRational max = null;
+    for (IExpr point : (IAST) data) {
+      if (!point.isList() || point.argSize() < 2 || !point.first().isRational()) {
+        return null;
+      }
+      IRational x = (IRational) point.first();
+      if (min == null || x.isLT(min)) {
+        min = x;
+      }
+      if (max == null || x.isGT(max)) {
+        max = x;
+      }
+    }
+    return new IExpr[] {min, max};
+  }
+
+  private IExpr interpolate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+      IAST originalAST) {
     if (ast.arg1().isVector() > 0 && ast.arg1().isMatrix() == null) {
       // the values {v1, v2, ...} at the points 1, 2, ...
       IAST values = (IAST) ast.arg1();
@@ -30,6 +69,12 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
         points.append(F.List(F.ZZ(i), values.get(i)));
       }
       return evaluate(ast.setAtCopy(1, points), argSize, options, engine, originalAST);
+    }
+    int[] rowDims = ast.arg1().isMatrix();
+    if (rowDims != null && rowDims[1] == 1) {
+      // rows {v} of one element are the values themselves
+      return evaluate(ast.setAtCopy(1, ((IAST) ast.arg1()).map(row -> row.first())), argSize,
+          options, engine, originalAST);
     }
     IExpr tensorValued = tensorValued(ast, argSize, originalAST, engine);
     if (tensorValued.isPresent()) {

@@ -247,6 +247,11 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (solution.isPresent()) {
         return solution;
       }
+      // a system, the unknowns written u(x, t), or ends with a flux
+      solution = NDSolvePDESystem.solve(ast, engine, ruleForm);
+      if (solution.isPresent()) {
+        return solution;
+      }
     }
     final IAST tRangeList = (IAST) ast.arg3();
     if (!(tRangeList.isAST2() || tRangeList.isAST3())) {

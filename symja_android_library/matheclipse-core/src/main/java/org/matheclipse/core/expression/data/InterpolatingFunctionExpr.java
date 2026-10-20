@@ -38,6 +38,23 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   int order = 3;
 
   /**
+   * The domain <code>{min, max}</code> as the exact numbers of the data it was built from, or
+   * {@link F#NIL} if the data had inexact or no such numbers.
+   */
+  IAST exactDomain = F.NIL;
+
+  /**
+   * Sets the domain to the exact numbers <code>min</code> and <code>max</code>, which the
+   * <code>"Domain"</code> property gives instead of their machine values.
+   *
+   * @return this function
+   */
+  public InterpolatingFunctionExpr<T> withExactDomain(IExpr min, IExpr max) {
+    this.exactDomain = F.list(min, max);
+    return this;
+  }
+
+  /**
    * Wrapper for an interpolating function represented as an {@link IAST}. This variant returns the
    * original stored AST via {@link #normal(boolean)}.
    */
@@ -70,6 +87,7 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     public IExpr copy() {
       ASTFunctionExpr function = new ASTFunctionExpr(toData(), min, max);
       function.order = order;
+      function.exactDomain = exactDomain;
       return function;
     }
   }
@@ -432,6 +450,15 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
         InterpolatingFunctionExpr<?> function = (InterpolatingFunctionExpr<?>) ast.head();
         String property = arg1.toString();
         if (property.equals("Domain")) {
+          if (function instanceof GridFunctionExpr) {
+            // a function of two variables has a range for each
+            GridFunctionExpr grid = (GridFunctionExpr) function;
+            return F.list(F.list(F.num(grid.min), F.num(grid.max)),
+                F.list(F.num(grid.yMin), F.num(grid.yMax)));
+          }
+          if (function.exactDomain.isPresent()) {
+            return F.list(function.exactDomain);
+          }
           return F.list(F.list(F.num(function.min), F.num(function.max)));
         }
         if (property.equals("InterpolationOrder") && function instanceof ASTFunctionExpr) {
@@ -488,7 +515,9 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
 
   @Override
   public IExpr copy() {
-    return new InterpolatingFunctionExpr(fData, min, max);
+    InterpolatingFunctionExpr<T> function = new InterpolatingFunctionExpr<T>(fData, min, max);
+    function.exactDomain = exactDomain;
+    return function;
   }
 
   @Override

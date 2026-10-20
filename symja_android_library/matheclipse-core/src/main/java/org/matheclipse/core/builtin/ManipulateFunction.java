@@ -46,6 +46,7 @@ public class ManipulateFunction {
       S.DynamicWrapper.setEvaluator(new DynamicObject());
       S.Refresh.setEvaluator(new Refresh());
       S.Button.setEvaluator(new ButtonObject());
+      S.Setting.setEvaluator(new Setting());
     }
   }
 
@@ -108,6 +109,50 @@ public class ManipulateFunction {
    * when the button is pressed. Without the hold a <code>Column[{Button[1, x = 1]}]</code> would
    * assign at once.
    */
+  /**
+   * <code>Setting(expr)</code> - <code>expr</code> with every control in it replaced by its current
+   * value: the first argument of a slider, checkbox, input field and the like, with a
+   * <code>Dynamic(x)</code> there evaluated to the value of <code>x</code>. A box such as
+   * <code>ColorSetterBox</code> is no control and stays.
+   */
+  private static class Setting extends AbstractEvaluator {
+    private static final java.util.Set<IExpr> CONTROLS = new java.util.HashSet<IExpr>(
+        java.util.Arrays.asList(S.Animator, S.Checkbox, S.CheckboxBar, S.ColorSetter,
+            S.ColorSlider, S.InputField, S.IntervalSlider, S.Locator, S.LocatorPane,
+            S.Manipulator, S.Opener, S.PopupMenu, S.RadioButton, S.RadioButtonBar, S.Setter,
+            S.SetterBar, S.Slider, S.Slider2D, S.Toggler, S.TogglerBar, S.Trigger,
+            S.VerticalSlider));
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr expr = ast.arg1();
+      IExpr result = settings(expr, engine);
+      return result == expr ? expr : engine.evaluate(result);
+    }
+
+    private static IExpr settings(IExpr expr, EvalEngine engine) {
+      return expr.replaceAll(e -> {
+        if (e.isAST() && e.argSize() >= 1 && CONTROLS.contains(e.head())) {
+          return settings(e.first(), engine);
+        }
+        if (e.isAST(S.Dynamic) && e.argSize() >= 1) {
+          return settings(engine.evaluate(e.first()), engine);
+        }
+        return F.NIL;
+      }).orElse(expr);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   private static class ButtonObject extends AbstractEvaluator {
 
     @Override
