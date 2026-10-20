@@ -463,12 +463,13 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
   public void testIntegerPowersOfInexactNumbers() {
     check("N(10,30)^6", //
         "1000000");
+    // the precision 30-Log10(10^12)
     check("N(2,30)^(10^12)", //
-        "9.57624423149274328480505949570*10^301029995663");
+        "9.57624423149274328*10^301029995663");
     check("N(11/10,30)^(10^6)", //
-        "4.84348796603303484786492117176*10^41392");
+        "4.84348796603303484786492*10^41392");
     check("N(-3,30)^1001", //
-        "-3.96621245844241991067136577926*10^477");
+        "-3.96621245844241991067136578*10^477");
   }
 
   @Test
@@ -1260,7 +1261,7 @@ public class SpecialFunctionsNumericTest extends ExprEvaluatorTestCase {
         "10.5");
     // the count of the factors may be an inexact integer: 0.5944879869374718685699588
     check("QPochhammer(N(1/3,20),N(1/4,20),5)", //
-        "0.5944879869374718686");
+        "0.59448798693747186857");
     check("N(QPochhammer(1/3,1/4,5),20)", //
         "0.59448798693747186857");
     check("QPochhammer(0.5,0.25,-2)", //

@@ -787,6 +787,13 @@ public class EvalEngine implements Serializable {
   private transient int fSignificanceSuspended;
 
   /**
+   * The precision which <code>N(expr, p)</code> asked for while it evaluates, <code>0</code>
+   * otherwise: a number of a higher precision of its own is lowered to it, and only to it, see
+   * {@link ApfloatNum#evaluate(EvalEngine)}.
+   */
+  private transient long fRequestedPrecision;
+
+  /**
    * if <code>true</code> the engine evaluates &quot;F.Together(expr)&quot; in IExpr#times() method.
    */
   transient boolean fTogetherMode;
@@ -1834,6 +1841,18 @@ public class EvalEngine implements Serializable {
       if (!fNumericMode) {
         if (isNumericFunction && isNumericArgument) {
           localNumericMode = true;
+          final long significancePrecision = significancePrecision(ast);
+          if (significancePrecision > 0) {
+            // an argument of a precision of its own: the exact arguments become numbers of that
+            // precision, not machine numbers which would cut its digits
+            final long oldPrecision = getNumericPrecision();
+            setNumericPrecision(significancePrecision);
+            try {
+              return evalArgs(ast, attributes, numericFunction);
+            } finally {
+              setNumericPrecision(oldPrecision);
+            }
+          }
         }
       }
 
@@ -1935,6 +1954,32 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
+  /**
+   * The precision for the numeric evaluation of the arguments of <code>ast</code> if one of them
+   * has a precision of its own and the engine has no arbitrary precision, see
+   * {@link ApfloatNum#isSignificanceTracked()}.
+   *
+   * @return <code>0</code> if the precision of the engine stays
+   */
+  private long significancePrecision(final IAST ast) {
+    if (isArbitraryMode()) {
+      return 0L;
+    }
+    long precision = 0L;
+    boolean exactArgument = false;
+    for (int i = 1; i < ast.size(); i++) {
+      final IExpr arg = ast.get(i);
+      if (arg instanceof ApfloatNum && ((ApfloatNum) arg).isSignificanceTracked()) {
+        precision = Math.max(precision, arg.determinePrecision(false));
+      } else if (!exactArgument && !arg.isInexactNumber() && arg.isNumericFunction(true)) {
+        exactArgument = true;
+      }
+    }
+    // without an exact argument to convert the precision of the engine stays: a change of it
+    // starts a new evaluation epoch
+    return exactArgument ? precision : 0L;
+  }
+
   public final IAST evalArgsOrderlessN(IAST ast1) {
     Flag numericFlag =
         isArbitraryMode() ? Flag.NUMERIC_ARBITRARY_EVALED : Flag.NUMERIC_DOUBLE_EVALED;
@@ -1946,6 +1991,18 @@ public class EvalEngine implements Serializable {
     try {
       // fNumericMode = true;
       setNumericMode(true);
+      // next to a number of a precision of its own the exact arguments become numbers of that
+      // precision: as numbers of the machine precision they would cut its digits
+      final long significancePrecision = significancePrecision(ast1);
+      if (significancePrecision > 0) {
+        final long oldPrecision = getNumericPrecision();
+        setNumericPrecision(significancePrecision);
+        try {
+          return evalArgsOrderlessN(ast1);
+        } finally {
+          setNumericPrecision(oldPrecision);
+        }
+      }
       IASTMutable copy = F.NIL;
       for (int i = 1; i < ast1.size(); i++) {
         IExpr temp = ast1.get(i);
@@ -5039,6 +5096,28 @@ public class EvalEngine implements Serializable {
   /** Ends a {@link #suspendSignificance()}. */
   public void resumeSignificance() {
     fSignificanceSuspended--;
+  }
+
+  /**
+   * The precision which <code>N(expr, p)</code> asked for while it evaluates, to which numbers of
+   * a higher precision of their own are lowered.
+   *
+   * @return <code>0</code> outside of <code>N(expr, p)</code>
+   */
+  public long getRequestedPrecision() {
+    return fRequestedPrecision;
+  }
+
+  /**
+   * Set the precision which <code>N(expr, p)</code> asked for, see
+   * {@link #getRequestedPrecision()}.
+   *
+   * @return the previous value
+   */
+  public long setRequestedPrecision(long precision) {
+    final long old = fRequestedPrecision;
+    fRequestedPrecision = precision;
+    return old;
   }
 
   public long getNumericPrecision() {

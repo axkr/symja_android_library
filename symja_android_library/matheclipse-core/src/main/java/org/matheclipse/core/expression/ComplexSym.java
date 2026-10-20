@@ -671,18 +671,11 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber plus(final INumber that) {
-    if (F.isExactZero(that)) {
-      return this;
-    }
     if (that instanceof ComplexSym) {
       return this.add((ComplexSym) that);
     }
-    if (that instanceof IComplexNum) {
-      if (that instanceof ApcomplexNum) {
-        Apcomplex temp = apcomplexValue().add(((ApcomplexNum) that).apcomplexValue());
-        return F.complexNum(temp);
-      }
-      return F.complexNum(evalfc().add(that.evalfc()));
+    if (F.isExactZero(that)) {
+      return this;
     }
     if (that instanceof IInteger) {
       return this.add(valueOf((IInteger) that));
@@ -690,12 +683,19 @@ public class ComplexSym implements IComplex {
     if (that instanceof IFraction) {
       return this.add(valueOf((IFraction) that));
     }
-    if (that instanceof INum) {
-      if (that instanceof ApfloatNum) {
-        Apcomplex temp = apcomplexValue().add(((ApfloatNum) that).apfloatValue());
-        return F.complexNum(temp);
-      }
+    if (that instanceof ComplexNum) {
+      return F.complexNum(evalfc().add(that.evalfc()));
+    }
+    if (that instanceof Num) {
       return F.complexNum(evalfc().add(((INum) that).evalfNaN()));
+    }
+    if (that instanceof ApcomplexNum) {
+      Apcomplex temp = apcomplexValue().add(((ApcomplexNum) that).apcomplexValue());
+      return F.complexNum(temp);
+    }
+    if (that instanceof ApfloatNum) {
+      Apcomplex temp = apcomplexValue().add(((ApfloatNum) that).apfloatValue());
+      return F.complexNum(temp);
     }
     throw new java.lang.ArithmeticException();
   }
@@ -934,6 +934,9 @@ public class ComplexSym implements IComplex {
 
   @Override
   public INumber times(final INumber that) {
+    if (that instanceof ComplexSym) {
+      return multiply((ComplexSym) that);
+    }
     if (that.isOne()) {
       return this;
     }
@@ -943,28 +946,25 @@ public class ComplexSym implements IComplex {
     if (F.isExactZero(that)) {
       return F.C0;
     }
-    if (that instanceof ComplexSym) {
-      return multiply((ComplexSym) that);
-    }
-    if (that instanceof IComplexNum) {
-      if (that instanceof ApcomplexNum) {
-        Apcomplex temp = apcomplexValue().multiply(((ApcomplexNum) that).apcomplexValue());
-        return F.complexNum(temp);
-      }
-      return F.complexNum(evalfc().multiply(that.evalfc()));
-    }
     if (that instanceof IInteger) {
       return this.multiply(valueOf((IInteger) that));
     }
     if (that instanceof IFraction) {
       return this.multiply(valueOf((IFraction) that));
     }
-    if (that instanceof INum) {
-      if (that instanceof ApfloatNum) {
-        Apcomplex temp = apcomplexValue().multiply(((ApfloatNum) that).apfloatValue());
-        return F.complexNum(temp);
-      }
+    if (that instanceof ComplexNum) {
+      return F.complexNum(evalfc().multiply(that.evalfc()));
+    }
+    if (that instanceof Num) {
       return F.complexNum(evalfc().multiply(((INum) that).evalfNaN()));
+    }
+    if (that instanceof ApcomplexNum) {
+      Apcomplex temp = apcomplexValue().multiply(((ApcomplexNum) that).apcomplexValue());
+      return F.complexNum(temp);
+    }
+    if (that instanceof ApfloatNum) {
+      Apcomplex temp = apcomplexValue().multiply(((ApfloatNum) that).apfloatValue());
+      return F.complexNum(temp);
     }
     throw new java.lang.ArithmeticException();
   }

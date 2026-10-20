@@ -244,6 +244,9 @@ public class Num implements INum {
 
   @Override
   public INum add(final INum val) {
+    if (val instanceof Num) {
+      return valueOf(value + ((Num) val).value);
+    }
     if (val instanceof ApfloatNum) {
       Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
       return F.num(EvalEngine.getApfloat().add(apfloatValue(), arg2));
@@ -892,6 +895,9 @@ public class Num implements INum {
 
   @Override
   public INum divide(final INum val) {
+    if (val instanceof Num) {
+      return valueOf(value / ((Num) val).value);
+    }
     if (val instanceof ApfloatNum) {
       Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
       return F.num(EvalEngine.getApfloat().divide(apfloatValue(), arg2));
@@ -2310,6 +2316,9 @@ public class Num implements INum {
 
   @Override
   public INum multiply(final INum val) {
+    if (val instanceof Num) {
+      return valueOf(value * ((Num) val).value);
+    }
     if (val instanceof ApfloatNum) {
       return F
           .num(EvalEngine.getApfloat().multiply(apfloatValue(), ((ApfloatNum) val).apfloatValue()));
@@ -2369,17 +2378,17 @@ public class Num implements INum {
 
   @Override
   public IInexactNumber plus(final IInexactNumber that) {
-    if (that instanceof INum) {
-      if (that instanceof ApfloatNum) {
-        return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
-      }
+    if (that instanceof Num) {
       return valueOf(value + ((Num) that).value);
     }
-    if (that instanceof IComplexNum) {
-      if (that instanceof ApcomplexNum) {
-        return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
-      }
+    if (that instanceof ComplexNum) {
       return ComplexNum.valueOf(value).add((ComplexNum) that);
+    }
+    if (that instanceof ApfloatNum) {
+      return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
+    }
+    if (that instanceof ApcomplexNum) {
+      return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();
   }
@@ -2520,6 +2529,9 @@ public class Num implements INum {
 
   @Override
   public INum pow(final INum val) {
+    if (val instanceof Num) {
+      return valueOf(Math.pow(value, ((Num) val).value));
+    }
     if (val instanceof ApfloatNum) {
       return F.num(EvalEngine.getApfloat().pow(apfloatValue(), ((ApfloatNum) val).apfloatValue()));
     }
@@ -2534,12 +2546,12 @@ public class Num implements INum {
       }
       return valueOf(Math.pow(value, ((Num) that).getRealPart()));
     }
-    if (that instanceof IComplexNum) {
-      if (that instanceof ApcomplexNum) {
-        return F.complexNum(
-            EvalEngine.getApfloat().pow(apcomplexValue(), ((ApcomplexNum) that).apcomplexValue()));
-      }
+    if (that instanceof ComplexNum) {
       return ComplexNum.valueOf(value).power(that);
+    }
+    if (that instanceof ApcomplexNum) {
+      return F.complexNum(
+          EvalEngine.getApfloat().pow(apcomplexValue(), ((ApcomplexNum) that).apcomplexValue()));
     }
     if (that instanceof ApfloatNum) {
       if (value < 0.0) {
@@ -2723,6 +2735,9 @@ public class Num implements INum {
 
   @Override
   public INum subtract(final INum val) {
+    if (val instanceof Num) {
+      return valueOf(value - ((Num) val).value);
+    }
     if (val instanceof ApfloatNum) {
       Apfloat arg2 = ((ApfloatNum) val).apfloatValue();
       return F.num(EvalEngine.getApfloat().subtract(apfloatValue(), arg2));
@@ -2761,17 +2776,17 @@ public class Num implements INum {
 
   @Override
   public IInexactNumber times(final IInexactNumber that) {
-    if (that instanceof INum) {
-      if (that instanceof ApfloatNum) {
-        return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
-      }
+    if (that instanceof Num) {
       return valueOf(value * ((Num) that).value);
     }
-    if (that instanceof IComplexNum) {
-      if (that instanceof ApcomplexNum) {
-        return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
-      }
+    if (that instanceof ComplexNum) {
       return ComplexNum.valueOf(value).multiply((ComplexNum) that);
+    }
+    if (that instanceof ApfloatNum) {
+      return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
+    }
+    if (that instanceof ApcomplexNum) {
+      return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();
   }

@@ -253,7 +253,7 @@ public class NumberTest extends ExprEvaluatorTestCase {
       Config.TRUNCATE_PRECISION_IN_N = true;
       // the 1001 requested digits are truncated to Config.MAX_PRECISION_APFLOAT == 512
       check("N(Simplify(-3858/3125+N(1.23456,1001)),1001)", //
-          "0");
+          "0.0*10^-511");
       check("Precision(N(Pi,1001))", //
           "512");
 

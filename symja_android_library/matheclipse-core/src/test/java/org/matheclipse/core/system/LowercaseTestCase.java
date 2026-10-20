@@ -20001,7 +20001,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N(Pi, {a, b})", //
         "N(Pi,{a,b})");
     check("SetAccuracy(N(Pi/10^10, 20), 5)", //
-        "0.0");
+        "0.0*10^-5");
   }
 
   @Test

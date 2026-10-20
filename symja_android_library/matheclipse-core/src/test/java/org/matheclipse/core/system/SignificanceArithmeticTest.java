@@ -119,4 +119,228 @@ public class SignificanceArithmeticTest extends ExprEvaluatorTestCase {
     check("Precision(LaguerreL(7, 0, 2.5`20))", //
         "20");
   }
+
+  @Test
+  public void testHyperbolicConditionNumbers() {
+    // |x*Coth(x)| and |x*Tanh(x)|
+    check("Precision(Sinh(0.4`20))", //
+        "19.97767");
+    check("Precision(Cosh(2.5`20))", //
+        "19.60791");
+    check("Precision(Sech(0.7`20))", //
+        "20.3736");
+    check("Precision(Csch(2.5`20))", //
+        "19.59621");
+    // below 1 as Sinh/Cosh, above 1 as |2*x/Sinh(2*x)|: a large argument gains digits
+    check("Precision(Tanh(0.6`20))", //
+        "19.8418");
+    check("Precision(Tanh(30.0`20))", //
+        "43.97849");
+    check("Precision(Coth(2.5`20))", //
+        "21.17145");
+    check("Precision(ArcSinh(0.6`20))", //
+        "20.0436");
+    check("Precision(ArcCosh(3.5`20))", //
+        "20.2659");
+    check("Precision(ArcTanh(0.95`20))", //
+        "19.27415");
+    check("Precision(ArcCoth(2.5`20))", //
+        "19.94923");
+    check("Precision(ArcSech(0.6`20))", //
+        "19.94393");
+    check("Precision(ArcCsch(0.6`20))", //
+        "20.17527");
+    // beyond the range of a double value
+    check("Accuracy(Sinh(2000.0`3))", //
+        "-868.589");
+  }
+
+  @Test
+  public void testZeroArgumentAndDomainEnds() {
+    // a zero has no relative error: the change of the function within its error
+    check("Accuracy(Sin(0``15))", //
+        "15.0");
+    check("Accuracy(Tanh(0``15))", //
+        "15.0");
+    // the cosine changes to the second order only
+    check("Precision(Cos(0``15))", //
+        "30.30103");
+    check("Precision(Sech(0``15))", //
+        "30.30103");
+    // at the end of the domain the change is Sqrt(2*10^-16)
+    check("Accuracy(ArcCos(1.0`16))", //
+        "7.84949");
+    check("Accuracy(ArcCosh(1.0`16))", //
+        "7.84949");
+    check("Precision(ArcSin(0.99999`16))", //
+        "13.8454");
+  }
+
+  @Test
+  public void testPolesAndBounds() {
+    // not one digit is known next to a pole
+    check("Cot(3.14159`4)", //
+        "ComplexInfinity");
+    check("Coth(0``12)", //
+        "ComplexInfinity");
+    check("Csch(0``12)", //
+        "ComplexInfinity");
+    check("Csch(0.0)", //
+        "ComplexInfinity");
+    // the error of a bounded function is bounded too
+    check("Accuracy(Cos(1.0`15*10^25))", //
+        "0.0");
+  }
+
+  @Test
+  public void testInexactZeroInPlusAndTimes() {
+    check("Precision(2.5`15 + 0``8)", //
+        "8.39794");
+    check("Precision(0``8 + 3)", //
+        "8.47712");
+    check("Accuracy(0``8 + 0``12)", //
+        "7.99996");
+    // the error of the zero times the other factors
+    check("Accuracy(2.5`15 * 0``8)", //
+        "7.60206");
+    check("Accuracy(3*0``8)", //
+        "7.52288");
+    check("Accuracy(0``8*0``12)", //
+        "20.0");
+    // the exact zero gives the exact zero, a machine number the machine zero
+    check("0*2.5`15*3.5`20", //
+        "0");
+    check("0*0``8", //
+        "0");
+    check("0*2.5", //
+        "0.0");
+    // a low precision stays an arbitrary precision: 2 isn't made a machine number
+    check("Precision(1.5`5 + 2)", //
+        "5.36798");
+  }
+
+  @Test
+  public void testPowersOfInexactZero() {
+    // below 10^-20, so the square root is below 10^-10
+    check("InputForm(Sqrt(0``20))", //
+        "0``10");
+    check("InputForm((0``10)^2)", //
+        "0``20");
+  }
+
+  @Test
+  public void testInexactZeroNextToSymbols() {
+    // left out as a machine zero is, whatever else the sum has
+    check("x + 0``10", //
+        "x");
+    check("x + 0``10 + 0", //
+        "x");
+    // with a number it adds its error
+    check("InputForm(2 + 0``10 + x)", //
+        "2`10.301 + x");
+  }
+
+  @Test
+  public void testMachineZeroProducts() {
+    check("0 * 10.0^400", //
+        "0.0");
+    check("0.0 * 2.5`20", //
+        "0.0");
+    check("0 * I * 2.5`15", //
+        "0");
+  }
+
+  @Test
+  public void testNLowersToTheRequestedPrecision() {
+    check("Precision(N(1.5`40, 20))", //
+        "20");
+    // a precision of the numbers set, which is above the one of the evaluation, stays: Sin of a
+    // number of the precision 35 keeps about 4 digits
+    check("Precision(SetAccuracy(Sin(10^30), 5))", //
+        "3.95658");
+  }
+
+  @Test
+  public void testSetAccuracyOfComplexNumbers() {
+    // the real part is below the accuracy 3
+    check("InputForm(SetAccuracy(0.0001 + I, 3))", //
+        "I*1`3");
+  }
+
+  @Test
+  public void testInexactZeroOutputForm() {
+    // the exponent is the one of the first unknown digit, -Floor(accuracy)
+    check("0``12.7", //
+        "0.0*10^-12");
+    check("1.5`15 - 1.5`15", //
+        "0.0*10^-14");
+    check("0``-1.5", //
+        "0.0");
+    check("InputForm(0``12.7)", //
+        "0``12.7");
+  }
+
+  @Test
+  public void testPrecisionWithMachineNumber() {
+    // a machine number anywhere gives the machine precision
+    check("Precision({2.5`15, 0.5})", //
+        "16");
+    check("Precision({x, 1.5``4, 2.0})", //
+        "16");
+    // a literal with more digits isn't a machine number: 23 digits
+    check("Precision(1.3333333333333333333333)", //
+        "23");
+    check("Precision({1.3333333333333333333333, 2.5})", //
+        "16");
+  }
+
+  @Test
+  public void testSetPrecisionRealValued() {
+    check("Precision(SetPrecision(2.5, 12.7))", //
+        "12.7");
+    check("Precision(SetPrecision(0.25`30, 8.5))", //
+        "8.5");
+    // a zero has no digits: the exact 0
+    check("SetPrecision(0.0, 12)", //
+        "0");
+    // the exact exponent stays exact: the square root of a number of 25 digits
+    check("Precision(SetPrecision(Sqrt(3), 25))", //
+        "25.30103");
+    check("Precision(SetPrecision(E, 12.5))", //
+        "12.5");
+    // set, then evaluated
+    check("Precision(SetPrecision(Cos(3), 15))", //
+        "15.36892");
+  }
+
+  @Test
+  public void testSetAccuracy() {
+    check("Precision(SetAccuracy(2.5, 12))", //
+        "12.39794");
+    check("Precision /@ SetAccuracy({2.5, 250.0}, 8)", //
+        "{8.39794,10.39794}");
+    // a zero, and a number of which no digit is left, are zeros of that accuracy
+    check("Accuracy(SetAccuracy(0, 12.5))", //
+        "12.5");
+    check("Accuracy(SetAccuracy(0.0001, 3))", //
+        "3.0");
+  }
+
+  @Test
+  public void testLowPrecisionKeepsItsDigits() {
+    // the accuracy of 2.7183, not of the 3 digits shown
+    check("Accuracy(2.7183`3)", //
+        "2.5657");
+    // the difference is taken with 2.4007
+    check("Precision(2.5`20 - 2.4007`3)", //
+        "1.61661");
+  }
+
+  @Test
+  public void testExactNumbersStayExactNextToTrackedNumbers() {
+    // the fraction isn't made a machine number: its difference to N(1.234, 40) is a zero of 40
+    // digits
+    check("InputForm(-617/500 + N(1.234, 40))", //
+        "0``39.9087");
+  }
 }

@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.ASTSeriesData;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalDataSym;
@@ -169,7 +170,9 @@ public final class PlusOp {
    */
   public IExpr getSum() {
     if (plusMap == null) {
-      if (numberValue.isPresent() && !numberValue.isZero()) {
+      if (numberValue.isPresent()
+          && (!numberValue.isZero() || isZeroOfAccuracy(numberValue))) {
+        // a sum of numbers whose digits all cancel keeps its accuracy
         return numberValue;
       }
       return F.C0;
@@ -280,6 +283,11 @@ public final class PlusOp {
     return (evaled || folded) ? getSum() : F.NIL;
   }
 
+  /** Test if <code>arg</code> is a zero of a given accuracy, like <code>0``10</code>. */
+  private static boolean isZeroOfAccuracy(IExpr arg) {
+    return arg instanceof ApfloatNum && !Double.isNaN(((ApfloatNum) arg).zeroAccuracy10());
+  }
+
   /** A constant like <code>I*Pi</code>: a finite number, possibly complex. */
   private static boolean isFiniteConstant(IExpr arg) {
     return !arg.isNumber() && arg.isNumericFunction(true)
@@ -382,6 +390,16 @@ public final class PlusOp {
       if (arg.isNumber()) {
         if (arg.isZero()) {
           evaled = true;
+          if (!isZeroOfAccuracy(arg)) {
+            return F.NIL;
+          }
+          // a zero of a given accuracy adds its error to the other numbers; next to symbolic
+          // terms it is left out, as a machine zero is
+          if (numberValue.isNIL()) {
+            numberValue = arg;
+          } else if (numberValue.isNumber()) {
+            numberValue = ((INumber) numberValue).plusExpr((INumber) arg);
+          }
           return F.NIL;
         }
         if (numberValue.isNIL()) {

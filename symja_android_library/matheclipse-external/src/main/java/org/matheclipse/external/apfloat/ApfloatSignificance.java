@@ -2,6 +2,7 @@ package org.matheclipse.external.apfloat;
 
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
+import org.apfloat.ApfloatRuntimeException;
 
 /**
  * Significance arithmetic: how the error of an arbitrary-precision number carries through a
@@ -120,7 +121,45 @@ public final class ApfloatSignificance {
     LOG,
     /** <code>Log(b, x)</code> with the arguments <code>{b, x}</code> */
     LOG_BASE,
-    SIN, COS, TAN, COT, SEC, CSC, ARCSIN, ARCCOS, ARCTAN, ARCCOT, ARCSEC, ARCCSC
+    SIN, COS, TAN, COT, SEC, CSC, ARCSIN, ARCCOS, ARCTAN, ARCCOT, ARCSEC, ARCCSC, //
+    SINH, COSH, TANH, COTH, SECH, CSCH, //
+    ARCSINH, ARCCOSH, ARCTANH, ARCCOTH, ARCSECH, ARCCSCH
+  }
+
+  /**
+   * Test if the function has poles: where not one digit of its value is known, the value is
+   * <code>ComplexInfinity</code>, as <code>Tan(1.5707963`5)</code>.
+   */
+  public static boolean hasPoles(Function function) {
+    switch (function) {
+      case TAN:
+      case COT:
+      case SEC:
+      case CSC:
+      case COTH:
+      case CSCH:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * The bound of the absolute value of the function, which is also a bound of its error: the
+   * accuracy of <code>Sin(1.`20*^30)</code> is <code>0</code>, not negative.
+   *
+   * @return <code>NaN</code> if the function is not bounded
+   */
+  public static double bound(Function function) {
+    switch (function) {
+      case SIN:
+      case COS:
+      case TANH:
+      case SECH:
+        return 1.0;
+      default:
+        return Double.NaN;
+    }
   }
 
   /** The largest condition number passed on; beyond it no digit of the result is right anyway. */
@@ -137,11 +176,38 @@ public final class ApfloatSignificance {
    * @return <code>null</code> if a condition number is not a finite number
    */
   public static double[] conditionNumbers(Function function, Apfloat[] args, Apfloat value) {
-    final double f = value.doubleValue();
+    if (value.signum() == 0) {
+      return null;
+    }
     final double x = args[0].doubleValue();
+    switch (function) {
+      // the functions whose condition numbers don't need the value: they are known beyond the
+      // range of a double value too, as for Sinh(1000.`2)
+      case POWER:
+      case EXP:
+      case SINH:
+      case COSH:
+      case SECH:
+      case CSCH:
+        return conditionNumbers(function, args, x, Double.NaN);
+      case TANH:
+      case COTH:
+        if (Math.abs(x) >= 1.0) {
+          return conditionNumbers(function, args, x, Double.NaN);
+        }
+        break;
+      default:
+        break;
+    }
+    final double f = value.doubleValue();
     if (!Double.isFinite(f) || f == 0.0) {
       return null;
     }
+    return conditionNumbers(function, args, x, f);
+  }
+
+  private static double[] conditionNumbers(Function function, Apfloat[] args, double x,
+      double f) {
     double[] c;
     switch (function) {
       case POWER: {
@@ -192,6 +258,41 @@ public final class ApfloatSignificance {
       case ARCSEC:
       case ARCCSC:
         c = new double[] {Math.abs(1.0 / (Math.sqrt(Math.max(0.0, x * x - 1.0)) * f))};
+        break;
+      case SINH:
+      case CSCH:
+        // |x*Cosh(x)/Sinh(x)| = |x*Coth(x)|, the same for 1/Sinh(x)
+        c = new double[] {Math.abs(x / Math.tanh(x))};
+        break;
+      case COSH:
+      case SECH:
+        c = new double[] {Math.abs(x * Math.tanh(x))};
+        break;
+      case TANH:
+      case COTH:
+        if (Math.abs(x) < 1.0) {
+          // as the quotient Sinh(x)/Cosh(x), the errors of both added
+          c = new double[] {Math.abs(x * (f + 1.0 / f))};
+        } else {
+          // x*(1-Tanh(x)^2)/Tanh(x) without the cancellation
+          c = new double[] {Math.abs(2.0 * x / Math.sinh(2.0 * x))};
+        }
+        break;
+      case ARCSINH:
+        c = new double[] {Math.abs(x / (Math.sqrt(1.0 + x * x) * f))};
+        break;
+      case ARCCOSH:
+        c = new double[] {Math.abs(x / (Math.sqrt(Math.max(0.0, x * x - 1.0)) * f))};
+        break;
+      case ARCTANH:
+      case ARCCOTH:
+        c = new double[] {Math.abs(x / ((1.0 - x * x) * f))};
+        break;
+      case ARCSECH:
+        c = new double[] {Math.abs(1.0 / (Math.sqrt(Math.max(0.0, 1.0 - x * x)) * f))};
+        break;
+      case ARCCSCH:
+        c = new double[] {Math.abs(1.0 / (Math.sqrt(1.0 + x * x) * f))};
         break;
       default:
         return null;
@@ -257,11 +358,103 @@ public final class ApfloatSignificance {
           return ApfloatMath.acos(ApfloatMath.inverseRoot(x, 1));
         case ARCCSC:
           return ApfloatMath.asin(ApfloatMath.inverseRoot(x, 1));
+        case SINH:
+          return ApfloatMath.sinh(x);
+        case COSH:
+          return ApfloatMath.cosh(x);
+        case TANH:
+          return ApfloatMath.tanh(x);
+        case COTH:
+          return ApfloatMath.inverseRoot(ApfloatMath.tanh(x), 1);
+        case SECH:
+          return ApfloatMath.inverseRoot(ApfloatMath.cosh(x), 1);
+        case CSCH:
+          return ApfloatMath.inverseRoot(ApfloatMath.sinh(x), 1);
+        case ARCSINH:
+          return ApfloatMath.asinh(x);
+        case ARCCOSH:
+          return ApfloatMath.acosh(x);
+        case ARCTANH:
+          return ApfloatMath.atanh(x);
+        case ARCCOTH:
+          return ApfloatMath.atanh(ApfloatMath.inverseRoot(x, 1));
+        case ARCSECH:
+          return ApfloatMath.acosh(ApfloatMath.inverseRoot(x, 1));
+        case ARCCSCH:
+          return ApfloatMath.asinh(ApfloatMath.inverseRoot(x, 1));
         default:
           return null;
       }
-    } catch (ArithmeticException | IllegalArgumentException e) {
+    } catch (ArithmeticException | IllegalArgumentException | ApfloatRuntimeException e) {
+      // also a complete loss of the digits of a large argument
       return null;
     }
+  }
+
+  /**
+   * The value of a function of one real argument <code>x</code>, and how much the function changes
+   * within <code>delta</code> of <code>x</code>: the error of the value where the condition number
+   * doesn't exist. For a zero argument, which has no relative error, <code>Sin(0``20)</code> is
+   * <code>0``20</code> and <code>Cos(0``20)</code> is <code>1</code> with the precision
+   * <code>40.301</code>, since the cosine changes by <code>(10^-20)^2/2</code> only. At an end of
+   * the domain, <code>ArcCos(1.`20)</code> is <code>0``9.849</code>, since the arc cosine changes by
+   * <code>Sqrt(2*10^-20)</code>.
+   *
+   * <p>
+   * The smaller change of the two sides is taken: where the function is continuous they agree, and
+   * a branch cut jumps on one side only. A side where the function has no real value, as above
+   * <code>1</code> for the arc cosine, is left out.
+   *
+   * @param function a function of one argument
+   * @param x the argument
+   * @param delta the absolute error of the argument, not zero
+   * @param digits the accuracy of the argument, which decides the working precision
+   * @return <code>{value, change}</code>, or <code>null</code> if the function has no real value at
+   *         <code>x</code> or on either side of it
+   */
+  public static Apfloat[] changeWithin(Function function, Apfloat x, Apfloat delta,
+      double digits) {
+    // enough digits for a change of second order
+    final long precision = (long) Math.ceil(2.0 * Math.max(digits, 1.0)) + 20L;
+    final Apfloat argument = x.precision(precision);
+    final Apfloat value = realValue(function, argument, precision);
+    if (value == null) {
+      return null;
+    }
+    Apfloat change = null;
+    for (Apfloat side : new Apfloat[] {argument.add(delta.precision(precision)),
+        argument.subtract(delta.precision(precision))}) {
+      final Apfloat other = realValue(function, side, precision);
+      if (other != null) {
+        final Apfloat difference = ApfloatMath.abs(other.subtract(value));
+        if (change == null || difference.compareTo(change) < 0) {
+          change = difference;
+        }
+      }
+    }
+    if (change == null || change.signum() == 0) {
+      return null;
+    }
+    return new Apfloat[] {value, change};
+  }
+
+  /**
+   * The value of a function of one argument, or <code>null</code> if it isn't a real number: the
+   * functions of {@link #evaluate(Function, Apfloat[], long)} throw for a complex value.
+   */
+  private static Apfloat realValue(Function function, Apfloat x, long precision) {
+    return evaluate(function, new Apfloat[] {x}, precision);
+  }
+
+  /**
+   * <code>10^-exponent</code> for a real exponent, also beyond the range of a double value.
+   *
+   * @param exponent a finite number
+   * @param precision the precision of the result
+   */
+  public static Apfloat tenToTheMinus(double exponent, long precision) {
+    final double whole = Math.floor(exponent);
+    final Apfloat fraction = new Apfloat(Math.pow(10.0, whole - exponent), precision);
+    return ApfloatMath.scale(fraction, -(long) whole);
   }
 }

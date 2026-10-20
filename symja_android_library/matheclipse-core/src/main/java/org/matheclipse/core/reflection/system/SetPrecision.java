@@ -20,14 +20,18 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.external.apfloat.ApfloatSignificance;
 import org.matheclipse.parser.client.ParserConfig;
 
 /**
  * <code>SetPrecision(expr, n)</code> gives every number of <code>expr</code> the precision
- * <code>n</code>: exact numbers and constants are evaluated to <code>n</code> digits, a number
- * of a lower precision is filled up with zeros (binary zeros for a machine number), a number of
- * a higher precision is cut. <code>SetPrecision(expr, MachinePrecision)</code> gives machine
- * numbers and <code>SetPrecision(expr, Infinity)</code> the exact rational values.
+ * <code>n</code>, a real number: exact numbers and constants are evaluated to <code>n</code>
+ * digits, a number of a lower precision is filled up with zeros (binary zeros for a machine
+ * number), a number of a higher precision is cut, and a zero becomes the exact <code>0</code>. An
+ * exact exponent stays exact, and the expression is evaluated with the numbers set.
+ * <code>SetPrecision(expr, MachinePrecision)</code> gives machine numbers and
+ * <code>SetPrecision(expr, Infinity)</code> the exact rational values.
  * <p>
  * Nothing of the conversion is kept anywhere: the numbers are built with the precision asked
  * for, and the numeric mode which evaluates the rest of the expression is the one of the
@@ -64,38 +68,201 @@ public class SetPrecision extends AbstractFunctionEvaluator {
     if (arg2.isInfinity()) {
       return convert(ast.arg1(), EXACT, scale -> EXACT, engine);
     }
-    final long precision = digitsArgument(ast, arg2, engine);
-    if (precision == Long.MIN_VALUE) {
+    double precision = digitsArgument(ast, arg2, "precbd", engine);
+    if (Double.isNaN(precision)) {
       return F.NIL;
     }
-    if (precision <= 0) {
+    if (precision < 0.0) {
       // Requested precision `1` is smaller than `2`.
-      return Errors.printMessage(ast.topHead(), "precsm", F.list(arg2, F.C1), engine);
+      Errors.printMessage(ast.topHead(), "precsm", F.list(arg2, F.C0), engine);
+      precision = 0.0;
     }
-    return convert(ast.arg1(), precision, scale -> precision, engine);
+    return setDigits(ast.arg1(), precision, false, engine);
   }
 
   /**
    * The number of digits in the second argument of <code>SetPrecision</code> and
-   * <code>SetAccuracy</code>.
+   * <code>SetAccuracy</code>, a real number.
    *
-   * @return <code>Long.MIN_VALUE</code> if the argument is not a real number, or if it is too
-   *         large; a message is printed
+   * @param messageShortcut the message for an argument which is not a real number
+   * @return <code>NaN</code> if the argument is not a real number, or if it is too large; a
+   *         message is printed
    */
-  static long digitsArgument(final IAST ast, IExpr arg2, EvalEngine engine) {
-    double digits = arg2.isReal() || arg2.isNumericFunction(true) ? arg2.evalf() : Double.NaN;
+  static double digitsArgument(final IAST ast, IExpr arg2, String messageShortcut,
+      EvalEngine engine) {
+    double digits = Double.NaN;
+    if (arg2.isReal() || arg2.isNumericFunction(true)) {
+      try {
+        digits = arg2.evalf();
+      } catch (RuntimeException rex) {
+        // a list or another value which is no real number
+      }
+    }
     if (!Double.isFinite(digits)) {
-      // The value `1` is not a real number.
-      Errors.printMessage(ast.topHead(), "realx", F.list(arg2), engine);
-      return Long.MIN_VALUE;
+      // Requested precision `1` is not a machine-sized real number.
+      Errors.printMessage(ast.topHead(), messageShortcut, F.list(arg2), engine);
+      return Double.NaN;
     }
     if (digits > Config.MAX_PRECISION_APFLOAT) {
       // Requested precision `1` is greater than `2`.
       Errors.printMessage(ast.topHead(), "precgt",
           F.list(arg2, F.ZZ(Config.MAX_PRECISION_APFLOAT)), engine);
-      return Long.MIN_VALUE;
+      return Double.NaN;
     }
-    return (long) Math.ceil(Math.max(digits, -(double) Config.MAX_PRECISION_APFLOAT));
+    return Math.max(digits, -(double) Config.MAX_PRECISION_APFLOAT);
+  }
+
+  /**
+   * <code>expr</code> with every number set to the precision (or the accuracy) <code>digits</code>,
+   * a real number, and every numeric constant evaluated to it; then what is left is evaluated.
+   * An exact exponent stays exact: the square root of <code>SetPrecision(Sqrt(2), 20)</code> is
+   * taken of <code>2</code> with 20 digits, which gives the precision <code>20.301</code>.
+   *
+   * @param expr the expression
+   * @param digits the precision or the accuracy
+   * @param accuracy <code>true</code> if <code>digits</code> is an accuracy
+   * @param engine the engine of the call; its numeric precision is the same after the call
+   */
+  static IExpr setDigits(IExpr expr, double digits, boolean accuracy, EvalEngine engine) {
+    IExpr result = setNumbers(expr, digits, accuracy, engine);
+    if (result.isNumber() || result.isFree(x -> x.isInexactNumber(), false)) {
+      return result;
+    }
+    final boolean oldNumericMode = engine.isNumericMode();
+    final long oldPrecision = engine.getNumericPrecision();
+    final int oldSignificantFigures = engine.getSignificantFigures();
+    try {
+      // the exact numbers which are left, the exponents, are taken as arbitrary-precision numbers
+      // of no error
+      final long precision = Math.min(Config.MAX_PRECISION_APFLOAT,
+          Math.max((long) Math.ceil(digits) + 20L, ParserConfig.MACHINE_PRECISION + 1L));
+      engine.setNumericMode(false, precision, oldSignificantFigures);
+      return engine.evalWithoutNumericReset(result);
+    } finally {
+      engine.setNumericMode(oldNumericMode, oldPrecision, oldSignificantFigures);
+    }
+  }
+
+  private static IExpr setNumbers(IExpr expr, double digits, boolean accuracy,
+      EvalEngine engine) {
+    if (expr.isNumber()) {
+      return setNumber((INumber) expr, digits, accuracy);
+    }
+    if (expr.isBuiltInSymbol() && ((ISymbol) expr).isConstantAttribute()) {
+      // a numeric constant like Pi, with enough digits for its precision or accuracy
+      final long precision = Math.min(Config.MAX_PRECISION_APFLOAT,
+          (long) Math.ceil(Math.max(digits, accuracy ? 0.0 : 1.0)) + 20L);
+      final IExpr value = engine.evalN(expr, precision);
+      return value.isNumber() ? setNumber((INumber) value, digits, accuracy) : expr;
+    }
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      IASTMutable result = F.NIL;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (i == 2 && ast.isPower() && arg.isRational()) {
+          // an exact exponent stays exact
+          continue;
+        }
+        IExpr temp = setNumbers(arg, digits, accuracy, engine);
+        if (temp != arg) {
+          if (result.isNIL()) {
+            result = ast.copy();
+          }
+          result.set(i, temp);
+        }
+      }
+      return result.orElse(expr);
+    }
+    return expr;
+  }
+
+  /** One number with the precision or the accuracy <code>digits</code>. */
+  private static IExpr setNumber(INumber x, double digits, boolean accuracy) {
+    if (x instanceof IComplex || x instanceof IComplexNum) {
+      return setComplex(x, digits, accuracy);
+    }
+    if (x.isZero()) {
+      // the zero has no relative error: SetPrecision gives the exact 0, SetAccuracy a zero of that
+      // accuracy
+      return accuracy ? ApfloatNum.zero(digits) : F.C0;
+    }
+    final Apfloat value;
+    if (x instanceof IRational) {
+      IRational rational = (IRational) x;
+      final long precision = Math.max(Math.max(1L, (long) Math.ceil(digits)),
+          ApfloatNum.MIN_STORED_DIGITS) + 10L + Math.abs(new Apfloat(rational.toBigNumerator())
+              .scale() - new Apfloat(rational.toBigDenominator()).scale());
+      value = new Apfloat(rational.toBigNumerator(), precision)
+          .divide(new Apfloat(rational.toBigDenominator(), precision));
+    } else if (x instanceof ApfloatNum) {
+      value = ((ApfloatNum) x).extendedValue();
+    } else if (x instanceof INum) {
+      final double d = ((INum) x).doubleValue();
+      if (!Double.isFinite(d)) {
+        return x;
+      }
+      // the binary value of the machine number
+      value = exact(d);
+    } else {
+      return x;
+    }
+    final double log10 = ApfloatSignificance.log10Abs(value);
+    final double precision = accuracy ? digits + log10 : digits;
+    if (precision <= 0.0) {
+      // not one digit is left
+      return ApfloatNum.zero(accuracy ? digits : precision - log10);
+    }
+    return ApfloatNum.valueOf(value, precision);
+  }
+
+  /**
+   * A complex number with the precision or the accuracy <code>digits</code>: both parts get the
+   * same accuracy, the one which gives the number that precision or accuracy. A part below the
+   * accuracy becomes a zero of it; for <code>SetPrecision</code> an exact or a machine zero part
+   * stays the exact <code>0</code>.
+   */
+  private static IExpr setComplex(INumber z, double digits, boolean accuracy) {
+    final INumber re;
+    final INumber im;
+    if (z instanceof IComplex) {
+      re = ((IComplex) z).re();
+      im = ((IComplex) z).im();
+    } else if (z instanceof ApcomplexNum) {
+      final Apcomplex value = ((ApcomplexNum) z).apcomplexValue();
+      re = ApfloatNum.valueOf(value.real());
+      im = ApfloatNum.valueOf(value.imag());
+    } else {
+      final IComplexNum value = (IComplexNum) z;
+      re = F.num(value.reDoubleValue());
+      im = F.num(value.imDoubleValue());
+    }
+    if (accuracy) {
+      // also an exact zero part becomes inexact, so both parts count
+      final double partAccuracy = digits + Math.log10(2.0) / 2.0;
+      return complex(setNumber(re, partAccuracy, true), setNumber(im, partAccuracy, true));
+    }
+    final int counted = (isExactOrMachineZero(re) ? 0 : 1) + (isExactOrMachineZero(im) ? 0 : 1);
+    final double partAccuracy = digits - log10Abs(z) + Math.log10(Math.max(counted, 1)) / 2.0;
+    return complex(setPart(re, partAccuracy), setPart(im, partAccuracy));
+  }
+
+  private static boolean isExactOrMachineZero(INumber part) {
+    return part.isZero() && !(part instanceof ApfloatNum);
+  }
+
+  /** A part of a complex number under <code>SetPrecision</code>, with the accuracy given. */
+  private static IExpr setPart(INumber part, double partAccuracy) {
+    if (isExactOrMachineZero(part)) {
+      return F.C0;
+    }
+    return setNumber(part, partAccuracy, true);
+  }
+
+  /** <code>Log10(Abs(x))</code> of a complex number, <code>0</code> for zero. */
+  private static double log10Abs(INumber x) {
+    final double abs = x.evalfc().norm();
+    return abs > 0.0 && Double.isFinite(abs) ? Math.log10(abs) : 0.0;
   }
 
   /**
@@ -198,9 +365,16 @@ public class SetPrecision extends AbstractFunctionEvaluator {
     if (re instanceof IRational && im instanceof IRational) {
       return F.CC((IRational) re, (IRational) im);
     }
+    if (im.isZero() && im.isExactNumber()) {
+      // an exact zero imaginary part leaves a real number
+      return re;
+    }
     if (re instanceof ApfloatNum && im instanceof ApfloatNum) {
       return F.complexNum(
           new Apcomplex(((ApfloatNum) re).apfloatValue(), ((ApfloatNum) im).apfloatValue()));
+    }
+    if (re.isZero() && re.isExactNumber() && im instanceof ApfloatNum) {
+      return F.complexNum(new Apcomplex(Apfloat.ZERO, ((ApfloatNum) im).apfloatValue()));
     }
     return F.complexNum(re.evalf(), im.evalf());
   }

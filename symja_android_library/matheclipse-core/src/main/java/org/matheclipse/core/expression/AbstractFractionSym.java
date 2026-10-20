@@ -1779,9 +1779,6 @@ public abstract class AbstractFractionSym implements IFraction {
   /** {@inheritDoc} */
   @Override
   public INumber plus(INumber that) {
-    if (F.isExactZero(that)) {
-      return this;
-    }
     if (that instanceof IFraction) {
       return this.add((IFraction) that).normalize();
     }
@@ -1794,18 +1791,28 @@ public abstract class AbstractFractionSym implements IFraction {
     if (that instanceof ComplexSym) {
       return ((ComplexSym) that).add(ComplexSym.valueOf(this)).normalize();
     }
-    if (that instanceof INum) {
-      if (that instanceof ApfloatNum) {
-        return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
+    if (that instanceof Num) {
+      if (F.isExactZero(that)) {
+        return this;
       }
       // the machine number takes this number at machine precision, or promoted beyond it
       return ((Num) that).plus((INumber) this);
     }
-    if (that instanceof IComplexNum) {
-      if (that instanceof ApcomplexNum) {
-        return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
+    if (that instanceof ComplexNum) {
+      if (F.isExactZero(that)) {
+        return this;
       }
       return F.complexNum(evalfc().add(that.evalfc()));
+    }
+    if (that instanceof ApfloatNum) {
+      // the error of the number carries on, also the one of a zero of a given accuracy
+      return ((ApfloatNum) that).plus(this);
+    }
+    if (that instanceof ApcomplexNum) {
+      if (F.isExactZero(that)) {
+        return this;
+      }
+      return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();
   }
@@ -1950,16 +1957,6 @@ public abstract class AbstractFractionSym implements IFraction {
   /** {@inheritDoc} */
   @Override
   public INumber times(INumber that) {
-    if (that.isOne()) {
-      return this;
-    }
-    if (that.isMinusOne()) {
-      return negate();
-    }
-    if (F.isExactZero(that)) {
-      // exactly zero: a small machine number is no zero, $MinMachineNumber/2 is not 0
-      return F.C0;
-    }
     if (that instanceof IFraction) {
       return this.mul((IFraction) that).normalize();
     }
@@ -1972,17 +1969,28 @@ public abstract class AbstractFractionSym implements IFraction {
     if (that instanceof ComplexSym) {
       return ((ComplexSym) that).multiply(ComplexSym.valueOf(this)).normalize();
     }
-    if (that instanceof INum) {
-      if (that instanceof ApfloatNum) {
-        return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
-      }
+    if (that instanceof ApfloatNum) {
+      return ((ApfloatNum) that).times(this);
+    }
+    // a machine number, or an arbitrary-precision complex number
+    if (that.isOne()) {
+      return this;
+    }
+    if (that.isMinusOne()) {
+      return negate();
+    }
+    if (F.isExactZero(that)) {
+      // exactly zero: a small machine number is no zero, $MinMachineNumber/2 is not 0
+      return F.C0;
+    }
+    if (that instanceof Num) {
       return ((Num) that).times((INumber) this);
     }
-    if (that instanceof IComplexNum) {
-      if (that instanceof ApcomplexNum) {
-        return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
-      }
+    if (that instanceof ComplexNum) {
       return F.complexNum(evalfc().multiply(that.evalfc()));
+    }
+    if (that instanceof ApcomplexNum) {
+      return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();
   }

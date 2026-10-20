@@ -8649,8 +8649,10 @@ public class F extends S {
           S.N);
       return null;
     }
-    // the precision is a real number: 1.5`20.3 has 21 digits and the precision 20.3
-    Apfloat value = new Apfloat(numberStr, Math.max(1L, (long) Math.ceil(precision - 1.0e-9)) + 1L);
+    // the precision is a real number: 1.5`20.3 has 21 digits and the precision 20.3; a low
+    // precision keeps the digits written, see ApfloatNum#MIN_STORED_DIGITS
+    Apfloat value = new Apfloat(numberStr, Math.max(
+        Math.max(1L, (long) Math.ceil(precision - 1.0e-9)) + 1L, ApfloatNum.MIN_STORED_DIGITS));
     if (value.signum() == 0) {
       // 0.`20 is a zero known to 20 digits behind the decimal point
       return ApfloatNum.zero(precision);

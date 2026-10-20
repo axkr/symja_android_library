@@ -69,23 +69,26 @@ public class SetPrecisionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSetPrecisionMessages() {
+    // the precision 0 leaves no digit: a zero of the accuracy -Log10(2/7)
     check("SetPrecision(2/7, 0)", //
-        "SetPrecision(2/7,0)");
+        "0.0");
     check("SetPrecision(2/7, a)", //
         "SetPrecision(2/7,a)");
   }
 
   @Test
   public void testSetAccuracy() {
+    // the precision 30+Log10(2/7) shows 29 digits
     check("SetAccuracy(2/7, 30)", //
-        "0.285714285714285714285714285714");
-    // 20 digits behind the decimal point and 4 in front of it
+        "0.28571428571428571428571428571");
+    // 20 digits behind the decimal point and 4321.5 in front of it: 20+Log10(4321.5)
     check("Precision(SetAccuracy(4321.5, 20))", //
-        "24");
+        "23.63563");
     check("SetAccuracy({2/7, 654321, y}, 10)", //
-        "{0.2857142857,654321,y}");
+        "{0.285714286,654321,y}");
+    // the numbers of 1000*E get the accuracy 20: E has the precision 20.43, and the product too
     check("SetAccuracy(E*1000, 20)", //
-        "2718.28182845904523536029");
+        "2718.2818284590452354");
     check("SetAccuracy(1.25, Infinity)", //
         "5/4");
   }

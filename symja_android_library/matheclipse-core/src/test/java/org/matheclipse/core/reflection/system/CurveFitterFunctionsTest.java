@@ -101,8 +101,10 @@ public class CurveFitterFunctionsTest extends ExprEvaluatorTestCase {
   @Test
   public void testFitWorkingPrecisionApfloat() {
     // WorkingPrecision->n uses n-digit Apfloat arithmetic
+    // the coefficients which cancel are zeros of the accuracy the 30 digits leave; a zero term is
+    // left out of the sum
     check("Fit({{1,1},{2,4},{3,9},{4,16}}, {1,x,x^2}, x, WorkingPrecision->30)", //
-        "0*x+x^2");
+        "0.0*10^-24*x+x^2");
   }
 
   @Test

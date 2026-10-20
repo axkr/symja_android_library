@@ -1289,12 +1289,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (isZero()) {
       return that;
     }
-    if (F.isExactZero(that)) {
-      if (that.isInexactNumber()) {
-        return numericNumber();
-      }
-      return this;
-    }
     if (that instanceof IInteger) {
       return this.add((IInteger) that);
     }
@@ -1304,18 +1298,28 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (that instanceof ComplexSym) {
       return ((ComplexSym) that).add(ComplexSym.valueOf(this)).normalize();
     }
-    if (that instanceof INum) {
-      if (that instanceof ApfloatNum) {
-        return apfloatNumValue().add(((ApfloatNum) that).apfloatNumValue());
+    if (that instanceof Num) {
+      if (F.isExactZero(that)) {
+        return numericNumber();
       }
       // the machine number takes this number at machine precision, or promoted beyond it
       return ((Num) that).plus((INumber) this);
     }
-    if (that instanceof IComplexNum) {
-      if (that instanceof ApcomplexNum) {
-        return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
+    if (that instanceof ComplexNum) {
+      if (F.isExactZero(that)) {
+        return numericNumber();
       }
       return F.complexNum(evalfc().add(that.evalfc()));
+    }
+    if (that instanceof ApfloatNum) {
+      // the error of the number carries on, also the one of a zero of a given accuracy
+      return ((ApfloatNum) that).plus(this);
+    }
+    if (that instanceof ApcomplexNum) {
+      if (F.isExactZero(that)) {
+        return numericNumber();
+      }
+      return apcomplexNumValue().add(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();
   }
@@ -1533,45 +1537,48 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (isMinusOne()) {
       return that.negate();
     }
-    if (that.isOne()) {
-      if (that.isInexactNumber()) {
-        return numericNumber();
-      }
-      return this;
-    }
-    if (that.isMinusOne()) {
-      if (that.isInexactNumber()) {
-        return negate().numericNumber();
-      }
-      return negate();
-    }
-    if (isZero() || F.isExactZero(that)) {
-      // exactly zero: a small machine number is no zero
-      if (that.isInexactNumber()) {
-        return F.CD0;
-      }
-      return F.C0;
-    }
     if (that instanceof IInteger) {
       return this.multiply((IInteger) that);
     }
     if (that instanceof IFraction) {
+      if (isZero()) {
+        return F.C0;
+      }
       return AbstractFractionSym.valueOf(this).mul((IFraction) that).normalize();
     }
     if (that instanceof ComplexSym) {
+      if (isZero()) {
+        return F.C0;
+      }
       return ((ComplexSym) that).multiply(ComplexSym.valueOf(this)).normalize();
     }
-    if (that instanceof INum) {
-      if (that instanceof ApfloatNum) {
-        return apfloatNumValue().multiply(((ApfloatNum) that).apfloatNumValue());
+    if (that instanceof ApfloatNum) {
+      if (isZero()) {
+        // the exact zero times a number of a precision of its own is the exact zero, times the
+        // value of a machine number the machine zero
+        return ((ApfloatNum) that).isMachineValue() ? F.CD0 : F.C0;
       }
+      return ((ApfloatNum) that).times(this);
+    }
+    // a machine number, or an arbitrary-precision complex number
+    if (that.isOne()) {
+      return numericNumber();
+    }
+    if (that.isMinusOne()) {
+      return negate().numericNumber();
+    }
+    if (isZero() || F.isExactZero(that)) {
+      // exactly zero: a small machine number is no zero
+      return F.CD0;
+    }
+    if (that instanceof Num) {
       return ((Num) that).times((INumber) this);
     }
-    if (that instanceof IComplexNum) {
-      if (that instanceof ApcomplexNum) {
-        return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
-      }
+    if (that instanceof ComplexNum) {
       return F.complexNum(evalfc().multiply(that.evalfc()));
+    }
+    if (that instanceof ApcomplexNum) {
+      return apcomplexNumValue().multiply(((ApcomplexNum) that).apcomplexNumValue());
     }
     throw new java.lang.ArithmeticException();
   }

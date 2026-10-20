@@ -71,6 +71,7 @@ public class Errors {
    * printed for that shortcut.
    */
   private static final String[] MESSAGES = { //
+      "accbd", "Requested accuracy `1` is not a real number within the allowable range.", //
       "accg", "Value of option `1` is not Automatic or a machine-sized integer.", //
       "affind", "`1` should be a list of `2` or more affinely independent points.", //
       "aord", "Approximation order specification `1` should be a positive integer.", //

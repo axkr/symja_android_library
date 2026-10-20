@@ -39,7 +39,8 @@ public class SystemConfigurationTest extends ExprEvaluatorTestCase {
     String expr = "N(1.7*10^1,100)/N(2.5*10^1,100)*N(0,100)";
 
     IExpr result = evaluator.eval(expr);
-    assertEquals(result.toString(), "0`9223372036854775807");
+    // the exact zero times machine numbers is the machine zero
+    assertEquals(result.toString(), "0.0");
   }
 
   @Test

@@ -2981,7 +2981,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     System.out.println(evalString);
     check(evalString, //
         // the differences of the 17-digit numbers cost digits
-        "{33659487.501,-1.544947365,22487008.04,-6.46884508955,0.0000000002546,20731337.63689,0.00000000004876}");
+        "{33659487.501,-1.544947365,22487008.04,-6.46884508955,2.546*10^-10,20731337.63689,4.876*10^-11}");
 
 
     check("th=2400;tk=320;" //

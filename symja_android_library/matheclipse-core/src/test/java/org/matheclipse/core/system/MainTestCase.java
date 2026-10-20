@@ -4249,8 +4249,9 @@ public class MainTestCase extends ExprEvaluatorTestCase {
       }
       ParserConfig.EXPLICIT_TIMES_OPERATOR = true;
       if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
+        // the machine zero times numbers is the machine zero
         check("0.1758368*0.4112540785271148*0.0*9.986163076795545E-11", //
-            "0");
+            "0.0");
         check("2(b+c)", //
             "Syntax error in line: 1 - End-of-file not reached.\n" + "2(b+c)\n" + " ^");
         check("2(b+c)3 // FullForm", "Syntax error in line: 1 - End-of-file not reached.\n"

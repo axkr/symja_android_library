@@ -292,8 +292,12 @@ public class OutputFormFactory {
       if (!isNegative && caller == PLUS_CALL) {
         append(buf, fInputForm ? " + " : "+");
       }
+      final String zero = fInputForm ? null : ((ApfloatNum) d).zeroAccuracyOutputString();
       String str = fInputForm ? ((ApfloatNum) d).fullFormString()
-          : convertApfloatToFormattedString(apfloat);
+          : zero != null ? zero
+              : convertApfloatToFormattedString(apfloat,
+                  ((ApfloatNum) d).isSignificanceTracked() ? apfloat.precision()
+                      : Long.MAX_VALUE);
       convertDoubleString(buf, str, precedence, isNegative);
       return;
     }
@@ -627,6 +631,14 @@ public class OutputFormFactory {
   }
 
   private String convertApfloatToFormattedString(Apfloat value) {
+    return convertApfloatToFormattedString(value, Long.MAX_VALUE);
+  }
+
+  /**
+   * @param maxDigits the most digits shown: the precision of a number which has one of its own,
+   *        which the precision of the engine doesn't fill up with zeros
+   */
+  private String convertApfloatToFormattedString(Apfloat value, long maxDigits) {
     if (fNumberFormatter != null) {
       String formatted =
           assembleFormattedNumber(fNumberFormatter.format(value, fSignificantFigures));
@@ -635,10 +647,10 @@ public class OutputFormFactory {
       }
     }
     StringBuilder buf = new StringBuilder();
-    int numericPrecision = (int) EvalEngine.get().getNumericPrecision();
+    int numericPrecision = (int) Math.min(EvalEngine.get().getNumericPrecision(), maxDigits);
     if (fUseSignificantFiguresInApfloat) {
-      ApfloatToMMA.apfloatToMMA(buf, value, numericPrecision, fSignificantFigures,
-          fUseSignificantFiguresInApfloat);
+      ApfloatToMMA.apfloatToMMA(buf, value, numericPrecision,
+          (int) Math.min(fSignificantFigures, maxDigits), fUseSignificantFiguresInApfloat);
     } else {
       ApfloatToMMA.apfloatToMMA(buf, value, numericPrecision, numericPrecision,
           fUseSignificantFiguresInApfloat);

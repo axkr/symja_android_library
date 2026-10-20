@@ -384,6 +384,17 @@ public final class N extends AbstractCoreFunctionEvaluator {
    * @param engine the evaluation engine used for processing the expression
    */
   public static IExpr evalN2(IExpr expr, final long nDigitPrecision, EvalEngine engine) {
+    // the numbers of a higher precision of their own are lowered to the precision asked for
+    final long oldRequested = engine.setRequestedPrecision(nDigitPrecision);
+    try {
+      return evalN2Requested(expr, nDigitPrecision, engine);
+    } finally {
+      engine.setRequestedPrecision(oldRequested);
+    }
+  }
+
+  private static IExpr evalN2Requested(IExpr expr, final long nDigitPrecision,
+      EvalEngine engine) {
     // first try symbolic evaluation
     final IExpr original = expr;
     // the digits which numbers lose in it, see below

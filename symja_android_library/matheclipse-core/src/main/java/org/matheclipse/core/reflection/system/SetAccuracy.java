@@ -11,7 +11,8 @@ import org.matheclipse.parser.client.ParserConfig;
 /**
  * <code>SetAccuracy(expr, a)</code> gives every number of <code>expr</code> <code>a</code> digits
  * to the right of the decimal point, which is the precision <code>a+Log10(Abs(x))</code> for the
- * number <code>x</code>. As for {@link SetPrecision}, nothing is kept outside of the
+ * number <code>x</code>; a zero, and a number of which no digit is left, becomes a zero of the
+ * accuracy <code>a</code>. As for {@link SetPrecision}, nothing is kept outside of the
  * {@link EvalEngine} of the call.
  */
 public class SetAccuracy extends AbstractFunctionEvaluator {
@@ -28,22 +29,11 @@ public class SetAccuracy extends AbstractFunctionEvaluator {
     if (arg2.equals(S.MachinePrecision)) {
       arg2 = F.ZZ(ParserConfig.MACHINE_PRECISION);
     }
-    final long accuracy = SetPrecision.digitsArgument(ast, arg2, engine);
-    if (accuracy == Long.MIN_VALUE) {
+    final double accuracy = SetPrecision.digitsArgument(ast, arg2, "accbd", engine);
+    if (Double.isNaN(accuracy)) {
       return F.NIL;
     }
-    // the constants and functions of the expression are evaluated to the precision which the
-    // expression as a whole needs for that accuracy
-    long evalPrecision = accuracy;
-    IExpr arg1 = ast.arg1();
-    if (!arg1.isNumber() && arg1.isNumericFunction(true)) {
-      double magnitude = Math.abs(arg1.evalf());
-      if (Double.isFinite(magnitude) && magnitude > 0.0) {
-        evalPrecision += (long) Math.floor(Math.log10(magnitude)) + 1L;
-      }
-    }
-    return SetPrecision.convert(arg1, Math.max(evalPrecision, 1L), scale -> accuracy + scale,
-        engine);
+    return SetPrecision.setDigits(ast.arg1(), accuracy, true, engine);
   }
 
   @Override

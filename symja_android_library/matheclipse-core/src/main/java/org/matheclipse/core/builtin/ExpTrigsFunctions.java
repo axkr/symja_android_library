@@ -2538,16 +2538,26 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e1ApfloatArg(Apfloat arg1) {
+      if (arg1.signum() == 0) {
+        // the pole at 0
+        return F.CComplexInfinity;
+      }
       return ApfloatNum.valueOf(arg1).csch();
     }
 
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
+      if (arg1.isZero()) {
+        return F.CComplexInfinity;
+      }
       return F.complexNum(arg1.sinh().reciprocal());
     }
 
     @Override
     public IExpr e1DblArg(final double arg1) {
+      if (arg1 == 0.0) {
+        return F.CComplexInfinity;
+      }
       return F.num(1.0D / Math.sinh(arg1));
     }
 

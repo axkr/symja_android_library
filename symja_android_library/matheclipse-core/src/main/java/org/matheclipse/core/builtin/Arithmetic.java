@@ -93,6 +93,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.NumStr;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
@@ -5491,7 +5492,7 @@ public final class Arithmetic {
         }
         if (number.isSignificanceTracked() && !number.isZero()) {
           return number.precision10()
-              - org.matheclipse.external.apfloat.ApfloatSignificance.log10Abs(number.apfloatValue());
+              - org.matheclipse.external.apfloat.ApfloatSignificance.log10Abs(number.extendedValue());
         }
       }
       if (expr instanceof INum) {
@@ -5537,7 +5538,11 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      double precision = precision(engine.evaluate(ast.arg1()));
+      final IExpr arg1 = engine.evaluate(ast.arg1());
+      // a machine number anywhere makes the whole expression one of machine precision, also if a
+      // number of a lower precision is in it
+      final double machinePrecision = machinePrecision(arg1);
+      double precision = Double.isNaN(machinePrecision) ? precision(arg1) : machinePrecision;
       if (Double.isInfinite(precision)) {
         return F.CInfinity;
       }
@@ -5578,6 +5583,18 @@ public final class Arithmetic {
       }
       // Exact numbers, symbols and strings are known exactly.
       return Double.POSITIVE_INFINITY;
+    }
+
+    /**
+     * The precision of the machine numbers of an expression.
+     *
+     * @return <code>NaN</code> if the expression has no machine number
+     */
+    private static double machinePrecision(IExpr expr) {
+      // a literal with more digits than a machine number keeps the precision of its digits
+      return expr.has(x -> (x instanceof Num
+          && !(x instanceof NumStr && ((NumStr) x).precision() > ParserConfig.MACHINE_PRECISION))
+          || x instanceof ComplexNum, false) ? ParserConfig.MACHINE_PRECISION : Double.NaN;
     }
 
     @Override
@@ -7571,6 +7588,10 @@ public final class Arithmetic {
         return numResult;
       }
       if (ast.isUniform(UniformFlags.NUMBER)) {
+        final IExpr zero = zeroProduct(ast);
+        if (zero.isPresent()) {
+          return zero;
+        }
         INumber numResult = (INumber) ast.arg1();
         for (int i = 2; i < ast.size(); i++) {
           numResult = numResult.times((INumber) ast.get(i));
@@ -7723,6 +7744,10 @@ public final class Arithmetic {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() > 0) {
+        final IExpr zero = zeroProduct(ast);
+        if (zero.isPresent()) {
+          return zero;
+        }
         IInexactNumber num = (IInexactNumber) ast.arg1();
         for (int i = 2; i < ast.size(); i++) {
           num = num.times((IInexactNumber) ast.get(i));
@@ -7730,6 +7755,61 @@ public final class Arithmetic {
         return num;
       }
       return F.C1;
+    }
+
+    /**
+     * The product of numbers with a zero factor and an arbitrary-precision factor: the exact zero
+     * times numbers which are exact or of a precision of their own is the exact zero, and the
+     * machine zero if a machine number is among them; the machine zero times real numbers is the
+     * machine zero. A product of exact and machine numbers only is left to the arithmetic of the
+     * numbers.
+     *
+     * @return {@link F#NIL} if the rules don't decide the product
+     */
+    private static IExpr zeroProduct(IAST ast) {
+      boolean exactZero = false;
+      boolean machineZero = false;
+      boolean machine = false;
+      boolean arbitrary = false;
+      boolean complex = false;
+      for (int i = 1; i < ast.size(); i++) {
+        final IExpr x = ast.get(i);
+        if (x instanceof ApfloatNum) {
+          arbitrary = true;
+          final ApfloatNum number = (ApfloatNum) x;
+          if (number.isMachineValue()) {
+            machine = true;
+            machineZero |= number.isZero();
+          } else if (number.isExactValue()) {
+            exactZero |= number.isZero();
+          } else if (!number.isSignificanceTracked()) {
+            // a zero without a precision of its own, like a machine zero in arbitrary-precision
+            // mode
+            machineZero |= number.isZero();
+          }
+        } else if (x instanceof ApcomplexNum) {
+          arbitrary = true;
+          complex = true;
+        } else if (x instanceof Num) {
+          machine = true;
+          machineZero |= x.isZero();
+        } else if (x instanceof ComplexNum) {
+          machine = true;
+          complex = true;
+        } else if (x.isExactNumber()) {
+          exactZero |= x.isZero();
+          complex |= x.isComplex();
+        } else {
+          return F.NIL;
+        }
+      }
+      if (!arbitrary) {
+        return F.NIL;
+      }
+      if (exactZero) {
+        return !machine ? F.C0 : complex ? F.NIL : F.CD0;
+      }
+      return machineZero && !complex ? F.CD0 : F.NIL;
     }
 
     @Override
