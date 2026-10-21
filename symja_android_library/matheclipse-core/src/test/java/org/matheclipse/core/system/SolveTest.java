@@ -3887,6 +3887,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveIssue1563() {
     check("Solve(x-Log(x)==Log(3),x)", //
         "{{x->-ProductLog(-1/3)},{x->-ProductLog(-1,-1/3)}}");
+    // the first variable gives a family x == Log(3*y)+2*I*Pi*C(1), the second one y == E^x/3
+    check("N(Solve({E^x==3*y,y==x},{x,y}))", //
+        "{{x->0.619061,y->0.619061},{x->1.51213,y->1.51213}}");
     check("Solve({E^x==3*x,y==x+1},{x,y})", //
         "{{y->1-ProductLog(-1/3),x->-ProductLog(-1/3)},{y->1-ProductLog(-1,-1/3),x->-ProductLog(-\n"
             + "1,-1/3)}}");

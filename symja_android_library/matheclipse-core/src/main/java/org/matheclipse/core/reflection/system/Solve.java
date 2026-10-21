@@ -1140,7 +1140,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // expensive recursion try
       IExpr firstEquation = termsEqualZeroList.arg1();
 
-      IASTMutable reducedEqualZeroList = termsEqualZeroList.copyAppendable();
+      // the other equations, which every attempt below starts from: an attempt that fails must
+      // not take an equation away from the next one
+      final IASTMutable reducedEqualZeroList = termsEqualZeroList.removeAtCopy(1);
       // the first elimination with several branches, for the last resort below
       IAST branchRules = null;
       int branchIndex = -1;
@@ -1169,8 +1171,12 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             continue;
           }
           final IAST variables = vars.splice(i);
-          reducedEqualZeroList = reducedEqualZeroList.removeAtCopy(1);
           IExpr replaced = reducedEqualZeroList.replaceAll(oneVariableRule);
+          if (replaced.isList() && hasContradiction((IAST) replaced, engine)) {
+            // c -> 0 from a*c==0 turns b*c==1 into -1==0: no solution with this value, but the
+            // generic elimination drops the branch a==0, so the system is left to the others
+            continue;
+          }
           if (replaced.isList()) {
             IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag,
                 variables, engine);
@@ -1213,6 +1219,17 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    /** Whether one of the expressions which have to be zero evaluates to a nonzero number. */
+    private static boolean hasContradiction(IAST termsEqualZero, EvalEngine engine) {
+      for (IExpr term : termsEqualZero) {
+        IExpr value = engine.evaluate(term);
+        if (value.isNumber() && !value.isZero()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     /**
      * Solve the system once for every branch of the elimination of the first equation, when no
      * variable has an elimination with a single branch: in
@@ -1235,6 +1252,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IExpr replaced = rest.replaceAll((IAST) branch);
         if (!replaced.isList()) {
           return F.NIL;
+        }
+        if (hasContradiction((IAST) replaced, engine)) {
+          // no solution in this branch
+          continue;
         }
         IExpr subResult =
             solveRecursive((IASTMutable) replaced, inequationsList, numericFlag, variables, engine);
