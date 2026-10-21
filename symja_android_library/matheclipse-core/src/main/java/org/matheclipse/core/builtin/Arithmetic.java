@@ -737,11 +737,19 @@ public final class Arithmetic {
       double delta;
       if (ast.isAST2()) {
         IExpr tolerance = ast.arg2();
+        if (!(tolerance instanceof IReal) && tolerance.isRealResult()
+            && tolerance.isNumericFunction()) {
+          // an exact numeric tolerance like Pi/10^6
+          IExpr numeric = engine.evalN(tolerance);
+          if (numeric instanceof IReal) {
+            tolerance = numeric;
+          }
+        }
         if (tolerance instanceof IReal && tolerance.isPositive()) {
           delta = tolerance.evalfNaN();
         } else {
           // Tolerance specification `1` must be a non-negative number.
-          return Errors.printMessage(S.Chop, "tolnn", F.List(tolerance), engine);
+          return Errors.printMessage(S.Chop, "tolnn", F.List(ast.arg2()), engine);
         }
       } else {
         delta = Config.DEFAULT_CHOP_DELTA;

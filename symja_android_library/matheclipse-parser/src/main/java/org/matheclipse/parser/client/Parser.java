@@ -47,11 +47,18 @@ public class Parser extends Scanner {
    * <p>
    * A <code>:</code> standing after a symbol names a pattern, and that reading is accepted even
    * where the operator's own precedence would not reach - <code>x*y:z</code> is
-   * <code>x (y:z)</code>. It must not reach into the test of a <code>PatternTest</code> though:
-   * there <code>_Symbol?test:default</code> read the test as <code>test:default</code> and the
-   * default was lost.
+   * <code>x (y:z)</code>. A bare <code>_Symbol?test:default</code> is read that way too, as
+   * <code>PatternTest[_Symbol, Pattern[test, default]]</code>, and <code>a::b:c</code> as
+   * <code>MessageName[a, Pattern[b, c]]</code>. Only inside the pattern of a named
+   * argument <code>name:_Symbol?test:default</code> does it not reach into the test: there the
+   * second <code>:</code> gives the named argument its default (see {@link #fPatternNameLevel}).
    */
   private static final int PATTERN_TEST_PRECEDENCE = 680;
+
+  /**
+   * The bracket depth at which the pattern of a <code>name:pattern</code> is being read, or -1.
+   */
+  private int fPatternNameLevel = -1;
 
   /** The precedence of <code>;;</code>, <code>Span</code>. */
   private static final int SPAN_PRECEDENCE = 305;
@@ -1380,7 +1387,8 @@ public class Parser extends Scanner {
             ? precedence >= min_precedence
             : precedence > min_precedence //
                 || (fOperatorString.equals(":") && (lhs instanceof SymbolNode)
-                    && min_precedence < PATTERN_TEST_PRECEDENCE)
+                    && (min_precedence < PATTERN_TEST_PRECEDENCE
+                        || fPatternNameLevel != fRecursionDepth))
                 || (precedence == min_precedence
                     && (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE
                         // f[x_] := x /: g[x] := 1 is SetDelayed[f[x_], TagSetDelayed[x, g[x], 1]]:
@@ -1438,7 +1446,17 @@ public class Parser extends Scanner {
 
   private final ASTNode parseInfixOperator(ASTNode lhs, InfixOperator infixOperator) {
     ASTNode rhs;
-    rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+    if (infixOperator.isOperator(":") && lhs instanceof SymbolNode) {
+      final int patternNameLevel = fPatternNameLevel;
+      fPatternNameLevel = fRecursionDepth;
+      try {
+        rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+      } finally {
+        fPatternNameLevel = patternNameLevel;
+      }
+    } else {
+      rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+    }
     lhs = infixOperator.createFunction(fFactory, lhs, rhs);
     if (lhs instanceof FunctionNode) {
       FunctionNode ast = ((FunctionNode) lhs);

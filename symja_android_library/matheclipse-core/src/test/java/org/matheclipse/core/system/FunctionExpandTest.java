@@ -573,9 +573,13 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(PolyLog(2,(-1-Sqrt(5))/2))", //
         "-Pi^2/10-ArcCsch(2)^2");
 
+    // the real part from BernoulliB(2, 2/5), the imaginary part as Hurwitz zeta values
     check("FunctionExpand( PolyLog(2, E^( 4/5*Pi*I )) )", //
-        "Pi^2/150+1/25*(E^(I*4/5*Pi)*PolyGamma(1,1/5)+PolyGamma(1,2/5)/E^(I*2/5*Pi)+E^(\n" //
-            + "I*2/5*Pi)*PolyGamma(1,3/5)+PolyGamma(1,4/5)/E^(I*4/5*Pi))");
+        "-11/150*Pi^2+I*1/25*(Sqrt(5/8-Sqrt(5)/8)*PolyGamma(1,1/5)-Sqrt(5/8+Sqrt(5)/8)*PolyGamma(\n"
+            + "1,2/5)+Sqrt(5/8+Sqrt(5)/8)*PolyGamma(1,3/5)-Sqrt(5/8-Sqrt(5)/8)*PolyGamma(1,4/5))");
+    // odd orders at roots of unity: the real part is a multiple of Zeta(n)
+    check("FunctionExpand({PolyLog(5, I), PolyLog(3, E^(2*Pi*I/3)), PolyLog(5, -I) + PolyLog(5, I)})", //
+        "{I*5/1536*Pi^5-15/512*Zeta(5),I*2/81*Pi^3-4/9*Zeta(3),-15/256*Zeta(5)}");
   }
 
   @Test

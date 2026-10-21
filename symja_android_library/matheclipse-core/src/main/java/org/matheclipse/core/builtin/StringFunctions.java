@@ -908,6 +908,43 @@ public final class StringFunctions {
     }
   }
 
+  /** {@link #encodingLimit(String)} of the UTF-8 encoding, which maps a character to bytes. */
+  private static final int UTF8 = -1;
+
+  /**
+   * {@link #encodingLimit(String)} of the printable ASCII encoding, which also leaves out the
+   * control characters below the space except the newline.
+   */
+  private static final int PRINTABLE_ASCII = 0x7E;
+
+  /**
+   * The largest character code of an encoding name: <code>0x7F</code> for ASCII,
+   * {@link #PRINTABLE_ASCII}, <code>0xFF</code> for ISO Latin 1, {@link #UTF8} for UTF-8 and
+   * <code>Integer.MAX_VALUE</code> for Unicode and the names which are not known here.
+   */
+  private static int encodingLimit(String encoding) {
+    switch (encoding) {
+      case "UTF8":
+      case "UTF-8":
+        return UTF8;
+      case "ASCII":
+        return 0x7F;
+      case "PrintableASCII":
+        return PRINTABLE_ASCII;
+      case "ISOLatin1":
+      case "ISO8859-1":
+        return 0xFF;
+      default:
+        return Integer.MAX_VALUE;
+    }
+  }
+
+  /** <code>true</code> if the encoding with this {@link #encodingLimit(String)} lacks the code. */
+  private static boolean outsideEncoding(int code, int limit) {
+    return code > limit
+        || (limit == PRINTABLE_ASCII && code >= 0 && code < 0x20 && code != '\n');
+  }
+
   private static class FromCharacterCode extends AbstractFunctionEvaluator {
 
     private static IExpr fromCharacterCode(final IAST charList, final IAST fromCharacterCodeAST,
@@ -931,12 +968,77 @@ public final class StringFunctions {
       return StringX.valueOf(buffer);
     }
 
+    /**
+     * The string of the UTF-8 <code>bytes</code>. A byte which starts no valid sequence is
+     * reported and taken as the ISO Latin 1 character of its code.
+     */
+    private static IExpr fromUTF8(final IAST bytes, EvalEngine engine) {
+      byte[] buffer = new byte[bytes.argSize()];
+      for (int i = 1; i < bytes.size(); i++) {
+        int b = bytes.get(i).toIntDefault();
+        if (b < 0 || b > 0xFF) {
+          return F.NIL;
+        }
+        buffer[i - 1] = (byte) b;
+      }
+      java.nio.charset.CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
+          .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+          .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT);
+      java.nio.ByteBuffer in = java.nio.ByteBuffer.wrap(buffer);
+      java.nio.CharBuffer out = java.nio.CharBuffer.allocate(buffer.length + 1);
+      IASTAppendable invalid = F.ListAlloc();
+      while (true) {
+        java.nio.charset.CoderResult result = decoder.decode(in, out, true);
+        if (result.isError()) {
+          for (int k = 0; k < result.length(); k++) {
+            int b = in.get() & 0xFF;
+            invalid.append(b);
+            out.put((char) b);
+          }
+          continue;
+        }
+        decoder.flush(out);
+        break;
+      }
+      if (invalid.argSize() > 0) {
+        // The byte sequence `1` could not be interpreted as a character in the UTF-8 character
+        // encoding.
+        Errors.printMessage(S.$CharacterEncoding, "utf8", F.list(invalid), engine);
+      }
+      out.flip();
+      return StringX.valueOf(out.toString());
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      // FromCharacterCode[codes, "UTF8"] names the encoding the numbers are in. Symja's strings
-      // are Unicode already and the numbers are code points, so every encoding names the same
-      // characters; the argument is taken and nothing else has to happen for it.
+      if (ast.isAST2() && ast.arg2().isString()
+          && encodingLimit(ast.arg2().toString()) == UTF8) {
+        // the numbers are the bytes of the UTF-8 encoding
+        if (arg1.isList()) {
+          IAST list = (IAST) arg1;
+          if (list.argSize() > 0 && list.arg1().isList()) {
+            return list.mapThread(ast, 1);
+          }
+          return list.forAll(x -> x.isInteger()) ? fromUTF8(list, engine) : F.NIL;
+        }
+        return arg1.isInteger() ? fromUTF8(F.list(arg1), engine) : F.NIL;
+      }
+      // the other encodings name the characters by their codes, up to the largest code they have
+      final int limit = ast.isAST2() && ast.arg2().isString()
+          ? encodingLimit(ast.arg2().toString())
+          : Integer.MAX_VALUE;
+      if (limit < Integer.MAX_VALUE) {
+        if (arg1.isList() && arg1.argSize() > 0 && arg1.first().isList()) {
+          // each list of codes with the encoding
+          return arg1.mapThread(ast, 1);
+        }
+        if (arg1.isList()
+            ? ((IAST) arg1).exists(c -> c.isInteger() && outsideEncoding(c.toIntDefault(), limit))
+            : arg1.isInteger() && outsideEncoding(arg1.toIntDefault(), limit)) {
+          return F.NIL;
+        }
+      }
       IAST codes = ast.isAST1() ? ast : F.unaryAST1(ast.head(), arg1);
 
       if (arg1.isList()) {
@@ -2096,6 +2198,14 @@ public final class StringFunctions {
       if (!n.isInteger()) {
         return F.NIL;
       }
+      if (ast.isAST2() && ast.arg2().isString("Roman")) {
+        // the digits of the absolute value, as for any base
+        int value = n.toIntDefault();
+        if (value != Integer.MIN_VALUE) {
+          value = Math.abs(value);
+        }
+        return value >= 0 && value < 5000 ? F.stringx(toRoman(value)) : F.NIL;
+      }
       int base = 10;
       if (ast.argSize() >= 2) {
         base = ast.arg2().toIntDefault();
@@ -2117,6 +2227,26 @@ public final class StringFunctions {
         }
       }
       return F.stringx(digits);
+    }
+
+    private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+
+    private static final String[] ROMAN_DIGITS =
+        {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+
+    /** The Roman numeral of <code>0 &lt;= n &lt; 5000</code>; 0 is <code>N</code>. */
+    private static String toRoman(int n) {
+      if (n == 0) {
+        return "N";
+      }
+      StringBuilder buf = new StringBuilder();
+      for (int i = 0; i < ROMAN_VALUES.length; i++) {
+        while (n >= ROMAN_VALUES[i]) {
+          buf.append(ROMAN_DIGITS[i]);
+          n -= ROMAN_VALUES[i];
+        }
+      }
+      return buf.toString();
     }
 
     @Override
@@ -3993,16 +4123,31 @@ public final class StringFunctions {
       if (!arg1.isString()) {
         return F.NIL;
       }
-
-      return toCharacterCode(ast.arg1().toString(), StandardCharsets.UTF_8);
+      String text = ast.arg1().toString();
+      if (ast.isAST2() && ast.arg2().isString()) {
+        switch (encodingLimit(ast.arg2().toString())) {
+          case UTF8:
+            // the bytes of the UTF-8 encoding
+            byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
+            return F.mapRange(0, bytes.length, i -> F.ZZ(bytes[i] & 0xFF));
+          case 0x7F:
+          case PRINTABLE_ASCII:
+          case 0xFF:
+            // a character the encoding does not have is None
+            final int limit = encodingLimit(ast.arg2().toString());
+            final int[] codePoints = text.codePoints().toArray();
+            return F.mapRange(0, codePoints.length,
+                i -> outsideEncoding(codePoints[i], limit) ? S.None : F.ZZ(codePoints[i]));
+          default:
+        }
+      }
+      return toCharacterCode(text, StandardCharsets.UTF_8);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      // ToCharacterCode[string, encoding] names the encoding the codes are read in. Symja holds a
-      // string as Java does, so the codes are the same whichever name is given and the second
-      // argument changes nothing - but refusing it made the call an error, and a package which
-      // spells the encoding out got no codes at all
+      // ToCharacterCode[string, encoding]: an encoding this function does not know gives the
+      // character codes, as Unicode does
       return ARGS_1_2;
     }
   }

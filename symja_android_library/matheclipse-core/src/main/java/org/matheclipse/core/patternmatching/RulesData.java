@@ -109,7 +109,8 @@ public final class RulesData implements Serializable {
         if (isComplicatedPatternExpr(a1) || !a1.head().isFreeOfPatterns()) {
           return true;
         }
-        if (lhsAST.exists(x -> x.isPatternDefault() || x.isPatternSequence(false))) {
+        if (lhsAST.exists(
+            x -> x.isPatternDefault() || x.isPatternSequence(false) || isSequencePatternAST(x))) {
           return true;
         }
       }
@@ -118,12 +119,21 @@ public final class RulesData implements Serializable {
     return isComplicatedPatternExpr(lhs);
   }
 
+  /**
+   * Whether <code>x</code> is a pattern function which may stand for a number of arguments other
+   * than one, so that a rule with it can't be found by a hash of its first argument.
+   */
+  private static boolean isSequencePatternAST(IExpr x) {
+    return x.isAST(S.PatternSequence) || x.isAST(S.OrderlessPatternSequence)
+        || x.isAST(S.Longest) || x.isAST(S.Shortest);
+  }
+
   private static boolean isComplicatedPatternExpr(IExpr a1) {
     if (a1 instanceof IPatternObject) {
       return true;
     } else if (a1.isASTOrAssociation()) {
 
-      if (a1.isPatternMatchingFunction()) {
+      if (a1.isPatternMatchingFunction() || isSequencePatternAST(a1)) {
         return true;
       }
 

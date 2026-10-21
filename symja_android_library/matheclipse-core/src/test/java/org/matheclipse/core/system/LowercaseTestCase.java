@@ -3026,6 +3026,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testChop() {
+    // an exact numeric tolerance
+    check("Chop({2.0*10^-7, 0.5}, E/10^6)", //
+        "{0,0.5}");
     check("-4.898587196589413*^-16*I ", //
         "I*(-0.0000000000000004898587196589413)");
     check("Chop(  1. - 4.898587196589413*^-16*I)", //
@@ -6561,6 +6564,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDiracDelta() {
+    // the indefinite integral of the sifting property
+    check("{Integrate(Exp(x)*DiracDelta(3*x - 6), x), Integrate(g(x)*DiracDelta(x - d), x)}", //
+        "{1/3*E^2*HeavisideTheta(-2+x),g(d)*HeavisideTheta(-d+x)}");
+    // a symbolic slope leaves the side of the step open
+    check("Integrate(g(x)*DiracDelta(c*x - d), x)", //
+        "Integrate(DiracDelta(-d+c*x)*g(x),x)");
     // a derivative of DiracDelta vanishes away from zero, as DiracDelta does
     check("DiracDelta'(1)", //
         "0");
@@ -9467,6 +9476,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorialPower() {
+    // FactorialPower(x, -k) == 1/((x+1)*...*(x+k))
+    check("{FactorialPower(4, -3), FactorialPower(3/2, -2), FactorialPower(1.5, -1)}", //
+        "{1/210,4/35,0.4}");
     // not an integer number of factors: Gamma(1+x)/Gamma(1+x-n)
     check("FactorialPower(x, 1/2)", //
         "Gamma(1+x)/Gamma(1/2+x)");
@@ -13983,6 +13995,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFromCharacterCode() {
+    // $CharacterEncoding: The byte sequence {255} could not be interpreted as a character in the
+    // UTF-8 character encoding.
+    check("FromCharacterCode({98, 255}, \"UTF8\")", //
+        "b\u00FF");
+    // the bytes of the UTF-8 encoding
+    check("{ToCharacterCode(\"z\u00DF\", \"UTF8\"), FromCharacterCode(ToCharacterCode(\"z\u00DF\u20AC\", \"UTF8\"), \"UTF8\")}", //
+        "{{122,195,159},z\u00DF\u20AC}");
+    // a character the encoding lacks is None; printable ASCII also lacks the control characters
+    // other than the newline
+    check("{ToCharacterCode(\"q\u00E9\u20AC\", \"ASCII\"), ToCharacterCode(\"q\u00E9\u20AC\", \"ISOLatin1\"), ToCharacterCode(\"k\tm|\nz\", \"PrintableASCII\")}", //
+        "{{113,None,None},{113,233,None},{107,None,109,124,10,122}}");
+    check("{FromCharacterCode({{107, 33}, {126}}, \"PrintableASCII\"), FromCharacterCode({107, 9}, \"PrintableASCII\")}", //
+        "{{k!,~},FromCharacterCode({107,9},PrintableASCII)}");
     check("FromCharacterCode({97,45,51})", //
         "a-3");
     // undefined negative codes
@@ -22381,6 +22406,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("MatchQ({1,8,Pi},{__?Positive})", //
         "True");
+    // without a name the `:` after the test names the test; with a name it is the default
+    check("FullForm(Hold({_Integer?tst:dv, w:_Integer?tst:dv}))", //
+        "Hold(List(PatternTest(Blank(Integer), Pattern(tst, dv)), Optional(Pattern(w, PatternTest(Blank(Integer), tst)), dv)))");
+    check("$pt(u_?NumberQ:7) := {u}; {$pt(), $pt(3)}", //
+        "{$pt(),$pt(3)}");
+    check("$pq(u:_?NumberQ:7) := {u}; {$pq(), $pq(3), $pq(c)}", //
+        "{{7},{3},$pq(c)}");
 
     check("$j(x_, y_:1, z_:2) := jp(x, y, z); $j(a,b)", //
         "jp(a,b,2)");
@@ -22849,6 +22881,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testPolyLog() {
+    check("{PolyLog(1, 4, 1), FunctionExpand(PolyLog(3, -1/2 + I*Sqrt(3)/2))}", //
+        "{Zeta(5),I*2/81*Pi^3-4/9*Zeta(3)}");
+    // the Nielsen polylogarithm off the unit disk and for non-integer orders on it
+    check("{PolyLog(2, 2, 3.), PolyLog(2, 2, 0.5), PolyLog(1, 1/3, 0.4), PolyLog(3/2, 2, 0.6)}", //
+        "{-0.480511+I*(-2.30254),0.0407582,2.52242,0.0969451}");
+    check("PolyLog(1, 1/2, 3.)", //
+        "PolyLog(1.0,0.5,3.0)");
     // an order on the imaginary axis with an argument between 0 and 1
     checkNumeric("PolyLog(I, 0.99)", //
         "-20.86728574125743+I*47.096525592037");
@@ -27276,6 +27315,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("MatchQ({4, 5, 6}, {Repeated(_Integer)})", //
         "True");
+
+    // a name inside the repeated unit takes the same value in every repetition, and ReplaceList
+    // lists every way to split the sequence
+    check("ReplaceList(g(c, c, c), g(y__ ..) :> {y})", //
+        "{{c},{c,c,c}}");
+    check("{h(u, u, v) /. h(z_ .., v) :> {z}, MatchQ(h(u, w), h(z_ ..)), ReplaceList(k(b, b), k(b ..) :> 7)}", //
+        "{{u},False,{7}}");
+    check("ReplaceList(k(1, 2, 1, 2, 1, 2), k(PatternSequence(r_, s_) ..) :> {r, s})", //
+        "{{1,2}}");
+    // an unnamed OrderlessPatternSequence takes a run of arguments in any order
+    check(
+        "{ReplaceList(g(5, 4, 6), g(OrderlessPatternSequence(x_, 4), y___) :> {x, {y}}), ReplaceList(g(7, 4, 6), g(y___, OrderlessPatternSequence(4, x_)) :> {x, {y}})}", //
+        "{{{5,{6}}},{{6,{7}}}}");
+    // a PatternSequence on the left-hand side of a definition stands for several arguments
+    check(
+        "Clear(ps1, ps2); ps1(PatternSequence(a_, b_), c_) := a + b*c; ps2(PatternSequence(u_, v_)) := u - v; {ps1(2, 3, 4), ps2(10, 4), ps2(1)}", //
+        "{14,6,ps2(1)}");
   }
 
   @Test

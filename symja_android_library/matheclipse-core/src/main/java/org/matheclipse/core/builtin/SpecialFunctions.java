@@ -2527,6 +2527,79 @@ public class SpecialFunctions {
   private static class PolyLog extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     /**
+     * <code>PolyLog(n, z)</code> for an integer <code>n &gt;= 2</code> and a root of unity
+     * <code>z = E^(2*Pi*I*x)</code> with a rational <code>0 &lt; x &lt; 1</code>.
+     *
+     * <p>
+     * <code>PolyLog(n, z) + (-1)^n*PolyLog(n, Conjugate(z)) == -(2*Pi*I)^n*BernoulliB(n, x)/n!</code>
+     * gives the real part for an even <code>n</code> and the imaginary part for an odd one. The
+     * other part is a multiple of <code>Zeta(n)</code> for an odd <code>n</code> and
+     * <code>x</code> with the denominator 2, 3, 4 or 6, <code>Catalan</code> for
+     * <code>PolyLog(2, I)</code>, and otherwise the sum
+     * <code>q^-n*Sum(Cos(2*Pi*k*x)*Zeta(n, k/q), {k, 1, q})</code> (or with <code>Sin</code>) of
+     * Hurwitz zeta values, which is written with <code>PolyGamma</code>.
+     */
+    private static IExpr polyLogAtRootOfUnity(IExpr n, IExpr z, EvalEngine engine) {
+      int order = n.toIntDefault();
+      if (order < 2 || order > 64 || !z.isNumericFunction() || z.isReal()) {
+        return F.NIL;
+      }
+      if (!engine.evalTrue(F.Equal(F.Abs(z), F.C1))) {
+        return F.NIL;
+      }
+      IExpr r = engine.evaluate(F.Divide(F.Arg(z), F.Times(F.C2, S.Pi)));
+      if (!r.isRational()) {
+        return F.NIL;
+      }
+      IRational x = (IRational) r;
+      if (x.isNegative()) {
+        x = x.add(F.C1);
+      }
+      if (!x.isPositive() || !x.isLT(F.C1)) {
+        return F.NIL;
+      }
+      final int q = x.denominator().toIntDefault();
+      // the other part is a sum of q terms
+      if (q < 2 || q > 1024) {
+        return F.NIL;
+      }
+      // -(2*Pi*I)^n*BernoulliB(n, x)/(2*n!)
+      IExpr bernoulli = F.Times(F.CN1D2, F.Power(F.Times(F.C2, S.Pi, F.CI), n),
+          F.BernoulliB(n, x), F.Power(F.Factorial(n), F.CN1));
+      IExpr other;
+      boolean odd = (order & 1) == 1;
+      IExpr zeta = F.Zeta(n);
+      // z == -1 is real and has its own rule, so q == 2 only remains for an even n
+      if (odd && q == 3) {
+        other = F.Times(F.C1D2, F.Plus(F.Power(F.C3, F.Subtract(F.C1, n)), F.CN1), zeta);
+      } else if (odd && q == 4) {
+        other = F.Times(F.Power(F.C2, F.Negate(n)), F.Plus(F.Power(F.C2, F.Subtract(F.C1, n)), F.CN1),
+            zeta);
+      } else if (odd && q == 6) {
+        other = F.Times(F.C1D2, F.Plus(F.Power(F.C2, F.Subtract(F.C1, n)), F.CN1),
+            F.Plus(F.Power(F.C3, F.Subtract(F.C1, n)), F.CN1), zeta);
+      } else if (!odd && q == 2) {
+        other = F.C0;
+      } else if (order == 2 && q == 4) {
+        // Catalan's constant is the imaginary part of PolyLog(2, I)
+        other = F.Times(x.isLT(F.C1D2) ? F.CI : F.CNI, S.Catalan);
+      } else {
+        // q^-n*Sum(Cos(2*Pi*k*x)*Zeta(n, k/q), {k, 1, q}) or I*q^-n*Sum(Sin(...)*Zeta(n, k/q))
+        IASTAppendable sum = F.PlusAlloc(q);
+        for (int k = 1; k <= q; k++) {
+          IExpr angle = F.Times(F.C2, S.Pi, F.ZZ(k), x);
+          IExpr weight = odd ? F.Cos(angle) : F.Sin(angle);
+          IExpr hurwitz = k == q ? zeta
+              : F.Times(F.Power(F.CN1, n), F.PolyGamma(F.Subtract(n, F.C1), F.QQ(k, q)),
+                  F.Power(F.Factorial(F.Subtract(n, F.C1)), F.CN1));
+          sum.append(F.Times(weight, hurwitz));
+        }
+        other = F.Times(odd ? F.C1 : F.CI, F.Power(F.ZZ(q), F.Negate(n)), sum);
+      }
+      return engine.evaluate(F.Plus(bernoulli, other));
+    }
+
+    /**
      * Beyond this the Eulerian numbers themselves are the cost: the table is <code>n</code>
      * integers whose sum is <code>n!</code>, built in <code>n^2</code> steps. Measured against
      * <code>PolyLog(-n, -3/2)</code>: 2 ms at 128, 213 ms at 1000, 1.9 s at 2000. The line is drawn
@@ -2538,36 +2611,7 @@ public class SpecialFunctions {
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
-        // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/PolyLog2/03/01/0002/
-        IExpr n = ast.arg1();
-        IExpr z = ast.arg2();
-        if (n.isNumEqualInteger(F.C2) && z.isPower() && z.base().isE() && z.exponent().isTimes2()) {
-          // PolyLog(2, E^( exponent_ ))
-          IAST timesAST = (IAST) z.exponent();
-          if (timesAST.arg1().isComplex() && timesAST.arg2().isPi()) {
-            IComplex c1 = (IComplex) timesAST.arg1();
-            if (c1.getRealPart().isZero()) {
-              IRational imag = c1.getImaginaryPart();
-              IInteger p = imag.numerator();
-              if (p.isEven() && p.isPositive()) {
-                p = p.div(2);
-                IInteger q = imag.denominator();
-                int pInt = p.toIntDefault();
-                int qInt = q.toIntDefault();
-                if (pInt > 0 && qInt > 0 && pInt <= qInt) {
-                  // Pi^2/(6*q^2)+Sum(E^((2*Pi*I*k*p)/q)*PolyGamma(1,k/q),{k,1,-1+q})/q^2
-                  IFraction qR1 = F.QQ(1, qInt);
-                  IFraction qR2 = F.QQ(F.C1, q.multiply(q));
-                  return F.Plus(F.Times(F.QQ(1L, 6L), F.Sqr(F.Pi), F.Power(q, F.CN2)), F.Times(qR2, //
-                      F.sum(
-                          k -> F.Times(F.Exp(F.Times(c1, F.Pi, k)),
-                              F.PolyGamma(F.C1, F.Times(k, qR1))), //
-                          1, --qInt)));
-                }
-              }
-            }
-          }
-        }
+        return polyLogAtRootOfUnity(ast.arg1(), ast.arg2(), engine);
       }
       return F.NIL;
     }
@@ -2587,7 +2631,7 @@ public class SpecialFunctions {
         if (temp.isPresent()) {
           return temp.eval(engine);
         }
-        return F.NIL;
+        return nielsenNumeric(n, x, z);
       }
       IExpr temp = polyLogSymbolic(n, x);
       if (temp.isPresent()) {
@@ -2700,12 +2744,55 @@ public class SpecialFunctions {
       return F.Times(numerator, F.Power(F.Subtract(F.C1, z), F.ZZ(-(order + 1L))));
     }
 
+    /**
+     * <code>PolyLog(n, p, z)</code> for machine numbers with real <code>n, p &gt; 0</code> and at
+     * least one inexact argument, by the integral representation.
+     */
+    private static IExpr nielsenNumeric(IExpr n, IExpr p, IExpr z) {
+      if (!n.isReal() || !p.isReal() || !z.isNumber()
+          || !(n.isInexactNumber() || p.isInexactNumber() || z.isInexactNumber())) {
+        return F.NIL;
+      }
+      if (n.isInexactNumber() && !(n instanceof INum) || p.isInexactNumber() && !(p instanceof INum)
+          || z.isInexactNumber() && !(z instanceof INum || z instanceof IComplexNum)) {
+        // arbitrary precision is not supported here
+        return F.NIL;
+      }
+      try {
+        Complex zc = z.evalfc();
+        if (!(n.isInteger() || n.isNumIntValue()) || !(p.isInteger() || p.isNumIntValue())) {
+          // a non-integer order only on the closed unit disk
+          if (zc.norm() > 1.0) {
+            return F.NIL;
+          }
+        }
+        Complex value =
+            org.matheclipse.core.numerics.functions.NielsenPolyLog.value(n.evalf(), p.evalf(), zc);
+        if (value == null) {
+          return F.NIL;
+        }
+        // an imaginary part at the level of the rounding errors comes from the complex powers of
+        // the integrand, whose phases cancel for a real value
+        if (Math.abs(value.getImaginary()) <= 1.0e-14 * Math.abs(value.getReal())) {
+          return F.num(value.getReal());
+        }
+        return F.complexNum(value);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return F.NIL;
+      }
+    }
+
     private IExpr polyLogSymbolic(IExpr n, IExpr p, IExpr z) {
       if (F.isExactZero(z)) {
         return F.C0;
       }
       if (n.isOne()) {
         int pInt = p.toIntDefault();
+        if (z.isOne() && p.isReal() && p.isPositive()) {
+          // the sum of 1/k^(p+1)
+          return F.Zeta(F.Plus(p, F.C1));
+        }
         if (pInt > 1) {
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/PolyLog3/03/01/03/0002/
           IExpr v4 = F.CN1.pow(pInt);

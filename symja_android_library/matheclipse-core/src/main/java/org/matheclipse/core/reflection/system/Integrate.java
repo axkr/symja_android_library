@@ -805,6 +805,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         if (result.isPresent()) {
           return result;
         }
+        result = integrateDiracDeltaIndefinite(fx, x, engine);
+        if (result.isPresent()) {
+          return result;
+        }
         result = integrateStruveH(fx, x, engine);
         if (result.isPresent()) {
           return result;
@@ -2243,39 +2247,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
   private static IExpr integrateDiracDelta(IExpr integrand, IExpr x, IExpr lower, IExpr upper,
       EvalEngine engine) {
-    if (integrand.isFreeAST(S.DiracDelta) || !x.isVariable()) {
+    IExpr[] sifting = siftingPoint(integrand, x, engine);
+    if (sifting == null) {
       return F.NIL;
     }
-    IAST factors = integrand.isTimes() ? (IAST) integrand : F.Times(integrand);
-    IExpr deltaArgument = F.NIL;
-    IASTAppendable cofactor = F.TimesAlloc(factors.size());
-    for (int i = 1; i < factors.size(); i++) {
-      IExpr factor = factors.get(i);
-      if (deltaArgument.isNIL() && factor.isAST(S.DiracDelta, 2)) {
-        deltaArgument = factor.first();
-      } else {
-        cofactor.append(factor);
-      }
-    }
-    // a second delta in the same variable would be a product of distributions - not defined here
-    if (deltaArgument.isNIL() || !cofactor.isFreeAST(S.DiracDelta)) {
-      return F.NIL;
-    }
-    // the delta argument must be linear in x; DiracDelta itself already normalises Abs(c1) to 1
-    if (!engine.evaluate(F.PolynomialQ(deltaArgument, x)).isTrue()
-        || engine.evaluate(F.Exponent(deltaArgument, x)).toIntDefault(-1) != 1) {
-      return F.NIL;
-    }
-    IExpr slope = engine.evaluate(F.Coefficient(deltaArgument, x, F.C1));
-    if (slope.isZero()) {
-      return F.NIL;
-    }
-    IExpr constant = engine.evaluate(F.Coefficient(deltaArgument, x, F.C0));
-    IExpr root = engine.evaluate(F.Divide(constant.negate(), slope));
-    IExpr value = engine.evaluate(F.Divide(F.ReplaceAll(cofactor, F.Rule(x, root)), F.Abs(slope)));
-    if (!value.isFree(x, true)) {
-      return F.NIL;
-    }
+    IExpr root = sifting[0];
+    IExpr value = sifting[1];
     // reversed limits would need a sign flip; leave those to the generic route
     if (!engine.evaluate(F.Less(lower, upper)).isTrue()) {
       return F.NIL;
@@ -2296,6 +2273,68 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.C0;
     }
     return F.NIL;
+  }
+
+  /**
+   * <code>Integrate(f(x)*DiracDelta(c1*x+c0), x)</code> is
+   * <code>f(r)/Abs(c1)*HeavisideTheta(x-r)</code> with the root <code>r = -c0/c1</code>.
+   *
+   * @return {@link F#NIL} if the integrand is not of this form
+   */
+  private static IExpr integrateDiracDeltaIndefinite(IExpr integrand, IExpr x,
+      EvalEngine engine) {
+    IExpr[] sifting = siftingPoint(integrand, x, engine);
+    // the spike lies on the real line only for a real root, and a numeric slope tells on which
+    // side of it the step is
+    if (sifting == null || !sifting[2].isReal()
+        || (sifting[0].isNumericFunction() && !sifting[0].isRealResult())) {
+      return F.NIL;
+    }
+    return engine.evaluate(F.Times(sifting[1], F.HeavisideTheta(F.Subtract(x, sifting[0]))));
+  }
+
+  /**
+   * The root <code>r</code>, the value <code>f(r)/Abs(c1)</code> and the slope <code>c1</code> of
+   * an integrand <code>f(x)*DiracDelta(c1*x+c0)</code> with one delta factor linear in
+   * <code>x</code>.
+   *
+   * @return <code>null</code> if the integrand is not of this form
+   */
+  private static IExpr[] siftingPoint(IExpr integrand, IExpr x, EvalEngine engine) {
+    if (integrand.isFreeAST(S.DiracDelta) || !x.isVariable()) {
+      return null;
+    }
+    IAST factors = integrand.isTimes() ? (IAST) integrand : F.Times(integrand);
+    IExpr deltaArgument = F.NIL;
+    IASTAppendable cofactor = F.TimesAlloc(factors.size());
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      if (deltaArgument.isNIL() && factor.isAST(S.DiracDelta, 2)) {
+        deltaArgument = factor.first();
+      } else {
+        cofactor.append(factor);
+      }
+    }
+    // a second delta in the same variable would be a product of distributions - not defined here
+    if (deltaArgument.isNIL() || !cofactor.isFreeAST(S.DiracDelta)) {
+      return null;
+    }
+    // the delta argument must be linear in x; DiracDelta itself already normalises Abs(c1) to 1
+    if (!engine.evaluate(F.PolynomialQ(deltaArgument, x)).isTrue()
+        || engine.evaluate(F.Exponent(deltaArgument, x)).toIntDefault(-1) != 1) {
+      return null;
+    }
+    IExpr slope = engine.evaluate(F.Coefficient(deltaArgument, x, F.C1));
+    if (slope.isZero()) {
+      return null;
+    }
+    IExpr constant = engine.evaluate(F.Coefficient(deltaArgument, x, F.C0));
+    IExpr root = engine.evaluate(F.Divide(constant.negate(), slope));
+    IExpr value = engine.evaluate(F.Divide(F.ReplaceAll(cofactor, F.Rule(x, root)), F.Abs(slope)));
+    if (!value.isFree(x, true)) {
+      return null;
+    }
+    return new IExpr[] {root, value, slope};
   }
 
   /**

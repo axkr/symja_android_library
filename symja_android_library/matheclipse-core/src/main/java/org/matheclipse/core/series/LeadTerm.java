@@ -647,6 +647,25 @@ public class LeadTerm {
       }
       return null;
     }
+    if (ast.argSize() == 2 && (head.ordinal() == ID.Zeta || head.ordinal() == ID.HurwitzZeta)
+        && ast.arg1().isFree(t)) {
+      final IExpr s = ast.arg1();
+      IExpr shifted = engine.evaluate(F.Subtract(s, F.C1));
+      Lead zLead = dispatch(ast.arg2(), t, logx, engine, depth + 1);
+      if (zLead == null || zLead.coefficientHasLogx() || zLead.exponentSign(engine) >= 0
+          || !(shifted.isPositiveResult() || shifted.isNegativeResult())) {
+        return null;
+      }
+      // only along the positive real axis: towards -Infinity z passes the poles of Zeta(s, z)
+      if (!zLead.coefficient().isPositiveResult()) {
+        return null;
+      }
+      // Zeta(s, z) ~ z^(1-s)/(s-1) for z -> Infinity and s != 1
+      IExpr c = engine.evaluate(
+          F.Divide(F.Power(zLead.coefficient(), F.Negate(shifted)), shifted));
+      IExpr e = engine.evaluate(F.Times(zLead.exponent(), F.Negate(shifted)));
+      return c.isZero() ? null : new Lead(c, e, logx);
+    }
     // Any other multi-argument function: only the fully continuous case is safe, and only when a
     // single argument depends on t.
     return null;

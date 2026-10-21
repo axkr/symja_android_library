@@ -2131,6 +2131,31 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     return matchHoldPattern(lhsPatternOptional, lhsEvalExpr, stackMatcher, engine);
   }
 
+  /** The most splits of one sequence which {@link #matchOtherSplits} tries. */
+  private static final int MAX_REPEATED_SPLITS = 4096;
+
+  /**
+   * After the first split of <code>seq</code> by a repeated unit with names failed in
+   * <code>rest</code>, try the other splits, which give the names other values.
+   */
+  private boolean matchOtherSplits(IPatternSequence patternSequence, IAST seq,
+      IExpr[] patternValues, java.util.function.BooleanSupplier rest) {
+    if (!(patternSequence instanceof RepeatedPattern)
+        || !((RepeatedPattern) patternSequence).hasAlternativeSplits()) {
+      return false;
+    }
+    RepeatedPattern repeated = (RepeatedPattern) patternSequence;
+    fPatternMap.resetPattern(patternValues);
+    java.util.List<IExpr[]> splits = repeated.namedSplits(seq, fPatternMap, MAX_REPEATED_SPLITS);
+    for (int i = 1; i < splits.size(); i++) {
+      fPatternMap.resetPattern(patternValues);
+      if (repeated.setSplit(splits.get(i), seq, fPatternMap) && rest.getAsBoolean()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private boolean matchBlankSequence(final IPatternSequence patternSequence,
       final IAST lhsPatternAST, final int position, final IAST lhsEvalAST, EvalEngine engine,
       StackMatcher stackMatcher) {
@@ -2144,6 +2169,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         seq.appendAll(lhsEvalAST, 1, lhsEvalAST.size());
         if (patternSequence.matchPatternSequence(seq, fPatternMap, lhsPatternAST.topHead())) {
           matched = stackMatcher.matchRest();
+          if (matched) {
+            return true;
+          }
+          matched = matchOtherSplits(patternSequence, seq, patternValues,
+              () -> stackMatcher.matchRest());
           if (matched) {
             return true;
           }
@@ -2180,6 +2210,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
         if (patternSequence.matchPatternSequence(seq, fPatternMap, lhsPatternAST.topHead())) {
           matched = matchAST(reducedLHSPatternAST, lhsEvalAST.copyFrom(lhsEvalIndex), engine,
               stackMatcher);
+          if (matched) {
+            return true;
+          }
+          final int index = lhsEvalIndex;
+          matched = matchOtherSplits(patternSequence, seq, patternValues, () -> matchAST(
+              reducedLHSPatternAST, lhsEvalAST.copyFrom(index), engine, stackMatcher));
           if (matched) {
             return true;
           }

@@ -87,6 +87,10 @@ public class FixedPatternSequence extends AbstractPatternSequence {
       return false;
     }
     if (fSymbol == null) {
+      // the slot of an unnamed sequence counts as assigned only when it is set (ReplaceList)
+      if (patternMap.indexOf(this) >= 0) {
+        patternMap.setValue(this, sequence);
+      }
       return true;
     }
     IExpr value = patternMap.getValue(this);

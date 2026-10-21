@@ -883,10 +883,10 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
-   * <code>ToCharacterCode[string, encoding]</code> names the encoding the codes are read in. Symja
-   * holds a string as Java does, so the codes are the same whichever name is given - but refusing
-   * the second argument made the call an error, and the notebook's own way of turning a printed
-   * line back into characters got none.
+   * <code>ToCharacterCode[string, encoding]</code> names the encoding the codes are read in; for
+   * ASCII text every encoding gives the character codes. Refusing the second argument made the
+   * call an error, and the notebook's own way of turning a printed line back into characters got
+   * none.
    */
   @Test
   public void testToCharacterCodeAcceptsAnEncoding() {

@@ -761,6 +761,13 @@ class ParserTestCase {
     // to the pattern and not to the test
     ASTNode obj = PARSE_UNRELAXED.parse("b : _Symbol?tq : B0");
     assertEquals("Optional(Pattern(b, PatternTest(_Symbol, tq)), B0)", obj.toString());
+    // without a name the `:` names the test, and inside brackets the outer name does not count
+    obj = PARSE_UNRELAXED.parse("_Symbol?tq : B0");
+    assertEquals("PatternTest(_Symbol, Pattern(tq, B0))", obj.toString());
+    obj = PARSE_UNRELAXED.parse("b : g[_?tq : B0]");
+    assertEquals("Pattern(b, g(PatternTest(_, Pattern(tq, B0))))", obj.toString());
+    obj = PARSE_UNRELAXED.parse("h::tg:w");
+    assertEquals("MessageName(h, Pattern(tg, w))", obj.toString());
   }
 
   @Test

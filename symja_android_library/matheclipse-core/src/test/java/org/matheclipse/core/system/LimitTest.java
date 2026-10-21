@@ -12,6 +12,15 @@ import org.junit.jupiter.api.Tag;
 public class LimitTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testLimitHurwitzZetaAtInfinity() {
+    // Zeta(s, x) ~ x^(1-s)/(s-1)
+    check("{Limit(x^2*Zeta(3, x), x -> Infinity), Limit(x^(a - 1)*Zeta(a, x), x -> Infinity, Assumptions -> a > 1)}", //
+        "{1/2,1/(-1+a)}");
+    check("Limit(x^s*Zeta(s, x), x -> Infinity, Assumptions -> s > 1)", //
+        "Infinity");
+  }
+
+  @Test
   public void testLimitFa() {
     check("Limit(0^x,x->Infinity)", //
         "0");

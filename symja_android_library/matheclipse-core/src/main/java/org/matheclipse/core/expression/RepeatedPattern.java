@@ -226,7 +226,13 @@ public class RepeatedPattern extends AbstractPatternSequence {
       }
     }
     EvalEngine engine = EvalEngine.get();
-    if (units) {
+    if (!innerPatterns().isEmpty()) {
+      // the names inside p take one value in every repetition
+      List<IExpr[]> splits = namedSplits(sequence, patternMap, 1, engine);
+      if (splits.isEmpty() || !setInnerValues(splits.get(0), patternMap)) {
+        return false;
+      }
+    } else if (units) {
       if (!matchUnits(sequence, engine)) {
         return false;
       }
@@ -237,10 +243,183 @@ public class RepeatedPattern extends AbstractPatternSequence {
         }
       }
     }
-    if (fSymbol != null) {
-      return patternMap.setValue(this, sequence);
+    if (fSymbol == null && patternMap.indexOf(this) < 0) {
+      // a map without a slot for this pattern
+      return true;
+    }
+    // also without a name: the slot of the pattern counts as assigned only then (ReplaceList)
+    return patternMap.setValue(this, sequence);
+  }
+
+  /** The named patterns inside the unit, each symbol once. */
+  private transient List<IPatternObject> fInnerPatterns;
+
+  private List<IPatternObject> innerPatterns() {
+    if (fInnerPatterns == null) {
+      List<IPatternObject> inner = new java.util.ArrayList<IPatternObject>();
+      collectNamedPatterns(fRepeatedExpr, inner);
+      fInnerPatterns = inner;
+    }
+    return fInnerPatterns;
+  }
+
+  private static void collectNamedPatterns(IExpr expr, List<IPatternObject> inner) {
+    if (expr instanceof IPatternObject) {
+      IPatternObject pattern = (IPatternObject) expr;
+      ISymbol symbol = pattern.getSymbol();
+      if (symbol != null && inner.stream().noneMatch(x -> x.getSymbol() == symbol)) {
+        inner.add(pattern);
+      }
+      if (expr instanceof PatternNested) {
+        collectNamedPatterns(((PatternNested) expr).getPatternExpr(), inner);
+      } else if (expr instanceof RepeatedPattern) {
+        collectNamedPatterns(((RepeatedPattern) expr).fRepeatedExpr, inner);
+      }
+    } else if (expr.isASTOrAssociation()) {
+      for (IExpr arg : (IAST) expr) {
+        collectNamedPatterns(arg, inner);
+      }
+      collectNamedPatterns(expr.head(), inner);
+    }
+  }
+
+  /**
+   * Whether the names inside the unit can take values in more than one way: the unit stands for
+   * a varying number of arguments or has several branches.
+   */
+  public boolean hasAlternativeSplits() {
+    if (innerPatterns().isEmpty() || !spansSequence(fRepeatedExpr)) {
+      return false;
+    }
+    unitMatchers(EvalEngine.get());
+    return fUnitWidths == null || fUnitPatterns.length > 1;
+  }
+
+  /**
+   * The values of the names inside the unit for every split of <code>sequence</code> into units
+   * which give the names the same values, also the values they already have in
+   * <code>patternMap</code>; the units are tried shortest first.
+   *
+   * @param limit the most splits wanted
+   */
+  public List<IExpr[]> namedSplits(IAST sequence, IPatternMap patternMap, int limit) {
+    return namedSplits(sequence, patternMap, limit, EvalEngine.get());
+  }
+
+  private List<IExpr[]> namedSplits(IAST sequence, IPatternMap patternMap, int limit,
+      EvalEngine engine) {
+    final List<IPatternObject> inner = innerPatterns();
+    final IExpr[] values = new IExpr[inner.size()];
+    for (int i = 0; i < values.length; i++) {
+      values[i] = patternMap.getValue(inner.get(i));
+    }
+    final boolean units = spansSequence(fRepeatedExpr);
+    final IPatternMatcher[] matchers = units ? unitMatchers(engine) : elementMatcher(engine);
+    final int[] widths = units ? fUnitWidths : new int[] {1};
+    List<IExpr[]> splits = new java.util.ArrayList<IExpr[]>();
+    splitNamed(sequence, 0, 0, matchers, widths, values, splits, limit, engine);
+    return splits;
+  }
+
+  /**
+   * Store the values of a split from {@link #namedSplits} and the matched <code>sequence</code>
+   * in <code>patternMap</code>.
+   */
+  public boolean setSplit(IExpr[] values, IAST sequence, IPatternMap patternMap) {
+    if (!setInnerValues(values, patternMap)) {
+      return false;
+    }
+    if (fSymbol == null && patternMap.indexOf(this) < 0) {
+      return true;
+    }
+    return patternMap.setValue(this, sequence);
+  }
+
+  private boolean setInnerValues(IExpr[] values, IPatternMap patternMap) {
+    final List<IPatternObject> inner = innerPatterns();
+    for (int i = 0; i < values.length; i++) {
+      IPatternObject pattern = inner.get(i);
+      if (values[i] == null || patternMap.getValue(pattern) != null) {
+        continue;
+      }
+      boolean set = pattern instanceof IPatternSequence && values[i].isAST()
+          ? patternMap.setValue((IPatternSequence) pattern, (IAST) values[i])
+          : patternMap.setValue(pattern, values[i]);
+      if (!set) {
+        return false;
+      }
     }
     return true;
+  }
+
+  /** The evaluated pattern <code>List(p)</code> of a unit of one argument. */
+  private transient IExpr fElementPattern;
+
+  private IPatternMatcher[] elementMatcher(EvalEngine engine) {
+    if (fElementPattern == null) {
+      fElementPattern = engine.evalPattern(F.unaryAST1(S.List, fRepeatedExpr));
+    }
+    return new IPatternMatcher[] {
+        new org.matheclipse.core.patternmatching.PatternMatcher(fElementPattern)};
+  }
+
+  /**
+   * The depth first search of {@link #namedSplits} from argument <code>from</code>; it stops when
+   * <code>splits</code> holds <code>limit</code> splits.
+   *
+   * @return <code>true</code> if the search is to stop
+   */
+  private boolean splitNamed(IAST sequence, int from, int count, IPatternMatcher[] matchers,
+      int[] widths, IExpr[] values, List<IExpr[]> splits, int limit, EvalEngine engine) {
+    final int n = sequence.argSize();
+    if (from == n) {
+      if (count >= fMin) {
+        splits.add(values.clone());
+      }
+      return splits.size() >= limit;
+    }
+    if (count >= fMax) {
+      return false;
+    }
+    engine.checkTimeLimit();
+    final List<IPatternObject> inner = innerPatterns();
+    for (int j = from + 1; j <= n; j++) {
+      if (widths != null && !hasWidth(widths, j - from)) {
+        continue;
+      }
+      IASTAppendable run = F.ListAlloc(j - from);
+      for (int k = from + 1; k <= j; k++) {
+        run.append(sequence.get(k));
+      }
+      for (IPatternMatcher matcher : matchers) {
+        if (!matcher.test(run, engine)) {
+          continue;
+        }
+        // the values this unit gives the names, compared with the earlier ones
+        IPatternMap unitMap = matcher.getPatternMap();
+        IExpr[] saved = values.clone();
+        boolean consistent = true;
+        for (int i = 0; i < values.length; i++) {
+          int index = unitMap.indexOf(inner.get(i).getSymbol());
+          IExpr value = index >= 0 ? unitMap.getValue(index) : null;
+          if (value == null) {
+            continue;
+          }
+          if (values[i] == null) {
+            values[i] = value;
+          } else if (!values[i].equals(value)) {
+            consistent = false;
+            break;
+          }
+        }
+        if (consistent && splitNamed(sequence, j, count + 1, matchers, widths, values, splits,
+            limit, engine)) {
+          return true;
+        }
+        System.arraycopy(saved, 0, values, 0, values.length);
+      }
+    }
+    return false;
   }
 
   /**
@@ -458,6 +637,10 @@ public class RepeatedPattern extends AbstractPatternSequence {
   @Override
   public int[] addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap) {
     IPatternMap.addPattern(patternIndexMap, this);
+    // the names inside the unit are bound by the whole match
+    for (IPatternObject pattern : innerPatterns()) {
+      IPatternMap.addPattern(patternIndexMap, pattern);
+    }
     // the ast contains a pattern sequence (i.e. "x__")
     int[] result = new int[2];
     result[0] = EvalFlags.Mask.CONTAINS_PATTERN_SEQUENCE;

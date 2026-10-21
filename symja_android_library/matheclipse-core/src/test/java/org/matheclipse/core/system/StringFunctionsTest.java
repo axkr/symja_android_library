@@ -33,6 +33,10 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{\"101\",\"1010\"}");
     check("IntegerString(2^70, 36) // InputForm", //
         "\"6x5kxtvuwilukg\"");
+    check("{IntegerString(1994, \"Roman\"), IntegerString(3888, \"Roman\")} // InputForm", //
+        "{\"MCMXCIV\",\"MMMDCCCLXXXVIII\"}");
+    check("IntegerString(-2026, \"Roman\") // InputForm", //
+        "\"MMXXVI\"");
   }
 
   @Test

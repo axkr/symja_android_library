@@ -2753,7 +2753,21 @@ public final class NumberTheory {
           IterationLimitExceeded.throwIt(ni, ast);
         }
       } else {
-        if (n.isInteger()) {
+        // also the integer which a numeric evaluation has turned into an inexact number
+        if (n.isInteger() || (n.isReal() && ((IReal) n).isNumIntValue())) {
+          if (ast.isAST2() && v.isNumber() && F.isPresent(ni)) {
+            // FactorialPower(x, -k) == 1/((x+1)*(x+2)*...*(x+k))
+            int k = -ni;
+            int iterationLimit = engine.getIterationLimit();
+            if (iterationLimit >= 0 && iterationLimit <= k) {
+              IterationLimitExceeded.throwIt(k, ast);
+            }
+            IASTAppendable product = F.TimesAlloc(k);
+            for (int i = 1; i <= k; i++) {
+              product.append(F.Plus(v, F.ZZ(i)));
+            }
+            return F.Power(product, F.CN1);
+          }
           return F.NIL;
         }
       }

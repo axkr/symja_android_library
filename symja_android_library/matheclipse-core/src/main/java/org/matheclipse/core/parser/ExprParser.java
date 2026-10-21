@@ -114,11 +114,18 @@ public class ExprParser extends Scanner {
    * <p>
    * A <code>:</code> standing after a symbol names a pattern, and that reading is accepted even
    * where the operator's own precedence would not reach - <code>x*y:z</code> is
-   * <code>x (y:z)</code>. It must not reach into the test of a <code>PatternTest</code> though:
-   * there <code>_Symbol?test:default</code> read the test as <code>test:default</code> and the
-   * default was lost.
+   * <code>x (y:z)</code>. A bare <code>_Symbol?test:default</code> is read that way too, as
+   * <code>PatternTest[_Symbol, Pattern[test, default]]</code>, and <code>a::b:c</code> as
+   * <code>MessageName[a, Pattern[b, c]]</code>. Only inside the pattern of a named
+   * argument <code>name:_Symbol?test:default</code> does it not reach into the test: there the
+   * second <code>:</code> gives the named argument its default (see {@link #fPatternNameLevel}).
    */
   private static final int PATTERN_TEST_PRECEDENCE = 680;
+
+  /**
+   * The bracket depth at which the pattern of a <code>name:pattern</code> is being read, or -1.
+   */
+  private int fPatternNameLevel = -1;
 
   /** The precedence of <code>:</code> naming a pattern, <code>x:p</code>. */
   private static final int PATTERN_PRECEDENCE = 150;
@@ -2031,7 +2038,8 @@ public class ExprParser extends Scanner {
             ? precedence >= min_precedence
             : precedence > min_precedence //
                 || (fOperatorString.equals(":") && lhs.isSymbol()
-                    && min_precedence < PATTERN_TEST_PRECEDENCE
+                    && (min_precedence < PATTERN_TEST_PRECEDENCE
+                        || fPatternNameLevel != fRecursionDepth)
                     // in a:b:c the second : gives a:b a default and doesn't name b
                     && min_precedence != PATTERN_PRECEDENCE)
                 || (precedence == min_precedence
@@ -2090,6 +2098,14 @@ public class ExprParser extends Scanner {
     if (infixOperator.headSymbol() == S.Pattern && !lhs.isSymbol()) {
       // p:v after anything but a symbol is the default of p
       rhs = parseLookaheadOperator(OPTIONAL_PRECEDENCE);
+    } else if (infixOperator.headSymbol() == S.Pattern) {
+      final int patternNameLevel = fPatternNameLevel;
+      fPatternNameLevel = fRecursionDepth;
+      try {
+        rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+      } finally {
+        fPatternNameLevel = patternNameLevel;
+      }
     } else {
       rhs = parseLookaheadOperator(infixOperator.getPrecedence());
     }

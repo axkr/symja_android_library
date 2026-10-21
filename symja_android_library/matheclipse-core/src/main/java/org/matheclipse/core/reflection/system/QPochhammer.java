@@ -98,6 +98,18 @@ public class QPochhammer extends AbstractFunctionEvaluator implements IFunctionE
       return F.C1;
     }
 
+    if (n.isNumber() && a.isNumber() && q.isNumber()
+        && (n.isInexactNumber() || a.isInexactNumber() || q.isInexactNumber())
+        && !(n.isReal() && ((IReal) n).isNumIntValue())) {
+      // (a;q)_n == (a;q)_Infinity/(a*q^n;q)_Infinity inside of the unit disk
+      IExpr absQ = engine.evaluate(F.Abs(F.N(q)));
+      if (absQ.isReal() && ((IReal) absQ).isLT(F.C1)) {
+        return F.Divide(F.binaryAST2(S.QPochhammer, a, q),
+            F.binaryAST2(S.QPochhammer, F.Times(a, F.Power(q, n)), q));
+      }
+      return F.NIL;
+    }
+
     if (n.isInteger() || (n.isInexactNumber() && n.isReal() && ((IReal) n).isNumIntValue()
         && a.isNumber() && q.isNumber())) {
       // also the integer which a numeric evaluation has turned into an inexact number

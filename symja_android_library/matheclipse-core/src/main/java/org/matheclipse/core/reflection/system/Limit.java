@@ -2640,7 +2640,16 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         expr = engine.evalQuiet(F.Simplify(expr));
       }
       if (expr.isFree(v -> v == S.D || v == S.Derivative, true)) {
-        return evalLimit(expr, data, engine);
+        IExpr limit = evalLimit(expr, data, engine);
+        if (limit.isPresent() && !limit.isNumber() && limit.isFree(S.Limit)) {
+          // each application of the rule nests the previous quotient: s/(s-1) after 13 steps of
+          // Zeta(s,x)/x^(1-s) was -1+s*(-1+s*(...)); the same value over a common denominator
+          IExpr reduced = engine.evalQuiet(F.Together(limit));
+          if (reduced.isPresent() && reduced.leafCount() < limit.leafCount()) {
+            return reduced;
+          }
+        }
+        return limit;
       }
     } catch (RecursionLimitExceeded rle) {
       //

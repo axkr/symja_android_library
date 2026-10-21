@@ -626,7 +626,9 @@ public class Errors {
       "symm0", "Symmetry specification `1` is only compatible with the zero tensor.", //
       "tag", "Rule for `1` can only be attached to `2`.", //
       "tagnf", "Tag `1` not found in `2`.", //
-      "tagpos", "Tag `1` in `2` is to deep for an assigned rule to be found.", //
+      "tagpos", "Tag `1` in `2` is too deep for an assigned rule to be found.", //
+      "utf8",
+      "The byte sequence `1` could not be interpreted as a character in the UTF-8 character encoding.", //
       "take", "Cannot take positions `1` through `2` in `3`.", //
       "takeeigen", "Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.", //
       "targ", "Argument `1` at position `2` is not List or SparseArray.", //
