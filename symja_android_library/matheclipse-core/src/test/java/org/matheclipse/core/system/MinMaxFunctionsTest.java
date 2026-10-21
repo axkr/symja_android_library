@@ -644,4 +644,42 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     check("Minimize({u^2 + v^2, 3*u + 4*v == 7, Element(u, Integers)}, {u, v})", //
         "Minimize({u^2+v^2,3*u+4*v==7,u∈Integers},{u,v})");
   }
+
+  /**
+   * A numeric extremum of a problem with machine numbers is only given if no feasible point near
+   * it is better, and if it is finite; FunctionRange takes exact extrema only.
+   */
+  @Test
+  public void testIssue1565() {
+    // a feasible point beats the point of the numeric search
+    check("Maximize({-1.0+Tanh(x), x>0}, x)", //
+        "Maximize({-1.0+Tanh(x),x>0},x)");
+    check("Minimize({-1.0+Tanh(x), x<0}, x)", //
+        "Minimize({-1.0+Tanh(x),x<0},x)");
+    check("Maximize({100.0/(1.0+E^(-x))-100.0, x>0}, x)", //
+        "Maximize({-100.0+100.0/(1.0+E^(-x)),x>0},x)");
+    // bounded functions which the numeric search calls unbounded
+    check("Minimize(-1.0+Tanh(x), x)", //
+        "Minimize(-1.0+Tanh(x),x)");
+    check("Minimize(10.0^x, x)", //
+        "Minimize(10.0^x,x)");
+    check("Maximize(100.0/(1.0+E^(-x))-100.0, x)", //
+        "Maximize(-100.0+100.0/(1.0+E^(-x)),x)");
+    // a fair numeric answer stays
+    check("Maximize({Exp(-1./x)/(1 + y), 250 < x < 750, 250 < y < 750}, {x, y})", //
+        "{0.00397876,{x->750.0,y->250.0}}");
+
+    check("FunctionRange(-1.0+Tanh(x), x, y)", //
+        "-2.0<y<0.0");
+    check("FunctionRange(10.0^x, x, y)", //
+        "y>0.0");
+    check("FunctionRange(100.0/(1.0+E^(-x))-100.0, x, y)", //
+        "-100.0<y<0.0");
+    check("FunctionRange(Log(10.0,10.0^x^2)-x^2, x, y)", //
+        "True");
+    check("FunctionRange(-1.0+Tanh(Abs(x)), x, y)", //
+        "-1.0<=y<=0.0");
+    check("FunctionRange(100.0/(1.0+E^(-Abs(x)))-100.0, x, y)", //
+        "-50.0<=y<=0.0");
+  }
 }

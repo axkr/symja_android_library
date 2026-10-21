@@ -470,14 +470,35 @@ public class Maximize extends AbstractFunctionEvaluator {
    * @return the call in its plain form, or {@link F#NIL} if it has this form already or the
    *         integer variables are only a part of the variables
    */
+  /** Set while a caller needs extrema which hold exactly, see {@link #exactOnly}. */
+  private static final ThreadLocal<Boolean> EXACT_ONLY =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  /**
+   * Run <code>work</code> with <code>Maximize</code> and <code>Minimize</code> answering exact
+   * extrema only, without the numeric fallback: <code>FunctionRange</code> takes their values for
+   * bounds, and a numeric maximum <code>0.0</code> of <code>-1.0+Tanh(x)</code> is no bound which
+   * is attained.
+   */
+  static <T> T exactOnly(java.util.function.Supplier<T> work) {
+    Boolean previous = EXACT_ONLY.get();
+    EXACT_ONLY.set(Boolean.TRUE);
+    try {
+      return work.get();
+    } finally {
+      EXACT_ONLY.set(previous);
+    }
+  }
+
   /**
    * The exact extremum, or for a problem with machine numbers which the exact methods leave open,
-   * the numeric one of <code>numericHead</code>.
+   * the numeric one of <code>numericHead</code> - if it passes
+   * {@link #isNumericExtremum(IAST, IExpr, boolean, EvalEngine)}.
    */
   static IExpr withNumericFallback(IAST ast, ISymbol numericHead, EvalEngine engine,
       java.util.function.Supplier<IExpr> exact) {
     if (ast.argSize() < 2 || !ast.arg1().has(x -> x.isInexactNumber(), false)
-        || (ast.isAST3() && ast.arg3() != S.Reals)) {
+        || (ast.isAST3() && ast.arg3() != S.Reals) || EXACT_ONLY.get()) {
       return exact.get();
     }
     IExpr result;
@@ -492,7 +513,73 @@ public class Maximize extends AbstractFunctionEvaluator {
       return result;
     }
     IExpr numeric = engine.evaluate(F.binaryAST2(numericHead, ast.arg1(), ast.arg2()));
-    return numeric.isAST(numericHead) ? F.NIL : numeric;
+    if (numeric.isAST(numericHead)
+        || !isNumericExtremum(ast, numeric, numericHead == S.NMaximize, engine)) {
+      return F.NIL;
+    }
+    return numeric;
+  }
+
+  /**
+   * Whether the answer <code>{value, {x->x0, ...}}</code> of a numeric search can stand for the
+   * extremum: a finite value at a finite point, which no feasible point near it, or a little
+   * further away along one variable, improves. <code>NMaximize({-1.0+Tanh(x), x>0}, x)</code>
+   * gives a point next to <code>x==0</code>, where the function is smallest; and an
+   * "unbounded" <code>{-Infinity, {x->Indeterminate}}</code> of a bounded function is no
+   * minimum either. The point itself is not tested against the constraints: the search reads a
+   * strict inequality as non-strict.
+   */
+  private static boolean isNumericExtremum(IAST ast, IExpr numeric, boolean isMax,
+      EvalEngine engine) {
+    if (!numeric.isList() || numeric.argSize() != 2 || !numeric.second().isListOfRules()) {
+      return false;
+    }
+    IExpr value = numeric.first();
+    if (!value.isReal() || !Double.isFinite(value.evalf())) {
+      return false;
+    }
+    final double best = value.evalf();
+    final IAST point = (IAST) numeric.second();
+    final IExpr arg1 = ast.arg1();
+    final IExpr objective = arg1.isList() ? arg1.first() : arg1;
+    final IExpr constraints =
+        arg1.isList() && arg1.argSize() > 1 ? ((IAST) arg1).rest().apply(S.And) : S.True;
+    final double tolerance = 1.0e-10 * Math.max(1.0, Math.abs(best));
+    final double[] steps = {1.0e-4, 1.0e-2, 1.0, 100.0};
+    final boolean quiet = engine.isQuietMode();
+    try {
+      engine.setQuietMode(true);
+      for (int i = 1; i < point.size(); i++) {
+        IExpr coordinate = point.get(i).second();
+        if (!coordinate.isReal() || !Double.isFinite(coordinate.evalf())) {
+          return false;
+        }
+        double c = coordinate.evalf();
+        double scale = Math.max(1.0, Math.abs(c));
+        for (double step : steps) {
+          for (int sign = -1; sign <= 1; sign += 2) {
+            IExpr shifted = F.num(c + sign * step * scale);
+            IAST moved = point.setAtCopy(i, F.Rule(point.get(i).first(), shifted));
+            if (!engine.evaluate(constraints.replaceAll(moved).orElse(constraints)).isTrue()) {
+              continue;
+            }
+            IExpr f = engine.evalN(objective.replaceAll(moved).orElse(objective));
+            if (f.isReal()) {
+              double fv = f.evalf();
+              if (isMax ? fv > best + tolerance : fv < best - tolerance) {
+                return false;
+              }
+            }
+          }
+        }
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return false;
+    } finally {
+      engine.setQuietMode(quiet);
+    }
+    return true;
   }
 
   static IExpr plainForm(IAST ast) {

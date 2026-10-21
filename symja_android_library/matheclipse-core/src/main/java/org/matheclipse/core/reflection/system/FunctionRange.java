@@ -403,8 +403,11 @@ public class FunctionRange extends AbstractFunctionEvaluator {
     if (branch.isFree(x, true)) {
       return isFiniteRealValue(branch) ? Span.point(branch) : null;
     }
-    IExpr min = engine.evalQuiet(F.Minimize(F.list(branch, constraint), x));
-    IExpr max = engine.evalQuiet(F.Maximize(F.list(branch, constraint), x));
+    // bounds have to hold exactly: no numeric extremum
+    IExpr min =
+        Maximize.exactOnly(() -> engine.evalQuiet(F.Minimize(F.list(branch, constraint), x)));
+    IExpr max =
+        Maximize.exactOnly(() -> engine.evalQuiet(F.Maximize(F.list(branch, constraint), x)));
     Bound lo = branchBound(min, true, constraint, x, engine);
     Bound hi = branchBound(max, false, constraint, x, engine);
     if (lo == null || hi == null) {
@@ -935,8 +938,9 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         // the witness-based open/closed check. Return only when BOTH sides are determined;
         // otherwise fall through to the interval heuristics below so e.g. 1/(1+x^2)
         // (Minimize -> {}) can still be handled there.
-        IExpr min = engine.evalQuiet(F.Minimize(function, x));
-        IExpr max = engine.evalQuiet(F.Maximize(function, x));
+        // bounds have to hold exactly: no numeric extremum
+        IExpr min = Maximize.exactOnly(() -> engine.evalQuiet(F.Minimize(function, x)));
+        IExpr max = Maximize.exactOnly(() -> engine.evalQuiet(F.Maximize(function, x)));
         Bound lo = interpretExtremum(min, true);
         Bound hi = interpretExtremum(max, false);
         if (lo.known && hi.known && !isInverted(lo, hi)) {
