@@ -16,8 +16,10 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.RuleCreationError;
+import org.matheclipse.core.eval.util.PureFunctions;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
@@ -135,21 +137,35 @@ public class Symbol implements ISymbol, Serializable {
   private transient long fValueEpoch = 0L;
 
   /**
-   * Has a condition or a pattern test read (or changed) the value of this symbol? Then a new value
-   * may change whether a rule applies to an expression which does not contain the symbol, and every
-   * change of the value has to invalidate all fixed points.
+   * Evaluation flag: has a condition or a pattern test read (or changed) the value of this symbol?
+   * Then a new value may change whether a rule applies to an expression which does not contain the
+   * symbol, and every change of the value has to invalidate all fixed points. A flag rather than a
+   * field of its own, like {@link #RULES_READ_IN_CONDITION}, keeps a symbol as small as it was
+   * before {@link #fValueFunction} was added.
    */
-  private transient boolean fValueReadInCondition = false;
+  private static final int VALUE_READ_IN_CONDITION = 0x00000200;
 
   /**
-   * Has a condition or a pattern test used (or changed) the rules of this symbol? Then a new rule
-   * may change whether a rule of another symbol applies to an expression which does not contain
-   * this symbol, and every change of the rules has to invalidate all fixed points.
+   * Evaluation flag: has a condition or a pattern test used (or changed) the rules of this symbol?
+   * Then a new rule may change whether a rule of another symbol applies to an expression which does
+   * not contain this symbol, and every change of the rules has to invalidate all fixed points.
    */
-  private transient boolean fRulesReadInCondition = false;
+  private static final int RULES_READ_IN_CONDITION = 0x00000400;
 
   /** The pattern matching &quot;down value&quot; rules associated with this symbol. */
   protected transient volatile RulesData fRulesData;
+
+  /**
+   * The function which is told about every change of {@link #fValue}, or <code>null</code>, see
+   * {@link #getValueFunction()}.
+   */
+  private transient IExpr fValueFunction;
+
+  /**
+   * Evaluation flag set while {@link #fValueFunction} runs: the changes it makes to the value of
+   * this symbol are reported to it after it returns, not in a recursive call.
+   */
+  private static final int VALUE_FUNCTION_ACTIVE = 0x00000100;
 
   /** The sizes of a {@link RulesData} created for a first definition: no space reserved. */
   private static final int[] NO_SIZES = {};
@@ -333,6 +349,9 @@ public class Symbol implements ISymbol, Serializable {
       clearEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
     }
     valueChanged();
+    if (fValueFunction != null) {
+      callValueFunction(value);
+    }
   }
 
   /** {@inheritDoc} */
@@ -342,7 +361,6 @@ public class Symbol implements ISymbol, Serializable {
       throw new RuleCreationError(this);
     }
     ensureRulesLoaded();
-    clearValue(null);
     if (fRulesData != null) {
       final boolean upRules = usedByOtherExpressions(fRulesData);
       fRulesData.clear();
@@ -353,6 +371,9 @@ public class Symbol implements ISymbol, Serializable {
         rulesChanged();
       }
     }
+    // the value last: a value function sees the symbol cleared completely, and its exception
+    // leaves nothing half done
+    clearValue(null);
   }
 
   /** {@inheritDoc} */
@@ -363,10 +384,11 @@ public class Symbol implements ISymbol, Serializable {
     }
     ensureRulesLoaded();
     fAttributes = NOATTRIBUTE;
-    clearValue(null);
     fRulesData = null;
     // attributes and rules are gone, see clear(EvalEngine)
     EvalEngine.incEpoch();
+    // the value last, see clear(EvalEngine)
+    clearValue(null);
   }
 
   /** {@inheritDoc} */
@@ -389,6 +411,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void clearValue(IExpr resetValue) {
+    final boolean hadValue = fValue != null;
     fValue = resetValue;
     valueChanged();
     if (resetValue == null) {
@@ -397,6 +420,92 @@ public class Symbol implements ISymbol, Serializable {
       // a value which is put back, as Block does at its end, was kept somewhere in the meantime
       fEvalFlags |= DIRTY_FLAG_ASSIGNED_VALUE;
     }
+    // clearing a symbol which has no value changes nothing
+    if (fValueFunction != null && (hadValue || resetValue != null)) {
+      callValueFunction(resetValue);
+    }
+  }
+
+  /**
+   * Evaluate <code>f(this, value)</code> for a new value or <code>f(this)</code> for a cleared
+   * one, at once or, while a <code>Block</code> localizes or restores its variables, when all of
+   * them are done. The value is stored already, so an exception of <code>f</code> leaves a
+   * consistent symbol behind.
+   *
+   * @param value the new value or <code>null</code> if the value was cleared
+   */
+  private void callValueFunction(IExpr value) {
+    if ((fEvalFlags & VALUE_FUNCTION_ACTIVE) != 0) {
+      // a change the function makes itself, see callValueFunctionNow()
+      return;
+    }
+    final EvalEngine engine = EvalEngine.get();
+    if (!engine.deferValueFunction(() -> callValueFunctionNow(value, engine))) {
+      callValueFunctionNow(value, engine);
+    }
+  }
+
+  /**
+   * The changes <code>f</code> makes to this symbol while it runs are not reported to it at once,
+   * which ends the recursion of a function that corrects the value it is told about. Afterwards
+   * <code>f</code> is told about the value it left behind, until it leaves the value alone.
+   */
+  private void callValueFunctionNow(IExpr value, EvalEngine engine) {
+    IExpr reported = value;
+    for (long calls = 1;; calls++) {
+      // read every time: the function may remove itself
+      final IExpr function = fValueFunction;
+      if (function == null || (fEvalFlags & VALUE_FUNCTION_ACTIVE) != 0) {
+        return;
+      }
+      fEvalFlags |= VALUE_FUNCTION_ACTIVE;
+      try {
+        engine.evaluate(valueFunctionCall(function, reported, engine));
+      } finally {
+        fEvalFlags &= ~VALUE_FUNCTION_ACTIVE;
+      }
+      if (fValue == reported) {
+        return;
+      }
+      reported = fValue;
+      final int iterationLimit = engine.getIterationLimit();
+      if (iterationLimit > 0 && calls >= iterationLimit) {
+        IterationLimitExceeded.throwIt(calls, valueFunctionCall(function, reported, engine));
+      }
+    }
+  }
+
+  /**
+   * <code>f(this, value)</code> or <code>f(this)</code>. The value is passed as it is stored: a
+   * function which does not hold its second argument gets it in <code>Unevaluated</code>, so that
+   * neither a delayed value is evaluated nor an evaluated one once more.
+   */
+  private IAST valueFunctionCall(IExpr function, IExpr value, EvalEngine engine) {
+    if (value == null) {
+      return F.unaryAST1(function, this);
+    }
+    final int attributes = function.isSymbol() ? ((ISymbol) function).getAttributes()
+        : function.isAST(S.Function) ? PureFunctions.attributes((IAST) function, engine)
+            : ISymbol.NOATTRIBUTE;
+    return F.binaryAST2(function, this,
+        (attributes & ISymbol.HOLDREST) != 0 ? value : F.Unevaluated(value));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr getValueFunction() {
+    return fValueFunction;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean setValueFunction(IExpr function) {
+    // built-in and formal symbols keep their values elsewhere or have none
+    if (getClass() != Symbol.class) {
+      return false;
+    }
+    fValueFunction = function;
+    return true;
   }
 
   /**
@@ -407,7 +516,7 @@ public class Symbol implements ISymbol, Serializable {
    */
   private void valueChanged() {
     markReadInCondition();
-    if (fValueReadInCondition || getClass() != Symbol.class) {
+    if ((fEvalFlags & VALUE_READ_IN_CONDITION) != 0 || getClass() != Symbol.class) {
       EvalEngine.incEpoch();
     } else {
       fValueEpoch = EvalEngine.incValueEpoch();
@@ -416,12 +525,12 @@ public class Symbol implements ISymbol, Serializable {
 
   /**
    * A value read or written while a condition is evaluated makes this symbol one whose changes
-   * invalidate every fixed point, see {@link #fValueReadInCondition}.
+   * invalidate every fixed point, see {@link #VALUE_READ_IN_CONDITION}.
    */
   private void markReadInCondition() {
-    if (!fValueReadInCondition && getClass() == Symbol.class
+    if ((fEvalFlags & VALUE_READ_IN_CONDITION) == 0 && getClass() == Symbol.class
         && EvalEngine.get().isConditionScope()) {
-      fValueReadInCondition = true;
+      fEvalFlags |= VALUE_READ_IN_CONDITION;
     }
   }
 
@@ -435,7 +544,7 @@ public class Symbol implements ISymbol, Serializable {
    */
   private void rulesChanged() {
     markRulesReadInCondition(EvalEngine.get());
-    if (fRulesReadInCondition || getClass() != Symbol.class) {
+    if ((fEvalFlags & RULES_READ_IN_CONDITION) != 0 || getClass() != Symbol.class) {
       EvalEngine.incEpoch();
     } else {
       fValueEpoch = EvalEngine.incValueEpoch();
@@ -465,11 +574,11 @@ public class Symbol implements ISymbol, Serializable {
    */
   @Override
   public int beginLocalScope() {
-    final int outerMarks = (fValueReadInCondition ? 1 : 0) | (fRulesReadInCondition ? 2 : 0);
+    final int outerMarks = ((fEvalFlags & VALUE_READ_IN_CONDITION) != 0 ? 1 : 0)
+        | ((fEvalFlags & RULES_READ_IN_CONDITION) != 0 ? 2 : 0);
     if (outerMarks != 0) {
       EvalEngine.incEpoch();
-      fValueReadInCondition = false;
-      fRulesReadInCondition = false;
+      fEvalFlags &= ~(VALUE_READ_IN_CONDITION | RULES_READ_IN_CONDITION);
     }
     return outerMarks;
   }
@@ -477,17 +586,18 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public void endLocalScope(int outerMarks) {
     if ((outerMarks & 1) != 0) {
-      fValueReadInCondition = true;
+      fEvalFlags |= VALUE_READ_IN_CONDITION;
     }
     if ((outerMarks & 2) != 0) {
-      fRulesReadInCondition = true;
+      fEvalFlags |= RULES_READ_IN_CONDITION;
     }
   }
 
-  /** Rules used or changed while a condition is evaluated, see {@link #fRulesReadInCondition}. */
+  /** Rules used or changed while a condition is evaluated, see {@link #RULES_READ_IN_CONDITION}. */
   private void markRulesReadInCondition(EvalEngine engine) {
-    if (!fRulesReadInCondition && engine.isConditionScope() && getClass() == Symbol.class) {
-      fRulesReadInCondition = true;
+    if ((fEvalFlags & RULES_READ_IN_CONDITION) == 0 && engine.isConditionScope()
+        && getClass() == Symbol.class) {
+      fEvalFlags |= RULES_READ_IN_CONDITION;
     }
   }
 
@@ -755,7 +865,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public IExpr evaluate(EvalEngine engine) {
     if (engine.isConditionScope()) {
-      fValueReadInCondition = true;
+      fEvalFlags |= VALUE_READ_IN_CONDITION;
     }
     // one read of the value, not two: symbols are shared between the threads that evaluate them,
     // and a Clear[] between hasAssignedSymbolValue() and assignedValue() used to reach
@@ -857,7 +967,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final RulesData getRulesData() {
     ensureRulesLoaded();
-    if (fRulesData != null && !fRulesReadInCondition) {
+    if (fRulesData != null && (fEvalFlags & RULES_READ_IN_CONDITION) == 0) {
       // Options[f], DownValues[f], Default[f] read in a condition
       markRulesReadInCondition(EvalEngine.get());
     }
@@ -1407,8 +1517,11 @@ public class Symbol implements ISymbol, Serializable {
       }
       IExpr calculatedResult = function.apply(value);
       if (calculatedResult.isPresent()) {
+        // a value function may keep the association it is told about
+        final boolean handedOut = fValueFunction != null;
         assignValue(calculatedResult, false);
-        if (association && calculatedResult == value && fValue == calculatedResult) {
+        if (association && calculatedResult == value && fValue == calculatedResult
+            && !handedOut) {
           // Changed in place, and from here on nobody but this symbol has it: the next call may
           // change it again without a copy. That is why the caller gets a copy of its own - the
           // result of AssociateTo can be kept, and must not follow the variable afterwards.

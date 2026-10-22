@@ -969,6 +969,10 @@ public class StructureFunctions {
         }
         final int attributes = PureFunctions.attributes(function, engine);
         IAST astEvaled = engine.evalArgs(ast, attributes, false).orElse(ast);
+        if (astEvaled.hasSpecialArg() && astEvaled.exists(x -> x.isAST(S.Unevaluated, 2))) {
+          // an argument in Unevaluated is passed as it is, without the wrapper
+          astEvaled = astEvaled.map(x -> x.isAST(S.Unevaluated, 2) ? x.first() : x);
+        }
 
         if (Attribute.LISTABLE.isSetIn(attributes)) {
           // Listable threads the *application* over list arguments, before they are substituted

@@ -15,4 +15,14 @@ public interface ISetEvaluator extends IFunctionEvaluator {
       IBuiltInSymbol builtinSymbol, final EvalEngine engine) {
     return F.NIL;
   }
+
+  /**
+   * Remove what {@link #evaluateSet(IExpr, IExpr, IBuiltInSymbol, EvalEngine)} assigned to the
+   * unevaluated <code>leftHandSide =.</code>
+   *
+   * @return the result of <code>Unset</code> or {@link F#NIL} if the usual rules apply
+   */
+  default IExpr evaluateUnset(final IExpr leftHandSide, final EvalEngine engine) {
+    return F.NIL;
+  }
 }

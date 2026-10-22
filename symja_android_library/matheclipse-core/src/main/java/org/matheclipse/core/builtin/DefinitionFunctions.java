@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.OptionsPattern;
@@ -42,6 +43,7 @@ public class DefinitionFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.ValueFunction.setEvaluator(new ValueFunction());
       if (!Config.FUZZY_PARSER) {
         S.SubValues.setEvaluator(new SubValues());
         S.NValues.setEvaluator(new NValues());
@@ -523,6 +525,113 @@ public class DefinitionFunctions {
       if (!options.isEmptyList()) {
         engine.evaluate(F.Set(F.Options(target), rename.apply(options)));
       }
+    }
+  }
+
+  /**
+   * <code>Experimental`ValueFunction[symbol] = f</code>: evaluate <code>f[symbol, value]</code>
+   * whenever the symbol gets a new value and <code>f[symbol]</code> whenever its value is cleared.
+   *
+   * <p>
+   * The symbol keeps the function and calls it where its value is written, see
+   * {@link ISymbol#setValueFunction(IExpr)}: assignments to parts, <code>AppendTo</code>,
+   * increments, <code>Block</code> and iterators are reported as well as <code>Set</code>.
+   */
+  private static final class ValueFunction extends AbstractFunctionEvaluator
+      implements ISetEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // the argument is held, as in an assignment: ValueFunction(x) is the function of x, even
+      // where x has a value
+      ISymbol symbol = trackedSymbol(ast.arg1(), false, engine);
+      if (symbol != null) {
+        IExpr function = symbol.getValueFunction();
+        if (function != null) {
+          return function;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluateSet(final IExpr leftHandSide, IExpr rightHandSide,
+        IBuiltInSymbol builtinSymbol, EvalEngine engine) {
+      ISymbol symbol = trackedSymbol(leftHandSide, engine);
+      if (symbol == null) {
+        return S.$Failed;
+      }
+      if (symbol.hasProtectedAttribute() || symbol.isBuiltInSymbol()
+          || !symbol.setValueFunction(rightHandSide)) {
+        // Symbol `1` is Protected.
+        Errors.printMessage(S.ValueFunction, "wrsym", F.list(symbol), engine);
+        return S.$Failed;
+      }
+      return builtinSymbol == S.Set ? rightHandSide : S.Null;
+    }
+
+    @Override
+    public IExpr evaluateUnset(final IExpr leftHandSide, EvalEngine engine) {
+      ISymbol symbol = trackedSymbol(leftHandSide, engine);
+      if (symbol == null) {
+        return S.$Failed;
+      }
+      if (symbol.getValueFunction() == null) {
+        // Assignment on `2` for `1` not found.
+        Errors.printMessage(S.Unset, "norep", F.list(leftHandSide, S.ValueFunction), engine);
+        return S.$Failed;
+      }
+      symbol.setValueFunction(null);
+      return S.Null;
+    }
+
+    /**
+     * The symbol of the unevaluated left-hand side <code>ValueFunction[arg]</code> of an
+     * assignment.
+     *
+     * @return <code>null</code> after a message if there is no symbol
+     */
+    private static ISymbol trackedSymbol(IExpr leftHandSide, EvalEngine engine) {
+      if (leftHandSide.argSize() != 1) {
+        // `1` called with `2` arguments; 1 argument is expected.
+        Errors.printMessage(S.ValueFunction, "argx",
+            F.list(S.ValueFunction, F.ZZ(leftHandSide.argSize())), engine);
+        return null;
+      }
+      return trackedSymbol(leftHandSide.first(), true, engine);
+    }
+
+    /**
+     * The symbol in <code>Unevaluated[s]</code> or <code>HoldPattern[s]</code>, a symbol itself
+     * (even one with a value), or what <code>arg</code> evaluates to.
+     *
+     * @param message print a message if there is no symbol
+     * @return <code>null</code> if there is no symbol
+     */
+    private static ISymbol trackedSymbol(IExpr arg, boolean message, EvalEngine engine) {
+      if (arg.isAST(S.Unevaluated, 2) || arg.isAST(S.HoldPattern, 2)) {
+        arg = arg.first();
+      } else if (!arg.isSymbol()) {
+        arg = engine.evaluate(arg);
+      }
+      if (arg.isSymbol()) {
+        return (ISymbol) arg;
+      }
+      if (message) {
+        // Argument `1` at position `2` is expected to be a symbol.
+        Errors.printMessage(S.ValueFunction, "sym", F.list(arg, F.C1), engine);
+      }
+      return null;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
     }
   }
 

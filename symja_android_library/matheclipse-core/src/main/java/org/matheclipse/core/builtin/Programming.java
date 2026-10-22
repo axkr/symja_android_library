@@ -919,30 +919,35 @@ public final class Programming {
     public IExpr doIt(IExpr input) {
       if (fIndex < fIterList.size()) {
         final IIterator<IExpr> iter = fIterList.get(fIndex);
-        if (iter.setUp()) {
-          try {
+        try {
+          // setUp() may have given the variable its first value when it fails, so tearDown() has
+          // to run then as well; it leaves an iteration alone which never started
+          if (iter.setUp()) {
             // $IterationLimit bounds one evaluation chain, not the number of loop passes
             long iterationCounter = 0;
             fIndex++;
-            while (iter.hasNext()) {
-              try {
-                iter.next();
-                doIt(input);
-                fEngine.checkTimeLimit();
-                if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
-                  IterationLimitExceeded.throwIt(iterationCounter, input);
+            try {
+              while (iter.hasNext()) {
+                try {
+                  iter.next();
+                  doIt(input);
+                  fEngine.checkTimeLimit();
+                  if (Config.MAX_LOOP_COUNT <= ++iterationCounter) {
+                    IterationLimitExceeded.throwIt(iterationCounter, input);
+                  }
+                } catch (final ReturnException e) {
+                  return e.getValue();
+                } catch (final BreakException e) {
+                  return S.Null;
+                } catch (final ContinueException e) {
                 }
-              } catch (final ReturnException e) {
-                return e.getValue();
-              } catch (final BreakException e) {
-                return S.Null;
-              } catch (final ContinueException e) {
               }
+            } finally {
+              --fIndex;
             }
-          } finally {
-            --fIndex;
-            iter.tearDown();
           }
+        } finally {
+          iter.tearDown();
         }
         return S.Null;
       }

@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
@@ -944,6 +945,16 @@ public class EvalEngine implements Serializable {
   private transient List<IExpr> fReapList = null;
 
   private transient Set<ISymbol> fModifiedVariablesList;
+
+  /**
+   * Greater than zero while a <code>Block</code> gives its variables local values or puts the outer
+   * ones back: the value functions of the variables are called once all of them are done, see
+   * {@link #deferValueFunction(Runnable)}.
+   */
+  private transient int fValueFunctionDeferral = 0;
+
+  /** The value function calls queued by {@link #deferValueFunction(Runnable)}, or null. */
+  private transient List<Runnable> fDeferredValueFunctions = null;
 
   /**
    * Set interactive trace mode on or off. See functions <code>On()</code> and <code>Off()</code>.
@@ -2539,10 +2550,15 @@ public class EvalEngine implements Serializable {
     return evalBlock(() -> evaluate(expr), localVariablesList);
   }
 
+  /** A Block variable <code>x</code> or <code>x = value</code> whose old value is put back. */
+  private static boolean isRestoredBlockVariable(IExpr variable) {
+    return variable.isVariable() || (variable.isAST(S.Set, 3) && variable.first().isVariable());
+  }
+
   /**
    * Evaluate an expression in a block. The local {@link S#Block} variables are saved before and
    * restored after the evaluation.
-   * 
+   *
    * @param supplier the expression which should be evaluated for the variables
    * @param localVariablesList the list of local variables
    * @return the result from the {@link Supplier#get()} method
@@ -2554,10 +2570,23 @@ public class EvalEngine implements Serializable {
     int[] outerMarks = new int[localVariablesList.size()];
     final int oldIterationLimit = fIterationLimit;
     final int oldRecursionLimit = fRecursionLimit;
+    boolean completed = false;
     try {
-      rememberBlockVariables(localVariablesList, symbolList, oldAssignedValues,
-          oldAssignedRulesData, outerMarks, this);
-      return supplier.get();
+      // the value functions of the variables see all of them local
+      fValueFunctionDeferral++;
+      RuntimeException failure;
+      try {
+        rememberBlockVariables(localVariablesList, symbolList, oldAssignedValues,
+            oldAssignedRulesData, outerMarks, this);
+      } finally {
+        failure = callDeferredValueFunctions();
+      }
+      if (failure != null) {
+        throw failure;
+      }
+      final IExpr result = supplier.get();
+      completed = true;
+      return result;
     } finally {
       for (int i = 1; i < localVariablesList.size(); i++) {
         if (symbolList[i] != null && isEngineLimitSymbol(symbolList[i])) {
@@ -2567,30 +2596,70 @@ public class EvalEngine implements Serializable {
         }
       }
       if (localVariablesList.size() > 0) {
-        // reset local variables to global ones
-        ISymbol variableSymbol;
-        for (int i = 1; i < localVariablesList.size(); i++) {
-          if (localVariablesList.get(i).isVariable()) {
-            variableSymbol = symbolList[i];
-            if (variableSymbol != null) {
+        // reset local variables to global ones; the value functions see all of them restored
+        fValueFunctionDeferral++;
+        RuntimeException failure;
+        try {
+          for (int i = 1; i < localVariablesList.size(); i++) {
+            final ISymbol variableSymbol = symbolList[i];
+            if (variableSymbol != null && isRestoredBlockVariable(localVariablesList.get(i))) {
               restoreBlockVariable(variableSymbol, oldAssignedValues[i], this);
               variableSymbol.setRulesData(oldAssignedRulesData[i]);
               variableSymbol.endLocalScope(outerMarks[i]);
             }
-          } else if (localVariablesList.get(i).isAST(S.Set, 3)) {
-            final IAST setFun = (IAST) localVariablesList.get(i);
-            if (setFun.arg1().isVariable()) {
-              variableSymbol = symbolList[i];
-              if (variableSymbol != null) {
-                restoreBlockVariable(variableSymbol, oldAssignedValues[i], this);
-                variableSymbol.setRulesData(oldAssignedRulesData[i]);
-                variableSymbol.endLocalScope(outerMarks[i]);
-              }
-            }
           }
+        } finally {
+          failure = callDeferredValueFunctions();
+        }
+        // an exception of the block itself goes first
+        if (failure != null && completed) {
+          throw failure;
         }
       }
     }
+  }
+
+  /**
+   * Queue a call of a value function while a <code>Block</code> gives its variables local values
+   * or puts the outer ones back, see {@link ISymbol#setValueFunction(IExpr)}.
+   *
+   * @param call the call of the value function
+   * @return <code>false</code> if the value function has to be called at once
+   */
+  public boolean deferValueFunction(Runnable call) {
+    if (fValueFunctionDeferral == 0) {
+      return false;
+    }
+    if (fDeferredValueFunctions == null) {
+      fDeferredValueFunctions = new ArrayList<Runnable>();
+    }
+    fDeferredValueFunctions.add(call);
+    return true;
+  }
+
+  /**
+   * End one level of {@link #deferValueFunction(Runnable)}; at the outermost one, call the queued
+   * value functions. All of them are called even if one fails.
+   *
+   * @return the first exception of a value function, or <code>null</code>
+   */
+  private RuntimeException callDeferredValueFunctions() {
+    if (--fValueFunctionDeferral > 0 || fDeferredValueFunctions == null) {
+      return null;
+    }
+    final List<Runnable> calls = fDeferredValueFunctions;
+    fDeferredValueFunctions = null;
+    RuntimeException failure = null;
+    for (Runnable call : calls) {
+      try {
+        call.run();
+      } catch (RuntimeException rex) {
+        if (failure == null) {
+          failure = rex;
+        }
+      }
+    }
+    return failure;
   }
 
   /**
@@ -4060,7 +4129,10 @@ public class EvalEngine implements Serializable {
   public IExpr evalRules(ISymbol symbol, IAST argsAST) {
     IAST ast;
     boolean[] unevaluatedFunction = new boolean[] {false};
-    if (argsAST.hasSpecialArg() && argsAST.exists(x -> x.isAST(S.Unevaluated, 2))) {
+    if (argsAST.hasSpecialArg() && argsAST.exists(x -> x.isAST(S.Unevaluated, 2))
+        && !(symbol == S.Function && argsAST.head().isAST())) {
+      // a pure function evaluates its arguments itself and takes Unevaluated off afterwards;
+      // taken off here, it would evaluate them all the same
       ast = mapUnevaluated(argsAST, unevaluatedFunction);
     } else {
       ast = argsAST;

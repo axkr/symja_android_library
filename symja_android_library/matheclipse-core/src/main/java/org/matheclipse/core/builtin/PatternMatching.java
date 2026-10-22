@@ -3651,6 +3651,15 @@ public final class PatternMatching {
           }
           return S.Null;
         }
+        if (leftHandSide.isAST() && leftHandSide.head().isBuiltInSymbol()
+            && ((IBuiltInSymbol) leftHandSide.head()).getEvaluator() instanceof ISetEvaluator) {
+          // a built-in which took the assignment itself removes it, like ValueFunction[x] =.
+          IExpr unset = ((ISetEvaluator) ((IBuiltInSymbol) leftHandSide.head()).getEvaluator())
+              .evaluateUnset(leftHandSide, engine);
+          if (unset.isPresent()) {
+            return unset;
+          }
+        }
         if (leftHandSide.isAST()) {
           final ISymbol lhsSymbol = getLookupReferenceName(leftHandSide);
           if (lhsSymbol == null) {

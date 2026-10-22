@@ -31,6 +31,82 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </code>
  */
 public class Iterator {
+  /**
+   * The local value an iteration gives its variable. The value from outside is saved before the
+   * limits are evaluated and put back at the end, and every element is assigned once, so that a
+   * value function of the variable is told about each element a single time.
+   */
+  private static final class IterationVariable {
+    private final ISymbol variable;
+
+    /** The value of the variable outside the iteration. */
+    private IExpr valueBefore;
+
+    /** The marks of the variable outside the iteration, -1 while it has no local value. */
+    private int outerMarks = -1;
+
+    /** The value {@link #start(IExpr)} assigned, until the first element is assigned. */
+    private IExpr firstValue;
+
+    private IterationVariable(ISymbol variable) {
+      this.variable = variable;
+    }
+
+    static IterationVariable of(ISymbol variable) {
+      return variable == null ? null : new IterationVariable(variable);
+    }
+
+    /** Remember the value from outside; called before the limits are evaluated. */
+    void save() {
+      firstValue = null;
+      valueBefore = variable.assignedValue();
+    }
+
+    /**
+     * The iteration starts: the variable gets a local scope and the first element, unless that is
+     * <code>null</code>.
+     */
+    void start(IExpr first) {
+      beginLocalScope();
+      if (first != null) {
+        firstValue = first;
+        variable.assignValue(first, false);
+      }
+    }
+
+    /** Assign an element; the first one has its value from {@link #start(IExpr)} already. */
+    void assign(IExpr value) {
+      if (firstValue != null) {
+        final IExpr first = firstValue;
+        firstValue = null;
+        if (value.equals(first)) {
+          return;
+        }
+      }
+      beginLocalScope();
+      variable.assignValue(value, false);
+    }
+
+    /** Put the value from outside back, if the iteration started. */
+    void restore() {
+      if (outerMarks >= 0) {
+        try {
+          variable.clearValue(valueBefore);
+        } finally {
+          // also after a value function which failed on the restored value
+          variable.endLocalScope(outerMarks);
+          outerMarks = -1;
+        }
+      }
+    }
+
+    private void beginLocalScope() {
+      if (outerMarks < 0) {
+        outerMarks = variable.beginLocalScope();
+      }
+    }
+  }
+
   private static class ExprIterator implements IIterator<IExpr> {
 
     IExpr count;
@@ -59,32 +135,14 @@ public class Iterator {
 
     final ISymbol variable;
 
-    /**
-     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
-     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
-     */
-    IExpr variableValueBeforeIteration;
-
-    /** The marks of the variable outside the iteration, -1 before it got its first value. */
-    private int outerMarks = -1;
-
-    private void beginLocalScope() {
-      if (outerMarks < 0) {
-        outerMarks = variable.beginLocalScope();
-      }
-    }
-
-    private void endLocalScope() {
-      if (outerMarks >= 0) {
-        variable.endLocalScope(outerMarks);
-        outerMarks = -1;
-      }
-    }
+    /** The local value of {@link #variable}, or <code>null</code> without a variable. */
+    private final IterationVariable local;
 
     public ExprIterator(final ISymbol symbol, final IExpr originalStart,
         final IExpr originalMaxCount, final IExpr originalStep, boolean numericMode,
         final EvalEngine engine) {
       this.variable = symbol;
+      this.local = IterationVariable.of(symbol);
       this.evalEngine = engine;
       this.originalLowerLimit = originalStart;
       this.originalUpperLimit = originalMaxCount;
@@ -203,7 +261,7 @@ public class Iterator {
       // a loop like Table(0, {10^10}) doesn't pass the evaluation loop
       evalEngine.checkTimeLimit();
       if (variable != null && variable != count) {
-        variable.assignValue(count, false);
+        local.assign(count);
       }
       final IExpr temp = count;
       if (maxCounterOrList.isList()) {
@@ -227,7 +285,7 @@ public class Iterator {
     @Override
     public boolean setUp() {
       if (variable != null) {
-        variableValueBeforeIteration = variable.assignedValue();
+        local.save();
       }
       lowerLimit = originalLowerLimit;
       if (!(originalLowerLimit.isReal())) {
@@ -264,9 +322,8 @@ public class Iterator {
       } else {
         count = lowerLimit;
       }
-      if (variable != null && variable != count) {
-        beginLocalScope();
-        variable.assignValue(count, false);
+      if (variable != null) {
+        local.start(variable != count ? count : null);
       }
       return true;
     }
@@ -275,8 +332,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.clearValue(variableValueBeforeIteration);
-        endLocalScope();
+        local.restore();
       }
       EvalEngine.get().setNumericMode(fNumericMode);
     }
@@ -301,27 +357,8 @@ public class Iterator {
 
     final ISymbol variable;
 
-    /**
-     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
-     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
-     */
-    IExpr variableValueBeforeIteration;
-
-    /** The marks of the variable outside the iteration, -1 before it got its first value. */
-    private int outerMarks = -1;
-
-    private void beginLocalScope() {
-      if (outerMarks < 0) {
-        outerMarks = variable.beginLocalScope();
-      }
-    }
-
-    private void endLocalScope() {
-      if (outerMarks >= 0) {
-        variable.endLocalScope(outerMarks);
-        outerMarks = -1;
-      }
-    }
+    /** The local value of {@link #variable}, or <code>null</code> without a variable. */
+    private final IterationVariable local;
 
     /**
      * Iterate over a list of values.
@@ -333,6 +370,7 @@ public class Iterator {
     public ExprListIterator(final ISymbol symbol, final IAST originalList,
         final EvalEngine engine) {
       this.variable = symbol;
+      this.local = IterationVariable.of(symbol);
       this.evalEngine = engine;
       this.originalListAssoc = originalList;
     }
@@ -394,7 +432,7 @@ public class Iterator {
       // a loop like Table(0, {10^10}) doesn't pass the evaluation loop
       evalEngine.checkTimeLimit();
       if (variable != null && variable != count) {
-        variable.assignValue(count, false);
+        local.assign(count);
       }
       final IExpr temp = count;
       if (maxCounterOrListAssoc.isListOrAssociation()) {
@@ -416,7 +454,7 @@ public class Iterator {
     @Override
     public boolean setUp() {
       if (variable != null) {
-        variableValueBeforeIteration = variable.assignedValue();
+        local.save();
       }
       maxCounterOrListAssoc = originalListAssoc;
       maxCounterOrListAssoc = originalListAssoc.map(x -> evalEngine.evalWithoutNumericReset(x));
@@ -429,9 +467,8 @@ public class Iterator {
         return false;
       }
 
-      if (variable != null && variable != count) {
-        beginLocalScope();
-        variable.assignValue(count, false);
+      if (variable != null) {
+        local.start(variable != count ? count : null);
       }
       return true;
     }
@@ -440,8 +477,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.clearValue(variableValueBeforeIteration);
-        endLocalScope();
+        local.restore();
       }
     }
   }
@@ -454,33 +490,15 @@ public class Iterator {
   private abstract static class RangeIterator implements IIterator<IExpr> {
     final ISymbol variable;
 
-    /**
-     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
-     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
-     */
-    IExpr variableValueBeforeIteration;
-
-    /** The marks of the variable outside the iteration, -1 before it got its first value. */
-    private int outerMarks = -1;
-
-    private void beginLocalScope() {
-      if (outerMarks < 0) {
-        outerMarks = variable.beginLocalScope();
-      }
-    }
-
-    private void endLocalScope() {
-      if (outerMarks >= 0) {
-        variable.endLocalScope(outerMarks);
-        outerMarks = -1;
-      }
-    }
+    /** The local value of {@link #variable}, or <code>null</code> without a variable. */
+    private final IterationVariable local;
 
     /** The engine of the evaluation the iterator runs in, for its time limit checkpoint. */
     final EvalEngine engine = EvalEngine.get();
 
     RangeIterator(final ISymbol variable) {
       this.variable = variable;
+      this.local = IterationVariable.of(variable);
     }
 
     /**
@@ -529,7 +547,7 @@ public class Iterator {
       engine.checkTimeLimit();
       final IExpr temp = current();
       if (variable != null) {
-        variable.assignValue(temp, false);
+        local.assign(temp);
       }
       advance();
       return temp;
@@ -544,14 +562,13 @@ public class Iterator {
     @Override
     public boolean setUp() {
       if (variable != null) {
-        variableValueBeforeIteration = variable.assignedValue();
+        local.save();
       }
       if (!start()) {
         return false;
       }
       if (variable != null) {
-        beginLocalScope();
-        variable.assignValue(getLowerLimit(), false);
+        local.start(getLowerLimit());
       }
       return true;
     }
@@ -559,8 +576,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.clearValue(variableValueBeforeIteration);
-        endLocalScope();
+        local.restore();
       }
     }
   }

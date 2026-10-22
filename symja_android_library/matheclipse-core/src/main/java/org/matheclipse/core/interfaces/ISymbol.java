@@ -851,6 +851,28 @@ public interface ISymbol extends IExpr {
   }
 
   /**
+   * The function <code>f</code> which is called as <code>f(symbol, value)</code> whenever this
+   * symbol gets a new value and as <code>f(symbol)</code> whenever its value is cleared.
+   *
+   * @return the function or <code>null</code> if none is set
+   * @see #setValueFunction(IExpr)
+   */
+  default IExpr getValueFunction() {
+    return null;
+  }
+
+  /**
+   * Set the function which is called whenever the value of this symbol changes, see
+   * {@link #getValueFunction()}.
+   *
+   * @param function the function or <code>null</code> to remove it
+   * @return <code>false</code> if this kind of symbol cannot report its value changes
+   */
+  default boolean setValueFunction(IExpr function) {
+    return false;
+  }
+
+  /**
    * Does this symbols attribute set contains the <code>Flat</code> attribute?
    *
    * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code>
