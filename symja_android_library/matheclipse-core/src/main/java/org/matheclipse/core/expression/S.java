@@ -4920,6 +4920,15 @@ public class S {
   public final static IBuiltInSymbol CountRoots = S.initFinalSymbol("CountRoots", ID.CountRoots);
 
   /**
+   * CountryData(x) - TODO describe `CountryData`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CountryData.md">CountryData
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CountryData = S.initFinalSymbol("CountryData", ID.CountryData);
+
+  /**
    * Counts({elem1, elem2, elem3, ...}) - count the number of each distinct element in the list
    * `{elem1, elem2, elem3, ...}` and return the result as an association `<|elem1->counter1,
    * ...|>`.
@@ -5122,6 +5131,15 @@ public class S {
    */
   public final static IBuiltInSymbol CurrentValue =
       S.initFinalSymbol("CurrentValue", ID.CurrentValue);
+
+  /**
+   * Curry(x) - TODO describe `Curry`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Curry.md">Curry
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Curry = S.initFinalSymbol("Curry", ID.Curry);
 
   /**
    * CurveClosed(x) - TODO describe `CurveClosed`.
@@ -6299,6 +6317,16 @@ public class S {
    */
   public final static IBuiltInSymbol DiscreteLimit =
       S.initFinalSymbol("DiscreteLimit", ID.DiscreteLimit);
+
+  /**
+   * DiscreteMarkovProcess(x) - TODO describe `DiscreteMarkovProcess`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiscreteMarkovProcess.md">DiscreteMarkovProcess
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DiscreteMarkovProcess =
+      S.initFinalSymbol("DiscreteMarkovProcess", ID.DiscreteMarkovProcess);
 
   /**
    * DiscretePlot( expr, {x, nmax} ) - plots `expr` with `x` ranging from `1` to `nmax`.
@@ -10803,6 +10831,16 @@ public class S {
    */
   public final static IBuiltInSymbol HighlightGraph =
       S.initFinalSymbol("HighlightGraph", ID.HighlightGraph);
+
+  /**
+   * HighlightMesh(x) - TODO describe `HighlightMesh`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HighlightMesh.md">HighlightMesh
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol HighlightMesh =
+      S.initFinalSymbol("HighlightMesh", ID.HighlightMesh);
 
   /**
    * HilbertMatrix(n) - gives the hilbert matrix with `n` rows and columns.
@@ -24154,6 +24192,16 @@ public class S {
 
   public final static IBuiltInSymbol Therefore = S.initFinalSymbol("Therefore", ID.Therefore);
 
+  /**
+   * ThermometerGauge(x) - TODO describe `ThermometerGauge`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ThermometerGauge.md">ThermometerGauge
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ThermometerGauge =
+      S.initFinalSymbol("ThermometerGauge", ID.ThermometerGauge);
+
   public final static IBuiltInSymbol Thick = S.initFinalSymbol("Thick", ID.Thick);
 
   public final static IBuiltInSymbol Thickness = S.initFinalSymbol("Thickness", ID.Thickness);
@@ -24419,6 +24467,15 @@ public class S {
    */
   public final static IBuiltInSymbol ToCharacterCode =
       S.initFinalSymbol("ToCharacterCode", ID.ToCharacterCode);
+
+  /**
+   * ToColor(x) - TODO describe `ToColor`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToColor.md">ToColor
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ToColor = S.initFinalSymbol("ToColor", ID.ToColor);
 
   /**
    * ToDataset(x) - TODO describe `ToDataset`.
@@ -24848,6 +24905,16 @@ public class S {
    */
   public final static IBuiltInSymbol TriangularDistribution =
       S.initFinalSymbol("TriangularDistribution", ID.TriangularDistribution);
+
+  /**
+   * TriangulateMesh(x) - TODO describe `TriangulateMesh`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TriangulateMesh.md">TriangulateMesh
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol TriangulateMesh =
+      S.initFinalSymbol("TriangulateMesh", ID.TriangulateMesh);
 
   public final static IBuiltInSymbol Trig = S.initFinalSymbol("Trig", ID.Trig);
 
@@ -25761,6 +25828,16 @@ public class S {
       S.initFinalSymbol("VertexColors", ID.VertexColors);
 
   /**
+   * VertexComponent(x) - TODO describe `VertexComponent`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexComponent.md">VertexComponent
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexComponent =
+      S.initFinalSymbol("VertexComponent", ID.VertexComponent);
+
+  /**
    * VertexConnectivity(x) - TODO describe `VertexConnectivity`.
    * 
    * @see <a href=
@@ -25813,6 +25890,16 @@ public class S {
   public final static IBuiltInSymbol VertexEccentricity =
       S.initFinalSymbol("VertexEccentricity", ID.VertexEccentricity);
 
+  /**
+   * VertexInComponent(x) - TODO describe `VertexInComponent`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexInComponent.md">VertexInComponent
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexInComponent =
+      S.initFinalSymbol("VertexInComponent", ID.VertexInComponent);
+
   public final static IBuiltInSymbol VertexInDegree =
       S.initFinalSymbol("VertexInDegree", ID.VertexInDegree);
 
@@ -25849,6 +25936,16 @@ public class S {
 
   public final static IBuiltInSymbol VertexNormals =
       S.initFinalSymbol("VertexNormals", ID.VertexNormals);
+
+  /**
+   * VertexOutComponent(x) - TODO describe `VertexOutComponent`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VertexOutComponent.md">VertexOutComponent
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol VertexOutComponent =
+      S.initFinalSymbol("VertexOutComponent", ID.VertexOutComponent);
 
   public final static IBuiltInSymbol VertexOutDegree =
       S.initFinalSymbol("VertexOutDegree", ID.VertexOutDegree);
