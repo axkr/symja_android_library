@@ -1871,7 +1871,12 @@ public class ExprParser extends Scanner {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_ASSOCIATION_OPEN
         || fToken == TT_IDENTIFIER || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
         || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN
-        || fToken == TT_ANGLE_OPEN || isBlankToken();
+        || fToken == TT_ANGLE_OPEN || isBlankToken() || isDifferentialDToken();
+  }
+
+  /** <code>f \uF74Cx</code> is the product of <code>f</code> and <code>DifferentialD(x)</code>. */
+  private boolean isDifferentialDToken() {
+    return fToken == TT_OPERATOR && "\uF74C".equals(fOperatorString);
   }
 
   /** A blank starts an operand: <code>_. _f</code> and <code>_Integer _</code> are products. */
@@ -2335,6 +2340,9 @@ public class ExprParser extends Scanner {
     }
     getNextToken();
     final IExpr temp = parseLookaheadOperator(prefixOperator.getPrecedence());
+    if ("\u222B".equals(prefixOperator.getOperatorString())) {
+      return integral(temp);
+    }
     if (prefixOperator.getFunctionName().equals("PreMinus")) {
       // special cases for negative numbers
       if (temp.isNumber()) {
@@ -2342,6 +2350,23 @@ public class ExprParser extends Scanner {
       }
     }
     return prefixOperator.createFunction(fFactory, temp);
+  }
+
+  /**
+   * <code>\u222B f \uF74Cx</code> is read as the integral sign before the product of
+   * <code>f</code> and <code>DifferentialD(x)</code>: it is <code>Integrate(f, x)</code>.
+   */
+  private IExpr integral(final IExpr body) {
+    if (body.isAST(S.DifferentialD, 2)) {
+      return F.Integrate(F.C1, body.first());
+    }
+    if (body.isTimes() && body.argSize() > 1 && body.last().isAST(S.DifferentialD, 2)) {
+      IAST times = (IAST) body;
+      return F.Integrate(times.removeAtClone(times.argSize()).oneIdentity1(),
+          times.last().first());
+    }
+    throwSyntaxError("'\uF74C' expected.");
+    return F.NIL;
   }
 
   public void setFactory(final IParserFactory factory) {

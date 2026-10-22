@@ -186,7 +186,8 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
   public IExpr visit(IAssociation assoc) {
     IAssociation[] result = new IAssociation[] {F.NIL};
     if (assoc.isPresent()) {
-      int[] minDepth = new int[] {0};
+      // an empty association has depth 2, like one of atoms
+      int[] minDepth = new int[] {-1};
       try {
         checkRecursionLimit(assoc);
         if (fIncludeHeads) {
@@ -226,7 +227,8 @@ public class VisitorLevelSpecification extends AbstractLevelVisitor {
   public IExpr visit(IASTMutable ast) {
     IASTMutable[] result = new IASTMutable[] {F.NIL};
     if (ast.isPresent()) {
-      int[] minDepth = new int[] {0};
+      // an expression without arguments has depth 2, like one of atoms
+      int[] minDepth = new int[] {-1};
       try {
         checkRecursionLimit(ast);
         if (fIncludeHeads) {

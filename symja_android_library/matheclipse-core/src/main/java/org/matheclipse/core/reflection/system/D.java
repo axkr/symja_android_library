@@ -1191,6 +1191,20 @@ public class D extends AbstractFunctionOptionEvaluator {
       final IAST ast, EvalEngine engine) {
 
     IAST list = (IAST) piecewiseFunction.arg1();
+    IExpr defaultValue = piecewiseFunction.argSize() > 1 ? piecewiseFunction.arg2() : F.C0;
+    if (list.size() > 1 && list.forAll(row -> row.second().isFree(x, true))) {
+      // the pieces don't change with x: each piece and the default value are differentiated
+      // on their own
+      IASTAppendable pwResult = F.ListAlloc(list.size());
+      for (int i = 1; i < list.size(); i++) {
+        IASTMutable piecewiseD = ast.copy();
+        piecewiseD.set(1, list.get(i).first());
+        pwResult.append(F.list(piecewiseD, list.get(i).second()));
+      }
+      IASTMutable defaultD = ast.copy();
+      defaultD.set(1, defaultValue);
+      return F.Piecewise(pwResult, defaultD);
+    }
     if (list.size() > 1) {
       IASTAppendable pwResult = F.ListAlloc(list.size() + 1);
       IASTAppendable conditions = F.ast(S.Or, list.size());
@@ -1203,7 +1217,6 @@ public class D extends AbstractFunctionOptionEvaluator {
       // The default value holds where no condition is true. Where that region has an interior,
       // the derivative of the default value applies; the transition points which remain
       // uncovered get the default Indeterminate, because there the derivative doesn't exist.
-      IExpr defaultValue = piecewiseFunction.argSize() > 1 ? piecewiseFunction.arg2() : F.C0;
       IExpr complement = engine.evaluate(F.Not(conditions));
       if (!complement.isFalse() && complement.isFree(S.Not, true)) {
         IExpr openedComplement = engine.evaluate(openCondition(complement, x));

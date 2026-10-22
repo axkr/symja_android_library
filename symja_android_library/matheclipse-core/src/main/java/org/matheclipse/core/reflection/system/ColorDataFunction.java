@@ -86,6 +86,9 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
 
     IExpr param = applicationAst.arg1();
 
+    if (type.equals("Named")) {
+      return name.equals("WebSafe") ? ColorData.webSafe(param) : F.NIL;
+    }
     if (param.isString()) {
       String prop = param.toString();
       if (prop.startsWith("\"") && prop.endsWith("\"")) {
@@ -125,8 +128,18 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
           if (Double.isNaN(value)) {
             return F.NIL;
           }
-          param = F.num(Math.min(1.0, Math.max(0.0, (value - min) / (max - min))));
+          if (name.equals("VISIBLE_SPECTRUM")
+              && (value < Math.min(min, max) || value > Math.max(min, max))) {
+            // light outside of the visible spectrum is not seen
+            return F.RGBColor(F.CD0, F.CD0, F.CD0);
+          }
+          param = F.num((value - min) / (max - min));
         }
+      }
+      double value = param.evalfNaN();
+      if (!Double.isNaN(value)) {
+        // a gradient has no colors beyond its ends
+        param = F.num(Math.min(1.0, Math.max(0.0, value)));
       }
       return evaluateGradient(name, param);
     } else if (type.equals("Indexed")) {

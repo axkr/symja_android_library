@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -393,6 +394,8 @@ public class GraphicsFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.Blend.setEvaluator(new Blend());
+      S.ToColor.setEvaluator(new ToColor());
       S.Lighter.setEvaluator(new LighterDarker(true));
       S.Darker.setEvaluator(new LighterDarker(false));
       S.Dashed.setEvaluator(new Dashed());
@@ -721,6 +724,343 @@ public class GraphicsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   * A color directive taken apart: its color space (<code>RGBColor, GrayLevel, Hue</code> or
+   * <code>CMYKColor</code>), its components and its opacity, which is <code>null</code> if the
+   * directive has none.
+   */
+  private static final class ColorValue {
+    final ISymbol space;
+    final IExpr[] components;
+    final IExpr opacity;
+
+    ColorValue(ISymbol space, IExpr[] components, IExpr opacity) {
+      this.space = space;
+      this.components = components;
+      this.opacity = opacity;
+    }
+
+    /**
+     * The directive of the color space: a hue always has its saturation and brightness.
+     */
+    IAST toDirective() {
+      IASTAppendable result = F.ast(space, components.length + 1);
+      for (IExpr component : components) {
+        result.append(component);
+      }
+      if (opacity != null) {
+        result.append(opacity);
+      }
+      return result;
+    }
+
+    /**
+     * Take apart a color directive with real components.
+     *
+     * @return <code>null</code> if <code>color</code> is no such directive
+     */
+    static ColorValue of(IExpr color, EvalEngine engine) {
+      if (!color.isAST() || color.argSize() == 0 || !((IAST) color).forAll(x -> x.isReal())) {
+        return null;
+      }
+      IAST directive = (IAST) color;
+      int n = directive.argSize();
+      if (directive.isAST(S.RGBColor) && (n == 3 || n == 4)) {
+        return new ColorValue(S.RGBColor,
+            new IExpr[] {directive.arg1(), directive.arg2(), directive.arg3()},
+            n == 4 ? directive.arg4() : null);
+      }
+      if (directive.isAST(S.GrayLevel) && n <= 2) {
+        return new ColorValue(S.GrayLevel, new IExpr[] {directive.arg1()},
+            n == 2 ? directive.arg2() : null);
+      }
+      if (directive.isAST(S.CMYKColor) && (n == 4 || n == 5)) {
+        return new ColorValue(S.CMYKColor,
+            new IExpr[] {directive.arg1(), directive.arg2(), directive.arg3(), directive.arg4()},
+            n == 5 ? directive.arg5() : null);
+      }
+      if (directive.isAST(S.Hue) && n != 2 && n <= 4) {
+        IExpr hue = directive.arg1();
+        double h = hue.evalf();
+        if (h < 0.0 || h > 1.0) {
+          // a hue of more than one turn is the hue of its fractional part
+          hue = engine.evaluate(F.Mod(hue, F.C1));
+        }
+        return new ColorValue(S.Hue,
+            new IExpr[] {hue, n >= 3 ? directive.arg2() : F.C1, n >= 3 ? directive.arg3() : F.C1},
+            n == 4 ? directive.arg4() : null);
+      }
+      return null;
+    }
+
+    ColorValue withOpacity(IExpr newOpacity) {
+      return new ColorValue(space, components, newOpacity);
+    }
+
+    /** The same color in the RGB color space. */
+    ColorValue toRGB(EvalEngine engine) {
+      IExpr[] rgb;
+      if (space == S.RGBColor) {
+        return this;
+      } else if (space == S.GrayLevel) {
+        rgb = new IExpr[] {components[0], components[0], components[0]};
+      } else if (space == S.CMYKColor) {
+        IExpr white = F.Subtract(F.C1, components[3]);
+        rgb = new IExpr[3];
+        for (int i = 0; i < 3; i++) {
+          rgb[i] = engine.evaluate(F.Times(F.Subtract(F.C1, components[i]), white));
+        }
+      } else {
+        rgb = hueToRGB(components[0], components[1], components[2], engine);
+      }
+      return new ColorValue(S.RGBColor, rgb, opacity);
+    }
+
+    private static IExpr[] hueToRGB(IExpr h, IExpr s, IExpr b, EvalEngine engine) {
+      IExpr sector = engine.evaluate(F.Times(F.C6, h));
+      int i = engine.evaluate(F.Floor(sector)).toIntDefault(0);
+      IExpr f = engine.evaluate(F.Subtract(sector, F.ZZ(i)));
+      IExpr p = engine.evaluate(F.Times(b, F.Subtract(F.C1, s)));
+      IExpr q = engine.evaluate(F.Times(b, F.Subtract(F.C1, F.Times(s, f))));
+      IExpr t = engine.evaluate(F.Times(b, F.Subtract(F.C1, F.Times(s, F.Subtract(F.C1, f)))));
+      switch (Math.floorMod(i, 6)) {
+        case 0:
+          return new IExpr[] {b, t, p};
+        case 1:
+          return new IExpr[] {q, b, p};
+        case 2:
+          return new IExpr[] {p, b, t};
+        case 3:
+          return new IExpr[] {p, q, b};
+        case 4:
+          return new IExpr[] {t, p, b};
+        default:
+          return new IExpr[] {b, p, q};
+      }
+    }
+
+    /** The same color in the given color space. */
+    ColorValue convert(ISymbol target, EvalEngine engine) {
+      if (target == space) {
+        return this;
+      }
+      ColorValue rgbValue = toRGB(engine);
+      if (target == S.RGBColor) {
+        return rgbValue;
+      }
+      double r = rgbValue.components[0].evalf();
+      double g = rgbValue.components[1].evalf();
+      double b = rgbValue.components[2].evalf();
+      if (target == S.GrayLevel) {
+        // the luminance of the color
+        return new ColorValue(S.GrayLevel, new IExpr[] {F.num(0.299 * r + 0.587 * g + 0.114 * b)},
+            opacity);
+      }
+      double max = Math.max(r, Math.max(g, b));
+      double min = Math.min(r, Math.min(g, b));
+      if (target == S.CMYKColor) {
+        double k = 1.0 - max;
+        double white = 1.0 - k;
+        IExpr[] cmyk = new IExpr[4];
+        for (int i = 0; i < 3; i++) {
+          double c = i == 0 ? r : i == 1 ? g : b;
+          cmyk[i] = F.num(white == 0.0 ? 0.0 : (white - c) / white);
+        }
+        cmyk[3] = F.num(k);
+        return new ColorValue(S.CMYKColor, cmyk, opacity);
+      }
+      double delta = max - min;
+      double hue = 0.0;
+      if (delta > 0.0) {
+        if (max == r) {
+          hue = (g - b) / delta;
+        } else if (max == g) {
+          hue = 2.0 + (b - r) / delta;
+        } else {
+          hue = 4.0 + (r - g) / delta;
+        }
+        hue /= 6.0;
+        if (hue < 0.0) {
+          hue += 1.0;
+        }
+      }
+      return new ColorValue(S.Hue,
+          new IExpr[] {F.num(hue), F.num(max == 0.0 ? 0.0 : delta / max), F.num(max)}, opacity);
+    }
+  }
+
+  /**
+   * <code>Blend({c1, c2, ...}, t)</code> - the color at <code>t</code> of the colors spread evenly
+   * over <code>0 ... 1</code>; <code>Blend({{p1, c1}, {p2, c2}, ...}, t)</code> - the colors at
+   * the positions <code>pi</code>; <code>Blend({c1, c2, ...}, {w1, w2, ...})</code> - the colors
+   * mixed by the weights <code>wi</code>; <code>Blend({c1, c2, ...})</code> - mixed equally;
+   * <code>Blend("gradient", t)</code> - the color of a named gradient.
+   *
+   * <p>
+   * Colors of one color space are blended in it, other colors as RGB colors. Outside of the
+   * positions <code>t</code> gives the color at the nearer end.
+   */
+  private static class Blend extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isString()) {
+        if (ast.isAST2() && ast.arg2().isReal()) {
+          return engine.evaluate(F.unaryAST1(F.unaryAST1(S.ColorData, arg1), ast.arg2()));
+        }
+        return F.NIL;
+      }
+      if (!arg1.isList() || arg1.argSize() == 0) {
+        return F.NIL;
+      }
+      IAST list = (IAST) arg1;
+      int n = list.argSize();
+      boolean positioned = ast.isAST2() && ast.arg2().isReal()
+          && list.forAll(x -> x.isList2() && x.first().isReal());
+      if (positioned) {
+        // the colors in the order of their positions
+        IExpr[] pairs = new IExpr[n];
+        for (int i = 0; i < n; i++) {
+          pairs[i] = list.get(i + 1);
+        }
+        java.util.Arrays.sort(pairs,
+            java.util.Comparator.comparingDouble((IExpr pair) -> pair.first().evalf()));
+        list = F.mapRange(0, n, i -> pairs[i]);
+      }
+      IExpr[] colors = new IExpr[n];
+      IExpr[] positions = new IExpr[n];
+      ColorValue[] values = new ColorValue[n];
+      ISymbol space = null;
+      boolean opaque = true;
+      for (int i = 0; i < n; i++) {
+        IExpr element = list.get(i + 1);
+        colors[i] = positioned ? element.second() : element;
+        positions[i] = positioned ? element.first() : n == 1 ? F.C0 : F.QQ(i, n - 1);
+        values[i] = ColorValue.of(colors[i], engine);
+        if (values[i] == null) {
+          if (colors[i].isAST(S.Image) || colors[i] instanceof org.matheclipse.core.interfaces.IDataExpr) {
+            return F.NIL;
+          }
+          return Errors.printMessage(S.Blend, "color", F.list(colors[i]), engine);
+        }
+        space = (space == null || space == values[i].space) ? values[i].space : S.RGBColor;
+        opaque &= values[i].opacity == null;
+      }
+      for (int i = 0; i < n; i++) {
+        ColorValue value = values[i].convert(space, engine);
+        values[i] = opaque || value.opacity != null ? value : value.withOpacity(F.C1);
+      }
+
+      if (ast.isAST1()) {
+        return mix(values, F.constantArray(F.C1, n), engine);
+      }
+      IExpr arg2 = ast.arg2();
+      if (arg2.isList() && arg2.argSize() == n
+          && ((IAST) arg2).forAll(x -> x.isReal() && !x.isNegative())) {
+        return mix(values, (IAST) arg2, engine);
+      }
+      if (!arg2.isReal()) {
+        return Errors.printMessage(S.Blend, "argl", F.list(arg2, list), engine);
+      }
+
+      // the color at the parameter arg2
+      double t = arg2.evalf();
+      if (n == 1 || t <= positions[0].evalf()) {
+        return colors[0];
+      }
+      if (t >= positions[n - 1].evalf()) {
+        return colors[n - 1];
+      }
+      int k = 0;
+      while (k < n - 2 && positions[k + 1].evalf() <= t) {
+        k++;
+      }
+      IExpr width = engine.evaluate(F.Subtract(positions[k + 1], positions[k]));
+      if (width.isZero()) {
+        return colors[k + 1];
+      }
+      IExpr u = engine.evaluate(F.Divide(F.Subtract(arg2, positions[k]), width));
+      ColorValue from = values[k];
+      ColorValue to = values[k + 1];
+      IExpr[] components = new IExpr[from.components.length];
+      for (int i = 0; i < components.length; i++) {
+        components[i] = interpolate(from.components[i], to.components[i], u, engine);
+      }
+      return new ColorValue(space, components,
+          opaque ? null : interpolate(from.opacity, to.opacity, u, engine)).toDirective();
+    }
+
+    /** <code>a + u (b - a)</code>; for machine numbers as one fused multiply-add. */
+    private static IExpr interpolate(IExpr a, IExpr b, IExpr u, EvalEngine engine) {
+      if (a.isMachineNumber() || b.isMachineNumber() || u.isMachineNumber()) {
+        double x = a.evalf();
+        return F.num(Math.fma(u.evalf(), b.evalf() - x, x));
+      }
+      return engine.evaluate(F.Plus(a, F.Times(u, F.Subtract(b, a))));
+    }
+
+    /** The colors mixed by the weights. */
+    private static IExpr mix(ColorValue[] values, IAST weights, EvalEngine engine) {
+      IExpr total = engine.evaluate(weights.setAtCopy(0, S.Plus));
+      if (total.isZero()) {
+        return F.NIL;
+      }
+      int length = values[0].components.length;
+      IExpr[] components = new IExpr[length];
+      for (int i = 0; i < length; i++) {
+        IASTAppendable sum = F.PlusAlloc(values.length);
+        for (int j = 0; j < values.length; j++) {
+          sum.append(F.Times(F.Divide(weights.get(j + 1), total), values[j].components[i]));
+        }
+        components[i] = engine.evaluate(sum);
+      }
+      IExpr opacity = null;
+      if (values[0].opacity != null) {
+        IASTAppendable sum = F.PlusAlloc(values.length);
+        for (int j = 0; j < values.length; j++) {
+          sum.append(F.Times(F.Divide(weights.get(j + 1), total), values[j].opacity));
+        }
+        opacity = engine.evaluate(sum);
+      }
+      return new ColorValue(values[0].space, components, opacity).toDirective();
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <code>ToColor(color, space)</code> - the color converted to the color space
+   * <code>RGBColor, GrayLevel, Hue</code> or <code>CMYKColor</code>.
+   */
+  private static class ToColor extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      ColorValue value = ColorValue.of(ast.arg1(), engine);
+      if (value == null) {
+        return Errors.printMessage(S.ToColor, "color", F.list(ast.arg1()), engine);
+      }
+      IExpr space = ast.arg2();
+      if (space != S.RGBColor && space != S.GrayLevel && space != S.Hue
+          && space != S.CMYKColor) {
+        return Errors.printMessage(S.ToColor, "colconv", F.list(space), engine);
+      }
+      if (space == value.space) {
+        return ast.arg1();
+      }
+      return value.convert((ISymbol) space, engine).toDirective();
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
   }
 
   /**

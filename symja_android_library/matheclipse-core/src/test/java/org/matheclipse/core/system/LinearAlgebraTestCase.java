@@ -1778,9 +1778,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Inverse({{1,2},{3,4}})", "{{-2,1},\n" + " {3/2,-1/2}}");
     check("Inverse({{1,2.0},{3,4}})", "{{-2.0,1.0},\n" + " {1.5,-0.5}}");
 
-    check("Inverse(SparseArray({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}}))", //
-        "{{-3,2,0},\n" //
-            + " {2,-1,0},\n" + " {1,-2,1}}");
+    // the inverse of a sparse array is a sparse array
+    check("Head(Inverse(SparseArray({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})))", //
+        "SparseArray");
+    check("Normal(Inverse(SparseArray({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})))", //
+        "{{-3,2,0},{2,-1,0},{1,-2,1}}");
 
     check("Inverse(-2)", //
         "Inverse(-2)");

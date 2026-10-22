@@ -1300,10 +1300,18 @@ public final class NumberTheory {
 
         final IExpr num;
         if (maxNTerms < Integer.MAX_VALUE) {
-          num = engine.evalN(arg1, maxNTerms * 3);
-          if (num instanceof ApfloatNum) {
-            return apfloatToContinuedFraction(((ApfloatNum) num).apfloatValue(), maxNTerms, engine);
+          // a term takes about one digit, more for numbers like E whose terms grow; the digits are
+          // bounded by the precision a calculation may ask for, and only the terms which a less
+          // precise value gives too are reliable
+          long digits = Math.min(Config.MAX_PRECISION_APFLOAT, 30L + 2L * maxNTerms);
+          IExpr value = engine.evalN(arg1, digits);
+          IExpr check = engine.evalN(arg1,
+              Math.max(org.matheclipse.parser.client.ParserConfig.MACHINE_PRECISION + 1, digits - 10));
+          if (value instanceof ApfloatNum && check instanceof ApfloatNum) {
+            return apfloatToContinuedFraction(((ApfloatNum) value).apfloatValue(),
+                ((ApfloatNum) check).apfloatValue(), maxNTerms, engine);
           }
+          num = value;
         } else {
           num = engine.evalN(arg1);
         }
@@ -1327,10 +1335,22 @@ public final class NumberTheory {
       return F.NIL;
     }
 
-    private static IExpr apfloatToContinuedFraction(final Apfloat apfloat, int maxNTerms,
-        EvalEngine engine) {
-      Apint[] continuedFraction = ApfloatMath.continuedFraction(apfloat, maxNTerms);
-      final int length = continuedFraction.length;
+    /**
+     * The terms of the continued fraction of <code>apfloat</code> which the less precise
+     * <code>check</code> of the same number gives too.
+     */
+    private static IExpr apfloatToContinuedFraction(final Apfloat apfloat, final Apfloat check,
+        int maxNTerms, EvalEngine engine) {
+      Apint[] terms = ApfloatMath.continuedFraction(apfloat, maxNTerms);
+      Apint[] checkTerms = ApfloatMath.continuedFraction(check, maxNTerms);
+      int agree = 0;
+      while (agree < terms.length && agree < checkTerms.length
+          && terms[agree].equals(checkTerms[agree])) {
+        agree++;
+      }
+      // the last common term may still be cut short in both
+      int length = agree < terms.length ? Math.max(1, agree - 1) : agree;
+      Apint[] continuedFraction = java.util.Arrays.copyOf(terms, length);
       if (length < maxNTerms) {
         // Warning: `1` terminated before `2` terms.
         Errors.printMessage(S.ContinuedFraction, "incompCF",
@@ -3925,72 +3945,118 @@ public final class NumberTheory {
 
   private static class Hyperfactorial extends AbstractEvaluator {
 
-    private static IExpr hyperfactorial(int n) {
-      if (n >= 0) {
-        BigInteger result = BigInteger.ONE;
-        for (int k = 2; k <= n; k++) {
-          result = result.multiply(BigInteger.valueOf(k).pow(k));
-          if (result.bitLength() > Config.MAX_AST_SIZE * 8) {
-            IterationLimitExceeded.throwIt(result.bitLength(), F.Hyperfactorial(F.ZZ(n)));
-          }
-        }
-        return F.ZZ(result);
+    /**
+     * The largest magnitude of an integer-valued machine number whose hyperfactorial is a machine
+     * number.
+     */
+    private static final int MACHINE_LIMIT = 23;
+
+    /**
+     * The largest magnitude of a negative integer-valued arbitrary precision number whose
+     * hyperfactorial is computed as an exact product.
+     */
+    private static final int APFLOAT_LIMIT = 200;
+
+    /**
+     * The product <code>1^1*2^2*...*n^n</code> for <code>n &gt;= 0</code>. For negative
+     * <code>n</code> it is continued by <code>(-1)^Floor(-n/2)*Hyperfactorial(-n-1)</code>.
+     */
+    private static IInteger hyperfactorial(int n, EvalEngine engine) {
+      if (n < 0) {
+        IInteger h = hyperfactorial(-n - 1, engine);
+        return ((-n / 2) & 1) == 1 ? h.negate() : h;
       }
-      return F.NIL;
+      // the product has about Sum(k*Log2(k), {k, 2, n}) bits
+      double bits = 0.0;
+      for (int k = 2; k <= n; k++) {
+        bits += k * Math.log(k) / Math.log(2.0);
+        if (bits > Config.MAX_BIT_LENGTH) {
+          BigIntegerLimitExceeded.throwIt((long) bits);
+        }
+      }
+      BigInteger result = BigInteger.ONE;
+      for (int k = 2; k <= n; k++) {
+        engine.checkTimeLimit();
+        result = result.multiply(BigInteger.valueOf(k).pow(k));
+      }
+      return F.ZZ(result);
     }
 
+    /** The digits added to the precision of an arbitrary precision argument while calculating. */
+    private static final long GUARD_DIGITS = 10L;
+
+    /**
+     * <code>E^(z*LogGamma(z+1))/BarnesG(z+1)</code>. For an arbitrary precision <code>z</code> it
+     * is calculated with more digits than <code>z</code> has, because the quotient loses digits,
+     * and rounded to the precision of <code>z</code>.
+     */
+    private static IExpr numericHyperfactorial(INumber z, EvalEngine engine) {
+      if (z.isMachineNumber()) {
+        IExpr z1 = F.Plus(F.C1, z);
+        return F.Divide(F.Exp(F.Times(z, F.LogGamma(z1))), F.BarnesG(z1));
+      }
+      final Apcomplex value = z.apcomplexValue();
+      final long precision = value.precision();
+      final long digits =
+          Math.max(precision, Math.min(precision + GUARD_DIGITS, Config.MAX_PRECISION_APFLOAT));
+      // the exact value of z: a number of the working precision would be rounded back to the
+      // precision of the evaluation it occurs in
+      IExpr re = exactValue(new java.math.BigDecimal(value.real().toString(true)));
+      IExpr exact = z.isReal() ? re
+          : F.Complex(re, exactValue(new java.math.BigDecimal(value.imag().toString(true))));
+      IExpr z1 = F.Plus(F.C1, exact);
+      IExpr result;
+      final boolean numericMode = engine.isNumericMode();
+      try {
+        // in the numeric mode of the argument N keeps its precision
+        engine.setNumericMode(false);
+        result =
+            engine.evalN(F.Divide(F.Exp(F.Times(exact, F.LogGamma(z1))), F.BarnesG(z1)), digits);
+      } finally {
+        engine.setNumericMode(numericMode);
+      }
+      if (!result.isNumber()) {
+        return result;
+      }
+      Apcomplex rounded = ((INumber) result).apcomplexValue().precision(precision);
+      return result.isReal() ? ApfloatNum.valueOf(rounded.real()) : ApcomplexNum.valueOf(rounded);
+    }
+
+    /** The rational number with the value of <code>decimal</code>. */
+    private static IExpr exactValue(java.math.BigDecimal decimal) {
+      if (decimal.scale() <= 0) {
+        return F.ZZ(decimal.toBigIntegerExact());
+      }
+      return F.QQ(decimal.unscaledValue(), BigInteger.TEN.pow(decimal.scale()));
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isInexactNumber()) {
-        // E^(z*LogGamma(z+1))/BarnesG(z+1)
-        IExpr z1 = F.Plus(F.C1, arg1);
-        return F.Divide(F.Exp(F.Times(arg1, F.LogGamma(z1))), F.BarnesG(z1));
-      }
       if (arg1.isInteger()) {
-        int n = arg1.toIntDefault(0);
-        if (-8 <= n && n <= 7) {
-          // long integer results
-          switch (n) {
-            case 0:
-              return F.C1;
-            case 1:
-              return F.C1;
-            case 2:
-              return F.C4;
-            case 3:
-              return F.ZZ(108);
-            case 4:
-              return F.ZZ(27648);
-            case 5:
-              return F.ZZ(86400000);
-            case 6:
-              return F.ZZ(4031078400000L);
-            case 7:
-              return F.ZZ(3319766398771200000L);
-            case -1:
-              return F.C1;
-            case -2:
-              return F.CN1;
-            case -3:
-              return F.CN4;
-            case -4:
-              return F.ZZ(108);
-            case -5:
-              return F.ZZ(27648);
-            case -6:
-              return F.ZZ(-86400000);
-            case -7:
-              return F.ZZ(-4031078400000L);
-            case -8:
-              return F.ZZ(3319766398771200000L);
+        int n = arg1.toIntDefault();
+        return F.isPresent(n) ? hyperfactorial(n, engine) : F.NIL;
+      }
+      if (arg1.isMachineNumber() && arg1.isReal() && arg1.isNumIntValue()) {
+        // the exact product, without the rounding of the Gamma function formula
+        int n = arg1.toIntDefault();
+        if (F.isPresent(n) && Math.abs(n) <= MACHINE_LIMIT) {
+          double value = hyperfactorial(n, engine).doubleValue();
+          if (Double.isFinite(value)) {
+            return F.num(value);
           }
         }
-
-        if (n > 0) {
-          return hyperfactorial(n);
+      }
+      if (arg1 instanceof ApfloatNum && arg1.isNumIntValue() && arg1.isNegative()) {
+        // the Gamma function formula divides zero by zero at the negative integers
+        int n = arg1.toIntDefault();
+        if (F.isPresent(n) && n >= -APFLOAT_LIMIT) {
+          long precision = ((ApfloatNum) arg1).apfloatValue().precision();
+          return F.num(new Apfloat(hyperfactorial(n, engine).toBigNumerator(), precision));
         }
+      }
+      if (arg1.isInexactNumber()) {
+        return numericHyperfactorial((INumber) arg1, engine);
       }
       if (arg1.isRationalValue(F.CN1D2)) {
         return F.Divide(F.Power(S.Glaisher, F.C3D2), //

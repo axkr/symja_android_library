@@ -4689,6 +4689,13 @@ public final class Arithmetic {
           // (a^b)^c => a^(b*c) /; a > 0 && b real, e.g. Refine((x^2)^r, x>0) is x^(2*r)
           return F.Power(base.base(), F.Times(baseExponent, exponent));
         }
+        IExpr baseBase = base.base();
+        if (baseBase.isNumericFunction(true) && baseExponent.isNumericFunction(true)
+            && !baseBase.isInexactNumber() && !baseExponent.isInexactNumber()
+            && baseBase.isPositiveResult() && baseExponent.isRealResult()) {
+          // (a^b)^c => a^(b*c) for exact constants a > 0 and b real, e.g. (Pi^2)^x is Pi^(2*x)
+          return F.Power(baseBase, F.Times(baseExponent, exponent));
+        }
       } else if (base.isAbs() && base.isAST1()) {
         // Abs(u)^n => u^n for a real valued u and an even integer n
         IExpr u = base.first();

@@ -27,7 +27,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(Fibonacci(n + 3), Element(n, Integers))", //
         "2*Fibonacci(n)+LucasL(n)");
     check("FunctionExpand(LucasL(n))", //
-        "(1/2)^n*(1+Sqrt(5))^n+2^n*(1/(1+Sqrt(5)))^n*Cos(n*Pi)");
+        "(1/2)^n*(1+Sqrt(5))^n+(2^n*Cos(n*Pi))/(1+Sqrt(5))^n");
     check("FunctionExpand(LucasL(n,z))", //
         "(z/2+Sqrt(1+z^2/4))^n+Cos(n*Pi)/(z/2+Sqrt(1+z^2/4))^n");
     check("FunctionExpand(CatalanNumber(n))", //
@@ -362,9 +362,9 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   public void testFunctionExpandFibonacci() {
     // 1/2*(1+Sqrt(5)) is the OutputForm of (1+Sqrt(5))/2
     check("FunctionExpand(Fibonacci(n))", //
-        "((1/2)^n*(1+Sqrt(5))^n-2^n*(1/(1+Sqrt(5)))^n*Cos(n*Pi))/Sqrt(5)");
+        "((1/2)^n*(1+Sqrt(5))^n+(-2^n*Cos(n*Pi))/(1+Sqrt(5))^n)/Sqrt(5)");
     check("FunctionExpand(LucasL(n))", //
-        "(1/2)^n*(1+Sqrt(5))^n+2^n*(1/(1+Sqrt(5)))^n*Cos(n*Pi)");
+        "(1/2)^n*(1+Sqrt(5))^n+(2^n*Cos(n*Pi))/(1+Sqrt(5))^n");
   }
 
   @Test

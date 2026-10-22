@@ -88,7 +88,8 @@ public class IndexedLevel extends AbstractLevelVisitor {
 
   public IExpr visitAST(IAST ast, IExpr[] indx) {
     IASTMutable[] result = new IASTMutable[] {F.NIL};
-    int[] minDepth = new int[] {0};
+    // an expression without arguments has depth 2, like one of atoms
+    int[] minDepth = new int[] {-1};
     try {
       int size = indx.length;
       final IExpr[] newIndx = new IExpr[size + 1];

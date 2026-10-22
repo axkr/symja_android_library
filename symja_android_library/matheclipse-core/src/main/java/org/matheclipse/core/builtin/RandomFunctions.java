@@ -22,6 +22,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Tensors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -957,8 +958,9 @@ public final class RandomFunctions {
       IAST weights = null;
       if (arg1.isRuleAST()) {
         // "RandomSample[{w1,w2,…}->{e1,e2,…},n]" - the elements with the weights to draw them by
-        if (!arg1.first().isList() || !arg1.second().isList()
-            || arg1.first().size() != arg1.second().size()) {
+        if (!arg1.first().isList()
+            || (!arg1.second().isList() && !arg1.second().isAssociation())
+            || arg1.first().argSize() != arg1.second().argSize()) {
           return F.NIL;
         }
         weights = (IAST) arg1.first();
@@ -966,6 +968,13 @@ public final class RandomFunctions {
       } else if (arg1.isAST(S.Span)) {
         // "RandomSample[i;;j;;k, n] may be used to sample the Span from i to j in steps of k"
         arg1 = spanAsList((IAST) arg1, engine);
+      }
+      if (arg1.isAssociation()) {
+        // a sample of the rules of the association is an association again
+        IExpr rules = ((IAssociation) arg1).normal(false);
+        IExpr sample =
+            evaluate(ast.setAtCopy(1, weights == null ? rules : F.Rule(weights, rules)), engine);
+        return sample.isList() ? F.assoc((IAST) sample) : F.NIL;
       }
       if (!arg1.isList() && !arg1.isDataset()) {
         return F.NIL;

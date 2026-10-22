@@ -84,6 +84,10 @@ public class BarnesG extends AbstractFunctionEvaluator {
       // Safety: Integer too small/large to iterate
       return F.NIL;
     }
+    if (n == 0) {
+      // the argument is in (0, 1) and has no closed form: it stays as it is
+      return F.NIL;
+    }
 
     try {
       if (n > 0) {

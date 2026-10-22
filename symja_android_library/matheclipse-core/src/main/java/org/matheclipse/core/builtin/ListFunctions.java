@@ -224,6 +224,7 @@ public final class ListFunctions {
       S.Commonest.setEvaluator(new Commonest());
       S.Complement.setEvaluator(new Complement());
       S.Composition.setEvaluator(new Composition());
+      S.Curry.setEvaluator(new Curry());
       S.ComposeList.setEvaluator(new ComposeList());
       S.ConstantArray.setEvaluator(new ConstantArray());
       S.Count.setEvaluator(new Count());
@@ -1864,6 +1865,90 @@ public final class ListFunctions {
    * u(v(w(x,y)))
    * </pre>
    */
+  /**
+   * <code>Curry(f)(a)(b)</code> - <code>f(b, a)</code>; <code>Curry(f, n)(x1)...(xn)</code> -
+   * <code>f(x1, ..., xn)</code>; <code>Curry(f, {i1, ..., in})(x1)...(xn)</code> -
+   * <code>f(x_i1, ..., x_in)</code>. The arguments may also be given several at a time; those
+   * left over are applied to the result.
+   */
+  private static final class Curry extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head() == S.Curry) {
+        // the operator itself
+        return F.NIL;
+      }
+      // the applications from the innermost Curry(...)(x1, ...) outwards
+      java.util.ArrayDeque<IAST> applications = new java.util.ArrayDeque<IAST>();
+      IExpr expr = ast;
+      while (expr.isAST() && expr.head() != S.Curry) {
+        applications.push((IAST) expr);
+        expr = expr.head();
+      }
+      if (!expr.isAST() || expr.argSize() < 1 || expr.argSize() > 2) {
+        return F.NIL;
+      }
+      IAST curry = (IAST) expr;
+      int[] order;
+      if (curry.isAST1()) {
+        order = new int[] {2, 1};
+      } else if (curry.arg2().isList()) {
+        IAST list = (IAST) curry.arg2();
+        order = new int[list.argSize()];
+        for (int i = 0; i < order.length; i++) {
+          order[i] = list.get(i + 1).toIntDefault();
+          if (order[i] < 1 || order[i] > order.length) {
+            return F.NIL;
+          }
+        }
+      } else {
+        int n = curry.arg2().toIntDefault();
+        if (n < 1) {
+          return F.NIL;
+        }
+        order = new int[n];
+        for (int i = 0; i < n; i++) {
+          order[i] = i + 1;
+        }
+      }
+      IExpr[] arguments = new IExpr[order.length];
+      int count = 0;
+      while (count < order.length) {
+        if (applications.isEmpty()) {
+          // not enough arguments yet
+          return F.NIL;
+        }
+        IAST application = applications.pop();
+        int i = 1;
+        while (i < application.size() && count < order.length) {
+          arguments[count++] = application.get(i++);
+        }
+        if (i < application.size()) {
+          // the arguments beyond the arity are applied to the result
+          IASTAppendable rest = F.ast(F.Slot1, application.size() - i);
+          rest.appendArgs(i, application.size(), j -> application.get(j));
+          applications.push(rest);
+        }
+      }
+      IASTAppendable result = F.ast(curry.arg1(), order.length);
+      for (int i = 0; i < order.length; i++) {
+        result.append(arguments[order[i] - 1]);
+      }
+      IExpr head = result;
+      while (!applications.isEmpty()) {
+        head = applications.pop().setAtCopy(0, head);
+      }
+      return head;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // the applications of the operator take any number of arguments
+      return ast.head() == S.Curry ? ARGS_1_2 : null;
+    }
+  }
+
   private static final class Composition extends AbstractFunctionEvaluator {
 
     @Override
@@ -3190,7 +3275,8 @@ public final class ListFunctions {
        * @param ast
        */
       private void positionRecursive(final IAST ast, IAST prototypeList) {
-        int minDepth = 0;
+        // an expression without arguments has depth 2, like one of atoms
+        int minDepth = -1;
         level.incCurrentLevel();
         IASTAppendable clone = null;
         final int size = ast.size();
@@ -3206,6 +3292,9 @@ public final class ListFunctions {
             if (level.getCurrentDepth() < minDepth) {
               minDepth = level.getCurrentDepth();
             }
+          } else {
+            // an atom has depth 1
+            level.setCurrentDepth(-1);
           }
           if (matcher.test(ast.get(i))) {
             if (level.isInRange()) {
@@ -5168,7 +5257,8 @@ public final class ListFunctions {
        * @return
        */
       private IAST positionRecursive(final IAST ast, final IAST prototypeList) {
-        int minDepth = 0;
+        // an expression without arguments has depth 2, like one of atoms
+        int minDepth = -1;
         level.incCurrentLevel();
         IASTAppendable clone = null;
         final int size = ast.size();
@@ -5186,6 +5276,9 @@ public final class ListFunctions {
             if (level.getCurrentDepth() < minDepth) {
               minDepth = level.getCurrentDepth();
             }
+          } else {
+            // an atom has depth 1
+            level.setCurrentDepth(-1);
           }
           if (matcher.test(arg)) {
             if (level.isInRange()) {
@@ -6168,6 +6261,32 @@ public final class ListFunctions {
           return Errors.printMessage(S.ReplacePart, "opttfa", F.List(S.Heads, headsOption), engine);
         }
       }
+      if (argSize == 4) {
+        // ReplacePart(expr, new, {pos1, pos2, ...}, {npos1, npos2, ...}): the part posi becomes
+        // the part nposi of new
+        IExpr positions = ast.arg3();
+        IExpr newPositions = ast.arg4();
+        if (!positions.isList() || !newPositions.isList()
+            || positions.argSize() != newPositions.argSize()) {
+          return F.NIL;
+        }
+        for (int i = 1; i <= positions.argSize(); i++) {
+          IExpr newPosition = newPositions.getAt(i);
+          IASTAppendable part = F.ast(S.Part, 3);
+          part.append(ast.arg2());
+          if (newPosition.isList()) {
+            part.appendArgs((IAST) newPosition);
+          } else {
+            part.append(newPosition);
+          }
+          IExpr value = engine.evaluate(part);
+          if (value.isAST(S.Part)) {
+            return F.NIL;
+          }
+          result = result.replacePart(F.Rule(positions.getAt(i), value), heads).orElse(result);
+        }
+        return result;
+      }
       if (argSize == 3) {
         IExpr lhs = ast.arg3();
         IExpr rhs = ast.arg2();
@@ -6219,7 +6338,7 @@ public final class ListFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3_1;
+      return ARGS_2_4_1;
     }
 
     @Override

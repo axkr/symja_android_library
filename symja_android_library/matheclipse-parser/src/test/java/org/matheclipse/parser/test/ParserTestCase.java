@@ -832,6 +832,14 @@ class ParserTestCase {
   }
 
   @Test
+  void testIntegralWithDifferentialD() {
+    ASTNode obj = PARSE_UNRELAXED.parse("a + \u222B Sin[x] y \uF74Cx");
+    assertEquals("Plus(a, Integrate(Times(Sin(x), y), x))", obj.toString());
+    obj = PARSE_UNRELAXED.parse("u \uF7D9 v \u2A75 w");
+    assertEquals("Equal(u, v, w)", obj.toString());
+  }
+
+  @Test
   void testLetterLikeTableMatchesScannerData() throws java.io.IOException {
     // Characters.isLetterLike() is the is-letter-like column of Mathics3-scanner's
     // named-characters.yml, apart from the characters which have another meaning here
@@ -852,6 +860,12 @@ class ParserTestCase {
           && !otherMeaning.contains(entry.getKey())) {
         expected.add(((String) unicode).charAt(0));
       }
+    }
+    // \[Bullet], \[Sun], \[Moon], the planets and the signs of the zodiac are letters as well
+    expected.add('\u2022');
+    expected.add('\u2609');
+    for (char ch = '\u263E'; ch <= '\u2653'; ch++) {
+      expected.add(ch);
     }
     java.util.TreeSet<Character> actual = new java.util.TreeSet<>();
     for (char ch = 128; ch < Character.MAX_VALUE; ch++) {

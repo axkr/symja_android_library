@@ -1079,7 +1079,21 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             return Errors.printMessage(builtinSymbol, "write", F.list(symbol), EvalEngine.get());
           }
           try {
+            ISparseArray sparse = null;
+            if (temp.isSparseArray()) {
+              // the parts of a SparseArray are assigned in its dense form, and the result is sparse
+              // again with the same default value
+              sparse = (ISparseArray) temp;
+              temp = sparse.normal(false);
+            }
             IExpr result = assignPart(temp, part, 2, rightHandSide, engine);
+            if (result.isPresent() && sparse != null && result.isList()) {
+              IExpr sparseResult =
+                  SparseArrayExpr.newDenseList((IAST) result, sparse.getDefaultValue());
+              if (sparseResult != null) {
+                result = sparseResult;
+              }
+            }
             if (result.isPresent()) {
               symbol.assignValue(result, false);
             }

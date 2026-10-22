@@ -177,7 +177,7 @@ public final class OperatorTable {
       row("=!=", "UnsameQ", Affix.INFIX, 290, Grouping.FLAT),
       row("=", "Set", Affix.INFIX, 40, Grouping.RIGHT),
       row("=.", "Unset", Affix.POSTFIX, 670, Grouping.FLAT),
-      row("==", "Equal", Affix.INFIX, 290, Grouping.FLAT, "\uf431"),
+      row("==", "Equal", Affix.INFIX, 290, Grouping.FLAT, "\uf431", "\uf7d9", "\u2a75"),
       row("===", "SameQ", Affix.INFIX, 290, Grouping.FLAT),
       row(">", "Greater", Affix.INFIX, 290, Grouping.FLAT),
       row(">=", "GreaterEqual", Affix.INFIX, 290, Grouping.FLAT, "\u2265"),
@@ -255,6 +255,8 @@ public final class OperatorTable {
       row("\u2223", "Divides", Affix.INFIX, 470, Grouping.FLAT),
       row("\u2225", "DoubleVerticalBar", Affix.INFIX, 280, Grouping.FLAT),
       row("\u2226", "NotDoubleVerticalBar", Affix.INFIX, 280, Grouping.FLAT),
+      // \u222b f \uf74cx - the body is read up to its trailing DifferentialD(x)
+      inputOnlyRow("\u222b", "Integrate", Affix.PREFIX, 325, Grouping.FLAT),
       row("\u2234", "Therefore", Affix.INFIX, 50, Grouping.RIGHT),
       row("\u2235", "Because", Affix.INFIX, 50, Grouping.LEFT),
       row("\u2236", "Colon", Affix.INFIX, 80, Grouping.FLAT),

@@ -7060,28 +7060,28 @@ ab^2	!syntax@2: End-of-file not reached.
 a	!syntax@2: End-of-file not reached.
 a+b	!syntax@2: End-of-file not reached.
 (a+b)	!syntax@6: End-of-file not reached.
-ab	!syntax@2: End-of-file not reached.
-a  b	!syntax@3: End-of-file not reached.
-23	!syntax@2: End-of-file not reached.
-abc	!syntax@2: End-of-file not reached.
-a+bc	!syntax@4: End-of-file not reached.
-ab+c	!syntax@2: End-of-file not reached.
-a*bc	!syntax@4: End-of-file not reached.
-ab*c	!syntax@2: End-of-file not reached.
-a.bc	!syntax@4: End-of-file not reached.
-ab.c	!syntax@2: End-of-file not reached.
-a==bc	!syntax@5: End-of-file not reached.
-ab==c	!syntax@2: End-of-file not reached.
-(ab)c	!syntax@3: ')' expected.
-a(bc)	!syntax@2: End-of-file not reached.
-a-b	!syntax@2: End-of-file not reached.
-ab^2	!syntax@2: End-of-file not reached.
+ab	Times(a, DifferentialD(b))
+a  b	Times(a, DifferentialD(b))
+23	Times(2, DifferentialD(3))
+abc	Times(a, DifferentialD(Times(b, DifferentialD(c))))
+a+bc	Plus(a, Times(b, DifferentialD(c)))
+ab+c	Plus(Times(a, DifferentialD(b)), c)
+a*bc	Times(a, Times(b, DifferentialD(c)))
+ab*c	Times(Times(a, DifferentialD(b)), c)
+a.bc	Dot(a, Times(b, DifferentialD(c)))
+ab.c	Times(a, Dot(DifferentialD(b), c))
+a==bc	Equal(a, Times(b, DifferentialD(c)))
+ab==c	Equal(Times(a, DifferentialD(b)), c)
+(ab)c	Times(Times(a, DifferentialD(b)), DifferentialD(c))
+a(bc)	Times(a, DifferentialD(Times(b, DifferentialD(c))))
+a-b	Times(a, DifferentialD(Times(-1, b)))
+ab^2	Times(a, DifferentialD(Power(b, 2)))
 a	DifferentialD(a)
 a+b	Plus(DifferentialD(a), b)
 (a+b)	DifferentialD(Plus(a, b))
-a	!syntax@2: End-of-file not reached.
-a+b	!syntax@2: End-of-file not reached.
-(a+b)	!syntax@6: End-of-file not reached.
+a	!syntax@3: Error in factor at character: ' ' (Token:0 \\u0020)
+a+b	Times(a, DifferentialD(Plus(b)))
+(a+b)	!syntax@7: Error in factor at character: ' ' (Token:0 \\u0020)
 a;b>>c	CompoundExpression(a, Put(b, c))
 a;b/:c	CompoundExpression(a, TagSet(b, c))
 a;b∴c	CompoundExpression(a, Therefore(b, c))

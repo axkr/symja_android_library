@@ -1320,7 +1320,12 @@ public class Parser extends Scanner {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_IDENTIFIER
         || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
         || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN
-        || fToken == TT_ANGLE_OPEN || isBlankToken();
+        || fToken == TT_ANGLE_OPEN || isBlankToken() || isDifferentialDToken();
+  }
+
+  /** <code>f \uF74Cx</code> is the product of <code>f</code> and <code>DifferentialD(x)</code>. */
+  private boolean isDifferentialDToken() {
+    return fToken == TT_OPERATOR && "\uF74C".equals(fOperatorString);
   }
 
   /** A blank starts an operand: <code>_. _f</code> and <code>_Integer _</code> are products. */
@@ -1727,12 +1732,53 @@ public class Parser extends Scanner {
     }
     getNextToken();
     final ASTNode temp = parseLookaheadOperator(prefixOperator.getPrecedence());
+    if ("\u222B".equals(prefixOperator.getOperatorString())) {
+      return integral(temp);
+    }
     if ("PreMinus".equals(prefixOperator.getFunctionName()) && temp instanceof NumberNode) {
       // special cases for negative numbers
       ((NumberNode) temp).toggleSign();
       return temp;
     }
     return prefixOperator.createFunction(fFactory, temp);
+  }
+
+  /**
+   * <code>\u222B f \uF74Cx</code> is read as the integral sign before the product of
+   * <code>f</code> and <code>DifferentialD(x)</code>: it is <code>Integrate(f, x)</code>.
+   */
+  private ASTNode integral(final ASTNode body) {
+    ASTNode integrand = null;
+    ASTNode differential = null;
+    if (isDifferential(body)) {
+      integrand = fFactory.createInteger(1);
+      differential = body;
+    } else if (body instanceof FunctionNode && ((FunctionNode) body).size() > 2
+        && "Times".equals(((FunctionNode) body).get(0).getString())) {
+      FunctionNode times = (FunctionNode) body;
+      differential = times.get(times.size() - 1);
+      if (isDifferential(differential)) {
+        if (times.size() == 3) {
+          integrand = times.get(1);
+        } else {
+          FunctionNode rest = fFactory.createFunction((SymbolNode) times.get(0));
+          for (int i = 1; i < times.size() - 1; i++) {
+            rest.add(times.get(i));
+          }
+          integrand = rest;
+        }
+      }
+    }
+    if (integrand == null) {
+      throwSyntaxError("'\uF74C' expected.");
+    }
+    return fFactory.createFunction(fFactory.createSymbol("Integrate"), integrand,
+        ((FunctionNode) differential).get(1));
+  }
+
+  private static boolean isDifferential(final ASTNode node) {
+    return node instanceof FunctionNode && ((FunctionNode) node).size() == 2
+        && "DifferentialD".equals(((FunctionNode) node).get(0).getString());
   }
 
   public void setFactory(final INodeParserFactory factory) {

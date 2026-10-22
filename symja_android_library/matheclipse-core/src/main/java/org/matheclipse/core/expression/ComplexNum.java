@@ -339,6 +339,11 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IInexactNumber acos() {
+    if (fComplex.getImaginary() == 0.0 && Math.abs(fComplex.getReal()) <= 1.0) {
+      // on the real segment the value is real; the complex formula leaves rounding noise in the
+      // imaginary part
+      return valueOf(new Complex(Math.acos(fComplex.getReal()), 0.0));
+    }
     return valueOf(fComplex.acos());
   }
 
@@ -497,6 +502,10 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IInexactNumber asin() {
+    if (fComplex.getImaginary() == 0.0 && Math.abs(fComplex.getReal()) <= 1.0) {
+      // on the real segment the value is real; see acos()
+      return valueOf(new Complex(Math.asin(fComplex.getReal()), 0.0));
+    }
     return valueOf(fComplex.asin());
   }
 

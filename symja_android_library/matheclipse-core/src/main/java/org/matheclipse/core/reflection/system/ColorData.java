@@ -40,10 +40,25 @@ public class ColorData extends AbstractFunctionEvaluator {
         return getAllGradients();
       } else if (name.equalsIgnoreCase("Indexed")) {
         return getAllIndexed();
+      } else if (name.equalsIgnoreCase("WebSafe")) {
+        // the colors named by their hex codes
+        if (ast.isAST2()) {
+          return webSafe(ast.arg2());
+        }
+        return createColorDataFunction("WebSafe", "Named", F.CEmptyList);
       }
 
       // Try to find scheme
       colorDataFunction = findScheme(name);
+    } else if (arg1.isList2() && arg1.first().isString() && arg1.second().isString()
+        && arg1.second().toString().equals("Reverse")) {
+      // {"Rainbow", "Reverse"}: the gradient run backwards over its range
+      IExpr gradient = findScheme(arg1.first().toString());
+      if (gradient.isPresent() && ((IAST) gradient).arg2().toString().equals("Gradients")) {
+        IExpr range = ((IAST) gradient).arg3();
+        colorDataFunction =
+            ((IAST) gradient).setAtCopy(3, F.list(range.second(), range.first()));
+      }
     } else if (arg1.isList2() && arg1.first().isString() && arg1.second().isList2()) {
       // {"Rainbow", {min, max}}: the gradient spread over the range from min to max; it runs
       // backwards if max < min
@@ -65,6 +80,20 @@ public class ColorData extends AbstractFunctionEvaluator {
     }
 
     if (colorDataFunction.isPresent()) {
+      if (ast.isAST2() && ast.arg2().isReal()) {
+        // ColorData(scheme, value) is the color the scheme's function gives for the value
+        return engine.evaluate(F.unaryAST1(colorDataFunction, ast.arg2()));
+      }
+      if (ast.isAST2() && ast.arg2().toString().equals("ColorList")
+          && ((IAST) colorDataFunction).arg2().toString().equals("Indexed")) {
+        IExpr range = ((IAST) colorDataFunction).arg3();
+        int length = range.isList2() ? range.second().toIntDefault() : -1;
+        if (length > 0) {
+          final IExpr function = colorDataFunction;
+          return F.mapRange(1, length + 1,
+              i -> engine.evaluate(F.unaryAST1(function, F.ZZ(i))));
+        }
+      }
       if (ast.isAST2()) {
         String prop = ast.arg2().toString();
         if (prop.equals("Name")) {
@@ -101,6 +130,53 @@ public class ColorData extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * The range of the values a gradient is spread over: wavelengths in nanometers for the visible
+   * spectrum, temperatures in kelvin for the black body spectrum, <code>0 ... 1</code> otherwise.
+   */
+  private static IExpr gradientRange(ColorDataGradients g) {
+    if (g == ColorDataGradients.VISIBLE_SPECTRUM) {
+      return F.List(F.ZZ(380), F.ZZ(750));
+    }
+    if (g == ColorDataGradients.BLACK_BODY_SPECTRUM) {
+      return F.List(F.ZZ(1000), F.ZZ(10000));
+    }
+    return F.List(F.C0, F.C1);
+  }
+
+  /**
+   * The color a web safe hex code such as <code>"#99CC00"</code> names.
+   *
+   * @return {@link F#NIL} if <code>code</code> is no such code
+   */
+  public static IExpr webSafe(IExpr code) {
+    if (!code.isString()) {
+      return F.NIL;
+    }
+    String hex = code.toString();
+    if (hex.startsWith("#")) {
+      hex = hex.substring(1);
+    }
+    if (hex.length() != 6) {
+      return F.NIL;
+    }
+    IASTAppendable rgb = F.ast(org.matheclipse.core.expression.S.RGBColor, 3);
+    for (int i = 0; i < 3; i++) {
+      int value;
+      try {
+        value = Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
+      } catch (NumberFormatException nfe) {
+        return F.NIL;
+      }
+      if (value % 0x33 != 0) {
+        // the web safe components are 00, 33, 66, 99, CC and FF
+        return F.NIL;
+      }
+      rgb.append(F.num(value / 255.0));
+    }
+    return rgb;
+  }
+
   private IExpr findIndexedScheme(String name) {
     try {
       ColorDataLists l = ColorDataLists.valueOf(name);
@@ -113,16 +189,16 @@ public class ColorData extends AbstractFunctionEvaluator {
 
   private IExpr findScheme(String name) {
     // Try Gradient
+    ColorDataGradients g;
     try {
       // Try direct match first
-      ColorDataGradients g = ColorDataGradients.valueOf(name.toUpperCase(Locale.US));
-      return createColorDataFunction(g.name(), "Gradients", F.List(F.C0, F.C1));
+      g = ColorDataGradients.valueOf(name.toUpperCase(Locale.US));
     } catch (IllegalArgumentException e) {
       // Attempt to match insensitive and ignoring underscores
-      ColorDataGradients g = gradientNamed(name);
-      if (g != null) {
-        return createColorDataFunction(g.name(), "Gradients", F.List(F.C0, F.C1));
-      }
+      g = gradientNamed(name);
+    }
+    if (g != null) {
+      return createColorDataFunction(g.name(), "Gradients", gradientRange(g));
     }
 
     // Try Indexed by name (integer string)

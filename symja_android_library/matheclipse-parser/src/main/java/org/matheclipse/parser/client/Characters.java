@@ -629,7 +629,9 @@ public class Characters {
   /**
    * The letter-like named characters at or above 128, sorted: the <code>wl-unicode</code> values of
    * the entries marked <code>is-letter-like</code> in Mathics3-scanner's
-   * <code>named-characters.yml</code> (a copy is in the test resources of this module). Left out are
+   * <code>named-characters.yml</code> (a copy is in the test resources of this module), together
+   * with <code>\\[Bullet]</code>, <code>\\[Sun]</code>, <code>\\[Moon]</code>, the planets and the
+   * signs of the zodiac, which are letters in symbol names as well. Left out are
    * the characters which have another meaning here: <code>\[DiscreteRatio]</code> and
    * <code>\[CapitalDifferentialD]</code> are prefix operators, <code>\[Section]</code> marks names
    * which cannot be typed, and <code>\[Infinity]</code>, <code>\[Degree]</code>,
@@ -654,14 +656,17 @@ public class Characters {
       '\u0399', '\u039A', '\u039B', '\u039C', '\u039D', '\u039E', '\u039F', '\u03A0',
       '\u03A1', '\u03A3', '\u03A4', '\u03A5', '\u03A6', '\u03A7', '\u03A8', '\u03A9',
       '\u03B1', '\u03B2', '\u03B8', '\u03BC', '\u03C6', '\u03C7', '\u03D1', '\u03D6',
-      '\u03DA', '\u03DC', '\u03DD', '\u03DE', '\u03E0', '\u03F0', '\u03F1', '\u2026',
+      '\u03DA', '\u03DC', '\u03DD', '\u03DE', '\u03E0', '\u03F0', '\u03F1', '\u2022', '\u2026',
       '\u2032', '\u2035', '\u2036', '\u2060', '\u210A', '\u210B', '\u210C', '\u210F',
       '\u2110', '\u2111', '\u2112', '\u2113', '\u2118', '\u211B', '\u211C', '\u2122',
       '\u2127', '\u2128', '\u212B', '\u212C', '\u212D', '\u212F', '\u2130', '\u2131',
       '\u2133', '\u2134', '\u2135', '\u2136', '\u21B5', '\u2205', '\u2220', '\u25A0',
       '\u25A1', '\u25AA', '\u25AE', '\u25AF', '\u25B2', '\u25B3', '\u25BC', '\u25BD',
       '\u25C0', '\u25C6', '\u25C7', '\u25CB', '\u25E6', '\u25FB', '\u25FC', '\u2605',
-      '\u2639', '\u263A', '\u2660', '\u2661', '\u266A', '\u266D', '\u266E', '\u266F',
+      '\u2609', '\u2639', '\u263A', '\u263E', '\u263F', '\u2640', '\u2641', '\u2642',
+      '\u2643', '\u2644', '\u2645', '\u2646', '\u2647', '\u2648', '\u2649', '\u264A',
+      '\u264B', '\u264C', '\u264D', '\u264E', '\u264F', '\u2650', '\u2651', '\u2652',
+      '\u2653', '\u2660', '\u2661', '\u266A', '\u266D', '\u266E', '\u266F',
       '\u2736', '\uF3A0', '\uF3B8', '\uF3B9', '\uF527', '\uF528', '\uF6B2', '\uF6B3',
       '\uF6B4', '\uF6B5', '\uF6B7', '\uF6B9', '\uF6BA', '\uF6BB', '\uF6BC', '\uF6BE',
       '\uF6BF', '\uF6C1', '\uF6C2', '\uF6C3', '\uF6C4', '\uF6C5', '\uF6C6', '\uF6C7',

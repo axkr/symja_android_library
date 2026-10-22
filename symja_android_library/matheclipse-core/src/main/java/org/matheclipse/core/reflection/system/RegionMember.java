@@ -109,8 +109,9 @@ public class RegionMember extends AbstractFunctionEvaluator {
       case ID.Polygon:
         return polygonMember(reg, point, engine);
       case ID.HalfSpace:
-      case ID.HalfPlane:
         return halfSpaceMember(reg, point, engine);
+      case ID.HalfPlane:
+        return halfPlaneMember(reg, point, engine);
       case ID.StadiumShape: {
         RegionPrimitives.StadiumSpec spec = RegionPrimitives.parseStadiumShape(reg);
         return spec == null ? F.NIL : tubeMember(spec.p1, spec.p2, spec.radius, point, engine);
@@ -672,6 +673,56 @@ public class RegionMember extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     return F.LessEqual(F.Dot(spec.normal, point), spec.offset);
+  }
+
+  /**
+   * <code>HalfPlane({p1, p2}, v)</code> and <code>HalfPlane(p, u, v)</code>: the points of the plane
+   * through <code>p</code> spanned by <code>u</code> and <code>v</code>, which are on the side of
+   * <code>v</code> of the line through <code>p</code> in direction <code>u</code>.
+   */
+  private static IExpr halfPlaneMember(IAST reg, IExpr point, EvalEngine engine) {
+    IExpr p;
+    IExpr u;
+    IExpr v;
+    if (reg.argSize() == 2 && reg.arg1().isList2() && reg.arg1().isListOfLists()) {
+      p = reg.arg1().first();
+      u = engine.evaluate(F.Subtract(reg.arg1().second(), p));
+      v = reg.arg2();
+    } else if (reg.argSize() == 3) {
+      p = reg.arg1();
+      u = reg.arg2();
+      v = reg.arg3();
+    } else {
+      return F.NIL;
+    }
+    if (!p.isList() || !u.isList() || !v.isList()) {
+      return F.NIL;
+    }
+    int dimension = p.argSize();
+    if ((dimension != 2 && dimension != 3) || u.argSize() != dimension
+        || v.argSize() != dimension || coordinates(point, dimension).isNIL()) {
+      return F.NIL;
+    }
+    IExpr w = engine.evaluate(F.Subtract(point, p));
+    if (dimension == 2) {
+      // w is on the side of v if both make the same turn from u
+      IExpr uw = F.Subtract(F.Times(u.first(), w.second()), F.Times(u.second(), w.first()));
+      IExpr uv =
+          engine.evaluate(F.Subtract(F.Times(u.first(), v.second()), F.Times(u.second(), v.first())));
+      if (uv.isZero()) {
+        // u and v don't span a plane
+        return F.NIL;
+      }
+      return F.GreaterEqual(F.Times(uw, uv), F.C0);
+    }
+    IExpr cross = engine.evaluate(F.Cross(u, v));
+    if (cross.isList() && ((IAST) cross).forAll(IExpr::isZero)) {
+      // u and v don't span a plane
+      return F.NIL;
+    }
+    // the part of v normal to u, scaled by u.u
+    IExpr normal = F.Subtract(F.Times(F.Dot(u, u), v), F.Times(F.Dot(u, v), u));
+    return F.And(F.Equal(F.Dot(w, cross), F.C0), F.GreaterEqual(F.Dot(w, normal), F.C0));
   }
 
   /** All points which are no further than <code>radius</code> away from the axis segment. */

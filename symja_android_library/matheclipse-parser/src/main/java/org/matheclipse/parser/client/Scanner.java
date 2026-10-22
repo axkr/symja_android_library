@@ -944,6 +944,7 @@ public abstract class Scanner {
           && (fCurrentChar != '\r') //
           && (fCurrentChar != ' ')//
           && (fCurrentChar != '\uF360') // \[InvisibleSpace]
+          && (fCurrentChar < 128 || !Character.isSpaceChar(fCurrentChar)) // \[LineSeparator], ...
       ) {
         if ((fCurrentChar == '\\' || fCurrentChar == BOX_BANG || fCurrentChar == BOX_OPEN)
             && scanBoxEscape(tokenStart)) {

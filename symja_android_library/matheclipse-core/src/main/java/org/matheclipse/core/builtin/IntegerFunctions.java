@@ -2845,7 +2845,9 @@ public class IntegerFunctions {
       // 3.4999999999999996
       IExpr n = engine.evaluate(multipleQuotient(expr, k));
       if (n.isPresent()) {
-        if (n.isRealResult() || n.isComplex() || n.isComplexNumeric()) {
+        if (n.isRealResult() || n.isComplex() || n.isComplexNumeric()
+            || n.isNumericFunction(true)) {
+          // an exact complex quotient like 2*Pi+2*E*I is rounded in both parts
           n = S.Round.ofNIL(engine, n);
           if (n.isPresent()) {
             return F.Times(n, k);

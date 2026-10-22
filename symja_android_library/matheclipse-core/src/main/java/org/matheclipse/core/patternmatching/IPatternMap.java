@@ -3048,6 +3048,15 @@ public interface IPatternMap {
       int[] dummyPriority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
       determinePatternsRecursive(condition, patternIndexMap, dummyPriority, ruleWithoutPattern,
           listEvalFlags, treeLevel);
+    } else if (lhsPatternExpr.isAST(S.PatternTest, 3)) {
+      // as for Condition, only the tested pattern decides the priority: the head PatternTest and
+      // the symbols of the test function are no literals of the rule, and must not move
+      // f[x_, k_Integer?Positive] ahead of f[x_, 1]
+      determinePatternsRecursive(lhsPatternExpr.arg1(), patternIndexMap, priority,
+          ruleWithoutPattern, listEvalFlags, treeLevel);
+      int[] dummyPriority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
+      determinePatternsRecursive(lhsPatternExpr.arg2(), patternIndexMap, dummyPriority,
+          ruleWithoutPattern, listEvalFlags, treeLevel);
     } else {
       // get the patterns from right argument to left argument, to get the pattern x_ in D(f,x_) and
       // Integrate(f,x_) as first pattern in the pattern map
@@ -3077,8 +3086,14 @@ public interface IPatternMap {
       listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, lhsPatternAST, priority,
           ruleWithoutPattern, treeLevel + 1);
 
-      // Replaced hardcoded 11 with the constant
-      priority[0] -= RuleConfig.PRIORITY_AST_PENALTY;
+      if (lhsPatternAST.isAST(S.PatternTest, 3)) {
+        // a test narrows its pattern like a head test does, so x_?test and x_Integer are equally
+        // specific and keep the order of their definitions
+        priority[0] -= RuleConfig.PRIORITY_PATTERN_HEADTEST;
+      } else {
+        // Replaced hardcoded 11 with the constant
+        priority[0] -= RuleConfig.PRIORITY_AST_PENALTY;
+      }
 
       if (x.isPatternDefault()) {
         listEvalFlags[0] |=

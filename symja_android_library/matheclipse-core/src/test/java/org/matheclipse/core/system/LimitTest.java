@@ -249,7 +249,7 @@ public class LimitTest extends ExprEvaluatorTestCase {
 
     // adjust LimitRules.m if these 2 tests fails
     check("FullForm(x*(Sqrt(2*Pi*x)/(x!))^(1/x) )", //
-        "Times(Power(Power(Times(2, Pi), Rational(1,2)), Power(x, -1)), x, Power(Times(Power(x, Rational(1,2)), Power(Factorial(x), -1)), Power(x, -1)))");
+        "Times(Power(Times(2, Pi), Times(Rational(1,2), Power(x, -1))), x, Power(Times(Power(x, Rational(1,2)), Power(Factorial(x), -1)), Power(x, -1)))");
     check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
         "E");
     check("Limit(x/((x!)^(1/x)), x->Infinity)", //

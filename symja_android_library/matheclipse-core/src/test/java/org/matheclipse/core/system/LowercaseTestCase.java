@@ -13631,6 +13631,245 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRulePriorityPatternTest() {
+    // a literal argument is tried before a pattern with a test, whatever the definition order
+    check("hh(lst_List, k_Integer?Positive) := many; hh(lst_List, 1) := single; "
+        + "{hh({a, b}, 1), hh({a, b}, 2)}", //
+        "{single,many}");
+    // a test is as specific as a head: the rule defined first is tried first
+    check("pt(x_Integer) := whole; pt(x_?Positive) := pos; {pt(5), pt(5/2)}", //
+        "{whole,pos}");
+    check("qt(x_?Positive) := pos; qt(x_Integer) := whole; {qt(5), qt(-5)}", //
+        "{pos,whole}");
+    check("rt(x_) := any; rt(x_?EvenQ) := even; {rt(4), rt(5)}", //
+        "{even,any}");
+  }
+
+  @Test
+  public void testSparseArrayPartAssignment() {
+    check("m = SparseArray({{1, 2}, {3, 4}}); m[[2, 1]] = 0; {Head(m), Normal(m)}", //
+        "{SparseArray,{{1,2},{0,4}}}");
+    check("s = Inverse(SparseArray({{2, 0}, {0, 4}})); {Head(s), Normal(s)}", //
+        "{SparseArray,{{1/2,0},{0,1/4}}}");
+  }
+
+  @Test
+  public void testBooleanFunctionsAsHeads() {
+    // And(f, g) applied to an argument is no conjunction of the argument
+    check("Head(And(PrimeQ, OddQ)[9])", //
+        "PrimeQ&&OddQ");
+    check("{Through(And(PrimeQ, OddQ)[7]), Through(Or(EvenQ, Negative)[3])}", //
+        "{True,False}");
+  }
+
+  @Test
+  public void testContinuedFractionLength() {
+    // the working precision grows with the number of terms
+    check("{Length(ContinuedFraction(E, 60)), Length(ContinuedFraction(Log(2), 80))}", //
+        "{60,80}");
+    check("ContinuedFraction(Log(2), 8)", //
+        "{0,1,2,3,1,6,3,1}");
+  }
+
+  @Test
+  public void testInverseTrigOfRealComplexNumbers() {
+    // a zero imaginary part inside the real domain gives the real value
+    check("{Im(ArcSin(Complex(0.3, 0.0))), Im(ArcCos(Complex(-0.6, 0.0)))}", //
+        "{0.0,0.0}");
+  }
+
+  @Test
+  public void testZeroMatrixEigensystem() {
+    check("Eigensystem({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}})", //
+        "{{0,0,0},{{0,0,1},{0,1,0},{1,0,0}}}");
+    check("SingularValueDecomposition({{0, 0}, {0, 0}})", //
+        "{{{0,1},{1,0}},{{0,0},{0,0}},{{0,1},{1,0}}}");
+    check("{CharacteristicPolynomial({{0, 0}, {0, 0}}, x), Eigenvalues({{0.0, 0.0}, {0.0, 0.0}})}", //
+        "{x^2,{0.0,0.0}}");
+  }
+
+  @Test
+  public void testColorDataRangesAndSchemes() {
+    // wavelengths in nm, temperatures in K; no light outside of the visible spectrum
+    check("{ColorData(\"VisibleSpectrum\")[200], ColorData(\"VisibleSpectrum\", \"Range\"), "
+        + "ColorData(\"BlackBodySpectrum\", \"Range\")}", //
+        "{RGBColor(0.0,0.0,0.0),{380,750},{1000,10000}}");
+    check("{ColorData({\"Rainbow\", \"Reverse\"})[0.25] === ColorData(\"Rainbow\")[0.75], "
+        + "ColorData(\"Rainbow\")[3.0] === ColorData(\"Rainbow\")[1.0]}", //
+        "{True,True}");
+    check("{ColorData(\"WebSafe\", \"#3300CC\"), ColorData(\"WebSafe\", \"#123456\")}", //
+        "{RGBColor(0.2,0.0,0.8),ColorData(WebSafe,#123456)}");
+    check("{Length(ColorData(97, \"ColorList\")), ColorData(97, 5) === ColorData(97)[5]}", //
+        "{16,True}");
+  }
+
+  @Test
+  public void testHyperfactorialIntegerValuedReals() {
+    check("{Hyperfactorial(3.0), Hyperfactorial(5.0) - 86400000, Hyperfactorial(9.0) - Hyperfactorial(9)}", //
+        "{108.0,0.0,0.0}");
+    // negative integers continue the product: H(-n) = (-1)^Floor(n/2)*H(n-1)
+    check("{Hyperfactorial(-10), Hyperfactorial(-9) == Hyperfactorial(8), Hyperfactorial(-10.0)}", //
+        "{-21577941222941856209168026828800000,True,-2.15779*10^34}");
+    // at the negative integers the Gamma function formula has no value
+    check("{Hyperfactorial(-10.0`30), Precision(Hyperfactorial(-7.0`25))}", //
+        "{-2.15779412229418562091680268288*10^34,25}");
+    // machine values within a few units in the last place of
+    // 0.88044923517342339328, 15.984211992223716853, 0.84871757972389922861 and 0.076172979656861111
+    check("FullForm({Hyperfactorial(0.5), Hyperfactorial(2.5), BarnesG(0.75), BarnesG(-2.5)})", //
+        "List(0.8804492351734233`, 15.984211992223722`, 0.8487175797238993`, 0.07617297965686112`)");
+    // no closed form: it stays
+    check("BarnesG(3/4)", //
+        "BarnesG(3/4)");
+    check("{Hyperfactorial(10^20), Hyperfactorial(Infinity)}", //
+        "{Hyperfactorial(100000000000000000000),Hyperfactorial(Infinity)}");
+  }
+
+  @Test
+  public void testLevelOfArgumentFreeExpressions() {
+    // g() and {} have depth 2, like expressions of atoms
+    check("{Depth(g()), Level({g(), {u}, h(v)}, {-1}), Level({g(), {u}}, {-2}), "
+        + "Count({{}, {u}, g()}, _, {-2})}", //
+        "{2,{u,v},{g(),{u}},3}");
+    check("{Depth(<||>), Level({<||>, 7}, {-1}), Level({<||>, 7}, {-2})}", //
+        "{2,{7},{<||>}}");
+    check("{Position({g(), {u}}, _, {-1}, Heads -> False), Position({g(), {u}}, _, {-2}, Heads -> False), "
+        + "FirstPosition({{}, 3}, _List, Missing(), {-2})}", //
+        "{{{2,1}},{{1},{2}},{1}}");
+  }
+
+  @Test
+  public void testBlendColorSpaces() {
+    check("Blend({GrayLevel(0), GrayLevel(1/2), GrayLevel(1)}, 3/4)", //
+        "GrayLevel(3/4)");
+    check("{Blend({Red, Green}, {3, 1}), Blend({{0, Red}, {2, Blue}}, 1/2), Blend({Red, Blue}, 5)}", //
+        "{RGBColor(3/4,1/4,0),RGBColor(3/4,0,1/4),RGBColor(0,0,1)}");
+    check("{Blend({Hue(0.2), Hue(0.6)}, 0.25), Blend({CMYKColor(0, 0, 0, 1), CMYKColor(0, 0, 0, 0)}, 1/4)}", //
+        "{Hue(0.3,1.0,1.0),CMYKColor(0,0,0,3/4)}");
+    // the opacity is blended as well; different color spaces blend as RGB colors
+    check("{Blend({RGBColor(0, 0, 0, 1/4), White}, 1/2), Blend({GrayLevel(1/3), RGBColor(1, 0, 0)})}", //
+        "{RGBColor(1/2,1/2,1/2,5/8),RGBColor(2/3,1/6,1/6)}");
+    // the positions may be given in any order
+    check("Blend({{1, Red}, {0, Blue}}, 1/4)", //
+        "RGBColor(1/4,0,3/4)");
+    check("Blend({Red, Blue}, {1, 2, 3})", //
+        "Blend({RGBColor(1,0,0),RGBColor(0,0,1)},{1,2,3})");
+  }
+
+  @Test
+  public void testToColor() {
+    check("{ToColor(GrayLevel(1/4), RGBColor), ToColor(RGBColor(0, 0, 1), GrayLevel), "
+        + "ToColor(Hue(1/2), RGBColor), ToColor(CMYKColor(0, 0, 0, 1/2), RGBColor)}", //
+        "{RGBColor(1/4,1/4,1/4),GrayLevel(0.114),RGBColor(0,1,1),RGBColor(1/2,1/2,1/2)}");
+    check("ToColor(RGBColor(0.5, 0.25, 0.0), Hue)", //
+        "Hue(0.0833333,1.0,0.5)");
+    check("ToColor(Hue(0.3), u)", //
+        "ToColor(Hue(0.3),u)");
+  }
+
+  @Test
+  public void testRegionMemberHalfPlane() {
+    check("{RegionMember(HalfPlane({1, 1}, {1, 1}, {-1, 0}), {0, 3}), "
+        + "RegionMember(HalfPlane({1, 1}, {1, 1}, {-1, 0}), {3, 0}), "
+        + "RegionMember(HalfPlane({{0, 0}, {2, 1}}, {0, -1}), {4, 1})}", //
+        "{True,False,True}");
+    // in 3D the points have to be on the plane as well
+    check("{RegionMember(HalfPlane({0, 0, 0}, {0, 0, 1}, {0, 1, 0}), {0, 2, 5}), "
+        + "RegionMember(HalfPlane({0, 0, 0}, {0, 0, 1}, {0, 1, 0}), {1, 2, 5}), "
+        + "RegionMember(HalfPlane({0, 0, 0}, {0, 0, 1}, {0, 1, 0}), {0, -1, 0})}", //
+        "{True,False,False}");
+    // parallel directions don't span a half-plane
+    check("RegionMember(HalfPlane({0, 0}, {1, 0}, {2, 0}), {5, -7})", //
+        "RegionMember(HalfPlane({0,0},{1,0},{2,0}),{5,-7})");
+  }
+
+  @Test
+  public void testBinCountsMultidimensional() {
+    check("BinCounts({{0.5, 2.5}, {1.5, 0.5}, {1.2, 0.7}, {3, 1}}, {0, 2, 1}, {0, 3, 1})", //
+        "{{0,0,1},{2,0,0}}");
+  }
+
+  @Test
+  public void testReplacePartFromParts() {
+    check("ReplacePart(g(u, v, w), {p, q}, {{3}, {1}}, {{1}, {2}})", //
+        "g(q,v,p)");
+  }
+
+  @Test
+  public void testDPiecewiseConstantConditions() {
+    // conditions free of x keep the pieces and the default value
+    check("D(Piecewise({{Sin(x), a > 0}}, x^3), x)", //
+        "Piecewise({{Cos(x),a>0}},3*x^2)");
+  }
+
+  @Test
+  public void testRoundExactComplexMultiple() {
+    check("Round(Sqrt(2) + Pi*I, 1/3)", //
+        "4/3+I*3");
+  }
+
+  @Test
+  public void testRandomSampleAssociation() {
+    check("RandomSample({0, 1, 0} -> <|u -> 1, v -> 2, w -> 3|>, 1)", //
+        "<|v->2|>");
+    check("{Sort(Keys(RandomSample(<|u -> 1, v -> 2, w -> 3|>))), "
+        + "AssociationQ(RandomSample(<|u -> 1, v -> 2|>, 1))}", //
+        "{{u,v,w},True}");
+  }
+
+  @Test
+  public void testCurry() {
+    check("{Curry(g)[1][2], Curry(g, 3)[u][v, w], Curry(g, {2, 1})[u][v], Curry(Divide)[4][12]}", //
+        "{g(2,1),g(u,v,w),g(v,u),3}");
+    // arguments beyond the arity are applied to the result
+    check("Curry(g, 2)[u, v, w]", //
+        "g(u,v)[w]");
+    check("{Curry(g)[u], Map(Curry(Subtract)[1], {5, 7})}", //
+        "{Curry(g)[u],{4,6}}");
+  }
+
+  @Test
+  public void testPowerOfPositiveConstantPower() {
+    check("{(3^(1/2))^y, (E^2)^z, (Pi^(1/4))^y, (z^2)^y}", //
+        "{3^(y/2),E^(2*z),Pi^(y/4),(z^2)^y}");
+  }
+
+  @Test
+  public void testLinearProgrammingIntegerDomains() {
+    check("LinearProgramming({2, 3}, {{1, 1}}, {4}, 0, Integers)", //
+        "{4,0}");
+    check("LinearProgramming({-5, -4}, {{-6, -4}, {-1, -2}}, {-24, -6}, 0, Integers)", //
+        "{4,0}");
+    // a 0/1 knapsack
+    check("LinearProgramming(-{5, 4, 3}, -{{2, 3, 1}}, {-5}, Table({0, 1}, {3}), Integers)", //
+        "{1,1,0}");
+    // the second variable is an integer only
+    check("LinearProgramming({1, 1}, {{2, 3}}, {7}, 0, {Reals, Integers})", //
+        "{0.5,2}");
+    check("LinearProgramming({1, 1}, {{2, 3}}, {7}, 1)", //
+        "{1.0,1.66667}");
+    // an unknown domain is reported and taken as Reals
+    check("LinearProgramming({1, 1}, {{2, 3}}, {7}, 0, Rationals)", //
+        "{0.0,2.33333}");
+  }
+
+  @Test
+  public void testParserNamedCharacters() {
+    // \[LongEqual] and U+2A75 are Equal, \[Integral] f \[DifferentialD]x is Integrate
+    check("FullForm(Hold(a  b == c ⩵ d))", //
+        "Hold(Equal(a, b, c, d))");
+    check("∫ x^3 x", //
+        "x^4/4");
+    check("∫ x + 2", //
+        "2+x");
+    // the moon, the planets and \[Bullet] are letters
+    check("{Head(☾), Head(u♂v), Head(•)}", //
+        "{Symbol,Symbol,Symbol}");
+    // \[LineSeparator] is white space
+    check("FullForm(Hold(g(u, v)))", //
+        "Hold(g(u, v))");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

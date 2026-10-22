@@ -732,6 +732,9 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
+        if (ast.argSize() >= 3) {
+          return binCountsND(ast);
+        }
         if (ast.arg1().isList()) {
           IAST vector = (IAST) ast.arg1();
           vector = dropNonReals(engine, vector);
@@ -749,7 +752,76 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_INFINITY;
+    }
+
+    /**
+     * <code>BinCounts({{x1, y1, ...}, ...}, {xmin, xmax, dx}, {ymin, ymax, dy}, ...)</code> - the
+     * counts of the points in the bins of a grid, nested by the coordinates in their order. A bin
+     * contains its lower bounds but not its upper bounds.
+     */
+    private static IExpr binCountsND(IAST ast) {
+      int dimension = ast.argSize() - 1;
+      double[] min = new double[dimension];
+      double[] step = new double[dimension];
+      int[] bins = new int[dimension];
+      long total = 1;
+      for (int d = 0; d < dimension; d++) {
+        IExpr spec = ast.get(d + 2);
+        if (!spec.isList3()) {
+          return F.NIL;
+        }
+        min[d] = spec.first().evalfNaN();
+        double max = spec.second().evalfNaN();
+        step[d] = spec.getAt(3).evalfNaN();
+        if (Double.isNaN(min[d]) || Double.isNaN(max) || Double.isNaN(step[d])
+            || step[d] <= 0.0) {
+          return F.NIL;
+        }
+        bins[d] = max <= min[d] ? 0 : (int) Math.ceil((max - min[d]) / step[d]);
+        total *= Math.max(bins[d], 1);
+        if (total > Config.MAX_AST_SIZE) {
+          ASTElementLimitExceeded.throwIt(total);
+        }
+      }
+      if (!ast.arg1().isListOfLists()) {
+        return F.NIL;
+      }
+      int[] counts = new int[(int) total];
+      for (IExpr point : (IAST) ast.arg1()) {
+        if (point.argSize() != dimension) {
+          return F.NIL;
+        }
+        int index = 0;
+        for (int d = 0; d < dimension; d++) {
+          double x = point.getAt(d + 1).evalfNaN();
+          if (Double.isNaN(x)) {
+            // only real points are counted
+            index = -1;
+            break;
+          }
+          double bin = Math.floor((x - min[d]) / step[d]);
+          if (bin < 0 || bin >= bins[d]) {
+            index = -1;
+            break;
+          }
+          index = index * bins[d] + (int) bin;
+        }
+        if (index >= 0) {
+          counts[index]++;
+        }
+      }
+      return nestedCounts(counts, bins, 0, 0);
+    }
+
+    private static IAST nestedCounts(int[] counts, int[] bins, int d, int offset) {
+      IASTAppendable result = F.ListAlloc(bins[d]);
+      for (int i = 0; i < bins[d]; i++) {
+        int index = offset * bins[d] + i;
+        result.append(d == bins.length - 1 ? F.ZZ(counts[index])
+            : nestedCounts(counts, bins, d + 1, index));
+      }
+      return result;
     }
 
     private static IExpr binCounts(IAST ast, IAST vector, final IExpr arg2, EvalEngine engine) {

@@ -298,7 +298,8 @@ public final class VisitorBooleanLevelSpecification extends AbstractVisitorBoole
 
   @Override
   public boolean visit(IAST ast) {
-    int[] minDepth = new int[] {0};
+    // an expression without arguments has depth 2, like one of atoms
+    int[] minDepth = new int[] {-1};
     try {
       fCurrentLevel++;
       if (fIncludeHeads) {

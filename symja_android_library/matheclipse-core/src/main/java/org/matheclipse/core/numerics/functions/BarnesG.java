@@ -76,7 +76,51 @@ public final class BarnesG {
   /** How far below zero the downward recurrence is worth running. */
   private static final double G_NEGATIVE_LIMIT = -50.0;
 
+  private static final double EULER_GAMMA = 0.57721566490153286061;
+
+  /** <code>zeta(k)</code> for <code>k = 2..19</code>; from 20 on a few terms of the sum suffice. */
+  private static final double[] ZETA = { //
+      1.6449340668482264365, 1.2020569031595942854, 1.0823232337111381915, 1.0369277551433699263,
+      1.0173430619844491397, 1.0083492773819228268, 1.0040773561979443394, 1.0020083928260822144,
+      1.0009945751278180853, 1.0004941886041194646, 1.0002460865533080483, 1.0001227133475784891,
+      1.0000612481350587048, 1.0000305882363070205, 1.0000152822594086519, 1.0000076371976378998,
+      1.0000038172932649998, 1.0000019082127165539};
+
+  /** The most terms of the Taylor series of <code>log G(1+z)</code> which are summed. */
+  private static final int TAYLOR_TERMS = 200;
+
   private BarnesG() {}
+
+  private static double zeta(int k) {
+    if (k - 2 < ZETA.length) {
+      return ZETA[k - 2];
+    }
+    // the omitted terms are below 7^-20
+    return 1.0 + Math.pow(2.0, -k) + Math.pow(3.0, -k) + Math.pow(4.0, -k) + Math.pow(5.0, -k)
+        + Math.pow(6.0, -k);
+  }
+
+  /**
+   * The Taylor series
+   * <code>log G(1+z) = z/2*log(2*Pi) - (z + (1+EulerGamma)*z^2)/2 + Sum((-1)^k*zeta(k)*z^(k+1)/(k+1), {k, 2, Infinity})</code>,
+   * which converges for <code>|z| &lt; 1</code>; it is used for <code>|z| &lt;= 1/2</code>. Near
+   * the argument 1, where <code>log G</code> passes through zero, it keeps the digits the
+   * asymptotic expansion loses in the cancellation of its large terms.
+   */
+  private static double taylorLogG(final double z) {
+    double result = 0.5 * z * LOG_TWO_PI - 0.5 * (z + (1.0 + EULER_GAMMA) * z * z);
+    double power = z * z;
+    for (int k = 2; k < TAYLOR_TERMS; k++) {
+      // power is (-z)^(k+1), and (-1)^k*z^(k+1) is -power
+      power *= -z;
+      result -= zeta(k) * power / (k + 1);
+      if (Math.abs(power) < 1.0e-20) {
+        // the absolute error of log G is the relative error of G
+        break;
+      }
+    }
+    return result;
+  }
 
   /**
    * Whether {@link #logBarnesG(double)} is trusted here. Only a positive argument qualifies:
@@ -109,14 +153,23 @@ public final class BarnesG {
     if (x == 1.0 || x == 2.0 || x == 3.0) {
       return 0.0;
     }
-    // Walk up to where the expansion applies, accumulating the log Gamma terms that
-    // G(z+1) = Gamma(z) G(z) introduces, then subtract them again.
-    final int k = x < ASYMPTOTIC_FROM ? (int) Math.ceil(ASYMPTOTIC_FROM - x) : 0;
-    double shift = 0.0;
-    for (int i = 0; i < k; i++) {
-      shift += Gamma.logGamma(x + i);
+    if (x >= ASYMPTOTIC_FROM) {
+      return asymptoticLogG(x);
     }
-    return asymptoticLogG(x + k) - shift;
+    // Move the argument into [1/2, 3/2] with log G(w+1) = log Gamma(w) + log G(w), and sum the
+    // Taylor series there. Walking up to the asymptotic expansion instead would subtract log Gamma
+    // terms of about the size of its value, and lose the digits of a small log G.
+    double w = x;
+    double shift = 0.0;
+    while (w > 1.5) {
+      w -= 1.0;
+      shift += Gamma.logGamma(w);
+    }
+    while (w < 0.5) {
+      shift -= Gamma.logGamma(w);
+      w += 1.0;
+    }
+    return taylorLogG(w - 1.0) + shift;
   }
 
   /**
@@ -159,8 +212,26 @@ public final class BarnesG {
       if (x > G_OVERFLOW_LIMIT) {
         return Double.POSITIVE_INFINITY;
       }
-      final double logG = logBarnesG(x);
-      return Double.isNaN(logG) ? Double.NaN : Math.exp(logG);
+      // G(w+n) = G(w)*Gamma(w)*Gamma(w+1)*...*Gamma(w+n-1) for w in [1/2, 3/2]: a product keeps
+      // the relative error small, where exp(log G) multiplies it by the size of log G
+      double w = x;
+      int n = 0;
+      while (w > 1.5) {
+        w -= 1.0;
+        n++;
+      }
+      double factor = 1.0;
+      if (w < 0.5) {
+        // G(w) = G(w+1)/Gamma(w)
+        factor /= Gamma.gamma(w);
+        w += 1.0;
+      }
+      double gamma = Gamma.gamma(w);
+      for (int k = 0; k < n; k++) {
+        factor *= gamma;
+        gamma *= w + k;
+      }
+      return Math.exp(taylorLogG(w - 1.0)) * factor;
     }
     // x < 0 and not an integer. G(z) = G(z+1)/Gamma(z), applied until the argument is positive.
     // Gamma alternates sign across the negative axis, which is exactly how G picks up the sign
@@ -193,6 +264,30 @@ public final class BarnesG {
    * grows like <code>z^2 log z</code>, so the answer is dominated by that term long before here.
    */
   private static final double COMPLEX_MAX_NORM = 1.0e4;
+
+  /**
+   * The Taylor series is used for imaginary parts up to this: the argument of the series then has
+   * an absolute value below 0.8.
+   */
+  private static final double COMPLEX_TAYLOR_RADIUS = 0.6;
+
+  /** The Taylor series of {@link #taylorLogG(double)} for complex <code>z</code>. */
+  private static Complex taylorLogG(final Complex z) {
+    final Complex zSquared = z.multiply(z);
+    Complex result = z.multiply(0.5 * LOG_TWO_PI)
+        .subtract(z.add(zSquared.multiply(1.0 + EULER_GAMMA)).multiply(0.5));
+    final Complex minusZ = z.negate();
+    Complex power = zSquared;
+    for (int k = 2; k < TAYLOR_TERMS; k++) {
+      // power is (-z)^(k+1), and (-1)^k*z^(k+1) is -power
+      power = power.multiply(minusZ);
+      result = result.subtract(power.multiply(zeta(k) / (k + 1)));
+      if (power.norm() < 1.0e-20) {
+        break;
+      }
+    }
+    return result;
+  }
 
   /**
    * Whether {@link #logBarnesG(Complex)} is trusted here.
@@ -236,6 +331,28 @@ public final class BarnesG {
     if (z.getImaginary() == 0.0
         && (z.getReal() == 1.0 || z.getReal() == 2.0 || z.getReal() == 3.0)) {
       return Complex.ZERO; // G(1) = G(2) = G(3) = 1 exactly
+    }
+    if (Math.abs(z.getImaginary()) <= COMPLEX_TAYLOR_RADIUS && z.getReal() < ASYMPTOTIC_FROM) {
+      // as for a real argument: move the real part into [1/2, 3/2] and sum the Taylor series
+      Complex w = z;
+      Complex shift = Complex.ZERO;
+      while (w.getReal() > 1.5) {
+        w = w.subtract(1.0);
+        final Complex logGamma = ComplexGamma.logGamma(w);
+        if (logGamma == null) {
+          return null;
+        }
+        shift = shift.add(logGamma);
+      }
+      while (w.getReal() < 0.5) {
+        final Complex logGamma = ComplexGamma.logGamma(w);
+        if (logGamma == null) {
+          return null;
+        }
+        shift = shift.subtract(logGamma);
+        w = w.add(1.0);
+      }
+      return taylorLogG(w.subtract(1.0)).add(shift);
     }
     Complex w = z;
     Complex shift = Complex.ZERO;

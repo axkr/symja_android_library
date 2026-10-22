@@ -1514,6 +1514,12 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isAST1()) {
+        IAST zero = zeroMatrixEigensystem(arg1);
+        if (zero.isPresent()) {
+          return zero;
+        }
+      }
       if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
         if (!engine.isNumericMode() && !arg1.isNumericArgument(true) && !arg1.isSparseArray()) {
           int maxValues = -1;
@@ -1734,6 +1740,12 @@ public final class LinearAlgebra {
           return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
         }
         maxValues = n;
+      }
+      if (ast.isAST1()) {
+        IAST zero = zeroMatrixEigensystem(ast.arg1());
+        if (zero.isPresent()) {
+          return zero.arg1();
+        }
       }
       if (!engine.isNumericMode()) {
         try {
@@ -2028,7 +2040,12 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
+      if (ast.isAST1()) {
+        IAST zero = zeroMatrixEigensystem(ast.arg1());
+        if (zero.isPresent()) {
+          return zero.arg2();
+        }
+      }
       if (ast.size() >= 2) {
         try {
           IExpr arg1 = ast.arg1();
@@ -3811,7 +3828,16 @@ public final class LinearAlgebra {
       if (modulus != null) {
         return inverseModulus(arg1, modulus, engine);
       }
-      return super.evaluate(ast, argSize, options, engine, originalAST);
+      IExpr inverse = super.evaluate(ast, argSize, options, engine, originalAST);
+      if (arg1.isSparseArray() && inverse.isList()) {
+        // the inverse of a sparse matrix is sparse too
+        IExpr sparse = org.matheclipse.core.expression.data.SparseArrayExpr
+            .newDenseList((IAST) inverse, F.C0);
+        if (sparse != null) {
+          return sparse;
+        }
+      }
+      return inverse;
     }
 
     /**
@@ -7437,6 +7463,34 @@ public final class LinearAlgebra {
 
   }
 
+  /**
+   * The eigensystem of a square matrix of zeros: every eigenvalue is zero and the eigenvectors are
+   * the unit vectors, the last one first.
+   *
+   * @return {@link F#NIL} if <code>arg1</code> isn't a square matrix whose entries are all zero
+   */
+  private static IAST zeroMatrixEigensystem(IExpr arg1) {
+    int[] dim = arg1.isMatrix(false);
+    if (dim == null || dim[0] != dim[1] || dim[0] == 0 || !arg1.isList()) {
+      return F.NIL;
+    }
+    boolean inexact = false;
+    for (IExpr row : (IAST) arg1) {
+      for (IExpr entry : (IAST) row) {
+        if (!entry.isNumber() || !entry.isZero()) {
+          return F.NIL;
+        }
+        inexact |= entry.isInexactNumber();
+      }
+    }
+    final int n = dim[0];
+    final IExpr zero = inexact ? F.CD0 : F.C0;
+    final IExpr one = inexact ? F.CD1 : F.C1;
+    IAST values = F.constantArray(zero, n);
+    IAST vectors = F.mapRange(0, n, i -> F.mapRange(0, n, j -> j == n - 1 - i ? one : zero));
+    return F.list(values, vectors);
+  }
+
   public static IExpr characteristicPolynomial(int n, IAST matrix, IExpr variable) {
     // see: https://en.wikipedia.org/wiki/Faddeev%E2%80%93LeVerrier_algorithm
     GenMatrix<IExpr> genMatrix = JASConvert.list2GenMatrix(matrix, true);
@@ -7446,6 +7500,12 @@ public final class LinearAlgebra {
       JASIExpr jas = new JASIExpr(variable, true);
       GenPolynomial<IExpr> charPolynomial =
           jas.getPolynomialRingFactory().charPolynomial(genMatrix);
+      if (charPolynomial.isZERO()) {
+        // a characteristic polynomial has the leading term (-x)^n; zero is what the
+        // Faddeev-LeVerrier recursion gives for the zero matrix, so the determinant is taken
+        return F.evalExpand(F.Det(
+            F.Subtract(matrix, F.Times(variable, F.IdentityMatrix(F.ZZ(n))))));
+      }
       return F.evalExpand(jas.exprPoly2Expr(charPolynomial));
     }
     return F.NIL;

@@ -79,6 +79,14 @@ import org.matheclipse.parser.client.math.MathException;
 
 public final class BooleanFunctions {
 
+  /**
+   * <code>And(a, b)[x]</code> and the like reach the evaluator of their top head, but they are no
+   * conjunction of <code>x</code>: such a call stays as it is.
+   */
+  private static boolean isCurriedCall(final IAST ast) {
+    return !ast.head().isSymbol();
+  }
+
   private static final int[] FULL_BITSETS = new int[] { //
       0b1, //
       0b11, //
@@ -609,6 +617,9 @@ public final class BooleanFunctions {
   private static class And extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (isCurriedCall(ast)) {
+        return F.NIL;
+      }
       if (ast.isAST0()) {
         return S.True;
       }
@@ -1835,6 +1846,9 @@ public final class BooleanFunctions {
       implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (isCurriedCall(ast)) {
+        return F.NIL;
+      }
       if (ast.isAST0() || ast.isAST1()) {
         return S.True;
       }
@@ -3359,6 +3373,9 @@ public final class BooleanFunctions {
   private static final class Nand extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (isCurriedCall(ast)) {
+        return F.NIL;
+      }
       if (ast.isAST0()) {
         return S.False;
       }
@@ -3625,6 +3642,9 @@ public final class BooleanFunctions {
   private static class Nor extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (isCurriedCall(ast)) {
+        return F.NIL;
+      }
       if (ast.isAST0()) {
         return S.True;
       }
@@ -3716,6 +3736,9 @@ public final class BooleanFunctions {
   private static class Or extends AbstractCoreFunctionEvaluator implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (isCurriedCall(ast)) {
+        return F.NIL;
+      }
       if (ast.isAST0()) {
         return S.False;
       }
@@ -4286,6 +4309,9 @@ public final class BooleanFunctions {
   private static class Xor extends AbstractFunctionEvaluator implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (isCurriedCall(ast)) {
+        return F.NIL;
+      }
       if (ast.isEmpty()) {
         return S.False;
       }

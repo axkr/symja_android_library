@@ -21,7 +21,9 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 
@@ -148,12 +150,40 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
                   F.list(F.$str("Numeric vector expected.")), engine);
             }
           }
-          SimplexSolver solver = new SimplexSolver();
-          // PointValuePair solution = solver.optimize(f, constraints, GoalType.MINIMIZE, true);
-          PointValuePair solution = solver.optimize(f, new LinearConstraintSet(constraints),
-              GoalType.MINIMIZE, new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
-          double[] values = solution.getPointRef();
-          return F.List(values);
+          int n = arg1D.length;
+          boolean nonNegative = true;
+          if (ast.argSize() >= 4) {
+            // the bounds of the variables replace x >= 0
+            if (!addBounds(ast.arg4(), n, constraints)) {
+              return F.NIL;
+            }
+            nonNegative = false;
+          }
+          boolean[] integer = new boolean[n];
+          if (ast.argSize() == 5 && !integerDomains(ast.arg5(), integer, engine)) {
+            return F.NIL;
+          }
+          boolean anyInteger = false;
+          for (boolean b : integer) {
+            anyInteger |= b;
+          }
+          if (!anyInteger) {
+            return F.List(solve(f, constraints, nonNegative));
+          }
+          double[] values = branchAndBound(f, constraints, nonNegative, integer);
+          if (values == INCOMPLETE) {
+            // The search for an integer solution stopped after `1` subproblems.
+            return Errors.printMessage(ast.topHead(), "lpbb", F.list(F.ZZ(MAX_NODES)), engine);
+          }
+          if (values == null) {
+            // No solution can be found that satisfies the constraints.
+            return Errors.printMessage(ast.topHead(), "lpsnf", F.CEmptyList, engine);
+          }
+          IASTAppendable result = F.ListAlloc(n);
+          for (int i = 0; i < n; i++) {
+            result.append(integer[i] ? F.ZZ(Math.round(values[i])) : F.num(values[i]));
+          }
+          return result;
         }
       }
     } catch (MathIllegalArgumentException miae) {
@@ -179,6 +209,186 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /** The largest number of subproblems the branch and bound solves. */
+  private static final int MAX_NODES = 10000;
+
+  private static final double INTEGER_TOLERANCE = 1.0e-9;
+
+  /** The result of a branch and bound which stopped before it proved a solution optimal. */
+  private static final double[] INCOMPLETE = new double[0];
+
+  /**
+   * Add the bounds of the variables to the constraints: one lower bound <code>l</code> for all,
+   * or a list of lower bounds <code>li</code> or of intervals <code>{li, ui}</code>.
+   *
+   * @return <code>false</code> if <code>bounds</code> has none of these forms
+   */
+  private static boolean addBounds(IExpr bounds, int n, Collection<LinearConstraint> constraints) {
+    for (int i = 0; i < n; i++) {
+      IExpr bound = bounds.isList() ? (bounds.argSize() == n ? bounds.getAt(i + 1) : F.NIL)
+          : bounds;
+      if (bound.isNIL()) {
+        return false;
+      }
+      double lower;
+      double upper = Double.POSITIVE_INFINITY;
+      if (bound.isList2()) {
+        lower = bound.first().isNegativeInfinity() ? Double.NEGATIVE_INFINITY
+            : bound.first().evalfNaN();
+        upper = bound.second().isInfinity() ? Double.POSITIVE_INFINITY : bound.second().evalfNaN();
+      } else {
+        lower = bound.isNegativeInfinity() ? Double.NEGATIVE_INFINITY : bound.evalfNaN();
+      }
+      if (Double.isNaN(lower) || Double.isNaN(upper)) {
+        return false;
+      }
+      double[] unit = new double[n];
+      unit[i] = 1.0;
+      if (lower != Double.NEGATIVE_INFINITY) {
+        constraints.add(new LinearConstraint(unit, Relationship.GEQ, lower));
+      }
+      if (upper != Double.POSITIVE_INFINITY) {
+        constraints.add(new LinearConstraint(unit, Relationship.LEQ, upper));
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Mark the variables which must be integers: <code>Integers</code> for all, or a list of
+   * <code>Integers</code> and <code>Reals</code> where the variables beyond its end are real. Any
+   * other domain is reported and taken as <code>Reals</code>.
+   *
+   * @return <code>false</code> if the list is longer than the number of variables
+   */
+  private static boolean integerDomains(IExpr domains, boolean[] integer, EvalEngine engine) {
+    boolean unknown = false;
+    if (domains.isList()) {
+      if (domains.argSize() > integer.length) {
+        return false;
+      }
+      for (int i = 1; i <= domains.argSize(); i++) {
+        IExpr domain = domains.getAt(i);
+        integer[i - 1] = domain == S.Integers;
+        unknown |= domain != S.Integers && domain != S.Reals;
+      }
+    } else if (domains == S.Integers) {
+      java.util.Arrays.fill(integer, true);
+    } else {
+      unknown = domains != S.Reals;
+    }
+    if (unknown) {
+      // `1` is not a valid domain specification; Reals is used instead.
+      Errors.printMessage(S.LinearProgramming, "lpdom", F.list(domains), engine);
+    }
+    return true;
+  }
+
+  private static double[] solve(LinearObjectiveFunction f, Collection<LinearConstraint> constraints,
+      boolean nonNegative) {
+    SimplexSolver solver = new SimplexSolver();
+    PointValuePair solution = solver.optimize(f, new LinearConstraintSet(constraints),
+        GoalType.MINIMIZE, new NonNegativeConstraint(nonNegative), PivotSelectionRule.BLAND);
+    return solution.getPointRef();
+  }
+
+  /** The solution of a subproblem, or <code>null</code> if it has none. */
+  private static double[] solveOrNull(LinearObjectiveFunction f,
+      Collection<LinearConstraint> constraints, boolean nonNegative) {
+    try {
+      return solve(f, constraints, nonNegative);
+    } catch (MathIllegalStateException mise) {
+      if (mise.getSpecifier() == org.hipparchus.optim.LocalizedOptimFormats.NO_FEASIBLE_SOLUTION) {
+        return null;
+      }
+      throw mise;
+    }
+  }
+
+  /** The first variable which should be an integer but isn't, or <code>-1</code>. */
+  private static int fractionalVariable(double[] values, boolean[] integer) {
+    for (int i = 0; i < values.length; i++) {
+      if (integer[i] && Math.abs(values[i] - Math.rint(values[i])) > INTEGER_TOLERANCE) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Branch and bound: a subproblem whose solution has a fractional value <code>v</code> for an
+   * integer variable is split into the subproblems with the variable <code>&lt;= Floor(v)</code>
+   * and <code>&gt;= Ceiling(v)</code>, and both are solved at once. The subproblem with the
+   * smallest objective value is split next; a solution only replaces the best one found so far if
+   * it is strictly better.
+   *
+   * @return <code>null</code> if no solution was found, {@link #INCOMPLETE} if the search was
+   *         stopped after {@link #MAX_NODES} subproblems
+   */
+  private static double[] branchAndBound(LinearObjectiveFunction f,
+      Collection<LinearConstraint> constraints, boolean nonNegative, boolean[] integer) {
+    final class Node {
+      final Collection<LinearConstraint> constraints;
+      final double[] values;
+      final double objective;
+      final int order;
+
+      Node(Collection<LinearConstraint> constraints, double[] values, int order) {
+        this.constraints = constraints;
+        this.values = values;
+        this.objective = f.value(values);
+        this.order = order;
+      }
+    }
+    java.util.PriorityQueue<Node> open = new java.util.PriorityQueue<Node>((a, b) -> {
+      int c = Double.compare(a.objective, b.objective);
+      return c != 0 ? c : Integer.compare(a.order, b.order);
+    });
+    double[] best = null;
+    double bestObjective = Double.POSITIVE_INFINITY;
+    int count = 0;
+    double[] root = solveOrNull(f, constraints, nonNegative);
+    if (root == null) {
+      return null;
+    }
+    if (fractionalVariable(root, integer) < 0) {
+      return root;
+    }
+    open.add(new Node(constraints, root, count++));
+    while (!open.isEmpty()) {
+      Node node = open.poll();
+      if (node.objective >= bestObjective - INTEGER_TOLERANCE) {
+        continue;
+      }
+      if (count > MAX_NODES) {
+        return INCOMPLETE;
+      }
+      int i = fractionalVariable(node.values, integer);
+      double[] unit = new double[integer.length];
+      unit[i] = 1.0;
+      for (int side = 0; side < 2; side++) {
+        Collection<LinearConstraint> branch = new ArrayList<LinearConstraint>(node.constraints);
+        branch.add(side == 0
+            ? new LinearConstraint(unit, Relationship.LEQ, Math.floor(node.values[i]))
+            : new LinearConstraint(unit, Relationship.GEQ, Math.ceil(node.values[i])));
+        double[] values = solveOrNull(f, branch, nonNegative);
+        if (values == null) {
+          continue;
+        }
+        Node child = new Node(branch, values, count++);
+        if (fractionalVariable(values, integer) < 0) {
+          if (child.objective < bestObjective - INTEGER_TOLERANCE) {
+            best = values;
+            bestObjective = child.objective;
+          }
+        } else if (child.objective < bestObjective - INTEGER_TOLERANCE) {
+          open.add(child);
+        }
+      }
+    }
+    return best;
+  }
+
   @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
@@ -186,6 +396,6 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_3_3;
+    return IFunctionEvaluator.ARGS_3_5;
   }
 }

@@ -77,6 +77,8 @@ public class Errors {
       "aord", "Approximation order specification `1` should be a positive integer.", //
       "aggspec", "`1` is not a known aggregator.", //
       "argillegal", "Illegal arguments: \"`1`\" in `2`", //
+      "argl",
+      "`1` should be a real number or a list of non-negative numbers that has the same length as `2`.", //
       "argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
       "argct", "`1` called with `2` arguments. `3`", //
       "argctu", "`1` called with 1 argument.", //
@@ -173,6 +175,7 @@ public class Errors {
       "cfname", "`1` is not a known color gradient for `2`; using the default coloring.", //
       "cfshade", "`1` is not a known shading scheme for `2`; using Automatic.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
+      "colconv", "`1` should be one of RGBColor, Hue, CMYKColor or GrayLevel.", //
       "color", "`1` is not a valid color or gray-level specification.", //
       "compat", "`1` and `2` are incompatible units", //
       "condp", "Pattern `1` appears on the right-hand-side of condition `2`.", //
@@ -368,6 +371,8 @@ public class Errors {
       "listrp", "List or SparseArray or structured array expected at position `1` in `2`.", //
       "locked", "Symbol `1` is locked.", //
       "lowlen", "Required length `1` is smaller than maximum `2` of support of `3`.", //
+      "lpbb", "The search for an integer solution stopped after `1` subproblems.", //
+      "lpdom", "`1` is not a valid domain specification; Reals is used instead.", //
       "lpn", "`1` is not a list of numbers or pairs of numbers.", //
       "lpsnf", "No solution can be found that satisfies the constraints.", //
       "lrgexp", "Exponent ist out of bounds for function `1`.", //
