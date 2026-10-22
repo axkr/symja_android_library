@@ -2449,6 +2449,26 @@ public class S {
   public final static IBuiltInSymbol BitSet = S.initFinalSymbol("BitSet", ID.BitSet);
 
   /**
+   * BitShiftLeft(x) - TODO describe `BitShiftLeft`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitShiftLeft.md">BitShiftLeft
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BitShiftLeft =
+      S.initFinalSymbol("BitShiftLeft", ID.BitShiftLeft);
+
+  /**
+   * BitShiftRight(x) - TODO describe `BitShiftRight`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitShiftRight.md">BitShiftRight
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BitShiftRight =
+      S.initFinalSymbol("BitShiftRight", ID.BitShiftRight);
+
+  /**
    * BitXor(int1, int2, int3, ...) - returns the bitwise `XOR` of the integer numbers `int1, int2,
    * int3, ...`.
    * 
