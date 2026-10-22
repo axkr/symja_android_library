@@ -13866,6 +13866,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFractionalPart() {
+    // a negative rational beyond the machine integers keeps the sign of its remainder
+    check("{FractionalPart(-(10^25 + 3)/8), FractionalPart(-(2^70 + 7)/3), FractionalPart(-(2^62 + 2)*4/5)}", //
+        "{-3/8,-2/3,-4/5}");
     check("FractionalPart(Quantity(-1.1, \"Meters\"))", //
         "Quantity(-0.1,\"Meters\")");
     check("FractionalPart(235/47 + 53/10*I)", //
@@ -19874,6 +19877,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMultiplicativeOrder() {
+    // discrete logarithms in a group of order 2^61 - 2
+    check("p = 2^61 - 1; {MultiplicativeOrder(37, p), MultiplicativeOrder(37, p, {PowerMod(37, 10^15, p)}), MultiplicativeOrder(37, p, {PowerMod(37, 10^15, p), PowerMod(37, 98765, p)})}", //
+        "{2305843009213693950,1000000000000000,98765}");
+    check("MultiplicativeOrder(5, 1000000007, {PowerMod(5, 123456789, 1000000007)})", //
+        "123456789");
+    check("{MultiplicativeOrder(4, 21, {2, 16}), MultiplicativeOrder(4, 21, {2}), MultiplicativeOrder(4, 21, {7}), MultiplicativeOrder(11, 1, {5})}", //
+        "{2,MultiplicativeOrder(4,21,{2}),MultiplicativeOrder(4,21,{7}),1}");
     check("MultiplicativeOrder(2,7, {1, -1})", //
         "3");
     check("MultiplicativeOrder(7,11,{1,3,9})", //
@@ -20862,6 +20872,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNextPrime() {
+    // a real numeric start value is rounded exactly
+    check("{NextPrime(3*Pi), NextPrime(-Sqrt(5)), NextPrime(Sqrt(5), -2), NextPrime(Catalan, 0), NextPrime(E*10^20)}", //
+        "{11,-2,-2,NextPrime(Catalan,0),271828182845904523609}");
     check("NextPrime(50,-1)", //
         "47");
     check("NextPrime(50,-3)", //

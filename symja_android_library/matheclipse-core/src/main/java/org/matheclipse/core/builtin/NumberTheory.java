@@ -15,11 +15,9 @@ import static org.matheclipse.core.expression.F.Times;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -97,6 +95,7 @@ import org.matheclipse.core.numbertheory.PartitionNumbers;
 import org.matheclipse.core.numbertheory.PrimeCount;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.polynomials.QuarticSolver;
+import org.matheclipse.core.sympy.ntheory.ResidueNTheory;
 import org.matheclipse.core.sympy.series.Sequences;
 import com.google.common.math.LongMath;
 import com.google.common.util.concurrent.UncheckedExecutionException;
@@ -5092,38 +5091,9 @@ public final class NumberTheory {
             return F.ZZ(Primality.multiplicativeOrder(k.toBigNumerator(), n.toBigNumerator()));
           } else if (ast.isAST3()) {
             IExpr arg3 = ast.arg3();
-            if (arg3.isList()) {
-              IAST residues = (IAST) arg3;
-              Set<IInteger> targets = new HashSet<>();
-
-              // Normalize the target residues into [0, n)
-              for (int i = 1; i <= residues.argSize(); i++) {
-                IExpr ri = residues.get(i);
-                if (!ri.isInteger()) {
-                  return F.NIL;
-                }
-                targets.add(((IInteger) ri).mod(n));
-              }
-
-              if (!targets.isEmpty()) {
-                IInteger kMod = k.mod(n);
-                IInteger power = kMod;
-                Set<IInteger> seen = new HashSet<>();
-                IInteger m = F.C1;
-
-                while (true) {
-                  if (targets.contains(power)) {
-                    return m;
-                  }
-                  if (!seen.add(power)) {
-                    // Cycled without reaching a residue: no solution.
-                    break;
-                  }
-
-                  power = power.multiply(kMod).mod(n);
-                  m = m.add(F.C1);
-                }
-              }
+            if (arg3.isList() && arg3.argSize() > 0 && k.gcd(n).isOne()) {
+              return smallestPowerIn(k.toBigNumerator(), n.toBigNumerator(), (IAST) arg3,
+                  engine);
             }
           }
         } catch (ArithmeticException ae) {
@@ -5131,6 +5101,49 @@ public final class NumberTheory {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * The smallest <code>m &gt;= 1</code> with <code>k^m</code> congruent to one of the
+     * <code>residues</code> modulo <code>n</code>. Each residue is a discrete logarithm to the base
+     * <code>k</code>, which is unique modulo the order of <code>k</code>.
+     *
+     * @return {@link F#NIL} if a residue is not an integer or no residue is a power of
+     *         <code>k</code>
+     */
+    private static IExpr smallestPowerIn(BigInteger k, BigInteger n, IAST residues,
+        EvalEngine engine) {
+      final BigInteger base = k.mod(n);
+      final List<BigInteger> units = new ArrayList<>(residues.argSize());
+      for (int i = 1; i < residues.size(); i++) {
+        if (!residues.get(i).isInteger()) {
+          return F.NIL;
+        }
+        final BigInteger target = ((IInteger) residues.get(i)).toBigNumerator().mod(n);
+        if (target.gcd(n).equals(BigInteger.ONE)) {
+          // only a unit is a power of k
+          units.add(target);
+        }
+      }
+      if (units.isEmpty()) {
+        return F.NIL;
+      }
+      final BigInteger[] targets = units.toArray(new BigInteger[0]);
+      final ResidueNTheory.DiscreteLogs logs = ResidueNTheory.discreteLogs(n, base, targets);
+      BigInteger smallest = null;
+      for (int i = 0; i < targets.length; i++) {
+        final BigInteger log = logs.logs[i];
+        if (log == null) {
+          continue;
+        }
+        final BigInteger m = log.signum() == 0 ? logs.order : log;
+        if (base.modPow(m, n).equals(targets[i])
+            && (smallest == null || m.compareTo(smallest) < 0)) {
+          smallest = m;
+        }
+      }
+      engine.checkTimeLimit();
+      return smallest == null ? F.NIL : F.ZZ(smallest);
     }
 
     @Override
@@ -5212,7 +5225,14 @@ public final class NumberTheory {
         }
       }
       if (!arg1.isReal()) {
-        return F.NIL;
+        // a real numeric value like Pi or Sqrt(2) starts from its exact integer bound
+        if (k == 0 || !arg1.isNumericFunction(true) || !arg1.isRealResult()) {
+          return F.NIL;
+        }
+        arg1 = engine.evaluate(k > 0 ? F.Floor(arg1) : F.Ceiling(arg1));
+        if (!arg1.isInteger()) {
+          return F.NIL;
+        }
       }
       IReal x = (IReal) arg1;
       if (k == 0) {

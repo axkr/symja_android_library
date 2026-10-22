@@ -63,6 +63,8 @@ public class IntegerFunctions {
       S.BitNot.setEvaluator(new BitNot());
       S.BitOr.setEvaluator(new BitOr());
       S.BitSet.setEvaluator(new BitSet());
+      S.BitShiftLeft.setEvaluator(new BitShift(true));
+      S.BitShiftRight.setEvaluator(new BitShift(false));
       S.BitXor.setEvaluator(new BitXor());
       S.Ceiling.setEvaluator(new Ceiling());
       S.DigitCount.setEvaluator(new DigitCount());
@@ -236,6 +238,104 @@ public class IntegerFunctions {
   }
 
 
+  /**
+   * Simplify <code>BitAnd</code> or <code>BitOr</code> with symbolic arguments: equal arguments
+   * collapse into one, the integers combine into one, the absorbing integer (<code>0</code> for
+   * <code>BitAnd</code>, <code>-1</code> for <code>BitOr</code>) is the result and the neutral one
+   * (<code>-1</code>, <code>0</code>) is dropped.
+   *
+   * @param ast the <code>BitAnd(...)</code> or <code>BitOr(...)</code> call with more than one
+   *        argument, sorted because of the <code>Orderless</code> attribute
+   * @param and <code>true</code> for <code>BitAnd</code>
+   * @return {@link F#NIL} if nothing changes
+   */
+  private static IExpr bitAndOr(final IAST ast, boolean and) {
+    final BigInteger absorbing = and ? BigInteger.ZERO : IInteger.BI_MINUS_ONE;
+    final BigInteger neutral = and ? IInteger.BI_MINUS_ONE : BigInteger.ZERO;
+    BigInteger constant = null;
+    int integers = 0;
+    final IASTAppendable rest = F.ast(ast.head(), ast.argSize());
+    for (int i = 1; i < ast.size(); i++) {
+      final IExpr arg = ast.get(i);
+      if (arg.isInteger()) {
+        final BigInteger value = ((IInteger) arg).toBigNumerator();
+        if (value.equals(absorbing)) {
+          return F.ZZ(absorbing);
+        }
+        constant = constant == null ? value : and ? constant.and(value) : constant.or(value);
+        integers++;
+      } else if (!arg.equals(ast.get(i - 1))) {
+        // the arguments are sorted, so equal ones are neighbours
+        rest.append(arg);
+      }
+    }
+    if (constant != null) {
+      if (constant.equals(absorbing)) {
+        return F.ZZ(absorbing);
+      }
+      if (!constant.equals(neutral)) {
+        rest.append(F.ZZ(constant));
+      }
+    }
+    final boolean unchanged = integers <= 1 && rest.argSize() == ast.argSize()
+        && (constant == null || !constant.equals(neutral));
+    if (unchanged) {
+      return F.NIL;
+    }
+    if (rest.argSize() == 0) {
+      return F.ZZ(neutral);
+    }
+    return rest.argSize() == 1 ? rest.arg1() : rest;
+  }
+
+  /**
+   * Simplify <code>BitXor</code> with symbolic arguments: equal arguments cancel in pairs, an odd
+   * number of <code>-1</code> arguments becomes a <code>BitNot</code> of the others, the other
+   * integers combine into one, which is dropped if it is <code>0</code> and also becomes a
+   * <code>BitNot</code> if it is <code>-1</code>.
+   *
+   * @param ast the <code>BitXor(...)</code> call with more than one argument, sorted because of
+   *        the <code>Orderless</code> attribute
+   * @return {@link F#NIL} if nothing changes
+   */
+  private static IExpr bitXor(final IAST ast) {
+    boolean not = false;
+    BigInteger constant = null;
+    int integers = 0;
+    boolean cancelled = false;
+    final IASTAppendable rest = F.ast(S.BitXor, ast.argSize());
+    for (int i = 1; i < ast.size(); i++) {
+      final IExpr arg = ast.get(i);
+      if (i + 1 < ast.size() && arg.equals(ast.get(i + 1))) {
+        // the arguments are sorted, so equal ones are neighbours: a pair cancels
+        i++;
+        cancelled = true;
+        continue;
+      }
+      if (arg.isMinusOne()) {
+        not = !not;
+      } else if (arg.isInteger()) {
+        final BigInteger value = ((IInteger) arg).toBigNumerator();
+        constant = constant == null ? value : constant.xor(value);
+        integers++;
+      } else {
+        rest.append(arg);
+      }
+    }
+    if (constant != null) {
+      if (constant.equals(IInteger.BI_MINUS_ONE)) {
+        not = !not;
+      } else if (constant.signum() != 0) {
+        rest.append(F.ZZ(constant));
+      }
+    }
+    if (!cancelled && !not && integers <= 1 && (constant == null || constant.signum() != 0)) {
+      return F.NIL;
+    }
+    final IExpr base = rest.argSize() == 0 ? F.C0 : rest.argSize() == 1 ? rest.arg1() : rest;
+    return not ? F.unaryAST1(S.BitNot, base) : base;
+  }
+
   private static class BitAnd extends AbstractFunctionEvaluator {
 
     @Override
@@ -248,25 +348,7 @@ public class IntegerFunctions {
         // its own, it speaks about pattern matching rather than evaluation.
         return ast.arg1();
       }
-      IExpr arg1 = ast.arg1();
-      if (arg1.isInteger()) {
-        BigInteger result = ((IInteger) arg1).toBigNumerator();
-        for (int i = 2; i < ast.size(); i++) {
-          IExpr arg = ast.get(i);
-          if (arg.isInteger()) {
-            BigInteger big = ((IInteger) arg).toBigNumerator();
-            result = apply(result, big);
-          } else {
-            return F.NIL;
-          }
-        }
-        return F.ZZ(result);
-      }
-      return F.NIL;
-    }
-
-    protected BigInteger apply(BigInteger lhs, BigInteger rhs) {
-      return lhs.and(rhs);
+      return bitAndOr(ast, true);
     }
 
     @Override
@@ -293,31 +375,7 @@ public class IntegerFunctions {
         // belongs here, and without it BitOr(e) stayed unevaluated for anything but an integer.
         return ast.arg1();
       }
-      IExpr arg1 = ast.arg1();
-      if (arg1.isInteger()) {
-        BigInteger result = ((IInteger) arg1).toBigNumerator();
-        if (result.equals(IInteger.BI_MINUS_ONE)) {
-          return F.ZZ(IInteger.BI_MINUS_ONE);
-        }
-        for (int i = 2; i < ast.size(); i++) {
-          IExpr arg = ast.get(i);
-          if (arg.isInteger()) {
-            BigInteger big = ((IInteger) arg).toBigNumerator();
-            result = apply(result, big);
-            if (result.equals(IInteger.BI_MINUS_ONE)) {
-              return F.ZZ(IInteger.BI_MINUS_ONE);
-            }
-          } else {
-            return F.NIL;
-          }
-        }
-        return F.ZZ(result);
-      }
-      return F.NIL;
-    }
-
-    protected BigInteger apply(BigInteger lhs, BigInteger rhs) {
-      return lhs.or(rhs);
+      return bitAndOr(ast, false);
     }
 
     @Override
@@ -343,25 +401,7 @@ public class IntegerFunctions {
         // its own, it speaks about pattern matching rather than evaluation.
         return ast.arg1();
       }
-      IExpr arg1 = ast.arg1();
-      if (arg1.isInteger()) {
-        BigInteger result = ((IInteger) arg1).toBigNumerator();
-        for (int i = 2; i < ast.size(); i++) {
-          IExpr arg = ast.get(i);
-          if (arg.isInteger()) {
-            BigInteger big = ((IInteger) arg).toBigNumerator();
-            result = apply(result, big);
-          } else {
-            return F.NIL;
-          }
-        }
-        return F.ZZ(result);
-      }
-      return F.NIL;
-    }
-
-    protected BigInteger apply(BigInteger lhs, BigInteger rhs) {
-      return lhs.xor(rhs);
+      return bitXor(ast);
     }
 
     @Override
@@ -402,6 +442,112 @@ public class IntegerFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.LISTABLE);
+    }
+  }
+
+  /**
+   * <code>BitShiftLeft(n, k)</code> is <code>n*2^k</code> and <code>BitShiftRight(n, k)</code> is
+   * <code>IntegerPart(n/2^k)</code> for an integer <code>n</code> and <code>n/2^k</code> for any
+   * other real number. A negative <code>k</code> shifts the other way, the shift count of the one
+   * argument form is <code>1</code> and a complex number is shifted part by part.
+   */
+  private static class BitShift extends AbstractFunctionEvaluator {
+    /** <code>true</code> for <code>BitShiftLeft</code>. */
+    private final boolean left;
+
+    BitShift(boolean left) {
+      this.left = left;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr n = ast.arg1();
+      long k = 1;
+      if (ast.isAST2()) {
+        final IExpr arg2 = ast.arg2();
+        if (!arg2.isNumber()) {
+          return F.NIL;
+        }
+        if (!arg2.isInteger() || ((IInteger) arg2).bitLength() > 63) {
+          // Machine-sized integer expected at position `2` in `1`.
+          return Errors.printMessage(ast.topHead(), "intm", F.list(ast, F.C2), engine);
+        }
+        // -Long.MIN_VALUE does not exist; a shift by Long.MAX_VALUE has the same result
+        k = Math.max(((IInteger) arg2).toLong(), -Long.MAX_VALUE);
+      }
+      if (!left) {
+        k = -k;
+      }
+      // k is now the exponent of the factor 2^k
+      if (n.isNumber()) {
+        if (n.isComplex() || n.isComplexNumeric()) {
+          final INumber number = (INumber) n;
+          final IExpr re = shift(number.re(), k, engine);
+          final IExpr im = shift(number.im(), k, engine);
+          if (re.isNumber() && im.isNumber()) {
+            return engine.evaluate(F.Plus(re, F.Times(F.CI, im)));
+          }
+          return F.NIL;
+        }
+        return shift(n, k, engine);
+      }
+      if (n.isInfinity() || n.isNegativeInfinity() || n.isDirectedInfinity()
+          || n.isIndeterminate()) {
+        return n;
+      }
+      return F.NIL;
+    }
+
+    /** The real number <code>n</code> times <code>2^k</code>, truncated for an integer. */
+    private static IExpr shift(IExpr n, long k, EvalEngine engine) {
+      if (n.isZero()) {
+        return n;
+      }
+      if (n.isInteger()) {
+        final BigInteger value = ((IInteger) n).toBigNumerator();
+        if (k <= 0) {
+          // IntegerPart(n/2^-k): the magnitude is shifted, so a negative n truncates towards 0
+          final BigInteger abs = value.abs();
+          if (-k >= abs.bitLength()) {
+            return F.C0;
+          }
+          final BigInteger magnitude = abs.shiftRight((int) -k);
+          return F.ZZ(value.signum() < 0 ? magnitude.negate() : magnitude);
+        }
+        if (k > Config.MAX_BIT_LENGTH - value.bitLength()) {
+          return overflow(engine);
+        }
+        return F.ZZ(value.shiftLeft((int) k));
+      }
+      if (Math.abs(k) > Config.MAX_BIT_LENGTH) {
+        if (k > 0) {
+          return overflow(engine);
+        }
+        if (n.isInexactNumber()) {
+          // the zero of the same kind, a machine 0.0 or an arbitrary precision 0
+          return n.zero();
+        }
+        // Underflow occurred in computation.
+        Errors.printMessage(S.General, "unfl", F.CEmptyList, engine);
+        return F.Underflow();
+      }
+      return engine.evaluate(F.Times(n, F.Power(F.C2, F.ZZ(k))));
+    }
+
+    private static IExpr overflow(EvalEngine engine) {
+      // Overflow occurred in computation.
+      Errors.printMessage(S.General, "ovfl", F.CEmptyList, engine);
+      return F.Overflow();
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override

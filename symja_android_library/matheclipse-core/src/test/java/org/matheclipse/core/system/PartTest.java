@@ -127,6 +127,76 @@ public class PartTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPartWriteDistributes() {
+    // a list of the same length as the selected positions is distributed level by level
+    check("w0 = {{7, 8, 9}, {u, 1, 2}, {3, 4, 5}}; w = w0; w[[{2, 3}, {3, 1}]] = {{g, h}, {k, l}}; w", //
+        "{{7,8,9},{h,1,g},{l,4,k}}");
+    check("w = w0; w[[2;;3, 2;;3]] = {{g, h}, {k, l}}; w", //
+        "{{7,8,9},{u,g,h},{3,k,l}}");
+    check("w = w0; w[[{2, 3}, {3, 1}]] = {g, h}; w", //
+        "{{7,8,9},{g,1,g},{h,4,h}}");
+    check("w = w0; w[[{1, 3}, 2]] = {g, h}; w", //
+        "{{7,g,9},{u,1,2},{3,h,5}}");
+    check("w = w0; w[[3, {1, 2}]] = {g, h}; w", //
+        "{{7,8,9},{u,1,2},{g,h,5}}");
+    // All selects every position of its level
+    check("w = w0; w[[All, 3]] = {g, h, k}; w", //
+        "{{7,8,g},{u,1,h},{3,4,k}}");
+    check("w = w0; w[[All, 1]] = g; w", //
+        "{{g,8,9},{g,1,2},{g,4,5}}");
+    check("w = w0; w[[1, All]] = {g, h, k}; w", //
+        "{{g,h,k},{u,1,2},{3,4,5}}");
+    check("w = w0; w[[All]] = g; w", //
+        "{g,g,g}");
+    // any other right-hand side is assigned as a whole at every selected position
+    check("w = w0; w[[All, 3]] = {g, h}; w", //
+        "{{7,8,{g,h}},{u,1,{g,h}},{3,4,{g,h}}}");
+    check("y = {6, u, 8, 9, 10}; y[[3;;5]] = {g, h}; y", //
+        "{6,u,{g,h},{g,h},{g,h}}");
+    check("y = {6, u, 8, 9, 10}; y[[{1, 5}]] = {g, h, k}; y", //
+        "{{g,h,k},u,8,9,{g,h,k}}");
+    check("y = Range(7); y[[{2, 3}]] = Range(5); y", //
+        "{1,{1,2,3,4,5},{1,2,3,4,5},4,5,6,7}");
+    // the later of two equal positions wins
+    check("w = w0; w[[{2, 2}, 2]] = {g, h}; w", //
+        "{{7,8,9},{u,h,2},{3,4,5}}");
+    check("y = Range(9); y[[-1;;1;;-4]] = {g, h, k}; y", //
+        "{k,2,3,4,h,6,7,8,g}");
+    // a position which does not exist leaves the value unchanged
+    check("y = {6, u, 8}; y[[{1, 9}]] = {g, h}; y", //
+        "{6,u,8}");
+    check("as = <|\"p\" -> {1, 2}, \"q\" -> {3, 4}|>; as[[All, 2]] = g; as", //
+        "<|p->{1,g},q->{3,g}|>");
+    // an association on the right-hand side is not distributed
+    check("as = <|\"p\" -> 5, \"q\" -> 6|>; as[[{2, 1}]] = <|\"r\" -> 7, \"s\" -> 8|>; as", //
+        "<|p-><|r->7,s->8|>,q-><|r->7,s->8|>|>");
+    check("as = <|\"p\" -> 5, \"q\" -> 6|>; as[[All]] = {7, 8}; as", //
+        "<|p->7,q->8|>");
+  }
+
+  @Test
+  public void testPartCompoundAssignment() {
+    // the compound assignments read the parts and write them back level by level
+    check("w = {{2, 4, 6}, {8, 10, 12}}; w[[All, 3]] += 100; w", //
+        "{{2,4,106},{8,10,112}}");
+    check("w = {{2, 4, 6}, {8, 10, 12}}; w[[All, 1]] *= {3, 5}; w", //
+        "{{6,4,6},{40,10,12}}");
+    check("w = {{2, 4, 6}, {8, 10, 12}}; w[[{2, 2}, 3]] -= 1; w", //
+        "{{2,4,6},{8,10,11}}");
+    check("w = {{2, 4, 6}, {8, 10, 12}}; {w[[1, {1, 3}]]++, ++w[[All, 2]], w}", //
+        "{{2,6},{5,11},{{3,5,7},{8,11,12}}}");
+    check("w = {{2, 4, 6}, {8, 10, 12}}; w[[1;;2, -1]] /= 2; w", //
+        "{{2,4,3},{8,10,6}}");
+    check("w = {{2, 4}, {8, 10}}; AppendTo(w[[2]], 9); PrependTo(w[[1]], 0); w", //
+        "{{0,2,4},{8,10,9}}");
+    // as[[All]] is the association itself, which is assigned as a whole to every value
+    check("as = <|\"p\" -> 5, \"q\" -> 6|>; as[[All]] += 10; as", //
+        "<|p-><|p->15,q->16|>,q-><|p->15,q->16|>|>");
+    check("as = <|\"p\" -> {5, 1}, \"q\" -> {6, 1}|>; as[[\"q\", 1]] *= 2; as", //
+        "<|p->{5,1},q->{12,1}|>");
+  }
+
+  @Test
   public void testPartSparse() {
     check("sp=SparseArray[{{0, a}, {b, 0}}]", //
         "SparseArray(Number of elements: 2 Dimensions: {2,2} Default value: 0)");

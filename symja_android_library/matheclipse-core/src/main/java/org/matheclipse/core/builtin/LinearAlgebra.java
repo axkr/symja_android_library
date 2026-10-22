@@ -4516,20 +4516,49 @@ public final class LinearAlgebra {
 
     /**
      * For a underdetermined system, return one of the possible solutions through a row reduced
-     * matrix.
+     * matrix, where the free variables are <code>0</code>. A system with inexact numbers gets the
+     * solution of minimal norm instead.
      *
      * @param matrix
      * @param vector
      * @param engine
-     * @return
+     * @return {@link F#NIL} if the system has no solution
      */
     private IExpr underdeterminedSystem(final FieldMatrix<IExpr> matrix, FieldVector<IExpr> vector,
         EvalEngine engine) {
       FieldMatrix<IExpr> augmentedMatrix = Convert.augmentedFieldMatrix(matrix, vector);
       if (augmentedMatrix != null) {
-        return LinearAlgebra.rowReduced2List(augmentedMatrix, true, engine);
+        IAST solution = LinearAlgebra.rowReduced2List(augmentedMatrix, true, engine);
+        if (solution.isNIL()) {
+          // Linear equation encountered that has no solution.
+          return Errors.printMessage(S.LinearSolve, "nosol", F.CEmptyList, engine);
+        }
+        if (isInexactNumberMatrix(augmentedMatrix)) {
+          IExpr minimalNorm = engine.evalQuiet(F.Dot(
+              F.unaryAST1(S.PseudoInverse, Convert.matrix2List(matrix)),
+              Convert.vector2List(vector)));
+          if (minimalNorm.isList() && minimalNorm.argSize() == solution.argSize()) {
+            return minimalNorm;
+          }
+        }
+        return solution;
       }
       return F.NIL;
+    }
+
+    /** <code>true</code> if every entry is a number and at least one is inexact. */
+    private static boolean isInexactNumberMatrix(FieldMatrix<IExpr> matrix) {
+      boolean inexact = false;
+      for (int i = 0; i < matrix.getRowDimension(); i++) {
+        for (int j = 0; j < matrix.getColumnDimension(); j++) {
+          final IExpr entry = matrix.getEntry(i, j);
+          if (!entry.isNumber()) {
+            return false;
+          }
+          inexact |= entry.isInexactNumber();
+        }
+      }
+      return inexact;
     }
   }
 

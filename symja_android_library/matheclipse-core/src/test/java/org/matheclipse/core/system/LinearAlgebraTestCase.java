@@ -1856,6 +1856,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testLinearSolve() {
     check("LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1,1,1})", //
         "{-1,1,0}");
+    // an inconsistent system; a singular machine number system gets the solution of minimal norm
+    check("Check(LinearSolve({{3., -6.}, {-1., 2.}}, {2., 5.}), nosolution)", //
+        "nosolution");
+    check("LinearSolve({{3., -6.}, {-1., 2.}}, {9., -3.})", //
+        "{0.6,-1.2}");
+    check("LinearSolve({{1., 1., 1.}, {2., 2., 2.}}, {3., 6.})", //
+        "{1.0,1.0,1.0}");
+    check("LinearSolve({{3, -6}, {-1, 2}}, {9, -3})", //
+        "{3,0}");
 
 
     check(
@@ -2419,7 +2428,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("NullSpace({{1.0,2.0*^-20},{2.0,4.0*^-20}})", //
         "{{-2.*10^-20,1}}");
     check("LinearSolve({{1.0*^-20,2.0*^-20},{2.0*^-20,4.0*^-20}},{1.0,2.0})", //
-        "{1.*10^20,0}");
+        "{2.*10^19,4.*10^19}");
     // the output form leaves out a part below the machine epsilon: Im shows it
     check("Im(Det({{1.0*^-20*I,0.0},{0.0,1.0}}))", //
         "1.*10^-20");

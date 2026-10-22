@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeSet;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -565,7 +566,7 @@ public class ResidueNTheory {
   /** Discrete logarithm of {@code a} to base {@code b} modulo {@code p}. */
   private static BigInteger discreteLog(BigInteger p, BigInteger a, BigInteger b) {
     try {
-      return discreteLog(p, a, b, null, null, null);
+      return discreteLog(p, a, b, null, null, null, null);
     } catch (ValueError ve) {
       throw new IllegalArgumentException(ve.getMessage());
     }
@@ -599,11 +600,103 @@ public class ResidueNTheory {
    * @throws ValueError if the logarithm does not exist
    */
   public static BigInteger discreteLogBig(BigInteger n, BigInteger a, BigInteger b) {
-    return discreteLog(n, a, b, null, null, null);
+    return discreteLog(n, a, b, null, null, null, null);
   }
 
+  /** The discrete logarithms of several targets to one base, see {@link #discreteLogs}. */
+  public static final class DiscreteLogs {
+    /** The logarithm of each target, or {@code null} if it does not exist. */
+    public final BigInteger[] logs;
+
+    /** The multiplicative order of the base. */
+    public final BigInteger order;
+
+    private DiscreteLogs(BigInteger[] logs, BigInteger order) {
+      this.logs = logs;
+      this.order = order;
+    }
+  }
+
+  /**
+   * The discrete logarithms of each of the {@code targets} to the base {@code b} modulo {@code n}.
+   * The order of {@code b}, its factorization and the baby-step tables of the subgroups are
+   * computed once for all targets.
+   *
+   * @param n a modulus greater than 1
+   * @param b a base coprime to {@code n}
+   */
+  public static DiscreteLogs discreteLogs(BigInteger n, BigInteger b, BigInteger[] targets) {
+    b = b.mod(n);
+    final Map<BigInteger, Integer> orderFactors = new java.util.TreeMap<BigInteger, Integer>();
+    final BigInteger order = orderOfBase(n, b, orderFactors);
+    final boolean primeOrder = MachinePrime.isProbablePrime(order, 32);
+    final Map<BigInteger, Map<BigInteger, Long>> babySteps = new HashMap<>();
+    final BigInteger[] logs = new BigInteger[targets.length];
+    for (int i = 0; i < targets.length; i++) {
+      try {
+        logs[i] = discreteLog(n, targets[i], b, order, primeOrder, orderFactors, babySteps);
+      } catch (ValueError | ArithmeticException e) {
+        logs[i] = null;
+      }
+    }
+    return new DiscreteLogs(logs, order);
+  }
+
+  /**
+   * The multiplicative order of {@code b} modulo {@code n}.
+   *
+   * @param orderFactors gets the prime factorization of the order
+   */
+  private static BigInteger orderOfBase(BigInteger n, BigInteger b,
+      Map<BigInteger, Integer> orderFactors) {
+    // Compute the order and its factoring in one pass
+    // order = totient(n), factors = factorint(order)
+    Map<BigInteger, Integer> factors = new java.util.TreeMap<BigInteger, Integer>();
+    for (Map.Entry<BigInteger, Integer> entry : factorIntegerMap(n).entrySet()) {
+      BigInteger px = entry.getKey();
+      int kx = entry.getValue();
+      if (kx > 1) {
+        factors.merge(px, kx - 1, Integer::sum);
+      }
+      BigInteger pxMinus1 = px.subtract(BigInteger.ONE);
+      if (pxMinus1.compareTo(BigInteger.ONE) > 0) {
+        for (Map.Entry<BigInteger, Integer> e : factorIntegerMap(pxMinus1).entrySet()) {
+          factors.merge(e.getKey(), e.getValue(), Integer::sum);
+        }
+      }
+    }
+    BigInteger order = BigInteger.ONE;
+    for (Map.Entry<BigInteger, Integer> entry : factors.entrySet()) {
+      order = order.multiply(entry.getKey().pow(entry.getValue()));
+    }
+    // Now the `order` is the order of the group and factors = factorint(order)
+    // The order of `b` divides the order of the group.
+    for (Map.Entry<BigInteger, Integer> entry : factors.entrySet()) {
+      BigInteger p = entry.getKey();
+      int e = entry.getValue();
+      int i = 0;
+      for (int k = 0; k < e; k++) {
+        if (b.modPow(order.divide(p), n).equals(BigInteger.ONE)) {
+          order = order.divide(p);
+          i++;
+        } else {
+          break;
+        }
+      }
+      if (i < e) {
+        orderFactors.put(p, e - i);
+      }
+    }
+    return order;
+  }
+
+  /**
+   * @param babySteps the baby-step tables by their base, shared by the logarithms of several
+   *        targets; may be {@code null}
+   */
   private static BigInteger discreteLog(BigInteger n, BigInteger a, BigInteger b,
-      BigInteger order, Boolean primeOrder, Map<BigInteger, Integer> orderFactors) {
+      BigInteger order, Boolean primeOrder, Map<BigInteger, Integer> orderFactors,
+      Map<BigInteger, Map<BigInteger, Long>> babySteps) {
     if (n.signum() < 1) {
       throw new ValueError("n should be positive");
     }
@@ -613,45 +706,8 @@ public class ResidueNTheory {
     a = a.mod(n);
     b = b.mod(n);
     if (order == null) {
-      // Compute the order and its factoring in one pass
-      // order = totient(n), factors = factorint(order)
-      Map<BigInteger, Integer> factors = new java.util.TreeMap<BigInteger, Integer>();
-      for (Map.Entry<BigInteger, Integer> entry : factorIntegerMap(n).entrySet()) {
-        BigInteger px = entry.getKey();
-        int kx = entry.getValue();
-        if (kx > 1) {
-          factors.merge(px, kx - 1, Integer::sum);
-        }
-        BigInteger pxMinus1 = px.subtract(BigInteger.ONE);
-        if (pxMinus1.compareTo(BigInteger.ONE) > 0) {
-          for (Map.Entry<BigInteger, Integer> e : factorIntegerMap(pxMinus1).entrySet()) {
-            factors.merge(e.getKey(), e.getValue(), Integer::sum);
-          }
-        }
-      }
-      order = BigInteger.ONE;
-      for (Map.Entry<BigInteger, Integer> entry : factors.entrySet()) {
-        order = order.multiply(entry.getKey().pow(entry.getValue()));
-      }
-      // Now the `order` is the order of the group and factors = factorint(order)
-      // The order of `b` divides the order of the group.
       orderFactors = new java.util.TreeMap<BigInteger, Integer>();
-      for (Map.Entry<BigInteger, Integer> entry : factors.entrySet()) {
-        BigInteger p = entry.getKey();
-        int e = entry.getValue();
-        int i = 0;
-        for (int k = 0; k < e; k++) {
-          if (b.modPow(order.divide(p), n).equals(BigInteger.ONE)) {
-            order = order.divide(p);
-            i++;
-          } else {
-            break;
-          }
-        }
-        if (i < e) {
-          orderFactors.put(p, e - i);
-        }
-      }
+      order = orderOfBase(n, b, orderFactors);
     }
     if (primeOrder == null) {
       primeOrder = MachinePrime.isProbablePrime(order, 32);
@@ -662,11 +718,11 @@ public class ResidueNTheory {
     } else if (primeOrder) {
       if (order.compareTo(BigInteger.valueOf(1000000000000L)) < 0) {
         // Shanks seems typically faster, but uses O(sqrt(order)) memory
-        return discreteLogShanksSteps(n, a, b, order);
+        return discreteLogShanksSteps(n, a, b, order, babySteps);
       }
       return discreteLogPollardRho(n, a, b, order, 10);
     }
-    return discreteLogPohligHellman(n, a, b, order, orderFactors);
+    return discreteLogPohligHellman(n, a, b, order, orderFactors, babySteps);
   }
 
   /**
@@ -690,15 +746,13 @@ public class ResidueNTheory {
    * {@code b} modulo {@code n}.
    */
   private static BigInteger discreteLogShanksSteps(BigInteger n, BigInteger a, BigInteger b,
-      BigInteger order) {
+      BigInteger order, Map<BigInteger, Map<BigInteger, Long>> babySteps) {
     // m = sqrt(order) + 1
-    long m = order.sqrt().longValueExact() + 1;
-    Map<BigInteger, Long> table = new HashMap<>();
-    BigInteger x = BigInteger.ONE;
-    for (long i = 0; i < m; i++) {
-      table.put(x, i);
-      x = x.multiply(b).mod(n);
-    }
+    final long m = order.sqrt().longValueExact() + 1;
+    // the baby steps depend on the base only, the order of b fixes m
+    final Map<BigInteger, Long> table = babySteps == null ? babySteps(n, b, m)
+        : babySteps.computeIfAbsent(b, key -> babySteps(n, key, m));
+    BigInteger x;
     // z = pow(b, -m, n)
     BigInteger z = b.modInverse(n).modPow(BigInteger.valueOf(m), n);
     x = a;
@@ -710,6 +764,17 @@ public class ResidueNTheory {
       x = x.multiply(z).mod(n);
     }
     throw new ValueError("Log does not exist");
+  }
+
+  /** The powers {@code b^i} for {@code 0 <= i < m} by their exponents. */
+  private static Map<BigInteger, Long> babySteps(BigInteger n, BigInteger b, long m) {
+    final Map<BigInteger, Long> table = new HashMap<>();
+    BigInteger x = BigInteger.ONE;
+    for (long i = 0; i < m; i++) {
+      table.put(x, i);
+      x = x.multiply(b).mod(n);
+    }
+    return table;
   }
 
   /** A random number in the range {@code 1..order-1} */
@@ -739,6 +804,9 @@ public class ResidueNTheory {
       BigInteger[] hare = tortoise.clone();
       pollardRhoStep(hare, n, a, b, order);
       for (long j = 0; j < maxSteps; j++) {
+        if ((j & 0xFFF) == 0) {
+          EvalEngine.get().checkTimeLimit();
+        }
         pollardRhoStep(tortoise, n, a, b, order);
         pollardRhoStep(hare, n, a, b, order);
         pollardRhoStep(hare, n, a, b, order);
@@ -780,7 +848,8 @@ public class ResidueNTheory {
    * {@code b} modulo {@code n}. It takes advantage of the factorization of the group order.
    */
   private static BigInteger discreteLogPohligHellman(BigInteger n, BigInteger a, BigInteger b,
-      BigInteger order, Map<BigInteger, Integer> orderFactors) {
+      BigInteger order, Map<BigInteger, Integer> orderFactors,
+      Map<BigInteger, Map<BigInteger, Long>> babySteps) {
     if (orderFactors == null) {
       orderFactors = factorIntegerMap(order);
     }
@@ -794,7 +863,7 @@ public class ResidueNTheory {
       for (int j = 0; j < ri; j++) {
         // aj = pow(a * pow(b, -l[i], n), order // pi**(j + 1), n)
         BigInteger aj = a.multiply(bInverse.modPow(li, n)).mod(n).modPow(order.divide(pi.pow(j + 1)), n);
-        BigInteger cj = discreteLog(n, aj, bj, pi, Boolean.TRUE, null);
+        BigInteger cj = discreteLog(n, aj, bj, pi, Boolean.TRUE, null, babySteps);
         li = li.add(cj.multiply(pi.pow(j)));
       }
       // d, _ = crt([pi**ri for pi, ri in order_factors.items()], l)

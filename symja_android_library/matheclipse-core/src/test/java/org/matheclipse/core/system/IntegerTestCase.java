@@ -284,6 +284,42 @@ public class IntegerTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBitSymbolic() {
+    // equal arguments cancel in pairs, -1 turns into BitNot, the integers combine
+    check("{BitXor(u, v, u, w, v), BitXor(6, 3, u), BitXor(-1, u, v), BitXor(-1, w, w), BitXor(-3, 2, u), BitXor(4.5, u, 4.5)}", //
+        "{w,BitXor(5,u),BitNot(BitXor(u,v)),-1,BitNot(u),u}");
+    check("{BitXor(-9, u), BitXor(BitXor(u, w), w), BitXor(-1, BitNot(w)), BitXor(1.5, 6)}", //
+        "{BitXor(-9,u),u,w,BitXor(1.5,6)}");
+    // 0 absorbs BitAnd and -1 BitOr; the neutral integer is dropped
+    check("{BitAnd(v, u, v), BitAnd(12, 10, u), BitAnd(4, 3, u), BitAnd(0, u, 7.5), BitAnd(-1, w), BitAnd(4.5, 4.5)}", //
+        "{BitAnd(u,v),BitAnd(8,u),0,0,w,4.5}");
+    check("{BitOr(4, 3, u), BitOr(-1, 8, u), BitOr(0, 7.5), BitOr(u, 0, 4.5, 4.5), BitOr(BitOr(u, 6), BitOr(9, v)), BitOr(u, BitAnd(u, v))}", //
+        "{BitOr(7,u),-1,7.5,BitOr(4.5,u),BitOr(15,u,v),BitOr(u,BitAnd(u,v))}");
+  }
+
+  @Test
+  public void testBitShift() {
+    check("{BitShiftLeft(13, 4), BitShiftRight(200, 3), BitShiftLeft(7), BitShiftRight(7), BitShiftLeft(13, -2), BitShiftRight(3, -5)}", //
+        "{208,25,14,3,3,96}");
+    // a negative integer is truncated towards 0
+    check("{BitShiftRight(-13, 2), BitShiftRight(-3, 70), BitShiftRight(-2^80, 80), BitShiftLeft(-5, 64)}", //
+        "{-3,0,-1,-92233720368547758080}");
+    // any other number is scaled, a complex number part by part
+    check("{BitShiftLeft(1.5, 3), BitShiftRight(9/4, 2), BitShiftRight(9 + 6*I, 2), BitShiftLeft(3/2 - 0.25*I, 1)}", //
+        "{12.0,9/16,2+I,3.0+I*(-0.5)}");
+    check("{BitShiftLeft(Infinity, 2), BitShiftRight(q, 3), BitShiftLeft({1, q, 3}, 2), BitShiftRight(64, {1, 2, -1})}", //
+        "{Infinity,BitShiftRight(q,3),{4,BitShiftLeft(q,2),12},{32,16,128}}");
+    // BitShiftLeft: Machine-sized integer expected at position 2 in BitShiftLeft(9,2.5).
+    check("BitShiftLeft(9, 2.5)", //
+        "BitShiftLeft(9,2.5)");
+    // General: Overflow occurred in computation.
+    check("BitShiftLeft(3, 2^62)", //
+        "Overflow()");
+    check("BitShiftRight(5.5, 2^62)", //
+        "0.0");
+  }
+
+  @Test
   public void testDigitSumBase10() {
     check("DigitSum(123)", //
         "6");

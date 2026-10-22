@@ -357,11 +357,8 @@ public class BigFractionSym extends AbstractFractionSym {
       return FractionSym.ZERO;
     }
     BigInteger den = fFraction.getDenominator();
-    BigInteger newnum = fFraction.getNumerator().mod(den);
-    if (isNegative()) {
-      return AbstractFractionSym.valueOf(newnum.negate(), den);
-    }
-    return AbstractFractionSym.valueOf(newnum, den);
+    // the remainder keeps the sign of the numerator, like the truncation towards 0
+    return AbstractFractionSym.valueOf(fFraction.getNumerator().remainder(den), den);
   }
 
   @Override

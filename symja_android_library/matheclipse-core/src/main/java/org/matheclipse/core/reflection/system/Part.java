@@ -1,10 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
-import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
@@ -22,6 +21,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.external.fastutil.ints.IntArrayList;
 
 /**
  *
@@ -218,211 +218,150 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public final class Part extends AbstractFunctionEvaluator implements ISetEvaluator {
 
-  private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition,
-      IAST rhs, int rhsPos, EvalEngine engine) {
-    if (!assignedExpr.isASTOrAssociation() || partPosition >= part.size()) {
-      return assignedExpr;
-    }
-    IAST assignedAST = (IAST) assignedExpr;
-    final IExpr arg2 = engine.evaluate(part.get(partPosition));
-    int partPositionPlus1 = partPosition + 1;
-    int[] span = arg2.isSpan(assignedAST.size());
-    if (span != null) {
-      int start = span[0];
-      int last = span[1];
-      int step = span[2];
-      IASTAppendable result = F.NIL;
-
-      if (step < 0 && start >= last) {
-        int rhsIndx = 1;
-        for (int i = start; i >= last; i += step) {
-          IExpr temp = rhs.get(rhsIndx++);
-          if (!temp.isList()) {
-            temp = assignPart(assignedAST.get(i), part, partPositionPlus1, temp, engine);
-          } else {
-            temp = assignPart(assignedAST.get(i), part, partPositionPlus1, (IAST) temp, 1, engine);
-          }
-
-          if (temp.isPresent()) {
-            if (result.isNIL()) {
-              result = assignedAST.copyAppendable();
-            }
-            setElement(result, i, temp);
-          }
-        }
-      } else if (step > 0 && (last != 1 || start <= last)) {
-        int rhsIndx = 1;
-        for (int i = start; i <= last; i += step) {
-          IExpr temp = rhs.get(rhsIndx++);
-          if (!temp.isList()) {
-            temp = assignPart(assignedAST.get(i), part, partPositionPlus1, temp, engine);
-          } else {
-            temp = assignPart(assignedAST.get(i), part, partPositionPlus1, (IAST) temp, 1, engine);
-          }
-
-          if (temp.isPresent()) {
-            if (result.isNIL()) {
-              result = assignedAST.copyAppendable();
-            }
-            setElement(result, i, temp);
-          }
-        }
-      } else {
-        // Part `1` of `2` does not exist.
-        return Errors.printMessage(S.Part, "partw", F.list(arg2, assignedAST), engine);
-      }
-      return result;
-    } else if (arg2.isReal()) {
-      final int indx = Validate.checkIntType(part, partPosition, Integer.MIN_VALUE);
-      IExpr ires = null;
-      ires = assignPartValue(assignedAST, indx, rhs);
-      if (partPositionPlus1 < part.size()) {
-        if (ires.isASTOrAssociation()) {
-          return assignPart(ires, part, partPositionPlus1, rhs, rhsPos++, engine);
-        } else {
-          // Part `1` of `2` does not exist.
-          return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), assignedAST),
-              engine);
-        }
-      }
-      return ires;
-    } else if (assignedAST.isAssociation() && (arg2.isKey() || arg2.isString())) {
-      return assignAssociationKey((IAssociation) assignedAST, arg2, part, partPositionPlus1, rhs,
-          rhsPos, engine);
-    } else if (arg2.isList()) {
-      IExpr temp = null;
-      final IAST list = (IAST) arg2;
-      final IASTAppendable result = F.ListAlloc(list.size());
-
-      for (int i = 1; i < list.size(); i++) {
-        final IExpr listArg = list.get(i);
-        if (listArg.isInteger()) {
-          IExpr ires = null;
-
-          final int indx = Validate.throwIntType(listArg, Integer.MIN_VALUE, engine);
-          ires = assignPartValue(assignedAST, indx, list);
-          if (ires == null) {
-            return F.NIL;
-          }
-          if (partPositionPlus1 < part.size()) {
-            if (ires.isASTOrAssociation()) {
-              temp = assignPart(ires, part, partPositionPlus1, rhs, rhsPos++, engine);
-              result.append(temp);
-            } else {
-              // Part `1` of `2` does not exist.
-              return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), assignedAST),
-                  engine);
-            }
-          } else {
-            result.append(ires);
-          }
-        }
-      }
-      return result;
-    }
-    // Part `1` of `2` does not exist.
-    return Errors.printMessage(S.Part, "partw", F.list(arg2, assignedAST), engine);
-  }
-
-  private static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition,
-      IExpr value, EvalEngine engine) {
+  /**
+   * <code>expr[[spec, ...]] = rhs</code> from the specification at <code>partPosition</code> on.
+   *
+   * <p>
+   * The specification of one level is a position, <code>All</code>, a <code>Span</code> or a list
+   * of positions. When it selects several positions and <code>rhs</code> is a list of the same
+   * length, the elements of <code>rhs</code> go to the positions one by one and the deeper levels
+   * work on them; any other <code>rhs</code> is assigned as a whole at every position. A position
+   * which is selected twice receives the later value. The compound assignments like
+   * <code>AddTo</code> or <code>AppendTo</code> of a part read the part and come back here
+   * through <code>Set</code>.
+   *
+   * @param expr the expression to assign into
+   * @param part the <code>Part(...)</code> expression
+   * @param partPosition the index of the next part specification
+   * @param rhs the value which should be assigned
+   * @param engine the evaluation engine
+   * @return the changed copy of <code>expr</code> or {@link F#NIL} if a message was printed
+   */
+  private static IExpr assignPart(final IExpr expr, final IAST part, int partPosition,
+      IExpr rhs, EvalEngine engine) {
     if (partPosition >= part.size()) {
       // stop recursion
-      return value;
+      return rhs;
     }
-    if (!assignedExpr.isASTOrAssociation()) {
+    if (!expr.isASTOrAssociation()) {
       // Part specification `1` is longer than depth of object.
       return Errors.printMessage(S.Part, "partd", F.list(part), engine);
     }
-    IAST assignedAST = (IAST) assignedExpr;
-    final IExpr arg2 = engine.evaluate(part.get(partPosition));
-    int partPositionPlus1 = partPosition + 1;
-    int[] span = arg2.isSpan(assignedAST.size());
-    if (span != null) {
-      int start = span[0];
-      int last = span[1];
-      int step = span[2];
-      IASTAppendable result = F.NIL;
-      IExpr element;
-      final int size = assignedAST.size();
-      if (start < 0 || last < 0 || start >= size || last >= size) {
-        // a span which runs past the end is an error message, not an IndexOutOfBoundsException
-        // Cannot take positions `1` through `2` in `3`.
-        return Errors.printMessage(S.Part, "take", F.list(F.ZZ(start), F.ZZ(last), assignedAST),
-            engine);
+    final IAST ast = (IAST) expr;
+    final IExpr spec = engine.evaluate(part.get(partPosition));
+    if (ast.isAssociation() && (spec.isKey() || spec.isString())) {
+      return assignAssociationKey((IAssociation) ast, spec, part, partPosition + 1, rhs, engine);
+    }
+    final int[] positions = partPositions(ast, spec, engine);
+    if (positions == null) {
+      return F.NIL;
+    }
+    // only a list is distributed; an association is assigned as a whole like any other value
+    final boolean distribute = !spec.isInteger() && rhs.isList()
+        && rhs.argSize() == positions.length;
+    final IASTAppendable result = ast.copyAppendable();
+    for (int i = 0; i < positions.length; i++) {
+      final int position = positions[i];
+      final IExpr value = distribute ? rhs.getAt(i + 1) : rhs;
+      if (result.isAssociation() && position == 0) {
+        // an association keeps its head, its values are the parts which can be assigned
+        // Part `1` of `2` does not exist.
+        return Errors.printMessage(S.Part, "partw", F.list(F.C0, ast), engine);
       }
+      final IExpr element = result.isAssociation() ? ((IAssociation) result).getValue(position)
+          : result.get(position);
+      final IExpr temp = assignPart(element, part, partPosition + 1, value, engine);
+      if (temp.isNIL()) {
+        return F.NIL;
+      }
+      setElement(result, position, temp);
+    }
+    return result;
+  }
 
-      if (step < 0 && start >= last) {
-        for (int i = start; i >= last; i += step) {
-          element = assignedAST.get(i);
-          result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i,
-              value, engine);
-        }
-      } else if (step > 0 && (last != 1 || start <= last)) {
+  /**
+   * The positions of <code>ast</code> which the part specification <code>spec</code> of one level
+   * selects: one for an integer, all arguments for <code>All</code>, the ones in a
+   * <code>Span</code> or the ones in a list of integers. Negative positions count from the end.
+   *
+   * @return <code>null</code> if a message was printed
+   */
+  private static int[] partPositions(IAST ast, IExpr spec, EvalEngine engine) {
+    final int size = ast.size();
+    if (spec.isInteger()) {
+      final int position = partPosition(ast, spec, engine);
+      return position < 0 ? null : new int[] {position};
+    }
+    if (spec == S.All) {
+      final int[] positions = new int[size - 1];
+      for (int i = 1; i < size; i++) {
+        positions[i - 1] = i;
+      }
+      return positions;
+    }
+    final int[] span = spec.isSpan(size);
+    if (span != null) {
+      final int start = span[0];
+      final int last = span[1];
+      final int step = span[2];
+      if (start < 0 || last < 0 || start >= size || last >= size || step == 0
+          || step == Config.INVALID_INT) {
+        // the positions as they are written, not as they were resolved against the length
+        // Cannot take positions `1` through `2` in `3`.
+        Errors.printMessage(S.Part, "take", F.list(spec.first(), spec.second(), ast), engine);
+        return null;
+      }
+      final IntArrayList positions = new IntArrayList();
+      if (step > 0) {
         for (int i = start; i <= last; i += step) {
-          element = assignedAST.get(i);
-          result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i,
-              value, engine);
+          positions.add(i);
         }
       } else {
-        // Part `1` of `2` does not exist.
-        return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), arg2), engine);
-      }
-      return result;
-    } else if (arg2.isReal()) {
-      int indx = Validate.throwIntType(arg2, Integer.MIN_VALUE, engine);
-      if (indx < 0) {
-        indx = assignedAST.size() + indx;
-      }
-      if ((indx < 0) || (indx >= assignedAST.size())) {
-        // Part `1` of `2` does not exist.
-        return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(indx), assignedAST), engine);
-      }
-      IASTAppendable result = F.NIL;
-      IExpr temp = assignPart(assignedAST.get(indx), part, partPositionPlus1, value, engine);
-      if (temp.isPresent()) {
-        if (result.isNIL()) {
-          result = assignedAST.copyAppendable();
+        for (int i = start; i >= last; i += step) {
+          positions.add(i);
         }
-        setElement(result, indx, temp);
       }
-      return result;
-    } else if (assignedAST.isAssociation() && (arg2.isKey() || arg2.isString())) {
-      return assignAssociationKey((IAssociation) assignedAST, arg2, part, partPositionPlus1, value,
-          engine);
-    } else if (arg2.isList()) {
-      IExpr temp = null;
-      final IAST list = (IAST) arg2;
-      final IASTAppendable result = F.ListAlloc(list.size());
-
+      return positions.toIntArray();
+    }
+    if (spec.isList()) {
+      final IAST list = (IAST) spec;
+      final int[] positions = new int[list.argSize()];
       for (int i = 1; i < list.size(); i++) {
-        final IExpr listArg = list.get(i);
-        if (listArg.isInteger()) {
-          IExpr ires = null;
-
-          final int indx = Validate.throwIntType(listArg, Integer.MIN_VALUE, engine);
-          ires = assignPartValue(assignedAST, indx, value);
-          if (ires == null) {
-            return F.NIL;
+        final IExpr index = list.get(i);
+        final int position = index.isInteger() ? partPosition(ast, index, engine) : -1;
+        if (position < 0) {
+          if (!index.isInteger()) {
+            // Part `1` of `2` does not exist.
+            Errors.printMessage(S.Part, "partw", F.list(index, ast), engine);
           }
-          if (partPositionPlus1 < part.size()) {
-            if (ires.isASTOrAssociation()) {
-              temp = assignPart(ires, part, partPositionPlus1, value, engine);
-              result.append(temp);
-            } else {
-              // Part `1` of `2` does not exist.
-              return Errors.printMessage(S.Part, "partw", F.list(F.ZZ(partPosition), assignedAST),
-                  engine);
-            }
-          } else {
-            result.append(ires);
-          }
+          return null;
         }
+        positions[i - 1] = position;
       }
-      return result;
+      return positions;
     }
     // Part `1` of `2` does not exist.
-    return Errors.printMessage(S.Part, "partw", F.list(arg2, assignedAST), engine);
+    Errors.printMessage(S.Part, "partw", F.list(spec, ast), engine);
+    return null;
+  }
+
+  /**
+   * The position of the integer <code>index</code> in <code>ast</code>, counted from the end if it
+   * is negative. <code>0</code> is the head.
+   *
+   * @return <code>-1</code> if a message was printed
+   */
+  private static int partPosition(IAST ast, IExpr index, EvalEngine engine) {
+    int position = index.toIntDefault();
+    if (position != Integer.MIN_VALUE && position < 0) {
+      position = ast.size() + position;
+    }
+    if (position < 0 || position >= ast.size()) {
+      // Part `1` of `2` does not exist.
+      Errors.printMessage(S.Part, "partw", F.list(index, ast), engine);
+      return -1;
+    }
+    return position;
   }
 
   /**
@@ -466,68 +405,6 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
   }
 
   /**
-   * Assign the elements of the <code>rhs</code> list to the rule of the association which is
-   * defined by the given <code>keySpecification</code>. <code>assoc[[key]] = rhs</code>
-   *
-   * @param assoc the association in which the value should be assigned
-   * @param keySpecification a string or a <code>Key(...)</code> expression
-   * @param part the <code>Part(...)</code> expression
-   * @param partPosition the index of the next part specification
-   * @param rhs the right-hand-side list of the assignment
-   * @param rhsPos the current position in the <code>rhs</code> list
-   * @param engine the evaluation engine
-   * @return {@link F#NIL} if an error occurred
-   * @see #assignAssociationKey(IAssociation, IExpr, IAST, int, IExpr, EvalEngine)
-   */
-  private static IExpr assignAssociationKey(IAssociation assoc, IExpr keySpecification,
-      final IAST part, int partPosition, IAST rhs, int rhsPos, EvalEngine engine) {
-    final IExpr key = keySpecification.isKey() ? keySpecification.first() : keySpecification;
-    if (partPosition >= part.size()) {
-      IAssociation result = assoc.copy();
-      result.appendRule(F.Rule(key, rhs));
-      return result;
-    }
-    final int index = assoc.getRulePosition(key);
-    if (index == 0) {
-      // Part `1` of `2` does not exist.
-      return Errors.printMessage(S.Part, "partw", F.list(keySpecification, assoc), engine);
-    }
-    IExpr temp = assignPart(assoc.getValue(index), part, partPosition, rhs, rhsPos, engine);
-    if (temp.isNIL()) {
-      return F.NIL;
-    }
-    IAssociation result = assoc.copy();
-    result.setValue(index, temp);
-    return result;
-  }
-
-  /**
-   * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively and assign the
-   * result to the given position in the result. <code>result[[position]] = resultValue</code>
-   *
-   * @param expr
-   * @param element
-   * @param part
-   * @param partPosition
-   * @param result will be cloned if an assignment occurs and returned by this method
-   * @param position
-   * @param value
-   * @param engine the evaluation engineF
-   * @return the (cloned and value assigned) result AST from input
-   */
-  private static IASTAppendable assignPartSpanValue(IAST expr, IExpr element, final IAST part,
-      int partPosition, IASTAppendable result, int position, IExpr value, EvalEngine engine) {
-    IExpr resultValue = assignPart(element, part, partPosition, value, engine);
-    if (resultValue.isPresent()) {
-      if (result.isNIL()) {
-        result = expr.copyAppendable();
-      }
-      setElement(result, position, resultValue);
-    }
-    return result;
-  }
-
-  /**
    * Set the element at the given <code>position</code>. An {@link IAssociation} stores
    * <code>Rule(key, value)</code> expressions internally, therefore only the value of the rule at
    * <code>position</code> gets replaced, so that the association keys are preserved.
@@ -542,31 +419,6 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
     } else {
       result.set(position, value);
     }
-  }
-
-  /**
-   * Assign the <code>value</code> to the given position in the left-hand-side. <code>
-   * lhs[[position]] = value</code>
-   *
-   * @param lhs left-hand-side
-   * @param partPosition
-   * @param value
-   * @return
-   */
-  private static IExpr assignPartValue(IAST lhs, int partPosition, IExpr value) {
-    if (partPosition < 0) {
-      partPosition = lhs.size() + partPosition;
-    }
-    if ((partPosition < 0) || (partPosition >= lhs.size())) {
-      throw new ArgumentTypeException(
-          "Part: index " + partPosition + " of " + lhs.toString() + " is out of bounds.");
-    }
-    if (lhs.isAssociation()) {
-      IAssociation result = ((IAssociation) lhs).copy();
-      result.setValue(partPosition, value);
-      return result;
-    }
-    return lhs.setAtCopy(partPosition, value);
   }
 
   /**
@@ -1227,12 +1079,7 @@ public final class Part extends AbstractFunctionEvaluator implements ISetEvaluat
             return Errors.printMessage(builtinSymbol, "write", F.list(symbol), EvalEngine.get());
           }
           try {
-            IExpr result;
-            if (rightHandSide.isList()) {
-              result = assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
-            } else {
-              result = assignPart(temp, part, 2, rightHandSide, engine);
-            }
+            IExpr result = assignPart(temp, part, 2, rightHandSide, engine);
             if (result.isPresent()) {
               symbol.assignValue(result, false);
             }

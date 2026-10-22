@@ -645,6 +645,7 @@ public class Errors {
       "ubnd", "The problem is unbounded.", //
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
       "underdet", "The system is underdetermined.", //
+      "unfl", "Underflow occurred in computation.", //
       "unitsys", "Cannot set `1` to `2`; value must be \"Metric\" or \"Imperial\".", //
       "unkds",
       "Warning: the set of discontinuities may be incomplete due to missing domain and discontinuity information for some of the functions involved.", //
