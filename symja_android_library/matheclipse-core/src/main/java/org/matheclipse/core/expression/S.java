@@ -16309,6 +16309,16 @@ public class S {
   public final static IBuiltInSymbol Nearest = S.initFinalSymbol("Nearest", ID.Nearest);
 
   /**
+   * NearestFunction(x) - TODO describe `NearestFunction`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NearestFunction.md">NearestFunction
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NearestFunction =
+      S.initFinalSymbol("NearestFunction", ID.NearestFunction);
+
+  /**
    * NearestTo(x-value) - returns the value from the `list-of-values` which is nearest to `x-value`.
    * By default the `EuclideanDistance` is used. With the `DistanceFunction` option you can specify
    * your own distance function.
