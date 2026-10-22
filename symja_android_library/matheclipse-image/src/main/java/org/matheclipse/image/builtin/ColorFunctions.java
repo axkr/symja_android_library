@@ -251,19 +251,16 @@ public class ColorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image != null) {
-        int channels = Boof.channels(image);
-        int colorChannels = channels == 4 ? 3 : channels;
-        return new ImageExpr(
-            Pixels.fromPixels(image.getWidth(), image.getHeight(), channels, (x, y) -> {
-              float[] values = Pixels.pixel(image, x, y, channels);
-              float[] result = values.clone();
-              for (int c = 0; c < colorChannels; c++) {
-                result[c] = 255.0f - values[c];
-              }
-              return result;
-            }), null);
+      if (ast.arg1() instanceof ImageExpr) {
+        // 1 - v of every colour sample, also of one outside of 0 ... 1; the type stays
+        ImageExpr image = (ImageExpr) ast.arg1();
+        org.matheclipse.image.algo.Raster raster = image.raster();
+        if (raster == null) {
+          return F.NIL;
+        }
+        ImageExpr negated = ImageExpr.fromRaster(raster.mapColor(v -> 1.0 - v),
+            image.getOptions(), image.sampleType());
+        return negated == null ? F.NIL : negated;
       }
       float[] rgba = Colors.toRgba(ast.arg1());
       if (rgba == null) {

@@ -1,7 +1,6 @@
 package org.matheclipse.image.algo;
 
 import java.awt.image.BufferedImage;
-import boofcv.alg.enhance.EnhanceImageOps;
 import boofcv.alg.filter.binary.GThresholdImageOps;
 import boofcv.struct.ConfigLength;
 import boofcv.struct.image.GrayF32;
@@ -21,14 +20,14 @@ public final class Enhance {
 
   private Enhance() {}
 
-  /** Otsu's threshold: the intensity that best separates the samples into two clusters. */
-  public static double otsu(BufferedImage image) {
-    return GThresholdImageOps.computeOtsu(Boof.grayF32(image), 0.0, Boof.MAX_VALUE);
-  }
-
-  /** The threshold that minimizes the cross entropy of the two groups it makes. */
-  public static double entropy(BufferedImage image) {
-    return GThresholdImageOps.computeEntropy(Boof.grayF32(image), 0.0, Boof.MAX_VALUE);
+  /**
+   * The threshold that minimizes the cross entropy of the two groups it makes, of the intensities
+   * <code>values</code>, row by row from the top, which lie in <code>min ... max</code>.
+   */
+  public static double entropy(float[] values, int width, int height, double min, double max) {
+    GrayF32 gray = new GrayF32(width, height);
+    System.arraycopy(values, 0, gray.data, 0, values.length);
+    return GThresholdImageOps.computeEntropy(gray, min, max);
   }
 
   /**
@@ -68,13 +67,4 @@ public final class Enhance {
     return mask;
   }
 
-  /**
-   * The lookup table that spreads a histogram of 256 levels evenly over the whole range, which is
-   * what histogram equalization applies to every sample.
-   */
-  public static int[] equalizationTable(int[] histogram) {
-    int[] transform = new int[histogram.length];
-    EnhanceImageOps.equalize(histogram, transform);
-    return transform;
-  }
 }

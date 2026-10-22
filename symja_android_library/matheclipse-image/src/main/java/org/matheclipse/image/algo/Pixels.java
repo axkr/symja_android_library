@@ -15,11 +15,11 @@ import org.matheclipse.external.fastutil.ints.IntArrayList;
  * {@link BufferedImage}.
  *
  * <p>
- * <b>The scale depends on the data.</b> <code>Image[{{0.5}}]</code> and <code>Image[{{128}}]</code>
- * are the same picture: real samples run <code>0.0 ... 1.0</code>, integer samples run
- * <code>0 ... 255</code>, and integer data whose samples are all 0 or 1 is a bilevel image where 1
- * means white. That is what {@link #imageTypeOf(IAST)} decides, and getting it wrong is what made
- * <code>Image[{{{1.0, 0.0, 0.0}}}]</code> come out black rather than red.
+ * <b>The scale depends on the type.</b> Data written without a type is an image of reals, whose
+ * samples run <code>0.0 ... 1.0</code> - integers included, so <code>Image[{{128}}]</code> holds
+ * 128 and shows as white. A stated type puts the samples on its own scale: <code>0 ... 255</code>
+ * for <code>"Byte"</code>, <code>0 ... 65535</code> for <code>"Bit16"</code>, 0 or 1 for
+ * <code>"Bit"</code>.
  *
  * <p>
  * <b>Channels are counted from the data.</b> A matrix of scalars is greyscale, a matrix of triples
@@ -65,7 +65,7 @@ public final class Pixels {
    * <p>
    * The samples are handed out one at a time and unconverted, because the scale they are on is not
    * a property of the layout: {@link #scaleOf(String)} decides that from
-   * {@link #imageTypeOf(IAST)}, which reads the data as a whole.
+   * the image type.
    */
   public interface Samples {
 
@@ -147,7 +147,8 @@ public final class Pixels {
     if (samples == null) {
       return null;
     }
-    return toBufferedImage(samples, colorSpace, scaleOf(imageTypeOf(data)));
+    // data without a type is an image of reals
+    return toBufferedImage(samples, colorSpace, scaleOf(REAL32));
   }
 
   /**
@@ -194,45 +195,6 @@ public final class Pixels {
       return dataChannels == 1;
     }
     return false;
-  }
-
-  /**
-   * The image type that <code>data</code> describes: <code>"Bit"</code> when every sample is 0 or
-   * 1, <code>"Byte"</code> for any other integer data, <code>"Real32"</code> as soon as one sample
-   * is not an integer.
-   *
-   * <p>
-   * This walks every sample of <code>data</code> and never asks what any of them means, so it reads
-   * interleaved and planar data alike.
-   */
-  public static String imageTypeOf(IAST data) {
-    boolean bilevel = true;
-    for (int i = 1; i < data.size(); i++) {
-      IExpr row = data.get(i);
-      if (!row.isList()) {
-        return REAL32;
-      }
-      IAST rowList = (IAST) row;
-      for (int j = 1; j < rowList.size(); j++) {
-        IExpr cell = rowList.get(j);
-        if (cell.isList()) {
-          IAST channels = (IAST) cell;
-          for (int k = 1; k < channels.size(); k++) {
-            IExpr sample = channels.get(k);
-            if (!sample.isInteger()) {
-              return REAL32;
-            }
-            bilevel = bilevel && (sample.isZero() || sample.isOne());
-          }
-        } else {
-          if (!cell.isInteger()) {
-            return REAL32;
-          }
-          bilevel = bilevel && (cell.isZero() || cell.isOne());
-        }
-      }
-    }
-    return bilevel ? BIT : BYTE;
   }
 
   /**

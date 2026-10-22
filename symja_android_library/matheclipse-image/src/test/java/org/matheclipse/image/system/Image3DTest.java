@@ -66,12 +66,13 @@ public class Image3DTest extends AbstractTestCase {
     check("v = Image3D({{{0, 0, 0}, {0, 1, 0}}, {{0, 0, 0}, {0, 0, 0}}}); "
         + "{Head(v), ImageQ(v), ImageDimensions(v), ImageType(v), ImageChannels(v), "
         + "ImageColorSpace(v)}", //
-        "{Image3D,True,{3,2,2},Bit,1,Grayscale}");
+        "{Image3D,True,{3,2,2},Real32,1,Grayscale}");
     check("ImageData(v) == {{{0, 0, 0}, {0, 1, 0}}, {{0, 0, 0}, {0, 0, 0}}}", //
         "True");
+    // data without a type is a volume of reals, integers included
     check("ImageType /@ {Image3D({{{0, 128}}}), Image3D({{{0.5, 1}}}), "
         + "Image3D({{{0, 1}}}, \"Byte\")}", //
-        "{Byte,Real32,Byte}");
+        "{Real32,Real32,Byte}");
     // the samples on the scale of another type
     check("ImageData(Image3D({{{0, 51}, {255, 102}}}, \"Byte\")) == {{{0, 0.2}, {1, 0.4}}}", //
         "True");
@@ -93,13 +94,35 @@ public class Image3DTest extends AbstractTestCase {
   }
 
   @Test
+  public void testImage3DFromStack() {
+    // 2D images of one size are the slices of the volume, the first one on top
+    check("p = Image({{0.25, 0.5}, {0.75, 1.0}, {0.0, 0.5}}); q = Image({{1.0, 0.0}, {0.5, 0.5}, {0.25, 0.75}}); "
+        + "v = Image3D({p, q, p}); "
+        + "{ImageQ(v), ImageDimensions(v), ImageChannels(v), ImageType(v), ImageData(v)[[2, 1]]}", //
+        "{True,{2,3,3},1,Real32,{1.0,0.0}}");
+    // the type of the slices is kept
+    check("b = Image({{3, 9}, {27, 81}}, \"Byte\"); "
+        + "{ImageType(Image3D({b, b})), ImageData(Image3D({b, b}), \"Byte\")[[2]]}", //
+        "{Byte,{{3,9},{27,81}}}");
+    // slices of different sizes don't stack
+    check("ImageQ(Image3D({Image({{0.5, 0.5}}), Image({{0.5}})}))", //
+        "False");
+    // a type given for the volume
+    check("r = Image({{0.2, 0.6}}); {ImageType(Image3D({r, r}, \"Byte\")), "
+        + "ImageData(Image3D({r, r}, \"Byte\"), \"Byte\")[[1]]}", //
+        "{Byte,{{51,153}}}");
+    check("ImageQ(Image3D({Image({{0.5}}), Image({{0.5}})}, \"Bogus\"))", //
+        "False");
+  }
+
+  @Test
   public void testMorphology3D() {
     // a voxel grows into the cube around it, cut off at the border of the volume
     check("d = Image3D(ReplacePart(ConstantArray(0, {5, 5, 5}), {3, 3, 3} -> 1)); "
         + "{Total(Flatten(ImageData(Dilation(d, 1)))), ImageType(Dilation(d, 1)), "
         + "ImageData(Erosion(Dilation(d, 1), 1)) == ImageData(d), "
         + "ImageData(Closing(d, 1)) == ImageData(d), Total(Flatten(ImageData(Opening(d, 1))))}", //
-        "{27.0,Bit,True,True,0.0}");
+        "{27.0,Real32,True,True,0.0}");
     check("Total(Flatten(ImageData(Dilation(Image3D(ReplacePart(ConstantArray(0, {4, 4, 4}), "
         + "{1, 1, 1} -> 1)), 1))))", //
         "8.0");

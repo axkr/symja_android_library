@@ -25,12 +25,13 @@ public class ImagePropertiesTest extends AbstractTestCase {
     check("ImageColorSpace(Image({{{1.0,0.0,0.0}}}))", "RGB");
   }
 
-  /** Real data is 0...1, integer data is 0...255, and integer data of 0s and 1s is bilevel. */
+  /** Data without a type is an image of reals, whatever its samples are. */
   @Test
-  public void theTypeIsInferredFromTheSamples() {
+  public void dataWithoutATypeIsReal32() {
     check("ImageType(Image({{0.0,1.0}}))", "Real32");
-    check("ImageType(Image({{0,1}}))", "Bit");
-    check("ImageType(Image({{0,128,255}}))", "Byte");
+    check("ImageType(Image({{1,0},{0,1}}))", "Real32");
+    check("ImageType(Image({{3,77,250}}))", "Real32");
+    check("ImageType(Image({{3,77,250}},\"Byte\"))", "Byte");
   }
 
   @Test
@@ -64,7 +65,9 @@ public class ImagePropertiesTest extends AbstractTestCase {
     check("ImageMeasurements(Image({{0.0,1.0}}),\"Total\")", "1.0");
     check("ImageMeasurements(Image({{0.0,1.0}}),\"MinMax\")", "{0.0,1.0}");
     check("ImageMeasurements(Image({{0.0,1.0}}),\"Range\")", "1.0");
-    check("ImageMeasurements(Image({{0.0,0.5,1.0}}),\"Median\")", "0.501961");
+    check("ImageMeasurements(Image({{0.0,0.5,1.0}}),\"Median\")", "0.5");
+    // the samples as they are, beyond full intensity too
+    check("ImageMeasurements(Image({{0, 3, 9}}),{\"Mean\",\"Max\"})", "{4.0,9.0}");
   }
 
   @Test
@@ -77,7 +80,7 @@ public class ImagePropertiesTest extends AbstractTestCase {
   @Test
   public void aColorImageIsMeasuredChannelByChannel() {
     check("ImageMeasurements(Image({{{1.0,0.0,0.5}}}),\"Mean\")", //
-        "{1.0,0.0,0.501961}");
+        "{1.0,0.0,0.5}");
   }
 
   @Test

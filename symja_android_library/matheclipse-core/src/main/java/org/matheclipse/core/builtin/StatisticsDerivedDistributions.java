@@ -10,9 +10,11 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICDF;
 import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
+import org.matheclipse.core.interfaces.statistics.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.statistics.IDistribution;
 import org.matheclipse.core.interfaces.statistics.IPDF;
 import org.matheclipse.core.interfaces.statistics.IRandomVariate;
@@ -584,12 +586,47 @@ public class StatisticsDerivedDistributions {
    * renormalized by <code>CDF(dist,max) - CDF(dist,min)</code>.
    *
    * <p>
-   * Only a continuous <code>dist</code> is supported - for a discrete one the normalization has to
-   * include the probability of <code>min</code> itself, and the wrapper would have to report itself
-   * as a discrete distribution, which it cannot do per instance.
+   * A discrete <code>dist</code> keeps the values <code>min &lt; x &lt;= max</code> - the lower end
+   * is left out, so that the normalization is <code>CDF(dist,max) - CDF(dist,min)</code> as for a
+   * continuous one. Each truncation is continuous or discrete as <code>dist</code> is.
    */
-  public static final class TruncatedDistribution extends AbstractEvaluator
-      implements IContinuousDistribution, ICDF, IPDF, IStatistics, IRandomVariate {
+  public static final class TruncatedDistribution extends AbstractEvaluator implements
+      IContinuousDistribution, IDiscreteDistribution, ICDF, IPDF, IStatistics, IRandomVariate {
+
+    @Override
+    public int kind(IAST distribution) {
+      if (distribution.isAST2()) {
+        if (distribution.arg2().isDiscreteDistribution()) {
+          return DISCRETE;
+        }
+        if (distribution.arg2().isContinuousDistribution()) {
+          return CONTINUOUS;
+        }
+      }
+      return 0;
+    }
+
+    @Override
+    public int getSupportLowerBound(IExpr distribution) {
+      DiscreteWindow window =
+          distribution.isAST() ? DiscreteWindow.of((IAST) distribution, EvalEngine.get()) : null;
+      if (window == null || !window.first.isInteger()) {
+        return Integer.MIN_VALUE;
+      }
+      int first = window.first.toIntDefault();
+      return F.isPresent(first) ? first : Integer.MIN_VALUE;
+    }
+
+    @Override
+    public int getSupportUpperBound(IExpr distribution) {
+      DiscreteWindow window =
+          distribution.isAST() ? DiscreteWindow.of((IAST) distribution, EvalEngine.get()) : null;
+      if (window == null || !window.last.isInteger()) {
+        return Integer.MAX_VALUE;
+      }
+      int last = window.last.toIntDefault();
+      return F.isPresent(last) ? last : Integer.MAX_VALUE;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -653,11 +690,108 @@ public class StatisticsDerivedDistributions {
       return engine.evaluate(F.Subtract(upper, lower));
     }
 
+    /**
+     * The truncation of a discrete distribution to <code>min &lt; x &lt;= max</code>: the integers
+     * <code>first .. last</code> in it, the probability below them and their probability.
+     */
+    private static final class DiscreteWindow {
+      final IExpr inner;
+      final IExpr min;
+      final IExpr max;
+      final IExpr first;
+      final IExpr last;
+      final IExpr below;
+      final IExpr mass;
+
+      private DiscreteWindow(IExpr inner, IExpr min, IExpr max, IExpr first, IExpr last,
+          IExpr below, IExpr mass) {
+        this.inner = inner;
+        this.min = min;
+        this.max = max;
+        this.first = first;
+        this.last = last;
+        this.below = below;
+        this.mass = mass;
+      }
+
+      /** @return {@code null} if this isn't a truncation of a discrete distribution */
+      static DiscreteWindow of(IAST dist, EvalEngine engine) {
+        if (!dist.isAST2() || !dist.arg1().isList2() || !dist.arg2().isDiscreteDistribution()) {
+          return null;
+        }
+        IExpr inner = dist.arg2();
+        IExpr min = dist.arg1().first();
+        IExpr max = dist.arg1().second();
+        IExpr first =
+            min.isNegativeInfinity() ? min : engine.evaluate(F.Plus(F.Floor(min), F.C1));
+        IExpr last = max.isInfinity() ? max : engine.evaluate(F.Floor(max));
+        if (!(first.isInteger() || first.isNegativeInfinity())
+            || !(last.isInteger() || last.isInfinity())) {
+          return null;
+        }
+        IExpr below = min.isNegativeInfinity() ? F.C0 : S.CDF.ofNIL(engine, inner, min);
+        IExpr upTo = max.isInfinity() ? F.C1 : S.CDF.ofNIL(engine, inner, max);
+        if (below.isNIL() || upTo.isNIL()) {
+          return null;
+        }
+        IExpr mass = engine.evaluate(F.Subtract(upTo, below));
+        if (mass.isZero()) {
+          return null;
+        }
+        return new DiscreteWindow(inner, min, max, first, last, below, mass);
+      }
+
+      /** <code>min &lt; k &lt;= max</code>, without an infinite end */
+      IExpr condition(IExpr k) {
+        if (min.isNegativeInfinity()) {
+          return F.LessEqual(k, max);
+        }
+        if (max.isInfinity()) {
+          return F.Greater(k, min);
+        }
+        return F.function(S.Inequality, min, S.Less, k, S.LessEqual, max);
+      }
+
+      /** <code>Sum(k^n*PDF(dist,k), {k,first,last})/mass</code>, or {@link F#NIL} */
+      IExpr rawMoment(int n, EvalEngine engine) {
+        ISymbol k = F.Dummy("k");
+        IExpr density = S.PDF.ofNIL(engine, inner, k);
+        if (density.isNIL()) {
+          return F.NIL;
+        }
+        if (density.isAST(S.Piecewise)) {
+          // the cases of the density outside of the window don't take part in the sum
+          density =
+              engine.evaluate(F.Refine(density, F.And(condition(k), F.Element(k, S.Integers))));
+        }
+        IExpr sum = engine.evaluate(
+            F.Sum(F.Times(F.Power(k, F.ZZ(n)), density), F.list(k, first, last)));
+        if (!sum.isFree(S.Sum, true) || !sum.isFree(k, true)) {
+          return F.NIL;
+        }
+        return engine.evaluate(F.Divide(sum, mass));
+      }
+    }
+
     @Override
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parts = parts(dist);
       if (parts == null) {
-        return F.NIL;
+        DiscreteWindow window = DiscreteWindow.of(dist, engine);
+        if (window == null) {
+          return F.NIL;
+        }
+        IExpr innerDensity = S.PDF.ofNIL(engine, window.inner, k);
+        if (innerDensity.isNIL()) {
+          return F.NIL;
+        }
+        if (innerDensity.isAST(S.Piecewise)) {
+          // the cases of the density outside of the window are cut off anyway
+          innerDensity = engine.evaluate(F.Refine(innerDensity, window.condition(k)));
+        }
+        // Piecewise({{PDF(dist,k)/z, min < k <= max}}, 0)
+        return F.Piecewise(
+            F.list(F.list(F.Divide(innerDensity, window.mass), window.condition(k))), F.C0);
       }
       IExpr density = S.PDF.ofNIL(engine, parts[2], k);
       IExpr z = normalization(parts[2], parts[0], parts[1], engine);
@@ -673,7 +807,24 @@ public class StatisticsDerivedDistributions {
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parts = parts(dist);
       if (parts == null) {
-        return F.NIL;
+        DiscreteWindow window = DiscreteWindow.of(dist, engine);
+        if (window == null) {
+          return F.NIL;
+        }
+        IExpr cumulative = S.CDF.ofNIL(engine, window.inner, k);
+        if (cumulative.isNIL()) {
+          return F.NIL;
+        }
+        if (cumulative.isAST(S.Piecewise)) {
+          cumulative = engine.evaluate(F.Refine(cumulative, window.condition(k)));
+        }
+        IAST inside = F.list(F.Divide(F.Subtract(cumulative, window.below), window.mass),
+            window.condition(k));
+        if (window.max.isInfinity()) {
+          return F.Piecewise(F.list(inside), F.C0);
+        }
+        // Piecewise({{1, k > max}, {(CDF(dist,k)-below)/z, min < k <= max}}, 0)
+        return F.Piecewise(F.list(F.list(F.C1, F.Greater(k, window.max)), inside), F.C0);
       }
       IExpr lower = cdfAt(parts[2], parts[0], false, engine);
       IExpr z = normalization(parts[2], parts[0], parts[1], engine);
@@ -693,7 +844,13 @@ public class StatisticsDerivedDistributions {
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
       IExpr[] parts = parts(dist);
       if (parts == null) {
-        return F.NIL;
+        DiscreteWindow window = DiscreteWindow.of(dist, engine);
+        if (window == null) {
+          return F.NIL;
+        }
+        // the smallest k whose probability reaches below + p*z; for p = 0 that is min itself
+        return S.InverseCDF.ofNIL(engine, window.inner,
+            F.Plus(window.below, F.Times(k, window.mass)));
       }
       IExpr lower = cdfAt(parts[2], parts[0], false, engine);
       IExpr z = normalization(parts[2], parts[0], parts[1], engine);
@@ -728,16 +885,37 @@ public class StatisticsDerivedDistributions {
       return engine.evaluate(F.Divide(integral, z));
     }
 
+    /** The raw moment of a continuous or of a discrete truncation. */
+    private static IExpr moment(IAST dist, int n, EvalEngine engine) {
+      if (parts(dist) == null) {
+        DiscreteWindow window = DiscreteWindow.of(dist, engine);
+        return window == null ? F.NIL : window.rawMoment(n, engine);
+      }
+      return rawMoment(dist, n, engine);
+    }
+
     @Override
     public IExpr mean(IAST dist) {
-      return rawMoment(dist, 1, EvalEngine.get());
+      return moment(dist, 1, EvalEngine.get());
     }
 
     @Override
     public IExpr variance(IAST dist) {
       EvalEngine engine = EvalEngine.get();
-      IExpr firstMoment = rawMoment(dist, 1, engine);
-      IExpr secondMoment = rawMoment(dist, 2, engine);
+      IExpr firstMoment;
+      IExpr secondMoment;
+      if (parts(dist) == null) {
+        // one window for both moments
+        DiscreteWindow window = DiscreteWindow.of(dist, engine);
+        if (window == null) {
+          return F.NIL;
+        }
+        firstMoment = window.rawMoment(1, engine);
+        secondMoment = window.rawMoment(2, engine);
+      } else {
+        firstMoment = rawMoment(dist, 1, engine);
+        secondMoment = rawMoment(dist, 2, engine);
+      }
       if (firstMoment.isNIL() || secondMoment.isNIL()) {
         return F.NIL;
       }
@@ -759,7 +937,8 @@ public class StatisticsDerivedDistributions {
       EvalEngine engine = EvalEngine.get();
       IExpr[] parts = parts(dist);
       if (parts == null) {
-        return F.NIL;
+        DiscreteWindow window = DiscreteWindow.of(dist, engine);
+        return window == null ? F.NIL : discreteVariates(random, window, size, engine);
       }
       IExpr lower = cdfAt(parts[2], parts[0], false, engine);
       IExpr z = normalization(parts[2], parts[0], parts[1], engine);
@@ -780,6 +959,72 @@ public class StatisticsDerivedDistributions {
           return F.NIL;
         }
         result.append(variate);
+      }
+      return result;
+    }
+
+    /** The most values of a window whose cumulative probabilities a sample tabulates. */
+    private static final int MAX_TABULATED = 100_000;
+
+    /**
+     * Inverse transform sampling on the window of a discrete truncation: the smallest value whose
+     * cumulative probability within the window reaches a uniform number. Starting at the first
+     * value of the window, the cumulative probabilities are tabulated once, as far as the samples
+     * need them, and searched for each sample; a window without a first value asks
+     * <code>InverseCDF</code> for every sample.
+     */
+    private static IExpr discreteVariates(java.util.Random random, DiscreteWindow window,
+        int size, EvalEngine engine) {
+      double below = engine.evalN(window.below).evalfNaN();
+      double mass = engine.evalN(window.mass).evalfNaN();
+      if (!Double.isFinite(below) || !Double.isFinite(mass) || mass <= 0.0) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(size);
+      if (!window.first.isInteger()) {
+        for (int i = 0; i < size; i++) {
+          // within (below, below + mass], and never above 1 through rounding
+          double probability = Math.min(1.0, below + (1.0 - random.nextDouble()) * mass);
+          IExpr variate = S.InverseCDF.ofNIL(engine, window.inner, F.num(probability));
+          if (!variate.isInteger()) {
+            return F.NIL;
+          }
+          if (window.last.isInteger() && ((IInteger) variate).isGT((IInteger) window.last)) {
+            variate = window.last;
+          }
+          result.append(variate);
+        }
+        return result;
+      }
+      int first = window.first.toIntDefault();
+      if (F.isNotPresent(first)) {
+        return F.NIL;
+      }
+      long last = window.last.isInteger() ? window.last.toLongDefault() : Long.MAX_VALUE;
+      // cumulative[i]: the probability of first .. first + i within the window
+      double[] cumulative = new double[64];
+      int count = 0;
+      double total = 0.0;
+      for (int i = 0; i < size; i++) {
+        double u = 1.0 - random.nextDouble();
+        while ((count == 0 || cumulative[count - 1] < u) && first + (long) count <= last
+            && count < MAX_TABULATED) {
+          double p = engine.evalN(F.PDF(window.inner, F.ZZ(first + count))).evalfNaN();
+          if (!Double.isFinite(p)) {
+            return F.NIL;
+          }
+          total += p / mass;
+          if (count == cumulative.length) {
+            cumulative = java.util.Arrays.copyOf(cumulative, 2 * count);
+          }
+          cumulative[count++] = total;
+        }
+        int index = java.util.Arrays.binarySearch(cumulative, 0, count, u);
+        if (index < 0) {
+          index = -index - 1;
+        }
+        // a u which the rounded total doesn't reach takes the last tabulated value
+        result.append(F.ZZ(first + Math.min(index, count - 1)));
       }
       return result;
     }

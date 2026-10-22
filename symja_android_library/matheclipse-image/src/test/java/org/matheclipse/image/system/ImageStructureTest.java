@@ -54,9 +54,9 @@ public class ImageStructureTest extends AbstractTestCase {
         "{{191,128},{191,255}}");
     // All and None restrict nothing
     check("ImageData(ImageApply(1-#&,Image({{0.25,0.5}}),Masking->All),\"Byte\")", //
-        "{{191,127}}");
+        "{{191,128}}");
     check("ImageData(ImageApply(1-#&,Image({{0.25,0.5}}),Masking->None),\"Byte\")", //
-        "{{191,127}}");
+        "{{191,128}}");
     // a one pixel mask is the centre pixel
     check("ImageData(ImageApply(1-#&,Image({{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}}),"
         + "Masking->Image({{1}})),\"Byte\")", //

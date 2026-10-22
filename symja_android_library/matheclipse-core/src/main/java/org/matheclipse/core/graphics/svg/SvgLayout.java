@@ -78,6 +78,9 @@ final class SvgLayout {
     final boolean scalable;
     double displayW;
     double displayH;
+    /** The text of a piece which is a line of text, and its font size; {@code null} otherwise. */
+    String text;
+    double fontSize;
 
     Piece(String contents, double naturalW, double naturalH, boolean scalable) {
       this.contents = contents;
@@ -373,6 +376,8 @@ final class SvgLayout {
     double[] colW = new double[cols];
     double[] rowH = new double[rows];
     measure(spec, pieces, colW, rowH);
+    double[] alignedW = new double[cols];
+    double[][] alignedOffset = alignOnCharacters(spec, pieces, colW, alignedW);
 
     double[] colGap = new double[Math.max(cols - 1, 0)];
     double[] rowGap = new double[Math.max(rows - 1, 0)];
@@ -445,7 +450,8 @@ final class SvgLayout {
       elements.add(canvasRect(canvasW, canvasH, spec.background));
     }
     addCellBackgrounds(spec, elements, colX, colW, rowY, rowH, colGap, rowGap, scale);
-    addCells(spec, pieces, elements, colX, colW, rowY, rowH, colGap, rowGap, scale);
+    addCells(spec, pieces, elements, colX, colW, rowY, rowH, colGap, rowGap, scale, alignedOffset,
+        alignedW);
     addItemFrames(spec, elements, colX, colW, rowY, rowH, scale);
     addDividers(spec, elements, colX, colW, rowY, rowH, colGap, rowGap, scale, originX, originY,
         contentW, contentH);
@@ -478,6 +484,56 @@ final class SvgLayout {
         p.displayH = p.naturalH * factor;
       }
     }
+  }
+
+  /**
+   * The columns whose cells line up on a character, such as the decimal point of
+   * <code>Alignment -&gt; "."</code>: each text cell is moved so that its first such character, or
+   * its end where it has none, comes under the others, and the column is made wide enough for the
+   * longest text before and the longest after it.
+   *
+   * @param alignedW receives per column the width of the block of aligned cells
+   * @return per cell the offset of its left edge in that block, {@code NaN} for a cell which is not
+   *         aligned on a character
+   */
+  private static double[][] alignOnCharacters(LayoutSpec spec, Piece[][] pieces, double[] colW,
+      double[] alignedW) {
+    double[][] offset = new double[spec.rows][spec.cols];
+    for (double[] row : offset) {
+      Arrays.fill(row, Double.NaN);
+    }
+    for (int c = 0; c < spec.cols; c++) {
+      String character = spec.colAlignChar[c];
+      if (character == null || character.isEmpty()) {
+        continue;
+      }
+      double[] lead = new double[spec.rows];
+      Arrays.fill(lead, Double.NaN);
+      double maxLead = 0;
+      double maxTrail = 0;
+      for (int r = 0; r < spec.rows; r++) {
+        Piece p = pieces[r][c];
+        LayoutSpec.Cell cell = spec.cells[r][c];
+        if (p == null || p.text == null || cell.colSpan != 1 || !Double.isNaN(cell.alignH)) {
+          // a cell with a placement of its own keeps it
+          continue;
+        }
+        int at = p.text.indexOf(character);
+        String before = at < 0 ? p.text : p.text.substring(0, at);
+        // the text starts half a font size into its piece
+        lead[r] = p.fontSize / 2.0 + SvgRenderer2D.estimateTextWidth(before, p.fontSize);
+        maxLead = Math.max(maxLead, lead[r]);
+        maxTrail = Math.max(maxTrail, p.displayW - lead[r]);
+      }
+      alignedW[c] = maxLead + maxTrail;
+      colW[c] = Math.max(colW[c], alignedW[c]);
+      for (int r = 0; r < spec.rows; r++) {
+        if (!Double.isNaN(lead[r])) {
+          offset[r][c] = maxLead - lead[r];
+        }
+      }
+    }
+    return offset;
   }
 
   /** A column is as wide as its widest single cell, and a row as tall as its tallest. */
@@ -547,7 +603,8 @@ final class SvgLayout {
   // ------------------------------------------------------------------ emitting
 
   private void addCells(LayoutSpec spec, Piece[][] pieces, List<DomContent> elements, double[] colX,
-      double[] colW, double[] rowY, double[] rowH, double[] colGap, double[] rowGap, double scale) {
+      double[] colW, double[] rowY, double[] rowH, double[] colGap, double[] rowGap, double scale,
+      double[][] alignedOffset, double[] alignedW) {
     for (int r = 0; r < spec.rows; r++) {
       for (int c = 0; c < spec.cols; c++) {
         Piece p = pieces[r][c];
@@ -560,6 +617,11 @@ final class SvgLayout {
         double w = p.displayW * scale;
         double h = p.displayH * scale;
         double x = colX[c] + spec.alignHAt(r, c) * Math.max(0, boxW - w);
+        if (!Double.isNaN(alignedOffset[r][c])) {
+          // the block of the cells aligned on a character is centred in the column
+          x = colX[c] + 0.5 * Math.max(0, boxW - alignedW[c] * scale)
+              + alignedOffset[r][c] * scale;
+        }
         double y = rowY[r] + spec.alignVAt(r, c) * Math.max(0, boxH - h);
         elements.add(viewport(p, x, y, w, h));
       }
@@ -1017,7 +1079,10 @@ final class SvgLayout {
         .attr("font-family", style.fontFamily).attr("font-weight", style.fontWeight)
         .attr("font-style", style.fontStyle).attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle").withText(text);
-    return new Piece(element.render(), width, height, false);
+    Piece piece = new Piece(element.render(), width, height, false);
+    piece.text = text;
+    piece.fontSize = style.fontSize;
+    return piece;
   }
 
   // ------------------------------------------------------------------ overlay

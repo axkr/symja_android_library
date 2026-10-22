@@ -163,6 +163,20 @@ public class LayoutSpecTest {
   }
 
   @Test
+  public void testAlignmentOnACharacter() {
+    // a string aligns the cells of a column on that character
+    LayoutSpec all = grid("Grid({{1.5, 2.25}, {30.0, 4.125}}, Alignment -> \".\")");
+    assertEquals(".", all.colAlignChar[0]);
+    assertEquals(".", all.colAlignChar[1]);
+    // the repeated block of a column specification
+    LayoutSpec repeated = grid("Grid({{a, 1.5, 2.25}}, Alignment -> {{Left, {\".\"}}})");
+    assertNull(repeated.colAlignChar[0]);
+    assertEquals(0.0, repeated.alignHAt(0, 0));
+    assertEquals(".", repeated.colAlignChar[1]);
+    assertEquals(".", repeated.colAlignChar[2]);
+  }
+
+  @Test
   public void testACellRuleBeatsTheColumnAlignment() {
     LayoutSpec spec =
         grid("Grid({{a, b}, {c, d}}, Alignment -> {Center, Automatic, {{1,1} -> Left}})");

@@ -13581,6 +13581,56 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTruncatedDiscreteDistribution() {
+    // the window is min < x <= max: the lower end is cut off with the part below it
+    check("t = TruncatedDistribution({2, 6}, PoissonDistribution(5/2)); "
+        + "{PDF(t, 3) + PDF(t, 4) + PDF(t, 5) + PDF(t, 6), PDF(t, 2), PDF(t, 7), CDF(t, 2), CDF(t, 6)}", //
+        "{1,0,0,0,1}");
+    // a geometric distribution forgets the part cut off: it starts at 3, the variance stays
+    check("t = TruncatedDistribution({2, Infinity}, GeometricDistribution(1/3)); "
+        + "{Mean(t), Variance(t), CDF(t, 3), InverseCDF(t, 0)}", //
+        "{5,6,1/3,2}");
+    check("s = RandomVariate(TruncatedDistribution({3, 8}, BinomialDistribution(10, 1/2)), 300); "
+        + "{Length(s), Min(s) >= 4, Max(s) <= 8, AllTrue(s, IntegerQ)}", //
+        "{300,True,True,True}");
+    // the truncation of a discrete distribution is discrete: numeric expectations sum
+    check("t = TruncatedDistribution({2, 6}, PoissonDistribution(5/2)); "
+        + "{Abs(NExpectation(x^2, Distributed(x, t)) - N(Variance(t) + Mean(t)^2)) < 10^-10, "
+        + "NProbability(x <= 3, Distributed(x, t)) == N(CDF(t, 3))}", //
+        "{True,True}");
+  }
+
+  @Test
+  public void testRandomVariateArrayLimit() {
+    // the whole array counts against the limit, not each of its levels
+    check("Head(RandomVariate(UniformDistribution(), Range(35)))", //
+        "RandomVariate");
+    check("Dimensions(RandomVariate(UniformDistribution(), {2, 3, 4}))", //
+        "{2,3,4}");
+  }
+
+  @Test
+  public void testInterpolatingFunctionAnatomyDomain() {
+    // the function of the package, called with its context
+    check("f = Interpolation({{1/2, 1}, {2, 4}, {3, 2}, {5, 0}}); "
+        + "DifferentialEquations`InterpolatingFunctionAnatomy`InterpolatingFunctionDomain(f)", //
+        "{{1/2,5}}");
+    // after Needs the short name is enough
+    check("Needs(\"DifferentialEquations`InterpolatingFunctionAnatomy`\")", //
+        "");
+    check("InterpolatingFunctionDomain(Interpolation({{-1, 2}, {0, 4}, {2, 1}, {7, 3}}))", //
+        "{{-1,7}}");
+  }
+
+  @Test
+  public void testGridAlignmentOnDecimalPoint() {
+    // the decimal points of a column line up; text without one ends where they are
+    check("ToExpression /@ StringCases(ExportString(Grid({{3.25}, {641.5}, {\"n\"}}, "
+        + "Alignment -> \".\"), \"SVG\"), RegularExpression(\"<svg x=\\\"([0-9.]+)\\\"\") -> \"$1\")", //
+        "{14.4,0,14.4}");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

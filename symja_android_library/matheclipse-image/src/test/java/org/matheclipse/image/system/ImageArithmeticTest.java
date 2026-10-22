@@ -31,7 +31,7 @@ public class ImageArithmeticTest extends AbstractTestCase {
     check("ImageData(ImageSubtract(Image({{0.5,0.5}}),Image({{0.25,0.75}})),\"Byte\")", //
         "{{64,0}}");
     check("ImageData(ImageDifference(Image({{0.5,0.5}}),Image({{0.25,0.75}})),\"Byte\")", //
-        "{{64,63}}");
+        "{{64,64}}");
   }
 
   /** Two images of different sizes have no sample by sample meaning. */

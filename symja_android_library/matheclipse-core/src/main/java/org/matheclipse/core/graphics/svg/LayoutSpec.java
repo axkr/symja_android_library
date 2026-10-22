@@ -124,6 +124,11 @@ public final class LayoutSpec {
 
   /** Per column horizontal placement, {@code NaN} for automatic. */
   public double[] colAlignH;
+  /**
+   * Per column the character, such as <code>"."</code>, on which the text of its cells lines up;
+   * {@code null} where the column has none.
+   */
+  public String[] colAlignChar;
   /** Per row vertical placement, {@code NaN} for automatic. */
   public double[] rowAlignV;
 
@@ -163,6 +168,7 @@ public final class LayoutSpec {
     this.rowAlignV = new double[rows];
     java.util.Arrays.fill(colAlignH, Double.NaN);
     java.util.Arrays.fill(rowAlignV, Double.NaN);
+    this.colAlignChar = new String[cols];
     this.colBackgrounds = new Color[cols];
     this.rowBackgrounds = new Color[rows];
     this.colStyles = new IExpr[cols];
@@ -693,6 +699,10 @@ public final class LayoutSpec {
   }
 
   private void applyAlignment(IExpr value) {
+    if (value.isString()) {
+      java.util.Arrays.fill(colAlignChar, value.toString());
+      return;
+    }
     if (!value.isList()) {
       double h = alignFraction(value, 0);
       double v = alignFraction(value, 1);
@@ -711,7 +721,12 @@ public final class LayoutSpec {
         IExpr[] perColumn = positions(specX, cols, null);
         for (int c = 0; c < cols; c++) {
           colAlignH[c] = alignFraction(perColumn[c], 0);
+          if (perColumn[c] != null && perColumn[c].isString()) {
+            colAlignChar[c] = perColumn[c].toString();
+          }
         }
+      } else if (specX.isString()) {
+        java.util.Arrays.fill(colAlignChar, specX.toString());
       } else {
         double h = alignFraction(specX, 0);
         if (!Double.isNaN(h)) {

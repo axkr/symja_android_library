@@ -184,6 +184,18 @@ public class ImagePropertyFunctions {
       // image coordinates count y from the bottom, the raster counts rows from the top
       int row = clamp(image.getHeight() - 1 - (int) Math.floor(y), image.getHeight());
 
+      org.matheclipse.image.algo.Raster raster =
+          ast.arg1() instanceof ImageExpr ? ((ImageExpr) ast.arg1()).raster() : null;
+      if (raster != null) {
+        // the sample as it is stored, which an image of reals keeps outside of 0 ... 1
+        org.matheclipse.image.algo.Raster one = new org.matheclipse.image.algo.Raster(1, 1,
+            raster.channels);
+        for (int c = 0; c < raster.channels; c++) {
+          one.set(0, 0, c, raster.get(column, row, c));
+        }
+        IExpr pixel = ((IAST) one.toMatrix(Pixels.imageType(type)).arg1()).arg1();
+        return pixel;
+      }
       int channels = Boof.channels(image);
       float[] values = Pixels.pixel(image, column, row, channels);
       if (channels == 1) {
@@ -216,11 +228,15 @@ public class ImagePropertyFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = bufferedImage(ast.arg1());
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      ImageExpr imageExpr = (ImageExpr) ast.arg1();
+      org.matheclipse.image.algo.Raster image = imageExpr.raster();
       if (image == null) {
         return F.NIL;
       }
-      int channels = Boof.channels(image);
+      int channels = image.channels;
       double[] wanted = wantedValue(ast.arg2(), channels);
       if (wanted == null) {
         return F.NIL;
@@ -229,14 +245,16 @@ public class ImagePropertyFunctions {
       if (Double.isNaN(tolerance)) {
         return F.NIL;
       }
-      double tolerance255 = tolerance * 255.0 + 0.5;
+      // the samples of a picture without its own matrix are levels of 8 bits, which are compared
+      // as such: a value matches the levels within half a level of it
+      boolean levels = imageExpr.getMatrix() == null;
+      double slack = levels ? tolerance * 255.0 + 0.5 : tolerance + 1.0e-12;
 
-      int height = image.getHeight();
+      int height = image.height;
       IASTAppendable result = F.ListAlloc(16);
       for (int row = 0; row < height; row++) {
-        for (int column = 0; column < image.getWidth(); column++) {
-          float[] values = Pixels.pixel(image, column, row, channels);
-          if (matches(values, wanted, tolerance255)) {
+        for (int column = 0; column < image.width; column++) {
+          if (matches(image, column, row, wanted, slack, levels)) {
             result.append(F.List(F.num(column + 0.5), F.num(height - row - 0.5)));
           }
         }
@@ -244,6 +262,7 @@ public class ImagePropertyFunctions {
       return result;
     }
 
+    /** The sample value looked for in each channel, on the intensity scale. */
     private static double[] wantedValue(IExpr value, int channels) {
       if (value.isList()) {
         IAST list = (IAST) value;
@@ -252,7 +271,7 @@ public class ImagePropertyFunctions {
         }
         double[] wanted = new double[channels];
         for (int i = 0; i < channels; i++) {
-          wanted[i] = list.get(i + 1).evalfNaN() * 255.0;
+          wanted[i] = list.get(i + 1).evalfNaN();
           if (Double.isNaN(wanted[i])) {
             return null;
           }
@@ -264,13 +283,17 @@ public class ImagePropertyFunctions {
         return null;
       }
       double[] wanted = new double[channels];
-      java.util.Arrays.fill(wanted, scalar * 255.0);
+      java.util.Arrays.fill(wanted, scalar);
       return wanted;
     }
 
-    private static boolean matches(float[] values, double[] wanted, double tolerance255) {
-      for (int i = 0; i < wanted.length; i++) {
-        if (Math.abs(values[i] - wanted[i]) > tolerance255) {
+    private static boolean matches(org.matheclipse.image.algo.Raster image, int x, int y,
+        double[] wanted, double slack, boolean levels) {
+      for (int c = 0; c < wanted.length; c++) {
+        double difference = levels //
+            ? Math.abs(Math.round(255.0 * image.get(x, y, c)) - 255.0 * wanted[c])
+            : Math.abs(image.get(x, y, c) - wanted[c]);
+        if (difference > slack) {
           return false;
         }
       }
@@ -304,12 +327,19 @@ public class ImagePropertyFunctions {
       if (image == null) {
         return F.NIL;
       }
+      // the samples as they are, which an image of reals keeps beyond 0 ... 1
+      org.matheclipse.image.algo.Raster raster = ast.arg1() instanceof ImageExpr
+          ? ((ImageExpr) ast.arg1()).raster()
+          : org.matheclipse.image.algo.Raster.fromBitmap(image);
+      if (raster == null) {
+        return F.NIL;
+      }
       IExpr property = ast.arg2();
       if (property.isList()) {
         IAST properties = (IAST) property;
         IASTAppendable result = F.ListAlloc(properties.argSize());
         for (int i = 1; i < properties.size(); i++) {
-          IExpr measurement = measure(image, properties.get(i));
+          IExpr measurement = measure(raster, properties.get(i));
           if (!measurement.isPresent()) {
             return F.NIL;
           }
@@ -317,16 +347,16 @@ public class ImagePropertyFunctions {
         }
         return result;
       }
-      return measure(image, property);
+      return measure(raster, property);
     }
 
-    private static IExpr measure(BufferedImage image, IExpr property) {
+    private static IExpr measure(org.matheclipse.image.algo.Raster raster, IExpr property) {
       if (!property.isString()) {
         return F.NIL;
       }
       String name = property.toString();
-      int width = image.getWidth();
-      int height = image.getHeight();
+      int width = raster.width;
+      int height = raster.height;
       if ("Dimensions".equals(name)) {
         return F.List(F.ZZ(width), F.ZZ(height));
       }
@@ -334,14 +364,13 @@ public class ImagePropertyFunctions {
         return F.ZZ((long) width * height);
       }
 
-      int channels = Boof.channels(image);
+      int channels = raster.channels;
       double[][] samples = new double[channels][width * height];
       int index = 0;
       for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-          float[] pixel = Pixels.pixel(image, x, y, channels);
           for (int c = 0; c < channels; c++) {
-            samples[c][index] = pixel[c] / 255.0;
+            samples[c][index] = raster.get(x, y, c);
           }
           index++;
         }

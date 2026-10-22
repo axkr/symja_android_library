@@ -15,6 +15,21 @@ import org.matheclipse.core.interfaces.IExpr;
  * {@link IDistribution}.
  */
 public interface IDistribution {
+  /** {@link #kind(IAST)} of a continuous distribution. */
+  int CONTINUOUS = 1;
+  /** {@link #kind(IAST)} of a discrete distribution. */
+  int DISCRETE = 2;
+
+  /**
+   * Whether this particular distribution is {@link #CONTINUOUS} or {@link #DISCRETE}, for a
+   * distribution built from another one whose kind it takes; <code>0</code> where the class of the
+   * evaluator decides.
+   *
+   * @param distribution the distribution expression
+   */
+  default int kind(IAST distribution) {
+    return 0;
+  }
   default RealDistribution dist() {
     return null;
   }

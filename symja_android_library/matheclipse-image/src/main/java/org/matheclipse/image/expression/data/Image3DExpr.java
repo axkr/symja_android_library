@@ -65,7 +65,7 @@ public final class Image3DExpr extends DataExpr<IAST> {
    *
    * @param data the array <code>{slice, row, column}</code> or
    *        <code>{slice, row, column, channel}</code> of the samples
-   * @param sampleType one of the five image types, or <code>null</code> to read it off the data
+   * @param sampleType one of the five image types, or <code>null</code> for <code>"Real32"</code>
    * @return <code>null</code> if the data is no such array of real numbers, or has 2 or more
    *         than 4 channels
    */
@@ -79,7 +79,7 @@ public final class Image3DExpr extends DataExpr<IAST> {
         || (channels != 1 && channels != 3 && channels != 4)) {
       return null;
     }
-    String type = sampleType != null ? sampleType : typeOf(data, new boolean[] {true});
+    String type = sampleType != null ? sampleType : typeOf(data);
     if (type == null) {
       return null;
     }
@@ -95,34 +95,17 @@ public final class Image3DExpr extends DataExpr<IAST> {
   }
 
   /**
-   * <code>"Bit"</code> when every sample is 0 or 1, <code>"Byte"</code> for any other integer
-   * data, <code>"Real32"</code> as soon as one sample is no integer, <code>null</code> if one is
-   * no real number.
+   * <code>"Real32"</code>, the type of data written without one whatever its samples are, or
+   * <code>null</code> if a sample is no real number.
    */
-  private static String typeOf(IAST data, boolean[] bilevel) {
-    String type = Pixels.BIT;
+  private static String typeOf(IAST data) {
     for (int i = 1; i < data.size(); i++) {
       IExpr element = data.get(i);
-      if (element.isList()) {
-        String inner = typeOf((IAST) element, bilevel);
-        if (inner == null) {
-          return null;
-        }
-        if (Pixels.REAL32.equals(inner)) {
-          type = inner;
-        }
-      } else if (!element.isReal()) {
+      if (element.isList() ? typeOf((IAST) element) == null : !element.isReal()) {
         return null;
-      } else if (!element.isInteger()) {
-        type = Pixels.REAL32;
-      } else if (!element.isZero() && !element.isOne()) {
-        bilevel[0] = false;
       }
     }
-    if (Pixels.REAL32.equals(type)) {
-      return type;
-    }
-    return bilevel[0] ? Pixels.BIT : Pixels.BYTE;
+    return Pixels.REAL32;
   }
 
   /**

@@ -24,20 +24,54 @@ public class ImageCharacterizationTest extends AbstractTestCase {
   // ----------------------------------------------------------------- sample scales
 
   /**
-   * The scale a sample is on is read off the data: reals run 0.0 ... 1.0, integers run 0 ... 255,
-   * and integer data whose samples are all 0 or 1 is bilevel.
+   * Data without a type is an image of reals, integers included: its samples run 0.0 ... 1.0 and
+   * are kept as they are beyond that. A stated type puts the samples on its own scale.
    */
   @Test
-  public void theSampleScaleIsReadOffTheData() {
-    check("ImageType(Image({{0.0,1.0}}))", //
-        "Real32");
-    check("ImageType(Image({{0,255}}))", //
-        "Byte");
-    check("ImageType(Image({{0,1}}))", //
-        "Bit");
+  public void theSampleScaleIsTheType() {
+    check("{ImageType(Image({{0.0,1.0}})), ImageType(Image({{0,255}})), ImageType(Image({{0,1}}))}", //
+        "{Real32,Real32,Real32}");
+    check("ImageData(Image({{0,3,200}}))", //
+        "{{0.0,3.0,200.0}}");
     // the same picture written on two scales
-    check("ImageData(Image({{0.0,1.0}}),\"Byte\")==ImageData(Image({{0,255}}),\"Byte\")", //
+    check("ImageData(Image({{0.0,1.0}}),\"Byte\")==ImageData(Image({{0,255}},\"Byte\"),\"Byte\")", //
         "True");
+    // an integer type clips what lies beyond full intensity
+    check("{ImageData(Image({{0,0.5,3}}),\"Byte\"), ImageData(Image({{0,0.4,3}}),\"Bit\")}", //
+        "{{{0,128,255}},{{0,0,1}}}");
+  }
+
+  /**
+   * The samples of an image of reals beyond full intensity are kept by what computes new samples;
+   * only the picture shown and a conversion to an integer type clip them.
+   */
+  @Test
+  public void samplesBeyondFullIntensityAreKept() {
+    check("p = Image({{0, 3, 200}}); {Flatten(ImageData(ColorNegate(p))), "
+        + "Flatten(ImageData(ImageAdjust(p))), Flatten(ImageData(Binarize(p, 2), \"Bit\")), "
+        + "ImageValue(p, {2.5, 0.5})}", //
+        "{{1.0,-2.0,-199.0},{0.0,0.015,1.0},{0,1,1},200.0}");
+    check("p = Image({{0, 3, 200}}); {Flatten(ImageData(ImageAdd(p, 1))), "
+        + "Flatten(ImageData(ImageClip(p))), Flatten(ImageData(ImageTake(p, {1}, {2})))}", //
+        "{{1.0,4.0,201.0},{0.0,1.0,1.0},{3.0}}");
+    // the result keeps the type, a black and white image becomes one of reals by arithmetic
+    check("q = Image({{4, 250}}, \"Byte\"); w = Image({{1, 0}}, \"Bit\"); "
+        + "{ImageType(ColorNegate(q)), ImageType(ImageMultiply(q, 3)), ImageType(ColorNegate(w)), "
+        + "ImageType(ImageAdd(w, 0.25)), Flatten(ImageData(ImageMultiply(q, 3), \"Byte\"))}", //
+        "{Byte,Byte,Bit,Real32,{12,255}}");
+  }
+
+  /** What computes new samples reads them in the colour space of the picture, and keeps their precision. */
+  @Test
+  public void newSamplesKeepColourSpaceAndPrecision() {
+    // a picture read as HSB holds red, green and blue: the yellow of hue 1/6 negates to blue
+    check("Flatten(ImageData(ColorNegate(Image({{{1/6, 1.0, 1.0}}}, ColorSpace -> \"HSB\"))))", //
+        "{0.0,0.0,1.0}");
+    // black and white from one half on, whichever way the image keeps its samples
+    check("Flatten(ImageData(Image({{0.5, 0.49}}), \"Bit\"))", //
+        "{1,0}");
+    check("InputForm(Flatten(ImageData(ImageApply(2*#&, Image({{0.0123456789012345}}, \"Real64\")))))", //
+        "{0.024691357802469`}");
   }
 
   /** A rasterized graphics object has no source matrix, so it reports the type of its bitmap. */
@@ -88,10 +122,10 @@ public class ImageCharacterizationTest extends AbstractTestCase {
   @Test
   public void theStoredMatrixIsHandedBackOnlyOnItsOwnScale() {
     // stored matrix, Byte in and Byte out
-    check("ImageData(Image({{0,255},{128,64}}),\"Byte\")", //
+    check("ImageData(Image({{0,255},{128,64}},\"Byte\"),\"Byte\")", //
         "{{0,255},\n {128,64}}");
-    // bitmap, because Byte samples are not what a Real32 request asks for
-    check("ImageData(Image({{0,255},{128,64}}))", //
+    // converted, because Byte samples are not what a Real32 request asks for
+    check("ImageData(Image({{0,255},{128,64}},\"Byte\"))", //
         "{{0.0,1.0},{0.501961,0.25098}}");
     // stored matrix again, Real32 in and Real32 out
     check("ImageData(Image({{0.0,1.0},{1.0,0.0}}))", //
@@ -117,7 +151,7 @@ public class ImageCharacterizationTest extends AbstractTestCase {
         "ImageData(Image({{{1.0,0.0,0.0},{0.0,1.0,0.0}}}),\"Byte\")" + "=={{{255,0,0},{0,255,0}}}", //
         "True");
     check(
-        "ImageData(Image({{{255,0,0,255},{0,255,0,128}}}),\"Byte\")"
+        "ImageData(Image({{{255,0,0,255},{0,255,0,128}}},\"Byte\"),\"Byte\")"
             + "=={{{255,0,0,255},{0,255,0,128}}}", //
         "True");
     // the alpha channel survives the png buffer

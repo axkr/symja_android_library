@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumericArray;
@@ -48,6 +49,10 @@ public class ImageFunctions {
         return arg1;
       }
       String type = null;
+      if (arg1.isList() && arg1.argSize() > 0
+          && ((IAST) arg1).forAll(slice -> slice instanceof ImageExpr)) {
+        return stack((IAST) arg1, ast, engine);
+      }
       if (arg1.isNumericArray()) {
         INumericArray array = (INumericArray) arg1;
         type = Image.imageTypeOfArray(array.getStringType());
@@ -83,6 +88,60 @@ public class ImageFunctions {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.Image3D, rex, engine);
       }
+    }
+
+    /**
+     * <code>Image3D({image1, image2, ...})</code> - the 2D images of one size, number of channels and
+     * color space as the slices of a volume, the first one on top; the type is the one given, or
+     * theirs, or <code>"Real32"</code> where they differ. Other images stay unevaluated with a
+     * message.
+     */
+    private static IExpr stack(IAST slices, IAST ast, EvalEngine engine) {
+      ImageExpr first = (ImageExpr) slices.arg1();
+      String type = first.sampleType();
+      IExpr dimensions = engine.evaluate(F.unaryAST1(S.ImageDimensions, first));
+      IExpr channels = engine.evaluate(F.unaryAST1(S.ImageChannels, first));
+      IExpr space = engine.evaluate(F.unaryAST1(S.ImageColorSpace, first));
+      for (IExpr slice : slices) {
+        if (!dimensions.equals(engine.evaluate(F.unaryAST1(S.ImageDimensions, slice)))
+            || !channels.equals(engine.evaluate(F.unaryAST1(S.ImageChannels, slice)))
+            || !space.equals(engine.evaluate(F.unaryAST1(S.ImageColorSpace, slice)))) {
+          // The specified argument `1` should be an array of rank 3 or 4 with machine-sized
+          // numbers or a list of images of consistent dimension and color space.
+          return Errors.printMessage(S.Image3D, "imgarray", F.list(slices), engine);
+        }
+        if (!type.equals(((ImageExpr) slice).sampleType())) {
+          type = Pixels.REAL32;
+        }
+      }
+      IASTAppendable options = F.ListAlloc(ast.size());
+      boolean colorSpace = false;
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        if (i == 2 && arg.isString()) {
+          // the type asked for instead of the one of the slices
+          type = Pixels.imageType(arg.toString());
+          if (!Pixels.isImageType(type)) {
+            return Errors.printMessage(S.Image3D, "imgtype", F.list(arg), engine);
+          }
+        } else if (arg.isRuleAST()) {
+          colorSpace |= arg.first() == S.ColorSpace;
+          options.append(arg);
+        } else {
+          return F.NIL;
+        }
+      }
+      final String sampleType = type;
+      IAST data = slices.map(
+          slice -> engine.evaluate(F.binaryAST2(S.ImageData, slice, F.stringx(sampleType))));
+      IASTAppendable volume = F.ast(S.Image3D, ast.size() + 2);
+      volume.append(data);
+      volume.append(F.stringx(type));
+      volume.appendArgs(options);
+      if (!colorSpace) {
+        volume.append(F.Rule(S.ColorSpace, space));
+      }
+      return engine.evaluate(volume);
     }
 
     @Override
@@ -314,7 +373,7 @@ public class ImageFunctions {
         if (imageExpr == null) {
           return F.NIL;
         }
-        return type == null ? imageExpr : onScale(imageExpr, data, type, interleaved);
+        return imageExpr;
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.Image, rex, engine);
@@ -335,26 +394,6 @@ public class ImageFunctions {
         default:
           return null;
       }
-    }
-
-    /**
-     * The image with its data written on the scale <code>type</code> names.
-     *
-     * <p>
-     * Data already on that scale is left exactly as it was written, so that
-     * <code>Image[data, "Real32"]</code> of real data is the same lossless thing as
-     * <code>Image[data]</code>. Anything else is read back off the bitmap, which is where the
-     * conversion has already happened.
-     */
-    private static ImageExpr onScale(ImageExpr imageExpr, IAST data, String type,
-        boolean interleaved) {
-      if (Pixels.sameScale(Pixels.imageTypeOf(data), type)) {
-        return imageExpr;
-      }
-      IAST converted = Pixels.toData(imageExpr.getBufferedImage(), type, interleaved, false);
-      // mark it for the matrix layout of OutputForm, as the data written by hand would be
-      converted.isMatrix(true);
-      return imageExpr.withMatrix(converted);
     }
 
     /**
@@ -502,6 +541,25 @@ public class ImageFunctions {
         }
       }
 
+      if (matrix != null) {
+        // another scale, or upside down: from the exact samples, which a real type keeps outside
+        // of 0 ... 1 and an integer type clips
+        org.matheclipse.image.algo.Raster raster = imageExpr.raster();
+        if (raster != null && raster.channels != 2) {
+          IAST data = raster.toMatrix(type);
+          if (dataReversed) {
+            // the rows bottom to top
+            final IAST rows = data;
+            data = F.mapRange(1, rows.size(), i -> rows.get(rows.size() - i));
+          }
+          if (!interleaved) {
+            data = Pixels.relayout(data, false);
+          }
+          if (data != null) {
+            return data;
+          }
+        }
+      }
       BufferedImage bufferedImage = imageExpr.getBufferedImage();
       if (bufferedImage == null) {
         return F.NIL;

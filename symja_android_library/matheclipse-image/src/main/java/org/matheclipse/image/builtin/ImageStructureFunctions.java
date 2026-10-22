@@ -15,6 +15,7 @@ import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Kernels;
 import org.matheclipse.image.algo.Masks;
 import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.image.algo.Raster;
 import org.matheclipse.image.expression.data.ImageExpr;
 
 /**
@@ -53,7 +54,11 @@ public class ImageStructureFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg2());
+      if (!(ast.arg2() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      ImageExpr source = (ImageExpr) ast.arg2();
+      Raster image = source.raster();
       if (image == null) {
         return F.NIL;
       }
@@ -68,10 +73,10 @@ public class ImageStructureFunctions {
         return Errors.printMessage(S.ImageApply, "optx", F.list(option, ast), engine);
       }
       IExpr function = ast.arg1();
-      int channels = Boof.channels(image);
-      int colorChannels = channels == 4 ? 3 : channels;
-      int width = image.getWidth();
-      int height = image.getHeight();
+      int channels = image.channels;
+      int colorChannels = image.colorChannels();
+      int width = image.width;
+      int height = image.height;
       boolean[][] mask = Masks.of(maskSpec, width, height);
       if (mask == Masks.UNREADABLE) {
         return F.NIL;
@@ -81,11 +86,11 @@ public class ImageStructureFunctions {
       // reference implementation: a color for every gray sample widens the image to RGB, Max of
       // every color narrows it to gray. It is read from the first sample f is applied to.
       int outColorChannels = -1;
-      float[][] result = new float[width * height][];
+      double[][] result = new double[width * height][];
       boolean[] masked = new boolean[width * height];
       for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-          float[] values = Pixels.pixel(image, x, y, channels);
+          double[] values = pixel(image, x, y);
           if (mask != null && !mask[y][x]) {
             result[y * width + x] = values;
             masked[y * width + x] = true;
@@ -99,7 +104,7 @@ public class ImageStructureFunctions {
               return F.NIL;
             }
           }
-          float[] replaced = valuesOf(applied, values, colorChannels, outColorChannels);
+          double[] replaced = valuesOf(applied, values, colorChannels, outColorChannels);
           if (replaced == null) {
             return F.NIL;
           }
@@ -119,8 +124,7 @@ public class ImageStructureFunctions {
           }
         }
       }
-      return new ImageExpr(
-          Pixels.fromPixels(width, height, outChannels, (x, y) -> result[y * width + x]), null);
+      return imageOf(result, width, height, outChannels, source);
     }
 
     @Override
@@ -146,7 +150,11 @@ public class ImageStructureFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg2());
+      if (!(ast.arg2() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      ImageExpr source = (ImageExpr) ast.arg2();
+      Raster image = source.raster();
       if (image == null) {
         return F.NIL;
       }
@@ -155,26 +163,24 @@ public class ImageStructureFunctions {
         return F.NIL;
       }
       IExpr function = ast.arg1();
-      int channels = Boof.channels(image);
-      int colorChannels = channels == 4 ? 3 : channels;
-      int width = image.getWidth();
-      int height = image.getHeight();
+      int channels = image.channels;
+      int colorChannels = image.colorChannels();
+      int width = image.width;
+      int height = image.height;
 
-      float[][] result = new float[width * height][];
+      double[][] result = new double[width * height][];
       for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
           IExpr block = neighbourhood(image, x, y, radii[0], radii[1], channels, colorChannels);
           IExpr applied = engine.evaluate(F.unaryAST1(function, block));
-          float[] replaced =
-              valuesOf(applied, Pixels.pixel(image, x, y, channels), colorChannels);
+          double[] replaced = valuesOf(applied, pixel(image, x, y), colorChannels);
           if (replaced == null) {
             return F.NIL;
           }
           result[y * width + x] = replaced;
         }
       }
-      return new ImageExpr(
-          Pixels.fromPixels(width, height, channels, (x, y) -> result[y * width + x]), null);
+      return imageOf(result, width, height, channels, source);
     }
 
     @Override
@@ -196,16 +202,18 @@ public class ImageStructureFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg2());
+      if (!(ast.arg2() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      Raster image = ((ImageExpr) ast.arg2()).raster();
       if (image == null) {
         return F.NIL;
       }
       IExpr function = ast.arg1();
-      int channels = Boof.channels(image);
-      int colorChannels = channels == 4 ? 3 : channels;
-      for (int y = 0; y < image.getHeight(); y++) {
-        for (int x = 0; x < image.getWidth(); x++) {
-          float[] values = Pixels.pixel(image, x, y, channels);
+      int colorChannels = image.colorChannels();
+      for (int y = 0; y < image.height; y++) {
+        for (int x = 0; x < image.width; x++) {
+          double[] values = pixel(image, x, y);
           engine.evaluate(F.unaryAST1(function, samplesOf(values, colorChannels)));
         }
       }
@@ -474,80 +482,62 @@ public class ImageStructureFunctions {
   // -------------------------------------------------------------------- internals
 
   /** The samples of one pixel as the argument of the user function. */
-  private static IExpr samplesOf(float[] values, int colorChannels) {
+  private static IExpr samplesOf(double[] values, int colorChannels) {
     if (colorChannels == 1) {
-      return F.num(values[0] / 255.0);
+      return F.num(values[0]);
     }
     IASTAppendable list = F.ListAlloc(colorChannels);
     for (int c = 0; c < colorChannels; c++) {
-      list.append(F.num(values[c] / 255.0));
+      list.append(F.num(values[c]));
     }
     return list;
   }
 
   /**
-   * The value the user function returned, back on the 0 ... 255 scale, with the alpha channel of
-   * <code>original</code> carried through.
+   * The value the user function returned, with the alpha channel of <code>original</code> carried
+   * through.
    *
    * @return <code>null</code> if the function did not return a number or a list of the right length
    */
-  private static float[] valuesOf(IExpr applied, float[] original, int colorChannels) {
+  private static double[] valuesOf(IExpr applied, double[] original, int colorChannels) {
     return valuesOf(applied, original, colorChannels, colorChannels);
   }
 
   /**
-   * The value the user function returned, as {@code outColorChannels} samples on the 0 ... 255
-   * scale; the alpha channel of <code>original</code> follows the colors when they stay colors.
+   * The value the user function returned, as {@code outColorChannels} samples; the alpha channel of
+   * <code>original</code> follows the colors when they stay colors.
    *
    * @return <code>null</code> if the function did not return a number or a list of that length
    */
-  private static float[] valuesOf(IExpr applied, float[] original, int colorChannels,
+  private static double[] valuesOf(IExpr applied, double[] original, int colorChannels,
       int outColorChannels) {
+    double[] result;
     if (outColorChannels != colorChannels) {
       boolean alpha = original.length == 4 && outColorChannels == 3;
-      float[] result = new float[alpha ? 4 : outColorChannels];
+      result = new double[alpha ? 4 : outColorChannels];
       if (alpha) {
         result[3] = original[3];
       }
-      if (outColorChannels == 1) {
-        double value = applied.evalfNaN();
-        if (Double.isNaN(value)) {
-          return null;
-        }
-        result[0] = (float) (255.0 * value);
-        return result;
-      }
-      if (!applied.isList() || applied.argSize() != outColorChannels) {
-        return null;
-      }
-      for (int c = 0; c < outColorChannels; c++) {
-        double value = ((IAST) applied).get(c + 1).evalfNaN();
-        if (Double.isNaN(value)) {
-          return null;
-        }
-        result[c] = (float) (255.0 * value);
-      }
-      return result;
+    } else {
+      result = original.clone();
     }
-    float[] result = original.clone();
-    if (colorChannels == 1) {
+    if (outColorChannels == 1) {
       double value = applied.evalfNaN();
       if (Double.isNaN(value)) {
         return null;
       }
-      result[0] = (float) (255.0 * value);
+      result[0] = value;
       return result;
     }
-    if (!applied.isList() || ((IAST) applied).argSize() != colorChannels) {
+    if (!applied.isList() || applied.argSize() != outColorChannels) {
       return null;
     }
-    IAST list = (IAST) applied;
-    for (int c = 0; c < colorChannels; c++) {
-      double value = list.get(c + 1).evalfNaN();
+    for (int c = 0; c < outColorChannels; c++) {
+      double value = ((IAST) applied).get(c + 1).evalfNaN();
       if (Double.isNaN(value)) {
         return null;
       }
-      result[c] = (float) (255.0 * value);
+      result[c] = value;
     }
     return result;
   }
@@ -556,14 +546,14 @@ public class ImageStructureFunctions {
    * A pixel masked out of <code>ImageApply</code> in the result's channels: a gray sample repeated
    * into r, g and b, or the mean of the colors when the result is gray.
    */
-  private static float[] converted(float[] values, int colorChannels, int outChannels) {
-    float[] result = new float[outChannels];
+  private static double[] converted(double[] values, int colorChannels, int outChannels) {
+    double[] result = new double[outChannels];
     if (colorChannels == 1) {
       for (int c = 0; c < Math.min(outChannels, 3); c++) {
         result[c] = values[0];
       }
     } else {
-      float sum = 0.0f;
+      double sum = 0.0;
       for (int c = 0; c < colorChannels; c++) {
         sum += values[c];
       }
@@ -572,25 +562,53 @@ public class ImageStructureFunctions {
       }
     }
     if (outChannels == 4) {
-      result[3] = values.length == 4 ? values[3] : 255.0f;
+      result[3] = values.length == 4 ? values[3] : 1.0;
     }
     return result;
   }
 
   /** The block of samples around one pixel, with the edge sample repeated past the border. */
-  private static IExpr neighbourhood(BufferedImage image, int x, int y, int radiusX, int radiusY,
+  private static IExpr neighbourhood(Raster image, int x, int y, int radiusX, int radiusY,
       int channels, int colorChannels) {
     IASTAppendable rows = F.ListAlloc(2 * radiusY + 1);
     for (int dy = -radiusY; dy <= radiusY; dy++) {
       IASTAppendable row = F.ListAlloc(2 * radiusX + 1);
-      int sampleY = clamp(y + dy, image.getHeight());
+      int sampleY = clamp(y + dy, image.height);
       for (int dx = -radiusX; dx <= radiusX; dx++) {
-        int sampleX = clamp(x + dx, image.getWidth());
-        row.append(samplesOf(Pixels.pixel(image, sampleX, sampleY, channels), colorChannels));
+        int sampleX = clamp(x + dx, image.width);
+        row.append(samplesOf(pixel(image, sampleX, sampleY), colorChannels));
       }
       rows.append(row);
     }
     return rows;
+  }
+
+  /** The samples of one pixel as they are, not clipped. */
+  private static double[] pixel(Raster raster, int x, int y) {
+    double[] values = new double[raster.channels];
+    for (int c = 0; c < raster.channels; c++) {
+      values[c] = raster.get(x, y, c);
+    }
+    return values;
+  }
+
+  /**
+   * The image of the pixels <code>result</code>, in the type and with the options of
+   * <code>source</code>.
+   */
+  private static IExpr imageOf(double[][] result, int width, int height, int channels,
+      ImageExpr source) {
+    Raster raster = new Raster(width, height, channels);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        double[] values = result[y * width + x];
+        for (int c = 0; c < channels; c++) {
+          raster.set(x, y, c, values[c]);
+        }
+      }
+    }
+    ImageExpr image = ImageExpr.fromRaster(raster, source.getOptions(), source.sampleType());
+    return image == null ? F.NIL : image;
   }
 
   private static int clamp(int value, int size) {

@@ -195,6 +195,18 @@ public final class ContextPath implements Iterable<Context> {
     aliases.put("Experimental`ValueFunction", S.ValueFunction);
     aliases.put("Developer`RawCompress", S.RawCompress);
     aliases.put("Developer`RawUncompress", S.RawUncompress);
+    // the domain {{min, max}, ...} of an InterpolatingFunction, from the package which defines it
+    aliases.put("DifferentialEquations`InterpolatingFunctionAnatomy`InterpolatingFunctionDomain",
+        F.localFunction("InterpolatingFunctionDomain", x -> {
+          EvalEngine engine = EvalEngine.get();
+          org.matheclipse.core.interfaces.IExpr function = engine.evaluate(x);
+          if (function.head() != S.InterpolatingFunction) {
+            return F.NIL;
+          }
+          org.matheclipse.core.interfaces.IExpr domain =
+              engine.evaluate(F.unaryAST1(function, F.stringx("Domain")));
+          return domain.isList() ? domain : F.NIL;
+        }));
     // the WLJS notebook shows an image only when Image`ValidImageQHold holds for it
     aliases.put("Image`ValidImageQHold", S.ImageQ);
     // does the expression print with a leading minus sign? FeynCalc tests it on sums of terms
@@ -458,6 +470,13 @@ public final class ContextPath implements Iterable<Context> {
       ISymbol symbol = context.get(name);
       if (symbol != null) {
         return symbol;
+      }
+    }
+    for (Context context : path) {
+      // a package on the path, as Needs puts it there, whose function the system answers
+      IBuiltInSymbol alias = systemAlias(context.completeContextName(), symbolName);
+      if (alias != null) {
+        return alias;
       }
     }
     return getSymbolFromContext(newContext, name);

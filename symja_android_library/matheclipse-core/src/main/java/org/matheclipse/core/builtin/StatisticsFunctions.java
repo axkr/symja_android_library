@@ -4149,11 +4149,16 @@ public class StatisticsFunctions {
                     if (dimension == null || dimension.length == 0) {
                       return F.NIL;
                     }
+                    // the whole array, not each of its levels, has to stay within the limit
+                    long total = 1;
+                    for (int d : dimension) {
+                      total *= d;
+                      if (total >= Config.MAX_AST_SIZE) {
+                        ASTElementLimitExceeded.throwIt(total);
+                      }
+                    }
                     if (dimension.length == 1) {
                       // create a list
-                      if (dimension[0] >= Config.MAX_AST_SIZE) {
-                        ASTElementLimitExceeded.throwIt(dimension[0]);
-                      }
                       return variate.randomVariate(random, dist, dimension[0]);
                     }
                     // create a tensor recursively
@@ -4229,9 +4234,6 @@ public class StatisticsFunctions {
       if (indx.length <= offset) {
         list.append(s.get());
         return list;
-      }
-      if (indx[offset] >= Config.MAX_AST_SIZE) {
-        ASTElementLimitExceeded.throwIt(indx[offset]);
       }
       IASTAppendable subList = F.ListAlloc(indx[offset]);
       for (int i = 1; i <= indx[offset]; i++) {

@@ -249,14 +249,17 @@ public class ImageOptionsTest {
   @Test
   public void theSourceMatrixIsKeptOnlyWhenItStillDescribesThePixels() {
     IAST colour = F.list(F.list(F.list(F.C1, F.C0, F.C0)));
-    assertEquals(colour, ImageExpr.toImageExpr(colour, "RGB").getMatrix());
-    assertEquals(colour, ImageExpr.toImageExpr(colour, "Automatic").getMatrix());
+    // data without a type is an image of reals, which keeps its samples as machine reals
+    IAST reals = F.list(F.list(F.list(F.CD1, F.CD0, F.CD0)));
+    assertEquals(reals, ImageExpr.toImageExpr(colour, "RGB").getMatrix());
+    assertEquals(reals, ImageExpr.toImageExpr(colour, "Automatic").getMatrix());
     assertNull(ImageExpr.toImageExpr(colour, "Grayscale").getMatrix(), "three channels into one");
     assertNull(ImageExpr.toImageExpr(colour, "HSB").getMatrix());
     assertNull(ImageExpr.toImageExpr(colour, "CMYK").getMatrix());
 
     // one intensity is left alone by "Grayscale", so that matrix survives
     IAST grey = F.list(F.list(F.C0, F.C1));
-    assertEquals(grey, ImageExpr.toImageExpr(grey, "Grayscale").getMatrix());
+    assertEquals(F.list(F.list(F.CD0, F.CD1)),
+        ImageExpr.toImageExpr(grey, "Grayscale").getMatrix());
   }
 }

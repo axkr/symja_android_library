@@ -1,6 +1,5 @@
 package org.matheclipse.image.builtin;
 
-import java.awt.image.BufferedImage;
 import java.util.function.DoubleBinaryOperator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -9,8 +8,8 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.image.algo.Raster;
 import org.matheclipse.image.expression.data.ImageExpr;
 
 /**
@@ -19,9 +18,11 @@ import org.matheclipse.image.expression.data.ImageExpr;
  * <code>ImageClip</code>.
  *
  * <p>
- * Everything works on the <code>0.0 ... 1.0</code> scale, so <code>ImageAdd(image, 0.2)</code>
- * brightens by a fifth of full intensity whatever the storage of the image is, and every result is
- * clipped back into that range.
+ * Everything works on the intensity scale, where <code>1.0</code> is full intensity, so
+ * <code>ImageAdd(image, 0.2)</code> brightens by a fifth of it whatever the storage of the image
+ * is. The result has the type of the first image: an image of reals keeps samples outside of
+ * <code>0.0 ... 1.0</code>, an integer type clips them, and a <code>"Bit"</code> image becomes a
+ * <code>"Real32"</code> one.
  *
  * <p>
  * The alpha channel is carried through untouched. Arithmetic on transparency is what
@@ -45,31 +46,31 @@ public class ImageArithmeticFunctions {
   /** The shared shape of the five binary functions. */
   private abstract static class BinaryImageFunction extends AbstractEvaluator {
 
-    /** Combine two samples, both on the <code>0.0 ... 1.0</code> scale. */
+    /** Combine two samples, both on the intensity scale. */
     abstract double apply(double left, double right);
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image == null) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
         return F.NIL;
       }
-      IExpr result = ast.arg1();
+      ImageExpr image = (ImageExpr) ast.arg1();
+      Raster result = image.raster();
+      if (result == null) {
+        return F.NIL;
+      }
       // ImageAdd(image, a, b, ...) folds left, the way Plus does
       for (int i = 2; i < ast.size(); i++) {
-        IExpr real = combineReal(result, ast.get(i), this::apply);
-        if (real.isPresent()) {
-          result = real;
-          continue;
-        }
-        image = ImagePropertyFunctions.bufferedImage(result);
-        IExpr combined = combine(image, ast.get(i), this::apply);
-        if (!combined.isPresent()) {
+        result = combine(result, ast.get(i), this::apply);
+        if (result == null) {
           return F.NIL;
         }
-        result = combined;
       }
-      return result;
+      // the type of the first image: an image of reals keeps the samples outside of 0 ... 1,
+      // an integer type clips them; a black and white image becomes one of reals
+      String type = Pixels.BIT.equals(image.sampleType()) ? Pixels.REAL32 : image.sampleType();
+      ImageExpr combined = ImageExpr.fromRaster(result, image.getOptions(), type);
+      return combined == null ? F.NIL : combined;
     }
 
     @Override
@@ -136,15 +137,19 @@ public class ImageArithmeticFunctions {
    * <code>{min, max}</code> when a range is given.
    *
    * <p>
-   * The samples of a stored image are already inside <code>0.0 ... 1.0</code>, so the one argument
-   * form is the identity and only the two argument form does anything.
+   * An image of reals may hold samples outside of <code>0.0 ... 1.0</code>, which the one
+   * argument form brings back into it.
    */
   private static class ImageClip extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image == null) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      ImageExpr image = (ImageExpr) ast.arg1();
+      Raster raster = image.raster();
+      if (raster == null) {
         return F.NIL;
       }
       double low = 0.0;
@@ -162,7 +167,10 @@ public class ImageArithmeticFunctions {
       }
       final double lowBound = low;
       final double highBound = high;
-      return map(image, sample -> Math.min(highBound, Math.max(lowBound, sample)));
+      ImageExpr clipped = ImageExpr.fromRaster(
+          raster.mapColor(sample -> Math.min(highBound, Math.max(lowBound, sample))),
+          image.getOptions(), image.sampleType());
+      return clipped == null ? F.NIL : clipped;
     }
 
     @Override
@@ -179,111 +187,43 @@ public class ImageArithmeticFunctions {
   // -------------------------------------------------------------------- internals
 
   /**
-   * Combine <code>image</code> with a number, a colour, a list of channel values or another image.
+   * Combine the samples of an image with a number, a colour, a list of channel values or the
+   * samples of another image. The alpha channel of the left image is carried through.
    *
-   * @return {@link F#NIL} when <code>operand</code> is none of those, or when two images differ in
-   *         size
+   * @return <code>null</code> when <code>operand</code> is none of those, or when two images differ
+   *         in size
    */
-  private static IExpr combine(BufferedImage image, IExpr operand, DoubleBinaryOperator operator) {
-    int width = image.getWidth();
-    int height = image.getHeight();
-    int channels = Boof.channels(image);
-    // the alpha channel of the left image is carried through, so it is not an operand
-    int colorChannels = channels == 4 ? 3 : channels;
-
-    BufferedImage other = ImagePropertyFunctions.bufferedImage(operand);
-    if (other != null) {
-      if (other.getWidth() != width || other.getHeight() != height) {
-        return F.NIL;
+  private static Raster combine(Raster left, IExpr operand, DoubleBinaryOperator operator) {
+    int colorChannels = left.colorChannels();
+    Raster result = left.copy();
+    if (operand instanceof ImageExpr) {
+      Raster right = ((ImageExpr) operand).raster();
+      if (right == null || right.width != left.width || right.height != left.height) {
+        return null;
       }
-      int otherChannels = Boof.channels(other);
-      final BufferedImage right = other;
-      return imageOf(Pixels.fromPixels(width, height, channels, (x, y) -> {
-        float[] left = Pixels.pixel(image, x, y, channels);
-        float[] rightPixel = Pixels.pixel(right, x, y, otherChannels);
-        float[] result = left.clone();
-        for (int c = 0; c < colorChannels; c++) {
-          double rightSample = rightPixel[otherChannels == 1 ? 0 : Math.min(c, 2)] / 255.0;
-          result[c] = (float) (255.0 * operator.applyAsDouble(left[c] / 255.0, rightSample));
+      int rightColors = right.colorChannels();
+      for (int y = 0; y < left.height; y++) {
+        for (int x = 0; x < left.width; x++) {
+          for (int c = 0; c < colorChannels; c++) {
+            double rightSample = right.get(x, y, rightColors == 1 ? 0 : Math.min(c, rightColors - 1));
+            result.set(x, y, c, operator.applyAsDouble(left.get(x, y, c), rightSample));
+          }
         }
-        return result;
-      }));
-    }
-
-    double[] operands = constantOperand(operand, colorChannels);
-    if (operands == null) {
-      return F.NIL;
-    }
-    return imageOf(Pixels.fromPixels(width, height, channels, (x, y) -> {
-      float[] left = Pixels.pixel(image, x, y, channels);
-      float[] result = left.clone();
-      for (int c = 0; c < colorChannels; c++) {
-        result[c] = (float) (255.0 * operator.applyAsDouble(left[c] / 255.0, operands[c]));
       }
       return result;
-    }));
-  }
-
-  /**
-   * Combine an image of reals with a number, a colour or a list of channel values on its own
-   * samples: the result is an image of the same type, and its samples are not rounded to the 256
-   * levels of the bitmap.
-   *
-   * @return {@link F#NIL} when <code>image</code> is not an image of reals which still has its
-   *         samples, or <code>operand</code> is not a constant
-   */
-  private static IExpr combineReal(IExpr image, IExpr operand, DoubleBinaryOperator operator) {
-    if (!(image instanceof ImageExpr)) {
-      return F.NIL;
     }
-    ImageExpr imageExpr = (ImageExpr) image;
-    IAST matrix = imageExpr.getMatrix();
-    String type = imageExpr.sampleType();
-    if (matrix == null || matrix.argSize() == 0 || !matrix.arg1().isList()
-        || ((IAST) matrix.arg1()).argSize() == 0
-        || !(Pixels.REAL32.equals(type) || Pixels.REAL64.equals(type))) {
-      return F.NIL;
-    }
-    IExpr firstPixel = ((IAST) matrix.arg1()).arg1();
-    int channels = firstPixel.isList() ? firstPixel.argSize() : 1;
-    // the alpha channel is carried through, so it is not an operand
-    int colorChannels = channels == 4 || channels == 2 ? channels - 1 : channels;
     double[] operands = constantOperand(operand, colorChannels);
     if (operands == null) {
-      return F.NIL;
+      return null;
     }
-    final boolean[] failed = new boolean[1];
-    IAST combined = F.mapRange(1, matrix.size(), r -> {
-      IExpr row = matrix.get(r);
-      if (!row.isList()) {
-        failed[0] = true;
-        return row;
+    for (int y = 0; y < left.height; y++) {
+      for (int x = 0; x < left.width; x++) {
+        for (int c = 0; c < colorChannels; c++) {
+          result.set(x, y, c, operator.applyAsDouble(left.get(x, y, c), operands[c]));
+        }
       }
-      return F.mapRange(1, ((IAST) row).size(), c -> {
-        IExpr pixel = ((IAST) row).get(c);
-        if (!pixel.isList()) {
-          double sample = pixel.evalfNaN();
-          failed[0] |= Double.isNaN(sample) || channels != 1;
-          return F.num(operator.applyAsDouble(sample, operands[0]));
-        }
-        IAST samples = (IAST) pixel;
-        if (samples.argSize() != channels) {
-          failed[0] = true;
-          return pixel;
-        }
-        return F.mapRange(1, samples.size(), k -> {
-          double sample = samples.get(k).evalfNaN();
-          failed[0] |= Double.isNaN(sample);
-          return k <= colorChannels ? F.num(operator.applyAsDouble(sample, operands[k - 1]))
-              : samples.get(k);
-        });
-      });
-    });
-    if (failed[0]) {
-      return F.NIL;
     }
-    ImageExpr result = ImageExpr.toImageExpr(combined, imageExpr.getOptions(), type);
-    return result == null ? F.NIL : result;
+    return result;
   }
 
   /** A number, an <code>RGBColor</code> or a list of channel values, spread over the channels. */
@@ -311,26 +251,6 @@ public class ImageArithmeticFunctions {
     }
     java.util.Arrays.fill(result, scalar);
     return result;
-  }
-
-  /** Apply <code>operator</code> to every colour sample, leaving alpha alone. */
-  private static IExpr map(BufferedImage image, java.util.function.DoubleUnaryOperator operator) {
-    int channels = Boof.channels(image);
-    int colorChannels = channels == 4 ? 3 : channels;
-    return imageOf(
-        Pixels.fromPixels(image.getWidth(), image.getHeight(), channels, (x, y) -> {
-          float[] values = Pixels.pixel(image, x, y, channels);
-          float[] result = values.clone();
-          for (int c = 0; c < colorChannels; c++) {
-            result[c] = (float) (255.0 * operator.applyAsDouble(values[c] / 255.0));
-          }
-          return result;
-        }));
-  }
-
-  private static IExpr imageOf(BufferedImage image) {
-    // no source matrix: see Boof#toImageExpr
-    return new ImageExpr(image, null);
   }
 
   public static void initialize() {

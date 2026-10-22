@@ -3788,6 +3788,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isContinuousDistribution() {
     if (isBuiltInFunction()) {
       IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+      if (evaluator instanceof IDistribution) {
+        int kind = ((IDistribution) evaluator).kind(this);
+        if (kind != 0) {
+          return kind == IDistribution.CONTINUOUS;
+        }
+      }
       return evaluator instanceof IContinuousDistribution;
     }
     return false;
@@ -3879,6 +3885,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isDiscreteDistribution() {
     if (isBuiltInFunction()) {
       IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+      if (evaluator instanceof IDistribution) {
+        int kind = ((IDistribution) evaluator).kind(this);
+        if (kind != 0) {
+          return kind == IDistribution.DISCRETE;
+        }
+      }
       return evaluator instanceof IDiscreteDistribution;
     }
     return false;

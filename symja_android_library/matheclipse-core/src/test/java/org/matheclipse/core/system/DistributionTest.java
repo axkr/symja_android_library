@@ -937,9 +937,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "Module({s=RandomVariate(TruncatedDistribution({0,1},NormalDistribution(0,1)),200)},"
             + " {Min(s)>=0, Max(s)<=1})", //
         "{True,True}");
-    // a discrete distribution isn't supported and stays unevaluated instead of being wrong
+    // a discrete distribution keeps the values min < x <= max
     check("PDF(TruncatedDistribution({1,5}, PoissonDistribution(3)), x)", //
-        "PDF(TruncatedDistribution({1,5},PoissonDistribution(3)),x)");
+        "Piecewise({{5/(8*3^(2-x)*x!),1<x<=5}},0)");
   }
 
   @Test

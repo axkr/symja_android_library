@@ -19,6 +19,7 @@ import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.image.algo.Raster;
 
 /**
  * Represent a BufferedImage by the PNG byte array.
@@ -39,6 +40,9 @@ final public class ImageExpr extends DataExpr<byte[]> {
   private final String sampleType;
 
   private transient SoftReference<BufferedImage> buffer;
+
+  /** The samples once {@link #raster()} has read them. */
+  private transient SoftReference<Raster> rasterCache;
 
   /**
    * Represent a BufferedImage by the PNG byte array.
@@ -121,6 +125,69 @@ final public class ImageExpr extends DataExpr<byte[]> {
   }
 
   /**
+   * The samples of this image on the intensity scale: the exact samples of the matrix it was built
+   * from where it kept one, otherwise those of the 8 bit picture it is shown from. Samples of an
+   * image of reals outside of <code>0.0 ... 1.0</code> are kept.
+   *
+   * <p>
+   * The raster is read once and shared by the callers: it must not be changed, only copied.
+   */
+  public Raster raster() {
+    Raster cached = rasterCache == null ? null : rasterCache.get();
+    if (cached != null) {
+      return cached;
+    }
+    Raster raster = null;
+    if (matrix != null) {
+      IAST interleaved = options.interleaved() ? matrix : Pixels.relayout(matrix, true);
+      if (interleaved != null) {
+        raster = Raster.fromMatrix(interleaved, sampleType());
+      }
+    }
+    if (raster == null) {
+      BufferedImage image = getBufferedImage();
+      if (image == null) {
+        return null;
+      }
+      raster = Raster.fromBitmap(image);
+    }
+    rasterCache = new SoftReference<Raster>(raster);
+    return raster;
+  }
+
+  /**
+   * The image of the samples of <code>raster</code>, stored in <code>type</code>: a real type
+   * keeps them as they are, an integer type rounds and clips them.
+   *
+   * @param options the options of the image it was computed from
+   * @return <code>null</code> if the samples describe no image
+   */
+  public static ImageExpr fromRaster(Raster raster, ImageOptions options, String type) {
+    ImageOptions resultOptions = options.withInterleaved(true);
+    if (!Pixels.describesPixels(resultOptions.colorSpaceName(), raster.channels)) {
+      // the samples are red, green and blue whatever space the source was read in; reading them
+      // in that space again would convert them twice
+      resultOptions = resultOptions.withColorSpace(S.Automatic);
+    }
+    if ((Pixels.BYTE.equals(type) || Pixels.BIT.equals(type)) && raster.channels != 2) {
+      // 8 bits hold these samples exactly, so the picture is written directly, without a matrix
+      final double max = Raster.maxOf(type);
+      final double toByte = 255.0 / max;
+      BufferedImage bitmap = Pixels.fromPixels(raster.width, raster.height, raster.channels,
+          (x, y) -> {
+            float[] values = new float[raster.channels];
+            for (int c = 0; c < raster.channels; c++) {
+              values[c] = (float) (Raster.level(raster.get(x, y, c), max) * toByte);
+            }
+            return values;
+          });
+      return new ImageExpr(bitmap, null, resultOptions, type);
+    }
+    IAST data = raster.toMatrix(type);
+    return toImageExpr(data, resultOptions, type);
+  }
+
+  /**
    * The image type: the one <code>Image(data, type)</code> stated, else the type of the matrix it
    * was built from, else <code>"Byte"</code> for a picture stored as an 8 bit bitmap.
    */
@@ -128,7 +195,8 @@ final public class ImageExpr extends DataExpr<byte[]> {
     if (sampleType != null) {
       return sampleType;
     }
-    return matrix == null ? Pixels.BYTE : Pixels.imageTypeOf(matrix);
+    // a matrix written without a type is one of reals
+    return matrix == null ? Pixels.BYTE : Pixels.REAL32;
   }
 
   /** The options this image carries; never <code>null</code>. */
@@ -303,7 +371,7 @@ final public class ImageExpr extends DataExpr<byte[]> {
     if (samples == null) {
       return null;
     }
-    String type = sampleType != null ? sampleType : Pixels.imageTypeOf(imageData);
+    String type = sampleType != null ? sampleType : Pixels.REAL32;
     BufferedImage bufferedImage = Pixels.toBufferedImage(samples, space, Pixels.scaleOf(type));
     if (bufferedImage == null) {
       return null;

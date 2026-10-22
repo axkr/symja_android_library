@@ -39,7 +39,9 @@ public final class PackageResolver {
       new java.util.HashSet<>(java.util.Arrays.asList(//
           "System`", "Global`", "Internal`", "Developer`", "Experimental`", "Language`", //
           "PacletManager`", "PacletManager`Package`", "Parallel`", "Parallel`Developer`", //
-          "GeneralUtilities`", "Documentation`"));
+          "GeneralUtilities`", "Documentation`",
+          // its functions are answered by the system, see ContextPath#systemAlias
+          "DifferentialEquations`InterpolatingFunctionAnatomy`"));
 
   /** Is this one of the contexts the system provides? */
   public static boolean isStandardContext(String context) {

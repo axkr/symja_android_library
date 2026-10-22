@@ -7,9 +7,13 @@ public class ImageAdjustTest extends AbstractTestCase {
 
   @Test
   public void findThresholdSplitsTheHistogram() {
-    check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}))", "0.101961");
-    check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}),Method->\"Mean\")", "0.50098");
-    check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}),Method->\"Median\")", "0.101961");
+    // every split between the two groups is as good: the first of them, or the middle of the gap
+    // where the darker group is the darkest value alone
+    check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}))", "0.0976562");
+    check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}),Method->\"Mean\")", "0.5");
+    check("FindThreshold(Image({{0.0,0.1,0.9,1.0}}),Method->\"Median\")", "0.1");
+    // the samples as they are, beyond full intensity too
+    check("FindThreshold(Image({{0, 6}}))", "2.98828");
   }
 
   /** An unknown method is left unevaluated rather than falling back to the default. */
@@ -49,13 +53,15 @@ public class ImageAdjustTest extends AbstractTestCase {
   /** Without arguments ImageAdjust stretches the samples to fill the whole range. */
   @Test
   public void imageAdjustStretchesTheRange() {
-    check("ImageData(ImageAdjust(Image({{0.25,0.5,0.75}})),\"Byte\")", "{{0,129,255}}");
+    check("ImageData(ImageAdjust(Image({{0.25,0.5,0.75}})),\"Byte\")", "{{0,128,255}}");
+    // the range of the samples as they are, also beyond full intensity
+    check("ImageData(ImageAdjust(Image({{1,5,9}})))", "{{0.0,0.5,1.0}}");
   }
 
   @Test
   public void imageAdjustTakesContrastAndBrightness() {
     check("ImageData(ImageAdjust(Image({{0.25,0.5,0.75}}),{0,0.1}),\"Byte\")", //
-        "{{90,154,217}}");
+        "{{89,153,217}}");
   }
 
   /** An image that is already flat has nothing to stretch. */
@@ -66,7 +72,14 @@ public class ImageAdjustTest extends AbstractTestCase {
 
   @Test
   public void histogramTransformEvensOutTheSamples() {
+    // a sample goes to the middle of the share of the samples up to it, on 256 levels
     check("ImageData(HistogramTransform(Image({{0.0,0.25,0.5,1.0}})),\"Byte\")", //
-        "{{63,127,191,255}}");
+        "{{32,96,160,224}}");
+    check("ImageData(HistogramTransform(Image({{4, 9, 9, 9, 50}})))", //
+        "{{0.0984314,0.5,0.5,0.5,0.901569}}");
+    // the type stays
+    check("h = HistogramTransform(Image({{3, 7, 7, 200}}, \"Byte\")); "
+        + "{ImageType(h), Flatten(ImageData(h, \"Byte\"))}", //
+        "{Byte,{32,128,128,224}}");
   }
 }

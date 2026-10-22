@@ -288,6 +288,8 @@ public class Errors {
       "ilim", "Invalid integration variable or limit(s) in `1`.", //
       "imgcs", "`1` is not a valid setting for ColorSpace.", //
       "imgcsc", "ColorSpace -> `1` cannot read image data with `2` channels.", //
+      "imgarray",
+      "The specified argument `1` should be an array of rank 3 or 4 with machine-sized numbers or a list of images of consistent dimension and color space.", //
       "imgtype", "`1` is not a valid image type; Bit, Byte, Bit16, Real32 or Real64 expected.", //
       "incomp", "Expressions `1` and `2` have incompatible shapes.", //
       "incompCF", "Warning: `1` terminated before `2` terms.", //

@@ -16,6 +16,8 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.external.fastutil.ints.IntArrayList;
+import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.image.algo.Raster;
 import org.matheclipse.image.algo.Volumes;
 import org.matheclipse.image.expression.data.Image3DExpr;
 import org.matheclipse.image.expression.data.ImageExpr;
@@ -75,14 +77,14 @@ public class ImageFilterFunctions {
   }
 
   /**
-   * The samples of an image as <code>[channel][row][column]</code>.
+   * The samples of an image as <code>[channel][row][column]</code>, on the intensity scale and not
+   * clipped; see {@link ImageExpr#raster()}.
    *
-   * @return <code>null</code> if the image data is no array of real numbers
+   * @return <code>null</code> if the image has no samples
    */
   public static double[][][] channels(ImageExpr image, EvalEngine engine) {
-    // one pixel next to the other, also for an image which stores its channels as planes
-    return channels(
-        engine.evaluate(F.binaryAST2(S.ImageData, image, F.Rule(S.Interleaving, S.True))));
+    Raster raster = image.raster();
+    return raster == null ? null : raster.toChannels();
   }
 
   /**
@@ -143,40 +145,20 @@ public class ImageFilterFunctions {
   }
 
   /**
-   * An image of the samples <code>[channel][row][column]</code>, which are on the scale
-   * <code>0...1</code> of <code>ImageData</code>. A <code>"Byte"</code>, <code>"Bit16"</code> or
-   * <code>"Bit"</code> image stores them as the integers of its type, every other one is a
-   * <code>"Real32"</code> image unless <code>"Real64"</code> is asked for.
+   * An image of the samples <code>[channel][row][column]</code>, which are on the intensity scale
+   * of <code>ImageData</code>. A <code>"Byte"</code>, <code>"Bit16"</code> or <code>"Bit"</code>
+   * image stores them as the integers of its type, clipped to its range; every other one is a
+   * <code>"Real32"</code> image, which keeps them as they are, unless <code>"Real64"</code> is asked
+   * for.
    */
   static IExpr toImage(double[][][] channels, ImageOptions options, String type) {
-    final double scale = "Byte".equals(type) ? 255.0
-        : "Bit16".equals(type) ? 65535.0 : "Bit".equals(type) ? 1.0 : 0.0;
-    final int count = channels.length;
-    final int height = channels[0].length;
-    final int width = channels[0][0].length;
-    IASTAppendable rows = F.ListAlloc(height);
-    for (int y = 0; y < height; y++) {
-      IASTAppendable row = F.ListAlloc(width);
-      for (int x = 0; x < width; x++) {
-        if (count == 1) {
-          row.append(sample(channels[0][y][x], scale));
-        } else {
-          IASTAppendable pixel = F.ListAlloc(count);
-          for (int c = 0; c < count; c++) {
-            pixel.append(sample(channels[c][y][x], scale));
-          }
-          row.append(pixel);
-        }
-      }
-      rows.append(row);
+    Raster raster = Raster.fromChannels(channels);
+    if (raster == null) {
+      return F.NIL;
     }
-    ImageExpr image = ImageExpr.toImageExpr(rows, options.withInterleaved(true),
-        scale != 0.0 || "Real64".equals(type) ? type : "Real32");
+    String stored = Raster.isIntegerType(type) || Pixels.REAL64.equals(type) ? type : Pixels.REAL32;
+    ImageExpr image = ImageExpr.fromRaster(raster, options, stored);
     return image == null ? F.NIL : image;
-  }
-
-  private static IExpr sample(double value, double scale) {
-    return scale == 0.0 ? F.num(value) : F.ZZ(Math.round(value * scale));
   }
 
   /** A filter which takes an image, and leaves a list to the evaluator of core. */

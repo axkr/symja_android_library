@@ -657,11 +657,16 @@ public class ImageGeometryFunctions {
       int to;
       if (spec.isList()) {
         IAST list = (IAST) spec;
-        if (list.argSize() != 2) {
+        if (list.argSize() == 1) {
+          // {n}: the n-th one alone
+          from = list.arg1().toIntDefault();
+          to = from;
+        } else if (list.argSize() == 2) {
+          from = list.arg1().toIntDefault();
+          to = list.arg2().toIntDefault();
+        } else {
           return null;
         }
-        from = list.arg1().toIntDefault();
-        to = list.arg2().toIntDefault();
       } else {
         int count = spec.toIntDefault();
         if (count == Config.INVALID_INT) {

@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.algo.Boof;
 import org.matheclipse.image.algo.Enhance;
 import org.matheclipse.image.algo.Pixels;
+import org.matheclipse.image.algo.Raster;
 import org.matheclipse.image.expression.data.ImageExpr;
 
 /**
@@ -49,12 +50,15 @@ public class ImageAdjustFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image == null) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      Raster raster = ((ImageExpr) ast.arg1()).raster();
+      if (raster == null) {
         return F.NIL;
       }
       String method = methodOption(ast, 2, engine, "Cluster");
-      double threshold = threshold(image, method);
+      double threshold = threshold(raster, method, false);
       return Double.isNaN(threshold) ? F.NIL : F.num(threshold / 255.0);
     }
 
@@ -101,8 +105,13 @@ public class ImageAdjustFunctions {
         white[y][x] = test.isTrue();
       }
     }
-    return new ImageExpr(Pixels.fromPixels(width, height, 1,
-        (x, y) -> new float[] {white[y][x] ? 255.0f : 0.0f}), null);
+    Raster binary = new Raster(width, height, 1);
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        binary.set(x, y, 0, white[y][x] ? 1.0 : 0.0);
+      }
+    }
+    return bitImage(binary, image);
   }
 
   /**
@@ -118,8 +127,11 @@ public class ImageAdjustFunctions {
           && (ast.arg2().isFunction() || (ast.arg2().isSymbol() && !ast.arg2().isNumericFunction()))) {
         return binarizeByFunction((ImageExpr) ast.arg1(), ast.arg2(), engine);
       }
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image == null) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
+        return F.NIL;
+      }
+      Raster raster = ((ImageExpr) ast.arg1()).raster();
+      if (raster == null) {
         return F.NIL;
       }
       double low;
@@ -142,19 +154,23 @@ public class ImageAdjustFunctions {
           }
         }
       } else {
-        low = threshold(image, methodOption(ast, 2, engine, "Cluster"));
+        low = threshold(raster, methodOption(ast, 2, engine, "Cluster"), true);
         if (Double.isNaN(low)) {
           return F.NIL;
         }
       }
 
-      final double lowBound = low;
-      final double highBound = high;
-      return new ImageExpr(Pixels.fromPixels(image.getWidth(), image.getHeight(), 1, (x, y) -> {
-        float intensity = Boof.intensity(image, x, y);
-        boolean inside = intensity > lowBound && intensity <= highBound;
-        return new float[] {inside ? 255.0f : 0.0f};
-      }), null);
+      // the thresholds are on the 0 ... 255 scale, the intensities of the samples as they are
+      final double lowBound = low / 255.0;
+      final double highBound = high / 255.0;
+      Raster binary = new Raster(raster.width, raster.height, 1);
+      for (int y = 0; y < raster.height; y++) {
+        for (int x = 0; x < raster.width; x++) {
+          double intensity = intensity(raster, x, y);
+          binary.set(x, y, 0, intensity > lowBound && intensity <= highBound ? 1.0 : 0.0);
+        }
+      }
+      return bitImage(binary, (ImageExpr) ast.arg1());
     }
 
     @Override
@@ -224,31 +240,24 @@ public class ImageAdjustFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image == null) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
         return F.NIL;
       }
-      int channels = Boof.channels(image);
-      int colorChannels = channels == 4 ? 3 : channels;
+      ImageExpr image = (ImageExpr) ast.arg1();
+      Raster raster = image.raster();
+      if (raster == null) {
+        return F.NIL;
+      }
 
       if (ast.argSize() == 1) {
-        float low = Float.MAX_VALUE;
-        float high = -Float.MAX_VALUE;
-        for (int y = 0; y < image.getHeight(); y++) {
-          for (int x = 0; x < image.getWidth(); x++) {
-            float[] values = Pixels.pixel(image, x, y, channels);
-            for (int c = 0; c < colorChannels; c++) {
-              low = Math.min(low, values[c]);
-              high = Math.max(high, values[c]);
-            }
-          }
-        }
-        if (high <= low) {
+        // the range of the samples as they are, also beyond 0 ... 1, onto 0 ... 1
+        double[] range = raster.colorRange();
+        if (range[1] <= range[0]) {
           return ast.arg1();
         }
-        final float minimum = low;
-        final float scale = 255.0f / (high - low);
-        return map(image, channels, colorChannels, value -> (value - minimum) * scale);
+        final double minimum = range[0];
+        final double width = range[1] - range[0];
+        return imageOf(raster.mapColor(value -> (value - minimum) / width), image);
       }
 
       double contrast = 0.0;
@@ -274,14 +283,13 @@ public class ImageAdjustFunctions {
       final double slope = Math.pow(10.0, contrast);
       final double offset = brightness;
       final double exponent = 1.0 / gamma;
-      return map(image, channels, colorChannels, value -> {
-        double unit = value / 255.0;
-        double adjusted = (unit - 0.5) * slope + 0.5 + offset;
+      return imageOf(raster.mapColor(value -> {
+        double adjusted = (value - 0.5) * slope + 0.5 + offset;
         if (adjusted < 0.0) {
           adjusted = 0.0;
         }
-        return (float) (255.0 * Math.pow(adjusted, exponent));
-      });
+        return Math.pow(adjusted, exponent);
+      }), image);
     }
 
     @Override
@@ -300,48 +308,75 @@ public class ImageAdjustFunctions {
    * about equally common, which is what evens out a picture with too little contrast.
    *
    * <p>
-   * A colour image is equalized channel by channel.
+   * A sample goes to the middle of the share of the samples which are not larger than it, on the
+   * scale of 256 levels: <code>(256 m - 1/2)/255</code>. A colour image is equalized channel by
+   * channel, and the type stays.
    */
   private static class HistogramTransform extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
-      if (image == null) {
+      if (!(ast.arg1() instanceof ImageExpr)) {
         return F.NIL;
       }
-      int channels = Boof.channels(image);
-      int colorChannels = channels == 4 ? 3 : channels;
-      int width = image.getWidth();
-      int height = image.getHeight();
-
-      int[][] transform = new int[colorChannels][];
-      for (int c = 0; c < colorChannels; c++) {
-        int[] histogram = new int[256];
-        for (int y = 0; y < height; y++) {
-          for (int x = 0; x < width; x++) {
-            histogram[clamp(Pixels.pixel(image, x, y, channels)[c])]++;
+      ImageExpr image = (ImageExpr) ast.arg1();
+      Raster raster = image.raster();
+      if (raster == null) {
+        return F.NIL;
+      }
+      int count = raster.width * raster.height;
+      Raster result = raster.copy();
+      for (int c = 0; c < raster.colorChannels(); c++) {
+        double[] sorted = new double[count];
+        for (int y = 0; y < raster.height; y++) {
+          for (int x = 0; x < raster.width; x++) {
+            sorted[y * raster.width + x] = raster.get(x, y, c);
           }
         }
-        transform[c] = Enhance.equalizationTable(histogram);
-      }
-
-      return new ImageExpr(Pixels.fromPixels(width, height, channels, (x, y) -> {
-        float[] values = Pixels.pixel(image, x, y, channels);
-        float[] result = values.clone();
-        for (int c = 0; c < colorChannels; c++) {
-          result[c] = transform[c][clamp(values[c])];
+        java.util.Arrays.sort(sorted);
+        for (int y = 0; y < raster.height; y++) {
+          for (int x = 0; x < raster.width; x++) {
+            double value = raster.get(x, y, c);
+            // the share of the samples below the value and up to it
+            int below = lowerBound(sorted, value);
+            int upTo = upperBound(sorted, value);
+            double middle = (below + upTo) / (2.0 * count);
+            result.set(x, y, c, (256.0 * middle - 0.5) / 255.0);
+          }
         }
-        return result;
-      }), null);
+      }
+      ImageExpr equalized = ImageExpr.fromRaster(result, image.getOptions(), image.sampleType());
+      return equalized == null ? F.NIL : equalized;
     }
 
-    private static int clamp(float value) {
-      int rounded = Math.round(value);
-      if (rounded < 0) {
-        return 0;
+    /** The number of entries of <code>sorted</code> below <code>value</code>. */
+    private static int lowerBound(double[] sorted, double value) {
+      int low = 0;
+      int high = sorted.length;
+      while (low < high) {
+        int middle = (low + high) >>> 1;
+        if (sorted[middle] < value) {
+          low = middle + 1;
+        } else {
+          high = middle;
+        }
       }
-      return rounded > 255 ? 255 : rounded;
+      return low;
+    }
+
+    /** The number of entries of <code>sorted</code> up to and including <code>value</code>. */
+    private static int upperBound(double[] sorted, double value) {
+      int low = 0;
+      int high = sorted.length;
+      while (low < high) {
+        int middle = (low + high) >>> 1;
+        if (sorted[middle] <= value) {
+          low = middle + 1;
+        } else {
+          high = middle;
+        }
+      }
+      return low;
     }
 
     @Override
@@ -357,45 +392,106 @@ public class ImageAdjustFunctions {
 
   // -------------------------------------------------------------------- internals
 
-  /** The whole image threshold of the given method, on the 0 ... 255 scale. */
-  private static double threshold(BufferedImage image, String method) {
+  /**
+   * The whole image threshold of the given method, on the 0 ... 255 scale, of the intensities as
+   * they are: an image of reals with samples beyond 1 is thresholded over its whole range.
+   *
+   * @param cut <code>true</code> for the value <code>Binarize</code> splits the samples at,
+   *        <code>false</code> for the one <code>FindThreshold</code> reports
+   */
+  private static double threshold(Raster raster, String method, boolean cut) {
+    // the intensities row by row from the top, on the 0 ... 255 scale
+    float[] values = new float[raster.width * raster.height];
+    float low = 0.0f;
+    float high = Boof.MAX_VALUE;
+    for (int y = 0; y < raster.height; y++) {
+      for (int x = 0; x < raster.width; x++) {
+        float value = (float) (255.0 * intensity(raster, x, y));
+        values[y * raster.width + x] = value;
+        low = Math.min(low, value);
+        high = Math.max(high, value);
+      }
+    }
     switch (method) {
       case "Cluster":
       case "Otsu":
       case "Automatic":
-        return Enhance.otsu(image);
+        return otsu(values, cut);
       case "Entropy":
       case "MinimumError":
-        return Enhance.entropy(image);
+        return Enhance.entropy(values, raster.width, raster.height, low, high);
       case "Mean": {
         double total = 0.0;
-        for (int y = 0; y < image.getHeight(); y++) {
-          for (int x = 0; x < image.getWidth(); x++) {
-            total += Boof.intensity(image, x, y);
-          }
+        for (float value : values) {
+          total += value;
         }
-        return total / ((long) image.getWidth() * image.getHeight());
+        return total / values.length;
       }
       case "Median": {
-        int[] histogram = new int[256];
-        int count = image.getWidth() * image.getHeight();
-        for (int y = 0; y < image.getHeight(); y++) {
-          for (int x = 0; x < image.getWidth(); x++) {
-            histogram[Math.round(Boof.intensity(image, x, y))]++;
-          }
-        }
-        int seen = 0;
-        for (int level = 0; level < histogram.length; level++) {
-          seen += histogram[level];
-          if (seen * 2 >= count) {
-            return level;
-          }
-        }
-        return 127.0;
+        float[] sorted = values.clone();
+        java.util.Arrays.sort(sorted);
+        return sorted[(sorted.length - 1) / 2];
       }
       default:
         return Double.NaN;
     }
+  }
+
+  /**
+   * Otsu's threshold of the values: the split of a 256 bin histogram over their own range which
+   * separates the two groups best. Where several splits are equally good the first of them is
+   * taken, unless the darker group is the darkest bin alone - two values only, say - where the
+   * threshold goes to the middle of the gap above it.
+   *
+   * @param cut <code>true</code> for the value to split the samples at, which is the end of the bin
+   *        the threshold names: that bin still belongs to the darker group
+   */
+  private static double otsu(float[] values, boolean cut) {
+    double low = Double.POSITIVE_INFINITY;
+    double high = Double.NEGATIVE_INFINITY;
+    for (float value : values) {
+      low = Math.min(low, value);
+      high = Math.max(high, value);
+    }
+    if (!(high > low)) {
+      return low;
+    }
+    final int bins = 256;
+    double width = (high - low) / bins;
+    long[] histogram = new long[bins];
+    double total = 0.0;
+    for (float value : values) {
+      histogram[Math.min(bins - 1, (int) ((value - low) / width))]++;
+      total += value;
+    }
+    double count = values.length;
+    double weightBelow = 0.0;
+    double sumBelow = 0.0;
+    double best = -1.0;
+    int first = 0;
+    int last = 0;
+    for (int t = 0; t < bins - 1; t++) {
+      weightBelow += histogram[t];
+      sumBelow += histogram[t] * (low + (t + 0.5) * width);
+      double weightAbove = count - weightBelow;
+      if (weightBelow == 0.0 || weightAbove == 0.0) {
+        continue;
+      }
+      double meanBelow = sumBelow / weightBelow;
+      double meanAbove = (total - sumBelow) / weightAbove;
+      double between = weightBelow * weightAbove * (meanBelow - meanAbove) * (meanBelow - meanAbove);
+      if (between > best * (1.0 + 1.0e-12)) {
+        best = between;
+        first = t;
+        last = t;
+      } else if (between >= best * (1.0 - 1.0e-12)) {
+        last = t;
+      }
+    }
+    if (first == 0) {
+      return low + width * (first + last + 1) / 2.0;
+    }
+    return low + width * (cut ? first + 1 : first);
   }
 
   /** The <code>Method</code> option, looked for from <code>startIndex</code> on. */
@@ -409,17 +505,33 @@ public class ImageAdjustFunctions {
     return method.isString() ? method.toString() : defaultMethod;
   }
 
-  private static IExpr map(BufferedImage image, int channels, int colorChannels,
-      java.util.function.DoubleUnaryOperator operator) {
-    return new ImageExpr(
-        Pixels.fromPixels(image.getWidth(), image.getHeight(), channels, (x, y) -> {
-          float[] values = Pixels.pixel(image, x, y, channels);
-          float[] result = values.clone();
-          for (int c = 0; c < colorChannels; c++) {
-            result[c] = (float) operator.applyAsDouble(values[c]);
-          }
-          return result;
-        }), null);
+  /**
+   * The intensity of a pixel: its sample, or the weighted sum of its colour samples, as they are.
+   */
+  private static double intensity(Raster raster, int x, int y) {
+    if (raster.colorChannels() < 3) {
+      return raster.get(x, y, 0);
+    }
+    double r = raster.get(x, y, 0);
+    double g = raster.get(x, y, 1);
+    double b = raster.get(x, y, 2);
+    if (r == g && g == b) {
+      return r;
+    }
+    return 0.299 * r + 0.587 * g + 0.114 * b;
+  }
+
+  /** The image of new samples in the type and with the options of <code>source</code>. */
+  private static IExpr imageOf(Raster raster, ImageExpr source) {
+    ImageExpr image = ImageExpr.fromRaster(raster, source.getOptions(), source.sampleType());
+    return image == null ? F.NIL : image;
+  }
+
+  /** The black and white image of samples 0 and 1: a <code>"Bit"</code> image. */
+  private static IExpr bitImage(Raster raster, ImageExpr source) {
+    ImageExpr image = ImageExpr.fromRaster(raster,
+        source.getOptions().withColorSpace(S.Automatic), Pixels.BIT);
+    return image == null ? F.NIL : image;
   }
 
   public static void initialize() {
