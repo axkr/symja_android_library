@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.PackageUtil;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -864,40 +866,135 @@ public final class StringFunctions {
     }
   }
 
+  /**
+   * The unevaluated statements of a source with several lines. Every empty line which doesn't
+   * continue an unfinished statement (an open bracket or string, a trailing operator) is a
+   * <code>Null</code> statement; the line break which ends the source adds none.
+   */
+  private static List<IExpr> lineStatements(String source, EvalEngine engine) {
+    final AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+    final List<IExpr> result = new ArrayList<IExpr>();
+    final String[] lines = source.split("\n", -1);
+    final int lineCount = lines.length > 0 && lines[lines.length - 1].isEmpty() ? lines.length - 1
+        : lines.length;
+    final StringBuilder chunk = new StringBuilder();
+    for (int i = 0; i < lineCount; i++) {
+      final String line = lines[i];
+      if (line.trim().isEmpty()) {
+        if (chunk.length() == 0) {
+          result.add(S.Null);
+          continue;
+        }
+        List<ASTNode> statements = parseStatements(chunk.toString(), engine);
+        if (statements != null) {
+          statements.forEach(node -> result.add(ast2Expr.convert(node)));
+          chunk.setLength(0);
+          result.add(S.Null);
+          continue;
+        }
+      }
+      if (chunk.length() > 0) {
+        chunk.append('\n');
+      }
+      chunk.append(line);
+    }
+    if (chunk.length() > 0) {
+      for (ASTNode node : new Parser(engine.isRelaxedSyntax(), true).parseScript(chunk.toString())) {
+        result.add(ast2Expr.convert(node));
+      }
+    }
+    return result;
+  }
+
+  /** @return <code>null</code> if <code>source</code> is not complete */
+  private static List<ASTNode> parseStatements(String source, EvalEngine engine) {
+    try {
+      return new Parser(engine.isRelaxedSyntax(), true).parseScript(source);
+    } catch (SyntaxError se) {
+      return null;
+    }
+  }
+
+  /**
+   * <code>FileNameTake(name, spec)</code>: the path segments of a file name taken like
+   * <code>Take</code> takes elements. The root <code>/</code> of an absolute name is a segment of
+   * its own and a trailing separator is ignored.
+   */
   private static class FileNameTake extends AbstractFunctionEvaluator {
+
+    /** The segments of a file name; <code>"/"</code> first for an absolute name. */
+    private static List<String> segments(String fileName) {
+      final List<String> segments = new ArrayList<>();
+      final char separator = File.separatorChar;
+      int start = 0;
+      if (!fileName.isEmpty() && (fileName.charAt(0) == '/' || fileName.charAt(0) == separator)) {
+        segments.add(fileName.substring(0, 1));
+        start = 1;
+      }
+      for (int i = start; i <= fileName.length(); i++) {
+        if (i == fileName.length() || fileName.charAt(i) == '/' || fileName.charAt(i) == separator) {
+          if (i > start) {
+            segments.add(fileName.substring(start, i));
+          }
+          start = i + 1;
+        }
+      }
+      return segments;
+    }
+
+    /** The segments <code>from..to</code> (1-based, inclusive) joined to a file name. */
+    private static IExpr join(List<String> segments, int from, int to) {
+      final StringBuilder buf = new StringBuilder();
+      for (int i = from; i <= to; i++) {
+        final String segment = segments.get(i - 1);
+        if (buf.length() > 0 && buf.charAt(buf.length() - 1) != '/'
+            && buf.charAt(buf.length() - 1) != File.separatorChar) {
+          buf.append('/');
+        }
+        buf.append(segment);
+      }
+      return F.stringx(buf.toString());
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int from = 1;
-      int to = 1;
-      IExpr arg1 = ast.arg1();
-      try {
-        if (arg1.isString()) {
-          String fileName = arg1.toString();
-          String separator = "/";
-          if (ast.isAST1()) {
-            // first try Java dependent
-            int index = fileName.lastIndexOf(separator);
-            if (index >= 0) {
-              return F.stringx(fileName.substring(index + separator.length()));
-            }
-            separator = File.separator;
-            if (separator != null) {
-              // try operator system dependent
-              index = fileName.lastIndexOf(separator);
-              if (index >= 0) {
-                return F.stringx(fileName.substring(index + separator.length()));
-              }
-            }
-            return arg1;
-          }
+      final IExpr arg1 = ast.arg1();
+      if (!arg1.isString()) {
+        return F.NIL;
+      }
+      final List<String> segments = segments(arg1.toString());
+      final int size = segments.size();
+      if (ast.isAST1()) {
+        return size == 0 ? F.CEmptyString : F.stringx(segments.get(size - 1));
+      }
+      final IExpr spec = ast.arg2();
+      if (spec.isInteger()) {
+        // the first n segments, or the last -n
+        final int n = spec.toIntDefault();
+        if (F.isNotPresent(n)) {
+          return F.NIL;
         }
-
-      } catch (IndexOutOfBoundsException iob) {
-        // from substring
-        // Cannot take positions `1` through `2` in `3`.
-        return Errors.printMessage(ast.topHead(), "take", F.list(F.ZZ(from), F.ZZ(to), arg1),
-            engine);
+        if (n >= 0) {
+          return join(segments, 1, Math.min(n, size));
+        }
+        return join(segments, Math.max(1, size + n + 1), size);
+      }
+      if (spec.isList1() || spec.isList2()) {
+        final int[] positions = new int[spec.argSize()];
+        for (int i = 0; i < positions.length; i++) {
+          int position = spec.getAt(i + 1).toIntDefault();
+          if (F.isNotPresent(position)) {
+            return F.NIL;
+          }
+          positions[i] = position < 0 ? size + position + 1 : position;
+        }
+        final int from = positions[0];
+        final int to = positions[positions.length - 1];
+        if (from < 1 || to > size || from > to) {
+          // a segment which does not exist
+          return F.CEmptyString;
+        }
+        return join(segments, from, to);
       }
       return F.NIL;
     }
@@ -4207,6 +4304,12 @@ public final class StringFunctions {
                   new Parser(engine.isRelaxedSyntax(), true).parseScript(source);
               if (statements.size() > 1) {
                 return PackageUtil.evaluatePackage(statements, engine);
+              }
+            } else if (head.isPresent() && source.indexOf('\n') >= 0) {
+              // with a head the statements on separate lines become its arguments, unevaluated
+              List<IExpr> statements = lineStatements(source, engine);
+              if (statements.size() > 1) {
+                return F.mapRange(head, 0, statements.size(), i -> statements.get(i));
               }
             }
             ExprParser parser = new ExprParser(engine);

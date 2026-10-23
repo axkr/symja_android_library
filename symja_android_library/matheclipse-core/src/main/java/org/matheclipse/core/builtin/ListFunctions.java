@@ -6428,7 +6428,9 @@ public final class ListFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, F.list(F.Rule(S.MaxIterations, F.ZZ(65536))));
+    }
   }
 
   /**

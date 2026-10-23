@@ -1394,11 +1394,20 @@ public class FileFunctions {
     }
   }
 
+  /**
+   * <code>true</code> if <code>stream</code> can be read: any stream when the file system is
+   * enabled, and a stream over a string always.
+   */
+  private static boolean isReadable(IExpr stream, EvalEngine engine) {
+    return Config.isFileSystemEnabled(engine)
+        || (stream instanceof InputStreamExpr && ((InputStreamExpr) stream).isInMemory());
+  }
+
   private static final class Read extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (Config.isFileSystemEnabled(engine)) {
+      if (isReadable(ast.arg1(), engine)) {
         try {
           IExpr arg1 = ast.arg1();
           Reader reader = null;
@@ -1410,8 +1419,8 @@ public class FileFunctions {
           }
           if (reader != null) {
             if (ast.isAST1()) {
-              String str = CharStreams.toString(reader);
-              return S.ToExpression.of(engine, F.stringx(str));
+              // one expression, like Read[stream, Expression]
+              return readExpression(reader, engine);
             }
             IExpr typeExpr = ast.arg2();
             if (typeExpr.isList()) {
@@ -1440,10 +1449,10 @@ public class FileFunctions {
 
     /**
      * Read one expression: everything up to a line break which ends a complete expression. A line
-     * break inside a comment, a string or a bracket does not end it, and comments are skipped -
-     * a package file starts with a comment over several lines, and reading it a line at a time
-     * took the lines of the comment for code. When the input ends with nothing but comments and
-     * white space left, the result is <code>EndOfFile</code>.
+     * break inside a comment, a string or a bracket does not end it. A comment with no expression
+     * before the line break or the end of the input which ends it is the statement
+     * <code>Null</code>, as an empty statement is; empty lines are skipped. When the input ends with
+     * nothing but white space left, the result is <code>EndOfFile</code>.
      */
     private static IExpr readExpression(Reader reader, EvalEngine engine) throws IOException {
       StringBuilder buf = new StringBuilder();
@@ -1451,6 +1460,7 @@ public class FileFunctions {
       int bracketDepth = 0;
       boolean inString = false;
       boolean content = false;
+      boolean comment = false;
       boolean pendingParen = false;
       boolean pendingStar = false;
       while (true) {
@@ -1473,6 +1483,7 @@ public class FileFunctions {
         if (commentDepth > 0) {
           if (pendingStar && c == ')') {
             commentDepth--;
+            comment = true;
             pendingStar = false;
           } else if (pendingParen && c == '*') {
             commentDepth++;
@@ -1519,6 +1530,8 @@ public class FileFunctions {
               } catch (SyntaxError se) {
                 // not complete yet, e.g. a line which ends with an operator
               }
+            } else if (!content && comment && bracketDepth <= 0) {
+              return S.Null;
             }
             continue;
           default:
@@ -1531,7 +1544,7 @@ public class FileFunctions {
         content = true;
       }
       if (!content) {
-        return S.EndOfFile;
+        return comment && commentDepth == 0 ? S.Null : S.EndOfFile;
       }
       try {
         return new ExprParser(engine).parse(buf.toString());
@@ -1540,7 +1553,7 @@ public class FileFunctions {
       }
     }
 
-    private IExpr readTypeOrHold(IExpr arg, Reader reader, EvalEngine engine) throws IOException {
+    static IExpr readTypeOrHold(IExpr arg, Reader reader, EvalEngine engine) throws IOException {
       if (arg.isAST(S.Hold, 2)) {
         IExpr holdArg = arg.first();
         if (!holdArg.isBuiltInSymbol()) {
@@ -1561,7 +1574,7 @@ public class FileFunctions {
       return readType((IBuiltInSymbol) arg, reader, engine);
     }
 
-    private IExpr readType(IBuiltInSymbol arg2, Reader reader, EvalEngine engine)
+    private static IExpr readType(IBuiltInSymbol arg2, Reader reader, EvalEngine engine)
         throws IOException {
       int headID = arg2.ordinal();
       int numberOfChar = -1;
@@ -1581,14 +1594,7 @@ public class FileFunctions {
           case ID.Expression:
             return readExpression(reader, engine);
           case ID.Number:
-            IAST numberSeparators = F.List(F.stringx("0"), //
-                F.stringx("1"), F.stringx("2"), F.stringx("3"), F.stringx("4"), F.stringx("5"),
-                F.stringx("6"), F.stringx("7"), F.stringx("8"), F.stringx("9"));
-            String tempNumber = numberReader(reader, numberSeparators);
-            if (tempNumber == null) {
-              return S.EndOfFile;
-            }
-            return F.$str(tempNumber);
+            return readNumber(reader);
 
           case ID.Real:
             // TODO
@@ -1604,18 +1610,34 @@ public class FileFunctions {
             }
             return F.$Failed;
           case ID.String:
-            BufferedReader sReader = new BufferedReader(reader);
-            String tempStr = sReader.readLine();
-            if (tempStr == null) {
+            // the rest of the line, read one character at a time: a buffered reader over the
+            // stream would take the following lines with it
+            StringBuilder line = new StringBuilder();
+            int character = reader.read();
+            if (character < 0) {
               return S.EndOfFile;
             }
-            return F.$str(tempStr + "\n");
+            while (character >= 0 && character != '\n') {
+              line.append((char) character);
+              character = reader.read();
+            }
+            return F.$str(line.toString());
           case ID.Word:
             IExpr wordSeparators = engine.evaluate(S.WordSeparators);
+            IExpr separatorsOfRecords = engine.evaluate(S.RecordSeparators);
+            if (wordSeparators.isList() && separatorsOfRecords.isList()) {
+              // a word ends at the end of its record too
+              IASTAppendable separators =
+                  F.ListAlloc(wordSeparators.argSize() + separatorsOfRecords.argSize());
+              separators.appendArgs((IAST) wordSeparators);
+              separators.appendArgs((IAST) separatorsOfRecords);
+              wordSeparators = separators;
+            }
             if (wordSeparators.isAST()) {
               String tempWord = separatorReader(reader, (IAST) wordSeparators);
-              if (tempWord == null) {
-                return S.$Failed;
+              if (tempWord == null || tempWord.isEmpty()) {
+                // nothing but separators were left
+                return S.EndOfFile;
               }
               return F.$str(tempWord);
             }
@@ -1627,43 +1649,88 @@ public class FileFunctions {
       return F.$Failed;
     }
 
-    private static String numberReader(Reader reader, IAST wordSeparators) throws IOException {
-
-      try {
-        StringBuilder word = new StringBuilder();
-        char[] temp = new char[1];
-        reader.mark(256);
-        int numberOfChar = reader.read(temp);
-        if (numberOfChar < 0) {
-          return null;
-        }
-
-        int indx = wordSeparators.indexOf(F.stringx(temp[0]));
-        if (indx > 0) {
-          word.append(temp[0]);
-        } else {
-          reader.reset();
-          return word.toString();
-        }
-        while (true) {
-          reader.mark(256);
-          numberOfChar = reader.read(temp);
-          if (numberOfChar < 0) {
-            break;
-          }
-          indx = wordSeparators.indexOf(F.stringx(temp[0]));
-          if (indx > 0) {
-            word.append(temp[0]);
-          } else {
-            reader.reset();
-            return word.toString();
-          }
-        }
-        return word.toString();
-      } catch (IOException ioex) {
-        reader.reset();
+    /**
+     * Read a number written like <code>12</code>, <code>-3.5</code>, <code>2.5e-3</code> or
+     * <code>2.5*^-3</code> after leading white space.
+     *
+     * @return the integer or real number, <code>EndOfFile</code> if only white space was left and
+     *         <code>$Failed</code> if the next characters are no number (they stay in the stream)
+     */
+    private static IExpr readNumber(Reader reader) throws IOException {
+      int c;
+      do {
+        reader.mark(1);
+        c = reader.read();
+      } while (c >= 0 && Character.isWhitespace(c));
+      if (c < 0) {
+        return S.EndOfFile;
       }
-      return null;
+      reader.reset();
+      // the stream goes back to the start of the number and then forward over the characters
+      // which belong to it, so that a read which finds no number leaves the stream unchanged
+      reader.mark(4096);
+      final StringBuilder digits = new StringBuilder();
+      // the length of the longest prefix of the characters read which is a number
+      int numberLength = 0;
+      int consumed = 0;
+      int numberConsumed = 0;
+      boolean real = false;
+      boolean realNumber = false;
+      int state = 0; // 0 sign, 1 mantissa, 2 exponent sign, 3 exponent
+      while (consumed < 4000) {
+        c = reader.read();
+        if (c < 0) {
+          break;
+        }
+        consumed++;
+        if ((state == 0 || state == 2) && (c == '+' || c == '-')) {
+          digits.append((char) c);
+          state++;
+          continue;
+        }
+        if (Character.isDigit(c)) {
+          digits.append((char) c);
+          state = state <= 1 ? 1 : 3;
+        } else if (state <= 1 && c == '.' && !real) {
+          digits.append('.');
+          real = true;
+          if (state == 0) {
+            // ".5" has its digits still to come
+            continue;
+          }
+        } else if (state == 1 && (c == 'e' || c == 'E')) {
+          digits.append('e');
+          real = true;
+          state = 2;
+          continue;
+        } else if (state == 1 && c == '*' && reader.read() == '^') {
+          consumed++;
+          digits.append('e');
+          real = true;
+          state = 2;
+          continue;
+        } else {
+          break;
+        }
+        if (state == 1 || state == 3) {
+          // "3" and "3." and "2.5e-3" are numbers, "2.5e" and "-" are not
+          numberLength = digits.length();
+          numberConsumed = consumed;
+          realNumber = real;
+        }
+      }
+      reader.reset();
+      if (numberLength == 0) {
+        return S.$Failed;
+      }
+      reader.skip(numberConsumed);
+      final String number = digits.substring(0, numberLength);
+      try {
+        return realNumber ? F.num(Double.parseDouble(number))
+            : F.ZZ(new java.math.BigInteger(number));
+      } catch (NumberFormatException nfe) {
+        return S.$Failed;
+      }
     }
 
     private static String separatorReader(Reader reader, IAST wordSeparators) throws IOException {
@@ -1761,6 +1828,9 @@ public class FileFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1() instanceof InputStreamExpr && isReadable(ast.arg1(), engine)) {
+        return readListFromStream((InputStreamExpr) ast.arg1(), ast, engine);
+      }
       if (Config.isFileSystemEnabled(engine)) {
         try {
           final DataInput reader = getDataInput(ast.arg1(), engine);
@@ -1822,6 +1892,55 @@ public class FileFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>ReadList[stream, type, n]</code> on an open stream: <code>Read[stream, type]</code>
+     * repeated until <code>EndOfFile</code>, at most <code>n</code> times. An expression may run
+     * over several lines.
+     */
+    private static IExpr readListFromStream(InputStreamExpr stream, IAST ast, EvalEngine engine) {
+      int n = Integer.MAX_VALUE;
+      if (ast.isAST3()) {
+        n = ast.arg3().toMachineInt();
+        if (n < 0) {
+          // Non-negative machine-sized integer expected at position `2` in `1`
+          return Errors.printMessage(S.ReadList, "intnm", F.List(F.C3, ast), engine);
+        }
+      }
+      final IExpr type = ast.argSize() >= 2 ? ast.arg2() : S.Expression;
+      final IASTAppendable result = F.ListAlloc();
+      try {
+        final Reader reader = stream.getReader();
+        while (result.argSize() < n) {
+          IExpr element;
+          if (type.isList()) {
+            // a record of several types: it ends where its first part finds the end
+            final IASTAppendable record = F.ListAlloc(type.argSize());
+            for (int i = 1; i < type.size(); i++) {
+              record.append(Read.readTypeOrHold(type.getAt(i), reader, engine));
+            }
+            element = record.argSize() > 0 && record.arg1() == S.EndOfFile ? S.EndOfFile : record;
+          } else {
+            element = Read.readTypeOrHold(type, reader, engine);
+          }
+          if (element == S.EndOfFile) {
+            break;
+          }
+          if (element == S.$Failed) {
+            return S.$Failed;
+          }
+          engine.checkTimeLimit();
+          if (type == S.String && element.isString() && element.toString().isEmpty()) {
+            // the lines of a list of strings leave out the empty ones
+            continue;
+          }
+          result.append(element);
+        }
+      } catch (IOException ex) {
+        return Errors.printMessage(S.ReadList, ex, engine);
+      }
+      return result;
     }
 
     @Override
@@ -1903,14 +2022,32 @@ public class FileFunctions {
   }
 
   /**
+   * The text of a terminator made of strings only, as <code>"--"</code> or
+   * <code>"-" ~~ "-"</code>; <code>null</code> for any other pattern.
+   */
+  private static String literalTerminator(IExpr terminator) {
+    if (terminator.isString()) {
+      return terminator.toString();
+    }
+    if (terminator.isAST(S.StringExpression) && ((IAST) terminator).forAll(x -> x.isString())) {
+      StringBuilder buf = new StringBuilder();
+      ((IAST) terminator).forEach(x -> buf.append(x.toString()));
+      return buf.toString();
+    }
+    return null;
+  }
+
+  /**
    * <code>ReadString[stream]</code> and <code>ReadString[stream, terminator]</code>.
    *
    * <p>
-   * With a terminator the stream is read up to the first place it matches: the text before it is
-   * the answer, the terminator itself is consumed, and what follows stays in the stream for the
-   * next read. That is how a file written in sections is read back - a notebook is a run of cells
-   * separated by a line of dashes - and the terminator may be a string pattern rather than a
-   * literal, which is why it is turned into a regular expression here.
+   * With a terminator the stream is read up to the first place it matches, and the text before it
+   * is the answer. A literal terminator (a string, or strings joined by <code>~~</code>) stays in
+   * the stream, and a read which starts at one skips it first, so <code>"a b c"</code> is read as
+   * <code>"a"</code>, <code>"b"</code>, <code>"c"</code> and a character read in between finds the
+   * separator. Any other string pattern is consumed with the text before it: a file written in
+   * sections is read back that way - a notebook is a run of cells separated by lines of dashes,
+   * which are matched by patterns.
    *
    * @return the text read, or <code>EndOfFile</code> when the stream had nothing left
    */
@@ -1943,6 +2080,23 @@ public class FileFunctions {
       return S.EndOfFile;
     }
     if (terminator.isNIL() || terminator == S.EndOfFile) {
+      stream.pushBack("");
+      return F.stringx(rest);
+    }
+    final String literal = literalTerminator(terminator);
+    if (literal != null && !literal.isEmpty()) {
+      if (rest.startsWith(literal)) {
+        rest = rest.substring(literal.length());
+        if (rest.isEmpty()) {
+          stream.pushBack("");
+          return S.EndOfFile;
+        }
+      }
+      int index = rest.indexOf(literal);
+      if (index >= 0) {
+        stream.pushBack(rest.substring(index));
+        return F.stringx(rest.substring(0, index));
+      }
       stream.pushBack("");
       return F.stringx(rest);
     }
@@ -2159,18 +2313,11 @@ public class FileFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (Config.isFileSystemEnabled(engine)) {
-        try {
-          if (ast.isAST1()) {
-            IExpr arg1 = ast.arg1();
-            if (arg1.isString()) {
-              StringReader stringReader = new StringReader(arg1.toString());
-              return InputStreamExpr.newInstance(stringReader);
-            }
-          }
-        } catch (RuntimeException | IOException ex) {
-          Errors.rethrowsInterruptException(ex);
-          Errors.printMessage(S.StringToStream, ex);
+      // a stream over a string reads no file, so it needs no file system access
+      if (ast.isAST1()) {
+        IExpr arg1 = ast.arg1();
+        if (arg1.isString()) {
+          return InputStreamExpr.ofString(arg1.toString());
         }
       }
       return F.NIL;

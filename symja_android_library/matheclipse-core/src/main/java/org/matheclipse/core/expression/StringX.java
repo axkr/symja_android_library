@@ -257,7 +257,7 @@ public class StringX implements IStringX {
   @Override
   public int compareTo(final IExpr expr) {
     if (expr instanceof StringX) {
-      return IStringX.US_COLLATOR.compare(fString, ((StringX) expr).fString);
+      return StringCollation.INSTANCE.compare(fString, ((StringX) expr).fString);
     }
     return IStringX.super.compareTo(expr);
   }
@@ -268,7 +268,7 @@ public class StringX implements IStringX {
    */
   public int compareTo(final StringX anotherString) {
     // sort lexicographically
-    return IStringX.US_COLLATOR.compare(fString, anotherString.fString);
+    return StringCollation.INSTANCE.compare(fString, anotherString.fString);
   }
 
   /**

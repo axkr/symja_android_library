@@ -79,6 +79,7 @@ public class ConstantDefinitions {
       // }
 
       S.$Assumptions.setEvaluator(new $Assumptions());
+      S.$MessageList.setEvaluator(new $MessageList());
       S.$Messages.setEvaluator(new $Messages());
       S.$Output.setEvaluator(new $Output());
       S.$BaseDirectory.setEvaluator(new $BaseDirectory());
@@ -272,6 +273,28 @@ public class ConstantDefinitions {
         }
       }
       return F.NIL;
+    }
+  }
+
+  /**
+   * <code>$MessageList</code> - the names of the messages generated while it holds a list, as in
+   * <code>Block[{$MessageList = {}}, ...]</code>; <code>{}</code> when nothing was assigned.
+   */
+  private static class $MessageList extends AbstractSymbolEvaluator
+      implements ISetValueEvaluator {
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      // the value belongs to the engine
+      IExpr value = engine.getDollarValue(S.$MessageList);
+      return value.isPresent() ? value : F.CEmptyList;
+    }
+
+    @Override
+    public IExpr evaluateSet(IExpr rightHandSide, boolean setDelayed, final EvalEngine engine) {
+      EvalEngine.incEpoch();
+      engine.setDollarValue(S.$MessageList, rightHandSide);
+      return rightHandSide;
     }
   }
 

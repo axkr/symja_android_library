@@ -184,7 +184,9 @@ public final class RulesData implements Serializable {
   private volatile List<IPatternMatcher> fPatternDownRules;
 
   /**
-   * Sorted int array of the priorities of the corresponding <code>fPatternDownRules</code> matcher.
+   * The priorities of the corresponding <code>fPatternDownRules</code> matchers. They ascend except
+   * around rules with a run of arguments, which {@link #insertMatcher(PatternMatcher)} places by
+   * generality.
    */
   private IntArrayList fPriorityDownRules;
 
@@ -1187,9 +1189,12 @@ public final class RulesData implements Serializable {
    * Insert a new (or replace an old equivalent) pattern matching rule in the rules data structure.
    *
    * <p>
-   * <code>fPriorityDownRules</code> is sorted ascending, so the insert position is found by
-   * binary search. Rules with the same priority keep their insertion order; within that run an
-   * equivalent rule is replaced instead of appended.
+   * The new rule goes before the first rule it is to be tried before; otherwise it is appended. Of
+   * two rules without a run of arguments (<code>__</code>, <code>___</code>) which can match the
+   * same expression, the one with the lower priority value is tried first. A rule with such a run
+   * is tried before another rule only if that one is more general (see {@link RuleGenerality}), so
+   * two rules of which neither is more general keep the order of their definitions. An equivalent
+   * rule with the same priority is replaced instead.
    *
    * @param newPatternMatcher the new pattern matching rule
    */
@@ -1204,51 +1209,69 @@ public final class RulesData implements Serializable {
     }
     final List<IPatternMatcher> rules = new ArrayList<IPatternMatcher>(fPatternDownRules);
     final int lhsPriority = newPatternMatcher.getLHSPriority();
-    // first index whose priority is greater than lhsPriority
-    int low = 0;
-    int high = fPriorityDownRules.size();
-    while (low < high) {
-      int mid = (low + high) >>> 1;
-      if (fPriorityDownRules.getInt(mid) <= lhsPriority) {
-        low = mid + 1;
-      } else {
-        high = mid;
-      }
-    }
-    final int insertPosition = low;
-    // the run of rules with the same priority ends at insertPosition
-    int runStart = insertPosition;
-    while (runStart > 0 && fPriorityDownRules.getInt(runStart - 1) == lhsPriority) {
-      runStart--;
-    }
-    if (runStart < insertPosition) {
-      final int patternHash = newPatternMatcher.getPatternHash();
-      IPatternMap pmSlotValuesMap = null;
-      IExpr pmRHS = null;
-      for (int i = runStart; i < insertPosition; i++) {
-        final IPatternMatcher matcher = rules.get(i);
-        // a hash of 0 means "no pre-filtering" on either side
-        if (patternHash == 0 || matcher.getPatternHash() == 0
-            || matcher.getPatternHash() == patternHash) {
-          if (IPatternMatcher.EQUIVALENCE_COMPARATOR.compare(newPatternMatcher, matcher) == 0) {
-            if (pmSlotValuesMap == null) {
-              pmSlotValuesMap = newPatternMatcher.getPatternMap().copy();
-              pmSlotValuesMap.initSlotValues();
-              pmRHS = pmSlotValuesMap.substituteSymbols(newPatternMatcher.getRHS(), F.NIL);
-            }
-            if (equivalentSlots(matcher, pmSlotValuesMap.size(), pmRHS)) {
-              rules.set(i, newPatternMatcher);
-              publishPatternDownRules(rules);
-              return newPatternMatcher;
-            }
+    final boolean positional = isPositional(newPatternMatcher.getLHS());
+    final boolean newIsRun = positional && newPatternMatcher.isArgumentRunRule();
+    final int patternHash = newPatternMatcher.getPatternHash();
+    IPatternMap pmSlotValuesMap = null;
+    IExpr pmRHS = null;
+    int insertPosition = -1;
+    for (int i = 0; i < rules.size(); i++) {
+      final IPatternMatcher matcher = rules.get(i);
+      final int priority = fPriorityDownRules.getInt(i);
+      // a hash of 0 means "no pre-filtering" on either side
+      if (priority == lhsPriority && (patternHash == 0 || matcher.getPatternHash() == 0
+          || matcher.getPatternHash() == patternHash)) {
+        if (IPatternMatcher.EQUIVALENCE_COMPARATOR.compare(newPatternMatcher, matcher) == 0) {
+          if (pmSlotValuesMap == null) {
+            pmSlotValuesMap = newPatternMatcher.getPatternMap().copy();
+            pmSlotValuesMap.initSlotValues();
+            pmRHS = pmSlotValuesMap.substituteSymbols(newPatternMatcher.getRHS(), F.NIL);
+          }
+          if (equivalentSlots(matcher, pmSlotValuesMap.size(), pmRHS)) {
+            rules.set(i, newPatternMatcher);
+            publishPatternDownRules(rules);
+            return newPatternMatcher;
           }
         }
       }
+      if (insertPosition < 0) {
+        final boolean byGenerality = newIsRun || (positional && matcher instanceof PatternMatcher
+            && ((PatternMatcher) matcher).isArgumentRunRule());
+        if (byGenerality ? RuleGenerality.covers(matcher.getLHS(), newPatternMatcher.getLHS())
+            : lhsPriority < priority && (!positional
+                || RuleGenerality.mayOverlap(matcher.getLHS(), newPatternMatcher.getLHS()))) {
+          insertPosition = i;
+        }
+      }
+    }
+    if (insertPosition < 0) {
+      insertPosition = rules.size();
     }
     rules.add(insertPosition, newPatternMatcher);
     fPriorityDownRules.add(insertPosition, lhsPriority);
     publishPatternDownRules(rules);
     return newPatternMatcher;
+  }
+
+  /**
+   * Are the arguments of <code>lhs</code> matched position by position? Not for a head with the
+   * attribute <code>Flat</code>, <code>Orderless</code> or <code>OneIdentity</code>; rules with a
+   * run of arguments for such a head are tried after the others.
+   */
+  private static boolean isPositional(IExpr lhs) {
+    while (lhs.isCondition() || lhs.isAST(S.HoldPattern, 2)) {
+      lhs = ((IAST) lhs).arg1();
+    }
+    if (!lhs.isAST()) {
+      return false;
+    }
+    IExpr head = lhs.head();
+    if (!head.isSymbol()) {
+      return true;
+    }
+    ISymbol symbol = (ISymbol) head;
+    return !(symbol.hasFlatAttribute() || symbol.hasOrderlessAttribute()
+        || symbol.hasOneIdentityAttribute());
   }
 
   /**

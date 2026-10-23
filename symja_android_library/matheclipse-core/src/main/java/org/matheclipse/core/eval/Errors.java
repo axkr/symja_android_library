@@ -1082,6 +1082,15 @@ public class Errors {
     if (engine.isQuietMode()) {
       return;
     }
+    // the value of $MessageList belongs to this engine
+    final IExpr messageList = engine.getDollarValue(S.$MessageList);
+    if (messageList.isList()) {
+      // Block[{$MessageList = {}}, ...] collects the names of the messages generated inside;
+      // a changed value invalidates what was cached for the old one
+      EvalEngine.incEpoch();
+      engine.setDollarValue(S.$MessageList, ((IAST) messageList)
+          .appendClone(F.HoldForm(F.binaryAST2(S.MessageName, symbol, F.stringx(tag)))));
+    }
     ArrayDeque<CheckScope> scopes = CHECK_SCOPES.get();
     if (scopes.isEmpty()) {
       return;

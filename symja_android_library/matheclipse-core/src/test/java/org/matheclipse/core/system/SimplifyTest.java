@@ -14,6 +14,34 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSpecialFunctionRecurrences() {
+    // Simplify leaves recurrences and shifts of special functions alone
+    check("Simplify({BesselJ(m - 1, y) + BesselJ(m + 1, y), Gamma(y + 2)/Gamma(y)})", //
+        "{BesselJ(-1+m,y)+BesselJ(1+m,y),Gamma(2+y)/Gamma(y)}");
+    // three term recurrences rewrite neighbouring orders onto two of them
+    check("FullSimplify({BesselJ(m - 1, y) + BesselJ(m + 1, y), BesselJ(-3/4, y) + BesselJ(5/4, y) - 1/(2*y)*BesselJ(1/4, y)})", //
+        "{(2*m*BesselJ(m,y))/y,0}");
+    check("FullSimplify({(m + 2)*LegendreP(m + 2, y) - (2*m + 3)*y*LegendreP(m + 1, y) + (m + 1)*LegendreP(m, y), HermiteH(m + 2, y) - 2*y*HermiteH(m + 1, y) + 2*(m + 1)*HermiteH(m, y), ChebyshevU(m + 1, y) + ChebyshevU(m - 1, y)})", //
+        "{0,0,2*y*ChebyshevU(m,y)}");
+    // first order recurrences reduce quotients and sums
+    check("FullSimplify({Gamma(y + 3)/Gamma(y + 1), Pochhammer(c, m + 2)/Pochhammer(c, m), Gamma(y + 2) - y*Gamma(y + 1), PolyGamma(0, y + 2) - PolyGamma(0, y)})", //
+        "{(1+y)*(2+y),(c+m)*(1+c+m),Gamma(1+y),1/y+1/(1+y)}");
+    // orders which don't differ by an integer, or are not neighbours of a recurrence, stay
+    check("FullSimplify({BesselJ(1/4, y) + BesselJ(5/4, y), Gamma(y) + Gamma(y + 1/2), BesselJ(m, y) + BesselY(m + 1, y)})", //
+        "{BesselJ(1/4,y)+BesselJ(5/4,y),Gamma(1/2+y)+Gamma(y),BesselJ(m,y)+BesselY(1+m,y)}");
+  }
+
+  @Test
+  public void testSpecialFunctionCombinations() {
+    // Casoratians and Wronskians
+    check("FullSimplify({BesselJ(m + 1, 3*y)*BesselY(m, 3*y) - BesselJ(m, 3*y)*BesselY(m + 1, 3*y), BesselI(m + 1, y)*BesselK(m, y) + BesselI(m, y)*BesselK(m + 1, y), AiryAi(2*y)*AiryBiPrime(2*y) - AiryAiPrime(2*y)*AiryBi(2*y)})", //
+        "{2/(3*Pi*y),1/y,1/Pi}");
+    // Kummer's transformation, Legendre's relation, reflections
+    check("FullSimplify({Hypergeometric1F1(c, d, 2*y) - E^(2*y)*Hypergeometric1F1(d - c, d, -2*y), EllipticE(2/7)*EllipticK(5/7) + EllipticE(5/7)*EllipticK(2/7) - EllipticK(2/7)*EllipticK(5/7), PolyGamma(0, 1 - y) - PolyGamma(0, y), Erfc(-2*y) - Erfc(2*y)})", //
+        "{0,Pi/2,Pi*Cot(Pi*y),2*Erf(2*y)}");
+  }
+
+  @Test
   public void testFullSimplify() {
     // TODO
     // check("FullSimplify(a*b*c/Abs(b))", //

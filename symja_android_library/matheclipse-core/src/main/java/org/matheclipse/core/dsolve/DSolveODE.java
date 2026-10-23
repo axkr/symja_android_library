@@ -8,6 +8,7 @@ import org.matheclipse.core.basic.MachineProfile;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SpecialFunctionIdentities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -5091,6 +5092,11 @@ final class DSolveODE {
     // of a solution of the homogeneous equation recognizable, so that the arbitrary constants can
     // absorb them instead of the answer carrying them along.
     IExpr result = engine.evaluate(F.Expand(particular));
+    // a Casoratian of the basis, like Pi/2*(J1*Y0-J0*Y1) == 1/x for Bessel functions, collapses
+    IExpr identities = SpecialFunctionIdentities.simplify(result, engine);
+    if (identities.isPresent() && identities.leafCount() < result.leafCount()) {
+      result = identities;
+    }
     IExpr reduced = engine.evaluate(F.Expand(F.TrigReduce(result)));
     return reduced.isPresent() && reduced.leafCount() <= result.leafCount() ? reduced : result;
   }

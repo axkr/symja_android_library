@@ -330,14 +330,21 @@ public class IOFunctions {
               return S.Null;
             }
             IExpr temp = Errors.message(symbol, messageShortcut, ast, engine.getOutputSizeLimit());
-            if (temp.isPresent()) {
-              // a generated message, which an enclosing Check sees
-              Errors.noteMessage(symbol, messageShortcut, engine);
-              if (!Errors.isSilenced(engine)) {
-                engine.getErrorPrintStream().append(temp.toString() + "\n");
+            if (temp.isNIL()) {
+              // a tag without a text is still a message; its arguments follow in parentheses
+              StringBuilder buf = new StringBuilder(symbol.toString());
+              buf.append(": -- Message text not found --");
+              for (int i = 2; i < ast.size(); i++) {
+                buf.append(" (").append(ast.get(i).toString()).append(')');
               }
-              return temp;
+              temp = F.stringx(buf.toString());
             }
+            // a generated message, which an enclosing Check sees
+            Errors.noteMessage(symbol, messageShortcut, engine);
+            if (!Errors.isSilenced(engine)) {
+              engine.getErrorPrintStream().append(temp.toString() + "\n");
+            }
+            return temp;
           }
           return Errors.message(S.General, messageShortcut, ast, engine.getOutputSizeLimit());
         }

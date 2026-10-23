@@ -2,7 +2,7 @@
 !True	Not(True)
 !a! //FullForm	FullForm(Not(Factorial(a)))
 !b	Not(b)
-"Attributes(f)	Attributes(f
+"Attributes(f)	!syntax@14: string - end of string not reached.
 "Java" <> ToString(8)	StringJoin(Java, ToString(8))
 "a string" // InputForm	InputForm(a string)
 "a" != "a"	Unequal(a, a)
@@ -3872,7 +3872,7 @@ SelectComponents(x)	SelectComponents(x)
 SelectFirst({-3, 0, 1, 3, a}, #>0 &)	SelectFirst(List(-3, 0, 1, 3, a), Function(Greater(Slot(1), 0)))
 SelectFirst({-3, 0, 1, 3, a}, #>3 &)	SelectFirst(List(-3, 0, 1, 3, a), Function(Greater(Slot(1), 3)))
 SemanticImport("./data/test.csv")	SemanticImport(./data/test.csv)
-SemanticImportString("Products,Sales,Market_Share	!syntax@50: ')' expected.
+SemanticImportString("Products,Sales,Market_Share	!syntax@49: string - end of string not reached.
 SeparateBoundaries(x)	SeparateBoundaries(x)
 SequenceAlignment("BANANA", "ANANAS")	SequenceAlignment(BANANA, ANANAS)
 SequenceAlignment("aXYb", "aZWb")	SequenceAlignment(aXYb, aZWb)

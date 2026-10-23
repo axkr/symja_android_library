@@ -308,10 +308,78 @@ public final class HolonomicIntegration {
       if (result.isPresent() && verified(result, f, x, engine)) {
         return result;
       }
+      result = besselSquare(f, x, engine);
+      if (result.isPresent()) {
+        return result;
+      }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }
     return F.NIL;
+  }
+
+  /**
+   * The square of a Bessel function <code>c*BesselJ(n,u)^2</code> or <code>c*BesselI(n,u)^2</code>
+   * with <code>u = a+b*x</code>. Its series is a <code>1F2</code> in <code>u^2</code>, so the
+   * antiderivative is
+   *
+   * <pre>
+   * c * 2^(-1-2*n) * u^(1+2*n) * HypergeometricPFQ({1/2+n,1/2+n},{1+n,3/2+n,1+2*n},-+u^2)
+   *   / ((1/2+n) * Gamma(1+n)^2 * b)
+   * </pre>
+   *
+   * with <code>-u^2</code> for <code>BesselJ</code> and <code>u^2</code> for <code>BesselI</code>.
+   * Orders with <code>1+2*n</code> zero or a negative integer, where the formula has no value, are
+   * left out.
+   */
+  private static IExpr besselSquare(IExpr f, IExpr x, EvalEngine engine) {
+    IExpr coefficient = F.C1;
+    IExpr square = f;
+    if (f.isTimes()) {
+      IASTAppendable free = F.TimesAlloc(((IAST) f).argSize());
+      square = F.NIL;
+      for (IExpr factor : (IAST) f) {
+        if (factor.isFree(x)) {
+          free.append(factor);
+        } else if (square.isPresent()) {
+          return F.NIL;
+        } else {
+          square = factor;
+        }
+      }
+      if (square.isNIL()) {
+        return F.NIL;
+      }
+      coefficient = free.oneIdentity1();
+    }
+    if (!square.isPower() || !square.exponent().isInteger() || !square.exponent().equals(F.C2)) {
+      return F.NIL;
+    }
+    IExpr bessel = square.base();
+    final boolean modified = bessel.isAST(S.BesselI, 3);
+    if (!modified && !bessel.isAST(S.BesselJ, 3)) {
+      return F.NIL;
+    }
+    IExpr n = bessel.first();
+    IExpr u = bessel.second();
+    if (!n.isFree(x)) {
+      return F.NIL;
+    }
+    IExpr b = engine.evaluate(F.D(u, x));
+    if (!b.isFree(x) || b.isZero()) {
+      return F.NIL;
+    }
+    IExpr lowest = engine.evaluate(F.Plus(F.C1, F.Times(F.C2, n)));
+    if (lowest.isInteger() && !lowest.isPositive()) {
+      return F.NIL;
+    }
+    IExpr upper = F.Plus(F.C1D2, n);
+    IExpr parameters1 = F.list(upper, upper);
+    IExpr parameters2 = F.list(F.Plus(F.C1, n), F.Plus(F.C3D2, n), lowest);
+    IExpr z = modified ? F.Sqr(u) : F.Negate(F.Sqr(u));
+    return engine.evaluate(F.Times(coefficient, F.Power(F.C2, F.Plus(F.CN1, F.Times(F.CN2, n))),
+        F.Power(u, lowest), F.HypergeometricPFQ(parameters1, parameters2, z),
+        F.Power(F.Times(upper, F.Sqr(F.Gamma(F.Plus(F.C1, n))), b), F.CN1)));
   }
 
   // ---------------------------------------------------------------------------------------------

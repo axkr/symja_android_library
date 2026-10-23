@@ -9,6 +9,24 @@ import org.matheclipse.core.eval.EvalEngine;
 /** Tests for string functions */
 public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
+  /**
+   * Strings are ordered by their letters and digits first, then by accents, punctuation and case.
+   */
+  @Test
+  public void testStringCollation() {
+    check("Sort({\"q\", \"P\", \"p\", \"-p\", \"p?\", \"p.q\", \"pq\", \"pQ\", \"Pq\", \"pq,\", \"7\", \"70\", \"8\", \".z\", \"y\", \"\", \" \"}) // InputForm", //
+        "{\"\",\" \",\"7\",\"70\",\"8\",\"-p\",\"p\",\"P\",\"p?\",\"p.q\",\"pq\",\"pQ\",\"Pq\",\"pq,\",\"q\",\"y\",\".z\"}");
+    check("Sort({\"o\", \"\u00F6\", \"n\", \"$\", \"m$\", \"mn\"}) // InputForm", //
+        "{\"mn\",\"m$\",\"n\",\"o\",\"\u00F6\",\"$\"}");
+    check("Sort({\"..\", \"!\", \" \", \".\"}) // InputForm", //
+        "{\"!\",\".\",\" \",\"..\"}");
+    // other characters than ASCII punctuation count, after the letters
+    check("Sort({\"m\u2022n\", \"mn\", \"m+n\", \"m\u20ACn\", \"m n\", \"\u03B3\", \"y\"}) // InputForm", //
+        "{\"m+n\",\"m n\",\"mn\",\"m\u2022n\",\"m\u20ACn\",\"y\",\"\u03B3\"}");
+    check("{Order(\".k\", \"j.k\"), Order(\"j\", \"J\"), Order(\"K\", \"j\"), OrderedQ({\"j\", \"K\", \"l\"}), Union({\"K\", \"j\", \"J\", \"k\"})}", //
+        "{-1,1,-1,True,{j,J,k,K}}");
+  }
+
   @Test
   public void testCreateUUID() {
     // check("CreateUUID()", //
@@ -130,6 +148,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
   public void testFileNameTake() {
     check("FileNameTake(\"/a/b/c.txt\")", //
         "c.txt");
+    // the segments are taken like elements by Take; the root of an absolute name is one of them
+    check("{FileNameTake(\"/u/v/w.dat\", 1), FileNameTake(\"/u/v/w.dat\", 3), FileNameTake(\"/u/v/w.dat\", -1), FileNameTake(\"/u/v/w.dat\", {3}), FileNameTake(\"/u/v/w.dat\", {2, 3}), FileNameTake(\"u/v/\", 1), FileNameTake(\"/u/v/w.dat\", {9})} // InputForm", //
+        "{\"/\",\"/u/v\",\"w.dat\",\"v\",\"u/v\",\"u\",\"\"}");
   }
 
   @Test

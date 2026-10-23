@@ -77,6 +77,10 @@ public class ExprParser extends Scanner {
    * @return <code>true</code> if the string is valid Symja syntax
    */
   public static boolean isSyntax(final String str, EvalEngine engine) {
+    if (str.isEmpty()) {
+      // no input at all is no expression, unlike a blank or a comment
+      return false;
+    }
     try {
       ExprParser fParser = new ExprParser(engine);
       final IExpr parsedExpression = fParser.parse(str);

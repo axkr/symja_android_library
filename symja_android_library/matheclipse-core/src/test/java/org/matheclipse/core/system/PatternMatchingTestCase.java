@@ -378,11 +378,53 @@ public class PatternMatchingTestCase {
     check("r[0] := True; r[x_Plus] := And @@ (r /@ List @@ x); r[g[i___]] := EvenQ[i]; "
         + "r[_] := False; {r[g[2]], r[g[2]+g[4]], r[g[3]], r[1]}", //
         "{True,True,False,False}");
-    // a sequence standing for arguments of the defined function still goes last
+    // a sequence standing for arguments of the defined function goes after the narrower rule
     check("q[x___] := many; q[x_] := one; {q[1], q[1,2]}", //
         "{one,many}");
     check("q2[x_][y___] := many; q2[x_][y_] := one; {q2[1][2], q2[1][2,3]}", //
         "{one,many}");
+  }
+
+  /**
+   * A rule with a run of arguments goes before an older rule only if that one is more general; of
+   * two rules where neither is, the older one is tried first.
+   */
+  @Test
+  public void testArgumentRunRuleOrder() {
+    // neither is more general: several keys against a key list and any head
+    check("ar1[r_, k__String, t : _String | _StringExpression] := 1; "
+        + "ar1[r_, k : _String | {__String}, t : _Function | _Symbol | _[___]] := 2; "
+        + "{ar1[x, \"u\", \"v\" ~~ ___], ar1[x, \"u\", \"v\"], ar1[x, \"u\", h[2]], "
+        + "ar1[x, {\"u\", \"w\"}, h[2]]}", //
+        "{1,1,2,2}");
+    // rules with other numbers of arguments don't decide where the new rule goes
+    check("am[a_Association, p_Association] := 0; am[p_Association][a_Association] := am[a, p]; "
+        + "am[r_Association, k__String, t : _String | _StringExpression] := 1; "
+        + "am[r_Association, k__String, t_Association] := 2; "
+        + "am[r_Association, k : _String | {__String}, t : _Function | _Symbol | _[___]] := 3; "
+        + "{am[<|\"u\" -> \"v.txt\"|>, \"u\", ___ ~~ \".txt\"], am[<|\"u\" -> 1|>, \"u\", h], "
+        + "am[<|\"u\" -> <||>|>, \"u\", <||>]}", //
+        "{1,3,2}");
+    check("ar2[k__Integer, t_List] := 1; ar2[k_Integer, t_] := 2; {ar2[3, {}], ar2[3, x]}", //
+        "{1,2}");
+    check("ar3[k_Integer, t_] := 2; ar3[k__Integer, t_List] := 1; {ar3[3, {}], ar3[3, 4, {}]}", //
+        "{2,1}");
+    check("ar4[k__, t_Real] := 1; ar4[k_, t_] := 2; {ar4[a, 1.5], ar4[a, b]}", //
+        "{1,2}");
+    check("ar5[y_] := 2; ar5[y__Symbol] := 1; {ar5[a], ar5[a, b]}", //
+        "{2,1}");
+    // the older rule is more general in every argument: the new one goes first, but after an
+    // older rule which is not more general
+    check("ar6[k__Symbol, t_] := 1; ar6[k_Symbol, t_] := 2; {ar6[a, 7], ar6[a, b, 7]}", //
+        "{2,1}");
+    check("ar7[x___] := 0; ar7[x__Integer] := 1; ar7[x_Integer, y_] := 2; "
+        + "{ar7[1, a], ar7[1, 2], ar7[a], ar7[]}", //
+        "{2,1,0,0}");
+    check("DownValues[ar7]", //
+        "{HoldPattern[ar7[x__Integer]]:>1,HoldPattern[ar7[x_Integer,y_]]:>2,HoldPattern[ar7[x___]]:>0}");
+    // a repeated name matches less than its shape: no reordering
+    check("ar8[x__, x__] := 1; ar8[a_, b_] := 2; {ar8[c, c], ar8[c, d]}", //
+        "{1,2}");
   }
 
   /** <code>/:</code> is right-associative like <code>:=</code>: a definition may make an upvalue. */

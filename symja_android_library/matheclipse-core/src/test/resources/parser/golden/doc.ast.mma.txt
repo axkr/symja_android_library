@@ -2,7 +2,7 @@
 !True	Not(True)
 !a! //FullForm	FullForm(Not(Factorial(a)))
 !b	Not(b)
-"Attributes(f)	Attributes(f
+"Attributes(f)	!syntax@14: string - end of string not reached.
 "Java" <> ToString(8)	Times(StringJoin(Java, ToString), 8)
 "a string" // InputForm	InputForm(a string)
 "a" != "a"	Unequal(a, a)
@@ -1221,7 +1221,7 @@ DiscreteRatio(k!, k)	!syntax@17: ')' expected.
 DiscreteShift(n^2, n)	!syntax@18: ')' expected.
 Discriminant(a*x^2+b*x+c, x, Modulus->3)	!syntax@25: ')' expected.
 Discriminant(a*x^2+b*x+c,x)	!syntax@25: ')' expected.
-Dispatch({"a" -> 1, "b" -> 2, "c" -> 3}) // Normal // InputForm", //	Times(InputForm, , /)[Normal(Times(Dispatch, List(Rule(a, 1), Rule(b, 2), Rule(c, 3))))]
+Dispatch({"a" -> 1, "b" -> 2, "c" -> 3}) // Normal // InputForm", //	!syntax@68: string - end of string not reached.
 DisplayAllSteps(x)	Times(DisplayAllSteps, x)
 DistanceTransform(x)	Times(DistanceTransform, x)
 Distribute((a+b)*(x+y+z))	Times(Distribute, Times(Plus(a, b), Plus(x, y, z)))
@@ -2411,7 +2411,7 @@ LetterNumber("B")	Times(LetterNumber, B)
 LetterNumber("b")	Times(LetterNumber, b)
 LetterNumber("dzs","Hungarian")	!syntax@19: ')' expected.
 LetterNumber("ij", "Dutch")	!syntax@18: ')' expected.
-LetterQ("7")", //	Times(Times(LetterQ, 7), , /)
+LetterQ("7")", //	!syntax@17: string - end of string not reached.
 LetterQ("k")	Times(LetterQ, k)
 Level(a + b ^ 3 * f(2 x ^ 2), {-1})	!syntax@29: ')' expected.
 Level(a ^ 2 + 2 * b, {-1}, Heads -> True)	!syntax@20: ')' expected.
@@ -3872,7 +3872,7 @@ SelectComponents(x)	Times(SelectComponents, x)
 SelectFirst({-3, 0, 1, 3, a}, #>0 &)	!syntax@29: ')' expected.
 SelectFirst({-3, 0, 1, 3, a}, #>3 &)	!syntax@29: ')' expected.
 SemanticImport("./data/test.csv")	Times(SemanticImport, ./data/test.csv)
-SemanticImportString("Products,Sales,Market_Share	!syntax@50: ')' expected.
+SemanticImportString("Products,Sales,Market_Share	!syntax@49: string - end of string not reached.
 SeparateBoundaries(x)	Times(SeparateBoundaries, x)
 SequenceAlignment("BANANA", "ANANAS")	!syntax@27: ')' expected.
 SequenceAlignment("aXYb", "aZWb")	!syntax@25: ')' expected.
@@ -5102,7 +5102,7 @@ z == ProductLog(z) * E ^ ProductLog(z)	Equal(z, Times(Times(Times(ProductLog, z)
 {a} != {a}	Unequal(List(a), List(a))
 {f(2),g(7)}	List(Times(f, 2), Times(g, 7))
 {gcdVal, factors} = ExtendedGCD(Sequence @@ numbers)	Set(List(gcdVal, factors), Times(ExtendedGCD, Apply(Sequence, numbers)))
-{p, h} = HessenbergDecomposition({{2.0,5,8,7},{5,2,2,8},{7,5,6,6},{5,4,4,8}})", //	Set(List(p, h), Times(Times(HessenbergDecomposition, List(List(2.0, 5, 8, 7), List(5, 2, 2, 8), List(7, 5, 6, 6), List(5, 4, 4, 8))), , /))
+{p, h} = HessenbergDecomposition({{2.0,5,8,7},{5,2,2,8},{7,5,6,6},{5,4,4,8}})", //	!syntax@82: string - end of string not reached.
 {u, r, v} = SmithDecomposition({{1,2,3},{4,5,6},{7,8,9}});	CompoundExpression(Set(List(u, r, v), Times(SmithDecomposition, List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9)))), Null)
 {u, v} = RandomReal(1, {2, 6})	!syntax@22: ')' expected.
 {x,x^2,y} /. x->3	ReplaceAll(List(x, Power(x, 2), y), Rule(x, 3))

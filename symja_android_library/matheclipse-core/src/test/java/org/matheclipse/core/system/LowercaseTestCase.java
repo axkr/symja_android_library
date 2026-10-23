@@ -5511,6 +5511,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Syntax error in line: 1 - Unknown unicode longname Fake.\n" //
             + "StringLength(\"\\[Fake]\")\n" //
             + "               ^");
+    // after a known name, an escaped backslash and an unknown name stay as written
+    check("ToCharacterCode({\"\\[Alpha]\", \"\\\\[Beta]x\"})", //
+        "{{945},{92,91,66,101,116,97,93,120}}");
+    check("StringLength(\"\\[Alpha]\\[Fake]\")", //
+        "Syntax error in line: 1 - Unknown unicode longname Fake.\n" //
+            + "StringLength(\"α\\[Fake]\")\n" //
+            + "                ^");
+    check("ToCharacterCode(\"\\[Gamma]\\:03b4\\.41\\[ShortUpArrow]\\[Application]\")", //
+        "{947,948,65,62762,62768}");
   }
 
   @Test
@@ -19485,6 +19494,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMessage() {
+    // a tag without a text, and the names collected in $MessageList
+    check("Message(mt::nothere, 4, 5)", //
+        "mt: -- Message text not found -- (4) (5)");
+    check("mt::w = \"warn `1`\"; Block({$MessageList = {}}, Message(mt::w, 3); Quiet(Message(mt::w, 4)); $MessageList) // FullForm", //
+        "List(HoldForm(MessageName(mt, \"w\")))");
     check("Message(f::argx, 1, 2)", //
         "f: 1 called with 2 arguments; 1 argument is expected.");
     check("a::b:=\"Hello world\"", //
@@ -22016,6 +22030,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testReplaceRepeated() {
+    check("Options(ReplaceRepeated)", //
+        "{MaxIterations->65536}");
     check("ReplaceRepeated(x, x -> x + 1, MaxIterations -> 4)", //
         "4+x");
     // example from https://en.wikipedia.org/wiki/Wolfram_Language
@@ -29482,6 +29498,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSignature() {
+    // the arguments of any head
+    check("{Signature(g(c, a, b)), Signature(g(b, a)), Signature(g(a, a))}", //
+        "{1,-1,0}");
     check("Signature({1,2,3,4})", //
         "1");
     check("Signature({1,4,3,2})", //
@@ -31135,6 +31154,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSyntaxQ() {
+    // no input at all, and a string without its closing quote, are no expression
+    check("{SyntaxQ(\"\"), SyntaxQ(\"\\\"xyz\"), SyntaxQ(\"\\\"xyz\\\"\"), SyntaxQ(\" \"), SyntaxQ(\"(* only *)\")}", //
+        "{False,False,True,True,True}");
     check("SyntaxQ(\"Integrate(f(x),{x,0,10})\")", //
         "True");
     check("SyntaxQ(\"Integrate(f(x),{x,0,10)\")", //
@@ -32672,6 +32694,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testToExpression() {
+    // with a head, the statements on separate lines are its arguments
+    check("FullForm(ToExpression(\"u = 7\\n v = u + 2\", InputForm, Hold))", //
+        "Hold(Set(u, 7), Set(v, Plus(u, 2)))");
+    check("ToExpression(\"p\\nq\", InputForm, g)", //
+        "g(p,q)");
+    // every empty line is a Null statement, a leading one too; the final line break adds none
+    check("ToExpression(\"p\\n\\nq\\nr\", InputForm, g)", //
+        "g(p,Null,q,r)");
+    check("{ToExpression(\"p\\n\\n\\nq\", InputForm, g), ToExpression(\"\\np\\nq\\n\", InputForm, g), ToExpression(\"p\\n \\t\\nq\", InputForm, g)}", //
+        "{g(p,Null,Null,q),g(Null,p,q),g(p,Null,q)}");
+    // an empty line inside a string or a bracket separates nothing
+    check("ToExpression(\"{p,\\n\\nq}\\nr\", InputForm, g)", //
+        "g({p,q},r)");
     // TODO print syntax error to error stream
     check("ToExpression(\"1+2}\")", //
         "$Failed");

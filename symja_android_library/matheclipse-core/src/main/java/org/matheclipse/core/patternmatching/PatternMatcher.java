@@ -688,6 +688,15 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   }
 
   /**
+   * Does a <code>__</code> or <code>___</code> style pattern stand for arguments of the left-hand
+   * side? Such a rule is not placed by its priority but by {@link RuleGenerality}.
+   */
+  public boolean isArgumentRunRule() {
+    return fLhsPatternExpr.hasFlag(Flag.CONTAINS_PATTERN_SEQUENCE)
+        && matchesArgumentRun(fLhsPatternExpr);
+  }
+
+  /**
    * Is <code>argument</code> a sequence pattern, possibly named, tested, conditioned, optional or
    * one of several alternatives?
    */

@@ -1436,9 +1436,10 @@ public final class Combinatoric {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
+      if (ast.arg1().isAST()) {
+        // the arguments of any head, f(b, a) like {b, a}
         IAST list = (IAST) ast.arg1();
-        if (list.argSize() == 1) {
+        if (list.argSize() <= 1) {
           return F.C1;
         }
         int n = 0;

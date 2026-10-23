@@ -47,6 +47,19 @@ public class StreamTest extends ExprEvaluatorTestCase {
    * answers the text, and <code>FailureQ</code> of it is <code>False</code>. The WLJS notebook
    * reader rejects its older file format at the header check that follows.
    */
+  /**
+   * A literal terminator stays in the stream; a read which starts at one skips it first.
+   */
+  @Test
+  public void testReadStringLiteralTerminator() {
+    check("s=StringToStream(\"pq;rs;tu\"); {ReadString(s, \";\"), ReadString(s, \";\"), ReadString(s, \";\"), ReadString(s, \";\")} // InputForm", //
+        "{\"pq\",\"rs\",\"tu\",EndOfFile}");
+    check("s=StringToStream(\"uv::wx::yz\"); {ReadString(s, \":\" ~~ \":\"), Read(s, Character), ReadString(s, \"::\"), ReadString(s)} // InputForm", //
+        "{\"uv\",\":\",\":wx\",\"::yz\"}");
+    check("s=StringToStream(\"first second\"); {ReadString(s, \" \"), Read(s, Character), ReadString(s)} // InputForm", //
+        "{\"first\",\" \",\"second\"}");
+  }
+
   @Test
   public void testReadStringTerminatorNotFound() {
     check("s=StringToStream(\"abc\\ndef\"); {StringLength(Check(ReadString(s, \"xyz\"), \"msg\")), ReadString(s, \"xyz\")}", //
@@ -60,8 +73,9 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "{13,EndOfFile}");
     check("FailureQ(Quiet(ReadString(StringToStream(\"<|a->1|>\"), \"%\" ~~ \"x\")))", //
         "False");
+    // strings joined by ~~ are a literal terminator, which stays in the stream
     check("s=StringToStream(\"head\\n%%\\ntail\"); {ReadString(s, \"\\n\" ~~ \"%%\"), StringLength(ReadString(s))}", //
-        "{head,5}");
+        "{head,8}");
 
     // a terminator starting with ___ is tried once, from the start: tried again from every position
     // a WLJS notebook of the older format (4 MB, no %Notebook% header) never finished loading
@@ -96,12 +110,29 @@ public class StreamTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testStringStreamTypes() {
+    // a stream over a string needs no file system access
+    check("st = StringToStream(\"41 -2.5 word1 word2\\nlast\"); {Read(st, Number), Read(st, Number), Read(st, Word), ReadList(st, Word)}", //
+        "{41,-2.5,word1,{word2,last}}");
+    // an expression may continue on the next line
+    check("st = StringToStream(\"h(u,\\n v) + 1\\nk(3)\"); {Read(st), Read(st), Read(st)}", //
+        "{1+h(u,v),k(3),EndOfFile}");
+    check("{ReadList(StringToStream(\"7 8 9 10\"), Number, 3), ReadList(StringToStream(\"3 p 4 q\"), {Number, Word})}", //
+        "{{7,8,9},{{3,p},{4,q}}}");
+    check("st = StringToStream(\"one\\ntwo\"); {Read(st, String), Read(st, String), Read(st, String)}", //
+        "{one,two,EndOfFile}");
+    // a real may end with its decimal point; a read which finds no number takes nothing
+    check("st = StringToStream(\"6. .25 7*^-1 - 9\"); {Read(st, Number), Read(st, Number), Read(st, Number), Read(st, Number), Read(st, Word), Read(st, Number)}", //
+        "{6.0,0.25,0.7,$Failed,-,9}");
+  }
+
+  @Test
   public void testRead001() {
     call("str = StringToStream(\"4711 dummy 0815\")");
     check("Read(str, Number)", //
         "4711");
     check("Read(str, {Word, Number})", //
-        "{dummy,0815}");
+        "{dummy,815}");
     check("Read(str, Number)", //
         "EndOfFile");
     check("Close(str)", //
@@ -116,7 +147,7 @@ public class StreamTest extends ExprEvaluatorTestCase {
     check("Read(str, Word)", //
         "dummy");
     check("Read(str, Number)", //
-        "0815");
+        "815");
     check("Close(str)", //
         "String");
   }
@@ -160,12 +191,16 @@ public class StreamTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReadList002() {
+    // a comment standing alone is the statement Null; empty lines are skipped
     check("ReadList(StringToStream(\"(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}\"))", //
-        "{Null,{0,x,1,0},{1,x,1,x}}");
-    check("ReadList(StringToStream(\"(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}\"), Expression)", //
         "{Null,{0,x,1,0},{1,x,1,x}}");
     check("ReadList(StringToStream(\"(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}\"), Expression, 2)", //
         "{Null,{0,x,1,0}}");
+    check("ReadList(StringToStream(\"(* one\\n two *)\\nu+\\nv\\n\\n(* three *) w\\n\"))", //
+        "{Null,u+v,w}");
+    // also at the end of the input
+    check("{ReadList(StringToStream(\"(* end *)\")), ReadList(StringToStream(\"v\\n(* end *)\"))}", //
+        "{{Null},{v,Null}}");
 
     check(
         "ReadList(StringToStream(\"(**)\\n\\n\\n{0, x, 1, 0}\\n{1, x, 1, x}\"), String) // InputForm", //

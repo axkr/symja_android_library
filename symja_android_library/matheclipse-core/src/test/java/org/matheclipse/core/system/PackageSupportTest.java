@@ -32,14 +32,15 @@ public class PackageSupportTest extends ExprEvaluatorTestCase {
         "True");
   }
 
+  /** A comment standing alone on its lines is read as the statement Null. */
   @Test
-  public void testReadSkipsCommentsAndEndsWithEndOfFile() {
+  public void testReadCommentIsNullAndEndsWithEndOfFile() {
     boolean fileSystem = Config.FILESYSTEM_ENABLED;
     try {
       Config.FILESYSTEM_ENABLED = true;
       check("s = StringToStream(\"(* a comment\\n over two lines *)\\nf(1)\\n(* only a comment *)\\n\"); "
-          + "{Read(s, Hold(Expression)), Read(s, Hold(Expression)), Read(s, Expression)}", //
-          "{Hold(f(1)),EndOfFile,EndOfFile}");
+          + "{Read(s, Hold(Expression)), Read(s, Hold(Expression)), Read(s, Expression), Read(s, Expression)}", //
+          "{Hold(Null),Hold(f(1)),Null,EndOfFile}");
     } finally {
       Config.FILESYSTEM_ENABLED = fileSystem;
     }
@@ -108,6 +109,12 @@ public class PackageSupportTest extends ExprEvaluatorTestCase {
     check("{OptionQ(a -> 1), OptionQ({a -> 1, {b :> 2}}), OptionQ({}), OptionQ(x), "
         + "OptionQ({a -> 1, x})}", //
         "{True,True,True,False,False}");
+    // the name of an option is a symbol or a string
+    check("{OptionQ(\"p\" -> 1), OptionQ(2 -> 1), OptionQ(g(p) -> 1)}", //
+        "{True,False,False}");
+    // and FilterRules takes either for the other
+    check("{FilterRules({p -> 1, \"q\" -> 2}, q), FilterRules({\"p\" -> 1, q -> 2}, p), FilterRules({p -> 1, \"q\" -> 2}, Except(q)), FilterRules({p -> 1, q -> 2}, Except(p | q))} // InputForm", //
+        "{{\"q\"->2},{\"p\"->1},{p->1},{}}");
   }
 
   @Test

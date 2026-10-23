@@ -23,7 +23,8 @@ public class Characters {
       "ARing", "\u00E5", "ATilde", "\u00E3", "Akuz", "\uF728", "Aleph", "\u2135", "AliasDelimiter",
       "\uF764", "AliasIndicator", "\uF768", "AlignmentMarker", "\uF760", "Alpha", "\u03B1",
       "AltKey", "\uF7D1", "And", "\u2227", "Andy", "\uF729", "Angle", "\u2220", "Angstrom",
-      "\u212B", "AquariusSign", "\u2652", "AriesSign", "\u2648", "AscendingEllipsis", "\u22F0",
+      "\u212B", "Application", "\uF530", "AquariusSign", "\u2652", "AriesSign", "\u2648",
+      "AscendingEllipsis", "\u22F0",
       "AutoLeftMatch", "\uF3A8", "AutoOperand", "\uF3AE", "AutoPlaceholder", "\uF3A4",
       "AutoRightMatch", "\uF3A9", "AutoSpace", "\uF3AD", "Backslash", "\u2216", "BeamedEighthNote",
       "\u266B", "BeamedSixteenthNote", "\u266C", "Because", "\u2235", "Bet", "\u2136", "Beta",
@@ -290,7 +291,7 @@ public class Characters {
       "\uF6C6", "ScriptV", "\uF6C7", "ScriptW", "\uF6C8", "ScriptX", "\uF6C9", "ScriptY", "\uF6CA",
       "ScriptZ", "\uF6CB", "ScriptZero", "\uF7F0", "Section", "\u00A7", "SelectionPlaceholder",
       "\uF527", "Shah", "\uF11D", "Sharp", "\u266F", "ShiftKey", "\uF7D5", "ShortDownArrow",
-      "\uF52B", "ShortLeftArrow", "\uF526", "ShortRightArrow", "\uF525", "Sigma", "\u03C3",
+      "\uF52B", "ShortLeftArrow", "\uF526", "ShortRightArrow", "\uF525", "ShortUpArrow", "\uF52A", "Sigma", "\u03C3",
       "SixPointedStar", "\u2736", "SkeletonIndicator", "\u2043", "SmallCircle", "\u2218",
       "SpaceIndicator", "\u2423", "SpaceKey", "\uF7BF", "SpadeSuit", "\u2660", "SpanFromAbove",
       "\uF3BB", "SpanFromBoth", "\uF3BC", "SpanFromLeft", "\uF3BA", "SphericalAngle", "\u2222",
@@ -397,174 +398,73 @@ public class Characters {
     }
     final int strLength = str.length();
     StringBuilder buf = null;
-    char currentChar;
+    // str[copied, escapeStart) has not been appended to buf yet
+    int copied = 0;
     while (currentPosition < strLength) {
-      currentChar = str.charAt(currentPosition++);
-      if (currentChar == '\\') {
-        if (currentPosition < strLength) {
-          if (str.charAt(currentPosition) == '[') {
-            final int startPosition = currentPosition++ - 1;
-            if (currentPosition < strLength) {
-              currentChar = str.charAt(currentPosition++);
-            } else {
-              break;
-            }
-            while (Character.isLetterOrDigit(currentChar)) {
-              if (currentPosition < strLength) {
-                currentChar = str.charAt(currentPosition++);
-              } else {
-                break;
-              }
-            }
-            int endPosition = currentPosition;
-            if (currentChar == ']') {
-              String subString = str.substring(startPosition + 2, endPosition - 1);
-              String namedCh = Characters.NamedCharactersMap.get(subString);
-              if (namedCh != null) {
-                buf = new StringBuilder(str.length());
-                buf.append(str.substring(0, startPosition));
-                currentChar = namedCh.charAt(0);
-                buf.append(currentChar);
-                break; // while (currentPosition < strLength)
-              }
-            }
-          } else if (str.charAt(currentPosition) == '.') {
-            try {
-              final int numberOfUnicodeDigits = 2;
-              buf = new StringBuilder(str.length());
-              buf.append(str.substring(0, ++currentPosition - 2));
-              currentPosition = codePointToUTF16(str, currentPosition, numberOfUnicodeDigits, buf);
-            } catch (final NumberFormatException e) {
-            }
-            break;
-          } else if (str.charAt(currentPosition) == ':') {
-            try {
-              final int numberOfUnicodeDigits = 4;
-              buf = new StringBuilder(str.length());
-              buf.append(str.substring(0, ++currentPosition - 2));
-              currentPosition = codePointToUTF16(str, currentPosition, numberOfUnicodeDigits, buf);
-
-            } catch (final NumberFormatException e) {
-            }
-            break;
-          } else if (str.charAt(currentPosition) == '|') {
-            try {
-              final int numberOfUnicodeDigits = 6;
-              buf = new StringBuilder(str.length());
-              buf.append(str.substring(0, ++currentPosition - 2));
-              currentPosition = codePointToUTF16(str, currentPosition, numberOfUnicodeDigits, buf);
-              break;
-            } catch (final NumberFormatException e) {
-            }
-          } else {
-            // escape next character
-            currentPosition++;
-          }
-        }
+      if (str.charAt(currentPosition) != '\\' || currentPosition + 1 >= strLength) {
+        currentPosition++;
+        continue;
       }
+      final int escapeStart = currentPosition;
+      final char escapeChar = str.charAt(escapeStart + 1);
+      String replacement = null;
+      int escapeEnd = escapeStart + 2;
+      if (escapeChar == '[') {
+        int nameEnd = escapeStart + 2;
+        while (nameEnd < strLength && Character.isLetterOrDigit(str.charAt(nameEnd))) {
+          nameEnd++;
+        }
+        if (nameEnd < strLength && str.charAt(nameEnd) == ']') {
+          replacement = NamedCharactersMap.get(str.substring(escapeStart + 2, nameEnd));
+          escapeEnd = nameEnd + 1;
+        }
+      } else if (escapeChar == '.' || escapeChar == ':' || escapeChar == '|') {
+        final int numberOfDigits = escapeChar == '.' ? 2 : (escapeChar == ':' ? 4 : 6);
+        replacement = hexCharacter(str, escapeStart + 2, numberOfDigits);
+        escapeEnd = escapeStart + 2 + numberOfDigits;
+      }
+      if (replacement == null) {
+        // keep an unknown name, an invalid code and an escaped character (also '\\') unchanged
+        currentPosition = escapeStart + 2;
+        continue;
+      }
+      if (buf == null) {
+        buf = new StringBuilder(strLength);
+      }
+      buf.append(str, copied, escapeStart).append(replacement);
+      copied = escapeEnd;
+      currentPosition = escapeEnd;
     }
     if (buf == null) {
-      // no special unicode character found, return original string
       return str;
     }
-
-    while (currentPosition < strLength) {
-      currentChar = str.charAt(currentPosition++);
-      if (currentChar == '\\') {
-        if (currentPosition < strLength) {
-          if (str.charAt(currentPosition) == '[') {
-            final int startPosition = currentPosition++ - 1;
-            if (currentPosition < strLength) {
-              currentChar = str.charAt(currentPosition++);
-            } else {
-              break;
-            }
-            while (Character.isLetterOrDigit(currentChar)) {
-              if (currentPosition < strLength) {
-                currentChar = str.charAt(currentPosition++);
-              } else {
-                break;
-              }
-            }
-            int endPosition = currentPosition;
-            if (currentChar == ']') {
-              String subString = str.substring(startPosition + 2, endPosition - 1);
-              String namedCh = Characters.NamedCharactersMap.get(subString);
-              if (namedCh != null) {
-                // currentChar = namedCh.charAt(0);
-                buf.append(namedCh);
-                continue; // while (currentPosition < strLength)
-              }
-              buf.append("\\[");
-              buf.append(subString);
-
-            } else {
-              String subString = str.substring(startPosition, endPosition - 1);
-              buf.append(subString);
-            }
-          } else if (str.charAt(currentPosition) == '.') {
-            try {
-              final int numberOfUnicodeDigits = 2;
-              currentPosition =
-                  codePointToUTF16(str, ++currentPosition, numberOfUnicodeDigits, buf);
-              continue;
-            } catch (final NumberFormatException e) {
-            }
-          } else if (str.charAt(currentPosition) == ':') {
-            try {
-              final int numberOfUnicodeDigits = 4;
-              currentPosition =
-                  codePointToUTF16(str, ++currentPosition, numberOfUnicodeDigits, buf);
-              continue;
-            } catch (final NumberFormatException e) {
-            }
-          } else if (str.charAt(currentPosition) == '|') {
-            try {
-              final int numberOfUnicodeDigits = 6;
-              currentPosition =
-                  codePointToUTF16(str, ++currentPosition, numberOfUnicodeDigits, buf);
-              continue;
-            } catch (final NumberFormatException e) {
-            }
-          } else {
-            // escape character
-            buf.append(currentChar);
-          }
-        } else {
-          buf.append(currentChar);
-        }
-      } else {
-        buf.append(currentChar);
-      }
-    }
+    buf.append(str, copied, strLength);
     return buf.toString();
   }
 
   /**
-   * Append the specified character (Unicode code point with the string length of <code>
-   * numberOfUnicodeDigits</code> starting at <code>startPosition</code>) to its UTF-16
-   * representation stored in a char array and append this array to the <code>buffer</code>. If the
-   * specified code point is a BMP (Basic Multilingual Plane or Plane 0) value, the resulting char
-   * array has the same value as codePoint. If the specified codepoint is a supplementary code
-   * point, the resulting char array has the corresponding surrogate pair.
+   * The character with the hexadecimal code of exactly <code>numberOfDigits</code> digits starting
+   * at <code>startPosition</code>, as UTF-16 (a surrogate pair for a supplementary code point).
    *
-   * @param str the input string
-   * @param startPosition
-   * @param numberOfUnicodeDigits
-   * @param buffer the output string buffer
-   * @return
-   * @throws NumberFormatException
+   * @return <code>null</code> if there are not enough hexadecimal digits or the code is no valid
+   *         code point
    */
-  private static int codePointToUTF16(String str, int startPosition,
-      final int numberOfUnicodeDigits, StringBuilder buffer) throws NumberFormatException {
-    if (startPosition + numberOfUnicodeDigits >= str.length()) {
-      throw new NumberFormatException("Number length must be exactly: " + numberOfUnicodeDigits);
+  private static String hexCharacter(String str, int startPosition, final int numberOfDigits) {
+    if (startPosition + numberOfDigits > str.length()) {
+      return null;
     }
-    final String number = str.substring(startPosition, startPosition + numberOfUnicodeDigits);
-    // parseInt() may also throw NumberFormatException
-    int codePoint = Integer.parseInt(number, 16);
-    buffer.append(Character.toChars(codePoint));
-    return startPosition + numberOfUnicodeDigits;
+    int codePoint = 0;
+    for (int i = startPosition; i < startPosition + numberOfDigits; i++) {
+      final int digit = Character.digit(str.charAt(i), 16);
+      if (digit < 0) {
+        return null;
+      }
+      codePoint = (codePoint << 4) | digit;
+    }
+    if (!Character.isValidCodePoint(codePoint)) {
+      return null;
+    }
+    return new String(Character.toChars(codePoint));
   }
 
   /**

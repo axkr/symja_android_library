@@ -1551,6 +1551,10 @@ public abstract class Scanner {
         }
       }
     }
+    if (fCurrentChar != '"') {
+      // the input ended on the last character of the string, before its closing quote
+      throwSyntaxError("string - end of string not reached.");
+    }
 
     return ident;
   }

@@ -45,11 +45,12 @@ public class PredicateQ {
    */
   /**
    * <code>OptionQ[e]</code>: is <code>e</code> a rule, a delayed rule, or a list - possibly
-   * nested, possibly empty - of them, i.e. something which can be given as options.
+   * nested, possibly empty - of them, i.e. something which can be given as options. The name of
+   * an option is a symbol or a string.
    */
   private static boolean isOptionQ(IExpr expr) {
     if (expr.isRuleAST()) {
-      return true;
+      return expr.first().isSymbol() || expr.first().isString();
     }
     return expr.isList() && ((IAST) expr).forAll(PredicateQ::isOptionQ);
   }

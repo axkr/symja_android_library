@@ -922,25 +922,57 @@ public final class PatternMatching {
       // FilterRules[opts, Options[f]], FilterRules[opts, {a, b}] and
       // FilterRules[opts, Except[{a -> 1}]] - a list names the options to keep (or, under Except,
       // to drop); anything else is a pattern for the left-hand side
-      final IPatternMatcher matcher = engine.evalPatternMatcher(filterPattern(ast.arg2()));
-      return F.mapList((IAST) rules, rule -> matcher.test(rule.first()) ? rule : F.NIL);
+      IExpr spec = ast.arg2();
+      // Except[...] keeps the rules the names inside it don't match
+      final boolean except = spec.isAST(S.Except, 2);
+      final IPatternMatcher matcher =
+          engine.evalPatternMatcher(filterPattern(except ? spec.first() : spec));
+      return F.mapList((IAST) rules, rule -> matchesName(matcher, rule.first()) != except ? rule
+          : F.NIL);
     }
 
-    /** A list of names or rules becomes the alternatives of the names, also inside Except. */
+    /** An option name may be a symbol or the string of its name. */
+    private static boolean matchesName(IPatternMatcher matcher, IExpr name) {
+      return matcher.test(name) || (name.isSymbol()
+          && matcher.test(F.stringx(((ISymbol) name).getSymbolName())));
+    }
+
+    /**
+     * A list of names or rules becomes the alternatives of the names, also inside Except. A
+     * symbol also stands for the string of its name.
+     */
     private static IExpr filterPattern(IExpr spec) {
       if (spec.isList()) {
         org.matheclipse.core.interfaces.IASTAppendable alternatives =
             F.ast(S.Alternatives, spec.argSize());
         for (int i = 1; i < spec.size(); i++) {
           IExpr element = ((IAST) spec).get(i);
-          alternatives.append(element.isRuleAST() ? element.first() : element);
+          appendName(alternatives, element.isRuleAST() ? element.first() : element);
         }
         return alternatives;
       }
-      if (spec.isAST(S.Except, 2)) {
-        return F.unaryAST1(S.Except, filterPattern(spec.first()));
+      if (spec.isAlternatives()) {
+        org.matheclipse.core.interfaces.IASTAppendable alternatives =
+            F.ast(S.Alternatives, spec.argSize());
+        for (int i = 1; i < spec.size(); i++) {
+          appendName(alternatives, ((IAST) spec).get(i));
+        }
+        return alternatives;
+      }
+      if (spec.isSymbol()) {
+        org.matheclipse.core.interfaces.IASTAppendable alternatives = F.ast(S.Alternatives, 2);
+        appendName(alternatives, spec);
+        return alternatives;
       }
       return spec;
+    }
+
+    private static void appendName(org.matheclipse.core.interfaces.IASTAppendable alternatives,
+        IExpr name) {
+      alternatives.append(name);
+      if (name.isSymbol()) {
+        alternatives.append(F.stringx(((ISymbol) name).getSymbolName()));
+      }
     }
 
     @Override

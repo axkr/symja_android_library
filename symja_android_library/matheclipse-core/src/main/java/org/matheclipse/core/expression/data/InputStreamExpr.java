@@ -211,6 +211,26 @@ public class InputStreamExpr extends DataExpr<InputStream> implements Externaliz
     return new InputStreamExpr(targetStream, "String", reader);
   }
 
+  /**
+   * A stream over the characters of a string, which touches no file: reading it needs no file
+   * system access.
+   */
+  public static InputStreamExpr ofString(final String text) {
+    InputStreamExpr stream =
+        new InputStreamExpr(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)),
+            "String", new StringReader(text));
+    stream.inMemory = true;
+    return stream;
+  }
+
+  /** <code>true</code> for a stream over a string, see {@link #ofString(String)}. */
+  private boolean inMemory;
+
+  /** <code>true</code> if this stream reads a string in memory and no file. */
+  public boolean isInMemory() {
+    return inMemory;
+  }
+
 
   /**
    * Protected constructor used to create a stream wrapper with default name {@code "String"}.

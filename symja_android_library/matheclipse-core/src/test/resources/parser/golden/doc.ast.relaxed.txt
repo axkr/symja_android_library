@@ -2,7 +2,7 @@
 !True	Not(True)
 !a! //FullForm	FullForm(Not(Factorial(a)))
 !b	Not(b)
-"Attributes(f)	Attributes(f
+"Attributes(f)	!syntax@14: string - end of string not reached.
 "Java" <> ToString(8)	StringJoin(Java, ToString(8))
 "a string" // InputForm	InputForm(a string)
 "a" != "a"	Unequal(a, a)
@@ -1221,7 +1221,7 @@ DiscreteRatio(k!, k)	DiscreteRatio(Factorial(k), k)
 DiscreteShift(n^2, n)	DiscreteShift(Power(n, 2), n)
 Discriminant(a*x^2+b*x+c, x, Modulus->3)	Discriminant(Plus(Times(a, Power(x, 2)), Times(b, x), c), x, Rule(Modulus, 3))
 Discriminant(a*x^2+b*x+c,x)	Discriminant(Plus(Times(a, Power(x, 2)), Times(b, x), c), x)
-Dispatch({"a" -> 1, "b" -> 2, "c" -> 3}) // Normal // InputForm", //	Times(InputForm, , /)[Normal(Dispatch(List(Rule(a, 1), Rule(b, 2), Rule(c, 3))))]
+Dispatch({"a" -> 1, "b" -> 2, "c" -> 3}) // Normal // InputForm", //	!syntax@68: string - end of string not reached.
 DisplayAllSteps(x)	DisplayAllSteps(x)
 DistanceTransform(x)	DistanceTransform(x)
 Distribute((a+b)*(x+y+z))	Distribute(Times(Plus(a, b), Plus(x, y, z)))
@@ -2411,7 +2411,7 @@ LetterNumber("B")	LetterNumber(B)
 LetterNumber("b")	LetterNumber(b)
 LetterNumber("dzs","Hungarian")	LetterNumber(dzs, Hungarian)
 LetterNumber("ij", "Dutch")	LetterNumber(ij, Dutch)
-LetterQ("7")", //	Times(LetterQ(7), , /)
+LetterQ("7")", //	!syntax@17: string - end of string not reached.
 LetterQ("k")	LetterQ(k)
 Level(a + b ^ 3 * f(2 x ^ 2), {-1})	Level(Plus(a, Times(Power(b, 3), f(Times(2, Power(x, 2))))), List(-1))
 Level(a ^ 2 + 2 * b, {-1}, Heads -> True)	Level(Plus(Power(a, 2), Times(2, b)), List(-1), Rule(Heads, True))
@@ -3872,7 +3872,7 @@ SelectComponents(x)	SelectComponents(x)
 SelectFirst({-3, 0, 1, 3, a}, #>0 &)	SelectFirst(List(-3, 0, 1, 3, a), Function(Greater(Slot(1), 0)))
 SelectFirst({-3, 0, 1, 3, a}, #>3 &)	SelectFirst(List(-3, 0, 1, 3, a), Function(Greater(Slot(1), 3)))
 SemanticImport("./data/test.csv")	SemanticImport(./data/test.csv)
-SemanticImportString("Products,Sales,Market_Share	!syntax@50: ')' expected.
+SemanticImportString("Products,Sales,Market_Share	!syntax@49: string - end of string not reached.
 SeparateBoundaries(x)	SeparateBoundaries(x)
 SequenceAlignment("BANANA", "ANANAS")	SequenceAlignment(BANANA, ANANAS)
 SequenceAlignment("aXYb", "aZWb")	SequenceAlignment(aXYb, aZWb)
@@ -4085,7 +4085,7 @@ StringContainsQ({"the quick brown fox", "jumps", "over the lazy dog"}, "the")	St
 StringCount("a#ä_123", LetterCharacter)	StringCount(a#ä_123, LetterCharacter)
 StringCount("a#ä_123", WordCharacter)	StringCount(a#ä_123, WordCharacter)
 StringExtract(x)	StringExtract(x)
-StringFreeQ("Symja", "SY" ,IgnoreCase -> True)", //	Times(StringFreeQ(Symja, SY, Rule(IgnoreCase, True)), , /)
+StringFreeQ("Symja", "SY" ,IgnoreCase -> True)", //	!syntax@51: string - end of string not reached.
 StringFreeQ("e" ~~___ ~~"u") /@ {"The Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"}	Map(StringFreeQ(StringExpression(e, ___, u)), List(The Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune))
 StringFreeQ("symja", "s" ~~__ ~~"a")	StringFreeQ(symja, StringExpression(s, __, a))
 StringFreeQ("symja", "y" ~~__~~"s")	StringFreeQ(symja, StringExpression(y, __, s))
@@ -5102,7 +5102,7 @@ z == ProductLog(z) * E ^ ProductLog(z)	Equal(z, Times(ProductLog(z), Power(E, Pr
 {a} != {a}	Unequal(List(a), List(a))
 {f(2),g(7)}	List(f(2), g(7))
 {gcdVal, factors} = ExtendedGCD(Sequence @@ numbers)	Set(List(gcdVal, factors), ExtendedGCD(Apply(Sequence, numbers)))
-{p, h} = HessenbergDecomposition({{2.0,5,8,7},{5,2,2,8},{7,5,6,6},{5,4,4,8}})", //	Set(List(p, h), Times(HessenbergDecomposition(List(List(2.0, 5, 8, 7), List(5, 2, 2, 8), List(7, 5, 6, 6), List(5, 4, 4, 8))), , /))
+{p, h} = HessenbergDecomposition({{2.0,5,8,7},{5,2,2,8},{7,5,6,6},{5,4,4,8}})", //	!syntax@82: string - end of string not reached.
 {u, r, v} = SmithDecomposition({{1,2,3},{4,5,6},{7,8,9}});	CompoundExpression(Set(List(u, r, v), SmithDecomposition(List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9)))), Null)
 {u, v} = RandomReal(1, {2, 6})	Set(List(u, v), RandomReal(1, List(2, 6)))
 {x,x^2,y} /. x->3	ReplaceAll(List(x, Power(x, 2), y), Rule(x, 3))

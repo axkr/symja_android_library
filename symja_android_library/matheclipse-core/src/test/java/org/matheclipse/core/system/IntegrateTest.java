@@ -41,6 +41,19 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
    * has to be a machine number by the time it arrives, and a parsed <code>Infinity`</code> is not
    * one: it reads back as a symbol, which takes an entirely different route through the evaluator.
    */
+  /** The square of a Bessel function J or I of a linear argument integrates to a 2F3. */
+  @Test
+  public void testBesselSquare() {
+    check("Integrate(BesselJ(2, 5*x)^2, x)", //
+        "125/64*x^5*HypergeometricPFQ({5/2,5/2},{3,7/2,5},-25*x^2)");
+    check("Integrate(7*BesselI(1/3, x + 2)^2, x)", //
+        "21/5*((2+x)^(5/3)*HypergeometricPFQ({5/6,5/6},{4/3,5/3,11/6},(2+x)^2))/(2^(2/3)*Gamma(\n"
+            + "4/3)^2)");
+    check("Integrate(BesselJ(k, x)^2, x)", //
+        "(x^(1+2*k)*HypergeometricPFQ({1/2+k,1/2+k},{1+k,3/2+k,1+2*k},-x^2))/(2^(1+2*k)*(\n"
+            + "1/2+k)*Gamma(1+k)^2)");
+  }
+
   @Test
   public void testIntegrateFermiDirac() {
     // Integrate(x^(s-1)/(E^(c*x)+z), {x,0,Infinity}) == -Gamma(s)*PolyLog(s,-z)/(z*c^s), for z >=

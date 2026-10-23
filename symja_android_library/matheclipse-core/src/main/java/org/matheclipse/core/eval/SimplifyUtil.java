@@ -2550,6 +2550,24 @@ public class SimplifyUtil extends VisitorExpr {
         }
       }
     }
+    if (fFullSimplify && (ast.isPlus() || ast.isTimes())
+        && SpecialFunctionIdentities.isCandidate(ast)) {
+      // recurrences, Casoratians and transformations of special functions; Simplify leaves them
+      try {
+        temp = SpecialFunctionIdentities.simplify(ast, fEngine);
+        // the identities answer only a form with fewer special function calls or fewer leaves,
+        // so a tie of the leaf counts is accepted
+        if (temp.isPresent() && sResult.checkLessEqual(temp)) {
+          if (temp.isPlus() || temp.isTimes()) {
+            ast = (IASTMutable) temp;
+          } else {
+            return temp;
+          }
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+      }
+    }
     if (ast.isPower()) {
       temp = visitPower(ast, sResult);
       if (temp.isPresent()) {

@@ -359,6 +359,6 @@ public class TestGammaSimp extends ExprEvaluatorTestCase {
     check("FullSimplify(n!/(n-2)!)", //
         "(-1+n)*n");
     check("FullSimplify(Binomial(n,k)*k!*(n-k)!)", //
-        "Gamma(1+n)");
+        "n!");
   }
 }
