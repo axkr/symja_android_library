@@ -3688,6 +3688,16 @@ public class S {
   public final static IBuiltInSymbol Close = S.initFinalSymbol("Close", ID.Close);
 
   /**
+   * CloseKernels(x) - TODO describe `CloseKernels`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CloseKernels.md">CloseKernels
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CloseKernels =
+      S.initFinalSymbol("CloseKernels", ID.CloseKernels);
+
+  /**
    * ClosenessCentrality(graph) - Computes the closeness centrality of each vertex of a `graph`.
    * 
    * @see <a href=
@@ -12975,6 +12985,15 @@ public class S {
   public final static IBuiltInSymbol KelvinKer = S.initFinalSymbol("KelvinKer", ID.KelvinKer);
 
   /**
+   * Kernels(x) - TODO describe `Kernels`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Kernels.md">Kernels
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol Kernels = S.initFinalSymbol("Kernels", ID.Kernels);
+
+  /**
    * Key(key) - represents a `key` used to access a value in an association.
    * 
    * @see <a href=
@@ -13302,6 +13321,16 @@ public class S {
    */
   public final static IBuiltInSymbol LatticeReduce =
       S.initFinalSymbol("LatticeReduce", ID.LatticeReduce);
+
+  /**
+   * LaunchKernels(x) - TODO describe `LaunchKernels`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LaunchKernels.md">LaunchKernels
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol LaunchKernels =
+      S.initFinalSymbol("LaunchKernels", ID.LaunchKernels);
 
   /**
    * LCHColor(x) - TODO describe `LCHColor`.
