@@ -4317,7 +4317,16 @@ public final class StringFunctions {
               }
             }
             ExprParser parser = new ExprParser(engine);
-            IExpr temp = parser.parse(source);
+            // the parser raises the engine's precision to the one of the input, which is right for
+            // a new input and wrong in the middle of an evaluation: an N[x, 30] read here would make
+            // every later evaluation numeric with 30 digits
+            final long precision = engine.getNumericPrecision();
+            IExpr temp;
+            try {
+              temp = parser.parse(source);
+            } finally {
+              engine.setNumericPrecision(precision);
+            }
             if (head.isPresent()) {
               return F.unaryAST1(head, temp);
             }

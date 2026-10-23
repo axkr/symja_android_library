@@ -105,6 +105,13 @@ public final class KernelLinkServer {
 
   /** What one packet is answered with, or {@link F#NIL} when it is answered with nothing. */
   private static IExpr answer(IExpr packet, EvalEngine engine) {
+    if (packet.isAST(S.ReturnPacket, 2) || packet.isAST(S.TextPacket, 2)) {
+      // an answer of ours coming back: nothing to do with it
+      return F.NIL;
+    }
+    // every packet is a new input, as every line of a session is: the counters and modes of the
+    // evaluation before (the numbers of DSolve's constants, the recursion depth) start afresh
+    EvalEngine.setReset(engine);
     if (packet.isAST(S.EvaluatePacket, 2)) {
       return F.unaryAST1(S.ReturnPacket, engine.evaluate(packet.first()));
     }
@@ -114,10 +121,6 @@ public final class KernelLinkServer {
     }
     if (packet.isAST(S.EnterExpressionPacket, 2)) {
       return F.unaryAST1(S.ReturnExpressionPacket, engine.evaluate(packet.first()));
-    }
-    if (packet.isAST(S.ReturnPacket, 2) || packet.isAST(S.TextPacket, 2)) {
-      // an answer of ours coming back: nothing to do with it
-      return F.NIL;
     }
     // a bare expression, which is what LinkWrite[link, Unevaluated[expr]] sends
     return F.unaryAST1(S.ReturnPacket, engine.evaluate(packet));

@@ -23,6 +23,8 @@ import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
+import org.matheclipse.core.eval.exception.FailedException;
+import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -3194,8 +3196,9 @@ public final class Programming {
       engine.setErrorPrintStream(new PrintStream(errorBytes, true, StandardCharsets.UTF_8));
       engine.setDollarValue(S.$MessageList, F.CEmptyList);
       EvalEngine.incEpoch();
-      final ThreadMXBean threads = ManagementFactory.getThreadMXBean();
-      final boolean cpuTime = threads.isCurrentThreadCpuTimeSupported();
+      // no java.lang.management on Android or with Config.DISABLE_JMX: Timing is then wall time
+      final ThreadMXBean threads = Config.DISABLE_JMX ? null : ManagementFactory.getThreadMXBean();
+      final boolean cpuTime = threads != null && threads.isCurrentThreadCpuTimeSupported();
       final long cpuStart = cpuTime ? threads.getCurrentThreadCpuTime() : 0L;
       final long start = System.nanoTime();
       IExpr result;
@@ -3206,6 +3209,21 @@ public final class Programming {
       } catch (AbortException ae) {
         result = S.$Aborted;
         failureType = F.stringx("Abort");
+      } catch (LimitException le) {
+        // a recursion or iteration limit ends the evaluation with a message, as at the top level;
+        // the answer must still come back, a notebook waits for it
+        Errors.printMessage(S.General, le, engine);
+        result = S.$Aborted;
+        failureType = F.stringx("Message");
+      } catch (FailedException fe) {
+        result = S.$Failed;
+        failureType = F.stringx("Message");
+      } catch (StackOverflowError soe) {
+        // a recursion deeper than the stack of the thread, before the recursion limit is reached
+        Errors.printMessage(S.$RecursionLimit, "reclim2",
+            F.list(F.ZZ(engine.getRecursionLimit()), ast.arg1()), engine);
+        result = S.$Aborted;
+        failureType = F.stringx("Message");
       } finally {
         engine.setOutPrintStream(outStream);
         engine.setErrorPrintStream(errorStream);

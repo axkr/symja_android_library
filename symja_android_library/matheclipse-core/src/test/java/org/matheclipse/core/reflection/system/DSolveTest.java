@@ -11,6 +11,13 @@ import org.matheclipse.core.system.TestTags;
 /** Tests for DSolve */
 public class DSolveTest extends ExprEvaluatorTestCase {
 
+  /** Every DSolve which isn't nested in another one numbers its constants from C(1) on. */
+  @Test
+  public void testDSolveConstantsStartAtOne() {
+    check("{DSolve(y'(x)==y(x),y(x),x), DSolve(z'(x)==2*z(x),z(x),x)}", //
+        "{{{y(x)->E^x*C(1)}},{{z(x)->E^(2*x)*C(1)}}}");
+  }
+
   @Test
   @Tag(TestTags.SLOW)
   public void testDSolveUnevaluated() {

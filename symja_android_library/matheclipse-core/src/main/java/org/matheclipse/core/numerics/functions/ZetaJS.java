@@ -264,10 +264,19 @@ public class ZetaJS extends JS {
     // return S.add(I).add(T);
   }
 
+  /** The largest order of Bernoulli numbers the numeric Hurwitz zeta function computes. */
+  private static final int MAX_BERNOULLI_ORDER = 1000;
+
   public static double hurwitzZeta(final double x, final double a) {
     double machine = HurwitzZetaKernel.hurwitzZeta(x, a);
     if (!Double.isNaN(machine)) {
       return machine;
+    }
+    if (x < -MAX_BERNOULLI_ORDER && x == Math.rint(x)) {
+      // for s = -n the arbitrary precision route computes the Bernoulli numbers up to n+1 in a loop
+      // no time limit reaches, and the value is far outside the machine range anyway
+      throw new ArgumentTypeException(
+          "Zeta(s, a) for an integer s < -" + MAX_BERNOULLI_ORDER + " is not computed numerically");
     }
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
 

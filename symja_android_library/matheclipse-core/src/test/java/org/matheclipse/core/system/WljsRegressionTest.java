@@ -664,6 +664,36 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{1+2*u+u^2,True,None,{},{},True,True}");
     check("ed = EvaluationData[1/0]; ed[\"MessagesText\"]", //
         "{Power::infy: Infinite expression 1/0 encountered.}");
+    // a recursion limit is a message, and the answer still comes back
+    check("recurse[x_] := recurse[x]; ed = EvaluationData[recurse[3]]; "
+        + "{ed[\"Result\"], ed[\"Success\"], Length[ed[\"MessagesText\"]] > 0}", //
+        "{$Aborted,False,True}");
+  }
+
+  /**
+   * <code>ToExpression</code> of an input with 30 digit numbers made every later evaluation numeric
+   * with 30 digits: the parser raised the engine's precision and nothing set it back. The notebook's
+   * evaluation API reads every input with <code>ToExpression</code>.
+   */
+  @Test
+  public void testToExpressionKeepsThePrecision() {
+    check("ToExpression[\"N[1/7, 30]\", InputForm]", //
+        "0.142857142857142857142857142857");
+    check("{Zeta[0, 1/5], 1/5 + 0.25}", //
+        "{3/10,0.45}");
+  }
+
+  /**
+   * An assignment to a protected tag fails with a message and <code>$Failed</code>, and the rest of
+   * the input goes on; it used to end the whole input, and inside <code>ToExpression</code> a
+   * script.
+   */
+  @Test
+  public void testAFailedAssignmentDoesNotEndTheInput() {
+    check("{Pi /: tagFail[Pi] = 1, 7}", //
+        "{$Failed,7}");
+    check("ToExpression[\"Pi /: tagFail2[Pi] = 1; 8\", InputForm]", //
+        "8");
   }
 
   /**

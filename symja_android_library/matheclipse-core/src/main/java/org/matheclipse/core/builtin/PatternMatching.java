@@ -2465,71 +2465,76 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr leftHandSide = ast.arg1();
-      IExpr spliced =
-          spliceSequences(S.Set, leftHandSide, F.unaryAST1(S.Unevaluated, ast.arg2()), engine);
-      if (spliced.isPresent()) {
-        return spliced;
-      }
-      if (isConditionalSymbol(leftHandSide)) {
-        // h /; test = v: the value of h is v (evaluated now) where the test holds
-        IExpr value = engine.evaluate(ast.arg2());
-        engine.evaluate(F.SetDelayed(leftHandSide.first(),
-            conditionalValue((ISymbol) leftHandSide.first(), value, leftHandSide.second())));
-        return value;
-      }
-
-      IExpr head = leftHandSide.head();
-      // a built-in which takes the assignment itself keeps it, even where the symbol has a value
-      // of its own: $ContextAliases["a`"] = "A`" adds an alias, although $ContextAliases
-      // evaluates to an association
-      if (!(head.isBuiltInSymbol()
-          && ((IBuiltInSymbol) head).getEvaluator() instanceof ISetEvaluator)) {
-        IExpr rawHead = head;
-        head = engine.evaluate(head);
-        IExpr redispatched = assignToEvaluatedHead(S.Set, leftHandSide, rawHead, head,
-            F.unaryAST1(S.Unevaluated, ast.arg2()), engine);
-        if (redispatched.isPresent()) {
-          return redispatched;
-        }
-        if (head.topHead() == S.Association) {
-          head = S.Association;
-        }
-      }
-      IExpr rightHandSide = ast.arg2();
-      // try {
-      // rightHandSide = engine.evaluate(rightHandSide);
-      // } catch (final ConditionException e) {
-      // } catch (final ReturnException e) {
-      // rightHandSide = e.getValue();
-      // }
-      if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
-        // Cannot assign to raw object `1`.
-        Errors.printMessage(S.Set, "setraw", F.list(leftHandSide), engine);
-        return rightHandSide;
-      }
-
       try {
-        if (leftHandSide.isAST()) {
-          if (head.isBuiltInSymbol()) {
-            IBuiltInSymbol symbol = (IBuiltInSymbol) head;
+        final IExpr leftHandSide = ast.arg1();
+        IExpr spliced =
+            spliceSequences(S.Set, leftHandSide, F.unaryAST1(S.Unevaluated, ast.arg2()), engine);
+        if (spliced.isPresent()) {
+          return spliced;
+        }
+        if (isConditionalSymbol(leftHandSide)) {
+          // h /; test = v: the value of h is v (evaluated now) where the test holds
+          IExpr value = engine.evaluate(ast.arg2());
+          engine.evaluate(F.SetDelayed(leftHandSide.first(),
+              conditionalValue((ISymbol) leftHandSide.first(), value, leftHandSide.second())));
+          return value;
+        }
+
+        IExpr head = leftHandSide.head();
+        // a built-in which takes the assignment itself keeps it, even where the symbol has a value
+        // of its own: $ContextAliases["a`"] = "A`" adds an alias, although $ContextAliases
+        // evaluates to an association
+        if (!(head.isBuiltInSymbol()
+            && ((IBuiltInSymbol) head).getEvaluator() instanceof ISetEvaluator)) {
+          IExpr rawHead = head;
+          head = engine.evaluate(head);
+          IExpr redispatched = assignToEvaluatedHead(S.Set, leftHandSide, rawHead, head,
+              F.unaryAST1(S.Unevaluated, ast.arg2()), engine);
+          if (redispatched.isPresent()) {
+            return redispatched;
+          }
+          if (head.topHead() == S.Association) {
+            head = S.Association;
+          }
+        }
+        IExpr rightHandSide = ast.arg2();
+        // try {
+        // rightHandSide = engine.evaluate(rightHandSide);
+        // } catch (final ConditionException e) {
+        // } catch (final ReturnException e) {
+        // rightHandSide = e.getValue();
+        // }
+        if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
+          // Cannot assign to raw object `1`.
+          Errors.printMessage(S.Set, "setraw", F.list(leftHandSide), engine);
+          return rightHandSide;
+        }
+
+        try {
+          if (leftHandSide.isAST()) {
+            if (head.isBuiltInSymbol()) {
+              IBuiltInSymbol symbol = (IBuiltInSymbol) head;
+              IEvaluator eval = symbol.getEvaluator();
+              if (eval instanceof ISetEvaluator) {
+                return ((ISetEvaluator) eval).evaluateSet(leftHandSide, rightHandSide, S.Set, engine);
+              }
+            }
+          } else if (leftHandSide.isBuiltInSymbol()) {
+            IBuiltInSymbol symbol = (IBuiltInSymbol) leftHandSide;
             IEvaluator eval = symbol.getEvaluator();
-            if (eval instanceof ISetEvaluator) {
-              return ((ISetEvaluator) eval).evaluateSet(leftHandSide, rightHandSide, S.Set, engine);
+            if (eval instanceof ISetValueEvaluator) {
+              return ((ISetValueEvaluator) eval).evaluateSet(rightHandSide, false, engine);
             }
           }
-        } else if (leftHandSide.isBuiltInSymbol()) {
-          IBuiltInSymbol symbol = (IBuiltInSymbol) leftHandSide;
-          IEvaluator eval = symbol.getEvaluator();
-          if (eval instanceof ISetValueEvaluator) {
-            return ((ISetValueEvaluator) eval).evaluateSet(rightHandSide, false, engine);
-          }
+          return createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
+        } catch (RuleCreationError rce) {
+          // Cannot unset object `1`.
+          Errors.printMessage(ast.topHead(), "usraw", F.list(leftHandSide), engine);
+          return rightHandSide;
         }
-        return createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
-      } catch (RuleCreationError rce) {
-        // Cannot unset object `1`.
-        Errors.printMessage(ast.topHead(), "usraw", F.list(leftHandSide), engine);
-        return rightHandSide;
+      } catch (FailedException fe) {
+        // the assignment failed with a message; the rest of the input goes on
+        return S.$Failed;
       }
     }
 
@@ -2642,59 +2647,64 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr leftHandSide = ast.arg1();
-      IExpr spliced = spliceSequences(S.SetDelayed, leftHandSide, ast.arg2(), engine);
-      if (spliced.isPresent()) {
-        return spliced;
-      }
-      if (isConditionalSymbol(leftHandSide)) {
-        // h /; test := v is h := v /; test, a value of h where the test holds
-        return engine.evaluate(F.SetDelayed(leftHandSide.first(),
-            conditionalValue((ISymbol) leftHandSide.first(), ast.arg2(), leftHandSide.second())));
-      }
-      IExpr head = engine.evaluate(leftHandSide.head());
-      IExpr redispatched = assignToEvaluatedHead(S.SetDelayed, leftHandSide, leftHandSide.head(),
-          head, ast.arg2(), engine);
-      if (redispatched.isPresent()) {
-        return redispatched;
-      }
-      if (head.isAssociation()) {
-        head = S.Association;
-      }
       try {
-        final IExpr rightHandSide = ast.arg2();
-        if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
-          // Cannot assign to raw object `1`.
-          Errors.printMessage(S.SetDelayed, "setraw", F.list(leftHandSide), engine);
-          return rightHandSide;
+        final IExpr leftHandSide = ast.arg1();
+        IExpr spliced = spliceSequences(S.SetDelayed, leftHandSide, ast.arg2(), engine);
+        if (spliced.isPresent()) {
+          return spliced;
         }
+        if (isConditionalSymbol(leftHandSide)) {
+          // h /; test := v is h := v /; test, a value of h where the test holds
+          return engine.evaluate(F.SetDelayed(leftHandSide.first(),
+              conditionalValue((ISymbol) leftHandSide.first(), ast.arg2(), leftHandSide.second())));
+        }
+        IExpr head = engine.evaluate(leftHandSide.head());
+        IExpr redispatched = assignToEvaluatedHead(S.SetDelayed, leftHandSide, leftHandSide.head(),
+            head, ast.arg2(), engine);
+        if (redispatched.isPresent()) {
+          return redispatched;
+        }
+        if (head.isAssociation()) {
+          head = S.Association;
+        }
+        try {
+          final IExpr rightHandSide = ast.arg2();
+          if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
+            // Cannot assign to raw object `1`.
+            Errors.printMessage(S.SetDelayed, "setraw", F.list(leftHandSide), engine);
+            return rightHandSide;
+          }
 
-        if (leftHandSide.isAST()) {
-          if (head.isBuiltInSymbol()) {
-            IBuiltInSymbol symbol = (IBuiltInSymbol) head;
-            IEvaluator eval = symbol.getEvaluator();
-            if (eval instanceof ISetEvaluator) {
-              IExpr temp = ((ISetEvaluator) eval).evaluateSet(leftHandSide, rightHandSide,
-                  S.SetDelayed, engine);
-              if (temp.isPresent()) {
-                return temp;
+          if (leftHandSide.isAST()) {
+            if (head.isBuiltInSymbol()) {
+              IBuiltInSymbol symbol = (IBuiltInSymbol) head;
+              IEvaluator eval = symbol.getEvaluator();
+              if (eval instanceof ISetEvaluator) {
+                IExpr temp = ((ISetEvaluator) eval).evaluateSet(leftHandSide, rightHandSide,
+                    S.SetDelayed, engine);
+                if (temp.isPresent()) {
+                  return temp;
+                }
               }
             }
+          } else if (leftHandSide.isBuiltInSymbol()) {
+            IBuiltInSymbol symbol = (IBuiltInSymbol) leftHandSide;
+            IEvaluator eval = symbol.getEvaluator();
+            if (eval instanceof ISetValueEvaluator) {
+              ((ISetValueEvaluator) eval).evaluateSet(rightHandSide, true, engine);
+              return S.Null;
+            }
           }
-        } else if (leftHandSide.isBuiltInSymbol()) {
-          IBuiltInSymbol symbol = (IBuiltInSymbol) leftHandSide;
-          IEvaluator eval = symbol.getEvaluator();
-          if (eval instanceof ISetValueEvaluator) {
-            ((ISetValueEvaluator) eval).evaluateSet(rightHandSide, true, engine);
-            return S.Null;
-          }
-        }
-        createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
+          createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
 
-        return S.Null;
-      } catch (RuleCreationError rce) {
-        // Cannot unset object `1`.
-        Errors.printMessage(ast.topHead(), "usraw", F.list(leftHandSide), engine);
+          return S.Null;
+        } catch (RuleCreationError rce) {
+          // Cannot unset object `1`.
+          Errors.printMessage(ast.topHead(), "usraw", F.list(leftHandSide), engine);
+          return S.$Failed;
+        }
+      } catch (FailedException fe) {
+        // the assignment failed with a message; the rest of the input goes on
         return S.$Failed;
       }
     }
@@ -3160,62 +3170,67 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (ast.isAST2()) {
-        // the parser creates TagSet(tag, Unset(lhs)) for the input `tag /: lhs =.`
-        if (arg1.isSymbol() && ast.arg2().isAST(S.Unset, 2)) {
-          return TagUnset.tagUnset((ISymbol) arg1, ast.arg2().first(), engine);
+      try {
+        IExpr arg1 = ast.arg1();
+        if (ast.isAST2()) {
+          // the parser creates TagSet(tag, Unset(lhs)) for the input `tag /: lhs =.`
+          if (arg1.isSymbol() && ast.arg2().isAST(S.Unset, 2)) {
+            return TagUnset.tagUnset((ISymbol) arg1, ast.arg2().first(), engine);
+          }
+          // TagSet called with 2 arguments; 3 arguments are expected.
+          return Errors.printArgMessage(ast, ARGS_3_3, engine);
         }
-        // TagSet called with 2 arguments; 3 arguments are expected.
-        return Errors.printArgMessage(ast, ARGS_3_3, engine);
-      }
-      if (arg1.isSymbol()) {
-        final ISymbol symbol = (ISymbol) arg1;
-        final IExpr leftHandSide = ast.arg2();
-        IExpr rightHandSide = ast.arg3();
-        if (isDefinitionOfTag(symbol, leftHandSide)) {
-          // f /: f(x_) = rhs and x /: x = rhs are the definitions without the tag; the
-          // right-hand-side is evaluated there, once
-          return engine.evaluate(F.Set(leftHandSide, rightHandSide));
-        }
-        try {
-          rightHandSide = engine.evaluate(rightHandSide);
-        } catch (final ConditionException e) {
-        } catch (final ReturnException e) {
-          rightHandSide = e.getValue();
-        }
-        if (symbol.hasProtectedAttribute()) {
-          // Tag `1` in `2` is Protected.
-          Errors.printMessage(S.TagSet, "write", F.list(symbol, leftHandSide), EvalEngine.get());
-          throw new FailedException();
-        }
-
-        if (leftHandSide.isList()) {
-          // thread over lists
+        if (arg1.isSymbol()) {
+          final ISymbol symbol = (ISymbol) arg1;
+          final IExpr leftHandSide = ast.arg2();
+          IExpr rightHandSide = ast.arg3();
+          if (isDefinitionOfTag(symbol, leftHandSide)) {
+            // f /: f(x_) = rhs and x /: x = rhs are the definitions without the tag; the
+            // right-hand-side is evaluated there, once
+            return engine.evaluate(F.Set(leftHandSide, rightHandSide));
+          }
           try {
             rightHandSide = engine.evaluate(rightHandSide);
+          } catch (final ConditionException e) {
           } catch (final ReturnException e) {
             rightHandSide = e.getValue();
           }
-          IExpr temp = engine.threadASTListArgs(F.TagSet(symbol, leftHandSide, rightHandSide),
-              S.TagSet, "tdlen");
-          if (temp.isPresent()) {
-            return engine.evaluate(temp);
+          if (symbol.hasProtectedAttribute()) {
+            // Tag `1` in `2` is Protected.
+            Errors.printMessage(S.TagSet, "write", F.list(symbol, leftHandSide), EvalEngine.get());
+            throw new FailedException();
           }
+
+          if (leftHandSide.isList()) {
+            // thread over lists
+            try {
+              rightHandSide = engine.evaluate(rightHandSide);
+            } catch (final ReturnException e) {
+              rightHandSide = e.getValue();
+            }
+            IExpr temp = engine.threadASTListArgs(F.TagSet(symbol, leftHandSide, rightHandSide),
+                S.TagSet, "tdlen");
+            if (temp.isPresent()) {
+              return engine.evaluate(temp);
+            }
+          }
+          try {
+            Object[] result =
+                createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSet, engine);
+            return (IExpr) result[1];
+          } catch (final ValidateException ve) {
+            Errors.printMessage(ast.topHead(), ve, engine);
+            return rightHandSide;
+          }
+        } else {
+          // Argument `1` at position `2` is expected to be a symbol.
+          Errors.printMessage(S.TagSet, "sym", F.list(arg1, F.C1), EvalEngine.get());
         }
-        try {
-          Object[] result =
-              createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSet, engine);
-          return (IExpr) result[1];
-        } catch (final ValidateException ve) {
-          Errors.printMessage(ast.topHead(), ve, engine);
-          return rightHandSide;
-        }
-      } else {
-        // Argument `1` at position `2` is expected to be a symbol.
-        Errors.printMessage(S.TagSet, "sym", F.list(arg1, F.C1), EvalEngine.get());
+        return F.NIL;
+      } catch (FailedException fe) {
+        // the assignment failed with a message; the rest of the input goes on
+        return S.$Failed;
       }
-      return F.NIL;
     }
 
     @Override
@@ -3407,13 +3422,18 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isSymbol()) {
-        return tagUnset((ISymbol) arg1, ast.arg2(), engine);
+      try {
+        IExpr arg1 = ast.arg1();
+        if (arg1.isSymbol()) {
+          return tagUnset((ISymbol) arg1, ast.arg2(), engine);
+        }
+        // Argument `1` at position `2` is expected to be a symbol.
+        Errors.printMessage(S.TagUnset, "sym", F.list(arg1, F.C1), engine);
+        return F.NIL;
+      } catch (FailedException fe) {
+        // the assignment failed with a message; the rest of the input goes on
+        return S.$Failed;
       }
-      // Argument `1` at position `2` is expected to be a symbol.
-      Errors.printMessage(S.TagUnset, "sym", F.list(arg1, F.C1), engine);
-      return F.NIL;
     }
 
     /**
@@ -3483,32 +3503,37 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isSymbol()) {
-        final ISymbol symbol = (ISymbol) arg1;
-        final IExpr leftHandSide = ast.arg2();
-        final IExpr rightHandSide = ast.arg3();
-        if (symbol.hasProtectedAttribute()) {
-          // Tag `1` in `2` is Protected.
-          Errors.printMessage(ast.topHead(), "write", F.list(symbol, leftHandSide),
-              EvalEngine.get());
-          throw new FailedException();
+      try {
+        IExpr arg1 = ast.arg1();
+        if (arg1.isSymbol()) {
+          final ISymbol symbol = (ISymbol) arg1;
+          final IExpr leftHandSide = ast.arg2();
+          final IExpr rightHandSide = ast.arg3();
+          if (symbol.hasProtectedAttribute()) {
+            // Tag `1` in `2` is Protected.
+            Errors.printMessage(ast.topHead(), "write", F.list(symbol, leftHandSide),
+                EvalEngine.get());
+            throw new FailedException();
+          }
+          if (isDefinitionOfTag(symbol, leftHandSide)) {
+            return engine.evaluate(F.SetDelayed(leftHandSide, rightHandSide));
+          }
+          try {
+            createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSetDelayed, engine);
+            return S.Null;
+          } catch (final ValidateException ve) {
+            Errors.printMessage(ast.topHead(), ve, engine);
+            throw new FailedException();
+          }
+        } else {
+          // Argument `1` at position `2` is expected to be a symbol.
+          Errors.printMessage(S.TagSetDelayed, "sym", F.list(arg1, F.C1), EvalEngine.get());
         }
-        if (isDefinitionOfTag(symbol, leftHandSide)) {
-          return engine.evaluate(F.SetDelayed(leftHandSide, rightHandSide));
-        }
-        try {
-          createPatternMatcher(symbol, leftHandSide, rightHandSide, false, S.TagSetDelayed, engine);
-          return S.Null;
-        } catch (final ValidateException ve) {
-          Errors.printMessage(ast.topHead(), ve, engine);
-          throw new FailedException();
-        }
-      } else {
-        // Argument `1` at position `2` is expected to be a symbol.
-        Errors.printMessage(S.TagSetDelayed, "sym", F.list(arg1, F.C1), EvalEngine.get());
+        return F.NIL;
+      } catch (FailedException fe) {
+        // the assignment failed with a message; the rest of the input goes on
+        return S.$Failed;
       }
-      return F.NIL;
     }
 
     @Override
@@ -3653,83 +3678,88 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr leftHandSide = ast.arg1();
       try {
-        if (leftHandSide.isList()) {
-          // thread over lists
-          IExpr temp = engine.threadASTListArgs(F.Unset(leftHandSide), S.Unset, "tdlen");
-          if (temp.isPresent()) {
-            return engine.evaluate(temp);
+        final IExpr leftHandSide = ast.arg1();
+        try {
+          if (leftHandSide.isList()) {
+            // thread over lists
+            IExpr temp = engine.threadASTListArgs(F.Unset(leftHandSide), S.Unset, "tdlen");
+            if (temp.isPresent()) {
+              return engine.evaluate(temp);
+            }
+            return F.NIL;
           }
-          return F.NIL;
-        }
 
-        final ISymbol nValueTag = nValueTag(leftHandSide);
-        if (nValueTag != null) {
-          // an N-value is stored with the up-values of its tag
-          IExpr lhs = engine.evalHoldPattern((IAST) leftHandSide);
-          lhs = lhs.isAST() ? RulesData.storedNValue((IAST) lhs) : lhs;
-          if (!nValueTag.removeRule(IPatternMatcher.TAGSET, false, lhs, engine.isPackageMode())) {
-            printAssignmentNotFound(nValueTag, leftHandSide);
+          final ISymbol nValueTag = nValueTag(leftHandSide);
+          if (nValueTag != null) {
+            // an N-value is stored with the up-values of its tag
+            IExpr lhs = engine.evalHoldPattern((IAST) leftHandSide);
+            lhs = lhs.isAST() ? RulesData.storedNValue((IAST) lhs) : lhs;
+            if (!nValueTag.removeRule(IPatternMatcher.TAGSET, false, lhs, engine.isPackageMode())) {
+              printAssignmentNotFound(nValueTag, leftHandSide);
+            }
+            return S.Null;
           }
-          return S.Null;
-        }
-        final ISymbol notationTag = notationTag(leftHandSide);
-        if (notationTag != null) {
-          // the rule was stored as an up-value of the variable the notation is written for
-          IExpr lhs = engine.evalHoldPattern((IAST) leftHandSide);
-          if (!notationTag.removeRule(IPatternMatcher.TAGSET, false, lhs, engine.isPackageMode())) {
-            printAssignmentNotFound(notationTag, leftHandSide);
+          final ISymbol notationTag = notationTag(leftHandSide);
+          if (notationTag != null) {
+            // the rule was stored as an up-value of the variable the notation is written for
+            IExpr lhs = engine.evalHoldPattern((IAST) leftHandSide);
+            if (!notationTag.removeRule(IPatternMatcher.TAGSET, false, lhs, engine.isPackageMode())) {
+              printAssignmentNotFound(notationTag, leftHandSide);
+            }
+            return S.Null;
           }
-          return S.Null;
-        }
-        if (leftHandSide.isAST() && leftHandSide.head().isBuiltInSymbol()
-            && ((IBuiltInSymbol) leftHandSide.head()).getEvaluator() instanceof ISetEvaluator) {
-          // a built-in which took the assignment itself removes it, like ValueFunction[x] =.
-          IExpr unset = ((ISetEvaluator) ((IBuiltInSymbol) leftHandSide.head()).getEvaluator())
-              .evaluateUnset(leftHandSide, engine);
-          if (unset.isPresent()) {
-            return unset;
+          if (leftHandSide.isAST() && leftHandSide.head().isBuiltInSymbol()
+              && ((IBuiltInSymbol) leftHandSide.head()).getEvaluator() instanceof ISetEvaluator) {
+            // a built-in which took the assignment itself removes it, like ValueFunction[x] =.
+            IExpr unset = ((ISetEvaluator) ((IBuiltInSymbol) leftHandSide.head()).getEvaluator())
+                .evaluateUnset(leftHandSide, engine);
+            if (unset.isPresent()) {
+              return unset;
+            }
           }
-        }
-        if (leftHandSide.isAST()) {
-          final ISymbol lhsSymbol = getLookupReferenceName(leftHandSide);
-          if (lhsSymbol == null) {
-            // `1` does not contain a symbol to attach a rule to.
-            Errors.printMessage(S.Unset, "nosym", F.list(leftHandSide), EvalEngine.get());
-            throw new FailedException();
+          if (leftHandSide.isAST()) {
+            final ISymbol lhsSymbol = getLookupReferenceName(leftHandSide);
+            if (lhsSymbol == null) {
+              // `1` does not contain a symbol to attach a rule to.
+              Errors.printMessage(S.Unset, "nosym", F.list(leftHandSide), EvalEngine.get());
+              throw new FailedException();
+            }
+            if (lhsSymbol.hasProtectedAttribute()) {
+              // Symbol `1` is Protected.
+              Errors.printMessage(S.Unset, "wrsym", F.list(lhsSymbol), EvalEngine.get());
+              throw new FailedException();
+            }
           }
-          if (lhsSymbol.hasProtectedAttribute()) {
-            // Symbol `1` is Protected.
-            Errors.printMessage(S.Unset, "wrsym", F.list(lhsSymbol), EvalEngine.get());
-            throw new FailedException();
+          if (leftHandSide.isBuiltInSymbol()
+              && ((IBuiltInSymbol) leftHandSide).getEvaluator() instanceof ISetValueEvaluator
+              && ((IBuiltInSymbol) leftHandSide).isDollarSymbol()) {
+            // An assignable $ symbol such as $GeoLocation keeps its value in the engine, where Set
+            // put it through ISetValueEvaluator; dropping it there brings back the symbol's default.
+            engine.setDollarValue((IBuiltInSymbol) leftHandSide, null);
+            return S.Null;
           }
-        }
-        if (leftHandSide.isBuiltInSymbol()
-            && ((IBuiltInSymbol) leftHandSide).getEvaluator() instanceof ISetValueEvaluator
-            && ((IBuiltInSymbol) leftHandSide).isDollarSymbol()) {
-          // An assignable $ symbol such as $GeoLocation keeps its value in the engine, where Set
-          // put it through ISetValueEvaluator; dropping it there brings back the symbol's default.
-          engine.setDollarValue((IBuiltInSymbol) leftHandSide, null);
-          return S.Null;
-        }
-        if (leftHandSide.isSymbol()) {
-          final ISymbol lhsSymbol = (ISymbol) leftHandSide;
-          if (lhsSymbol.hasProtectedAttribute()) {
-            // Symbol `1` is Protected.
-            Errors.printMessage(ast.topHead(), "wrsym", F.list(lhsSymbol), EvalEngine.get());
-            throw new FailedException();
+          if (leftHandSide.isSymbol()) {
+            final ISymbol lhsSymbol = (ISymbol) leftHandSide;
+            if (lhsSymbol.hasProtectedAttribute()) {
+              // Symbol `1` is Protected.
+              Errors.printMessage(ast.topHead(), "wrsym", F.list(lhsSymbol), EvalEngine.get());
+              throw new FailedException();
+            }
           }
-        }
 
-        if (unsetAssociationKey(leftHandSide, engine)) {
+          if (unsetAssociationKey(leftHandSide, engine)) {
+            return S.Null;
+          }
+          removePatternMatcher(leftHandSide, engine.isPackageMode(), engine);
           return S.Null;
+        } catch (RuleCreationError rce) {
+          // Cannot unset object `1`.
+          Errors.printMessage(ast.topHead(), "usraw", F.list(leftHandSide), engine);
+          return S.$Failed;
         }
-        removePatternMatcher(leftHandSide, engine.isPackageMode(), engine);
-        return S.Null;
-      } catch (RuleCreationError rce) {
-        // Cannot unset object `1`.
-        Errors.printMessage(ast.topHead(), "usraw", F.list(leftHandSide), engine);
+      } catch (FailedException fe) {
+        // the assignment failed with a message; the rest of the input goes on
         return S.$Failed;
       }
     }
@@ -3815,32 +3845,37 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr leftHandSide = ast.arg1();
-      IExpr rightHandSide = ast.arg2();
       try {
-        if (leftHandSide.isList()) {
-          // thread over lists
-          try {
-            rightHandSide = engine.evaluate(rightHandSide);
-          } catch (final ReturnException e) {
-            rightHandSide = e.getValue();
+        final IExpr leftHandSide = ast.arg1();
+        IExpr rightHandSide = ast.arg2();
+        try {
+          if (leftHandSide.isList()) {
+            // thread over lists
+            try {
+              rightHandSide = engine.evaluate(rightHandSide);
+            } catch (final ReturnException e) {
+              rightHandSide = e.getValue();
+            }
+            IExpr temp =
+                engine.threadASTListArgs(F.UpSet(leftHandSide, rightHandSide), S.UpSet, "tdlen");
+            if (temp.isPresent()) {
+              return engine.evaluate(temp);
+            }
           }
-          IExpr temp =
-              engine.threadASTListArgs(F.UpSet(leftHandSide, rightHandSide), S.UpSet, "tdlen");
-          if (temp.isPresent()) {
-            return engine.evaluate(temp);
+          if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
+            // Cannot assign to raw object `1`.
+            Errors.printMessage(S.UpSet, "setraw", F.list(leftHandSide), engine);
+            return rightHandSide;
           }
+          Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
+          return (IExpr) result[1];
+        } catch (final ValidateException ve) {
+          Errors.printMessage(ast.topHead(), ve, engine);
+          return F.NIL;
         }
-        if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
-          // Cannot assign to raw object `1`.
-          Errors.printMessage(S.UpSet, "setraw", F.list(leftHandSide), engine);
-          return rightHandSide;
-        }
-        Object[] result = createPatternMatcher(leftHandSide, rightHandSide, false, engine);
-        return (IExpr) result[1];
-      } catch (final ValidateException ve) {
-        Errors.printMessage(ast.topHead(), ve, engine);
-        return F.NIL;
+      } catch (FailedException fe) {
+        // the assignment failed with a message; the rest of the input goes on
+        return S.$Failed;
       }
     }
 
@@ -3901,21 +3936,26 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr leftHandSide = ast.arg1();
-      final IExpr rightHandSide = ast.arg2();
       try {
-        if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
-          // Cannot assign to raw object `1`.
-          Errors.printMessage(S.UpSetDelayed, "setraw", F.list(leftHandSide), engine);
-          return rightHandSide;
+        final IExpr leftHandSide = ast.arg1();
+        final IExpr rightHandSide = ast.arg2();
+        try {
+          if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
+            // Cannot assign to raw object `1`.
+            Errors.printMessage(S.UpSetDelayed, "setraw", F.list(leftHandSide), engine);
+            return rightHandSide;
+          }
+
+          createPatternMatcher(leftHandSide, rightHandSide, false, engine);
+
+          return S.Null;
+        } catch (final ValidateException ve) {
+          Errors.printMessage(ast.topHead(), ve, engine);
+          return F.NIL;
         }
-
-        createPatternMatcher(leftHandSide, rightHandSide, false, engine);
-
-        return S.Null;
-      } catch (final ValidateException ve) {
-        Errors.printMessage(ast.topHead(), ve, engine);
-        return F.NIL;
+      } catch (FailedException fe) {
+        // the assignment failed with a message; the rest of the input goes on
+        return S.$Failed;
       }
     }
 

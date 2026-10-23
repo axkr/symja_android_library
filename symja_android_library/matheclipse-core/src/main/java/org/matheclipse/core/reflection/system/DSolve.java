@@ -104,8 +104,34 @@ public class DSolve extends AbstractFunctionOptionEvaluator {
         new IExpr[] {S.C});
   }
 
+  /** The nesting depth of DSolve calls of the current thread. */
+  private static final ThreadLocal<int[]> DEPTH = ThreadLocal.withInitial(() -> new int[1]);
+
+  /**
+   * The constants of a solution are numbered from <code>C(1)</code> on for every call which isn't
+   * nested in another one, however long the session; a nested call continues the numbering of the
+   * one around it.
+   */
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine, IAST originalAST) {
+    final int[] depth = DEPTH.get();
+    final int savedCounter = engine.getConstantCounter();
+    if (depth[0] == 0) {
+      engine.setConstantCounter(1);
+    }
+    depth[0]++;
+    try {
+      return evaluateEquations(ast, argSize, options, engine, originalAST);
+    } finally {
+      depth[0]--;
+      if (depth[0] == 0) {
+        engine.setConstantCounter(savedCounter);
+      }
+    }
+  }
+
+  private IExpr evaluateEquations(final IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine, IAST originalAST) {
     // an `And(...)` of equations is equivalent to a `List(...)` of equations
     IAST arg1 = SolveUtils.toEquationList(ast.arg1()).makeList();

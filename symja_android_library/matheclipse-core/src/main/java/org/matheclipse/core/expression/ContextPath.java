@@ -174,14 +174,21 @@ public final class ContextPath implements Iterable<Context> {
    * like that, and the built-in that answers them lives in <code>System`</code>. Rather than fill
    * those contexts in every engine, a name that is asked for here is answered with the built-in.
    */
-  private static final Map<String, IBuiltInSymbol> SYSTEM_ALIASES = buildSystemAliases();
+  private static final class SystemAliases {
+    /*
+     * Built on first use, not when ContextPath is initialized: the tables need F and S, and F's
+     * initialization creates an EvalEngine, which needs ContextPath. Two threads which started
+     * the two at the same time waited for each other forever.
+     */
+    static final Map<String, IBuiltInSymbol> EXACT = buildSystemAliases();
 
-  private static final Map<String, IBuiltInSymbol> SYSTEM_ALIASES_LOWERCASE =
-      buildLowercaseSystemAliases();
+    static final Map<String, IBuiltInSymbol> LOWERCASE = buildLowercaseSystemAliases(EXACT);
+  }
 
-  private static Map<String, IBuiltInSymbol> buildLowercaseSystemAliases() {
+  private static Map<String, IBuiltInSymbol> buildLowercaseSystemAliases(
+      Map<String, IBuiltInSymbol> exact) {
     Map<String, IBuiltInSymbol> aliases = new java.util.HashMap<>();
-    for (Map.Entry<String, IBuiltInSymbol> entry : SYSTEM_ALIASES.entrySet()) {
+    for (Map.Entry<String, IBuiltInSymbol> entry : exact.entrySet()) {
       aliases.put(entry.getKey().toLowerCase(Locale.ENGLISH), entry.getValue());
     }
     return aliases;
@@ -250,12 +257,12 @@ public final class ContextPath implements Iterable<Context> {
    * <code>null</code> when the system provides no such symbol.
    */
   public static IBuiltInSymbol systemAlias(String contextName, String symbolName) {
-    IBuiltInSymbol alias = SYSTEM_ALIASES.get(contextName + symbolName);
+    IBuiltInSymbol alias = SystemAliases.EXACT.get(contextName + symbolName);
     if (alias != null) {
       return alias;
     }
     // in relaxed syntax the name written in the source has been lower-cased by now
-    return SYSTEM_ALIASES_LOWERCASE.get((contextName + symbolName).toLowerCase(Locale.ENGLISH));
+    return SystemAliases.LOWERCASE.get((contextName + symbolName).toLowerCase(Locale.ENGLISH));
   }
 
   /** Add a short name for a context, as <code>Needs["A`" -&gt; "a`"]</code> does. */

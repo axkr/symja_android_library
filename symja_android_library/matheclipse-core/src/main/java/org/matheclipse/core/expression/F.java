@@ -5738,8 +5738,23 @@ public class F extends S {
 
   public static IPattern initPredefinedPattern(final ISymbol symbol) {
     IPattern temp = new Pattern(symbol);
-    PREDEFINED_PATTERN_MAP.put(symbol.toString(), temp);
+    PREDEFINED_PATTERN_MAP.put(predefinedKey(symbol), temp);
     return temp;
+  }
+
+  /**
+   * The name a predefined symbol of the system context prints with. Worked out here instead of
+   * with <code>toString()</code>, which creates an EvalEngine: F is still being initialized, and
+   * an EvalEngine created from a static initializer made two threads which started Symja at the
+   * same time wait for each other.
+   */
+  private static String predefinedKey(final ISymbol symbol) {
+    final String name = symbol.getSymbolName();
+    if (symbol.getContext() == org.matheclipse.core.expression.Context.SYSTEM) {
+      final String printed = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(name);
+      return printed != null ? printed : name;
+    }
+    return symbol.toString();
   }
 
   public static IPatternSequence initPredefinedPatternSequence(final ISymbol symbol) {
@@ -5750,7 +5765,7 @@ public class F extends S {
       boolean zeroArgsAllowed) {
     org.matheclipse.core.expression.PatternSequence temp =
         org.matheclipse.core.expression.PatternSequence.valueOf(symbol, zeroArgsAllowed);
-    PREDEFINED_PATTERNSEQUENCE_MAP.put(symbol.toString(), temp);
+    PREDEFINED_PATTERNSEQUENCE_MAP.put(predefinedKey(symbol), temp);
     return temp;
   }
 

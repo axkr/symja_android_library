@@ -2569,7 +2569,8 @@ public class TeXFormFactory {
       return;
     }
 
-    if (EvalEngine.get().getContextPath().contains(context)) {
+    // as in InputForm: no context for a symbol of the current context or of one on the path
+    if (EvalEngine.get().getContextPath().isShortName(context)) {
       buf.append(sym.getSymbolName());
     } else {
       buf.append(context + sym.getSymbolName());

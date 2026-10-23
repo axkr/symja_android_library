@@ -34375,6 +34375,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   @Tag(TestTags.SLOW)
   public void testZeta() {
+    // s = -n with a large n: the numeric route would compute Bernoulli numbers up to n+1 in a loop
+    // no time limit reaches; it is left unevaluated instead
+    check("Zeta(-4001, 2.0*10^300)", //
+        "Zeta(-4001,2.0*10^300)");
     check("N(HurwitzZeta(3, -3/2),30)", //
         "0.118102025820863701501870834284");
     // Zeta(s, a) is the sum of ((k+a)^2)^(-s/2) for a negative a, at any precision; the sum of
