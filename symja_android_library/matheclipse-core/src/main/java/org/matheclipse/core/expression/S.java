@@ -7726,6 +7726,16 @@ public class S {
       S.initFinalSymbol("EvaluationNotebook", ID.EvaluationNotebook);
 
   /**
+   * EvaluationObject(x) - TODO describe `EvaluationObject`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/EvaluationObject.md">EvaluationObject
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol EvaluationObject =
+      S.initFinalSymbol("EvaluationObject", ID.EvaluationObject);
+
+  /**
    * Evaluator(x) - TODO describe `Evaluator`.
    * 
    * @see <a href=
@@ -12983,6 +12993,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol KelvinKer = S.initFinalSymbol("KelvinKer", ID.KelvinKer);
+
+  /**
+   * KernelObject(x) - TODO describe `KernelObject`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KernelObject.md">KernelObject
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KernelObject =
+      S.initFinalSymbol("KernelObject", ID.KernelObject);
 
   /**
    * Kernels(x) - TODO describe `Kernels`.
