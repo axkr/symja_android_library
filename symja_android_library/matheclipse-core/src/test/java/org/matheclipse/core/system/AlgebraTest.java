@@ -717,4 +717,27 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "(1+x)*z");
   }
 
+  /**
+   * A cache hit gives what the first Factor of the same argument returned, and a Simplify which
+   * factors the argument internally does not change what a later Factor returns.
+   */
+  @Test
+  public void testFactorIssue1570() {
+    check("{Factor(6/(2-x)), Factor(6/(2-x))}", //
+        "{-6/(-2+x),-6/(-2+x)}");
+    check("{Factor((-a+b)^3), Factor((-a+b)^3)}", //
+        "{-(a-b)^3,-(a-b)^3}");
+    check("{Factor((x+2)/(x-5)+3==6/(2-x)), Factor((x+2)/(x-5)+3==6/(2-x))}", //
+        "{(-13+4*x)/(-5+x)==-6/(-2+x),(-13+4*x)/(-5+x)==-6/(-2+x)}");
+    // TrigSimplifyFu, which Simplify and FullSimplify run, factors the argument first
+    check("Last({TrigSimplifyFu(6/(2-x)), Factor(6/(2-x))})", //
+        "-6/(-2+x)");
+    check("Last({Simplify(Cos(y)^2/(2-x)), Factor(Cos(y)^2/(2-x))})", //
+        "-Cos(y)^2/(-2+x)");
+    check("Last({FullSimplify((-a+b)^3*Cos(y)), Factor((-a+b)^3*Cos(y))})", //
+        "-(a-b)^3*Cos(y)");
+    check("Last({Simplify(6/(2-x)+Cos(y)), Factor(6/(2-x)+Cos(y))})", //
+        "(-6-2*Cos(y)+x*Cos(y))/(-2+x)");
+  }
+
 }
