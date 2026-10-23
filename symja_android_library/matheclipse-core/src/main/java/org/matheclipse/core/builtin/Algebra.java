@@ -1643,8 +1643,12 @@ public class Algebra {
       }
       if (modulus.isZero() && extension == S.None && gaussianIntegers.isFalse()) {
         IExpr factorization = AlgebraUtil.factor(ast, arg1, eVar, false, true, true, trig, engine);
-        return factorization.isPresent() ? AlgebraUtil.factorSigns(factorization, engine)
-            : factorization;
+        if (factorization.isPresent()) {
+          factorization = AlgebraUtil.factorSigns(factorization, engine);
+          // cache what is returned, so that the cache hit above gives the same form
+          engine.putCache(ast, factorization);
+        }
+        return factorization;
       }
       if (!modulus.isZero()) {
         return factorModulus(S.Factor, arg1, eVar, false, modulus, engine);
