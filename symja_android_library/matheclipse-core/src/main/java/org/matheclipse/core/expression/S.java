@@ -476,6 +476,16 @@ public class S {
   public final static IBuiltInSymbol AbsoluteFileName =
       S.initFinalSymbol("AbsoluteFileName", ID.AbsoluteFileName);
 
+  /**
+   * AbsoluteOptions(x) - TODO describe `AbsoluteOptions`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AbsoluteOptions.md">AbsoluteOptions
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol AbsoluteOptions =
+      S.initFinalSymbol("AbsoluteOptions", ID.AbsoluteOptions);
+
   public final static IBuiltInSymbol AbsolutePointSize =
       S.initFinalSymbol("AbsolutePointSize", ID.AbsolutePointSize);
 
@@ -7892,6 +7902,16 @@ public class S {
   public final static IBuiltInSymbol ExponentialDistribution =
       S.initFinalSymbol("ExponentialDistribution", ID.ExponentialDistribution);
 
+  /**
+   * ExponentialFamily(x) - TODO describe `ExponentialFamily`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExponentialFamily.md">ExponentialFamily
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ExponentialFamily =
+      S.initFinalSymbol("ExponentialFamily", ID.ExponentialFamily);
+
   public final static IBuiltInSymbol ExponentialGeneratingFunction =
       S.initFinalSymbol("ExponentialGeneratingFunction", ID.ExponentialGeneratingFunction);
 
@@ -9706,6 +9726,16 @@ public class S {
   public final static IBuiltInSymbol GegenbauerC = S.initFinalSymbol("GegenbauerC", ID.GegenbauerC);
 
   public final static IBuiltInSymbol General = S.initFinalSymbol("General", ID.General);
+
+  /**
+   * GeneralizedLinearModelFit(x) - TODO describe `GeneralizedLinearModelFit`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeneralizedLinearModelFit.md">GeneralizedLinearModelFit
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GeneralizedLinearModelFit =
+      S.initFinalSymbol("GeneralizedLinearModelFit", ID.GeneralizedLinearModelFit);
 
   public final static IBuiltInSymbol GenerateConditions =
       S.initFinalSymbol("GenerateConditions", ID.GenerateConditions);
@@ -19960,6 +19990,15 @@ public class S {
       S.initFinalSymbol("RandomPermutation", ID.RandomPermutation);
 
   /**
+   * RandomPoint(x) - TODO describe `RandomPoint`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RandomPoint.md">RandomPoint
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RandomPoint = S.initFinalSymbol("RandomPoint", ID.RandomPoint);
+
+  /**
    * RandomPrime({imin, imax}) - create a random prime integer number between `imin` and `imax`
    * inclusive.
    * 
@@ -20280,6 +20319,16 @@ public class S {
    */
   public final static IBuiltInSymbol RectangleChart =
       S.initFinalSymbol("RectangleChart", ID.RectangleChart);
+
+  /**
+   * RectangleChart3D(x) - TODO describe `RectangleChart3D`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RectangleChart3D.md">RectangleChart3D
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol RectangleChart3D =
+      S.initFinalSymbol("RectangleChart3D", ID.RectangleChart3D);
 
   /**
    * RecurrenceTable(x) - TODO describe `RecurrenceTable`.
