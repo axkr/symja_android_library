@@ -651,6 +651,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStringTrim() {
+    // an empty list of strings stays empty
+    check("{StringTrim({}), StringTrim(ToString /@ {})}", //
+        "{{},{}}");
     check("StringJoin(\"a\", StringTrim(\" \\tb\\n \"), \"c\")", //
         "abc");
     check("StringTrim(\"ababaxababyaabab\", RegularExpression(\"(ab)+\"))", //

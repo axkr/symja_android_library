@@ -1,7 +1,10 @@
 package org.matheclipse.core.builtin;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
@@ -107,6 +110,7 @@ public final class Programming {
       S.StackBegin.setEvaluator(new StackBegin());
       S.Switch.setEvaluator(new Switch());
       S.TimeConstrained.setEvaluator(new TimeConstrained());
+      S.EvaluationData.setEvaluator(new EvaluationData());
       S.TimeRemaining.setEvaluator(new TimeRemaining());
       S.Timing.setEvaluator(new Timing());
       S.TimeUsed.setEvaluator(new TimeUsed());
@@ -3158,6 +3162,117 @@ public final class Programming {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(Attribute.HOLDALL);
+    }
+  }
+
+  /**
+   * <code>EvaluationData(expr)</code>: the result of evaluating <code>expr</code> together with
+   * what the evaluation printed and the messages it generated, as an association with the keys
+   * <code>"Result"</code>, <code>"Success"</code>, <code>"FailureType"</code>,
+   * <code>"OutputLog"</code>, <code>"Messages"</code>, <code>"MessagesText"</code>,
+   * <code>"Timing"</code> and <code>"AbsoluteTiming"</code>. The printed output and the messages
+   * are collected instead of printed, so a kernel driven over a link only sends the answer.
+   */
+  private static final class EvaluationData extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.isAST1()) {
+        return engine.checkBuiltinArgsSize(ast, this);
+      }
+      final PrintStream outStream = engine.getOutPrintStream();
+      final PrintStream errorStream = engine.getErrorPrintStream();
+      final IExpr messageList = engine.getDollarValue(S.$MessageList);
+      final ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
+      final ByteArrayOutputStream errorBytes = new ByteArrayOutputStream();
+      engine.setOutPrintStream(new PrintStream(outBytes, true, StandardCharsets.UTF_8));
+      engine.setErrorPrintStream(new PrintStream(errorBytes, true, StandardCharsets.UTF_8));
+      engine.setDollarValue(S.$MessageList, F.CEmptyList);
+      EvalEngine.incEpoch();
+      final ThreadMXBean threads = ManagementFactory.getThreadMXBean();
+      final boolean cpuTime = threads.isCurrentThreadCpuTimeSupported();
+      final long cpuStart = cpuTime ? threads.getCurrentThreadCpuTime() : 0L;
+      final long start = System.nanoTime();
+      IExpr result;
+      IExpr failureType = S.None;
+      IExpr messages;
+      try {
+        result = engine.evaluate(ast.arg1());
+      } catch (AbortException ae) {
+        result = S.$Aborted;
+        failureType = F.stringx("Abort");
+      } finally {
+        engine.setOutPrintStream(outStream);
+        engine.setErrorPrintStream(errorStream);
+        messages = engine.getDollarValue(S.$MessageList);
+        engine.setDollarValue(S.$MessageList, messageList);
+        EvalEngine.incEpoch();
+      }
+      final double absoluteTiming = (System.nanoTime() - start) / 1.0e9;
+      final double timing =
+          cpuTime ? (threads.getCurrentThreadCpuTime() - cpuStart) / 1.0e9 : absoluteTiming;
+      if (!messages.isList()) {
+        messages = F.CEmptyList;
+      }
+      if (failureType == S.None && messages.argSize() > 0) {
+        failureType = F.stringx("Message");
+      }
+      final IASTAppendable rules = F.ListAlloc(8);
+      rules.append(F.Rule(F.stringx("Result"), result));
+      rules.append(F.Rule(F.stringx("Success"), F.booleSymbol(failureType == S.None)));
+      rules.append(F.Rule(F.stringx("FailureType"), failureType));
+      rules.append(F.Rule(F.stringx("OutputLog"), lines(outBytes)));
+      rules.append(F.Rule(F.stringx("Messages"), messages));
+      rules.append(F.Rule(F.stringx("MessagesText"), messagesText((IAST) messages, errorBytes)));
+      rules.append(F.Rule(F.stringx("Timing"), F.num(timing)));
+      rules.append(F.Rule(F.stringx("AbsoluteTiming"), F.num(absoluteTiming)));
+      return F.assoc(rules);
+    }
+
+    /** The lines written to a captured stream, as strings. */
+    private static IAST lines(ByteArrayOutputStream bytes) {
+      final String text = bytes.toString(StandardCharsets.UTF_8);
+      final IASTAppendable list = F.ListAlloc();
+      for (String line : text.split("\\r?\\n")) {
+        if (!line.isEmpty()) {
+          list.append(F.stringx(line));
+        }
+      }
+      return list;
+    }
+
+    /**
+     * The printed messages, each as <code>"symbol::tag: text"</code>. A message is printed as
+     * <code>"symbol: text"</code>; the tag comes from the message list, when the two agree.
+     */
+    private static IAST messagesText(IAST messages, ByteArrayOutputStream errorBytes) {
+      final IAST printed = lines(errorBytes);
+      if (printed.argSize() != messages.argSize()) {
+        return printed;
+      }
+      final IASTAppendable list = F.ListAlloc(printed.argSize());
+      for (int i = 1; i < printed.size(); i++) {
+        String line = printed.get(i).toString();
+        IExpr name = messages.get(i).isAST(S.HoldForm, 2) ? messages.get(i).first() : F.NIL;
+        if (name.isAST(S.MessageName, 3)) {
+          String symbol = name.first().toString();
+          if (line.startsWith(symbol + ": ")) {
+            line = symbol + "::" + name.second().toString() + line.substring(symbol.length());
+          }
+        }
+        list.append(F.stringx(line));
+      }
+      return list;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
 
     @Override

@@ -648,6 +648,25 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * The notebook's evaluation API runs each expression inside <code>EvaluationData</code> and
+   * sends back its result, the printed lines and the message texts. Without it every answer was
+   * the unevaluated wrapper.
+   */
+  @Test
+  public void testEvaluationDataCollectsOutputAndMessages() {
+    check("ed = EvaluationData[Print[\"step\"]; Print[2 + 3]; 1/0]; "
+        + "{ed[\"Result\"], ed[\"Success\"], ed[\"FailureType\"], ed[\"OutputLog\"], "
+        + "Length[ed[\"Messages\"]], Length[ed[\"MessagesText\"]]}", //
+        "{ComplexInfinity,False,Message,{step,5},1,1}");
+    check("ed = EvaluationData[Expand[(u + 1)^2]]; "
+        + "{ed[\"Result\"], ed[\"Success\"], ed[\"FailureType\"], ed[\"OutputLog\"], ed[\"Messages\"], "
+        + "NumberQ[ed[\"Timing\"]], NumberQ[ed[\"AbsoluteTiming\"]]}", //
+        "{1+2*u+u^2,True,None,{},{},True,True}");
+    check("ed = EvaluationData[1/0]; ed[\"MessagesText\"]", //
+        "{Power::infy: Infinite expression 1/0 encountered.}");
+  }
+
+  /**
    * The current context counts at its place on <code>$ContextPath</code>: once
    * <code>System`name</code> exists, the short name means it even if <code>Global`name</code> was
    * made before. start.wls declares <code>System`$Env;</code> and then assigns <code>$Env</code>,
@@ -672,6 +691,9 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "1");
     check("Context[ctxPub]", //
         "CtxPkg`Private`");
+    // a symbol of the current context prints without it
+    check("ToString[Hold[ctxPub], InputForm]", //
+        "Hold[ctxPub]");
     check("End[]; EndPackage[]", //
         "");
     check("Context[ctxPub]", //
@@ -695,7 +717,7 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "");
     // the short name inside the context and the name written out in full are the same symbol
     check("{Context[g], SymbolName[g], g === A`B`g}", //
-        "{A`B`,A`B`g,True}");
+        "{A`B`,g,True}");
     check("End[]", //
         "A`B`");
     check("{Length[DownValues[A`B`g]], A`B`g[1, 2]}", //

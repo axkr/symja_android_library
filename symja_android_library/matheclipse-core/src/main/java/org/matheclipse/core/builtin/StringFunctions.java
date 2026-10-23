@@ -3927,6 +3927,10 @@ public final class StringFunctions {
         final EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
       if (arg1.isList()) {
+        if (arg1.isEmptyList()) {
+          // an empty list of strings
+          return arg1;
+        }
         if (!arg1.isListOfStrings()) {
           // String or list of strings expected at position `1` in `2`.
           return Errors.printMessage(ast.topHead(), "strse", F.list(F.C1, ast), engine);

@@ -2384,8 +2384,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testBlock() {
     // a localized $IterationLimit / $RecursionLimit applies inside the block only
-    check("Do(Evaluate(Symbol(\"blk\" <> ToString(k))) = Symbol(\"blk\" <> ToString(k + 1)), {k, 0, 29});"
-        + "Block({$IterationLimit = 40}, blk0)", //
+    check(
+        "Do(Evaluate(Symbol(\"blk\" <> ToString(k))) = Symbol(\"blk\" <> ToString(k + 1)), {k, 0, 29});"
+            + "Block({$IterationLimit = 40}, blk0)", //
         "blk30");
     check("Block({$IterationLimit = 20}, blk0)", //
         "Hold(Block({$IterationLimit=20},blk0))");
@@ -2636,7 +2637,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.463648");
     check("CarlsonRC(3, 1.234567890123456789012345)", //
         "0.762626353743812501642456");
-    // mpmath: elliprc(3, 1.2345678901234567890123456789012345) = 0.7626263537438125016424559135836885193...
+    // mpmath: elliprc(3, 1.2345678901234567890123456789012345) =
+    // 0.7626263537438125016424559135836885193...
     check("CarlsonRC(3, 1.2345678901234567890123456789012345)", //
         "0.76262635374381250164245591358368852");
     check("CarlsonRC(y,y)", //
@@ -6364,7 +6366,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("DigitCount(0, 2)", //
         "{0,1}");
     // a list in the first argument threads; a real counts its RealDigits
-    check("{DigitCount({101, 7}, 2), DigitCount({15, 105}, 10, 5), DigitCount(0.75, 2), DigitCount(3.0)}", //
+    check(
+        "{DigitCount({101, 7}, 2), DigitCount({15, 105}, 10, 5), DigitCount(0.75, 2), DigitCount(3.0)}", //
         "{{{4,3},{3,0}},{1,1},{2,51},{0,0,1,0,0,0,0,0,0,15}}");
     // DigitCount: Integer expected at position 1 in DigitCount(2/3).
     check("DigitCount(2/3)", //
@@ -10955,8 +10958,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("fc(u1, u2, u3, u4, u5) /. fc(u4, u2) -> x", //
         "fc(u1,u2,u3,u4,u5)");
 
-    check("ClearAll(fd); SetAttributes(fd, {Flat, OneIdentity});"
-        + "{fd(a,b,c) /. fd(x_) -> {x}, MatchQ(fd(1,2), fd(_))}", //
+    check(
+        "ClearAll(fd); SetAttributes(fd, {Flat, OneIdentity});"
+            + "{fd(a,b,c) /. fd(x_) -> {x}, MatchQ(fd(1,2), fd(_))}", //
         "{{fd(a,b,c)},True}");
   }
 
@@ -11380,7 +11384,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1+2.*10^-20*x+1.*10^-40*x^2");
     check("Cancel((1.0*^-20*x^2+x)/x)", //
         "1+1.*10^-20*x");
-    check("{CoefficientList(1.0*^-20*x^2+x,x),Coefficient(1.0*^-20*x^2+x,x,2),Exponent(1.0*^-20*x^2+x,x)}", //
+    check(
+        "{CoefficientList(1.0*^-20*x^2+x,x),Coefficient(1.0*^-20*x^2+x,x,2),Exponent(1.0*^-20*x^2+x,x)}", //
         "{{0,1,1.*10^-20},1.*10^-20,2}");
     check("Collect(1.0*^-20*x*y+1.0*^-20*x+y,x)", //
         "x*(1.*10^-20+1.*10^-20*y)+y");
@@ -12846,8 +12851,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInvisibleTickLabel() {
-    check("StringCount(ExportString(Graphics({Rectangle({0, 0}, {1, 1})}, Axes -> {True, False}, PlotRange -> {{0, 1}, {0, 1}},"
-        + " Ticks -> {{{0.25, Invisible(1/6)}, {0.5, \"mid\"}}, Automatic}), \"SVG\"), #) & /@ {\">mid<\", \"Invisible\", \"1/6\"}", //
+    check(
+        "StringCount(ExportString(Graphics({Rectangle({0, 0}, {1, 1})}, Axes -> {True, False}, PlotRange -> {{0, 1}, {0, 1}},"
+            + " Ticks -> {{{0.25, Invisible(1/6)}, {0.5, \"mid\"}}, Automatic}), \"SVG\"), #) & /@ {\">mid<\", \"Invisible\", \"1/6\"}", //
         "{1,0,0}");
   }
 
@@ -12863,13 +12869,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInterpolationOrderOption() {
-    check("pts = {{0, 0}, {1, 1}, {2, 0}, {3, 2}, {4, 1}}; f = Interpolation(pts, InterpolationOrder -> 4); "
-        + "{f(\"InterpolationOrder\"), Chop(f(0.5) - InterpolatingPolynomial(pts, x) /. x -> 0.5), "
-        + "Round(Derivative(2)[f][0.5], 0.001)}", //
+    check(
+        "pts = {{0, 0}, {1, 1}, {2, 0}, {3, 2}, {4, 1}}; f = Interpolation(pts, InterpolationOrder -> 4); "
+            + "{f(\"InterpolationOrder\"), Chop(f(0.5) - InterpolatingPolynomial(pts, x) /. x -> 0.5), "
+            + "Round(Derivative(2)[f][0.5], 0.001)}", //
         "{{4},0,-7.708}");
-    check("f = Interpolation({{0, 1}, {1, 2}, {2, 0}, {3, 3}, {4, 1}}, InterpolationOrder -> 1); {f(0.5), f(3.5)}", //
+    check(
+        "f = Interpolation({{0, 1}, {1, 2}, {2, 0}, {3, 3}, {4, 1}}, InterpolationOrder -> 1); {f(0.5), f(3.5)}", //
         "{1.5,2.0}");
-    check("f = Interpolation({{0, 0}, {1, 1}, {2, 0}, {3, 2}, {4, 1}}); {f(\"InterpolationOrder\"), f(\"Domain\")}", //
+    check(
+        "f = Interpolation({{0, 0}, {1, 1}, {2, 0}, {3, 2}, {4, 1}}); {f(\"InterpolationOrder\"), f(\"Domain\")}", //
         "{{3},{{0,4}}}");
   }
 
@@ -12900,8 +12909,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("c = 0; DiscretePlot((c++; n), {n, 1, 3}); c", //
         "3");
     // a body whose values are lists is several sequences
-    check("f(n_) := {n, n^2}; Count(DiscretePlot(f(n), {n, 1, 4}), _Point|_Line, Infinity) == "
-        + "Count(DiscretePlot({n, n^2}, {n, 1, 4}), _Point|_Line, Infinity)", //
+    check(
+        "f(n_) := {n, n^2}; Count(DiscretePlot(f(n), {n, 1, 4}), _Point|_Line, Infinity) == "
+            + "Count(DiscretePlot({n, n^2}, {n, 1, 4}), _Point|_Line, Infinity)", //
         "True");
   }
 
@@ -12911,8 +12921,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{5,9}");
     check("Nearest({1, 5, 9, 12})[6]", //
         "{5}");
-    check("nf = Nearest({{1, 2}, {4, 5}, {7, 8}} -> Automatic, DistanceFunction -> (Abs(#1[[1]] - #2[[1]]) &)); "
-        + "{nf({6, 6}), nf({1, 2}, 2)}", //
+    check(
+        "nf = Nearest({{1, 2}, {4, 5}, {7, 8}} -> Automatic, DistanceFunction -> (Abs(#1[[1]] - #2[[1]]) &)); "
+            + "{nf({6, 6}), nf({1, 2}, 2)}", //
         "{{3},{1,2}}");
   }
 
@@ -12947,14 +12958,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "t*(1-EulerGamma-Log(t))");
   }
 
+  @Tag(TestTags.SLOW)
   @Test
   public void testMaximizeWithMachineNumbers() {
     // the exact methods give up on the machine number: the numeric search
     check("{v, r} = Maximize({Exp(-1./x)/(1 + y), 250 < x < 750, 250 < y < 750}, {x, y}); "
         + "{Abs(v - 0.003978755101692835) < 10^-9, Abs((x /. r) - 750) < 0.1, Abs((y /. r) - 250) < 0.1}", //
         "{True,True,True}");
-    check("{v, r} = Minimize({Exp(-1./x)*(1 + y), 250 < x < 750, 250 < y < 750}, {x, y}); "
-        + "{Abs((x /. r) - 250) < 0.1, Abs((y /. r) - 250) < 0.1}", //
+    check(
+        "{v, r} = Minimize({Exp(-1./x)*(1 + y), 250 < x < 750, 250 < y < 750}, {x, y}); "
+            + "{Abs((x /. r) - 250) < 0.1, Abs((y /. r) - 250) < 0.1}", //
         "{True,True}");
     check("Minimize({x^2 - 0.5*x, 0 <= x <= 1}, x)", //
         "{-0.0625,{x->0.25}}");
@@ -13012,8 +13025,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testInterpolationOfValues() {
     // the values at the points 1, 2, ...; the function is atomic for replacements
-    check("f = Interpolation({1, 4, 9, 16}); {(f /. 4 -> 5) === f, (h(f, t) /. t -> 2) === h(f, 2), "
-        + "f(2), (g(t) /. g -> f /. t -> 2)}", //
+    check(
+        "f = Interpolation({1, 4, 9, 16}); {(f /. 4 -> 5) === f, (h(f, t) /. t -> 2) === h(f, 2), "
+            + "f(2), (g(t) /. g -> f /. t -> 2)}", //
         "{True,True,4,4}");
     check("f = Interpolation({1, 4, 9, 16, 25, 36}); {f(2.5), f(\"Domain\")}", //
         "{6.25,{{1,6}}}");
@@ -13025,18 +13039,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Pi/(2*(-64+Pi)),0}");
     check("RegionCentroid(RegionDifference(Rectangle({-1, -1}, {1, 1}), Disk({0.38, 0.38}, 0.55)))", //
         "{-0.118415,-0.118415}");
-    check("RegionCentroid(RegionDifference(Rectangle({0, 0}, {4, 4}), Triangle({{0, 0}, {2, 0}, {0, 2}})))", //
+    check(
+        "RegionCentroid(RegionDifference(Rectangle({0, 0}, {4, 4}), Triangle({{0, 0}, {2, 0}, {0, 2}})))", //
         "{46/21,46/21}");
     check("RegionCentroid(RegionDifference(Disk({0, 0}, 2), Disk({1, 0}, 1/2)))", //
         "{-1/15,0}");
-    check("{Area(RegionDifference(Rectangle({-1, -1}, {1, 1}), Disk({1/2, 0}, 1/4))), "
-        + "Volume(RegionDifference(Cuboid({0, 0, 0}, {2, 2, 2}), Ball({1, 1, 1}, 1/2)))}", //
+    check(
+        "{Area(RegionDifference(Rectangle({-1, -1}, {1, 1}), Disk({1/2, 0}, 1/4))), "
+            + "Volume(RegionDifference(Cuboid({0, 0, 0}, {2, 2, 2}), Ball({1, 1, 1}, 1/2)))}", //
         "{4-Pi/16,8-Pi/6}");
     // a hole sticking out of the region isn't taken apart
     check("RegionCentroid(RegionDifference(Rectangle({0, 0}, {2, 2}), Disk({2, 2}, 1)))", //
         "RegionCentroid(BooleanRegion(#1&&!#2&,{Rectangle({0,0},{2,2}),Disk({2,2},1)}))");
-    check("{RegionWithin(Rectangle({-1, -1}, {1, 1}), Disk({1/2, 0}, 1/4)), "
-        + "RegionWithin(Rectangle({0, 0}, {2, 2}), Disk({2, 2}, 1))}", //
+    check(
+        "{RegionWithin(Rectangle({-1, -1}, {1, 1}), Disk({1/2, 0}, 1/4)), "
+            + "RegionWithin(Rectangle({0, 0}, {2, 2}), Disk({2, 2}, 1))}", //
         "{True,False}");
   }
 
@@ -13106,15 +13123,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testLaplacianFilter() {
     // the response to an impulse: 2*(-1)^(k+1)/k^2 beside -2*Pi^2/3, shifted to the sum 0
-    check("k = LaplacianFilter(UnitVector(11, 6), 3); c = -(2*(2 - 1/2 + 2/9) - 2*Pi^2/3)/7; "
-        + "Max(Abs(k[[3 ;; 9]] - (N({2/9, -1/2, 2, -2*Pi^2/3, 2, -1/2, 2/9}) + c))) < 10^-14", //
+    check(
+        "k = LaplacianFilter(UnitVector(11, 6), 3); c = -(2*(2 - 1/2 + 2/9) - 2*Pi^2/3)/7; "
+            + "Max(Abs(k[[3 ;; 9]] - (N({2/9, -1/2, 2, -2*Pi^2/3, 2, -1/2, 2/9}) + c))) < 10^-14", //
         "True");
     check("Chop(Total(LaplacianFilter(UnitVector(11, 6), 4)))", //
         "0");
     // a quadratic: Sum(k(j)*j^2) inside, the border continued with its own values
-    check("Chop(LaplacianFilter(N(Range(8)^2 + 3), 1) - "
-        + "{8.579736267392905,5.719824178261937,5.719824178261937,5.719824178261937,"
-        + "5.719824178261937,5.719824178261937,5.719824178261937,-42.89868133696453}, 10^-10)", //
+    check(
+        "Chop(LaplacianFilter(N(Range(8)^2 + 3), 1) - "
+            + "{8.579736267392905,5.719824178261937,5.719824178261937,5.719824178261937,"
+            + "5.719824178261937,5.719824178261937,5.719824178261937,-42.89868133696453}, 10^-10)", //
         "{0,0,0,0,0,0,0,0}");
     check("Chop(LaplacianFilter({{2, 2, 2}, {2, 2, 2}}, 1))", //
         "{{0,0,0},{0,0,0}}");
@@ -13127,16 +13146,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDistributionParameterAssumptions() {
-    check("DistributionParameterAssumptions /@ {NormalDistribution(m, s), GammaDistribution(a, b), "
-        + "ExponentialDistribution(l), PoissonDistribution(m), BinomialDistribution(n, p), "
-        + "UniformDistribution({a, b})}", //
+    check(
+        "DistributionParameterAssumptions /@ {NormalDistribution(m, s), GammaDistribution(a, b), "
+            + "ExponentialDistribution(l), PoissonDistribution(m), BinomialDistribution(n, p), "
+            + "UniformDistribution({a, b})}", //
         "{m\u2208Reals&&s>0,a>0&&b>0,l>0,m>0,n\u2208Integers&&n>=0&&0<=p<=1,a\u2208Reals&&b\u2208Reals&&a<b}");
     check("DistributionParameterAssumptions(NormalDistribution(0, -1))", //
         "False");
-    check("{DistributionParameterQ(NormalDistribution(I, 1)), "
-        + "DistributionParameterQ(UniformDistribution({1, 1})), "
-        + "DistributionParameterQ(GammaDistribution(-1, 2)), "
-        + "DistributionParameterQ(BinomialDistribution(5, 1/2))}", //
+    check(
+        "{DistributionParameterQ(NormalDistribution(I, 1)), "
+            + "DistributionParameterQ(UniformDistribution({1, 1})), "
+            + "DistributionParameterQ(GammaDistribution(-1, 2)), "
+            + "DistributionParameterQ(BinomialDistribution(5, 1/2))}", //
         "{False,False,False,True}");
   }
 
@@ -13145,11 +13166,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // the point of every step, with the variables set to it
     check("Round(Reap(FindMinimum((x - 3)^2 + 1, {x, -1}, StepMonitor :> Sow(x)))[[2]], 10^-8)", //
         "{{3}}");
-    check("Round(Reap(FindMinimum((x + 1)^2 + (y - 4)^2, {{x, 2.}, {y, 0.}}, "
-        + "StepMonitor :> Sow({x, y})))[[2]], 10^-8)", //
+    check(
+        "Round(Reap(FindMinimum((x + 1)^2 + (y - 4)^2, {{x, 2.}, {y, 0.}}, "
+            + "StepMonitor :> Sow({x, y})))[[2]], 10^-8)", //
         "{{{-1,4}}}");
-    check("Round(Reap(FindMaximum(-(x - 3)^2, {x, -1}, Method -> \"ConjugateGradient\", "
-        + "StepMonitor :> Sow(x)))[[2]], 10^-8)", //
+    check(
+        "Round(Reap(FindMaximum(-(x - 3)^2, {x, -1}, Method -> \"ConjugateGradient\", "
+            + "StepMonitor :> Sow(x)))[[2]], 10^-8)", //
         "{{3}}");
     check("Reap(FindMinimum((x - 3)^2, {x, -1}))[[2]]", //
         "{}");
@@ -13158,15 +13181,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testDensityPlotValueRange() {
     // PlotRange -> {zmin, zmax} is the colour scale; the values outside are left out by default
-    check("d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {0.25, 0.75}); "
-        + "{PlotRange /. Options(d), Count(Flatten(d[[1, 1, 1]], 1), {_, _, _, 0.})}", //
+    check(
+        "d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {0.25, 0.75}); "
+            + "{PlotRange /. Options(d), Count(Flatten(d[[1, 1, 1]], 1), {_, _, _, 0.})}", //
         "{{{0.0,1.0},{0.0,1.0}},1200}");
-    check("d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {0.25, 0.75}, ClippingStyle -> Blue); "
-        + "Count(Flatten(d[[1, 1, 1]], 1), {0.0, 0.0, 1.0})", //
+    check(
+        "d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {0.25, 0.75}, ClippingStyle -> Blue); "
+            + "Count(Flatten(d[[1, 1, 1]], 1), {0.0, 0.0, 1.0})", //
         "1200");
     // PlotLegends -> Automatic is a bar of the colour scale; Show keeps it
-    check("d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {-1, 2}, ColorFunction -> \"Rainbow\", "
-        + "PlotLegends -> Automatic); {Head(d), d[[2]]}", //
+    check(
+        "d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotRange -> {-1, 2}, ColorFunction -> \"Rainbow\", "
+            + "PlotLegends -> Automatic); {Head(d), d[[2]]}", //
         "{Legended,BarLegend({Rainbow,{-1.0,2.0}})}");
     check("d = DensityPlot(y, {x, 0, 1}, {y, 0, 1}, PlotLegends -> Automatic); "
         + "s = Show(d, Graphics(Circle({0.5, 0.5}, 0.2))); {Head(s), s[[2]] === d[[2]], Head(First(s))}", //
@@ -13176,11 +13202,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTypesetLabelText() {
     // an escaped space in a box escape is a space of the text
-    check("StringContainsQ(ExportString(Graphics(Text(\"\\!\\(\\*FractionBox[\\(top\\ part\\), \\(b\\)]\\)\", {0, 0})), \"SVG\"), \"(top part)/b\")", //
+    check(
+        "StringContainsQ(ExportString(Graphics(Text(\"\\!\\(\\*FractionBox[\\(top\\ part\\), \\(b\\)]\\)\", {0, 0})), \"SVG\"), \"(top part)/b\")", //
         "True");
-    check("StringContainsQ(ExportString(Graphics(Text(BracketingBar(x), {0, 0})), \"SVG\"), \">|x|<\")", //
+    check(
+        "StringContainsQ(ExportString(Graphics(Text(BracketingBar(x), {0, 0})), \"SVG\"), \">|x|<\")", //
         "True");
-    check("StringCount(ExportString(Graphics(Arrow(BSplineCurve({{0, 0}, {1, 1}, {2, 0}}))), \"SVG\"), RegularExpression(\"<path|<polyline|<polygon|<line\")) > 0", //
+    check(
+        "StringCount(ExportString(Graphics(Arrow(BSplineCurve({{0, 0}, {1, 1}, {2, 0}}))), \"SVG\"), RegularExpression(\"<path|<polyline|<polygon|<line\")) > 0", //
         "True");
   }
 
@@ -13229,11 +13258,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNDSolveDelay() {
     // y'(t) == -y(t - 1) with the history 1: 1-t on [0, 1], then the next piece
-    check("s = NDSolve({w'(t) == -w(t - 1), w(t /; t <= 0) == 1}, w, {t, 0, 2}); "
-        + "Round({w(0.5), w(1.5), w(2.)} /. s, 10^-9)", //
+    check(
+        "s = NDSolve({w'(t) == -w(t - 1), w(t /; t <= 0) == 1}, w, {t, 0, 2}); "
+            + "Round({w(0.5), w(1.5), w(2.)} /. s, 10^-9)", //
         "{{1/2,-3/8,-1/2}}");
-    check("s = NDSolve({v'(t) == -v(t - 1/2) + Sin(t), v(t /; t <= 0) == Cos(t)}, v, {t, 0, 3}); "
-        + "Abs(First(v(3.) /. s) - 0.6074414486033842) < 10^-6", //
+    check(
+        "s = NDSolve({v'(t) == -v(t - 1/2) + Sin(t), v(t /; t <= 0) == Cos(t)}, v, {t, 0, 3}); "
+            + "Abs(First(v(3.) /. s) - 0.6074414486033842) < 10^-6", //
         "True");
     check("s = NDSolve({x'(t) == -y(t - 1), y'(t) == x(t - 1/2), x(t /; t <= 0) == 1, "
         + "y(t /; t <= 0) == 0}, {x, y}, {t, 0, 2}); Chop(({x(2.), y(2.)} /. s) - {{1/2, 95/48}}, 10^-9)", //
@@ -13242,25 +13273,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCellularAutomatonSparseCells() {
-    check("CellularAutomaton(30, {SparseArray({3 -> 1}, 5), 0}, 2) == "
-        + "CellularAutomaton(30, {{0, 0, 1, 0, 0}, 0}, 2)", //
+    check(
+        "CellularAutomaton(30, {SparseArray({3 -> 1}, 5), 0}, 2) == "
+            + "CellularAutomaton(30, {{0, 0, 1, 0, 0}, 0}, 2)", //
         "True");
   }
 
   @Test
   public void testNSolveComplexCoefficients() {
     // all roots of polynomials with complex coefficients above degree four
-    check("sol = NSolve(x^5 + (2 - I)*x^3 + 4 == 0, x); "
-        + "{Length(sol), Max(Abs(x^5 + (2 - I)*x^3 + 4 /. sol)) < 10^-12}", //
+    check(
+        "sol = NSolve(x^5 + (2 - I)*x^3 + 4 == 0, x); "
+            + "{Length(sol), Max(Abs(x^5 + (2 - I)*x^3 + 4 /. sol)) < 10^-12}", //
         "{5,True}");
-    check("sol = NSolve(x^6 - 3*I*x + 2 == 0, x); "
-        + "{Length(sol), Max(Abs(x^6 - 3*I*x + 2 /. sol)) < 10^-12}", //
+    check(
+        "sol = NSolve(x^6 - 3*I*x + 2 == 0, x); "
+            + "{Length(sol), Max(Abs(x^6 - 3*I*x + 2 /. sol)) < 10^-12}", //
         "{6,True}");
     check("sol = NSolve(x^2*(x^3 + I) == 0, x); {Length(sol), Count(sol, {x -> 0})}", //
         "{5,2}");
     // a double and a triple root with inexact coefficients
-    check("p = Expand((x - (0.25 - 2*I))^2*(x^3 - 2.5)); sol = NSolve(p == 0, x); "
-        + "{Length(sol), Max(Abs(p /. sol)) < 10^-10}", //
+    check(
+        "p = Expand((x - (0.25 - 2*I))^2*(x^3 - 2.5)); sol = NSolve(p == 0, x); "
+            + "{Length(sol), Max(Abs(p /. sol)) < 10^-10}", //
         "{5,True}");
     check("Length(NSolve(Expand((x - (1 + I/2))^3*(x^2 + 0.5)) == 0, x))", //
         "5");
@@ -13296,14 +13331,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // a range from 0 down to -1
     check("NDSolve({y'(s) == 2*y(s), y(0) == 1}, y, {s, 0, -1})", //
         "{{y->InterpolatingFunction({{-1.0,0.0}},<>)}}");
-    check("Abs(y(-1) - Exp(-2)) < 10^-6 /. First(NDSolve({y'(s) == 2*y(s), y(0) == 1}, y, {s, 0, -1}))", //
+    check(
+        "Abs(y(-1) - Exp(-2)) < 10^-6 /. First(NDSolve({y'(s) == 2*y(s), y(0) == 1}, y, {s, 0, -1}))", //
         "True");
     // a call of the function to solve for is no independent variable
     check("NDSolve({y'(s) == y(s), y(0) == 1}, y, {y(s), 0, 1})", //
         "NDSolve({y'(s)==y(s),y(0)==1},y,{y(s),0,1})");
     // an independent variable which isn't a symbol
-    check("f = NDSolveValue({w'(Subscript(b, 1)) == -2*w(Subscript(b, 1)), w(0) == 1}, w, "
-        + "{Subscript(b, 1), 0, 1}); Abs(f(1) - Exp(-2)) < 10^-6", //
+    check(
+        "f = NDSolveValue({w'(Subscript(b, 1)) == -2*w(Subscript(b, 1)), w(0) == 1}, w, "
+            + "{Subscript(b, 1), 0, 1}); Abs(f(1) - Exp(-2)) < 10^-6", //
         "True");
   }
 
@@ -13323,7 +13360,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{1,2},{5,9}}");
     check("ListCorrelate({{1, 1}, {1, 1}}, {{1, 2}, {3, 4}}, 1)", //
         "{{10,10},{10,10}}");
-    check("ListCorrelate({{1, 0}, {0, 2}}, {{1, 2, 3}, {4, 5, 6}}, {{1, 1}, {2, 2}}, {{7, 8}, {9, 10}})", //
+    check(
+        "ListCorrelate({{1, 0}, {0, 2}}, {{1, 2, 3}, {4, 5, 6}}, {{1, 1}, {2, 2}}, {{7, 8}, {9, 10}})", //
         "{{11,14}}");
     // the padding list is repeated cyclically from the first position of the list
     check("ListConvolve({1, 2}, {1, 2, 3}, 1, {10, 20})", //
@@ -13392,28 +13430,33 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPlotFillingTopBottom() {
     // Top and Bottom are the edges of the plot range, also where the curve leaves it
-    check("Cases(Plot(2*x, {x, -3, 3}, Filling -> Top, PlotRange -> 4), Polygon(p_) :> Last(p), "
-        + "Infinity)", //
+    check(
+        "Cases(Plot(2*x, {x, -3, 3}, Filling -> Top, PlotRange -> 4), Polygon(p_) :> Last(p), "
+            + "Infinity)", //
         "{{-3.0,4.0}}");
-    check("Cases(Plot(Cos(x), {x, 0, 3}, Filling -> Bottom, PlotRange -> {-2, 2}), "
-        + "Polygon(p_) :> Last(p), Infinity)", //
+    check(
+        "Cases(Plot(Cos(x), {x, 0, 3}, Filling -> Bottom, PlotRange -> {-2, 2}), "
+            + "Polygon(p_) :> Last(p), Infinity)", //
         "{{0.0,-2.0}}");
     // a number is the height to fill to
     check("Cases(Plot(Cos(x), {x, 0, 3}, Filling -> 0.25), Polygon(p_) :> Last(p), Infinity)", //
         "{{0.0,0.25}}");
-    check("Cases(ListPlot({2, 4, 3}, Filling -> Top, PlotRange -> {0, 6}), Line(p_) :> p, "
-        + "Infinity)", //
+    check(
+        "Cases(ListPlot({2, 4, 3}, Filling -> Top, PlotRange -> {0, 6}), Line(p_) :> p, "
+            + "Infinity)", //
         "{{{{1.0,2},{1.0,6.0}},{{2.0,4},{2.0,6.0}},{{3.0,3},{3.0,6.0}}}}");
     // without a range, Bottom is the lowest point
     check("Cases(ListPlot({2, 4, 3}, Filling -> Bottom), Line(p_) :> p, Infinity)", //
         "{{{{1.0,2},{1.0,2.0}},{{2.0,4},{2.0,2.0}},{{3.0,3},{3.0,2.0}}}}");
     // one end of the range given, the other from the data
-    check("Cases(ListPlot({2, 4, 3}, Filling -> Bottom, PlotRange -> {1, Automatic}), "
-        + "Line(p_) :> First(p), Infinity)", //
+    check(
+        "Cases(ListPlot({2, 4, 3}, Filling -> Bottom, PlotRange -> {1, Automatic}), "
+            + "Line(p_) :> First(p), Infinity)", //
         "{{{1.0,2},{1.0,1.0}}}");
     // a height with its own style
-    check("Cases(Plot(Cos(x), {x, 0, 3}, Filling -> {1 -> {1, Red}}), {s_, Polygon(p_)} :> "
-        + "{s, Last(p)}, Infinity)", //
+    check(
+        "Cases(Plot(Cos(x), {x, 0, 3}, Filling -> {1 -> {1, Red}}), {s_, Polygon(p_)} :> "
+            + "{s, Last(p)}, Infinity)", //
         "{{Directive(RGBColor(1,0,0),EdgeForm(None)),{0.0,1.0}}}");
   }
 
@@ -13446,7 +13489,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testMarchenkoPasturDistribution() {
     check("PDF(MarchenkoPasturDistribution(1/4, 1), 1)", //
         "Sqrt(15)/(2*Pi)");
-    check("{Mean(MarchenkoPasturDistribution(1/2, 3)), Variance(MarchenkoPasturDistribution(1/2, 3))}", //
+    check(
+        "{Mean(MarchenkoPasturDistribution(1/2, 3)), Variance(MarchenkoPasturDistribution(1/2, 3))}", //
         "{9,81/2}");
     check("MarchenkoPasturDistribution(q)", //
         "MarchenkoPasturDistribution(q,1)");
@@ -13511,8 +13555,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Abs(Log(Quantile(LogNormalDistribution(1, 2), 1 - 4.0*^-13)) - 1 - 2*7.1612) < 10^-3", //
         "True");
     // the machine InverseErfc keeps the digits of a small argument and of one close to 2
-    check("{Abs(InverseErfc(2.0*^-16)/5.81389 - 1) < 10^-4, "
-        + "InverseErfc(2 - 2.0^-52) == -InverseErfc(2.0^-52)}", //
+    check(
+        "{Abs(InverseErfc(2.0*^-16)/5.81389 - 1) < 10^-4, "
+            + "InverseErfc(2 - 2.0^-52) == -InverseErfc(2.0^-52)}", //
         "{True,True}");
   }
 
@@ -13524,16 +13569,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "- lm(\"RSquared\")) < 10^-12, "
         + "Abs(lm(\"ANOVATableFStatistics\")[[1]] - lm(\"ParameterTStatistics\")[[2]]^2) < 10^-10}", //
         "{{1,2,3},True,True}");
-    check("lm = LinearModelFit({{1, 2}, {2, 3}, {3, 5}, {4, 4}}, x, x); "
-        + "Round(lm(\"ANOVATableEntries\"), 10^-6)", //
+    check(
+        "lm = LinearModelFit({{1, 2}, {2, 3}, {3, 5}, {4, 4}}, x, x); "
+            + "Round(lm(\"ANOVATableEntries\"), 10^-6)", //
         "{{1,16/5,16/5,888889/250000,1/5},{2,9/5,9/10},{3,5}}");
     // a basis function which depends on another has no sum of squares of its own
-    check("lm = LinearModelFit({{1, 1}, {2, 3}, {3, 4}, {5, 6}}, {x, 3*x}, x); "
-        + "lm(\"ANOVATableEntries\")[[2]]", //
+    check(
+        "lm = LinearModelFit({{1, 1}, {2, 3}, {3, 4}, {5, 6}}, {x, 3*x}, x); "
+            + "lm(\"ANOVATableEntries\")[[2]]", //
         "{1,Indeterminate,Indeterminate,Indeterminate,Indeterminate}");
     // a small p-value doesn't cancel to 0
-    check("lm = LinearModelFit(Table({k, 3*k + Sin(k)/50.0}, {k, 12}), x, x); "
-        + "0 < lm(\"ANOVATablePValues\")[[1]] < 10^-14", //
+    check(
+        "lm = LinearModelFit(Table({k, 3*k + Sin(k)/50.0}, {k, 12}), x, x); "
+            + "0 < lm(\"ANOVATablePValues\")[[1]] < 10^-14", //
         "True");
   }
 
@@ -13555,7 +13603,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testParametricPlotListOfRegions() {
-    check("Length(Cases(ParametricPlot({{u, v}, {u + 2, v}}, {u, 0, 1}, {v, 0, 1}), _Polygon, Infinity))", //
+    check(
+        "Length(Cases(ParametricPlot({{u, v}, {u + 2, v}}, {u, 0, 1}, {v, 0, 1}), _Polygon, Infinity))", //
         "2");
   }
 
@@ -13596,16 +13645,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "{PDF(t, 3) + PDF(t, 4) + PDF(t, 5) + PDF(t, 6), PDF(t, 2), PDF(t, 7), CDF(t, 2), CDF(t, 6)}", //
         "{1,0,0,0,1}");
     // a geometric distribution forgets the part cut off: it starts at 3, the variance stays
-    check("t = TruncatedDistribution({2, Infinity}, GeometricDistribution(1/3)); "
-        + "{Mean(t), Variance(t), CDF(t, 3), InverseCDF(t, 0)}", //
+    check(
+        "t = TruncatedDistribution({2, Infinity}, GeometricDistribution(1/3)); "
+            + "{Mean(t), Variance(t), CDF(t, 3), InverseCDF(t, 0)}", //
         "{5,6,1/3,2}");
-    check("s = RandomVariate(TruncatedDistribution({3, 8}, BinomialDistribution(10, 1/2)), 300); "
-        + "{Length(s), Min(s) >= 4, Max(s) <= 8, AllTrue(s, IntegerQ)}", //
+    check(
+        "s = RandomVariate(TruncatedDistribution({3, 8}, BinomialDistribution(10, 1/2)), 300); "
+            + "{Length(s), Min(s) >= 4, Max(s) <= 8, AllTrue(s, IntegerQ)}", //
         "{300,True,True,True}");
     // the truncation of a discrete distribution is discrete: numeric expectations sum
-    check("t = TruncatedDistribution({2, 6}, PoissonDistribution(5/2)); "
-        + "{Abs(NExpectation(x^2, Distributed(x, t)) - N(Variance(t) + Mean(t)^2)) < 10^-10, "
-        + "NProbability(x <= 3, Distributed(x, t)) == N(CDF(t, 3))}", //
+    check(
+        "t = TruncatedDistribution({2, 6}, PoissonDistribution(5/2)); "
+            + "{Abs(NExpectation(x^2, Distributed(x, t)) - N(Variance(t) + Mean(t)^2)) < 10^-10, "
+            + "NProbability(x <= 3, Distributed(x, t)) == N(CDF(t, 3))}", //
         "{True,True}");
   }
 
@@ -13621,8 +13673,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testInterpolatingFunctionAnatomyDomain() {
     // the function of the package, called with its context
-    check("f = Interpolation({{1/2, 1}, {2, 4}, {3, 2}, {5, 0}}); "
-        + "DifferentialEquations`InterpolatingFunctionAnatomy`InterpolatingFunctionDomain(f)", //
+    check(
+        "f = Interpolation({{1/2, 1}, {2, 4}, {3, 2}, {5, 0}}); "
+            + "DifferentialEquations`InterpolatingFunctionAnatomy`InterpolatingFunctionDomain(f)", //
         "{{1/2,5}}");
     // after Needs the short name is enough
     check("Needs(\"DifferentialEquations`InterpolatingFunctionAnatomy`\")", //
@@ -13642,8 +13695,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testRulePriorityPatternTest() {
     // a literal argument is tried before a pattern with a test, whatever the definition order
-    check("hh(lst_List, k_Integer?Positive) := many; hh(lst_List, 1) := single; "
-        + "{hh({a, b}, 1), hh({a, b}, 2)}", //
+    check(
+        "hh(lst_List, k_Integer?Positive) := many; hh(lst_List, 1) := single; "
+            + "{hh({a, b}, 1), hh({a, b}, 2)}", //
         "{single,many}");
     // a test is as specific as a head: the rule defined first is tried first
     check("pt(x_Integer) := whole; pt(x_?Positive) := pos; {pt(5), pt(5/2)}", //
@@ -13700,11 +13754,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testColorDataRangesAndSchemes() {
     // wavelengths in nm, temperatures in K; no light outside of the visible spectrum
-    check("{ColorData(\"VisibleSpectrum\")[200], ColorData(\"VisibleSpectrum\", \"Range\"), "
-        + "ColorData(\"BlackBodySpectrum\", \"Range\")}", //
+    check(
+        "{ColorData(\"VisibleSpectrum\")[200], ColorData(\"VisibleSpectrum\", \"Range\"), "
+            + "ColorData(\"BlackBodySpectrum\", \"Range\")}", //
         "{RGBColor(0.0,0.0,0.0),{380,750},{1000,10000}}");
-    check("{ColorData({\"Rainbow\", \"Reverse\"})[0.25] === ColorData(\"Rainbow\")[0.75], "
-        + "ColorData(\"Rainbow\")[3.0] === ColorData(\"Rainbow\")[1.0]}", //
+    check(
+        "{ColorData({\"Rainbow\", \"Reverse\"})[0.25] === ColorData(\"Rainbow\")[0.75], "
+            + "ColorData(\"Rainbow\")[3.0] === ColorData(\"Rainbow\")[1.0]}", //
         "{True,True}");
     check("{ColorData(\"WebSafe\", \"#3300CC\"), ColorData(\"WebSafe\", \"#123456\")}", //
         "{RGBColor(0.2,0.0,0.8),ColorData(WebSafe,#123456)}");
@@ -13714,7 +13770,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHyperfactorialIntegerValuedReals() {
-    check("{Hyperfactorial(3.0), Hyperfactorial(5.0) - 86400000, Hyperfactorial(9.0) - Hyperfactorial(9)}", //
+    check(
+        "{Hyperfactorial(3.0), Hyperfactorial(5.0) - 86400000, Hyperfactorial(9.0) - Hyperfactorial(9)}", //
         "{108.0,0.0,0.0}");
     // negative integers continue the product: H(-n) = (-1)^Floor(n/2)*H(n-1)
     check("{Hyperfactorial(-10), Hyperfactorial(-9) == Hyperfactorial(8), Hyperfactorial(-10.0)}", //
@@ -13723,7 +13780,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("{Hyperfactorial(-10.0`30), Precision(Hyperfactorial(-7.0`25))}", //
         "{-2.15779412229418562091680268288*10^34,25}");
     // machine values within a few units in the last place of
-    // 0.88044923517342339328, 15.984211992223716853, 0.84871757972389922861 and 0.076172979656861111
+    // 0.88044923517342339328, 15.984211992223716853, 0.84871757972389922861 and
+    // 0.076172979656861111
     check("FullForm({Hyperfactorial(0.5), Hyperfactorial(2.5), BarnesG(0.75), BarnesG(-2.5)})", //
         "List(0.8804492351734233`, 15.984211992223722`, 0.8487175797238993`, 0.07617297965686112`)");
     // no closed form: it stays
@@ -13736,13 +13794,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testLevelOfArgumentFreeExpressions() {
     // g() and {} have depth 2, like expressions of atoms
-    check("{Depth(g()), Level({g(), {u}, h(v)}, {-1}), Level({g(), {u}}, {-2}), "
-        + "Count({{}, {u}, g()}, _, {-2})}", //
+    check(
+        "{Depth(g()), Level({g(), {u}, h(v)}, {-1}), Level({g(), {u}}, {-2}), "
+            + "Count({{}, {u}, g()}, _, {-2})}", //
         "{2,{u,v},{g(),{u}},3}");
     check("{Depth(<||>), Level({<||>, 7}, {-1}), Level({<||>, 7}, {-2})}", //
         "{2,{7},{<||>}}");
-    check("{Position({g(), {u}}, _, {-1}, Heads -> False), Position({g(), {u}}, _, {-2}, Heads -> False), "
-        + "FirstPosition({{}, 3}, _List, Missing(), {-2})}", //
+    check(
+        "{Position({g(), {u}}, _, {-1}, Heads -> False), Position({g(), {u}}, _, {-2}, Heads -> False), "
+            + "FirstPosition({{}, 3}, _List, Missing(), {-2})}", //
         "{{{2,1}},{{1},{2}},{1}}");
   }
 
@@ -13752,10 +13812,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "GrayLevel(3/4)");
     check("{Blend({Red, Green}, {3, 1}), Blend({{0, Red}, {2, Blue}}, 1/2), Blend({Red, Blue}, 5)}", //
         "{RGBColor(3/4,1/4,0),RGBColor(3/4,0,1/4),RGBColor(0,0,1)}");
-    check("{Blend({Hue(0.2), Hue(0.6)}, 0.25), Blend({CMYKColor(0, 0, 0, 1), CMYKColor(0, 0, 0, 0)}, 1/4)}", //
+    check(
+        "{Blend({Hue(0.2), Hue(0.6)}, 0.25), Blend({CMYKColor(0, 0, 0, 1), CMYKColor(0, 0, 0, 0)}, 1/4)}", //
         "{Hue(0.3,1.0,1.0),CMYKColor(0,0,0,3/4)}");
     // the opacity is blended as well; different color spaces blend as RGB colors
-    check("{Blend({RGBColor(0, 0, 0, 1/4), White}, 1/2), Blend({GrayLevel(1/3), RGBColor(1, 0, 0)})}", //
+    check(
+        "{Blend({RGBColor(0, 0, 0, 1/4), White}, 1/2), Blend({GrayLevel(1/3), RGBColor(1, 0, 0)})}", //
         "{RGBColor(1/2,1/2,1/2,5/8),RGBColor(2/3,1/6,1/6)}");
     // the positions may be given in any order
     check("Blend({{1, Red}, {0, Blue}}, 1/4)", //
@@ -13766,8 +13828,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testToColor() {
-    check("{ToColor(GrayLevel(1/4), RGBColor), ToColor(RGBColor(0, 0, 1), GrayLevel), "
-        + "ToColor(Hue(1/2), RGBColor), ToColor(CMYKColor(0, 0, 0, 1/2), RGBColor)}", //
+    check(
+        "{ToColor(GrayLevel(1/4), RGBColor), ToColor(RGBColor(0, 0, 1), GrayLevel), "
+            + "ToColor(Hue(1/2), RGBColor), ToColor(CMYKColor(0, 0, 0, 1/2), RGBColor)}", //
         "{RGBColor(1/4,1/4,1/4),GrayLevel(0.114),RGBColor(0,1,1),RGBColor(1/2,1/2,1/2)}");
     check("ToColor(RGBColor(0.5, 0.25, 0.0), Hue)", //
         "Hue(0.0833333,1.0,0.5)");
@@ -13777,14 +13840,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRegionMemberHalfPlane() {
-    check("{RegionMember(HalfPlane({1, 1}, {1, 1}, {-1, 0}), {0, 3}), "
-        + "RegionMember(HalfPlane({1, 1}, {1, 1}, {-1, 0}), {3, 0}), "
-        + "RegionMember(HalfPlane({{0, 0}, {2, 1}}, {0, -1}), {4, 1})}", //
+    check(
+        "{RegionMember(HalfPlane({1, 1}, {1, 1}, {-1, 0}), {0, 3}), "
+            + "RegionMember(HalfPlane({1, 1}, {1, 1}, {-1, 0}), {3, 0}), "
+            + "RegionMember(HalfPlane({{0, 0}, {2, 1}}, {0, -1}), {4, 1})}", //
         "{True,False,True}");
     // in 3D the points have to be on the plane as well
-    check("{RegionMember(HalfPlane({0, 0, 0}, {0, 0, 1}, {0, 1, 0}), {0, 2, 5}), "
-        + "RegionMember(HalfPlane({0, 0, 0}, {0, 0, 1}, {0, 1, 0}), {1, 2, 5}), "
-        + "RegionMember(HalfPlane({0, 0, 0}, {0, 0, 1}, {0, 1, 0}), {0, -1, 0})}", //
+    check(
+        "{RegionMember(HalfPlane({0, 0, 0}, {0, 0, 1}, {0, 1, 0}), {0, 2, 5}), "
+            + "RegionMember(HalfPlane({0, 0, 0}, {0, 0, 1}, {0, 1, 0}), {1, 2, 5}), "
+            + "RegionMember(HalfPlane({0, 0, 0}, {0, 0, 1}, {0, 1, 0}), {0, -1, 0})}", //
         "{True,False,False}");
     // parallel directions don't span a half-plane
     check("RegionMember(HalfPlane({0, 0}, {1, 0}, {2, 0}), {5, -7})", //
@@ -13820,8 +13885,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testRandomSampleAssociation() {
     check("RandomSample({0, 1, 0} -> <|u -> 1, v -> 2, w -> 3|>, 1)", //
         "<|v->2|>");
-    check("{Sort(Keys(RandomSample(<|u -> 1, v -> 2, w -> 3|>))), "
-        + "AssociationQ(RandomSample(<|u -> 1, v -> 2|>, 1))}", //
+    check(
+        "{Sort(Keys(RandomSample(<|u -> 1, v -> 2, w -> 3|>))), "
+            + "AssociationQ(RandomSample(<|u -> 1, v -> 2|>, 1))}", //
         "{{u,v,w},True}");
   }
 
@@ -13880,8 +13946,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNearestFunction() {
-    check("{Head(Nearest({{1, 1}, {4, 0}})), MatchQ(Nearest({3, 8, 12}), _NearestFunction), "
-        + "Nearest({3, 8, 12})[11, 2]}", //
+    check(
+        "{Head(Nearest({{1, 1}, {4, 0}})), MatchQ(Nearest({3, 8, 12}), _NearestFunction), "
+            + "Nearest({3, 8, 12})[11, 2]}", //
         "{NearestFunction,True,{12,8}}");
     check("ng(f_NearestFunction, x_) := f[x]; ng(Nearest({3, 8, 12}), 7)", //
         "{8}");
@@ -13901,7 +13968,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("{DateObject(\"15 Mar 31\"), DateObject(\"07 Dec 85\"), DateObject(\"31/10/91\")}", //
         "{DateObject({2031,3,15},Day),DateObject({1985,12,7},Day),DateObject({1991,10,31},Day)}");
     // a day without a year is one of this year
-    check("{DateList(DateObject(\"Mar7\"))[[2;;3]], DateList(DateObject(\"Mar7\"))[[1]] == DateValue(\"Year\")}", //
+    check(
+        "{DateList(DateObject(\"Mar7\"))[[2;;3]], DateList(DateObject(\"Mar7\"))[[1]] == DateValue(\"Year\")}", //
         "{{3,7},True}");
     // the form DateString writes, with the day of the week
     check("DateList(DateObject(\"Fri 9 Feb 2024 10:30:00\"))", //
@@ -13912,25 +13980,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("DatePlus(\"Mar 3 2021 08:20:10\", {5, \"Second\"})", //
         "March 3, 2021 8:20:15 am");
     // two digit years of a numeric date or a format are 1950 ... 2049
-    check("{DateObject(\"31/10/55\"), DateList({\"05/06/48\", {\"Day\", \"Month\", \"YearShort\"}})}", //
+    check(
+        "{DateObject(\"31/10/55\"), DateList({\"05/06/48\", {\"Day\", \"Month\", \"YearShort\"}})}", //
         "{DateObject({1955,10,31},Day),{2048,6,5,0,0,0.0}}");
   }
 
   @Test
   public void testNDSolveBoundaryValueProblems() {
     // conditions at both ends: a - b is constant, a(4) = 10 - 4*(a - b), b(4) = 2
-    check("sol = NDSolve({a'(z) == b(z) - a(z), b'(z) == b(z) - a(z), a(0) == 10, b(4) == 2}, "
-        + "{a, b}, {z, 0, 4})[[1]]; Round(10^6*({a(4), b(0)} /. sol))", //
+    check(
+        "sol = NDSolve({a'(z) == b(z) - a(z), b'(z) == b(z) - a(z), a(0) == 10, b(4) == 2}, "
+            + "{a, b}, {z, 0, 4})[[1]]; Round(10^6*({a(4), b(0)} /. sol))", //
         "{3600000,8400000}");
-    check("sol = NDSolveValue({u''(x) == -4*u(x), u(0) == 1, u(1) == 0}, u, {x, 0, 1}); "
-        + "Abs(sol(0.5) - (Cos(1.0) - Cot(2.0)*Sin(1.0))) < 10^-8", //
+    check(
+        "sol = NDSolveValue({u''(x) == -4*u(x), u(0) == 1, u(1) == 0}, u, {x, 0, 1}); "
+            + "Abs(sol(0.5) - (Cos(1.0) - Cot(2.0)*Sin(1.0))) < 10^-8", //
         "True");
     // a nonlinear problem, and a clamped beam with two conditions at each end
-    check("sol = NDSolveValue({y''(x) == Exp(y(x)), y(0) == 0, y(1) == 0}, y, {x, 0, 1}); "
-        + "{sol(1/2) < 0, Abs(sol(1/4) - sol(3/4)) < 10^-8}", //
+    check(
+        "sol = NDSolveValue({y''(x) == Exp(y(x)), y(0) == 0, y(1) == 0}, y, {x, 0, 1}); "
+            + "{sol(1/2) < 0, Abs(sol(1/4) - sol(3/4)) < 10^-8}", //
         "{True,True}");
-    check("sol = NDSolveValue({w''''(x) == 1, w(0) == 0, w'(0) == 0, w(1) == 0, w'(1) == 0}, "
-        + "w, {x, 0, 1}); Abs(sol(1/2) - 1/384) < 10^-9", //
+    check(
+        "sol = NDSolveValue({w''''(x) == 1, w(0) == 0, w'(0) == 0, w(1) == 0, w'(1) == 0}, "
+            + "w, {x, 0, 1}); Abs(sol(1/2) - 1/384) < 10^-9", //
         "True");
     // y(Pi) is 0 for every solution with y(0) = 0
     check("NDSolve({y''(x) == -y(x), y(0) == 0, y(Pi) == 1}, y, {x, 0, Pi})", //
@@ -13940,8 +14013,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPanelInGridSVG() {
     // a panel is a light gray box around its content
-    check("{StringCount(ExportString(Grid({{Panel(\"a\"), Panel(\"b\"), \"c\"}}), \"SVG\"), \"rgb(242,242,242)\"), "
-        + "StringContainsQ(ExportString(Grid({{Panel(\"a\"), \"c\"}}), \"SVG\"), \"Panel\")}", //
+    check(
+        "{StringCount(ExportString(Grid({{Panel(\"a\"), Panel(\"b\"), \"c\"}}), \"SVG\"), \"rgb(242,242,242)\"), "
+            + "StringContainsQ(ExportString(Grid({{Panel(\"a\"), \"c\"}}), \"SVG\"), \"Panel\")}", //
         "{2,False}");
   }
 
@@ -14182,7 +14256,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFractionalPart() {
     // a negative rational beyond the machine integers keeps the sign of its remainder
-    check("{FractionalPart(-(10^25 + 3)/8), FractionalPart(-(2^70 + 7)/3), FractionalPart(-(2^62 + 2)*4/5)}", //
+    check(
+        "{FractionalPart(-(10^25 + 3)/8), FractionalPart(-(2^70 + 7)/3), FractionalPart(-(2^62 + 2)*4/5)}", //
         "{-3/8,-2/3,-4/5}");
     check("FractionalPart(Quantity(-1.1, \"Meters\"))", //
         "Quantity(-0.1,\"Meters\")");
@@ -14265,7 +14340,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFreeQ() {
     // a pattern is Pattern(x, Blank()) in full form, so it contains Pattern, Blank and its name
-    check("{FreeQ({x_}, Blank), FreeQ({x_}, Pattern), FreeQ({x_}, x), FreeQ({a___}, BlankNullSequence)}", //
+    check(
+        "{FreeQ({x_}, Blank), FreeQ({x_}, Pattern), FreeQ({x_}, x), FreeQ({a___}, BlankNullSequence)}", //
         "{False,False,False,False}");
     check("{FreeQ(f(y_Integer), Integer), FreeQ({1, 2}, Blank), FreeQ({x_}, z)}", //
         "{False,True,True}");
@@ -14368,13 +14444,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FromCharacterCode({98, 255}, \"UTF8\")", //
         "b\u00FF");
     // the bytes of the UTF-8 encoding
-    check("{ToCharacterCode(\"z\u00DF\", \"UTF8\"), FromCharacterCode(ToCharacterCode(\"z\u00DF\u20AC\", \"UTF8\"), \"UTF8\")}", //
+    check(
+        "{ToCharacterCode(\"z\u00DF\", \"UTF8\"), FromCharacterCode(ToCharacterCode(\"z\u00DF\u20AC\", \"UTF8\"), \"UTF8\")}", //
         "{{122,195,159},z\u00DF\u20AC}");
     // a character the encoding lacks is None; printable ASCII also lacks the control characters
     // other than the newline
-    check("{ToCharacterCode(\"q\u00E9\u20AC\", \"ASCII\"), ToCharacterCode(\"q\u00E9\u20AC\", \"ISOLatin1\"), ToCharacterCode(\"k\tm|\nz\", \"PrintableASCII\")}", //
+    check(
+        "{ToCharacterCode(\"q\u00E9\u20AC\", \"ASCII\"), ToCharacterCode(\"q\u00E9\u20AC\", \"ISOLatin1\"), ToCharacterCode(\"k\tm|\nz\", \"PrintableASCII\")}", //
         "{{113,None,None},{113,233,None},{107,None,109,124,10,122}}");
-    check("{FromCharacterCode({{107, 33}, {126}}, \"PrintableASCII\"), FromCharacterCode({107, 9}, \"PrintableASCII\")}", //
+    check(
+        "{FromCharacterCode({{107, 33}, {126}}, \"PrintableASCII\"), FromCharacterCode({107, 9}, \"PrintableASCII\")}", //
         "{{k!,~},FromCharacterCode({107,9},PrintableASCII)}");
     check("FromCharacterCode({97,45,51})", //
         "a-3");
@@ -16289,7 +16368,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testInputForm() {
     check("N(Pi+I, 30) // InputForm", //
         "3.14159265358979323846264338328`30+I*1`30");
-    // 5.3408273300251974704470847225860673...*10^51 - 3.6461734475941180200578323251666980...*10^51*I
+    // 5.3408273300251974704470847225860673...*10^51 -
+    // 3.6461734475941180200578323251666980...*10^51*I
     check("N((Pi+I)^100, 30) // InputForm", //
         "5.34082733002519747044708472259`30*^51+I*(-3.64617344759411802005783232517`30*^51)");
     check("N(Pi, 30) // InputForm", //
@@ -19497,7 +19577,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // a tag without a text, and the names collected in $MessageList
     check("Message(mt::nothere, 4, 5)", //
         "mt: -- Message text not found -- (4) (5)");
-    check("mt::w = \"warn `1`\"; Block({$MessageList = {}}, Message(mt::w, 3); Quiet(Message(mt::w, 4)); $MessageList) // FullForm", //
+    check(
+        "mt::w = \"warn `1`\"; Block({$MessageList = {}}, Message(mt::w, 3); Quiet(Message(mt::w, 4)); $MessageList) // FullForm", //
         "List(HoldForm(MessageName(mt, \"w\")))");
     check("Message(f::argx, 1, 2)", //
         "f: 1 called with 2 arguments; 1 argument is expected.");
@@ -20198,11 +20279,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testMultiplicativeOrder() {
     // discrete logarithms in a group of order 2^61 - 2
-    check("p = 2^61 - 1; {MultiplicativeOrder(37, p), MultiplicativeOrder(37, p, {PowerMod(37, 10^15, p)}), MultiplicativeOrder(37, p, {PowerMod(37, 10^15, p), PowerMod(37, 98765, p)})}", //
+    check(
+        "p = 2^61 - 1; {MultiplicativeOrder(37, p), MultiplicativeOrder(37, p, {PowerMod(37, 10^15, p)}), MultiplicativeOrder(37, p, {PowerMod(37, 10^15, p), PowerMod(37, 98765, p)})}", //
         "{2305843009213693950,1000000000000000,98765}");
     check("MultiplicativeOrder(5, 1000000007, {PowerMod(5, 123456789, 1000000007)})", //
         "123456789");
-    check("{MultiplicativeOrder(4, 21, {2, 16}), MultiplicativeOrder(4, 21, {2}), MultiplicativeOrder(4, 21, {7}), MultiplicativeOrder(11, 1, {5})}", //
+    check(
+        "{MultiplicativeOrder(4, 21, {2, 16}), MultiplicativeOrder(4, 21, {2}), MultiplicativeOrder(4, 21, {7}), MultiplicativeOrder(11, 1, {5})}", //
         "{2,MultiplicativeOrder(4,21,{2}),MultiplicativeOrder(4,21,{7}),1}");
     check("MultiplicativeOrder(2,7, {1, -1})", //
         "3");
@@ -20336,8 +20419,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("N(nva) =.; {NValues(nva), N(nva + 1)}", //
         "{{},1.0+nva}");
 
-    check("NValues(nvb) = {HoldPattern(N(nvb, {MachinePrecision, MachinePrecision})) :> 2.0};"
-        + "{N(nvb), N(nvb + 1)}", //
+    check(
+        "NValues(nvb) = {HoldPattern(N(nvb, {MachinePrecision, MachinePrecision})) :> 2.0};"
+            + "{N(nvb), N(nvb + 1)}", //
         "{2.0,3.0}");
     // a rule for a precision
     // the precision is a machine real, shown with the accuracy Infinity
@@ -21193,7 +21277,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testNextPrime() {
     // a real numeric start value is rounded exactly
-    check("{NextPrime(3*Pi), NextPrime(-Sqrt(5)), NextPrime(Sqrt(5), -2), NextPrime(Catalan, 0), NextPrime(E*10^20)}", //
+    check(
+        "{NextPrime(3*Pi), NextPrime(-Sqrt(5)), NextPrime(Sqrt(5), -2), NextPrime(Catalan, 0), NextPrime(E*10^20)}", //
         "{11,-2,-2,NextPrime(Catalan,0),271828182845904523609}");
     check("NextPrime(50,-1)", //
         "47");
@@ -21215,7 +21300,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // two lists thread like an outer product
     check("NextPrime({-12, 40}, {2, -2})", //
         "{{-7,-17},{43,31}}");
-    check("{NextPrime(-8, 3), NextPrime(-4, -1), NextPrime(1, -1), NextPrime(-13, 0), NextPrime(9, 0)}", //
+    check(
+        "{NextPrime(-8, 3), NextPrime(-4, -1), NextPrime(1, -1), NextPrime(-13, 0), NextPrime(9, 0)}", //
         "{-3,-5,-2,-13,NextPrime(9,0)}");
     // a real start: Floor going up, Ceiling going down
     check("{NextPrime(-7/3, 2), NextPrime(4.5, -2), NextPrime({-20, 30}, 1)}", //
@@ -25059,8 +25145,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "PrimePi(200000000000000)");
     check("{PrimePi(Infinity), PrimePi(-Infinity), PrimePi(Sqrt(1000))}", //
         "{Infinity,0,11}");
-    check(
-        "PrimePi(7*10^10 + 12345) == PrimePi(7*10^10 + 12345, Method -> \"LucyHedgehog\")", //
+    check("PrimePi(7*10^10 + 12345) == PrimePi(7*10^10 + 12345, Method -> \"LucyHedgehog\")", //
         "True");
     check("PrimePi(10^7, Method->\"Bogus\")", //
         "PrimePi(10000000,Method->Bogus)");
@@ -25327,7 +25412,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPrimePowerQ() {
     // a unit times a power of one Gaussian prime; a rational number by its reciprocal
-    check("{PrimePowerQ(3+2*I), PrimePowerQ((3+2*I)^2), PrimePowerQ((3+2*I)*(1+I)), PrimePowerQ(7, GaussianIntegers->True), PrimePowerQ(13, GaussianIntegers->True)}", //
+    check(
+        "{PrimePowerQ(3+2*I), PrimePowerQ((3+2*I)^2), PrimePowerQ((3+2*I)*(1+I)), PrimePowerQ(7, GaussianIntegers->True), PrimePowerQ(13, GaussianIntegers->True)}", //
         "{True,True,False,True,False}");
     check("{PrimePowerQ(-1/8), PrimePowerQ(3/8), PrimePowerQ(1/(3+2*I))}", //
         "{True,False,True}");
@@ -27705,7 +27791,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // lists every way to split the sequence
     check("ReplaceList(g(c, c, c), g(y__ ..) :> {y})", //
         "{{c},{c,c,c}}");
-    check("{h(u, u, v) /. h(z_ .., v) :> {z}, MatchQ(h(u, w), h(z_ ..)), ReplaceList(k(b, b), k(b ..) :> 7)}", //
+    check(
+        "{h(u, u, v) /. h(z_ .., v) :> {z}, MatchQ(h(u, w), h(z_ ..)), ReplaceList(k(b, b), k(b ..) :> 7)}", //
         "{{u},False,{7}}");
     check("ReplaceList(k(1, 2, 1, 2, 1, 2), k(PatternSequence(r_, s_) ..) :> {r, s})", //
         "{{1,2}}");
@@ -31155,7 +31242,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testSyntaxQ() {
     // no input at all, and a string without its closing quote, are no expression
-    check("{SyntaxQ(\"\"), SyntaxQ(\"\\\"xyz\"), SyntaxQ(\"\\\"xyz\\\"\"), SyntaxQ(\" \"), SyntaxQ(\"(* only *)\")}", //
+    check(
+        "{SyntaxQ(\"\"), SyntaxQ(\"\\\"xyz\"), SyntaxQ(\"\\\"xyz\\\"\"), SyntaxQ(\" \"), SyntaxQ(\"(* only *)\")}", //
         "{False,False,True,True,True}");
     check("SyntaxQ(\"Integrate(f(x),{x,0,10})\")", //
         "True");
@@ -32636,7 +32724,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together(1/(x-y)^2+1/(x-y)^3+1/(y-x))", //
         "(1+x-x^2-y+2*x*y-y^2)/(x-y)^3");
     // the same factor twice in one denominator
-    check("(Together(a/((x+y)*(2*x+2*y))+b/(x+y))-(a/((x+y)*(2*x+2*y))+b/(x+y)))/.{x->2,y->3,a->5,b->7}", //
+    check(
+        "(Together(a/((x+y)*(2*x+2*y))+b/(x+y))-(a/((x+y)*(2*x+2*y))+b/(x+y)))/.{x->2,y->3,a->5,b->7}", //
         "0");
     check("Together(a/((x+y)*(2*x+2*y))+b/(x+y))", //
         "(a+2*b*x+2*b*y)/(2*(x+y)^2)");
@@ -32644,7 +32733,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together(1/(u-v)+(u+v)/(u^2-v^2))", //
         "2/(u-v)");
     // fractions over expanded powers of the same polynomial: the power is recovered
-    check("Together(Expand(Sum(Binomial(6,k)*(-1)^k*5*p^k*q^(12-k)*r^(6-k)*s^(1+k),{k,0,6})/Expand((q*r-p*s)^12)))", //
+    check(
+        "Together(Expand(Sum(Binomial(6,k)*(-1)^k*5*p^k*q^(12-k)*r^(6-k)*s^(1+k),{k,0,6})/Expand((q*r-p*s)^12)))", //
         "(5*q^6*s)/(q*r-p*s)^6");
     // a denominator which is not a polynomial in its variables takes the general path as before
     check("Together(1/(a-b^(1/3))+1/(a+b^(1/3)))", //
@@ -32702,7 +32792,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // every empty line is a Null statement, a leading one too; the final line break adds none
     check("ToExpression(\"p\\n\\nq\\nr\", InputForm, g)", //
         "g(p,Null,q,r)");
-    check("{ToExpression(\"p\\n\\n\\nq\", InputForm, g), ToExpression(\"\\np\\nq\\n\", InputForm, g), ToExpression(\"p\\n \\t\\nq\", InputForm, g)}", //
+    check(
+        "{ToExpression(\"p\\n\\n\\nq\", InputForm, g), ToExpression(\"\\np\\nq\\n\", InputForm, g), ToExpression(\"p\\n \\t\\nq\", InputForm, g)}", //
         "{g(p,Null,Null,q),g(Null,p,q),g(p,Null,q)}");
     // an empty line inside a string or a bracket separates nothing
     check("ToExpression(\"{p,\\n\\nq}\\nr\", InputForm, g)", //
@@ -34400,14 +34491,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   /** Rules of a Flat head on a run of its arguments. */
   @Test
   public void testFlatRunRules() {
-    check("SetAttributes(fq, Flat); fq(u, gg(1), gg(5), v) /. HoldPattern(fq(gg(i_), gg(j_)) /; i<j) :> gg(i*j)", //
+    check(
+        "SetAttributes(fq, Flat); fq(u, gg(1), gg(5), v) /. HoldPattern(fq(gg(i_), gg(j_)) /; i<j) :> gg(i*j)", //
         "fq(u,gg(5),v)");
-    check("SetAttributes(fq, Flat); fq(u, gg(5), gg(1), v) /. HoldPattern(fq(gg(i_), gg(j_)) /; i<j) :> gg(i*j)", //
+    check(
+        "SetAttributes(fq, Flat); fq(u, gg(5), gg(1), v) /. HoldPattern(fq(gg(i_), gg(j_)) /; i<j) :> gg(i*j)", //
         "fq(u,gg(5),gg(1),v)");
     check("SetAttributes(fr, Flat); fr(q, r) := qr; fr(p, q, r, s)", //
         "fr(p,qr,s)");
     // the test fails on the first run, whose values don't stay bound for the next one
-    check("SetAttributes(fs, Flat); fs(gg(4), gg(9), gg(2), v) /. HoldPattern(fs(gg(i_), gg(j_)) /; i>j) :> gg(i-j)", //
+    check(
+        "SetAttributes(fs, Flat); fs(gg(4), gg(9), gg(2), v) /. HoldPattern(fs(gg(i_), gg(j_)) /; i>j) :> gg(i-j)", //
         "fs(gg(4),gg(7),v)");
     // a rule which gives back its own left-hand side is no replacement of a run
     check("SetAttributes(ft, Flat); ft(m, n) = ft(m, n); ft(k, m, n)", //

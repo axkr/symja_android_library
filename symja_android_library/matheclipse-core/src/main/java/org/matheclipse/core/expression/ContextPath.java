@@ -456,6 +456,18 @@ public final class ContextPath implements Iterable<Context> {
     return !path.isEmpty() && path.get(0) == Context.SYSTEM;
   }
 
+  /**
+   * Does a symbol of <code>context</code> print without its context? When the context is on the
+   * context path or is the current one, as the short name is looked up there.
+   */
+  public boolean isShortName(Context context) {
+    return path.contains(context) || (fContext != null && sameContext(fContext, context));
+  }
+
+  private static boolean sameContext(Context c1, Context c2) {
+    return c1 == c2 || c1.completeContextName().equals(c2.completeContextName());
+  }
+
   private boolean isOnPath(Context context) {
     for (Context c : path) {
       if (c == context || c.getContextName().equals(context.getContextName())) {

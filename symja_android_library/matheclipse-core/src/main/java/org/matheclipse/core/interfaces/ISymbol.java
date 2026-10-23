@@ -512,7 +512,8 @@ public interface ISymbol extends IExpr {
     } else if (context == Context.RUBI) {
       return context.completeContextName() + symbolName;
     }
-    if (engine != null && engine.getContextPath().contains(context)) {
+    // the short name when its context is on the context path or the current one
+    if (engine != null && engine.getContextPath().isShortName(context)) {
       return symbolName;
     }
     return context.completeContextName() + symbolName;
