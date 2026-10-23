@@ -433,10 +433,11 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       derivatives[offset[j] + order[j] - 1] = rhs;
     }
 
-    // --- the initial conditions ---
-    double[] initialState = new double[dimension];
-    boolean[] isGiven = new boolean[dimension];
-    double t0 = Double.NaN;
+    // --- the conditions: the value of a component of the state at a point ---
+    final int conditionCount = initialConditions.argSize();
+    double[] points = new double[conditionCount];
+    int[] components = new int[conditionCount];
+    double[] values = new double[conditionCount];
     for (int j = 1; j < initialConditions.size(); j++) {
       IExpr condition = initialConditions.get(j);
       IExpr application = findApplication(condition, functions);
@@ -457,31 +458,210 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       if (Double.isNaN(point)) {
         return null;
       }
-      if (Double.isNaN(t0)) {
-        t0 = point;
-      } else if (t0 != point) {
-        // conditions spread over more than one point are a boundary value problem, which this
-        // initial value solver cannot integrate
-        Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
-        return null;
-      }
       double value = conditionValue(condition, application, engine);
       if (Double.isNaN(value)) {
         return null;
       }
-      initialState[offset[index] + derivativeOrder[0]] = value;
-      isGiven[offset[index] + derivativeOrder[0]] = true;
-    }
-    for (int j = 0; j < dimension; j++) {
-      if (!isGiven[j]) {
-        // The system is underdetermined.
-        Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
-        return null;
-      }
+      points[j - 1] = point;
+      components[j - 1] = offset[index] + derivativeOrder[0];
+      values[j - 1] = value;
     }
 
-    return new FirstOrderSystem(timeVar, functions, appliedForm, offset, stateExpressions,
-        derivatives, t0, initialState);
+    // --- the initial state at the point with the most conditions ---
+    // conditions at one point are an initial value problem; at more points a boundary value
+    // problem, whose missing initial values are found by shooting
+    double t0 = Double.NaN;
+    int mostConditions = 0;
+    for (int j = 0; j < conditionCount; j++) {
+      int count = 0;
+      for (int k = 0; k < conditionCount; k++) {
+        if (points[k] == points[j]) {
+          count++;
+        }
+      }
+      if (count > mostConditions || (count == mostConditions && points[j] < t0)) {
+        mostConditions = count;
+        t0 = points[j];
+      }
+    }
+    double[] initialState = new double[dimension];
+    boolean[] isGiven = new boolean[dimension];
+    int boundaryConditions = 0;
+    for (int j = 0; j < conditionCount; j++) {
+      if (points[j] == t0) {
+        initialState[components[j]] = values[j];
+        isGiven[components[j]] = true;
+      } else {
+        boundaryConditions++;
+      }
+    }
+    int unknowns = 0;
+    for (int j = 0; j < dimension; j++) {
+      if (!isGiven[j]) {
+        unknowns++;
+      }
+    }
+    if (unknowns != boundaryConditions || Double.isNaN(t0)) {
+      // The system is underdetermined.
+      Errors.printMessage(S.NDSolve, "underdet", F.CEmptyList, engine);
+      return null;
+    }
+    FirstOrderSystem system = new FirstOrderSystem(timeVar, functions, appliedForm, offset,
+        stateExpressions, derivatives, t0, initialState);
+    if (boundaryConditions > 0 && !shoot(system, isGiven, points, components, values, engine)) {
+      // The boundary value problem could not be solved by shooting from `1`.
+      Errors.printMessage(S.NDSolve, "bvnc", F.list(F.num(t0)), engine);
+      return null;
+    }
+    return system;
+  }
+
+  /** The most Newton steps of the shooting method. */
+  private static final int MAX_SHOOTING_STEPS = 30;
+
+  /** How often a Newton step which doesn't reduce the differences is halved. */
+  private static final int MAX_STEP_HALVINGS = 10;
+
+  /**
+   * Find the initial values at <code>system.t0</code> which aren't given, so that the trajectory
+   * from there meets the conditions at the other points: Newton's method on the differences at
+   * those points, with a Jacobian of finite differences. A step which doesn't reduce the
+   * differences is halved. A linear problem is solved by the first step.
+   *
+   * @param system the system whose initial state is completed in place
+   * @param isGiven the components of the initial state which are given
+   * @param points the points of all conditions
+   * @param components the component of the state each condition is about
+   * @param values the value of the component each condition requires
+   * @return <code>false</code> if no solution was found
+   */
+  private static boolean shoot(FirstOrderSystem system, boolean[] isGiven, double[] points,
+      int[] components, double[] values, EvalEngine engine) {
+    final double[] state = system.initialState;
+    final int dimension = state.length;
+    int[] free = new int[dimension];
+    int n = 0;
+    for (int j = 0; j < dimension; j++) {
+      if (!isGiven[j]) {
+        free[n++] = j;
+      }
+    }
+    double scale = 1.0;
+    for (int j = 0; j < points.length; j++) {
+      scale = Math.max(scale, Math.abs(values[j]));
+    }
+    double[] residual = boundaryResiduals(system, points, components, values, engine);
+    if (residual == null) {
+      return false;
+    }
+    double norm = maxNorm(residual);
+    for (int step = 0; step < MAX_SHOOTING_STEPS; step++) {
+      if (norm <= 1.0e-9 * scale) {
+        return true;
+      }
+      double[][] jacobian = new double[n][n];
+      for (int j = 0; j < n; j++) {
+        final double saved = state[free[j]];
+        final double h = 1.0e-6 * Math.max(1.0, Math.abs(saved));
+        state[free[j]] = saved + h;
+        double[] shifted = boundaryResiduals(system, points, components, values, engine);
+        state[free[j]] = saved;
+        if (shifted == null) {
+          return false;
+        }
+        for (int i = 0; i < n; i++) {
+          jacobian[i][j] = (shifted[i] - residual[i]) / h;
+        }
+      }
+      double[] delta;
+      try {
+        org.hipparchus.linear.DecompositionSolver solver =
+            new org.hipparchus.linear.LUDecomposition(
+                new org.hipparchus.linear.Array2DRowRealMatrix(jacobian, false)).getSolver();
+        delta = solver.solve(new org.hipparchus.linear.ArrayRealVector(residual, false))
+            .toArray();
+      } catch (MathRuntimeException mre) {
+        // the conditions don't depend on the unknown initial values
+        return false;
+      }
+      double[] start = state.clone();
+      double factor = 1.0;
+      double[] next = null;
+      for (int halving = 0; halving <= MAX_STEP_HALVINGS; halving++) {
+        for (int j = 0; j < n; j++) {
+          state[free[j]] = start[free[j]] - factor * delta[j];
+        }
+        next = boundaryResiduals(system, points, components, values, engine);
+        if (next != null && maxNorm(next) < norm) {
+          break;
+        }
+        next = null;
+        factor /= 2.0;
+      }
+      if (next == null) {
+        // no step along the Newton direction gets closer to the conditions
+        System.arraycopy(start, 0, state, 0, dimension);
+        return false;
+      }
+      residual = next;
+      norm = maxNorm(residual);
+    }
+    return norm <= 1.0e-9 * scale;
+  }
+
+  private static double maxNorm(double[] vector) {
+    double norm = 0.0;
+    for (double v : vector) {
+      norm = Math.max(norm, Math.abs(v));
+    }
+    return norm;
+  }
+
+  /**
+   * The differences between the components of the trajectory from the initial state of
+   * <code>system</code> and the values the conditions at the points other than
+   * <code>system.t0</code> require. The trajectory is integrated once to each such point.
+   *
+   * @return <code>null</code> if the integration failed
+   */
+  private static double[] boundaryResiduals(FirstOrderSystem system, double[] points,
+      int[] components, double[] values, EvalEngine engine) {
+    int count = 0;
+    for (double point : points) {
+      if (point != system.t0) {
+        count++;
+      }
+    }
+    double[] residual = new double[count];
+    double[][] stateAt = new double[points.length][];
+    FirstODE ode = new FirstODE(engine, system);
+    int i = 0;
+    for (int j = 0; j < points.length; j++) {
+      if (points[j] == system.t0) {
+        continue;
+      }
+      for (int k = 0; k < j && stateAt[j] == null; k++) {
+        if (points[k] == points[j]) {
+          stateAt[j] = stateAt[k];
+        }
+      }
+      if (stateAt[j] == null) {
+        engine.checkTimeLimit();
+        double distance = Math.abs(points[j] - system.t0);
+        try {
+          DormandPrince853Integrator integrator =
+              new DormandPrince853Integrator(MIN_STEP * distance, distance, 1.0e-12, 1.0e-12);
+          integrator.setMaxEvaluations(MAX_EVALUATIONS);
+          stateAt[j] = integrator
+              .integrate(ode, new ODEState(system.t0, system.initialState.clone()), points[j])
+              .getPrimaryState();
+        } catch (MathRuntimeException mre) {
+          return null;
+        }
+      }
+      residual[i++] = stateAt[j][components[j]] - values[j];
+    }
+    return residual;
   }
 
   /**

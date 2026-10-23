@@ -773,7 +773,10 @@ final class SvgLayout {
       return frame.isPresent() ? piece(frame, seedWidth) : null;
     }
     if (content.isAST(S.Framed) && content.argSize() >= 1) {
-      return framed((IAST) content, seedWidth);
+      return framed((IAST) content, FrameBox.of((IAST) content, FRAME_MARGIN), seedWidth);
+    }
+    if (content.isAST(S.Panel) && content.argSize() >= 1) {
+      return framed((IAST) content, FrameBox.panel((IAST) content), seedWidth);
     }
     if (content.head() == S.Graph && !content.isAST()) {
       // a graph is drawn as the picture GraphPlot makes of it
@@ -828,7 +831,12 @@ final class SvgLayout {
      * @param margin the margin on every side where <code>FrameMargins</code> is not set
      */
     static FrameBox of(IAST framed, double margin) {
-      FrameBox box = new FrameBox();
+      return new FrameBox().read(framed, margin);
+    }
+
+    /** Set the margins to <code>margin</code> and read the options of <code>framed</code>. */
+    private FrameBox read(IAST framed, double margin) {
+      FrameBox box = this;
       box.left = box.right = box.bottom = box.top = margin;
       for (int i = 2; i < framed.size(); i++) {
         if (!framed.get(i).isRuleAST()) {
@@ -851,6 +859,18 @@ final class SvgLayout {
         }
       }
       return box;
+    }
+
+    /**
+     * The box of a <code>Panel(content, options)</code>: a light gray area with a lighter border
+     * and rounded corners, unless the options say otherwise.
+     */
+    static FrameBox panel(IAST panel) {
+      FrameBox box = new FrameBox();
+      box.fill = new java.awt.Color(242, 242, 242);
+      box.stroke = new java.awt.Color(191, 191, 191);
+      box.radius = 3.0;
+      return box.read(panel, FRAME_MARGIN);
     }
 
     /** <code>m</code>, <code>{horizontal, vertical}</code> or <code>{{l, r}, {b, t}}</code>. */
@@ -926,10 +946,12 @@ final class SvgLayout {
     }
   }
 
-  /** The content of a <code>Framed</code> inside its {@link FrameBox}; an empty box if there is none. */
-  private Piece framed(IAST framed, double seedWidth) {
+  /**
+   * The content of a <code>Framed</code> or <code>Panel</code> inside its {@link FrameBox}; an
+   * empty box if there is none.
+   */
+  private Piece framed(IAST framed, FrameBox box, double seedWidth) {
     Piece inner = piece(framed.arg1(), seedWidth);
-    FrameBox box = FrameBox.of(framed, FRAME_MARGIN);
     double innerW = inner == null ? 0.0 : inner.naturalW;
     double innerH = inner == null ? 0.0 : inner.naturalH;
     double width = innerW + box.left + box.right;

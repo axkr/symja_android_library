@@ -13870,6 +13870,73 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNearestFunction() {
+    check("{Head(Nearest({{1, 1}, {4, 0}})), MatchQ(Nearest({3, 8, 12}), _NearestFunction), "
+        + "Nearest({3, 8, 12})[11, 2]}", //
+        "{NearestFunction,True,{12,8}}");
+    check("ng(f_NearestFunction, x_) := f[x]; ng(Nearest({3, 8, 12}), 7)", //
+        "{8}");
+    // a symbolic point stays applied
+    check("Nearest({{2, 3}, {5, 1}})[{p, q}][[1]]", //
+        "{p,q}");
+    check("Nearest({3, 8, 12}) // InputForm", //
+        "NearestFunction(Hold(Nearest({3,8,12})))");
+    // no data to search
+    check("{Nearest(Sin(x)), NearestFunction(Hold(Nearest()))[3]}", //
+        "{Nearest(Sin(x)),NearestFunction(Hold(Nearest()))[3]}");
+  }
+
+  @Test
+  public void testDateStringForms() {
+    // two digit years after a month name are 1970 ... 2069
+    check("{DateObject(\"15 Mar 31\"), DateObject(\"07 Dec 85\"), DateObject(\"31/10/91\")}", //
+        "{DateObject({2031,3,15},Day),DateObject({1985,12,7},Day),DateObject({1991,10,31},Day)}");
+    // a day without a year is one of this year
+    check("{DateList(DateObject(\"Mar7\"))[[2;;3]], DateList(DateObject(\"Mar7\"))[[1]] == DateValue(\"Year\")}", //
+        "{{3,7},True}");
+    // the form DateString writes, with the day of the week
+    check("DateList(DateObject(\"Fri 9 Feb 2024 10:30:00\"))", //
+        "{2024,2,9,10,30,0.0}");
+    check("{DatePlus(\"Feb 27 2024\", 3), DayCount(\"Jan 1 2020\", \"01 Jan 21\")}", //
+        "{March 1, 2024 12:00 am,366}");
+    // the seconds of a time are kept
+    check("DatePlus(\"Mar 3 2021 08:20:10\", {5, \"Second\"})", //
+        "March 3, 2021 8:20:15 am");
+    // two digit years of a numeric date or a format are 1950 ... 2049
+    check("{DateObject(\"31/10/55\"), DateList({\"05/06/48\", {\"Day\", \"Month\", \"YearShort\"}})}", //
+        "{DateObject({1955,10,31},Day),{2048,6,5,0,0,0.0}}");
+  }
+
+  @Test
+  public void testNDSolveBoundaryValueProblems() {
+    // conditions at both ends: a - b is constant, a(4) = 10 - 4*(a - b), b(4) = 2
+    check("sol = NDSolve({a'(z) == b(z) - a(z), b'(z) == b(z) - a(z), a(0) == 10, b(4) == 2}, "
+        + "{a, b}, {z, 0, 4})[[1]]; Round(10^6*({a(4), b(0)} /. sol))", //
+        "{3600000,8400000}");
+    check("sol = NDSolveValue({u''(x) == -4*u(x), u(0) == 1, u(1) == 0}, u, {x, 0, 1}); "
+        + "Abs(sol(0.5) - (Cos(1.0) - Cot(2.0)*Sin(1.0))) < 10^-8", //
+        "True");
+    // a nonlinear problem, and a clamped beam with two conditions at each end
+    check("sol = NDSolveValue({y''(x) == Exp(y(x)), y(0) == 0, y(1) == 0}, y, {x, 0, 1}); "
+        + "{sol(1/2) < 0, Abs(sol(1/4) - sol(3/4)) < 10^-8}", //
+        "{True,True}");
+    check("sol = NDSolveValue({w''''(x) == 1, w(0) == 0, w'(0) == 0, w(1) == 0, w'(1) == 0}, "
+        + "w, {x, 0, 1}); Abs(sol(1/2) - 1/384) < 10^-9", //
+        "True");
+    // y(Pi) is 0 for every solution with y(0) = 0
+    check("NDSolve({y''(x) == -y(x), y(0) == 0, y(Pi) == 1}, y, {x, 0, Pi})", //
+        "NDSolve({y''(x)==-y(x),y(0)==0,y(Pi)==1},y,{x,0,Pi})");
+  }
+
+  @Test
+  public void testPanelInGridSVG() {
+    // a panel is a light gray box around its content
+    check("{StringCount(ExportString(Grid({{Panel(\"a\"), Panel(\"b\"), \"c\"}}), \"SVG\"), \"rgb(242,242,242)\"), "
+        + "StringContainsQ(ExportString(Grid({{Panel(\"a\"), \"c\"}}), \"SVG\"), \"Panel\")}", //
+        "{2,False}");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //

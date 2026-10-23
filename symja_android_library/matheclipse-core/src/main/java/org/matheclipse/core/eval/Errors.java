@@ -156,6 +156,7 @@ public class Errors {
       "bldim", "The arguments `1` and `2` do not have compatible dimensions.", //
       "boxfmt", "`1` is not a box formatting type.", //
       "bdomv", "Warning: `1` is not a valid domain specification.", //
+      "bvnc", "The boundary value problem could not be solved by shooting from `1`.", //
       "bspec", "`1` is not a valid `2` specification.", //
       "bvfail", "For some branches of the general solution, unable to solve for the conditions", //
       "bvnul",

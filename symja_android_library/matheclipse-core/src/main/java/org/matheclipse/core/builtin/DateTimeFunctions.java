@@ -465,9 +465,23 @@ public class DateTimeFunctions {
     return new ParsedDateString(date.atStartOfDay(), DateGranularity.DAY);
   }
 
+  /** A leading day of the week, as in <code>"Wed 4 Jan 2012"</code>. */
+  private static final java.util.regex.Pattern WEEKDAY_PREFIX = java.util.regex.Pattern.compile(
+      "^(?i:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)(?i:day|nesday|rsday|urday)?\\.?,?\\s+");
+
+  /** A year after a month name: two digits are a year of 1970 ... 2069. */
+  private static int yearOf(String digits) {
+    if (digits.length() == 2) {
+      int year = Integer.parseInt(digits);
+      return year < 70 ? 2000 + year : 1900 + year;
+    }
+    return DateObjectExpr.toJavaYear(Integer.parseInt(digits));
+  }
+
   /** Parse the date part of a date string. */
   private static LocalDate parseDateOnly(String text) {
     try {
+      text = WEEKDAY_PREFIX.matcher(text).replaceFirst("");
       // 2026, 2026-07, 2026-07-15
       java.util.regex.Matcher m = java.util.regex.Pattern
           .compile("^(-?\\d{1,6})(?:[-/](\\d{1,2})(?:[-/](\\d{1,2}))?)?$").matcher(text);
@@ -475,7 +489,11 @@ public class DateTimeFunctions {
         int year = Integer.parseInt(m.group(1));
         int month = m.group(2) == null ? 1 : Integer.parseInt(m.group(2));
         int day = m.group(3) == null ? 1 : Integer.parseInt(m.group(3));
-        return LocalDate.of(DateObjectExpr.toJavaYear(year), month, day);
+        try {
+          return LocalDate.of(DateObjectExpr.toJavaYear(year), month, day);
+        } catch (DateTimeException dte) {
+          // 31/10/91 is no year 31: the day comes first
+        }
       }
       // 31/10/1991 or 31/10/91 - day first, because a leading four digit group was matched above
       m = java.util.regex.Pattern.compile("^(\\d{1,2})[-./](\\d{1,2})[-./](\\d{2}|\\d{4})$")
@@ -493,8 +511,7 @@ public class DateTimeFunctions {
       if (m.matches()) {
         int month = monthOfName(m.group(2));
         if (month > 0) {
-          return LocalDate.of(DateObjectExpr.toJavaYear(Integer.parseInt(m.group(3))), month,
-              Integer.parseInt(m.group(1)));
+          return LocalDate.of(yearOf(m.group(3)), month, Integer.parseInt(m.group(1)));
         }
         return null;
       }
@@ -505,10 +522,22 @@ public class DateTimeFunctions {
       if (m.matches()) {
         int month = monthOfName(m.group(1));
         if (month > 0) {
-          return LocalDate.of(DateObjectExpr.toJavaYear(Integer.parseInt(m.group(3))), month,
-              Integer.parseInt(m.group(2)));
+          return LocalDate.of(yearOf(m.group(3)), month, Integer.parseInt(m.group(2)));
         }
         return null;
+      }
+      // Jan1, Jan 8th, 1 Feb, 4July - a day without a year is one of this year
+      m = java.util.regex.Pattern.compile("^([A-Za-z]+)\\.?\\s*(\\d{1,2})(?:st|nd|rd|th)?$")
+          .matcher(text);
+      if (m.matches() && monthOfName(m.group(1)) > 0) {
+        return LocalDate.of(LocalDate.now().getYear(), monthOfName(m.group(1)),
+            Integer.parseInt(m.group(2)));
+      }
+      m = java.util.regex.Pattern.compile("^(\\d{1,2})(?:st|nd|rd|th)?\\s*([A-Za-z]+)\\.?$")
+          .matcher(text);
+      if (m.matches() && monthOfName(m.group(2)) > 0) {
+        return LocalDate.of(LocalDate.now().getYear(), monthOfName(m.group(2)),
+            Integer.parseInt(m.group(1)));
       }
     } catch (RuntimeException rex) {
       return null;
@@ -2062,15 +2091,20 @@ public class DateTimeFunctions {
     }
 
     /**
-     * A date of a range of date strings, in the form the Wolfram Language writes it:
-     * <code>"July 1, 2022 12:00 am"</code>.
+     * A date computed from date strings, as a string again: <code>"July 1, 2022 12:00 am"</code>.
+     * The dates of a range of date strings and a date string moved by <code>DatePlus</code> are
+     * written this way.
      */
-    private static String dateRangeString(LocalDateTime dateTime) {
+    static String dateRangeString(LocalDateTime dateTime) {
       int hour = dateTime.getHour() % 12;
-      return String.format(Locale.US, "%s %d, %d %d:%02d %s",
+      // the seconds are written only where there are some
+      String seconds = dateTime.getSecond() == 0 && dateTime.getNano() == 0 ? ""
+          : String.format(Locale.US, ":%02d", dateTime.getSecond());
+      return String.format(Locale.US, "%s %d, %d %d:%02d%s %s",
           dateTime.getMonth().getDisplayName(java.time.format.TextStyle.FULL, Locale.US),
           dateTime.getDayOfMonth(), DateObjectExpr.toDisplayYear(dateTime.getYear()),
-          hour == 0 ? 12 : hour, dateTime.getMinute(), dateTime.getHour() < 12 ? "am" : "pm");
+          hour == 0 ? 12 : hour, dateTime.getMinute(), seconds,
+          dateTime.getHour() < 12 ? "am" : "pm");
     }
 
     /**
@@ -2223,6 +2257,10 @@ public class DateTimeFunctions {
       if (arg1 instanceof DateObjectExpr) {
         DateObjectExpr dateObject = (DateObjectExpr) arg1;
         return dateObject.withDateTime(dateObject.getGranularity().truncate(result));
+      }
+      if (arg1.isString()) {
+        // a date string gives a date string
+        return F.stringx(DateRange.dateRangeString(result));
       }
       if (spec.listSize > 0) {
         // a date list carries a time of day only when there is one to carry: half of 2020 is 183

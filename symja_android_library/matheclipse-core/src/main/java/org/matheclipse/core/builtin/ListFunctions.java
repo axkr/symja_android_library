@@ -257,6 +257,7 @@ public final class ListFunctions {
       S.Level.setEvaluator(new Level());
       S.Most.setEvaluator(new Most());
       S.Nearest.setEvaluator(new Nearest());
+      S.NearestFunction.setEvaluator(new NearestFunction());
       S.NearestTo.setEvaluator(new NearestTo());
       S.PadLeft.setEvaluator(new PadLeft());
       S.PadRight.setEvaluator(new PadRight());
@@ -4668,7 +4669,65 @@ public final class ListFunctions {
     }
   }
 
+  /**
+   * <code>NearestFunction(Hold(Nearest(data, options)))(x)</code> - the elements of
+   * <code>data</code> nearest to <code>x</code>; <code>(x, n)</code> the <code>n</code> nearest
+   * ones. A point which isn't numeric while the data is stays applied.
+   */
+  private static final class NearestFunction extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.head() == S.NearestFunction || !ast.head().isAST(S.NearestFunction, 2)) {
+        return F.NIL;
+      }
+      IExpr held = ast.head().first();
+      if (!held.isAST(S.Hold, 2) || !held.first().isAST(S.Nearest)
+          || held.first().argSize() < 1 || ast.argSize() < 1 || ast.argSize() > 2) {
+        return F.NIL;
+      }
+      IAST nearest = (IAST) held.first();
+      IExpr data = nearest.arg1();
+      IExpr x = ast.arg1();
+      if (isNumericArray(data) && !isNumericArray(x)) {
+        return F.NIL;
+      }
+      IASTAppendable call = F.ast(S.Nearest, nearest.argSize() + ast.argSize());
+      call.append(data);
+      call.appendArgs(ast);
+      for (int i = 2; i < nearest.size(); i++) {
+        call.append(nearest.get(i));
+      }
+      return call;
+    }
+
+    /** A number, or a list of numbers or of such lists. */
+    private static boolean isNumericArray(IExpr expr) {
+      if (expr.isList()) {
+        return ((IAST) expr).forAll(NearestFunction::isNumericArray);
+      }
+      return expr.isNumericFunction(true);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      // the applications of the function object take their own arguments
+      return ast.head() == S.NearestFunction ? ARGS_1_1 : null;
+    }
+  }
+
   private static final class Nearest extends AbstractFunctionOptionEvaluator {
+
+    /**
+     * Data Nearest searches: a non-empty list or association, or the rule
+     * <code>{e1, e2, ...} -> values</code>.
+     */
+    private static boolean isNearestData(IExpr data) {
+      if (data.isRuleAST()) {
+        return data.first().isList() && data.first().argSize() > 0;
+      }
+      return (data.isList() || data.isAssociation()) && data.argSize() > 0;
+    }
 
     /** Return all elements with minimal distance, i.e. no number of elements was specified. */
     private static final int ALL_NEAREST = -1;
@@ -4677,21 +4736,13 @@ public final class ListFunctions {
     public IExpr evaluate(IAST ast, int argSize, IExpr[] option, EvalEngine engine,
         IAST originalAST) {
       if (ast.headID() != ID.Nearest) {
-        // operator form Nearest(data, options)(x) or Nearest(data, options)(x, n)
-        IAST operator = (IAST) ast.head();
-        if (ast.argSize() < 1 || ast.argSize() > 2 || operator.argSize() < 1) {
-          return F.NIL;
-        }
-        IASTAppendable call = F.ast(S.Nearest, operator.argSize() + ast.argSize());
-        call.append(operator.arg1());
-        call.appendArgs(ast);
-        for (int i = 2; i < operator.size(); i++) {
-          if (!operator.get(i).isRuleAST()) {
-            return F.NIL;
-          }
-          call.append(operator.get(i));
-        }
-        return call;
+        // Nearest(data, options) is a NearestFunction, which is applied to the point
+        return F.NIL;
+      }
+      if (argSize == 1 && isNearestData(ast.arg1())) {
+        // Nearest(data, options) is the function which finds the elements of data nearest to its
+        // argument
+        return F.unaryAST1(S.NearestFunction, F.Hold(originalAST));
       }
       if (ast.arg1().isASTOrAssociation()) {
         IAST listArg1 = (IAST) ast.arg1();
