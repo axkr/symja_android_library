@@ -647,6 +647,37 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
         "{Flat,OneIdentity,Protected}");
   }
 
+  /**
+   * The current context counts at its place on <code>$ContextPath</code>: once
+   * <code>System`name</code> exists, the short name means it even if <code>Global`name</code> was
+   * made before. start.wls declares <code>System`$Env;</code> and then assigns <code>$Env</code>,
+   * which every component reads; assigned to the older <code>Global`$Env</code> instead, the
+   * evaluation kernel's WebSocket address went out as an unevaluated lookup.
+   */
+  @Test
+  public void testASystemSymbolComesBeforeAGlobalOneOfTheSameName() {
+    check("ctxProbe[1]; System`ctxProbe; ctxProbe = 5; {Context[ctxProbe], System`ctxProbe}", //
+        "{System`,5}");
+    check("$ctxEnv[\"k\"]; System`$ctxEnv; $ctxEnv = <|\"k\" -> 2|>; Lookup[System`$ctxEnv, \"k\", 0]", //
+        "2");
+    // a private context which isn't on the path is still searched first (one input each: an
+    // input is read as a whole before it is evaluated)
+    check("BeginPackage[\"CtxPkg`\"]", //
+        "");
+    check("ctxPub::usage = \"public\"", //
+        "public");
+    check("Begin[\"`Private`\"]", //
+        "CtxPkg`Private`");
+    check("CtxPkg`Private`ctxPub = 1", //
+        "1");
+    check("Context[ctxPub]", //
+        "CtxPkg`Private`");
+    check("End[]; EndPackage[]", //
+        "");
+    check("Context[ctxPub]", //
+        "CtxPkg`");
+  }
+
   @Test
   public void testAnAbsoluteContextNameIsNotHungUnderTheCurrentOne() {
     // Frontend/Views.wl begins Begin["CoffeeLiqueur`Notebook`Views`"], defines its router, and

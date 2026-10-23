@@ -456,11 +456,21 @@ public final class ContextPath implements Iterable<Context> {
     return !path.isEmpty() && path.get(0) == Context.SYSTEM;
   }
 
+  private boolean isOnPath(Context context) {
+    for (Context c : path) {
+      if (c == context || c.getContextName().equals(context.getContextName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public ISymbol symbol(String symbolName, Context newContext, boolean relaxedSyntax) {
     String name = getName(symbolName, relaxedSyntax);
-    // $Context is searched before $ContextPath: inside Begin["Pkg`Private`"] a private symbol
-    // hides a public one of the same name
-    if (fContext != null) {
+    // a $Context which isn't on $ContextPath is searched first: inside Begin["Pkg`Private`"] a
+    // private symbol hides a public one of the same name. One which is on it counts at its place
+    // there, so after System`x; a name x means System`x even if Global`x exists already.
+    if (fContext != null && !isOnPath(fContext)) {
       ISymbol symbol = fContext.get(name);
       if (symbol != null) {
         return symbol;
