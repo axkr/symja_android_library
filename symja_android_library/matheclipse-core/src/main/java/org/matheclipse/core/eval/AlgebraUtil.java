@@ -1583,6 +1583,10 @@ public class AlgebraUtil {
     return null;
   }
 
+  /**
+   * Writes nothing to the engine cache: the built-in <code>Factor</code> caches the result it
+   * returns itself, and the other callers factor with other settings under the same key.
+   */
   public static IExpr factor(IAST ast, IExpr arg1, VariablesSet eVar, boolean squareFree,
       boolean withHomogenization, boolean togetherMode, boolean trig, EvalEngine engine) {
     IExpr expr = arg1;
@@ -1599,11 +1603,8 @@ public class AlgebraUtil {
             IExpr denominator = factorExpr(F.Factor(fractionParts[1]), fractionParts[1], eVar,
                 squareFree, withHomogenization, trig, engine);
             if (numerator.isPresent() && denominator.isPresent()) {
-              IExpr temp = engine.evaluate(F.Divide(numerator, denominator));
-              engine.putCache(ast, temp);
-              return temp;
+              return engine.evaluate(F.Divide(numerator, denominator));
             }
-            engine.putCache(ast, F.NIL);
           } catch (JASConversionException e) {
             //
           }
@@ -1613,7 +1614,6 @@ public class AlgebraUtil {
     }
     try {
       IExpr temp = factorExpr(ast, expr, eVar, squareFree, withHomogenization, trig, engine);
-      engine.putCache(ast, temp);
       if (temp.isPresent()) {
         return temp;
       }
