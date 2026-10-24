@@ -59,6 +59,14 @@ With the `Modulus` option the equations are solved in the residue class ring of 
 {}
 ```
 
+### Option
+
+```
+Solve(..., Method -> "ORTools")
+```
+
+> searches the solutions over the `Integers` with the CP-SAT solver of OR-Tools in place of choco-solver. It needs the module `matheclipse-or-tools`; without it the default method is used.
+
 ### Related terms 
 [DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindInstance](FindInstance.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [NSolve](NSolve.md), [NSolveValues](NSolveValues.md), [Reduce](Reduce.md), [Roots](Roots.md), [SolveValues](SolveValues.md) 
 

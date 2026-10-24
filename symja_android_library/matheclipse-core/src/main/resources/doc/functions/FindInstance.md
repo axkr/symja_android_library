@@ -13,6 +13,14 @@ FindInstance(equations, vars)
 {{x->-2,y->-2*Sqrt(2)}}
 ```
 
+### Option
+
+```
+FindInstance(..., Method -> "ORTools")
+```
+
+> searches the instances over the `Integers` with the CP-SAT solver of OR-Tools in place of choco-solver. It needs the module `matheclipse-or-tools`; without it the default method is used.
+
 ### Related terms 
 [Solve](Solve.md)
 

@@ -16,6 +16,14 @@ See:
 {42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x->-21/8-Sqrt(505)/8}}
 ```
 
+### Option
+
+```
+Minimize(..., Method -> "ORTools")
+```
+
+> solves a linear problem with the Glop simplex solver of OR-Tools, over the `Integers` with its branch and bound. It needs the module `matheclipse-or-tools`; without it the default method is used.
+
 ### Related terms 
 [Maximize](Maximize.md) 
 

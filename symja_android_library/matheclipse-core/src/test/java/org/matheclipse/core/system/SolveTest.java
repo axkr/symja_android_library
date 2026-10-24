@@ -1363,8 +1363,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("NSolve(2*x^(x-3)==3^(x-2),x)", //
         "{{x->2.0}}");
 
+    // the rules follow the order of the variables
     check("Chop(NSolve({0==(x-3)^2+(y-3)^2-4,0==-x^2+10*x-26+y},{y,x}))", //
-        "{{x->3.0,y->5.0},{x->6.34781+I*(-1.02885),y->1.75806+I*(-2.7734)},{x->6.34781+I*1.02885,y->1.75806+I*2.7734},{x->4.30438,y->1.48389}}");
+        "{{y->5.0,x->3.0},{y->1.75806+I*(-2.7734),x->6.34781+I*(-1.02885)},{y->1.75806+I*2.7734,x->6.34781+I*1.02885},{y->1.48389,x->4.30438}}");
 
     // github #261 - JUnit test for Apfloat switching to complex Power calculation
     checkNumeric("NSolve(0.00004244131815783 == x^5 , x)", //
@@ -1415,7 +1416,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "NSolve({m1*u1^2 + m2*u2^2 == m1*v1^2 + m2*v2^2, m1*u1 + m2*u2 == m1*v1 + m2*v2}, {v1, v2})", //
         // v1 is now a single reduced fraction; the previous nested form
         // (m1*u1+m2*u2+(m2*(-2.0*m1*u1+m1*u2-m2*u2))/(m1+m2))/m1 is the same value
-        "{{v2->u2,v1->u1},{v2->(2.0*m1*u1-m1*u2+m2*u2)/(m1+m2),v1->(m1*u1-m2*u1+2.0*m2*u2)/(m1+m2)}}");
+        "{{v1->u1,v2->u2},{v1->(m1*u1-m2*u1+2.0*m2*u2)/(m1+m2),v2->(2.0*m1*u1-m1*u2+m2*u2)/(m1+m2)}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == v2 - v1}, {v1, v2})", //
         "{{v1->(-m1*u1-m2*u2+m2*(-u1+u2))/(-m1-m2),v2->(-m1*u1+m1*(u1-u2)-m2*u2)/(-m1-m2)}}");
     check("NSolve({m1*u1 + m2*u2 == m1*v1 + m2*v2, u2 - u1 == -(v2 - v1)}, {v1, v2})", //
@@ -1770,7 +1771,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Tag(TestTags.SLOW)
   public void testNSolve002() {
     checkNumeric("NSolve({2==x-0.091*y, y==0.054-0.0171*z, x==Exp(z)+1}, {x,y,z})", //
-        "{{z->0.004894386769035759,y->0.053916305986249774,x->2.004906383844749}}");
+        "{{x->2.004906383844749,y->0.053916305986249774,z->0.004894386769035681}}");
 
     // check("Eliminate({sin(x)-11==y, x+y==-9}, {y,x})",
     // "x+Sin(x)==2");
@@ -1779,7 +1780,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     // NSolve calls Solve in numeric mode
     checkNumeric("NSolve({Sin(x)-11==y, x+y==-9}, {y,x})", //
-        "{{x->1.1060601577062719,y->-10.106060157706272}}");
+        "{{y->-10.106060157706272,x->1.1060601577062719}}");
     // Solve doesn't get the result
     checkNumeric("Solve({Sin(x)-11==y, x+y==-9}, {y,x})", //
         "Solve({-11+Sin(x)==y,x+y==-9},{y,x})");

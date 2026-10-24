@@ -31,6 +31,14 @@ with the constraints:
 		y >= 0
 ```
 
+### Option
+
+```
+NMaximize(..., Method -> "ORTools")
+```
+
+> solves a linear problem with the Glop simplex solver of OR-Tools; `Element(x, Integers)` conditions make it a mixed integer problem for its branch and bound. It needs the module `matheclipse-or-tools`; without it the default method is used.
+
 ### Related terms 
 [LinearProgramming](LinearProgramming.md), [NMinimize](NMinimize.md)
 

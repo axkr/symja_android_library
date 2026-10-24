@@ -23,6 +23,14 @@ Print a message if no maximum can be found
 {Infinity,{x->-Infinity}}
 ```
 
+### Option
+
+```
+Maximize(..., Method -> "ORTools")
+```
+
+> solves a linear problem with the Glop simplex solver of OR-Tools, over the `Integers` with its branch and bound. It needs the module `matheclipse-or-tools`; without it the default method is used.
+
 ### Related terms 
 [Minimize](Minimize.md) 
 

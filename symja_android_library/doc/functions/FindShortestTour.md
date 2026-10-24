@@ -16,6 +16,14 @@ See
 {Sqrt(2)+2*Sqrt(5),{1,3,2,1}}
 ```
 
+### Option
+
+```
+FindShortestTour(..., Method -> "ORTools")
+```
+
+> searches the tour with the routing library of OR-Tools; the tour is short but for many points not necessarily the shortest. It needs the module `matheclipse-or-tools`; without it the default method is used.
+
 ### Related terms 
 [GraphCenter](GraphCenter.md), [GraphDiameter](GraphDiameter.md), [GraphPeriphery](GraphPeriphery.md), [GraphRadius](GraphRadius.md), [AdjacencyMatrix](AdjacencyMatrix.md), [EdgeList](EdgeList.md),
 [EdgeQ](EdgeQ.md), [EulerianGraphQ](EulerianGraphQ.md), [FindEulerianCycle](FindEulerianCycle.md), [FindHamiltonianCycle](FindHamiltonianCycle.md), [FindVertexCover](FindVertexCover.md), [FindShortestPath](FindShortestPath.md), [FindSpanningTree](FindSpanningTree.md), [Graph](Graph.md), [GraphQ](GraphQ.md), [HamiltonianGraphQ](HamiltonianGraphQ.md), 

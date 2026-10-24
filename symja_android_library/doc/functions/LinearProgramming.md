@@ -31,6 +31,14 @@ with the constraints:
         y >= 0
 ```
 
+### Option
+
+```
+LinearProgramming(..., Method -> "ORTools")
+```
+
+> solves the problem with the Glop simplex solver of OR-Tools, an integer domain with its branch and bound. It needs the module `matheclipse-or-tools`; without it the default method is used.
+
 ### Related terms
 [NMaximize](NMaximize.md), [NMinimize](NMinimize.md)
 
