@@ -15743,6 +15743,16 @@ public class S {
   public final static IBuiltInSymbol Messages = S.initFinalSymbol("Messages", ID.Messages);
 
   /**
+   * MetaCharacters(x) - TODO describe `MetaCharacters`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MetaCharacters.md">MetaCharacters
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MetaCharacters =
+      S.initFinalSymbol("MetaCharacters", ID.MetaCharacters);
+
+  /**
    * MetaInformation(x) - TODO describe `MetaInformation`.
    * 
    * @see <a href=
