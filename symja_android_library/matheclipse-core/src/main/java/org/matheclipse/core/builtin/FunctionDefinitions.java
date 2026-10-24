@@ -483,6 +483,7 @@ public final class FunctionDefinitions {
     DataStructureFunctions.initialize();
     CompileFunctions.initialize();
     LinkFunctions.initialize();
+    ParallelKernelFunctions.initialize();
     ProcessFunctions.initialize();
     TaskFunctions.initialize();
     CodeParserFunctions.initialize();

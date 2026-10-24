@@ -671,6 +671,26 @@ public class WljsRegressionTest extends ExprEvaluatorTestCase {
   }
 
   /**
+   * The notebook's packages compute some functions in a parallel kernel: <code>ParallelSubmit</code>
+   * holds its expression, and <code>WaitAll</code> evaluates it - here without any kernel, in this
+   * one. An object of a package's own is left to that package's definition of <code>WaitAll</code>.
+   * The kernels themselves are separate processes and are tested in the console.
+   */
+  @Test
+  public void testParallelSubmitAndWaitAll() {
+    check("Kernels[]", //
+        "{}");
+    check("job = ParallelSubmit[Print[\"not yet\"]; 2 + 3]; Head[job]", //
+        "EvaluationObject");
+    check("WaitAll[{job, ParallelSubmit[Expand[(v + 1)^2]]}]", //
+        "{5,1+2*v+v^2}");
+    check("z = 4; WaitAll[ParallelSubmit[{z}, z^3]]", //
+        "64");
+    check("ownJob /: WaitAll[ownJob[n_]] := n + 1; WaitAll[ownJob[4]]", //
+        "5");
+  }
+
+  /**
    * <code>ToExpression</code> of an input with 30 digit numbers made every later evaluation numeric
    * with 30 digits: the parser raised the engine's precision and nothing set it back. The notebook's
    * evaluation API reads every input with <code>ToExpression</code>.
