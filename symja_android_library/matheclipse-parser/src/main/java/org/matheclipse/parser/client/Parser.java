@@ -292,24 +292,28 @@ public class Parser extends Scanner {
       case TT_LIST_OPEN:
         return parseArguments(getList());
 
-      case TT_ANGLE_OPEN: {
-        // \u2329a, b, ...\u232A is AngleBracket(a, b, ...)
-        final FunctionNode angleBracket =
-            fFactory.createFunction(fFactory.createSymbol("AngleBracket"));
+      case TT_ANGLE_OPEN:
+      case TT_BRACKETING_BAR_OPEN:
+      case TT_DOUBLE_BRACKETING_BAR_OPEN: {
+        // \u2329a, b, ...\u232A is AngleBracket(a, b, ...), the bars BracketingBar(...) and
+        // DoubleBracketingBar(...)
+        final int open = fToken;
+        final FunctionNode matchfix =
+            fFactory.createFunction(fFactory.createSymbol(matchfixHead(open)));
         fRecursionDepth++;
         try {
           getNextToken();
-          if (fToken != TT_ANGLE_CLOSE) {
-            getArguments(angleBracket);
+          if (fToken != open + 1) {
+            getArguments(matchfix);
           }
-          if (fToken != TT_ANGLE_CLOSE) {
-            throwSyntaxError("'\u232A' expected.");
+          if (fToken != open + 1) {
+            throwSyntaxError("'" + matchfixClose(open) + "' expected.");
           }
         } finally {
           fRecursionDepth--;
         }
         getNextToken();
-        return parseArguments(angleBracket);
+        return parseArguments(matchfix);
       }
       case TT_BLANK:
       case TT_BLANK_BLANK:
@@ -966,8 +970,12 @@ public class Parser extends Scanner {
 
   /** Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code> &rarr; <code>b</code> */
   private ASTNode getPart(final int min_precedence) throws SyntaxError {
+    return parseParts(getFactor(min_precedence));
+  }
+
+  /** The parts <code>[[...]]</code> which follow <code>temp</code>, if there are any. */
+  private ASTNode parseParts(ASTNode temp) throws SyntaxError {
     FunctionNode function = null;
-    ASTNode temp = getFactor(min_precedence);
     // if (fToken == TT_COLON) {
     // getNextToken();
     // function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Optional),
@@ -1320,7 +1328,8 @@ public class Parser extends Scanner {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_IDENTIFIER
         || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
         || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN
-        || fToken == TT_ANGLE_OPEN || isBlankToken() || isDifferentialDToken();
+        || fToken == TT_ANGLE_OPEN || fToken == TT_BRACKETING_BAR_OPEN
+        || fToken == TT_DOUBLE_BRACKETING_BAR_OPEN || isBlankToken() || isDifferentialDToken();
   }
 
   /** <code>f \uF74Cx</code> is the product of <code>f</code> and <code>DifferentialD(x)</code>. */
@@ -1442,6 +1451,8 @@ public class Parser extends Scanner {
   private final ASTNode parsePostfixOperator(ASTNode lhs, PostfixOperator postfixOperator) {
     getNextToken();
     lhs = postfixOperator.createFunction(fFactory, lhs);
+    // m\[Transpose][[2]] is a part of the transposed m
+    lhs = parseParts(lhs);
     lhs = parseArguments(lhs);
     if (fToken == TT_ARGUMENTS_OPEN) {
       return getFunctionArguments(lhs);

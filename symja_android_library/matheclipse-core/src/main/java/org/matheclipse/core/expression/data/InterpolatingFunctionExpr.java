@@ -128,6 +128,15 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
     /** The component of the state vector this function reads. */
     private final int component;
 
+    /**
+     * The last component of the block holding <code>y, y', ..., y^(n-1)</code> of the function this
+     * one belongs to: the derivative of a component before it is the next component.
+     */
+    private final int blockEnd;
+
+    /** <code>true</code> for the derivative of the state component, not its value. */
+    private final boolean stateDerivative;
+
     /** The point the initial conditions were given at, separating the two directions. */
     private final double t0;
 
@@ -144,9 +153,43 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
      */
     public ODEFunctionExpr(final DenseOutputModel forward, final DenseOutputModel backward,
         double t0, int component, double min, double max) {
+      this(forward, backward, t0, component, component, false, min, max);
+    }
+
+    private ODEFunctionExpr(final DenseOutputModel forward, final DenseOutputModel backward,
+        double t0, int component, int blockEnd, boolean stateDerivative, double min,
+        double max) {
       super(new DenseOutputModel[] {forward, backward}, min, max);
       this.t0 = t0;
       this.component = component;
+      this.blockEnd = blockEnd;
+      this.stateDerivative = stateDerivative;
+    }
+
+    /**
+     * The <code>n</code>-th derivative: the next components of the block, and after the last one
+     * the derivative the integrator computed for it.
+     */
+    @Override
+    public IExpr derivative(int n) {
+      int c = component;
+      boolean derivativeOfState = stateDerivative;
+      for (int i = 0; i < n; i++) {
+        if (derivativeOfState) {
+          // the second derivative of the last component isn't stored
+          return F.NIL;
+        }
+        if (c < blockEnd) {
+          c++;
+        } else {
+          derivativeOfState = true;
+        }
+      }
+      DenseOutputModel[] models = toData();
+      ODEFunctionExpr function = new ODEFunctionExpr(models[0], models[1], t0, c, blockEnd,
+          derivativeOfState, min, max);
+      function.initialState = initialState;
+      return function;
     }
 
     /**
@@ -164,16 +207,42 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
       }
       if (model == null) {
         // nothing was integrated: the domain is t0 alone
-        return F.num(initialState[component]);
+        return stateDerivative ? F.NIL : F.num(initialState[component]);
       }
-      return F.num(model.getInterpolatedState(t).getPrimaryState()[component]);
+      return F.num(stateDerivative ? model.getInterpolatedState(t).getPrimaryDerivative()[component]
+          : model.getInterpolatedState(t).getPrimaryState()[component]);
+    }
+
+    /** The same solution component of the same integration, or its same derivative. */
+    @Override
+    public boolean equals(final Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof ODEFunctionExpr)) {
+        return false;
+      }
+      ODEFunctionExpr other = (ODEFunctionExpr) obj;
+      DenseOutputModel[] models = toData();
+      DenseOutputModel[] otherModels = other.toData();
+      return models[0] == otherModels[0] && models[1] == otherModels[1]
+          && component == other.component && stateDerivative == other.stateDerivative
+          && t0 == other.t0 && min == other.min && max == other.max
+          && initialState == other.initialState;
+    }
+
+    @Override
+    public int hashCode() {
+      DenseOutputModel[] models = toData();
+      return java.util.Objects.hash(System.identityHashCode(models[0]),
+          System.identityHashCode(models[1]), component, stateDerivative, t0);
     }
 
     @Override
     public IExpr copy() {
       DenseOutputModel[] models = toData();
-      ODEFunctionExpr function =
-          new ODEFunctionExpr(models[0], models[1], t0, component, min, max);
+      ODEFunctionExpr function = new ODEFunctionExpr(models[0], models[1], t0, component,
+          blockEnd, stateDerivative, min, max);
       function.initialState = initialState;
       return function;
     }
@@ -348,6 +417,36 @@ public class InterpolatingFunctionExpr<T> extends DataExpr<T> {
   public static InterpolatingFunctionExpr newInstance(final DenseOutputModel forward,
       final DenseOutputModel backward, double t0, int component, double min, double max) {
     return new ODEFunctionExpr(forward, backward, t0, component, min, max);
+  }
+
+  /**
+   * Create a new instance for component <code>component</code> of the solution of an ODE, whose
+   * derivatives are the components up to <code>blockEnd</code>.
+   */
+  public static InterpolatingFunctionExpr newInstance(final DenseOutputModel forward,
+      final DenseOutputModel backward, double t0, int component, int blockEnd, double min,
+      double max) {
+    return new ODEFunctionExpr(forward, backward, t0, component, blockEnd, false, min, max);
+  }
+
+  /**
+   * The <code>n</code>-th derivative of this function, or {@link F#NIL} if it isn't known.
+   *
+   * @param n a positive order
+   */
+  public IExpr derivative(int n) {
+    return F.NIL;
+  }
+
+  /**
+   * The derivative of this function, of the order <code>orders[i]</code> in its
+   * <code>i</code>-th variable, as an interpolating function of its own.
+   *
+   * @param orders the non-negative orders of differentiation, one for each variable
+   * @return {@link F#NIL} if the derivative can't be built from the stored model
+   */
+  public IExpr derivative(int[] orders) {
+    return orders.length == 1 && orders[0] > 0 ? derivative(orders[0]) : F.NIL;
   }
 
   /**

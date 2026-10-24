@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntUnaryOperator;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -66,6 +67,8 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
         int dt = 1;
         boolean returnSingleStep = false;
         boolean isOperatorForm = false;
+        // the offsets {x1, x2} of the cells to return, relative to the first given cell
+        int[] xWindow = null;
 
         IExpr tSpec = (argSize >= 3) ? ast.arg3() : F.C1;
 
@@ -75,6 +78,15 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
             tEnd = tSpec.toIntDefault(-1);
           } else if (tSpec.isList()) {
             IAST tList = (IAST) tSpec;
+            if (tList.argSize() >= 2 && tList.arg2().isList2()
+                && tList.arg2().first().isInteger() && tList.arg2().second().isInteger()) {
+              xWindow = new int[] {tList.arg2().first().toIntDefault(),
+                  tList.arg2().second().toIntDefault()};
+              if (F.isNotPresent(xWindow[0]) || F.isNotPresent(xWindow[1])
+                  || xWindow[1] - xWindow[0] > Config.MAX_AST_SIZE) {
+                return F.NIL;
+              }
+            }
             if (tList.argSize() >= 1) {
               IExpr tTime = tList.arg1();
 
@@ -330,7 +342,8 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
                   (IAST) init, stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
             } else {
               result = evaluateInteger1D(baseRule, k, r, s, isTotalistic, explicitWeights,
-                  (IAST) init, stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
+                  (IAST) init, stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm,
+                  xWindow);
             }
           }
 
@@ -439,7 +452,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
 
   private IExpr evaluateInteger1D(IInteger ruleNum, int k, int r, int s, boolean isTotalistic,
       int[][] explicitWeights, IAST init, int steps, int tStart, int tEnd, int dt,
-      boolean returnSingleStep, boolean isOperatorForm) {
+      boolean returnSingleStep, boolean isOperatorForm, int[] xWindow) {
     if (k < 2 || r < 0 || s < 1)
       return F.NIL;
 
@@ -473,6 +486,22 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       IExpr[] divMod = temp.divideAndRemainder(ZZk);
       ruleBits[i] = divMod[1].toIntDefault(0);
       temp = (IInteger) divMod[0];
+    }
+
+    if (s == 1 && !isOperatorForm && init.argSize() == 2 && init.arg1().isList()
+        && (init.arg2().isList() || (init.arg2().isInteger() && xWindow != null))) {
+      // {cells, {b1, b2, ...}}: the cells on a background which repeats the block
+      int[] block = integers(init.arg2().makeList(), k);
+      IAST cells = (IAST) init.arg1();
+      if (cells.argSize() == 1 && cells.arg1().isList()) {
+        cells = (IAST) cells.arg1();
+      }
+      int[] seed = integers(cells, k);
+      if (block == null || block.length == 0 || seed == null || seed.length == 0) {
+        return F.NIL;
+      }
+      return evaluateOnBackground(ruleBits, k, r, isTotalistic, explicitWeights, seed, block,
+          steps, tStart, tEnd, dt, returnSingleStep, xWindow);
     }
 
     boolean isCyclic = true;
@@ -691,6 +720,131 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
       return resultList.arg1(); // {{{t}}} tSpec: plain unwrap, no bg wrapper
     }
 
+    return resultList;
+  }
+
+  /** The cells of a list of integer states <code>0 &lt;= c &lt; k</code>, or <code>null</code>. */
+  private static int[] integers(IAST list, int k) {
+    int[] values = new int[list.argSize()];
+    for (int i = 1; i < list.size(); i++) {
+      int value = list.get(i).toIntDefault();
+      if (value < 0 || value >= k) {
+        return null;
+      }
+      values[i - 1] = value;
+    }
+    return values;
+  }
+
+  /** The new value of a cell from the values <code>cellAt(-r), ..., cellAt(r)</code>. */
+  private static int transition(int[] ruleBits, int k, int r, boolean isTotalistic,
+      int[][] explicitWeights, IntUnaryOperator cellAt) {
+    int v = 0;
+    for (int di = -r; di <= r; di++) {
+      int cellVal = cellAt.applyAsInt(di);
+      if (explicitWeights != null) {
+        v += explicitWeights[0][di + r] * cellVal;
+      } else if (isTotalistic) {
+        v += cellVal;
+      } else {
+        v = v * k + cellVal;
+      }
+    }
+    return ruleBits[v];
+  }
+
+  /**
+   * The evolution of the cells <code>seed</code>, the first one at offset 0, on a background in
+   * which offset <code>x</code> holds <code>block[x mod p]</code>. The background evolves on its
+   * own period; the seeded line is computed on a window so wide that every cell outside of it still
+   * follows the background. Without <code>xWindow</code> the rows keep the cells which differ from
+   * the background at one of the requested steps.
+   */
+  private static IExpr evaluateOnBackground(int[] ruleBits, int k, int r, boolean isTotalistic,
+      int[][] explicitWeights, int[] seed, int[] block, int steps, int tStart, int tEnd, int dt,
+      boolean returnSingleStep, int[] xWindow) {
+    final int p = block.length;
+    final int localDt = (dt == 0) ? 1 : dt;
+    if (tStart < 0 || tEnd < 0) {
+      return F.NIL;
+    }
+    final long reach = (long) r * steps + 1;
+    final long width = seed.length + 2 * reach;
+    if (width * (steps + 1) > Config.MAX_AST_SIZE) {
+      ASTElementLimitExceeded.throwIt(width * (steps + 1));
+    }
+    final int left = (int) -reach;
+    List<int[]> backgrounds = new ArrayList<>(steps + 1);
+    List<int[]> lines = new ArrayList<>(steps + 1);
+    int[] background = block.clone();
+    int[] line = new int[(int) width];
+    for (int i = 0; i < line.length; i++) {
+      int x = left + i;
+      line[i] = x >= 0 && x < seed.length ? seed[x] : block[Math.floorMod(x, p)];
+    }
+    backgrounds.add(background);
+    lines.add(line);
+    for (int t = 0; t < steps; t++) {
+      final int[] bg = background;
+      final int[] current = line;
+      int[] nextBackground = new int[p];
+      for (int i = 0; i < p; i++) {
+        final int x = i;
+        nextBackground[i] = transition(ruleBits, k, r, isTotalistic, explicitWeights,
+            di -> bg[Math.floorMod(x + di, p)]);
+      }
+      int[] nextLine = new int[current.length];
+      for (int i = 0; i < current.length; i++) {
+        final int j = i;
+        nextLine[i] = transition(ruleBits, k, r, isTotalistic, explicitWeights, di -> {
+          int index = j + di;
+          return index >= 0 && index < current.length ? current[index]
+              : bg[Math.floorMod(left + index, p)];
+        });
+      }
+      background = nextBackground;
+      line = nextLine;
+      backgrounds.add(background);
+      lines.add(line);
+    }
+
+    int minX;
+    int maxX;
+    if (xWindow != null) {
+      minX = xWindow[0];
+      maxX = xWindow[1];
+    } else {
+      minX = Integer.MAX_VALUE;
+      maxX = Integer.MIN_VALUE;
+      for (int t = tStart; (localDt > 0 ? t <= tEnd : t >= tEnd); t += localDt) {
+        if (t < lines.size()) {
+          int[] cells = lines.get(t);
+          int[] bg = backgrounds.get(t);
+          for (int i = 0; i < cells.length; i++) {
+            if (cells[i] != bg[Math.floorMod(left + i, p)]) {
+              minX = Math.min(minX, left + i);
+              maxX = Math.max(maxX, left + i);
+            }
+          }
+        }
+      }
+    }
+    IASTAppendable resultList = F.ListAlloc();
+    for (int t = tStart; (localDt > 0 ? t <= tEnd : t >= tEnd); t += localDt) {
+      if (t < lines.size()) {
+        int[] cells = lines.get(t);
+        int[] bg = backgrounds.get(t);
+        IASTAppendable row = F.ListAlloc(maxX >= minX ? maxX - minX + 1 : 0);
+        for (int x = minX; x <= maxX; x++) {
+          int i = x - left;
+          row.append(F.ZZ(i >= 0 && i < cells.length ? cells[i] : bg[Math.floorMod(x, p)]));
+        }
+        resultList.append(row);
+      }
+    }
+    if (returnSingleStep && resultList.argSize() == 1) {
+      return resultList.arg1();
+    }
     return resultList;
   }
 

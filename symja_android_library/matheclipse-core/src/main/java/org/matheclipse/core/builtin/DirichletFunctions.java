@@ -447,7 +447,7 @@ public final class DirichletFunctions {
       engine.setNumericMode(false);
       IExpr expr = closedForm;
       if (expr == null) {
-        IExpr exact = engine.evaluate(F.Rationalize(s, F.C0));
+        IExpr exact = NumberTheory.Rationalize.exact(engine.evaluate(s));
         expr = hurwitzSum(table, exact);
       }
       return engine.evaluate(F.N(expr, F.ZZ(digits)));

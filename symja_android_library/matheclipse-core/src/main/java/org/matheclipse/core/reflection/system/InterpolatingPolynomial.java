@@ -207,6 +207,14 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 
       final IAST list = (IAST) ast.arg1();
       IExpr x = ast.arg2();
+      if (x.isList1()) {
+        // the variable given as {x}
+        x = x.first();
+      }
+      if (list.argSize() > 0 && list.forAll(
+          row -> row.isList() && row.argSize() >= 2 && row.first().isList1())) {
+        return confluent(list, x, engine);
+      }
       int size = list.size();
       if (size > 1) {
         int n = size - 1;
@@ -248,6 +256,71 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The polynomial in <code>x</code> through the points <code>{{x0}, f0, f0', f0'', ...}</code>
+   * which also takes the derivatives given at each point, in the Newton form with confluent divided
+   * differences: a point with <code>k</code> conditions is a node repeated <code>k</code> times,
+   * and the divided difference over <code>j+1</code> equal nodes is the <code>j</code>-th
+   * derivative divided by <code>j!</code>.
+   *
+   * @param data the points with their values and derivatives
+   * @param x the variable or the point to evaluate at
+   */
+  private static IExpr confluent(IAST data, IExpr x, EvalEngine engine) {
+    int m = 0;
+    for (IExpr row : data) {
+      m += row.argSize() - 1;
+    }
+    // each condition: its node, the index of the point and the order of its derivative
+    IExpr[] nodes = new IExpr[m];
+    int[] point = new int[m];
+    int[] derivative = new int[m];
+    IExpr[] value = new IExpr[m];
+    int c = 0;
+    for (int i = 1; i < data.size(); i++) {
+      IAST row = (IAST) data.get(i);
+      for (int k = 0; k < row.argSize() - 1; k++) {
+        nodes[c] = row.first().first();
+        point[c] = i;
+        derivative[c] = k;
+        value[c] = row.get(k + 2);
+        c++;
+      }
+    }
+    for (int i = 0; i < m; i++) {
+      for (int j = i + 1; j < m; j++) {
+        if (point[i] != point[j] && engine.evaluate(F.Subtract(nodes[j], nodes[i])).isZero()) {
+          // two points with the same abscissa
+          return F.NIL;
+        }
+      }
+    }
+    IExpr[] table = new IExpr[m];
+    for (int j = 0; j < m; j++) {
+      table[j] = value[j - derivative[j]];
+    }
+    IExpr[] a = new IExpr[m];
+    a[0] = table[0];
+    for (int level = 1; level < m; level++) {
+      for (int j = 0; j < m - level; j++) {
+        if (point[j] == point[j + level]) {
+          int first = j - derivative[j];
+          table[j] =
+              engine.evaluate(F.Divide(value[first + level], F.ZZ(level).factorial()));
+        } else {
+          table[j] = engine.evaluate(F.Divide(F.Subtract(table[j + 1], table[j]),
+              F.Subtract(nodes[j + level], nodes[j])));
+        }
+      }
+      a[level] = table[0];
+    }
+    IExpr result = a[m - 1];
+    for (int i = m - 2; i >= 0; i--) {
+      result = F.Plus(a[i], F.Times(F.Subtract(x, nodes[i]), result));
+    }
+    return result;
   }
 
   /**

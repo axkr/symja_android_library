@@ -7,8 +7,21 @@ public class Characters {
   public final static Map<String, String> NamedCharactersMap =
       ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
-  private final static Map<String, String> ReversedNamedCharactersMap =
-      ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
+  /**
+   * The names of the named characters, by their unicode string: filled once when the class is
+   * first used, so that parsers on several threads read a complete map.
+   */
+  private static final class ReversedNames {
+    static final Map<String, String> MAP = build();
+
+    private static Map<String, String> build() {
+      Map<String, String> map = new java.util.HashMap<String, String>();
+      for (int i = 0; i < NamedCharacters.length; i += 2) {
+        map.put(NamedCharacters[i + 1], NamedCharacters[i]);
+      }
+      return map;
+    }
+  }
 
   public final static Map<String, String> CharacterNamesMap =
       ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
@@ -360,24 +373,12 @@ public class Characters {
    */
   public static String unicodeName(char unicode) {
     String str = String.valueOf(unicode);
-    if (ReversedNamedCharactersMap.size() == 0) {
-      // create unicode to name map
-      for (int i = 0; i < NamedCharacters.length; i += 2) {
-        ReversedNamedCharactersMap.put(NamedCharacters[i + 1], NamedCharacters[i]);
-      }
-    }
-    return ReversedNamedCharactersMap.get(str);
+    return ReversedNames.MAP.get(str);
   }
 
   public static String unicodePoint(int codePoint) {
     String str = new String(Character.toChars(codePoint));
-    if (ReversedNamedCharactersMap.size() == 0) {
-      // create unicode to name map
-      for (int i = 0; i < NamedCharacters.length; i += 2) {
-        ReversedNamedCharactersMap.put(NamedCharacters[i + 1], NamedCharacters[i]);
-      }
-    }
-    return ReversedNamedCharactersMap.get(str);
+    return ReversedNames.MAP.get(str);
   }
 
   /**
@@ -484,7 +485,7 @@ public class Characters {
       return ASCII_IDENTIFIER_START[ch];
     }
     return (Character.isJavaIdentifierStart(ch) && (ch != '_'))
-        || isFormalLatinLetter(ch) || isLetterLike(ch);
+        || isFormalLatinLetter(ch) || isLetterLike(ch) || isUnnamedPrivateUse(ch);
   }
 
   /**
@@ -601,6 +602,15 @@ public class Characters {
   };
 
   /**
+   * Test if <code>ch</code> is a private use character without a named character for it, like
+   * the ones a notebook writes for its own letters: it is a letter of a symbol name.
+   */
+  public static boolean isUnnamedPrivateUse(char ch) {
+    return ch >= '\uE000' && ch <= '\uF8FF' && unicodeName(ch) == null
+        && !org.matheclipse.parser.client.operator.OperatorTable.isOperatorCharacter(ch);
+  }
+
+  /**
    * Determines if the specified character may be part of a Symja identifier as other than the first
    * character.
    *
@@ -619,7 +629,7 @@ public class Characters {
     }
     return (Character.isJavaIdentifierPart(ch) && (ch != '_')) || (ch == '`') // context name
                                                                               // separator character
-        || isFormalLatinLetter(ch) || isLetterLike(ch);
+        || isFormalLatinLetter(ch) || isLetterLike(ch) || isUnnamedPrivateUse(ch);
   }
 
   /**

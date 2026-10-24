@@ -44,7 +44,9 @@ public class CompleteKaryTree extends AbstractFunctionOptionEvaluator {
 
 
     int k = 2;
-    if (argSize >= 2) {
+    if (argSize >= 2 && !ast.arg2().isRuleAST()) {
+      // a rule after the first argument is an option, also one like ImageSize which the
+      // tree doesn't declare
       IExpr arg2 = ast.arg2();
       k = arg2.toMachineInt();
       if (k < 0) {
@@ -59,6 +61,12 @@ public class CompleteKaryTree extends AbstractFunctionOptionEvaluator {
       directed = true;
     }
     optionsList.append(F.Rule(S.GraphLayout, options[GraphGraphics.X_GRAPH_LAYOUT]));
+    for (int i = 2; i < ast.size(); i++) {
+      IExpr rule = ast.get(i);
+      if (rule.isRuleAST() && rule.first() != S.DirectedEdges && rule.first() != S.GraphLayout) {
+        optionsList.append(rule);
+      }
+    }
 
     // Calculate total vertices
     long totalVertices;

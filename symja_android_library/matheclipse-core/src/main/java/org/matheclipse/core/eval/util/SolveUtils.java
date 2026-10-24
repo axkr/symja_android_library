@@ -26,13 +26,14 @@ public class SolveUtils {
    * variable: <code>Reduce({X*C==1}, {X, C})</code> is <code>X != 0 &amp;&amp; C == 1/X</code>.
    * Symja's algorithms take a built-in symbol for a constant, so it is renamed on the way in and
    * back in the result. A numeric constant like <code>Pi</code>, and <code>True, False,
-   * Null</code>, are not renamed.
+   * Null</code>, are not renamed. A variable which is a call of a call, like <code>c(1)(t)</code>,
+   * is renamed as well, so that it is one unknown.
    *
    * @param ast <code>Solve(eqns, vars, ...)</code> or <code>Reduce(eqns, vars, ...)</code> with its
    *        options
    * @return the result with the original symbols - the call itself if the renamed call stays
    *         unevaluated, which the caller must not solve a second time - or {@link F#NIL} if no
-   *         variable is a built-in symbol
+   *         variable is a built-in symbol or a call of a call
    */
   public static IExpr solveWithRenamedBuiltinVariables(IAST ast, EvalEngine engine) {
     if (ast.argSize() < 2) {
@@ -40,13 +41,19 @@ public class SolveUtils {
     }
     IExpr variables = ast.arg2();
     IAST list = variables.isList() ? (IAST) variables : F.list(variables);
-    java.util.Map<IExpr, IExpr> forward = new java.util.IdentityHashMap<IExpr, IExpr>();
-    java.util.Map<IExpr, IExpr> backward = new java.util.IdentityHashMap<IExpr, IExpr>();
+    java.util.Map<IExpr, IExpr> forward = new java.util.HashMap<IExpr, IExpr>();
+    java.util.Map<IExpr, IExpr> backward = new java.util.HashMap<IExpr, IExpr>();
     for (IExpr variable : list) {
       if (variable.isBuiltInSymbol() && !variable.isConstantAttribute() && !variable.isTrue()
           && !variable.isFalse() && variable != S.Null && !isDomain(variable)
           && !forward.containsKey(variable)) {
         ISymbol dummy = F.Dummy(((ISymbol) variable).getSymbolName());
+        forward.put(variable, dummy);
+        backward.put(dummy, variable);
+      } else if (variable.isAST() && variable.head().isAST()
+          && !variable.head().head().isAST(S.Derivative) && !forward.containsKey(variable)) {
+        // a call of a call like c(1)(t) is solved for as one unknown
+        ISymbol dummy = F.Dummy("v" + (forward.size() + 1));
         forward.put(variable, dummy);
         backward.put(dummy, variable);
       }

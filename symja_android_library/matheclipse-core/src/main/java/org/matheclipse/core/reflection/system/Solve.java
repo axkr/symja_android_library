@@ -3503,6 +3503,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // solved without the Abs, or unsolved there - which isn't tried a second time
       return withoutSquaredAbs == ast ? F.NIL : withoutSquaredAbs;
     }
+    IExpr withoutMaxMin = solveMaxMin(ast, isNumericArgument, engine);
+    if (withoutMaxMin.isPresent()) {
+      return withoutMaxMin;
+    }
     SolveData sd = new SolveData(SolveOptions.of(SolveOptions.SOLVE_KEYS, options));
     IAST withoutIdentities = dropRationalIdentities(ast, engine);
     if (withoutIdentities.isPresent()) {
@@ -3583,6 +3587,151 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
       return true;
     });
+  }
+
+  /** The number of choices of the extremal arguments which {@link #solveMaxMin} tries. */
+  private static final int MAX_EXTREMUM_CASES = 64;
+
+  /**
+   * Solve a system with <code>Max(a1, a2, ...)</code> or <code>Min(a1, a2, ...)</code> of the
+   * variables: for each choice of the argument <code>ai</code> which is the extremum the system
+   * with <code>ai</code> in place of the <code>Max</code> is solved, and its solutions are kept if
+   * <code>ai</code> is not less (for <code>Min</code> not greater) than every other argument there.
+   * <code>Solve(x == Max(x/2, 1), x)</code> is <code>{{x->1}}</code>. A system with machine numbers
+   * is solved with their rational values, and the solutions are numericized.
+   *
+   * @return the solutions, or {@link F#NIL} if there is no such <code>Max</code> or
+   *         <code>Min</code> or a case isn't decided
+   */
+  private static IExpr solveMaxMin(IAST ast, boolean isNumeric, EvalEngine engine) {
+    if (ast.argSize() < 2 || (ast.argSize() >= 3 && ast.arg3() != S.Reals)
+        || (ast.arg1().isFree(S.Max) && ast.arg1().isFree(S.Min))) {
+      return F.NIL;
+    }
+    IAST variables = ast.arg2().makeList();
+    if (variables.isEmpty() || !variables
+        .forAll(x -> (x.isVariable() || (x.isAST() && !x.isList())) && !SolveUtils.isDomain(x))) {
+      return F.NIL;
+    }
+    IExpr system = ast.arg1();
+    if (innermostExtremum(system, variables).isNIL()) {
+      return F.NIL;
+    }
+    try {
+      if (isNumeric) {
+        system = engine.evaluate(F.Rationalize(system));
+        if (!system.isFree(x -> x.isInexactNumber(), false)) {
+          system = engine.evaluate(F.Rationalize(system, F.C0));
+          if (!system.isFree(x -> x.isInexactNumber(), false)) {
+            return F.NIL;
+          }
+        }
+      }
+      java.util.List<IExpr[]> cases = new ArrayList<IExpr[]>();
+      if (!extremumCases(system, F.CEmptyList, variables, cases)) {
+        return F.NIL;
+      }
+      IASTAppendable solutions = F.ListAlloc(cases.size());
+      Set<IExpr> keys = new HashSet<IExpr>();
+      for (IExpr[] c : cases) {
+        IExpr result = engine.evalQuiet(ast.setAtCopy(1, c[0]));
+        if (!result.isList()) {
+          return F.NIL;
+        }
+        IAST conditions = (IAST) c[1];
+        for (IExpr solution : (IAST) result) {
+          if (!solution.isListOfRules()
+              || !solution.isFree(x -> x.isConditionalExpression() || x.isAST(S.C, 2), true)) {
+            return F.NIL;
+          }
+          boolean holds = true;
+          for (IExpr condition : conditions) {
+            IExpr value =
+                engine.evalQuiet(condition.replaceAll((IAST) solution).orElse(condition));
+            if (value.isFalse()) {
+              holds = false;
+              break;
+            }
+            if (!value.isTrue()) {
+              return F.NIL;
+            }
+          }
+          if (holds && keys.add(EvalAttributes.copySort((IAST) solution))) {
+            solutions.append(solution);
+          }
+        }
+      }
+      IExpr result = isNumeric ? engine.evalN(solutions) : solutions;
+      if (result.isList()) {
+        result = ((IAST) result).copy();
+        EvalAttributes.sort((IASTMutable) result);
+      }
+      return result;
+    } catch (LimitException le) {
+      throw le;
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /**
+   * Collect the systems <code>{system', conditions}</code> of all choices of the extremal arguments
+   * of the <code>Max</code> and <code>Min</code> of the variables in <code>system</code>.
+   *
+   * @return <code>false</code> if there are too many choices or a <code>Max</code> of a list
+   */
+  private static boolean extremumCases(IExpr system, IAST conditions, IAST variables,
+      java.util.List<IExpr[]> cases) {
+    IAST occurrence = innermostExtremum(system, variables);
+    if (occurrence.isNIL()) {
+      cases.add(new IExpr[] {system, conditions});
+      return cases.size() <= MAX_EXTREMUM_CASES;
+    }
+    final boolean isMax = occurrence.isAST(S.Max);
+    for (int i = 1; i < occurrence.size(); i++) {
+      IExpr chosen = occurrence.get(i);
+      if (chosen.isList()) {
+        return false;
+      }
+      IAST rule = F.Rule(occurrence, chosen);
+      IASTAppendable next = F.ListAlloc(conditions.argSize() + occurrence.argSize());
+      for (IExpr condition : conditions) {
+        next.append(condition.replaceAll(rule).orElse(condition));
+      }
+      for (int j = 1; j < occurrence.size(); j++) {
+        if (j != i) {
+          next.append(isMax ? F.GreaterEqual(chosen, occurrence.get(j))
+              : F.LessEqual(chosen, occurrence.get(j)));
+        }
+      }
+      if (!extremumCases(system.replaceAll(rule).orElse(system), next, variables, cases)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * A <code>Max</code> or <code>Min</code> of two or more arguments with a variable, whose
+   * arguments have no such <code>Max</code> or <code>Min</code>; {@link F#NIL} if there is none.
+   */
+  private static IAST innermostExtremum(IExpr expr, IAST variables) {
+    if (!expr.isAST()) {
+      return F.NIL;
+    }
+    IAST ast = (IAST) expr;
+    for (int i = 1; i < ast.size(); i++) {
+      IAST inner = innermostExtremum(ast.get(i), variables);
+      if (inner.isPresent()) {
+        return inner;
+      }
+    }
+    if ((ast.isAST(S.Max) || ast.isAST(S.Min)) && ast.argSize() >= 2
+        && !ast.isFree(x -> variables.contains(x), false)) {
+      return ast;
+    }
+    return F.NIL;
   }
 
   /**

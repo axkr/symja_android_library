@@ -82,6 +82,7 @@ public class StatisticsFunctions {
       S.PDF.setEvaluator(new PDF());
       S.BernoulliProcess.setEvaluator(new BernoulliProcess());
       S.BinCounts.setEvaluator(new BinCounts());
+      S.HistogramList.setEvaluator(new HistogramList());
       S.BinomialProcess.setEvaluator(new BinomialProcess());
       S.BrownianBridgeProcess.setEvaluator(new BrownianBridgeProcess());
       S.Correlation.setEvaluator(new Correlation());
@@ -727,6 +728,158 @@ public class StatisticsFunctions {
    * {5}
    * </pre>
    */
+  /**
+   * <code>HistogramList(data, bspec, hspec)</code> - the bin edges and the heights of the
+   * histogram of <code>data</code>. The bins are <code>Automatic</code>, <code>n</code> bins of a
+   * round width, <code>{dx}</code>, <code>{min, max, dx}</code> or the edges
+   * <code>{{b1, b2, ...}}</code>; a bin contains its lower edge but not its upper one. The heights
+   * are <code>"Count"</code>, <code>"Probability"</code>, <code>"PDF"</code> or <code>"CDF"</code>
+   * of the data which falls into the bins.
+   */
+  private static final class HistogramList extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.arg1().isList() || ast.arg1().argSize() == 0
+          || !((IAST) ast.arg1()).forAll(IExpr::isReal)) {
+        return F.NIL;
+      }
+      IAST data = (IAST) ast.arg1();
+      IExpr bspec = ast.argSize() >= 2 ? ast.arg2() : S.Automatic;
+      String hspec = "Count";
+      if (ast.argSize() >= 3) {
+        if (!ast.arg3().isString()) {
+          return F.NIL;
+        }
+        hspec = ast.arg3().toString();
+      }
+      IAST edges = edges(data, bspec, engine);
+      if (edges.isNIL() || edges.argSize() < 2) {
+        return F.NIL;
+      }
+      int bins = edges.argSize() - 1;
+      int[] counts = new int[bins];
+      int inside = 0;
+      double[] edgeValues = new double[edges.argSize()];
+      for (int i = 0; i < edgeValues.length; i++) {
+        edgeValues[i] = edges.get(i + 1).evalfNaN();
+      }
+      for (IExpr value : data) {
+        // the last edge which is not above the value, found by bisection
+        double v = value.evalfNaN();
+        if (Double.isNaN(v) || v < edgeValues[0] || v >= edgeValues[bins]) {
+          continue;
+        }
+        int lo = 0;
+        int hi = bins;
+        while (hi - lo > 1) {
+          int mid = (lo + hi) >>> 1;
+          if (edgeValues[mid] <= v) {
+            lo = mid;
+          } else {
+            hi = mid;
+          }
+        }
+        counts[lo]++;
+        inside++;
+      }
+      IASTAppendable heights = F.ListAlloc(bins);
+      int cumulative = 0;
+      for (int i = 0; i < bins; i++) {
+        IExpr count = F.ZZ(counts[i]);
+        cumulative += counts[i];
+        IExpr height;
+        switch (hspec) {
+          case "Count":
+            height = count;
+            break;
+          case "Probability":
+            height = inside == 0 ? F.C0 : F.QQ(counts[i], inside);
+            break;
+          case "PDF":
+            height = inside == 0 ? F.C0
+                : F.Divide(F.QQ(counts[i], inside), F.Subtract(edges.get(i + 2), edges.get(i + 1)));
+            break;
+          case "CDF":
+            height = inside == 0 ? F.C0 : F.QQ(cumulative, inside);
+            break;
+          default:
+            return F.NIL;
+        }
+        heights.append(height);
+      }
+      IExpr result = engine.evaluate(F.list(edges, heights));
+      // the cumulative shares are numeric, and so are the shares and densities of numeric bins;
+      // counts stay integers
+      return hspec.equals("CDF")
+          || (!hspec.equals("Count") && edges.exists(IExpr::isInexactNumber))
+          ? F.list(edges, engine.evalN(((IAST) result).arg2()))
+          : result;
+    }
+
+    /** The bin edges of a specification, or {@link F#NIL} if it isn't one. */
+    private static IAST edges(IAST data, IExpr bspec, EvalEngine engine) {
+      if (bspec.isList1() && bspec.first().isList()) {
+        // the edges themselves
+        IAST list = (IAST) bspec.first();
+        return list.forAll(IExpr::isReal) ? list : F.NIL;
+      }
+      if (bspec.isList3()) {
+        IExpr steps = engine.evaluate(F.Range(bspec.first(), bspec.second(), bspec.getAt(3)));
+        if (!steps.isList() || steps.argSize() == 0) {
+          return F.NIL;
+        }
+        IAST edges = (IAST) steps;
+        if (engine.evaluate(F.Less(edges.last(), bspec.second())).isTrue()) {
+          // the last bin is a whole one, reaching beyond max
+          edges = edges.appendClone(engine.evaluate(F.Plus(edges.last(), bspec.getAt(3))));
+        }
+        return edges;
+      }
+      double[] values = new double[data.argSize()];
+      double min = Double.MAX_VALUE;
+      double max = -Double.MAX_VALUE;
+      for (int i = 0; i < values.length; i++) {
+        values[i] = data.get(i + 1).evalf();
+        min = Math.min(min, values[i]);
+        max = Math.max(max, values[i]);
+      }
+      double width;
+      if (bspec.isList1() && bspec.first().isReal()) {
+        width = bspec.first().evalf();
+      } else if (bspec.isInteger() && bspec.toIntDefault() > 0) {
+        width = org.matheclipse.core.builtin.graphics.Histogram
+            .roundNumber(max > min ? (max - min) / bspec.toIntDefault() : 1.0);
+      } else if (bspec == S.Automatic) {
+        width = org.matheclipse.core.builtin.graphics.Histogram.binWidth(values, min, max);
+      } else {
+        return F.NIL;
+      }
+      if (!(width > 0)) {
+        return F.NIL;
+      }
+      // the edges are multiples of the width; for integer data and an integer width they lie
+      // halfway between the integers, so that each integer has a bin of its own
+      double offset = 0.0;
+      if (data.forAll(IExpr::isInteger) && width == Math.rint(width)) {
+        offset = 0.5;
+      }
+      double start = Math.floor((min - offset) / width) * width + offset;
+      int bins = (int) Math.floor((max - start) / width) + 1;
+      if (bins > Config.MAX_AST_SIZE || bins > 100_000) {
+        return F.NIL;
+      }
+      final double first = start;
+      final double step = width;
+      return F.mapRange(0, bins + 1, i -> F.num(first + i * step));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+  }
+
   private static final class BinCounts extends AbstractFunctionEvaluator {
 
     @Override

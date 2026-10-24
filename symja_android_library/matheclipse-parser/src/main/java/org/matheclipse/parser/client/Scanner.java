@@ -75,6 +75,34 @@ public abstract class Scanner {
   /** <code>\u232A</code> or <code>\u3009</code> - the closing bracket of <code>AngleBracket</code> */
   protected static final int TT_ANGLE_CLOSE = 25;
 
+  /** <code>\[LeftBracketingBar]</code> - the opening bar of <code>BracketingBar</code> */
+  protected static final int TT_BRACKETING_BAR_OPEN = 26;
+
+  /** <code>\[RightBracketingBar]</code> */
+  protected static final int TT_BRACKETING_BAR_CLOSE = 27;
+
+  /** <code>\[LeftDoubleBracketingBar]</code> - the opening bar of <code>DoubleBracketingBar</code> */
+  protected static final int TT_DOUBLE_BRACKETING_BAR_OPEN = 28;
+
+  /** <code>\[RightDoubleBracketingBar]</code> */
+  protected static final int TT_DOUBLE_BRACKETING_BAR_CLOSE = 29;
+
+  /**
+   * The head of the expression a pair of matching brackets encloses, for the opening tokens
+   * {@link #TT_ANGLE_OPEN}, {@link #TT_BRACKETING_BAR_OPEN} and
+   * {@link #TT_DOUBLE_BRACKETING_BAR_OPEN}; the closing token is the next one.
+   */
+  protected static String matchfixHead(int openToken) {
+    return openToken == TT_ANGLE_OPEN ? "AngleBracket"
+        : openToken == TT_BRACKETING_BAR_OPEN ? "BracketingBar" : "DoubleBracketingBar";
+  }
+
+  /** The closing character of a pair of matching brackets, for the error message. */
+  protected static String matchfixClose(int openToken) {
+    return openToken == TT_ANGLE_OPEN ? "\u232A"
+        : openToken == TT_BRACKETING_BAR_OPEN ? "\uF604" : "\uF606";
+  }
+
   protected static final int TT_SPAN = 30;
 
   /** Token type: operator found in input string */
@@ -1155,6 +1183,11 @@ public abstract class Scanner {
             }
             if (fCurrentChar == '\u232A' || fCurrentChar == '\u3009') {
               fToken = TT_ANGLE_CLOSE;
+              return;
+            }
+            if (fCurrentChar >= '\uF603' && fCurrentChar <= '\uF606') {
+              // \[LeftBracketingBar], \[RightBracketingBar] and the double bars
+              fToken = TT_BRACKETING_BAR_OPEN + (fCurrentChar - '\uF603');
               return;
             }
             if (isOperatorCharacters()) {

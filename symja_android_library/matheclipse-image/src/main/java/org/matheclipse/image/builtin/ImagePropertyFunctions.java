@@ -500,6 +500,20 @@ public class ImagePropertyFunctions {
     return value >= size ? size - 1 : value;
   }
 
+  /**
+   * The call with its argument at <code>position</code> rasterized, if that argument is a two
+   * dimensional graphic: the image functions take a graphic for the image it is drawn to.
+   *
+   * @return {@link F#NIL} if the argument is no graphic or can't be rasterized
+   */
+  static IExpr withRasterizedGraphics(IAST ast, int position, EvalEngine engine) {
+    if (ast.size() <= position || !ast.get(position).isAST(S.Graphics)) {
+      return F.NIL;
+    }
+    IExpr image = engine.evaluate(F.unaryAST1(S.Rasterize, ast.get(position)));
+    return image instanceof ImageExpr ? engine.evaluate(ast.setAtCopy(position, image)) : F.NIL;
+  }
+
   /** The bitmap of <code>expr</code>, or <code>null</code> when it is not an image. */
   static BufferedImage bufferedImage(IExpr expr) {
     return expr instanceof ImageExpr ? ((ImageExpr) expr).getBufferedImage() : null;

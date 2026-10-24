@@ -241,6 +241,9 @@ public class Algebra {
           if (temp.isPresent()) {
             return temp;
           }
+        } else if (arg1.isPolynomial(variableList)) {
+          // a polynomial has no fractions to separate, it is multiplied out
+          return F.evalExpandAll(arg1, engine);
         }
         return arg1;
       }
@@ -945,7 +948,13 @@ public class Algebra {
       }
 
       if (arg1.isAST() && ast.argSize() > 0) {
-        return AlgebraUtil.distribute(ast, head);
+        IExpr result = AlgebraUtil.distribute(ast, head);
+        if (result == arg1 && !arg1.head().equals(head)) {
+          // no argument has the head: the expression is the only term, Distribute(a->b, List) is
+          // {a->b}
+          return F.unaryAST1(ast.size() >= 5 ? ast.arg4() : head, arg1);
+        }
+        return result;
       }
       return arg1;
     }
@@ -2278,7 +2287,9 @@ public class Algebra {
     private static ExprPolynomial[] symbolicExtendedGCD(ExprPolynomial a, ExprPolynomial b,
         ExprPolynomialRing ring, EvalEngine engine) {
       Function<IExpr, IExpr> normalize = coefficient -> {
-        IExpr temp = engine.evaluate(F.Cancel(F.Together(coefficient)));
+        // the common denominator without rationalizing it, the normal form of the coefficients
+        IExpr together = AlgebraUtil.togetherExpr(coefficient, engine);
+        IExpr temp = engine.evaluate(F.Cancel(together.orElse(coefficient)));
         return temp.isPresent() ? temp : coefficient;
       };
       // remainder == s*a + t*b holds for the "old" and the "new" triple throughout
@@ -4633,6 +4644,13 @@ public class Algebra {
             return reduced;
           }
         }
+        if (arg1.isPlus()) {
+          // a sum over a common denominator gets a rational number in place of its radicals
+          IExpr rationalized = rationalDenominator(together, engine);
+          if (rationalized.isPresent()) {
+            return rationalized;
+          }
+        }
         // every other fraction gets the same form as a reduced fraction which is given directly
         if (together.isTimes() || together.isPower()) {
           return AlgebraUtil.reducedFraction(together, engine).orElse(together);
@@ -4640,6 +4658,40 @@ public class Algebra {
         return together;
       }
       return arg1;
+    }
+
+    /**
+     * Multiply numerator and denominator of the fraction by <code>p^(Ceiling(r)-r)</code> for every
+     * factor <code>p^r</code> of the denominator with a positive integer <code>p</code> and a
+     * rational, non-integer exponent <code>r</code>: <code>(Sqrt(3)*a+b)/Sqrt(3)</code> becomes
+     * <code>(3*a+Sqrt(3)*b)/3</code>.
+     *
+     * @return {@link F#NIL} if the denominator has no such factor
+     */
+    private static IExpr rationalDenominator(IExpr fraction, EvalEngine engine) {
+      IExpr denominator = engine.evaluate(F.Denominator(fraction));
+      IAST factors = denominator.isTimes() ? (IAST) denominator : F.list(denominator);
+      IASTAppendable multiplier = F.TimesAlloc(factors.argSize());
+      for (IExpr factor : factors) {
+        if (factor.isPower() && factor.base().isInteger() && factor.base().isPositive()
+            && factor.exponent().isFraction() && factor.exponent().isPositive()) {
+          IRational exponent = (IRational) factor.exponent();
+          multiplier.append(F.Power(factor.base(),
+              F.Subtract(exponent.ceilFraction(), exponent)));
+        } else if (!factor.isFree(x -> x.isPower() && x.base().isNumber()
+            && x.exponent().isFraction(), true)) {
+          // a radical in another factor, like 1+2*Sqrt(2), stays in the denominator anyway
+          return F.NIL;
+        }
+      }
+      if (multiplier.argSize() == 0) {
+        return F.NIL;
+      }
+      IExpr numerator =
+          engine.evaluate(F.Expand(F.Times(F.Numerator(fraction), multiplier.oneIdentity1())));
+      IExpr rationalDenominator =
+          engine.evaluate(F.Times(denominator, multiplier.oneIdentity1()));
+      return engine.evaluate(F.Times(numerator, F.Power(rationalDenominator, F.CN1)));
     }
 
     @Override

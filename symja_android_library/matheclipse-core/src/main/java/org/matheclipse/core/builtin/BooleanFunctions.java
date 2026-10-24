@@ -1615,18 +1615,66 @@ public final class BooleanFunctions {
         return btp.booleanTableBDDRecursive(bddExpr, 1);
       }
       final IAST variables;
-      if (ast.isAST2()) {
+      if (ast.argSize() >= 2) {
         variables = ast.arg2().makeList();
       } else {
         variables = BooleanVariables.booleanVariables(ast.arg1());
+      }
+      if (ast.argSize() > 2 || !variables.forAll(IExpr::isSymbol)) {
+        // variables like x(1), or one list of variables for each level of the table
+        IASTAppendable levels = F.ListAlloc(ast.argSize());
+        for (int i = 2; i < ast.size(); i++) {
+          levels.append(ast.get(i).makeList());
+        }
+        if (levels.isEmpty()) {
+          levels.append(variables);
+        }
+        return substitutionTable(ast.arg1(), levels, 1, F.CEmptyList, engine);
       }
       BooleanTableFormula btp = new BooleanTableFormula(variables, engine);
       return btp.booleanTableRecursive(ast.arg1(), 1);
     }
 
+    /**
+     * The values of <code>expr</code> for all combinations of <code>True</code> and
+     * <code>False</code> of the variables of <code>levels</code>, which are substituted: one list
+     * of values for each combination of the variables of the outer levels.
+     *
+     * @param rules the values of the variables of the outer levels
+     */
+    private static IExpr substitutionTable(IExpr expr, IAST levels, int level, IAST rules,
+        EvalEngine engine) {
+      IAST variables = (IAST) levels.get(level);
+      int n = variables.argSize();
+      if (n > 20) {
+        // the table would have more than a million entries
+        return F.NIL;
+      }
+      IASTAppendable table = F.ListAlloc(1 << n);
+      for (int combination = 0; combination < (1 << n); combination++) {
+        IASTAppendable values = F.ListAlloc(rules.argSize() + n);
+        values.appendArgs(rules);
+        for (int i = 0; i < n; i++) {
+          // True before False, the first variable changing slowest
+          boolean value = ((combination >> (n - 1 - i)) & 1) == 0;
+          values.append(F.Rule(variables.get(i + 1), value ? S.True : S.False));
+        }
+        if (level == levels.argSize()) {
+          table.append(engine.evaluate(F.subst(expr, values)));
+        } else {
+          IExpr inner = substitutionTable(expr, levels, level + 1, values, engine);
+          if (inner.isNIL()) {
+            return F.NIL;
+          }
+          table.append(inner);
+        }
+      }
+      return table;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_INFINITY;
     }
   }
 

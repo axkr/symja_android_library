@@ -19,6 +19,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -355,7 +356,8 @@ public class D extends AbstractFunctionOptionEvaluator {
 
   /**
    * Test if <code>head(args...)</code> is a function whose partial derivatives can be written as
-   * <code>Derivative(...)[head][args...]</code>: a symbol, or a compound head like
+   * <code>Derivative(...)[head][args...]</code>: a symbol, an interpolating function, or a compound
+   * head like
    * <code>f(a)</code> which doesn't depend on <code>x</code>.
    *
    * @param head
@@ -363,7 +365,7 @@ public class D extends AbstractFunctionOptionEvaluator {
    * @return
    */
   private static boolean isFunctionHead(IExpr head, IExpr x) {
-    if (head.isSymbol()) {
+    if (head.isSymbol() || head instanceof InterpolatingFunctionExpr) {
       return true;
     }
     // D(f(a)[x], x) -> Derivative(1)[f(a)][x]; an operator Derivative(n)[f] applied to the wrong

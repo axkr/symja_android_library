@@ -6320,6 +6320,90 @@ public final class NumberTheory {
    */
   public static final class Rationalize extends AbstractCoreFunctionEvaluator {
 
+    /**
+     * The exact rational value of every inexact number in <code>expr</code>: unlike
+     * <code>Rationalize(expr, 0)</code>, which takes the simplest number within the precision, the
+     * number itself.
+     */
+    public static IExpr exact(IExpr expr) {
+      return AbstractFractionSym.rationalize(expr, 0.0, false, true).orElse(expr);
+    }
+
+    /**
+     * The relative distance within which a convergent of the continued fraction stands for a
+     * machine number: five quarters of a unit of the 53rd binary digit.
+     */
+    private static final double MACHINE_TOLERANCE = 1.25 * Math.pow(2.0, -53);
+
+    /**
+     * The first convergent within the precision of an inexact real or complex number, or
+     * {@link F#NIL} for any other expression.
+     */
+    private static IExpr convergent(IExpr x) {
+      if (x instanceof INum && x.isMachineNumber()) {
+        double value = ((INum) x).doubleValue();
+        return Double.isFinite(value)
+            ? convergentWithin(new org.hipparchus.fraction.BigFraction(value),
+                new org.hipparchus.fraction.BigFraction(MACHINE_TOLERANCE))
+            : F.NIL;
+      }
+      if (x instanceof ApfloatNum) {
+        Apfloat value = ((ApfloatNum) x).apfloatValue();
+        java.math.BigDecimal decimal = new java.math.BigDecimal(value.toString(true));
+        org.hipparchus.fraction.BigFraction exact = decimal.scale() <= 0
+            ? new org.hipparchus.fraction.BigFraction(decimal.toBigIntegerExact())
+            : new org.hipparchus.fraction.BigFraction(decimal.unscaledValue(),
+                java.math.BigInteger.TEN.pow(decimal.scale()));
+        // five quarters of a unit of the last digit
+        org.hipparchus.fraction.BigFraction tolerance = new org.hipparchus.fraction.BigFraction(
+            java.math.BigInteger.valueOf(5),
+            java.math.BigInteger.TEN.pow((int) Math.min(value.precision(), 100_000)).shiftLeft(2));
+        return convergentWithin(exact, tolerance);
+      }
+      if (x.isInexactNumber() && x instanceof INumber && !x.isReal()) {
+        IExpr re = convergent(((INumber) x).re());
+        IExpr im = convergent(((INumber) x).im());
+        return re.isPresent() && im.isPresent() ? F.Complex(re, im) : F.NIL;
+      }
+      return F.NIL;
+    }
+
+    /**
+     * The first convergent of the continued fraction of <code>x</code> within the relative
+     * distance <code>relativeTolerance</code>: <code>0.1</code> is <code>1/10</code>.
+     */
+    private static IExpr convergentWithin(org.hipparchus.fraction.BigFraction x,
+        org.hipparchus.fraction.BigFraction relativeTolerance) {
+      if (x.getNumerator().signum() == 0) {
+        return F.C0;
+      }
+      final org.hipparchus.fraction.BigFraction value = x.abs();
+      final org.hipparchus.fraction.BigFraction tolerance = value.multiply(relativeTolerance);
+      java.math.BigInteger h0 = java.math.BigInteger.ZERO;
+      java.math.BigInteger h1 = java.math.BigInteger.ONE;
+      java.math.BigInteger k0 = java.math.BigInteger.ONE;
+      java.math.BigInteger k1 = java.math.BigInteger.ZERO;
+      org.hipparchus.fraction.BigFraction rest = value;
+      while (true) {
+        java.math.BigInteger a = rest.getNumerator().divide(rest.getDenominator());
+        java.math.BigInteger h2 = a.multiply(h1).add(h0);
+        java.math.BigInteger k2 = a.multiply(k1).add(k0);
+        h0 = h1;
+        h1 = h2;
+        k0 = k1;
+        k1 = k2;
+        org.hipparchus.fraction.BigFraction convergent = new org.hipparchus.fraction.BigFraction(h1, k1);
+        org.hipparchus.fraction.BigFraction fractional =
+            rest.subtract(new org.hipparchus.fraction.BigFraction(a));
+        if (fractional.getNumerator().signum() == 0
+            || convergent.subtract(value).abs().compareTo(tolerance) <= 0) {
+          IExpr result = F.QQ(h1, k1);
+          return x.getNumerator().signum() < 0 ? result.negate() : result;
+        }
+        rest = fractional.reciprocal();
+      }
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
@@ -6336,9 +6420,18 @@ public final class NumberTheory {
           }
           useConvergenceMethod = false;
           epsilon = epsilonExpr.doubleValue();
-          if (arg1.isNumericFunction(true)) {
-            // works more similar to MMA if we do this step:
+          if (arg1.isNumericFunction(true) && !arg1.isList()) {
+            // an exact numeric expression is approximated as a whole; inside a list or any other
+            // expression only the inexact numbers are rationalized
             arg1 = engine.evalN(arg1);
+          }
+          if (epsilon == 0.0) {
+            // every inexact number becomes the simplest rational number it stands for
+            IExpr converted = arg1.isAST() ? arg1.replaceAll(Rationalize::convergent)
+                : convergent(arg1);
+            if (converted.isPresent()) {
+              return engine.evaluate(converted);
+            }
           }
         }
         // try to convert into a fractional number

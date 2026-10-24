@@ -34,7 +34,6 @@ import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.GraphMeasurer;
 import org.jgrapht.alg.shortestpath.NegativeCycleDetectedException;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
-import org.jgrapht.alg.tour.HeldKarpTSP;
 import org.jgrapht.generate.ComplementGraphGenerator;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
@@ -49,6 +48,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -70,6 +70,7 @@ import org.matheclipse.graphtheory.eval.CanonicalLabeling;
 import org.matheclipse.graphtheory.eval.GraphUtil;
 import org.matheclipse.graphtheory.eval.GraphView;
 import org.matheclipse.graphtheory.eval.SpanningTree;
+import org.matheclipse.graphtheory.eval.TravelingSalesman;
 import org.matheclipse.graphtheory.expression.data.ExprEdge;
 import org.matheclipse.graphtheory.expression.data.ExprWeightedEdge;
 import org.matheclipse.graphtheory.expression.data.GraphExpr;
@@ -1553,21 +1554,43 @@ public class GraphFunctions {
     }
   }
 
-
   /**
    *
    *
    * <pre>
-   * <code> FindShortestTour({{p11, p12}, {p21, p22}, {p31, p32}, ...})
+   * <code>FindShortestTour({p1, p2, p3, ...})
    * </code>
    * </pre>
    *
    * <blockquote>
    *
    * <p>
-   * find a shortest tour in the <code>graph</code> with minimum <code>EuclideanDistance</code>.
+   * find a shortest closed tour through the points <code>p1, p2, p3, ...</code>, starting and ending
+   * at <code>p1</code>, and return <code>{length, {1, ..., 1}}</code>.
    *
    * </blockquote>
+   *
+   * <pre>
+   * <code>FindShortestTour({p1, p2, p3, ...}, s, t)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * find a shortest path from point number <code>s</code> to point number <code>t</code> which visits
+   * every point once.
+   *
+   * </blockquote>
+   *
+   * <p>
+   * The points may be numbers, numeric vectors of any dimension (measured by
+   * <code>EuclideanDistance</code>), strings (measured by <code>EditDistance</code>) or
+   * <code>GeoPosition</code>s; the option <code>DistanceFunction -&gt; f</code> measures them by
+   * <code>f(pi, pj)</code> instead. The length is the sum of the distances of the legs, so exact
+   * points give an exact length. Up to 12 points the tour is optimal; above that it is found by a
+   * deterministic local search. Of the two directions of a closed tour the one whose second point
+   * has the higher number is returned.
    *
    * <p>
    * See
@@ -1579,126 +1602,198 @@ public class GraphFunctions {
    *
    * <h3>Related terms</h3>
    */
-  private static class FindShortestTour extends AbstractEvaluator {
+  private static class FindShortestTour extends AbstractFunctionOptionEvaluator {
+
+    /** The distances between the points, and how the length of one leg is written. */
+    private static final class TourMetric {
+      final double[][] dist;
+      final IAST points;
+      /** The head applied to two points to give the length of a leg, or null for geodesics. */
+      final IExpr distanceHead;
+
+      TourMetric(double[][] dist, IAST points, IExpr distanceHead) {
+        this.dist = dist;
+        this.points = points;
+        this.distanceHead = distanceHead;
+      }
+
+      boolean isGeodesic() {
+        return distanceHead == null;
+      }
+
+      /** The length of the leg between the points <code>i</code> and <code>j</code> (0-based). */
+      IExpr leg(int i, int j) {
+        IExpr p1 = points.get(i + 1);
+        IExpr p2 = points.get(j + 1);
+        if (isGeodesic()) {
+          // The leg lengths are emitted as quantities rather than as GeoDistance calls:
+          // GeoDistance lives in the matheclipse-astro module and measures a rhumb line,
+          // which would not agree with the geodesic edge weights the tour was optimized on.
+          return F.Quantity(F.num(dist[i][j]), F.stringx("m"));
+        }
+        return F.binaryAST2(distanceHead, p1, p2);
+      }
+    }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      if (argSize == 2) {
+        // `1` called with `2` arguments; `3` or `4` arguments are expected.
+        return Errors.printMessage(S.FindShortestTour, "argt",
+            F.List(S.FindShortestTour, F.C2, F.C1, F.C3), engine);
+      }
+      if (argSize > 3) {
+        // Options expected (instead of `1`) beyond position `2` in `3`. An option must be a rule
+        // or a list of rules.
+        return Errors.printMessage(S.FindShortestTour, "nonopt",
+            F.List(ast.get(4), F.C3, ast), engine);
+      }
+      if (!ast.arg1().isList()) {
+        return F.NIL;
+      }
+      IAST points = (IAST) ast.arg1();
+      int n = points.argSize();
+      int s = 0;
+      int t = 0;
+      if (argSize == 3) {
+        int s1 = ast.arg2().toIntDefault();
+        int t1 = ast.arg3().toIntDefault();
+        if (s1 == Integer.MIN_VALUE || t1 == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        if (s1 < 1 || s1 > n || t1 < 1 || t1 > n) {
+          return F.CEmptyList;
+        }
+        s = s1 - 1;
+        t = t1 - 1;
+      }
+      if (n == 0) {
+        return F.CEmptyList;
+      }
       try {
-        if (ast.isAST1()) {
-          if (ast.arg1().isListOfLists()) {
-            int[] dim = ast.arg1().isMatrix();
-            if (dim != null) {
-              IAST m = (IAST) ast.arg1();
-              double[][] matrix = m.toDoubleMatrix(true);
-              if (matrix != null) {
-                int rowDim = dim[0];
-                int colDim = dim[1];
-                if (colDim == 2) {
-                  Graph<IInteger, ExprWeightedEdge> g =
-                      new DefaultUndirectedWeightedGraph<>(ExprWeightedEdge.class);
-                  // define the vertices as integer numbers 1..rowDim
-                  for (int i = 1; i <= rowDim; i++) {
-                    g.addVertex(F.ZZ(i));
-                  }
-
-                  // create all possible edges between the given vertices
-                  for (int i = 0; i < rowDim; i++) {
-                    for (int j = i + 1; j < rowDim; j++) {
-                      g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), // EuclideanDistance
-                          MathArrays.distance(matrix[i], matrix[j]));
-                    }
-                  }
-                  GraphPath<IInteger, ExprWeightedEdge> tour =
-                      new HeldKarpTSP<IInteger, ExprWeightedEdge>().getTour(g);
-
-                  // calculate the shortest tour from the sum of distances and
-                  // create list of vertices for the shortest tour
-                  List<IInteger> tourPositions = tour.getVertexList();
-                  IASTAppendable shortestTourList = F.ListAlloc(tourPositions.size());
-                  IASTAppendable sum = F.PlusAlloc(tourPositions.size());
-                  IInteger lastPosition = tourPositions.get(tourPositions.size() - 1);
-                  shortestTourList.append(lastPosition);
-                  for (int i = tourPositions.size() - 2; i >= 0; i--) {
-                    IInteger position = tourPositions.get(i);
-                    shortestTourList.append(position);
-                    sum.append(F.EuclideanDistance(m.get(lastPosition), m.get(position)));
-                    lastPosition = position;
-                  }
-                  return F.list(sum, shortestTourList);
-                }
-              }
+        TourMetric metric = metric(points, options[0], engine);
+        if (metric == null) {
+          return F.NIL;
+        }
+        boolean closed = argSize == 1 || s == t;
+        int[] order;
+        if (closed) {
+          order = TravelingSalesman.tour(metric.dist, s, engine);
+          if (n > 2 && order[1] < order[n - 1]) {
+            // of the two directions take the one whose second stop has the higher number
+            for (int i = 1, j = n - 1; i < j; i++, j--) {
+              int swap = order[i];
+              order[i] = order[j];
+              order[j] = swap;
             }
-          } else if (ast.arg1().isList()) {
-            IAST list = (IAST) ast.arg1();
-            if (list.size() > 2 && list.forAll(x -> (x instanceof GeoPositionExpr))) {
-              int rowDim = list.size() - 1;
-              Graph<IInteger, ExprWeightedEdge> g =
-                  new DefaultUndirectedWeightedGraph<>(ExprWeightedEdge.class);
-              // define the vertices as integer numbers 1..rowDim
-              for (int i = 1; i <= rowDim; i++) {
-                g.addVertex(F.ZZ(i));
-              }
+          }
+        } else {
+          order = TravelingSalesman.path(metric.dist, s, t, engine);
+        }
 
-              // create all possible edges between the given vertices
-              for (int i = 0; i < rowDim - 1; i++) {
-                GeoPositionExpr p1 = (GeoPositionExpr) list.get(i + 1);
-                for (int j = i + 1; j < rowDim; j++) {
-                  GeoPositionExpr p2 = (GeoPositionExpr) list.get(j + 1);
-                  g.setEdgeWeight(g.addEdge(F.ZZ(i + 1), F.ZZ(j + 1)), geodesicMeters(p1, p2));
-                }
-              }
-              GraphPath<IInteger, ExprWeightedEdge> tour =
-                  new HeldKarpTSP<IInteger, ExprWeightedEdge>().getTour(g);
-
-              // calculate the shortest tour from the sum of distances and
-              // create list of vertices for the shortest tour
-              List<IInteger> tourPositions = tour.getVertexList();
-              IASTAppendable shortestTourList = F.ListAlloc(tourPositions.size());
-              IASTAppendable sum = F.PlusAlloc(tourPositions.size());
-              IInteger lastPosition = tourPositions.get(tourPositions.size() - 1);
-              shortestTourList.append(lastPosition);
-              for (int i = tourPositions.size() - 2; i >= 0; i--) {
-                IInteger position = tourPositions.get(i);
-                shortestTourList.append(position);
-                // The leg lengths are emitted as quantities rather than as GeoDistance calls:
-                // GeoDistance lives in the matheclipse-astro module and measures a rhumb line,
-                // which would not agree with the geodesic edge weights the tour was optimized on.
-                sum.append(F.Quantity(F.num(geodesicMeters((GeoPositionExpr) list.get(lastPosition),
-                    (GeoPositionExpr) list.get(position))), F.stringx("m")));
-                lastPosition = position;
-              }
-              return F.list(F.UnitConvert(sum, F.stringx("mi")), shortestTourList);
-            }
-            // } else {
-            // GraphExpr<ExprEdge> gex = createGraph(ast.arg1());
-            // if (gex == null) {
-            // return F.NIL;
-            // }
-            //
-            // Graph<IExpr, ExprEdge> g = gex.toData();
-            //
-            // GraphPath<IExpr, ExprEdge> tour = new HeldKarpTSP<IExpr, ExprEdge>()
-            // .getTour(g);
-            //
-            // // calculate the shortest tour from the sum of distances and
-            // // create list of vertices for the shortest tour
-            // List<IExpr> tourPositions = tour.getVertexList();
-            // IASTAppendable shortestTourList = F.ListAlloc(tourPositions.size());
-            // IExpr lastPosition = tourPositions.get(tourPositions.size() - 1);
-            // shortestTourList.append(lastPosition);
-            // for (int i = tourPositions.size() - 2; i >= 0; i--) {
-            // IExpr position = tourPositions.get(i);
-            // shortestTourList.append(position);
-            // lastPosition = position;
-            // }
-            // return F.List(F.num(tour.getWeight()), shortestTourList);
+        IASTAppendable tourList = F.ListAlloc(n + 1);
+        IASTAppendable sum = F.PlusAlloc(n);
+        for (int i = 0; i < n; i++) {
+          tourList.append(F.ZZ(order[i] + 1));
+          if (i > 0) {
+            sum.append(metric.leg(order[i - 1], order[i]));
           }
         }
+        if (closed && n > 1) {
+          tourList.append(F.ZZ(order[0] + 1));
+          sum.append(metric.leg(order[n - 1], order[0]));
+        }
+        IExpr length = sum.argSize() == 0 ? F.C0 : sum;
+        if (metric.isGeodesic()) {
+          if (sum.argSize() == 0) {
+            length = F.Quantity(F.CD0, F.stringx("m"));
+          }
+          length = F.UnitConvert(length, F.stringx("mi"));
+        }
+        return F.list(length, tourList);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.FindShortestTour, rex, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * The distances between the points, or <code>null</code> if they cannot be measured: a point
+     * which is not numeric, points of different kinds, or a distance function which does not give
+     * a real number.
+     */
+    private static TourMetric metric(IAST points, IExpr distanceFunction, EvalEngine engine) {
+      int n = points.argSize();
+      double[][] dist = new double[n][n];
+      if (distanceFunction.isPresent() && distanceFunction != S.Automatic) {
+        return measured(points, distanceFunction, dist, engine);
+      }
+      if (points.forAll(x -> x instanceof GeoPositionExpr)) {
+        for (int i = 0; i < n; i++) {
+          GeoPositionExpr p1 = (GeoPositionExpr) points.get(i + 1);
+          for (int j = i + 1; j < n; j++) {
+            dist[i][j] = dist[j][i] = geodesicMeters(p1, (GeoPositionExpr) points.get(j + 1));
+          }
+        }
+        return new TourMetric(dist, points, null);
+      }
+      if (points.forAll(x -> x.isString())) {
+        return measured(points, S.EditDistance, dist, engine);
+      }
+      // numbers, or numeric vectors all of the same dimension
+      int dimension = points.arg1().isList() ? points.arg1().argSize() : 0;
+      double[][] coordinates = new double[n][];
+      for (int i = 0; i < n; i++) {
+        IExpr p = points.get(i + 1);
+        if (dimension == 0) {
+          if (p.isList()) {
+            return null;
+          }
+          double value = p.evalfNaN();
+          if (!Double.isFinite(value)) {
+            return null;
+          }
+          coordinates[i] = new double[] {value};
+        } else {
+          if (!p.isList() || p.argSize() != dimension) {
+            return null;
+          }
+          coordinates[i] = new double[dimension];
+          for (int k = 0; k < dimension; k++) {
+            double value = ((IAST) p).get(k + 1).evalfNaN();
+            if (!Double.isFinite(value)) {
+              return null;
+            }
+            coordinates[i][k] = value;
+          }
+        }
+      }
+      for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+          dist[i][j] = dist[j][i] = MathArrays.distance(coordinates[i], coordinates[j]);
+        }
+      }
+      return new TourMetric(dist, points, S.EuclideanDistance);
+    }
+
+    /** The distances <code>f(pi, pj)</code>, which have to be real numbers. */
+    private static TourMetric measured(IAST points, IExpr distanceFunction, double[][] dist,
+        EvalEngine engine) {
+      int n = points.argSize();
+      for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+          double value = engine
+              .evaluate(F.binaryAST2(distanceFunction, points.get(i + 1), points.get(j + 1)))
+              .evalfNaN();
+          if (!Double.isFinite(value)) {
+            return null;
+          }
+          dist[i][j] = dist[j][i] = value;
+        }
+      }
+      return new TourMetric(dist, points, distanceFunction);
     }
 
     @Override
@@ -1708,7 +1803,12 @@ public class GraphFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.DistanceFunction, S.Automatic);
     }
 
     /**
@@ -1725,6 +1825,7 @@ public class GraphFunctions {
           p2.latitude(), p2.longitude(), p2.altitude());
     }
   }
+
 
 
   /**

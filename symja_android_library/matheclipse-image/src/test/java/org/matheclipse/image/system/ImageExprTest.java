@@ -51,4 +51,19 @@ public class ImageExprTest extends AbstractTestCase {
     check("EdgeDetect(Image({{0.0,1.0}}),1)", //
         "EdgeDetect(Image(Dimensions: 2,1 Transparency: 1),1)");
   }
+
+  @Test
+  public void testRasterizeAndGraphicsAsImages() {
+    // any expression is drawn as a text; the image is RGB without transparency
+    check("{Head(Rasterize(\"Symja\")), ImageChannels(Rasterize(Graphics(Circle())))}", //
+        "{Image,3}");
+    check("ImageDimensions(Rasterize(Graphics(Rectangle()), RasterSize -> 30))", //
+        "{30,30}");
+    check("ImageDimensions(Rasterize(Style(\"B\", 20), RasterSize -> {12, 18}))", //
+        "{12,18}");
+    // the image functions take a graphic for the image it is drawn to
+    check("{Head(ColorNegate(Graphics(Disk()))), Head(ColorConvert(Graphics(Disk()), \"Grayscale\")), "
+        + "ImageDimensions(ImageResize(Graphics(Disk()), 16))}", //
+        "{Image,Image,{16,16}}");
+  }
 }

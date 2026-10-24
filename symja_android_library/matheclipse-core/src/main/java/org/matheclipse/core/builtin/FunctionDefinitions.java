@@ -289,6 +289,8 @@ public final class FunctionDefinitions {
       S.Part.setEvaluator(new org.matheclipse.core.reflection.system.Part());
       S.Partition.setEvaluator(new org.matheclipse.core.reflection.system.Partition());
       S.Perimeter.setEvaluator(new org.matheclipse.core.reflection.system.Perimeter());
+      S.ParametricRegion
+          .setEvaluator(new org.matheclipse.core.reflection.system.ParametricRegion());
       S.PeriodogramArray
           .setEvaluator(new org.matheclipse.core.reflection.system.PeriodogramArray());
       S.Permanent.setEvaluator(new org.matheclipse.core.reflection.system.Permanent());
@@ -312,6 +314,7 @@ public final class FunctionDefinitions {
 
       S.QPochhammer.setEvaluator(new org.matheclipse.core.reflection.system.QPochhammer());
 
+      S.RandomPoint.setEvaluator(new org.matheclipse.core.reflection.system.RandomPoint());
       S.RankDecomposition
           .setEvaluator(new org.matheclipse.core.reflection.system.RankDecomposition());
       S.RangeSpace.setEvaluator(new org.matheclipse.core.reflection.system.RangeSpace());
@@ -433,6 +436,8 @@ public final class FunctionDefinitions {
       S.StreamPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.StreamPlot());
       S.PieChart.setEvaluator(new org.matheclipse.core.builtin.graphics.PieChart());
       S.SectorChart.setEvaluator(new org.matheclipse.core.builtin.graphics.SectorChart());
+      S.RectangleChart.setEvaluator(new org.matheclipse.core.builtin.graphics.RectangleChart());
+      S.RectangleChart3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.RectangleChart3D());
       S.Plot.setEvaluator(new org.matheclipse.core.builtin.graphics.Plot());
       S.WordCloud.setEvaluator(new org.matheclipse.core.builtin.graphics.WordCloud());
 

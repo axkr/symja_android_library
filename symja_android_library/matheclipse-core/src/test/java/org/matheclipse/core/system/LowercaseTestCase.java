@@ -14020,6 +14020,490 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNSolveMixedPrecisionDuplicates() {
+    // the radicals of the exact coefficients don't leave copies of the solutions behind
+    check("Length(NSolve(x == s*Sqrt(5)*Cos(Pi/12) + Sin(Pi/12) && y == s - Cos(Pi/12) "
+        + "&& (x - 0.3)^2 + (y - 0.5)^2 == 0.2, {x, y, s}))", //
+        "2");
+    // the rules are in the order of the variables
+    check("Map(First, NSolve(x == s*Sqrt(5)*Cos(Pi/12) + Sin(Pi/12) && y == s - Cos(Pi/12) "
+        + "&& (x - 0.3)^2 + (y - 0.5)^2 == 0.2, {x, y, s})[[1]])", //
+        "{x,y,s}");
+    // one variable keeps the multiplicity of a root
+    check("NSolve(x^2 == 0, x)", //
+        "{{x->0.0},{x->0.0}}");
+  }
+
+  @Test
+  public void testSparseArrayPositionListRule() {
+    check("{Normal(SparseArray({{2, 1}, {1, 3}} -> 7)), Normal(SparseArray({{1, 1}, {2, 2}} -> 4, {2, 3}, z))}", //
+        "{{{0,0,7},{7,0,0}},{{4,z,z},{z,4,z}}}");
+  }
+
+  @Test
+  public void testTransformationFunctionNumerics() {
+    // a point of another dimension stays applied
+    check("TranslationTransform({3, 4})[{1, 1, 1}]", //
+        "TransformationFunction({{1,0,3},{0,1,4},{0,0,1}})[{1,1,1}]");
+    // a numeric matrix with an inexact entry is inexact
+    check("TransformationFunction({{0.5, E}, {0, 1}})", //
+        "TransformationFunction({{0.5,2.71828},{0.0,1.0}})");
+    // a symbolic entry keeps the matrix as it is
+    check("TransformationFunction({{2.0, 0}, {0, y}})[[1, 1, 2]]", //
+        "0");
+  }
+
+  @Test
+  public void testTogetherRationalDenominator() {
+    check("{Together(u + v/Sqrt(5)), Together(1/Sqrt(7) + 1/w), Together(p/5^(1/3) + q)}", //
+        "{1/5*(5*u+Sqrt(5)*v),(7+Sqrt(7)*w)/(7*w),1/5*(5^(2/3)*p+5*q)}");
+    // one fraction keeps its denominator, and so does a symbolic radical
+    check("{Together(v/Sqrt(5)), Together(u + v/Sqrt(w)), Together(u + v/Sqrt(w) + 1/Sqrt(3))}", //
+        "{v/Sqrt(5),(v+u*Sqrt(w))/Sqrt(w),(3*v+Sqrt(3)*Sqrt(w)+3*u*Sqrt(w))/(3*Sqrt(w))}");
+    check("Together(1/Sqrt(5) + 1/Sqrt(7))", //
+        "1/35*(7*Sqrt(5)+5*Sqrt(7))");
+  }
+
+  @Test
+  public void testSolveCurriedVariables() {
+    check("{Solve({g(2)[s] + h == 4, g(2)[s] - h == 2}, {g(2)[s], h}), Solve(w(1)[z]^2 == 9, w(1)[z])}", //
+        "{{{h->1,g(2)[s]->3}},{{w(1)[z]->-3},{w(1)[z]->3}}}");
+  }
+
+  @Test
+  public void testFindRootVectorEquationsAndBounds() {
+    check("{FindRoot({u, v} + {1, 2} == {4, 4}, {{u, 0}, {v, 0}}), "
+        + "FindRoot({u + v == 5, u - v == 1}, {{u, 1, 0, 10}, {v, 1, 0, 10}})}", //
+        "{{u->3.0,v->2.0},{u->3.0,v->2.0}}");
+  }
+
+  @Test
+  public void testNDSolveDerivatives() {
+    check("s = NDSolve({w''(t) == -4*w(t), w(0) == 1, w'(0) == 0}, {w'(t), w(t)}, {t, 0, 1}); "
+        + "Round({w'(t), w(t)} /. First(s) /. t -> 0.5, 0.0001)", //
+        "{-1.6829,0.5403}");
+    // the derivatives of a numerical solution
+    check("sol = NDSolve({y''(x) == -9*y(x), y(0) == 0, y'(0) == 3}, y, {x, 0, 1}); "
+        + "{Abs(y'(0.5) - 3*Cos(1.5)) < 10^-6, Abs(y''(0.5) + 9*y(0.5)) < 10^-6} /. sol[[1]]", //
+        "{True,True}");
+    // the same derivative of the same solution is the same function
+    check("f = y /. First(NDSolve({y''(x) == -y(x), y(0) == 0, y'(0) == 1}, y, {x, 0, 1})); "
+        + "{Derivative(1)[f] === Derivative(1)[f], Derivative(1)[f] === f}", //
+        "{True,False}");
+  }
+
+  @Test
+  public void testRationalizeMachineNumberZero() {
+    // the first convergent within the precision of the machine number
+    check("{Rationalize(0.25, 0), Rationalize(0.7, 0), Rationalize(-1/7.0, 0)}", //
+        "{1/4,7/10,-1/7}");
+    // the numbers in a list or an expression, and the parts of a complex number
+    check("{Rationalize({0.1, 0.2}, 0), Rationalize(x + 0.1, 0), Rationalize(0.5 + 0.1*I, 0)}", //
+        "{{1/10,1/5},1/10+x,1/2+I*1/10}");
+  }
+
+  @Test
+  public void testHistogramList() {
+    // the cumulative shares are numeric
+    check("{HistogramList({2, 3, 5, 9}, {0, 10, 5}, \"PDF\"), HistogramList({1, 4, 6}, {0, 8, 4}, \"CDF\")}", //
+        "{{{0,5,10},{1/10,1/10}},{{0,4,8},{0.333333,1.0}}}");
+    // the last bin is a whole one
+    check("HistogramList({0.5, 4.5}, {0, 5, 2})", //
+        "{{0,2,4,6},{1,0,1}}");
+    // integer data gets bins around the integers
+    check("HistogramList({2, 3, 3, 4, 4, 4})", //
+        "{{1.5,2.5,3.5,4.5},{1,2,3}}");
+  }
+
+  @Test
+  public void testBooleanTableVariablesAndLevels() {
+    check("{BooleanTable(p(1) || p(2), {p(1), p(2)}), BooleanTable(a && !b, {a}, {b})}", //
+        "{{True,True,True,False},{{False,True},{False,False}}}");
+  }
+
+  @Test
+  public void testPlotRangeOfGraphics() {
+    check("{PlotRange(Graphics(Line({{1, -2}, {4, 5}}))), "
+        + "PlotRange(Graphics(Point({0, 0}), PlotRange -> {{-3, 3}, {-1, 2}}))}", //
+        "{{{1.0,4.0},{-2.0,5.0}},{{-3.0,3.0},{-1.0,2.0}}}");
+  }
+
+  @Test
+  public void testParserBracketingBarsAndPostfixParts() {
+    check("FullForm(Hold(a, b + c))", //
+        "Hold(Plus(BracketingBar(a, b), DoubleBracketingBar(c)))");
+    check("{{5, 6}, {7, 8}}[[2]]", //
+        "{6,8}");
+    // a private use character without a name is a letter
+    check("Head(Unevaluated(qr))", //
+        "Symbol");
+  }
+
+  @Test
+  public void testApartPolynomial() {
+    // a polynomial has no fractions, it is multiplied out
+    check("Apart((x+3)^2)", //
+        "9+6*x+x^2");
+    check("Apart(2*(x-1)*(x+4))", //
+        "-8+6*x+2*x^2");
+    check("Apart((x+3)^2/(x-2))", //
+        "8+25/(-2+x)+x");
+  }
+
+  @Test
+  public void testDistributeWithoutHead() {
+    // no argument has the head: the expression is the only term
+    check("Distribute(g(a,b),List)", //
+        "{g(a,b)}");
+    check("Distribute(u->v,List)", //
+        "{u->v}");
+    check("Distribute(u->{v,w},List)", //
+        "{u->v,u->w}");
+    check("Distribute(g(a+b,c))", //
+        "g(a,c)+g(b,c)");
+  }
+
+  @Test
+  public void testRationalizeStructural() {
+    // exact numbers are approximated only as the whole expression
+    check("Rationalize({E, 0.75}, 1/100)", //
+        "{E,3/4}");
+    check("Rationalize(h(Pi, 0.125), 1/100)", //
+        "h(Pi,1/8)");
+    check("Rationalize(E, 1/100)", //
+        "19/7");
+    check("Rationalize(y==0.2*z, 1/100)", //
+        "y==z/5");
+  }
+
+  @Test
+  public void testClock() {
+    check("Head(Clock({3, 6}, 2))", //
+        "Real");
+    check("3<=Clock({3, 6}, 2)<=6", //
+        "True");
+    // with a step the value is exact
+    check("IntegerQ(3*Clock({2, 5, 1/3}, 4))", //
+        "True");
+    check("Clock({0, 1}, z)", //
+        "Clock({0,1},z)");
+    check("MemberQ(Attributes(AiryBiZero), ReadProtected)", //
+        "True");
+  }
+
+  @Test
+  public void testCellularAutomatonWindowAndPeriodicBackground() {
+    // offset x of the background holds the block's element x mod 2
+    check("CellularAutomaton(30, {{1}, {0, 1}}, {2, {-4, 4}})", //
+        "{{0,1,0,1,1,1,0,1,0},{0,1,0,1,0,0,0,1,0},{0,1,0,1,1,0,1,1,0}}");
+    check("CellularAutomaton(90, {{1}, {1, 0}}, {1, {-3, 3}})", //
+        "{{0,1,0,1,0,1,0},{0,0,0,0,0,0,0}}");
+    // a seed which equals the background never differs from it
+    check("CellularAutomaton(90, {{1}, {1, 0}}, 1)", //
+        "{{},{}}");
+    // the window is relative to the first given cell
+    check("CellularAutomaton(90, {{1}, 0}, {2, {-2, 2}})", //
+        "{{0,0,1,0,0},{0,1,0,1,0},{1,0,0,0,1}}");
+    check("CellularAutomaton(90, {{1}, 0}, {{{2}}, {-1, 1}})", //
+        "{0,0,0}");
+  }
+
+  @Test
+  public void testGeneralizedLinearModelFit() {
+    check("GeneralizedLinearModelFit({{0,1},{2,5},{4,9}}, x, x)[3]", //
+        "7.0");
+    check("GeneralizedLinearModelFit({{0,1},{2,5},{4,9}}, x, x, ExponentialFamily->\"Poisson\")", //
+        "GeneralizedLinearModelFit({{0,1},{2,5},{4,9}},x,x,ExponentialFamily->Poisson)");
+  }
+
+  @Test
+  public void testAbsoluteOptions() {
+    check("AbsoluteOptions(Graphics(Line({{1,1},{4,3}})), PlotRange)", //
+        "{PlotRange->{{1.0,4.0},{1.0,3.0}}}");
+    check("AbsoluteOptions(Graphics(Line({{1,1},{4,3}}), Axes->True), Axes)", //
+        "{Axes->True}");
+  }
+
+  @Test
+  public void testRandomPoint() {
+    // shapes of the result
+    check("RandomPoint(Point({-3, 5}))", //
+        "{-3.0,5.0}");
+    check("Dimensions(RandomPoint(Point({{0,1},{2,3},{4,5}}), 7))", //
+        "{7,2}");
+    check("Dimensions(RandomPoint(Rectangle(), {3, 2}))", //
+        "{3,2,2}");
+    check("Dimensions(RandomPoint(Sphere({1,1,1}, 3), 6))", //
+        "{6,3}");
+    check("Dimensions(RandomPoint(Ball({0,0,0,0,0}, 2), 4))", //
+        "{4,5}");
+    check("Dimensions(RandomPoint(Cuboid({0,0,0,0}, {1,2,1,2}), 2))", //
+        "{2,4}");
+    check("Dimensions(RandomPoint(Interval({-2, -1}, {5, 7}), 3))", //
+        "{3,1}");
+    check("RandomPoint(Circle(), 0)", //
+        "{}");
+    check("MachineNumberQ /@ RandomPoint(Triangle())", //
+        "{True,True}");
+    // invalid counts and non-regions stay unevaluated
+    check("RandomPoint(Circle(), -2)", //
+        "RandomPoint(Circle({0,0}),-2)");
+    check("RandomPoint(Circle(), 3/2)", //
+        "RandomPoint(Circle({0,0}),3/2)");
+    check("RandomPoint(y)", //
+        "RandomPoint(y)");
+    // the engine's random generator is used
+    check("SeedRandom(42);p1=RandomPoint(Ball(), 4);SeedRandom(42);p1==RandomPoint(Ball(), 4)", //
+        "True");
+
+    // every point lies in its region
+    check("SeedRandom(11);pts=RandomPoint(Disk({0,0}, 2, {Pi/2, Pi}), 40);"
+        + "And @@ ((#[[1]]<=0 && #[[2]]>=0 && Norm(#)<=2)& /@ pts)", //
+        "True");
+    check("SeedRandom(12);reg=Polygon({{0,0},{3,0},{3,1},{1,1},{1,3},{0,3}});"
+        + "pts=RandomPoint(reg, 40);And @@ (RegionMember(reg, #)& /@ pts)", //
+        "True");
+    check("SeedRandom(13);pts=RandomPoint(Circle({-1,2}, 1/2), 40);"
+        + "Max(Abs(Norm(#-{-1,2})-1/2)& /@ pts) < 10^(-12)", //
+        "True");
+    check("SeedRandom(14);pts=RandomPoint(Line({{0,0},{0,2},{2,2}}), 40);"
+        + "And @@ ((#[[1]]==0 || #[[2]]==2)& /@ pts)", //
+        "True");
+    check("SeedRandom(15);"
+        + "pts=RandomPoint(RegionDifference(Rectangle({0,0},{2,2}), Disk({1,1},1/2)), 40);"
+        + "And @@ ((0<=#[[1]]<=2 && 0<=#[[2]]<=2 && Norm(#-{1,1})>=1/2)& /@ pts)", //
+        "True");
+    check("SeedRandom(16);pts=RandomPoint(Ellipsoid({1,0,0},{3,2,1}), 40);"
+        + "And @@ (RegionMember(Ellipsoid({1,0,0},{3,2,1}), #)& /@ pts)", //
+        "True");
+    // a polygon in space stays in its plane z == x
+    check("SeedRandom(17);pts=RandomPoint(Polygon({{0,0,0},{2,0,2},{2,1,2},{0,1,0}}), 20);"
+        + "Max(Abs(#[[3]]-#[[1]])& /@ pts) < 10^(-12)", //
+        "True");
+    // uniform by measure
+    check("SeedRandom(18);Norm(Mean(RandomPoint(Simplex(3), 4000))-{1/4,1/4,1/4}) < 0.02", //
+        "True");
+    // the area element of the parametrization weights the parameters: uniform on the annulus
+    check("SeedRandom(19);"
+        + "pts=RandomPoint(ParametricRegion({r*Cos(t), r*Sin(t)}, {{r, 1, 2}, {t, 0, 2*Pi}}), 3000);"
+        + "Abs(Mean(Norm /@ pts)-14/9) < 0.03", //
+        "True");
+    // on the uniformly covered unit sphere |z| is uniform in [0,1]
+    check("SeedRandom(20);pts=RandomPoint(ParametricRegion("
+        + "{Sin(p)*Cos(q), Sin(p)*Sin(q), Cos(p)}, {{p, 0, Pi}, {q, 0, 2*Pi}}), 3000);"
+        + "{Max(Abs(Norm /@ pts - 1)) < 10^(-12), Abs(Mean(Abs(#[[3]])& /@ pts)-1/2) < 0.03}", //
+        "{True,True}");
+    // the parameter condition is respected
+    check("SeedRandom(21);"
+        + "pts=RandomPoint(ParametricRegion({{u, v}, u^2+v^2 <= 1}, {{u, -1, 1}, {v, 0, 1}}), 100);"
+        + "And @@ ((#[[2]]>=0 && Norm(#)<=1)& /@ pts)", //
+        "True");
+  }
+
+  @Test
+  public void testParametricRegionCanonical() {
+    check("ParametricRegion({a*Cos(t), b*Sin(t)}, {{t, 0, Pi}})", //
+        "ParametricRegion({{a*Cos(t),b*Sin(t)},0<=t<=Pi},{t})");
+    // the range becomes an Inequality condition
+    check("FullForm(ParametricRegion({u, u^3}, {{u, -2, 3}}))", //
+        "ParametricRegion(List(List(u, Power(u, 3)), "
+            + "Inequality(-2, LessEqual, u, LessEqual, 3)), List(u))");
+    check("ParametricRegion({x, Exp(x)}, {{x, 2, Infinity}})", //
+        "ParametricRegion({{x,E^x},x>=2},{x})");
+    check("ParametricRegion({x, Exp(x)}, {{x, -Infinity, -1}})", //
+        "ParametricRegion({{x,E^x},x<=-1},{x})");
+    check("ParametricRegion({x, Exp(x)}, {{x, -Infinity, Infinity}})", //
+        "ParametricRegion({x,E^x},{x})");
+    // a bare parameter has no condition
+    check("ParametricRegion({p, q, p+q}, {p, {q, -1, 1}})", //
+        "ParametricRegion({{p,q,p+q},-1<=q<=1},{p,q})");
+    // a parameter which does not occur is dropped
+    check("ParametricRegion({w, 2*w}, {{w, 0, 3}, {z, 1, 2}})", //
+        "ParametricRegion({{w,2*w},0<=w<=3},{w})");
+    // the range conditions follow a given condition
+    check("ParametricRegion({{x, y}, x < y}, {{x, 0, 1}, {y, 0, 1}})", //
+        "ParametricRegion({{x,y},x<y&&0<=x<=1&&0<=y<=1},{x,y})");
+    // an empty range
+    check("ParametricRegion({p, q}, {{p, 0, 1}, {q, 3, 2}})", //
+        "EmptyRegion(2)");
+    // the canonical form is stable
+    check("ParametricRegion({{p, q}, Inequality(0, LessEqual, p, LessEqual, 1)}, {p, q})", //
+        "ParametricRegion({{p,q},0<=p<=1},{p,q})");
+    check("{RegionDimension(#), RegionEmbeddingDimension(#), ConstantRegionQ(#)}&("
+        + "ParametricRegion({Cos(u), Sin(u), v}, {{u, 0, 2*Pi}, {v, -1, 1}}))", //
+        "{2,3,True}");
+  }
+
+  @Test
+  public void testRectangleChart() {
+    check("Cases(RectangleChart({{3, 2}}), _Rectangle, Infinity)", //
+        "{Rectangle({0.0,0.0},{3.0,2.0},RoundingRadius->0)}");
+    // bars of the given widths and heights side by side, a narrow gap between them
+    check("Cases(RectangleChart({{3, 2}, {2, 5}, {1, 1}, {4, 3}}), "
+        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+        "{{0.0,3.0,2.0},{3.096,5.096,5.0},{5.192,6.192,1.0},{6.288,10.288,3.0}}");
+    check("Cases(RectangleChart({{3, 2}, {1/2, 5}}, BarSpacing -> 1/4), "
+        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+        "{{0.0,3.0,2.0},{3.25,3.75,5.0}}");
+    check("Cases(RectangleChart({{3, 2}, {1/2, 5}}, BarSpacing -> None), "
+        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+        "{{0.0,3.0,2.0},{3.0,3.5,5.0}}");
+    check("Cases(RectangleChart({{3, 2}, {1, -2}}), "
+        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+        "{{0.0,3.0,2.0},{3.098,4.098,-2.0}}");
+    // one dataset is drawn in one colour
+    check("Length(Union(Cases(RectangleChart({{3, 2}, {2, 5}, {1, 1}}), _RGBColor, Infinity)))", //
+        "1");
+    // several datasets: a wider gap between them, and a colour for each position
+    check("Cases(RectangleChart({{{2, 1}, {1, 2}}, {{3, 3}}}), "
+        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+        "{{0.1,2.1,1.0},{2.197,3.197,2.0},{3.397,6.397,3.0}}");
+    check("c = Cases(RectangleChart({{{2, 1}, {1, 2}}, {{3, 3}, {1, 1}}}), "
+        + "{s_RGBColor, _Rectangle} :> s, Infinity); {c[[1]] === c[[3]], c[[2]] === c[[4]], c[[1]] === c[[2]]}", //
+        "{True,True,False}");
+    check("Cases(RectangleChart({{2, 1}, {1, 2}}, ChartStyle -> {Green, {Opacity(0.25), Red}}), "
+        + "{s_, _Rectangle} :> s, Infinity)", //
+        "{RGBColor(0,1,0),Directive(Opacity(0.25),RGBColor(1,0,0))}");
+    check("Head(RectangleChart({{2, 1}, {1, 2}}, ChartLegends -> {\"u\", \"v\"}))", //
+        "Legended");
+    // an entry which is not a pair of numbers is left out
+    check("Cases(RectangleChart({{2, 1}, y, {1, b}, {1, 2}}), "
+        + "Rectangle({x0_, 0.0}, {x1_, h_}, ___) :> {x0, x1, h}, Infinity)", //
+        "{{0.0,2.0,1.0},{2.098,3.098,2.0}}");
+    check("StringContainsQ(ExportString(RectangleChart({{2, 1}, {1, 2}}), \"SVG\"), \"<rect\")", //
+        "True");
+    check("RectangleChart(y)", //
+        "RectangleChart(y)");
+    // RectangleChart: {4,5,6} is not a valid dataset or a list of datasets.
+    check("RectangleChart({4, 5, 6})", //
+        "RectangleChart({4,5,6})");
+  }
+
+  @Test
+  public void testInterpolationHermiteAndGrid() {
+    // a cubic Hermite piece between two points with values and first derivatives
+    check("f = Interpolation({{{0}, 2, -1}, {{1}, 0, 1}, {{3}, 4, 0}}); "
+        + "{f(1/2), f'(1/2), f(2), f(1), f(0.25), D(f(x), x) /. x -> 1/2}", //
+        "{3/4,-3,9/4,0,1.5,-3}");
+    // a point without derivative: the piece takes the whole neighbouring point
+    check("f = Interpolation({{{0}, 1, 1}, {{2}, 5}, {{3}, 2, 0}}); {f(1), f(5/2), f'(3)}", //
+        "{128/27,2749/864,0}");
+    check("f = Interpolation({{{0}, 2, -1}, {{1}, 0, 1}, {{3}, 4, 0}}); "
+        + "{f(\"Domain\"), f(\"InterpolationOrder\"), f(\"Grid\"), f(\"ValuesOnGrid\"), f(\"Coordinates\")}", //
+        "{{{0,3}},{3},{{0},{1},{3}},{2,0,4},{{0,1,3}}}");
+    // tensor products reproduce polynomials of the order along each axis
+    check("g = Interpolation(Flatten(Table({x, y, 2*x - y + x*y}, {x, 0, 3}, {y, 0, 3}), 1)); "
+        + "{g(1.5, 0.5), Chop(Derivative(1, 0)[g][1.5, 0.5] - 2.5), Derivative(0, 1)[g][1.5, 0.5], g(1, 2)}", //
+        "{3.25,0,0.5,2}");
+    check("g = Interpolation(Flatten(Table({{x, y}, x^2 - y}, {x, 0, 2}, {y, 0, 1}), 1)); "
+        + "{g(1/2, 1/2), g(\"InterpolationOrder\")}", //
+        "{-1/4,{2,1}}");
+    check("v = Interpolation(Flatten(Table({{x, y}, {x*y, x - y}}, {x, 0, 2}, {y, 0, 2}), 1)); v(1/2, 3/2)", //
+        "{3/4,-1}");
+    check("k = Interpolation(Flatten(Table({x, y, x + y^3}, {x, 0, 3}, {y, 0, 3}), 1), InterpolationOrder -> {1, 3}); "
+        + "{k(0.5, 1.5), k(\"InterpolationOrder\"), k(\"Coordinates\")}", //
+        "{3.875,{1,3},{{0,1,2,3},{0,1,2,3}}}");
+    check("h = Interpolation(Flatten(Table({x, y, z, x*y*z}, {x, 0, 1}, {y, 0, 1}, {z, 0, 1}), 2), InterpolationOrder -> 1); "
+        + "{h(0.5, 0.5, 0.5), h(\"Domain\")}", //
+        "{0.125,{{0,1},{0,1},{0,1}}}");
+    check("f = Interpolation(Flatten(Table({x, y, x - y}, {x, 0, 1}, {y, 0, 2}), 1), InterpolationOrder -> 1); "
+        + "{f(\"Grid\"), f(\"ValuesOnGrid\")}", //
+        "{{{{0,0},{0,1},{0,2}},{{1,0},{1,1},{1,2}}},{{0,-1,-2},{1,0,-1}}}");
+  }
+
+  @Test
+  public void testInterpolationSpline() {
+    // a cubic spline reproduces a cubic polynomial
+    check("xs = {0, 1, 2, 4, 5, 7}; f = Interpolation(Table({x, x^3 - 2*x}, {x, xs}), Method -> \"Spline\"); "
+        + "{f(3), f'(3), f''(3), f /@ xs, f(\"InterpolationOrder\")}", //
+        "{21,25,18,{0,-1,4,56,115,329},{3}}");
+    // of degree 1 it is linear between the points
+    check("f = Interpolation({{0, 1}, {1, 2}, {3, 0}, {4, 3}, {6, 1}}, Method -> \"Spline\", InterpolationOrder -> 1); "
+        + "{f(2), f(5.5), f'(2)}", //
+        "{1,1.5,-1}");
+    check("f = Interpolation(Table({x, {x^2, x}}, {x, 0, 4}), Method -> \"Spline\", InterpolationOrder -> 2); f(5/2)", //
+        "{25/4,5/2}");
+    check("f = Interpolation({{1, 4}, {2, 0}, {4, 1}}, Method -> \"Spline\"); {f(\"InterpolationOrder\"), f(3)}", //
+        "{{2},-1}");
+    check("f = Interpolation({{0, 1}, {1, 2}, {3, 0}, {4, 3}, {6, 1}}, Method -> \"Spline\"); "
+        + "{f /@ {0, 1, 3, 4, 6}, f({2, 5})}", //
+        "{{1,2,0,3,1},{13/159,7771/1590}}");
+  }
+
+  @Test
+  public void testInterpolatingPolynomialDerivativeData() {
+    check("InterpolatingPolynomial({{{1}, 2, 3}, {{2}, 1}}, x)", //
+        "2+(3-4*(-1+x))*(-1+x)");
+    check("Expand(InterpolatingPolynomial({{{0}, 0, 1, 2}, {{1}, 3}}, {x}))", //
+        "x+x^2+x^3");
+    check("p = InterpolatingPolynomial({{{-1}, 4, -2}, {{1}, 0, 1, 6}}, x); "
+        + "{p /. x -> -1, D(p, x) /. x -> -1, p /. x -> 1, D(p, x) /. x -> 1, D(p, {x, 2}) /. x -> 1}", //
+        "{4,-2,0,1,6}");
+    check("InterpolatingPolynomial({{{0}, 1}, {{1}, 3}, {{3}, 2}}, {x}) - InterpolatingPolynomial({{0, 1}, {1, 3}, {3, 2}}, x)", //
+        "0");
+  }
+
+  @Test
+  public void testNMinimizeIntegerAlternatives() {
+    // Element(x | y, Integers) names integer variables; they come back as integers and the
+    // objective is evaluated at that point
+    check("NMinimize({2*x + 3*y, x + y >= 5/2, x >= 0, y >= 0, Element(x | y, Integers)}, {x, y})", //
+        "{6.0,{x->3,y->0}}");
+    check("NMaximize({x + y, 2*x + y <= 7/2, x >= 0, y >= 0, Element(x | y, Integers)}, {x, y})", //
+        "{3.0,{x->0,y->3}}");
+    check("NMinimize({3*x(1) + x(2), x(1) + x(2) == 2, 0 <= x(1) <= 2, 0 <= x(2) <= 2, "
+        + "Element(x(1) | x(2), Integers)}, {x(1), x(2)})", //
+        "{2.0,{x(1)->0,x(2)->2}}");
+    // a nested list of constraints
+    check("NMaximize({5*a + 4*b + 3*c, {2*a + 3*b + c <= 5, {0 <= a <= 1, 0 <= b <= 1, "
+        + "0 <= c <= 1}, Element({a, b, c}, Integers)}}, {a, b, c})", //
+        "{9.0,{a->1,b->1,c->0}}");
+    // the exact optimum by the rational simplex method and branch and bound
+    check("Minimize({4*x + 3*y, 2*x + y >= 7/2, x >= 0, y >= 0, Element(x | y, Integers)}, {x, y})", //
+        "{8,{x->2,y->0}}");
+    check("Maximize({x + 2*y, 3*x + 4*y <= 25/2, x >= 0, y >= 0}, {x, y}, Integers)", //
+        "{6,{x->0,y->3}}");
+    check("Minimize({x + y, x + 2*y >= 5/2, x >= 0, y >= 0, Element(y, Integers)}, {x, y})", //
+        "{3/2,{x->1/2,y->1}}");
+    check("Minimize({x, 1/4 <= x <= 3/4, Element(x, Integers)}, x)", //
+        "{Infinity,{x->Indeterminate}}");
+  }
+
+  @Test
+  public void testSolveMaxMin() {
+    check("Solve(x == Max(2*x - 3, 1), x)", //
+        "{{x->1},{x->3}}");
+    check("Solve(Min(x, 4) == 2*x - 2, x)", //
+        "{{x->2}}");
+    check("Solve({y == Min(x, 3), x + y == 8}, {x, y})", //
+        "{{x->5,y->3}}");
+    check("Solve(Max(x, -x) == 5, x)", //
+        "{{x->-5},{x->5}}");
+    check("Solve(Min(x, 1) == 2 && x > 0, x)", //
+        "{}");
+    // machine numbers: the rational system is solved and its solutions are numericized
+    check("Solve(x == 0.5*Max(x, 4.0) + 1, x)", //
+        "{{x->3.0}}");
+  }
+
+  @Test
+  public void testReduceIntegerBox() {
+    // interval propagation confines the variables to a box, whose points are tested
+    check("Reduce(x^2 + 2*y^2 == 11 && x > 0 && y > 0, {x, y}, Integers)", //
+        "x==3&&y==1");
+    check("Reduce(a^2 + b == 5 && a > 0 && b > 0, Integers)", //
+        "(a==1&&b==4)||(a==2&&b==1)");
+    check("Reduce(x*y == 12 && x > 2 && y > 2, {x, y}, Integers)", //
+        "(x==3&&y==4)||(x==4&&y==3)");
+    check("Reduce(x^2 + y^2 < 3 && x > 0 && y >= 0, {x, y}, Integers)", //
+        "(x==1&&y==0)||(x==1&&y==1)");
+    check("Reduce(x^3 + y^2 == 10 && x > 0, {x, y}, Integers)", //
+        "(x==1&&y==-3)||(x==1&&y==3)");
+    check("Reduce(x^2 + y^2 == 3 && x > 0, {x, y}, Integers)", //
+        "False");
+  }
+
+  @Test
   public void testThreeValuedComparisonFolds() {
     // a definite difference decides even after an undecided element (Kleene "and")
     check("{x, 1} == {y, 2}", //
@@ -27276,10 +27760,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "101449/500000");
 
 
+    // the first convergent of the continued fraction within the precision of the machine number
     check("Rationalize(Sin(3.0),0)", //
-        "5084384125703515/36028797018963968");
+        "39326557/278674566");
     check("Rationalize(N(Pi),0)", //
-        "884279719003555/281474976710656");
+        "245850922/78256779");
     check("Rationalize(x+E)", //
         "E+x");
     check("Rationalize(E)", //

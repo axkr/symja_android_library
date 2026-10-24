@@ -630,23 +630,28 @@ public class ExprParser extends Scanner {
           fRecursionDepth--;
         }
 
-      case TT_ANGLE_OPEN: {
-        // \u2329a, b, ...\u232A is AngleBracket(a, b, ...)
-        IASTAppendable angleBracket = F.ast(convertSymbolOnInput("AngleBracket", "", false), 4);
+      case TT_ANGLE_OPEN:
+      case TT_BRACKETING_BAR_OPEN:
+      case TT_DOUBLE_BRACKETING_BAR_OPEN: {
+        // \u2329a, b, ...\u232A is AngleBracket(a, b, ...), the bars BracketingBar(...) and
+        // DoubleBracketingBar(...)
+        final int open = fToken;
+        IASTAppendable matchfix =
+            F.ast(convertSymbolOnInput(matchfixHead(open), "", false), 4);
         fRecursionDepth++;
         try {
           getNextToken();
-          if (fToken != TT_ANGLE_CLOSE) {
-            getArguments(angleBracket);
+          if (fToken != open + 1) {
+            getArguments(matchfix);
           }
-          if (fToken != TT_ANGLE_CLOSE) {
-            throwSyntaxError("'\u232A' expected.");
+          if (fToken != open + 1) {
+            throwSyntaxError("'" + matchfixClose(open) + "' expected.");
           }
         } finally {
           fRecursionDepth--;
         }
         getNextToken();
-        return parseArguments(angleBracket);
+        return parseArguments(matchfix);
       }
 
       case TT_BLANK:
@@ -1356,8 +1361,12 @@ public class ExprParser extends Scanner {
 
   /** Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code> &rarr; <code>b</code> */
   private IExpr getPart(final int min_precedence) throws SyntaxError {
+    return parseParts(getFactor(min_precedence));
+  }
+
+  /** The parts <code>[[...]]</code> which follow <code>temp</code>, if there are any. */
+  private IExpr parseParts(IExpr temp) throws SyntaxError {
     IASTAppendable function = null;
-    IExpr temp = getFactor(min_precedence);
     // A part may be followed by an application and that by another part - t[[i]]["key"][[2]] -
     // so each round reads one run of [[...]] and then whatever is applied to it.
     while (fToken == TT_PARTOPEN) {
@@ -1875,7 +1884,8 @@ public class ExprParser extends Scanner {
     return fToken == TT_LIST_OPEN || fToken == TT_PRECEDENCE_OPEN || fToken == TT_ASSOCIATION_OPEN
         || fToken == TT_IDENTIFIER || fToken == TT_STRING || fToken == TT_DIGIT || fToken == TT_SLOT
         || fToken == TT_SLOTSEQUENCE || fToken == TT_FLOOR_OPEN || fToken == TT_CEILING_OPEN
-        || fToken == TT_ANGLE_OPEN || isBlankToken() || isDifferentialDToken();
+        || fToken == TT_ANGLE_OPEN || fToken == TT_BRACKETING_BAR_OPEN
+        || fToken == TT_DOUBLE_BRACKETING_BAR_OPEN || isBlankToken() || isDifferentialDToken();
   }
 
   /** <code>f \uF74Cx</code> is the product of <code>f</code> and <code>DifferentialD(x)</code>. */
@@ -2226,6 +2236,8 @@ public class ExprParser extends Scanner {
   private final IExpr parsePostfixOperator(IExpr lhs, PostfixExprOperator postfixOperator) {
     getNextToken();
     lhs = convert(postfixOperator.createFunction(fFactory, lhs));
+    // m\[Transpose][[2]] is a part of the transposed m
+    lhs = parseParts(lhs);
     lhs = parseArguments(lhs);
     if (fToken == TT_ARGUMENTS_OPEN) {
       return getFunctionArguments(lhs);

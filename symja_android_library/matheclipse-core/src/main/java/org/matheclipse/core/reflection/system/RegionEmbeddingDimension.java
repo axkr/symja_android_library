@@ -121,8 +121,12 @@ public class RegionEmbeddingDimension extends AbstractFunctionEvaluator {
             // ImplicitRegion(cond, {x,y,...}) has one coordinate per variable
             return ast.argSize() == 2 && ast.arg2().isList() ? ast.arg2().argSize() : -1;
           case ID.ParametricRegion:
-            // ParametricRegion({x1,...,xn}, {params}) maps into n coordinates
-            return ast.argSize() == 2 && ast.arg1().isList() ? ast.arg1().argSize() : -1;
+          {
+            // ParametricRegion({x1,...,xn}, {params}) and ParametricRegion({{x1,...,xn}, cond},
+            // {params}) map into n coordinates
+            IAST functions = ParametricRegion.coordinateFunctions(ast);
+            return ast.argSize() == 2 && functions.isPresent() ? functions.argSize() : -1;
+          }
           case ID.BooleanRegion:
             // the parts live in the space, the function only combines them
             return ast.argSize() == 2 && ast.arg2().isList()

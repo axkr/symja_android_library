@@ -2157,6 +2157,15 @@ public class TensorFunctions {
           // flag which `F.matrix()`, `DiagonalMatrix`, `Dot` or `Inverse` may have set.
           IAST matrix = (IAST) ast.arg1();
           matrix.clearFlag(Flag.IS_MATRIX);
+          if (matrix.isMatrix(false) != null && !matrix.isFree(IExpr::isInexactNumber, false)
+              && matrix.forAll(row -> ((IAST) row).forAll(x -> x.isNumericFunction(true)))) {
+            // a numeric matrix with an inexact entry is a matrix of inexact numbers
+            IExpr numeric = engine.evalN(matrix);
+            if (numeric.isList() && !numeric.equals(matrix)) {
+              ((IAST) numeric).clearFlag(Flag.IS_MATRIX);
+              return F.TransformationFunction(numeric);
+            }
+          }
         }
         return F.NIL;
       }
@@ -2169,7 +2178,12 @@ public class TensorFunctions {
             F.List(ast, F.ZZ(ast.argSize())), engine);
       }
       int dim = ast.arg1().isVector();
+      int[] matrixDimension = m.isMatrix(false);
       if (dim > 0) {
+        if (matrixDimension != null && matrixDimension[1] != dim + 1) {
+          // a point of another dimension than the transformation's stays as it is
+          return F.NIL;
+        }
         IAST v = (IAST) ast.arg1().normal(false);
         // Take(m . Join(v, {1}), Length(v))
         return F.Take(F.Dot(m, F.Join(v, F.list(F.C1))), F.ZZ(dim));

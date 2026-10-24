@@ -61,6 +61,10 @@ public class ImageGeometryFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rasterized = ImagePropertyFunctions.withRasterizedGraphics(ast, 1, engine);
+      if (rasterized.isPresent()) {
+        return rasterized;
+      }
       BufferedImage image = ImagePropertyFunctions.bufferedImage(ast.arg1());
       if (image == null) {
         return F.NIL;
@@ -889,13 +893,58 @@ public class ImageGeometryFunctions {
       if (arg1 instanceof ImageExpr) {
         return arg1;
       }
-      if (arg1.isAST() && (arg1.isGraphicsObject() || arg1.isAST(S.Graphics3D))) {
-        ImageExpr image = ImageExpr.toImageExpr((IAST) arg1);
-        if (image != null) {
-          return image;
+      // any other expression is drawn as a text
+      IAST graphics = arg1.isAST() && (arg1.isGraphicsObject() || arg1.isAST(S.Graphics3D))
+          ? (IAST) arg1
+          : F.Graphics(F.Text(arg1));
+      ImageExpr image = ImageExpr.toImageExpr(graphics);
+      if (image == null) {
+        return F.NIL;
+      }
+      BufferedImage drawn = image.getBufferedImage();
+      int[] size = rasterSize(ast, drawn.getWidth(), drawn.getHeight());
+      if (size == null) {
+        return F.NIL;
+      }
+      // an opaque RGB image: the transparent background is white
+      BufferedImage rgb = new BufferedImage(size[0], size[1], BufferedImage.TYPE_INT_RGB);
+      java.awt.Graphics2D g = rgb.createGraphics();
+      try {
+        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+            java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setColor(java.awt.Color.WHITE);
+        g.fillRect(0, 0, size[0], size[1]);
+        g.drawImage(drawn, 0, 0, size[0], size[1], null);
+      } finally {
+        g.dispose();
+      }
+      return new ImageExpr(rgb, null);
+    }
+
+    /**
+     * The size of the image: <code>RasterSize -> w</code> scales the drawing to the width
+     * <code>w</code>, <code>RasterSize -> {w, h}</code> to both.
+     *
+     * @return <code>null</code> for an invalid size
+     */
+    private static int[] rasterSize(IAST ast, int width, int height) {
+      for (int i = 2; i < ast.size(); i++) {
+        IExpr option = ast.get(i);
+        if (option.isRuleAST() && option.first() == S.RasterSize) {
+          IExpr value = option.second();
+          if (value.isList2()) {
+            int w = value.first().toIntDefault();
+            int h = value.second().toIntDefault();
+            return w > 0 && h > 0 ? new int[] {w, h} : null;
+          }
+          int w = value.toIntDefault();
+          if (w <= 0) {
+            return value == S.Automatic ? new int[] {width, height} : null;
+          }
+          return new int[] {w, Math.max(1, (int) Math.round((double) w * height / width))};
         }
       }
-      return F.NIL;
+      return new int[] {width, height};
     }
 
     @Override

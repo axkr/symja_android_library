@@ -67,6 +67,7 @@ public class DateTimeFunctions {
 
       S.AbsoluteTime.setEvaluator(new AbsoluteTime());
       S.CalendarConvert.setEvaluator(new CalendarConvert());
+      S.Clock.setEvaluator(new Clock());
       S.DateBounds.setEvaluator(new DateBounds());
       S.DateDifference.setEvaluator(new DateDifference());
       S.DateInterval.setEvaluator(new DateInterval());
@@ -1175,6 +1176,81 @@ public class DateTimeFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // don't set CONSTANT attribute !
+    }
+  }
+
+  /**
+   * <code>Clock(spec, t, n)</code> - the current value of a variable which runs <code>n</code> times
+   * through the range <code>spec</code>, each run taking <code>t</code> seconds of the session.
+   * <code>spec</code> is <code>vmax</code>, <code>{vmin, vmax}</code> or
+   * <code>{vmin, vmax, dv}</code>; with a step <code>dv</code> the value jumps from one step to the
+   * next and keeps the exactness of <code>vmin</code> and <code>dv</code>.
+   */
+  private static final class Clock extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr min = F.C0;
+      IExpr max = F.C1;
+      IExpr step = F.NIL;
+      if (ast.argSize() >= 1) {
+        IExpr spec = ast.arg1();
+        if (spec.isList()) {
+          if (spec.argSize() < 2 || spec.argSize() > 3) {
+            return F.NIL;
+          }
+          min = spec.first();
+          max = spec.second();
+          if (spec.argSize() == 3) {
+            step = spec.get(3);
+          }
+        } else {
+          max = spec;
+        }
+      }
+      double period = 1.0;
+      if (ast.argSize() >= 2) {
+        period = real(ast.arg2(), engine);
+        if (!(period > 0.0) || Double.isInfinite(period)) {
+          return F.NIL;
+        }
+      }
+      long runs = Long.MAX_VALUE;
+      if (ast.argSize() == 3) {
+        runs = ast.arg3().toLongDefault();
+        if (runs <= 0) {
+          return F.NIL;
+        }
+      }
+      double vmin = real(min, engine);
+      double vmax = real(max, engine);
+      if (!Double.isFinite(vmin) || !Double.isFinite(vmax)) {
+        return F.NIL;
+      }
+      double elapsed = (System.nanoTime() - engine.getSessionStartNanos()) / 1.0e9 / period;
+      boolean finished = elapsed >= runs;
+      double phase = finished ? 1.0 : elapsed - Math.floor(elapsed);
+      if (step.isPresent()) {
+        double dv = real(step, engine);
+        if (!(dv > 0.0) || !Double.isFinite(dv)) {
+          return F.NIL;
+        }
+        long count = (long) Math.floor((vmax - vmin) / dv + 1.0e-12);
+        long index = finished ? count : Math.min(count, (long) Math.floor(phase * (count + 1)));
+        return engine.evaluate(F.Plus(min, F.Times(F.ZZ(index), step)));
+      }
+      return F.num(vmin + (vmax - vmin) * phase);
+    }
+
+    /** The value of a real numeric expression, or <code>NaN</code>. */
+    private static double real(IExpr x, EvalEngine engine) {
+      IExpr value = engine.evalN(x);
+      return value.isReal() ? value.evalf() : Double.NaN;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_3;
     }
   }
 

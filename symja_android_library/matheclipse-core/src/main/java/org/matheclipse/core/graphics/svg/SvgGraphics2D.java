@@ -291,6 +291,34 @@ public class SvgGraphics2D {
   }
 
   /**
+   * The plot range of a two dimensional graphic, without its padding: the range of its primitives
+   * on each axis where the <code>PlotRange</code> option doesn't give one.
+   *
+   * @return <code>null</code> if the graphic has no extent to measure
+   */
+  public static double[][] plotRange(IAST graphics) {
+    SvgGraphics2D renderer = new SvgGraphics2D();
+    renderer.layout(graphics);
+    Bounds2D b = renderer.bounds;
+    double[][] range = b.isEmpty() ? new double[][] {{Double.NaN, Double.NaN}, {Double.NaN, Double.NaN}}
+        : new double[][] {{b.xMin, b.xMax}, {b.yMin, b.yMax}};
+    double[][] option = renderer.options.plotRange;
+    if (option != null) {
+      for (int axis = 0; axis < 2; axis++) {
+        if (!Double.isNaN(option[axis][0]) && !Double.isNaN(option[axis][1])) {
+          range[axis] = option[axis].clone();
+        }
+      }
+    }
+    for (double[] axis : range) {
+      if (Double.isNaN(axis[0]) || Double.isNaN(axis[1])) {
+        return null;
+      }
+    }
+    return range;
+  }
+
+  /**
    * Read the options, collect the primitives, derive the plot range and fit the canvas to it:
    * everything short of drawing. Sets {@link #primitives}, {@link #bounds} and {@link #viewport}.
    */

@@ -6,6 +6,9 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
@@ -55,7 +58,8 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
    */
   static IExpr solveNumeric(SolveOptions options, IAST ast, long precision, EvalEngine engine) {
     if (precision == SolveUtils.MACHINE_PRECISION_REQUESTED) {
-      return new SolveData(options).of(ast, true, true, engine);
+      return distinctSolutions(new SolveData(options).of(ast, true, true, engine),
+          ast.argSize() >= 2 ? ast.arg2().makeList() : F.CEmptyList);
     }
     IExpr result = new SolveData(options).of(ast, false, true, engine);
     if (result.isNIL()) {
@@ -66,6 +70,101 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
     }
     return Solve.sortNumericSolutions(engine.evaluate(F.N(result, precision)));
   }
+
+  /**
+   * The solutions of several variables without the copies which the branches of exact radicals
+   * leave behind once their values are machine numbers: an imaginary part which is only rounding
+   * noise is dropped, and solutions which agree to working precision are merged. The solutions of
+   * one variable keep their multiplicities.
+   */
+  private static IExpr distinctSolutions(IExpr result, IAST variables) {
+    if (!result.isListOfLists() || ((IAST) result).exists(s -> s.argSize() < 2)) {
+      return result;
+    }
+    IAST list = (IAST) result;
+    IASTAppendable distinct = F.ListAlloc(list.argSize());
+    for (IExpr solution : list) {
+      IAST cleaned = inVariableOrder(withoutImaginaryNoise((IAST) solution), variables);
+      if (!distinct.exists(other -> sameSolution((IAST) other, cleaned))) {
+        distinct.append(cleaned);
+      }
+    }
+    return distinct;
+  }
+
+  /** The rules of the solution in the order of the variables they are for. */
+  private static IAST inVariableOrder(IAST solution, IAST variables) {
+    if (variables.argSize() != solution.argSize()) {
+      return solution;
+    }
+    IASTAppendable ordered = F.ListAlloc(solution.argSize());
+    for (IExpr variable : variables) {
+      IExpr rule = F.NIL;
+      for (IExpr r : solution) {
+        if (r.isRuleAST() && r.first().equals(variable)) {
+          rule = r;
+          break;
+        }
+      }
+      if (rule.isNIL()) {
+        return solution;
+      }
+      ordered.append(rule);
+    }
+    return ordered;
+  }
+
+  /** The solution with real values, if all its imaginary parts are rounding noise. */
+  private static IAST withoutImaginaryNoise(IAST solution) {
+    IASTMutable real = solution.copy();
+    for (int i = 1; i < solution.size(); i++) {
+      IExpr rule = solution.get(i);
+      if (!rule.isRuleAST() || !rule.second().isNumber() || !rule.second().isInexactNumber()) {
+        return solution;
+      }
+      INumber value = (INumber) rule.second();
+      double re = value.reDoubleValue();
+      double im = value.imDoubleValue();
+      if (Math.abs(im) > NOISE * Math.max(1.0, Math.abs(re))) {
+        return solution;
+      }
+      real.set(i, F.Rule(rule.first(), F.num(re)));
+    }
+    return real;
+  }
+
+  private static boolean sameSolution(IAST a, IAST b) {
+    if (a.argSize() != b.argSize()) {
+      return false;
+    }
+    for (int i = 1; i < a.size(); i++) {
+      IExpr ruleA = a.get(i);
+      IExpr ruleB = b.get(i);
+      if (!ruleA.isRuleAST() || !ruleB.isRuleAST() || !ruleA.first().equals(ruleB.first())
+          || !ruleA.second().isNumber() || !ruleB.second().isNumber()) {
+        return ruleA.equals(ruleB) && ruleA.isRuleAST();
+      }
+      INumber x = (INumber) ruleA.second();
+      INumber y = (INumber) ruleB.second();
+      double distance = Math.hypot(x.reDoubleValue() - y.reDoubleValue(),
+          x.imDoubleValue() - y.imDoubleValue());
+      double size = Math.max(1.0, Math.max(Math.hypot(x.reDoubleValue(), x.imDoubleValue()),
+          Math.hypot(y.reDoubleValue(), y.imDoubleValue())));
+      if (!(distance <= SAME * size)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** The relative size below which an imaginary part is rounding noise. */
+  private static final double NOISE = 1.0e-12;
+
+  /**
+   * The relative distance below which two solutions are the same: a few hundred units of the last
+   * digit, the rounding error of the branches of exact radicals evaluated with machine numbers.
+   */
+  private static final double SAME = 1.0e-13;
 
   @Override
   public int status() {

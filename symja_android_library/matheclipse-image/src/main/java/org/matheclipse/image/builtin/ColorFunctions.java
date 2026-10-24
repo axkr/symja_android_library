@@ -145,6 +145,10 @@ public class ColorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rasterized = ImagePropertyFunctions.withRasterizedGraphics(ast, 1, engine);
+      if (rasterized.isPresent()) {
+        return rasterized;
+      }
       if (!ast.arg2().isString()) {
         return F.NIL;
       }
@@ -251,6 +255,10 @@ public class ColorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rasterized = ImagePropertyFunctions.withRasterizedGraphics(ast, 1, engine);
+      if (rasterized.isPresent()) {
+        return rasterized;
+      }
       if (ast.arg1() instanceof ImageExpr) {
         // 1 - v of every colour sample, also of one outside of 0 ... 1; the type stays
         ImageExpr image = (ImageExpr) ast.arg1();

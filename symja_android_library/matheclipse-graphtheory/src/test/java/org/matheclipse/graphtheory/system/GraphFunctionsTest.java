@@ -521,11 +521,86 @@ public class GraphFunctionsTest extends AbstractTestCase {
 
     check("FindShortestTour({GeoPosition({41, 20}), GeoPosition({5, 20}), GeoPosition({49, 32}), " //
         + "GeoPosition({53, 28}), GeoPosition({47, 29})})", //
-        "{Quantity(6852.025,\"Miles\"),{1,2,5,3,4,1}}");
+        "{Quantity(6852.025,\"Miles\"),{1,4,3,5,2,1}}");
+    // more than 12 points: found by the local search, here an optimal tour
     check(
         "FindShortestTour({{1, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 1}, {2, 3}, {2, 5}, {3, 1}, {3, 2}," //
             + " {3, 4}, {3, 5}, {4, 1}, {4, 3}, {4, 5}, {5, 1}, {5, 2}, {5, 3}, {5, 4}})", //
-        "{14+5*Sqrt(2),{1,6,9,13,16,17,18,19,14,10,7,11,15,12,8,5,4,3,2,1}}");
+        "{14+5*Sqrt(2),{1,6,10,9,13,16,17,18,19,14,11,15,12,8,5,4,3,7,2,1}}");
+  }
+
+  @Test
+  public void testFindShortestTourForms() {
+    // of the two directions the one whose second stop has the higher number
+    check("FindShortestTour({{0,0},{0,2},{3,0},{3,2}})", //
+        "{10,{1,3,4,2,1}}");
+    check("FindShortestTour({{0,0,0},{0,0,2},{0,2,2},{0,2,0},{1,1,1}})", //
+        "{6+2*Sqrt(3),{1,5,4,3,2,1}}");
+    // numbers
+    check("FindShortestTour({5, -1, 2, 7/2})", //
+        "{12,{1,4,3,2,1}}");
+    check("FindShortestTour({5, -1., 2, 7/2})", //
+        "{12.0,{1,4,3,2,1}}");
+    // strings are measured by EditDistance
+    check("FindShortestTour({\"tree\",\"free\",\"fret\",\"treat\",\"eat\"})", //
+        "{9,{1,4,5,3,2,1}}");
+    check("FindShortestTour({{0,0},{2,1},{1,3},{3,3}}, DistanceFunction -> ManhattanDistance)", //
+        "{12,{1,3,4,2,1}}");
+    check("FindShortestTour({{0,0},{2,1},{1,3},{3,3}}, " //
+        + "DistanceFunction -> (Abs(First(#1-#2)) + 2*Abs(Last(#1-#2))&))", //
+        "{18,{1,3,4,2,1}}");
+
+    check("FindShortestTour({})", //
+        "{}");
+    check("FindShortestTour({{3,4}})", //
+        "{0,{1}}");
+    check("FindShortestTour({{3,4},{0,0}})", //
+        "{10,{1,2,1}}");
+
+    // a shortest path from s to t
+    check("FindShortestTour({{0,0},{5,0},{1,0},{4,0},{2,0}}, 1, 2)", //
+        "{5,{1,3,5,4,2}}");
+    check("FindShortestTour({{0,0},{4,0},{4,3}}, 2, 3)", //
+        "{9,{2,1,3}}");
+    check("FindShortestTour({{3,4},{0,0}}, 2, 1)", //
+        "{5,{2,1}}");
+    // s == t is the closed tour from s
+    check("FindShortestTour({{0,0},{5,0},{1,0},{4,0},{2,0}}, 3, 3)", //
+        "{10,{3,5,4,2,1,3}}");
+    check("FindShortestTour({{0,0},{5,0},{1,0}}, 0, 2)", //
+        "{}");
+    check("FindShortestTour({{0,0},{5,0},{1,0}}, 1, 4)", //
+        "{}");
+    check("FindShortestTour({{0,0},{5,0},{1,0}}, 1, b)", //
+        "FindShortestTour({{0,0},{5,0},{1,0}},1,b)");
+    // FindShortestTour called with 2 arguments; 1 or 3 arguments are expected.
+    check("FindShortestTour({{0,0},{5,0},{1,0}}, 2)", //
+        "FindShortestTour({{0,0},{5,0},{1,0}},2)");
+    // Options expected (instead of 3) beyond position 3 in ...
+    check("FindShortestTour({{0,0},{5,0},{1,0}}, 1, 2, 3)", //
+        "FindShortestTour({{0,0},{5,0},{1,0}},1,2,3)");
+
+    check("FindShortestTour(y)", //
+        "FindShortestTour(y)");
+    check("FindShortestTour({{0,0},{b,1}})", //
+        "FindShortestTour({{0,0},{b,1}})");
+    check("FindShortestTour({{1,2},{3,4,5}})", //
+        "FindShortestTour({{1,2},{3,4,5}})");
+  }
+
+  @Test
+  public void testFindShortestTourLarge() {
+    // the local search returns the polygon
+    check("p = Table({Cos(2*Pi*k/30.), Sin(2*Pi*k/30.)}, {k, 30}); r = FindShortestTour(p); " //
+        + "{First(r), Last(r) == Join({1}, Range(30, 2, -1), {1})}", //
+        "{6.27171,True}");
+    // from x = 1 to x = 29 along the line, through x = 30 last
+    check("p = Table({Mod(7*k, 31), 0}, {k, 30}); r = FindShortestTour(p, 9, 13); " //
+        + "{First(r), Map(First, p[[Last(r)]]) == Join(Range(28), {30, 29})}", //
+        "{30,True}");
+    check("p = Table({Mod(3*i^2, 211)/211., Mod(i^3, 199)/199.}, {i, 150}); "
+        + "t = Last(FindShortestTour(p)); {First(t), Last(t), Sort(Most(t)) == Range(150)}", //
+        "{1,1,True}");
   }
 
   @Test

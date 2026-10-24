@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.Arrays;
+import java.util.TreeMap;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -8,6 +10,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.GridInterpolatingFunctionExpr;
 import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -24,7 +27,8 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
     IExpr result = interpolate(ast, argSize, options, engine, originalAST);
-    if (result instanceof InterpolatingFunctionExpr) {
+    if (result instanceof InterpolatingFunctionExpr
+        && !(result instanceof GridInterpolatingFunctionExpr)) {
       // points at exact abscissae keep them exact in the domain
       IExpr[] domain = exactDomain(ast.arg1());
       if (domain != null) {
@@ -76,6 +80,31 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       return evaluate(ast.setAtCopy(1, ((IAST) ast.arg1()).map(row -> row.first())), argSize,
           options, engine, originalAST);
     }
+    if (ast.arg1().isList() && ast.arg1().argSize() > 0) {
+      IAST data = (IAST) ast.arg1();
+      String method = options[0].isAutomatic() ? "" : options[0].toString();
+      IExpr orderOption = options.length > 1 ? options[1] : S.Automatic;
+      IExpr function = F.NIL;
+      if ("Spline".equals(method)) {
+        function = spline(data, orderOption, engine);
+        if (function.isNIL()) {
+          return F.NIL;
+        }
+      } else if (method.isEmpty() && data.forAll(row -> row.isList() && row.argSize() >= 2
+          && row.first().isList())) {
+        // points {{x1, x2, ...}, f, f', f'', ...}
+        function = localGrid(data, true, orderOption, engine);
+        if (function.isNIL()) {
+          return F.NIL;
+        }
+      } else if (method.isEmpty() && data.forAll(row -> row.isList() && row.argSize() >= 3)) {
+        // rows {x1, x2, ..., f} of a function of several variables
+        function = localGrid(data, false, orderOption, engine);
+      }
+      if (function.isPresent()) {
+        return argSize == 2 ? engine.evaluate(F.unaryAST1(function, ast.arg2())) : function;
+      }
+    }
     IExpr tensorValued = tensorValued(ast, argSize, originalAST, engine);
     if (tensorValued.isPresent()) {
       return tensorValued;
@@ -112,6 +141,187 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
       return temp;
     }
     return F.NIL;
+  }
+
+  /**
+   * The interpolation orders of the <code>dimension</code> axes from the
+   * <code>InterpolationOrder</code> option: <code>3</code> by default, one order for all axes or a
+   * list of one order for each.
+   *
+   * @return <code>null</code> if the option isn't one of these
+   */
+  private static int[] interpolationOrders(IExpr option, int dimension) {
+    int[] orders = new int[dimension];
+    if (option.isAutomatic()) {
+      Arrays.fill(orders, 3);
+      return orders;
+    }
+    if (option.isList()) {
+      if (option.argSize() != dimension) {
+        return null;
+      }
+      for (int i = 0; i < dimension; i++) {
+        orders[i] = option.getAt(i + 1).toIntDefault();
+        if (orders[i] < 1) {
+          return null;
+        }
+      }
+      return orders;
+    }
+    int order = option.toIntDefault();
+    if (order < 1) {
+      return null;
+    }
+    Arrays.fill(orders, order);
+    return orders;
+  }
+
+  /**
+   * The values in <code>data</code> must all be of one shape: numbers, or tensors of the same
+   * dimensions.
+   */
+  private static boolean sameShape(IExpr value, IExpr first, EvalEngine engine) {
+    if (!value.isList() && !first.isList()) {
+      return true;
+    }
+    return engine.evaluate(F.Dimensions(value)).equals(engine.evaluate(F.Dimensions(first)));
+  }
+
+  /**
+   * Local polynomial interpolation of the points of a complete grid, in one variable also through
+   * the derivatives given at the points.
+   *
+   * @param data the points <code>{{x1, x2, ...}, f}</code> or in one variable
+   *        <code>{{x}, f, f', f'', ...}</code> if <code>pairs</code>, otherwise the rows
+   *        <code>{x1, x2, ..., f}</code>
+   * @return {@link F#NIL} if the points don't make up a complete grid
+   */
+  private static IExpr localGrid(IAST data, boolean pairs, IExpr orderOption,
+      EvalEngine engine) {
+    final int rows = data.argSize();
+    int dimension = -1;
+    IAST[] tuples = new IAST[rows];
+    IExpr[][] conditions = new IExpr[rows][];
+    for (int r = 0; r < rows; r++) {
+      IAST row = (IAST) data.get(r + 1);
+      IAST tuple = pairs ? (IAST) row.first() : row.copyUntil(row.argSize());
+      int valueStart = pairs ? 2 : row.argSize();
+      if (dimension < 0) {
+        dimension = tuple.argSize();
+      }
+      if (tuple.argSize() != dimension || dimension == 0 || !tuple.forAll(x -> x.isReal())) {
+        return F.NIL;
+      }
+      IExpr[] values = new IExpr[row.argSize() - valueStart + 1];
+      if (dimension > 1 && values.length != 1) {
+        // only a function of one variable takes derivatives at its points
+        return F.NIL;
+      }
+      for (int i = 0; i < values.length; i++) {
+        values[i] = row.get(valueStart + i);
+        if (!sameShape(values[i], r == 0 ? values[0] : conditions[0][0], engine)) {
+          return F.NIL;
+        }
+      }
+      tuples[r] = tuple;
+      conditions[r] = values;
+    }
+    // the coordinates along each axis, in increasing order
+    IExpr[][] coordinates = new IExpr[dimension][];
+    double[][] coordinatesN = new double[dimension][];
+    int total = 1;
+    for (int axis = 0; axis < dimension; axis++) {
+      TreeMap<Double, IExpr> distinct = new TreeMap<Double, IExpr>();
+      for (IAST tuple : tuples) {
+        distinct.putIfAbsent(tuple.get(axis + 1).evalf(), tuple.get(axis + 1));
+      }
+      if (distinct.size() < 2) {
+        return F.NIL;
+      }
+      coordinates[axis] = distinct.values().toArray(new IExpr[0]);
+      coordinatesN[axis] = new double[distinct.size()];
+      int i = 0;
+      for (Double x : distinct.keySet()) {
+        coordinatesN[axis][i++] = x;
+      }
+      total *= distinct.size();
+      if (total > rows) {
+        return F.NIL;
+      }
+    }
+    if (total != rows) {
+      // not a complete grid
+      return F.NIL;
+    }
+    IExpr[][] gridData = new IExpr[rows][];
+    for (int r = 0; r < rows; r++) {
+      int index = 0;
+      for (int axis = 0; axis < dimension; axis++) {
+        int position =
+            Arrays.binarySearch(coordinatesN[axis], tuples[r].get(axis + 1).evalf());
+        index = index * coordinatesN[axis].length + position;
+      }
+      if (gridData[index] != null) {
+        // a point given twice
+        return F.NIL;
+      }
+      gridData[index] = conditions[r];
+    }
+    int[] orders = interpolationOrders(orderOption, dimension);
+    if (orders == null) {
+      return F.NIL;
+    }
+    return GridInterpolatingFunctionExpr.newLocal(coordinates, gridData, orders, engine);
+  }
+
+  /**
+   * The interpolating B-spline of the degree <code>InterpolationOrder</code> through the points
+   * <code>{{x1, f1}, {x2, f2}, ...}</code>.
+   */
+  private static IExpr spline(IAST data, IExpr orderOption, EvalEngine engine) {
+    final int n = data.argSize();
+    if (n < 2) {
+      return F.NIL;
+    }
+    int[] orders = interpolationOrders(orderOption, 1);
+    if (orders == null) {
+      return F.NIL;
+    }
+    TreeMap<Double, IExpr[]> points = new TreeMap<Double, IExpr[]>();
+    IExpr first = null;
+    for (IExpr row : data) {
+      if (!row.isList2()) {
+        return F.NIL;
+      }
+      IExpr x = row.first();
+      if (x.isList1()) {
+        x = x.first();
+      }
+      IExpr y = row.second();
+      if (!x.isReal()) {
+        return F.NIL;
+      }
+      if (first == null) {
+        first = y;
+      } else if (!sameShape(y, first, engine)) {
+        return F.NIL;
+      }
+      if (points.put(x.evalf(), new IExpr[] {x, y}) != null) {
+        // an abscissa given twice
+        return F.NIL;
+      }
+    }
+    IExpr[] xs = new IExpr[n];
+    IExpr[] ys = new IExpr[n];
+    int i = 0;
+    for (IExpr[] point : points.values()) {
+      xs[i] = point[0];
+      ys[i] = point[1];
+      i++;
+    }
+    GridInterpolatingFunctionExpr function =
+        GridInterpolatingFunctionExpr.newSpline(xs, ys, orders[0], engine);
+    return function == null ? F.NIL : function;
   }
 
   /**

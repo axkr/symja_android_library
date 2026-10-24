@@ -2,12 +2,14 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.RationalSimplex;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
@@ -16,6 +18,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
@@ -74,6 +77,10 @@ public class Maximize extends AbstractFunctionEvaluator {
   }
 
   private IExpr evaluateExact(final IAST ast, EvalEngine engine) {
+    IExpr integerLinear = integerLinearExtremum(ast.topHead(), ast, true, engine);
+    if (integerLinear.isPresent()) {
+      return integerLinear;
+    }
     IExpr plain = plainForm(ast);
     if (plain.isPresent()) {
       return plain;
@@ -2779,6 +2786,215 @@ public class Maximize extends AbstractFunctionEvaluator {
       }
     }
     return true;
+  }
+
+  /** The number of exact relaxations the branch and bound search for integer points may solve. */
+  private static final int MAX_INTEGER_LP_NODES = 2000;
+
+  /**
+   * The exact optimum of a linear objective under linear constraints with rational coefficients,
+   * where some or all variables are integers: the variables named by a constraint
+   * <code>Element(x | y, Integers)</code>, <code>Element({x, y}, Integers)</code> or all of them for
+   * the domain argument <code>Integers</code>. The rational simplex method on the relaxations and
+   * branch and bound find the integer point; a strict inequality of integer variables
+   * <code>a.x &lt; b</code> is <code>a.x &lt;= b'</code> with the largest attainable
+   * <code>b' &lt; b</code>.
+   *
+   * @param head {@code Maximize} or {@code Minimize}
+   * @return <code>{value, {x -> x0, ...}}</code>, or {@link F#NIL} if the problem has not this form
+   *         or isn't decided
+   */
+  static IExpr integerLinearExtremum(ISymbol head, IAST ast, boolean isMax, EvalEngine engine) {
+    IExpr function = ast.arg1();
+    if (!function.isList() || function.argSize() < 2) {
+      return F.NIL;
+    }
+    IAST varList = ast.arg2().makeList();
+    final int n = varList.argSize();
+    if (n == 0) {
+      return F.NIL;
+    }
+    IExpr[] vars = new IExpr[n];
+    for (int i = 0; i < n; i++) {
+      IExpr v = varList.get(i + 1);
+      if (v.isNumber() || v.isList() || !v.isVariable() && !v.isAST()) {
+        return F.NIL;
+      }
+      vars[i] = v;
+    }
+    boolean[] integer = new boolean[n];
+    boolean anyInteger = false;
+    if (ast.isAST3()) {
+      if (ast.arg3() == S.Integers) {
+        java.util.Arrays.fill(integer, true);
+        anyInteger = true;
+      } else if (ast.arg3() != S.Reals) {
+        return F.NIL;
+      }
+    }
+    List<IExpr> conjuncts = new ArrayList<>();
+    for (int i = 2; i <= function.argSize(); i++) {
+      flattenConstraints(((IAST) function).get(i), conjuncts);
+    }
+    List<IExpr> relations = new ArrayList<>();
+    for (IExpr c : conjuncts) {
+      if (c.isAST(S.Element, 3)) {
+        if (c.second() != S.Integers && c.second() != S.Reals) {
+          return F.NIL;
+        }
+        List<IExpr> named = new ArrayList<>();
+        domainVariables(c.first(), named);
+        for (IExpr v : named) {
+          int index = varList.indexOf(v) - 1;
+          if (index < 0) {
+            return F.NIL;
+          }
+          if (c.second() == S.Integers) {
+            integer[index] = true;
+            anyInteger = true;
+          }
+        }
+      } else if (c.argSize() > 2 && (c.isAST(S.Less) || c.isAST(S.LessEqual)
+          || c.isAST(S.Greater) || c.isAST(S.GreaterEqual) || c.isAST(S.Equal))) {
+        // a chain a <= x <= b
+        for (int i = 1; i < c.argSize(); i++) {
+          relations.add(F.binaryAST2(c.head(), ((IAST) c).get(i), ((IAST) c).get(i + 1)));
+        }
+      } else if (!c.isTrue()) {
+        relations.add(c);
+      }
+    }
+    if (!anyInteger) {
+      return F.NIL;
+    }
+    try {
+      IExpr objective = function.first();
+      IExpr[] objectiveCoefficients = linearCoefficients(objective, vars, engine);
+      BigFraction[] c = rationalRow(objectiveCoefficients, n + 1);
+      if (c == null) {
+        return F.NIL;
+      }
+      final int m = relations.size();
+      BigFraction[][] a = new BigFraction[m][];
+      int[] rel = new int[m];
+      BigFraction[] b = new BigFraction[m];
+      for (int k = 0; k < m; k++) {
+        IExpr r = relations.get(k);
+        if (!r.isAST() || r.argSize() != 2) {
+          return F.NIL;
+        }
+        final boolean strict = r.isAST(S.Less) || r.isAST(S.Greater);
+        IExpr difference;
+        if (r.isAST(S.LessEqual) || r.isAST(S.Less) || r.isAST(S.Equal)) {
+          difference = F.Subtract(r.first(), r.second());
+        } else if (r.isAST(S.GreaterEqual) || r.isAST(S.Greater)) {
+          difference = F.Subtract(r.second(), r.first());
+        } else {
+          return F.NIL;
+        }
+        // difference <= 0, < 0 or == 0
+        BigFraction[] row = rationalRow(linearCoefficients(engine.evaluate(difference), vars, engine),
+            n + 1);
+        if (row == null) {
+          return F.NIL;
+        }
+        BigFraction bound = row[n].negate();
+        if (strict) {
+          // a.x < bound with integer variables and integer coefficients: a.x <= Ceiling(bound)-1
+          java.math.BigInteger scale = java.math.BigInteger.ONE;
+          for (int j = 0; j < n; j++) {
+            if (row[j].signum() != 0) {
+              if (!integer[j]) {
+                return F.NIL;
+              }
+              java.math.BigInteger d = row[j].getDenominator();
+              scale = scale.divide(scale.gcd(d)).multiply(d);
+            }
+          }
+          BigFraction factor = new BigFraction(scale);
+          for (int j = 0; j < n; j++) {
+            row[j] = row[j].multiply(factor);
+          }
+          BigFraction scaled = bound.multiply(factor);
+          java.math.BigInteger[] qr =
+              scaled.getNumerator().divideAndRemainder(scaled.getDenominator());
+          // the largest integer below scaled
+          java.math.BigInteger below = qr[1].signum() > 0 ? qr[0]
+              : qr[0].subtract(java.math.BigInteger.ONE);
+          bound = new BigFraction(below);
+        }
+        a[k] = java.util.Arrays.copyOf(row, n);
+        rel[k] = r.isAST(S.Equal) ? RationalSimplex.EQ : RationalSimplex.LEQ;
+        b[k] = bound;
+      }
+      BigFraction[] cost = java.util.Arrays.copyOf(c, n);
+      if (isMax) {
+        for (int j = 0; j < n; j++) {
+          cost[j] = cost[j].negate();
+        }
+      }
+      RationalSimplex.Result result =
+          RationalSimplex.minimizeInteger(cost, a, rel, b, integer, MAX_INTEGER_LP_NODES);
+      if (result.status == RationalSimplex.Status.INFEASIBLE) {
+        // There are no values of `1` for which the constraints `2` are satisfied and the
+        // objective function `3` is real valued.
+        IASTAppendable constraint = F.ast(S.And, conjuncts.size());
+        constraint.appendAll(conjuncts);
+        Errors.printMessage(head, "infeas",
+            F.List(varList, constraint.oneIdentity1(), objective), engine);
+        return F.list(isMax ? F.CNInfinity : F.CInfinity,
+            varList.map(v -> F.Rule(v, S.Indeterminate), 1));
+      }
+      if (result.status != RationalSimplex.Status.OPTIMAL) {
+        return F.NIL;
+      }
+      BigFraction value = c[n];
+      IASTAppendable rules = F.ListAlloc(n);
+      for (int j = 0; j < n; j++) {
+        value = value.add(c[j].multiply(result.point[j]));
+        rules.append(F.Rule(vars[j], rational(result.point[j])));
+      }
+      return F.list(rational(value), rules);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      return F.NIL;
+    }
+  }
+
+  /** The variables of <code>x</code>, <code>{x, y}</code> or <code>x | y</code>. */
+  private static void domainVariables(IExpr variables, List<IExpr> named) {
+    if (variables.isList() || variables.isAlternatives()) {
+      for (IExpr v : (IAST) variables) {
+        domainVariables(v, named);
+      }
+    } else {
+      named.add(variables);
+    }
+  }
+
+  /**
+   * The rational numbers of <code>coefficients</code>, or <code>null</code> if there is no row or
+   * one of them isn't rational.
+   */
+  private static BigFraction[] rationalRow(IExpr[] coefficients, int length) {
+    if (coefficients == null || coefficients.length != length) {
+      return null;
+    }
+    BigFraction[] row = new BigFraction[length];
+    for (int j = 0; j < length; j++) {
+      if (!coefficients[j].isRational()) {
+        return null;
+      }
+      row[j] = ((IRational) coefficients[j]).toBigFraction();
+    }
+    return row;
+  }
+
+  private static IExpr rational(BigFraction value) {
+    if (value.getDenominator().equals(java.math.BigInteger.ONE)) {
+      return F.ZZ(value.getNumerator());
+    }
+    return F.QQ(value.getNumerator(), value.getDenominator());
   }
 
   /**

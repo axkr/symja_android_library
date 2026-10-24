@@ -60,4 +60,11 @@ public class VertexFunctionsTest extends AbstractTestCase {
         "{{0,1},{1,1},{2,0}}");
   }
 
+  @Test
+  public void testKaryTreeDisplayOptions() {
+    // a display option which the tree doesn't declare is no k
+    check("{EdgeCount(KaryTree(6, ImageSize -> 150)), EdgeCount(CompleteKaryTree(2, ImageSize -> 150))}", //
+        "{5,2}");
+  }
+
 }

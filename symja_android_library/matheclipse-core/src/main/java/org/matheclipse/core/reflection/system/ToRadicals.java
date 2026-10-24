@@ -74,8 +74,10 @@ public class ToRadicals extends AbstractFunctionEvaluator {
       // Attempt to find exact symbolic solutions using Solve(eq, x)
       double cmin = targetC - Config.DEFAULT_CHOP_DELTA;
       double cmax = targetC + Config.DEFAULT_CHOP_DELTA;
-      IAST solve = F.Solve(F.List(eq, F.LessEqual(x, F.Rationalize(F.num(cmax), F.C0)),
-          F.GreaterEqual(x, F.Rationalize(F.num(cmin), F.C0))), x);
+      IAST solve = F.Solve(F.List(eq,
+          F.LessEqual(x, org.matheclipse.core.builtin.NumberTheory.Rationalize.exact(F.num(cmax))),
+          F.GreaterEqual(x,
+              org.matheclipse.core.builtin.NumberTheory.Rationalize.exact(F.num(cmin)))), x);
       IExpr solveResult = engine.evaluate(solve);
 
       if (solveResult.isList()) {

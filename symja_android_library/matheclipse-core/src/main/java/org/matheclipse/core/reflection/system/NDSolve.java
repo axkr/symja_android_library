@@ -241,6 +241,10 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
     if (!ast.arg3().isList()) {
       return F.NIL;
     }
+    if (ast.arg2().makeList().exists(NDSolve::isDerivativeCall)) {
+      // solved for the functions, whose derivatives are asked for; not tried a second time
+      return solveForDerivatives(ast, options, engine, ruleForm);
+    }
     if (ast.argSize() >= 4 && ast.arg4().isList3()) {
       // a second range: a partial differential equation in one space variable
       IExpr solution = NDSolvePDE.solve(ast, engine, ruleForm);
@@ -307,6 +311,46 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return Errors.printMessage(ast.topHead(), rex, engine);
     }
+  }
+
+  /**
+   * <code>NDSolve(eqns, {y''(t), y'(t), y(t)}, ...)</code>: the equations are solved for the
+   * functions whose derivatives are asked for, and each of the requested expressions is the
+   * derivative of the solution.
+   *
+   * @return {@link F#NIL} if the functions could not be solved for
+   */
+  private static IExpr solveForDerivatives(final IAST ast, final IExpr[] options,
+      EvalEngine engine, boolean ruleForm) {
+    IAST requested = ast.arg2().makeList();
+    IASTAppendable functions = F.ListAlloc(requested.argSize());
+    for (IExpr variable : requested) {
+      IExpr function = isDerivativeCall(variable) ? variable.head().first()
+          : variable.isAST1() ? variable.head() : variable;
+      if (!function.isSymbol()) {
+        return F.NIL;
+      }
+      if (!functions.contains(function)) {
+        functions.append(function);
+      }
+    }
+    IExpr solution = solve(ast.setAtCopy(2, functions), options, engine, true);
+    if (!solution.isListOfLists() || solution.argSize() != 1) {
+      return F.NIL;
+    }
+    IAST rules = (IAST) solution.first();
+    IAST values = F.mapList(requested, variable -> engine.evaluate(F.subst(variable, rules)));
+    if (ruleForm) {
+      return F.list(F.mapRange(1, requested.size(),
+          i -> F.Rule(requested.get(i), values.get(i))));
+    }
+    return values.argSize() == 1 ? values.arg1() : values;
+  }
+
+  /** <code>Derivative(k)[y][t]</code> */
+  private static boolean isDerivativeCall(IExpr variable) {
+    return variable.isAST1() && variable.head().isAST1()
+        && variable.head().head().isAST(S.Derivative, 2) && variable.head().first().isSymbol();
   }
 
   /**
@@ -701,10 +745,13 @@ public class NDSolve extends AbstractFunctionOptionEvaluator {
       // the solution of function j is state component offset[j], the one holding y rather than one
       // of the derivatives the reduction introduced
       // the range of the single point t0 has the initial value only
+      // the components up to blockEnd are y, y', ..., the derivatives of the function
+      int blockEnd =
+          (j + 1 < numberOfFunctions ? system.offset[j + 1] : system.dimension()) - 1;
       IExpr interpolation = forward == null && backward == null
           ? InterpolatingFunctionExpr.newInstance(system.initialState, system.t0, system.offset[j])
           : InterpolatingFunctionExpr.newInstance(forward, backward, system.t0, system.offset[j],
-              domainMin, domainMax);
+              blockEnd, domainMin, domainMax);
       // y(x) as the second argument asks for the solution in the same applied form
       IExpr solution = system.appliedForm[j] //
           ? F.unaryAST1(interpolation, system.timeVar)

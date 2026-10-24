@@ -832,6 +832,14 @@ class ParserTestCase {
   }
 
   @Test
+  void testBracketingBarsAndPostfixParts() {
+    ASTNode obj = PARSE_UNRELAXED.parse("\uF603u, v\uF604 + \uF605w\uF606");
+    assertEquals("Plus(BracketingBar(u, v), DoubleBracketingBar(w))", obj.toString());
+    obj = PARSE_UNRELAXED.parse("m\uF3C7[[1, 2]]");
+    assertEquals("Part(Transpose(m), 1, 2)", obj.toString());
+  }
+
+  @Test
   void testIntegralWithDifferentialD() {
     ASTNode obj = PARSE_UNRELAXED.parse("a + \u222B Sin[x] y \uF74Cx");
     assertEquals("Plus(a, Integrate(Times(Sin(x), y), x))", obj.toString());

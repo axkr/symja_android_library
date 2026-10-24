@@ -41,6 +41,7 @@ import org.matheclipse.core.reduce.BivariateReduce;
 import org.matheclipse.core.reduce.Formula;
 import org.matheclipse.core.reduce.IntegerReduceEngine;
 import org.matheclipse.core.reduce.Lowering;
+import org.matheclipse.core.reduce.PolynomialBox;
 import org.matheclipse.core.reduce.QuadraticDiophantine;
 import org.matheclipse.core.reduce.RationalQE;
 import org.matheclipse.core.reduce.Variable;
@@ -4868,6 +4869,13 @@ public class Reduce extends AbstractFunctionOptionEvaluator {
       IExpr twoVar = reduceIntegersTwoVar((IAST) expr, vars, domain, engine);
       if (twoVar.isPresent()) {
         return twoVar;
+      }
+    }
+    if (domain != S.Rationals) {
+      // polynomial relations which confine the variables to a small box: its points are tested
+      IAST points = PolynomialBox.integerPoints(expr, vars, domain, engine);
+      if (points.isPresent()) {
+        return branchesToOr(points, vars, engine);
       }
     }
     return reduceIntegerSystem(expr, vars, domain, engine);

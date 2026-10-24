@@ -45,6 +45,7 @@ public class CurveFitterFunctions {
     private static void init() {
       S.FindFit.setEvaluator(new FindFit());
       S.Fit.setEvaluator(new Fit());
+      S.GeneralizedLinearModelFit.setEvaluator(new GeneralizedLinearModelFit());
       S.LinearModelFit.setEvaluator(new LinearModelFit());
       S.NonlinearModelFit.setEvaluator(new NonlinearModelFit());
     }
@@ -750,6 +751,40 @@ public class CurveFitterFunctions {
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, new IBuiltInSymbol[] {S.IncludeConstantBasis},
           new IExpr[] {S.True});
+    }
+  }
+
+  /**
+   * <code>GeneralizedLinearModelFit(data, functions, variables)</code> - a generalized linear model.
+   * The Gaussian family with its identity link is the ordinary least squares model of
+   * <code>LinearModelFit</code>.
+   */
+  private static final class GeneralizedLinearModelFit extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, final IAST originalAST) {
+      if (argSize != 3) {
+        return F.NIL;
+      }
+      IExpr family = options[0];
+      if (!family.isAutomatic() && !(family.isString() && family.toString().equals("Gaussian"))) {
+        return F.NIL;
+      }
+      return engine.evaluate(F.LinearModelFit(ast.arg1(), ast.arg2(), ast.arg3(),
+          F.Rule(S.IncludeConstantBasis, options[1])));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol,
+          new IBuiltInSymbol[] {S.ExponentialFamily, S.IncludeConstantBasis},
+          new IExpr[] {F.stringx("Gaussian"), S.True});
     }
   }
 

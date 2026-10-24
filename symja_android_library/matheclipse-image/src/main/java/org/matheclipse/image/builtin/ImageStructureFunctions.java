@@ -54,6 +54,10 @@ public class ImageStructureFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr rasterized = ImagePropertyFunctions.withRasterizedGraphics(ast, 2, engine);
+      if (rasterized.isPresent()) {
+        return rasterized;
+      }
       if (!(ast.arg2() instanceof ImageExpr)) {
         return F.NIL;
       }

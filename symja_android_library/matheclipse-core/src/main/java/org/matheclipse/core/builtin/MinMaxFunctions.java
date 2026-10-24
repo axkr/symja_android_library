@@ -1739,37 +1739,69 @@ public class MinMaxFunctions {
     }
 
     /**
-     * Take the domain conditions <code>Element(x, Integers)</code> and
-     * <code>Element({x,y}, Integers)</code> out of the constraints; <code>Element(x, Reals)</code>
-     * says nothing new.
+     * Take the domain conditions <code>Element(x, Integers)</code>,
+     * <code>Element({x,y}, Integers)</code> and <code>Element(x | y, Integers)</code> out of the
+     * constraints; <code>Element(x, Reals)</code> says nothing new. Nested lists and conjunctions of
+     * constraints, as in <code>{f, {c1, {c2, c3}}}</code>, are one flat conjunction.
      *
      * @param integerVariables gets the variables which have to be integers
      * @return the remaining constraints, <code>True</code> if there are none
      */
     private static IExpr withoutDomains(IExpr constraints, List<IExpr> integerVariables,
         EvalEngine engine) {
-      if (constraints.isFree(S.Element)) {
+      if (!constraints.isList() && constraints.isFree(S.Element)
+          && !(constraints.isAnd() && ((IAST) constraints).exists(c -> c.isList() || c.isAnd()))) {
+        // a flat conjunction without domain conditions stays as it is
         return constraints;
       }
-      IAST conjuncts = constraints.isAnd() ? (IAST) constraints : F.And(constraints);
-      IASTAppendable rest = F.ast(S.And, conjuncts.argSize());
-      for (int i = 1; i < conjuncts.size(); i++) {
-        IExpr conjunct = conjuncts.get(i);
+      List<IExpr> conjuncts = new ArrayList<IExpr>();
+      flattenConjuncts(constraints, conjuncts);
+      IASTAppendable rest = F.ast(S.And, conjuncts.size());
+      for (IExpr conjunct : conjuncts) {
         if (conjunct.isAST(S.Element, 3)
             && (conjunct.second() == S.Integers || conjunct.second() == S.Reals)) {
           if (conjunct.second() == S.Integers) {
-            IAST variables = conjunct.first().makeList();
-            for (int j = 1; j < variables.size(); j++) {
-              if (!integerVariables.contains(variables.get(j))) {
-                integerVariables.add(variables.get(j));
-              }
-            }
+            collectDomainVariables(conjunct.first(), integerVariables);
           }
           continue;
         }
-        rest.append(conjunct);
+        if (!conjunct.isTrue()) {
+          rest.append(conjunct);
+        }
       }
       return rest.argSize() == 0 ? S.True : rest.oneIdentity1();
+    }
+
+    /**
+     * The conjuncts of nested lists and conjunctions of constraints; a chain
+     * <code>a <= x <= b</code> is the two relations <code>a <= x</code> and <code>x <= b</code>.
+     */
+    private static void flattenConjuncts(IExpr constraints, List<IExpr> conjuncts) {
+      if (constraints.isList() || constraints.isAnd()) {
+        for (IExpr c : (IAST) constraints) {
+          flattenConjuncts(c, conjuncts);
+        }
+      } else if (constraints.argSize() > 2 && (constraints.isAST(S.Less)
+          || constraints.isAST(S.LessEqual) || constraints.isAST(S.Greater)
+          || constraints.isAST(S.GreaterEqual) || constraints.isAST(S.Equal))) {
+        IAST chain = (IAST) constraints;
+        for (int i = 1; i < chain.argSize(); i++) {
+          conjuncts.add(F.binaryAST2(chain.head(), chain.get(i), chain.get(i + 1)));
+        }
+      } else {
+        conjuncts.add(constraints);
+      }
+    }
+
+    /** The variables of <code>x</code>, <code>{x, y}</code> or <code>x | y</code>. */
+    private static void collectDomainVariables(IExpr variables, List<IExpr> integerVariables) {
+      if (variables.isList() || variables.isAlternatives()) {
+        for (IExpr v : (IAST) variables) {
+          collectDomainVariables(v, integerVariables);
+        }
+      } else if (!integerVariables.contains(variables)) {
+        integerVariables.add(variables);
+      }
     }
 
     /**

@@ -127,6 +127,33 @@ public final class OperatorTable {
 
   private OperatorTable() {}
 
+  /** The characters of the non ASCII operator tokens, collected on first use. */
+  private static volatile java.util.Set<Character> operatorCharacters;
+
+  /** Test if <code>ch</code> is a character of one of the operators beyond ASCII. */
+  public static boolean isOperatorCharacter(char ch) {
+    java.util.Set<Character> characters = operatorCharacters;
+    if (characters == null) {
+      characters = new java.util.HashSet<Character>();
+      for (Row row : ROWS) {
+        addCharacters(characters, row.token);
+        for (String alias : row.aliases) {
+          addCharacters(characters, alias);
+        }
+      }
+      operatorCharacters = characters;
+    }
+    return characters.contains(ch);
+  }
+
+  private static void addCharacters(java.util.Set<Character> characters, String token) {
+    for (int i = 0; i < token.length(); i++) {
+      if (token.charAt(i) >= 128) {
+        characters.add(token.charAt(i));
+      }
+    }
+  }
+
   /** Every operator Symja parses, ordered by token. */
   public static final List<Row> ROWS = Collections.unmodifiableList(Arrays.asList(//
       row("!!", "Factorial2", Affix.POSTFIX, 610, Grouping.FLAT),

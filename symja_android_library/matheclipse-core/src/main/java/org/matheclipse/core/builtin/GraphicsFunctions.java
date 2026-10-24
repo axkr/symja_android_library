@@ -395,6 +395,8 @@ public class GraphicsFunctions {
 
     private static void init() {
       S.Blend.setEvaluator(new Blend());
+      S.PlotRange.setEvaluator(new PlotRange());
+      S.AbsoluteOptions.setEvaluator(new AbsoluteOptions());
       S.ToColor.setEvaluator(new ToColor());
       S.Lighter.setEvaluator(new LighterDarker(true));
       S.Darker.setEvaluator(new LighterDarker(false));
@@ -724,6 +726,108 @@ public class GraphicsFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+  /**
+   * <code>AbsoluteOptions(expr)</code>, <code>AbsoluteOptions(expr, name)</code> - the options of
+   * <code>expr</code> with the values they actually take: the <code>PlotRange</code> of a two
+   * dimensional graphic is the range it is drawn in.
+   */
+  private static class AbsoluteOptions extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr expr = ast.arg1();
+      IExpr options = engine.evaluate(F.Options(expr));
+      if (!options.isList()) {
+        return F.NIL;
+      }
+      IExpr plotRange = F.NIL;
+      if (expr.isAST(S.Graphics)) {
+        plotRange = engine.evaluate(F.unaryAST1(S.PlotRange, expr));
+        if (!plotRange.isList()) {
+          plotRange = F.NIL;
+        }
+      }
+      if (ast.isAST1()) {
+        IASTAppendable result = F.ListAlloc(options.argSize() + 1);
+        boolean hasPlotRange = false;
+        for (IExpr rule : (IAST) options) {
+          if (plotRange.isPresent() && rule.isRuleAST() && rule.first() == S.PlotRange) {
+            result.append(F.Rule(S.PlotRange, plotRange));
+            hasPlotRange = true;
+          } else {
+            result.append(rule);
+          }
+        }
+        if (plotRange.isPresent() && !hasPlotRange) {
+          result.append(F.Rule(S.PlotRange, plotRange));
+        }
+        return result;
+      }
+      if (ast.isAST2()) {
+        IAST names = ast.arg2().makeList();
+        IASTAppendable result = F.ListAlloc(names.argSize());
+        for (IExpr name : names) {
+          if (plotRange.isPresent() && name == S.PlotRange) {
+            result.append(F.Rule(S.PlotRange, plotRange));
+            continue;
+          }
+          IExpr rule = optionRule((IAST) options, name);
+          if (rule.isNIL()) {
+            IExpr defaults = engine.evaluate(F.Options(expr.head()));
+            if (defaults.isList()) {
+              rule = optionRule((IAST) defaults, name);
+            }
+          }
+          if (rule.isPresent()) {
+            result.append(rule);
+          }
+        }
+        return result;
+      }
+      return F.NIL;
+    }
+
+    /** The rule for the option <code>name</code> in a list of rules, or {@link F#NIL}. */
+    private static IExpr optionRule(IAST rules, IExpr name) {
+      for (IExpr rule : rules) {
+        if (rule.isRuleAST() && rule.first().equals(name)) {
+          return rule;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  /**
+   * <code>PlotRange(graphics)</code> - the range <code>{{xmin, xmax}, {ymin, ymax}}</code> a two
+   * dimensional graphic is drawn in, without its padding.
+   */
+  private static class PlotRange extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (!ast.isAST1() || !ast.arg1().isAST(S.Graphics)) {
+        return F.NIL;
+      }
+      double[][] range = org.matheclipse.core.graphics.svg.SvgGraphics2D.plotRange((IAST) ast.arg1());
+      if (range == null) {
+        return F.NIL;
+      }
+      return F.list(F.list(F.num(range[0][0]), F.num(range[0][1])),
+          F.list(F.num(range[1][0]), F.num(range[1][1])));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return null;
+    }
   }
 
   /**

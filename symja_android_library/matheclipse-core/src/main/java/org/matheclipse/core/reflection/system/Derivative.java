@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.Attribute;
@@ -133,11 +134,38 @@ public class Derivative extends AbstractFunctionEvaluator {
         return F.NIL;
       }
     }
+    if (functions.arg1() instanceof InterpolatingFunctionExpr) {
+      // an interpolating function or numerical solution which knows its derivatives
+      IExpr derived = interpolatingFunctionDerivative(derivativeHead,
+          (InterpolatingFunctionExpr<?>) functions.arg1());
+      if (derived.isPresent()) {
+        return derivativeAST[2] != null ? derivativeAST[2].setAtCopy(0, derived) : derived;
+      }
+    }
     IExpr extremum = maxMinDerivative(derivativeHead, functions.arg1(), derivativeAST[2]);
     if (extremum.isPresent()) {
       return extremum;
     }
     return evaluateDIfPossible(derivativeHead, functions, derivativeAST[2], engine);
+  }
+
+  /**
+   * <code>Derivative(n1, n2, ...)[f]</code> of an interpolating function which can build its
+   * derivative from its data.
+   *
+   * @return {@link F#NIL} unless all orders are non-negative machine integers and the function
+   *         supports derivatives
+   */
+  private static IExpr interpolatingFunctionDerivative(IAST orders,
+      InterpolatingFunctionExpr<?> function) {
+    int[] n = new int[orders.argSize()];
+    for (int i = 0; i < n.length; i++) {
+      n[i] = orders.get(i + 1).toIntDefault(-1);
+      if (n[i] < 0) {
+        return F.NIL;
+      }
+    }
+    return function.derivative(n);
   }
 
   /**

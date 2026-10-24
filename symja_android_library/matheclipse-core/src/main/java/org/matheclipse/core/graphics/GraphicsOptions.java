@@ -1054,7 +1054,10 @@ public class GraphicsOptions {
   public static IAST chartStyleColorExpr(int elementNumber) {
     RGBColor color = CHART_COLORS[Math.floorMod(elementNumber, CHART_COLORS.length)];
     float[] rgbComponents = color.getRGBColorComponents(null);
-    return F.RGBColor(rgbComponents[0], rgbComponents[1], rgbComponents[2]);
+    // the shortest decimal of each float component: 0.835 and not 0.8349999785423279
+    return F.RGBColor(Double.parseDouble(Float.toString(rgbComponents[0])),
+        Double.parseDouble(Float.toString(rgbComponents[1])),
+        Double.parseDouble(Float.toString(rgbComponents[2])));
   }
 
   private static void setColor(ObjectNode json, double red, double green, double blue) {

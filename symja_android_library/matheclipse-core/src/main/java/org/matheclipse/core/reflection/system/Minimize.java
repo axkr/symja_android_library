@@ -59,6 +59,10 @@ public class Minimize extends AbstractFunctionEvaluator {
   }
 
   private IExpr evaluateExact(final IAST ast, EvalEngine engine) {
+    IExpr integerLinear = Maximize.integerLinearExtremum(ast.topHead(), ast, false, engine);
+    if (integerLinear.isPresent()) {
+      return integerLinear;
+    }
     IExpr plain = Maximize.plainForm(ast);
     if (plain.isPresent()) {
       return plain;

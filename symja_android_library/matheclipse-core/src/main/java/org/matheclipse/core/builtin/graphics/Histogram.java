@@ -259,7 +259,7 @@ public class Histogram extends ListPlot {
    * The spread of the data falls back to its standard deviation when half of it lies on one value,
    * and to a tenth of the range when every value is the same.
    */
-  private static double binWidth(double[] values, double min, double max) {
+  public static double binWidth(double[] values, double min, double max) {
     double h = 0;
     if (values.length > 1) {
       double[] sorted = values.clone();
@@ -294,7 +294,7 @@ public class Histogram extends ListPlot {
    * Mathematica counts in those three alone: five hundred standard normal samples, whose rule of
    * thumb asks for 0.34, are binned at 0.5 rather than at the nearer 0.25.
    */
-  private static double roundNumber(double value) {
+  public static double roundNumber(double value) {
     double magnitude = Math.pow(10, Math.floor(Math.log10(value)));
     double scaled = value / magnitude;
     double rounded = scaled <= 1.5 ? 1.0 : scaled <= 3.0 ? 2.0 : scaled <= 7.0 ? 5.0 : 10.0;

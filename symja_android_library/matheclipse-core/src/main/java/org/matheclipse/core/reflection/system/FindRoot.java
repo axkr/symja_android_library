@@ -420,6 +420,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
+    ast = threadVectorEquations(ast);
     ast = unwrapSingleResidual(ast);
     IExpr result = machineRoot(ast, options, engine);
     int precision = workingPrecision(options.length > 3 ? options[3] : S.MachinePrecision);
@@ -438,6 +439,38 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       }
     }
     return result;
+  }
+
+  /**
+   * An equation between two lists of the same length is the list of the equations of their
+   * elements: <code>FindRoot({x, y} - {1, 1} == {1, 2}, ...)</code> solves
+   * <code>{x - 1 == 1, y - 1 == 2}</code>.
+   */
+  private static IAST threadVectorEquations(IAST ast) {
+    if (ast.argSize() < 2) {
+      return ast;
+    }
+    IAST equations = ast.arg1().makeList();
+    IASTAppendable threaded = F.NIL;
+    for (int i = 1; i < equations.size(); i++) {
+      IExpr equation = equations.get(i);
+      if (equation.isEqual() && equation.first().isList() && equation.second().isList()
+          && equation.first().argSize() == equation.second().argSize()
+          && equation.first().argSize() > 1) {
+        if (threaded.isNIL()) {
+          threaded = F.ListAlloc(equations.argSize() + equation.first().argSize());
+          threaded.appendArgs(equations, i);
+        }
+        IAST lhs = (IAST) equation.first();
+        IAST rhs = (IAST) equation.second();
+        for (int k = 1; k < lhs.size(); k++) {
+          threaded.append(F.Equal(lhs.get(k), rhs.get(k)));
+        }
+      } else if (threaded.isPresent()) {
+        threaded.append(equation);
+      }
+    }
+    return threaded.isPresent() ? ast.setAtCopy(1, threaded) : ast;
   }
 
   /**
@@ -515,7 +548,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     // combined with that precision inside of N(), and N() evaluates its argument before it raises
     // the precision - an iterate of 45 digits would be cut back to machine precision on the way.
     IExpr exactPoint =
-        engine.evaluate(F.mapRange(1, n + 1, i -> F.Rationalize(rules.get(i).second(), F.C0)));
+        org.matheclipse.core.builtin.NumberTheory.Rationalize.exact(engine.evaluate(
+            F.mapRange(1, n + 1, i -> rules.get(i).second())));
     if (!exactPoint.isList() || !((IAST) exactPoint).forAll(x -> x.isRational())) {
       return F.NIL;
     }
@@ -527,7 +561,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       IAST substitution = F.mapRange(1, n + 1, i -> F.Rule(variables.get(i), current.get(i)));
       IExpr values = engine.evalN(F.subst(functions, substitution), digits);
       IExpr matrix = engine.evalN(F.subst(evaluatedJacobian, substitution), digits);
-      IExpr step = engine.evaluate(F.Rationalize(F.LinearSolve(matrix, F.Negate(values)), F.C0));
+      IExpr step = org.matheclipse.core.builtin.NumberTheory.Rationalize
+          .exact(engine.evaluate(F.LinearSolve(matrix, F.Negate(values))));
       if (!step.isList() || step.argSize() != n || !((IAST) step).forAll(x -> x.isRational())) {
         return F.NIL;
       }
@@ -793,9 +828,27 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     // for the numerical fallback below; `0.0` asks it to determine a width of its own
     double[] realInitialGuess = new double[numberOfVariables];
     double[] initialStepWidths = new double[numberOfVariables];
+    // the bounds of {x, x0, xmin, xmax}, unbounded otherwise
+    double[] lower = new double[numberOfVariables];
+    double[] upper = new double[numberOfVariables];
+    java.util.Arrays.fill(lower, Double.NEGATIVE_INFINITY);
+    java.util.Arrays.fill(upper, Double.POSITIVE_INFINITY);
     boolean allStartValuesAreReal = true;
     for (int i = 1; i < matrixOfVarValuePairs.size(); i++) {
       IExpr variableInitialGuessPair = matrixOfVarValuePairs.get(i);
+      if (variableInitialGuessPair.isAST(S.List, 5)) {
+        double min = variableInitialGuessPair.getAt(3).evalfNaN();
+        double max = variableInitialGuessPair.getAt(4).evalfNaN();
+        if (Double.isNaN(min) || Double.isNaN(max) || min > max) {
+          // Search specification `1` should be a list with 1 to 3 elements.
+          return Errors.printMessage(S.FindRoot, "fdss", F.List(variableInitialGuessPair),
+              engine);
+        }
+        lower[i - 1] = min;
+        upper[i - 1] = max;
+        variableInitialGuessPair = F.list(variableInitialGuessPair.first(),
+            variableInitialGuessPair.second());
+      }
       if (variableInitialGuessPair.isList2() || variableInitialGuessPair.isList3()) {
         IExpr variable = variableInitialGuessPair.first();
         if (!variable.isVariable()) {
@@ -848,19 +901,30 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
 
     IExpr result = multivariateNewton(vectorValuedFunction, vectorOfVariables, initialGuess,
         tolerance, maxIterations, engine);
-    if (result.isPresent()) {
-      return result;
-    }
-    if (allStartValuesAreReal) {
+    if (result.isNIL() && allStartValuesAreReal) {
       // The jacobian matrix could not be determined symbolically, or could not be evaluated to
       // numbers - a function which is only defined for numeric arguments has no derivative to
       // differentiate. Determine the jacobian matrix numerically instead and keep it up to date
       // with Broyden's rank one updates, which costs one function evaluation per step where a
       // fresh finite difference matrix would cost one per entry.
-      return new BroydenSolver(vectorValuedFunction, vectorOfVariables, realInitialGuess,
+      result = new BroydenSolver(vectorValuedFunction, vectorOfVariables, realInitialGuess,
           initialStepWidths, tolerance, maxIterations, engine).get();
     }
-    return F.NIL;
+    if (result.isListOfRules()) {
+      for (int i = 1; i < result.size(); i++) {
+        double value = result.getAt(i).second().evalfNaN();
+        if (!Double.isNaN(value) && (value < lower[i - 1] || value > upper[i - 1])) {
+          // the root lies outside of the region the search was confined to
+          // The point `1` is at the edge of the search region `2` in coordinate `3` and the
+          // computed search direction points outside the region.
+          final IExpr found = result;
+          IAST point = F.mapRange(1, found.size(), j -> found.getAt(j).second());
+          return Errors.printMessage(S.FindRoot, "reged", F.list(point,
+              F.list(F.num(lower[i - 1]), F.num(upper[i - 1])), F.ZZ(i)), engine);
+        }
+      }
+    }
+    return result;
   }
 
   /**
