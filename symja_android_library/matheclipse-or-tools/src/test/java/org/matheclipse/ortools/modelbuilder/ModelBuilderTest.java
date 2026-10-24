@@ -1,0 +1,179 @@
+// Copyright 2010-2025 Google LLC
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// Modified for the Symja matheclipse-or-tools module: adapted from the OR-Tools Java test
+// ortools/javatests/com/google/ortools/modelbuilder/ModelBuilderTest.java (OR-Tools 10.0; Truth
+// replaced by JUnit 5 assertions), see NOTICE in the module root.
+
+package org.matheclipse.ortools.modelbuilder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Duration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.matheclipse.ortools.Loader;
+
+public final class ModelBuilderTest {
+  @BeforeEach
+  public void setUp() {
+    Loader.loadNativeLibraries();
+  }
+
+  @Test
+  public void testEnforcedLinearApi() {
+    ModelBuilder model = new ModelBuilder();
+    model.setName("minimal enforced linear test");
+    double infinity = Double.POSITIVE_INFINITY;
+    Variable x = model.newNumVar(0.0, infinity, "x");
+    Variable y = model.newNumVar(0.0, infinity, "y");
+    Variable z = model.newBoolVar("z");
+
+    assertEquals(3, model.numVariables());
+
+    EnforcedLinearConstraint c0 = model.addEnforcedGreaterOrEqual(
+        LinearExpr.newBuilder().add(x).addTerm(y, 2.0), 10.0, z, false);
+    assertEquals(10.0, c0.getLowerBound());
+    assertEquals(z.getIndex(), c0.getIndicatorVariable().getIndex());
+    assertFalse(c0.getIndicatorValue());
+  }
+
+  @Test
+  public void runMinimalLinearExample_ok() {
+    final String name = "minimal_linear_example";
+    ModelBuilder model = new ModelBuilder();
+    model.setName(name);
+    double infinity = Double.POSITIVE_INFINITY;
+    Variable x1 = model.newNumVar(0.0, infinity, "x1");
+    Variable x2 = model.newNumVar(0.0, infinity, "x2");
+    Variable x3 = model.newNumVar(0.0, infinity, "x3");
+
+    assertEquals(3, model.numVariables());
+    assertFalse(x1.getIntegrality());
+    assertEquals(0.0, x1.getLowerBound());
+    assertEquals(infinity, x2.getUpperBound());
+    x1.setLowerBound(1.0);
+    assertEquals(1.0, x1.getLowerBound());
+
+    LinearConstraint c0 = model.addLessOrEqual(LinearExpr.sum(new Variable[] {x1, x2, x3}), 100.0);
+    assertEquals(100.0, c0.getUpperBound());
+    LinearConstraint c1 =
+        model
+            .addLessOrEqual(
+                LinearExpr.newBuilder().addTerm(x1, 10.0).addTerm(x2, 4.0).addTerm(x3, 5.0), 600.0)
+            .withName("c1");
+    assertEquals("c1", c1.getName());
+    LinearConstraint c2 = model.addLessOrEqual(
+        LinearExpr.newBuilder().addTerm(x1, 2.0).addTerm(x2, 2.0).addTerm(x3, 6.0), 300.0);
+    assertEquals(300.0, c2.getUpperBound());
+
+    model.maximize(
+        LinearExpr.weightedSum(new Variable[] {x1, x2, x3}, new double[] {10.0, 6, 4.0}));
+    assertEquals(4.0, x3.getObjectiveCoefficient());
+    assertEquals(0.0, model.getObjectiveOffset());
+    model.setObjectiveOffset(-5.5);
+    assertEquals(-5.5, model.getObjectiveOffset());
+
+    ModelSolver solver = new ModelSolver("glop");
+    assertTrue(solver.solverIsSupported());
+    solver.setTimeLimit(Duration.ofSeconds(1));
+    assertEquals(SolveStatus.OPTIMAL, solver.solve(model));
+
+    assertEquals(733.333333 + model.getObjectiveOffset(), solver.getObjectiveValue(), 1e-5);
+    assertEquals(33.333333, solver.getValue(x1), 1e-5);
+    assertEquals(66.6666673, solver.getValue(x2), 1e-5);
+    assertEquals(0.0, solver.getValue(x3), 1e-5);
+
+    double dualObjectiveValue = solver.getDualValue(c0) * c0.getUpperBound()
+        + solver.getDualValue(c1) * c1.getUpperBound()
+        + solver.getDualValue(c2) * c2.getUpperBound() + model.getObjectiveOffset();
+    assertEquals(dualObjectiveValue, solver.getObjectiveValue(), 1e-5);
+
+    assertEquals(0.0, solver.getReducedCost(x1), 1e-5);
+    assertEquals(0.0, solver.getReducedCost(x2), 1e-5);
+    assertEquals(4.0 - 1.0 * solver.getDualValue(c0) - 5.0 * solver.getDualValue(c1),
+        solver.getReducedCost(x3), 1e-5);
+
+    assertEquals(100.0, solver.getActivity(c0), 1e-5);
+    assertEquals(600.0, solver.getActivity(c1), 1e-5);
+    assertEquals(200.0, solver.getActivity(c2), 1e-5);
+
+    assertTrue(model.exportToLpString(false).contains(name));
+    assertTrue(model.exportToMpsString(false).contains(name));
+  }
+
+  @Test
+  public void importFromMpsString() {
+    ModelBuilder model = new ModelBuilder();
+    String mpsData = "* Generated by MPModelProtoExporter\n"
+        + "*   Name             : SupportedMaximizationProblem\n"
+        + "*   Format           : Free\n"
+        + "*   Constraints      : 0\n"
+        + "*   Variables        : 1\n"
+        + "*     Binary         : 0\n"
+        + "*     Integer        : 0\n"
+        + "*     Continuous     : 1\n"
+        + "NAME          SupportedMaximizationProblem\n"
+        + "OBJSENSE\n"
+        + "  MAX\n"
+        + "ROWS\n"
+        + " N  COST\n"
+        + "COLUMNS\n"
+        + "    X_ONE   COST         1\n"
+        + "BOUNDS\n"
+        + " UP BOUND   X_ONE        4\n"
+        + "ENDATA";
+    assertTrue(model.importFromMpsString(mpsData));
+    assertEquals("SupportedMaximizationProblem", model.getName());
+  }
+
+  @Test
+  public void importFromLpString() {
+    ModelBuilder model = new ModelBuilder();
+    String lpData = "min: x + y;\n"
+        + "bin: b1, b2, b3;\n"
+        + "1 <= x <= 42;\n"
+        + "constraint_num1: 5 b1 + 3b2 + x <= 7;\n"
+        + "4 y + b2 - 3 b3 <= 2;\n"
+        + "constraint_num2: -4 b1 + b2 - 3 z <= -2;\n";
+    assertTrue(model.importFromLpString(lpData));
+    assertEquals(6, model.numVariables());
+    assertEquals(3, model.numConstraints());
+    assertEquals(1.0, model.varFromIndex(0).getLowerBound());
+    assertEquals(42.0, model.varFromIndex(0).getUpperBound());
+    assertEquals("x", model.varFromIndex(0).getName());
+  }
+
+  @Test
+  public void highsLogCallback_receivesLogsWhenEnabled() {
+    ModelBuilder model = new ModelBuilder();
+    double infinity = Double.POSITIVE_INFINITY;
+    Variable x = model.newNumVar(0.0, infinity, "x");
+    Variable y = model.newNumVar(0.0, infinity, "y");
+    model.addLessOrEqual(LinearExpr.sum(new Variable[] {x, y}), 10.0);
+    model.maximize(LinearExpr.newBuilder().addTerm(x, 1.0).addTerm(y, 2.0));
+
+    ModelSolver solver = new ModelSolver("highs");
+    if (!solver.solverIsSupported()) {
+      return;
+    }
+    StringBuilder log = new StringBuilder();
+    solver.setLogCallback(msg -> log.append(msg));
+    solver.enableOutput(true);
+    assertEquals(SolveStatus.OPTIMAL, solver.solve(model));
+    assertTrue(log.length() > 0);
+    assertTrue(log.toString().contains("Model"), log.toString());
+  }
+}

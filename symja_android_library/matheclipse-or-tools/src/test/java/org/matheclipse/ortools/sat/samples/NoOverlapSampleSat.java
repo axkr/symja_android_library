@@ -1,0 +1,83 @@
+// Copyright 2010-2025 Google LLC
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// Modified for the Symja matheclipse-or-tools module: sample ported to run as a JUnit test, see NOTICE in the module root.
+
+// [START program]
+package org.matheclipse.ortools.sat.samples;
+
+import org.matheclipse.ortools.Loader;
+import org.matheclipse.ortools.sat.CpModel;
+import org.matheclipse.ortools.sat.CpSolver;
+import org.matheclipse.ortools.sat.CpSolverStatus;
+import org.matheclipse.ortools.sat.IntVar;
+import org.matheclipse.ortools.sat.IntervalVar;
+import org.matheclipse.ortools.sat.LinearExpr;
+
+/**
+ * We want to schedule 3 tasks on 3 weeks excluding weekends, making the final day as early as
+ * possible.
+ */
+public class NoOverlapSampleSat {
+  public static void main(String[] args) throws Exception {
+    Loader.loadNativeLibraries();
+    CpModel model = new CpModel();
+    // Three weeks.
+    int horizon = 21;
+
+    // Task 0, duration 2.
+    IntVar start0 = model.newIntVar(0, horizon, "start0");
+    int duration0 = 2;
+    IntervalVar task0 = model.newFixedSizeIntervalVar(start0, duration0, "task0");
+
+    //  Task 1, duration 4.
+    IntVar start1 = model.newIntVar(0, horizon, "start1");
+    int duration1 = 4;
+    IntervalVar task1 = model.newFixedSizeIntervalVar(start1, duration1, "task1");
+
+    // Task 2, duration 3.
+    IntVar start2 = model.newIntVar(0, horizon, "start2");
+    int duration2 = 3;
+    IntervalVar task2 = model.newFixedSizeIntervalVar(start2, duration2, "task2");
+
+    // Weekends.
+    IntervalVar weekend0 = model.newFixedInterval(5, 2, "weekend0");
+    IntervalVar weekend1 = model.newFixedInterval(12, 2, "weekend1");
+    IntervalVar weekend2 = model.newFixedInterval(19, 2, "weekend2");
+
+    // No Overlap constraint. This constraint enforces that no two intervals can overlap.
+    // In this example, as we use 3 fixed intervals that span over weekends, this constraint makes
+    // sure that all tasks are executed on weekdays.
+    model.addNoOverlap(new IntervalVar[] {task0, task1, task2, weekend0, weekend1, weekend2});
+
+    // Makespan objective.
+    IntVar obj = model.newIntVar(0, horizon, "makespan");
+    model.addMaxEquality(obj,
+        new LinearExpr[] {LinearExpr.newBuilder().add(start0).add(duration0).build(),
+            LinearExpr.newBuilder().add(start1).add(duration1).build(),
+            LinearExpr.newBuilder().add(start2).add(duration2).build()});
+    model.minimize(obj);
+
+    // Creates a solver and solves the model.
+    CpSolver solver = new CpSolver();
+    CpSolverStatus status = solver.solve(model);
+
+    if (status == CpSolverStatus.OPTIMAL) {
+      System.out.println("Optimal Schedule Length: " + solver.objectiveValue());
+      System.out.println("Task 0 starts at " + solver.value(start0));
+      System.out.println("Task 1 starts at " + solver.value(start1));
+      System.out.println("Task 2 starts at " + solver.value(start2));
+    }
+  }
+}
+// [END program]

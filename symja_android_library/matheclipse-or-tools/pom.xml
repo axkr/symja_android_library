@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.matheclipse</groupId>
+		<artifactId>matheclipse</artifactId>
+		<version>3.3.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>matheclipse-or-tools</artifactId>
+	<packaging>jar</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>A pure Java port of parts of Google OR-Tools 10.0 (graph flows and
+		assignment, knapsack, the Glop linear programming solver with a branch and
+		bound for mixed integer programs, a CP-SAT subset and a routing subset). The
+		classes keep the API of the OR-Tools Java wrapper in the org.matheclipse.ortools
+		packages. Symja functions use it with the option Method -> "ORTools".</description>
+
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>The module is derived from Google OR-Tools 10.0, Copyright 2010-2025
+				Google LLC, see the LICENSE and NOTICE files of the module</comments>
+		</license>
+	</licenses>
+
+	<!-- No maven.compiler.release override here on purpose: the port is plain
+	Java 11 without third party libraries, so this module inherits the release 11
+	default of the parent POM. The module is optional: matheclipse-io, -api and -jar
+	don't depend on it. A deployment adds the jar and IOInit installs it. -->
+
+	<dependencies>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- logging dependencies -->
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-logging</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs-annotations</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- test dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-script</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- the graph functions FindMaximumFlow, FindMinimumCostFlow and
+		FindShortestTour with Method -> "ORTools" are tested here -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>matheclipse-graphtheory</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<profiles>
+		<!-- SpotBugs check of the main and test classes with the settings of the
+		Eclipse plugin (rank 15 and lower), opt-in:
+		mvn -pl matheclipse-or-tools -am process-test-classes -Pspotbugs -->
+		<profile>
+			<id>spotbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+						<version>4.10.5.0</version>
+						<configuration>
+							<effort>Max</effort>
+							<threshold>Medium</threshold>
+							<maxRank>15</maxRank>
+							<includeTests>true</includeTests>
+							<failOnError>true</failOnError>
+							<!-- the default 512 MB run out of memory in the value number
+							analysis of the large simplex methods -->
+							<maxHeap>4096</maxHeap>
+						</configuration>
+						<executions>
+							<execution>
+								<id>spotbugs-check</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>

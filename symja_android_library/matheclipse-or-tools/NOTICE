@@ -1,0 +1,20 @@
+matheclipse-or-tools
+Copyright 2026 the Symja project contributors
+
+This module contains a Java port of parts of Google OR-Tools 10.0 (release
+candidate, commit bfeb616d48; first ported from 9.15)
+(https://github.com/google/or-tools), Copyright 2010-2025 Google LLC,
+licensed under the Apache License, Version 2.0 (see the LICENSE file).
+
+The files in the packages org.matheclipse.ortools.* were either ported from the
+OR-Tools C++ sources to Java or adapted from the hand written OR-Tools Java wrapper
+(ortools/java/com/google/ortools). The samples in src/test/java were adapted from
+ortools/*/samples/java and the unit tests from ortools/javatests of OR-Tools and run
+as JUnit tests.
+Every such file keeps the original copyright notice and states that it was modified.
+
+The CP-SAT solver (org.matheclipse.ortools.sat), the original constraint solver
+(org.matheclipse.ortools.constraintsolver) and the routing library
+(org.matheclipse.ortools.routing) are reimplementations of the OR-Tools
+Java API on top of simpler search engines; they are not line by line ports of the
+corresponding C++ code.
