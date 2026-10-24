@@ -13204,6 +13204,18 @@ public class S {
       S.initFinalSymbol("KleinInvariantJ", ID.KleinInvariantJ);
 
   /**
+   * KnapsackSolve({item1, item2, ...}, maxCost) - the number of times each item is taken so that
+   * the total value is largest and the total cost is at most <code>maxCost</code>. Needs the
+   * module <code>matheclipse-or-tools</code>.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KnapsackSolve.md">KnapsackSolve
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KnapsackSolve =
+      S.initFinalSymbol("KnapsackSolve", ID.KnapsackSolve);
+
+  /**
    * KnotData(x) - TODO describe `KnotData`.
    * 
    * @see <a href=

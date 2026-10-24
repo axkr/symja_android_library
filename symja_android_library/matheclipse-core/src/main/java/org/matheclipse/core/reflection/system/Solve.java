@@ -54,6 +54,8 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.optimization.IIntegerConstraintSolver;
+import org.matheclipse.core.optimization.OptimizationMethod;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.reduce.Emitter;
@@ -2327,7 +2329,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                   && (maxRootsOption.isAutomatic() || maxRootsOption.isInfinity()
                       || maxRootsOption.equals(F.C1000));
               IExpr integersResult = solveIntegers(ast, equationVariables, variables, maxRoots,
-                  domain, allowParametricSolution, engine);
+                  domain, allowParametricSolution, options.method(), engine);
               if (domain == S.Primes) {
                 return checkDomain(integersResult, domain, maxRoots);
               }
@@ -3374,7 +3376,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
       IAST userDefinedVariables, int maximumNumberOfResults, ISymbol domain, EvalEngine engine) {
     return solveIntegers(ast, equationVariables, userDefinedVariables, maximumNumberOfResults,
-        domain, false, engine);
+        domain, false, S.Automatic, engine);
+  }
+
+  public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
+      IAST userDefinedVariables, int maximumNumberOfResults, ISymbol domain,
+      boolean allowParametricSolution, EvalEngine engine) {
+    return solveIntegers(ast, equationVariables, userDefinedVariables, maximumNumberOfResults,
+        domain, allowParametricSolution, S.Automatic, engine);
   }
 
   /**
@@ -3383,10 +3392,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
    *        Callers that need concrete instances - {@link S#FindInstance}, or a {@link S#Solve} call
    *        which asked for a specific finite number of results via {@link S#MaxRoots} - pass
    *        <code>false</code> and get the enumeration.
+   * @param method the value of the {@link S#Method} option: <code>"ORTools"</code> searches with
+   *        the CP-SAT solver of the <code>matheclipse-or-tools</code> module where the choco-solver
+   *        search is used otherwise
    */
   public static IExpr solveIntegers(final IAST ast, IAST equationVariables,
       IAST userDefinedVariables, int maximumNumberOfResults, ISymbol domain,
-      boolean allowParametricSolution, EvalEngine engine) {
+      boolean allowParametricSolution, IExpr method, EvalEngine engine) {
     if (!userDefinedVariables.isEmpty()) {
       // a condition which evaluated to True or False is no unknown
       equationVariables = equationVariables.select(x -> !x.isTrue() && !x.isFalse());
@@ -3460,6 +3472,21 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
         }
 
+        if (OptimizationMethod.useORTools(ast.topHead(), method,
+            IIntegerConstraintSolver.isAvailable(), engine)) {
+          IAST resultList = IIntegerConstraintSolver.get().solve(equationsAndInequations,
+              equationVariables, userDefinedVariables, maximumNumberOfResults, domain,
+              ChocoConvert.CHOCO_MIN_VALUE, ChocoConvert.CHOCO_MAX_VALUE, engine);
+          if (resultList.isPresent()) {
+            if (resultList.isEmpty()) {
+              return resultList;
+            }
+            resultList = resultList.copy();
+            EvalAttributes.sort((IASTMutable) resultList);
+            return resultList;
+          }
+          // a system the CP-SAT model can't express: the choco-solver search below
+        }
         try {
           IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
               userDefinedVariables, maximumNumberOfResults, domain, engine);

@@ -882,43 +882,60 @@ public class ChocoConvert {
       // a solution may lie outside a restricted intermediate range
       return model.getHook(RESTRICTED_RANGE) != null ? F.NIL : F.CEmptyList;
     }
-    IASTAppendable result = F.ListAlloc(res.size());
-    for (int i = 0; i < res.size(); i++) {
-      Solution solution = res.get(i);
+    List<Map<ISymbol, Long>> solutions = new java.util.ArrayList<Map<ISymbol, Long>>(res.size());
+    for (Solution solution : res) {
       if (solution != null) {
-        IExpr listOfZZVariables = F.NIL;
-        IExpr complement = S.Complement.of(engine, userDefinedVariables, equationVariables);
-        if (complement.size() > 1 && complement.isList()) {
-          listOfZZVariables =
-              S.Apply.of(engine, S.And, complement.mapThread(F.Element(F.Slot1, S.Integers), 1));
+        Map<ISymbol, Long> values = new TreeMap<ISymbol, Long>();
+        for (Entry<ISymbol, IntVar> entry : map.entrySet()) {
+          values.put(entry.getKey(), (long) solution.getIntVal(entry.getValue()));
         }
-
-        Set<Entry<ISymbol, IntVar>> set = map.entrySet();
-        IASTAppendable temp = F.ListAlloc(set.size());
-        // Emit the rules in the order in which the user listed the variables. Iterating the
-        // TreeMap instead would order them alphabetically, so solving for {n, m} would answer
-        // {m->.., n->..}.
-        for (int j = 1; j < userDefinedVariables.size(); j++) {
-          IExpr userVariable = userDefinedVariables.get(j);
-          if (userVariable.isSymbol()) {
-            IntVar intVar = map.get(userVariable);
-            if (intVar != null) {
-              appendIntegerRule(temp, (ISymbol) userVariable, solution.getIntVal(intVar),
-                  listOfZZVariables);
-            }
-          }
-        }
-        // any remaining solved variables the user didn't list explicitly
-        for (Entry<ISymbol, IntVar> entry : set) {
-          if (userDefinedVariables.indexOf(entry.getKey()) <= 0) {
-            appendIntegerRule(temp, entry.getKey(), solution.getIntVal(entry.getValue()),
-                listOfZZVariables);
-          }
-        }
-        result.append(temp);
+        solutions.add(values);
       }
     }
+    return solutionRules(solutions, equationVariables, userDefinedVariables, engine);
+  }
 
+  /**
+   * The integer solutions of a system as lists of rules: first the variables in the order in which
+   * the user listed them, then the other solved variables in the order of the map. A variable of
+   * the user which isn't in the system only has to be an integer, so every value is wrapped in a
+   * {@link S#ConditionalExpression} with the condition that those variables are integers.
+   *
+   * @param solutions one map from the solved variables to their values per solution
+   * @param equationVariables the variables of the system
+   * @param userDefinedVariables the variables the user asked for
+   */
+  public static IASTAppendable solutionRules(List<? extends Map<ISymbol, Long>> solutions,
+      IAST equationVariables, IAST userDefinedVariables, EvalEngine engine) {
+    IExpr listOfZZVariables = F.NIL;
+    IExpr complement = S.Complement.of(engine, userDefinedVariables, equationVariables);
+    if (complement.size() > 1 && complement.isList()) {
+      listOfZZVariables =
+          S.Apply.of(engine, S.And, complement.mapThread(F.Element(F.Slot1, S.Integers), 1));
+    }
+    IASTAppendable result = F.ListAlloc(solutions.size());
+    for (Map<ISymbol, Long> solution : solutions) {
+      IASTAppendable temp = F.ListAlloc(solution.size());
+      // Emit the rules in the order in which the user listed the variables. Iterating the
+      // TreeMap instead would order them alphabetically, so solving for {n, m} would answer
+      // {m->.., n->..}.
+      for (int j = 1; j < userDefinedVariables.size(); j++) {
+        IExpr userVariable = userDefinedVariables.get(j);
+        if (userVariable.isSymbol()) {
+          Long value = solution.get(userVariable);
+          if (value != null) {
+            appendIntegerRule(temp, (ISymbol) userVariable, value, listOfZZVariables);
+          }
+        }
+      }
+      // any remaining solved variables the user didn't list explicitly
+      for (Entry<ISymbol, Long> entry : solution.entrySet()) {
+        if (userDefinedVariables.indexOf(entry.getKey()) <= 0) {
+          appendIntegerRule(temp, entry.getKey(), entry.getValue(), listOfZZVariables);
+        }
+      }
+      result.append(temp);
+    }
     return result;
   }
 
@@ -926,7 +943,7 @@ public class ChocoConvert {
    * Append the rule <code>variable -> value</code> to <code>result</code>, wrapping the value in a
    * {@link S#ConditionalExpression} if there are unsolved variables which only have to be integers.
    */
-  private static void appendIntegerRule(IASTAppendable result, ISymbol variable, int value,
+  private static void appendIntegerRule(IASTAppendable result, ISymbol variable, long value,
       IExpr listOfZZVariables) {
     if (listOfZZVariables.isPresent()) {
       result.append(F.Rule(variable, F.ConditionalExpression(F.ZZ(value), listOfZZVariables)));

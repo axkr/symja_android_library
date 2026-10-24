@@ -469,16 +469,45 @@ public class GraphFunctionsTest extends AbstractTestCase {
     check("Head(FindHamiltonianCycle(CycleGraph(4), 0))", "FindHamiltonianCycle");
   }
 
-  // @Test
-  // public void testFindMinimumCostFlow() {
-  // // TODO
-  // check("FindMinimumCostFlow(Graph({1,2,3,4},{1->2,2->3,3->1,3->4})," //
-  // + "1,4)", //
-  // " ");
-  // check("FindMinimumCostFlow(Graph({1,2,3,4,5,6},{1->2,2->3,3->4,1->5,5->6,6->4,2->5,3->6})," //
-  // + "{1,3,4,-3,-4,-1})", //
-  // " ");
-  // }
+  @Test
+  public void testFindMinimumCostFlow() {
+    // the only path 1->2->3->4 carries a flow of 1 at cost 3
+    check("FindMinimumCostFlow(Graph({1,2,3,4},{1->2,2->3,3->1,3->4})," //
+        + "1,4)", //
+        "3");
+    // a maximum flow of 2: the paths 1->2->4 (cost 2) and 1->3->4 (cost 6)
+    check("FindMinimumCostFlow(Graph({1->2,1->3,2->4,3->4},EdgeWeight->{1,5,1,1}),1,4)", //
+        "8");
+    check("FindMinimumCostFlow(Graph({1->2,1->3,2->4,3->4},EdgeWeight->{1,5,1,1}),1,4,1)", //
+        "2");
+    check("FindMinimumCostFlow(Graph({1->2,1->3,2->4,3->4},EdgeWeight->{1,5,1,1}),1,4,"
+        + "EdgeCapacity->{2,2,2,2})", //
+        "16");
+    check("FindMinimumCostFlow(Graph({1->2,1->3,2->4,3->4},EdgeWeight->{1.5,5,1,1}),1,4)", //
+        "8.5");
+    // an EdgeWeight option of the call replaces the weights of the graph
+    check("FindMinimumCostFlow(Graph({1->2,1->3,2->4,3->4}),1,4,EdgeWeight->{1,5,1,1})", //
+        "8");
+    check("FindMinimumCostFlow(Graph({1->2,1->3,2->4,3->4},EdgeWeight->{9,9,9,9}),1,4,"
+        + "EdgeWeight->{1,5,1,1})", //
+        "8");
+    // capacities of 10^9 and more are outside the range of the default method
+    check("Head(FindMinimumCostFlow(Graph({1->2,2->3}),1,3,EdgeCapacity->{10^9,10^9}))", //
+        "FindMinimumCostFlow");
+    // undirected edges: 1-2-3 costs 2, 1-3 costs 5
+    check("FindMinimumCostFlow(Graph({1<->2,2<->3,1<->3},EdgeWeight->{1,1,5}),1,3)", //
+        "7");
+    // no flow of value 3
+    check("Head(FindMinimumCostFlow(Graph({1->2,1->3,2->4,3->4},EdgeWeight->{1,5,1,1}),1,4,3))", //
+        "FindMinimumCostFlow");
+    // an undirected edge with a negative cost would carry flow both ways
+    check("Head(FindMinimumCostFlow(Graph({1<->2,2<->3},EdgeWeight->{-5,1}),1,3))", //
+        "FindMinimumCostFlow");
+    // the form with supplies and demands isn't implemented
+    check("Head(FindMinimumCostFlow(Graph({1,2,3,4,5,6},"
+        + "{1->2,2->3,3->4,1->5,5->6,6->4,2->5,3->6}),{1,3,4,-3,-4,-1}))", //
+        "FindMinimumCostFlow");
+  }
 
   @Test
   public void testFindVertexCover() {

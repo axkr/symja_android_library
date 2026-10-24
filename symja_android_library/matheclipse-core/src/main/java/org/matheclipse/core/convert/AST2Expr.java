@@ -386,7 +386,7 @@ public class AST2Expr {
       "Kernels", "Key", "KeyDrop", "KeyDropFrom", "KeyExistsQ", "KeyFreeQ", "KeyComplement",
       "KeyIntersection", "KeyMap", "KeyMemberQ", "Keys", "KeySelect", "KeySort", "KeySortBy",
       "KeyTake", "KeyUnion", "KeyValueMap", "KeyValuePattern", "KillProcess", "KirchhoffMatrix",
-      "KleinInvariantJ", "KnotData", "KnownUnitQ", "KolmogorovSmirnovTest", "KOrderlessPartitions",
+      "KleinInvariantJ", "KnapsackSolve", "KnotData", "KnownUnitQ", "KolmogorovSmirnovTest", "KOrderlessPartitions",
       "KPartitions", "KroneckerDelta", "KroneckerProduct", "KroneckerSymbol",
       "KumaraswamyDistribution", "Kurtosis", "LABColor", "Labeled", "LaguerreL", "LambdaComponents",
       "LambertW", "LaplaceDistribution", "LaplaceTransform", "Laplacian", "LaplacianFilter",

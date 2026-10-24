@@ -26,15 +26,17 @@ public class SolveOptionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void solveKeysBindByName() {
-    // {Assumptions, GenerateConditions, InverseFunctions, MaxExtraConditions, MaxRoots, Modulus}
-    SolveOptions options = SolveOptions.of(SolveOptions.SOLVE_KEYS,
-        new IExpr[] {F.Greater(F.a, F.C0), S.False, S.False, F.C2, F.ZZ(7), F.ZZ(13)});
+    // {Assumptions, GenerateConditions, InverseFunctions, MaxExtraConditions, MaxRoots, Method,
+    // Modulus}
+    SolveOptions options = SolveOptions.of(SolveOptions.SOLVE_KEYS, new IExpr[] {
+        F.Greater(F.a, F.C0), S.False, S.False, F.C2, F.ZZ(7), F.stringx("ORTools"), F.ZZ(13)});
     assertEquals(F.Greater(F.a, F.C0), options.assumptions());
     assertSame(S.False, options.generateConditions());
     assertEquals(EvalEngine.INVERSE_FUNCTIONS_FALSE, options.inverseFunctionsMode());
     assertEquals(2, options.maxExtraConditions());
     assertEquals(F.ZZ(7), options.maxRoots());
     assertEquals(F.ZZ(13), options.modulus());
+    assertEquals(F.stringx("ORTools"), options.method());
     // Solve declares no WorkingPrecision - it must not pick up any of these values
     assertSame(S.Automatic, options.workingPrecision());
   }
@@ -69,12 +71,16 @@ public class SolveOptionsTest extends ExprEvaluatorTestCase {
     assertEquals(F.C0, nsolve.modulus());
   }
 
-  /** FindInstance declares one option, so every other option has to fall back to its default. */
+  /**
+   * A value array shorter than the keys of FindInstance: every option without a value, and every
+   * option FindInstance doesn't declare, has to fall back to its default.
+   */
   @Test
   public void shorterValueArrayFallsBackToDefaults() {
     SolveOptions options =
         SolveOptions.of(SolveOptions.FIND_INSTANCE_KEYS, new IExpr[] {S.False});
     assertSame(S.False, options.generateConditions());
+    assertSame(S.Automatic, options.method());
     assertEquals(F.C1000, options.maxRoots());
     assertEquals(F.C0, options.modulus());
     assertSame(S.Automatic, options.workingPrecision());

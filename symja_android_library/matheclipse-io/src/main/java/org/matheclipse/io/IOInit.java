@@ -34,6 +34,42 @@ public class IOInit {
     }
   }
 
+  /**
+   * Initialize an optional module that <code>matheclipse-io</code> doesn't depend on, so that its
+   * init class can only be found at runtime: the static <code>init()</code> method of
+   * <code>initClassName</code> is called if the module is on the classpath, and nothing happens if
+   * it isn't. A deployment adds such a module by putting its jar on the classpath, so its absence
+   * is the normal case and isn't reported.
+   *
+   * <p>
+   * The class is looked up without being initialized: only a missing class means a missing module.
+   * A module that is present but fails while its classes are initialized or its
+   * <code>init()</code> runs is a real failure and propagates, as in
+   * {@link #initOptional(String, Runnable)}.
+   */
+  private static void initOptionalByName(String initClassName) {
+    final Class<?> initClass;
+    try {
+      initClass = Class.forName(initClassName, false, IOInit.class.getClassLoader());
+    } catch (ClassNotFoundException missing) {
+      return;
+    }
+    try {
+      initClass.getMethod("init").invoke(null);
+    } catch (java.lang.reflect.InvocationTargetException ite) {
+      Throwable cause = ite.getCause();
+      if (cause instanceof RuntimeException) {
+        throw (RuntimeException) cause;
+      }
+      if (cause instanceof Error) {
+        throw (Error) cause;
+      }
+      throw new IllegalStateException(cause);
+    } catch (ReflectiveOperationException roe) {
+      throw new IllegalStateException(initClassName + ".init() can't be called", roe);
+    }
+  }
+
   public static void init() {
     // prime factorization of BigInteger numbers by matheclipse-core
     Config.PRIME_FACTORS = new Primality();
@@ -58,6 +94,10 @@ public class IOInit {
     // shown in; without it those stay unevaluated and JSFormData is shown as text
     initOptional("matheclipse-jsgraphics",
         () -> org.matheclipse.jsgraphics.JSGraphicsInit.init());
+    // installs the OR-Tools solvers the option Method -> "ORTools" of LinearOptimization, Solve,
+    // FindShortestTour, ... uses and registers KnapsackSolve; matheclipse-io doesn't depend on
+    // matheclipse-or-tools, so it is used only if a deployment puts it on the classpath
+    initOptionalByName("org.matheclipse.ortools.OrToolsInit");
 
     S.Import.setEvaluator(new org.matheclipse.io.builtin.Import());
     FileIOFunctions.initialize();

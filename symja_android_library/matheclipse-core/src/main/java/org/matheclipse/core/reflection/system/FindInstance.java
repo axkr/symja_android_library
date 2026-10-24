@@ -98,7 +98,9 @@ public class FindInstance extends Solve {
             return BooleanFunctions.solveInstances(ast.arg1(), vars, maxChoices);
           } else if (ast.arg3() == S.Integers || ast.arg3() == S.Primes) {
             domain = (ISymbol) ast.arg3();
-            return Solve.solveIntegers(ast, vars, vars, maxChoices, domain, engine);
+            // options[1] is the Method option
+            return Solve.solveIntegers(ast, vars, vars, maxChoices, domain, false,
+                options.length > 1 && options[1] != null ? options[1] : S.Automatic, engine);
           }
           domain = (ISymbol) ast.arg3();
           if (domain != S.Reals && domain != S.Complexes) {
@@ -247,6 +249,6 @@ public class FindInstance extends Solve {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, SolveOptions.FIND_INSTANCE_KEYS[0], SolveOptions.FIND_INSTANCE_DEFAULTS[0]);
+    setOptions(newSymbol, SolveOptions.FIND_INSTANCE_KEYS, SolveOptions.FIND_INSTANCE_DEFAULTS);
   }
 }

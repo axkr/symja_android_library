@@ -73,8 +73,10 @@ public class Documentation {
    * Every module's root package is <code>org.matheclipse.&lt;module&gt;</code> and its directory is
    * <code>matheclipse-&lt;module&gt;</code> - true for core, parser, io, gpl, image, nlp, astro,
    * bio, chem, graphtheory, compile, script and discord alike - so the module is the third package
-   * segment rather than something to enumerate. Evaluators outside <code>org.matheclipse</code>
-   * fall back to <code>core</code>.
+   * segment rather than something to enumerate. The one exception is
+   * <code>org.matheclipse.ortools</code> in the directory <code>matheclipse-or-tools</code>, because
+   * a package name can't contain the hyphen. Evaluators outside <code>org.matheclipse</code> fall
+   * back to <code>core</code>.
    *
    * @param packageName the fully qualified package name
    * @return the module name without the <code>matheclipse-</code> prefix
@@ -84,6 +86,9 @@ public class Documentation {
       String rest = packageName.substring("org.matheclipse.".length());
       int dot = rest.indexOf('.');
       String module = dot > 0 ? rest.substring(0, dot) : rest;
+      if (module.equals("ortools")) {
+        return "or-tools";
+      }
       if (!module.isEmpty()) {
         return module;
       }

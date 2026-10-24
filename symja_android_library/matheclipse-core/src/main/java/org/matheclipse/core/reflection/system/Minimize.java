@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.optimization.OptimizationMethod;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
@@ -55,6 +56,10 @@ public class Minimize extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IAST plain = Maximize.withoutMethod(ast, false, engine);
+    if (plain.isPresent()) {
+      return plain.isList() ? plain : evaluate(plain, engine);
+    }
     return Maximize.withNumericFallback(ast, S.NMinimize, engine, () -> evaluateExact(ast, engine));
   }
 
@@ -109,7 +114,8 @@ public class Minimize extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_3;
+    // a trailing Method -> ... rule is not counted
+    return OptimizationMethod.trailingMethod(ast, 2).isPresent() ? ARGS_3_4 : ARGS_2_3;
   }
 
   @Override

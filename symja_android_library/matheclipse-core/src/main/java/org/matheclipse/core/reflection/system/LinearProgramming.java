@@ -26,6 +26,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.optimization.ILinearOptimizer;
+import org.matheclipse.core.optimization.OptimizationMethod;
 
 /**
  *
@@ -96,7 +99,14 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
   }
 
   @Override
-  public IExpr numericEval(final IAST ast, EvalEngine engine) {
+  public IExpr numericEval(IAST ast, EvalEngine engine) {
+    // LinearProgramming(c, m, b, ..., Method -> "ORTools")
+    final IExpr method = OptimizationMethod.trailingMethod(ast, 3);
+    if (method.isPresent()) {
+      ast = ast.removeAtClone(ast.argSize());
+    }
+    final boolean orTools = OptimizationMethod.useORTools(S.LinearProgramming, method,
+        ILinearOptimizer.isAvailable(), engine);
     try {
       if (ast.arg1().isList() && ast.arg2().isList() && ast.arg3().isList()) {
         double[] arg1D = ast.arg1().toDoubleVector();
@@ -167,6 +177,10 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
           for (boolean b : integer) {
             anyInteger |= b;
           }
+          if (orTools) {
+            return solveWithORTools(ast.topHead(), arg1D, constraints, nonNegative, integer,
+                engine);
+          }
           if (!anyInteger) {
             return F.List(solve(f, constraints, nonNegative));
           }
@@ -209,13 +223,63 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * Minimize <code>objective . x</code> subject to <code>constraints</code> with the installed
+   * {@link ILinearOptimizer}, the Glop simplex and branch and bound of OR-Tools.
+   *
+   * @return the list of the values of the variables; the integer variables as exact integers
+   */
+  static IExpr solveWithORTools(ISymbol head, double[] objective,
+      Collection<LinearConstraint> constraints, boolean nonNegative, boolean[] integer,
+      EvalEngine engine) {
+    return resultList(head, solveORTools(objective, constraints, nonNegative, integer), integer,
+        engine);
+  }
+
+  /** Minimize <code>objective . x</code> subject to <code>constraints</code> with OR-Tools. */
+  static ILinearOptimizer.Result solveORTools(double[] objective,
+      Collection<LinearConstraint> constraints, boolean nonNegative, boolean[] integer) {
+    return ILinearOptimizer.get().solve(OptimizationMethod.linearProblem(objective, 0.0, false,
+        constraints, nonNegative, integer, OptimizationMethod.DEFAULT_TIME_LIMIT));
+  }
+
+  /**
+   * The values of the variables of an OR-Tools result, the integer ones as exact integers, or a
+   * message and {@link F#NIL} if there is no solution.
+   */
+  static IExpr resultList(ISymbol head, ILinearOptimizer.Result result, boolean[] integer,
+      EvalEngine engine) {
+    switch (result.status) {
+      case OPTIMAL:
+      case FEASIBLE:
+        IASTAppendable list = F.ListAlloc(result.values.length);
+        for (int i = 0; i < result.values.length; i++) {
+          list.append(integer != null && integer[i] ? F.ZZ(Math.round(result.values[i]))
+              : F.num(result.values[i]));
+        }
+        return list;
+      case INFEASIBLE:
+        // No solution can be found that satisfies the constraints.
+        return Errors.printMessage(head, "lpsnf", F.CEmptyList, engine);
+      case UNBOUNDED:
+        // `1`.
+        return Errors.printMessage(head, "error",
+            F.list(F.$str("The problem is unbounded.")), engine);
+      default:
+        // `1`.
+        return Errors.printMessage(head, "error",
+            F.list(F.$str("The OR-Tools solver returned the status " + result.status + ".")),
+            engine);
+    }
+  }
+
   /** The largest number of subproblems the branch and bound solves. */
-  private static final int MAX_NODES = 10000;
+  static final int MAX_NODES = 10000;
 
   private static final double INTEGER_TOLERANCE = 1.0e-9;
 
   /** The result of a branch and bound which stopped before it proved a solution optimal. */
-  private static final double[] INCOMPLETE = new double[0];
+  static final double[] INCOMPLETE = new double[0];
 
   /**
    * Add the bounds of the variables to the constraints: one lower bound <code>l</code> for all,
@@ -325,7 +389,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
    * @return <code>null</code> if no solution was found, {@link #INCOMPLETE} if the search was
    *         stopped after {@link #MAX_NODES} subproblems
    */
-  private static double[] branchAndBound(LinearObjectiveFunction f,
+  static double[] branchAndBound(LinearObjectiveFunction f,
       Collection<LinearConstraint> constraints, boolean nonNegative, boolean[] integer) {
     final class Node {
       final Collection<LinearConstraint> constraints;
@@ -396,6 +460,10 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_3_5;
+    // a trailing Method -> ... rule is not counted
+    return OptimizationMethod.trailingMethod(ast, 3).isPresent() ? ARGS_4_6
+        : IFunctionEvaluator.ARGS_3_5;
   }
+
+  private static final int[] ARGS_4_6 = new int[] {4, 6};
 }

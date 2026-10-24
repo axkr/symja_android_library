@@ -20,6 +20,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.optimization.ILinearOptimizer;
+import org.matheclipse.core.optimization.LinearExtremum;
+import org.matheclipse.core.optimization.OptimizationMethod;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
@@ -73,7 +76,55 @@ public class Maximize extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IAST plain = withoutMethod(ast, true, engine);
+    if (plain.isPresent()) {
+      return plain.isList() ? plain : evaluate(plain, engine);
+    }
     return Maximize.withNumericFallback(ast, S.NMaximize, engine, () -> evaluateExact(ast, engine));
+  }
+
+  /**
+   * <code>Maximize(f, vars, [dom], Method -&gt; m)</code> and the same for <code>Minimize</code>:
+   * the OR-Tools solution of a linear problem if <code>m</code> is <code>"ORTools"</code>.
+   *
+   * @return {@link F#NIL} if there is no trailing <code>Method</code> rule; the result list if
+   *         OR-Tools solved the problem; else the call without the rule, which the caller
+   *         evaluates with its own methods
+   */
+  static IAST withoutMethod(IAST ast, boolean isMax, EvalEngine engine) {
+    IExpr method = OptimizationMethod.trailingMethod(ast, 2);
+    if (method.isNIL()) {
+      return F.NIL;
+    }
+    IAST plain = ast.removeAtClone(ast.argSize());
+    if (OptimizationMethod.useORTools(ast.topHead(), method, ILinearOptimizer.isAvailable(),
+        engine)) {
+      IExpr result = orToolsExtremum(plain, isMax, engine);
+      if (result.isList()) {
+        return (IAST) result;
+      }
+    }
+    return plain;
+  }
+
+  /** The extremum of a linear problem <code>Maximize({f, cons...}, vars, [dom])</code>. */
+  private static IExpr orToolsExtremum(IAST ast, boolean isMax, EvalEngine engine) {
+    boolean allInteger = ast.isAST3() && ast.arg3() == S.Integers;
+    if (ast.isAST3() && !allInteger && ast.arg3() != S.Reals) {
+      return F.NIL;
+    }
+    IExpr function = ast.arg1();
+    IExpr objective = function;
+    IExpr constraints = S.True;
+    if (function.isList()) {
+      if (function.argSize() < 1) {
+        return F.NIL;
+      }
+      objective = function.first();
+      constraints = ((IAST) function).rest();
+    }
+    return LinearExtremum.extremum(ast.topHead(), objective, constraints, ast.arg2().makeList(),
+        allInteger, isMax, false, engine);
   }
 
   private IExpr evaluateExact(final IAST ast, EvalEngine engine) {
@@ -3355,7 +3406,8 @@ public class Maximize extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_3;
+    // a trailing Method -> ... rule is not counted
+    return OptimizationMethod.trailingMethod(ast, 2).isPresent() ? ARGS_3_4 : ARGS_2_3;
   }
 
   public static IAST maximizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {

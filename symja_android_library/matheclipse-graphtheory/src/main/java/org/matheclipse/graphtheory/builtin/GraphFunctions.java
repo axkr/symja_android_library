@@ -58,12 +58,16 @@ import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.Attribute;
 import org.matheclipse.core.interfaces.EdgeListType;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.geodesy.GeodesicSolver;
+import org.matheclipse.core.optimization.IGraphFlowSolver;
+import org.matheclipse.core.optimization.IRoutingSolver;
+import org.matheclipse.core.optimization.OptimizationMethod;
 import org.matheclipse.core.numerics.geodesy.ReferenceEllipsoid;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.graphtheory.eval.CanonicalLabeling;
@@ -332,26 +336,7 @@ public class GraphFunctions {
       if (sources == null || sinks == null) {
         return F.NIL;
       }
-      // an option of the call replaces the option of the graph
-      IAST options = gex.options();
-      if (lastArgument < ast.argSize()) {
-        IASTAppendable merged = F.ListAlloc();
-        if (options != null && options.isPresent()) {
-          for (IExpr option : options) {
-            boolean replaced = false;
-            for (int i = lastArgument + 1; i < ast.size(); i++) {
-              replaced |= option.isRuleAST() && option.first().equals(ast.get(i).first());
-            }
-            if (!replaced) {
-              merged.append(option);
-            }
-          }
-        }
-        for (int i = lastArgument + 1; i < ast.size(); i++) {
-          merged.append(ast.get(i));
-        }
-        options = merged;
-      }
+      IAST options = mergedOptions(gex, ast, lastArgument + 1);
       double[] edgeCapacity = capacities(options, S.EdgeCapacity, view.m, 1.0);
       double[] vertexCapacity =
           capacities(options, S.VertexCapacity, view.n, Double.POSITIVE_INFINITY);
@@ -372,18 +357,15 @@ public class GraphFunctions {
       final int n = view.n;
       final int superSource = 2 * n;
       final int superSink = 2 * n + 1;
-      Graph<Integer, DefaultWeightedEdge> network =
-          GraphTypeBuilder.<Integer, DefaultWeightedEdge>directed().allowingMultipleEdges(false)
-              .allowingSelfLoops(false).weighted(true).edgeClass(DefaultWeightedEdge.class)
-              .buildGraph();
-      for (int i = 0; i < 2 * n + 2 + 2 * view.m; i++) {
-        network.addVertex(i);
-      }
+      final int numNodes = 2 * n + 2 + 2 * view.m;
+      FlowNetwork network = new FlowNetwork();
       for (int v = 0; v < n; v++) {
-        arc(network, 2 * v, 2 * v + 1, vertexCapacity[v]);
+        network.arc(2 * v, 2 * v + 1, vertexCapacity[v]);
       }
-      DefaultWeightedEdge[] forward = new DefaultWeightedEdge[view.m];
-      DefaultWeightedEdge[] backward = new DefaultWeightedEdge[view.m];
+      int[] forward = new int[view.m];
+      int[] backward = new int[view.m];
+      java.util.Arrays.fill(forward, -1);
+      java.util.Arrays.fill(backward, -1);
       for (int e = 0; e < view.m; e++) {
         int u = view.source[e];
         int v = view.target[e];
@@ -391,36 +373,60 @@ public class GraphFunctions {
           continue;
         }
         int node = 2 * n + 2 + 2 * e;
-        forward[e] = arc(network, 2 * u + 1, node, edgeCapacity[e]);
-        arc(network, node, 2 * v, edgeCapacity[e]);
+        forward[e] = network.arc(2 * u + 1, node, edgeCapacity[e]);
+        network.arc(node, 2 * v, edgeCapacity[e]);
         if (view.undirected[e]) {
-          backward[e] = arc(network, 2 * v + 1, node + 1, edgeCapacity[e]);
-          arc(network, node + 1, 2 * u, edgeCapacity[e]);
+          backward[e] = network.arc(2 * v + 1, node + 1, edgeCapacity[e]);
+          network.arc(node + 1, 2 * u, edgeCapacity[e]);
         }
       }
       for (int s : sources) {
-        arc(network, superSource, 2 * s, Double.POSITIVE_INFINITY);
+        network.arc(superSource, 2 * s, Double.POSITIVE_INFINITY);
       }
       for (int t : sinks) {
-        arc(network, 2 * t + 1, superSink, Double.POSITIVE_INFINITY);
+        network.arc(2 * t + 1, superSink, Double.POSITIVE_INFINITY);
       }
-      MaximumFlowAlgorithm<Integer, DefaultWeightedEdge> algorithm =
-          new EdmondsKarpMFImpl<Integer, DefaultWeightedEdge>(network);
-      MaximumFlowAlgorithm.MaximumFlow<DefaultWeightedEdge> flow =
-          algorithm.getMaximumFlow(superSource, superSink);
+      IExpr method = OptimizationMethod.methodOption(ast, lastArgument + 1);
+      boolean orTools = OptimizationMethod.useORTools(S.FindMaximumFlow, method,
+          IGraphFlowSolver.isAvailable(), engine);
+      if (orTools && !exact) {
+        // `1`.
+        Errors.printMessage(S.FindMaximumFlow, "error",
+            F.list(F.stringx("Method -> \"ORTools\" needs integer capacities; "
+                + "the default method is used")),
+            engine);
+        orTools = false;
+      }
+      final double flowValue;
+      final double[] arcFlow;
+      if (orTools) {
+        IGraphFlowSolver.FlowResult flow =
+            network.solveWithORTools(numNodes, superSource, superSink);
+        if (flow == null) {
+          return F.NIL;
+        }
+        flowValue = flow.value;
+        arcFlow = new double[flow.arcFlow.length];
+        for (int a = 0; a < arcFlow.length; a++) {
+          arcFlow[a] = flow.arcFlow[a];
+        }
+      } else {
+        arcFlow = new double[network.size()];
+        flowValue = network.solveWithJGraphT(numNodes, superSource, superSink, arcFlow);
+      }
       if (property.equals("FlowValue")) {
-        return flowNumber(flow.getValue(), exact);
+        return flowNumber(flowValue, exact);
       }
       if (property.equals("FlowMatrix")) {
         // the net flow from vertex i to vertex j as a SparseArray
         double[][] matrix = new double[n][n];
         for (int e = 0; e < view.m; e++) {
-          if (forward[e] == null) {
+          if (forward[e] < 0) {
             continue;
           }
-          double f = flow.getFlowMap().get(forward[e]);
-          if (backward[e] != null) {
-            f -= flow.getFlowMap().get(backward[e]);
+          double f = arcFlow[forward[e]];
+          if (backward[e] >= 0) {
+            f -= arcFlow[backward[e]];
           }
           if (f >= 0.0) {
             matrix[view.source[e]][view.target[e]] += f;
@@ -442,12 +448,12 @@ public class GraphFunctions {
       // "EdgeList": the edges carrying flow, oriented along the flow, in flow matrix row order
       List<int[]> carrying = new ArrayList<int[]>();
       for (int e = 0; e < view.m; e++) {
-        if (forward[e] == null) {
+        if (forward[e] < 0) {
           continue;
         }
-        double f = flow.getFlowMap().get(forward[e]);
-        if (backward[e] != null) {
-          f -= flow.getFlowMap().get(backward[e]);
+        double f = arcFlow[forward[e]];
+        if (backward[e] >= 0) {
+          f -= arcFlow[backward[e]];
         }
         if (f > Config.DOUBLE_TOLERANCE) {
           carrying.add(new int[] {view.source[e], view.target[e], e});
@@ -467,11 +473,86 @@ public class GraphFunctions {
       return result;
     }
 
-    private static DefaultWeightedEdge arc(Graph<Integer, DefaultWeightedEdge> network, int u,
-        int v, double capacity) {
-      DefaultWeightedEdge edge = network.addEdge(u, v);
-      network.setEdgeWeight(edge, capacity);
-      return edge;
+    /**
+     * The arcs of a flow network: arc <code>a</code> goes from <code>tails[a]</code> to
+     * <code>heads[a]</code> with the capacity <code>capacities[a]</code>, which may be infinite.
+     */
+    private static final class FlowNetwork {
+      private final List<int[]> arcs = new ArrayList<int[]>();
+      private final List<Double> capacities = new ArrayList<Double>();
+
+      /** Add an arc and return its index. */
+      int arc(int tail, int head, double capacity) {
+        arcs.add(new int[] {tail, head});
+        capacities.add(capacity);
+        return arcs.size() - 1;
+      }
+
+      int size() {
+        return arcs.size();
+      }
+
+      /**
+       * The maximum flow with the Edmonds-Karp algorithm of JGraphT.
+       *
+       * @param arcFlow gets the flow on each arc
+       * @return the flow value
+       */
+      double solveWithJGraphT(int numNodes, int source, int sink, double[] arcFlow) {
+        Graph<Integer, DefaultWeightedEdge> graph =
+            GraphTypeBuilder.<Integer, DefaultWeightedEdge>directed().allowingMultipleEdges(false)
+                .allowingSelfLoops(false).weighted(true).edgeClass(DefaultWeightedEdge.class)
+                .buildGraph();
+        for (int i = 0; i < numNodes; i++) {
+          graph.addVertex(i);
+        }
+        DefaultWeightedEdge[] edges = new DefaultWeightedEdge[arcs.size()];
+        for (int a = 0; a < edges.length; a++) {
+          edges[a] = graph.addEdge(arcs.get(a)[0], arcs.get(a)[1]);
+          graph.setEdgeWeight(edges[a], capacities.get(a));
+        }
+        MaximumFlowAlgorithm<Integer, DefaultWeightedEdge> algorithm =
+            new EdmondsKarpMFImpl<Integer, DefaultWeightedEdge>(graph);
+        MaximumFlowAlgorithm.MaximumFlow<DefaultWeightedEdge> flow =
+            algorithm.getMaximumFlow(source, sink);
+        for (int a = 0; a < edges.length; a++) {
+          arcFlow[a] = flow.getFlowMap().get(edges[a]);
+        }
+        return flow.getValue();
+      }
+
+      /**
+       * The maximum flow with the push-relabel algorithm of OR-Tools. The capacities must be
+       * integers; an infinite capacity is replaced by one more than the sum of the finite ones,
+       * which no flow can reach.
+       *
+       * @return <code>null</code> if the solver fails
+       */
+      IGraphFlowSolver.FlowResult solveWithORTools(int numNodes, int source, int sink) {
+        final int m = arcs.size();
+        long finiteSum = 0;
+        for (double c : capacities) {
+          if (!Double.isInfinite(c)) {
+            finiteSum = Math.addExact(finiteSum, (long) c);
+          }
+        }
+        long infinite = Math.addExact(finiteSum, 1L);
+        int[] tails = new int[m];
+        int[] heads = new int[m];
+        long[] caps = new long[m];
+        for (int a = 0; a < m; a++) {
+          tails[a] = arcs.get(a)[0];
+          heads[a] = arcs.get(a)[1];
+          double c = capacities.get(a);
+          caps[a] = Double.isInfinite(c) ? infinite : (long) c;
+        }
+        IGraphFlowSolver.FlowResult flow =
+            IGraphFlowSolver.get().maxFlow(numNodes, tails, heads, caps, source, sink);
+        if (flow.status != IGraphFlowSolver.Status.OPTIMAL || flow.arcFlow == null) {
+          return null;
+        }
+        return flow;
+      }
     }
 
     /** The 0-based positions of a vertex or a list of vertices, or <code>null</code>. */
@@ -523,6 +604,33 @@ public class GraphFunctions {
         }
       }
       return result;
+    }
+
+    /**
+     * The options of the graph with the option rules <code>ast.get(firstOption) ... ast.last()
+     * </code> of the call; an option of the call replaces the option of the graph.
+     */
+    private static IAST mergedOptions(GraphExpr<?> gex, IAST ast, int firstOption) {
+      IAST options = gex.options();
+      if (firstOption >= ast.size()) {
+        return options;
+      }
+      IASTAppendable merged = F.ListAlloc();
+      if (options != null && options.isPresent()) {
+        for (IExpr option : options) {
+          boolean replaced = false;
+          for (int i = firstOption; i < ast.size(); i++) {
+            replaced |= option.isRuleAST() && option.first().equals(ast.get(i).first());
+          }
+          if (!replaced) {
+            merged.append(option);
+          }
+        }
+      }
+      for (int i = firstOption; i < ast.size(); i++) {
+        merged.append(ast.get(i));
+      }
+      return merged;
     }
 
     /** Whether the capacities of option <code>key</code> are all integers (or absent). */
@@ -1677,9 +1785,16 @@ public class GraphFunctions {
           return F.NIL;
         }
         boolean closed = argSize == 1 || s == t;
-        int[] order;
+        int[] order = null;
+        if (closed && OptimizationMethod.useORTools(S.FindShortestTour, options[1],
+            IRoutingSolver.isAvailable(), engine)) {
+          // Method -> "ORTools": the routing search of OR-Tools, a heuristic for many points
+          order = orToolsTour(metric.dist, s);
+        }
         if (closed) {
-          order = TravelingSalesman.tour(metric.dist, s, engine);
+          if (order == null) {
+            order = TravelingSalesman.tour(metric.dist, s, engine);
+          }
           if (n > 2 && order[1] < order[n - 1]) {
             // of the two directions take the one whose second stop has the higher number
             for (int i = 1, j = n - 1; i < j; i++, j--) {
@@ -1717,6 +1832,45 @@ public class GraphFunctions {
         Errors.printMessage(S.FindShortestTour, rex, engine);
       }
       return F.NIL;
+    }
+
+    /** The time limit in seconds of the routing search of OR-Tools. */
+    private static final double ORTOOLS_TIME_LIMIT = 2.0;
+
+    /**
+     * A closed tour with the routing search of OR-Tools, starting at point <code>start</code>, or
+     * <code>null</code> if the search found none. The routing search works on integer distances,
+     * so they are scaled such that the largest one has 12 digits, which keeps their order.
+     */
+    private static int[] orToolsTour(double[][] dist, int start) {
+      final int n = dist.length;
+      double max = 0.0;
+      for (double[] row : dist) {
+        for (double d : row) {
+          max = Math.max(max, d);
+        }
+      }
+      double scale = max > 0.0 ? 1.0e12 / max : 1.0;
+      long[][] scaled = new long[n][n];
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          scaled[i][j] = Math.round(dist[i][j] * scale);
+        }
+      }
+      int[] tour = IRoutingSolver.get().shortestTour(scaled, ORTOOLS_TIME_LIMIT);
+      if (tour == null || tour.length != n) {
+        return null;
+      }
+      // the tour starts at point 0; rotate it to start at point start
+      int k = 0;
+      while (tour[k] != start) {
+        k++;
+      }
+      int[] order = new int[n];
+      for (int i = 0; i < n; i++) {
+        order[i] = tour[(k + i) % n];
+      }
+      return order;
     }
 
     /**
@@ -1808,7 +1962,8 @@ public class GraphFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.DistanceFunction, S.Automatic);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.DistanceFunction, S.Method},
+          new IExpr[] {S.Automatic, S.Automatic});
     }
 
     /**
@@ -2965,96 +3120,369 @@ public class GraphFunctions {
   }
 
 
+  /**
+   *
+   *
+   * <pre>
+   * <code>FindMinimumCostFlow(graph, source, target)
+   * FindMinimumCostFlow(graph, source, target, d)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * the smallest cost of a maximum flow from <code>source</code> to <code>target</code>, or of a
+   * flow of value <code>d</code>. A unit of flow on an edge costs its <code>EdgeWeight</code>
+   * (default <code>1</code>); its <code>EdgeCapacity</code> (default <code>1</code>) bounds the
+   * flow. Options of the call replace the options of the graph. An undirected edge carries flow in
+   * one of its directions, so it can't have a negative cost. With
+   * <code>Method -&gt; "ORTools"</code> the cost scaling algorithm of OR-Tools solves the problem,
+   * which needs integer costs.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; FindMinimumCostFlow(Graph({1-&gt;2,1-&gt;3,2-&gt;4,3-&gt;4},EdgeWeight-&gt;{1,5,1,1}),1,4)
+   * 8
+   * </code>
+   * </pre>
+   */
   private static class FindMinimumCostFlow extends AbstractEvaluator {
-    private static class MinimumCostFlowProblemImpl
-        implements MinimumCostFlowProblem<IExpr, ExprEdge> {
-      private final Graph<IExpr, ExprEdge> graph;
-      private final Map<IExpr, Integer> supplyMap;
-      private final Map<ExprEdge, Integer> capacityMap;
-      private final Map<ExprEdge, Integer> costMap;
 
-      private MinimumCostFlowProblemImpl(Graph<IExpr, ExprEdge> graph,
-          Map<IExpr, Integer> supplyMap, Map<ExprEdge, Integer> capacityMap,
-          Map<ExprEdge, Integer> costMap) {
-        this.graph = graph;
-        this.supplyMap = supplyMap;
-        this.capacityMap = capacityMap;
-        this.costMap = costMap;
-      }
+    /** The flow problem of a call: arc <code>a</code> goes from <code>tails[a]</code> to <code>heads[a]</code>. */
+    private static final class Network {
+      final int n;
+      final int source;
+      final int target;
+      final int[] tails;
+      final int[] heads;
+      final long[] capacities;
+      final double[] costs;
+      final boolean integerCosts;
 
-      @Override
-      public Graph<IExpr, ExprEdge> getGraph() {
-        return graph;
-      }
-
-      @Override
-      public Function<IExpr, Integer> getNodeSupply() {
-        return v -> {
-          int val = supplyMap.getOrDefault(v, 0);
-          return val;
-        };
-      }
-
-      @Override
-      public Function<ExprEdge, Integer> getArcCapacityLowerBounds() {
-        return e -> costMap.getOrDefault(e, 0);
-      }
-
-      @Override
-      public Function<ExprEdge, Integer> getArcCapacityUpperBounds() {
-        return e -> capacityMap.getOrDefault(e, 0);
-      }
-
-      @Override
-      public Function<ExprEdge, Double> getArcCosts() {
-        return x -> 0.0;
+      Network(int n, int source, int target, int[] tails, int[] heads, long[] capacities,
+          double[] costs, boolean integerCosts) {
+        this.n = n;
+        this.source = source;
+        this.target = target;
+        this.tails = tails;
+        this.heads = heads;
+        this.capacities = capacities;
+        this.costs = costs;
+        this.integerCosts = integerCosts;
       }
     }
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    /** The cost as an exact integer for integer edge weights, else as a machine real. */
+    private static IExpr costNumber(double cost, boolean integerCosts) {
+      return integerCosts ? F.ZZ(Math.round(cost)) : F.num(cost);
+    }
+
+    private static IExpr noFlow(long value, EvalEngine engine) {
+      // `1`.
+      return Errors.printMessage(S.FindMinimumCostFlow, "error",
+          F.list(F.stringx("no flow of value " + value + " exists")), engine);
+    }
+
+    /**
+     * The minimum cost flow with the cost scaling algorithm of OR-Tools.
+     *
+     * @param value the value of the flow, <code>-1</code> for a maximum flow
+     */
+    private static IExpr solveWithORTools(Network net, long value, EvalEngine engine) {
+      final int m = net.tails.length;
+      long[] costs = new long[m];
+      for (int a = 0; a < m; a++) {
+        costs[a] = Math.round(net.costs[a]);
+      }
+      IGraphFlowSolver solver = IGraphFlowSolver.get();
+      if (value < 0) {
+        IGraphFlowSolver.FlowResult maxFlow =
+            solver.maxFlow(net.n, net.tails, net.heads, net.capacities, net.source, net.target);
+        if (maxFlow.status != IGraphFlowSolver.Status.OPTIMAL) {
+          return F.NIL;
+        }
+        value = maxFlow.value;
+      }
+      long[] supplies = new long[net.n];
+      supplies[net.source] = value;
+      supplies[net.target] = -value;
+      IGraphFlowSolver.FlowResult flow =
+          solver.minCostFlow(net.n, net.tails, net.heads, net.capacities, costs, supplies);
+      if (flow.status == IGraphFlowSolver.Status.INFEASIBLE) {
+        return noFlow(value, engine);
+      }
+      if (flow.status != IGraphFlowSolver.Status.OPTIMAL) {
+        return F.NIL;
+      }
+      return F.ZZ(flow.value);
+    }
+
+    /**
+     * The minimum cost flow with the capacity scaling algorithm of JGraphT. Arc <code>a</code>
+     * becomes the path <code>tail -&gt; n+a -&gt; head</code>, so that parallel and opposite arcs
+     * stay apart; its cost is on the first part.
+     *
+     * @param value the value of the flow, <code>-1</code> for a maximum flow
+     */
+    private static IExpr solveWithJGraphT(Network net, long value, EvalEngine engine) {
+      final int m = net.tails.length;
+      // JGraphT reads a capacity of CAP_INF or more as infinite and rejects costs of COST_INF or
+      // more; the requested flow value and the supplies are ints
+      boolean inRange = value < CapacityScalingMinimumCostFlow.CAP_INF;
+      for (long c : net.capacities) {
+        inRange &= c < CapacityScalingMinimumCostFlow.CAP_INF;
+      }
+      for (double c : net.costs) {
+        inRange &= Math.abs(c) < CapacityScalingMinimumCostFlow.COST_INF;
+      }
+      if (!inRange) {
+        // `1`.
+        return Errors.printMessage(S.FindMinimumCostFlow, "error",
+            F.list(F.stringx("the default method needs capacities, costs and a flow value below "
+                + "10^9; Method -> \"ORTools\" has no such limit")),
+            engine);
+      }
+      Graph<Integer, DefaultWeightedEdge> capacityGraph = splitArcs(net);
+      Graph<Integer, DefaultWeightedEdge> costGraph = splitArcs(net);
+      final Map<DefaultWeightedEdge, Integer> upper = new HashMap<DefaultWeightedEdge, Integer>();
+      for (int a = 0; a < m; a++) {
+        int mid = net.n + a;
+        DefaultWeightedEdge in = capacityGraph.getEdge(net.tails[a], mid);
+        DefaultWeightedEdge out = capacityGraph.getEdge(mid, net.heads[a]);
+        capacityGraph.setEdgeWeight(in, net.capacities[a]);
+        capacityGraph.setEdgeWeight(out, net.capacities[a]);
+        DefaultWeightedEdge costIn = costGraph.getEdge(net.tails[a], mid);
+        DefaultWeightedEdge costOut = costGraph.getEdge(mid, net.heads[a]);
+        costGraph.setEdgeWeight(costIn, net.costs[a]);
+        costGraph.setEdgeWeight(costOut, 0.0);
+        upper.put(costIn, (int) net.capacities[a]);
+        upper.put(costOut, (int) net.capacities[a]);
+      }
+      if (value < 0) {
+        value = Math.round(new EdmondsKarpMFImpl<Integer, DefaultWeightedEdge>(capacityGraph)
+            .getMaximumFlowValue(net.source, net.target));
+      }
+      final int flowValue = (int) value;
+      final int source = net.source;
+      final int target = net.target;
+      MinimumCostFlowProblem<Integer, DefaultWeightedEdge> problem =
+          new MinimumCostFlowProblem<Integer, DefaultWeightedEdge>() {
+            @Override
+            public Graph<Integer, DefaultWeightedEdge> getGraph() {
+              return costGraph;
+            }
+
+            @Override
+            public Function<Integer, Integer> getNodeSupply() {
+              return v -> v == source ? flowValue : v == target ? -flowValue : 0;
+            }
+
+            @Override
+            public Function<DefaultWeightedEdge, Integer> getArcCapacityLowerBounds() {
+              return e -> 0;
+            }
+
+            @Override
+            public Function<DefaultWeightedEdge, Integer> getArcCapacityUpperBounds() {
+              return upper::get;
+            }
+
+            @Override
+            public Function<DefaultWeightedEdge, Double> getArcCosts() {
+              return costGraph::getEdgeWeight;
+            }
+          };
+      if (flowValue == 0) {
+        return costNumber(0.0, net.integerCosts);
+      }
       try {
-        IExpr startVertex = ast.arg2();
-        IExpr endVertex = ast.arg3();
-        // if (!arg2.isList()) {
-        // return F.NIL;
-        // }
+        MinimumCostFlow<DefaultWeightedEdge> flow =
+            new CapacityScalingMinimumCostFlow<Integer, DefaultWeightedEdge>()
+                .getMinimumCostFlow(problem);
+        return costNumber(flow.getCost(), net.integerCosts);
+      } catch (IllegalArgumentException iae) {
+        if ("Specified flow network problem has no feasible solution".equals(iae.getMessage())) {
+          // the network can't carry a flow of this value
+          return noFlow(value, engine);
+        }
+        return Errors.printMessage(S.FindMinimumCostFlow, iae, engine);
+      }
+    }
+
+    /**
+     * The cost of each edge in <code>EdgeList</code> order: an <code>EdgeWeight</code> option of
+     * the call replaces the weights of the graph; costs may be negative.
+     *
+     * @return <code>null</code> if the option isn't a list of one real number per edge
+     */
+    private static double[] edgeCosts(IAST options, GraphView view) {
+      if (options != null && options.isPresent()) {
+        for (int i = options.argSize(); i >= 1; i--) {
+          IExpr option = options.get(i);
+          if (option.isRuleAST() && option.first() == S.EdgeWeight) {
+            IExpr value = option.second();
+            if (!value.isList() || value.argSize() != view.m) {
+              return null;
+            }
+            double[] costs = new double[view.m];
+            for (int e = 0; e < view.m; e++) {
+              costs[e] = ((IAST) value).get(e + 1).evalfNaN();
+              if (Double.isNaN(costs[e])) {
+                return null;
+              }
+            }
+            return costs;
+          }
+        }
+      }
+      return view.weight;
+    }
+
+    private static Graph<Integer, DefaultWeightedEdge> splitArcs(Network net) {
+      Graph<Integer, DefaultWeightedEdge> graph =
+          GraphTypeBuilder.<Integer, DefaultWeightedEdge>directed().allowingMultipleEdges(false)
+              .allowingSelfLoops(false).weighted(true).edgeClass(DefaultWeightedEdge.class)
+              .buildGraph();
+      for (int v = 0; v < net.n + net.tails.length; v++) {
+        graph.addVertex(v);
+      }
+      for (int a = 0; a < net.tails.length; a++) {
+        graph.addEdge(net.tails[a], net.n + a);
+        graph.addEdge(net.n + a, net.heads[a]);
+      }
+      return graph;
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      final IExpr method = OptimizationMethod.trailingMethod(ast, 3);
+      if (method.isPresent()) {
+        ast = ast.removeAtClone(ast.argSize());
+      }
+      boolean orTools = OptimizationMethod.useORTools(S.FindMinimumCostFlow, method,
+          IGraphFlowSolver.isAvailable(), engine);
+      try {
+        // FindMinimumCostFlow(g, s, t, [d], options...)
+        int lastArgument = ast.argSize();
+        while (lastArgument > 3 && ast.get(lastArgument).isRuleAST()) {
+          lastArgument--;
+        }
+        if (lastArgument > 4) {
+          return F.NIL;
+        }
         GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
         if (gex == null) {
           return F.NIL;
         }
-
-        Graph<IExpr, ExprEdge> graph = (Graph<IExpr, ExprEdge>) gex.toData();
-        Map<ExprEdge, Integer> capacityMap = new HashMap<>();
-        Map<ExprEdge, Integer> costMap = new HashMap<>();
-        Map<IExpr, Integer> supplyMap = new HashMap<>();
-        supplyMap.put(startVertex, 1);
-        supplyMap.put(endVertex, -1);
-
-        MinimumCostFlowProblem<IExpr, ExprEdge> problem =
-            new MinimumCostFlowProblemImpl(graph, supplyMap, capacityMap, costMap);
-        MinimumCostFlowAlgorithm<IExpr, ExprEdge> algorithm =
-            new CapacityScalingMinimumCostFlow<>();
-
-        MinimumCostFlow<ExprEdge> minimumCostFlow = algorithm.getMinimumCostFlow(problem);
-
-        return F.num(minimumCostFlow.getCost());
+        GraphView view = GraphView.of(gex.toData());
+        Integer s = view.index.get(ast.arg2());
+        Integer t = view.index.get(ast.arg3());
+        if (s == null || t == null) {
+          return F.NIL;
+        }
+        long value = -1;
+        if (lastArgument == 4) {
+          value = ast.arg4().toLongDefault();
+          if (value < 0) {
+            return F.NIL;
+          }
+        }
+        IAST options = FindMaximumFlow.mergedOptions(gex, ast, lastArgument + 1);
+        double[] capacity = FindMaximumFlow.capacities(options, S.EdgeCapacity, view.m, 1.0);
+        if (capacity == null || !FindMaximumFlow.isIntegerCapacity(options, S.EdgeCapacity)) {
+          // `1`.
+          return Errors.printMessage(S.FindMinimumCostFlow, "error",
+              F.list(F.stringx("non-negative integer edge capacities expected")), engine);
+        }
+        final double[] cost = edgeCosts(options, view);
+        if (cost == null) {
+          // `1`.
+          return Errors.printMessage(S.FindMinimumCostFlow, "error",
+              F.list(F.stringx("a list of one numeric EdgeWeight per edge expected")), engine);
+        }
+        boolean integerCosts = true;
+        for (int e = 0; e < view.m; e++) {
+          if (Double.isNaN(cost[e]) || Double.isInfinite(cost[e])) {
+            return F.NIL;
+          }
+          integerCosts &= cost[e] == Math.rint(cost[e]) && Math.abs(cost[e]) < 1.0e15;
+          if (view.undirected[e] && cost[e] < 0.0) {
+            // the two directions of the edge would form a cycle of negative cost
+            // `1`.
+            return Errors.printMessage(S.FindMinimumCostFlow, "error",
+                F.list(F.stringx("an undirected edge can't have a negative cost")), engine);
+          }
+        }
+        if (s.intValue() == t.intValue()) {
+          return costNumber(0.0, integerCosts);
+        }
+        long finiteSum = 0;
+        for (double c : capacity) {
+          if (!Double.isInfinite(c)) {
+            finiteSum = Math.addExact(finiteSum, (long) c);
+          }
+        }
+        final long infinite = Math.addExact(finiteSum, 1L);
+        List<int[]> arcs = new ArrayList<int[]>();
+        List<Integer> edgeOfArc = new ArrayList<Integer>();
+        for (int e = 0; e < view.m; e++) {
+          int u = view.source[e];
+          int v = view.target[e];
+          if (u == v) {
+            continue;
+          }
+          arcs.add(new int[] {u, v});
+          edgeOfArc.add(e);
+          if (view.undirected[e]) {
+            arcs.add(new int[] {v, u});
+            edgeOfArc.add(e);
+          }
+        }
+        final int m = arcs.size();
+        int[] tails = new int[m];
+        int[] heads = new int[m];
+        long[] caps = new long[m];
+        double[] costs = new double[m];
+        for (int a = 0; a < m; a++) {
+          int e = edgeOfArc.get(a);
+          tails[a] = arcs.get(a)[0];
+          heads[a] = arcs.get(a)[1];
+          caps[a] = Double.isInfinite(capacity[e]) ? infinite : (long) capacity[e];
+          costs[a] = cost[e];
+        }
+        Network net = new Network(view.n, s, t, tails, heads, caps, costs, integerCosts);
+        if (orTools && !integerCosts) {
+          // `1`.
+          Errors.printMessage(S.FindMinimumCostFlow, "error",
+              F.list(F.stringx("Method -> \"ORTools\" needs integer edge weights; "
+                  + "the default method is used")),
+              engine);
+          orTools = false;
+        }
+        return orTools ? solveWithORTools(net, value, engine)
+            : solveWithJGraphT(net, value, engine);
+      } catch (ArithmeticException ae) {
+        // the capacities overflow a long
+        return Errors.printMessage(S.FindMinimumCostFlow, ae, engine);
       } catch (RuntimeException rex) {
-        rex.printStackTrace();
         Errors.rethrowsInterruptException(rex);
-        Errors.printMessage(S.FindMinimumCostFlow, rex, engine);
+        return Errors.printMessage(S.FindMinimumCostFlow, rex, engine);
       }
-      return F.NIL;
     }
 
     @Override
     public int status() {
-      return ImplementationStatus.NO_SUPPORT;
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      // FindMinimumCostFlow(g, s, t, [d], options..., [Method -> "ORTools"])
+      return ARGS_3_INFINITY;
     }
   }
 

@@ -29,7 +29,8 @@ public final class SolveOptions {
 
   /** The option keys of {@link S#Solve} and {@link S#SolveValues}. */
   static final IBuiltInSymbol[] SOLVE_KEYS = new IBuiltInSymbol[] {S.Assumptions,
-      S.GenerateConditions, S.InverseFunctions, S.MaxExtraConditions, S.MaxRoots, S.Modulus};
+      S.GenerateConditions, S.InverseFunctions, S.MaxExtraConditions, S.MaxRoots, S.Method,
+      S.Modulus};
 
   /**
    * The option defaults of {@link S#Solve} and {@link S#SolveValues}. {@link S#Assumptions} default
@@ -37,7 +38,7 @@ public final class SolveOptions {
    * <code>$Assumptions</code> and the ones an enclosing <code>Assuming(...)</code> established.
    */
   static final IExpr[] SOLVE_DEFAULTS =
-      new IExpr[] {S.Automatic, S.True, S.Automatic, F.C0, F.C1000, F.C0};
+      new IExpr[] {S.Automatic, S.True, S.Automatic, F.C0, F.C1000, S.Automatic, F.C0};
 
   /** The option keys of {@link S#Eliminate}. */
   public static final IBuiltInSymbol[] ELIMINATE_KEYS =
@@ -62,10 +63,10 @@ public final class SolveOptions {
 
   /** The option keys of {@link S#FindInstance}. */
   static final IBuiltInSymbol[] FIND_INSTANCE_KEYS =
-      new IBuiltInSymbol[] {S.GenerateConditions};
+      new IBuiltInSymbol[] {S.GenerateConditions, S.Method};
 
   /** The option defaults of {@link S#FindInstance}. */
-  static final IExpr[] FIND_INSTANCE_DEFAULTS = new IExpr[] {S.False};
+  static final IExpr[] FIND_INSTANCE_DEFAULTS = new IExpr[] {S.False, S.Automatic};
 
   /** The option keys of {@link S#Reduce}. */
   static final IBuiltInSymbol[] REDUCE_KEYS =
@@ -233,8 +234,10 @@ public final class SolveOptions {
   }
 
   /**
-   * The value of the {@link S#Method} option. Only {@link S#Automatic} is implemented - there is one
-   * algorithm to select - so a different value is accepted and ignored rather than rejected.
+   * The value of the {@link S#Method} option. Besides {@link S#Automatic} only
+   * <code>"ORTools"</code> selects something: <code>Solve</code> and <code>FindInstance</code> over
+   * the integers search with the CP-SAT solver of the <code>matheclipse-or-tools</code> module in
+   * place of choco-solver. Other values are accepted and ignored rather than rejected.
    */
   public IExpr method() {
     return method;

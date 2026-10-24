@@ -54,6 +54,9 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.optimization.ILinearOptimizer;
+import org.matheclipse.core.optimization.LinearExtremum;
+import org.matheclipse.core.optimization.OptimizationMethod;
 import org.matheclipse.core.reflection.system.Maximize;
 import org.matheclipse.core.reflection.system.Minimize;
 import org.matheclipse.core.sympy.calculus.Util;
@@ -1668,6 +1671,19 @@ public class MinMaxFunctions {
           // or a list of rules.
           return Errors.printMessage(ast.topHead(), "nonopt", F.List(ast.get(i), F.C2, ast),
               engine);
+        }
+      }
+      IExpr method = OptimizationMethod.methodOption(ast, 3);
+      if (OptimizationMethod.useORTools(ast.topHead(), method, ILinearOptimizer.isAvailable(),
+          engine)) {
+        // a linear problem, Element(x, Integers) conditions make it a mixed integer one
+        IAST list1 = ast.arg1().makeList();
+        if (list1.argSize() > 0) {
+          IExpr result = LinearExtremum.extremum(ast.topHead(), list1.first(), list1.rest(),
+              ast.arg2().makeList(), false, getGoalType() == GoalType.MAXIMIZE, true, engine);
+          if (result.isPresent()) {
+            return result;
+          }
         }
       }
       try {
