@@ -9927,6 +9927,16 @@ public class S {
       S.initFinalSymbol("GeometricMean", ID.GeometricMean);
 
   /**
+   * GeometricMeanFilter(x) - TODO describe `GeometricMeanFilter`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeometricMeanFilter.md">GeometricMeanFilter
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol GeometricMeanFilter =
+      S.initFinalSymbol("GeometricMeanFilter", ID.GeometricMeanFilter);
+
+  /**
    * GeometricTest(x) - TODO describe `GeometricTest`.
    * 
    * @see <a href=
@@ -13031,6 +13041,25 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol KelvinKer = S.initFinalSymbol("KelvinKer", ID.KelvinKer);
+
+  /**
+   * KendallTau(x) - TODO describe `KendallTau`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KendallTau.md">KendallTau
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KendallTau = S.initFinalSymbol("KendallTau", ID.KendallTau);
+
+  /**
+   * KendallTauTest(x) - TODO describe `KendallTauTest`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KendallTauTest.md">KendallTauTest
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KendallTauTest =
+      S.initFinalSymbol("KendallTauTest", ID.KendallTauTest);
 
   /**
    * KernelObject(x) - TODO describe `KernelObject`.
