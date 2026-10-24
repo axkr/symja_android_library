@@ -1902,6 +1902,16 @@ public class S {
   public final static IBuiltInSymbol Band = S.initFinalSymbol("Band", ID.Band);
 
   /**
+   * BarabasiAlbertGraphDistribution(x) - TODO describe `BarabasiAlbertGraphDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BarabasiAlbertGraphDistribution.md">BarabasiAlbertGraphDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BarabasiAlbertGraphDistribution =
+      S.initFinalSymbol("BarabasiAlbertGraphDistribution", ID.BarabasiAlbertGraphDistribution);
+
+  /**
    * BarChart(list-of-values, options) - plot a bar chart for a `list-of-values` with option
    * `BarOrigin->Bottom` or `BarOrigin->Bottom`
    * 
@@ -3188,6 +3198,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Catch = S.initFinalSymbol("Catch", ID.Catch);
+
+  /**
+   * CategoricalDistribution(x) - TODO describe `CategoricalDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/CategoricalDistribution.md">CategoricalDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol CategoricalDistribution =
+      S.initFinalSymbol("CategoricalDistribution", ID.CategoricalDistribution);
 
   /**
    * Catenate({l1, l2, ...}) - concatenates the lists `l1, l2, ...`
@@ -8433,6 +8453,24 @@ public class S {
   public final static IBuiltInSymbol Find = S.initFinalSymbol("Find", ID.Find);
 
   /**
+   * FindArgMax(x) - TODO describe `FindArgMax`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindArgMax.md">FindArgMax
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindArgMax = S.initFinalSymbol("FindArgMax", ID.FindArgMax);
+
+  /**
+   * FindArgMin(x) - TODO describe `FindArgMin`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindArgMin.md">FindArgMin
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol FindArgMin = S.initFinalSymbol("FindArgMin", ID.FindArgMin);
+
+  /**
    * FindAstroEvent(x) - TODO describe `FindAstroEvent`.
    * 
    * @see <a href=
@@ -13217,6 +13255,16 @@ public class S {
 
   public final static IBuiltInSymbol KroneckerSymbol =
       S.initFinalSymbol("KroneckerSymbol", ID.KroneckerSymbol);
+
+  /**
+   * KumaraswamyDistribution(x) - TODO describe `KumaraswamyDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KumaraswamyDistribution.md">KumaraswamyDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol KumaraswamyDistribution =
+      S.initFinalSymbol("KumaraswamyDistribution", ID.KumaraswamyDistribution);
 
   /**
    * Kurtosis(list) - gives the Pearson measure of kurtosis for `list` (a measure of existing
@@ -25261,6 +25309,16 @@ public class S {
       S.initFinalSymbol("UniformDistribution", ID.UniformDistribution);
 
   /**
+   * UniformGraphDistribution(x) - TODO describe `UniformGraphDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/UniformGraphDistribution.md">UniformGraphDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol UniformGraphDistribution =
+      S.initFinalSymbol("UniformGraphDistribution", ID.UniformGraphDistribution);
+
+  /**
    * UniformSumDistribution(x) - TODO describe `UniformSumDistribution`.
    * 
    * @see <a href=
@@ -26249,6 +26307,16 @@ public class S {
       S.initFinalSymbol("WatershedComponents", ID.WatershedComponents);
 
   /**
+   * WattsStrogatzGraphDistribution(x) - TODO describe `WattsStrogatzGraphDistribution`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WattsStrogatzGraphDistribution.md">WattsStrogatzGraphDistribution
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WattsStrogatzGraphDistribution =
+      S.initFinalSymbol("WattsStrogatzGraphDistribution", ID.WattsStrogatzGraphDistribution);
+
+  /**
    * WeaklyConnectedComponents(x) - TODO describe `WeaklyConnectedComponents`.
    * 
    * @see <a href=
@@ -26384,6 +26452,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol WheelGraph = S.initFinalSymbol("WheelGraph", ID.WheelGraph);
+
+  /**
+   * WhenEvent(x) - TODO describe `WhenEvent`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WhenEvent.md">WhenEvent
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol WhenEvent = S.initFinalSymbol("WhenEvent", ID.WhenEvent);
 
   /**
    * Which(cond1, expr1, cond2, expr2, ...) - yields `expr1` if `cond1` evaluates to `True`, `expr2`
